@@ -28,6 +28,14 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from collections import defaultdict
 
+# Import AI modules
+try:
+    from productivity_ai import ProductivityAnalyzer, GamificationEngine, FocusGoals
+    AI_AVAILABLE = True
+except ImportError:
+    AI_AVAILABLE = False
+    print("AI features not available - productivity_ai.py not found")
+
 # Windows hosts file path
 HOSTS_PATH = r"C:\Windows\System32\drivers\etc\hosts"
 REDIRECT_IP = "127.0.0.1"
@@ -38,6 +46,7 @@ MARKER_END = "# === PERSONAL FREEDOM BLOCK END ==="
 APP_DIR = Path(__file__).parent
 CONFIG_PATH = APP_DIR / "config.json"
 STATS_PATH = APP_DIR / "stats.json"
+GOALS_PATH = APP_DIR / "goals.json"
 
 # Website categories with common distracting sites
 SITE_CATEGORIES = {
@@ -196,6 +205,7 @@ class FocusBlocker:
     def update_stats(self, focus_seconds, completed=True):
         """Update session statistics"""
         today = datetime.now().strftime("%Y-%m-%d")
+        current_hour = datetime.now().hour
         
         self.stats["total_focus_time"] += focus_seconds
         
@@ -203,6 +213,24 @@ class FocusBlocker:
             self.stats["sessions_completed"] += 1
         else:
             self.stats["sessions_cancelled"] += 1
+        
+        # Track session types for achievements (AI feature)
+        if AI_AVAILABLE:
+            # Track early morning sessions (5 AM - 9 AM)
+            if 5 <= current_hour < 9:
+                self.stats["early_sessions"] = self.stats.get("early_sessions", 0) + 1
+            
+            # Track night sessions (9 PM - 1 AM)
+            if current_hour >= 21 or current_hour < 1:
+                self.stats["night_sessions"] = self.stats.get("night_sessions", 0) + 1
+            
+            # Track strict mode sessions
+            if self.current_mode == BlockMode.STRICT:
+                self.stats["strict_sessions"] = self.stats.get("strict_sessions", 0) + 1
+            
+            # Track pomodoro sessions
+            if self.current_mode == BlockMode.POMODORO:
+                self.stats["pomodoro_sessions"] = self.stats.get("pomodoro_sessions", 0) + 1
         
         if "daily_stats" not in self.stats:
             self.stats["daily_stats"] = {}
@@ -594,6 +622,12 @@ class FocusBlockerGUI:
         self.settings_tab = ttk.Frame(self.notebook, padding="10")
         self.notebook.add(self.settings_tab, text="⚙ Settings")
         self.setup_settings_tab()
+        
+        # Tab 7: AI Insights (if available)
+        if AI_AVAILABLE:
+            self.ai_tab = ttk.Frame(self.notebook, padding="10")
+            self.notebook.add(self.ai_tab, text="🧠 AI Insights")
+            self.setup_ai_tab()
     
     def setup_timer_tab(self):
         """Setup the timer tab"""
@@ -926,6 +960,146 @@ class FocusBlockerGUI:
         ttk.Label(about_frame, text="Block distracting websites and track your progress.",
                   font=('Segoe UI', 9)).pack()
     
+    def setup_ai_tab(self):
+        """Setup the AI Insights tab"""
+        # Initialize AI engines
+        self.analyzer = ProductivityAnalyzer(STATS_PATH)
+        self.gamification = GamificationEngine(STATS_PATH)
+        self.goals = FocusGoals(GOALS_PATH, STATS_PATH)
+        
+        # Create scrollable canvas
+        canvas = tk.Canvas(self.ai_tab, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(self.ai_tab, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # === AI Insights Section ===
+        insights_frame = ttk.LabelFrame(scrollable_frame, text="🔍 AI Insights & Recommendations", padding="15")
+        insights_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        self.insights_text = tk.Text(insights_frame, height=6, wrap=tk.WORD, 
+                                     font=('Segoe UI', 9), bg='#f0f0f0', relief=tk.FLAT)
+        self.insights_text.pack(fill=tk.X, pady=5)
+        
+        ttk.Button(insights_frame, text="🔄 Refresh Insights", 
+                   command=self.refresh_ai_insights).pack(pady=5)
+        
+        # === Achievements Section ===
+        ach_frame = ttk.LabelFrame(scrollable_frame, text="🏆 Achievements", padding="15")
+        ach_frame.pack(fill=tk.X, pady=10)
+        
+        self.achievement_widgets = {}
+        achievements = self.gamification.get_achievements()
+        
+        # Create a grid of achievement cards
+        for idx, (ach_id, ach_data) in enumerate(achievements.items()):
+            row, col = divmod(idx, 2)
+            
+            card = ttk.Frame(ach_frame, relief=tk.RIDGE, borderwidth=1)
+            card.grid(row=row, column=col, padx=5, pady=5, sticky='ew')
+            
+            # Achievement icon and name
+            header = ttk.Frame(card)
+            header.pack(fill=tk.X, padx=8, pady=(8, 2))
+            
+            icon_label = ttk.Label(header, text=ach_data['icon'], font=('Segoe UI', 16))
+            icon_label.pack(side=tk.LEFT)
+            
+            name_label = ttk.Label(header, text=ach_data['name'], 
+                                  font=('Segoe UI', 9, 'bold'))
+            name_label.pack(side=tk.LEFT, padx=5)
+            
+            # Description
+            desc_label = ttk.Label(card, text=ach_data['description'], 
+                                  font=('Segoe UI', 8), foreground='gray')
+            desc_label.pack(fill=tk.X, padx=8, pady=(0, 2))
+            
+            # Progress bar
+            progress_frame = ttk.Frame(card)
+            progress_frame.pack(fill=tk.X, padx=8, pady=(0, 8))
+            
+            progress_bar = ttk.Progressbar(progress_frame, mode='determinate', 
+                                          length=150, maximum=100)
+            progress_bar.pack(side=tk.LEFT, fill=tk.X, expand=True)
+            
+            progress_label = ttk.Label(progress_frame, text="0%", 
+                                      font=('Segoe UI', 8))
+            progress_label.pack(side=tk.LEFT, padx=5)
+            
+            self.achievement_widgets[ach_id] = {
+                'card': card,
+                'progress_bar': progress_bar,
+                'progress_label': progress_label,
+                'icon': icon_label,
+                'name': name_label
+            }
+        
+        # Configure grid columns
+        ach_frame.columnconfigure(0, weight=1)
+        ach_frame.columnconfigure(1, weight=1)
+        
+        # === Daily Challenge Section ===
+        challenge_frame = ttk.LabelFrame(scrollable_frame, text="🎯 Daily Challenge", padding="15")
+        challenge_frame.pack(fill=tk.X, pady=10)
+        
+        self.challenge_title = ttk.Label(challenge_frame, text="", 
+                                        font=('Segoe UI', 10, 'bold'))
+        self.challenge_title.pack(anchor=tk.W)
+        
+        self.challenge_desc = ttk.Label(challenge_frame, text="", 
+                                       font=('Segoe UI', 9), foreground='gray')
+        self.challenge_desc.pack(anchor=tk.W, pady=(2, 8))
+        
+        challenge_progress_frame = ttk.Frame(challenge_frame)
+        challenge_progress_frame.pack(fill=tk.X)
+        
+        self.challenge_progress = ttk.Progressbar(challenge_progress_frame, 
+                                                 mode='determinate', length=300)
+        self.challenge_progress.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        
+        self.challenge_status = ttk.Label(challenge_progress_frame, text="0/0", 
+                                         font=('Segoe UI', 9))
+        self.challenge_status.pack(side=tk.LEFT, padx=10)
+        
+        # === Goals Section ===
+        goals_frame = ttk.LabelFrame(scrollable_frame, text="🎯 Active Goals", padding="15")
+        goals_frame.pack(fill=tk.X, pady=10)
+        
+        self.goals_listbox = tk.Listbox(goals_frame, height=5, 
+                                        font=('Segoe UI', 9))
+        self.goals_listbox.pack(fill=tk.X, pady=(0, 10))
+        
+        goals_btn_frame = ttk.Frame(goals_frame)
+        goals_btn_frame.pack(fill=tk.X)
+        
+        ttk.Button(goals_btn_frame, text="➕ Add Goal", 
+                   command=self.add_goal_dialog).pack(side=tk.LEFT, padx=5)
+        ttk.Button(goals_btn_frame, text="✓ Complete Goal", 
+                   command=self.complete_selected_goal).pack(side=tk.LEFT, padx=5)
+        ttk.Button(goals_btn_frame, text="🗑 Remove Goal", 
+                   command=self.remove_selected_goal).pack(side=tk.LEFT, padx=5)
+        
+        # === Productivity Stats Section ===
+        stats_frame = ttk.LabelFrame(scrollable_frame, text="📈 AI-Powered Statistics", padding="15")
+        stats_frame.pack(fill=tk.X, pady=10)
+        
+        self.ai_stats_text = tk.Text(stats_frame, height=5, wrap=tk.WORD,
+                                     font=('Courier New', 9), bg='#f0f0f0', relief=tk.FLAT)
+        self.ai_stats_text.pack(fill=tk.X)
+        
+        # Initial data refresh
+        self.refresh_ai_data()
+    
     # === Timer Tab Methods ===
     
     def check_admin_status(self):
@@ -1017,6 +1191,10 @@ class FocusBlockerGUI:
         self.stop_session(show_message=False)
         self.timer_display.config(text="00:00:00")
         self.update_stats_display()
+        
+        # Refresh AI data after completing session
+        if AI_AVAILABLE:
+            self.refresh_ai_data()
         
         messagebox.showinfo("Complete!", "🎉 Focus session complete!\nGreat job staying focused!")
     
@@ -1308,6 +1486,229 @@ class FocusBlockerGUI:
             messagebox.showinfo("Success", "Pomodoro settings saved!")
         except ValueError:
             messagebox.showerror("Error", "Invalid values")
+    
+    # === AI Tab Methods ===
+    
+    def refresh_ai_data(self):
+        """Refresh all AI-powered insights and data"""
+        if not AI_AVAILABLE:
+            return
+        
+        self.refresh_ai_insights()
+        self.update_achievements()
+        self.update_daily_challenge()
+        self.update_goals_display()
+        self.update_ai_stats()
+    
+    def refresh_ai_insights(self):
+        """Refresh AI insights and recommendations"""
+        if not AI_AVAILABLE:
+            return
+        
+        self.insights_text.delete('1.0', tk.END)
+        
+        # Get insights and recommendations
+        insights = self.analyzer.generate_insights()
+        recommendations = self.analyzer.get_recommendations()
+        
+        if insights:
+            self.insights_text.insert(tk.END, "💡 INSIGHTS:\n", 'header')
+            for insight in insights:
+                self.insights_text.insert(tk.END, f"  • {insight}\n")
+            self.insights_text.insert(tk.END, "\n")
+        
+        if recommendations:
+            self.insights_text.insert(tk.END, "🎯 RECOMMENDATIONS:\n", 'header')
+            for rec in recommendations:
+                self.insights_text.insert(tk.END, f"  • {rec}\n")
+        
+        if not insights and not recommendations:
+            self.insights_text.insert(tk.END, "Complete a few sessions to unlock AI insights!\n", 'info')
+        
+        # Configure text tags
+        self.insights_text.tag_config('header', font=('Segoe UI', 9, 'bold'))
+        self.insights_text.tag_config('info', font=('Segoe UI', 9, 'italic'), foreground='gray')
+        self.insights_text.config(state=tk.DISABLED)
+    
+    def update_achievements(self):
+        """Update achievement progress bars"""
+        if not AI_AVAILABLE:
+            return
+        
+        progress_data = self.gamification.check_achievements()
+        
+        for ach_id, widgets in self.achievement_widgets.items():
+            if ach_id in progress_data:
+                progress = progress_data[ach_id]
+                current = progress['current']
+                target = progress['target']
+                unlocked = progress['unlocked']
+                
+                percentage = min(100, int((current / target) * 100)) if target > 0 else 0
+                
+                widgets['progress_bar']['value'] = percentage
+                widgets['progress_label'].config(text=f"{percentage}%")
+                
+                if unlocked:
+                    widgets['card'].config(relief=tk.RAISED, style='success.TFrame')
+                    widgets['icon'].config(font=('Segoe UI', 18))
+                    widgets['name'].config(foreground='green')
+                else:
+                    widgets['card'].config(relief=tk.RIDGE)
+                    widgets['icon'].config(font=('Segoe UI', 16))
+                    widgets['name'].config(foreground='black')
+    
+    def update_daily_challenge(self):
+        """Update daily challenge display"""
+        if not AI_AVAILABLE:
+            return
+        
+        challenge = self.gamification.get_daily_challenge()
+        
+        self.challenge_title.config(text=challenge['title'])
+        self.challenge_desc.config(text=challenge['description'])
+        
+        current = challenge['progress']['current']
+        target = challenge['progress']['target']
+        
+        self.challenge_progress['maximum'] = target
+        self.challenge_progress['value'] = current
+        self.challenge_status.config(text=f"{current}/{target}")
+    
+    def update_goals_display(self):
+        """Update active goals listbox"""
+        if not AI_AVAILABLE:
+            return
+        
+        self.goals_listbox.delete(0, tk.END)
+        
+        active_goals = self.goals.get_active_goals()
+        
+        if not active_goals:
+            self.goals_listbox.insert(tk.END, "No active goals. Add one to get started!")
+        else:
+            for goal in active_goals:
+                progress = goal.get('progress', 0)
+                target = goal.get('target', 100)
+                percentage = int((progress / target) * 100) if target > 0 else 0
+                
+                display = f"{goal['title']} - {percentage}% ({progress}/{target})"
+                self.goals_listbox.insert(tk.END, display)
+    
+    def update_ai_stats(self):
+        """Update AI-powered statistics display"""
+        if not AI_AVAILABLE:
+            return
+        
+        self.ai_stats_text.delete('1.0', tk.END)
+        
+        # Get peak productivity hours
+        peak_hours = self.analyzer.get_peak_productivity_hours()
+        if peak_hours:
+            self.ai_stats_text.insert(tk.END, f"🌟 Peak Hours: {', '.join(peak_hours)}\n")
+        
+        # Get optimal session length
+        optimal = self.analyzer.predict_optimal_session_length()
+        if optimal:
+            self.ai_stats_text.insert(tk.END, f"⏱  Optimal Session: {optimal} minutes\n")
+        
+        # Get distraction patterns
+        patterns = self.analyzer.get_distraction_patterns()
+        if patterns:
+            self.ai_stats_text.insert(tk.END, "\n🔍 Distraction Patterns:\n")
+            for pattern in patterns[:3]:  # Show top 3
+                self.ai_stats_text.insert(tk.END, f"   • {pattern}\n")
+        
+        self.ai_stats_text.config(state=tk.DISABLED)
+    
+    def add_goal_dialog(self):
+        """Show dialog to add a new goal"""
+        if not AI_AVAILABLE:
+            return
+        
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Add New Goal")
+        dialog.geometry("400x250")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        # Goal title
+        ttk.Label(dialog, text="Goal Title:", font=('Segoe UI', 10)).pack(pady=(20, 5), padx=20, anchor=tk.W)
+        title_entry = ttk.Entry(dialog, width=40, font=('Segoe UI', 10))
+        title_entry.pack(padx=20, pady=(0, 10))
+        
+        # Goal type
+        ttk.Label(dialog, text="Goal Type:", font=('Segoe UI', 10)).pack(pady=5, padx=20, anchor=tk.W)
+        goal_type = tk.StringVar(value="daily")
+        
+        type_frame = ttk.Frame(dialog)
+        type_frame.pack(padx=20, pady=(0, 10), anchor=tk.W)
+        
+        ttk.Radiobutton(type_frame, text="Daily", value="daily", variable=goal_type).pack(side=tk.LEFT, padx=5)
+        ttk.Radiobutton(type_frame, text="Weekly", value="weekly", variable=goal_type).pack(side=tk.LEFT, padx=5)
+        ttk.Radiobutton(type_frame, text="Custom", value="custom", variable=goal_type).pack(side=tk.LEFT, padx=5)
+        
+        # Target value
+        ttk.Label(dialog, text="Target (minutes):", font=('Segoe UI', 10)).pack(pady=5, padx=20, anchor=tk.W)
+        target_entry = ttk.Entry(dialog, width=15, font=('Segoe UI', 10))
+        target_entry.pack(padx=20, pady=(0, 20), anchor=tk.W)
+        target_entry.insert(0, "60")
+        
+        def save_goal():
+            title = title_entry.get().strip()
+            try:
+                target = int(target_entry.get())
+                if title and target > 0:
+                    self.goals.add_goal(title, goal_type.get(), target)
+                    self.update_goals_display()
+                    dialog.destroy()
+                else:
+                    messagebox.showerror("Invalid Input", "Please enter a valid title and target.")
+            except ValueError:
+                messagebox.showerror("Invalid Input", "Target must be a number.")
+        
+        btn_frame = ttk.Frame(dialog)
+        btn_frame.pack(padx=20, pady=10)
+        
+        ttk.Button(btn_frame, text="Save Goal", command=save_goal).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Cancel", command=dialog.destroy).pack(side=tk.LEFT, padx=5)
+    
+    def complete_selected_goal(self):
+        """Mark selected goal as completed"""
+        if not AI_AVAILABLE:
+            return
+        
+        selection = self.goals_listbox.curselection()
+        if selection:
+            idx = selection[0]
+            active_goals = self.goals.get_active_goals()
+            if 0 <= idx < len(active_goals):
+                goal = active_goals[idx]
+                self.goals.complete_goal(goal['id'])
+                self.update_goals_display()
+                messagebox.showinfo("Goal Completed", f"🎉 Congratulations on completing '{goal['title']}'!")
+    
+    def remove_selected_goal(self):
+        """Remove selected goal"""
+        if not AI_AVAILABLE:
+            return
+        
+        selection = self.goals_listbox.curselection()
+        if selection:
+            idx = selection[0]
+            active_goals = self.goals.get_active_goals()
+            if 0 <= idx < len(active_goals):
+                goal = active_goals[idx]
+                if messagebox.askyesno("Remove Goal", f"Remove goal '{goal['title']}'?"):
+                    # Get all goals and remove the selected one
+                    all_goals = self.goals.goals
+                    all_goals = [g for g in all_goals if g['id'] != goal['id']]
+                    self.goals.goals = all_goals
+                    self.goals.save_goals()
+                    self.update_goals_display()
+    
+    # === Window Management ===
+
     
     def on_closing(self):
         """Handle window close"""
