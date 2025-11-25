@@ -1782,10 +1782,10 @@ class FocusBlockerGUI:
         
         # Get distraction patterns
         patterns = self.analyzer.get_distraction_patterns()
-        if patterns:
+        if patterns and isinstance(patterns, dict):
             self.ai_stats_text.insert(tk.END, "\n🔍 Distraction Patterns:\n")
-            for pattern in patterns[:3]:  # Show top 3
-                self.ai_stats_text.insert(tk.END, f"   • {pattern}\n")
+            for key, value in list(patterns.items())[:3]:  # Show top 3
+                self.ai_stats_text.insert(tk.END, f"   • {key}: {value}\n")
         
         self.ai_stats_text.config(state=tk.DISABLED)
     
@@ -1804,12 +1804,15 @@ class FocusBlockerGUI:
         self.triggers_text.delete('1.0', tk.END)
         if len(session_notes) >= 3:
             triggers = self.local_ai.detect_distraction_triggers(session_notes[-10:])  # Last 10 notes
-            if triggers:
+            if triggers and isinstance(triggers, list) and len(triggers) > 0:
                 for trigger in triggers[:3]:  # Top 3
-                    self.triggers_text.insert(tk.END, 
-                        f"🎯 {trigger['trigger'].upper()} ({trigger['frequency']}x)\n")
-                    self.triggers_text.insert(tk.END, 
-                        f"   💡 {trigger['recommendation']}\n\n")
+                    if isinstance(trigger, dict):
+                        self.triggers_text.insert(tk.END, 
+                            f"🎯 {trigger.get('trigger', 'Unknown').upper()} ({trigger.get('frequency', 0)}x)\n")
+                        self.triggers_text.insert(tk.END, 
+                            f"   💡 {trigger.get('recommendation', 'No recommendation')}\n\n")
+                    else:
+                        self.triggers_text.insert(tk.END, f"• {trigger}\n")
             else:
                 self.triggers_text.insert(tk.END, "No common distraction patterns detected yet.\n")
         else:

@@ -68,37 +68,10 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\PersonalFreedomTray.exe"""; Tasks: autostart; Flags: uninsdeletevalue
 
 [Code]
-procedure InitializeWizard();
-var
-  InfoPage: TOutputMsgMemoWizardPage;
-begin
-  InfoPage := CreateOutputMsgMemoPage(wpWelcome,
-    'About Personal Freedom', 
-    'AI-Powered Productivity & Focus Tool',
-    'Personal Freedom helps you stay focused by blocking distracting websites during work sessions.' + #13#10 + #13#10 +
-    'KEY FEATURES:' + #13#10 +
-    '  • Website blocking with flexible scheduling' + #13#10 +
-    '  • AI-powered productivity insights' + #13#10 +
-    '  • GPU-accelerated sentiment analysis' + #13#10 +
-    '  • Distraction pattern detection' + #13#10 +
-    '  • Achievement system & goal tracking' + #13#10 +
-    '  • Smart break suggestions' + #13#10 + #13#10 +
-    'FULLY BUNDLED AI:' + #13#10 +
-    '  • All AI features work out of the box' + #13#10 +
-    '  • No Python or pip installation required' + #13#10 +
-    '  • Automatic GPU detection & usage' + #13#10 +
-    '  • 100% private - runs completely offline' + #13#10 + #13#10 +
-    'FIRST LAUNCH:' + #13#10 +
-    '  • May take ~30 seconds (downloading AI models)' + #13#10 +
-    '  • Models cached locally (~400MB in AppData)' + #13#10 +
-    '  • Subsequent launches are instant' + #13#10 + #13#10 +
-    'NOTE: Administrator privileges required for website blocking!'
-  );
-end;
-
 function InitializeSetup(): Boolean;
 var
   ResultCode: Integer;
+  UninstallString: String;
 begin
   Result := True;
   

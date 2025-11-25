@@ -2,6 +2,7 @@
 build/
 dist/
 *.spec
+installer_output/
 
 # Python cache
 __pycache__/
@@ -21,3 +22,17 @@ config.json
 # OS
 Thumbs.db
 .DS_Store
+
+# Large binaries - don't push to Git
+*.exe
+*.dll
+*.so
+*.dylib
+*.zip
+*.tar.gz
+*.rar
+
+# Installer files
+*.msi
+*.dmg
+*.pkg
