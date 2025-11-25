@@ -36,6 +36,14 @@ except ImportError:
     AI_AVAILABLE = False
     print("AI features not available - productivity_ai.py not found")
 
+# Import GPU-accelerated local AI
+try:
+    from local_ai import LocalAI
+    LOCAL_AI_AVAILABLE = True
+except ImportError:
+    LOCAL_AI_AVAILABLE = False
+    print("GPU AI not available - install: pip install -r requirements_ai.txt")
+
 # Windows hosts file path
 HOSTS_PATH = r"C:\Windows\System32\drivers\etc\hosts"
 REDIRECT_IP = "127.0.0.1"
@@ -1097,6 +1105,36 @@ class FocusBlockerGUI:
                                      font=('Courier New', 9), bg='#f0f0f0', relief=tk.FLAT)
         self.ai_stats_text.pack(fill=tk.X)
         
+        # === GPU AI Insights Section (if available) ===
+        if LOCAL_AI_AVAILABLE:
+            gpu_frame = ttk.LabelFrame(scrollable_frame, text="🚀 GPU AI Insights", padding="15")
+            gpu_frame.pack(fill=tk.X, pady=10)
+            
+            # Initialize local AI
+            if not hasattr(self, 'local_ai'):
+                self.local_ai = LocalAI()
+            
+            # GPU status
+            gpu_status = "✅ Running on GPU (CUDA)" if self.local_ai.gpu_available else "💻 Running on CPU"
+            ttk.Label(gpu_frame, text=gpu_status, 
+                     font=('Segoe UI', 9, 'italic'), foreground='green').pack(anchor=tk.W)
+            
+            # Distraction triggers display
+            ttk.Label(gpu_frame, text="🎯 Common Distraction Triggers:", 
+                     font=('Segoe UI', 10, 'bold')).pack(anchor=tk.W, pady=(10, 5))
+            
+            self.triggers_text = tk.Text(gpu_frame, height=4, wrap=tk.WORD,
+                                        font=('Segoe UI', 9), bg='#fff9e6', relief=tk.FLAT)
+            self.triggers_text.pack(fill=tk.X, pady=5)
+            
+            # Mood analysis
+            ttk.Label(gpu_frame, text="😊 Recent Focus Quality:", 
+                     font=('Segoe UI', 10, 'bold')).pack(anchor=tk.W, pady=(10, 5))
+            
+            self.mood_text = tk.Text(gpu_frame, height=3, wrap=tk.WORD,
+                                    font=('Segoe UI', 9), bg='#e6f7ff', relief=tk.FLAT)
+            self.mood_text.pack(fill=tk.X, pady=5)
+        
         # Initial data refresh
         self.refresh_ai_data()
     
@@ -1196,7 +1234,133 @@ class FocusBlockerGUI:
         if AI_AVAILABLE:
             self.refresh_ai_data()
         
-        messagebox.showinfo("Complete!", "🎉 Focus session complete!\nGreat job staying focused!")
+        # Show AI-powered session completion dialog
+        if LOCAL_AI_AVAILABLE:
+            self.show_ai_session_complete(elapsed)
+        else:
+            messagebox.showinfo("Complete!", "🎉 Focus session complete!\nGreat job staying focused!")
+    
+    def show_ai_session_complete(self, session_duration):
+        """AI-powered session completion with notes and analysis"""
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Session Complete! 🎉")
+        dialog.geometry("500x450")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        # Congratulations
+        ttk.Label(dialog, text="🎉 Great work!", 
+                 font=('Segoe UI', 16, 'bold')).pack(pady=(20, 5))
+        
+        ttk.Label(dialog, text=f"You focused for {session_duration // 60} minutes", 
+                 font=('Segoe UI', 11)).pack(pady=(0, 20))
+        
+        # Session notes section
+        notes_frame = ttk.LabelFrame(dialog, text="📝 How was your focus? (optional)", padding="15")
+        notes_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 10))
+        
+        ttk.Label(notes_frame, text="Rate your session or add notes:", 
+                 font=('Segoe UI', 9)).pack(anchor=tk.W)
+        
+        # Quick rating buttons
+        rating_frame = ttk.Frame(notes_frame)
+        rating_frame.pack(fill=tk.X, pady=10)
+        
+        selected_rating = tk.StringVar(value="")
+        
+        ratings = [
+            ("😫 Struggled", "Struggled to concentrate, many distractions"),
+            ("😐 Okay", "Decent session, some distractions"),
+            ("😊 Good", "Good session, stayed mostly focused"),
+            ("🌟 Excellent", "Amazing session! In the zone!")
+        ]
+        
+        for emoji, description in ratings:
+            btn = ttk.Button(rating_frame, text=emoji, width=10,
+                           command=lambda d=description: selected_rating.set(d))
+            btn.pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
+        
+        # Free-form notes
+        ttk.Label(notes_frame, text="Or write your own notes:", 
+                 font=('Segoe UI', 9)).pack(anchor=tk.W, pady=(10, 5))
+        
+        notes_text = tk.Text(notes_frame, height=5, wrap=tk.WORD, font=('Segoe UI', 9))
+        notes_text.pack(fill=tk.BOTH, expand=True)
+        
+        # AI Analysis result display
+        analysis_label = ttk.Label(notes_frame, text="", 
+                                   font=('Segoe UI', 9, 'italic'),
+                                   foreground='#0066cc')
+        analysis_label.pack(pady=5)
+        
+        # AI suggestion display
+        suggestion_text = tk.Text(dialog, height=3, wrap=tk.WORD, 
+                                 font=('Segoe UI', 9), bg='#f0f0f0', relief=tk.FLAT)
+        suggestion_text.pack(fill=tk.X, padx=20, pady=(0, 10))
+        
+        # Initialize local AI
+        if not hasattr(self, 'local_ai'):
+            self.local_ai = LocalAI()
+        
+        # Generate break suggestions
+        suggestions = self.local_ai.suggest_break_activity(
+            session_duration // 60, 
+            None
+        )
+        suggestion_text.insert('1.0', "💡 Suggested break activities:\n")
+        for i, sug in enumerate(suggestions, 1):
+            suggestion_text.insert(tk.END, f"  {i}. {sug}\n")
+        suggestion_text.config(state=tk.DISABLED)
+        
+        def analyze_and_save():
+            """Analyze notes with AI and save"""
+            note = notes_text.get('1.0', tk.END).strip()
+            if not note and selected_rating.get():
+                note = selected_rating.get()
+            
+            if note:
+                # AI sentiment analysis
+                analysis = self.local_ai.analyze_focus_quality(note)
+                if analysis:
+                    analysis_label.config(text=f"🧠 AI: {analysis['interpretation']}")
+                
+                # Save note to stats
+                self._save_session_note(note, analysis)
+            
+            dialog.destroy()
+        
+        # Buttons
+        btn_frame = ttk.Frame(dialog)
+        btn_frame.pack(fill=tk.X, padx=20, pady=(0, 20))
+        
+        ttk.Button(btn_frame, text="💾 Save & Continue", 
+                  command=analyze_and_save).pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
+        ttk.Button(btn_frame, text="Skip", 
+                  command=dialog.destroy).pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
+    
+    def _save_session_note(self, note, analysis):
+        """Save session note with AI analysis to stats"""
+        today = datetime.now().strftime("%Y-%m-%d")
+        
+        if 'session_notes' not in self.blocker.stats:
+            self.blocker.stats['session_notes'] = {}
+        
+        if today not in self.blocker.stats['session_notes']:
+            self.blocker.stats['session_notes'][today] = []
+        
+        session_record = {
+            'timestamp': datetime.now().isoformat(),
+            'note': note,
+            'sentiment': analysis['sentiment'] if analysis else 'NEUTRAL',
+            'confidence': analysis['confidence'] if analysis else 0.5,
+            'interpretation': analysis['interpretation'] if analysis else ''
+        }
+        
+        self.blocker.stats['session_notes'][today].append(session_record)
+        self.blocker.save_stats()
+        
+        print(f"💾 Saved session note: {note[:50]}...")
+
     
     def stop_session(self, show_message=True):
         """Stop the focus session"""
@@ -1499,6 +1663,10 @@ class FocusBlockerGUI:
         self.update_daily_challenge()
         self.update_goals_display()
         self.update_ai_stats()
+        
+        # Update GPU AI insights if available
+        if LOCAL_AI_AVAILABLE and hasattr(self, 'local_ai'):
+            self.update_gpu_insights()
     
     def refresh_ai_insights(self):
         """Refresh AI insights and recommendations"""
@@ -1620,6 +1788,70 @@ class FocusBlockerGUI:
                 self.ai_stats_text.insert(tk.END, f"   • {pattern}\n")
         
         self.ai_stats_text.config(state=tk.DISABLED)
+    
+    def update_gpu_insights(self):
+        """Update GPU AI-powered insights"""
+        if not LOCAL_AI_AVAILABLE or not hasattr(self, 'triggers_text'):
+            return
+        
+        # Get session notes from stats
+        session_notes = []
+        for date, notes_list in self.blocker.stats.get('session_notes', {}).items():
+            for note_data in notes_list:
+                session_notes.append(note_data.get('note', ''))
+        
+        # Update distraction triggers
+        self.triggers_text.delete('1.0', tk.END)
+        if len(session_notes) >= 3:
+            triggers = self.local_ai.detect_distraction_triggers(session_notes[-10:])  # Last 10 notes
+            if triggers:
+                for trigger in triggers[:3]:  # Top 3
+                    self.triggers_text.insert(tk.END, 
+                        f"🎯 {trigger['trigger'].upper()} ({trigger['frequency']}x)\n")
+                    self.triggers_text.insert(tk.END, 
+                        f"   💡 {trigger['recommendation']}\n\n")
+            else:
+                self.triggers_text.insert(tk.END, "No common distraction patterns detected yet.\n")
+        else:
+            self.triggers_text.insert(tk.END, 
+                "Complete 3+ sessions with notes to detect patterns.\n")
+        self.triggers_text.config(state=tk.DISABLED)
+        
+        # Update mood analysis
+        self.mood_text.delete('1.0', tk.END)
+        if session_notes:
+            recent_notes = session_notes[-5:]  # Last 5 sessions
+            positive_count = 0
+            negative_count = 0
+            
+            for note in recent_notes:
+                result = self.local_ai.analyze_focus_quality(note)
+                if result:
+                    if result['sentiment'] == 'POSITIVE':
+                        positive_count += 1
+                    else:
+                        negative_count += 1
+            
+            total = positive_count + negative_count
+            if total > 0:
+                positive_pct = int((positive_count / total) * 100)
+                
+                if positive_pct >= 80:
+                    mood_msg = f"🌟 Excellent! {positive_pct}% of recent sessions were highly focused"
+                elif positive_pct >= 60:
+                    mood_msg = f"😊 Good trend: {positive_pct}% positive sessions"
+                elif positive_pct >= 40:
+                    mood_msg = f"😐 Mixed results: {positive_pct}% positive, {100-positive_pct}% challenging"
+                else:
+                    mood_msg = f"⚠️ Struggling: Only {positive_pct}% positive sessions\n   💡 Try shorter sessions or different times"
+                
+                self.mood_text.insert(tk.END, mood_msg)
+            else:
+                self.mood_text.insert(tk.END, "Add session notes to track focus quality trends")
+        else:
+            self.mood_text.insert(tk.END, "No session notes yet. Complete a session to start!")
+        
+        self.mood_text.config(state=tk.DISABLED)
     
     def add_goal_dialog(self):
         """Show dialog to add a new goal"""
