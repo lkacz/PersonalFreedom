@@ -1,0 +1,15 @@
+# Git LFS - Large File Storage
+# DO NOT commit large binaries to Git repository
+
+# Executables and installers are too large for Git
+*.exe filter=lfs diff=lfs merge=lfs -text
+*.msi filter=lfs diff=lfs merge=lfs -text
+*.dll filter=lfs diff=lfs merge=lfs -text
+
+# Compressed archives
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.tar.gz filter=lfs diff=lfs merge=lfs -text
+*.rar filter=lfs diff=lfs merge=lfs -text
+
+# IMPORTANT: These files should NOT be pushed to Git at all
+# They are ignored in .gitignore and this is just a safeguard
