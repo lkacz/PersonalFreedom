@@ -1,0 +1,75 @@
+PERSONAL FREEDOM - AI-POWERED FOCUS BLOCKER
+============================================
+
+Thank you for installing Personal Freedom!
+
+WHAT'S INCLUDED:
+----------------
+This installer includes EVERYTHING you need:
+✓ Personal Freedom application (fully self-contained)
+✓ All AI features bundled (PyTorch, Transformers)
+✓ GPU acceleration (auto-detected)
+✓ System Tray version
+✓ Complete documentation
+
+NO ADDITIONAL SOFTWARE REQUIRED:
+---------------------------------
+✓ No Python installation needed
+✓ No pip or package management
+✓ No manual configuration
+✓ Just install and run!
+
+FIRST LAUNCH:
+-------------
+When you first launch Personal Freedom, it will:
+1. Download AI models (~400MB) - one-time only
+2. Cache them locally in your AppData folder
+3. Auto-detect your GPU (NVIDIA, AMD, or CPU fallback)
+4. Be ready to use in ~30 seconds
+
+Subsequent launches are instant!
+
+AI FEATURES:
+------------
+• Productivity pattern analysis
+• Achievement system with 10 unlockable achievements
+• Goal tracking and progress monitoring
+• GPU-accelerated sentiment analysis
+• Distraction pattern detection
+• Smart break suggestions
+• Session quality scoring
+• All processing is 100% local and private
+
+GETTING STARTED:
+----------------
+1. The installer will launch Personal Freedom when complete
+2. Click "Start Session" to begin a focus session
+3. Add websites to block in the "Blocked Sites" tab
+4. Check the "AI Insights" tab for productivity analytics
+5. Explore categories, schedules, and statistics
+
+IMPORTANT NOTES:
+----------------
+⚠️ Administrator privileges are REQUIRED for website blocking
+   (The app modifies the Windows hosts file)
+
+💡 TIPS:
+   • Use the System Tray version for minimal distraction
+   • Enable "Start with Windows" for automatic protection
+   • Check AI Insights after each session for feedback
+   • Set daily goals in the AI Insights tab
+
+PRIVACY:
+--------
+• 100% of your data stays on your computer
+• No internet connection required after initial model download
+• No analytics, tracking, or data collection
+• Open source: https://github.com/lkacz/PersonalFreedom
+
+SUPPORT:
+--------
+• Documentation: Check the installed README.md and QUICK_START.md
+• GPU Setup: See GPU_AI_GUIDE.md for detailed GPU information
+• Issues: https://github.com/lkacz/PersonalFreedom/issues
+
+Enjoy your productivity boost!
