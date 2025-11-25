@@ -1,3 +1,10 @@
+# ===================================================================
+# IMPORTANT: LARGE FILES MUST NEVER BE COMMITTED TO GIT
+# ===================================================================
+# Build artifacts (executables can be 500MB-2GB with bundled AI)
+# These should be distributed via GitHub Releases, NOT in the repo
+# ===================================================================
+
 # Build artifacts
 build/
 dist/
@@ -23,7 +30,10 @@ config.json
 Thumbs.db
 .DS_Store
 
-# Large binaries - don't push to Git
+# ===================================================================
+# CRITICAL: Large binaries - NEVER commit these to Git!
+# These files can be 100MB-2GB each and will break the repository
+# ===================================================================
 *.exe
 *.dll
 *.so
@@ -32,7 +42,13 @@ Thumbs.db
 *.tar.gz
 *.rar
 
-# Installer files
+# Installer files (typically 500MB-2GB)
 *.msi
 *.dmg
 *.pkg
+
+# ===================================================================
+# For distribution: Use GitHub Releases
+# Upload these files to: https://github.com/lkacz/PersonalFreedom/releases
+# DO NOT use 'git add' on any .exe or installer files
+# ===================================================================
