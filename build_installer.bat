@@ -16,7 +16,7 @@ if not exist "%ISCC%" (
     echo Please install Inno Setup 6.0 or later from:
     echo https://jrsoftware.org/isinfo.php
     echo.
-    echo Default installation path: C:\Program Files (x86)\Inno Setup 6\
+    echo Default installation path: C:\Program Files ^(x86^)\Inno Setup 6\
     echo.
     pause
     exit /b 1
