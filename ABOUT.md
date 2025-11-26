@@ -43,13 +43,12 @@ Block entire categories with one click:
 - **Track your focus time** – see daily, weekly, and total hours
 - **Session history** – review completed and cancelled sessions
 - **Streak tracking** – build consistency with day streaks
-- **Visual progress** – charts showing your productivity patterns
+- **Completion rate** – see what percentage of sessions you finish
 
-### AI-Powered Insights
-- **Pattern analysis** – identifies when you're most productive
-- **Optimal session length** – learns your best focus duration
-- **Break suggestions** – smart recommendations based on your work style
-- **Distraction detection** – spots patterns in what breaks your focus
+### Smart Insights
+- **Session recommendations** – suggests session length based on your completion rate
+- **Weekday vs weekend patterns** – shows when you focus more
+- **Consistency tracking** – monitors how regular your focus habits are
 
 ### Achievement System
 Unlock achievements as you build focus habits:
@@ -73,6 +72,14 @@ Fresh challenges every day to keep you motivated:
 - **Track completion** – see progress toward your goals
 - **Adjust as needed** – update goals anytime
 
+### Optional: Real AI Analysis (Advanced)
+If you install the optional AI package (~400MB download), you get:
+- **Sentiment analysis** – analyzes your session notes using a real neural network (DistilBERT)
+- **Distraction pattern detection** – uses sentence embeddings to find common themes in what breaks your focus
+- **GPU acceleration** – runs on your graphics card if available (NVIDIA CUDA)
+
+*Note: The basic insights features use simple statistics, not AI. The optional AI features use actual machine learning models that run locally on your computer.*
+
 ---
 
 ## 🔒 Privacy
@@ -80,6 +87,7 @@ Fresh challenges every day to keep you motivated:
 - **100% offline** – no account needed, no data sent anywhere
 - **All data stays local** – settings and stats saved on your computer only
 - **No tracking** – we don't collect any information about you
+- **AI runs locally** – if you use the AI features, models run on your computer, not in the cloud
 
 ---
 
@@ -87,7 +95,8 @@ Fresh challenges every day to keep you motivated:
 
 - Windows 10 or 11
 - Administrator access (needed to block websites)
-- ~500MB disk space
+- ~50MB disk space (basic app)
+- ~500MB additional for optional AI features
 
 ---
 
@@ -107,7 +116,7 @@ Fresh challenges every day to keep you motivated:
 - Use Pomodoro mode if you're new to focus sessions
 - Enable Strict mode when you need extra commitment
 - Set up schedules for your regular work/study hours
-- Check the AI Insights tab for personalized recommendations
+- Write session notes to get the most from the AI features
 
 ---
 
