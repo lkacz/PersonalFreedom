@@ -224,7 +224,7 @@ class TrayBlocker:
     
     def create_menu(self):
         """Create the system tray menu"""
-        def get_status():
+        def get_status(item):
             if self.is_blocking:
                 return f"🔒 Blocking - {self.format_time(self.remaining_seconds)}"
             return "✅ Not Blocking"
