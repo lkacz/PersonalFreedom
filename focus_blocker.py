@@ -469,6 +469,63 @@ class FocusBlocker:
             return True
         return False
     
+    def emergency_cleanup(self):
+        """
+        Emergency system cleanup - removes ALL traces of the app's activity:
+        - Removes all blocked sites from hosts file
+        - Stops any active session
+        - Clears DNS cache
+        Returns tuple (success, message)
+        """
+        if not self.is_admin():
+            return False, "Administrator privileges required!"
+        
+        errors = []
+        
+        # 1. Force stop any active blocking (bypass password)
+        self.is_blocking = False
+        self.session_id = None
+        self.end_time = None
+        
+        # 2. Clean hosts file - remove ALL our markers
+        try:
+            with open(HOSTS_PATH, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+            
+            # Remove our block section
+            if MARKER_START in content and MARKER_END in content:
+                start_idx = content.find(MARKER_START)
+                end_idx = content.find(MARKER_END) + len(MARKER_END)
+                if start_idx < end_idx:
+                    content = content[:start_idx] + content[end_idx:]
+                    
+            # Also clean up any stray entries (just in case)
+            lines = content.split('\n')
+            clean_lines = []
+            for line in lines:
+                # Skip lines with our redirect that might be orphaned
+                if REDIRECT_IP in line and any(site in line for site in self.blacklist[:10]):
+                    continue
+                clean_lines.append(line)
+            
+            content = '\n'.join(clean_lines)
+            
+            with open(HOSTS_PATH, 'w', encoding='utf-8') as f:
+                f.write(content.strip() + '\n')
+                
+        except Exception as e:
+            errors.append(f"Hosts file: {str(e)}")
+        
+        # 3. Flush DNS cache
+        try:
+            self._flush_dns()
+        except Exception as e:
+            errors.append(f"DNS flush: {str(e)}")
+        
+        if errors:
+            return True, f"Cleanup completed with warnings: {'; '.join(errors)}"
+        return True, "System cleanup complete! All blocks removed."
+
     def export_config(self, filepath):
         """Export configuration to file"""
         try:
@@ -967,6 +1024,19 @@ class FocusBlockerGUI:
                   font=('Segoe UI', 9)).pack()
         ttk.Label(about_frame, text="Block distracting websites and track your progress.",
                   font=('Segoe UI', 9)).pack()
+        
+        # Emergency Cleanup Section
+        cleanup_frame = ttk.LabelFrame(self.settings_tab, text="⚠️ Emergency Cleanup", padding="10")
+        cleanup_frame.pack(fill=tk.X, pady=10)
+        
+        ttk.Label(cleanup_frame, 
+                  text="Use this if websites remain blocked after closing the app,\n"
+                       "or if you need to remove all app changes from your system.",
+                  wraplength=450, justify=tk.LEFT).pack(anchor=tk.W, pady=(0, 10))
+        
+        cleanup_btn = ttk.Button(cleanup_frame, text="🧹 Remove All Blocks & Clean System", 
+                                 command=self.emergency_cleanup_action)
+        cleanup_btn.pack(pady=5)
     
     def setup_ai_tab(self):
         """Setup the AI Insights tab"""
@@ -1651,6 +1721,40 @@ class FocusBlockerGUI:
         except ValueError:
             messagebox.showerror("Error", "Invalid values")
     
+    def emergency_cleanup_action(self):
+        """Emergency cleanup - remove all blocks and clean system"""
+        confirm = messagebox.askyesno(
+            "Emergency Cleanup",
+            "This will:\n\n"
+            "• Stop any active blocking session\n"
+            "• Remove ALL blocked sites from your system\n"
+            "• Clear DNS cache\n"
+            "• Bypass any password protection\n\n"
+            "Use this if websites remain blocked after the app closes.\n\n"
+            "Continue?",
+            icon='warning'
+        )
+        
+        if confirm:
+            # Stop the timer if running
+            with self._timer_lock:
+                self.timer_running = False
+                self.remaining_seconds = 0
+            
+            # Run the cleanup
+            success, message = self.blocker.emergency_cleanup()
+            
+            # Update UI
+            self.start_btn.config(state=tk.NORMAL)
+            self.stop_btn.config(state=tk.DISABLED)
+            self.timer_display.config(text="00:00:00")
+            self.status_label.config(text="✅ Ready", foreground='green')
+            
+            if success:
+                messagebox.showinfo("Cleanup Complete", message + "\n\nAll websites should now be accessible.")
+            else:
+                messagebox.showerror("Cleanup Failed", message)
+
     # === AI Tab Methods ===
     
     def refresh_ai_data(self):
