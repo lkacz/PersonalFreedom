@@ -21,7 +21,7 @@ class ProductivityAnalyzer:
             try:
                 with open(self.stats_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
-            except:
+            except (json.JSONDecodeError, IOError, OSError):
                 return {}
         return {}
     
@@ -86,7 +86,7 @@ class ProductivityAnalyzer:
                     weekday_total += time_spent
                 else:
                     weekend_total += time_spent
-            except:
+            except (ValueError, TypeError, KeyError):
                 continue
         
         if weekday_total > weekend_total * 1.5:
@@ -503,7 +503,7 @@ class FocusGoals:
             try:
                 with open(self.goals_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
-            except:
+            except (json.JSONDecodeError, IOError, OSError):
                 return []
         return []
     

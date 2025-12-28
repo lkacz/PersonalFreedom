@@ -1,10 +1,13 @@
 """
 System Tray version of Personal Freedom - Focus Blocker
 Runs minimized in the system tray for unobtrusive operation.
+
+Usage:
+    python tray_blocker.py
+    
+Will automatically request admin privileges if needed.
 """
 
-import pystray
-from PIL import Image, ImageDraw
 import threading
 import time
 import os
@@ -15,14 +18,26 @@ import subprocess
 import re
 from pathlib import Path
 
-# Windows hosts file path
-HOSTS_PATH = r"C:\Windows\System32\drivers\etc\hosts"
+# Check for required packages
+try:
+    import pystray
+    from PIL import Image, ImageDraw
+except ImportError:
+    print("Required packages not found. Installing...")
+    subprocess.run([sys.executable, "-m", "pip", "install", "pystray", "Pillow"], check=True)
+    import pystray
+    from PIL import Image, ImageDraw
+
+# Windows hosts file path - use environment variable for flexibility
+system_root = os.environ.get('SystemRoot', r'C:\Windows')
+HOSTS_PATH = os.path.join(system_root, r"System32\drivers\etc\hosts")
 REDIRECT_IP = "127.0.0.1"
 MARKER_START = "# === PERSONAL FREEDOM BLOCK START ==="
 MARKER_END = "# === PERSONAL FREEDOM BLOCK END ==="
 
 # Config file path
-CONFIG_PATH = Path(__file__).parent / "config.json"
+SCRIPT_DIR = Path(__file__).parent
+CONFIG_PATH = SCRIPT_DIR / "config.json"
 
 # Default sites to block
 DEFAULT_BLACKLIST = [
@@ -38,6 +53,44 @@ DEFAULT_BLACKLIST = [
 ]
 
 
+def is_admin():
+    """Check if running with administrator privileges"""
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin() != 0
+    except (AttributeError, OSError):
+        return False
+
+
+def request_admin_and_restart():
+    """Restart the script with administrator privileges"""
+    script = os.path.abspath(sys.argv[0])
+    
+    # Handle both .py and .exe
+    if script.endswith('.py'):
+        params = f'"{script}"'
+        executable = sys.executable
+    else:
+        params = ""
+        executable = script
+    
+    print(f"Requesting admin privileges...")
+    print(f"Executable: {executable}")
+    print(f"Params: {params}")
+    
+    # Request elevation
+    result = ctypes.windll.shell32.ShellExecuteW(
+        None,           # hwnd
+        "runas",        # operation
+        executable,     # file
+        params,         # parameters
+        str(SCRIPT_DIR), # directory
+        1               # show window
+    )
+    
+    # If result > 32, it succeeded
+    return result > 32
+
+
 class TrayBlocker:
     def __init__(self):
         self.blacklist = []
@@ -45,6 +98,7 @@ class TrayBlocker:
         self.remaining_seconds = 0
         self.timer_thread = None
         self.icon = None
+        self._stop_event = threading.Event()
         self.load_config()
     
     def load_config(self):
@@ -62,13 +116,8 @@ class TrayBlocker:
                 self.blacklist = DEFAULT_BLACKLIST.copy()
         else:
             self.blacklist = DEFAULT_BLACKLIST.copy()
-    
-    def is_admin(self):
-        """Check if running with administrator privileges"""
-        try:
-            return ctypes.windll.shell32.IsUserAnAdmin() != 0
-        except (AttributeError, OSError):
-            return False
+        
+        print(f"Loaded {len(self.blacklist)} sites to block")
     
     def _is_valid_hostname(self, hostname):
         """Validate hostname format"""
@@ -118,41 +167,55 @@ class TrayBlocker:
     
     def block_sites(self):
         """Add blocked sites to hosts file"""
-        if not self.is_admin():
+        if not is_admin():
+            print("ERROR: Cannot block - not running as admin!")
             return False
         
         if not self.blacklist:
+            print("ERROR: No sites to block!")
             return False
         
         try:
             with open(HOSTS_PATH, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
             
+            # Remove existing block if present
             if MARKER_START in content and MARKER_END in content:
                 start_idx = content.find(MARKER_START)
                 end_idx = content.find(MARKER_END) + len(MARKER_END)
                 if start_idx < end_idx:
                     content = content[:start_idx] + content[end_idx:]
             
+            # Build block entries
             block_entries = [f"\n{MARKER_START}"]
+            blocked_count = 0
             for site in self.blacklist:
                 clean_site = site.strip().lower()
                 if clean_site and self._is_valid_hostname(clean_site):
                     block_entries.append(f"{REDIRECT_IP} {clean_site}")
+                    blocked_count += 1
             block_entries.append(f"{MARKER_END}\n")
             
+            # Write back
             with open(HOSTS_PATH, 'w', encoding='utf-8') as f:
                 f.write(content.strip() + '\n' + '\n'.join(block_entries))
             
             self.is_blocking = True
             self._flush_dns()
+            print(f"✓ Blocking {blocked_count} sites")
             return True
-        except Exception:
+            
+        except PermissionError:
+            print("ERROR: Permission denied writing to hosts file!")
+            return False
+        except Exception as e:
+            print(f"ERROR: {e}")
             return False
     
     def unblock_sites(self):
         """Remove blocked sites from hosts file"""
-        if not self.is_admin():
+        if not is_admin():
+            print("ERROR: Cannot unblock - not running as admin!")
             return False
         
         try:
@@ -170,8 +233,11 @@ class TrayBlocker:
             
             self.is_blocking = False
             self._flush_dns()
+            print("✓ Sites unblocked")
             return True
-        except Exception:
+            
+        except Exception as e:
+            print(f"ERROR: {e}")
             return False
     
     def format_time(self, seconds):
@@ -183,26 +249,65 @@ class TrayBlocker:
     
     def start_session(self, minutes):
         """Start a focus session"""
+        if self.is_blocking:
+            print("Session already active!")
+            return
+        
+        print(f"Starting {minutes} minute session...")
+        
         def timer_callback():
             self.remaining_seconds = minutes * 60
-            self.block_sites()
+            
+            if not self.block_sites():
+                print("Failed to start blocking!")
+                self.remaining_seconds = 0
+                return
+            
             self.update_icon()
             
-            while self.remaining_seconds > 0 and self.is_blocking:
-                time.sleep(1)
-                self.remaining_seconds -= 1
-                self.update_menu()
+            # Show notification
+            if self.icon:
+                try:
+                    self.icon.notify(
+                        f"Blocking {len(self.blacklist)} sites for {minutes} minutes",
+                        "Focus Session Started"
+                    )
+                except Exception:
+                    pass
             
+            # Timer loop
+            while self.remaining_seconds > 0 and self.is_blocking:
+                if self._stop_event.wait(timeout=1):
+                    break
+                self.remaining_seconds -= 1
+                try:
+                    self.update_menu()
+                except Exception:
+                    pass
+            
+            # Session ended
             if self.is_blocking:
                 self.unblock_sites()
                 self.update_icon()
-                self.show_notification("Focus Complete!", "Your focus session has ended.")
+                if self.icon:
+                    try:
+                        self.icon.notify(
+                            "Your focus session has ended. Sites are now accessible.",
+                            "Focus Complete! 🎉"
+                        )
+                    except Exception:
+                        pass
+            
+            print("Session ended")
         
+        self._stop_event.clear()
         self.timer_thread = threading.Thread(target=timer_callback, daemon=True)
         self.timer_thread.start()
     
     def stop_session(self, icon=None, item=None):
         """Stop the current session"""
+        print("Stopping session...")
+        self._stop_event.set()
         self.remaining_seconds = 0
         self.unblock_sites()
         self.update_icon()
@@ -210,37 +315,40 @@ class TrayBlocker:
     def update_icon(self):
         """Update the tray icon"""
         if self.icon:
-            self.icon.icon = self.create_icon_image(self.is_blocking)
+            try:
+                self.icon.icon = self.create_icon_image(self.is_blocking)
+            except Exception:
+                pass
     
     def update_menu(self):
         """Update the menu (for timer display)"""
         if self.icon:
-            self.icon.update_menu()
+            try:
+                self.icon.update_menu()
+            except Exception:
+                pass
     
-    def show_notification(self, title, message):
-        """Show a system notification"""
-        if self.icon:
-            self.icon.notify(message, title)
+    def get_status_text(self, item):
+        """Get current status text for menu"""
+        if self.is_blocking:
+            return f"🔒 Blocking - {self.format_time(self.remaining_seconds)}"
+        admin_status = "✅" if is_admin() else "⚠️ No Admin"
+        return f"{admin_status} Ready"
     
     def create_menu(self):
         """Create the system tray menu"""
-        def get_status(item):
-            if self.is_blocking:
-                return f"🔒 Blocking - {self.format_time(self.remaining_seconds)}"
-            return "✅ Not Blocking"
-        
         return pystray.Menu(
-            pystray.MenuItem(get_status, None, enabled=False),
+            pystray.MenuItem(self.get_status_text, None, enabled=False),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("⏱ Quick Start", pystray.Menu(
-                pystray.MenuItem("25 minutes", lambda: self.start_session(25)),
-                pystray.MenuItem("45 minutes", lambda: self.start_session(45)),
-                pystray.MenuItem("1 hour", lambda: self.start_session(60)),
-                pystray.MenuItem("2 hours", lambda: self.start_session(120)),
-                pystray.MenuItem("4 hours", lambda: self.start_session(240)),
+                pystray.MenuItem("25 minutes", lambda icon, item: self.start_session(25)),
+                pystray.MenuItem("45 minutes", lambda icon, item: self.start_session(45)),
+                pystray.MenuItem("1 hour", lambda icon, item: self.start_session(60)),
+                pystray.MenuItem("2 hours", lambda icon, item: self.start_session(120)),
+                pystray.MenuItem("4 hours", lambda icon, item: self.start_session(240)),
             )),
             pystray.MenuItem("⬛ Stop Session", self.stop_session, 
-                           enabled=lambda item: self.is_blocking),
+                           enabled=self.is_blocking),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("🖥 Open Full App", self.open_full_app),
             pystray.MenuItem("❌ Exit", self.exit_app),
@@ -248,35 +356,126 @@ class TrayBlocker:
     
     def open_full_app(self, icon=None, item=None):
         """Open the full GUI application"""
-        script_dir = Path(__file__).parent
-        main_script = script_dir / "focus_blocker.py"
+        # Try exe first
+        exe_path = SCRIPT_DIR / "dist" / "PersonalFreedom.exe"
+        if not exe_path.exists():
+            exe_path = SCRIPT_DIR / "PersonalFreedom.exe"
+        
+        if exe_path.exists():
+            print(f"Opening: {exe_path}")
+            ctypes.windll.shell32.ShellExecuteW(
+                None, "runas", str(exe_path), None, str(SCRIPT_DIR), 1
+            )
+            return
+        
+        # Fall back to Python script
+        main_script = SCRIPT_DIR / "focus_blocker.py"
         if main_script.exists():
-            os.system(f'start pythonw "{main_script}"')
+            print(f"Opening: {main_script}")
+            ctypes.windll.shell32.ShellExecuteW(
+                None, "runas", sys.executable, f'"{main_script}"', str(SCRIPT_DIR), 1
+            )
     
     def exit_app(self, icon=None, item=None):
         """Exit the application"""
+        print("Exiting...")
         if self.is_blocking:
             self.unblock_sites()
+        self._stop_event.set()
         if self.icon:
             self.icon.stop()
     
     def run(self):
         """Run the system tray application"""
-        if not self.is_admin():
-            print("Warning: Not running as administrator. Blocking will not work.")
+        print("=" * 50)
+        print("  Personal Freedom - System Tray")
+        print("=" * 50)
+        print(f"Admin privileges: {'Yes ✓' if is_admin() else 'No ✗'}")
+        print(f"Sites loaded: {len(self.blacklist)}")
+        print()
+        
+        if not is_admin():
+            print("WARNING: Running without admin - blocking will NOT work!")
+            print()
+        
+        print("Right-click the tray icon to access the menu.")
+        print("=" * 50)
         
         self.icon = pystray.Icon(
             "PersonalFreedom",
             self.create_icon_image(False),
-            "Personal Freedom",
+            "Personal Freedom - Focus Blocker",
             self.create_menu()
         )
-        self.icon.run()
+        
+        # Show startup notification
+        def after_setup(icon):
+            if is_admin():
+                icon.notify("Right-click the icon to start a focus session", "Personal Freedom Ready")
+            else:
+                icon.notify("Running without admin - blocking won't work!\nRight-click > Open Full App", "⚠️ Admin Required")
+        
+        self.icon.run(setup=after_setup)
 
 
 def main():
-    app = TrayBlocker()
-    app.run()
+    # Add a small delay to ensure window is ready
+    import time
+    
+    print("Personal Freedom Tray starting...")
+    print(f"Python: {sys.executable}")
+    print(f"Script: {sys.argv[0]}")
+    print(f"Working dir: {os.getcwd()}")
+    print()
+    
+    # Check admin and offer to elevate
+    if not is_admin():
+        print("Not running as administrator.")
+        print()
+        
+        # Try to show a dialog
+        try:
+            import tkinter as tk
+            from tkinter import messagebox
+            
+            root = tk.Tk()
+            root.withdraw()
+            root.attributes('-topmost', True)
+            
+            result = messagebox.askyesno(
+                "Administrator Required",
+                "Personal Freedom needs administrator privileges to block websites.\n\n"
+                "Without admin rights, blocking will NOT work.\n\n"
+                "Restart as administrator?",
+                icon='warning'
+            )
+            root.destroy()
+            
+            if result:
+                if request_admin_and_restart():
+                    print("Elevated process started. Exiting this instance.")
+                    sys.exit(0)
+                else:
+                    print("Failed to elevate. Running without admin...")
+        except Exception as e:
+            print(f"Could not show dialog: {e}")
+            print("Running without admin privileges...")
+    else:
+        print("Running with administrator privileges ✓")
+    
+    # Change to script directory
+    os.chdir(SCRIPT_DIR)
+    print(f"Changed to: {SCRIPT_DIR}")
+    
+    # Run the app
+    try:
+        app = TrayBlocker()
+        app.run()
+    except Exception as e:
+        print(f"ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        input("Press Enter to exit...")
 
 
 if __name__ == "__main__":

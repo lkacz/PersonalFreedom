@@ -1,0 +1,630 @@
+"""
+Core logic for Personal Freedom - Website Blocker
+Separated from UI for better architecture.
+"""
+
+import os
+import sys
+import json
+import ctypes
+import subprocess
+import re
+import hashlib
+import uuid
+import logging
+from typing import List, Dict, Optional, Tuple, Any, Set
+try:
+    import bcrypt
+except ImportError:
+    bcrypt = None
+from pathlib import Path
+from datetime import datetime, timedelta
+from collections import defaultdict
+
+# Setup logger
+logger = logging.getLogger(__name__)
+
+# Import AI modules
+try:
+    from productivity_ai import ProductivityAnalyzer, GamificationEngine, FocusGoals
+    AI_AVAILABLE = True
+except ImportError:
+    AI_AVAILABLE = False
+    logger.warning("AI features not available - productivity_ai.py not found")
+
+# Import GPU-accelerated local AI
+try:
+    from local_ai import LocalAI
+    LOCAL_AI_AVAILABLE = True
+except ImportError:
+    LOCAL_AI_AVAILABLE = False
+    logger.warning("GPU AI not available - install: pip install -r requirements_ai.txt")
+
+# Windows hosts file path
+system_root = os.environ.get('SystemRoot', r'C:\Windows')
+HOSTS_PATH = os.path.join(system_root, r"System32\drivers\etc\hosts")
+REDIRECT_IP = "127.0.0.1"
+MARKER_START = "# === PERSONAL FREEDOM BLOCK START ==="
+MARKER_END = "# === PERSONAL FREEDOM BLOCK END ==="
+
+# Config file paths
+if getattr(sys, 'frozen', False):
+    APP_DIR = Path(sys.executable).parent
+else:
+    APP_DIR = Path(__file__).parent
+
+CONFIG_PATH = APP_DIR / "config.json"
+STATS_PATH = APP_DIR / "stats.json"
+GOALS_PATH = APP_DIR / "goals.json"
+
+# Website categories with common distracting sites
+SITE_CATEGORIES = {
+    "Social Media": [
+        "facebook.com", "www.facebook.com",
+        "twitter.com", "www.twitter.com", "x.com", "www.x.com",
+        "instagram.com", "www.instagram.com",
+        "tiktok.com", "www.tiktok.com",
+        "snapchat.com", "www.snapchat.com",
+        "linkedin.com", "www.linkedin.com",
+        "pinterest.com", "www.pinterest.com",
+    ],
+    "Video Streaming": [
+        "youtube.com", "www.youtube.com",
+        "netflix.com", "www.netflix.com",
+        "hulu.com", "www.hulu.com",
+        "disneyplus.com", "www.disneyplus.com",
+        "max.com", "www.max.com",
+        "primevideo.com", "www.primevideo.com",
+        "twitch.tv", "www.twitch.tv",
+        "vimeo.com", "www.vimeo.com",
+    ],
+    "Gaming": [
+        "store.steampowered.com", "steampowered.com",
+        "epicgames.com", "www.epicgames.com",
+        "roblox.com", "www.roblox.com",
+        "itch.io", "www.itch.io",
+    ],
+    "News & Forums": [
+        "reddit.com", "www.reddit.com", "old.reddit.com",
+        "news.ycombinator.com",
+        "9gag.com", "www.9gag.com",
+        "imgur.com", "www.imgur.com",
+    ],
+    "Shopping": [
+        "amazon.com", "www.amazon.com",
+        "ebay.com", "www.ebay.com",
+        "aliexpress.com", "www.aliexpress.com",
+        "etsy.com", "www.etsy.com",
+    ],
+}
+
+
+class BlockMode:
+    """Blocking mode constants"""
+    NORMAL = "normal"
+    STRICT = "strict"
+    POMODORO = "pomodoro"
+    SCHEDULED = "scheduled"
+
+
+class BlockerCore:
+    """Core blocking engine with enhanced features"""
+    
+    def __init__(self):
+        self.blacklist = []
+        self.whitelist = []
+        self.categories_enabled = {}
+        self.is_blocking = False
+        self.end_time = None
+        self.mode = BlockMode.NORMAL
+        self.password_hash = None
+        self.session_id = None
+        
+        # Pomodoro settings
+        self.pomodoro_work = 25
+        self.pomodoro_break = 5
+        self.pomodoro_long_break = 15
+        self.pomodoro_sessions_before_long = 4
+        self.pomodoro_current_session = 0
+        self.is_break = False
+        
+        # Schedule
+        self.schedules = []
+        
+        # Statistics
+        self.stats = self._default_stats()
+        
+        self.load_config()
+        self.load_stats()
+    
+    def _default_stats(self) -> Dict[str, Any]:
+        return {
+            "total_focus_time": 0,
+            "sessions_completed": 0,
+            "sessions_cancelled": 0,
+            "daily_stats": {},
+            "streak_days": 0,
+            "last_session_date": None,
+            "best_streak": 0,
+        }
+    
+    def load_config(self) -> None:
+        """Load configuration from file"""
+        default_blacklist = []
+        for sites in SITE_CATEGORIES.values():
+            default_blacklist.extend(sites)
+        
+        if CONFIG_PATH.exists():
+            try:
+                with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    self.blacklist = config.get('blacklist', default_blacklist)
+                    self.whitelist = config.get('whitelist', [])
+                    self.categories_enabled = config.get('categories_enabled', 
+                        {cat: True for cat in SITE_CATEGORIES})
+                    self.password_hash = config.get('password_hash')
+                    self.pomodoro_work = config.get('pomodoro_work', 25)
+                    self.pomodoro_break = config.get('pomodoro_break', 5)
+                    self.pomodoro_long_break = config.get('pomodoro_long_break', 15)
+                    self.schedules = config.get('schedules', [])
+            except (json.JSONDecodeError, IOError, OSError):
+                self.blacklist = default_blacklist
+                self.categories_enabled = {cat: True for cat in SITE_CATEGORIES}
+        else:
+            self.blacklist = default_blacklist
+            self.categories_enabled = {cat: True for cat in SITE_CATEGORIES}
+            self.save_config()
+    
+    def save_config(self) -> None:
+        """Save configuration to file"""
+        try:
+            config = {
+                'blacklist': self.blacklist,
+                'whitelist': self.whitelist,
+                'categories_enabled': self.categories_enabled,
+                'password_hash': self.password_hash,
+                'pomodoro_work': self.pomodoro_work,
+                'pomodoro_break': self.pomodoro_break,
+                'pomodoro_long_break': self.pomodoro_long_break,
+                'schedules': self.schedules,
+            }
+            with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=2)
+        except (IOError, OSError) as e:
+            logger.error(f"Could not save config: {e}")
+    
+    def load_stats(self):
+        """Load statistics from file"""
+        if STATS_PATH.exists():
+            try:
+                with open(STATS_PATH, 'r', encoding='utf-8') as f:
+                    loaded = json.load(f)
+                    self.stats = {**self._default_stats(), **loaded}
+            except (json.JSONDecodeError, IOError):
+                pass
+    
+    def save_stats(self):
+        """Save statistics to file"""
+        try:
+            with open(STATS_PATH, 'w', encoding='utf-8') as f:
+                json.dump(self.stats, f, indent=2)
+        except (IOError, OSError):
+            pass
+    
+    def update_stats(self, focus_seconds, completed=True):
+        """Update session statistics"""
+        today = datetime.now().strftime("%Y-%m-%d")
+        current_hour = datetime.now().hour
+        
+        self.stats["total_focus_time"] += focus_seconds
+        
+        if completed:
+            self.stats["sessions_completed"] += 1
+        else:
+            self.stats["sessions_cancelled"] += 1
+        
+        # Track session types for achievements (AI feature)
+        if AI_AVAILABLE:
+            # Track early morning sessions (5 AM - 9 AM)
+            if 5 <= current_hour < 9:
+                self.stats["early_sessions"] = self.stats.get("early_sessions", 0) + 1
+            
+            # Track night sessions (9 PM - 1 AM)
+            if current_hour >= 21 or current_hour < 1:
+                self.stats["night_sessions"] = self.stats.get("night_sessions", 0) + 1
+            
+            # Track strict mode sessions
+            if self.mode == BlockMode.STRICT:
+                self.stats["strict_sessions"] = self.stats.get("strict_sessions", 0) + 1
+            
+            # Track pomodoro sessions
+            if self.mode == BlockMode.POMODORO:
+                self.stats["pomodoro_sessions"] = self.stats.get("pomodoro_sessions", 0) + 1
+        
+        if "daily_stats" not in self.stats:
+            self.stats["daily_stats"] = {}
+        
+        if today not in self.stats["daily_stats"]:
+            self.stats["daily_stats"][today] = {"focus_time": 0, "sessions": 0}
+        
+        self.stats["daily_stats"][today]["focus_time"] += focus_seconds
+        self.stats["daily_stats"][today]["sessions"] += 1
+        
+        # Update streak
+        if self.stats.get("last_session_date"):
+            try:
+                last_date = datetime.strptime(self.stats["last_session_date"], "%Y-%m-%d")
+                today_date = datetime.strptime(today, "%Y-%m-%d")
+                
+                if (today_date - last_date).days == 1:
+                    self.stats["streak_days"] = self.stats.get("streak_days", 0) + 1
+                elif (today_date - last_date).days > 1:
+                    self.stats["streak_days"] = 1
+            except ValueError:
+                self.stats["streak_days"] = 1
+        else:
+            self.stats["streak_days"] = 1
+        
+        # Update best streak
+        if self.stats["streak_days"] > self.stats.get("best_streak", 0):
+            self.stats["best_streak"] = self.stats["streak_days"]
+        
+        self.stats["last_session_date"] = today
+        self.save_stats()
+    
+    def get_stats_summary(self):
+        """Get a summary of statistics"""
+        total_hours = self.stats["total_focus_time"] / 3600
+        return {
+            "total_hours": round(total_hours, 1),
+            "sessions_completed": self.stats["sessions_completed"],
+            "current_streak": self.stats.get("streak_days", 0),
+            "best_streak": self.stats.get("best_streak", 0),
+        }
+    
+    def set_password(self, password: Optional[str]) -> None:
+        """Set a password for strict mode using bcrypt
+        
+        Args:
+            password: The password to set, or None to remove password
+        """
+        if password:
+            if bcrypt:
+                salt = bcrypt.gensalt()
+                hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+                self.password_hash = hashed.decode('utf-8')
+            else:
+                logger.error("bcrypt not found, cannot set secure password")
+                return
+        else:
+            self.password_hash = None
+        self.save_config()
+    
+    def verify_password(self, password: str) -> bool:
+        """Verify the password"""
+        if not self.password_hash:
+            return True
+            
+        try:
+            if bcrypt:
+                return bcrypt.checkpw(password.encode('utf-8'), self.password_hash.encode('utf-8'))
+            else:
+                return False
+        except Exception as e:
+            logger.error(f"Password verification error: {e}")
+            return False
+    
+    def is_admin(self) -> bool:
+        """Check if running with administrator privileges"""
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin() != 0
+        except (AttributeError, OSError):
+            return False
+    
+    def _is_valid_hostname(self, hostname):
+        """Validate hostname format"""
+        if not hostname or len(hostname) > 253:
+            return False
+        hostname = hostname.rstrip('.').lower()
+        if '..' in hostname or '.' not in hostname:
+            return False
+        labels = hostname.split('.')
+        for label in labels:
+            if not label or len(label) > 63:
+                return False
+            if not re.match(r'^[a-z0-9]([a-z0-9\-]*[a-z0-9])?$|^[a-z0-9]$', label):
+                return False
+        return True
+    
+    def _flush_dns(self):
+        """Flush DNS cache safely"""
+        try:
+            subprocess.run(['ipconfig', '/flushdns'], capture_output=True,
+                          creationflags=subprocess.CREATE_NO_WINDOW)
+        except Exception:
+            pass
+    
+    def get_effective_blacklist(self):
+        """Get the effective blacklist considering categories and whitelist"""
+        effective = set()
+        
+        for category, enabled in self.categories_enabled.items():
+            if enabled and category in SITE_CATEGORIES:
+                effective.update(SITE_CATEGORIES[category])
+        
+        effective.update(self.blacklist)
+        effective -= set(self.whitelist)
+        
+        return list(effective)
+    
+    def block_sites(self):
+        """Add blocked sites to hosts file"""
+        if not self.is_admin():
+            return False, "Administrator privileges required!"
+        
+        sites_to_block = self.get_effective_blacklist()
+        if not sites_to_block:
+            return False, "No sites to block!"
+        
+        try:
+            with open(HOSTS_PATH, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+            
+            if MARKER_START in content and MARKER_END in content:
+                start_idx = content.find(MARKER_START)
+                end_idx = content.find(MARKER_END) + len(MARKER_END)
+                if start_idx < end_idx:
+                    content = content[:start_idx] + content[end_idx:]
+            
+            block_entries = [f"\n{MARKER_START}"]
+            for site in sites_to_block:
+                clean_site = site.strip().lower()
+                if clean_site and self._is_valid_hostname(clean_site):
+                    block_entries.append(f"{REDIRECT_IP} {clean_site}")
+            block_entries.append(f"{MARKER_END}\n")
+            
+            with open(HOSTS_PATH, 'w', encoding='utf-8') as f:
+                f.write(content.strip() + '\n' + '\n'.join(block_entries))
+            
+            self.is_blocking = True
+            self.session_id = str(uuid.uuid4())
+            self._flush_dns()
+            return True, f"Blocking {len(sites_to_block)} sites!"
+        
+        except PermissionError:
+            return False, "Permission denied! Run as Administrator."
+        except FileNotFoundError:
+            return False, "Hosts file not found!"
+        except Exception as e:
+            return False, f"Error: {str(e)}"
+    
+    def unblock_sites(self, password=None, force=False):
+        """Remove blocked sites from hosts file
+        
+        Args:
+            password: Password for strict mode
+            force: If True, bypass password check (used for natural timer completion)
+        """
+        if not self.is_admin():
+            return False, "Administrator privileges required!"
+        
+        if self.mode == BlockMode.STRICT and self.is_blocking and not force:
+            if self.password_hash and not self.verify_password(password or ""):
+                return False, "Incorrect password!"
+        
+        try:
+            with open(HOSTS_PATH, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+            
+            if MARKER_START in content and MARKER_END in content:
+                start_idx = content.find(MARKER_START)
+                end_idx = content.find(MARKER_END) + len(MARKER_END)
+                if start_idx < end_idx:
+                    content = content[:start_idx] + content[end_idx:]
+            
+            with open(HOSTS_PATH, 'w', encoding='utf-8') as f:
+                f.write(content.strip() + '\n')
+            
+            self.is_blocking = False
+            self.session_id = None
+            self._flush_dns()
+            return True, "Sites unblocked!"
+        
+        except PermissionError:
+            return False, "Permission denied!"
+        except Exception as e:
+            return False, f"Error: {str(e)}"
+    
+    def add_site(self, site):
+        """Add a site to the blacklist"""
+        site = site.lower().strip()
+        for prefix in ['https://', 'http://', 'www.']:
+            if site.startswith(prefix):
+                site = site[len(prefix):]
+        site = site.split('/')[0].strip()
+        
+        if not site or not self._is_valid_hostname(site):
+            return False
+        
+        added = False
+        if site not in self.blacklist:
+            self.blacklist.append(site)
+            added = True
+        
+        if not site.startswith('www.'):
+            www_site = f"www.{site}"
+            if www_site not in self.blacklist:
+                self.blacklist.append(www_site)
+                added = True
+        
+        if added:
+            self.save_config()
+        return added
+    
+    def remove_site(self, site):
+        """Remove a site from the blacklist"""
+        if site in self.blacklist:
+            self.blacklist.remove(site)
+            self.save_config()
+            return True
+        return False
+    
+    def add_to_whitelist(self, site):
+        """Add a site to the whitelist"""
+        site = site.lower().strip()
+        for prefix in ['https://', 'http://', 'www.']:
+            if site.startswith(prefix):
+                site = site[len(prefix):]
+        site = site.split('/')[0].strip()
+        
+        if site and site not in self.whitelist:
+            self.whitelist.append(site)
+            if not site.startswith('www.'):
+                self.whitelist.append(f"www.{site}")
+            self.save_config()
+            return True
+        return False
+    
+    def remove_from_whitelist(self, site):
+        """Remove a site from whitelist"""
+        if site in self.whitelist:
+            self.whitelist.remove(site)
+            self.save_config()
+            return True
+        return False
+    
+    def emergency_cleanup(self):
+        """
+        Emergency system cleanup - removes ALL traces of the app's activity:
+        - Removes all blocked sites from hosts file
+        - Stops any active session
+        - Clears DNS cache
+        Returns tuple (success, message)
+        """
+        if not self.is_admin():
+            return False, "Administrator privileges required!"
+        
+        errors = []
+        
+        # 1. Force stop any active blocking (bypass password)
+        self.is_blocking = False
+        self.session_id = None
+        self.end_time = None
+        
+        # 2. Clean hosts file - remove ALL our markers
+        try:
+            with open(HOSTS_PATH, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+            
+            # Remove our block section
+            if MARKER_START in content and MARKER_END in content:
+                start_idx = content.find(MARKER_START)
+                end_idx = content.find(MARKER_END) + len(MARKER_END)
+                if start_idx < end_idx:
+                    content = content[:start_idx] + content[end_idx:]
+                    
+            # Also clean up any stray entries (just in case)
+            lines = content.split('\n')
+            clean_lines = []
+            for line in lines:
+                # Skip lines with our redirect that might be orphaned
+                if REDIRECT_IP in line and any(site in line for site in self.blacklist[:10]):
+                    continue
+                clean_lines.append(line)
+            
+            content = '\n'.join(clean_lines)
+            
+            with open(HOSTS_PATH, 'w', encoding='utf-8') as f:
+                f.write(content.strip() + '\n')
+                
+        except Exception as e:
+            errors.append(f"Hosts file: {str(e)}")
+        
+        # 3. Flush DNS cache
+        try:
+            self._flush_dns()
+        except Exception as e:
+            errors.append(f"DNS flush: {str(e)}")
+        
+        if errors:
+            return True, f"Cleanup completed with warnings: {'; '.join(errors)}"
+        return True, "System cleanup complete! All blocks removed."
+
+    def export_config(self, filepath):
+        """Export configuration to file"""
+        try:
+            config = {
+                'blacklist': self.blacklist,
+                'whitelist': self.whitelist,
+                'categories_enabled': self.categories_enabled,
+            }
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=2)
+            return True
+        except Exception:
+            return False
+    
+    def import_config(self, filepath):
+        """Import configuration from file"""
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+            if 'blacklist' in config:
+                self.blacklist.extend([s for s in config['blacklist'] if s not in self.blacklist])
+            if 'whitelist' in config:
+                self.whitelist.extend([s for s in config['whitelist'] if s not in self.whitelist])
+            self.save_config()
+            return True
+        except Exception:
+            return False
+    
+    def add_schedule(self, days, start_time, end_time):
+        """Add a blocking schedule"""
+        schedule = {
+            'id': str(uuid.uuid4())[:8],
+            'days': days,
+            'start_time': start_time,
+            'end_time': end_time,
+            'enabled': True
+        }
+        self.schedules.append(schedule)
+        self.save_config()
+        return schedule['id']
+    
+    def remove_schedule(self, schedule_id):
+        """Remove a schedule"""
+        self.schedules = [s for s in self.schedules if s.get('id') != schedule_id]
+        self.save_config()
+    
+    def toggle_schedule(self, schedule_id):
+        """Toggle a schedule on/off"""
+        for s in self.schedules:
+            if s.get('id') == schedule_id:
+                s['enabled'] = not s.get('enabled', True)
+                self.save_config()
+                return s['enabled']
+        return None
+    
+    def is_scheduled_block_time(self):
+        """Check if current time is within any active schedule"""
+        now = datetime.now()
+        current_day = now.weekday()
+        current_time = now.strftime("%H:%M")
+        
+        for schedule in self.schedules:
+            if not schedule.get('enabled', True):
+                continue
+            if current_day in schedule.get('days', []):
+                start = schedule.get('start_time', '00:00')
+                end = schedule.get('end_time', '23:59')
+                
+                # Handle overnight schedules (e.g., 22:00 to 06:00)
+                if start <= end:
+                    # Normal case: same day schedule
+                    if start <= current_time <= end:
+                        return True
+                else:
+                    # Overnight case: crosses midnight
+                    if current_time >= start or current_time <= end:
+                        return True
+        return False
