@@ -785,7 +785,8 @@ def get_diary_power_tier(power: int) -> str:
     for tier_name, (min_power, max_power) in DIARY_POWER_TIERS.items():
         if min_power <= power <= max_power:
             return tier_name
-    return "godlike" if power > 2000 else "pathetic"
+    # Handle edge cases: power below 0 or above max range
+    return "godlike" if power >= 1500 else "pathetic"
 
 
 def calculate_session_tier_boost(session_minutes: int) -> int:
@@ -1374,8 +1375,12 @@ class ADHDBusterDialog:
             options = ["[Empty]"]
             item_map = {}  # Map display name to item
             
-            for item in slot_items:
+            for idx, item in enumerate(slot_items):
+                # Include index to handle duplicate item names
                 display = f"{item['name']} (+{item.get('power', 10)}) [{item['rarity'][:1]}]"
+                # If duplicate name exists, add index suffix
+                if display in item_map:
+                    display = f"{display} #{idx+1}"
                 options.append(display)
                 item_map[display] = item
             
@@ -2502,8 +2507,10 @@ class PriorityCheckinDialog:
         
         current_equipped = self.blocker.adhd_buster["equipped"].get(slot)
         if not current_equipped:
-            self.blocker.adhd_buster["equipped"][slot] = item
-            item["auto_equipped"] = True
+            # Use a copy to avoid mutating the inventory item
+            equipped_item = item.copy()
+            equipped_item["auto_equipped"] = True
+            self.blocker.adhd_buster["equipped"][slot] = equipped_item
         
         # Generate diary entry based on current power level
         power = calculate_character_power(self.blocker.adhd_buster)
@@ -2521,6 +2528,9 @@ class PriorityCheckinDialog:
             if "diary" not in self.blocker.adhd_buster:
                 self.blocker.adhd_buster["diary"] = []
             self.blocker.adhd_buster["diary"].append(diary_entry)
+            # Limit diary size to prevent unbounded growth (keep most recent 100)
+            if len(self.blocker.adhd_buster["diary"]) > 100:
+                self.blocker.adhd_buster["diary"] = self.blocker.adhd_buster["diary"][-100:]
         
         self.blocker.save_config()
         
