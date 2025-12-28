@@ -567,35 +567,36 @@ def get_diary_power_tier(power: int) -> str:
 
 def calculate_session_tier_boost(session_minutes: int) -> int:
     """
-    Calculate how many tiers to boost diary entries based on session length.
-    Longer sessions = more epic adventures!
+    Calculate tier boost chance based on session length.
     
-    15-29 min: +0 tiers (normal)
-    30-44 min: +1 tier
-    45-59 min: +1 tier + 30% chance of +2
-    60-89 min: +2 tiers
-    90-119 min: +2 tiers + 50% chance of +3
-    120+ min: +3 tiers (legendary focus!)
+    Character gear/power is the PRIMARY factor for diary tier.
+    Longer sessions give a SMALL chance of a tier bump (+1 max).
+    
+    Returns:
+        0 = no boost
+        1 = one tier bump (rare reward for dedication)
+    
+    Chances:
+    - Under 60 min: No boost chance
+    - 60-89 min: 10% chance of +1 tier
+    - 90-119 min: 20% chance of +1 tier
+    - 120+ min: 35% chance of +1 tier (dedicated focus reward)
     """
     if session_minutes >= 120:
-        return 3
+        return 1 if random.random() < 0.35 else 0
     elif session_minutes >= 90:
-        return 3 if random.random() < 0.5 else 2
+        return 1 if random.random() < 0.20 else 0
     elif session_minutes >= 60:
-        return 2
-    elif session_minutes >= 45:
-        return 2 if random.random() < 0.3 else 1
-    elif session_minutes >= 30:
-        return 1
+        return 1 if random.random() < 0.10 else 0
     return 0
 
 
 def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: dict = None) -> dict:
     """
-    Generate a hilarious diary entry based on character power level AND session length.
+    Generate a hilarious diary entry based on character power level.
     
-    Higher power levels unlock more epic and absurd adventures.
-    Longer sessions boost the tier for even more epic entries!
+    Character gear/power is the PRIMARY factor - your progress matters most!
+    Longer sessions (60+ min) give a small chance of a tier bump as a bonus.
     The diary entry includes the date, story, and context about the session.
     """
     base_tier = get_diary_power_tier(power)
@@ -1468,16 +1469,12 @@ class DiaryEntryRevealDialog:
         header_frame = tk.Frame(main_frame, bg=bg)
         header_frame.pack(fill=tk.X, pady=(0, 15))
         
-        # Dynamic header based on tier boost
+        # Dynamic header based on tier boost (now more subtle)
         tier_boosted = self.entry.get("tier_boosted", False)
-        session_boost = self.entry.get("session_boost", 0)
         
-        if tier_boosted and session_boost >= 2:
-            header_text = f"{emoji} LEGENDARY FOCUS SESSION! {emoji}"
-            subheader = f"Your {self.session_minutes} min session unlocked a {tier.upper()} tier adventure!"
-        elif tier_boosted:
-            header_text = f"{emoji} Epic Focus Reward! {emoji}"
-            subheader = f"Long session bonus: +{session_boost} tier{'s' if session_boost > 1 else ''}!"
+        if tier_boosted:
+            header_text = f"{emoji} Lucky Adventure! {emoji}"
+            subheader = f"Your {self.session_minutes}+ min focus earned a bonus tier!"
         else:
             header_text = f"{emoji} Today's Adventure {emoji}"
             subheader = self.entry.get("short_date", "")
