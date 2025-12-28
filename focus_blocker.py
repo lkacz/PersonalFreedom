@@ -2302,8 +2302,8 @@ class PriorityTimeLogDialog:
         frame.pack(fill=tk.X, pady=5)
         
         title = priority.get("title", "")
-        planned = priority.get("planned_minutes", 0)
-        logged = priority.get("logged_minutes", 0)
+        planned_hours = priority.get("planned_hours", 0)
+        logged_hours = priority.get("logged_hours", 0)
         
         # Priority info
         info_frame = ttk.Frame(frame)
@@ -2312,9 +2312,9 @@ class PriorityTimeLogDialog:
         ttk.Label(info_frame, text=f"#{index + 1}: {title}", 
                   font=('Segoe UI', 10, 'bold')).pack(side=tk.LEFT)
         
-        if planned > 0:
-            progress_pct = min(100, int((logged / planned) * 100))
-            ttk.Label(info_frame, text=f"({logged}/{planned} min - {progress_pct}%)",
+        if planned_hours > 0:
+            progress_pct = min(100, int((logged_hours / planned_hours) * 100))
+            ttk.Label(info_frame, text=f"({logged_hours:.1f}/{planned_hours} hrs - {progress_pct}%)",
                       font=('Segoe UI', 9), foreground='gray').pack(side=tk.RIGHT)
         
         # Time input
@@ -2332,10 +2332,10 @@ class PriorityTimeLogDialog:
         self.priority_indices.append(index)
         
         # Progress bar if planned time exists
-        if planned > 0:
+        if planned_hours > 0:
             progress = ttk.Progressbar(time_frame, mode='determinate', 
                                         length=150, maximum=100)
-            progress['value'] = min(100, int((logged / planned) * 100))
+            progress['value'] = min(100, int((logged_hours / planned_hours) * 100))
             progress.pack(side=tk.RIGHT, padx=5)
     
     def log_all_to_first(self):
@@ -2358,8 +2358,10 @@ class PriorityTimeLogDialog:
             try:
                 minutes = int(time_var.get())
                 if minutes > 0:
-                    current_logged = self.blocker.priorities[priority_idx].get("logged_minutes", 0)
-                    self.blocker.priorities[priority_idx]["logged_minutes"] = current_logged + minutes
+                    # Convert minutes to hours and add to logged_hours
+                    hours_to_add = minutes / 60.0
+                    current_logged = self.blocker.priorities[priority_idx].get("logged_hours", 0)
+                    self.blocker.priorities[priority_idx]["logged_hours"] = current_logged + hours_to_add
             except ValueError:
                 pass
         
@@ -2634,7 +2636,7 @@ class PrioritiesDialog:
         header_frame = ttk.Frame(main_frame)
         header_frame.pack(fill=tk.X, pady=(0, 15))
         
-        ttk.Label(header_frame, text="🎯 My Priorities for Today",
+        ttk.Label(header_frame, text="🎯 My Priorities",
                   font=('Segoe UI', 16, 'bold')).pack(side=tk.LEFT)
         
         today = datetime.now().strftime("%A, %B %d")
@@ -2643,7 +2645,7 @@ class PrioritiesDialog:
         
         # Description
         ttk.Label(main_frame, 
-                  text="Set up to 3 priority tasks. Choose which days to be reminded about each.",
+                  text="Set up to 3 priority tasks. These can span multiple days.",
                   font=('Segoe UI', 9), foreground='gray').pack(anchor=tk.W, pady=(0, 15))
         
         # Priority entries
@@ -2713,8 +2715,8 @@ class PrioritiesDialog:
     def _create_priority_row(self, parent, index):
         """Create a priority entry row with day selection and time planning."""
         priority_data = self.priorities[index]
-        planned = priority_data.get("planned_minutes", 0)
-        logged = priority_data.get("logged_minutes", 0)
+        planned_hours = priority_data.get("planned_hours", 0)
+        logged_hours = priority_data.get("logged_hours", 0)
         
         frame = ttk.LabelFrame(parent, text=f"Priority #{index + 1}", padding="10")
         frame.pack(fill=tk.X, pady=5)
@@ -2730,30 +2732,30 @@ class PrioritiesDialog:
         title_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 10))
         self.priority_vars.append(title_var)
         
-        # Planned time input
+        # Planned time input (in hours)
         ttk.Label(title_frame, text="⏱ Plan:").pack(side=tk.LEFT)
-        planned_var = tk.IntVar(value=planned)
-        planned_spin = ttk.Spinbox(title_frame, from_=0, to=600, width=5, 
+        planned_var = tk.IntVar(value=planned_hours)
+        planned_spin = ttk.Spinbox(title_frame, from_=0, to=100, width=5, 
                                     textvariable=planned_var)
         planned_spin.pack(side=tk.LEFT, padx=(3, 0))
-        ttk.Label(title_frame, text="min").pack(side=tk.LEFT, padx=(2, 0))
+        ttk.Label(title_frame, text="hrs").pack(side=tk.LEFT, padx=(2, 0))
         self.planned_vars.append(planned_var)
         
         # Progress display (only if there's planned time)
-        if planned > 0:
+        if planned_hours > 0:
             progress_frame = ttk.Frame(frame)
             progress_frame.pack(fill=tk.X, pady=(0, 8))
             
             ttk.Label(progress_frame, text="Progress:", width=8).pack(side=tk.LEFT)
             
             # Progress bar
-            progress_pct = min(100, int((logged / planned) * 100)) if planned > 0 else 0
+            progress_pct = min(100, int((logged_hours / planned_hours) * 100)) if planned_hours > 0 else 0
             progress_bar = ttk.Progressbar(progress_frame, length=150, mode='determinate',
                                            value=progress_pct)
             progress_bar.pack(side=tk.LEFT, padx=(5, 10))
             
             # Time logged text
-            progress_text = f"{logged}/{planned} min ({progress_pct}%)"
+            progress_text = f"{logged_hours}/{planned_hours} hrs ({progress_pct}%)"
             if progress_pct >= 100:
                 progress_text += " ✅"
             ttk.Label(progress_frame, text=progress_text, 
@@ -2784,14 +2786,14 @@ class PrioritiesDialog:
         for i, priority in enumerate(self.priorities):
             title = priority.get("title", "").strip()
             days = priority.get("days", [])
-            planned = priority.get("planned_minutes", 0)
-            logged = priority.get("logged_minutes", 0)
+            planned = priority.get("planned_hours", 0)
+            logged = priority.get("logged_hours", 0)
             
             if title and (not days or today in days):
                 # Show progress if there's planned time
                 if planned > 0:
                     pct = min(100, int((logged / planned) * 100))
-                    status = "✅" if pct >= 100 else f"({logged}/{planned} min, {pct}%)"
+                    status = "✅" if pct >= 100 else f"({logged}/{planned} hrs, {pct}%)"
                     today_priorities.append(f"• {title} {status}")
                 else:
                     today_priorities.append(f"• {title}")
@@ -2815,15 +2817,15 @@ class PrioritiesDialog:
             title = self.priority_vars[i].get().strip()
             days = [day for day, var in self.day_vars[i].items() if var.get()]
             planned = self.planned_vars[i].get() if i < len(self.planned_vars) else 0
-            # Preserve existing logged_minutes
-            logged = self.priorities[i].get("logged_minutes", 0)
+            # Preserve existing logged_hours
+            logged = self.priorities[i].get("logged_hours", 0)
             
             new_priorities.append({
                 "title": title,
                 "days": days,
                 "active": bool(title),
-                "planned_minutes": planned,
-                "logged_minutes": logged
+                "planned_hours": planned,
+                "logged_hours": logged
             })
         
         self.blocker.priorities = new_priorities
