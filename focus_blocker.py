@@ -2607,15 +2607,15 @@ class PrioritiesDialog:
         # Create the dialog window
         self.dialog = tk.Toplevel(parent)
         self.dialog.title("🎯 My Priorities")
-        self.dialog.geometry("550x500")
-        self.dialog.resizable(False, False)
+        self.dialog.geometry("550x620")
+        self.dialog.resizable(True, True)
         self.dialog.transient(parent)
         self.dialog.grab_set()
         
         # Center the dialog
         self.dialog.update_idletasks()
         x = (self.dialog.winfo_screenwidth() // 2) - (550 // 2)
-        y = (self.dialog.winfo_screenheight() // 2) - (500 // 2)
+        y = (self.dialog.winfo_screenheight() // 2) - (620 // 2)
         self.dialog.geometry(f"+{x}+{y}")
         
         # Load existing priorities
