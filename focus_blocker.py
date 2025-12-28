@@ -781,6 +781,218 @@ def calculate_character_power(adhd_buster: dict) -> int:
     return total_power
 
 
+class CharacterCanvas:
+    """Canvas-based visual character with equipped gear display."""
+    
+    # Slot positions relative to character center (x_offset, y_offset)
+    SLOT_POSITIONS = {
+        "Helmet": (0, -85),
+        "Amulet": (0, -50),
+        "Chestplate": (0, -20),
+        "Cloak": (45, -20),
+        "Weapon": (-55, 10),
+        "Shield": (55, 10),
+        "Gauntlets": (-40, 30),
+        "Boots": (0, 80),
+    }
+    
+    # Tier-based body colors
+    TIER_COLORS = {
+        "pathetic": "#bdbdbd",    # Gray
+        "modest": "#a5d6a7",      # Light green
+        "decent": "#81c784",      # Green
+        "heroic": "#64b5f6",      # Blue
+        "epic": "#ba68c8",        # Purple
+        "legendary": "#ffb74d",   # Orange
+        "godlike": "#ffd54f",     # Gold
+    }
+    
+    # Tier-based glow colors
+    TIER_GLOW = {
+        "pathetic": None,
+        "modest": None,
+        "decent": "#c8e6c9",
+        "heroic": "#bbdefb",
+        "epic": "#e1bee7",
+        "legendary": "#ffe0b2",
+        "godlike": "#fff9c4",
+    }
+    
+    def __init__(self, parent, equipped: dict, power: int, width: int = 180, height: int = 200):
+        self.parent = parent
+        self.equipped = equipped
+        self.power = power
+        self.width = width
+        self.height = height
+        self.tier = get_diary_power_tier(power)
+        
+        self.canvas = tk.Canvas(parent, width=width, height=height, 
+                                bg='#2d2d2d', highlightthickness=2,
+                                highlightbackground='#444')
+        
+        self.draw_character()
+    
+    def draw_character(self):
+        """Draw the character with equipped gear."""
+        cx, cy = self.width // 2, self.height // 2 + 10
+        
+        body_color = self.TIER_COLORS.get(self.tier, "#bdbdbd")
+        glow_color = self.TIER_GLOW.get(self.tier)
+        
+        # Draw tier glow effect for higher tiers
+        if glow_color:
+            # Outer glow
+            self.canvas.create_oval(cx - 60, cy - 70, cx + 60, cy + 90,
+                                   fill=glow_color, outline='', stipple='gray50')
+        
+        # Draw body parts (back to front layering)
+        
+        # Cloak (behind body)
+        cloak = self.equipped.get("Cloak")
+        if cloak:
+            cloak_color = cloak.get("color", "#666")
+            # Cape shape
+            self.canvas.create_polygon(
+                cx - 25, cy - 30,  # Left shoulder
+                cx + 25, cy - 30,  # Right shoulder
+                cx + 35, cy + 60,  # Right bottom
+                cx - 35, cy + 60,  # Left bottom
+                fill=cloak_color, outline=self._darken(cloak_color), width=2
+            )
+        
+        # Legs
+        self.canvas.create_rectangle(cx - 15, cy + 25, cx - 5, cy + 65,
+                                     fill=body_color, outline=self._darken(body_color), width=2)
+        self.canvas.create_rectangle(cx + 5, cy + 25, cx + 15, cy + 65,
+                                     fill=body_color, outline=self._darken(body_color), width=2)
+        
+        # Boots
+        boots = self.equipped.get("Boots")
+        if boots:
+            boots_color = boots.get("color", "#666")
+            self.canvas.create_rectangle(cx - 18, cy + 55, cx - 2, cy + 75,
+                                        fill=boots_color, outline=self._darken(boots_color), width=2)
+            self.canvas.create_rectangle(cx + 2, cy + 55, cx + 18, cy + 75,
+                                        fill=boots_color, outline=self._darken(boots_color), width=2)
+        else:
+            # Default feet
+            self.canvas.create_rectangle(cx - 16, cy + 60, cx - 4, cy + 72,
+                                        fill='#8d6e63', outline='#5d4037', width=1)
+            self.canvas.create_rectangle(cx + 4, cy + 60, cx + 16, cy + 72,
+                                        fill='#8d6e63', outline='#5d4037', width=1)
+        
+        # Arms
+        self.canvas.create_rectangle(cx - 38, cy - 25, cx - 25, cy + 20,
+                                     fill=body_color, outline=self._darken(body_color), width=2)
+        self.canvas.create_rectangle(cx + 25, cy - 25, cx + 38, cy + 20,
+                                     fill=body_color, outline=self._darken(body_color), width=2)
+        
+        # Gauntlets
+        gauntlets = self.equipped.get("Gauntlets")
+        if gauntlets:
+            gaunt_color = gauntlets.get("color", "#666")
+            self.canvas.create_rectangle(cx - 40, cy + 5, cx - 23, cy + 25,
+                                        fill=gaunt_color, outline=self._darken(gaunt_color), width=2)
+            self.canvas.create_rectangle(cx + 23, cy + 5, cx + 40, cy + 25,
+                                        fill=gaunt_color, outline=self._darken(gaunt_color), width=2)
+        
+        # Torso (body)
+        self.canvas.create_rectangle(cx - 25, cy - 30, cx + 25, cy + 30,
+                                     fill=body_color, outline=self._darken(body_color), width=2)
+        
+        # Chestplate
+        chestplate = self.equipped.get("Chestplate")
+        if chestplate:
+            chest_color = chestplate.get("color", "#666")
+            self.canvas.create_rectangle(cx - 22, cy - 28, cx + 22, cy + 25,
+                                        fill=chest_color, outline=self._darken(chest_color), width=2)
+            # Chest detail
+            self.canvas.create_line(cx, cy - 25, cx, cy + 20, fill=self._darken(chest_color), width=2)
+        
+        # Head
+        self.canvas.create_oval(cx - 18, cy - 65, cx + 18, cy - 30,
+                               fill='#ffcc80', outline='#e6a84d', width=2)
+        
+        # Face
+        self.canvas.create_oval(cx - 8, cy - 55, cx - 3, cy - 48, fill='#333')  # Left eye
+        self.canvas.create_oval(cx + 3, cy - 55, cx + 8, cy - 48, fill='#333')  # Right eye
+        # Smile based on tier
+        if self.tier in ['legendary', 'godlike']:
+            self.canvas.create_arc(cx - 8, cy - 48, cx + 8, cy - 38,
+                                  start=200, extent=140, style=tk.ARC, width=2)
+        else:
+            self.canvas.create_line(cx - 6, cy - 42, cx + 6, cy - 42, fill='#333', width=2)
+        
+        # Helmet
+        helmet = self.equipped.get("Helmet")
+        if helmet:
+            helm_color = helmet.get("color", "#666")
+            self.canvas.create_arc(cx - 20, cy - 75, cx + 20, cy - 45,
+                                  start=0, extent=180, fill=helm_color,
+                                  outline=self._darken(helm_color), width=2)
+            self.canvas.create_rectangle(cx - 20, cy - 60, cx + 20, cy - 50,
+                                        fill=helm_color, outline=self._darken(helm_color), width=2)
+        
+        # Amulet
+        amulet = self.equipped.get("Amulet")
+        if amulet:
+            amulet_color = amulet.get("color", "#666")
+            # Chain
+            self.canvas.create_line(cx - 10, cy - 30, cx, cy - 20, fill='#888', width=1)
+            self.canvas.create_line(cx + 10, cy - 30, cx, cy - 20, fill='#888', width=1)
+            # Gem
+            self.canvas.create_oval(cx - 6, cy - 25, cx + 6, cy - 13,
+                                   fill=amulet_color, outline=self._darken(amulet_color), width=2)
+        
+        # Weapon (left hand)
+        weapon = self.equipped.get("Weapon")
+        if weapon:
+            weap_color = weapon.get("color", "#666")
+            # Sword/weapon handle
+            self.canvas.create_rectangle(cx - 52, cy - 5, cx - 48, cy + 35,
+                                        fill='#5d4037', outline='#3e2723', width=1)
+            # Blade
+            self.canvas.create_polygon(
+                cx - 55, cy - 5,
+                cx - 45, cy - 5,
+                cx - 47, cy - 45,
+                cx - 53, cy - 45,
+                fill=weap_color, outline=self._darken(weap_color), width=2
+            )
+        
+        # Shield (right hand)
+        shield = self.equipped.get("Shield")
+        if shield:
+            shield_color = shield.get("color", "#666")
+            self.canvas.create_oval(cx + 35, cy - 15, cx + 65, cy + 25,
+                                   fill=shield_color, outline=self._darken(shield_color), width=3)
+            # Shield emblem
+            self.canvas.create_oval(cx + 45, cy - 2, cx + 55, cy + 12,
+                                   fill=self._darken(shield_color), outline='')
+        
+        # Power level indicator at bottom
+        self.canvas.create_text(cx, self.height - 10,
+                               text=f"⚔ {self.power}",
+                               font=('Segoe UI', 10, 'bold'),
+                               fill='#ffd700' if self.tier in ['legendary', 'godlike'] else '#fff')
+    
+    def _darken(self, hex_color: str) -> str:
+        """Darken a hex color for outlines."""
+        try:
+            hex_color = hex_color.lstrip('#')
+            r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+            r, g, b = max(0, r - 40), max(0, g - 40), max(0, b - 40)
+            return f'#{r:02x}{g:02x}{b:02x}'
+        except:
+            return '#333333'
+    
+    def pack(self, **kwargs):
+        self.canvas.pack(**kwargs)
+    
+    def grid(self, **kwargs):
+        self.canvas.grid(**kwargs)
+
+
 class ADHDBusterDialog:
     """Dialog to view and manage the ADHD Buster character and inventory."""
     
@@ -790,14 +1002,14 @@ class ADHDBusterDialog:
         
         self.dialog = tk.Toplevel(parent)
         self.dialog.title("🦸 ADHD Buster - Character & Inventory")
-        self.dialog.geometry("620x720")
+        self.dialog.geometry("680x750")
         self.dialog.resizable(False, False)
         self.dialog.transient(parent)
         
         # Center on screen
         self.dialog.update_idletasks()
-        x = (self.dialog.winfo_screenwidth() // 2) - (620 // 2)
-        y = (self.dialog.winfo_screenheight() // 2) - (720 // 2)
+        x = (self.dialog.winfo_screenwidth() // 2) - (680 // 2)
+        y = (self.dialog.winfo_screenheight() // 2) - (750 // 2)
         self.dialog.geometry(f"+{x}+{y}")
         
         self.setup_ui()
@@ -859,21 +1071,25 @@ class ADHDBusterDialog:
             ttk.Label(stats_frame, text=bonus_text, font=('Segoe UI', 9, 'bold'),
                       foreground='#4caf50').pack(anchor=tk.W)
         
-        # Character equipment section
-        equip_frame = ttk.LabelFrame(main_frame, text="⚔ Equipped Gear", padding="10")
-        equip_frame.pack(fill=tk.X, pady=(0, 10))
+        # Character visualization and equipment side by side
+        char_equip_frame = ttk.Frame(main_frame)
+        char_equip_frame.pack(fill=tk.X, pady=(0, 10))
         
+        # Left: Character Canvas
         equipped = self.blocker.adhd_buster.get("equipped", {})
+        char_canvas = CharacterCanvas(char_equip_frame, equipped, power, width=180, height=200)
+        char_canvas.pack(side=tk.LEFT, padx=(0, 15))
+        
+        # Right: Equipment list
+        equip_frame = ttk.LabelFrame(char_equip_frame, text="⚔ Equipped Gear", padding="10")
+        equip_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
         slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
         
-        # Create 2-column layout for equipment
+        # Single column layout for equipment (since we have canvas on left)
         for i, slot in enumerate(slots):
-            row = i // 2
-            col = i % 2
-            
             slot_frame = ttk.Frame(equip_frame)
-            slot_frame.grid(row=row, column=col, sticky='ew', padx=5, pady=2)
-            equip_frame.columnconfigure(col, weight=1)
+            slot_frame.pack(fill=tk.X, pady=1)
             
             item = equipped.get(slot)
             if item:
