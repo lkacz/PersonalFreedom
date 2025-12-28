@@ -229,6 +229,144 @@ class PriorityTimeLogDialog:
         return self.result
 
 
+class PriorityCheckinDialog:
+    """Dialog shown during a session to ask if user is working on priorities."""
+    
+    def __init__(self, parent: tk.Tk, blocker, today_priorities: list):
+        self.parent = parent
+        self.blocker = blocker
+        self.today_priorities = today_priorities
+        self.result = None
+        
+        self.dialog = tk.Toplevel(parent)
+        self.dialog.title("Priority Check-in ⏰")
+        self.dialog.geometry("400x280")
+        self.dialog.resizable(False, False)
+        self.dialog.transient(parent)
+        self.dialog.grab_set()
+        
+        # Center on parent
+        self.dialog.update_idletasks()
+        x = parent.winfo_x() + (parent.winfo_width() - 400) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - 280) // 2
+        self.dialog.geometry(f"+{x}+{y}")
+        
+        self.setup_ui()
+        
+        # Auto-close after 60 seconds if no response
+        self.dialog.after(60000, self.auto_close)
+    
+    def setup_ui(self):
+        """Create the check-in dialog UI."""
+        main_frame = ttk.Frame(self.dialog, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Header with question
+        ttk.Label(main_frame, text="🎯 Quick Check-in",
+                  font=('Segoe UI', 14, 'bold')).pack(anchor=tk.W)
+        
+        ttk.Label(main_frame, 
+                  text="Are you currently working on your priority tasks?",
+                  font=('Segoe UI', 10)).pack(anchor=tk.W, pady=(5, 15))
+        
+        # Show today's priorities as reminder
+        priorities_frame = ttk.LabelFrame(main_frame, text="Today's Priorities", padding="10")
+        priorities_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        priorities_text = "\n".join([f"• {p.get('title', '')}" for p in self.today_priorities])
+        ttk.Label(priorities_frame, text=priorities_text if priorities_text else "No priorities set",
+                  font=('Segoe UI', 9), foreground='#2e7d32').pack(anchor=tk.W)
+        
+        # Response buttons
+        btn_frame = ttk.Frame(main_frame)
+        btn_frame.pack(fill=tk.X, pady=(10, 0))
+        
+        yes_btn = ttk.Button(btn_frame, text="✅ Yes, I'm on task!",
+                             command=self.confirm_on_task)
+        yes_btn.pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
+        
+        no_btn = ttk.Button(btn_frame, text="⚠ Need to refocus",
+                            command=self.confirm_off_task)
+        no_btn.pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
+        
+        # Dismiss button
+        ttk.Button(main_frame, text="Dismiss",
+                   command=self.close_dialog).pack(pady=(10, 0))
+    
+    def confirm_on_task(self):
+        """User confirms they are on task - show positive feedback."""
+        self.result = True
+        self.dialog.destroy()
+        
+        # Show brief positive feedback
+        feedback = tk.Toplevel(self.parent)
+        feedback.title("")
+        feedback.geometry("300x100")
+        feedback.resizable(False, False)
+        feedback.overrideredirect(True)  # No window decorations
+        
+        # Center on parent
+        feedback.update_idletasks()
+        x = self.parent.winfo_x() + (self.parent.winfo_width() - 300) // 2
+        y = self.parent.winfo_y() + (self.parent.winfo_height() - 100) // 2
+        feedback.geometry(f"+{x}+{y}")
+        
+        feedback_frame = ttk.Frame(feedback, padding="20")
+        feedback_frame.pack(fill=tk.BOTH, expand=True)
+        
+        ttk.Label(feedback_frame, text="🌟 Great job staying focused!",
+                  font=('Segoe UI', 12, 'bold')).pack()
+        ttk.Label(feedback_frame, text="Keep up the excellent work!",
+                  font=('Segoe UI', 10)).pack(pady=(5, 0))
+        
+        # Auto-close after 2 seconds
+        feedback.after(2000, feedback.destroy)
+    
+    def confirm_off_task(self):
+        """User admits they're off task - provide gentle reminder."""
+        self.result = False
+        self.dialog.destroy()
+        
+        # Show refocus reminder
+        feedback = tk.Toplevel(self.parent)
+        feedback.title("")
+        feedback.geometry("320x120")
+        feedback.resizable(False, False)
+        feedback.overrideredirect(True)
+        
+        # Center on parent
+        feedback.update_idletasks()
+        x = self.parent.winfo_x() + (self.parent.winfo_width() - 320) // 2
+        y = self.parent.winfo_y() + (self.parent.winfo_height() - 120) // 2
+        feedback.geometry(f"+{x}+{y}")
+        
+        feedback_frame = ttk.Frame(feedback, padding="20")
+        feedback_frame.pack(fill=tk.BOTH, expand=True)
+        
+        ttk.Label(feedback_frame, text="💪 Time to refocus!",
+                  font=('Segoe UI', 12, 'bold')).pack()
+        ttk.Label(feedback_frame, text="Take a breath and get back to your priorities.",
+                  font=('Segoe UI', 10)).pack(pady=(5, 0))
+        ttk.Label(feedback_frame, text="You've got this!",
+                  font=('Segoe UI', 10), foreground='#2e7d32').pack()
+        
+        # Auto-close after 3 seconds
+        feedback.after(3000, feedback.destroy)
+    
+    def auto_close(self):
+        """Auto-close if no response."""
+        try:
+            if self.dialog.winfo_exists():
+                self.dialog.destroy()
+        except tk.TclError:
+            pass
+    
+    def close_dialog(self):
+        """Close the dialog without action."""
+        self.result = None
+        self.dialog.destroy()
+
+
 class PrioritiesDialog:
     """Dialog for managing daily priorities with day-of-week reminders."""
     
@@ -323,6 +461,28 @@ class PrioritiesDialog:
                         text="Show this dialog when the app starts",
                         variable=self.show_on_startup_var,
                         command=self.toggle_startup_setting).pack(anchor=tk.W)
+        
+        # Priority check-in settings
+        checkin_frame = ttk.LabelFrame(main_frame, text="⏰ Focus Check-ins", padding="10")
+        checkin_frame.pack(fill=tk.X, pady=(10, 0))
+        
+        checkin_row = ttk.Frame(checkin_frame)
+        checkin_row.pack(fill=tk.X)
+        
+        self.checkin_enabled_var = tk.BooleanVar(value=self.blocker.priority_checkin_enabled)
+        ttk.Checkbutton(checkin_row, 
+                        text="Ask if I'm working on priorities every",
+                        variable=self.checkin_enabled_var,
+                        command=self.toggle_checkin_setting).pack(side=tk.LEFT)
+        
+        self.checkin_interval_var = tk.IntVar(value=self.blocker.priority_checkin_interval)
+        interval_spin = ttk.Spinbox(checkin_row, from_=5, to=120, width=4,
+                                     textvariable=self.checkin_interval_var,
+                                     command=self.update_checkin_interval)
+        interval_spin.pack(side=tk.LEFT, padx=3)
+        interval_spin.bind('<FocusOut>', lambda e: self.update_checkin_interval())
+        
+        ttk.Label(checkin_row, text="minutes during sessions").pack(side=tk.LEFT)
     
     def _create_priority_row(self, parent, index):
         """Create a priority entry row with day selection and time planning."""
@@ -459,6 +619,21 @@ class PrioritiesDialog:
         self.blocker.show_priorities_on_startup = self.show_on_startup_var.get()
         self.blocker.save_config()
     
+    def toggle_checkin_setting(self):
+        """Toggle priority check-in reminders during sessions."""
+        self.blocker.priority_checkin_enabled = self.checkin_enabled_var.get()
+        self.blocker.save_config()
+    
+    def update_checkin_interval(self):
+        """Update the check-in interval setting."""
+        try:
+            interval = self.checkin_interval_var.get()
+            if 5 <= interval <= 120:
+                self.blocker.priority_checkin_interval = interval
+                self.blocker.save_config()
+        except (tk.TclError, ValueError):
+            pass
+    
     def start_priority_session(self):
         """Start a focus session for the first active priority."""
         # Find the first priority for today
@@ -506,6 +681,10 @@ class FocusBlockerGUI:
         self.remaining_seconds = 0
         self._timer_lock = threading.Lock()
         self.session_start_time = None
+        
+        # Priority check-in tracking
+        self.last_checkin_time = None
+        self.checkin_dialog_open = False
         
         # Pomodoro state
         self.pomodoro_is_break = False
@@ -1414,6 +1593,9 @@ class FocusBlockerGUI:
 
     def run_timer(self) -> None:
         """Run the countdown timer."""
+        # Initialize check-in tracking at session start
+        self.last_checkin_time = time.time()
+        
         while True:
             with self._timer_lock:
                 if not self.timer_running:
@@ -1436,6 +1618,9 @@ class FocusBlockerGUI:
                 self.root.after(0, lambda t=time_str: self.timer_display.config(text=t))
             except tk.TclError:
                 break
+            
+            # Check if it's time for a priority check-in
+            self._check_priority_checkin()
 
             time.sleep(1)
 
@@ -1461,6 +1646,52 @@ class FocusBlockerGUI:
             self.session_complete()
         except Exception as e:
             logging.error(f"Error in session completion: {e}", exc_info=True)
+
+    def _check_priority_checkin(self):
+        """Check if it's time to show a priority check-in dialog."""
+        # Skip if check-ins are disabled or during Pomodoro breaks
+        if not self.blocker.priority_checkin_enabled:
+            return
+        if self.blocker.mode == BlockMode.POMODORO and self.pomodoro_is_break:
+            return
+        if self.checkin_dialog_open:
+            return
+        
+        # Check if enough time has passed since last check-in
+        interval_seconds = self.blocker.priority_checkin_interval * 60
+        elapsed_since_checkin = time.time() - (self.last_checkin_time or time.time())
+        
+        if elapsed_since_checkin >= interval_seconds:
+            # Get today's priorities
+            today = datetime.now().strftime("%A")
+            today_priorities = []
+            
+            for priority in self.blocker.priorities:
+                title = priority.get("title", "").strip()
+                days = priority.get("days", [])
+                
+                if title and (not days or today in days):
+                    today_priorities.append(priority)
+            
+            # Only show check-in if there are priorities for today
+            if today_priorities:
+                self.checkin_dialog_open = True
+                try:
+                    self.root.after(0, lambda: self._show_checkin_dialog(today_priorities))
+                except tk.TclError:
+                    pass
+            
+            # Reset the timer regardless
+            self.last_checkin_time = time.time()
+    
+    def _show_checkin_dialog(self, today_priorities: list):
+        """Show the priority check-in dialog on the main thread."""
+        try:
+            PriorityCheckinDialog(self.root, self.blocker, today_priorities)
+        except Exception as e:
+            logging.error(f"Error showing check-in dialog: {e}", exc_info=True)
+        finally:
+            self.checkin_dialog_open = False
 
     def session_complete(self):
         """Handle session completion"""
