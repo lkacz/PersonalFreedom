@@ -17,6 +17,12 @@ __pycache__/
 *$py.class
 *.pyo
 
+# Virtual environments
+.venv/
+.venv_qt/
+venv/
+env/
+
 # Config (user-specific)
 config.json
 

@@ -1,0 +1,2747 @@
+import sys
+import random
+import platform
+from typing import Optional, Dict
+from datetime import datetime
+
+# Hide console window on Windows
+if platform.system() == "Windows":
+    import ctypes
+    try:
+        ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
+    except Exception:
+        pass
+
+from PySide6 import QtCore, QtGui, QtWidgets
+
+from core_logic import BlockerCore, BlockMode, SITE_CATEGORIES, AI_AVAILABLE, LOCAL_AI_AVAILABLE
+
+# Local AI for session analysis
+if LOCAL_AI_AVAILABLE:
+    from local_ai import LocalAI
+else:
+    LocalAI = None  # type: ignore
+
+
+# --- Gamification imports from focus_blocker.py ---
+try:
+    from focus_blocker import (
+        RARITY_POWER, ITEM_THEMES, get_item_themes,
+        get_diary_power_tier, calculate_character_power, get_power_breakdown,
+        calculate_rarity_bonuses, calculate_merge_success_rate,
+        get_merge_result_rarity, perform_lucky_merge, is_merge_worthwhile,
+        generate_diary_entry, calculate_set_bonuses
+    )
+    GAMIFICATION_AVAILABLE = True
+except ImportError:
+    GAMIFICATION_AVAILABLE = False
+    RARITY_POWER = {"Common": 10, "Uncommon": 25, "Rare": 50, "Epic": 100, "Legendary": 250}
+
+
+class TimerTab(QtWidgets.QWidget):
+    """Qt implementation of the timer tab (start/stop, modes, presets, countdown)."""
+
+    timer_tick = QtCore.Signal(int)  # remaining seconds
+    session_complete = QtCore.Signal(int)  # elapsed seconds
+
+    def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self.timer_running = False
+        self.remaining_seconds = 0
+        self.session_start: Optional[float] = None
+        
+        # Pomodoro state
+        self.pomodoro_is_break = False
+        self.pomodoro_session_count = 0
+        self.pomodoro_total_work_time = 0
+        
+        # Priority check-in tracking
+        self.last_checkin_time: Optional[float] = None
+
+        self._build_ui()
+        self._connect_signals()
+
+        # QTimer for ticking each second
+        self.qt_timer = QtCore.QTimer(self)
+        self.qt_timer.setInterval(1000)
+        self.qt_timer.timeout.connect(self._on_tick)
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setSpacing(10)
+
+        # Timer display
+        self.timer_label = QtWidgets.QLabel("00:00:00")
+        self.timer_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.timer_label.setStyleSheet("font: 700 36px 'Consolas';")
+        layout.addWidget(self.timer_label)
+
+        # Mode selection
+        mode_box = QtWidgets.QGroupBox("Mode")
+        mode_layout = QtWidgets.QHBoxLayout(mode_box)
+        self.mode_buttons: Dict[str, QtWidgets.QRadioButton] = {}
+        modes = [
+            ("Normal", BlockMode.NORMAL),
+            ("Strict 🔐", BlockMode.STRICT),
+            ("Pomodoro 🍅", BlockMode.POMODORO),
+        ]
+        for text, value in modes:
+            btn = QtWidgets.QRadioButton(text)
+            btn.setProperty("mode_value", value)
+            mode_layout.addWidget(btn)
+            self.mode_buttons[value] = btn
+        self.mode_buttons[BlockMode.NORMAL].setChecked(True)
+        layout.addWidget(mode_box)
+
+        # Duration inputs
+        duration_box = QtWidgets.QGroupBox("Duration")
+        duration_layout = QtWidgets.QHBoxLayout(duration_box)
+        self.hours_spin = QtWidgets.QSpinBox()
+        self.hours_spin.setRange(0, 12)
+        self.hours_spin.setValue(0)
+        self.minutes_spin = QtWidgets.QSpinBox()
+        self.minutes_spin.setRange(0, 59)
+        self.minutes_spin.setValue(25)
+        duration_layout.addWidget(QtWidgets.QLabel("Hours"))
+        duration_layout.addWidget(self.hours_spin)
+        duration_layout.addWidget(QtWidgets.QLabel("Minutes"))
+        duration_layout.addWidget(self.minutes_spin)
+        layout.addWidget(duration_box)
+
+        # Presets
+        preset_box = QtWidgets.QGroupBox("Presets")
+        preset_layout = QtWidgets.QHBoxLayout(preset_box)
+        presets = [("25m", 25), ("45m", 45), ("1h", 60), ("2h", 120), ("4h", 240)]
+        for label, minutes in presets:
+            btn = QtWidgets.QPushButton(label)
+            btn.clicked.connect(lambda _=False, m=minutes: self._set_preset(m))
+            preset_layout.addWidget(btn)
+        layout.addWidget(preset_box)
+
+        # Start/Stop buttons
+        btn_layout = QtWidgets.QHBoxLayout()
+        self.start_btn = QtWidgets.QPushButton("▶ Start Focus")
+        self.stop_btn = QtWidgets.QPushButton("⬛ Stop")
+        self.stop_btn.setEnabled(False)
+        btn_layout.addWidget(self.start_btn)
+        btn_layout.addWidget(self.stop_btn)
+        layout.addLayout(btn_layout)
+
+        # Status label
+        self.status_label = QtWidgets.QLabel("Ready to focus")
+        self.status_label.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(self.status_label)
+
+        layout.addStretch(1)
+
+    def _connect_signals(self) -> None:
+        self.start_btn.clicked.connect(self._start_session)
+        self.stop_btn.clicked.connect(self._stop_session)
+
+    # === UI helpers ===
+    def _set_preset(self, minutes: int) -> None:
+        self.hours_spin.setValue(minutes // 60)
+        self.minutes_spin.setValue(minutes % 60)
+
+    def _current_mode(self) -> str:
+        for value, btn in self.mode_buttons.items():
+            if btn.isChecked():
+                return value
+        return BlockMode.NORMAL
+
+    def _format_time(self, seconds: int) -> str:
+        h = seconds // 3600
+        m = (seconds % 3600) // 60
+        s = seconds % 60
+        return f"{h:02d}:{m:02d}:{s:02d}"
+
+    # === Timer control ===
+    def _start_session(self) -> None:
+        hours = self.hours_spin.value()
+        minutes = self.minutes_spin.value()
+        total_minutes = hours * 60 + minutes
+        if total_minutes <= 0:
+            QtWidgets.QMessageBox.warning(self, "Error", "Please set a time greater than 0")
+            return
+
+        mode = self._current_mode()
+        self.blocker.mode = mode
+
+        # Reset Pomodoro state
+        self.pomodoro_is_break = False
+        self.pomodoro_session_count = 0
+        self.pomodoro_total_work_time = 0
+        self.last_checkin_time = None
+
+        # Pomodoro uses its own durations
+        if mode == BlockMode.POMODORO:
+            total_seconds = self.blocker.pomodoro_work * 60
+            self.status_label.setText(f"🍅 WORK #{self.pomodoro_session_count + 1}")
+        else:
+            total_seconds = total_minutes * 60
+
+        success, message = self.blocker.block_sites(duration_seconds=total_seconds)
+        if not success:
+            QtWidgets.QMessageBox.critical(self, "Error", message)
+            return
+
+        self.timer_running = True
+        self.remaining_seconds = total_seconds
+        self.session_start = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch()
+        self.timer_label.setText(self._format_time(self.remaining_seconds))
+        self.start_btn.setEnabled(False)
+        self.stop_btn.setEnabled(True)
+        if mode != BlockMode.POMODORO:
+            self.status_label.setText("🔒 BLOCKING")
+        self.qt_timer.start()
+
+    def _stop_session(self) -> None:
+        # Check password for Strict Mode
+        if self.blocker.mode == BlockMode.STRICT and self.blocker.password_hash:
+            pwd, ok = QtWidgets.QInputDialog.getText(
+                self, "Password Required", "Enter password to stop Strict Mode:",
+                QtWidgets.QLineEdit.Password
+            )
+            if not ok or not self.blocker.verify_password(pwd or ""):
+                QtWidgets.QMessageBox.warning(self, "Error", "Incorrect password. Session continues.")
+                return
+
+        elapsed = 0
+        if self.session_start:
+            elapsed = int(QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - self.session_start)
+
+        self.timer_running = False
+        self.qt_timer.stop()
+        self.remaining_seconds = 0
+        self.timer_label.setText("00:00:00")
+        self.start_btn.setEnabled(True)
+        self.stop_btn.setEnabled(False)
+        self.status_label.setText("Ready to focus")
+        self.pomodoro_is_break = False
+        self.pomodoro_session_count = 0
+        self.pomodoro_total_work_time = 0
+
+        # Unblock sites
+        self.blocker.unblock_sites()
+
+        # Only record stats if ran > 60s
+        if elapsed > 60:
+            self.blocker.update_stats(elapsed, completed=False)
+
+    def _on_tick(self) -> None:
+        if not self.timer_running:
+            return
+        self.remaining_seconds -= 1
+        self.timer_label.setText(self._format_time(max(self.remaining_seconds, 0)))
+        self.timer_tick.emit(max(self.remaining_seconds, 0))
+
+        # Priority check-in during sessions
+        self._check_priority_checkin()
+
+        if self.remaining_seconds <= 0:
+            self._handle_session_complete()
+
+    def _check_priority_checkin(self) -> None:
+        """Check if it's time to show a priority check-in dialog."""
+        if not self.blocker.priority_checkin_enabled:
+            return
+        if self.blocker.mode == BlockMode.POMODORO and self.pomodoro_is_break:
+            return  # Don't check-in during breaks
+        if not self.session_start:
+            return
+
+        elapsed = int(QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - self.session_start)
+        interval_seconds = self.blocker.priority_checkin_interval * 60
+
+        if elapsed > 0 and elapsed % interval_seconds < 2:  # 2-second window
+            if self.last_checkin_time is None or (elapsed - self.last_checkin_time) >= interval_seconds - 5:
+                self.last_checkin_time = elapsed
+                self._show_priority_checkin()
+
+    def _show_priority_checkin(self) -> None:
+        """Show the priority check-in dialog."""
+        today = datetime.now().strftime("%A")
+        today_priorities = [
+            p for p in self.blocker.priorities
+            if p.get("title", "").strip() and (not p.get("days") or today in p.get("days", []))
+        ]
+        if not today_priorities:
+            return
+
+        elapsed = int(QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - self.session_start) if self.session_start else 0
+        session_minutes = elapsed // 60
+
+        dialog = PriorityCheckinDialog(self.blocker, today_priorities, session_minutes, self.window())
+        dialog.exec()
+
+        # Handle on-task confirmation with rewards
+        if dialog.result and GAMIFICATION_AVAILABLE:
+            self._give_session_rewards(session_minutes)
+
+    def _give_session_rewards(self, session_minutes: int) -> None:
+        """Give item drop and diary entry rewards."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+
+        from focus_blocker import generate_item
+
+        streak = self.blocker.stats.get("streak_days", 0)
+        luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+
+        # Generate item
+        item = generate_item(session_minutes=session_minutes, streak_days=streak)
+
+        # Lucky upgrade chance based on luck bonus
+        luck_chance = min(luck / 100, 10)
+        if luck > 0 and random.random() * 100 < luck_chance:
+            rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+            current_idx = rarity_order.index(item["rarity"])
+            if current_idx < len(rarity_order) - 1:
+                item = generate_item(rarity=rarity_order[current_idx + 1],
+                                      session_minutes=session_minutes, streak_days=streak)
+                item["lucky_upgrade"] = True
+
+        # Add to inventory
+        if "inventory" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["inventory"] = []
+        self.blocker.adhd_buster["inventory"].append(item)
+        self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
+
+        # Auto-equip if slot empty
+        slot = item.get("slot")
+        if "equipped" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["equipped"] = {}
+        if not self.blocker.adhd_buster["equipped"].get(slot):
+            self.blocker.adhd_buster["equipped"][slot] = item.copy()
+
+        # Generate diary entry (once per day)
+        today = datetime.now().strftime("%Y-%m-%d")
+        diary = self.blocker.adhd_buster.get("diary", [])
+        today_entries = [e for e in diary if e.get("date") == today]
+
+        diary_entry = None
+        if not today_entries:
+            power = calculate_character_power(self.blocker.adhd_buster)
+            equipped = self.blocker.adhd_buster.get("equipped", {})
+            diary_entry = generate_diary_entry(power, session_minutes, equipped)
+            if "diary" not in self.blocker.adhd_buster:
+                self.blocker.adhd_buster["diary"] = []
+            self.blocker.adhd_buster["diary"].append(diary_entry)
+            if len(self.blocker.adhd_buster["diary"]) > 100:
+                self.blocker.adhd_buster["diary"] = self.blocker.adhd_buster["diary"][-100:]
+
+        self.blocker.save_config()
+
+        # Show item drop dialog
+        ItemDropDialog(self.blocker, item, session_minutes, streak, self.window()).exec()
+
+        # Show diary entry reveal
+        if diary_entry:
+            DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes, self.window()).exec()
+
+    def _handle_session_complete(self) -> None:
+        """Handle session completion."""
+        self.timer_running = False
+        self.qt_timer.stop()
+
+        elapsed = 0
+        if self.session_start:
+            elapsed = int(QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - self.session_start)
+
+        # Handle Pomodoro mode specially
+        if self.blocker.mode == BlockMode.POMODORO:
+            self._handle_pomodoro_complete(elapsed)
+            return
+
+        self.blocker.update_stats(elapsed, completed=True)
+        self.blocker.unblock_sites(force=True)
+
+        self.timer_label.setText("00:00:00")
+        self.start_btn.setEnabled(True)
+        self.stop_btn.setEnabled(False)
+        self.status_label.setText("Session complete 🎉")
+
+        session_minutes = elapsed // 60
+
+        # Show AI session dialog if available, otherwise simple message
+        main_window = self.window()
+        if LOCAL_AI_AVAILABLE and hasattr(main_window, 'show_ai_session_complete'):
+            main_window.show_ai_session_complete(elapsed)
+        else:
+            QtWidgets.QMessageBox.information(self, "Complete!", "🎉 Focus session complete!\nGreat job staying focused!")
+
+        if session_minutes > 0:
+            self._give_session_rewards(session_minutes)
+            self._show_priority_time_log(session_minutes)
+
+        self.session_complete.emit(elapsed)
+
+    def _show_priority_time_log(self, session_minutes: int) -> None:
+        """Show priority time logging dialog."""
+        today = datetime.now().strftime("%A")
+        has_priorities = any(
+            p.get("title", "").strip() and (not p.get("days") or today in p.get("days", []))
+            for p in self.blocker.priorities
+        )
+        if has_priorities:
+            PriorityTimeLogDialog(self.blocker, session_minutes, self.window()).exec()
+
+    def _handle_pomodoro_complete(self, elapsed: int) -> None:
+        """Handle Pomodoro work/break cycle transitions."""
+        if self.pomodoro_is_break:
+            # Break is over, start next work session
+            self.pomodoro_is_break = False
+            self.blocker.unblock_sites(force=True)
+
+            if QtWidgets.QMessageBox.question(
+                self, "Break Over! 🍅",
+                f"Break time is over!\n\n"
+                f"Sessions completed: {self.pomodoro_session_count}\n"
+                f"Total focus time: {self.pomodoro_total_work_time // 60} min\n\n"
+                "Ready for another focus session?"
+            ) == QtWidgets.QMessageBox.Yes:
+                self._start_pomodoro_work()
+            else:
+                self._end_pomodoro_session()
+        else:
+            # Work session completed
+            self.pomodoro_session_count += 1
+            self.pomodoro_total_work_time += elapsed
+            self.blocker.update_stats(elapsed, completed=True)
+            self.blocker.unblock_sites(force=True)
+
+            # Give rewards for completing work session
+            session_minutes = elapsed // 60
+            if session_minutes > 0:
+                self._give_session_rewards(session_minutes)
+
+            # Determine break length
+            sessions_before_long = self.blocker.pomodoro_sessions_before_long
+            if self.pomodoro_session_count % sessions_before_long == 0:
+                break_minutes = self.blocker.pomodoro_long_break
+                break_type = "Long Break"
+            else:
+                break_minutes = self.blocker.pomodoro_break
+                break_type = "Short Break"
+
+            if QtWidgets.QMessageBox.question(
+                self, f"Work Complete! 🍅 {break_type}",
+                f"Great work! Session #{self.pomodoro_session_count} complete!\n\n"
+                f"Time for a {break_minutes}-minute {break_type.lower()}.\n\n"
+                "Start break timer?"
+            ) == QtWidgets.QMessageBox.Yes:
+                self._start_pomodoro_break(break_minutes)
+            else:
+                self._end_pomodoro_session()
+
+    def _start_pomodoro_work(self) -> None:
+        """Start a Pomodoro work session."""
+        work_minutes = self.blocker.pomodoro_work
+        total_seconds = work_minutes * 60
+
+        success, message = self.blocker.block_sites(duration_seconds=total_seconds)
+        if not success:
+            QtWidgets.QMessageBox.critical(self, "Error", message)
+            self._end_pomodoro_session()
+            return
+
+        self.remaining_seconds = total_seconds
+        self.timer_running = True
+        self.session_start = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch()
+        self.pomodoro_is_break = False
+        self.last_checkin_time = None
+
+        self.timer_label.setText(self._format_time(self.remaining_seconds))
+        self.start_btn.setEnabled(False)
+        self.stop_btn.setEnabled(True)
+        self.status_label.setText(f"🍅 WORK #{self.pomodoro_session_count + 1}")
+        self.qt_timer.start()
+
+    def _start_pomodoro_break(self, break_minutes: int) -> None:
+        """Start a Pomodoro break period."""
+        total_seconds = break_minutes * 60
+
+        self.remaining_seconds = total_seconds
+        self.timer_running = True
+        self.session_start = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch()
+        self.pomodoro_is_break = True
+
+        self.timer_label.setText(self._format_time(self.remaining_seconds))
+        self.status_label.setText("☕ BREAK")
+        self.qt_timer.start()
+
+    def _end_pomodoro_session(self) -> None:
+        """End the Pomodoro session completely."""
+        session_minutes = self.pomodoro_total_work_time // 60
+
+        self.timer_running = False
+        self.qt_timer.stop()
+        self.remaining_seconds = 0
+        self.timer_label.setText("00:00:00")
+        self.start_btn.setEnabled(True)
+        self.stop_btn.setEnabled(False)
+        self.pomodoro_is_break = False
+
+        if self.pomodoro_session_count > 0:
+            self.status_label.setText(
+                f"🍅 Done! {self.pomodoro_session_count} sessions, "
+                f"{self.pomodoro_total_work_time // 60} min"
+            )
+            if session_minutes > 0:
+                self._show_priority_time_log(session_minutes)
+        else:
+            self.status_label.setText("Ready to focus")
+
+        self.pomodoro_session_count = 0
+        self.pomodoro_total_work_time = 0
+
+    def _force_stop_session(self) -> None:
+        """Force stop the session without password check (for app exit)."""
+        elapsed = 0
+        if self.session_start:
+            elapsed = int(QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - self.session_start)
+
+        self.timer_running = False
+        self.qt_timer.stop()
+        self.remaining_seconds = 0
+        self.timer_label.setText("00:00:00")
+        self.start_btn.setEnabled(True)
+        self.stop_btn.setEnabled(False)
+        self.status_label.setText("Ready to focus")
+        self.pomodoro_is_break = False
+        self.pomodoro_session_count = 0
+        self.pomodoro_total_work_time = 0
+
+        # Unblock sites
+        self.blocker.unblock_sites()
+
+        # Record stats if ran > 60s
+        if elapsed > 60:
+            self.blocker.update_stats(elapsed, completed=False)
+
+
+class SitesTab(QtWidgets.QWidget):
+    """Sites management tab - blacklist and whitelist."""
+
+    def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self._build_ui()
+        self._refresh_lists()
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+
+        # Blacklist section
+        black_group = QtWidgets.QGroupBox("Blocked Sites (Custom)")
+        black_layout = QtWidgets.QVBoxLayout(black_group)
+        self.black_list = QtWidgets.QListWidget()
+        self.black_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        black_layout.addWidget(self.black_list)
+
+        black_input_layout = QtWidgets.QHBoxLayout()
+        self.black_entry = QtWidgets.QLineEdit()
+        self.black_entry.setPlaceholderText("Enter site to block...")
+        self.black_entry.returnPressed.connect(self._add_black)
+        black_input_layout.addWidget(self.black_entry)
+        add_black_btn = QtWidgets.QPushButton("+ Add")
+        add_black_btn.clicked.connect(self._add_black)
+        black_input_layout.addWidget(add_black_btn)
+        rem_black_btn = QtWidgets.QPushButton("- Remove")
+        rem_black_btn.clicked.connect(self._remove_black)
+        black_input_layout.addWidget(rem_black_btn)
+        black_layout.addLayout(black_input_layout)
+        layout.addWidget(black_group)
+
+        # Whitelist section
+        white_group = QtWidgets.QGroupBox("Whitelist (Never Block)")
+        white_layout = QtWidgets.QVBoxLayout(white_group)
+        self.white_list = QtWidgets.QListWidget()
+        white_layout.addWidget(self.white_list)
+
+        white_input_layout = QtWidgets.QHBoxLayout()
+        self.white_entry = QtWidgets.QLineEdit()
+        self.white_entry.setPlaceholderText("Enter site to whitelist...")
+        self.white_entry.returnPressed.connect(self._add_white)
+        white_input_layout.addWidget(self.white_entry)
+        add_white_btn = QtWidgets.QPushButton("+ Add")
+        add_white_btn.clicked.connect(self._add_white)
+        white_input_layout.addWidget(add_white_btn)
+        rem_white_btn = QtWidgets.QPushButton("- Remove")
+        rem_white_btn.clicked.connect(self._remove_white)
+        white_input_layout.addWidget(rem_white_btn)
+        white_layout.addLayout(white_input_layout)
+        layout.addWidget(white_group)
+
+        # Import/Export buttons
+        io_layout = QtWidgets.QHBoxLayout()
+        import_btn = QtWidgets.QPushButton("📥 Import")
+        import_btn.clicked.connect(self._import_sites)
+        io_layout.addWidget(import_btn)
+        export_btn = QtWidgets.QPushButton("📤 Export")
+        export_btn.clicked.connect(self._export_sites)
+        io_layout.addWidget(export_btn)
+        io_layout.addStretch()
+        layout.addLayout(io_layout)
+
+    def _refresh_lists(self) -> None:
+        self.black_list.clear()
+        for site in sorted(self.blocker.blacklist):
+            self.black_list.addItem(site)
+        self.white_list.clear()
+        for site in sorted(self.blocker.whitelist):
+            self.white_list.addItem(site)
+
+    def _add_black(self) -> None:
+        site = self.black_entry.text().strip()
+        if site and self.blocker.add_site(site):
+            self._refresh_lists()
+            self.black_entry.clear()
+
+    def _remove_black(self) -> None:
+        for item in self.black_list.selectedItems():
+            self.blocker.remove_site(item.text())
+        self._refresh_lists()
+
+    def _add_white(self) -> None:
+        site = self.white_entry.text().strip()
+        if site and self.blocker.add_to_whitelist(site):
+            self._refresh_lists()
+            self.white_entry.clear()
+
+    def _remove_white(self) -> None:
+        for item in self.white_list.selectedItems():
+            self.blocker.remove_from_whitelist(item.text())
+        self._refresh_lists()
+
+    def _import_sites(self) -> None:
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Import Sites", "", "JSON Files (*.json)")
+        if path and self.blocker.import_config(path):
+            self._refresh_lists()
+            QtWidgets.QMessageBox.information(self, "Import", "Sites imported successfully!")
+
+    def _export_sites(self) -> None:
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Export Sites", "", "JSON Files (*.json)")
+        if path and self.blocker.export_config(path):
+            QtWidgets.QMessageBox.information(self, "Export", "Sites exported successfully!")
+
+
+class CategoriesTab(QtWidgets.QWidget):
+    """Categories tab - toggle entire categories of sites."""
+
+    def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self.category_checks: Dict[str, QtWidgets.QCheckBox] = {}
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(QtWidgets.QLabel("Enable/disable entire categories of sites:"))
+
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        container = QtWidgets.QWidget()
+        cat_layout = QtWidgets.QVBoxLayout(container)
+
+        for category, sites in SITE_CATEGORIES.items():
+            row = QtWidgets.QHBoxLayout()
+            cb = QtWidgets.QCheckBox(f"{category} ({len(sites)} sites)")
+            cb.setChecked(self.blocker.categories_enabled.get(category, True))
+            cb.stateChanged.connect(lambda state, c=category: self._toggle(c, state))
+            self.category_checks[category] = cb
+            row.addWidget(cb)
+            view_btn = QtWidgets.QPushButton("View")
+            view_btn.setFixedWidth(60)
+            view_btn.clicked.connect(lambda _, c=category: self._show_sites(c))
+            row.addWidget(view_btn)
+            row.addStretch()
+            cat_layout.addLayout(row)
+
+        cat_layout.addStretch()
+        scroll.setWidget(container)
+        layout.addWidget(scroll)
+
+        self.total_label = QtWidgets.QLabel()
+        layout.addWidget(self.total_label)
+        self._update_total()
+
+    def _toggle(self, category: str, state: int) -> None:
+        self.blocker.categories_enabled[category] = (state == QtCore.Qt.Checked)
+        self.blocker.save_config()
+        self._update_total()
+
+    def _show_sites(self, category: str) -> None:
+        sites = SITE_CATEGORIES.get(category, [])
+        text = "\n".join(sorted(set(s.replace("www.", "") for s in sites)))
+        QtWidgets.QMessageBox.information(self, f"{category} Sites", text)
+
+    def _update_total(self) -> None:
+        total = len(self.blocker.get_effective_blacklist())
+        self.total_label.setText(f"Total sites to block: {total}")
+
+
+class ScheduleTab(QtWidgets.QWidget):
+    """Schedule tab - automatic blocking schedules."""
+
+    def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self._build_ui()
+        self._refresh_table()
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(QtWidgets.QLabel("Automatic blocking schedules:"))
+
+        # Schedule table
+        self.table = QtWidgets.QTableWidget(0, 3)
+        self.table.setHorizontalHeaderLabels(["Days", "Time", "Status"])
+        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        layout.addWidget(self.table)
+
+        # Add schedule form
+        add_group = QtWidgets.QGroupBox("Add Schedule")
+        add_layout = QtWidgets.QVBoxLayout(add_group)
+
+        days_layout = QtWidgets.QHBoxLayout()
+        days_layout.addWidget(QtWidgets.QLabel("Days:"))
+        self.day_checks: list[QtWidgets.QCheckBox] = []
+        day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        for i, name in enumerate(day_names):
+            cb = QtWidgets.QCheckBox(name)
+            cb.setChecked(i < 5)  # default weekdays
+            self.day_checks.append(cb)
+            days_layout.addWidget(cb)
+        days_layout.addStretch()
+        add_layout.addLayout(days_layout)
+
+        time_layout = QtWidgets.QHBoxLayout()
+        time_layout.addWidget(QtWidgets.QLabel("From:"))
+        self.start_time = QtWidgets.QTimeEdit(QtCore.QTime(9, 0))
+        time_layout.addWidget(self.start_time)
+        time_layout.addWidget(QtWidgets.QLabel("To:"))
+        self.end_time = QtWidgets.QTimeEdit(QtCore.QTime(17, 0))
+        time_layout.addWidget(self.end_time)
+        time_layout.addStretch()
+        add_layout.addLayout(time_layout)
+
+        add_btn = QtWidgets.QPushButton("+ Add Schedule")
+        add_btn.clicked.connect(self._add_schedule)
+        add_layout.addWidget(add_btn)
+        layout.addWidget(add_group)
+
+        # Actions
+        action_layout = QtWidgets.QHBoxLayout()
+        toggle_btn = QtWidgets.QPushButton("Toggle")
+        toggle_btn.clicked.connect(self._toggle_schedule)
+        action_layout.addWidget(toggle_btn)
+        delete_btn = QtWidgets.QPushButton("Delete")
+        delete_btn.clicked.connect(self._delete_schedule)
+        action_layout.addWidget(delete_btn)
+        action_layout.addStretch()
+        layout.addLayout(action_layout)
+
+    def _refresh_table(self) -> None:
+        self.table.setRowCount(0)
+        day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        for sched in self.blocker.schedules:
+            row = self.table.rowCount()
+            self.table.insertRow(row)
+            days_str = ", ".join(day_names[d] for d in sorted(sched.get("days", [])))
+            time_str = f"{sched.get('start_time', '')} - {sched.get('end_time', '')}"
+            status = "✅ Active" if sched.get("enabled", True) else "⏸ Paused"
+            self.table.setItem(row, 0, QtWidgets.QTableWidgetItem(days_str))
+            self.table.setItem(row, 1, QtWidgets.QTableWidgetItem(time_str))
+            self.table.setItem(row, 2, QtWidgets.QTableWidgetItem(status))
+            # Store schedule id
+            self.table.item(row, 0).setData(QtCore.Qt.UserRole, sched["id"])
+
+    def _add_schedule(self) -> None:
+        days = [i for i, cb in enumerate(self.day_checks) if cb.isChecked()]
+        if not days:
+            QtWidgets.QMessageBox.warning(self, "Error", "Select at least one day")
+            return
+        start = self.start_time.time().toString("HH:mm")
+        end = self.end_time.time().toString("HH:mm")
+        self.blocker.add_schedule(days, start, end)
+        self._refresh_table()
+
+    def _selected_id(self) -> Optional[str]:
+        row = self.table.currentRow()
+        if row < 0:
+            return None
+        item = self.table.item(row, 0)
+        return item.data(QtCore.Qt.UserRole) if item else None
+
+    def _toggle_schedule(self) -> None:
+        sid = self._selected_id()
+        if sid:
+            self.blocker.toggle_schedule(sid)
+            self._refresh_table()
+
+    def _delete_schedule(self) -> None:
+        sid = self._selected_id()
+        if sid:
+            self.blocker.remove_schedule(sid)
+            self._refresh_table()
+
+
+class StatsTab(QtWidgets.QWidget):
+    """Statistics tab - focus time, sessions, streaks, weekly chart."""
+
+    def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self._build_ui()
+        self.refresh()
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        container = QtWidgets.QWidget()
+        inner = QtWidgets.QVBoxLayout(container)
+
+        # Overview cards
+        overview_group = QtWidgets.QGroupBox("📊 Overview")
+        overview_layout = QtWidgets.QGridLayout(overview_group)
+        self.total_hours_lbl = QtWidgets.QLabel("0h")
+        self.total_hours_lbl.setStyleSheet("font-size: 18px; font-weight: bold;")
+        self.sessions_lbl = QtWidgets.QLabel("0")
+        self.sessions_lbl.setStyleSheet("font-size: 18px; font-weight: bold;")
+        self.streak_lbl = QtWidgets.QLabel("0 days")
+        self.streak_lbl.setStyleSheet("font-size: 18px; font-weight: bold;")
+        self.best_streak_lbl = QtWidgets.QLabel("0 days")
+        self.best_streak_lbl.setStyleSheet("font-size: 18px; font-weight: bold;")
+
+        overview_layout.addWidget(QtWidgets.QLabel("Total Focus Time"), 0, 0)
+        overview_layout.addWidget(self.total_hours_lbl, 1, 0)
+        overview_layout.addWidget(QtWidgets.QLabel("Sessions Completed"), 0, 1)
+        overview_layout.addWidget(self.sessions_lbl, 1, 1)
+        overview_layout.addWidget(QtWidgets.QLabel("Current Streak"), 2, 0)
+        overview_layout.addWidget(self.streak_lbl, 3, 0)
+        overview_layout.addWidget(QtWidgets.QLabel("Best Streak"), 2, 1)
+        overview_layout.addWidget(self.best_streak_lbl, 3, 1)
+        inner.addWidget(overview_group)
+
+        # Weekly chart (text-based)
+        week_group = QtWidgets.QGroupBox("📈 This Week")
+        week_layout = QtWidgets.QVBoxLayout(week_group)
+        self.week_text = QtWidgets.QTextEdit()
+        self.week_text.setReadOnly(True)
+        self.week_text.setFont(QtGui.QFont("Consolas", 10))
+        self.week_text.setMaximumHeight(200)
+        week_layout.addWidget(self.week_text)
+        inner.addWidget(week_group)
+
+        # Reset button
+        reset_btn = QtWidgets.QPushButton("🔄 Reset All Statistics")
+        reset_btn.clicked.connect(self._reset_stats)
+        inner.addWidget(reset_btn)
+
+        inner.addStretch()
+        scroll.setWidget(container)
+        layout.addWidget(scroll)
+
+    def refresh(self) -> None:
+        from datetime import datetime, timedelta
+        stats = self.blocker.get_stats_summary()
+        self.total_hours_lbl.setText(f"{stats['total_hours']}h")
+        self.sessions_lbl.setText(str(stats["sessions_completed"]))
+        self.streak_lbl.setText(f"{stats['current_streak']} days")
+        self.best_streak_lbl.setText(f"{stats['best_streak']} days")
+
+        # Weekly chart
+        days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        today = datetime.now()
+        week_data = []
+        max_time = 1
+        for i in range(6, -1, -1):
+            date_str = (today - timedelta(days=i)).strftime("%Y-%m-%d")
+            daily = self.blocker.stats.get("daily_stats", {}).get(date_str, {})
+            time_min = daily.get("focus_time", 0) // 60
+            week_data.append((date_str, time_min))
+            max_time = max(max_time, time_min)
+
+        lines = ["Focus time this week:\n"]
+        for date_str, time_min in week_data:
+            dt = datetime.strptime(date_str, "%Y-%m-%d")
+            day_name = days[dt.weekday()]
+            bar_len = int((time_min / max_time) * 30) if max_time > 0 else 0
+            bar = "█" * bar_len + "░" * (30 - bar_len)
+            lines.append(f"  {day_name}  {bar} {time_min}m")
+        total_week = sum(t for _, t in week_data)
+        lines.append(f"\n  Total: {total_week} min ({total_week // 60}h {total_week % 60}m)")
+        self.week_text.setPlainText("\n".join(lines))
+
+    def _reset_stats(self) -> None:
+        if QtWidgets.QMessageBox.question(self, "Reset Stats", "Reset all statistics?") == QtWidgets.QMessageBox.Yes:
+            self.blocker.stats = self.blocker._default_stats()
+            self.blocker.save_stats()
+            self.refresh()
+
+
+class SettingsTab(QtWidgets.QWidget):
+    """Settings tab - password, pomodoro settings, backup/restore, cleanup."""
+
+    def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        container = QtWidgets.QWidget()
+        inner = QtWidgets.QVBoxLayout(container)
+
+        # Password protection
+        pwd_group = QtWidgets.QGroupBox("🔐 Password Protection")
+        pwd_layout = QtWidgets.QVBoxLayout(pwd_group)
+        pwd_layout.addWidget(QtWidgets.QLabel("Set a password to prevent stopping Strict Mode sessions early."))
+        self.pwd_status = QtWidgets.QLabel()
+        pwd_layout.addWidget(self.pwd_status)
+        pwd_btn_layout = QtWidgets.QHBoxLayout()
+        set_pwd_btn = QtWidgets.QPushButton("Set Password")
+        set_pwd_btn.clicked.connect(self._set_password)
+        pwd_btn_layout.addWidget(set_pwd_btn)
+        rem_pwd_btn = QtWidgets.QPushButton("Remove Password")
+        rem_pwd_btn.clicked.connect(self._remove_password)
+        pwd_btn_layout.addWidget(rem_pwd_btn)
+        pwd_btn_layout.addStretch()
+        pwd_layout.addLayout(pwd_btn_layout)
+        inner.addWidget(pwd_group)
+        self._update_pwd_status()
+
+        # Pomodoro settings
+        pomo_group = QtWidgets.QGroupBox("🍅 Pomodoro Settings")
+        pomo_layout = QtWidgets.QFormLayout(pomo_group)
+        self.pomo_work_spin = QtWidgets.QSpinBox()
+        self.pomo_work_spin.setRange(1, 120)
+        self.pomo_work_spin.setValue(self.blocker.pomodoro_work)
+        pomo_layout.addRow("Work duration (min):", self.pomo_work_spin)
+        self.pomo_break_spin = QtWidgets.QSpinBox()
+        self.pomo_break_spin.setRange(1, 60)
+        self.pomo_break_spin.setValue(self.blocker.pomodoro_break)
+        pomo_layout.addRow("Short break (min):", self.pomo_break_spin)
+        self.pomo_long_spin = QtWidgets.QSpinBox()
+        self.pomo_long_spin.setRange(1, 60)
+        self.pomo_long_spin.setValue(self.blocker.pomodoro_long_break)
+        pomo_layout.addRow("Long break (min):", self.pomo_long_spin)
+        save_pomo_btn = QtWidgets.QPushButton("Save Pomodoro Settings")
+        save_pomo_btn.clicked.connect(self._save_pomodoro)
+        pomo_layout.addRow(save_pomo_btn)
+        inner.addWidget(pomo_group)
+
+        # Backup/Restore
+        backup_group = QtWidgets.QGroupBox("💾 Backup & Restore")
+        backup_layout = QtWidgets.QVBoxLayout(backup_group)
+        backup_layout.addWidget(QtWidgets.QLabel("Backup or restore all your data (settings, stats, goals)."))
+        backup_btn_layout = QtWidgets.QHBoxLayout()
+        create_backup_btn = QtWidgets.QPushButton("📤 Create Backup")
+        create_backup_btn.clicked.connect(self._create_backup)
+        backup_btn_layout.addWidget(create_backup_btn)
+        restore_backup_btn = QtWidgets.QPushButton("📥 Restore Backup")
+        restore_backup_btn.clicked.connect(self._restore_backup)
+        backup_btn_layout.addWidget(restore_backup_btn)
+        backup_btn_layout.addStretch()
+        backup_layout.addLayout(backup_btn_layout)
+        inner.addWidget(backup_group)
+
+        # Emergency cleanup
+        cleanup_group = QtWidgets.QGroupBox("⚠️ Emergency Cleanup")
+        cleanup_layout = QtWidgets.QVBoxLayout(cleanup_group)
+        cleanup_layout.addWidget(QtWidgets.QLabel("Use if websites remain blocked after closing the app."))
+        cleanup_btn = QtWidgets.QPushButton("🧹 Remove All Blocks & Clean System")
+        cleanup_btn.clicked.connect(self._emergency_cleanup)
+        cleanup_layout.addWidget(cleanup_btn)
+        inner.addWidget(cleanup_group)
+
+        # System Tray (if available)
+        if QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
+            tray_group = QtWidgets.QGroupBox("🖥️ System Tray")
+            tray_layout = QtWidgets.QVBoxLayout(tray_group)
+            self.tray_check = QtWidgets.QCheckBox("Minimize to system tray instead of taskbar")
+            self.tray_check.toggled.connect(self._toggle_tray)
+            tray_layout.addWidget(self.tray_check)
+            tray_layout.addWidget(QtWidgets.QLabel(
+                "When enabled, minimizing the window will hide it to the system tray.\n"
+                "Double-click the tray icon to restore the window."
+            ))
+            inner.addWidget(tray_group)
+
+        # About
+        about_group = QtWidgets.QGroupBox("About")
+        about_layout = QtWidgets.QVBoxLayout(about_group)
+        about_layout.addWidget(QtWidgets.QLabel("Personal Freedom v3.1.0 (Qt)"))
+        about_layout.addWidget(QtWidgets.QLabel("A focus and productivity tool for Windows"))
+        inner.addWidget(about_group)
+
+        inner.addStretch()
+        scroll.setWidget(container)
+        layout.addWidget(scroll)
+
+    def _update_pwd_status(self) -> None:
+        if self.blocker.password_hash:
+            self.pwd_status.setText("🔐 Password is set")
+            self.pwd_status.setStyleSheet("color: green;")
+        else:
+            self.pwd_status.setText("No password set")
+            self.pwd_status.setStyleSheet("color: gray;")
+
+    def _set_password(self) -> None:
+        pwd, ok = QtWidgets.QInputDialog.getText(self, "Set Password", "Enter new password:", QtWidgets.QLineEdit.Password)
+        if not ok or not pwd:
+            return
+        confirm, ok = QtWidgets.QInputDialog.getText(self, "Confirm", "Confirm password:", QtWidgets.QLineEdit.Password)
+        if ok and pwd == confirm:
+            self.blocker.set_password(pwd)
+            self._update_pwd_status()
+            QtWidgets.QMessageBox.information(self, "Success", "Password set!")
+        else:
+            QtWidgets.QMessageBox.warning(self, "Error", "Passwords don't match")
+
+    def _remove_password(self) -> None:
+        if not self.blocker.password_hash:
+            QtWidgets.QMessageBox.information(self, "Info", "No password set")
+            return
+        pwd, ok = QtWidgets.QInputDialog.getText(self, "Remove Password", "Enter current password:", QtWidgets.QLineEdit.Password)
+        if ok and self.blocker.verify_password(pwd or ""):
+            self.blocker.set_password(None)
+            self._update_pwd_status()
+        else:
+            QtWidgets.QMessageBox.warning(self, "Error", "Incorrect password")
+
+    def _save_pomodoro(self) -> None:
+        self.blocker.pomodoro_work = self.pomo_work_spin.value()
+        self.blocker.pomodoro_break = self.pomo_break_spin.value()
+        self.blocker.pomodoro_long_break = self.pomo_long_spin.value()
+        self.blocker.save_config()
+        QtWidgets.QMessageBox.information(self, "Saved", "Pomodoro settings saved!")
+
+    def _create_backup(self) -> None:
+        import json
+        from datetime import datetime
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Backup", "", "JSON Files (*.json)")
+        if not path:
+            return
+        try:
+            backup_data = {
+                "backup_version": "3.1.0",
+                "backup_date": datetime.now().isoformat(),
+                "config": {
+                    "blacklist": self.blocker.blacklist,
+                    "whitelist": self.blocker.whitelist,
+                    "categories_enabled": self.blocker.categories_enabled,
+                    "pomodoro_work": self.blocker.pomodoro_work,
+                    "pomodoro_break": self.blocker.pomodoro_break,
+                    "pomodoro_long_break": self.blocker.pomodoro_long_break,
+                    "schedules": self.blocker.schedules,
+                },
+                "stats": self.blocker.stats,
+            }
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(backup_data, f, indent=2)
+            QtWidgets.QMessageBox.information(self, "Backup Complete", "Backup saved successfully!")
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Backup Failed", str(e))
+
+    def _restore_backup(self) -> None:
+        import json
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Backup", "", "JSON Files (*.json)")
+        if not path:
+            return
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if "backup_version" not in data:
+                QtWidgets.QMessageBox.warning(self, "Invalid", "Not a valid backup file.")
+                return
+            if QtWidgets.QMessageBox.question(self, "Confirm", "Restore backup? This will replace all current data.") != QtWidgets.QMessageBox.Yes:
+                return
+            config = data.get("config", {})
+            self.blocker.blacklist = config.get("blacklist", self.blocker.blacklist)
+            self.blocker.whitelist = config.get("whitelist", self.blocker.whitelist)
+            self.blocker.categories_enabled = config.get("categories_enabled", self.blocker.categories_enabled)
+            self.blocker.pomodoro_work = config.get("pomodoro_work", self.blocker.pomodoro_work)
+            self.blocker.pomodoro_break = config.get("pomodoro_break", self.blocker.pomodoro_break)
+            self.blocker.pomodoro_long_break = config.get("pomodoro_long_break", self.blocker.pomodoro_long_break)
+            self.blocker.schedules = config.get("schedules", self.blocker.schedules)
+            self.blocker.save_config()
+            stats = data.get("stats", {})
+            self.blocker.stats = {**self.blocker._default_stats(), **stats}
+            self.blocker.save_stats()
+            QtWidgets.QMessageBox.information(self, "Restored", "Backup restored successfully!")
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Restore Failed", str(e))
+
+    def _emergency_cleanup(self) -> None:
+        if QtWidgets.QMessageBox.question(self, "Emergency Cleanup", "Remove ALL blocks and clean system?") != QtWidgets.QMessageBox.Yes:
+            return
+        success, message = self.blocker.emergency_cleanup()
+        if success:
+            QtWidgets.QMessageBox.information(self, "Cleanup Complete", message)
+        else:
+            QtWidgets.QMessageBox.critical(self, "Cleanup Failed", message)
+
+    def _toggle_tray(self, checked: bool) -> None:
+        """Toggle minimize to tray setting."""
+        main_window = self.window()
+        if hasattr(main_window, 'minimize_to_tray'):
+            main_window.minimize_to_tray = checked
+
+
+class AITab(QtWidgets.QWidget):
+    """AI insights tab - productivity coach, achievements, goals, challenges."""
+
+    def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        container = QtWidgets.QWidget()
+        inner = QtWidgets.QVBoxLayout(container)
+
+        # AI Status
+        status_group = QtWidgets.QGroupBox("🤖 AI Status")
+        status_layout = QtWidgets.QVBoxLayout(status_group)
+        if AI_AVAILABLE:
+            status_layout.addWidget(QtWidgets.QLabel("✅ AI features available"))
+        else:
+            status_layout.addWidget(QtWidgets.QLabel("⚠️ AI not available - install with: pip install -r requirements_ai.txt"))
+        inner.addWidget(status_group)
+
+        # Productivity Insights
+        insights_group = QtWidgets.QGroupBox("💡 Productivity Insights")
+        insights_layout = QtWidgets.QVBoxLayout(insights_group)
+        self.insights_text = QtWidgets.QTextEdit()
+        self.insights_text.setReadOnly(True)
+        self.insights_text.setMaximumHeight(150)
+        insights_layout.addWidget(self.insights_text)
+        refresh_btn = QtWidgets.QPushButton("🔄 Get AI Insights")
+        refresh_btn.clicked.connect(self._get_insights)
+        refresh_btn.setEnabled(AI_AVAILABLE)
+        insights_layout.addWidget(refresh_btn)
+        inner.addWidget(insights_group)
+
+        # Achievements
+        achievements_group = QtWidgets.QGroupBox("🏆 Achievements")
+        achievements_layout = QtWidgets.QVBoxLayout(achievements_group)
+        self.achievements_list = QtWidgets.QListWidget()
+        self.achievements_list.setMaximumHeight(150)
+        achievements_layout.addWidget(self.achievements_list)
+        inner.addWidget(achievements_group)
+
+        # Daily Challenge
+        challenge_group = QtWidgets.QGroupBox("🎯 Daily Challenge")
+        challenge_layout = QtWidgets.QVBoxLayout(challenge_group)
+        self.challenge_label = QtWidgets.QLabel()
+        challenge_layout.addWidget(self.challenge_label)
+        new_challenge_btn = QtWidgets.QPushButton("🎲 New Challenge")
+        new_challenge_btn.clicked.connect(self._new_challenge)
+        challenge_layout.addWidget(new_challenge_btn)
+        inner.addWidget(challenge_group)
+
+        # Goals
+        goals_group = QtWidgets.QGroupBox("📋 Goals")
+        goals_layout = QtWidgets.QVBoxLayout(goals_group)
+        self.goals_list = QtWidgets.QListWidget()
+        self.goals_list.setMaximumHeight(120)
+        goals_layout.addWidget(self.goals_list)
+        goals_btn_layout = QtWidgets.QHBoxLayout()
+        add_goal_btn = QtWidgets.QPushButton("➕ Add Goal")
+        add_goal_btn.clicked.connect(self._add_goal)
+        goals_btn_layout.addWidget(add_goal_btn)
+        rem_goal_btn = QtWidgets.QPushButton("✓ Complete Goal")
+        rem_goal_btn.clicked.connect(self._complete_goal)
+        goals_btn_layout.addWidget(rem_goal_btn)
+        goals_btn_layout.addStretch()
+        goals_layout.addLayout(goals_btn_layout)
+        inner.addWidget(goals_group)
+
+        inner.addStretch()
+        scroll.setWidget(container)
+        layout.addWidget(scroll)
+
+        self._refresh_data()
+
+    def _refresh_data(self) -> None:
+        # Achievements
+        self.achievements_list.clear()
+        achievements = self.blocker.stats.get("achievements", [])
+        if achievements:
+            for ach in achievements:
+                self.achievements_list.addItem(f"🏅 {ach}")
+        else:
+            self.achievements_list.addItem("No achievements yet - start focusing!")
+
+        # Challenge
+        challenge = self.blocker.stats.get("daily_challenge", "")
+        if challenge:
+            self.challenge_label.setText(f"Today's challenge: {challenge}")
+        else:
+            self.challenge_label.setText("Click 'New Challenge' to get started!")
+
+        # Goals
+        self.goals_list.clear()
+        goals = self.blocker.stats.get("goals", [])
+        for goal in goals:
+            self.goals_list.addItem(f"📌 {goal}")
+
+    def _get_insights(self) -> None:
+        if not AI_AVAILABLE:
+            self.insights_text.setPlainText("AI not available")
+            return
+        try:
+            from productivity_ai import ProductivityAI
+            ai = ProductivityAI()
+            insights = ai.get_productivity_insights(self.blocker.stats)
+            self.insights_text.setPlainText(insights)
+        except Exception as e:
+            self.insights_text.setPlainText(f"Error: {e}")
+
+    def _new_challenge(self) -> None:
+        import random
+        challenges = [
+            "Complete a 45-minute deep work session",
+            "Stay focused for 30 minutes without checking social media",
+            "Take a 5-minute break after every 25 minutes of work",
+            "Complete 4 Pomodoro sessions today",
+            "Block all distractions for 1 hour straight",
+            "Finish one important task before checking email",
+            "Do a 60-minute focus session",
+            "Complete 3 focus sessions before lunch",
+        ]
+        challenge = random.choice(challenges)
+        self.blocker.stats["daily_challenge"] = challenge
+        self.blocker.save_stats()
+        self.challenge_label.setText(f"Today's challenge: {challenge}")
+
+    def _add_goal(self) -> None:
+        goal, ok = QtWidgets.QInputDialog.getText(self, "Add Goal", "Enter your goal:")
+        if ok and goal.strip():
+            goals = self.blocker.stats.get("goals", [])
+            goals.append(goal.strip())
+            self.blocker.stats["goals"] = goals
+            self.blocker.save_stats()
+            self._refresh_data()
+
+    def _complete_goal(self) -> None:
+        item = self.goals_list.currentItem()
+        if not item:
+            QtWidgets.QMessageBox.warning(self, "No Selection", "Select a goal first")
+            return
+        row = self.goals_list.currentRow()
+        goals = self.blocker.stats.get("goals", [])
+        if 0 <= row < len(goals):
+            completed = goals.pop(row)
+            self.blocker.stats["goals"] = goals
+            # Track completed goals
+            completed_goals = self.blocker.stats.get("completed_goals", [])
+            completed_goals.append(completed)
+            self.blocker.stats["completed_goals"] = completed_goals
+            self.blocker.save_stats()
+            QtWidgets.QMessageBox.information(self, "Goal Completed!", f"🎉 '{completed}' marked as complete!")
+            self._refresh_data()
+
+
+# ============================================================================
+# ADHD Buster Gamification Dialogs (Qt Implementation)
+# ============================================================================
+
+class CharacterCanvas(QtWidgets.QWidget):
+    """Qt widget for rendering the ADHD Buster character with equipped gear."""
+
+    TIER_COLORS = {
+        "pathetic": "#bdbdbd", "modest": "#a5d6a7", "decent": "#81c784",
+        "heroic": "#64b5f6", "epic": "#ba68c8", "legendary": "#ffb74d", "godlike": "#ffd54f"
+    }
+
+    TIER_GLOW = {
+        "pathetic": None, "modest": None, "decent": "#c8e6c9",
+        "heroic": "#bbdefb", "epic": "#e1bee7", "legendary": "#ffe0b2", "godlike": "#fff9c4"
+    }
+
+    def __init__(self, equipped: dict, power: int, width: int = 180, height: int = 200,
+                 parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.equipped = equipped
+        self.power = power
+        self.setFixedSize(width, height)
+        if GAMIFICATION_AVAILABLE:
+            self.tier = get_diary_power_tier(power)
+        else:
+            self.tier = "pathetic" if power < 50 else "modest" if power < 150 else "decent"
+
+    def paintEvent(self, event) -> None:
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+
+        w, h = self.width(), self.height()
+        cx, cy = w // 2, h // 2 + 10
+
+        # Background
+        painter.fillRect(self.rect(), QtGui.QColor("#2d2d2d"))
+
+        body_color = QtGui.QColor(self.TIER_COLORS.get(self.tier, "#bdbdbd"))
+        glow = self.TIER_GLOW.get(self.tier)
+
+        # Glow
+        if glow:
+            painter.setBrush(QtGui.QColor(glow))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.setOpacity(0.5)
+            painter.drawEllipse(cx - 60, cy - 70, 120, 160)
+            painter.setOpacity(1.0)
+
+        def darken(color: str) -> QtGui.QColor:
+            c = QtGui.QColor(color)
+            return c.darker(130)
+
+        # Cloak
+        cloak = self.equipped.get("Cloak")
+        if cloak:
+            cc = QtGui.QColor(cloak.get("color", "#666"))
+            painter.setBrush(cc)
+            painter.setPen(QtGui.QPen(darken(cloak.get("color", "#666")), 2))
+            pts = [QtCore.QPoint(cx - 25, cy - 30), QtCore.QPoint(cx + 25, cy - 30),
+                   QtCore.QPoint(cx + 35, cy + 60), QtCore.QPoint(cx - 35, cy + 60)]
+            painter.drawPolygon(pts)
+
+        # Legs
+        painter.setBrush(body_color)
+        painter.setPen(QtGui.QPen(body_color.darker(130), 2))
+        painter.drawRect(cx - 15, cy + 25, 10, 40)
+        painter.drawRect(cx + 5, cy + 25, 10, 40)
+
+        # Boots
+        boots = self.equipped.get("Boots")
+        if boots:
+            bc = QtGui.QColor(boots.get("color", "#666"))
+            painter.setBrush(bc)
+            painter.setPen(QtGui.QPen(bc.darker(130), 2))
+            painter.drawRect(cx - 18, cy + 55, 16, 20)
+            painter.drawRect(cx + 2, cy + 55, 16, 20)
+        else:
+            painter.setBrush(QtGui.QColor("#8d6e63"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#5d4037"), 1))
+            painter.drawRect(cx - 16, cy + 60, 12, 12)
+            painter.drawRect(cx + 4, cy + 60, 12, 12)
+
+        # Arms
+        painter.setBrush(body_color)
+        painter.setPen(QtGui.QPen(body_color.darker(130), 2))
+        painter.drawRect(cx - 38, cy - 25, 13, 45)
+        painter.drawRect(cx + 25, cy - 25, 13, 45)
+
+        # Gauntlets
+        gaunt = self.equipped.get("Gauntlets")
+        if gaunt:
+            gc = QtGui.QColor(gaunt.get("color", "#666"))
+            painter.setBrush(gc)
+            painter.setPen(QtGui.QPen(gc.darker(130), 2))
+            painter.drawRect(cx - 40, cy + 5, 17, 20)
+            painter.drawRect(cx + 23, cy + 5, 17, 20)
+
+        # Torso
+        painter.setBrush(body_color)
+        painter.setPen(QtGui.QPen(body_color.darker(130), 2))
+        painter.drawRect(cx - 25, cy - 30, 50, 60)
+
+        # Chestplate
+        chest = self.equipped.get("Chestplate")
+        if chest:
+            cc = QtGui.QColor(chest.get("color", "#666"))
+            painter.setBrush(cc)
+            painter.setPen(QtGui.QPen(cc.darker(130), 2))
+            painter.drawRect(cx - 22, cy - 28, 44, 53)
+            painter.setPen(QtGui.QPen(cc.darker(130), 2))
+            painter.drawLine(cx, cy - 25, cx, cy + 20)
+
+        # Head
+        painter.setBrush(QtGui.QColor("#ffcc80"))
+        painter.setPen(QtGui.QPen(QtGui.QColor("#e6a84d"), 2))
+        painter.drawEllipse(cx - 18, cy - 65, 36, 35)
+
+        # Eyes
+        painter.setBrush(QtGui.QColor("#333"))
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawEllipse(cx - 8, cy - 55, 5, 7)
+        painter.drawEllipse(cx + 3, cy - 55, 5, 7)
+
+        # Smile
+        painter.setPen(QtGui.QPen(QtGui.QColor("#333"), 2))
+        if self.tier in ["legendary", "godlike"]:
+            painter.drawArc(cx - 8, cy - 48, 16, 10, 200 * 16, 140 * 16)
+        else:
+            painter.drawLine(cx - 6, cy - 42, cx + 6, cy - 42)
+
+        # Helmet
+        helm = self.equipped.get("Helmet")
+        if helm:
+            hc = QtGui.QColor(helm.get("color", "#666"))
+            painter.setBrush(hc)
+            painter.setPen(QtGui.QPen(hc.darker(130), 2))
+            painter.drawPie(cx - 20, cy - 75, 40, 30, 0, 180 * 16)
+            painter.drawRect(cx - 20, cy - 60, 40, 10)
+
+        # Amulet
+        amulet = self.equipped.get("Amulet")
+        if amulet:
+            ac = QtGui.QColor(amulet.get("color", "#666"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#888"), 1))
+            painter.drawLine(cx - 10, cy - 30, cx, cy - 20)
+            painter.drawLine(cx + 10, cy - 30, cx, cy - 20)
+            painter.setBrush(ac)
+            painter.setPen(QtGui.QPen(ac.darker(130), 2))
+            painter.drawEllipse(cx - 6, cy - 25, 12, 12)
+
+        # Weapon
+        weap = self.equipped.get("Weapon")
+        if weap:
+            wc = QtGui.QColor(weap.get("color", "#666"))
+            painter.setBrush(QtGui.QColor("#5d4037"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#3e2723"), 1))
+            painter.drawRect(cx - 52, cy - 5, 4, 40)
+            pts = [QtCore.QPoint(cx - 55, cy - 5), QtCore.QPoint(cx - 45, cy - 5),
+                   QtCore.QPoint(cx - 47, cy - 45), QtCore.QPoint(cx - 53, cy - 45)]
+            painter.setBrush(wc)
+            painter.setPen(QtGui.QPen(wc.darker(130), 2))
+            painter.drawPolygon(pts)
+
+        # Shield
+        shield = self.equipped.get("Shield")
+        if shield:
+            sc = QtGui.QColor(shield.get("color", "#666"))
+            painter.setBrush(sc)
+            painter.setPen(QtGui.QPen(sc.darker(130), 3))
+            painter.drawEllipse(cx + 35, cy - 15, 30, 40)
+            painter.setBrush(sc.darker(130))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx + 45, cy - 2, 10, 14)
+
+        # Power label
+        painter.setPen(QtGui.QColor("#ffd700") if self.tier in ["legendary", "godlike"] else QtGui.QColor("#fff"))
+        painter.setFont(QtGui.QFont("Segoe UI", 10, QtGui.QFont.Bold))
+        painter.drawText(self.rect().adjusted(0, 0, 0, -5), QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, f"⚔ {self.power}")
+
+
+class ADHDBusterDialog(QtWidgets.QDialog):
+    """Dialog for viewing and managing the ADHD Buster character and inventory."""
+
+    def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self.setWindowTitle("🦸 ADHD Buster - Character & Inventory")
+        self.resize(750, 850)
+        self.merge_selected = []
+        self.slot_combos: Dict[str, QtWidgets.QComboBox] = {}
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        container = QtWidgets.QWidget()
+        inner = QtWidgets.QVBoxLayout(container)
+
+        # Header with power
+        header = QtWidgets.QHBoxLayout()
+        header.addWidget(QtWidgets.QLabel("<b style='font-size:18px;'>🦸 ADHD Buster</b>"))
+        header.addStretch()
+
+        power = calculate_character_power(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else 0
+        power_info = get_power_breakdown(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else {"base_power": 0, "set_bonus": 0, "active_sets": [], "total_power": 0}
+
+        if power_info["set_bonus"] > 0:
+            power_txt = f"⚔ Power: {power_info['total_power']} ({power_info['base_power']} + {power_info['set_bonus']} set)"
+        else:
+            power_txt = f"⚔ Power: {power_info['total_power']}"
+        power_lbl = QtWidgets.QLabel(power_txt)
+        power_lbl.setStyleSheet("font-weight: bold; color: #e65100;")
+        header.addWidget(power_lbl)
+        inner.addLayout(header)
+
+        # Active set bonuses
+        if GAMIFICATION_AVAILABLE and power_info["active_sets"]:
+            sets_group = QtWidgets.QGroupBox("🎯 Active Set Bonuses")
+            sets_layout = QtWidgets.QVBoxLayout(sets_group)
+            for s in power_info["active_sets"]:
+                lbl = QtWidgets.QLabel(f"{s['emoji']} {s['name']} ({s['count']} items): +{s['bonus']} power")
+                lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
+                sets_layout.addWidget(lbl)
+            inner.addWidget(sets_group)
+
+        # Stats summary
+        total_items = len(self.blocker.adhd_buster.get("inventory", []))
+        total_collected = self.blocker.adhd_buster.get("total_collected", total_items)
+        streak = self.blocker.stats.get("streak_days", 0)
+        luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+        stats_lbl = QtWidgets.QLabel(f"📦 {total_items} in bag  |  🎁 {total_collected} collected  |  🔥 {streak} day streak  |  🍀 {luck} luck")
+        stats_lbl.setStyleSheet("color: gray;")
+        inner.addWidget(stats_lbl)
+
+        # Character canvas and equipment side by side
+        char_equip = QtWidgets.QHBoxLayout()
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        char_canvas = CharacterCanvas(equipped, power_info["total_power"], parent=self)
+        char_equip.addWidget(char_canvas)
+
+        equip_group = QtWidgets.QGroupBox("⚔ Equipped Gear (change with dropdown)")
+        equip_layout = QtWidgets.QFormLayout(equip_group)
+        slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+
+        for slot in slots:
+            combo = QtWidgets.QComboBox()
+            combo.addItem("[Empty]")
+            slot_items = [item for item in inventory if item.get("slot") == slot]
+            for idx, item in enumerate(slot_items):
+                display = f"{item['name']} (+{item.get('power', 10)}) [{item['rarity'][:1]}]"
+                combo.addItem(display, item)
+            current = equipped.get(slot)
+            if current:
+                for i in range(1, combo.count()):
+                    if combo.itemData(i) and combo.itemData(i).get("name") == current.get("name"):
+                        combo.setCurrentIndex(i)
+                        break
+            combo.currentIndexChanged.connect(lambda idx, s=slot, c=combo: self._on_equip_change(s, c))
+            self.slot_combos[slot] = combo
+            equip_layout.addRow(f"{slot}:", combo)
+        char_equip.addWidget(equip_group)
+        inner.addLayout(char_equip)
+
+        # Lucky Merge
+        merge_group = QtWidgets.QGroupBox("🎲 Lucky Merge (High Risk, High Reward!)")
+        merge_layout = QtWidgets.QVBoxLayout(merge_group)
+        merge_layout.addWidget(QtWidgets.QLabel("Select 2+ items below, then merge for a CHANCE at better loot!"))
+        warn_lbl = QtWidgets.QLabel("⚠️ 90% failure = ALL items lost!")
+        warn_lbl.setStyleSheet("color: #d32f2f; font-weight: bold;")
+        merge_layout.addWidget(warn_lbl)
+        self.merge_btn = QtWidgets.QPushButton("🎲 Merge Selected (0)")
+        self.merge_btn.setEnabled(False)
+        self.merge_btn.clicked.connect(self._do_merge)
+        merge_layout.addWidget(self.merge_btn)
+        self.merge_rate_lbl = QtWidgets.QLabel("Select 2+ items to merge")
+        merge_layout.addWidget(self.merge_rate_lbl)
+        inner.addWidget(merge_group)
+
+        # Inventory
+        inv_group = QtWidgets.QGroupBox("📦 Inventory")
+        inv_layout = QtWidgets.QVBoxLayout(inv_group)
+        sort_bar = QtWidgets.QHBoxLayout()
+        sort_bar.addWidget(QtWidgets.QLabel("Sort:"))
+        self.sort_combo = QtWidgets.QComboBox()
+        self.sort_combo.addItems(["newest", "rarity", "slot", "power"])
+        self.sort_combo.currentTextChanged.connect(self._refresh_inventory)
+        sort_bar.addWidget(self.sort_combo)
+        sort_bar.addStretch()
+        inv_layout.addLayout(sort_bar)
+        self.inv_list = QtWidgets.QListWidget()
+        self.inv_list.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+        self.inv_list.itemSelectionChanged.connect(self._update_merge_selection)
+        inv_layout.addWidget(self.inv_list)
+        inner.addWidget(inv_group)
+
+        self._refresh_inventory()
+
+        # Buttons
+        btn_layout = QtWidgets.QHBoxLayout()
+        diary_btn = QtWidgets.QPushButton("📖 Adventure Diary")
+        diary_btn.clicked.connect(self._open_diary)
+        btn_layout.addWidget(diary_btn)
+        salvage_btn = QtWidgets.QPushButton("🗑️ Salvage Duplicates")
+        salvage_btn.clicked.connect(self._salvage_duplicates)
+        btn_layout.addWidget(salvage_btn)
+        btn_layout.addStretch()
+        close_btn = QtWidgets.QPushButton("Close")
+        close_btn.clicked.connect(self.accept)
+        btn_layout.addWidget(close_btn)
+        inner.addLayout(btn_layout)
+
+        scroll.setWidget(container)
+        layout.addWidget(scroll)
+
+    def _on_equip_change(self, slot: str, combo: QtWidgets.QComboBox) -> None:
+        idx = combo.currentIndex()
+        if "equipped" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["equipped"] = {}
+        if idx == 0:
+            self.blocker.adhd_buster["equipped"][slot] = None
+        else:
+            item = combo.currentData()
+            if item:
+                self.blocker.adhd_buster["equipped"][slot] = item.copy()
+        self.blocker.save_config()
+
+    def _refresh_inventory(self) -> None:
+        self.inv_list.clear()
+        self.merge_selected = []
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        equipped_ts = {item.get("obtained_at") for item in equipped.values() if item}
+
+        rarity_order = {"Common": 0, "Uncommon": 1, "Rare": 2, "Epic": 3, "Legendary": 4}
+        sort_key = self.sort_combo.currentText()
+
+        indexed = list(enumerate(inventory))
+        if sort_key == "rarity":
+            indexed.sort(key=lambda x: rarity_order.get(x[1].get("rarity", "Common"), 0), reverse=True)
+        elif sort_key == "slot":
+            indexed.sort(key=lambda x: x[1].get("slot", ""))
+        elif sort_key == "power":
+            indexed.sort(key=lambda x: x[1].get("power", 10), reverse=True)
+        else:
+            indexed.reverse()
+
+        for orig_idx, item in indexed:
+            is_eq = item.get("obtained_at") in equipped_ts
+            prefix = "✓ " if is_eq else ""
+            power = item.get("power", RARITY_POWER.get(item.get("rarity", "Common"), 10))
+            text = f"{prefix}{item['name']} (+{power}) [{item['rarity'][:1]}]"
+            list_item = QtWidgets.QListWidgetItem(text)
+            list_item.setData(QtCore.Qt.UserRole, orig_idx)
+            if is_eq:
+                list_item.setFlags(list_item.flags() & ~QtCore.Qt.ItemIsSelectable)
+            list_item.setForeground(QtGui.QColor(item.get("color", "#333")))
+            self.inv_list.addItem(list_item)
+
+    def _update_merge_selection(self) -> None:
+        self.merge_selected = [item.data(QtCore.Qt.UserRole) for item in self.inv_list.selectedItems()]
+        count = len(self.merge_selected)
+        self.merge_btn.setText(f"🎲 Merge Selected ({count})")
+        if count >= 2 and GAMIFICATION_AVAILABLE:
+            inventory = self.blocker.adhd_buster.get("inventory", [])
+            items = [inventory[idx] for idx in self.merge_selected if idx < len(inventory)]
+            worthwhile, reason = is_merge_worthwhile(items)
+            if not worthwhile:
+                self.merge_btn.setEnabled(False)
+                self.merge_rate_lbl.setText(f"⚠️ {reason}")
+            else:
+                self.merge_btn.setEnabled(True)
+                luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+                rate = calculate_merge_success_rate(items, luck)
+                result_rarity = get_merge_result_rarity(items)
+                self.merge_rate_lbl.setText(f"Success rate: {rate*100:.0f}% → {result_rarity} item")
+        else:
+            self.merge_btn.setEnabled(False)
+            self.merge_rate_lbl.setText("Select 2+ items to merge")
+
+    def _do_merge(self) -> None:
+        if len(self.merge_selected) < 2:
+            return
+        if not GAMIFICATION_AVAILABLE:
+            QtWidgets.QMessageBox.warning(self, "Merge", "Gamification not available")
+            return
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        items = [inventory[idx] for idx in self.merge_selected if idx < len(inventory)]
+        luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+        rate = calculate_merge_success_rate(items, luck)
+        result_rarity = get_merge_result_rarity(items)
+        summary = "\n".join([f"  • {i['name']} ({i['rarity']})" for i in items])
+        if QtWidgets.QMessageBox.question(
+            self, "⚠️ Lucky Merge",
+            f"Merge {len(items)} items?\n\n{summary}\n\nSuccess rate: {rate*100:.0f}%\n"
+            f"On success: {result_rarity} item\nOn failure: ALL items LOST!",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        ) != QtWidgets.QMessageBox.Yes:
+            return
+        result = perform_lucky_merge(items, luck)
+        for idx in sorted(self.merge_selected, reverse=True):
+            if idx < len(inventory):
+                del inventory[idx]
+        if result["success"]:
+            inventory.append(result["result_item"])
+            self.blocker.adhd_buster["inventory"] = inventory
+            self.blocker.save_config()
+            QtWidgets.QMessageBox.information(self, "🎉 MERGE SUCCESS!",
+                f"Roll: {result['roll_pct']} (needed < {result['needed_pct']})\n\n"
+                f"Created: {result['result_item']['name']}\n"
+                f"Rarity: {result['result_item']['rarity']}, Power: +{result['result_item']['power']}")
+        else:
+            self.blocker.adhd_buster["inventory"] = inventory
+            self.blocker.save_config()
+            QtWidgets.QMessageBox.critical(self, "💔 Merge Failed!",
+                f"Roll: {result['roll_pct']} (needed < {result['needed_pct']})\n\n"
+                f"{len(items)} items lost forever.")
+        self._refresh_inventory()
+
+    def _open_diary(self) -> None:
+        DiaryDialog(self.blocker, self).exec()
+
+    def _salvage_duplicates(self) -> None:
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        if not inventory:
+            QtWidgets.QMessageBox.information(self, "Salvage", "No items to salvage!")
+            return
+        equipped_ts = {item.get("obtained_at") for item in equipped.values() if item}
+        slot_items: Dict[str, dict] = {}
+        to_remove = []
+        for item in inventory:
+            slot = item.get("slot", "Unknown")
+            power = item.get("power", 10)
+            is_eq = item.get("obtained_at") in equipped_ts
+            if is_eq:
+                continue
+            if slot not in slot_items:
+                slot_items[slot] = {"best": item, "dups": []}
+            elif power > slot_items[slot]["best"].get("power", 10):
+                slot_items[slot]["dups"].append(slot_items[slot]["best"])
+                slot_items[slot]["best"] = item
+            else:
+                slot_items[slot]["dups"].append(item)
+        for data in slot_items.values():
+            to_remove.extend(data["dups"])
+        if not to_remove:
+            QtWidgets.QMessageBox.information(self, "Salvage", "No duplicates found!")
+            return
+        luck_bonus = sum(i.get("power", 10) // 10 for i in to_remove)
+        if QtWidgets.QMessageBox.question(
+            self, "Salvage Duplicates",
+            f"Salvage {len(to_remove)} duplicate items?\nLuck bonus earned: +{luck_bonus} 🍀",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        ) != QtWidgets.QMessageBox.Yes:
+            return
+        for item in to_remove:
+            if item in inventory:
+                inventory.remove(item)
+        cur_luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+        self.blocker.adhd_buster["luck_bonus"] = cur_luck + luck_bonus
+        self.blocker.adhd_buster["inventory"] = inventory
+        self.blocker.save_config()
+        QtWidgets.QMessageBox.information(self, "Salvage Complete!", f"✨ Salvaged {len(to_remove)} items!\n🍀 Total luck: +{cur_luck + luck_bonus}")
+        self._refresh_inventory()
+
+
+class DiaryDialog(QtWidgets.QDialog):
+    """Dialog for viewing the ADHD Buster's adventure diary."""
+
+    def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self.setWindowTitle("📖 Adventure Diary")
+        self.resize(650, 600)
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+
+        power = calculate_character_power(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else 0
+        tier = get_diary_power_tier(power) if GAMIFICATION_AVAILABLE else "pathetic"
+
+        header = QtWidgets.QHBoxLayout()
+        header.addWidget(QtWidgets.QLabel("<b style='font-size:16px;'>📖 The Adventures of ADHD Buster</b>"))
+        header.addStretch()
+        tier_lbl = QtWidgets.QLabel(f"⚔ Power: {power} ({tier.capitalize()} Tier)")
+        tier_lbl.setStyleSheet("font-weight: bold; color: #ff9800;")
+        header.addWidget(tier_lbl)
+        layout.addLayout(header)
+
+        entries = self.blocker.adhd_buster.get("diary", [])
+        if entries:
+            stats_lbl = QtWidgets.QLabel(f"📚 {len(entries)} adventures | 🗓️ Latest: {entries[-1].get('short_date', 'Unknown')}")
+            stats_lbl.setStyleSheet("color: gray;")
+            layout.addWidget(stats_lbl)
+
+        self.diary_text = QtWidgets.QTextEdit()
+        self.diary_text.setReadOnly(True)
+        if entries:
+            for entry in reversed(entries):
+                date = entry.get("short_date", entry.get("date", "Unknown"))
+                story = entry.get("story", "...")
+                pwr = entry.get("power_at_time", 0)
+                mins = entry.get("session_minutes", 0)
+                tr = entry.get("tier", "pathetic")
+                self.diary_text.append(f"<b style='color:#1976d2;'>{date}</b><br>{story}<br>"
+                                       f"<span style='color:#888;'>Power: {pwr} | Focus: {mins} min | Tier: {tr.capitalize()}</span><br><hr>")
+        else:
+            self.diary_text.setPlainText("📭 No adventures recorded yet!\n\nComplete focus sessions to record your epic adventures.")
+        layout.addWidget(self.diary_text)
+
+        btn_layout = QtWidgets.QHBoxLayout()
+        if entries:
+            clear_btn = QtWidgets.QPushButton("🗑️ Clear All")
+            clear_btn.clicked.connect(self._clear_diary)
+            btn_layout.addWidget(clear_btn)
+        write_btn = QtWidgets.QPushButton("✍️ Write Today's Entry")
+        write_btn.clicked.connect(self._write_entry)
+        btn_layout.addWidget(write_btn)
+        btn_layout.addStretch()
+        close_btn = QtWidgets.QPushButton("Close")
+        close_btn.clicked.connect(self.accept)
+        btn_layout.addWidget(close_btn)
+        layout.addLayout(btn_layout)
+
+    def _clear_diary(self) -> None:
+        if QtWidgets.QMessageBox.question(self, "Clear Diary", "Clear all diary entries?") == QtWidgets.QMessageBox.Yes:
+            self.blocker.adhd_buster["diary"] = []
+            self.blocker.save_config()
+            self.accept()
+
+    def _write_entry(self) -> None:
+        if not GAMIFICATION_AVAILABLE:
+            QtWidgets.QMessageBox.warning(self, "Diary", "Gamification not available")
+            return
+        today = datetime.now().strftime("%Y-%m-%d")
+        diary = self.blocker.adhd_buster.get("diary", [])
+        bonus_today = [e for e in diary if e.get("date") == today and e.get("story", "").startswith("[Bonus Entry]")]
+        if bonus_today:
+            QtWidgets.QMessageBox.information(self, "Diary", "You already wrote a bonus entry today!")
+            return
+        power = calculate_character_power(self.blocker.adhd_buster)
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        entry = generate_diary_entry(power, session_minutes=0, equipped_items=equipped)
+        entry["story"] = "[Bonus Entry] " + entry["story"]
+        if "diary" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["diary"] = []
+        self.blocker.adhd_buster["diary"].append(entry)
+        if len(self.blocker.adhd_buster["diary"]) > 100:
+            self.blocker.adhd_buster["diary"] = self.blocker.adhd_buster["diary"][-100:]
+        self.blocker.save_config()
+        self.accept()
+
+
+class ItemDropDialog(QtWidgets.QDialog):
+    """Dialog shown when an item drops after confirming on-task."""
+
+    def __init__(self, blocker: BlockerCore, item: dict, session_minutes: int = 0,
+                 streak_days: int = 0, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self.item = item
+        self.session_minutes = session_minutes
+        self.streak_days = streak_days
+        self.setWindowTitle("🎁 Item Drop!")
+        self.setFixedSize(400, 280)
+        self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
+        self._build_ui()
+        close_time = {"Common": 3000, "Uncommon": 3500, "Rare": 4000, "Epic": 5000, "Legendary": 6000}
+        QtCore.QTimer.singleShot(close_time.get(item["rarity"], 4000), self.accept)
+
+    def _build_ui(self) -> None:
+        bg_colors = {"Common": "#f5f5f5", "Uncommon": "#e8f5e9", "Rare": "#e3f2fd", "Epic": "#f3e5f5", "Legendary": "#fff3e0"}
+        bg = bg_colors.get(self.item["rarity"], "#f5f5f5")
+        self.setStyleSheet(f"background-color: {bg};")
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(20, 15, 20, 15)
+
+        if self.item.get("lucky_upgrade"):
+            header_text = "🍀 LUCKY UPGRADE! 🍀"
+        elif self.item["rarity"] == "Legendary":
+            header_text = "⭐ LEGENDARY DROP! ⭐"
+        elif self.item["rarity"] == "Epic":
+            header_text = "💎 EPIC DROP! 💎"
+        else:
+            header_text = "✨ LOOT DROP! ✨"
+        header_lbl = QtWidgets.QLabel(header_text)
+        header_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        header_lbl.setStyleSheet("font-size: 14px; font-weight: bold;")
+        layout.addWidget(header_lbl)
+        layout.addWidget(QtWidgets.QLabel("Your ADHD Buster found:"))
+        name_lbl = QtWidgets.QLabel(self.item["name"])
+        name_lbl.setStyleSheet(f"color: {self.item['color']}; font-size: 12px; font-weight: bold;")
+        name_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(name_lbl)
+        power = self.item.get("power", RARITY_POWER.get(self.item["rarity"], 10))
+        info_lbl = QtWidgets.QLabel(f"[{self.item['rarity']} {self.item['slot']}] +{power} Power")
+        info_lbl.setStyleSheet(f"color: {self.item['color']};")
+        info_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(info_lbl)
+
+        if GAMIFICATION_AVAILABLE:
+            bonuses = calculate_rarity_bonuses(self.session_minutes, self.streak_days)
+            if bonuses["total_bonus"] > 0:
+                bonus_parts = []
+                if bonuses["session_bonus"] > 0:
+                    bonus_parts.append(f"⏱️{self.session_minutes}min")
+                if bonuses["streak_bonus"] > 0:
+                    bonus_parts.append(f"🔥{self.streak_days}day streak")
+                bonus_txt = " + ".join(bonus_parts) + f" = +{bonuses['total_bonus']}% luck!"
+                bonus_lbl = QtWidgets.QLabel(bonus_txt)
+                bonus_lbl.setStyleSheet("color: #ff9800;")
+                bonus_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                layout.addWidget(bonus_lbl)
+
+        messages = {"Common": ["Every item counts! 💪", "Building your arsenal!"],
+                    "Uncommon": ["Nice find! 🌟", "Your focus is paying off!"],
+                    "Rare": ["Rare drop! You're on fire! 🔥", "Sweet loot! ⚡"],
+                    "Epic": ["EPIC! Your dedication shows! 💜", "Champion tier! 👑"],
+                    "Legendary": ["LEGENDARY! You are unstoppable! ⭐", "GODLIKE FOCUS! 🏆"]}
+        msg = random.choice(messages.get(self.item["rarity"], messages["Common"]))
+        msg_lbl = QtWidgets.QLabel(msg)
+        msg_lbl.setStyleSheet("font-weight: bold; color: #666;")
+        msg_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(msg_lbl)
+        layout.addWidget(QtWidgets.QLabel("📖 Your adventure awaits..."))
+        layout.addWidget(QtWidgets.QLabel("(Click anywhere or wait to dismiss)"))
+
+    def mousePressEvent(self, event) -> None:
+        self.accept()
+
+
+class DiaryEntryRevealDialog(QtWidgets.QDialog):
+    """Dramatic reveal dialog for the daily diary entry."""
+
+    def __init__(self, blocker: BlockerCore, entry: dict, session_minutes: int = 0,
+                 parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self.entry = entry
+        self.session_minutes = session_minutes
+        self.setWindowTitle("📖 Today's Adventure")
+        self.setFixedSize(520, 380)
+        self._build_ui()
+        story_len = len(entry.get("story", ""))
+        close_time = max(8000, min(15000, story_len * 50))
+        QtCore.QTimer.singleShot(close_time, self.accept)
+
+    def _build_ui(self) -> None:
+        tier = self.entry.get("tier", "pathetic")
+        tier_styles = {
+            "pathetic": {"bg": "#fafafa", "accent": "#9e9e9e", "emoji": "🌱"},
+            "modest": {"bg": "#f1f8e9", "accent": "#8bc34a", "emoji": "🛡️"},
+            "decent": {"bg": "#e8f5e9", "accent": "#4caf50", "emoji": "💪"},
+            "heroic": {"bg": "#e3f2fd", "accent": "#2196f3", "emoji": "🔥"},
+            "epic": {"bg": "#f3e5f5", "accent": "#9c27b0", "emoji": "⚡"},
+            "legendary": {"bg": "#fff3e0", "accent": "#ff9800", "emoji": "⭐"},
+            "godlike": {"bg": "#fffde7", "accent": "#ffc107", "emoji": "🌟"}
+        }
+        style = tier_styles.get(tier, tier_styles["pathetic"])
+        self.setStyleSheet(f"background-color: {style['bg']};")
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(25, 20, 25, 20)
+
+        tier_boosted = self.entry.get("tier_boosted", False)
+        if tier_boosted:
+            header_text = f"{style['emoji']} Lucky Adventure! {style['emoji']}"
+            subheader = f"Your {self.session_minutes}+ min focus earned a bonus tier!"
+        else:
+            header_text = f"{style['emoji']} Today's Adventure {style['emoji']}"
+            subheader = self.entry.get("short_date", "")
+        header_lbl = QtWidgets.QLabel(header_text)
+        header_lbl.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {style['accent']};")
+        header_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(header_lbl)
+        sub_lbl = QtWidgets.QLabel(subheader)
+        sub_lbl.setStyleSheet("color: #666;")
+        sub_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(sub_lbl)
+
+        line = QtWidgets.QFrame()
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setStyleSheet(f"color: {style['accent']};")
+        layout.addWidget(line)
+
+        story = self.entry.get("story", "A mysterious adventure occurred...")
+        story_lbl = QtWidgets.QLabel(story)
+        story_lbl.setWordWrap(True)
+        story_lbl.setStyleSheet("font-size: 12px; color: #333;")
+        layout.addWidget(story_lbl)
+
+        line2 = QtWidgets.QFrame()
+        line2.setFrameShape(QtWidgets.QFrame.HLine)
+        line2.setStyleSheet(f"color: {style['accent']};")
+        layout.addWidget(line2)
+
+        power = self.entry.get("power_at_time", 0)
+        tier_display = tier.capitalize()
+        if tier_boosted:
+            base_tier = self.entry.get("base_tier", tier)
+            power_text = f"⚔ Power: {power}  |  🎭 {base_tier.capitalize()} → {tier_display} (bonus!)"
+        else:
+            power_text = f"⚔ Power: {power}  |  🎭 {tier_display} Tier"
+        pwr_lbl = QtWidgets.QLabel(power_text)
+        pwr_lbl.setStyleSheet(f"font-weight: bold; color: {style['accent']};")
+        pwr_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(pwr_lbl)
+        mins_lbl = QtWidgets.QLabel(f"⏱️ {self.session_minutes} min focus session")
+        mins_lbl.setStyleSheet("color: #888;")
+        mins_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(mins_lbl)
+        layout.addWidget(QtWidgets.QLabel("(Click anywhere or wait to dismiss)"))
+
+    def mousePressEvent(self, event) -> None:
+        self.accept()
+
+
+# ============================================================================
+# Priority Management Dialogs (Qt Implementation)
+# ============================================================================
+
+class PriorityTimeLogDialog(QtWidgets.QDialog):
+    """Dialog for logging time to priorities after a focus session."""
+
+    def __init__(self, blocker: BlockerCore, session_minutes: int,
+                 parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self.session_minutes = session_minutes
+        self.time_spins: list = []
+        self.priority_indices: list = []
+        self.setWindowTitle("📊 Log Priority Time")
+        self.resize(450, 450)
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+
+        header = QtWidgets.QLabel(f"<b>📊 Log Time to Priorities</b><br>"
+                                  f"You completed a {self.session_minutes} minute focus session.")
+        layout.addWidget(header)
+
+        today = datetime.now().strftime("%A")
+        priorities_box = QtWidgets.QGroupBox("Today's Priorities")
+        p_layout = QtWidgets.QVBoxLayout(priorities_box)
+
+        has_priorities = False
+        for i, priority in enumerate(self.blocker.priorities):
+            title = priority.get("title", "").strip()
+            days = priority.get("days", [])
+            if title and (not days or today in days):
+                has_priorities = True
+                row = QtWidgets.QHBoxLayout()
+                row.addWidget(QtWidgets.QLabel(f"#{i+1}: {title}"))
+                spin = QtWidgets.QSpinBox()
+                spin.setRange(0, self.session_minutes)
+                spin.setValue(0)
+                spin.setSuffix(" min")
+                row.addWidget(spin)
+                p_layout.addLayout(row)
+                self.time_spins.append(spin)
+                self.priority_indices.append(i)
+
+        if not has_priorities:
+            p_layout.addWidget(QtWidgets.QLabel("No active priorities for today."))
+        layout.addWidget(priorities_box)
+
+        if has_priorities:
+            quick_box = QtWidgets.QGroupBox("Quick Options")
+            q_layout = QtWidgets.QHBoxLayout(quick_box)
+            all_first_btn = QtWidgets.QPushButton(f"All {self.session_minutes} min to first")
+            all_first_btn.clicked.connect(self._log_all_to_first)
+            q_layout.addWidget(all_first_btn)
+            split_btn = QtWidgets.QPushButton("Split evenly")
+            split_btn.clicked.connect(self._split_evenly)
+            q_layout.addWidget(split_btn)
+            layout.addWidget(quick_box)
+
+        btn_layout = QtWidgets.QHBoxLayout()
+        save_btn = QtWidgets.QPushButton("💾 Save & Close")
+        save_btn.clicked.connect(self._save_and_close)
+        btn_layout.addWidget(save_btn)
+        skip_btn = QtWidgets.QPushButton("Skip")
+        skip_btn.clicked.connect(self.reject)
+        btn_layout.addWidget(skip_btn)
+        layout.addLayout(btn_layout)
+
+    def _log_all_to_first(self) -> None:
+        if self.time_spins:
+            self.time_spins[0].setValue(self.session_minutes)
+            for spin in self.time_spins[1:]:
+                spin.setValue(0)
+
+    def _split_evenly(self) -> None:
+        if self.time_spins:
+            per = self.session_minutes // len(self.time_spins)
+            for spin in self.time_spins:
+                spin.setValue(per)
+
+    def _save_and_close(self) -> None:
+        for spin, idx in zip(self.time_spins, self.priority_indices):
+            minutes = spin.value()
+            if minutes > 0:
+                hours = minutes / 60.0
+                cur = self.blocker.priorities[idx].get("logged_hours", 0)
+                self.blocker.priorities[idx]["logged_hours"] = cur + hours
+        self.blocker.save_config()
+        self.accept()
+
+
+class PriorityCheckinDialog(QtWidgets.QDialog):
+    """Dialog shown during a session to ask if user is working on priorities."""
+
+    def __init__(self, blocker: BlockerCore, today_priorities: list, session_minutes: int = 0,
+                 parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self.today_priorities = today_priorities
+        self.session_minutes = session_minutes
+        self.result: Optional[bool] = None
+        self.setWindowTitle("Priority Check-in ⏰")
+        self.resize(420, 380)
+        self._build_ui()
+        QtCore.QTimer.singleShot(60000, self.reject)  # Auto-close after 60s
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+
+        layout.addWidget(QtWidgets.QLabel("<b style='font-size:14px;'>🎯 Quick Check-in</b>"))
+        layout.addWidget(QtWidgets.QLabel("Are you currently working on your priority tasks?"))
+
+        if GAMIFICATION_AVAILABLE:
+            streak = self.blocker.stats.get("streak_days", 0)
+            bonuses = calculate_rarity_bonuses(self.session_minutes, streak)
+            luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+            bonus_parts = []
+            if bonuses["session_bonus"] > 0:
+                bonus_parts.append(f"⏱️+{bonuses['session_bonus']}%")
+            if bonuses["streak_bonus"] > 0:
+                bonus_parts.append(f"🔥+{bonuses['streak_bonus']}%")
+            if luck > 0:
+                bonus_parts.append(f"🍀+{min(luck, 100)}%")
+            if bonus_parts:
+                bonus_lbl = QtWidgets.QLabel(f"✨ Loot bonuses: {' '.join(bonus_parts)}")
+                bonus_lbl.setStyleSheet("color: #ff9800;")
+                layout.addWidget(bonus_lbl)
+
+        p_box = QtWidgets.QGroupBox("Today's Priorities")
+        p_layout = QtWidgets.QVBoxLayout(p_box)
+        text = "\n".join([f"• {p.get('title', '')}" for p in self.today_priorities])
+        p_layout.addWidget(QtWidgets.QLabel(text if text.strip() else "No priorities set"))
+        layout.addWidget(p_box)
+
+        btn_layout = QtWidgets.QHBoxLayout()
+        yes_btn = QtWidgets.QPushButton("✅ Yes, I'm on task!")
+        yes_btn.clicked.connect(self._confirm_on_task)
+        btn_layout.addWidget(yes_btn)
+        no_btn = QtWidgets.QPushButton("⚠ Need to refocus")
+        no_btn.clicked.connect(self._confirm_off_task)
+        btn_layout.addWidget(no_btn)
+        layout.addLayout(btn_layout)
+
+        dismiss_btn = QtWidgets.QPushButton("Dismiss")
+        dismiss_btn.clicked.connect(self.reject)
+        layout.addWidget(dismiss_btn)
+
+    def _confirm_on_task(self) -> None:
+        self.result = True
+        self.accept()
+
+    def _confirm_off_task(self) -> None:
+        self.result = False
+        QtWidgets.QMessageBox.information(self, "💪 Time to refocus!",
+                                           "Take a breath and get back to your priorities.\nYou've got this!")
+        self.accept()
+
+
+class PrioritiesDialog(QtWidgets.QDialog):
+    """Dialog for managing daily priorities with day-of-week reminders."""
+
+    DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+    def __init__(self, blocker: BlockerCore, on_start_callback=None,
+                 parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self.on_start_callback = on_start_callback
+        self.setWindowTitle("🎯 My Priorities")
+        self.resize(550, 620)
+        self.priorities = list(self.blocker.priorities) if self.blocker.priorities else []
+        while len(self.priorities) < 3:
+            self.priorities.append({"title": "", "days": [], "active": False})
+        self.title_edits: list = []
+        self.day_checks: list = []
+        self.planned_spins: list = []
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+
+        header = QtWidgets.QHBoxLayout()
+        header.addWidget(QtWidgets.QLabel("<b style='font-size:16px;'>🎯 My Priorities</b>"))
+        header.addStretch()
+        today = datetime.now().strftime("%A, %B %d")
+        header.addWidget(QtWidgets.QLabel(today))
+        layout.addLayout(header)
+
+        layout.addWidget(QtWidgets.QLabel("Set up to 3 priority tasks. These can span multiple days."))
+
+        for i in range(3):
+            self._create_priority_row(layout, i)
+
+        # Today's Focus
+        today_box = QtWidgets.QGroupBox("📌 Today's Focus")
+        today_layout = QtWidgets.QVBoxLayout(today_box)
+        self.today_lbl = QtWidgets.QLabel()
+        today_layout.addWidget(self.today_lbl)
+        layout.addWidget(today_box)
+        self._refresh_today_focus()
+
+        btn_layout = QtWidgets.QHBoxLayout()
+        save_btn = QtWidgets.QPushButton("💾 Save Priorities")
+        save_btn.clicked.connect(self._save_priorities)
+        btn_layout.addWidget(save_btn)
+        if self.on_start_callback:
+            start_btn = QtWidgets.QPushButton("▶ Start Working on Priority")
+            start_btn.clicked.connect(self._start_session)
+            btn_layout.addWidget(start_btn)
+        btn_layout.addStretch()
+        close_btn = QtWidgets.QPushButton("Close")
+        close_btn.clicked.connect(self.accept)
+        btn_layout.addWidget(close_btn)
+        layout.addLayout(btn_layout)
+
+        # Settings section
+        settings_box = QtWidgets.QGroupBox("⚙️ Settings")
+        settings_layout = QtWidgets.QVBoxLayout(settings_box)
+        
+        # Startup toggle
+        self.startup_check = QtWidgets.QCheckBox("Show this dialog when the app starts")
+        self.startup_check.setChecked(self.blocker.show_priorities_on_startup)
+        self.startup_check.toggled.connect(self._toggle_startup)
+        settings_layout.addWidget(self.startup_check)
+        
+        # Check-in settings
+        checkin_layout = QtWidgets.QHBoxLayout()
+        self.checkin_enabled = QtWidgets.QCheckBox("Ask if I'm working on priorities every")
+        self.checkin_enabled.setChecked(self.blocker.priority_checkin_enabled)
+        self.checkin_enabled.toggled.connect(self._toggle_checkin)
+        checkin_layout.addWidget(self.checkin_enabled)
+        
+        self.checkin_interval_spin = QtWidgets.QSpinBox()
+        self.checkin_interval_spin.setRange(5, 120)
+        self.checkin_interval_spin.setValue(self.blocker.priority_checkin_interval)
+        self.checkin_interval_spin.valueChanged.connect(self._update_checkin_interval)
+        checkin_layout.addWidget(self.checkin_interval_spin)
+        
+        checkin_layout.addWidget(QtWidgets.QLabel("minutes during sessions"))
+        checkin_layout.addStretch()
+        settings_layout.addLayout(checkin_layout)
+        
+        layout.addWidget(settings_box)
+
+    def _create_priority_row(self, parent_layout: QtWidgets.QVBoxLayout, index: int) -> None:
+        group = QtWidgets.QGroupBox(f"Priority #{index + 1}")
+        g_layout = QtWidgets.QVBoxLayout(group)
+
+        title_edit = QtWidgets.QLineEdit(self.priorities[index].get("title", ""))
+        title_edit.setPlaceholderText("Enter priority title...")
+        g_layout.addWidget(title_edit)
+        self.title_edits.append(title_edit)
+
+        days_layout = QtWidgets.QHBoxLayout()
+        days_layout.addWidget(QtWidgets.QLabel("Days:"))
+        day_checks = []
+        saved_days = self.priorities[index].get("days", [])
+        for day in self.DAYS:
+            cb = QtWidgets.QCheckBox(day[:3])
+            cb.setChecked(day in saved_days)
+            days_layout.addWidget(cb)
+            day_checks.append((day, cb))
+        self.day_checks.append(day_checks)
+        g_layout.addLayout(days_layout)
+
+        planned_layout = QtWidgets.QHBoxLayout()
+        planned_layout.addWidget(QtWidgets.QLabel("Planned hours:"))
+        planned_spin = QtWidgets.QDoubleSpinBox()
+        planned_spin.setRange(0, 100)
+        planned_spin.setValue(self.priorities[index].get("planned_hours", 0))
+        planned_layout.addWidget(planned_spin)
+        logged = self.priorities[index].get("logged_hours", 0)
+        planned_layout.addWidget(QtWidgets.QLabel(f"Logged: {logged:.1f} hrs"))
+        planned_layout.addStretch()
+        self.planned_spins.append(planned_spin)
+        g_layout.addLayout(planned_layout)
+
+        parent_layout.addWidget(group)
+
+    def _refresh_today_focus(self) -> None:
+        today = datetime.now().strftime("%A")
+        today_priorities = []
+        for i, p in enumerate(self.priorities):
+            title = p.get("title", "").strip()
+            days = p.get("days", [])
+            if title and (not days or today in days):
+                today_priorities.append(f"#{i+1}: {title}")
+        if today_priorities:
+            self.today_lbl.setText("\n".join(today_priorities))
+        else:
+            self.today_lbl.setText("No priorities set for today.")
+
+    def _save_priorities(self) -> None:
+        for i in range(3):
+            self.priorities[i]["title"] = self.title_edits[i].text().strip()
+            self.priorities[i]["days"] = [day for day, cb in self.day_checks[i] if cb.isChecked()]
+            self.priorities[i]["planned_hours"] = self.planned_spins[i].value()
+        self.blocker.priorities = self.priorities
+        self.blocker.save_config()
+        self._refresh_today_focus()
+        QtWidgets.QMessageBox.information(self, "Saved", "Priorities saved!")
+
+    def _start_session(self) -> None:
+        self._save_priorities()
+        self.accept()
+        if self.on_start_callback:
+            self.on_start_callback()
+
+    def _toggle_startup(self, checked: bool) -> None:
+        self.blocker.show_priorities_on_startup = checked
+        self.blocker.save_config()
+
+    def _toggle_checkin(self, checked: bool) -> None:
+        self.blocker.priority_checkin_enabled = checked
+        self.blocker.save_config()
+
+    def _update_checkin_interval(self, value: int) -> None:
+        if 5 <= value <= 120:
+            self.blocker.priority_checkin_interval = value
+            self.blocker.save_config()
+
+
+class AISessionCompleteDialog(QtWidgets.QDialog):
+    """AI-powered session completion dialog with ratings, notes, and break suggestions."""
+
+    def __init__(self, blocker: BlockerCore, session_duration: int,
+                 parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self.session_duration = session_duration
+        self.selected_rating = ""
+        self.local_ai = None
+        if LOCAL_AI_AVAILABLE and LocalAI:
+            self.local_ai = LocalAI()
+        self.setWindowTitle("Session Complete! 🎉")
+        self.resize(500, 520)
+        self.setMinimumSize(450, 400)
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+
+        # Congratulations header
+        header = QtWidgets.QLabel("🎉 Great work!")
+        header.setStyleSheet("font-size: 18px; font-weight: bold;")
+        header.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(header)
+
+        duration_label = QtWidgets.QLabel(f"You focused for {self.session_duration // 60} minutes")
+        duration_label.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(duration_label)
+
+        # Rating section
+        rating_group = QtWidgets.QGroupBox("📝 How was your focus? (optional)")
+        rating_layout = QtWidgets.QVBoxLayout(rating_group)
+
+        rating_layout.addWidget(QtWidgets.QLabel("Rate your session:"))
+
+        btn_layout = QtWidgets.QHBoxLayout()
+        ratings = [
+            ("😫 Struggled", "Struggled to concentrate, many distractions"),
+            ("😐 Okay", "Decent session, some distractions"),
+            ("😊 Good", "Good session, stayed mostly focused"),
+            ("🌟 Excellent", "Amazing session! In the zone!")
+        ]
+        self.rating_buttons = []
+        for emoji, description in ratings:
+            btn = QtWidgets.QPushButton(emoji)
+            btn.setProperty("rating_desc", description)
+            btn.setCheckable(True)
+            btn.clicked.connect(lambda checked, d=description, b=btn: self._select_rating(d, b))
+            btn_layout.addWidget(btn)
+            self.rating_buttons.append(btn)
+        rating_layout.addLayout(btn_layout)
+
+        rating_layout.addWidget(QtWidgets.QLabel("Or write your own notes:"))
+        self.notes_edit = QtWidgets.QTextEdit()
+        self.notes_edit.setMaximumHeight(100)
+        self.notes_edit.setPlaceholderText("How did the session go?")
+        rating_layout.addWidget(self.notes_edit)
+
+        # AI analysis display
+        self.analysis_label = QtWidgets.QLabel("")
+        self.analysis_label.setStyleSheet("color: #0066cc; font-style: italic;")
+        self.analysis_label.setWordWrap(True)
+        rating_layout.addWidget(self.analysis_label)
+
+        layout.addWidget(rating_group)
+
+        # Break suggestions
+        suggestion_group = QtWidgets.QGroupBox("💡 Suggested Break Activities")
+        suggestion_layout = QtWidgets.QVBoxLayout(suggestion_group)
+        self.suggestions_label = QtWidgets.QLabel()
+        self.suggestions_label.setWordWrap(True)
+        suggestion_layout.addWidget(self.suggestions_label)
+        layout.addWidget(suggestion_group)
+
+        # Generate suggestions
+        self._generate_suggestions()
+
+        # Buttons
+        btn_layout2 = QtWidgets.QHBoxLayout()
+        save_btn = QtWidgets.QPushButton("💾 Save & Continue")
+        save_btn.clicked.connect(self._save_and_close)
+        btn_layout2.addWidget(save_btn)
+        skip_btn = QtWidgets.QPushButton("Skip")
+        skip_btn.clicked.connect(self.accept)
+        btn_layout2.addWidget(skip_btn)
+        layout.addLayout(btn_layout2)
+
+    def _select_rating(self, description: str, clicked_btn: QtWidgets.QPushButton) -> None:
+        self.selected_rating = description
+        for btn in self.rating_buttons:
+            btn.setChecked(btn == clicked_btn)
+
+    def _generate_suggestions(self) -> None:
+        if self.local_ai:
+            try:
+                suggestions = self.local_ai.suggest_break_activity(
+                    self.session_duration // 60, None
+                )
+                if suggestions:
+                    text = "\n".join(f"  {i}. {s}" for i, s in enumerate(suggestions, 1))
+                    self.suggestions_label.setText(text)
+                    return
+            except Exception:
+                pass
+        # Fallback suggestions
+        fallback = [
+            "Take a 5-minute walk or stretch",
+            "Get some water or a healthy snack",
+            "Look away from screen - rest your eyes",
+            "Do some deep breathing exercises"
+        ]
+        self.suggestions_label.setText("\n".join(f"  {i}. {s}" for i, s in enumerate(fallback, 1)))
+
+    def _save_and_close(self) -> None:
+        note = self.notes_edit.toPlainText().strip()
+        if not note and self.selected_rating:
+            note = self.selected_rating
+
+        if note and self.local_ai:
+            try:
+                analysis = self.local_ai.analyze_focus_quality(note)
+                if analysis and "interpretation" in analysis:
+                    self.analysis_label.setText(f"🧠 AI: {analysis['interpretation']}")
+                    # Save to stats
+                    self._save_session_note(note, analysis)
+            except Exception:
+                pass
+        elif note:
+            self._save_session_note(note, None)
+
+        self.accept()
+
+    def _save_session_note(self, note: str, analysis) -> None:
+        """Save session note with AI analysis to stats."""
+        session_notes = self.blocker.stats.get("session_notes", [])
+        session_notes.append({
+            "timestamp": datetime.now().isoformat(),
+            "duration_seconds": self.session_duration,
+            "note": note,
+            "analysis": analysis
+        })
+        # Keep last 50 notes
+        self.blocker.stats["session_notes"] = session_notes[-50:]
+        self.blocker.save_stats()
+
+
+class FocusBlockerWindow(QtWidgets.QMainWindow):
+    def __init__(self) -> None:
+        super().__init__()
+        self.setWindowTitle("Personal Freedom - Focus Blocker (Qt)")
+        self.resize(900, 700)
+
+        self.blocker = BlockerCore()
+
+        # Menu bar
+        self._create_menu_bar()
+
+        central = QtWidgets.QWidget()
+        self.setCentralWidget(central)
+        main_layout = QtWidgets.QVBoxLayout(central)
+
+        # Quick access bar
+        quick_bar = QtWidgets.QHBoxLayout()
+
+        # Priorities button
+        priorities_btn = QtWidgets.QPushButton("🎯 Priorities")
+        priorities_btn.setStyleSheet("font-weight: bold; padding: 6px 12px;")
+        priorities_btn.clicked.connect(self._open_priorities)
+        quick_bar.addWidget(priorities_btn)
+
+        # ADHD Buster button
+        if GAMIFICATION_AVAILABLE:
+            power = calculate_character_power(self.blocker.adhd_buster)
+            self.buster_btn = QtWidgets.QPushButton(f"🦸 ADHD Buster  ⚔ {power}")
+            self.buster_btn.setStyleSheet("font-weight: bold; padding: 6px 12px;")
+            self.buster_btn.clicked.connect(self._open_adhd_buster)
+            quick_bar.addWidget(self.buster_btn)
+
+        quick_bar.addStretch()
+        main_layout.addLayout(quick_bar)
+
+        self.tabs = QtWidgets.QTabWidget()
+        main_layout.addWidget(self.tabs)
+
+        self.timer_tab = TimerTab(self.blocker, self)
+        self.tabs.addTab(self.timer_tab, "⏱ Timer")
+
+        self.sites_tab = SitesTab(self.blocker, self)
+        self.tabs.addTab(self.sites_tab, "🌐 Sites")
+
+        self.categories_tab = CategoriesTab(self.blocker, self)
+        self.tabs.addTab(self.categories_tab, "📁 Categories")
+
+        self.schedule_tab = ScheduleTab(self.blocker, self)
+        self.tabs.addTab(self.schedule_tab, "📅 Schedule")
+
+        self.stats_tab = StatsTab(self.blocker, self)
+        self.tabs.addTab(self.stats_tab, "📊 Stats")
+
+        self.settings_tab = SettingsTab(self.blocker, self)
+        self.tabs.addTab(self.settings_tab, "⚙ Settings")
+
+        if AI_AVAILABLE:
+            self.ai_tab = AITab(self.blocker, self)
+            self.tabs.addTab(self.ai_tab, "🧠 AI Insights")
+
+        self.statusBar().showMessage("Personal Freedom v3.1.0 (Qt)")
+
+        # System Tray setup
+        self.tray_icon = None
+        self.minimize_to_tray = False
+        self._setup_system_tray()
+
+        # Show priorities on startup if enabled
+        if self.blocker.show_priorities_on_startup:
+            QtCore.QTimer.singleShot(100, self._open_priorities)
+
+    def _setup_system_tray(self) -> None:
+        """Setup system tray icon if available."""
+        if not QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
+            return
+
+        self.tray_icon = QtWidgets.QSystemTrayIcon(self)
+        self.tray_icon.setToolTip("Personal Freedom - Focus Blocker")
+
+        # Create tray icon (green circle with check)
+        self._update_tray_icon(blocking=False)
+
+        # Create tray menu
+        tray_menu = QtWidgets.QMenu()
+        
+        self.tray_status_action = tray_menu.addAction("Ready")
+        self.tray_status_action.setEnabled(False)
+        tray_menu.addSeparator()
+        
+        show_action = tray_menu.addAction("Show Window")
+        show_action.triggered.connect(self._restore_from_tray)
+        
+        exit_action = tray_menu.addAction("Exit")
+        exit_action.triggered.connect(self.close)
+        
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.activated.connect(self._on_tray_activated)
+
+        # Timer to update tray status
+        self.tray_update_timer = QtCore.QTimer(self)
+        self.tray_update_timer.setInterval(1000)
+        self.tray_update_timer.timeout.connect(self._update_tray_status)
+
+    def _update_tray_icon(self, blocking: bool = False) -> None:
+        """Update the tray icon image."""
+        if not self.tray_icon:
+            return
+
+        size = 64
+        pixmap = QtGui.QPixmap(size, size)
+        pixmap.fill(QtCore.Qt.transparent)
+
+        painter = QtGui.QPainter(pixmap)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+
+        if blocking:
+            # Red circle with lock when blocking
+            painter.setBrush(QtGui.QColor("#e74c3c"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#c0392b"), 2))
+            painter.drawEllipse(4, 4, size - 8, size - 8)
+            # Lock symbol
+            painter.setBrush(QtGui.QColor("white"))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawRect(20, 30, 24, 20)
+            painter.setPen(QtGui.QPen(QtGui.QColor("white"), 4))
+            painter.drawArc(24, 18, 16, 16, 0, 180 * 16)
+        else:
+            # Green circle with check when ready
+            painter.setBrush(QtGui.QColor("#2ecc71"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#27ae60"), 2))
+            painter.drawEllipse(4, 4, size - 8, size - 8)
+            # Check mark
+            painter.setPen(QtGui.QPen(QtGui.QColor("white"), 4))
+            painter.drawLine(20, 32, 28, 42)
+            painter.drawLine(28, 42, 44, 22)
+
+        painter.end()
+
+        self.tray_icon.setIcon(QtGui.QIcon(pixmap))
+
+    def _update_tray_status(self) -> None:
+        """Update tray icon status text."""
+        if not self.tray_icon:
+            return
+
+        if self.timer_tab.timer_running:
+            remaining = self.timer_tab.remaining_seconds
+            h = remaining // 3600
+            m = (remaining % 3600) // 60
+            s = remaining % 60
+            self.tray_status_action.setText(f"🔒 Blocking - {h:02d}:{m:02d}:{s:02d}")
+            self.tray_icon.setToolTip(f"Personal Freedom - Blocking ({h:02d}:{m:02d}:{s:02d})")
+        else:
+            self.tray_status_action.setText("Ready")
+            self.tray_icon.setToolTip("Personal Freedom - Ready")
+
+    def _on_tray_activated(self, reason: QtWidgets.QSystemTrayIcon.ActivationReason) -> None:
+        """Handle tray icon activation (double-click to restore)."""
+        if reason == QtWidgets.QSystemTrayIcon.DoubleClick:
+            self._restore_from_tray()
+
+    def _restore_from_tray(self) -> None:
+        """Restore window from system tray."""
+        self.show()
+        self.raise_()
+        self.activateWindow()
+        if self.tray_icon and self.tray_update_timer:
+            self.tray_update_timer.stop()
+
+    def changeEvent(self, event: QtCore.QEvent) -> None:
+        """Handle window state changes (minimize to tray)."""
+        if event.type() == QtCore.QEvent.WindowStateChange:
+            if self.windowState() & QtCore.Qt.WindowMinimized:
+                if self.minimize_to_tray and self.tray_icon:
+                    QtCore.QTimer.singleShot(0, self._hide_to_tray)
+        super().changeEvent(event)
+
+    def _hide_to_tray(self) -> None:
+        """Hide window to system tray."""
+        if self.tray_icon:
+            self.hide()
+            self.tray_icon.show()
+            self._update_tray_icon(self.timer_tab.timer_running)
+            self.tray_update_timer.start()
+            self.tray_icon.showMessage(
+                "Personal Freedom",
+                "Minimized to system tray. Double-click to restore.",
+                QtWidgets.QSystemTrayIcon.Information,
+                2000
+            )
+
+    def _create_menu_bar(self) -> None:
+        menu_bar = self.menuBar()
+
+        # File menu
+        file_menu = menu_bar.addMenu("&File")
+        priorities_action = file_menu.addAction("🎯 Priorities")
+        priorities_action.triggered.connect(self._open_priorities)
+        file_menu.addSeparator()
+        exit_action = file_menu.addAction("Exit")
+        exit_action.triggered.connect(self.close)
+
+        # Tools menu
+        tools_menu = menu_bar.addMenu("&Tools")
+        if GAMIFICATION_AVAILABLE:
+            buster_action = tools_menu.addAction("🦸 ADHD Buster")
+            buster_action.triggered.connect(self._open_adhd_buster)
+            diary_action = tools_menu.addAction("📖 Adventure Diary")
+            diary_action.triggered.connect(self._open_diary)
+        cleanup_action = tools_menu.addAction("🧹 Emergency Cleanup")
+        cleanup_action.triggered.connect(self._emergency_cleanup)
+
+        # Help menu
+        help_menu = menu_bar.addMenu("&Help")
+        about_action = help_menu.addAction("About")
+        about_action.triggered.connect(self._show_about)
+
+    def _open_priorities(self) -> None:
+        dialog = PrioritiesDialog(self.blocker, on_start_callback=self._start_priority_session, parent=self)
+        dialog.exec()
+
+    def _start_priority_session(self) -> None:
+        self.tabs.setCurrentWidget(self.timer_tab)
+
+    def _open_adhd_buster(self) -> None:
+        dialog = ADHDBusterDialog(self.blocker, self)
+        dialog.exec()
+        if GAMIFICATION_AVAILABLE:
+            power = calculate_character_power(self.blocker.adhd_buster)
+            self.buster_btn.setText(f"🦸 ADHD Buster  ⚔ {power}")
+
+    def _open_diary(self) -> None:
+        dialog = DiaryDialog(self.blocker, self)
+        dialog.exec()
+
+    def _emergency_cleanup(self) -> None:
+        if QtWidgets.QMessageBox.question(self, "Emergency Cleanup",
+            "Remove ALL blocks and clean system?") == QtWidgets.QMessageBox.Yes:
+            success, message = self.blocker.emergency_cleanup()
+            if success:
+                QtWidgets.QMessageBox.information(self, "Cleanup Complete", message)
+            else:
+                QtWidgets.QMessageBox.critical(self, "Cleanup Failed", message)
+
+    def _show_about(self) -> None:
+        QtWidgets.QMessageBox.about(self, "About Personal Freedom",
+            "<b>Personal Freedom v3.1.0 (Qt)</b><br><br>"
+            "A focus and productivity tool for Windows.<br><br>"
+            "Built with PySide6 (Qt for Python).")
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        """Handle window close - prompt if session is running."""
+        # Stop tray icon
+        if self.tray_icon:
+            self.tray_icon.hide()
+
+        if self.timer_tab.timer_running:
+            reply = QtWidgets.QMessageBox.question(
+                self,
+                "Confirm Exit",
+                "A focus session is still running!\n\nStop the session and exit?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                QtWidgets.QMessageBox.No
+            )
+            if reply == QtWidgets.QMessageBox.Yes:
+                self.timer_tab._force_stop_session()
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            event.accept()
+
+    def show_ai_session_complete(self, session_duration: int) -> None:
+        """Show AI-powered session complete dialog."""
+        if LOCAL_AI_AVAILABLE:
+            dialog = AISessionCompleteDialog(self.blocker, session_duration, self)
+            dialog.exec()
+
+
+def main() -> None:
+    # Set application attributes before creating QApplication
+    QtWidgets.QApplication.setHighDpiScaleFactorRoundingPolicy(
+        QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+    )
+    
+    app = QtWidgets.QApplication(sys.argv)
+    app.setApplicationName("Personal Freedom")
+    app.setOrganizationName("PersonalFreedom")
+    app.setApplicationVersion("3.1.0")
+    
+    window = FocusBlockerWindow()
+    window.show()
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()
