@@ -42,6 +42,16 @@ except ImportError:
     LOCAL_AI_AVAILABLE = False
     logger.warning("GPU AI not available - install: pip install -r requirements_ai.txt")
 
+# Import bypass logger
+try:
+    from bypass_logger import get_bypass_logger, BypassLogger
+    BYPASS_LOGGER_AVAILABLE = True
+except ImportError:
+    BYPASS_LOGGER_AVAILABLE = False
+    get_bypass_logger = None  # type: ignore[assignment]
+    BypassLogger = None  # type: ignore[assignment]
+    logger.info("Bypass logger not available")
+
 # Windows hosts file path
 system_root = os.environ.get('SystemRoot', r'C:\Windows')
 HOSTS_PATH = os.path.join(system_root, r"System32\drivers\etc\hosts")
@@ -136,6 +146,11 @@ class BlockerCore:
 
         # Statistics
         self.stats = self._default_stats()
+        
+        # Bypass logger
+        self.bypass_logger = None
+        if BYPASS_LOGGER_AVAILABLE and get_bypass_logger:
+            self.bypass_logger = get_bypass_logger()
 
         self.load_config()
         self.load_stats()
@@ -387,6 +402,18 @@ class BlockerCore:
             "best_streak": self.stats.get("best_streak", 0),
         }
 
+    def get_bypass_statistics(self):
+        """Get bypass attempt statistics"""
+        if self.bypass_logger:
+            return self.bypass_logger.get_statistics()
+        return None
+
+    def get_bypass_insights(self):
+        """Get bypass attempt insights"""
+        if self.bypass_logger:
+            return self.bypass_logger.get_insights()
+        return []
+
     def set_password(self, password: Optional[str]) -> None:
         """Set a password for strict mode using bcrypt
 
@@ -503,6 +530,10 @@ class BlockerCore:
             self.session_id = str(uuid.uuid4())
             self._flush_dns()
             
+            # Start bypass attempt logger
+            if self.bypass_logger:
+                self.bypass_logger.start_server()
+            
             # Save session state for crash recovery
             self.save_session_state(duration_seconds)
             
@@ -545,6 +576,10 @@ class BlockerCore:
             self.is_blocking = False
             self.session_id = None
             self._flush_dns()
+            
+            # Stop bypass attempt logger
+            if self.bypass_logger:
+                self.bypass_logger.stop_server()
             
             # Clear session state (crash recovery no longer needed)
             self.clear_session_state()
