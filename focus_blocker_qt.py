@@ -340,6 +340,15 @@ class TimerTab(QtWidgets.QWidget):
         if diary_entry:
             DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes, self.window()).exec()
 
+    def _play_notification_sound(self) -> None:
+        """Play a short notification chime on completion."""
+        try:
+            import winsound
+
+            winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
+        except Exception:
+            pass
+
     def _handle_session_complete(self) -> None:
         """Handle session completion."""
         self.timer_running = False
@@ -356,6 +365,9 @@ class TimerTab(QtWidgets.QWidget):
 
         self.blocker.update_stats(elapsed, completed=True)
         self.blocker.unblock_sites(force=True)
+
+    # Notify the user the session has ended
+    self._play_notification_sound()
 
         self.timer_label.setText("00:00:00")
         self.start_btn.setEnabled(True)
@@ -392,6 +404,7 @@ class TimerTab(QtWidgets.QWidget):
         if self.pomodoro_is_break:
             # Break is over, start next work session
             self.pomodoro_is_break = False
+            self._play_notification_sound()
             self.blocker.unblock_sites(force=True)
 
             if QtWidgets.QMessageBox.question(
@@ -409,6 +422,7 @@ class TimerTab(QtWidgets.QWidget):
             self.pomodoro_session_count += 1
             self.pomodoro_total_work_time += elapsed
             self.blocker.update_stats(elapsed, completed=True)
+            self._play_notification_sound()
             self.blocker.unblock_sites(force=True)
 
             # Give rewards for completing work session
