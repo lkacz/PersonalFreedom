@@ -146,6 +146,207 @@ RARITY_POWER = {
     "Legendary": 250
 }
 
+# ============================================================================
+# SET BONUS SYSTEM - Matching themed items give power bonuses!
+# ============================================================================
+# Items can share "theme words" in their names or suffixes.
+# Equipping multiple items with the same theme gives a set bonus.
+
+# Theme categories that items can belong to (extracted from item names)
+ITEM_THEMES = {
+    # Creature themes
+    "Goblin": {"words": ["goblin", "gremlin", "imp"], "bonus_per_match": 15, "emoji": "👺"},
+    "Dragon": {"words": ["dragon", "drake", "wyrm", "draconic"], "bonus_per_match": 25, "emoji": "🐉"},
+    "Phoenix": {"words": ["phoenix", "flame", "fire", "burning", "blazing"], "bonus_per_match": 20, "emoji": "🔥"},
+    "Void": {"words": ["void", "shadow", "dark", "abyss", "abyssal"], "bonus_per_match": 20, "emoji": "🌑"},
+    "Celestial": {"words": ["celestial", "astral", "cosmic", "star", "divine"], "bonus_per_match": 25, "emoji": "⭐"},
+    "Titan": {"words": ["titan", "giant", "colossal", "primordial"], "bonus_per_match": 25, "emoji": "🗿"},
+    "Arcane": {"words": ["arcane", "mystic", "enchanted", "magical", "rune"], "bonus_per_match": 18, "emoji": "✨"},
+    "Ancient": {"words": ["ancient", "old", "eternal", "timeless"], "bonus_per_match": 18, "emoji": "📜"},
+    "Crystal": {"words": ["crystal", "gem", "jewel", "diamond"], "bonus_per_match": 15, "emoji": "💎"},
+    "Iron": {"words": ["iron", "steel", "metal", "forge", "forged"], "bonus_per_match": 12, "emoji": "⚔️"},
+    # Silly themes  
+    "Procrastination": {"words": ["procrastination", "lazy", "distract", "coffee"], "bonus_per_match": 10, "emoji": "☕"},
+    "Focus": {"words": ["focus", "clarity", "discipline", "determination"], "bonus_per_match": 20, "emoji": "🎯"},
+    "Chaos": {"words": ["chaos", "random", "wild", "unpredictable"], "bonus_per_match": 15, "emoji": "🌀"},
+    "Quantum": {"words": ["quantum", "reality", "dimension", "paradox"], "bonus_per_match": 30, "emoji": "🔮"},
+}
+
+# Minimum matches required for set bonus activation
+SET_BONUS_MIN_MATCHES = 2
+
+
+def get_item_themes(item: dict) -> list:
+    """Extract theme(s) from an item based on its name."""
+    if not item:
+        return []
+    
+    name_lower = item.get("name", "").lower()
+    themes = []
+    
+    for theme_name, theme_data in ITEM_THEMES.items():
+        for word in theme_data["words"]:
+            if word in name_lower:
+                themes.append(theme_name)
+                break  # Only count each theme once per item
+    
+    return themes
+
+
+def calculate_set_bonuses(equipped: dict) -> dict:
+    """
+    Calculate set bonuses from equipped items sharing themes.
+    
+    Returns a dict with:
+    - active_sets: list of {name, emoji, count, bonus}
+    - total_bonus: total power bonus from all sets
+    """
+    if not equipped:
+        return {"active_sets": [], "total_bonus": 0}
+    
+    # Count themes across all equipped items
+    theme_counts = {}
+    theme_items = {}  # Track which items belong to each theme
+    
+    for slot, item in equipped.items():
+        if not item:
+            continue
+        themes = get_item_themes(item)
+        for theme in themes:
+            theme_counts[theme] = theme_counts.get(theme, 0) + 1
+            if theme not in theme_items:
+                theme_items[theme] = []
+            theme_items[theme].append(slot)
+    
+    # Calculate bonuses for themes with enough matches
+    active_sets = []
+    total_bonus = 0
+    
+    for theme_name, count in theme_counts.items():
+        if count >= SET_BONUS_MIN_MATCHES:
+            theme_data = ITEM_THEMES[theme_name]
+            bonus = theme_data["bonus_per_match"] * count
+            active_sets.append({
+                "name": theme_name,
+                "emoji": theme_data["emoji"],
+                "count": count,
+                "bonus": bonus,
+                "slots": theme_items[theme_name]
+            })
+            total_bonus += bonus
+    
+    # Sort by bonus amount (highest first)
+    active_sets.sort(key=lambda x: x["bonus"], reverse=True)
+    
+    return {
+        "active_sets": active_sets,
+        "total_bonus": total_bonus
+    }
+
+
+# ============================================================================
+# LUCKY MERGE SYSTEM - High Risk, High Reward Item Fusion!
+# ============================================================================
+# Combine multiple items for a CHANCE at a higher tier item.
+# Base success rate is 10% - each item adds to the probability.
+# On failure (90% base), ALL items are lost forever!
+
+MERGE_BASE_SUCCESS_RATE = 0.10  # 10% base chance
+MERGE_BONUS_PER_ITEM = 0.03    # +3% per additional item after the first two
+MERGE_MAX_SUCCESS_RATE = 0.35  # Cap at 35% success rate
+
+# Rarity upgrade paths
+RARITY_UPGRADE = {
+    "Common": "Uncommon",
+    "Uncommon": "Rare",
+    "Rare": "Epic",
+    "Epic": "Legendary",
+    "Legendary": "Legendary"  # Can't go higher
+}
+
+RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+
+
+def calculate_merge_success_rate(items: list, luck_bonus: int = 0) -> float:
+    """
+    Calculate the success rate for a lucky merge.
+    
+    Args:
+        items: List of items to merge (minimum 2)
+        luck_bonus: Accumulated luck from salvaging
+    
+    Returns:
+        Success probability (0.0 to MERGE_MAX_SUCCESS_RATE)
+    """
+    if len(items) < 2:
+        return 0.0
+    
+    # Base rate + bonus per extra item
+    rate = MERGE_BASE_SUCCESS_RATE + (len(items) - 2) * MERGE_BONUS_PER_ITEM
+    
+    # Luck bonus adds up to 10% extra (100 luck = +10%)
+    luck_bonus_pct = min(luck_bonus / 1000, 0.10)
+    rate += luck_bonus_pct
+    
+    # Cap at max rate
+    return min(rate, MERGE_MAX_SUCCESS_RATE)
+
+
+def get_merge_result_rarity(items: list) -> str:
+    """
+    Determine the rarity of the merged item result.
+    
+    The result is ONE tier higher than the LOWEST rarity item in the merge.
+    This encourages using same-rarity items for best results.
+    """
+    if not items:
+        return "Common"
+    
+    # Find lowest rarity
+    lowest_idx = min(RARITY_ORDER.index(item.get("rarity", "Common")) for item in items)
+    lowest_rarity = RARITY_ORDER[lowest_idx]
+    
+    # Upgrade by one tier
+    return RARITY_UPGRADE.get(lowest_rarity, "Uncommon")
+
+
+def perform_lucky_merge(items: list, luck_bonus: int = 0) -> dict:
+    """
+    Attempt a lucky merge of items.
+    
+    Returns:
+        {
+            "success": bool,
+            "result_item": item dict or None,
+            "items_lost": list of items consumed,
+            "roll": float (the actual roll 0-1),
+            "needed": float (success threshold)
+        }
+    """
+    if len(items) < 2:
+        return {"success": False, "error": "Need at least 2 items to merge"}
+    
+    success_rate = calculate_merge_success_rate(items, luck_bonus)
+    roll = random.random()
+    
+    result = {
+        "success": roll < success_rate,
+        "items_lost": items,
+        "roll": roll,
+        "needed": success_rate,
+        "roll_pct": f"{roll*100:.1f}%",
+        "needed_pct": f"{success_rate*100:.1f}%"
+    }
+    
+    if result["success"]:
+        # Generate a new item of higher rarity!
+        result_rarity = get_merge_result_rarity(items)
+        result["result_item"] = generate_item(rarity=result_rarity)
+    else:
+        result["result_item"] = None
+    
+    return result
+
 
 # ============================================================================
 # ADHD Buster Diary - Epic Adventure Journal System
@@ -771,14 +972,41 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     }
 
 
-def calculate_character_power(adhd_buster: dict) -> int:
-    """Calculate total power from equipped items."""
+def calculate_character_power(adhd_buster: dict, include_set_bonus: bool = True) -> int:
+    """Calculate total power from equipped items plus set bonuses."""
     equipped = adhd_buster.get("equipped", {})
     total_power = 0
     for item in equipped.values():
         if item:
             total_power += item.get("power", RARITY_POWER.get(item.get("rarity", "Common"), 10))
+    
+    # Add set bonuses
+    if include_set_bonus:
+        set_info = calculate_set_bonuses(equipped)
+        total_power += set_info["total_bonus"]
+    
     return total_power
+
+
+def get_power_breakdown(adhd_buster: dict) -> dict:
+    """Get detailed breakdown of character power."""
+    equipped = adhd_buster.get("equipped", {})
+    
+    # Base power from items
+    base_power = 0
+    for item in equipped.values():
+        if item:
+            base_power += item.get("power", RARITY_POWER.get(item.get("rarity", "Common"), 10))
+    
+    # Set bonuses
+    set_info = calculate_set_bonuses(equipped)
+    
+    return {
+        "base_power": base_power,
+        "set_bonus": set_info["total_bonus"],
+        "active_sets": set_info["active_sets"],
+        "total_power": base_power + set_info["total_bonus"]
+    }
 
 
 class CharacterCanvas:
@@ -1002,15 +1230,19 @@ class ADHDBusterDialog:
         
         self.dialog = tk.Toplevel(parent)
         self.dialog.title("🦸 ADHD Buster - Character & Inventory")
-        self.dialog.geometry("680x750")
-        self.dialog.resizable(False, False)
+        self.dialog.geometry("750x850")
+        self.dialog.resizable(True, True)
         self.dialog.transient(parent)
         
         # Center on screen
         self.dialog.update_idletasks()
-        x = (self.dialog.winfo_screenwidth() // 2) - (680 // 2)
-        y = (self.dialog.winfo_screenheight() // 2) - (750 // 2)
+        x = (self.dialog.winfo_screenwidth() // 2) - (750 // 2)
+        y = (self.dialog.winfo_screenheight() // 2) - (850 // 2)
         self.dialog.geometry(f"+{x}+{y}")
+        
+        # Track slot dropdown variables
+        self.slot_vars = {}
+        self.merge_selected = []
         
         self.setup_ui()
     
@@ -1026,8 +1258,9 @@ class ADHDBusterDialog:
         ttk.Label(header_frame, text="🦸 ADHD Buster",
                   font=('Segoe UI', 18, 'bold')).pack(side=tk.LEFT)
         
-        # Power level calculation
-        power = calculate_character_power(self.blocker.adhd_buster)
+        # Power level calculation with breakdown
+        power_info = get_power_breakdown(self.blocker.adhd_buster)
+        power = power_info["total_power"]
         max_power = 8 * RARITY_POWER["Legendary"]  # 2000
         power_pct = int((power / max_power) * 100)
         
@@ -1047,10 +1280,26 @@ class ADHDBusterDialog:
         
         power_frame = ttk.Frame(header_frame)
         power_frame.pack(side=tk.RIGHT)
-        tk.Label(power_frame, text=f"⚔ Power: {power}", 
+        
+        # Show base power and set bonus separately
+        if power_info["set_bonus"] > 0:
+            power_text = f"⚔ Power: {power} ({power_info['base_power']} + {power_info['set_bonus']} set)"
+        else:
+            power_text = f"⚔ Power: {power}"
+        tk.Label(power_frame, text=power_text, 
                  font=('Segoe UI', 12, 'bold'), fg='#e65100').pack(side=tk.TOP)
         ttk.Label(power_frame, text=title,
                   font=('Segoe UI', 9)).pack(side=tk.TOP)
+        
+        # Set Bonuses Display (if any active)
+        if power_info["active_sets"]:
+            set_frame = ttk.LabelFrame(main_frame, text="🎯 Active Set Bonuses", padding="5")
+            set_frame.pack(fill=tk.X, pady=(0, 10))
+            
+            for set_info in power_info["active_sets"]:
+                set_text = f"{set_info['emoji']} {set_info['name']} ({set_info['count']} items): +{set_info['bonus']} power"
+                tk.Label(set_frame, text=set_text, font=('Segoe UI', 9, 'bold'),
+                        fg='#4caf50').pack(anchor=tk.W)
         
         # Stats summary
         stats_frame = ttk.Frame(main_frame)
@@ -1059,8 +1308,9 @@ class ADHDBusterDialog:
         total_items = len(self.blocker.adhd_buster.get("inventory", []))
         total_collected = self.blocker.adhd_buster.get("total_collected", total_items)
         streak = self.blocker.stats.get("streak_days", 0)
+        luck = self.blocker.adhd_buster.get("luck_bonus", 0)
         
-        stats_text = f"📦 {total_items} in bag  |  🎁 {total_collected} total collected  |  🔥 {streak} day streak"
+        stats_text = f"📦 {total_items} in bag  |  🎁 {total_collected} collected  |  🔥 {streak} day streak  |  🍀 {luck} luck"
         ttk.Label(stats_frame, text=stats_text, font=('Segoe UI', 9), 
                   foreground='gray').pack(anchor=tk.W)
         
@@ -1080,31 +1330,69 @@ class ADHDBusterDialog:
         char_canvas = CharacterCanvas(char_equip_frame, equipped, power, width=180, height=200)
         char_canvas.pack(side=tk.LEFT, padx=(0, 15))
         
-        # Right: Equipment list
-        equip_frame = ttk.LabelFrame(char_equip_frame, text="⚔ Equipped Gear", padding="10")
+        # Right: Equipment with dropdown selection
+        equip_frame = ttk.LabelFrame(char_equip_frame, text="⚔ Equipped Gear (click dropdown to change)", padding="10")
         equip_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
+        inventory = self.blocker.adhd_buster.get("inventory", [])
         
-        # Single column layout for equipment (since we have canvas on left)
-        for i, slot in enumerate(slots):
+        # Build dropdown options for each slot
+        for slot in slots:
             slot_frame = ttk.Frame(equip_frame)
-            slot_frame.pack(fill=tk.X, pady=1)
+            slot_frame.pack(fill=tk.X, pady=2)
             
-            item = equipped.get(slot)
-            if item:
-                color = item.get("color", "#333")
-                power_val = item.get("power", RARITY_POWER.get(item.get("rarity", "Common"), 10))
-                ttk.Label(slot_frame, text=f"• {slot}:", width=12).pack(side=tk.LEFT)
-                item_label = tk.Label(slot_frame, text=f"{item['name']} (+{power_val})", 
-                                      font=('Segoe UI', 9), fg=color)
-                item_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
+            ttk.Label(slot_frame, text=f"{slot}:", width=10).pack(side=tk.LEFT)
+            
+            # Get items available for this slot
+            slot_items = [item for item in inventory if item.get("slot") == slot]
+            current_item = equipped.get(slot)
+            
+            # Build options list: [Empty] + all items for this slot
+            options = ["[Empty]"]
+            item_map = {}  # Map display name to item
+            
+            for item in slot_items:
+                display = f"{item['name']} (+{item.get('power', 10)}) [{item['rarity'][:1]}]"
+                options.append(display)
+                item_map[display] = item
+            
+            # Create dropdown
+            var = tk.StringVar()
+            if current_item:
+                current_display = f"{current_item['name']} (+{current_item.get('power', 10)}) [{current_item['rarity'][:1]}]"
+                var.set(current_display)
             else:
-                ttk.Label(slot_frame, text=f"• {slot}:", width=12).pack(side=tk.LEFT)
-                ttk.Label(slot_frame, text="[Empty]", 
-                          foreground='gray').pack(side=tk.LEFT)
+                var.set("[Empty]")
+            
+            self.slot_vars[slot] = {"var": var, "item_map": item_map}
+            
+            dropdown = ttk.Combobox(slot_frame, textvariable=var, values=options,
+                                    state="readonly", width=45)
+            dropdown.pack(side=tk.LEFT, fill=tk.X, expand=True)
+            dropdown.bind("<<ComboboxSelected>>", lambda e, s=slot: self.on_equip_change(s))
         
-        # Inventory section with sorting
+        # Lucky Merge Section
+        merge_frame = ttk.LabelFrame(main_frame, text="🎲 Lucky Merge (High Risk, High Reward!)", padding="10")
+        merge_frame.pack(fill=tk.X, pady=(10, 5))
+        
+        merge_info = ttk.Frame(merge_frame)
+        merge_info.pack(fill=tk.X)
+        
+        ttk.Label(merge_info, text="Select 2+ items below, then merge for a CHANCE at better loot!",
+                  font=('Segoe UI', 9)).pack(side=tk.LEFT)
+        ttk.Label(merge_info, text="⚠️ 90% failure = ALL items lost!",
+                  font=('Segoe UI', 9, 'bold'), foreground='#d32f2f').pack(side=tk.RIGHT)
+        
+        self.merge_btn = ttk.Button(merge_frame, text="🎲 Merge Selected (0)", 
+                                    command=self.do_lucky_merge, state=tk.DISABLED)
+        self.merge_btn.pack(pady=5)
+        
+        self.merge_rate_label = ttk.Label(merge_frame, text="Success rate: 10%",
+                                          font=('Segoe UI', 9))
+        self.merge_rate_label.pack()
+        
+        # Inventory section with sorting and checkboxes for merge
         inv_header = ttk.Frame(main_frame)
         inv_header.pack(fill=tk.X, pady=(10, 5))
         ttk.Label(inv_header, text="📦 Inventory",
@@ -1159,16 +1447,140 @@ class ADHDBusterDialog:
         ttk.Button(btn_frame, text="Close",
                    command=self.dialog.destroy).pack(side=tk.RIGHT, padx=5)
     
+    def on_equip_change(self, slot: str):
+        """Handle equipment change from dropdown."""
+        slot_data = self.slot_vars.get(slot)
+        if not slot_data:
+            return
+        
+        selected = slot_data["var"].get()
+        
+        if "equipped" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["equipped"] = {}
+        
+        if selected == "[Empty]":
+            # Unequip
+            self.blocker.adhd_buster["equipped"][slot] = None
+        else:
+            # Equip the selected item
+            item = slot_data["item_map"].get(selected)
+            if item:
+                self.blocker.adhd_buster["equipped"][slot] = item
+        
+        self.blocker.save_config()
+        
+        # Refresh dialog to show new power/set bonuses
+        self.dialog.destroy()
+        ADHDBusterDialog(self.parent, self.blocker)
+    
+    def update_merge_ui(self):
+        """Update merge button and rate based on selected items."""
+        count = len(self.merge_selected)
+        self.merge_btn.config(text=f"🎲 Merge Selected ({count})")
+        
+        if count >= 2:
+            self.merge_btn.config(state=tk.NORMAL)
+            # Calculate success rate
+            items = [self.blocker.adhd_buster["inventory"][idx] for idx in self.merge_selected 
+                     if idx < len(self.blocker.adhd_buster.get("inventory", []))]
+            luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+            rate = calculate_merge_success_rate(items, luck)
+            result_rarity = get_merge_result_rarity(items) if items else "Unknown"
+            self.merge_rate_label.config(
+                text=f"Success rate: {rate*100:.0f}% → {result_rarity} item"
+            )
+        else:
+            self.merge_btn.config(state=tk.DISABLED)
+            self.merge_rate_label.config(text="Select 2+ items to merge")
+    
+    def toggle_merge_item(self, idx: int, var: tk.BooleanVar):
+        """Toggle an item's selection for merge."""
+        if var.get():
+            if idx not in self.merge_selected:
+                self.merge_selected.append(idx)
+        else:
+            if idx in self.merge_selected:
+                self.merge_selected.remove(idx)
+        self.update_merge_ui()
+    
+    def do_lucky_merge(self):
+        """Perform a lucky merge of selected items."""
+        if len(self.merge_selected) < 2:
+            messagebox.showwarning("Merge", "Select at least 2 items to merge!", parent=self.dialog)
+            return
+        
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        items_to_merge = [inventory[idx] for idx in self.merge_selected if idx < len(inventory)]
+        
+        if len(items_to_merge) < 2:
+            return
+        
+        luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+        rate = calculate_merge_success_rate(items_to_merge, luck)
+        result_rarity = get_merge_result_rarity(items_to_merge)
+        
+        # Confirm the risky merge
+        item_summary = "\n".join([f"  • {item['name']} ({item['rarity']})" for item in items_to_merge])
+        if not messagebox.askyesno("⚠️ Lucky Merge - HIGH RISK!",
+                                   f"Merge {len(items_to_merge)} items?\n\n"
+                                   f"{item_summary}\n\n"
+                                   f"Success rate: {rate*100:.0f}%\n"
+                                   f"On success: Get one {result_rarity} item\n"
+                                   f"On failure: ALL {len(items_to_merge)} items LOST!\n\n"
+                                   f"Are you sure?",
+                                   parent=self.dialog):
+            return
+        
+        # Perform the merge!
+        result = perform_lucky_merge(items_to_merge, luck)
+        
+        # Remove merged items from inventory (sorted in reverse to not mess up indices)
+        for idx in sorted(self.merge_selected, reverse=True):
+            if idx < len(inventory):
+                del inventory[idx]
+        
+        if result["success"]:
+            # Add the new item!
+            inventory.append(result["result_item"])
+            self.blocker.adhd_buster["inventory"] = inventory
+            self.blocker.save_config()
+            
+            messagebox.showinfo("🎉 MERGE SUCCESS!",
+                               f"The stars aligned!\n\n"
+                               f"Roll: {result['roll_pct']} (needed < {result['needed_pct']})\n\n"
+                               f"You created:\n"
+                               f"✨ {result['result_item']['name']} ✨\n"
+                               f"Rarity: {result['result_item']['rarity']}\n"
+                               f"Power: +{result['result_item']['power']}",
+                               parent=self.dialog)
+        else:
+            # Items lost!
+            self.blocker.adhd_buster["inventory"] = inventory
+            self.blocker.save_config()
+            
+            messagebox.showerror("💔 Merge Failed!",
+                                f"The merge went horribly wrong!\n\n"
+                                f"Roll: {result['roll_pct']} (needed < {result['needed_pct']})\n\n"
+                                f"{len(items_to_merge)} items have been lost forever.\n"
+                                f"Better luck next time, adventurer...",
+                                parent=self.dialog)
+        
+        # Refresh dialog
+        self.dialog.destroy()
+        ADHDBusterDialog(self.parent, self.blocker)
+    
     def open_diary(self):
         """Open the adventure diary dialog."""
         self.dialog.destroy()
         DiaryDialog(self.parent, self.blocker)
     
     def refresh_inventory(self):
-        """Refresh the inventory display with current sorting."""
-        # Clear existing items
+        """Refresh the inventory display with current sorting and merge checkboxes."""
+        # Clear existing items and merge selection
         for widget in self.inv_frame.winfo_children():
             widget.destroy()
+        self.merge_selected = []
+        self.update_merge_ui()
         
         inventory = self.blocker.adhd_buster.get("inventory", [])
         equipped = self.blocker.adhd_buster.get("equipped", {})
@@ -1196,30 +1608,45 @@ class ADHDBusterDialog:
         else:  # newest
             sorted_inv = list(reversed(list(enumerate(inventory))))
         
+        # Store checkbox vars
+        self.merge_vars = {}
+        
         for orig_idx, item in sorted_inv:
             item_frame = ttk.Frame(self.inv_frame)
             item_frame.pack(fill=tk.X, pady=2)
             
-            # Item name with rarity color
+            # Merge checkbox (not for equipped items)
             is_equipped = item["name"] in equipped_names
+            
+            if not is_equipped:
+                merge_var = tk.BooleanVar(value=False)
+                self.merge_vars[orig_idx] = merge_var
+                cb = ttk.Checkbutton(item_frame, variable=merge_var,
+                                    command=lambda idx=orig_idx, v=merge_var: self.toggle_merge_item(idx, v))
+                cb.pack(side=tk.LEFT)
+            else:
+                # Placeholder for alignment
+                ttk.Label(item_frame, text="  ", width=2).pack(side=tk.LEFT)
+            
+            # Item name with rarity color
             name_text = f"{'✓ ' if is_equipped else ''}{item['name']}"
             power_val = item.get("power", RARITY_POWER.get(item.get("rarity", "Common"), 10))
             
+            # Show theme indicators
+            themes = get_item_themes(item)
+            if themes:
+                theme_emojis = " ".join([ITEM_THEMES[t]["emoji"] for t in themes[:2]])  # Max 2 emojis
+                name_text = f"{name_text} {theme_emojis}"
+            
             item_label = tk.Label(item_frame, text=name_text,
                                  font=('Segoe UI', 9), fg=item.get("color", "#333"),
-                                 anchor='w', width=40)
+                                 anchor='w', width=42)
             item_label.pack(side=tk.LEFT)
             
             # Power and rarity
             info_text = f"+{power_val} [{item['rarity'][:1]}]"
             tk.Label(item_frame, text=info_text,
                     font=('Segoe UI', 8), fg=item.get("color", "#333")).pack(side=tk.LEFT, padx=5)
-            
-            # Equip button (only if not already equipped)
-            if not is_equipped:
-                equip_btn = ttk.Button(item_frame, text="Equip",
-                                       command=lambda idx=orig_idx: self.equip_item(idx))
-                equip_btn.pack(side=tk.RIGHT, padx=2)
     
     def equip_item(self, inv_index: int):
         """Equip an item from inventory."""

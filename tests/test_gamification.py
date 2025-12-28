@@ -265,5 +265,134 @@ class TestProductivityAnalyzerInsights(unittest.TestCase):
         self.assertIn("consistency", patterns)
 
 
+class TestSetBonusSystem(unittest.TestCase):
+    """Tests for the ADHD Buster set bonus system."""
+    
+    def test_get_item_themes_dragon(self) -> None:
+        """Test theme extraction for dragon-themed items."""
+        from focus_blocker import get_item_themes
+        item = {"name": "Dragon-forged Helmet of Blazing Focus"}
+        themes = get_item_themes(item)
+        self.assertIn("Dragon", themes)
+    
+    def test_get_item_themes_multiple(self) -> None:
+        """Test item can have multiple themes."""
+        from focus_blocker import get_item_themes
+        item = {"name": "Void-touched Crystal Amulet of Shadows"}
+        themes = get_item_themes(item)
+        self.assertIn("Void", themes)
+        self.assertIn("Crystal", themes)
+    
+    def test_get_item_themes_none(self) -> None:
+        """Test item with no matching themes."""
+        from focus_blocker import get_item_themes
+        item = {"name": "Rusty Helmet of Mild Confusion"}
+        themes = get_item_themes(item)
+        self.assertEqual(len(themes), 0)
+    
+    def test_calculate_set_bonuses_empty(self) -> None:
+        """Test set bonus calculation with empty equipped."""
+        from focus_blocker import calculate_set_bonuses
+        result = calculate_set_bonuses({})
+        self.assertEqual(result["total_bonus"], 0)
+        self.assertEqual(len(result["active_sets"]), 0)
+    
+    def test_calculate_set_bonuses_single_theme(self) -> None:
+        """Test set bonus with items sharing one theme."""
+        from focus_blocker import calculate_set_bonuses
+        equipped = {
+            "Helmet": {"name": "Dragon Helmet of Power"},
+            "Chestplate": {"name": "Drake-scale Chestplate of Might"},
+        }
+        result = calculate_set_bonuses(equipped)
+        # Dragon theme should activate (2 items)
+        self.assertGreater(result["total_bonus"], 0)
+        self.assertTrue(any(s["name"] == "Dragon" for s in result["active_sets"]))
+    
+    def test_calculate_set_bonuses_not_enough_matches(self) -> None:
+        """Test no bonus when only 1 item has a theme."""
+        from focus_blocker import calculate_set_bonuses
+        equipped = {
+            "Helmet": {"name": "Dragon Helmet of Power"},
+            "Chestplate": {"name": "Rusty Chestplate of Confusion"},
+        }
+        result = calculate_set_bonuses(equipped)
+        # Only 1 dragon item - not enough for bonus
+        self.assertEqual(result["total_bonus"], 0)
+
+
+class TestLuckyMergeSystem(unittest.TestCase):
+    """Tests for the ADHD Buster lucky merge system."""
+    
+    def test_merge_success_rate_minimum(self) -> None:
+        """Test merge success rate with 2 items."""
+        from focus_blocker import calculate_merge_success_rate
+        items = [{"rarity": "Common"}, {"rarity": "Common"}]
+        rate = calculate_merge_success_rate(items, luck_bonus=0)
+        self.assertAlmostEqual(rate, 0.10, places=2)  # 10% base
+    
+    def test_merge_success_rate_with_extra_items(self) -> None:
+        """Test merge success rate increases with more items."""
+        from focus_blocker import calculate_merge_success_rate
+        items = [{"rarity": "Common"} for _ in range(5)]  # 5 items
+        rate = calculate_merge_success_rate(items, luck_bonus=0)
+        # Base 10% + 3% per extra item (5-2=3 extras) = 19%
+        self.assertAlmostEqual(rate, 0.19, places=2)
+    
+    def test_merge_success_rate_with_luck(self) -> None:
+        """Test luck bonus affects merge rate."""
+        from focus_blocker import calculate_merge_success_rate
+        items = [{"rarity": "Common"}, {"rarity": "Common"}]
+        rate_no_luck = calculate_merge_success_rate(items, luck_bonus=0)
+        rate_with_luck = calculate_merge_success_rate(items, luck_bonus=500)
+        # Luck should increase the rate
+        self.assertGreater(rate_with_luck, rate_no_luck)
+    
+    def test_merge_success_rate_capped(self) -> None:
+        """Test merge success rate is capped at 35%."""
+        from focus_blocker import calculate_merge_success_rate
+        items = [{"rarity": "Common"} for _ in range(20)]  # Many items
+        rate = calculate_merge_success_rate(items, luck_bonus=1000)
+        self.assertLessEqual(rate, 0.35)
+    
+    def test_get_merge_result_rarity(self) -> None:
+        """Test merge result is one tier above lowest."""
+        from focus_blocker import get_merge_result_rarity
+        items = [
+            {"rarity": "Common"},
+            {"rarity": "Rare"},
+            {"rarity": "Epic"}
+        ]
+        result = get_merge_result_rarity(items)
+        # Lowest is Common, upgrade to Uncommon
+        self.assertEqual(result, "Uncommon")
+    
+    def test_get_merge_result_same_rarity(self) -> None:
+        """Test merge result with same rarity items."""
+        from focus_blocker import get_merge_result_rarity
+        items = [
+            {"rarity": "Rare"},
+            {"rarity": "Rare"}
+        ]
+        result = get_merge_result_rarity(items)
+        # Rare -> Epic
+        self.assertEqual(result, "Epic")
+    
+    def test_perform_lucky_merge_returns_structure(self) -> None:
+        """Test merge result has expected structure."""
+        from focus_blocker import perform_lucky_merge
+        items = [
+            {"rarity": "Common", "name": "Test 1"},
+            {"rarity": "Common", "name": "Test 2"}
+        ]
+        result = perform_lucky_merge(items, luck_bonus=0)
+        self.assertIn("success", result)
+        self.assertIn("items_lost", result)
+        self.assertIn("roll", result)
+        self.assertIn("needed", result)
+        if result["success"]:
+            self.assertIsNotNone(result["result_item"])
+
+
 if __name__ == '__main__':
     unittest.main()
