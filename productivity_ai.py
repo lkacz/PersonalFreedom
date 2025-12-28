@@ -4,18 +4,21 @@ Analyzes your blocking patterns and provides intelligent insights
 """
 
 import json
+import logging
 from datetime import datetime, timedelta
-from collections import Counter, defaultdict
+from collections import defaultdict
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 class ProductivityAnalyzer:
     """AI-powered productivity insights"""
-    
+
     def __init__(self, stats_path):
         self.stats_path = Path(stats_path)
         self.stats = self._load_stats()
-    
+
     def _load_stats(self):
         if self.stats_path.exists():
             try:
@@ -24,11 +27,11 @@ class ProductivityAnalyzer:
             except (json.JSONDecodeError, IOError, OSError):
                 return {}
         return {}
-    
+
     def get_peak_productivity_hours(self):
         """Identify when user is most productive"""
         hourly_data = defaultdict(lambda: {'count': 0, 'total_time': 0})
-        
+
         # Analyze session start times (would need to track this)
         for date, data in self.stats.get('daily_stats', {}).items():
             # Simplified - in real implementation, track session times
@@ -39,30 +42,28 @@ class ProductivityAnalyzer:
                 if morning:
                     hourly_data['morning']['count'] += 1
                     hourly_data['morning']['total_time'] += focus_time
-        
+
         return hourly_data
-    
+
     def predict_optimal_session_length(self):
         """ML-based prediction of optimal session duration"""
-        sessions = []
-        
         # Analyze completion rates by duration
         # This is simplified - you'd track actual session durations and completion
         completed = self.stats.get('sessions_completed', 0)
         cancelled = self.stats.get('sessions_cancelled', 0)
-        
+
         if completed + cancelled > 10:
             completion_rate = completed / (completed + cancelled)
-            
+
             if completion_rate > 0.8:
                 return 45  # User completes most sessions, can go longer
             elif completion_rate > 0.6:
                 return 25  # Standard Pomodoro
             else:
                 return 15  # Shorter sessions needed
-        
+
         return 25  # Default
-    
+
     def get_distraction_patterns(self):
         """Identify patterns in when user gets distracted"""
         patterns = {
@@ -71,53 +72,53 @@ class ProductivityAnalyzer:
             'consistency': self._calculate_consistency(),
         }
         return patterns
-    
+
     def _analyze_weekday_weekend(self):
         """Compare weekday vs weekend productivity"""
         weekday_total = 0
         weekend_total = 0
-        
+
         for date_str, data in self.stats.get('daily_stats', {}).items():
             try:
                 date = datetime.strptime(date_str, '%Y-%m-%d')
                 time_spent = data.get('focus_time', 0)
-                
+
                 if date.weekday() < 5:
                     weekday_total += time_spent
                 else:
                     weekend_total += time_spent
             except (ValueError, TypeError, KeyError):
                 continue
-        
+
         if weekday_total > weekend_total * 1.5:
             return 'weekdays'
         elif weekend_total > weekday_total * 1.5:
             return 'weekends'
         return 'balanced'
-    
+
     def _calculate_consistency(self):
         """Calculate how consistent user's focus sessions are"""
         daily_stats = self.stats.get('daily_stats', {})
         if len(daily_stats) < 7:
             return 'building'
-        
+
         recent_days = sorted(daily_stats.keys())[-7:]
         focus_times = [daily_stats[d].get('focus_time', 0) for d in recent_days]
-        
+
         avg = sum(focus_times) / len(focus_times)
         variance = sum((t - avg) ** 2 for t in focus_times) / len(focus_times)
-        
+
         if variance < 100:
             return 'very_consistent'
         elif variance < 500:
             return 'consistent'
         else:
             return 'inconsistent'
-    
+
     def generate_insights(self):
         """Generate actionable insights"""
         insights = []
-        
+
         # Streak insights
         streak = self.stats.get('streak_days', 0)
         if streak >= 7:
@@ -136,7 +137,7 @@ class ProductivityAnalyzer:
                     'message': 'Start a session today to rebuild your streak!',
                     'action': 'start_session'
                 })
-        
+
         # Productivity pattern
         pattern = self._analyze_weekday_weekend()
         if pattern == 'weekdays':
@@ -146,7 +147,7 @@ class ProductivityAnalyzer:
                 'message': 'You focus more on weekdays. Consider weekend review sessions.',
                 'action': 'schedule_weekend'
             })
-        
+
         # Session completion rate
         completed = self.stats.get('sessions_completed', 0)
         cancelled = self.stats.get('sessions_cancelled', 0)
@@ -159,7 +160,7 @@ class ProductivityAnalyzer:
                     'message': f'You cancel {int((1-rate)*100)}% of sessions. Try 15-min sessions!',
                     'action': 'suggest_short'
                 })
-        
+
         # Total time milestone
         total_hours = self.stats.get('total_focus_time', 0) / 3600
         milestones = [10, 25, 50, 100, 250, 500, 1000]
@@ -172,13 +173,13 @@ class ProductivityAnalyzer:
                     'action': None
                 })
                 break
-        
+
         return insights
-    
+
     def get_recommendations(self):
         """Get personalized recommendations"""
         recommendations = []
-        
+
         optimal_length = self.predict_optimal_session_length()
         recommendations.append({
             'category': 'session_length',
@@ -186,7 +187,7 @@ class ProductivityAnalyzer:
             'reason': 'Based on your completion patterns',
             'confidence': 0.8
         })
-        
+
         # Check consistency
         consistency = self._calculate_consistency()
         if consistency == 'inconsistent':
@@ -196,7 +197,7 @@ class ProductivityAnalyzer:
                 'reason': 'Your focus times vary widely',
                 'confidence': 0.9
             })
-        
+
         # Check if using strict mode
         if self.stats.get('sessions_cancelled', 0) > self.stats.get('sessions_completed', 0):
             recommendations.append({
@@ -205,13 +206,13 @@ class ProductivityAnalyzer:
                 'reason': 'You cancel more than you complete',
                 'confidence': 0.85
             })
-        
+
         return recommendations
 
 
 class GamificationEngine:
     """Gamification system with achievements and challenges"""
-    
+
     ACHIEVEMENTS = {
         'first_session': {
             'icon': '🎬',
@@ -247,7 +248,7 @@ class GamificationEngine:
             'icon': '⭐',
             'name': 'Perfectionist',
             'desc': 'Complete 10 sessions without canceling',
-            'requirement': lambda s: (s.get('sessions_completed', 0) >= 10 and 
+            'requirement': lambda s: (s.get('sessions_completed', 0) >= 10 and
                                      s.get('sessions_cancelled', 0) == 0)
         },
         'early_bird': {
@@ -281,12 +282,12 @@ class GamificationEngine:
             'requirement': lambda s: s.get('pomodoro_sessions', 0) >= 25
         },
     }
-    
+
     def __init__(self, stats_path):
         self.stats_path = Path(stats_path)
         self.stats = self._load_stats()
         self.unlocked = self.stats.get('achievements_unlocked', [])
-    
+
     def _load_stats(self):
         """Load statistics from file"""
         if self.stats_path.exists():
@@ -296,22 +297,22 @@ class GamificationEngine:
             except Exception:
                 return {}
         return {}
-    
+
     def _save_stats(self):
         """Save statistics to file"""
         try:
             with open(self.stats_path, 'w') as f:
                 json.dump(self.stats, f, indent=2)
-        except Exception:
-            pass
-    
+        except Exception as e:
+            logger.warning(f"Failed to save stats: {e}")
+
     def check_achievements(self):
         """Check which achievements are newly unlocked"""
         # Reload stats to get latest
         self.stats = self._load_stats()
         self.unlocked = self.stats.get('achievements_unlocked', [])
         newly_unlocked = []
-        
+
         for ach_id, achievement in self.ACHIEVEMENTS.items():
             if ach_id not in self.unlocked:
                 if achievement['requirement'](self.stats):
@@ -321,26 +322,26 @@ class GamificationEngine:
                         'desc': achievement['desc']
                     })
                     self.unlocked.append(ach_id)
-        
+
         # Save updated unlocked achievements
         if newly_unlocked:
             self.stats['achievements_unlocked'] = self.unlocked
             self._save_stats()
-        
+
         # Return progress for all achievements
         progress = {}
         for ach_id, achievement in self.ACHIEVEMENTS.items():
             # Get current progress based on achievement type
             current, target = self._get_achievement_progress(ach_id, achievement)
-            
+
             progress[ach_id] = {
                 'current': current,
                 'target': target,
                 'unlocked': ach_id in self.unlocked
             }
-        
+
         return progress
-    
+
     def _get_achievement_progress(self, ach_id, achievement):
         """Get current and target values for an achievement"""
         # Map achievement IDs to their progress metrics
@@ -357,13 +358,13 @@ class GamificationEngine:
             'iron_will': (self.stats.get('strict_sessions', 0), 10),
             'pomodoro_pro': (self.stats.get('pomodoro_sessions', 0), 25),
         }
-        
+
         return progress_map.get(ach_id, (0, 1))
-    
+
     def get_progress(self):
         """Get progress towards locked achievements"""
         progress = []
-        
+
         for ach_id, achievement in self.ACHIEVEMENTS.items():
             if ach_id not in self.unlocked:
                 # Calculate progress (simplified)
@@ -380,22 +381,22 @@ class GamificationEngine:
                             'desc': achievement['desc'],
                             'progress': min(100, int((current / target) * 100))
                         })
-        
+
         return progress
-    
+
     def get_achievements(self):
         """Get all achievement definitions with icons and descriptions"""
         achievements_with_details = {}
-        
+
         for ach_id, achievement in self.ACHIEVEMENTS.items():
             achievements_with_details[ach_id] = {
                 'icon': achievement['icon'],
                 'name': achievement['name'],
                 'description': achievement['desc']
             }
-        
+
         return achievements_with_details
-    
+
     def get_daily_challenge(self):
         """Generate a daily challenge"""
         today = datetime.now().strftime('%Y-%m-%d')
@@ -425,11 +426,11 @@ class GamificationEngine:
                 'type': 'single_session'
             },
         ]
-        
+
         # Rotate based on day of year
         day_of_year = datetime.now().timetuple().tm_yday
         daily_challenge = challenges[day_of_year % len(challenges)]
-        
+
         # Check progress
         today_stats = self.stats.get('daily_stats', {}).get(today, {})
         if daily_challenge['type'] == 'time':
@@ -441,19 +442,19 @@ class GamificationEngine:
         else:
             current = 0
             target = daily_challenge['target']
-        
+
         daily_challenge['progress'] = {
             'current': current,
             'target': target
         }
         daily_challenge['completed'] = current >= target
-        
+
         return daily_challenge
-    
+
     def get_leaderboard_rank(self, total_users=1000):
         """Simulate leaderboard ranking"""
         total_time = self.stats.get('total_focus_time', 0) / 3600
-        
+
         # Simulate ranking based on total hours
         if total_time > 500:
             rank = 10
@@ -470,7 +471,7 @@ class GamificationEngine:
         else:
             rank = 600
             percentile = 40
-        
+
         return {
             'rank': rank,
             'total_users': total_users,
@@ -481,13 +482,13 @@ class GamificationEngine:
 
 class FocusGoals:
     """Goal setting and tracking system"""
-    
+
     def __init__(self, goals_path, stats_path=None):
         self.goals_path = Path(goals_path)
         self.stats_path = Path(stats_path) if stats_path else None
         self.goals = self._load_goals()
         self.stats = self._load_stats() if stats_path else {}
-    
+
     def _load_stats(self):
         """Load statistics from file"""
         if self.stats_path and self.stats_path.exists():
@@ -497,7 +498,7 @@ class FocusGoals:
             except Exception:
                 return {}
         return {}
-    
+
     def _load_goals(self):
         if self.goals_path.exists():
             try:
@@ -506,11 +507,11 @@ class FocusGoals:
             except (json.JSONDecodeError, IOError, OSError):
                 return []
         return []
-    
+
     def save_goals(self):
         with open(self.goals_path, 'w', encoding='utf-8') as f:
             json.dump(self.goals, f, indent=2)
-    
+
     def add_goal(self, title, goal_type, target, deadline=None):
         """Add a new goal"""
         import uuid
@@ -527,19 +528,19 @@ class FocusGoals:
         self.goals.append(goal)
         self.save_goals()
         return goal['id']
-    
+
     def update_progress(self, focus_minutes=None):
         """Update progress on all goals"""
         # Reload stats if available
         if self.stats_path:
             self.stats = self._load_stats()
-        
+
         today = datetime.now().strftime('%Y-%m-%d')
-        
+
         for goal in self.goals:
             if goal['completed']:
                 continue
-            
+
             if goal['type'] == 'daily':
                 if focus_minutes is not None:
                     goal['progress'] = goal.get('progress', 0) + (focus_minutes * 60)  # convert to seconds
@@ -558,20 +559,20 @@ class FocusGoals:
                 # For custom goals, use total stats
                 total = self.stats.get('best_streak', 0)
                 goal['progress'] = total
-            
+
             if goal['progress'] >= goal['target']:
                 goal['completed'] = True
-        
+
         self.save_goals()
-    
+
     def get_active_goals(self):
         """Get all active (not completed) goals"""
         return [g for g in self.goals if not g['completed']]
-    
+
     def suggest_goals(self):
         """Suggest goals based on user's patterns"""
         return self.get_goal_suggestions(self.stats)
-    
+
     def complete_goal(self, goal_id):
         """Mark a goal as completed"""
         for goal in self.goals:
@@ -580,14 +581,14 @@ class FocusGoals:
                 goal['progress'] = goal['target']
                 break
         self.save_goals()
-    
+
     def get_goal_suggestions(self, stats):
         """Suggest goals based on user's patterns"""
         suggestions = []
-        
+
         # Check current average
         recent_avg = self._get_recent_average(stats)
-        
+
         if recent_avg < 1800:  # Less than 30 min/day
             suggestions.append({
                 'type': 'daily',
@@ -602,7 +603,7 @@ class FocusGoals:
                 'title': 'Daily Power Hour',
                 'desc': 'Level up to 1 hour daily'
             })
-        
+
         # Weekly goals
         suggestions.append({
             'type': 'weekly',
@@ -610,9 +611,9 @@ class FocusGoals:
             'title': 'Weekly 5 Hours',
             'desc': 'Accumulate 5 focused hours this week'
         })
-        
+
         return suggestions
-    
+
     def _get_recent_average(self, stats):
         """Calculate average focus time over last 7 days"""
         total = 0
