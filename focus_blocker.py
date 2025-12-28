@@ -147,6 +147,492 @@ RARITY_POWER = {
 }
 
 
+# ============================================================================
+# ADHD Buster Diary - Epic Adventure Journal System
+# ============================================================================
+# Diary entries are generated based on character power level.
+# Higher power = more epic and extraordinary adventures!
+
+# Power tiers for diary generation
+DIARY_POWER_TIERS = {
+    "pathetic": (0, 49),       # Starting out, humble adventures
+    "modest": (50, 149),       # Getting somewhere
+    "decent": (150, 349),      # Respectable adventurer
+    "heroic": (350, 599),      # True hero status
+    "epic": (600, 999),        # Epic warrior
+    "legendary": (1000, 1499), # Legendary champion
+    "godlike": (1500, 2000)    # Focus deity
+}
+
+# === VERBS by power tier ===
+DIARY_VERBS = {
+    "pathetic": [
+        "accidentally poked", "awkwardly stared at", "tripped over", "licked",
+        "politely asked", "nervously waved at", "mildly annoyed", "quietly judged",
+        "bumped into", "accidentally sat on", "coughed near", "sneezed at",
+        "gave a participation trophy to", "made eye contact with", "slightly nudged",
+        "mumbled at", "waddled toward", "unsuccessfully high-fived", "apologized to",
+        "stood next to", "accidentally photobombed", "passive-aggressively sighed at",
+        "gave an awkward thumbs-up to", "made a weird face at", "lost a staring contest to",
+        "shared an awkward elevator ride with", "sent an email to", "left a voicemail for",
+        "accidentally liked an old photo of", "tried to unfriend", "forgot the name of"
+    ],
+    "modest": [
+        "challenged", "pushed", "tickled", "startled", "confused", "outsmarted",
+        "debated", "out-danced", "arm-wrestled", "had lunch with", "roasted",
+        "pranked", "traded snacks with", "shared a blanket with", "high-fived",
+        "karaoked with", "played cards with", "had an intense staring match with",
+        "went shopping with", "had a pillow fight with", "told a dad joke to",
+        "challenged to rock-paper-scissors", "made a TikTok with", "photobombed",
+        "beat at checkers", "shared a pizza with", "did a trust fall with",
+        "had a dance-off with", "played charades with", "made friendship bracelets with"
+    ],
+    "decent": [
+        "fought", "defeated in combat", "had an epic duel with", "outmaneuvered",
+        "tactically retreated from", "formed an alliance with", "rescued",
+        "was rescued by", "traded ancient secrets with", "meditated with",
+        "trained alongside", "went on a quest with", "discovered treasure with",
+        "navigated a dungeon with", "survived a storm with", "broke bread with",
+        "swore a blood oath with", "competed in a tournament against",
+        "discovered a hidden village with", "decoded ancient runes with",
+        "brewed a potion with", "forged a weapon with", "tamed a beast with",
+        "explored ruins with", "outwitted in a riddle contest", "sparred with"
+    ],
+    "heroic": [
+        "slayed", "vanquished", "banished to another realm", "imprisoned in crystal",
+        "sealed away forever", "turned to stone", "defeated with one strike",
+        "humiliated in front of their army", "outsmarted in dimensional chess",
+        "absorbed the power of", "broke the curse of", "freed from eternal slumber",
+        "merged consciousness with", "time-traveled with", "shapeshifted with",
+        "opened a portal with", "closed a rift alongside", "rewrote destiny with",
+        "shattered the illusion of", "awakened the true power of", "united kingdoms with",
+        "ended a millennium-long war with", "discovered the origin story of",
+        "granted a second chance to", "fulfilled an ancient prophecy with"
+    ],
+    "epic": [
+        "obliterated from existence", "erased from the timeline", "trapped in a paradox",
+        "fused into a single being with", "ascended to godhood alongside",
+        "challenged the very concept of", "rewrote the laws of physics with",
+        "bent reality around", "consumed the essence of", "became the avatar of",
+        "transcended mortality with", "shattered dimensions fighting",
+        "created a new universe with", "collapsed a star to defeat",
+        "reversed entropy alongside", "became legend after meeting",
+        "split into parallel versions fighting", "absorbed into the void alongside",
+        "merged timelines with", "became the living prophecy of",
+        "unwrote the existence of", "became the eternal nemesis of"
+    ],
+    "legendary": [
+        "became one with the cosmos alongside", "achieved omniscience from",
+        "transcended time and space with", "became the last memory of",
+        "is now worshipped alongside", "became a fundamental force with",
+        "now exists simultaneously with", "merged with the universal consciousness and",
+        "became the concept of focus itself with", "rewrote all of existence with",
+        "is now eternal thanks to", "became the beginning and end with",
+        "ascended beyond comprehension with", "is now a paradox because of",
+        "exists outside reality with", "became the dream of existence with"
+    ],
+    "godlike": [
+        "created and destroyed infinite realities with",
+        "became the alpha and omega alongside",
+        "is now the fundamental equation of existence with",
+        "transcended all possible dimensions with",
+        "became the universe's source code with",
+        "is now simultaneously everything and nothing with",
+        "achieved focus so pure it bent reality with",
+        "became the personification of pure productivity with",
+        "rewrote the multiverse's operating system with",
+        "is now an eternal constant of mathematics with",
+        "became the voice of the cosmic background radiation with",
+        "transcended the concept of transcendence with"
+    ]
+}
+
+# === TARGET ADJECTIVES by power tier ===
+DIARY_ADJECTIVES = {
+    "pathetic": [
+        "a mildly inconvenienced", "a slightly annoyed", "a confused-looking",
+        "an unimpressed", "a suspiciously normal", "a forgettable", "a generic",
+        "a low-budget", "a discount", "an off-brand", "a knock-off", "a B-list",
+        "a questionable", "a somewhat sketchy", "a mediocre", "an adequate",
+        "a barely-trying", "an underwhelming", "a participation-trophy-worthy",
+        "a 'good enough'", "a 'meh'-level", "a basic", "a budget-friendly",
+        "an economy-class", "a store-brand", "a clearance-rack", "a refurbished"
+    ],
+    "modest": [
+        "a reasonably impressive", "a decent", "an actually-trying", "a notable",
+        "an interesting", "a surprising", "an unexpected", "a capable",
+        "a competent", "a professional", "a trained", "an experienced",
+        "a battle-tested", "a weathered", "a seasoned", "a respectable",
+        "a noteworthy", "a remarkable", "a distinguished", "an admirable",
+        "a formidable", "an accomplished", "a proven", "a reliable"
+    ],
+    "decent": [
+        "a legendary", "a mythical", "an ancient", "a powerful", "a fearsome",
+        "a dreaded", "a fabled", "a renowned", "a notorious", "an infamous",
+        "a celebrated", "an honored", "a revered", "a mighty", "a terrible",
+        "an awe-inspiring", "a magnificent", "a glorious", "a majestic",
+        "a regal", "an imperial", "a sovereign", "a supreme", "a paramount"
+    ],
+    "heroic": [
+        "a reality-bending", "a dimension-hopping", "a time-traveling", "a fate-weaving",
+        "a prophecy-fulfilling", "a destiny-altering", "a world-shaking",
+        "a civilization-ending", "a cosmos-spanning", "a plane-shifting",
+        "a void-touched", "an eternally-cursed", "a divinely-blessed",
+        "a chaos-infused", "an order-maintaining", "a balance-keeping",
+        "a myth-made-real", "a legend-incarnate", "a story-become-flesh"
+    ],
+    "epic": [
+        "an infinitely powerful", "an omniscient", "an omnipotent", "an omnipresent",
+        "a beyond-comprehension", "a reality-defining", "a universe-creating",
+        "a dimension-ruling", "a multiverse-spanning", "a timeline-controlling",
+        "a causality-breaking", "an entropy-defying", "a existence-transcending",
+        "a concept-embodying", "a fundamental-force-channeling"
+    ],
+    "legendary": [
+        "a cosmic-horror-yet-somehow-friendly", "an incomprehensible-but-approachable",
+        "a beyond-all-understanding-yet-cool", "a reality-core-manifestation-of",
+        "a living-paradox-that-is", "an existence-contradiction-known-as",
+        "a fundamental-truth-embodied-as", "a universe-equation-personified-as"
+    ],
+    "godlike": [
+        "the very concept of", "the fundamental essence of",
+        "the living equation that is", "the cosmic constant known as",
+        "the universal truth embodied as", "existence itself manifested as",
+        "the alpha and omega that is", "infinity given form as",
+        "the source code of reality known as", "pure mathematics embodied as"
+    ]
+}
+
+# === TARGETS (creatures/beings) by power tier ===
+DIARY_TARGETS = {
+    "pathetic": [
+        "an intern", "a confused tourist", "a lost pizza delivery guy",
+        "someone's weird uncle", "a procrastinating student", "a grumpy cat",
+        "a judgmental squirrel", "a suspicious pigeon", "a distracted goldfish",
+        "a passive-aggressive roommate", "a vague acquaintance", "someone's ex",
+        "a LinkedIn recruiter", "an overly enthusiastic gym bro", "a crypto bro",
+        "a reply-all email offender", "a meeting-that-could-be-an-email person",
+        "a close-talker", "a loud chewer", "a spoiler-revealer", "a microwave fish person",
+        "a double-dipper", "a queue-cutter", "a one-upper", "a humble-bragger"
+    ],
+    "modest": [
+        "a minor goblin", "a trainee wizard", "an apprentice knight", "a baby dragon",
+        "a teenage vampire", "a part-time werewolf", "a gig-economy demon",
+        "an entry-level orc", "a freelance troll", "a startup fairy",
+        "a junior necromancer", "a mid-level ghost", "a regional manager lich",
+        "an assistant to the regional manager witch", "a seasonal skeleton",
+        "a temp zombie", "an unpaid intern at Evil Corp", "a dropout from wizard school"
+    ],
+    "decent": [
+        "a proper dragon", "an experienced sorcerer", "a veteran knight",
+        "a master assassin", "an ancient lich", "a demon lord", "an angel captain",
+        "a phoenix in its prime", "a kraken", "a hydra", "a cerberus",
+        "a sphinx with hard riddles", "a minotaur champion", "a giant king",
+        "a vampire elder", "a werewolf alpha", "an elemental lord",
+        "a djinn of great power", "a golem of legend", "a roc of the mountains"
+    ],
+    "heroic": [
+        "an elder god", "a titan of old", "a primordial being", "an arch-demon",
+        "an archangel", "a god of war", "a goddess of wisdom", "a lord of chaos",
+        "a keeper of time", "a weaver of fate", "a guardian of dimensions",
+        "a master of elements", "a sovereign of souls", "an emperor of the void",
+        "a harbinger of apocalypse", "a bringer of dawn", "a shaper of worlds",
+        "a destroyer of realities", "a creator of universes"
+    ],
+    "epic": [
+        "the concept of entropy itself", "the physical manifestation of chaos",
+        "the living embodiment of time", "the sentient void between dimensions",
+        "the consciousness of a dying universe", "the dream of a sleeping god",
+        "the nightmare of existence", "the echo of the big bang",
+        "the whisper of heat death", "the scream of creation", "reality's fever dream",
+        "the universe's intrusive thought", "existence's autocorrect error"
+    ],
+    "legendary": [
+        "the mathematical constant that defines all reality",
+        "the final theorem of existence", "the first thought ever conceived",
+        "the last breath of the multiverse", "the moment between moments",
+        "the concept of concepts", "the meta-narrative of all stories",
+        "the observer that collapsed the wave function", "the dreamer dreaming all dreams"
+    ],
+    "godlike": [
+        "the source code of existence", "the original writer of reality",
+        "the concept of focus that created the universe", "infinity's calculator",
+        "the equation that solved itself into existence",
+        "the cursor that blinks at the end of all programs",
+        "the final commit to the cosmic repository",
+        "the merge conflict at the heart of reality"
+    ]
+}
+
+# === LOCATIONS by power tier ===
+DIARY_LOCATIONS = {
+    "pathetic": [
+        "in the break room", "at a gas station bathroom", "in a DMV waiting room",
+        "at a sketchy laundromat", "in a Wendy's parking lot", "at a bus stop",
+        "in someone's unfinished basement", "at a midnight Walmart",
+        "in a mall food court", "at a sad office party", "in a dentist's waiting room",
+        "at a timeshare presentation", "in an IKEA showroom", "at a speed-dating event",
+        "in a haunted Denny's", "at 3AM in a 7-Eleven", "in a LinkedIn message thread",
+        "at a pyramid scheme meeting", "in a homeowner's association meeting",
+        "at an airport baggage claim", "in a zoom call with camera on"
+    ],
+    "modest": [
+        "in a mysterious forest", "at an ancient crossroads", "in a forgotten temple",
+        "at a haunted inn", "in a magical marketplace", "at the edge of civilization",
+        "in a dragon's outer cave", "at the gates of a dark castle",
+        "in a pixie's garden", "at a wizard's doorstep", "in goblin territory",
+        "at the troll bridge", "in the shadows of the dark tower",
+        "at the entrance to the underworld", "in the neutral zone"
+    ],
+    "decent": [
+        "in the heart of an erupting volcano", "at the peak of the world's tallest mountain",
+        "in the depths of the ocean abyss", "at the center of an eternal storm",
+        "in the frozen wastelands of the north", "at the edge of the world",
+        "in the sacred grove of ancient power", "at the convergence of ley lines",
+        "in the ruins of a fallen civilization", "at the gates of the underworld",
+        "in the dragon's treasure hoard", "at the court of the fae queen"
+    ],
+    "heroic": [
+        "in the space between dimensions", "at the crossroads of all timelines",
+        "in the void between stars", "at the edge of a black hole",
+        "in the dreams of a sleeping god", "at the moment of creation",
+        "in the echo of the big bang", "at the end of entropy",
+        "in the library of infinite knowledge", "at the council of cosmic entities",
+        "in the forge where suns are born", "at the graveyard of dead universes"
+    ],
+    "epic": [
+        "in a reality that shouldn't exist", "at the intersection of all possibilities",
+        "in the negative space of existence", "at the point where math breaks down",
+        "in the error message of the universe", "at the event horizon of consciousness",
+        "in the quantum superposition of all locations simultaneously",
+        "at the place that exists only when observed", "in the paradox zone"
+    ],
+    "legendary": [
+        "in the concept of 'here' before 'here' existed",
+        "at the philosophical debate about whether places are real",
+        "in the space between thoughts", "at the origin of the question 'where'",
+        "in the metadata of reality", "at the config file of existence"
+    ],
+    "godlike": [
+        "in the source code repository of existence",
+        "at the root directory of all dimensions",
+        "in the production environment of the cosmos",
+        "at the pull request that created reality",
+        "in the git blame of the universe",
+        "at the stack overflow that became sentient"
+    ]
+}
+
+# === OUTCOMES by power tier ===
+DIARY_OUTCOMES = {
+    "pathetic": [
+        "a minor inconvenience", "an awkward silence", "a participation certificate",
+        "a weird look", "a very confusing email thread", "both of us just walking away",
+        "someone calling HR", "an unfollowing on social media", "a 1-star Yelp review",
+        "a passive-aggressive post-it note", "mutual agreement to never speak of this",
+        "someone's mom getting involved", "a very long and uncomfortable elevator ride",
+        "us pretending we don't know each other", "a strongly worded letter",
+        "someone being 'just disappointed'", "a mildly viral Twitter thread",
+        "a meeting that could have been an email", "an unsubscribe from my newsletter"
+    ],
+    "modest": [
+        "unexpected friendship", "a temporary truce", "mutual respect",
+        "a rematch scheduled for next week", "both of us going our separate ways",
+        "a lesson learned by both parties", "a handshake and a beer",
+        "an exchange of contact information", "a small but meaningful victory",
+        "a story to tell at parties", "a minor wound and a major ego boost",
+        "recognition in the local tavern", "a discount at the merchant's shop",
+        "a reluctant alliance", "trading secrets", "sharing a meal"
+    ],
+    "decent": [
+        "a grand victory", "absolute triumph", "hard-won glory", "legendary status",
+        "songs written about it", "a statue being commissioned", "national holidays",
+        "the enemy's eternal respect", "a blood oath of loyalty", "ancient secrets revealed",
+        "unlocking hidden potential", "the forge of a legendary weapon",
+        "the discovery of lost magic", "ascension to noble rank", "a kingdom saved"
+    ],
+    "heroic": [
+        "the rewriting of prophecy", "reality itself shifting", "a new age beginning",
+        "the old gods taking notice", "dimensions merging temporarily",
+        "time flowing differently", "the fabric of space rippling",
+        "a new constellation appearing", "the sun hesitating", "the moon applauding",
+        "the stars rearranging themselves", "causality questioning itself",
+        "fate throwing up its hands", "destiny asking for a rewrite",
+        "the universe issuing an official statement"
+    ],
+    "epic": [
+        "the multiverse experiencing an existential crisis",
+        "several timelines just... stopping to watch",
+        "infinity googling 'how to handle this'",
+        "the cosmic background radiation stuttering",
+        "entropy briefly considering retirement",
+        "the heat death of the universe being postponed",
+        "causality filing a formal complaint",
+        "reality asking if this is being documented",
+        "the simulation requesting more RAM"
+    ],
+    "legendary": [
+        "the concept of 'endings' having to be redefined",
+        "philosophy departments worldwide spontaneously combusting",
+        "mathematics having to add new axioms",
+        "physics submitting a resignation letter",
+        "the universe's terms of service being updated",
+        "existence itself leaving a 5-star review",
+        "the cosmic debugger being permanently confused"
+    ],
+    "godlike": [
+        "a new mathematical constant being defined: focus",
+        "the universe's source code being refactored",
+        "reality getting a major version update",
+        "existence's unit tests finally passing",
+        "the cosmic CI/CD pipeline being optimized",
+        "infinity getting a performance review",
+        "the multiverse achieving inbox zero",
+        "time management becoming a fundamental force",
+        "productivity replacing entropy as the universe's destiny"
+    ]
+}
+
+# === ADDITIONAL FLAVOR by power tier ===
+DIARY_FLAVOR = {
+    "pathetic": [
+        "I was wearing mismatched socks.",
+        "My phone was at 2% battery.",
+        "I had spinach in my teeth the whole time.",
+        "I forgot everyone's names.",
+        "My shoelace was untied.",
+        "I accidentally called them 'mom'.",
+        "I waved at someone who wasn't waving at me.",
+        "I had 47 unread emails at the time.",
+        "Mercury was in retrograde, which explains everything.",
+        "I hadn't had my coffee yet.",
+        "I was still wearing my 'Work From Home' outfit. The one with stains."
+    ],
+    "modest": [
+        "The weather was surprisingly pleasant.",
+        "Someone took a really blurry photo of it.",
+        "A random bard wrote a mediocre song about it.",
+        "The local newspaper might cover it on page 17.",
+        "I got a free appetizer out of the deal.",
+        "My mom would probably be proud.",
+        "It was definitely better than my last Tuesday.",
+        "At least three witnesses can confirm this happened."
+    ],
+    "decent": [
+        "The stars literally aligned for this moment.",
+        "Ancient prophecies were fulfilled. Not the important ones, but still.",
+        "A wise old sage nodded approvingly from somewhere.",
+        "The very elements seemed to acknowledge my presence.",
+        "Bards will sing of this. Probably during happy hour specials.",
+        "My ancestors smiled upon me. Even the weird ones."
+    ],
+    "heroic": [
+        "Reality itself paused to take notes.",
+        "The gods added this to their highlight reel.",
+        "Time briefly considered flowing backward just to watch again.",
+        "The cosmic janitor had to clean up the epic aftermath.",
+        "Fate itself asked for my autograph.",
+        "The universe briefly questioned its own existence."
+    ],
+    "epic": [
+        "Parallel versions of me in alternate realities high-fived simultaneously.",
+        "The space-time continuum updated its status to 'it's complicated'.",
+        "Quantum physicists somewhere felt a great disturbance.",
+        "The simulation's admins had to restart several servers.",
+        "Infinity briefly made eye contact with me. It looked away first."
+    ],
+    "legendary": [
+        "The concept of 'possible' was permanently expanded.",
+        "Several philosophical frameworks had to be rewritten.",
+        "Mathematics added a new appendix because of this.",
+        "The universe's FAQ section now includes a entry about me."
+    ],
+    "godlike": [
+        "This is now taught in universe design courses across the multiverse.",
+        "The cosmic code review team gave me a 'LGTM'.",
+        "Reality's git log will forever contain this commit.",
+        "I am now a constant in all mathematical equations.",
+        "Focus levels achieved: undefined (in the best way)."
+    ]
+}
+
+
+def get_diary_power_tier(power: int) -> str:
+    """Get the diary tier name based on character power."""
+    for tier_name, (min_power, max_power) in DIARY_POWER_TIERS.items():
+        if min_power <= power <= max_power:
+            return tier_name
+    return "godlike" if power > 2000 else "pathetic"
+
+
+def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: dict = None) -> dict:
+    """
+    Generate a hilarious diary entry based on character power level.
+    
+    Higher power levels unlock more epic and absurd adventures.
+    The diary entry includes the date, story, and context about the session.
+    """
+    tier = get_diary_power_tier(power)
+    
+    # For maximum variety, occasionally pull from adjacent tiers too
+    adjacent_chance = random.random()
+    available_tiers = list(DIARY_POWER_TIERS.keys())
+    tier_index = available_tiers.index(tier)
+    
+    # 20% chance to pull a verb/outcome from one tier higher (if possible)
+    # This makes occasional epic moments even at lower power
+    verb_tier = tier
+    if adjacent_chance < 0.15 and tier_index < len(available_tiers) - 1:
+        verb_tier = available_tiers[tier_index + 1]
+    
+    # Build the story
+    verb = random.choice(DIARY_VERBS[verb_tier])
+    adjective = random.choice(DIARY_ADJECTIVES[tier])
+    target = random.choice(DIARY_TARGETS[tier])
+    location = random.choice(DIARY_LOCATIONS[tier])
+    outcome = random.choice(DIARY_OUTCOMES[tier])
+    flavor = random.choice(DIARY_FLAVOR[tier])
+    
+    # Create the main story sentence
+    story = f"Today I {verb} {adjective} {target} {location} and it ended in {outcome}."
+    
+    # Add equipped item flavor if available
+    item_mention = ""
+    if equipped_items:
+        equipped_list = [item for item in equipped_items.values() if item]
+        if equipped_list:
+            featured_item = random.choice(equipped_list)
+            item_name = featured_item.get("name", "mysterious item")
+            item_templates = [
+                f"My trusty {item_name} proved essential.",
+                f"I couldn't have done it without my {item_name}.",
+                f"The {item_name} glowed with approval.",
+                f"Even the {item_name} seemed surprised.",
+                f"The power of my {item_name} was barely contained.",
+                f"My {item_name} will never be the same.",
+                f"Witnesses say my {item_name} was particularly magnificent today.",
+            ]
+            item_mention = random.choice(item_templates)
+    
+    # Combine everything
+    full_entry = f"{story} {flavor}"
+    if item_mention:
+        full_entry += f" {item_mention}"
+    
+    # Create entry object
+    entry = {
+        "date": datetime.now().strftime("%Y-%m-%d"),
+        "timestamp": datetime.now().isoformat(),
+        "story": full_entry,
+        "power_at_time": power,
+        "tier": tier,
+        "session_minutes": session_minutes,
+        "short_date": datetime.now().strftime("%b %d, %Y")
+    }
+    
+    return entry
+
+
 def calculate_rarity_bonuses(session_minutes: int = 0, streak_days: int = 0) -> dict:
     """
     Calculate rarity weight adjustments based on session length and streak.
@@ -411,10 +897,17 @@ class ADHDBusterDialog:
         btn_frame = ttk.Frame(main_frame)
         btn_frame.pack(fill=tk.X, pady=(15, 0))
         
+        ttk.Button(btn_frame, text="� Adventure Diary", 
+                   command=self.open_diary).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="🗑️ Salvage Duplicates", 
                    command=self.salvage_duplicates).pack(side=tk.LEFT, padx=5)
         ttk.Button(btn_frame, text="Close",
                    command=self.dialog.destroy).pack(side=tk.RIGHT, padx=5)
+    
+    def open_diary(self):
+        """Open the adventure diary dialog."""
+        self.dialog.destroy()
+        DiaryDialog(self.parent, self.blocker)
     
     def refresh_inventory(self):
         """Refresh the inventory display with current sorting."""
@@ -573,6 +1066,201 @@ class ADHDBusterDialog:
             ADHDBusterDialog(self.parent, self.blocker)
 
 
+class DiaryDialog:
+    """Dialog to view the ADHD Buster's adventure diary."""
+    
+    def __init__(self, parent: tk.Tk, blocker):
+        self.parent = parent
+        self.blocker = blocker
+        
+        self.dialog = tk.Toplevel(parent)
+        self.dialog.title("📖 Adventure Diary")
+        self.dialog.geometry("650x600")
+        self.dialog.resizable(True, True)
+        self.dialog.transient(parent)
+        
+        # Center on screen
+        self.dialog.update_idletasks()
+        x = (self.dialog.winfo_screenwidth() // 2) - (650 // 2)
+        y = (self.dialog.winfo_screenheight() // 2) - (600 // 2)
+        self.dialog.geometry(f"+{x}+{y}")
+        
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Create the diary UI."""
+        main_frame = ttk.Frame(self.dialog, padding="15")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Header
+        header_frame = ttk.Frame(main_frame)
+        header_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Label(header_frame, text="📖 The Adventures of ADHD Buster",
+                  font=('Segoe UI', 16, 'bold')).pack(side=tk.LEFT)
+        
+        # Current power and tier
+        power = calculate_character_power(self.blocker.adhd_buster)
+        tier = get_diary_power_tier(power)
+        tier_display = tier.capitalize()
+        
+        tier_colors = {
+            "pathetic": "#9e9e9e",
+            "modest": "#8bc34a",
+            "decent": "#4caf50",
+            "heroic": "#2196f3",
+            "epic": "#9c27b0",
+            "legendary": "#ff9800",
+            "godlike": "#ffd700"
+        }
+        
+        power_label = tk.Label(header_frame, text=f"⚔ Power: {power} ({tier_display} Tier)",
+                               font=('Segoe UI', 10, 'bold'), 
+                               fg=tier_colors.get(tier, "#333"))
+        power_label.pack(side=tk.RIGHT)
+        
+        # Diary entries
+        entries = self.blocker.adhd_buster.get("diary", [])
+        
+        # Stats summary
+        if entries:
+            stats_text = f"📚 {len(entries)} adventures recorded | 🗓️ Latest: {entries[-1].get('short_date', 'Unknown')}"
+            ttk.Label(main_frame, text=stats_text, font=('Segoe UI', 9),
+                      foreground='gray').pack(anchor=tk.W, pady=(0, 10))
+        
+        # Scrollable diary area
+        diary_container = ttk.Frame(main_frame)
+        diary_container.pack(fill=tk.BOTH, expand=True)
+        
+        # Create text widget with scrollbar for diary entries
+        text_frame = ttk.Frame(diary_container)
+        text_frame.pack(fill=tk.BOTH, expand=True)
+        
+        self.diary_text = tk.Text(text_frame, wrap=tk.WORD, font=('Georgia', 11),
+                                   padx=15, pady=10, spacing2=5, spacing3=10)
+        scrollbar = ttk.Scrollbar(text_frame, orient="vertical", 
+                                   command=self.diary_text.yview)
+        self.diary_text.configure(yscrollcommand=scrollbar.set)
+        
+        self.diary_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Configure text tags for styling
+        self.diary_text.tag_configure("date", font=('Segoe UI', 10, 'bold'), 
+                                       foreground='#1976d2')
+        self.diary_text.tag_configure("tier_pathetic", foreground='#9e9e9e')
+        self.diary_text.tag_configure("tier_modest", foreground='#8bc34a')
+        self.diary_text.tag_configure("tier_decent", foreground='#4caf50')
+        self.diary_text.tag_configure("tier_heroic", foreground='#2196f3')
+        self.diary_text.tag_configure("tier_epic", foreground='#9c27b0')
+        self.diary_text.tag_configure("tier_legendary", foreground='#ff9800')
+        self.diary_text.tag_configure("tier_godlike", foreground='#b8860b', 
+                                       font=('Georgia', 11, 'bold italic'))
+        self.diary_text.tag_configure("story", foreground='#333')
+        self.diary_text.tag_configure("power_info", font=('Segoe UI', 9), 
+                                       foreground='#888')
+        
+        # Populate diary entries (newest first)
+        if entries:
+            for entry in reversed(entries):
+                self._add_entry_to_text(entry)
+        else:
+            self.diary_text.insert(tk.END, "\n\n")
+            self.diary_text.insert(tk.END, "📭 No adventures recorded yet!\n\n", "date")
+            self.diary_text.insert(tk.END, 
+                "Complete focus sessions and confirm you stayed on task "
+                "to record your epic adventures.\n\n"
+                "Each session adds a new chapter to your story. "
+                "As your power grows, your adventures become more legendary!\n\n"
+                "🌱 Novice → 🛡️ Apprentice → 💪 Fighter → 🔥 Warrior → "
+                "⚡ Champion → 🌟 Focus Deity",
+                "story")
+        
+        self.diary_text.configure(state=tk.DISABLED)  # Make read-only
+        
+        # Buttons
+        btn_frame = ttk.Frame(main_frame)
+        btn_frame.pack(fill=tk.X, pady=(15, 0))
+        
+        if entries:
+            ttk.Button(btn_frame, text="🗑️ Clear All Entries",
+                       command=self.clear_diary).pack(side=tk.LEFT, padx=5)
+        
+        ttk.Button(btn_frame, text="✍️ Write Today's Entry",
+                   command=self.write_new_entry).pack(side=tk.LEFT, padx=5)
+        
+        ttk.Button(btn_frame, text="Close",
+                   command=self.dialog.destroy).pack(side=tk.RIGHT, padx=5)
+    
+    def _add_entry_to_text(self, entry: dict):
+        """Add a single diary entry to the text widget."""
+        date = entry.get("short_date", entry.get("date", "Unknown Date"))
+        story = entry.get("story", "A mysterious adventure occurred...")
+        tier = entry.get("tier", "pathetic")
+        power = entry.get("power_at_time", 0)
+        minutes = entry.get("session_minutes", 0)
+        
+        # Tier emoji
+        tier_emojis = {
+            "pathetic": "🌱",
+            "modest": "🛡️",
+            "decent": "💪",
+            "heroic": "🔥",
+            "epic": "⚡",
+            "legendary": "⭐",
+            "godlike": "🌟"
+        }
+        emoji = tier_emojis.get(tier, "📖")
+        
+        # Insert date header
+        self.diary_text.insert(tk.END, f"\n{emoji} {date}\n", "date")
+        
+        # Insert story with tier-specific styling
+        tier_tag = f"tier_{tier}"
+        self.diary_text.insert(tk.END, f"{story}\n", tier_tag)
+        
+        # Insert power info
+        self.diary_text.insert(tk.END, 
+            f"Power: {power} | Focus: {minutes} min | Tier: {tier.capitalize()}\n",
+            "power_info")
+        
+        # Add separator
+        self.diary_text.insert(tk.END, "─" * 60 + "\n", "power_info")
+    
+    def write_new_entry(self):
+        """Manually write a new diary entry (bonus feature)."""
+        power = calculate_character_power(self.blocker.adhd_buster)
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        
+        # Generate entry
+        entry = generate_diary_entry(power, session_minutes=0, equipped_items=equipped)
+        entry["story"] = "[Bonus Entry] " + entry["story"]
+        
+        # Add to diary
+        if "diary" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["diary"] = []
+        
+        self.blocker.adhd_buster["diary"].append(entry)
+        self.blocker.save_config()
+        
+        # Refresh dialog
+        self.dialog.destroy()
+        DiaryDialog(self.parent, self.blocker)
+    
+    def clear_diary(self):
+        """Clear all diary entries after confirmation."""
+        if messagebox.askyesno("Clear Diary", 
+                               "Are you sure you want to clear all diary entries?\n\n"
+                               "This cannot be undone!",
+                               parent=self.dialog):
+            self.blocker.adhd_buster["diary"] = []
+            self.blocker.save_config()
+            
+            # Refresh dialog
+            self.dialog.destroy()
+            DiaryDialog(self.parent, self.blocker)
+
+
 class ItemDropDialog:
     """Dialog shown when an item drops (after confirming on-task)."""
     
@@ -672,6 +1360,22 @@ class ItemDropDialog:
         msg_list = messages.get(self.item["rarity"], messages["Common"])
         tk.Label(main_frame, text=random.choice(msg_list),
                  font=('Segoe UI', 10, 'bold'), bg=bg, fg='#666').pack(pady=(10, 5))
+        
+        # Check if diary entry was added today
+        today = datetime.now().strftime("%Y-%m-%d")
+        diary = self.blocker.adhd_buster.get("diary", [])
+        today_entries = [e for e in diary if e.get("date") == today]
+        
+        if today_entries:
+            # Show a teaser of today's diary entry
+            entry = today_entries[-1]
+            story = entry.get("story", "")
+            # Truncate story for preview
+            if len(story) > 80:
+                story = story[:77] + "..."
+            tk.Label(main_frame, text=f"📖 {story}",
+                     font=('Segoe UI', 8, 'italic'), bg=bg, fg='#555',
+                     wraplength=360).pack(pady=(5, 0))
         
         tk.Label(main_frame, text="(Click anywhere or wait to dismiss)",
                  font=('Segoe UI', 8), bg=bg, fg='#999').pack()
@@ -930,7 +1634,7 @@ class PriorityCheckinDialog:
                    command=self.close_dialog).pack(pady=(10, 0))
     
     def confirm_on_task(self):
-        """User confirms they are on task - generate item drop and show feedback."""
+        """User confirms they are on task - generate item drop and diary entry."""
         self.result = True
         self.dialog.destroy()
         
@@ -963,6 +1667,22 @@ class PriorityCheckinDialog:
         
         total = self.blocker.adhd_buster.get("total_collected", 0) + 1
         self.blocker.adhd_buster["total_collected"] = total
+        
+        # Generate diary entry based on current power level
+        power = calculate_character_power(self.blocker.adhd_buster)
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        
+        # Only add one diary entry per day (check if we already have one today)
+        today = datetime.now().strftime("%Y-%m-%d")
+        diary = self.blocker.adhd_buster.get("diary", [])
+        today_entries = [e for e in diary if e.get("date") == today]
+        
+        if not today_entries:
+            # Generate new diary entry for today
+            diary_entry = generate_diary_entry(power, self.session_minutes, equipped)
+            if "diary" not in self.blocker.adhd_buster:
+                self.blocker.adhd_buster["diary"] = []
+            self.blocker.adhd_buster["diary"].append(diary_entry)
         
         self.blocker.save_config()
         
