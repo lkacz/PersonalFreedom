@@ -18,6 +18,12 @@ omit =
     test_*.py
     setup.py
     launcher.py
+    # GUI files are hard to unit test - would need integration tests
+    focus_blocker.py
+    tray_blocker.py
+    # AI features require GPU/models
+    local_ai.py
+    pyscript
 
 [report]
 # Minimum coverage percentage to pass
