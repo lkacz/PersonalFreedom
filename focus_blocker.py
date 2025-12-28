@@ -33,6 +33,12 @@ from core_logic import (
     STATS_PATH, GOALS_PATH
 )
 
+# Check if bypass logger is available
+try:
+    from core_logic import BYPASS_LOGGER_AVAILABLE
+except ImportError:
+    BYPASS_LOGGER_AVAILABLE = False
+
 # Re-import AI classes if available, for GUI usage
 if AI_AVAILABLE:
     from productivity_ai import ProductivityAnalyzer, GamificationEngine, FocusGoals
@@ -405,10 +411,31 @@ class FocusBlockerGUI:
         self.update_schedule_list()
 
     def setup_stats_tab(self):
-        """Setup the statistics tab"""
-        # Overview
-        overview_frame = ttk.LabelFrame(self.stats_tab, text="Overview", padding="15")
-        overview_frame.pack(fill=tk.X, pady=(0, 10))
+        """Setup the statistics tab with scrollable content"""
+        # Create scrollable canvas
+        canvas = tk.Canvas(self.stats_tab, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(self.stats_tab, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Enable mouse wheel scrolling
+        def _on_mousewheel(event):
+            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # === Overview Section ===
+        overview_frame = ttk.LabelFrame(scrollable_frame, text="📊 Overview", padding="15")
+        overview_frame.pack(fill=tk.X, pady=(0, 10), padx=5)
 
         stats_grid = ttk.Frame(overview_frame)
         stats_grid.pack()
@@ -431,17 +458,140 @@ class FocusBlockerGUI:
                                               font=('Segoe UI', 18, 'bold'))
             self.stat_labels[key].pack()
 
-        # Weekly chart (simple text-based)
-        week_frame = ttk.LabelFrame(self.stats_tab, text="This Week", padding="15")
-        week_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+        # === Focus Goals Dashboard ===
+        goals_frame = ttk.LabelFrame(scrollable_frame, text="🎯 Focus Goals Dashboard", padding="15")
+        goals_frame.pack(fill=tk.X, pady=10, padx=5)
+
+        # Weekly Goal
+        weekly_frame = ttk.Frame(goals_frame)
+        weekly_frame.pack(fill=tk.X, pady=5)
+
+        ttk.Label(weekly_frame, text="Weekly Goal:", font=('Segoe UI', 10, 'bold')).pack(anchor=tk.W)
+
+        weekly_progress_frame = ttk.Frame(weekly_frame)
+        weekly_progress_frame.pack(fill=tk.X, pady=5)
+
+        self.weekly_goal_progress = ttk.Progressbar(weekly_progress_frame, mode='determinate',
+                                                     length=300, maximum=100)
+        self.weekly_goal_progress.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
+
+        self.weekly_goal_label = ttk.Label(weekly_progress_frame, text="0h / 10h (0%)",
+                                            font=('Segoe UI', 9))
+        self.weekly_goal_label.pack(side=tk.LEFT)
+
+        weekly_settings = ttk.Frame(weekly_frame)
+        weekly_settings.pack(fill=tk.X, pady=3)
+
+        ttk.Label(weekly_settings, text="Target (hours):").pack(side=tk.LEFT)
+        self.weekly_goal_var = tk.StringVar(value="10")
+        ttk.Spinbox(weekly_settings, from_=1, to=100, width=5,
+                    textvariable=self.weekly_goal_var).pack(side=tk.LEFT, padx=5)
+        ttk.Button(weekly_settings, text="Set", width=6,
+                   command=lambda: self.set_focus_goal("weekly")).pack(side=tk.LEFT)
+
+        ttk.Separator(goals_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
+
+        # Monthly Goal
+        monthly_frame = ttk.Frame(goals_frame)
+        monthly_frame.pack(fill=tk.X, pady=5)
+
+        ttk.Label(monthly_frame, text="Monthly Goal:", font=('Segoe UI', 10, 'bold')).pack(anchor=tk.W)
+
+        monthly_progress_frame = ttk.Frame(monthly_frame)
+        monthly_progress_frame.pack(fill=tk.X, pady=5)
+
+        self.monthly_goal_progress = ttk.Progressbar(monthly_progress_frame, mode='determinate',
+                                                      length=300, maximum=100)
+        self.monthly_goal_progress.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
+
+        self.monthly_goal_label = ttk.Label(monthly_progress_frame, text="0h / 40h (0%)",
+                                             font=('Segoe UI', 9))
+        self.monthly_goal_label.pack(side=tk.LEFT)
+
+        monthly_settings = ttk.Frame(monthly_frame)
+        monthly_settings.pack(fill=tk.X, pady=3)
+
+        ttk.Label(monthly_settings, text="Target (hours):").pack(side=tk.LEFT)
+        self.monthly_goal_var = tk.StringVar(value="40")
+        ttk.Spinbox(monthly_settings, from_=1, to=500, width=5,
+                    textvariable=self.monthly_goal_var).pack(side=tk.LEFT, padx=5)
+        ttk.Button(monthly_settings, text="Set", width=6,
+                   command=lambda: self.set_focus_goal("monthly")).pack(side=tk.LEFT)
+
+        # === Bypass Attempts Tracking ===
+        if BYPASS_LOGGER_AVAILABLE:
+            bypass_frame = ttk.LabelFrame(scrollable_frame, text="🚫 Distraction Attempts", padding="15")
+            bypass_frame.pack(fill=tk.X, pady=10, padx=5)
+
+            # Current session info
+            session_frame = ttk.Frame(bypass_frame)
+            session_frame.pack(fill=tk.X, pady=5)
+
+            self.bypass_session_label = ttk.Label(session_frame,
+                                                   text="Current Session: 0 attempts",
+                                                   font=('Segoe UI', 10, 'bold'))
+            self.bypass_session_label.pack(anchor=tk.W)
+
+            self.bypass_session_sites = ttk.Label(session_frame,
+                                                   text="No sites accessed",
+                                                   font=('Segoe UI', 9), foreground='gray')
+            self.bypass_session_sites.pack(anchor=tk.W)
+
+            ttk.Separator(bypass_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
+
+            # All-time stats
+            alltime_frame = ttk.Frame(bypass_frame)
+            alltime_frame.pack(fill=tk.X, pady=5)
+
+            ttk.Label(alltime_frame, text="All-Time Statistics:",
+                      font=('Segoe UI', 10, 'bold')).pack(anchor=tk.W)
+
+            self.bypass_total_label = ttk.Label(alltime_frame,
+                                                 text="Total attempts: 0",
+                                                 font=('Segoe UI', 9))
+            self.bypass_total_label.pack(anchor=tk.W, pady=2)
+
+            self.bypass_top_sites = ttk.Label(alltime_frame,
+                                               text="Top distractions: -",
+                                               font=('Segoe UI', 9))
+            self.bypass_top_sites.pack(anchor=tk.W, pady=2)
+
+            self.bypass_peak_hours = ttk.Label(alltime_frame,
+                                                text="Peak hours: -",
+                                                font=('Segoe UI', 9))
+            self.bypass_peak_hours.pack(anchor=tk.W, pady=2)
+
+            # Insights
+            ttk.Separator(bypass_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
+
+            ttk.Label(bypass_frame, text="💡 Insights:",
+                      font=('Segoe UI', 10, 'bold')).pack(anchor=tk.W)
+
+            self.bypass_insights_text = tk.Text(bypass_frame, height=3, wrap=tk.WORD,
+                                                 font=('Segoe UI', 9), bg='#fff9e6',
+                                                 relief=tk.FLAT)
+            self.bypass_insights_text.pack(fill=tk.X, pady=5)
+
+            ttk.Button(bypass_frame, text="🔄 Refresh Stats",
+                       command=self.refresh_bypass_stats).pack(pady=5)
+
+        # === Weekly Chart ===
+        week_frame = ttk.LabelFrame(scrollable_frame, text="📈 This Week", padding="15")
+        week_frame.pack(fill=tk.X, pady=10, padx=5)
 
         self.week_chart = tk.Text(week_frame, height=10, font=('Consolas', 10),
                                   state=tk.DISABLED, bg='#f5f5f5')
-        self.week_chart.pack(fill=tk.BOTH, expand=True)
+        self.week_chart.pack(fill=tk.X)
 
         # Reset button
-        ttk.Button(self.stats_tab, text="Reset Statistics",
+        ttk.Button(scrollable_frame, text="🔄 Reset All Statistics",
                    command=self.reset_stats).pack(pady=10)
+
+        # Load initial data
+        self.load_focus_goals()
+        self.update_focus_goals_display()
+        if BYPASS_LOGGER_AVAILABLE:
+            self.refresh_bypass_stats()
 
     def setup_settings_tab(self):
         """Setup the settings tab"""
@@ -523,7 +673,7 @@ class FocusBlockerGUI:
         about_frame = ttk.LabelFrame(self.settings_tab, text="About", padding="10")
         about_frame.pack(fill=tk.X, pady=10)
 
-        ttk.Label(about_frame, text="Personal Freedom v2.1.0",
+        ttk.Label(about_frame, text="Personal Freedom v2.2.0",
                   font=('Segoe UI', 11, 'bold')).pack()
         ttk.Label(about_frame, text="A focus and productivity tool for Windows",
                   font=('Segoe UI', 9)).pack()
@@ -1218,6 +1368,14 @@ class FocusBlockerGUI:
             self.stat_labels['best_streak'].config(text=f"{stats['best_streak']} days")
 
             self.update_week_chart()
+        
+        # Update focus goals dashboard
+        if hasattr(self, 'weekly_goal_progress'):
+            self.update_focus_goals_display()
+        
+        # Update bypass stats
+        if BYPASS_LOGGER_AVAILABLE and hasattr(self, 'bypass_session_label'):
+            self.refresh_bypass_stats()
 
     def update_week_chart(self):
         """Update the weekly chart"""
@@ -1406,6 +1564,129 @@ class FocusBlockerGUI:
             self.blocker.stats = self.blocker._default_stats()
             self.blocker.save_stats()
             self.update_stats_display()
+
+    def load_focus_goals(self):
+        """Load focus goals from config"""
+        # Weekly and monthly goals stored in blocker stats
+        self.weekly_goal_target = self.blocker.stats.get("weekly_goal_target", 10)
+        self.monthly_goal_target = self.blocker.stats.get("monthly_goal_target", 40)
+        
+        self.weekly_goal_var.set(str(self.weekly_goal_target))
+        self.monthly_goal_var.set(str(self.monthly_goal_target))
+
+    def set_focus_goal(self, goal_type: str):
+        """Set a weekly or monthly focus goal"""
+        try:
+            if goal_type == "weekly":
+                target = int(self.weekly_goal_var.get())
+                self.weekly_goal_target = target
+                self.blocker.stats["weekly_goal_target"] = target
+            else:
+                target = int(self.monthly_goal_var.get())
+                self.monthly_goal_target = target
+                self.blocker.stats["monthly_goal_target"] = target
+            
+            self.blocker.save_stats()
+            self.update_focus_goals_display()
+            messagebox.showinfo("Goal Set", f"{goal_type.capitalize()} goal set to {target} hours!")
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid number")
+
+    def update_focus_goals_display(self):
+        """Update the focus goals dashboard display"""
+        from datetime import datetime, timedelta
+        
+        # Get current date info
+        today = datetime.now()
+        
+        # Calculate weekly progress
+        week_start = today - timedelta(days=today.weekday())
+        week_start_str = week_start.strftime("%Y-%m-%d")
+        
+        weekly_hours = 0
+        for date_str, daily_data in self.blocker.stats.get("daily_stats", {}).items():
+            if date_str >= week_start_str:
+                weekly_hours += daily_data.get("focus_time", 0) / 3600
+        
+        weekly_target = getattr(self, 'weekly_goal_target', 10)
+        weekly_percent = min(100, (weekly_hours / weekly_target * 100)) if weekly_target > 0 else 0
+        
+        self.weekly_goal_progress['value'] = weekly_percent
+        self.weekly_goal_label.config(
+            text=f"{weekly_hours:.1f}h / {weekly_target}h ({weekly_percent:.0f}%)"
+        )
+        
+        # Calculate monthly progress
+        month_start_str = today.strftime("%Y-%m-01")
+        
+        monthly_hours = 0
+        for date_str, daily_data in self.blocker.stats.get("daily_stats", {}).items():
+            if date_str >= month_start_str:
+                monthly_hours += daily_data.get("focus_time", 0) / 3600
+        
+        monthly_target = getattr(self, 'monthly_goal_target', 40)
+        monthly_percent = min(100, (monthly_hours / monthly_target * 100)) if monthly_target > 0 else 0
+        
+        self.monthly_goal_progress['value'] = monthly_percent
+        self.monthly_goal_label.config(
+            text=f"{monthly_hours:.1f}h / {monthly_target}h ({monthly_percent:.0f}%)"
+        )
+
+    def refresh_bypass_stats(self):
+        """Refresh the bypass attempt statistics display"""
+        if not BYPASS_LOGGER_AVAILABLE:
+            return
+        
+        stats = self.blocker.get_bypass_statistics()
+        if not stats:
+            return
+        
+        # Current session
+        session_count = stats.get("current_session", 0)
+        session_sites = stats.get("session_sites", [])
+        
+        self.bypass_session_label.config(
+            text=f"Current Session: {session_count} attempts"
+        )
+        
+        if session_sites:
+            sites_text = ", ".join(session_sites[:5])
+            if len(session_sites) > 5:
+                sites_text += f" (+{len(session_sites) - 5} more)"
+            self.bypass_session_sites.config(text=f"Sites: {sites_text}")
+        else:
+            self.bypass_session_sites.config(text="No sites accessed")
+        
+        # All-time stats
+        self.bypass_total_label.config(
+            text=f"Total attempts: {stats.get('total_attempts', 0)}"
+        )
+        
+        # Top sites
+        top_sites = stats.get("top_sites", [])[:3]
+        if top_sites:
+            sites_str = ", ".join(f"{site} ({count})" for site, count in top_sites)
+            self.bypass_top_sites.config(text=f"Top distractions: {sites_str}")
+        else:
+            self.bypass_top_sites.config(text="Top distractions: -")
+        
+        # Peak hours
+        peak_hours = stats.get("peak_hours", [])[:3]
+        if peak_hours:
+            hours_str = ", ".join(f"{int(h)}:00" for h, _ in peak_hours)
+            self.bypass_peak_hours.config(text=f"Peak hours: {hours_str}")
+        else:
+            self.bypass_peak_hours.config(text="Peak hours: -")
+        
+        # Insights
+        insights = self.blocker.get_bypass_insights()
+        self.bypass_insights_text.config(state=tk.NORMAL)
+        self.bypass_insights_text.delete('1.0', tk.END)
+        if insights:
+            self.bypass_insights_text.insert('1.0', "\n".join(insights))
+        else:
+            self.bypass_insights_text.insert('1.0', "No insights yet. Keep focusing!")
+        self.bypass_insights_text.config(state=tk.DISABLED)
 
     # === Settings Tab Methods ===
 

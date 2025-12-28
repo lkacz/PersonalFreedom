@@ -40,6 +40,14 @@ SCRIPT_DIR = Path(__file__).parent
 CONFIG_PATH = SCRIPT_DIR / "config.json"
 SESSION_STATE_PATH = SCRIPT_DIR / ".session_state.json"  # Crash recovery file
 
+# Import bypass logger if available
+try:
+    from bypass_logger import get_bypass_logger
+    BYPASS_LOGGER_AVAILABLE = True
+except ImportError:
+    BYPASS_LOGGER_AVAILABLE = False
+    get_bypass_logger = None
+
 # Default sites to block
 DEFAULT_BLACKLIST = [
     "facebook.com", "www.facebook.com",
@@ -103,6 +111,11 @@ class TrayBlocker:
         self.session_start_time = None
         self.load_config()
         self.stats = self._load_stats()
+        
+        # Initialize bypass logger
+        self.bypass_logger = None
+        if BYPASS_LOGGER_AVAILABLE and get_bypass_logger:
+            self.bypass_logger = get_bypass_logger()
         
         # Check for crash recovery on startup
         self.check_crash_recovery()
@@ -368,6 +381,10 @@ class TrayBlocker:
             self.is_blocking = True
             self._flush_dns()
             
+            # Start bypass attempt logger
+            if self.bypass_logger:
+                self.bypass_logger.start_server()
+            
             # Save session state for crash recovery
             self.save_session_state(duration_seconds)
             
@@ -402,6 +419,10 @@ class TrayBlocker:
 
             self.is_blocking = False
             self._flush_dns()
+            
+            # Stop bypass attempt logger
+            if self.bypass_logger:
+                self.bypass_logger.stop_server()
             
             # Clear session state (crash recovery no longer needed)
             self.clear_session_state()
