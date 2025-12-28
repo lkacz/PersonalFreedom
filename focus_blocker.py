@@ -62,6 +62,226 @@ except ImportError:
     TRAY_AVAILABLE = False
 
 
+# Days of the week for priority scheduling
+DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+
+class PrioritiesDialog:
+    """Dialog for managing daily priorities with day-of-week reminders."""
+    
+    def __init__(self, parent: tk.Tk, blocker, on_start_callback=None):
+        self.parent = parent
+        self.blocker = blocker
+        self.on_start_callback = on_start_callback
+        self.result = None
+        
+        # Create the dialog window
+        self.dialog = tk.Toplevel(parent)
+        self.dialog.title("🎯 My Priorities")
+        self.dialog.geometry("550x500")
+        self.dialog.resizable(False, False)
+        self.dialog.transient(parent)
+        self.dialog.grab_set()
+        
+        # Center the dialog
+        self.dialog.update_idletasks()
+        x = (self.dialog.winfo_screenwidth() // 2) - (550 // 2)
+        y = (self.dialog.winfo_screenheight() // 2) - (500 // 2)
+        self.dialog.geometry(f"+{x}+{y}")
+        
+        # Load existing priorities
+        self.priorities = self.blocker.priorities.copy() if self.blocker.priorities else []
+        # Ensure we have 3 priority slots
+        while len(self.priorities) < 3:
+            self.priorities.append({"title": "", "days": [], "active": False})
+        
+        self.setup_ui()
+        self.check_day_notifications()
+    
+    def setup_ui(self):
+        """Setup the dialog UI."""
+        main_frame = ttk.Frame(self.dialog, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Header
+        header_frame = ttk.Frame(main_frame)
+        header_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        ttk.Label(header_frame, text="🎯 My Priorities for Today",
+                  font=('Segoe UI', 16, 'bold')).pack(side=tk.LEFT)
+        
+        today = datetime.now().strftime("%A, %B %d")
+        ttk.Label(header_frame, text=today,
+                  font=('Segoe UI', 10), foreground='gray').pack(side=tk.RIGHT)
+        
+        # Description
+        ttk.Label(main_frame, 
+                  text="Set up to 3 priority tasks. Choose which days to be reminded about each.",
+                  font=('Segoe UI', 9), foreground='gray').pack(anchor=tk.W, pady=(0, 15))
+        
+        # Priority entries
+        self.priority_vars = []
+        self.day_vars = []
+        
+        for i in range(3):
+            self._create_priority_row(main_frame, i)
+        
+        ttk.Separator(main_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=15)
+        
+        # Highlighted priorities for today
+        today_frame = ttk.LabelFrame(main_frame, text="📌 Today's Focus", padding="10")
+        today_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        self.today_priorities_label = ttk.Label(today_frame, text="", 
+                                                 font=('Segoe UI', 10), wraplength=480)
+        self.today_priorities_label.pack(anchor=tk.W)
+        
+        # Buttons
+        btn_frame = ttk.Frame(main_frame)
+        btn_frame.pack(fill=tk.X, pady=(10, 0))
+        
+        ttk.Button(btn_frame, text="💾 Save Priorities",
+                   command=self.save_priorities).pack(side=tk.LEFT, padx=5)
+        
+        self.start_btn = ttk.Button(btn_frame, text="▶ Start Working on Priority",
+                                     command=self.start_priority_session)
+        self.start_btn.pack(side=tk.LEFT, padx=5)
+        
+        ttk.Button(btn_frame, text="Close",
+                   command=self.close_dialog).pack(side=tk.RIGHT, padx=5)
+        
+        # Startup toggle
+        startup_frame = ttk.Frame(main_frame)
+        startup_frame.pack(fill=tk.X, pady=(15, 0))
+        
+        self.show_on_startup_var = tk.BooleanVar(value=self.blocker.show_priorities_on_startup)
+        ttk.Checkbutton(startup_frame, 
+                        text="Show this dialog when the app starts",
+                        variable=self.show_on_startup_var,
+                        command=self.toggle_startup_setting).pack(anchor=tk.W)
+    
+    def _create_priority_row(self, parent, index):
+        """Create a priority entry row with day selection."""
+        frame = ttk.LabelFrame(parent, text=f"Priority #{index + 1}", padding="10")
+        frame.pack(fill=tk.X, pady=5)
+        
+        # Priority title entry
+        title_frame = ttk.Frame(frame)
+        title_frame.pack(fill=tk.X, pady=(0, 8))
+        
+        ttk.Label(title_frame, text="Task:", width=8).pack(side=tk.LEFT)
+        
+        title_var = tk.StringVar(value=self.priorities[index].get("title", ""))
+        title_entry = ttk.Entry(title_frame, textvariable=title_var, width=50)
+        title_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 0))
+        self.priority_vars.append(title_var)
+        
+        # Day selection
+        days_frame = ttk.Frame(frame)
+        days_frame.pack(fill=tk.X)
+        
+        ttk.Label(days_frame, text="Remind:", width=8).pack(side=tk.LEFT)
+        
+        day_checkboxes = {}
+        saved_days = self.priorities[index].get("days", [])
+        
+        for day in DAYS_OF_WEEK:
+            var = tk.BooleanVar(value=day in saved_days)
+            cb = ttk.Checkbutton(days_frame, text=day[:3], variable=var, width=5)
+            cb.pack(side=tk.LEFT, padx=2)
+            day_checkboxes[day] = var
+        
+        self.day_vars.append(day_checkboxes)
+    
+    def check_day_notifications(self):
+        """Check which priorities should be shown today based on day selection."""
+        today = datetime.now().strftime("%A")
+        today_priorities = []
+        
+        for i, priority in enumerate(self.priorities):
+            title = priority.get("title", "").strip()
+            days = priority.get("days", [])
+            
+            if title and (not days or today in days):
+                today_priorities.append(f"• {title}")
+        
+        if today_priorities:
+            self.today_priorities_label.config(
+                text="\n".join(today_priorities),
+                foreground='#2e7d32'
+            )
+        else:
+            self.today_priorities_label.config(
+                text="No priorities set for today. Add your tasks above!",
+                foreground='gray'
+            )
+    
+    def save_priorities(self):
+        """Save the priorities to config."""
+        new_priorities = []
+        
+        for i in range(3):
+            title = self.priority_vars[i].get().strip()
+            days = [day for day, var in self.day_vars[i].items() if var.get()]
+            
+            new_priorities.append({
+                "title": title,
+                "days": days,
+                "active": bool(title)
+            })
+        
+        self.blocker.priorities = new_priorities
+        self.blocker.save_config()
+        self.priorities = new_priorities
+        self.check_day_notifications()
+        
+        # Show confirmation
+        self.dialog.after(0, lambda: self._show_save_feedback())
+    
+    def _show_save_feedback(self):
+        """Show brief save feedback."""
+        original_text = self.today_priorities_label.cget("text")
+        self.today_priorities_label.config(text="✓ Priorities saved!", foreground='#1976d2')
+        self.dialog.after(1500, lambda: self.check_day_notifications())
+    
+    def toggle_startup_setting(self):
+        """Toggle whether to show dialog on startup."""
+        self.blocker.show_priorities_on_startup = self.show_on_startup_var.get()
+        self.blocker.save_config()
+    
+    def start_priority_session(self):
+        """Start a focus session for the first active priority."""
+        # Find the first priority for today
+        today = datetime.now().strftime("%A")
+        
+        for priority in self.priorities:
+            title = priority.get("title", "").strip()
+            days = priority.get("days", [])
+            
+            if title and (not days or today in days):
+                self.result = {"action": "start", "priority": title}
+                self.close_dialog()
+                
+                if self.on_start_callback:
+                    self.on_start_callback(title)
+                return
+        
+        # No priority for today
+        from tkinter import messagebox
+        messagebox.showinfo("No Priority", 
+                           "No priority is set for today. Add a task above first!",
+                           parent=self.dialog)
+    
+    def close_dialog(self):
+        """Close the dialog."""
+        self.dialog.destroy()
+    
+    def wait_for_close(self):
+        """Wait for the dialog to close."""
+        self.parent.wait_window(self.dialog)
+        return self.result
+
+
 class FocusBlockerGUI:
     """Enhanced GUI with tabbed interface"""
 
@@ -100,6 +320,9 @@ class FocusBlockerGUI:
         
         # Check for crash recovery (orphaned sessions)
         self.root.after(500, self.check_crash_recovery)
+        
+        # Show priorities dialog on startup if enabled
+        self.root.after(600, self.check_priorities_on_startup)
         
         # Handle window minimize
         self.root.bind('<Unmap>', self._on_minimize)
@@ -595,6 +818,26 @@ class FocusBlockerGUI:
 
     def setup_settings_tab(self):
         """Setup the settings tab"""
+        # My Priorities Section
+        priorities_frame = ttk.LabelFrame(self.settings_tab, text="🎯 My Priorities", padding="10")
+        priorities_frame.pack(fill=tk.X, pady=(0, 10))
+
+        ttk.Label(priorities_frame, 
+                  text="Set up to 3 daily priority tasks with day-of-week reminders.",
+                  wraplength=400).pack(anchor=tk.W)
+
+        priorities_btn_frame = ttk.Frame(priorities_frame)
+        priorities_btn_frame.pack(fill=tk.X, pady=10)
+
+        ttk.Button(priorities_btn_frame, text="📝 Manage Priorities",
+                   command=self.open_priorities_dialog).pack(side=tk.LEFT, padx=5)
+
+        self.priorities_startup_var = tk.BooleanVar(value=self.blocker.show_priorities_on_startup)
+        ttk.Checkbutton(priorities_btn_frame, 
+                        text="Show on startup",
+                        variable=self.priorities_startup_var,
+                        command=self.toggle_priorities_startup).pack(side=tk.LEFT, padx=15)
+
         # Password protection
         pwd_frame = ttk.LabelFrame(self.settings_tab, text="Password Protection", padding="10")
         pwd_frame.pack(fill=tk.X, pady=(0, 10))
@@ -673,7 +916,7 @@ class FocusBlockerGUI:
         about_frame = ttk.LabelFrame(self.settings_tab, text="About", padding="10")
         about_frame.pack(fill=tk.X, pady=10)
 
-        ttk.Label(about_frame, text="Personal Freedom v2.2.0",
+        ttk.Label(about_frame, text="Personal Freedom v2.3.0",
                   font=('Segoe UI', 11, 'bold')).pack()
         ttk.Label(about_frame, text="A focus and productivity tool for Windows",
                   font=('Segoe UI', 9)).pack()
@@ -1690,6 +1933,28 @@ class FocusBlockerGUI:
 
     # === Settings Tab Methods ===
 
+    def open_priorities_dialog(self):
+        """Open the My Priorities dialog."""
+        def on_start_priority(priority_title):
+            """Callback when user clicks Start Working on Priority."""
+            # Switch to Timer tab and start a session
+            self.notebook.select(self.timer_tab)
+            messagebox.showinfo("Priority Session", 
+                               f"Starting focus session for:\n\n\"{priority_title}\"\n\n"
+                               "Set your desired duration and click Start Focus!",
+                               parent=self.root)
+        
+        dialog = PrioritiesDialog(self.root, self.blocker, on_start_priority)
+        dialog.wait_for_close()
+        
+        # Sync the startup checkbox state
+        self.priorities_startup_var.set(self.blocker.show_priorities_on_startup)
+
+    def toggle_priorities_startup(self):
+        """Toggle whether to show priorities dialog on startup."""
+        self.blocker.show_priorities_on_startup = self.priorities_startup_var.get()
+        self.blocker.save_config()
+
     def set_password(self):
         """Set strict mode password"""
         password = simpledialog.askstring("Set Password", "Enter new password:", show='*')
@@ -1916,6 +2181,37 @@ class FocusBlockerGUI:
                 "Use 'Emergency Cleanup' in Settings tab when you want to remove them."
             )
         # If CANCEL (None), do nothing - will ask again next time
+
+    def check_priorities_on_startup(self) -> None:
+        """Check if priorities dialog should be shown on startup."""
+        if not self.blocker.show_priorities_on_startup:
+            return
+        
+        # Check if today is a day with any priorities
+        today = datetime.now().strftime("%A")
+        has_priority_today = False
+        
+        for priority in self.blocker.priorities:
+            title = priority.get("title", "").strip()
+            days = priority.get("days", [])
+            
+            # Show if priority has a title and either no days specified or today is selected
+            if title and (not days or today in days):
+                has_priority_today = True
+                break
+        
+        # Show dialog if there are priorities for today, or if no priorities set yet
+        if has_priority_today or not any(p.get("title", "").strip() for p in self.blocker.priorities):
+            def on_start_priority(priority_title):
+                """Callback when user clicks Start Working on Priority."""
+                self.notebook.select(self.timer_tab)
+                messagebox.showinfo("Priority Session", 
+                                   f"Starting focus session for:\n\n\"{priority_title}\"\n\n"
+                                   "Set your desired duration and click Start Focus!",
+                                   parent=self.root)
+            
+            dialog = PrioritiesDialog(self.root, self.blocker, on_start_priority)
+            dialog.wait_for_close()
 
     def emergency_cleanup_action(self):
         """Emergency cleanup - remove all blocks and clean system"""
