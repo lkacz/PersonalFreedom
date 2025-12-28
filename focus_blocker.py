@@ -66,6 +66,169 @@ except ImportError:
 DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 
+class PriorityTimeLogDialog:
+    """Dialog shown after a session to log time spent on priorities."""
+    
+    def __init__(self, parent: tk.Tk, blocker, session_minutes: int):
+        self.parent = parent
+        self.blocker = blocker
+        self.session_minutes = session_minutes
+        self.result = None
+        
+        # Create the dialog window
+        self.dialog = tk.Toplevel(parent)
+        self.dialog.title("📊 Log Priority Time")
+        self.dialog.geometry("450x400")
+        self.dialog.resizable(False, False)
+        self.dialog.transient(parent)
+        self.dialog.grab_set()
+        
+        # Center the dialog
+        self.dialog.update_idletasks()
+        x = (self.dialog.winfo_screenwidth() // 2) - (450 // 2)
+        y = (self.dialog.winfo_screenheight() // 2) - (400 // 2)
+        self.dialog.geometry(f"+{x}+{y}")
+        
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Setup the dialog UI."""
+        main_frame = ttk.Frame(self.dialog, padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Header
+        ttk.Label(main_frame, text="📊 Log Time to Priorities",
+                  font=('Segoe UI', 14, 'bold')).pack(anchor=tk.W)
+        
+        ttk.Label(main_frame, 
+                  text=f"You just completed a {self.session_minutes} minute focus session.\n"
+                       "How much time did you spend on each priority?",
+                  font=('Segoe UI', 10), foreground='gray').pack(anchor=tk.W, pady=(5, 15))
+        
+        # Get today's priorities
+        today = datetime.now().strftime("%A")
+        self.time_vars = []
+        self.priority_indices = []
+        
+        priorities_frame = ttk.Frame(main_frame)
+        priorities_frame.pack(fill=tk.X, pady=10)
+        
+        has_priorities = False
+        for i, priority in enumerate(self.blocker.priorities):
+            title = priority.get("title", "").strip()
+            days = priority.get("days", [])
+            
+            if title and (not days or today in days):
+                has_priorities = True
+                self._create_priority_time_row(priorities_frame, i, priority)
+        
+        if not has_priorities:
+            ttk.Label(priorities_frame, 
+                      text="No active priorities for today.\nSession time won't be logged to priorities.",
+                      font=('Segoe UI', 10), foreground='gray').pack(pady=20)
+        
+        # Quick buttons
+        if has_priorities:
+            quick_frame = ttk.LabelFrame(main_frame, text="Quick Options", padding="10")
+            quick_frame.pack(fill=tk.X, pady=15)
+            
+            ttk.Button(quick_frame, text=f"Log all {self.session_minutes} min to first priority",
+                       command=self.log_all_to_first).pack(side=tk.LEFT, padx=5)
+            
+            ttk.Button(quick_frame, text="Split evenly",
+                       command=self.split_evenly).pack(side=tk.LEFT, padx=5)
+        
+        # Buttons
+        btn_frame = ttk.Frame(main_frame)
+        btn_frame.pack(fill=tk.X, pady=(15, 0))
+        
+        ttk.Button(btn_frame, text="💾 Save & Close",
+                   command=self.save_and_close).pack(side=tk.LEFT, padx=5)
+        
+        ttk.Button(btn_frame, text="Skip",
+                   command=self.close_dialog).pack(side=tk.RIGHT, padx=5)
+    
+    def _create_priority_time_row(self, parent, index, priority):
+        """Create a row for logging time to a priority."""
+        frame = ttk.Frame(parent)
+        frame.pack(fill=tk.X, pady=5)
+        
+        title = priority.get("title", "")
+        planned = priority.get("planned_minutes", 0)
+        logged = priority.get("logged_minutes", 0)
+        
+        # Priority info
+        info_frame = ttk.Frame(frame)
+        info_frame.pack(fill=tk.X)
+        
+        ttk.Label(info_frame, text=f"#{index + 1}: {title}", 
+                  font=('Segoe UI', 10, 'bold')).pack(side=tk.LEFT)
+        
+        if planned > 0:
+            progress_pct = min(100, int((logged / planned) * 100))
+            ttk.Label(info_frame, text=f"({logged}/{planned} min - {progress_pct}%)",
+                      font=('Segoe UI', 9), foreground='gray').pack(side=tk.RIGHT)
+        
+        # Time input
+        time_frame = ttk.Frame(frame)
+        time_frame.pack(fill=tk.X, pady=(5, 0))
+        
+        ttk.Label(time_frame, text="Add minutes:", width=12).pack(side=tk.LEFT)
+        
+        time_var = tk.StringVar(value="0")
+        spinbox = ttk.Spinbox(time_frame, from_=0, to=self.session_minutes, 
+                               width=8, textvariable=time_var)
+        spinbox.pack(side=tk.LEFT, padx=5)
+        
+        self.time_vars.append(time_var)
+        self.priority_indices.append(index)
+        
+        # Progress bar if planned time exists
+        if planned > 0:
+            progress = ttk.Progressbar(time_frame, mode='determinate', 
+                                        length=150, maximum=100)
+            progress['value'] = min(100, int((logged / planned) * 100))
+            progress.pack(side=tk.RIGHT, padx=5)
+    
+    def log_all_to_first(self):
+        """Log all session time to the first priority."""
+        if self.time_vars:
+            self.time_vars[0].set(str(self.session_minutes))
+            for var in self.time_vars[1:]:
+                var.set("0")
+    
+    def split_evenly(self):
+        """Split session time evenly among priorities."""
+        if self.time_vars:
+            per_priority = self.session_minutes // len(self.time_vars)
+            for var in self.time_vars:
+                var.set(str(per_priority))
+    
+    def save_and_close(self):
+        """Save the logged time and close."""
+        for i, (time_var, priority_idx) in enumerate(zip(self.time_vars, self.priority_indices)):
+            try:
+                minutes = int(time_var.get())
+                if minutes > 0:
+                    current_logged = self.blocker.priorities[priority_idx].get("logged_minutes", 0)
+                    self.blocker.priorities[priority_idx]["logged_minutes"] = current_logged + minutes
+            except ValueError:
+                pass
+        
+        self.blocker.save_config()
+        self.result = "saved"
+        self.close_dialog()
+    
+    def close_dialog(self):
+        """Close the dialog."""
+        self.dialog.destroy()
+    
+    def wait_for_close(self):
+        """Wait for the dialog to close."""
+        self.parent.wait_window(self.dialog)
+        return self.result
+
+
 class PrioritiesDialog:
     """Dialog for managing daily priorities with day-of-week reminders."""
     
@@ -122,6 +285,7 @@ class PrioritiesDialog:
         # Priority entries
         self.priority_vars = []
         self.day_vars = []
+        self.planned_vars = []
         
         for i in range(3):
             self._create_priority_row(main_frame, i)
@@ -161,7 +325,11 @@ class PrioritiesDialog:
                         command=self.toggle_startup_setting).pack(anchor=tk.W)
     
     def _create_priority_row(self, parent, index):
-        """Create a priority entry row with day selection."""
+        """Create a priority entry row with day selection and time planning."""
+        priority_data = self.priorities[index]
+        planned = priority_data.get("planned_minutes", 0)
+        logged = priority_data.get("logged_minutes", 0)
+        
         frame = ttk.LabelFrame(parent, text=f"Priority #{index + 1}", padding="10")
         frame.pack(fill=tk.X, pady=5)
         
@@ -171,10 +339,39 @@ class PrioritiesDialog:
         
         ttk.Label(title_frame, text="Task:", width=8).pack(side=tk.LEFT)
         
-        title_var = tk.StringVar(value=self.priorities[index].get("title", ""))
-        title_entry = ttk.Entry(title_frame, textvariable=title_var, width=50)
-        title_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 0))
+        title_var = tk.StringVar(value=priority_data.get("title", ""))
+        title_entry = ttk.Entry(title_frame, textvariable=title_var, width=40)
+        title_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 10))
         self.priority_vars.append(title_var)
+        
+        # Planned time input
+        ttk.Label(title_frame, text="⏱ Plan:").pack(side=tk.LEFT)
+        planned_var = tk.IntVar(value=planned)
+        planned_spin = ttk.Spinbox(title_frame, from_=0, to=600, width=5, 
+                                    textvariable=planned_var)
+        planned_spin.pack(side=tk.LEFT, padx=(3, 0))
+        ttk.Label(title_frame, text="min").pack(side=tk.LEFT, padx=(2, 0))
+        self.planned_vars.append(planned_var)
+        
+        # Progress display (only if there's planned time)
+        if planned > 0:
+            progress_frame = ttk.Frame(frame)
+            progress_frame.pack(fill=tk.X, pady=(0, 8))
+            
+            ttk.Label(progress_frame, text="Progress:", width=8).pack(side=tk.LEFT)
+            
+            # Progress bar
+            progress_pct = min(100, int((logged / planned) * 100)) if planned > 0 else 0
+            progress_bar = ttk.Progressbar(progress_frame, length=150, mode='determinate',
+                                           value=progress_pct)
+            progress_bar.pack(side=tk.LEFT, padx=(5, 10))
+            
+            # Time logged text
+            progress_text = f"{logged}/{planned} min ({progress_pct}%)"
+            if progress_pct >= 100:
+                progress_text += " ✅"
+            ttk.Label(progress_frame, text=progress_text, 
+                     foreground='#2e7d32' if progress_pct >= 100 else 'gray').pack(side=tk.LEFT)
         
         # Day selection
         days_frame = ttk.Frame(frame)
@@ -183,7 +380,7 @@ class PrioritiesDialog:
         ttk.Label(days_frame, text="Remind:", width=8).pack(side=tk.LEFT)
         
         day_checkboxes = {}
-        saved_days = self.priorities[index].get("days", [])
+        saved_days = priority_data.get("days", [])
         
         for day in DAYS_OF_WEEK:
             var = tk.BooleanVar(value=day in saved_days)
@@ -201,9 +398,17 @@ class PrioritiesDialog:
         for i, priority in enumerate(self.priorities):
             title = priority.get("title", "").strip()
             days = priority.get("days", [])
+            planned = priority.get("planned_minutes", 0)
+            logged = priority.get("logged_minutes", 0)
             
             if title and (not days or today in days):
-                today_priorities.append(f"• {title}")
+                # Show progress if there's planned time
+                if planned > 0:
+                    pct = min(100, int((logged / planned) * 100))
+                    status = "✅" if pct >= 100 else f"({logged}/{planned} min, {pct}%)"
+                    today_priorities.append(f"• {title} {status}")
+                else:
+                    today_priorities.append(f"• {title}")
         
         if today_priorities:
             self.today_priorities_label.config(
@@ -223,11 +428,16 @@ class PrioritiesDialog:
         for i in range(3):
             title = self.priority_vars[i].get().strip()
             days = [day for day, var in self.day_vars[i].items() if var.get()]
+            planned = self.planned_vars[i].get() if i < len(self.planned_vars) else 0
+            # Preserve existing logged_minutes
+            logged = self.priorities[i].get("logged_minutes", 0)
             
             new_priorities.append({
                 "title": title,
                 "days": days,
-                "active": bool(title)
+                "active": bool(title),
+                "planned_minutes": planned,
+                "logged_minutes": logged
             })
         
         self.blocker.priorities = new_priorities
@@ -1280,6 +1490,30 @@ class FocusBlockerGUI:
             self.show_ai_session_complete(elapsed)
         else:
             messagebox.showinfo("Complete!", "🎉 Focus session complete!\nGreat job staying focused!")
+        
+        # Show priority time logging dialog if user has priorities for today
+        session_minutes = elapsed // 60
+        if session_minutes > 0:
+            self._show_priority_time_log_dialog(session_minutes)
+    
+    def _show_priority_time_log_dialog(self, session_minutes: int):
+        """Show the priority time logging dialog after a focus session."""
+        today = datetime.now().strftime("%A")
+        
+        # Check if there are priorities for today
+        today_priorities = []
+        for i, priority in enumerate(self.blocker.priorities):
+            title = priority.get("title", "").strip()
+            days = priority.get("days", [])
+            planned = priority.get("planned_minutes", 0)
+            
+            # Include priority if it has a title and either no days set or today is selected
+            if title and (not days or today in days):
+                today_priorities.append(i)
+        
+        # Only show dialog if there are priorities with planned time for today
+        if today_priorities:
+            PriorityTimeLogDialog(self.root, self.blocker, session_minutes)
     
     def _handle_pomodoro_complete(self, elapsed: int):
         """Handle Pomodoro work/break cycle transitions"""
@@ -1404,6 +1638,11 @@ class FocusBlockerGUI:
                 f"Total focus time: {total_work // 60} minutes\n\n"
                 "Keep up the great work!"
             )
+            
+            # Show priority time logging dialog for Pomodoro work time
+            work_minutes = total_work // 60
+            if work_minutes > 0:
+                self._show_priority_time_log_dialog(work_minutes)
     
     def _play_notification_sound(self):
         """Play a notification sound"""
