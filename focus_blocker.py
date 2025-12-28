@@ -565,21 +565,56 @@ def get_diary_power_tier(power: int) -> str:
     return "godlike" if power > 2000 else "pathetic"
 
 
+def calculate_session_tier_boost(session_minutes: int) -> int:
+    """
+    Calculate how many tiers to boost diary entries based on session length.
+    Longer sessions = more epic adventures!
+    
+    15-29 min: +0 tiers (normal)
+    30-44 min: +1 tier
+    45-59 min: +1 tier + 30% chance of +2
+    60-89 min: +2 tiers
+    90-119 min: +2 tiers + 50% chance of +3
+    120+ min: +3 tiers (legendary focus!)
+    """
+    if session_minutes >= 120:
+        return 3
+    elif session_minutes >= 90:
+        return 3 if random.random() < 0.5 else 2
+    elif session_minutes >= 60:
+        return 2
+    elif session_minutes >= 45:
+        return 2 if random.random() < 0.3 else 1
+    elif session_minutes >= 30:
+        return 1
+    return 0
+
+
 def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: dict = None) -> dict:
     """
-    Generate a hilarious diary entry based on character power level.
+    Generate a hilarious diary entry based on character power level AND session length.
     
     Higher power levels unlock more epic and absurd adventures.
+    Longer sessions boost the tier for even more epic entries!
     The diary entry includes the date, story, and context about the session.
     """
-    tier = get_diary_power_tier(power)
+    base_tier = get_diary_power_tier(power)
+    available_tiers = list(DIARY_POWER_TIERS.keys())
+    base_tier_index = available_tiers.index(base_tier)
+    
+    # Apply session length boost!
+    session_boost = calculate_session_tier_boost(session_minutes)
+    boosted_index = min(base_tier_index + session_boost, len(available_tiers) - 1)
+    tier = available_tiers[boosted_index]
+    
+    # Track if we got a boost for display
+    tier_was_boosted = boosted_index > base_tier_index
     
     # For maximum variety, occasionally pull from adjacent tiers too
     adjacent_chance = random.random()
-    available_tiers = list(DIARY_POWER_TIERS.keys())
     tier_index = available_tiers.index(tier)
     
-    # 20% chance to pull a verb/outcome from one tier higher (if possible)
+    # 15% chance to pull a verb/outcome from one tier higher (if possible)
     # This makes occasional epic moments even at lower power
     verb_tier = tier
     if adjacent_chance < 0.15 and tier_index < len(available_tiers) - 1:
@@ -626,6 +661,9 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
         "story": full_entry,
         "power_at_time": power,
         "tier": tier,
+        "base_tier": base_tier,
+        "tier_boosted": tier_was_boosted,
+        "session_boost": session_boost,
         "session_minutes": session_minutes,
         "short_date": datetime.now().strftime("%b %d, %Y")
     }
@@ -1361,24 +1399,132 @@ class ItemDropDialog:
         tk.Label(main_frame, text=random.choice(msg_list),
                  font=('Segoe UI', 10, 'bold'), bg=bg, fg='#666').pack(pady=(10, 5))
         
-        # Check if diary entry was added today
-        today = datetime.now().strftime("%Y-%m-%d")
-        diary = self.blocker.adhd_buster.get("diary", [])
-        today_entries = [e for e in diary if e.get("date") == today]
-        
-        if today_entries:
-            # Show a teaser of today's diary entry
-            entry = today_entries[-1]
-            story = entry.get("story", "")
-            # Truncate story for preview
-            if len(story) > 80:
-                story = story[:77] + "..."
-            tk.Label(main_frame, text=f"📖 {story}",
-                     font=('Segoe UI', 8, 'italic'), bg=bg, fg='#555',
-                     wraplength=360).pack(pady=(5, 0))
+        # Hint about upcoming diary entry
+        tk.Label(main_frame, text="📖 Your adventure awaits...",
+                 font=('Segoe UI', 9, 'italic'), bg=bg, fg='#888').pack(pady=(5, 0))
         
         tk.Label(main_frame, text="(Click anywhere or wait to dismiss)",
                  font=('Segoe UI', 8), bg=bg, fg='#999').pack()
+        
+        # Click to dismiss
+        self.dialog.bind("<Button-1>", lambda e: self.dialog.destroy())
+
+
+class DiaryEntryRevealDialog:
+    """
+    Dramatic reveal dialog for the daily diary entry.
+    Shows after item drop as a session reward.
+    """
+    
+    def __init__(self, parent: tk.Tk, blocker, entry: dict, session_minutes: int = 0):
+        self.parent = parent
+        self.blocker = blocker
+        self.entry = entry
+        self.session_minutes = session_minutes
+        
+        self.dialog = tk.Toplevel(parent)
+        self.dialog.title("📖 Today's Adventure")
+        self.dialog.geometry("520x380")
+        self.dialog.resizable(False, False)
+        self.dialog.transient(parent)
+        
+        # Center on parent
+        self.dialog.update_idletasks()
+        x = parent.winfo_x() + (parent.winfo_width() - 520) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - 380) // 2
+        self.dialog.geometry(f"+{x}+{y}")
+        
+        self.setup_ui()
+        
+        # Auto-close after reading time (based on story length)
+        story_len = len(entry.get("story", ""))
+        close_time = max(8000, min(15000, story_len * 50))  # 8-15 seconds
+        self.dialog.after(close_time, self.dialog.destroy)
+    
+    def setup_ui(self):
+        """Create the dramatic diary reveal UI."""
+        tier = self.entry.get("tier", "pathetic")
+        
+        # Background and accent colors by tier
+        tier_styles = {
+            "pathetic": {"bg": "#fafafa", "accent": "#9e9e9e", "emoji": "🌱"},
+            "modest": {"bg": "#f1f8e9", "accent": "#8bc34a", "emoji": "🛡️"},
+            "decent": {"bg": "#e8f5e9", "accent": "#4caf50", "emoji": "💪"},
+            "heroic": {"bg": "#e3f2fd", "accent": "#2196f3", "emoji": "🔥"},
+            "epic": {"bg": "#f3e5f5", "accent": "#9c27b0", "emoji": "⚡"},
+            "legendary": {"bg": "#fff3e0", "accent": "#ff9800", "emoji": "⭐"},
+            "godlike": {"bg": "#fffde7", "accent": "#ffc107", "emoji": "🌟"}
+        }
+        
+        style = tier_styles.get(tier, tier_styles["pathetic"])
+        bg = style["bg"]
+        accent = style["accent"]
+        emoji = style["emoji"]
+        
+        main_frame = tk.Frame(self.dialog, bg=bg, padx=25, pady=20)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Header with tier info
+        header_frame = tk.Frame(main_frame, bg=bg)
+        header_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        # Dynamic header based on tier boost
+        tier_boosted = self.entry.get("tier_boosted", False)
+        session_boost = self.entry.get("session_boost", 0)
+        
+        if tier_boosted and session_boost >= 2:
+            header_text = f"{emoji} LEGENDARY FOCUS SESSION! {emoji}"
+            subheader = f"Your {self.session_minutes} min session unlocked a {tier.upper()} tier adventure!"
+        elif tier_boosted:
+            header_text = f"{emoji} Epic Focus Reward! {emoji}"
+            subheader = f"Long session bonus: +{session_boost} tier{'s' if session_boost > 1 else ''}!"
+        else:
+            header_text = f"{emoji} Today's Adventure {emoji}"
+            subheader = self.entry.get("short_date", "")
+        
+        tk.Label(header_frame, text=header_text,
+                 font=('Georgia', 16, 'bold'), bg=bg, fg=accent).pack()
+        
+        tk.Label(header_frame, text=subheader,
+                 font=('Segoe UI', 10), bg=bg, fg='#666').pack()
+        
+        # Decorative line
+        tk.Frame(main_frame, height=2, bg=accent).pack(fill=tk.X, pady=10)
+        
+        # The diary entry story
+        story_frame = tk.Frame(main_frame, bg=bg)
+        story_frame.pack(fill=tk.BOTH, expand=True, pady=10)
+        
+        story = self.entry.get("story", "A mysterious adventure occurred...")
+        
+        story_label = tk.Label(story_frame, text=story,
+                               font=('Georgia', 12), bg=bg, fg='#333',
+                               wraplength=460, justify=tk.LEFT)
+        story_label.pack(anchor=tk.W)
+        
+        # Decorative line
+        tk.Frame(main_frame, height=2, bg=accent).pack(fill=tk.X, pady=10)
+        
+        # Footer with session stats
+        footer_frame = tk.Frame(main_frame, bg=bg)
+        footer_frame.pack(fill=tk.X)
+        
+        power = self.entry.get("power_at_time", 0)
+        base_tier = self.entry.get("base_tier", tier)
+        
+        stats_parts = [f"⚔ Power: {power}"]
+        if tier_boosted:
+            stats_parts.append(f"📈 {base_tier.capitalize()} → {tier.capitalize()}")
+        else:
+            stats_parts.append(f"🎭 {tier.capitalize()} Tier")
+        stats_parts.append(f"⏱️ {self.session_minutes} min session")
+        
+        tk.Label(footer_frame, text="  |  ".join(stats_parts),
+                 font=('Segoe UI', 9), bg=bg, fg='#888').pack()
+        
+        # Hint text
+        tk.Label(main_frame, text="(Click anywhere or wait to dismiss)",
+                 font=('Segoe UI', 8), bg=bg, fg='#aaa').pack(pady=(15, 0))
         
         # Click to dismiss
         self.dialog.bind("<Button-1>", lambda e: self.dialog.destroy())
@@ -1677,6 +1823,7 @@ class PriorityCheckinDialog:
         diary = self.blocker.adhd_buster.get("diary", [])
         today_entries = [e for e in diary if e.get("date") == today]
         
+        diary_entry = None
         if not today_entries:
             # Generate new diary entry for today
             diary_entry = generate_diary_entry(power, self.session_minutes, equipped)
@@ -1686,8 +1833,17 @@ class PriorityCheckinDialog:
         
         self.blocker.save_config()
         
-        # Show item drop dialog
-        ItemDropDialog(self.parent, self.blocker, item, self.session_minutes, streak)
+        # Show item drop dialog first
+        item_dialog = ItemDropDialog(self.parent, self.blocker, item, self.session_minutes, streak)
+        
+        # Then show the diary entry reveal after item dialog closes (with a small delay)
+        if diary_entry:
+            # Schedule diary reveal to appear after item dialog
+            close_time = {"Common": 3200, "Uncommon": 3700, "Rare": 4200, 
+                          "Epic": 5200, "Legendary": 6200}
+            delay = close_time.get(item["rarity"], 4200)
+            self.parent.after(delay, lambda: DiaryEntryRevealDialog(
+                self.parent, self.blocker, diary_entry, self.session_minutes))
     
     def confirm_off_task(self):
         """User admits they're off task - provide gentle reminder."""
