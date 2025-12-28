@@ -143,6 +143,10 @@ class BlockerCore:
 
         # Schedule
         self.schedules = []
+        
+        # Priorities (My Priorities feature)
+        self.priorities = []
+        self.show_priorities_on_startup = False
 
         # Statistics
         self.stats = self._default_stats()
@@ -186,6 +190,8 @@ class BlockerCore:
                     self.pomodoro_break = config.get('pomodoro_break', 5)
                     self.pomodoro_long_break = config.get('pomodoro_long_break', 15)
                     self.schedules = config.get('schedules', [])
+                    self.priorities = config.get('priorities', [])
+                    self.show_priorities_on_startup = config.get('show_priorities_on_startup', False)
             except (json.JSONDecodeError, IOError, OSError):
                 self.blacklist = default_blacklist
                 self.categories_enabled = {cat: True for cat in SITE_CATEGORIES}
@@ -206,6 +212,8 @@ class BlockerCore:
                 'pomodoro_break': self.pomodoro_break,
                 'pomodoro_long_break': self.pomodoro_long_break,
                 'schedules': self.schedules,
+                'priorities': self.priorities,
+                'show_priorities_on_startup': self.show_priorities_on_startup,
             }
             with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=2)
