@@ -1489,10 +1489,10 @@ class ADHDBusterDialog:
             # Unequip
             self.blocker.adhd_buster["equipped"][slot] = None
         else:
-            # Equip the selected item
+            # Equip the selected item (use copy to avoid shared reference)
             item = slot_data["item_map"].get(selected)
             if item:
-                self.blocker.adhd_buster["equipped"][slot] = item
+                self.blocker.adhd_buster["equipped"][slot] = item.copy()
         
         self.blocker.save_config()
         
@@ -1621,7 +1621,8 @@ class ADHDBusterDialog:
         
         inventory = self.blocker.adhd_buster.get("inventory", [])
         equipped = self.blocker.adhd_buster.get("equipped", {})
-        equipped_names = {item["name"] for item in equipped.values() if item}
+        # Use obtained_at timestamp to identify equipped items (more reliable than name)
+        equipped_timestamps = {item.get("obtained_at") for item in equipped.values() if item}
         
         if not inventory:
             ttk.Label(self.inv_frame, 
@@ -1653,7 +1654,7 @@ class ADHDBusterDialog:
             item_frame.pack(fill=tk.X, pady=2)
             
             # Merge checkbox (not for equipped items)
-            is_equipped = item["name"] in equipped_names
+            is_equipped = item.get("obtained_at") in equipped_timestamps
             
             if not is_equipped:
                 merge_var = tk.BooleanVar(value=False)
@@ -1685,26 +1686,6 @@ class ADHDBusterDialog:
             tk.Label(item_frame, text=info_text,
                     font=('Segoe UI', 8), fg=item.get("color", "#333")).pack(side=tk.LEFT, padx=5)
     
-    def equip_item(self, inv_index: int):
-        """Equip an item from inventory."""
-        inventory = self.blocker.adhd_buster.get("inventory", [])
-        if inv_index >= len(inventory):
-            return
-        
-        item = inventory[inv_index]
-        slot = item["slot"]
-        
-        # Equip the item
-        if "equipped" not in self.blocker.adhd_buster:
-            self.blocker.adhd_buster["equipped"] = {}
-        
-        self.blocker.adhd_buster["equipped"][slot] = item
-        self.blocker.save_config()
-        
-        # Refresh dialog
-        self.dialog.destroy()
-        ADHDBusterDialog(self.parent, self.blocker)
-    
     def salvage_duplicates(self):
         """Salvage duplicate items (keep best of each slot) for bonus luck."""
         inventory = self.blocker.adhd_buster.get("inventory", [])
@@ -1716,12 +1697,13 @@ class ADHDBusterDialog:
         
         # Find duplicates by slot - keep the best (highest power) non-equipped item per slot
         slot_items = {}
-        equipped_names = {item["name"] for item in equipped.values() if item}
+        # Use obtained_at timestamp to identify equipped items (more reliable than name)
+        equipped_timestamps = {item.get("obtained_at") for item in equipped.values() if item}
         
         for item in inventory:
             slot = item.get("slot", "Unknown")
             power = item.get("power", 10)
-            is_equipped = item["name"] in equipped_names
+            is_equipped = item.get("obtained_at") in equipped_timestamps
             
             if slot not in slot_items:
                 slot_items[slot] = {"best": None, "duplicates": []}
@@ -1953,7 +1935,19 @@ class DiaryDialog:
         self.diary_text.insert(tk.END, "─" * 60 + "\n", "power_info")
     
     def write_new_entry(self):
-        """Manually write a new diary entry (bonus feature)."""
+        """Manually write a new diary entry (bonus feature - once per day)."""
+        # Check if already wrote a bonus entry today
+        today = datetime.now().strftime("%Y-%m-%d")
+        diary = self.blocker.adhd_buster.get("diary", [])
+        today_bonus_entries = [e for e in diary if e.get("date") == today 
+                               and e.get("story", "").startswith("[Bonus Entry]")]
+        
+        if today_bonus_entries:
+            messagebox.showinfo("Diary", "You've already written a bonus entry today!\n\n"
+                               "Complete a focus session for more adventures.",
+                               parent=self.dialog)
+            return
+        
         power = calculate_character_power(self.blocker.adhd_buster)
         equipped = self.blocker.adhd_buster.get("equipped", {})
         
@@ -1966,6 +1960,10 @@ class DiaryDialog:
             self.blocker.adhd_buster["diary"] = []
         
         self.blocker.adhd_buster["diary"].append(entry)
+        # Limit diary size to prevent unbounded growth
+        if len(self.blocker.adhd_buster["diary"]) > 100:
+            self.blocker.adhd_buster["diary"] = self.blocker.adhd_buster["diary"][-100:]
+        
         self.blocker.save_config()
         
         # Refresh dialog
@@ -2435,7 +2433,9 @@ class PriorityCheckinDialog:
             if bonuses["streak_bonus"] > 0:
                 bonus_parts.append(f"🔥+{bonuses['streak_bonus']}% (streak)")
             if luck > 0:
-                bonus_parts.append(f"🍀+{luck}% (luck)")
+                # Display capped at 100% for clarity
+                luck_display = min(luck, 100)
+                bonus_parts.append(f"🍀+{luck_display}% (luck)")
             
             bonus_text = "  ".join(bonus_parts)
             ttk.Label(bonus_frame, text=f"✨ Loot bonuses: {bonus_text}",
@@ -2481,7 +2481,9 @@ class PriorityCheckinDialog:
         )
         
         # Apply luck bonus as additional rarity boost chance
-        if luck > 0 and random.randint(1, 100) <= luck:
+        # Every 100 luck = +1% chance (max 10% at 1000 luck)
+        luck_chance = min(luck / 100, 10)  # Cap at 10%
+        if luck > 0 and random.random() * 100 < luck_chance:
             # Lucky! Upgrade rarity if possible
             rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
             current_idx = rarity_order.index(item["rarity"])
