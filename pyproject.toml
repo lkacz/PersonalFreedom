@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "personal-freedom"
-version = "2.3.0"
+version = "3.0.3"
 description = "AI-powered Windows application that blocks distracting websites during focus sessions"
 readme = "README.md"
 license = {text = "MIT"}
