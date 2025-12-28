@@ -149,6 +149,9 @@ class BlockerCore:
         self.show_priorities_on_startup = False
         self.priority_checkin_enabled = False
         self.priority_checkin_interval = 30  # minutes
+        
+        # ADHD Buster gamification
+        self.adhd_buster = {"inventory": [], "equipped": {}}
 
         # Statistics
         self.stats = self._default_stats()
@@ -196,6 +199,7 @@ class BlockerCore:
                     self.show_priorities_on_startup = config.get('show_priorities_on_startup', False)
                     self.priority_checkin_enabled = config.get('priority_checkin_enabled', False)
                     self.priority_checkin_interval = config.get('priority_checkin_interval', 30)
+                    self.adhd_buster = config.get('adhd_buster', {"inventory": [], "equipped": {}})
             except (json.JSONDecodeError, IOError, OSError):
                 self.blacklist = default_blacklist
                 self.categories_enabled = {cat: True for cat in SITE_CATEGORIES}
@@ -220,6 +224,7 @@ class BlockerCore:
                 'show_priorities_on_startup': self.show_priorities_on_startup,
                 'priority_checkin_enabled': self.priority_checkin_enabled,
                 'priority_checkin_interval': self.priority_checkin_interval,
+                'adhd_buster': self.adhd_buster,
             }
             with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=2)

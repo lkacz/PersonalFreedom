@@ -66,7 +66,349 @@ except ImportError:
 DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 
-class PriorityTimeLogDialog:
+# ============================================================================
+# ADHD Buster Gamification System
+# ============================================================================
+
+import random
+
+# Item rarities with colors and drop weights
+ITEM_RARITIES = {
+    "Common": {"color": "#9e9e9e", "weight": 50, "adjectives": [
+        "Rusty", "Worn-out", "Home-made", "Dusty", "Crooked", "Moth-eaten",
+        "Crumbling", "Patched", "Wobbly", "Dented", "Tattered", "Chipped"
+    ]},
+    "Uncommon": {"color": "#4caf50", "weight": 30, "adjectives": [
+        "Sturdy", "Reliable", "Polished", "Refined", "Gleaming", "Solid",
+        "Reinforced", "Balanced", "Tempered", "Seasoned", "Crafted", "Honed"
+    ]},
+    "Rare": {"color": "#2196f3", "weight": 15, "adjectives": [
+        "Enchanted", "Mystic", "Glowing", "Ancient", "Blessed", "Arcane",
+        "Shimmering", "Ethereal", "Spectral", "Radiant", "Infused", "Rune-carved"
+    ]},
+    "Epic": {"color": "#9c27b0", "weight": 4, "adjectives": [
+        "Legendary", "Celestial", "Void-touched", "Dragon-forged", "Titan's",
+        "Phoenix", "Astral", "Cosmic", "Eldritch", "Primordial", "Abyssal"
+    ]},
+    "Legendary": {"color": "#ff9800", "weight": 1, "adjectives": [
+        "Quantum", "Omniscient", "Transcendent", "Reality-bending", "Godslayer",
+        "Universe-forged", "Eternal", "Infinity", "Apotheosis", "Mythic", "Supreme"
+    ]}
+}
+
+# Item slots and types
+ITEM_SLOTS = {
+    "Helmet": ["Helmet", "Crown", "Hood", "Circlet", "Headband", "Visor", "Cap"],
+    "Chestplate": ["Chestplate", "Armor", "Tunic", "Vest", "Robe", "Mail", "Jerkin"],
+    "Gauntlets": ["Gauntlets", "Gloves", "Bracers", "Handwraps", "Mitts", "Grips"],
+    "Boots": ["Boots", "Greaves", "Sandals", "Treads", "Slippers", "Sabatons"],
+    "Shield": ["Shield", "Buckler", "Barrier", "Aegis", "Ward", "Bulwark"],
+    "Weapon": ["Sword", "Axe", "Staff", "Hammer", "Bow", "Dagger", "Mace", "Spear"],
+    "Cloak": ["Cloak", "Cape", "Mantle", "Shroud", "Veil", "Scarf"],
+    "Amulet": ["Amulet", "Pendant", "Talisman", "Charm", "Necklace", "Medallion"]
+}
+
+# Suffix nouns by rarity (for "of X" part)
+ITEM_SUFFIXES = {
+    "Common": [
+        "Mild Confusion", "Rotten Wood", "Questionable Origins", "Yesterday's Laundry",
+        "Procrastination", "Lost Socks", "Stale Coffee", "Monday Mornings",
+        "Forgotten Passwords", "Empty Batteries", "Tangled Cables", "Expired Coupons"
+    ],
+    "Uncommon": [
+        "Steady Focus", "Clear Thoughts", "Decent Progress", "Minor Victories",
+        "Organized Chaos", "Reasonable Effort", "Acceptable Results", "Fair Warning",
+        "Moderate Success", "Quiet Determination", "Honest Attempts", "Small Wins"
+    ],
+    "Rare": [
+        "Focused Intent", "Crystal Clarity", "Burning Motivation", "Iron Will",
+        "Swift Progress", "Hidden Potential", "Rising Power", "Keen Insight",
+        "Fierce Determination", "Awakened Mind", "Blazing Dedication", "True Purpose"
+    ],
+    "Epic": [
+        "Shattered Distractions", "Conquered Chaos", "Absolute Discipline",
+        "Unstoppable Force", "Infinite Patience", "Temporal Mastery", "Mind's Eye",
+        "Dragon's Focus", "Phoenix Rebirth", "Void Resistance", "Astral Projection"
+    ],
+    "Legendary": [
+        "Transcended ADHD", "Jaded Insight", "Dimensional Focus", "Reality Control",
+        "Time Itself", "Universal Truth", "Cosmic Awareness", "Eternal Vigilance",
+        "The Focused One", "Absolute Clarity", "Boundless Potential", "The Hyperfocus"
+    ]
+}
+
+
+def generate_item(rarity: str = None) -> dict:
+    """Generate a random item with the given or random rarity."""
+    # Choose rarity based on weights if not specified
+    if rarity is None:
+        rarities = list(ITEM_RARITIES.keys())
+        weights = [ITEM_RARITIES[r]["weight"] for r in rarities]
+        rarity = random.choices(rarities, weights=weights)[0]
+    
+    # Pick random slot and item type
+    slot = random.choice(list(ITEM_SLOTS.keys()))
+    item_type = random.choice(ITEM_SLOTS[slot])
+    
+    # Generate name: "[Adjective] [Item Type] of [Suffix]"
+    adjective = random.choice(ITEM_RARITIES[rarity]["adjectives"])
+    suffix = random.choice(ITEM_SUFFIXES[rarity])
+    
+    name = f"{adjective} {item_type} of {suffix}"
+    
+    return {
+        "name": name,
+        "rarity": rarity,
+        "slot": slot,
+        "item_type": item_type,
+        "color": ITEM_RARITIES[rarity]["color"]
+    }
+
+
+class ADHDBusterDialog:
+    """Dialog to view and manage the ADHD Buster character and inventory."""
+    
+    def __init__(self, parent: tk.Tk, blocker):
+        self.parent = parent
+        self.blocker = blocker
+        
+        self.dialog = tk.Toplevel(parent)
+        self.dialog.title("🦸 ADHD Buster - Character & Inventory")
+        self.dialog.geometry("600x650")
+        self.dialog.resizable(False, False)
+        self.dialog.transient(parent)
+        
+        # Center on screen
+        self.dialog.update_idletasks()
+        x = (self.dialog.winfo_screenwidth() // 2) - (600 // 2)
+        y = (self.dialog.winfo_screenheight() // 2) - (650 // 2)
+        self.dialog.geometry(f"+{x}+{y}")
+        
+        self.setup_ui()
+    
+    def setup_ui(self):
+        """Create the ADHD Buster dialog UI."""
+        main_frame = ttk.Frame(self.dialog, padding="15")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Character Header
+        header_frame = ttk.Frame(main_frame)
+        header_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Label(header_frame, text="🦸 ADHD Buster",
+                  font=('Segoe UI', 18, 'bold')).pack(side=tk.LEFT)
+        
+        total_items = len(self.blocker.adhd_buster.get("inventory", []))
+        ttk.Label(header_frame, text=f"📦 {total_items} items collected",
+                  font=('Segoe UI', 10), foreground='gray').pack(side=tk.RIGHT)
+        
+        # Character equipment section
+        equip_frame = ttk.LabelFrame(main_frame, text="⚔ Equipped Gear", padding="10")
+        equip_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
+        
+        # Create 2-column layout for equipment
+        for i, slot in enumerate(slots):
+            row = i // 2
+            col = i % 2
+            
+            slot_frame = ttk.Frame(equip_frame)
+            slot_frame.grid(row=row, column=col, sticky='ew', padx=5, pady=2)
+            equip_frame.columnconfigure(col, weight=1)
+            
+            item = equipped.get(slot)
+            if item:
+                color = item.get("color", "#333")
+                ttk.Label(slot_frame, text=f"• {slot}:", width=12).pack(side=tk.LEFT)
+                item_label = tk.Label(slot_frame, text=item["name"], 
+                                      font=('Segoe UI', 9), fg=color)
+                item_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
+            else:
+                ttk.Label(slot_frame, text=f"• {slot}:", width=12).pack(side=tk.LEFT)
+                ttk.Label(slot_frame, text="[Empty]", 
+                          foreground='gray').pack(side=tk.LEFT)
+        
+        # Inventory section
+        inv_label_frame = ttk.Frame(main_frame)
+        inv_label_frame.pack(fill=tk.X, pady=(10, 5))
+        ttk.Label(inv_label_frame, text="📦 Inventory",
+                  font=('Segoe UI', 12, 'bold')).pack(side=tk.LEFT)
+        
+        # Inventory list with scrollbar
+        inv_container = ttk.Frame(main_frame)
+        inv_container.pack(fill=tk.BOTH, expand=True)
+        
+        # Create canvas with scrollbar for inventory
+        canvas = tk.Canvas(inv_container, height=280)
+        scrollbar = ttk.Scrollbar(inv_container, orient="vertical", command=canvas.yview)
+        self.inv_frame = ttk.Frame(canvas)
+        
+        self.inv_frame.bind("<Configure>", 
+                            lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        
+        canvas.create_window((0, 0), window=self.inv_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Enable mouse wheel scrolling
+        def on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.bind_all("<MouseWheel>", on_mousewheel)
+        
+        # Populate inventory
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        equipped_names = {item["name"] for item in equipped.values() if item}
+        
+        if not inventory:
+            ttk.Label(self.inv_frame, 
+                      text="No items yet! Stay focused during sessions to earn loot! 🎁",
+                      foreground='gray').pack(pady=20)
+        else:
+            for i, item in enumerate(inventory):
+                item_frame = ttk.Frame(self.inv_frame)
+                item_frame.pack(fill=tk.X, pady=2)
+                
+                # Item name with rarity color
+                is_equipped = item["name"] in equipped_names
+                name_text = f"{'✓ ' if is_equipped else ''}{item['name']}"
+                item_label = tk.Label(item_frame, text=name_text,
+                                     font=('Segoe UI', 9), fg=item.get("color", "#333"),
+                                     anchor='w', width=45)
+                item_label.pack(side=tk.LEFT)
+                
+                # Rarity badge
+                rarity_label = tk.Label(item_frame, text=f"[{item['rarity']}]",
+                                        font=('Segoe UI', 8), fg=item.get("color", "#333"))
+                rarity_label.pack(side=tk.LEFT, padx=(5, 10))
+                
+                # Equip button (only if not already equipped)
+                if not is_equipped:
+                    equip_btn = ttk.Button(item_frame, text="Equip",
+                                           command=lambda idx=i: self.equip_item(idx))
+                    equip_btn.pack(side=tk.RIGHT, padx=2)
+        
+        # Unbind mousewheel when dialog closes
+        self.dialog.bind("<Destroy>", lambda e: canvas.unbind_all("<MouseWheel>"))
+        
+        # Buttons
+        btn_frame = ttk.Frame(main_frame)
+        btn_frame.pack(fill=tk.X, pady=(15, 0))
+        
+        ttk.Button(btn_frame, text="🎲 Test Drop (Debug)", 
+                   command=self.debug_drop).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Close",
+                   command=self.dialog.destroy).pack(side=tk.RIGHT, padx=5)
+    
+    def equip_item(self, inv_index: int):
+        """Equip an item from inventory."""
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        if inv_index >= len(inventory):
+            return
+        
+        item = inventory[inv_index]
+        slot = item["slot"]
+        
+        # Equip the item
+        if "equipped" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["equipped"] = {}
+        
+        self.blocker.adhd_buster["equipped"][slot] = item
+        self.blocker.save_config()
+        
+        # Refresh dialog
+        self.dialog.destroy()
+        ADHDBusterDialog(self.parent, self.blocker)
+    
+    def debug_drop(self):
+        """Debug: Generate and add a random item."""
+        item = generate_item()
+        if "inventory" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["inventory"] = []
+        self.blocker.adhd_buster["inventory"].append(item)
+        self.blocker.save_config()
+        
+        # Refresh dialog
+        self.dialog.destroy()
+        ADHDBusterDialog(self.parent, self.blocker)
+
+
+class ItemDropDialog:
+    """Dialog shown when an item drops (after confirming on-task)."""
+    
+    def __init__(self, parent: tk.Tk, blocker, item: dict):
+        self.parent = parent
+        self.blocker = blocker
+        self.item = item
+        
+        self.dialog = tk.Toplevel(parent)
+        self.dialog.title("🎁 Item Drop!")
+        self.dialog.geometry("380x220")
+        self.dialog.resizable(False, False)
+        self.dialog.overrideredirect(True)  # No decorations for dramatic effect
+        
+        # Center on parent
+        self.dialog.update_idletasks()
+        x = parent.winfo_x() + (parent.winfo_width() - 380) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - 220) // 2
+        self.dialog.geometry(f"+{x}+{y}")
+        
+        self.setup_ui()
+        
+        # Auto-close after 4 seconds
+        self.dialog.after(4000, self.dialog.destroy)
+    
+    def setup_ui(self):
+        """Create the item drop UI."""
+        # Background color based on rarity
+        bg_colors = {
+            "Common": "#f5f5f5", "Uncommon": "#e8f5e9", "Rare": "#e3f2fd",
+            "Epic": "#f3e5f5", "Legendary": "#fff3e0"
+        }
+        bg = bg_colors.get(self.item["rarity"], "#f5f5f5")
+        
+        main_frame = tk.Frame(self.dialog, bg=bg, padx=20, pady=15)
+        main_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Header
+        tk.Label(main_frame, text="✨ LOOT DROP! ✨", 
+                 font=('Segoe UI', 14, 'bold'), bg=bg).pack()
+        
+        tk.Label(main_frame, text="Your ADHD Buster found:", 
+                 font=('Segoe UI', 10), bg=bg).pack(pady=(5, 10))
+        
+        # Item name with rarity color
+        item_frame = tk.Frame(main_frame, bg=bg)
+        item_frame.pack(pady=5)
+        
+        tk.Label(item_frame, text=self.item["name"],
+                 font=('Segoe UI', 12, 'bold'), 
+                 fg=self.item["color"], bg=bg).pack()
+        
+        # Rarity
+        tk.Label(item_frame, text=f"[{self.item['rarity']} {self.item['slot']}]",
+                 font=('Segoe UI', 9), 
+                 fg=self.item["color"], bg=bg).pack()
+        
+        # Motivational message
+        messages = [
+            "Keep crushing those distractions! 💪",
+            "Your focus is unstoppable! 🔥",
+            "ADHD doesn't stand a chance! ⚡",
+            "You're on a roll! 🎯",
+            "Legendary focus detected! 🌟"
+        ]
+        tk.Label(main_frame, text=random.choice(messages),
+                 font=('Segoe UI', 10), bg=bg, fg='#666').pack(pady=(15, 5))
+        
+        tk.Label(main_frame, text="(Click anywhere or wait to dismiss)",
+                 font=('Segoe UI', 8), bg=bg, fg='#999').pack()
+        
+        # Click to dismiss
+        self.dialog.bind("<Button-1>", lambda e: self.dialog.destroy())
     """Dialog shown after a session to log time spent on priorities."""
     
     def __init__(self, parent: tk.Tk, blocker, session_minutes: int):
@@ -294,33 +636,21 @@ class PriorityCheckinDialog:
                    command=self.close_dialog).pack(pady=(10, 0))
     
     def confirm_on_task(self):
-        """User confirms they are on task - show positive feedback."""
+        """User confirms they are on task - generate item drop and show feedback."""
         self.result = True
         self.dialog.destroy()
         
-        # Show brief positive feedback
-        feedback = tk.Toplevel(self.parent)
-        feedback.title("")
-        feedback.geometry("300x100")
-        feedback.resizable(False, False)
-        feedback.overrideredirect(True)  # No window decorations
+        # Generate a random item drop
+        item = generate_item()
         
-        # Center on parent
-        feedback.update_idletasks()
-        x = self.parent.winfo_x() + (self.parent.winfo_width() - 300) // 2
-        y = self.parent.winfo_y() + (self.parent.winfo_height() - 100) // 2
-        feedback.geometry(f"+{x}+{y}")
+        # Add to inventory
+        if "inventory" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["inventory"] = []
+        self.blocker.adhd_buster["inventory"].append(item)
+        self.blocker.save_config()
         
-        feedback_frame = ttk.Frame(feedback, padding="20")
-        feedback_frame.pack(fill=tk.BOTH, expand=True)
-        
-        ttk.Label(feedback_frame, text="🌟 Great job staying focused!",
-                  font=('Segoe UI', 12, 'bold')).pack()
-        ttk.Label(feedback_frame, text="Keep up the excellent work!",
-                  font=('Segoe UI', 10)).pack(pady=(5, 0))
-        
-        # Auto-close after 2 seconds
-        feedback.after(2000, feedback.destroy)
+        # Show item drop dialog
+        ItemDropDialog(self.parent, self.blocker, item)
     
     def confirm_off_task(self):
         """User admits they're off task - provide gentle reminder."""
@@ -1129,6 +1459,40 @@ class FocusBlockerGUI:
                     textvariable=self.monthly_goal_var).pack(side=tk.LEFT, padx=5)
         ttk.Button(monthly_settings, text="Set", width=6,
                    command=lambda: self.set_focus_goal("monthly")).pack(side=tk.LEFT)
+
+        # === ADHD Buster Character ===
+        buster_frame = ttk.LabelFrame(scrollable_frame, text="🦸 ADHD Buster", padding="15")
+        buster_frame.pack(fill=tk.X, pady=10, padx=5)
+        
+        # Quick character preview
+        buster_info = ttk.Frame(buster_frame)
+        buster_info.pack(fill=tk.X)
+        
+        total_items = len(self.blocker.adhd_buster.get("inventory", []))
+        equipped_count = len([s for s in self.blocker.adhd_buster.get("equipped", {}).values() if s])
+        
+        ttk.Label(buster_info, text="Your warrior against distractions!",
+                  font=('Segoe UI', 10)).pack(anchor=tk.W)
+        
+        stats_text = f"📦 {total_items} items collected  |  ⚔ {equipped_count}/8 slots equipped"
+        self.buster_stats_label = ttk.Label(buster_info, text=stats_text,
+                                             font=('Segoe UI', 9), foreground='gray')
+        self.buster_stats_label.pack(anchor=tk.W, pady=(5, 0))
+        
+        # Rarity breakdown
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        rarity_counts = {}
+        for item in inventory:
+            r = item.get("rarity", "Common")
+            rarity_counts[r] = rarity_counts.get(r, 0) + 1
+        
+        if rarity_counts:
+            rarity_text = "  ".join([f"{r}: {c}" for r, c in rarity_counts.items()])
+            ttk.Label(buster_info, text=rarity_text,
+                      font=('Segoe UI', 8), foreground='#666').pack(anchor=tk.W)
+        
+        ttk.Button(buster_frame, text="🦸 View Character & Inventory",
+                   command=self.open_adhd_buster).pack(pady=(10, 0))
 
         # === Bypass Attempts Tracking ===
         if BYPASS_LOGGER_AVAILABLE:
@@ -2419,6 +2783,25 @@ class FocusBlockerGUI:
         
         # Sync the startup checkbox state
         self.priorities_startup_var.set(self.blocker.show_priorities_on_startup)
+        
+        # Refresh ADHD Buster stats in case check-in settings changed
+        self.refresh_buster_stats()
+
+    def open_adhd_buster(self):
+        """Open the ADHD Buster character and inventory dialog."""
+        ADHDBusterDialog(self.root, self.blocker)
+        # Refresh stats after closing
+        self.refresh_buster_stats()
+    
+    def refresh_buster_stats(self):
+        """Refresh the ADHD Buster stats display in the Stats tab."""
+        try:
+            total_items = len(self.blocker.adhd_buster.get("inventory", []))
+            equipped_count = len([s for s in self.blocker.adhd_buster.get("equipped", {}).values() if s])
+            stats_text = f"📦 {total_items} items collected  |  ⚔ {equipped_count}/8 slots equipped"
+            self.buster_stats_label.config(text=stats_text)
+        except (AttributeError, tk.TclError):
+            pass
 
     def toggle_priorities_startup(self):
         """Toggle whether to show priorities dialog on startup."""
