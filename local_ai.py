@@ -6,18 +6,23 @@ Requires: pip install transformers torch sentence-transformers
 import json
 from pathlib import Path
 from datetime import datetime
+from typing import Any, Optional
 import warnings
 warnings.filterwarnings('ignore')
 
+# Initialize with defaults - will be overwritten if imports succeed
+GPU_AVAILABLE = False
+DEVICE = -1
+
 try:
     import torch
-    from transformers import pipeline
-    from sentence_transformers import SentenceTransformer
+    from transformers import pipeline  # type: ignore
+    from sentence_transformers import SentenceTransformer  # type: ignore
     GPU_AVAILABLE = torch.cuda.is_available()
     DEVICE = 0 if GPU_AVAILABLE else -1  # 0 = GPU, -1 = CPU
 except ImportError:
-    GPU_AVAILABLE = False
-    DEVICE = -1
+    pipeline = None  # type: ignore
+    SentenceTransformer = None  # type: ignore
     print("⚠️  Install transformers: pip install transformers torch sentence-transformers")
 
 
@@ -40,8 +45,9 @@ class LocalAI:
         """Lazy load sentiment analysis model (40MB)"""
         if self._sentiment_analyzer is None:
             print("📥 Loading sentiment model (distilbert-base-uncased-finetuned-sst-2-english)...")
+            # Note: type: ignore needed due to incomplete transformers type stubs
             self._sentiment_analyzer = pipeline(
-                "sentiment-analysis",
+                "sentiment-analysis",  # type: ignore[arg-type]
                 model="distilbert-base-uncased-finetuned-sst-2-english",
                 device=self.device
             )
@@ -53,7 +59,7 @@ class LocalAI:
         if self._embedder is None:
             print("📥 Loading embedding model (all-MiniLM-L6-v2)...")
             device = 'cuda' if self.gpu_available else 'cpu'
-            self._embedder = SentenceTransformer('all-MiniLM-L6-v2', device=device)
+            self._embedder = SentenceTransformer('all-MiniLM-L6-v2', device=device)  # type: ignore[misc]
         return self._embedder
     
     @property
@@ -61,7 +67,7 @@ class LocalAI:
         """Lazy load text summarization model (240MB)"""
         if self._summarizer is None:
             print("📥 Loading summarization model (distilbart-cnn-6-6)...")
-            self._summarizer = pipeline(
+            self._summarizer = pipeline(  # type: ignore[misc]
                 "summarization",
                 model="sshleifer/distilbart-cnn-6-6",
                 device=self.device
@@ -340,7 +346,10 @@ def demo_local_ai():
     for note in test_notes:
         result = ai.analyze_focus_quality(note)
         print(f"📝 '{note}'")
-        print(f"   → {result['interpretation']} (confidence: {result['confidence']:.2%})")
+        if result:
+            print(f"   → {result['interpretation']} (confidence: {result['confidence']:.2%})")
+        else:
+            print("   → Could not analyze")
         print()
     
     # Feature 2: Distraction Detection

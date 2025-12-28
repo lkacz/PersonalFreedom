@@ -2,16 +2,24 @@
 Test script for AI features
 """
 import json
+import tempfile
+import shutil
+import os
 from pathlib import Path
 from datetime import datetime, timedelta
 from productivity_ai import ProductivityAnalyzer, GamificationEngine, FocusGoals
 
-# Create test data directories
-APP_DIR = Path.home() / ".focus_blocker"
+# Create temporary test directory
+TEST_DIR = Path(tempfile.mkdtemp())
+APP_DIR = TEST_DIR / ".focus_blocker"
 APP_DIR.mkdir(exist_ok=True)
 
 STATS_PATH = APP_DIR / "stats.json"
 GOALS_PATH = APP_DIR / "goals.json"
+
+def cleanup():
+    """Clean up temporary files"""
+    shutil.rmtree(TEST_DIR)
 
 def create_test_stats():
     """Create sample stats data for testing"""
