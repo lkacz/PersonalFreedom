@@ -17,6 +17,7 @@ from tkinter import ttk, messagebox, filedialog, simpledialog
 import threading
 import time
 import logging
+import re
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 
@@ -186,7 +187,10 @@ def get_item_themes(item: dict) -> list:
     
     for theme_name, theme_data in ITEM_THEMES.items():
         for word in theme_data["words"]:
-            if word in name_lower:
+            # Use word boundary matching to avoid partial matches
+            # e.g., "fire" shouldn't match "backfire"
+            pattern = r'\b' + re.escape(word) + r'\b'
+            if re.search(pattern, name_lower):
                 themes.append(theme_name)
                 break  # Only count each theme once per item
     
@@ -284,8 +288,8 @@ def calculate_merge_success_rate(items: list, luck_bonus: int = 0) -> float:
     # Base rate + bonus per extra item
     rate = MERGE_BASE_SUCCESS_RATE + (len(items) - 2) * MERGE_BONUS_PER_ITEM
     
-    # Luck bonus adds up to 10% extra (100 luck = +10%)
-    luck_bonus_pct = min(luck_bonus / 1000, 0.10)
+    # Luck bonus: every 100 luck = +1% (1000 luck = +10% max)
+    luck_bonus_pct = min(luck_bonus / 100 * 0.01, 0.10)
     rate += luck_bonus_pct
     
     # Cap at max rate
@@ -308,6 +312,24 @@ def get_merge_result_rarity(items: list) -> str:
     
     # Upgrade by one tier
     return RARITY_UPGRADE.get(lowest_rarity, "Uncommon")
+
+
+def is_merge_worthwhile(items: list) -> tuple:
+    """
+    Check if a merge is worthwhile (can result in upgrade).
+    
+    Returns:
+        (is_worthwhile: bool, reason: str)
+    """
+    if not items or len(items) < 2:
+        return False, "Need at least 2 items"
+    
+    # Check if all items are Legendary
+    all_legendary = all(item.get("rarity") == "Legendary" for item in items)
+    if all_legendary:
+        return False, "All items are Legendary - merge cannot upgrade!"
+    
+    return True, ""
 
 
 def perform_lucky_merge(items: list, luck_bonus: int = 0) -> dict:
@@ -1479,10 +1501,20 @@ class ADHDBusterDialog:
         self.merge_btn.config(text=f"🎲 Merge Selected ({count})")
         
         if count >= 2:
-            self.merge_btn.config(state=tk.NORMAL)
             # Calculate success rate
-            items = [self.blocker.adhd_buster["inventory"][idx] for idx in self.merge_selected 
-                     if idx < len(self.blocker.adhd_buster.get("inventory", []))]
+            inventory = self.blocker.adhd_buster.get("inventory", [])
+            items = [inventory[idx] for idx in self.merge_selected 
+                     if idx < len(inventory)]
+            
+            # Check if merge is worthwhile
+            worthwhile, reason = is_merge_worthwhile(items)
+            
+            if not worthwhile:
+                self.merge_btn.config(state=tk.DISABLED)
+                self.merge_rate_label.config(text=f"⚠️ {reason}")
+                return
+            
+            self.merge_btn.config(state=tk.NORMAL)
             luck = self.blocker.adhd_buster.get("luck_bonus", 0)
             rate = calculate_merge_success_rate(items, luck)
             result_rarity = get_merge_result_rarity(items) if items else "Unknown"
@@ -1710,6 +1742,12 @@ class ADHDBusterDialog:
                                parent=self.dialog)
             return
         
+        # Check if any items to remove have themes (set bonus warning)
+        themed_items = [item for item in to_remove if get_item_themes(item)]
+        theme_warning = ""
+        if themed_items:
+            theme_warning = f"\n\n⚠️ {len(themed_items)} items have set themes - salvaging may affect set bonuses!"
+        
         # Calculate luck bonus from salvaged items
         luck_bonus = sum(item.get("power", 10) // 10 for item in to_remove)
         
@@ -1724,7 +1762,7 @@ class ADHDBusterDialog:
         if messagebox.askyesno("Salvage Duplicates",
                                f"Salvage {len(to_remove)} duplicate items?\n\n"
                                f"Items: {summary}\n"
-                               f"Luck bonus earned: +{luck_bonus} 🍀\n\n"
+                               f"Luck bonus earned: +{luck_bonus} 🍀{theme_warning}\n\n"
                                "(Best item of each slot type will be kept)",
                                parent=self.dialog):
             # Remove duplicates
@@ -2456,6 +2494,16 @@ class PriorityCheckinDialog:
         
         total = self.blocker.adhd_buster.get("total_collected", 0) + 1
         self.blocker.adhd_buster["total_collected"] = total
+        
+        # Auto-equip if slot is empty (better new player experience)
+        slot = item.get("slot")
+        if "equipped" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["equipped"] = {}
+        
+        current_equipped = self.blocker.adhd_buster["equipped"].get(slot)
+        if not current_equipped:
+            self.blocker.adhd_buster["equipped"][slot] = item
+            item["auto_equipped"] = True
         
         # Generate diary entry based on current power level
         power = calculate_character_power(self.blocker.adhd_buster)

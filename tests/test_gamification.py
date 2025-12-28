@@ -344,9 +344,11 @@ class TestLuckyMergeSystem(unittest.TestCase):
         from focus_blocker import calculate_merge_success_rate
         items = [{"rarity": "Common"}, {"rarity": "Common"}]
         rate_no_luck = calculate_merge_success_rate(items, luck_bonus=0)
-        rate_with_luck = calculate_merge_success_rate(items, luck_bonus=500)
+        rate_with_luck = calculate_merge_success_rate(items, luck_bonus=100)  # 100 luck = +1%
         # Luck should increase the rate
         self.assertGreater(rate_with_luck, rate_no_luck)
+        # 100 luck should add 1%
+        self.assertAlmostEqual(rate_with_luck - rate_no_luck, 0.01, places=3)
     
     def test_merge_success_rate_capped(self) -> None:
         """Test merge success rate is capped at 35%."""
@@ -392,6 +394,47 @@ class TestLuckyMergeSystem(unittest.TestCase):
         self.assertIn("needed", result)
         if result["success"]:
             self.assertIsNotNone(result["result_item"])
+    
+    def test_is_merge_worthwhile_all_legendary(self) -> None:
+        """Test merge is not worthwhile when all items are Legendary."""
+        from focus_blocker import is_merge_worthwhile
+        items = [
+            {"rarity": "Legendary", "name": "Test 1"},
+            {"rarity": "Legendary", "name": "Test 2"}
+        ]
+        worthwhile, reason = is_merge_worthwhile(items)
+        self.assertFalse(worthwhile)
+        self.assertIn("Legendary", reason)
+    
+    def test_is_merge_worthwhile_mixed_rarity(self) -> None:
+        """Test merge is worthwhile with mixed rarities."""
+        from focus_blocker import is_merge_worthwhile
+        items = [
+            {"rarity": "Common", "name": "Test 1"},
+            {"rarity": "Legendary", "name": "Test 2"}
+        ]
+        worthwhile, reason = is_merge_worthwhile(items)
+        self.assertTrue(worthwhile)
+    
+    def test_get_item_themes_word_boundary(self) -> None:
+        """Test theme detection uses word boundaries."""
+        from focus_blocker import get_item_themes
+        # "fire" should not match in "backfire"
+        item = {"name": "Backfire Helmet of Confusion"}
+        themes = get_item_themes(item)
+        self.assertNotIn("Phoenix", themes)
+        
+        # But "fire" should match when it's a word
+        item2 = {"name": "Fire Helmet of Burning"}
+        themes2 = get_item_themes(item2)
+        self.assertIn("Phoenix", themes2)
+    
+    def test_get_item_themes_star_word_boundary(self) -> None:
+        """Test 'star' doesn't match 'upstart'."""
+        from focus_blocker import get_item_themes
+        item = {"name": "Upstart Helmet of Beginners"}
+        themes = get_item_themes(item)
+        self.assertNotIn("Celestial", themes)
 
 
 if __name__ == '__main__':
