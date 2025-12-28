@@ -1,0 +1,44 @@
+# Coverage configuration for Personal Freedom
+# https://coverage.readthedocs.io/en/latest/config.html
+
+[run]
+# Source files to include
+source = .
+branch = True
+
+# Files/directories to omit from coverage
+omit =
+    .venv/*
+    tests/*
+    build/*
+    dist/*
+    */__pycache__/*
+    shibokensupport/*
+    signature_bootstrap.py
+    test_*.py
+    setup.py
+    launcher.py
+
+[report]
+# Minimum coverage percentage to pass
+fail_under = 50
+
+# Exclude lines from coverage
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    @abstractmethod
+
+# Show missing lines in report
+show_missing = True
+
+# Ignore files with no executable statements
+skip_empty = True
+
+[html]
+directory = htmlcov
+title = Personal Freedom Coverage Report

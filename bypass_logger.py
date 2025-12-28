@@ -13,7 +13,6 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse
 import socket
 
 logger = logging.getLogger(__name__)

@@ -3,10 +3,6 @@ Local GPU-accelerated AI models for advanced productivity insights
 Requires: pip install transformers torch sentence-transformers
 """
 
-import json
-from pathlib import Path
-from datetime import datetime
-from typing import Any, Optional
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -232,7 +228,7 @@ class LocalAI:
         try:
             summary = self.summarizer(description, max_length=50, min_length=20)[0]['summary_text']
             return summary
-        except:
+        except Exception:
             return description[:200] + "..."
 
     def _find_best_day(self, weekly_data):

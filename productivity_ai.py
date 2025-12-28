@@ -8,6 +8,7 @@ import logging
 from datetime import datetime, timedelta
 from collections import defaultdict
 from pathlib import Path
+from typing import Dict, Any, Union
 
 logger = logging.getLogger(__name__)
 
@@ -15,11 +16,11 @@ logger = logging.getLogger(__name__)
 class ProductivityAnalyzer:
     """AI-powered productivity insights"""
 
-    def __init__(self, stats_path):
+    def __init__(self, stats_path: Union[str, Path]) -> None:
         self.stats_path = Path(stats_path)
-        self.stats = self._load_stats()
+        self.stats: Dict[str, Any] = self._load_stats()
 
-    def _load_stats(self):
+    def _load_stats(self) -> Dict[str, Any]:
         if self.stats_path.exists():
             try:
                 with open(self.stats_path, 'r', encoding='utf-8') as f:
@@ -28,9 +29,9 @@ class ProductivityAnalyzer:
                 return {}
         return {}
 
-    def get_peak_productivity_hours(self):
+    def get_peak_productivity_hours(self) -> Dict[str, Dict[str, int]]:
         """Identify when user is most productive"""
-        hourly_data = defaultdict(lambda: {'count': 0, 'total_time': 0})
+        hourly_data: Dict[str, Dict[str, int]] = defaultdict(lambda: {'count': 0, 'total_time': 0})
 
         # Analyze session start times (would need to track this)
         for date, data in self.stats.get('daily_stats', {}).items():
@@ -43,9 +44,9 @@ class ProductivityAnalyzer:
                     hourly_data['morning']['count'] += 1
                     hourly_data['morning']['total_time'] += focus_time
 
-        return hourly_data
+        return dict(hourly_data)
 
-    def predict_optimal_session_length(self):
+    def predict_optimal_session_length(self) -> int:
         """ML-based prediction of optimal session duration"""
         # Analyze completion rates by duration
         # This is simplified - you'd track actual session durations and completion
