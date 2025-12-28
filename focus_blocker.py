@@ -1502,21 +1502,24 @@ class DiaryEntryRevealDialog:
         # Decorative line
         tk.Frame(main_frame, height=2, bg=accent).pack(fill=tk.X, pady=10)
         
-        # Footer with session stats
+        # Footer with power/tier info
         footer_frame = tk.Frame(main_frame, bg=bg)
         footer_frame.pack(fill=tk.X)
         
         power = self.entry.get("power_at_time", 0)
-        base_tier = self.entry.get("base_tier", tier)
         
-        stats_parts = [f"⚔ Power: {power}"]
+        # Show equipped power and tier
+        tier_display = tier.capitalize()
         if tier_boosted:
-            stats_parts.append(f"📈 {base_tier.capitalize()} → {tier.capitalize()}")
+            base_tier = self.entry.get("base_tier", tier)
+            power_text = f"⚔ Power: {power}  |  🎭 {base_tier.capitalize()} → {tier_display} (bonus!)"
         else:
-            stats_parts.append(f"🎭 {tier.capitalize()} Tier")
-        stats_parts.append(f"⏱️ {self.session_minutes} min session")
+            power_text = f"⚔ Power: {power}  |  🎭 {tier_display} Tier"
         
-        tk.Label(footer_frame, text="  |  ".join(stats_parts),
+        tk.Label(footer_frame, text=power_text,
+                 font=('Segoe UI', 10, 'bold'), bg=bg, fg=accent).pack()
+        
+        tk.Label(footer_frame, text=f"⏱️ {self.session_minutes} min focus session",
                  font=('Segoe UI', 9), bg=bg, fg='#888').pack()
         
         # Hint text
@@ -2658,18 +2661,31 @@ class FocusBlockerGUI:
         power = calculate_character_power(self.blocker.adhd_buster)
         max_power = 8 * RARITY_POWER["Legendary"]
         
+        # Title and next tier calculation
         if power >= 1500:
             title = "🌟 Focus Deity"
+            next_tier = None
+            next_power = max_power
         elif power >= 1000:
             title = "⚡ Legendary Champion"
+            next_tier = "Focus Deity"
+            next_power = 1500
         elif power >= 600:
             title = "🔥 Epic Warrior"
+            next_tier = "Legendary Champion"
+            next_power = 1000
         elif power >= 300:
             title = "💪 Seasoned Fighter"
+            next_tier = "Epic Warrior"
+            next_power = 600
         elif power >= 100:
             title = "🛡️ Apprentice"
+            next_tier = "Seasoned Fighter"
+            next_power = 300
         else:
             title = "🌱 Novice"
+            next_tier = "Apprentice"
+            next_power = 100
         
         power_frame = ttk.Frame(buster_frame)
         power_frame.pack(fill=tk.X)
@@ -2677,6 +2693,20 @@ class FocusBlockerGUI:
         self.buster_power_label = tk.Label(power_frame, text=f"⚔ Power: {power}  {title}",
                                             font=('Segoe UI', 11, 'bold'), fg='#e65100')
         self.buster_power_label.pack(side=tk.LEFT)
+        
+        # Power progress to next tier
+        progress_frame = ttk.Frame(buster_frame)
+        progress_frame.pack(fill=tk.X, pady=(5, 0))
+        
+        if next_tier:
+            progress_pct = int((power / next_power) * 100)
+            progress_text = f"📈 {power}/{next_power} to {next_tier} ({progress_pct}%)"
+        else:
+            progress_text = f"👑 MAX TIER ACHIEVED! ({power}/{max_power} power)"
+        
+        self.buster_progress_label = ttk.Label(progress_frame, text=progress_text,
+                                                font=('Segoe UI', 9), foreground='#4caf50')
+        self.buster_progress_label.pack(anchor=tk.W)
         
         # Quick character stats
         buster_info = ttk.Frame(buster_frame)
@@ -4021,27 +4051,50 @@ class FocusBlockerGUI:
             equipped_count = len([s for s in self.blocker.adhd_buster.get("equipped", {}).values() if s])
             total_collected = self.blocker.adhd_buster.get("total_collected", total_items)
             luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+            max_power = 8 * RARITY_POWER["Legendary"]
             
             stats_text = f"📦 {total_items} in bag  |  ⚔ {equipped_count}/8 equipped  |  🎁 {total_collected} lifetime"
             if luck > 0:
                 stats_text += f"  |  🍀 +{luck}% luck"
             self.buster_stats_label.config(text=stats_text)
             
-            # Update power level
+            # Update power level and title
             power = calculate_character_power(self.blocker.adhd_buster)
             if power >= 1500:
                 title = "🌟 Focus Deity"
+                next_tier = None
+                next_power = max_power
             elif power >= 1000:
                 title = "⚡ Legendary Champion"
+                next_tier = "Focus Deity"
+                next_power = 1500
             elif power >= 600:
                 title = "🔥 Epic Warrior"
+                next_tier = "Legendary Champion"
+                next_power = 1000
             elif power >= 300:
                 title = "💪 Seasoned Fighter"
+                next_tier = "Epic Warrior"
+                next_power = 600
             elif power >= 100:
                 title = "🛡️ Apprentice"
+                next_tier = "Seasoned Fighter"
+                next_power = 300
             else:
                 title = "🌱 Novice"
+                next_tier = "Apprentice"
+                next_power = 100
+            
             self.buster_power_label.config(text=f"⚔ Power: {power}  {title}")
+            
+            # Update progress to next tier
+            if next_tier:
+                progress_pct = int((power / next_power) * 100)
+                progress_text = f"📈 {power}/{next_power} to {next_tier} ({progress_pct}%)"
+            else:
+                progress_text = f"👑 MAX TIER ACHIEVED! ({power}/{max_power} power)"
+            self.buster_progress_label.config(text=progress_text)
+            
         except (AttributeError, tk.TclError):
             pass
 
