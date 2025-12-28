@@ -2226,15 +2226,16 @@ class PriorityTimeLogDialog:
         # Create the dialog window
         self.dialog = tk.Toplevel(parent)
         self.dialog.title("📊 Log Priority Time")
-        self.dialog.geometry("450x400")
-        self.dialog.resizable(False, False)
+        self.dialog.geometry("450x450")
+        self.dialog.resizable(True, True)
+        self.dialog.minsize(400, 350)
         self.dialog.transient(parent)
         self.dialog.grab_set()
         
         # Center the dialog
         self.dialog.update_idletasks()
         x = (self.dialog.winfo_screenwidth() // 2) - (450 // 2)
-        y = (self.dialog.winfo_screenheight() // 2) - (400 // 2)
+        y = (self.dialog.winfo_screenheight() // 2) - (450 // 2)
         self.dialog.geometry(f"+{x}+{y}")
         
         self.setup_ui()
@@ -2391,15 +2392,16 @@ class PriorityCheckinDialog:
         
         self.dialog = tk.Toplevel(parent)
         self.dialog.title("Priority Check-in ⏰")
-        self.dialog.geometry("420x320")
-        self.dialog.resizable(False, False)
+        self.dialog.geometry("420x380")
+        self.dialog.resizable(True, True)
+        self.dialog.minsize(380, 300)
         self.dialog.transient(parent)
         self.dialog.grab_set()
         
         # Center on parent
         self.dialog.update_idletasks()
         x = parent.winfo_x() + (parent.winfo_width() - 420) // 2
-        y = parent.winfo_y() + (parent.winfo_height() - 320) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - 380) // 2
         self.dialog.geometry(f"+{x}+{y}")
         
         self.setup_ui()
@@ -2609,6 +2611,7 @@ class PrioritiesDialog:
         self.dialog.title("🎯 My Priorities")
         self.dialog.geometry("550x620")
         self.dialog.resizable(True, True)
+        self.dialog.minsize(500, 550)
         self.dialog.transient(parent)
         self.dialog.grab_set()
         
@@ -4207,7 +4210,9 @@ class FocusBlockerGUI:
         """AI-powered session completion with notes and analysis"""
         dialog = tk.Toplevel(self.root)
         dialog.title("Session Complete! 🎉")
-        dialog.geometry("500x450")
+        dialog.geometry("500x480")
+        dialog.resizable(True, True)
+        dialog.minsize(450, 400)
         dialog.transient(self.root)
         dialog.grab_set()
 
@@ -5327,7 +5332,9 @@ class FocusBlockerGUI:
 
         dialog = tk.Toplevel(self.root)
         dialog.title("Add New Goal")
-        dialog.geometry("400x250")
+        dialog.geometry("400x300")
+        dialog.resizable(True, True)
+        dialog.minsize(350, 250)
         dialog.transient(self.root)
         dialog.grab_set()
 
