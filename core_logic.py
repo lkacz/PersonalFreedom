@@ -58,6 +58,7 @@ else:
 CONFIG_PATH = APP_DIR / "config.json"
 STATS_PATH = APP_DIR / "stats.json"
 GOALS_PATH = APP_DIR / "goals.json"
+SESSION_STATE_PATH = APP_DIR / ".session_state.json"  # Crash recovery file
 
 # Website categories with common distracting sites
 SITE_CATEGORIES = {
@@ -214,6 +215,107 @@ class BlockerCore:
         except (IOError, OSError):
             pass
 
+    # === Crash Recovery Methods ===
+
+    def save_session_state(self, duration_seconds: int) -> None:
+        """Save current session state for crash recovery.
+        
+        This file is created when blocking starts and deleted when blocking ends.
+        If it exists on startup, the previous session crashed.
+        """
+        state = {
+            "session_id": self.session_id,
+            "start_time": datetime.now().isoformat(),
+            "planned_duration": duration_seconds,
+            "mode": self.mode,
+            "pid": os.getpid(),
+        }
+        try:
+            with open(SESSION_STATE_PATH, 'w', encoding='utf-8') as f:
+                json.dump(state, f, indent=2)
+        except (IOError, OSError) as e:
+            logger.warning(f"Could not save session state: {e}")
+
+    def clear_session_state(self) -> None:
+        """Remove the session state file (called on clean shutdown)."""
+        try:
+            if SESSION_STATE_PATH.exists():
+                SESSION_STATE_PATH.unlink()
+        except (IOError, OSError) as e:
+            logger.warning(f"Could not clear session state: {e}")
+
+    def check_orphaned_session(self) -> Optional[Dict[str, Any]]:
+        """Check if there's an orphaned session from a crash.
+        
+        Returns session info if orphaned session found, None otherwise.
+        """
+        if not SESSION_STATE_PATH.exists():
+            return None
+
+        try:
+            with open(SESSION_STATE_PATH, 'r', encoding='utf-8') as f:
+                state = json.load(f)
+
+            # Check if the old process is still running
+            old_pid = state.get("pid")
+            if old_pid and self._is_process_running(old_pid):
+                # Another instance is still running, not orphaned
+                return None
+
+            # Check if blocks are actually in hosts file
+            if not self._has_active_blocks():
+                # No blocks in hosts file, just clean up the state file
+                self.clear_session_state()
+                return None
+
+            return state
+
+        except (json.JSONDecodeError, IOError, OSError) as e:
+            logger.warning(f"Could not read session state: {e}")
+            # If we can't read it, check if hosts has blocks
+            if self._has_active_blocks():
+                return {"unknown": True, "start_time": "unknown"}
+            return None
+
+    def _is_process_running(self, pid: int) -> bool:
+        """Check if a process with given PID is running."""
+        try:
+            # On Windows, check if process exists
+            if sys.platform == 'win32':
+                import ctypes
+                kernel32 = ctypes.windll.kernel32
+                SYNCHRONIZE = 0x00100000
+                handle = kernel32.OpenProcess(SYNCHRONIZE, False, pid)
+                if handle:
+                    kernel32.CloseHandle(handle)
+                    return True
+                return False
+            else:
+                os.kill(pid, 0)
+                return True
+        except (OSError, PermissionError):
+            return False
+
+    def _has_active_blocks(self) -> bool:
+        """Check if our block markers exist in the hosts file."""
+        try:
+            with open(HOSTS_PATH, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+            return MARKER_START in content and MARKER_END in content
+        except (IOError, OSError):
+            return False
+
+    def recover_from_crash(self) -> tuple:
+        """Clean up after a crash - remove all blocks.
+        
+        Returns tuple (success, message)
+        """
+        # Clear the session state file first
+        self.clear_session_state()
+        
+        # Use emergency cleanup to remove blocks
+        return self.emergency_cleanup()
+
     def update_stats(self, focus_seconds, completed=True):
         """Update session statistics"""
         today = datetime.now().strftime("%Y-%m-%d")
@@ -364,8 +466,12 @@ class BlockerCore:
 
         return list(effective)
 
-    def block_sites(self):
-        """Add blocked sites to hosts file"""
+    def block_sites(self, duration_seconds: int = 0):
+        """Add blocked sites to hosts file
+        
+        Args:
+            duration_seconds: Planned session duration for crash recovery
+        """
         if not self.is_admin():
             return False, "Administrator privileges required!"
 
@@ -396,6 +502,10 @@ class BlockerCore:
             self.is_blocking = True
             self.session_id = str(uuid.uuid4())
             self._flush_dns()
+            
+            # Save session state for crash recovery
+            self.save_session_state(duration_seconds)
+            
             return True, f"Blocking {len(sites_to_block)} sites!"
 
         except PermissionError:
@@ -435,6 +545,10 @@ class BlockerCore:
             self.is_blocking = False
             self.session_id = None
             self._flush_dns()
+            
+            # Clear session state (crash recovery no longer needed)
+            self.clear_session_state()
+            
             return True, "Sites unblocked!"
 
         except PermissionError:

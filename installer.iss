@@ -50,6 +50,8 @@ Source: "GPU_AI_GUIDE.md"; DestDir: "{app}"; Flags: ignoreversion
 ; Helper scripts
 Source: "run_as_admin.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "setup_autostart.bat"; DestDir: "{app}"; Flags: ignoreversion
+; Cleanup script for uninstall
+Source: "cleanup_hosts.ps1"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; WorkingDir: "{app}"; Comment: "AI-Powered Focus & Productivity Tool"
@@ -67,7 +69,87 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 ; Add to startup if selected
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\PersonalFreedomTray.exe"""; Tasks: autostart; Flags: uninsdeletevalue
 
+[UninstallRun]
+; Run cleanup script before uninstall (primary method)
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\cleanup_hosts.ps1"" -Silent"; Flags: runhidden waituntilterminated; RunOnceId: "CleanupHosts"
+; Flush DNS cache
+Filename: "{sys}\ipconfig.exe"; Parameters: "/flushdns"; Flags: runhidden waituntilterminated; RunOnceId: "FlushDNS"
+
 [Code]
+// Helper function to run PowerShell cleanup script
+function RunCleanupScript(AppPath: String): Boolean;
+var
+  ResultCode: Integer;
+  PSPath: String;
+  ScriptPath: String;
+  Params: String;
+begin
+  Result := True;
+  
+  // Get PowerShell path
+  PSPath := ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe');
+  ScriptPath := AppPath + '\cleanup_hosts.ps1';
+  
+  // Check if cleanup script exists
+  if FileExists(ScriptPath) then
+  begin
+    // Run PowerShell with execution policy bypass and silent mode
+    Params := '-NoProfile -ExecutionPolicy Bypass -File "' + ScriptPath + '" -Silent';
+    
+    // Execute and wait for completion
+    if not Exec(PSPath, Params, '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+    begin
+      // PowerShell execution failed, try alternative method
+      Result := False;
+    end;
+  end;
+end;
+
+// Alternative cleanup using direct file manipulation (backup method)
+procedure DirectHostsCleanup();
+var
+  HostsPath: String;
+  HostsContent: AnsiString;
+  StartPos, EndPos: Integer;
+  MarkerStart, MarkerEnd: String;
+  NewContent: String;
+begin
+  MarkerStart := '# === PERSONAL FREEDOM BLOCK START ===';
+  MarkerEnd := '# === PERSONAL FREEDOM BLOCK END ===';
+  HostsPath := ExpandConstant('{sys}\drivers\etc\hosts');
+  
+  if FileExists(HostsPath) then
+  begin
+    if LoadStringFromFile(HostsPath, HostsContent) then
+    begin
+      StartPos := Pos(MarkerStart, HostsContent);
+      if StartPos > 0 then
+      begin
+        EndPos := Pos(MarkerEnd, HostsContent);
+        if EndPos > StartPos then
+        begin
+          // Calculate the end position including the marker
+          EndPos := EndPos + Length(MarkerEnd);
+          
+          // Build new content without the block
+          NewContent := Copy(HostsContent, 1, StartPos - 1) + Copy(HostsContent, EndPos + 1, Length(HostsContent));
+          
+          // Write back
+          SaveStringToFile(HostsPath, NewContent, False);
+        end;
+      end;
+    end;
+  end;
+end;
+
+// Flush DNS cache
+procedure FlushDNSCache();
+var
+  ResultCode: Integer;
+begin
+  Exec(ExpandConstant('{sys}\ipconfig.exe'), '/flushdns', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+end;
+
 function InitializeSetup(): Boolean;
 var
   ResultCode: Integer;
@@ -103,12 +185,49 @@ begin
   end;
 end;
 
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  AppPath: String;
+begin
+  // Run cleanup at the start of uninstall process (before files are deleted)
+  if CurUninstallStep = usUninstall then
+  begin
+    AppPath := ExpandConstant('{app}');
+    
+    // Try PowerShell script first
+    if not RunCleanupScript(AppPath) then
+    begin
+      // Fall back to direct cleanup
+      DirectHostsCleanup();
+    end;
+    
+    // Always flush DNS
+    FlushDNSCache();
+  end;
+end;
+
 function InitializeUninstall(): Boolean;
 var
   ResultCode: Integer;
+  AppPath: String;
 begin
   Result := True;
+  AppPath := ExpandConstant('{app}');
   
+  // First, clean up the hosts file BEFORE asking about user data
+  // This ensures blocked sites are always unblocked on uninstall
+  
+  // Try PowerShell script first (more reliable)
+  if not RunCleanupScript(AppPath) then
+  begin
+    // Fall back to direct cleanup
+    DirectHostsCleanup();
+  end;
+  
+  // Always flush DNS
+  FlushDNSCache();
+  
+  // Now ask about keeping user data
   if MsgBox('Do you want to keep your settings, statistics, and goals?', mbConfirmation, MB_YESNO or MB_DEFBUTTON1) = IDNO then
   begin
     // Delete user data
