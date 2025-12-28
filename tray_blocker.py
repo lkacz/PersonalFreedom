@@ -38,6 +38,7 @@ MARKER_END = "# === PERSONAL FREEDOM BLOCK END ==="
 # Config file path
 SCRIPT_DIR = Path(__file__).parent
 CONFIG_PATH = SCRIPT_DIR / "config.json"
+SESSION_STATE_PATH = SCRIPT_DIR / ".session_state.json"  # Crash recovery file
 
 # Default sites to block
 DEFAULT_BLACKLIST = [
@@ -99,7 +100,86 @@ class TrayBlocker:
         self.timer_thread = None
         self.icon = None
         self._stop_event = threading.Event()
+        self.session_start_time = None
         self.load_config()
+        self.stats = self._load_stats()
+        
+        # Check for crash recovery on startup
+        self.check_crash_recovery()
+    
+    def _load_stats(self):
+        """Load statistics from file"""
+        stats_path = SCRIPT_DIR / "stats.json"
+        default_stats = {
+            "total_focus_time": 0,
+            "sessions_completed": 0,
+            "sessions_cancelled": 0,
+            "daily_stats": {},
+            "streak_days": 0,
+            "last_session_date": None,
+            "best_streak": 0,
+        }
+        if stats_path.exists():
+            try:
+                with open(stats_path, 'r', encoding='utf-8') as f:
+                    loaded = json.load(f)
+                    return {**default_stats, **loaded}
+            except (json.JSONDecodeError, IOError):
+                pass
+        return default_stats
+    
+    def _save_stats(self):
+        """Save statistics to file"""
+        stats_path = SCRIPT_DIR / "stats.json"
+        try:
+            with open(stats_path, 'w', encoding='utf-8') as f:
+                json.dump(self.stats, f, indent=2)
+        except (IOError, OSError) as e:
+            print(f"Warning: Could not save stats: {e}")
+    
+    def _update_stats(self, focus_seconds, completed=True):
+        """Update session statistics"""
+        from datetime import datetime
+        today = datetime.now().strftime("%Y-%m-%d")
+        
+        self.stats["total_focus_time"] += focus_seconds
+        
+        if completed:
+            self.stats["sessions_completed"] += 1
+        else:
+            self.stats["sessions_cancelled"] += 1
+        
+        if "daily_stats" not in self.stats:
+            self.stats["daily_stats"] = {}
+        
+        if today not in self.stats["daily_stats"]:
+            self.stats["daily_stats"][today] = {"focus_time": 0, "sessions": 0}
+        
+        self.stats["daily_stats"][today]["focus_time"] += focus_seconds
+        self.stats["daily_stats"][today]["sessions"] += 1
+        
+        # Update streak
+        if self.stats.get("last_session_date"):
+            try:
+                last_date = datetime.strptime(self.stats["last_session_date"], "%Y-%m-%d")
+                today_date = datetime.strptime(today, "%Y-%m-%d")
+                
+                if (today_date - last_date).days == 1:
+                    self.stats["streak_days"] = self.stats.get("streak_days", 0) + 1
+                elif (today_date - last_date).days > 1:
+                    self.stats["streak_days"] = 1
+            except ValueError:
+                self.stats["streak_days"] = 1
+        else:
+            self.stats["streak_days"] = 1
+        
+        # Update best streak
+        if self.stats["streak_days"] > self.stats.get("best_streak", 0):
+            self.stats["best_streak"] = self.stats["streak_days"]
+        
+        self.stats["last_session_date"] = today
+        self._save_stats()
+        print(f"📊 Stats updated: {focus_seconds // 60} min session, streak: {self.stats['streak_days']} days")
 
     def load_config(self):
         """Load configuration from file"""
@@ -118,6 +198,87 @@ class TrayBlocker:
             self.blacklist = DEFAULT_BLACKLIST.copy()
 
         print(f"Loaded {len(self.blacklist)} sites to block")
+
+    # === Crash Recovery Methods ===
+
+    def save_session_state(self, duration_seconds: int) -> None:
+        """Save session state for crash recovery."""
+        from datetime import datetime
+        state = {
+            "session_id": str(id(self)),
+            "start_time": datetime.now().isoformat(),
+            "planned_duration": duration_seconds,
+            "mode": "tray",
+            "pid": os.getpid(),
+        }
+        try:
+            with open(SESSION_STATE_PATH, 'w', encoding='utf-8') as f:
+                json.dump(state, f, indent=2)
+        except (IOError, OSError) as e:
+            print(f"Warning: Could not save session state: {e}")
+
+    def clear_session_state(self) -> None:
+        """Remove the session state file."""
+        try:
+            if SESSION_STATE_PATH.exists():
+                SESSION_STATE_PATH.unlink()
+        except (IOError, OSError) as e:
+            print(f"Warning: Could not clear session state: {e}")
+
+    def check_crash_recovery(self) -> None:
+        """Check for orphaned sessions from a crash."""
+        if not SESSION_STATE_PATH.exists():
+            return
+
+        try:
+            with open(SESSION_STATE_PATH, 'r', encoding='utf-8') as f:
+                state = json.load(f)
+
+            old_pid = state.get("pid")
+            if old_pid and self._is_process_running(old_pid):
+                return  # Another instance is running
+
+            # Check if blocks exist in hosts file
+            if self._has_active_blocks():
+                print("⚠️  Detected orphaned blocks from a previous crash!")
+                print("    Cleaning up automatically...")
+                self.unblock_sites()
+                self.clear_session_state()
+                print("✓  Crash recovery complete - blocks removed")
+            else:
+                self.clear_session_state()
+
+        except (json.JSONDecodeError, IOError, OSError) as e:
+            print(f"Warning: Could not check crash recovery: {e}")
+            if self._has_active_blocks():
+                print("    Found blocks in hosts file - cleaning up...")
+                self.unblock_sites()
+
+    def _is_process_running(self, pid: int) -> bool:
+        """Check if a process with given PID is running."""
+        try:
+            if sys.platform == 'win32':
+                kernel32 = ctypes.windll.kernel32
+                SYNCHRONIZE = 0x00100000
+                handle = kernel32.OpenProcess(SYNCHRONIZE, False, pid)
+                if handle:
+                    kernel32.CloseHandle(handle)
+                    return True
+                return False
+            else:
+                os.kill(pid, 0)
+                return True
+        except (OSError, PermissionError):
+            return False
+
+    def _has_active_blocks(self) -> bool:
+        """Check if our block markers exist in the hosts file."""
+        try:
+            with open(HOSTS_PATH, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+            return MARKER_START in content and MARKER_END in content
+        except (IOError, OSError):
+            return False
 
     def _is_valid_hostname(self, hostname):
         """Validate hostname format"""
@@ -165,8 +326,12 @@ class TrayBlocker:
 
         return image
 
-    def block_sites(self):
-        """Add blocked sites to hosts file"""
+    def block_sites(self, duration_seconds: int = 0):
+        """Add blocked sites to hosts file
+        
+        Args:
+            duration_seconds: Planned session duration for crash recovery
+        """
         if not is_admin():
             print("ERROR: Cannot block - not running as admin!")
             return False
@@ -202,6 +367,10 @@ class TrayBlocker:
 
             self.is_blocking = True
             self._flush_dns()
+            
+            # Save session state for crash recovery
+            self.save_session_state(duration_seconds)
+            
             print(f"✓ Blocking {blocked_count} sites")
             return True
 
@@ -233,6 +402,10 @@ class TrayBlocker:
 
             self.is_blocking = False
             self._flush_dns()
+            
+            # Clear session state (crash recovery no longer needed)
+            self.clear_session_state()
+            
             print("✓ Sites unblocked")
             return True
 
@@ -256,9 +429,12 @@ class TrayBlocker:
         print(f"Starting {minutes} minute session...")
 
         def timer_callback():
+            import time as time_module
             self.remaining_seconds = minutes * 60
+            duration_seconds = minutes * 60
+            session_start = time_module.time()
 
-            if not self.block_sites():
+            if not self.block_sites(duration_seconds=duration_seconds):
                 print("Failed to start blocking!")
                 self.remaining_seconds = 0
                 return
@@ -274,6 +450,9 @@ class TrayBlocker:
                     )
                 except Exception:
                     pass
+            
+            # Play start sound
+            self._play_notification_sound()
 
             # Timer loop
             while self.remaining_seconds > 0 and self.is_blocking:
@@ -285,18 +464,35 @@ class TrayBlocker:
                 except Exception:
                     pass
 
+            # Calculate elapsed time
+            elapsed = int(time_module.time() - session_start)
+            completed = self.remaining_seconds <= 0 and self.is_blocking
+
             # Session ended
             if self.is_blocking:
                 self.unblock_sites()
                 self.update_icon()
+                
+                # Update stats
+                self._update_stats(elapsed, completed=True)
+                
+                # Play completion sound
+                self._play_notification_sound()
+                
                 if self.icon:
                     try:
+                        total_hours = self.stats.get('total_focus_time', 0) / 3600
+                        streak = self.stats.get('streak_days', 0)
                         self.icon.notify(
-                            "Your focus session has ended. Sites are now accessible.",
+                            f"Session complete! 🔥 Streak: {streak} days | Total: {total_hours:.1f}h",
                             "Focus Complete! 🎉"
                         )
                     except Exception:
                         pass
+            else:
+                # Session was stopped manually
+                if elapsed > 60:  # Only count if > 1 minute
+                    self._update_stats(elapsed, completed=False)
 
             print("Session ended")
 
@@ -311,6 +507,14 @@ class TrayBlocker:
         self.remaining_seconds = 0
         self.unblock_sites()
         self.update_icon()
+    
+    def _play_notification_sound(self):
+        """Play a notification sound"""
+        try:
+            import winsound
+            winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
+        except Exception:
+            pass  # Sound not critical
 
     def update_icon(self):
         """Update the tray icon"""

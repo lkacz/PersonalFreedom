@@ -47,6 +47,14 @@ if LOCAL_AI_AVAILABLE:
 else:
     LocalAI = None  # type: ignore
 
+# Try to import tray support
+try:
+    import pystray
+    from PIL import Image, ImageDraw
+    TRAY_AVAILABLE = True
+except ImportError:
+    TRAY_AVAILABLE = False
+
 
 class FocusBlockerGUI:
     """Enhanced GUI with tabbed interface"""
@@ -62,6 +70,15 @@ class FocusBlockerGUI:
         self.remaining_seconds = 0
         self._timer_lock = threading.Lock()
         self.session_start_time = None
+        
+        # Pomodoro state
+        self.pomodoro_is_break = False
+        self.pomodoro_session_count = 0
+        self.pomodoro_total_work_time = 0
+        
+        # System tray state
+        self.tray_icon = None
+        self.minimize_to_tray = tk.BooleanVar(value=False)
 
         # Apply theme
         self.style = ttk.Style()
@@ -74,6 +91,12 @@ class FocusBlockerGUI:
 
         # Check for scheduled blocking
         self.check_scheduled_blocking()
+        
+        # Check for crash recovery (orphaned sessions)
+        self.root.after(500, self.check_crash_recovery)
+        
+        # Handle window minimize
+        self.root.bind('<Unmap>', self._on_minimize)
 
     def _configure_styles(self) -> None:
         """Configure custom styles."""
@@ -464,11 +487,43 @@ class FocusBlockerGUI:
         ttk.Button(pomo_frame, text="Save Pomodoro Settings",
                    command=self.save_pomodoro_settings).pack(pady=10)
 
+        # System Tray Section (if available)
+        if TRAY_AVAILABLE:
+            tray_frame = ttk.LabelFrame(self.settings_tab, text="🖥️ System Tray", padding="10")
+            tray_frame.pack(fill=tk.X, pady=10)
+
+            ttk.Checkbutton(
+                tray_frame,
+                text="Minimize to system tray instead of taskbar",
+                variable=self.minimize_to_tray
+            ).pack(anchor=tk.W)
+
+            ttk.Label(tray_frame,
+                      text="When enabled, minimizing the window will hide it to the system tray.\n"
+                           "Click the tray icon to restore the window.",
+                      font=('Segoe UI', 8), foreground='gray').pack(anchor=tk.W, pady=(5, 0))
+
+        # Backup & Restore Section
+        backup_frame = ttk.LabelFrame(self.settings_tab, text="💾 Backup & Restore", padding="10")
+        backup_frame.pack(fill=tk.X, pady=10)
+
+        ttk.Label(backup_frame,
+                  text="Backup or restore all your data (settings, stats, goals, achievements).",
+                  wraplength=450).pack(anchor=tk.W, pady=(0, 10))
+
+        backup_btn_frame = ttk.Frame(backup_frame)
+        backup_btn_frame.pack(fill=tk.X)
+
+        ttk.Button(backup_btn_frame, text="📤 Create Backup",
+                   command=self.create_full_backup).pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
+        ttk.Button(backup_btn_frame, text="📥 Restore Backup",
+                   command=self.restore_full_backup).pack(side=tk.LEFT, padx=5, expand=True, fill=tk.X)
+
         # About
         about_frame = ttk.LabelFrame(self.settings_tab, text="About", padding="10")
         about_frame.pack(fill=tk.X, pady=10)
 
-        ttk.Label(about_frame, text="Personal Freedom v2.0",
+        ttk.Label(about_frame, text="Personal Freedom v2.1.0",
                   font=('Segoe UI', 11, 'bold')).pack()
         ttk.Label(about_frame, text="A focus and productivity tool for Windows",
                   font=('Segoe UI', 9)).pack()
@@ -688,16 +743,53 @@ class FocusBlockerGUI:
 
         # Set mode
         self.blocker.mode = self.mode_var.get()
+        
+        # Handle Pomodoro mode specially
+        if self.blocker.mode == BlockMode.POMODORO:
+            # Reset Pomodoro state
+            self.pomodoro_is_break = False
+            self.pomodoro_session_count = 0
+            self.pomodoro_total_work_time = 0
+            
+            # Use Pomodoro work duration instead of user-specified time
+            total_seconds = self.blocker.pomodoro_work * 60
+            
+            success, message = self.blocker.block_sites(duration_seconds=total_seconds)
+            if not success:
+                messagebox.showerror("Error", message)
+                return
+            
+            with self._timer_lock:
+                self.remaining_seconds = total_seconds
+                self.timer_running = True
+                self.session_start_time = time.time()
+            
+            self.start_btn.config(state=tk.DISABLED)
+            self.stop_btn.config(state=tk.NORMAL)
+            self.status_label.config(text="🍅 WORK #1", foreground='red')
+            
+            threading.Thread(target=self.run_timer, daemon=True).start()
+            
+            messagebox.showinfo(
+                "Pomodoro Started! 🍅",
+                f"Starting Pomodoro session:\n"
+                f"• Work: {self.blocker.pomodoro_work} min\n"
+                f"• Break: {self.blocker.pomodoro_break} min\n"
+                f"• Long break: {self.blocker.pomodoro_long_break} min (every {self.blocker.pomodoro_sessions_before_long} sessions)\n\n"
+                "Stay focused! 💪"
+            )
+            return
 
-        # Block sites
-        success, message = self.blocker.block_sites()
+        # Block sites (pass duration for crash recovery)
+        total_seconds = total_minutes * 60
+        success, message = self.blocker.block_sites(duration_seconds=total_seconds)
         if not success:
             messagebox.showerror("Error", message)
             return
 
         # Start timer
         with self._timer_lock:
-            self.remaining_seconds = total_minutes * 60
+            self.remaining_seconds = total_seconds
             self.timer_running = True
             self.session_start_time = time.time()
 
@@ -770,12 +862,21 @@ class FocusBlockerGUI:
     def session_complete(self):
         """Handle session completion"""
         elapsed = int(time.time() - self.session_start_time) if self.session_start_time else 0
+        
+        # Handle Pomodoro mode specially
+        if self.blocker.mode == BlockMode.POMODORO:
+            self._handle_pomodoro_complete(elapsed)
+            return
+        
         self.blocker.update_stats(elapsed, completed=True)
 
         # Use _stop_session_internal to bypass password check and avoid double stats update
         self._stop_session_internal()
         self.timer_display.config(text="00:00:00")
         self.update_stats_display()
+
+        # Play completion sound
+        self._play_notification_sound()
 
         # Refresh AI data after completing session
         if AI_AVAILABLE:
@@ -786,6 +887,138 @@ class FocusBlockerGUI:
             self.show_ai_session_complete(elapsed)
         else:
             messagebox.showinfo("Complete!", "🎉 Focus session complete!\nGreat job staying focused!")
+    
+    def _handle_pomodoro_complete(self, elapsed: int):
+        """Handle Pomodoro work/break cycle transitions"""
+        if self.pomodoro_is_break:
+            # Break is over, start next work session
+            self.pomodoro_is_break = False
+            self._play_notification_sound()
+            
+            # Unblock sites during work
+            self.blocker.unblock_sites(force=True)
+            
+            if messagebox.askyesno("Break Over! 🍅", 
+                                   f"Break time is over!\n\n"
+                                   f"Sessions completed: {self.pomodoro_session_count}\n"
+                                   f"Total focus time: {self.pomodoro_total_work_time // 60} min\n\n"
+                                   "Ready for another focus session?"):
+                self._start_pomodoro_work()
+            else:
+                self._end_pomodoro_session()
+        else:
+            # Work session completed
+            self.pomodoro_session_count += 1
+            self.pomodoro_total_work_time += elapsed
+            self.blocker.update_stats(elapsed, completed=True)
+            
+            self._play_notification_sound()
+            
+            # Unblock sites during break
+            self.blocker.unblock_sites(force=True)
+            
+            # Determine break length
+            sessions_before_long = self.blocker.pomodoro_sessions_before_long
+            if self.pomodoro_session_count % sessions_before_long == 0:
+                break_minutes = self.blocker.pomodoro_long_break
+                break_type = "Long Break"
+            else:
+                break_minutes = self.blocker.pomodoro_break
+                break_type = "Short Break"
+            
+            response = messagebox.askyesno(
+                f"Work Complete! 🍅 {break_type}",
+                f"Great work! Session #{self.pomodoro_session_count} complete!\n\n"
+                f"Time for a {break_minutes}-minute {break_type.lower()}.\n\n"
+                "Start break timer?"
+            )
+            
+            if response:
+                self._start_pomodoro_break(break_minutes)
+            else:
+                self._end_pomodoro_session()
+    
+    def _start_pomodoro_work(self):
+        """Start a Pomodoro work session"""
+        work_minutes = self.blocker.pomodoro_work
+        total_seconds = work_minutes * 60
+        
+        # Block sites during work
+        success, message = self.blocker.block_sites(duration_seconds=total_seconds)
+        if not success:
+            messagebox.showerror("Error", message)
+            self._end_pomodoro_session()
+            return
+        
+        with self._timer_lock:
+            self.remaining_seconds = total_seconds
+            self.timer_running = True
+            self.session_start_time = time.time()
+        
+        self.pomodoro_is_break = False
+        self.start_btn.config(state=tk.DISABLED)
+        self.stop_btn.config(state=tk.NORMAL)
+        self.status_label.config(text=f"🍅 WORK #{self.pomodoro_session_count + 1}", foreground='red')
+        
+        threading.Thread(target=self.run_timer, daemon=True).start()
+    
+    def _start_pomodoro_break(self, break_minutes: int):
+        """Start a Pomodoro break period"""
+        total_seconds = break_minutes * 60
+        
+        with self._timer_lock:
+            self.remaining_seconds = total_seconds
+            self.timer_running = True
+            self.session_start_time = time.time()
+        
+        self.pomodoro_is_break = True
+        self.start_btn.config(state=tk.DISABLED)
+        self.stop_btn.config(state=tk.NORMAL)
+        self.status_label.config(text="☕ BREAK TIME", foreground='green')
+        
+        threading.Thread(target=self.run_timer, daemon=True).start()
+    
+    def _end_pomodoro_session(self):
+        """End the entire Pomodoro session"""
+        total_work = self.pomodoro_total_work_time
+        sessions = self.pomodoro_session_count
+        
+        # Reset Pomodoro state
+        self.pomodoro_is_break = False
+        self.pomodoro_session_count = 0
+        self.pomodoro_total_work_time = 0
+        
+        # Reset UI
+        with self._timer_lock:
+            self.timer_running = False
+            self.remaining_seconds = 0
+        
+        self.start_btn.config(state=tk.NORMAL)
+        self.stop_btn.config(state=tk.DISABLED)
+        self.timer_display.config(text="00:00:00")
+        self.status_label.config(text="Ready to focus", foreground='black')
+        
+        self.update_stats_display()
+        
+        if AI_AVAILABLE:
+            self.refresh_ai_data()
+        
+        if sessions > 0:
+            messagebox.showinfo(
+                "Pomodoro Complete! 🍅",
+                f"Great Pomodoro session!\n\n"
+                f"Work sessions: {sessions}\n"
+                f"Total focus time: {total_work // 60} minutes\n\n"
+                "Keep up the great work!"
+            )
+    
+    def _play_notification_sound(self):
+        """Play a notification sound"""
+        try:
+            import winsound
+            winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
+        except Exception:
+            pass  # Sound not critical
 
     def show_ai_session_complete(self, session_duration):
         """AI-powered session completion with notes and analysis"""
@@ -1156,7 +1389,8 @@ class FocusBlockerGUI:
             if messagebox.askyesno("Scheduled Block",
                                    "You have a blocking schedule active now.\nStart blocking?"):
                 self.blocker.mode = BlockMode.SCHEDULED
-                self.blocker.block_sites()
+                # Use 8 hours as default for scheduled blocks
+                self.blocker.block_sites(duration_seconds=8 * 60 * 60)
                 self.status_label.config(text="🔒 SCHEDULED BLOCK", foreground='red')
                 self.start_btn.config(state=tk.DISABLED)
                 self.stop_btn.config(state=tk.NORMAL)
@@ -1216,6 +1450,191 @@ class FocusBlockerGUI:
             messagebox.showinfo("Success", "Pomodoro settings saved!")
         except ValueError:
             messagebox.showerror("Error", "Invalid values")
+
+    def create_full_backup(self):
+        """Create a full backup of all app data"""
+        import json
+        from pathlib import Path
+        
+        filepath = filedialog.asksaveasfilename(
+            defaultextension=".json",
+            filetypes=[("JSON files", "*.json")],
+            title="Save Full Backup"
+        )
+        
+        if not filepath:
+            return
+        
+        try:
+            backup_data = {
+                'backup_version': '2.1.0',
+                'backup_date': datetime.now().isoformat(),
+                'config': {
+                    'blacklist': self.blocker.blacklist,
+                    'whitelist': self.blocker.whitelist,
+                    'categories_enabled': self.blocker.categories_enabled,
+                    'pomodoro_work': self.blocker.pomodoro_work,
+                    'pomodoro_break': self.blocker.pomodoro_break,
+                    'pomodoro_long_break': self.blocker.pomodoro_long_break,
+                    'schedules': self.blocker.schedules,
+                },
+                'stats': self.blocker.stats,
+            }
+            
+            # Include goals if available
+            if AI_AVAILABLE and hasattr(self, 'goals'):
+                backup_data['goals'] = self.goals.goals
+            
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(backup_data, f, indent=2)
+            
+            messagebox.showinfo(
+                "Backup Complete",
+                f"Full backup saved successfully!\n\nIncludes:\n"
+                f"• {len(self.blocker.blacklist)} blocked sites\n"
+                f"• {len(self.blocker.whitelist)} whitelisted sites\n"
+                f"• {self.blocker.stats.get('sessions_completed', 0)} session records\n"
+                f"• All settings and schedules"
+            )
+        except Exception as e:
+            messagebox.showerror("Backup Failed", f"Could not create backup:\n{e}")
+
+    def restore_full_backup(self):
+        """Restore from a full backup"""
+        import json
+        
+        filepath = filedialog.askopenfilename(
+            filetypes=[("JSON files", "*.json")],
+            title="Select Backup File"
+        )
+        
+        if not filepath:
+            return
+        
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                backup_data = json.load(f)
+            
+            # Validate backup
+            if 'backup_version' not in backup_data:
+                messagebox.showerror("Invalid Backup", "This doesn't appear to be a valid backup file.")
+                return
+            
+            backup_date = backup_data.get('backup_date', 'Unknown')
+            
+            # Confirm restore
+            if not messagebox.askyesno(
+                "Confirm Restore",
+                f"Restore backup from {backup_date}?\n\n"
+                "⚠️ This will replace ALL your current data:\n"
+                "• Blocked/whitelisted sites\n"
+                "• Statistics and achievements\n"
+                "• Schedules and settings\n"
+                "• Goals\n\n"
+                "Continue?"
+            ):
+                return
+            
+            # Restore config
+            config = backup_data.get('config', {})
+            if config:
+                self.blocker.blacklist = config.get('blacklist', self.blocker.blacklist)
+                self.blocker.whitelist = config.get('whitelist', self.blocker.whitelist)
+                self.blocker.categories_enabled = config.get('categories_enabled', self.blocker.categories_enabled)
+                self.blocker.pomodoro_work = config.get('pomodoro_work', self.blocker.pomodoro_work)
+                self.blocker.pomodoro_break = config.get('pomodoro_break', self.blocker.pomodoro_break)
+                self.blocker.pomodoro_long_break = config.get('pomodoro_long_break', self.blocker.pomodoro_long_break)
+                self.blocker.schedules = config.get('schedules', self.blocker.schedules)
+                self.blocker.save_config()
+            
+            # Restore stats
+            stats = backup_data.get('stats', {})
+            if stats:
+                self.blocker.stats = {**self.blocker._default_stats(), **stats}
+                self.blocker.save_stats()
+            
+            # Restore goals
+            if AI_AVAILABLE and hasattr(self, 'goals') and 'goals' in backup_data:
+                self.goals.goals = backup_data['goals']
+                self.goals.save_goals()
+            
+            # Refresh UI
+            self.update_site_lists()
+            self.update_schedule_list()
+            self.update_stats_display()
+            self.update_total_sites_count()
+            
+            # Update Pomodoro settings display
+            self.pomo_vars['pomodoro_work'].set(str(self.blocker.pomodoro_work))
+            self.pomo_vars['pomodoro_break'].set(str(self.blocker.pomodoro_break))
+            self.pomo_vars['pomodoro_long_break'].set(str(self.blocker.pomodoro_long_break))
+            
+            if AI_AVAILABLE:
+                self.refresh_ai_data()
+            
+            messagebox.showinfo("Restore Complete", "Backup restored successfully!")
+            
+        except json.JSONDecodeError:
+            messagebox.showerror("Invalid File", "The file is not valid JSON.")
+        except Exception as e:
+            messagebox.showerror("Restore Failed", f"Could not restore backup:\n{e}")
+
+    def check_crash_recovery(self) -> None:
+        """Check for orphaned sessions from a previous crash and offer recovery."""
+        orphaned = self.blocker.check_orphaned_session()
+        
+        if orphaned is None:
+            return
+        
+        # Format the crash info for the user
+        if orphaned.get("unknown"):
+            crash_info = "An unknown previous session"
+        else:
+            start_time = orphaned.get("start_time", "unknown")
+            mode = orphaned.get("mode", "unknown")
+            try:
+                from datetime import datetime
+                dt = datetime.fromisoformat(start_time)
+                time_str = dt.strftime("%Y-%m-%d %H:%M")
+            except (ValueError, TypeError):
+                time_str = start_time
+            crash_info = f"A session started at {time_str} (mode: {mode})"
+        
+        # Ask user what to do
+        response = messagebox.askyesnocancel(
+            "Crash Recovery Detected",
+            f"⚠️ {crash_info} did not shut down properly.\n\n"
+            "Some websites may still be blocked.\n\n"
+            "Would you like to:\n"
+            "• YES - Remove all blocks and clean up\n"
+            "• NO - Keep the blocks (I'll manage manually)\n"
+            "• CANCEL - Decide later",
+            icon='warning'
+        )
+        
+        if response is True:  # YES - Clean up
+            success, message = self.blocker.recover_from_crash()
+            if success:
+                messagebox.showinfo(
+                    "Recovery Complete",
+                    "✅ All blocks have been removed.\n\n"
+                    "Your browser should now be able to access all websites."
+                )
+            else:
+                messagebox.showerror(
+                    "Recovery Failed",
+                    f"Could not clean up: {message}\n\n"
+                    "Try using 'Emergency Cleanup' in Settings tab."
+                )
+        elif response is False:  # NO - Keep blocks
+            # Just clear the session state file so we don't ask again
+            self.blocker.clear_session_state()
+            messagebox.showinfo(
+                "Blocks Retained",
+                "The blocks have been kept.\n\n"
+                "Use 'Emergency Cleanup' in Settings tab when you want to remove them."
+            )
+        # If CANCEL (None), do nothing - will ask again next time
 
     def emergency_cleanup_action(self):
         """Emergency cleanup - remove all blocks and clean system"""
@@ -1282,13 +1701,25 @@ class FocusBlockerGUI:
         if insights:
             self.insights_text.insert(tk.END, "💡 INSIGHTS:\n", 'header')
             for insight in insights:
-                self.insights_text.insert(tk.END, f"  • {insight}\n")
+                # Handle both dict and string insights
+                if isinstance(insight, dict):
+                    title = insight.get('title', '')
+                    message = insight.get('message', '')
+                    self.insights_text.insert(tk.END, f"  • {title}: {message}\n")
+                else:
+                    self.insights_text.insert(tk.END, f"  • {insight}\n")
             self.insights_text.insert(tk.END, "\n")
 
         if recommendations:
             self.insights_text.insert(tk.END, "🎯 RECOMMENDATIONS:\n", 'header')
             for rec in recommendations:
-                self.insights_text.insert(tk.END, f"  • {rec}\n")
+                # Handle both dict and string recommendations
+                if isinstance(rec, dict):
+                    suggestion = rec.get('suggestion', '')
+                    reason = rec.get('reason', '')
+                    self.insights_text.insert(tk.END, f"  • {suggestion} ({reason})\n")
+                else:
+                    self.insights_text.insert(tk.END, f"  • {rec}\n")
 
         if not insights and not recommendations:
             self.insights_text.insert(tk.END, "Complete a few sessions to unlock AI insights!\n", 'info')
@@ -1547,8 +1978,97 @@ class FocusBlockerGUI:
 
     # === Window Management ===
 
+    def _on_minimize(self, event):
+        """Handle window minimize event"""
+        if not TRAY_AVAILABLE or not self.minimize_to_tray.get():
+            return
+        
+        # Only act if the main window is being minimized (not child dialogs)
+        if event.widget != self.root:
+            return
+        
+        # Check if window is actually iconified
+        if self.root.state() == 'iconic':
+            self.root.withdraw()  # Hide window
+            self._show_tray_icon()
+    
+    def _create_tray_image(self, blocking=False):
+        """Create a simple icon image for the tray"""
+        size = 64
+        image = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(image)
+
+        if blocking:
+            # Red circle when blocking
+            draw.ellipse([4, 4, size-4, size-4], fill='#e74c3c', outline='#c0392b', width=2)
+            # Lock symbol
+            draw.rectangle([20, 30, 44, 50], fill='white')
+            draw.arc([24, 18, 40, 34], 0, 180, fill='white', width=4)
+        else:
+            # Green circle when not blocking
+            draw.ellipse([4, 4, size-4, size-4], fill='#2ecc71', outline='#27ae60', width=2)
+            # Check mark
+            draw.line([(20, 32), (28, 42), (44, 22)], fill='white', width=4)
+
+        return image
+    
+    def _show_tray_icon(self):
+        """Show the system tray icon"""
+        if not TRAY_AVAILABLE or self.tray_icon is not None:
+            return
+        
+        def on_show(icon, item):
+            icon.stop()
+            self.tray_icon = None
+            self.root.after(0, self._restore_window)
+        
+        def on_quit(icon, item):
+            icon.stop()
+            self.tray_icon = None
+            self.root.after(0, self.on_closing)
+        
+        def get_status():
+            if self.timer_running:
+                h = self.remaining_seconds // 3600
+                m = (self.remaining_seconds % 3600) // 60
+                s = self.remaining_seconds % 60
+                return f"🔒 Blocking - {h:02d}:{m:02d}:{s:02d}"
+            return "Ready"
+        
+        menu = pystray.Menu(
+            pystray.MenuItem(lambda item: get_status(), lambda: None, enabled=False),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem("Show Window", on_show, default=True),
+            pystray.MenuItem("Exit", on_quit),
+        )
+        
+        image = self._create_tray_image(self.timer_running)
+        self.tray_icon = pystray.Icon(
+            "PersonalFreedom",
+            image,
+            "Personal Freedom - Focus Blocker",
+            menu
+        )
+        
+        # Run in background thread
+        threading.Thread(target=self.tray_icon.run, daemon=True).start()
+    
+    def _restore_window(self):
+        """Restore the window from system tray"""
+        self.root.deiconify()
+        self.root.lift()
+        self.root.focus_force()
+
     def on_closing(self) -> None:
         """Handle window close."""
+        # Stop tray icon if running
+        if self.tray_icon is not None:
+            try:
+                self.tray_icon.stop()
+            except Exception:
+                pass
+            self.tray_icon = None
+        
         if self.timer_running:
             if messagebox.askyesno("Confirm Exit", "A session is running!\nStop and exit?"):
                 self.stop_session(show_message=False)
