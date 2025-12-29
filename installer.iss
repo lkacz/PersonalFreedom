@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6.0 or later: https://jrsoftware.org/isinfo.php
 
 #define MyAppName "Personal Freedom"
-#define MyAppVersion "3.1.3"
+#define MyAppVersion "3.1.4"
 #define MyAppPublisher "Personal Freedom"
 #define MyAppURL "https://github.com/lkacz/PersonalFreedom"
 #define MyAppExeName "PersonalFreedom.exe"
