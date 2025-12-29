@@ -1,6 +1,8 @@
 import sys
+import json
 import random
 import platform
+from pathlib import Path
 from typing import Optional, Dict, List
 from datetime import datetime
 
@@ -388,8 +390,8 @@ class TimerTab(QtWidgets.QWidget):
         self.blocker.update_stats(elapsed, completed=True)
         self.blocker.unblock_sites(force=True)
 
-    # Notify the user the session has ended
-    self._play_notification_sound()
+        # Notify the user the session has ended
+        self._play_notification_sound()
 
         self.timer_label.setText("00:00:00")
         self.start_btn.setEnabled(True)
@@ -1234,6 +1236,13 @@ class SettingsTab(QtWidgets.QWidget):
                 },
                 "stats": self.blocker.stats,
             }
+            # Include goals if available
+            if FocusGoals and Path(GOALS_PATH).exists():
+                try:
+                    with open(GOALS_PATH, "r", encoding="utf-8") as gf:
+                        backup_data["goals"] = json.load(gf)
+                except Exception:
+                    pass
             with open(path, "w", encoding="utf-8") as f:
                 json.dump(backup_data, f, indent=2)
             QtWidgets.QMessageBox.information(self, "Backup Complete", "Backup saved successfully!")
@@ -1265,6 +1274,15 @@ class SettingsTab(QtWidgets.QWidget):
             stats = data.get("stats", {})
             self.blocker.stats = {**self.blocker._default_stats(), **stats}
             self.blocker.save_stats()
+
+            # Restore goals if present
+            if FocusGoals and "goals" in data:
+                try:
+                    with open(GOALS_PATH, "w", encoding="utf-8") as gf:
+                        json.dump(data["goals"], gf, indent=2)
+                except Exception:
+                    pass
+
             QtWidgets.QMessageBox.information(self, "Restored", "Backup restored successfully!")
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "Restore Failed", str(e))
@@ -2849,9 +2867,60 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.minimize_to_tray = False
         self._setup_system_tray()
 
+        # Check for crash recovery on startup
+        QtCore.QTimer.singleShot(500, self._check_crash_recovery)
+
+        # Check for scheduled blocking
+        QtCore.QTimer.singleShot(700, self._check_scheduled_blocking)
+
         # Show priorities on startup if enabled
         if self.blocker.show_priorities_on_startup:
-            QtCore.QTimer.singleShot(100, self._open_priorities)
+            QtCore.QTimer.singleShot(600, self._open_priorities)
+
+    def _check_crash_recovery(self) -> None:
+        """Check for orphaned sessions from a previous crash and offer recovery."""
+        orphaned = self.blocker.check_orphaned_session()
+
+        if orphaned is None:
+            return
+
+        # Format crash info
+        if orphaned.get("unknown"):
+            crash_info = "An unknown previous session"
+        else:
+            start_time = orphaned.get("start_time", "unknown")
+            mode = orphaned.get("mode", "unknown")
+            try:
+                from datetime import datetime
+                dt = datetime.fromisoformat(start_time)
+                time_str = dt.strftime("%Y-%m-%d %H:%M")
+            except (ValueError, TypeError):
+                time_str = start_time
+            crash_info = f"A session started at {time_str} (mode: {mode})"
+
+        # Ask user what to do
+        msgbox = QtWidgets.QMessageBox(self)
+        msgbox.setIcon(QtWidgets.QMessageBox.Warning)
+        msgbox.setWindowTitle("Crash Recovery Detected")
+        msgbox.setText(f"⚠️ {crash_info} did not shut down properly.\n\nSome websites may still be blocked.")
+        msgbox.setInformativeText("Would you like to remove all blocks and clean up?")
+        msgbox.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel)
+        msgbox.setDefaultButton(QtWidgets.QMessageBox.Yes)
+        msgbox.button(QtWidgets.QMessageBox.Yes).setText("Remove Blocks")
+        msgbox.button(QtWidgets.QMessageBox.No).setText("Keep Blocks")
+        msgbox.button(QtWidgets.QMessageBox.Cancel).setText("Decide Later")
+
+        response = msgbox.exec()
+
+        if response == QtWidgets.QMessageBox.Yes:
+            success, message = self.blocker.recover_from_crash()
+            if success:
+                QtWidgets.QMessageBox.information(self, "Recovery Complete", "✅ All blocks have been removed.\n\nYour browser should now be able to access all websites.")
+            else:
+                QtWidgets.QMessageBox.critical(self, "Recovery Failed", f"Could not clean up: {message}\n\nTry using 'Emergency Cleanup' in Settings tab.")
+        elif response == QtWidgets.QMessageBox.No:
+            self.blocker.clear_session_state()
+            QtWidgets.QMessageBox.information(self, "Blocks Retained", "The blocks have been kept.\n\nUse 'Emergency Cleanup' in Settings tab when you want to remove them.")
 
     def _update_admin_label(self) -> None:
         if hasattr(self, "admin_label"):
@@ -2861,6 +2930,21 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             else:
                 self.admin_label.setText("⚠ Not Admin")
                 self.admin_label.setStyleSheet("color: #d32f2f; font-weight: bold;")
+
+    def _check_scheduled_blocking(self) -> None:
+        """Check if we should be blocking based on schedule."""
+        if self.blocker.is_scheduled_block_time() and not self.blocker.is_blocking:
+            result = QtWidgets.QMessageBox.question(
+                self, "Scheduled Block",
+                "You have a blocking schedule active now.\nStart blocking?"
+            )
+            if result == QtWidgets.QMessageBox.Yes:
+                self.blocker.mode = BlockMode.SCHEDULED
+                self.blocker.block_sites(duration_seconds=8 * 60 * 60)
+                self.timer_tab._update_timer_display()
+
+        # Check again in 60 seconds
+        QtCore.QTimer.singleShot(60000, self._check_scheduled_blocking)
 
     def _setup_system_tray(self) -> None:
         """Setup system tray icon if available."""
