@@ -22,6 +22,7 @@ from core_logic import (
     LOCAL_AI_AVAILABLE,
     GOALS_PATH,
     STATS_PATH,
+    BYPASS_LOGGER_AVAILABLE,
 )
 
 # AI helpers (guarded for optional dependency)
@@ -917,6 +918,35 @@ class StatsTab(QtWidgets.QWidget):
         week_layout.addWidget(self.week_text)
         inner.addWidget(week_group)
 
+        # Distraction attempts (bypass) if available
+        if BYPASS_LOGGER_AVAILABLE:
+            bypass_group = QtWidgets.QGroupBox("🚫 Distraction Attempts")
+            bypass_layout = QtWidgets.QVBoxLayout(bypass_group)
+
+            self.bypass_session_label = QtWidgets.QLabel("Current Session: 0 attempts")
+            self.bypass_session_sites = QtWidgets.QLabel("No sites accessed")
+            self.bypass_session_sites.setStyleSheet("color: gray;")
+            bypass_layout.addWidget(self.bypass_session_label)
+            bypass_layout.addWidget(self.bypass_session_sites)
+
+            self.bypass_total_label = QtWidgets.QLabel("Total attempts: 0")
+            self.bypass_top_sites = QtWidgets.QLabel("Top distractions: -")
+            self.bypass_peak_hours = QtWidgets.QLabel("Peak hours: -")
+            bypass_layout.addWidget(self.bypass_total_label)
+            bypass_layout.addWidget(self.bypass_top_sites)
+            bypass_layout.addWidget(self.bypass_peak_hours)
+
+            self.bypass_insights = QtWidgets.QTextEdit()
+            self.bypass_insights.setReadOnly(True)
+            self.bypass_insights.setMaximumHeight(80)
+            bypass_layout.addWidget(self.bypass_insights)
+
+            refresh_bypass = QtWidgets.QPushButton("🔄 Refresh Attempts")
+            refresh_bypass.clicked.connect(self._refresh_bypass_stats)
+            bypass_layout.addWidget(refresh_bypass)
+
+            inner.addWidget(bypass_group)
+
         # Reset button
         reset_btn = QtWidgets.QPushButton("🔄 Reset All Statistics")
         reset_btn.clicked.connect(self._reset_stats)
@@ -971,6 +1001,9 @@ class StatsTab(QtWidgets.QWidget):
         lines.append(f"\n  Total: {total_week} min ({total_week // 60}h {total_week % 60}m)")
         self.week_text.setPlainText("\n".join(lines))
 
+        if BYPASS_LOGGER_AVAILABLE:
+            self._refresh_bypass_stats()
+
     def _sum_focus_minutes(self, days_back: int) -> int:
         from datetime import datetime, timedelta
 
@@ -991,6 +1024,47 @@ class StatsTab(QtWidgets.QWidget):
         self.blocker.stats["monthly_goal_hours"] = float(self.monthly_target.value())
         self.blocker.save_stats()
         self.refresh()
+
+    def _refresh_bypass_stats(self) -> None:
+        if not BYPASS_LOGGER_AVAILABLE:
+            return
+        stats = self.blocker.get_bypass_statistics()
+        if not stats:
+            return
+
+        session_count = stats.get("current_session", 0)
+        session_sites = stats.get("session_sites", [])
+        self.bypass_session_label.setText(f"Current Session: {session_count} attempts")
+        if session_sites:
+            sites_text = ", ".join(session_sites[:5])
+            if len(session_sites) > 5:
+                sites_text += f" (+{len(session_sites) - 5} more)"
+            self.bypass_session_sites.setText(f"Sites: {sites_text}")
+        else:
+            self.bypass_session_sites.setText("No sites accessed")
+
+        self.bypass_total_label.setText(f"Total attempts: {stats.get('total_attempts', 0)}")
+        top_sites = stats.get("top_sites", [])[:3]
+        if top_sites:
+            self.bypass_top_sites.setText(
+                "Top distractions: " + ", ".join(f"{s} ({c})" for s, c in top_sites)
+            )
+        else:
+            self.bypass_top_sites.setText("Top distractions: -")
+
+        peak_hours = stats.get("peak_hours", [])[:3]
+        if peak_hours:
+            self.bypass_peak_hours.setText(
+                "Peak hours: " + ", ".join(f"{int(h)}:00" for h, _ in peak_hours)
+            )
+        else:
+            self.bypass_peak_hours.setText("Peak hours: -")
+
+        insights = self.blocker.get_bypass_insights()
+        if insights:
+            self.bypass_insights.setPlainText("\n".join(insights))
+        else:
+            self.bypass_insights.setPlainText("No insights yet. Keep focusing!")
 
     def _reset_stats(self) -> None:
         if QtWidgets.QMessageBox.question(self, "Reset Stats", "Reset all statistics?") == QtWidgets.QMessageBox.Yes:
