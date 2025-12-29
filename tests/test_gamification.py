@@ -835,10 +835,11 @@ class TestMultiStorySystem(unittest.TestCase):
     def test_available_stories_defined(self) -> None:
         """Test that multiple stories are available."""
         from gamification import AVAILABLE_STORIES
-        self.assertEqual(len(AVAILABLE_STORIES), 3)
+        self.assertEqual(len(AVAILABLE_STORIES), 4)
         self.assertIn("warrior", AVAILABLE_STORIES)
         self.assertIn("scholar", AVAILABLE_STORIES)
         self.assertIn("wanderer", AVAILABLE_STORIES)
+        self.assertIn("underdog", AVAILABLE_STORIES)
     
     def test_story_has_required_fields(self) -> None:
         """Test that each story has required fields."""
@@ -912,6 +913,16 @@ class TestMultiStorySystem(unittest.TestCase):
         chapter = get_chapter_content(1, adhd_buster)
         self.assertIsNotNone(chapter)
         self.assertIn("Dream", chapter["title"])
+    
+    def test_underdog_story_content(self) -> None:
+        """Test that underdog story has unique content."""
+        from gamification import get_chapter_content, select_story
+        adhd_buster = {"equipped": {}, "inventory": []}
+        select_story(adhd_buster, "underdog")
+        
+        chapter = get_chapter_content(1, adhd_buster)
+        self.assertIsNotNone(chapter)
+        self.assertIn("Monday", chapter["title"])
     
     def test_story_progress_includes_story_info(self) -> None:
         """Test that story progress includes selected story info."""
