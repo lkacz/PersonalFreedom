@@ -667,13 +667,14 @@ class TestStoryDecisions(unittest.TestCase):
         """Test getting decision info for a chapter."""
         from gamification import get_decision_for_chapter
         
-        # Chapter with decision
-        decision = get_decision_for_chapter(2)
+        # Chapter with decision (default warrior story)
+        adhd_buster = {}  # Uses default warrior story
+        decision = get_decision_for_chapter(2, adhd_buster)
         self.assertIsNotNone(decision)
-        self.assertEqual(decision["id"], "mirror_choice")
+        self.assertEqual(decision["id"], "warrior_mirror")
         
         # Chapter without decision
-        decision = get_decision_for_chapter(1)
+        decision = get_decision_for_chapter(1, adhd_buster)
         self.assertIsNone(decision)
     
     def test_has_made_decision(self) -> None:
@@ -684,8 +685,8 @@ class TestStoryDecisions(unittest.TestCase):
         adhd_buster = {"story_decisions": {}}
         self.assertFalse(has_made_decision(adhd_buster, 2))
         
-        # Decision made
-        adhd_buster = {"story_decisions": {"mirror_choice": "A"}}
+        # Decision made (warrior story IDs)
+        adhd_buster = {"story_decisions": {"warrior_mirror": "A"}}
         self.assertTrue(has_made_decision(adhd_buster, 2))
         
         # Chapter without decision returns True (no decision needed)
@@ -700,7 +701,7 @@ class TestStoryDecisions(unittest.TestCase):
         # Make decision for chapter 2
         result = make_story_decision(adhd_buster, 2, "A")
         self.assertTrue(result)
-        self.assertEqual(adhd_buster["story_decisions"]["mirror_choice"], "A")
+        self.assertEqual(adhd_buster["story_decisions"]["warrior_mirror"], "A")
         
         # Invalid choice
         result = make_story_decision(adhd_buster, 2, "C")
@@ -718,19 +719,19 @@ class TestStoryDecisions(unittest.TestCase):
         adhd_buster = {"story_decisions": {}}
         self.assertEqual(get_decision_path(adhd_buster), "")
         
-        # One decision
-        adhd_buster = {"story_decisions": {"mirror_choice": "A"}}
+        # One decision (warrior story IDs)
+        adhd_buster = {"story_decisions": {"warrior_mirror": "A"}}
         self.assertEqual(get_decision_path(adhd_buster), "A")
         
         # Two decisions
-        adhd_buster = {"story_decisions": {"mirror_choice": "B", "fortress_choice": "A"}}
+        adhd_buster = {"story_decisions": {"warrior_mirror": "B", "warrior_fortress": "A"}}
         self.assertEqual(get_decision_path(adhd_buster), "BA")
         
         # All three decisions
         adhd_buster = {"story_decisions": {
-            "mirror_choice": "A",
-            "fortress_choice": "B",
-            "war_choice": "A"
+            "warrior_mirror": "A",
+            "warrior_fortress": "B",
+            "warrior_war": "A"
         }}
         self.assertEqual(get_decision_path(adhd_buster), "ABA")
     
@@ -749,7 +750,7 @@ class TestStoryDecisions(unittest.TestCase):
                 "Boots": {"power": 200},
             },
             "inventory": [],
-            "story_decisions": {"mirror_choice": "A"}  # Only 1 decision
+            "story_decisions": {"warrior_mirror": "A"}  # Only 1 decision
         }
         
         chapter = get_chapter_content(7, adhd_buster)
@@ -773,14 +774,14 @@ class TestStoryDecisions(unittest.TestCase):
             "Boots": {"power": 200},
         }
         
-        # Path AAA - "The Destroyer"
+        # Path AAA - "The Destroyer" (warrior story)
         adhd_buster_aaa = {
             "equipped": base_equipped,
             "inventory": [],
             "story_decisions": {
-                "mirror_choice": "A",
-                "fortress_choice": "A",
-                "war_choice": "A"
+                "warrior_mirror": "A",
+                "warrior_fortress": "A",
+                "warrior_war": "A"
             }
         }
         chapter_aaa = get_chapter_content(7, adhd_buster_aaa)
@@ -791,9 +792,9 @@ class TestStoryDecisions(unittest.TestCase):
             "equipped": base_equipped,
             "inventory": [],
             "story_decisions": {
-                "mirror_choice": "B",
-                "fortress_choice": "B",
-                "war_choice": "B"
+                "warrior_mirror": "B",
+                "warrior_fortress": "B",
+                "warrior_war": "B"
             }
         }
         chapter_bbb = get_chapter_content(7, adhd_buster_bbb)
@@ -809,7 +810,7 @@ class TestStoryDecisions(unittest.TestCase):
         adhd_buster = {
             "equipped": {"Weapon": {"power": 100}},
             "inventory": [],
-            "story_decisions": {"mirror_choice": "A"}
+            "story_decisions": {"warrior_mirror": "A"}
         }
         
         progress = get_story_progress(adhd_buster)
@@ -826,6 +827,102 @@ class TestStoryDecisions(unittest.TestCase):
         ch4 = next(ch for ch in progress["chapters"] if ch["number"] == 4)
         self.assertTrue(ch4["has_decision"])
         self.assertFalse(ch4["decision_made"])
+
+
+class TestMultiStorySystem(unittest.TestCase):
+    """Tests for the multi-story selection system."""
+    
+    def test_available_stories_defined(self) -> None:
+        """Test that multiple stories are available."""
+        from gamification import AVAILABLE_STORIES
+        self.assertEqual(len(AVAILABLE_STORIES), 3)
+        self.assertIn("warrior", AVAILABLE_STORIES)
+        self.assertIn("scholar", AVAILABLE_STORIES)
+        self.assertIn("wanderer", AVAILABLE_STORIES)
+    
+    def test_story_has_required_fields(self) -> None:
+        """Test that each story has required fields."""
+        from gamification import AVAILABLE_STORIES
+        for story_id, story in AVAILABLE_STORIES.items():
+            self.assertIn("id", story)
+            self.assertIn("title", story)
+            self.assertIn("description", story)
+            self.assertIn("theme", story)
+    
+    def test_get_selected_story_default(self) -> None:
+        """Test that default story is warrior."""
+        from gamification import get_selected_story
+        adhd_buster = {}
+        self.assertEqual(get_selected_story(adhd_buster), "warrior")
+    
+    def test_select_story(self) -> None:
+        """Test selecting a different story."""
+        from gamification import select_story, get_selected_story
+        adhd_buster = {}
+        
+        # Select scholar story
+        result = select_story(adhd_buster, "scholar")
+        self.assertTrue(result)
+        self.assertEqual(get_selected_story(adhd_buster), "scholar")
+        
+        # Invalid story returns False
+        result = select_story(adhd_buster, "invalid_story")
+        self.assertFalse(result)
+    
+    def test_select_story_clears_decisions(self) -> None:
+        """Test that switching stories clears previous decisions."""
+        from gamification import select_story
+        adhd_buster = {
+            "selected_story": "warrior",
+            "story_decisions": {"warrior_mirror": "A", "warrior_fortress": "B"}
+        }
+        
+        # Switch to scholar
+        select_story(adhd_buster, "scholar")
+        self.assertEqual(adhd_buster["story_decisions"], {})
+    
+    def test_story_data_exists_for_all_stories(self) -> None:
+        """Test that each story has decisions and chapters."""
+        from gamification import STORY_DATA
+        for story_id in ["warrior", "scholar", "wanderer"]:
+            self.assertIn(story_id, STORY_DATA)
+            self.assertIn("decisions", STORY_DATA[story_id])
+            self.assertIn("chapters", STORY_DATA[story_id])
+            # Each story should have 7 chapters
+            self.assertEqual(len(STORY_DATA[story_id]["chapters"]), 7)
+            # Each story should have 3 decisions
+            self.assertEqual(len(STORY_DATA[story_id]["decisions"]), 3)
+    
+    def test_scholar_story_content(self) -> None:
+        """Test that scholar story has unique content."""
+        from gamification import get_chapter_content, select_story
+        adhd_buster = {"equipped": {}, "inventory": []}
+        select_story(adhd_buster, "scholar")
+        
+        chapter = get_chapter_content(1, adhd_buster)
+        self.assertIsNotNone(chapter)
+        self.assertIn("Blueprint", chapter["title"])
+    
+    def test_wanderer_story_content(self) -> None:
+        """Test that wanderer story has unique content."""
+        from gamification import get_chapter_content, select_story
+        adhd_buster = {"equipped": {}, "inventory": []}
+        select_story(adhd_buster, "wanderer")
+        
+        chapter = get_chapter_content(1, adhd_buster)
+        self.assertIsNotNone(chapter)
+        self.assertIn("Dream", chapter["title"])
+    
+    def test_story_progress_includes_story_info(self) -> None:
+        """Test that story progress includes selected story info."""
+        from gamification import get_story_progress
+        adhd_buster = {"equipped": {}, "inventory": []}
+        
+        progress = get_story_progress(adhd_buster)
+        
+        self.assertIn("selected_story", progress)
+        self.assertIn("story_info", progress)
+        self.assertEqual(progress["selected_story"], "warrior")
 
 
 if __name__ == '__main__':
