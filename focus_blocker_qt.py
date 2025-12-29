@@ -547,6 +547,7 @@ class TimerTab(QtWidgets.QWidget):
         # Only record stats if ran > 60s
         if elapsed > 60:
             self.blocker.update_stats(elapsed, completed=False)
+            self.session_complete.emit(elapsed)
 
     def _on_tick(self) -> None:
         if not self.timer_running:
@@ -834,6 +835,10 @@ class TimerTab(QtWidgets.QWidget):
         else:
             self.status_label.setText("Ready to focus")
 
+        # Emit session complete signal to refresh stats
+        if session_minutes > 0:
+            self.session_complete.emit(session_minutes * 60)
+
         self.pomodoro_session_count = 0
         self.pomodoro_total_work_time = 0
 
@@ -865,6 +870,7 @@ class TimerTab(QtWidgets.QWidget):
         # Record stats if ran > 60s
         if elapsed > 60:
             self.blocker.update_stats(elapsed, completed=False)
+            self.session_complete.emit(elapsed)
 
 
 class SitesTab(QtWidgets.QWidget):
@@ -1563,6 +1569,11 @@ class SettingsTab(QtWidgets.QWidget):
                     "pomodoro_break": self.blocker.pomodoro_break,
                     "pomodoro_long_break": self.blocker.pomodoro_long_break,
                     "schedules": self.blocker.schedules,
+                    "priorities": self.blocker.priorities,
+                    "show_priorities_on_startup": self.blocker.show_priorities_on_startup,
+                    "priority_checkin_enabled": self.blocker.priority_checkin_enabled,
+                    "priority_checkin_interval": self.blocker.priority_checkin_interval,
+                    "adhd_buster": self.blocker.adhd_buster,
                 },
                 "stats": self.blocker.stats,
             }
@@ -1600,6 +1611,11 @@ class SettingsTab(QtWidgets.QWidget):
             self.blocker.pomodoro_break = config.get("pomodoro_break", self.blocker.pomodoro_break)
             self.blocker.pomodoro_long_break = config.get("pomodoro_long_break", self.blocker.pomodoro_long_break)
             self.blocker.schedules = config.get("schedules", self.blocker.schedules)
+            self.blocker.priorities = config.get("priorities", self.blocker.priorities)
+            self.blocker.show_priorities_on_startup = config.get("show_priorities_on_startup", self.blocker.show_priorities_on_startup)
+            self.blocker.priority_checkin_enabled = config.get("priority_checkin_enabled", self.blocker.priority_checkin_enabled)
+            self.blocker.priority_checkin_interval = config.get("priority_checkin_interval", self.blocker.priority_checkin_interval)
+            self.blocker.adhd_buster = config.get("adhd_buster", self.blocker.adhd_buster)
             self.blocker.save_config()
             stats = data.get("stats", {})
             self.blocker.stats = {**self.blocker._default_stats(), **stats}
@@ -1699,11 +1715,33 @@ class AITab(QtWidgets.QWidget):
         inner.addWidget(insights_group)
 
         # Achievements
-        achievements_group = QtWidgets.QGroupBox("🏆 Achievements")
+        achievements_group = QtWidgets.QGroupBox("🏆 Achievements & Challenges")
         achievements_layout = QtWidgets.QVBoxLayout(achievements_group)
+        
+        # Intro label challenging the user
+        self.achievements_intro = QtWidgets.QLabel()
+        self.achievements_intro.setWordWrap(True)
+        self.achievements_intro.setStyleSheet("font-weight: bold; color: #2196F3; padding: 5px;")
+        achievements_layout.addWidget(self.achievements_intro)
+        
+        # Unlocked trophies section
+        unlocked_label = QtWidgets.QLabel("✅ Trophies Earned:")
+        unlocked_label.setStyleSheet("font-weight: bold; margin-top: 5px;")
+        achievements_layout.addWidget(unlocked_label)
+        self.unlocked_achievements_list = QtWidgets.QListWidget()
+        self.unlocked_achievements_list.setMaximumHeight(80)
+        self.unlocked_achievements_list.setStyleSheet("background-color: #E8F5E9;")
+        achievements_layout.addWidget(self.unlocked_achievements_list)
+        
+        # Active challenges section
+        challenges_label = QtWidgets.QLabel("🎯 Your Next Challenges — Can You Complete Them?")
+        challenges_label.setStyleSheet("font-weight: bold; margin-top: 10px; color: #FF5722;")
+        achievements_layout.addWidget(challenges_label)
         self.achievements_list = QtWidgets.QListWidget()
-        self.achievements_list.setMaximumHeight(200)
+        self.achievements_list.setMaximumHeight(150)
+        self.achievements_list.setStyleSheet("background-color: #FFF3E0;")
         achievements_layout.addWidget(self.achievements_list)
+        
         inner.addWidget(achievements_group)
 
         # Daily Challenge
@@ -1768,21 +1806,68 @@ class AITab(QtWidgets.QWidget):
         self._refresh_data()
 
     def _refresh_data(self) -> None:
-        # Achievements
+        # Achievements - split into unlocked trophies and active challenges
         self.achievements_list.clear()
+        self.unlocked_achievements_list.clear()
+        
         if self.gamification:
             progress = self.gamification.check_achievements()
             achievements_def = self.gamification.get_achievements()
+            
+            unlocked_count = 0
+            locked_items = []
+            
             for ach_id, data in achievements_def.items():
                 prog = progress.get(ach_id, {"current": 0, "target": 1, "unlocked": False})
                 pct = min(100, int((prog["current"] / prog["target"]) * 100)) if prog["target"] else 0
-                status = "✅" if prog.get("unlocked") else f"{pct}%"
-                item = QtWidgets.QListWidgetItem(f"{data['icon']} {data['name']} — {status} ({prog['current']}/{prog['target']})")
-                # Set tooltip with description
-                item.setToolTip(f"{data['name']}\n{data.get('description', '')}")
+                
+                if prog.get("unlocked"):
+                    # Unlocked achievement - show as trophy
+                    unlocked_count += 1
+                    item = QtWidgets.QListWidgetItem(f"{data['icon']} {data['name']} — COMPLETE! 🎉")
+                    item.setToolTip(f"✅ {data['name']}\n{data.get('description', '')}\nYou did it!")
+                    self.unlocked_achievements_list.addItem(item)
+                else:
+                    # Locked achievement - show as challenge with encouraging text
+                    remaining = prog["target"] - prog["current"]
+                    challenge_text = f"{data['icon']} {data['name']}: {data.get('description', '')} — {prog['current']}/{prog['target']} ({remaining} to go!)"
+                    locked_items.append((pct, challenge_text, data))
+            
+            # Sort challenges by progress (closest to completion first)
+            locked_items.sort(key=lambda x: -x[0])
+            
+            for pct, challenge_text, data in locked_items:
+                item = QtWidgets.QListWidgetItem(challenge_text)
+                # Add motivational tooltip
+                if pct >= 75:
+                    tip = f"🔥 SO CLOSE! You're {pct}% there!\n{data.get('description', '')}"
+                elif pct >= 50:
+                    tip = f"💪 Halfway there! Keep pushing!\n{data.get('description', '')}"
+                elif pct >= 25:
+                    tip = f"📈 Good progress! Don't stop now!\n{data.get('description', '')}"
+                else:
+                    tip = f"🚀 Challenge yourself: {data.get('description', '')}"
+                item.setToolTip(tip)
                 self.achievements_list.addItem(item)
+            
+            # Update intro label with personalized challenge
+            total = len(achievements_def)
+            if unlocked_count == 0:
+                intro = "🎮 You haven't unlocked any achievements yet! Complete focus sessions to earn your first trophy!"
+            elif unlocked_count == total:
+                intro = "🏆 LEGENDARY! You've unlocked ALL achievements! You are a focus master!"
+            elif unlocked_count >= total * 0.75:
+                intro = f"🔥 Almost there! {unlocked_count}/{total} achievements unlocked. Can you get them all?"
+            else:
+                intro = f"💪 {unlocked_count}/{total} trophies earned! Take on the challenges below to unlock more!"
+            self.achievements_intro.setText(intro)
+            
+            # Show message if no unlocked achievements
+            if unlocked_count == 0:
+                self.unlocked_achievements_list.addItem("No trophies yet — complete your first focus session!")
         else:
-            self.achievements_list.addItem("AI module not installed; install requirements_ai.txt to unlock achievements.")
+            self.achievements_intro.setText("🔧 AI module not installed")
+            self.achievements_list.addItem("Install requirements_ai.txt to unlock achievements and challenges!")
 
         # Challenge
         if self.gamification:
@@ -2214,8 +2299,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         # Character canvas and equipment side by side
         char_equip = QtWidgets.QHBoxLayout()
         equipped = self.blocker.adhd_buster.get("equipped", {})
-        char_canvas = CharacterCanvas(equipped, power_info["total_power"], parent=self)
-        char_equip.addWidget(char_canvas)
+        self.char_canvas = CharacterCanvas(equipped, power_info["total_power"], parent=self)
+        char_equip.addWidget(self.char_canvas)
+        self.char_equip_layout = char_equip  # Store reference for refresh
 
         equip_group = QtWidgets.QGroupBox("⚔ Equipped Gear (change with dropdown)")
         equip_layout = QtWidgets.QFormLayout(equip_group)
@@ -2278,6 +2364,71 @@ class ADHDBusterDialog(QtWidgets.QDialog):
 
         self._refresh_inventory()
 
+        # Story Progress Section
+        story_group = QtWidgets.QGroupBox("📜 The Focus Warrior's Tale")
+        story_layout = QtWidgets.QVBoxLayout(story_group)
+        
+        # Story progress info
+        if GAMIFICATION_AVAILABLE:
+            from gamification import get_story_progress
+            progress = get_story_progress(self.blocker.adhd_buster)
+            
+            progress_lbl = QtWidgets.QLabel(
+                f"📖 Chapters Unlocked: {len(progress['unlocked_chapters'])}/{progress['total_chapters']}  |  "
+                f"⚔ Power: {progress['power']}"
+            )
+            progress_lbl.setStyleSheet("font-weight: bold;")
+            story_layout.addWidget(progress_lbl)
+            
+            if progress['next_threshold']:
+                next_lbl = QtWidgets.QLabel(
+                    f"🔒 Next chapter unlocks at {progress['next_threshold']} power "
+                    f"({progress['power_to_next']} more needed)"
+                )
+                next_lbl.setStyleSheet("color: #666;")
+                story_layout.addWidget(next_lbl)
+            else:
+                complete_lbl = QtWidgets.QLabel("✨ You have unlocked the entire story!")
+                complete_lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
+                story_layout.addWidget(complete_lbl)
+        
+        # Chapter selection
+        chapter_bar = QtWidgets.QHBoxLayout()
+        chapter_bar.addWidget(QtWidgets.QLabel("Select Chapter:"))
+        self.chapter_combo = QtWidgets.QComboBox()
+        
+        if GAMIFICATION_AVAILABLE:
+            from gamification import get_story_progress
+            progress = get_story_progress(self.blocker.adhd_buster)
+            for ch in progress['chapters']:
+                emoji = "✅" if ch["unlocked"] else "🔒"
+                decision_marker = ""
+                if ch.get("has_decision"):
+                    if ch.get("decision_made"):
+                        decision_marker = " ⚡"  # Decision made
+                    elif ch.get("unlocked"):
+                        decision_marker = " ❓"  # Decision pending
+                
+                if ch["unlocked"]:
+                    self.chapter_combo.addItem(
+                        f"{emoji} {ch['title']}{decision_marker}", ch["number"]
+                    )
+                else:
+                    self.chapter_combo.addItem(
+                        f"{emoji} Chapter {ch['number']}: ???", ch["number"]
+                    )
+        else:
+            self.chapter_combo.addItem("Story unavailable", 0)
+        
+        chapter_bar.addWidget(self.chapter_combo)
+        read_btn = QtWidgets.QPushButton("📖 Read Chapter")
+        read_btn.clicked.connect(self._read_story_chapter)
+        chapter_bar.addWidget(read_btn)
+        chapter_bar.addStretch()
+        story_layout.addLayout(chapter_bar)
+        
+        inner.addWidget(story_group)
+
         # Buttons
         btn_layout = QtWidgets.QHBoxLayout()
         diary_btn = QtWidgets.QPushButton("📖 Adventure Diary")
@@ -2306,6 +2457,60 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             if item:
                 self.blocker.adhd_buster["equipped"][slot] = item.copy()
         self.blocker.save_config()
+        # Immediately refresh character display
+        self._refresh_character()
+
+    def _refresh_character(self) -> None:
+        """Refresh the character canvas and power display after gear changes."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        # Update character canvas with new equipped items
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        power_info = get_power_breakdown(self.blocker.adhd_buster)
+        self.char_canvas.equipped = equipped
+        self.char_canvas.power = power_info["total_power"]
+        self.char_canvas.update()  # Trigger repaint
+
+    def _refresh_all_slot_combos(self) -> None:
+        """Refresh all equipment slot combo boxes with current inventory."""
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        needs_save = False
+        
+        for slot, combo in self.slot_combos.items():
+            # Block signals to prevent triggering _on_equip_change
+            combo.blockSignals(True)
+            combo.clear()
+            combo.addItem("[Empty]")
+            
+            slot_items = [item for item in inventory if item.get("slot") == slot]
+            for item in slot_items:
+                display = f"{item['name']} (+{item.get('power', 10)}) [{item['rarity'][:1]}]"
+                combo.addItem(display, item)
+            
+            # Re-select current equipped item if it exists in inventory
+            current = equipped.get(slot)
+            if current:
+                found = False
+                for i in range(1, combo.count()):
+                    item_data = combo.itemData(i)
+                    if item_data and item_data.get("obtained_at") == current.get("obtained_at"):
+                        combo.setCurrentIndex(i)
+                        found = True
+                        break
+                if not found:
+                    # Equipped item no longer in inventory, clear it
+                    self.blocker.adhd_buster["equipped"][slot] = None
+                    combo.setCurrentIndex(0)
+                    needs_save = True
+            else:
+                combo.setCurrentIndex(0)
+            
+            combo.blockSignals(False)
+        
+        # Persist any equipped items that were cleared
+        if needs_save:
+            self.blocker.save_config()
 
     def _refresh_inventory(self) -> None:
         self.inv_list.clear()
@@ -2383,21 +2588,39 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         if QtWidgets.QMessageBox.question(
             self, "⚠️ Lucky Merge",
             f"Merge {len(items)} items?\n\n{summary}\n\nSuccess rate: {rate*100:.0f}%\n"
-            f"On success: {result_rarity} item\nOn failure: ALL items LOST!",
+            f"On success: {result_rarity}+ item\nOn failure: ALL items LOST!",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
         ) != QtWidgets.QMessageBox.Yes:
             return
         result = perform_lucky_merge(items, luck)
+        
+        # Get the timestamps of items being merged for equipped cleanup
+        merged_timestamps = {item.get("obtained_at") for item in items if item.get("obtained_at")}
+        
+        # Remove merged items from inventory
         for idx in sorted(self.merge_selected, reverse=True):
             if idx < len(inventory):
                 del inventory[idx]
+        
+        # Clean up equipped items that were merged (in case any were equipped)
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        for slot, eq_item in list(equipped.items()):
+            if eq_item and eq_item.get("obtained_at") in merged_timestamps:
+                self.blocker.adhd_buster["equipped"][slot] = None
+        
         if result["success"]:
             inventory.append(result["result_item"])
             self.blocker.adhd_buster["inventory"] = inventory
             self.blocker.save_config()
+            
+            # Show result with tier upgrade info
+            tier_info = ""
+            if result.get("tier_jump", 1) > 1:
+                tier_info = f" (+{result['tier_jump']} tiers! 🎯)"
+            
             QtWidgets.QMessageBox.information(self, "🎉 MERGE SUCCESS!",
                 f"Roll: {result['roll_pct']} (needed < {result['needed_pct']})\n\n"
-                f"Created: {result['result_item']['name']}\n"
+                f"Created: {result['result_item']['name']}{tier_info}\n"
                 f"Rarity: {result['result_item']['rarity']}, Power: +{result['result_item']['power']}")
         else:
             self.blocker.adhd_buster["inventory"] = inventory
@@ -2405,7 +2628,196 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.critical(self, "💔 Merge Failed!",
                 f"Roll: {result['roll_pct']} (needed < {result['needed_pct']})\n\n"
                 f"{len(items)} items lost forever.")
+        
+        # Refresh both inventory and equipment dropdowns
         self._refresh_inventory()
+        self._refresh_all_slot_combos()
+        self._refresh_character()
+
+    def _read_story_chapter(self) -> None:
+        """Open a dialog to read the selected story chapter."""
+        if not GAMIFICATION_AVAILABLE:
+            QtWidgets.QMessageBox.warning(self, "Story", "Story system requires gamification module.")
+            return
+        
+        chapter_num = self.chapter_combo.currentData()
+        if not chapter_num:
+            return
+        
+        from gamification import get_chapter_content, get_decision_for_chapter, has_made_decision, make_story_decision
+        chapter = get_chapter_content(chapter_num, self.blocker.adhd_buster)
+        
+        if not chapter:
+            return
+        
+        # Create story dialog
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle(f"📜 {chapter['title']}")
+        dialog.resize(650, 550)
+        
+        layout = QtWidgets.QVBoxLayout(dialog)
+        
+        # Title
+        title_lbl = QtWidgets.QLabel(f"<h2>{chapter['title']}</h2>")
+        title_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(title_lbl)
+        
+        if not chapter['unlocked']:
+            # Locked chapter
+            lock_lbl = QtWidgets.QLabel(
+                f"<p style='font-size: 48px; text-align: center;'>🔒</p>"
+                f"<p style='text-align: center; font-size: 14px;'>"
+                f"This chapter is locked.<br><br>"
+                f"<b>Required Power:</b> {chapter['threshold']}<br>"
+                f"<b>Your Power:</b> {chapter['threshold'] - chapter['power_needed']}<br>"
+                f"<b>Power Needed:</b> {chapter['power_needed']}<br><br>"
+                f"<i>Equip stronger gear to unlock this chapter!</i></p>"
+            )
+            lock_lbl.setWordWrap(True)
+            layout.addWidget(lock_lbl)
+        else:
+            # Story content
+            content_text = QtWidgets.QTextEdit()
+            content_text.setReadOnly(True)
+            
+            # Format content with markdown-like bold/italic
+            formatted = chapter['content'].strip()
+            formatted = formatted.replace("**", "<b>").replace("**", "</b>")
+            formatted = formatted.replace("*", "<i>").replace("*", "</i>")
+            formatted = formatted.replace("\n\n", "</p><p>")
+            formatted = formatted.replace("\n", "<br>")
+            formatted = f"<p style='font-size: 13px; line-height: 1.6;'>{formatted}</p>"
+            
+            content_text.setHtml(formatted)
+            content_text.setStyleSheet("background-color: #1a1a2e; color: #eee; padding: 10px;")
+            layout.addWidget(content_text)
+            
+            # Check if this chapter has a pending decision (has_decision is True when decision not yet made)
+            if chapter.get('has_decision') and chapter.get('decision'):
+                decision = chapter.get('decision', {})
+                
+                # Decision frame
+                decision_frame = QtWidgets.QFrame()
+                decision_frame.setStyleSheet(
+                    "QFrame { background-color: #2a1a4a; border: 2px solid #9b59b6; "
+                    "border-radius: 10px; padding: 15px; }"
+                )
+                decision_layout = QtWidgets.QVBoxLayout(decision_frame)
+                
+                # Decision prompt
+                prompt_lbl = QtWidgets.QLabel(
+                    f"<h3 style='color: #e74c3c;'>⚔️ CRITICAL DECISION ⚔️</h3>"
+                    f"<p style='font-size: 13px; color: #fff;'>{decision.get('prompt', 'What will you do?')}</p>"
+                )
+                prompt_lbl.setWordWrap(True)
+                prompt_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                decision_layout.addWidget(prompt_lbl)
+                
+                # Choice buttons
+                choices = decision.get('choices', {})
+                btn_layout = QtWidgets.QHBoxLayout()
+                
+                choice_a = choices.get('A', {})
+                choice_b = choices.get('B', {})
+                
+                btn_a = QtWidgets.QPushButton(f"⚔️ {choice_a.get('label', 'Choice A')}")
+                btn_a.setToolTip(choice_a.get('description', ''))
+                btn_a.setStyleSheet(
+                    "QPushButton { background-color: #c0392b; color: white; font-weight: bold; "
+                    "padding: 15px; border-radius: 8px; font-size: 13px; }"
+                    "QPushButton:hover { background-color: #e74c3c; }"
+                )
+                btn_a.setMinimumHeight(60)
+                
+                btn_b = QtWidgets.QPushButton(f"💡 {choice_b.get('label', 'Choice B')}")
+                btn_b.setToolTip(choice_b.get('description', ''))
+                btn_b.setStyleSheet(
+                    "QPushButton { background-color: #2980b9; color: white; font-weight: bold; "
+                    "padding: 15px; border-radius: 8px; font-size: 13px; }"
+                    "QPushButton:hover { background-color: #3498db; }"
+                )
+                btn_b.setMinimumHeight(60)
+                
+                def make_choice(choice: str, choice_data: dict):
+                    # Make the decision
+                    make_story_decision(self.blocker.adhd_buster, chapter_num, choice)
+                    self.blocker.save_config()
+                    dialog.accept()
+                    
+                    # Show consequence dialog
+                    consequence_dialog = QtWidgets.QDialog(self)
+                    consequence_dialog.setWindowTitle("⚡ The Die is Cast!")
+                    consequence_dialog.resize(500, 350)
+                    cons_layout = QtWidgets.QVBoxLayout(consequence_dialog)
+                    
+                    consequence_lbl = QtWidgets.QLabel(
+                        f"<h2 style='text-align: center; color: #f39c12;'>Your Choice:</h2>"
+                        f"<h3 style='text-align: center;'>{choice_data.get('label', 'Unknown')}</h3>"
+                        f"<p style='text-align: center; font-size: 14px; color: #888;'>"
+                        f"<i>{choice_data.get('description', '')}</i></p>"
+                        f"<p style='text-align: center; font-size: 32px;'>⚡</p>"
+                        f"<p style='text-align: center; font-size: 13px;'>"
+                        f"This decision will shape your story...<br>"
+                        f"Re-read this chapter to see what happens next!</p>"
+                    )
+                    consequence_lbl.setWordWrap(True)
+                    cons_layout.addWidget(consequence_lbl)
+                    
+                    ok_btn = QtWidgets.QPushButton("Continue My Journey")
+                    ok_btn.clicked.connect(consequence_dialog.accept)
+                    cons_layout.addWidget(ok_btn)
+                    
+                    consequence_dialog.exec()
+                    
+                    # Refresh the chapter list to show decision was made
+                    self._refresh_story_chapter_list()
+                
+                btn_a.clicked.connect(lambda: make_choice("A", choice_a))
+                btn_b.clicked.connect(lambda: make_choice("B", choice_b))
+                
+                btn_layout.addWidget(btn_a)
+                btn_layout.addWidget(btn_b)
+                decision_layout.addLayout(btn_layout)
+                
+                # Warning label
+                warning_lbl = QtWidgets.QLabel(
+                    "<p style='color: #e74c3c; font-size: 11px; text-align: center;'>"
+                    "⚠️ <b>Warning:</b> This choice is permanent and will affect your story!</p>"
+                )
+                warning_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                decision_layout.addWidget(warning_lbl)
+                
+                layout.addWidget(decision_frame)
+        
+        # Close button
+        close_btn = QtWidgets.QPushButton("Close")
+        close_btn.clicked.connect(dialog.accept)
+        layout.addWidget(close_btn)
+        
+        dialog.exec()
+    
+    def _refresh_story_chapter_list(self) -> None:
+        """Refresh the story chapter dropdown to reflect decisions made."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        from gamification import get_story_progress
+        progress = get_story_progress(self.blocker.adhd_buster)
+        
+        self.chapter_combo.clear()
+        for ch in progress["chapters"]:
+            emoji = "✅" if ch["unlocked"] else "🔒"
+            decision_marker = ""
+            if ch.get("has_decision"):
+                if ch.get("decision_made"):
+                    decision_marker = " ⚡"  # Decision made
+                elif ch.get("unlocked"):
+                    decision_marker = " ❓"  # Decision pending
+            
+            self.chapter_combo.addItem(
+                f"{emoji} Chapter {ch['number']}: {ch['title']}{decision_marker}",
+                ch["number"]
+            )
 
     def _open_diary(self) -> None:
         DiaryDialog(self.blocker, self).exec()
@@ -2453,6 +2865,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self.blocker.save_config()
         QtWidgets.QMessageBox.information(self, "Salvage Complete!", f"✨ Salvaged {len(to_remove)} items!\n🍀 Total luck: +{cur_luck + luck_bonus}")
         self._refresh_inventory()
+        self._refresh_all_slot_combos()
 
 
 class DiaryDialog(QtWidgets.QDialog):
@@ -2884,6 +3297,8 @@ class PrioritiesDialog(QtWidgets.QDialog):
         self.title_edits: list = []
         self.day_checks: list = []
         self.planned_spins: list = []
+        self.priority_groups: list = []
+        self.complete_buttons: list = []
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -2954,11 +3369,23 @@ class PrioritiesDialog(QtWidgets.QDialog):
 
     def _create_priority_row(self, parent_layout: QtWidgets.QVBoxLayout, index: int) -> None:
         group = QtWidgets.QGroupBox(f"Priority #{index + 1}")
+        self.priority_groups.append(group)
         g_layout = QtWidgets.QVBoxLayout(group)
 
+        # Title row with complete button
+        title_row = QtWidgets.QHBoxLayout()
         title_edit = QtWidgets.QLineEdit(self.priorities[index].get("title", ""))
         title_edit.setPlaceholderText("Enter priority title...")
-        g_layout.addWidget(title_edit)
+        title_row.addWidget(title_edit)
+        
+        complete_btn = QtWidgets.QPushButton("✅ Complete")
+        complete_btn.setToolTip("Mark this priority as complete and roll for a Lucky Gift!")
+        complete_btn.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")
+        complete_btn.clicked.connect(lambda checked, idx=index: self._complete_priority(idx))
+        title_row.addWidget(complete_btn)
+        self.complete_buttons.append(complete_btn)
+        
+        g_layout.addLayout(title_row)
         self.title_edits.append(title_edit)
 
         days_layout = QtWidgets.QHBoxLayout()
@@ -3057,6 +3484,76 @@ class PrioritiesDialog(QtWidgets.QDialog):
         if 5 <= value <= 120:
             self.blocker.priority_checkin_interval = value
             self.blocker.save_config()
+
+    def _complete_priority(self, index: int) -> None:
+        """Mark a priority as complete and roll for a lucky gift reward."""
+        title = self.title_edits[index].text().strip()
+        if not title:
+            QtWidgets.QMessageBox.warning(self, "No Priority", 
+                "This priority slot is empty. Enter a title first!")
+            return
+        
+        # Confirm completion
+        reply = QtWidgets.QMessageBox.question(
+            self, "Complete Priority?",
+            f"🎯 Mark '{title}' as COMPLETE?\n\n"
+            f"You'll get a chance to win a Lucky Gift!\n"
+            f"(15% chance to win, but rewards are high-tier!)",
+            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No
+        )
+        
+        if reply != QtWidgets.QMessageBox.StandardButton.Yes:
+            return
+        
+        # Roll for reward
+        from gamification import roll_priority_completion_reward
+        result = roll_priority_completion_reward()
+        
+        if result["won"]:
+            item = result["item"]
+            rarity_color = item.get("color", "#ffffff")
+            
+            # Add to inventory
+            adhd_buster = self.blocker.config.get("adhd_buster", {"inventory": [], "equipped": {}})
+            if "inventory" not in adhd_buster:
+                adhd_buster["inventory"] = []
+            adhd_buster["inventory"].append(item)
+            self.blocker.config["adhd_buster"] = adhd_buster
+            self.blocker.save_config()
+            
+            # Show win dialog
+            msg = QtWidgets.QMessageBox(self)
+            msg.setWindowTitle("🎁 Lucky Gift!")
+            msg.setText(f"<h2 style='color: {rarity_color};'>🎉 YOU WON! 🎉</h2>")
+            msg.setInformativeText(
+                f"<p style='font-size: 14px;'>{result['message']}</p>"
+                f"<p style='font-size: 16px; color: {rarity_color}; font-weight: bold;'>"
+                f"{item['name']}</p>"
+                f"<p><b>Rarity:</b> <span style='color: {rarity_color};'>{item['rarity']}</span><br>"
+                f"<b>Slot:</b> {item['slot']}<br>"
+                f"<b>Power:</b> +{item['power']}</p>"
+                f"<p><i>Check your ADHD Buster inventory!</i></p>"
+            )
+            msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
+            msg.exec()
+        else:
+            QtWidgets.QMessageBox.information(
+                self, "Priority Complete!",
+                f"✅ '{title}' marked as complete!\n\n"
+                f"🎲 {result['message']}"
+            )
+        
+        # Clear the completed priority
+        self.priorities[index] = {"title": "", "days": [], "active": False, "planned_hours": 0, "logged_hours": 0}
+        self.title_edits[index].setText("")
+        for day, cb in self.day_checks[index]:
+            cb.setChecked(False)
+        self.planned_spins[index].setValue(0)
+        
+        # Save and refresh
+        self.blocker.priorities = self.priorities
+        self.blocker.save_config()
+        self._refresh_today_focus()
 
 
 class AISessionCompleteDialog(QtWidgets.QDialog):
@@ -3246,10 +3743,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self._update_admin_label()
 
         self.tabs = QtWidgets.QTabWidget()
+        self.tabs.currentChanged.connect(self._on_tab_changed)
         main_layout.addWidget(self.tabs)
 
         self.timer_tab = TimerTab(self.blocker, self)
         self.tabs.addTab(self.timer_tab, "⏱ Timer")
+        # Connect session complete signal to refresh stats
+        self.timer_tab.session_complete.connect(self._on_session_complete)
 
         self.sites_tab = SitesTab(self.blocker, self)
         self.tabs.addTab(self.sites_tab, "🌐 Sites")
@@ -3626,9 +4126,11 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """Handle window close - prompt if session is running."""
-        # Stop tray icon
+        # Stop tray icon and update timer
         if self.tray_icon:
             self.tray_icon.hide()
+        if hasattr(self, 'tray_update_timer') and self.tray_update_timer:
+            self.tray_update_timer.stop()
 
         if self.timer_tab.timer_running:
             # For Hardcore mode, require solving the challenge to exit
@@ -3672,6 +4174,32 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         if LOCAL_AI_AVAILABLE:
             dialog = AISessionCompleteDialog(self.blocker, session_duration, self)
             dialog.exec()
+
+    def _on_session_complete(self, elapsed_seconds: int) -> None:
+        """Handle session completion - refresh stats and related UI."""
+        # Reload stats from file to ensure we have latest data
+        self.blocker.load_stats()
+        
+        # Refresh the stats tab to show updated focus time
+        if hasattr(self, 'stats_tab'):
+            self.stats_tab.refresh()
+        
+        # Refresh AI tab if available
+        if AI_AVAILABLE and hasattr(self, 'ai_tab'):
+            self.ai_tab._refresh_data()
+
+    def _on_tab_changed(self, index: int) -> None:
+        """Handle tab changes - refresh data for the newly selected tab."""
+        widget = self.tabs.widget(index)
+        
+        # Refresh stats tab when switched to
+        if hasattr(self, 'stats_tab') and widget == self.stats_tab:
+            self.blocker.load_stats()
+            self.stats_tab.refresh()
+        
+        # Refresh AI tab when switched to
+        elif AI_AVAILABLE and hasattr(self, 'ai_tab') and widget == self.ai_tab:
+            self.ai_tab._refresh_data()
 
 
 def check_single_instance():
