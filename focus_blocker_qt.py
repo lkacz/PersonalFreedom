@@ -54,12 +54,16 @@ try:
         get_diary_power_tier, calculate_character_power, get_power_breakdown,
         calculate_rarity_bonuses, calculate_merge_success_rate,
         get_merge_result_rarity, perform_lucky_merge, is_merge_worthwhile,
-        generate_diary_entry, calculate_set_bonuses, generate_item
+        generate_diary_entry, calculate_set_bonuses, generate_item,
+        generate_daily_reward_item, get_current_tier, get_boosted_rarity
     )
     GAMIFICATION_AVAILABLE = True
 except ImportError:
     GAMIFICATION_AVAILABLE = False
     RARITY_POWER = {"Common": 10, "Uncommon": 25, "Rare": 50, "Epic": 100, "Legendary": 250}
+
+# Single instance mutex name
+MUTEX_NAME = "PersonalFreedom_SingleInstance_Mutex"
 
 
 class HardcoreChallengeDialog(QtWidgets.QDialog):
@@ -1425,13 +1429,13 @@ class SettingsTab(QtWidgets.QWidget):
         mode_info = QtWidgets.QLabel(
             "<b>Normal:</b> Can stop anytime - good for flexibility<br>"
             "<b>Strict 🔐:</b> Requires password to stop - prevents impulsive exits<br>"
-            "<b>Hardcore �:</b> Must solve 2 math problems to stop - maximum commitment!<br>"
+            "<b>Hardcore 💪:</b> Must solve 2 math problems to stop - maximum commitment!<br>"
             "&nbsp;&nbsp;&nbsp;&nbsp;• Numbers are displayed as images (no copy-paste)<br>"
             "&nbsp;&nbsp;&nbsp;&nbsp;• Wrong answer = start over with new problems<br>"
             "<b>Pomodoro 🍅:</b> 25 min work / 5 min break cycles - for productivity"
         )
         mode_info.setWordWrap(True)
-        mode_info.setStyleSheet("padding: 10px; background-color: #f8f9fa; border-radius: 5px;")
+        mode_info.setStyleSheet("padding: 10px; background-color: #2d2d30; color: #e0e0e0; border-radius: 5px; border: 1px solid #3e3e42;")
         mode_layout.addWidget(mode_info)
         inner.addWidget(mode_group)
 
@@ -1773,7 +1777,10 @@ class AITab(QtWidgets.QWidget):
                 prog = progress.get(ach_id, {"current": 0, "target": 1, "unlocked": False})
                 pct = min(100, int((prog["current"] / prog["target"]) * 100)) if prog["target"] else 0
                 status = "✅" if prog.get("unlocked") else f"{pct}%"
-                self.achievements_list.addItem(f"{data['icon']} {data['name']} — {status} ({prog['current']}/{prog['target']})")
+                item = QtWidgets.QListWidgetItem(f"{data['icon']} {data['name']} — {status} ({prog['current']}/{prog['target']})")
+                # Set tooltip with description
+                item.setToolTip(f"{data['name']}\n{data.get('description', '')}")
+                self.achievements_list.addItem(item)
         else:
             self.achievements_list.addItem("AI module not installed; install requirements_ai.txt to unlock achievements.")
 
@@ -2237,20 +2244,23 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         # Lucky Merge
         merge_group = QtWidgets.QGroupBox("🎲 Lucky Merge (High Risk, High Reward!)")
         merge_layout = QtWidgets.QVBoxLayout(merge_group)
-        merge_layout.addWidget(QtWidgets.QLabel("Select 2+ items below, then merge for a CHANCE at better loot!"))
-        warn_lbl = QtWidgets.QLabel("⚠️ 90% failure = ALL items lost!")
+        merge_layout.addWidget(QtWidgets.QLabel(
+            "Click items in the inventory below to select them for merging.\n"
+            "Items with ✓ are equipped and cannot be merged."
+        ))
+        warn_lbl = QtWidgets.QLabel("⚠️ ~90% failure = ALL items lost! Only ~10% success rate!")
         warn_lbl.setStyleSheet("color: #d32f2f; font-weight: bold;")
         merge_layout.addWidget(warn_lbl)
         self.merge_btn = QtWidgets.QPushButton("🎲 Merge Selected (0)")
         self.merge_btn.setEnabled(False)
         self.merge_btn.clicked.connect(self._do_merge)
         merge_layout.addWidget(self.merge_btn)
-        self.merge_rate_lbl = QtWidgets.QLabel("Select 2+ items to merge")
+        self.merge_rate_lbl = QtWidgets.QLabel("↓ Click items below to select for merge (Ctrl+click for multiple)")
         merge_layout.addWidget(self.merge_rate_lbl)
         inner.addWidget(merge_group)
 
         # Inventory
-        inv_group = QtWidgets.QGroupBox("📦 Inventory")
+        inv_group = QtWidgets.QGroupBox("📦 Inventory (click items to select for merge)")
         inv_layout = QtWidgets.QVBoxLayout(inv_group)
         sort_bar = QtWidgets.QHBoxLayout()
         sort_bar.addWidget(QtWidgets.QLabel("Sort:"))
@@ -2324,6 +2334,14 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             text = f"{prefix}{item['name']} (+{power}) [{item['rarity'][:1]}]"
             list_item = QtWidgets.QListWidgetItem(text)
             list_item.setData(QtCore.Qt.UserRole, orig_idx)
+            # Add tooltip with full item details
+            list_item.setToolTip(
+                f"{item['name']}\n"
+                f"Rarity: {item.get('rarity', 'Common')}\n"
+                f"Slot: {item.get('slot', 'Unknown')}\n"
+                f"Power: +{power}\n"
+                f"{'[EQUIPPED - cannot merge]' if is_eq else '[Click to select for merge]'}"
+            )
             if is_eq:
                 list_item.setFlags(list_item.flags() & ~QtCore.Qt.ItemIsSelectable)
             list_item.setForeground(QtGui.QColor(item.get("color", "#333")))
@@ -3269,6 +3287,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         if self.blocker.show_priorities_on_startup:
             QtCore.QTimer.singleShot(600, self._check_priorities_on_startup)
 
+        # Check for daily gear reward
+        if GAMIFICATION_AVAILABLE:
+            QtCore.QTimer.singleShot(800, self._check_daily_gear_reward)
+
     def _check_priorities_on_startup(self) -> None:
         """Check if priorities dialog should be shown on startup."""
         if not self.blocker.show_priorities_on_startup:
@@ -3357,6 +3379,68 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         # Check again in 60 seconds
         QtCore.QTimer.singleShot(60000, self._check_scheduled_blocking)
+
+    def _check_daily_gear_reward(self) -> None:
+        """Check if user should receive a daily gear reward.
+        
+        On first app start: Always award gear.
+        On subsequent starts: 10% chance per day.
+        Gear is one tier higher than current equipped tier.
+        """
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        today = datetime.now().strftime("%Y-%m-%d")
+        last_reward_date = self.blocker.adhd_buster.get("last_daily_reward_date", "")
+        first_launch = self.blocker.adhd_buster.get("first_launch_complete", False)
+        
+        # Already received reward today
+        if last_reward_date == today:
+            return
+        
+        # Determine if we should give reward
+        should_reward = False
+        reward_reason = ""
+        
+        if not first_launch:
+            # First time ever - always reward
+            should_reward = True
+            reward_reason = "🎁 Welcome Gift!"
+            self.blocker.adhd_buster["first_launch_complete"] = True
+        else:
+            # Subsequent launches - 10% daily chance
+            import random
+            if random.random() < 0.10:
+                should_reward = True
+                reward_reason = "🎲 Lucky Daily Drop!"
+        
+        if should_reward:
+            # Generate boosted item
+            item = generate_daily_reward_item(self.blocker.adhd_buster)
+            
+            # Add to inventory
+            if "inventory" not in self.blocker.adhd_buster:
+                self.blocker.adhd_buster["inventory"] = []
+            self.blocker.adhd_buster["inventory"].append(item)
+            self.blocker.adhd_buster["last_daily_reward_date"] = today
+            self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
+            self.blocker.save_config()
+            
+            # Show reward dialog
+            current_tier = get_current_tier(self.blocker.adhd_buster)
+            boosted_tier = get_boosted_rarity(current_tier)
+            
+            QtWidgets.QMessageBox.information(
+                self,
+                f"🎁 {reward_reason}",
+                f"You received a special gear item!\n\n"
+                f"✨ {item['name']}\n"
+                f"⚔ Power: +{item['power']}\n"
+                f"🏆 Rarity: {item['rarity']}\n"
+                f"📍 Slot: {item['slot']}\n\n"
+                f"(Based on your current tier: {current_tier} → boosted to {boosted_tier})\n\n"
+                f"Check your ADHD Buster inventory to equip it!"
+            )
 
     def _setup_system_tray(self) -> None:
         """Setup system tray icon if available."""
@@ -3590,7 +3674,45 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             dialog.exec()
 
 
+def check_single_instance():
+    """Check if another instance is already running using a Windows mutex.
+    Returns the mutex handle if this is the first instance, None otherwise.
+    """
+    if platform.system() != "Windows":
+        return True  # No mutex on non-Windows
+    
+    try:
+        import ctypes
+        # Try to create a named mutex
+        mutex = ctypes.windll.kernel32.CreateMutexW(None, True, MUTEX_NAME)
+        last_error = ctypes.windll.kernel32.GetLastError()
+        
+        # ERROR_ALREADY_EXISTS = 183
+        if last_error == 183:
+            # Another instance is running
+            ctypes.windll.kernel32.CloseHandle(mutex)
+            return None
+        
+        # This is the first instance, return the mutex handle
+        return mutex
+    except Exception:
+        # If we can't create a mutex, allow running anyway
+        return True
+
+
 def main() -> None:
+    # Check for single instance first
+    mutex_handle = check_single_instance()
+    if mutex_handle is None:
+        # Show message box without full app initialization
+        temp_app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
+        QtWidgets.QMessageBox.warning(
+            None,
+            "Already Running",
+            "Personal Freedom is already running.\n\nCheck your system tray or taskbar."
+        )
+        sys.exit(0)
+    
     # Set application attributes before creating QApplication
     QtWidgets.QApplication.setHighDpiScaleFactorRoundingPolicy(
         QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
@@ -3599,7 +3721,7 @@ def main() -> None:
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName("Personal Freedom")
     app.setOrganizationName("PersonalFreedom")
-    app.setApplicationVersion("3.1.0")
+    app.setApplicationVersion("3.1.3")
     
     window = FocusBlockerWindow()
     window.show()

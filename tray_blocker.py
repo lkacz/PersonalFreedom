@@ -35,6 +35,9 @@ REDIRECT_IP = "127.0.0.1"
 MARKER_START = "# === PERSONAL FREEDOM BLOCK START ==="
 MARKER_END = "# === PERSONAL FREEDOM BLOCK END ==="
 
+# Single instance mutex name
+MUTEX_NAME = "PersonalFreedomTray_SingleInstance_Mutex"
+
 # Config file path
 SCRIPT_DIR = Path(__file__).parent
 CONFIG_PATH = SCRIPT_DIR / "config.json"
@@ -60,6 +63,30 @@ DEFAULT_BLACKLIST = [
     "netflix.com", "www.netflix.com",
     "twitch.tv", "www.twitch.tv",
 ]
+
+
+def check_single_instance():
+    """Check if another instance is already running using a Windows mutex.
+    Returns the mutex handle if this is the first instance, None otherwise.
+    """
+    try:
+        # Try to create a named mutex
+        mutex = ctypes.windll.kernel32.CreateMutexW(None, True, MUTEX_NAME)
+        last_error = ctypes.windll.kernel32.GetLastError()
+        
+        # ERROR_ALREADY_EXISTS = 183
+        if last_error == 183:
+            # Another instance is running
+            ctypes.windll.kernel32.CloseHandle(mutex)
+            return None
+        
+        # This is the first instance, return the mutex handle
+        # (keep it open to maintain the lock)
+        return mutex
+    except Exception as e:
+        print(f"Warning: Could not create mutex: {e}")
+        # If we can't create a mutex, allow running anyway
+        return True
 
 
 def is_admin():
@@ -713,6 +740,14 @@ def main():
             print("Running without admin privileges...")
     else:
         print("Running with administrator privileges ✓")
+
+    # Check for single instance
+    mutex_handle = check_single_instance()
+    if mutex_handle is None:
+        print("Another instance of PersonalFreedomTray is already running.")
+        print("Exiting to prevent duplicate instances.")
+        sys.exit(0)
+    print("Single instance check passed ✓")
 
     # Change to script directory
     os.chdir(SCRIPT_DIR)

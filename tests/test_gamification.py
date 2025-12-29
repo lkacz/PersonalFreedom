@@ -437,5 +437,51 @@ class TestLuckyMergeSystem(unittest.TestCase):
         self.assertNotIn("Celestial", themes)
 
 
+class TestDailyRewardSystem(unittest.TestCase):
+    """Tests for the daily gear reward system functions."""
+    
+    def test_get_current_tier_empty(self) -> None:
+        """Test current tier is Common when nothing equipped."""
+        from gamification import get_current_tier
+        adhd_buster = {"equipped": {}}
+        self.assertEqual(get_current_tier(adhd_buster), "Common")
+    
+    def test_get_current_tier_with_items(self) -> None:
+        """Test current tier returns highest equipped rarity."""
+        from gamification import get_current_tier
+        adhd_buster = {
+            "equipped": {
+                "Helmet": {"name": "Test Helmet", "rarity": "Common"},
+                "Weapon": {"name": "Test Sword", "rarity": "Rare"},
+                "Boots": {"name": "Test Boots", "rarity": "Uncommon"}
+            }
+        }
+        self.assertEqual(get_current_tier(adhd_buster), "Rare")
+    
+    def test_get_boosted_rarity(self) -> None:
+        """Test boosted rarity is one tier higher."""
+        from gamification import get_boosted_rarity
+        self.assertEqual(get_boosted_rarity("Common"), "Uncommon")
+        self.assertEqual(get_boosted_rarity("Uncommon"), "Rare")
+        self.assertEqual(get_boosted_rarity("Rare"), "Epic")
+        self.assertEqual(get_boosted_rarity("Epic"), "Legendary")
+        self.assertEqual(get_boosted_rarity("Legendary"), "Legendary")  # Capped
+    
+    def test_generate_daily_reward_item(self) -> None:
+        """Test daily reward generates correct rarity tier."""
+        from gamification import generate_daily_reward_item
+        adhd_buster = {
+            "equipped": {
+                "Helmet": {"name": "Test Helmet", "rarity": "Uncommon"}
+            }
+        }
+        item = generate_daily_reward_item(adhd_buster)
+        # Current tier is Uncommon, so reward should be Rare
+        self.assertEqual(item["rarity"], "Rare")
+        self.assertIn("name", item)
+        self.assertIn("power", item)
+        self.assertIn("slot", item)
+
+
 if __name__ == '__main__':
     unittest.main()
