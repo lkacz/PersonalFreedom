@@ -240,8 +240,36 @@ def is_merge_worthwhile(items: list) -> tuple:
     return True, ""
 
 
+# Tier jump probabilities for lucky merge (higher jumps are rarer for more thrill)
+# +1 tier: 70%, +2 tiers: 22%, +3 tiers: 8%
+MERGE_TIER_JUMP_WEIGHTS = [
+    (1, 70),   # +1 tier: 70% chance
+    (2, 22),   # +2 tiers: 22% chance  
+    (3, 8),    # +3 tiers: 8% chance (jackpot!)
+]
+
+
+def get_random_tier_jump() -> int:
+    """Roll for random tier upgrade on successful merge.
+    
+    Returns:
+        Number of tiers to jump (1, 2, or 3)
+    """
+    roll = random.randint(1, 100)
+    cumulative = 0
+    for jump, weight in MERGE_TIER_JUMP_WEIGHTS:
+        cumulative += weight
+        if roll <= cumulative:
+            return jump
+    return 1  # Fallback
+
+
 def perform_lucky_merge(items: list, luck_bonus: int = 0) -> dict:
-    """Attempt a lucky merge of items."""
+    """Attempt a lucky merge of items.
+    
+    On success, the resulting item can be +1, +2, or +3 tiers higher than
+    the base result (with decreasing probability for higher jumps).
+    """
     if len(items) < 2:
         return {"success": False, "error": "Need at least 2 items to merge"}
     
@@ -254,12 +282,25 @@ def perform_lucky_merge(items: list, luck_bonus: int = 0) -> dict:
         "roll": roll,
         "needed": success_rate,
         "roll_pct": f"{roll*100:.1f}%",
-        "needed_pct": f"{success_rate*100:.1f}%"
+        "needed_pct": f"{success_rate*100:.1f}%",
+        "tier_jump": 0
     }
     
     if result["success"]:
-        result_rarity = get_merge_result_rarity(items)
-        result["result_item"] = generate_item(rarity=result_rarity)
+        # Get base rarity from lowest item
+        lowest_idx = min(RARITY_ORDER.index(item.get("rarity", "Common")) for item in items)
+        
+        # Roll for tier jump
+        tier_jump = get_random_tier_jump()
+        result["tier_jump"] = tier_jump
+        
+        # Calculate final rarity with tier jump (capped at Legendary)
+        final_idx = min(lowest_idx + tier_jump, len(RARITY_ORDER) - 1)
+        final_rarity = RARITY_ORDER[final_idx]
+        
+        result["result_item"] = generate_item(rarity=final_rarity)
+        result["base_rarity"] = RARITY_ORDER[lowest_idx]
+        result["final_rarity"] = final_rarity
     else:
         result["result_item"] = None
     
@@ -630,6 +671,57 @@ def generate_daily_reward_item(adhd_buster: dict) -> dict:
     return generate_item(rarity=boosted_rarity)
 
 
+# Priority completion reward settings
+PRIORITY_COMPLETION_CHANCE = 15  # 15% chance to win a reward
+PRIORITY_REWARD_WEIGHTS = {
+    # Low chance rewards are high tier - inverted from normal drops
+    "Common": 5,       # 5% of rewards
+    "Uncommon": 10,    # 10% of rewards  
+    "Rare": 30,        # 30% of rewards
+    "Epic": 35,        # 35% of rewards
+    "Legendary": 20    # 20% of rewards!
+}
+
+
+def roll_priority_completion_reward() -> dict | None:
+    """
+    Roll for a priority completion reward.
+    Low chance (15%) to win, but if you win, high chance of Epic/Legendary!
+    
+    Returns:
+        dict with 'won' (bool), 'item' (dict or None), 'message' (str)
+    """
+    # First roll: did the user win?
+    if random.randint(1, 100) > PRIORITY_COMPLETION_CHANCE:
+        return {
+            "won": False,
+            "item": None,
+            "message": "No lucky gift this time... Keep completing priorities for another chance!"
+        }
+    
+    # User won! Roll for rarity (weighted toward high tiers)
+    rarities = list(PRIORITY_REWARD_WEIGHTS.keys())
+    weights = [PRIORITY_REWARD_WEIGHTS[r] for r in rarities]
+    lucky_rarity = random.choices(rarities, weights=weights)[0]
+    
+    # Generate the item with this rarity
+    item = generate_item(rarity=lucky_rarity)
+    
+    rarity_messages = {
+        "Common": "A small gift for your hard work!",
+        "Uncommon": "Nice! A quality reward for your dedication!",
+        "Rare": "Excellent! A rare treasure for completing your priority!",
+        "Epic": "AMAZING! An epic reward befitting your achievement!",
+        "Legendary": "🌟 LEGENDARY! 🌟 The focus gods smile upon you!"
+    }
+    
+    return {
+        "won": True,
+        "item": item,
+        "message": rarity_messages.get(lucky_rarity, "You won a reward!")
+    }
+
+
 def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int = 0) -> dict:
     """Generate a random item with rarity influenced by session length and streak."""
     if rarity is None:
@@ -702,3 +794,858 @@ def get_power_breakdown(adhd_buster: dict) -> dict:
         "active_sets": set_info["active_sets"],
         "total_power": base_power + set_info["total_bonus"]
     }
+
+
+# ============================================================================
+# STORY SYSTEM - Unlock story chapters as you grow stronger!
+# Branching narrative with 3 key decisions that affect the ending
+# ============================================================================
+
+# Power thresholds to unlock each chapter
+STORY_THRESHOLDS = [
+    0,      # Chapter 1: Starting the journey (unlocked from start)
+    50,     # Chapter 2: First real progress + DECISION 1
+    120,    # Chapter 3: Growing stronger (affected by Decision 1)
+    250,    # Chapter 4: Becoming formidable + DECISION 2
+    450,    # Chapter 5: True power awakens (affected by Decisions 1 & 2)
+    800,    # Chapter 6: Approaching mastery + DECISION 3
+    1500,   # Chapter 7: The final revelation (8 possible endings!)
+]
+
+# Decision points - chapters where the user must choose
+STORY_DECISIONS = {
+    2: {
+        "id": "mirror_choice",
+        "prompt": "The Mirror of Procrastination lies shattered. What do you do?",
+        "choices": {
+            "A": {
+                "label": "🔥 Destroy Every Fragment",
+                "short": "destruction",
+                "description": "Leave nothing behind. Burn it all.",
+            },
+            "B": {
+                "label": "🔍 Study the Shards",
+                "short": "wisdom",
+                "description": "Knowledge is power. Learn from your enemy.",
+            },
+        },
+    },
+    4: {
+        "id": "fortress_choice",
+        "prompt": "The Fortress of False Comfort has trapped you. How do you escape?",
+        "choices": {
+            "A": {
+                "label": "⚔️ Fight Through the Walls",
+                "short": "strength",
+                "description": "Sheer willpower. Smash your way out.",
+            },
+            "B": {
+                "label": "🌀 Find the Hidden Path",
+                "short": "cunning",
+                "description": "There's always another way. Find it.",
+            },
+        },
+    },
+    6: {
+        "id": "war_choice",
+        "prompt": "The defeated versions of yourself lie before you. What is their fate?",
+        "choices": {
+            "A": {
+                "label": "💀 Absorb Their Power",
+                "short": "power",
+                "description": "They failed. Their strength is now yours.",
+            },
+            "B": {
+                "label": "🕊️ Forgive and Release",
+                "short": "compassion",
+                "description": "They were you. Show mercy.",
+            },
+        },
+    },
+}
+
+# The Focus Warrior's Tale - 7 chapters with branching paths
+# Placeholders: {helmet}, {weapon}, {chestplate}, {shield}, {amulet}, {boots}, {gauntlets}, {cloak}
+# Decision placeholders: {decision_1}, {decision_2}, {decision_3}
+STORY_CHAPTERS = [
+    {
+        "title": "Chapter 1: The Awakening",
+        "threshold": 0,
+        "has_decision": False,
+        "content": """
+You open your eyes in a dimly lit chamber, memories fragmented like scattered dreams.
+Around you lie the remnants of countless others who tried—and failed—to master their minds.
+
+A voice echoes: "Another one awakens. Most flee before the first trial."
+
+You feel weak. Unfocused. The chaos of a thousand distractions pulls at your thoughts.
+But something is different about you. A spark of determination burns within.
+
+On a dusty pedestal, you find your first piece of equipment: {helmet}.
+It's humble, perhaps even laughable. But it's yours.
+
+The journey of a thousand sessions begins with a single focus.
+
+🔮 PLOT TWIST: The voice belongs to someone who sounds... exactly like you.
+""",
+    },
+    {
+        "title": "Chapter 2: The First Trial",
+        "threshold": 50,
+        "has_decision": True,
+        "decision_id": "mirror_choice",
+        "content": """
+The trials begin. Each focused session strips away a layer of chaos.
+
+Armed with {helmet} and {weapon}, you face the Mirror of Procrastination—
+a beast that shows you infinite distractions, each more tempting than the last.
+
+"Just five more minutes," it whispers. "You deserve a break."
+"Check your phone. Something important might have happened."
+"This task is too hard. Start tomorrow."
+
+But you've trained for this. You recognize the lies for what they are.
+
+With a burst of willpower, you SHATTER the mirror.
+
+The glass explodes into a thousand fragments, each reflecting a future
+where you failed. The silence that follows is deafening.
+
+🔮 PLOT TWIST: Among the shattered reflections, one version of you is still moving.
+   It smiles, and whispers: "We'll meet again."
+   
+⚡ A CHOICE AWAITS... What do you do with the shattered mirror?
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: 🔥 DESTROY EVERY FRAGMENT]
+
+You don't hesitate. Summoning flames from {weapon}, you BURN every shard.
+The reflections scream as they turn to ash. Nothing survives.
+
+"BRUTAL," the voice of your future self echoes. "But effective.
+ Some enemies leave no room for mercy."
+
+The path ahead glows with residual fire. You've chosen destruction.
+There will be no going back. No second chances for your enemies.
+
+The warrior's path is lit by flames.
+""",
+            "B": """
+[YOUR CHOICE: 🔍 STUDY THE SHARDS]
+
+You kneel among the fragments, carefully examining each piece.
+In the reflections, you see patterns. Weaknesses. Secrets.
+
+"INTERESTING," the voice of your future self murmurs. "Knowledge is rare here.
+ Most simply destroy and move on. You chose to understand."
+
+You pocket a single shard—small, but potent with information.
+It pulses with forbidden knowledge about the distractions you'll face.
+
+The scholar's path is illuminated by insight.
+""",
+        },
+    },
+    {
+        "title": "Chapter 3: The Companion's Secret",
+        "threshold": 120,
+        "has_decision": False,
+        "content_variations": {
+            "A": """
+In the Valley of Abandoned Goals, smoke still rises from your path of destruction.
+The spectral figure called The Keeper watches you approach with {cloak} billowing.
+
+"I've seen many travelers," The Keeper says. "But few with such... ferocity.
+ You burned the Mirror's remains. The other versions of you felt that flame.
+ They fear you now."
+
+Your reputation precedes you. At {current_power} power, you're becoming legend.
+Some whisper of a warrior who shows no mercy to weakness.
+
+The Keeper removes their hood. The face beneath is scarred, weathered—
+and unmistakably YOURS, aged by centuries.
+
+🔮 PLOT TWIST: "I am you. From a timeline where destruction was my answer too.
+   It worked... until it didn't. But perhaps YOUR destruction will succeed
+   where mine failed. The fire in you burns brighter than mine ever did."
+""",
+            "B": """
+In the Valley of Abandoned Goals, you walk with newfound perception.
+The shard from the Mirror whispers secrets about each abandoned dream you pass.
+The spectral figure called The Keeper notices your prize.
+
+"You kept a fragment," The Keeper says, wrapped in {cloak}. "Clever.
+ Most who enter here are blind to the valley's truths.
+ But you can SEE now, can't you?"
+
+You can. The abandoned goals reveal their stories—not just failure, but WHY.
+At {current_power} power, you understand more than most ever will.
+
+The Keeper removes their hood. The face beneath is weathered, knowing—
+and unmistakably YOURS, aged by centuries.
+
+🔮 PLOT TWIST: "I am you. From a timeline where wisdom was my answer too.
+   I learned so much... perhaps too much. Knowledge can be a burden.
+   But perhaps YOUR wisdom will reveal what mine could not see."
+""",
+        },
+    },
+    {
+        "title": "Chapter 4: The Fortress of False Comfort",
+        "threshold": 250,
+        "has_decision": True,
+        "decision_id": "fortress_choice",
+        "content": """
+Your reputation precedes you now. Equipped with {chestplate} and {gauntlets},
+you're no longer prey to every passing distraction.
+
+But the next challenge is insidious: The Fortress of False Comfort.
+
+Inside, everything is... nice. Cozy. There's no urgency, no pressure.
+"You've done enough," the walls seem to say. "Rest now. You've earned it."
+
+For a moment, you almost believe it. The fortress offers:
+- A comfortable existence without growth
+- Safety without risk
+- Contentment without achievement
+
+But something feels wrong. The other inhabitants smile, but their eyes are empty.
+They stopped striving years ago. Decades. Centuries.
+
+🔮 PLOT TWIST: The Fortress isn't a place. It's a living entity.
+   A cosmic parasite that feeds on surrendered potential.
+   It's already wrapping tendrils around your mind.
+
+⚡ A CHOICE AWAITS... How do you escape?
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: ⚔️ FIGHT THROUGH THE WALLS]
+
+You raise {shield} and CHARGE. The walls bleed as you tear through them.
+The Fortress SCREAMS—a sound that shakes reality itself.
+
+"YOU DARE?!" it roars. "I offered you PEACE!"
+
+"Peace is a trap," you snarl, {weapon} blazing. "I choose STRUGGLE."
+
+The exit appears not because you found it—but because you MADE it.
+Behind you, the Fortress collapses into itself, weakened but not destroyed.
+
+You emerge covered in ichor, stronger than before.
+But the Fortress whispers: "I will remember this violence. I will wait."
+""",
+            "B": """
+[YOUR CHOICE: 🌀 FIND THE HIDDEN PATH]
+
+You still your mind. The shard/flame from Chapter 2 resonates with hidden frequencies.
+There—a shimmer in the corner of your eye. A door that shouldn't exist.
+
+You slip through while the Fortress is distracted by other prisoners.
+The hidden path leads through the entity's DREAMS—visions of all it has consumed.
+
+You see thousands of lost souls. But you also see the Fortress's weakness:
+It cannot consume those who UNDERSTAND it.
+
+You emerge unseen, carrying secrets the Fortress never wanted shared.
+It doesn't even realize you've escaped. And that ignorance may save you later.
+""",
+        },
+    },
+    {
+        "title": "Chapter 5: The Revelation of Time",
+        "threshold": 450,
+        "has_decision": False,
+        "content_variations": {
+            "AA": """
+At {current_power} power, you've become something TERRIFYING.
+Your path of destruction and strength has left scars across reality.
+{helmet}, {weapon}, {chestplate}—they pulse with barely contained fury.
+
+The Keeper watches you with a mixture of pride and fear.
+"You destroyed the Mirror. You fought through the Fortress. Nothing stops you."
+
+In the Chronos Sanctum, you see every timeline where you existed.
+The destructive ones—YOUR timelines—burn brightest. And shortest.
+
+🔮 PLOT TWIST: Warriors who destroy everything eventually destroy themselves.
+   The "original you" didn't give up—they burned out. And you might too.
+   Unless you find something worth PROTECTING, not just destroying.
+""",
+            "AB": """
+At {current_power} power, you've become a TEMPEST of contradictions.
+Destruction guided by cunning. Fire that knows where to burn.
+{helmet}, {weapon}, {chestplate}—they pulse with strategic fury.
+
+The Keeper nods approvingly. "You destroyed the Mirror but escaped the Fortress
+through wisdom. You're learning when to fight and when to think."
+
+In the Chronos Sanctum, your timelines are RARE—survivors who balance both paths.
+
+🔮 PLOT TWIST: The "original you" tried pure destruction. They failed.
+   Then they tried pure cunning. They failed again.
+   YOU are the timeline that learned to COMBINE them. That's why you're still here.
+""",
+            "BA": """
+At {current_power} power, you've become a SCHOLAR-WARRIOR.
+Wisdom hardened by necessary violence. Knowledge that knows when to strike.
+{helmet}, {weapon}, {chestplate}—they pulse with calculated power.
+
+The Keeper seems impressed. "You studied the Mirror, then fought the Fortress.
+You understand your enemies before you destroy them. That's... wise."
+
+In the Chronos Sanctum, your timelines shine with unique clarity.
+
+🔮 PLOT TWIST: The "original you" had only knowledge. It wasn't enough.
+   They needed STRENGTH when it mattered. They didn't have it.
+   YOU are the timeline that learned when wisdom must yield to action.
+""",
+            "BB": """
+At {current_power} power, you've become something UNPRECEDENTED.
+Pure understanding. Empathy even for enemies. A path no one has walked.
+{helmet}, {weapon}, {chestplate}—they pulse with gentle, implacable will.
+
+The Keeper stares at you with something like wonder.
+"You studied the Mirror. You slipped past the Fortress without violence.
+ In all my centuries... I've never seen this path taken."
+
+In the Chronos Sanctum, your timeline is almost INVISIBLE—too subtle to track.
+
+🔮 PLOT TWIST: The "original you" never imagined this was possible.
+   They assumed all paths required violence. They were wrong.
+   YOU are the timeline that proves there's always another way.
+   But will mercy be enough for what comes next?
+""",
+        },
+    },
+    {
+        "title": "Chapter 6: The War Within",
+        "threshold": 800,
+        "has_decision": True,
+        "decision_id": "war_choice",
+        "content": """
+Armed with legendary equipment—{amulet} gleaming, {boots} swift as thought—
+you face the ultimate battle: The War Within.
+
+The enemy? Every version of yourself that gave up.
+They emerge from the shadows—thousands of them.
+Each one represents a moment you almost quit but didn't.
+
+"Join us," they whisper. "Surrender is peace."
+
+The Keeper hands you {weapon}. "This is where I fell. My weapon wasn't enough."
+
+But YOUR weapon IS enough. Because it's been forged by YOUR sessions.
+YOUR choices. YOUR unique path through this story.
+
+The battle is brutal. For every self you defeat, two more appear.
+But you realize: they're not getting stronger. And YOU are.
+
+With a final strike, you shatter the last echo of surrender.
+They lie before you—broken, defeated, awaiting judgment.
+
+🔮 PLOT TWIST: One of them whispers: "We weren't the enemy.
+   We were protecting you from what waits in Chapter 7."
+   
+⚡ A CHOICE AWAITS... What is their fate?
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: 💀 ABSORB THEIR POWER]
+
+You reach down and TAKE their essence. One by one, they dissolve into you.
+Their failures. Their fears. Their surrendered potential—ALL YOURS NOW.
+
+Power floods through you. {current_power} isn't even close to what you feel.
+For a moment, you understand EVERYTHING they gave up. And you TAKE it.
+
+The Keeper watches in horror. "That's... that's not what I did.
+ I showed mercy. I thought that was the answer."
+
+Your eyes glow with absorbed power. "Mercy is for the living.
+ They were already dead. I just claimed what they wasted."
+
+You are MORE now. Much more. But some of what you absorbed...
+...wasn't ready to die. It's still in there. Watching. Waiting.
+""",
+            "B": """
+[YOUR CHOICE: 🕊️ FORGIVE AND RELEASE]
+
+You kneel among your fallen selves. "I understand," you whisper.
+"You weren't weak. You were tired. Scared. Overwhelmed. I was too."
+
+One by one, you touch them gently. "I forgive you. I release you."
+
+They don't dissolve into power. They dissolve into PEACE.
+And as they fade, they whisper back: "Thank you. We were waiting
+ for someone strong enough to show mercy instead of judgment."
+
+The Keeper weeps. "That's not what I did. I absorbed them for power.
+ I've carried their pain for centuries. You... you set them free."
+
+You are no more powerful than before. But you are LIGHTER.
+And something in the universe shifts, recognizing a path rarely taken.
+""",
+        },
+    },
+    {
+        "title": "Chapter 7: The Truth Beyond the Door",
+        "threshold": 1500,
+        "has_decision": False,
+        "endings": {
+            "AAA": {
+                "title": "Ending 1: The Destroyer",
+                "content": """
+You stand before the Final Door at power level {current_power}.
+DESTROYER. CONQUEROR. UNSTOPPABLE FORCE.
+
+Every choice was destruction. Every enemy was annihilated.
+The power you absorbed from your fallen selves burns within you.
+
+The door opens to reveal... emptiness. A void where reality used to be.
+
+🔮 THE DESTROYER'S TRUTH:
+You destroyed everything in your path. Including, it turns out, the path itself.
+There is nothing left to achieve because you left nothing standing.
+
+But in the void, you see a spark. A new universe waiting to be born.
+And you realize: destroyers don't just end things. They make room for new beginnings.
+
+You step into the void. Whatever comes next, you'll build from the ashes.
+Or burn it all down again. That's always been your choice.
+
+THE END: Total destruction leads to total rebirth.
+"""
+            },
+            "AAB": {
+                "title": "Ending 2: The Redeemed Warrior",
+                "content": """
+You stand before the Final Door at power level {current_power}.
+WARRIOR. DESTROYER. But in the end... MERCIFUL.
+
+You burned the Mirror. You fought through the Fortress.
+But when your fallen selves lay before you, you chose compassion.
+
+The door opens to reveal yourself—the REAL you, in your real life.
+Sitting at this screen. Reading these words.
+
+🔮 THE REDEEMED TRUTH:
+You proved something rare: strength doesn't require cruelty.
+The most powerful act wasn't destruction—it was forgiveness.
+
+The versions of you that gave up? They're at peace now.
+And you carry forward not their power, but their HOPE.
+
+You ARE the Focus Warrior. Not because you destroyed your weakness—
+but because you understood it, fought it, and ultimately... loved it anyway.
+
+THE END: Strength + Compassion = True Victory.
+"""
+            },
+            "ABA": {
+                "title": "Ending 3: The Dark Strategist",
+                "content": """
+You stand before the Final Door at power level {current_power}.
+STRATEGIC. ADAPTIVE. And ultimately... HUNGRY FOR MORE.
+
+You destroyed the Mirror but outwitted the Fortress.
+Then you absorbed your fallen selves for their power.
+
+The door opens to reveal a CHESSBOARD of infinite dimensions.
+
+🔮 THE STRATEGIST'S TRUTH:
+You learned that sometimes you fight, sometimes you think.
+But you never show mercy. Power is the only currency that matters.
+
+The game continues beyond this door. Larger. More complex.
+Other players await—some who've been playing for eons.
+
+You step onto the board. A new piece with old hunger.
+The Focus Warrior becomes the Focus PLAYER.
+
+THE END: Victory is just the beginning of a larger game.
+"""
+            },
+            "ABB": {
+                "title": "Ending 4: The Enlightened Warrior",
+                "content": """
+You stand before the Final Door at power level {current_power}.
+DESTROYER when necessary. THINKER when possible. COMPASSIONATE in the end.
+
+Your path was unique—violence tempered by wisdom, both softened by mercy.
+The rarest combination. The most difficult to walk.
+
+The door opens to reveal ALL possible futures at once.
+
+🔮 THE ENLIGHTENED TRUTH:
+You've achieved what The Keeper never could: BALANCE.
+Every version of your future self is smiling.
+
+Not because you won. Because you GREW.
+The Focus Warrior doesn't need to fight anymore—
+not because there are no enemies, but because you understand them all.
+
+You step through the door into a life where focus isn't a struggle.
+It's simply who you are now.
+
+THE END: Balance is the highest power.
+"""
+            },
+            "BAA": {
+                "title": "Ending 5: The Scholar-Tyrant",
+                "content": """
+You stand before the Final Door at power level {current_power}.
+WISE. POWERFUL. And perhaps... too certain of your own rightness.
+
+You studied the Mirror. You fought through the Fortress.
+You absorbed your fallen selves for their knowledge AND power.
+
+The door opens to reveal a LIBRARY that spans eternity.
+
+🔮 THE SCHOLAR-TYRANT'S TRUTH:
+You know everything now. Every distraction, every weakness, every path.
+The knowledge of countless failed selves burns in your mind.
+
+But with knowledge came certainty. With certainty came judgment.
+You no longer struggle with focus—you IMPOSE it.
+
+Whether that makes you a savior or a tyrant depends on who's asking.
+You step into the library, ready to learn what even the universe has forgotten.
+
+THE END: Knowledge without mercy becomes control.
+"""
+            },
+            "BAB": {
+                "title": "Ending 6: The Sage",
+                "content": """
+You stand before the Final Door at power level {current_power}.
+WISE. STRONG when needed. MERCIFUL at the end.
+
+You studied your enemies. You fought when you had to.
+But when victory came, you chose understanding over domination.
+
+The door opens to reveal... a simple room. YOUR room. Your real life.
+
+🔮 THE SAGE'S TRUTH:
+There was never a monster to defeat. There was only yourself to understand.
+Every "enemy" was a lesson. Every "battle" was growth.
+
+The Focus Warrior was always a metaphor for the person reading this.
+And that person—YOU—has proven something profound:
+
+Wisdom knows when to fight. Strength knows when to learn.
+And true mastery is knowing that some battles end with a handshake.
+
+THE END: The Sage returns to ordinary life, forever changed.
+"""
+            },
+            "BBA": {
+                "title": "Ending 7: The Hungry Scholar",
+                "content": """
+You stand before the Final Door at power level {current_power}.
+PATIENT. CUNNING. And in the end... hungry for what others wasted.
+
+You slipped past every obstacle through wit, not force.
+But when your fallen selves offered their power, you TOOK it.
+
+The door opens to reveal a WEB of infinite connections.
+
+🔮 THE HUNGRY SCHOLAR'S TRUTH:
+You've proven that intelligence and mercy don't always align.
+Sometimes the clever path leads to dark places.
+
+The power you absorbed whispers secrets. Some useful. Some... troubling.
+You know things now that you can never un-know.
+
+But the web ahead offers more. More knowledge. More power. More.
+You step in, already weaving your first strand.
+
+THE END: Wisdom without compassion becomes calculation.
+"""
+            },
+            "BBB": {
+                "title": "Ending 8: The Transcendent",
+                "content": """
+You stand before the Final Door at power level {current_power}.
+WISE. GENTLE. UNSTOPPABLE in the softest possible way.
+
+You never destroyed what you could understand. Never fought what you could befriend.
+And when your fallen selves awaited judgment, you gave them peace instead of pain.
+
+The door opens to reveal... NOTHING.
+Not void. Not emptiness. Just... the absence of doors.
+
+🔮 THE TRANSCENDENT'S TRUTH:
+You don't need doors anymore. You don't need power levels or equipment.
+The game was always a mirror—and you've stepped THROUGH the glass.
+
+Every "enemy" was you. Every "ally" was you.
+Every choice led here: the understanding that there was never anywhere to go.
+
+You were always the Focus Warrior.
+You were always HERE.
+The only thing that changed was your belief in yourself.
+
+🎭 THE STORY WAS A MIRROR. YOU WERE ALWAYS LOOKING AT YOURSELF.
+
+THE END: The highest victory is realizing there was never a war.
+"""
+            },
+        },
+    },
+]
+
+
+def get_story_progress(adhd_buster: dict) -> dict:
+    """
+    Get the user's story progress based on their power level.
+    
+    Returns:
+        dict with 'current_chapter', 'unlocked_chapters', 'chapters', 'next_threshold', 'power', 'decisions'
+    """
+    power = calculate_character_power(adhd_buster)
+    unlocked = []
+    current_chapter = 0
+    
+    for i, threshold in enumerate(STORY_THRESHOLDS):
+        if power >= threshold:
+            unlocked.append(i + 1)
+            current_chapter = i + 1
+    
+    # Find next threshold
+    next_threshold = None
+    for threshold in STORY_THRESHOLDS:
+        if power < threshold:
+            next_threshold = threshold
+            break
+    
+    # Get stored decisions
+    decisions = adhd_buster.get("story_decisions", {})
+    
+    # Build chapter details
+    chapters = []
+    for i, chapter in enumerate(STORY_CHAPTERS):
+        chapter_num = i + 1
+        is_unlocked = chapter_num in unlocked
+        has_decision = chapter.get("has_decision", False)
+        decision_made = False
+        if has_decision:
+            decision_info = STORY_DECISIONS.get(chapter_num)
+            if decision_info:
+                decision_made = decision_info["id"] in decisions
+        
+        chapters.append({
+            "number": chapter_num,
+            "title": chapter["title"],
+            "unlocked": is_unlocked,
+            "has_decision": has_decision,
+            "decision_made": decision_made,
+        })
+    
+    return {
+        "power": power,
+        "current_chapter": current_chapter,
+        "unlocked_chapters": unlocked,
+        "chapters": chapters,
+        "total_chapters": len(STORY_CHAPTERS),
+        "next_threshold": next_threshold,
+        "power_to_next": next_threshold - power if next_threshold else 0,
+        "decisions": decisions,
+        "decisions_made": len(decisions),
+    }
+
+
+def get_decision_for_chapter(chapter_number: int) -> dict | None:
+    """Get the decision info for a chapter, if it has one."""
+    return STORY_DECISIONS.get(chapter_number)
+
+
+def has_made_decision(adhd_buster: dict, chapter_number: int) -> bool:
+    """Check if user has made the decision for a chapter."""
+    decisions = adhd_buster.get("story_decisions", {})
+    decision_info = STORY_DECISIONS.get(chapter_number)
+    if not decision_info:
+        return True  # No decision needed
+    return decision_info["id"] in decisions
+
+
+def make_story_decision(adhd_buster: dict, chapter_number: int, choice: str) -> bool:
+    """
+    Record a story decision. Returns True if successful.
+    
+    Args:
+        adhd_buster: The user's ADHD Buster data (will be modified)
+        chapter_number: The chapter where the decision is made
+        choice: "A" or "B"
+    """
+    decision_info = STORY_DECISIONS.get(chapter_number)
+    if not decision_info:
+        return False
+    if choice not in ("A", "B"):
+        return False
+    
+    if "story_decisions" not in adhd_buster:
+        adhd_buster["story_decisions"] = {}
+    
+    adhd_buster["story_decisions"][decision_info["id"]] = choice
+    return True
+
+
+def get_decision_path(adhd_buster: dict) -> str:
+    """
+    Get the user's decision path as a string like "ABA" or "BB" (partial).
+    Used to select the right story variation.
+    """
+    decisions = adhd_buster.get("story_decisions", {})
+    path = ""
+    
+    for chapter_num in [2, 4, 6]:
+        decision_info = STORY_DECISIONS.get(chapter_num)
+        if decision_info and decision_info["id"] in decisions:
+            path += decisions[decision_info["id"]]
+    
+    return path
+
+
+def get_chapter_content(chapter_number: int, adhd_buster: dict) -> dict | None:
+    """
+    Get the content of a specific chapter, personalized with gear and decisions.
+    
+    Args:
+        chapter_number: 1-7
+        adhd_buster: The user's ADHD Buster data with equipped items and decisions
+    
+    Returns:
+        dict with 'title', 'content', 'unlocked', 'has_decision', 'decision', etc.
+    """
+    if chapter_number < 1 or chapter_number > len(STORY_CHAPTERS):
+        return None
+    
+    chapter = STORY_CHAPTERS[chapter_number - 1]
+    power = calculate_character_power(adhd_buster)
+    unlocked = power >= chapter["threshold"]
+    
+    if not unlocked:
+        return {
+            "title": f"Chapter {chapter_number}: ???",
+            "content": f"🔒 Locked — Reach {chapter['threshold']} power to unlock.\nYour current power: {power}",
+            "unlocked": False,
+            "threshold": chapter["threshold"],
+            "power_needed": chapter["threshold"] - power,
+            "has_decision": False,
+        }
+    
+    # Get equipped items for personalization
+    equipped = adhd_buster.get("equipped", {})
+    
+    def get_item_name(slot: str) -> str:
+        item = equipped.get(slot)
+        if item and item.get("name"):
+            return f"**{item['name']}**"
+        return f"*your {slot.lower()}*"
+    
+    # Build replacement dict
+    replacements = {
+        "helmet": get_item_name("Helmet"),
+        "weapon": get_item_name("Weapon"),
+        "chestplate": get_item_name("Chestplate"),
+        "shield": get_item_name("Shield"),
+        "gauntlets": get_item_name("Gauntlets"),
+        "boots": get_item_name("Boots"),
+        "cloak": get_item_name("Cloak"),
+        "amulet": get_item_name("Amulet"),
+        "current_power": str(power),
+    }
+    
+    # Get decisions made so far
+    decisions = adhd_buster.get("story_decisions", {})
+    decision_path = get_decision_path(adhd_buster)
+    
+    # Determine content based on chapter type
+    has_decision = chapter.get("has_decision", False)
+    decision_info = STORY_DECISIONS.get(chapter_number)
+    decision_made = has_made_decision(adhd_buster, chapter_number)
+    
+    # Chapter 7 has multiple endings based on all 3 decisions
+    if chapter_number == 7:
+        if len(decision_path) < 3:
+            content = """
+🔮 THE FINAL CHAPTER AWAITS...
+
+But your story is not yet complete.
+You have not made all three critical decisions.
+
+Return to the chapters you've unlocked and face your choices.
+Only then will the Final Door reveal YOUR ending.
+
+Decisions made: {}/3
+""".format(len(decision_path))
+        else:
+            ending = chapter.get("endings", {}).get(decision_path)
+            if ending:
+                content = ending["content"]
+            else:
+                content = "Error: Ending not found for path: " + decision_path
+    
+    # Chapters with decisions
+    elif has_decision:
+        content = chapter["content"]
+        if decision_made and "content_after_decision" in chapter:
+            choice = decisions.get(decision_info["id"], "A")
+            after_content = chapter["content_after_decision"].get(choice, "")
+            content = content + "\n" + after_content
+    
+    # Chapters with variations based on previous decisions
+    elif "content_variations" in chapter:
+        variations = chapter["content_variations"]
+        # Find the best matching variation
+        if decision_path in variations:
+            content = variations[decision_path]
+        elif len(decision_path) >= 1 and decision_path[0] in variations:
+            content = variations[decision_path[0]]
+        else:
+            content = chapter.get("content", list(variations.values())[0])
+    
+    # Simple chapters
+    else:
+        content = chapter["content"]
+    
+    # Apply replacements
+    for key, value in replacements.items():
+        content = content.replace("{" + key + "}", value)
+    
+    result = {
+        "title": chapter["title"],
+        "content": content,
+        "unlocked": True,
+        "chapter_number": chapter_number,
+        "has_decision": has_decision and not decision_made,
+        "decision_made": decision_made,
+    }
+    
+    if has_decision and not decision_made:
+        result["decision"] = decision_info
+    
+    return result
+
+
+def get_newly_unlocked_chapter(old_power: int, new_power: int) -> int | None:
+    """
+    Check if a new chapter was unlocked by a power increase.
+    
+    Returns:
+        The newly unlocked chapter number, or None if no new chapter
+    """
+    old_chapter = 0
+    new_chapter = 0
+    
+    for i, threshold in enumerate(STORY_THRESHOLDS):
+        if old_power >= threshold:
+            old_chapter = i + 1
+        if new_power >= threshold:
+            new_chapter = i + 1
+    
+    if new_chapter > old_chapter:
+        return new_chapter
+    return None

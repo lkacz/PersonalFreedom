@@ -483,5 +483,350 @@ class TestDailyRewardSystem(unittest.TestCase):
         self.assertIn("slot", item)
 
 
+class TestPriorityCompletionReward(unittest.TestCase):
+    """Tests for priority completion reward system."""
+    
+    def test_roll_priority_completion_reward_returns_dict(self) -> None:
+        """Test roll returns proper structure."""
+        from gamification import roll_priority_completion_reward
+        result = roll_priority_completion_reward()
+        self.assertIn("won", result)
+        self.assertIn("item", result)
+        self.assertIn("message", result)
+        self.assertIsInstance(result["won"], bool)
+        self.assertIsInstance(result["message"], str)
+    
+    def test_roll_priority_completion_reward_item_when_won(self) -> None:
+        """Test that winning produces a valid item."""
+        from gamification import roll_priority_completion_reward
+        # Run multiple times to ensure we get at least one win
+        won_result = None
+        for _ in range(100):
+            result = roll_priority_completion_reward()
+            if result["won"]:
+                won_result = result
+                break
+        
+        # Should have won at least once in 100 tries (15% chance)
+        self.assertIsNotNone(won_result, "Should have won at least once in 100 attempts")
+        item = won_result["item"]
+        self.assertIsNotNone(item)
+        self.assertIn("name", item)
+        self.assertIn("rarity", item)
+        self.assertIn("slot", item)
+        self.assertIn("power", item)
+    
+    def test_roll_priority_reward_high_tier_weighted(self) -> None:
+        """Test that rewards are weighted toward high tiers."""
+        from gamification import roll_priority_completion_reward
+        rarities = {"Common": 0, "Uncommon": 0, "Rare": 0, "Epic": 0, "Legendary": 0}
+        
+        # Run many times to gather stats
+        wins = 0
+        for _ in range(1000):
+            result = roll_priority_completion_reward()
+            if result["won"]:
+                wins += 1
+                rarities[result["item"]["rarity"]] += 1
+        
+        # With enough wins, high tiers should dominate
+        if wins > 20:
+            high_tier_count = rarities["Rare"] + rarities["Epic"] + rarities["Legendary"]
+            low_tier_count = rarities["Common"] + rarities["Uncommon"]
+            # High tiers should be more common than low tiers (85% vs 15%)
+            self.assertGreater(high_tier_count, low_tier_count, 
+                "High tier rewards should be more common than low tier")
+
+
+class TestStorySystem(unittest.TestCase):
+    """Tests for the Story System."""
+    
+    def test_story_thresholds_defined(self) -> None:
+        """Test that story thresholds are defined."""
+        from gamification import STORY_THRESHOLDS, STORY_CHAPTERS
+        self.assertEqual(len(STORY_THRESHOLDS), 7)
+        self.assertEqual(len(STORY_CHAPTERS), 7)
+        # Thresholds should be ascending
+        for i in range(1, len(STORY_THRESHOLDS)):
+            self.assertGreater(STORY_THRESHOLDS[i], STORY_THRESHOLDS[i-1])
+    
+    def test_get_story_progress_new_user(self) -> None:
+        """Test story progress for new user."""
+        from gamification import get_story_progress
+        adhd_buster = {"equipped": {}, "inventory": []}
+        progress = get_story_progress(adhd_buster)
+        
+        self.assertEqual(progress["power"], 0)
+        self.assertEqual(progress["current_chapter"], 1)  # Chapter 1 unlocked at 0
+        self.assertIn(1, progress["unlocked_chapters"])
+        self.assertEqual(progress["total_chapters"], 7)
+    
+    def test_get_story_progress_with_power(self) -> None:
+        """Test story progress with equipped items."""
+        from gamification import get_story_progress
+        adhd_buster = {
+            "equipped": {
+                "Helmet": {"name": "Epic Helmet", "rarity": "Epic", "power": 100},
+                "Weapon": {"name": "Rare Sword", "rarity": "Rare", "power": 50}
+            },
+            "inventory": []
+        }
+        progress = get_story_progress(adhd_buster)
+        
+        self.assertEqual(progress["power"], 150)  # 100 + 50
+        self.assertGreater(progress["current_chapter"], 1)
+        self.assertIn(1, progress["unlocked_chapters"])
+        self.assertIn(2, progress["unlocked_chapters"])  # 50 threshold
+        self.assertIn(3, progress["unlocked_chapters"])  # 120 threshold
+    
+    def test_get_chapter_content_unlocked(self) -> None:
+        """Test getting content for an unlocked chapter."""
+        from gamification import get_chapter_content
+        adhd_buster = {"equipped": {}, "inventory": []}
+        
+        chapter = get_chapter_content(1, adhd_buster)
+        
+        self.assertIsNotNone(chapter)
+        self.assertTrue(chapter["unlocked"])
+        self.assertIn("title", chapter)
+        self.assertIn("content", chapter)
+        self.assertIn("Awakening", chapter["title"])
+    
+    def test_get_chapter_content_locked(self) -> None:
+        """Test getting content for a locked chapter."""
+        from gamification import get_chapter_content
+        adhd_buster = {"equipped": {}, "inventory": []}
+        
+        chapter = get_chapter_content(7, adhd_buster)  # Needs 1500 power
+        
+        self.assertIsNotNone(chapter)
+        self.assertFalse(chapter["unlocked"])
+        self.assertIn("threshold", chapter)
+        self.assertIn("power_needed", chapter)
+    
+    def test_get_chapter_content_personalized(self) -> None:
+        """Test that chapter content is personalized with gear names."""
+        from gamification import get_chapter_content
+        adhd_buster = {
+            "equipped": {
+                "Helmet": {"name": "Dragon Crown of Focus", "rarity": "Epic", "power": 100}
+            },
+            "inventory": []
+        }
+        
+        chapter = get_chapter_content(1, adhd_buster)
+        
+        self.assertIsNotNone(chapter)
+        # The helmet name should appear in the content
+        self.assertIn("Dragon Crown of Focus", chapter["content"])
+    
+    def test_get_newly_unlocked_chapter(self) -> None:
+        """Test detecting newly unlocked chapters."""
+        from gamification import get_newly_unlocked_chapter
+        
+        # No new chapter
+        result = get_newly_unlocked_chapter(40, 45)
+        self.assertIsNone(result)
+        
+        # New chapter unlocked (threshold at 50)
+        result = get_newly_unlocked_chapter(40, 60)
+        self.assertEqual(result, 2)
+        
+        # Multiple chapters unlocked, returns the new one
+        result = get_newly_unlocked_chapter(0, 130)
+        self.assertEqual(result, 3)  # Crossed 50 and 120, returns 3
+
+
+class TestStoryDecisions(unittest.TestCase):
+    """Tests for the branching story decision system."""
+    
+    def test_story_decisions_defined(self) -> None:
+        """Test that story decisions are defined for specific chapters."""
+        from gamification import STORY_DECISIONS
+        # Decisions at chapters 2, 4, and 6
+        self.assertIn(2, STORY_DECISIONS)
+        self.assertIn(4, STORY_DECISIONS)
+        self.assertIn(6, STORY_DECISIONS)
+        self.assertEqual(len(STORY_DECISIONS), 3)
+    
+    def test_decision_structure(self) -> None:
+        """Test that each decision has required fields."""
+        from gamification import STORY_DECISIONS
+        for chapter_num, decision in STORY_DECISIONS.items():
+            self.assertIn("id", decision)
+            self.assertIn("prompt", decision)
+            self.assertIn("choices", decision)
+            self.assertIn("A", decision["choices"])
+            self.assertIn("B", decision["choices"])
+            # Each choice should have label and description
+            for choice in ["A", "B"]:
+                self.assertIn("label", decision["choices"][choice])
+                self.assertIn("description", decision["choices"][choice])
+    
+    def test_get_decision_for_chapter(self) -> None:
+        """Test getting decision info for a chapter."""
+        from gamification import get_decision_for_chapter
+        
+        # Chapter with decision
+        decision = get_decision_for_chapter(2)
+        self.assertIsNotNone(decision)
+        self.assertEqual(decision["id"], "mirror_choice")
+        
+        # Chapter without decision
+        decision = get_decision_for_chapter(1)
+        self.assertIsNone(decision)
+    
+    def test_has_made_decision(self) -> None:
+        """Test checking if a decision has been made."""
+        from gamification import has_made_decision
+        
+        # No decisions made
+        adhd_buster = {"story_decisions": {}}
+        self.assertFalse(has_made_decision(adhd_buster, 2))
+        
+        # Decision made
+        adhd_buster = {"story_decisions": {"mirror_choice": "A"}}
+        self.assertTrue(has_made_decision(adhd_buster, 2))
+        
+        # Chapter without decision returns True (no decision needed)
+        self.assertTrue(has_made_decision(adhd_buster, 1))
+    
+    def test_make_story_decision(self) -> None:
+        """Test making a story decision."""
+        from gamification import make_story_decision
+        
+        adhd_buster = {}
+        
+        # Make decision for chapter 2
+        result = make_story_decision(adhd_buster, 2, "A")
+        self.assertTrue(result)
+        self.assertEqual(adhd_buster["story_decisions"]["mirror_choice"], "A")
+        
+        # Invalid choice
+        result = make_story_decision(adhd_buster, 2, "C")
+        self.assertFalse(result)
+        
+        # Chapter without decision
+        result = make_story_decision(adhd_buster, 1, "A")
+        self.assertFalse(result)
+    
+    def test_get_decision_path(self) -> None:
+        """Test getting the decision path string."""
+        from gamification import get_decision_path
+        
+        # No decisions
+        adhd_buster = {"story_decisions": {}}
+        self.assertEqual(get_decision_path(adhd_buster), "")
+        
+        # One decision
+        adhd_buster = {"story_decisions": {"mirror_choice": "A"}}
+        self.assertEqual(get_decision_path(adhd_buster), "A")
+        
+        # Two decisions
+        adhd_buster = {"story_decisions": {"mirror_choice": "B", "fortress_choice": "A"}}
+        self.assertEqual(get_decision_path(adhd_buster), "BA")
+        
+        # All three decisions
+        adhd_buster = {"story_decisions": {
+            "mirror_choice": "A",
+            "fortress_choice": "B",
+            "war_choice": "A"
+        }}
+        self.assertEqual(get_decision_path(adhd_buster), "ABA")
+    
+    def test_chapter_7_requires_all_decisions(self) -> None:
+        """Test that chapter 7 content requires all decisions."""
+        from gamification import get_chapter_content
+        
+        # Power high enough for chapter 7 (1500+)
+        adhd_buster = {
+            "equipped": {
+                "Helmet": {"power": 300},
+                "Weapon": {"power": 300},
+                "Chestplate": {"power": 300},
+                "Shield": {"power": 300},
+                "Gauntlets": {"power": 200},
+                "Boots": {"power": 200},
+            },
+            "inventory": [],
+            "story_decisions": {"mirror_choice": "A"}  # Only 1 decision
+        }
+        
+        chapter = get_chapter_content(7, adhd_buster)
+        
+        self.assertIsNotNone(chapter)
+        self.assertTrue(chapter["unlocked"])
+        self.assertIn("not yet complete", chapter["content"])
+        self.assertIn("1/3", chapter["content"])
+    
+    def test_chapter_7_endings_by_path(self) -> None:
+        """Test that chapter 7 has different endings based on decisions."""
+        from gamification import get_chapter_content
+        
+        # Power high enough for chapter 7
+        base_equipped = {
+            "Helmet": {"power": 300},
+            "Weapon": {"power": 300},
+            "Chestplate": {"power": 300},
+            "Shield": {"power": 300},
+            "Gauntlets": {"power": 200},
+            "Boots": {"power": 200},
+        }
+        
+        # Path AAA - "The Destroyer"
+        adhd_buster_aaa = {
+            "equipped": base_equipped,
+            "inventory": [],
+            "story_decisions": {
+                "mirror_choice": "A",
+                "fortress_choice": "A",
+                "war_choice": "A"
+            }
+        }
+        chapter_aaa = get_chapter_content(7, adhd_buster_aaa)
+        self.assertIn("DESTROYER", chapter_aaa["content"])
+        
+        # Path BBB - "The Transcendent"
+        adhd_buster_bbb = {
+            "equipped": base_equipped,
+            "inventory": [],
+            "story_decisions": {
+                "mirror_choice": "B",
+                "fortress_choice": "B",
+                "war_choice": "B"
+            }
+        }
+        chapter_bbb = get_chapter_content(7, adhd_buster_bbb)
+        self.assertIn("TRANSCENDENT", chapter_bbb["content"].upper())
+        
+        # Different paths should have different content
+        self.assertNotEqual(chapter_aaa["content"], chapter_bbb["content"])
+    
+    def test_story_progress_includes_chapters_with_decisions(self) -> None:
+        """Test that story progress includes chapter decision info."""
+        from gamification import get_story_progress
+        
+        adhd_buster = {
+            "equipped": {"Weapon": {"power": 100}},
+            "inventory": [],
+            "story_decisions": {"mirror_choice": "A"}
+        }
+        
+        progress = get_story_progress(adhd_buster)
+        
+        self.assertIn("chapters", progress)
+        self.assertIsInstance(progress["chapters"], list)
+        
+        # Find chapter 2 (has decision)
+        ch2 = next(ch for ch in progress["chapters"] if ch["number"] == 2)
+        self.assertTrue(ch2["has_decision"])
+        self.assertTrue(ch2["decision_made"])
+        
+        # Find chapter 4 (has decision, not made)
+        ch4 = next(ch for ch in progress["chapters"] if ch["number"] == 4)
+        self.assertTrue(ch4["has_decision"])
+        self.assertFalse(ch4["decision_made"])
+
+
 if __name__ == '__main__':
     unittest.main()
