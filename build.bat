@@ -45,8 +45,9 @@ pyinstaller --onefile --windowed --name "PersonalFreedom" ^
     --icon=NONE ^
     --add-data "productivity_ai.py;." ^
     --add-data "local_ai.py;." ^
+    --add-data "gamification.py;." ^
     %HIDDEN_IMPORTS% ^
-    focus_blocker.py
+    focus_blocker_qt.py
 
 echo.
 echo [2/3] Building System Tray version...

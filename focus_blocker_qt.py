@@ -47,19 +47,279 @@ else:
     LocalAI = None  # type: ignore
 
 
-# --- Gamification imports from focus_blocker.py ---
+# --- Gamification imports ---
 try:
-    from focus_blocker import (
+    from gamification import (
         RARITY_POWER, ITEM_THEMES, get_item_themes,
         get_diary_power_tier, calculate_character_power, get_power_breakdown,
         calculate_rarity_bonuses, calculate_merge_success_rate,
         get_merge_result_rarity, perform_lucky_merge, is_merge_worthwhile,
-        generate_diary_entry, calculate_set_bonuses
+        generate_diary_entry, calculate_set_bonuses, generate_item
     )
     GAMIFICATION_AVAILABLE = True
 except ImportError:
     GAMIFICATION_AVAILABLE = False
     RARITY_POWER = {"Common": 10, "Uncommon": 25, "Rare": 50, "Epic": 100, "Legendary": 250}
+
+
+class HardcoreChallengeDialog(QtWidgets.QDialog):
+    """
+    Math challenge dialog for Hardcore mode.
+    Requires solving two long number arithmetic problems to stop the session.
+    Numbers are rendered as non-selectable images to prevent copy-paste.
+    """
+
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("� Hardcore Challenge")
+        self.setModal(True)
+        self.setMinimumWidth(500)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        
+        # Generate two different math problems
+        self.problems = self._generate_problems()
+        self.current_problem = 0
+        self.solved_count = 0
+        
+        self._build_ui()
+        self._show_current_problem()
+    
+    def _generate_problems(self) -> list:
+        """Generate two challenging math problems with large numbers."""
+        problems = []
+        operations = ['+', '-', '×']
+        
+        for _ in range(2):
+            op = random.choice(operations)
+            
+            if op == '+':
+                # Addition: two 5-digit numbers
+                a = random.randint(10000, 99999)
+                b = random.randint(10000, 99999)
+                answer = a + b
+            elif op == '-':
+                # Subtraction: ensure positive result
+                a = random.randint(50000, 99999)
+                b = random.randint(10000, a - 1)
+                answer = a - b
+            else:  # ×
+                # Multiplication: 4-digit × 2-digit
+                a = random.randint(1000, 9999)
+                b = random.randint(10, 99)
+                answer = a * b
+            
+            problems.append({
+                'a': a,
+                'b': b,
+                'op': op,
+                'answer': answer
+            })
+        
+        return problems
+    
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setSpacing(20)
+        
+        # Warning header
+        header = QtWidgets.QLabel("⚠️ HARDCORE MODE ACTIVE ⚠️")
+        header.setStyleSheet("""
+            font-size: 18px;
+            font-weight: bold;
+            color: #dc3545;
+            padding: 10px;
+        """)
+        header.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(header)
+        
+        # Instructions
+        instructions = QtWidgets.QLabel(
+            "To stop this session, you must solve 2 math problems.\n"
+            "Type your answers manually - no shortcuts allowed!"
+        )
+        instructions.setStyleSheet("font-size: 12px; color: #666;")
+        instructions.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(instructions)
+        
+        # Progress indicator
+        self.progress_label = QtWidgets.QLabel()
+        self.progress_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+        self.progress_label.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(self.progress_label)
+        
+        # Problem display area (using QLabel with custom painting to prevent selection)
+        self.problem_frame = QtWidgets.QFrame()
+        self.problem_frame.setStyleSheet("""
+            QFrame {
+                background-color: #2d2d2d;
+                border: 2px solid #444;
+                border-radius: 10px;
+                padding: 20px;
+            }
+        """)
+        problem_layout = QtWidgets.QVBoxLayout(self.problem_frame)
+        
+        # The math expression - rendered as an image
+        self.problem_display = QtWidgets.QLabel()
+        self.problem_display.setAlignment(QtCore.Qt.AlignCenter)
+        self.problem_display.setMinimumHeight(80)
+        problem_layout.addWidget(self.problem_display)
+        
+        layout.addWidget(self.problem_frame)
+        
+        # Answer input
+        input_layout = QtWidgets.QHBoxLayout()
+        input_layout.addWidget(QtWidgets.QLabel("Your Answer:"))
+        self.answer_input = QtWidgets.QLineEdit()
+        self.answer_input.setPlaceholderText("Type the result here...")
+        self.answer_input.setStyleSheet("""
+            QLineEdit {
+                font-size: 20px;
+                padding: 10px;
+                border: 2px solid #007bff;
+                border-radius: 5px;
+            }
+        """)
+        # Only allow numbers and minus sign
+        self.answer_input.setValidator(QtGui.QIntValidator())
+        self.answer_input.returnPressed.connect(self._check_answer)
+        input_layout.addWidget(self.answer_input)
+        layout.addLayout(input_layout)
+        
+        # Feedback label
+        self.feedback_label = QtWidgets.QLabel("")
+        self.feedback_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.feedback_label.setStyleSheet("font-size: 14px; min-height: 30px;")
+        layout.addWidget(self.feedback_label)
+        
+        # Buttons
+        btn_layout = QtWidgets.QHBoxLayout()
+        
+        self.submit_btn = QtWidgets.QPushButton("Submit Answer")
+        self.submit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #28a745;
+                color: white;
+                font-size: 14px;
+                font-weight: bold;
+                padding: 10px 30px;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #218838;
+            }
+        """)
+        self.submit_btn.clicked.connect(self._check_answer)
+        
+        self.cancel_btn = QtWidgets.QPushButton("Keep Focusing")
+        self.cancel_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #6c757d;
+                color: white;
+                font-size: 14px;
+                padding: 10px 30px;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #5a6268;
+            }
+        """)
+        self.cancel_btn.clicked.connect(self.reject)
+        
+        btn_layout.addWidget(self.cancel_btn)
+        btn_layout.addStretch()
+        btn_layout.addWidget(self.submit_btn)
+        layout.addLayout(btn_layout)
+    
+    def _render_problem_as_image(self, a: int, b: int, op: str) -> QtGui.QPixmap:
+        """Render the math problem as a pixmap to prevent text selection/copying."""
+        # Create a pixmap
+        width, height = 400, 60
+        pixmap = QtGui.QPixmap(width, height)
+        pixmap.fill(QtCore.Qt.transparent)
+        
+        painter = QtGui.QPainter(pixmap)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        
+        # Use a monospace font for clear number display
+        font = QtGui.QFont("Consolas", 28, QtGui.QFont.Bold)
+        painter.setFont(font)
+        painter.setPen(QtGui.QColor("#00ff88"))
+        
+        # Format the expression
+        expression = f"{a:,}  {op}  {b:,}  =  ?"
+        
+        # Draw centered
+        rect = QtCore.QRect(0, 0, width, height)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, expression)
+        
+        painter.end()
+        return pixmap
+    
+    def _show_current_problem(self) -> None:
+        """Display the current math problem."""
+        problem = self.problems[self.current_problem]
+        
+        # Update progress
+        self.progress_label.setText(f"Problem {self.current_problem + 1} of 2")
+        
+        # Render the problem as an image
+        pixmap = self._render_problem_as_image(
+            problem['a'], problem['b'], problem['op']
+        )
+        self.problem_display.setPixmap(pixmap)
+        
+        # Clear previous input and feedback
+        self.answer_input.clear()
+        self.feedback_label.setText("")
+        self.answer_input.setFocus()
+    
+    def _check_answer(self) -> None:
+        """Verify the user's answer."""
+        try:
+            user_answer = int(self.answer_input.text().strip())
+        except ValueError:
+            self.feedback_label.setText("❌ Please enter a valid number!")
+            self.feedback_label.setStyleSheet("font-size: 14px; color: #dc3545; min-height: 30px;")
+            return
+        
+        correct_answer = self.problems[self.current_problem]['answer']
+        
+        if user_answer == correct_answer:
+            self.solved_count += 1
+            self.current_problem += 1
+            
+            if self.solved_count >= 2:
+                # All problems solved!
+                self.feedback_label.setText("✅ Correct! Session will stop...")
+                self.feedback_label.setStyleSheet("font-size: 14px; color: #28a745; min-height: 30px;")
+                QtCore.QTimer.singleShot(500, self.accept)
+            else:
+                # Show next problem
+                self.feedback_label.setText("✅ Correct! One more to go...")
+                self.feedback_label.setStyleSheet("font-size: 14px; color: #28a745; min-height: 30px;")
+                QtCore.QTimer.singleShot(800, self._show_current_problem)
+        else:
+            # Wrong answer - generate new problems and restart
+            self.feedback_label.setText("❌ Wrong! Starting over with new problems...")
+            self.feedback_label.setStyleSheet("font-size: 14px; color: #dc3545; min-height: 30px;")
+            
+            # Reset with new problems after a delay
+            QtCore.QTimer.singleShot(1500, self._reset_challenge)
+    
+    def _reset_challenge(self) -> None:
+        """Reset the challenge with new problems."""
+        self.problems = self._generate_problems()
+        self.current_problem = 0
+        self.solved_count = 0
+        self._show_current_problem()
+    
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        """Prevent Escape from closing the dialog easily."""
+        if event.key() == QtCore.Qt.Key_Escape:
+            # Ignore escape - user must click "Keep Focusing" or solve problems
+            return
+        super().keyPressEvent(event)
 
 
 class TimerTab(QtWidgets.QWidget):
@@ -106,13 +366,15 @@ class TimerTab(QtWidgets.QWidget):
         mode_layout = QtWidgets.QHBoxLayout(mode_box)
         self.mode_buttons: Dict[str, QtWidgets.QRadioButton] = {}
         modes = [
-            ("Normal", BlockMode.NORMAL),
-            ("Strict 🔐", BlockMode.STRICT),
-            ("Pomodoro 🍅", BlockMode.POMODORO),
+            ("Normal", BlockMode.NORMAL, "Can stop session anytime"),
+            ("Strict 🔐", BlockMode.STRICT, "Requires password to stop"),
+            ("Hardcore �", BlockMode.HARDCORE, "Solve math problems to stop - no easy escape!"),
+            ("Pomodoro 🍅", BlockMode.POMODORO, "25 min work / 5 min break cycles"),
         ]
-        for text, value in modes:
+        for text, value, tooltip in modes:
             btn = QtWidgets.QRadioButton(text)
             btn.setProperty("mode_value", value)
+            btn.setToolTip(tooltip)
             mode_layout.addWidget(btn)
             self.mode_buttons[value] = btn
         self.mode_buttons[BlockMode.NORMAL].setChecked(True)
@@ -180,6 +442,18 @@ class TimerTab(QtWidgets.QWidget):
         s = seconds % 60
         return f"{h:02d}:{m:02d}:{s:02d}"
 
+    def _update_timer_display(self) -> None:
+        """Update timer label and button states."""
+        self.timer_label.setText(self._format_time(self.remaining_seconds))
+        if self.timer_running:
+            self.start_btn.setEnabled(False)
+            self.stop_btn.setEnabled(True)
+            self.status_label.setText("🔒 BLOCKING")
+        else:
+            self.start_btn.setEnabled(True)
+            self.stop_btn.setEnabled(False)
+            self.status_label.setText("Ready to focus")
+
     # === Timer control ===
     def _start_session(self) -> None:
         hours = self.hours_spin.value()
@@ -220,6 +494,11 @@ class TimerTab(QtWidgets.QWidget):
             self.status_label.setText("🔒 BLOCKING")
         self.qt_timer.start()
 
+        # Update tray icon to blocking state
+        main_window = self.window()
+        if hasattr(main_window, '_update_tray_icon'):
+            main_window._update_tray_icon(blocking=True)
+
     def _stop_session(self) -> None:
         # Check password for Strict Mode
         if self.blocker.mode == BlockMode.STRICT and self.blocker.password_hash:
@@ -229,6 +508,13 @@ class TimerTab(QtWidgets.QWidget):
             )
             if not ok or not self.blocker.verify_password(pwd or ""):
                 QtWidgets.QMessageBox.warning(self, "Error", "Incorrect password. Session continues.")
+                return
+        
+        # Check for Hardcore Mode - must solve math challenges
+        if self.blocker.mode == BlockMode.HARDCORE:
+            dialog = HardcoreChallengeDialog(self)
+            if dialog.exec() != QtWidgets.QDialog.Accepted:
+                # User cancelled or failed - session continues
                 return
 
         elapsed = 0
@@ -245,6 +531,11 @@ class TimerTab(QtWidgets.QWidget):
         self.pomodoro_is_break = False
         self.pomodoro_session_count = 0
         self.pomodoro_total_work_time = 0
+
+        # Update tray icon to ready state
+        main_window = self.window()
+        if hasattr(main_window, '_update_tray_icon'):
+            main_window._update_tray_icon(blocking=False)
 
         # Unblock sites
         self.blocker.unblock_sites()
@@ -308,12 +599,10 @@ class TimerTab(QtWidgets.QWidget):
         if not GAMIFICATION_AVAILABLE:
             return
 
-        from focus_blocker import generate_item
-
         streak = self.blocker.stats.get("streak_days", 0)
         luck = self.blocker.adhd_buster.get("luck_bonus", 0)
 
-        # Generate item
+        # Generate item (generate_item already imported at top)
         item = generate_item(session_minutes=session_minutes, streak_days=streak)
 
         # Lucky upgrade chance based on luck bonus
@@ -397,6 +686,11 @@ class TimerTab(QtWidgets.QWidget):
         self.start_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
         self.status_label.setText("Session complete 🎉")
+
+        # Update tray icon to ready state
+        main_window = self.window()
+        if hasattr(main_window, '_update_tray_icon'):
+            main_window._update_tray_icon(blocking=False)
 
         session_minutes = elapsed // 60
 
@@ -521,6 +815,11 @@ class TimerTab(QtWidgets.QWidget):
         self.stop_btn.setEnabled(False)
         self.pomodoro_is_break = False
 
+        # Update tray icon to ready state
+        main_window = self.window()
+        if hasattr(main_window, '_update_tray_icon'):
+            main_window._update_tray_icon(blocking=False)
+
         if self.pomodoro_session_count > 0:
             self.status_label.setText(
                 f"🍅 Done! {self.pomodoro_session_count} sessions, "
@@ -550,6 +849,11 @@ class TimerTab(QtWidgets.QWidget):
         self.pomodoro_is_break = False
         self.pomodoro_session_count = 0
         self.pomodoro_total_work_time = 0
+
+        # Update tray icon to ready state
+        main_window = self.window()
+        if hasattr(main_window, '_update_tray_icon'):
+            main_window._update_tray_icon(blocking=False)
 
         # Unblock sites
         self.blocker.unblock_sites()
@@ -718,6 +1022,12 @@ class CategoriesTab(QtWidgets.QWidget):
         sites = SITE_CATEGORIES.get(category, [])
         text = "\n".join(sorted(set(s.replace("www.", "") for s in sites)))
         QtWidgets.QMessageBox.information(self, f"{category} Sites", text)
+
+    def refresh(self) -> None:
+        """Refresh checkboxes from blocker config."""
+        for category, cb in self.category_checks.items():
+            cb.setChecked(self.blocker.categories_enabled.get(category, True))
+        self._update_total()
 
     def _update_total(self) -> None:
         total = len(self.blocker.get_effective_blacklist())
@@ -1109,6 +1419,22 @@ class SettingsTab(QtWidgets.QWidget):
         inner.addWidget(pwd_group)
         self._update_pwd_status()
 
+        # Mode explanations
+        mode_group = QtWidgets.QGroupBox("📋 Session Modes")
+        mode_layout = QtWidgets.QVBoxLayout(mode_group)
+        mode_info = QtWidgets.QLabel(
+            "<b>Normal:</b> Can stop anytime - good for flexibility<br>"
+            "<b>Strict 🔐:</b> Requires password to stop - prevents impulsive exits<br>"
+            "<b>Hardcore �:</b> Must solve 2 math problems to stop - maximum commitment!<br>"
+            "&nbsp;&nbsp;&nbsp;&nbsp;• Numbers are displayed as images (no copy-paste)<br>"
+            "&nbsp;&nbsp;&nbsp;&nbsp;• Wrong answer = start over with new problems<br>"
+            "<b>Pomodoro 🍅:</b> 25 min work / 5 min break cycles - for productivity"
+        )
+        mode_info.setWordWrap(True)
+        mode_info.setStyleSheet("padding: 10px; background-color: #f8f9fa; border-radius: 5px;")
+        mode_layout.addWidget(mode_info)
+        inner.addWidget(mode_group)
+
         # Pomodoro settings
         pomo_group = QtWidgets.QGroupBox("🍅 Pomodoro Settings")
         pomo_layout = QtWidgets.QFormLayout(pomo_group)
@@ -1283,6 +1609,24 @@ class SettingsTab(QtWidgets.QWidget):
                 except Exception:
                     pass
 
+            # Refresh UI
+            self.pomo_work_spin.setValue(self.blocker.pomodoro_work)
+            self.pomo_break_spin.setValue(self.blocker.pomodoro_break)
+            self.pomo_long_spin.setValue(self.blocker.pomodoro_long_break)
+            self._update_pwd_status()
+
+            main_win = self.window()
+            if hasattr(main_win, "sites_tab"):
+                main_win.sites_tab._refresh_lists()
+            if hasattr(main_win, "categories_tab"):
+                main_win.categories_tab.refresh()
+            if hasattr(main_win, "schedule_tab"):
+                main_win.schedule_tab._refresh_table()
+            if hasattr(main_win, "stats_tab"):
+                main_win.stats_tab.refresh()
+            if hasattr(main_win, "ai_tab") and AI_AVAILABLE:
+                main_win.ai_tab._refresh_data()
+
             QtWidgets.QMessageBox.information(self, "Restored", "Backup restored successfully!")
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "Restore Failed", str(e))
@@ -1293,6 +1637,10 @@ class SettingsTab(QtWidgets.QWidget):
         success, message = self.blocker.emergency_cleanup()
         if success:
             QtWidgets.QMessageBox.information(self, "Cleanup Complete", message)
+            # Reset Timer UI
+            main_win = self.window()
+            if hasattr(main_win, "timer_tab"):
+                main_win.timer_tab._force_stop_session()
         else:
             QtWidgets.QMessageBox.critical(self, "Cleanup Failed", message)
 
@@ -1309,6 +1657,11 @@ class AITab(QtWidgets.QWidget):
     def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
         self.blocker = blocker
+        # Initialize AI/gamification components
+        self.analyzer = ProductivityAnalyzer(STATS_PATH) if ProductivityAnalyzer else None
+        self.gamification = GamificationEngine(STATS_PATH) if GamificationEngine else None
+        self.focus_goals = FocusGoals(GOALS_PATH, STATS_PATH) if FocusGoals else None
+        self.local_ai = LocalAI() if LOCAL_AI_AVAILABLE else None
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -1476,7 +1829,17 @@ class AITab(QtWidgets.QWidget):
             status_txt = "✅ Running on GPU" if self.local_ai.gpu_available else "💻 Running on CPU"
             self.gpu_status_label.setText(status_txt)
 
-            notes = [n.get("note", "") for n in self.blocker.stats.get("session_notes", []) if n.get("note")]
+            # Extract notes from session_notes, handling both dict and string formats
+            raw_notes = self.blocker.stats.get("session_notes", [])
+            notes = []
+            for n in raw_notes:
+                if isinstance(n, dict):
+                    note_text = n.get("note", "")
+                    if note_text:
+                        notes.append(note_text)
+                elif isinstance(n, str) and n:
+                    notes.append(n)
+            
             if len(notes) >= 3:
                 try:
                     triggers = self.local_ai.detect_distraction_triggers(notes)
@@ -2598,8 +2961,22 @@ class PrioritiesDialog(QtWidgets.QDialog):
         planned_spin.setRange(0, 100)
         planned_spin.setValue(self.priorities[index].get("planned_hours", 0))
         planned_layout.addWidget(planned_spin)
+        
         logged = self.priorities[index].get("logged_hours", 0)
-        planned_layout.addWidget(QtWidgets.QLabel(f"Logged: {logged:.1f} hrs"))
+        planned = self.priorities[index].get("planned_hours", 0)
+        
+        # Progress bar
+        if planned > 0:
+            p_bar = QtWidgets.QProgressBar()
+            p_bar.setMaximum(100)
+            pct = min(100, int((logged / planned) * 100))
+            p_bar.setValue(pct)
+            p_bar.setFormat(f"{logged:.1f}/{planned:.1f} hrs ({pct}%)")
+            p_bar.setFixedWidth(150)
+            planned_layout.addWidget(p_bar)
+        else:
+            planned_layout.addWidget(QtWidgets.QLabel(f"Logged: {logged:.1f} hrs"))
+            
         planned_layout.addStretch()
         self.planned_spins.append(planned_spin)
         g_layout.addLayout(planned_layout)
@@ -2631,9 +3008,24 @@ class PrioritiesDialog(QtWidgets.QDialog):
 
     def _start_session(self) -> None:
         self._save_priorities()
-        self.accept()
-        if self.on_start_callback:
-            self.on_start_callback()
+        
+        # Find the first priority for today
+        today = datetime.now().strftime("%A")
+        target_priority = None
+        
+        for p in self.priorities:
+            if p.get("title", "").strip() and (not p.get("days") or today in p.get("days", [])):
+                target_priority = p.get("title")
+                break
+        
+        if target_priority:
+            self.accept()
+            if self.on_start_callback:
+                self.on_start_callback(target_priority)
+        else:
+            QtWidgets.QMessageBox.warning(self, "No Priority", 
+                                  "No priority task found for today!\n"
+                                  "Add a task above and ensure today is selected.")
 
     def _toggle_startup(self, checked: bool) -> None:
         self.blocker.show_priorities_on_startup = checked
@@ -2875,7 +3267,27 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         # Show priorities on startup if enabled
         if self.blocker.show_priorities_on_startup:
-            QtCore.QTimer.singleShot(600, self._open_priorities)
+            QtCore.QTimer.singleShot(600, self._check_priorities_on_startup)
+
+    def _check_priorities_on_startup(self) -> None:
+        """Check if priorities dialog should be shown on startup."""
+        if not self.blocker.show_priorities_on_startup:
+            return
+        
+        # Check if today is a day with any priorities
+        today = datetime.now().strftime("%A")
+        has_priority_today = False
+        
+        for priority in self.blocker.priorities:
+            title = priority.get("title", "").strip()
+            days = priority.get("days", [])
+            if title and (not days or today in days):
+                has_priority_today = True
+                break
+        
+        # Show dialog if there are priorities for today, or if no priorities set yet
+        if has_priority_today or not any(p.get("title", "").strip() for p in self.blocker.priorities):
+            self._open_priorities()
 
     def _check_crash_recovery(self) -> None:
         """Check for orphaned sessions from a previous crash and offer recovery."""
@@ -2978,6 +3390,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.tray_update_timer.setInterval(1000)
         self.tray_update_timer.timeout.connect(self._update_tray_status)
 
+        # Show tray icon immediately and start update timer
+        self.tray_icon.show()
+        self.tray_update_timer.start()
+
     def _update_tray_icon(self, blocking: bool = False) -> None:
         """Update the tray icon image."""
         if not self.tray_icon:
@@ -3041,8 +3457,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.show()
         self.raise_()
         self.activateWindow()
-        if self.tray_icon and self.tray_update_timer:
-            self.tray_update_timer.stop()
+        # Tray icon stays visible and timer keeps running
 
     def changeEvent(self, event: QtCore.QEvent) -> None:
         """Handle window state changes (minimize to tray)."""
@@ -3056,9 +3471,6 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """Hide window to system tray."""
         if self.tray_icon:
             self.hide()
-            self.tray_icon.show()
-            self._update_tray_icon(self.timer_tab.timer_running)
-            self.tray_update_timer.start()
             self.tray_icon.showMessage(
                 "Personal Freedom",
                 "Minimized to system tray. Double-click to restore.",
@@ -3096,8 +3508,11 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         dialog = PrioritiesDialog(self.blocker, on_start_callback=self._start_priority_session, parent=self)
         dialog.exec()
 
-    def _start_priority_session(self) -> None:
+    def _start_priority_session(self, priority_title: str) -> None:
         self.tabs.setCurrentWidget(self.timer_tab)
+        QtWidgets.QMessageBox.information(self, "Priority Session", 
+                                   f"Starting focus session for:\n\n\"{priority_title}\"\n\n"
+                                   "Set your desired duration and click Start Focus!")
 
     def _open_adhd_buster(self) -> None:
         dialog = ADHDBusterDialog(self.blocker, self)
@@ -3132,6 +3547,27 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.tray_icon.hide()
 
         if self.timer_tab.timer_running:
+            # For Hardcore mode, require solving the challenge to exit
+            if self.timer_tab.blocker.mode == BlockMode.HARDCORE:
+                reply = QtWidgets.QMessageBox.question(
+                    self,
+                    "� Hardcore Mode Active",
+                    "A Hardcore session is running!\n\n"
+                    "You must solve the math challenge to exit.\n\nContinue?",
+                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                    QtWidgets.QMessageBox.No
+                )
+                if reply == QtWidgets.QMessageBox.Yes:
+                    dialog = HardcoreChallengeDialog(self)
+                    if dialog.exec() == QtWidgets.QDialog.Accepted:
+                        self.timer_tab._force_stop_session()
+                        event.accept()
+                    else:
+                        event.ignore()
+                else:
+                    event.ignore()
+                return
+            
             reply = QtWidgets.QMessageBox.question(
                 self,
                 "Confirm Exit",

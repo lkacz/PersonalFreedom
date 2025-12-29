@@ -32,7 +32,7 @@ A complete AI module with three intelligent engines:
 - **Smart Suggestions**: AI recommends goals based on your patterns
 - **Completion Tracking**: Mark goals complete and celebrate wins
 
-### 2. **Enhanced FocusBlocker (focus_blocker.py)**
+### 2. **Enhanced FocusBlocker (focus_blocker_qt.py)**
 
 #### New AI Insights Tab (7th Tab)
 - **Insights Display**: Shows AI-generated productivity insights and recommendations
@@ -144,10 +144,11 @@ optimal = median(successful)  # e.g., 45 minutes
 
 ### New Files
 - `productivity_ai.py` (604 lines): Complete AI engine
+- `gamification.py` (~500 lines): ADHD Buster gamification system
 - `test_ai_features.py` (177 lines): Comprehensive test suite
 
 ### Modified Files
-- `focus_blocker.py`: Added AI tab (+223 lines), enhanced stats tracking
+- `focus_blocker_qt.py`: Qt-based GUI with AI tab, enhanced stats tracking
 - `README.md`: Documented all AI features
 
 ### Total Lines Added
@@ -167,7 +168,7 @@ All AI features tested and working:
 ## 🎓 Technologies Used
 
 - **Python 3.12**: Core language
-- **tkinter**: GUI framework for AI Insights tab
+- **PySide6**: Qt-based GUI framework
 - **JSON**: Data persistence
 - **datetime/timedelta**: Time-based analytics
 - **Statistics module**: Median calculations
@@ -195,4 +196,4 @@ We transformed a basic website blocker into an **AI-powered productivity coach**
 
 This is the **first app of its kind** - combining website blocking with machine learning productivity intelligence. No other tool offers this level of personalization and intelligent coaching.
 
-**Run `python focus_blocker.py` to experience the future of productivity software!** 🚀
+**Run `python focus_blocker_qt.py` to experience the future of productivity software!** 🚀

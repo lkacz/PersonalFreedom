@@ -18,13 +18,15 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [1/2] Building Main GUI...
+echo [1/2] Building Main GUI (PySide6/Qt)...
 pyinstaller --noconfirm --onefile --windowed --uac-admin ^
     --name "PersonalFreedom" ^
     --add-data "productivity_ai.py;." ^
     --add-data "local_ai.py;." ^
+    --add-data "gamification.py;." ^
     --hidden-import=productivity_ai ^
-    focus_blocker.py
+    --hidden-import=PySide6 ^
+    focus_blocker_qt.py
 
 if %errorlevel% neq 0 (
     echo [ERROR] Failed to build main app!

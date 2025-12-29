@@ -320,7 +320,27 @@ class TrayBlocker:
             pass
 
     def create_icon_image(self, blocking=False):
-        """Create a simple icon image"""
+        """Create or load icon image for system tray"""
+        # Try to load icon from file first (when running from installed location)
+        icon_name = "tray_blocking.png" if blocking else "tray_ready.png"
+        
+        # Check in script directory and parent
+        for base_path in [SCRIPT_DIR, SCRIPT_DIR.parent]:
+            icon_path = base_path / icon_name
+            if icon_path.exists():
+                try:
+                    return Image.open(icon_path)
+                except Exception:
+                    pass
+            # Also check in icons subfolder (dev environment)
+            icon_path = base_path / "icons" / icon_name
+            if icon_path.exists():
+                try:
+                    return Image.open(icon_path)
+                except Exception:
+                    pass
+        
+        # Fallback: generate icon dynamically
         size = 64
         image = Image.new('RGBA', (size, size), (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
@@ -334,8 +354,14 @@ class TrayBlocker:
         else:
             # Green circle when not blocking
             draw.ellipse([4, 4, size-4, size-4], fill='#2ecc71', outline='#27ae60', width=2)
-            # Check mark
-            draw.line([(20, 32), (28, 42), (44, 22)], fill='white', width=4)
+            # PF text
+            try:
+                from PIL import ImageFont
+                font = ImageFont.truetype('arial.ttf', 24)
+                draw.text((16, 16), "PF", fill='white', font=font)
+            except Exception:
+                # Fallback check mark
+                draw.line([(20, 32), (28, 42), (44, 22)], fill='white', width=4)
 
         return image
 
@@ -593,8 +619,8 @@ class TrayBlocker:
             )
             return
 
-        # Fall back to Python script
-        main_script = SCRIPT_DIR / "focus_blocker.py"
+        # Fall back to Python script (Qt version)
+        main_script = SCRIPT_DIR / "focus_blocker_qt.py"
         if main_script.exists():
             print(f"Opening: {main_script}")
             ctypes.windll.shell32.ShellExecuteW(

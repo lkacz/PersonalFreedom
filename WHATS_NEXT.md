@@ -31,7 +31,7 @@ This will create:
 ### 2. Test the Full Application
 ```bash
 # Run with admin privileges to test blocking
-python focus_blocker.py
+python focus_blocker_qt.py
 ```
 
 **Test checklist:**
@@ -411,7 +411,7 @@ If releasing publicly:
 ## 🚀 Next Immediate Action
 
 **Right now, you can:**
-1. Run `python focus_blocker.py` to experience the AI features
+1. Run `python focus_blocker_qt.py` to experience the AI features
 2. Complete a session and watch achievements unlock
 3. Check the AI Insights tab for your first recommendations
 4. Set a goal and track progress

@@ -90,7 +90,7 @@ All models run **100% locally** - no cloud APIs, no data sent anywhere!
 ### 1. Complete a Focus Session
 Run the app normally:
 ```bash
-python focus_blocker.py
+python focus_blocker_qt.py
 ```
 
 ### 2. After Session Ends
@@ -352,7 +352,7 @@ After completing 10 sessions with notes:
 pip install -r requirements_ai.txt
 
 # Run
-python focus_blocker.py
+python focus_blocker_qt.py
 
 # Complete a session, add notes, watch the magic happen! ✨
 ```
