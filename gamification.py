@@ -598,6 +598,38 @@ def calculate_rarity_bonuses(session_minutes: int = 0, streak_days: int = 0) -> 
     }
 
 
+# Rarity order for tier calculations
+RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+
+
+def get_current_tier(adhd_buster: dict) -> str:
+    """Get the highest rarity tier from equipped items."""
+    equipped = adhd_buster.get("equipped", {})
+    highest_tier = "Common"
+    
+    for item in equipped.values():
+        if item:
+            item_rarity = item.get("rarity", "Common")
+            if RARITY_ORDER.index(item_rarity) > RARITY_ORDER.index(highest_tier):
+                highest_tier = item_rarity
+    
+    return highest_tier
+
+
+def get_boosted_rarity(current_tier: str) -> str:
+    """Get a rarity one tier higher than current (capped at Legendary)."""
+    current_idx = RARITY_ORDER.index(current_tier)
+    boosted_idx = min(current_idx + 1, len(RARITY_ORDER) - 1)
+    return RARITY_ORDER[boosted_idx]
+
+
+def generate_daily_reward_item(adhd_buster: dict) -> dict:
+    """Generate a daily reward item - one tier higher than current equipped tier."""
+    current_tier = get_current_tier(adhd_buster)
+    boosted_rarity = get_boosted_rarity(current_tier)
+    return generate_item(rarity=boosted_rarity)
+
+
 def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int = 0) -> dict:
     """Generate a random item with rarity influenced by session length and streak."""
     if rarity is None:
