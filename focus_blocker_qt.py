@@ -2365,32 +2365,52 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self._refresh_inventory()
 
         # Story Progress Section
-        story_group = QtWidgets.QGroupBox("📜 The Focus Warrior's Tale")
+        story_group = QtWidgets.QGroupBox("📜 Your Story")
         story_layout = QtWidgets.QVBoxLayout(story_group)
+        
+        # Story selection row
+        if GAMIFICATION_AVAILABLE:
+            from gamification import AVAILABLE_STORIES, get_selected_story, get_story_progress
+            
+            story_select_bar = QtWidgets.QHBoxLayout()
+            story_select_bar.addWidget(QtWidgets.QLabel("Choose Your Story:"))
+            self.story_combo = QtWidgets.QComboBox()
+            self.story_combo.setMinimumWidth(250)
+            
+            current_story = get_selected_story(self.blocker.adhd_buster)
+            current_idx = 0
+            for i, (story_id, story_info) in enumerate(AVAILABLE_STORIES.items()):
+                self.story_combo.addItem(f"{story_info['title']}", story_id)
+                self.story_combo.setItemData(i, story_info['description'], QtCore.Qt.ToolTipRole)
+                if story_id == current_story:
+                    current_idx = i
+            
+            self.story_combo.setCurrentIndex(current_idx)
+            self.story_combo.currentIndexChanged.connect(self._on_story_change)
+            story_select_bar.addWidget(self.story_combo)
+            story_select_bar.addStretch()
+            story_layout.addLayout(story_select_bar)
+            
+            # Story description
+            self.story_desc_lbl = QtWidgets.QLabel()
+            self.story_desc_lbl.setWordWrap(True)
+            self.story_desc_lbl.setStyleSheet("color: #888; font-style: italic; padding: 5px;")
+            self._update_story_description()
+            story_layout.addWidget(self.story_desc_lbl)
         
         # Story progress info
         if GAMIFICATION_AVAILABLE:
-            from gamification import get_story_progress
             progress = get_story_progress(self.blocker.adhd_buster)
             
-            progress_lbl = QtWidgets.QLabel(
-                f"📖 Chapters Unlocked: {len(progress['unlocked_chapters'])}/{progress['total_chapters']}  |  "
-                f"⚔ Power: {progress['power']}"
-            )
-            progress_lbl.setStyleSheet("font-weight: bold;")
-            story_layout.addWidget(progress_lbl)
+            self.story_progress_lbl = QtWidgets.QLabel()
+            self.story_progress_lbl.setStyleSheet("font-weight: bold;")
+            story_layout.addWidget(self.story_progress_lbl)
             
-            if progress['next_threshold']:
-                next_lbl = QtWidgets.QLabel(
-                    f"🔒 Next chapter unlocks at {progress['next_threshold']} power "
-                    f"({progress['power_to_next']} more needed)"
-                )
-                next_lbl.setStyleSheet("color: #666;")
-                story_layout.addWidget(next_lbl)
-            else:
-                complete_lbl = QtWidgets.QLabel("✨ You have unlocked the entire story!")
-                complete_lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
-                story_layout.addWidget(complete_lbl)
+            self.story_next_lbl = QtWidgets.QLabel()
+            self.story_next_lbl.setStyleSheet("color: #666;")
+            story_layout.addWidget(self.story_next_lbl)
+            
+            self._update_story_progress_labels()
         
         # Chapter selection
         chapter_bar = QtWidgets.QHBoxLayout()
@@ -2398,25 +2418,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self.chapter_combo = QtWidgets.QComboBox()
         
         if GAMIFICATION_AVAILABLE:
-            from gamification import get_story_progress
-            progress = get_story_progress(self.blocker.adhd_buster)
-            for ch in progress['chapters']:
-                emoji = "✅" if ch["unlocked"] else "🔒"
-                decision_marker = ""
-                if ch.get("has_decision"):
-                    if ch.get("decision_made"):
-                        decision_marker = " ⚡"  # Decision made
-                    elif ch.get("unlocked"):
-                        decision_marker = " ❓"  # Decision pending
-                
-                if ch["unlocked"]:
-                    self.chapter_combo.addItem(
-                        f"{emoji} {ch['title']}{decision_marker}", ch["number"]
-                    )
-                else:
-                    self.chapter_combo.addItem(
-                        f"{emoji} Chapter {ch['number']}: ???", ch["number"]
-                    )
+            self._refresh_story_chapter_list()
         else:
             self.chapter_combo.addItem("Story unavailable", 0)
         
@@ -2633,6 +2635,78 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self._refresh_inventory()
         self._refresh_all_slot_combos()
         self._refresh_character()
+
+    def _on_story_change(self, index: int) -> None:
+        """Handle story selection change."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        story_id = self.story_combo.currentData()
+        if not story_id:
+            return
+        
+        from gamification import select_story, get_selected_story
+        current = get_selected_story(self.blocker.adhd_buster)
+        
+        if story_id != current:
+            # Warn about losing progress
+            reply = QtWidgets.QMessageBox.question(
+                self, "Switch Story?",
+                f"Switching stories will reset your story decisions.\n\n"
+                f"Your power and equipment will be kept.\n\n"
+                f"Are you sure you want to switch?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+            if reply != QtWidgets.QMessageBox.Yes:
+                # Revert combo to current story
+                for i in range(self.story_combo.count()):
+                    if self.story_combo.itemData(i) == current:
+                        self.story_combo.setCurrentIndex(i)
+                        break
+                return
+        
+        select_story(self.blocker.adhd_buster, story_id)
+        self.blocker.save_config()
+        
+        self._update_story_description()
+        self._update_story_progress_labels()
+        self._refresh_story_chapter_list()
+    
+    def _update_story_description(self) -> None:
+        """Update the story description label."""
+        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'story_desc_lbl'):
+            return
+        
+        from gamification import AVAILABLE_STORIES, get_selected_story
+        story_id = get_selected_story(self.blocker.adhd_buster)
+        story_info = AVAILABLE_STORIES.get(story_id, {})
+        self.story_desc_lbl.setText(f"📖 {story_info.get('description', '')}")
+    
+    def _update_story_progress_labels(self) -> None:
+        """Update story progress labels."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        from gamification import get_story_progress
+        progress = get_story_progress(self.blocker.adhd_buster)
+        
+        if hasattr(self, 'story_progress_lbl'):
+            self.story_progress_lbl.setText(
+                f"📖 Chapters Unlocked: {len(progress['unlocked_chapters'])}/{progress['total_chapters']}  |  "
+                f"⚔ Power: {progress['power']}  |  "
+                f"⚡ Decisions: {progress['decisions_made']}/3"
+            )
+        
+        if hasattr(self, 'story_next_lbl'):
+            if progress['next_threshold']:
+                self.story_next_lbl.setText(
+                    f"🔒 Next chapter unlocks at {progress['next_threshold']} power "
+                    f"({progress['power_to_next']} more needed)"
+                )
+                self.story_next_lbl.setStyleSheet("color: #666;")
+            else:
+                self.story_next_lbl.setText("✨ You have unlocked the entire story!")
+                self.story_next_lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
 
     def _read_story_chapter(self) -> None:
         """Open a dialog to read the selected story chapter."""

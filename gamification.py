@@ -798,10 +798,10 @@ def get_power_breakdown(adhd_buster: dict) -> dict:
 
 # ============================================================================
 # STORY SYSTEM - Unlock story chapters as you grow stronger!
-# Branching narrative with 3 key decisions that affect the ending
+# 3 unique stories, each with branching narrative and 8 possible endings
 # ============================================================================
 
-# Power thresholds to unlock each chapter
+# Power thresholds to unlock each chapter (shared by all stories)
 STORY_THRESHOLDS = [
     0,      # Chapter 1: Starting the journey (unlocked from start)
     50,     # Chapter 2: First real progress + DECISION 1
@@ -812,10 +812,35 @@ STORY_THRESHOLDS = [
     1500,   # Chapter 7: The final revelation (8 possible endings!)
 ]
 
-# Decision points - chapters where the user must choose
-STORY_DECISIONS = {
+# Available stories - user picks one to follow
+AVAILABLE_STORIES = {
+    "warrior": {
+        "id": "warrior",
+        "title": "⚔️ The Focus Warrior's Tale",
+        "description": "A classic hero's journey. Battle your inner demons and conquer the fortress of distraction.",
+        "theme": "combat",
+    },
+    "scholar": {
+        "id": "scholar", 
+        "title": "📚 The Mind Architect's Path",
+        "description": "Build the perfect mental fortress. Knowledge and strategy are your weapons.",
+        "theme": "intellect",
+    },
+    "wanderer": {
+        "id": "wanderer",
+        "title": "🌙 The Dream Walker's Journey",
+        "description": "Navigate the surreal dreamscape of your subconscious. Reality bends to your will.",
+        "theme": "mystical",
+    },
+}
+
+# ============================================================================
+# STORY 1: THE FOCUS WARRIOR'S TALE
+# ============================================================================
+
+WARRIOR_DECISIONS = {
     2: {
-        "id": "mirror_choice",
+        "id": "warrior_mirror",
         "prompt": "The Mirror of Procrastination lies shattered. What do you do?",
         "choices": {
             "A": {
@@ -831,7 +856,7 @@ STORY_DECISIONS = {
         },
     },
     4: {
-        "id": "fortress_choice",
+        "id": "warrior_fortress",
         "prompt": "The Fortress of False Comfort has trapped you. How do you escape?",
         "choices": {
             "A": {
@@ -847,7 +872,7 @@ STORY_DECISIONS = {
         },
     },
     6: {
-        "id": "war_choice",
+        "id": "warrior_war",
         "prompt": "The defeated versions of yourself lie before you. What is their fate?",
         "choices": {
             "A": {
@@ -866,8 +891,7 @@ STORY_DECISIONS = {
 
 # The Focus Warrior's Tale - 7 chapters with branching paths
 # Placeholders: {helmet}, {weapon}, {chestplate}, {shield}, {amulet}, {boots}, {gauntlets}, {cloak}
-# Decision placeholders: {decision_1}, {decision_2}, {decision_3}
-STORY_CHAPTERS = [
+WARRIOR_CHAPTERS = [
     {
         "title": "Chapter 1: The Awakening",
         "threshold": 0,
@@ -1396,14 +1420,1087 @@ THE END: The highest victory is realizing there was never a war.
     },
 ]
 
+# ============================================================================
+# STORY 2: THE MIND ARCHITECT'S PATH
+# ============================================================================
+
+SCHOLAR_DECISIONS = {
+    2: {
+        "id": "scholar_library",
+        "prompt": "The Forbidden Library's guardian offers you a choice. What do you seek?",
+        "choices": {
+            "A": {
+                "label": "⚡ The Tome of Instant Mastery",
+                "short": "speed",
+                "description": "Learn everything quickly. Skip the foundations.",
+            },
+            "B": {
+                "label": "📖 The Book of Deep Understanding",
+                "short": "depth",
+                "description": "Master the fundamentals. Build from the ground up.",
+            },
+        },
+    },
+    4: {
+        "id": "scholar_paradox",
+        "prompt": "A logical paradox threatens to collapse your mental fortress. How do you respond?",
+        "choices": {
+            "A": {
+                "label": "🔨 Rebuild From Scratch",
+                "short": "rebuild",
+                "description": "Tear down everything and start fresh.",
+            },
+            "B": {
+                "label": "🧩 Integrate the Paradox",
+                "short": "adapt",
+                "description": "Accept contradiction. Let it become part of the design.",
+            },
+        },
+    },
+    6: {
+        "id": "scholar_truth",
+        "prompt": "You discover the truth: your mental fortress exists only in your imagination. What now?",
+        "choices": {
+            "A": {
+                "label": "🏛️ Make It Real",
+                "short": "materialize",
+                "description": "Build it in reality. Brick by brick.",
+            },
+            "B": {
+                "label": "💭 Embrace the Illusion",
+                "short": "transcend",
+                "description": "The imaginary fortress IS real. Perception is reality.",
+            },
+        },
+    },
+}
+
+SCHOLAR_CHAPTERS = [
+    {
+        "title": "Chapter 1: The Empty Blueprint",
+        "threshold": 0,
+        "has_decision": False,
+        "content": """
+The drafting table before you is vast, covered in failed designs from architects past.
+Each blueprint shows a mind that tried to organize itself—and crumbled.
+
+You pick up the only tool that remains: {weapon}—not for fighting, but for drawing.
+Strange. The architects before you had armies of tools. You have just one.
+
+A whisper in the walls: "They all started with too much. You start with just enough."
+
+Your {helmet} feels heavy with potential. Every thought that passes through it
+is a line you could draw, a room you could build.
+
+The empty blueprint waits. Your mind is the territory. Time to start mapping.
+
+🔮 PLOT TWIST: The failed blueprints all share the same handwriting. Yours.
+""",
+    },
+    {
+        "title": "Chapter 2: The Forbidden Library",
+        "threshold": 50,
+        "has_decision": True,
+        "decision_id": "scholar_library",
+        "content": """
+Your first wing is complete—a modest library containing everything you know.
+But its shelves are mostly empty. Knowledge takes time.
+
+Then you discover a hidden door.
+
+Beyond it: THE FORBIDDEN LIBRARY. Every book ever abandoned by distraction.
+Every thought interrupted. Every project left unfinished.
+
+The guardian appears—a mirror image of yourself wearing {chestplate} made of paper.
+"You may take one book. Choose wisely."
+
+Two tomes glow before you. One promises instant mastery. One promises true understanding.
+Every architect before you chose speed. Their ruins are proof of the outcome.
+
+But time is precious, isn't it? Perhaps you're different. Perhaps speed will work for YOU.
+
+🔮 PLOT TWIST: The guardian is crying. They've watched everyone choose wrong.
+""",
+        "content_after_decision": {
+            "A": """
+⚡ You chose THE TOME OF INSTANT MASTERY.
+
+Knowledge floods your mind. Languages. Skills. Theories. All at once.
+Your blueprint expands wildly—new wings, new towers, new everything!
+
+But already you feel the cracks. The foundation groans.
+Learning without understanding is like building without plans.
+
+"Speed without depth," the guardian sighs. "Let us see if YOU can make it work."
+""",
+            "B": """
+📖 You chose THE BOOK OF DEEP UNDERSTANDING.
+
+The book opens. One page. One concept. One truth that shifts everything.
+You sit and read for what feels like hours, but it's only a single idea.
+
+When you close the book, your blueprint hasn't expanded.
+But every existing line glows with new purpose. You understand WHY.
+
+"The slow path," the guardian smiles. "Perhaps you'll be different."
+""",
+        },
+    },
+    {
+        "title": "Chapter 3: The Growing Structure",
+        "threshold": 120,
+        "has_decision": False,
+        "content_variations": {
+            "A": """
+The tower rises fast—too fast. {weapon} dances across the blueprint,
+adding rooms and corridors at breakneck speed.
+
+Visitors marvel at your progress. So many rooms! So much space!
+But you notice: some doors lead nowhere. Some stairs loop back.
+Speed has its price.
+
+{shield} hangs on a half-finished wall. Pretty, but structurally irrelevant.
+
+The paradox begins to form: you know so much, yet understand so little.
+Your power level hits {current_power}, but the foundation trembles.
+
+🔮 PLOT TWIST: Every room you build vanishes when you stop looking at it.
+""",
+            "B": """
+The structure grows slowly—deliberately. Each room connects to every other.
+Visitors think it's modest. They can't see the depth.
+
+With {weapon} in hand, you add rooms that serve purposes no one else would think of.
+Secret passages between concepts. Elevators that skip floors.
+
+{shield} becomes a load-bearing element. Beautiful AND functional.
+
+Your power level reaches {current_power}. The foundation is solid.
+But you wonder: will you ever catch up to faster builders?
+
+🔮 PLOT TWIST: Your building extends underground—ten floors deep that no one sees.
+""",
+        },
+    },
+    {
+        "title": "Chapter 4: The Paradox Engine",
+        "threshold": 250,
+        "has_decision": True,
+        "decision_id": "scholar_paradox",
+        "content": """
+At power level {current_power}, you uncover something impossible.
+
+A room in your fortress that shouldn't exist.
+It occupies the same space as another room. Both are real. Both are contradictions.
+
+THE PARADOX ENGINE—a machine built from logical impossibilities.
+It powers everything in your fortress... and threatens to destroy it all.
+
+"I am the thought you couldn't think," it hums. "I am the distraction that IS focus."
+
+Your {gauntlets} crackle with conflicting energies. This cannot stand.
+But destroying it might destroy everything you've built.
+
+The choice splits before you: rebuild from nothing, or accept the impossible.
+
+🔮 PLOT TWIST: The Paradox Engine has been here since before you started building.
+""",
+        "content_after_decision": {
+            "A": """
+🔨 You chose to REBUILD FROM SCRATCH.
+
+With {weapon} reversed, you begin the demolition. Every room. Every wall.
+The Paradox Engine screams as its home crumbles.
+
+Days pass. Your fortress is rubble. But the contradiction is gone.
+
+You begin again—slower this time, checking every logic gate.
+Your new foundation is paradox-proof. Nothing impossible can grow here.
+
+The cost: everything you built before. The gain: certainty.
+""",
+            "B": """
+🧩 You chose to INTEGRATE THE PARADOX.
+
+You approach the Engine with {amulet} glowing. "I accept you," you whisper.
+
+The fortress SHIFTS. Rooms fold into each other. Walls become doors.
+What was impossible becomes possible. What was contradictory becomes complementary.
+
+Your {chestplate} now has two hearts. Both beat. Neither should.
+But you are stronger for embracing the impossible.
+
+Some visitors run screaming. Others stand in awe. You just... understand.
+""",
+        },
+    },
+    {
+        "title": "Chapter 5: The Grand Design",
+        "threshold": 450,
+        "has_decision": False,
+        "content_variations": {
+            "AA": """
+The fortress is clean. Logical. Perfect in its simplicity.
+You rebuilt fast after the paradox, and the new structure is PURE.
+
+Visitors admire its efficiency. No contradictions. No confusion.
+Each room serves exactly one purpose. Each corridor leads exactly one place.
+
+Your {boots} echo in empty halls. Echoes returning echoes.
+
+At {current_power} power, you are undeniably strong.
+But sometimes you miss the chaos. The possibility. The... paradox.
+
+🔮 PLOT TWIST: The fortress is so perfect that you find it hard to think inside it.
+""",
+            "AB": """
+Speed and adaptation merged into something unexpected.
+
+Your fortress defies description. Rooms that are fast AND deep.
+Knowledge that is instant AND understood. The paradox didn't destroy—it evolved.
+
+{cloak} shimmers between states—solid and transparent, present and absent.
+
+At {current_power} power, you are unpredictable even to yourself.
+The grand design isn't a blueprint anymore. It's a living thing.
+
+🔮 PLOT TWIST: The fortress completes rooms before you design them.
+""",
+            "BA": """
+Deep understanding met a hard reset. The result: REFINED SIMPLICITY.
+
+Your rebuilt fortress is small but infinite. Each room contains multitudes.
+Visitors see three walls; you see three thousand libraries.
+
+{gauntlets} ache from the work of rebuilding, but every ache taught a lesson.
+
+At {current_power} power, you are modest on the outside, vast within.
+The grand design is minimalist—because true complexity is invisible.
+
+🔮 PLOT TWIST: Your fortress exists entirely inside a single thought.
+""",
+            "BB": """
+Deep understanding embraced the paradox. The result: TRANSCENDENT ARCHITECTURE.
+
+Your fortress follows no rules yet breaks none. It is everything and nothing.
+Visitors leave crying—not from fear, but from understanding they can't articulate.
+
+{amulet} glows with equations that solve themselves.
+
+At {current_power} power, you have stopped designing and started BECOMING.
+The grand design is not a building. It's a state of mind.
+
+🔮 PLOT TWIST: There is no fortress. There never was. YOU are the architecture.
+""",
+        },
+    },
+    {
+        "title": "Chapter 6: The Final Theorem",
+        "threshold": 800,
+        "has_decision": True,
+        "decision_id": "scholar_truth",
+        "content": """
+At {current_power} power, you reach the top floor—THE FINAL THEOREM.
+
+A single equation hangs in the air, incomplete:
+"MIND + ? = MASTERY"
+
+You've tried everything. Knowledge. Speed. Depth. Paradox.
+None of them complete the equation.
+
+Then you realize: the fortress doesn't exist.
+It never existed outside your imagination. Every wall is a thought.
+Every room is a belief. Every visitor was you, from a different angle.
+
+The truth shatters you: YOU BUILT NOTHING REAL.
+
+Or did you? If the imaginary fortress makes you productive, is it not real?
+If the mental architecture improves your life, does it need to be physical?
+
+The final choice: make your dreams concrete, or accept that dreams are enough.
+
+🔮 PLOT TWIST: The equation already has an answer. You're refusing to read it.
+""",
+        "content_after_decision": {
+            "A": """
+🏛️ You chose to MAKE IT REAL.
+
+With trembling hands, you step out of the mental fortress.
+Into the real world. With real tools. Real time. Real constraints.
+
+Your {weapon} becomes actual practice. Your {shield} becomes actual habits.
+Brick by brick, day by day, you BUILD.
+
+The imaginary fortress fades. Something better takes its place: REALITY.
+It's harder. It's slower. It's... actually there.
+""",
+            "B": """
+💭 You chose to EMBRACE THE ILLUSION.
+
+"Why make it real when real is just another illusion?" you whisper.
+
+Your fortress GLOWS. Not physically—but somehow more than physically.
+It exists in the space between thoughts, in the gap between heartbeats.
+
+Every tool becomes symbolic. {helmet} is courage. {boots} are progress.
+The fortress is a story you tell yourself. And stories shape reality.
+
+You are the Mind Architect. And your mind IS the architecture.
+""",
+        },
+    },
+    {
+        "title": "Chapter 7: The Master Blueprint",
+        "threshold": 1500,
+        "has_decision": False,
+        "endings": {
+            "AAA": {
+                "title": "THE ENGINEER",
+                "content": """
+You stand before the Master Blueprint at power level {current_power}.
+EFFICIENCY. REALITY. MATERIALISM.
+
+Speed, rebuilding, and making it real—your path was always about DOING.
+The fortress exists in brick and mortar. You can touch every wall.
+
+📐 THE ENGINEER'S TRUTH:
+Dreams are worthless until they're built. Ideas rot without action.
+You turned thought into thing. You made the abstract concrete.
+
+Your productivity is a MACHINE—predictable, reliable, measurable.
+Others dream of what you've already built.
+
+THE END: The greatest design is one that works.
+"""
+            },
+            "AAB": {
+                "title": "THE PRACTICAL VISIONARY",
+                "content": """
+You stand before the Master Blueprint at power level {current_power}.
+EFFICIENCY. REALITY. TRANSCENDENCE.
+
+Speed and rebuilding made you efficient—but embracing illusion made you FREE.
+Your fortress is a symbol that manifests as needed.
+
+🔮 THE PRACTICAL VISIONARY'S TRUTH:
+You learned to build fast, learned to rebuild from nothing,
+and then learned that building was never the point.
+
+The fortress exists when you need it. Vanishes when you don't.
+You are productive not because of structure, but despite it.
+
+THE END: The best tool is the one you no longer need.
+"""
+            },
+            "ABA": {
+                "title": "THE CHAOS ENGINEER",
+                "content": """
+You stand before the Master Blueprint at power level {current_power}.
+SPEED. PARADOX. MATERIALISM.
+
+You built fast, embraced contradiction, then grounded it all in reality.
+Your fortress SHOULDN'T work. But it does.
+
+⚙️ THE CHAOS ENGINEER'S TRUTH:
+Efficiency through impossibility. Speed through contradiction.
+You made the illogical logical by sheer force of will.
+
+Your productivity is creative destruction—building and breaking at once.
+No one understands your methods. No one needs to.
+
+THE END: The impossible is just the possible in disguise.
+"""
+            },
+            "ABB": {
+                "title": "THE QUANTUM MIND",
+                "content": """
+You stand before the Master Blueprint at power level {current_power}.
+SPEED. PARADOX. TRANSCENDENCE.
+
+Fast, contradictory, and imaginary—your fortress exists in superposition.
+It is and isn't. It works and doesn't. It matters and doesn't matter.
+
+🌀 THE QUANTUM MIND'S TRUTH:
+You stopped fighting contradiction and became it.
+Your fortress is a probability cloud. Every possibility exists until observed.
+
+Your productivity is uncertain—and that uncertainty is your strength.
+You accomplish impossible things by never collapsing the wave function.
+
+THE END: The master observes without measuring.
+"""
+            },
+            "BAA": {
+                "title": "THE FOUNDATION MASTER",
+                "content": """
+You stand before the Master Blueprint at power level {current_power}.
+DEPTH. REBUILDING. MATERIALISM.
+
+Deep understanding, careful rebuilding, and physical manifestation.
+Your fortress is small—but every inch is PERFECT.
+
+🏛️ THE FOUNDATION MASTER'S TRUTH:
+You took the slow path, rebuilt when needed, and made it real.
+Every brick was placed with intention. Every wall was tested.
+
+Your productivity is a cathedral—centuries to build, millennia to admire.
+You will not live to see its completion. That was never the point.
+
+THE END: True masters build what they'll never use.
+"""
+            },
+            "BAB": {
+                "title": "THE INNER SAGE",
+                "content": """
+You stand before the Master Blueprint at power level {current_power}.
+DEPTH. REBUILDING. TRANSCENDENCE.
+
+Deep learning, careful reconstruction, and the embrace of imagination.
+Your fortress is invisible to everyone—even you, sometimes.
+
+📿 THE INNER SAGE'S TRUTH:
+The slow path taught you patience. Rebuilding taught you humility.
+Embracing illusion taught you that inner world IS outer world.
+
+Your productivity appears as nothing. Results appear as if by magic.
+You have stopped trying and started being.
+
+THE END: The sage's greatest work is invisible.
+"""
+            },
+            "BBA": {
+                "title": "THE PARADOX SCHOLAR",
+                "content": """
+You stand before the Master Blueprint at power level {current_power}.
+DEPTH. PARADOX. MATERIALISM.
+
+Deep understanding embraced contradiction and then made it real.
+Your fortress is an oxymoron built in stone.
+
+📖 THE PARADOX SCHOLAR'S TRUTH:
+You learned slowly, accepted the impossible, then proved it possible.
+Your fortress exists specifically because it shouldn't.
+
+Your productivity is academic proof—documenting the impossible.
+Others said it couldn't be done. You said "why not?" and did it.
+
+THE END: Understanding the impossible makes it inevitable.
+"""
+            },
+            "BBB": {
+                "title": "THE UNIFIED MIND",
+                "content": """
+You stand before the Master Blueprint at power level {current_power}.
+DEPTH. PARADOX. TRANSCENDENCE.
+
+Deep understanding, embraced contradiction, transcendent illusion.
+There is no fortress. There is no builder. There is only... THIS.
+
+🕊️ THE UNIFIED MIND'S TRUTH:
+You learned slowly and well.
+You accepted that logic has limits.
+You embraced that imagination is reality.
+
+Now you understand: YOU are the Master Blueprint.
+Every thought is architecture. Every moment is construction.
+There's nothing to build because you're already complete.
+
+The equation solves itself: MIND + ACCEPTANCE = MASTERY.
+
+🎭 THE ARCHITECT WAS ALWAYS THE ARCHITECTURE.
+
+THE END: The unified mind needs no fortress.
+"""
+            },
+        },
+    },
+]
+
+# ============================================================================
+# STORY 3: THE DREAM WALKER'S JOURNEY
+# ============================================================================
+
+WANDERER_DECISIONS = {
+    2: {
+        "id": "wanderer_gate",
+        "prompt": "Two dreamgates appear before you. Which path do you walk?",
+        "choices": {
+            "A": {
+                "label": "🌋 The Gate of Nightmares",
+                "short": "darkness",
+                "description": "Face your fears. Master them.",
+            },
+            "B": {
+                "label": "🌸 The Gate of Sweet Dreams",
+                "short": "light",
+                "description": "Embrace joy. Let it guide you.",
+            },
+        },
+    },
+    4: {
+        "id": "wanderer_memory",
+        "prompt": "A memory you've suppressed surfaces. What do you do with it?",
+        "choices": {
+            "A": {
+                "label": "🔥 Burn It Away",
+                "short": "forget",
+                "description": "Some things are better forgotten.",
+            },
+            "B": {
+                "label": "💎 Crystallize It",
+                "short": "preserve",
+                "description": "Even pain has value. Keep it.",
+            },
+        },
+    },
+    6: {
+        "id": "wanderer_wake",
+        "prompt": "You can finally wake up. But waking means leaving the dreamworld forever.",
+        "choices": {
+            "A": {
+                "label": "☀️ Wake Up",
+                "short": "awaken",
+                "description": "Return to reality. Leave dreams behind.",
+            },
+            "B": {
+                "label": "🌙 Stay Dreaming",
+                "short": "remain",
+                "description": "This is your home now. Why leave?",
+            },
+        },
+    },
+}
+
+WANDERER_CHAPTERS = [
+    {
+        "title": "Chapter 1: The First Dream",
+        "threshold": 0,
+        "has_decision": False,
+        "content": """
+You don't remember falling asleep.
+But here you are—standing in a landscape that shifts like water.
+
+Mountains breathe. Rivers flow upward. The sky is full of eyes.
+This is the DREAMSCAPE. Your subconscious made visible.
+
+Around you, fragments of thoughts take shape and dissolve.
+A distraction becomes a buzzing insect. A worry becomes a storm cloud.
+
+You find {helmet} growing from a thought-tree. It fits perfectly.
+Of course it does. You dreamed it for yourself.
+
+A whisper that might be wind: "Walk carefully, dreamer.
+What you focus on here becomes real. What you ignore... fades."
+
+Your power is {current_power}. Your journey is just beginning.
+
+🔮 PLOT TWIST: You've been here before. You just don't remember.
+""",
+    },
+    {
+        "title": "Chapter 2: The Twin Gates",
+        "threshold": 50,
+        "has_decision": True,
+        "decision_id": "wanderer_gate",
+        "content": """
+The dreamscape shifts and you stand before THE CROSSROADS.
+
+Two massive gates pulse with energy—one dark, one bright.
+Each leads deeper into the subconscious. Each promises power.
+
+THE GATE OF NIGHTMARES: Behind it, your fears writhe and wait.
+They hate you. They want to consume you. They are also... part of you.
+
+THE GATE OF SWEET DREAMS: Behind it, your joys dance and sing.
+They love you. They want to embrace you. But can joy make you strong?
+
+Your {weapon} hums in your hand. It will work in either realm.
+Your {chestplate} glows with anticipation. Which color will it become?
+
+Other dreamwalkers have come here. Most chose comfort.
+The few who chose fear... well, some of them came back.
+
+🔮 PLOT TWIST: Both gates lead to the same place. The path changes you, not the destination.
+""",
+        "content_after_decision": {
+            "A": """
+🌋 You chose THE GATE OF NIGHTMARES.
+
+The darkness swallows you whole. For a moment, there is only terror.
+Then you remember: this is YOUR mind. These fears serve YOU.
+
+The nightmares sense your determination. They bow.
+Not defeated—acknowledged. You are their master now.
+
+Your {weapon} darkens. Your {shield} grows spikes.
+You will walk in darkness, but the darkness will walk WITH you.
+""",
+            "B": """
+🌸 You chose THE GATE OF SWEET DREAMS.
+
+Light envelops you like a warm embrace. Every happy memory surfaces.
+Every moment of pure joy becomes tangible, walkable, liveable.
+
+The sweet dreams sense your openness. They dance around you.
+Not serving—celebrating. You are their honored guest.
+
+Your {weapon} brightens. Your {shield} becomes soft but strong.
+You will walk in light, and the light will guide your way.
+""",
+        },
+    },
+    {
+        "title": "Chapter 3: The Deeper Dream",
+        "threshold": 120,
+        "has_decision": False,
+        "content_variations": {
+            "A": """
+The nightmare realm embraces you like an old friend.
+
+Here, every fear has a face. Every anxiety takes form.
+The Monster of Missed Deadlines. The Beast of Broken Promises.
+The Specter of Scroll Addiction. They all know your name.
+
+But you're not afraid anymore. {gauntlets} crackling with dark energy,
+you walk among them. They part before you like shadows before flame.
+
+At {current_power} power, you've learned: fear is just focus misapplied.
+Redirect that intensity, and terror becomes determination.
+
+Your {amulet} pulses with nightmare-light. Beautiful in its darkness.
+
+🔮 PLOT TWIST: The monsters are afraid of YOU now. They should be.
+""",
+            "B": """
+The dream-garden welcomes you with open arms.
+
+Here, every joy has a song. Every pleasure takes form.
+The Sprite of Small Victories. The Angel of Afternoon Rest.
+The Phoenix of Perfect Focus. They all sing your name.
+
+You dance with them. {gauntlets} glowing with pure light,
+you create new dreams just by imagining them.
+
+At {current_power} power, you've learned: joy is focus made visible.
+When you love what you do, concentration is effortless.
+
+Your {amulet} pulses with dream-light. Warm and inviting.
+
+🔮 PLOT TWIST: The dream-creatures are protecting you from something. But what?
+""",
+        },
+    },
+    {
+        "title": "Chapter 4: The Buried Memory",
+        "threshold": 250,
+        "has_decision": True,
+        "decision_id": "wanderer_memory",
+        "content": """
+At {current_power} power, you stumble upon THE VAULT.
+
+A place you've been avoiding. A door you've been pretending doesn't exist.
+Behind it: a memory so powerful you buried it in the deepest dream.
+
+The door opens without you touching it. You've become strong enough to face this.
+
+The memory surfaces: THE MOMENT YOU GAVE UP.
+A day. A failure. A decision that "this isn't worth trying anymore."
+The birth of every procrastination, every distraction, every escape.
+
+It hurts. Oh, how it hurts to remember.
+You see your younger self, crushed by disappointment.
+You see the exact moment hope died—and something else was born.
+
+Your {boots} sink into the memory-floor. You're stuck here until you decide.
+Burn this moment away? Or crystallize it forever?
+
+🔮 PLOT TWIST: The memory isn't yours. It's EVERYONE'S. We all have this moment.
+""",
+        "content_after_decision": {
+            "A": """
+🔥 You chose to BURN IT AWAY.
+
+Fire erupts from your {weapon}. The memory screams as it burns.
+Every detail, every emotion, every lesson—gone in cleansing flame.
+
+You feel... lighter. The weight of that moment dissolves.
+But somewhere, somehow, you also feel... smaller.
+
+The vault is empty now. The pain is gone.
+But what else disappeared with it?
+
+"Some wounds need to heal," you tell yourself. "Not fester."
+""",
+            "B": """
+💎 You chose to CRYSTALLIZE IT.
+
+The memory solidifies, becomes a diamond in your hand.
+Every facet shows a different angle of that painful moment.
+
+You feel... heavier. But also stronger. Wiser.
+Pain crystallized becomes wisdom. Wounds become armor.
+
+The vault now contains a treasure. YOUR treasure.
+Others would run from this. You carry it as a badge of honor.
+
+"I survived this," you whisper to the diamond. "It made me who I am."
+""",
+        },
+    },
+    {
+        "title": "Chapter 5: The Dream Logic",
+        "threshold": 450,
+        "has_decision": False,
+        "content_variations": {
+            "AA": """
+Darkness. Emptiness. But also: purity.
+
+You burned your fears. You burned your pain. What's left?
+Just you. {helmet} glowing in the void. {weapon} ready for nothing.
+
+At {current_power} power, you've learned to let go completely.
+The dreamscape is clean. Your mind is a blank canvas.
+
+But blank canvases don't paint themselves.
+You realize: you've erased so much, you might have erased too much.
+
+🔮 PLOT TWIST: In the emptiness, something new is growing. Something YOU.
+""",
+            "AB": """
+Darkness embraced, pain preserved.
+
+Your nightmare mastery combined with crystallized memory
+creates something new: FORGED STRENGTH.
+
+At {current_power} power, your {shield} is made of solidified suffering.
+Every monster knows you. Every fear respects you.
+And you carry the diamond of that worst moment as proof of survival.
+
+The dreamscape fears you AND honors you.
+
+🔮 PLOT TWIST: Other dreamwalkers seek you out. They want to learn your dark wisdom.
+""",
+            "BA": """
+Light embraced, pain released.
+
+Your joyful path combined with burned memory
+creates something new: PURE PRESENCE.
+
+At {current_power} power, you live entirely in the NOW.
+No past weighing you down. No fear darkening your path.
+Just endless, beautiful, present moment.
+
+Your {cloak} flows with golden light. You are a beacon.
+
+🔮 PLOT TWIST: You can't remember why you came here. Does it matter?
+""",
+            "BB": """
+Light embraced, pain preserved.
+
+Your joyful path combined with crystallized memory
+creates something new: COMPASSIONATE WISDOM.
+
+At {current_power} power, you carry joy AND sorrow in perfect balance.
+The diamond in your hand reminds you of darkness.
+The light in your heart reminds you of beauty.
+
+Your {amulet} holds both—a star and a shadow, dancing.
+
+🔮 PLOT TWIST: You can heal other dreamwalkers now. Their pain recognizes yours.
+""",
+        },
+    },
+    {
+        "title": "Chapter 6: The Final Door",
+        "threshold": 800,
+        "has_decision": True,
+        "decision_id": "wanderer_wake",
+        "content": """
+At {current_power} power, you find THE FINAL DOOR.
+
+It's different from all the others. Through it, you see... reality.
+The waking world. Sunlight. Clocks. Responsibilities.
+Everything you came here to escape.
+
+A guardian made of pure dream-stuff blocks your way.
+"You've walked far, dreamwalker. Farther than most.
+Now you must choose: wake up or stay dreaming?"
+
+Your {boots} are planted in dream-soil you've grown to love.
+Your {helmet} has become more real than your real head.
+Your {weapon} has defeated more nightmares than you can count.
+
+Out there, in the waking world, none of this exists.
+You'll be just... you. Without magic. Without power. Without dreams.
+
+But out there, things are REAL. They last. They matter.
+Don't they?
+
+🔮 PLOT TWIST: The guardian is you. The door is you. The choice was always you.
+""",
+        "content_after_decision": {
+            "A": """
+☀️ You chose to WAKE UP.
+
+The door opens. Light floods in—not dream-light, REAL light.
+You feel your dream-body dissolving, returning to imagination.
+
+But you're not sad. Dreams were never meant to be forever.
+They were meant to teach you how to live when you wake.
+
+{helmet} fades. {weapon} becomes memory. {shield} becomes confidence.
+The power you gathered here doesn't disappear—it transforms.
+
+You open your real eyes. The world is waiting.
+""",
+            "B": """
+🌙 You chose to STAY DREAMING.
+
+The door closes. The guardian smiles—and joins you.
+"Welcome home, dreamwalker. Welcome to forever."
+
+The waking world fades like a forgotten nightmare.
+Why wake up when you can dream forever?
+
+{helmet} becomes part of your skull. {weapon} becomes your arm.
+You are no longer a visitor in the dreamscape. You are its CITIZEN.
+
+The dream continues. Endlessly. Beautifully. Yours.
+""",
+        },
+    },
+    {
+        "title": "Chapter 7: The Dreamer's Truth",
+        "threshold": 1500,
+        "has_decision": False,
+        "endings": {
+            "AAA": {
+                "title": "THE VOID WALKER",
+                "content": """
+You stand at the end of all dreams at power level {current_power}.
+DARKNESS. EMPTINESS. AWAKENING.
+
+You faced nightmares, burned your pain, and woke up.
+There's nothing left in the dreamscape—because you needed nothing from it.
+
+🖤 THE VOID WALKER'S TRUTH:
+You entered the dream to conquer it. You conquered it by leaving.
+Every fear faced, every pain released, every dream abandoned.
+
+In the waking world, you are fearless. Painless. Free.
+Others see your empty eyes and wonder what you've seen.
+You don't tell them. They wouldn't understand.
+
+THE END: The greatest dream is dreamless sleep.
+"""
+            },
+            "AAB": {
+                "title": "THE SHADOW DREAMER",
+                "content": """
+You stand at the end of all dreams at power level {current_power}.
+DARKNESS. EMPTINESS. ETERNAL DREAMING.
+
+You faced nightmares, burned your pain, and chose to stay.
+The void became your home. The emptiness became your canvas.
+
+🌑 THE SHADOW DREAMER'S TRUTH:
+You created a new dreamscape from nothing—pure darkness made beautiful.
+Other dreamwalkers visit your realm and find it terrifying... and peaceful.
+
+You are the keeper of the void. The master of nothing.
+In your emptiness, everything is possible.
+
+THE END: The empty dream contains all dreams.
+"""
+            },
+            "ABA": {
+                "title": "THE DARK SAGE",
+                "content": """
+You stand at the end of all dreams at power level {current_power}.
+DARKNESS. MEMORY. AWAKENING.
+
+You faced nightmares, preserved your pain, and woke up.
+The diamond of suffering came with you—transmuted into wisdom.
+
+🔮 THE DARK SAGE'S TRUTH:
+You walked through darkness and emerged with truth.
+The memory you crystallized became a teaching—for yourself and others.
+
+In the waking world, you help others face their fears.
+Your darkness became light for those still lost.
+
+THE END: Pain remembered is pain repurposed.
+"""
+            },
+            "ABB": {
+                "title": "THE NIGHTMARE KING",
+                "content": """
+You stand at the end of all dreams at power level {current_power}.
+DARKNESS. MEMORY. ETERNAL DREAMING.
+
+You faced nightmares, preserved your pain, and made them your kingdom.
+The dreamscape bows to you—every fear, every shadow, every buried memory.
+
+👑 THE NIGHTMARE KING'S TRUTH:
+You didn't defeat your darkness. You BECAME it.
+Every nightmare in every dreamer's mind knows your name.
+
+But you're not cruel. You're the guardian of necessary fears.
+Without you, no one would ever grow.
+
+THE END: The king of nightmares serves the dreamer's growth.
+"""
+            },
+            "BAA": {
+                "title": "THE LIGHT BEARER",
+                "content": """
+You stand at the end of all dreams at power level {current_power}.
+LIGHT. EMPTINESS. AWAKENING.
+
+You chose joy, released your pain, and woke up.
+The light followed you into the waking world—a permanent inner glow.
+
+☀️ THE LIGHT BEARER'S TRUTH:
+You found joy in dreams and brought it to reality.
+Every moment shines now. Every task is playful.
+
+People wonder why you're always smiling.
+You don't tell them about the dream-garden in your heart.
+
+THE END: Joy carried home is joy multiplied.
+"""
+            },
+            "BAB": {
+                "title": "THE ETERNAL CHILD",
+                "content": """
+You stand at the end of all dreams at power level {current_power}.
+LIGHT. EMPTINESS. ETERNAL DREAMING.
+
+You chose joy, released your pain, and stayed in paradise.
+Why would anyone leave a place this beautiful?
+
+🌈 THE ETERNAL CHILD'S TRUTH:
+You found the secret: pure joy, forever, without consequence.
+The dream-garden grows endless delights for you.
+
+Is it real? Does it matter?
+You're happy. Eternally, perfectly, innocently happy.
+
+THE END: The eternal child never has to grow up.
+"""
+            },
+            "BBA": {
+                "title": "THE COMPASSIONATE AWAKENER",
+                "content": """
+You stand at the end of all dreams at power level {current_power}.
+LIGHT. MEMORY. AWAKENING.
+
+You chose joy, preserved your pain, and brought both back.
+In the waking world, you are whole—light and shadow balanced.
+
+💚 THE COMPASSIONATE AWAKENER'S TRUTH:
+You wake others gently. Your joy inspires, your scar-diamond teaches.
+"Yes, it hurts," you tell them. "And yes, it's worth it."
+
+You are proof that pain and joy can coexist.
+That remembering suffering doesn't prevent happiness.
+
+THE END: The awakener carries both worlds in one heart.
+"""
+            },
+            "BBB": {
+                "title": "THE DREAM WEAVER",
+                "content": """
+You stand at the end of all dreams at power level {current_power}.
+LIGHT. MEMORY. ETERNAL DREAMING.
+
+You chose joy, preserved your pain, and became one with the dreamscape.
+Not its prisoner. Not its master. Its PARTNER.
+
+✨ THE DREAM WEAVER'S TRUTH:
+You weave new dreams for other dreamwalkers now.
+Every nightmare they face is tempered by your compassion.
+Every joy they find is enriched by your understanding.
+
+You are the dreamscape's heart. It grows through you.
+And in growing, it helps everyone who sleeps.
+
+🎭 THE DREAMER WAS ALWAYS THE DREAM.
+THE DREAM WAS ALWAYS THE DREAMER.
+
+THE END: The greatest dream is the dream that dreams others.
+"""
+            },
+        },
+    },
+]
+
+# ============================================================================
+# UNIFIED STORY DATA
+# ============================================================================
+
+# Map story IDs to their data
+STORY_DATA = {
+    "warrior": {
+        "decisions": WARRIOR_DECISIONS,
+        "chapters": WARRIOR_CHAPTERS,
+    },
+    "scholar": {
+        "decisions": SCHOLAR_DECISIONS,
+        "chapters": SCHOLAR_CHAPTERS,
+    },
+    "wanderer": {
+        "decisions": WANDERER_DECISIONS,
+        "chapters": WANDERER_CHAPTERS,
+    },
+}
+
+# Legacy compatibility - default to warrior story
+STORY_DECISIONS = WARRIOR_DECISIONS
+STORY_CHAPTERS = WARRIOR_CHAPTERS
+
+
+def get_selected_story(adhd_buster: dict) -> str:
+    """Get the currently selected story ID. Defaults to 'warrior'."""
+    return adhd_buster.get("selected_story", "warrior")
+
+
+def select_story(adhd_buster: dict, story_id: str) -> bool:
+    """
+    Select a story to follow. Clears decisions if switching stories.
+    Returns True if successful.
+    """
+    if story_id not in AVAILABLE_STORIES:
+        return False
+    
+    current_story = adhd_buster.get("selected_story")
+    if current_story != story_id:
+        # Switching stories - clear previous story decisions
+        adhd_buster["story_decisions"] = {}
+    
+    adhd_buster["selected_story"] = story_id
+    return True
+
+
+def get_story_data(adhd_buster: dict) -> tuple:
+    """Get the decisions and chapters for the user's selected story."""
+    story_id = get_selected_story(adhd_buster)
+    data = STORY_DATA.get(story_id, STORY_DATA["warrior"])
+    return data["decisions"], data["chapters"]
+
 
 def get_story_progress(adhd_buster: dict) -> dict:
     """
     Get the user's story progress based on their power level.
     
     Returns:
-        dict with 'current_chapter', 'unlocked_chapters', 'chapters', 'next_threshold', 'power', 'decisions'
+        dict with 'current_chapter', 'unlocked_chapters', 'chapters', 'next_threshold', 
+        'power', 'decisions', 'selected_story', 'story_info'
     """
+    story_decisions, story_chapters = get_story_data(adhd_buster)
+    story_id = get_selected_story(adhd_buster)
+    story_info = AVAILABLE_STORIES.get(story_id, AVAILABLE_STORIES["warrior"])
+    
     power = calculate_character_power(adhd_buster)
     unlocked = []
     current_chapter = 0
@@ -1425,13 +2522,13 @@ def get_story_progress(adhd_buster: dict) -> dict:
     
     # Build chapter details
     chapters = []
-    for i, chapter in enumerate(STORY_CHAPTERS):
+    for i, chapter in enumerate(story_chapters):
         chapter_num = i + 1
         is_unlocked = chapter_num in unlocked
         has_decision = chapter.get("has_decision", False)
         decision_made = False
         if has_decision:
-            decision_info = STORY_DECISIONS.get(chapter_num)
+            decision_info = story_decisions.get(chapter_num)
             if decision_info:
                 decision_made = decision_info["id"] in decisions
         
@@ -1448,23 +2545,30 @@ def get_story_progress(adhd_buster: dict) -> dict:
         "current_chapter": current_chapter,
         "unlocked_chapters": unlocked,
         "chapters": chapters,
-        "total_chapters": len(STORY_CHAPTERS),
+        "total_chapters": len(story_chapters),
         "next_threshold": next_threshold,
         "power_to_next": next_threshold - power if next_threshold else 0,
         "decisions": decisions,
         "decisions_made": len(decisions),
+        "selected_story": story_id,
+        "story_info": story_info,
     }
 
 
-def get_decision_for_chapter(chapter_number: int) -> dict | None:
+def get_decision_for_chapter(chapter_number: int, adhd_buster: dict = None) -> dict | None:
     """Get the decision info for a chapter, if it has one."""
-    return STORY_DECISIONS.get(chapter_number)
+    if adhd_buster:
+        story_decisions, _ = get_story_data(adhd_buster)
+    else:
+        story_decisions = STORY_DECISIONS
+    return story_decisions.get(chapter_number)
 
 
 def has_made_decision(adhd_buster: dict, chapter_number: int) -> bool:
     """Check if user has made the decision for a chapter."""
     decisions = adhd_buster.get("story_decisions", {})
-    decision_info = STORY_DECISIONS.get(chapter_number)
+    story_decisions, _ = get_story_data(adhd_buster)
+    decision_info = story_decisions.get(chapter_number)
     if not decision_info:
         return True  # No decision needed
     return decision_info["id"] in decisions
@@ -1479,7 +2583,8 @@ def make_story_decision(adhd_buster: dict, chapter_number: int, choice: str) -> 
         chapter_number: The chapter where the decision is made
         choice: "A" or "B"
     """
-    decision_info = STORY_DECISIONS.get(chapter_number)
+    story_decisions, _ = get_story_data(adhd_buster)
+    decision_info = story_decisions.get(chapter_number)
     if not decision_info:
         return False
     if choice not in ("A", "B"):
@@ -1497,11 +2602,12 @@ def get_decision_path(adhd_buster: dict) -> str:
     Get the user's decision path as a string like "ABA" or "BB" (partial).
     Used to select the right story variation.
     """
+    story_decisions, _ = get_story_data(adhd_buster)
     decisions = adhd_buster.get("story_decisions", {})
     path = ""
     
     for chapter_num in [2, 4, 6]:
-        decision_info = STORY_DECISIONS.get(chapter_num)
+        decision_info = story_decisions.get(chapter_num)
         if decision_info and decision_info["id"] in decisions:
             path += decisions[decision_info["id"]]
     
@@ -1519,10 +2625,12 @@ def get_chapter_content(chapter_number: int, adhd_buster: dict) -> dict | None:
     Returns:
         dict with 'title', 'content', 'unlocked', 'has_decision', 'decision', etc.
     """
-    if chapter_number < 1 or chapter_number > len(STORY_CHAPTERS):
+    story_decisions, story_chapters = get_story_data(adhd_buster)
+    
+    if chapter_number < 1 or chapter_number > len(story_chapters):
         return None
     
-    chapter = STORY_CHAPTERS[chapter_number - 1]
+    chapter = story_chapters[chapter_number - 1]
     power = calculate_character_power(adhd_buster)
     unlocked = power >= chapter["threshold"]
     
@@ -1564,7 +2672,7 @@ def get_chapter_content(chapter_number: int, adhd_buster: dict) -> dict | None:
     
     # Determine content based on chapter type
     has_decision = chapter.get("has_decision", False)
-    decision_info = STORY_DECISIONS.get(chapter_number)
+    decision_info = story_decisions.get(chapter_number)
     decision_made = has_made_decision(adhd_buster, chapter_number)
     
     # Chapter 7 has multiple endings based on all 3 decisions
