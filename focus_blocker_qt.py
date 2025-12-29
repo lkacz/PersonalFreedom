@@ -1,7 +1,7 @@
 import sys
 import random
 import platform
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from datetime import datetime
 
 # Hide console window on Windows
@@ -14,7 +14,28 @@ if platform.system() == "Windows":
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from core_logic import BlockerCore, BlockMode, SITE_CATEGORIES, AI_AVAILABLE, LOCAL_AI_AVAILABLE
+from core_logic import (
+    BlockerCore,
+    BlockMode,
+    SITE_CATEGORIES,
+    AI_AVAILABLE,
+    LOCAL_AI_AVAILABLE,
+    GOALS_PATH,
+    STATS_PATH,
+)
+
+# AI helpers (guarded for optional dependency)
+if AI_AVAILABLE:
+    try:
+        from productivity_ai import ProductivityAnalyzer, GamificationEngine, FocusGoals
+    except Exception:  # pragma: no cover - runtime guard
+        ProductivityAnalyzer = None  # type: ignore
+        GamificationEngine = None  # type: ignore
+        FocusGoals = None  # type: ignore
+else:
+    ProductivityAnalyzer = None  # type: ignore
+    GamificationEngine = None  # type: ignore
+    FocusGoals = None  # type: ignore
 
 # Local AI for session analysis
 if LOCAL_AI_AVAILABLE:
@@ -541,6 +562,10 @@ class SitesTab(QtWidgets.QWidget):
     def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
         self.blocker = blocker
+        self.analyzer = ProductivityAnalyzer(STATS_PATH) if ProductivityAnalyzer else None
+        self.gamification = GamificationEngine(STATS_PATH) if GamificationEngine else None
+        self.focus_goals = FocusGoals(GOALS_PATH, STATS_PATH) if FocusGoals else None
+        self.local_ai = LocalAI() if LOCAL_AI_AVAILABLE else None
         self._build_ui()
         self._refresh_lists()
 
@@ -842,6 +867,46 @@ class StatsTab(QtWidgets.QWidget):
         overview_layout.addWidget(self.best_streak_lbl, 3, 1)
         inner.addWidget(overview_group)
 
+        # Focus goals dashboard (weekly/monthly targets)
+        goals_group = QtWidgets.QGroupBox("🎯 Focus Goals Dashboard")
+        goals_layout = QtWidgets.QVBoxLayout(goals_group)
+
+        # Weekly goal
+        weekly_row = QtWidgets.QHBoxLayout()
+        weekly_row.addWidget(QtWidgets.QLabel("Weekly Goal:"))
+        self.weekly_bar = QtWidgets.QProgressBar()
+        self.weekly_bar.setMaximum(100)
+        self.weekly_bar.setTextVisible(True)
+        weekly_row.addWidget(self.weekly_bar, stretch=1)
+        self.weekly_target = QtWidgets.QDoubleSpinBox()
+        self.weekly_target.setRange(1, 200)
+        self.weekly_target.setSuffix(" h")
+        self.weekly_target.setValue(float(self.blocker.stats.get("weekly_goal_hours", 10)))
+        weekly_set = QtWidgets.QPushButton("Set")
+        weekly_set.clicked.connect(self._set_weekly_goal)
+        weekly_row.addWidget(self.weekly_target)
+        weekly_row.addWidget(weekly_set)
+        goals_layout.addLayout(weekly_row)
+
+        # Monthly goal
+        monthly_row = QtWidgets.QHBoxLayout()
+        monthly_row.addWidget(QtWidgets.QLabel("Monthly Goal:"))
+        self.monthly_bar = QtWidgets.QProgressBar()
+        self.monthly_bar.setMaximum(100)
+        self.monthly_bar.setTextVisible(True)
+        monthly_row.addWidget(self.monthly_bar, stretch=1)
+        self.monthly_target = QtWidgets.QDoubleSpinBox()
+        self.monthly_target.setRange(1, 1000)
+        self.monthly_target.setSuffix(" h")
+        self.monthly_target.setValue(float(self.blocker.stats.get("monthly_goal_hours", 40)))
+        monthly_set = QtWidgets.QPushButton("Set")
+        monthly_set.clicked.connect(self._set_monthly_goal)
+        monthly_row.addWidget(self.monthly_target)
+        monthly_row.addWidget(monthly_set)
+        goals_layout.addLayout(monthly_row)
+
+        inner.addWidget(goals_group)
+
         # Weekly chart (text-based)
         week_group = QtWidgets.QGroupBox("📈 This Week")
         week_layout = QtWidgets.QVBoxLayout(week_group)
@@ -869,6 +934,20 @@ class StatsTab(QtWidgets.QWidget):
         self.streak_lbl.setText(f"{stats['current_streak']} days")
         self.best_streak_lbl.setText(f"{stats['best_streak']} days")
 
+        # Goals progress
+        weekly_target = float(self.blocker.stats.get("weekly_goal_hours", 10))
+        monthly_target = float(self.blocker.stats.get("monthly_goal_hours", 40))
+        weekly_minutes = self._sum_focus_minutes(7)
+        monthly_minutes = self._sum_focus_minutes(30)
+
+        weekly_pct = 0 if weekly_target <= 0 else min(100, int((weekly_minutes / 60) / weekly_target * 100))
+        monthly_pct = 0 if monthly_target <= 0 else min(100, int((monthly_minutes / 60) / monthly_target * 100))
+
+        self.weekly_bar.setFormat(f"{weekly_minutes/60:.1f}h / {weekly_target:.0f}h ({weekly_pct}%)")
+        self.weekly_bar.setValue(weekly_pct)
+        self.monthly_bar.setFormat(f"{monthly_minutes/60:.1f}h / {monthly_target:.0f}h ({monthly_pct}%)")
+        self.monthly_bar.setValue(monthly_pct)
+
         # Weekly chart
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         today = datetime.now()
@@ -891,6 +970,27 @@ class StatsTab(QtWidgets.QWidget):
         total_week = sum(t for _, t in week_data)
         lines.append(f"\n  Total: {total_week} min ({total_week // 60}h {total_week % 60}m)")
         self.week_text.setPlainText("\n".join(lines))
+
+    def _sum_focus_minutes(self, days_back: int) -> int:
+        from datetime import datetime, timedelta
+
+        total = 0
+        today = datetime.now()
+        for i in range(days_back):
+            date_str = (today - timedelta(days=i)).strftime("%Y-%m-%d")
+            daily = self.blocker.stats.get("daily_stats", {}).get(date_str, {})
+            total += daily.get("focus_time", 0) // 60
+        return total
+
+    def _set_weekly_goal(self) -> None:
+        self.blocker.stats["weekly_goal_hours"] = float(self.weekly_target.value())
+        self.blocker.save_stats()
+        self.refresh()
+
+    def _set_monthly_goal(self) -> None:
+        self.blocker.stats["monthly_goal_hours"] = float(self.monthly_target.value())
+        self.blocker.save_stats()
+        self.refresh()
 
     def _reset_stats(self) -> None:
         if QtWidgets.QMessageBox.question(self, "Reset Stats", "Reset all statistics?") == QtWidgets.QMessageBox.Yes:
@@ -1153,7 +1253,7 @@ class AITab(QtWidgets.QWidget):
         achievements_group = QtWidgets.QGroupBox("🏆 Achievements")
         achievements_layout = QtWidgets.QVBoxLayout(achievements_group)
         self.achievements_list = QtWidgets.QListWidget()
-        self.achievements_list.setMaximumHeight(150)
+        self.achievements_list.setMaximumHeight(200)
         achievements_layout.addWidget(self.achievements_list)
         inner.addWidget(achievements_group)
 
@@ -1162,6 +1262,9 @@ class AITab(QtWidgets.QWidget):
         challenge_layout = QtWidgets.QVBoxLayout(challenge_group)
         self.challenge_label = QtWidgets.QLabel()
         challenge_layout.addWidget(self.challenge_label)
+        self.challenge_progress = QtWidgets.QProgressBar()
+        self.challenge_progress.setMaximum(100)
+        challenge_layout.addWidget(self.challenge_progress)
         new_challenge_btn = QtWidgets.QPushButton("🎲 New Challenge")
         new_challenge_btn.clicked.connect(self._new_challenge)
         challenge_layout.addWidget(new_challenge_btn)
@@ -1184,6 +1287,31 @@ class AITab(QtWidgets.QWidget):
         goals_layout.addLayout(goals_btn_layout)
         inner.addWidget(goals_group)
 
+        # AI-powered statistics
+        stats_group = QtWidgets.QGroupBox("📈 AI-Powered Statistics")
+        stats_layout = QtWidgets.QVBoxLayout(stats_group)
+        self.ai_stats_text = QtWidgets.QTextEdit()
+        self.ai_stats_text.setReadOnly(True)
+        self.ai_stats_text.setMaximumHeight(180)
+        stats_layout.addWidget(self.ai_stats_text)
+        inner.addWidget(stats_group)
+
+        # GPU AI insights
+        if LOCAL_AI_AVAILABLE:
+            gpu_group = QtWidgets.QGroupBox("🚀 GPU AI Insights")
+            gpu_layout = QtWidgets.QVBoxLayout(gpu_group)
+            self.gpu_status_label = QtWidgets.QLabel()
+            gpu_layout.addWidget(self.gpu_status_label)
+            self.triggers_text = QtWidgets.QTextEdit()
+            self.triggers_text.setReadOnly(True)
+            self.triggers_text.setMaximumHeight(120)
+            gpu_layout.addWidget(self.triggers_text)
+            self.mood_text = QtWidgets.QTextEdit()
+            self.mood_text.setReadOnly(True)
+            self.mood_text.setMaximumHeight(80)
+            gpu_layout.addWidget(self.mood_text)
+            inner.addWidget(gpu_group)
+
         inner.addStretch()
         scroll.setWidget(container)
         layout.addWidget(scroll)
@@ -1193,30 +1321,115 @@ class AITab(QtWidgets.QWidget):
     def _refresh_data(self) -> None:
         # Achievements
         self.achievements_list.clear()
-        achievements = self.blocker.stats.get("achievements", [])
-        if achievements:
-            for ach in achievements:
-                self.achievements_list.addItem(f"🏅 {ach}")
+        if self.gamification:
+            progress = self.gamification.check_achievements()
+            achievements_def = self.gamification.get_achievements()
+            for ach_id, data in achievements_def.items():
+                prog = progress.get(ach_id, {"current": 0, "target": 1, "unlocked": False})
+                pct = min(100, int((prog["current"] / prog["target"]) * 100)) if prog["target"] else 0
+                status = "✅" if prog.get("unlocked") else f"{pct}%"
+                self.achievements_list.addItem(f"{data['icon']} {data['name']} — {status} ({prog['current']}/{prog['target']})")
         else:
-            self.achievements_list.addItem("No achievements yet - start focusing!")
+            self.achievements_list.addItem("AI module not installed; install requirements_ai.txt to unlock achievements.")
 
         # Challenge
-        challenge = self.blocker.stats.get("daily_challenge", "")
-        if challenge:
-            self.challenge_label.setText(f"Today's challenge: {challenge}")
+        if self.gamification:
+            challenge = self.gamification.get_daily_challenge()
+            current = challenge.get("progress", {}).get("current", 0)
+            target = challenge.get("progress", {}).get("target", 1)
+            pct = min(100, int((current / target) * 100)) if target else 0
+            self.challenge_label.setText(f"{challenge.get('title', 'Daily Challenge')}: {challenge.get('description', '')}")
+            self.challenge_progress.setValue(pct)
+            self.challenge_progress.setFormat(f"{current}/{target} ({pct}%)")
         else:
-            self.challenge_label.setText("Click 'New Challenge' to get started!")
+            self.challenge_label.setText("Install AI dependencies to enable challenges.")
+            self.challenge_progress.setValue(0)
 
         # Goals
         self.goals_list.clear()
         goals = self.blocker.stats.get("goals", [])
         for goal in goals:
             self.goals_list.addItem(f"📌 {goal}")
+        if self.focus_goals:
+            try:
+                self.focus_goals.update_progress()
+                for goal in self.focus_goals.get_active_goals():
+                    pct = 0
+                    target = goal.get("target", 1)
+                    progress_val = goal.get("progress", 0)
+                    pct = min(100, int((progress_val / target) * 100)) if target else 0
+                    self.goals_list.addItem(
+                        f"🎯 {goal.get('title', 'Goal')} — {pct}% ({progress_val/3600:.1f}h/{target/3600:.1f}h)"
+                    )
+            except Exception:
+                pass
+
+        # AI stats
+        stats_lines: List[str] = []
+        if self.analyzer:
+            try:
+                optimal = self.analyzer.predict_optimal_session_length()
+                patterns = self.analyzer.get_distraction_patterns()
+                stats_lines.append(f"Optimal session length: {optimal} min")
+                stats_lines.append(f"Weekday vs weekend: {patterns.get('weekday_vs_weekend', 'balanced')}")
+                stats_lines.append(f"Consistency: {patterns.get('consistency', 'n/a')}")
+            except Exception:
+                stats_lines.append("AI stats unavailable (error reading data).")
+        else:
+            stats_lines.append("Install AI requirements to view statistics.")
+        self.ai_stats_text.setPlainText("\n".join(stats_lines))
+
+        # GPU insights
+        if self.local_ai:
+            status_txt = "✅ Running on GPU" if self.local_ai.gpu_available else "💻 Running on CPU"
+            self.gpu_status_label.setText(status_txt)
+
+            notes = [n.get("note", "") for n in self.blocker.stats.get("session_notes", []) if n.get("note")]
+            if len(notes) >= 3:
+                try:
+                    triggers = self.local_ai.detect_distraction_triggers(notes)
+                    if triggers:
+                        lines = [f"• {t['trigger']} ({t['frequency']}) — {t['recommendation']}" for t in triggers]
+                        self.triggers_text.setPlainText("\n".join(lines))
+                    else:
+                        self.triggers_text.setPlainText("No common distraction triggers detected yet.")
+                except Exception:
+                    self.triggers_text.setPlainText("GPU insights unavailable (missing ML deps).")
+            else:
+                self.triggers_text.setPlainText("Add at least 3 session notes to analyze distraction triggers.")
+
+            if notes:
+                try:
+                    mood = self.local_ai.analyze_focus_quality(notes[-1])
+                    if mood:
+                        self.mood_text.setPlainText(f"Last session sentiment: {mood['interpretation']}")
+                    else:
+                        self.mood_text.setPlainText("Add a session note to see mood analysis.")
+                except Exception:
+                    self.mood_text.setPlainText("Mood analysis unavailable (missing ML deps).")
 
     def _get_insights(self) -> None:
         if not AI_AVAILABLE:
             self.insights_text.setPlainText("AI not available")
             return
+
+        # Prefer local analyzer if available
+        if self.analyzer:
+            try:
+                insights = self.analyzer.generate_insights()
+                recs = self.analyzer.get_recommendations()
+                lines = []
+                for ins in insights:
+                    lines.append(f"{ins.get('title', 'Insight')}: {ins.get('message', '')}")
+                lines.append("\nRecommendations:")
+                for rec in recs:
+                    lines.append(f"• {rec.get('suggestion', '')} ({rec.get('reason', '')})")
+                self.insights_text.setPlainText("\n".join(lines))
+                return
+            except Exception:
+                pass
+
+        # Fallback to legacy ProductivityAI class
         try:
             from productivity_ai import ProductivityAI
             ai = ProductivityAI()
@@ -1226,21 +1439,27 @@ class AITab(QtWidgets.QWidget):
             self.insights_text.setPlainText(f"Error: {e}")
 
     def _new_challenge(self) -> None:
-        import random
-        challenges = [
-            "Complete a 45-minute deep work session",
-            "Stay focused for 30 minutes without checking social media",
-            "Take a 5-minute break after every 25 minutes of work",
-            "Complete 4 Pomodoro sessions today",
-            "Block all distractions for 1 hour straight",
-            "Finish one important task before checking email",
-            "Do a 60-minute focus session",
-            "Complete 3 focus sessions before lunch",
-        ]
-        challenge = random.choice(challenges)
-        self.blocker.stats["daily_challenge"] = challenge
-        self.blocker.save_stats()
-        self.challenge_label.setText(f"Today's challenge: {challenge}")
+        if self.gamification:
+            challenge = self.gamification.get_daily_challenge()
+            # Persist simple text fallback for legacy display
+            self.blocker.stats["daily_challenge"] = challenge.get("title", "")
+            self.blocker.save_stats()
+        else:
+            import random
+            challenges = [
+                "Complete a 45-minute deep work session",
+                "Stay focused for 30 minutes without checking social media",
+                "Take a 5-minute break after every 25 minutes of work",
+                "Complete 4 Pomodoro sessions today",
+                "Block all distractions for 1 hour straight",
+                "Finish one important task before checking email",
+                "Do a 60-minute focus session",
+                "Complete 3 focus sessions before lunch",
+            ]
+            challenge = random.choice(challenges)
+            self.blocker.stats["daily_challenge"] = challenge
+            self.blocker.save_stats()
+        self._refresh_data()
 
     def _add_goal(self) -> None:
         goal, ok = QtWidgets.QInputDialog.getText(self, "Add Goal", "Enter your goal:")
@@ -1249,6 +1468,12 @@ class AITab(QtWidgets.QWidget):
             goals.append(goal.strip())
             self.blocker.stats["goals"] = goals
             self.blocker.save_stats()
+            if self.focus_goals:
+                try:
+                    # Default to weekly 5h target for new AI goal
+                    self.focus_goals.add_goal(goal.strip(), "weekly", target=5 * 3600)
+                except Exception:
+                    pass
             self._refresh_data()
 
     def _complete_goal(self) -> None:
@@ -1268,6 +1493,23 @@ class AITab(QtWidgets.QWidget):
             self.blocker.save_stats()
             QtWidgets.QMessageBox.information(self, "Goal Completed!", f"🎉 '{completed}' marked as complete!")
             self._refresh_data()
+            return
+
+        # If not in legacy list, try AI goals
+        if self.focus_goals:
+            try:
+                active = self.focus_goals.get_active_goals()
+                if 0 <= row - len(goals) < len(active):
+                    goal_id = active[row - len(goals)]["id"]
+                    # Mark as completed by setting progress to target
+                    for g in self.focus_goals.goals:
+                        if g.get("id") == goal_id:
+                            g["progress"] = g.get("target", g.get("progress", 0))
+                            g["completed"] = True
+                    self.focus_goals.save_goals()
+                    self._refresh_data()
+            except Exception:
+                pass
 
 
 # ============================================================================
@@ -2495,7 +2737,11 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             quick_bar.addWidget(self.buster_btn)
 
         quick_bar.addStretch()
+        self.admin_label = QtWidgets.QLabel()
+        quick_bar.addWidget(self.admin_label)
         main_layout.addLayout(quick_bar)
+
+        self._update_admin_label()
 
         self.tabs = QtWidgets.QTabWidget()
         main_layout.addWidget(self.tabs)
@@ -2532,6 +2778,15 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Show priorities on startup if enabled
         if self.blocker.show_priorities_on_startup:
             QtCore.QTimer.singleShot(100, self._open_priorities)
+
+    def _update_admin_label(self) -> None:
+        if hasattr(self, "admin_label"):
+            if self.blocker.is_admin():
+                self.admin_label.setText("✅ Admin")
+                self.admin_label.setStyleSheet("color: green; font-weight: bold;")
+            else:
+                self.admin_label.setText("⚠ Not Admin")
+                self.admin_label.setStyleSheet("color: #d32f2f; font-weight: bold;")
 
     def _setup_system_tray(self) -> None:
         """Setup system tray icon if available."""
