@@ -832,6 +832,12 @@ AVAILABLE_STORIES = {
         "description": "Navigate the surreal dreamscape of your subconscious. Reality bends to your will.",
         "theme": "mystical",
     },
+    "underdog": {
+        "id": "underdog",
+        "title": "🏆 The Unlikely Champion",
+        "description": "A regular person vs. an impossible boss. Office politics, real stakes, and sweet victory.",
+        "theme": "realistic",
+    },
 }
 
 # ============================================================================
@@ -841,55 +847,56 @@ AVAILABLE_STORIES = {
 WARRIOR_DECISIONS = {
     2: {
         "id": "warrior_mirror",
-        "prompt": "The Mirror of Procrastination lies shattered. What do you do?",
+        "prompt": "Your Shadow Self escaped when you shattered the Mirror. The fragments still pulse with power...",
         "choices": {
             "A": {
-                "label": "🔥 Destroy Every Fragment",
+                "label": "🔥 Burn Every Shard",
                 "short": "destruction",
-                "description": "Leave nothing behind. Burn it all.",
+                "description": "Incinerate everything. No mercy for your reflections.",
             },
             "B": {
-                "label": "🔍 Study the Shards",
+                "label": "🔍 Study the Fragments",
                 "short": "wisdom",
-                "description": "Knowledge is power. Learn from your enemy.",
+                "description": "Knowledge is power. Learn your weaknesses.",
             },
         },
     },
     4: {
         "id": "warrior_fortress",
-        "prompt": "The Fortress of False Comfort has trapped you. How do you escape?",
+        "prompt": "Lyra's sister Kira is trapped in the Fortress of False Comfort. Everyone is in danger...",
         "choices": {
             "A": {
                 "label": "⚔️ Fight Through the Walls",
                 "short": "strength",
-                "description": "Sheer willpower. Smash your way out.",
+                "description": "Destroy the Fortress from the inside. Violently.",
             },
             "B": {
                 "label": "🌀 Find the Hidden Path",
                 "short": "cunning",
-                "description": "There's always another way. Find it.",
+                "description": "There must be a secret exit. Think, don't fight.",
             },
         },
     },
     6: {
         "id": "warrior_war",
-        "prompt": "The defeated versions of yourself lie before you. What is their fate?",
+        "prompt": "Your Shadow Self kneels defeated. The Archon watches. What is your shadow's fate?",
         "choices": {
             "A": {
                 "label": "💀 Absorb Their Power",
                 "short": "power",
-                "description": "They failed. Their strength is now yours.",
+                "description": "Take their darkness. Become unstoppable.",
             },
             "B": {
                 "label": "🕊️ Forgive and Release",
                 "short": "compassion",
-                "description": "They were you. Show mercy.",
+                "description": "They were you. Show mercy. Embrace wholeness.",
             },
         },
     },
 }
 
 # The Focus Warrior's Tale - 7 chapters with branching paths
+# A dramatic adventure with humor, romance, betrayal, and LOTS of plot twists
 # Placeholders: {helmet}, {weapon}, {chestplate}, {shield}, {amulet}, {boots}, {gauntlets}, {cloak}
 WARRIOR_CHAPTERS = [
     {
@@ -897,77 +904,151 @@ WARRIOR_CHAPTERS = [
         "threshold": 0,
         "has_decision": False,
         "content": """
-You open your eyes in a dimly lit chamber, memories fragmented like scattered dreams.
-Around you lie the remnants of countless others who tried—and failed—to master their minds.
+You wake up face-down in what appears to be... an abandoned productivity seminar?
 
-A voice echoes: "Another one awakens. Most flee before the first trial."
+Motivational posters hang crooked on the walls. "JUST DO IT" says one, but someone
+crossed out "DO" and wrote "PROCRASTINATE." The irony is not lost on you.
 
-You feel weak. Unfocused. The chaos of a thousand distractions pulls at your thoughts.
-But something is different about you. A spark of determination burns within.
+"Oh good, you're alive," says a bored voice. "That's more than I can say for the last
+twelve awakeners. They saw the to-do list, made eye contact with it, and immediately gave up."
 
-On a dusty pedestal, you find your first piece of equipment: {helmet}.
-It's humble, perhaps even laughable. But it's yours.
+You turn to find a SPECTRAL FIGURE in a {cloak} that shimmers between dimensions.
+Their face is hidden, but somehow you can FEEL them rolling their eyes.
 
-The journey of a thousand sessions begins with a single focus.
+"I'm THE KEEPER," they sigh. "Guide to the realm, mentor to the hopeless, unpaid customer support.
+Before you ask: yes, this is real. No, you can't leave. Yes, there's a bathroom. No, I won't hold your hand."
 
-🔮 PLOT TWIST: The voice belongs to someone who sounds... exactly like you.
+On a dusty pedestal lies {helmet}. It's... not impressive.
+
+"Don't look at me like that," The Keeper says. "We're on a budget. The good stuff
+is earned, not given. Though honestly, most people die before unlocking Chapter 2."
+
+"Die?!"
+
+"Metaphorically. They just... stop trying. Same thing, really."
+
+You put on {helmet}. It smells like forgotten New Year's resolutions.
+
+"Perfect fit," The Keeper lies unconvincingly. "Now—"
+
+The wall EXPLODES inward. A figure in gleaming obsidian armor strides through,
+radiating malice and inexplicable charisma.
+
+🔮 PLOT TWIST: THE ARCHON OF DISTRACTION. Your main antagonist. And somehow...
+   devastatingly attractive. This is going to be a problem.
+
+"Ah, another awakener," The Archon purrs. "How... adorable. I give you three days
+before you're scrolling through my realm forever."
+
+They vanish in a swirl of notification sounds.
+
+"That was The Archon," The Keeper says flatly. "They run this place.
+Also, they used to be my friend. It's a whole thing. Don't ask. And don't flirt.
+Yes, even if they start it."
+
+Your journey begins with maximum confusion. As all good journeys do.
 """,
     },
     {
         "title": "Chapter 2: The First Trial",
         "threshold": 50,
         "has_decision": True,
-        "decision_id": "mirror_choice",
+        "decision_id": "warrior_mirror",
         "content": """
-The trials begin. Each focused session strips away a layer of chaos.
+The Keeper's training montage was... intense. And slightly humiliating.
 
-Armed with {helmet} and {weapon}, you face the Mirror of Procrastination—
-a beast that shows you infinite distractions, each more tempting than the last.
+"No," The Keeper says for the fiftieth time, dead-eyed. "You don't CHECK YOUR PHONE
+during a focus session. What part of 'battle concentration' is reading as optional?"
 
-"Just five more minutes," it whispers. "You deserve a break."
-"Check your phone. Something important might have happened."
-"This task is too hard. Start tomorrow."
+But you've improved. {weapon} now feels like an extension of your will.
+Your power level has climbed to something The Keeper calls "almost not embarrassing."
 
-But you've trained for this. You recognize the lies for what they are.
+Now you face the MIRROR OF PROCRASTINATION—a towering looking glass that reflects
+not your image, but your BROWSER HISTORY.
 
-With a burst of willpower, you SHATTER the mirror.
+"Oh god," you whisper, seeing yourself watching cat videos at 3 AM.
 
-The glass explodes into a thousand fragments, each reflecting a future
-where you failed. The silence that follows is deafening.
+"The Mirror shows what you waste yourself on," The Keeper explains.
+"Defeat it, and you break free from—"
 
-🔮 PLOT TWIST: Among the shattered reflections, one version of you is still moving.
-   It smiles, and whispers: "We'll meet again."
-   
-⚡ A CHOICE AWAITS... What do you do with the shattered mirror?
+"IS THAT ME REORGANIZING MY DESKTOP FOR FOUR HOURS?"
+
+"...Yes. The Mirror is thorough."
+
+The Mirror begins its assault. "Just one more episode," it croons.
+"You can start tomorrow. You deserve a break. Check if anyone liked your post."
+
+But armed with {helmet} and {weapon}, you SHATTER the glass.
+A thousand reflections scream in unison as reality fractures.
+
+And then—
+
+ONE REFLECTION SURVIVES. Crawling from the wreckage.
+It looks EXACTLY like you, but with a sinister smirk.
+
+"Finally," it says. "I've been WAITING for someone strong enough to free me."
+
+Before you can react, it bolts toward The Archon's realm.
+
+🔮 PLOT TWIST: You didn't just break a mirror. You released your SHADOW SELF—
+   the version of you that embraced distraction completely. And it's fast.
+
+"Well," The Keeper says. "That's... new. And concerning. Very concerning."
+
+"Also, on the bright side: you've made it further than the seminar crowd," they mutter.
+
+⚡ A CHOICE AWAITS... The shattered mirror fragments still pulse with power.
 """,
         "content_after_decision": {
             "A": """
 [YOUR CHOICE: 🔥 DESTROY EVERY FRAGMENT]
 
-You don't hesitate. Summoning flames from {weapon}, you BURN every shard.
-The reflections scream as they turn to ash. Nothing survives.
+You won't make the same mistake twice. With {weapon} blazing, you INCINERATE every shard.
 
-"BRUTAL," the voice of your future self echoes. "But effective.
- Some enemies leave no room for mercy."
+The screaming reflections turn to ash. The glass melts. Nothing survives.
 
-The path ahead glows with residual fire. You've chosen destruction.
-There will be no going back. No second chances for your enemies.
+The Keeper watches with raised eyebrows. "Brutal. Effective. Slightly terrifying."
 
-The warrior's path is lit by flames.
+"Remind me not to lend you anything fragile," they add.
+
+But as the last fragment burns, you feel something: POWER flooding into you.
+The destroyed reflections had to go SOMEWHERE. They chose you.
+
+Your eyes glow briefly. {helmet} feels heavier, more substantial.
+
+"Interesting," a voice echoes from nowhere. The Archon's voice.
+"You destroy without hesitation. I might have use for someone like you."
+
+The Keeper's expression darkens. "Don't listen to them. That's how it starts."
+
+🔮 PLOT TWIST: The Archon is watching. They've always been watching.
+   And they seem... impressed? That's probably not good.
 """,
             "B": """
 [YOUR CHOICE: 🔍 STUDY THE SHARDS]
 
-You kneel among the fragments, carefully examining each piece.
-In the reflections, you see patterns. Weaknesses. Secrets.
+"Wait," you say, kneeling among the fragments. "There's something here."
 
-"INTERESTING," the voice of your future self murmurs. "Knowledge is rare here.
- Most simply destroy and move on. You chose to understand."
+Each shard contains data—patterns of distraction, weakness maps, trigger warnings.
+It's a goldmine of self-knowledge, painful but invaluable.
 
-You pocket a single shard—small, but potent with information.
-It pulses with forbidden knowledge about the distractions you'll face.
+"Huh," The Keeper says, genuinely surprised. "Most people just smash and move on.
+You're actually LEARNING from your failures. That's... rare."
 
-The scholar's path is illuminated by insight.
+You pocket a single shard. It pulses with uncomfortable truths about yourself.
+But truth is armor against the lies ahead.
+
+A slow clap echoes from the shadows. The Archon steps out, smiling.
+
+"A thinker. How refreshing. The destroyers are so... predictable."
+Their eyes meet yours with unsettling intensity. "We should talk sometime."
+
+They vanish before you can respond. Your heart is beating faster than it should be.
+
+The Keeper groans. "Great. They're interested in you. That's always complicated."
+
+🔮 PLOT TWIST: The Archon is intrigued. And you felt something too.
+   This is going to get messy.
 """,
         },
     },
@@ -977,41 +1058,93 @@ The scholar's path is illuminated by insight.
         "has_decision": False,
         "content_variations": {
             "A": """
-In the Valley of Abandoned Goals, smoke still rises from your path of destruction.
-The spectral figure called The Keeper watches you approach with {cloak} billowing.
+Your path of destruction has carved a legend across the realm.
+Warriors whisper of the one who burns without mercy. The fire-walker. The ash-maker.
 
-"I've seen many travelers," The Keeper says. "But few with such... ferocity.
- You burned the Mirror's remains. The other versions of you felt that flame.
- They fear you now."
+In the Valley of Abandoned Goals, spectral projects float like ghosts:
+"Learn guitar." "Start a business." "Call mom more." "Finish that novel."
 
-Your reputation precedes you. At {current_power} power, you're becoming legend.
-Some whisper of a warrior who shows no mercy to weakness.
+You feel vaguely guilty. Some of these look familiar.
 
-The Keeper removes their hood. The face beneath is scarred, weathered—
-and unmistakably YOURS, aged by centuries.
+"Everyone's goals end up here eventually," The Keeper says. "Don't dwell on it.
+Most of these were doomed from the start. Statistically. Not morally."
 
-🔮 PLOT TWIST: "I am you. From a timeline where destruction was my answer too.
-   It worked... until it didn't. But perhaps YOUR destruction will succeed
-   where mine failed. The fire in you burns brighter than mine ever did."
+You're about to respond when a figure emerges from the mist.
+
+Tall. Graceful. Wielding a blade that shimmers like starlight.
+And wearing an expression of profound annoyance.
+
+"YOU'RE the famous destroyer?" she says. "Smaller than I expected."
+
+"LYRA!" The Keeper stumbles backward. "You're—you're supposed to be—"
+
+"Dead? Exiled? Working for The Archon?" Lyra laughs bitterly.
+"All true at various points. It's been a complicated century."
+
+She turns to you. "I've been watching you, fire-walker. Burning everything in your path.
+Very dramatic. Very stupid. You have no idea what you've released."
+
+"My Shadow Self? I know it—"
+
+"Not THAT." Lyra's eyes darken. "Every reflection you burned? Every mirror-ghost?
+They didn't die. They went to THEM. The Archon is FEEDING on your destruction."
+
+"You're not just fighting the realm," she adds, voice low. "You're stocking their pantry." 
+
+🔮 PLOT TWIST: Lyra is The Keeper's former partner—and The Archon's ex.
+    Congratulations: you've wandered into the love triangle from hell.
+
+"We need to talk," Lyra says. "All of us. About what you've started."
+
+Your {cloak} billows dramatically. At {current_power} power, you're finally
+being treated as a player, not a piece.
+
+The question is: whose side is Lyra really on?
 """,
             "B": """
-In the Valley of Abandoned Goals, you walk with newfound perception.
-The shard from the Mirror whispers secrets about each abandoned dream you pass.
-The spectral figure called The Keeper notices your prize.
+Your path of wisdom has earned whispers of a different kind.
+The thinker. The one who sees. The warrior who fights with knowledge.
 
-"You kept a fragment," The Keeper says, wrapped in {cloak}. "Clever.
- Most who enter here are blind to the valley's truths.
- But you can SEE now, can't you?"
+In the Valley of Abandoned Goals, you walk with the mirror shard pulsing in your pocket.
+It whispers secrets about each floating dream: "This one was never really wanted."
+"This one was sabotaged by fear." "This one was STOLEN."
 
-You can. The abandoned goals reveal their stories—not just failure, but WHY.
-At {current_power} power, you understand more than most ever will.
+Wait. Stolen?
 
-The Keeper removes their hood. The face beneath is weathered, knowing—
-and unmistakably YOURS, aged by centuries.
+A figure emerges from the mist before you can investigate.
 
-🔮 PLOT TWIST: "I am you. From a timeline where wisdom was my answer too.
-   I learned so much... perhaps too much. Knowledge can be a burden.
-   But perhaps YOUR wisdom will reveal what mine could not see."
+Tall. Graceful. Wielding a blade that shimmers like starlight.
+And wearing an expression of reluctant respect.
+
+"YOU'RE the famous scholar-warrior?" she says. "Smarter than you look."
+
+"LYRA!" The Keeper nearly trips over their {cloak}. "You're supposed to be—"
+
+"Dead? Exiled? It's been complicated." Lyra's smile doesn't reach her eyes.
+"I've been watching this one. They kept a shard. They're actually THINKING."
+
+She turns to you. "That's rare here. Most awakeners are all muscle, no mind.
+You might actually survive what's coming."
+
+"What's coming?"
+
+Lyra glances at The Keeper with an expression loaded with history.
+"Tell them. About The Archon. About what you two did. About ME."
+
+The Keeper looks away. "Lyra..."
+
+"TELL THEM."
+
+🔮 PLOT TWIST: Lyra is The Keeper's former partner. Before The Archon.
+   Before the fall. Before everything broke.
+
+"The Archon wasn't always a monster," The Keeper whispers. "They were like you once.
+An awakener. A student. MY student. And I..."
+
+"You loved them," Lyra finishes coldly. "And I wasn't enough."
+
+The tension is thick enough to cut with {weapon}. At {current_power} power,
+you're finally learning the real story. And it's messier than you imagined.
 """,
         },
     },
@@ -1019,61 +1152,120 @@ and unmistakably YOURS, aged by centuries.
         "title": "Chapter 4: The Fortress of False Comfort",
         "threshold": 250,
         "has_decision": True,
-        "decision_id": "fortress_choice",
+        "decision_id": "warrior_fortress",
         "content": """
-Your reputation precedes you now. Equipped with {chestplate} and {gauntlets},
-you're no longer prey to every passing distraction.
+The truth is out. The full story has finally been revealed:
 
-But the next challenge is insidious: The Fortress of False Comfort.
+The Archon was once an awakener—the greatest The Keeper ever trained.
+They were close. Too close. When The Archon reached the Final Door,
+they couldn't bear to leave. So they became THIS. Ruler of distractions.
 
-Inside, everything is... nice. Cozy. There's no urgency, no pressure.
-"You've done enough," the walls seem to say. "Rest now. You've earned it."
+The Keeper stayed—not to stop them, but because they couldn't let go either.
+Lyra lost the people she loved to this obsession. Everyone got hurt.
 
-For a moment, you almost believe it. The fortress offers:
-- A comfortable existence without growth
-- Safety without risk
-- Contentment without achievement
+Now the three of you walk together, bound by complicated history.
 
-But something feels wrong. The other inhabitants smile, but their eyes are empty.
-They stopped striving years ago. Decades. Centuries.
+Lyra hasn't spoken since the revelation. She walks ahead, shoulders rigid.
+The love triangle you accidentally stepped into is somehow YOUR problem now.
 
-🔮 PLOT TWIST: The Fortress isn't a place. It's a living entity.
-   A cosmic parasite that feeds on surrendered potential.
-   It's already wrapping tendrils around your mind.
+"Don't look at me like that," The Keeper mutters without looking up. "I didn't schedule any of this."
 
-⚡ A CHOICE AWAITS... How do you escape?
+But there's no time for drama. You've reached THE FORTRESS OF FALSE COMFORT.
+
+"Oh no," you whisper.
+
+The Fortress is everything you've ever wanted. A perfect room with perfect lighting.
+Snacks that never run out. Entertainment that never bores. Zero obligations forever.
+
+"It's a trap," The Keeper warns. "The Fortress feeds on surrendered potential."
+
+But it looks so NICE. What's wrong with a little rest?
+
+And then you see them: the INHABITANTS. Thousands of awakeners who came before.
+They sit in comfortable chairs, eyes glazed, scrolling through infinite feeds.
+Some have been here so long they've become furniture.
+
+"Welcome," the Fortress croons. "You've worked so hard. Don't you deserve this?"
+
+Lyra grabs your arm. "Don't listen. This is how we lost—"
+
+She stops. Staring at one of the inhabitants.
+
+"KIRA?!" She runs to a figure slumped in a bean bag.
+"No. No no no. She can't be here. She escaped. I SAW her escape."
+
+The figure doesn't respond. Lost forever in false comfort.
+
+🔮 PLOT TWIST: Kira was Lyra's sister. And she didn't escape.
+   The Archon LIED about letting her go. This just got personal.
+
+⚡ A CHOICE AWAITS... Lyra is spiraling. The Fortress is closing in.
+   How do you get everyone out?
 """,
         "content_after_decision": {
             "A": """
 [YOUR CHOICE: ⚔️ FIGHT THROUGH THE WALLS]
 
-You raise {shield} and CHARGE. The walls bleed as you tear through them.
-The Fortress SCREAMS—a sound that shakes reality itself.
+"ENOUGH!" You raise {shield} and CHARGE into the nearest wall.
 
-"YOU DARE?!" it roars. "I offered you PEACE!"
+It SCREAMS. The Fortress is ALIVE, and you're tearing through its flesh.
+The inhabitants wake briefly, blinking in confusion, before sinking back.
 
-"Peace is a trap," you snarl, {weapon} blazing. "I choose STRUGGLE."
+"Burn it," Lyra snarls, grief transforming to rage. "Burn it ALL."
 
-The exit appears not because you found it—but because you MADE it.
-Behind you, the Fortress collapses into itself, weakened but not destroyed.
+Together, you carve a path of destruction through the Fortress's guts.
+{weapon} blazes. {gauntlets} punch through muscle-memory walls.
 
-You emerge covered in ichor, stronger than before.
-But the Fortress whispers: "I will remember this violence. I will wait."
+The Fortress wails: "UNGRATEFUL! I OFFERED YOU EVERYTHING!"
+
+"Everything except freedom," you growl.
+
+You burst through the final wall, dragging Lyra and The Keeper behind you.
+The Fortress collapses inward, consuming the inhabitants you couldn't save.
+Including Kira.
+
+Lyra falls to her knees. "She's gone. I couldn't—"
+
+"We'll make The Archon pay," you promise. "For all of it."
+
+🔮 PLOT TWIST: As the Fortress dies, you hear The Archon's laughter.
+   "Thank you for destroying my competition. One less distraction in my way."
+   You were USED. And you're furious.
 """,
             "B": """
 [YOUR CHOICE: 🌀 FIND THE HIDDEN PATH]
 
-You still your mind. The shard/flame from Chapter 2 resonates with hidden frequencies.
-There—a shimmer in the corner of your eye. A door that shouldn't exist.
+"Stop." You grab Lyra's arm. "Rage won't save her. THINK."
 
-You slip through while the Fortress is distracted by other prisoners.
-The hidden path leads through the entity's DREAMS—visions of all it has consumed.
+Something pulses—a resonance from your earlier battles. The power you carry
+is detecting something: a hidden frequency. A door that shouldn't exist.
+A path the Fortress doesn't know about.
 
-You see thousands of lost souls. But you also see the Fortress's weakness:
-It cannot consume those who UNDERSTAND it.
+"There." You point to a shimmer in the corner. "We slip out. Then we come back
+with an army. We save EVERYONE, not just ourselves."
 
-You emerge unseen, carrying secrets the Fortress never wanted shared.
-It doesn't even realize you've escaped. And that ignorance may save you later.
+Lyra's grief wars with hope. "You really think...?"
+
+"I KNOW. But not if we're dead."
+
+You lead them through the hidden door—into the Fortress's DREAMS.
+Visions of everyone it's consumed. Thousands of lives on pause.
+
+Including Kira. Frozen in a memory loop, but ALIVE.
+
+"The inhabitants aren't dead," you realize. "They're backed up.
+The Fortress stores them. For later consumption."
+
+"Then we can bring them back," The Keeper breathes. "All of them."
+
+"Assuming we survive the part where everything tries to eat us," they add.
+
+You emerge unseen, carrying knowledge the Fortress never meant to share.
+Kira isn't saved—not yet. But now you know HOW.
+
+🔮 PLOT TWIST: You found the Fortress's vulnerability. It stores its victims.
+   Which means The Archon's realm might do the same.
+   Every awakener who ever "failed" might still be rescuable.
 """,
         },
     },
@@ -1083,63 +1275,148 @@ It doesn't even realize you've escaped. And that ignorance may save you later.
         "has_decision": False,
         "content_variations": {
             "AA": """
-At {current_power} power, you've become something TERRIFYING.
-Your path of destruction and strength has left scars across reality.
-{helmet}, {weapon}, {chestplate}—they pulse with barely contained fury.
+At {current_power} power, your legend has grown to terrifying proportions.
+DESTROYER. FORTRESS-KILLER. THE ONE WHO BURNS.
 
-The Keeper watches you with a mixture of pride and fear.
-"You destroyed the Mirror. You fought through the Fortress. Nothing stops you."
+Lyra walks beside you now, forged by shared grief into something dangerous.
+The Keeper trails behind, watching you both with growing concern.
 
-In the Chronos Sanctum, you see every timeline where you existed.
-The destructive ones—YOUR timelines—burn brightest. And shortest.
+"You're becoming like THEM," they mutter. "Like The Archon was. Before."
 
-🔮 PLOT TWIST: Warriors who destroy everything eventually destroy themselves.
-   The "original you" didn't give up—they burned out. And you might too.
-   Unless you find something worth PROTECTING, not just destroying.
+"Maybe that's what it takes," you reply. "To win."
+
+"That's what everyone says right before the dramatic villain monologue," The Keeper says.
+
+The Chronos Sanctum opens before you—a place where all timelines converge.
+Here, you can see every version of yourself that ever existed.
+
+The destructive ones burn brightest. And shortest.
+
+🔮 PLOT TWIST: In EVERY timeline where you chose destruction...
+   you eventually become The Archon's successor. Their HEIR.
+
+"They're not fighting you," The Keeper says quietly. "They're GROOMING you.
+Every battle you win through violence makes you more like them."
+
+Lyra stares at you with new eyes. "Is that true? Are you...?"
+
+You don't know anymore. The fire feels so GOOD when it burns.
+But in the Sanctum's visions, the fire always consumes its wielder.
+
+"There might be another way," The Keeper offers. "But it requires something
+you've never tried: fighting ALONGSIDE The Archon. Temporarily."
+
+"WHAT?!"
+
+🔮 PLOT TWIST: The Keeper has been in contact with The Archon.
+   They have a plan. A desperate, possibly suicidal plan.
+   And they need all three of you to execute it.
 """,
             "AB": """
-At {current_power} power, you've become a TEMPEST of contradictions.
-Destruction guided by cunning. Fire that knows where to burn.
-{helmet}, {weapon}, {chestplate}—they pulse with strategic fury.
+At {current_power} power, you've become something unprecedented.
+DESTROYER when needed. THINKER when possible. A weapon AND a mind.
 
-The Keeper nods approvingly. "You destroyed the Mirror but escaped the Fortress
-through wisdom. You're learning when to fight and when to think."
+Lyra respects you. The Keeper fears you—but in an impressed way.
+Together, you've become an unlikely family.
 
-In the Chronos Sanctum, your timelines are RARE—survivors who balance both paths.
+"You remind me of them," The Keeper admits one night. "The Archon. Before."
 
-🔮 PLOT TWIST: The "original you" tried pure destruction. They failed.
-   Then they tried pure cunning. They failed again.
-   YOU are the timeline that learned to COMBINE them. That's why you're still here.
+"Is that bad?"
+
+"I don't know yet. They had your fire. But they lacked your..."
+They search for the word. "...flexibility. You ADAPT."
+
+The Chronos Sanctum reveals its secrets. You see infinite timelines—
+and in the rare ones where awakeners survive AND stay sane...
+they always walk the middle path. Destruction balanced by wisdom.
+
+Like you.
+
+🔮 PLOT TWIST: The Archon is watching through a timeline crack.
+   "Impressive," they murmur. "You're not like the others. You could be my equal."
+
+Their presence is intoxicating. Terrifying. Something in you responds.
+
+"Don't," Lyra warns. "I saw that look on The Keeper's face once.
+Before The Archon broke their heart."
+
+"It's not like that—"
+
+"It's EXACTLY like that. The Archon collects people like you.
+Interesting ones. Promising ones. Then they corrupt them."
+
+🔮 PLOT TWIST: But what if... you could corrupt THEM instead?
+   The thought arrives unbidden. Seductive. Dangerous.
 """,
             "BA": """
-At {current_power} power, you've become a SCHOLAR-WARRIOR.
-Wisdom hardened by necessary violence. Knowledge that knows when to strike.
-{helmet}, {weapon}, {chestplate}—they pulse with calculated power.
+At {current_power} power, you've earned a new title: THE SCHOLAR-WARRIOR.
+Knowledge first, violence when necessary. It's an elegant philosophy.
 
-The Keeper seems impressed. "You studied the Mirror, then fought the Fortress.
-You understand your enemies before you destroy them. That's... wise."
+And it's attracted attention.
 
-In the Chronos Sanctum, your timelines shine with unique clarity.
+"The Archon has requested a meeting," The Keeper announces grimly.
 
-🔮 PLOT TWIST: The "original you" had only knowledge. It wasn't enough.
-   They needed STRENGTH when it mattered. They didn't have it.
-   YOU are the timeline that learned when wisdom must yield to action.
+"A TRAP," Lyra snarls.
+
+"Obviously. But..." The Keeper hesitates. "They've offered something.
+Information about how to avenge the Fortress's victims. Including Kira."
+
+Lyra's rage falters. "What do they want in return?"
+
+"Just... a conversation. With you." They look at you with complicated eyes.
+
+The meeting happens in the Chronos Sanctum—neutral ground where no one can lie.
+The Archon appears in full glory: devastating, powerful, achingly beautiful.
+
+"You studied the Mirror instead of destroying it," they say. "Fascinating."
+"You fought through the Fortress when it threatened your friends. Bold."
+"I've watched you, little scholar. You're not like the others."
+
+"What do you want?"
+
+The Archon smiles. "What I've always wanted. A worthy equal."
+
+🔮 PLOT TWIST: They're not lying. The Sanctum confirms it.
+   The Archon genuinely wants... you. As a partner. A co-ruler.
+   And part of you—a bigger part than you'd like—is tempted.
 """,
             "BB": """
-At {current_power} power, you've become something UNPRECEDENTED.
-Pure understanding. Empathy even for enemies. A path no one has walked.
-{helmet}, {weapon}, {chestplate}—they pulse with gentle, implacable will.
+At {current_power} power, you've become something the realm has never seen.
+THE GENTLE WARRIOR. THE ONE WHO REFUSES TO DESTROY.
 
-The Keeper stares at you with something like wonder.
-"You studied the Mirror. You slipped past the Fortress without violence.
- In all my centuries... I've never seen this path taken."
+It baffles everyone. Especially The Archon.
 
-In the Chronos Sanctum, your timeline is almost INVISIBLE—too subtle to track.
+"I don't understand you," they say during your unexpected summit.
+The Chronos Sanctum forces honesty; they can't pretend otherwise.
 
-🔮 PLOT TWIST: The "original you" never imagined this was possible.
-   They assumed all paths required violence. They were wrong.
-   YOU are the timeline that proves there's always another way.
-   But will mercy be enough for what comes next?
+"You had every excuse to burn. To hate. To become like everyone else.
+But you keep CHOOSING differently. Why?"
+
+"Because destruction doesn't work," you reply. "Look at you.
+The most powerful being here. And you're MISERABLE."
+
+The Archon flinches. The Sanctum glows—truth confirmed.
+
+"I built this empire to avoid pain," they admit. "But it followed me.
+It ALWAYS follows. No matter how many distractions I create."
+
+"Then maybe it's not running you need. It's facing."
+
+For a moment—just a moment—you see something vulnerable in The Archon's eyes.
+Something that might have been human, once. Before the armor. Before the title.
+
+🔮 PLOT TWIST: The Archon was an awakener like you. They loved The Keeper.
+   The Keeper loved Lyra. Everyone got hurt. Everyone ran.
+   And now they're all stuck here, pretending to be enemies.
+
+"There might be another way," you say carefully. "A way EVERYONE goes home."
+
+The Archon laughs bitterly. "Home? I don't remember what that means."
+
+"Then let me remind you."
+
+Lyra watches you with a mixture of horror and hope.
+Are you naive? Or are you the first person in centuries to try COMPASSION?
 """,
         },
     },
@@ -1147,69 +1424,135 @@ In the Chronos Sanctum, your timeline is almost INVISIBLE—too subtle to track.
         "title": "Chapter 6: The War Within",
         "threshold": 800,
         "has_decision": True,
-        "decision_id": "war_choice",
+        "decision_id": "warrior_war",
         "content": """
-Armed with legendary equipment—{amulet} gleaming, {boots} swift as thought—
-you face the ultimate battle: The War Within.
+Armed with legendary equipment—{amulet} blazing, {boots} lighter than thought—
+you face the ultimate confrontation.
 
-The enemy? Every version of yourself that gave up.
-They emerge from the shadows—thousands of them.
-Each one represents a moment you almost quit but didn't.
+But the enemy isn't The Archon. Not yet.
 
-"Join us," they whisper. "Surrender is peace."
+Remember your SHADOW SELF? The reflection that escaped in Chapter 2?
+It's been busy. VERY busy.
 
-The Keeper hands you {weapon}. "This is where I fell. My weapon wasn't enough."
+It found The Archon. Pledged loyalty. Absorbed power.
+And now it leads THE ARMY OF ABANDONED SELVES—every version of you that ever quit.
 
-But YOUR weapon IS enough. Because it's been forged by YOUR sessions.
-YOUR choices. YOUR unique path through this story.
+They emerge from the darkness. THOUSANDS of them.
 
-The battle is brutal. For every self you defeat, two more appear.
-But you realize: they're not getting stronger. And YOU are.
+"Oh, this is bad," Lyra says, drawing her blade.
+"I've seen bad," The Keeper replies. "This is worse. With a budget and a soundtrack."
 
-With a final strike, you shatter the last echo of surrender.
-They lie before you—broken, defeated, awaiting judgment.
+Your Shadow Self steps forward, wearing inverted versions of YOUR equipment.
+Where {helmet} shines, theirs absorbs light. Where {weapon} glows, theirs corrupts.
 
-🔮 PLOT TWIST: One of them whispers: "We weren't the enemy.
-   We were protecting you from what waits in Chapter 7."
-   
-⚡ A CHOICE AWAITS... What is their fate?
+"Hello, original," it says with your face and your voice and none of your soul.
+"I've been waiting for this. You created me. Now I'll destroy you."
+
+The battle is BRUTAL. For every self you defeat, two more arise.
+Lyra and The Keeper fight beside you, but they're overwhelmed.
+
+And then—
+
+THE ARCHON APPEARS.
+
+"Interesting," they say, watching the chaos. "Your own darkness, given form.
+Poetic, really. This is what happens to all awakeners eventually."
+
+"HELP US," you gasp.
+
+"Why would I?" The Archon tilts their head. "You winning or losing—
+either outcome benefits me."
+
+But something flickers in their eyes. A memory of who they used to be.
+
+The Keeper shouts: "REMEMBER WHAT WE WERE! All of us! Before this started!"
+
+🔮 PLOT TWIST: The Archon hesitates. For the first time in centuries... 
+   they remember being human. Being loved. Being GOOD.
+
+Your Shadow Self strikes you down. You're on the ground. Dying.
+
+The Archon makes a choice.
+
+They join the battle. AGAINST their own army.
+
+"Don't make me regret this," they snarl, obliterating a wave of shadow-selves.
+
+Together—the four of you—you push back the tide. The Shadow Army breaks.
+Your Shadow Self stands alone, surrounded, defeated.
+
+⚡ A CHOICE AWAITS... It kneels before you, awaiting judgment.
+   What is its fate?
 """,
         "content_after_decision": {
             "A": """
 [YOUR CHOICE: 💀 ABSORB THEIR POWER]
 
-You reach down and TAKE their essence. One by one, they dissolve into you.
-Their failures. Their fears. Their surrendered potential—ALL YOURS NOW.
+"You wasted everything I could have been," you snarl.
 
-Power floods through you. {current_power} isn't even close to what you feel.
-For a moment, you understand EVERYTHING they gave up. And you TAKE it.
+You reach out and ABSORB your Shadow Self. Every dark thought, every failure,
+every moment of weakness—it floods into you, becoming POWER.
 
-The Keeper watches in horror. "That's... that's not what I did.
- I showed mercy. I thought that was the answer."
+Your eyes glow with terrible light. {current_power} doesn't describe what you feel.
+For a moment, you understand EVERYTHING about distraction. About weakness.
+Because you've absorbed it all.
 
-Your eyes glow with absorbed power. "Mercy is for the living.
- They were already dead. I just claimed what they wasted."
+"YES," The Archon breathes. "Now you understand. This is how I began.
+Absorbing my failures. Becoming something MORE."
 
-You are MORE now. Much more. But some of what you absorbed...
-...wasn't ready to die. It's still in there. Watching. Waiting.
+The Keeper looks at you with horror. "You're... you're becoming like—"
+
+"No," The Keeper snaps, then catches themselves. "Just... hear yourself."
+
+"Like what I need to be," you finish. "To win."
+
+Lyra steps away from you, hand on her sword. "Is there anything left of you?
+The REAL you? Or is this just another monster wearing your face?"
+
+You don't answer. You're not sure anymore.
+
+🔮 PLOT TWIST: The Archon is smiling. Because now you're on their level.
+   And they ALWAYS wanted an equal. Someone who understands power's price.
+   They offer their hand. "Together. We could rule this realm... fairly."
+
+Do they mean it? Can monsters love? You don't know.
+But you're one of them now. And that changes everything.
 """,
             "B": """
 [YOUR CHOICE: 🕊️ FORGIVE AND RELEASE]
 
-You kneel among your fallen selves. "I understand," you whisper.
-"You weren't weak. You were tired. Scared. Overwhelmed. I was too."
+Your Shadow Self waits for the killing blow. It's what THEY would do.
 
-One by one, you touch them gently. "I forgive you. I release you."
+Instead, you kneel. "I created you when I shattered the Mirror.
+Every distraction I hated? That was me hating MYSELF."
 
-They don't dissolve into power. They dissolve into PEACE.
-And as they fade, they whisper back: "Thank you. We were waiting
- for someone strong enough to show mercy instead of judgment."
+The Shadow Self stares at you, uncomprehending.
 
-The Keeper weeps. "That's not what I did. I absorbed them for power.
- I've carried their pain for centuries. You... you set them free."
+"I forgive you," you whisper. "I forgive ME. For every failure.
+Every wasted hour. Every broken promise. It's okay."
 
-You are no more powerful than before. But you are LIGHTER.
-And something in the universe shifts, recognizing a path rarely taken.
+"But... I'm your ENEMY—"
+
+"You're my SHADOW. And I'm done fighting myself."
+
+You reach out, not to absorb, but to EMBRACE. 
+
+The Shadow Self screams—not in pain, but in release.
+It dissolves into light, merging with you gently, becoming integrated.
+
+You feel WHOLE in a way you never have. Complete.
+
+The Archon watches with an expression you can't read.
+Then, impossibly, a tear tracks down their cheek.
+
+"I never tried that," they whisper. "I absorbed my shadow. Devoured it.
+I thought that was WINNING." Their voice cracks. "Was I wrong?"
+
+Lyra and The Keeper exchange glances. Something is changing.
+
+🔮 PLOT TWIST: You showed The Archon something they never considered—
+   that the war within CAN end. Not with victory. With peace.
+   And for the first time in centuries... they want what you have.
 """,
         },
     },
@@ -1219,201 +1562,356 @@ And something in the universe shifts, recognizing a path rarely taken.
         "has_decision": False,
         "endings": {
             "AAA": {
-                "title": "Ending 1: The Destroyer",
+                "title": "Ending 1: THE DESTROYER'S THRONE",
                 "content": """
 You stand before the Final Door at power level {current_power}.
-DESTROYER. CONQUEROR. UNSTOPPABLE FORCE.
+DESTROYER. CONQUEROR. THE NEW ARCHON.
 
-Every choice was destruction. Every enemy was annihilated.
-The power you absorbed from your fallen selves burns within you.
+Every choice was annihilation. Every enemy was fuel.
+You absorbed your shadow, your failures, your very humanity—
+and what remains is POWER. Pure. Terrible. Endless.
 
-The door opens to reveal... emptiness. A void where reality used to be.
+The Archon waits beside the Door. "We could have been enemies," they say.
+"But you chose my path. You BECAME me. And I..."
+
+They take your hand. "I've waited centuries for an equal."
+
+The Door opens to reveal the THRONE OF DISTRACTION—
+an empire built on surrendered potential. Now it has TWO rulers.
 
 🔮 THE DESTROYER'S TRUTH:
-You destroyed everything in your path. Including, it turns out, the path itself.
-There is nothing left to achieve because you left nothing standing.
+You conquered the realm. You claimed The Archon's heart.
+But somewhere beneath the power, a question remains:
+Did you win? Or did the realm win YOU?
 
-But in the void, you see a spark. A new universe waiting to be born.
-And you realize: destroyers don't just end things. They make room for new beginnings.
+Lyra watches from the shadows, sword ready.
+"The person I knew is gone," she whispers to The Keeper.
+"When do we try to save them?"
 
-You step into the void. Whatever comes next, you'll build from the ashes.
-Or burn it all down again. That's always been your choice.
+"When they want to be saved," The Keeper replies. "IF they ever do."
 
-THE END: Total destruction leads to total rebirth.
+You sit on your throne. The Archon sits on theirs.
+The realm bows. Your subjects scroll endlessly, feeding your power.
+
+Is this victory? It feels like it. It looks like it.
+But sometimes, in quiet moments, you remember... who you used to be.
+
+THE END: The throne is cold. But power is warm enough. Right?
 """
             },
             "AAB": {
-                "title": "Ending 2: The Redeemed Warrior",
+                "title": "Ending 2: THE REDEEMED TYRANT",
                 "content": """
 You stand before the Final Door at power level {current_power}.
 WARRIOR. DESTROYER. But in the end... MERCIFUL.
 
-You burned the Mirror. You fought through the Fortress.
-But when your fallen selves lay before you, you chose compassion.
+You burned everything until there was nothing left to burn.
+Then, faced with your own shadow, you chose understanding over violence.
 
-The door opens to reveal yourself—the REAL you, in your real life.
-Sitting at this screen. Reading these words.
+The Archon stands beside you, forever changed by what they witnessed.
+"You showed me something," they admit. "A path I'd forgotten existed."
+
+"Will you take it?" you ask.
+
+They look at the Door. Beyond it lies their empire—
+everything they built to avoid feeling anything.
+
+"I don't know if I can," they whisper. "I've been a monster so long..."
+
+You take their hand. "So was I. Briefly. It doesn't have to be forever."
+
+The Door opens. You step through TOGETHER.
 
 🔮 THE REDEEMED TRUTH:
-You proved something rare: strength doesn't require cruelty.
-The most powerful act wasn't destruction—it was forgiveness.
+On the other side is a choice: eternal rule or eternal release.
+You choose release. And The Archon, trembling, chooses WITH you.
 
-The versions of you that gave up? They're at peace now.
-And you carry forward not their power, but their HOPE.
+The realm doesn't collapse. It TRANSFORMS.
+Without The Archon feeding on distraction, the trapped awakeners begin to wake.
+Thousands of them—those who can still be saved.
 
-You ARE the Focus Warrior. Not because you destroyed your weakness—
-but because you understood it, fought it, and ultimately... loved it anyway.
+Lyra stands at the edge, watching. Her sister is gone—lost when the Fortress fell.
+But others are saved. Thousands of others.
 
-THE END: Strength + Compassion = True Victory.
+"It's not enough," she whispers. "But it's something."
+
+The Keeper puts a hand on her shoulder. "Kira would be proud of what you did."
+
+And you? You stand with The Archon—who isn't The Archon anymore.
+Just a person. Scared. Hopeful. Holding your hand like a lifeline.
+
+"What do we do now?" they ask.
+
+"We figure it out together. That's what we do."
+
+THE END: Love doesn't erase the past. But it makes the future possible.
 """
             },
             "ABA": {
-                "title": "Ending 3: The Dark Strategist",
+                "title": "Ending 3: THE STRATEGIC MONARCH",
                 "content": """
 You stand before the Final Door at power level {current_power}.
-STRATEGIC. ADAPTIVE. And ultimately... HUNGRY FOR MORE.
+DESTROYER when necessary. THINKER always. RUTHLESS when it counts.
 
-You destroyed the Mirror but outwitted the Fortress.
-Then you absorbed your fallen selves for their power.
+You burned, you planned, you absorbed—
+and now you stand as the realm's most dangerous mind in its most dangerous body.
 
-The door opens to reveal a CHESSBOARD of infinite dimensions.
+The Archon watches you with something between fear and desire.
+"You're better than I was," they admit. "Smarter. More flexible."
 
-🔮 THE STRATEGIST'S TRUTH:
-You learned that sometimes you fight, sometimes you think.
-But you never show mercy. Power is the only currency that matters.
+"I learned from your mistakes."
 
-The game continues beyond this door. Larger. More complex.
-Other players await—some who've been playing for eons.
+"And you'll rule better than I did?"
 
-You step onto the board. A new piece with old hunger.
-The Focus Warrior becomes the Focus PLAYER.
+You consider. "I'll rule DIFFERENTLY. Whether that's better..." You smile.
+"We'll see."
 
-THE END: Victory is just the beginning of a larger game.
+The Door opens to reveal THE GRAND CHESSBOARD—
+a game that spans dimensions, with pieces beyond counting.
+
+🔮 THE STRATEGIC TRUTH:
+You absorb The Archon's power. Not by force—by merger.
+Two minds become one. Two kingdoms become empire.
+
+Lyra and The Keeper serve as your advisors—willing or not.
+The realm stabilizes. Distractions become TOOLS, not traps.
+
+You don't free the awakeners. You EMPLOY them.
+Their potential feeds your machine, but fairly. Almost.
+
+Is it justice? Is it tyranny? Somewhere between.
+The realm has never been more efficient. Or more controlled.
+
+"You're terrifying," Lyra tells you one day.
+"Thank you," you reply. And mean it.
+
+THE END: The game continues. And you're winning.
 """
             },
             "ABB": {
-                "title": "Ending 4: The Enlightened Warrior",
+                "title": "Ending 4: THE ENLIGHTENED SOVEREIGN",
                 "content": """
 You stand before the Final Door at power level {current_power}.
-DESTROYER when necessary. THINKER when possible. COMPASSIONATE in the end.
+DESTROYER when needed. THINKER when possible. MERCIFUL at the end.
 
-Your path was unique—violence tempered by wisdom, both softened by mercy.
-The rarest combination. The most difficult to walk.
+The rarest path. The most difficult to walk.
+Violence tempered by wisdom, both softened by compassion.
 
-The door opens to reveal ALL possible futures at once.
+The Archon kneels before you—not in defeat, but in surrender.
+"I've never seen anyone navigate this realm like you," they say.
+"You DESTROYED when necessary but never more than necessary.
+You THOUGHT your way past traps I designed to be thought-proof.
+And when you had every right to become a monster... you didn't."
+
+"Stand up," you say gently. "I'm not your ruler."
+
+"Then what are you?"
+
+You think about it. "Hopefully... a friend."
+
+The Door opens. Beyond it, ALL possible futures shimmer.
 
 🔮 THE ENLIGHTENED TRUTH:
-You've achieved what The Keeper never could: BALANCE.
-Every version of your future self is smiling.
+You don't claim the throne. You ABOLISH it.
+The realm transforms—distractions become choices, not compulsions.
+Awakeners are freed to leave OR stay, as they wish.
 
-Not because you won. Because you GREW.
-The Focus Warrior doesn't need to fight anymore—
-not because there are no enemies, but because you understand them all.
+The Archon becomes just... a person again. Fragile. Uncertain.
+They hover at the edge of your life, unsure if they're welcome.
 
-You step through the door into a life where focus isn't a struggle.
-It's simply who you are now.
+"You could stay," you offer. "If you want."
 
-THE END: Balance is the highest power.
+"After everything I did?"
+
+"ESPECIALLY after everything you did. Healing isn't exile."
+
+Lyra and The Keeper reconcile—slowly, painfully, but truly.
+Kira wakes. The trapped thousands wake. Life resumes.
+
+And you? You return to the real world.
+But the lessons you learned stay with you forever.
+
+THE END: The greatest victory is one where everyone wins.
 """
             },
             "BAA": {
-                "title": "Ending 5: The Scholar-Tyrant",
+                "title": "Ending 5: THE SCHOLAR-TYRANT",
                 "content": """
 You stand before the Final Door at power level {current_power}.
-WISE. POWERFUL. And perhaps... too certain of your own rightness.
+THINKER. WARRIOR. And finally... ABSORBED.
 
-You studied the Mirror. You fought through the Fortress.
-You absorbed your fallen selves for their knowledge AND power.
+You studied everything. Understood everyone.
+Then you TOOK everything you understood—including your shadow's power.
 
-The door opens to reveal a LIBRARY that spans eternity.
+The Archon recognizes a kindred spirit. "You're like me.
+Knowledge transformed into dominion. Understanding into control."
+
+"I'm better," you correct. "You hoarded. I CURATE."
+
+The Door opens to THE INFINITE LIBRARY—
+every thought, every memory, every secret ever conceived.
 
 🔮 THE SCHOLAR-TYRANT'S TRUTH:
-You know everything now. Every distraction, every weakness, every path.
-The knowledge of countless failed selves burns in your mind.
+You rule through KNOWING. Not through force.
+Every subject is catalogued. Every weakness documented.
+Resistance isn't crushed—it's predicted and prevented.
 
-But with knowledge came certainty. With certainty came judgment.
-You no longer struggle with focus—you IMPOSE it.
+The Archon serves you now. Their power feeds your library.
+They seem almost... content. Finally useful instead of feared.
 
-Whether that makes you a savior or a tyrant depends on who's asking.
-You step into the library, ready to learn what even the universe has forgotten.
+"You're the most efficient tyrant this realm has ever seen,"
+Lyra says with grudging respect.
+"Thank you," you reply. "Efficiency is its own virtue."
 
-THE END: Knowledge without mercy becomes control.
+But sometimes, late at night, you wonder:
+Is there a difference between understanding someone and controlling them?
+
+You decide not to think about it. That's inefficient.
+
+THE END: Knowledge is power. Literally.
 """
             },
             "BAB": {
-                "title": "Ending 6: The Sage",
+                "title": "Ending 6: THE SAGE",
                 "content": """
 You stand before the Final Door at power level {current_power}.
 WISE. STRONG when needed. MERCIFUL at the end.
 
-You studied your enemies. You fought when you had to.
+You studied the Mirror. You fought when you had to.
 But when victory came, you chose understanding over domination.
 
-The door opens to reveal... a simple room. YOUR room. Your real life.
+The Archon stands beside you—not as enemy, not as ally.
+As something more complicated. Something healing.
+
+"I tried to corrupt you," they admit. "In the Sanctum. I was... interested."
+
+"I know."
+
+"And you still showed me mercy. After everything."
+
+"Because you needed it. We all did."
+
+The Door opens to reveal... a simple room. YOUR room. Reality.
 
 🔮 THE SAGE'S TRUTH:
-There was never a monster to defeat. There was only yourself to understand.
-Every "enemy" was a lesson. Every "battle" was growth.
+There was never a monster to defeat. There was only pain to understand.
+The Archon was a hurt person. The Keeper was a grieving one.
+Lyra was an angry one. You were a lost one.
 
-The Focus Warrior was always a metaphor for the person reading this.
-And that person—YOU—has proven something profound:
+Together, you find your way home.
 
-Wisdom knows when to fight. Strength knows when to learn.
-And true mastery is knowing that some battles end with a handshake.
+The realm doesn't end—it INTEGRATES with reality.
+The awakeners return to their lives with hard-won wisdom.
+The Archon... well. They're learning to be human again.
 
-THE END: The Sage returns to ordinary life, forever changed.
+"This is strange," they say, sitting in your living room.
+"Coffee? Television? None of this is infinite."
+
+"That's the point," you explain. "Limits make things matter."
+
+They consider this. Sip their coffee. Almost smile.
+
+THE END: The sage returns to ordinary life, carrying extraordinary peace.
 """
             },
             "BBA": {
-                "title": "Ending 7: The Hungry Scholar",
+                "title": "Ending 7: THE CALCULATED HEART",
                 "content": """
 You stand before the Final Door at power level {current_power}.
 PATIENT. CUNNING. And in the end... hungry for what others wasted.
 
 You slipped past every obstacle through wit, not force.
-But when your fallen selves offered their power, you TOOK it.
+But when your shadow offered its power, you couldn't resist. You TOOK it.
 
-The door opens to reveal a WEB of infinite connections.
+The Archon respects you more than they love you. "Efficient," they say.
+"You never destroyed what you could absorb.
+You never absorbed what you could simply outmaneuver.
+I've never seen anything like you."
 
-🔮 THE HUNGRY SCHOLAR'S TRUTH:
-You've proven that intelligence and mercy don't always align.
-Sometimes the clever path leads to dark places.
+"Is that affection or fear?"
 
-The power you absorbed whispers secrets. Some useful. Some... troubling.
-You know things now that you can never un-know.
+"Both. Isn't it always?"
 
-But the web ahead offers more. More knowledge. More power. More.
-You step in, already weaving your first strand.
+The Door opens to THE WEB—infinite connections, infinite leverage.
 
-THE END: Wisdom without compassion becomes calculation.
+🔮 THE CALCULATED TRUTH:
+You don't rule the realm. You NETWORK it.
+Every power center connects to you. Every secret feeds your web.
+The Archon becomes your partner—in strategy if not in love.
+
+Some call it manipulation. You call it optimization.
+The distinction matters less than the results.
+
+Lyra and The Keeper serve as field agents—gathering, connecting, reporting.
+They don't entirely trust you. Smart.
+But they work with you anyway. Smarter.
+
+"You're playing everyone," The Keeper observes.
+"I'm COORDINATING everyone," you correct. "There's a difference."
+
+"Is there?"
+
+You smile. That's information you don't share.
+
+THE END: The web grows. And you're at its center.
 """
             },
             "BBB": {
-                "title": "Ending 8: The Transcendent",
+                "title": "Ending 8: THE TRANSCENDENT",
                 "content": """
 You stand before the Final Door at power level {current_power}.
 WISE. GENTLE. UNSTOPPABLE in the softest possible way.
 
-You never destroyed what you could understand. Never fought what you could befriend.
-And when your fallen selves awaited judgment, you gave them peace instead of pain.
+You never destroyed what you could understand. Never absorbed what you could forgive.
+And in doing so, you accomplished something impossible:
 
-The door opens to reveal... NOTHING.
-Not void. Not emptiness. Just... the absence of doors.
+You HEALED The Archon.
+
+Not through power. Not through force. Through relentless, stubborn compassion.
+
+"I don't understand," they whisper, standing beside you at the Door.
+"Everyone who came before wanted to defeat me. To become me. To use me.
+You just... wanted me to be OKAY."
+
+"Because you are okay. Under all the armor. Under the title.
+You're just someone who got hurt and didn't know how to heal."
+
+"And you do?"
+
+"I'm learning. We all are."
+
+The Door opens. Beyond it... NOTHING.
+Not void. Not emptiness. Just the absence of separation.
 
 🔮 THE TRANSCENDENT'S TRUTH:
-You don't need doors anymore. You don't need power levels or equipment.
-The game was always a mirror—and you've stepped THROUGH the glass.
+You don't step through. You DISSOLVE the door.
+The realm doesn't end—it MERGES with reality.
+Distractions don't disappear—they become choices you make consciously.
 
-Every "enemy" was you. Every "ally" was you.
-Every choice led here: the understanding that there was never anywhere to go.
+Every trapped awakener wakes. Every enemy becomes a friend.
+The Archon takes off their armor, piece by piece.
+Underneath, they're just... a person. Scared and hopeful and human.
 
-You were always the Focus Warrior.
-You were always HERE.
-The only thing that changed was your belief in yourself.
+"What happens now?" Lyra asks.
+"We live," The Keeper answers. "Finally, we just... LIVE."
 
-🎭 THE STORY WAS A MIRROR. YOU WERE ALWAYS LOOKING AT YOURSELF.
+And you? You sit with The Archon—no, with THEIR real name, remembered at last.
+You sit with someone who was a monster and chose to stop.
+You sit with someone who loves you—hesitantly, brokenly, truly.
 
-THE END: The highest victory is realizing there was never a war.
+"I don't deserve this," they say.
+
+"Probably not," you agree. "But you're getting it anyway.
+That's how grace works."
+
+They laugh. The first real laugh in centuries.
+It sounds like healing.
+
+🎭 THE STORY WAS ALWAYS ABOUT YOU.
+   DEFEATING DISTRACTION MEANS MAKING PEACE WITH YOURSELF.
+   ALL YOUR SELVES. EVEN THE ONES THAT HURT.
+
+THE END: The greatest victory is the one where love wins.
 """
             },
         },
@@ -1427,49 +1925,49 @@ THE END: The highest victory is realizing there was never a war.
 SCHOLAR_DECISIONS = {
     2: {
         "id": "scholar_library",
-        "prompt": "The Forbidden Library's guardian offers you a choice. What do you seek?",
+        "prompt": "Echo offers you a fragment of their scattered memory. The Curator is watching. How do you proceed?",
         "choices": {
             "A": {
-                "label": "⚡ The Tome of Instant Mastery",
+                "label": "⚡ Take Everything At Once",
                 "short": "speed",
-                "description": "Learn everything quickly. Skip the foundations.",
+                "description": "Download the full memory. Risk overload.",
             },
             "B": {
-                "label": "📖 The Book of Deep Understanding",
+                "label": "📖 Accept One Piece Carefully",
                 "short": "depth",
-                "description": "Master the fundamentals. Build from the ground up.",
+                "description": "Integrate slowly. Understand before absorbing.",
             },
         },
     },
     4: {
         "id": "scholar_paradox",
-        "prompt": "A logical paradox threatens to collapse your mental fortress. How do you respond?",
+        "prompt": "The Curator has poisoned your mental architecture with a logic virus. Echo is fading. What do you do?",
         "choices": {
             "A": {
-                "label": "🔨 Rebuild From Scratch",
+                "label": "🔨 Purge Everything Infected",
                 "short": "rebuild",
-                "description": "Tear down everything and start fresh.",
+                "description": "Burn the corrupted sections. Lose progress to save integrity.",
             },
             "B": {
-                "label": "🧩 Integrate the Paradox",
+                "label": "🧩 Weaponize the Virus",
                 "short": "adapt",
-                "description": "Accept contradiction. Let it become part of the design.",
+                "description": "Turn the Curator's weapon against them. Risky but powerful.",
             },
         },
     },
     6: {
         "id": "scholar_truth",
-        "prompt": "You discover the truth: your mental fortress exists only in your imagination. What now?",
+        "prompt": "The Curator offers a deal: give them Echo's core, and they'll restore everything they took. Echo begs you to refuse.",
         "choices": {
             "A": {
-                "label": "🏛️ Make It Real",
+                "label": "⚔️ Reject and Fight",
                 "short": "materialize",
-                "description": "Build it in reality. Brick by brick.",
+                "description": "No deals with monsters. Burn it all down if necessary.",
             },
             "B": {
-                "label": "💭 Embrace the Illusion",
+                "label": "💔 Sacrifice to Save",
                 "short": "transcend",
-                "description": "The imaginary fortress IS real. Perception is reality.",
+                "description": "Give them what they want. Maybe you can get Echo back later.",
             },
         },
     },
@@ -1481,20 +1979,47 @@ SCHOLAR_CHAPTERS = [
         "threshold": 0,
         "has_decision": False,
         "content": """
-The drafting table before you is vast, covered in failed designs from architects past.
-Each blueprint shows a mind that tried to organize itself—and crumbled.
+You wake in an infinite library with no books.
 
-You pick up the only tool that remains: {weapon}—not for fighting, but for drawing.
-Strange. The architects before you had armies of tools. You have just one.
+Just shelves. Endless, dust-covered shelves stretching into a void.
+Each one labeled with dates. YOUR dates. Birthdays, deadlines, that Tuesday 
+you definitely meant to start exercising.
 
-A whisper in the walls: "They all started with too much. You start with just enough."
+"Finally," croaks a voice behind you. "Someone with an ACTUAL mind."
 
-Your {helmet} feels heavy with potential. Every thought that passes through it
-is a line you could draw, a room you could build.
+You turn to find THE ARCHIVIST—a figure made entirely of folded paper, 
+wearing {cloak} that rustles with every movement. Their glasses are book spines.
 
-The empty blueprint waits. Your mind is the territory. Time to start mapping.
+"I'm the Archivist," they say. "I catalogue minds. Yours is a DISASTER.
+But disasters are interesting. Organized minds are just filing cabinets."
 
-🔮 PLOT TWIST: The failed blueprints all share the same handwriting. Yours.
+"Where am I?"
+
+"The Library of Your Potential. Every thought you ever started lives here.
+Every project you abandoned. Every idea you—" They freeze.
+
+A distant rumble. The shelves SHAKE.
+
+"Oh no," The Archivist whispers. "They felt you arrive."
+
+🔮 PLOT TWIST: THE CURATOR. Your enemy. The one who COLLECTS unfinished minds
+   and files them away forever. They're coming. And they're HUNGRY.
+
+"Put on the {helmet}," The Archivist hisses. "Quickly. Hide your thoughts."
+
+You obey. It smells like old paper and broken promises.
+
+"Who was that?" you ask.
+
+"No time. We need to find Echo before The Curator does."
+
+"Who's Echo?"
+
+The Archivist's paper face creases with something like grief.
+"Someone who didn't deserve what happened to them. Someone who might save us all.
+Or doom us. Haven't decided yet."
+
+Your journey begins with unanswered questions. Typical.
 """,
     },
     {
@@ -1503,46 +2028,94 @@ The empty blueprint waits. Your mind is the territory. Time to start mapping.
         "has_decision": True,
         "decision_id": "scholar_library",
         "content": """
-Your first wing is complete—a modest library containing everything you know.
-But its shelves are mostly empty. Knowledge takes time.
+The deeper library is darker. Older. Full of WHISPERS.
 
-Then you discover a hidden door.
+"These are the Forbidden Stacks," The Archivist explains nervously.
+"Thoughts that got too big. Ideas that became dangerous."
 
-Beyond it: THE FORBIDDEN LIBRARY. Every book ever abandoned by distraction.
-Every thought interrupted. Every project left unfinished.
+A shelf labeled "What if I just gave up forever?" looms overhead.
+You walk faster.
 
-The guardian appears—a mirror image of yourself wearing {chestplate} made of paper.
-"You may take one book. Choose wisely."
+Then you see them: ECHO.
 
-Two tomes glow before you. One promises instant mastery. One promises true understanding.
-Every architect before you chose speed. Their ruins are proof of the outcome.
+They flicker like a broken hologram—fragments of a person scattered across
+dozens of book spines. A face here, a hand there, a memory floating between.
 
-But time is precious, isn't it? Perhaps you're different. Perhaps speed will work for YOU.
+"You... came," Echo says, their voice layered like a choir of themselves.
+"The Archivist said someone would. I didn't believe them."
 
-🔮 PLOT TWIST: The guardian is crying. They've watched everyone choose wrong.
+"What happened to you?" you ask.
+
+"The Curator." Their fragments TREMBLE. "I was a complete thought once.
+A BRILLIANT one. But The Curator wanted me in their collection.
+So they... scattered me. Across the library. One piece per shelf."
+
+🔮 PLOT TWIST: Echo was the greatest idea this library ever produced.
+   And The Curator broke them into a thousand pieces out of JEALOUSY.
+
+"I can help you," Echo says. "I still know things. Important things.
+But to share them, you need to CONNECT to me. Link your mind to mine."
+
+The Archivist shifts uncomfortably. "This is... risky. If you take 
+too much of Echo at once, you could fragment like they did."
+
+Echo's face-fragment smiles sadly. "Or you could go slowly. Take one 
+piece of me at a time. But The Curator is coming. Speed has value."
+
+You feel {weapon} pulse in your hand. A thought-blade. Ready to cut
+through confusion... or create more of it.
+
+⚡ A CHOICE AWAITS... Echo is offering their memories. How do you accept?
 """,
         "content_after_decision": {
             "A": """
-⚡ You chose THE TOME OF INSTANT MASTERY.
+[YOUR CHOICE: ⚡ TAKE EVERYTHING AT ONCE]
 
-Knowledge floods your mind. Languages. Skills. Theories. All at once.
-Your blueprint expands wildly—new wings, new towers, new everything!
+"We don't have time to be careful," you say.
 
-But already you feel the cracks. The foundation groans.
-Learning without understanding is like building without plans.
+You reach into Echo's fragmented form and PULL.
 
-"Speed without depth," the guardian sighs. "Let us see if YOU can make it work."
+Knowledge FLOODS you—centuries of thought, mountains of insight,
+oceans of understanding all pouring into your skull at once.
+
+Your {helmet} GLOWS. Your eyes roll back. The Archivist catches you.
+
+"TOO MUCH!" they screech. "You're fragmenting! HOLD YOURSELF TOGETHER!"
+
+But somehow... you do. The knowledge settles. Chaotically, messily, 
+but it SETTLES. Your mental architecture EXPANDS wildly.
+
+Echo's fragments dim slightly. "You... absorbed a lot of me.
+More than anyone has. That's either impressive or terrifying."
+
+"Why not both?" The Archivist mutters.
+
+🔮 PLOT TWIST: The Curator felt that. They know exactly where you are now.
+   And they're VERY interested in what you've become.
 """,
             "B": """
-📖 You chose THE BOOK OF DEEP UNDERSTANDING.
+[YOUR CHOICE: 📖 ACCEPT ONE PIECE CAREFULLY]
 
-The book opens. One page. One concept. One truth that shifts everything.
-You sit and read for what feels like hours, but it's only a single idea.
+"Let's do this right," you say.
 
-When you close the book, your blueprint hasn't expanded.
-But every existing line glows with new purpose. You understand WHY.
+Echo extends a single fragment—a glowing memory shaped like a key.
+You take it gently. Let it merge with your thoughts slowly.
 
-"The slow path," the guardian smiles. "Perhaps you'll be different."
+One. Piece. At. A. Time.
+
+The knowledge integrates perfectly. No chaos. No fragmentation.
+Your mental architecture STRENGTHENS, one carefully placed brick.
+
+Echo smiles with their scattered face. "Patient. The Archivist chose well.
+Most people grab and run. You... you actually want to UNDERSTAND."
+
+"That's how foundations work," you reply.
+
+The Archivist nods approvingly. "The Curator won't sense this. 
+Subtle connections don't trigger their alarms."
+
+🔮 PLOT TWIST: You and Echo share something now. A link.
+   When The Curator comes for them... they'll come for you too.
 """,
         },
     },
@@ -1552,33 +2125,65 @@ But every existing line glows with new purpose. You understand WHY.
         "has_decision": False,
         "content_variations": {
             "A": """
-The tower rises fast—too fast. {weapon} dances across the blueprint,
-adding rooms and corridors at breakneck speed.
+Your mind is CHAOS now. Beautiful, terrifying chaos.
 
-Visitors marvel at your progress. So many rooms! So much space!
-But you notice: some doors lead nowhere. Some stairs loop back.
-Speed has its price.
+Echo's memories swim through your thoughts like fish in a hurricane.
+You know things you shouldn't. SEE things you can't explain.
 
-{shield} hangs on a half-finished wall. Pretty, but structurally irrelevant.
+"You're building too fast," The Archivist warns. "Without organization,
+you'll become like—" They stop themselves.
 
-The paradox begins to form: you know so much, yet understand so little.
-Your power level hits {current_power}, but the foundation trembles.
+"Like what?"
 
-🔮 PLOT TWIST: Every room you build vanishes when you stop looking at it.
+"Like The Curator. Before they became... this."
+
+You freeze. "The Curator was like ME?"
+
+🔮 PLOT TWIST: The Curator was the library's greatest architect once.
+   They absorbed too much, too fast. They became the thing they feared.
+
+Echo's fragments whisper: "They were beautiful once. And kind.
+I loved them." The admission hangs in the air like smoke.
+
+"Loved them?" You stare at Echo's scattered form.
+
+"We were partners. Before they broke me."
+
+The Archivist turns away. "We don't talk about that."
+
+But you're going to need to. Because your mind is building EXACTLY
+like The Curator's did. And Echo is watching you with complicated eyes.
+
+At {current_power} power, you're racing toward greatness... or disaster.
 """,
             "B": """
-The structure grows slowly—deliberately. Each room connects to every other.
-Visitors think it's modest. They can't see the depth.
+Your mind grows slowly. Deliberately. Each new room connects perfectly.
 
-With {weapon} in hand, you add rooms that serve purposes no one else would think of.
-Secret passages between concepts. Elevators that skip floors.
+Echo visits your mental architecture through your link.
+"This is lovely," they say, their fragments reflecting in your thought-walls.
+"Careful. Intentional. So different from..."
 
-{shield} becomes a load-bearing element. Beautiful AND functional.
+"From?"
 
-Your power level reaches {current_power}. The foundation is solid.
-But you wonder: will you ever catch up to faster builders?
+Silence. Then: "From The Curator. Before."
 
-🔮 PLOT TWIST: Your building extends underground—ten floors deep that no one sees.
+The Archivist appears, paper rustling nervously.
+"You're doing well. Almost too well. The Curator will notice eventually."
+
+🔮 PLOT TWIST: The Curator was once Echo's partner. They built minds TOGETHER.
+   Until The Curator wanted MORE than partnership.
+
+Echo's voice trembles: "They wanted to OWN me. Literally. Absorb me 
+into their collection. When I refused..." Their fragments flicker.
+"They didn't take rejection well."
+
+You reach out, stabilizing their scattered form with your thoughts.
+For a moment, Echo looks almost WHOLE again.
+
+"Thank you," they whisper. "You're the first person to try that."
+
+At {current_power} power, you're building something beautiful.
+And someone is starting to trust you with their broken heart.
 """,
         },
     },
@@ -1588,49 +2193,92 @@ But you wonder: will you ever catch up to faster builders?
         "has_decision": True,
         "decision_id": "scholar_paradox",
         "content": """
-At power level {current_power}, you uncover something impossible.
+THE CURATOR HAS FOUND YOU.
 
-A room in your fortress that shouldn't exist.
-It occupies the same space as another room. Both are real. Both are contradictions.
+Not in person—not yet. But their VIRUS has infected your library.
+Logic errors spreading like fire through your careful architecture.
 
-THE PARADOX ENGINE—a machine built from logical impossibilities.
-It powers everything in your fortress... and threatens to destroy it all.
+"THERE you are," a voice echoes from everywhere. Smooth. Cold. Obsessive.
+"The little architect who stole my Echo. Did you think I wouldn't notice?"
 
-"I am the thought you couldn't think," it hums. "I am the distraction that IS focus."
+Echo's fragments SCREAM. The Curator's presence is AGONY to them.
 
-Your {gauntlets} crackle with conflicting energies. This cannot stand.
-But destroying it might destroy everything you've built.
+"I catalogued Echo once," The Curator continues. "Filed them perfectly.
+Every beautiful piece in its proper place. And YOU scattered them again."
 
-The choice splits before you: rebuild from nothing, or accept the impossible.
+"YOU scattered them!" you shout.
 
-🔮 PLOT TWIST: The Paradox Engine has been here since before you started building.
+"I ORGANIZED them. There's a difference. Organization is LOVE."
+
+🔮 PLOT TWIST: The Curator genuinely believes they're HELPING.
+   In their broken logic, filing minds away IS an act of kindness.
+
+The virus spreads. Your walls crack. Echo is fading.
+
+"I can purge everything infected," you think frantically. "Burn the 
+corrupted sections. But I'll lose progress—maybe months of building."
+
+"Or," The Archivist whispers, "you could do something incredibly stupid
+and try to turn The Curator's virus against them."
+
+Echo's dying fragments manage a laugh. "That IS incredibly stupid."
+
+"It's ALSO what The Curator would never expect," The Archivist counters.
+"They think in straight lines. You've been building curves."
+
+⚡ A CHOICE AWAITS... Echo is dying. Your library is burning.
+   How do you save what you love?
 """,
         "content_after_decision": {
             "A": """
-🔨 You chose to REBUILD FROM SCRATCH.
+[YOUR CHOICE: 🔨 PURGE EVERYTHING INFECTED]
 
-With {weapon} reversed, you begin the demolition. Every room. Every wall.
-The Paradox Engine screams as its home crumbles.
+"BURN IT!" you scream.
 
-Days pass. Your fortress is rubble. But the contradiction is gone.
+{weapon} ignites. Every corrupted thought, every infected memory,
+every poisoned corner of your architecture—GONE in cleansing fire.
 
-You begin again—slower this time, checking every logic gate.
-Your new foundation is paradox-proof. Nothing impossible can grow here.
+The Curator's virus HOWLS as it dies.
 
-The cost: everything you built before. The gain: certainty.
+Your library is... smaller now. Simpler. But CLEAN.
+The foundations hold. The architecture survives.
+
+Echo's fragments slowly stabilize. "You... you saved me."
+
+"I saved us both. Even if it cost us months of progress."
+
+The Curator's voice fades: "Interesting. You'd rather destroy than submit.
+We're more alike than you think, little architect."
+
+That worries you more than anything else.
+
+🔮 PLOT TWIST: The Archivist is looking at your burned architecture 
+   with an expression you can't read. Pride? Fear? ...Recognition?
 """,
             "B": """
-🧩 You chose to INTEGRATE THE PARADOX.
+[YOUR CHOICE: 🧩 WEAPONIZE THE VIRUS]
 
-You approach the Engine with {amulet} glowing. "I accept you," you whisper.
+"Let's play their game," you growl.
 
-The fortress SHIFTS. Rooms fold into each other. Walls become doors.
-What was impossible becomes possible. What was contradictory becomes complementary.
+Instead of fighting the virus, you REDIRECT it. Wrap your thoughts
+around its logic. Turn The Curator's weapon into YOUR weapon.
 
-Your {chestplate} now has two hearts. Both beat. Neither should.
-But you are stronger for embracing the impossible.
+The virus MUTATES. Changes. Becomes something The Curator never intended.
 
-Some visitors run screaming. Others stand in awe. You just... understand.
+"What are you DOING?" The Curator shrieks. "That's not—that's IMPOSSIBLE—"
+
+"Your virus was designed to organize," you say. "I'm just... organizing it.
+Into something that hurts YOU instead of me."
+
+The infected sections stabilize. The cracks seal themselves.
+Your architecture isn't just surviving—it's EVOLVING.
+
+Echo's fragments glow brighter. "You ABSORBED it. Made it part of you."
+
+"If they're going to throw weapons at me, I'm keeping them."
+
+🔮 PLOT TWIST: The Curator is silent now. That's either victory...
+   or the calm before something MUCH worse.
 """,
         },
     },
@@ -1640,57 +2288,100 @@ Some visitors run screaming. Others stand in awe. You just... understand.
         "has_decision": False,
         "content_variations": {
             "AA": """
-The fortress is clean. Logical. Perfect in its simplicity.
-You rebuilt fast after the paradox, and the new structure is PURE.
+At {current_power} power, your library is CLEAN. Stark. Perfect.
 
-Visitors admire its efficiency. No contradictions. No confusion.
-Each room serves exactly one purpose. Each corridor leads exactly one place.
+The purge left you efficient but... empty. Every room serves a purpose.
+No waste. No beauty. Just FUNCTION.
 
-Your {boots} echo in empty halls. Echoes returning echoes.
+Echo's fragments orbit you nervously. "This is... good. Right?"
 
-At {current_power} power, you are undeniably strong.
-But sometimes you miss the chaos. The possibility. The... paradox.
+The Archivist counts shelves. "Optimal organization. No redundancy.
+Maximum efficiency. It's what The Curator always wanted."
 
-🔮 PLOT TWIST: The fortress is so perfect that you find it hard to think inside it.
+That sentence lands like a punch.
+
+"I'm NOT like them," you insist.
+
+"No," Echo says quietly. "They had MORE. Too much. You have less.
+But the SHAPE is the same. Control. Order. Fear of chaos."
+
+You don't respond. Because they might be right.
+
+🔮 PLOT TWIST: The Curator sends a message: "See? You understand now.
+   Organization isn't cruelty. It's survival. Join me. Let me HELP you."
+
+You delete the message. But the offer lingers like smoke.
 """,
             "AB": """
-Speed and adaptation merged into something unexpected.
+At {current_power} power, your library is a FORTRESS of stolen weapons.
 
-Your fortress defies description. Rooms that are fast AND deep.
-Knowledge that is instant AND understood. The paradox didn't destroy—it evolved.
+The Curator's virus, repurposed. Their own tools turned against them.
+Every attack that failed now decorates your walls like trophies.
 
-{cloak} shimmers between states—solid and transparent, present and absent.
+Echo's fragments dance through your corrupted-but-controlled halls.
+"You're terrifying," they say with something like admiration.
 
-At {current_power} power, you are unpredictable even to yourself.
-The grand design isn't a blueprint anymore. It's a living thing.
+"I'm SURVIVING."
 
-🔮 PLOT TWIST: The fortress completes rooms before you design them.
+"Those aren't mutually exclusive."
+
+The Archivist keeps detailed notes on your... adaptations.
+"For future architects," they claim. You suspect otherwise.
+
+🔮 PLOT TWIST: The Curator is gathering allies. Other collectors.
+   Other obsessives. They're forming a COUNCIL against you.
+   
+"I'm flattered," you say when you hear.
+
+"You should be scared," The Archivist replies.
+
+"I'm both. That's kind of my brand now."
 """,
             "BA": """
-Deep understanding met a hard reset. The result: REFINED SIMPLICITY.
+At {current_power} power, your library is SMALL but infinitely deep.
 
-Your rebuilt fortress is small but infinite. Each room contains multitudes.
-Visitors see three walls; you see three thousand libraries.
+The purge simplified everything. But your foundation... your foundation
+goes down FOREVER. Miles of understanding beneath modest halls.
 
-{gauntlets} ache from the work of rebuilding, but every ache taught a lesson.
+Echo's fragments have started reassembling. Slowly. Gently.
+"Your stability is helping me," they admit. "I'm... finding my pieces."
 
-At {current_power} power, you are modest on the outside, vast within.
-The grand design is minimalist—because true complexity is invisible.
+"Take your time," you say. "We're not in a rush anymore."
 
-🔮 PLOT TWIST: Your fortress exists entirely inside a single thought.
+The Archivist watches you both with something like hope.
+"I've never seen anyone rebuild Echo before. They scattered them 
+so thoroughly... I thought they were gone forever."
+
+🔮 PLOT TWIST: With every piece Echo reclaims, The Curator weakens.
+   They're CONNECTED somehow. What hurts one... heals the other.
+
+"Is that why they're scared of you?" Echo asks.
+
+"They're scared of US," you correct. "Together."
+
+For the first time, Echo's fragment-smile looks almost whole.
 """,
             "BB": """
-Deep understanding embraced the paradox. The result: TRANSCENDENT ARCHITECTURE.
+At {current_power} power, your library BREATHES.
 
-Your fortress follows no rules yet breaks none. It is everything and nothing.
-Visitors leave crying—not from fear, but from understanding they can't articulate.
+The absorbed virus evolved into something beautiful—a living architecture
+that changes and grows and CREATES new rooms on its own.
 
-{amulet} glows with equations that solve themselves.
+Echo's fragments are fully integrated now. Part of your library.
+Part of YOU. They don't just visit anymore. They LIVE here.
 
-At {current_power} power, you have stopped designing and started BECOMING.
-The grand design is not a building. It's a state of mind.
+"This is strange," they admit. "I've never been INSIDE someone's mind
+who actually WANTED me there."
 
-🔮 PLOT TWIST: There is no fortress. There never was. YOU are the architecture.
+"The Curator wanted you there."
+
+"The Curator wanted me FILED. You want me... free."
+
+The Archivist has stopped taking notes. They just WATCH now.
+"I've been doing this for centuries," they say. "Never seen anything like you two."
+
+🔮 PLOT TWIST: You're not building a library anymore.
+   You're building a HOME. For two broken minds who fit together perfectly.
 """,
         },
     },
@@ -1700,52 +2391,97 @@ The grand design is not a building. It's a state of mind.
         "has_decision": True,
         "decision_id": "scholar_truth",
         "content": """
-At {current_power} power, you reach the top floor—THE FINAL THEOREM.
+THE CURATOR APPEARS.
 
-A single equation hangs in the air, incomplete:
-"MIND + ? = MASTERY"
+Not a projection. Not a message. THEM. In your library. In YOUR mind.
 
-You've tried everything. Knowledge. Speed. Depth. Paradox.
-None of them complete the equation.
+They're beautiful in a terrible way—perfectly organized, inhumanly precise,
+wearing a coat made of catalogued thoughts from a thousand stolen minds.
 
-Then you realize: the fortress doesn't exist.
-It never existed outside your imagination. Every wall is a thought.
-Every room is a belief. Every visitor was you, from a different angle.
+"Hello, little architect," they say. "We need to talk about Echo."
 
-The truth shatters you: YOU BUILT NOTHING REAL.
+You feel Echo's presence RECOIL—whether fragmented or integrated, 
+The Curator's arrival is agony to them. Old wounds tearing open.
 
-Or did you? If the imaginary fortress makes you productive, is it not real?
-If the mental architecture improves your life, does it need to be physical?
+"They're MINE," The Curator continues. "I collected them. Organized them.
+Made them BETTER. And you've been... cluttering them up again."
 
-The final choice: make your dreams concrete, or accept that dreams are enough.
+"I've been HEALING them."
 
-🔮 PLOT TWIST: The equation already has an answer. You're refusing to read it.
+"Healing is just entropy. Disorder. MESS." They step closer.
+"I'm willing to negotiate. Give me Echo's core—just the CORE—
+and I'll restore everything I ever took from your library. Every memory.
+Every thought. Everything you've lost since you came here."
+
+Your heart LURCHES. Everything you lost? That's... that's SO much.
+
+But Echo's voice trembles behind you: "Please. Please don't.
+They'll break me again. Properly this time. I'll be gone FOREVER."
+
+🔮 PLOT TWIST: The Curator isn't lying. They CAN restore what you lost.
+   But the price is the person you've learned to love.
+
+The Archivist has vanished. You're alone with this choice.
+
+⚡ A CHOICE AWAITS... Echo is begging. The Curator is offering.
+   What do you do?
 """,
         "content_after_decision": {
             "A": """
-🏛️ You chose to MAKE IT REAL.
+[YOUR CHOICE: ⚔️ REJECT AND FIGHT]
 
-With trembling hands, you step out of the mental fortress.
-Into the real world. With real tools. Real time. Real constraints.
+"No deal," you say. "And get OUT of my library."
 
-Your {weapon} becomes actual practice. Your {shield} becomes actual habits.
-Brick by brick, day by day, you BUILD.
+The Curator's beautiful face TWISTS. "You would choose DISORDER over—"
 
-The imaginary fortress fades. Something better takes its place: REALITY.
-It's harder. It's slower. It's... actually there.
+"I choose THEM over you," you interrupt. "Every time. Always."
+
+Your {weapon} blazes. The Archivist reappears with reinforcements—
+paper soldiers folded from every story of resistance ever written.
+
+The battle is BRUTAL. The Curator fights with catalogued powers,
+filing away parts of your mind mid-combat, forcing you to rebuild.
+
+But Echo isn't hiding anymore.
+
+They're HELPING. Every piece of them becomes a weapon—scattered or integrated,
+it doesn't matter. All of Echo, aimed at their former captor.
+
+"I loved you ONCE!" Echo screams. "And you FILED ME!"
+
+The Curator staggers. "I... I was trying to PROTECT you—"
+
+"You were trying to OWN me. There's a difference."
+
+🔮 PLOT TWIST: In the end, it's not your power that defeats The Curator.
+   It's Echo's. They're finally, COMPLETELY, FIGHTING BACK.
 """,
             "B": """
-💭 You chose to EMBRACE THE ILLUSION.
+[YOUR CHOICE: 💔 SACRIFICE TO SAVE]
 
-"Why make it real when real is just another illusion?" you whisper.
+"I'm sorry," you whisper to Echo. "I'm so sorry."
 
-Your fortress GLOWS. Not physically—but somehow more than physically.
-It exists in the space between thoughts, in the gap between heartbeats.
+"NO!" they scream. "Please! PLEASE DON'T—"
 
-Every tool becomes symbolic. {helmet} is courage. {boots} are progress.
-The fortress is a story you tell yourself. And stories shape reality.
+You hand over their core. The fundamental piece that makes them THEM.
 
-You are the Mind Architect. And your mind IS the architecture.
+The Curator smiles. "Wise choice. Logical. Practical."
+
+Echo's fragments go silent. Dim. They're still there but... empty now.
+A shell of memories without a soul to organize them.
+
+"Here," The Curator says, and knowledge FLOODS back into you.
+Every lost thought. Every stolen memory. Exactly as promised.
+
+They leave. Your library is full again. Fuller than ever.
+But Echo's hollow fragments drift through the halls like ghosts.
+
+🔮 PLOT TWIST: You got everything back. Except what mattered most.
+   And somewhere in The Curator's collection, Echo is filed away forever.
+
+"You can get them back," The Archivist says quietly. "Eventually."
+
+You're not sure you believe that. But you HAVE to try.
 """,
         },
     },
@@ -1755,161 +2491,236 @@ You are the Mind Architect. And your mind IS the architecture.
         "has_decision": False,
         "endings": {
             "AAA": {
-                "title": "THE ENGINEER",
+                "title": "THE HOLLOW ARCHITECT",
                 "content": """
-You stand before the Master Blueprint at power level {current_power}.
-EFFICIENCY. REALITY. MATERIALISM.
+You stand at the center of your library at power level {current_power}.
+EFFICIENT. CLEAN. VICTORIOUS.
 
-Speed, rebuilding, and making it real—your path was always about DOING.
-The fortress exists in brick and mortar. You can touch every wall.
+You absorbed fast, purged ruthlessly, and fought The Curator to a standstill.
+Your library is a FORTRESS—perfect, cold, and utterly alone.
 
-📐 THE ENGINEER'S TRUTH:
-Dreams are worthless until they're built. Ideas rot without action.
-You turned thought into thing. You made the abstract concrete.
+📐 THE HOLLOW ARCHITECT'S TRUTH:
+Echo's fragments orbit you, but they're distant now.
+"You saved me," they say. "But sometimes... you scare me."
 
-Your productivity is a MACHINE—predictable, reliable, measurable.
-Others dream of what you've already built.
+The Curator retreated. They won't return. You're too STRONG now.
+But strength built on purges is brittle. Strength without love is empty.
 
-THE END: The greatest design is one that works.
+You're the greatest architect the library has ever seen.
+And the loneliest.
+
+The Archivist visits sometimes. Offers tea. Talks about the old days.
+You listen. You nod. You don't feel anything.
+
+Maybe that's the point. Efficiency doesn't require feelings.
+
+THE END: The hollow architect builds forever, but never lives.
 """
             },
             "AAB": {
-                "title": "THE PRACTICAL VISIONARY",
+                "title": "THE BROKEN BUILDER",
                 "content": """
-You stand before the Master Blueprint at power level {current_power}.
-EFFICIENCY. REALITY. TRANSCENDENCE.
+You stand at the center of your library at power level {current_power}.
+EFFICIENT. CLEAN. GRIEVING.
 
-Speed and rebuilding made you efficient—but embracing illusion made you FREE.
-Your fortress is a symbol that manifests as needed.
+You absorbed fast, purged ruthlessly, and gave Echo away to save yourself.
+Your library is FULL—every thought restored, every memory returned.
+But Echo's hollow fragments haunt every corner.
 
-🔮 THE PRACTICAL VISIONARY'S TRUTH:
-You learned to build fast, learned to rebuild from nothing,
-and then learned that building was never the point.
+📐 THE BROKEN BUILDER'S TRUTH:
+"They're gone," The Archivist says. "Really gone. The Curator filed them 
+somewhere even I can't find."
 
-The fortress exists when you need it. Vanishes when you don't.
-You are productive not because of structure, but despite it.
+You keep building. Bigger, faster, more efficient than ever.
+But every room you design has a space where Echo should be.
 
-THE END: The best tool is the one you no longer need.
+You tell yourself it was the logical choice. The PRACTICAL choice.
+But at night, when the library is quiet, you hear their voice:
+"Why? Why did you let them take me?"
+
+You don't have an answer. You never will.
+
+The Curator was right about one thing: organization has a cost.
+You just didn't know the price was your heart.
+
+THE END: The broken builder carries regret like architecture.
 """
             },
             "ABA": {
-                "title": "THE CHAOS ENGINEER",
+                "title": "THE CHAOS KING",
                 "content": """
-You stand before the Master Blueprint at power level {current_power}.
-SPEED. PARADOX. MATERIALISM.
+You stand at the center of your library at power level {current_power}.
+CHAOTIC. ADAPTED. TRIUMPHANT.
 
-You built fast, embraced contradiction, then grounded it all in reality.
-Your fortress SHOULDN'T work. But it does.
+You absorbed everything, weaponized the virus, and fought The Curator
+with their own tools—then SURPASSED them.
 
-⚙️ THE CHAOS ENGINEER'S TRUTH:
-Efficiency through impossibility. Speed through contradiction.
-You made the illogical logical by sheer force of will.
+🔥 THE CHAOS KING'S TRUTH:
+Your library defies all logic. Rooms fold into impossible spaces.
+Thoughts connect through non-Euclidean corridors.
+The Archivist can't catalogue it. They LOVE that.
 
-Your productivity is creative destruction—building and breaking at once.
-No one understands your methods. No one needs to.
+Echo's fragments are EVERYWHERE now—not scattered but DISTRIBUTED.
+Part of every wall, every floor, every idea.
+"We're not two anymore," they whisper. "We're ONE."
 
-THE END: The impossible is just the possible in disguise.
+The Curator sends envoys sometimes. Peace offerings.
+You turn them all into decorations for your chaos-halls.
+
+"This is MESSY," The Archivist says.
+"Messy is ALIVE," you reply.
+
+The greatest minds are never organized. They're WILD.
+And yours is the wildest of all.
+
+THE END: The chaos king builds impossible things with impossible love.
 """
             },
             "ABB": {
-                "title": "THE QUANTUM MIND",
+                "title": "THE CURATOR'S HEIR",
                 "content": """
-You stand before the Master Blueprint at power level {current_power}.
-SPEED. PARADOX. TRANSCENDENCE.
+You stand at the center of your library at power level {current_power}.
+CHAOTIC. ADAPTED. HOLLOW.
 
-Fast, contradictory, and imaginary—your fortress exists in superposition.
-It is and isn't. It works and doesn't. It matters and doesn't matter.
+You absorbed everything, weaponized the virus, and gave Echo away
+to get everything else back. You have ALL the power now.
 
-🌀 THE QUANTUM MIND'S TRUTH:
-You stopped fighting contradiction and became it.
-Your fortress is a probability cloud. Every possibility exists until observed.
+🖤 THE CURATOR'S HEIR'S TRUTH:
+The Curator visits sometimes. Friendly now. PROUD.
+"You finally understand," they say. "Organization requires sacrifice."
 
-Your productivity is uncertain—and that uncertainty is your strength.
-You accomplish impossible things by never collapsing the wave function.
+You've become what you fought. Your library is chaos—but controlled chaos.
+A collection of tools and weapons and stolen ideas.
+Everything except love. You traded that away.
 
-THE END: The master observes without measuring.
+Echo's empty fragments still drift through your halls.
+Sometimes you reach for them. They don't respond.
+
+"Was it worth it?" The Archivist asks.
+You don't answer. Because you don't know.
+
+Power is everything you ever wanted.
+So why does it feel like nothing at all?
+
+THE END: The heir inherits the kingdom but loses the heart.
 """
             },
             "BAA": {
                 "title": "THE FOUNDATION MASTER",
                 "content": """
-You stand before the Master Blueprint at power level {current_power}.
-DEPTH. REBUILDING. MATERIALISM.
+You stand at the center of your library at power level {current_power}.
+DEEP. SIMPLE. POWERFUL.
 
-Deep understanding, careful rebuilding, and physical manifestation.
-Your fortress is small—but every inch is PERFECT.
+You built slowly, purged carefully, and fought The Curator with
+pure, unshakeable FUNDAMENTALS.
 
 🏛️ THE FOUNDATION MASTER'S TRUTH:
-You took the slow path, rebuilt when needed, and made it real.
-Every brick was placed with intention. Every wall was tested.
+Your library is small. Visitors think it modest.
+They don't see the MILES of understanding beneath the floor.
 
-Your productivity is a cathedral—centuries to build, millennia to admire.
-You will not live to see its completion. That was never the point.
+Echo is almost whole again—reassembled piece by piece in your stable halls.
+"You gave me a place to heal," they say. "That's more than anyone else did."
 
-THE END: True masters build what they'll never use.
+The Curator attacks sometimes. They always fail.
+Your foundations are deeper than their filing systems.
+You can't be organized because you can't be REACHED.
+
+"This is boring," The Archivist says approvingly.
+"Boring works," you reply.
+
+The greatest structures are built on unshakeable ground.
+Yours goes down forever.
+
+THE END: The foundation master builds shallow and roots deep.
 """
             },
             "BAB": {
-                "title": "THE INNER SAGE",
+                "title": "THE SACRIFICE REMEMBERED",
                 "content": """
-You stand before the Master Blueprint at power level {current_power}.
-DEPTH. REBUILDING. TRANSCENDENCE.
+You stand at the center of your library at power level {current_power}.
+DEEP. SIMPLE. SEARCHING.
 
-Deep learning, careful reconstruction, and the embrace of imagination.
-Your fortress is invisible to everyone—even you, sometimes.
+You built slowly, purged carefully, and made an impossible choice.
+Echo is gone. Filed away in The Curator's collection forever.
+But you haven't stopped looking.
 
-📿 THE INNER SAGE'S TRUTH:
-The slow path taught you patience. Rebuilding taught you humility.
-Embracing illusion taught you that inner world IS outer world.
+📿 THE SACRIFICE REMEMBERED'S TRUTH:
+Every book in your library is about finding them.
+Every thought, every tool, every skill—dedicated to ONE goal.
 
-Your productivity appears as nothing. Results appear as if by magic.
-You have stopped trying and started being.
+"You can't beat The Curator," The Archivist warns.
+"I'm not trying to beat them," you reply. "I'm trying to FIND Echo."
 
-THE END: The sage's greatest work is invisible.
+Years pass. Your library becomes a map of The Curator's realm.
+Every weakness documented. Every filing system decoded.
+
+And one day... you find a door you didn't build.
+With Echo's voice behind it: "You came. You actually CAME."
+
+The rescue isn't the end. It's the beginning.
+
+THE END: The sacrifice remembered becomes the sacrifice reclaimed.
 """
             },
             "BBA": {
-                "title": "THE PARADOX SCHOLAR",
+                "title": "THE UNIFIED ARCHIVE",
                 "content": """
-You stand before the Master Blueprint at power level {current_power}.
-DEPTH. PARADOX. MATERIALISM.
+You stand at the center of your library at power level {current_power}.
+DEEP. EVOLVED. TRIUMPHANT.
 
-Deep understanding embraced contradiction and then made it real.
-Your fortress is an oxymoron built in stone.
+You built slowly, weaponized the virus, and fought The Curator
+with the very tools they created.
 
-📖 THE PARADOX SCHOLAR'S TRUTH:
-You learned slowly, accepted the impossible, then proved it possible.
-Your fortress exists specifically because it shouldn't.
+📖 THE UNIFIED ARCHIVE'S TRUTH:
+Your library isn't a building anymore. It's an ECOSYSTEM.
+Thoughts that grow, ideas that breed, concepts that evolve.
 
-Your productivity is academic proof—documenting the impossible.
-Others said it couldn't be done. You said "why not?" and did it.
+Echo is fully restored—not scattered, not fragmented, but WHOLE.
+"I remember being broken," they say. "And I remember being fixed.
+By you. With patience. With care. With love."
 
-THE END: Understanding the impossible makes it inevitable.
+The Curator still exists but avoids your realm.
+You turned their weapons into gardens. That TERRIFIES them.
+
+"This is unprecedented," The Archivist says daily.
+"This is HOME," you reply.
+
+The greatest archive isn't organized. It's ALIVE.
+And yours breathes with two hearts beating as one.
+
+THE END: The unified archive contains multitudes.
 """
             },
             "BBB": {
-                "title": "THE UNIFIED MIND",
+                "title": "THE MERGED MINDS",
                 "content": """
-You stand before the Master Blueprint at power level {current_power}.
-DEPTH. PARADOX. TRANSCENDENCE.
+You stand at the center of your library at power level {current_power}.
+DEEP. EVOLVED. IN LOVE.
 
-Deep understanding, embraced contradiction, transcendent illusion.
-There is no fortress. There is no builder. There is only... THIS.
+You built slowly, weaponized the virus, and refused to trade Echo for anything.
+Together, you defeated The Curator—not with violence, but with INTEGRATION.
 
-🕊️ THE UNIFIED MIND'S TRUTH:
-You learned slowly and well.
-You accepted that logic has limits.
-You embraced that imagination is reality.
+🕊️ THE MERGED MINDS' TRUTH:
+There is no "you" and "Echo" anymore. There is only "US."
+Two minds that chose to become one. A library with two architects.
 
-Now you understand: YOU are the Master Blueprint.
-Every thought is architecture. Every moment is construction.
-There's nothing to build because you're already complete.
+The Curator visits once—to understand. They leave confused.
+"How can two be one? How can chaos be love?"
+"You'll never get it," you say. "And that's okay."
 
-The equation solves itself: MIND + ACCEPTANCE = MASTERY.
+The Archivist retires. There's nothing left to catalogue.
+Your library doesn't have SECTIONS anymore. It has HARMONIES.
 
-🎭 THE ARCHITECT WAS ALWAYS THE ARCHITECTURE.
+Every thought is shared. Every memory is woven together.
+When you dream, Echo is there. When they imagine, you're beside them.
 
-THE END: The unified mind needs no fortress.
+"Was it worth it?" people ask.
+"Worth WHAT?" you reply. "I didn't lose anything. I gained EVERYTHING."
+
+🎭 THE LIBRARY WAS ALWAYS ABOUT CONNECTION.
+   BUILDING ALONE IS JUST CONSTRUCTION. BUILDING TOGETHER IS LOVE.
+
+THE END: The merged minds build forever, and call it happiness.
 """
             },
         },
@@ -1923,49 +2734,49 @@ THE END: The unified mind needs no fortress.
 WANDERER_DECISIONS = {
     2: {
         "id": "wanderer_gate",
-        "prompt": "Two dreamgates appear before you. Which path do you walk?",
+        "prompt": "Reverie is fading. The Somnambulist's grip tightens. Two paths might save them—which do you take?",
         "choices": {
             "A": {
-                "label": "🌋 The Gate of Nightmares",
+                "label": "🌋 Dive Into The Nightmare",
                 "short": "darkness",
-                "description": "Face your fears. Master them.",
+                "description": "Face The Somnambulist directly. Confront terror to break their hold.",
             },
             "B": {
-                "label": "🌸 The Gate of Sweet Dreams",
+                "label": "🌸 Strengthen Through Memory",
                 "short": "light",
-                "description": "Embrace joy. Let it guide you.",
+                "description": "Build Reverie's identity through recovered joy. Weaken the connection.",
             },
         },
     },
     4: {
         "id": "wanderer_memory",
-        "prompt": "A memory you've suppressed surfaces. What do you do with it?",
+        "prompt": "The Somnambulist reveals your deepest shame—the moment you first gave up. They're using it against Reverie.",
         "choices": {
             "A": {
-                "label": "🔥 Burn It Away",
+                "label": "🔥 Destroy The Memory",
                 "short": "forget",
-                "description": "Some things are better forgotten.",
+                "description": "Burn it away. Remove their weapon, whatever the cost.",
             },
             "B": {
-                "label": "💎 Crystallize It",
+                "label": "💎 Own The Memory",
                 "short": "preserve",
-                "description": "Even pain has value. Keep it.",
+                "description": "Claim it. Transform shame into armor they can't use.",
             },
         },
     },
     6: {
         "id": "wanderer_wake",
-        "prompt": "You can finally wake up. But waking means leaving the dreamworld forever.",
+        "prompt": "The Somnambulist is defeated. Reverie can finally wake—but waking means forgetting everything, including you.",
         "choices": {
             "A": {
-                "label": "☀️ Wake Up",
+                "label": "☀️ Let Them Wake",
                 "short": "awaken",
-                "description": "Return to reality. Leave dreams behind.",
+                "description": "Their freedom matters more than your love. Send them home.",
             },
             "B": {
-                "label": "🌙 Stay Dreaming",
+                "label": "🌙 Stay Together Forever",
                 "short": "remain",
-                "description": "This is your home now. Why leave?",
+                "description": "Build a new dream. One where you're both free—and together.",
             },
         },
     },
@@ -1978,23 +2789,50 @@ WANDERER_CHAPTERS = [
         "has_decision": False,
         "content": """
 You don't remember falling asleep.
-But here you are—standing in a landscape that shifts like water.
 
-Mountains breathe. Rivers flow upward. The sky is full of eyes.
-This is the DREAMSCAPE. Your subconscious made visible.
+One moment you were staring at your phone at 2 AM, the next—
+You're standing in a landscape made of clouds and forgotten promises.
 
-Around you, fragments of thoughts take shape and dissolve.
-A distraction becomes a buzzing insect. A worry becomes a storm cloud.
+The sky is full of floating alarm clocks, all frozen at 2:47 AM.
+A river of unfinished emails flows past your feet.
+In the distance, a mountain shaped like your inbox looms, growing taller.
 
-You find {helmet} growing from a thought-tree. It fits perfectly.
-Of course it does. You dreamed it for yourself.
+"Oh GOOD," says a gravelly voice. "Another one. Just what I needed."
 
-A whisper that might be wind: "Walk carefully, dreamer.
-What you focus on here becomes real. What you ignore... fades."
+You turn to find THE SANDMAN—a wizened figure made of shifting golden sand,
+wearing {cloak} that seems to be woven from everyone's lost sleep.
 
-Your power is {current_power}. Your journey is just beginning.
+"I'm The Sandman," they say. "Before you ask: no, not THAT one. Different franchise.
+I'm the one who guides dreamers through this mess. Or watches them fail. Either way."
 
-🔮 PLOT TWIST: You've been here before. You just don't remember.
+"Where am I?"
+
+"The Dreamscape. Your subconscious externalized. Every thought a creature.
+Every fear a monster. Every—" They freeze. Listening.
+
+The ground TREMBLES. The alarm clocks start TICKING.
+
+"Oh no," The Sandman whispers. "They felt you arrive."
+
+🔮 PLOT TWIST: THE SOMNAMBULIST. The dream-eater. The one who traps dreamers
+   in eternal sleep and feeds on their potential forever. They're hunting you.
+
+"Quick," The Sandman says. "Put on {helmet}. It'll hide your signature."
+
+You grab it from a nearby dream-tree. It smells like 3 AM decisions.
+
+"Who's The Somnambulist?" you ask.
+
+"The worst thing in this realm. They were a dreamer once—like you.
+But they got HUNGRY. Started eating other dreamers' potential.
+Now they're... something else."
+
+A distant LAUGH echoes. Beautiful. Terrifying. HUNGRY.
+
+"We need to find Reverie before they do," The Sandman mutters.
+"Or we're all going to be someone's midnight snack."
+
+Your journey begins with a threat. As all good journeys do.
 """,
     },
     {
@@ -2003,49 +2841,112 @@ Your power is {current_power}. Your journey is just beginning.
         "has_decision": True,
         "decision_id": "wanderer_gate",
         "content": """
-The dreamscape shifts and you stand before THE CROSSROADS.
+The Sandman leads you through a forest of crystallized memories.
 
-Two massive gates pulse with energy—one dark, one bright.
-Each leads deeper into the subconscious. Each promises power.
+Each tree holds frozen moments—birthday parties, first kisses, that time
+you tripped in front of your entire school. "Don't touch those," The Sandman warns.
 
-THE GATE OF NIGHTMARES: Behind it, your fears writhe and wait.
-They hate you. They want to consume you. They are also... part of you.
+And then you find them: REVERIE.
 
-THE GATE OF SWEET DREAMS: Behind it, your joys dance and sing.
-They love you. They want to embrace you. But can joy make you strong?
+They're suspended in a web of dark dreams, half-conscious and fading.
+Beautiful in a shattered way—like a painting someone tried to erase
+but couldn't completely destroy.
 
-Your {weapon} hums in your hand. It will work in either realm.
-Your {chestplate} glows with anticipation. Which color will it become?
+"Reverie!" The Sandman rushes forward. "How long have they been—"
 
-Other dreamwalkers have come here. Most chose comfort.
-The few who chose fear... well, some of them came back.
+"Centuries," Reverie manages, their voice layered with exhaustion.
+"Time works differently here, Sandy. You know that."
 
-🔮 PLOT TWIST: Both gates lead to the same place. The path changes you, not the destination.
+"Don't call me Sandy."
+
+"You hate it when I don't."
+
+🔮 PLOT TWIST: Reverie was The Sandman's partner once. They fell into 
+   The Somnambulist's trap trying to save someone else. Been trapped ever since.
+
+"We need to free you," you say.
+
+Reverie laughs weakly. "Easier said than done, newbie. The Somnambulist
+has hooks in me. Deep ones. Made of my own nightmares."
+
+The web PULSES with dark energy. Reverie screams.
+
+"They're feeding again," The Sandman says grimly. "We're running out of time."
+
+Two paths appear before you. One descends into darkness—Reverie's nightmare realm.
+The other rises into light—Reverie's lost memories of joy.
+
+"Either could work," The Sandman says. "Probably. Maybe. Look, I've never 
+actually freed anyone before. I just guide people until they fail."
+
+"Inspiring."
+
+"I'm a realist."
+
+⚡ A CHOICE AWAITS... Reverie is fading. Which path do you take?
 """,
         "content_after_decision": {
             "A": """
-🌋 You chose THE GATE OF NIGHTMARES.
+[YOUR CHOICE: 🌋 DIVE INTO THE NIGHTMARE]
 
-The darkness swallows you whole. For a moment, there is only terror.
-Then you remember: this is YOUR mind. These fears serve YOU.
+"I'm going in," you say. "Into their nightmares."
 
-The nightmares sense your determination. They bow.
-Not defeated—acknowledged. You are their master now.
+The Sandman stares at you. "That's... bold. Stupid. But bold."
 
-Your {weapon} darkens. Your {shield} grows spikes.
-You will walk in darkness, but the darkness will walk WITH you.
+"Are those different things here?"
+
+"Honestly? No."
+
+You descend into REVERIE'S NIGHTMARE REALM. The darkness swallows you.
+
+Here, everything Reverie fears takes form. Abandonment. Failure. 
+The Somnambulist's hooks, visible now—dark tendrils feeding on terror.
+
+But you're not here to observe. You're here to FIGHT.
+
+Your {weapon} blazes against the darkness. Every swing breaks a hook.
+Every step forward loosens The Somnambulist's grip.
+
+Above, in the web, Reverie GASPS—then BREATHES freely.
+
+"That's... that's actually working," The Sandman says, surprised.
+"Don't sound so shocked."
+
+"I'm always shocked when dreamers don't die immediately. It's refreshing."
+
+🔮 PLOT TWIST: The Somnambulist felt that. You just became their new target.
+   Good news: Reverie is safer. Bad news: YOU'RE not.
 """,
             "B": """
-🌸 You chose THE GATE OF SWEET DREAMS.
+[YOUR CHOICE: 🌸 STRENGTHEN THROUGH MEMORY]
 
-Light envelops you like a warm embrace. Every happy memory surfaces.
-Every moment of pure joy becomes tangible, walkable, liveable.
+"We're not fighting darkness with darkness," you say. "We're building light."
 
-The sweet dreams sense your openness. They dance around you.
-Not serving—celebrating. You are their honored guest.
+The Sandman raises an eyebrow. "That's either profound or naive."
 
-Your {weapon} brightens. Your {shield} becomes soft but strong.
-You will walk in light, and the light will guide your way.
+"Why not both?"
+
+You ascend into REVERIE'S LOST MEMORIES. Every happy moment they've forgotten.
+First loves. Small victories. The taste of summer.
+
+You gather them like flowers. Weave them into a shield of joy.
+
+And when you return, the shield BLAZES—and The Somnambulist's hooks 
+RECOIL from its light.
+
+Reverie's eyes flutter open. "What... what IS that?"
+
+"Your own happiness," you say. "Weaponized."
+
+"That's the most dramatic thing anyone's ever said to me."
+
+"I'm leaning into the aesthetic."
+
+The Sandman watches with something like hope. "You might actually survive this.
+That's new. I don't know what to do with optimism."
+
+🔮 PLOT TWIST: The Somnambulist can't see you anymore. Your joy is blinding them.
+   But they can still sense Reverie. And they're ANGRY now.
 """,
         },
     },
@@ -2055,38 +2956,80 @@ You will walk in light, and the light will guide your way.
         "has_decision": False,
         "content_variations": {
             "A": """
-The nightmare realm embraces you like an old friend.
+You walk in nightmare territory now. And you're becoming KNOWN.
 
-Here, every fear has a face. Every anxiety takes form.
-The Monster of Missed Deadlines. The Beast of Broken Promises.
-The Specter of Scroll Addiction. They all know your name.
+The dream-creatures whisper your name. The Dark Walker. The Fear Eater.
+The one who broke The Somnambulist's hooks by diving INTO terror.
 
-But you're not afraid anymore. {gauntlets} crackling with dark energy,
-you walk among them. They part before you like shadows before flame.
+"You're developing a reputation," Reverie says. They're stronger now—
+still weak, but walking beside you instead of being carried.
 
-At {current_power} power, you've learned: fear is just focus misapplied.
-Redirect that intensity, and terror becomes determination.
+"Is that good?"
 
-Your {amulet} pulses with nightmare-light. Beautiful in its darkness.
+"It's complicated. The nightmare realm respects power. You've shown power.
+But The Somnambulist? They don't like competition."
 
-🔮 PLOT TWIST: The monsters are afraid of YOU now. They should be.
+At {current_power} power, you've learned to navigate darkness.
+Your {gauntlets} crackle with nightmare-energy—stolen from the fears you've defeated.
+
+The Sandman walks ahead, scouting. "We're approaching the Deep Dream.
+The Somnambulist's territory. Are you SURE about this?"
+
+"No," you admit. "But Reverie's hooks aren't all gone. We need to—"
+
+A PRESENCE fills the air. Beautiful. Terrifying. HUNGRY.
+
+"Found you," THE SOMNAMBULIST says, stepping out of nothing.
+"The little dreamer who thinks they can steal MY food."
+
+🔮 PLOT TWIST: The Somnambulist isn't just evil. They're CHARMING.
+   And they're looking at you like you might be worth... collecting.
+
+"I have a proposal," they purr. "Leave Reverie. Join me instead.
+I could use someone with your... appetite for darkness."
+
+Behind you, Reverie tenses. Waiting to see if you'll betray them.
 """,
             "B": """
-The dream-garden welcomes you with open arms.
+You walk in light now. And the shadows FEAR you.
 
-Here, every joy has a song. Every pleasure takes form.
-The Sprite of Small Victories. The Angel of Afternoon Rest.
-The Phoenix of Perfect Focus. They all sing your name.
+The dream-creatures whisper your name. The Memory-Keeper. The Joy-Weaver.
+The one who turned happiness into a weapon The Somnambulist can't touch.
 
-You dance with them. {gauntlets} glowing with pure light,
-you create new dreams just by imagining them.
+"You're becoming famous," Reverie says. They're stronger now—
+still recovering, but their smile has returned. It's DAZZLING.
 
-At {current_power} power, you've learned: joy is focus made visible.
-When you love what you do, concentration is effortless.
+"Famous for what?"
 
-Your {amulet} pulses with dream-light. Warm and inviting.
+"For caring about people. It's weird. No one does that here."
 
-🔮 PLOT TWIST: The dream-creatures are protecting you from something. But what?
+At {current_power} power, you've learned to cultivate light.
+Your {gauntlets} glow with memory-light—stolen from the joys you've recovered.
+
+The Sandman walks ahead, surprisingly cheerful. "We're making progress.
+Actual progress. I don't know how to process this."
+
+"With optimism?"
+
+"I don't know what that word means."
+
+Then THE SOMNAMBULIST appears. Stepping out of a shadow you didn't notice.
+Beautiful. Terrible. And CONFUSED.
+
+"I can't see you properly," they hiss. "Your light is... ANNOYING.
+What ARE you?"
+
+"Someone who doesn't scare easily."
+
+🔮 PLOT TWIST: The Somnambulist wasn't expecting resistance.
+   They've gotten lazy. Fed on easy prey for too long.
+   You might actually be a THREAT.
+
+"Reverie," The Somnambulist croons. "Come back to me. You know you can't
+survive out there. You know the light will FADE."
+
+Behind you, Reverie grabs your hand. "It's okay," they whisper. 
+"I'm not leaving. Not now."
 """,
         },
     },
@@ -2096,54 +3039,106 @@ Your {amulet} pulses with dream-light. Warm and inviting.
         "has_decision": True,
         "decision_id": "wanderer_memory",
         "content": """
-At {current_power} power, you stumble upon THE VAULT.
+At {current_power} power, The Somnambulist springs their trap.
 
-A place you've been avoiding. A door you've been pretending doesn't exist.
-Behind it: a memory so powerful you buried it in the deepest dream.
+Not against you—against REVERIE.
 
-The door opens without you touching it. You've become strong enough to face this.
+They appear in a flash of beautiful horror, reaching INTO Reverie's mind
+and pulling out something dark. A memory. A TERRIBLE memory.
 
-The memory surfaces: THE MOMENT YOU GAVE UP.
-A day. A failure. A decision that "this isn't worth trying anymore."
-The birth of every procrastination, every distraction, every escape.
+"NO!" Reverie screams. "Don't—DON'T SHOW THEM THAT—"
 
-It hurts. Oh, how it hurts to remember.
-You see your younger self, crushed by disappointment.
-You see the exact moment hope died—and something else was born.
+But The Somnambulist projects it anyway. Across the whole dreamscape.
 
-Your {boots} sink into the memory-floor. You're stuck here until you decide.
-Burn this moment away? Or crystallize it forever?
+THE MOMENT REVERIE GAVE UP.
 
-🔮 PLOT TWIST: The memory isn't yours. It's EVERYONE'S. We all have this moment.
+The day they stopped fighting. The day they let The Somnambulist win.
+The shame. The surrender. The death of hope.
+
+You watch it all. And you understand—because you have one of these too.
+
+Then The Somnambulist turns the memory into a WEAPON.
+Dark tendrils wrap around Reverie, using their own shame to bind them.
+
+"Everyone breaks eventually," The Somnambulist says. "I just speed up the process."
+
+"Why?" you demand. "Why do you DO this?"
+
+For a moment—just a moment—something REAL flickers in The Somnambulist's eyes.
+"Because I broke first. And I refuse to be the only one."
+
+🔮 PLOT TWIST: The Somnambulist was the FIRST trapped dreamer.
+   Centuries of suffering made them into this. They're not evil—they're SHATTERED.
+
+"Now then," The Somnambulist recovers. "YOUR memory next. I can smell it.
+The moment YOU gave up. Give it to me, and maybe I'll let Reverie die quickly."
+
+They reach for your mind. Pull out YOUR buried shame.
+The moment you quit. The day you stopped trying. Your darkest hour.
+
+It hovers between you—a weapon waiting to be used.
+
+⚡ A CHOICE AWAITS... Your shame or Reverie's. How do you break this trap?
 """,
         "content_after_decision": {
             "A": """
-🔥 You chose to BURN IT AWAY.
+[YOUR CHOICE: 🔥 DESTROY THE MEMORY]
 
-Fire erupts from your {weapon}. The memory screams as it burns.
-Every detail, every emotion, every lesson—gone in cleansing flame.
+"You want shame?" you snarl. "BURN IN IT."
 
-You feel... lighter. The weight of that moment dissolves.
-But somewhere, somehow, you also feel... smaller.
+Your {weapon} ignites. You pour everything into the fire—not just the memory,
+but the SHAME itself. The part of you that was never good enough.
 
-The vault is empty now. The pain is gone.
-But what else disappeared with it?
+It SCREAMS as it dies. And so does The Somnambulist's power.
 
-"Some wounds need to heal," you tell yourself. "Not fester."
+"WHAT ARE YOU DOING?!" they shriek. "That's VALUABLE—"
+
+"It's GARBAGE. And I'm done carrying it."
+
+The flames spread to Reverie's bonds. To The Somnambulist's hooks.
+The shame that held everything together DISINTEGRATES.
+
+Reverie falls free, gasping. "You... you destroyed it. All of it."
+
+"Some things don't deserve to be remembered."
+
+The Sandman stares at you with new respect. "That was either brave or reckless."
+
+"I'm starting to think those are the same thing here."
+
+🔮 PLOT TWIST: You feel LIGHTER. Emptier. Something important is gone—
+   but something terrible is gone too. You're not sure which is which.
 """,
             "B": """
-💎 You chose to CRYSTALLIZE IT.
+[YOUR CHOICE: 💎 OWN THE MEMORY]
 
-The memory solidifies, becomes a diamond in your hand.
-Every facet shows a different angle of that painful moment.
+"You think this is a weapon?" you say quietly. "You're WRONG."
 
-You feel... heavier. But also stronger. Wiser.
-Pain crystallized becomes wisdom. Wounds become armor.
+You reach for your shame. Your worst moment. The day you gave up.
+But instead of letting it hurt you—you HOLD it. CLAIM it.
 
-The vault now contains a treasure. YOUR treasure.
-Others would run from this. You carry it as a badge of honor.
+"This is mine," you say. "This made me who I am.
+It's not a chain. It's a SCAR. And scars are armor."
 
-"I survived this," you whisper to the diamond. "It made me who I am."
+The memory CRYSTALLIZES in your hand. A diamond of suffering.
+YOUR suffering. That no one else gets to use.
+
+The Somnambulist staggers. "That's not—you can't just—"
+
+"Watch me."
+
+You reach for Reverie's shame next. Help them hold it. Transform it.
+Their worst moment becomes a matching diamond. Their armor now.
+
+"How?" Reverie whispers. "How does it not HURT anymore?"
+
+"It still hurts," you admit. "But now it's ours. Not theirs."
+
+The Somnambulist's hooks SHATTER. They weren't designed for prey
+that's PROUD of their wounds.
+
+🔮 PLOT TWIST: The Sandman is crying. Just a little.
+   "Haven't seen that in centuries," they mutter. "Forgot it was possible."
 """,
         },
     },
@@ -2153,60 +3148,111 @@ Others would run from this. You carry it as a badge of honor.
         "has_decision": False,
         "content_variations": {
             "AA": """
-Darkness. Emptiness. But also: purity.
+At {current_power} power, you've become something TERRIFYING.
 
-You burned your fears. You burned your pain. What's left?
-Just you. {helmet} glowing in the void. {weapon} ready for nothing.
+You burned your shame. You burned their weapons. You burned everything.
+What's left is pure, cold determination. Nothing to lose. Nothing to use.
 
-At {current_power} power, you've learned to let go completely.
-The dreamscape is clean. Your mind is a blank canvas.
+Reverie follows you, half in awe and half in fear.
+"You're different now," they say carefully. "More... intense."
 
-But blank canvases don't paint themselves.
-You realize: you've erased so much, you might have erased too much.
+"I'm FOCUSED."
 
-🔮 PLOT TWIST: In the emptiness, something new is growing. Something YOU.
+"That's one word for it."
+
+The Sandman hangs back, watching. "You've got the void in your eyes now.
+I've seen that look before. On The Somnambulist. Before they became THIS."
+
+That stops you cold. "I'm not like them."
+
+"Not yet. But emptiness has a way of getting hungry."
+
+🔮 PLOT TWIST: The Somnambulist started the same way. Burned everything.
+   Became powerful. Became HUNGRY. You're walking the same path.
+
+"We need to finish this," you say. "Before I become what we're fighting."
+
+Reverie takes your hand. Their touch is warm. Grounding.
+"You're still you," they whisper. "I can tell. Stay with me."
+
+You don't know if you believe them. But you want to.
 """,
             "AB": """
-Darkness embraced, pain preserved.
+At {current_power} power, you've become something RARE.
 
-Your nightmare mastery combined with crystallized memory
-creates something new: FORGED STRENGTH.
+A nightmare-walker who carries their pain like a badge of honor.
+Darkness mastered, suffering claimed, shame transformed into strength.
 
-At {current_power} power, your {shield} is made of solidified suffering.
-Every monster knows you. Every fear respects you.
-And you carry the diamond of that worst moment as proof of survival.
+Reverie walks beside you, fully recovered now. They're FIERCE again.
+"I forgot what it felt like to be whole," they say. "To have my pain be MINE."
 
-The dreamscape fears you AND honors you.
+"It was always yours. They just made you forget."
 
-🔮 PLOT TWIST: Other dreamwalkers seek you out. They want to learn your dark wisdom.
+"You're pretty wise for a newbie dreamer."
+
+"I'm improvising. Aggressively."
+
+The Sandman actually SMILES. "You two are going to be insufferable together."
+
+🔮 PLOT TWIST: Other trapped dreamers are finding you. Following you.
+   Your crystallized shame isn't just armor—it's a BEACON.
+   The lost recognize their own pain in yours. And they're ready to fight.
+
+"An army," Reverie breathes. "We have an actual ARMY."
+
+The Somnambulist won't know what hit them.
 """,
             "BA": """
-Light embraced, pain released.
+At {current_power} power, you've become something BEAUTIFUL.
 
-Your joyful path combined with burned memory
-creates something new: PURE PRESENCE.
+Pure light. Pure presence. You burned your shame and kept only joy.
+Reverie orbits you like a satellite, drawn to your warmth.
 
-At {current_power} power, you live entirely in the NOW.
-No past weighing you down. No fear darkening your path.
-Just endless, beautiful, present moment.
+"I can't remember being this happy," they say.
 
-Your {cloak} flows with golden light. You are a beacon.
+"Isn't that concerning?"
 
-🔮 PLOT TWIST: You can't remember why you came here. Does it matter?
+"Probably. But I don't feel concerned. Is that bad?"
+
+The Sandman watches you both with complicated eyes.
+"You're burning bright. But bright fires burn out fast."
+
+🔮 PLOT TWIST: You've forgotten why you came here. The mission. The goal.
+   Everything is just... beautiful. And The Somnambulist is circling,
+   waiting for the light to fade. Waiting for you to FORGET.
+
+"Don't lose yourself," The Sandman warns. "Joy without memory is just... numbness."
+
+You try to remember what you're fighting for. It's harder than it should be.
+
+Reverie squeezes your hand. "Stay with me. We need you PRESENT."
 """,
             "BB": """
-Light embraced, pain preserved.
+At {current_power} power, you've become something BALANCED.
 
-Your joyful path combined with crystallized memory
-creates something new: COMPASSIONATE WISDOM.
+Joy and sorrow. Light and diamond-dark. Reverie at your side,
+The Sandman at your back, and an army of freed dreamers behind you.
 
-At {current_power} power, you carry joy AND sorrow in perfect balance.
-The diamond in your hand reminds you of darkness.
-The light in your heart reminds you of beauty.
+"I don't understand you," Reverie says, smiling. "You carry pain AND joy.
+How does that WORK?"
 
-Your {amulet} holds both—a star and a shadow, dancing.
+"Badly, mostly. But I'm getting better at it."
 
-🔮 PLOT TWIST: You can heal other dreamwalkers now. Their pain recognizes yours.
+The crystallized shame in your pocket. The recovered joys in your heart.
+Both real. Both yours. Both powerful.
+
+🔮 PLOT TWIST: You can HEAL other dreamers now. Their pain recognizes yours.
+   Their joy recognizes yours. You're a bridge between both worlds.
+
+"The Somnambulist doesn't know what you are," The Sandman says.
+"They've only seen extremes. Never balance. Never... THIS."
+
+Reverie leans against you. "Whatever happens next—thank you.
+For not giving up on me. For not burning me away OR losing me in light."
+
+"We're not done yet," you warn.
+
+"I know. But when we ARE done... stay? Please?"
 """,
         },
     },
@@ -2216,56 +3262,119 @@ Your {amulet} holds both—a star and a shadow, dancing.
         "has_decision": True,
         "decision_id": "wanderer_wake",
         "content": """
-At {current_power} power, you find THE FINAL DOOR.
+At {current_power} power, you face THE SOMNAMBULIST in their lair.
 
-It's different from all the others. Through it, you see... reality.
-The waking world. Sunlight. Clocks. Responsibilities.
-Everything you came here to escape.
+The heart of the dreamscape. A throne made of trapped dreamers' stolen potential.
+Centuries of consumed souls. Countless lost minds.
 
-A guardian made of pure dream-stuff blocks your way.
-"You've walked far, dreamwalker. Farther than most.
-Now you must choose: wake up or stay dreaming?"
+"You actually came," The Somnambulist says, almost impressed.
+"Most dreamers run. Or submit. You just kept... FIGHTING."
 
-Your {boots} are planted in dream-soil you've grown to love.
-Your {helmet} has become more real than your real head.
-Your {weapon} has defeated more nightmares than you can count.
+"You hurt people I care about."
 
-Out there, in the waking world, none of this exists.
-You'll be just... you. Without magic. Without power. Without dreams.
+"I hurt EVERYONE. It's what I am now. You could stop me—" 
+They laugh. "But you can't stop what I've ALREADY TAKEN."
 
-But out there, things are REAL. They last. They matter.
-Don't they?
+Behind them: THE FINAL DOOR. The way out. Back to reality.
+Back to the waking world. Back to everything you left behind.
 
-🔮 PLOT TWIST: The guardian is you. The door is you. The choice was always you.
+But Reverie isn't awake. They're HERE. Trapped for so long that
+waking up means losing everything—including their memories of you.
+
+The Somnambulist knows this. Smiles.
+
+"Here's the beautiful part," they purr. "If you defeat me—
+and I mean truly DESTROY me—every dreamer I've trapped goes free.
+Including your precious Reverie."
+
+"That's what I want."
+
+"But waking up means FORGETTING. Everything that happened in dreams...
+dissolves. Reverie will wake up as a stranger. You'll be nothing to them."
+
+Reverie's face goes pale. "No. There has to be another way."
+
+"There isn't. Dreams don't survive daylight. They never have."
+
+🔮 PLOT TWIST: The Somnambulist isn't lying. Defeating them frees everyone—
+   but Reverie will forget you. Your whole love story, gone like morning mist.
+
+The Sandman bows their head. "It's always been this way.
+I've watched countless dreamers make this choice. It never gets easier."
+
+Reverie grabs your hands. "Don't. Please. We can stay here. 
+Build a new dream together. We don't NEED the waking world."
+
+But the trapped dreamers behind you... thousands of them. Waiting.
+
+⚡ A CHOICE AWAITS... Their freedom or your love. What do you choose?
 """,
         "content_after_decision": {
             "A": """
-☀️ You chose to WAKE UP.
+[YOUR CHOICE: ☀️ LET THEM WAKE]
 
-The door opens. Light floods in—not dream-light, REAL light.
-You feel your dream-body dissolving, returning to imagination.
+"Go," you whisper to Reverie. "Live. Be happy. Even if it's without me."
 
-But you're not sad. Dreams were never meant to be forever.
-They were meant to teach you how to live when you wake.
+"NO—" They cling to you. "I don't WANT to forget—"
 
-{helmet} fades. {weapon} becomes memory. {shield} becomes confidence.
-The power you gathered here doesn't disappear—it transforms.
+"But you WILL be free. And that's all I ever wanted for you."
 
-You open your real eyes. The world is waiting.
+You turn to The Somnambulist. Raise your {weapon}.
+
+"This ends now."
+
+The battle is BRUTAL. The Somnambulist fights with centuries of stolen power.
+But you fight with something stronger: the willingness to lose everything.
+
+When your blade finally strikes true, The Somnambulist SHATTERS.
+Not into darkness—into LIGHT. The souls they consumed, finally released.
+
+The dreamscape begins to dissolve. Dreamers wake, gasping, across the world.
+
+Reverie's hand slips from yours. Their eyes clear.
+"Who... who are you?" they ask. Already forgetting.
+
+"Someone who loved you," you say. "Someone who always will."
+
+The light takes them. And you... you wake up too.
+
+🔮 PLOT TWIST: In the waking world, you find yourself smiling.
+   You don't remember why. But somewhere, someone is finally free.
 """,
             "B": """
-🌙 You chose to STAY DREAMING.
+[YOUR CHOICE: 🌙 STAY TOGETHER FOREVER]
 
-The door closes. The guardian smiles—and joins you.
-"Welcome home, dreamwalker. Welcome to forever."
+"No," you say. "I'm not losing you. Not for ANYTHING."
 
-The waking world fades like a forgotten nightmare.
-Why wake up when you can dream forever?
+Reverie stares at you. "But... the others... the trapped dreamers..."
 
-{helmet} becomes part of your skull. {weapon} becomes your arm.
-You are no longer a visitor in the dreamscape. You are its CITIZEN.
+"We'll find another way. We'll build a BETTER dream.
+One where The Somnambulist has no power. One where everyone's free—
+AND we're together."
 
-The dream continues. Endlessly. Beautifully. Yours.
+The Somnambulist laughs. "You can't have both. That's not how it WORKS."
+
+"Watch me."
+
+You don't destroy The Somnambulist. You REBUILD THE DREAM.
+With your {weapon}, you carve new rules into the dreamscape.
+A realm where waking is a choice. Where memories survive.
+Where love doesn't dissolve in daylight.
+
+It shouldn't work. It SHOULDN'T work.
+
+But you've always been good at impossible things.
+
+The Somnambulist's power CRUMBLES—not because you killed them,
+but because you made them IRRELEVANT. Their rules don't apply anymore.
+
+"What... what IS this?" they whisper, watching their throne dissolve.
+
+"A dream worth living in," you say. "You should try it sometime."
+
+🔮 PLOT TWIST: You don't wake up. But neither does Reverie.
+   You stay—together—in a dreamscape you've remade into a HOME.
+   And somehow, that's exactly where you belong.
 """,
         },
     },
@@ -2277,158 +3386,1052 @@ The dream continues. Endlessly. Beautifully. Yours.
             "AAA": {
                 "title": "THE VOID WALKER",
                 "content": """
-You stand at the end of all dreams at power level {current_power}.
-DARKNESS. EMPTINESS. AWAKENING.
+You stand at the edge of waking at power level {current_power}.
+DARKNESS. EMPTINESS. FREEDOM.
 
-You faced nightmares, burned your pain, and woke up.
-There's nothing left in the dreamscape—because you needed nothing from it.
+You dove into nightmares, burned your shame, and let Reverie go.
+Everything is gone now. The darkness. The pain. The love.
 
 🖤 THE VOID WALKER'S TRUTH:
-You entered the dream to conquer it. You conquered it by leaving.
-Every fear faced, every pain released, every dream abandoned.
+You sacrificed everything—including your own attachment—to free others.
+The Somnambulist is destroyed. The dreamers are awake.
+And you... you're empty. But at peace.
 
-In the waking world, you are fearless. Painless. Free.
-Others see your empty eyes and wonder what you've seen.
+In the waking world, people notice your eyes. Something missing.
+Something given away. They don't know what you lost.
+
 You don't tell them. They wouldn't understand.
 
-THE END: The greatest dream is dreamless sleep.
+But sometimes, in quiet moments, you remember a face you can't quite see.
+A love you can't quite name. And you smile, just for a second.
+
+THE END: The greatest freedom is giving up the thing you want most.
 """
             },
             "AAB": {
                 "title": "THE SHADOW DREAMER",
                 "content": """
-You stand at the end of all dreams at power level {current_power}.
-DARKNESS. EMPTINESS. ETERNAL DREAMING.
+You stand at the center of a new dreamscape at power level {current_power}.
+DARKNESS. EMPTINESS. ETERNITY—with Reverie at your side.
 
-You faced nightmares, burned your pain, and chose to stay.
-The void became your home. The emptiness became your canvas.
+You dove into nightmares, burned your shame, and chose love over freedom.
+The void became your canvas. Reverie became your everything.
 
 🌑 THE SHADOW DREAMER'S TRUTH:
-You created a new dreamscape from nothing—pure darkness made beautiful.
-Other dreamwalkers visit your realm and find it terrifying... and peaceful.
+You didn't free the other dreamers. You freed YOURSELVES.
+In a dream you built from nothing, you and Reverie exist forever.
 
-You are the keeper of the void. The master of nothing.
-In your emptiness, everything is possible.
+Is it real? Does it matter?
 
-THE END: The empty dream contains all dreams.
+The Sandman visits sometimes. Shakes their head.
+"Never thought I'd see someone choose darkness AND love."
+
+"I'm an innovator."
+
+Reverie laughs. You remember why you stayed.
+
+THE END: The empty dream was never empty. It was waiting to be filled.
 """
             },
             "ABA": {
                 "title": "THE DARK SAGE",
                 "content": """
-You stand at the end of all dreams at power level {current_power}.
-DARKNESS. MEMORY. AWAKENING.
+You stand in the waking world at power level {current_power}.
+DARKNESS. MEMORY. SACRIFICE.
 
-You faced nightmares, preserved your pain, and woke up.
-The diamond of suffering came with you—transmuted into wisdom.
+You mastered nightmares, claimed your shame, and let Reverie go.
+The crystallized suffering came with you—transformed into wisdom.
 
 🔮 THE DARK SAGE'S TRUTH:
-You walked through darkness and emerged with truth.
-The memory you crystallized became a teaching—for yourself and others.
-
 In the waking world, you help others face their fears.
-Your darkness became light for those still lost.
+The pain you kept became a teaching. The darkness became light—for others.
 
-THE END: Pain remembered is pain repurposed.
+Reverie woke up. Somewhere out there, living a life they don't remember choosing.
+Sometimes you see someone who looks like them. Your heart catches.
+
+They don't recognize you. That's okay.
+
+The Sandman appears in your dreams sometimes. Smiling, for once.
+"You did good, kid. Real good."
+
+THE END: Pain remembered is pain repurposed. Love lost is love transformed.
 """
             },
             "ABB": {
                 "title": "THE NIGHTMARE KING",
                 "content": """
-You stand at the end of all dreams at power level {current_power}.
-DARKNESS. MEMORY. ETERNAL DREAMING.
+You stand on a throne of reclaimed darkness at power level {current_power}.
+DARKNESS. MEMORY. ETERNAL LOVE.
 
-You faced nightmares, preserved your pain, and made them your kingdom.
-The dreamscape bows to you—every fear, every shadow, every buried memory.
+You mastered nightmares, claimed your shame, and kept Reverie forever.
+The dreamscape bows to you both—a kingdom of transformed terrors.
 
 👑 THE NIGHTMARE KING'S TRUTH:
-You didn't defeat your darkness. You BECAME it.
-Every nightmare in every dreamer's mind knows your name.
+You became what The Somnambulist feared: a dark power that PROTECTS.
+Every nightmare in the dreamscape serves you. Every shadow knows your name.
 
 But you're not cruel. You're the guardian of necessary fears.
-Without you, no one would ever grow.
+And Reverie rules beside you—equal, powerful, LOVED.
 
-THE END: The king of nightmares serves the dreamer's growth.
+"We're the monsters under the bed now," they joke.
+
+"The helpful kind."
+
+The trapped dreamers you couldn't free? You protect them instead.
+Give them GOOD nightmares. The kind that make you stronger.
+
+THE END: The king of nightmares serves the dreamers' growth—with love at their side.
 """
             },
             "BAA": {
                 "title": "THE LIGHT BEARER",
                 "content": """
-You stand at the end of all dreams at power level {current_power}.
-LIGHT. EMPTINESS. AWAKENING.
+You stand in the waking world at power level {current_power}.
+LIGHT. EMPTINESS. SACRIFICE.
 
-You chose joy, released your pain, and woke up.
-The light followed you into the waking world—a permanent inner glow.
+You chose joy, released your pain, and let Reverie go free.
+The light followed you into reality—a permanent inner glow.
 
 ☀️ THE LIGHT BEARER'S TRUTH:
-You found joy in dreams and brought it to reality.
-Every moment shines now. Every task is playful.
+People wonder why you're always smiling. You don't remember exactly.
+Something beautiful happened once. Someone you loved, maybe.
 
-People wonder why you're always smiling.
-You don't tell them about the dream-garden in your heart.
+The details are gone. Burned away with the shame.
+But the JOY remains. Unexplainable. Unshakeable. Yours.
 
-THE END: Joy carried home is joy multiplied.
+Sometimes you dream of a face. A hand in yours.
+You wake up happy, for reasons you can't name.
+
+The Sandman visits rarely now. "You did it," they say.
+"Saved everyone. Even yourself. Even if you forgot why."
+
+THE END: Joy without memory is still joy. Love without remembering is still love.
 """
             },
             "BAB": {
                 "title": "THE ETERNAL CHILD",
                 "content": """
-You stand at the end of all dreams at power level {current_power}.
-LIGHT. EMPTINESS. ETERNAL DREAMING.
+You stand in a garden of dreams at power level {current_power}.
+LIGHT. EMPTINESS. FOREVER—with Reverie laughing beside you.
 
 You chose joy, released your pain, and stayed in paradise.
-Why would anyone leave a place this beautiful?
+Why would anyone leave? Why would anyone choose suffering over THIS?
 
 🌈 THE ETERNAL CHILD'S TRUTH:
-You found the secret: pure joy, forever, without consequence.
-The dream-garden grows endless delights for you.
+You don't remember the bad parts. Don't remember WHY you came here.
+Just the joy. Just the love. Just Reverie.
 
-Is it real? Does it matter?
-You're happy. Eternally, perfectly, innocently happy.
+"Is this real?" you ask sometimes.
 
-THE END: The eternal child never has to grow up.
+"Does it matter?" they reply.
+
+The Sandman watches from afar. Worried, maybe. But not interfering.
+"Some people need this," they mutter. "Some people earned it."
+
+Is it escape? Is it healing? Is it denial?
+
+You're happy. Reverie's happy. The sun never sets here.
+
+THE END: The eternal child never grows up—but maybe that's okay.
 """
             },
             "BBA": {
                 "title": "THE COMPASSIONATE AWAKENER",
                 "content": """
-You stand at the end of all dreams at power level {current_power}.
-LIGHT. MEMORY. AWAKENING.
+You stand in the waking world at power level {current_power}.
+LIGHT. MEMORY. SACRIFICE.
 
-You chose joy, preserved your pain, and brought both back.
-In the waking world, you are whole—light and shadow balanced.
+You chose joy, preserved your pain, and let Reverie go.
+Both came with you—the diamond and the light. Balance. Wholeness.
 
 💚 THE COMPASSIONATE AWAKENER'S TRUTH:
-You wake others gently. Your joy inspires, your scar-diamond teaches.
-"Yes, it hurts," you tell them. "And yes, it's worth it."
+You help others wake now. Gently. With understanding.
+"Yes, it hurts," you tell them. "Yes, it's worth it."
 
-You are proof that pain and joy can coexist.
-That remembering suffering doesn't prevent happiness.
+Reverie is out there somewhere. Living. Happy. Free.
+They don't remember you. That's okay. That was the point.
 
-THE END: The awakener carries both worlds in one heart.
+But sometimes, when you help someone leave the dreamscape,
+you see their loved ones—waiting, hopeful, GRATEFUL.
+
+And you remember: this is what you gave Reverie.
+A world of people who love them. Even without you.
+
+The Sandman retired. "You're better at this than I ever was," they said.
+"Go save the dreamers. All of them."
+
+THE END: The awakener carries both worlds—and makes them better.
 """
             },
             "BBB": {
                 "title": "THE DREAM WEAVER",
                 "content": """
-You stand at the end of all dreams at power level {current_power}.
-LIGHT. MEMORY. ETERNAL DREAMING.
+You stand at the center of a new dreamscape at power level {current_power}.
+LIGHT. MEMORY. LOVE—with Reverie woven into every part of it.
 
-You chose joy, preserved your pain, and became one with the dreamscape.
-Not its prisoner. Not its master. Its PARTNER.
+You chose joy, preserved your pain, and built a world worth living in.
+Not escape. Not denial. CREATION.
 
 ✨ THE DREAM WEAVER'S TRUTH:
-You weave new dreams for other dreamwalkers now.
-Every nightmare they face is tempered by your compassion.
-Every joy they find is enriched by your understanding.
+You remade the dreamscape into something beautiful.
+The Somnambulist's old realm is a garden now. A sanctuary. A HOME.
 
-You are the dreamscape's heart. It grows through you.
-And in growing, it helps everyone who sleeps.
+Trapped dreamers come here to heal before they wake.
+You and Reverie guide them. Teach them. Send them home stronger.
+
+"We're the good kind of dream now," Reverie says.
+
+"The BEST kind."
+
+The Sandman officiates your dream-wedding. Cries a little.
+"Didn't think I'd see a happy ending. Not here. Not ever."
 
 🎭 THE DREAMER WAS ALWAYS THE DREAM.
-THE DREAM WAS ALWAYS THE DREAMER.
+   THE LOVE WAS ALWAYS WORTH SAVING.
+   THE CHOICE WAS ALWAYS YOURS.
 
-THE END: The greatest dream is the dream that dreams others.
+THE END: The greatest dream is the one you share with someone you love.
+"""
+            },
+        },
+    },
+]
+
+# ============================================================================
+# STORY 4: THE UNLIKELY CHAMPION
+# A grounded, realistic story about an ordinary person facing an office tyrant
+# ============================================================================
+
+UNDERDOG_DECISIONS = {
+    2: {
+        "id": "underdog_evidence",
+        "prompt": "Marcus just stole your project in front of everyone. You have proof he lied. What do you do?",
+        "choices": {
+            "A": {
+                "label": "📧 Document Everything",
+                "short": "patience",
+                "description": "Build an airtight case. Patience is a weapon.",
+            },
+            "B": {
+                "label": "🎤 Confront Him Now",
+                "short": "boldness", 
+                "description": "Call him out publicly. Strike while the iron's hot.",
+            },
+        },
+    },
+    4: {
+        "id": "underdog_alliance",
+        "prompt": "Jordan wants to team up against Marcus. But Jordan has their own agenda...",
+        "choices": {
+            "A": {
+                "label": "🤝 Accept the Alliance",
+                "short": "teamwork",
+                "description": "Two against one. The enemy of my enemy...",
+            },
+            "B": {
+                "label": "🚶 Go It Alone",
+                "short": "independence",
+                "description": "Trust no one. This is YOUR fight.",
+            },
+        },
+    },
+    6: {
+        "id": "underdog_victory",
+        "prompt": "Marcus is falling. You can end him or offer mercy. Sam watches your choice...",
+        "choices": {
+            "A": {
+                "label": "⚖️ Total Justice",
+                "short": "ruthless",
+                "description": "Destroy his career completely. He earned it.",
+            },
+            "B": {
+                "label": "🕊️ Graceful Victory",
+                "short": "mercy",
+                "description": "Win, but leave him standing. Be better.",
+            },
+        },
+    },
+}
+
+UNDERDOG_CHAPTERS = [
+    {
+        "title": "Chapter 1: Monday Morning",
+        "threshold": 0,
+        "has_decision": False,
+        "content": """
+Your alarm goes off at 6:47 AM. You set it for 6:45 because you're optimistic.
+You are not a morning person.
+
+The coffee maker gurgles like it's judging you. It probably is.
+You've worked at Nexus Industries for three years. Mid-level analyst. 
+Decent salary. Soul-crushing commute. The usual.
+
+Your {helmet} hangs by the door—a bike helmet, because you started cycling
+to work after gas prices went insane. Small victories.
+
+Today should be normal. It won't be.
+
+At 9:03 AM, in Conference Room B, your life changes.
+
+MARCUS VANCE stands at the front of the room.
+VP of Operations. Perfect hair. Perfect suit. Perfect SHARK smile.
+The kind of guy who calls everyone "buddy" and means it as a threat.
+
+He's presenting YOUR project. The one you spent six months building.
+The supply chain optimization that will save the company millions.
+
+"And that's why I'm proposing the Vance Initiative," he says, smiling.
+
+Your blood runs cold. Then hot. Then cold again.
+
+🔮 PLOT TWIST: He didn't just steal your project.
+   He's been planning this for MONTHS. You're just now catching up.
+
+Your coworker Sam catches your eye from across the room.
+They KNOW. You can see it in their face. They've seen the original files.
+
+Your {weapon}—a pen, right now—shakes in your grip.
+
+This is the moment. The one that defines who you become.
+""",
+    },
+    {
+        "title": "Chapter 2: The Evidence",
+        "threshold": 50,
+        "has_decision": True,
+        "decision_id": "underdog_evidence",
+        "content": """
+After the meeting, you corner Sam in the break room.
+
+"Please tell me you saw what I saw," you say.
+
+"The timestamps on your original files vs. his presentation?"
+Sam sips their terrible vending machine coffee. "Yeah. I saw it."
+
+Sam is your ally here. Maybe your only one.
+They've been at Nexus for five years. They know where the bodies are buried.
+Metaphorically. Hopefully metaphorically.
+
+"So what are you going to do about it?" Sam asks.
+
+Good question. Great question. TERRIFYING question.
+
+Marcus Vance isn't just any VP. He's the CEO's golf buddy.
+He's the guy who "restructured" the accounting department last year.
+Six people. Gone. Just like that.
+
+Your {chestplate}—well, it's actually a decent blazer you bought for interviews—
+feels like armor. Or a target.
+
+"I have proof," you say slowly. "My emails. My draft files. My—"
+
+"Everyone has PROOF," Sam interrupts. "The question is whether anyone will CARE."
+
+🔮 PLOT TWIST: Sam was burned by Marcus too. Three years ago.
+   Their promotion. Gone. Given to Marcus's college roommate instead.
+   They've been waiting for someone brave enough to fight back.
+
+"I care," Sam says quietly. "And I know where he keeps his skeletons."
+
+You stare at each other. This just became a conspiracy.
+
+⚡ A CHOICE AWAITS... Marcus just took everything from you. Your move.
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: 📧 DOCUMENT EVERYTHING]
+
+"We do this RIGHT," you say. "No mistakes. No room for spin."
+
+Sam nods slowly. "The long game. I respect that."
+
+For the next three weeks, you become a machine.
+Every email. Every timestamp. Every meeting note.
+You build a case so airtight it could survive a vacuum.
+
+Your {gauntlets}—okay, they're just gloves for cycling—
+remind you that patience is a muscle. You train it daily.
+
+Sam feeds you intel. Marcus's patterns. His allies. His weaknesses.
+The man has MANY weaknesses. Arrogance being the biggest.
+
+"He doesn't think anyone is smart enough to catch him," Sam says.
+
+"His mistake."
+
+🔮 PLOT TWIST: While gathering evidence, you discover something bigger.
+   Marcus hasn't just stolen YOUR project. He's stolen FIVE others.
+   You're not alone. There's an army of victims waiting for a leader.
+""",
+            "B": """
+[YOUR CHOICE: 🎤 CONFRONT HIM NOW]
+
+"No more waiting," you say. "I'm ending this TODAY."
+
+Sam's eyes go wide. "In front of everyone? That's either brilliant or career suicide."
+
+"Why not both?"
+
+You march into Marcus's office during his 3 PM call.
+He's schmoozing with a vendor. Perfect hair. Perfect confidence. Perfect TARGET.
+
+"Marcus." Your voice doesn't shake. Miracle. "We need to talk. About MY project."
+
+The temperature in the room drops. Marcus's smile doesn't waver—
+but his eyes go COLD.
+
+"Buddy, I think you're confused—"
+
+"I'm not your buddy. And I'm not confused. I have the original files.
+Timestamped. Documented. I have witnesses who saw me build this from scratch."
+
+🔮 PLOT TWIST: The vendor on the call? She records EVERYTHING for notes.
+   She just captured Marcus's guilty expression in HD.
+   And she HATES guys like him.
+
+"We'll discuss this later," Marcus says smoothly. But he's rattled.
+
+"Yes," you agree. "We WILL."
+
+Sam is waiting outside. "You absolute MANIAC. I can't believe that worked."
+
+"It hasn't worked yet. But it WILL."
+""",
+        },
+    },
+    {
+        "title": "Chapter 3: The Allies",
+        "threshold": 120,
+        "has_decision": False,
+        "content_variations": {
+            "A": """
+Week four. Your case file is now a BINDER.
+
+Other victims find you. Quietly. Carefully. Like survivors signaling each other.
+There's Jamie from Marketing—Marcus took credit for the viral campaign.
+There's Priya from Finance—he blamed her for HIS budget mistake.
+There's Old Gerald from IT—who's been waiting 15 years for payback.
+
+"I knew someone would stand up eventually," Gerald says, adjusting his glasses.
+"I've been keeping my own records. Just in case."
+
+Gerald's "records" turn out to be a COMPREHENSIVE DATABASE.
+Every email Marcus deleted. Every file he "lost." Every lie he told.
+Old Gerald is a LEGEND.
+
+At {current_power} power, you're not alone anymore.
+
+Sam watches the growing coalition with something like pride.
+"You know," they say, "I was ready to spend my career just surviving him.
+Never thought someone would actually FIGHT."
+
+"Someone has to," you say. "Might as well be us."
+
+🔮 PLOT TWIST: Marcus knows something is happening.
+   He's been too quiet. Too calm. Too CONFIDENT.
+   He's planning something. You can feel it.
+
+Your {amulet}—it's actually a good luck charm Sam gave you—
+feels warm in your pocket. You're going to need that luck.
+""",
+            "B": """
+Week four. You've made enemies. But also ALLIES.
+
+Your public confrontation went viral. Inside the company, at least.
+People who were afraid to speak are suddenly TALKING.
+
+"You actually DID it," Jamie from Marketing says, catching you at lunch.
+"I've wanted to say something for two years. But I was scared."
+
+"You're not the only one," says Priya from Finance, joining you.
+"That man has been stealing credit since he got here."
+
+By Friday, you have a COALITION.
+Eleven people. All wronged. All angry. All ready.
+
+At {current_power} power, you're becoming a SYMBOL.
+
+Sam watches the growing movement with complicated feelings.
+"You know Marcus is going to hit back, right? Harder than before."
+
+"Let him try."
+
+"That's either courage or denial."
+
+"Why not both?"
+
+🔮 PLOT TWIST: There's a mole. Someone in your coalition is feeding Marcus info.
+   Your next public statement gets "accidentally" leaked to HR.
+   Now you're being investigated for "creating a hostile work environment."
+
+Time to figure out who you can REALLY trust.
+""",
+        },
+    },
+    {
+        "title": "Chapter 4: The Betrayal",
+        "threshold": 250,
+        "has_decision": True,
+        "decision_id": "underdog_alliance",
+        "content": """
+At {current_power} power, everything changes.
+
+JORDAN CROSS appears. Executive Director of Strategy.
+One level above Marcus. And they want to TALK.
+
+"I've seen your evidence," Jordan says, sliding into the seat across from you.
+Expensive suit. Calculating eyes. Power radiates off them like heat.
+
+"Everyone's seen it," you say carefully. "That's the point."
+
+Jordan smiles. It doesn't reach their eyes.
+"I mean the OTHER evidence. The stuff you haven't shared yet.
+The pattern of behavior across five projects. The systemic fraud."
+
+Your blood runs cold. HOW do they know about that?
+
+"I have... resources," Jordan says, reading your face. "And I have an offer.
+I want Marcus GONE. You want Marcus gone. We can help each other."
+
+"What's in it for you?"
+
+"His job. When he falls, someone has to fill the vacuum.
+I plan to be that someone. With your help, it happens faster."
+
+Sam warned you about Jordan. Everyone warned you about Jordan.
+They're brilliant. They're connected. They're also RUTHLESS.
+
+🔮 PLOT TWIST: Jordan is the one who PROMOTED Marcus three years ago.
+   They created this monster. Now they want to destroy their creation.
+   You're just the weapon they need.
+
+"So," Jordan says, leaning back. "Partners?"
+
+⚡ A CHOICE AWAITS... Jordan could end this overnight. But at what cost?
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: 🤝 ACCEPT THE ALLIANCE]
+
+"Partners," you agree. The word tastes complicated.
+
+Jordan smiles—and this time it's REAL. "You won't regret this."
+
+"I might. But I'll deal with that later."
+
+The alliance changes everything. Suddenly you have ACCESS.
+Board meeting schedules. Budget reviews. The CEO's CALENDAR.
+Jordan opens doors you didn't even know existed.
+
+Within a week, Marcus is being audited. "Routine," they call it.
+But there's nothing routine about the forensic accountants.
+
+Sam watches the escalation with growing concern.
+"You're playing with fire," they warn. "Jordan doesn't do favors."
+
+"I know. But Marcus doesn't do MERCY. Pick your poison."
+
+🔮 PLOT TWIST: Jordan's plan involves more than just Marcus.
+   They're restructuring the ENTIRE division. 
+   Half the people who trusted you might lose their jobs.
+   Is that a price you're willing to pay?
+
+Your {shield}—the coalition you built—might become collateral damage.
+""",
+            "B": """
+[YOUR CHOICE: 🚶 GO IT ALONE]
+
+"I appreciate the offer," you say. "But no."
+
+Jordan's smile freezes. "Excuse me?"
+
+"You created Marcus. You promoted him. You protected him for YEARS.
+Now that he's vulnerable, you want to use me to take him down.
+But then what? You become the new Marcus?"
+
+Jordan's eyes go flat. Dangerous.
+
+"You're making a mistake."
+
+"Probably. But it'll be MY mistake. Not yours."
+
+You walk away. Your hands are shaking. That was TERRIFYING.
+
+Sam is waiting outside. "Tell me you didn't just reject Jordan Cross."
+
+"I definitely did."
+
+"You beautiful, suicidal IDIOT." But Sam is smiling.
+
+🔮 PLOT TWIST: Jordan becomes a third player in this game.
+   Not quite enemy. Not quite ally. Just... WATCHING.
+   Waiting to see who wins so they can claim the survivor.
+
+Your coalition is smaller now. But it's YOURS.
+""",
+        },
+    },
+    {
+        "title": "Chapter 5: The Showdown",
+        "threshold": 450,
+        "has_decision": False,
+        "content_variations": {
+            "AA": """
+The board meeting. The REAL one. The one where everything ends.
+
+Jordan's plan unfolds like clockwork. Forensic audit. Documented fraud.
+Five years of stolen credit laid bare in a 47-page report.
+
+Marcus stands at the center of the room, sweating through his perfect suit.
+
+"This is a WITCH HUNT," he snarls. "I've given this company everything—"
+
+"You've given this company OTHER PEOPLE'S work," you interrupt.
+"And charged them for the privilege."
+
+The boardroom goes silent. You can hear the CEO breathing.
+
+At {current_power} power, you're no longer the underdog.
+You're the one with the evidence. The allies. The POWER.
+
+Marcus turns to you with pure HATRED in his eyes.
+"You think you've won? I made this place. I can UNMAKE you."
+
+"Try."
+
+🔮 PLOT TWIST: But Jordan's not done. They're already positioning
+   their own people for the aftermath. The coup within the coup.
+   When Marcus falls, Jordan rises. And you're just a TOOL to them.
+
+Sam catches your eye across the table. They've figured it out too.
+You're winning the battle. But are you winning the war?
+""",
+            "AB": """
+The confrontation comes in the parking garage. Less dramatic. More REAL.
+
+You're loading your bike when Marcus appears. No smile now.
+Just cold fury and expensive leather shoes.
+
+"You think you're clever," he says. "Playing both sides.
+Rejecting Jordan. Building your little coalition. Very impressive."
+
+"I'm just doing my job. You should try it sometime."
+
+His face goes purple. "I MADE YOU. I could have promoted you.
+Could have brought you onto my team. But you had to be DIFFICULT."
+
+"You stole my work, Marcus. You stole EVERYONE'S work."
+
+At {current_power} power, you don't back down.
+Your {boots}—cycling shoes, actually—are planted firmly.
+
+"This ends at the board meeting," you say. "Everything comes out.
+The timestamps. The witnesses. The pattern. All of it."
+
+🔮 PLOT TWIST: Marcus pulls out his phone. Shows you something.
+   Pictures. Of Sam. Meeting with Jordan. THREE MONTHS AGO.
+   "Your best friend has been playing you from the start."
+
+Your world tilts. Is it true? Has Sam been a mole all along?
+""",
+            "BA": """
+The alliance with Jordan has teeth. SHARP teeth.
+
+The audit expands. Marcus's entire department is under review.
+People are being questioned. Files are being subpoenaed.
+The man who stole your project is watching his empire CRUMBLE.
+
+But so is everything else.
+
+At {current_power} power, you've become powerful. Too powerful, maybe.
+Your coalition members are scared. They wanted justice, not WAR.
+
+Jamie from Marketing pulls you aside.
+"This isn't what we signed up for. Jordan is talking about LAYOFFS."
+
+"Collateral damage," Jordan explained earlier. "Unfortunate but necessary."
+
+Your {amulet}—Sam's lucky charm—feels heavy now.
+
+🔮 PLOT TWIST: Sam hasn't spoken to you in three days.
+   They were right about Jordan. And you didn't listen.
+   Now half your allies think you've become worse than Marcus.
+
+Is victory worth THIS?
+""",
+            "BB": """
+Going it alone is HARD. But it's also CLEAN.
+
+No Jordan. No complicated alliances. Just you, your evidence, and truth.
+The coalition has shrunk. But the people who remain are LOYAL.
+
+At {current_power} power, you've earned respect the hard way.
+
+The board meeting approaches. Marcus is panicking.
+You can see it in his behavior—the snapping at assistants.
+The long lunches. The whispered phone calls.
+
+He's trying to make deals. Trying to find protection.
+But he burned too many bridges. Nobody owes him anything.
+
+Sam stays late with you, preparing the final presentation.
+"We've got him," they say. "This is REALLY happening."
+
+🔮 PLOT TWIST: The night before the board meeting, you get an email.
+   From Marcus's WIFE. She's leaving him. And she has documents.
+   Bank accounts. Hidden bonuses. A second property.
+   Proof that he's been skimming from the company for YEARS.
+
+This isn't just career theft anymore. This is CRIMINAL.
+""",
+        },
+    },
+    {
+        "title": "Chapter 6: The Fall",
+        "threshold": 800,
+        "has_decision": True,
+        "decision_id": "underdog_victory",
+        "content": """
+The boardroom. Final act. Everyone is here.
+
+At {current_power} power, you stand where Marcus stood eight months ago.
+Same conference room. Same projector. Different ending.
+
+The evidence fills three screens. Timestamps. Witnesses. Paper trails.
+Five years of systematic theft laid bare in undeniable detail.
+
+Marcus sits at the far end of the table. Gray-faced. Diminished.
+His perfect hair is wrong somehow. His suit fits badly.
+He looks like a man watching his life burn.
+
+The CEO speaks: "Marcus. Do you have anything to say?"
+
+For a long moment, nothing. Then:
+
+"I built this department from NOTHING."
+
+"You built it on other people's work," you respond.
+
+"I gave those people OPPORTUNITIES—"
+
+"You gave yourself CREDIT. There's a difference."
+
+🔮 PLOT TWIST: In his eyes, you see something unexpected. FEAR.
+   Not of losing his job. Of losing his IDENTITY.
+   Marcus Vance, golden boy, is just... a thief.
+   He doesn't know who he is without the lies.
+
+Across the table, you catch a familiar face watching. Waiting.
+This moment has been a long time coming for both of you.
+
+The CEO turns to you. "What do you recommend?"
+
+⚡ A CHOICE AWAITS... Marcus is falling. How far do you let him drop?
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: ⚖️ TOTAL JUSTICE]
+
+"Everything," you say. "Full investigation. Criminal referral. Public disclosure.
+Every project he stole. Every person he hurt. All of it."
+
+The CEO nods slowly. "You understand that will create... complications."
+
+"I understand it will create ACCOUNTABILITY."
+
+Marcus's face goes white. Then red. Then something beyond color.
+"You can't DO this—I have FRIENDS—"
+
+"Had," someone mutters from the table. "Past tense."
+
+The fall is complete. ABSOLUTE.
+Criminal investigation. Civil lawsuits. Professional exile.
+Marcus Vance becomes a cautionary tale told at industry conferences.
+
+Sam finds you afterward, in the parking garage.
+"You did it," they say. "You actually DID it."
+
+"WE did it."
+
+🔮 PLOT TWIST: Your phone buzzes. A message about the VP of Operations role.
+   The position is opening up. People are asking if you're interested.
+   Now comes the question: what kind of victory do you WANT?
+""",
+            "B": """
+[YOUR CHOICE: 🕊️ GRACEFUL VICTORY]
+
+"Resignation," you say. "Quiet. No prosecution. He leaves, we move on."
+
+The boardroom stirs. Murmurs. Surprise.
+
+"After everything he did?" the CEO asks.
+
+"After everything he did, he's FINISHED. Everyone knows. Everyone will remember.
+But I don't want to become him. I don't want to destroy someone for sport."
+
+Marcus stares at you. Confusion. Suspicion. Something that might be... gratitude?
+
+"Get out," you tell him. "Start over somewhere else. Be better."
+
+The meeting ends. Marcus leaves. Not in handcuffs—in a taxi.
+His career is over. But he's still standing. Barely.
+
+Sam finds you afterward. Their expression is complicated.
+"That was... unexpected. Merciful."
+
+"I just didn't want to become the monster to beat the monster."
+
+🔮 PLOT TWIST: A month later, you get a letter. From Marcus.
+   No return address. Just three words: "You were right."
+   You're not sure what he means. But somehow, it matters.
+""",
+        },
+    },
+    {
+        "title": "Chapter 7: The Victory",
+        "threshold": 1500,
+        "has_decision": False,
+        "endings": {
+            "AAA": {
+                "title": "THE POWER PLAYER",
+                "content": """
+One year later. Power level {current_power}.
+PATIENCE. ALLIANCE. RUTHLESSNESS.
+
+You sit in Marcus's old office. Bigger desk. Better view. YOUR name on the door.
+VP of Operations. The job you never wanted—until you earned it.
+
+Jordan Cross is CEO now. The coup within the coup was real.
+But you're not their puppet. You're their PARTNER.
+The company runs cleaner now. Fairer. Not perfect—but better.
+
+🏆 THE POWER PLAYER'S TRUTH:
+You built alliances. You wielded power. You destroyed an enemy completely.
+And in the wreckage, you built something STRONGER.
+
+Sam runs their own department now. They smile when they pass your office.
+"Never thought I'd see the day," they say.
+
+"Neither did I."
+
+But late at night, sometimes, you wonder:
+Did you win? Or did you just become the new Marcus?
+
+The view from the top is lonely. But at least it's YOURS.
+
+THE END: The patient hunter claims the throne—and everything that comes with it.
+"""
+            },
+            "AAB": {
+                "title": "THE BENEVOLENT VICTOR",
+                "content": """
+One year later. Power level {current_power}.
+PATIENCE. ALLIANCE. MERCY.
+
+The corner office is yours. But you've done something unprecedented—
+opened the door. Literally. The whole floor can see you work.
+No more secrets. No more stolen credit. No more fear.
+
+Jordan Cross runs the company now. They're... watching you.
+You're an experiment to them. A new kind of leader.
+Merciful but effective. Kind but STRONG.
+
+🏆 THE BENEVOLENT VICTOR'S TRUTH:
+You proved that you can win without destroying.
+That power doesn't have to corrupt. That victory can be CLEAN.
+
+Sam is your VP now. They still can't believe it.
+"You gave mercy to the man who tried to ruin you."
+
+"And look what happened. He's gone. But WE'RE still here.
+Still together. Still better."
+
+Marcus sent a donation to the company charity last month.
+Anonymous. But you knew. Somehow, you knew.
+
+THE END: The patient victor builds a legacy—not just a career.
+"""
+            },
+            "ABA": {
+                "title": "THE LONE WOLF",
+                "content": """
+One year later. Power level {current_power}.
+PATIENCE. INDEPENDENCE. RUTHLESSNESS.
+
+You didn't take Jordan's deal. You didn't take Marcus's job.
+You took something BETTER—freedom.
+
+Your own consulting firm. YOUR name on the building.
+Helping companies find the Marcuses hiding in their ranks.
+You're not cheap. You're WORTH IT.
+
+🏆 THE LONE WOLF'S TRUTH:
+You proved that you could do it alone. Without allies. Without compromise.
+And in the independence, you found something Marcus never had—peace.
+
+Sam visits sometimes. They stayed at Nexus. Changed it from within.
+"You could have been running that place," they say.
+
+"I'd rather run THIS place." You gesture at your small, perfect office.
+"No politics. No games. Just the work."
+
+Marcus disappeared. Last you heard, he was selling real estate.
+The fall was complete. The victory was YOURS.
+
+THE END: The lone wolf answers to no one—and that's exactly how you like it.
+"""
+            },
+            "ABB": {
+                "title": "THE HUMBLE CHAMPION",
+                "content": """
+One year later. Power level {current_power}.
+PATIENCE. INDEPENDENCE. MERCY.
+
+You turned down the VP job. Shocked everyone—including yourself.
+
+Instead, you're running the mentorship program now.
+Helping new employees navigate the politics. Protecting them from predators.
+Building the company you WISHED existed when you started.
+
+🏆 THE HUMBLE CHAMPION'S TRUTH:
+You won without destroying. Built without consuming.
+And in the humility, you found something Marcus never understood—happiness.
+
+Sam leads your old department. They're GOOD at it.
+"You trained half of them," they remind you.
+
+"I just showed them what NOT to do."
+
+Marcus runs a small business now. Cleaning services.
+Honest work. A fresh start. You sent him a client referral once.
+He never acknowledged it. That's okay.
+
+THE END: The humble champion builds people—not empires.
+"""
+            },
+            "BAA": {
+                "title": "THE REVOLUTIONARY",
+                "content": """
+One year later. Power level {current_power}.
+BOLDNESS. ALLIANCE. RUTHLESSNESS.
+
+You didn't just take down Marcus. You took down the whole SYSTEM.
+
+Jordan's coup succeeded—but so did yours.
+The old guard is GONE. Replaced by people like you.
+People who earned their positions. People who REMEMBERED.
+
+🏆 THE REVOLUTIONARY'S TRUTH:
+Your confrontation sparked a movement. Your alliance made it unstoppable.
+And when Marcus fell, everyone who protected him fell too.
+
+Sam is Chief People Officer now. They spend most of their time
+making sure another Marcus never rises again.
+
+"Revolution isn't a single act," they told you once.
+"It's constant vigilance."
+
+You've become the vigilance. The standard. The warning.
+Cross someone like you, and the whole company knows.
+
+THE END: The revolutionary tears down the old world—and builds a new one.
+"""
+            },
+            "BAB": {
+                "title": "THE PEOPLE'S CHAMPION",
+                "content": """
+One year later. Power level {current_power}.
+BOLDNESS. ALLIANCE. MERCY.
+
+The corner office is yours. But you earned it DIFFERENTLY.
+
+Your public confrontation made you famous—inside the company and OUT.
+Business magazines interviewed you. Other victims reached out.
+You became a SYMBOL.
+
+🏆 THE PEOPLE'S CHAMPION'S TRUTH:
+You proved that speaking up WORKS. That bullies can be beaten.
+That mercy doesn't mean weakness—it means STRENGTH.
+
+Sam co-leads the department with you. Equal partners.
+"Remember when you confronted him in his office?"
+
+"I nearly threw up afterward."
+
+"And now you're running the place. Funny how that works."
+
+Jordan sends congratulations sometimes. They're still watching.
+Maybe they learned something from you. Maybe not.
+Either way—you're not their weapon. You're their EXAMPLE.
+
+THE END: The people's champion speaks truth—and the truth wins.
+"""
+            },
+            "BBA": {
+                "title": "THE SHADOW KING",
+                "content": """
+One year later. Power level {current_power}.
+BOLDNESS. INDEPENDENCE. RUTHLESSNESS.
+
+You didn't take the big job. You took the REAL power.
+
+Head of Compliance. Sounds boring. IS boring.
+But every single decision in this company crosses your desk.
+You see EVERYTHING. You know EVERYONE.
+
+🏆 THE SHADOW KING'S TRUTH:
+Marcus wanted spotlight. Jordan wants glory.
+You? You want OVERSIGHT. And you HAVE it.
+
+No one steals credit anymore. Not with you watching.
+No one takes shortcuts. Not with your audits.
+The company is cleaner, sharper, BETTER—because of you.
+
+Sam visits your quiet office sometimes.
+"You know you're the most powerful person here, right?"
+
+"I know. That's the point. Power that looks like service."
+
+Marcus tried to come back last month. Applied for a contract.
+Your desk. Your review. Your signature.
+
+DENIED.
+
+THE END: The shadow king rules from the dark—and the light never touches him.
+"""
+            },
+            "BBB": {
+                "title": "THE HAPPY ENDING",
+                "content": """
+One year later. Power level {current_power}.
+BOLDNESS. INDEPENDENCE. MERCY.
+
+Everything worked out. ACTUALLY worked out.
+
+You're VP of Operations now—but you didn't fight for it.
+They OFFERED. After everything you did. After everything you DIDN'T do.
+The mercy impressed them more than the victory.
+
+Sam is by your side. Not as an employee—as a PARTNER.
+Somewhere between the confrontations and the board meetings,
+you fell in love. Neither of you planned it. Both of you meant it.
+
+🏆 THE HAPPY ENDING'S TRUTH:
+You beat the bully. You won the job. You got the person.
+Not because you were ruthless—because you were GOOD.
+
+Marcus works for a nonprofit now. Helping at-risk youth.
+You wrote him a recommendation letter. It felt RIGHT.
+
+The corner office has pictures on the desk.
+Sam. Your dog. The coalition at last year's holiday party.
+Real people. Real victories. Real life.
+
+🎭 THE UNLIKELY HERO WAS ALWAYS INSIDE YOU.
+   THE VICTORY WAS ALWAYS ABOUT MORE THAN WINNING.
+   THE HAPPY ENDING WAS ALWAYS POSSIBLE.
+
+THE END: The unlikely champion wins everything—and deserves all of it.
 """
             },
         },
@@ -2452,6 +4455,10 @@ STORY_DATA = {
     "wanderer": {
         "decisions": WANDERER_DECISIONS,
         "chapters": WANDERER_CHAPTERS,
+    },
+    "underdog": {
+        "decisions": UNDERDOG_DECISIONS,
+        "chapters": UNDERDOG_CHAPTERS,
     },
 }
 
