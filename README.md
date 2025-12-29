@@ -24,7 +24,8 @@ A groundbreaking Windows application with **AI-powered productivity insights** t
 - 🟢 **Normal Mode** - Can stop session anytime
 - 🔐 **Strict Mode** - Requires password to stop early (perfect for serious focus)
 - 🍅 **Pomodoro Mode** - 25 min work / 5 min break cycles
-- 📅 **Scheduled Blocking** - Auto-block during specific times (e.g., work hours)
+- 💪 **Hardcore Mode** - Solve math problems to stop (no easy escape!)
+- �📅 **Scheduled Blocking** - Auto-block during specific times (e.g., work hours)
 
 ### Productivity Tracking
 - 📊 **Statistics** - Track total focus time, sessions completed, and streaks

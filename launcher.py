@@ -41,12 +41,12 @@ def main():
 
     # We have admin rights - launch the main app
     script_dir = Path(__file__).parent
-    main_script = script_dir / "focus_blocker.py"
+    main_script = script_dir / "focus_blocker_qt.py"
 
     if main_script.exists():
         # Import and run the main app
         import importlib.util
-        spec = importlib.util.spec_from_file_location("focus_blocker", main_script)
+        spec = importlib.util.spec_from_file_location("focus_blocker_qt", main_script)
         if spec is None or spec.loader is None:
             print(f"Error: Could not load {main_script}")
             input("Press Enter to exit...")

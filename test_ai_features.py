@@ -176,7 +176,7 @@ def main():
     print("✅ ALL TESTS COMPLETED!")
     print("=" * 60)
     print("\nThe AI features are working correctly!")
-    print("Run 'python focus_blocker.py' to see them in the GUI.")
+    print("Run 'python focus_blocker_qt.py' to see them in the GUI.")
 
 if __name__ == "__main__":
     main()

@@ -23,6 +23,6 @@ set "SCRIPT_DIR=%~dp0"
 
 :: Request admin privileges and run the main script
 echo Requesting administrator privileges...
-powershell -Command "Start-Process python -ArgumentList '\"%SCRIPT_DIR%focus_blocker.py\"' -Verb RunAs"
+powershell -Command "Start-Process python -ArgumentList '\"%SCRIPT_DIR%focus_blocker_qt.py\"' -Verb RunAs"
 
 exit /b 0

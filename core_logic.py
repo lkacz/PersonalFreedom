@@ -118,6 +118,7 @@ class BlockMode:
     STRICT = "strict"
     POMODORO = "pomodoro"
     SCHEDULED = "scheduled"
+    HARDCORE = "hardcore"
 
 
 class BlockerCore:

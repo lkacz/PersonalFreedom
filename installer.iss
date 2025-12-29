@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6.0 or later: https://jrsoftware.org/isinfo.php
 
 #define MyAppName "Personal Freedom"
-#define MyAppVersion "3.0.3"
+#define MyAppVersion "3.1.1"
 #define MyAppPublisher "Personal Freedom"
 #define MyAppURL "https://github.com/lkacz/PersonalFreedom"
 #define MyAppExeName "PersonalFreedom.exe"
@@ -23,13 +23,13 @@ LicenseFile=LICENSE.txt
 InfoBeforeFile=INSTALLER_INFO.txt
 OutputDir=installer_output
 OutputBaseFilename=PersonalFreedom_Setup_v{#MyAppVersion}
-SetupIconFile=
+SetupIconFile=icons\app.ico
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
-UninstallDisplayIcon={app}\{#MyAppExeName}
+UninstallDisplayIcon={app}\app.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -43,6 +43,10 @@ Name: "autostart"; Description: "Start with Windows (recommended)"; GroupDescrip
 ; Main executables with AI bundled
 Source: "dist\PersonalFreedom.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\PersonalFreedomTray.exe"; DestDir: "{app}"; Flags: ignoreversion
+; Icons
+Source: "icons\app.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "icons\tray_ready.png"; DestDir: "{app}"; Flags: ignoreversion
+Source: "icons\tray_blocking.png"; DestDir: "{app}"; Flags: ignoreversion
 ; Documentation
 Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "QUICK_START.md"; DestDir: "{app}"; Flags: ignoreversion
@@ -54,8 +58,8 @@ Source: "setup_autostart.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "cleanup_hosts.ps1"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: ""; WorkingDir: "{app}"; Comment: "AI-Powered Focus & Productivity Tool"
-Name: "{group}\{#MyAppName} (Tray)"; Filename: "{app}\PersonalFreedomTray.exe"; WorkingDir: "{app}"; Comment: "System Tray Version"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app.ico"; WorkingDir: "{app}"; Comment: "AI-Powered Focus & Productivity Tool"
+Name: "{group}\{#MyAppName} (Tray)"; Filename: "{app}\PersonalFreedomTray.exe"; IconFilename: "{app}\app.ico"; WorkingDir: "{app}"; Comment: "System Tray Version"
 Name: "{group}\Quick Start Guide"; Filename: "{app}\QUICK_START.md"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
@@ -70,6 +74,11 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\PersonalFreedomTray.exe"""; Tasks: autostart; Flags: uninsdeletevalue
 
 [UninstallRun]
+; Kill running processes first
+Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM PersonalFreedom.exe"; Flags: runhidden; RunOnceId: "KillMain"
+Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM PersonalFreedomTray.exe"; Flags: runhidden; RunOnceId: "KillTray"
+; Remove scheduled task if exists
+Filename: "{sys}\schtasks.exe"; Parameters: "/delete /tn PersonalFreedomAutostart /f"; Flags: runhidden; RunOnceId: "RemoveTask"
 ; Run cleanup script before uninstall (primary method)
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\cleanup_hosts.ps1"" -Silent"; Flags: runhidden waituntilterminated; RunOnceId: "CleanupHosts"
 ; Flush DNS cache

@@ -270,14 +270,14 @@ class TestSetBonusSystem(unittest.TestCase):
     
     def test_get_item_themes_dragon(self) -> None:
         """Test theme extraction for dragon-themed items."""
-        from focus_blocker import get_item_themes
+        from gamification import get_item_themes
         item = {"name": "Dragon-forged Helmet of Blazing Focus"}
         themes = get_item_themes(item)
         self.assertIn("Dragon", themes)
     
     def test_get_item_themes_multiple(self) -> None:
         """Test item can have multiple themes."""
-        from focus_blocker import get_item_themes
+        from gamification import get_item_themes
         item = {"name": "Void-touched Crystal Amulet of Shadows"}
         themes = get_item_themes(item)
         self.assertIn("Void", themes)
@@ -285,21 +285,21 @@ class TestSetBonusSystem(unittest.TestCase):
     
     def test_get_item_themes_none(self) -> None:
         """Test item with no matching themes."""
-        from focus_blocker import get_item_themes
+        from gamification import get_item_themes
         item = {"name": "Rusty Helmet of Mild Confusion"}
         themes = get_item_themes(item)
         self.assertEqual(len(themes), 0)
     
     def test_calculate_set_bonuses_empty(self) -> None:
         """Test set bonus calculation with empty equipped."""
-        from focus_blocker import calculate_set_bonuses
+        from gamification import calculate_set_bonuses
         result = calculate_set_bonuses({})
         self.assertEqual(result["total_bonus"], 0)
         self.assertEqual(len(result["active_sets"]), 0)
     
     def test_calculate_set_bonuses_single_theme(self) -> None:
         """Test set bonus with items sharing one theme."""
-        from focus_blocker import calculate_set_bonuses
+        from gamification import calculate_set_bonuses
         equipped = {
             "Helmet": {"name": "Dragon Helmet of Power"},
             "Chestplate": {"name": "Drake-scale Chestplate of Might"},
@@ -311,7 +311,7 @@ class TestSetBonusSystem(unittest.TestCase):
     
     def test_calculate_set_bonuses_not_enough_matches(self) -> None:
         """Test no bonus when only 1 item has a theme."""
-        from focus_blocker import calculate_set_bonuses
+        from gamification import calculate_set_bonuses
         equipped = {
             "Helmet": {"name": "Dragon Helmet of Power"},
             "Chestplate": {"name": "Rusty Chestplate of Confusion"},
@@ -326,14 +326,14 @@ class TestLuckyMergeSystem(unittest.TestCase):
     
     def test_merge_success_rate_minimum(self) -> None:
         """Test merge success rate with 2 items."""
-        from focus_blocker import calculate_merge_success_rate
+        from gamification import calculate_merge_success_rate
         items = [{"rarity": "Common"}, {"rarity": "Common"}]
         rate = calculate_merge_success_rate(items, luck_bonus=0)
         self.assertAlmostEqual(rate, 0.10, places=2)  # 10% base
     
     def test_merge_success_rate_with_extra_items(self) -> None:
         """Test merge success rate increases with more items."""
-        from focus_blocker import calculate_merge_success_rate
+        from gamification import calculate_merge_success_rate
         items = [{"rarity": "Common"} for _ in range(5)]  # 5 items
         rate = calculate_merge_success_rate(items, luck_bonus=0)
         # Base 10% + 3% per extra item (5-2=3 extras) = 19%
@@ -341,7 +341,7 @@ class TestLuckyMergeSystem(unittest.TestCase):
     
     def test_merge_success_rate_with_luck(self) -> None:
         """Test luck bonus affects merge rate."""
-        from focus_blocker import calculate_merge_success_rate
+        from gamification import calculate_merge_success_rate
         items = [{"rarity": "Common"}, {"rarity": "Common"}]
         rate_no_luck = calculate_merge_success_rate(items, luck_bonus=0)
         rate_with_luck = calculate_merge_success_rate(items, luck_bonus=100)  # 100 luck = +1%
@@ -352,14 +352,14 @@ class TestLuckyMergeSystem(unittest.TestCase):
     
     def test_merge_success_rate_capped(self) -> None:
         """Test merge success rate is capped at 35%."""
-        from focus_blocker import calculate_merge_success_rate
+        from gamification import calculate_merge_success_rate
         items = [{"rarity": "Common"} for _ in range(20)]  # Many items
         rate = calculate_merge_success_rate(items, luck_bonus=1000)
         self.assertLessEqual(rate, 0.35)
     
     def test_get_merge_result_rarity(self) -> None:
         """Test merge result is one tier above lowest."""
-        from focus_blocker import get_merge_result_rarity
+        from gamification import get_merge_result_rarity
         items = [
             {"rarity": "Common"},
             {"rarity": "Rare"},
@@ -371,7 +371,7 @@ class TestLuckyMergeSystem(unittest.TestCase):
     
     def test_get_merge_result_same_rarity(self) -> None:
         """Test merge result with same rarity items."""
-        from focus_blocker import get_merge_result_rarity
+        from gamification import get_merge_result_rarity
         items = [
             {"rarity": "Rare"},
             {"rarity": "Rare"}
@@ -382,7 +382,7 @@ class TestLuckyMergeSystem(unittest.TestCase):
     
     def test_perform_lucky_merge_returns_structure(self) -> None:
         """Test merge result has expected structure."""
-        from focus_blocker import perform_lucky_merge
+        from gamification import perform_lucky_merge
         items = [
             {"rarity": "Common", "name": "Test 1"},
             {"rarity": "Common", "name": "Test 2"}
@@ -397,7 +397,7 @@ class TestLuckyMergeSystem(unittest.TestCase):
     
     def test_is_merge_worthwhile_all_legendary(self) -> None:
         """Test merge is not worthwhile when all items are Legendary."""
-        from focus_blocker import is_merge_worthwhile
+        from gamification import is_merge_worthwhile
         items = [
             {"rarity": "Legendary", "name": "Test 1"},
             {"rarity": "Legendary", "name": "Test 2"}
@@ -408,7 +408,7 @@ class TestLuckyMergeSystem(unittest.TestCase):
     
     def test_is_merge_worthwhile_mixed_rarity(self) -> None:
         """Test merge is worthwhile with mixed rarities."""
-        from focus_blocker import is_merge_worthwhile
+        from gamification import is_merge_worthwhile
         items = [
             {"rarity": "Common", "name": "Test 1"},
             {"rarity": "Legendary", "name": "Test 2"}
@@ -418,7 +418,7 @@ class TestLuckyMergeSystem(unittest.TestCase):
     
     def test_get_item_themes_word_boundary(self) -> None:
         """Test theme detection uses word boundaries."""
-        from focus_blocker import get_item_themes
+        from gamification import get_item_themes
         # "fire" should not match in "backfire"
         item = {"name": "Backfire Helmet of Confusion"}
         themes = get_item_themes(item)
@@ -431,7 +431,7 @@ class TestLuckyMergeSystem(unittest.TestCase):
     
     def test_get_item_themes_star_word_boundary(self) -> None:
         """Test 'star' doesn't match 'upstart'."""
-        from focus_blocker import get_item_themes
+        from gamification import get_item_themes
         item = {"name": "Upstart Helmet of Beginners"}
         themes = get_item_themes(item)
         self.assertNotIn("Celestial", themes)
