@@ -3721,7 +3721,7 @@ def main() -> None:
     app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName("Personal Freedom")
     app.setOrganizationName("PersonalFreedom")
-    app.setApplicationVersion("3.1.3")
+    app.setApplicationVersion("3.1.4")
     
     window = FocusBlockerWindow()
     window.show()
