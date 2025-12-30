@@ -55,12 +55,21 @@ try:
         calculate_rarity_bonuses, calculate_merge_success_rate,
         get_merge_result_rarity, perform_lucky_merge, is_merge_worthwhile,
         generate_diary_entry, calculate_set_bonuses, generate_item,
-        generate_daily_reward_item, get_current_tier, get_boosted_rarity
+        generate_daily_reward_item, get_current_tier, get_boosted_rarity,
+        AVAILABLE_STORIES, STORY_MODE_ACTIVE, STORY_MODE_HERO_ONLY, STORY_MODE_DISABLED,
+        set_story_mode, get_story_mode, switch_story, ensure_hero_structure, sync_hero_data,
+        is_gamification_enabled
     )
     GAMIFICATION_AVAILABLE = True
 except ImportError:
     GAMIFICATION_AVAILABLE = False
     RARITY_POWER = {"Common": 10, "Uncommon": 25, "Rare": 50, "Epic": 100, "Legendary": 250}
+    AVAILABLE_STORIES = {}
+    STORY_MODE_ACTIVE = "story"
+    STORY_MODE_HERO_ONLY = "hero_only"
+    STORY_MODE_DISABLED = "disabled"
+    sync_hero_data = None  # type: ignore
+    is_gamification_enabled = lambda adhd_buster: False  # type: ignore
 
 # Single instance mutex name
 MUTEX_NAME = "PersonalFreedom_SingleInstance_Mutex"
@@ -324,6 +333,97 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
             # Ignore escape - user must click "Keep Focusing" or solve problems
             return
         super().keyPressEvent(event)
+
+
+class OnboardingModeDialog(QtWidgets.QDialog):
+    """Prompt the user to pick how they want to play on startup."""
+
+    def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        ensure_hero_structure(self.blocker.adhd_buster)
+
+        self.setWindowTitle("Choose Gamification Mode")
+        self.setModal(True)
+        self.setMinimumWidth(420)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+
+        layout = QtWidgets.QVBoxLayout(self)
+        info = QtWidgets.QLabel(
+            "How would you like to play today?\n"
+            "• Story: each story has its own hero, gear, and decisions.\n"
+            "• Hero only: level up a free hero, no story.\n"
+            "• Disabled: no gamification for this session."
+        )
+        info.setWordWrap(True)
+        layout.addWidget(info)
+
+        self.story_radio = QtWidgets.QRadioButton("Story mode")
+        self.hero_only_radio = QtWidgets.QRadioButton("Hero only (no story)")
+        self.disabled_radio = QtWidgets.QRadioButton("Disabled")
+
+        mode_group = QtWidgets.QButtonGroup(self)
+        for btn in (self.story_radio, self.hero_only_radio, self.disabled_radio):
+            mode_group.addButton(btn)
+            layout.addWidget(btn)
+
+        self.story_combo = QtWidgets.QComboBox()
+        if AVAILABLE_STORIES:
+            for story_id, info_data in AVAILABLE_STORIES.items():
+                self.story_combo.addItem(info_data.get("title", story_id), story_id)
+        else:
+            self.story_combo.addItem("The Focus Warrior", "warrior")
+        layout.addWidget(self.story_combo)
+
+        current_mode = get_story_mode(self.blocker.adhd_buster)
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+
+        if current_mode == STORY_MODE_HERO_ONLY:
+            self.hero_only_radio.setChecked(True)
+        elif current_mode == STORY_MODE_DISABLED:
+            self.disabled_radio.setChecked(True)
+        else:
+            self.story_radio.setChecked(True)
+
+        idx = self.story_combo.findData(active_story)
+        if idx >= 0:
+            self.story_combo.setCurrentIndex(idx)
+
+        self.story_radio.toggled.connect(self._on_mode_changed)
+        self.hero_only_radio.toggled.connect(self._on_mode_changed)
+        self.disabled_radio.toggled.connect(self._on_mode_changed)
+        self._on_mode_changed()
+
+        # Don't ask again checkbox
+        self.dont_ask_checkbox = QtWidgets.QCheckBox("Don't ask again on startup")
+        self.dont_ask_checkbox.setToolTip(
+            "You can always change your mode from the ADHD Buster dialog (Story Settings)"
+        )
+        layout.addWidget(self.dont_ask_checkbox)
+
+        buttons = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel,
+            QtCore.Qt.Horizontal,
+            self,
+        )
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    def _on_mode_changed(self) -> None:
+        self.story_combo.setEnabled(self.story_radio.isChecked())
+
+    def get_selection(self) -> tuple:
+        if self.disabled_radio.isChecked():
+            return STORY_MODE_DISABLED, None
+        if self.hero_only_radio.isChecked():
+            return STORY_MODE_HERO_ONLY, None
+        story_id = self.story_combo.currentData()
+        return STORY_MODE_ACTIVE, story_id
+
+    def should_skip_next_time(self) -> bool:
+        """Return True if user checked 'Don't ask again'."""
+        return self.dont_ask_checkbox.isChecked()
 
 
 class TimerTab(QtWidgets.QWidget):
@@ -603,6 +703,9 @@ class TimerTab(QtWidgets.QWidget):
         """Give item drop and diary entry rewards."""
         if not GAMIFICATION_AVAILABLE:
             return
+        # Skip if gamification mode is disabled
+        if not is_gamification_enabled(self.blocker.adhd_buster):
+            return
 
         streak = self.blocker.stats.get("streak_days", 0)
         luck = self.blocker.adhd_buster.get("luck_bonus", 0)
@@ -649,6 +752,9 @@ class TimerTab(QtWidgets.QWidget):
             if len(self.blocker.adhd_buster["diary"]) > 100:
                 self.blocker.adhd_buster["diary"] = self.blocker.adhd_buster["diary"][-100:]
 
+        # Sync changes to active hero before saving
+        if GAMIFICATION_AVAILABLE:
+            sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
 
         # Show item drop dialog
@@ -1493,12 +1599,13 @@ class SettingsTab(QtWidgets.QWidget):
         if QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
             tray_group = QtWidgets.QGroupBox("🖥️ System Tray")
             tray_layout = QtWidgets.QVBoxLayout(tray_group)
-            self.tray_check = QtWidgets.QCheckBox("Minimize to system tray instead of taskbar")
+            self.tray_check = QtWidgets.QCheckBox("Minimize to system tray instead of closing")
+            self.tray_check.setChecked(self.blocker.minimize_to_tray)  # Load from config
             self.tray_check.toggled.connect(self._toggle_tray)
             tray_layout.addWidget(self.tray_check)
             tray_layout.addWidget(QtWidgets.QLabel(
-                "When enabled, minimizing the window will hide it to the system tray.\n"
-                "Double-click the tray icon to restore the window."
+                "When enabled, clicking the close button will hide the app to the system tray.\n"
+                "Double-click the tray icon to restore the window. Use 'Exit' to fully quit."
             ))
             inner.addWidget(tray_group)
 
@@ -1665,10 +1772,13 @@ class SettingsTab(QtWidgets.QWidget):
             QtWidgets.QMessageBox.critical(self, "Cleanup Failed", message)
 
     def _toggle_tray(self, checked: bool) -> None:
-        """Toggle minimize to tray setting."""
+        """Toggle minimize to tray setting and save to config."""
         main_window = self.window()
         if hasattr(main_window, 'minimize_to_tray'):
             main_window.minimize_to_tray = checked
+            # Persist the setting
+            self.blocker.minimize_to_tray = checked
+            self.blocker.save_config()
 
 
 class AITab(QtWidgets.QWidget):
@@ -2367,6 +2477,32 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         # Story Progress Section
         story_group = QtWidgets.QGroupBox("📜 Your Story")
         story_layout = QtWidgets.QVBoxLayout(story_group)
+
+        # Mode selection row
+        if GAMIFICATION_AVAILABLE:
+            mode_bar = QtWidgets.QHBoxLayout()
+            mode_bar.addWidget(QtWidgets.QLabel("Mode:"))
+            self.mode_story_radio = QtWidgets.QRadioButton("Story")
+            self.mode_hero_radio = QtWidgets.QRadioButton("Hero Only")
+            self.mode_disabled_radio = QtWidgets.QRadioButton("Disabled")
+            mode_group = QtWidgets.QButtonGroup(self)
+            for btn in (self.mode_story_radio, self.mode_hero_radio, self.mode_disabled_radio):
+                mode_group.addButton(btn)
+                mode_bar.addWidget(btn)
+            # Set current mode
+            current_mode = get_story_mode(self.blocker.adhd_buster)
+            if current_mode == STORY_MODE_HERO_ONLY:
+                self.mode_hero_radio.setChecked(True)
+            elif current_mode == STORY_MODE_DISABLED:
+                self.mode_disabled_radio.setChecked(True)
+            else:
+                self.mode_story_radio.setChecked(True)
+            # Connect signals
+            self.mode_story_radio.toggled.connect(self._on_mode_radio_changed)
+            self.mode_hero_radio.toggled.connect(self._on_mode_radio_changed)
+            self.mode_disabled_radio.toggled.connect(self._on_mode_radio_changed)
+            mode_bar.addStretch()
+            story_layout.addLayout(mode_bar)
         
         # Story selection row
         if GAMIFICATION_AVAILABLE:
@@ -2431,6 +2567,10 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         
         inner.addWidget(story_group)
 
+        # Update mode UI state (enable/disable story controls based on mode)
+        if GAMIFICATION_AVAILABLE:
+            self._update_mode_ui_state()
+
         # Buttons
         btn_layout = QtWidgets.QHBoxLayout()
         diary_btn = QtWidgets.QPushButton("📖 Adventure Diary")
@@ -2458,6 +2598,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             item = combo.currentData()
             if item:
                 self.blocker.adhd_buster["equipped"][slot] = item.copy()
+        # Sync changes to active hero before saving
+        if GAMIFICATION_AVAILABLE:
+            sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
         # Immediately refresh character display
         self._refresh_character()
@@ -2512,6 +2655,8 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         
         # Persist any equipped items that were cleared
         if needs_save:
+            if GAMIFICATION_AVAILABLE:
+                sync_hero_data(self.blocker.adhd_buster)
             self.blocker.save_config()
 
     def _refresh_inventory(self) -> None:
@@ -2613,6 +2758,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         if result["success"]:
             inventory.append(result["result_item"])
             self.blocker.adhd_buster["inventory"] = inventory
+            # Sync changes to active hero before saving
+            if GAMIFICATION_AVAILABLE:
+                sync_hero_data(self.blocker.adhd_buster)
             self.blocker.save_config()
             
             # Show result with tier upgrade info
@@ -2626,6 +2774,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                 f"Rarity: {result['result_item']['rarity']}, Power: +{result['result_item']['power']}")
         else:
             self.blocker.adhd_buster["inventory"] = inventory
+            # Sync changes to active hero before saving
+            if GAMIFICATION_AVAILABLE:
+                sync_hero_data(self.blocker.adhd_buster)
             self.blocker.save_config()
             QtWidgets.QMessageBox.critical(self, "💔 Merge Failed!",
                 f"Roll: {result['roll_pct']} (needed < {result['needed_pct']})\n\n"
@@ -2649,12 +2800,13 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         current = get_selected_story(self.blocker.adhd_buster)
         
         if story_id != current:
-            # Warn about losing progress
+            # Inform about switching to different hero
             reply = QtWidgets.QMessageBox.question(
                 self, "Switch Story?",
-                f"Switching stories will reset your story decisions.\n\n"
-                f"Your power and equipment will be kept.\n\n"
-                f"Are you sure you want to switch?",
+                f"Each story has its own hero with separate gear and progress.\n\n"
+                f"Switching will load your hero for this story.\n"
+                f"(Your current hero's progress will be saved.)\n\n"
+                f"Switch to the new story?",
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
             )
             if reply != QtWidgets.QMessageBox.Yes:
@@ -2668,9 +2820,60 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         select_story(self.blocker.adhd_buster, story_id)
         self.blocker.save_config()
         
+        # Refresh all UI elements for the new hero
         self._update_story_description()
         self._update_story_progress_labels()
         self._refresh_story_chapter_list()
+        self._refresh_inventory()
+        self._refresh_all_slot_combos()
+        self._refresh_character()
+
+    def _on_mode_radio_changed(self) -> None:
+        """Handle mode radio button change."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+
+        # Determine which mode is selected
+        if self.mode_disabled_radio.isChecked():
+            new_mode = STORY_MODE_DISABLED
+        elif self.mode_hero_radio.isChecked():
+            new_mode = STORY_MODE_HERO_ONLY
+        else:
+            new_mode = STORY_MODE_ACTIVE
+
+        current_mode = get_story_mode(self.blocker.adhd_buster)
+        if new_mode == current_mode:
+            return
+
+        # Sync any pending changes before mode switch
+        sync_hero_data(self.blocker.adhd_buster)
+
+        if new_mode == STORY_MODE_ACTIVE:
+            # Switch to story mode - use current active story
+            story_id = self.blocker.adhd_buster.get("active_story", "warrior")
+            switch_story(self.blocker.adhd_buster, story_id)
+        else:
+            set_story_mode(self.blocker.adhd_buster, new_mode)
+
+        self.blocker.save_config()
+
+        # Update UI to reflect mode change
+        self._update_mode_ui_state()
+        self._refresh_inventory()
+        self._refresh_all_slot_combos()
+        self._refresh_character()
+
+    def _update_mode_ui_state(self) -> None:
+        """Update UI elements based on current mode (enable/disable story controls)."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        enabled = is_gamification_enabled(self.blocker.adhd_buster)
+        story_mode = get_story_mode(self.blocker.adhd_buster) == STORY_MODE_ACTIVE
+        # Enable story combo only in story mode
+        if hasattr(self, "story_combo"):
+            self.story_combo.setEnabled(story_mode)
+        if hasattr(self, "chapter_combo"):
+            self.chapter_combo.setEnabled(story_mode)
     
     def _update_story_description(self) -> None:
         """Update the story description label."""
@@ -2936,6 +3139,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         cur_luck = self.blocker.adhd_buster.get("luck_bonus", 0)
         self.blocker.adhd_buster["luck_bonus"] = cur_luck + luck_bonus
         self.blocker.adhd_buster["inventory"] = inventory
+        # Sync changes to active hero before saving
+        if GAMIFICATION_AVAILABLE:
+            sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
         QtWidgets.QMessageBox.information(self, "Salvage Complete!", f"✨ Salvaged {len(to_remove)} items!\n🍀 Total luck: +{cur_luck + luck_bonus}")
         self._refresh_inventory()
@@ -3593,6 +3799,9 @@ class PrioritiesDialog(QtWidgets.QDialog):
                 adhd_buster["inventory"] = []
             adhd_buster["inventory"].append(item)
             self.blocker.config["adhd_buster"] = adhd_buster
+            # Sync changes to active hero before saving
+            if GAMIFICATION_AVAILABLE:
+                sync_hero_data(self.blocker.adhd_buster)
             self.blocker.save_config()
             
             # Show win dialog
@@ -3801,12 +4010,15 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         priorities_btn.clicked.connect(self._open_priorities)
         quick_bar.addWidget(priorities_btn)
 
-        # ADHD Buster button
+        # ADHD Buster button (only when gamification is available and not disabled)
         if GAMIFICATION_AVAILABLE:
             power = calculate_character_power(self.blocker.adhd_buster)
             self.buster_btn = QtWidgets.QPushButton(f"🦸 ADHD Buster  ⚔ {power}")
             self.buster_btn.setStyleSheet("font-weight: bold; padding: 6px 12px;")
             self.buster_btn.clicked.connect(self._open_adhd_buster)
+            # Hide if gamification is disabled
+            if not is_gamification_enabled(self.blocker.adhd_buster):
+                self.buster_btn.setVisible(False)
             quick_bar.addWidget(self.buster_btn)
 
         quick_bar.addStretch()
@@ -3848,7 +4060,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         # System Tray setup
         self.tray_icon = None
-        self.minimize_to_tray = False
+        self.minimize_to_tray = self.blocker.minimize_to_tray  # Load from config
         self._setup_system_tray()
 
         # Check for crash recovery on startup
@@ -3864,6 +4076,47 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Check for daily gear reward
         if GAMIFICATION_AVAILABLE:
             QtCore.QTimer.singleShot(800, self._check_daily_gear_reward)
+            QtCore.QTimer.singleShot(850, self._show_onboarding_prompt)
+
+    def _show_onboarding_prompt(self) -> None:
+        """Ask the user how they want to play this session."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+
+        ensure_hero_structure(self.blocker.adhd_buster)
+
+        # Skip if user already set 'skip_onboarding' flag
+        if self.blocker.adhd_buster.get("skip_onboarding", False):
+            return
+
+        dialog = OnboardingModeDialog(self.blocker, self)
+        if dialog.exec() != QtWidgets.QDialog.Accepted:
+            return
+
+        mode, story_id = dialog.get_selection()
+
+        # Save 'Don't ask again' preference
+        if dialog.should_skip_next_time():
+            self.blocker.adhd_buster["skip_onboarding"] = True
+
+        # Persist any pending flat changes before switching modes
+        sync_hero_data(self.blocker.adhd_buster)
+
+        if mode == STORY_MODE_ACTIVE:
+            target_story = story_id or self.blocker.adhd_buster.get("active_story", "warrior")
+            switch_story(self.blocker.adhd_buster, target_story)
+        else:
+            set_story_mode(self.blocker.adhd_buster, mode)
+
+        if GAMIFICATION_AVAILABLE and hasattr(self, "buster_btn"):
+            # Update button visibility and text based on mode
+            enabled = is_gamification_enabled(self.blocker.adhd_buster)
+            self.buster_btn.setVisible(enabled)
+            if enabled:
+                power = calculate_character_power(self.blocker.adhd_buster)
+                self.buster_btn.setText(f"🦸 ADHD Buster  ⚔ {power}")
+
+        self.blocker.save_config()
 
     def _check_priorities_on_startup(self) -> None:
         """Check if priorities dialog should be shown on startup."""
@@ -3963,6 +4216,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """
         if not GAMIFICATION_AVAILABLE:
             return
+        # Skip if gamification mode is disabled
+        if not is_gamification_enabled(self.blocker.adhd_buster):
+            return
         
         today = datetime.now().strftime("%Y-%m-%d")
         last_reward_date = self.blocker.adhd_buster.get("last_daily_reward_date", "")
@@ -3998,6 +4254,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.blocker.adhd_buster["inventory"].append(item)
             self.blocker.adhd_buster["last_daily_reward_date"] = today
             self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
+            # Sync changes to active hero before saving
+            if GAMIFICATION_AVAILABLE:
+                sync_hero_data(self.blocker.adhd_buster)
             self.blocker.save_config()
             
             # Show reward dialog
@@ -4038,7 +4297,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         show_action.triggered.connect(self._restore_from_tray)
         
         exit_action = tray_menu.addAction("Exit")
-        exit_action.triggered.connect(self.close)
+        exit_action.triggered.connect(self._quit_application)
         
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.activated.connect(self._on_tray_activated)
@@ -4112,17 +4371,20 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
     def _restore_from_tray(self) -> None:
         """Restore window from system tray."""
-        self.show()
+        self.showNormal()  # Ensures window is not minimized
         self.raise_()
         self.activateWindow()
         # Tray icon stays visible and timer keeps running
 
+    def _quit_application(self) -> None:
+        """Force quit the application (bypasses minimize to tray)."""
+        self._force_quit = True
+        self.close()
+
     def changeEvent(self, event: QtCore.QEvent) -> None:
-        """Handle window state changes (minimize to tray)."""
-        if event.type() == QtCore.QEvent.WindowStateChange:
-            if self.windowState() & QtCore.Qt.WindowMinimized:
-                if self.minimize_to_tray and self.tray_icon:
-                    QtCore.QTimer.singleShot(0, self._hide_to_tray)
+        """Handle window state changes."""
+        # Note: We no longer hide to tray on minimize - only on close
+        # This keeps minimize behavior standard (to taskbar)
         super().changeEvent(event)
 
     def _hide_to_tray(self) -> None:
@@ -4131,7 +4393,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.hide()
             self.tray_icon.showMessage(
                 "Personal Freedom",
-                "Minimized to system tray. Double-click to restore.",
+                "Still running in system tray. Double-click to restore, or right-click → Exit to quit.",
                 QtWidgets.QSystemTrayIcon.Information,
                 2000
             )
@@ -4145,7 +4407,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         priorities_action.triggered.connect(self._open_priorities)
         file_menu.addSeparator()
         exit_action = file_menu.addAction("Exit")
-        exit_action.triggered.connect(self.close)
+        exit_action.triggered.connect(self._quit_application)
 
         # Tools menu
         tools_menu = menu_bar.addMenu("&Tools")
@@ -4175,9 +4437,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     def _open_adhd_buster(self) -> None:
         dialog = ADHDBusterDialog(self.blocker, self)
         dialog.exec()
-        if GAMIFICATION_AVAILABLE:
-            power = calculate_character_power(self.blocker.adhd_buster)
-            self.buster_btn.setText(f"🦸 ADHD Buster  ⚔ {power}")
+        if GAMIFICATION_AVAILABLE and hasattr(self, "buster_btn"):
+            # Update button visibility and text based on mode
+            enabled = is_gamification_enabled(self.blocker.adhd_buster)
+            self.buster_btn.setVisible(enabled)
+            if enabled:
+                power = calculate_character_power(self.blocker.adhd_buster)
+                self.buster_btn.setText(f"🦸 ADHD Buster  ⚔ {power}")
 
     def _open_diary(self) -> None:
         dialog = DiaryDialog(self.blocker, self)
@@ -4199,7 +4465,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             "Built with PySide6 (Qt for Python).")
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
-        """Handle window close - prompt if session is running."""
+        """Handle window close - minimize to tray if enabled, else prompt/close."""
+        # If minimize_to_tray is enabled and tray is available, hide to tray instead of closing
+        if self.minimize_to_tray and self.tray_icon and not getattr(self, '_force_quit', False):
+            event.ignore()
+            self._hide_to_tray()
+            return
+
         # Stop tray icon and update timer
         if self.tray_icon:
             self.tray_icon.hide()
@@ -4315,6 +4587,9 @@ def main() -> None:
         )
         sys.exit(0)
     
+    # Parse command-line arguments
+    start_minimized = "--minimized" in sys.argv or "--tray" in sys.argv
+    
     # Set application attributes before creating QApplication
     QtWidgets.QApplication.setHighDpiScaleFactorRoundingPolicy(
         QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
@@ -4326,7 +4601,19 @@ def main() -> None:
     app.setApplicationVersion("3.1.4")
     
     window = FocusBlockerWindow()
-    window.show()
+    
+    if start_minimized and window.tray_icon:
+        # Start minimized to system tray
+        window.hide()
+        window.tray_icon.showMessage(
+            "Personal Freedom",
+            "Running in system tray. Double-click to open.",
+            QtWidgets.QSystemTrayIcon.Information,
+            3000
+        )
+    else:
+        window.show()
+    
     sys.exit(app.exec())
 
 
