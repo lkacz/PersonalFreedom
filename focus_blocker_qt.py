@@ -7208,10 +7208,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         if self.blocker.show_priorities_on_startup:
             QtCore.QTimer.singleShot(600, self._check_priorities_on_startup)
 
-        # Check for daily gear reward
+        # Check for daily gear reward (delayed until after onboarding so story is selected)
         if GAMIFICATION_AVAILABLE:
-            QtCore.QTimer.singleShot(800, self._check_daily_gear_reward)
-            QtCore.QTimer.singleShot(850, self._show_onboarding_prompt)
+            QtCore.QTimer.singleShot(900, self._show_onboarding_prompt)
 
     def _show_onboarding_prompt(self) -> None:
         """Ask the user how they want to play this session."""
@@ -7222,10 +7221,14 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         # Skip if user already set 'skip_onboarding' flag
         if self.blocker.adhd_buster.get("skip_onboarding", False):
+            # Still check for daily reward even if skipping onboarding
+            self._check_daily_gear_reward()
             return
 
         dialog = OnboardingModeDialog(self.blocker, self)
         if dialog.exec() != QtWidgets.QDialog.Accepted:
+            # Still check for daily reward even if dialog cancelled
+            self._check_daily_gear_reward()
             return
 
         mode, story_id = dialog.get_selection()
@@ -7252,6 +7255,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 self.buster_btn.setText(f"🦸 ADHD Buster  ⚔ {power}")
 
         self.blocker.save_config()
+        
+        # Now check for daily gear reward AFTER story is selected
+        self._check_daily_gear_reward()
 
     def _check_priorities_on_startup(self) -> None:
         """Check if priorities dialog should be shown on startup."""
@@ -7386,8 +7392,11 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 reward_reason = "🎲 Lucky Daily Drop!"
         
         if should_reward:
-            # Generate boosted item
-            item = generate_daily_reward_item(self.blocker.adhd_buster)
+            # Get active story for themed item generation
+            active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+            
+            # Generate boosted item with correct story theme
+            item = generate_daily_reward_item(self.blocker.adhd_buster, story_id=active_story)
             
             # Add to inventory
             if "inventory" not in self.blocker.adhd_buster:
@@ -7400,9 +7409,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 sync_hero_data(self.blocker.adhd_buster)
             self.blocker.save_config()
             
-            # Show reward dialog
+            # Show reward dialog with themed slot name
             current_tier = get_current_tier(self.blocker.adhd_buster)
             boosted_tier = get_boosted_rarity(current_tier)
+            slot_display = get_slot_display_name(item['slot'], active_story) if get_slot_display_name else item['slot']
             
             QtWidgets.QMessageBox.information(
                 self,
@@ -7411,7 +7421,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 f"✨ {item['name']}\n"
                 f"⚔ Power: +{item['power']}\n"
                 f"🏆 Rarity: {item['rarity']}\n"
-                f"📍 Slot: {item['slot']}\n\n"
+                f"📍 Slot: {slot_display}\n\n"
                 f"(Based on your current tier: {current_tier} → boosted to {boosted_tier})\n\n"
                 f"Check your ADHD Buster inventory to equip it!"
             )
