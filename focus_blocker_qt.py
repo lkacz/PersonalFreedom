@@ -48,7 +48,7 @@ class SplashScreen(QtWidgets.QWidget):
             }
         """)
         container_layout = QtWidgets.QVBoxLayout(container)
-        container_layout.setContentsMargins(40, 30, 40, 30)
+        container_layout.setContentsMargins(50, 30, 50, 30)
         container_layout.setSpacing(15)
         
         # App icon/title
@@ -56,7 +56,7 @@ class SplashScreen(QtWidgets.QWidget):
         title_label.setStyleSheet("""
             QLabel {
                 color: #ffffff;
-                font-size: 24px;
+                font-size: 22px;
                 font-weight: bold;
                 background: transparent;
                 border: none;
@@ -2733,6 +2733,14 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             self.story_combo.setCurrentIndex(current_idx)
             self.story_combo.currentIndexChanged.connect(self._on_story_change)
             story_select_bar.addWidget(self.story_combo)
+            
+            # Restart Story button
+            self.restart_story_btn = QtWidgets.QPushButton("🔄 Restart Story")
+            self.restart_story_btn.setToolTip("Reset this story's hero - lose all gear, progress, and decisions")
+            self.restart_story_btn.setStyleSheet("color: #c62828;")
+            self.restart_story_btn.clicked.connect(self._on_restart_story)
+            story_select_bar.addWidget(self.restart_story_btn)
+            
             story_select_bar.addStretch()
             story_layout.addLayout(story_select_bar)
             
@@ -2839,7 +2847,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         merge_layout = QtWidgets.QVBoxLayout(merge_group)
         merge_layout.addWidget(QtWidgets.QLabel(
             "Click items in the inventory below to select them for merging.\n"
-            "Items with ✓ are equipped and cannot be merged."
+            "Items with ✓ are equipped and will be unequipped if merged."
         ))
         warn_lbl = QtWidgets.QLabel("⚠️ ~90% failure = ALL items lost! Only ~10% success rate!")
         warn_lbl.setStyleSheet("color: #d32f2f; font-weight: bold;")
@@ -3042,10 +3050,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                 f"Rarity: {item.get('rarity', 'Common')}\n"
                 f"Slot: {item.get('slot', 'Unknown')}\n"
                 f"Power: +{power}\n"
-                f"{'[EQUIPPED - cannot merge]' if is_eq else '[Click to select for merge]'}"
+                f"{'[✓ EQUIPPED - will be unequipped if merged]' if is_eq else '[Click to select for merge]'}"
             )
-            if is_eq:
-                list_item.setFlags(list_item.flags() & ~QtCore.Qt.ItemIsSelectable)
+            # Allow selecting equipped items (they can be merged now)
             list_item.setForeground(QtGui.QColor(item.get("color", "#333")))
             self.inv_list.addItem(list_item)
 
@@ -3212,6 +3219,72 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self._refresh_inventory()
         self._refresh_all_slot_combos()
         self._refresh_character()
+
+    def _on_restart_story(self) -> None:
+        """Handle restart story button click - reset current story's hero."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        from gamification import restart_story, get_selected_story, AVAILABLE_STORIES
+        
+        story_id = get_selected_story(self.blocker.adhd_buster)
+        story_info = AVAILABLE_STORIES.get(story_id, {})
+        story_title = story_info.get("title", story_id)
+        
+        # Confirm with serious warning
+        reply = QtWidgets.QMessageBox.warning(
+            self, "⚠️ Restart Story?",
+            f"Are you sure you want to RESTART '{story_title}'?\n\n"
+            f"This will DELETE:\n"
+            f"  ❌ All gear and inventory for this story\n"
+            f"  ❌ All story decisions and progress\n"
+            f"  ❌ All chapters unlocked\n\n"
+            f"Your hero will start from Chapter 1 with nothing.\n\n"
+            f"This CANNOT be undone!",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.No  # Default to No
+        )
+        
+        if reply != QtWidgets.QMessageBox.Yes:
+            return
+        
+        # Double-confirm for safety
+        confirm = QtWidgets.QMessageBox.question(
+            self, "Final Confirmation",
+            f"Type of restart: FULL RESET\n\n"
+            f"Really delete all progress for '{story_title}'?",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.No
+        )
+        
+        if confirm != QtWidgets.QMessageBox.Yes:
+            return
+        
+        # Perform the restart
+        success = restart_story(self.blocker.adhd_buster, story_id)
+        
+        if success:
+            self.blocker.save_config()
+            
+            # Refresh all UI elements
+            self._update_story_description()
+            self._update_story_progress_labels()
+            self._refresh_story_chapter_list()
+            self._refresh_inventory()
+            self._refresh_all_slot_combos()
+            self._refresh_character()
+            
+            QtWidgets.QMessageBox.information(
+                self, "Story Restarted",
+                f"'{story_title}' has been reset!\n\n"
+                f"Your hero begins anew at Chapter 1.\n"
+                f"Good luck on your fresh journey! 🌟"
+            )
+        else:
+            QtWidgets.QMessageBox.critical(
+                self, "Error",
+                "Failed to restart story. Please try again."
+            )
 
     def _on_mode_radio_changed(self) -> None:
         """Handle mode radio button change."""
@@ -4280,22 +4353,33 @@ class PrioritiesDialog(QtWidgets.QDialog):
                 "This priority slot is empty. Enter a title first!")
             return
         
+        # Get logged hours for this priority
+        logged_hours = self.priorities[index].get("logged_hours", 0)
+        
+        # Calculate chance for display
+        if logged_hours >= 20:
+            chance = 99
+        elif logged_hours > 0:
+            chance = min(99, int(15 + (logged_hours / 20) * 84))
+        else:
+            chance = 15
+        
         # Confirm completion
         reply = QtWidgets.QMessageBox.question(
             self, "Complete Priority?",
             f"🎯 Mark '{title}' as COMPLETE?\n\n"
             f"You'll get a chance to win a Lucky Gift!\n"
-            f"(15% chance to win, but rewards are high-tier!)",
+            f"(🎰 {chance}% chance based on {logged_hours:.1f}h logged)",
             QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No
         )
         
         if reply != QtWidgets.QMessageBox.StandardButton.Yes:
             return
         
-        # Roll for reward with story theme
+        # Roll for reward with story theme and logged hours
         from gamification import roll_priority_completion_reward
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
-        result = roll_priority_completion_reward(story_id=active_story)
+        result = roll_priority_completion_reward(story_id=active_story, logged_hours=logged_hours)
         
         if result["won"]:
             item = result["item"]

@@ -493,22 +493,24 @@ class TestPriorityCompletionReward(unittest.TestCase):
         self.assertIn("won", result)
         self.assertIn("item", result)
         self.assertIn("message", result)
+        self.assertIn("chance", result)
         self.assertIsInstance(result["won"], bool)
         self.assertIsInstance(result["message"], str)
+        self.assertIsInstance(result["chance"], int)
     
     def test_roll_priority_completion_reward_item_when_won(self) -> None:
         """Test that winning produces a valid item."""
         from gamification import roll_priority_completion_reward
-        # Run multiple times to ensure we get at least one win
+        # Use high hours to ensure high chance of winning
         won_result = None
-        for _ in range(100):
-            result = roll_priority_completion_reward()
+        for _ in range(50):
+            result = roll_priority_completion_reward(logged_hours=20)  # 99% chance
             if result["won"]:
                 won_result = result
                 break
         
-        # Should have won at least once in 100 tries (15% chance)
-        self.assertIsNotNone(won_result, "Should have won at least once in 100 attempts")
+        # Should have won at least once with 99% chance
+        self.assertIsNotNone(won_result, "Should have won at least once with 99% chance")
         item = won_result["item"]
         self.assertIsNotNone(item)
         self.assertIn("name", item)
@@ -521,21 +523,41 @@ class TestPriorityCompletionReward(unittest.TestCase):
         from gamification import roll_priority_completion_reward
         rarities = {"Common": 0, "Uncommon": 0, "Rare": 0, "Epic": 0, "Legendary": 0}
         
-        # Run many times to gather stats
+        # Use high hours to ensure wins for testing distribution
         wins = 0
-        for _ in range(1000):
-            result = roll_priority_completion_reward()
+        for _ in range(200):
+            result = roll_priority_completion_reward(logged_hours=20)  # 99% chance
             if result["won"]:
                 wins += 1
                 rarities[result["item"]["rarity"]] += 1
         
         # With enough wins, high tiers should dominate
-        if wins > 20:
+        if wins > 50:
             high_tier_count = rarities["Rare"] + rarities["Epic"] + rarities["Legendary"]
             low_tier_count = rarities["Common"] + rarities["Uncommon"]
             # High tiers should be more common than low tiers (85% vs 15%)
             self.assertGreater(high_tier_count, low_tier_count, 
                 "High tier rewards should be more common than low tier")
+    
+    def test_roll_priority_completion_chance_scales_with_hours(self) -> None:
+        """Test that win chance scales with logged hours."""
+        from gamification import roll_priority_completion_reward
+        
+        # 0 hours = 15% base chance
+        result = roll_priority_completion_reward(logged_hours=0)
+        self.assertEqual(result["chance"], 15)
+        
+        # 10 hours = 15% + (10/20)*84 = 15% + 42% = 57%
+        result = roll_priority_completion_reward(logged_hours=10)
+        self.assertEqual(result["chance"], 57)
+        
+        # 20+ hours = 99% max
+        result = roll_priority_completion_reward(logged_hours=20)
+        self.assertEqual(result["chance"], 99)
+        
+        # Even more hours still caps at 99%
+        result = roll_priority_completion_reward(logged_hours=50)
+        self.assertEqual(result["chance"], 99)
 
 
 class TestStorySystem(unittest.TestCase):

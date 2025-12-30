@@ -1783,7 +1783,7 @@ def generate_daily_reward_item(adhd_buster: dict, story_id: str = None) -> dict:
 
 
 # Priority completion reward settings
-PRIORITY_COMPLETION_CHANCE = 15  # 15% chance to win a reward
+PRIORITY_BASE_COMPLETION_CHANCE = 15  # 15% base chance to win a reward
 PRIORITY_REWARD_WEIGHTS = {
     # Low chance rewards are high tier - inverted from normal drops
     "Common": 5,       # 5% of rewards
@@ -1794,23 +1794,35 @@ PRIORITY_REWARD_WEIGHTS = {
 }
 
 
-def roll_priority_completion_reward(story_id: str = None) -> dict | None:
+def roll_priority_completion_reward(story_id: str = None, logged_hours: float = 0) -> dict | None:
     """
     Roll for a priority completion reward.
-    Low chance (15%) to win, but if you win, high chance of Epic/Legendary!
+    Chance scales with logged hours: base 15%, up to 99% for 20+ hours.
     
     Args:
         story_id: Story theme for item generation
+        logged_hours: Hours logged on this priority (higher = better chance)
     
     Returns:
-        dict with 'won' (bool), 'item' (dict or None), 'message' (str)
+        dict with 'won' (bool), 'item' (dict or None), 'message' (str), 'chance' (int)
     """
+    # Calculate chance based on logged hours
+    # 0h = 15%, 5h = 35%, 10h = 55%, 15h = 75%, 20h+ = 99%
+    if logged_hours >= 20:
+        chance = 99
+    elif logged_hours > 0:
+        # Linear scaling: 15% + (logged_hours / 20) * 84 = up to 99%
+        chance = min(99, int(PRIORITY_BASE_COMPLETION_CHANCE + (logged_hours / 20) * 84))
+    else:
+        chance = PRIORITY_BASE_COMPLETION_CHANCE
+    
     # First roll: did the user win?
-    if random.randint(1, 100) > PRIORITY_COMPLETION_CHANCE:
+    if random.randint(1, 100) > chance:
         return {
             "won": False,
             "item": None,
-            "message": "No lucky gift this time... Keep completing priorities for another chance!"
+            "message": "No lucky gift this time... Keep completing priorities for another chance!",
+            "chance": chance
         }
     
     # User won! Roll for rarity (weighted toward high tiers)
@@ -1832,7 +1844,8 @@ def roll_priority_completion_reward(story_id: str = None) -> dict | None:
     return {
         "won": True,
         "item": item,
-        "message": rarity_messages.get(lucky_rarity, "You won a reward!")
+        "message": rarity_messages.get(lucky_rarity, "You won a reward!"),
+        "chance": chance
     }
 
 
