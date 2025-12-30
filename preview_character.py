@@ -47,22 +47,49 @@ class PreviewWindow(QtWidgets.QWidget):
                 left: 10px; 
                 padding: 0 5px; 
             }
+            QScrollArea { border: none; background-color: #1a1a2e; }
+            QScrollBar:vertical {
+                background: #2d2d4a;
+                width: 12px;
+                border-radius: 6px;
+            }
+            QScrollBar::handle:vertical {
+                background: #ffd700;
+                border-radius: 6px;
+                min-height: 30px;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
         """)
 
-        main_layout = QtWidgets.QVBoxLayout(self)
-        main_layout.setSpacing(15)
+        # Main layout for the window
+        window_layout = QtWidgets.QVBoxLayout(self)
+        window_layout.setContentsMargins(0, 0, 0, 0)
 
-        # Title
+        # Title (outside scroll area)
         title = QtWidgets.QLabel("⚔️ Hero Character Art Preview ⚔️")
-        title.setStyleSheet("font-size: 24px; font-weight: bold; color: #ffd700;")
+        title.setStyleSheet("font-size: 24px; font-weight: bold; color: #ffd700; padding: 10px;")
         title.setAlignment(QtCore.Qt.AlignCenter)
-        main_layout.addWidget(title)
+        window_layout.addWidget(title)
 
         # Subtitle
-        subtitle = QtWidgets.QLabel("Warrior, Scholar & Wanderer themes with detailed gear and tier-based effects")
+        subtitle = QtWidgets.QLabel("All 4 story themes: Warrior, Scholar, Wanderer & Underdog")
         subtitle.setStyleSheet("font-size: 14px; color: #aaa;")
         subtitle.setAlignment(QtCore.Qt.AlignCenter)
-        main_layout.addWidget(subtitle)
+        window_layout.addWidget(subtitle)
+
+        # Scroll area for content
+        scroll_area = QtWidgets.QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        
+        # Content widget inside scroll area
+        content_widget = QtWidgets.QWidget()
+        main_layout = QtWidgets.QVBoxLayout(content_widget)
+        main_layout.setSpacing(15)
+        main_layout.setContentsMargins(15, 15, 15, 15)
 
         # Row 1: Warrior Power Tiers
         warrior_group = QtWidgets.QGroupBox("⚔️ Warrior Theme - Power Tiers")
@@ -125,7 +152,24 @@ class PreviewWindow(QtWidgets.QWidget):
 
         main_layout.addWidget(wanderer_group)
 
-        # Row 4: Warrior Gear Sets
+        # Row 4: Underdog Power Tiers
+        underdog_group = QtWidgets.QGroupBox("🏢 Underdog Theme - Power Tiers")
+        underdog_layout = QtWidgets.QHBoxLayout(underdog_group)
+        underdog_layout.setSpacing(12)
+
+        for tier_name, power in tiers:
+            container = QtWidgets.QVBoxLayout()
+            canvas = CharacterCanvas({}, power, 100, 140, story_theme="underdog")
+            container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
+            label = QtWidgets.QLabel(f"{tier_name}")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            label.setStyleSheet("font-size: 9px;")
+            container.addWidget(label)
+            underdog_layout.addLayout(container)
+
+        main_layout.addWidget(underdog_group)
+
+        # Row 5: Warrior Gear Sets
         warrior_gear_group = QtWidgets.QGroupBox("⚔️ Warrior Equipment Sets")
         warrior_gear_layout = QtWidgets.QHBoxLayout(warrior_gear_group)
         warrior_gear_layout.setSpacing(12)
@@ -306,13 +350,94 @@ class PreviewWindow(QtWidgets.QWidget):
 
         main_layout.addWidget(random_group)
 
+        # Row 8: Underdog Gear Sets
+        underdog_gear_group = QtWidgets.QGroupBox("🏢 Underdog Equipment Sets")
+        underdog_gear_layout = QtWidgets.QHBoxLayout(underdog_gear_group)
+        underdog_gear_layout.setSpacing(12)
+
+        underdog_sets = [
+            ("Intern", 50, {
+                "Helmet": {"color": "#2d3436"},  # Basic headphones
+                "Chestplate": {"color": "#74b9ff"},  # Polo shirt
+                "Boots": {"color": "#636e72"},  # Sneakers
+            }),
+            ("Employee", 350, {
+                "Helmet": {"color": "#1e272e"},
+                "Chestplate": {"color": "#0984e3"},
+                "Gauntlets": {"color": "#2d3436"},  # Smartwatch
+                "Boots": {"color": "#2d3436"},
+                "Shield": {"color": "#636e72"},  # Laptop
+                "Weapon": {"color": "#1e272e"},  # Smartphone
+            }),
+            ("Manager", 650, {
+                "Helmet": {"color": "#0d47a1"},
+                "Chestplate": {"color": "#1565c0"},
+                "Gauntlets": {"color": "#ffd700"},  # Premium watch
+                "Boots": {"color": "#4e342e"},  # Dress shoes
+                "Cloak": {"color": "#2c3e50"},  # Blazer
+                "Shield": {"color": "#455a64"},  # MacBook
+                "Weapon": {"color": "#1e272e"},
+                "Amulet": {"color": "#ffd700"},  # Gold badge
+            }),
+            ("CEO", 1100, {
+                "Helmet": {"color": "#b71c1c"},  # Beats headphones
+                "Chestplate": {"color": "#1a237e"},
+                "Gauntlets": {"color": "#ffd700"},
+                "Boots": {"color": "#3e2723"},
+                "Cloak": {"color": "#212121"},  # Designer jacket
+                "Shield": {"color": "#37474f"},
+                "Weapon": {"color": "#ffd700"},  # Gold phone
+                "Amulet": {"color": "#ffd700"},
+            }),
+        ]
+
+        for name, power, gear in underdog_sets:
+            container = QtWidgets.QVBoxLayout()
+            canvas = CharacterCanvas(gear, power, 110, 150, story_theme="underdog")
+            container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
+            label = QtWidgets.QLabel(f"{name}")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            label.setStyleSheet("font-size: 10px; font-weight: bold;")
+            container.addWidget(label)
+            underdog_gear_layout.addLayout(container)
+
+        main_layout.addWidget(underdog_gear_group)
+
+        # Row 9: Random Underdogs
+        underdog_random_group = QtWidgets.QGroupBox("🏢 Random Office Workers")
+        underdog_random_layout = QtWidgets.QHBoxLayout(underdog_random_group)
+        underdog_random_layout.setSpacing(10)
+
+        random.seed(456)  # Different seed for variety
+        underdog_names = ["Newbie", "Temp", "Junior", "Senior", "Lead", 
+                         "Director", "VP", "Founder", "Hustler", "Legend"]
+        
+        for i, name in enumerate(underdog_names):
+            power = random.randint(50, 1100)
+            gear = self._generate_random_gear()
+            container = QtWidgets.QVBoxLayout()
+            canvas = CharacterCanvas(gear, power, 90, 125, story_theme="underdog")
+            container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
+            label = QtWidgets.QLabel(f"{name}")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            label.setStyleSheet("font-size: 8px;")
+            container.addWidget(label)
+            underdog_random_layout.addLayout(container)
+
+        main_layout.addWidget(underdog_random_group)
+
         # Instructions
-        instructions = QtWidgets.QLabel("Close this window when done previewing")
+        instructions = QtWidgets.QLabel("Scroll to see all themes • Close this window when done")
         instructions.setStyleSheet("font-size: 11px; color: #666; font-style: italic;")
         instructions.setAlignment(QtCore.Qt.AlignCenter)
         main_layout.addWidget(instructions)
 
-        self.adjustSize()
+        # Finalize scroll area
+        scroll_area.setWidget(content_widget)
+        window_layout.addWidget(scroll_area)
+        
+        # Set a reasonable default size
+        self.resize(1200, 800)
 
     def _generate_random_gear(self) -> dict:
         """Generate a random gear loadout."""
