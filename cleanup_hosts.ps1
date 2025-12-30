@@ -82,11 +82,41 @@ function Clear-DnsCache {
     }
 }
 
+function Remove-StartupShortcut {
+    try {
+        $startupPath = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Startup\PersonalLiberty.lnk"
+        if (Test-Path $startupPath) {
+            Remove-Item $startupPath -Force
+            Write-Log "Removed startup shortcut."
+        }
+        return $true
+    }
+    catch {
+        Write-Log "Warning: Could not remove startup shortcut: $_"
+        return $false
+    }
+}
+
+function Stop-RunningProcesses {
+    try {
+        Write-Log "Stopping any running Personal Liberty processes..."
+        Get-Process -Name "PersonalLiberty*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+        Write-Log "Processes stopped."
+        return $true
+    }
+    catch {
+        Write-Log "Warning: Could not stop processes: $_"
+        return $false
+    }
+}
+
 # Main execution
 Write-Log "=== Personal Liberty Cleanup ==="
 Write-Log ""
 
+$processesClean = Stop-RunningProcesses
 $hostsClean = Remove-PersonalLibertyBlocks
+$startupClean = Remove-StartupShortcut
 $dnsClean = Clear-DnsCache
 
 Write-Log ""
