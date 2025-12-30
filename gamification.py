@@ -8,6 +8,7 @@ Includes: item generation, set bonuses, lucky merge, diary entries.
 import random
 import re
 from datetime import datetime
+from typing import Optional
 
 # ============================================================================
 # ADHD Buster Gamification System
@@ -2538,7 +2539,7 @@ PRIORITY_REWARD_WEIGHTS = {
 }
 
 
-def roll_priority_completion_reward(story_id: str = None, logged_hours: float = 0) -> dict | None:
+def roll_priority_completion_reward(story_id: str = None, logged_hours: float = 0) -> Optional[dict]:
     """
     Roll for a priority completion reward.
     Chance scales with logged hours: base 15%, up to 99% for 20+ hours.
@@ -6394,7 +6395,7 @@ def get_story_progress(adhd_buster: dict) -> dict:
     }
 
 
-def get_decision_for_chapter(chapter_number: int, adhd_buster: dict = None) -> dict | None:
+def get_decision_for_chapter(chapter_number: int, adhd_buster: dict = None) -> Optional[dict]:
     """Get the decision info for a chapter, if it has one."""
     if adhd_buster:
         story_decisions, _ = get_story_data(adhd_buster)
@@ -6457,7 +6458,7 @@ def get_decision_path(adhd_buster: dict) -> str:
     return path
 
 
-def get_chapter_content(chapter_number: int, adhd_buster: dict) -> dict | None:
+def get_chapter_content(chapter_number: int, adhd_buster: dict) -> Optional[dict]:
     """
     Get the content of a specific chapter, personalized with gear and decisions.
     
@@ -6599,7 +6600,7 @@ Decisions made: {}/3
     return result
 
 
-def get_newly_unlocked_chapter(old_power: int, new_power: int) -> int | None:
+def get_newly_unlocked_chapter(old_power: int, new_power: int) -> Optional[int]:
     """
     Check if a new chapter was unlocked by a power increase.
     
@@ -6810,7 +6811,7 @@ def set_story_mode(adhd_buster: dict, mode: str) -> bool:
     return True
 
 
-def get_active_story_id(adhd_buster: dict) -> str | None:
+def get_active_story_id(adhd_buster: dict) -> Optional[str]:
     """
     Get the currently active story ID.
     Returns None if in hero_only or disabled mode.
@@ -6824,7 +6825,7 @@ def get_active_story_id(adhd_buster: dict) -> str | None:
     return adhd_buster.get("active_story", "warrior")
 
 
-def get_active_hero(adhd_buster: dict) -> dict | None:
+def get_active_hero(adhd_buster: dict) -> Optional[dict]:
     """
     Get the currently active hero's data.
     Returns None if gamification is disabled.
@@ -6952,7 +6953,7 @@ def restart_story(adhd_buster: dict, story_id: str = None) -> bool:
     return True
 
 
-def get_hero_summary(adhd_buster: dict, story_id: str = None) -> dict | None:
+def get_hero_summary(adhd_buster: dict, story_id: str = None) -> Optional[dict]:
     """
     Get a summary of a hero's progress.
     
