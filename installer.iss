@@ -86,6 +86,12 @@ Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile
 ; Flush DNS cache
 Filename: "{sys}\ipconfig.exe"; Parameters: "/flushdns"; Flags: runhidden waituntilterminated; RunOnceId: "FlushDNS"
 
+[UninstallDelete]
+; Remove startup shortcut if created manually via setup_autostart.bat
+Type: files; Name: "{userappdata}\Microsoft\Windows\Start Menu\Programs\Startup\PersonalLiberty.lnk"
+; Remove Quick Launch shortcut
+Type: files; Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Personal Liberty.lnk"
+
 [Code]
 // Helper function to run PowerShell cleanup script
 function RunCleanupScript(AppPath: String): Boolean;
