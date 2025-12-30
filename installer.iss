@@ -38,11 +38,11 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 Name: "autostart"; Description: "Start with Windows (recommended)"; GroupDescription: "Startup Options:"
+Name: "nouac"; Description: "Create no-UAC shortcut (skip admin prompt on launch)"; GroupDescription: "Startup Options:"; Flags: unchecked
 
 [Files]
-; Main executables with AI bundled
+; Main executable with AI bundled (includes tray functionality)
 Source: "dist\PersonalFreedom.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "dist\PersonalFreedomTray.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; Icons
 Source: "icons\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "icons\tray_ready.png"; DestDir: "{app}"; Flags: ignoreversion
@@ -54,12 +54,12 @@ Source: "GPU_AI_GUIDE.md"; DestDir: "{app}"; Flags: ignoreversion
 ; Helper scripts
 Source: "run_as_admin.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "setup_autostart.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "setup_no_uac.bat"; DestDir: "{app}"; Flags: ignoreversion
 ; Cleanup script for uninstall
 Source: "cleanup_hosts.ps1"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app.ico"; WorkingDir: "{app}"; Comment: "AI-Powered Focus & Productivity Tool"
-Name: "{group}\{#MyAppName} (Tray)"; Filename: "{app}\PersonalFreedomTray.exe"; IconFilename: "{app}\app.ico"; WorkingDir: "{app}"; Comment: "System Tray Version"
 Name: "{group}\Quick Start Guide"; Filename: "{app}\QUICK_START.md"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
@@ -68,17 +68,19 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 [Run]
 ; Run as admin is required for hosts file modification
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser shellexec
+; Create no-UAC scheduled task if selected
+Filename: "{sys}\schtasks.exe"; Parameters: "/create /tn ""PersonalFreedomLauncher"" /tr """"""{app}\{#MyAppExeName}"""""" /sc onlogon /rl highest /f"; Tasks: nouac; Flags: runhidden
 
 [Registry]
-; Add to startup if selected
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\PersonalFreedomTray.exe"""; Tasks: autostart; Flags: uninsdeletevalue
+; Add to startup if selected (uses main app with --minimized to start in tray)
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\{#MyAppExeName}"" --minimized"; Tasks: autostart; Flags: uninsdeletevalue
 
 [UninstallRun]
 ; Kill running processes first
 Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM PersonalFreedom.exe"; Flags: runhidden; RunOnceId: "KillMain"
-Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM PersonalFreedomTray.exe"; Flags: runhidden; RunOnceId: "KillTray"
 ; Remove scheduled task if exists
 Filename: "{sys}\schtasks.exe"; Parameters: "/delete /tn PersonalFreedomAutostart /f"; Flags: runhidden; RunOnceId: "RemoveTask"
+Filename: "{sys}\schtasks.exe"; Parameters: "/delete /tn PersonalFreedomLauncher /f"; Flags: runhidden; RunOnceId: "RemoveNoUACTask"
 ; Run cleanup script before uninstall (primary method)
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\cleanup_hosts.ps1"" -Silent"; Flags: runhidden waituntilterminated; RunOnceId: "CleanupHosts"
 ; Flush DNS cache

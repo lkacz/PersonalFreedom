@@ -885,7 +885,7 @@ class TestMultiStorySystem(unittest.TestCase):
     def test_story_data_exists_for_all_stories(self) -> None:
         """Test that each story has decisions and chapters."""
         from gamification import STORY_DATA
-        for story_id in ["warrior", "scholar", "wanderer"]:
+        for story_id in ["warrior", "scholar", "wanderer", "underdog"]:
             self.assertIn(story_id, STORY_DATA)
             self.assertIn("decisions", STORY_DATA[story_id])
             self.assertIn("chapters", STORY_DATA[story_id])
@@ -934,6 +934,276 @@ class TestMultiStorySystem(unittest.TestCase):
         self.assertIn("selected_story", progress)
         self.assertIn("story_info", progress)
         self.assertEqual(progress["selected_story"], "warrior")
+
+
+class TestHeroManagement(unittest.TestCase):
+    """Tests for the new hero management system."""
+    
+    def test_ensure_hero_structure_creates_new(self) -> None:
+        """Test that ensure_hero_structure creates proper structure for new users."""
+        from gamification import ensure_hero_structure, STORY_MODE_ACTIVE
+        adhd_buster = {}
+        
+        ensure_hero_structure(adhd_buster)
+        
+        self.assertIn("story_mode", adhd_buster)
+        self.assertIn("active_story", adhd_buster)
+        self.assertIn("story_heroes", adhd_buster)
+        self.assertIn("free_hero", adhd_buster)
+        self.assertEqual(adhd_buster["story_mode"], STORY_MODE_ACTIVE)
+    
+    def test_migration_preserves_existing_data(self) -> None:
+        """Test that migration preserves existing user data."""
+        from gamification import ensure_hero_structure
+        
+        # Simulate old data format
+        adhd_buster = {
+            "inventory": [{"name": "Test Sword", "power": 10}],
+            "equipped": {"weapon": {"name": "Old Sword", "power": 5}},
+            "story_decisions": {"decision_1": "A"},
+            "selected_story": "scholar",
+            "luck_bonus": 5,
+            "total_collected": 10,
+        }
+        
+        ensure_hero_structure(adhd_buster)
+        
+        # Check data was preserved in the story hero
+        self.assertIn("scholar", adhd_buster["story_heroes"])
+        hero = adhd_buster["story_heroes"]["scholar"]
+        self.assertEqual(len(hero["inventory"]), 1)
+        self.assertEqual(hero["equipped"]["weapon"]["name"], "Old Sword")
+        self.assertEqual(hero["story_decisions"]["decision_1"], "A")
+        self.assertEqual(hero["luck_bonus"], 5)
+    
+    def test_switch_story_saves_and_loads_hero(self) -> None:
+        """Test that switching stories saves current hero and loads new one."""
+        from gamification import ensure_hero_structure, switch_story
+        
+        # Start with warrior
+        adhd_buster = {"inventory": [], "equipped": {}}
+        ensure_hero_structure(adhd_buster)
+        
+        # Add items to warrior hero
+        adhd_buster["equipped"]["weapon"] = {"name": "Warrior Sword", "power": 20}
+        adhd_buster["inventory"].append({"name": "Warrior Item", "power": 10})
+        
+        # Switch to scholar
+        switch_story(adhd_buster, "scholar")
+        
+        # Scholar should have empty gear
+        self.assertEqual(len(adhd_buster["inventory"]), 0)
+        self.assertEqual(len(adhd_buster["equipped"]), 0)
+        
+        # Add scholar items
+        adhd_buster["equipped"]["head"] = {"name": "Scholar Hat", "power": 15}
+        
+        # Switch back to warrior
+        switch_story(adhd_buster, "warrior")
+        
+        # Warrior items should be back
+        self.assertEqual(adhd_buster["equipped"]["weapon"]["name"], "Warrior Sword")
+        self.assertEqual(len(adhd_buster["inventory"]), 1)
+        
+        # Switch back to scholar
+        switch_story(adhd_buster, "scholar")
+        
+        # Scholar hat should still be there
+        self.assertEqual(adhd_buster["equipped"]["head"]["name"], "Scholar Hat")
+    
+    def test_restart_story_clears_hero(self) -> None:
+        """Test that restarting a story clears that hero's progress."""
+        from gamification import ensure_hero_structure, restart_story
+        
+        adhd_buster = {
+            "inventory": [{"name": "Item"}],
+            "equipped": {"weapon": {"name": "Sword"}},
+            "story_decisions": {"d1": "A"},
+        }
+        ensure_hero_structure(adhd_buster)
+        
+        restart_story(adhd_buster, "warrior")
+        
+        # Hero should be empty now
+        self.assertEqual(len(adhd_buster["inventory"]), 0)
+        self.assertEqual(len(adhd_buster["equipped"]), 0)
+        self.assertEqual(len(adhd_buster["story_decisions"]), 0)
+    
+    def test_story_modes(self) -> None:
+        """Test story mode switching."""
+        from gamification import (
+            ensure_hero_structure, set_story_mode, get_story_mode,
+            is_gamification_enabled, is_story_enabled,
+            STORY_MODE_ACTIVE, STORY_MODE_HERO_ONLY, STORY_MODE_DISABLED
+        )
+        
+        adhd_buster = {}
+        ensure_hero_structure(adhd_buster)
+        
+        # Default is story mode
+        self.assertEqual(get_story_mode(adhd_buster), STORY_MODE_ACTIVE)
+        self.assertTrue(is_gamification_enabled(adhd_buster))
+        self.assertTrue(is_story_enabled(adhd_buster))
+        
+        # Switch to hero only
+        set_story_mode(adhd_buster, STORY_MODE_HERO_ONLY)
+        self.assertEqual(get_story_mode(adhd_buster), STORY_MODE_HERO_ONLY)
+        self.assertTrue(is_gamification_enabled(adhd_buster))
+        self.assertFalse(is_story_enabled(adhd_buster))
+        
+        # Switch to disabled
+        set_story_mode(adhd_buster, STORY_MODE_DISABLED)
+        self.assertEqual(get_story_mode(adhd_buster), STORY_MODE_DISABLED)
+        self.assertFalse(is_gamification_enabled(adhd_buster))
+        self.assertFalse(is_story_enabled(adhd_buster))
+    
+    def test_get_active_hero_returns_correct_hero(self) -> None:
+        """Test that get_active_hero returns the right hero based on mode."""
+        from gamification import (
+            ensure_hero_structure, get_active_hero, set_story_mode, switch_story,
+            STORY_MODE_ACTIVE, STORY_MODE_HERO_ONLY, STORY_MODE_DISABLED
+        )
+        
+        adhd_buster = {}
+        ensure_hero_structure(adhd_buster)
+        
+        # In story mode, get story hero
+        adhd_buster["story_heroes"]["warrior"]["inventory"].append({"name": "Story Item"})
+        hero = get_active_hero(adhd_buster)
+        self.assertEqual(len(hero["inventory"]), 1)
+        
+        # In hero only mode, get free hero
+        set_story_mode(adhd_buster, STORY_MODE_HERO_ONLY)
+        adhd_buster["free_hero"]["inventory"].append({"name": "Free Item"})
+        hero = get_active_hero(adhd_buster)
+        self.assertEqual(len(hero["inventory"]), 1)
+        self.assertEqual(hero["inventory"][0]["name"], "Free Item")
+        
+        # In disabled mode, get None
+        set_story_mode(adhd_buster, STORY_MODE_DISABLED)
+        hero = get_active_hero(adhd_buster)
+        self.assertIsNone(hero)
+    
+    def test_get_hero_summary(self) -> None:
+        """Test hero summary generation."""
+        from gamification import ensure_hero_structure, get_hero_summary
+        
+        adhd_buster = {
+            "equipped": {"weapon": {"name": "Sword", "power": 25, "rarity": "Rare"}},
+            "inventory": [{"name": "Item1"}, {"name": "Item2"}],
+            "total_collected": 15,
+        }
+        ensure_hero_structure(adhd_buster)
+        
+        summary = get_hero_summary(adhd_buster)
+        
+        self.assertIsNotNone(summary)
+        self.assertEqual(summary["story_id"], "warrior")
+        self.assertEqual(summary["inventory_count"], 2)
+        self.assertEqual(summary["equipped_count"], 1)
+        self.assertGreater(summary["power"], 0)
+    
+    def test_get_all_heroes_summary(self) -> None:
+        """Test all heroes summary."""
+        from gamification import ensure_hero_structure, get_all_heroes_summary, switch_story
+        
+        adhd_buster = {}
+        ensure_hero_structure(adhd_buster)
+        
+        # Add some progress to warrior
+        adhd_buster["story_heroes"]["warrior"]["total_collected"] = 10
+        
+        # Create scholar hero with progress
+        switch_story(adhd_buster, "scholar")
+        adhd_buster["story_heroes"]["scholar"]["total_collected"] = 5
+        
+        summary = get_all_heroes_summary(adhd_buster)
+        
+        self.assertIn("story_heroes", summary)
+        self.assertIn("free_hero", summary)
+        self.assertEqual(summary["story_mode"], "story")
+        
+        # Should have all 4 stories
+        self.assertEqual(len(summary["story_heroes"]), 4)
+        
+        # Warrior and scholar should have progress
+        warrior = next(h for h in summary["story_heroes"] if h["story_id"] == "warrior")
+        scholar = next(h for h in summary["story_heroes"] if h["story_id"] == "scholar")
+        self.assertTrue(warrior["has_progress"])
+        self.assertTrue(scholar["has_progress"])
+    
+    def test_sync_hero_data_after_modifications(self) -> None:
+        """Test that sync_hero_data updates hero after flat modifications."""
+        from gamification import ensure_hero_structure, sync_hero_data, switch_story
+        
+        adhd_buster = {}
+        ensure_hero_structure(adhd_buster)
+        
+        # Modify flat structure (simulating old code)
+        adhd_buster["inventory"].append({"name": "New Item"})
+        adhd_buster["equipped"]["weapon"] = {"name": "New Sword"}
+        
+        # Sync back to hero
+        sync_hero_data(adhd_buster)
+        
+        # Switch to another story and back
+        switch_story(adhd_buster, "scholar")
+        switch_story(adhd_buster, "warrior")
+        
+        # Data should be preserved
+        self.assertEqual(len(adhd_buster["inventory"]), 1)
+        self.assertEqual(adhd_buster["equipped"]["weapon"]["name"], "New Sword")
+    
+    def test_backward_compatibility_with_select_story(self) -> None:
+        """Test that select_story still works with new system."""
+        from gamification import select_story, get_selected_story, ensure_hero_structure
+        
+        adhd_buster = {}
+        
+        # Old code would just set selected_story
+        success = select_story(adhd_buster, "scholar")
+        
+        self.assertTrue(success)
+        self.assertEqual(get_selected_story(adhd_buster), "scholar")
+        
+        # Should have created structure
+        self.assertIn("story_heroes", adhd_buster)
+    
+    def test_invalid_story_rejected(self) -> None:
+        """Test that invalid story IDs are rejected."""
+        from gamification import switch_story, restart_story
+        
+        adhd_buster = {}
+        
+        self.assertFalse(switch_story(adhd_buster, "nonexistent"))
+        self.assertFalse(restart_story(adhd_buster, "invalid_story"))
+    
+    def test_decisions_are_per_story(self) -> None:
+        """Test that story decisions are stored per-story."""
+        from gamification import ensure_hero_structure, switch_story, make_story_decision
+        
+        adhd_buster = {}
+        ensure_hero_structure(adhd_buster)
+        
+        # Make decision in warrior story (chapter 2 has ID "warrior_mirror")
+        make_story_decision(adhd_buster, 2, "A")
+        self.assertEqual(adhd_buster["story_decisions"]["warrior_mirror"], "A")
+        
+        # Switch to scholar
+        switch_story(adhd_buster, "scholar")
+        
+        # Scholar should have no decisions
+        self.assertEqual(len(adhd_buster["story_decisions"]), 0)
+        
+        # Make decision in scholar (chapter 4 has ID "scholar_echo")
+        make_story_decision(adhd_buster, 4, "B")
+        
+        # Switch back to warrior
+        switch_story(adhd_buster, "warrior")
+        
+        # Warrior's decision should still be there
+        self.assertEqual(adhd_buster["story_decisions"]["warrior_mirror"], "A")
+        self.assertNotIn("scholar_echo", adhd_buster["story_decisions"])
 
 
 if __name__ == '__main__':

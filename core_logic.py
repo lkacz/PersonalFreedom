@@ -52,6 +52,14 @@ except ImportError:
     BypassLogger = None  # type: ignore[assignment]
     logger.info("Bypass logger not available")
 
+# Import gamification hero management (optional)
+try:
+    from gamification import ensure_hero_structure as _ensure_hero_structure
+    HERO_MANAGEMENT_AVAILABLE = True
+except ImportError:
+    HERO_MANAGEMENT_AVAILABLE = False
+    _ensure_hero_structure = None  # type: ignore[assignment]
+
 # Windows hosts file path
 system_root = os.environ.get('SystemRoot', r'C:\Windows')
 HOSTS_PATH = os.path.join(system_root, r"System32\drivers\etc\hosts")
@@ -151,6 +159,9 @@ class BlockerCore:
         self.priority_checkin_enabled = False
         self.priority_checkin_interval = 30  # minutes
         
+        # UI preferences
+        self.minimize_to_tray = True  # Close button minimizes to tray
+        
         # ADHD Buster gamification
         self.adhd_buster = {"inventory": [], "equipped": {}}
 
@@ -200,7 +211,11 @@ class BlockerCore:
                     self.show_priorities_on_startup = config.get('show_priorities_on_startup', False)
                     self.priority_checkin_enabled = config.get('priority_checkin_enabled', False)
                     self.priority_checkin_interval = config.get('priority_checkin_interval', 30)
+                    self.minimize_to_tray = config.get('minimize_to_tray', True)
                     self.adhd_buster = config.get('adhd_buster', {"inventory": [], "equipped": {}})
+                    # Initialize/migrate hero management structure
+                    if HERO_MANAGEMENT_AVAILABLE and _ensure_hero_structure:
+                        _ensure_hero_structure(self.adhd_buster)
             except (json.JSONDecodeError, IOError, OSError):
                 self.blacklist = default_blacklist
                 self.categories_enabled = {cat: True for cat in SITE_CATEGORIES}
@@ -225,6 +240,7 @@ class BlockerCore:
                 'show_priorities_on_startup': self.show_priorities_on_startup,
                 'priority_checkin_enabled': self.priority_checkin_enabled,
                 'priority_checkin_interval': self.priority_checkin_interval,
+                'minimize_to_tray': self.minimize_to_tray,
                 'adhd_buster': self.adhd_buster,
             }
             with open(CONFIG_PATH, 'w', encoding='utf-8') as f:

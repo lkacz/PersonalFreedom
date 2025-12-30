@@ -4468,25 +4468,30 @@ STORY_CHAPTERS = WARRIOR_CHAPTERS
 
 
 def get_selected_story(adhd_buster: dict) -> str:
-    """Get the currently selected story ID. Defaults to 'warrior'."""
-    return adhd_buster.get("selected_story", "warrior")
+    """
+    Get the currently selected story ID.
+    Uses new hero management system - falls back to 'warrior' for backward compat.
+    Returns None if story mode is disabled.
+    """
+    ensure_hero_structure(adhd_buster)
+    mode = adhd_buster.get("story_mode", STORY_MODE_ACTIVE)
+    
+    if mode != STORY_MODE_ACTIVE:
+        # Not in story mode - return the active_story for display purposes anyway
+        # This ensures UI can still show which story was last selected
+        return adhd_buster.get("active_story", "warrior")
+    
+    return adhd_buster.get("active_story", "warrior")
 
 
 def select_story(adhd_buster: dict, story_id: str) -> bool:
     """
-    Select a story to follow. Clears decisions if switching stories.
+    Select a story to follow. Uses the new hero management system.
+    Each story has its own independent hero with separate progress.
+    
     Returns True if successful.
     """
-    if story_id not in AVAILABLE_STORIES:
-        return False
-    
-    current_story = adhd_buster.get("selected_story")
-    if current_story != story_id:
-        # Switching stories - clear previous story decisions
-        adhd_buster["story_decisions"] = {}
-    
-    adhd_buster["selected_story"] = story_id
-    return True
+    return switch_story(adhd_buster, story_id)
 
 
 def get_story_data(adhd_buster: dict) -> tuple:
@@ -4590,6 +4595,7 @@ def make_story_decision(adhd_buster: dict, chapter_number: int, choice: str) -> 
         chapter_number: The chapter where the decision is made
         choice: "A" or "B"
     """
+    ensure_hero_structure(adhd_buster)
     story_decisions, _ = get_story_data(adhd_buster)
     decision_info = story_decisions.get(chapter_number)
     if not decision_info:
@@ -4601,6 +4607,9 @@ def make_story_decision(adhd_buster: dict, chapter_number: int, choice: str) -> 
         adhd_buster["story_decisions"] = {}
     
     adhd_buster["story_decisions"][decision_info["id"]] = choice
+    
+    # Sync decision back to the hero
+    sync_hero_data(adhd_buster)
     return True
 
 
@@ -4764,3 +4773,445 @@ def get_newly_unlocked_chapter(old_power: int, new_power: int) -> int | None:
     if new_chapter > old_chapter:
         return new_chapter
     return None
+
+
+# ============================================================================
+# HERO & STORY MODE MANAGEMENT SYSTEM
+# Each story has its own independent hero with separate progress
+# ============================================================================
+
+# Story modes
+STORY_MODE_ACTIVE = "story"      # Playing a story with associated hero
+STORY_MODE_HERO_ONLY = "hero_only"  # Hero progress only, no story
+STORY_MODE_DISABLED = "disabled"    # No gamification at all
+
+STORY_MODES = {
+    STORY_MODE_ACTIVE: {
+        "id": STORY_MODE_ACTIVE,
+        "title": "📖 Story Mode",
+        "description": "Follow a story with your hero. Each story has its own hero and progress.",
+    },
+    STORY_MODE_HERO_ONLY: {
+        "id": STORY_MODE_HERO_ONLY,
+        "title": "⚔️ Hero Only",
+        "description": "Level up your hero without following a story. Just collect gear and grow stronger.",
+    },
+    STORY_MODE_DISABLED: {
+        "id": STORY_MODE_DISABLED,
+        "title": "🚫 Disabled",
+        "description": "No gamification. Just focus sessions without heroes or stories.",
+    },
+}
+
+
+def _create_empty_hero() -> dict:
+    """Create a fresh hero with no items or progress."""
+    return {
+        "inventory": [],
+        "equipped": {},
+        "story_decisions": {},
+        "diary": [],
+        "luck_bonus": 0,
+        "total_collected": 0,
+    }
+
+
+def _migrate_adhd_buster_data(adhd_buster: dict) -> dict:
+    """
+    Migrate old flat adhd_buster structure to new hero-per-story structure.
+    This preserves existing user data while upgrading to the new format.
+    """
+    # Already migrated?
+    if "story_heroes" in adhd_buster:
+        return adhd_buster
+    
+    # Extract old data
+    old_inventory = adhd_buster.get("inventory", [])
+    old_equipped = adhd_buster.get("equipped", {})
+    old_decisions = adhd_buster.get("story_decisions", {})
+    old_diary = adhd_buster.get("diary", [])
+    old_luck = adhd_buster.get("luck_bonus", 0)
+    old_collected = adhd_buster.get("total_collected", 0)
+    old_story = adhd_buster.get("selected_story", "warrior")
+    
+    # Create migrated hero (assign all old data to the story they were playing)
+    migrated_hero = {
+        "inventory": old_inventory,
+        "equipped": old_equipped,
+        "story_decisions": old_decisions,
+        "diary": old_diary,
+        "luck_bonus": old_luck,
+        "total_collected": old_collected,
+    }
+    
+    # Build new structure
+    adhd_buster["story_mode"] = STORY_MODE_ACTIVE
+    adhd_buster["active_story"] = old_story
+    adhd_buster["story_heroes"] = {old_story: migrated_hero}
+    adhd_buster["free_hero"] = _create_empty_hero()
+    
+    # Clean up old flat keys (keep them for backward compatibility during transition)
+    # They will be updated by get_active_hero_data
+    
+    return adhd_buster
+
+
+def ensure_hero_structure(adhd_buster: dict) -> dict:
+    """
+    Ensure adhd_buster has the proper hero management structure.
+    Migrates old data if needed, creates defaults if missing.
+    Also ensures flat structure is synced for backward compatibility.
+    """
+    if "story_heroes" not in adhd_buster:
+        _migrate_adhd_buster_data(adhd_buster)
+    
+    # Ensure all required keys exist
+    if "story_mode" not in adhd_buster:
+        adhd_buster["story_mode"] = STORY_MODE_ACTIVE
+    if "active_story" not in adhd_buster:
+        adhd_buster["active_story"] = "warrior"
+    if "story_heroes" not in adhd_buster:
+        adhd_buster["story_heroes"] = {}
+    if "free_hero" not in adhd_buster:
+        adhd_buster["free_hero"] = _create_empty_hero()
+    
+    # Ensure active story has a hero
+    active_story = adhd_buster.get("active_story", "warrior")
+    if active_story not in adhd_buster.get("story_heroes", {}):
+        adhd_buster["story_heroes"][active_story] = _create_empty_hero()
+    
+    # Sync flat structure for backward compatibility
+    _sync_active_hero_to_flat_internal(adhd_buster)
+    
+    return adhd_buster
+
+
+def _sync_active_hero_to_flat_internal(adhd_buster: dict) -> None:
+    """
+    Internal sync function that doesn't call ensure_hero_structure.
+    Used during initialization to avoid infinite recursion.
+    """
+    mode = adhd_buster.get("story_mode", STORY_MODE_ACTIVE)
+    
+    if mode == STORY_MODE_DISABLED:
+        # Disabled mode - use empty data
+        adhd_buster["inventory"] = []
+        adhd_buster["equipped"] = {}
+        adhd_buster["story_decisions"] = {}
+        adhd_buster["diary"] = []
+        adhd_buster["luck_bonus"] = 0
+        adhd_buster["total_collected"] = 0
+    elif mode == STORY_MODE_HERO_ONLY:
+        hero = adhd_buster.get("free_hero", _create_empty_hero())
+        adhd_buster["inventory"] = hero.get("inventory", [])
+        adhd_buster["equipped"] = hero.get("equipped", {})
+        adhd_buster["story_decisions"] = hero.get("story_decisions", {})
+        adhd_buster["diary"] = hero.get("diary", [])
+        adhd_buster["luck_bonus"] = hero.get("luck_bonus", 0)
+        adhd_buster["total_collected"] = hero.get("total_collected", 0)
+    else:
+        # Story mode - get the hero for the active story
+        story_id = adhd_buster.get("active_story", "warrior")
+        heroes = adhd_buster.get("story_heroes", {})
+        hero = heroes.get(story_id, _create_empty_hero())
+        
+        adhd_buster["inventory"] = hero.get("inventory", [])
+        adhd_buster["equipped"] = hero.get("equipped", {})
+        adhd_buster["story_decisions"] = hero.get("story_decisions", {})
+        adhd_buster["diary"] = hero.get("diary", [])
+        adhd_buster["luck_bonus"] = hero.get("luck_bonus", 0)
+        adhd_buster["total_collected"] = hero.get("total_collected", 0)
+    
+    # Also sync selected_story for backward compatibility
+    if mode == STORY_MODE_ACTIVE:
+        adhd_buster["selected_story"] = adhd_buster.get("active_story", "warrior")
+    
+    return adhd_buster
+
+
+def get_story_mode(adhd_buster: dict) -> str:
+    """Get the current story mode."""
+    ensure_hero_structure(adhd_buster)
+    return adhd_buster.get("story_mode", STORY_MODE_ACTIVE)
+
+
+def set_story_mode(adhd_buster: dict, mode: str) -> bool:
+    """
+    Set the story mode.
+    
+    Args:
+        adhd_buster: User's data
+        mode: STORY_MODE_ACTIVE, STORY_MODE_HERO_ONLY, or STORY_MODE_DISABLED
+    
+    Returns:
+        True if successful
+    """
+    if mode not in STORY_MODES:
+        return False
+    
+    ensure_hero_structure(adhd_buster)
+    adhd_buster["story_mode"] = mode
+    _sync_active_hero_to_flat(adhd_buster)
+    return True
+
+
+def get_active_story_id(adhd_buster: dict) -> str | None:
+    """
+    Get the currently active story ID.
+    Returns None if in hero_only or disabled mode.
+    """
+    ensure_hero_structure(adhd_buster)
+    mode = adhd_buster.get("story_mode", STORY_MODE_ACTIVE)
+    
+    if mode != STORY_MODE_ACTIVE:
+        return None
+    
+    return adhd_buster.get("active_story", "warrior")
+
+
+def get_active_hero(adhd_buster: dict) -> dict | None:
+    """
+    Get the currently active hero's data.
+    Returns None if gamification is disabled.
+    """
+    ensure_hero_structure(adhd_buster)
+    mode = adhd_buster.get("story_mode", STORY_MODE_ACTIVE)
+    
+    if mode == STORY_MODE_DISABLED:
+        return None
+    
+    if mode == STORY_MODE_HERO_ONLY:
+        return adhd_buster.get("free_hero", _create_empty_hero())
+    
+    # Story mode - get the hero for the active story
+    story_id = adhd_buster.get("active_story", "warrior")
+    heroes = adhd_buster.get("story_heroes", {})
+    
+    if story_id not in heroes:
+        heroes[story_id] = _create_empty_hero()
+        adhd_buster["story_heroes"] = heroes
+    
+    return heroes[story_id]
+
+
+def _sync_active_hero_to_flat(adhd_buster: dict) -> None:
+    """
+    Sync the active hero's data to the flat structure for backward compatibility.
+    This ensures existing code that reads adhd_buster["equipped"] etc. still works.
+    """
+    ensure_hero_structure(adhd_buster)
+    _sync_active_hero_to_flat_internal(adhd_buster)
+
+
+def _sync_flat_to_active_hero(adhd_buster: dict) -> None:
+    """
+    Sync the flat structure back to the active hero's data.
+    Call this after any code modifies the flat structure.
+    """
+    ensure_hero_structure(adhd_buster)
+    hero = get_active_hero(adhd_buster)
+    
+    if hero is None:
+        return  # Disabled mode, nothing to sync
+    
+    # Sync flat data back to hero
+    hero["inventory"] = adhd_buster.get("inventory", [])
+    hero["equipped"] = adhd_buster.get("equipped", {})
+    hero["story_decisions"] = adhd_buster.get("story_decisions", {})
+    hero["diary"] = adhd_buster.get("diary", [])
+    hero["luck_bonus"] = adhd_buster.get("luck_bonus", 0)
+    hero["total_collected"] = adhd_buster.get("total_collected", 0)
+
+
+def switch_story(adhd_buster: dict, story_id: str) -> bool:
+    """
+    Switch to a different story, loading that story's hero.
+    Saves current hero data first, then loads the new story's hero.
+    
+    Args:
+        adhd_buster: User's data
+        story_id: The story to switch to
+    
+    Returns:
+        True if successful
+    """
+    if story_id not in AVAILABLE_STORIES:
+        return False
+    
+    ensure_hero_structure(adhd_buster)
+    
+    # Save current hero's state
+    _sync_flat_to_active_hero(adhd_buster)
+    
+    # Switch to new story
+    adhd_buster["active_story"] = story_id
+    adhd_buster["story_mode"] = STORY_MODE_ACTIVE
+    
+    # Ensure new story has a hero
+    if story_id not in adhd_buster.get("story_heroes", {}):
+        if "story_heroes" not in adhd_buster:
+            adhd_buster["story_heroes"] = {}
+        adhd_buster["story_heroes"][story_id] = _create_empty_hero()
+    
+    # Load new hero to flat structure
+    _sync_active_hero_to_flat(adhd_buster)
+    
+    return True
+
+
+def restart_story(adhd_buster: dict, story_id: str = None) -> bool:
+    """
+    Restart a story with a fresh hero. Deletes all progress for that story.
+    
+    Args:
+        adhd_buster: User's data
+        story_id: The story to restart (None = current story)
+    
+    Returns:
+        True if successful
+    """
+    ensure_hero_structure(adhd_buster)
+    
+    if story_id is None:
+        story_id = adhd_buster.get("active_story", "warrior")
+    
+    if story_id not in AVAILABLE_STORIES:
+        return False
+    
+    # Save current hero if we're not restarting the active one
+    current_story = adhd_buster.get("active_story")
+    if current_story != story_id:
+        _sync_flat_to_active_hero(adhd_buster)
+    
+    # Create fresh hero for this story
+    if "story_heroes" not in adhd_buster:
+        adhd_buster["story_heroes"] = {}
+    adhd_buster["story_heroes"][story_id] = _create_empty_hero()
+    
+    # If this is the active story, reload flat structure
+    if current_story == story_id:
+        _sync_active_hero_to_flat(adhd_buster)
+    
+    return True
+
+
+def get_hero_summary(adhd_buster: dict, story_id: str = None) -> dict | None:
+    """
+    Get a summary of a hero's progress.
+    
+    Args:
+        adhd_buster: User's data
+        story_id: Story ID to get hero for, or None for current/free hero
+    
+    Returns:
+        Dict with hero summary, or None if no hero exists
+    """
+    ensure_hero_structure(adhd_buster)
+    
+    if story_id is None:
+        hero = get_active_hero(adhd_buster)
+        if hero is None:
+            return None
+        story_id = adhd_buster.get("active_story")
+        is_free_hero = adhd_buster.get("story_mode") == STORY_MODE_HERO_ONLY
+    else:
+        heroes = adhd_buster.get("story_heroes", {})
+        hero = heroes.get(story_id)
+        is_free_hero = False
+    
+    if hero is None:
+        return None
+    
+    # Calculate power from equipped items
+    equipped = hero.get("equipped", {})
+    power = 0
+    for item in equipped.values():
+        if item:
+            power += item.get("power", RARITY_POWER.get(item.get("rarity", "Common"), 10))
+    
+    # Add set bonus
+    set_info = calculate_set_bonuses(equipped)
+    power += set_info["total_bonus"]
+    
+    # Count items
+    inventory_count = len(hero.get("inventory", []))
+    equipped_count = sum(1 for item in equipped.values() if item)
+    decisions_count = len(hero.get("story_decisions", {}))
+    
+    return {
+        "story_id": story_id if not is_free_hero else None,
+        "story_title": AVAILABLE_STORIES[story_id]["title"] if story_id and not is_free_hero else "Free Hero",
+        "is_free_hero": is_free_hero,
+        "power": power,
+        "inventory_count": inventory_count,
+        "equipped_count": equipped_count,
+        "decisions_made": decisions_count,
+        "total_collected": hero.get("total_collected", 0),
+    }
+
+
+def get_all_heroes_summary(adhd_buster: dict) -> dict:
+    """
+    Get a summary of all heroes (story heroes + free hero).
+    
+    Returns:
+        Dict with 'story_heroes' list and 'free_hero' summary
+    """
+    ensure_hero_structure(adhd_buster)
+    
+    story_summaries = []
+    for story_id in AVAILABLE_STORIES:
+        heroes = adhd_buster.get("story_heroes", {})
+        if story_id in heroes:
+            summary = get_hero_summary(adhd_buster, story_id)
+            if summary:
+                summary["has_progress"] = True
+                story_summaries.append(summary)
+        else:
+            # Story exists but no hero created yet
+            story_summaries.append({
+                "story_id": story_id,
+                "story_title": AVAILABLE_STORIES[story_id]["title"],
+                "is_free_hero": False,
+                "power": 0,
+                "has_progress": False,
+            })
+    
+    # Free hero summary
+    free_hero = adhd_buster.get("free_hero", {})
+    free_power = 0
+    for item in free_hero.get("equipped", {}).values():
+        if item:
+            free_power += item.get("power", RARITY_POWER.get(item.get("rarity", "Common"), 10))
+    
+    return {
+        "story_heroes": story_summaries,
+        "free_hero": {
+            "power": free_power,
+            "inventory_count": len(free_hero.get("inventory", [])),
+            "total_collected": free_hero.get("total_collected", 0),
+            "has_progress": free_power > 0 or len(free_hero.get("inventory", [])) > 0,
+        },
+        "active_story": adhd_buster.get("active_story"),
+        "story_mode": adhd_buster.get("story_mode", STORY_MODE_ACTIVE),
+    }
+
+
+def is_gamification_enabled(adhd_buster: dict) -> bool:
+    """Check if gamification is enabled (not in disabled mode)."""
+    ensure_hero_structure(adhd_buster)
+    return adhd_buster.get("story_mode", STORY_MODE_ACTIVE) != STORY_MODE_DISABLED
+
+
+def is_story_enabled(adhd_buster: dict) -> bool:
+    """Check if story mode is active (not hero-only or disabled)."""
+    ensure_hero_structure(adhd_buster)
+    return adhd_buster.get("story_mode", STORY_MODE_ACTIVE) == STORY_MODE_ACTIVE
+
+
+def sync_hero_data(adhd_buster: dict) -> None:
+    """
+    Sync hero data after modifications.
+    Call this after any external code modifies the flat adhd_buster structure.
+    """
+    _sync_flat_to_active_hero(adhd_buster)

@@ -39,10 +39,10 @@ set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --hidden-import=tokenizers --hidden-import=
 set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --collect-all=transformers --collect-all=sentence_transformers --collect-all=torch"
 
 echo.
-echo [1/3] Building GUI version with FULL AI bundle...
+echo [1/2] Building GUI version with FULL AI bundle...
 echo (This may take 5-10 minutes - bundling PyTorch and transformers)
 pyinstaller --onefile --windowed --name "PersonalFreedom" ^
-    --icon=NONE ^
+    --icon=icons\app.ico ^
     --add-data "productivity_ai.py;." ^
     --add-data "local_ai.py;." ^
     --add-data "gamification.py;." ^
@@ -50,26 +50,14 @@ pyinstaller --onefile --windowed --name "PersonalFreedom" ^
     focus_blocker_qt.py
 
 echo.
-echo [2/3] Building System Tray version...
-pip show pystray >nul 2>&1
-if %errorlevel% equ 0 (
-    pyinstaller --onefile --windowed --name "PersonalFreedomTray" --icon=NONE tray_blocker.py 2>nul
-    if %errorlevel% neq 0 (
-        pyinstaller --onefile --windowed --name "PersonalFreedomTray" tray_blocker.py
-    )
-) else (
-    echo [SKIP] pystray not installed, skipping tray version
-)
-
-echo.
-echo [3/3] Creating distribution package...
+echo [2/2] Creating distribution package...
 if not exist "dist\PersonalFreedom_Package" mkdir "dist\PersonalFreedom_Package"
 copy "dist\PersonalFreedom.exe" "dist\PersonalFreedom_Package\" >nul 2>&1
-if exist "dist\PersonalFreedomTray.exe" copy "dist\PersonalFreedomTray.exe" "dist\PersonalFreedom_Package\" >nul 2>&1
 copy "README.md" "dist\PersonalFreedom_Package\" >nul 2>&1
 copy "QUICK_START.md" "dist\PersonalFreedom_Package\" >nul 2>&1
 copy "run_as_admin.bat" "dist\PersonalFreedom_Package\" >nul 2>&1
 copy "setup_autostart.bat" "dist\PersonalFreedom_Package\" >nul 2>&1
+copy "setup_no_uac.bat" "dist\PersonalFreedom_Package\" >nul 2>&1
 
 :: Create readme for the package
 echo Creating distribution README...
