@@ -6,6 +6,11 @@ from pathlib import Path
 from typing import Optional, Dict, List
 from datetime import datetime
 
+try:
+    from __version__ import __version__ as APP_VERSION
+except ImportError:
+    APP_VERSION = "3.1.4"
+
 # Hide console window on Windows
 if platform.system() == "Windows":
     import ctypes
@@ -16,60 +21,308 @@ if platform.system() == "Windows":
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from core_logic import (
-    BlockerCore,
-    BlockMode,
-    SITE_CATEGORIES,
-    AI_AVAILABLE,
-    LOCAL_AI_AVAILABLE,
-    GOALS_PATH,
-    STATS_PATH,
-    BYPASS_LOGGER_AVAILABLE,
-)
 
-# AI helpers (guarded for optional dependency)
-if AI_AVAILABLE:
-    try:
-        from productivity_ai import ProductivityAnalyzer, GamificationEngine, FocusGoals
-    except Exception:  # pragma: no cover - runtime guard
-        ProductivityAnalyzer = None  # type: ignore
-        GamificationEngine = None  # type: ignore
-        FocusGoals = None  # type: ignore
-else:
-    ProductivityAnalyzer = None  # type: ignore
-    GamificationEngine = None  # type: ignore
-    FocusGoals = None  # type: ignore
+class SplashScreen(QtWidgets.QWidget):
+    """Splash screen shown during application startup."""
+    
+    def __init__(self):
+        super().__init__()
+        self.setWindowFlags(
+            QtCore.Qt.WindowType.FramelessWindowHint |
+            QtCore.Qt.WindowType.WindowStaysOnTopHint |
+            QtCore.Qt.WindowType.SplashScreen
+        )
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
+        
+        # Main layout
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Container with rounded corners
+        container = QtWidgets.QFrame()
+        container.setStyleSheet("""
+            QFrame {
+                background-color: #1a1a2e;
+                border-radius: 15px;
+                border: 2px solid #4a4a6a;
+            }
+        """)
+        container_layout = QtWidgets.QVBoxLayout(container)
+        container_layout.setContentsMargins(40, 30, 40, 30)
+        container_layout.setSpacing(15)
+        
+        # App icon/title
+        title_label = QtWidgets.QLabel("🛡️ Personal Freedom")
+        title_label.setStyleSheet("""
+            QLabel {
+                color: #ffffff;
+                font-size: 24px;
+                font-weight: bold;
+                background: transparent;
+                border: none;
+            }
+        """)
+        title_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        container_layout.addWidget(title_label)
+        
+        # Version
+        version_label = QtWidgets.QLabel(f"v{APP_VERSION}")
+        version_label.setStyleSheet("""
+            QLabel {
+                color: #888888;
+                font-size: 12px;
+                background: transparent;
+                border: none;
+            }
+        """)
+        version_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        container_layout.addWidget(version_label)
+        
+        container_layout.addSpacing(10)
+        
+        # Status message
+        self.status_label = QtWidgets.QLabel("Loading...")
+        self.status_label.setStyleSheet("""
+            QLabel {
+                color: #aaaaaa;
+                font-size: 13px;
+                background: transparent;
+                border: none;
+            }
+        """)
+        self.status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        container_layout.addWidget(self.status_label)
+        
+        # Progress bar
+        self.progress = QtWidgets.QProgressBar()
+        self.progress.setRange(0, 0)  # Indeterminate
+        self.progress.setTextVisible(False)
+        self.progress.setFixedHeight(6)
+        self.progress.setStyleSheet("""
+            QProgressBar {
+                background-color: #2a2a4a;
+                border-radius: 3px;
+                border: none;
+            }
+            QProgressBar::chunk {
+                background-color: #6366f1;
+                border-radius: 3px;
+            }
+        """)
+        container_layout.addWidget(self.progress)
+        
+        # Tip message
+        tips = [
+            "💡 Tip: Use the AI tab for personalized productivity insights",
+            "💡 Tip: Enable Hardcore mode for extra commitment",
+            "💡 Tip: Set up schedules to block automatically",
+            "💡 Tip: Track your progress in the Statistics tab",
+            "💡 Tip: Add custom sites to block in Settings",
+        ]
+        tip_label = QtWidgets.QLabel(random.choice(tips))
+        tip_label.setStyleSheet("""
+            QLabel {
+                color: #666688;
+                font-size: 11px;
+                font-style: italic;
+                background: transparent;
+                border: none;
+            }
+        """)
+        tip_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        tip_label.setWordWrap(True)
+        container_layout.addWidget(tip_label)
+        
+        layout.addWidget(container)
+        
+        # Set size and center on screen
+        self.setFixedSize(380, 200)
+        self.center_on_screen()
+    
+    def center_on_screen(self):
+        """Center the splash screen on the primary screen."""
+        screen = QtWidgets.QApplication.primaryScreen()
+        if screen:
+            screen_geometry = screen.availableGeometry()
+            x = (screen_geometry.width() - self.width()) // 2
+            y = (screen_geometry.height() - self.height()) // 2
+            self.move(screen_geometry.x() + x, screen_geometry.y() + y)
+    
+    def set_status(self, message: str):
+        """Update the status message."""
+        self.status_label.setText(message)
+        QtWidgets.QApplication.processEvents()
 
-# Local AI for session analysis
-if LOCAL_AI_AVAILABLE:
-    from local_ai import LocalAI
-else:
-    LocalAI = None  # type: ignore
+
+# Module-level variables for deferred imports (initialized in load_heavy_modules)
+BlockerCore = None
+BlockMode = None
+SITE_CATEGORIES = None
+AI_AVAILABLE = False
+LOCAL_AI_AVAILABLE = False
+GOALS_PATH = None
+STATS_PATH = None
+BYPASS_LOGGER_AVAILABLE = False
+ProductivityAnalyzer = None
+GamificationEngine = None
+FocusGoals = None
+LocalAI = None
+GAMIFICATION_AVAILABLE = False
+RARITY_POWER = {"Common": 10, "Uncommon": 25, "Rare": 50, "Epic": 100, "Legendary": 250}
+ITEM_THEMES = None
+get_item_themes = None
+get_diary_power_tier = None
+calculate_character_power = None
+get_power_breakdown = None
+calculate_rarity_bonuses = None
+calculate_merge_success_rate = None
+get_merge_result_rarity = None
+perform_lucky_merge = None
+is_merge_worthwhile = None
+generate_diary_entry = None
+calculate_set_bonuses = None
+generate_item = None
+generate_daily_reward_item = None
+get_current_tier = None
+get_boosted_rarity = None
+AVAILABLE_STORIES = {}
+STORY_MODE_ACTIVE = "story"
+STORY_MODE_HERO_ONLY = "hero_only"
+STORY_MODE_DISABLED = "disabled"
+set_story_mode = None
+get_story_mode = None
+switch_story = None
+ensure_hero_structure = None
+sync_hero_data = None
+is_gamification_enabled = lambda adhd_buster: False
 
 
-# --- Gamification imports ---
-try:
-    from gamification import (
-        RARITY_POWER, ITEM_THEMES, get_item_themes,
-        get_diary_power_tier, calculate_character_power, get_power_breakdown,
-        calculate_rarity_bonuses, calculate_merge_success_rate,
-        get_merge_result_rarity, perform_lucky_merge, is_merge_worthwhile,
-        generate_diary_entry, calculate_set_bonuses, generate_item,
-        generate_daily_reward_item, get_current_tier, get_boosted_rarity,
-        AVAILABLE_STORIES, STORY_MODE_ACTIVE, STORY_MODE_HERO_ONLY, STORY_MODE_DISABLED,
-        set_story_mode, get_story_mode, switch_story, ensure_hero_structure, sync_hero_data,
-        is_gamification_enabled
+def load_heavy_modules(splash: Optional[SplashScreen] = None):
+    """Load heavy modules with splash screen updates."""
+    global BlockerCore, BlockMode, SITE_CATEGORIES, AI_AVAILABLE, LOCAL_AI_AVAILABLE
+    global GOALS_PATH, STATS_PATH, BYPASS_LOGGER_AVAILABLE
+    global ProductivityAnalyzer, GamificationEngine, FocusGoals, LocalAI
+    global GAMIFICATION_AVAILABLE, RARITY_POWER, ITEM_THEMES, get_item_themes
+    global get_diary_power_tier, calculate_character_power, get_power_breakdown
+    global calculate_rarity_bonuses, calculate_merge_success_rate, get_merge_result_rarity
+    global perform_lucky_merge, is_merge_worthwhile, generate_diary_entry
+    global calculate_set_bonuses, generate_item, generate_daily_reward_item
+    global get_current_tier, get_boosted_rarity, AVAILABLE_STORIES
+    global STORY_MODE_ACTIVE, STORY_MODE_HERO_ONLY, STORY_MODE_DISABLED
+    global set_story_mode, get_story_mode, switch_story, ensure_hero_structure
+    global sync_hero_data, is_gamification_enabled
+    
+    if splash:
+        splash.set_status("Loading core modules...")
+    
+    from core_logic import (
+        BlockerCore as _BlockerCore,
+        BlockMode as _BlockMode,
+        SITE_CATEGORIES as _SITE_CATEGORIES,
+        AI_AVAILABLE as _AI_AVAILABLE,
+        LOCAL_AI_AVAILABLE as _LOCAL_AI_AVAILABLE,
+        GOALS_PATH as _GOALS_PATH,
+        STATS_PATH as _STATS_PATH,
+        BYPASS_LOGGER_AVAILABLE as _BYPASS_LOGGER_AVAILABLE,
     )
-    GAMIFICATION_AVAILABLE = True
-except ImportError:
-    GAMIFICATION_AVAILABLE = False
-    RARITY_POWER = {"Common": 10, "Uncommon": 25, "Rare": 50, "Epic": 100, "Legendary": 250}
-    AVAILABLE_STORIES = {}
-    STORY_MODE_ACTIVE = "story"
-    STORY_MODE_HERO_ONLY = "hero_only"
-    STORY_MODE_DISABLED = "disabled"
-    sync_hero_data = None  # type: ignore
-    is_gamification_enabled = lambda adhd_buster: False  # type: ignore
+    BlockerCore = _BlockerCore
+    BlockMode = _BlockMode
+    SITE_CATEGORIES = _SITE_CATEGORIES
+    AI_AVAILABLE = _AI_AVAILABLE
+    LOCAL_AI_AVAILABLE = _LOCAL_AI_AVAILABLE
+    GOALS_PATH = _GOALS_PATH
+    STATS_PATH = _STATS_PATH
+    BYPASS_LOGGER_AVAILABLE = _BYPASS_LOGGER_AVAILABLE
+    
+    # AI helpers (guarded for optional dependency)
+    if AI_AVAILABLE:
+        if splash:
+            splash.set_status("Loading AI features...")
+        try:
+            from productivity_ai import (
+                ProductivityAnalyzer as _ProductivityAnalyzer,
+                GamificationEngine as _GamificationEngine,
+                FocusGoals as _FocusGoals
+            )
+            ProductivityAnalyzer = _ProductivityAnalyzer
+            GamificationEngine = _GamificationEngine
+            FocusGoals = _FocusGoals
+        except Exception:
+            pass
+    
+    # Local AI for session analysis
+    if LOCAL_AI_AVAILABLE:
+        if splash:
+            splash.set_status("Loading local AI models...")
+        from local_ai import LocalAI as _LocalAI
+        LocalAI = _LocalAI
+    
+    # Gamification imports
+    if splash:
+        splash.set_status("Loading gamification...")
+    try:
+        from gamification import (
+            RARITY_POWER as _RARITY_POWER,
+            ITEM_THEMES as _ITEM_THEMES,
+            get_item_themes as _get_item_themes,
+            get_diary_power_tier as _get_diary_power_tier,
+            calculate_character_power as _calculate_character_power,
+            get_power_breakdown as _get_power_breakdown,
+            calculate_rarity_bonuses as _calculate_rarity_bonuses,
+            calculate_merge_success_rate as _calculate_merge_success_rate,
+            get_merge_result_rarity as _get_merge_result_rarity,
+            perform_lucky_merge as _perform_lucky_merge,
+            is_merge_worthwhile as _is_merge_worthwhile,
+            generate_diary_entry as _generate_diary_entry,
+            calculate_set_bonuses as _calculate_set_bonuses,
+            generate_item as _generate_item,
+            generate_daily_reward_item as _generate_daily_reward_item,
+            get_current_tier as _get_current_tier,
+            get_boosted_rarity as _get_boosted_rarity,
+            AVAILABLE_STORIES as _AVAILABLE_STORIES,
+            STORY_MODE_ACTIVE as _STORY_MODE_ACTIVE,
+            STORY_MODE_HERO_ONLY as _STORY_MODE_HERO_ONLY,
+            STORY_MODE_DISABLED as _STORY_MODE_DISABLED,
+            set_story_mode as _set_story_mode,
+            get_story_mode as _get_story_mode,
+            switch_story as _switch_story,
+            ensure_hero_structure as _ensure_hero_structure,
+            sync_hero_data as _sync_hero_data,
+            is_gamification_enabled as _is_gamification_enabled
+        )
+        GAMIFICATION_AVAILABLE = True
+        RARITY_POWER = _RARITY_POWER
+        ITEM_THEMES = _ITEM_THEMES
+        get_item_themes = _get_item_themes
+        get_diary_power_tier = _get_diary_power_tier
+        calculate_character_power = _calculate_character_power
+        get_power_breakdown = _get_power_breakdown
+        calculate_rarity_bonuses = _calculate_rarity_bonuses
+        calculate_merge_success_rate = _calculate_merge_success_rate
+        get_merge_result_rarity = _get_merge_result_rarity
+        perform_lucky_merge = _perform_lucky_merge
+        is_merge_worthwhile = _is_merge_worthwhile
+        generate_diary_entry = _generate_diary_entry
+        calculate_set_bonuses = _calculate_set_bonuses
+        generate_item = _generate_item
+        generate_daily_reward_item = _generate_daily_reward_item
+        get_current_tier = _get_current_tier
+        get_boosted_rarity = _get_boosted_rarity
+        AVAILABLE_STORIES = _AVAILABLE_STORIES
+        STORY_MODE_ACTIVE = _STORY_MODE_ACTIVE
+        STORY_MODE_HERO_ONLY = _STORY_MODE_HERO_ONLY
+        STORY_MODE_DISABLED = _STORY_MODE_DISABLED
+        set_story_mode = _set_story_mode
+        get_story_mode = _get_story_mode
+        switch_story = _switch_story
+        ensure_hero_structure = _ensure_hero_structure
+        sync_hero_data = _sync_hero_data
+        is_gamification_enabled = _is_gamification_enabled
+    except ImportError:
+        GAMIFICATION_AVAILABLE = False
+    
+    if splash:
+        splash.set_status("Initializing interface...")
 
 # Single instance mutex name
 MUTEX_NAME = "PersonalFreedom_SingleInstance_Mutex"
@@ -84,7 +337,7 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("� Hardcore Challenge")
+        self.setWindowTitle("💪 Hardcore Challenge")
         self.setModal(True)
         self.setMinimumWidth(500)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
@@ -564,7 +817,7 @@ class TimerTab(QtWidgets.QWidget):
         minutes = self.minutes_spin.value()
         total_minutes = hours * 60 + minutes
         if total_minutes <= 0:
-            QtWidgets.QMessageBox.warning(self, "Error", "Please set a time greater than 0")
+            QtWidgets.QMessageBox.warning(self, "Invalid Duration", "Please set a time greater than 0 minutes.")
             return
 
         mode = self._current_mode()
@@ -585,7 +838,7 @@ class TimerTab(QtWidgets.QWidget):
 
         success, message = self.blocker.block_sites(duration_seconds=total_seconds)
         if not success:
-            QtWidgets.QMessageBox.critical(self, "Error", message)
+            QtWidgets.QMessageBox.critical(self, "Cannot Start Session", message)
             return
 
         self.timer_running = True
@@ -611,7 +864,7 @@ class TimerTab(QtWidgets.QWidget):
                 QtWidgets.QLineEdit.Password
             )
             if not ok or not self.blocker.verify_password(pwd or ""):
-                QtWidgets.QMessageBox.warning(self, "Error", "Incorrect password. Session continues.")
+                QtWidgets.QMessageBox.warning(self, "Incorrect Password", "The password you entered is incorrect.\nSession continues.")
                 return
         
         # Check for Hardcore Mode - must solve math challenges
@@ -885,7 +1138,7 @@ class TimerTab(QtWidgets.QWidget):
 
         success, message = self.blocker.block_sites(duration_seconds=total_seconds)
         if not success:
-            QtWidgets.QMessageBox.critical(self, "Error", message)
+            QtWidgets.QMessageBox.critical(self, "Blocking Failed", message)
             self._end_pomodoro_session()
             return
 
@@ -1230,7 +1483,7 @@ class ScheduleTab(QtWidgets.QWidget):
     def _add_schedule(self) -> None:
         days = [i for i, cb in enumerate(self.day_checks) if cb.isChecked()]
         if not days:
-            QtWidgets.QMessageBox.warning(self, "Error", "Select at least one day")
+            QtWidgets.QMessageBox.warning(self, "No Days Selected", "Please select at least one day for the schedule.")
             return
         start = self.start_time.time().toString("HH:mm")
         end = self.end_time.time().toString("HH:mm")
@@ -1612,7 +1865,7 @@ class SettingsTab(QtWidgets.QWidget):
         # About
         about_group = QtWidgets.QGroupBox("About")
         about_layout = QtWidgets.QVBoxLayout(about_group)
-        about_layout.addWidget(QtWidgets.QLabel("Personal Freedom v3.1.0 (Qt)"))
+        about_layout.addWidget(QtWidgets.QLabel(f"Personal Freedom v{APP_VERSION}"))
         about_layout.addWidget(QtWidgets.QLabel("A focus and productivity tool for Windows"))
         inner.addWidget(about_group)
 
@@ -1636,9 +1889,9 @@ class SettingsTab(QtWidgets.QWidget):
         if ok and pwd == confirm:
             self.blocker.set_password(pwd)
             self._update_pwd_status()
-            QtWidgets.QMessageBox.information(self, "Success", "Password set!")
+            QtWidgets.QMessageBox.information(self, "Password Set", "Your password has been set successfully!")
         else:
-            QtWidgets.QMessageBox.warning(self, "Error", "Passwords don't match")
+            QtWidgets.QMessageBox.warning(self, "Password Mismatch", "The passwords you entered don't match. Please try again.")
 
     def _remove_password(self) -> None:
         if not self.blocker.password_hash:
@@ -1649,7 +1902,7 @@ class SettingsTab(QtWidgets.QWidget):
             self.blocker.set_password(None)
             self._update_pwd_status()
         else:
-            QtWidgets.QMessageBox.warning(self, "Error", "Incorrect password")
+            QtWidgets.QMessageBox.warning(self, "Incorrect Password", "The password you entered is incorrect.")
 
     def _save_pomodoro(self) -> None:
         self.blocker.pomodoro_work = self.pomo_work_spin.value()
@@ -1666,7 +1919,7 @@ class SettingsTab(QtWidgets.QWidget):
             return
         try:
             backup_data = {
-                "backup_version": "3.1.0",
+                "backup_version": APP_VERSION,
                 "backup_date": datetime.now().isoformat(),
                 "config": {
                     "blacklist": self.blocker.blacklist,
@@ -2136,7 +2389,7 @@ class AITab(QtWidgets.QWidget):
     def _complete_goal(self) -> None:
         item = self.goals_list.currentItem()
         if not item:
-            QtWidgets.QMessageBox.warning(self, "No Selection", "Select a goal first")
+            QtWidgets.QMessageBox.warning(self, "No Goal Selected", "Please select a goal from the list first.")
             return
         row = self.goals_list.currentRow()
         goals = self.blocker.stats.get("goals", [])
@@ -2368,7 +2621,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
         container = QtWidgets.QWidget()
-        inner = QtWidgets.QVBoxLayout(container)
+        self.inner_layout = QtWidgets.QVBoxLayout(container)
 
         # Header with power
         header = QtWidgets.QHBoxLayout()
@@ -2382,29 +2635,26 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             power_txt = f"⚔ Power: {power_info['total_power']} ({power_info['base_power']} + {power_info['set_bonus']} set)"
         else:
             power_txt = f"⚔ Power: {power_info['total_power']}"
-        power_lbl = QtWidgets.QLabel(power_txt)
-        power_lbl.setStyleSheet("font-weight: bold; color: #e65100;")
-        header.addWidget(power_lbl)
-        inner.addLayout(header)
+        self.power_lbl = QtWidgets.QLabel(power_txt)
+        self.power_lbl.setStyleSheet("font-weight: bold; color: #e65100;")
+        header.addWidget(self.power_lbl)
+        self.inner_layout.addLayout(header)
 
-        # Active set bonuses
-        if GAMIFICATION_AVAILABLE and power_info["active_sets"]:
-            sets_group = QtWidgets.QGroupBox("🎯 Active Set Bonuses")
-            sets_layout = QtWidgets.QVBoxLayout(sets_group)
-            for s in power_info["active_sets"]:
-                lbl = QtWidgets.QLabel(f"{s['emoji']} {s['name']} ({s['count']} items): +{s['bonus']} power")
-                lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
-                sets_layout.addWidget(lbl)
-            inner.addWidget(sets_group)
+        # Active set bonuses (container for dynamic updates)
+        self.sets_container = QtWidgets.QWidget()
+        self.sets_layout = QtWidgets.QVBoxLayout(self.sets_container)
+        self.sets_layout.setContentsMargins(0, 0, 0, 0)
+        self._refresh_sets_display(power_info)
+        self.inner_layout.addWidget(self.sets_container)
 
         # Stats summary
         total_items = len(self.blocker.adhd_buster.get("inventory", []))
         total_collected = self.blocker.adhd_buster.get("total_collected", total_items)
         streak = self.blocker.stats.get("streak_days", 0)
         luck = self.blocker.adhd_buster.get("luck_bonus", 0)
-        stats_lbl = QtWidgets.QLabel(f"📦 {total_items} in bag  |  🎁 {total_collected} collected  |  🔥 {streak} day streak  |  🍀 {luck} luck")
-        stats_lbl.setStyleSheet("color: gray;")
-        inner.addWidget(stats_lbl)
+        self.stats_lbl = QtWidgets.QLabel(f"📦 {total_items} in bag  |  🎁 {total_collected} collected  |  🔥 {streak} day streak  |  🍀 {luck} luck")
+        self.stats_lbl.setStyleSheet("color: gray;")
+        self.inner_layout.addWidget(self.stats_lbl)
 
         # Character canvas and equipment side by side
         char_equip = QtWidgets.QHBoxLayout()
@@ -2435,7 +2685,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             self.slot_combos[slot] = combo
             equip_layout.addRow(f"{slot}:", combo)
         char_equip.addWidget(equip_group)
-        inner.addLayout(char_equip)
+        self.inner_layout.addLayout(char_equip)
 
         # Lucky Merge
         merge_group = QtWidgets.QGroupBox("🎲 Lucky Merge (High Risk, High Reward!)")
@@ -2453,7 +2703,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         merge_layout.addWidget(self.merge_btn)
         self.merge_rate_lbl = QtWidgets.QLabel("↓ Click items below to select for merge (Ctrl+click for multiple)")
         merge_layout.addWidget(self.merge_rate_lbl)
-        inner.addWidget(merge_group)
+        self.inner_layout.addWidget(merge_group)
 
         # Inventory
         inv_group = QtWidgets.QGroupBox("📦 Inventory (click items to select for merge)")
@@ -2470,7 +2720,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self.inv_list.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
         self.inv_list.itemSelectionChanged.connect(self._update_merge_selection)
         inv_layout.addWidget(self.inv_list)
-        inner.addWidget(inv_group)
+        self.inner_layout.addWidget(inv_group)
 
         self._refresh_inventory()
 
@@ -2565,7 +2815,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         chapter_bar.addStretch()
         story_layout.addLayout(chapter_bar)
         
-        inner.addWidget(story_group)
+        self.inner_layout.addWidget(story_group)
 
         # Update mode UI state (enable/disable story controls based on mode)
         if GAMIFICATION_AVAILABLE:
@@ -2583,7 +2833,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         close_btn = QtWidgets.QPushButton("Close")
         close_btn.clicked.connect(self.accept)
         btn_layout.addWidget(close_btn)
-        inner.addLayout(btn_layout)
+        self.inner_layout.addLayout(btn_layout)
 
         scroll.setWidget(container)
         layout.addWidget(scroll)
@@ -2602,19 +2852,69 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         if GAMIFICATION_AVAILABLE:
             sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
-        # Immediately refresh character display
+        # Immediately refresh all dependent displays
         self._refresh_character()
 
-    def _refresh_character(self) -> None:
-        """Refresh the character canvas and power display after gear changes."""
+    def _refresh_sets_display(self, power_info: dict = None) -> None:
+        """Refresh the active set bonuses display."""
+        # Clear existing widgets from sets_layout
+        while self.sets_layout.count():
+            child = self.sets_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+        
         if not GAMIFICATION_AVAILABLE:
             return
-        # Update character canvas with new equipped items
+            
+        if power_info is None:
+            power_info = get_power_breakdown(self.blocker.adhd_buster)
+        
+        if power_info["active_sets"]:
+            sets_group = QtWidgets.QGroupBox("🎯 Active Set Bonuses")
+            sets_inner = QtWidgets.QVBoxLayout(sets_group)
+            for s in power_info["active_sets"]:
+                lbl = QtWidgets.QLabel(f"{s['emoji']} {s['name']} ({s['count']} items): +{s['bonus']} power")
+                lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
+                sets_inner.addWidget(lbl)
+            self.sets_layout.addWidget(sets_group)
+
+    def _refresh_character(self) -> None:
+        """Refresh all power-related displays after gear changes."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        # Get updated power info
         equipped = self.blocker.adhd_buster.get("equipped", {})
         power_info = get_power_breakdown(self.blocker.adhd_buster)
+        
+        # Update character canvas
         self.char_canvas.equipped = equipped
         self.char_canvas.power = power_info["total_power"]
         self.char_canvas.update()  # Trigger repaint
+        
+        # Update power label
+        if power_info["set_bonus"] > 0:
+            power_txt = f"⚔ Power: {power_info['total_power']} ({power_info['base_power']} + {power_info['set_bonus']} set)"
+        else:
+            power_txt = f"⚔ Power: {power_info['total_power']}"
+        self.power_lbl.setText(power_txt)
+        
+        # Update stats label
+        total_items = len(self.blocker.adhd_buster.get("inventory", []))
+        total_collected = self.blocker.adhd_buster.get("total_collected", total_items)
+        streak = self.blocker.stats.get("streak_days", 0)
+        luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+        self.stats_lbl.setText(f"📦 {total_items} in bag  |  🎁 {total_collected} collected  |  🔥 {streak} day streak  |  🍀 {luck} luck")
+        
+        # Update set bonuses display
+        self._refresh_sets_display(power_info)
+        
+        # Update story progress labels if available
+        if hasattr(self, 'story_progress_lbl'):
+            self._update_story_progress_labels()
+        
+        # Refresh chapter list in case new chapters were unlocked
+        if hasattr(self, 'chapter_combo'):
+            self._refresh_story_chapter_list()
 
     def _refresh_all_slot_combos(self) -> None:
         """Refresh all equipment slot combo boxes with current inventory."""
@@ -2724,7 +3024,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         if len(self.merge_selected) < 2:
             return
         if not GAMIFICATION_AVAILABLE:
-            QtWidgets.QMessageBox.warning(self, "Merge", "Gamification not available")
+            QtWidgets.QMessageBox.warning(self, "Feature Unavailable", "Gamification features are not available.")
             return
         inventory = self.blocker.adhd_buster.get("inventory", [])
         items = [inventory[idx] for idx in self.merge_selected if idx < len(inventory)]
@@ -3156,7 +3456,37 @@ class DiaryDialog(QtWidgets.QDialog):
         self.blocker = blocker
         self.setWindowTitle("📖 Adventure Diary")
         self.resize(650, 600)
+        self._auto_generated_today = False
+        self._auto_generate_todays_entry()
         self._build_ui()
+
+    def _auto_generate_todays_entry(self) -> None:
+        """Auto-generate today's diary entry if one doesn't exist yet."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        today = datetime.now().strftime("%Y-%m-%d")
+        diary = self.blocker.adhd_buster.get("diary", [])
+        today_entries = [e for e in diary if e.get("date") == today]
+        if today_entries:
+            return  # Already have an entry for today
+        
+        # Generate today's entry
+        power = calculate_character_power(self.blocker.adhd_buster)
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        entry = generate_diary_entry(power, session_minutes=0, equipped_items=equipped)
+        entry["story"] = "[Auto] " + entry["story"]
+        entry["is_new"] = True  # Mark as new for display
+        
+        if "diary" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["diary"] = []
+        self.blocker.adhd_buster["diary"].append(entry)
+        if len(self.blocker.adhd_buster["diary"]) > 100:
+            self.blocker.adhd_buster["diary"] = self.blocker.adhd_buster["diary"][-100:]
+        
+        # Sync changes to active hero before saving
+        sync_hero_data(self.blocker.adhd_buster)
+        self.blocker.save_config()
+        self._auto_generated_today = True
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
@@ -3180,6 +3510,7 @@ class DiaryDialog(QtWidgets.QDialog):
 
         self.diary_text = QtWidgets.QTextEdit()
         self.diary_text.setReadOnly(True)
+        new_entries_cleared = False
         if entries:
             for entry in reversed(entries):
                 date = entry.get("short_date", entry.get("date", "Unknown"))
@@ -3187,11 +3518,23 @@ class DiaryDialog(QtWidgets.QDialog):
                 pwr = entry.get("power_at_time", 0)
                 mins = entry.get("session_minutes", 0)
                 tr = entry.get("tier", "pathetic")
-                self.diary_text.append(f"<b style='color:#1976d2;'>{date}</b><br>{story}<br>"
+                # Show NEW badge for new entries
+                new_badge = ""
+                if entry.get("is_new"):
+                    new_badge = "<span style='background-color:#4CAF50;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;'>✨ NEW</span>"
+                    entry["is_new"] = False  # Clear the new flag after display
+                    new_entries_cleared = True
+                self.diary_text.append(f"<b style='color:#1976d2;'>{date}</b>{new_badge}<br>{story}<br>"
                                        f"<span style='color:#888;'>Power: {pwr} | Focus: {mins} min | Tier: {tr.capitalize()}</span><br><hr>")
         else:
             self.diary_text.setPlainText("📭 No adventures recorded yet!\n\nComplete focus sessions to record your epic adventures.")
         layout.addWidget(self.diary_text)
+        
+        # Save if we cleared new flags
+        if new_entries_cleared:
+            if GAMIFICATION_AVAILABLE:
+                sync_hero_data(self.blocker.adhd_buster)
+            self.blocker.save_config()
 
         btn_layout = QtWidgets.QHBoxLayout()
         if entries:
@@ -3210,6 +3553,9 @@ class DiaryDialog(QtWidgets.QDialog):
     def _clear_diary(self) -> None:
         if QtWidgets.QMessageBox.question(self, "Clear Diary", "Clear all diary entries?") == QtWidgets.QMessageBox.Yes:
             self.blocker.adhd_buster["diary"] = []
+            # Sync changes to active hero before saving
+            if GAMIFICATION_AVAILABLE:
+                sync_hero_data(self.blocker.adhd_buster)
             self.blocker.save_config()
             self.accept()
 
@@ -3232,6 +3578,9 @@ class DiaryDialog(QtWidgets.QDialog):
         self.blocker.adhd_buster["diary"].append(entry)
         if len(self.blocker.adhd_buster["diary"]) > 100:
             self.blocker.adhd_buster["diary"] = self.blocker.adhd_buster["diary"][-100:]
+        # Sync changes to active hero before saving
+        if GAMIFICATION_AVAILABLE:
+            sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
         self.accept()
 
@@ -3793,12 +4142,11 @@ class PrioritiesDialog(QtWidgets.QDialog):
             item = result["item"]
             rarity_color = item.get("color", "#ffffff")
             
-            # Add to inventory
-            adhd_buster = self.blocker.config.get("adhd_buster", {"inventory": [], "equipped": {}})
-            if "inventory" not in adhd_buster:
-                adhd_buster["inventory"] = []
-            adhd_buster["inventory"].append(item)
-            self.blocker.config["adhd_buster"] = adhd_buster
+            # Add to inventory (use the proper adhd_buster reference)
+            if "inventory" not in self.blocker.adhd_buster:
+                self.blocker.adhd_buster["inventory"] = []
+            self.blocker.adhd_buster["inventory"].append(item)
+            self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
             # Sync changes to active hero before saving
             if GAMIFICATION_AVAILABLE:
                 sync_hero_data(self.blocker.adhd_buster)
@@ -3989,7 +4337,7 @@ class AISessionCompleteDialog(QtWidgets.QDialog):
 class FocusBlockerWindow(QtWidgets.QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("Personal Freedom - Focus Blocker (Qt)")
+        self.setWindowTitle(f"Personal Freedom v{APP_VERSION}")
         self.resize(900, 700)
 
         self.blocker = BlockerCore()
@@ -4056,7 +4404,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.ai_tab = AITab(self.blocker, self)
             self.tabs.addTab(self.ai_tab, "🧠 AI Insights")
 
-        self.statusBar().showMessage("Personal Freedom v3.1.0 (Qt)")
+        self.statusBar().showMessage(f"Personal Freedom v{APP_VERSION}")
 
         # System Tray setup
         self.tray_icon = None
@@ -4188,9 +4536,15 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if self.blocker.is_admin():
                 self.admin_label.setText("✅ Admin")
                 self.admin_label.setStyleSheet("color: green; font-weight: bold;")
+                self.admin_label.setToolTip("Running with administrator privileges - website blocking will work.")
             else:
                 self.admin_label.setText("⚠ Not Admin")
                 self.admin_label.setStyleSheet("color: #d32f2f; font-weight: bold;")
+                self.admin_label.setToolTip(
+                    "Not running as administrator - website blocking won't work!\\n\\n"
+                    "Right-click the app and select 'Run as administrator',\\n"
+                    "or use the 'run_as_admin.bat' script."
+                )
 
     def _check_scheduled_blocking(self) -> None:
         """Check if we should be blocking based on schedule."""
@@ -4460,7 +4814,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
     def _show_about(self) -> None:
         QtWidgets.QMessageBox.about(self, "About Personal Freedom",
-            "<b>Personal Freedom v3.1.0 (Qt)</b><br><br>"
+            f"<b>Personal Freedom v{APP_VERSION}</b><br><br>"
             "A focus and productivity tool for Windows.<br><br>"
             "Built with PySide6 (Qt for Python).")
 
@@ -4575,11 +4929,20 @@ def check_single_instance():
 
 
 def main() -> None:
+    # Set application attributes before creating QApplication
+    QtWidgets.QApplication.setHighDpiScaleFactorRoundingPolicy(
+        QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
+    )
+    
+    # Create app early so we can show splash
+    app = QtWidgets.QApplication(sys.argv)
+    app.setApplicationName("Personal Freedom")
+    app.setOrganizationName("PersonalFreedom")
+    app.setApplicationVersion(APP_VERSION)
+    
     # Check for single instance first
     mutex_handle = check_single_instance()
     if mutex_handle is None:
-        # Show message box without full app initialization
-        temp_app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
         QtWidgets.QMessageBox.warning(
             None,
             "Already Running",
@@ -4590,17 +4953,20 @@ def main() -> None:
     # Parse command-line arguments
     start_minimized = "--minimized" in sys.argv or "--tray" in sys.argv
     
-    # Set application attributes before creating QApplication
-    QtWidgets.QApplication.setHighDpiScaleFactorRoundingPolicy(
-        QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
-    )
+    # Show splash screen during loading
+    splash = SplashScreen()
+    splash.show()
+    app.processEvents()
     
-    app = QtWidgets.QApplication(sys.argv)
-    app.setApplicationName("Personal Freedom")
-    app.setOrganizationName("PersonalFreedom")
-    app.setApplicationVersion("3.1.4")
+    # Load heavy modules with splash feedback
+    load_heavy_modules(splash)
+    
+    splash.set_status("Creating main window...")
     
     window = FocusBlockerWindow()
+    
+    # Close splash and show main window
+    splash.close()
     
     if start_minimized and window.tray_icon:
         # Start minimized to system tray
