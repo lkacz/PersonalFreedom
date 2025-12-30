@@ -2640,6 +2640,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self.resize(750, 850)
         self.merge_selected = []
         self.slot_combos: Dict[str, QtWidgets.QComboBox] = {}
+        self.slot_labels: Dict[str, QtWidgets.QLabel] = {}  # Store slot label references for theme updates
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -2822,6 +2823,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         equip_layout = QtWidgets.QFormLayout(equip_group)
         slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
         inventory = self.blocker.adhd_buster.get("inventory", [])
+        
+        # Get current story for themed slot names
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
 
         for slot in slots:
             combo = QtWidgets.QComboBox()
@@ -2838,7 +2842,11 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                         break
             combo.currentIndexChanged.connect(lambda idx, s=slot, c=combo: self._on_equip_change(s, c))
             self.slot_combos[slot] = combo
-            equip_layout.addRow(f"{slot}:", combo)
+            # Use themed slot display name
+            display_name = get_slot_display_name(slot, active_story) if get_slot_display_name else slot
+            slot_label = QtWidgets.QLabel(f"{display_name}:")
+            self.slot_labels[slot] = slot_label
+            equip_layout.addRow(slot_label, combo)
         char_equip.addWidget(equip_group)
         self.inner_layout.addLayout(char_equip)
 
@@ -2979,6 +2987,12 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         inventory = self.blocker.adhd_buster.get("inventory", [])
         equipped = self.blocker.adhd_buster.get("equipped", {})
         needs_save = False
+        
+        # Update slot labels with themed names
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        for slot, label in self.slot_labels.items():
+            display_name = get_slot_display_name(slot, active_story) if get_slot_display_name else slot
+            label.setText(f"{display_name}:")
         
         for slot, combo in self.slot_combos.items():
             # Block signals to prevent triggering _on_equip_change
