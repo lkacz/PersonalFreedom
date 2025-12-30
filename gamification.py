@@ -739,7 +739,7 @@ def perform_lucky_merge(items: list, luck_bonus: int = 0, story_id: str = None) 
 
 STORY_DIARY_THEMES = {
     # =========================================================================
-    # WARRIOR DIARY - Classic Fantasy Adventures
+    # WARRIOR DIARY - Classic Fantasy Adventures (EXPANDED)
     # =========================================================================
     "warrior": {
         "theme_name": "⚔️ Battle Chronicle",
@@ -747,337 +747,680 @@ STORY_DIARY_THEMES = {
             "pathetic": [
                 "accidentally poked", "tripped over", "awkwardly stared at",
                 "nervously waved at", "mildly annoyed", "bumped into",
-                "gave a participation trophy to", "accidentally photobombed"
+                "gave a participation trophy to", "accidentally photobombed",
+                "sneezed on", "apologized profusely to", "gently tapped",
+                "ran away from", "hid behind a barrel from", "pretended not to see",
+                "offered a handshake to", "complimented the shoes of",
+                "asked for directions from", "borrowed a pencil from",
+                "shared an awkward elevator ride with", "accidentally insulted",
+                "stepped on the cape of", "spilled ale on", "lost a staring contest to",
+                "was startled by", "mistook for a coat rack", "walked into",
+                "mumbled incoherently at", "forgot the name of", "waved goodbye to",
+                "made an excuse to leave from", "pretended to be busy near"
             ],
             "modest": [
                 "challenged to honorable combat", "traded blows with", "sparred with",
-                "had a training match with", "arm-wrestled", "competed against"
+                "had a training match with", "arm-wrestled", "competed against",
+                "crossed swords with", "exchanged fierce glares with",
+                "had a respectable duel with", "proved my worth against",
+                "stood my ground against", "pushed back against",
+                "held the line against", "defended the village from",
+                "survived an encounter with", "fought to a standstill with",
+                "earned the respect of", "matched blades with",
+                "tested my mettle against", "rose to the challenge of",
+                "faced bravely", "charged into battle with",
+                "clashed shields with", "traded war cries with",
+                "showed no fear against", "rallied my courage against"
             ],
             "decent": [
                 "defeated in single combat", "vanquished", "outmaneuvered",
-                "conquered", "bested in battle", "triumphed over"
+                "conquered", "bested in battle", "triumphed over",
+                "crushed the defenses of", "broke the ranks of",
+                "sent fleeing", "claimed victory over", "dominated",
+                "overwhelmed", "routed the forces of", "destroyed the army of",
+                "shattered the morale of", "brought low", "humbled in combat",
+                "proved superior to", "demonstrated mastery over",
+                "left defeated", "sent to the healers", "forced into retreat",
+                "outclassed", "showed no mercy to", "made an example of",
+                "ended the reign of", "toppled from power"
             ],
             "heroic": [
                 "slayed", "banished to another realm", "sealed away forever",
-                "struck down with legendary fury", "crushed the army of"
+                "struck down with legendary fury", "crushed the army of",
+                "annihilated the legion of", "became the nightmare of",
+                "forged my legend by defeating", "inspired ballads by conquering",
+                "etched my name in history against", "performed miracles against",
+                "defied the odds and destroyed", "rewrote fate by vanquishing",
+                "achieved the impossible against", "became legend by slaying",
+                "turned the tide of war against", "saved kingdoms from",
+                "united the realms by defeating", "fulfilled prophecy against",
+                "achieved destiny by conquering"
             ],
             "epic": [
                 "obliterated from existence", "erased from the battlefield of time",
-                "became the doom of", "shattered the very essence of"
+                "became the doom of", "shattered the very essence of",
+                "unmade the reality of", "transcended mortality to defeat",
+                "became one with war itself to destroy", "wielded cosmic fury against",
+                "channeled the power of all warriors against",
+                "achieved apotheosis in battle with", "became the end of",
+                "rewrote the laws of combat against", "became eternal by defeating",
+                "ascended through victory over"
             ],
             "legendary": [
                 "became one with the warrior spirit alongside",
-                "transcended mortal combat with", "achieved battle nirvana with"
+                "transcended mortal combat with", "achieved battle nirvana with",
+                "merged with the concept of victory against",
+                "became the living embodiment of war by defeating",
+                "unified all combat styles to transcend",
+                "achieved perfect warrior enlightenment against",
+                "became the alpha and omega of battle with"
             ],
             "godlike": [
                 "redefined the concept of victory against",
-                "became the eternal champion by defeating"
+                "became the eternal champion by defeating",
+                "transcended all concepts of conflict with",
+                "became the source of all future battles by conquering",
+                "rewrote the fundamental nature of combat against",
+                "became the cosmic arbiter of war with"
             ]
         },
         "targets": {
             "pathetic": [
                 "training dummy", "confused goblin scout", "lost merchant's chicken",
-                "grumpy innkeeper", "a scarecrow that looked suspicious"
+                "grumpy innkeeper", "a scarecrow that looked suspicious",
+                "a particularly aggressive squirrel", "my own shadow",
+                "a door that wouldn't open", "a stubborn mule", "a sleeping guard",
+                "a tavern cat", "an old farmer's fence", "a practice target",
+                "a training mannequin", "a wooden post", "a pile of hay",
+                "the village drunk", "a lost sheep", "a cranky vendor",
+                "a broken cart wheel", "my own reflection", "a rusty weathervane",
+                "someone's garden gnome", "an abandoned helmet", "a leaky bucket"
             ],
             "modest": [
                 "goblin raiding party", "bandit captain", "wolf pack alpha",
-                "orc berserker", "rival knight in training"
+                "orc berserker", "rival knight in training", "a band of highwaymen",
+                "a troll bridge keeper", "a mercenary squad", "a rogue mage",
+                "a corrupt guard captain", "a pack of dire wolves",
+                "a nest of giant spiders", "a haunted suit of armor",
+                "a rival clan", "a gang of thieves", "a barbarian raider",
+                "an escaped war beast", "a cursed knight", "a fallen paladin",
+                "a vengeful spirit", "a band of orcs", "a cave troll"
             ],
             "decent": [
                 "dragon whelp", "veteran warlord", "cursed champion",
-                "demon spawn", "undead general"
+                "demon spawn", "undead general", "a legendary bounty hunter",
+                "a dark knight", "a vampire lord", "a lich's champion",
+                "a war golem", "an elemental titan", "a hydra",
+                "a kraken's spawn", "a phoenix warrior", "a shadow assassin",
+                "a death knight", "a corrupted paladin", "a demon commander",
+                "an arch-mage", "a legendary beast", "a mythical guardian"
             ],
             "heroic": [
                 "ancient dragon", "demon prince", "titan of war",
-                "the Shadow Self", "army of the damned"
+                "the Shadow Self", "army of the damned", "an elder god's avatar",
+                "the Void Knight", "the Chaos Emperor", "an archangel of war",
+                "the Dragon King", "a thousand-year curse", "the Lich Emperor",
+                "the Beast of Legend", "the Immortal Champion",
+                "the Spirit of Vengeance", "the Harbinger of Doom"
             ],
             "epic": [
                 "the God of Destruction", "primordial chaos beast",
-                "the living concept of warfare"
+                "the living concept of warfare", "the Entropy Incarnate",
+                "the First and Last Dragon", "the Cosmic Destroyer",
+                "the Universe Devourer", "the Reality Shatterer",
+                "the Existence Ender", "the Multiverse Conqueror"
             ],
             "legendary": [
-                "the first warrior ever born", "the spirit of all battles"
+                "the first warrior ever born", "the spirit of all battles",
+                "the concept of conflict itself", "the primordial war god",
+                "the source of all violence", "the essence of struggle"
             ],
             "godlike": [
-                "the cosmic embodiment of conflict", "the original concept of struggle"
+                "the cosmic embodiment of conflict", "the original concept of struggle",
+                "the universe's primal fury", "existence itself in combat form",
+                "the alpha warrior of all realities"
             ]
         },
         "locations": {
             "pathetic": [
                 "behind the tavern", "in the training yard", "near the outhouse",
-                "at the local farmer's field", "in a puddle"
+                "at the local farmer's field", "in a puddle", "behind the stables",
+                "in the root cellar", "at the village well", "near the pig pen",
+                "in an empty barn", "at the town garbage heap", "behind a bush",
+                "in my own backyard", "at the practice range", "near the compost pile",
+                "in a muddy ditch", "at the edge of town", "behind the blacksmith",
+                "near the old well", "in the chicken coop", "at the town square fountain",
+                "behind the general store", "in the alley", "near the broken fence"
             ],
             "modest": [
                 "in the dark forest", "at the mountain pass", "in ancient ruins",
-                "at the haunted crossroads", "in the gladiator pit"
+                "at the haunted crossroads", "in the gladiator pit",
+                "at the border fortress", "in the misty swamp",
+                "at the abandoned mine", "in the thieves' guild basement",
+                "at the tournament grounds", "in the cursed cemetery",
+                "at the wizard's tower entrance", "in the dragon's foothills",
+                "at the mercenary camp", "in the forgotten temple",
+                "at the edge of the wilderness", "in the bandit stronghold",
+                "at the orc encampment", "in the beast's lair"
             ],
             "decent": [
                 "at the gates of the dark fortress", "on the dragon's peak",
-                "in the heart of the demon realm", "at the edge of the abyss"
+                "in the heart of the demon realm", "at the edge of the abyss",
+                "in the throne room of the dark lord", "at the world's edge",
+                "in the realm between realms", "at the legendary battlefield",
+                "in the heart of the volcano", "at the bottom of the ocean",
+                "in the sky citadel", "at the gates of the underworld",
+                "in the frozen wastes of legend", "at the nexus of power"
             ],
             "heroic": [
                 "in the dimension of eternal battle", "at the crossroads of all wars",
-                "in the void between conquests"
+                "in the void between conquests", "at the throne of the war gods",
+                "in the legendary hall of heroes", "at the edge of infinity",
+                "in the realm of pure combat", "at the source of all courage",
+                "in the dimension of legends", "at the heart of the multiverse"
             ],
             "epic": [
                 "in a reality forged from pure conflict",
-                "at the point where courage itself was born"
+                "at the point where courage itself was born",
+                "in the fabric of existence itself",
+                "at the birthplace of all warriors",
+                "in the cosmic colosseum", "at the universe's battlefield"
             ],
             "legendary": [
-                "in the first battlefield ever conceived"
+                "in the first battlefield ever conceived",
+                "at the origin of all combat",
+                "in the primordial arena of creation",
+                "at the nexus of all warrior spirits"
             ],
             "godlike": [
-                "at the source code of valor itself"
+                "at the source code of valor itself",
+                "in the fundamental nature of struggle",
+                "at the cosmic origin of conflict",
+                "in the heart of existence's eternal battle"
             ]
         },
         "outcomes": {
             "pathetic": [
                 "a minor bruise", "awkward silence", "both of us just walking away",
-                "a promise to try again tomorrow"
+                "a promise to try again tomorrow", "mutual embarrassment",
+                "absolutely nothing happening", "a weak handshake",
+                "a polite cough and exit", "me needing a nap",
+                "a story I'll never tell", "a bruised ego", "a torn tunic",
+                "a slightly dented helmet", "a need for ale",
+                "a lesson learned (maybe)", "quiet disappointment",
+                "a vow to practice more", "a strategic retreat",
+                "me pretending it didn't happen", "an unspoken agreement to forget"
             ],
             "modest": [
                 "mutual respect", "a worthy rivalry begun",
-                "both of us gaining experience", "a draw"
+                "both of us gaining experience", "a draw",
+                "a handshake between warriors", "a story worth telling at the tavern",
+                "new scars to show off", "growing confidence",
+                "the start of a legend", "a taste of glory",
+                "recognition from peers", "a step toward greatness",
+                "the first chapter of my saga", "earned bruises",
+                "a reputation being built", "worthy battle wounds"
             ],
             "decent": [
                 "glorious victory", "songs being written", "a statue commissioned",
-                "the bards taking notice"
+                "the bards taking notice", "fame spreading across the land",
+                "my name being remembered", "a feast in my honor",
+                "a title being bestowed", "knights saluting me",
+                "the king taking notice", "treasure beyond measure",
+                "a legendary weapon earned", "a keep being granted",
+                "an army pledging loyalty", "prophecies being updated"
             ],
             "heroic": [
                 "legends being born", "prophecies being fulfilled",
-                "the gods nodding in approval"
+                "the gods nodding in approval", "history being rewritten",
+                "the stars rearranging in my honor", "kingdoms united under my banner",
+                "eternal glory", "a throne being offered", "immortality in legend",
+                "the world forever changed", "ages being named after me"
             ],
             "epic": [
-                "reality itself trembling", "new constellations forming in my honor"
+                "reality itself trembling", "new constellations forming in my honor",
+                "the multiverse taking notice", "dimensions aligning",
+                "the fabric of time recording my deed",
+                "cosmic entities bowing in recognition"
             ],
             "legendary": [
-                "the concept of 'victory' being permanently redefined"
+                "the concept of 'victory' being permanently redefined",
+                "the fundamental laws of combat changing",
+                "my essence merging with the warrior spirit",
+                "becoming one with the legend"
             ],
             "godlike": [
-                "a new era of heroism beginning"
+                "a new era of heroism beginning",
+                "the universe acknowledging my supremacy",
+                "existence itself celebrating my triumph",
+                "becoming the eternal standard of victory"
             ]
         },
         "flavor": {
             "pathetic": [
                 "My sword was a bit rusty.",
                 "I forgot my shield at home.",
-                "My battle cry came out as a squeak."
+                "My battle cry came out as a squeak.",
+                "I tripped over my own feet twice.",
+                "My armor made embarrassing noises.",
+                "I accidentally dropped my weapon.",
+                "The audience cringed audibly.",
+                "Even the crows looked away.",
+                "A child offered me advice.",
+                "My horse seemed disappointed.",
+                "The bard didn't even take notes.",
+                "I got lost on the way.",
+                "My breakfast disagreed with me mid-battle.",
+                "I forgot the battle was today.",
+                "My opponent yawned.",
+                "A gentle breeze knocked me over.",
+                "I challenged the wrong person.",
+                "The practice dummy won."
             ],
             "modest": [
                 "The crowd of three people seemed mildly impressed.",
                 "A passing knight gave me a nod.",
-                "My armor only clanked embarrassingly twice."
+                "My armor only clanked embarrassingly twice.",
+                "Someone in the crowd didn't fall asleep.",
+                "The bard wrote down a sentence about me.",
+                "My parents would be moderately proud.",
+                "The village elder raised an eyebrow approvingly.",
+                "A child asked for my autograph.",
+                "The tavern keeper offered a free drink.",
+                "My opponent admitted it wasn't easy.",
+                "A squire asked to train with me.",
+                "The blacksmith noticed my improved technique."
             ],
             "decent": [
                 "The stars aligned for this battle.",
                 "Ancient war drums echoed in approval.",
-                "My ancestors watched with pride."
+                "My ancestors watched with pride.",
+                "The crowd erupted in cheers.",
+                "Bards immediately began composing.",
+                "Knights raised their swords in salute.",
+                "The king sent a messenger of congratulations.",
+                "My weapon glowed with approval.",
+                "Thunder rolled to punctuate my victory.",
+                "A rainbow appeared at the perfect moment.",
+                "Eagles circled overhead majestically.",
+                "The very ground seemed to honor me."
             ],
             "heroic": [
                 "The gods paused their own battles to watch.",
                 "Time itself slowed to witness my strike.",
-                "Lightning struck at the perfect moment."
+                "Lightning struck at the perfect moment.",
+                "The stars formed my initials in the sky.",
+                "Ancient prophecies updated in real-time.",
+                "The world held its breath.",
+                "All wars everywhere paused in respect.",
+                "The moon turned to witness.",
+                "History books rewrote themselves."
             ],
             "epic": [
                 "Parallel versions of me in other dimensions also won.",
-                "The multiverse's war council took notes."
+                "The multiverse's war council took notes.",
+                "Cosmic entities placed bets on my favor.",
+                "Reality itself bent to accommodate my legend.",
+                "Time travelers came back just to watch.",
+                "The universe itself seemed to cheer."
             ],
             "legendary": [
-                "This battle is now taught in celestial academies."
+                "This battle is now taught in celestial academies.",
+                "The very concept of 'warrior' was updated.",
+                "Future heroes model themselves after this moment.",
+                "The cosmos recorded this in crystalline memory."
             ],
             "godlike": [
-                "I am now the cosmic standard for victory."
+                "I am now the cosmic standard for victory.",
+                "The universe's victory protocols were updated.",
+                "Existence itself celebrates this moment eternally.",
+                "All future battles are measured against this one."
             ]
         }
     },
 
     # =========================================================================
-    # SCHOLAR DIARY - Academic & Intellectual Pursuits  
+    # SCHOLAR DIARY - Academic & Intellectual Pursuits (EXPANDED)
     # =========================================================================
     "scholar": {
         "theme_name": "📚 Research Journal",
         "verbs": {
             "pathetic": [
-                "lost a citation battle with", "got out-footnoted by",
-                "had my thesis questioned by", "was corrected on grammar by",
-                "spilled coffee while debating", "forgot my argument against"
+                "misread", "accidentally spilled coffee on", "lost my notes about",
+                "fell asleep while studying", "forgot the deadline for",
+                "cited incorrectly", "plagiarized accidentally", "daydreamed through",
+                "doodled instead of researching", "confused the topic with",
+                "misspelled the title of", "submitted late",
+                "formatted incorrectly", "used Comic Sans for",
+                "forgot to save my work on", "deleted the wrong file about",
+                "got distracted while researching", "procrastinated on",
+                "overcomplicated my analysis of", "missed the obvious point about",
+                "over-caffeinated while studying", "ran out of highlighters during",
+                "got lost in Wikipedia instead of studying", "debated myself about",
+                "questioned my career choice while studying"
             ],
             "modest": [
-                "successfully cited sources against", "peer-reviewed the work of",
-                "engaged in scholarly discourse with", "defended my position to",
-                "traded research notes with", "collaborated on a paper with"
+                "successfully summarized", "completed the chapter on",
+                "found a decent source about", "understood the basics of",
+                "took respectable notes on", "formed a hypothesis about",
+                "conducted preliminary research on", "organized my thoughts about",
+                "outlined my argument regarding", "gathered evidence for",
+                "drafted my thesis on", "reviewed the literature on",
+                "attended a lecture about", "discussed intelligently about",
+                "made progress on understanding", "improved my knowledge of"
             ],
             "decent": [
-                "demolished the thesis of", "published a rebuttal to",
-                "achieved academic recognition alongside", "proved wrong the theory of",
-                "discovered a breakthrough while studying with"
+                "published a paper on", "delivered a presentation about",
+                "defended my thesis on", "got cited for my work on",
+                "received peer approval for", "discovered new insights about",
+                "connected disparate theories about", "advanced the field of",
+                "challenged existing paradigms about", "proved my hypothesis on",
+                "impressed the committee with", "contributed meaningfully to",
+                "received a grant to study", "was invited to speak about"
             ],
             "heroic": [
-                "revolutionized the field against the objections of",
-                "achieved tenure by out-researching", "won the Nobel Prize over",
-                "became the definitive authority despite"
+                "revolutionized the understanding of", "became the leading expert on",
+                "rewrote the textbooks about", "solved a decades-old mystery about",
+                "achieved breakthrough insight into", "unified competing theories on",
+                "earned the Nobel for work on", "changed the paradigm of",
+                "transcended conventional wisdom about", "became synonymous with"
             ],
             "epic": [
                 "transcended human knowledge to understand",
                 "unlocked the secrets of the universe from",
-                "became omniscient by studying"
+                "became omniscient by studying",
+                "achieved total enlightenment regarding",
+                "merged with the concept of knowledge itself through",
+                "rewrote the laws of reality by understanding"
             ],
             "legendary": [
                 "merged consciousness with all knowledge of",
-                "became the living embodiment of wisdom from"
+                "became the living embodiment of wisdom from",
+                "transcended mortal understanding of",
+                "became one with universal truth regarding"
             ],
             "godlike": [
-                "redefined the nature of truth itself regarding"
+                "redefined the nature of truth itself regarding",
+                "became the cosmic source of all knowledge about",
+                "achieved absolute understanding of",
+                "became the universal constant of wisdom through"
             ]
         },
         "targets": {
             "pathetic": [
                 "a particularly aggressive spell-checker", "overdue library fine",
                 "an undergrad with too many questions", "corrupted save file",
-                "a pretentious coffee shop philosopher"
+                "a pretentious coffee shop philosopher", "my own footnotes",
+                "a confusing abstract", "a missing reference",
+                "an endless bibliography", "a stubborn citation format",
+                "my advisor's vague feedback", "a broken printer",
+                "a full inbox", "a malfunctioning projector",
+                "a grade I didn't deserve", "my own terrible handwriting",
+                "a textbook with tiny font", "a subscription paywall",
+                "an incomprehensible chart", "my department's bureaucracy",
+                "a thesis that makes no sense", "a dataset full of errors"
             ],
             "modest": [
                 "a rival researcher", "stubborn peer reviewer",
                 "ancient text with terrible handwriting", "complex theorem",
-                "skeptical department head"
+                "skeptical department head", "a challenging concept",
+                "a multi-volume encyclopedia", "a dusty archive",
+                "a competing theory", "a skeptical audience",
+                "a difficult dataset", "an ambiguous source",
+                "a contrarian colleague", "a dense philosophical text",
+                "a seemingly unsolvable problem", "years of contradictory research"
             ],
             "decent": [
                 "a centuries-old academic mystery", "the leading expert in the field",
-                "a forbidden text", "an impossible mathematical proof"
+                "a forbidden text", "an impossible mathematical proof",
+                "the unified field theory", "a paradigm shift",
+                "the establishment's consensus", "a legendary unsolved problem",
+                "the greatest minds in the field", "the Nobel committee",
+                "a revolutionary new methodology", "the limits of human knowledge"
             ],
             "heroic": [
                 "the grand council of scholars", "knowledge itself",
-                "the mystery of consciousness", "the theory of everything"
+                "the mystery of consciousness", "the theory of everything",
+                "the nature of reality", "the secrets of the universe",
+                "the collective wisdom of humanity", "the limits of understanding",
+                "the fundamental forces of existence", "the origin of thought"
             ],
             "epic": [
                 "the fundamental nature of reality", "the source code of mathematics",
-                "the cosmic library of all knowledge"
+                "the cosmic library of all knowledge", "the universal truth",
+                "the fabric of existence", "the mind of the cosmos",
+                "the primordial wisdom", "the essence of understanding"
             ],
             "legendary": [
-                "the first thought ever conceived"
+                "the first thought ever conceived",
+                "the origin of all knowledge",
+                "the cosmic consciousness",
+                "the universal mind"
             ],
             "godlike": [
-                "the concept of understanding itself"
+                "the concept of understanding itself",
+                "the fundamental nature of truth",
+                "the cosmic source of all wisdom",
+                "existence's deepest secrets"
             ]
         },
         "locations": {
             "pathetic": [
                 "in the back of the library", "at my cluttered desk",
-                "in the coffee-stained study room", "during a boring lecture"
+                "in the coffee-stained study room", "during a boring lecture",
+                "in the bathroom during a break", "at 3am in my dorm",
+                "in line at the coffee shop", "during office hours nobody attended",
+                "in the corner of the grad student lounge",
+                "at a conference I wasn't invited to",
+                "in a building I wasn't supposed to be in",
+                "during a fire drill", "in a room with no outlets",
+                "at a library closing in 5 minutes", "in a study group where I was useless",
+                "next to someone eating loudly", "in a room that was too hot",
+                "at a table with wobbly legs", "under fluorescent lights that flickered"
             ],
             "modest": [
                 "in the grand library", "at the academic conference",
-                "in the rare manuscripts section", "at the symposium"
+                "in the rare manuscripts section", "at the symposium",
+                "in the research laboratory", "at the faculty meeting",
+                "in the archives", "at the visiting professor's lecture",
+                "in the department library", "at the research colloquium",
+                "in the special collections room", "at the academic retreat",
+                "in the reading room", "at the thesis defense",
+                "in the faculty lounge", "at the international conference"
             ],
             "decent": [
                 "in the forbidden archives", "at the tower of ancient wisdom",
-                "in the dimension of pure thought"
+                "in the dimension of pure thought", "at the nexus of knowledge",
+                "in the library of infinite volumes", "at the summit of scholars",
+                "in the temple of understanding", "at the academy of legends",
+                "in the chambers of the illuminated", "at the council of the wise"
             ],
             "heroic": [
                 "in the cosmic university", "at the intersection of all knowledge",
-                "in the library between worlds"
+                "in the library between worlds", "at the academy of the gods",
+                "in the realm of pure intellect", "at the throne of wisdom",
+                "in the dimension of enlightenment", "at the source of all learning"
             ],
             "epic": [
                 "in a reality made entirely of information",
-                "at the point where knowledge becomes wisdom"
+                "at the point where knowledge becomes wisdom",
+                "in the cosmic consciousness itself",
+                "at the origin of thought", "in the mind of the universe"
             ],
             "legendary": [
-                "in the concept of 'understanding' itself"
+                "in the concept of 'understanding' itself",
+                "at the primordial source of wisdom",
+                "in the first library ever conceived",
+                "at the birthplace of knowledge"
             ],
             "godlike": [
-                "at the source of all intellectual light"
+                "at the source of all intellectual light",
+                "in the fundamental nature of truth",
+                "at the cosmic origin of wisdom",
+                "in the heart of universal understanding"
             ]
         },
         "outcomes": {
             "pathetic": [
                 "a strongly-worded footnote", "needing more coffee",
-                "a revision being required", "an awkward silence in the seminar"
+                "a revision being required", "an awkward silence in the seminar",
+                "my advisor sighing heavily", "everyone pretending to understand",
+                "a 'see me after class' note", "an extension being denied",
+                "my hypothesis being wrong again", "more questions than answers",
+                "a need for a nap", "questioning my life choices",
+                "my laptop dying mid-save", "a citation needed",
+                "my funding being questioned", "an embarrassing typo discovered",
+                "the audience checking their phones", "polite but confused applause"
             ],
             "modest": [
                 "a paper being published", "grudging peer approval",
-                "my citation count increasing", "a grant being approved"
+                "my citation count increasing", "a grant being approved",
+                "respectful disagreement", "a follow-up study being proposed",
+                "my name in an index", "a decent teaching evaluation",
+                "an invitation to present again", "a positive review",
+                "acknowledgment in someone's paper", "a small but loyal following"
             ],
             "decent": [
                 "a paradigm shift", "textbooks being rewritten",
-                "a Nobel nomination", "standing ovation at the conference"
+                "a Nobel nomination", "standing ovation at the conference",
+                "my theory becoming standard", "a chair position being offered",
+                "multiple universities recruiting me", "my work being translated",
+                "a documentary being made", "the field being renamed after me"
             ],
             "heroic": [
                 "entire fields being renamed after me",
-                "my equations becoming universal constants"
+                "my equations becoming universal constants",
+                "reality conforming to my theories",
+                "the Nobel committee calling personally",
+                "history remembering me forever",
+                "my ideas changing civilization"
             ],
             "epic": [
                 "omniscience being briefly achieved",
-                "the universe's mysteries being solved"
+                "the universe's mysteries being solved",
+                "reality itself being understood",
+                "all knowledge becoming accessible to me"
             ],
             "legendary": [
-                "knowledge itself bowing in respect"
+                "knowledge itself bowing in respect",
+                "becoming one with universal truth",
+                "transcending the need for further learning"
             ],
             "godlike": [
-                "becoming the living definition of genius"
+                "becoming the living definition of genius",
+                "the cosmos organizing according to my understanding",
+                "truth itself being redefined by my comprehension"
             ]
         },
         "flavor": {
             "pathetic": [
                 "My highlighter ran out halfway through.",
                 "I cited the wrong edition. Again.",
-                "The library closed before I could finish."
+                "The library closed before I could finish.",
+                "I forgot what I was researching.",
+                "My notes were in the wrong order.",
+                "I accidentally quoted myself.",
+                "The font was too small to read.",
+                "I realized my thesis was already done. By someone else.",
+                "My advisor didn't remember my name.",
+                "I cited a Wikipedia article.",
+                "My laptop battery died mid-thought.",
+                "I fell asleep on my keyboard.",
+                "My coffee went cold three hours ago.",
+                "I highlighted the entire page by accident.",
+                "I've been reading the same sentence for an hour."
             ],
             "modest": [
                 "My reading glasses steamed up with excitement.",
                 "Other scholars nodded thoughtfully.",
-                "The footnotes were particularly elegant."
+                "The footnotes were particularly elegant.",
+                "My bibliography was properly formatted.",
+                "Someone asked for a copy of my paper.",
+                "The Q&A session went smoothly.",
+                "My PowerPoint didn't crash.",
+                "I remembered all my talking points.",
+                "The coffee was actually good today.",
+                "My office hours were attended by someone."
             ],
             "decent": [
                 "The ancient texts glowed with approval.",
                 "Einstein's ghost gave me a thumbs up.",
-                "My brain felt briefly infinite."
+                "My brain felt briefly infinite.",
+                "The peer reviewers had no revisions.",
+                "My H-index jumped significantly.",
+                "Graduate students quote me in their papers.",
+                "My theory is now on the syllabus.",
+                "Tenure was granted immediately."
             ],
             "heroic": [
                 "The cosmic library added a wing in my name.",
-                "Mathematical constants rearranged in my honor."
+                "Mathematical constants rearranged in my honor.",
+                "Reality briefly made more sense.",
+                "The universe's FAQ was updated.",
+                "All paradoxes resolved themselves.",
+                "Future textbooks are being written now."
             ],
             "epic": [
-                "Reality briefly became a well-organized bibliography."
+                "Reality briefly became a well-organized bibliography.",
+                "The cosmic consciousness took notes.",
+                "All questions were answered, briefly.",
+                "Truth itself felt understood."
             ],
             "legendary": [
-                "The universe's thesis committee passed me unanimously."
+                "The universe's thesis committee passed me unanimously.",
+                "Knowledge itself felt complete.",
+                "Understanding achieved its final form."
             ],
             "godlike": [
-                "I am now the peer review for reality itself."
+                "I am now the peer review for reality itself.",
+                "The cosmos asks me for citations.",
+                "Truth consults me before existing."
             ]
         },
         "adjectives": {
             "pathetic": [
                 "overdue", "dog-eared", "coffee-stained", "misplaced",
-                "confusing", "outdated", "poorly-cited", "incomprehensible"
+                "confusing", "outdated", "poorly-cited", "incomprehensible",
+                "illegible", "corrupted", "plagiarized", "boring",
+                "irrelevant", "pedantic", "pretentious", "obscure",
+                "dense", "convoluted", "contradictory", "incomplete",
+                "unfunded", "rejected", "retracted", "disputed"
             ],
             "modest": [
                 "interesting", "well-researched", "peer-reviewed",
-                "recently-published", "notable", "cited", "thorough"
+                "recently-published", "notable", "cited", "thorough",
+                "competent", "respectable", "promising", "emerging",
+                "solid", "credible", "rigorous", "methodical",
+                "analytical", "insightful", "comprehensive"
             ],
             "decent": [
                 "groundbreaking", "seminal", "revolutionary",
-                "paradigm-shifting", "field-defining", "acclaimed"
+                "paradigm-shifting", "field-defining", "acclaimed",
+                "influential", "landmark", "pioneering", "transformative",
+                "visionary", "definitive", "authoritative", "canonical"
             ],
             "heroic": [
                 "Nobel-worthy", "epoch-making", "civilization-advancing",
-                "transcendent", "omniscient-level"
+                "transcendent", "omniscient-level", "genius-tier",
+                "history-making", "world-changing", "legendary"
             ],
             "epic": [
                 "reality-revealing", "universe-explaining", "cosmic-truth-containing",
-                "existence-defining"
+                "existence-defining", "infinity-comprehending", "all-knowing"
             ],
             "legendary": [
-                "all-knowing", "primordial", "origin-of-thought"
+                "all-knowing", "primordial", "origin-of-thought",
+                "universal", "eternal", "absolute"
             ],
             "godlike": [
-                "omniscience-granting", "infinite-wisdom", "cosmic-understanding"
+                "omniscience-granting", "infinite-wisdom", "cosmic-understanding",
+                "truth-itself", "knowledge-incarnate", "wisdom-absolute"
             ]
         }
     },
 
     # =========================================================================
-    # WANDERER DIARY - Surreal Dream Adventures
+    # WANDERER DIARY - Surreal Dream Adventures (EXPANDED)
     # =========================================================================
     "wanderer": {
         "theme_name": "🌙 Dream Chronicle",
@@ -1085,182 +1428,316 @@ STORY_DIARY_THEMES = {
             "pathetic": [
                 "got lost while following", "sleepwalked into",
                 "had a confusing dream about", "accidentally napped through meeting",
-                "daydreamed awkwardly near", "zoned out while looking at"
+                "daydreamed awkwardly near", "zoned out while looking at",
+                "drooled on my pillow dreaming of", "forgot immediately upon waking from",
+                "hit snooze during a dream about", "mixed up reality with",
+                "couldn't tell if I imagined", "woke up confused by",
+                "almost remembered something about", "dozed off thinking about",
+                "half-hallucinated", "mistook a dream for reality with",
+                "sleepwalked past", "muttered in my sleep about",
+                "tossed and turned dreaming of", "had a false awakening with",
+                "experienced deja vu about", "couldn't fall asleep thinking of"
             ],
             "modest": [
                 "navigated the dream realm with", "shared a vision with",
                 "wandered through memories alongside", "decoded dream symbols with",
-                "found meaning while meditating on"
+                "found meaning while meditating on", "achieved lucidity with",
+                "controlled the dream involving", "interpreted signs from",
+                "connected spiritually with", "glimpsed the truth about",
+                "received guidance regarding", "understood the symbolism of",
+                "made peace with", "embraced the mystery of",
+                "journeyed inward with", "unlocked memories of"
             ],
             "decent": [
                 "mastered lucid dreaming against", "bent reality with",
                 "walked between dimensions with", "unlocked hidden memories of",
-                "achieved prophetic clarity about"
+                "achieved prophetic clarity about", "transcended normal sleep with",
+                "commanded the dreamscape against", "became the dreamer of",
+                "rewrote the night's narrative with", "achieved astral projection to",
+                "pierced the veil between worlds with", "became one with the moon through"
             ],
             "heroic": [
                 "became the dreamweaver alongside", "transcended consciousness with",
                 "merged with the collective unconscious of",
-                "conquered the nightmare realm of"
+                "conquered the nightmare realm of", "unified all dreamers against",
+                "became the guardian of sleep from", "rewrote the laws of dreaming with",
+                "achieved cosmic consciousness through", "became the moon's chosen against"
             ],
             "epic": [
                 "became one with the cosmic dream alongside",
                 "rewrote the fabric of sleep itself with",
-                "achieved eternal lucidity regarding"
+                "achieved eternal lucidity regarding",
+                "transcended the boundary between all realities with",
+                "became the source of all visions through",
+                "merged with the infinite possibility of"
             ],
             "legendary": [
                 "became the source of all dreams with",
-                "transcended the boundary between sleep and reality with"
+                "transcended the boundary between sleep and reality with",
+                "became the eternal dreamer of", "unified all consciousness through"
             ],
             "godlike": [
-                "became the dreamer who dreams the universe with"
+                "became the dreamer who dreams the universe with",
+                "transcended all concepts of sleep and waking with",
+                "became the cosmic consciousness itself through"
             ]
         },
         "targets": {
             "pathetic": [
                 "that weird recurring dream", "sleep paralysis demon",
-                "the snooze button", "my own pillow", "insomnia"
+                "the snooze button", "my own pillow", "insomnia",
+                "a nonsensical dream character", "my childhood bedroom",
+                "a dream about teeth falling out", "a dream about being late",
+                "the monster under the bed", "a dream about forgetting something",
+                "my own reflection in a dream", "a door that wouldn't open",
+                "a dream about falling", "an endless staircase",
+                "a talking animal that made no sense", "a dream about being naked in public",
+                "a shadow with no source", "a phone that wouldn't dial",
+                "a dream version of someone I know", "a clock with no hands"
             ],
             "modest": [
                 "wandering dream spirit", "moon phantom", "star whisper",
-                "twilight guardian", "sleep sage"
+                "twilight guardian", "sleep sage", "memory echo",
+                "dream guide", "astral messenger", "night wanderer",
+                "vision keeper", "dream interpreter", "moon watcher",
+                "starlight spirit", "shadow friend", "peaceful presence",
+                "forgotten ancestor", "wisdom keeper", "gentle ghost"
             ],
             "decent": [
                 "the Nightmare King", "ancient dream oracle",
-                "the keeper of forgotten memories", "the lord of lucid realms"
+                "the keeper of forgotten memories", "the lord of lucid realms",
+                "the architect of nightmares", "the moon's guardian",
+                "the master of illusions", "the spirit of prophecy",
+                "the gatekeeper between worlds", "the dream serpent",
+                "the infinite maze", "the tower of visions"
             ],
             "heroic": [
                 "the collective unconscious", "the void between dreams",
-                "the primordial dreamer", "the cosmic sleepwalker"
+                "the primordial dreamer", "the cosmic sleepwalker",
+                "the unified dream of all minds", "the eternal night",
+                "the source of all visions", "the moon goddess",
+                "the star council", "infinity itself in dream form"
             ],
             "epic": [
                 "the concept of sleep itself", "the boundary between real and unreal",
-                "infinite dream dimensions"
+                "infinite dream dimensions", "the cosmic unconscious",
+                "the source of all imagination", "existence's dream form"
             ],
             "legendary": [
-                "the first dream ever dreamed"
+                "the first dream ever dreamed", "the primordial vision",
+                "the cosmic consciousness", "the eternal night"
             ],
             "godlike": [
-                "the cosmic dreamer who dreams existence"
+                "the cosmic dreamer who dreams existence",
+                "the universal unconscious", "the source of all reality"
             ]
         },
         "locations": {
             "pathetic": [
                 "in a half-remembered dream", "on my creaky bed",
-                "between hitting snooze buttons", "in that weird 3am state"
+                "between hitting snooze buttons", "in that weird 3am state",
+                "while drooling on my pillow", "in a dream I immediately forgot",
+                "during a nap I didn't plan", "in a sleep I couldn't control",
+                "while sleep-talking", "in a nightmare I couldn't escape",
+                "during restless tossing and turning", "in a dream within a dream",
+                "while experiencing false awakening", "in hypnagogic state",
+                "during an accidental microsleep", "in the twilight before waking",
+                "while half-asleep on the couch", "in a dream about my childhood home"
             ],
             "modest": [
                 "in the twilight realm", "at the moon's reflection",
-                "in a lucid dream", "at the edge of sleep"
+                "in a lucid dream", "at the edge of sleep",
+                "in the space between thoughts", "at the threshold of dreams",
+                "in a waking vision", "at the border of consciousness",
+                "in a meditative state", "at the astral crossroads",
+                "in the garden of memories", "at the river of forgetfulness",
+                "in the hall of mirrors", "at the starlit path"
             ],
             "decent": [
                 "in the deepest level of dream", "at the gates of the astral plane",
-                "in the collective unconscious", "between waking and sleeping"
+                "in the collective unconscious", "between waking and sleeping",
+                "in the realm of pure imagination", "at the throne of the moon",
+                "in the library of all dreams", "at the nexus of visions",
+                "in the sanctuary of sleep", "at the temple of prophecy"
             ],
             "heroic": [
                 "in the dimension of pure imagination",
-                "at the crossroads of all possible dreams"
+                "at the crossroads of all possible dreams",
+                "in the realm where thoughts become reality",
+                "at the source of all visions",
+                "in the cosmic dreamscape", "at the heart of the unconscious"
             ],
             "epic": [
                 "in a dream within a dream within infinity",
-                "at the source of all visions"
+                "at the source of all visions",
+                "in the fabric of imagination itself",
+                "at the origin of consciousness"
             ],
             "legendary": [
-                "in the concept of 'possibility' itself"
+                "in the concept of 'possibility' itself",
+                "at the primordial source of dreams",
+                "in the first imagination ever imagined"
             ],
             "godlike": [
-                "at the point where imagination becomes reality"
+                "at the point where imagination becomes reality",
+                "in the cosmic source of all dreams",
+                "at the heart of universal consciousness"
             ]
         },
         "outcomes": {
             "pathetic": [
                 "waking up confused", "drool on my pillow",
-                "forgetting the dream immediately", "being late for everything"
+                "forgetting the dream immediately", "being late for everything",
+                "feeling more tired than before", "a sleep paralysis episode",
+                "a weird feeling all day", "explaining a dream nobody understood",
+                "a headache from oversleeping", "a sore neck from bad positioning",
+                "a vague sense of dread", "hitting snooze twelve more times",
+                "missing my alarm entirely", "waking up in the wrong position",
+                "a lingering sense of weirdness", "not knowing if it was real"
             ],
             "modest": [
-                "peaceful sleep", "prophetic insight",
-                "a meaningful vision", "creative inspiration"
+                "peaceful rest", "a meaningful interpretation",
+                "waking up refreshed", "a sense of understanding",
+                "remembering the dream clearly", "feeling connected to something greater",
+                "a message from the subconscious", "clarity about a problem",
+                "a creative idea upon waking", "a sense of peace",
+                "better understanding of myself", "reconciliation with the past"
             ],
             "decent": [
-                "lucid dream mastery", "psychic awakening",
-                "visions of the future", "dream realm recognition"
+                "prophetic insight", "complete lucidity achieved",
+                "mastery over the dream realm", "communication with the beyond",
+                "transcendent peace", "visions of the future",
+                "understanding of hidden truths", "spiritual awakening",
+                "connection with ancestral wisdom", "the veil being lifted"
             ],
             "heroic": [
-                "becoming a legend in the dream world",
-                "having dreams seek my guidance"
+                "becoming one with all dreamers", "transcending normal consciousness",
+                "achieving cosmic awareness", "merging with the infinite",
+                "becoming the guardian of dreams", "eternal lucidity",
+                "the gift of prophecy", "unity with the moon"
             ],
             "epic": [
-                "the boundary between dreams and reality dissolving",
-                "becoming eternal in the realm of sleep"
+                "reality and dream becoming one", "infinite consciousness achieved",
+                "becoming the eternal dreamer", "all mysteries revealed"
             ],
             "legendary": [
-                "dreams and reality becoming one at my will"
+                "transcending the concept of sleep itself",
+                "becoming one with the cosmic dream"
             ],
             "godlike": [
-                "existence itself becoming my lucid dream"
+                "dreams and reality becoming indistinguishable",
+                "becoming the source of all dreams"
             ]
         },
         "flavor": {
             "pathetic": [
                 "I'm not even sure I was awake.",
                 "My alarm went off at the worst moment.",
-                "I can't remember if this actually happened."
+                "I can't remember if this actually happened.",
+                "I drooled on my favorite pillow.",
+                "I hit snooze so many times I lost count.",
+                "I woke up more confused than before.",
+                "The dream made no sense whatsoever.",
+                "I'm pretty sure I was talking in my sleep.",
+                "I woke up in a weird position.",
+                "My neck hurt from sleeping wrong.",
+                "I overslept by three hours.",
+                "I dreamed about something embarrassing.",
+                "The nightmare was about being unprepared.",
+                "I couldn't tell if I was awake or dreaming.",
+                "I accidentally slept through everything important."
             ],
             "modest": [
                 "The stars seemed to whisper approval.",
                 "The moon winked at me. Probably.",
-                "I felt unusually well-rested afterward."
+                "I felt unusually well-rested afterward.",
+                "The dream felt meaningful.",
+                "I remembered every detail.",
+                "Something shifted in my understanding.",
+                "The symbols were surprisingly clear.",
+                "I woke up with a sense of purpose.",
+                "The dream had a clear message.",
+                "I felt connected to something larger."
             ],
             "decent": [
                 "The veil between worlds thinned for me.",
                 "Other dreamers sensed my presence.",
-                "Time moved strangely, as it should."
+                "Time moved strangely, as it should.",
+                "The moon goddess acknowledged me.",
+                "The stars rearranged for my vision.",
+                "Ancient dream spirits welcomed me.",
+                "The lucidity was complete.",
+                "I controlled every aspect of the dream."
             ],
             "heroic": [
                 "The dream realm itself acknowledged me.",
-                "Infinite possibilities opened before me."
+                "Infinite possibilities opened before me.",
+                "I became one with the night.",
+                "The collective unconscious embraced me.",
+                "All dreamers sensed my presence.",
+                "The moon granted me her blessing."
             ],
             "epic": [
-                "I briefly became everything that ever dreamed."
+                "I briefly became everything that ever dreamed.",
+                "The cosmic dream recognized me.",
+                "All of existence briefly slept in my vision.",
+                "The universe dreamed through me."
             ],
             "legendary": [
-                "Dreams now dream of me."
+                "Dreams now dream of me.",
+                "The concept of sleep was updated.",
+                "I became the eternal dreamer."
             ],
             "godlike": [
-                "I am the sleep from which all awakening comes."
+                "I am the sleep from which all awakening comes.",
+                "The cosmic dream flows through me eternally.",
+                "All dreams are now part of my consciousness."
             ]
         },
         "adjectives": {
             "pathetic": [
                 "recurring", "confusing", "half-forgotten", "nonsensical",
-                "fading", "fragmented", "restless", "troubled"
+                "fading", "fragmented", "restless", "troubled",
+                "bizarre", "incoherent", "disturbing", "forgettable",
+                "hazy", "disjointed", "meaningless", "unsettling",
+                "weird", "uncomfortable", "anxious", "exhausting",
+                "interrupted", "broken", "shallow", "fitful"
             ],
             "modest": [
                 "vivid", "meaningful", "lucid", "prophetic",
-                "serene", "flowing", "clear", "gentle"
+                "serene", "flowing", "clear", "gentle",
+                "peaceful", "restful", "insightful", "symbolic",
+                "calming", "refreshing", "deep", "restorative",
+                "connected", "guided", "purposeful", "enlightening"
             ],
             "decent": [
                 "transcendent", "cosmic", "astral", "ethereal",
-                "reality-bending", "infinite", "awakened"
+                "reality-bending", "infinite", "awakened",
+                "prophetic", "visionary", "otherworldly", "mystical",
+                "profound", "illuminating", "transformative"
             ],
             "heroic": [
                 "dimension-spanning", "universe-traversing", "all-seeing",
-                "omnipresent", "timeless"
+                "omnipresent", "timeless", "eternal", "cosmic-scale",
+                "reality-shaping", "consciousness-expanding"
             ],
             "epic": [
                 "existence-spanning", "reality-defining", "cosmic-scale",
-                "infinite-layered"
+                "infinite-layered", "universe-containing", "all-encompassing"
             ],
             "legendary": [
-                "primordial", "origin-of-sleep", "eternal"
+                "primordial", "origin-of-sleep", "eternal",
+                "cosmic-source", "infinite-dream", "universal"
             ],
             "godlike": [
-                "all-dreaming", "infinite-consciousness", "cosmic-awareness"
+                "all-dreaming", "infinite-consciousness", "cosmic-awareness",
+                "reality-source", "existence-dreaming", "universal-mind"
             ]
         }
     },
 
     # =========================================================================
-    # UNDERDOG DIARY - Corporate Office Adventures
+    # UNDERDOG DIARY - Corporate Office Adventures (EXPANDED)
     # =========================================================================
     "underdog": {
         "theme_name": "🏢 Office Chronicle",
@@ -1268,183 +1745,340 @@ STORY_DIARY_THEMES = {
             "pathetic": [
                 "got passive-aggressively emailed by", "was micromanaged by",
                 "had my lunch stolen by", "got stuck in a meeting with",
-                "crashed Excel while presenting to", "forgot the name of"
+                "crashed Excel while presenting to", "forgot the name of",
+                "accidentally replied-all because of", "got thrown under the bus by",
+                "was blamed by", "sat through a boring meeting with",
+                "got a complaint from", "was ghosted by", "got overlooked by",
+                "was patronized by", "got confused by instructions from",
+                "missed a deadline because of", "got copied on drama involving",
+                "was volunteered for extra work by", "got side-eyed by",
+                "was left off the invite by", "got unsolicited advice from",
+                "was told 'per my last email' by", "got mansplained by",
+                "was voluntold by", "got a passive-aggressive sticky note from"
             ],
             "modest": [
                 "survived a meeting with", "successfully dodged work from",
                 "networked awkwardly with", "collaborated reluctantly with",
-                "reached inbox zero despite"
+                "reached inbox zero despite", "got a decent review from",
+                "finished a project despite", "handled feedback from",
+                "navigated politics around", "built rapport with",
+                "impressed slightly", "got noticed by", "held my own against",
+                "kept my cool with", "established boundaries with",
+                "pushed back successfully against", "earned grudging respect from"
             ],
             "decent": [
                 "outperformed the KPIs of", "got promoted over",
                 "delivered a killer presentation to", "closed the deal against",
-                "impressed the board by defeating"
+                "impressed the board by defeating", "got the corner office from",
+                "earned a raise by outshining", "went viral internally against",
+                "got headhunted away from", "received a standing ovation from",
+                "won Employee of the Month over", "negotiated a better deal than",
+                "made the CEO notice me over", "disrupted the plans of"
             ],
             "heroic": [
                 "became the legend of the office by crushing",
                 "got the corner office by outworking",
-                "achieved CEO status by transcending"
+                "achieved CEO status by transcending",
+                "revolutionized the company by defeating",
+                "became an industry leader by outmaneuvering",
+                "got acquired at a premium by outperforming",
+                "made the Forbes list by dominating"
             ],
             "epic": [
                 "became an industry titan by obliterating",
                 "disrupted the entire market against",
-                "achieved mogul status by absorbing"
+                "achieved mogul status by absorbing",
+                "became a billionaire by outplaying",
+                "changed the industry forever by destroying",
+                "became synonymous with success by annihilating"
             ],
             "legendary": [
                 "became synonymous with success by transcending",
-                "redefined what success means by defeating"
+                "redefined what success means by defeating",
+                "became the gold standard by surpassing",
+                "entered business history by conquering"
             ],
             "godlike": [
-                "became the living concept of hustle against"
+                "became the living concept of hustle against",
+                "transcended capitalism itself by defeating",
+                "became the universal symbol of success against"
             ]
         },
         "targets": {
             "pathetic": [
                 "the office printer", "that one passive-aggressive coworker",
                 "the broken coffee machine", "reply-all email chain",
-                "the intern who asks too many questions"
+                "the intern who asks too many questions", "the thermostat wars",
+                "the guy who microwaves fish", "the meeting that could've been an email",
+                "the Slack notification that never stops", "the expired milk in the fridge",
+                "the desk that wobbles", "the chair that squeaks",
+                "the WiFi that keeps dropping", "the mandatory fun activity",
+                "the motivational poster", "the open-plan office noise",
+                "the calendar invite with no context", "the mystery lunch thief",
+                "the person who schedules Friday 5pm meetings",
+                "the email with no subject line", "the vending machine",
+                "the elevator small talk", "the broken bathroom lock"
             ],
             "modest": [
                 "my micromanaging supervisor", "the credit-stealing colleague",
                 "endless Slack notifications", "unrealistic deadline",
-                "soul-crushing performance review"
+                "soul-crushing performance review", "the office politics",
+                "the difficult client", "the impossible project",
+                "the team that doesn't communicate", "the bureaucracy",
+                "the annual budget review", "the mandatory training",
+                "the restructuring rumors", "the scope creep",
+                "the stakeholder with changing requirements"
             ],
             "decent": [
                 "the toxic senior manager", "hostile takeover attempt",
-                "quarterly targets from hell", "impossible client demands"
+                "quarterly targets from hell", "impossible client demands",
+                "the board's unrealistic expectations", "industry competition",
+                "the market downturn", "the crisis that tested everyone",
+                "the project from hell", "the impossible negotiation"
             ],
             "heroic": [
                 "the CEO's impossible expectations", "industry-wide disruption",
-                "the entire competition", "the board of directors"
+                "the entire competition", "the board of directors",
+                "the market itself", "the old guard",
+                "the established monopoly", "the skeptical investors"
             ],
             "epic": [
                 "the concept of corporate mediocrity",
-                "the very idea of the rat race", "capitalism itself"
+                "the very idea of the rat race", "capitalism itself",
+                "the entire industry", "the fundamental nature of work",
+                "the global economy"
             ],
             "legendary": [
-                "the original corporate ladder"
+                "the original corporate ladder",
+                "the concept of employment itself",
+                "the history of business"
             ],
             "godlike": [
-                "the fundamental nature of work-life balance"
+                "the fundamental nature of work-life balance",
+                "the cosmic concept of success",
+                "the universal nature of ambition"
             ]
         },
         "locations": {
             "pathetic": [
                 "at my cramped cubicle", "in the break room fridge battle",
-                "during the world's longest meeting", "in the parking lot dispute"
+                "during the world's longest meeting", "in the parking lot dispute",
+                "at the vending machine", "in the bathroom stall",
+                "during the fire drill", "at the worst desk in the office",
+                "in the elevator", "during the mandatory team building",
+                "at the water cooler", "in the supply closet",
+                "during the 8am Monday meeting", "at my standing desk that's broken",
+                "in the open-plan nightmare", "at the hot desk lottery",
+                "during the 3pm slump", "in line for coffee",
+                "at the printer queue", "during the awkward silence",
+                "in the Zoom waiting room", "at the sad desk lunch"
             ],
             "modest": [
                 "in the conference room", "at the quarterly review",
-                "during the team building exercise", "at the client dinner"
+                "during the team building exercise", "at the client dinner",
+                "in the corner office I borrowed", "at the networking event",
+                "during the presentation", "at the department meeting",
+                "in the interview room", "at the performance review",
+                "during the all-hands meeting", "at the leadership retreat"
             ],
             "decent": [
                 "in the corner office", "at the board meeting",
-                "during the hostile takeover", "at the industry summit"
+                "during the hostile takeover", "at the industry summit",
+                "in the executive suite", "at the investor presentation",
+                "during the IPO roadshow", "at the merger negotiation",
+                "in the private dining room", "at the exclusive conference"
             ],
             "heroic": [
                 "at the Forbes interview", "during my IPO",
-                "at the global headquarters", "on the TED stage"
+                "at the global headquarters", "on the TED stage",
+                "at Davos", "during the congressional testimony",
+                "at the ribbon cutting ceremony", "in the Time magazine feature"
             ],
             "epic": [
                 "in the metaverse corporate realm",
-                "at the intersection of all industries"
+                "at the intersection of all industries",
+                "during the industry-reshaping moment",
+                "at the summit of global business"
             ],
             "legendary": [
-                "in the concept of 'success' itself"
+                "in the concept of 'success' itself",
+                "at the origin of all business",
+                "in the history books of commerce"
             ],
             "godlike": [
-                "at the source code of ambition"
+                "at the source code of ambition",
+                "in the cosmic realm of achievement",
+                "at the universal center of success"
             ]
         },
         "outcomes": {
             "pathetic": [
                 "another meeting being scheduled", "a strongly-worded email",
-                "passive-aggressive CC'ing", "exactly what I expected (nothing)"
+                "passive-aggressive CC'ing", "exactly what I expected (nothing)",
+                "being voluntold for more work", "my desk plant dying",
+                "missing the good parking spot", "cold coffee again",
+                "my lunch being stolen", "the WiFi dying mid-presentation",
+                "an awkward silence", "a calendar invite for a meeting about meetings",
+                "being left off the email thread", "my idea being ignored",
+                "someone else getting credit", "more unpaid overtime",
+                "a 'learning opportunity'", "constructive criticism nobody asked for",
+                "being asked to do more with less", "a 'quick question' that wasn't quick"
             ],
             "modest": [
                 "a decent performance review", "a small bonus",
-                "surviving until Friday", "getting credit for once"
+                "surviving until Friday", "getting credit for once",
+                "a not-terrible commute home", "being left alone to work",
+                "actually finishing something", "a successful handoff",
+                "escaping the meeting early", "someone saying thanks",
+                "a working printer", "an empty elevator",
+                "a lunch that was actually good", "finding a free conference room"
             ],
             "decent": [
                 "a promotion", "a corner office", "industry recognition",
-                "my face on the company newsletter"
+                "my face on the company newsletter", "a significant raise",
+                "the CEO knowing my name", "a team that respects me",
+                "being the go-to person", "a viral LinkedIn post",
+                "a recruiter reaching out", "stock options vesting"
             ],
             "heroic": [
                 "becoming a LinkedIn inspiration", "Harvard case study status",
-                "Fortune 500 listing"
+                "Fortune 500 listing", "being interviewed by CNBC",
+                "a book deal", "speaking at conferences",
+                "being quoted in the Wall Street Journal"
             ],
             "epic": [
-                "becoming an industry legend", "my name becoming a verb"
+                "becoming an industry legend", "my name becoming a verb",
+                "redefining the industry", "billionaire status",
+                "a successful IPO", "being taught in business schools"
             ],
             "legendary": [
-                "redefining what 'career' means for humanity"
+                "redefining what 'career' means for humanity",
+                "changing the nature of work forever",
+                "becoming the gold standard of success"
             ],
             "godlike": [
-                "work-life balance being achieved universally"
+                "work-life balance being achieved universally",
+                "the concept of 'success' being permanently updated",
+                "becoming the cosmic embodiment of achievement"
             ]
         },
         "flavor": {
             "pathetic": [
                 "My coffee was cold by the time I drank it.",
                 "Someone definitely saw me napping.",
-                "The WiFi dropped at the worst moment."
+                "The WiFi dropped at the worst moment.",
+                "I accidentally replied to the wrong thread.",
+                "My Zoom background glitched embarrassingly.",
+                "I was on mute the whole time.",
+                "I forgot to unmute and kept talking.",
+                "My camera was on when I thought it was off.",
+                "I called my boss by the wrong name.",
+                "I sent the message to the wrong chat.",
+                "I was caught browsing job listings.",
+                "My lunch leaked in my bag.",
+                "I fell asleep on a conference call.",
+                "I walked into the wrong meeting.",
+                "My phone rang during the presentation.",
+                "I had spinach in my teeth all day.",
+                "I wore my shirt inside out."
             ],
             "modest": [
                 "I actually understood the TPS reports.",
                 "My desk plant seemed proud.",
-                "Someone laughed at my email joke."
+                "Someone laughed at my email joke.",
+                "The coffee was hot for once.",
+                "My computer didn't crash.",
+                "I found a parking spot easily.",
+                "The elevator came immediately.",
+                "Someone held the door for me.",
+                "My presentation went smoothly.",
+                "I left work on time.",
+                "Nobody scheduled a meeting during lunch.",
+                "The snacks were restocked."
             ],
             "decent": [
                 "The CEO remembered my name.",
                 "My LinkedIn post got real engagement.",
-                "The quarterly report mentioned me specifically."
+                "The quarterly report mentioned me specifically.",
+                "I got a shoutout in the all-hands.",
+                "My idea was actually implemented.",
+                "I negotiated successfully.",
+                "The board was impressed.",
+                "Recruiters are reaching out.",
+                "My bonus was significant.",
+                "I got the budget I requested."
             ],
             "heroic": [
                 "Business schools added me to their curriculum.",
-                "My success story went viral."
+                "My success story went viral.",
+                "Forbes reached out for an interview.",
+                "I rang the opening bell.",
+                "My IPO was oversubscribed.",
+                "I was trending on business Twitter."
             ],
             "epic": [
                 "Elon tweeted about my achievement.",
-                "Multiple industries felt the disruption."
+                "Multiple industries felt the disruption.",
+                "My company is now a verb.",
+                "Governments consulted me.",
+                "I changed the market permanently."
             ],
             "legendary": [
-                "The concept of 'success' was updated in dictionaries."
+                "The concept of 'success' was updated in dictionaries.",
+                "Business history was rewritten.",
+                "Future generations will study this moment."
             ],
             "godlike": [
-                "I am now the gold standard for corporate achievement."
+                "I am now the gold standard for corporate achievement.",
+                "The universe's success protocols were updated.",
+                "All ambition is now measured against mine."
             ]
         },
         "adjectives": {
             "pathetic": [
                 "malfunctioning", "outdated", "constantly-crashing", "passive-aggressive",
-                "soul-crushing", "never-ending", "mysteriously broken", "infuriating"
+                "soul-crushing", "never-ending", "mysteriously broken", "infuriating",
+                "endless", "tedious", "pointless", "bureaucratic",
+                "frustrating", "confusing", "demoralizing", "exhausting",
+                "unnecessary", "redundant", "micromanaged", "underfunded",
+                "understaffed", "overworked", "thankless", "forgotten",
+                "dysfunctional", "toxic", "draining", "mind-numbing"
             ],
             "modest": [
                 "surprisingly functional", "actually-working", "decent",
-                "manageable", "reasonable", "respectable", "tolerable"
+                "manageable", "reasonable", "respectable", "tolerable",
+                "acceptable", "satisfactory", "competent", "adequate",
+                "functional", "organized", "efficient", "productive",
+                "professional", "reliable", "consistent", "stable"
             ],
             "decent": [
                 "impressive", "noteworthy", "substantial", "significant",
-                "formidable", "major", "serious", "game-changing"
+                "formidable", "major", "serious", "game-changing",
+                "impactful", "influential", "notable", "remarkable",
+                "successful", "effective", "strategic", "innovative"
             ],
             "heroic": [
                 "legendary", "career-defining", "industry-shaking",
-                "unprecedented", "historic", "monumental"
+                "unprecedented", "historic", "monumental",
+                "groundbreaking", "revolutionary", "transformative",
+                "visionary", "exceptional", "extraordinary"
             ],
             "epic": [
                 "world-changing", "industry-disrupting", "paradigm-shifting",
-                "reality-altering", "once-in-a-generation"
+                "reality-altering", "once-in-a-generation", "market-defining",
+                "economy-reshaping", "history-making"
             ],
             "legendary": [
-                "civilization-defining", "history-making", "era-defining"
+                "civilization-defining", "history-making", "era-defining",
+                "legacy-creating", "generation-defining", "immortal"
             ],
             "godlike": [
-                "universe-reshaping", "existence-redefining", "cosmic-level"
+                "universe-reshaping", "existence-redefining", "cosmic-level",
+                "reality-defining", "absolute", "eternal", "infinite"
             ]
         }
     },
 }
-
 
 # Default diary content (fallback for compatibility)
 DIARY_POWER_TIERS = {
@@ -1505,32 +2139,39 @@ DIARY_VERBS = {
 
 DIARY_ADJECTIVES = {
     "pathetic": [
-        "a mildly inconvenienced", "a slightly annoyed", "a confused-looking",
-        "an unimpressed", "a suspiciously normal", "a forgettable", "a generic"
+        "mildly inconvenient", "slightly annoying", "confusing",
+        "unimpressive", "suspiciously normal", "forgettable", "generic",
+        "embarrassing", "anticlimactic", "underwhelming", "disappointing"
     ],
     "modest": [
-        "a reasonably impressive", "a decent", "an actually-trying", "a notable",
-        "an interesting", "a surprising", "an unexpected", "a capable"
+        "reasonably impressive", "decent", "notable",
+        "interesting", "surprising", "unexpected", "capable",
+        "respectable", "worthwhile", "encouraging", "promising"
     ],
     "decent": [
-        "a legendary", "a mythical", "an ancient", "a powerful", "a fearsome",
-        "a dreaded", "a fabled", "a renowned", "a notorious", "an infamous"
+        "legendary", "mythical", "ancient", "powerful", "fearsome",
+        "dreaded", "fabled", "renowned", "notorious", "infamous",
+        "formidable", "remarkable", "extraordinary"
     ],
     "heroic": [
-        "a reality-bending", "a dimension-hopping", "a time-traveling", "a fate-weaving",
-        "a prophecy-fulfilling", "a destiny-altering", "a world-shaking"
+        "reality-bending", "dimension-hopping", "time-traveling", "fate-weaving",
+        "prophecy-fulfilling", "destiny-altering", "world-shaking",
+        "epic", "legendary", "awe-inspiring", "history-making"
     ],
     "epic": [
-        "an infinitely powerful", "an omniscient", "an omnipotent", "an omnipresent",
-        "a beyond-comprehension", "a reality-defining", "a universe-creating"
+        "infinitely powerful", "omniscient", "omnipotent", "omnipresent",
+        "beyond comprehension", "reality-defining", "universe-creating",
+        "existence-shaking", "cosmos-altering", "infinity-spanning"
     ],
     "legendary": [
-        "a cosmic-horror-yet-somehow-friendly", "an incomprehensible-but-approachable",
-        "a beyond-all-understanding-yet-cool", "a reality-core-manifestation-of"
+        "cosmic", "incomprehensible yet awe-inspiring",
+        "beyond all understanding", "reality-core level",
+        "transcendently powerful", "eternally significant"
     ],
     "godlike": [
-        "the very concept of", "the fundamental essence of",
-        "the living equation that is", "the cosmic constant known as"
+        "the stuff of pure legend", "beyond mortal comprehension",
+        "cosmically significant", "the pinnacle of all existence",
+        "eternally transcendent", "absolutely universe-defining"
     ]
 }
 
@@ -1740,14 +2381,23 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
         outcome = random.choice(DIARY_OUTCOMES[tier])
         flavor = random.choice(DIARY_FLAVOR[tier])
     
-    # Build story sentence - different structure for different themes
-    if story_id == "underdog":
-        # Underdog: adjective describes the situation, not the target
-        # "Today I {verb} {target} {location}. It was {adjective}. It ended in {outcome}."
+    # Build story sentence - theme-appropriate structures that avoid grammar issues
+    # Each theme uses a structure where adjective is in a separate clause
+    if story_id == "warrior":
+        # Warrior: Epic battle narrative with adjective describing the encounter
+        story = f"Today I {verb} {target} {location}. The battle was {adjective}. It ended in {outcome}."
+    elif story_id == "scholar":
+        # Scholar: Academic discovery narrative with adjective describing the work
+        story = f"Today I {verb} {target} {location}. The research was {adjective}. It ended in {outcome}."
+    elif story_id == "wanderer":
+        # Wanderer: Dream journey narrative with adjective describing the vision
+        story = f"Today I {verb} {target} {location}. The vision was {adjective}. It ended in {outcome}."
+    elif story_id == "underdog":
+        # Underdog: Office struggle narrative with adjective describing the situation
         story = f"Today I {verb} {target} {location}. It was {adjective}. It ended in {outcome}."
     else:
-        # Default pattern for warrior, scholar, wanderer
-        story = f"Today I {verb} {adjective} {target} {location} and it ended in {outcome}."
+        # Default fallback pattern
+        story = f"Today I {verb} {target} {location}. It was {adjective}. It ended in {outcome}."
     
     item_mention = ""
     if equipped_items:
