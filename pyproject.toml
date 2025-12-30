@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "personal-freedom"
-version = "3.0.3"
+name = "personal-liberty"
+version = "4.1.0"
 description = "AI-powered Windows application that blocks distracting websites during focus sessions"
 readme = "README.md"
 license = {text = "MIT"}
