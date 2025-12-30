@@ -536,11 +536,11 @@ class BlockerCore:
             duration_seconds: Planned session duration for crash recovery
         """
         if not self.is_admin():
-            return False, "Administrator privileges required!"
+            return False, "Administrator privileges required!\\n\\nPlease restart the app as administrator:\\n• Right-click the app → Run as administrator\\n• Or use the 'run_as_admin.bat' script"
 
         sites_to_block = self.get_effective_blacklist()
         if not sites_to_block:
-            return False, "No sites to block!"
+            return False, "No sites to block! Add some sites in the Sites or Categories tab first."
 
         try:
             with open(HOSTS_PATH, 'r', encoding='utf-8', errors='ignore') as f:

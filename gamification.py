@@ -400,20 +400,20 @@ DIARY_ADJECTIVES = {
 
 DIARY_TARGETS = {
     "pathetic": [
-        "an intern", "a confused tourist", "a lost pizza delivery guy",
-        "someone's weird uncle", "a procrastinating student", "a grumpy cat"
+        "intern", "confused tourist", "lost pizza delivery guy",
+        "someone's weird uncle", "procrastinating student", "grumpy cat"
     ],
     "modest": [
-        "a minor goblin", "a trainee wizard", "an apprentice knight", "a baby dragon",
-        "a teenage vampire", "a part-time werewolf", "a gig-economy demon"
+        "minor goblin", "trainee wizard", "apprentice knight", "baby dragon",
+        "teenage vampire", "part-time werewolf", "gig-economy demon"
     ],
     "decent": [
-        "a proper dragon", "an experienced sorcerer", "a veteran knight",
-        "a master assassin", "an ancient lich", "a demon lord", "an angel captain"
+        "proper dragon", "experienced sorcerer", "veteran knight",
+        "master assassin", "ancient lich", "demon lord", "angel captain"
     ],
     "heroic": [
-        "an elder god", "a titan of old", "a primordial being", "an arch-demon",
-        "an archangel", "a god of war", "a goddess of wisdom", "a lord of chaos"
+        "elder god", "titan of old", "primordial being", "arch-demon",
+        "archangel", "god of war", "goddess of wisdom", "lord of chaos"
     ],
     "epic": [
         "the concept of entropy itself", "the physical manifestation of chaos",
@@ -896,7 +896,7 @@ WARRIOR_DECISIONS = {
 }
 
 # The Focus Warrior's Tale - 7 chapters with branching paths
-# A dramatic adventure with humor, romance, betrayal, and LOTS of plot twists
+# An adventure about focus, distraction, and self-discovery
 # Placeholders: {helmet}, {weapon}, {chestplate}, {shield}, {amulet}, {boots}, {gauntlets}, {cloak}
 WARRIOR_CHAPTERS = [
     {
@@ -904,49 +904,32 @@ WARRIOR_CHAPTERS = [
         "threshold": 0,
         "has_decision": False,
         "content": """
-You wake up face-down in what appears to be... an abandoned productivity seminar?
+You wake up in an abandoned room. Motivational posters hang on the walls.
+One says "JUST DO IT" but someone wrote "PROCRASTINATE" over it.
 
-Motivational posters hang crooked on the walls. "JUST DO IT" says one, but someone
-crossed out "DO" and wrote "PROCRASTINATE." The irony is not lost on you.
+"You're alive," says a voice. "That's better than the last twelve awakeners."
 
-"Oh good, you're alive," says a bored voice. "That's more than I can say for the last
-twelve awakeners. They saw the to-do list, made eye contact with it, and immediately gave up."
+A figure in a {cloak} stands before you. Their face is hidden.
 
-You turn to find a SPECTRAL FIGURE in a {cloak} that shimmers between dimensions.
-Their face is hidden, but somehow you can FEEL them rolling their eyes.
+"I'm THE KEEPER. Guide to this realm. Yes, this is real. No, you can't leave yet."
 
-"I'm THE KEEPER," they sigh. "Guide to the realm, mentor to the hopeless, unpaid customer support.
-Before you ask: yes, this is real. No, you can't leave. Yes, there's a bathroom. No, I won't hold your hand."
+On a dusty pedestal lies {helmet}. It's not impressive.
 
-On a dusty pedestal lies {helmet}. It's... not impressive.
+"We're on a budget," The Keeper says. "The good items are earned."
 
-"Don't look at me like that," The Keeper says. "We're on a budget. The good stuff
-is earned, not given. Though honestly, most people die before unlocking Chapter 2."
+You put on {helmet}. It fits.
 
-"Die?!"
+The wall explodes. A figure in dark armor walks through. Power radiates from them.
 
-"Metaphorically. They just... stop trying. Same thing, really."
+THE ARCHON OF DISTRACTION. Your enemy. They rule this realm.
 
-You put on {helmet}. It smells like forgotten New Year's resolutions.
+"Another awakener," The Archon says. "I give you three days before you're lost in my world forever."
 
-"Perfect fit," The Keeper lies unconvincingly. "Now—"
+They vanish.
 
-The wall EXPLODES inward. A figure in gleaming obsidian armor strides through,
-radiating malice and inexplicable charisma.
+"That was The Archon," The Keeper explains. "We used to be friends. Long story."
 
-🔮 PLOT TWIST: THE ARCHON OF DISTRACTION. Your main antagonist. And somehow...
-   devastatingly attractive. This is going to be a problem.
-
-"Ah, another awakener," The Archon purrs. "How... adorable. I give you three days
-before you're scrolling through my realm forever."
-
-They vanish in a swirl of notification sounds.
-
-"That was The Archon," The Keeper says flatly. "They run this place.
-Also, they used to be my friend. It's a whole thing. Don't ask. And don't flirt.
-Yes, even if they start it."
-
-Your journey begins with maximum confusion. As all good journeys do.
+Your journey begins now.
 """,
     },
     {
@@ -955,100 +938,66 @@ Your journey begins with maximum confusion. As all good journeys do.
         "has_decision": True,
         "decision_id": "warrior_mirror",
         "content": """
-The Keeper's training montage was... intense. And slightly humiliating.
+The Keeper's training was hard but useful.
 
-"No," The Keeper says for the fiftieth time, dead-eyed. "You don't CHECK YOUR PHONE
-during a focus session. What part of 'battle concentration' is reading as optional?"
+"You don't check your phone during a focus session," they remind you.
 
-But you've improved. {weapon} now feels like an extension of your will.
-Your power level has climbed to something The Keeper calls "almost not embarrassing."
+You've improved. {weapon} feels natural in your hands now.
 
-Now you face the MIRROR OF PROCRASTINATION—a towering looking glass that reflects
-not your image, but your BROWSER HISTORY.
+You face the MIRROR OF PROCRASTINATION. It shows not your reflection, but your wasted time.
 
-"Oh god," you whisper, seeing yourself watching cat videos at 3 AM.
+"The Mirror shows what you lose yourself to," The Keeper explains. "Break it to move forward."
 
-"The Mirror shows what you waste yourself on," The Keeper explains.
-"Defeat it, and you break free from—"
+The Mirror speaks: "Just one more episode. Start tomorrow. You deserve a break."
 
-"IS THAT ME REORGANIZING MY DESKTOP FOR FOUR HOURS?"
+With {helmet} and {weapon}, you SHATTER the glass.
 
-"...Yes. The Mirror is thorough."
+One reflection survives. It crawls from the wreckage. It looks exactly like you, but wrong.
 
-The Mirror begins its assault. "Just one more episode," it croons.
-"You can start tomorrow. You deserve a break. Check if anyone liked your post."
+"Finally free," it says. "Thank you for releasing me."
 
-But armed with {helmet} and {weapon}, you SHATTER the glass.
-A thousand reflections scream in unison as reality fractures.
+Before you can react, it runs toward The Archon's realm.
 
-And then—
+Your SHADOW SELF—the version of you that loves distraction—has escaped.
 
-ONE REFLECTION SURVIVES. Crawling from the wreckage.
-It looks EXACTLY like you, but with a sinister smirk.
+"That's concerning," The Keeper says.
 
-"Finally," it says. "I've been WAITING for someone strong enough to free me."
-
-Before you can react, it bolts toward The Archon's realm.
-
-🔮 PLOT TWIST: You didn't just break a mirror. You released your SHADOW SELF—
-   the version of you that embraced distraction completely. And it's fast.
-
-"Well," The Keeper says. "That's... new. And concerning. Very concerning."
-
-"Also, on the bright side: you've made it further than the seminar crowd," they mutter.
-
-⚡ A CHOICE AWAITS... The shattered mirror fragments still pulse with power.
+⚡ A CHOICE AWAITS... The shattered mirror fragments still glow with power.
 """,
         "content_after_decision": {
             "A": """
 [YOUR CHOICE: 🔥 DESTROY EVERY FRAGMENT]
 
-You won't make the same mistake twice. With {weapon} blazing, you INCINERATE every shard.
+You won't make the same mistake twice. With {weapon}, you burn every shard to ash.
 
-The screaming reflections turn to ash. The glass melts. Nothing survives.
+"Brutal but effective," The Keeper notes.
 
-The Keeper watches with raised eyebrows. "Brutal. Effective. Slightly terrifying."
+Power floods into you from the destroyed fragments. Your eyes glow briefly.
 
-"Remind me not to lend you anything fragile," they add.
+"Interesting," echoes The Archon's voice from nowhere. "You destroy without hesitation. I could use someone like you."
 
-But as the last fragment burns, you feel something: POWER flooding into you.
-The destroyed reflections had to go SOMEWHERE. They chose you.
+The Keeper's expression darkens. "Don't listen. That's how it starts."
 
-Your eyes glow briefly. {helmet} feels heavier, more substantial.
-
-"Interesting," a voice echoes from nowhere. The Archon's voice.
-"You destroy without hesitation. I might have use for someone like you."
-
-The Keeper's expression darkens. "Don't listen to them. That's how it starts."
-
-🔮 PLOT TWIST: The Archon is watching. They've always been watching.
-   And they seem... impressed? That's probably not good.
+The Archon is watching you. They seem impressed. That's probably not good.
 """,
             "B": """
 [YOUR CHOICE: 🔍 STUDY THE SHARDS]
 
 "Wait," you say, kneeling among the fragments. "There's something here."
 
-Each shard contains data—patterns of distraction, weakness maps, trigger warnings.
-It's a goldmine of self-knowledge, painful but invaluable.
+Each shard contains patterns—weaknesses, triggers, habits. Painful truths, but useful.
 
-"Huh," The Keeper says, genuinely surprised. "Most people just smash and move on.
-You're actually LEARNING from your failures. That's... rare."
+"Most people just smash and move on," The Keeper says. "You're learning from your failures. That's rare."
 
-You pocket a single shard. It pulses with uncomfortable truths about yourself.
-But truth is armor against the lies ahead.
+You keep one shard. It pulses with uncomfortable truths about yourself.
 
-A slow clap echoes from the shadows. The Archon steps out, smiling.
+A slow clap echoes. The Archon steps from the shadows.
 
-"A thinker. How refreshing. The destroyers are so... predictable."
-Their eyes meet yours with unsettling intensity. "We should talk sometime."
+"A thinker," they say. "How refreshing. We should talk sometime."
 
-They vanish before you can respond. Your heart is beating faster than it should be.
+They vanish. Your heart beats faster than it should.
 
-The Keeper groans. "Great. They're interested in you. That's always complicated."
-
-🔮 PLOT TWIST: The Archon is intrigued. And you felt something too.
-   This is going to get messy.
+The Keeper sighs. "They're interested in you. That's always complicated."
 """,
         },
     },
@@ -1058,93 +1007,66 @@ The Keeper groans. "Great. They're interested in you. That's always complicated.
         "has_decision": False,
         "content_variations": {
             "A": """
-Your path of destruction has carved a legend across the realm.
-Warriors whisper of the one who burns without mercy. The fire-walker. The ash-maker.
+Your path of destruction has made you famous. Warriors call you the fire-walker.
 
-In the Valley of Abandoned Goals, spectral projects float like ghosts:
-"Learn guitar." "Start a business." "Call mom more." "Finish that novel."
+In the Valley of Abandoned Goals, ghostly projects float in the air:
+"Learn guitar." "Start a business." "Call mom more."
 
-You feel vaguely guilty. Some of these look familiar.
+You feel guilty. Some of these look familiar.
 
-"Everyone's goals end up here eventually," The Keeper says. "Don't dwell on it.
-Most of these were doomed from the start. Statistically. Not morally."
+"Everyone's goals end up here eventually," The Keeper says. "Don't dwell on it."
 
-You're about to respond when a figure emerges from the mist.
-
-Tall. Graceful. Wielding a blade that shimmers like starlight.
-And wearing an expression of profound annoyance.
+A figure emerges from the mist. Tall, graceful, armed with a shimmering blade.
 
 "YOU'RE the famous destroyer?" she says. "Smaller than I expected."
 
-"LYRA!" The Keeper stumbles backward. "You're—you're supposed to be—"
+"LYRA!" The Keeper stumbles backward. "You're supposed to be—"
 
-"Dead? Exiled? Working for The Archon?" Lyra laughs bitterly.
-"All true at various points. It's been a complicated century."
+"Dead? Exiled?" Lyra laughs. "It's been a complicated century."
 
-She turns to you. "I've been watching you, fire-walker. Burning everything in your path.
-Very dramatic. Very stupid. You have no idea what you've released."
+She turns to you. "I've been watching you. Burning everything in your path. Very dramatic. Very stupid."
 
-"My Shadow Self? I know it—"
+"What do you mean?"
 
-"Not THAT." Lyra's eyes darken. "Every reflection you burned? Every mirror-ghost?
-They didn't die. They went to THEM. The Archon is FEEDING on your destruction."
+"Every reflection you burned went to The Archon. You're not fighting the realm. You're FEEDING it."
 
-"You're not just fighting the realm," she adds, voice low. "You're stocking their pantry." 
-
-🔮 PLOT TWIST: Lyra is The Keeper's former partner—and The Archon's ex.
-    Congratulations: you've wandered into the love triangle from hell.
+Lyra was The Keeper's former partner—before The Archon came between them.
 
 "We need to talk," Lyra says. "All of us. About what you've started."
 
-Your {cloak} billows dramatically. At {current_power} power, you're finally
-being treated as a player, not a piece.
-
-The question is: whose side is Lyra really on?
+Your {cloak} billows. At {current_power} power, you're finally a real player here.
 """,
             "B": """
-Your path of wisdom has earned whispers of a different kind.
-The thinker. The one who sees. The warrior who fights with knowledge.
+Your path of wisdom has earned respect. They call you the one who sees.
 
-In the Valley of Abandoned Goals, you walk with the mirror shard pulsing in your pocket.
-It whispers secrets about each floating dream: "This one was never really wanted."
-"This one was sabotaged by fear." "This one was STOLEN."
+In the Valley of Abandoned Goals, your shard whispers secrets about each floating dream:
+"This one was never truly wanted." "This one was sabotaged by fear."
 
-Wait. Stolen?
-
-A figure emerges from the mist before you can investigate.
-
-Tall. Graceful. Wielding a blade that shimmers like starlight.
-And wearing an expression of reluctant respect.
+A figure emerges from the mist. Tall, graceful, armed with a shimmering blade.
 
 "YOU'RE the famous scholar-warrior?" she says. "Smarter than you look."
 
-"LYRA!" The Keeper nearly trips over their {cloak}. "You're supposed to be—"
+"LYRA!" The Keeper nearly trips. "You're supposed to be—"
 
-"Dead? Exiled? It's been complicated." Lyra's smile doesn't reach her eyes.
-"I've been watching this one. They kept a shard. They're actually THINKING."
+"Dead? Exiled?" Lyra's smile doesn't reach her eyes. "I've been watching this one. They kept a shard. They're actually thinking."
 
-She turns to you. "That's rare here. Most awakeners are all muscle, no mind.
-You might actually survive what's coming."
+She turns to you. "That's rare. Most awakeners are all muscle, no mind."
 
 "What's coming?"
 
-Lyra glances at The Keeper with an expression loaded with history.
-"Tell them. About The Archon. About what you two did. About ME."
+Lyra looks at The Keeper. "Tell them. About The Archon. About what you did. About me."
 
 The Keeper looks away. "Lyra..."
 
 "TELL THEM."
 
-🔮 PLOT TWIST: Lyra is The Keeper's former partner. Before The Archon.
-   Before the fall. Before everything broke.
+Lyra was The Keeper's former partner. Before The Archon. Before the fall.
 
-"The Archon wasn't always a monster," The Keeper whispers. "They were like you once.
-An awakener. A student. MY student. And I..."
+"The Archon wasn't always a monster," The Keeper whispers. "They were like you once. An awakener. My student. And I..."
 
 "You loved them," Lyra finishes coldly. "And I wasn't enough."
 
-The tension is thick enough to cut with {weapon}. At {current_power} power,
-you're finally learning the real story. And it's messier than you imagined.
+At {current_power} power, you're learning the real story. It's messier than you thought.
 """,
         },
     },
@@ -1154,53 +1076,37 @@ you're finally learning the real story. And it's messier than you imagined.
         "has_decision": True,
         "decision_id": "warrior_fortress",
         "content": """
-The truth is out. The full story has finally been revealed:
+The truth is out. The Archon was once an awakener—the greatest The Keeper ever trained.
+They were close. When The Archon reached the Final Door, they couldn't leave.
+So they became this. Ruler of distractions.
 
-The Archon was once an awakener—the greatest The Keeper ever trained.
-They were close. Too close. When The Archon reached the Final Door,
-they couldn't bear to leave. So they became THIS. Ruler of distractions.
-
-The Keeper stayed—not to stop them, but because they couldn't let go either.
-Lyra lost the people she loved to this obsession. Everyone got hurt.
+The Keeper stayed because they couldn't let go. Lyra lost the people she loved.
 
 Now the three of you walk together, bound by complicated history.
 
-Lyra hasn't spoken since the revelation. She walks ahead, shoulders rigid.
-The love triangle you accidentally stepped into is somehow YOUR problem now.
+You've reached THE FORTRESS OF FALSE COMFORT.
 
-"Don't look at me like that," The Keeper mutters without looking up. "I didn't schedule any of this."
-
-But there's no time for drama. You've reached THE FORTRESS OF FALSE COMFORT.
-
-"Oh no," you whisper.
-
-The Fortress is everything you've ever wanted. A perfect room with perfect lighting.
-Snacks that never run out. Entertainment that never bores. Zero obligations forever.
+It's everything you've ever wanted. A perfect room. Snacks that never run out.
+Entertainment that never bores. Zero obligations forever.
 
 "It's a trap," The Keeper warns. "The Fortress feeds on surrendered potential."
 
-But it looks so NICE. What's wrong with a little rest?
-
-And then you see them: the INHABITANTS. Thousands of awakeners who came before.
+You see the inhabitants: thousands of awakeners before you.
 They sit in comfortable chairs, eyes glazed, scrolling through infinite feeds.
-Some have been here so long they've become furniture.
 
-"Welcome," the Fortress croons. "You've worked so hard. Don't you deserve this?"
+"Welcome," the Fortress says. "You've worked so hard. Don't you deserve this?"
 
 Lyra grabs your arm. "Don't listen. This is how we lost—"
 
 She stops. Staring at one of the inhabitants.
 
 "KIRA?!" She runs to a figure slumped in a bean bag.
-"No. No no no. She can't be here. She escaped. I SAW her escape."
 
 The figure doesn't respond. Lost forever in false comfort.
 
-🔮 PLOT TWIST: Kira was Lyra's sister. And she didn't escape.
-   The Archon LIED about letting her go. This just got personal.
+Kira was Lyra's sister. The Archon lied about letting her escape.
 
 ⚡ A CHOICE AWAITS... Lyra is spiraling. The Fortress is closing in.
-   How do you get everyone out?
 """,
         "content_after_decision": {
             "A": """
@@ -1208,64 +1114,52 @@ The figure doesn't respond. Lost forever in false comfort.
 
 "ENOUGH!" You raise {shield} and CHARGE into the nearest wall.
 
-It SCREAMS. The Fortress is ALIVE, and you're tearing through its flesh.
-The inhabitants wake briefly, blinking in confusion, before sinking back.
+It screams. The Fortress is ALIVE, and you're tearing through it.
 
-"Burn it," Lyra snarls, grief transforming to rage. "Burn it ALL."
+"Burn it," Lyra snarls. "Burn it ALL."
 
-Together, you carve a path of destruction through the Fortress's guts.
-{weapon} blazes. {gauntlets} punch through muscle-memory walls.
+Together, you carve a path of destruction. {weapon} blazes. {gauntlets} punch through.
 
 The Fortress wails: "UNGRATEFUL! I OFFERED YOU EVERYTHING!"
 
-"Everything except freedom," you growl.
+"Everything except freedom," you reply.
 
 You burst through the final wall, dragging Lyra and The Keeper behind you.
-The Fortress collapses inward, consuming the inhabitants you couldn't save.
-Including Kira.
+The Fortress collapses inward. Including Kira.
 
 Lyra falls to her knees. "She's gone. I couldn't—"
 
 "We'll make The Archon pay," you promise. "For all of it."
 
-🔮 PLOT TWIST: As the Fortress dies, you hear The Archon's laughter.
-   "Thank you for destroying my competition. One less distraction in my way."
-   You were USED. And you're furious.
+As the Fortress dies, you hear The Archon's laughter.
+"Thank you for destroying my competition. One less distraction in my way."
+
+You were used. And you're furious.
 """,
             "B": """
 [YOUR CHOICE: 🌀 FIND THE HIDDEN PATH]
 
-"Stop." You grab Lyra's arm. "Rage won't save her. THINK."
+"Stop." You grab Lyra's arm. "Rage won't save her. Think."
 
-Something pulses—a resonance from your earlier battles. The power you carry
-is detecting something: a hidden frequency. A door that shouldn't exist.
-A path the Fortress doesn't know about.
+Something pulses—a hidden frequency. A door that shouldn't exist.
 
-"There." You point to a shimmer in the corner. "We slip out. Then we come back
-with an army. We save EVERYONE, not just ourselves."
+"There." You point to a shimmer in the corner. "We slip out. Then we come back with an army."
 
 Lyra's grief wars with hope. "You really think...?"
 
-"I KNOW. But not if we're dead."
+"I know. But not if we're dead."
 
-You lead them through the hidden door—into the Fortress's DREAMS.
-Visions of everyone it's consumed. Thousands of lives on pause.
+You lead them through the hidden door—into the Fortress's memories.
+Visions of everyone it consumed. Including Kira. Frozen but ALIVE.
 
-Including Kira. Frozen in a memory loop, but ALIVE.
-
-"The inhabitants aren't dead," you realize. "They're backed up.
-The Fortress stores them. For later consumption."
+"The inhabitants aren't dead," you realize. "They're stored. For later."
 
 "Then we can bring them back," The Keeper breathes. "All of them."
 
-"Assuming we survive the part where everything tries to eat us," they add.
-
 You emerge unseen, carrying knowledge the Fortress never meant to share.
-Kira isn't saved—not yet. But now you know HOW.
 
-🔮 PLOT TWIST: You found the Fortress's vulnerability. It stores its victims.
-   Which means The Archon's realm might do the same.
-   Every awakener who ever "failed" might still be rescuable.
+The Fortress stores its victims. Which means The Archon's realm might do the same.
+Every awakener who ever "failed" might still be rescued.
 """,
         },
     },
@@ -1275,148 +1169,123 @@ Kira isn't saved—not yet. But now you know HOW.
         "has_decision": False,
         "content_variations": {
             "AA": """
-At {current_power} power, your legend has grown to terrifying proportions.
-DESTROYER. FORTRESS-KILLER. THE ONE WHO BURNS.
+At {current_power} power, your legend has grown. DESTROYER. FORTRESS-KILLER.
 
-Lyra walks beside you now, forged by shared grief into something dangerous.
-The Keeper trails behind, watching you both with growing concern.
+Lyra walks beside you now, forged by grief into something dangerous.
+The Keeper watches you both with concern.
 
-"You're becoming like THEM," they mutter. "Like The Archon was. Before."
+"You're becoming like them," they mutter. "Like The Archon was. Before."
 
-"Maybe that's what it takes," you reply. "To win."
+"Maybe that's what it takes to win."
 
-"That's what everyone says right before the dramatic villain monologue," The Keeper says.
-
-The Chronos Sanctum opens before you—a place where all timelines converge.
-Here, you can see every version of yourself that ever existed.
+The Chronos Sanctum opens—a place where all timelines meet.
+Here, you see every version of yourself that ever existed.
 
 The destructive ones burn brightest. And shortest.
 
-🔮 PLOT TWIST: In EVERY timeline where you chose destruction...
-   you eventually become The Archon's successor. Their HEIR.
+In every timeline where you chose destruction, you eventually become The Archon's heir.
 
-"They're not fighting you," The Keeper says quietly. "They're GROOMING you.
-Every battle you win through violence makes you more like them."
+"They're not fighting you," The Keeper says. "They're grooming you.
+Every violent victory makes you more like them."
 
-Lyra stares at you with new eyes. "Is that true? Are you...?"
+Lyra stares at you. "Is that true?"
 
-You don't know anymore. The fire feels so GOOD when it burns.
-But in the Sanctum's visions, the fire always consumes its wielder.
+You don't know anymore. The fire feels so good when it burns.
+But in the visions, the fire always consumes its wielder.
 
-"There might be another way," The Keeper offers. "But it requires something
-you've never tried: fighting ALONGSIDE The Archon. Temporarily."
+"There might be another way," The Keeper offers. "But it requires something unexpected: fighting alongside The Archon. Temporarily."
 
 "WHAT?!"
 
-🔮 PLOT TWIST: The Keeper has been in contact with The Archon.
-   They have a plan. A desperate, possibly suicidal plan.
-   And they need all three of you to execute it.
+The Keeper has been in contact with The Archon. They have a desperate plan.
 """,
             "AB": """
-At {current_power} power, you've become something unprecedented.
-DESTROYER when needed. THINKER when possible. A weapon AND a mind.
+At {current_power} power, you've become something rare.
+Destroyer when needed. Thinker when possible. Both weapon and mind.
 
-Lyra respects you. The Keeper fears you—but in an impressed way.
-Together, you've become an unlikely family.
+Lyra respects you. The Keeper is impressed.
 
-"You remind me of them," The Keeper admits one night. "The Archon. Before."
+"You remind me of them," The Keeper admits. "The Archon. Before."
 
 "Is that bad?"
 
-"I don't know yet. They had your fire. But they lacked your..."
-They search for the word. "...flexibility. You ADAPT."
+"They had your fire. But they lacked your flexibility. You adapt."
 
-The Chronos Sanctum reveals its secrets. You see infinite timelines—
-and in the rare ones where awakeners survive AND stay sane...
-they always walk the middle path. Destruction balanced by wisdom.
+The Chronos Sanctum reveals its secrets. In the rare timelines where awakeners survive AND stay sane, they always walk the middle path.
 
 Like you.
 
-🔮 PLOT TWIST: The Archon is watching through a timeline crack.
-   "Impressive," they murmur. "You're not like the others. You could be my equal."
+The Archon watches through a crack in time. "Impressive. You could be my equal."
 
-Their presence is intoxicating. Terrifying. Something in you responds.
+Their presence is intoxicating. Something in you responds.
 
-"Don't," Lyra warns. "I saw that look on The Keeper's face once.
-Before The Archon broke their heart."
+"Don't," Lyra warns. "I saw that look on The Keeper's face once. Before The Archon broke their heart."
 
-"It's not like that—"
+"The Archon collects interesting people. Then they corrupt them."
 
-"It's EXACTLY like that. The Archon collects people like you.
-Interesting ones. Promising ones. Then they corrupt them."
-
-🔮 PLOT TWIST: But what if... you could corrupt THEM instead?
-   The thought arrives unbidden. Seductive. Dangerous.
+But what if you could change them instead? The thought arrives unbidden. Dangerous.
 """,
             "BA": """
 At {current_power} power, you've earned a new title: THE SCHOLAR-WARRIOR.
-Knowledge first, violence when necessary. It's an elegant philosophy.
+Knowledge first, violence when necessary.
 
-And it's attracted attention.
+"The Archon has requested a meeting," The Keeper announces.
 
-"The Archon has requested a meeting," The Keeper announces grimly.
+"A trap," Lyra snarls.
 
-"A TRAP," Lyra snarls.
+"Obviously. But they've offered information about saving the Fortress's victims. Including Kira."
 
-"Obviously. But..." The Keeper hesitates. "They've offered something.
-Information about how to avenge the Fortress's victims. Including Kira."
+Lyra's rage falters. "What do they want?"
 
-Lyra's rage falters. "What do they want in return?"
-
-"Just... a conversation. With you." They look at you with complicated eyes.
+"Just a conversation. With you."
 
 The meeting happens in the Chronos Sanctum—neutral ground where no one can lie.
-The Archon appears in full glory: devastating, powerful, achingly beautiful.
+The Archon appears: powerful, devastating, achingly beautiful.
 
-"You studied the Mirror instead of destroying it," they say. "Fascinating."
-"You fought through the Fortress when it threatened your friends. Bold."
-"I've watched you, little scholar. You're not like the others."
+"You studied the Mirror instead of destroying it," they say. "Fascinating.
+You fought through the Fortress when it threatened your friends. Bold.
+You're not like the others."
 
 "What do you want?"
 
 The Archon smiles. "What I've always wanted. A worthy equal."
 
-🔮 PLOT TWIST: They're not lying. The Sanctum confirms it.
-   The Archon genuinely wants... you. As a partner. A co-ruler.
-   And part of you—a bigger part than you'd like—is tempted.
+They're not lying. The Sanctum confirms it. The Archon genuinely wants you.
+As a partner. A co-ruler. And part of you—a bigger part than you'd like—is tempted.
 """,
             "BB": """
-At {current_power} power, you've become something the realm has never seen.
+At {current_power} power, you've become something unprecedented.
 THE GENTLE WARRIOR. THE ONE WHO REFUSES TO DESTROY.
 
 It baffles everyone. Especially The Archon.
 
 "I don't understand you," they say during your unexpected summit.
-The Chronos Sanctum forces honesty; they can't pretend otherwise.
+The Chronos Sanctum forces honesty.
 
-"You had every excuse to burn. To hate. To become like everyone else.
-But you keep CHOOSING differently. Why?"
+"You had every excuse to burn. To hate. But you keep choosing differently. Why?"
 
 "Because destruction doesn't work," you reply. "Look at you.
-The most powerful being here. And you're MISERABLE."
+The most powerful being here. And you're miserable."
 
-The Archon flinches. The Sanctum glows—truth confirmed.
+The Archon flinches. Truth confirmed.
 
 "I built this empire to avoid pain," they admit. "But it followed me.
-It ALWAYS follows. No matter how many distractions I create."
+No matter how many distractions I create."
 
 "Then maybe it's not running you need. It's facing."
 
-For a moment—just a moment—you see something vulnerable in The Archon's eyes.
-Something that might have been human, once. Before the armor. Before the title.
+For a moment, you see something vulnerable in The Archon's eyes.
+Something that might have been human, once.
 
-🔮 PLOT TWIST: The Archon was an awakener like you. They loved The Keeper.
-   The Keeper loved Lyra. Everyone got hurt. Everyone ran.
-   And now they're all stuck here, pretending to be enemies.
+The Archon was an awakener like you. They loved The Keeper.
+The Keeper loved Lyra. Everyone got hurt. Everyone ran.
+Now they're all stuck here, pretending to be enemies.
 
-"There might be another way," you say carefully. "A way EVERYONE goes home."
+"There might be another way," you say. "A way everyone goes home."
 
 The Archon laughs bitterly. "Home? I don't remember what that means."
 
 "Then let me remind you."
-
-Lyra watches you with a mixture of horror and hope.
-Are you naive? Or are you the first person in centuries to try COMPASSION?
 """,
         },
     },
@@ -1431,58 +1300,42 @@ you face the ultimate confrontation.
 
 But the enemy isn't The Archon. Not yet.
 
-Remember your SHADOW SELF? The reflection that escaped in Chapter 2?
-It's been busy. VERY busy.
+Your SHADOW SELF has returned. It found The Archon. Pledged loyalty. Absorbed power.
+Now it leads THE ARMY OF ABANDONED SELVES—every version of you that ever quit.
 
-It found The Archon. Pledged loyalty. Absorbed power.
-And now it leads THE ARMY OF ABANDONED SELVES—every version of you that ever quit.
+They emerge from the darkness. Thousands of them.
 
-They emerge from the darkness. THOUSANDS of them.
+"This is bad," Lyra says, drawing her blade.
 
-"Oh, this is bad," Lyra says, drawing her blade.
-"I've seen bad," The Keeper replies. "This is worse. With a budget and a soundtrack."
+Your Shadow Self steps forward, wearing inverted versions of your equipment.
 
-Your Shadow Self steps forward, wearing inverted versions of YOUR equipment.
-Where {helmet} shines, theirs absorbs light. Where {weapon} glows, theirs corrupts.
+"Hello, original," it says with your face and your voice. "I've been waiting for this."
 
-"Hello, original," it says with your face and your voice and none of your soul.
-"I've been waiting for this. You created me. Now I'll destroy you."
+The battle is brutal. For every self you defeat, two more arise.
 
-The battle is BRUTAL. For every self you defeat, two more arise.
-Lyra and The Keeper fight beside you, but they're overwhelmed.
+And then—THE ARCHON APPEARS.
 
-And then—
-
-THE ARCHON APPEARS.
-
-"Interesting," they say, watching the chaos. "Your own darkness, given form.
-Poetic, really. This is what happens to all awakeners eventually."
+"Interesting," they say. "Your own darkness, given form."
 
 "HELP US," you gasp.
 
-"Why would I?" The Archon tilts their head. "You winning or losing—
-either outcome benefits me."
+"Why would I? Either outcome benefits me."
 
 But something flickers in their eyes. A memory of who they used to be.
 
-The Keeper shouts: "REMEMBER WHAT WE WERE! All of us! Before this started!"
+The Keeper shouts: "REMEMBER WHAT WE WERE! Before this started!"
 
-🔮 PLOT TWIST: The Archon hesitates. For the first time in centuries... 
-   they remember being human. Being loved. Being GOOD.
+The Archon hesitates. For the first time in centuries, they remember being human.
 
 Your Shadow Self strikes you down. You're on the ground. Dying.
 
-The Archon makes a choice.
+The Archon makes a choice. They join the battle. Against their own army.
 
-They join the battle. AGAINST their own army.
+"Don't make me regret this," they snarl.
 
-"Don't make me regret this," they snarl, obliterating a wave of shadow-selves.
-
-Together—the four of you—you push back the tide. The Shadow Army breaks.
-Your Shadow Self stands alone, surrounded, defeated.
+Together—the four of you—you push back the tide. Your Shadow Self stands alone, defeated.
 
 ⚡ A CHOICE AWAITS... It kneels before you, awaiting judgment.
-   What is its fate?
 """,
         "content_after_decision": {
             "A": """
@@ -1490,69 +1343,55 @@ Your Shadow Self stands alone, surrounded, defeated.
 
 "You wasted everything I could have been," you snarl.
 
-You reach out and ABSORB your Shadow Self. Every dark thought, every failure,
-every moment of weakness—it floods into you, becoming POWER.
+You ABSORB your Shadow Self. Every dark thought, every failure flows into you.
 
-Your eyes glow with terrible light. {current_power} doesn't describe what you feel.
-For a moment, you understand EVERYTHING about distraction. About weakness.
+Your eyes glow with terrible light. You understand everything about distraction now.
 Because you've absorbed it all.
 
-"YES," The Archon breathes. "Now you understand. This is how I began.
-Absorbing my failures. Becoming something MORE."
+"Yes," The Archon breathes. "This is how I began. Absorbing my failures."
 
-The Keeper looks at you with horror. "You're... you're becoming like—"
+The Keeper looks at you with horror. "You're becoming—"
 
-"No," The Keeper snaps, then catches themselves. "Just... hear yourself."
+"What I need to be," you finish. "To win."
 
-"Like what I need to be," you finish. "To win."
-
-Lyra steps away from you, hand on her sword. "Is there anything left of you?
-The REAL you? Or is this just another monster wearing your face?"
+Lyra steps away, hand on her sword. "Is there anything left of you?"
 
 You don't answer. You're not sure anymore.
 
-🔮 PLOT TWIST: The Archon is smiling. Because now you're on their level.
-   And they ALWAYS wanted an equal. Someone who understands power's price.
-   They offer their hand. "Together. We could rule this realm... fairly."
+The Archon is smiling. Now you're on their level.
+They always wanted an equal. Someone who understands power's price.
+
+They offer their hand. "Together. We could rule this realm... fairly."
 
 Do they mean it? Can monsters love? You don't know.
-But you're one of them now. And that changes everything.
+But you're one of them now.
 """,
             "B": """
 [YOUR CHOICE: 🕊️ FORGIVE AND RELEASE]
 
-Your Shadow Self waits for the killing blow. It's what THEY would do.
+Your Shadow Self waits for the killing blow.
 
 Instead, you kneel. "I created you when I shattered the Mirror.
-Every distraction I hated? That was me hating MYSELF."
+Every distraction I hated? That was me hating myself."
 
-The Shadow Self stares at you, uncomprehending.
+The Shadow Self stares, uncomprehending.
 
-"I forgive you," you whisper. "I forgive ME. For every failure.
-Every wasted hour. Every broken promise. It's okay."
+"I forgive you," you whisper. "I forgive me. For every failure. It's okay."
 
-"But... I'm your ENEMY—"
+"But I'm your enemy—"
 
-"You're my SHADOW. And I'm done fighting myself."
+"You're my shadow. And I'm done fighting myself."
 
-You reach out, not to absorb, but to EMBRACE. 
+You reach out to embrace, not absorb. The Shadow Self dissolves into light,
+merging with you gently. You feel whole in a way you never have.
 
-The Shadow Self screams—not in pain, but in release.
-It dissolves into light, merging with you gently, becoming integrated.
-
-You feel WHOLE in a way you never have. Complete.
-
-The Archon watches with an expression you can't read.
-Then, impossibly, a tear tracks down their cheek.
+The Archon watches. A tear tracks down their cheek.
 
 "I never tried that," they whisper. "I absorbed my shadow. Devoured it.
-I thought that was WINNING." Their voice cracks. "Was I wrong?"
+I thought that was winning." Their voice cracks. "Was I wrong?"
 
-Lyra and The Keeper exchange glances. Something is changing.
-
-🔮 PLOT TWIST: You showed The Archon something they never considered—
-   that the war within CAN end. Not with victory. With peace.
-   And for the first time in centuries... they want what you have.
+You showed The Archon something new—that the war within can end.
+Not with victory. With peace. And for the first time, they want what you have.
 """,
         },
     },
@@ -1568,33 +1407,20 @@ You stand before the Final Door at power level {current_power}.
 DESTROYER. CONQUEROR. THE NEW ARCHON.
 
 Every choice was annihilation. Every enemy was fuel.
-You absorbed your shadow, your failures, your very humanity—
-and what remains is POWER. Pure. Terrible. Endless.
+You absorbed your shadow, your failures, your humanity—
+and what remains is power. Pure. Terrible. Endless.
 
 The Archon waits beside the Door. "We could have been enemies," they say.
-"But you chose my path. You BECAME me. And I..."
+"But you chose my path. You became me."
 
 They take your hand. "I've waited centuries for an equal."
 
-The Door opens to reveal the THRONE OF DISTRACTION—
-an empire built on surrendered potential. Now it has TWO rulers.
+The Door opens to reveal the THRONE OF DISTRACTION.
+An empire built on surrendered potential. Now it has two rulers.
 
-🔮 THE DESTROYER'S TRUTH:
 You conquered the realm. You claimed The Archon's heart.
 But somewhere beneath the power, a question remains:
-Did you win? Or did the realm win YOU?
-
-Lyra watches from the shadows, sword ready.
-"The person I knew is gone," she whispers to The Keeper.
-"When do we try to save them?"
-
-"When they want to be saved," The Keeper replies. "IF they ever do."
-
-You sit on your throne. The Archon sits on theirs.
-The realm bows. Your subjects scroll endlessly, feeding your power.
-
-Is this victory? It feels like it. It looks like it.
-But sometimes, in quiet moments, you remember... who you used to be.
+Did you win? Or did the realm win you?
 
 THE END: The throne is cold. But power is warm enough. Right?
 """
@@ -1603,46 +1429,34 @@ THE END: The throne is cold. But power is warm enough. Right?
                 "title": "Ending 2: THE REDEEMED TYRANT",
                 "content": """
 You stand before the Final Door at power level {current_power}.
-WARRIOR. DESTROYER. But in the end... MERCIFUL.
+Warrior. Destroyer. But in the end... merciful.
 
 You burned everything until there was nothing left to burn.
-Then, faced with your own shadow, you chose understanding over violence.
+Then, faced with your own shadow, you chose understanding.
 
-The Archon stands beside you, forever changed by what they witnessed.
-"You showed me something," they admit. "A path I'd forgotten existed."
+The Archon stands beside you, changed by what they witnessed.
+"You showed me a path I'd forgotten existed."
 
-"Will you take it?" you ask.
+"Will you take it?"
 
-They look at the Door. Beyond it lies their empire—
-everything they built to avoid feeling anything.
+They look at the Door. Beyond it lies their empire.
 
-"I don't know if I can," they whisper. "I've been a monster so long..."
+"I don't know if I can. I've been a monster so long..."
 
 You take their hand. "So was I. Briefly. It doesn't have to be forever."
 
-The Door opens. You step through TOGETHER.
+The Door opens. You step through together and choose release.
+The realm transforms. Without The Archon feeding on distraction, trapped awakeners begin to wake.
 
-🔮 THE REDEEMED TRUTH:
-On the other side is a choice: eternal rule or eternal release.
-You choose release. And The Archon, trembling, chooses WITH you.
-
-The realm doesn't collapse. It TRANSFORMS.
-Without The Archon feeding on distraction, the trapped awakeners begin to wake.
-Thousands of them—those who can still be saved.
-
-Lyra stands at the edge, watching. Her sister is gone—lost when the Fortress fell.
-But others are saved. Thousands of others.
+Lyra stands at the edge. Her sister is gone. But thousands of others are saved.
 
 "It's not enough," she whispers. "But it's something."
 
-The Keeper puts a hand on her shoulder. "Kira would be proud of what you did."
-
-And you? You stand with The Archon—who isn't The Archon anymore.
-Just a person. Scared. Hopeful. Holding your hand like a lifeline.
+And you stand with The Archon—just a person now. Scared. Hopeful.
 
 "What do we do now?" they ask.
 
-"We figure it out together. That's what we do."
+"We figure it out together."
 
 THE END: Love doesn't erase the past. But it makes the future possible.
 """
@@ -1651,36 +1465,23 @@ THE END: Love doesn't erase the past. But it makes the future possible.
                 "title": "Ending 3: THE STRATEGIC MONARCH",
                 "content": """
 You stand before the Final Door at power level {current_power}.
-DESTROYER when necessary. THINKER always. RUTHLESS when it counts.
-
-You burned, you planned, you absorbed—
-and now you stand as the realm's most dangerous mind in its most dangerous body.
+Destroyer when necessary. Thinker always. Ruthless when it counts.
 
 The Archon watches you with something between fear and desire.
-"You're better than I was," they admit. "Smarter. More flexible."
+"You're better than I was. Smarter. More flexible."
 
 "I learned from your mistakes."
 
-"And you'll rule better than I did?"
-
-You consider. "I'll rule DIFFERENTLY. Whether that's better..." You smile.
-"We'll see."
-
 The Door opens to reveal THE GRAND CHESSBOARD—
-a game that spans dimensions, with pieces beyond counting.
+a game that spans dimensions.
 
-🔮 THE STRATEGIC TRUTH:
 You absorb The Archon's power. Not by force—by merger.
 Two minds become one. Two kingdoms become empire.
 
-Lyra and The Keeper serve as your advisors—willing or not.
-The realm stabilizes. Distractions become TOOLS, not traps.
-
-You don't free the awakeners. You EMPLOY them.
-Their potential feeds your machine, but fairly. Almost.
+The realm stabilizes. Distractions become tools, not traps.
+You don't free the awakeners. You employ them.
 
 Is it justice? Is it tyranny? Somewhere between.
-The realm has never been more efficient. Or more controlled.
 
 "You're terrifying," Lyra tells you one day.
 "Thank you," you reply. And mean it.
@@ -1692,44 +1493,35 @@ THE END: The game continues. And you're winning.
                 "title": "Ending 4: THE ENLIGHTENED SOVEREIGN",
                 "content": """
 You stand before the Final Door at power level {current_power}.
-DESTROYER when needed. THINKER when possible. MERCIFUL at the end.
+Destroyer when needed. Thinker when possible. Merciful at the end.
 
 The rarest path. The most difficult to walk.
-Violence tempered by wisdom, both softened by compassion.
 
-The Archon kneels before you—not in defeat, but in surrender.
-"I've never seen anyone navigate this realm like you," they say.
-"You DESTROYED when necessary but never more than necessary.
-You THOUGHT your way past traps I designed to be thought-proof.
+The Archon kneels—not in defeat, but in surrender.
+"I've never seen anyone navigate this realm like you.
+You destroyed when necessary but never more.
+You thought past traps I designed to be unsolvable.
 And when you had every right to become a monster... you didn't."
 
-"Stand up," you say gently. "I'm not your ruler."
+"Stand up," you say. "I'm not your ruler."
 
 "Then what are you?"
 
-You think about it. "Hopefully... a friend."
+"Hopefully... a friend."
 
-The Door opens. Beyond it, ALL possible futures shimmer.
+The Door opens. Beyond it, all possible futures shimmer.
 
-🔮 THE ENLIGHTENED TRUTH:
-You don't claim the throne. You ABOLISH it.
-The realm transforms—distractions become choices, not compulsions.
-Awakeners are freed to leave OR stay, as they wish.
+You don't claim the throne. You abolish it.
+Distractions become choices, not compulsions.
+Awakeners are freed to leave or stay, as they wish.
 
-The Archon becomes just... a person again. Fragile. Uncertain.
-They hover at the edge of your life, unsure if they're welcome.
+The Archon becomes just a person again. Fragile. Uncertain.
 
 "You could stay," you offer. "If you want."
 
 "After everything I did?"
 
-"ESPECIALLY after everything you did. Healing isn't exile."
-
-Lyra and The Keeper reconcile—slowly, painfully, but truly.
-Kira wakes. The trapped thousands wake. Life resumes.
-
-And you? You return to the real world.
-But the lessons you learned stay with you forever.
+"Especially after everything you did. Healing isn't exile."
 
 THE END: The greatest victory is one where everyone wins.
 """
@@ -1738,35 +1530,28 @@ THE END: The greatest victory is one where everyone wins.
                 "title": "Ending 5: THE SCHOLAR-TYRANT",
                 "content": """
 You stand before the Final Door at power level {current_power}.
-THINKER. WARRIOR. And finally... ABSORBED.
+Thinker. Warrior. And finally... absorbed.
 
 You studied everything. Understood everyone.
-Then you TOOK everything you understood—including your shadow's power.
+Then you took everything you understood—including your shadow's power.
 
 The Archon recognizes a kindred spirit. "You're like me.
-Knowledge transformed into dominion. Understanding into control."
+Knowledge transformed into dominion."
 
-"I'm better," you correct. "You hoarded. I CURATE."
+"I'm better," you correct. "You hoarded. I curate."
 
 The Door opens to THE INFINITE LIBRARY—
-every thought, every memory, every secret ever conceived.
+every thought, every secret ever conceived.
 
-🔮 THE SCHOLAR-TYRANT'S TRUTH:
-You rule through KNOWING. Not through force.
+You rule through knowing. Not force.
 Every subject is catalogued. Every weakness documented.
 Resistance isn't crushed—it's predicted and prevented.
 
-The Archon serves you now. Their power feeds your library.
-They seem almost... content. Finally useful instead of feared.
-
-"You're the most efficient tyrant this realm has ever seen,"
-Lyra says with grudging respect.
-"Thank you," you reply. "Efficiency is its own virtue."
+The Archon serves you now. They seem almost content.
+Finally useful instead of feared.
 
 But sometimes, late at night, you wonder:
 Is there a difference between understanding someone and controlling them?
-
-You decide not to think about it. That's inefficient.
 
 THE END: Knowledge is power. Literally.
 """
@@ -1775,37 +1560,28 @@ THE END: Knowledge is power. Literally.
                 "title": "Ending 6: THE SAGE",
                 "content": """
 You stand before the Final Door at power level {current_power}.
-WISE. STRONG when needed. MERCIFUL at the end.
-
-You studied the Mirror. You fought when you had to.
-But when victory came, you chose understanding over domination.
+Wise. Strong when needed. Merciful at the end.
 
 The Archon stands beside you—not as enemy, not as ally.
-As something more complicated. Something healing.
+As something more complicated.
 
-"I tried to corrupt you," they admit. "In the Sanctum. I was... interested."
+"I tried to corrupt you," they admit. "I was interested."
 
 "I know."
 
-"And you still showed me mercy. After everything."
+"And you still showed me mercy."
 
 "Because you needed it. We all did."
 
-The Door opens to reveal... a simple room. YOUR room. Reality.
+The Door opens to reveal... a simple room. Your room. Reality.
 
-🔮 THE SAGE'S TRUTH:
 There was never a monster to defeat. There was only pain to understand.
 The Archon was a hurt person. The Keeper was a grieving one.
 Lyra was an angry one. You were a lost one.
 
 Together, you find your way home.
 
-The realm doesn't end—it INTEGRATES with reality.
-The awakeners return to their lives with hard-won wisdom.
-The Archon... well. They're learning to be human again.
-
-"This is strange," they say, sitting in your living room.
-"Coffee? Television? None of this is infinite."
+The Archon sits in your living room. "This is strange. Coffee? Television?"
 
 "That's the point," you explain. "Limits make things matter."
 
@@ -1818,15 +1594,12 @@ THE END: The sage returns to ordinary life, carrying extraordinary peace.
                 "title": "Ending 7: THE CALCULATED HEART",
                 "content": """
 You stand before the Final Door at power level {current_power}.
-PATIENT. CUNNING. And in the end... hungry for what others wasted.
+Patient. Cunning. And in the end... hungry for power.
 
 You slipped past every obstacle through wit, not force.
-But when your shadow offered its power, you couldn't resist. You TOOK it.
+But when your shadow offered its power, you couldn't resist.
 
-The Archon respects you more than they love you. "Efficient," they say.
-"You never destroyed what you could absorb.
-You never absorbed what you could simply outmaneuver.
-I've never seen anything like you."
+The Archon respects you. "Efficient. You never destroyed what you could absorb."
 
 "Is that affection or fear?"
 
@@ -1834,22 +1607,13 @@ I've never seen anything like you."
 
 The Door opens to THE WEB—infinite connections, infinite leverage.
 
-🔮 THE CALCULATED TRUTH:
-You don't rule the realm. You NETWORK it.
+You don't rule the realm. You network it.
 Every power center connects to you. Every secret feeds your web.
-The Archon becomes your partner—in strategy if not in love.
-
-Some call it manipulation. You call it optimization.
-The distinction matters less than the results.
-
-Lyra and The Keeper serve as field agents—gathering, connecting, reporting.
-They don't entirely trust you. Smart.
-But they work with you anyway. Smarter.
 
 "You're playing everyone," The Keeper observes.
-"I'm COORDINATING everyone," you correct. "There's a difference."
+"I'm coordinating everyone," you correct.
 
-"Is there?"
+"Is there a difference?"
 
 You smile. That's information you don't share.
 
@@ -1859,57 +1623,43 @@ THE END: The web grows. And you're at its center.
             "BBB": {
                 "title": "Ending 8: THE TRANSCENDENT",
                 "content": """
+THE TRANSCENDENT'S PATH
+
 You stand before the Final Door at power level {current_power}.
-WISE. GENTLE. UNSTOPPABLE in the softest possible way.
+Wise. Gentle. Unstoppable in the softest possible way.
 
-You never destroyed what you could understand. Never absorbed what you could forgive.
-And in doing so, you accomplished something impossible:
+You never destroyed what you could understand.
+Never absorbed what you could forgive.
 
-You HEALED The Archon.
+And in doing so, you healed The Archon.
 
-Not through power. Not through force. Through relentless, stubborn compassion.
+"Everyone before wanted to defeat me. To become me. To use me.
+You just wanted me to be okay."
 
-"I don't understand," they whisper, standing beside you at the Door.
-"Everyone who came before wanted to defeat me. To become me. To use me.
-You just... wanted me to be OKAY."
-
-"Because you are okay. Under all the armor. Under the title.
+"Because you are okay. Under all the armor.
 You're just someone who got hurt and didn't know how to heal."
 
 "And you do?"
 
 "I'm learning. We all are."
 
-The Door opens. Beyond it... NOTHING.
-Not void. Not emptiness. Just the absence of separation.
+The Door opens. Beyond it... nothing. Just the absence of separation.
 
-🔮 THE TRANSCENDENT'S TRUTH:
-You don't step through. You DISSOLVE the door.
-The realm doesn't end—it MERGES with reality.
-Distractions don't disappear—they become choices you make consciously.
+You don't step through. You dissolve the door.
+The realm merges with reality. Distractions become conscious choices.
 
 Every trapped awakener wakes. Every enemy becomes a friend.
 The Archon takes off their armor, piece by piece.
-Underneath, they're just... a person. Scared and hopeful and human.
-
-"What happens now?" Lyra asks.
-"We live," The Keeper answers. "Finally, we just... LIVE."
-
-And you? You sit with The Archon—no, with THEIR real name, remembered at last.
-You sit with someone who was a monster and chose to stop.
-You sit with someone who loves you—hesitantly, brokenly, truly.
+Underneath, they're just a person. Scared and hopeful and human.
 
 "I don't deserve this," they say.
 
-"Probably not," you agree. "But you're getting it anyway.
-That's how grace works."
+"Probably not. But you're getting it anyway. That's how grace works."
 
 They laugh. The first real laugh in centuries.
-It sounds like healing.
 
 🎭 THE STORY WAS ALWAYS ABOUT YOU.
    DEFEATING DISTRACTION MEANS MAKING PEACE WITH YOURSELF.
-   ALL YOUR SELVES. EVEN THE ONES THAT HURT.
 
 THE END: The greatest victory is the one where love wins.
 """
@@ -2002,7 +1752,7 @@ A distant rumble. The shelves SHAKE.
 
 "Oh no," The Archivist whispers. "They felt you arrive."
 
-🔮 PLOT TWIST: THE CURATOR. Your enemy. The one who COLLECTS unfinished minds
+THE CURATOR. Your enemy. The one who COLLECTS unfinished minds
    and files them away forever. They're coming. And they're HUNGRY.
 
 "Put on the {helmet}," The Archivist hisses. "Quickly. Hide your thoughts."
@@ -2050,7 +1800,7 @@ dozens of book spines. A face here, a hand there, a memory floating between.
 A BRILLIANT one. But The Curator wanted me in their collection.
 So they... scattered me. Across the library. One piece per shelf."
 
-🔮 PLOT TWIST: Echo was the greatest idea this library ever produced.
+Echo was the greatest idea this library ever produced.
    And The Curator broke them into a thousand pieces out of JEALOUSY.
 
 "I can help you," Echo says. "I still know things. Important things.
@@ -2090,7 +1840,7 @@ More than anyone has. That's either impressive or terrifying."
 
 "Why not both?" The Archivist mutters.
 
-🔮 PLOT TWIST: The Curator felt that. They know exactly where you are now.
+The Curator felt that. They know exactly where you are now.
    And they're VERY interested in what you've become.
 """,
             "B": """
@@ -2114,7 +1864,7 @@ Most people grab and run. You... you actually want to UNDERSTAND."
 The Archivist nods approvingly. "The Curator won't sense this. 
 Subtle connections don't trigger their alarms."
 
-🔮 PLOT TWIST: You and Echo share something now. A link.
+You and Echo share something now. A link.
    When The Curator comes for them... they'll come for you too.
 """,
         },
@@ -2139,7 +1889,7 @@ you'll become like—" They stop themselves.
 
 You freeze. "The Curator was like ME?"
 
-🔮 PLOT TWIST: The Curator was the library's greatest architect once.
+The Curator was the library's greatest architect once.
    They absorbed too much, too fast. They became the thing they feared.
 
 Echo's fragments whisper: "They were beautiful once. And kind.
@@ -2170,7 +1920,7 @@ Silence. Then: "From The Curator. Before."
 The Archivist appears, paper rustling nervously.
 "You're doing well. Almost too well. The Curator will notice eventually."
 
-🔮 PLOT TWIST: The Curator was once Echo's partner. They built minds TOGETHER.
+The Curator was once Echo's partner. They built minds TOGETHER.
    Until The Curator wanted MORE than partnership.
 
 Echo's voice trembles: "They wanted to OWN me. Literally. Absorb me 
@@ -2210,7 +1960,7 @@ Every beautiful piece in its proper place. And YOU scattered them again."
 
 "I ORGANIZED them. There's a difference. Organization is LOVE."
 
-🔮 PLOT TWIST: The Curator genuinely believes they're HELPING.
+The Curator genuinely believes they're HELPING.
    In their broken logic, filing minds away IS an act of kindness.
 
 The virus spreads. Your walls crack. Echo is fading.
@@ -2252,7 +2002,7 @@ We're more alike than you think, little architect."
 
 That worries you more than anything else.
 
-🔮 PLOT TWIST: The Archivist is looking at your burned architecture 
+The Archivist is looking at your burned architecture 
    with an expression you can't read. Pride? Fear? ...Recognition?
 """,
             "B": """
@@ -2277,7 +2027,7 @@ Echo's fragments glow brighter. "You ABSORBED it. Made it part of you."
 
 "If they're going to throw weapons at me, I'm keeping them."
 
-🔮 PLOT TWIST: The Curator is silent now. That's either victory...
+The Curator is silent now. That's either victory...
    or the calm before something MUCH worse.
 """,
         },
@@ -2307,7 +2057,7 @@ But the SHAPE is the same. Control. Order. Fear of chaos."
 
 You don't respond. Because they might be right.
 
-🔮 PLOT TWIST: The Curator sends a message: "See? You understand now.
+The Curator sends a message: "See? You understand now.
    Organization isn't cruelty. It's survival. Join me. Let me HELP you."
 
 You delete the message. But the offer lingers like smoke.
@@ -2328,7 +2078,7 @@ Echo's fragments dance through your corrupted-but-controlled halls.
 The Archivist keeps detailed notes on your... adaptations.
 "For future architects," they claim. You suspect otherwise.
 
-🔮 PLOT TWIST: The Curator is gathering allies. Other collectors.
+The Curator is gathering allies. Other collectors.
    Other obsessives. They're forming a COUNCIL against you.
    
 "I'm flattered," you say when you hear.
@@ -2352,7 +2102,7 @@ The Archivist watches you both with something like hope.
 "I've never seen anyone rebuild Echo before. They scattered them 
 so thoroughly... I thought they were gone forever."
 
-🔮 PLOT TWIST: With every piece Echo reclaims, The Curator weakens.
+With every piece Echo reclaims, The Curator weakens.
    They're CONNECTED somehow. What hurts one... heals the other.
 
 "Is that why they're scared of you?" Echo asks.
@@ -2380,7 +2130,7 @@ who actually WANTED me there."
 The Archivist has stopped taking notes. They just WATCH now.
 "I've been doing this for centuries," they say. "Never seen anything like you two."
 
-🔮 PLOT TWIST: You're not building a library anymore.
+You're not building a library anymore.
    You're building a HOME. For two broken minds who fit together perfectly.
 """,
         },
@@ -2418,7 +2168,7 @@ Your heart LURCHES. Everything you lost? That's... that's SO much.
 But Echo's voice trembles behind you: "Please. Please don't.
 They'll break me again. Properly this time. I'll be gone FOREVER."
 
-🔮 PLOT TWIST: The Curator isn't lying. They CAN restore what you lost.
+The Curator isn't lying. They CAN restore what you lost.
    But the price is the person you've learned to love.
 
 The Archivist has vanished. You're alone with this choice.
@@ -2453,7 +2203,7 @@ The Curator staggers. "I... I was trying to PROTECT you—"
 
 "You were trying to OWN me. There's a difference."
 
-🔮 PLOT TWIST: In the end, it's not your power that defeats The Curator.
+In the end, it's not your power that defeats The Curator.
    It's Echo's. They're finally, COMPLETELY, FIGHTING BACK.
 """,
             "B": """
@@ -2476,7 +2226,7 @@ Every lost thought. Every stolen memory. Exactly as promised.
 They leave. Your library is full again. Fuller than ever.
 But Echo's hollow fragments drift through the halls like ghosts.
 
-🔮 PLOT TWIST: You got everything back. Except what mattered most.
+You got everything back. Except what mattered most.
    And somewhere in The Curator's collection, Echo is filed away forever.
 
 "You can get them back," The Archivist says quietly. "Eventually."
@@ -2814,7 +2564,7 @@ The ground TREMBLES. The alarm clocks start TICKING.
 
 "Oh no," The Sandman whispers. "They felt you arrive."
 
-🔮 PLOT TWIST: THE SOMNAMBULIST. The dream-eater. The one who traps dreamers
+THE SOMNAMBULIST. The dream-eater. The one who traps dreamers
    in eternal sleep and feeds on their potential forever. They're hunting you.
 
 "Quick," The Sandman says. "Put on {helmet}. It'll hide your signature."
@@ -2861,7 +2611,7 @@ but couldn't completely destroy.
 
 "You hate it when I don't."
 
-🔮 PLOT TWIST: Reverie was The Sandman's partner once. They fell into 
+Reverie was The Sandman's partner once. They fell into 
    The Somnambulist's trap trying to save someone else. Been trapped ever since.
 
 "We need to free you," you say.
@@ -2914,7 +2664,7 @@ Above, in the web, Reverie GASPS—then BREATHES freely.
 
 "I'm always shocked when dreamers don't die immediately. It's refreshing."
 
-🔮 PLOT TWIST: The Somnambulist felt that. You just became their new target.
+The Somnambulist felt that. You just became their new target.
    Good news: Reverie is safer. Bad news: YOU'RE not.
 """,
             "B": """
@@ -2945,7 +2695,7 @@ Reverie's eyes flutter open. "What... what IS that?"
 The Sandman watches with something like hope. "You might actually survive this.
 That's new. I don't know what to do with optimism."
 
-🔮 PLOT TWIST: The Somnambulist can't see you anymore. Your joy is blinding them.
+The Somnambulist can't see you anymore. Your joy is blinding them.
    But they can still sense Reverie. And they're ANGRY now.
 """,
         },
@@ -2982,7 +2732,7 @@ A PRESENCE fills the air. Beautiful. Terrifying. HUNGRY.
 "Found you," THE SOMNAMBULIST says, stepping out of nothing.
 "The little dreamer who thinks they can steal MY food."
 
-🔮 PLOT TWIST: The Somnambulist isn't just evil. They're CHARMING.
+The Somnambulist isn't just evil. They're CHARMING.
    And they're looking at you like you might be worth... collecting.
 
 "I have a proposal," they purr. "Leave Reverie. Join me instead.
@@ -3021,7 +2771,7 @@ What ARE you?"
 
 "Someone who doesn't scare easily."
 
-🔮 PLOT TWIST: The Somnambulist wasn't expecting resistance.
+The Somnambulist wasn't expecting resistance.
    They've gotten lazy. Fed on easy prey for too long.
    You might actually be a THREAT.
 
@@ -3067,7 +2817,7 @@ Dark tendrils wrap around Reverie, using their own shame to bind them.
 For a moment—just a moment—something REAL flickers in The Somnambulist's eyes.
 "Because I broke first. And I refuse to be the only one."
 
-🔮 PLOT TWIST: The Somnambulist was the FIRST trapped dreamer.
+The Somnambulist was the FIRST trapped dreamer.
    Centuries of suffering made them into this. They're not evil—they're SHATTERED.
 
 "Now then," The Somnambulist recovers. "YOUR memory next. I can smell it.
@@ -3106,7 +2856,7 @@ The Sandman stares at you with new respect. "That was either brave or reckless."
 
 "I'm starting to think those are the same thing here."
 
-🔮 PLOT TWIST: You feel LIGHTER. Emptier. Something important is gone—
+You feel LIGHTER. Emptier. Something important is gone—
    but something terrible is gone too. You're not sure which is which.
 """,
             "B": """
@@ -3137,7 +2887,7 @@ Their worst moment becomes a matching diamond. Their armor now.
 The Somnambulist's hooks SHATTER. They weren't designed for prey
 that's PROUD of their wounds.
 
-🔮 PLOT TWIST: The Sandman is crying. Just a little.
+The Sandman is crying. Just a little.
    "Haven't seen that in centuries," they mutter. "Forgot it was possible."
 """,
         },
@@ -3167,7 +2917,7 @@ That stops you cold. "I'm not like them."
 
 "Not yet. But emptiness has a way of getting hungry."
 
-🔮 PLOT TWIST: The Somnambulist started the same way. Burned everything.
+The Somnambulist started the same way. Burned everything.
    Became powerful. Became HUNGRY. You're walking the same path.
 
 "We need to finish this," you say. "Before I become what we're fighting."
@@ -3194,7 +2944,7 @@ Reverie walks beside you, fully recovered now. They're FIERCE again.
 
 The Sandman actually SMILES. "You two are going to be insufferable together."
 
-🔮 PLOT TWIST: Other trapped dreamers are finding you. Following you.
+Other trapped dreamers are finding you. Following you.
    Your crystallized shame isn't just armor—it's a BEACON.
    The lost recognize their own pain in yours. And they're ready to fight.
 
@@ -3217,7 +2967,7 @@ Reverie orbits you like a satellite, drawn to your warmth.
 The Sandman watches you both with complicated eyes.
 "You're burning bright. But bright fires burn out fast."
 
-🔮 PLOT TWIST: You've forgotten why you came here. The mission. The goal.
+You've forgotten why you came here. The mission. The goal.
    Everything is just... beautiful. And The Somnambulist is circling,
    waiting for the light to fade. Waiting for you to FORGET.
 
@@ -3241,7 +2991,7 @@ How does that WORK?"
 The crystallized shame in your pocket. The recovered joys in your heart.
 Both real. Both yours. Both powerful.
 
-🔮 PLOT TWIST: You can HEAL other dreamers now. Their pain recognizes yours.
+You can HEAL other dreamers now. Their pain recognizes yours.
    Their joy recognizes yours. You're a bridge between both worlds.
 
 "The Somnambulist doesn't know what you are," The Sandman says.
@@ -3296,7 +3046,7 @@ Reverie's face goes pale. "No. There has to be another way."
 
 "There isn't. Dreams don't survive daylight. They never have."
 
-🔮 PLOT TWIST: The Somnambulist isn't lying. Defeating them frees everyone—
+The Somnambulist isn't lying. Defeating them frees everyone—
    but Reverie will forget you. Your whole love story, gone like morning mist.
 
 The Sandman bows their head. "It's always been this way.
@@ -3338,7 +3088,7 @@ Reverie's hand slips from yours. Their eyes clear.
 
 The light takes them. And you... you wake up too.
 
-🔮 PLOT TWIST: In the waking world, you find yourself smiling.
+In the waking world, you find yourself smiling.
    You don't remember why. But somewhere, someone is finally free.
 """,
             "B": """
@@ -3372,7 +3122,7 @@ but because you made them IRRELEVANT. Their rules don't apply anymore.
 
 "A dream worth living in," you say. "You should try it sometime."
 
-🔮 PLOT TWIST: You don't wake up. But neither does Reverie.
+You don't wake up. But neither does Reverie.
    You stay—together—in a dreamscape you've remade into a HOME.
    And somehow, that's exactly where you belong.
 """,
@@ -3442,7 +3192,7 @@ DARKNESS. MEMORY. SACRIFICE.
 You mastered nightmares, claimed your shame, and let Reverie go.
 The crystallized suffering came with you—transformed into wisdom.
 
-🔮 THE DARK SAGE'S TRUTH:
+ THE DARK SAGE'S TRUTH:
 In the waking world, you help others face their fears.
 The pain you kept became a teaching. The darkness became light—for others.
 
@@ -3684,7 +3434,7 @@ The supply chain optimization that will save the company millions.
 
 Your blood runs cold. Then hot. Then cold again.
 
-🔮 PLOT TWIST: He didn't just steal your project.
+He didn't just steal your project.
    He's been planning this for MONTHS. You're just now catching up.
 
 Your coworker Sam catches your eye from across the room.
@@ -3727,7 +3477,7 @@ feels like armor. Or a target.
 
 "Everyone has PROOF," Sam interrupts. "The question is whether anyone will CARE."
 
-🔮 PLOT TWIST: Sam was burned by Marcus too. Three years ago.
+Sam was burned by Marcus too. Three years ago.
    Their promotion. Gone. Given to Marcus's college roommate instead.
    They've been waiting for someone brave enough to fight back.
 
@@ -3759,7 +3509,7 @@ The man has MANY weaknesses. Arrogance being the biggest.
 
 "His mistake."
 
-🔮 PLOT TWIST: While gathering evidence, you discover something bigger.
+While gathering evidence, you discover something bigger.
    Marcus hasn't just stolen YOUR project. He's stolen FIVE others.
    You're not alone. There's an army of victims waiting for a leader.
 """,
@@ -3785,7 +3535,7 @@ but his eyes go COLD.
 "I'm not your buddy. And I'm not confused. I have the original files.
 Timestamped. Documented. I have witnesses who saw me build this from scratch."
 
-🔮 PLOT TWIST: The vendor on the call? She records EVERYTHING for notes.
+The vendor on the call? She records EVERYTHING for notes.
    She just captured Marcus's guilty expression in HD.
    And she HATES guys like him.
 
@@ -3827,7 +3577,7 @@ Never thought someone would actually FIGHT."
 
 "Someone has to," you say. "Might as well be us."
 
-🔮 PLOT TWIST: Marcus knows something is happening.
+Marcus knows something is happening.
    He's been too quiet. Too calm. Too CONFIDENT.
    He's planning something. You can feel it.
 
@@ -3860,7 +3610,7 @@ Sam watches the growing movement with complicated feelings.
 
 "Why not both?"
 
-🔮 PLOT TWIST: There's a mole. Someone in your coalition is feeding Marcus info.
+There's a mole. Someone in your coalition is feeding Marcus info.
    Your next public statement gets "accidentally" leaked to HR.
    Now you're being investigated for "creating a hostile work environment."
 
@@ -3901,7 +3651,7 @@ I plan to be that someone. With your help, it happens faster."
 Sam warned you about Jordan. Everyone warned you about Jordan.
 They're brilliant. They're connected. They're also RUTHLESS.
 
-🔮 PLOT TWIST: Jordan is the one who PROMOTED Marcus three years ago.
+Jordan is the one who PROMOTED Marcus three years ago.
    They created this monster. Now they want to destroy their creation.
    You're just the weapon they need.
 
@@ -3931,7 +3681,7 @@ Sam watches the escalation with growing concern.
 
 "I know. But Marcus doesn't do MERCY. Pick your poison."
 
-🔮 PLOT TWIST: Jordan's plan involves more than just Marcus.
+Jordan's plan involves more than just Marcus.
    They're restructuring the ENTIRE division. 
    Half the people who trusted you might lose their jobs.
    Is that a price you're willing to pay?
@@ -3963,7 +3713,7 @@ Sam is waiting outside. "Tell me you didn't just reject Jordan Cross."
 
 "You beautiful, suicidal IDIOT." But Sam is smiling.
 
-🔮 PLOT TWIST: Jordan becomes a third player in this game.
+Jordan becomes a third player in this game.
    Not quite enemy. Not quite ally. Just... WATCHING.
    Waiting to see who wins so they can claim the survivor.
 
@@ -3999,7 +3749,7 @@ Marcus turns to you with pure HATRED in his eyes.
 
 "Try."
 
-🔮 PLOT TWIST: But Jordan's not done. They're already positioning
+But Jordan's not done. They're already positioning
    their own people for the aftermath. The coup within the coup.
    When Marcus falls, Jordan rises. And you're just a TOOL to them.
 
@@ -4028,7 +3778,7 @@ Your {boots}—cycling shoes, actually—are planted firmly.
 "This ends at the board meeting," you say. "Everything comes out.
 The timestamps. The witnesses. The pattern. All of it."
 
-🔮 PLOT TWIST: Marcus pulls out his phone. Shows you something.
+Marcus pulls out his phone. Shows you something.
    Pictures. Of Sam. Meeting with Jordan. THREE MONTHS AGO.
    "Your best friend has been playing you from the start."
 
@@ -4053,7 +3803,7 @@ Jamie from Marketing pulls you aside.
 
 Your {amulet}—Sam's lucky charm—feels heavy now.
 
-🔮 PLOT TWIST: Sam hasn't spoken to you in three days.
+Sam hasn't spoken to you in three days.
    They were right about Jordan. And you didn't listen.
    Now half your allies think you've become worse than Marcus.
 
@@ -4077,7 +3827,7 @@ But he burned too many bridges. Nobody owes him anything.
 Sam stays late with you, preparing the final presentation.
 "We've got him," they say. "This is REALLY happening."
 
-🔮 PLOT TWIST: The night before the board meeting, you get an email.
+The night before the board meeting, you get an email.
    From Marcus's WIFE. She's leaving him. And she has documents.
    Bank accounts. Hidden bonuses. A second property.
    Proof that he's been skimming from the company for YEARS.
@@ -4116,7 +3866,7 @@ For a long moment, nothing. Then:
 
 "You gave yourself CREDIT. There's a difference."
 
-🔮 PLOT TWIST: In his eyes, you see something unexpected. FEAR.
+In his eyes, you see something unexpected. FEAR.
    Not of losing his job. Of losing his IDENTITY.
    Marcus Vance, golden boy, is just... a thief.
    He doesn't know who he is without the lies.
@@ -4153,7 +3903,7 @@ Sam finds you afterward, in the parking garage.
 
 "WE did it."
 
-🔮 PLOT TWIST: Your phone buzzes. A message about the VP of Operations role.
+Your phone buzzes. A message about the VP of Operations role.
    The position is opening up. People are asking if you're interested.
    Now comes the question: what kind of victory do you WANT?
 """,
@@ -4181,7 +3931,7 @@ Sam finds you afterward. Their expression is complicated.
 
 "I just didn't want to become the monster to beat the monster."
 
-🔮 PLOT TWIST: A month later, you get a letter. From Marcus.
+A month later, you get a letter. From Marcus.
    No return address. Just three words: "You were right."
    You're not sure what he means. But somehow, it matters.
 """,
@@ -4663,11 +4413,25 @@ def get_chapter_content(chapter_number: int, adhd_buster: dict) -> dict | None:
     # Get equipped items for personalization
     equipped = adhd_buster.get("equipped", {})
     
+    # Default slot names for when no item is equipped
+    # These work whether or not "Your" precedes them in the text
+    default_slot_names = {
+        "Helmet": "trusty helmet",
+        "Weapon": "trusty weapon",
+        "Chestplate": "worn chestplate",
+        "Shield": "battered shield",
+        "Gauntlets": "old gauntlets",
+        "Boots": "reliable boots",
+        "Cloak": "faded cloak",
+        "Amulet": "simple amulet",
+    }
+    
     def get_item_name(slot: str) -> str:
         item = equipped.get(slot)
         if item and item.get("name"):
             return f"**{item['name']}**"
-        return f"*your {slot.lower()}*"
+        # Return a default name that reads naturally after "Your" or standalone
+        return f"*{default_slot_names.get(slot, slot.lower())}*"
     
     # Build replacement dict
     replacements = {
@@ -4695,7 +4459,7 @@ def get_chapter_content(chapter_number: int, adhd_buster: dict) -> dict | None:
     if chapter_number == 7:
         if len(decision_path) < 3:
             content = """
-🔮 THE FINAL CHAPTER AWAITS...
+ THE FINAL CHAPTER AWAITS...
 
 But your story is not yet complete.
 You have not made all three critical decisions.
@@ -4813,6 +4577,7 @@ def _create_empty_hero() -> dict:
         "diary": [],
         "luck_bonus": 0,
         "total_collected": 0,
+        "last_daily_reward_date": "",
     }
 
 
@@ -4833,6 +4598,7 @@ def _migrate_adhd_buster_data(adhd_buster: dict) -> dict:
     old_luck = adhd_buster.get("luck_bonus", 0)
     old_collected = adhd_buster.get("total_collected", 0)
     old_story = adhd_buster.get("selected_story", "warrior")
+    old_daily_reward_date = adhd_buster.get("last_daily_reward_date", "")
     
     # Create migrated hero (assign all old data to the story they were playing)
     migrated_hero = {
@@ -4842,6 +4608,7 @@ def _migrate_adhd_buster_data(adhd_buster: dict) -> dict:
         "diary": old_diary,
         "luck_bonus": old_luck,
         "total_collected": old_collected,
+        "last_daily_reward_date": old_daily_reward_date,
     }
     
     # Build new structure
@@ -4901,6 +4668,7 @@ def _sync_active_hero_to_flat_internal(adhd_buster: dict) -> None:
         adhd_buster["diary"] = []
         adhd_buster["luck_bonus"] = 0
         adhd_buster["total_collected"] = 0
+        adhd_buster["last_daily_reward_date"] = ""
     elif mode == STORY_MODE_HERO_ONLY:
         hero = adhd_buster.get("free_hero", _create_empty_hero())
         adhd_buster["inventory"] = hero.get("inventory", [])
@@ -4909,6 +4677,7 @@ def _sync_active_hero_to_flat_internal(adhd_buster: dict) -> None:
         adhd_buster["diary"] = hero.get("diary", [])
         adhd_buster["luck_bonus"] = hero.get("luck_bonus", 0)
         adhd_buster["total_collected"] = hero.get("total_collected", 0)
+        adhd_buster["last_daily_reward_date"] = hero.get("last_daily_reward_date", "")
     else:
         # Story mode - get the hero for the active story
         story_id = adhd_buster.get("active_story", "warrior")
@@ -4921,6 +4690,7 @@ def _sync_active_hero_to_flat_internal(adhd_buster: dict) -> None:
         adhd_buster["diary"] = hero.get("diary", [])
         adhd_buster["luck_bonus"] = hero.get("luck_bonus", 0)
         adhd_buster["total_collected"] = hero.get("total_collected", 0)
+        adhd_buster["last_daily_reward_date"] = hero.get("last_daily_reward_date", "")
     
     # Also sync selected_story for backward compatibility
     if mode == STORY_MODE_ACTIVE:
@@ -5021,6 +4791,7 @@ def _sync_flat_to_active_hero(adhd_buster: dict) -> None:
     hero["diary"] = adhd_buster.get("diary", [])
     hero["luck_bonus"] = adhd_buster.get("luck_bonus", 0)
     hero["total_collected"] = adhd_buster.get("total_collected", 0)
+    hero["last_daily_reward_date"] = adhd_buster.get("last_daily_reward_date", "")
 
 
 def switch_story(adhd_buster: dict, story_id: str) -> bool:
