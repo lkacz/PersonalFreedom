@@ -5339,6 +5339,50 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         if GAMIFICATION_AVAILABLE:
             self._update_mode_ui_state()
 
+        # Latest Diary Entry - Speech bubble from the character
+        diary_bubble_group = QtWidgets.QWidget()
+        diary_bubble_layout = QtWidgets.QVBoxLayout(diary_bubble_group)
+        diary_bubble_layout.setContentsMargins(10, 5, 10, 5)
+        
+        # Get the latest diary entry
+        diary_entries = self.blocker.adhd_buster.get("diary", [])
+        
+        # Speech bubble header with button
+        bubble_header = QtWidgets.QHBoxLayout()
+        bubble_header.addWidget(QtWidgets.QLabel("<b>💬 Latest Adventure:</b>"))
+        bubble_header.addStretch()
+        self.diary_history_btn = QtWidgets.QPushButton("📖 View All Entries")
+        self.diary_history_btn.setStyleSheet("font-size: 11px; padding: 3px 8px;")
+        self.diary_history_btn.clicked.connect(self._open_diary)
+        bubble_header.addWidget(self.diary_history_btn)
+        diary_bubble_layout.addLayout(bubble_header)
+        
+        # Speech bubble content
+        self.speech_bubble = QtWidgets.QLabel()
+        self.speech_bubble.setWordWrap(True)
+        self.speech_bubble.setStyleSheet("""
+            QLabel {
+                background-color: #2d2d2d;
+                border: 2px solid #555;
+                border-radius: 12px;
+                padding: 12px;
+                color: #f0f0f0;
+                font-size: 12px;
+            }
+        """)
+        
+        if diary_entries:
+            latest = diary_entries[-1]
+            entry_text = latest.get("story", "No adventures yet...")
+            date_str = latest.get("short_date", latest.get("date", ""))
+            tier = latest.get("tier", "unknown")
+            self.speech_bubble.setText(f'"{entry_text}"\n\n— {date_str} | Tier: {tier.title()}')
+        else:
+            self.speech_bubble.setText("No adventures yet... Start a focus session to write your story!")
+        
+        diary_bubble_layout.addWidget(self.speech_bubble)
+        self.inner_layout.addWidget(diary_bubble_group)
+
         # Character canvas and equipment side by side
         char_equip = QtWidgets.QHBoxLayout()
         equipped = self.blocker.adhd_buster.get("equipped", {})
@@ -5508,6 +5552,18 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         # Refresh chapter list in case new chapters were unlocked
         if hasattr(self, 'chapter_combo'):
             self._refresh_story_chapter_list()
+        
+        # Update speech bubble with latest diary entry
+        if hasattr(self, 'speech_bubble'):
+            diary_entries = self.blocker.adhd_buster.get("diary", [])
+            if diary_entries:
+                latest = diary_entries[-1]
+                entry_text = latest.get("story", "No adventures yet...")
+                date_str = latest.get("short_date", latest.get("date", ""))
+                tier = latest.get("tier", "unknown")
+                self.speech_bubble.setText(f'"{entry_text}"\n\n— {date_str} | Tier: {tier.title()}')
+            else:
+                self.speech_bubble.setText("No adventures yet... Start a focus session to write your story!")
 
     def _refresh_all_slot_combos(self) -> None:
         """Refresh all equipment slot combo boxes with current inventory."""

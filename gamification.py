@@ -1045,6 +1045,34 @@ STORY_DIARY_THEMES = {
             "godlike": [
                 "I am now the peer review for reality itself."
             ]
+        },
+        "adjectives": {
+            "pathetic": [
+                "overdue", "dog-eared", "coffee-stained", "misplaced",
+                "confusing", "outdated", "poorly-cited", "incomprehensible"
+            ],
+            "modest": [
+                "interesting", "well-researched", "peer-reviewed",
+                "recently-published", "notable", "cited", "thorough"
+            ],
+            "decent": [
+                "groundbreaking", "seminal", "revolutionary",
+                "paradigm-shifting", "field-defining", "acclaimed"
+            ],
+            "heroic": [
+                "Nobel-worthy", "epoch-making", "civilization-advancing",
+                "transcendent", "omniscient-level"
+            ],
+            "epic": [
+                "reality-revealing", "universe-explaining", "cosmic-truth-containing",
+                "existence-defining"
+            ],
+            "legendary": [
+                "all-knowing", "primordial", "origin-of-thought"
+            ],
+            "godlike": [
+                "omniscience-granting", "infinite-wisdom", "cosmic-understanding"
+            ]
         }
     },
 
@@ -1199,6 +1227,34 @@ STORY_DIARY_THEMES = {
             ],
             "godlike": [
                 "I am the sleep from which all awakening comes."
+            ]
+        },
+        "adjectives": {
+            "pathetic": [
+                "recurring", "confusing", "half-forgotten", "nonsensical",
+                "fading", "fragmented", "restless", "troubled"
+            ],
+            "modest": [
+                "vivid", "meaningful", "lucid", "prophetic",
+                "serene", "flowing", "clear", "gentle"
+            ],
+            "decent": [
+                "transcendent", "cosmic", "astral", "ethereal",
+                "reality-bending", "infinite", "awakened"
+            ],
+            "heroic": [
+                "dimension-spanning", "universe-traversing", "all-seeing",
+                "omnipresent", "timeless"
+            ],
+            "epic": [
+                "existence-spanning", "reality-defining", "cosmic-scale",
+                "infinite-layered"
+            ],
+            "legendary": [
+                "primordial", "origin-of-sleep", "eternal"
+            ],
+            "godlike": [
+                "all-dreaming", "infinite-consciousness", "cosmic-awareness"
             ]
         }
     },
@@ -1356,6 +1412,34 @@ STORY_DIARY_THEMES = {
             ],
             "godlike": [
                 "I am now the gold standard for corporate achievement."
+            ]
+        },
+        "adjectives": {
+            "pathetic": [
+                "malfunctioning", "outdated", "constantly-crashing", "passive-aggressive",
+                "soul-crushing", "never-ending", "mysteriously broken", "infuriating"
+            ],
+            "modest": [
+                "surprisingly functional", "actually-working", "decent",
+                "manageable", "reasonable", "respectable", "tolerable"
+            ],
+            "decent": [
+                "impressive", "noteworthy", "substantial", "significant",
+                "formidable", "major", "serious", "game-changing"
+            ],
+            "heroic": [
+                "legendary", "career-defining", "industry-shaking",
+                "unprecedented", "historic", "monumental"
+            ],
+            "epic": [
+                "world-changing", "industry-disrupting", "paradigm-shifting",
+                "reality-altering", "once-in-a-generation"
+            ],
+            "legendary": [
+                "civilization-defining", "history-making", "era-defining"
+            ],
+            "godlike": [
+                "universe-reshaping", "existence-redefining", "cosmic-level"
             ]
         }
     },
@@ -1641,8 +1725,11 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
         location = random.choice(theme["locations"].get(tier, DIARY_LOCATIONS[tier]))
         outcome = random.choice(theme["outcomes"].get(tier, DIARY_OUTCOMES[tier]))
         flavor = random.choice(theme["flavor"].get(tier, DIARY_FLAVOR[tier]))
-        # Use default adjectives (they work well across all themes)
-        adjective = random.choice(DIARY_ADJECTIVES[tier])
+        # Use theme-specific adjectives if available, otherwise fall back to defaults
+        if "adjectives" in theme and tier in theme["adjectives"]:
+            adjective = random.choice(theme["adjectives"][tier])
+        else:
+            adjective = random.choice(DIARY_ADJECTIVES[tier])
     else:
         # Fallback to default (warrior-style) content
         theme_name = "⚔️ Adventure Log"
