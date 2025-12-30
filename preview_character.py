@@ -2,6 +2,7 @@
 """Preview script to display the enhanced CharacterCanvas with various configurations."""
 
 import sys
+import random
 from PySide6 import QtWidgets, QtCore, QtGui
 
 # Import the CharacterCanvas from the main module
@@ -10,6 +11,22 @@ from focus_blocker_qt import CharacterCanvas
 
 class PreviewWindow(QtWidgets.QWidget):
     """Window showing multiple character previews with different gear and power levels."""
+
+    # Color palettes for random gear
+    GEAR_COLORS = [
+        "#78909c", "#607d8b", "#546e7a", "#455a64",  # Steel/Gray
+        "#8d6e63", "#795548", "#6d4c41", "#5d4037",  # Brown/Leather
+        "#7e57c2", "#673ab7", "#5e35b1", "#512da8",  # Purple/Magic
+        "#42a5f5", "#2196f3", "#1e88e5", "#1976d2",  # Blue
+        "#66bb6a", "#4caf50", "#43a047", "#388e3c",  # Green
+        "#ef5350", "#e53935", "#d32f2f", "#c62828",  # Red
+        "#ffa726", "#ff9800", "#fb8c00", "#f57c00",  # Orange
+        "#ffee58", "#ffeb3b", "#fdd835", "#fbc02d",  # Yellow/Gold
+        "#26c6da", "#00bcd4", "#00acc1", "#0097a7",  # Cyan
+        "#ec407a", "#e91e63", "#d81b60", "#c2185b",  # Pink
+        "#37474f", "#263238", "#1c313a", "#102027",  # Dark/Shadow
+        "#ffd54f", "#ffca28", "#ffc107", "#ffb300",  # Gold
+    ]
 
     def __init__(self):
         super().__init__()
@@ -33,7 +50,7 @@ class PreviewWindow(QtWidgets.QWidget):
         """)
 
         main_layout = QtWidgets.QVBoxLayout(self)
-        main_layout.setSpacing(20)
+        main_layout.setSpacing(15)
 
         # Title
         title = QtWidgets.QLabel("⚔️ Hero Character Art Preview ⚔️")
@@ -64,20 +81,20 @@ class PreviewWindow(QtWidgets.QWidget):
 
         for tier_name, power in tiers:
             container = QtWidgets.QVBoxLayout()
-            canvas = CharacterCanvas({}, power, 140, 180)
+            canvas = CharacterCanvas({}, power, 120, 160)
             container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
             label = QtWidgets.QLabel(f"{tier_name}\n({power} power)")
             label.setAlignment(QtCore.Qt.AlignCenter)
-            label.setStyleSheet("font-size: 11px;")
+            label.setStyleSheet("font-size: 10px;")
             container.addWidget(label)
             tier_layout.addLayout(container)
 
         main_layout.addWidget(tier_group)
 
-        # Row 2: Gear showcase
-        gear_group = QtWidgets.QGroupBox("Gear Showcase - Full Equipment Sets")
+        # Row 2: Themed gear sets
+        gear_group = QtWidgets.QGroupBox("Themed Equipment Sets")
         gear_layout = QtWidgets.QHBoxLayout(gear_group)
-        gear_layout.setSpacing(20)
+        gear_layout.setSpacing(15)
 
         gear_sets = [
             ("Starter", 50, {
@@ -112,7 +129,7 @@ class PreviewWindow(QtWidgets.QWidget):
                 "Weapon": {"color": "#fff59d"},
                 "Amulet": {"color": "#4fc3f7"},
             }),
-            ("Shadow Knight", 900, {
+            ("Shadow", 900, {
                 "Helmet": {"color": "#37474f"},
                 "Chestplate": {"color": "#263238"},
                 "Gauntlets": {"color": "#455a64"},
@@ -122,7 +139,7 @@ class PreviewWindow(QtWidgets.QWidget):
                 "Weapon": {"color": "#b71c1c"},
                 "Amulet": {"color": "#d32f2f"},
             }),
-            ("Divine Champion", 1200, {
+            ("Divine", 1200, {
                 "Helmet": {"color": "#fff176"},
                 "Chestplate": {"color": "#ffee58"},
                 "Gauntlets": {"color": "#ffeb3b"},
@@ -136,43 +153,84 @@ class PreviewWindow(QtWidgets.QWidget):
 
         for name, power, gear in gear_sets:
             container = QtWidgets.QVBoxLayout()
-            canvas = CharacterCanvas(gear, power, 160, 200)
+            canvas = CharacterCanvas(gear, power, 130, 170)
             container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
             label = QtWidgets.QLabel(f"{name}")
             label.setAlignment(QtCore.Qt.AlignCenter)
-            label.setStyleSheet("font-size: 12px; font-weight: bold;")
+            label.setStyleSheet("font-size: 11px; font-weight: bold;")
             container.addWidget(label)
-            gear_label = QtWidgets.QLabel(f"{len(gear)} items equipped")
-            gear_label.setAlignment(QtCore.Qt.AlignCenter)
-            gear_label.setStyleSheet("font-size: 10px; color: #888;")
-            container.addWidget(gear_label)
             gear_layout.addLayout(container)
 
         main_layout.addWidget(gear_group)
 
-        # Row 3: Individual gear items
+        # Row 3: Random combinations
+        random_group = QtWidgets.QGroupBox("Random Adventurers")
+        random_layout = QtWidgets.QHBoxLayout(random_group)
+        random_layout.setSpacing(12)
+
+        random.seed(42)  # Consistent randoms for preview
+        adventurer_names = ["Scout", "Ranger", "Knight", "Sorcerer", "Berserker", 
+                           "Cleric", "Rogue", "Battlemage", "Guardian", "Champion"]
+        
+        for i, name in enumerate(adventurer_names):
+            power = random.randint(50, 1100)
+            gear = self._generate_random_gear()
+            container = QtWidgets.QVBoxLayout()
+            canvas = CharacterCanvas(gear, power, 100, 140)
+            container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
+            label = QtWidgets.QLabel(f"{name}")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            label.setStyleSheet("font-size: 9px;")
+            container.addWidget(label)
+            random_layout.addLayout(container)
+
+        main_layout.addWidget(random_group)
+
+        # Row 4: More random combinations
+        random_group2 = QtWidgets.QGroupBox("More Random Heroes")
+        random_layout2 = QtWidgets.QHBoxLayout(random_group2)
+        random_layout2.setSpacing(12)
+
+        hero_names = ["Nomad", "Sentinel", "Mystic", "Warden", "Slayer",
+                      "Oracle", "Templar", "Assassin", "Crusader", "Wanderer"]
+        
+        for i, name in enumerate(hero_names):
+            power = random.randint(100, 1200)
+            gear = self._generate_random_gear()
+            container = QtWidgets.QVBoxLayout()
+            canvas = CharacterCanvas(gear, power, 100, 140)
+            container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
+            label = QtWidgets.QLabel(f"{name}")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            label.setStyleSheet("font-size: 9px;")
+            container.addWidget(label)
+            random_layout2.addLayout(container)
+
+        main_layout.addWidget(random_group2)
+
+        # Row 5: Individual gear items
         item_group = QtWidgets.QGroupBox("Individual Gear Items")
         item_layout = QtWidgets.QHBoxLayout(item_group)
-        item_layout.setSpacing(15)
+        item_layout.setSpacing(12)
 
         items = [
-            ("Helmet Only", {"Helmet": {"color": "#64b5f6"}}),
-            ("Chestplate Only", {"Chestplate": {"color": "#81c784"}}),
-            ("Weapon Only", {"Weapon": {"color": "#ef5350"}}),
-            ("Shield Only", {"Shield": {"color": "#ffb74d"}}),
-            ("Cloak Only", {"Cloak": {"color": "#ba68c8"}}),
-            ("Amulet Only", {"Amulet": {"color": "#4dd0e1"}}),
-            ("Gauntlets Only", {"Gauntlets": {"color": "#a1887f"}}),
-            ("Boots Only", {"Boots": {"color": "#8d6e63"}}),
+            ("Helmet", {"Helmet": {"color": "#64b5f6"}}),
+            ("Chestplate", {"Chestplate": {"color": "#81c784"}}),
+            ("Weapon", {"Weapon": {"color": "#ef5350"}}),
+            ("Shield", {"Shield": {"color": "#ffb74d"}}),
+            ("Cloak", {"Cloak": {"color": "#ba68c8"}}),
+            ("Amulet", {"Amulet": {"color": "#4dd0e1"}}),
+            ("Gauntlets", {"Gauntlets": {"color": "#a1887f"}}),
+            ("Boots", {"Boots": {"color": "#8d6e63"}}),
         ]
 
         for name, gear in items:
             container = QtWidgets.QVBoxLayout()
-            canvas = CharacterCanvas(gear, 300, 120, 160)
+            canvas = CharacterCanvas(gear, 300, 100, 140)
             container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
-            label = QtWidgets.QLabel(name.replace(" Only", ""))
+            label = QtWidgets.QLabel(name)
             label.setAlignment(QtCore.Qt.AlignCenter)
-            label.setStyleSheet("font-size: 10px;")
+            label.setStyleSheet("font-size: 9px;")
             container.addWidget(label)
             item_layout.addLayout(container)
 
@@ -180,11 +238,24 @@ class PreviewWindow(QtWidgets.QWidget):
 
         # Instructions
         instructions = QtWidgets.QLabel("Close this window when done previewing")
-        instructions.setStyleSheet("font-size: 12px; color: #666; font-style: italic;")
+        instructions.setStyleSheet("font-size: 11px; color: #666; font-style: italic;")
         instructions.setAlignment(QtCore.Qt.AlignCenter)
         main_layout.addWidget(instructions)
 
         self.adjustSize()
+
+    def _generate_random_gear(self) -> dict:
+        """Generate a random gear loadout."""
+        slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Weapon", "Shield", "Cloak", "Amulet"]
+        gear = {}
+        # Randomly decide how many items (1-8)
+        num_items = random.randint(1, 8)
+        # Pick random slots
+        chosen_slots = random.sample(slots, num_items)
+        # Assign random colors
+        for slot in chosen_slots:
+            gear[slot] = {"color": random.choice(self.GEAR_COLORS)}
+        return gear
 
 
 def main():

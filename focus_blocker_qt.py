@@ -2939,34 +2939,35 @@ class CharacterCanvas(QtWidgets.QWidget):
                 plume.quadTo(cx + 8, cy - 95, cx + 3, cy - 80)
                 painter.drawPath(plume)
         else:
-            # Detailed hair
+            # Hair on top of head (not covering forehead)
             hair_color = QtGui.QColor("#5d4037")
-            hair_grad = QtGui.QRadialGradient(cx, cy - 68, 20)
+            hair_grad = QtGui.QRadialGradient(cx, cy - 68, 22)
             hair_grad.setColorAt(0, hair_color.lighter(120))
-            hair_grad.setColorAt(0.7, hair_color)
+            hair_grad.setColorAt(0.6, hair_color)
             hair_grad.setColorAt(1, hair_color.darker(130))
             painter.setBrush(hair_grad)
             painter.setPen(QtCore.Qt.NoPen)
-            # Hair volume
+            # Hair volume - sits on top, doesn't cover forehead
             hair_path = QtGui.QPainterPath()
-            hair_path.moveTo(cx - 18, cy - 55)
-            hair_path.quadTo(cx - 24, cy - 65, cx - 20, cy - 72)
-            hair_path.quadTo(cx - 10, cy - 78, cx, cy - 76)
-            hair_path.quadTo(cx + 10, cy - 78, cx + 20, cy - 72)
-            hair_path.quadTo(cx + 24, cy - 65, cx + 18, cy - 55)
+            hair_path.moveTo(cx - 20, cy - 60)  # Start at sides above ears
+            hair_path.quadTo(cx - 24, cy - 68, cx - 18, cy - 74)  # Left side curve up
+            hair_path.quadTo(cx - 8, cy - 80, cx, cy - 79)  # Top left to center peak
+            hair_path.quadTo(cx + 8, cy - 80, cx + 18, cy - 74)  # Top right
+            hair_path.quadTo(cx + 24, cy - 68, cx + 20, cy - 60)  # Right side down
             hair_path.closeSubpath()
             painter.drawPath(hair_path)
-            # Hair strands for texture
+            # Hair texture lines on top
             painter.setPen(QtGui.QPen(QtGui.QColor("#4e342e"), 1))
-            painter.drawLine(cx - 12, cy - 70, cx - 10, cy - 58)
-            painter.drawLine(cx - 6, cy - 74, cx - 5, cy - 60)
-            painter.drawLine(cx, cy - 76, cx, cy - 62)
-            painter.drawLine(cx + 6, cy - 74, cx + 5, cy - 60)
-            painter.drawLine(cx + 12, cy - 70, cx + 10, cy - 58)
-            # Sideburns
+            painter.drawLine(cx - 12, cy - 72, cx - 10, cy - 64)
+            painter.drawLine(cx - 5, cy - 76, cx - 4, cy - 66)
+            painter.drawLine(cx, cy - 78, cx, cy - 68)
+            painter.drawLine(cx + 5, cy - 76, cx + 4, cy - 66)
+            painter.drawLine(cx + 12, cy - 72, cx + 10, cy - 64)
+            # Side hair tufts (above ears)
             painter.setBrush(hair_color)
-            painter.drawRect(cx - 22, cy - 58, 4, 10)
-            painter.drawRect(cx + 18, cy - 58, 4, 10)
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx - 23, cy - 62, 6, 8)
+            painter.drawEllipse(cx + 17, cy - 62, 6, 8)
 
         # === FACE (if no helmet visor) ===
         if not helm:
@@ -3033,50 +3034,41 @@ class CharacterCanvas(QtWidgets.QWidget):
             # Mouth/expression based on tier
             painter.setPen(QtGui.QPen(QtGui.QColor("#a05a3a"), 2))
             if self.tier in ["legendary", "godlike"]:
-                # Big confident smile with teeth hint
-                painter.drawArc(cx - 10, cy - 42, 20, 14, 200 * 16, 140 * 16)
+                # Big confident smile with teeth hint - moved up
+                painter.drawArc(cx - 10, cy - 46, 20, 12, 200 * 16, 140 * 16)
                 # Teeth
                 painter.setPen(QtCore.Qt.NoPen)
                 painter.setBrush(QtGui.QColor("#fff"))
-                painter.drawRect(cx - 6, cy - 36, 12, 4)
+                painter.drawRect(cx - 6, cy - 40, 12, 3)
             elif self.tier in ["epic", "heroic"]:
-                # Confident smirk
-                painter.drawArc(cx - 9, cy - 40, 18, 10, 210 * 16, 120 * 16)
+                # Confident smirk - moved up
+                painter.drawArc(cx - 9, cy - 44, 18, 8, 210 * 16, 120 * 16)
             elif self.tier in ["decent", "modest"]:
-                # Slight smile
-                painter.drawArc(cx - 7, cy - 39, 14, 6, 220 * 16, 100 * 16)
+                # Slight smile - moved up
+                painter.drawArc(cx - 7, cy - 42, 14, 5, 220 * 16, 100 * 16)
             else:
-                # Neutral/determined line
-                painter.drawLine(cx - 6, cy - 38, cx + 6, cy - 38)
+                # Neutral/determined line - moved up
+                painter.drawLine(cx - 6, cy - 40, cx + 6, cy - 40)
             
             # Cheek blush for high tiers
             if self.tier in ["legendary", "godlike"]:
                 painter.setBrush(QtGui.QColor(255, 150, 150, 40))
                 painter.setPen(QtCore.Qt.NoPen)
-                painter.drawEllipse(cx - 18, cy - 46, 8, 5)
-                painter.drawEllipse(cx + 10, cy - 46, 8, 5)
+                painter.drawEllipse(cx - 18, cy - 48, 8, 5)
+                painter.drawEllipse(cx + 10, cy - 48, 8, 5)
 
-            # Ears with detail
+            # Ears - small and subtle, partially hidden by hair
             painter.setBrush(QtGui.QColor("#ffcc80"))
-            painter.setPen(QtGui.QPen(QtGui.QColor("#e6a84d"), 1))
-            # Left ear
-            ear_l = QtGui.QPainterPath()
-            ear_l.moveTo(cx - 22, cy - 58)
-            ear_l.quadTo(cx - 28, cy - 52, cx - 26, cy - 45)
-            ear_l.quadTo(cx - 24, cy - 42, cx - 22, cy - 45)
-            ear_l.closeSubpath()
-            painter.drawPath(ear_l)
-            # Right ear
-            ear_r = QtGui.QPainterPath()
-            ear_r.moveTo(cx + 22, cy - 58)
-            ear_r.quadTo(cx + 28, cy - 52, cx + 26, cy - 45)
-            ear_r.quadTo(cx + 24, cy - 42, cx + 22, cy - 45)
-            ear_r.closeSubpath()
-            painter.drawPath(ear_r)
-            # Inner ear detail
             painter.setPen(QtGui.QPen(QtGui.QColor("#d4943a"), 1))
-            painter.drawArc(cx - 26, cy - 54, 4, 8, 90 * 16, 180 * 16)
-            painter.drawArc(cx + 22, cy - 54, 4, 8, -90 * 16, 180 * 16)
+            # Left ear - small oval peeking out
+            painter.drawEllipse(cx - 24, cy - 52, 5, 9)
+            # Right ear
+            painter.drawEllipse(cx + 19, cy - 52, 5, 9)
+            # Inner ear shadow
+            painter.setBrush(QtGui.QColor("#e6b070"))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx - 23, cy - 50, 3, 5)
+            painter.drawEllipse(cx + 20, cy - 50, 3, 5)
 
         # === AMULET ===
         amulet = self.equipped.get("Amulet")
