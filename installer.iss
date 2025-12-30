@@ -43,10 +43,12 @@ Name: "nouac"; Description: "Create no-UAC shortcut (skip admin prompt on launch
 [Files]
 ; Main executable with AI bundled (includes tray functionality)
 Source: "dist\PersonalLiberty.exe"; DestDir: "{app}"; Flags: ignoreversion
-; Icons
+; Icons (both .ico and .png for compatibility)
 Source: "icons\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "icons\tray_ready.png"; DestDir: "{app}"; Flags: ignoreversion
+Source: "icons\tray_ready.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "icons\tray_blocking.png"; DestDir: "{app}"; Flags: ignoreversion
+Source: "icons\tray_blocking.ico"; DestDir: "{app}"; Flags: ignoreversion
 ; Documentation
 Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "QUICK_START.md"; DestDir: "{app}"; Flags: ignoreversion
