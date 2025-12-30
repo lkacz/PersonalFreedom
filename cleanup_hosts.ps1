@@ -84,15 +84,24 @@ function Clear-DnsCache {
 
 function Remove-StartupShortcut {
     try {
+        # Remove startup folder shortcut
         $startupPath = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Startup\PersonalLiberty.lnk"
         if (Test-Path $startupPath) {
             Remove-Item $startupPath -Force
             Write-Log "Removed startup shortcut."
         }
+        
+        # Remove No-UAC desktop shortcut
+        $desktopPath = Join-Path ([Environment]::GetFolderPath("Desktop")) "Personal Liberty (No UAC).lnk"
+        if (Test-Path $desktopPath) {
+            Remove-Item $desktopPath -Force
+            Write-Log "Removed No-UAC desktop shortcut."
+        }
+        
         return $true
     }
     catch {
-        Write-Log "Warning: Could not remove startup shortcut: $_"
+        Write-Log "Warning: Could not remove shortcuts: $_"
         return $false
     }
 }

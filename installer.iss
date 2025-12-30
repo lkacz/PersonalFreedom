@@ -91,6 +91,12 @@ Filename: "{sys}\ipconfig.exe"; Parameters: "/flushdns"; Flags: runhidden waitun
 Type: files; Name: "{userappdata}\Microsoft\Windows\Start Menu\Programs\Startup\PersonalLiberty.lnk"
 ; Remove Quick Launch shortcut
 Type: files; Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Personal Liberty.lnk"
+; Remove No-UAC desktop shortcut if created via setup_no_uac.bat
+Type: files; Name: "{userdesktop}\Personal Liberty (No UAC).lnk"
+; Remove any log files in install directory
+Type: files; Name: "{app}\app.log"
+Type: files; Name: "{app}\bypass_attempts.json"
+Type: files; Name: "{app}\.session_state.json"
 
 [Code]
 // Helper function to run PowerShell cleanup script
