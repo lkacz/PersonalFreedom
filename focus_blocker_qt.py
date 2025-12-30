@@ -2478,10 +2478,11 @@ class CharacterCanvas(QtWidgets.QWidget):
     }
 
     def __init__(self, equipped: dict, power: int, width: int = 180, height: int = 220,
-                 parent: Optional[QtWidgets.QWidget] = None) -> None:
+                 parent: Optional[QtWidgets.QWidget] = None, story_theme: str = "warrior") -> None:
         super().__init__(parent)
         self.equipped = equipped
         self.power = power
+        self.story_theme = story_theme  # warrior, scholar, wanderer, underdog
         self.setFixedSize(width, height)
         if GAMIFICATION_AVAILABLE:
             self.tier = get_diary_power_tier(power)
@@ -2494,6 +2495,16 @@ class CharacterCanvas(QtWidgets.QWidget):
                            for _ in range(15)]
 
     def paintEvent(self, event) -> None:
+        """Dispatch to theme-specific drawing method."""
+        if self.story_theme == "scholar":
+            self._draw_scholar_character(event)
+        elif self.story_theme == "wanderer":
+            self._draw_wanderer_character(event)
+        else:
+            self._draw_warrior_character(event)
+
+    def _draw_warrior_character(self, event) -> None:
+        """Draw the classic fantasy warrior character."""
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
 
@@ -3278,6 +3289,1253 @@ class CharacterCanvas(QtWidgets.QWidget):
         
         painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
         painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"⚔ {self.power}")
+
+    def _draw_scholar_character(self, event) -> None:
+        """Draw the academic/scholar themed character."""
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+
+        w, h = self.width(), self.height()
+        cx, cy = w // 2, h // 2 + 5
+
+        # Background with warm library gradient
+        bg_gradient = QtGui.QRadialGradient(cx, cy - 20, max(w, h) * 0.8)
+        bg_gradient.setColorAt(0, QtGui.QColor("#3d3529"))
+        bg_gradient.setColorAt(0.5, QtGui.QColor("#2a2419"))
+        bg_gradient.setColorAt(1, QtGui.QColor("#1a170f"))
+        painter.fillRect(self.rect(), bg_gradient)
+        
+        # Floor/desk shadow
+        floor_gradient = QtGui.QLinearGradient(cx - 40, cy + 70, cx + 40, cy + 85)
+        floor_gradient.setColorAt(0, QtGui.QColor(0, 0, 0, 30))
+        floor_gradient.setColorAt(0.5, QtGui.QColor(0, 0, 0, 80))
+        floor_gradient.setColorAt(1, QtGui.QColor(0, 0, 0, 30))
+        painter.setBrush(floor_gradient)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawEllipse(cx - 40, cy + 68, 80, 18)
+
+        body_color = QtGui.QColor(self.TIER_COLORS.get(self.tier, "#bdbdbd"))
+        body_outline = QtGui.QColor(self.TIER_OUTLINE.get(self.tier, "#888"))
+        glow = self.TIER_GLOW.get(self.tier)
+
+        def darken(color: str, amount: int = 130) -> QtGui.QColor:
+            c = QtGui.QColor(color)
+            return c.darker(amount)
+        
+        def lighten(color: str, amount: int = 130) -> QtGui.QColor:
+            c = QtGui.QColor(color)
+            return c.lighter(amount)
+
+        # Knowledge aura for high tiers (book/scroll particles)
+        if glow:
+            glow_color = QtGui.QColor(glow)
+            painter.setBrush(QtCore.Qt.NoBrush)
+            for i, opacity in enumerate([0.1, 0.15, 0.25, 0.35]):
+                painter.setOpacity(opacity)
+                size = 140 - i * 15
+                painter.setPen(QtGui.QPen(glow_color, 3))
+                painter.drawEllipse(cx - size//2, cy - 70, size, int(size * 1.2))
+            painter.setOpacity(1.0)
+            painter.setBrush(glow_color)
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.setOpacity(0.25)
+            painter.drawEllipse(cx - 50, cy - 60, 100, 130)
+            painter.setOpacity(1.0)
+        
+        # Floating knowledge particles (quills, stars, runes)
+        particles = self.TIER_PARTICLES.get(self.tier)
+        if particles:
+            p_color, p_count = particles
+            painter.setBrush(QtGui.QColor(p_color))
+            painter.setPen(QtCore.Qt.NoPen)
+            for i, (px, py, ps) in enumerate(self._particles[:p_count]):
+                painter.setOpacity(0.4 + (i % 3) * 0.2)
+                # Draw small book/star shapes instead of circles
+                if i % 2 == 0:
+                    painter.drawRect(cx + px, cy + py, ps + 2, ps)  # Small book
+                else:
+                    painter.drawEllipse(cx + px, cy + py, ps, ps)  # Star
+            painter.setOpacity(1.0)
+
+        # === CLOAK/MANTLE (Academic Robe back) ===
+        cloak = self.equipped.get("Cloak")
+        if cloak:
+            cc = QtGui.QColor(cloak.get("color", "#4a0080"))
+            path = QtGui.QPainterPath()
+            path.moveTo(cx - 24, cy - 28)
+            path.lineTo(cx + 24, cy - 28)
+            path.cubicTo(cx + 36, cy, cx + 38, cy + 40, cx + 32, cy + 72)
+            path.quadTo(cx + 15, cy + 75, cx, cy + 73)
+            path.quadTo(cx - 15, cy + 75, cx - 32, cy + 72)
+            path.cubicTo(cx - 38, cy + 40, cx - 36, cy, cx - 24, cy - 28)
+            cloak_gradient = QtGui.QLinearGradient(cx - 35, cy, cx + 35, cy)
+            cloak_gradient.setColorAt(0, darken(cloak.get("color", "#4a0080"), 140))
+            cloak_gradient.setColorAt(0.3, cc)
+            cloak_gradient.setColorAt(0.7, cc)
+            cloak_gradient.setColorAt(1, darken(cloak.get("color", "#4a0080"), 120))
+            painter.setBrush(cloak_gradient)
+            painter.setPen(QtGui.QPen(darken(cloak.get("color", "#4a0080"), 150), 2))
+            painter.drawPath(path)
+            # Robe folds
+            painter.setPen(QtGui.QPen(darken(cloak.get("color", "#4a0080"), 160), 1))
+            painter.drawLine(cx - 15, cy - 20, cx - 18, cy + 65)
+            painter.drawLine(cx + 15, cy - 20, cx + 18, cy + 65)
+            painter.drawLine(cx, cy - 15, cx, cy + 68)
+            # Academic hood/collar
+            painter.setBrush(QtGui.QColor("#f5f5dc"))  # Cream colored lining
+            painter.setPen(QtGui.QPen(QtGui.QColor("#d4c8a0"), 1))
+            hood_path = QtGui.QPainterPath()
+            hood_path.moveTo(cx - 20, cy - 28)
+            hood_path.quadTo(cx - 22, cy - 20, cx - 18, cy - 15)
+            hood_path.lineTo(cx + 18, cy - 15)
+            hood_path.quadTo(cx + 22, cy - 20, cx + 20, cy - 28)
+            painter.drawPath(hood_path)
+
+        # === LEGS (hidden by robe, just shoes visible) ===
+        # Robe covers most of legs, draw minimal legs
+        robe_grad = QtGui.QLinearGradient(cx - 25, cy + 25, cx + 25, cy + 25)
+        robe_color = QtGui.QColor("#1a1a4a") if not self.equipped.get("Chestplate") else QtGui.QColor(self.equipped["Chestplate"].get("color", "#1a1a4a"))
+        robe_grad.setColorAt(0, robe_color.darker(120))
+        robe_grad.setColorAt(0.5, robe_color)
+        robe_grad.setColorAt(1, robe_color.darker(120))
+        painter.setBrush(robe_grad)
+        painter.setPen(QtGui.QPen(robe_color.darker(150), 2))
+        # Long robe bottom
+        robe_path = QtGui.QPainterPath()
+        robe_path.moveTo(cx - 23, cy + 20)
+        robe_path.lineTo(cx + 23, cy + 20)
+        robe_path.lineTo(cx + 28, cy + 65)
+        robe_path.quadTo(cx, cy + 68, cx - 28, cy + 65)
+        robe_path.closeSubpath()
+        painter.drawPath(robe_path)
+
+        # === BOOTS/FOOTWEAR (Scholar's shoes/slippers) ===
+        boots = self.equipped.get("Boots")
+        if boots:
+            bc = QtGui.QColor(boots.get("color", "#4a3728"))
+            boot_grad = QtGui.QLinearGradient(0, cy + 60, 0, cy + 75)
+            boot_grad.setColorAt(0, bc.lighter(110))
+            boot_grad.setColorAt(0.5, bc)
+            boot_grad.setColorAt(1, bc.darker(120))
+            painter.setBrush(boot_grad)
+            painter.setPen(QtGui.QPen(bc.darker(140), 2))
+            # Left shoe (oxford style)
+            left_shoe = QtGui.QPainterPath()
+            left_shoe.moveTo(cx - 18, cy + 60)
+            left_shoe.lineTo(cx - 4, cy + 60)
+            left_shoe.quadTo(cx - 2, cy + 68, cx - 6, cy + 72)
+            left_shoe.quadTo(cx - 14, cy + 74, cx - 18, cy + 70)
+            left_shoe.closeSubpath()
+            painter.drawPath(left_shoe)
+            # Right shoe
+            right_shoe = QtGui.QPainterPath()
+            right_shoe.moveTo(cx + 4, cy + 60)
+            right_shoe.lineTo(cx + 18, cy + 60)
+            right_shoe.lineTo(cx + 18, cy + 70)
+            right_shoe.quadTo(cx + 14, cy + 74, cx + 6, cy + 72)
+            right_shoe.quadTo(cx + 2, cy + 68, cx + 4, cy + 60)
+            painter.drawPath(right_shoe)
+            # Shoe laces
+            painter.setPen(QtGui.QPen(bc.darker(150), 1))
+            painter.drawLine(cx - 14, cy + 62, cx - 8, cy + 62)
+            painter.drawLine(cx + 8, cy + 62, cx + 14, cy + 62)
+        else:
+            # Simple slippers
+            painter.setBrush(QtGui.QColor("#5d4037"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#4e342e"), 1))
+            painter.drawRoundedRect(cx - 16, cy + 62, 12, 10, 3, 3)
+            painter.drawRoundedRect(cx + 4, cy + 62, 12, 10, 3, 3)
+
+        # === ARMS (Robe sleeves) ===
+        arm_color = robe_color if self.equipped.get("Chestplate") else QtGui.QColor("#1a1a4a")
+        arm_grad_l = QtGui.QLinearGradient(cx - 42, cy - 5, cx - 28, cy - 5)
+        arm_grad_l.setColorAt(0, arm_color.darker(125))
+        arm_grad_l.setColorAt(0.4, arm_color)
+        arm_grad_l.setColorAt(1, arm_color.darker(110))
+        painter.setBrush(arm_grad_l)
+        painter.setPen(QtGui.QPen(arm_color.darker(150), 2))
+        # Wide robe sleeves
+        arm_path_l = QtGui.QPainterPath()
+        arm_path_l.moveTo(cx - 26, cy - 24)
+        arm_path_l.quadTo(cx - 34, cy - 26, cx - 40, cy - 18)
+        arm_path_l.quadTo(cx - 48, cy + 5, cx - 48, cy + 22)
+        arm_path_l.lineTo(cx - 30, cy + 18)
+        arm_path_l.quadTo(cx - 28, cy - 5, cx - 26, cy - 24)
+        painter.drawPath(arm_path_l)
+        # Right sleeve
+        arm_grad_r = QtGui.QLinearGradient(cx + 28, cy - 5, cx + 42, cy - 5)
+        arm_grad_r.setColorAt(0, arm_color.darker(110))
+        arm_grad_r.setColorAt(0.6, arm_color)
+        arm_grad_r.setColorAt(1, arm_color.darker(125))
+        painter.setBrush(arm_grad_r)
+        arm_path_r = QtGui.QPainterPath()
+        arm_path_r.moveTo(cx + 26, cy - 24)
+        arm_path_r.quadTo(cx + 34, cy - 26, cx + 40, cy - 18)
+        arm_path_r.quadTo(cx + 48, cy + 5, cx + 48, cy + 22)
+        arm_path_r.lineTo(cx + 30, cy + 18)
+        arm_path_r.quadTo(cx + 28, cy - 5, cx + 26, cy - 24)
+        painter.drawPath(arm_path_r)
+
+        # === GAUNTLETS (Writing Gloves / Ink-stained Gloves) ===
+        gaunt = self.equipped.get("Gauntlets")
+        if gaunt:
+            gc = QtGui.QColor(gaunt.get("color", "#f5f5dc"))
+            gaunt_grad = QtGui.QLinearGradient(0, cy + 10, 0, cy + 28)
+            gaunt_grad.setColorAt(0, gc.lighter(115))
+            gaunt_grad.setColorAt(0.5, gc)
+            gaunt_grad.setColorAt(1, gc.darker(110))
+            painter.setBrush(gaunt_grad)
+            painter.setPen(QtGui.QPen(gc.darker(130), 1))
+            # Left glove - elegant writing glove
+            painter.drawRoundedRect(cx - 48, cy + 12, 20, 20, 4, 4)
+            # Ink stains for high tiers
+            if self.tier in ["heroic", "epic", "legendary", "godlike"]:
+                painter.setBrush(QtGui.QColor("#1a237e"))
+                painter.setPen(QtCore.Qt.NoPen)
+                painter.drawEllipse(cx - 44, cy + 18, 4, 4)
+                painter.drawEllipse(cx - 38, cy + 22, 3, 3)
+            # Right glove
+            painter.setBrush(gaunt_grad)
+            painter.setPen(QtGui.QPen(gc.darker(130), 1))
+            painter.drawRoundedRect(cx + 28, cy + 12, 20, 20, 4, 4)
+            if self.tier in ["heroic", "epic", "legendary", "godlike"]:
+                painter.setBrush(QtGui.QColor("#1a237e"))
+                painter.setPen(QtCore.Qt.NoPen)
+                painter.drawEllipse(cx + 40, cy + 16, 3, 4)
+        else:
+            # Bare hands
+            painter.setBrush(QtGui.QColor("#ffcc80"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#e6a84d"), 1))
+            painter.drawEllipse(cx - 46, cy + 14, 14, 14)
+            painter.drawEllipse(cx + 32, cy + 14, 14, 14)
+            # Fingers
+            painter.setBrush(QtGui.QColor("#f5c07a"))
+            for i in range(4):
+                painter.drawEllipse(cx - 46 + i * 3, cy + 25, 3, 5)
+                painter.drawEllipse(cx + 32 + i * 3, cy + 25, 3, 5)
+
+        # === TORSO/ROBE ===
+        torso_grad = QtGui.QLinearGradient(cx - 25, cy, cx + 25, cy)
+        torso_grad.setColorAt(0, robe_color.darker(115))
+        torso_grad.setColorAt(0.3, robe_color)
+        torso_grad.setColorAt(0.7, robe_color)
+        torso_grad.setColorAt(1, robe_color.darker(115))
+        painter.setBrush(torso_grad)
+        painter.setPen(QtGui.QPen(robe_color.darker(150), 2))
+        torso_path = QtGui.QPainterPath()
+        torso_path.moveTo(cx - 26, cy - 28)
+        torso_path.quadTo(cx - 28, cy - 5, cx - 23, cy + 25)
+        torso_path.lineTo(cx + 23, cy + 25)
+        torso_path.quadTo(cx + 28, cy - 5, cx + 26, cy - 28)
+        torso_path.closeSubpath()
+        painter.drawPath(torso_path)
+
+        # === CHESTPLATE (Academic Vest/Cardigan) ===
+        chest = self.equipped.get("Chestplate")
+        if chest:
+            cc = QtGui.QColor(chest.get("color", "#2d2d5a"))
+            chest_grad = QtGui.QLinearGradient(cx - 20, cy, cx + 20, cy)
+            chest_grad.setColorAt(0, cc.darker(120))
+            chest_grad.setColorAt(0.3, cc)
+            chest_grad.setColorAt(0.7, cc)
+            chest_grad.setColorAt(1, cc.darker(120))
+            painter.setBrush(chest_grad)
+            painter.setPen(QtGui.QPen(cc.darker(140), 2))
+            # Vest/cardigan shape
+            vest_path = QtGui.QPainterPath()
+            vest_path.moveTo(cx - 22, cy - 26)
+            vest_path.lineTo(cx + 22, cy - 26)
+            vest_path.lineTo(cx + 18, cy + 18)
+            vest_path.lineTo(cx - 18, cy + 18)
+            vest_path.closeSubpath()
+            painter.drawPath(vest_path)
+            # Center buttons
+            painter.setBrush(QtGui.QColor("#b8860b"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#8b6914"), 1))
+            for i in range(4):
+                painter.drawEllipse(cx - 2, cy - 20 + i * 10, 4, 4)
+            # Lapels
+            painter.setPen(QtGui.QPen(cc.darker(150), 2))
+            painter.drawLine(cx - 8, cy - 24, cx - 12, cy + 10)
+            painter.drawLine(cx + 8, cy - 24, cx + 12, cy + 10)
+            # Pocket with handkerchief for high tiers
+            if self.tier in ["epic", "legendary", "godlike"]:
+                painter.setBrush(QtGui.QColor("#fff"))
+                painter.setPen(QtGui.QPen(QtGui.QColor("#ddd"), 1))
+                pocket_path = QtGui.QPainterPath()
+                pocket_path.moveTo(cx + 8, cy - 8)
+                pocket_path.lineTo(cx + 16, cy - 10)
+                pocket_path.lineTo(cx + 14, cy - 2)
+                pocket_path.lineTo(cx + 10, cy)
+                pocket_path.closeSubpath()
+                painter.drawPath(pocket_path)
+        else:
+            # Simple robe lines
+            painter.setPen(QtGui.QPen(robe_color.darker(140), 1))
+            painter.drawLine(cx, cy - 25, cx, cy + 18)
+            painter.drawLine(cx - 10, cy - 26, cx, cy - 20)
+            painter.drawLine(cx + 10, cy - 26, cx, cy - 20)
+
+        # === NECK ===
+        neck_grad = QtGui.QLinearGradient(cx - 8, cy - 35, cx + 8, cy - 35)
+        neck_grad.setColorAt(0, QtGui.QColor("#e6b980"))
+        neck_grad.setColorAt(0.5, QtGui.QColor("#ffcc80"))
+        neck_grad.setColorAt(1, QtGui.QColor("#e6b980"))
+        painter.setBrush(neck_grad)
+        painter.setPen(QtGui.QPen(QtGui.QColor("#d4943a"), 1))
+        painter.drawRect(cx - 9, cy - 36, 18, 12)
+
+        # === HEAD ===
+        head_gradient = QtGui.QRadialGradient(cx - 5, cy - 55, 30)
+        head_gradient.setColorAt(0, QtGui.QColor("#ffe8c8"))
+        head_gradient.setColorAt(0.5, QtGui.QColor("#ffcc80"))
+        head_gradient.setColorAt(0.8, QtGui.QColor("#e6a84d"))
+        head_gradient.setColorAt(1, QtGui.QColor("#d4943a"))
+        painter.setBrush(head_gradient)
+        painter.setPen(QtGui.QPen(QtGui.QColor("#c9843a"), 2))
+        head_path = QtGui.QPainterPath()
+        head_path.moveTo(cx - 2, cy - 32)
+        head_path.quadTo(cx - 22, cy - 35, cx - 22, cy - 52)
+        head_path.quadTo(cx - 22, cy - 72, cx, cy - 72)
+        head_path.quadTo(cx + 22, cy - 72, cx + 22, cy - 52)
+        head_path.quadTo(cx + 22, cy - 35, cx + 2, cy - 32)
+        head_path.closeSubpath()
+        painter.drawPath(head_path)
+
+        # === HELMET (Thinking Cap / Mortarboard / Glasses) ===
+        helm = self.equipped.get("Helmet")
+        if helm:
+            hc = QtGui.QColor(helm.get("color", "#1a1a4a"))
+            # Mortarboard cap
+            # Cap base
+            painter.setBrush(hc)
+            painter.setPen(QtGui.QPen(hc.darker(140), 2))
+            painter.drawEllipse(cx - 18, cy - 70, 36, 12)
+            # Flat top board
+            board_path = QtGui.QPainterPath()
+            board_path.moveTo(cx - 24, cy - 78)
+            board_path.lineTo(cx + 24, cy - 78)
+            board_path.lineTo(cx + 28, cy - 72)
+            board_path.lineTo(cx - 28, cy - 72)
+            board_path.closeSubpath()
+            painter.setBrush(hc)
+            painter.drawPath(board_path)
+            # Tassel
+            painter.setPen(QtGui.QPen(QtGui.QColor("#ffd700"), 2))
+            painter.drawLine(cx + 20, cy - 76, cx + 28, cy - 62)
+            # Tassel end
+            painter.setBrush(QtGui.QColor("#ffd700"))
+            painter.setPen(QtCore.Qt.NoPen)
+            for i in range(5):
+                painter.drawLine(cx + 28 - i, cy - 62, cx + 26 - i, cy - 54)
+        else:
+            # Hair
+            hair_color = QtGui.QColor("#5d4037")
+            hair_grad = QtGui.QRadialGradient(cx, cy - 68, 22)
+            hair_grad.setColorAt(0, hair_color.lighter(120))
+            hair_grad.setColorAt(0.6, hair_color)
+            hair_grad.setColorAt(1, hair_color.darker(130))
+            painter.setBrush(hair_grad)
+            painter.setPen(QtCore.Qt.NoPen)
+            hair_path = QtGui.QPainterPath()
+            hair_path.moveTo(cx - 20, cy - 60)
+            hair_path.quadTo(cx - 24, cy - 68, cx - 18, cy - 74)
+            hair_path.quadTo(cx - 8, cy - 80, cx, cy - 79)
+            hair_path.quadTo(cx + 8, cy - 80, cx + 18, cy - 74)
+            hair_path.quadTo(cx + 24, cy - 68, cx + 20, cy - 60)
+            hair_path.closeSubpath()
+            painter.drawPath(hair_path)
+            # Hair texture
+            painter.setPen(QtGui.QPen(QtGui.QColor("#4e342e"), 1))
+            painter.drawLine(cx - 12, cy - 72, cx - 10, cy - 64)
+            painter.drawLine(cx, cy - 78, cx, cy - 68)
+            painter.drawLine(cx + 12, cy - 72, cx + 10, cy - 64)
+            # Side tufts
+            painter.setBrush(hair_color)
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx - 23, cy - 62, 6, 8)
+            painter.drawEllipse(cx + 17, cy - 62, 6, 8)
+
+        # === FACE ===
+        # Eyebrows (scholarly, thoughtful)
+        painter.setPen(QtGui.QPen(QtGui.QColor("#4e342e"), 2))
+        if self.tier in ["legendary", "godlike"]:
+            # Raised knowing brows
+            painter.drawLine(cx - 13, cy - 60, cx - 5, cy - 57)
+            painter.drawLine(cx + 5, cy - 57, cx + 13, cy - 60)
+        else:
+            # Focused/thinking
+            painter.drawLine(cx - 12, cy - 58, cx - 5, cy - 59)
+            painter.drawLine(cx + 5, cy - 59, cx + 12, cy - 58)
+        
+        # Eyes
+        painter.setBrush(QtGui.QColor("#e8c090"))
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawEllipse(cx - 13, cy - 56, 12, 10)
+        painter.drawEllipse(cx + 1, cy - 56, 12, 10)
+        painter.setBrush(QtGui.QColor("#fff"))
+        painter.drawEllipse(cx - 12, cy - 55, 10, 9)
+        painter.drawEllipse(cx + 2, cy - 55, 10, 9)
+        # Iris
+        iris_colors = {
+            "pathetic": "#6b5b4f", "modest": "#4a5a6f", "decent": "#3a5a7a",
+            "heroic": "#2a4a7a", "epic": "#5a3a7a", "legendary": "#7a5a2a", "godlike": "#4a6a3a"
+        }
+        iris_color = QtGui.QColor(iris_colors.get(self.tier, "#5a5a5a"))
+        painter.setBrush(iris_color)
+        painter.drawEllipse(cx - 9, cy - 53, 6, 6)
+        painter.drawEllipse(cx + 4, cy - 53, 6, 6)
+        painter.setBrush(QtGui.QColor("#1a1a1a"))
+        painter.drawEllipse(cx - 7, cy - 51, 3, 3)
+        painter.drawEllipse(cx + 6, cy - 51, 3, 3)
+        # Eye shine
+        painter.setBrush(QtGui.QColor("#fff"))
+        painter.drawEllipse(cx - 8, cy - 52, 2, 2)
+        painter.drawEllipse(cx + 5, cy - 52, 2, 2)
+
+        # Glasses (always for scholars, even without helmet)
+        painter.setBrush(QtCore.Qt.NoBrush)
+        glasses_color = QtGui.QColor("#8b7355") if not helm else QtGui.QColor(helm.get("color", "#8b7355")).darker(110)
+        painter.setPen(QtGui.QPen(glasses_color, 2))
+        # Left lens (round)
+        painter.drawEllipse(cx - 15, cy - 57, 14, 12)
+        # Right lens
+        painter.drawEllipse(cx + 1, cy - 57, 14, 12)
+        # Bridge
+        painter.drawLine(cx - 1, cy - 52, cx + 1, cy - 52)
+        # Temple arms
+        painter.drawLine(cx - 15, cy - 52, cx - 22, cy - 54)
+        painter.drawLine(cx + 15, cy - 52, cx + 22, cy - 54)
+        # Lens shine
+        painter.setPen(QtGui.QPen(QtGui.QColor(255, 255, 255, 80), 1))
+        painter.drawArc(cx - 13, cy - 55, 8, 6, 45 * 16, 90 * 16)
+        painter.drawArc(cx + 3, cy - 55, 8, 6, 45 * 16, 90 * 16)
+
+        # Nose
+        painter.setPen(QtGui.QPen(QtGui.QColor("#d4943a"), 1))
+        painter.drawLine(cx, cy - 48, cx - 1, cy - 42)
+        painter.drawArc(cx - 4, cy - 42, 4, 3, 180 * 16, 180 * 16)
+        painter.drawArc(cx, cy - 42, 4, 3, 180 * 16, 180 * 16)
+
+        # Mouth (scholarly expressions)
+        painter.setPen(QtGui.QPen(QtGui.QColor("#a05a3a"), 2))
+        if self.tier in ["legendary", "godlike"]:
+            # Wise knowing smile
+            painter.drawArc(cx - 8, cy - 44, 16, 10, 210 * 16, 120 * 16)
+        elif self.tier in ["epic", "heroic"]:
+            # Slight satisfied smile
+            painter.drawArc(cx - 7, cy - 42, 14, 6, 220 * 16, 100 * 16)
+        else:
+            # Focused/neutral
+            painter.drawLine(cx - 5, cy - 38, cx + 5, cy - 38)
+
+        # Ears
+        painter.setBrush(QtGui.QColor("#ffcc80"))
+        painter.setPen(QtGui.QPen(QtGui.QColor("#d4943a"), 1))
+        painter.drawEllipse(cx - 24, cy - 52, 5, 9)
+        painter.drawEllipse(cx + 19, cy - 52, 5, 9)
+
+        # === AMULET (Scholar's Medal/Pocket Watch) ===
+        amulet = self.equipped.get("Amulet")
+        if amulet:
+            ac = QtGui.QColor(amulet.get("color", "#4fc3f7"))
+            # Chain
+            painter.setPen(QtGui.QPen(QtGui.QColor("#b8860b"), 2))
+            for i in range(3):
+                painter.drawEllipse(cx - 10 + i * 3, cy - 26 + i * 3, 3, 3)
+                painter.drawEllipse(cx + 7 - i * 3, cy - 26 + i * 3, 3, 3)
+            # Medal/Pocket watch body
+            painter.setBrush(QtGui.QColor("#daa520"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#b8860b"), 2))
+            painter.drawEllipse(cx - 10, cy - 16, 20, 20)
+            # Inner crystal/gem
+            gem_grad = QtGui.QRadialGradient(cx - 2, cy - 8, 8)
+            gem_grad.setColorAt(0, ac.lighter(150))
+            gem_grad.setColorAt(0.5, ac)
+            gem_grad.setColorAt(1, ac.darker(130))
+            painter.setBrush(gem_grad)
+            painter.setPen(QtGui.QPen(ac.darker(140), 1))
+            painter.drawEllipse(cx - 7, cy - 13, 14, 14)
+            # Watch hands / crystal facets
+            if self.tier in ["epic", "legendary", "godlike"]:
+                painter.setPen(QtGui.QPen(ac.lighter(170), 1))
+                painter.drawLine(cx, cy - 10, cx, cy - 4)
+                painter.drawLine(cx - 3, cy - 6, cx + 3, cy - 6)
+            # Shine
+            painter.setBrush(QtGui.QColor(255, 255, 255, 150))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx - 4, cy - 11, 4, 4)
+
+        # === WEAPON (Quill/Fountain Pen/Pointer) ===
+        weap = self.equipped.get("Weapon")
+        if weap:
+            wc = QtGui.QColor(weap.get("color", "#1a237e"))
+            # Quill pen
+            # Feather body
+            feather_path = QtGui.QPainterPath()
+            feather_path.moveTo(cx - 58, cy + 25)
+            feather_path.quadTo(cx - 65, cy - 5, cx - 55, cy - 45)
+            feather_path.quadTo(cx - 50, cy - 55, cx - 48, cy - 60)
+            feather_path.quadTo(cx - 52, cy - 50, cx - 52, cy - 40)
+            feather_path.quadTo(cx - 55, cy - 5, cx - 48, cy + 25)
+            feather_path.closeSubpath()
+            feather_grad = QtGui.QLinearGradient(cx - 60, cy - 30, cx - 48, cy - 30)
+            feather_grad.setColorAt(0, wc.lighter(130))
+            feather_grad.setColorAt(0.5, wc)
+            feather_grad.setColorAt(1, wc.darker(110))
+            painter.setBrush(feather_grad)
+            painter.setPen(QtGui.QPen(wc.darker(140), 1))
+            painter.drawPath(feather_path)
+            # Feather barbs/details
+            painter.setPen(QtGui.QPen(wc.darker(130), 1))
+            for i in range(6):
+                y_pos = cy - 45 + i * 10
+                painter.drawLine(cx - 56, y_pos, cx - 50, y_pos - 3)
+            # Quill shaft
+            painter.setPen(QtGui.QPen(QtGui.QColor("#f5f5dc"), 2))
+            painter.drawLine(cx - 53, cy - 40, cx - 53, cy + 30)
+            # Quill tip (nib)
+            painter.setBrush(QtGui.QColor("#b8860b"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#8b6914"), 1))
+            nib_path = QtGui.QPainterPath()
+            nib_path.moveTo(cx - 55, cy + 25)
+            nib_path.lineTo(cx - 53, cy + 38)
+            nib_path.lineTo(cx - 51, cy + 25)
+            nib_path.closeSubpath()
+            painter.drawPath(nib_path)
+            # Ink drip for high tiers
+            if self.tier in ["legendary", "godlike"]:
+                painter.setBrush(QtGui.QColor("#1a237e"))
+                painter.setPen(QtCore.Qt.NoPen)
+                painter.drawEllipse(cx - 55, cy + 36, 4, 6)
+
+        # === SHIELD (Tome/Book/Encyclopedia) ===
+        shield = self.equipped.get("Shield")
+        if shield:
+            sc = QtGui.QColor(shield.get("color", "#8d6e63"))
+            # Book body
+            book_grad = QtGui.QRadialGradient(cx + 48, cy + 8, 25)
+            book_grad.setColorAt(0, sc.lighter(115))
+            book_grad.setColorAt(0.5, sc)
+            book_grad.setColorAt(1, sc.darker(130))
+            # Book cover
+            book_path = QtGui.QPainterPath()
+            book_path.moveTo(cx + 32, cy - 18)
+            book_path.lineTo(cx + 68, cy - 18)
+            book_path.lineTo(cx + 68, cy + 35)
+            book_path.lineTo(cx + 32, cy + 35)
+            book_path.closeSubpath()
+            painter.setBrush(book_grad)
+            painter.setPen(QtGui.QPen(sc.darker(150), 3))
+            painter.drawPath(book_path)
+            # Book spine
+            painter.setBrush(sc.darker(120))
+            painter.drawRect(cx + 30, cy - 18, 5, 53)
+            # Pages (white edge)
+            painter.setBrush(QtGui.QColor("#fffef0"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#e0dcc8"), 1))
+            painter.drawRect(cx + 35, cy - 15, 30, 47)
+            # Page lines
+            painter.setPen(QtGui.QPen(QtGui.QColor("#ccc"), 1))
+            for i in range(8):
+                painter.drawLine(cx + 38, cy - 10 + i * 6, cx + 62, cy - 10 + i * 6)
+            # Cover decoration
+            painter.setPen(QtGui.QPen(QtGui.QColor("#daa520"), 2))
+            painter.drawRect(cx + 40, cy - 12, 20, 25)
+            # Mystical symbol for high tiers
+            if self.tier in ["epic", "legendary", "godlike"]:
+                painter.setBrush(QtGui.QColor("#daa520"))
+                painter.setPen(QtCore.Qt.NoPen)
+                # Star symbol
+                painter.drawEllipse(cx + 47, cy - 3, 8, 8)
+                painter.setPen(QtGui.QPen(QtGui.QColor("#daa520"), 2))
+                painter.drawLine(cx + 51, cy - 8, cx + 51, cy + 10)
+                painter.drawLine(cx + 44, cy + 1, cx + 58, cy + 1)
+            # Bookmark ribbon
+            painter.setPen(QtGui.QPen(QtGui.QColor("#c62828"), 2))
+            painter.drawLine(cx + 55, cy - 18, cx + 58, cy + 38)
+
+        # === POWER LABEL ===
+        label_rect = QtCore.QRect(0, h - 28, w, 25)
+        painter.fillRect(label_rect, QtGui.QColor(0, 0, 0, 100))
+        
+        if self.tier in ["legendary", "godlike"]:
+            painter.setPen(QtGui.QColor("#ffd700"))
+            painter.setOpacity(0.5)
+            for offset in [(-1, -1), (1, -1), (-1, 1), (1, 1)]:
+                painter.drawText(label_rect.adjusted(offset[0], offset[1], 0, 0), 
+                               QtCore.Qt.AlignCenter, f"📚 {self.power}")
+            painter.setOpacity(1.0)
+        elif self.tier in ["epic"]:
+            painter.setPen(QtGui.QColor("#e040fb"))
+        elif self.tier in ["heroic"]:
+            painter.setPen(QtGui.QColor("#42a5f5"))
+        else:
+            painter.setPen(QtGui.QColor("#fff"))
+        
+        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"📚 {self.power}")
+
+    def _draw_wanderer_character(self, event) -> None:
+        """Draw the mystical/dreamweaver themed character."""
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+
+        w, h = self.width(), self.height()
+        cx, cy = w // 2, h // 2 + 5
+
+        # Background with mystical night sky gradient
+        bg_gradient = QtGui.QRadialGradient(cx, cy - 40, max(w, h) * 0.9)
+        bg_gradient.setColorAt(0, QtGui.QColor("#1a1a3a"))
+        bg_gradient.setColorAt(0.4, QtGui.QColor("#0d0d2b"))
+        bg_gradient.setColorAt(0.7, QtGui.QColor("#05051a"))
+        bg_gradient.setColorAt(1, QtGui.QColor("#000010"))
+        painter.fillRect(self.rect(), bg_gradient)
+        
+        # Tiny stars in background
+        painter.setBrush(QtGui.QColor(255, 255, 255, 180))
+        painter.setPen(QtCore.Qt.NoPen)
+        import random
+        rng = random.Random(self.power + 999)
+        for _ in range(12):
+            sx, sy = rng.randint(5, w-5), rng.randint(5, int(h * 0.7))
+            painter.drawEllipse(sx, sy, 2, 2)
+        
+        # Floor/mist
+        floor_gradient = QtGui.QLinearGradient(cx - 45, cy + 65, cx + 45, cy + 80)
+        floor_gradient.setColorAt(0, QtGui.QColor(100, 100, 180, 20))
+        floor_gradient.setColorAt(0.5, QtGui.QColor(150, 150, 220, 60))
+        floor_gradient.setColorAt(1, QtGui.QColor(100, 100, 180, 20))
+        painter.setBrush(floor_gradient)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawEllipse(cx - 45, cy + 65, 90, 20)
+
+        body_color = QtGui.QColor(self.TIER_COLORS.get(self.tier, "#bdbdbd"))
+        body_outline = QtGui.QColor(self.TIER_OUTLINE.get(self.tier, "#888"))
+        glow = self.TIER_GLOW.get(self.tier)
+
+        def darken(color: str, amount: int = 130) -> QtGui.QColor:
+            c = QtGui.QColor(color)
+            return c.darker(amount)
+        
+        def lighten(color: str, amount: int = 130) -> QtGui.QColor:
+            c = QtGui.QColor(color)
+            return c.lighter(amount)
+
+        # Mystical aura for high tiers
+        if glow:
+            glow_color = QtGui.QColor(glow)
+            painter.setBrush(QtCore.Qt.NoBrush)
+            for i, opacity in enumerate([0.08, 0.12, 0.2, 0.3]):
+                painter.setOpacity(opacity)
+                size = 150 - i * 18
+                painter.setPen(QtGui.QPen(glow_color, 2))
+                painter.drawEllipse(cx - size//2, cy - 75, size, int(size * 1.2))
+            painter.setOpacity(1.0)
+            # Inner glow
+            painter.setBrush(glow_color)
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.setOpacity(0.2)
+            painter.drawEllipse(cx - 55, cy - 65, 110, 140)
+            painter.setOpacity(1.0)
+        
+        # Floating star/moon particles
+        particles = self.TIER_PARTICLES.get(self.tier)
+        if particles:
+            p_color, p_count = particles
+            for i, (px, py, ps) in enumerate(self._particles[:p_count]):
+                painter.setOpacity(0.5 + (i % 3) * 0.15)
+                # Draw crescent moons and stars
+                if i % 3 == 0:
+                    # Star
+                    painter.setBrush(QtGui.QColor(p_color))
+                    painter.setPen(QtCore.Qt.NoPen)
+                    star_path = QtGui.QPainterPath()
+                    star_cx, star_cy = cx + px, cy + py
+                    star_path.moveTo(star_cx, star_cy - ps)
+                    star_path.lineTo(star_cx + ps//3, star_cy - ps//3)
+                    star_path.lineTo(star_cx + ps, star_cy)
+                    star_path.lineTo(star_cx + ps//3, star_cy + ps//3)
+                    star_path.lineTo(star_cx, star_cy + ps)
+                    star_path.lineTo(star_cx - ps//3, star_cy + ps//3)
+                    star_path.lineTo(star_cx - ps, star_cy)
+                    star_path.lineTo(star_cx - ps//3, star_cy - ps//3)
+                    star_path.closeSubpath()
+                    painter.drawPath(star_path)
+                else:
+                    # Moon crescent
+                    painter.setBrush(QtGui.QColor(p_color))
+                    painter.setPen(QtCore.Qt.NoPen)
+                    painter.drawEllipse(cx + px, cy + py, ps + 1, ps + 1)
+            painter.setOpacity(1.0)
+
+        # === CLOAK/SHROUD (Flowing star-cloth) ===
+        cloak = self.equipped.get("Cloak")
+        if cloak:
+            cc = QtGui.QColor(cloak.get("color", "#1a1a4a"))
+            path = QtGui.QPainterPath()
+            path.moveTo(cx - 24, cy - 28)
+            path.lineTo(cx + 24, cy - 28)
+            path.cubicTo(cx + 40, cy + 5, cx + 45, cy + 45, cx + 38, cy + 75)
+            path.quadTo(cx + 18, cy + 80, cx, cy + 78)
+            path.quadTo(cx - 18, cy + 80, cx - 38, cy + 75)
+            path.cubicTo(cx - 45, cy + 45, cx - 40, cy + 5, cx - 24, cy - 28)
+            cloak_gradient = QtGui.QLinearGradient(cx, cy - 30, cx, cy + 75)
+            cloak_gradient.setColorAt(0, cc.lighter(110))
+            cloak_gradient.setColorAt(0.5, cc)
+            cloak_gradient.setColorAt(1, darken(cloak.get("color", "#1a1a4a"), 130))
+            painter.setBrush(cloak_gradient)
+            painter.setPen(QtGui.QPen(darken(cloak.get("color", "#1a1a4a"), 150), 2))
+            painter.drawPath(path)
+            # Star pattern on cloak
+            painter.setBrush(QtGui.QColor(255, 255, 200, 100))
+            painter.setPen(QtCore.Qt.NoPen)
+            cloak_stars = [(cx - 20, cy + 15), (cx + 15, cy + 25), (cx - 8, cy + 45),
+                          (cx + 22, cy + 50), (cx - 25, cy + 60), (cx + 8, cy + 65)]
+            for sx, sy in cloak_stars:
+                painter.drawEllipse(sx, sy, 3, 3)
+            # Cloak folds with shimmer
+            painter.setPen(QtGui.QPen(cc.lighter(120), 1))
+            painter.drawLine(cx - 18, cy - 15, cx - 25, cy + 70)
+            painter.drawLine(cx + 18, cy - 15, cx + 25, cy + 70)
+            painter.drawLine(cx, cy - 10, cx, cy + 72)
+
+        # === LEGS (hidden by flowing robes) ===
+        robe_color = QtGui.QColor("#2a2a5a") if not self.equipped.get("Chestplate") else QtGui.QColor(self.equipped["Chestplate"].get("color", "#2a2a5a"))
+        robe_grad = QtGui.QLinearGradient(cx - 25, cy + 25, cx + 25, cy + 25)
+        robe_grad.setColorAt(0, robe_color.darker(120))
+        robe_grad.setColorAt(0.5, robe_color)
+        robe_grad.setColorAt(1, robe_color.darker(120))
+        painter.setBrush(robe_grad)
+        painter.setPen(QtGui.QPen(robe_color.darker(150), 2))
+        robe_path = QtGui.QPainterPath()
+        robe_path.moveTo(cx - 22, cy + 22)
+        robe_path.lineTo(cx + 22, cy + 22)
+        robe_path.quadTo(cx + 28, cy + 50, cx + 25, cy + 68)
+        robe_path.quadTo(cx, cy + 72, cx - 25, cy + 68)
+        robe_path.quadTo(cx - 28, cy + 50, cx - 22, cy + 22)
+        painter.drawPath(robe_path)
+
+        # === BOOTS/TREADS (Cloud Walkers/Star Treads) ===
+        boots = self.equipped.get("Boots")
+        if boots:
+            bc = QtGui.QColor(boots.get("color", "#3a3a6a"))
+            boot_grad = QtGui.QLinearGradient(0, cy + 60, 0, cy + 78)
+            boot_grad.setColorAt(0, bc.lighter(120))
+            boot_grad.setColorAt(0.5, bc)
+            boot_grad.setColorAt(1, bc.darker(120))
+            painter.setBrush(boot_grad)
+            painter.setPen(QtGui.QPen(bc.darker(140), 2))
+            # Left boot - ethereal curved design
+            left_boot = QtGui.QPainterPath()
+            left_boot.moveTo(cx - 20, cy + 62)
+            left_boot.quadTo(cx - 22, cy + 70, cx - 18, cy + 76)
+            left_boot.quadTo(cx - 10, cy + 78, cx - 4, cy + 74)
+            left_boot.lineTo(cx - 4, cy + 62)
+            left_boot.closeSubpath()
+            painter.drawPath(left_boot)
+            # Right boot
+            right_boot = QtGui.QPainterPath()
+            right_boot.moveTo(cx + 4, cy + 62)
+            right_boot.lineTo(cx + 4, cy + 74)
+            right_boot.quadTo(cx + 10, cy + 78, cx + 18, cy + 76)
+            right_boot.quadTo(cx + 22, cy + 70, cx + 20, cy + 62)
+            right_boot.closeSubpath()
+            painter.drawPath(right_boot)
+            # Moon/star emblem on boots
+            painter.setBrush(QtGui.QColor("#ffd700"))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx - 14, cy + 66, 5, 5)
+            painter.drawEllipse(cx + 9, cy + 66, 5, 5)
+        else:
+            # Bare feet with mystical glow
+            painter.setBrush(QtGui.QColor("#e6c8a0"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#c9a066"), 1))
+            painter.drawRoundedRect(cx - 16, cy + 62, 12, 14, 4, 4)
+            painter.drawRoundedRect(cx + 4, cy + 62, 12, 14, 4, 4)
+
+        # === ARMS (Flowing sleeves) ===
+        arm_color = robe_color
+        arm_grad_l = QtGui.QLinearGradient(cx - 44, cy - 5, cx - 28, cy - 5)
+        arm_grad_l.setColorAt(0, arm_color.darker(125))
+        arm_grad_l.setColorAt(0.4, arm_color)
+        arm_grad_l.setColorAt(1, arm_color.darker(110))
+        painter.setBrush(arm_grad_l)
+        painter.setPen(QtGui.QPen(arm_color.darker(150), 2))
+        # Wide flowing sleeves
+        arm_path_l = QtGui.QPainterPath()
+        arm_path_l.moveTo(cx - 26, cy - 24)
+        arm_path_l.quadTo(cx - 36, cy - 26, cx - 42, cy - 16)
+        arm_path_l.quadTo(cx - 52, cy + 8, cx - 50, cy + 25)
+        arm_path_l.lineTo(cx - 30, cy + 20)
+        arm_path_l.quadTo(cx - 28, cy - 5, cx - 26, cy - 24)
+        painter.drawPath(arm_path_l)
+        # Right sleeve
+        arm_grad_r = QtGui.QLinearGradient(cx + 28, cy - 5, cx + 44, cy - 5)
+        arm_grad_r.setColorAt(0, arm_color.darker(110))
+        arm_grad_r.setColorAt(0.6, arm_color)
+        arm_grad_r.setColorAt(1, arm_color.darker(125))
+        painter.setBrush(arm_grad_r)
+        arm_path_r = QtGui.QPainterPath()
+        arm_path_r.moveTo(cx + 26, cy - 24)
+        arm_path_r.quadTo(cx + 36, cy - 26, cx + 42, cy - 16)
+        arm_path_r.quadTo(cx + 52, cy + 8, cx + 50, cy + 25)
+        arm_path_r.lineTo(cx + 30, cy + 20)
+        arm_path_r.quadTo(cx + 28, cy - 5, cx + 26, cy - 24)
+        painter.drawPath(arm_path_r)
+
+        # === GAUNTLETS (Arm Wraps / Dream Catchers) ===
+        gaunt = self.equipped.get("Gauntlets")
+        if gaunt:
+            gc = QtGui.QColor(gaunt.get("color", "#4a4a8a"))
+            gaunt_grad = QtGui.QLinearGradient(0, cy + 12, 0, cy + 32)
+            gaunt_grad.setColorAt(0, gc.lighter(115))
+            gaunt_grad.setColorAt(0.5, gc)
+            gaunt_grad.setColorAt(1, gc.darker(110))
+            painter.setBrush(gaunt_grad)
+            painter.setPen(QtGui.QPen(gc.darker(130), 1))
+            # Left arm wrap with bands
+            painter.drawRoundedRect(cx - 50, cy + 14, 22, 18, 6, 6)
+            # Wrap bands
+            painter.setPen(QtGui.QPen(gc.lighter(130), 2))
+            painter.drawLine(cx - 48, cy + 18, cx - 30, cy + 18)
+            painter.drawLine(cx - 48, cy + 24, cx - 30, cy + 24)
+            # Dream catcher circle for high tiers
+            if self.tier in ["heroic", "epic", "legendary", "godlike"]:
+                painter.setBrush(QtCore.Qt.NoBrush)
+                painter.setPen(QtGui.QPen(QtGui.QColor("#ffd700"), 1))
+                painter.drawEllipse(cx - 44, cy + 28, 8, 8)
+            # Right arm wrap
+            painter.setBrush(gaunt_grad)
+            painter.setPen(QtGui.QPen(gc.darker(130), 1))
+            painter.drawRoundedRect(cx + 28, cy + 14, 22, 18, 6, 6)
+            painter.setPen(QtGui.QPen(gc.lighter(130), 2))
+            painter.drawLine(cx + 30, cy + 18, cx + 48, cy + 18)
+            painter.drawLine(cx + 30, cy + 24, cx + 48, cy + 24)
+            if self.tier in ["heroic", "epic", "legendary", "godlike"]:
+                painter.setBrush(QtCore.Qt.NoBrush)
+                painter.setPen(QtGui.QPen(QtGui.QColor("#ffd700"), 1))
+                painter.drawEllipse(cx + 36, cy + 28, 8, 8)
+        else:
+            # Bare hands with ethereal glow
+            painter.setBrush(QtGui.QColor("#e6c8a0"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#c9a066"), 1))
+            painter.drawEllipse(cx - 48, cy + 16, 14, 14)
+            painter.drawEllipse(cx + 34, cy + 16, 14, 14)
+
+        # === TORSO ===
+        torso_grad = QtGui.QLinearGradient(cx - 25, cy, cx + 25, cy)
+        torso_grad.setColorAt(0, robe_color.darker(115))
+        torso_grad.setColorAt(0.3, robe_color)
+        torso_grad.setColorAt(0.7, robe_color)
+        torso_grad.setColorAt(1, robe_color.darker(115))
+        painter.setBrush(torso_grad)
+        painter.setPen(QtGui.QPen(robe_color.darker(150), 2))
+        torso_path = QtGui.QPainterPath()
+        torso_path.moveTo(cx - 26, cy - 28)
+        torso_path.quadTo(cx - 28, cy - 5, cx - 22, cy + 25)
+        torso_path.lineTo(cx + 22, cy + 25)
+        torso_path.quadTo(cx + 28, cy - 5, cx + 26, cy - 28)
+        torso_path.closeSubpath()
+        painter.drawPath(torso_path)
+
+        # === CHESTPLATE (Starweave Robe / Mooncloth Vest) ===
+        chest = self.equipped.get("Chestplate")
+        if chest:
+            cc = QtGui.QColor(chest.get("color", "#3a3a7a"))
+            chest_grad = QtGui.QLinearGradient(cx - 20, cy - 25, cx + 20, cy + 15)
+            chest_grad.setColorAt(0, cc.lighter(120))
+            chest_grad.setColorAt(0.5, cc)
+            chest_grad.setColorAt(1, cc.darker(110))
+            painter.setBrush(chest_grad)
+            painter.setPen(QtGui.QPen(cc.darker(140), 2))
+            # Flowing vest shape
+            vest_path = QtGui.QPainterPath()
+            vest_path.moveTo(cx - 22, cy - 26)
+            vest_path.quadTo(cx, cy - 30, cx + 22, cy - 26)
+            vest_path.lineTo(cx + 18, cy + 18)
+            vest_path.quadTo(cx, cy + 22, cx - 18, cy + 18)
+            vest_path.closeSubpath()
+            painter.drawPath(vest_path)
+            # Star pattern embroidery
+            painter.setBrush(QtGui.QColor(255, 255, 200, 150))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx - 12, cy - 15, 4, 4)
+            painter.drawEllipse(cx + 8, cy - 10, 3, 3)
+            painter.drawEllipse(cx - 5, cy + 2, 4, 4)
+            painter.drawEllipse(cx + 10, cy + 8, 3, 3)
+            # Moon crescent centerpiece
+            painter.setBrush(QtGui.QColor("#ffd700"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#daa520"), 1))
+            moon_path = QtGui.QPainterPath()
+            moon_path.moveTo(cx - 6, cy - 5)
+            moon_path.arcTo(cx - 8, cy - 8, 16, 16, 45, 270)
+            moon_path.arcTo(cx - 4, cy - 4, 8, 8, 315, -270)
+            painter.drawEllipse(cx - 6, cy - 8, 12, 12)
+            # Inner cut for crescent
+            painter.setBrush(cc)
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx - 2, cy - 6, 10, 10)
+        else:
+            # Simple robe pattern
+            painter.setPen(QtGui.QPen(robe_color.darker(130), 1))
+            painter.drawLine(cx, cy - 25, cx, cy + 18)
+            painter.drawLine(cx - 12, cy - 24, cx, cy - 18)
+            painter.drawLine(cx + 12, cy - 24, cx, cy - 18)
+
+        # === NECK ===
+        neck_grad = QtGui.QLinearGradient(cx - 8, cy - 35, cx + 8, cy - 35)
+        neck_grad.setColorAt(0, QtGui.QColor("#d4b090"))
+        neck_grad.setColorAt(0.5, QtGui.QColor("#e6c8a0"))
+        neck_grad.setColorAt(1, QtGui.QColor("#d4b090"))
+        painter.setBrush(neck_grad)
+        painter.setPen(QtGui.QPen(QtGui.QColor("#c49a70"), 1))
+        painter.drawRect(cx - 9, cy - 36, 18, 12)
+
+        # === HEAD ===
+        head_gradient = QtGui.QRadialGradient(cx - 5, cy - 55, 30)
+        head_gradient.setColorAt(0, QtGui.QColor("#f5e0c8"))
+        head_gradient.setColorAt(0.5, QtGui.QColor("#e6c8a0"))
+        head_gradient.setColorAt(0.8, QtGui.QColor("#d4a870"))
+        head_gradient.setColorAt(1, QtGui.QColor("#c49060"))
+        painter.setBrush(head_gradient)
+        painter.setPen(QtGui.QPen(QtGui.QColor("#b08050"), 2))
+        head_path = QtGui.QPainterPath()
+        head_path.moveTo(cx - 2, cy - 32)
+        head_path.quadTo(cx - 22, cy - 35, cx - 22, cy - 52)
+        head_path.quadTo(cx - 22, cy - 72, cx, cy - 72)
+        head_path.quadTo(cx + 22, cy - 72, cx + 22, cy - 52)
+        head_path.quadTo(cx + 22, cy - 35, cx + 2, cy - 32)
+        head_path.closeSubpath()
+        painter.drawPath(head_path)
+
+        # === HELMET (Dream Crown / Star Circlet / Moon Tiara) ===
+        helm = self.equipped.get("Helmet")
+        if helm:
+            hc = QtGui.QColor(helm.get("color", "#4a4a8a"))
+            # Circlet/tiara base
+            painter.setBrush(QtCore.Qt.NoBrush)
+            painter.setPen(QtGui.QPen(hc.lighter(120), 3))
+            painter.drawArc(cx - 20, cy - 68, 40, 20, 0, 180 * 16)
+            # Crown points with stars
+            painter.setBrush(hc.lighter(130))
+            painter.setPen(QtGui.QPen(hc.darker(110), 1))
+            # Center star point
+            center_star = QtGui.QPainterPath()
+            center_star.moveTo(cx, cy - 82)
+            center_star.lineTo(cx + 4, cy - 72)
+            center_star.lineTo(cx - 4, cy - 72)
+            center_star.closeSubpath()
+            painter.drawPath(center_star)
+            # Side points
+            left_point = QtGui.QPainterPath()
+            left_point.moveTo(cx - 14, cy - 76)
+            left_point.lineTo(cx - 10, cy - 68)
+            left_point.lineTo(cx - 18, cy - 68)
+            left_point.closeSubpath()
+            painter.drawPath(left_point)
+            right_point = QtGui.QPainterPath()
+            right_point.moveTo(cx + 14, cy - 76)
+            right_point.lineTo(cx + 10, cy - 68)
+            right_point.lineTo(cx + 18, cy - 68)
+            right_point.closeSubpath()
+            painter.drawPath(right_point)
+            # Center gem (moon crystal)
+            gem_grad = QtGui.QRadialGradient(cx, cy - 70, 6)
+            gem_grad.setColorAt(0, QtGui.QColor("#fff"))
+            gem_grad.setColorAt(0.5, hc.lighter(150))
+            gem_grad.setColorAt(1, hc)
+            painter.setBrush(gem_grad)
+            painter.setPen(QtGui.QPen(hc.darker(120), 1))
+            painter.drawEllipse(cx - 5, cy - 74, 10, 10)
+            # Gem sparkle
+            painter.setBrush(QtGui.QColor(255, 255, 255, 200))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx - 2, cy - 72, 3, 3)
+        else:
+            # Flowing hair (silvery/mystical)
+            hair_color = QtGui.QColor("#6a6a8a")
+            hair_grad = QtGui.QRadialGradient(cx, cy - 68, 24)
+            hair_grad.setColorAt(0, hair_color.lighter(130))
+            hair_grad.setColorAt(0.6, hair_color)
+            hair_grad.setColorAt(1, hair_color.darker(120))
+            painter.setBrush(hair_grad)
+            painter.setPen(QtCore.Qt.NoPen)
+            # Flowing mystical hair
+            hair_path = QtGui.QPainterPath()
+            hair_path.moveTo(cx - 22, cy - 58)
+            hair_path.quadTo(cx - 28, cy - 68, cx - 20, cy - 76)
+            hair_path.quadTo(cx - 10, cy - 84, cx, cy - 82)
+            hair_path.quadTo(cx + 10, cy - 84, cx + 20, cy - 76)
+            hair_path.quadTo(cx + 28, cy - 68, cx + 22, cy - 58)
+            hair_path.closeSubpath()
+            painter.drawPath(hair_path)
+            # Hair strands with shimmer
+            painter.setPen(QtGui.QPen(hair_color.lighter(140), 1))
+            painter.drawLine(cx - 14, cy - 74, cx - 12, cy - 62)
+            painter.drawLine(cx - 6, cy - 80, cx - 5, cy - 66)
+            painter.drawLine(cx, cy - 82, cx, cy - 68)
+            painter.drawLine(cx + 6, cy - 80, cx + 5, cy - 66)
+            painter.drawLine(cx + 14, cy - 74, cx + 12, cy - 62)
+            # Side tufts
+            painter.setBrush(hair_color)
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx - 25, cy - 60, 7, 10)
+            painter.drawEllipse(cx + 18, cy - 60, 7, 10)
+
+        # === FACE ===
+        # Mystical/serene eyebrows
+        painter.setPen(QtGui.QPen(QtGui.QColor("#5a5a7a"), 2))
+        if self.tier in ["legendary", "godlike"]:
+            # Serene arched brows
+            painter.drawArc(cx - 14, cy - 62, 10, 6, 30 * 16, 120 * 16)
+            painter.drawArc(cx + 4, cy - 62, 10, 6, 30 * 16, 120 * 16)
+        else:
+            # Calm brows
+            painter.drawLine(cx - 12, cy - 58, cx - 5, cy - 59)
+            painter.drawLine(cx + 5, cy - 59, cx + 12, cy - 58)
+        
+        # Eyes (mystical, glowing)
+        painter.setBrush(QtGui.QColor("#d8c0a0"))
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawEllipse(cx - 13, cy - 56, 12, 10)
+        painter.drawEllipse(cx + 1, cy - 56, 12, 10)
+        # Eye whites with slight glow
+        eye_glow = QtGui.QRadialGradient(cx - 7, cy - 51, 6)
+        eye_glow.setColorAt(0, QtGui.QColor("#fff"))
+        eye_glow.setColorAt(1, QtGui.QColor("#e8e8ff"))
+        painter.setBrush(eye_glow)
+        painter.drawEllipse(cx - 12, cy - 55, 10, 9)
+        eye_glow2 = QtGui.QRadialGradient(cx + 7, cy - 51, 6)
+        eye_glow2.setColorAt(0, QtGui.QColor("#fff"))
+        eye_glow2.setColorAt(1, QtGui.QColor("#e8e8ff"))
+        painter.setBrush(eye_glow2)
+        painter.drawEllipse(cx + 2, cy - 55, 10, 9)
+        # Iris (mystical purple/silver)
+        iris_colors = {
+            "pathetic": "#7a7a9a", "modest": "#6a6aaa", "decent": "#5a5aba",
+            "heroic": "#6a4aaa", "epic": "#8a4aca", "legendary": "#aa6ada", "godlike": "#ca8afa"
+        }
+        iris_color = QtGui.QColor(iris_colors.get(self.tier, "#7a7aaa"))
+        iris_grad = QtGui.QRadialGradient(cx - 7, cy - 51, 4)
+        iris_grad.setColorAt(0, iris_color.lighter(130))
+        iris_grad.setColorAt(1, iris_color)
+        painter.setBrush(iris_grad)
+        painter.drawEllipse(cx - 9, cy - 53, 6, 6)
+        iris_grad2 = QtGui.QRadialGradient(cx + 7, cy - 51, 4)
+        iris_grad2.setColorAt(0, iris_color.lighter(130))
+        iris_grad2.setColorAt(1, iris_color)
+        painter.setBrush(iris_grad2)
+        painter.drawEllipse(cx + 4, cy - 53, 6, 6)
+        # Pupils (star-shaped for high tiers)
+        painter.setBrush(QtGui.QColor("#1a1a2a"))
+        if self.tier in ["legendary", "godlike"]:
+            # Star pupils
+            for px in [cx - 7, cx + 6]:
+                star = QtGui.QPainterPath()
+                star.moveTo(px, cy - 52)
+                star.lineTo(px + 1, cy - 50)
+                star.lineTo(px + 2, cy - 51)
+                star.lineTo(px + 1, cy - 49)
+                star.lineTo(px, cy - 48)
+                star.lineTo(px - 1, cy - 49)
+                star.lineTo(px - 2, cy - 51)
+                star.lineTo(px - 1, cy - 50)
+                star.closeSubpath()
+                painter.drawPath(star)
+        else:
+            painter.drawEllipse(cx - 8, cy - 52, 3, 3)
+            painter.drawEllipse(cx + 5, cy - 52, 3, 3)
+        # Eye shine (multiple for mystical look)
+        painter.setBrush(QtGui.QColor("#fff"))
+        painter.drawEllipse(cx - 9, cy - 53, 2, 2)
+        painter.drawEllipse(cx + 4, cy - 53, 2, 2)
+        painter.setOpacity(0.6)
+        painter.drawEllipse(cx - 5, cy - 49, 1, 1)
+        painter.drawEllipse(cx + 8, cy - 49, 1, 1)
+        painter.setOpacity(1.0)
+
+        # Nose
+        painter.setPen(QtGui.QPen(QtGui.QColor("#c49060"), 1))
+        painter.drawLine(cx, cy - 48, cx - 1, cy - 42)
+        painter.drawArc(cx - 4, cy - 42, 4, 3, 180 * 16, 180 * 16)
+        painter.drawArc(cx, cy - 42, 4, 3, 180 * 16, 180 * 16)
+
+        # Mouth (serene expressions)
+        painter.setPen(QtGui.QPen(QtGui.QColor("#a06050"), 2))
+        if self.tier in ["legendary", "godlike"]:
+            # Serene knowing smile
+            painter.drawArc(cx - 8, cy - 44, 16, 10, 210 * 16, 120 * 16)
+        elif self.tier in ["epic", "heroic"]:
+            # Slight peaceful smile
+            painter.drawArc(cx - 7, cy - 42, 14, 6, 220 * 16, 100 * 16)
+        else:
+            # Contemplative
+            painter.drawLine(cx - 5, cy - 38, cx + 5, cy - 38)
+
+        # Ears
+        painter.setBrush(QtGui.QColor("#e6c8a0"))
+        painter.setPen(QtGui.QPen(QtGui.QColor("#c49a70"), 1))
+        painter.drawEllipse(cx - 24, cy - 52, 5, 9)
+        painter.drawEllipse(cx + 19, cy - 52, 5, 9)
+
+        # Third eye mark for high tiers (no helmet)
+        if not helm and self.tier in ["epic", "legendary", "godlike"]:
+            painter.setBrush(QtGui.QColor(200, 180, 255, 150))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#9a8aca"), 1))
+            painter.drawEllipse(cx - 3, cy - 62, 6, 4)
+
+        # === AMULET (Dream Catcher / Star Pendant / Moon Crystal) ===
+        amulet = self.equipped.get("Amulet")
+        if amulet:
+            ac = QtGui.QColor(amulet.get("color", "#8a8aca"))
+            # Chain with ethereal links
+            painter.setPen(QtGui.QPen(QtGui.QColor("#c0c0e0"), 2))
+            for i in range(4):
+                painter.drawEllipse(cx - 11 + i * 3, cy - 28 + i * 2, 3, 3)
+                painter.drawEllipse(cx + 8 - i * 3, cy - 28 + i * 2, 3, 3)
+            # Dream catcher circle
+            painter.setBrush(QtCore.Qt.NoBrush)
+            painter.setPen(QtGui.QPen(ac.lighter(120), 2))
+            painter.drawEllipse(cx - 12, cy - 18, 24, 24)
+            # Inner web pattern
+            painter.setPen(QtGui.QPen(ac, 1))
+            painter.drawEllipse(cx - 8, cy - 14, 16, 16)
+            painter.drawEllipse(cx - 4, cy - 10, 8, 8)
+            # Cross pattern
+            painter.drawLine(cx, cy - 18, cx, cy + 6)
+            painter.drawLine(cx - 12, cy - 6, cx + 12, cy - 6)
+            # Center crystal
+            gem_grad = QtGui.QRadialGradient(cx, cy - 6, 5)
+            gem_grad.setColorAt(0, QtGui.QColor("#fff"))
+            gem_grad.setColorAt(0.5, ac.lighter(140))
+            gem_grad.setColorAt(1, ac)
+            painter.setBrush(gem_grad)
+            painter.setPen(QtGui.QPen(ac.darker(120), 1))
+            painter.drawEllipse(cx - 4, cy - 10, 8, 8)
+            # Feather dangles for high tiers
+            if self.tier in ["epic", "legendary", "godlike"]:
+                painter.setPen(QtGui.QPen(ac.lighter(110), 1))
+                painter.drawLine(cx - 8, cy + 6, cx - 10, cy + 18)
+                painter.drawLine(cx, cy + 6, cx, cy + 16)
+                painter.drawLine(cx + 8, cy + 6, cx + 10, cy + 18)
+
+        # === WEAPON (Dream Staff / Star Wand / Void Orb) ===
+        weap = self.equipped.get("Weapon")
+        if weap:
+            wc = QtGui.QColor(weap.get("color", "#6a6aaa"))
+            # Staff body
+            staff_grad = QtGui.QLinearGradient(cx - 56, cy - 50, cx - 50, cy + 35)
+            staff_grad.setColorAt(0, wc.lighter(130))
+            staff_grad.setColorAt(0.5, wc)
+            staff_grad.setColorAt(1, wc.darker(120))
+            painter.setBrush(staff_grad)
+            painter.setPen(QtGui.QPen(wc.darker(140), 2))
+            # Curved mystical staff
+            staff_path = QtGui.QPainterPath()
+            staff_path.moveTo(cx - 56, cy + 35)
+            staff_path.quadTo(cx - 58, cy, cx - 54, cy - 45)
+            staff_path.lineTo(cx - 50, cy - 45)
+            staff_path.quadTo(cx - 52, cy, cx - 50, cy + 35)
+            staff_path.closeSubpath()
+            painter.drawPath(staff_path)
+            # Staff spiral wrapping
+            painter.setPen(QtGui.QPen(wc.lighter(140), 1))
+            for i in range(8):
+                y = cy - 35 + i * 8
+                painter.drawLine(cx - 56, y, cx - 50, y + 4)
+            # Orb at top
+            orb_grad = QtGui.QRadialGradient(cx - 52, cy - 55, 12)
+            orb_grad.setColorAt(0, QtGui.QColor("#fff"))
+            orb_grad.setColorAt(0.3, wc.lighter(150))
+            orb_grad.setColorAt(0.7, wc)
+            orb_grad.setColorAt(1, wc.darker(130))
+            painter.setBrush(orb_grad)
+            painter.setPen(QtGui.QPen(wc.darker(120), 2))
+            painter.drawEllipse(cx - 62, cy - 65, 20, 20)
+            # Orb inner glow
+            painter.setBrush(QtGui.QColor(255, 255, 255, 100))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx - 58, cy - 61, 8, 8)
+            # Orbiting stars for high tiers
+            if self.tier in ["legendary", "godlike"]:
+                painter.setBrush(QtGui.QColor("#ffd700"))
+                painter.drawEllipse(cx - 66, cy - 52, 4, 4)
+                painter.drawEllipse(cx - 46, cy - 58, 4, 4)
+                painter.drawEllipse(cx - 58, cy - 70, 3, 3)
+
+        # === SHIELD (Dream Ward / Reality Anchor / Astral Aegis) ===
+        shield = self.equipped.get("Shield")
+        if shield:
+            sc = QtGui.QColor(shield.get("color", "#5a5a9a"))
+            # Circular mystical ward
+            shield_grad = QtGui.QRadialGradient(cx + 50, cy + 8, 28)
+            shield_grad.setColorAt(0, sc.lighter(140))
+            shield_grad.setColorAt(0.5, sc)
+            shield_grad.setColorAt(1, sc.darker(130))
+            painter.setBrush(shield_grad)
+            painter.setPen(QtGui.QPen(sc.darker(150), 3))
+            painter.drawEllipse(cx + 28, cy - 14, 44, 44)
+            # Outer ring
+            painter.setBrush(QtCore.Qt.NoBrush)
+            painter.setPen(QtGui.QPen(sc.lighter(130), 2))
+            painter.drawEllipse(cx + 32, cy - 10, 36, 36)
+            # Inner mystical patterns
+            painter.setPen(QtGui.QPen(sc.lighter(140), 1))
+            # Star pattern
+            for angle in range(0, 360, 60):
+                import math
+                rad = math.radians(angle)
+                x1 = cx + 50 + 12 * math.cos(rad)
+                y1 = cy + 8 + 12 * math.sin(rad)
+                x2 = cx + 50 + 18 * math.cos(rad)
+                y2 = cy + 8 + 18 * math.sin(rad)
+                painter.drawLine(int(x1), int(y1), int(x2), int(y2))
+            # Center eye symbol
+            eye_grad = QtGui.QRadialGradient(cx + 50, cy + 8, 10)
+            eye_grad.setColorAt(0, QtGui.QColor("#fff"))
+            eye_grad.setColorAt(0.4, sc.lighter(160))
+            eye_grad.setColorAt(1, sc)
+            painter.setBrush(eye_grad)
+            painter.setPen(QtGui.QPen(sc.darker(120), 1))
+            painter.drawEllipse(cx + 42, cy, 16, 16)
+            # Pupil (void)
+            painter.setBrush(QtGui.QColor("#1a1a3a"))
+            painter.drawEllipse(cx + 47, cy + 5, 6, 6)
+            # Eye shine
+            painter.setBrush(QtGui.QColor(255, 255, 255, 180))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx + 48, cy + 6, 2, 2)
+            # Floating runes for high tiers
+            if self.tier in ["epic", "legendary", "godlike"]:
+                painter.setOpacity(0.4)
+                painter.setBrush(sc.lighter(150))
+                painter.drawEllipse(cx + 26, cy - 4, 6, 6)
+                painter.drawEllipse(cx + 68, cy - 2, 5, 5)
+                painter.drawEllipse(cx + 30, cy + 22, 5, 5)
+                painter.drawEllipse(cx + 64, cy + 20, 6, 6)
+                painter.setOpacity(1.0)
+
+        # === POWER LABEL ===
+        label_rect = QtCore.QRect(0, h - 28, w, 25)
+        painter.fillRect(label_rect, QtGui.QColor(0, 0, 0, 120))
+        
+        if self.tier in ["legendary", "godlike"]:
+            painter.setPen(QtGui.QColor("#e0d0ff"))
+            painter.setOpacity(0.5)
+            for offset in [(-1, -1), (1, -1), (-1, 1), (1, 1)]:
+                painter.drawText(label_rect.adjusted(offset[0], offset[1], 0, 0), 
+                               QtCore.Qt.AlignCenter, f"🌙 {self.power}")
+            painter.setOpacity(1.0)
+        elif self.tier in ["epic"]:
+            painter.setPen(QtGui.QColor("#c0a0ff"))
+        elif self.tier in ["heroic"]:
+            painter.setPen(QtGui.QColor("#a0a0ff"))
+        else:
+            painter.setPen(QtGui.QColor("#d0d0ff"))
+        
+        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🌙 {self.power}")
 
 
 class ADHDBusterDialog(QtWidgets.QDialog):
