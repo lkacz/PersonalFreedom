@@ -10,7 +10,7 @@ readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.8"
 authors = [
-    {name = "Personal Freedom Contributors"}
+    {name = "Personal Liberty Contributors"}
 ]
 keywords = ["focus", "productivity", "website-blocker", "pomodoro", "ai", "windows"]
 classifiers = [
@@ -51,9 +51,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/lkacz/PersonalFreedom"
-Repository = "https://github.com/lkacz/PersonalFreedom"
-Issues = "https://github.com/lkacz/PersonalFreedom/issues"
+Homepage = "https://github.com/lkacz/PersonalLiberty"
+Repository = "https://github.com/lkacz/PersonalLiberty"
+Issues = "https://github.com/lkacz/PersonalLiberty/issues"
 
 [project.scripts]
 personal-freedom = "focus_blocker:main"

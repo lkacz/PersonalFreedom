@@ -1,6 +1,6 @@
-# Building Personal Freedom for Distribution
+# Building Personal Liberty for Distribution
 
-This guide explains how to build Personal Freedom with **fully bundled AI** for distribution.
+This guide explains how to build Personal Liberty with **fully bundled AI** for distribution.
 
 ## 🎯 What Gets Bundled
 
@@ -43,8 +43,8 @@ build_all.bat
 ```
 
 This creates:
-1. `dist\PersonalFreedom_Package\` - Portable version
-2. `installer_output\PersonalFreedom_Setup_v2.1.exe` - Windows installer
+1. `dist\PersonalLiberty_Package\` - Portable version
+2. `installer_output\PersonalLiberty_Setup_v2.1.exe` - Windows installer
 
 ### Option B: Build Just the Executables
 ```bash
@@ -52,9 +52,9 @@ build.bat
 ```
 
 This creates:
-- `dist\PersonalFreedom.exe` - Main application
-- `dist\PersonalFreedomTray.exe` - System tray version
-- `dist\PersonalFreedom_Package\` - Complete package folder
+- `dist\PersonalLiberty.exe` - Main application
+- `dist\PersonalLibertyTray.exe` - System tray version
+- `dist\PersonalLiberty_Package\` - Complete package folder
 
 ### Option C: Build Just the Installer
 ```bash
@@ -74,8 +74,8 @@ Requirements: Must run `build.bat` first + Inno Setup installed
 - Bundles Python interpreter
 - Collects PyTorch, Transformers, and all dependencies
 - Creates two executables:
-  - `PersonalFreedom.exe` - Full GUI with AI
-  - `PersonalFreedomTray.exe` - Minimalist tray version
+  - `PersonalLiberty.exe` - Full GUI with AI
+  - `PersonalLibertyTray.exe` - Minimalist tray version
 - Creates distribution package folder
 
 **Build time:** 5-10 minutes (collecting PyTorch libraries)  
@@ -94,26 +94,26 @@ Requirements: Must run `build.bat` first + Inno Setup installed
 - Creates autostart registry entries (optional)
 
 **Build time:** 1-2 minutes  
-**Output:** `installer_output\PersonalFreedom_Setup_v2.1.exe` (~500MB)
+**Output:** `installer_output\PersonalLiberty_Setup_v2.1.exe` (~500MB)
 
 ## 📤 Distribution Options
 
 ### Portable Package Distribution
 1. Build: `.\build.bat`
-2. Zip the folder: `dist\PersonalFreedom_Package\`
+2. Zip the folder: `dist\PersonalLiberty_Package\`
 3. Upload zip file
-4. Users: Extract and run `PersonalFreedom.exe`
+4. Users: Extract and run `PersonalLiberty.exe`
 
 ### Installer Distribution
 1. Build: `.\build_all.bat` (or `build.bat` then `build_installer.bat`)
-2. Upload: `installer_output\PersonalFreedom_Setup_v2.1.exe`
+2. Upload: `installer_output\PersonalLiberty_Setup_v2.1.exe`
 3. Users: Download and run installer
 
 ## 🎨 What Users Experience
 
 ### First Launch (One-Time Setup):
 ```
-1. User runs PersonalFreedom.exe
+1. User runs PersonalLiberty.exe
 2. App detects GPU (NVIDIA/AMD/CPU)
 3. Downloads AI models (~400MB) from HuggingFace
 4. Caches models in %APPDATA%\huggingface
@@ -155,9 +155,9 @@ This ensures users need NOTHING else installed.
 
 | File | Size | Description |
 |------|------|-------------|
-| `PersonalFreedom.exe` | ~500MB | Main app with bundled AI |
-| `PersonalFreedomTray.exe` | ~50MB | Tray version (no AI) |
-| `PersonalFreedom_Setup.exe` | ~500MB | Windows installer |
+| `PersonalLiberty.exe` | ~500MB | Main app with bundled AI |
+| `PersonalLibertyTray.exe` | ~50MB | Tray version (no AI) |
+| `PersonalLiberty_Setup.exe` | ~500MB | Windows installer |
 
 ## 🎁 What Makes This Special
 
@@ -193,8 +193,8 @@ After building:
 ```bash
 # 1. Create a new release on GitHub
 # 2. Upload these files:
-#    - PersonalFreedom_Setup_v2.1.exe (Windows installer)
-#    - PersonalFreedom_Package.zip (Portable version)
+#    - PersonalLiberty_Setup_v2.1.exe (Windows installer)
+#    - PersonalLiberty_Package.zip (Portable version)
 # 3. Add release notes describing features
 ```
 

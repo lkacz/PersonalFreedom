@@ -4,7 +4,7 @@
 
 echo.
 echo =============================================
-echo   Building Personal Freedom (Lightweight)
+echo   Building Personal Liberty (Lightweight)
 echo =============================================
 echo.
 
@@ -20,7 +20,7 @@ if %errorlevel% neq 0 (
 echo.
 echo [1/2] Building Main GUI (PySide6/Qt)...
 pyinstaller --noconfirm --onefile --windowed --uac-admin ^
-    --name "PersonalFreedom" ^
+    --name "PersonalLiberty" ^
     --add-data "productivity_ai.py;." ^
     --add-data "local_ai.py;." ^
     --add-data "gamification.py;." ^
@@ -37,7 +37,7 @@ if %errorlevel% neq 0 (
 echo.
 echo [2/2] Building System Tray version...
 pyinstaller --noconfirm --onefile --windowed --uac-admin ^
-    --name "PersonalFreedomTray" ^
+    --name "PersonalLibertyTray" ^
     tray_blocker.py
 
 if %errorlevel% neq 0 (
@@ -52,8 +52,8 @@ echo   Build Complete!
 echo =============================================
 echo.
 echo Output files:
-echo   dist\PersonalFreedom.exe
-echo   dist\PersonalFreedomTray.exe
+echo   dist\PersonalLiberty.exe
+echo   dist\PersonalLibertyTray.exe
 echo.
 echo Now run: build_installer.bat
 echo.

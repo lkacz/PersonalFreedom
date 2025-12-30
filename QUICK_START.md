@@ -1,4 +1,4 @@
-# Personal Freedom - Quick Start Guide
+# Personal Liberty - Quick Start Guide
 
 ## First Time Setup (2 minutes)
 

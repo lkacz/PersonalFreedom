@@ -2,7 +2,7 @@
 
 ## What You'll See
 
-When you open Personal Freedom and click the **🧠 AI Insights** tab, you'll see:
+When you open Personal Liberty and click the **🧠 AI Insights** tab, you'll see:
 
 ---
 

@@ -1,14 +1,14 @@
-# Personal Freedom
+# Personal Liberty
 
 ## Take Back Control of Your Digital Life
 
-**Personal Freedom** is a Windows desktop app that helps you stay focused by blocking distracting websites during work or study sessions. No willpower needed – the app does the hard work for you.
+**Personal Liberty** is a Windows desktop app that helps you stay focused by blocking distracting websites during work or study sessions. No willpower needed – the app does the hard work for you.
 
 ---
 
 ## 🎯 What It Does
 
-When you start a focus session, Personal Freedom blocks access to distracting websites like social media, streaming services, and news sites. You set the timer, and the sites stay blocked until time's up. Simple as that.
+When you start a focus session, Personal Liberty blocks access to distracting websites like social media, streaming services, and news sites. You set the timer, and the sites stay blocked until time's up. Simple as that.
 
 ---
 

@@ -1,10 +1,10 @@
 @echo off
-:: Personal Freedom - Optional AI Features Installer
+:: Personal Liberty - Optional AI Features Installer
 :: Installs GPU-accelerated AI dependencies
 
 echo.
 echo =============================================
-echo   Personal Freedom - AI Features Installer
+echo   Personal Liberty - AI Features Installer
 echo =============================================
 echo.
 echo This will install optional AI features:
@@ -119,7 +119,7 @@ if %errorlevel% equ 0 (
     echo.
     python -c "import torch; print('GPU Available:', torch.cuda.is_available())"
     echo.
-    echo You're all set! Start PersonalFreedom.exe to use AI features.
+    echo You're all set! Start PersonalLiberty.exe to use AI features.
     echo.
     echo FIRST RUN: AI models will download automatically (~400MB)
     echo This happens once and takes 2-3 minutes.

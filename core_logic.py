@@ -1,5 +1,5 @@
 """
-Core logic for Personal Freedom - Website Blocker
+Core logic for Personal Liberty - Website Blocker
 Separated from UI for better architecture.
 """
 
@@ -64,8 +64,8 @@ except ImportError:
 system_root = os.environ.get('SystemRoot', r'C:\Windows')
 HOSTS_PATH = os.path.join(system_root, r"System32\drivers\etc\hosts")
 REDIRECT_IP = "127.0.0.1"
-MARKER_START = "# === PERSONAL FREEDOM BLOCK START ==="
-MARKER_END = "# === PERSONAL FREEDOM BLOCK END ==="
+MARKER_START = "# === Personal Liberty BLOCK START ==="
+MARKER_END = "# === Personal Liberty BLOCK END ==="
 
 # Config file paths
 if getattr(sys, 'frozen', False):

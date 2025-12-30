@@ -1,5 +1,5 @@
 """
-Personal Freedom Launcher
+Personal Liberty Launcher
 Automatically requests administrator privileges if needed.
 """
 

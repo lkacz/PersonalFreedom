@@ -1,12 +1,12 @@
-PERSONAL FREEDOM - AI-POWERED FOCUS BLOCKER
+Personal Liberty - AI-POWERED FOCUS BLOCKER
 ============================================
 
-Thank you for installing Personal Freedom!
+Thank you for installing Personal Liberty!
 
 WHAT'S INCLUDED:
 ----------------
 This installer includes EVERYTHING you need:
-✓ Personal Freedom application (fully self-contained)
+✓ Personal Liberty application (fully self-contained)
 ✓ All AI features bundled (PyTorch, Transformers)
 ✓ GPU acceleration (auto-detected)
 ✓ System Tray version
@@ -21,7 +21,7 @@ NO ADDITIONAL SOFTWARE REQUIRED:
 
 FIRST LAUNCH:
 -------------
-When you first launch Personal Freedom, it will:
+When you first launch Personal Liberty, it will:
 1. Download AI models (~400MB) - one-time only
 2. Cache them locally in your AppData folder
 3. Auto-detect your GPU (NVIDIA, AMD, or CPU fallback)
@@ -42,7 +42,7 @@ AI FEATURES:
 
 GETTING STARTED:
 ----------------
-1. The installer will launch Personal Freedom when complete
+1. The installer will launch Personal Liberty when complete
 2. Click "Start Session" to begin a focus session
 3. Add websites to block in the "Blocked Sites" tab
 4. Check the "AI Insights" tab for productivity analytics
@@ -64,12 +64,12 @@ PRIVACY:
 • 100% of your data stays on your computer
 • No internet connection required after initial model download
 • No analytics, tracking, or data collection
-• Open source: https://github.com/lkacz/PersonalFreedom
+• Open source: https://github.com/lkacz/PersonalLiberty
 
 SUPPORT:
 --------
 • Documentation: Check the installed README.md and QUICK_START.md
 • GPU Setup: See GPU_AI_GUIDE.md for detailed GPU information
-• Issues: https://github.com/lkacz/PersonalFreedom/issues
+• Issues: https://github.com/lkacz/PersonalLiberty/issues
 
 Enjoy your productivity boost!

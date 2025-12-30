@@ -70,12 +70,12 @@ jobs:
 
       - name: Build executables
         run: |
-          pyinstaller PersonalFreedom.spec --noconfirm
-          pyinstaller PersonalFreedomTray.spec --noconfirm
+          pyinstaller PersonalLiberty.spec --noconfirm
+          pyinstaller PersonalLibertyTray.spec --noconfirm
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: PersonalFreedom-Windows
+          name: PersonalLiberty-Windows
           path: dist/
           retention-days: 7

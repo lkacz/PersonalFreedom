@@ -1,4 +1,4 @@
-# Personal Freedom - Focus Blocker 🔒
+# Personal Liberty - Focus Blocker 🔒
 
 A groundbreaking Windows application with **AI-powered productivity insights** that blocks distracting websites during focus sessions. Take control of your time and supercharge your productivity with industry-leading features!
 
@@ -42,7 +42,7 @@ A groundbreaking Windows application with **AI-powered productivity insights** t
 
 ## What Makes This Different? 🚀
 
-Unlike basic website blockers, Personal Freedom uses **machine learning** to understand YOUR unique productivity patterns. It learns when you're most productive, how long you should focus, and what patterns lead to success. This isn't just blocking - it's **intelligent productivity coaching**.
+Unlike basic website blockers, Personal Liberty uses **machine learning** to understand YOUR unique productivity patterns. It learns when you're most productive, how long you should focus, and what patterns lead to success. This isn't just blocking - it's **intelligent productivity coaching**.
 
 ## Installation
 
@@ -200,9 +200,9 @@ Set and track custom goals:
 2. Open `C:\Windows\System32\drivers\etc\hosts`
 3. Delete everything between:
    ```
-   # === PERSONAL FREEDOM BLOCK START ===
+   # === Personal Liberty BLOCK START ===
    ...
-   # === PERSONAL FREEDOM BLOCK END ===
+   # === Personal Liberty BLOCK END ===
    ```
 4. Save the file
 5. Run `ipconfig /flushdns`
