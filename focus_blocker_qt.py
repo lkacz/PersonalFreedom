@@ -1013,6 +1013,11 @@ class TimerTab(QtWidgets.QWidget):
         # Show item drop dialog
         ItemDropDialog(self.blocker, item, session_minutes, streak, self.window()).exec()
 
+        # Refresh ADHD dialog if open (so new gear shows in dropdowns)
+        main_window = self.window()
+        if hasattr(main_window, 'refresh_adhd_dialog'):
+            main_window.refresh_adhd_dialog()
+
         # Show diary entry reveal
         if diary_entry:
             DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes, self.window()).exec()
@@ -2093,7 +2098,7 @@ class AITab(QtWidgets.QWidget):
         achievements_layout.addWidget(unlocked_label)
         self.unlocked_achievements_list = QtWidgets.QListWidget()
         self.unlocked_achievements_list.setMaximumHeight(80)
-        self.unlocked_achievements_list.setStyleSheet("background-color: #E8F5E9;")
+        self.unlocked_achievements_list.setStyleSheet("background-color: #E8F5E9; color: #1b5e20;")
         achievements_layout.addWidget(self.unlocked_achievements_list)
         
         # Active challenges section
@@ -2102,7 +2107,7 @@ class AITab(QtWidgets.QWidget):
         achievements_layout.addWidget(challenges_label)
         self.achievements_list = QtWidgets.QListWidget()
         self.achievements_list.setMaximumHeight(150)
-        self.achievements_list.setStyleSheet("background-color: #FFF3E0;")
+        self.achievements_list.setStyleSheet("background-color: #FFF3E0; color: #5d4037;")
         achievements_layout.addWidget(self.achievements_list)
         
         inner.addWidget(achievements_group)
@@ -2999,6 +3004,40 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             list_item.setForeground(QtGui.QColor(item.get("color", "#333")))
             self.inv_list.addItem(list_item)
 
+    def refresh_gear_combos(self) -> None:
+        """Refresh gear dropdown combos to reflect new inventory items."""
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        
+        for slot, combo in self.slot_combos.items():
+            # Remember current selection
+            current = equipped.get(slot)
+            current_name = current.get("name") if current else None
+            
+            # Block signals to prevent triggering equip changes
+            combo.blockSignals(True)
+            combo.clear()
+            combo.addItem("[Empty]")
+            
+            # Add all items for this slot
+            slot_items = [item for item in inventory if item.get("slot") == slot]
+            for item in slot_items:
+                display = f"{item['name']} (+{item.get('power', 10)}) [{item['rarity'][:1]}]"
+                combo.addItem(display, item)
+            
+            # Restore selection
+            if current_name:
+                for i in range(1, combo.count()):
+                    if combo.itemData(i) and combo.itemData(i).get("name") == current_name:
+                        combo.setCurrentIndex(i)
+                        break
+            
+            combo.blockSignals(False)
+        
+        # Also refresh inventory list and stats
+        self._refresh_inventory()
+        self._refresh_character()
+
     def _update_merge_selection(self) -> None:
         self.merge_selected = [item.data(QtCore.Qt.UserRole) for item in self.inv_list.selectedItems()]
         count = len(self.merge_selected)
@@ -3321,33 +3360,51 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                     self.blocker.save_config()
                     dialog.accept()
                     
-                    # Show consequence dialog
-                    consequence_dialog = QtWidgets.QDialog(self)
-                    consequence_dialog.setWindowTitle("⚡ The Die is Cast!")
-                    consequence_dialog.resize(500, 350)
-                    cons_layout = QtWidgets.QVBoxLayout(consequence_dialog)
+                    # Get the updated chapter content with the continuation
+                    updated_chapter = get_chapter_content(chapter_num, self.blocker.adhd_buster)
                     
-                    consequence_lbl = QtWidgets.QLabel(
-                        f"<h2 style='text-align: center; color: #f39c12;'>Your Choice:</h2>"
-                        f"<h3 style='text-align: center;'>{choice_data.get('label', 'Unknown')}</h3>"
-                        f"<p style='text-align: center; font-size: 14px; color: #888;'>"
-                        f"<i>{choice_data.get('description', '')}</i></p>"
-                        f"<p style='text-align: center; font-size: 32px;'>⚡</p>"
-                        f"<p style='text-align: center; font-size: 13px;'>"
-                        f"This decision will shape your story...<br>"
-                        f"Re-read this chapter to see what happens next!</p>"
+                    # Show continuation dialog with the story result
+                    continuation_dialog = QtWidgets.QDialog(self)
+                    continuation_dialog.setWindowTitle(f"⚡ {choice_data.get('label', 'Your Choice')}")
+                    continuation_dialog.resize(650, 550)
+                    cont_layout = QtWidgets.QVBoxLayout(continuation_dialog)
+                    
+                    # Header showing the choice made
+                    choice_lbl = QtWidgets.QLabel(
+                        f"<h2 style='text-align: center; color: #f39c12;'>⚡ The Die is Cast! ⚡</h2>"
+                        f"<p style='text-align: center; font-size: 14px;'>"
+                        f"You chose: <b>{choice_data.get('label', 'Unknown')}</b></p>"
                     )
-                    consequence_lbl.setWordWrap(True)
-                    cons_layout.addWidget(consequence_lbl)
+                    choice_lbl.setWordWrap(True)
+                    choice_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                    cont_layout.addWidget(choice_lbl)
                     
+                    # Story continuation content
+                    content_text = QtWidgets.QTextEdit()
+                    content_text.setReadOnly(True)
+                    
+                    # Format the full updated content
+                    formatted = updated_chapter['content'].strip()
+                    formatted = formatted.replace("**", "<b>").replace("**", "</b>")
+                    formatted = formatted.replace("*", "<i>").replace("*", "</i>")
+                    formatted = formatted.replace("\n\n", "</p><p>")
+                    formatted = formatted.replace("\n", "<br>")
+                    formatted = f"<p style='font-size: 13px; line-height: 1.6;'>{formatted}</p>"
+                    
+                    content_text.setHtml(formatted)
+                    content_text.setStyleSheet("background-color: #1a1a2e; color: #eee; padding: 10px;")
+                    cont_layout.addWidget(content_text)
+                    
+                    # Continue button
                     ok_btn = QtWidgets.QPushButton("Continue My Journey")
-                    ok_btn.clicked.connect(consequence_dialog.accept)
-                    cons_layout.addWidget(ok_btn)
+                    ok_btn.clicked.connect(continuation_dialog.accept)
+                    cont_layout.addWidget(ok_btn)
                     
-                    consequence_dialog.exec()
+                    continuation_dialog.exec()
                     
-                    # Refresh the chapter list to show decision was made
+                    # Refresh all story-related UI after decision
                     self._refresh_story_chapter_list()
+                    self._update_story_progress_labels()
                 
                 btn_a.clicked.connect(lambda: make_choice("A", choice_a))
                 btn_b.clicked.connect(lambda: make_choice("B", choice_b))
@@ -3599,8 +3656,8 @@ class ItemDropDialog(QtWidgets.QDialog):
         self.setFixedSize(400, 280)
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
         self._build_ui()
-        close_time = {"Common": 3000, "Uncommon": 3500, "Rare": 4000, "Epic": 5000, "Legendary": 6000}
-        QtCore.QTimer.singleShot(close_time.get(item["rarity"], 4000), self.accept)
+        close_time = {"Common": 8000, "Uncommon": 10000, "Rare": 12000, "Epic": 15000, "Legendary": 20000}
+        QtCore.QTimer.singleShot(close_time.get(item["rarity"], 10000), self.accept)
 
     def _build_ui(self) -> None:
         bg_colors = {"Common": "#f5f5f5", "Uncommon": "#e8f5e9", "Rare": "#e3f2fd", "Epic": "#f3e5f5", "Legendary": "#fff3e0"}
@@ -3619,9 +3676,11 @@ class ItemDropDialog(QtWidgets.QDialog):
             header_text = "✨ LOOT DROP! ✨"
         header_lbl = QtWidgets.QLabel(header_text)
         header_lbl.setAlignment(QtCore.Qt.AlignCenter)
-        header_lbl.setStyleSheet("font-size: 14px; font-weight: bold;")
+        header_lbl.setStyleSheet("font-size: 14px; font-weight: bold; color: #333;")
         layout.addWidget(header_lbl)
-        layout.addWidget(QtWidgets.QLabel("Your ADHD Buster found:"))
+        found_lbl = QtWidgets.QLabel("Your ADHD Buster found:")
+        found_lbl.setStyleSheet("color: #333;")
+        layout.addWidget(found_lbl)
         name_lbl = QtWidgets.QLabel(self.item["name"])
         name_lbl.setStyleSheet(f"color: {self.item['color']}; font-size: 12px; font-weight: bold;")
         name_lbl.setAlignment(QtCore.Qt.AlignCenter)
@@ -3642,7 +3701,7 @@ class ItemDropDialog(QtWidgets.QDialog):
                     bonus_parts.append(f"🔥{self.streak_days}day streak")
                 bonus_txt = " + ".join(bonus_parts) + f" = +{bonuses['total_bonus']}% luck!"
                 bonus_lbl = QtWidgets.QLabel(bonus_txt)
-                bonus_lbl.setStyleSheet("color: #ff9800;")
+                bonus_lbl.setStyleSheet("color: #e65100;")
                 bonus_lbl.setAlignment(QtCore.Qt.AlignCenter)
                 layout.addWidget(bonus_lbl)
 
@@ -3653,11 +3712,15 @@ class ItemDropDialog(QtWidgets.QDialog):
                     "Legendary": ["LEGENDARY! You are unstoppable! ⭐", "GODLIKE FOCUS! 🏆"]}
         msg = random.choice(messages.get(self.item["rarity"], messages["Common"]))
         msg_lbl = QtWidgets.QLabel(msg)
-        msg_lbl.setStyleSheet("font-weight: bold; color: #666;")
+        msg_lbl.setStyleSheet("font-weight: bold; color: #555;")
         msg_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(msg_lbl)
-        layout.addWidget(QtWidgets.QLabel("📖 Your adventure awaits..."))
-        layout.addWidget(QtWidgets.QLabel("(Click anywhere or wait to dismiss)"))
+        adventure_lbl = QtWidgets.QLabel("📖 Your adventure awaits...")
+        adventure_lbl.setStyleSheet("color: #555;")
+        layout.addWidget(adventure_lbl)
+        dismiss_lbl = QtWidgets.QLabel("(Click anywhere or wait to dismiss)")
+        dismiss_lbl.setStyleSheet("color: #777; font-size: 10px;")
+        layout.addWidget(dismiss_lbl)
 
     def mousePressEvent(self, event) -> None:
         self.accept()
@@ -3676,7 +3739,7 @@ class DiaryEntryRevealDialog(QtWidgets.QDialog):
         self.setFixedSize(520, 380)
         self._build_ui()
         story_len = len(entry.get("story", ""))
-        close_time = max(8000, min(15000, story_len * 50))
+        close_time = max(20000, min(45000, story_len * 100))
         QtCore.QTimer.singleShot(close_time, self.accept)
 
     def _build_ui(self) -> None:
@@ -3739,10 +3802,12 @@ class DiaryEntryRevealDialog(QtWidgets.QDialog):
         pwr_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(pwr_lbl)
         mins_lbl = QtWidgets.QLabel(f"⏱️ {self.session_minutes} min focus session")
-        mins_lbl.setStyleSheet("color: #888;")
+        mins_lbl.setStyleSheet("color: #666;")
         mins_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(mins_lbl)
-        layout.addWidget(QtWidgets.QLabel("(Click anywhere or wait to dismiss)"))
+        dismiss_lbl = QtWidgets.QLabel("(Click anywhere or wait to dismiss)")
+        dismiss_lbl.setStyleSheet("color: #777; font-size: 10px;")
+        layout.addWidget(dismiss_lbl)
 
     def mousePressEvent(self, event) -> None:
         self.accept()
@@ -4409,6 +4474,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # System Tray setup
         self.tray_icon = None
         self.minimize_to_tray = self.blocker.minimize_to_tray  # Load from config
+        
+        # Track open ADHD Buster dialog for refresh on loot drops
+        self.adhd_dialog = None
         self._setup_system_tray()
 
         # Check for crash recovery on startup
@@ -4789,8 +4857,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                                    "Set your desired duration and click Start Focus!")
 
     def _open_adhd_buster(self) -> None:
-        dialog = ADHDBusterDialog(self.blocker, self)
-        dialog.exec()
+        self.adhd_dialog = ADHDBusterDialog(self.blocker, self)
+        self.adhd_dialog.finished.connect(self._on_adhd_dialog_closed)
+        self.adhd_dialog.exec()
         if GAMIFICATION_AVAILABLE and hasattr(self, "buster_btn"):
             # Update button visibility and text based on mode
             enabled = is_gamification_enabled(self.blocker.adhd_buster)
@@ -4798,6 +4867,15 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if enabled:
                 power = calculate_character_power(self.blocker.adhd_buster)
                 self.buster_btn.setText(f"🦸 ADHD Buster  ⚔ {power}")
+
+    def _on_adhd_dialog_closed(self) -> None:
+        """Clear reference when ADHD dialog closes."""
+        self.adhd_dialog = None
+
+    def refresh_adhd_dialog(self) -> None:
+        """Refresh ADHD Buster dialog if it's open."""
+        if hasattr(self, 'adhd_dialog') and self.adhd_dialog is not None:
+            self.adhd_dialog.refresh_gear_combos()
 
     def _open_diary(self) -> None:
         dialog = DiaryDialog(self.blocker, self)

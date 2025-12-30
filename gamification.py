@@ -930,6 +930,14 @@ They vanish.
 "That was The Archon," The Keeper explains. "We used to be friends. Long story."
 
 Your journey begins now.
+
+...But as The Keeper turns away, you notice something strange.
+
+Their shadow doesn't match their body. It's reaching toward you.
+
+And it's smiling.
+
+🎲 NEXT TIME: The Keeper has secrets. Your helmet is whispering. And why does The Archon's voice sound so... familiar?
 """,
     },
     {
@@ -962,6 +970,12 @@ Your SHADOW SELF—the version of you that loves distraction—has escaped.
 
 "That's concerning," The Keeper says.
 
+Actually, "concerning" is an understatement. You just released your worst impulses into a realm specifically designed to feed them unlimited power.
+
+Somewhere, your Shadow Self is probably already watching cat videos on an infinite screen.
+
+🎲 NEXT TIME: Your evil twin is loose. The mirror shards are glowing. And The Keeper just got a message they're pretending you didn't see...
+
 ⚡ A CHOICE AWAITS... The shattered mirror fragments still glow with power.
 """,
         "content_after_decision": {
@@ -979,6 +993,14 @@ Power floods into you from the destroyed fragments. Your eyes glow briefly.
 The Keeper's expression darkens. "Don't listen. That's how it starts."
 
 The Archon is watching you. They seem impressed. That's probably not good.
+
+But here's what's REALLY not good: Your reflection in the nearest surface?
+
+It just winked at you. And pointed at The Keeper.
+
+Then held up a sign: "ASK THEM ABOUT THE PROPHECY."
+
+🎲 NEXT TIME: There's a prophecy?! The Archon left you a gift. And your shadow self just sent you a friend request.
 """,
             "B": """
 [YOUR CHOICE: 🔍 STUDY THE SHARDS]
@@ -998,6 +1020,16 @@ A slow clap echoes. The Archon steps from the shadows.
 They vanish. Your heart beats faster than it should.
 
 The Keeper sighs. "They're interested in you. That's always complicated."
+
+Complicated doesn't begin to cover it. Because you just realized something:
+
+The shard you kept? It's warm. And humming. And showing you visions of...
+
+Is that The Keeper and The Archon... KISSING?
+
+Wait. Those aren't visions. Those are MEMORIES. The shard belonged to one of them.
+
+🎲 NEXT TIME: Your magic shard is basically relationship drama on repeat. The Archon sends flowers. (They're on fire.) And Lyra has a confession that changes EVERYTHING.
 """,
         },
     },
@@ -1035,6 +1067,16 @@ Lyra was The Keeper's former partner—before The Archon came between them.
 "We need to talk," Lyra says. "All of us. About what you've started."
 
 Your {cloak} billows. At {current_power} power, you're finally a real player here.
+
+But here's the thing nobody mentioned: Lyra has The Keeper's eyes.
+
+Not similar. IDENTICAL. Down to the exact pattern in the iris.
+
+And when she thinks you're not looking, she mouths two words to The Keeper:
+
+"It's time."
+
+🎲 NEXT TIME: The love triangle has a fourth corner. Lyra knows something about you. And that wasn't your shadow you saw in the Valley... was it?
 """,
             "B": """
 Your path of wisdom has earned respect. They call you the one who sees.
@@ -1067,6 +1109,14 @@ Lyra was The Keeper's former partner. Before The Archon. Before the fall.
 "You loved them," Lyra finishes coldly. "And I wasn't enough."
 
 At {current_power} power, you're learning the real story. It's messier than you thought.
+
+But messy gets messier. Because as Lyra storms off, you catch a glimpse of her reflection in a pool.
+
+It's not her face looking back. It's The Archon's.
+
+Wearing Lyra's smile.
+
+🎲 NEXT TIME: Nobody here is who they say they are. The Keeper has been lying. And someone in your party is definitely working for the enemy. (Spoiler: It might be everyone.)
 """,
         },
     },
@@ -1106,6 +1156,16 @@ The figure doesn't respond. Lost forever in false comfort.
 
 Kira was Lyra's sister. The Archon lied about letting her escape.
 
+Meanwhile, your pocket vibrates. You forgot you even HAD a pocket.
+
+There's a note inside. Written in YOUR handwriting.
+
+"DON'T TRUST THE KEEPER. THEY PLANNED THIS. —FUTURE YOU"
+
+Wait. WHAT?
+
+🎲 NEXT TIME: Time travel exists here?! The Fortress wants you personally. And that bean bag Kira is sitting in? It's BREATHING.
+
 ⚡ A CHOICE AWAITS... Lyra is spiraling. The Fortress is closing in.
 """,
         "content_after_decision": {
@@ -1135,6 +1195,12 @@ As the Fortress dies, you hear The Archon's laughter.
 "Thank you for destroying my competition. One less distraction in my way."
 
 You were used. And you're furious.
+
+But fury doesn't explain why The Archon's laugh sounded so... familiar.
+
+Like hearing your own voice on a recording. Wrong, but unmistakable.
+
+🎲 NEXT TIME: The Archon knows your name. Your REAL name. The one you haven't used since you were five. Also, Lyra can apparently fly now? Nobody seems to find this unusual.
 """,
             "B": """
 [YOUR CHOICE: 🌀 FIND THE HIDDEN PATH]
@@ -1160,6 +1226,12 @@ You emerge unseen, carrying knowledge the Fortress never meant to share.
 
 The Fortress stores its victims. Which means The Archon's realm might do the same.
 Every awakener who ever "failed" might still be rescued.
+
+In the Fortress's memories, you saw something else: The Keeper—younger, different—HELPING to build this place.
+
+They haven't noticed you noticed. But now everything is a question.
+
+🎲 NEXT TIME: The Keeper has a TWIN. They're both "The Keeper." Nobody thought to mention this. Also, that rescue army you mentioned? The Archon already recruited them. Plot twist: they VOLUNTEER.
 """,
         },
     },
@@ -1198,6 +1270,18 @@ But in the visions, the fire always consumes its wielder.
 "WHAT?!"
 
 The Keeper has been in contact with The Archon. They have a desperate plan.
+
+Oh, and one more thing: That note from Future You? It just updated itself.
+
+New message: "SAID DON'T TRUST THEM. YOU NEVER LISTEN. P.S. CHECK YOUR LEFT BOOT."
+
+You check. There's a tiny scroll. It says: "The Keeper IS The Archon."
+
+But... they're standing right there. Both of them.
+
+Unless...
+
+🎲 NEXT TIME: Either there are two Archons, the scroll is lying, or reality is broken. Possibly all three. And your Shadow Self just applied to join your party. They sent a RESUME.
 """,
             "AB": """
 At {current_power} power, you've become something rare.
@@ -1224,6 +1308,18 @@ Their presence is intoxicating. Something in you responds.
 "The Archon collects interesting people. Then they corrupt them."
 
 But what if you could change them instead? The thought arrives unbidden. Dangerous.
+
+The Archon catches your eye through the time-crack. They smile.
+
+Then they mouth three words: "I know everything."
+
+The crack closes. But not before showing you one last image:
+
+You. On a throne. Wearing The Archon's crown. Looking... happy?
+
+That's not a threat. That's a SPOILER. And honestly? You don't hate it.
+
+🎲 NEXT TIME: The Archon has seen your future. Your Shadow Self opens a coffee shop. (It's surprisingly successful.) And The Keeper finally explains why they smell like time travel.
 """,
             "BA": """
 At {current_power} power, you've earned a new title: THE SCHOLAR-WARRIOR.
@@ -1252,6 +1348,18 @@ The Archon smiles. "What I've always wanted. A worthy equal."
 
 They're not lying. The Sanctum confirms it. The Archon genuinely wants you.
 As a partner. A co-ruler. And part of you—a bigger part than you'd like—is tempted.
+
+The Sanctum is neutral ground. Nobody can lie here.
+
+Which is why it's so terrifying when The Archon adds: "Also, your Keeper killed forty-seven awakeners before you. Deliberately. To find the right one."
+
+The Keeper's face goes white.
+
+"That's... context matters..." they stammer.
+
+The Archon laughs. "Ask them about the SELECTION PROCESS. I dare you."
+
+🎲 NEXT TIME: Your mentor might be a serial killer. The Archon offers therapy. (Theirs is surprisingly good.) And Lyra discovers she's been dead the entire time. OR HAS SHE?
 """,
             "BB": """
 At {current_power} power, you've become something unprecedented.
@@ -1286,6 +1394,22 @@ Now they're all stuck here, pretending to be enemies.
 The Archon laughs bitterly. "Home? I don't remember what that means."
 
 "Then let me remind you."
+
+The Archon stares at you. Nobody has ever offered them kindness before.
+
+Their armor cracks. Just a little. Just enough to show... a face you recognize.
+
+It's older. Sadder. But unmistakable.
+
+The Archon looks exactly like Future You.
+
+"Oh," The Archon whispers, seeing your recognition. "You finally noticed."
+
+"We're the same person. Separated by time. And I came back to stop myself from becoming... me."
+
+WHAT.
+
+🎲 NEXT TIME: You are literally your own worst enemy. The Keeper knew the whole time. And now you have to decide: save yourself, or save the person you'll become?
 """,
         },
     },
@@ -1335,6 +1459,26 @@ The Archon makes a choice. They join the battle. Against their own army.
 
 Together—the four of you—you push back the tide. Your Shadow Self stands alone, defeated.
 
+It kneels, waiting. But before you can decide its fate—
+
+Your Shadow Self pulls out a PHONE.
+
+"Before you judge me," it says, "you should see this."
+
+It's a video. Of The Keeper. Creating your Shadow Self ON PURPOSE.
+
+"It was supposed to make you stronger," The Keeper stammers. "I didn't know it would—"
+
+"DIDN'T KNOW?!" The Archon laughs. "You did the SAME THING TO ME!"
+
+Wait. The Archon has a Shadow Self too?
+
+"Had," The Archon corrects. "I absorbed it centuries ago. It's been driving me insane ever since."
+
+Your Shadow Self grins with your face. "So. Still want to absorb me? The Archon is EXHIBIT A of how that ends."
+
+🎲 NEXT TIME: Your mentor has been sabotaging everyone. The Archon might be salvageable. And your Shadow Self just offered to be your THERAPIST.
+
 ⚡ A CHOICE AWAITS... It kneels before you, awaiting judgment.
 """,
         "content_after_decision": {
@@ -1365,6 +1509,18 @@ They offer their hand. "Together. We could rule this realm... fairly."
 
 Do they mean it? Can monsters love? You don't know.
 But you're one of them now.
+
+The Final Door pulses in the distance. Beyond it: your ending.
+
+But as you approach, hand in The Archon's, you catch your reflection in a puddle.
+
+It's not just you anymore. There are THREE faces staring back.
+
+You. Your absorbed shadow. And someone you don't recognize.
+
+Someone who's been watching this whole time.
+
+🎲 THE FINALE AWAITS: The Final Door has eight possible endings. Your choices have sealed your path. But one mystery remains: WHO IS THE THIRD FACE?
 """,
             "B": """
 [YOUR CHOICE: 🕊️ FORGIVE AND RELEASE]
@@ -1392,6 +1548,20 @@ I thought that was winning." Their voice cracks. "Was I wrong?"
 
 You showed The Archon something new—that the war within can end.
 Not with victory. With peace. And for the first time, they want what you have.
+
+The Archon removes their helmet. Underneath: a face full of cracks. Beautiful cracks.
+
+"Can you teach me?" they ask. "How to forgive myself?"
+
+Lyra gasps. The Keeper weeps. You just broke a thousand-year cycle with a hug.
+
+The Final Door glows. All eight endings are possible now—but only one feels right.
+
+And as you walk toward it, you hear something impossible:
+
+Applause. From OUTSIDE the realm. Someone's been WATCHING.
+
+🎲 THE FINALE AWAITS: You healed the monster. The Door is open. But who has been watching your story unfold? And why are they clapping?
 """,
         },
     },
@@ -4254,6 +4424,7 @@ def get_story_data(adhd_buster: dict) -> tuple:
 def get_story_progress(adhd_buster: dict) -> dict:
     """
     Get the user's story progress based on their power level.
+    Chapters unlock based on max power ever reached (permanent unlock).
     
     Returns:
         dict with 'current_chapter', 'unlocked_chapters', 'chapters', 'next_threshold', 
@@ -4263,19 +4434,24 @@ def get_story_progress(adhd_buster: dict) -> dict:
     story_id = get_selected_story(adhd_buster)
     story_info = AVAILABLE_STORIES.get(story_id, AVAILABLE_STORIES["warrior"])
     
-    power = calculate_character_power(adhd_buster)
+    current_power = calculate_character_power(adhd_buster)
+    max_power = adhd_buster.get("max_power_reached", 0)
+    
+    # Use max power for unlocking (chapters stay unlocked once reached)
+    unlock_power = max(current_power, max_power)
+    
     unlocked = []
     current_chapter = 0
     
     for i, threshold in enumerate(STORY_THRESHOLDS):
-        if power >= threshold:
+        if unlock_power >= threshold:
             unlocked.append(i + 1)
             current_chapter = i + 1
     
-    # Find next threshold
+    # Find next threshold based on current power (what you need now)
     next_threshold = None
     for threshold in STORY_THRESHOLDS:
-        if power < threshold:
+        if current_power < threshold:
             next_threshold = threshold
             break
     
@@ -4303,17 +4479,18 @@ def get_story_progress(adhd_buster: dict) -> dict:
         })
     
     return {
-        "power": power,
+        "power": current_power,
         "current_chapter": current_chapter,
         "unlocked_chapters": unlocked,
         "chapters": chapters,
         "total_chapters": len(story_chapters),
         "next_threshold": next_threshold,
-        "power_to_next": next_threshold - power if next_threshold else 0,
+        "power_to_next": next_threshold - current_power if next_threshold else 0,
         "decisions": decisions,
         "decisions_made": len(decisions),
         "selected_story": story_id,
         "story_info": story_info,
+        "max_power_reached": unlock_power,  # Include for UI display if needed
     }
 
 
@@ -4487,12 +4664,16 @@ Decisions made: {}/3
     # Chapters with variations based on previous decisions
     elif "content_variations" in chapter:
         variations = chapter["content_variations"]
-        # Find the best matching variation
-        if decision_path in variations:
-            content = variations[decision_path]
-        elif len(decision_path) >= 1 and decision_path[0] in variations:
-            content = variations[decision_path[0]]
-        else:
+        # Find the best matching variation by progressively shortening the path
+        content = None
+        # Try exact match first, then progressively shorter prefixes
+        for length in range(len(decision_path), 0, -1):
+            prefix = decision_path[:length]
+            if prefix in variations:
+                content = variations[prefix]
+                break
+        # Fallback to first variation if no match
+        if content is None:
             content = chapter.get("content", list(variations.values())[0])
     
     # Simple chapters
@@ -4578,6 +4759,7 @@ def _create_empty_hero() -> dict:
         "luck_bonus": 0,
         "total_collected": 0,
         "last_daily_reward_date": "",
+        "max_power_reached": 0,  # Highest power ever achieved - chapters stay unlocked
     }
 
 
@@ -4669,6 +4851,7 @@ def _sync_active_hero_to_flat_internal(adhd_buster: dict) -> None:
         adhd_buster["luck_bonus"] = 0
         adhd_buster["total_collected"] = 0
         adhd_buster["last_daily_reward_date"] = ""
+        adhd_buster["max_power_reached"] = 0
     elif mode == STORY_MODE_HERO_ONLY:
         hero = adhd_buster.get("free_hero", _create_empty_hero())
         adhd_buster["inventory"] = hero.get("inventory", [])
@@ -4678,6 +4861,7 @@ def _sync_active_hero_to_flat_internal(adhd_buster: dict) -> None:
         adhd_buster["luck_bonus"] = hero.get("luck_bonus", 0)
         adhd_buster["total_collected"] = hero.get("total_collected", 0)
         adhd_buster["last_daily_reward_date"] = hero.get("last_daily_reward_date", "")
+        adhd_buster["max_power_reached"] = hero.get("max_power_reached", 0)
     else:
         # Story mode - get the hero for the active story
         story_id = adhd_buster.get("active_story", "warrior")
@@ -4691,6 +4875,7 @@ def _sync_active_hero_to_flat_internal(adhd_buster: dict) -> None:
         adhd_buster["luck_bonus"] = hero.get("luck_bonus", 0)
         adhd_buster["total_collected"] = hero.get("total_collected", 0)
         adhd_buster["last_daily_reward_date"] = hero.get("last_daily_reward_date", "")
+        adhd_buster["max_power_reached"] = hero.get("max_power_reached", 0)
     
     # Also sync selected_story for backward compatibility
     if mode == STORY_MODE_ACTIVE:
@@ -4792,6 +4977,7 @@ def _sync_flat_to_active_hero(adhd_buster: dict) -> None:
     hero["luck_bonus"] = adhd_buster.get("luck_bonus", 0)
     hero["total_collected"] = adhd_buster.get("total_collected", 0)
     hero["last_daily_reward_date"] = adhd_buster.get("last_daily_reward_date", "")
+    hero["max_power_reached"] = adhd_buster.get("max_power_reached", 0)
 
 
 def switch_story(adhd_buster: dict, story_id: str) -> bool:
@@ -4984,5 +5170,12 @@ def sync_hero_data(adhd_buster: dict) -> None:
     """
     Sync hero data after modifications.
     Call this after any external code modifies the flat adhd_buster structure.
+    Also updates max_power_reached if current power exceeds previous max.
     """
+    # Update max power reached if current power is higher
+    current_power = calculate_character_power(adhd_buster)
+    max_power = adhd_buster.get("max_power_reached", 0)
+    if current_power > max_power:
+        adhd_buster["max_power_reached"] = current_power
+    
     _sync_flat_to_active_hero(adhd_buster)
