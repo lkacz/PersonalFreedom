@@ -195,6 +195,11 @@ switch_story = None
 ensure_hero_structure = None
 sync_hero_data = None
 is_gamification_enabled = lambda adhd_buster: False
+# Story gear theme helpers
+GEAR_SLOTS = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
+STORY_GEAR_THEMES = {}
+get_story_gear_theme = None
+get_slot_display_name = None
 
 
 def load_heavy_modules(splash: Optional[SplashScreen] = None):
@@ -211,6 +216,7 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
     global STORY_MODE_ACTIVE, STORY_MODE_HERO_ONLY, STORY_MODE_DISABLED
     global set_story_mode, get_story_mode, switch_story, ensure_hero_structure
     global sync_hero_data, is_gamification_enabled
+    global GEAR_SLOTS, STORY_GEAR_THEMES, get_story_gear_theme, get_slot_display_name
     
     if splash:
         splash.set_status("Loading core modules...")
@@ -288,7 +294,12 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
             switch_story as _switch_story,
             ensure_hero_structure as _ensure_hero_structure,
             sync_hero_data as _sync_hero_data,
-            is_gamification_enabled as _is_gamification_enabled
+            is_gamification_enabled as _is_gamification_enabled,
+            # Story gear theme helpers
+            GEAR_SLOTS as _GEAR_SLOTS,
+            STORY_GEAR_THEMES as _STORY_GEAR_THEMES,
+            get_story_gear_theme as _get_story_gear_theme,
+            get_slot_display_name as _get_slot_display_name,
         )
         GAMIFICATION_AVAILABLE = True
         RARITY_POWER = _RARITY_POWER
@@ -318,6 +329,11 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         ensure_hero_structure = _ensure_hero_structure
         sync_hero_data = _sync_hero_data
         is_gamification_enabled = _is_gamification_enabled
+        # Story gear theme helpers
+        GEAR_SLOTS = _GEAR_SLOTS
+        STORY_GEAR_THEMES = _STORY_GEAR_THEMES
+        get_story_gear_theme = _get_story_gear_theme
+        get_slot_display_name = _get_slot_display_name
     except ImportError:
         GAMIFICATION_AVAILABLE = False
     
@@ -962,9 +978,13 @@ class TimerTab(QtWidgets.QWidget):
 
         streak = self.blocker.stats.get("streak_days", 0)
         luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+        
+        # Get active story for themed item generation
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
 
         # Generate item (generate_item already imported at top)
-        item = generate_item(session_minutes=session_minutes, streak_days=streak)
+        item = generate_item(session_minutes=session_minutes, streak_days=streak,
+                              story_id=active_story)
 
         # Lucky upgrade chance based on luck bonus
         luck_chance = min(luck / 100, 10)
@@ -973,7 +993,8 @@ class TimerTab(QtWidgets.QWidget):
             current_idx = rarity_order.index(item["rarity"])
             if current_idx < len(rarity_order) - 1:
                 item = generate_item(rarity=rarity_order[current_idx + 1],
-                                      session_minutes=session_minutes, streak_days=streak)
+                                      session_minutes=session_minutes, streak_days=streak,
+                                      story_id=active_story)
                 item["lucky_upgrade"] = True
 
         # Add to inventory
@@ -998,7 +1019,8 @@ class TimerTab(QtWidgets.QWidget):
         if not today_entries:
             power = calculate_character_power(self.blocker.adhd_buster)
             equipped = self.blocker.adhd_buster.get("equipped", {})
-            diary_entry = generate_diary_entry(power, session_minutes, equipped)
+            diary_entry = generate_diary_entry(power, session_minutes, equipped,
+                                               story_id=active_story)
             if "diary" not in self.blocker.adhd_buster:
                 self.blocker.adhd_buster["diary"] = []
             self.blocker.adhd_buster["diary"].append(diary_entry)
@@ -2661,75 +2683,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self.stats_lbl.setStyleSheet("color: gray;")
         self.inner_layout.addWidget(self.stats_lbl)
 
-        # Character canvas and equipment side by side
-        char_equip = QtWidgets.QHBoxLayout()
-        equipped = self.blocker.adhd_buster.get("equipped", {})
-        self.char_canvas = CharacterCanvas(equipped, power_info["total_power"], parent=self)
-        char_equip.addWidget(self.char_canvas)
-        self.char_equip_layout = char_equip  # Store reference for refresh
-
-        equip_group = QtWidgets.QGroupBox("⚔ Equipped Gear (change with dropdown)")
-        equip_layout = QtWidgets.QFormLayout(equip_group)
-        slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
-        inventory = self.blocker.adhd_buster.get("inventory", [])
-
-        for slot in slots:
-            combo = QtWidgets.QComboBox()
-            combo.addItem("[Empty]")
-            slot_items = [item for item in inventory if item.get("slot") == slot]
-            for idx, item in enumerate(slot_items):
-                display = f"{item['name']} (+{item.get('power', 10)}) [{item['rarity'][:1]}]"
-                combo.addItem(display, item)
-            current = equipped.get(slot)
-            if current:
-                for i in range(1, combo.count()):
-                    if combo.itemData(i) and combo.itemData(i).get("name") == current.get("name"):
-                        combo.setCurrentIndex(i)
-                        break
-            combo.currentIndexChanged.connect(lambda idx, s=slot, c=combo: self._on_equip_change(s, c))
-            self.slot_combos[slot] = combo
-            equip_layout.addRow(f"{slot}:", combo)
-        char_equip.addWidget(equip_group)
-        self.inner_layout.addLayout(char_equip)
-
-        # Lucky Merge
-        merge_group = QtWidgets.QGroupBox("🎲 Lucky Merge (High Risk, High Reward!)")
-        merge_layout = QtWidgets.QVBoxLayout(merge_group)
-        merge_layout.addWidget(QtWidgets.QLabel(
-            "Click items in the inventory below to select them for merging.\n"
-            "Items with ✓ are equipped and cannot be merged."
-        ))
-        warn_lbl = QtWidgets.QLabel("⚠️ ~90% failure = ALL items lost! Only ~10% success rate!")
-        warn_lbl.setStyleSheet("color: #d32f2f; font-weight: bold;")
-        merge_layout.addWidget(warn_lbl)
-        self.merge_btn = QtWidgets.QPushButton("🎲 Merge Selected (0)")
-        self.merge_btn.setEnabled(False)
-        self.merge_btn.clicked.connect(self._do_merge)
-        merge_layout.addWidget(self.merge_btn)
-        self.merge_rate_lbl = QtWidgets.QLabel("↓ Click items below to select for merge (Ctrl+click for multiple)")
-        merge_layout.addWidget(self.merge_rate_lbl)
-        self.inner_layout.addWidget(merge_group)
-
-        # Inventory
-        inv_group = QtWidgets.QGroupBox("📦 Inventory (click items to select for merge)")
-        inv_layout = QtWidgets.QVBoxLayout(inv_group)
-        sort_bar = QtWidgets.QHBoxLayout()
-        sort_bar.addWidget(QtWidgets.QLabel("Sort:"))
-        self.sort_combo = QtWidgets.QComboBox()
-        self.sort_combo.addItems(["newest", "rarity", "slot", "power"])
-        self.sort_combo.currentTextChanged.connect(self._refresh_inventory)
-        sort_bar.addWidget(self.sort_combo)
-        sort_bar.addStretch()
-        inv_layout.addLayout(sort_bar)
-        self.inv_list = QtWidgets.QListWidget()
-        self.inv_list.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-        self.inv_list.itemSelectionChanged.connect(self._update_merge_selection)
-        inv_layout.addWidget(self.inv_list)
-        self.inner_layout.addWidget(inv_group)
-
-        self._refresh_inventory()
-
-        # Story Progress Section
+        # Story Progress Section (at top for visibility)
         story_group = QtWidgets.QGroupBox("📜 Your Story")
         story_layout = QtWidgets.QVBoxLayout(story_group)
 
@@ -2801,6 +2755,29 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             self.story_next_lbl.setStyleSheet("color: #666;")
             story_layout.addWidget(self.story_next_lbl)
             
+            # Progress bar for next chapter
+            progress_bar_layout = QtWidgets.QHBoxLayout()
+            progress_bar_layout.addWidget(QtWidgets.QLabel("Progress to Next Chapter:"))
+            self.chapter_progress_bar = QtWidgets.QProgressBar()
+            self.chapter_progress_bar.setMinimum(0)
+            self.chapter_progress_bar.setMaximum(100)
+            self.chapter_progress_bar.setTextVisible(True)
+            self.chapter_progress_bar.setStyleSheet("""
+                QProgressBar {
+                    border: 1px solid #444;
+                    border-radius: 5px;
+                    text-align: center;
+                    height: 20px;
+                }
+                QProgressBar::chunk {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                        stop:0 #4caf50, stop:0.5 #8bc34a, stop:1 #cddc39);
+                    border-radius: 4px;
+                }
+            """)
+            progress_bar_layout.addWidget(self.chapter_progress_bar, 1)
+            story_layout.addLayout(progress_bar_layout)
+            
             self._update_story_progress_labels()
         
         # Chapter selection
@@ -2825,6 +2802,74 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         # Update mode UI state (enable/disable story controls based on mode)
         if GAMIFICATION_AVAILABLE:
             self._update_mode_ui_state()
+
+        # Character canvas and equipment side by side
+        char_equip = QtWidgets.QHBoxLayout()
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        self.char_canvas = CharacterCanvas(equipped, power_info["total_power"], parent=self)
+        char_equip.addWidget(self.char_canvas)
+        self.char_equip_layout = char_equip  # Store reference for refresh
+
+        equip_group = QtWidgets.QGroupBox("⚔ Equipped Gear (change with dropdown)")
+        equip_layout = QtWidgets.QFormLayout(equip_group)
+        slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+
+        for slot in slots:
+            combo = QtWidgets.QComboBox()
+            combo.addItem("[Empty]")
+            slot_items = [item for item in inventory if item.get("slot") == slot]
+            for idx, item in enumerate(slot_items):
+                display = f"{item['name']} (+{item.get('power', 10)}) [{item['rarity'][:1]}]"
+                combo.addItem(display, item)
+            current = equipped.get(slot)
+            if current:
+                for i in range(1, combo.count()):
+                    if combo.itemData(i) and combo.itemData(i).get("name") == current.get("name"):
+                        combo.setCurrentIndex(i)
+                        break
+            combo.currentIndexChanged.connect(lambda idx, s=slot, c=combo: self._on_equip_change(s, c))
+            self.slot_combos[slot] = combo
+            equip_layout.addRow(f"{slot}:", combo)
+        char_equip.addWidget(equip_group)
+        self.inner_layout.addLayout(char_equip)
+
+        # Lucky Merge
+        merge_group = QtWidgets.QGroupBox("🎲 Lucky Merge (High Risk, High Reward!)")
+        merge_layout = QtWidgets.QVBoxLayout(merge_group)
+        merge_layout.addWidget(QtWidgets.QLabel(
+            "Click items in the inventory below to select them for merging.\n"
+            "Items with ✓ are equipped and cannot be merged."
+        ))
+        warn_lbl = QtWidgets.QLabel("⚠️ ~90% failure = ALL items lost! Only ~10% success rate!")
+        warn_lbl.setStyleSheet("color: #d32f2f; font-weight: bold;")
+        merge_layout.addWidget(warn_lbl)
+        self.merge_btn = QtWidgets.QPushButton("🎲 Merge Selected (0)")
+        self.merge_btn.setEnabled(False)
+        self.merge_btn.clicked.connect(self._do_merge)
+        merge_layout.addWidget(self.merge_btn)
+        self.merge_rate_lbl = QtWidgets.QLabel("↓ Click items below to select for merge (Ctrl+click for multiple)")
+        merge_layout.addWidget(self.merge_rate_lbl)
+        self.inner_layout.addWidget(merge_group)
+
+        # Inventory
+        inv_group = QtWidgets.QGroupBox("📦 Inventory (click items to select for merge)")
+        inv_layout = QtWidgets.QVBoxLayout(inv_group)
+        sort_bar = QtWidgets.QHBoxLayout()
+        sort_bar.addWidget(QtWidgets.QLabel("Sort:"))
+        self.sort_combo = QtWidgets.QComboBox()
+        self.sort_combo.addItems(["newest", "rarity", "slot", "power"])
+        self.sort_combo.currentTextChanged.connect(self._refresh_inventory)
+        sort_bar.addWidget(self.sort_combo)
+        sort_bar.addStretch()
+        inv_layout.addLayout(sort_bar)
+        self.inv_list = QtWidgets.QListWidget()
+        self.inv_list.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+        self.inv_list.itemSelectionChanged.connect(self._update_merge_selection)
+        inv_layout.addWidget(self.inv_list)
+        self.inner_layout.addWidget(inv_group)
+
+        self._refresh_inventory()
 
         # Buttons
         btn_layout = QtWidgets.QHBoxLayout()
@@ -3078,7 +3123,8 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
         ) != QtWidgets.QMessageBox.Yes:
             return
-        result = perform_lucky_merge(items, luck)
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        result = perform_lucky_merge(items, luck, story_id=active_story)
         
         # Get the timestamps of items being merged for equipped cleanup
         merged_timestamps = {item.get("obtained_at") for item in items if item.get("obtained_at")}
@@ -3225,7 +3271,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self.story_desc_lbl.setText(f"📖 {story_info.get('description', '')}")
     
     def _update_story_progress_labels(self) -> None:
-        """Update story progress labels."""
+        """Update story progress labels and progress bar."""
         if not GAMIFICATION_AVAILABLE:
             return
         
@@ -3249,6 +3295,49 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             else:
                 self.story_next_lbl.setText("✨ You have unlocked the entire story!")
                 self.story_next_lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
+        
+        # Update progress bar
+        if hasattr(self, 'chapter_progress_bar'):
+            unlocked = len(progress['unlocked_chapters'])
+            total = progress['total_chapters']
+            
+            if progress['next_threshold']:
+                prev_threshold = progress.get('prev_threshold', 0)
+                next_threshold = progress['next_threshold']
+                current_power = progress['power']
+                next_chapter = unlocked + 1
+                
+                # Calculate progress percentage within current chapter range
+                range_size = next_threshold - prev_threshold
+                if range_size > 0:
+                    progress_in_range = current_power - prev_threshold
+                    percentage = int((progress_in_range / range_size) * 100)
+                    percentage = max(0, min(100, percentage))  # Clamp to 0-100
+                else:
+                    percentage = 100
+                
+                self.chapter_progress_bar.setValue(percentage)
+                self.chapter_progress_bar.setFormat(
+                    f"Ch {unlocked}/{total} | {current_power} → {next_threshold} power ({percentage}% to Ch {next_chapter})"
+                )
+                self.chapter_progress_bar.setVisible(True)
+            else:
+                # All chapters unlocked
+                self.chapter_progress_bar.setValue(100)
+                self.chapter_progress_bar.setFormat("✨ Story Complete!")
+                self.chapter_progress_bar.setStyleSheet("""
+                    QProgressBar {
+                        border: 1px solid #444;
+                        border-radius: 5px;
+                        text-align: center;
+                        height: 20px;
+                    }
+                    QProgressBar::chunk {
+                        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                            stop:0 #ffd700, stop:0.5 #ffcc00, stop:1 #ffaa00);
+                        border-radius: 4px;
+                    }
+                """)
 
     def _read_story_chapter(self) -> None:
         """Open a dialog to read the selected story chapter."""
@@ -3530,7 +3619,9 @@ class DiaryDialog(QtWidgets.QDialog):
         # Generate today's entry
         power = calculate_character_power(self.blocker.adhd_buster)
         equipped = self.blocker.adhd_buster.get("equipped", {})
-        entry = generate_diary_entry(power, session_minutes=0, equipped_items=equipped)
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        entry = generate_diary_entry(power, session_minutes=0, equipped_items=equipped,
+                                     story_id=active_story)
         entry["story"] = "[Auto] " + entry["story"]
         entry["is_new"] = True  # Mark as new for display
         
@@ -3628,7 +3719,9 @@ class DiaryDialog(QtWidgets.QDialog):
             return
         power = calculate_character_power(self.blocker.adhd_buster)
         equipped = self.blocker.adhd_buster.get("equipped", {})
-        entry = generate_diary_entry(power, session_minutes=0, equipped_items=equipped)
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        entry = generate_diary_entry(power, session_minutes=0, equipped_items=equipped,
+                                     story_id=active_story)
         entry["story"] = "[Bonus Entry] " + entry["story"]
         if "diary" not in self.blocker.adhd_buster:
             self.blocker.adhd_buster["diary"] = []
@@ -4199,9 +4292,10 @@ class PrioritiesDialog(QtWidgets.QDialog):
         if reply != QtWidgets.QMessageBox.StandardButton.Yes:
             return
         
-        # Roll for reward
+        # Roll for reward with story theme
         from gamification import roll_priority_completion_reward
-        result = roll_priority_completion_reward()
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        result = roll_priority_completion_reward(story_id=active_story)
         
         if result["won"]:
             item = result["item"]

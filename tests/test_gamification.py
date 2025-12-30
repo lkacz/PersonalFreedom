@@ -590,7 +590,7 @@ class TestStorySystem(unittest.TestCase):
         self.assertTrue(chapter["unlocked"])
         self.assertIn("title", chapter)
         self.assertIn("content", chapter)
-        self.assertIn("Awakening", chapter["title"])
+        self.assertIn("Where It Begins", chapter["title"])
     
     def test_get_chapter_content_locked(self) -> None:
         """Test getting content for a locked chapter."""
@@ -902,7 +902,7 @@ class TestMultiStorySystem(unittest.TestCase):
         
         chapter = get_chapter_content(1, adhd_buster)
         self.assertIsNotNone(chapter)
-        self.assertIn("Blueprint", chapter["title"])
+        self.assertIn("Terrible Mess", chapter["title"])
     
     def test_wanderer_story_content(self) -> None:
         """Test that wanderer story has unique content."""
@@ -912,7 +912,7 @@ class TestMultiStorySystem(unittest.TestCase):
         
         chapter = get_chapter_content(1, adhd_buster)
         self.assertIsNotNone(chapter)
-        self.assertIn("Dream", chapter["title"])
+        self.assertIn("2:47 AM", chapter["title"])
     
     def test_underdog_story_content(self) -> None:
         """Test that underdog story has unique content."""
@@ -922,7 +922,7 @@ class TestMultiStorySystem(unittest.TestCase):
         
         chapter = get_chapter_content(1, adhd_buster)
         self.assertIsNotNone(chapter)
-        self.assertIn("Monday", chapter["title"])
+        self.assertIn("Just Another Day", chapter["title"])
     
     def test_story_progress_includes_story_info(self) -> None:
         """Test that story progress includes selected story info."""

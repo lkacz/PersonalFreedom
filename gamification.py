@@ -37,7 +37,7 @@ ITEM_RARITIES = {
     ]}
 }
 
-# Item slots and types
+# Item slots and types (DEFAULT/FALLBACK - used when no story theme is active)
 ITEM_SLOTS = {
     "Helmet": ["Helmet", "Crown", "Hood", "Circlet", "Headband", "Visor", "Cap"],
     "Chestplate": ["Chestplate", "Armor", "Tunic", "Vest", "Robe", "Mail", "Jerkin"],
@@ -48,6 +48,421 @@ ITEM_SLOTS = {
     "Cloak": ["Cloak", "Cape", "Mantle", "Shroud", "Veil", "Scarf"],
     "Amulet": ["Amulet", "Pendant", "Talisman", "Charm", "Necklace", "Medallion"]
 }
+
+# ============================================================================
+# STORY-THEMED GEAR SYSTEM
+# Each story has unique item types, adjectives, and suffixes that match its theme.
+# Items are generated with a story_theme field so they keep their identity.
+# The base slot (Helmet, Weapon, etc.) is used for equipping compatibility.
+# ============================================================================
+
+# Base gear slots - these are the canonical slots used for equipping
+GEAR_SLOTS = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
+
+# Story gear configurations
+# Each story defines:
+#   - theme_id: unique identifier for the theme
+#   - theme_name: display name with emoji
+#   - slot_display: how each slot is displayed in this theme's context
+#   - item_types: what items can drop for each slot
+#   - adjectives: rarity-specific adjectives for item names
+#   - suffixes: rarity-specific suffixes for "of X" part
+#   - set_themes: theme keywords for set bonuses (optional, extends base ITEM_THEMES)
+
+STORY_GEAR_THEMES = {
+    # =========================================================================
+    # WARRIOR THEME - Classic Fantasy
+    # =========================================================================
+    "warrior": {
+        "theme_id": "warrior",
+        "theme_name": "⚔️ Battle Gear",
+        "slot_display": {
+            "Helmet": "Helm",
+            "Chestplate": "Armor",
+            "Gauntlets": "Gauntlets",
+            "Boots": "Greaves",
+            "Shield": "Shield",
+            "Weapon": "Weapon",
+            "Cloak": "Cloak",
+            "Amulet": "Amulet",
+        },
+        "item_types": {
+            "Helmet": ["Helmet", "Crown", "Hood", "Circlet", "Headband", "Visor", "War-Helm"],
+            "Chestplate": ["Chestplate", "Armor", "Tunic", "Mail", "Breastplate", "Cuirass", "Hauberk"],
+            "Gauntlets": ["Gauntlets", "Gloves", "Bracers", "Vambraces", "War-Grips", "Fists"],
+            "Boots": ["Boots", "Greaves", "Sabatons", "Treads", "War-Boots", "Stompers"],
+            "Shield": ["Shield", "Buckler", "Aegis", "Bulwark", "Tower Shield", "Kite Shield"],
+            "Weapon": ["Sword", "Axe", "Hammer", "Mace", "Spear", "Halberd", "Flail", "Claymore"],
+            "Cloak": ["Cloak", "Cape", "Mantle", "War-Banner", "Battle-Shroud", "Champion's Cape"],
+            "Amulet": ["Amulet", "Pendant", "War-Talisman", "Medal", "Victory Charm", "Battle-Totem"],
+        },
+        "adjectives": {
+            "Common": [
+                "Rusty", "Worn-out", "Dented", "Crooked", "Battered", "Tarnished",
+                "Bent", "Cracked", "Weathered", "Scuffed", "Scratched", "Faded"
+            ],
+            "Uncommon": [
+                "Sturdy", "Reliable", "Polished", "Tempered", "Reinforced", "Solid",
+                "Battle-tested", "Sharpened", "Honed", "Veteran's", "Warrior's", "Trusted"
+            ],
+            "Rare": [
+                "Enchanted", "Mystic", "Glowing", "Ancient", "Blessed", "Rune-carved",
+                "Legendary", "Heroic", "Champion's", "Valiant", "Fierce", "Radiant"
+            ],
+            "Epic": [
+                "Dragon-forged", "Titan's", "Phoenix", "Void-touched", "Astral", "Primordial",
+                "Mythic", "Celestial", "Godslayer", "Doom-bringer", "World-Ender", "Fate-Sealed"
+            ],
+            "Legendary": [
+                "Transcendent", "Reality-bending", "Universe-forged", "Eternal", "Infinite",
+                "Apotheosis", "Supreme", "Omnipotent", "Cosmic", "Absolute", "Divine", "Apex"
+            ],
+        },
+        "suffixes": {
+            "Common": [
+                "the Battlefield", "Mild Bruises", "Basic Training", "Yesterday's War",
+                "Forgotten Skirmishes", "Dull Edges", "Mediocre Valor", "Minor Scrapes"
+            ],
+            "Uncommon": [
+                "Steady Strikes", "Growing Strength", "Minor Victories", "the Arena",
+                "Rising Courage", "Honest Combat", "Fair Battles", "Earned Scars"
+            ],
+            "Rare": [
+                "the Conqueror", "Iron Will", "Burning Glory", "Swift Victory",
+                "the Champion", "Fierce Resolve", "Awakened Power", "True Valor"
+            ],
+            "Epic": [
+                "Shattered Armies", "Conquered Realms", "Dragon's Fury", "Titan's Wrath",
+                "Phoenix Flames", "Void Conquest", "Astral Dominion", "Primordial Might"
+            ],
+            "Legendary": [
+                "Transcended Combat", "Reality's Edge", "the Undefeated", "Eternal Glory",
+                "the War God", "Absolute Victory", "Cosmic Triumph", "the Legend Itself"
+            ],
+        },
+        "set_themes": {
+            "Dragon": {"words": ["dragon", "drake", "wyrm"], "bonus_per_match": 25, "emoji": "🐉"},
+            "Phoenix": {"words": ["phoenix", "flame", "fire", "burning"], "bonus_per_match": 20, "emoji": "🔥"},
+            "Titan": {"words": ["titan", "giant", "colossal"], "bonus_per_match": 25, "emoji": "🗿"},
+            "Iron": {"words": ["iron", "steel", "forged"], "bonus_per_match": 15, "emoji": "⚔️"},
+        },
+    },
+
+    # =========================================================================
+    # SCHOLAR THEME - Academic/Library
+    # =========================================================================
+    "scholar": {
+        "theme_id": "scholar",
+        "theme_name": "📚 Scholar's Tools",
+        "slot_display": {
+            "Helmet": "Headwear",
+            "Chestplate": "Robe",
+            "Gauntlets": "Gloves",
+            "Boots": "Footwear",
+            "Shield": "Tome",
+            "Weapon": "Implement",
+            "Cloak": "Mantle",
+            "Amulet": "Focus",
+        },
+        "item_types": {
+            "Helmet": ["Thinking Cap", "Scholar's Hat", "Monocle", "Reading Glasses", "Headband", "Beret", "Mortarboard"],
+            "Chestplate": ["Robe", "Academic Gown", "Lab Coat", "Vest", "Cardigan", "Blazer", "Tweed Jacket"],
+            "Gauntlets": ["Writing Gloves", "Ink-stained Gloves", "Library Mitts", "Page-Turner", "Scribe's Hands"],
+            "Boots": ["Slippers", "Oxford Shoes", "Study Loafers", "Silent Treads", "Library Shoes", "Quiet Steps"],
+            "Shield": ["Tome", "Encyclopedia", "Grimoire", "Lexicon", "Atlas", "Codex", "Reference Book"],
+            "Weapon": ["Quill", "Fountain Pen", "Pointer", "Chalk", "Magnifying Glass", "Letter Opener", "Ruler"],
+            "Cloak": ["Academic Robe", "Graduation Cape", "Research Shawl", "Wisdom Mantle", "Library Shroud"],
+            "Amulet": ["Pocket Watch", "Spectacles Chain", "Scholar's Medal", "Dean's Pendant", "Wisdom Crystal"],
+        },
+        "adjectives": {
+            "Common": [
+                "Dusty", "Dog-eared", "Worn", "Faded", "Coffee-stained", "Wrinkled",
+                "Moth-eaten", "Yellowed", "Creased", "Tattered", "Borrowed", "Overdue"
+            ],
+            "Uncommon": [
+                "Well-researched", "Organized", "Annotated", "Referenced", "Indexed",
+                "Catalogued", "Peer-reviewed", "Published", "Cited", "Reliable", "Thorough"
+            ],
+            "Rare": [
+                "Illuminated", "Ancient", "Legendary", "Arcane", "Mystic", "Rare Edition",
+                "First Print", "Collector's", "Enchanted", "Blessed", "Profound", "Enlightened"
+            ],
+            "Epic": [
+                "Transcendent", "Omniscient", "Reality-Defining", "Cosmic", "Infinite",
+                "Universe-Spanning", "Dimension-Bridging", "Time-Lost", "Primordial", "Apex"
+            ],
+            "Legendary": [
+                "All-Knowing", "Truth-Revealing", "Reality-Bending", "Universe-Forged",
+                "Eternal", "Absolute", "Supreme", "Divine", "Apotheosis", "The Original"
+            ],
+        },
+        "suffixes": {
+            "Common": [
+                "Mild Confusion", "Lost Footnotes", "Misplaced Citations", "Late Fees",
+                "Forgotten Deadlines", "Typos", "Missing Pages", "Broken Spines"
+            ],
+            "Uncommon": [
+                "Clear Thinking", "Organized Notes", "Decent Grades", "Fair Reviews",
+                "Honest Research", "Small Discoveries", "Growing Knowledge", "Good Habits"
+            ],
+            "Rare": [
+                "Brilliant Insight", "Crystal Clarity", "True Understanding", "the Breakthrough",
+                "Profound Wisdom", "Hidden Knowledge", "Ancient Secrets", "Keen Intellect"
+            ],
+            "Epic": [
+                "Shattered Ignorance", "Conquered Confusion", "Absolute Understanding",
+                "the Revelation", "Mind's Apex", "Void Knowledge", "Cosmic Truth"
+            ],
+            "Legendary": [
+                "Transcended Learning", "Universal Knowledge", "Omniscient Insight",
+                "Reality's Secrets", "the All-Knowing", "Absolute Wisdom", "the Truth Itself"
+            ],
+        },
+        "set_themes": {
+            "Arcane": {"words": ["arcane", "mystic", "enchanted", "magical"], "bonus_per_match": 20, "emoji": "✨"},
+            "Ancient": {"words": ["ancient", "old", "eternal", "primordial"], "bonus_per_match": 18, "emoji": "📜"},
+            "Crystal": {"words": ["crystal", "gem", "illuminated"], "bonus_per_match": 15, "emoji": "💎"},
+            "Wisdom": {"words": ["wisdom", "knowledge", "truth", "insight"], "bonus_per_match": 20, "emoji": "🎓"},
+        },
+    },
+
+    # =========================================================================
+    # WANDERER THEME - Mystical/Dreams
+    # =========================================================================
+    "wanderer": {
+        "theme_id": "wanderer",
+        "theme_name": "🌙 Dreamweaver's Attire",
+        "slot_display": {
+            "Helmet": "Crown",
+            "Chestplate": "Vestments",
+            "Gauntlets": "Arm Wraps",
+            "Boots": "Treads",
+            "Shield": "Ward",
+            "Weapon": "Focus",
+            "Cloak": "Shroud",
+            "Amulet": "Charm",
+        },
+        "item_types": {
+            "Helmet": ["Dream Crown", "Star Circlet", "Moon Tiara", "Night Hood", "Astral Halo", "Vision Mask", "Third Eye"],
+            "Chestplate": ["Starweave Robe", "Mooncloth Vest", "Dream Tunic", "Astral Garb", "Night Vestments", "Ether Wrap"],
+            "Gauntlets": ["Dream Catchers", "Star Weavers", "Moon Hands", "Astral Grips", "Night Wraps", "Void Touch"],
+            "Boots": ["Cloud Walkers", "Star Treads", "Moon Steps", "Dream Slippers", "Astral Drifters", "Night Stalkers"],
+            "Shield": ["Dream Ward", "Star Barrier", "Moon Shield", "Astral Aegis", "Night Guard", "Void Wall", "Reality Anchor"],
+            "Weapon": ["Dream Staff", "Star Wand", "Moon Blade", "Astral Scepter", "Night Scythe", "Void Orb", "Cosmic Key"],
+            "Cloak": ["Star Mantle", "Moon Shroud", "Dream Veil", "Astral Cape", "Night Cloak", "Void Curtain", "Reality Fold"],
+            "Amulet": ["Dream Catcher", "Star Pendant", "Moon Crystal", "Astral Charm", "Night Stone", "Void Gem", "Reality Shard"],
+        },
+        "adjectives": {
+            "Common": [
+                "Fading", "Hazy", "Foggy", "Fleeting", "Half-remembered", "Blurry",
+                "Wispy", "Dim", "Pale", "Ghostly", "Transparent", "Ephemeral"
+            ],
+            "Uncommon": [
+                "Lucid", "Vivid", "Clear", "Stable", "Recurring", "Prophetic",
+                "Meaningful", "Symbolic", "Guiding", "Revealing", "True", "Serene"
+            ],
+            "Rare": [
+                "Astral", "Cosmic", "Ethereal", "Transcendent", "Infinite", "Eternal",
+                "Divine", "Celestial", "Sacred", "Blessed", "Awakened", "Enlightened"
+            ],
+            "Epic": [
+                "Reality-Bending", "Dimension-Walking", "Time-Touched", "Void-Born",
+                "Star-Forged", "Moon-Blessed", "Dream-Woven", "Fate-Touched", "Cosmos-Kissed"
+            ],
+            "Legendary": [
+                "All-Dreaming", "Reality-Shaping", "Universe-Spanning", "Existence-Defining",
+                "Infinite", "Eternal", "Absolute", "Supreme", "Divine", "The Dreamer's Own"
+            ],
+        },
+        "suffixes": {
+            "Common": [
+                "Forgotten Dreams", "Hazy Memories", "Lost Sleep", "Restless Nights",
+                "Fading Visions", "Broken Sleep", "Nightmare Fragments", "Sleepwalking"
+            ],
+            "Uncommon": [
+                "Peaceful Slumber", "Clear Visions", "Lucid Moments", "Sweet Dreams",
+                "Calm Nights", "Restful Sleep", "Gentle Whispers", "Soft Moonlight"
+            ],
+            "Rare": [
+                "Prophetic Dreams", "Astral Travel", "the Dream Walker", "Star Visions",
+                "Moon's Blessing", "Night's Embrace", "Cosmic Journeys", "Reality Glimpses"
+            ],
+            "Epic": [
+                "Shattered Nightmares", "Conquered Sleep", "Dimension Walking",
+                "Reality Bending", "Star Dancing", "Moon Commanding", "Void Mastery"
+            ],
+            "Legendary": [
+                "Transcended Reality", "the Dream Itself", "Eternal Slumber",
+                "Universal Dreams", "Cosmic Consciousness", "the Dreaming God", "Infinite Nights"
+            ],
+        },
+        "set_themes": {
+            "Celestial": {"words": ["celestial", "astral", "cosmic", "star"], "bonus_per_match": 25, "emoji": "⭐"},
+            "Moon": {"words": ["moon", "lunar", "night"], "bonus_per_match": 20, "emoji": "🌙"},
+            "Dream": {"words": ["dream", "sleep", "vision"], "bonus_per_match": 18, "emoji": "💭"},
+            "Void": {"words": ["void", "shadow", "dark", "abyss"], "bonus_per_match": 20, "emoji": "🌑"},
+        },
+    },
+
+    # =========================================================================
+    # UNDERDOG THEME - Modern Office/Corporate
+    # =========================================================================
+    "underdog": {
+        "theme_id": "underdog",
+        "theme_name": "🏢 Office Arsenal",
+        "slot_display": {
+            "Helmet": "Headwear",
+            "Chestplate": "Top",
+            "Gauntlets": "Accessories",
+            "Boots": "Footwear",
+            "Shield": "Protection",
+            "Weapon": "Device",
+            "Cloak": "Outerwear",
+            "Amulet": "Badge",
+        },
+        "item_types": {
+            "Helmet": ["Headphones", "Bluetooth Earbuds", "Baseball Cap", "Beanie", "Visor", "Trucker Hat", "Noise-Cancellers"],
+            "Chestplate": ["Hoodie", "Blazer", "Sweater", "Polo Shirt", "T-Shirt", "Button-Down", "Cardigan", "Vest"],
+            "Gauntlets": ["Smartwatch", "Fitness Tracker", "Wristband", "Lucky Bracelet", "Power Gloves", "Typing Fingers"],
+            "Boots": ["Sneakers", "Loafers", "Running Shoes", "Dress Shoes", "Slippers", "Crocs", "Power Boots"],
+            "Shield": ["Laptop", "Tablet", "Notebook", "Binder", "Folder", "Briefcase", "Backpack"],
+            "Weapon": ["Smartphone", "Keyboard", "Mouse", "Pen", "Stapler", "Coffee Mug", "Stress Ball", "Whiteboard Marker"],
+            "Cloak": ["Jacket", "Hoodie", "Raincoat", "Fleece", "Windbreaker", "Trench Coat", "Denim Jacket"],
+            "Amulet": ["ID Badge", "Keycard", "USB Drive", "AirTag", "Lucky Coin", "Motivational Pin", "Employee Award"],
+        },
+        "adjectives": {
+            "Common": [
+                "Cracked-screen", "Low-battery", "Outdated", "Refurbished", "Generic", "Budget",
+                "Off-brand", "2010's", "Hand-me-down", "Borrowed", "Lost-and-found", "Clearance"
+            ],
+            "Uncommon": [
+                "Reliable", "Professional", "Latest-gen", "Well-maintained", "Upgraded",
+                "Certified", "Premium", "Business-class", "Efficient", "Ergonomic", "Synced"
+            ],
+            "Rare": [
+                "Executive", "Limited-edition", "Custom", "Prototype", "Beta", "VIP",
+                "Founder's", "Collector's", "Exclusive", "High-performance", "Next-gen"
+            ],
+            "Epic": [
+                "CEO's Personal", "Silicon Valley", "Billion-dollar", "Startup-Killer",
+                "Industry-Disrupting", "Viral", "Trending", "Game-changing", "Revolutionary"
+            ],
+            "Legendary": [
+                "The Original", "World-changing", "History-making", "Universe-denting",
+                "Reality-defining", "Legendary", "The One and Only", "Mythical", "Apotheosis"
+            ],
+        },
+        "suffixes": {
+            "Common": [
+                "Dead Batteries", "Lost WiFi", "Spam Emails", "Monday Mornings",
+                "Missed Deadlines", "Boring Meetings", "Broken Printers", "No Signal"
+            ],
+            "Uncommon": [
+                "Inbox Zero", "Good Reviews", "Decent Raises", "Work-Life Balance",
+                "Synced Calendars", "Clear Goals", "Fair Managers", "Okay Commutes"
+            ],
+            "Rare": [
+                "the Promotion", "Corner Office", "Recognition", "the Big Win",
+                "Standing Ovation", "Viral Success", "True Leadership", "Dream Job"
+            ],
+            "Epic": [
+                "Conquered Corporations", "Shattered Glass Ceilings", "Industry Dominance",
+                "the Exit Strategy", "Absolute Success", "Market Disruption", "the IPO"
+            ],
+            "Legendary": [
+                "World Domination", "the Legend", "Eternal Success", "Reality's CEO",
+                "the Visionary", "Absolute Victory", "the GOAT", "History Itself"
+            ],
+        },
+        "set_themes": {
+            "Tech": {"words": ["smartphone", "laptop", "tablet", "keyboard", "digital"], "bonus_per_match": 20, "emoji": "📱"},
+            "Coffee": {"words": ["coffee", "mug", "caffeine", "espresso"], "bonus_per_match": 15, "emoji": "☕"},
+            "Executive": {"words": ["executive", "ceo", "vip", "premium", "founder"], "bonus_per_match": 25, "emoji": "💼"},
+            "Startup": {"words": ["startup", "viral", "disrupt", "billion"], "bonus_per_match": 22, "emoji": "🚀"},
+        },
+    },
+}
+
+
+def get_story_gear_theme(story_id: str) -> dict:
+    """
+    Get the gear theme configuration for a story.
+    Falls back to warrior theme if story not found.
+    """
+    return STORY_GEAR_THEMES.get(story_id, STORY_GEAR_THEMES["warrior"])
+
+
+def get_slot_display_name(slot: str, story_id: str = None) -> str:
+    """
+    Get the display name for a gear slot in a story's theme.
+    
+    Args:
+        slot: The canonical slot name (Helmet, Weapon, etc.)
+        story_id: The story to get themed name for (defaults to warrior)
+    
+    Returns:
+        The themed display name for the slot
+    """
+    if story_id is None:
+        story_id = "warrior"
+    theme = get_story_gear_theme(story_id)
+    return theme["slot_display"].get(slot, slot)
+
+
+def get_story_item_types(story_id: str = None) -> dict:
+    """
+    Get the item types configuration for a story.
+    
+    Returns:
+        Dict mapping slots to lists of item type names
+    """
+    if story_id is None:
+        story_id = "warrior"
+    theme = get_story_gear_theme(story_id)
+    return theme["item_types"]
+
+
+def get_story_adjectives(story_id: str = None) -> dict:
+    """
+    Get the adjectives configuration for a story.
+    
+    Returns:
+        Dict mapping rarities to lists of adjectives
+    """
+    if story_id is None:
+        story_id = "warrior"
+    theme = get_story_gear_theme(story_id)
+    return theme["adjectives"]
+
+
+def get_story_suffixes(story_id: str = None) -> dict:
+    """
+    Get the suffixes configuration for a story.
+    
+    Returns:
+        Dict mapping rarities to lists of suffixes
+    """
+    if story_id is None:
+        story_id = "warrior"
+    theme = get_story_gear_theme(story_id)
+    return theme["suffixes"]
+
+
+def get_story_set_themes(story_id: str = None) -> dict:
+    """
+    Get the set bonus themes for a story.
+    Merges story-specific themes with base themes.
+    
+    Returns:
+        Dict of theme configurations for set bonuses
+    """
+    if story_id is None:
+        story_id = "warrior"
+    theme = get_story_gear_theme(story_id)
+    # Merge base themes with story-specific themes
+    merged = ITEM_THEMES.copy()
+    merged.update(theme.get("set_themes", {}))
+    return merged
 
 # Suffix nouns by rarity (for "of X" part)
 ITEM_SUFFIXES = {
@@ -264,11 +679,16 @@ def get_random_tier_jump() -> int:
     return 1  # Fallback
 
 
-def perform_lucky_merge(items: list, luck_bonus: int = 0) -> dict:
+def perform_lucky_merge(items: list, luck_bonus: int = 0, story_id: str = None) -> dict:
     """Attempt a lucky merge of items.
     
     On success, the resulting item can be +1, +2, or +3 tiers higher than
     the base result (with decreasing probability for higher jumps).
+    
+    Args:
+        items: List of items to merge
+        luck_bonus: Luck bonus from character stats
+        story_id: Story theme for the resulting item
     """
     if len(items) < 2:
         return {"success": False, "error": "Need at least 2 items to merge"}
@@ -298,7 +718,7 @@ def perform_lucky_merge(items: list, luck_bonus: int = 0) -> dict:
         final_idx = min(lowest_idx + tier_jump, len(RARITY_ORDER) - 1)
         final_rarity = RARITY_ORDER[final_idx]
         
-        result["result_item"] = generate_item(rarity=final_rarity)
+        result["result_item"] = generate_item(rarity=final_rarity, story_id=story_id)
         result["base_rarity"] = RARITY_ORDER[lowest_idx]
         result["final_rarity"] = final_rarity
     else:
@@ -311,6 +731,638 @@ def perform_lucky_merge(items: list, luck_bonus: int = 0) -> dict:
 # ADHD Buster Diary - Epic Adventure Journal System
 # ============================================================================
 
+# ============================================================================
+# STORY-THEMED DIARY CONTENT
+# Each story has unique verbs, targets, locations, outcomes, and flavor text
+# that reflect the character's daily struggles in their world.
+# ============================================================================
+
+STORY_DIARY_THEMES = {
+    # =========================================================================
+    # WARRIOR DIARY - Classic Fantasy Adventures
+    # =========================================================================
+    "warrior": {
+        "theme_name": "⚔️ Battle Chronicle",
+        "verbs": {
+            "pathetic": [
+                "accidentally poked", "tripped over", "awkwardly stared at",
+                "nervously waved at", "mildly annoyed", "bumped into",
+                "gave a participation trophy to", "accidentally photobombed"
+            ],
+            "modest": [
+                "challenged to honorable combat", "traded blows with", "sparred with",
+                "had a training match with", "arm-wrestled", "competed against"
+            ],
+            "decent": [
+                "defeated in single combat", "vanquished", "outmaneuvered",
+                "conquered", "bested in battle", "triumphed over"
+            ],
+            "heroic": [
+                "slayed", "banished to another realm", "sealed away forever",
+                "struck down with legendary fury", "crushed the army of"
+            ],
+            "epic": [
+                "obliterated from existence", "erased from the battlefield of time",
+                "became the doom of", "shattered the very essence of"
+            ],
+            "legendary": [
+                "became one with the warrior spirit alongside",
+                "transcended mortal combat with", "achieved battle nirvana with"
+            ],
+            "godlike": [
+                "redefined the concept of victory against",
+                "became the eternal champion by defeating"
+            ]
+        },
+        "targets": {
+            "pathetic": [
+                "training dummy", "confused goblin scout", "lost merchant's chicken",
+                "grumpy innkeeper", "a scarecrow that looked suspicious"
+            ],
+            "modest": [
+                "goblin raiding party", "bandit captain", "wolf pack alpha",
+                "orc berserker", "rival knight in training"
+            ],
+            "decent": [
+                "dragon whelp", "veteran warlord", "cursed champion",
+                "demon spawn", "undead general"
+            ],
+            "heroic": [
+                "ancient dragon", "demon prince", "titan of war",
+                "the Shadow Self", "army of the damned"
+            ],
+            "epic": [
+                "the God of Destruction", "primordial chaos beast",
+                "the living concept of warfare"
+            ],
+            "legendary": [
+                "the first warrior ever born", "the spirit of all battles"
+            ],
+            "godlike": [
+                "the cosmic embodiment of conflict", "the original concept of struggle"
+            ]
+        },
+        "locations": {
+            "pathetic": [
+                "behind the tavern", "in the training yard", "near the outhouse",
+                "at the local farmer's field", "in a puddle"
+            ],
+            "modest": [
+                "in the dark forest", "at the mountain pass", "in ancient ruins",
+                "at the haunted crossroads", "in the gladiator pit"
+            ],
+            "decent": [
+                "at the gates of the dark fortress", "on the dragon's peak",
+                "in the heart of the demon realm", "at the edge of the abyss"
+            ],
+            "heroic": [
+                "in the dimension of eternal battle", "at the crossroads of all wars",
+                "in the void between conquests"
+            ],
+            "epic": [
+                "in a reality forged from pure conflict",
+                "at the point where courage itself was born"
+            ],
+            "legendary": [
+                "in the first battlefield ever conceived"
+            ],
+            "godlike": [
+                "at the source code of valor itself"
+            ]
+        },
+        "outcomes": {
+            "pathetic": [
+                "a minor bruise", "awkward silence", "both of us just walking away",
+                "a promise to try again tomorrow"
+            ],
+            "modest": [
+                "mutual respect", "a worthy rivalry begun",
+                "both of us gaining experience", "a draw"
+            ],
+            "decent": [
+                "glorious victory", "songs being written", "a statue commissioned",
+                "the bards taking notice"
+            ],
+            "heroic": [
+                "legends being born", "prophecies being fulfilled",
+                "the gods nodding in approval"
+            ],
+            "epic": [
+                "reality itself trembling", "new constellations forming in my honor"
+            ],
+            "legendary": [
+                "the concept of 'victory' being permanently redefined"
+            ],
+            "godlike": [
+                "a new era of heroism beginning"
+            ]
+        },
+        "flavor": {
+            "pathetic": [
+                "My sword was a bit rusty.",
+                "I forgot my shield at home.",
+                "My battle cry came out as a squeak."
+            ],
+            "modest": [
+                "The crowd of three people seemed mildly impressed.",
+                "A passing knight gave me a nod.",
+                "My armor only clanked embarrassingly twice."
+            ],
+            "decent": [
+                "The stars aligned for this battle.",
+                "Ancient war drums echoed in approval.",
+                "My ancestors watched with pride."
+            ],
+            "heroic": [
+                "The gods paused their own battles to watch.",
+                "Time itself slowed to witness my strike.",
+                "Lightning struck at the perfect moment."
+            ],
+            "epic": [
+                "Parallel versions of me in other dimensions also won.",
+                "The multiverse's war council took notes."
+            ],
+            "legendary": [
+                "This battle is now taught in celestial academies."
+            ],
+            "godlike": [
+                "I am now the cosmic standard for victory."
+            ]
+        }
+    },
+
+    # =========================================================================
+    # SCHOLAR DIARY - Academic & Intellectual Pursuits  
+    # =========================================================================
+    "scholar": {
+        "theme_name": "📚 Research Journal",
+        "verbs": {
+            "pathetic": [
+                "lost a citation battle with", "got out-footnoted by",
+                "had my thesis questioned by", "was corrected on grammar by",
+                "spilled coffee while debating", "forgot my argument against"
+            ],
+            "modest": [
+                "successfully cited sources against", "peer-reviewed the work of",
+                "engaged in scholarly discourse with", "defended my position to",
+                "traded research notes with", "collaborated on a paper with"
+            ],
+            "decent": [
+                "demolished the thesis of", "published a rebuttal to",
+                "achieved academic recognition alongside", "proved wrong the theory of",
+                "discovered a breakthrough while studying with"
+            ],
+            "heroic": [
+                "revolutionized the field against the objections of",
+                "achieved tenure by out-researching", "won the Nobel Prize over",
+                "became the definitive authority despite"
+            ],
+            "epic": [
+                "transcended human knowledge to understand",
+                "unlocked the secrets of the universe from",
+                "became omniscient by studying"
+            ],
+            "legendary": [
+                "merged consciousness with all knowledge of",
+                "became the living embodiment of wisdom from"
+            ],
+            "godlike": [
+                "redefined the nature of truth itself regarding"
+            ]
+        },
+        "targets": {
+            "pathetic": [
+                "a particularly aggressive spell-checker", "overdue library fine",
+                "an undergrad with too many questions", "corrupted save file",
+                "a pretentious coffee shop philosopher"
+            ],
+            "modest": [
+                "a rival researcher", "stubborn peer reviewer",
+                "ancient text with terrible handwriting", "complex theorem",
+                "skeptical department head"
+            ],
+            "decent": [
+                "a centuries-old academic mystery", "the leading expert in the field",
+                "a forbidden text", "an impossible mathematical proof"
+            ],
+            "heroic": [
+                "the grand council of scholars", "knowledge itself",
+                "the mystery of consciousness", "the theory of everything"
+            ],
+            "epic": [
+                "the fundamental nature of reality", "the source code of mathematics",
+                "the cosmic library of all knowledge"
+            ],
+            "legendary": [
+                "the first thought ever conceived"
+            ],
+            "godlike": [
+                "the concept of understanding itself"
+            ]
+        },
+        "locations": {
+            "pathetic": [
+                "in the back of the library", "at my cluttered desk",
+                "in the coffee-stained study room", "during a boring lecture"
+            ],
+            "modest": [
+                "in the grand library", "at the academic conference",
+                "in the rare manuscripts section", "at the symposium"
+            ],
+            "decent": [
+                "in the forbidden archives", "at the tower of ancient wisdom",
+                "in the dimension of pure thought"
+            ],
+            "heroic": [
+                "in the cosmic university", "at the intersection of all knowledge",
+                "in the library between worlds"
+            ],
+            "epic": [
+                "in a reality made entirely of information",
+                "at the point where knowledge becomes wisdom"
+            ],
+            "legendary": [
+                "in the concept of 'understanding' itself"
+            ],
+            "godlike": [
+                "at the source of all intellectual light"
+            ]
+        },
+        "outcomes": {
+            "pathetic": [
+                "a strongly-worded footnote", "needing more coffee",
+                "a revision being required", "an awkward silence in the seminar"
+            ],
+            "modest": [
+                "a paper being published", "grudging peer approval",
+                "my citation count increasing", "a grant being approved"
+            ],
+            "decent": [
+                "a paradigm shift", "textbooks being rewritten",
+                "a Nobel nomination", "standing ovation at the conference"
+            ],
+            "heroic": [
+                "entire fields being renamed after me",
+                "my equations becoming universal constants"
+            ],
+            "epic": [
+                "omniscience being briefly achieved",
+                "the universe's mysteries being solved"
+            ],
+            "legendary": [
+                "knowledge itself bowing in respect"
+            ],
+            "godlike": [
+                "becoming the living definition of genius"
+            ]
+        },
+        "flavor": {
+            "pathetic": [
+                "My highlighter ran out halfway through.",
+                "I cited the wrong edition. Again.",
+                "The library closed before I could finish."
+            ],
+            "modest": [
+                "My reading glasses steamed up with excitement.",
+                "Other scholars nodded thoughtfully.",
+                "The footnotes were particularly elegant."
+            ],
+            "decent": [
+                "The ancient texts glowed with approval.",
+                "Einstein's ghost gave me a thumbs up.",
+                "My brain felt briefly infinite."
+            ],
+            "heroic": [
+                "The cosmic library added a wing in my name.",
+                "Mathematical constants rearranged in my honor."
+            ],
+            "epic": [
+                "Reality briefly became a well-organized bibliography."
+            ],
+            "legendary": [
+                "The universe's thesis committee passed me unanimously."
+            ],
+            "godlike": [
+                "I am now the peer review for reality itself."
+            ]
+        }
+    },
+
+    # =========================================================================
+    # WANDERER DIARY - Surreal Dream Adventures
+    # =========================================================================
+    "wanderer": {
+        "theme_name": "🌙 Dream Chronicle",
+        "verbs": {
+            "pathetic": [
+                "got lost while following", "sleepwalked into",
+                "had a confusing dream about", "accidentally napped through meeting",
+                "daydreamed awkwardly near", "zoned out while looking at"
+            ],
+            "modest": [
+                "navigated the dream realm with", "shared a vision with",
+                "wandered through memories alongside", "decoded dream symbols with",
+                "found meaning while meditating on"
+            ],
+            "decent": [
+                "mastered lucid dreaming against", "bent reality with",
+                "walked between dimensions with", "unlocked hidden memories of",
+                "achieved prophetic clarity about"
+            ],
+            "heroic": [
+                "became the dreamweaver alongside", "transcended consciousness with",
+                "merged with the collective unconscious of",
+                "conquered the nightmare realm of"
+            ],
+            "epic": [
+                "became one with the cosmic dream alongside",
+                "rewrote the fabric of sleep itself with",
+                "achieved eternal lucidity regarding"
+            ],
+            "legendary": [
+                "became the source of all dreams with",
+                "transcended the boundary between sleep and reality with"
+            ],
+            "godlike": [
+                "became the dreamer who dreams the universe with"
+            ]
+        },
+        "targets": {
+            "pathetic": [
+                "that weird recurring dream", "sleep paralysis demon",
+                "the snooze button", "my own pillow", "insomnia"
+            ],
+            "modest": [
+                "wandering dream spirit", "moon phantom", "star whisper",
+                "twilight guardian", "sleep sage"
+            ],
+            "decent": [
+                "the Nightmare King", "ancient dream oracle",
+                "the keeper of forgotten memories", "the lord of lucid realms"
+            ],
+            "heroic": [
+                "the collective unconscious", "the void between dreams",
+                "the primordial dreamer", "the cosmic sleepwalker"
+            ],
+            "epic": [
+                "the concept of sleep itself", "the boundary between real and unreal",
+                "infinite dream dimensions"
+            ],
+            "legendary": [
+                "the first dream ever dreamed"
+            ],
+            "godlike": [
+                "the cosmic dreamer who dreams existence"
+            ]
+        },
+        "locations": {
+            "pathetic": [
+                "in a half-remembered dream", "on my creaky bed",
+                "between hitting snooze buttons", "in that weird 3am state"
+            ],
+            "modest": [
+                "in the twilight realm", "at the moon's reflection",
+                "in a lucid dream", "at the edge of sleep"
+            ],
+            "decent": [
+                "in the deepest level of dream", "at the gates of the astral plane",
+                "in the collective unconscious", "between waking and sleeping"
+            ],
+            "heroic": [
+                "in the dimension of pure imagination",
+                "at the crossroads of all possible dreams"
+            ],
+            "epic": [
+                "in a dream within a dream within infinity",
+                "at the source of all visions"
+            ],
+            "legendary": [
+                "in the concept of 'possibility' itself"
+            ],
+            "godlike": [
+                "at the point where imagination becomes reality"
+            ]
+        },
+        "outcomes": {
+            "pathetic": [
+                "waking up confused", "drool on my pillow",
+                "forgetting the dream immediately", "being late for everything"
+            ],
+            "modest": [
+                "peaceful sleep", "prophetic insight",
+                "a meaningful vision", "creative inspiration"
+            ],
+            "decent": [
+                "lucid dream mastery", "psychic awakening",
+                "visions of the future", "dream realm recognition"
+            ],
+            "heroic": [
+                "becoming a legend in the dream world",
+                "having dreams seek my guidance"
+            ],
+            "epic": [
+                "the boundary between dreams and reality dissolving",
+                "becoming eternal in the realm of sleep"
+            ],
+            "legendary": [
+                "dreams and reality becoming one at my will"
+            ],
+            "godlike": [
+                "existence itself becoming my lucid dream"
+            ]
+        },
+        "flavor": {
+            "pathetic": [
+                "I'm not even sure I was awake.",
+                "My alarm went off at the worst moment.",
+                "I can't remember if this actually happened."
+            ],
+            "modest": [
+                "The stars seemed to whisper approval.",
+                "The moon winked at me. Probably.",
+                "I felt unusually well-rested afterward."
+            ],
+            "decent": [
+                "The veil between worlds thinned for me.",
+                "Other dreamers sensed my presence.",
+                "Time moved strangely, as it should."
+            ],
+            "heroic": [
+                "The dream realm itself acknowledged me.",
+                "Infinite possibilities opened before me."
+            ],
+            "epic": [
+                "I briefly became everything that ever dreamed."
+            ],
+            "legendary": [
+                "Dreams now dream of me."
+            ],
+            "godlike": [
+                "I am the sleep from which all awakening comes."
+            ]
+        }
+    },
+
+    # =========================================================================
+    # UNDERDOG DIARY - Corporate Office Adventures
+    # =========================================================================
+    "underdog": {
+        "theme_name": "🏢 Office Chronicle",
+        "verbs": {
+            "pathetic": [
+                "got passive-aggressively emailed by", "was micromanaged by",
+                "had my lunch stolen by", "got stuck in a meeting with",
+                "crashed Excel while presenting to", "forgot the name of"
+            ],
+            "modest": [
+                "survived a meeting with", "successfully dodged work from",
+                "networked awkwardly with", "collaborated reluctantly with",
+                "reached inbox zero despite"
+            ],
+            "decent": [
+                "outperformed the KPIs of", "got promoted over",
+                "delivered a killer presentation to", "closed the deal against",
+                "impressed the board by defeating"
+            ],
+            "heroic": [
+                "became the legend of the office by crushing",
+                "got the corner office by outworking",
+                "achieved CEO status by transcending"
+            ],
+            "epic": [
+                "became an industry titan by obliterating",
+                "disrupted the entire market against",
+                "achieved mogul status by absorbing"
+            ],
+            "legendary": [
+                "became synonymous with success by transcending",
+                "redefined what success means by defeating"
+            ],
+            "godlike": [
+                "became the living concept of hustle against"
+            ]
+        },
+        "targets": {
+            "pathetic": [
+                "the office printer", "that one passive-aggressive coworker",
+                "the broken coffee machine", "reply-all email chain",
+                "the intern who asks too many questions"
+            ],
+            "modest": [
+                "my micromanaging supervisor", "the credit-stealing colleague",
+                "endless Slack notifications", "unrealistic deadline",
+                "soul-crushing performance review"
+            ],
+            "decent": [
+                "the toxic senior manager", "hostile takeover attempt",
+                "quarterly targets from hell", "impossible client demands"
+            ],
+            "heroic": [
+                "the CEO's impossible expectations", "industry-wide disruption",
+                "the entire competition", "the board of directors"
+            ],
+            "epic": [
+                "the concept of corporate mediocrity",
+                "the very idea of the rat race", "capitalism itself"
+            ],
+            "legendary": [
+                "the original corporate ladder"
+            ],
+            "godlike": [
+                "the fundamental nature of work-life balance"
+            ]
+        },
+        "locations": {
+            "pathetic": [
+                "at my cramped cubicle", "in the break room fridge battle",
+                "during the world's longest meeting", "in the parking lot dispute"
+            ],
+            "modest": [
+                "in the conference room", "at the quarterly review",
+                "during the team building exercise", "at the client dinner"
+            ],
+            "decent": [
+                "in the corner office", "at the board meeting",
+                "during the hostile takeover", "at the industry summit"
+            ],
+            "heroic": [
+                "at the Forbes interview", "during my IPO",
+                "at the global headquarters", "on the TED stage"
+            ],
+            "epic": [
+                "in the metaverse corporate realm",
+                "at the intersection of all industries"
+            ],
+            "legendary": [
+                "in the concept of 'success' itself"
+            ],
+            "godlike": [
+                "at the source code of ambition"
+            ]
+        },
+        "outcomes": {
+            "pathetic": [
+                "another meeting being scheduled", "a strongly-worded email",
+                "passive-aggressive CC'ing", "exactly what I expected (nothing)"
+            ],
+            "modest": [
+                "a decent performance review", "a small bonus",
+                "surviving until Friday", "getting credit for once"
+            ],
+            "decent": [
+                "a promotion", "a corner office", "industry recognition",
+                "my face on the company newsletter"
+            ],
+            "heroic": [
+                "becoming a LinkedIn inspiration", "Harvard case study status",
+                "Fortune 500 listing"
+            ],
+            "epic": [
+                "becoming an industry legend", "my name becoming a verb"
+            ],
+            "legendary": [
+                "redefining what 'career' means for humanity"
+            ],
+            "godlike": [
+                "work-life balance being achieved universally"
+            ]
+        },
+        "flavor": {
+            "pathetic": [
+                "My coffee was cold by the time I drank it.",
+                "Someone definitely saw me napping.",
+                "The WiFi dropped at the worst moment."
+            ],
+            "modest": [
+                "I actually understood the TPS reports.",
+                "My desk plant seemed proud.",
+                "Someone laughed at my email joke."
+            ],
+            "decent": [
+                "The CEO remembered my name.",
+                "My LinkedIn post got real engagement.",
+                "The quarterly report mentioned me specifically."
+            ],
+            "heroic": [
+                "Business schools added me to their curriculum.",
+                "My success story went viral."
+            ],
+            "epic": [
+                "Elon tweeted about my achievement.",
+                "Multiple industries felt the disruption."
+            ],
+            "legendary": [
+                "The concept of 'success' was updated in dictionaries."
+            ],
+            "godlike": [
+                "I am now the gold standard for corporate achievement."
+            ]
+        }
+    },
+}
+
+
+# Default diary content (fallback for compatibility)
 DIARY_POWER_TIERS = {
     "pathetic": (0, 49),
     "modest": (50, 149),
@@ -548,8 +1600,20 @@ def calculate_session_tier_boost(session_minutes: int) -> int:
     return 0
 
 
-def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: dict = None) -> dict:
-    """Generate a hilarious diary entry based on character power level."""
+def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: dict = None,
+                         story_id: str = None) -> dict:
+    """
+    Generate a hilarious diary entry based on character power level and story theme.
+    
+    Args:
+        power: Character's current power level
+        session_minutes: Length of the focus session
+        equipped_items: Dict of equipped items (for item mentions)
+        story_id: Story theme for diary content (None = use default/warrior)
+    
+    Returns:
+        dict with diary entry data including story, tier info, and timestamp
+    """
     base_tier = get_diary_power_tier(power)
     available_tiers = list(DIARY_POWER_TIERS.keys())
     base_tier_index = available_tiers.index(base_tier)
@@ -566,12 +1630,28 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
     if adjacent_chance < 0.15 and tier_index < len(available_tiers) - 1:
         verb_tier = available_tiers[tier_index + 1]
     
-    verb = random.choice(DIARY_VERBS[verb_tier])
-    adjective = random.choice(DIARY_ADJECTIVES[tier])
-    target = random.choice(DIARY_TARGETS[tier])
-    location = random.choice(DIARY_LOCATIONS[tier])
-    outcome = random.choice(DIARY_OUTCOMES[tier])
-    flavor = random.choice(DIARY_FLAVOR[tier])
+    # Get story-themed content if available
+    if story_id and story_id in STORY_DIARY_THEMES:
+        theme = STORY_DIARY_THEMES[story_id]
+        theme_name = theme["theme_name"]
+        
+        # Get themed content, falling back to defaults if tier not found
+        verb = random.choice(theme["verbs"].get(verb_tier, DIARY_VERBS[verb_tier]))
+        target = random.choice(theme["targets"].get(tier, DIARY_TARGETS[tier]))
+        location = random.choice(theme["locations"].get(tier, DIARY_LOCATIONS[tier]))
+        outcome = random.choice(theme["outcomes"].get(tier, DIARY_OUTCOMES[tier]))
+        flavor = random.choice(theme["flavor"].get(tier, DIARY_FLAVOR[tier]))
+        # Use default adjectives (they work well across all themes)
+        adjective = random.choice(DIARY_ADJECTIVES[tier])
+    else:
+        # Fallback to default (warrior-style) content
+        theme_name = "⚔️ Adventure Log"
+        verb = random.choice(DIARY_VERBS[verb_tier])
+        adjective = random.choice(DIARY_ADJECTIVES[tier])
+        target = random.choice(DIARY_TARGETS[tier])
+        location = random.choice(DIARY_LOCATIONS[tier])
+        outcome = random.choice(DIARY_OUTCOMES[tier])
+        flavor = random.choice(DIARY_FLAVOR[tier])
     
     story = f"Today I {verb} {adjective} {target} {location} and it ended in {outcome}."
     
@@ -581,11 +1661,32 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
         if equipped_list:
             featured_item = random.choice(equipped_list)
             item_name = featured_item.get("name", "mysterious item")
-            item_templates = [
-                f"My trusty {item_name} proved essential.",
-                f"I couldn't have done it without my {item_name}.",
-                f"The {item_name} glowed with approval.",
-            ]
+            
+            # Story-themed item mention templates
+            if story_id == "scholar":
+                item_templates = [
+                    f"My trusty {item_name} provided the crucial insight.",
+                    f"I consulted my {item_name} for guidance.",
+                    f"The {item_name} practically glowed with knowledge.",
+                ]
+            elif story_id == "wanderer":
+                item_templates = [
+                    f"My {item_name} pulsed with dream energy.",
+                    f"The {item_name} guided me through the visions.",
+                    f"I felt my {item_name} resonating with the cosmic frequency.",
+                ]
+            elif story_id == "underdog":
+                item_templates = [
+                    f"My {item_name} gave me the edge I needed.",
+                    f"Couldn't have crushed it without my {item_name}.",
+                    f"The {item_name} was clutch in that moment.",
+                ]
+            else:  # warrior or default
+                item_templates = [
+                    f"My trusty {item_name} proved essential.",
+                    f"I couldn't have done it without my {item_name}.",
+                    f"The {item_name} glowed with approval.",
+                ]
             item_mention = random.choice(item_templates)
     
     full_entry = f"{story} {flavor}"
@@ -602,7 +1703,9 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
         "tier_boosted": tier_was_boosted,
         "session_boost": session_boost,
         "session_minutes": session_minutes,
-        "short_date": datetime.now().strftime("%b %d, %Y")
+        "short_date": datetime.now().strftime("%b %d, %Y"),
+        "story_theme": story_id or "warrior",
+        "theme_name": theme_name
     }
 
 
@@ -664,11 +1767,19 @@ def get_boosted_rarity(current_tier: str) -> str:
     return RARITY_ORDER[boosted_idx]
 
 
-def generate_daily_reward_item(adhd_buster: dict) -> dict:
-    """Generate a daily reward item - one tier higher than current equipped tier."""
+def generate_daily_reward_item(adhd_buster: dict, story_id: str = None) -> dict:
+    """
+    Generate a daily reward item - one tier higher than current equipped tier.
+    Uses the active story's theme for item generation.
+    """
     current_tier = get_current_tier(adhd_buster)
     boosted_rarity = get_boosted_rarity(current_tier)
-    return generate_item(rarity=boosted_rarity)
+    
+    # Get the active story if not specified
+    if story_id is None:
+        story_id = adhd_buster.get("active_story", "warrior")
+    
+    return generate_item(rarity=boosted_rarity, story_id=story_id)
 
 
 # Priority completion reward settings
@@ -683,10 +1794,13 @@ PRIORITY_REWARD_WEIGHTS = {
 }
 
 
-def roll_priority_completion_reward() -> dict | None:
+def roll_priority_completion_reward(story_id: str = None) -> dict | None:
     """
     Roll for a priority completion reward.
     Low chance (15%) to win, but if you win, high chance of Epic/Legendary!
+    
+    Args:
+        story_id: Story theme for item generation
     
     Returns:
         dict with 'won' (bool), 'item' (dict or None), 'message' (str)
@@ -704,8 +1818,8 @@ def roll_priority_completion_reward() -> dict | None:
     weights = [PRIORITY_REWARD_WEIGHTS[r] for r in rarities]
     lucky_rarity = random.choices(rarities, weights=weights)[0]
     
-    # Generate the item with this rarity
-    item = generate_item(rarity=lucky_rarity)
+    # Generate the item with this rarity and story theme
+    item = generate_item(rarity=lucky_rarity, story_id=story_id)
     
     rarity_messages = {
         "Common": "A small gift for your hard work!",
@@ -722,8 +1836,20 @@ def roll_priority_completion_reward() -> dict | None:
     }
 
 
-def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int = 0) -> dict:
-    """Generate a random item with rarity influenced by session length and streak."""
+def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int = 0,
+                  story_id: str = None) -> dict:
+    """
+    Generate a random item with rarity influenced by session length and streak.
+    
+    Args:
+        rarity: Force a specific rarity (None = random based on weights)
+        session_minutes: Session length for luck bonus
+        streak_days: Streak days for luck bonus
+        story_id: Story theme to use for item generation (None = use fallback)
+    
+    Returns:
+        dict with item properties including story_theme for display
+    """
     if rarity is None:
         rarities = list(ITEM_RARITIES.keys())
         base_weights = [ITEM_RARITIES[r]["weight"] for r in rarities]
@@ -744,10 +1870,25 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         
         rarity = random.choices(rarities, weights=weights)[0]
     
-    slot = random.choice(list(ITEM_SLOTS.keys()))
-    item_type = random.choice(ITEM_SLOTS[slot])
-    adjective = random.choice(ITEM_RARITIES[rarity]["adjectives"])
-    suffix = random.choice(ITEM_SUFFIXES[rarity])
+    # Get story-themed item generation data
+    if story_id and story_id in STORY_GEAR_THEMES:
+        theme = STORY_GEAR_THEMES[story_id]
+        item_types = theme["item_types"]
+        adjectives = theme["adjectives"]
+        suffixes = theme["suffixes"]
+        theme_id = story_id
+    else:
+        # Fallback to default (warrior theme for compatibility)
+        item_types = ITEM_SLOTS
+        adjectives = {r: ITEM_RARITIES[r]["adjectives"] for r in ITEM_RARITIES}
+        suffixes = ITEM_SUFFIXES
+        theme_id = "warrior"
+    
+    # Generate the item
+    slot = random.choice(list(item_types.keys()))
+    item_type = random.choice(item_types[slot])
+    adjective = random.choice(adjectives.get(rarity, adjectives.get("Common", ["Unknown"])))
+    suffix = random.choice(suffixes.get(rarity, suffixes.get("Common", ["Mystery"])))
     
     name = f"{adjective} {item_type} of {suffix}"
     
@@ -758,6 +1899,7 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         "item_type": item_type,
         "color": ITEM_RARITIES[rarity]["color"],
         "power": RARITY_POWER[rarity],
+        "story_theme": theme_id,  # Track which theme generated this item
         "obtained_at": datetime.now().isoformat()
     }
 
@@ -817,25 +1959,25 @@ AVAILABLE_STORIES = {
     "warrior": {
         "id": "warrior",
         "title": "⚔️ The Focus Warrior's Tale",
-        "description": "A classic hero's journey. Battle your inner demons and conquer the fortress of distraction.",
+        "description": "Some battles are fought inward. Some enemies wear familiar faces.",
         "theme": "combat",
     },
     "scholar": {
         "id": "scholar", 
         "title": "📚 The Mind Architect's Path",
-        "description": "Build the perfect mental fortress. Knowledge and strategy are your weapons.",
+        "description": "Every structure needs a blueprint. Every truth needs a seeker.",
         "theme": "intellect",
     },
     "wanderer": {
         "id": "wanderer",
         "title": "🌙 The Dream Walker's Journey",
-        "description": "Navigate the surreal dreamscape of your subconscious. Reality bends to your will.",
+        "description": "Between waking and sleep lies a door. Not everyone who opens it can close it.",
         "theme": "mystical",
     },
     "underdog": {
         "id": "underdog",
         "title": "🏆 The Unlikely Champion",
-        "description": "A regular person vs. an impossible boss. Office politics, real stakes, and sweet victory.",
+        "description": "The smallest moves can topple the tallest towers. Patience is a weapon.",
         "theme": "realistic",
     },
 }
@@ -900,7 +2042,7 @@ WARRIOR_DECISIONS = {
 # Placeholders: {helmet}, {weapon}, {chestplate}, {shield}, {amulet}, {boots}, {gauntlets}, {cloak}
 WARRIOR_CHAPTERS = [
     {
-        "title": "Chapter 1: The Awakening",
+        "title": "Chapter 1: Where It Begins",
         "threshold": 0,
         "has_decision": False,
         "content": """
@@ -941,7 +2083,7 @@ And it's smiling.
 """,
     },
     {
-        "title": "Chapter 2: The First Trial",
+        "title": "Chapter 2: Shattered Glass",
         "threshold": 50,
         "has_decision": True,
         "decision_id": "warrior_mirror",
@@ -1034,7 +2176,7 @@ Wait. Those aren't visions. Those are MEMORIES. The shard belonged to one of the
         },
     },
     {
-        "title": "Chapter 3: The Companion's Secret",
+        "title": "Chapter 3: Old Friends, New Lies",
         "threshold": 120,
         "has_decision": False,
         "content_variations": {
@@ -1121,7 +2263,7 @@ Wearing Lyra's smile.
         },
     },
     {
-        "title": "Chapter 4: The Fortress of False Comfort",
+        "title": "Chapter 4: What You Deserve",
         "threshold": 250,
         "has_decision": True,
         "decision_id": "warrior_fortress",
@@ -1236,7 +2378,7 @@ They haven't noticed you noticed. But now everything is a question.
         },
     },
     {
-        "title": "Chapter 5: The Revelation of Time",
+        "title": "Chapter 5: When Tomorrow Met Yesterday",
         "threshold": 450,
         "has_decision": False,
         "content_variations": {
@@ -1414,7 +2556,7 @@ WHAT.
         },
     },
     {
-        "title": "Chapter 6: The War Within",
+        "title": "Chapter 6: Family Reunion",
         "threshold": 800,
         "has_decision": True,
         "decision_id": "warrior_war",
@@ -1566,7 +2708,7 @@ Applause. From OUTSIDE the realm. Someone's been WATCHING.
         },
     },
     {
-        "title": "Chapter 7: The Truth Beyond the Door",
+        "title": "Chapter 7: Going Home",
         "threshold": 1500,
         "has_decision": False,
         "endings": {
@@ -1895,7 +3037,7 @@ SCHOLAR_DECISIONS = {
 
 SCHOLAR_CHAPTERS = [
     {
-        "title": "Chapter 1: The Empty Blueprint",
+        "title": "Chapter 1: A Terrible Mess",
         "threshold": 0,
         "has_decision": False,
         "content": """
@@ -1943,7 +3085,7 @@ Your journey begins with unanswered questions. Typical.
 """,
     },
     {
-        "title": "Chapter 2: The Forbidden Library",
+        "title": "Chapter 2: Do Not Read This",
         "threshold": 50,
         "has_decision": True,
         "decision_id": "scholar_library",
@@ -2040,7 +3182,7 @@ You and Echo share something now. A link.
         },
     },
     {
-        "title": "Chapter 3: The Growing Structure",
+        "title": "Chapter 3: Building Something",
         "threshold": 120,
         "has_decision": False,
         "content_variations": {
@@ -2108,7 +3250,7 @@ And someone is starting to trust you with their broken heart.
         },
     },
     {
-        "title": "Chapter 4: The Paradox Engine",
+        "title": "Chapter 4: The Impossible Machine",
         "threshold": 250,
         "has_decision": True,
         "decision_id": "scholar_paradox",
@@ -2203,7 +3345,7 @@ The Curator is silent now. That's either victory...
         },
     },
     {
-        "title": "Chapter 5: The Grand Design",
+        "title": "Chapter 5: Connecting the Dots",
         "threshold": 450,
         "has_decision": False,
         "content_variations": {
@@ -2306,7 +3448,7 @@ You're not building a library anymore.
         },
     },
     {
-        "title": "Chapter 6: The Final Theorem",
+        "title": "Chapter 6: QED",
         "threshold": 800,
         "has_decision": True,
         "decision_id": "scholar_truth",
@@ -2406,7 +3548,7 @@ You're not sure you believe that. But you HAVE to try.
         },
     },
     {
-        "title": "Chapter 7: The Master Blueprint",
+        "title": "Chapter 7: The Last Page",
         "threshold": 1500,
         "has_decision": False,
         "endings": {
@@ -2704,7 +3846,7 @@ WANDERER_DECISIONS = {
 
 WANDERER_CHAPTERS = [
     {
-        "title": "Chapter 1: The First Dream",
+        "title": "Chapter 1: 2:47 AM",
         "threshold": 0,
         "has_decision": False,
         "content": """
@@ -2756,7 +3898,7 @@ Your journey begins with a threat. As all good journeys do.
 """,
     },
     {
-        "title": "Chapter 2: The Twin Gates",
+        "title": "Chapter 2: Left or Right?",
         "threshold": 50,
         "has_decision": True,
         "decision_id": "wanderer_gate",
@@ -2871,7 +4013,7 @@ The Somnambulist can't see you anymore. Your joy is blinding them.
         },
     },
     {
-        "title": "Chapter 3: The Deeper Dream",
+        "title": "Chapter 3: Further Down",
         "threshold": 120,
         "has_decision": False,
         "content_variations": {
@@ -2954,7 +4096,7 @@ Behind you, Reverie grabs your hand. "It's okay," they whisper.
         },
     },
     {
-        "title": "Chapter 4: The Buried Memory",
+        "title": "Chapter 4: What You Forgot",
         "threshold": 250,
         "has_decision": True,
         "decision_id": "wanderer_memory",
@@ -3063,7 +4205,7 @@ The Sandman is crying. Just a little.
         },
     },
     {
-        "title": "Chapter 5: The Dream Logic",
+        "title": "Chapter 5: It Makes Sense Here",
         "threshold": 450,
         "has_decision": False,
         "content_variations": {
@@ -3177,7 +4319,7 @@ For not giving up on me. For not burning me away OR losing me in light."
         },
     },
     {
-        "title": "Chapter 6: The Final Door",
+        "title": "Chapter 6: Wake Up",
         "threshold": 800,
         "has_decision": True,
         "decision_id": "wanderer_wake",
@@ -3299,7 +4441,7 @@ You don't wake up. But neither does Reverie.
         },
     },
     {
-        "title": "Chapter 7: The Dreamer's Truth",
+        "title": "Chapter 7: Eyes Open",
         "threshold": 1500,
         "has_decision": False,
         "endings": {
@@ -3575,7 +4717,7 @@ UNDERDOG_DECISIONS = {
 
 UNDERDOG_CHAPTERS = [
     {
-        "title": "Chapter 1: Monday Morning",
+        "title": "Chapter 1: Just Another Day",
         "threshold": 0,
         "has_decision": False,
         "content": """
@@ -3616,7 +4758,7 @@ This is the moment. The one that defines who you become.
 """,
     },
     {
-        "title": "Chapter 2: The Evidence",
+        "title": "Chapter 2: Receipts",
         "threshold": 50,
         "has_decision": True,
         "decision_id": "underdog_evidence",
@@ -3720,7 +4862,7 @@ Sam is waiting outside. "You absolute MANIAC. I can't believe that worked."
         },
     },
     {
-        "title": "Chapter 3: The Allies",
+        "title": "Chapter 3: Friends in Low Places",
         "threshold": 120,
         "has_decision": False,
         "content_variations": {
@@ -3789,7 +4931,7 @@ Time to figure out who you can REALLY trust.
         },
     },
     {
-        "title": "Chapter 4: The Betrayal",
+        "title": "Chapter 4: Plot Twist",
         "threshold": 250,
         "has_decision": True,
         "decision_id": "underdog_alliance",
@@ -3892,7 +5034,7 @@ Your coalition is smaller now. But it's YOURS.
         },
     },
     {
-        "title": "Chapter 5: The Showdown",
+        "title": "Chapter 5: Conference Room B",
         "threshold": 450,
         "has_decision": False,
         "content_variations": {
@@ -4007,7 +5149,7 @@ This isn't just career theft anymore. This is CRIMINAL.
         },
     },
     {
-        "title": "Chapter 6: The Fall",
+        "title": "Chapter 6: The Higher They Climb",
         "threshold": 800,
         "has_decision": True,
         "decision_id": "underdog_victory",
@@ -4108,7 +5250,7 @@ A month later, you get a letter. From Marcus.
         },
     },
     {
-        "title": "Chapter 7: The Victory",
+        "title": "Chapter 7: The Corner Office",
         "threshold": 1500,
         "has_decision": False,
         "endings": {
@@ -4485,6 +5627,7 @@ def get_story_progress(adhd_buster: dict) -> dict:
         "chapters": chapters,
         "total_chapters": len(story_chapters),
         "next_threshold": next_threshold,
+        "prev_threshold": STORY_THRESHOLDS[current_chapter - 1] if current_chapter > 0 else 0,
         "power_to_next": next_threshold - current_power if next_threshold else 0,
         "decisions": decisions,
         "decisions_made": len(decisions),
