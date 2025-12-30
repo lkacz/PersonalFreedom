@@ -4,12 +4,12 @@
 
 echo.
 echo =============================================
-echo   Personal Freedom - MASTER BUILD
+echo   Personal Liberty - MASTER BUILD
 echo =============================================
 echo.
 echo This will create:
-echo   1. Standalone package (PersonalFreedom_Package folder)
-echo   2. Windows Installer (PersonalFreedom_Setup.exe)
+echo   1. Standalone package (PersonalLiberty_Package folder)
+echo   2. Windows Installer (PersonalLiberty_Setup.exe)
 echo.
 echo Both include FULLY BUNDLED AI - no dependencies needed!
 echo.
@@ -50,12 +50,12 @@ echo.
 echo TWO DISTRIBUTION OPTIONS CREATED:
 echo.
 echo 1. PORTABLE VERSION (no install needed):
-echo    Location: dist\PersonalFreedom_Package\
-echo    Contents: Just extract and run PersonalFreedom.exe
+echo    Location: dist\PersonalLiberty_Package\
+echo    Contents: Just extract and run PersonalLiberty.exe
 echo    Size: ~500MB (includes all AI libraries)
 echo.
 echo 2. WINDOWS INSTALLER (professional):
-echo    Location: installer_output\PersonalFreedom_Setup_v2.1.exe
+echo    Location: installer_output\PersonalLiberty_Setup_v2.1.exe
 echo    Features: Start menu, desktop icon, autostart, uninstaller
 echo    Size: ~500MB (single file installer)
 echo.
@@ -76,8 +76,8 @@ echo   • Then works 100%% offline forever
 echo   • Automatic GPU acceleration if available
 echo.
 echo FILES READY FOR DISTRIBUTION:
-echo   - Zip dist\PersonalFreedom_Package\ for portable version
-echo   - Upload installer_output\PersonalFreedom_Setup_v2.1.exe
+echo   - Zip dist\PersonalLiberty_Package\ for portable version
+echo   - Upload installer_output\PersonalLiberty_Setup_v2.1.exe
 echo.
 echo Ready to distribute! 🚀
 echo.

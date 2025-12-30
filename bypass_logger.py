@@ -1,5 +1,5 @@
 """
-Bypass Attempt Logger for Personal Freedom
+Bypass Attempt Logger for Personal Liberty
 Runs a local HTTP server to log attempts to access blocked sites.
 
 When sites are blocked via hosts file (redirected to 127.0.0.1),

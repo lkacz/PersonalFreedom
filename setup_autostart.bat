@@ -1,22 +1,22 @@
 @echo off
-:: Setup autostart for Personal Freedom
+:: Setup autostart for Personal Liberty
 :: Adds the app to Windows Startup (runs as admin on login)
 
 echo.
 echo =============================================
-echo   Personal Freedom - Autostart Setup
+echo   Personal Liberty - Autostart Setup
 echo =============================================
 echo.
 
 set "SCRIPT_DIR=%~dp0"
-set "EXE_PATH=%SCRIPT_DIR%dist\PersonalFreedomTray.exe"
+set "EXE_PATH=%SCRIPT_DIR%dist\PersonalLibertyTray.exe"
 set "STARTUP_FOLDER=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
-set "SHORTCUT_PATH=%STARTUP_FOLDER%\PersonalFreedom.lnk"
-set "TASK_NAME=PersonalFreedomAutostart"
+set "SHORTCUT_PATH=%STARTUP_FOLDER%\PersonalLiberty.lnk"
+set "TASK_NAME=PersonalLibertyAutostart"
 
 :: Check if exe exists
 if not exist "%EXE_PATH%" (
-    echo [ERROR] PersonalFreedomTray.exe not found!
+    echo [ERROR] PersonalLibertyTray.exe not found!
     echo Please run build.bat first.
     echo.
     pause
@@ -49,7 +49,7 @@ set "XML_PATH=%TEMP%\pf_task.xml"
 echo ^<?xml version="1.0" encoding="UTF-16"?^>
 echo ^<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task"^>
 echo   ^<RegistrationInfo^>
-echo     ^<Description^>Personal Freedom Focus Blocker - Autostart^</Description^>
+echo     ^<Description^>Personal Liberty Focus Blocker - Autostart^</Description^>
 echo   ^</RegistrationInfo^>
 echo   ^<Triggers^>
 echo     ^<LogonTrigger^>
@@ -83,7 +83,7 @@ powershell -Command "Start-Process schtasks -ArgumentList '/Create /TN \"%TASK_N
 if %errorlevel% equ 0 (
     echo.
     echo [SUCCESS] Autostart configured!
-    echo Personal Freedom will start automatically with admin rights on login.
+    echo Personal Liberty will start automatically with admin rights on login.
 ) else (
     echo.
     echo [ERROR] Failed to create task. Make sure to allow admin elevation.
@@ -96,7 +96,7 @@ echo.
 echo Creating startup shortcut...
 
 :: Create shortcut using PowerShell
-powershell -Command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('%SHORTCUT_PATH%'); $s.TargetPath = '%EXE_PATH%'; $s.WorkingDirectory = '%SCRIPT_DIR%dist'; $s.Description = 'Personal Freedom Focus Blocker'; $s.Save()"
+powershell -Command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateShortcut('%SHORTCUT_PATH%'); $s.TargetPath = '%EXE_PATH%'; $s.WorkingDirectory = '%SCRIPT_DIR%dist'; $s.Description = 'Personal Liberty Focus Blocker'; $s.Save()"
 
 if exist "%SHORTCUT_PATH%" (
     echo.

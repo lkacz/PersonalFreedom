@@ -1,4 +1,4 @@
-# 🚀 Personal Freedom - What's Next?
+# 🚀 Personal Liberty - What's Next?
 
 ## Current Status: v2.1 with AI
 
@@ -23,8 +23,8 @@
 python -m PyInstaller build.bat
 ```
 This will create:
-- `dist/PersonalFreedom.exe` (with AI features)
-- `dist/PersonalFreedomTray.exe` (system tray version)
+- `dist/PersonalLiberty.exe` (with AI features)
+- `dist/PersonalLibertyTray.exe` (system tray version)
 
 **Size increase expected:** +500KB due to AI module
 

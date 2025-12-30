@@ -1,10 +1,10 @@
 @echo off
-:: Build script for Personal Freedom - Focus Blocker
+:: Build script for Personal Liberty - Focus Blocker
 :: Creates standalone .exe files
 
 echo.
 echo =============================================
-echo   Building Personal Freedom
+echo   Building Personal Liberty
 echo =============================================
 echo.
 
@@ -41,7 +41,7 @@ set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --collect-all=transformers --collect-all=se
 echo.
 echo [1/2] Building GUI version with FULL AI bundle...
 echo (This may take 5-10 minutes - bundling PyTorch and transformers)
-pyinstaller --onefile --windowed --name "PersonalFreedom" ^
+pyinstaller --onefile --windowed --name "PersonalLiberty" ^
     --icon=icons\app.ico ^
     --add-data "productivity_ai.py;." ^
     --add-data "local_ai.py;." ^
@@ -51,23 +51,23 @@ pyinstaller --onefile --windowed --name "PersonalFreedom" ^
 
 echo.
 echo [2/2] Creating distribution package...
-if not exist "dist\PersonalFreedom_Package" mkdir "dist\PersonalFreedom_Package"
-copy "dist\PersonalFreedom.exe" "dist\PersonalFreedom_Package\" >nul 2>&1
-copy "README.md" "dist\PersonalFreedom_Package\" >nul 2>&1
-copy "QUICK_START.md" "dist\PersonalFreedom_Package\" >nul 2>&1
-copy "run_as_admin.bat" "dist\PersonalFreedom_Package\" >nul 2>&1
-copy "setup_autostart.bat" "dist\PersonalFreedom_Package\" >nul 2>&1
-copy "setup_no_uac.bat" "dist\PersonalFreedom_Package\" >nul 2>&1
+if not exist "dist\PersonalLiberty_Package" mkdir "dist\PersonalLiberty_Package"
+copy "dist\PersonalLiberty.exe" "dist\PersonalLiberty_Package\" >nul 2>&1
+copy "README.md" "dist\PersonalLiberty_Package\" >nul 2>&1
+copy "QUICK_START.md" "dist\PersonalLiberty_Package\" >nul 2>&1
+copy "run_as_admin.bat" "dist\PersonalLiberty_Package\" >nul 2>&1
+copy "setup_autostart.bat" "dist\PersonalLiberty_Package\" >nul 2>&1
+copy "setup_no_uac.bat" "dist\PersonalLiberty_Package\" >nul 2>&1
 
 :: Create readme for the package
 echo Creating distribution README...
 (
-echo Personal Freedom - AI-Powered Focus Blocker
+echo Personal Liberty - AI-Powered Focus Blocker
 echo ==========================================
 echo.
 echo QUICK START:
 echo 1. Right-click 'run_as_admin.bat' and select "Run as Administrator"
-echo 2. OR: Right-click 'PersonalFreedom.exe' ^> Properties ^> Compatibility ^> "Run as administrator"
+echo 2. OR: Right-click 'PersonalLiberty.exe' ^> Properties ^> Compatibility ^> "Run as administrator"
 echo.
 echo FEATURES:
 echo - Website blocking with timer
@@ -98,21 +98,21 @@ echo - Run 'setup_autostart.bat' to start with Windows
 echo.
 echo NOTE: Administrator privileges required for website blocking to work!
 echo.
-echo For more info: https://github.com/lkacz/PersonalFreedom
-) > "dist\PersonalFreedom_Package\START_HERE.txt"
+echo For more info: https://github.com/lkacz/PersonalLiberty
+) > "dist\PersonalLiberty_Package\START_HERE.txt"
 
-echo Done! Package created in: dist\PersonalFreedom_Package\
+echo Done! Package created in: dist\PersonalLiberty_Package\
 
 echo.
 echo =============================================
 echo   Build Complete!
 echo =============================================
 echo.
-echo DISTRIBUTION PACKAGE: %SCRIPT_DIR%dist\PersonalFreedom_Package\
+echo DISTRIBUTION PACKAGE: %SCRIPT_DIR%dist\PersonalLiberty_Package\
 echo.
 echo Contents:
-echo   - PersonalFreedom.exe        ^(Fully self-contained with AI^)
-echo   - PersonalFreedomTray.exe    ^(System tray version^)
+echo   - PersonalLiberty.exe        ^(Fully self-contained with AI^)
+echo   - PersonalLibertyTray.exe    ^(System tray version^)
 echo   - START_HERE.txt             ^(Quick instructions^)
 echo   - README.md                  ^(Full documentation^)
 echo   - QUICK_START.md             ^(Quick reference^)
@@ -126,6 +126,6 @@ echo   - Automatically detects and uses GPU if available
 echo   - 100%% private - runs completely offline after initial setup
 echo   - Run as Administrator for website blocking!
 echo.
-echo To distribute: Zip the PersonalFreedom_Package folder
+echo To distribute: Zip the PersonalLiberty_Package folder
 echo.
 pause

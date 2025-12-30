@@ -1,10 +1,10 @@
 @echo off
-:: Personal Freedom - Setup No-UAC Launch
+:: Personal Liberty - Setup No-UAC Launch
 :: Creates a scheduled task that runs the app with admin privileges without prompting
 :: Run this ONCE as administrator to set up the shortcut
 
 echo ============================================
-echo  Personal Freedom - No-UAC Setup
+echo  Personal Liberty - No-UAC Setup
 echo ============================================
 echo.
 
@@ -18,12 +18,12 @@ if %errorLevel% neq 0 (
     exit /b 1
 )
 
-set TASK_NAME=PersonalFreedomLauncher
-set APP_PATH=%~dp0dist\PersonalFreedom.exe
+set TASK_NAME=PersonalLibertyLauncher
+set APP_PATH=%~dp0dist\PersonalLiberty.exe
 
 :: Check if app exists
 if not exist "%APP_PATH%" (
-    echo ERROR: PersonalFreedom.exe not found at:
+    echo ERROR: PersonalLiberty.exe not found at:
     echo %APP_PATH%
     echo.
     echo Please build the app first using build.bat
@@ -59,26 +59,26 @@ echo Creating desktop shortcut...
 :: Create a VBS script to make a shortcut that runs the task
 set SHORTCUT_VBS=%TEMP%\create_shortcut.vbs
 echo Set oWS = WScript.CreateObject("WScript.Shell") > "%SHORTCUT_VBS%"
-echo sLinkFile = oWS.SpecialFolders("Desktop") ^& "\Personal Freedom (No UAC).lnk" >> "%SHORTCUT_VBS%"
+echo sLinkFile = oWS.SpecialFolders("Desktop") ^& "\Personal Liberty (No UAC).lnk" >> "%SHORTCUT_VBS%"
 echo Set oLink = oWS.CreateShortcut(sLinkFile) >> "%SHORTCUT_VBS%"
 echo oLink.TargetPath = "schtasks" >> "%SHORTCUT_VBS%"
 echo oLink.Arguments = "/run /tn %TASK_NAME%" >> "%SHORTCUT_VBS%"
 echo oLink.WorkingDirectory = "%~dp0" >> "%SHORTCUT_VBS%"
 echo oLink.IconLocation = "%~dp0icons\app.ico" >> "%SHORTCUT_VBS%"
-echo oLink.Description = "Personal Freedom - Focus Blocker (No UAC Prompt)" >> "%SHORTCUT_VBS%"
+echo oLink.Description = "Personal Liberty - Focus Blocker (No UAC Prompt)" >> "%SHORTCUT_VBS%"
 echo oLink.Save >> "%SHORTCUT_VBS%"
 
 cscript //nologo "%SHORTCUT_VBS%"
 del "%SHORTCUT_VBS%"
 
 echo.
-echo Desktop shortcut created: "Personal Freedom (No UAC)"
+echo Desktop shortcut created: "Personal Liberty (No UAC)"
 echo.
 echo ============================================
 echo  Setup Complete!
 echo ============================================
 echo.
-echo You can now launch Personal Freedom without UAC prompts
+echo You can now launch Personal Liberty without UAC prompts
 echo using the desktop shortcut or by running:
 echo   schtasks /run /tn %TASK_NAME%
 echo.

@@ -1,10 +1,10 @@
 @echo off
-:: Personal Freedom - Focus Blocker Launcher
+:: Personal Liberty - Focus Blocker Launcher
 :: This script runs the application with Administrator privileges
 
 echo.
 echo  ===============================================
-echo   Personal Freedom - Focus Blocker
+echo   Personal Liberty - Focus Blocker
 echo   Block distracting websites during focus time
 echo  ===============================================
 echo.

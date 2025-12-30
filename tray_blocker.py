@@ -1,5 +1,5 @@
 """
-System Tray version of Personal Freedom - Focus Blocker
+System Tray version of Personal Liberty - Focus Blocker
 Runs minimized in the system tray for unobtrusive operation.
 
 Usage:
@@ -32,11 +32,11 @@ except ImportError:
 system_root = os.environ.get('SystemRoot', r'C:\Windows')
 HOSTS_PATH = os.path.join(system_root, r"System32\drivers\etc\hosts")
 REDIRECT_IP = "127.0.0.1"
-MARKER_START = "# === PERSONAL FREEDOM BLOCK START ==="
-MARKER_END = "# === PERSONAL FREEDOM BLOCK END ==="
+MARKER_START = "# === Personal Liberty BLOCK START ==="
+MARKER_END = "# === Personal Liberty BLOCK END ==="
 
 # Single instance mutex name
-MUTEX_NAME = "PersonalFreedomTray_SingleInstance_Mutex"
+MUTEX_NAME = "PersonalLibertyTray_SingleInstance_Mutex"
 
 # Config file path
 SCRIPT_DIR = Path(__file__).parent
@@ -635,9 +635,9 @@ class TrayBlocker:
     def open_full_app(self, icon=None, item=None):
         """Open the full GUI application"""
         # Try exe first
-        exe_path = SCRIPT_DIR / "dist" / "PersonalFreedom.exe"
+        exe_path = SCRIPT_DIR / "dist" / "PersonalLiberty.exe"
         if not exe_path.exists():
-            exe_path = SCRIPT_DIR / "PersonalFreedom.exe"
+            exe_path = SCRIPT_DIR / "PersonalLiberty.exe"
 
         if exe_path.exists():
             print(f"Opening: {exe_path}")
@@ -666,7 +666,7 @@ class TrayBlocker:
     def run(self):
         """Run the system tray application"""
         print("=" * 50)
-        print("  Personal Freedom - System Tray")
+        print("  Personal Liberty - System Tray")
         print("=" * 50)
         print(f"Admin privileges: {'Yes ✓' if is_admin() else 'No ✗'}")
         print(f"Sites loaded: {len(self.blacklist)}")
@@ -680,16 +680,16 @@ class TrayBlocker:
         print("=" * 50)
 
         self.icon = pystray.Icon(
-            "PersonalFreedom",
+            "PersonalLiberty",
             self.create_icon_image(False),
-            "Personal Freedom - Focus Blocker",
+            "Personal Liberty - Focus Blocker",
             self.create_menu()
         )
 
         # Show startup notification
         def after_setup(icon):
             if is_admin():
-                icon.notify("Right-click the icon to start a focus session", "Personal Freedom Ready")
+                icon.notify("Right-click the icon to start a focus session", "Personal Liberty Ready")
             else:
                 icon.notify("Running without admin - blocking won't work!\nRight-click > Open Full App", "⚠️ Admin Required")
 
@@ -700,7 +700,7 @@ def main():
     # Add a small delay to ensure window is ready
     import time
 
-    print("Personal Freedom Tray starting...")
+    print("Personal Liberty Tray starting...")
     print(f"Python: {sys.executable}")
     print(f"Script: {sys.argv[0]}")
     print(f"Working dir: {os.getcwd()}")
@@ -722,7 +722,7 @@ def main():
 
             result = messagebox.askyesno(
                 "Administrator Required",
-                "Personal Freedom needs administrator privileges to block websites.\n\n"
+                "Personal Liberty needs administrator privileges to block websites.\n\n"
                 "Without admin rights, blocking will NOT work.\n\n"
                 "Restart as administrator?",
                 icon='warning'
@@ -744,7 +744,7 @@ def main():
     # Check for single instance
     mutex_handle = check_single_instance()
     if mutex_handle is None:
-        print("Another instance of PersonalFreedomTray is already running.")
+        print("Another instance of PersonalLibertyTray is already running.")
         print("Exiting to prevent duplicate instances.")
         sys.exit(0)
     print("Single instance check passed ✓")

@@ -4,7 +4,7 @@
 
 echo.
 echo =============================================
-echo   Building Personal Freedom Installer
+echo   Building Personal Liberty Installer
 echo =============================================
 echo.
 
@@ -23,8 +23,8 @@ if not exist "%ISCC%" (
 )
 
 :: Check if executables exist
-if not exist "dist\PersonalFreedom.exe" (
-    echo [ERROR] PersonalFreedom.exe not found!
+if not exist "dist\PersonalLiberty.exe" (
+    echo [ERROR] PersonalLiberty.exe not found!
     echo Please run build.bat first to create the executables.
     echo.
     pause
@@ -54,11 +54,11 @@ echo =============================================
 echo.
 
 :: Find the created installer
-for %%f in (installer_output\PersonalFreedom_Setup_*.exe) do (
+for %%f in (installer_output\PersonalLiberty_Setup_*.exe) do (
     set "INSTALLER=%%f"
     echo Installer created: %%f
     echo File size: 
-    dir "%%f" | findstr /R "[0-9].*PersonalFreedom"
+    dir "%%f" | findstr /R "[0-9].*PersonalLiberty"
 )
 
 echo.
@@ -74,8 +74,8 @@ echo   - Autostart option
 echo   - Clean uninstall with data preservation option
 echo.
 echo WHAT'S BUNDLED:
-echo   - PersonalFreedom.exe (with ALL AI dependencies)
-echo   - PersonalFreedomTray.exe
+echo   - PersonalLiberty.exe (with ALL AI dependencies)
+echo   - PersonalLibertyTray.exe
 echo   - Complete documentation
 echo   - No Python or pip required
 echo   - GPU auto-detection

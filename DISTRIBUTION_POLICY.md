@@ -23,24 +23,24 @@
 ```
 
 This creates:
-- `dist\PersonalFreedom_Package\` - Portable version
-- `installer_output\PersonalFreedom_Setup_v2.1.exe` - Installer
+- `dist\PersonalLiberty_Package\` - Portable version
+- `installer_output\PersonalLiberty_Setup_v2.1.exe` - Installer
 
 ### Step 2: Create GitHub Release
 
-1. Go to: https://github.com/lkacz/PersonalFreedom/releases
+1. Go to: https://github.com/lkacz/PersonalLiberty/releases
 2. Click "Draft a new release"
 3. Create a new tag (e.g., `v2.1.0`)
 4. Upload files:
-   - `PersonalFreedom_Setup_v2.1.exe` (from `installer_output/`)
-   - `PersonalFreedom_Package.zip` (zip the folder from `dist/`)
+   - `PersonalLiberty_Setup_v2.1.exe` (from `installer_output/`)
+   - `PersonalLiberty_Package.zip` (zip the folder from `dist/`)
 5. Write release notes describing features
 6. Publish release
 
 ### Step 3: Users Download
 
 Users download from:
-- https://github.com/lkacz/PersonalFreedom/releases/latest
+- https://github.com/lkacz/PersonalLiberty/releases/latest
 
 NOT from cloning the repository.
 

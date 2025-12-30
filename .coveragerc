@@ -1,4 +1,4 @@
-# Coverage configuration for Personal Freedom
+# Coverage configuration for Personal Liberty
 # https://coverage.readthedocs.io/en/latest/config.html
 
 [run]
@@ -47,4 +47,4 @@ skip_empty = True
 
 [html]
 directory = htmlcov
-title = Personal Freedom Coverage Report
+title = Personal Liberty Coverage Report

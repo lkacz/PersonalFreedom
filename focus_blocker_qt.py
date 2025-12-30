@@ -52,7 +52,7 @@ class SplashScreen(QtWidgets.QWidget):
         container_layout.setSpacing(15)
         
         # App icon/title
-        title_label = QtWidgets.QLabel("🛡️ Personal Freedom")
+        title_label = QtWidgets.QLabel("� Personal Liberty")
         title_label.setStyleSheet("""
             QLabel {
                 color: #ffffff;
@@ -341,7 +341,7 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         splash.set_status("Initializing interface...")
 
 # Single instance mutex name
-MUTEX_NAME = "PersonalFreedom_SingleInstance_Mutex"
+MUTEX_NAME = "PersonalLiberty_SingleInstance_Mutex"
 
 
 class HardcoreChallengeDialog(QtWidgets.QDialog):
@@ -1892,7 +1892,7 @@ class SettingsTab(QtWidgets.QWidget):
         # About
         about_group = QtWidgets.QGroupBox("About")
         about_layout = QtWidgets.QVBoxLayout(about_group)
-        about_layout.addWidget(QtWidgets.QLabel(f"Personal Freedom v{APP_VERSION}"))
+        about_layout.addWidget(QtWidgets.QLabel(f"Personal Liberty v{APP_VERSION}"))
         about_layout.addWidget(QtWidgets.QLabel("A focus and productivity tool for Windows"))
         inner.addWidget(about_group)
 
@@ -4580,7 +4580,7 @@ class AISessionCompleteDialog(QtWidgets.QDialog):
 class FocusBlockerWindow(QtWidgets.QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle(f"Personal Freedom v{APP_VERSION}")
+        self.setWindowTitle(f"Personal Liberty v{APP_VERSION}")
         self.resize(900, 700)
 
         self.blocker = BlockerCore()
@@ -4647,7 +4647,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.ai_tab = AITab(self.blocker, self)
             self.tabs.addTab(self.ai_tab, "🧠 AI Insights")
 
-        self.statusBar().showMessage(f"Personal Freedom v{APP_VERSION}")
+        self.statusBar().showMessage(f"Personal Liberty v{APP_VERSION}")
 
         # System Tray setup
         self.tray_icon = None
@@ -4881,7 +4881,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             return
 
         self.tray_icon = QtWidgets.QSystemTrayIcon(self)
-        self.tray_icon.setToolTip("Personal Freedom - Focus Blocker")
+        self.tray_icon.setToolTip("Personal Liberty - Focus Blocker")
 
         # Create tray icon (green circle with check)
         self._update_tray_icon(blocking=False)
@@ -4959,10 +4959,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             m = (remaining % 3600) // 60
             s = remaining % 60
             self.tray_status_action.setText(f"🔒 Blocking - {h:02d}:{m:02d}:{s:02d}")
-            self.tray_icon.setToolTip(f"Personal Freedom - Blocking ({h:02d}:{m:02d}:{s:02d})")
+            self.tray_icon.setToolTip(f"Personal Liberty - Blocking ({h:02d}:{m:02d}:{s:02d})")
         else:
             self.tray_status_action.setText("Ready")
-            self.tray_icon.setToolTip("Personal Freedom - Ready")
+            self.tray_icon.setToolTip("Personal Liberty - Ready")
 
     def _on_tray_activated(self, reason: QtWidgets.QSystemTrayIcon.ActivationReason) -> None:
         """Handle tray icon activation (double-click to restore)."""
@@ -4992,7 +4992,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         if self.tray_icon:
             self.hide()
             self.tray_icon.showMessage(
-                "Personal Freedom",
+                "Personal Liberty",
                 "Still running in system tray. Double-click to restore, or right-click → Exit to quit.",
                 QtWidgets.QSystemTrayIcon.Information,
                 2000
@@ -5069,8 +5069,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.critical(self, "Cleanup Failed", message)
 
     def _show_about(self) -> None:
-        QtWidgets.QMessageBox.about(self, "About Personal Freedom",
-            f"<b>Personal Freedom v{APP_VERSION}</b><br><br>"
+        QtWidgets.QMessageBox.about(self, "About Personal Liberty",
+            f"<b>Personal Liberty v{APP_VERSION}</b><br><br>"
             "A focus and productivity tool for Windows.<br><br>"
             "Built with PySide6 (Qt for Python).")
 
@@ -5192,8 +5192,8 @@ def main() -> None:
     
     # Create app early so we can show splash
     app = QtWidgets.QApplication(sys.argv)
-    app.setApplicationName("Personal Freedom")
-    app.setOrganizationName("PersonalFreedom")
+    app.setApplicationName("Personal Liberty")
+    app.setOrganizationName("PersonalLiberty")
     app.setApplicationVersion(APP_VERSION)
     
     # Check for single instance first
@@ -5202,7 +5202,7 @@ def main() -> None:
         QtWidgets.QMessageBox.warning(
             None,
             "Already Running",
-            "Personal Freedom is already running.\n\nCheck your system tray or taskbar."
+            "Personal Liberty is already running.\n\nCheck your system tray or taskbar."
         )
         sys.exit(0)
     
@@ -5228,7 +5228,7 @@ def main() -> None:
         # Start minimized to system tray
         window.hide()
         window.tray_icon.showMessage(
-            "Personal Freedom",
+            "Personal Liberty",
             "Running in system tray. Double-click to open.",
             QtWidgets.QSystemTrayIcon.Information,
             3000

@@ -1,5 +1,5 @@
 @echo off
-:: Personal Freedom - Run as Administrator
+:: Personal Liberty - Run as Administrator
 :: This batch file requests admin privileges and launches the app
 
 :: Check if already admin

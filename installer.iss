@@ -1,11 +1,11 @@
-; Inno Setup Script for Personal Freedom - AI-Powered Focus Blocker
+; Inno Setup Script for Personal Liberty - AI-Powered Focus Blocker
 ; Requires Inno Setup 6.0 or later: https://jrsoftware.org/isinfo.php
 
-#define MyAppName "Personal Freedom"
-#define MyAppVersion "3.3.0"
-#define MyAppPublisher "Personal Freedom"
-#define MyAppURL "https://github.com/lkacz/PersonalFreedom"
-#define MyAppExeName "PersonalFreedom.exe"
+#define MyAppName "Personal Liberty"
+#define MyAppVersion "4.0.0"
+#define MyAppPublisher "Personal Liberty"
+#define MyAppURL "https://github.com/lkacz/PersonalLiberty"
+#define MyAppExeName "PersonalLiberty.exe"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application
@@ -22,7 +22,7 @@ AllowNoIcons=yes
 LicenseFile=LICENSE.txt
 InfoBeforeFile=INSTALLER_INFO.txt
 OutputDir=installer_output
-OutputBaseFilename=PersonalFreedom_Setup_v{#MyAppVersion}
+OutputBaseFilename=PersonalLiberty_Setup_v{#MyAppVersion}
 SetupIconFile=icons\app.ico
 Compression=lzma2/max
 SolidCompression=yes
@@ -42,7 +42,7 @@ Name: "nouac"; Description: "Create no-UAC shortcut (skip admin prompt on launch
 
 [Files]
 ; Main executable with AI bundled (includes tray functionality)
-Source: "dist\PersonalFreedom.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\PersonalLiberty.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; Icons
 Source: "icons\app.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "icons\tray_ready.png"; DestDir: "{app}"; Flags: ignoreversion
@@ -69,7 +69,7 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 ; Run as admin is required for hosts file modification
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser shellexec
 ; Create no-UAC scheduled task if selected
-Filename: "{sys}\schtasks.exe"; Parameters: "/create /tn ""PersonalFreedomLauncher"" /tr """"""{app}\{#MyAppExeName}"""""" /sc onlogon /rl highest /f"; Tasks: nouac; Flags: runhidden
+Filename: "{sys}\schtasks.exe"; Parameters: "/create /tn ""PersonalLibertyLauncher"" /tr """"""{app}\{#MyAppExeName}"""""" /sc onlogon /rl highest /f"; Tasks: nouac; Flags: runhidden
 
 [Registry]
 ; Add to startup if selected (uses main app with --minimized to start in tray)
@@ -77,10 +77,10 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 
 [UninstallRun]
 ; Kill running processes first
-Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM PersonalFreedom.exe"; Flags: runhidden; RunOnceId: "KillMain"
+Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM PersonalLiberty.exe"; Flags: runhidden; RunOnceId: "KillMain"
 ; Remove scheduled task if exists
-Filename: "{sys}\schtasks.exe"; Parameters: "/delete /tn PersonalFreedomAutostart /f"; Flags: runhidden; RunOnceId: "RemoveTask"
-Filename: "{sys}\schtasks.exe"; Parameters: "/delete /tn PersonalFreedomLauncher /f"; Flags: runhidden; RunOnceId: "RemoveNoUACTask"
+Filename: "{sys}\schtasks.exe"; Parameters: "/delete /tn PersonalLibertyAutostart /f"; Flags: runhidden; RunOnceId: "RemoveTask"
+Filename: "{sys}\schtasks.exe"; Parameters: "/delete /tn PersonalLibertyLauncher /f"; Flags: runhidden; RunOnceId: "RemoveNoUACTask"
 ; Run cleanup script before uninstall (primary method)
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\cleanup_hosts.ps1"" -Silent"; Flags: runhidden waituntilterminated; RunOnceId: "CleanupHosts"
 ; Flush DNS cache
@@ -125,8 +125,8 @@ var
   MarkerStart, MarkerEnd: String;
   NewContent: String;
 begin
-  MarkerStart := '# === PERSONAL FREEDOM BLOCK START ===';
-  MarkerEnd := '# === PERSONAL FREEDOM BLOCK END ===';
+  MarkerStart := '# === Personal Liberty BLOCK START ===';
+  MarkerEnd := '# === Personal Liberty BLOCK END ===';
   HostsPath := ExpandConstant('{sys}\drivers\etc\hosts');
   
   if FileExists(HostsPath) then
@@ -172,7 +172,7 @@ begin
   if RegKeyExists(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#SetupSetting("AppId")}_is1') or
      RegKeyExists(HKEY_CURRENT_USER, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#SetupSetting("AppId")}_is1') then
   begin
-    if MsgBox('Personal Freedom is already installed. Do you want to uninstall it first?', mbConfirmation, MB_YESNO) = IDYES then
+    if MsgBox('Personal Liberty is already installed. Do you want to uninstall it first?', mbConfirmation, MB_YESNO) = IDYES then
     begin
       // Attempt uninstall
       if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#SetupSetting("AppId")}_is1', 'UninstallString', UninstallString) then
@@ -242,6 +242,6 @@ begin
   if MsgBox('Do you want to keep your settings, statistics, and goals?', mbConfirmation, MB_YESNO or MB_DEFBUTTON1) = IDNO then
   begin
     // Delete user data
-    DelTree(ExpandConstant('{userappdata}\PersonalFreedom'), True, True, True);
+    DelTree(ExpandConstant('{userappdata}\PersonalLiberty'), True, True, True);
   end;
 end;

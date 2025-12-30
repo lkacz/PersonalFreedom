@@ -1,8 +1,8 @@
 @echo off
-:: Personal Freedom - System Tray Launcher
+:: Personal Liberty - System Tray Launcher
 :: Runs the system tray version with Administrator privileges
 
-echo Starting Personal Freedom in system tray...
+echo Starting Personal Liberty in system tray...
 
 set "SCRIPT_DIR=%~dp0"
 

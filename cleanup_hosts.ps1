@@ -1,5 +1,5 @@
-# Personal Freedom - Hosts File Cleanup Script
-# This script removes all website blocks added by Personal Freedom
+# Personal Liberty - Hosts File Cleanup Script
+# This script removes all website blocks added by Personal Liberty
 # Run with administrator privileges
 
 param(
@@ -9,8 +9,8 @@ param(
 $ErrorActionPreference = "Stop"
 
 # Markers used by the application
-$MARKER_START = "# === PERSONAL FREEDOM BLOCK START ==="
-$MARKER_END = "# === PERSONAL FREEDOM BLOCK END ==="
+$MARKER_START = "# === Personal Liberty BLOCK START ==="
+$MARKER_END = "# === Personal Liberty BLOCK END ==="
 
 # Hosts file path
 $hostsPath = Join-Path $env:SystemRoot "System32\drivers\etc\hosts"
@@ -22,7 +22,7 @@ function Write-Log {
     }
 }
 
-function Remove-PersonalFreedomBlocks {
+function Remove-PersonalLibertyBlocks {
     try {
         # Check if hosts file exists
         if (-not (Test-Path $hostsPath)) {
@@ -35,11 +35,11 @@ function Remove-PersonalFreedomBlocks {
 
         # Check if our markers exist
         if ($content -notmatch [regex]::Escape($MARKER_START)) {
-            Write-Log "No Personal Freedom blocks found in hosts file."
+            Write-Log "No Personal Liberty blocks found in hosts file."
             return $true
         }
 
-        Write-Log "Found Personal Freedom blocks. Removing..."
+        Write-Log "Found Personal Liberty blocks. Removing..."
 
         # Create backup
         $backupPath = "$hostsPath.pf_backup_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
@@ -59,7 +59,7 @@ function Remove-PersonalFreedomBlocks {
 
         # Write the cleaned content back
         Set-Content -Path $hostsPath -Value $newContent -Encoding UTF8 -Force
-        Write-Log "Successfully removed Personal Freedom blocks from hosts file."
+        Write-Log "Successfully removed Personal Liberty blocks from hosts file."
 
         return $true
     }
@@ -83,10 +83,10 @@ function Clear-DnsCache {
 }
 
 # Main execution
-Write-Log "=== Personal Freedom Cleanup ==="
+Write-Log "=== Personal Liberty Cleanup ==="
 Write-Log ""
 
-$hostsClean = Remove-PersonalFreedomBlocks
+$hostsClean = Remove-PersonalLibertyBlocks
 $dnsClean = Clear-DnsCache
 
 Write-Log ""

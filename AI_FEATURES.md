@@ -2,7 +2,7 @@
 
 ## What We Built
 
-Personal Freedom v2.1 - Now with groundbreaking **AI-powered productivity intelligence**!
+Personal Liberty v2.1 - Now with groundbreaking **AI-powered productivity intelligence**!
 
 ## 🚀 Revolutionary Features Added
 

@@ -11,7 +11,7 @@
 
 ## Reporting a Vulnerability
 
-We take security seriously. If you discover a security vulnerability in Personal Freedom, please follow these steps:
+We take security seriously. If you discover a security vulnerability in Personal Liberty, please follow these steps:
 
 ### Do NOT
 
@@ -66,4 +66,4 @@ The following are in scope for security reports:
 3. **Admin Access**: Only grant admin privileges when starting focus sessions
 4. **Backup Config**: Regularly backup your configuration before updates
 
-Thank you for helping keep Personal Freedom secure!
+Thank you for helping keep Personal Liberty secure!

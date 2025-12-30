@@ -2,7 +2,7 @@
 
 ## What's New?
 
-Personal Freedom now includes **GPU-accelerated AI models** that run locally on your machine for truly intelligent insights!
+Personal Liberty now includes **GPU-accelerated AI models** that run locally on your machine for truly intelligent insights!
 
 ## ✨ New Features
 
