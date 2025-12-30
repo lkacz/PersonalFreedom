@@ -1740,7 +1740,14 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
         outcome = random.choice(DIARY_OUTCOMES[tier])
         flavor = random.choice(DIARY_FLAVOR[tier])
     
-    story = f"Today I {verb} {adjective} {target} {location} and it ended in {outcome}."
+    # Build story sentence - different structure for different themes
+    if story_id == "underdog":
+        # Underdog: adjective describes the situation, not the target
+        # "Today I {verb} {target} {location}. It was {adjective}. It ended in {outcome}."
+        story = f"Today I {verb} {target} {location}. It was {adjective}. It ended in {outcome}."
+    else:
+        # Default pattern for warrior, scholar, wanderer
+        story = f"Today I {verb} {adjective} {target} {location} and it ended in {outcome}."
     
     item_mention = ""
     if equipped_items:
