@@ -95,10 +95,11 @@ Type: files; Name: "{userappdata}\Microsoft\Windows\Start Menu\Programs\Startup\
 Type: files; Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\Personal Liberty.lnk"
 ; Remove No-UAC desktop shortcut if created via setup_no_uac.bat
 Type: files; Name: "{userdesktop}\Personal Liberty (No UAC).lnk"
-; Remove any log files in install directory
+; Remove log and temporary files (always cleaned - not user data)
 Type: files; Name: "{app}\app.log"
-Type: files; Name: "{app}\bypass_attempts.json"
 Type: files; Name: "{app}\.session_state.json"
+; Note: config.json, stats.json, goals.json, bypass_attempts.json are handled
+; conditionally in InitializeUninstall() based on user's choice to keep settings
 
 [Code]
 // Helper function to run PowerShell cleanup script
@@ -255,7 +256,12 @@ begin
   // Now ask about keeping user data
   if MsgBox('Do you want to keep your settings, statistics, and goals?', mbConfirmation, MB_YESNO or MB_DEFBUTTON1) = IDNO then
   begin
-    // Delete user data
+    // Delete user data from install directory
+    DeleteFile(AppPath + '\config.json');
+    DeleteFile(AppPath + '\stats.json');
+    DeleteFile(AppPath + '\goals.json');
+    DeleteFile(AppPath + '\bypass_attempts.json');
+    // Also try AppData location (in case future versions use it)
     DelTree(ExpandConstant('{userappdata}\PersonalLiberty'), True, True, True);
   end;
 end;
