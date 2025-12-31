@@ -7,10 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Initial `CONTRIBUTING.md`, `CHANGELOG.md`, and `CODE_OF_CONDUCT.md`.
+## [4.2.0] - 2025-12-31
 
-## [4.1.0] - 2025-12-XX
+### Added
+- Community health files: `CONTRIBUTING.md`, `CHANGELOG.md`, `CODE_OF_CONDUCT.md`.
+- Version info embedded in Windows EXE (shows in file properties).
+- `.ico` format tray icons for better Windows compatibility.
+
+### Fixed
+- Python 3.9 compatibility (replaced union type syntax with `Optional`).
+- Complete uninstall cleanup (processes, shortcuts, scheduled tasks, log files).
+- CI build pipeline (added .spec files to repository).
+
+## [4.1.0] - 2025-12-31
 
 ### Added
 - **AI-Powered Smart Insights**: Machine learning analysis of productivity patterns.
