@@ -8,7 +8,6 @@
 # Build artifacts
 build/
 dist/
-*.spec
 installer_output/
 
 # Python cache
