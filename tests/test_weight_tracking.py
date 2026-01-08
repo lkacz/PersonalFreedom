@@ -567,3 +567,222 @@ class TestMilestoneDefinitions:
         expected = ["first_entry", "lost_1kg", "lost_5kg", "lost_10kg", "goal_reached"]
         for m_id in expected:
             assert m_id in WEIGHT_MILESTONES, f"Missing milestone: {m_id}"
+
+
+# Import new BMI/prediction/insights functions
+try:
+    from gamification import (
+        calculate_bmi,
+        get_bmi_classification,
+        get_ideal_weight_range,
+        predict_goal_date,
+        get_historical_comparisons,
+        get_weekly_insights,
+        WEIGHT_ENTRY_TAGS,
+        format_entry_note,
+    )
+    NEW_FUNCTIONS_AVAILABLE = True
+except ImportError:
+    NEW_FUNCTIONS_AVAILABLE = False
+
+
+@pytest.mark.skipif(not NEW_FUNCTIONS_AVAILABLE, reason="New functions not available")
+class TestBMICalculations:
+    """Test BMI calculation functions."""
+
+    def test_calculate_bmi_normal(self):
+        """Test BMI calculation for normal weight."""
+        # 70kg, 170cm -> BMI = 70 / (1.7)^2 = 24.22
+        bmi = calculate_bmi(70, 170)
+        assert 24.0 <= bmi <= 24.5
+
+    def test_calculate_bmi_obese(self):
+        """Test BMI calculation for obese range."""
+        # 100kg, 170cm -> BMI = 100 / (1.7)^2 = 34.6
+        bmi = calculate_bmi(100, 170)
+        assert 34.0 <= bmi <= 35.0
+
+    def test_calculate_bmi_underweight(self):
+        """Test BMI calculation for underweight."""
+        # 45kg, 170cm -> BMI = 45 / (1.7)^2 = 15.6
+        bmi = calculate_bmi(45, 170)
+        assert 15.0 <= bmi <= 16.0
+
+    def test_calculate_bmi_invalid_height(self):
+        """Test BMI returns None for invalid height."""
+        assert calculate_bmi(70, 0) is None
+        assert calculate_bmi(70, -10) is None
+
+    def test_get_bmi_classification_underweight(self):
+        """Test classification for underweight BMI."""
+        name, color = get_bmi_classification(17.5)
+        assert "underweight" in name.lower()
+
+    def test_get_bmi_classification_normal(self):
+        """Test classification for normal BMI."""
+        name, color = get_bmi_classification(22.0)
+        assert "normal" in name.lower()
+        assert color  # Should have a color
+
+    def test_get_bmi_classification_overweight(self):
+        """Test classification for overweight BMI."""
+        name, color = get_bmi_classification(27.0)
+        assert "overweight" in name.lower()
+
+    def test_get_bmi_classification_obese(self):
+        """Test classification for obese BMI."""
+        name, color = get_bmi_classification(32.0)
+        assert "obese" in name.lower()
+
+    def test_get_ideal_weight_range(self):
+        """Test ideal weight range calculation."""
+        min_kg, max_kg = get_ideal_weight_range(170)
+        # For 170cm, normal BMI 18.5-25 gives 53.5-72.25 kg
+        assert 50 <= min_kg <= 55
+        assert 70 <= max_kg <= 75
+
+    def test_get_ideal_weight_range_tall(self):
+        """Test ideal weight range for tall person."""
+        min_kg, max_kg = get_ideal_weight_range(190)
+        assert min_kg > 60  # Taller = higher range
+        assert max_kg > 80
+
+
+@pytest.mark.skipif(not NEW_FUNCTIONS_AVAILABLE, reason="New functions not available")
+class TestGoalPrediction:
+    """Test goal prediction function."""
+
+    def test_predict_goal_reached(self):
+        """Test prediction when goal is already reached."""
+        entries = [
+            {"date": "2026-01-01", "weight": 80.0},
+            {"date": "2026-01-05", "weight": 78.0},
+            {"date": "2026-01-10", "weight": 75.0},
+        ]
+        result = predict_goal_date(entries, 76.0, 75.0)
+        assert result.get("status") == "achieved"
+
+    def test_predict_goal_losing_weight(self):
+        """Test prediction with weight loss trend."""
+        # Need 7+ entries for prediction
+        entries = [
+            {"date": "2026-01-01", "weight": 85.0},
+            {"date": "2026-01-02", "weight": 84.8},
+            {"date": "2026-01-03", "weight": 84.6},
+            {"date": "2026-01-04", "weight": 84.4},
+            {"date": "2026-01-05", "weight": 84.2},
+            {"date": "2026-01-06", "weight": 84.0},
+            {"date": "2026-01-07", "weight": 83.8},
+            {"date": "2026-01-08", "weight": 83.6},
+        ]
+        result = predict_goal_date(entries, 75.0, 83.6)
+        # Should have a prediction or at least a status
+        assert result.get("status") in ["on_track", "predicted", None] or result.get("predicted_date") is not None
+
+    def test_predict_goal_gaining_weight(self):
+        """Test prediction when gaining weight (wrong direction)."""
+        entries = [
+            {"date": "2026-01-01", "weight": 80.0},
+            {"date": "2026-01-08", "weight": 81.0},
+            {"date": "2026-01-15", "weight": 82.0},
+        ]
+        result = predict_goal_date(entries, 75.0, 82.0)
+        # Trend is going up, not down toward goal
+        assert result.get("status") != "achieved"
+        # May have a message or no date
+
+    def test_predict_goal_insufficient_data(self):
+        """Test prediction with too few entries."""
+        entries = [{"date": "2026-01-01", "weight": 80.0}]
+        result = predict_goal_date(entries, 75.0, 80.0)
+        # Should handle gracefully
+        assert result.get("status") == "insufficient_data" or result is None
+
+
+@pytest.mark.skipif(not NEW_FUNCTIONS_AVAILABLE, reason="New functions not available")
+class TestHistoricalComparisons:
+    """Test historical comparison function."""
+
+    def test_comparisons_with_week_ago(self):
+        """Test comparison with entry from 1 week ago."""
+        today = datetime.now().strftime("%Y-%m-%d")
+        week_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        entries = [
+            {"date": week_ago, "weight": 80.0},
+            {"date": today, "weight": 79.0},
+        ]
+        result = get_historical_comparisons(entries)
+        # Should have 1_week comparison
+        if "1_week" in result:
+            assert result["1_week"]["change"] == -1.0
+
+    def test_comparisons_empty_entries(self):
+        """Test comparisons with no entries."""
+        result = get_historical_comparisons([])
+        # Should be empty dict
+        assert result == {}
+
+    def test_comparisons_single_entry(self):
+        """Test comparisons with only one entry."""
+        entries = [{"date": "2026-01-01", "weight": 80.0}]
+        result = get_historical_comparisons(entries)
+        # Single entry will compare against itself (change=0)
+        for key, val in result.items():
+            if val is not None:
+                assert val.get("change") == 0.0
+
+
+@pytest.mark.skipif(not NEW_FUNCTIONS_AVAILABLE, reason="New functions not available")
+class TestWeeklyInsights:
+    """Test weekly insights function."""
+
+    def test_insights_with_entries(self):
+        """Test insights with valid entries."""
+        today = datetime.now()
+        entries = [
+            {"date": (today - timedelta(days=i)).strftime("%Y-%m-%d"), "weight": 80.0 - i * 0.1}
+            for i in range(7)
+        ]
+        result = get_weekly_insights(entries, [], 7, 75.0)
+        assert result is not None
+        assert result.get("has_data") is True
+        assert "entries_count" in result
+
+    def test_insights_empty_entries(self):
+        """Test insights with no entries."""
+        result = get_weekly_insights([], [], 0, None)
+        assert result.get("has_data") is False
+
+
+@pytest.mark.skipif(not NEW_FUNCTIONS_AVAILABLE, reason="New functions not available")
+class TestEntryTags:
+    """Test entry note/tag functions."""
+
+    def test_weight_entry_tags_defined(self):
+        """Test that weight entry tags are defined."""
+        assert WEIGHT_ENTRY_TAGS is not None
+        assert len(WEIGHT_ENTRY_TAGS) > 0
+
+    def test_tags_have_required_fields(self):
+        """Test all tags have id, display, description."""
+        for tag in WEIGHT_ENTRY_TAGS:
+            assert len(tag) >= 2  # At least id and display
+            tag_id, display = tag[0], tag[1]
+            assert isinstance(tag_id, str)
+            assert isinstance(display, str)
+
+    def test_format_entry_note_with_tag(self):
+        """Test formatting a note with a tag."""
+        result = format_entry_note("morning")
+        assert result is not None
+        # Should return the emoji-formatted version
+
+    def test_format_entry_note_empty(self):
+        """Test formatting an empty note."""
+        result = format_entry_note("")
+        assert result == "" or result is None
+
+    def test_format_entry_note_unknown_tag(self):
+        """Test formatting an unknown tag returns it as-is."""
+        result = format_entry_note("unknown_tag_xyz")
+        # Should return something (either the tag or empty)

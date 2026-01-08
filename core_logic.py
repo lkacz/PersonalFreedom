@@ -194,10 +194,14 @@ class BlockerCore:
         self.adhd_buster = {"inventory": [], "equipped": {}}
         
         # Weight tracking
-        self.weight_entries = []  # List of {"date": "YYYY-MM-DD", "weight": float}
+        self.weight_entries = []  # List of {"date": "YYYY-MM-DD", "weight": float, "note": str}
         self.weight_unit = "kg"  # or "lbs"
         self.weight_goal = None  # Target weight
         self.weight_milestones = []  # List of achieved milestone IDs
+        self.weight_height = None  # Height in cm for BMI calculation
+        self.weight_reminder_enabled = False  # Daily reminder
+        self.weight_reminder_time = "08:00"  # Reminder time HH:MM
+        self.weight_last_reminder_date = None  # Last reminder shown
 
         # Statistics
         self.stats = self._default_stats()
@@ -259,6 +263,10 @@ class BlockerCore:
                     self.weight_unit = config.get('weight_unit', 'kg')
                     self.weight_goal = config.get('weight_goal', None)
                     self.weight_milestones = config.get('weight_milestones', [])
+                    self.weight_height = config.get('weight_height', None)
+                    self.weight_reminder_enabled = config.get('weight_reminder_enabled', False)
+                    self.weight_reminder_time = config.get('weight_reminder_time', '08:00')
+                    self.weight_last_reminder_date = config.get('weight_last_reminder_date', None)
                     # Initialize/migrate hero management structure
                     if HERO_MANAGEMENT_AVAILABLE and _ensure_hero_structure:
                         _ensure_hero_structure(self.adhd_buster)
@@ -292,6 +300,10 @@ class BlockerCore:
                 'weight_unit': self.weight_unit,
                 'weight_goal': self.weight_goal,
                 'weight_milestones': self.weight_milestones,
+                'weight_height': self.weight_height,
+                'weight_reminder_enabled': self.weight_reminder_enabled,
+                'weight_reminder_time': self.weight_reminder_time,
+                'weight_last_reminder_date': self.weight_last_reminder_date,
             }
             atomic_write_json(CONFIG_PATH, config)
         except (IOError, OSError) as e:

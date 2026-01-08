@@ -334,21 +334,48 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
     
     # Weight tracking functions (separate try for backward compat)
     global check_weight_entry_rewards, get_weight_stats, format_weight_change, check_all_weight_rewards
+    global calculate_bmi, get_bmi_classification, get_ideal_weight_range
+    global predict_goal_date, get_historical_comparisons, get_weekly_insights
+    global WEIGHT_ENTRY_TAGS, format_entry_note
     check_weight_entry_rewards = None
     get_weight_stats = None
     format_weight_change = None
     check_all_weight_rewards = None
+    calculate_bmi = None
+    get_bmi_classification = None
+    get_ideal_weight_range = None
+    predict_goal_date = None
+    get_historical_comparisons = None
+    get_weekly_insights = None
+    WEIGHT_ENTRY_TAGS = []
+    format_entry_note = None
     try:
         from gamification import (
             check_weight_entry_rewards as _check_weight_entry_rewards,
             get_weight_stats as _get_weight_stats,
             format_weight_change as _format_weight_change,
             check_all_weight_rewards as _check_all_weight_rewards,
+            calculate_bmi as _calculate_bmi,
+            get_bmi_classification as _get_bmi_classification,
+            get_ideal_weight_range as _get_ideal_weight_range,
+            predict_goal_date as _predict_goal_date,
+            get_historical_comparisons as _get_historical_comparisons,
+            get_weekly_insights as _get_weekly_insights,
+            WEIGHT_ENTRY_TAGS as _WEIGHT_ENTRY_TAGS,
+            format_entry_note as _format_entry_note,
         )
         check_weight_entry_rewards = _check_weight_entry_rewards
         get_weight_stats = _get_weight_stats
         format_weight_change = _format_weight_change
         check_all_weight_rewards = _check_all_weight_rewards
+        calculate_bmi = _calculate_bmi
+        get_bmi_classification = _get_bmi_classification
+        get_ideal_weight_range = _get_ideal_weight_range
+        predict_goal_date = _predict_goal_date
+        get_historical_comparisons = _get_historical_comparisons
+        get_weekly_insights = _get_weekly_insights
+        WEIGHT_ENTRY_TAGS = _WEIGHT_ENTRY_TAGS
+        format_entry_note = _format_entry_note
     except ImportError:
         pass
     
@@ -2646,23 +2673,33 @@ class WeightChartWidget(QtWidgets.QWidget):
 
 
 class WeightTab(QtWidgets.QWidget):
-    """Weight tracking tab with chart and gamification rewards."""
+    """Weight tracking tab with chart, BMI, predictions, and gamification rewards."""
     
     def __init__(self, blocker: 'BlockerCore', parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
         self.blocker = blocker
+        self._reminder_timer = None
         self._build_ui()
         self._refresh_display()
+        self._setup_reminder()
     
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(15)
-        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(10)
+        layout.setContentsMargins(15, 15, 15, 15)
         
-        # Header
+        # Header with insights button
+        header_layout = QtWidgets.QHBoxLayout()
         header = QtWidgets.QLabel("⚖️ Weight Tracker")
         header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
-        layout.addWidget(header)
+        header_layout.addWidget(header)
+        header_layout.addStretch()
+        
+        insights_btn = QtWidgets.QPushButton("📊 Weekly Insights")
+        insights_btn.clicked.connect(self._show_weekly_insights)
+        header_layout.addWidget(insights_btn)
+        
+        layout.addLayout(header_layout)
         
         # Top section: Input and stats side by side
         top_layout = QtWidgets.QHBoxLayout()
@@ -2670,6 +2707,7 @@ class WeightTab(QtWidgets.QWidget):
         # Left: Weight input section
         input_group = QtWidgets.QGroupBox("📝 Log Weight")
         input_layout = QtWidgets.QFormLayout(input_group)
+        input_layout.setSpacing(8)
         
         # Weight input
         weight_row = QtWidgets.QHBoxLayout()
@@ -2694,10 +2732,22 @@ class WeightTab(QtWidgets.QWidget):
         # Date input (default to today, max = today to prevent future dates)
         self.date_edit = QtWidgets.QDateEdit()
         self.date_edit.setDate(QtCore.QDate.currentDate())
-        self.date_edit.setMaximumDate(QtCore.QDate.currentDate())  # Prevent future dates
+        self.date_edit.setMaximumDate(QtCore.QDate.currentDate())
         self.date_edit.setCalendarPopup(True)
         self.date_edit.setDisplayFormat("yyyy-MM-dd")
         input_layout.addRow("Date:", self.date_edit)
+        
+        # Note/Context (tag selection)
+        note_row = QtWidgets.QHBoxLayout()
+        self.note_combo = QtWidgets.QComboBox()
+        self.note_combo.addItem("(none)", "")
+        if WEIGHT_ENTRY_TAGS:
+            for tag_id, tag_display, tooltip in WEIGHT_ENTRY_TAGS:
+                self.note_combo.addItem(tag_display, tag_id)
+        self.note_combo.setFixedWidth(150)
+        note_row.addWidget(self.note_combo)
+        note_row.addStretch()
+        input_layout.addRow("Context:", note_row)
         
         # Goal weight with enable checkbox
         goal_row = QtWidgets.QHBoxLayout()
@@ -2707,19 +2757,40 @@ class WeightTab(QtWidgets.QWidget):
         goal_row.addWidget(self.goal_enabled)
         
         self.goal_input = QtWidgets.QDoubleSpinBox()
-        self.goal_input.setRange(1, 500)  # Allow any reasonable weight
+        self.goal_input.setRange(1, 500)
         self.goal_input.setDecimals(1)
         self.goal_input.setSingleStep(0.1)
-        self.goal_input.setValue(70.0)  # Default value
-        self.goal_input.setFixedWidth(120)
-        self.goal_input.setEnabled(False)  # Disabled until checkbox checked
+        self.goal_input.setValue(70.0)
+        self.goal_input.setFixedWidth(100)
+        self.goal_input.setEnabled(False)
         goal_row.addWidget(self.goal_input)
         
-        set_goal_btn = QtWidgets.QPushButton("Set Goal")
+        set_goal_btn = QtWidgets.QPushButton("Set")
+        set_goal_btn.setFixedWidth(40)
         set_goal_btn.clicked.connect(self._set_goal)
         goal_row.addWidget(set_goal_btn)
         goal_row.addStretch()
         input_layout.addRow("Goal:", goal_row)
+        
+        # Height input for BMI
+        height_row = QtWidgets.QHBoxLayout()
+        self.height_input = QtWidgets.QSpinBox()
+        self.height_input.setRange(100, 250)
+        self.height_input.setValue(170)
+        self.height_input.setSuffix(" cm")
+        self.height_input.setFixedWidth(80)
+        height_row.addWidget(self.height_input)
+        
+        set_height_btn = QtWidgets.QPushButton("Set")
+        set_height_btn.setFixedWidth(40)
+        set_height_btn.clicked.connect(self._set_height)
+        height_row.addWidget(set_height_btn)
+        
+        self.bmi_label = QtWidgets.QLabel("")
+        self.bmi_label.setStyleSheet("font-size: 11px; margin-left: 10px;")
+        height_row.addWidget(self.bmi_label)
+        height_row.addStretch()
+        input_layout.addRow("Height:", height_row)
         
         # Log button
         log_btn = QtWidgets.QPushButton("📊 Log Weight")
@@ -2728,7 +2799,7 @@ class WeightTab(QtWidgets.QWidget):
                 background-color: #4a90d9;
                 color: white;
                 font-weight: bold;
-                padding: 10px 20px;
+                padding: 8px 16px;
                 border-radius: 5px;
             }
             QPushButton:hover {
@@ -2740,17 +2811,40 @@ class WeightTab(QtWidgets.QWidget):
         
         top_layout.addWidget(input_group)
         
-        # Right: Stats display
+        # Right: Stats + Comparisons display
+        right_panel = QtWidgets.QVBoxLayout()
+        
+        # Stats section
         stats_group = QtWidgets.QGroupBox("📈 Statistics")
         stats_layout = QtWidgets.QVBoxLayout(stats_group)
+        stats_layout.setSpacing(5)
         
         self.stats_label = QtWidgets.QLabel()
         self.stats_label.setWordWrap(True)
-        self.stats_label.setStyleSheet("font-size: 12px; line-height: 1.6;")
+        self.stats_label.setStyleSheet("font-size: 11px; line-height: 1.4;")
         stats_layout.addWidget(self.stats_label)
-        stats_layout.addStretch()
         
-        top_layout.addWidget(stats_group)
+        # Prediction label
+        self.prediction_label = QtWidgets.QLabel()
+        self.prediction_label.setWordWrap(True)
+        self.prediction_label.setStyleSheet("font-size: 11px; margin-top: 5px;")
+        stats_layout.addWidget(self.prediction_label)
+        
+        right_panel.addWidget(stats_group)
+        
+        # Comparisons section
+        compare_group = QtWidgets.QGroupBox("📅 Historical")
+        compare_layout = QtWidgets.QVBoxLayout(compare_group)
+        compare_layout.setSpacing(3)
+        
+        self.compare_label = QtWidgets.QLabel()
+        self.compare_label.setWordWrap(True)
+        self.compare_label.setStyleSheet("font-size: 10px; color: #aaaaaa;")
+        compare_layout.addWidget(self.compare_label)
+        
+        right_panel.addWidget(compare_group)
+        
+        top_layout.addLayout(right_panel)
         layout.addLayout(top_layout)
         
         # Chart section
@@ -2760,48 +2854,59 @@ class WeightTab(QtWidgets.QWidget):
         self.chart = WeightChartWidget()
         chart_layout.addWidget(self.chart)
         
-        layout.addWidget(chart_group, 1)  # Give chart more space
+        layout.addWidget(chart_group, 1)
+        
+        # Bottom row: Recent entries and settings
+        bottom_layout = QtWidgets.QHBoxLayout()
         
         # Recent entries table
         entries_group = QtWidgets.QGroupBox("📋 Recent Entries")
         entries_layout = QtWidgets.QVBoxLayout(entries_group)
         
         self.entries_table = QtWidgets.QTableWidget()
-        self.entries_table.setColumnCount(4)
-        self.entries_table.setHorizontalHeaderLabels(["Date", "Weight", "Change", "Actions"])
+        self.entries_table.setColumnCount(5)
+        self.entries_table.setHorizontalHeaderLabels(["Date", "Weight", "Note", "Change", "Del"])
         self.entries_table.horizontalHeader().setStretchLastSection(True)
-        self.entries_table.setMaximumHeight(150)
+        self.entries_table.setMaximumHeight(130)
         self.entries_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         entries_layout.addWidget(self.entries_table)
         
-        layout.addWidget(entries_group)
+        bottom_layout.addWidget(entries_group, 2)
         
-        # Rewards info
-        rewards_group = QtWidgets.QGroupBox("🎁 Weight Loss Rewards")
+        # Reminder settings
+        settings_group = QtWidgets.QGroupBox("⏰ Reminder")
+        settings_layout = QtWidgets.QFormLayout(settings_group)
+        settings_layout.setSpacing(5)
+        
+        self.reminder_enabled = QtWidgets.QCheckBox("Daily reminder")
+        self.reminder_enabled.stateChanged.connect(self._on_reminder_toggle)
+        settings_layout.addRow(self.reminder_enabled)
+        
+        self.reminder_time = QtWidgets.QTimeEdit()
+        self.reminder_time.setDisplayFormat("HH:mm")
+        self.reminder_time.setTime(QtCore.QTime(8, 0))
+        self.reminder_time.timeChanged.connect(self._on_reminder_time_changed)
+        settings_layout.addRow("Time:", self.reminder_time)
+        
+        bottom_layout.addWidget(settings_group, 1)
+        
+        layout.addLayout(bottom_layout)
+        
+        # Rewards info (collapsed)
+        rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
         rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
         rewards_info = QtWidgets.QLabel(
-            "<b>Daily Rewards:</b> Same weight = Common, 100g loss = Uncommon, "
-            "200g = Rare, 300g = Epic, 500g+ = Legendary!<br>"
-            "<b>Weekly Bonus:</b> 500g loss in 7 days = Legendary item!<br>"
-            "<b>Monthly Bonus:</b> 2kg loss in 30 days = Legendary item!"
+            "<b>Daily:</b> 0g=Common, 100g=Uncommon, 200g=Rare, 300g=Epic, 500g+=Legendary | "
+            "<b>Weekly:</b> 500g=Legendary | <b>Monthly:</b> 2kg=Legendary | "
+            "<b>Streaks:</b> 7d=Rare, 14d=Epic, 30d=Legendary"
         )
         rewards_info.setWordWrap(True)
-        rewards_info.setStyleSheet("color: #aaaaaa; font-size: 11px;")
+        rewards_info.setStyleSheet("color: #888888; font-size: 10px;")
         rewards_layout.addWidget(rewards_info)
         layout.addWidget(rewards_group)
         
-        # Initialize unit from settings - update ranges BEFORE setting values
-        if self.blocker.weight_unit == "lbs":
-            self.weight_input.setRange(44, 1100)
-            self.weight_input.setSuffix(" lbs")
-            self.goal_input.setRange(2.2, 1100)  # ~1-500 kg in lbs
-        self.unit_combo.setCurrentText(self.blocker.weight_unit)
-        if self.blocker.weight_goal:
-            # Goal is stored in kg, convert for display if needed
-            goal_display = self.blocker.weight_goal * 2.20462 if self.blocker.weight_unit == "lbs" else self.blocker.weight_goal
-            self.goal_input.setValue(goal_display)
-            self.goal_enabled.setChecked(True)
-            self.goal_input.setEnabled(True)
+        # Initialize settings from saved values
+        self._load_settings()
     
     def _on_goal_toggle(self, state: int) -> None:
         """Handle goal checkbox toggle."""
@@ -2887,7 +2992,13 @@ class WeightTab(QtWidgets.QWidget):
             )
         
         # Update or add entry
+        # Get note from combo
+        note = self.note_combo.currentData() or ""
+        
         new_entry = {"date": date_str, "weight": weight_kg}
+        if note:
+            new_entry["note"] = note
+        
         if existing_idx is not None:
             reply = QtWidgets.QMessageBox.question(
                 self, "Update Entry",
@@ -3072,6 +3183,11 @@ class WeightTab(QtWidgets.QWidget):
             weight_display = weight_kg * 2.20462 if unit == "lbs" else weight_kg
             self.entries_table.setItem(i, 1, QtWidgets.QTableWidgetItem(f"{weight_display:.1f} {unit}"))
             
+            # Note (formatted)
+            note = entry.get("note", "")
+            note_display = format_entry_note(note) if format_entry_note and note else ""
+            self.entries_table.setItem(i, 2, QtWidgets.QTableWidgetItem(note_display))
+            
             # Change
             if i < len(sorted_entries) - 1:
                 prev_weight = sorted_entries[i + 1].get("weight", weight_kg)
@@ -3088,18 +3204,315 @@ class WeightTab(QtWidgets.QWidget):
                     change_item.setForeground(QtGui.QColor("#00ff88"))  # Green = lost weight
                 elif change < 0:
                     change_item.setForeground(QtGui.QColor("#ff6464"))  # Red = gained
-                self.entries_table.setItem(i, 2, change_item)
+                self.entries_table.setItem(i, 3, change_item)
             else:
-                self.entries_table.setItem(i, 2, QtWidgets.QTableWidgetItem("—"))
+                self.entries_table.setItem(i, 3, QtWidgets.QTableWidgetItem("—"))
             
             # Delete button
             delete_btn = QtWidgets.QPushButton("🗑")
             delete_btn.setFixedWidth(30)
             date_str = entry.get("date", "")
             delete_btn.clicked.connect(lambda checked, d=date_str: self._delete_entry(d))
-            self.entries_table.setCellWidget(i, 3, delete_btn)
+            self.entries_table.setCellWidget(i, 4, delete_btn)
         
         self.entries_table.resizeColumnsToContents()
+        
+        # Update BMI display
+        self._update_bmi_display()
+        
+        # Update prediction
+        self._update_prediction()
+        
+        # Update historical comparisons
+        self._update_comparisons()
+    
+    def _load_settings(self) -> None:
+        """Load saved settings into UI controls."""
+        # Unit
+        if self.blocker.weight_unit == "lbs":
+            self.weight_input.setRange(44, 1100)
+            self.weight_input.setSuffix(" lbs")
+            self.goal_input.setRange(2.2, 1100)
+        self.unit_combo.setCurrentText(self.blocker.weight_unit)
+        
+        # Goal
+        if self.blocker.weight_goal:
+            goal_display = self.blocker.weight_goal * 2.20462 if self.blocker.weight_unit == "lbs" else self.blocker.weight_goal
+            self.goal_input.setValue(goal_display)
+            self.goal_enabled.setChecked(True)
+            self.goal_input.setEnabled(True)
+        
+        # Height
+        if self.blocker.weight_height:
+            self.height_input.setValue(self.blocker.weight_height)
+        
+        # Reminder
+        self.reminder_enabled.setChecked(self.blocker.weight_reminder_enabled)
+        if self.blocker.weight_reminder_time:
+            try:
+                h, m = map(int, self.blocker.weight_reminder_time.split(":"))
+                self.reminder_time.setTime(QtCore.QTime(h, m))
+            except (ValueError, AttributeError):
+                pass
+    
+    def _set_height(self) -> None:
+        """Set the height for BMI calculation."""
+        height = self.height_input.value()
+        self.blocker.weight_height = height
+        self.blocker.save_config()
+        self._update_bmi_display()
+        QtWidgets.QMessageBox.information(self, "Height Set", f"Height set to {height} cm")
+    
+    def _update_bmi_display(self) -> None:
+        """Update the BMI label with current BMI."""
+        if not self.blocker.weight_height or not self.blocker.weight_entries:
+            self.bmi_label.setText("")
+            return
+        
+        # Get latest weight
+        sorted_entries = sorted(self.blocker.weight_entries, key=lambda x: x.get("date", ""))
+        if not sorted_entries:
+            self.bmi_label.setText("")
+            return
+        
+        latest_weight = sorted_entries[-1].get("weight", 0)
+        
+        if calculate_bmi:
+            bmi = calculate_bmi(latest_weight, self.blocker.weight_height)
+            if bmi and get_bmi_classification:
+                classification, color = get_bmi_classification(bmi)
+                self.bmi_label.setText(f"<b style='color:{color}'>BMI: {bmi:.1f} ({classification})</b>")
+            else:
+                self.bmi_label.setText("")
+        else:
+            self.bmi_label.setText("")
+    
+    def _update_prediction(self) -> None:
+        """Update the goal prediction display."""
+        if not self.blocker.weight_goal or not self.blocker.weight_entries:
+            self.prediction_label.setText("")
+            return
+        
+        sorted_entries = sorted(self.blocker.weight_entries, key=lambda x: x.get("date", ""))
+        if len(sorted_entries) < 3:
+            self.prediction_label.setText("<i>Need 3+ entries for prediction</i>")
+            return
+        
+        latest_weight = sorted_entries[-1].get("weight", 0)
+        
+        if predict_goal_date:
+            prediction = predict_goal_date(sorted_entries, self.blocker.weight_goal, latest_weight)
+            if prediction:
+                status = prediction.get("status", "")
+                if status == "achieved":
+                    self.prediction_label.setText("<b style='color:#00ff88'>🎯 Goal reached!</b>")
+                elif prediction.get("predicted_date"):
+                    days = prediction.get("days_remaining", 0)
+                    date_str = prediction["predicted_date"]
+                    if days and days > 0:
+                        self.prediction_label.setText(f"📅 Estimated goal: <b>{date_str}</b> ({days} days)")
+                    else:
+                        self.prediction_label.setText(f"📅 Estimated goal: <b>{date_str}</b>")
+                else:
+                    msg = prediction.get("message", "")
+                    self.prediction_label.setText(f"<i>{msg}</i>" if msg else "")
+            else:
+                self.prediction_label.setText("")
+        else:
+            self.prediction_label.setText("")
+    
+    def _update_comparisons(self) -> None:
+        """Update historical comparison display."""
+        if not self.blocker.weight_entries:
+            self.compare_label.setText("No data for comparisons")
+            return
+        
+        if get_historical_comparisons:
+            comparisons = get_historical_comparisons(self.blocker.weight_entries)
+            if comparisons:
+                parts = []
+                unit = self.blocker.weight_unit
+                for period_key, data in comparisons.items():
+                    if data is not None and isinstance(data, dict):
+                        label = data.get("label", period_key)
+                        change_kg = data.get("change", 0)
+                        
+                        if unit == "lbs":
+                            change_display = change_kg * 2.20462
+                            suffix = "lbs"
+                        else:
+                            change_display = change_kg
+                            suffix = "kg"
+                        
+                        if change_kg < 0:
+                            color = "#00ff88"
+                            sign = ""
+                        elif change_kg > 0:
+                            color = "#ff6464"
+                            sign = "+"
+                        else:
+                            color = "#888888"
+                            sign = ""
+                        parts.append(f"<span style='color:{color}'>{label}: {sign}{change_display:.1f} {suffix}</span>")
+                
+                if parts:
+                    self.compare_label.setText("<br>".join(parts))
+                else:
+                    self.compare_label.setText("Not enough historical data")
+            else:
+                self.compare_label.setText("Not enough historical data")
+        else:
+            self.compare_label.setText("Comparisons unavailable")
+    
+    def _on_reminder_toggle(self, state: int) -> None:
+        """Handle reminder checkbox toggle."""
+        enabled = state == QtCore.Qt.CheckState.Checked.value
+        self.blocker.weight_reminder_enabled = enabled
+        self.blocker.save_config()
+        self._setup_reminder()
+    
+    def _on_reminder_time_changed(self, time: QtCore.QTime) -> None:
+        """Handle reminder time change."""
+        self.blocker.weight_reminder_time = time.toString("HH:mm")
+        self.blocker.save_config()
+        self._setup_reminder()
+    
+    def _setup_reminder(self) -> None:
+        """Set up or cancel the reminder timer."""
+        if self._reminder_timer:
+            self._reminder_timer.stop()
+            self._reminder_timer = None
+        
+        if not self.blocker.weight_reminder_enabled:
+            return
+        
+        # Check every minute
+        self._reminder_timer = QtCore.QTimer(self)
+        self._reminder_timer.timeout.connect(self._check_reminder)
+        self._reminder_timer.start(60000)  # 60 seconds
+    
+    def _check_reminder(self) -> None:
+        """Check if reminder should be shown."""
+        if not self.blocker.weight_reminder_enabled:
+            return
+        
+        today = datetime.date.today().isoformat()
+        
+        # Skip if already reminded today
+        if self.blocker.weight_last_reminder_date == today:
+            return
+        
+        # Check if we already have an entry for today
+        has_today_entry = any(e.get("date") == today for e in self.blocker.weight_entries)
+        if has_today_entry:
+            self.blocker.weight_last_reminder_date = today
+            self.blocker.save_config()
+            return
+        
+        # Check if it's the right time
+        current_time = QtCore.QTime.currentTime().toString("HH:mm")
+        reminder_time = self.blocker.weight_reminder_time or "08:00"
+        
+        if current_time == reminder_time:
+            self.blocker.weight_last_reminder_date = today
+            self.blocker.save_config()
+            self._show_reminder_notification()
+    
+    def _show_reminder_notification(self) -> None:
+        """Show the weight reminder notification."""
+        # Try system tray notification if available
+        parent_window = self.window()
+        if hasattr(parent_window, 'tray_icon') and parent_window.tray_icon:
+            parent_window.tray_icon.showMessage(
+                "⚖️ Weight Reminder",
+                "Don't forget to log your weight today!",
+                QtWidgets.QSystemTrayIcon.MessageIcon.Information,
+                5000
+            )
+        else:
+            # Fallback to message box (only if window is visible)
+            if self.isVisible():
+                QtWidgets.QMessageBox.information(
+                    self, "⚖️ Weight Reminder",
+                    "Don't forget to log your weight today!"
+                )
+    
+    def _show_weekly_insights(self) -> None:
+        """Show weekly insights in a dialog."""
+        if not get_weekly_insights:
+            QtWidgets.QMessageBox.information(self, "Weekly Insights", "Insights not available")
+            return
+        
+        insights = get_weekly_insights(
+            self.blocker.weight_entries,
+            self.blocker.weight_milestones,
+            len([e for e in self.blocker.weight_entries if e.get("date", "")]),  # Approximate streak
+            self.blocker.weight_goal
+        )
+        
+        if not insights or not insights.get("has_data"):
+            msg = insights.get("message", "Not enough data for insights") if insights else "Not enough data for insights"
+            QtWidgets.QMessageBox.information(self, "Weekly Insights", msg)
+            return
+        
+        # Build insights message
+        unit = self.blocker.weight_unit
+        msg_parts = []
+        
+        msg_parts.append("<h3>📊 Weekly Summary</h3>")
+        
+        if insights.get("entries_count") is not None:
+            msg_parts.append(f"<b>Entries logged:</b> {insights['entries_count']}")
+        
+        if insights.get("average") is not None:
+            avg = insights["average"]
+            if unit == "lbs":
+                avg_display = avg * 2.20462
+                suffix = "lbs"
+            else:
+                avg_display = avg
+                suffix = "kg"
+            msg_parts.append(f"<b>Average weight:</b> {avg_display:.1f} {suffix}")
+        
+        if insights.get("min") is not None and insights.get("max") is not None:
+            min_w = insights["min"]
+            max_w = insights["max"]
+            if unit == "lbs":
+                min_display = min_w * 2.20462
+                max_display = max_w * 2.20462
+                suffix = "lbs"
+            else:
+                min_display = min_w
+                max_display = max_w
+                suffix = "kg"
+            msg_parts.append(f"<b>Range:</b> {min_display:.1f} - {max_display:.1f} {suffix}")
+        
+        if insights.get("change_from_last_week") is not None:
+            change = insights["change_from_last_week"]
+            if unit == "lbs":
+                change_display = change * 2.20462
+                suffix = "lbs"
+            else:
+                change_display = change
+                suffix = "kg"
+            color = "#00ff88" if change < 0 else "#ff6464" if change > 0 else "#888888"
+            sign = "+" if change > 0 else ""
+            msg_parts.append(f"<b>vs Last Week:</b> <span style='color:{color}'>{sign}{change_display:.2f} {suffix}</span>")
+        
+        if insights.get("streak") is not None and insights["streak"] > 0:
+            msg_parts.append(f"<b>Streak:</b> 🔥 {insights['streak']} days")
+        
+        # Show insights list
+        if insights.get("insights"):
+            msg_parts.append("<br><b>Highlights:</b>")
+            for insight_text in insights["insights"][:5]:  # Limit to 5
+                msg_parts.append(f"• {insight_text}")
+        
+        dialog = QtWidgets.QMessageBox(self)
+        dialog.setWindowTitle("📊 Weekly Insights")
+        dialog.setTextFormat(QtCore.Qt.TextFormat.RichText)
+        dialog.setText("<br>".join(msg_parts))
+        dialog.exec()
 
 
 class AITab(QtWidgets.QWidget):
