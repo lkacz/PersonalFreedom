@@ -5568,7 +5568,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self.merge_selected = []
         inventory = self.blocker.adhd_buster.get("inventory", [])
         equipped = self.blocker.adhd_buster.get("equipped", {})
-        equipped_ts = {item.get("obtained_at") for item in equipped.values() if item}
+        # Only include timestamps that are valid (not None or empty)
+        equipped_ts = {item.get("obtained_at") for item in equipped.values() 
+                       if item and item.get("obtained_at")}
 
         rarity_order = {"Common": 0, "Uncommon": 1, "Rare": 2, "Epic": 3, "Legendary": 4}
         sort_key = self.sort_combo.currentText()
@@ -5642,13 +5644,19 @@ class ADHDBusterDialog(QtWidgets.QDialog):
 
     def _update_merge_selection(self) -> None:
         self.merge_selected = [item.data(QtCore.Qt.UserRole) for item in self.inv_list.selectedItems()]
-        count = len(self.merge_selected)
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        
+        # Filter to only valid indices
+        valid_indices = [idx for idx in self.merge_selected if 0 <= idx < len(inventory)]
+        count = len(valid_indices)
+        
         self.merge_btn.setText(f"🎲 Merge Selected ({count})")
         if count >= 2 and GAMIFICATION_AVAILABLE:
-            inventory = self.blocker.adhd_buster.get("inventory", [])
             equipped = self.blocker.adhd_buster.get("equipped", {})
-            equipped_ts = {item.get("obtained_at") for item in equipped.values() if item}
-            items = [inventory[idx] for idx in self.merge_selected if idx < len(inventory)]
+            # Only include timestamps that are valid (not None or empty)
+            equipped_ts = {item.get("obtained_at") for item in equipped.values() 
+                           if item and item.get("obtained_at")}
+            items = [inventory[idx] for idx in valid_indices]
             
             # Check if any selected items are equipped (safety check)
             equipped_selected = [i for i in items if i.get("obtained_at") in equipped_ts]

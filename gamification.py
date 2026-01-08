@@ -638,7 +638,15 @@ def get_merge_result_rarity(items: list) -> str:
     if not items:
         return "Common"
     
-    lowest_idx = min(RARITY_ORDER.index(item.get("rarity", "Common")) for item in items)
+    # Safely get rarity index, defaulting to 0 (Common) for invalid values
+    def safe_rarity_idx(item):
+        rarity = item.get("rarity", "Common")
+        try:
+            return RARITY_ORDER.index(rarity)
+        except ValueError:
+            return 0  # Default to Common if invalid rarity
+    
+    lowest_idx = min(safe_rarity_idx(item) for item in items)
     lowest_rarity = RARITY_ORDER[lowest_idx]
     
     return RARITY_UPGRADE.get(lowest_rarity, "Uncommon")
@@ -708,8 +716,16 @@ def perform_lucky_merge(items: list, luck_bonus: int = 0, story_id: str = None) 
     }
     
     if result["success"]:
+        # Safely get rarity index, defaulting to 0 (Common) for invalid values
+        def safe_rarity_idx(item):
+            rarity = item.get("rarity", "Common")
+            try:
+                return RARITY_ORDER.index(rarity)
+            except ValueError:
+                return 0  # Default to Common if invalid rarity
+        
         # Get base rarity from lowest item
-        lowest_idx = min(RARITY_ORDER.index(item.get("rarity", "Common")) for item in items)
+        lowest_idx = min(safe_rarity_idx(item) for item in items)
         
         # Roll for tier jump
         tier_jump = get_random_tier_jump()
