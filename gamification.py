@@ -2683,6 +2683,10 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     
     name = f"{adjective} {item_type} of {suffix}"
     
+    # Validate rarity and use defaults for invalid values
+    if rarity not in ITEM_RARITIES:
+        rarity = "Common"
+    
     return {
         "name": name,
         "rarity": rarity,
