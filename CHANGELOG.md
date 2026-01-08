@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.4] - 2026-01-08
+
+### Fixed
+- Added robust `_is_item_equipped()` helper that uses timestamp + name/slot/rarity fallback.
+- Fixed equipped detection for legacy items without `obtained_at` timestamps.
+- Improved item removal logic to handle mixed items (with/without timestamps).
+- Added verification that correct number of items were removed from inventory.
+- Fixed duplicate `else` block that caused syntax error.
+
 ## [5.0.3] - 2026-01-08
 
 ### Fixed

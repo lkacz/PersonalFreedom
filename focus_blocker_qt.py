@@ -5563,14 +5563,43 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                 sync_hero_data(self.blocker.adhd_buster)
             self.blocker.save_config()
 
+    def _is_item_equipped(self, item: dict, equipped: dict) -> bool:
+        """Check if an item is currently equipped using multiple methods.
+        
+        Uses timestamp matching as primary check, falls back to name+slot+rarity
+        matching for items without timestamps (legacy data).
+        """
+        if not item or not equipped:
+            return False
+        
+        item_ts = item.get("obtained_at")
+        item_name = item.get("name", "")
+        item_slot = item.get("slot", "")
+        item_rarity = item.get("rarity", "")
+        
+        for slot, eq_item in equipped.items():
+            if not eq_item:
+                continue
+            
+            # Primary check: timestamp match
+            eq_ts = eq_item.get("obtained_at")
+            if item_ts and eq_ts and item_ts == eq_ts:
+                return True
+            
+            # Fallback for items without timestamps: match by name, slot, and rarity
+            if (not item_ts or not eq_ts):
+                if (eq_item.get("name") == item_name and 
+                    eq_item.get("slot") == item_slot and
+                    eq_item.get("rarity") == item_rarity):
+                    return True
+        
+        return False
+
     def _refresh_inventory(self) -> None:
         self.inv_list.clear()
         self.merge_selected = []
         inventory = self.blocker.adhd_buster.get("inventory", [])
         equipped = self.blocker.adhd_buster.get("equipped", {})
-        # Only include timestamps that are valid (not None or empty)
-        equipped_ts = {item.get("obtained_at") for item in equipped.values() 
-                       if item and item.get("obtained_at")}
 
         rarity_order = {"Common": 0, "Uncommon": 1, "Rare": 2, "Epic": 3, "Legendary": 4}
         sort_key = self.sort_combo.currentText()
@@ -5586,7 +5615,8 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             indexed.reverse()
 
         for orig_idx, item in indexed:
-            is_eq = item.get("obtained_at") in equipped_ts
+            # Use robust equipped check that handles items with/without timestamps
+            is_eq = self._is_item_equipped(item, equipped)
             prefix = "✓ " if is_eq else ""
             power = item.get("power", RARITY_POWER.get(item.get("rarity", "Common"), 10))
             text = f"{prefix}{item['name']} (+{power}) [{item['rarity'][:1]}]"
@@ -5645,6 +5675,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
     def _update_merge_selection(self) -> None:
         self.merge_selected = [item.data(QtCore.Qt.UserRole) for item in self.inv_list.selectedItems()]
         inventory = self.blocker.adhd_buster.get("inventory", [])
+        equipped = self.blocker.adhd_buster.get("equipped", {})
         
         # Filter to only valid indices
         valid_indices = [idx for idx in self.merge_selected if 0 <= idx < len(inventory)]
@@ -5652,14 +5683,10 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         
         self.merge_btn.setText(f"🎲 Merge Selected ({count})")
         if count >= 2 and GAMIFICATION_AVAILABLE:
-            equipped = self.blocker.adhd_buster.get("equipped", {})
-            # Only include timestamps that are valid (not None or empty)
-            equipped_ts = {item.get("obtained_at") for item in equipped.values() 
-                           if item and item.get("obtained_at")}
             items = [inventory[idx] for idx in valid_indices]
             
-            # Check if any selected items are equipped (safety check)
-            equipped_selected = [i for i in items if i.get("obtained_at") in equipped_ts]
+            # Check if any selected items are equipped (using robust check)
+            equipped_selected = [i for i in items if self._is_item_equipped(i, equipped)]
             if equipped_selected:
                 self.merge_btn.setEnabled(False)
                 self.merge_rate_lbl.setText("⚠️ Cannot merge equipped items!")
@@ -5732,10 +5759,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         # Re-fetch items with fresh inventory
         items = [inventory[idx] for idx in valid_indices]
         
-        # Final safety check: ensure no equipped items are being merged
+        # Final safety check: ensure no equipped items are being merged (using robust check)
         equipped = self.blocker.adhd_buster.get("equipped", {})
-        equipped_ts = {item.get("obtained_at") for item in equipped.values() if item and item.get("obtained_at")}
-        equipped_in_merge = [i for i in items if i.get("obtained_at") and i.get("obtained_at") in equipped_ts]
+        equipped_in_merge = [i for i in items if self._is_item_equipped(i, equipped)]
         if equipped_in_merge:
             QtWidgets.QMessageBox.warning(
                 self, "Cannot Merge",
@@ -5747,18 +5773,47 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         result = perform_lucky_merge(items, luck, story_id=active_story)
         
-        # Remove merged items from inventory by matching items, not indices
-        # This is safer than index-based deletion
-        merged_timestamps = {i.get("obtained_at") for i in items if i.get("obtained_at")}
-        new_inventory = [item for item in inventory if item.get("obtained_at") not in merged_timestamps]
+        # Remove merged items from inventory
+        # Create a set of items to remove using multiple identifiers
+        items_to_remove = set()
+        for i in items:
+            # Use timestamp if available
+            if i.get("obtained_at"):
+                items_to_remove.add(("ts", i.get("obtained_at")))
+            # Also add name+slot+rarity as fallback identifier
+            items_to_remove.add(("key", (i.get("name"), i.get("slot"), i.get("rarity"))))
         
-        # Fallback: if timestamp matching didn't work, use index-based deletion
-        if len(new_inventory) == len(inventory):
-            # Timestamps didn't match, fall back to index deletion
+        # Track which items have been removed (to handle duplicates correctly)
+        removed_keys = set()
+        new_inventory = []
+        for item in inventory:
+            item_ts = item.get("obtained_at")
+            item_key = (item.get("name"), item.get("slot"), item.get("rarity"))
+            
+            # Check if this item should be removed
+            should_remove = False
+            if item_ts and ("ts", item_ts) in items_to_remove and ("ts", item_ts) not in removed_keys:
+                should_remove = True
+                removed_keys.add(("ts", item_ts))
+            elif not item_ts and ("key", item_key) in items_to_remove:
+                # For items without timestamp, remove only one instance
+                remove_identifier = ("key_instance", item_key)
+                if remove_identifier not in removed_keys:
+                    should_remove = True
+                    removed_keys.add(remove_identifier)
+            
+            if not should_remove:
+                new_inventory.append(item)
+        
+        # Verify we removed the expected number of items
+        expected_removal = len(items)
+        actual_removal = len(inventory) - len(new_inventory)
+        if actual_removal != expected_removal:
+            # Fallback: if smart removal failed, use index-based deletion
+            new_inventory = inventory.copy()
             for idx in sorted(valid_indices, reverse=True):
-                if idx < len(inventory):
-                    del inventory[idx]
-            new_inventory = inventory
+                if idx < len(new_inventory):
+                    del new_inventory[idx]
         
         if result["success"]:
             new_inventory.append(result["result_item"])
