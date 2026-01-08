@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.4] - 2026-01-08
+
+### Fixed
+- Character graphics now correctly display the selected story theme (scholar, wanderer, underdog).
+- Previously all stories showed the warrior/knight character regardless of selection.
+- Character canvas updates properly when switching stories.
+
 ## [4.2.3] - 2026-01-08
 
 ### Fixed

@@ -5386,7 +5386,8 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         # Character canvas and equipment side by side
         char_equip = QtWidgets.QHBoxLayout()
         equipped = self.blocker.adhd_buster.get("equipped", {})
-        self.char_canvas = CharacterCanvas(equipped, power_info["total_power"], parent=self)
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        self.char_canvas = CharacterCanvas(equipped, power_info["total_power"], parent=self, story_theme=active_story)
         char_equip.addWidget(self.char_canvas)
         self.char_equip_layout = char_equip  # Store reference for refresh
 
@@ -5522,10 +5523,13 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         # Get updated power info
         equipped = self.blocker.adhd_buster.get("equipped", {})
         power_info = get_power_breakdown(self.blocker.adhd_buster)
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         
         # Update character canvas
         self.char_canvas.equipped = equipped
         self.char_canvas.power = power_info["total_power"]
+        self.char_canvas.story_theme = active_story  # Update story theme for correct character graphic
+        self.char_canvas.tier = get_diary_power_tier(power_info["total_power"])  # Recalculate tier
         self.char_canvas.update()  # Trigger repaint
         
         # Update power label
