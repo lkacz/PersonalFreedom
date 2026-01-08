@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] - 2026-01-08
+
+### Added
+- **Weight Tracker Tab**: New dedicated tab for daily weight tracking with visual progress chart.
+- Weight logging with date selection and kg/lbs unit support.
+- Custom Qt-based weight chart with trend visualization (green = loss, red = gain).
+- Goal weight setting with goal line displayed on chart.
+- **Weight Loss Gamification Rewards**:
+  - Daily rewards based on weight loss: Same weight = Common, 100g = Uncommon, 200g = Rare, 300g = Epic, 500g+ = Legendary.
+  - Weekly bonus: 500g loss in 7 days earns a Legendary item.
+  - Monthly bonus: 2kg loss in 30 days earns a Legendary item.
+- Weight statistics display: current, starting, lowest, highest, trends, and entry streak.
+- Recent entries table with delete functionality.
+- 33 new unit tests for weight tracking functionality.
+
 ## [5.0.8] - 2026-01-08
 
 ### Fixed
