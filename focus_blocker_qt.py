@@ -1091,12 +1091,15 @@ class TimerTab(QtWidgets.QWidget):
         luck_chance = min(luck / 100, 10)
         if luck > 0 and random.random() * 100 < luck_chance:
             rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-            current_idx = rarity_order.index(item["rarity"])
-            if current_idx < len(rarity_order) - 1:
-                item = generate_item(rarity=rarity_order[current_idx + 1],
-                                      session_minutes=session_minutes, streak_days=streak,
-                                      story_id=active_story)
-                item["lucky_upgrade"] = True
+            try:
+                current_idx = rarity_order.index(item["rarity"])
+                if current_idx < len(rarity_order) - 1:
+                    item = generate_item(rarity=rarity_order[current_idx + 1],
+                                          session_minutes=session_minutes, streak_days=streak,
+                                          story_id=active_story)
+                    item["lucky_upgrade"] = True
+            except ValueError:
+                pass  # Skip upgrade if rarity is invalid
 
         # Add to inventory
         if "inventory" not in self.blocker.adhd_buster:
@@ -3075,13 +3078,16 @@ class WeightTab(QtWidgets.QWidget):
             """Apply luck-based upgrade chance to item."""
             if luck_chance > 0 and random.random() * 100 < luck_chance:
                 rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-                current_idx = rarity_order.index(item.get("rarity", "Common"))
-                if current_idx < len(rarity_order) - 1:
-                    story_id = self.blocker.adhd_buster.get("active_story", "warrior")
-                    upgraded = generate_item(rarity=rarity_order[current_idx + 1], story_id=story_id)
-                    upgraded["slot"] = item.get("slot")  # Keep same slot
-                    upgraded["lucky_upgrade"] = True
-                    return upgraded
+                try:
+                    current_idx = rarity_order.index(item.get("rarity", "Common"))
+                    if current_idx < len(rarity_order) - 1:
+                        story_id = self.blocker.adhd_buster.get("active_story", "warrior")
+                        upgraded = generate_item(rarity=rarity_order[current_idx + 1], story_id=story_id)
+                        upgraded["slot"] = item.get("slot")  # Keep same slot
+                        upgraded["lucky_upgrade"] = True
+                        return upgraded
+                except ValueError:
+                    pass  # Skip upgrade if rarity is invalid
             return item
         
         # Collect all earned items - Daily/Weekly/Monthly
@@ -3943,13 +3949,16 @@ class ActivityTab(QtWidgets.QWidget):
             """Apply luck-based upgrade chance to item."""
             if luck_chance > 0 and random.random() * 100 < luck_chance:
                 rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-                current_idx = rarity_order.index(item.get("rarity", "Common"))
-                if current_idx < len(rarity_order) - 1:
-                    story_id = self.blocker.adhd_buster.get("active_story", "warrior")
-                    upgraded = generate_item(rarity=rarity_order[current_idx + 1], story_id=story_id)
-                    upgraded["slot"] = item.get("slot")
-                    upgraded["lucky_upgrade"] = True
-                    return upgraded
+                try:
+                    current_idx = rarity_order.index(item.get("rarity", "Common"))
+                    if current_idx < len(rarity_order) - 1:
+                        story_id = self.blocker.adhd_buster.get("active_story", "warrior")
+                        upgraded = generate_item(rarity=rarity_order[current_idx + 1], story_id=story_id)
+                        upgraded["slot"] = item.get("slot")
+                        upgraded["lucky_upgrade"] = True
+                        return upgraded
+                except ValueError:
+                    pass  # Skip upgrade if rarity is invalid
             return item
         
         # Base activity reward

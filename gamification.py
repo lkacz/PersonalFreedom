@@ -2523,15 +2523,24 @@ def get_current_tier(adhd_buster: dict) -> str:
     for item in equipped.values():
         if item:
             item_rarity = item.get("rarity", "Common")
-            if RARITY_ORDER.index(item_rarity) > RARITY_ORDER.index(highest_tier):
-                highest_tier = item_rarity
+            # Safely handle invalid rarity values
+            try:
+                item_idx = RARITY_ORDER.index(item_rarity)
+                highest_idx = RARITY_ORDER.index(highest_tier)
+                if item_idx > highest_idx:
+                    highest_tier = item_rarity
+            except ValueError:
+                pass  # Skip items with invalid rarity
     
     return highest_tier
 
 
 def get_boosted_rarity(current_tier: str) -> str:
     """Get a rarity one tier higher than current (capped at Legendary)."""
-    current_idx = RARITY_ORDER.index(current_tier)
+    try:
+        current_idx = RARITY_ORDER.index(current_tier)
+    except ValueError:
+        current_idx = 0  # Default to Common if invalid tier
     boosted_idx = min(current_idx + 1, len(RARITY_ORDER) - 1)
     return RARITY_ORDER[boosted_idx]
 
@@ -6931,6 +6940,7 @@ def _migrate_adhd_buster_data(adhd_buster: dict) -> dict:
     old_collected = adhd_buster.get("total_collected", 0)
     old_story = adhd_buster.get("selected_story", "warrior")
     old_daily_reward_date = adhd_buster.get("last_daily_reward_date", "")
+    old_max_power = adhd_buster.get("max_power_reached", 0)
     
     # Create migrated hero (assign all old data to the story they were playing)
     migrated_hero = {
@@ -6941,6 +6951,7 @@ def _migrate_adhd_buster_data(adhd_buster: dict) -> dict:
         "luck_bonus": old_luck,
         "total_collected": old_collected,
         "last_daily_reward_date": old_daily_reward_date,
+        "max_power_reached": old_max_power,
     }
     
     # Build new structure
