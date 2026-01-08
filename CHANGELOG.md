@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.6] - 2026-01-08
+
+### Added
+- **Optimize Gear button**: Automatically equips the best items for maximum power (including set bonuses).
+- **Potential Set Bonuses display**: Shows which items in your inventory could be equipped together for set bonuses.
+- Set bonus hints with color coding: orange for partial sets, blue for unequipped sets.
+- Smart optimization algorithm considers both base power and set synergies.
+- Preview of gear changes before applying with power gain calculation.
+
+### Improved
+- Better visibility of the set bonus system with actionable recommendations.
+- Added tooltip explaining the Optimize Gear feature.
+
 ## [5.0.5] - 2026-01-08
 
 ### Added

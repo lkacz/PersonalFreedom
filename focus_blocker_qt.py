@@ -289,6 +289,9 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
             STORY_GEAR_THEMES as _STORY_GEAR_THEMES,
             get_story_gear_theme as _get_story_gear_theme,
             get_slot_display_name as _get_slot_display_name,
+            # Gear optimization
+            optimize_equipped_gear as _optimize_equipped_gear,
+            find_potential_set_bonuses as _find_potential_set_bonuses,
         )
         GAMIFICATION_AVAILABLE = True
         RARITY_POWER = _RARITY_POWER
@@ -323,6 +326,9 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         STORY_GEAR_THEMES = _STORY_GEAR_THEMES
         get_story_gear_theme = _get_story_gear_theme
         get_slot_display_name = _get_slot_display_name
+        # Gear optimization
+        optimize_equipped_gear = _optimize_equipped_gear
+        find_potential_set_bonuses = _find_potential_set_bonuses
     except ImportError:
         GAMIFICATION_AVAILABLE = False
     
@@ -5194,6 +5200,13 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self._refresh_sets_display(power_info)
         self.inner_layout.addWidget(self.sets_container)
 
+        # Potential set bonuses from inventory (container for dynamic updates)
+        self.potential_sets_container = QtWidgets.QWidget()
+        self.potential_sets_layout = QtWidgets.QVBoxLayout(self.potential_sets_container)
+        self.potential_sets_layout.setContentsMargins(0, 0, 0, 0)
+        self._refresh_potential_sets_display()
+        self.inner_layout.addWidget(self.potential_sets_container)
+
         # Stats summary
         total_items = len(self.blocker.adhd_buster.get("inventory", []))
         total_collected = self.blocker.adhd_buster.get("total_collected", total_items)
@@ -5459,6 +5472,10 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         salvage_btn = QtWidgets.QPushButton("🗑️ Salvage Duplicates")
         salvage_btn.clicked.connect(self._salvage_duplicates)
         btn_layout.addWidget(salvage_btn)
+        optimize_btn = QtWidgets.QPushButton("⚡ Optimize Gear")
+        optimize_btn.setToolTip("Automatically equip the best gear for maximum power (including set bonuses)")
+        optimize_btn.clicked.connect(self._optimize_gear)
+        btn_layout.addWidget(optimize_btn)
         btn_layout.addStretch()
         close_btn = QtWidgets.QPushButton("Close")
         close_btn.clicked.connect(self.accept)
@@ -5508,6 +5525,58 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                 sets_inner.addWidget(lbl)
             self.sets_layout.addWidget(sets_group)
 
+    def _refresh_potential_sets_display(self) -> None:
+        """Refresh the potential set bonuses display from inventory."""
+        # Clear existing widgets
+        while self.potential_sets_layout.count():
+            child = self.potential_sets_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+        
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        
+        potential_sets = find_potential_set_bonuses(inventory, equipped)
+        
+        # Filter to only show sets that could be improved
+        improvable_sets = [
+            s for s in potential_sets 
+            if s["inventory_count"] > 0 and s["potential_bonus"] > s["current_bonus"]
+        ]
+        
+        if improvable_sets:
+            hint_group = QtWidgets.QGroupBox("💡 Potential Set Bonuses (in your inventory)")
+            hint_inner = QtWidgets.QVBoxLayout(hint_group)
+            
+            for s in improvable_sets[:5]:  # Show top 5 potential sets
+                if s["current_bonus"] > 0:
+                    # Already have some items equipped for this set
+                    hint_text = (
+                        f"{s['emoji']} {s['name']}: {s['equipped_count']} equipped + "
+                        f"{s['inventory_count']} in bag → could be +{s['potential_bonus']} power"
+                    )
+                    lbl = QtWidgets.QLabel(hint_text)
+                    lbl.setStyleSheet("color: #ff9800;")  # Orange for partial sets
+                else:
+                    # No items equipped yet
+                    hint_text = (
+                        f"{s['emoji']} {s['name']}: {s['inventory_count']} items in bag → "
+                        f"could be +{s['potential_bonus']} power (need {s['max_equippable']} equipped)"
+                    )
+                    lbl = QtWidgets.QLabel(hint_text)
+                    lbl.setStyleSheet("color: #2196f3;")  # Blue for unequipped sets
+                
+                hint_inner.addWidget(lbl)
+            
+            tip_lbl = QtWidgets.QLabel("💡 Use 'Optimize Gear' to automatically equip the best items!")
+            tip_lbl.setStyleSheet("color: gray; font-style: italic; font-size: 10px;")
+            hint_inner.addWidget(tip_lbl)
+            
+            self.potential_sets_layout.addWidget(hint_group)
+
     def _refresh_character(self) -> None:
         """Refresh all power-related displays after gear changes."""
         if not GAMIFICATION_AVAILABLE:
@@ -5540,6 +5609,10 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         
         # Update set bonuses display
         self._refresh_sets_display(power_info)
+        
+        # Update potential set bonuses from inventory
+        if hasattr(self, 'potential_sets_layout'):
+            self._refresh_potential_sets_display()
         
         # Update story progress labels if available
         if hasattr(self, 'story_progress_lbl'):
@@ -6332,6 +6405,67 @@ class ADHDBusterDialog(QtWidgets.QDialog):
 
     def _open_diary(self) -> None:
         DiaryDialog(self.blocker, self).exec()
+
+    def _optimize_gear(self) -> None:
+        """Automatically equip the best gear for maximum power."""
+        if not GAMIFICATION_AVAILABLE:
+            QtWidgets.QMessageBox.warning(self, "Optimize Gear", "Gamification module not available!")
+            return
+        
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        
+        if not inventory and not any(equipped.values()):
+            QtWidgets.QMessageBox.information(self, "Optimize Gear", "No gear available to optimize!")
+            return
+        
+        # Calculate optimal gear
+        result = optimize_equipped_gear(self.blocker.adhd_buster)
+        
+        if result["power_gain"] <= 0 and not result["changes"]:
+            QtWidgets.QMessageBox.information(
+                self, "Optimize Gear",
+                "Your gear is already optimized! ⚔️\n\n"
+                f"Current power: {result['old_power']}"
+            )
+            return
+        
+        # Show preview of changes
+        changes_text = "\n".join(f"  • {c}" for c in result["changes"]) if result["changes"] else "  No changes needed"
+        
+        msg = (
+            f"🔧 Gear Optimization Preview\n\n"
+            f"Current Power: {result['old_power']}\n"
+            f"Optimized Power: {result['new_power']}\n"
+            f"Power Gain: +{result['power_gain']}\n\n"
+            f"Changes:\n{changes_text}\n\n"
+            f"Apply these changes?"
+        )
+        
+        if QtWidgets.QMessageBox.question(
+            self, "Optimize Gear", msg,
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        ) != QtWidgets.QMessageBox.Yes:
+            return
+        
+        # Apply the optimized gear
+        self.blocker.adhd_buster["equipped"] = result["new_equipped"]
+        
+        # Sync changes to active hero before saving
+        if GAMIFICATION_AVAILABLE:
+            sync_hero_data(self.blocker.adhd_buster)
+        self.blocker.save_config()
+        
+        # Refresh all displays
+        self._refresh_all_slot_combos()
+        self._refresh_character()
+        self._refresh_inventory()
+        
+        QtWidgets.QMessageBox.information(
+            self, "Gear Optimized! ⚡",
+            f"Power increased from {result['old_power']} to {result['new_power']}!\n"
+            f"(+{result['power_gain']} power)"
+        )
 
     def _salvage_duplicates(self) -> None:
         inventory = self.blocker.adhd_buster.get("inventory", [])
