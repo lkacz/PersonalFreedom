@@ -7,6 +7,7 @@ Tests cover:
 - get_boosted_rarity with invalid tier handling
 - Hero sync operations
 - Story switching edge cases
+- Item generation edge cases
 """
 
 import unittest
@@ -17,6 +18,7 @@ from gamification import (
     get_current_tier,
     get_boosted_rarity,
     generate_daily_reward_item,
+    generate_item,
     calculate_character_power,
     get_active_hero,
     sync_hero_data,
@@ -32,6 +34,7 @@ from gamification import (
     STORY_MODE_DISABLED,
     RARITY_ORDER,
     RARITY_POWER,
+    ITEM_RARITIES,
 )
 
 
@@ -448,6 +451,53 @@ class TestCreateEmptyHero(unittest.TestCase):
         self.assertEqual(hero["equipped"], {})
         self.assertEqual(hero["luck_bonus"], 0)
         self.assertEqual(hero["max_power_reached"], 0)
+
+
+class TestGenerateItem(unittest.TestCase):
+    """Tests for generate_item edge cases."""
+    
+    def test_generate_item_valid_rarity(self) -> None:
+        """Test generate_item with valid rarity."""
+        for rarity in RARITY_ORDER:
+            item = generate_item(rarity=rarity)
+            self.assertEqual(item["rarity"], rarity)
+            self.assertIn("name", item)
+            self.assertIn("slot", item)
+            self.assertIn("power", item)
+    
+    def test_generate_item_invalid_rarity_defaults_to_common(self) -> None:
+        """Test generate_item handles invalid rarity by defaulting to Common."""
+        item = generate_item(rarity="InvalidRarity")
+        self.assertEqual(item["rarity"], "Common")
+        self.assertEqual(item["power"], RARITY_POWER["Common"])
+        self.assertEqual(item["color"], ITEM_RARITIES["Common"]["color"])
+    
+    def test_generate_item_empty_rarity_defaults_to_common(self) -> None:
+        """Test generate_item handles empty string rarity."""
+        item = generate_item(rarity="")
+        self.assertEqual(item["rarity"], "Common")
+    
+    def test_generate_item_no_rarity_random(self) -> None:
+        """Test generate_item with no rarity generates random valid rarity."""
+        item = generate_item()
+        self.assertIn(item["rarity"], RARITY_ORDER)
+    
+    def test_generate_item_has_timestamp(self) -> None:
+        """Test generate_item includes obtained_at timestamp."""
+        item = generate_item(rarity="Rare")
+        self.assertIn("obtained_at", item)
+        self.assertIsNotNone(item["obtained_at"])
+    
+    def test_generate_item_with_story_id(self) -> None:
+        """Test generate_item uses story theme."""
+        item = generate_item(rarity="Epic", story_id="warrior")
+        self.assertEqual(item.get("story_theme"), "warrior")
+    
+    def test_generate_item_invalid_story_uses_default(self) -> None:
+        """Test generate_item with invalid story_id uses default theme."""
+        item = generate_item(rarity="Rare", story_id="nonexistent_story")
+        # Should use warrior as fallback
+        self.assertEqual(item.get("story_theme"), "warrior")
 
 
 if __name__ == "__main__":
