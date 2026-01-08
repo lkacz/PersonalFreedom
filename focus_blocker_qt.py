@@ -2243,7 +2243,9 @@ class WeightChartWidget(QtWidgets.QWidget):
             painter.setPen(QtGui.QPen(QtGui.QColor("#00ff88"), 2, QtCore.Qt.PenStyle.DashLine))
             painter.drawLine(chart_rect.left(), int(goal_y), chart_rect.right(), int(goal_y))
             painter.setPen(QtGui.QColor("#00ff88"))
-            painter.drawText(chart_rect.right() - 50, int(goal_y) - 5, f"Goal: {self.goal_weight}")
+            # Display goal in correct unit (goal stored in kg)
+            goal_display = self.goal_weight * 2.20462 if self.unit == "lbs" else self.goal_weight
+            painter.drawText(chart_rect.right() - 60, int(goal_y) - 5, f"Goal: {goal_display:.1f}")
         
         # Draw weight line
         points = []
@@ -2444,7 +2446,11 @@ class WeightTab(QtWidgets.QWidget):
         rewards_layout.addWidget(rewards_info)
         layout.addWidget(rewards_group)
         
-        # Initialize unit from settings
+        # Initialize unit from settings - update ranges BEFORE setting values
+        if self.blocker.weight_unit == "lbs":
+            self.weight_input.setRange(44, 1100)
+            self.weight_input.setSuffix(" lbs")
+            self.goal_input.setRange(44, 1100)
         self.unit_combo.setCurrentText(self.blocker.weight_unit)
         if self.blocker.weight_goal:
             # Goal is stored in kg, convert for display if needed
@@ -2605,6 +2611,9 @@ class WeightTab(QtWidgets.QWidget):
     
     def _refresh_display(self) -> None:
         """Refresh all display elements."""
+        # Update max date to today (in case app stayed open past midnight)
+        self.date_edit.setMaximumDate(QtCore.QDate.currentDate())
+        
         unit = self.blocker.weight_unit
         entries = self.blocker.weight_entries
         
@@ -2652,8 +2661,9 @@ class WeightTab(QtWidgets.QWidget):
                 prev_weight = sorted_entries[i + 1].get("weight", weight_kg)
                 change = (prev_weight - weight_kg) * 1000  # in grams
                 if unit == "lbs":
-                    change_display = change * 2.20462 / 1000
-                    change_text = f"{change_display:+.1f} lbs" if abs(change_display) >= 0.1 else "—"
+                    # Convert grams to kg, then kg to lbs
+                    change_lbs = (change / 1000) * 2.20462
+                    change_text = f"{change_lbs:+.2f} lbs" if abs(change_lbs) >= 0.05 else "—"
                 else:
                     change_text = f"{change:+.0f}g" if abs(change) >= 10 else "—"
                 
