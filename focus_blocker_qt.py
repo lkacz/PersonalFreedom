@@ -855,6 +855,7 @@ class TimerTab(QtWidgets.QWidget):
         self.pomodoro_session_count = 0
         self.pomodoro_total_work_time = 0
         self.last_checkin_time = None
+        self._checkin_count = 0  # Reset priority check-in counter
 
         # Pomodoro uses its own durations
         if mode == BlockMode.POMODORO:
@@ -953,12 +954,22 @@ class TimerTab(QtWidgets.QWidget):
 
         elapsed = int(QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - self.session_start)
         interval_seconds = self.blocker.priority_checkin_interval * 60
+        
+        if interval_seconds <= 0:
+            return
 
-        # Only check-in after at least one full interval has passed
-        if elapsed >= interval_seconds and elapsed % interval_seconds < 2:  # 2-second window
-            if self.last_checkin_time is None or (elapsed - self.last_checkin_time) >= interval_seconds - 5:
-                self.last_checkin_time = elapsed
-                self._show_priority_checkin()
+        # Count intervals that should have triggered a check-in
+        intervals_passed = elapsed // interval_seconds
+        
+        # Track how many check-ins we've completed
+        if not hasattr(self, '_checkin_count'):
+            self._checkin_count = 0
+        
+        # If we've completed more intervals than check-ins, show one
+        if intervals_passed > 0 and intervals_passed > self._checkin_count:
+            self._checkin_count = intervals_passed
+            self.last_checkin_time = elapsed
+            self._show_priority_checkin()
 
     def _show_priority_checkin(self) -> None:
         """Show the priority check-in dialog."""
@@ -2097,6 +2108,21 @@ class SettingsTab(QtWidgets.QWidget):
             QtWidgets.QMessageBox.critical(self, "Restore Failed", str(e))
 
     def _emergency_cleanup(self) -> None:
+        # Extra warning for strict/hardcore modes
+        mode = getattr(self.blocker, 'mode', None)
+        if mode in (BlockMode.STRICT, BlockMode.HARDCORE) and self.blocker.is_blocking:
+            reply = QtWidgets.QMessageBox.warning(
+                self, "⚠️ Active Session Detected",
+                f"You have an active {mode.upper()} session!\n\n"
+                "Emergency cleanup will bypass the protection you set.\n"
+                "This defeats the purpose of using a strict mode.\n\n"
+                "Are you SURE you want to proceed?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                QtWidgets.QMessageBox.No
+            )
+            if reply != QtWidgets.QMessageBox.Yes:
+                return
+        
         if QtWidgets.QMessageBox.question(self, "Emergency Cleanup", "Remove ALL blocks and clean system?") != QtWidgets.QMessageBox.Yes:
             return
         success, message = self.blocker.emergency_cleanup()
@@ -7719,6 +7745,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 reward_reason = "🎲 Lucky Daily Drop!"
         
         if should_reward:
+            # Set reward date FIRST to prevent race conditions (rapid open/close)
+            self.blocker.adhd_buster["last_daily_reward_date"] = today
+            
             # Get active story for themed item generation
             active_story = self.blocker.adhd_buster.get("active_story", "warrior")
             
@@ -7729,7 +7758,6 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if "inventory" not in self.blocker.adhd_buster:
                 self.blocker.adhd_buster["inventory"] = []
             self.blocker.adhd_buster["inventory"].append(item)
-            self.blocker.adhd_buster["last_daily_reward_date"] = today
             self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
             # Sync changes to active hero before saving
             if GAMIFICATION_AVAILABLE:
@@ -7947,6 +7975,21 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         dialog.exec()
 
     def _emergency_cleanup(self) -> None:
+        # Extra warning for strict/hardcore modes
+        mode = getattr(self.blocker, 'mode', None)
+        if mode in (BlockMode.STRICT, BlockMode.HARDCORE) and self.blocker.is_blocking:
+            reply = QtWidgets.QMessageBox.warning(
+                self, "⚠️ Active Session Detected",
+                f"You have an active {mode.upper()} session!\n\n"
+                "Emergency cleanup will bypass the protection you set.\n"
+                "This defeats the purpose of using a strict mode.\n\n"
+                "Are you SURE you want to proceed?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                QtWidgets.QMessageBox.No
+            )
+            if reply != QtWidgets.QMessageBox.Yes:
+                return
+        
         if QtWidgets.QMessageBox.question(self, "Emergency Cleanup",
             "Remove ALL blocks and clean system?") == QtWidgets.QMessageBox.Yes:
             success, message = self.blocker.emergency_cleanup()
