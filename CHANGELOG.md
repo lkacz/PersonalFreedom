@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.2] - 2026-01-08
+
+### Changed
+- Autostart now uses Task Scheduler with admin privileges instead of registry.
+- App will start with administrator rights on Windows login (required for blocking).
+
 ## [4.2.1] - 2026-01-01
 
 ### Fixed
