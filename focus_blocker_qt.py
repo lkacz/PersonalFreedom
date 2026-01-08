@@ -3846,12 +3846,16 @@ class ActivityTab(QtWidgets.QWidget):
         intensity_id = self.intensity_combo.currentData()
         note = self.note_input.text().strip()
         
+        # Allow logging any activity, but warn if below reward threshold
         if duration < ACTIVITY_MIN_DURATION:
-            QtWidgets.QMessageBox.warning(
-                self, "Minimum Duration",
-                f"Activities need to be at least {ACTIVITY_MIN_DURATION} minutes for rewards."
+            reply = QtWidgets.QMessageBox.question(
+                self, "Short Activity",
+                f"Activities under {ACTIVITY_MIN_DURATION} minutes don't earn rewards.\n"
+                f"Log anyway for tracking?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
             )
-            return
+            if reply != QtWidgets.QMessageBox.Yes:
+                return
         
         # Get entries WITHOUT current date for reward calculation
         entries_for_reward = [e for e in self.blocker.activity_entries if e.get("date") != date_str]
@@ -4040,18 +4044,20 @@ class ActivityTab(QtWidgets.QWidget):
                 "\n".join(rewards["messages"])
             )
     
-    def _delete_entry(self, date_str: str, activity_type: str) -> None:
-        """Delete an activity entry."""
+    def _delete_entry(self, entry_index: int) -> None:
+        """Delete an activity entry by index."""
+        if entry_index < 0 or entry_index >= len(self.blocker.activity_entries):
+            return
+        entry = self.blocker.activity_entries[entry_index]
+        date_str = entry.get("date", "")
+        activity_type = entry.get("activity_type", "")
         reply = QtWidgets.QMessageBox.question(
             self, "Delete Entry",
             f"Delete the {activity_type} entry for {date_str}?",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
         )
         if reply == QtWidgets.QMessageBox.Yes:
-            self.blocker.activity_entries = [
-                e for e in self.blocker.activity_entries 
-                if not (e.get("date") == date_str and e.get("activity_type") == activity_type)
-            ]
+            del self.blocker.activity_entries[entry_index]
             self.blocker.save_config()
             self._refresh_display()
     
@@ -4084,11 +4090,12 @@ class ActivityTab(QtWidgets.QWidget):
 """
             self.stats_label.setText(stats_html)
         
-        # Update history table
-        sorted_entries = sorted(entries, key=lambda x: x.get("date", ""), reverse=True)[:50]
+        # Update history table - create sorted view with original indices
+        entries_with_indices = list(enumerate(entries))
+        sorted_entries = sorted(entries_with_indices, key=lambda x: x[1].get("date", ""), reverse=True)[:50]
         self.entries_table.setRowCount(len(sorted_entries))
         
-        for i, entry in enumerate(sorted_entries):
+        for i, (orig_idx, entry) in enumerate(sorted_entries):
             # Date
             self.entries_table.setItem(i, 0, QtWidgets.QTableWidgetItem(entry.get("date", "")))
             
@@ -4112,11 +4119,11 @@ class ActivityTab(QtWidgets.QWidget):
                     break
             self.entries_table.setItem(i, 3, QtWidgets.QTableWidgetItem(intensity_name))
             
-            # Delete button
+            # Delete button - pass original index for correct deletion
             del_btn = QtWidgets.QPushButton("🗑")
             del_btn.setMaximumWidth(30)
             del_btn.clicked.connect(
-                lambda _, d=entry.get("date"), a=entry.get("activity_type"): self._delete_entry(d, a)
+                lambda _, idx=orig_idx: self._delete_entry(idx)
             )
             self.entries_table.setCellWidget(i, 4, del_btn)
         

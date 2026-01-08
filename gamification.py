@@ -8536,8 +8536,9 @@ ACTIVITY_MIN_DURATION = 10
 
 # Reward thresholds based on effective minutes (duration * activity_intensity * user_intensity)
 # Effective minutes = duration * base_intensity * intensity_multiplier
+# Threshold 8 ensures 10min light walk (10 * 1.0 * 0.8 = 8) earns at least Common
 ACTIVITY_REWARD_THRESHOLDS = [
-    (10, "Common"),      # 10+ effective minutes (e.g., 10 min light walk)
+    (8, "Common"),       # 8+ effective minutes (e.g., 10 min light walk)
     (20, "Uncommon"),    # 20+ effective minutes
     (40, "Rare"),        # 40+ effective minutes
     (70, "Epic"),        # 70+ effective minutes
@@ -8627,7 +8628,9 @@ def get_activity_reward_rarity(effective_minutes: float) -> Optional[str]:
     Returns:
         Rarity string or None if below threshold
     """
-    if effective_minutes < ACTIVITY_MIN_DURATION:
+    # Use first threshold from ACTIVITY_REWARD_THRESHOLDS for minimum
+    min_threshold = ACTIVITY_REWARD_THRESHOLDS[0][0] if ACTIVITY_REWARD_THRESHOLDS else 8
+    if effective_minutes < min_threshold:
         return None
     
     rarity = None
@@ -8729,6 +8732,13 @@ def check_activity_entry_reward(duration_minutes: int, activity_id: str,
         result["messages"].append(
             f"{activity_emoji} {duration_minutes} min {intensity_name.lower()} {activity_name.lower()}! "
             f"Earned a {rarity} item!"
+        )
+    else:
+        # Activity logged but didn't earn reward (very low effective minutes)
+        activity = get_activity_type(activity_id)
+        activity_emoji = activity[2] if activity else "🎯"
+        result["messages"].append(
+            f"{activity_emoji} Activity logged! ({effective:.0f} effective min - need 8+ for item rewards)"
         )
     
     return result
