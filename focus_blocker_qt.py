@@ -2979,8 +2979,9 @@ class WeightTab(QtWidgets.QWidget):
         entries_for_reward = [e for e in self.blocker.weight_entries if e.get("date") != date_str]
         
         # Check for rewards before adding entry (use comprehensive function if available)
+        # Skip if gamification mode is disabled (same as focus sessions)
         rewards = None
-        if GAMIFICATION_AVAILABLE and check_all_weight_rewards:
+        if GAMIFICATION_AVAILABLE and check_all_weight_rewards and is_gamification_enabled(self.blocker.adhd_buster):
             story_id = self.blocker.adhd_buster.get("active_story", "warrior")
             rewards = check_all_weight_rewards(
                 entries_for_reward, 
@@ -2990,7 +2991,7 @@ class WeightTab(QtWidgets.QWidget):
                 self.blocker.weight_milestones,
                 story_id
             )
-        elif GAMIFICATION_AVAILABLE and check_weight_entry_rewards:
+        elif GAMIFICATION_AVAILABLE and check_weight_entry_rewards and is_gamification_enabled(self.blocker.adhd_buster):
             # Fallback to basic rewards
             story_id = self.blocker.adhd_buster.get("active_story", "warrior")
             rewards = check_weight_entry_rewards(
@@ -3094,6 +3095,26 @@ class WeightTab(QtWidgets.QWidget):
         if new_milestone_ids:
             self.blocker.weight_milestones.extend(new_milestone_ids)
         
+        # Generate diary entry (once per day, same as focus sessions)
+        diary_entry = None
+        if items_earned and GAMIFICATION_AVAILABLE and generate_diary_entry and calculate_character_power:
+            today = datetime.now().strftime("%Y-%m-%d")
+            diary = self.blocker.adhd_buster.get("diary", [])
+            today_entries = [e for e in diary if e.get("date") == today]
+            
+            if not today_entries:
+                power = calculate_character_power(self.blocker.adhd_buster)
+                equipped = self.blocker.adhd_buster.get("equipped", {})
+                active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+                diary_entry = generate_diary_entry(power, session_minutes=0, equipped_items=equipped,
+                                                   story_id=active_story)
+                if "diary" not in self.blocker.adhd_buster:
+                    self.blocker.adhd_buster["diary"] = []
+                self.blocker.adhd_buster["diary"].append(diary_entry)
+                # Keep only last 100 entries
+                if len(self.blocker.adhd_buster["diary"]) > 100:
+                    self.blocker.adhd_buster["diary"] = self.blocker.adhd_buster["diary"][-100:]
+        
         if items_earned:
             # Update total collected count (same as focus sessions)
             self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + len(items_earned)
@@ -3144,6 +3165,10 @@ class WeightTab(QtWidgets.QWidget):
                 self, "🎉 Weight Rewards!",
                 f"<h3>Congratulations!</h3>{msg}"
             )
+            
+            # Show diary entry reveal (same as focus sessions)
+            if diary_entry:
+                DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes=0, parent=self.window()).exec()
             
             # Refresh ADHD dialog if open (so new gear shows in dropdowns)
             main_window = self.window()
