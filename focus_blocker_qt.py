@@ -2920,6 +2920,7 @@ class WeightTab(QtWidgets.QWidget):
     def _on_unit_changed(self, unit: str) -> None:
         """Handle unit change."""
         self.weight_input.setSuffix(f" {unit}")
+        self.goal_input.setSuffix(f" {unit}")
         if unit == "lbs":
             self.weight_input.setRange(44, 1100)  # ~20-500 kg in lbs
             self.goal_input.setRange(2.2, 1100)   # ~1-500 kg in lbs
@@ -3332,6 +3333,15 @@ class WeightTab(QtWidgets.QWidget):
             if comparisons:
                 parts = []
                 unit = self.blocker.weight_unit
+                
+                # Determine if goal is to lose or gain weight
+                is_losing_goal = True  # Default: assume weight loss
+                if self.blocker.weight_goal and self.blocker.weight_entries:
+                    sorted_e = sorted(self.blocker.weight_entries, key=lambda x: x.get("date", ""))
+                    if sorted_e:
+                        current = sorted_e[-1].get("weight", 0)
+                        is_losing_goal = self.blocker.weight_goal < current
+                
                 for period_key, data in comparisons.items():
                     if data is not None and isinstance(data, dict):
                         label = data.get("label", period_key)
@@ -3344,15 +3354,25 @@ class WeightTab(QtWidgets.QWidget):
                             change_display = change_kg
                             suffix = "kg"
                         
-                        if change_kg < 0:
-                            color = "#00ff88"
-                            sign = ""
-                        elif change_kg > 0:
-                            color = "#ff6464"
-                            sign = "+"
+                        # Color based on goal direction
+                        if is_losing_goal:
+                            # Losing goal: negative change (lost weight) is good
+                            if change_kg < 0:
+                                color = "#00ff88"
+                            elif change_kg > 0:
+                                color = "#ff6464"
+                            else:
+                                color = "#888888"
                         else:
-                            color = "#888888"
-                            sign = ""
+                            # Gaining goal: positive change (gained weight) is good
+                            if change_kg > 0:
+                                color = "#00ff88"
+                            elif change_kg < 0:
+                                color = "#ff6464"
+                            else:
+                                color = "#888888"
+                        
+                        sign = "+" if change_kg > 0 else ""
                         parts.append(f"<span style='color:{color}'>{label}: {sign}{change_display:.1f} {suffix}</span>")
                 
                 if parts:
@@ -3443,10 +3463,16 @@ class WeightTab(QtWidgets.QWidget):
             QtWidgets.QMessageBox.information(self, "Weekly Insights", "Insights not available")
             return
         
+        # Calculate actual streak from get_weight_stats
+        actual_streak = 0
+        if get_weight_stats and self.blocker.weight_entries:
+            stats = get_weight_stats(self.blocker.weight_entries, self.blocker.weight_unit)
+            actual_streak = stats.get("streak_days", 0)
+        
         insights = get_weekly_insights(
             self.blocker.weight_entries,
             self.blocker.weight_milestones,
-            len([e for e in self.blocker.weight_entries if e.get("date", "")]),  # Approximate streak
+            actual_streak,
             self.blocker.weight_goal
         )
         
