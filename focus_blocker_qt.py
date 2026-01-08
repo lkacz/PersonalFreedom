@@ -767,6 +767,12 @@ class TimerTab(QtWidgets.QWidget):
             preset_layout.addWidget(btn)
         layout.addWidget(preset_box)
 
+        # Notification option
+        self.notify_checkbox = QtWidgets.QCheckBox("🔔 Notify me when session ends")
+        self.notify_checkbox.setChecked(self.blocker.config.get("notify_on_complete", True))
+        self.notify_checkbox.setToolTip("Show a desktop notification when your focus session completes")
+        layout.addWidget(self.notify_checkbox)
+
         # Start/Stop buttons
         btn_layout = QtWidgets.QHBoxLayout()
         self.start_btn = QtWidgets.QPushButton("▶ Start Focus")
@@ -786,6 +792,12 @@ class TimerTab(QtWidgets.QWidget):
     def _connect_signals(self) -> None:
         self.start_btn.clicked.connect(self._start_session)
         self.stop_btn.clicked.connect(self._stop_session)
+        self.notify_checkbox.stateChanged.connect(self._save_notify_preference)
+
+    def _save_notify_preference(self) -> None:
+        """Save the notification preference when checkbox changes."""
+        self.blocker.config["notify_on_complete"] = self.notify_checkbox.isChecked()
+        self.blocker.save_config()
 
     # === UI helpers ===
     def _set_preset(self, minutes: int) -> None:
@@ -1043,6 +1055,24 @@ class TimerTab(QtWidgets.QWidget):
         except Exception:
             pass
 
+    def _show_desktop_notification(self, title: str, message: str) -> None:
+        """Show a Windows toast notification."""
+        if not getattr(self, 'notify_checkbox', None) or not self.notify_checkbox.isChecked():
+            return
+        
+        try:
+            # Use Windows tray balloon tip (works on all Windows versions)
+            main_window = self.window()
+            if hasattr(main_window, 'tray_icon') and main_window.tray_icon:
+                main_window.tray_icon.showMessage(
+                    title,
+                    message,
+                    QtWidgets.QSystemTrayIcon.Information,
+                    10000  # 10 seconds
+                )
+        except Exception:
+            pass  # Silent fail - sound notification still works
+
     def _handle_session_complete(self) -> None:
         """Handle session completion."""
         self.timer_running = False
@@ -1062,6 +1092,13 @@ class TimerTab(QtWidgets.QWidget):
 
         # Notify the user the session has ended
         self._play_notification_sound()
+        
+        # Show desktop notification if enabled
+        session_minutes = elapsed // 60
+        self._show_desktop_notification(
+            "🎉 Focus Session Complete!",
+            f"Great job! You focused for {session_minutes} minutes.\nTime for a well-deserved break!"
+        )
 
         self.timer_label.setText("00:00:00")
         self.start_btn.setEnabled(True)
@@ -1116,6 +1153,10 @@ class TimerTab(QtWidgets.QWidget):
             # Break is over, start next work session
             self.pomodoro_is_break = False
             self._play_notification_sound()
+            self._show_desktop_notification(
+                "⏰ Break Over!",
+                f"Break time is over!\nReady for another focus session?"
+            )
             self.blocker.unblock_sites(force=True)
 
             if QtWidgets.QMessageBox.question(
@@ -1134,10 +1175,16 @@ class TimerTab(QtWidgets.QWidget):
             self.pomodoro_total_work_time += elapsed
             self.blocker.update_stats(elapsed, completed=True)
             self._play_notification_sound()
+            
+            # Show desktop notification
+            session_minutes = elapsed // 60
+            self._show_desktop_notification(
+                f"🍅 Pomodoro #{self.pomodoro_session_count} Complete!",
+                f"Great work! You focused for {session_minutes} minutes.\nTime for a break!"
+            )
             self.blocker.unblock_sites(force=True)
 
             # Give rewards for completing work session
-            session_minutes = elapsed // 60
             if session_minutes > 0:
                 self._give_session_rewards(session_minutes)
 
