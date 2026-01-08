@@ -3416,7 +3416,12 @@ class WeightTab(QtWidgets.QWidget):
                     self.prediction_label.setText("<b style='color:#00ff88'>🎯 Goal reached!</b>")
                 elif prediction.get("predicted_date"):
                     days = prediction.get("days_remaining", 0)
-                    date_str = prediction["predicted_date"]
+                    pred_date = prediction["predicted_date"]
+                    # Format datetime to string if needed
+                    if hasattr(pred_date, 'strftime'):
+                        date_str = pred_date.strftime("%b %d, %Y")
+                    else:
+                        date_str = str(pred_date)
                     if days and days > 0:
                         self.prediction_label.setText(f"📅 Estimated goal: <b>{date_str}</b> ({days} days)")
                     else:
