@@ -7655,3 +7655,354 @@ def format_weight_change(change_kg: float, unit: str = "kg") -> str:
     else:
         return f"→ 0 {unit_str}"  # No change
 
+
+# ============================================================================
+# WEIGHT TRACKING: STREAKS, MILESTONES & MAINTENANCE
+# ============================================================================
+
+# Streak thresholds for rewards
+WEIGHT_STREAK_THRESHOLDS = {
+    7: "Rare",      # 1 week streak
+    14: "Epic",     # 2 week streak  
+    30: "Legendary", # 1 month streak
+    60: "Legendary", # 2 month streak
+    100: "Legendary", # 100 day streak
+}
+
+# Milestone definitions (one-time achievements)
+WEIGHT_MILESTONES = {
+    "first_entry": {
+        "name": "First Step",
+        "description": "Log your first weight entry",
+        "rarity": "Common",
+        "check": lambda entries, goal, starting: len(entries) >= 1,
+    },
+    "week_logger": {
+        "name": "Consistent Tracker",
+        "description": "Log weight for 7 consecutive days",
+        "rarity": "Rare",
+        "check": lambda entries, goal, starting: _check_streak(entries) >= 7,
+    },
+    "month_logger": {
+        "name": "Dedicated Logger", 
+        "description": "Log weight for 30 consecutive days",
+        "rarity": "Legendary",
+        "check": lambda entries, goal, starting: _check_streak(entries) >= 30,
+    },
+    "lost_1kg": {
+        "name": "First Kilogram",
+        "description": "Lose 1 kg from your starting weight",
+        "rarity": "Uncommon",
+        "check": lambda entries, goal, starting: _check_weight_loss(entries, starting, 1.0),
+    },
+    "lost_5kg": {
+        "name": "Five Down",
+        "description": "Lose 5 kg from your starting weight",
+        "rarity": "Rare",
+        "check": lambda entries, goal, starting: _check_weight_loss(entries, starting, 5.0),
+    },
+    "lost_10kg": {
+        "name": "Double Digits",
+        "description": "Lose 10 kg from your starting weight",
+        "rarity": "Epic",
+        "check": lambda entries, goal, starting: _check_weight_loss(entries, starting, 10.0),
+    },
+    "lost_20kg": {
+        "name": "Transformation",
+        "description": "Lose 20 kg from your starting weight",
+        "rarity": "Legendary",
+        "check": lambda entries, goal, starting: _check_weight_loss(entries, starting, 20.0),
+    },
+    "goal_reached": {
+        "name": "Goal Achieved!",
+        "description": "Reach your target weight",
+        "rarity": "Legendary",
+        "check": lambda entries, goal, starting: _check_goal_reached(entries, goal),
+    },
+}
+
+
+def _check_streak(weight_entries: list) -> int:
+    """Calculate current logging streak (consecutive days with entries)."""
+    if not weight_entries:
+        return 0
+    
+    from datetime import datetime, timedelta
+    
+    sorted_entries = sorted(
+        [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
+        key=lambda x: x["date"]
+    )
+    
+    if not sorted_entries:
+        return 0
+    
+    streak = 0
+    check_date = datetime.now()
+    
+    for i in range(365):  # Check up to a year
+        date_str = check_date.strftime("%Y-%m-%d")
+        if any(e["date"] == date_str for e in sorted_entries):
+            streak += 1
+            check_date -= timedelta(days=1)
+        else:
+            break
+    
+    return streak
+
+
+def _check_weight_loss(weight_entries: list, starting_weight: float, target_loss_kg: float) -> bool:
+    """Check if user has lost at least target_loss_kg from starting weight."""
+    if not weight_entries or starting_weight is None:
+        return False
+    
+    sorted_entries = sorted(
+        [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
+        key=lambda x: x["date"],
+        reverse=True
+    )
+    
+    if not sorted_entries:
+        return False
+    
+    current = sorted_entries[0]["weight"]
+    return (starting_weight - current) >= target_loss_kg
+
+
+def _check_goal_reached(weight_entries: list, goal: float) -> bool:
+    """Check if user has reached their goal weight."""
+    if not weight_entries or goal is None:
+        return False
+    
+    sorted_entries = sorted(
+        [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
+        key=lambda x: x["date"],
+        reverse=True
+    )
+    
+    if not sorted_entries:
+        return False
+    
+    current = sorted_entries[0]["weight"]
+    return current <= goal
+
+
+def check_weight_streak_reward(weight_entries: list, achieved_milestones: list, 
+                                story_id: str = None) -> Optional[dict]:
+    """
+    Check if a streak threshold was just reached and generate reward.
+    
+    Args:
+        weight_entries: List of weight entries
+        achieved_milestones: List of already achieved milestone IDs
+        story_id: Story theme for item generation
+    
+    Returns:
+        Dict with reward info or None
+    """
+    streak = _check_streak(weight_entries)
+    
+    # Check if we just hit a threshold that hasn't been rewarded
+    for days, rarity in sorted(WEIGHT_STREAK_THRESHOLDS.items()):
+        milestone_id = f"streak_{days}"
+        if streak >= days and milestone_id not in achieved_milestones:
+            return {
+                "milestone_id": milestone_id,
+                "streak_days": days,
+                "rarity": rarity,
+                "item": generate_item(rarity=rarity, story_id=story_id),
+                "message": f"🔥 {days}-Day Logging Streak! Earned a {rarity} item!",
+            }
+    
+    return None
+
+
+def check_weight_milestones(weight_entries: list, goal: float, 
+                            achieved_milestones: list, story_id: str = None) -> list:
+    """
+    Check for newly achieved milestones.
+    
+    Args:
+        weight_entries: List of weight entries
+        goal: Goal weight (or None)
+        achieved_milestones: List of already achieved milestone IDs
+        story_id: Story theme for item generation
+    
+    Returns:
+        List of newly achieved milestone dicts with rewards
+    """
+    new_milestones = []
+    
+    if not weight_entries:
+        return new_milestones
+    
+    # Get starting weight (first entry)
+    sorted_entries = sorted(
+        [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
+        key=lambda x: x["date"]
+    )
+    
+    if not sorted_entries:
+        return new_milestones
+    
+    starting_weight = sorted_entries[0]["weight"]
+    
+    for milestone_id, milestone in WEIGHT_MILESTONES.items():
+        if milestone_id in achieved_milestones:
+            continue
+        
+        try:
+            if milestone["check"](weight_entries, goal, starting_weight):
+                new_milestones.append({
+                    "milestone_id": milestone_id,
+                    "name": milestone["name"],
+                    "description": milestone["description"],
+                    "rarity": milestone["rarity"],
+                    "item": generate_item(rarity=milestone["rarity"], story_id=story_id),
+                    "message": f"🏆 Milestone: {milestone['name']}! ({milestone['description']}) - {milestone['rarity']} reward!",
+                })
+        except Exception:
+            # Skip milestone if check fails
+            continue
+    
+    return new_milestones
+
+
+def check_weight_maintenance(weight_entries: list, goal: float, 
+                             story_id: str = None) -> Optional[dict]:
+    """
+    Check if user is in maintenance mode (at goal, staying within ±0.5kg).
+    
+    Args:
+        weight_entries: List of weight entries  
+        goal: Goal weight (kg)
+        story_id: Story theme for item generation
+    
+    Returns:
+        Dict with maintenance reward info or None
+    """
+    if goal is None or not weight_entries:
+        return None
+    
+    sorted_entries = sorted(
+        [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
+        key=lambda x: x["date"],
+        reverse=True
+    )
+    
+    if not sorted_entries:
+        return None
+    
+    current = sorted_entries[0]["weight"]
+    
+    # Check if within ±0.5kg of goal
+    deviation = abs(current - goal)
+    if deviation > 0.5:
+        return None  # Not in maintenance range
+    
+    # Count consecutive days in maintenance range
+    from datetime import datetime, timedelta
+    
+    maintenance_days = 0
+    check_date = datetime.now()
+    
+    for i in range(365):
+        date_str = check_date.strftime("%Y-%m-%d")
+        entry = next((e for e in sorted_entries if e["date"] == date_str), None)
+        
+        if entry:
+            if abs(entry["weight"] - goal) <= 0.5:
+                maintenance_days += 1
+                check_date -= timedelta(days=1)
+            else:
+                break
+        else:
+            # No entry for this day, don't break streak but don't count
+            check_date -= timedelta(days=1)
+            if i > 7:  # Allow up to 7 days gap
+                break
+    
+    if maintenance_days == 0:
+        return None
+    
+    # Determine reward based on maintenance streak
+    if maintenance_days >= 30:
+        rarity = "Legendary"
+        message = f"👑 30+ Days in Maintenance! Perfect control! Legendary reward!"
+    elif maintenance_days >= 14:
+        rarity = "Epic"
+        message = f"🌟 2+ Weeks in Maintenance! Excellent stability! Epic reward!"
+    elif maintenance_days >= 7:
+        rarity = "Rare"
+        message = f"💪 1 Week in Maintenance! Great job staying on target! Rare reward!"
+    else:
+        rarity = "Uncommon"
+        message = f"✅ Maintaining goal weight! ({deviation*1000:.0f}g from target) Uncommon reward!"
+    
+    return {
+        "maintenance_days": maintenance_days,
+        "deviation_kg": deviation,
+        "rarity": rarity,
+        "item": generate_item(rarity=rarity, story_id=story_id),
+        "message": message,
+    }
+
+
+def check_all_weight_rewards(weight_entries: list, new_weight: float, current_date: str,
+                             goal: float, achieved_milestones: list, 
+                             story_id: str = None) -> dict:
+    """
+    Comprehensive check for all weight-related rewards.
+    
+    Combines daily/weekly/monthly rewards with streak, milestone, and maintenance rewards.
+    
+    Args:
+        weight_entries: Existing entries (WITHOUT the new entry)
+        new_weight: New weight being logged
+        current_date: Today's date
+        goal: Goal weight or None
+        achieved_milestones: List of already achieved milestone IDs
+        story_id: Story theme
+    
+    Returns:
+        Dict with all reward information
+    """
+    # Get base rewards (daily/weekly/monthly)
+    base_rewards = check_weight_entry_rewards(
+        weight_entries, new_weight, current_date, story_id
+    )
+    
+    # Create temp entries list including new entry for milestone checks
+    temp_entries = weight_entries + [{"date": current_date, "weight": new_weight}]
+    
+    # Check streak rewards
+    streak_reward = check_weight_streak_reward(temp_entries, achieved_milestones, story_id)
+    
+    # Check milestone achievements
+    new_milestones = check_weight_milestones(temp_entries, goal, achieved_milestones, story_id)
+    
+    # Check maintenance mode
+    maintenance_reward = check_weight_maintenance(temp_entries, goal, story_id)
+    
+    # Compile all results
+    result = {
+        **base_rewards,
+        "streak_reward": streak_reward,
+        "new_milestones": new_milestones,
+        "maintenance_reward": maintenance_reward,
+        "current_streak": _check_streak(temp_entries),
+    }
+    
+    # Add streak message
+    if streak_reward:
+        result["messages"].append(streak_reward["message"])
+    
+    # Add milestone messages
+    for milestone in new_milestones:
+        result["messages"].append(milestone["message"])
+    
+    # Add maintenance message (only if not already getting other rewards)
+    if maintenance_reward and not base_rewards.get("daily_reward"):
+        result["messages"].append(maintenance_reward["message"])
+    
+    return result
