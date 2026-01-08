@@ -7770,21 +7770,31 @@ def _check_weight_loss(weight_entries: list, starting_weight: float, target_loss
 
 
 def _check_goal_reached(weight_entries: list, goal: float) -> bool:
-    """Check if user has reached their goal weight."""
+    """Check if user has reached their goal weight (works for both loss and gain goals)."""
     if not weight_entries or goal is None:
         return False
     
     sorted_entries = sorted(
         [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
-        key=lambda x: x["date"],
-        reverse=True
+        key=lambda x: x["date"]
     )
     
     if not sorted_entries:
         return False
     
-    current = sorted_entries[0]["weight"]
-    return current <= goal
+    starting = sorted_entries[0]["weight"]
+    current = sorted_entries[-1]["weight"]
+    
+    # Determine goal direction from starting weight
+    if starting > goal:
+        # Weight loss goal: current should be at or below goal
+        return current <= goal
+    elif starting < goal:
+        # Weight gain goal: current should be at or above goal
+        return current >= goal
+    else:
+        # Started at goal - consider reached if within 0.1 kg
+        return abs(current - goal) <= 0.1
 
 
 def check_weight_streak_reward(weight_entries: list, achieved_milestones: list, 

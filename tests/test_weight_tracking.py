@@ -936,3 +936,120 @@ class TestEntryTags:
         """Test formatting an unknown tag returns it as-is."""
         result = format_entry_note("unknown_tag_xyz")
         # Should return something (either the tag or empty)
+
+
+class TestEdgeCasesAndGoalDirections:
+    """Test edge cases and weight goal direction handling."""
+
+    def test_goal_reached_weight_gain(self):
+        """Goal reached check should work for weight GAIN goals."""
+        entries = [
+            {"date": "2026-01-01", "weight": 60.0},  # Starting underweight
+            {"date": "2026-01-10", "weight": 65.0},  # Gained to goal
+        ]
+        # Goal is to reach 65 kg (weight gain goal)
+        assert _check_goal_reached(entries, 65.0) is True
+
+    def test_goal_reached_weight_gain_exceeded(self):
+        """Goal reached check should detect exceeded weight gain goal."""
+        entries = [
+            {"date": "2026-01-01", "weight": 60.0},  # Starting
+            {"date": "2026-01-10", "weight": 68.0},  # Exceeded goal of 65
+        ]
+        assert _check_goal_reached(entries, 65.0) is True
+
+    def test_goal_reached_weight_gain_not_yet(self):
+        """Goal reached check should return False when not at gain goal."""
+        entries = [
+            {"date": "2026-01-01", "weight": 60.0},  # Starting
+            {"date": "2026-01-10", "weight": 62.0},  # Still below goal
+        ]
+        assert _check_goal_reached(entries, 65.0) is False
+
+    def test_goal_reached_started_at_goal(self):
+        """Goal reached when started at goal weight."""
+        entries = [
+            {"date": "2026-01-01", "weight": 70.0},  # At goal
+            {"date": "2026-01-10", "weight": 70.0},  # Still at goal
+        ]
+        assert _check_goal_reached(entries, 70.0) is True
+
+    def test_empty_entries_weight_stats(self):
+        """Empty entries should return sensible defaults."""
+        stats = get_weight_stats([])
+        assert stats["current"] is None
+        assert stats["starting"] is None
+        assert stats["entries_count"] == 0
+        assert stats["streak_days"] == 0
+
+    def test_entries_with_missing_fields(self):
+        """Entries with missing date/weight should be filtered."""
+        entries = [
+            {"date": "2026-01-01", "weight": 80.0},
+            {"date": "2026-01-02"},  # Missing weight
+            {"weight": 79.0},  # Missing date
+            {"date": "2026-01-03", "weight": 78.0},
+        ]
+        stats = get_weight_stats(entries)
+        # Only 2 valid entries
+        assert stats["entries_count"] == 2
+
+    def test_calculate_weight_loss_precision(self):
+        """Weight loss calculation should handle precision correctly."""
+        # 80.001 - 80.0 could have floating point issues
+        loss = calculate_weight_loss(79.999, 80.0)
+        assert abs(loss - 1) < 0.5  # Should be ~1g, not some weird float
+
+    def test_daily_reward_threshold_boundaries(self):
+        """Test exact threshold boundaries."""
+        assert get_daily_weight_reward_rarity(0) == "Common"
+        assert get_daily_weight_reward_rarity(99) == "Common"
+        assert get_daily_weight_reward_rarity(100) == "Uncommon"
+        assert get_daily_weight_reward_rarity(199) == "Uncommon"
+        assert get_daily_weight_reward_rarity(200) == "Rare"
+        assert get_daily_weight_reward_rarity(299) == "Rare"
+        assert get_daily_weight_reward_rarity(300) == "Epic"
+        assert get_daily_weight_reward_rarity(499) == "Epic"
+        assert get_daily_weight_reward_rarity(500) == "Legendary"
+
+    def test_get_previous_weight_entry_same_day(self):
+        """Previous entry should not return same-day entry."""
+        entries = [
+            {"date": "2026-01-05", "weight": 80.0},
+        ]
+        result = get_previous_weight_entry(entries, "2026-01-05")
+        assert result is None  # No previous, only same day
+
+    def test_closest_weight_future_date(self):
+        """Closest weight should handle future target date."""
+        entries = [
+            {"date": "2026-01-01", "weight": 80.0},
+            {"date": "2026-01-05", "weight": 79.0},
+        ]
+        result = get_closest_weight_before_date(entries, "2026-12-31")
+        assert result["date"] == "2026-01-05"
+        assert result["weight"] == 79.0
+
+    def test_weight_stats_single_entry(self):
+        """Stats with single entry should work."""
+        entries = [{"date": "2026-01-01", "weight": 80.0}]
+        stats = get_weight_stats(entries)
+        assert stats["current"] == 80.0
+        assert stats["starting"] == 80.0
+        assert stats["total_change"] == 0
+        assert stats["entries_count"] == 1
+
+    def test_format_weight_change_various_units(self):
+        """Format weight change in different units."""
+        assert "kg" in format_weight_change(1.0, "kg")
+        assert "lbs" in format_weight_change(1.0, "lbs")
+        assert format_weight_change(None, "kg") == "N/A"
+        assert format_weight_change(0, "kg") == "→ 0 kg"
+
+    def test_check_weight_entry_rewards_same_weight(self):
+        """Same weight should give Common item for consistency."""
+        entries = [{"date": "2026-01-07", "weight": 80.0}]
+        result = check_weight_entry_rewards(entries, 80.0, "2026-01-08")
+        assert result["daily_reward"] is not None
+        assert result["daily_reward"]["rarity"] == "Common"
+        assert result["daily_loss_grams"] == 0
