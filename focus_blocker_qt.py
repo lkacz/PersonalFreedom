@@ -7663,6 +7663,15 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                                    "Set your desired duration and click Start Focus!")
 
     def _open_adhd_buster(self) -> None:
+        # Prevent interaction during active focus sessions
+        if self.timer_tab.timer_running:
+            QtWidgets.QMessageBox.information(
+                self, "Session Active",
+                "You cannot modify your ADHD Buster during a focus session.\n\n"
+                "Complete or stop your session first to access inventory and equipment."
+            )
+            return
+        
         self.adhd_dialog = ADHDBusterDialog(self.blocker, self)
         self.adhd_dialog.finished.connect(self._on_adhd_dialog_closed)
         self.adhd_dialog.exec()
