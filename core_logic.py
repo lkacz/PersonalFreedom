@@ -11,6 +11,8 @@ import subprocess
 import re
 import uuid
 import logging
+import tempfile
+import shutil
 from typing import Dict, Optional, Any
 
 try:
@@ -73,6 +75,36 @@ CONFIG_PATH = APP_DIR / "config.json"
 STATS_PATH = APP_DIR / "stats.json"
 GOALS_PATH = APP_DIR / "goals.json"
 SESSION_STATE_PATH = APP_DIR / ".session_state.json"  # Crash recovery file
+
+
+def atomic_write_json(filepath: Path, data: dict) -> None:
+    """
+    Atomically write JSON data to a file.
+    
+    Writes to a temporary file first, then renames to target path.
+    This prevents data corruption if the app crashes mid-write.
+    """
+    # Create temp file in the same directory (to ensure same filesystem for rename)
+    fd, temp_path = tempfile.mkstemp(
+        suffix='.tmp',
+        prefix=filepath.stem + '_',
+        dir=filepath.parent
+    )
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+        # On Windows, we need to remove the target first if it exists
+        if sys.platform == 'win32' and filepath.exists():
+            filepath.unlink()
+        shutil.move(temp_path, filepath)
+    except Exception:
+        # Clean up temp file on error
+        try:
+            os.unlink(temp_path)
+        except OSError:
+            pass
+        raise
+
 
 # Website categories with common distracting sites
 SITE_CATEGORIES = {
@@ -221,7 +253,7 @@ class BlockerCore:
             self.save_config()
 
     def save_config(self) -> None:
-        """Save configuration to file"""
+        """Save configuration to file atomically (crash-safe)"""
         try:
             config = {
                 'blacklist': self.blacklist,
@@ -239,8 +271,7 @@ class BlockerCore:
                 'minimize_to_tray': self.minimize_to_tray,
                 'adhd_buster': self.adhd_buster,
             }
-            with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
-                json.dump(config, f, indent=2)
+            atomic_write_json(CONFIG_PATH, config)
         except (IOError, OSError) as e:
             logger.error(f"Could not save config: {e}")
 
@@ -255,10 +286,9 @@ class BlockerCore:
                 pass
 
     def save_stats(self):
-        """Save statistics to file"""
+        """Save statistics to file atomically (crash-safe)"""
         try:
-            with open(STATS_PATH, 'w', encoding='utf-8') as f:
-                json.dump(self.stats, f, indent=2)
+            atomic_write_json(STATS_PATH, self.stats)
         except (IOError, OSError):
             pass
 

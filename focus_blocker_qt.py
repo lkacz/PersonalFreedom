@@ -836,6 +836,10 @@ class TimerTab(QtWidgets.QWidget):
 
     # === Timer control ===
     def _start_session(self) -> None:
+        # Guard against starting while already running
+        if self.timer_running:
+            return
+        
         hours = self.hours_spin.value()
         minutes = self.minutes_spin.value()
         total_minutes = hours * 60 + minutes
@@ -5929,11 +5933,26 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         expected_removal = len(items)
         actual_removal = len(inventory) - len(new_inventory)
         if actual_removal != expected_removal:
-            # Fallback: if smart removal failed, use index-based deletion
+            # Fallback: use index-based deletion with item verification
+            # Only delete if the item at index matches what we expected
             new_inventory = inventory.copy()
+            removed_count = 0
             for idx in sorted(valid_indices, reverse=True):
                 if idx < len(new_inventory):
-                    del new_inventory[idx]
+                    item_at_idx = new_inventory[idx]
+                    # Verify this is one of our target items
+                    for target in items:
+                        if (item_at_idx.get("name") == target.get("name") and
+                            item_at_idx.get("slot") == target.get("slot") and
+                            item_at_idx.get("rarity") == target.get("rarity")):
+                            del new_inventory[idx]
+                            removed_count += 1
+                            break
+            
+            # If still couldn't remove expected amount, log warning but proceed
+            if removed_count != expected_removal:
+                import logging
+                logging.warning(f"Merge removal mismatch: expected {expected_removal}, got {removed_count}")
         
         if result["success"]:
             new_inventory.append(result["result_item"])
