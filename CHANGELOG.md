@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.8] - 2026-01-08
+
+### Fixed
+- **HIGH**: Fixed daily reward race condition - date now set BEFORE item generation to prevent duplicate rewards on rapid open/close.
+- Improved priority check-in timing using interval counting instead of narrow time window (no more missed check-ins).
+- Added extra confirmation dialog when using Emergency Cleanup during STRICT or HARDCORE sessions.
+
+### Improved
+- Priority check-in system now reliably triggers at each interval without timing dependency.
+- Emergency Cleanup now warns users about bypassing their chosen strict mode protection.
+
 ## [5.0.7] - 2026-01-08
 
 ### Fixed
