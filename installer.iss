@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6.0 or later: https://jrsoftware.org/isinfo.php
 
 #define MyAppName "Personal Liberty"
-#define MyAppVersion "4.2.1"
+#define MyAppVersion "4.2.2"
 #define MyAppPublisher "Personal Liberty"
 #define MyAppURL "https://github.com/lkacz/PersonalLiberty"
 #define MyAppExeName "PersonalLiberty.exe"
@@ -37,8 +37,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "autostart"; Description: "Start with Windows (recommended)"; GroupDescription: "Startup Options:"
-Name: "nouac"; Description: "Create no-UAC shortcut (skip admin prompt on launch)"; GroupDescription: "Startup Options:"; Flags: unchecked
+Name: "autostart"; Description: "Start with Windows as Administrator (recommended for blocking to work)"; GroupDescription: "Startup Options:"
 
 [Files]
 ; Main executable with AI bundled (includes tray functionality)
@@ -70,12 +69,12 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 [Run]
 ; Run as admin is required for hosts file modification
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser shellexec
-; Create no-UAC scheduled task if selected
-Filename: "{sys}\schtasks.exe"; Parameters: "/create /tn ""PersonalLibertyLauncher"" /tr """"""{app}\{#MyAppExeName}"""""" /sc onlogon /rl highest /f"; Tasks: nouac; Flags: runhidden
+; Create scheduled task with admin privileges for autostart
+Filename: "{sys}\schtasks.exe"; Parameters: "/create /tn ""PersonalLibertyAutostart"" /tr """"""{app}\{#MyAppExeName} --minimized"""""" /sc onlogon /rl highest /f"; Tasks: autostart; Flags: runhidden
 
 [Registry]
-; Add to startup if selected (uses main app with --minimized to start in tray)
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\{#MyAppExeName}"" --minimized"; Tasks: autostart; Flags: uninsdeletevalue
+; Note: We use Task Scheduler instead of registry for admin autostart
+; Registry entry removed - it doesn't support admin elevation
 
 [UninstallRun]
 ; Kill running processes first
