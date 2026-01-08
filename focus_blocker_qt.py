@@ -6422,7 +6422,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         # Calculate optimal gear
         result = optimize_equipped_gear(self.blocker.adhd_buster)
         
-        if result["power_gain"] <= 0 and not result["changes"]:
+        if not result["changes"]:
             QtWidgets.QMessageBox.information(
                 self, "Optimize Gear",
                 "Your gear is already optimized! ⚔️\n\n"
@@ -6461,11 +6461,17 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self._refresh_character()
         self._refresh_inventory()
         
-        QtWidgets.QMessageBox.information(
-            self, "Gear Optimized! ⚡",
-            f"Power increased from {result['old_power']} to {result['new_power']}!\n"
-            f"(+{result['power_gain']} power)"
-        )
+        if result["power_gain"] > 0:
+            QtWidgets.QMessageBox.information(
+                self, "Gear Optimized! ⚡",
+                f"Power increased from {result['old_power']} to {result['new_power']}!\n"
+                f"(+{result['power_gain']} power)"
+            )
+        else:
+            QtWidgets.QMessageBox.information(
+                self, "Gear Updated! ⚔️",
+                f"Gear configuration updated.\nPower: {result['new_power']}"
+            )
 
     def _salvage_duplicates(self) -> None:
         inventory = self.blocker.adhd_buster.get("inventory", [])
