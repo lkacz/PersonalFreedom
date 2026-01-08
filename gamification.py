@@ -2712,6 +2712,222 @@ def get_power_breakdown(adhd_buster: dict) -> dict:
     }
 
 
+def find_potential_set_bonuses(inventory: list, equipped: dict) -> list:
+    """
+    Find potential set bonuses that could be activated from inventory items.
+    
+    Returns a list of potential sets with:
+    - theme name, emoji
+    - items in inventory that match
+    - items currently equipped that match
+    - potential bonus if all items were equipped
+    """
+    if not inventory:
+        return []
+    
+    # Get all items (inventory + equipped)
+    all_items = list(inventory)
+    for item in equipped.values():
+        if item:
+            all_items.append(item)
+    
+    # Count themes across all available items
+    theme_items: Dict[str, list] = {}
+    for item in all_items:
+        if not item:
+            continue
+        themes = get_item_themes(item)
+        for theme in themes:
+            if theme not in theme_items:
+                theme_items[theme] = []
+            # Track if item is equipped or in inventory
+            is_equipped = any(
+                eq and eq.get("name") == item.get("name") and eq.get("obtained_at") == item.get("obtained_at")
+                for eq in equipped.values()
+            )
+            theme_items[theme].append({
+                "item": item,
+                "equipped": is_equipped
+            })
+    
+    # Find themes that could give bonuses (2+ items available)
+    potential_sets = []
+    for theme_name, items in theme_items.items():
+        if len(items) < SET_BONUS_MIN_MATCHES:
+            continue
+        
+        theme_data = ITEM_THEMES.get(theme_name, {"bonus_per_match": 10, "emoji": "🎯"})
+        
+        # Group by slot to see which items are equipable together
+        slot_items: Dict[str, list] = {}
+        for item_info in items:
+            slot = item_info["item"].get("slot", "Unknown")
+            if slot not in slot_items:
+                slot_items[slot] = []
+            slot_items[slot].append(item_info)
+        
+        # Count equipped vs inventory
+        equipped_count = sum(1 for i in items if i["equipped"])
+        inventory_count = sum(1 for i in items if not i["equipped"])
+        
+        # Max possible is one item per slot
+        max_equippable = min(len(slot_items), len(items))
+        
+        if max_equippable >= SET_BONUS_MIN_MATCHES:
+            potential_sets.append({
+                "name": theme_name,
+                "emoji": theme_data["emoji"],
+                "equipped_count": equipped_count,
+                "inventory_count": inventory_count,
+                "max_equippable": max_equippable,
+                "potential_bonus": theme_data["bonus_per_match"] * max_equippable,
+                "current_bonus": theme_data["bonus_per_match"] * equipped_count if equipped_count >= SET_BONUS_MIN_MATCHES else 0,
+                "slots": list(slot_items.keys())
+            })
+    
+    # Sort by potential bonus (highest first)
+    potential_sets.sort(key=lambda x: x["potential_bonus"], reverse=True)
+    return potential_sets
+
+
+def optimize_equipped_gear(adhd_buster: dict) -> dict:
+    """
+    Find the optimal gear configuration that maximizes total power.
+    
+    Uses a greedy algorithm with set bonus consideration:
+    1. Group items by slot
+    2. For each combination, calculate total power including set bonuses
+    3. Return the best configuration
+    
+    Returns:
+    - new_equipped: dict mapping slot -> item (or None)
+    - old_power: previous total power
+    - new_power: new total power
+    - changes: list of changes made
+    """
+    inventory = adhd_buster.get("inventory", [])
+    current_equipped = adhd_buster.get("equipped", {})
+    
+    # Get all available items (inventory + currently equipped)
+    all_items = list(inventory)
+    for slot, item in current_equipped.items():
+        if item and item not in all_items:
+            all_items.append(item)
+    
+    # Group items by slot
+    items_by_slot: Dict[str, list] = {slot: [] for slot in GEAR_SLOTS}
+    for item in all_items:
+        slot = item.get("slot")
+        if slot in items_by_slot:
+            items_by_slot[slot].append(item)
+    
+    # Sort items within each slot by power (highest first)
+    for slot in items_by_slot:
+        items_by_slot[slot].sort(
+            key=lambda x: x.get("power", RARITY_POWER.get(x.get("rarity", "Common"), 10)),
+            reverse=True
+        )
+    
+    # Calculate current power
+    old_power = calculate_character_power(adhd_buster)
+    
+    # For small inventories, try all combinations
+    # For larger ones, use a smarter greedy approach
+    total_items = sum(len(items) for items in items_by_slot.values())
+    
+    if total_items <= 50:
+        # Brute force for small inventories - try top 3 items per slot
+        best_equipped = {}
+        best_power = 0
+        
+        from itertools import product
+        
+        # Get top 3 candidates per slot (plus empty option)
+        candidates_per_slot = []
+        for slot in GEAR_SLOTS:
+            slot_items = items_by_slot[slot][:3]  # Top 3 by power
+            # Add None option for empty slot
+            candidates_per_slot.append([None] + slot_items)
+        
+        # Try all combinations
+        for combo in product(*candidates_per_slot):
+            test_equipped = {}
+            for i, slot in enumerate(GEAR_SLOTS):
+                test_equipped[slot] = combo[i]
+            
+            # Calculate power for this combo
+            base_power = sum(
+                item.get("power", RARITY_POWER.get(item.get("rarity", "Common"), 10))
+                for item in test_equipped.values() if item
+            )
+            set_info = calculate_set_bonuses(test_equipped)
+            total_power = base_power + set_info["total_bonus"]
+            
+            if total_power > best_power:
+                best_power = total_power
+                best_equipped = test_equipped.copy()
+    else:
+        # Greedy approach for larger inventories
+        # Start with highest power items, then try swaps for set bonuses
+        best_equipped = {}
+        for slot in GEAR_SLOTS:
+            if items_by_slot[slot]:
+                best_equipped[slot] = items_by_slot[slot][0]
+            else:
+                best_equipped[slot] = None
+        
+        # Try swaps to improve set bonuses
+        improved = True
+        iterations = 0
+        while improved and iterations < 10:
+            improved = False
+            iterations += 1
+            current_power = calculate_character_power({"equipped": best_equipped})
+            
+            for slot in GEAR_SLOTS:
+                for item in items_by_slot[slot]:
+                    if item == best_equipped.get(slot):
+                        continue
+                    # Try this item
+                    test_equipped = best_equipped.copy()
+                    test_equipped[slot] = item
+                    test_power = calculate_character_power({"equipped": test_equipped})
+                    
+                    if test_power > current_power:
+                        best_equipped = test_equipped
+                        current_power = test_power
+                        improved = True
+        
+        best_power = calculate_character_power({"equipped": best_equipped})
+    
+    # Build list of changes
+    changes = []
+    for slot in GEAR_SLOTS:
+        old_item = current_equipped.get(slot)
+        new_item = best_equipped.get(slot)
+        
+        old_name = old_item.get("name") if old_item else None
+        new_name = new_item.get("name") if new_item else None
+        
+        if old_name != new_name:
+            if old_item and new_item:
+                old_power_val = old_item.get("power", 10)
+                new_power_val = new_item.get("power", 10)
+                changes.append(f"{slot}: {old_name} → {new_name} ({new_power_val - old_power_val:+d})")
+            elif new_item:
+                changes.append(f"{slot}: [Empty] → {new_name}")
+            else:
+                changes.append(f"{slot}: {old_name} → [Empty]")
+    
+    return {
+        "new_equipped": best_equipped,
+        "old_power": old_power,
+        "new_power": best_power,
+        "power_gain": best_power - old_power,
+        "changes": changes
+    }
+
+
 # ============================================================================
 # STORY SYSTEM - Unlock story chapters as you grow stronger!
 # 3 unique stories, each with branching narrative and 8 possible endings
