@@ -2722,7 +2722,8 @@ def find_potential_set_bonuses(inventory: list, equipped: dict) -> list:
     - items currently equipped that match
     - potential bonus if all items were equipped
     """
-    if not inventory:
+    # Allow analysis even with empty inventory if there are equipped items
+    if not inventory and not any(equipped.values()):
         return []
     
     # Get all items (inventory + equipped)
@@ -2809,10 +2810,18 @@ def optimize_equipped_gear(adhd_buster: dict) -> dict:
     current_equipped = adhd_buster.get("equipped", {})
     
     # Get all available items (inventory + currently equipped)
+    # Use a set of (name, obtained_at) tuples to avoid duplicates
     all_items = list(inventory)
+    seen_items = {
+        (item.get("name"), item.get("obtained_at")) 
+        for item in inventory if item
+    }
     for slot, item in current_equipped.items():
-        if item and item not in all_items:
-            all_items.append(item)
+        if item:
+            item_key = (item.get("name"), item.get("obtained_at"))
+            if item_key not in seen_items:
+                all_items.append(item)
+                seen_items.add(item_key)
     
     # Group items by slot
     items_by_slot: Dict[str, list] = {slot: [] for slot in GEAR_SLOTS}
