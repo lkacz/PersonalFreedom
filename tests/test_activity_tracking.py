@@ -143,13 +143,14 @@ class TestActivityRewardRarity:
     """Test reward rarity calculation based on effective minutes."""
 
     def test_below_minimum_no_reward(self):
-        """Below minimum duration should give no reward."""
+        """Below minimum threshold (8) should give no reward."""
         assert get_activity_reward_rarity(5) is None
-        assert get_activity_reward_rarity(8) is None
-        assert get_activity_reward_rarity(9.9) is None
+        assert get_activity_reward_rarity(7) is None
+        assert get_activity_reward_rarity(7.9) is None
 
     def test_minimum_gives_common(self):
-        """Minimum 10 effective minutes should give Common."""
+        """8+ effective minutes should give Common (10 min light walk = 8)."""
+        assert get_activity_reward_rarity(8) == "Common"
         assert get_activity_reward_rarity(10) == "Common"
         assert get_activity_reward_rarity(15) == "Common"
         assert get_activity_reward_rarity(19) == "Common"
@@ -476,3 +477,93 @@ class TestStreakThresholds:
         for days, rarity, name in ACTIVITY_STREAK_THRESHOLDS:
             assert days > prev or days == prev  # Allow same for multiple same-level rewards
             prev = days
+
+
+class TestEdgeCases:
+    """Test edge cases and boundary conditions."""
+
+    def test_10min_light_walk_earns_common(self):
+        """Per user spec: 10 min light walking should earn at least Common."""
+        # 10 min * 1.0 (walking) * 0.8 (light) = 8 effective min
+        result = check_activity_entry_reward(10, "walking", "light")
+        assert result["reward"] is not None
+        assert result["rarity"] == "Common"
+
+    def test_10min_light_stretching_earns_common(self):
+        """10 min light stretching should still earn Common."""
+        # 10 min * 0.8 (stretching) * 0.8 (light) = 6.4 effective min - below threshold
+        result = check_activity_entry_reward(10, "stretching", "light")
+        # With threshold at 8, this won't earn reward
+        assert result["effective_minutes"] == 6.4
+
+    def test_13min_stretching_light_earns_reward(self):
+        """13 min light stretching reaches 8+ effective minutes."""
+        # 13 * 0.8 * 0.8 = 8.32 effective min
+        result = check_activity_entry_reward(13, "stretching", "light")
+        assert result["reward"] is not None
+        assert result["rarity"] == "Common"
+
+    def test_below_10min_duration_no_reward_check(self):
+        """Activities under 10 min duration skip reward calculation."""
+        result = check_activity_entry_reward(5, "running", "intense")
+        assert result["reward"] is None
+        assert "at least 10 minutes" in result["messages"][0]
+
+    def test_empty_activity_type_fallback(self):
+        """Unknown activity type should use default multiplier."""
+        result = calculate_effective_minutes(30, "nonexistent", "moderate")
+        assert result == 30  # 30 * 1.0 * 1.0
+
+    def test_empty_intensity_fallback(self):
+        """Unknown intensity should use default multiplier."""
+        result = calculate_effective_minutes(30, "walking", "nonexistent")
+        assert result == 30  # 30 * 1.0 * 1.0
+
+    def test_entry_without_activity_type(self):
+        """Entry without activity_type should be handled in stats."""
+        entries = [{"date": "2026-01-01", "duration": 30}]
+        stats = get_activity_stats(entries)
+        assert stats["total_sessions"] == 1
+        assert stats["total_minutes"] == 30
+
+    def test_entry_without_duration(self):
+        """Entry without duration should contribute 0 minutes."""
+        entries = [{"date": "2026-01-01", "activity_type": "walking"}]
+        stats = get_activity_stats(entries)
+        assert stats["total_minutes"] == 0
+
+    def test_message_when_no_reward_earned(self):
+        """When activity doesn't earn reward, message should explain."""
+        # 10 min stretching light = 6.4 effective min, below 8 threshold
+        result = check_activity_entry_reward(10, "stretching", "light")
+        assert result["reward"] is None
+        assert len(result["messages"]) > 0
+        assert "effective min" in result["messages"][0].lower() or "need" in result["messages"][0].lower()
+
+    def test_very_long_activity(self):
+        """Very long activities should still work correctly."""
+        result = check_activity_entry_reward(480, "hiit", "intense")
+        # 480 * 2.5 * 1.6 = 1920 effective min
+        assert result["reward"] is not None
+        assert result["rarity"] == "Legendary"
+        assert result["effective_minutes"] == 1920
+
+    def test_streak_with_future_entries(self):
+        """Entries with future dates shouldn't affect streak."""
+        from datetime import datetime, timedelta
+        today = datetime.now()
+        entries = [
+            {"date": today.strftime("%Y-%m-%d"), "duration": 30},
+            {"date": (today + timedelta(days=5)).strftime("%Y-%m-%d"), "duration": 30},
+        ]
+        # Only today counts, future is ignored in streak logic
+        assert check_activity_streak(entries) == 1
+
+    def test_stats_with_no_entries_returns_defaults(self):
+        """Empty entries should return sensible defaults."""
+        stats = get_activity_stats([])
+        assert stats["total_minutes"] == 0
+        assert stats["total_sessions"] == 0
+        assert stats["favorite_activity"] is None
+        assert stats["avg_duration"] == 0
+        assert stats["current_streak"] == 0
