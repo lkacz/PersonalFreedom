@@ -1083,6 +1083,9 @@ class TimerTab(QtWidgets.QWidget):
         if hasattr(main_window, '_update_tray_icon'):
             main_window._update_tray_icon(blocking=False)
 
+        # Process events to update UI immediately before showing dialogs
+        QtWidgets.QApplication.processEvents()
+
         session_minutes = elapsed // 60
 
         # Show AI session dialog if available, otherwise simple message
@@ -1092,11 +1095,20 @@ class TimerTab(QtWidgets.QWidget):
         else:
             QtWidgets.QMessageBox.information(self, "Complete!", "🎉 Focus session complete!\nGreat job staying focused!")
 
+        # Defer rewards to allow UI to remain responsive
         if session_minutes > 0:
-            self._give_session_rewards(session_minutes)
-            self._show_priority_time_log(session_minutes)
+            QtCore.QTimer.singleShot(50, lambda: self._give_session_rewards_deferred(session_minutes))
+        else:
+            self.session_complete.emit(elapsed)
 
-        self.session_complete.emit(elapsed)
+    def _give_session_rewards_deferred(self, session_minutes: int) -> None:
+        """Deferred session rewards to keep UI responsive."""
+        QtWidgets.QApplication.processEvents()
+        self._give_session_rewards(session_minutes)
+        QtWidgets.QApplication.processEvents()
+        self._show_priority_time_log(session_minutes)
+        # Calculate elapsed for signal - approximate from session_minutes
+        self.session_complete.emit(session_minutes * 60)
 
     def _show_priority_time_log(self, session_minutes: int) -> None:
         """Show priority time logging dialog."""
@@ -7040,9 +7052,7 @@ class AISessionCompleteDialog(QtWidgets.QDialog):
         self.blocker = blocker
         self.session_duration = session_duration
         self.selected_rating = ""
-        self.local_ai = None
-        if LOCAL_AI_AVAILABLE and LocalAI:
-            self.local_ai = LocalAI()
+        # Don't create LocalAI here - suggest_break_activity doesn't need it
         self.setWindowTitle("Session Complete! 🎉")
         self.resize(500, 520)
         self.setMinimumSize(450, 400)
@@ -7125,25 +7135,31 @@ class AISessionCompleteDialog(QtWidgets.QDialog):
             btn.setChecked(btn == clicked_btn)
 
     def _generate_suggestions(self) -> None:
-        if self.local_ai:
-            try:
-                suggestions = self.local_ai.suggest_break_activity(
-                    self.session_duration // 60, None
-                )
-                if suggestions:
-                    text = "\n".join(f"  {i}. {s}" for i, s in enumerate(suggestions, 1))
-                    self.suggestions_label.setText(text)
-                    return
-            except Exception:
-                pass
-        # Fallback suggestions
-        fallback = [
-            "Take a 5-minute walk or stretch",
-            "Get some water or a healthy snack",
-            "Look away from screen - rest your eyes",
-            "Do some deep breathing exercises"
-        ]
-        self.suggestions_label.setText("\n".join(f"  {i}. {s}" for i, s in enumerate(fallback, 1)))
+        """Generate break activity suggestions based on session duration."""
+        session_mins = self.session_duration // 60
+        
+        # Generate suggestions based on session length (same logic as LocalAI.suggest_break_activity)
+        if session_mins > 60:  # Long session
+            suggestions = [
+                "🚶 Take a 10-minute walk to refresh",
+                "💧 Drink water and do light stretching",
+                "🌳 Step outside for fresh air"
+            ]
+        elif session_mins > 30:
+            suggestions = [
+                "☕ Quick coffee/tea break",
+                "🧘 5-minute breathing exercises",
+                "👀 Look away from screen, rest eyes"
+            ]
+        else:
+            suggestions = [
+                "⚡ Brief 2-minute stretch",
+                "💪 Do 10 pushups for energy",
+                "🎵 Listen to one song"
+            ]
+        
+        text = "\n".join(f"  {i}. {s}" for i, s in enumerate(suggestions, 1))
+        self.suggestions_label.setText(text)
 
     def _save_and_close(self) -> None:
         note = self.notes_edit.toPlainText().strip()

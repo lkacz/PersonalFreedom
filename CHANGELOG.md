@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.5] - 2026-01-08
+
+### Fixed
+- Session completion dialog no longer freezes the application.
+- Removed unnecessary AI model loading during session complete.
+- Deferred reward processing to keep UI responsive.
+- Added UI event processing during session transitions.
+
 ## [4.2.4] - 2026-01-08
 
 ### Fixed
