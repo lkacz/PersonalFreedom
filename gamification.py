@@ -8495,3 +8495,453 @@ def format_entry_note(note: str) -> str:
             return tag_display
     
     return note
+
+
+# ============================================================================
+# PHYSICAL ACTIVITY TRACKING: GAMIFIED EXERCISE REWARDS
+# ============================================================================
+
+# Activity types with base intensity multipliers
+# (activity_id, display_name, emoji, base_intensity)
+# base_intensity: 1.0 = low, 1.5 = moderate, 2.0 = high, 2.5 = very high
+ACTIVITY_TYPES = [
+    ("walking", "Walking", "🚶", 1.0),
+    ("jogging", "Jogging", "🏃", 1.5),
+    ("running", "Running", "🏃‍♂️", 2.0),
+    ("cycling", "Cycling", "🚴", 1.5),
+    ("swimming", "Swimming", "🏊", 2.0),
+    ("hiking", "Hiking", "🥾", 1.5),
+    ("strength", "Strength Training", "🏋️", 2.0),
+    ("yoga", "Yoga", "🧘", 1.0),
+    ("dance", "Dancing", "💃", 1.5),
+    ("sports", "Sports (General)", "⚽", 1.8),
+    ("hiit", "HIIT", "🔥", 2.5),
+    ("climbing", "Climbing", "🧗", 2.0),
+    ("martial_arts", "Martial Arts", "🥋", 2.0),
+    ("stretching", "Stretching", "🤸", 0.8),
+    ("other", "Other Activity", "🎯", 1.0),
+]
+
+# Intensity levels that user can select
+# (intensity_id, display_name, multiplier)
+INTENSITY_LEVELS = [
+    ("light", "Light", 0.8),
+    ("moderate", "Moderate", 1.0),
+    ("vigorous", "Vigorous", 1.3),
+    ("intense", "Intense", 1.6),
+]
+
+# Minimum duration for rewards (in minutes)
+ACTIVITY_MIN_DURATION = 10
+
+# Reward thresholds based on effective minutes (duration * activity_intensity * user_intensity)
+# Effective minutes = duration * base_intensity * intensity_multiplier
+ACTIVITY_REWARD_THRESHOLDS = [
+    (10, "Common"),      # 10+ effective minutes (e.g., 10 min light walk)
+    (20, "Uncommon"),    # 20+ effective minutes
+    (40, "Rare"),        # 40+ effective minutes
+    (70, "Epic"),        # 70+ effective minutes
+    (120, "Legendary"),  # 120+ effective minutes (e.g., 1hr intense workout)
+]
+
+# Streak thresholds for activity (consecutive days with any activity)
+ACTIVITY_STREAK_THRESHOLDS = [
+    (3, "Uncommon", "3-day streak"),
+    (7, "Rare", "7-day streak"),
+    (14, "Epic", "14-day streak"),
+    (30, "Legendary", "30-day streak"),
+    (60, "Legendary", "60-day streak"),
+    (90, "Legendary", "90-day streak"),
+]
+
+# Milestones for activity tracking
+ACTIVITY_MILESTONES = [
+    {"id": "first_activity", "name": "First Workout", "description": "Log your first activity", 
+     "check": "first_entry", "rarity": "Uncommon"},
+    {"id": "total_1hr", "name": "Hour Hero", "description": "1 hour total activity time",
+     "check": "total_minutes", "threshold": 60, "rarity": "Uncommon"},
+    {"id": "total_5hr", "name": "Endurance Builder", "description": "5 hours total activity time",
+     "check": "total_minutes", "threshold": 300, "rarity": "Rare"},
+    {"id": "total_10hr", "name": "Fitness Warrior", "description": "10 hours total activity time",
+     "check": "total_minutes", "threshold": 600, "rarity": "Rare"},
+    {"id": "total_25hr", "name": "Iron Will", "description": "25 hours total activity time",
+     "check": "total_minutes", "threshold": 1500, "rarity": "Epic"},
+    {"id": "total_50hr", "name": "Athletic Legend", "description": "50 hours total activity time",
+     "check": "total_minutes", "threshold": 3000, "rarity": "Legendary"},
+    {"id": "variety_3", "name": "Explorer", "description": "Try 3 different activity types",
+     "check": "activity_variety", "threshold": 3, "rarity": "Uncommon"},
+    {"id": "variety_5", "name": "Versatile Athlete", "description": "Try 5 different activity types",
+     "check": "activity_variety", "threshold": 5, "rarity": "Rare"},
+    {"id": "variety_8", "name": "All-Rounder", "description": "Try 8 different activity types",
+     "check": "activity_variety", "threshold": 8, "rarity": "Epic"},
+    {"id": "intense_session", "name": "Beast Mode", "description": "Complete a 60+ min intense workout",
+     "check": "single_intense", "threshold": 60, "rarity": "Epic"},
+]
+
+
+def get_activity_type(activity_id: str) -> Optional[tuple]:
+    """Get activity type tuple by ID."""
+    for activity in ACTIVITY_TYPES:
+        if activity[0] == activity_id:
+            return activity
+    return None
+
+
+def get_intensity_level(intensity_id: str) -> Optional[tuple]:
+    """Get intensity level tuple by ID."""
+    for intensity in INTENSITY_LEVELS:
+        if intensity[0] == intensity_id:
+            return intensity
+    return None
+
+
+def calculate_effective_minutes(duration_minutes: int, activity_id: str, 
+                                intensity_id: str) -> float:
+    """
+    Calculate effective minutes based on duration, activity type, and intensity.
+    
+    Args:
+        duration_minutes: Actual duration in minutes
+        activity_id: Activity type ID
+        intensity_id: Intensity level ID
+    
+    Returns:
+        Effective minutes (duration * activity_base * intensity_multiplier)
+    """
+    activity = get_activity_type(activity_id)
+    intensity = get_intensity_level(intensity_id)
+    
+    base_intensity = activity[3] if activity else 1.0
+    intensity_mult = intensity[2] if intensity else 1.0
+    
+    return duration_minutes * base_intensity * intensity_mult
+
+
+def get_activity_reward_rarity(effective_minutes: float) -> Optional[str]:
+    """
+    Get reward rarity based on effective minutes.
+    
+    Args:
+        effective_minutes: Calculated effective minutes
+    
+    Returns:
+        Rarity string or None if below threshold
+    """
+    if effective_minutes < ACTIVITY_MIN_DURATION:
+        return None
+    
+    rarity = None
+    for threshold, r in ACTIVITY_REWARD_THRESHOLDS:
+        if effective_minutes >= threshold:
+            rarity = r
+    
+    return rarity
+
+
+def check_activity_streak(activity_entries: list) -> int:
+    """
+    Calculate current activity streak (consecutive days with activity).
+    
+    Args:
+        activity_entries: List of activity entries with date field
+    
+    Returns:
+        Current streak count
+    """
+    from datetime import datetime, timedelta
+    
+    if not activity_entries:
+        return 0
+    
+    # Get unique dates with activity
+    dates = set()
+    for entry in activity_entries:
+        if entry.get("date"):
+            dates.add(entry["date"])
+    
+    if not dates:
+        return 0
+    
+    today = datetime.now().strftime("%Y-%m-%d")
+    
+    # If no activity today, streak is 0
+    if today not in dates:
+        return 0
+    
+    streak = 1
+    current = datetime.now()
+    
+    while True:
+        current = current - timedelta(days=1)
+        date_str = current.strftime("%Y-%m-%d")
+        if date_str in dates:
+            streak += 1
+        else:
+            break
+    
+    return streak
+
+
+def check_activity_entry_reward(duration_minutes: int, activity_id: str,
+                                 intensity_id: str, story_id: str = None) -> dict:
+    """
+    Check what reward an activity entry earns.
+    
+    Args:
+        duration_minutes: Duration of activity
+        activity_id: Type of activity
+        intensity_id: Intensity level
+        story_id: Story theme for item generation
+    
+    Returns:
+        Dict with reward info
+    """
+    result = {
+        "reward": None,
+        "effective_minutes": 0,
+        "rarity": None,
+        "messages": [],
+    }
+    
+    if duration_minutes < ACTIVITY_MIN_DURATION:
+        result["messages"].append(
+            f"⏱️ Need at least {ACTIVITY_MIN_DURATION} minutes for rewards. "
+            f"You logged {duration_minutes} min."
+        )
+        return result
+    
+    effective = calculate_effective_minutes(duration_minutes, activity_id, intensity_id)
+    result["effective_minutes"] = effective
+    
+    rarity = get_activity_reward_rarity(effective)
+    result["rarity"] = rarity
+    
+    if rarity:
+        result["reward"] = generate_item(rarity=rarity, story_id=story_id)
+        
+        activity = get_activity_type(activity_id)
+        activity_name = activity[1] if activity else "Activity"
+        activity_emoji = activity[2] if activity else "🎯"
+        
+        intensity = get_intensity_level(intensity_id)
+        intensity_name = intensity[1] if intensity else "Moderate"
+        
+        result["messages"].append(
+            f"{activity_emoji} {duration_minutes} min {intensity_name.lower()} {activity_name.lower()}! "
+            f"Earned a {rarity} item!"
+        )
+    
+    return result
+
+
+def check_activity_streak_reward(activity_entries: list, achieved_milestones: list,
+                                  story_id: str = None) -> Optional[dict]:
+    """
+    Check if current streak earns a milestone reward.
+    
+    Args:
+        activity_entries: List of activity entries
+        achieved_milestones: Already achieved milestone IDs
+        story_id: Story theme
+    
+    Returns:
+        Reward dict or None
+    """
+    streak = check_activity_streak(activity_entries)
+    
+    for days, rarity, name in ACTIVITY_STREAK_THRESHOLDS:
+        milestone_id = f"activity_streak_{days}"
+        if streak >= days and milestone_id not in achieved_milestones:
+            return {
+                "milestone_id": milestone_id,
+                "streak_days": days,
+                "name": name,
+                "item": generate_item(rarity=rarity, story_id=story_id),
+                "message": f"🔥 {days}-day activity streak! Earned a {rarity} item!",
+            }
+    
+    return None
+
+
+def check_activity_milestones(activity_entries: list, achieved_milestones: list,
+                               story_id: str = None) -> list:
+    """
+    Check for newly achieved activity milestones.
+    
+    Args:
+        activity_entries: List of activity entries
+        achieved_milestones: Already achieved milestone IDs
+        story_id: Story theme
+    
+    Returns:
+        List of newly achieved milestones with rewards
+    """
+    new_milestones = []
+    
+    if not activity_entries:
+        return new_milestones
+    
+    # Calculate stats for milestone checks
+    total_minutes = sum(e.get("duration", 0) for e in activity_entries)
+    activity_types_used = set(e.get("activity_type") for e in activity_entries if e.get("activity_type"))
+    
+    for milestone in ACTIVITY_MILESTONES:
+        mid = milestone["id"]
+        if mid in achieved_milestones:
+            continue
+        
+        achieved = False
+        check = milestone.get("check")
+        
+        if check == "first_entry":
+            achieved = len(activity_entries) >= 1
+        
+        elif check == "total_minutes":
+            achieved = total_minutes >= milestone.get("threshold", 0)
+        
+        elif check == "activity_variety":
+            achieved = len(activity_types_used) >= milestone.get("threshold", 0)
+        
+        elif check == "single_intense":
+            # Check if any single entry is intense enough
+            threshold = milestone.get("threshold", 60)
+            for entry in activity_entries:
+                if entry.get("intensity") in ("vigorous", "intense"):
+                    if entry.get("duration", 0) >= threshold:
+                        achieved = True
+                        break
+        
+        if achieved:
+            new_milestones.append({
+                "milestone_id": mid,
+                "name": milestone["name"],
+                "description": milestone["description"],
+                "item": generate_item(rarity=milestone["rarity"], story_id=story_id),
+                "message": f"🏆 {milestone['name']}! {milestone['description']}",
+            })
+    
+    return new_milestones
+
+
+def check_all_activity_rewards(activity_entries: list, duration_minutes: int,
+                                activity_id: str, intensity_id: str, 
+                                current_date: str, achieved_milestones: list,
+                                story_id: str = None) -> dict:
+    """
+    Comprehensive check for all activity-related rewards.
+    
+    Args:
+        activity_entries: Existing entries (WITHOUT the new entry)
+        duration_minutes: New activity duration
+        activity_id: Activity type
+        intensity_id: Intensity level
+        current_date: Today's date
+        achieved_milestones: Already achieved milestone IDs
+        story_id: Story theme
+    
+    Returns:
+        Dict with all reward information
+    """
+    # Get base reward for this activity
+    base_rewards = check_activity_entry_reward(
+        duration_minutes, activity_id, intensity_id, story_id
+    )
+    
+    # Create temp entries list including new entry for streak/milestone checks
+    new_entry = {
+        "date": current_date,
+        "duration": duration_minutes,
+        "activity_type": activity_id,
+        "intensity": intensity_id,
+    }
+    temp_entries = activity_entries + [new_entry]
+    
+    # Check streak rewards
+    streak_reward = check_activity_streak_reward(temp_entries, achieved_milestones, story_id)
+    
+    # Check milestone achievements
+    new_milestones = check_activity_milestones(temp_entries, achieved_milestones, story_id)
+    
+    # Compile all results
+    result = {
+        **base_rewards,
+        "streak_reward": streak_reward,
+        "new_milestones": new_milestones,
+        "current_streak": check_activity_streak(temp_entries),
+    }
+    
+    # Add streak message
+    if streak_reward:
+        result["messages"].append(streak_reward["message"])
+    
+    # Add milestone messages
+    for milestone in new_milestones:
+        result["messages"].append(milestone["message"])
+    
+    return result
+
+
+def get_activity_stats(activity_entries: list) -> dict:
+    """
+    Calculate activity statistics for display.
+    
+    Args:
+        activity_entries: List of activity entries
+    
+    Returns:
+        Dict with stats
+    """
+    from datetime import datetime, timedelta
+    
+    if not activity_entries:
+        return {
+            "total_minutes": 0,
+            "total_sessions": 0,
+            "this_week_minutes": 0,
+            "this_month_minutes": 0,
+            "favorite_activity": None,
+            "avg_duration": 0,
+            "current_streak": 0,
+        }
+    
+    total_minutes = sum(e.get("duration", 0) for e in activity_entries)
+    total_sessions = len(activity_entries)
+    
+    # This week / month
+    today = datetime.now()
+    week_ago = (today - timedelta(days=7)).strftime("%Y-%m-%d")
+    month_ago = (today - timedelta(days=30)).strftime("%Y-%m-%d")
+    
+    this_week = sum(e.get("duration", 0) for e in activity_entries 
+                    if e.get("date", "") >= week_ago)
+    this_month = sum(e.get("duration", 0) for e in activity_entries 
+                     if e.get("date", "") >= month_ago)
+    
+    # Favorite activity
+    activity_counts = {}
+    for entry in activity_entries:
+        a_type = entry.get("activity_type", "other")
+        activity_counts[a_type] = activity_counts.get(a_type, 0) + 1
+    
+    favorite = max(activity_counts.items(), key=lambda x: x[1])[0] if activity_counts else None
+    
+    return {
+        "total_minutes": total_minutes,
+        "total_sessions": total_sessions,
+        "this_week_minutes": this_week,
+        "this_month_minutes": this_month,
+        "favorite_activity": favorite,
+        "avg_duration": total_minutes / total_sessions if total_sessions else 0,
+        "current_streak": check_activity_streak(activity_entries),
+    }
+
+
+def format_activity_duration(minutes: int) -> str:
+    """Format minutes as hours and minutes string."""
+    if minutes < 60:
+        return f"{minutes} min"
+    hours = minutes // 60
+    mins = minutes % 60
+    if mins == 0:
+        return f"{hours}h"
+    return f"{hours}h {mins}m"

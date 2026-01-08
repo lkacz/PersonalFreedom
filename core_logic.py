@@ -202,6 +202,13 @@ class BlockerCore:
         self.weight_reminder_enabled = False  # Daily reminder
         self.weight_reminder_time = "08:00"  # Reminder time HH:MM
         self.weight_last_reminder_date = None  # Last reminder shown
+        
+        # Activity tracking
+        self.activity_entries = []  # List of {"date": "YYYY-MM-DD", "duration": int, "activity_type": str, "intensity": str, "note": str}
+        self.activity_milestones = []  # List of achieved milestone IDs
+        self.activity_reminder_enabled = False  # Daily reminder
+        self.activity_reminder_time = "18:00"  # Reminder time HH:MM
+        self.activity_last_reminder_date = None  # Last reminder shown
 
         # Statistics
         self.stats = self._default_stats()
@@ -267,6 +274,19 @@ class BlockerCore:
                     self.weight_reminder_enabled = config.get('weight_reminder_enabled', False)
                     self.weight_reminder_time = config.get('weight_reminder_time', '08:00')
                     self.weight_last_reminder_date = config.get('weight_last_reminder_date', None)
+                    # Activity tracking - validate entries on load
+                    raw_activity = config.get('activity_entries', [])
+                    self.activity_entries = [
+                        e for e in raw_activity
+                        if isinstance(e, dict)
+                        and e.get("date")
+                        and isinstance(e.get("duration"), (int, float))
+                        and e.get("duration") > 0
+                    ]
+                    self.activity_milestones = config.get('activity_milestones', [])
+                    self.activity_reminder_enabled = config.get('activity_reminder_enabled', False)
+                    self.activity_reminder_time = config.get('activity_reminder_time', '18:00')
+                    self.activity_last_reminder_date = config.get('activity_last_reminder_date', None)
                     # Initialize/migrate hero management structure
                     if HERO_MANAGEMENT_AVAILABLE and _ensure_hero_structure:
                         _ensure_hero_structure(self.adhd_buster)
@@ -304,6 +324,11 @@ class BlockerCore:
                 'weight_reminder_enabled': self.weight_reminder_enabled,
                 'weight_reminder_time': self.weight_reminder_time,
                 'weight_last_reminder_date': self.weight_last_reminder_date,
+                'activity_entries': self.activity_entries,
+                'activity_milestones': self.activity_milestones,
+                'activity_reminder_enabled': self.activity_reminder_enabled,
+                'activity_reminder_time': self.activity_reminder_time,
+                'activity_last_reminder_date': self.activity_last_reminder_date,
             }
             atomic_write_json(CONFIG_PATH, config)
         except (IOError, OSError) as e:

@@ -379,6 +379,37 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
     except ImportError:
         pass
     
+    # Activity tracking functions
+    global ACTIVITY_TYPES, INTENSITY_LEVELS, ACTIVITY_MIN_DURATION
+    global check_all_activity_rewards, get_activity_stats, format_activity_duration
+    global check_activity_streak
+    ACTIVITY_TYPES = []
+    INTENSITY_LEVELS = []
+    ACTIVITY_MIN_DURATION = 10
+    check_all_activity_rewards = None
+    get_activity_stats = None
+    format_activity_duration = None
+    check_activity_streak = None
+    try:
+        from gamification import (
+            ACTIVITY_TYPES as _ACTIVITY_TYPES,
+            INTENSITY_LEVELS as _INTENSITY_LEVELS,
+            ACTIVITY_MIN_DURATION as _ACTIVITY_MIN_DURATION,
+            check_all_activity_rewards as _check_all_activity_rewards,
+            get_activity_stats as _get_activity_stats,
+            format_activity_duration as _format_activity_duration,
+            check_activity_streak as _check_activity_streak,
+        )
+        ACTIVITY_TYPES = _ACTIVITY_TYPES
+        INTENSITY_LEVELS = _INTENSITY_LEVELS
+        ACTIVITY_MIN_DURATION = _ACTIVITY_MIN_DURATION
+        check_all_activity_rewards = _check_all_activity_rewards
+        get_activity_stats = _get_activity_stats
+        format_activity_duration = _format_activity_duration
+        check_activity_streak = _check_activity_streak
+    except ImportError:
+        pass
+    
     if splash:
         splash.set_status("Initializing interface...")
 
@@ -3621,6 +3652,524 @@ class WeightTab(QtWidgets.QWidget):
         dialog.setTextFormat(QtCore.Qt.TextFormat.RichText)
         dialog.setText("<br>".join(msg_parts))
         dialog.exec()
+
+
+class ActivityTab(QtWidgets.QWidget):
+    """Physical activity tracking tab with gamification rewards."""
+    
+    def __init__(self, blocker: 'BlockerCore', parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self._reminder_timer = None
+        self._build_ui()
+        self._refresh_display()
+        self._setup_reminder()
+        self.destroyed.connect(self._cleanup_timer)
+    
+    def _cleanup_timer(self) -> None:
+        """Stop the reminder timer when the widget is destroyed."""
+        if self._reminder_timer is not None:
+            self._reminder_timer.stop()
+            self._reminder_timer = None
+    
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(15, 15, 15, 15)
+        
+        # Header
+        header = QtWidgets.QLabel("🏃 Activity Tracker")
+        header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
+        layout.addWidget(header)
+        
+        # Main content split
+        content_layout = QtWidgets.QHBoxLayout()
+        
+        # Left: Log activity form
+        left_panel = QtWidgets.QGroupBox("Log Activity")
+        left_layout = QtWidgets.QVBoxLayout(left_panel)
+        
+        # Date input
+        date_layout = QtWidgets.QHBoxLayout()
+        date_layout.addWidget(QtWidgets.QLabel("Date:"))
+        self.date_edit = QtWidgets.QDateEdit()
+        self.date_edit.setCalendarPopup(True)
+        self.date_edit.setDate(QtCore.QDate.currentDate())
+        self.date_edit.setMaximumDate(QtCore.QDate.currentDate())
+        date_layout.addWidget(self.date_edit)
+        date_layout.addStretch()
+        left_layout.addLayout(date_layout)
+        
+        # Activity type
+        type_layout = QtWidgets.QHBoxLayout()
+        type_layout.addWidget(QtWidgets.QLabel("Activity:"))
+        self.activity_combo = QtWidgets.QComboBox()
+        for activity_id, name, emoji, _ in ACTIVITY_TYPES:
+            self.activity_combo.addItem(f"{emoji} {name}", activity_id)
+        self.activity_combo.setCurrentIndex(0)  # Walking
+        type_layout.addWidget(self.activity_combo)
+        left_layout.addLayout(type_layout)
+        
+        # Duration
+        duration_layout = QtWidgets.QHBoxLayout()
+        duration_layout.addWidget(QtWidgets.QLabel("Duration:"))
+        self.duration_spin = QtWidgets.QSpinBox()
+        self.duration_spin.setRange(1, 480)  # 1 min to 8 hours
+        self.duration_spin.setValue(30)
+        self.duration_spin.setSuffix(" min")
+        duration_layout.addWidget(self.duration_spin)
+        duration_layout.addStretch()
+        left_layout.addLayout(duration_layout)
+        
+        # Intensity
+        intensity_layout = QtWidgets.QHBoxLayout()
+        intensity_layout.addWidget(QtWidgets.QLabel("Intensity:"))
+        self.intensity_combo = QtWidgets.QComboBox()
+        for intensity_id, name, _ in INTENSITY_LEVELS:
+            self.intensity_combo.addItem(name, intensity_id)
+        self.intensity_combo.setCurrentIndex(1)  # Moderate
+        intensity_layout.addWidget(self.intensity_combo)
+        intensity_layout.addStretch()
+        left_layout.addLayout(intensity_layout)
+        
+        # Note
+        note_layout = QtWidgets.QHBoxLayout()
+        note_layout.addWidget(QtWidgets.QLabel("Note:"))
+        self.note_input = QtWidgets.QLineEdit()
+        self.note_input.setPlaceholderText("Optional note...")
+        self.note_input.setMaxLength(100)
+        note_layout.addWidget(self.note_input)
+        left_layout.addLayout(note_layout)
+        
+        # Log button
+        self.log_btn = QtWidgets.QPushButton("🏆 Log Activity")
+        self.log_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4caf50;
+                color: white;
+                font-size: 14px;
+                font-weight: bold;
+                padding: 10px;
+                border-radius: 5px;
+            }
+            QPushButton:hover { background-color: #66bb6a; }
+        """)
+        self.log_btn.clicked.connect(self._log_activity)
+        left_layout.addWidget(self.log_btn)
+        
+        # Quick presets
+        presets_label = QtWidgets.QLabel("Quick Presets:")
+        presets_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
+        left_layout.addWidget(presets_label)
+        
+        presets_layout = QtWidgets.QGridLayout()
+        presets = [
+            ("🚶 10min Walk", "walking", 10, "light"),
+            ("🚶 30min Walk", "walking", 30, "moderate"),
+            ("🏃 20min Jog", "jogging", 20, "moderate"),
+            ("🏋️ 45min Gym", "strength", 45, "vigorous"),
+            ("🧘 30min Yoga", "yoga", 30, "light"),
+            ("🔥 30min HIIT", "hiit", 30, "intense"),
+        ]
+        for i, (label, activity, duration, intensity) in enumerate(presets):
+            btn = QtWidgets.QPushButton(label)
+            btn.setStyleSheet("padding: 5px;")
+            btn.clicked.connect(lambda _, a=activity, d=duration, i=intensity: self._apply_preset(a, d, i))
+            presets_layout.addWidget(btn, i // 2, i % 2)
+        left_layout.addLayout(presets_layout)
+        
+        left_layout.addStretch()
+        content_layout.addWidget(left_panel)
+        
+        # Right: Stats and history
+        right_panel = QtWidgets.QGroupBox("Stats & History")
+        right_layout = QtWidgets.QVBoxLayout(right_panel)
+        
+        # Stats display
+        self.stats_label = QtWidgets.QLabel()
+        self.stats_label.setWordWrap(True)
+        self.stats_label.setStyleSheet("font-size: 11px;")
+        right_layout.addWidget(self.stats_label)
+        
+        # History table
+        self.entries_table = QtWidgets.QTableWidget()
+        self.entries_table.setColumnCount(5)
+        self.entries_table.setHorizontalHeaderLabels(["Date", "Activity", "Duration", "Intensity", ""])
+        self.entries_table.horizontalHeader().setStretchLastSection(True)
+        self.entries_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.entries_table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        right_layout.addWidget(self.entries_table)
+        
+        content_layout.addWidget(right_panel)
+        layout.addLayout(content_layout)
+        
+        # Reminder section at bottom
+        reminder_layout = QtWidgets.QHBoxLayout()
+        self.reminder_checkbox = QtWidgets.QCheckBox("Daily reminder at:")
+        self.reminder_checkbox.setChecked(self.blocker.activity_reminder_enabled)
+        self.reminder_checkbox.stateChanged.connect(self._update_reminder_setting)
+        reminder_layout.addWidget(self.reminder_checkbox)
+        
+        self.reminder_time = QtWidgets.QTimeEdit()
+        self.reminder_time.setDisplayFormat("HH:mm")
+        try:
+            h, m = self.blocker.activity_reminder_time.split(":")
+            self.reminder_time.setTime(QtCore.QTime(int(h), int(m)))
+        except:
+            self.reminder_time.setTime(QtCore.QTime(18, 0))
+        self.reminder_time.timeChanged.connect(self._update_reminder_setting)
+        reminder_layout.addWidget(self.reminder_time)
+        reminder_layout.addStretch()
+        layout.addLayout(reminder_layout)
+    
+    def _apply_preset(self, activity: str, duration: int, intensity: str) -> None:
+        """Apply a quick preset to the form."""
+        # Find activity index
+        for i in range(self.activity_combo.count()):
+            if self.activity_combo.itemData(i) == activity:
+                self.activity_combo.setCurrentIndex(i)
+                break
+        
+        self.duration_spin.setValue(duration)
+        
+        # Find intensity index
+        for i in range(self.intensity_combo.count()):
+            if self.intensity_combo.itemData(i) == intensity:
+                self.intensity_combo.setCurrentIndex(i)
+                break
+    
+    def _log_activity(self) -> None:
+        """Log a new activity entry."""
+        date_str = self.date_edit.date().toString("yyyy-MM-dd")
+        duration = self.duration_spin.value()
+        activity_id = self.activity_combo.currentData()
+        intensity_id = self.intensity_combo.currentData()
+        note = self.note_input.text().strip()
+        
+        if duration < ACTIVITY_MIN_DURATION:
+            QtWidgets.QMessageBox.warning(
+                self, "Minimum Duration",
+                f"Activities need to be at least {ACTIVITY_MIN_DURATION} minutes for rewards."
+            )
+            return
+        
+        # Get entries WITHOUT current date for reward calculation
+        entries_for_reward = [e for e in self.blocker.activity_entries if e.get("date") != date_str]
+        
+        # Check for rewards
+        rewards = None
+        if GAMIFICATION_AVAILABLE and check_all_activity_rewards and is_gamification_enabled(self.blocker.adhd_buster):
+            story_id = self.blocker.adhd_buster.get("active_story", "warrior")
+            rewards = check_all_activity_rewards(
+                entries_for_reward,
+                duration,
+                activity_id,
+                intensity_id,
+                date_str,
+                self.blocker.activity_milestones,
+                story_id
+            )
+        
+        # Create entry
+        new_entry = {
+            "date": date_str,
+            "duration": duration,
+            "activity_type": activity_id,
+            "intensity": intensity_id,
+        }
+        if note:
+            new_entry["note"] = note
+        
+        # Check for existing entry on same date
+        existing_idx = None
+        for i, entry in enumerate(self.blocker.activity_entries):
+            if entry.get("date") == date_str and entry.get("activity_type") == activity_id:
+                existing_idx = i
+                break
+        
+        if existing_idx is not None:
+            activity_name = self.activity_combo.currentText()
+            reply = QtWidgets.QMessageBox.question(
+                self, "Update Entry",
+                f"You already have a {activity_name} entry for {date_str}.\n"
+                f"Add to existing ({self.blocker.activity_entries[existing_idx]['duration']} min) or replace?",
+                QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No | QtWidgets.QMessageBox.StandardButton.Cancel,
+                QtWidgets.QMessageBox.StandardButton.Yes
+            )
+            if reply == QtWidgets.QMessageBox.StandardButton.Cancel:
+                return
+            elif reply == QtWidgets.QMessageBox.StandardButton.Yes:
+                # Add to existing
+                self.blocker.activity_entries[existing_idx]["duration"] += duration
+                if note:
+                    old_note = self.blocker.activity_entries[existing_idx].get("note", "")
+                    self.blocker.activity_entries[existing_idx]["note"] = f"{old_note}; {note}" if old_note else note
+            else:
+                # Replace
+                self.blocker.activity_entries[existing_idx] = new_entry
+        else:
+            self.blocker.activity_entries.append(new_entry)
+            self.blocker.activity_entries.sort(key=lambda x: x.get("date", ""), reverse=True)
+        
+        self.blocker.save_config()
+        
+        # Process rewards
+        if rewards and GAMIFICATION_AVAILABLE:
+            self._process_rewards(rewards)
+        
+        # Reset form
+        self.note_input.clear()
+        self._refresh_display()
+    
+    def _process_rewards(self, rewards: dict) -> None:
+        """Process and show activity rewards."""
+        items_earned = []
+        new_milestone_ids = []
+        
+        # Get luck bonus for potential upgrades
+        luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+        luck_chance = min(luck / 100, 10) if luck > 0 else 0
+        
+        def maybe_upgrade_item(item: dict) -> dict:
+            """Apply luck-based upgrade chance to item."""
+            if luck_chance > 0 and random.random() * 100 < luck_chance:
+                rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+                current_idx = rarity_order.index(item.get("rarity", "Common"))
+                if current_idx < len(rarity_order) - 1:
+                    story_id = self.blocker.adhd_buster.get("active_story", "warrior")
+                    upgraded = generate_item(rarity=rarity_order[current_idx + 1], story_id=story_id)
+                    upgraded["slot"] = item.get("slot")
+                    upgraded["lucky_upgrade"] = True
+                    return upgraded
+            return item
+        
+        # Base activity reward
+        if rewards.get("reward"):
+            item = maybe_upgrade_item(rewards["reward"])
+            items_earned.append(("Activity", item))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
+        
+        # Streak reward
+        if rewards.get("streak_reward"):
+            streak_data = rewards["streak_reward"]
+            item = maybe_upgrade_item(streak_data["item"])
+            items_earned.append((f"🔥 {streak_data['streak_days']}-Day Streak", item))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
+            new_milestone_ids.append(streak_data["milestone_id"])
+        
+        # Milestone rewards
+        for milestone in rewards.get("new_milestones", []):
+            item = maybe_upgrade_item(milestone["item"])
+            items_earned.append((f"🏆 {milestone['name']}", item))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
+            new_milestone_ids.append(milestone["milestone_id"])
+        
+        # Save new milestones
+        if new_milestone_ids:
+            self.blocker.activity_milestones.extend(new_milestone_ids)
+        
+        # Generate diary entry (once per day)
+        diary_entry = None
+        if items_earned and GAMIFICATION_AVAILABLE and generate_diary_entry and calculate_character_power:
+            today = datetime.now().strftime("%Y-%m-%d")
+            diary = self.blocker.adhd_buster.get("diary", [])
+            today_entries = [e for e in diary if e.get("date") == today]
+            
+            if not today_entries:
+                power = calculate_character_power(self.blocker.adhd_buster)
+                equipped = self.blocker.adhd_buster.get("equipped", {})
+                active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+                diary_entry = generate_diary_entry(power, session_minutes=0, equipped_items=equipped,
+                                                   story_id=active_story)
+                if "diary" not in self.blocker.adhd_buster:
+                    self.blocker.adhd_buster["diary"] = []
+                self.blocker.adhd_buster["diary"].append(diary_entry)
+                if len(self.blocker.adhd_buster["diary"]) > 100:
+                    self.blocker.adhd_buster["diary"] = self.blocker.adhd_buster["diary"][-100:]
+        
+        if items_earned:
+            # Update total collected count
+            self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + len(items_earned)
+            
+            # Auto-equip to empty slots
+            if "equipped" not in self.blocker.adhd_buster:
+                self.blocker.adhd_buster["equipped"] = {}
+            for _, item in items_earned:
+                slot = item.get("slot")
+                if slot and not self.blocker.adhd_buster["equipped"].get(slot):
+                    self.blocker.adhd_buster["equipped"][slot] = item.copy()
+            
+            # Sync hero data
+            if GAMIFICATION_AVAILABLE and sync_hero_data:
+                sync_hero_data(self.blocker.adhd_buster)
+            
+            self.blocker.save_config()
+            
+            # Build reward message
+            msg_parts = []
+            for source, item in items_earned:
+                rarity = item.get("rarity", "Common")
+                name = item.get("name", "Unknown Item")
+                msg_parts.append(f"<b>{source}:</b> {rarity} - {name}")
+            
+            # Add effective minutes info
+            if rewards.get("effective_minutes"):
+                msg_parts.append(f"<br><i>Effective minutes: {rewards['effective_minutes']:.0f}</i>")
+            
+            # Add streak info
+            if rewards.get("current_streak", 0) > 0:
+                msg_parts.append(f"<i>Streak: {rewards['current_streak']} days 🔥</i>")
+            
+            msg = "<br>".join(msg_parts)
+            QtWidgets.QMessageBox.information(
+                self, "🏆 Activity Rewards!",
+                f"<h3>Great workout!</h3>{msg}"
+            )
+            
+            # Show diary entry reveal
+            if diary_entry:
+                DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes=0, parent=self.window()).exec()
+            
+            # Refresh ADHD dialog
+            main_window = self.window()
+            if hasattr(main_window, 'refresh_adhd_dialog'):
+                main_window.refresh_adhd_dialog()
+        elif rewards.get("messages"):
+            QtWidgets.QMessageBox.information(
+                self, "Activity Logged",
+                "\n".join(rewards["messages"])
+            )
+    
+    def _delete_entry(self, date_str: str, activity_type: str) -> None:
+        """Delete an activity entry."""
+        reply = QtWidgets.QMessageBox.question(
+            self, "Delete Entry",
+            f"Delete the {activity_type} entry for {date_str}?",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        )
+        if reply == QtWidgets.QMessageBox.Yes:
+            self.blocker.activity_entries = [
+                e for e in self.blocker.activity_entries 
+                if not (e.get("date") == date_str and e.get("activity_type") == activity_type)
+            ]
+            self.blocker.save_config()
+            self._refresh_display()
+    
+    def _refresh_display(self) -> None:
+        """Refresh all display elements."""
+        self.date_edit.setMaximumDate(QtCore.QDate.currentDate())
+        entries = self.blocker.activity_entries
+        
+        # Update stats
+        if get_activity_stats:
+            stats = get_activity_stats(entries)
+            
+            # Get favorite activity name
+            fav_name = "None"
+            if stats.get("favorite_activity"):
+                for aid, name, emoji, _ in ACTIVITY_TYPES:
+                    if aid == stats["favorite_activity"]:
+                        fav_name = f"{emoji} {name}"
+                        break
+            
+            stats_html = f"""
+<b>📊 Your Activity Stats</b><br><br>
+<b>Total Time:</b> {format_activity_duration(stats['total_minutes']) if format_activity_duration else f"{stats['total_minutes']} min"}<br>
+<b>Sessions:</b> {stats['total_sessions']}<br>
+<b>This Week:</b> {format_activity_duration(stats['this_week_minutes']) if format_activity_duration else f"{stats['this_week_minutes']} min"}<br>
+<b>This Month:</b> {format_activity_duration(stats['this_month_minutes']) if format_activity_duration else f"{stats['this_month_minutes']} min"}<br>
+<b>Avg Duration:</b> {stats['avg_duration']:.0f} min<br>
+<b>Favorite:</b> {fav_name}<br>
+<b>Streak:</b> 🔥 {stats['current_streak']} days
+"""
+            self.stats_label.setText(stats_html)
+        
+        # Update history table
+        sorted_entries = sorted(entries, key=lambda x: x.get("date", ""), reverse=True)[:50]
+        self.entries_table.setRowCount(len(sorted_entries))
+        
+        for i, entry in enumerate(sorted_entries):
+            # Date
+            self.entries_table.setItem(i, 0, QtWidgets.QTableWidgetItem(entry.get("date", "")))
+            
+            # Activity type
+            activity_name = entry.get("activity_type", "other")
+            for aid, name, emoji, _ in ACTIVITY_TYPES:
+                if aid == activity_name:
+                    activity_name = f"{emoji} {name}"
+                    break
+            self.entries_table.setItem(i, 1, QtWidgets.QTableWidgetItem(activity_name))
+            
+            # Duration
+            duration = entry.get("duration", 0)
+            self.entries_table.setItem(i, 2, QtWidgets.QTableWidgetItem(f"{duration} min"))
+            
+            # Intensity
+            intensity_name = entry.get("intensity", "moderate")
+            for iid, name, _ in INTENSITY_LEVELS:
+                if iid == intensity_name:
+                    intensity_name = name
+                    break
+            self.entries_table.setItem(i, 3, QtWidgets.QTableWidgetItem(intensity_name))
+            
+            # Delete button
+            del_btn = QtWidgets.QPushButton("🗑")
+            del_btn.setMaximumWidth(30)
+            del_btn.clicked.connect(
+                lambda _, d=entry.get("date"), a=entry.get("activity_type"): self._delete_entry(d, a)
+            )
+            self.entries_table.setCellWidget(i, 4, del_btn)
+        
+        self.entries_table.resizeColumnsToContents()
+    
+    def _setup_reminder(self) -> None:
+        """Setup daily reminder timer."""
+        if self._reminder_timer:
+            self._reminder_timer.stop()
+        
+        if not self.blocker.activity_reminder_enabled:
+            return
+        
+        self._reminder_timer = QtCore.QTimer(self)
+        self._reminder_timer.timeout.connect(self._check_reminder)
+        self._reminder_timer.start(60000)  # Check every minute
+    
+    def _check_reminder(self) -> None:
+        """Check if it's time to show reminder."""
+        if not self.blocker.activity_reminder_enabled:
+            return
+        
+        today = datetime.now().strftime("%Y-%m-%d")
+        if self.blocker.activity_last_reminder_date == today:
+            return
+        
+        current_time = QtCore.QTime.currentTime()
+        try:
+            h, m = self.blocker.activity_reminder_time.split(":")
+            reminder_time = QtCore.QTime(int(h), int(m))
+        except:
+            return
+        
+        if current_time >= reminder_time:
+            # Check if already logged today
+            has_today = any(e.get("date") == today for e in self.blocker.activity_entries)
+            if not has_today:
+                self.blocker.activity_last_reminder_date = today
+                self.blocker.save_config()
+                
+                QtWidgets.QMessageBox.information(
+                    self, "🏃 Activity Reminder",
+                    "Time to get moving!\n\n"
+                    "Even a 10-minute walk earns rewards for your hero.\n"
+                    "Log your activity to keep your streak going!"
+                )
+    
+    def _update_reminder_setting(self) -> None:
+        """Update reminder settings."""
+        self.blocker.activity_reminder_enabled = self.reminder_checkbox.isChecked()
+        self.blocker.activity_reminder_time = self.reminder_time.time().toString("HH:mm")
+        self.blocker.save_config()
+        self._setup_reminder()
 
 
 class AITab(QtWidgets.QWidget):
@@ -9018,6 +9567,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Weight tracking tab
         self.weight_tab = WeightTab(self.blocker, self)
         self.tabs.addTab(self.weight_tab, "⚖ Weight")
+        
+        # Activity tracking tab
+        self.activity_tab = ActivityTab(self.blocker, self)
+        self.tabs.addTab(self.activity_tab, "🏃 Activity")
 
         if AI_AVAILABLE:
             self.ai_tab = AITab(self.blocker, self)
