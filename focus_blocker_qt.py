@@ -2682,6 +2682,14 @@ class WeightTab(QtWidgets.QWidget):
         self._build_ui()
         self._refresh_display()
         self._setup_reminder()
+        # Ensure timer is cleaned up when widget is destroyed
+        self.destroyed.connect(self._cleanup_timer)
+    
+    def _cleanup_timer(self) -> None:
+        """Stop the reminder timer when the widget is destroyed."""
+        if self._reminder_timer is not None:
+            self._reminder_timer.stop()
+            self._reminder_timer = None
     
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
@@ -3429,11 +3437,17 @@ class WeightTab(QtWidgets.QWidget):
             self.blocker.save_config()
             return
         
-        # Check if it's the right time
-        current_time = QtCore.QTime.currentTime().toString("HH:mm")
-        reminder_time = self.blocker.weight_reminder_time or "08:00"
+        # Check if it's at or after the reminder time
+        current_time = QtCore.QTime.currentTime()
+        reminder_time_str = self.blocker.weight_reminder_time or "08:00"
+        try:
+            h, m = map(int, reminder_time_str.split(":"))
+            reminder_time = QtCore.QTime(h, m)
+        except (ValueError, AttributeError):
+            reminder_time = QtCore.QTime(8, 0)
         
-        if current_time == reminder_time:
+        # Show reminder if current time is at or past reminder time
+        if current_time >= reminder_time:
             self.blocker.weight_last_reminder_date = today
             self.blocker.save_config()
             self._show_reminder_notification()
