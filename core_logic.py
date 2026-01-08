@@ -192,6 +192,11 @@ class BlockerCore:
         
         # ADHD Buster gamification
         self.adhd_buster = {"inventory": [], "equipped": {}}
+        
+        # Weight tracking
+        self.weight_entries = []  # List of {"date": "YYYY-MM-DD", "weight": float}
+        self.weight_unit = "kg"  # or "lbs"
+        self.weight_goal = None  # Target weight
 
         # Statistics
         self.stats = self._default_stats()
@@ -241,6 +246,10 @@ class BlockerCore:
                     self.priority_checkin_interval = config.get('priority_checkin_interval', 30)
                     self.minimize_to_tray = config.get('minimize_to_tray', True)
                     self.adhd_buster = config.get('adhd_buster', {"inventory": [], "equipped": {}})
+                    # Weight tracking
+                    self.weight_entries = config.get('weight_entries', [])
+                    self.weight_unit = config.get('weight_unit', 'kg')
+                    self.weight_goal = config.get('weight_goal', None)
                     # Initialize/migrate hero management structure
                     if HERO_MANAGEMENT_AVAILABLE and _ensure_hero_structure:
                         _ensure_hero_structure(self.adhd_buster)
@@ -270,6 +279,9 @@ class BlockerCore:
                 'priority_checkin_interval': self.priority_checkin_interval,
                 'minimize_to_tray': self.minimize_to_tray,
                 'adhd_buster': self.adhd_buster,
+                'weight_entries': self.weight_entries,
+                'weight_unit': self.weight_unit,
+                'weight_goal': self.weight_goal,
             }
             atomic_write_json(CONFIG_PATH, config)
         except (IOError, OSError) as e:

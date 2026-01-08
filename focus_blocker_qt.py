@@ -332,6 +332,23 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
     except ImportError:
         GAMIFICATION_AVAILABLE = False
     
+    # Weight tracking functions (separate try for backward compat)
+    global check_weight_entry_rewards, get_weight_stats, format_weight_change
+    check_weight_entry_rewards = None
+    get_weight_stats = None
+    format_weight_change = None
+    try:
+        from gamification import (
+            check_weight_entry_rewards as _check_weight_entry_rewards,
+            get_weight_stats as _get_weight_stats,
+            format_weight_change as _format_weight_change,
+        )
+        check_weight_entry_rewards = _check_weight_entry_rewards
+        get_weight_stats = _get_weight_stats
+        format_weight_change = _format_weight_change
+    except ImportError:
+        pass
+    
     if splash:
         splash.set_status("Initializing interface...")
 
@@ -2143,6 +2160,511 @@ class SettingsTab(QtWidgets.QWidget):
             # Persist the setting
             self.blocker.minimize_to_tray = checked
             self.blocker.save_config()
+
+
+class WeightChartWidget(QtWidgets.QWidget):
+    """Custom widget that draws a weight progress chart using Qt's built-in painting."""
+    
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.weight_data = []  # List of (date_str, weight) tuples
+        self.goal_weight = None
+        self.unit = "kg"
+        self.setMinimumHeight(250)
+        self.setMinimumWidth(400)
+    
+    def set_data(self, entries: list, goal: float = None, unit: str = "kg") -> None:
+        """Set the weight data to display."""
+        self.weight_data = [(e["date"], e["weight"]) for e in entries if e.get("date") and e.get("weight")]
+        self.goal_weight = goal
+        self.unit = unit
+        self.update()
+    
+    def paintEvent(self, event) -> None:
+        """Paint the weight chart."""
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+        
+        rect = self.rect()
+        margin = 60
+        chart_rect = QtCore.QRect(margin, 20, rect.width() - margin - 20, rect.height() - 60)
+        
+        # Background
+        painter.fillRect(rect, QtGui.QColor("#1a1a2e"))
+        
+        # Draw border
+        painter.setPen(QtGui.QPen(QtGui.QColor("#4a4a6a"), 1))
+        painter.drawRect(chart_rect)
+        
+        if len(self.weight_data) < 2:
+            # Not enough data
+            painter.setPen(QtGui.QColor("#888888"))
+            painter.setFont(QtGui.QFont("Segoe UI", 12))
+            painter.drawText(chart_rect, QtCore.Qt.AlignmentFlag.AlignCenter, 
+                           "Enter at least 2 weight entries\nto see your progress chart")
+            return
+        
+        # Calculate ranges
+        weights = [w for _, w in self.weight_data]
+        min_weight = min(weights)
+        max_weight = max(weights)
+        
+        # Include goal in range if set
+        if self.goal_weight:
+            min_weight = min(min_weight, self.goal_weight)
+            max_weight = max(max_weight, self.goal_weight)
+        
+        # Add padding to range
+        weight_range = max_weight - min_weight
+        if weight_range < 1:
+            weight_range = 2
+        min_weight -= weight_range * 0.1
+        max_weight += weight_range * 0.1
+        weight_range = max_weight - min_weight
+        
+        # Draw grid lines and labels
+        painter.setPen(QtGui.QPen(QtGui.QColor("#333355"), 1, QtCore.Qt.PenStyle.DashLine))
+        num_lines = 5
+        for i in range(num_lines + 1):
+            y = chart_rect.top() + (chart_rect.height() * i / num_lines)
+            painter.drawLine(chart_rect.left(), int(y), chart_rect.right(), int(y))
+            
+            # Weight label
+            weight_val = max_weight - (weight_range * i / num_lines)
+            painter.setPen(QtGui.QColor("#888888"))
+            painter.setFont(QtGui.QFont("Segoe UI", 9))
+            label = f"{weight_val:.1f}"
+            painter.drawText(5, int(y) + 4, label)
+            painter.setPen(QtGui.QPen(QtGui.QColor("#333355"), 1, QtCore.Qt.PenStyle.DashLine))
+        
+        # Draw goal line if set
+        if self.goal_weight and min_weight <= self.goal_weight <= max_weight:
+            goal_y = chart_rect.top() + chart_rect.height() * (max_weight - self.goal_weight) / weight_range
+            painter.setPen(QtGui.QPen(QtGui.QColor("#00ff88"), 2, QtCore.Qt.PenStyle.DashLine))
+            painter.drawLine(chart_rect.left(), int(goal_y), chart_rect.right(), int(goal_y))
+            painter.setPen(QtGui.QColor("#00ff88"))
+            painter.drawText(chart_rect.right() - 50, int(goal_y) - 5, f"Goal: {self.goal_weight}")
+        
+        # Draw weight line
+        points = []
+        for i, (date_str, weight) in enumerate(self.weight_data):
+            x = chart_rect.left() + (chart_rect.width() * i / (len(self.weight_data) - 1))
+            y = chart_rect.top() + chart_rect.height() * (max_weight - weight) / weight_range
+            points.append(QtCore.QPointF(x, y))
+        
+        # Draw gradient fill under line
+        if len(points) >= 2:
+            path = QtGui.QPainterPath()
+            path.moveTo(points[0].x(), chart_rect.bottom())
+            for p in points:
+                path.lineTo(p)
+            path.lineTo(points[-1].x(), chart_rect.bottom())
+            path.closeSubpath()
+            
+            gradient = QtGui.QLinearGradient(0, chart_rect.top(), 0, chart_rect.bottom())
+            gradient.setColorAt(0, QtGui.QColor(100, 150, 255, 100))
+            gradient.setColorAt(1, QtGui.QColor(100, 150, 255, 20))
+            painter.fillPath(path, gradient)
+        
+        # Draw the line
+        painter.setPen(QtGui.QPen(QtGui.QColor("#6496ff"), 3))
+        for i in range(len(points) - 1):
+            painter.drawLine(points[i], points[i + 1])
+        
+        # Draw data points
+        for i, ((date_str, weight), point) in enumerate(zip(self.weight_data, points)):
+            # Determine point color based on trend
+            if i > 0:
+                prev_weight = self.weight_data[i - 1][1]
+                if weight < prev_weight:
+                    color = QtGui.QColor("#00ff88")  # Green - lost weight
+                elif weight > prev_weight:
+                    color = QtGui.QColor("#ff6464")  # Red - gained weight
+                else:
+                    color = QtGui.QColor("#ffff64")  # Yellow - same
+            else:
+                color = QtGui.QColor("#6496ff")  # Blue - first point
+            
+            painter.setBrush(color)
+            painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1))
+            painter.drawEllipse(point, 5, 5)
+        
+        # Draw date labels (first, middle, last)
+        painter.setPen(QtGui.QColor("#888888"))
+        painter.setFont(QtGui.QFont("Segoe UI", 8))
+        if self.weight_data:
+            # First date
+            painter.drawText(chart_rect.left() - 20, chart_rect.bottom() + 15, self.weight_data[0][0][5:])
+            # Last date
+            painter.drawText(chart_rect.right() - 30, chart_rect.bottom() + 15, self.weight_data[-1][0][5:])
+            # Middle date if enough data
+            if len(self.weight_data) >= 5:
+                mid_idx = len(self.weight_data) // 2
+                mid_x = chart_rect.left() + (chart_rect.width() * mid_idx / (len(self.weight_data) - 1))
+                painter.drawText(int(mid_x) - 15, chart_rect.bottom() + 15, self.weight_data[mid_idx][0][5:])
+
+
+class WeightTab(QtWidgets.QWidget):
+    """Weight tracking tab with chart and gamification rewards."""
+    
+    def __init__(self, blocker: 'BlockerCore', parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self._build_ui()
+        self._refresh_display()
+    
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Header
+        header = QtWidgets.QLabel("⚖️ Weight Tracker")
+        header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
+        layout.addWidget(header)
+        
+        # Top section: Input and stats side by side
+        top_layout = QtWidgets.QHBoxLayout()
+        
+        # Left: Weight input section
+        input_group = QtWidgets.QGroupBox("📝 Log Weight")
+        input_layout = QtWidgets.QFormLayout(input_group)
+        
+        # Weight input
+        weight_row = QtWidgets.QHBoxLayout()
+        self.weight_input = QtWidgets.QDoubleSpinBox()
+        self.weight_input.setRange(20, 500)
+        self.weight_input.setDecimals(1)
+        self.weight_input.setSingleStep(0.1)
+        self.weight_input.setValue(70.0)
+        self.weight_input.setSuffix(" kg")
+        self.weight_input.setFixedWidth(120)
+        weight_row.addWidget(self.weight_input)
+        
+        # Unit toggle
+        self.unit_combo = QtWidgets.QComboBox()
+        self.unit_combo.addItems(["kg", "lbs"])
+        self.unit_combo.setFixedWidth(60)
+        self.unit_combo.currentTextChanged.connect(self._on_unit_changed)
+        weight_row.addWidget(self.unit_combo)
+        weight_row.addStretch()
+        input_layout.addRow("Weight:", weight_row)
+        
+        # Date input (default to today)
+        self.date_edit = QtWidgets.QDateEdit()
+        self.date_edit.setDate(QtCore.QDate.currentDate())
+        self.date_edit.setCalendarPopup(True)
+        self.date_edit.setDisplayFormat("yyyy-MM-dd")
+        input_layout.addRow("Date:", self.date_edit)
+        
+        # Goal weight
+        goal_row = QtWidgets.QHBoxLayout()
+        self.goal_input = QtWidgets.QDoubleSpinBox()
+        self.goal_input.setRange(20, 500)
+        self.goal_input.setDecimals(1)
+        self.goal_input.setSingleStep(0.1)
+        self.goal_input.setSpecialValueText("Not set")
+        self.goal_input.setValue(20.0)  # Minimum = "not set"
+        self.goal_input.setFixedWidth(120)
+        goal_row.addWidget(self.goal_input)
+        
+        set_goal_btn = QtWidgets.QPushButton("Set Goal")
+        set_goal_btn.clicked.connect(self._set_goal)
+        goal_row.addWidget(set_goal_btn)
+        goal_row.addStretch()
+        input_layout.addRow("Goal:", goal_row)
+        
+        # Log button
+        log_btn = QtWidgets.QPushButton("📊 Log Weight")
+        log_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4a90d9;
+                color: white;
+                font-weight: bold;
+                padding: 10px 20px;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #5aa0e9;
+            }
+        """)
+        log_btn.clicked.connect(self._log_weight)
+        input_layout.addRow("", log_btn)
+        
+        top_layout.addWidget(input_group)
+        
+        # Right: Stats display
+        stats_group = QtWidgets.QGroupBox("📈 Statistics")
+        stats_layout = QtWidgets.QVBoxLayout(stats_group)
+        
+        self.stats_label = QtWidgets.QLabel()
+        self.stats_label.setWordWrap(True)
+        self.stats_label.setStyleSheet("font-size: 12px; line-height: 1.6;")
+        stats_layout.addWidget(self.stats_label)
+        stats_layout.addStretch()
+        
+        top_layout.addWidget(stats_group)
+        layout.addLayout(top_layout)
+        
+        # Chart section
+        chart_group = QtWidgets.QGroupBox("📉 Progress Chart")
+        chart_layout = QtWidgets.QVBoxLayout(chart_group)
+        
+        self.chart = WeightChartWidget()
+        chart_layout.addWidget(self.chart)
+        
+        layout.addWidget(chart_group, 1)  # Give chart more space
+        
+        # Recent entries table
+        entries_group = QtWidgets.QGroupBox("📋 Recent Entries")
+        entries_layout = QtWidgets.QVBoxLayout(entries_group)
+        
+        self.entries_table = QtWidgets.QTableWidget()
+        self.entries_table.setColumnCount(4)
+        self.entries_table.setHorizontalHeaderLabels(["Date", "Weight", "Change", "Actions"])
+        self.entries_table.horizontalHeader().setStretchLastSection(True)
+        self.entries_table.setMaximumHeight(150)
+        self.entries_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        entries_layout.addWidget(self.entries_table)
+        
+        layout.addWidget(entries_group)
+        
+        # Rewards info
+        rewards_group = QtWidgets.QGroupBox("🎁 Weight Loss Rewards")
+        rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
+        rewards_info = QtWidgets.QLabel(
+            "<b>Daily Rewards:</b> Same weight = Common, 100g loss = Uncommon, "
+            "200g = Rare, 300g = Epic, 500g+ = Legendary!<br>"
+            "<b>Weekly Bonus:</b> 500g loss in 7 days = Legendary item!<br>"
+            "<b>Monthly Bonus:</b> 2kg loss in 30 days = Legendary item!"
+        )
+        rewards_info.setWordWrap(True)
+        rewards_info.setStyleSheet("color: #aaaaaa; font-size: 11px;")
+        rewards_layout.addWidget(rewards_info)
+        layout.addWidget(rewards_group)
+        
+        # Initialize unit from settings
+        self.unit_combo.setCurrentText(self.blocker.weight_unit)
+        if self.blocker.weight_goal:
+            self.goal_input.setValue(self.blocker.weight_goal)
+    
+    def _on_unit_changed(self, unit: str) -> None:
+        """Handle unit change."""
+        self.weight_input.setSuffix(f" {unit}")
+        if unit == "lbs":
+            self.weight_input.setRange(44, 1100)  # ~20-500 kg in lbs
+            self.goal_input.setRange(44, 1100)
+        else:
+            self.weight_input.setRange(20, 500)
+            self.goal_input.setRange(20, 500)
+        self.blocker.weight_unit = unit
+        self.blocker.save_config()
+        self._refresh_display()
+    
+    def _set_goal(self) -> None:
+        """Set the goal weight."""
+        goal = self.goal_input.value()
+        if goal <= self.goal_input.minimum():
+            self.blocker.weight_goal = None
+        else:
+            self.blocker.weight_goal = goal
+        self.blocker.save_config()
+        self._refresh_display()
+        QtWidgets.QMessageBox.information(self, "Goal Set", 
+            f"Goal weight set to {goal:.1f} {self.blocker.weight_unit}" if self.blocker.weight_goal 
+            else "Goal weight cleared")
+    
+    def _log_weight(self) -> None:
+        """Log a new weight entry."""
+        weight = self.weight_input.value()
+        date_str = self.date_edit.date().toString("yyyy-MM-dd")
+        unit = self.unit_combo.currentText()
+        
+        # Convert to kg for storage if needed
+        weight_kg = weight / 2.20462 if unit == "lbs" else weight
+        
+        # Check if entry already exists for this date
+        existing_idx = None
+        for i, entry in enumerate(self.blocker.weight_entries):
+            if entry.get("date") == date_str:
+                existing_idx = i
+                break
+        
+        # Check for rewards before adding entry
+        rewards = None
+        if GAMIFICATION_AVAILABLE and check_weight_entry_rewards:
+            story_id = self.blocker.adhd_buster.get("active_story", "warrior")
+            rewards = check_weight_entry_rewards(
+                self.blocker.weight_entries, 
+                weight_kg, 
+                date_str,
+                story_id
+            )
+        
+        # Update or add entry
+        new_entry = {"date": date_str, "weight": weight_kg}
+        if existing_idx is not None:
+            reply = QtWidgets.QMessageBox.question(
+                self, "Update Entry",
+                f"An entry for {date_str} already exists.\nUpdate it to {weight:.1f} {unit}?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+            if reply != QtWidgets.QMessageBox.Yes:
+                return
+            self.blocker.weight_entries[existing_idx] = new_entry
+        else:
+            self.blocker.weight_entries.append(new_entry)
+            # Sort by date
+            self.blocker.weight_entries.sort(key=lambda x: x.get("date", ""))
+        
+        self.blocker.save_config()
+        
+        # Process rewards
+        if rewards and GAMIFICATION_AVAILABLE:
+            self._process_rewards(rewards)
+        
+        self._refresh_display()
+    
+    def _process_rewards(self, rewards: dict) -> None:
+        """Process and show weight loss rewards."""
+        items_earned = []
+        
+        # Collect all earned items
+        if rewards.get("daily_reward"):
+            items_earned.append(("Daily", rewards["daily_reward"]))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(rewards["daily_reward"])
+        
+        if rewards.get("weekly_reward"):
+            items_earned.append(("Weekly Bonus", rewards["weekly_reward"]))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(rewards["weekly_reward"])
+        
+        if rewards.get("monthly_reward"):
+            items_earned.append(("Monthly Bonus", rewards["monthly_reward"]))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(rewards["monthly_reward"])
+        
+        if items_earned:
+            self.blocker.save_config()
+            
+            # Build reward message
+            msg_parts = []
+            for source, item in items_earned:
+                rarity = item.get("rarity", "Common")
+                name = item.get("name", "Unknown Item")
+                msg_parts.append(f"<b>{source}:</b> {rarity} - {name}")
+            
+            # Add loss stats
+            stats_parts = []
+            if rewards.get("daily_loss_grams") is not None:
+                loss = rewards["daily_loss_grams"]
+                if loss > 0:
+                    stats_parts.append(f"Daily: -{loss:.0f}g")
+                elif loss < 0:
+                    stats_parts.append(f"Daily: +{abs(loss):.0f}g")
+            if rewards.get("weekly_loss_grams") is not None:
+                stats_parts.append(f"Weekly: {rewards['weekly_loss_grams']:.0f}g")
+            if rewards.get("monthly_loss_grams") is not None:
+                stats_parts.append(f"Monthly: {rewards['monthly_loss_grams']/1000:.1f}kg")
+            
+            msg = "<br>".join(msg_parts)
+            if stats_parts:
+                msg += "<br><br><i>" + " | ".join(stats_parts) + "</i>"
+            
+            QtWidgets.QMessageBox.information(
+                self, "🎉 Weight Loss Rewards!",
+                f"<h3>Congratulations!</h3>{msg}"
+            )
+        elif rewards.get("messages"):
+            # Show info messages even if no rewards
+            QtWidgets.QMessageBox.information(
+                self, "Weight Logged",
+                "\n".join(rewards["messages"])
+            )
+    
+    def _delete_entry(self, date_str: str) -> None:
+        """Delete a weight entry."""
+        reply = QtWidgets.QMessageBox.question(
+            self, "Delete Entry",
+            f"Delete the entry for {date_str}?",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        )
+        if reply == QtWidgets.QMessageBox.Yes:
+            self.blocker.weight_entries = [
+                e for e in self.blocker.weight_entries if e.get("date") != date_str
+            ]
+            self.blocker.save_config()
+            self._refresh_display()
+    
+    def _refresh_display(self) -> None:
+        """Refresh all display elements."""
+        unit = self.blocker.weight_unit
+        entries = self.blocker.weight_entries
+        
+        # Update chart
+        self.chart.set_data(entries, self.blocker.weight_goal, unit)
+        
+        # Update stats
+        if get_weight_stats:
+            stats = get_weight_stats(entries, unit)
+            if stats["current"]:
+                current_display = stats["current"] * 2.20462 if unit == "lbs" else stats["current"]
+                starting_display = stats["starting"] * 2.20462 if unit == "lbs" else stats["starting"]
+                
+                stats_text = f"""
+<b>Current:</b> {current_display:.1f} {unit}<br>
+<b>Starting:</b> {starting_display:.1f} {unit}<br>
+<b>Total Change:</b> {format_weight_change(stats['total_change'], unit) if format_weight_change else 'N/A'}<br>
+<b>7-Day Trend:</b> {format_weight_change(stats['trend_7d'], unit) if format_weight_change else 'N/A'}<br>
+<b>30-Day Trend:</b> {format_weight_change(stats['trend_30d'], unit) if format_weight_change else 'N/A'}<br>
+<b>Entries:</b> {stats['entries_count']} | <b>Streak:</b> {stats['streak_days']} days
+"""
+                self.stats_label.setText(stats_text)
+            else:
+                self.stats_label.setText("No weight entries yet.\nStart logging to see your stats!")
+        else:
+            self.stats_label.setText("Statistics unavailable")
+        
+        # Update entries table
+        self.entries_table.setRowCount(0)
+        sorted_entries = sorted(entries, key=lambda x: x.get("date", ""), reverse=True)[:10]
+        
+        for i, entry in enumerate(sorted_entries):
+            self.entries_table.insertRow(i)
+            
+            # Date
+            self.entries_table.setItem(i, 0, QtWidgets.QTableWidgetItem(entry.get("date", "")))
+            
+            # Weight
+            weight_kg = entry.get("weight", 0)
+            weight_display = weight_kg * 2.20462 if unit == "lbs" else weight_kg
+            self.entries_table.setItem(i, 1, QtWidgets.QTableWidgetItem(f"{weight_display:.1f} {unit}"))
+            
+            # Change
+            if i < len(sorted_entries) - 1:
+                prev_weight = sorted_entries[i + 1].get("weight", weight_kg)
+                change = (prev_weight - weight_kg) * 1000  # in grams
+                if unit == "lbs":
+                    change_display = change * 2.20462 / 1000
+                    change_text = f"{change_display:+.1f} lbs" if abs(change_display) >= 0.1 else "—"
+                else:
+                    change_text = f"{change:+.0f}g" if abs(change) >= 10 else "—"
+                
+                change_item = QtWidgets.QTableWidgetItem(change_text)
+                if change > 0:
+                    change_item.setForeground(QtGui.QColor("#00ff88"))  # Green = lost weight
+                elif change < 0:
+                    change_item.setForeground(QtGui.QColor("#ff6464"))  # Red = gained
+                self.entries_table.setItem(i, 2, change_item)
+            else:
+                self.entries_table.setItem(i, 2, QtWidgets.QTableWidgetItem("—"))
+            
+            # Delete button
+            delete_btn = QtWidgets.QPushButton("🗑")
+            delete_btn.setFixedWidth(30)
+            date_str = entry.get("date", "")
+            delete_btn.clicked.connect(lambda checked, d=date_str: self._delete_entry(d))
+            self.entries_table.setCellWidget(i, 3, delete_btn)
+        
+        self.entries_table.resizeColumnsToContents()
 
 
 class AITab(QtWidgets.QWidget):
@@ -7536,6 +8058,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         self.settings_tab = SettingsTab(self.blocker, self)
         self.tabs.addTab(self.settings_tab, "⚙ Settings")
+
+        # Weight tracking tab
+        self.weight_tab = WeightTab(self.blocker, self)
+        self.tabs.addTab(self.weight_tab, "⚖ Weight")
 
         if AI_AVAILABLE:
             self.ai_tab = AITab(self.blocker, self)

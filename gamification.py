@@ -7329,3 +7329,328 @@ def sync_hero_data(adhd_buster: dict) -> None:
         adhd_buster["max_power_reached"] = current_power
     
     _sync_flat_to_active_hero(adhd_buster)
+
+
+# =============================================================================
+# WEIGHT TRACKING GAMIFICATION
+# =============================================================================
+
+# Weight loss thresholds for daily rewards (in grams)
+WEIGHT_DAILY_THRESHOLDS = {
+    0: "Common",       # Same weight = Common item
+    100: "Uncommon",   # 100g loss
+    200: "Rare",       # 200g loss
+    300: "Epic",       # 300g loss
+    500: "Legendary",  # 500g+ loss = daily legendary!
+}
+
+# Weekly weight loss threshold for legendary (in grams)
+WEIGHT_WEEKLY_LEGENDARY_THRESHOLD = 500  # 500g in a week
+
+# Monthly weight loss threshold for legendary (in grams)
+WEIGHT_MONTHLY_LEGENDARY_THRESHOLD = 2000  # 2kg in a month
+
+
+def get_weight_from_date(weight_entries: list, target_date: str) -> Optional[float]:
+    """
+    Get weight entry for a specific date.
+    
+    Args:
+        weight_entries: List of {"date": "YYYY-MM-DD", "weight": float}
+        target_date: Date string in YYYY-MM-DD format
+    
+    Returns:
+        Weight value or None if not found
+    """
+    for entry in weight_entries:
+        if entry.get("date") == target_date:
+            return entry.get("weight")
+    return None
+
+
+def get_closest_weight_before_date(weight_entries: list, target_date: str) -> Optional[dict]:
+    """
+    Get the most recent weight entry before or on the target date.
+    
+    Args:
+        weight_entries: List of {"date": "YYYY-MM-DD", "weight": float}
+        target_date: Date string in YYYY-MM-DD format
+    
+    Returns:
+        Entry dict with date and weight, or None if no entries before target
+    """
+    if not weight_entries:
+        return None
+    
+    # Sort entries by date descending
+    sorted_entries = sorted(
+        [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
+        key=lambda x: x["date"],
+        reverse=True
+    )
+    
+    for entry in sorted_entries:
+        if entry["date"] <= target_date:
+            return entry
+    return None
+
+
+def get_previous_weight_entry(weight_entries: list, current_date: str) -> Optional[dict]:
+    """
+    Get the weight entry immediately before today.
+    
+    Args:
+        weight_entries: List of {"date": "YYYY-MM-DD", "weight": float}
+        current_date: Today's date in YYYY-MM-DD format
+    
+    Returns:
+        Previous entry dict or None
+    """
+    if not weight_entries:
+        return None
+    
+    sorted_entries = sorted(
+        [e for e in weight_entries if e.get("date") and e.get("weight") is not None and e["date"] < current_date],
+        key=lambda x: x["date"],
+        reverse=True
+    )
+    
+    return sorted_entries[0] if sorted_entries else None
+
+
+def calculate_weight_loss(current_weight: float, previous_weight: float) -> float:
+    """
+    Calculate weight loss in grams.
+    
+    Args:
+        current_weight: Current weight in kg
+        previous_weight: Previous weight in kg
+    
+    Returns:
+        Weight loss in grams (positive = lost weight, negative = gained)
+    """
+    return (previous_weight - current_weight) * 1000
+
+
+def get_daily_weight_reward_rarity(weight_loss_grams: float) -> str:
+    """
+    Determine item rarity based on daily weight loss.
+    
+    Args:
+        weight_loss_grams: Weight lost since previous entry (in grams)
+    
+    Returns:
+        Rarity string
+    """
+    if weight_loss_grams < 0:
+        return None  # No reward for weight gain
+    
+    # Find the highest threshold that was met
+    rarity = "Common"
+    for threshold, tier in sorted(WEIGHT_DAILY_THRESHOLDS.items()):
+        if weight_loss_grams >= threshold:
+            rarity = tier
+    
+    return rarity
+
+
+def check_weight_entry_rewards(weight_entries: list, new_weight: float, 
+                                current_date: str, story_id: str = None) -> dict:
+    """
+    Check and generate rewards for a new weight entry.
+    
+    Args:
+        weight_entries: List of existing weight entries
+        new_weight: The new weight being entered
+        current_date: Today's date (YYYY-MM-DD)
+        story_id: Story theme for item generation
+    
+    Returns:
+        Dict with:
+            - daily_reward: item dict or None
+            - weekly_reward: item dict or None  
+            - monthly_reward: item dict or None
+            - daily_loss_grams: float
+            - weekly_loss_grams: float or None
+            - monthly_loss_grams: float or None
+            - messages: list of reward messages
+    """
+    result = {
+        "daily_reward": None,
+        "weekly_reward": None,
+        "monthly_reward": None,
+        "daily_loss_grams": 0,
+        "weekly_loss_grams": None,
+        "monthly_loss_grams": None,
+        "messages": [],
+    }
+    
+    # Check for previous entry (daily comparison)
+    prev_entry = get_previous_weight_entry(weight_entries, current_date)
+    if prev_entry:
+        prev_weight = prev_entry["weight"]
+        daily_loss = calculate_weight_loss(new_weight, prev_weight)
+        result["daily_loss_grams"] = daily_loss
+        
+        if daily_loss > 0:
+            rarity = get_daily_weight_reward_rarity(daily_loss)
+            if rarity:
+                result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+                result["messages"].append(
+                    f"🎉 Daily Progress: Lost {daily_loss:.0f}g! Earned a {rarity} item!"
+                )
+        elif daily_loss == 0:
+            # Same weight - still give a common item for consistency
+            result["daily_reward"] = generate_item(rarity="Common", story_id=story_id)
+            result["messages"].append("💪 Maintained weight! Earned a Common item.")
+        else:
+            result["messages"].append(f"📈 Weight up {abs(daily_loss):.0f}g - keep going!")
+    
+    # Calculate date 7 days ago for weekly check
+    from datetime import datetime, timedelta
+    try:
+        today = datetime.strptime(current_date, "%Y-%m-%d")
+        week_ago_date = (today - timedelta(days=7)).strftime("%Y-%m-%d")
+        month_ago_date = (today - timedelta(days=30)).strftime("%Y-%m-%d")
+    except ValueError:
+        return result
+    
+    # Check weekly progress (vs ~7 days ago)
+    week_ago_entry = get_closest_weight_before_date(weight_entries, week_ago_date)
+    if week_ago_entry and week_ago_entry["date"] != current_date:
+        weekly_loss = calculate_weight_loss(new_weight, week_ago_entry["weight"])
+        result["weekly_loss_grams"] = weekly_loss
+        
+        if weekly_loss >= WEIGHT_WEEKLY_LEGENDARY_THRESHOLD:
+            result["weekly_reward"] = generate_item(rarity="Legendary", story_id=story_id)
+            result["messages"].append(
+                f"🌟 WEEKLY LEGENDARY! Lost {weekly_loss:.0f}g this week! "
+                f"(vs {week_ago_entry['date']})"
+            )
+        elif weekly_loss >= 300:
+            result["weekly_reward"] = generate_item(rarity="Epic", story_id=story_id)
+            result["messages"].append(
+                f"🏆 Great week! Lost {weekly_loss:.0f}g - Epic reward!"
+            )
+    
+    # Check monthly progress (vs ~30 days ago)
+    month_ago_entry = get_closest_weight_before_date(weight_entries, month_ago_date)
+    if month_ago_entry and month_ago_entry["date"] != current_date:
+        monthly_loss = calculate_weight_loss(new_weight, month_ago_entry["weight"])
+        result["monthly_loss_grams"] = monthly_loss
+        
+        if monthly_loss >= WEIGHT_MONTHLY_LEGENDARY_THRESHOLD:
+            result["monthly_reward"] = generate_item(rarity="Legendary", story_id=story_id)
+            result["messages"].append(
+                f"👑 MONTHLY LEGENDARY! Lost {monthly_loss/1000:.1f}kg this month! "
+                f"(vs {month_ago_entry['date']})"
+            )
+        elif monthly_loss >= 1500:
+            result["weekly_reward"] = generate_item(rarity="Epic", story_id=story_id)
+            result["messages"].append(
+                f"🎊 Amazing month! Lost {monthly_loss/1000:.1f}kg - Epic reward!"
+            )
+    
+    return result
+
+
+def get_weight_stats(weight_entries: list, unit: str = "kg") -> dict:
+    """
+    Calculate weight statistics for display.
+    
+    Args:
+        weight_entries: List of weight entries
+        unit: Weight unit (kg or lbs)
+    
+    Returns:
+        Dict with various statistics
+    """
+    if not weight_entries:
+        return {
+            "current": None,
+            "starting": None,
+            "lowest": None,
+            "highest": None,
+            "total_change": None,
+            "trend_7d": None,
+            "trend_30d": None,
+            "entries_count": 0,
+            "streak_days": 0,
+        }
+    
+    # Sort by date
+    sorted_entries = sorted(
+        [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
+        key=lambda x: x["date"]
+    )
+    
+    if not sorted_entries:
+        return {
+            "current": None,
+            "starting": None,
+            "lowest": None,
+            "highest": None,
+            "total_change": None,
+            "trend_7d": None,
+            "trend_30d": None,
+            "entries_count": 0,
+            "streak_days": 0,
+        }
+    
+    weights = [e["weight"] for e in sorted_entries]
+    current = sorted_entries[-1]["weight"]
+    starting = sorted_entries[0]["weight"]
+    
+    # Calculate trends
+    from datetime import datetime, timedelta
+    today = datetime.now().strftime("%Y-%m-%d")
+    week_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+    month_ago = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+    
+    week_entry = get_closest_weight_before_date(sorted_entries, week_ago)
+    month_entry = get_closest_weight_before_date(sorted_entries, month_ago)
+    
+    # Calculate entry streak (consecutive days with entries)
+    streak = 0
+    check_date = datetime.now()
+    for i in range(365):  # Check up to a year
+        date_str = check_date.strftime("%Y-%m-%d")
+        if any(e["date"] == date_str for e in sorted_entries):
+            streak += 1
+            check_date -= timedelta(days=1)
+        else:
+            break
+    
+    return {
+        "current": current,
+        "starting": starting,
+        "lowest": min(weights),
+        "highest": max(weights),
+        "total_change": starting - current,
+        "trend_7d": (week_entry["weight"] - current) if week_entry else None,
+        "trend_30d": (month_entry["weight"] - current) if month_entry else None,
+        "entries_count": len(sorted_entries),
+        "streak_days": streak,
+        "unit": unit,
+    }
+
+
+def format_weight_change(change_kg: float, unit: str = "kg") -> str:
+    """Format weight change with appropriate sign and unit."""
+    if change_kg is None:
+        return "N/A"
+    
+    if unit == "lbs":
+        change = change_kg * 2.20462
+        unit_str = "lbs"
+    else:
+        change = change_kg
+        unit_str = "kg"
+    
+    if change > 0:
+        return f"↓ {change:.1f} {unit_str}"  # Lost weight (good)
+    elif change < 0:
+        return f"↑ {abs(change):.1f} {unit_str}"  # Gained weight
+    else:
+        return f"→ 0 {unit_str}"  # No change
+
