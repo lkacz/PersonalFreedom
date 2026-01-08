@@ -7429,7 +7429,8 @@ def calculate_weight_loss(current_weight: float, previous_weight: float) -> floa
     Returns:
         Weight loss in grams (positive = lost weight, negative = gained)
     """
-    return (previous_weight - current_weight) * 1000
+    # Round to avoid floating point precision issues (e.g., 99.999 instead of 100)
+    return round((previous_weight - current_weight) * 1000, 1)
 
 
 def get_daily_weight_reward_rarity(weight_loss_grams: float) -> str:
@@ -7546,7 +7547,7 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
                 f"(vs {month_ago_entry['date']})"
             )
         elif monthly_loss >= 1500:
-            result["weekly_reward"] = generate_item(rarity="Epic", story_id=story_id)
+            result["monthly_reward"] = generate_item(rarity="Epic", story_id=story_id)
             result["messages"].append(
                 f"🎊 Amazing month! Lost {monthly_loss/1000:.1f}kg - Epic reward!"
             )

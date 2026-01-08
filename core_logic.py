@@ -246,8 +246,15 @@ class BlockerCore:
                     self.priority_checkin_interval = config.get('priority_checkin_interval', 30)
                     self.minimize_to_tray = config.get('minimize_to_tray', True)
                     self.adhd_buster = config.get('adhd_buster', {"inventory": [], "equipped": {}})
-                    # Weight tracking
-                    self.weight_entries = config.get('weight_entries', [])
+                    # Weight tracking - validate entries on load
+                    raw_entries = config.get('weight_entries', [])
+                    self.weight_entries = [
+                        e for e in raw_entries
+                        if isinstance(e, dict) 
+                        and e.get("date") 
+                        and isinstance(e.get("weight"), (int, float)) 
+                        and e.get("weight") > 0
+                    ]
                     self.weight_unit = config.get('weight_unit', 'kg')
                     self.weight_goal = config.get('weight_goal', None)
                     # Initialize/migrate hero management structure
