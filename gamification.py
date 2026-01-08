@@ -8114,14 +8114,47 @@ def predict_goal_date(weight_entries: list, goal_weight: float,
     if current_weight is None:
         current_weight = sorted_entries[0]["weight"]
     
-    # Already at goal
-    if current_weight <= goal_weight:
+    # Check if already at goal (within 0.1 kg tolerance)
+    if abs(current_weight - goal_weight) <= 0.1:
         return {
             "status": "achieved",
             "message": "🎉 You've reached your goal!",
             "days_remaining": 0,
             "predicted_date": None,
+            "is_losing": goal_weight <= current_weight,
         }
+    
+    # Determine goal direction from starting weight if available
+    # If current != goal, the direction is: goal < current means losing
+    # But if we've EXCEEDED the goal, we need to check the history
+    starting_weight = sorted_entries[-1]["weight"] if sorted_entries else current_weight
+    
+    # Use starting weight to determine direction (more reliable)
+    if starting_weight > goal_weight:
+        # Started higher than goal = weight loss goal
+        is_losing_goal = True
+        if current_weight <= goal_weight:
+            return {
+                "status": "achieved",
+                "message": "🎉 You've reached your goal!" if current_weight >= goal_weight - 0.1 else "🎉 You've exceeded your goal!",
+                "days_remaining": 0,
+                "predicted_date": None,
+                "is_losing": True,
+            }
+    elif starting_weight < goal_weight:
+        # Started lower than goal = weight gain goal
+        is_losing_goal = False
+        if current_weight >= goal_weight:
+            return {
+                "status": "achieved",
+                "message": "🎉 You've reached your goal!" if current_weight <= goal_weight + 0.1 else "🎉 You've exceeded your goal!",
+                "days_remaining": 0,
+                "predicted_date": None,
+                "is_losing": False,
+            }
+    else:
+        # Started at goal - use current vs goal to determine direction
+        is_losing_goal = goal_weight < current_weight
     
     # Need at least 7 days of data for reliable prediction
     if len(sorted_entries) < 7:
@@ -8175,28 +8208,40 @@ def predict_goal_date(weight_entries: list, goal_weight: float,
     
     slope = (n * sum_xy - sum_x * sum_y) / denom  # kg per day
     
-    # Check if losing weight
-    if slope >= 0:
+    # Check if trend is in the right direction
+    if is_losing_goal and slope >= 0:
         return {
-            "status": "gaining",
+            "status": "wrong_direction",
             "message": "Currently gaining weight - reverse the trend to reach goal",
             "rate_per_week": slope * 7 * 1000,  # grams per week
             "days_remaining": None,
             "predicted_date": None,
+            "is_losing": True,
+        }
+    elif not is_losing_goal and slope <= 0:
+        return {
+            "status": "wrong_direction",
+            "message": "Currently losing weight - reverse the trend to reach goal",
+            "rate_per_week": slope * 7 * 1000,  # grams per week
+            "days_remaining": None,
+            "predicted_date": None,
+            "is_losing": False,
         }
     
     # Calculate days to goal
-    weight_to_lose = current_weight - goal_weight
-    days_to_goal = int(weight_to_lose / abs(slope))
+    weight_diff = abs(current_weight - goal_weight)
+    days_to_goal = int(weight_diff / abs(slope))
     
     # Cap at 2 years for sanity
     if days_to_goal > 730:
+        action = "lose" if is_losing_goal else "gain"
         return {
             "status": "long_term",
-            "message": f"At current pace: {days_to_goal // 30} months (try to lose faster!)",
+            "message": f"At current pace: {days_to_goal // 30} months (try to {action} faster!)",
             "rate_per_week": abs(slope) * 7 * 1000,  # grams per week
             "days_remaining": days_to_goal,
             "predicted_date": datetime.now() + timedelta(days=days_to_goal),
+            "is_losing": is_losing_goal,
         }
     
     predicted_date = datetime.now() + timedelta(days=days_to_goal)
@@ -8208,6 +8253,7 @@ def predict_goal_date(weight_entries: list, goal_weight: float,
         "rate_per_week": abs(slope) * 7 * 1000,  # grams per week
         "days_remaining": days_to_goal,
         "predicted_date": predicted_date,
+        "is_losing": is_losing_goal,
     }
 
 
@@ -8424,8 +8470,11 @@ def format_entry_note(note: str) -> str:
     if not note:
         return ""
     
+    note_lower = note.lower().strip()
     for tag_id, tag_display, _ in WEIGHT_ENTRY_TAGS:
-        if note.lower() == tag_id or note.lower() == tag_display.lower():
+        # Match by tag_id (e.g., "morning") or by display text without emoji
+        display_text = tag_display.split(" ", 1)[-1].lower() if " " in tag_display else tag_display.lower()
+        if note_lower == tag_id.lower() or note_lower == display_text:
             return tag_display
     
     return note
