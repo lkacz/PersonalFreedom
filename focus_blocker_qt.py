@@ -2360,15 +2360,20 @@ class WeightTab(QtWidgets.QWidget):
         self.date_edit.setDisplayFormat("yyyy-MM-dd")
         input_layout.addRow("Date:", self.date_edit)
         
-        # Goal weight
+        # Goal weight with enable checkbox
         goal_row = QtWidgets.QHBoxLayout()
+        self.goal_enabled = QtWidgets.QCheckBox()
+        self.goal_enabled.setToolTip("Enable/disable goal weight")
+        self.goal_enabled.stateChanged.connect(self._on_goal_toggle)
+        goal_row.addWidget(self.goal_enabled)
+        
         self.goal_input = QtWidgets.QDoubleSpinBox()
-        self.goal_input.setRange(20, 500)
+        self.goal_input.setRange(1, 500)  # Allow any reasonable weight
         self.goal_input.setDecimals(1)
         self.goal_input.setSingleStep(0.1)
-        self.goal_input.setSpecialValueText("Not set")
-        self.goal_input.setValue(20.0)  # Minimum = "not set"
+        self.goal_input.setValue(70.0)  # Default value
         self.goal_input.setFixedWidth(120)
+        self.goal_input.setEnabled(False)  # Disabled until checkbox checked
         goal_row.addWidget(self.goal_input)
         
         set_goal_btn = QtWidgets.QPushButton("Set Goal")
@@ -2450,40 +2455,55 @@ class WeightTab(QtWidgets.QWidget):
         if self.blocker.weight_unit == "lbs":
             self.weight_input.setRange(44, 1100)
             self.weight_input.setSuffix(" lbs")
-            self.goal_input.setRange(44, 1100)
+            self.goal_input.setRange(2.2, 1100)  # ~1-500 kg in lbs
         self.unit_combo.setCurrentText(self.blocker.weight_unit)
         if self.blocker.weight_goal:
             # Goal is stored in kg, convert for display if needed
             goal_display = self.blocker.weight_goal * 2.20462 if self.blocker.weight_unit == "lbs" else self.blocker.weight_goal
             self.goal_input.setValue(goal_display)
+            self.goal_enabled.setChecked(True)
+            self.goal_input.setEnabled(True)
+    
+    def _on_goal_toggle(self, state: int) -> None:
+        """Handle goal checkbox toggle."""
+        enabled = state == QtCore.Qt.CheckState.Checked.value
+        self.goal_input.setEnabled(enabled)
+        if not enabled:
+            self.blocker.weight_goal = None
+            self.blocker.save_config()
+            self._refresh_display()
     
     def _on_unit_changed(self, unit: str) -> None:
         """Handle unit change."""
         self.weight_input.setSuffix(f" {unit}")
         if unit == "lbs":
             self.weight_input.setRange(44, 1100)  # ~20-500 kg in lbs
-            self.goal_input.setRange(44, 1100)
+            self.goal_input.setRange(2.2, 1100)   # ~1-500 kg in lbs
         else:
             self.weight_input.setRange(20, 500)
-            self.goal_input.setRange(20, 500)
+            self.goal_input.setRange(1, 500)
         self.blocker.weight_unit = unit
         self.blocker.save_config()
         self._refresh_display()
     
     def _set_goal(self) -> None:
         """Set the goal weight."""
+        if not self.goal_enabled.isChecked():
+            self.blocker.weight_goal = None
+            self.blocker.save_config()
+            self._refresh_display()
+            QtWidgets.QMessageBox.information(self, "Goal Cleared", 
+                "Goal weight has been cleared. Check the box and set a value to enable.")
+            return
+        
         goal = self.goal_input.value()
         unit = self.unit_combo.currentText()
-        if goal <= self.goal_input.minimum():
-            self.blocker.weight_goal = None
-        else:
-            # Store goal in kg for consistency
-            self.blocker.weight_goal = goal / 2.20462 if unit == "lbs" else goal
+        # Store goal in kg for consistency
+        self.blocker.weight_goal = goal / 2.20462 if unit == "lbs" else goal
         self.blocker.save_config()
         self._refresh_display()
         QtWidgets.QMessageBox.information(self, "Goal Set", 
-            f"Goal weight set to {goal:.1f} {unit}" if self.blocker.weight_goal 
-            else "Goal weight cleared")
+            f"Goal weight set to {goal:.1f} {unit}")
     
     def _log_weight(self) -> None:
         """Log a new weight entry."""
