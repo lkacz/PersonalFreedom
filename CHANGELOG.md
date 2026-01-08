@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0] - 2026-01-08
+
+### Removed
+- **BREAKING**: Removed heavy AI libraries (torch, transformers, sentence-transformers).
+- Removed `local_ai.py` GPU-based sentiment analysis module.
+- Removed `requirements_ai.txt` and `install_ai.bat`.
+- Removed AI documentation files (`AI_FEATURES.md`, `AI_TAB_GUIDE.md`, `GPU_AI_GUIDE.md`).
+
+### Changed
+- Application size reduced from ~3GB to ~100MB.
+- Session complete dialog simplified (no AI sentiment analysis).
+- AI Tab now shows lightweight pattern analysis only.
+- Updated branding to focus on gamification rather than AI.
+
+### Kept
+- `productivity_ai.py` (lightweight JSON/datetime analysis - no ML dependencies).
+- Full gamification system (ADHD Buster, hero progression, achievements).
+
 ## [4.2.7] - 2026-01-08
 
 ### Changed

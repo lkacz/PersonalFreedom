@@ -1,16 +1,15 @@
 # Personal Liberty - Focus Blocker 🔒
 
-A groundbreaking Windows application with **AI-powered productivity insights** that blocks distracting websites during focus sessions. Take control of your time and supercharge your productivity with industry-leading features!
+A powerful Windows application that blocks distracting websites during focus sessions. Take control of your time and supercharge your productivity with gamification and habit-building features!
 
 ## ✨ Features
 
-### 🧠 AI-Powered Features (NEW!)
-- 📊 **Smart Insights** - Machine learning analyzes your patterns and suggests optimal session lengths
-- 🏆 **Achievement System** - Unlock 10 achievements as you build focus habits
+### 🎮 Gamification Features
+- 🦸 **ADHD Buster** - Build your hero character by collecting loot during focus sessions
+- 📖 **Story Mode** - Follow narrative adventures (Warrior, Scholar, Wanderer, Underdog)
+- 🏆 **Achievement System** - Unlock achievements as you build focus habits
 - 🎯 **Daily Challenges** - Stay motivated with rotating daily goals
-- 📈 **Pattern Recognition** - Discover your peak productivity hours and distraction patterns
-- 🎮 **Gamification** - Level up your focus game with progress tracking
-- 💡 **Personalized Recommendations** - AI suggests improvements based on your behavior
+- 📈 **Progress Tracking** - Level up your focus game with streaks and stats
 
 ### Core Blocking
 - ⏱️ **Timer-based blocking** - Set focus sessions from 25 minutes to several hours
@@ -25,24 +24,24 @@ A groundbreaking Windows application with **AI-powered productivity insights** t
 - 🔐 **Strict Mode** - Requires password to stop early (perfect for serious focus)
 - 🍅 **Pomodoro Mode** - 25 min work / 5 min break cycles
 - 💪 **Hardcore Mode** - Solve math problems to stop (no easy escape!)
-- �📅 **Scheduled Blocking** - Auto-block during specific times (e.g., work hours)
+- 📅 **Scheduled Blocking** - Auto-block during specific times (e.g., work hours)
 
 ### Productivity Tracking
 - 📊 **Statistics** - Track total focus time, sessions completed, and streaks
 - 🔥 **Streak tracking** - Build focus habits with daily streak counts
 - 📈 **Weekly charts** - Visualize your focus time over the week
 - 📅 **Daily breakdown** - See your progress each day
-- 🧠 **AI Analytics** - Get insights on peak hours and optimal session lengths
+- 💡 **Pattern Analysis** - Insights on peak hours and optimal session lengths
 
 ### Other Features
 - 🖥️ **System tray mode** - Run minimized in the background
 - 📥 **Import/Export** - Share blacklists or backup your configuration
-- 🎨 **7-Tab Interface** - Clean, organized UI including dedicated AI Insights tab
+- 🎨 **Clean Interface** - Organized tabbed UI for easy navigation
 - 🔔 **Break reminders** - Stay healthy during long sessions
 
 ## What Makes This Different? 🚀
 
-Unlike basic website blockers, Personal Liberty uses **machine learning** to understand YOUR unique productivity patterns. It learns when you're most productive, how long you should focus, and what patterns lead to success. This isn't just blocking - it's **intelligent productivity coaching**.
+Unlike basic website blockers, Personal Liberty combines effective blocking with engaging gamification. Collect loot, build your hero character, follow story adventures, and unlock achievements as you build lasting focus habits. This isn't just blocking - it's **habit-building through play**.
 
 ## Installation
 
@@ -149,22 +148,33 @@ View your productivity in the **📊 Stats** tab:
 
 Build the habit by maintaining your daily streak! 🔥
 
-## 🧠 AI Insights & Achievements
+## � ADHD Buster & Gamification
 
-Access the revolutionary **🧠 AI Insights** tab to unlock:
+Access the **🦸 ADHD Buster** to build your focus hero:
+
+### 🎮 Hero System
+- Collect loot (equipment) by completing focus sessions
+- Equip items in 8 slots: Helmet, Chestplate, Gauntlets, Boots, Shield, Weapon, Cloak, Amulet
+- Increase your hero's power level
+- Merge duplicate items to upgrade rarity
+- Unlock set bonuses for matching equipment
+
+### 📖 Story Adventures
+Choose your path with 4 unique stories:
+- ⚔️ **Warrior** - The classic hero's journey
+- 📚 **Scholar** - Knowledge and wisdom
+- 🗺️ **Wanderer** - Exploration and discovery
+- 🏆 **Underdog** - Rise against the odds
 
 ### 🏆 Achievement System
-Unlock 10 achievements as you build focus habits:
+Unlock achievements as you build focus habits:
 - 🎬 **First Steps** - Complete your first session
 - ⭐ **Dedicated** - Complete 10 sessions
 - 📅 **Week Warrior** - Maintain a 7-day streak
 - 💯 **Century Club** - Complete 100 sessions
 - 🏃 **Marathon** - Accumulate 1000 minutes of focus
-- 🌅 **Early Bird** - Complete 10 morning sessions
-- 🦉 **Night Owl** - Complete 10 evening sessions
 - 🔥 **Fire Keeper** - Build a 30-day streak
-- 🛡️ **Iron Will** - Complete 10 strict mode sessions
-- 🍅 **Pomodoro Pro** - Complete 25 Pomodoro sessions
+- And more!
 
 ### 🎯 Daily Challenges
 Rotating challenges keep you motivated:
@@ -173,19 +183,12 @@ Rotating challenges keep you motivated:
 - ⚡ Sprint Master - 6 Pomodoro cycles
 - 💪 Endurance Test - Single 90-minute session
 
-### 📊 AI-Powered Analytics
-Machine learning analyzes your patterns to provide:
-- **Peak Productivity Hours** - When you focus best
-- **Optimal Session Length** - Your ideal focus duration
-- **Distraction Patterns** - Identifies when you struggle
-- **Personalized Recommendations** - Custom tips for improvement
-
-### 🎯 Goal Tracking
-Set and track custom goals:
-- Daily focus time targets
-- Weekly hour goals
-- Custom streak challenges
-- AI suggests goals based on your patterns
+### 📊 Pattern Analysis
+Track your productivity patterns:
+- **Session Statistics** - Track focus time and sessions
+- **Optimal Session Length** - Based on your completion rates
+- **Weekday vs Weekend** - Compare your productivity
+- **Streak Tracking** - Build and maintain habits
 
 ## Troubleshooting
 

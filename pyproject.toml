@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "personal-liberty"
-version = "4.2.4"
-description = "AI-powered Windows application that blocks distracting websites during focus sessions"
+version = "5.0.0"
+description = "Gamified Windows application that blocks distracting websites during focus sessions with hero progression"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.8"
 authors = [
     {name = "Personal Liberty Contributors"}
 ]
-keywords = ["focus", "productivity", "website-blocker", "pomodoro", "ai", "windows"]
+keywords = ["focus", "productivity", "website-blocker", "pomodoro", "gamification", "adhd", "windows"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Win32 (MS Windows)",
