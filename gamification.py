@@ -8290,7 +8290,15 @@ def get_historical_comparisons(weight_entries: list, current_date: str = None) -
     if not sorted_entries:
         return {}
     
-    current_weight = sorted_entries[0]["weight"]
+    # Find current weight - use entry for current_date if available, else latest
+    current_weight = None
+    current_date_str = today.strftime("%Y-%m-%d")
+    for entry in sorted_entries:
+        if entry["date"] == current_date_str:
+            current_weight = entry["weight"]
+            break
+    if current_weight is None:
+        current_weight = sorted_entries[0]["weight"]
     
     comparisons = {}
     periods = [
@@ -8405,10 +8413,19 @@ def get_weekly_insights(weight_entries: list, achieved_milestones: list,
     if goal and sorted_entries:
         starting_weight = sorted_entries[0]["weight"]
         current_weight = sorted_entries[-1]["weight"]
-        total_to_lose = starting_weight - goal
-        lost_so_far = starting_weight - current_weight
-        if total_to_lose > 0:
-            goal_progress = (lost_so_far / total_to_lose) * 100
+        total_change_needed = abs(starting_weight - goal)
+        change_so_far = abs(starting_weight - current_weight)
+        
+        # Check if moving in right direction
+        if total_change_needed > 0.1:  # Avoid division by near-zero
+            if starting_weight > goal:
+                # Weight loss goal
+                if current_weight <= starting_weight:
+                    goal_progress = (change_so_far / total_change_needed) * 100
+            else:
+                # Weight gain goal
+                if current_weight >= starting_weight:
+                    goal_progress = (change_so_far / total_change_needed) * 100
     
     # Generate insights
     insights = []

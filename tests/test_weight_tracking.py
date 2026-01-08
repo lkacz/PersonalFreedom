@@ -811,6 +811,26 @@ class TestHistoricalComparisons:
             if val is not None:
                 assert val.get("change") == 0.0
 
+    def test_comparisons_uses_current_date_param(self):
+        """Test that current_date parameter is used for comparisons."""
+        # Create entries spread over 2 weeks
+        entries = [
+            {"date": "2026-01-01", "weight": 80.0},
+            {"date": "2026-01-08", "weight": 78.0},
+            {"date": "2026-01-15", "weight": 76.0},
+        ]
+        # Use Jan 15 as reference - should compare 76kg against 80kg from Jan 8
+        result = get_historical_comparisons(entries, "2026-01-15")
+        if "1_week" in result:
+            # 76.0 - 78.0 = -2.0 (used Jan 8 weight which is ~7 days before Jan 15)
+            assert result["1_week"]["change"] == -2.0
+        
+        # Use Jan 8 as reference - should compare 78kg against 80kg from Jan 1
+        result2 = get_historical_comparisons(entries, "2026-01-08")
+        if "1_week" in result2:
+            # 78.0 - 80.0 = -2.0 (used Jan 1 weight which is ~7 days before Jan 8)
+            assert result2["1_week"]["change"] == -2.0
+
 
 @pytest.mark.skipif(not NEW_FUNCTIONS_AVAILABLE, reason="New functions not available")
 class TestWeeklyInsights:
@@ -832,6 +852,48 @@ class TestWeeklyInsights:
         """Test insights with no entries."""
         result = get_weekly_insights([], [], 0, None)
         assert result.get("has_data") is False
+
+    def test_insights_goal_progress_loss(self):
+        """Test goal progress calculation for weight loss goal."""
+        today = datetime.now()
+        # Started at 80kg, now at 75kg, goal is 70kg (10kg total loss, 5kg done = 50%)
+        entries = [
+            {"date": (today - timedelta(days=10)).strftime("%Y-%m-%d"), "weight": 80.0},
+            {"date": (today - timedelta(days=3)).strftime("%Y-%m-%d"), "weight": 77.0},
+            {"date": today.strftime("%Y-%m-%d"), "weight": 75.0},
+        ]
+        result = get_weekly_insights(entries, [], 3, goal=70.0)
+        assert result.get("goal_progress_pct") is not None
+        # 5kg lost out of 10kg needed = 50%
+        assert abs(result["goal_progress_pct"] - 50.0) < 0.1
+
+    def test_insights_goal_progress_gain(self):
+        """Test goal progress calculation for weight GAIN goal."""
+        today = datetime.now()
+        # Started at 60kg, now at 65kg, goal is 70kg (10kg total gain, 5kg done = 50%)
+        entries = [
+            {"date": (today - timedelta(days=10)).strftime("%Y-%m-%d"), "weight": 60.0},
+            {"date": (today - timedelta(days=3)).strftime("%Y-%m-%d"), "weight": 63.0},
+            {"date": today.strftime("%Y-%m-%d"), "weight": 65.0},
+        ]
+        result = get_weekly_insights(entries, [], 3, goal=70.0)
+        assert result.get("goal_progress_pct") is not None
+        # 5kg gained out of 10kg needed = 50%
+        assert abs(result["goal_progress_pct"] - 50.0) < 0.1
+
+    def test_insights_goal_progress_wrong_direction(self):
+        """Test that goal progress is None if moving in wrong direction."""
+        today = datetime.now()
+        # Started at 60kg, now at 55kg, but goal is 70kg (weight GAIN goal)
+        # User is losing weight instead of gaining - should not show progress
+        entries = [
+            {"date": (today - timedelta(days=10)).strftime("%Y-%m-%d"), "weight": 60.0},
+            {"date": (today - timedelta(days=3)).strftime("%Y-%m-%d"), "weight": 58.0},
+            {"date": today.strftime("%Y-%m-%d"), "weight": 55.0},
+        ]
+        result = get_weekly_insights(entries, [], 3, goal=70.0)
+        # Progress should be None because user is going wrong direction
+        assert result.get("goal_progress_pct") is None
 
 
 @pytest.mark.skipif(not NEW_FUNCTIONS_AVAILABLE, reason="New functions not available")
