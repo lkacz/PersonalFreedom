@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.2] - 2026-01-08
+
+### Fixed
+- Fixed chart goal line label to display correct unit (kg/lbs) instead of raw stored value.
+- Fixed lbs change calculation in entries table (was showing incorrect conversion).
+- Fixed goal input range initialization when user preference is lbs (ranges now set before loading value).
+- Max date for weight entries now refreshes on each display (handles app open past midnight).
+
 ## [5.1.1] - 2026-01-08
 
 ### Fixed
