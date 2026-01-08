@@ -34,13 +34,9 @@ except ImportError:
     AI_AVAILABLE = False
     logger.warning("AI features not available - productivity_ai.py not found")
 
-# Import GPU-accelerated local AI
-try:
-    from local_ai import LocalAI as _LocalAI  # noqa: F401
-    LOCAL_AI_AVAILABLE = True
-except ImportError:
-    LOCAL_AI_AVAILABLE = False
-    logger.warning("GPU AI not available - install: pip install -r requirements_ai.txt")
+# GPU-accelerated local AI removed (was experimental, added ~3GB to app size)
+# The heavy ML libraries (torch, transformers, sentence-transformers) are no longer bundled.
+LOCAL_AI_AVAILABLE = False
 
 # Import bypass logger
 try:

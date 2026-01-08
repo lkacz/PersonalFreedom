@@ -159,14 +159,12 @@ BlockerCore = None
 BlockMode = None
 SITE_CATEGORIES = None
 AI_AVAILABLE = False
-LOCAL_AI_AVAILABLE = False
 GOALS_PATH = None
 STATS_PATH = None
 BYPASS_LOGGER_AVAILABLE = False
 ProductivityAnalyzer = None
 GamificationEngine = None
 FocusGoals = None
-LocalAI = None
 GAMIFICATION_AVAILABLE = False
 RARITY_POWER = {"Common": 10, "Uncommon": 25, "Rare": 50, "Epic": 100, "Legendary": 250}
 ITEM_THEMES = None
@@ -204,9 +202,9 @@ get_slot_display_name = None
 
 def load_heavy_modules(splash: Optional[SplashScreen] = None):
     """Load heavy modules with splash screen updates."""
-    global BlockerCore, BlockMode, SITE_CATEGORIES, AI_AVAILABLE, LOCAL_AI_AVAILABLE
+    global BlockerCore, BlockMode, SITE_CATEGORIES, AI_AVAILABLE
     global GOALS_PATH, STATS_PATH, BYPASS_LOGGER_AVAILABLE
-    global ProductivityAnalyzer, GamificationEngine, FocusGoals, LocalAI
+    global ProductivityAnalyzer, GamificationEngine, FocusGoals
     global GAMIFICATION_AVAILABLE, RARITY_POWER, ITEM_THEMES, get_item_themes
     global get_diary_power_tier, calculate_character_power, get_power_breakdown
     global calculate_rarity_bonuses, calculate_merge_success_rate, get_merge_result_rarity
@@ -226,7 +224,6 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         BlockMode as _BlockMode,
         SITE_CATEGORIES as _SITE_CATEGORIES,
         AI_AVAILABLE as _AI_AVAILABLE,
-        LOCAL_AI_AVAILABLE as _LOCAL_AI_AVAILABLE,
         GOALS_PATH as _GOALS_PATH,
         STATS_PATH as _STATS_PATH,
         BYPASS_LOGGER_AVAILABLE as _BYPASS_LOGGER_AVAILABLE,
@@ -235,7 +232,6 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
     BlockMode = _BlockMode
     SITE_CATEGORIES = _SITE_CATEGORIES
     AI_AVAILABLE = _AI_AVAILABLE
-    LOCAL_AI_AVAILABLE = _LOCAL_AI_AVAILABLE
     GOALS_PATH = _GOALS_PATH
     STATS_PATH = _STATS_PATH
     BYPASS_LOGGER_AVAILABLE = _BYPASS_LOGGER_AVAILABLE
@@ -255,13 +251,6 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
             FocusGoals = _FocusGoals
         except Exception:
             pass
-    
-    # Local AI for session analysis
-    if LOCAL_AI_AVAILABLE:
-        if splash:
-            splash.set_status("Loading local AI models...")
-        from local_ai import LocalAI as _LocalAI
-        LocalAI = _LocalAI
     
     # Gamification imports
     if splash:
@@ -1089,9 +1078,9 @@ class TimerTab(QtWidgets.QWidget):
 
         session_minutes = elapsed // 60
 
-        # Show AI session dialog if available, otherwise simple message
+        # Show session complete dialog with break suggestions
         main_window = self.window()
-        if LOCAL_AI_AVAILABLE and hasattr(main_window, 'show_ai_session_complete'):
+        if hasattr(main_window, 'show_ai_session_complete'):
             main_window.show_ai_session_complete(elapsed)
         else:
             QtWidgets.QMessageBox.information(self, "Complete!", "🎉 Focus session complete!\nGreat job staying focused!")
@@ -1281,7 +1270,6 @@ class SitesTab(QtWidgets.QWidget):
         self.analyzer = ProductivityAnalyzer(STATS_PATH) if ProductivityAnalyzer else None
         self.gamification = GamificationEngine(STATS_PATH) if GamificationEngine else None
         self.focus_goals = FocusGoals(GOALS_PATH, STATS_PATH) if FocusGoals else None
-        self.local_ai = LocalAI() if LOCAL_AI_AVAILABLE else None
         self._build_ui()
         self._refresh_lists()
 
@@ -2084,7 +2072,6 @@ class AITab(QtWidgets.QWidget):
         self.analyzer = ProductivityAnalyzer(STATS_PATH) if ProductivityAnalyzer else None
         self.gamification = GamificationEngine(STATS_PATH) if GamificationEngine else None
         self.focus_goals = FocusGoals(GOALS_PATH, STATS_PATH) if FocusGoals else None
-        self.local_ai = LocalAI() if LOCAL_AI_AVAILABLE else None
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -2185,22 +2172,6 @@ class AITab(QtWidgets.QWidget):
         self.ai_stats_text.setMaximumHeight(180)
         stats_layout.addWidget(self.ai_stats_text)
         inner.addWidget(stats_group)
-
-        # GPU AI insights
-        if LOCAL_AI_AVAILABLE:
-            gpu_group = QtWidgets.QGroupBox("🚀 GPU AI Insights")
-            gpu_layout = QtWidgets.QVBoxLayout(gpu_group)
-            self.gpu_status_label = QtWidgets.QLabel()
-            gpu_layout.addWidget(self.gpu_status_label)
-            self.triggers_text = QtWidgets.QTextEdit()
-            self.triggers_text.setReadOnly(True)
-            self.triggers_text.setMaximumHeight(120)
-            gpu_layout.addWidget(self.triggers_text)
-            self.mood_text = QtWidgets.QTextEdit()
-            self.mood_text.setReadOnly(True)
-            self.mood_text.setMaximumHeight(80)
-            gpu_layout.addWidget(self.mood_text)
-            inner.addWidget(gpu_group)
 
         inner.addStretch()
         scroll.setWidget(container)
@@ -2318,45 +2289,6 @@ class AITab(QtWidgets.QWidget):
         else:
             stats_lines.append("Install AI requirements to view statistics.")
         self.ai_stats_text.setPlainText("\n".join(stats_lines))
-
-        # GPU insights
-        if self.local_ai:
-            status_txt = "✅ Running on GPU" if self.local_ai.gpu_available else "💻 Running on CPU"
-            self.gpu_status_label.setText(status_txt)
-
-            # Extract notes from session_notes, handling both dict and string formats
-            raw_notes = self.blocker.stats.get("session_notes", [])
-            notes = []
-            for n in raw_notes:
-                if isinstance(n, dict):
-                    note_text = n.get("note", "")
-                    if note_text:
-                        notes.append(note_text)
-                elif isinstance(n, str) and n:
-                    notes.append(n)
-            
-            if len(notes) >= 3:
-                try:
-                    triggers = self.local_ai.detect_distraction_triggers(notes)
-                    if triggers:
-                        lines = [f"• {t['trigger']} ({t['frequency']}) — {t['recommendation']}" for t in triggers]
-                        self.triggers_text.setPlainText("\n".join(lines))
-                    else:
-                        self.triggers_text.setPlainText("No common distraction triggers detected yet.")
-                except Exception:
-                    self.triggers_text.setPlainText("GPU insights unavailable (missing ML deps).")
-            else:
-                self.triggers_text.setPlainText("Add at least 3 session notes to analyze distraction triggers.")
-
-            if notes:
-                try:
-                    mood = self.local_ai.analyze_focus_quality(notes[-1])
-                    if mood:
-                        self.mood_text.setPlainText(f"Last session sentiment: {mood['interpretation']}")
-                    else:
-                        self.mood_text.setPlainText("Add a session note to see mood analysis.")
-                except Exception:
-                    self.mood_text.setPlainText("Mood analysis unavailable (missing ML deps).")
 
     def _get_insights(self) -> None:
         if not AI_AVAILABLE:
@@ -7167,28 +7099,18 @@ class AISessionCompleteDialog(QtWidgets.QDialog):
         if not note and self.selected_rating:
             note = self.selected_rating
 
-        if note and self.local_ai:
-            try:
-                analysis = self.local_ai.analyze_focus_quality(note)
-                if analysis and "interpretation" in analysis:
-                    self.analysis_label.setText(f"🧠 AI: {analysis['interpretation']}")
-                    # Save to stats
-                    self._save_session_note(note, analysis)
-            except Exception:
-                pass
-        elif note:
-            self._save_session_note(note, None)
+        if note:
+            self._save_session_note(note)
 
         self.accept()
 
-    def _save_session_note(self, note: str, analysis) -> None:
-        """Save session note with AI analysis to stats."""
+    def _save_session_note(self, note: str) -> None:
+        """Save session note to stats."""
         session_notes = self.blocker.stats.get("session_notes", [])
         session_notes.append({
             "timestamp": datetime.now().isoformat(),
             "duration_seconds": self.session_duration,
-            "note": note,
-            "analysis": analysis
+            "note": note
         })
         # Keep last 50 notes
         self.blocker.stats["session_notes"] = session_notes[-50:]
@@ -7763,10 +7685,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             event.accept()
 
     def show_ai_session_complete(self, session_duration: int) -> None:
-        """Show AI-powered session complete dialog."""
-        if LOCAL_AI_AVAILABLE:
-            dialog = AISessionCompleteDialog(self.blocker, session_duration, self)
-            dialog.exec()
+        """Show session complete dialog with break suggestions."""
+        dialog = AISessionCompleteDialog(self.blocker, session_duration, self)
+        dialog.exec()
 
     def _on_session_complete(self, elapsed_seconds: int) -> None:
         """Handle session completion - refresh stats and related UI."""
