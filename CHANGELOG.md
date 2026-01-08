@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.3] - 2026-01-08
+
+### Fixed
+- Installer now forcefully closes running instances before upgrading.
+- Installer removes scheduled task before file replacement to prevent "Access denied" errors.
+- Added `CloseApplications=force` to handle locked files during upgrades.
+
 ## [4.2.2] - 2026-01-08
 
 ### Changed

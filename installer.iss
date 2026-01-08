@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6.0 or later: https://jrsoftware.org/isinfo.php
 
 #define MyAppName "Personal Liberty"
-#define MyAppVersion "4.2.2"
+#define MyAppVersion "4.2.3"
 #define MyAppPublisher "Personal Liberty"
 #define MyAppURL "https://github.com/lkacz/PersonalLiberty"
 #define MyAppExeName "PersonalLiberty.exe"
@@ -30,6 +30,10 @@ WizardStyle=modern
 PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
 UninstallDisplayIcon={app}\app.ico
+; Automatically close running instances during install/upgrade
+CloseApplications=force
+CloseApplicationsFilter=PersonalLiberty.exe
+RestartApplications=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -181,6 +185,15 @@ var
   UninstallString: String;
 begin
   Result := True;
+  
+  // Kill any running instances before installation
+  Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM PersonalLiberty.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  
+  // Remove scheduled task that might be holding the file
+  Exec(ExpandConstant('{sys}\schtasks.exe'), '/delete /tn PersonalLibertyAutostart /f', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  
+  // Small delay to ensure file handles are released
+  Sleep(500);
   
   // Check if already installed
   if RegKeyExists(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#SetupSetting("AppId")}_is1') or
