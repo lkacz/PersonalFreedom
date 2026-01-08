@@ -943,7 +943,8 @@ class TimerTab(QtWidgets.QWidget):
         elapsed = int(QtCore.QDateTime.currentDateTime().toSecsSinceEpoch() - self.session_start)
         interval_seconds = self.blocker.priority_checkin_interval * 60
 
-        if elapsed > 0 and elapsed % interval_seconds < 2:  # 2-second window
+        # Only check-in after at least one full interval has passed
+        if elapsed >= interval_seconds and elapsed % interval_seconds < 2:  # 2-second window
             if self.last_checkin_time is None or (elapsed - self.last_checkin_time) >= interval_seconds - 5:
                 self.last_checkin_time = elapsed
                 self._show_priority_checkin()

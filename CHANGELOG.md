@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.6] - 2026-01-08
+
+### Fixed
+- Priority check-in now waits for the configured interval before first prompt.
+- Previously the check-in dialog appeared immediately when starting a session.
+
 ## [4.2.5] - 2026-01-08
 
 ### Fixed
