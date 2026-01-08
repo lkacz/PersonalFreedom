@@ -5596,10 +5596,14 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                 f"Rarity: {item.get('rarity', 'Common')}\n"
                 f"Slot: {item.get('slot', 'Unknown')}\n"
                 f"Power: +{power}\n"
-                f"{'[✓ EQUIPPED - will be unequipped if merged]' if is_eq else '[Click to select for merge]'}"
+                f"{'[✓ EQUIPPED - unequip to merge]' if is_eq else '[Click to select for merge]'}"
             )
-            # Allow selecting equipped items (they can be merged now)
-            list_item.setForeground(QtGui.QColor(item.get("color", "#333")))
+            # Block equipped items from being selected for merge
+            if is_eq:
+                list_item.setFlags(list_item.flags() & ~QtCore.Qt.ItemIsSelectable)
+                list_item.setForeground(QtGui.QColor("#888888"))  # Gray out equipped
+            else:
+                list_item.setForeground(QtGui.QColor(item.get("color", "#333")))
             self.inv_list.addItem(list_item)
 
     def refresh_gear_combos(self) -> None:
@@ -5642,7 +5646,17 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self.merge_btn.setText(f"🎲 Merge Selected ({count})")
         if count >= 2 and GAMIFICATION_AVAILABLE:
             inventory = self.blocker.adhd_buster.get("inventory", [])
+            equipped = self.blocker.adhd_buster.get("equipped", {})
+            equipped_ts = {item.get("obtained_at") for item in equipped.values() if item}
             items = [inventory[idx] for idx in self.merge_selected if idx < len(inventory)]
+            
+            # Check if any selected items are equipped (safety check)
+            equipped_selected = [i for i in items if i.get("obtained_at") in equipped_ts]
+            if equipped_selected:
+                self.merge_btn.setEnabled(False)
+                self.merge_rate_lbl.setText("⚠️ Cannot merge equipped items!")
+                return
+            
             worthwhile, reason = is_merge_worthwhile(items)
             if not worthwhile:
                 self.merge_btn.setEnabled(False)
@@ -5676,22 +5690,25 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
         ) != QtWidgets.QMessageBox.Yes:
             return
+        # Final safety check: ensure no equipped items are being merged
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        equipped_ts = {item.get("obtained_at") for item in equipped.values() if item}
+        equipped_in_merge = [i for i in items if i.get("obtained_at") in equipped_ts]
+        if equipped_in_merge:
+            QtWidgets.QMessageBox.warning(
+                self, "Cannot Merge",
+                f"Cannot merge equipped items! Unequip them first.\n\n"
+                f"Equipped items selected: {len(equipped_in_merge)}"
+            )
+            return
+        
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         result = perform_lucky_merge(items, luck, story_id=active_story)
-        
-        # Get the timestamps of items being merged for equipped cleanup
-        merged_timestamps = {item.get("obtained_at") for item in items if item.get("obtained_at")}
         
         # Remove merged items from inventory
         for idx in sorted(self.merge_selected, reverse=True):
             if idx < len(inventory):
                 del inventory[idx]
-        
-        # Clean up equipped items that were merged (in case any were equipped)
-        equipped = self.blocker.adhd_buster.get("equipped", {})
-        for slot, eq_item in list(equipped.items()):
-            if eq_item and eq_item.get("obtained_at") in merged_timestamps:
-                self.blocker.adhd_buster["equipped"][slot] = None
         
         if result["success"]:
             inventory.append(result["result_item"])

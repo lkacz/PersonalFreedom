@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.1] - 2026-01-08
+
+### Fixed
+- Equipped items can no longer be selected for Lucky Merge.
+- Previously equipped items could be merged and destroyed, losing them permanently.
+- Added safety checks at selection, validation, and merge execution levels.
+
 ## [5.0.0] - 2026-01-08
 
 ### Removed
