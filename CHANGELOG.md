@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.2] - 2026-01-08
+
+### Fixed
+- Hardened merge logic against stale inventory indices and race conditions.
+- Added validation to detect if inventory changed between selection and merge.
+- Added safety check for items missing `obtained_at` timestamp (auto-fixes data).
+- Changed item removal to use timestamp matching instead of fragile index deletion.
+- Added fallback to index-based deletion if timestamp matching fails.
+
 ## [5.0.1] - 2026-01-08
 
 ### Fixed
