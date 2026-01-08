@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.1] - 2026-01-08
+
+### Fixed
+- **CRITICAL**: Fixed monthly reward being incorrectly assigned to weekly_reward variable.
+- **CRITICAL**: Prevented future date selection in weight tracker (max date = today).
+- **HIGH**: Fixed reward calculation when updating existing weight entries (now excludes current date from comparison).
+- **HIGH**: Added null safety checks for stats display to prevent crashes with corrupted data.
+- **HIGH**: Added validation for weight entries on config load (filters invalid/malformed entries).
+- Fixed floating point precision issues in weight loss calculations (now properly rounds to 0.1g).
+- Fixed goal weight unit conversion - goal now properly stored in kg and converted for display.
+
 ## [5.1.0] - 2026-01-08
 
 ### Added

@@ -2350,9 +2350,10 @@ class WeightTab(QtWidgets.QWidget):
         weight_row.addStretch()
         input_layout.addRow("Weight:", weight_row)
         
-        # Date input (default to today)
+        # Date input (default to today, max = today to prevent future dates)
         self.date_edit = QtWidgets.QDateEdit()
         self.date_edit.setDate(QtCore.QDate.currentDate())
+        self.date_edit.setMaximumDate(QtCore.QDate.currentDate())  # Prevent future dates
         self.date_edit.setCalendarPopup(True)
         self.date_edit.setDisplayFormat("yyyy-MM-dd")
         input_layout.addRow("Date:", self.date_edit)
@@ -2446,7 +2447,9 @@ class WeightTab(QtWidgets.QWidget):
         # Initialize unit from settings
         self.unit_combo.setCurrentText(self.blocker.weight_unit)
         if self.blocker.weight_goal:
-            self.goal_input.setValue(self.blocker.weight_goal)
+            # Goal is stored in kg, convert for display if needed
+            goal_display = self.blocker.weight_goal * 2.20462 if self.blocker.weight_unit == "lbs" else self.blocker.weight_goal
+            self.goal_input.setValue(goal_display)
     
     def _on_unit_changed(self, unit: str) -> None:
         """Handle unit change."""
@@ -2464,14 +2467,16 @@ class WeightTab(QtWidgets.QWidget):
     def _set_goal(self) -> None:
         """Set the goal weight."""
         goal = self.goal_input.value()
+        unit = self.unit_combo.currentText()
         if goal <= self.goal_input.minimum():
             self.blocker.weight_goal = None
         else:
-            self.blocker.weight_goal = goal
+            # Store goal in kg for consistency
+            self.blocker.weight_goal = goal / 2.20462 if unit == "lbs" else goal
         self.blocker.save_config()
         self._refresh_display()
         QtWidgets.QMessageBox.information(self, "Goal Set", 
-            f"Goal weight set to {goal:.1f} {self.blocker.weight_unit}" if self.blocker.weight_goal 
+            f"Goal weight set to {goal:.1f} {unit}" if self.blocker.weight_goal 
             else "Goal weight cleared")
     
     def _log_weight(self) -> None:
@@ -2490,12 +2495,16 @@ class WeightTab(QtWidgets.QWidget):
                 existing_idx = i
                 break
         
+        # For reward calculation, we need entries WITHOUT the current date
+        # This ensures updating an entry compares against historical data only
+        entries_for_reward = [e for e in self.blocker.weight_entries if e.get("date") != date_str]
+        
         # Check for rewards before adding entry
         rewards = None
         if GAMIFICATION_AVAILABLE and check_weight_entry_rewards:
             story_id = self.blocker.adhd_buster.get("active_story", "warrior")
             rewards = check_weight_entry_rewards(
-                self.blocker.weight_entries, 
+                entries_for_reward, 
                 weight_kg, 
                 date_str,
                 story_id
@@ -2605,7 +2614,7 @@ class WeightTab(QtWidgets.QWidget):
         # Update stats
         if get_weight_stats:
             stats = get_weight_stats(entries, unit)
-            if stats["current"]:
+            if stats["current"] is not None and stats["starting"] is not None:
                 current_display = stats["current"] * 2.20462 if unit == "lbs" else stats["current"]
                 starting_display = stats["starting"] * 2.20462 if unit == "lbs" else stats["starting"]
                 
