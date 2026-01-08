@@ -623,10 +623,12 @@ RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
 
 def calculate_merge_success_rate(items: list, luck_bonus: int = 0) -> float:
     """Calculate the success rate for a lucky merge."""
-    if len(items) < 2:
+    # Filter out None items
+    valid_items = [item for item in items if item is not None]
+    if len(valid_items) < 2:
         return 0.0
     
-    rate = MERGE_BASE_SUCCESS_RATE + (len(items) - 2) * MERGE_BONUS_PER_ITEM
+    rate = MERGE_BASE_SUCCESS_RATE + (len(valid_items) - 2) * MERGE_BONUS_PER_ITEM
     luck_bonus_pct = min(luck_bonus / 100 * 0.01, 0.10)
     rate += luck_bonus_pct
     
@@ -635,7 +637,9 @@ def calculate_merge_success_rate(items: list, luck_bonus: int = 0) -> float:
 
 def get_merge_result_rarity(items: list) -> str:
     """Determine the rarity of the merged item result."""
-    if not items:
+    # Filter out None items
+    valid_items = [item for item in items if item is not None]
+    if not valid_items:
         return "Common"
     
     # Safely get rarity index, defaulting to 0 (Common) for invalid values
@@ -654,10 +658,12 @@ def get_merge_result_rarity(items: list) -> str:
 
 def is_merge_worthwhile(items: list) -> tuple:
     """Check if a merge is worthwhile (can result in upgrade)."""
-    if not items or len(items) < 2:
+    # Filter out None items
+    valid_items = [item for item in items if item is not None]
+    if not valid_items or len(valid_items) < 2:
         return False, "Need at least 2 items"
     
-    all_legendary = all(item.get("rarity") == "Legendary" for item in items)
+    all_legendary = all(item.get("rarity") == "Legendary" for item in valid_items)
     if all_legendary:
         return False, "All items are Legendary - merge cannot upgrade!"
     
@@ -699,15 +705,17 @@ def perform_lucky_merge(items: list, luck_bonus: int = 0, story_id: str = None) 
         luck_bonus: Luck bonus from character stats
         story_id: Story theme for the resulting item
     """
-    if len(items) < 2:
+    # Filter out None items
+    valid_items = [item for item in items if item is not None]
+    if len(valid_items) < 2:
         return {"success": False, "error": "Need at least 2 items to merge"}
     
-    success_rate = calculate_merge_success_rate(items, luck_bonus)
+    success_rate = calculate_merge_success_rate(valid_items, luck_bonus)
     roll = random.random()
     
     result = {
         "success": roll < success_rate,
-        "items_lost": items,
+        "items_lost": valid_items,
         "roll": roll,
         "needed": success_rate,
         "roll_pct": f"{roll*100:.1f}%",
@@ -724,8 +732,8 @@ def perform_lucky_merge(items: list, luck_bonus: int = 0, story_id: str = None) 
             except ValueError:
                 return 0  # Default to Common if invalid rarity
         
-        # Get base rarity from lowest item
-        lowest_idx = min(safe_rarity_idx(item) for item in items)
+        # Get base rarity from lowest item (using valid_items)
+        lowest_idx = min(safe_rarity_idx(item) for item in valid_items)
         
         # Roll for tier jump
         tier_jump = get_random_tier_jump()

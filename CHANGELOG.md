@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.7] - 2026-01-08
+
+### Fixed
+- **CRITICAL**: Config and stats files now use atomic writes (write-to-temp-then-rename) to prevent data corruption on crash.
+- **CRITICAL**: Merge system now filters out None items to prevent crashes from corrupted inventory data.
+- Added session timer guard to prevent starting new session while one is already running.
+- Improved merge item removal with verification - fallback deletion now verifies item identity before removing.
+- All merge-related functions now safely handle None items in the items list.
+
+### Security
+- Atomic file writes prevent data loss if app crashes mid-save.
+
 ## [5.0.6] - 2026-01-08
 
 ### Added
