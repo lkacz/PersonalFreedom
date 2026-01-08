@@ -5677,8 +5677,28 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         if not GAMIFICATION_AVAILABLE:
             QtWidgets.QMessageBox.warning(self, "Feature Unavailable", "Gamification features are not available.")
             return
+        
+        # Re-fetch inventory fresh to avoid stale indices
         inventory = self.blocker.adhd_buster.get("inventory", [])
-        items = [inventory[idx] for idx in self.merge_selected if idx < len(inventory)]
+        
+        # Validate indices are still valid
+        valid_indices = [idx for idx in self.merge_selected if 0 <= idx < len(inventory)]
+        if len(valid_indices) < 2:
+            QtWidgets.QMessageBox.warning(self, "Invalid Selection", 
+                "Selected items are no longer valid. Please refresh and try again.")
+            self._refresh_inventory()
+            return
+        
+        items = [inventory[idx] for idx in valid_indices]
+        
+        # Check for items without timestamps (data integrity issue)
+        items_without_ts = [i for i in items if not i.get("obtained_at")]
+        if items_without_ts:
+            # Add timestamps to fix data integrity
+            for item in items_without_ts:
+                item["obtained_at"] = datetime.now().isoformat()
+            self.blocker.save_config()
+        
         luck = self.blocker.adhd_buster.get("luck_bonus", 0)
         rate = calculate_merge_success_rate(items, luck)
         result_rarity = get_merge_result_rarity(items)
@@ -5690,10 +5710,24 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
         ) != QtWidgets.QMessageBox.Yes:
             return
+        
+        # Re-fetch inventory again after dialog (user could have modified in another window)
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        
+        # Re-validate indices after dialog
+        if not all(0 <= idx < len(inventory) for idx in valid_indices):
+            QtWidgets.QMessageBox.warning(self, "Inventory Changed", 
+                "Inventory changed while dialog was open. Please try again.")
+            self._refresh_inventory()
+            return
+        
+        # Re-fetch items with fresh inventory
+        items = [inventory[idx] for idx in valid_indices]
+        
         # Final safety check: ensure no equipped items are being merged
         equipped = self.blocker.adhd_buster.get("equipped", {})
-        equipped_ts = {item.get("obtained_at") for item in equipped.values() if item}
-        equipped_in_merge = [i for i in items if i.get("obtained_at") in equipped_ts]
+        equipped_ts = {item.get("obtained_at") for item in equipped.values() if item and item.get("obtained_at")}
+        equipped_in_merge = [i for i in items if i.get("obtained_at") and i.get("obtained_at") in equipped_ts]
         if equipped_in_merge:
             QtWidgets.QMessageBox.warning(
                 self, "Cannot Merge",
@@ -5705,14 +5739,22 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         result = perform_lucky_merge(items, luck, story_id=active_story)
         
-        # Remove merged items from inventory
-        for idx in sorted(self.merge_selected, reverse=True):
-            if idx < len(inventory):
-                del inventory[idx]
+        # Remove merged items from inventory by matching items, not indices
+        # This is safer than index-based deletion
+        merged_timestamps = {i.get("obtained_at") for i in items if i.get("obtained_at")}
+        new_inventory = [item for item in inventory if item.get("obtained_at") not in merged_timestamps]
+        
+        # Fallback: if timestamp matching didn't work, use index-based deletion
+        if len(new_inventory) == len(inventory):
+            # Timestamps didn't match, fall back to index deletion
+            for idx in sorted(valid_indices, reverse=True):
+                if idx < len(inventory):
+                    del inventory[idx]
+            new_inventory = inventory
         
         if result["success"]:
-            inventory.append(result["result_item"])
-            self.blocker.adhd_buster["inventory"] = inventory
+            new_inventory.append(result["result_item"])
+            self.blocker.adhd_buster["inventory"] = new_inventory
             # Sync changes to active hero before saving
             if GAMIFICATION_AVAILABLE:
                 sync_hero_data(self.blocker.adhd_buster)
@@ -5728,7 +5770,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                 f"Created: {result['result_item']['name']}{tier_info}\n"
                 f"Rarity: {result['result_item']['rarity']}, Power: +{result['result_item']['power']}")
         else:
-            self.blocker.adhd_buster["inventory"] = inventory
+            self.blocker.adhd_buster["inventory"] = new_inventory
             # Sync changes to active hero before saving
             if GAMIFICATION_AVAILABLE:
                 sync_hero_data(self.blocker.adhd_buster)
