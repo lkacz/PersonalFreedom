@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.7] - 2026-01-08
+
+### Changed
+- ADHD Buster dialog is now blocked during active focus sessions.
+- Users must complete or stop their session before modifying inventory/equipment.
+
 ## [4.2.6] - 2026-01-08
 
 ### Fixed
