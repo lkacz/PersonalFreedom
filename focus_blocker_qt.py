@@ -2166,7 +2166,19 @@ class SettingsTab(QtWidgets.QWidget):
 
 
 class WeightChartWidget(QtWidgets.QWidget):
-    """Custom widget that draws a weight progress chart using Qt's built-in painting."""
+    """Custom widget that draws a weight progress chart using Qt's built-in painting.
+    
+    Features:
+    - Date-based X-axis (proper time spacing)
+    - Gap handling with dashed lines for missing days
+    - 7-day moving average trend line (for 7+ entries)
+    - Weekly binning with min/max bands (for 30+ entries)
+    - Trend direction indicator
+    """
+    
+    # Mode thresholds
+    WEEKLY_BIN_THRESHOLD = 30  # Switch to weekly binning after this many entries
+    MOVING_AVG_WINDOW = 7     # 7-day moving average
     
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
@@ -2178,19 +2190,173 @@ class WeightChartWidget(QtWidgets.QWidget):
     
     def set_data(self, entries: list, goal: float = None, unit: str = "kg") -> None:
         """Set the weight data to display."""
-        self.weight_data = [(e["date"], e["weight"]) for e in entries if e.get("date") and e.get("weight")]
+        # Sort by date and filter valid entries
+        valid_entries = [(e["date"], e["weight"]) for e in entries 
+                        if e.get("date") and e.get("weight")]
+        self.weight_data = sorted(valid_entries, key=lambda x: x[0])
         self.goal_weight = goal
         self.unit = unit
         self.update()
     
+    def _parse_date(self, date_str: str):
+        """Parse date string to datetime object."""
+        from datetime import datetime
+        try:
+            return datetime.strptime(date_str, "%Y-%m-%d")
+        except ValueError:
+            return None
+    
+    def _calculate_weekly_bins(self) -> list:
+        """Calculate weekly bins with avg, min, max for each week."""
+        from datetime import datetime, timedelta
+        
+        if not self.weight_data:
+            return []
+        
+        bins = []
+        first_date = self._parse_date(self.weight_data[0][0])
+        last_date = self._parse_date(self.weight_data[-1][0])
+        
+        if not first_date or not last_date:
+            return []
+        
+        # Group by week
+        current_week_start = first_date
+        while current_week_start <= last_date:
+            week_end = current_week_start + timedelta(days=6)
+            
+            # Find weights in this week
+            week_weights = []
+            for date_str, weight in self.weight_data:
+                d = self._parse_date(date_str)
+                if d and current_week_start <= d <= week_end:
+                    week_weights.append(weight)
+            
+            if week_weights:
+                bins.append({
+                    "date": current_week_start,
+                    "avg": sum(week_weights) / len(week_weights),
+                    "min": min(week_weights),
+                    "max": max(week_weights),
+                    "count": len(week_weights),
+                })
+            
+            current_week_start += timedelta(days=7)
+        
+        return bins
+    
+    def _calculate_moving_average(self) -> list:
+        """Calculate 7-day moving average for each data point."""
+        from datetime import datetime, timedelta
+        
+        if len(self.weight_data) < self.MOVING_AVG_WINDOW:
+            return []
+        
+        ma_data = []
+        
+        for i, (date_str, weight) in enumerate(self.weight_data):
+            current_date = self._parse_date(date_str)
+            if not current_date:
+                continue
+            
+            # Get weights from past 7 days
+            window_start = current_date - timedelta(days=self.MOVING_AVG_WINDOW - 1)
+            window_weights = []
+            
+            for d_str, w in self.weight_data:
+                d = self._parse_date(d_str)
+                if d and window_start <= d <= current_date:
+                    window_weights.append(w)
+            
+            if len(window_weights) >= 3:  # Need at least 3 points for meaningful average
+                ma_data.append((date_str, sum(window_weights) / len(window_weights)))
+        
+        return ma_data
+    
+    def _calculate_trend(self) -> tuple:
+        """Calculate overall trend direction and rate.
+        
+        Returns:
+            (direction, rate_per_week, r_squared)
+            direction: "down", "up", or "stable"
+            rate_per_week: kg change per week
+            r_squared: strength of trend (0-1)
+        """
+        if len(self.weight_data) < 3:
+            return ("stable", 0, 0)
+        
+        from datetime import datetime
+        
+        # Simple linear regression
+        dates = []
+        weights = []
+        first_date = self._parse_date(self.weight_data[0][0])
+        
+        for date_str, weight in self.weight_data:
+            d = self._parse_date(date_str)
+            if d and first_date:
+                days = (d - first_date).days
+                dates.append(days)
+                weights.append(weight)
+        
+        if len(dates) < 3:
+            return ("stable", 0, 0)
+        
+        n = len(dates)
+        sum_x = sum(dates)
+        sum_y = sum(weights)
+        sum_xy = sum(x * y for x, y in zip(dates, weights))
+        sum_x2 = sum(x * x for x in dates)
+        sum_y2 = sum(y * y for y in weights)
+        
+        # Slope (rate per day)
+        denom = n * sum_x2 - sum_x ** 2
+        if denom == 0:
+            return ("stable", 0, 0)
+        
+        slope = (n * sum_xy - sum_x * sum_y) / denom
+        
+        # R-squared
+        mean_y = sum_y / n
+        ss_tot = sum((y - mean_y) ** 2 for y in weights)
+        
+        if ss_tot == 0:
+            r_squared = 1.0
+        else:
+            intercept = (sum_y - slope * sum_x) / n
+            ss_res = sum((y - (slope * x + intercept)) ** 2 for x, y in zip(dates, weights))
+            r_squared = 1 - (ss_res / ss_tot)
+        
+        # Rate per week (slope * 7)
+        rate_per_week = slope * 7
+        
+        # Determine direction
+        if abs(rate_per_week) < 0.1:  # Less than 100g per week
+            direction = "stable"
+        elif rate_per_week < 0:
+            direction = "down"
+        else:
+            direction = "up"
+        
+        return (direction, rate_per_week, max(0, r_squared))
+    
     def paintEvent(self, event) -> None:
         """Paint the weight chart."""
+        from datetime import datetime, timedelta
+        
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
         
         rect = self.rect()
-        margin = 60
-        chart_rect = QtCore.QRect(margin, 20, rect.width() - margin - 20, rect.height() - 60)
+        margin_left = 55
+        margin_right = 20
+        margin_top = 35  # More space for trend indicator
+        margin_bottom = 45
+        chart_rect = QtCore.QRect(
+            margin_left, margin_top, 
+            rect.width() - margin_left - margin_right, 
+            rect.height() - margin_top - margin_bottom
+        )
         
         # Background
         painter.fillRect(rect, QtGui.QColor("#1a1a2e"))
@@ -2207,7 +2373,19 @@ class WeightChartWidget(QtWidgets.QWidget):
                            "Enter at least 2 weight entries\nto see your progress chart")
             return
         
-        # Calculate ranges
+        # Determine if we should use weekly binning
+        use_weekly_bins = len(self.weight_data) >= self.WEEKLY_BIN_THRESHOLD
+        
+        # Calculate date range
+        first_date = self._parse_date(self.weight_data[0][0])
+        last_date = self._parse_date(self.weight_data[-1][0])
+        
+        if not first_date or not last_date:
+            return
+        
+        total_days = max(1, (last_date - first_date).days)
+        
+        # Calculate weight range
         weights = [w for _, w in self.weight_data]
         min_weight = min(weights)
         max_weight = max(weights)
@@ -2224,6 +2402,39 @@ class WeightChartWidget(QtWidgets.QWidget):
         min_weight -= weight_range * 0.1
         max_weight += weight_range * 0.1
         weight_range = max_weight - min_weight
+        
+        # Helper functions
+        def date_to_x(date):
+            if isinstance(date, str):
+                date = self._parse_date(date)
+            if not date:
+                return chart_rect.left()
+            days_from_start = (date - first_date).days
+            return chart_rect.left() + (chart_rect.width() * days_from_start / total_days)
+        
+        def weight_to_y(weight):
+            return chart_rect.top() + chart_rect.height() * (max_weight - weight) / weight_range
+        
+        # Draw trend indicator at top
+        direction, rate, r_sq = self._calculate_trend()
+        painter.setFont(QtGui.QFont("Segoe UI", 10))
+        if direction == "down":
+            trend_color = QtGui.QColor("#00ff88")
+            trend_text = f"↓ Losing {abs(rate)*1000:.0f}g/week"
+        elif direction == "up":
+            trend_color = QtGui.QColor("#ff6464")
+            trend_text = f"↑ Gaining {abs(rate)*1000:.0f}g/week"
+        else:
+            trend_color = QtGui.QColor("#ffff64")
+            trend_text = "→ Stable"
+        
+        if r_sq > 0.5:
+            trend_text += f" (strong trend)"
+        elif r_sq > 0.2:
+            trend_text += f" (moderate trend)"
+        
+        painter.setPen(trend_color)
+        painter.drawText(margin_left, 20, trend_text)
         
         # Draw grid lines and labels
         painter.setPen(QtGui.QPen(QtGui.QColor("#333355"), 1, QtCore.Qt.PenStyle.DashLine))
@@ -2242,71 +2453,196 @@ class WeightChartWidget(QtWidgets.QWidget):
         
         # Draw goal line if set
         if self.goal_weight and min_weight <= self.goal_weight <= max_weight:
-            goal_y = chart_rect.top() + chart_rect.height() * (max_weight - self.goal_weight) / weight_range
+            goal_y = weight_to_y(self.goal_weight)
             painter.setPen(QtGui.QPen(QtGui.QColor("#00ff88"), 2, QtCore.Qt.PenStyle.DashLine))
             painter.drawLine(chart_rect.left(), int(goal_y), chart_rect.right(), int(goal_y))
             painter.setPen(QtGui.QColor("#00ff88"))
-            # Display goal in correct unit (goal stored in kg)
             goal_display = self.goal_weight * 2.20462 if self.unit == "lbs" else self.goal_weight
             painter.drawText(chart_rect.right() - 60, int(goal_y) - 5, f"Goal: {goal_display:.1f}")
         
-        # Draw weight line
-        points = []
-        for i, (date_str, weight) in enumerate(self.weight_data):
-            x = chart_rect.left() + (chart_rect.width() * i / (len(self.weight_data) - 1))
-            y = chart_rect.top() + chart_rect.height() * (max_weight - weight) / weight_range
-            points.append(QtCore.QPointF(x, y))
-        
-        # Draw gradient fill under line
-        if len(points) >= 2:
-            path = QtGui.QPainterPath()
-            path.moveTo(points[0].x(), chart_rect.bottom())
-            for p in points:
-                path.lineTo(p)
-            path.lineTo(points[-1].x(), chart_rect.bottom())
-            path.closeSubpath()
+        if use_weekly_bins:
+            # ===== WEEKLY BINNING MODE =====
+            bins = self._calculate_weekly_bins()
             
-            gradient = QtGui.QLinearGradient(0, chart_rect.top(), 0, chart_rect.bottom())
-            gradient.setColorAt(0, QtGui.QColor(100, 150, 255, 100))
-            gradient.setColorAt(1, QtGui.QColor(100, 150, 255, 20))
-            painter.fillPath(path, gradient)
+            if len(bins) >= 2:
+                # Draw min/max band
+                band_path = QtGui.QPainterPath()
+                
+                # Top edge (max values)
+                first_bin = bins[0]
+                band_path.moveTo(date_to_x(first_bin["date"]), weight_to_y(first_bin["max"]))
+                for bin_data in bins:
+                    x = date_to_x(bin_data["date"])
+                    band_path.lineTo(x, weight_to_y(bin_data["max"]))
+                
+                # Bottom edge (min values, reversed)
+                for bin_data in reversed(bins):
+                    x = date_to_x(bin_data["date"])
+                    band_path.lineTo(x, weight_to_y(bin_data["min"]))
+                
+                band_path.closeSubpath()
+                
+                # Fill band
+                painter.setBrush(QtGui.QColor(100, 150, 255, 40))
+                painter.setPen(QtCore.Qt.PenStyle.NoPen)
+                painter.drawPath(band_path)
+                
+                # Draw average line
+                painter.setPen(QtGui.QPen(QtGui.QColor("#6496ff"), 3))
+                for i in range(len(bins) - 1):
+                    x1 = date_to_x(bins[i]["date"])
+                    y1 = weight_to_y(bins[i]["avg"])
+                    x2 = date_to_x(bins[i + 1]["date"])
+                    y2 = weight_to_y(bins[i + 1]["avg"])
+                    painter.drawLine(QtCore.QPointF(x1, y1), QtCore.QPointF(x2, y2))
+                
+                # Draw weekly points with count indicator
+                for bin_data in bins:
+                    x = date_to_x(bin_data["date"])
+                    y = weight_to_y(bin_data["avg"])
+                    
+                    # Size based on entry count
+                    size = min(8, 4 + bin_data["count"])
+                    
+                    painter.setBrush(QtGui.QColor("#6496ff"))
+                    painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1))
+                    painter.drawEllipse(QtCore.QPointF(x, y), size, size)
+                
+                # Legend for binned mode
+                painter.setPen(QtGui.QColor("#888888"))
+                painter.setFont(QtGui.QFont("Segoe UI", 8))
+                painter.drawText(chart_rect.right() - 100, chart_rect.top() + 15, 
+                               f"Weekly avg (n={len(self.weight_data)})")
         
-        # Draw the line
-        painter.setPen(QtGui.QPen(QtGui.QColor("#6496ff"), 3))
-        for i in range(len(points) - 1):
-            painter.drawLine(points[i], points[i + 1])
-        
-        # Draw data points
-        for i, ((date_str, weight), point) in enumerate(zip(self.weight_data, points)):
-            # Determine point color based on trend
-            if i > 0:
-                prev_weight = self.weight_data[i - 1][1]
-                if weight < prev_weight:
-                    color = QtGui.QColor("#00ff88")  # Green - lost weight
-                elif weight > prev_weight:
-                    color = QtGui.QColor("#ff6464")  # Red - gained weight
+        else:
+            # ===== DAILY MODE =====
+            # Build points list with date info
+            points = []
+            prev_date = None
+            
+            for date_str, weight in self.weight_data:
+                current_date = self._parse_date(date_str)
+                if not current_date:
+                    continue
+                
+                x = date_to_x(current_date)
+                y = weight_to_y(weight)
+                
+                # Check for gap
+                gap_days = 0
+                if prev_date:
+                    gap_days = (current_date - prev_date).days - 1
+                
+                points.append({
+                    "date": current_date,
+                    "date_str": date_str,
+                    "weight": weight,
+                    "x": x,
+                    "y": y,
+                    "gap_before": gap_days,
+                })
+                
+                prev_date = current_date
+            
+            if len(points) >= 2:
+                # Draw gradient fill under line
+                path = QtGui.QPainterPath()
+                path.moveTo(points[0]["x"], chart_rect.bottom())
+                for p in points:
+                    path.lineTo(p["x"], p["y"])
+                path.lineTo(points[-1]["x"], chart_rect.bottom())
+                path.closeSubpath()
+                
+                gradient = QtGui.QLinearGradient(0, chart_rect.top(), 0, chart_rect.bottom())
+                gradient.setColorAt(0, QtGui.QColor(100, 150, 255, 100))
+                gradient.setColorAt(1, QtGui.QColor(100, 150, 255, 20))
+                painter.fillPath(path, gradient)
+                
+                # Draw connecting lines (dashed for gaps)
+                for i in range(len(points) - 1):
+                    p1 = points[i]
+                    p2 = points[i + 1]
+                    
+                    if p2["gap_before"] > 1:
+                        # Dashed line for gaps > 1 day
+                        painter.setPen(QtGui.QPen(
+                            QtGui.QColor("#6496ff"), 2, 
+                            QtCore.Qt.PenStyle.DashLine
+                        ))
+                    else:
+                        # Solid line for consecutive/near-consecutive days
+                        painter.setPen(QtGui.QPen(QtGui.QColor("#6496ff"), 3))
+                    
+                    painter.drawLine(
+                        QtCore.QPointF(p1["x"], p1["y"]), 
+                        QtCore.QPointF(p2["x"], p2["y"])
+                    )
+                
+                # Draw 7-day moving average if enough data
+                ma_data = self._calculate_moving_average()
+                if len(ma_data) >= 2:
+                    painter.setPen(QtGui.QPen(QtGui.QColor("#ffaa00"), 2))
+                    for i in range(len(ma_data) - 1):
+                        x1 = date_to_x(ma_data[i][0])
+                        y1 = weight_to_y(ma_data[i][1])
+                        x2 = date_to_x(ma_data[i + 1][0])
+                        y2 = weight_to_y(ma_data[i + 1][1])
+                        painter.drawLine(QtCore.QPointF(x1, y1), QtCore.QPointF(x2, y2))
+                    
+                    # MA legend
+                    painter.setPen(QtGui.QColor("#ffaa00"))
+                    painter.setFont(QtGui.QFont("Segoe UI", 8))
+                    painter.drawText(chart_rect.right() - 80, chart_rect.top() + 15, "7-day avg")
+            
+            # Draw data points
+            for i, p in enumerate(points):
+                # Determine point color based on trend
+                if i > 0:
+                    prev_weight = points[i - 1]["weight"]
+                    if p["weight"] < prev_weight:
+                        color = QtGui.QColor("#00ff88")  # Green - lost weight
+                    elif p["weight"] > prev_weight:
+                        color = QtGui.QColor("#ff6464")  # Red - gained weight
+                    else:
+                        color = QtGui.QColor("#ffff64")  # Yellow - same
                 else:
-                    color = QtGui.QColor("#ffff64")  # Yellow - same
-            else:
-                color = QtGui.QColor("#6496ff")  # Blue - first point
-            
-            painter.setBrush(color)
-            painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1))
-            painter.drawEllipse(point, 5, 5)
+                    color = QtGui.QColor("#6496ff")  # Blue - first point
+                
+                # Hollow point for gap interpolation indicator
+                if p["gap_before"] > 2:
+                    # Draw gap indicator - small triangle pointing to gap
+                    painter.setPen(QtGui.QPen(QtGui.QColor("#888888"), 1))
+                    painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
+                else:
+                    painter.setBrush(color)
+                    painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1))
+                
+                painter.drawEllipse(QtCore.QPointF(p["x"], p["y"]), 5, 5)
         
-        # Draw date labels (first, middle, last)
+        # Draw date labels (smart distribution)
         painter.setPen(QtGui.QColor("#888888"))
         painter.setFont(QtGui.QFont("Segoe UI", 8))
-        if self.weight_data:
-            # First date
-            painter.drawText(chart_rect.left() - 20, chart_rect.bottom() + 15, self.weight_data[0][0][5:])
-            # Last date
-            painter.drawText(chart_rect.right() - 30, chart_rect.bottom() + 15, self.weight_data[-1][0][5:])
-            # Middle date if enough data
-            if len(self.weight_data) >= 5:
-                mid_idx = len(self.weight_data) // 2
-                mid_x = chart_rect.left() + (chart_rect.width() * mid_idx / (len(self.weight_data) - 1))
-                painter.drawText(int(mid_x) - 15, chart_rect.bottom() + 15, self.weight_data[mid_idx][0][5:])
+        
+        if total_days <= 14:
+            # Show more dates for short ranges
+            date_step = max(1, total_days // 5)
+        elif total_days <= 60:
+            date_step = 7  # Weekly
+        else:
+            date_step = 14  # Bi-weekly
+        
+        current_date = first_date
+        while current_date <= last_date:
+            x = date_to_x(current_date)
+            date_label = current_date.strftime("%m/%d")
+            painter.drawText(int(x) - 15, chart_rect.bottom() + 15, date_label)
+            current_date += timedelta(days=date_step)
+        
+        # Always show last date if not too close to previous
+        last_x = date_to_x(last_date)
+        if last_x - date_to_x(current_date - timedelta(days=date_step)) > 30:
+            painter.drawText(int(last_x) - 15, chart_rect.bottom() + 15, 
+                           last_date.strftime("%m/%d"))
 
 
 class WeightTab(QtWidgets.QWidget):
