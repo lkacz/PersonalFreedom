@@ -333,19 +333,22 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         GAMIFICATION_AVAILABLE = False
     
     # Weight tracking functions (separate try for backward compat)
-    global check_weight_entry_rewards, get_weight_stats, format_weight_change
+    global check_weight_entry_rewards, get_weight_stats, format_weight_change, check_all_weight_rewards
     check_weight_entry_rewards = None
     get_weight_stats = None
     format_weight_change = None
+    check_all_weight_rewards = None
     try:
         from gamification import (
             check_weight_entry_rewards as _check_weight_entry_rewards,
             get_weight_stats as _get_weight_stats,
             format_weight_change as _format_weight_change,
+            check_all_weight_rewards as _check_all_weight_rewards,
         )
         check_weight_entry_rewards = _check_weight_entry_rewards
         get_weight_stats = _get_weight_stats
         format_weight_change = _format_weight_change
+        check_all_weight_rewards = _check_all_weight_rewards
     except ImportError:
         pass
     
@@ -2525,9 +2528,20 @@ class WeightTab(QtWidgets.QWidget):
         # This ensures updating an entry compares against historical data only
         entries_for_reward = [e for e in self.blocker.weight_entries if e.get("date") != date_str]
         
-        # Check for rewards before adding entry
+        # Check for rewards before adding entry (use comprehensive function if available)
         rewards = None
-        if GAMIFICATION_AVAILABLE and check_weight_entry_rewards:
+        if GAMIFICATION_AVAILABLE and check_all_weight_rewards:
+            story_id = self.blocker.adhd_buster.get("active_story", "warrior")
+            rewards = check_all_weight_rewards(
+                entries_for_reward, 
+                weight_kg, 
+                date_str,
+                self.blocker.weight_goal,
+                self.blocker.weight_milestones,
+                story_id
+            )
+        elif GAMIFICATION_AVAILABLE and check_weight_entry_rewards:
+            # Fallback to basic rewards
             story_id = self.blocker.adhd_buster.get("active_story", "warrior")
             rewards = check_weight_entry_rewards(
                 entries_for_reward, 
@@ -2563,8 +2577,9 @@ class WeightTab(QtWidgets.QWidget):
     def _process_rewards(self, rewards: dict) -> None:
         """Process and show weight loss rewards."""
         items_earned = []
+        new_milestone_ids = []
         
-        # Collect all earned items
+        # Collect all earned items - Daily/Weekly/Monthly
         if rewards.get("daily_reward"):
             items_earned.append(("Daily", rewards["daily_reward"]))
             self.blocker.adhd_buster.setdefault("inventory", []).append(rewards["daily_reward"])
@@ -2576,6 +2591,29 @@ class WeightTab(QtWidgets.QWidget):
         if rewards.get("monthly_reward"):
             items_earned.append(("Monthly Bonus", rewards["monthly_reward"]))
             self.blocker.adhd_buster.setdefault("inventory", []).append(rewards["monthly_reward"])
+        
+        # Streak reward
+        if rewards.get("streak_reward"):
+            streak_data = rewards["streak_reward"]
+            items_earned.append((f"🔥 {streak_data['streak_days']}-Day Streak", streak_data["item"]))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(streak_data["item"])
+            new_milestone_ids.append(streak_data["milestone_id"])
+        
+        # Milestone rewards
+        for milestone in rewards.get("new_milestones", []):
+            items_earned.append((f"🏆 {milestone['name']}", milestone["item"]))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(milestone["item"])
+            new_milestone_ids.append(milestone["milestone_id"])
+        
+        # Maintenance reward (only if no daily reward to avoid double-rewarding)
+        if rewards.get("maintenance_reward") and not rewards.get("daily_reward"):
+            maint_data = rewards["maintenance_reward"]
+            items_earned.append(("⚖️ Maintenance", maint_data["item"]))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(maint_data["item"])
+        
+        # Save new milestones
+        if new_milestone_ids:
+            self.blocker.weight_milestones.extend(new_milestone_ids)
         
         if items_earned:
             self.blocker.save_config()
@@ -2600,12 +2638,16 @@ class WeightTab(QtWidgets.QWidget):
             if rewards.get("monthly_loss_grams") is not None:
                 stats_parts.append(f"Monthly: {rewards['monthly_loss_grams']/1000:.1f}kg")
             
+            # Add streak info
+            if rewards.get("current_streak", 0) > 0:
+                stats_parts.append(f"Streak: {rewards['current_streak']} days")
+            
             msg = "<br>".join(msg_parts)
             if stats_parts:
                 msg += "<br><br><i>" + " | ".join(stats_parts) + "</i>"
             
             QtWidgets.QMessageBox.information(
-                self, "🎉 Weight Loss Rewards!",
+                self, "🎉 Weight Rewards!",
                 f"<h3>Congratulations!</h3>{msg}"
             )
         elif rewards.get("messages"):
@@ -2647,13 +2689,31 @@ class WeightTab(QtWidgets.QWidget):
                 current_display = stats["current"] * 2.20462 if unit == "lbs" else stats["current"]
                 starting_display = stats["starting"] * 2.20462 if unit == "lbs" else stats["starting"]
                 
+                # Check maintenance status
+                maintenance_status = ""
+                if self.blocker.weight_goal and stats["current"] is not None:
+                    deviation = abs(stats["current"] - self.blocker.weight_goal)
+                    if deviation <= 0.5:
+                        maintenance_status = "<br><b style='color:#00ff88'>⚖️ MAINTENANCE MODE</b> (within ±0.5kg of goal)"
+                
+                # Milestone count
+                milestone_count = len(self.blocker.weight_milestones)
+                milestone_text = f" | <b>Milestones:</b> {milestone_count}" if milestone_count > 0 else ""
+                
+                # Streak display with fire emoji for active streaks
+                streak = stats['streak_days']
+                if streak >= 7:
+                    streak_display = f"🔥 {streak} days"
+                else:
+                    streak_display = f"{streak} days"
+                
                 stats_text = f"""
 <b>Current:</b> {current_display:.1f} {unit}<br>
 <b>Starting:</b> {starting_display:.1f} {unit}<br>
 <b>Total Change:</b> {format_weight_change(stats['total_change'], unit) if format_weight_change else 'N/A'}<br>
 <b>7-Day Trend:</b> {format_weight_change(stats['trend_7d'], unit) if format_weight_change else 'N/A'}<br>
 <b>30-Day Trend:</b> {format_weight_change(stats['trend_30d'], unit) if format_weight_change else 'N/A'}<br>
-<b>Entries:</b> {stats['entries_count']} | <b>Streak:</b> {stats['streak_days']} days
+<b>Entries:</b> {stats['entries_count']} | <b>Streak:</b> {streak_display}{milestone_text}{maintenance_status}
 """
                 self.stats_label.setText(stats_text)
             else:

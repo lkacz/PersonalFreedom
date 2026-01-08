@@ -197,6 +197,7 @@ class BlockerCore:
         self.weight_entries = []  # List of {"date": "YYYY-MM-DD", "weight": float}
         self.weight_unit = "kg"  # or "lbs"
         self.weight_goal = None  # Target weight
+        self.weight_milestones = []  # List of achieved milestone IDs
 
         # Statistics
         self.stats = self._default_stats()
@@ -257,6 +258,7 @@ class BlockerCore:
                     ]
                     self.weight_unit = config.get('weight_unit', 'kg')
                     self.weight_goal = config.get('weight_goal', None)
+                    self.weight_milestones = config.get('weight_milestones', [])
                     # Initialize/migrate hero management structure
                     if HERO_MANAGEMENT_AVAILABLE and _ensure_hero_structure:
                         _ensure_hero_structure(self.adhd_buster)
@@ -289,6 +291,7 @@ class BlockerCore:
                 'weight_entries': self.weight_entries,
                 'weight_unit': self.weight_unit,
                 'weight_goal': self.weight_goal,
+                'weight_milestones': self.weight_milestones,
             }
             atomic_write_json(CONFIG_PATH, config)
         except (IOError, OSError) as e:
