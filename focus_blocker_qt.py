@@ -3035,43 +3035,81 @@ class WeightTab(QtWidgets.QWidget):
         items_earned = []
         new_milestone_ids = []
         
+        # Get luck bonus for potential upgrades (same as focus session rewards)
+        luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+        luck_chance = min(luck / 100, 10) if luck > 0 else 0
+        
+        def maybe_upgrade_item(item: dict) -> dict:
+            """Apply luck-based upgrade chance to item."""
+            if luck_chance > 0 and random.random() * 100 < luck_chance:
+                rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+                current_idx = rarity_order.index(item.get("rarity", "Common"))
+                if current_idx < len(rarity_order) - 1:
+                    story_id = self.blocker.adhd_buster.get("active_story", "warrior")
+                    upgraded = generate_item(rarity=rarity_order[current_idx + 1], story_id=story_id)
+                    upgraded["slot"] = item.get("slot")  # Keep same slot
+                    upgraded["lucky_upgrade"] = True
+                    return upgraded
+            return item
+        
         # Collect all earned items - Daily/Weekly/Monthly
         if rewards.get("daily_reward"):
-            items_earned.append(("Daily", rewards["daily_reward"]))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(rewards["daily_reward"])
+            item = maybe_upgrade_item(rewards["daily_reward"])
+            items_earned.append(("Daily", item))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
         
         if rewards.get("weekly_reward"):
-            items_earned.append(("Weekly Bonus", rewards["weekly_reward"]))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(rewards["weekly_reward"])
+            item = maybe_upgrade_item(rewards["weekly_reward"])
+            items_earned.append(("Weekly Bonus", item))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
         
         if rewards.get("monthly_reward"):
-            items_earned.append(("Monthly Bonus", rewards["monthly_reward"]))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(rewards["monthly_reward"])
+            item = maybe_upgrade_item(rewards["monthly_reward"])
+            items_earned.append(("Monthly Bonus", item))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
         
         # Streak reward
         if rewards.get("streak_reward"):
             streak_data = rewards["streak_reward"]
-            items_earned.append((f"🔥 {streak_data['streak_days']}-Day Streak", streak_data["item"]))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(streak_data["item"])
+            item = maybe_upgrade_item(streak_data["item"])
+            items_earned.append((f"🔥 {streak_data['streak_days']}-Day Streak", item))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
             new_milestone_ids.append(streak_data["milestone_id"])
         
         # Milestone rewards
         for milestone in rewards.get("new_milestones", []):
-            items_earned.append((f"🏆 {milestone['name']}", milestone["item"]))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(milestone["item"])
+            item = maybe_upgrade_item(milestone["item"])
+            items_earned.append((f"🏆 {milestone['name']}", item))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
             new_milestone_ids.append(milestone["milestone_id"])
         
         # Maintenance reward (only if no daily reward to avoid double-rewarding)
         if rewards.get("maintenance_reward") and not rewards.get("daily_reward"):
             maint_data = rewards["maintenance_reward"]
-            items_earned.append(("⚖️ Maintenance", maint_data["item"]))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(maint_data["item"])
+            item = maybe_upgrade_item(maint_data["item"])
+            items_earned.append(("⚖️ Maintenance", item))
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
         
         # Save new milestones
         if new_milestone_ids:
             self.blocker.weight_milestones.extend(new_milestone_ids)
         
         if items_earned:
+            # Update total collected count (same as focus sessions)
+            self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + len(items_earned)
+            
+            # Auto-equip items to empty slots (same as focus sessions)
+            if "equipped" not in self.blocker.adhd_buster:
+                self.blocker.adhd_buster["equipped"] = {}
+            for _, item in items_earned:
+                slot = item.get("slot")
+                if slot and not self.blocker.adhd_buster["equipped"].get(slot):
+                    self.blocker.adhd_buster["equipped"][slot] = item.copy()
+            
+            # Sync hero data (same as focus sessions)
+            if GAMIFICATION_AVAILABLE and sync_hero_data:
+                sync_hero_data(self.blocker.adhd_buster)
+            
             self.blocker.save_config()
             
             # Build reward message
@@ -3106,6 +3144,11 @@ class WeightTab(QtWidgets.QWidget):
                 self, "🎉 Weight Rewards!",
                 f"<h3>Congratulations!</h3>{msg}"
             )
+            
+            # Refresh ADHD dialog if open (so new gear shows in dropdowns)
+            main_window = self.window()
+            if hasattr(main_window, 'refresh_adhd_dialog'):
+                main_window.refresh_adhd_dialog()
         elif rewards.get("messages"):
             # Show info messages even if no rewards
             QtWidgets.QMessageBox.information(
