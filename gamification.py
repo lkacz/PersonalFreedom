@@ -8006,3 +8006,426 @@ def check_all_weight_rewards(weight_entries: list, new_weight: float, current_da
         result["messages"].append(maintenance_reward["message"])
     
     return result
+
+
+# ============================================================================
+# WEIGHT TRACKING: BMI, PREDICTION, INSIGHTS & COMPARISONS
+# ============================================================================
+
+# BMI classifications (WHO standard)
+BMI_CLASSIFICATIONS = [
+    (0, 16.0, "Severely Underweight", "#ff6464"),
+    (16.0, 17.0, "Moderately Underweight", "#ffaa64"),
+    (17.0, 18.5, "Mildly Underweight", "#ffff64"),
+    (18.5, 25.0, "Normal", "#00ff88"),
+    (25.0, 30.0, "Overweight", "#ffff64"),
+    (30.0, 35.0, "Obese Class I", "#ffaa64"),
+    (35.0, 40.0, "Obese Class II", "#ff6464"),
+    (40.0, 100.0, "Obese Class III", "#ff3232"),
+]
+
+
+def calculate_bmi(weight_kg: float, height_cm: float) -> Optional[float]:
+    """
+    Calculate BMI from weight and height.
+    
+    Args:
+        weight_kg: Weight in kilograms
+        height_cm: Height in centimeters
+    
+    Returns:
+        BMI value or None if invalid inputs
+    """
+    if not weight_kg or not height_cm or height_cm <= 0 or weight_kg <= 0:
+        return None
+    
+    height_m = height_cm / 100
+    return weight_kg / (height_m ** 2)
+
+
+def get_bmi_classification(bmi: float) -> tuple:
+    """
+    Get BMI classification and color.
+    
+    Args:
+        bmi: BMI value
+    
+    Returns:
+        Tuple of (classification_name, color_hex)
+    """
+    if bmi is None:
+        return ("Unknown", "#888888")
+    
+    for min_bmi, max_bmi, name, color in BMI_CLASSIFICATIONS:
+        if min_bmi <= bmi < max_bmi:
+            return (name, color)
+    
+    return ("Unknown", "#888888")
+
+
+def get_ideal_weight_range(height_cm: float) -> tuple:
+    """
+    Calculate ideal weight range for normal BMI (18.5-25).
+    
+    Args:
+        height_cm: Height in centimeters
+    
+    Returns:
+        Tuple of (min_weight_kg, max_weight_kg)
+    """
+    if not height_cm or height_cm <= 0:
+        return (None, None)
+    
+    height_m = height_cm / 100
+    min_weight = 18.5 * (height_m ** 2)
+    max_weight = 25.0 * (height_m ** 2)
+    
+    return (min_weight, max_weight)
+
+
+def predict_goal_date(weight_entries: list, goal_weight: float, 
+                      current_weight: float = None) -> Optional[dict]:
+    """
+    Predict when goal weight will be reached based on current trend.
+    
+    Args:
+        weight_entries: List of weight entries
+        goal_weight: Target weight
+        current_weight: Current weight (optional, uses latest if not provided)
+    
+    Returns:
+        Dict with prediction info or None if can't predict
+    """
+    from datetime import datetime, timedelta
+    
+    if not weight_entries or goal_weight is None:
+        return None
+    
+    # Get current weight
+    sorted_entries = sorted(
+        [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
+        key=lambda x: x["date"],
+        reverse=True
+    )
+    
+    if not sorted_entries:
+        return None
+    
+    if current_weight is None:
+        current_weight = sorted_entries[0]["weight"]
+    
+    # Already at goal
+    if current_weight <= goal_weight:
+        return {
+            "status": "achieved",
+            "message": "🎉 You've reached your goal!",
+            "days_remaining": 0,
+            "predicted_date": None,
+        }
+    
+    # Need at least 7 days of data for reliable prediction
+    if len(sorted_entries) < 7:
+        return {
+            "status": "insufficient_data",
+            "message": "Log weight for 7+ days to see prediction",
+            "days_remaining": None,
+            "predicted_date": None,
+        }
+    
+    # Calculate rate of change (linear regression over last 30 days)
+    first_date = datetime.strptime(sorted_entries[-1]["date"], "%Y-%m-%d")
+    
+    dates = []
+    weights = []
+    cutoff = datetime.now() - timedelta(days=30)
+    
+    for entry in sorted_entries:
+        try:
+            d = datetime.strptime(entry["date"], "%Y-%m-%d")
+            if d >= cutoff:
+                days = (d - first_date).days
+                dates.append(days)
+                weights.append(entry["weight"])
+        except ValueError:
+            continue
+    
+    if len(dates) < 5:
+        return {
+            "status": "insufficient_data",
+            "message": "Need more recent data for prediction",
+            "days_remaining": None,
+            "predicted_date": None,
+        }
+    
+    # Linear regression
+    n = len(dates)
+    sum_x = sum(dates)
+    sum_y = sum(weights)
+    sum_xy = sum(x * y for x, y in zip(dates, weights))
+    sum_x2 = sum(x * x for x in dates)
+    
+    denom = n * sum_x2 - sum_x ** 2
+    if denom == 0:
+        return {
+            "status": "no_trend",
+            "message": "Weight is stable - adjust habits to make progress",
+            "days_remaining": None,
+            "predicted_date": None,
+        }
+    
+    slope = (n * sum_xy - sum_x * sum_y) / denom  # kg per day
+    
+    # Check if losing weight
+    if slope >= 0:
+        return {
+            "status": "gaining",
+            "message": "Currently gaining weight - reverse the trend to reach goal",
+            "rate_per_week": slope * 7 * 1000,  # grams per week
+            "days_remaining": None,
+            "predicted_date": None,
+        }
+    
+    # Calculate days to goal
+    weight_to_lose = current_weight - goal_weight
+    days_to_goal = int(weight_to_lose / abs(slope))
+    
+    # Cap at 2 years for sanity
+    if days_to_goal > 730:
+        return {
+            "status": "long_term",
+            "message": f"At current pace: {days_to_goal // 30} months (try to lose faster!)",
+            "rate_per_week": abs(slope) * 7 * 1000,  # grams per week
+            "days_remaining": days_to_goal,
+            "predicted_date": datetime.now() + timedelta(days=days_to_goal),
+        }
+    
+    predicted_date = datetime.now() + timedelta(days=days_to_goal)
+    weeks = days_to_goal // 7
+    
+    return {
+        "status": "on_track",
+        "message": f"🎯 Goal in ~{weeks} weeks ({predicted_date.strftime('%b %d, %Y')})",
+        "rate_per_week": abs(slope) * 7 * 1000,  # grams per week
+        "days_remaining": days_to_goal,
+        "predicted_date": predicted_date,
+    }
+
+
+def get_historical_comparisons(weight_entries: list, current_date: str = None) -> dict:
+    """
+    Get weight comparisons vs historical dates.
+    
+    Args:
+        weight_entries: List of weight entries
+        current_date: Reference date (defaults to today)
+    
+    Returns:
+        Dict with comparisons
+    """
+    from datetime import datetime, timedelta
+    
+    if not weight_entries:
+        return {}
+    
+    if current_date is None:
+        current_date = datetime.now().strftime("%Y-%m-%d")
+    
+    try:
+        today = datetime.strptime(current_date, "%Y-%m-%d")
+    except ValueError:
+        today = datetime.now()
+    
+    sorted_entries = sorted(
+        [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
+        key=lambda x: x["date"],
+        reverse=True
+    )
+    
+    if not sorted_entries:
+        return {}
+    
+    current_weight = sorted_entries[0]["weight"]
+    
+    comparisons = {}
+    periods = [
+        ("1_week", 7, "1 week ago"),
+        ("2_weeks", 14, "2 weeks ago"),
+        ("1_month", 30, "1 month ago"),
+        ("3_months", 90, "3 months ago"),
+        ("6_months", 180, "6 months ago"),
+        ("1_year", 365, "1 year ago"),
+    ]
+    
+    for key, days, label in periods:
+        target_date = today - timedelta(days=days)
+        
+        # Find closest entry to target date
+        closest_entry = None
+        min_diff = float('inf')
+        
+        for entry in sorted_entries:
+            try:
+                entry_date = datetime.strptime(entry["date"], "%Y-%m-%d")
+                diff = abs((entry_date - target_date).days)
+                if diff < min_diff and diff <= 7:  # Within a week of target
+                    min_diff = diff
+                    closest_entry = entry
+            except ValueError:
+                continue
+        
+        if closest_entry:
+            change = current_weight - closest_entry["weight"]
+            comparisons[key] = {
+                "label": label,
+                "date": closest_entry["date"],
+                "weight": closest_entry["weight"],
+                "change": change,
+                "change_pct": (change / closest_entry["weight"]) * 100 if closest_entry["weight"] else 0,
+            }
+    
+    return comparisons
+
+
+def get_weekly_insights(weight_entries: list, achieved_milestones: list,
+                        current_streak: int, goal: float = None) -> dict:
+    """
+    Generate weekly insights summary.
+    
+    Args:
+        weight_entries: List of weight entries
+        achieved_milestones: List of achieved milestone IDs
+        current_streak: Current logging streak
+        goal: Goal weight (optional)
+    
+    Returns:
+        Dict with insights data
+    """
+    from datetime import datetime, timedelta
+    
+    if not weight_entries:
+        return {
+            "has_data": False,
+            "message": "Start logging to see weekly insights!",
+        }
+    
+    today = datetime.now()
+    week_start = today - timedelta(days=7)
+    
+    sorted_entries = sorted(
+        [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
+        key=lambda x: x["date"]
+    )
+    
+    # Get this week's entries
+    this_week_entries = []
+    for entry in sorted_entries:
+        try:
+            entry_date = datetime.strptime(entry["date"], "%Y-%m-%d")
+            if entry_date >= week_start:
+                this_week_entries.append(entry)
+        except ValueError:
+            continue
+    
+    if not this_week_entries:
+        return {
+            "has_data": False,
+            "message": "No entries this week yet. Log your weight!",
+        }
+    
+    # Calculate weekly stats
+    week_weights = [e["weight"] for e in this_week_entries]
+    week_avg = sum(week_weights) / len(week_weights)
+    week_min = min(week_weights)
+    week_max = max(week_weights)
+    
+    # Compare to previous week
+    prev_week_start = week_start - timedelta(days=7)
+    prev_week_entries = []
+    for entry in sorted_entries:
+        try:
+            entry_date = datetime.strptime(entry["date"], "%Y-%m-%d")
+            if prev_week_start <= entry_date < week_start:
+                prev_week_entries.append(entry)
+        except ValueError:
+            continue
+    
+    week_change = None
+    if prev_week_entries:
+        prev_avg = sum(e["weight"] for e in prev_week_entries) / len(prev_week_entries)
+        week_change = week_avg - prev_avg
+    
+    # Progress towards goal
+    goal_progress = None
+    if goal and sorted_entries:
+        starting_weight = sorted_entries[0]["weight"]
+        current_weight = sorted_entries[-1]["weight"]
+        total_to_lose = starting_weight - goal
+        lost_so_far = starting_weight - current_weight
+        if total_to_lose > 0:
+            goal_progress = (lost_so_far / total_to_lose) * 100
+    
+    # Generate insights
+    insights = []
+    
+    if len(this_week_entries) == 7:
+        insights.append("🌟 Perfect week! Logged every day!")
+    elif len(this_week_entries) >= 5:
+        insights.append(f"👍 Great consistency! {len(this_week_entries)}/7 days logged")
+    
+    if week_change is not None:
+        if week_change < -0.5:
+            insights.append(f"📉 Excellent! Down {abs(week_change)*1000:.0f}g from last week")
+        elif week_change < 0:
+            insights.append(f"📉 Good progress! Down {abs(week_change)*1000:.0f}g")
+        elif week_change < 0.2:
+            insights.append("➡️ Weight stable this week")
+        else:
+            insights.append(f"📈 Up {week_change*1000:.0f}g - let's refocus!")
+    
+    if current_streak >= 7:
+        insights.append(f"🔥 {current_streak}-day logging streak!")
+    
+    if goal_progress is not None:
+        if goal_progress >= 100:
+            insights.append("🎉 GOAL ACHIEVED!")
+        elif goal_progress >= 75:
+            insights.append(f"🏆 {goal_progress:.0f}% to goal - almost there!")
+        elif goal_progress >= 50:
+            insights.append(f"💪 {goal_progress:.0f}% to goal - halfway!")
+        elif goal_progress > 0:
+            insights.append(f"📊 {goal_progress:.0f}% progress towards goal")
+    
+    return {
+        "has_data": True,
+        "entries_count": len(this_week_entries),
+        "average": week_avg,
+        "min": week_min,
+        "max": week_max,
+        "variability": week_max - week_min,
+        "change_from_last_week": week_change,
+        "goal_progress_pct": goal_progress,
+        "streak": current_streak,
+        "insights": insights,
+    }
+
+
+# Entry note tags
+WEIGHT_ENTRY_TAGS = [
+    ("morning", "🌅 Morning", "First thing after waking"),
+    ("evening", "🌙 Evening", "End of day"),
+    ("post_workout", "💪 Post-workout", "After exercise"),
+    ("fasted", "⏱️ Fasted", "Before eating"),
+    ("post_meal", "🍽️ Post-meal", "After eating"),
+]
+
+
+def format_entry_note(note: str) -> str:
+    """Format entry note with tag emoji if it matches a known tag."""
+    if not note:
+        return ""
+    
+    for tag_id, tag_display, _ in WEIGHT_ENTRY_TAGS:
+        if note.lower() == tag_id or note.lower() == tag_display.lower():
+            return tag_display
+    
+    return note
