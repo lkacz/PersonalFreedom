@@ -293,7 +293,7 @@ class GamificationEngine:
         """Load statistics from file"""
         if self.stats_path.exists():
             try:
-                with open(self.stats_path, 'r') as f:
+                with open(self.stats_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError, OSError):
                 return {}
@@ -302,9 +302,9 @@ class GamificationEngine:
     def _save_stats(self):
         """Save statistics to file"""
         try:
-            with open(self.stats_path, 'w') as f:
+            with open(self.stats_path, 'w', encoding='utf-8') as f:
                 json.dump(self.stats, f, indent=2)
-        except Exception as e:
+        except (IOError, OSError) as e:
             logger.warning(f"Failed to save stats: {e}")
 
     def check_achievements(self):
@@ -494,7 +494,7 @@ class FocusGoals:
         """Load statistics from file"""
         if self.stats_path and self.stats_path.exists():
             try:
-                with open(self.stats_path, 'r') as f:
+                with open(self.stats_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError, OSError):
                 return {}
@@ -510,8 +510,11 @@ class FocusGoals:
         return []
 
     def save_goals(self):
-        with open(self.goals_path, 'w', encoding='utf-8') as f:
-            json.dump(self.goals, f, indent=2)
+        try:
+            with open(self.goals_path, 'w', encoding='utf-8') as f:
+                json.dump(self.goals, f, indent=2)
+        except (IOError, OSError) as e:
+            logger.warning(f"Failed to save goals: {e}")
 
     def add_goal(self, title, goal_type, target, deadline=None):
         """Add a new goal"""

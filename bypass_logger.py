@@ -10,10 +10,12 @@ We log these attempts to help users understand their distraction patterns.
 import threading
 import json
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import socket
+import html
 
 logger = logging.getLogger(__name__)
 
@@ -62,8 +64,10 @@ class BypassAttemptHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/html; charset=utf-8')
         self.end_headers()
         
-        html = self._generate_reminder_page(host)
-        self.wfile.write(html.encode('utf-8'))
+        # Escape host to prevent XSS
+        safe_host = html.escape(host)
+        page_html = self._generate_reminder_page(safe_host)
+        self.wfile.write(page_html.encode('utf-8'))
     
     def _generate_reminder_page(self, blocked_site: str) -> str:
         """Generate an HTML page reminding user to stay focused."""
@@ -148,6 +152,7 @@ class BypassLogger:
     """Logs and tracks bypass attempts during focus sessions."""
     
     def __init__(self):
+        self._lock = threading.Lock()  # Thread safety for shared state
         self.attempts = self._load_attempts()
         self.server = None
         self.server_thread = None
@@ -171,12 +176,27 @@ class BypassLogger:
         }
     
     def _save_attempts(self):
-        """Save bypass attempts to file."""
+        """Save bypass attempts to file atomically."""
         try:
-            with open(BYPASS_LOG_PATH, 'w', encoding='utf-8') as f:
-                json.dump(self.attempts, f, indent=2)
+            with self._lock:
+                data_to_save = dict(self.attempts)
+            
+            # Write to temp file first, then atomically rename
+            temp_path = BYPASS_LOG_PATH.with_suffix('.tmp')
+            with open(temp_path, 'w', encoding='utf-8') as f:
+                json.dump(data_to_save, f, indent=2)
+            
+            # Atomic rename (os.replace is atomic on same filesystem)
+            os.replace(temp_path, BYPASS_LOG_PATH)
         except (IOError, OSError) as e:
             logger.warning(f"Could not save bypass attempts: {e}")
+            # Clean up temp file if it exists
+            try:
+                temp_path = BYPASS_LOG_PATH.with_suffix('.tmp')
+                if temp_path.exists():
+                    temp_path.unlink()
+            except (IOError, OSError):
+                pass
     
     def log_attempt(self, site: str, path: str = "/"):
         """Log a single bypass attempt."""
@@ -193,27 +213,30 @@ class BypassLogger:
             "path": path
         }
         
-        # Update statistics
-        self.attempts["total_attempts"] += 1
+        with self._lock:
+            # Update statistics
+            self.attempts["total_attempts"] += 1
+            
+            # By site
+            if site not in self.attempts["attempts_by_site"]:
+                self.attempts["attempts_by_site"][site] = 0
+            self.attempts["attempts_by_site"][site] += 1
+            
+            # By hour
+            self.attempts["attempts_by_hour"][hour] += 1
+            
+            # By day
+            if today not in self.attempts["daily_attempts"]:
+                self.attempts["daily_attempts"][today] = 0
+            self.attempts["daily_attempts"][today] += 1
+            
+            # Current session
+            self.current_session_attempts.append(attempt)
+            
+            # Save periodically (every 5 attempts)
+            should_save = self.attempts["total_attempts"] % 5 == 0
         
-        # By site
-        if site not in self.attempts["attempts_by_site"]:
-            self.attempts["attempts_by_site"][site] = 0
-        self.attempts["attempts_by_site"][site] += 1
-        
-        # By hour
-        self.attempts["attempts_by_hour"][hour] += 1
-        
-        # By day
-        if today not in self.attempts["daily_attempts"]:
-            self.attempts["daily_attempts"][today] = 0
-        self.attempts["daily_attempts"][today] += 1
-        
-        # Current session
-        self.current_session_attempts.append(attempt)
-        
-        # Save periodically (every 5 attempts)
-        if self.attempts["total_attempts"] % 5 == 0:
+        if should_save:
             self._save_attempts()
         
         logger.info(f"Bypass attempt logged: {site}{path}")
@@ -261,54 +284,66 @@ class BypassLogger:
             self.server.shutdown()
             self._running = False
             
-            # Save session summary
-            if self.current_session_attempts:
-                session_summary = {
-                    "date": datetime.now().isoformat(),
-                    "attempt_count": len(self.current_session_attempts),
-                    "sites": list(set(a["site"] for a in self.current_session_attempts))
-                }
-                self.attempts["session_history"].append(session_summary)
+            with self._lock:
+                # Save session summary
+                if self.current_session_attempts:
+                    session_summary = {
+                        "date": datetime.now().isoformat(),
+                        "attempt_count": len(self.current_session_attempts),
+                        "sites": list(set(a["site"] for a in self.current_session_attempts))
+                    }
+                    self.attempts["session_history"].append(session_summary)
+                    
+                    # Keep only last 100 sessions
+                    if len(self.attempts["session_history"]) > 100:
+                        self.attempts["session_history"] = self.attempts["session_history"][-100:]
                 
-                # Keep only last 100 sessions
-                if len(self.attempts["session_history"]) > 100:
-                    self.attempts["session_history"] = self.attempts["session_history"][-100:]
+                self.current_session_attempts = []
             
-            self.current_session_attempts = []
             self._save_attempts()
             
             logger.info("Bypass logger server stopped")
     
     def get_statistics(self) -> dict:
         """Get bypass attempt statistics for display."""
+        with self._lock:
+            attempts_copy = {
+                "total_attempts": self.attempts["total_attempts"],
+                "attempts_by_site": dict(self.attempts["attempts_by_site"]),
+                "attempts_by_hour": dict(self.attempts["attempts_by_hour"]),
+                "daily_attempts": dict(self.attempts["daily_attempts"]),
+            }
+            current_session_copy = list(self.current_session_attempts)
+        
         # Top distraction sites
         sorted_sites = sorted(
-            self.attempts["attempts_by_site"].items(),
+            attempts_copy["attempts_by_site"].items(),
             key=lambda x: x[1],
             reverse=True
         )[:10]
         
         # Peak distraction hours
         sorted_hours = sorted(
-            self.attempts["attempts_by_hour"].items(),
+            attempts_copy["attempts_by_hour"].items(),
             key=lambda x: x[1],
             reverse=True
         )[:5]
         
         # Recent trend (last 7 days)
+        from datetime import timedelta
         recent_days = []
         for i in range(7):
-            date = (datetime.now() - __import__('datetime').timedelta(days=i)).strftime("%Y-%m-%d")
-            count = self.attempts["daily_attempts"].get(date, 0)
+            date = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
+            count = attempts_copy["daily_attempts"].get(date, 0)
             recent_days.append((date, count))
         
         return {
-            "total_attempts": self.attempts["total_attempts"],
+            "total_attempts": attempts_copy["total_attempts"],
             "top_sites": sorted_sites,
             "peak_hours": sorted_hours,
             "recent_trend": list(reversed(recent_days)),
-            "current_session": len(self.current_session_attempts),
-            "session_sites": list(set(a["site"] for a in self.current_session_attempts))
+            "current_session": len(current_session_copy),
+            "session_sites": list(set(a["site"] for a in current_session_copy))
         }
     
     def get_insights(self) -> list:
