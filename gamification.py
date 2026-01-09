@@ -9928,6 +9928,11 @@ def calculate_session_xp(duration_minutes: int, streak_days: int = 0,
     
     Returns dict with breakdown of XP sources.
     """
+    # Validate inputs
+    duration_minutes = max(0, int(duration_minutes) if duration_minutes else 0)
+    streak_days = max(0, int(streak_days) if streak_days else 0)
+    multiplier = max(0.0, float(multiplier) if multiplier else 1.0)
+    
     base_xp = XP_REWARDS["focus_session"]
     duration_xp = duration_minutes * XP_REWARDS["focus_per_minute"]
     streak_bonus = min(streak_days, 30) * XP_REWARDS["streak_day"] // 10  # Diminishing returns
@@ -9951,10 +9956,21 @@ def award_xp(adhd_buster: dict, xp_amount: int, source: str = "unknown") -> dict
     
     Returns dict with level up info if applicable.
     """
+    # Validate xp_amount - must be non-negative integer
+    if not isinstance(xp_amount, int) or xp_amount < 0:
+        xp_amount = max(0, int(xp_amount)) if xp_amount else 0
+    
     old_xp = adhd_buster.get("total_xp", 0)
+    # Ensure old_xp is valid
+    if not isinstance(old_xp, (int, float)) or old_xp < 0:
+        old_xp = 0
+    old_xp = int(old_xp)
+    
     old_level, _, _, _ = get_level_from_xp(old_xp)
     
     new_xp = old_xp + xp_amount
+    # Cap XP to prevent integer overflow (max ~2 billion)
+    new_xp = min(new_xp, 2_000_000_000)
     adhd_buster["total_xp"] = new_xp
     
     new_level, xp_in_level, xp_needed, progress = get_level_from_xp(new_xp)
@@ -10033,12 +10049,16 @@ DAILY_LOGIN_REWARDS = [
     {"day": 25, "type": "xp", "amount": 150, "description": "150 XP", "emoji": "✨"},
     {"day": 26, "type": "multiplier", "amount": 2.0, "duration": 120, "description": "2x XP (2 hours)", "emoji": "⚡"},
     {"day": 27, "type": "item", "rarity": "Epic", "description": "Epic Item", "emoji": "📦"},
-    {"day": 28, "type": "legendary_box", "description": "Legendary Mystery Box!", "emoji": "🌟"},
+    {"day": 28, "type": "mystery_box", "tier": "legendary", "description": "Legendary Mystery Box!", "emoji": "🌟"},
 ]
 
 
 def get_daily_login_reward(login_streak: int) -> dict:
     """Get the reward for the current login streak day."""
+    # Validate login_streak
+    if not isinstance(login_streak, int) or login_streak < 1:
+        login_streak = 1
+    
     # Cycle through rewards (28-day cycle)
     day_in_cycle = ((login_streak - 1) % 28) + 1
     
@@ -10052,7 +10072,7 @@ def get_daily_login_reward(login_streak: int) -> dict:
             }
     
     # Fallback
-    return {"day": day_in_cycle, "type": "xp", "amount": 25, "description": "25 XP", "emoji": "✨"}
+    return {"day": day_in_cycle, "type": "xp", "amount": 25, "description": "25 XP", "emoji": "✨", "login_streak": login_streak, "day_in_cycle": day_in_cycle, "cycle_number": 1}
 
 
 def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
@@ -10134,14 +10154,17 @@ def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
         
     elif reward["type"] == "multiplier":
         # Store active multiplier with expiration
+        duration = reward.get("duration", 60)
+        if not isinstance(duration, (int, float)) or duration <= 0:
+            duration = 60
         adhd_buster["active_multiplier"] = {
-            "value": reward["amount"],
-            "expires_at": (datetime.now().timestamp() + reward["duration"] * 60),
+            "value": reward.get("amount", 1.5),
+            "expires_at": (datetime.now().timestamp() + duration * 60),
             "source": "daily_login"
         }
         result["multiplier_active"] = adhd_buster["active_multiplier"]
         
-    elif reward["type"] in ("mystery_box", "legendary_box"):
+    elif reward["type"] == "mystery_box":
         # Open mystery box immediately
         box_result = open_mystery_box(adhd_buster, reward.get("tier", "gold"), story_id)
         result["mystery_box_result"] = box_result
@@ -10154,15 +10177,22 @@ def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
 def get_active_multiplier(adhd_buster: dict) -> float:
     """Get current active XP multiplier (1.0 if none)."""
     multiplier = adhd_buster.get("active_multiplier")
-    if not multiplier:
+    if not multiplier or not isinstance(multiplier, dict):
         return 1.0
     
-    if datetime.now().timestamp() > multiplier.get("expires_at", 0):
-        # Expired
-        del adhd_buster["active_multiplier"]
+    try:
+        expires_at = float(multiplier.get("expires_at", 0))
+        if datetime.now().timestamp() > expires_at:
+            # Expired - safely remove
+            adhd_buster.pop("active_multiplier", None)
+            return 1.0
+        
+        value = float(multiplier.get("value", 1.0))
+        # Clamp multiplier to reasonable range
+        return max(1.0, min(value, 10.0))
+    except (TypeError, ValueError):
+        adhd_buster.pop("active_multiplier", None)
         return 1.0
-    
-    return multiplier.get("value", 1.0)
 
 
 # ============================================================================
@@ -10224,7 +10254,10 @@ def open_mystery_box(adhd_buster: dict, tier: str = "bronze", story_id: str = No
     
     Returns dict with all rewards granted.
     """
-    box = MYSTERY_BOX_TIERS.get(tier, MYSTERY_BOX_TIERS["bronze"])
+    # Validate tier
+    if tier not in MYSTERY_BOX_TIERS:
+        tier = "bronze"
+    box = MYSTERY_BOX_TIERS[tier]
     result = {
         "box_tier": tier,
         "box_name": box["name"],
@@ -10558,10 +10591,11 @@ def update_challenge_progress(adhd_buster: dict, event_type: str, amount: int = 
                 newly_completed.append(challenge)
         # Special case: log_all
         elif challenge["requirement"]["type"] == "log_all" and event_type in ("weight_log", "sleep_log", "activity_log"):
-            # Track which logs done today
+            # Track which logs done today - use list for JSON serialization
             if "logs_today" not in challenge:
-                challenge["logs_today"] = set()
-            challenge["logs_today"].add(event_type)
+                challenge["logs_today"] = []
+            if event_type not in challenge["logs_today"]:
+                challenge["logs_today"].append(event_type)
             challenge["progress"] = len(challenge["logs_today"])
             if challenge["progress"] >= 3:
                 challenge["completed"] = True
@@ -10644,7 +10678,16 @@ def use_streak_freeze(adhd_buster: dict, streak_type: str = "focus") -> dict:
     
     streak_type: "focus", "weight", "sleep", "activity", "login"
     """
+    # Validate streak_type
+    valid_types = {"focus", "weight", "sleep", "activity", "login"}
+    if streak_type not in valid_types:
+        streak_type = "focus"
+    
     freeze_count = adhd_buster.get("streak_freeze_tokens", 0)
+    # Ensure freeze_count is valid integer
+    if not isinstance(freeze_count, int) or freeze_count < 0:
+        freeze_count = 0
+        adhd_buster["streak_freeze_tokens"] = 0
     
     if freeze_count <= 0:
         return {
