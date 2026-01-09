@@ -400,8 +400,7 @@ class BlockerCore:
             "pid": os.getpid(),
         }
         try:
-            with open(SESSION_STATE_PATH, 'w', encoding='utf-8') as f:
-                json.dump(state, f, indent=2)
+            atomic_write_json(SESSION_STATE_PATH, state)
         except (IOError, OSError) as e:
             logger.warning(f"Could not save session state: {e}")
 
@@ -523,6 +522,13 @@ class BlockerCore:
 
         self.stats["daily_stats"][today]["focus_time"] += focus_seconds
         self.stats["daily_stats"][today]["sessions"] += 1
+        
+        # Cap daily_stats to last 365 days to prevent unbounded growth
+        MAX_DAILY_STATS_DAYS = 365
+        if len(self.stats["daily_stats"]) > MAX_DAILY_STATS_DAYS:
+            sorted_dates = sorted(self.stats["daily_stats"].keys())
+            for old_date in sorted_dates[:-MAX_DAILY_STATS_DAYS]:
+                del self.stats["daily_stats"][old_date]
 
         # Update streak
         if self.stats.get("last_session_date"):
@@ -827,28 +833,21 @@ class BlockerCore:
         self.session_id = None
         self.end_time = None
 
-        # 2. Clean hosts file - remove ALL our markers
+        # 2. Clean hosts file - remove our markers section only
         try:
             with open(HOSTS_PATH, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
 
-            # Remove our block section
+            # Remove our block section (between markers)
             if MARKER_START in content and MARKER_END in content:
                 start_idx = content.find(MARKER_START)
                 end_idx = content.find(MARKER_END) + len(MARKER_END)
                 if start_idx < end_idx:
                     content = content[:start_idx] + content[end_idx:]
-
-            # Also clean up any stray entries (just in case)
-            lines = content.split('\n')
-            clean_lines = []
-            for line in lines:
-                # Skip lines with our redirect that might be orphaned
-                if REDIRECT_IP in line and any(site in line for site in self.blacklist[:10]):
-                    continue
-                clean_lines.append(line)
-
-            content = '\n'.join(clean_lines)
+            
+            # Clean up any extra blank lines left over
+            while '\n\n\n' in content:
+                content = content.replace('\n\n\n', '\n\n')
 
             with open(HOSTS_PATH, 'w', encoding='utf-8') as f:
                 f.write(content.strip() + '\n')
@@ -877,7 +876,8 @@ class BlockerCore:
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=2)
             return True
-        except Exception:
+        except (IOError, OSError, TypeError) as e:
+            logger.warning(f"Failed to export config: {e}")
             return False
 
     def import_config(self, filepath):
@@ -891,11 +891,45 @@ class BlockerCore:
                 self.whitelist.extend([s for s in config['whitelist'] if s not in self.whitelist])
             self.save_config()
             return True
-        except Exception:
+        except (IOError, OSError, json.JSONDecodeError, KeyError) as e:
+            logger.warning(f"Failed to import config: {e}")
             return False
 
     def add_schedule(self, days, start_time, end_time):
-        """Add a blocking schedule"""
+        """Add a blocking schedule.
+        
+        Args:
+            days: List of weekday integers (0=Monday, 6=Sunday)
+            start_time: Start time as "HH:MM" string
+            end_time: End time as "HH:MM" string
+            
+        Returns:
+            Schedule ID string, or None if validation fails
+        """
+        # Validate days
+        if not isinstance(days, list) or not days:
+            logger.warning("Invalid schedule: days must be a non-empty list")
+            return None
+        if not all(isinstance(d, int) and 0 <= d <= 6 for d in days):
+            logger.warning("Invalid schedule: days must be integers 0-6")
+            return None
+        
+        # Validate time format (HH:MM)
+        import re
+        time_pattern = re.compile(r'^([01]?\d|2[0-3]):([0-5]\d)$')
+        if not time_pattern.match(start_time):
+            logger.warning(f"Invalid schedule: start_time '{start_time}' not in HH:MM format")
+            return None
+        if not time_pattern.match(end_time):
+            logger.warning(f"Invalid schedule: end_time '{end_time}' not in HH:MM format")
+            return None
+        
+        # Normalize times to zero-padded HH:MM format
+        start_parts = start_time.split(':')
+        end_parts = end_time.split(':')
+        start_time = f"{int(start_parts[0]):02d}:{start_parts[1]}"
+        end_time = f"{int(end_parts[0]):02d}:{end_parts[1]}"
+        
         schedule = {
             'id': str(uuid.uuid4())[:8],
             'days': days,
