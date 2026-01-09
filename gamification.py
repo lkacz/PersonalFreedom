@@ -9250,20 +9250,24 @@ def calculate_sleep_score(sleep_hours: float, bedtime: str, quality_id: str,
     # Apply disruption penalties
     disruption_penalty = 0
     disruption_msgs = []
-    for tag_id in disruptions:
-        tag = get_disruption_tag(tag_id)
-        if tag and tag[3] != 0:
-            disruption_penalty += abs(tag[3])
-            disruption_msgs.append(f"{tag[1]} ({tag[3]})")
+    if disruptions:  # Handle None or empty list
+        for tag_id in disruptions:
+            tag = get_disruption_tag(tag_id)
+            if tag and tag[3] != 0:
+                disruption_penalty += abs(tag[3])
+                disruption_msgs.append(f"{tag[1]} ({tag[3]})")
     
     quality_score = max(0, quality_score - disruption_penalty)
     
-    # Weighted total
+    # Weighted total (note: consistency_weight is applied as a bonus based on history
+    # in check_all_sleep_rewards, so base calculation uses 90% of weights)
+    # Add 10% base consistency score for single-entry calculations
+    consistency_bonus = 10  # Base consistency score (will be adjusted with history)
     total = (
         dur_score * weights["duration_weight"] / 100 +
         bed_score * weights["bedtime_weight"] / 100 +
-        quality_score * weights["quality_weight"] / 100
-        # Consistency bonus calculated separately based on history
+        quality_score * weights["quality_weight"] / 100 +
+        consistency_bonus * weights["consistency_weight"] / 100
     )
     
     return {
@@ -9308,16 +9312,15 @@ def check_sleep_streak(sleep_entries: list) -> int:
     
     # Streak can start from today or yesterday (in case user hasn't logged today yet)
     if today in good_dates:
-        streak_start = today
+        current = datetime.strptime(today, "%Y-%m-%d")
+        streak = 1
     elif yesterday in good_dates:
-        streak_start = yesterday
+        current = datetime.strptime(yesterday, "%Y-%m-%d")
+        streak = 1
     else:
         return 0
     
-    streak = 1 if streak_start == today else 0
-    current = datetime.strptime(streak_start, "%Y-%m-%d") if streak_start == today else datetime.now()
-    
-    # Count backwards
+    # Count backwards from current
     while True:
         current = current - timedelta(days=1)
         date_str = current.strftime("%Y-%m-%d")
@@ -9488,20 +9491,26 @@ def check_sleep_milestones(sleep_entries: list, achieved_milestones: list,
                     break
         
         elif check == "early_bedtime_count":
-            # Count entries with bedtime before optimal window start
+            # Count entries with bedtime before (earlier than) optimal window start
+            # "Early" means going to bed earlier than needed - a good habit
             chrono = get_chronotype(chronotype_id) or SLEEP_CHRONOTYPES[1]
-            optimal_start = time_to_minutes(chrono[3])
+            optimal_start_mins = time_to_minutes(chrono[3])
             count = 0
             for entry in sleep_entries:
                 if entry.get("bedtime"):
                     bedtime_mins = time_to_minutes(entry["bedtime"])
-                    # Handle after-midnight bedtimes
-                    if bedtime_mins < 12 * 60:
-                        bedtime_mins += 24 * 60
-                    if optimal_start > 12 * 60:  # Evening time
-                        if bedtime_mins < optimal_start or bedtime_mins > 24 * 60:
-                            count += 1
-                    elif bedtime_mins <= optimal_start:
+                    
+                    # Normalize both times for comparison
+                    # Treat times after midnight (00:00-05:59) as "late night" continuation
+                    norm_optimal = optimal_start_mins
+                    norm_bedtime = bedtime_mins
+                    
+                    # If optimal start is evening (after 6pm) and bedtime is after midnight
+                    if optimal_start_mins >= 18 * 60 and bedtime_mins < 6 * 60:
+                        norm_bedtime += 24 * 60  # bedtime is actually "late" (next day)
+                    
+                    # Early means bedtime < optimal_start (went to bed earlier than suggested)
+                    if norm_bedtime < norm_optimal:
                         count += 1
             achieved = count >= milestone.get("threshold", 5)
         
@@ -9559,9 +9568,22 @@ def _check_consistent_bedtime_week(sleep_entries: list) -> bool:
             bedtimes.append(date_bedtime[check_date])
         
         if consecutive and bedtimes:
+            # Normalize bedtimes for overnight comparison
+            # If any bedtime is after midnight (< 6*60 = 360 mins), add 24*60
+            # to create consistency with late-night times
+            normalized = []
+            has_early = any(b < 6 * 60 for b in bedtimes)  # After midnight
+            has_late = any(b >= 18 * 60 for b in bedtimes)  # Before midnight
+            
+            for b in bedtimes:
+                if has_early and has_late and b < 6 * 60:
+                    normalized.append(b + 24 * 60)  # Shift post-midnight times
+                else:
+                    normalized.append(b)
+            
             # Check if all bedtimes are within 30 min of average
-            avg = sum(bedtimes) / len(bedtimes)
-            all_consistent = all(abs(b - avg) <= 30 for b in bedtimes)
+            avg = sum(normalized) / len(normalized)
+            all_consistent = all(abs(b - avg) <= 30 for b in normalized)
             if all_consistent:
                 return True
     
@@ -9569,7 +9591,7 @@ def _check_consistent_bedtime_week(sleep_entries: list) -> bool:
 
 
 def _check_quality_streak(sleep_entries: list, threshold: int) -> bool:
-    """Check for quality streak (consecutive good/excellent)."""
+    """Check for quality streak (consecutive calendar days with good/excellent quality)."""
     from datetime import datetime, timedelta
     
     if len(sleep_entries) < threshold:
@@ -9586,17 +9608,32 @@ def _check_quality_streak(sleep_entries: list, threshold: int) -> bool:
     
     good_qualities = {"excellent", "good"}
     
-    # Sort dates and check for consecutive good quality
+    # Sort dates and check for consecutive CALENDAR days with good quality
     sorted_dates = sorted(date_quality.keys())
     streak = 0
+    prev_date = None
     
-    for date in sorted_dates:
-        if date_quality[date] in good_qualities:
-            streak += 1
+    for date_str in sorted_dates:
+        if date_quality[date_str] in good_qualities:
+            if prev_date is None:
+                streak = 1
+            else:
+                # Check if this date is exactly 1 day after prev_date
+                try:
+                    curr = datetime.strptime(date_str, "%Y-%m-%d")
+                    prev = datetime.strptime(prev_date, "%Y-%m-%d")
+                    if (curr - prev).days == 1:
+                        streak += 1
+                    else:
+                        streak = 1  # Gap in dates, restart streak
+                except ValueError:
+                    streak = 1
+            prev_date = date_str
             if streak >= threshold:
                 return True
         else:
             streak = 0
+            prev_date = None
     
     return False
 
