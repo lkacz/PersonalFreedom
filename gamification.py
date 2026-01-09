@@ -674,19 +674,30 @@ def is_merge_worthwhile(items: list) -> tuple:
 
 
 # Tier jump probabilities for lucky merge (higher jumps are rarer for more thrill)
-# +1 tier: 70%, +2 tiers: 22%, +3 tiers: 8%
+# Tiered probability system:
+#   +1 tier: 50% - Common result, still an upgrade
+#   +2 tiers: 30% - Good result, nice jump
+#   +3 tiers: 15% - Great result, significant upgrade!
+#   +4 tiers: 5% - JACKPOT! Jump straight to Legendary (from Common)
 MERGE_TIER_JUMP_WEIGHTS = [
-    (1, 70),   # +1 tier: 70% chance
-    (2, 22),   # +2 tiers: 22% chance  
-    (3, 8),    # +3 tiers: 8% chance (jackpot!)
+    (1, 50),   # +1 tier: 50% chance (basic upgrade)
+    (2, 30),   # +2 tiers: 30% chance (good upgrade)
+    (3, 15),   # +3 tiers: 15% chance (great upgrade!)
+    (4, 5),    # +4 tiers: 5% chance (LEGENDARY JACKPOT!)
 ]
 
 
 def get_random_tier_jump() -> int:
     """Roll for random tier upgrade on successful merge.
     
+    Tiered probability system for exciting merge results:
+    - 50% chance for +1 tier (reliable upgrade)
+    - 30% chance for +2 tiers (good luck!)
+    - 15% chance for +3 tiers (excellent luck!)
+    - 5% chance for +4 tiers (JACKPOT - straight to Legendary!)
+    
     Returns:
-        Number of tiers to jump (1, 2, or 3)
+        Number of tiers to jump (1, 2, 3, or 4)
     """
     roll = random.randint(1, 100)
     cumulative = 0
@@ -700,8 +711,12 @@ def get_random_tier_jump() -> int:
 def perform_lucky_merge(items: list, luck_bonus: int = 0, story_id: str = None) -> dict:
     """Attempt a lucky merge of items.
     
-    On success, the resulting item can be +1, +2, or +3 tiers higher than
-    the base result (with decreasing probability for higher jumps).
+    On success, the resulting item can be +1 to +4 tiers higher than
+    the base result, with tiered probability for exciting results:
+    - 50% chance for +1 tier (reliable upgrade)
+    - 30% chance for +2 tiers (good luck!)
+    - 15% chance for +3 tiers (excellent luck!)
+    - 5% chance for +4 tiers (JACKPOT - straight to Legendary!)
     
     Args:
         items: List of items to merge
