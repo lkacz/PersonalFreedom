@@ -887,7 +887,7 @@ class TimerTab(QtWidgets.QWidget):
 
         # Notification option
         self.notify_checkbox = QtWidgets.QCheckBox("🔔 Notify me when session ends")
-        self.notify_checkbox.setChecked(self.blocker.config.get("notify_on_complete", True))
+        self.notify_checkbox.setChecked(getattr(self.blocker, 'notify_on_complete', True))
         self.notify_checkbox.setToolTip("Show a desktop notification when your focus session completes")
         layout.addWidget(self.notify_checkbox)
 
@@ -914,7 +914,7 @@ class TimerTab(QtWidgets.QWidget):
 
     def _save_notify_preference(self) -> None:
         """Save the notification preference when checkbox changes."""
-        self.blocker.config["notify_on_complete"] = self.notify_checkbox.isChecked()
+        self.blocker.notify_on_complete = self.notify_checkbox.isChecked()
         self.blocker.save_config()
 
     # === UI helpers ===
@@ -4681,12 +4681,12 @@ class SleepTab(QtWidgets.QWidget):
             
             self.stats_label.setText(
                 f"<b>📊 Your Sleep Stats</b><br><br>"
-                f"🌙 Total nights tracked: {stats['total_nights']}<br>"
-                f"⏰ Average sleep: {stats['avg_hours']:.1f}h<br>"
-                f"📈 This week average: {stats['this_week_avg']:.1f}h<br>"
-                f"🏆 Best score: {stats['best_score']:.0f}/100<br>"
-                f"✅ Nights on target (7+h): {stats['nights_on_target']} "
-                f"({stats['target_rate']:.0f}%)<br>"
+                f"🌙 Total nights tracked: {stats.get('total_nights', 0)}<br>"
+                f"⏰ Average sleep: {stats.get('avg_hours', 0):.1f}h<br>"
+                f"📈 This week average: {stats.get('this_week_avg', 0):.1f}h<br>"
+                f"🏆 Best score: {stats.get('best_score', 0):.0f}/100<br>"
+                f"✅ Nights on target (7+h): {stats.get('nights_on_target', 0)} "
+                f"({stats.get('target_rate', 0):.0f}%)<br>"
                 f"{streak_emoji} Current streak: {streak} nights"
             )
         else:
@@ -8475,11 +8475,13 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             text = f"{prefix}{item['name']} (+{power}) [{item['rarity'][:1]}]"
             list_item = QtWidgets.QListWidgetItem(text)
             list_item.setData(QtCore.Qt.UserRole, orig_idx)
-            # Add tooltip with full item details
+            # Add tooltip with full item details (use themed slot name)
+            active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+            slot_display = get_slot_display_name(item.get('slot', 'Unknown'), active_story) if get_slot_display_name else item.get('slot', 'Unknown')
             list_item.setToolTip(
                 f"{item['name']}\n"
                 f"Rarity: {item.get('rarity', 'Common')}\n"
-                f"Slot: {item.get('slot', 'Unknown')}\n"
+                f"Slot: {slot_display}\n"
                 f"Power: +{power}\n"
                 f"{'[✓ EQUIPPED - unequip to merge]' if is_eq else '[Click to select for merge]'}"
             )
@@ -9455,7 +9457,10 @@ class ItemDropDialog(QtWidgets.QDialog):
         name_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(name_lbl)
         power = self.item.get("power", RARITY_POWER.get(self.item["rarity"], 10))
-        info_lbl = QtWidgets.QLabel(f"[{self.item['rarity']} {self.item['slot']}] +{power} Power")
+        # Get themed slot display name
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        slot_display = get_slot_display_name(self.item['slot'], active_story) if get_slot_display_name else self.item['slot']
+        info_lbl = QtWidgets.QLabel(f"[{self.item['rarity']} {slot_display}] +{power} Power")
         info_lbl.setStyleSheet(f"color: {self.item['color']};")
         info_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(info_lbl)
@@ -10002,12 +10007,13 @@ class PrioritiesDialog(QtWidgets.QDialog):
             msg = QtWidgets.QMessageBox(self)
             msg.setWindowTitle("🎁 Lucky Gift!")
             msg.setText(f"<h2 style='color: {rarity_color};'>🎉 YOU WON! 🎉</h2>")
+            slot_display = get_slot_display_name(item['slot'], active_story) if get_slot_display_name else item['slot']
             msg.setInformativeText(
                 f"<p style='font-size: 14px;'>{result['message']}</p>"
                 f"<p style='font-size: 16px; color: {rarity_color}; font-weight: bold;'>"
                 f"{item['name']}</p>"
                 f"<p><b>Rarity:</b> <span style='color: {rarity_color};'>{item['rarity']}</span><br>"
-                f"<b>Slot:</b> {item['slot']}<br>"
+                f"<b>Slot:</b> {slot_display}<br>"
                 f"<b>Power:</b> +{item['power']}</p>"
                 f"<p><i>Check your ADHD Buster inventory!</i></p>"
             )
