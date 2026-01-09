@@ -581,7 +581,9 @@ def calculate_set_bonuses(equipped: dict) -> dict:
     
     for theme_name, count in theme_counts.items():
         if count >= SET_BONUS_MIN_MATCHES:
-            theme_data = ITEM_THEMES[theme_name]
+            theme_data = ITEM_THEMES.get(theme_name)
+            if theme_data is None:
+                continue  # Skip unknown themes (e.g., story-specific themes)
             bonus = theme_data["bonus_per_match"] * count
             active_sets.append({
                 "name": theme_name,
@@ -629,7 +631,8 @@ def calculate_merge_success_rate(items: list, luck_bonus: int = 0) -> float:
         return 0.0
     
     rate = MERGE_BASE_SUCCESS_RATE + (len(valid_items) - 2) * MERGE_BONUS_PER_ITEM
-    luck_bonus_pct = min(luck_bonus / 100 * 0.01, 0.10)
+    # Ensure luck_bonus is non-negative before calculating bonus
+    luck_bonus_pct = min(max(luck_bonus, 0) / 100 * 0.01, 0.10)
     rate += luck_bonus_pct
     
     return min(rate, MERGE_MAX_SUCCESS_RATE)
@@ -650,7 +653,7 @@ def get_merge_result_rarity(items: list) -> str:
         except ValueError:
             return 0  # Default to Common if invalid rarity
     
-    lowest_idx = min(safe_rarity_idx(item) for item in items)
+    lowest_idx = min(safe_rarity_idx(item) for item in valid_items)
     lowest_rarity = RARITY_ORDER[lowest_idx]
     
     return RARITY_UPGRADE.get(lowest_rarity, "Uncommon")
