@@ -537,5 +537,113 @@ class TestComprehensiveRewards(unittest.TestCase):
         self.assertGreaterEqual(result["current_streak"], 3)
 
 
+class TestEdgeCasesAndBugFixes(unittest.TestCase):
+    """Tests for edge cases and bug fixes."""
+    
+    def test_quality_streak_requires_consecutive_dates(self) -> None:
+        """Test that quality streak requires consecutive calendar days."""
+        from gamification import _check_quality_streak
+        
+        # Non-consecutive dates should NOT count as streak of 7
+        entries = [
+            {"date": "2024-01-01", "quality": "good"},  # Monday
+            {"date": "2024-01-03", "quality": "good"},  # Wednesday (skip Tue)
+            {"date": "2024-01-04", "quality": "good"},
+            {"date": "2024-01-05", "quality": "good"},
+            {"date": "2024-01-06", "quality": "good"},
+            {"date": "2024-01-07", "quality": "good"},
+            {"date": "2024-01-08", "quality": "good"},
+        ]
+        # 03-08 is 6 consecutive days (03, 04, 05, 06, 07, 08)
+        # Day 01 is isolated, so max streak is 6
+        result = _check_quality_streak(entries, 7)
+        self.assertFalse(result)  # Only 6 consecutive, not 7
+        
+        result = _check_quality_streak(entries, 6)
+        self.assertTrue(result)  # 6 consecutive days achievable
+    
+    def test_quality_streak_gap_resets(self) -> None:
+        """Test that a gap in dates resets the quality streak."""
+        from gamification import _check_quality_streak
+        
+        entries = [
+            {"date": "2024-01-01", "quality": "good"},
+            {"date": "2024-01-02", "quality": "good"},
+            {"date": "2024-01-03", "quality": "good"},
+            # Gap on 04
+            {"date": "2024-01-05", "quality": "good"},
+            {"date": "2024-01-06", "quality": "good"},
+        ]
+        # Max streak is 3 (01-02-03)
+        result = _check_quality_streak(entries, 4)
+        self.assertFalse(result)
+    
+    def test_overnight_bedtime_consistency(self) -> None:
+        """Test consistent bedtime calculation handles overnight times."""
+        from gamification import _check_consistent_bedtime_week
+        
+        # Mix of pre and post-midnight bedtimes that are actually consistent
+        entries = [
+            {"date": "2024-01-01", "bedtime": "23:45"},
+            {"date": "2024-01-02", "bedtime": "00:00"},  # Midnight
+            {"date": "2024-01-03", "bedtime": "23:50"},
+            {"date": "2024-01-04", "bedtime": "00:10"},
+            {"date": "2024-01-05", "bedtime": "23:55"},
+            {"date": "2024-01-06", "bedtime": "00:05"},
+            {"date": "2024-01-07", "bedtime": "23:58"},
+        ]
+        result = _check_consistent_bedtime_week(entries)
+        self.assertTrue(result)  # All within ~25 min of midnight
+    
+    def test_disruptions_none_handled(self) -> None:
+        """Test that None disruptions list doesn't crash."""
+        result = calculate_sleep_score(
+            sleep_hours=8.0,
+            bedtime="22:30",
+            quality_id="good",
+            disruptions=None,  # Could be None
+            chronotype_id="moderate"
+        )
+        self.assertIn("total_score", result)
+        self.assertGreater(result["total_score"], 0)
+    
+    def test_disruptions_empty_list(self) -> None:
+        """Test empty disruptions list."""
+        result = calculate_sleep_score(
+            sleep_hours=8.0,
+            bedtime="22:30",
+            quality_id="good",
+            disruptions=[],
+            chronotype_id="moderate"
+        )
+        self.assertEqual(result["disruption_penalty"], 0)
+    
+    def test_score_includes_consistency_bonus(self) -> None:
+        """Test that score calculation includes consistency weight."""
+        result = calculate_sleep_score(
+            sleep_hours=8.0,
+            bedtime="22:30",
+            quality_id="excellent",
+            disruptions=[],
+            chronotype_id="moderate"
+        )
+        # With consistency bonus (10 base * 10% = 1 point), score should be higher
+        # Perfect: duration=100*0.4 + bedtime=100*0.25 + quality~104*0.25 + consistency=10*0.1
+        # = 40 + 25 + 26 + 1 = 92
+        self.assertGreaterEqual(result["total_score"], 90)
+    
+    def test_streak_from_yesterday_counts_correctly(self) -> None:
+        """Test streak starting from yesterday is counted correctly."""
+        # Create entries for yesterday and day before
+        today = datetime.now()
+        entries = [
+            {"date": (today - timedelta(days=1)).strftime("%Y-%m-%d"), "sleep_hours": 8.0},
+            {"date": (today - timedelta(days=2)).strftime("%Y-%m-%d"), "sleep_hours": 7.5},
+            {"date": (today - timedelta(days=3)).strftime("%Y-%m-%d"), "sleep_hours": 7.0},
+        ]
+        streak = check_sleep_streak(entries)
+        self.assertEqual(streak, 3)  # Should count all 3 days
+
+
 if __name__ == "__main__":
     unittest.main()
