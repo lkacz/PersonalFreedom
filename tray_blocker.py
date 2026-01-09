@@ -135,6 +135,7 @@ class TrayBlocker:
         self.timer_thread = None
         self.icon = None
         self._stop_event = threading.Event()
+        self._state_lock = threading.Lock()  # Thread-safe access to shared state
         self.session_start_time = None
         self.load_config()
         self.stats = self._load_stats()
@@ -431,7 +432,8 @@ class TrayBlocker:
             with open(HOSTS_PATH, 'w', encoding='utf-8') as f:
                 f.write(content.strip() + '\n' + '\n'.join(block_entries))
 
-            self.is_blocking = True
+            with self._state_lock:
+                self.is_blocking = True
             self._flush_dns()
             
             # Start bypass attempt logger
@@ -470,7 +472,8 @@ class TrayBlocker:
             with open(HOSTS_PATH, 'w', encoding='utf-8') as f:
                 f.write(content.strip() + '\n')
 
-            self.is_blocking = False
+            with self._state_lock:
+                self.is_blocking = False
             self._flush_dns()
             
             # Stop bypass attempt logger
@@ -504,13 +507,15 @@ class TrayBlocker:
 
         def timer_callback():
             import time as time_module
-            self.remaining_seconds = minutes * 60
+            with self._state_lock:
+                self.remaining_seconds = minutes * 60
             duration_seconds = minutes * 60
             session_start = time_module.time()
 
             if not self.block_sites(duration_seconds=duration_seconds):
                 print("Failed to start blocking!")
-                self.remaining_seconds = 0
+                with self._state_lock:
+                    self.remaining_seconds = 0
                 return
 
             self.update_icon()
@@ -528,11 +533,17 @@ class TrayBlocker:
             # Play start sound
             self._play_notification_sound()
 
-            # Timer loop
-            while self.remaining_seconds > 0 and self.is_blocking:
+            # Timer loop - use local copies to reduce lock contention
+            while True:
+                with self._state_lock:
+                    remaining = self.remaining_seconds
+                    blocking = self.is_blocking
+                if remaining <= 0 or not blocking:
+                    break
                 if self._stop_event.wait(timeout=1):
                     break
-                self.remaining_seconds -= 1
+                with self._state_lock:
+                    self.remaining_seconds -= 1
                 try:
                     self.update_menu()
                 except Exception:
@@ -540,7 +551,8 @@ class TrayBlocker:
 
             # Calculate elapsed time
             elapsed = int(time_module.time() - session_start)
-            completed = self.remaining_seconds <= 0 and self.is_blocking
+            with self._state_lock:
+                completed = self.remaining_seconds <= 0 and self.is_blocking
 
             # Session ended
             if self.is_blocking:
