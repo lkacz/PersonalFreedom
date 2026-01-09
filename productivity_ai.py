@@ -295,7 +295,7 @@ class GamificationEngine:
             try:
                 with open(self.stats_path, 'r') as f:
                     return json.load(f)
-            except Exception:
+            except (json.JSONDecodeError, IOError, OSError):
                 return {}
         return {}
 
@@ -496,7 +496,7 @@ class FocusGoals:
             try:
                 with open(self.stats_path, 'r') as f:
                     return json.load(f)
-            except Exception:
+            except (json.JSONDecodeError, IOError, OSError):
                 return {}
         return {}
 
