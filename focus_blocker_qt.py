@@ -3860,7 +3860,7 @@ class ActivityTab(QtWidgets.QWidget):
         try:
             h, m = self.blocker.activity_reminder_time.split(":")
             self.reminder_time.setTime(QtCore.QTime(int(h), int(m)))
-        except:
+        except (ValueError, AttributeError):
             self.reminder_time.setTime(QtCore.QTime(18, 0))
         self.reminder_time.timeChanged.connect(self._update_reminder_setting)
         reminder_layout.addWidget(self.reminder_time)
@@ -4202,7 +4202,7 @@ class ActivityTab(QtWidgets.QWidget):
         try:
             h, m = self.blocker.activity_reminder_time.split(":")
             reminder_time = QtCore.QTime(int(h), int(m))
-        except:
+        except (ValueError, AttributeError):
             return
         
         if current_time >= reminder_time:

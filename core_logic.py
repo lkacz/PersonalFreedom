@@ -93,10 +93,15 @@ def atomic_write_json(filepath: Path, data: dict) -> None:
     try:
         with os.fdopen(fd, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
-        # On Windows, we need to remove the target first if it exists
-        if sys.platform == 'win32' and filepath.exists():
-            filepath.unlink()
-        shutil.move(temp_path, filepath)
+        # Use os.replace for atomic rename (works on Windows and Unix)
+        # os.replace is atomic and will overwrite the destination if it exists
+        try:
+            os.replace(temp_path, filepath)
+        except OSError:
+            # Fallback for very old Windows or cross-filesystem moves
+            if sys.platform == 'win32' and filepath.exists():
+                filepath.unlink()
+            shutil.move(temp_path, filepath)
     except Exception:
         # Clean up temp file on error
         try:
@@ -594,7 +599,13 @@ class BlockerCore:
                 )
                 return bool(result)
             else:
-                return False
+                # bcrypt not available but password hash exists - this is a problem
+                # Log warning but allow access to prevent permanent lockout
+                logger.warning(
+                    "bcrypt not installed but password hash exists. "
+                    "Install bcrypt for password protection: pip install bcrypt"
+                )
+                return True  # Allow access rather than permanent lockout
         except Exception as e:
             logger.error(f"Password verification error: {e}")
             return False
@@ -914,22 +925,29 @@ class BlockerCore:
         """Check if current time is within any active schedule"""
         now = datetime.now()
         current_day = now.weekday()
+        yesterday = (current_day - 1) % 7  # Handle Sunday -> Saturday wrap
         current_time = now.strftime("%H:%M")
 
         for schedule in self.schedules:
             if not schedule.get('enabled', True):
                 continue
-            if current_day in schedule.get('days', []):
-                start = schedule.get('start_time', '00:00')
-                end = schedule.get('end_time', '23:59')
-
-                # Handle overnight schedules (e.g., 22:00 to 06:00)
-                if start <= end:
-                    # Normal case: same day schedule
-                    if start <= current_time <= end:
-                        return True
-                else:
-                    # Overnight case: crosses midnight
-                    if current_time >= start or current_time <= end:
-                        return True
+            
+            start = schedule.get('start_time', '00:00')
+            end = schedule.get('end_time', '23:59')
+            schedule_days = schedule.get('days', [])
+            
+            # Handle overnight schedules (e.g., 22:00 to 06:00)
+            if start <= end:
+                # Normal case: same day schedule
+                if current_day in schedule_days and start <= current_time <= end:
+                    return True
+            else:
+                # Overnight case: crosses midnight
+                # Two conditions to check:
+                # 1. Today is in schedule_days AND current_time >= start (pre-midnight portion)
+                # 2. Yesterday is in schedule_days AND current_time <= end (post-midnight portion)
+                if current_day in schedule_days and current_time >= start:
+                    return True
+                if yesterday in schedule_days and current_time <= end:
+                    return True
         return False

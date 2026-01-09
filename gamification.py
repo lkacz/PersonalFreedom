@@ -7752,14 +7752,28 @@ def _check_streak(weight_entries: list) -> int:
     if not sorted_entries:
         return 0
     
-    streak = 0
-    check_date = datetime.now()
+    # Get dates with entries
+    entry_dates = set(e["date"] for e in sorted_entries)
     
-    for i in range(365):  # Check up to a year
-        date_str = check_date.strftime("%Y-%m-%d")
-        if any(e["date"] == date_str for e in sorted_entries):
+    today = datetime.now().strftime("%Y-%m-%d")
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    
+    # Streak can start from today or yesterday (in case user hasn't logged today yet)
+    if today in entry_dates:
+        current = datetime.strptime(today, "%Y-%m-%d")
+        streak = 1
+    elif yesterday in entry_dates:
+        current = datetime.strptime(yesterday, "%Y-%m-%d")
+        streak = 1
+    else:
+        return 0
+    
+    # Count backwards from current
+    while True:
+        current = current - timedelta(days=1)
+        date_str = current.strftime("%Y-%m-%d")
+        if date_str in entry_dates:
             streak += 1
-            check_date -= timedelta(days=1)
         else:
             break
     
@@ -8691,14 +8705,19 @@ def check_activity_streak(activity_entries: list) -> int:
         return 0
     
     today = datetime.now().strftime("%Y-%m-%d")
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
     
-    # If no activity today, streak is 0
-    if today not in dates:
+    # Streak can start from today or yesterday (in case user hasn't logged today yet)
+    if today in dates:
+        current = datetime.strptime(today, "%Y-%m-%d")
+        streak = 1
+    elif yesterday in dates:
+        current = datetime.strptime(yesterday, "%Y-%m-%d")
+        streak = 1
+    else:
         return 0
     
-    streak = 1
-    current = datetime.now()
-    
+    # Count backwards from current
     while True:
         current = current - timedelta(days=1)
         date_str = current.strftime("%Y-%m-%d")
