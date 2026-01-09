@@ -23,7 +23,8 @@ def run_as_admin():
     params = ' '.join(f'"{arg}"' for arg in sys.argv[1:])
 
     # Use ShellExecuteW to request elevation
-    ctypes.windll.shell32.ShellExecuteW(
+    # Returns instance handle (> 32 on success, <= 32 on error)
+    result = ctypes.windll.shell32.ShellExecuteW(
         None,           # hwnd
         "runas",        # operation (request admin)
         sys.executable, # executable
@@ -31,6 +32,13 @@ def run_as_admin():
         None,           # directory
         1               # show command (SW_SHOWNORMAL)
     )
+    
+    # Check if elevation request failed (values <= 32 indicate error)
+    if result <= 32:
+        print(f"Failed to request administrator privileges (error code: {result})")
+        print("Please try running the application as administrator manually.")
+        input("Press Enter to exit...")
+        sys.exit(1)
 
 
 def main():
