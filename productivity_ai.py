@@ -50,11 +50,12 @@ class ProductivityAnalyzer:
         """ML-based prediction of optimal session duration"""
         # Analyze completion rates by duration
         # This is simplified - you'd track actual session durations and completion
-        completed = self.stats.get('sessions_completed', 0)
-        cancelled = self.stats.get('sessions_cancelled', 0)
+        completed = max(0, self.stats.get('sessions_completed', 0))
+        cancelled = max(0, self.stats.get('sessions_cancelled', 0))
+        total = completed + cancelled
 
-        if completed + cancelled > 10:
-            completion_rate = completed / (completed + cancelled)
+        if total > 10:
+            completion_rate = completed / total
 
             if completion_rate > 0.8:
                 return 45  # User completes most sessions, can go longer
@@ -106,6 +107,10 @@ class ProductivityAnalyzer:
         recent_days = sorted(daily_stats.keys())[-7:]
         focus_times = [daily_stats[d].get('focus_time', 0) for d in recent_days]
 
+        # Guard against empty focus_times (shouldn't happen but defensive)
+        if not focus_times:
+            return 'building'
+        
         avg = sum(focus_times) / len(focus_times)
         variance = sum((t - avg) ** 2 for t in focus_times) / len(focus_times)
 
@@ -150,10 +155,11 @@ class ProductivityAnalyzer:
             })
 
         # Session completion rate
-        completed = self.stats.get('sessions_completed', 0)
-        cancelled = self.stats.get('sessions_cancelled', 0)
-        if completed + cancelled > 5:
-            rate = completed / (completed + cancelled)
+        completed = max(0, self.stats.get('sessions_completed', 0))
+        cancelled = max(0, self.stats.get('sessions_cancelled', 0))
+        total = completed + cancelled
+        if total > 5:
+            rate = completed / total
             if rate < 0.5:
                 insights.append({
                     'type': 'tip',
