@@ -209,6 +209,14 @@ class BlockerCore:
         self.activity_reminder_enabled = False  # Daily reminder
         self.activity_reminder_time = "18:00"  # Reminder time HH:MM
         self.activity_last_reminder_date = None  # Last reminder shown
+        
+        # Sleep tracking
+        self.sleep_entries = []  # List of {"date": "YYYY-MM-DD", "sleep_hours": float, "bedtime": "HH:MM", "wake_time": "HH:MM", "quality": str, "disruptions": list, "score": int, "note": str}
+        self.sleep_milestones = []  # List of achieved milestone IDs
+        self.sleep_chronotype = "moderate"  # early_bird, moderate, night_owl
+        self.sleep_reminder_enabled = False  # Daily reminder
+        self.sleep_reminder_time = "21:00"  # Reminder time HH:MM (bedtime reminder)
+        self.sleep_last_reminder_date = None  # Last reminder shown
 
         # Statistics
         self.stats = self._default_stats()
@@ -287,6 +295,20 @@ class BlockerCore:
                     self.activity_reminder_enabled = config.get('activity_reminder_enabled', False)
                     self.activity_reminder_time = config.get('activity_reminder_time', '18:00')
                     self.activity_last_reminder_date = config.get('activity_last_reminder_date', None)
+                    # Sleep tracking - validate entries on load
+                    raw_sleep = config.get('sleep_entries', [])
+                    self.sleep_entries = [
+                        e for e in raw_sleep
+                        if isinstance(e, dict)
+                        and e.get("date")
+                        and isinstance(e.get("sleep_hours"), (int, float))
+                        and e.get("sleep_hours") > 0
+                    ]
+                    self.sleep_milestones = config.get('sleep_milestones', [])
+                    self.sleep_chronotype = config.get('sleep_chronotype', 'moderate')
+                    self.sleep_reminder_enabled = config.get('sleep_reminder_enabled', False)
+                    self.sleep_reminder_time = config.get('sleep_reminder_time', '21:00')
+                    self.sleep_last_reminder_date = config.get('sleep_last_reminder_date', None)
                     # Initialize/migrate hero management structure
                     if HERO_MANAGEMENT_AVAILABLE and _ensure_hero_structure:
                         _ensure_hero_structure(self.adhd_buster)
@@ -329,6 +351,12 @@ class BlockerCore:
                 'activity_reminder_enabled': self.activity_reminder_enabled,
                 'activity_reminder_time': self.activity_reminder_time,
                 'activity_last_reminder_date': self.activity_last_reminder_date,
+                'sleep_entries': self.sleep_entries,
+                'sleep_milestones': self.sleep_milestones,
+                'sleep_chronotype': self.sleep_chronotype,
+                'sleep_reminder_enabled': self.sleep_reminder_enabled,
+                'sleep_reminder_time': self.sleep_reminder_time,
+                'sleep_last_reminder_date': self.sleep_last_reminder_date,
             }
             atomic_write_json(CONFIG_PATH, config)
         except (IOError, OSError) as e:
