@@ -9838,3 +9838,1092 @@ def get_sleep_recommendation(chronotype_id: str) -> dict:
         "target_hours": "7-9 hours",
         "tips": tips,
     }
+
+
+# ============================================================================
+# XP AND LEVELING SYSTEM
+# ============================================================================
+
+# XP required for each level (exponential curve)
+def get_xp_for_level(level: int) -> int:
+    """Calculate total XP needed to reach a given level."""
+    if level <= 1:
+        return 0
+    # Formula: 100 * (level^1.5) - gives smooth progression
+    return int(100 * (level ** 1.5))
+
+
+def get_level_from_xp(total_xp: int) -> tuple:
+    """
+    Get current level and progress from total XP.
+    
+    Returns:
+        (level, xp_in_current_level, xp_needed_for_next_level, progress_percent)
+    """
+    if total_xp <= 0:
+        return (1, 0, get_xp_for_level(2), 0.0)
+    
+    level = 1
+    while get_xp_for_level(level + 1) <= total_xp:
+        level += 1
+        if level >= 999:  # Cap at level 999
+            break
+    
+    current_level_xp = get_xp_for_level(level)
+    next_level_xp = get_xp_for_level(level + 1)
+    xp_in_level = total_xp - current_level_xp
+    xp_needed = next_level_xp - current_level_xp
+    progress = (xp_in_level / xp_needed * 100) if xp_needed > 0 else 100.0
+    
+    return (level, xp_in_level, xp_needed, min(progress, 100.0))
+
+
+# Level titles
+LEVEL_TITLES = {
+    1: ("Novice", "🌱"),
+    5: ("Apprentice", "📚"),
+    10: ("Focused", "🎯"),
+    15: ("Dedicated", "⭐"),
+    20: ("Disciplined", "💪"),
+    25: ("Expert", "🏆"),
+    30: ("Master", "👑"),
+    40: ("Grandmaster", "🔮"),
+    50: ("Legend", "⚡"),
+    75: ("Mythic", "🌟"),
+    100: ("Transcendent", "✨"),
+}
+
+
+def get_level_title(level: int) -> tuple:
+    """Get the title and emoji for a given level."""
+    title = ("Novice", "🌱")
+    for req_level, info in sorted(LEVEL_TITLES.items()):
+        if level >= req_level:
+            title = info
+    return title
+
+
+# XP rewards for various activities
+XP_REWARDS = {
+    "focus_session": 50,        # Base XP per focus session
+    "focus_per_minute": 2,      # Bonus XP per minute focused
+    "weight_log": 20,           # XP for logging weight
+    "sleep_log": 25,            # XP for logging sleep
+    "activity_log": 30,         # XP for logging activity
+    "streak_day": 15,           # Bonus XP per streak day
+    "daily_login": 25,          # XP for daily login
+    "challenge_complete": 100,  # XP for completing a challenge
+    "achievement_unlock": 200,  # XP for unlocking achievement
+    "item_collect": 10,         # XP for collecting an item
+    "rare_item": 25,            # Bonus for Rare+ items
+    "epic_item": 50,            # Bonus for Epic+ items
+    "legendary_item": 100,      # Bonus for Legendary items
+}
+
+
+def calculate_session_xp(duration_minutes: int, streak_days: int = 0, 
+                         multiplier: float = 1.0) -> dict:
+    """
+    Calculate XP earned from a focus session.
+    
+    Returns dict with breakdown of XP sources.
+    """
+    base_xp = XP_REWARDS["focus_session"]
+    duration_xp = duration_minutes * XP_REWARDS["focus_per_minute"]
+    streak_bonus = min(streak_days, 30) * XP_REWARDS["streak_day"] // 10  # Diminishing returns
+    
+    subtotal = base_xp + duration_xp + streak_bonus
+    total = int(subtotal * multiplier)
+    
+    return {
+        "base_xp": base_xp,
+        "duration_xp": duration_xp,
+        "streak_bonus": streak_bonus,
+        "multiplier": multiplier,
+        "total_xp": total,
+        "breakdown": f"Base: {base_xp} + Duration: {duration_xp} + Streak: {streak_bonus}"
+    }
+
+
+def award_xp(adhd_buster: dict, xp_amount: int, source: str = "unknown") -> dict:
+    """
+    Award XP to the player and check for level up.
+    
+    Returns dict with level up info if applicable.
+    """
+    old_xp = adhd_buster.get("total_xp", 0)
+    old_level, _, _, _ = get_level_from_xp(old_xp)
+    
+    new_xp = old_xp + xp_amount
+    adhd_buster["total_xp"] = new_xp
+    
+    new_level, xp_in_level, xp_needed, progress = get_level_from_xp(new_xp)
+    
+    # Track XP history
+    if "xp_history" not in adhd_buster:
+        adhd_buster["xp_history"] = []
+    adhd_buster["xp_history"].append({
+        "amount": xp_amount,
+        "source": source,
+        "timestamp": datetime.now().isoformat(),
+        "new_total": new_xp
+    })
+    # Keep only last 100 entries
+    if len(adhd_buster["xp_history"]) > 100:
+        adhd_buster["xp_history"] = adhd_buster["xp_history"][-100:]
+    
+    result = {
+        "xp_earned": xp_amount,
+        "total_xp": new_xp,
+        "level": new_level,
+        "xp_in_level": xp_in_level,
+        "xp_needed": xp_needed,
+        "progress": progress,
+        "leveled_up": new_level > old_level,
+        "levels_gained": new_level - old_level,
+    }
+    
+    if new_level > old_level:
+        old_title, old_emoji = get_level_title(old_level)
+        new_title, new_emoji = get_level_title(new_level)
+        result["old_level"] = old_level
+        result["old_title"] = f"{old_emoji} {old_title}"
+        result["new_title"] = f"{new_emoji} {new_title}"
+        result["title_changed"] = (old_title != new_title)
+    
+    return result
+
+
+# ============================================================================
+# DAILY LOGIN REWARDS
+# ============================================================================
+
+DAILY_LOGIN_REWARDS = [
+    # Day 1-7 (Week 1)
+    {"day": 1, "type": "xp", "amount": 25, "description": "25 XP", "emoji": "✨"},
+    {"day": 2, "type": "item", "rarity": "Common", "description": "Common Item", "emoji": "📦"},
+    {"day": 3, "type": "xp", "amount": 50, "description": "50 XP", "emoji": "✨"},
+    {"day": 4, "type": "streak_freeze", "amount": 1, "description": "Streak Freeze Token", "emoji": "🧊"},
+    {"day": 5, "type": "item", "rarity": "Uncommon", "description": "Uncommon Item", "emoji": "📦"},
+    {"day": 6, "type": "xp", "amount": 75, "description": "75 XP", "emoji": "✨"},
+    {"day": 7, "type": "mystery_box", "tier": "silver", "description": "Silver Mystery Box", "emoji": "🎁"},
+    
+    # Day 8-14 (Week 2)
+    {"day": 8, "type": "xp", "amount": 50, "description": "50 XP", "emoji": "✨"},
+    {"day": 9, "type": "item", "rarity": "Uncommon", "description": "Uncommon Item", "emoji": "📦"},
+    {"day": 10, "type": "multiplier", "amount": 1.5, "duration": 60, "description": "1.5x XP (1 hour)", "emoji": "⚡"},
+    {"day": 11, "type": "xp", "amount": 100, "description": "100 XP", "emoji": "✨"},
+    {"day": 12, "type": "streak_freeze", "amount": 1, "description": "Streak Freeze Token", "emoji": "🧊"},
+    {"day": 13, "type": "item", "rarity": "Rare", "description": "Rare Item", "emoji": "📦"},
+    {"day": 14, "type": "mystery_box", "tier": "gold", "description": "Gold Mystery Box", "emoji": "🎁"},
+    
+    # Day 15-21 (Week 3)
+    {"day": 15, "type": "xp", "amount": 75, "description": "75 XP", "emoji": "✨"},
+    {"day": 16, "type": "item", "rarity": "Rare", "description": "Rare Item", "emoji": "📦"},
+    {"day": 17, "type": "xp", "amount": 100, "description": "100 XP", "emoji": "✨"},
+    {"day": 18, "type": "streak_freeze", "amount": 2, "description": "2 Streak Freeze Tokens", "emoji": "🧊"},
+    {"day": 19, "type": "multiplier", "amount": 2.0, "duration": 60, "description": "2x XP (1 hour)", "emoji": "⚡"},
+    {"day": 20, "type": "item", "rarity": "Epic", "description": "Epic Item", "emoji": "📦"},
+    {"day": 21, "type": "mystery_box", "tier": "diamond", "description": "Diamond Mystery Box", "emoji": "💎"},
+    
+    # Day 22-28 (Week 4)
+    {"day": 22, "type": "xp", "amount": 100, "description": "100 XP", "emoji": "✨"},
+    {"day": 23, "type": "item", "rarity": "Rare", "description": "Rare Item", "emoji": "📦"},
+    {"day": 24, "type": "streak_freeze", "amount": 2, "description": "2 Streak Freeze Tokens", "emoji": "🧊"},
+    {"day": 25, "type": "xp", "amount": 150, "description": "150 XP", "emoji": "✨"},
+    {"day": 26, "type": "multiplier", "amount": 2.0, "duration": 120, "description": "2x XP (2 hours)", "emoji": "⚡"},
+    {"day": 27, "type": "item", "rarity": "Epic", "description": "Epic Item", "emoji": "📦"},
+    {"day": 28, "type": "legendary_box", "description": "Legendary Mystery Box!", "emoji": "🌟"},
+]
+
+
+def get_daily_login_reward(login_streak: int) -> dict:
+    """Get the reward for the current login streak day."""
+    # Cycle through rewards (28-day cycle)
+    day_in_cycle = ((login_streak - 1) % 28) + 1
+    
+    for reward in DAILY_LOGIN_REWARDS:
+        if reward["day"] == day_in_cycle:
+            return {
+                **reward,
+                "login_streak": login_streak,
+                "day_in_cycle": day_in_cycle,
+                "cycle_number": (login_streak - 1) // 28 + 1
+            }
+    
+    # Fallback
+    return {"day": day_in_cycle, "type": "xp", "amount": 25, "description": "25 XP", "emoji": "✨"}
+
+
+def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
+    """
+    Claim daily login reward. Should be called once per day.
+    
+    Returns the reward info and any items/XP granted.
+    """
+    today = datetime.now().strftime("%Y-%m-%d")
+    last_login = adhd_buster.get("last_login_date")
+    
+    # Check if already claimed today
+    if last_login == today:
+        return {"already_claimed": True, "message": "Already claimed today's reward!"}
+    
+    # Calculate login streak
+    if last_login:
+        try:
+            last_date = datetime.strptime(last_login, "%Y-%m-%d")
+            today_date = datetime.strptime(today, "%Y-%m-%d")
+            days_diff = (today_date - last_date).days
+            
+            if days_diff == 1:
+                # Consecutive day
+                adhd_buster["login_streak"] = adhd_buster.get("login_streak", 0) + 1
+            elif days_diff > 1:
+                # Streak broken - check for streak freeze
+                freeze_count = adhd_buster.get("streak_freeze_tokens", 0)
+                if freeze_count > 0 and days_diff == 2:
+                    # Use streak freeze
+                    adhd_buster["streak_freeze_tokens"] = freeze_count - 1
+                    adhd_buster["login_streak"] = adhd_buster.get("login_streak", 0) + 1
+                    adhd_buster["streak_freezes_used"] = adhd_buster.get("streak_freezes_used", 0) + 1
+                else:
+                    # Reset streak
+                    adhd_buster["login_streak"] = 1
+        except ValueError:
+            adhd_buster["login_streak"] = 1
+    else:
+        adhd_buster["login_streak"] = 1
+    
+    adhd_buster["last_login_date"] = today
+    adhd_buster["total_logins"] = adhd_buster.get("total_logins", 0) + 1
+    
+    # Get and process reward
+    reward = get_daily_login_reward(adhd_buster["login_streak"])
+    result = {
+        "claimed": True,
+        "reward": reward,
+        "login_streak": adhd_buster["login_streak"],
+        "total_logins": adhd_buster["total_logins"],
+        "items_granted": [],
+        "xp_granted": 0,
+    }
+    
+    # Process reward by type
+    if reward["type"] == "xp":
+        xp_result = award_xp(adhd_buster, reward["amount"], "daily_login")
+        result["xp_granted"] = reward["amount"]
+        result["xp_result"] = xp_result
+        
+    elif reward["type"] == "item":
+        item = generate_item(
+            rarity=reward.get("rarity"),
+            session_minutes=30,  # Standard reward session
+            story_id=story_id
+        )
+        if "inventory" not in adhd_buster:
+            adhd_buster["inventory"] = []
+        adhd_buster["inventory"].append(item)
+        result["items_granted"].append(item)
+        # Cap inventory
+        if len(adhd_buster["inventory"]) > 500:
+            adhd_buster["inventory"] = adhd_buster["inventory"][-500:]
+        
+    elif reward["type"] == "streak_freeze":
+        adhd_buster["streak_freeze_tokens"] = adhd_buster.get("streak_freeze_tokens", 0) + reward["amount"]
+        result["streak_freeze_tokens"] = adhd_buster["streak_freeze_tokens"]
+        
+    elif reward["type"] == "multiplier":
+        # Store active multiplier with expiration
+        adhd_buster["active_multiplier"] = {
+            "value": reward["amount"],
+            "expires_at": (datetime.now().timestamp() + reward["duration"] * 60),
+            "source": "daily_login"
+        }
+        result["multiplier_active"] = adhd_buster["active_multiplier"]
+        
+    elif reward["type"] in ("mystery_box", "legendary_box"):
+        # Open mystery box immediately
+        box_result = open_mystery_box(adhd_buster, reward.get("tier", "gold"), story_id)
+        result["mystery_box_result"] = box_result
+        result["items_granted"].extend(box_result.get("items", []))
+        result["xp_granted"] += box_result.get("xp", 0)
+    
+    return result
+
+
+def get_active_multiplier(adhd_buster: dict) -> float:
+    """Get current active XP multiplier (1.0 if none)."""
+    multiplier = adhd_buster.get("active_multiplier")
+    if not multiplier:
+        return 1.0
+    
+    if datetime.now().timestamp() > multiplier.get("expires_at", 0):
+        # Expired
+        del adhd_buster["active_multiplier"]
+        return 1.0
+    
+    return multiplier.get("value", 1.0)
+
+
+# ============================================================================
+# MYSTERY BOXES (VARIABLE REWARDS)
+# ============================================================================
+
+MYSTERY_BOX_TIERS = {
+    "bronze": {
+        "name": "Bronze Mystery Box",
+        "emoji": "🥉",
+        "color": "#CD7F32",
+        "xp_range": (10, 30),
+        "item_chances": {"Common": 70, "Uncommon": 25, "Rare": 5},
+        "item_count": (1, 2),
+        "streak_freeze_chance": 5,
+    },
+    "silver": {
+        "name": "Silver Mystery Box", 
+        "emoji": "🥈",
+        "color": "#C0C0C0",
+        "xp_range": (25, 75),
+        "item_chances": {"Common": 40, "Uncommon": 40, "Rare": 15, "Epic": 5},
+        "item_count": (1, 3),
+        "streak_freeze_chance": 10,
+    },
+    "gold": {
+        "name": "Gold Mystery Box",
+        "emoji": "🥇",
+        "color": "#FFD700",
+        "xp_range": (50, 150),
+        "item_chances": {"Uncommon": 30, "Rare": 40, "Epic": 25, "Legendary": 5},
+        "item_count": (2, 4),
+        "streak_freeze_chance": 20,
+    },
+    "diamond": {
+        "name": "Diamond Mystery Box",
+        "emoji": "💎",
+        "color": "#B9F2FF",
+        "xp_range": (100, 300),
+        "item_chances": {"Rare": 30, "Epic": 45, "Legendary": 25},
+        "item_count": (2, 5),
+        "streak_freeze_chance": 30,
+    },
+    "legendary": {
+        "name": "Legendary Mystery Box",
+        "emoji": "🌟",
+        "color": "#FF9800",
+        "xp_range": (200, 500),
+        "item_chances": {"Epic": 40, "Legendary": 60},
+        "item_count": (3, 5),
+        "streak_freeze_chance": 50,
+    },
+}
+
+
+def open_mystery_box(adhd_buster: dict, tier: str = "bronze", story_id: str = None) -> dict:
+    """
+    Open a mystery box and grant random rewards.
+    
+    Returns dict with all rewards granted.
+    """
+    box = MYSTERY_BOX_TIERS.get(tier, MYSTERY_BOX_TIERS["bronze"])
+    result = {
+        "box_tier": tier,
+        "box_name": box["name"],
+        "box_emoji": box["emoji"],
+        "items": [],
+        "xp": 0,
+        "streak_freeze": 0,
+        "rewards_summary": [],
+    }
+    
+    # Random XP
+    xp_amount = random.randint(*box["xp_range"])
+    xp_result = award_xp(adhd_buster, xp_amount, f"mystery_box_{tier}")
+    result["xp"] = xp_amount
+    result["xp_result"] = xp_result
+    result["rewards_summary"].append(f"✨ {xp_amount} XP")
+    
+    # Random items
+    num_items = random.randint(*box["item_count"])
+    for _ in range(num_items):
+        # Pick rarity based on chances
+        roll = random.randint(1, 100)
+        cumulative = 0
+        chosen_rarity = "Common"
+        for rarity, chance in box["item_chances"].items():
+            cumulative += chance
+            if roll <= cumulative:
+                chosen_rarity = rarity
+                break
+        
+        item = generate_item(
+            rarity=chosen_rarity,
+            session_minutes=30,
+            story_id=story_id
+        )
+        if "inventory" not in adhd_buster:
+            adhd_buster["inventory"] = []
+        adhd_buster["inventory"].append(item)
+        result["items"].append(item)
+        result["rewards_summary"].append(f"{ITEM_RARITIES[chosen_rarity]['color']} {item['name']}")
+    
+    # Cap inventory
+    if len(adhd_buster["inventory"]) > 500:
+        adhd_buster["inventory"] = adhd_buster["inventory"][-500:]
+    
+    # Chance for streak freeze
+    if random.randint(1, 100) <= box["streak_freeze_chance"]:
+        adhd_buster["streak_freeze_tokens"] = adhd_buster.get("streak_freeze_tokens", 0) + 1
+        result["streak_freeze"] = 1
+        result["rewards_summary"].append("🧊 Streak Freeze Token")
+    
+    return result
+
+
+# ============================================================================
+# DAILY & WEEKLY CHALLENGES
+# ============================================================================
+
+CHALLENGE_TEMPLATES = {
+    # Daily challenges
+    "daily_focus_1": {
+        "type": "daily",
+        "title": "Quick Focus",
+        "description": "Complete 1 focus session",
+        "requirement": {"type": "sessions", "count": 1},
+        "xp_reward": 50,
+        "difficulty": "easy",
+    },
+    "daily_focus_3": {
+        "type": "daily",
+        "title": "Triple Focus",
+        "description": "Complete 3 focus sessions",
+        "requirement": {"type": "sessions", "count": 3},
+        "xp_reward": 150,
+        "difficulty": "medium",
+    },
+    "daily_minutes_30": {
+        "type": "daily",
+        "title": "Half Hour Hero",
+        "description": "Focus for 30 minutes total",
+        "requirement": {"type": "focus_minutes", "count": 30},
+        "xp_reward": 75,
+        "difficulty": "easy",
+    },
+    "daily_minutes_60": {
+        "type": "daily",
+        "title": "Hour of Power",
+        "description": "Focus for 60 minutes total",
+        "requirement": {"type": "focus_minutes", "count": 60},
+        "xp_reward": 150,
+        "difficulty": "medium",
+    },
+    "daily_minutes_120": {
+        "type": "daily",
+        "title": "Marathon Mind",
+        "description": "Focus for 2 hours total",
+        "requirement": {"type": "focus_minutes", "count": 120},
+        "xp_reward": 300,
+        "difficulty": "hard",
+    },
+    "daily_early_bird": {
+        "type": "daily",
+        "title": "Early Bird",
+        "description": "Complete a session before 9 AM",
+        "requirement": {"type": "early_session", "count": 1},
+        "xp_reward": 100,
+        "difficulty": "medium",
+    },
+    "daily_night_owl": {
+        "type": "daily",
+        "title": "Night Owl",
+        "description": "Complete a session after 9 PM",
+        "requirement": {"type": "night_session", "count": 1},
+        "xp_reward": 100,
+        "difficulty": "medium",
+    },
+    "daily_log_all": {
+        "type": "daily",
+        "title": "Tracker Supreme",
+        "description": "Log weight, sleep, and activity today",
+        "requirement": {"type": "log_all", "count": 3},
+        "xp_reward": 125,
+        "difficulty": "medium",
+    },
+    
+    # Weekly challenges
+    "weekly_sessions_10": {
+        "type": "weekly",
+        "title": "Consistency King",
+        "description": "Complete 10 focus sessions this week",
+        "requirement": {"type": "sessions", "count": 10},
+        "xp_reward": 400,
+        "difficulty": "medium",
+    },
+    "weekly_sessions_20": {
+        "type": "weekly",
+        "title": "Focus Machine",
+        "description": "Complete 20 focus sessions this week",
+        "requirement": {"type": "sessions", "count": 20},
+        "xp_reward": 800,
+        "difficulty": "hard",
+    },
+    "weekly_hours_5": {
+        "type": "weekly",
+        "title": "Five Hour Focus",
+        "description": "Focus for 5 hours total this week",
+        "requirement": {"type": "focus_minutes", "count": 300},
+        "xp_reward": 500,
+        "difficulty": "medium",
+    },
+    "weekly_hours_10": {
+        "type": "weekly",
+        "title": "Ten Hour Titan",
+        "description": "Focus for 10 hours total this week",
+        "requirement": {"type": "focus_minutes", "count": 600},
+        "xp_reward": 1000,
+        "difficulty": "hard",
+    },
+    "weekly_streak_7": {
+        "type": "weekly",
+        "title": "Week Warrior",
+        "description": "Maintain a 7-day login streak",
+        "requirement": {"type": "login_streak", "count": 7},
+        "xp_reward": 350,
+        "difficulty": "medium",
+    },
+    "weekly_log_weight_5": {
+        "type": "weekly",
+        "title": "Weight Watcher",
+        "description": "Log weight 5 days this week",
+        "requirement": {"type": "weight_logs", "count": 5},
+        "xp_reward": 250,
+        "difficulty": "medium",
+    },
+    "weekly_log_sleep_7": {
+        "type": "weekly",
+        "title": "Sleep Scholar",
+        "description": "Log sleep every day this week",
+        "requirement": {"type": "sleep_logs", "count": 7},
+        "xp_reward": 350,
+        "difficulty": "medium",
+    },
+    "weekly_log_activity_5": {
+        "type": "weekly",
+        "title": "Active Achiever",
+        "description": "Log activity 5 days this week",
+        "requirement": {"type": "activity_logs", "count": 5},
+        "xp_reward": 300,
+        "difficulty": "medium",
+    },
+}
+
+
+def generate_daily_challenges(seed_date: str = None) -> list:
+    """
+    Generate 3 daily challenges for the given date.
+    Uses date as seed for consistent challenges per day.
+    """
+    if seed_date is None:
+        seed_date = datetime.now().strftime("%Y-%m-%d")
+    
+    # Use date as seed for reproducibility
+    random.seed(hash(seed_date + "daily"))
+    
+    daily_templates = [k for k, v in CHALLENGE_TEMPLATES.items() if v["type"] == "daily"]
+    
+    # Select 3 challenges with varying difficulty
+    easy = [k for k in daily_templates if CHALLENGE_TEMPLATES[k]["difficulty"] == "easy"]
+    medium = [k for k in daily_templates if CHALLENGE_TEMPLATES[k]["difficulty"] == "medium"]
+    hard = [k for k in daily_templates if CHALLENGE_TEMPLATES[k]["difficulty"] == "hard"]
+    
+    selected = []
+    if easy:
+        selected.append(random.choice(easy))
+    if medium:
+        selected.append(random.choice([m for m in medium if m not in selected]))
+    if hard:
+        selected.append(random.choice([h for h in hard if h not in selected]))
+    
+    # Fill remaining slots if needed
+    remaining = [t for t in daily_templates if t not in selected]
+    while len(selected) < 3 and remaining:
+        choice = random.choice(remaining)
+        selected.append(choice)
+        remaining.remove(choice)
+    
+    random.seed()  # Reset seed
+    
+    challenges = []
+    for challenge_id in selected:
+        template = CHALLENGE_TEMPLATES[challenge_id]
+        challenges.append({
+            "id": f"{seed_date}_{challenge_id}",
+            "template_id": challenge_id,
+            "date": seed_date,
+            "progress": 0,
+            "completed": False,
+            "claimed": False,
+            **template
+        })
+    
+    return challenges
+
+
+def generate_weekly_challenges(week_start: str = None) -> list:
+    """
+    Generate 2 weekly challenges for the given week.
+    """
+    if week_start is None:
+        today = datetime.now()
+        # Get Monday of current week
+        monday = today - __import__('datetime').timedelta(days=today.weekday())
+        week_start = monday.strftime("%Y-%m-%d")
+    
+    random.seed(hash(week_start + "weekly"))
+    
+    weekly_templates = [k for k, v in CHALLENGE_TEMPLATES.items() if v["type"] == "weekly"]
+    
+    # Select 2 challenges
+    selected = random.sample(weekly_templates, min(2, len(weekly_templates)))
+    
+    random.seed()
+    
+    challenges = []
+    for challenge_id in selected:
+        template = CHALLENGE_TEMPLATES[challenge_id]
+        challenges.append({
+            "id": f"{week_start}_{challenge_id}",
+            "template_id": challenge_id,
+            "week_start": week_start,
+            "progress": 0,
+            "completed": False,
+            "claimed": False,
+            **template
+        })
+    
+    return challenges
+
+
+def update_challenge_progress(adhd_buster: dict, event_type: str, amount: int = 1) -> list:
+    """
+    Update progress on active challenges based on an event.
+    
+    event_type: "session", "focus_minutes", "early_session", "night_session", 
+                "weight_log", "sleep_log", "activity_log"
+    
+    Returns list of newly completed challenges.
+    """
+    today = datetime.now().strftime("%Y-%m-%d")
+    
+    # Ensure challenges exist for today
+    if "daily_challenges" not in adhd_buster or adhd_buster.get("daily_challenges_date") != today:
+        adhd_buster["daily_challenges"] = generate_daily_challenges(today)
+        adhd_buster["daily_challenges_date"] = today
+    
+    # Check weekly challenges
+    today_dt = datetime.now()
+    monday = today_dt - __import__('datetime').timedelta(days=today_dt.weekday())
+    week_start = monday.strftime("%Y-%m-%d")
+    
+    if "weekly_challenges" not in adhd_buster or adhd_buster.get("weekly_challenges_start") != week_start:
+        adhd_buster["weekly_challenges"] = generate_weekly_challenges(week_start)
+        adhd_buster["weekly_challenges_start"] = week_start
+    
+    newly_completed = []
+    
+    # Map event types to requirement types
+    event_to_req = {
+        "session": "sessions",
+        "focus_minutes": "focus_minutes",
+        "early_session": "early_session",
+        "night_session": "night_session",
+        "weight_log": "weight_logs",
+        "sleep_log": "sleep_logs",
+        "activity_log": "activity_logs",
+    }
+    
+    req_type = event_to_req.get(event_type)
+    if not req_type:
+        return newly_completed
+    
+    # Update daily challenges
+    for challenge in adhd_buster["daily_challenges"]:
+        if challenge["completed"]:
+            continue
+        if challenge["requirement"]["type"] == req_type:
+            challenge["progress"] += amount
+            if challenge["progress"] >= challenge["requirement"]["count"]:
+                challenge["completed"] = True
+                challenge["completed_at"] = datetime.now().isoformat()
+                newly_completed.append(challenge)
+        # Special case: log_all
+        elif challenge["requirement"]["type"] == "log_all" and event_type in ("weight_log", "sleep_log", "activity_log"):
+            # Track which logs done today
+            if "logs_today" not in challenge:
+                challenge["logs_today"] = set()
+            challenge["logs_today"].add(event_type)
+            challenge["progress"] = len(challenge["logs_today"])
+            if challenge["progress"] >= 3:
+                challenge["completed"] = True
+                challenge["completed_at"] = datetime.now().isoformat()
+                newly_completed.append(challenge)
+    
+    # Update weekly challenges
+    for challenge in adhd_buster["weekly_challenges"]:
+        if challenge["completed"]:
+            continue
+        if challenge["requirement"]["type"] == req_type:
+            challenge["progress"] += amount
+            if challenge["progress"] >= challenge["requirement"]["count"]:
+                challenge["completed"] = True
+                challenge["completed_at"] = datetime.now().isoformat()
+                newly_completed.append(challenge)
+        # Login streak check
+        elif challenge["requirement"]["type"] == "login_streak":
+            current_streak = adhd_buster.get("login_streak", 0)
+            challenge["progress"] = current_streak
+            if current_streak >= challenge["requirement"]["count"]:
+                challenge["completed"] = True
+                challenge["completed_at"] = datetime.now().isoformat()
+                newly_completed.append(challenge)
+    
+    return newly_completed
+
+
+def claim_challenge_reward(adhd_buster: dict, challenge_id: str) -> dict:
+    """Claim the reward for a completed challenge."""
+    # Check daily challenges
+    for challenge in adhd_buster.get("daily_challenges", []):
+        if challenge["id"] == challenge_id:
+            if not challenge["completed"]:
+                return {"success": False, "message": "Challenge not completed yet!"}
+            if challenge["claimed"]:
+                return {"success": False, "message": "Reward already claimed!"}
+            
+            challenge["claimed"] = True
+            xp_result = award_xp(adhd_buster, challenge["xp_reward"], "challenge_complete")
+            return {
+                "success": True,
+                "challenge": challenge,
+                "xp_reward": challenge["xp_reward"],
+                "xp_result": xp_result
+            }
+    
+    # Check weekly challenges
+    for challenge in adhd_buster.get("weekly_challenges", []):
+        if challenge["id"] == challenge_id:
+            if not challenge["completed"]:
+                return {"success": False, "message": "Challenge not completed yet!"}
+            if challenge["claimed"]:
+                return {"success": False, "message": "Reward already claimed!"}
+            
+            challenge["claimed"] = True
+            xp_result = award_xp(adhd_buster, challenge["xp_reward"], "challenge_complete")
+            
+            # Weekly challenges also give a mystery box
+            box_result = open_mystery_box(adhd_buster, "silver")
+            
+            return {
+                "success": True,
+                "challenge": challenge,
+                "xp_reward": challenge["xp_reward"],
+                "xp_result": xp_result,
+                "bonus_box": box_result
+            }
+    
+    return {"success": False, "message": "Challenge not found!"}
+
+
+# ============================================================================
+# STREAK FREEZE SYSTEM
+# ============================================================================
+
+def use_streak_freeze(adhd_buster: dict, streak_type: str = "focus") -> dict:
+    """
+    Use a streak freeze token to protect a streak.
+    
+    streak_type: "focus", "weight", "sleep", "activity", "login"
+    """
+    freeze_count = adhd_buster.get("streak_freeze_tokens", 0)
+    
+    if freeze_count <= 0:
+        return {
+            "success": False,
+            "message": "No streak freeze tokens available!",
+            "tokens_remaining": 0
+        }
+    
+    adhd_buster["streak_freeze_tokens"] = freeze_count - 1
+    adhd_buster["streak_freezes_used"] = adhd_buster.get("streak_freezes_used", 0) + 1
+    
+    # Track which streaks have been frozen
+    if "frozen_streaks" not in adhd_buster:
+        adhd_buster["frozen_streaks"] = {}
+    adhd_buster["frozen_streaks"][streak_type] = datetime.now().strftime("%Y-%m-%d")
+    
+    return {
+        "success": True,
+        "message": f"Streak freeze applied to {streak_type} streak!",
+        "tokens_remaining": adhd_buster["streak_freeze_tokens"],
+        "total_used": adhd_buster["streak_freezes_used"]
+    }
+
+
+def check_streak_frozen(adhd_buster: dict, streak_type: str, check_date: str = None) -> bool:
+    """Check if a streak was frozen on a given date."""
+    if check_date is None:
+        yesterday = datetime.now() - __import__('datetime').timedelta(days=1)
+        check_date = yesterday.strftime("%Y-%m-%d")
+    
+    frozen_streaks = adhd_buster.get("frozen_streaks", {})
+    return frozen_streaks.get(streak_type) == check_date
+
+
+# ============================================================================
+# COMBO / MULTIPLIER SYSTEM
+# ============================================================================
+
+def calculate_combo_multiplier(adhd_buster: dict) -> dict:
+    """
+    Calculate combo multiplier based on consecutive activities.
+    
+    Combos:
+    - 3+ sessions in a day: 1.25x
+    - 5+ sessions in a day: 1.5x
+    - Log all 4 types today: 1.5x bonus
+    - Active streak 7+: 1.25x
+    - Active streak 30+: 1.5x
+    """
+    multiplier = 1.0
+    bonuses = []
+    
+    today = datetime.now().strftime("%Y-%m-%d")
+    
+    # Sessions today
+    daily_stats = adhd_buster.get("daily_stats", {})
+    today_stats = daily_stats.get(today, {})
+    sessions_today = today_stats.get("sessions", 0)
+    
+    if sessions_today >= 5:
+        multiplier *= 1.5
+        bonuses.append(("🔥 5+ Sessions", 1.5))
+    elif sessions_today >= 3:
+        multiplier *= 1.25
+        bonuses.append(("⚡ 3+ Sessions", 1.25))
+    
+    # Login streak
+    login_streak = adhd_buster.get("login_streak", 0)
+    if login_streak >= 30:
+        multiplier *= 1.5
+        bonuses.append(("🏆 30-Day Streak", 1.5))
+    elif login_streak >= 7:
+        multiplier *= 1.25
+        bonuses.append(("📅 Week Streak", 1.25))
+    
+    # Active XP multiplier from rewards
+    active_mult = get_active_multiplier(adhd_buster)
+    if active_mult > 1.0:
+        multiplier *= active_mult
+        bonuses.append((f"⚡ Bonus Active", active_mult))
+    
+    return {
+        "total_multiplier": round(multiplier, 2),
+        "bonuses": bonuses,
+        "description": " × ".join([b[0] for b in bonuses]) if bonuses else "No active bonuses"
+    }
+
+
+# ============================================================================
+# PROGRESS BAR HELPERS
+# ============================================================================
+
+def get_all_progress_bars(adhd_buster: dict) -> list:
+    """
+    Get all active progress bars for display.
+    
+    Returns list of progress bar info dicts.
+    """
+    progress_bars = []
+    
+    # XP to next level
+    total_xp = adhd_buster.get("total_xp", 0)
+    level, xp_in_level, xp_needed, progress = get_level_from_xp(total_xp)
+    title, emoji = get_level_title(level)
+    progress_bars.append({
+        "id": "level",
+        "label": f"Level {level} → {level + 1}",
+        "sublabel": f"{emoji} {title}",
+        "current": xp_in_level,
+        "target": xp_needed,
+        "percent": progress,
+        "color": "#4CAF50",
+        "priority": 1,
+    })
+    
+    # Daily login streak to next milestone
+    login_streak = adhd_buster.get("login_streak", 0)
+    streak_milestones = [7, 14, 21, 28, 50, 100]
+    next_milestone = next((m for m in streak_milestones if m > login_streak), 100)
+    prev_milestone = max([0] + [m for m in streak_milestones if m <= login_streak])
+    streak_progress = ((login_streak - prev_milestone) / (next_milestone - prev_milestone) * 100) if next_milestone > prev_milestone else 100
+    progress_bars.append({
+        "id": "login_streak",
+        "label": f"Login Streak: {login_streak} days",
+        "sublabel": f"Next reward at {next_milestone} days",
+        "current": login_streak - prev_milestone,
+        "target": next_milestone - prev_milestone,
+        "percent": streak_progress,
+        "color": "#FF9800",
+        "priority": 2,
+    })
+    
+    # Character power to next story chapter
+    story_progress = get_story_progress(adhd_buster)
+    power = story_progress["power"]
+    current_chapter = story_progress["current_chapter"]
+    if current_chapter < len(STORY_THRESHOLDS):
+        next_threshold = STORY_THRESHOLDS[current_chapter]
+        prev_threshold = STORY_THRESHOLDS[current_chapter - 1] if current_chapter > 0 else 0
+        power_progress = ((power - prev_threshold) / (next_threshold - prev_threshold) * 100) if next_threshold > prev_threshold else 100
+        progress_bars.append({
+            "id": "story_chapter",
+            "label": f"Chapter {current_chapter + 1} Unlock",
+            "sublabel": f"Power: {power} / {next_threshold}",
+            "current": power - prev_threshold,
+            "target": next_threshold - prev_threshold,
+            "percent": min(power_progress, 100),
+            "color": "#9C27B0",
+            "priority": 3,
+        })
+    
+    # Daily challenges progress
+    daily_challenges = adhd_buster.get("daily_challenges", [])
+    completed_daily = sum(1 for c in daily_challenges if c.get("completed"))
+    if daily_challenges:
+        progress_bars.append({
+            "id": "daily_challenges",
+            "label": f"Daily Challenges: {completed_daily}/{len(daily_challenges)}",
+            "sublabel": "Complete for bonus XP!",
+            "current": completed_daily,
+            "target": len(daily_challenges),
+            "percent": (completed_daily / len(daily_challenges) * 100),
+            "color": "#2196F3",
+            "priority": 4,
+        })
+    
+    # Weekly challenges progress
+    weekly_challenges = adhd_buster.get("weekly_challenges", [])
+    completed_weekly = sum(1 for c in weekly_challenges if c.get("completed"))
+    if weekly_challenges:
+        progress_bars.append({
+            "id": "weekly_challenges",
+            "label": f"Weekly Challenges: {completed_weekly}/{len(weekly_challenges)}",
+            "sublabel": "Complete for bonus rewards!",
+            "current": completed_weekly,
+            "target": len(weekly_challenges),
+            "percent": (completed_weekly / len(weekly_challenges) * 100),
+            "color": "#E91E63",
+            "priority": 5,
+        })
+    
+    # Sort by priority
+    progress_bars.sort(key=lambda x: x["priority"])
+    
+    return progress_bars
+
+
+def get_challenge_progress_bars(adhd_buster: dict) -> list:
+    """Get detailed progress bars for individual challenges."""
+    progress_bars = []
+    
+    # Daily challenges
+    for challenge in adhd_buster.get("daily_challenges", []):
+        req = challenge["requirement"]
+        percent = min((challenge["progress"] / req["count"] * 100), 100) if req["count"] > 0 else 100
+        progress_bars.append({
+            "id": challenge["id"],
+            "label": challenge["title"],
+            "sublabel": challenge["description"],
+            "current": challenge["progress"],
+            "target": req["count"],
+            "percent": percent,
+            "completed": challenge.get("completed", False),
+            "claimed": challenge.get("claimed", False),
+            "xp_reward": challenge["xp_reward"],
+            "type": "daily",
+            "color": "#4CAF50" if challenge.get("completed") else "#2196F3",
+        })
+    
+    # Weekly challenges
+    for challenge in adhd_buster.get("weekly_challenges", []):
+        req = challenge["requirement"]
+        percent = min((challenge["progress"] / req["count"] * 100), 100) if req["count"] > 0 else 100
+        progress_bars.append({
+            "id": challenge["id"],
+            "label": challenge["title"],
+            "sublabel": challenge["description"],
+            "current": challenge["progress"],
+            "target": req["count"],
+            "percent": percent,
+            "completed": challenge.get("completed", False),
+            "claimed": challenge.get("claimed", False),
+            "xp_reward": challenge["xp_reward"],
+            "type": "weekly",
+            "color": "#4CAF50" if challenge.get("completed") else "#E91E63",
+        })
+    
+    return progress_bars
+
+
+# ============================================================================
+# CELEBRATION MESSAGES
+# ============================================================================
+
+CELEBRATION_MESSAGES = {
+    "level_up": [
+        "🎉 LEVEL UP! You've reached Level {level}!",
+        "⬆️ Incredible! Level {level} achieved!",
+        "🌟 You're now Level {level}! Keep it up!",
+        "🚀 Level {level}! Your focus is legendary!",
+    ],
+    "title_unlock": [
+        "👑 New Title Unlocked: {title}!",
+        "🏆 You've earned the title: {title}!",
+        "⭐ Congratulations, {title}!",
+    ],
+    "streak_milestone": [
+        "🔥 {days}-Day Streak! You're on fire!",
+        "📅 Amazing! {days} days in a row!",
+        "💪 {days}-day streak! Unstoppable!",
+    ],
+    "challenge_complete": [
+        "✅ Challenge Complete: {title}!",
+        "🎯 You crushed it! {title} done!",
+        "⚡ {title} conquered!",
+    ],
+    "mystery_box": [
+        "🎁 Mystery Box opened!",
+        "✨ Let's see what's inside...",
+        "🎊 Rewards incoming!",
+    ],
+    "rare_item": [
+        "💎 Rare drop! {item_name}!",
+        "✨ Lucky find: {item_name}!",
+    ],
+    "epic_item": [
+        "🌟 EPIC DROP! {item_name}!",
+        "⚡ Incredible! {item_name}!",
+    ],
+    "legendary_item": [
+        "🌟✨ LEGENDARY! {item_name}! ✨🌟",
+        "👑 THE LEGENDARY {item_name}!!!",
+        "🔥 MYTHIC DROP: {item_name}! 🔥",
+    ],
+}
+
+
+def get_celebration_message(event_type: str, **kwargs) -> str:
+    """Get a random celebration message for an event."""
+    messages = CELEBRATION_MESSAGES.get(event_type, ["🎉 Great job!"])
+    message = random.choice(messages)
+    return message.format(**kwargs)
