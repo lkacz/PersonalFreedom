@@ -9847,10 +9847,10 @@ def get_sleep_recommendation(chronotype_id: str) -> dict:
 # XP required for each level (exponential curve)
 def get_xp_for_level(level: int) -> int:
     """Calculate total XP needed to reach a given level."""
-    if level <= 1:
+    if not isinstance(level, (int, float)) or level <= 1:
         return 0
     # Formula: 100 * (level^1.5) - gives smooth progression
-    return int(100 * (level ** 1.5))
+    return int(100 * (int(level) ** 1.5))
 
 
 def get_level_from_xp(total_xp: int) -> tuple:
@@ -10297,7 +10297,8 @@ def open_mystery_box(adhd_buster: dict, tier: str = "bronze", story_id: str = No
             adhd_buster["inventory"] = []
         adhd_buster["inventory"].append(item)
         result["items"].append(item)
-        result["rewards_summary"].append(f"{ITEM_RARITIES[chosen_rarity]['color']} {item['name']}")
+        rarity_color = ITEM_RARITIES.get(chosen_rarity, {}).get('color', '#FFFFFF')
+        result["rewards_summary"].append(f"{rarity_color} {item['name']}")
     
     # Cap inventory
     if len(adhd_buster["inventory"]) > 500:
@@ -10459,8 +10460,8 @@ def generate_daily_challenges(seed_date: str = None) -> list:
     if seed_date is None:
         seed_date = datetime.now().strftime("%Y-%m-%d")
     
-    # Use date as seed for reproducibility
-    random.seed(hash(seed_date + "daily"))
+    # Use local Random instance to avoid affecting global state
+    rng = random.Random(hash(seed_date + "daily"))
     
     daily_templates = [k for k, v in CHALLENGE_TEMPLATES.items() if v["type"] == "daily"]
     
@@ -10471,20 +10472,18 @@ def generate_daily_challenges(seed_date: str = None) -> list:
     
     selected = []
     if easy:
-        selected.append(random.choice(easy))
+        selected.append(rng.choice(easy))
     if medium:
-        selected.append(random.choice([m for m in medium if m not in selected]))
+        selected.append(rng.choice([m for m in medium if m not in selected]))
     if hard:
-        selected.append(random.choice([h for h in hard if h not in selected]))
+        selected.append(rng.choice([h for h in hard if h not in selected]))
     
     # Fill remaining slots if needed
     remaining = [t for t in daily_templates if t not in selected]
     while len(selected) < 3 and remaining:
-        choice = random.choice(remaining)
+        choice = rng.choice(remaining)
         selected.append(choice)
         remaining.remove(choice)
-    
-    random.seed()  # Reset seed
     
     challenges = []
     for challenge_id in selected:
@@ -10512,14 +10511,13 @@ def generate_weekly_challenges(week_start: str = None) -> list:
         monday = today - timedelta(days=today.weekday())
         week_start = monday.strftime("%Y-%m-%d")
     
-    random.seed(hash(week_start + "weekly"))
+    # Use local Random instance to avoid affecting global state
+    rng = random.Random(hash(week_start + "weekly"))
     
     weekly_templates = [k for k, v in CHALLENGE_TEMPLATES.items() if v["type"] == "weekly"]
     
     # Select 2 challenges
-    selected = random.sample(weekly_templates, min(2, len(weekly_templates)))
-    
-    random.seed()
+    selected = rng.sample(weekly_templates, min(2, len(weekly_templates)))
     
     challenges = []
     for challenge_id in selected:
@@ -10969,4 +10967,7 @@ def get_celebration_message(event_type: str, **kwargs) -> str:
     """Get a random celebration message for an event."""
     messages = CELEBRATION_MESSAGES.get(event_type, ["🎉 Great job!"])
     message = random.choice(messages)
-    return message.format(**kwargs)
+    try:
+        return message.format(**kwargs)
+    except KeyError:
+        return message  # Return unformatted if keys missing

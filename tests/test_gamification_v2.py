@@ -755,3 +755,61 @@ class TestEdgeCases:
         from gamification import claim_daily_login
         adhd_buster = {}
         # We can't easily test this without mocking, but the code now handles it
+
+
+class TestV532EdgeCases:
+    """Tests for edge cases fixed in v5.3.2."""
+
+    def test_get_xp_for_level_negative(self):
+        """Negative level should return 0, not crash."""
+        assert get_xp_for_level(-5) == 0
+        assert get_xp_for_level(-1000) == 0
+
+    def test_get_xp_for_level_invalid_type(self):
+        """Invalid type should return 0, not crash."""
+        assert get_xp_for_level(None) == 0
+        assert get_xp_for_level("invalid") == 0
+        assert get_xp_for_level([]) == 0
+
+    def test_get_xp_for_level_float(self):
+        """Float level should be handled gracefully."""
+        # Should convert to int
+        assert get_xp_for_level(5.7) == get_xp_for_level(5)
+        assert get_xp_for_level(10.0) == get_xp_for_level(10)
+
+    def test_get_celebration_message_missing_kwargs(self):
+        """Celebration message with missing kwargs should not crash."""
+        # Missing 'level' kwarg for level_up message
+        msg = get_celebration_message("level_up")
+        assert isinstance(msg, str)
+        assert len(msg) > 0
+
+    def test_get_celebration_message_invalid_event(self):
+        """Invalid event type should return default message."""
+        msg = get_celebration_message("nonexistent_event_type")
+        assert msg == "🎉 Great job!"
+
+    def test_generate_daily_challenges_no_global_state(self):
+        """Daily challenge generation should not affect global random state."""
+        # Set a known seed
+        random.seed(12345)
+        expected = random.random()
+        
+        # Reset and generate challenges (should use local RNG)
+        random.seed(12345)
+        generate_daily_challenges("2024-01-01")
+        actual = random.random()
+        
+        # If using local RNG, the next random should match expected
+        assert actual == expected, "generate_daily_challenges affected global random state"
+
+    def test_generate_weekly_challenges_no_global_state(self):
+        """Weekly challenge generation should not affect global random state."""
+        random.seed(12345)
+        expected = random.random()
+        
+        random.seed(12345)
+        generate_weekly_challenges("2024-01-01")
+        actual = random.random()
+        
+        assert actual == expected, "generate_weekly_challenges affected global random state"
