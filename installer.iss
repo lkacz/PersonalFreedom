@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6.0 or later: https://jrsoftware.org/isinfo.php
 
 #define MyAppName "Personal Liberty"
-#define MyAppVersion "5.0.5"
+#define MyAppVersion "5.3.5"
 #define MyAppPublisher "Personal Liberty"
 #define MyAppURL "https://github.com/lkacz/PersonalLiberty"
 #define MyAppExeName "PersonalLiberty.exe"
@@ -55,7 +55,6 @@ Source: "icons\tray_blocking.ico"; DestDir: "{app}"; Flags: ignoreversion
 ; Documentation
 Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "QUICK_START.md"; DestDir: "{app}"; Flags: ignoreversion
-Source: "GPU_AI_GUIDE.md"; DestDir: "{app}"; Flags: ignoreversion
 ; Helper scripts
 Source: "run_as_admin.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "setup_autostart.bat"; DestDir: "{app}"; Flags: ignoreversion

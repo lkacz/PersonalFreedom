@@ -28,7 +28,7 @@ if %errorlevel% neq 0 (
 )
 
 :: Collect hidden imports for AI models (comprehensive list)
-set "HIDDEN_IMPORTS=--hidden-import=productivity_ai --hidden-import=local_ai"
+set "HIDDEN_IMPORTS=--hidden-import=productivity_ai"
 set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --hidden-import=transformers --hidden-import=transformers.models --hidden-import=transformers.models.distilbert"
 set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --hidden-import=transformers.models.bert --hidden-import=transformers.models.bart"
 set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --hidden-import=torch --hidden-import=torch.nn --hidden-import=torch.cuda"
@@ -44,7 +44,6 @@ echo (This may take 5-10 minutes - bundling PyTorch and transformers)
 pyinstaller --onefile --windowed --name "PersonalLiberty" ^
     --icon=icons\app.ico ^
     --add-data "productivity_ai.py;." ^
-    --add-data "local_ai.py;." ^
     --add-data "gamification.py;." ^
     %HIDDEN_IMPORTS% ^
     focus_blocker_qt.py

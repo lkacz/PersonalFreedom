@@ -1,17 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
-
-# Light build - no heavy AI libraries (torch, transformers, sentence-transformers)
-# This reduces the app size from ~3GB to ~100MB
+from PyInstaller.utils.hooks import collect_all
 
 datas = [('productivity_ai.py', '.'), ('gamification.py', '.')]
 binaries = []
-hiddenimports = ['productivity_ai', 'numpy']
-
-# Exclude heavy ML libraries that are no longer used
-excludes = [
-    'torch', 'transformers', 'sentence_transformers', 'huggingface_hub',
-    'tokenizers', 'torchaudio', 'torchvision', 'cupy', 'triton'
-]
+hiddenimports = ['productivity_ai', 'transformers', 'transformers.models', 'transformers.models.distilbert', 'transformers.models.bert', 'transformers.models.bart', 'torch', 'torch.nn', 'torch.cuda', 'sentence_transformers', 'sentence_transformers.models', 'sklearn', 'sklearn.metrics', 'sklearn.metrics.pairwise', 'numpy', 'scipy', 'tokenizers', 'huggingface_hub']
+tmp_ret = collect_all('transformers')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+tmp_ret = collect_all('sentence_transformers')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
+tmp_ret = collect_all('torch')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(
@@ -23,7 +21,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=excludes,
+    excludes=[],
     noarchive=False,
     optimize=0,
 )
