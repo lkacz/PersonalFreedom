@@ -194,6 +194,7 @@ class BlockerCore:
         
         # UI preferences
         self.minimize_to_tray = True  # Close button minimizes to tray
+        self.notify_on_complete = True  # Notify when session ends
         
         # ADHD Buster gamification
         self.adhd_buster = {"inventory": [], "equipped": {}}

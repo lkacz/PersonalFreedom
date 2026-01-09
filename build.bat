@@ -27,25 +27,21 @@ if %errorlevel% neq 0 (
     pip install pyinstaller
 )
 
-:: Collect hidden imports for AI models (comprehensive list)
-set "HIDDEN_IMPORTS=--hidden-import=productivity_ai"
-set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --hidden-import=transformers --hidden-import=transformers.models --hidden-import=transformers.models.distilbert"
-set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --hidden-import=transformers.models.bert --hidden-import=transformers.models.bart"
-set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --hidden-import=torch --hidden-import=torch.nn --hidden-import=torch.cuda"
-set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --hidden-import=sentence_transformers --hidden-import=sentence_transformers.models"
-set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --hidden-import=sklearn --hidden-import=sklearn.metrics --hidden-import=sklearn.metrics.pairwise"
-set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --hidden-import=numpy --hidden-import=scipy"
-set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --hidden-import=tokenizers --hidden-import=huggingface_hub"
-set "HIDDEN_IMPORTS=%HIDDEN_IMPORTS% --collect-all=transformers --collect-all=sentence_transformers --collect-all=torch"
+:: Light build - exclude heavy AI libraries (torch, transformers, etc.)
+:: This keeps the app under 100MB instead of 3GB+
+set "HIDDEN_IMPORTS=--hidden-import=productivity_ai --hidden-import=numpy"
+set "EXCLUDES=--exclude-module=torch --exclude-module=transformers --exclude-module=sentence_transformers"
+set "EXCLUDES=%EXCLUDES% --exclude-module=huggingface_hub --exclude-module=tokenizers"
+set "EXCLUDES=%EXCLUDES% --exclude-module=torchaudio --exclude-module=torchvision --exclude-module=cupy --exclude-module=triton"
 
 echo.
-echo [1/2] Building GUI version with FULL AI bundle...
-echo (This may take 5-10 minutes - bundling PyTorch and transformers)
+echo [1/2] Building GUI version (lightweight, ~100MB)...
 pyinstaller --onefile --windowed --name "PersonalLiberty" ^
     --icon=icons\app.ico ^
     --add-data "productivity_ai.py;." ^
     --add-data "gamification.py;." ^
     %HIDDEN_IMPORTS% ^
+    %EXCLUDES% ^
     focus_blocker_qt.py
 
 echo.
