@@ -213,10 +213,28 @@ class TestActivityStreak:
         ]
         assert check_activity_streak(entries) == 2
 
-    def test_no_entry_today_zero_streak(self):
-        """If no entry today, streak should be 0."""
+    def test_no_entry_today_yesterday_counts(self):
+        """If no entry today but entry yesterday, streak should count from yesterday."""
         yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
         entries = [{"date": yesterday, "duration": 30}]
+        assert check_activity_streak(entries) == 1  # Yesterday counts as valid streak start
+
+    def test_streak_from_yesterday_with_history(self):
+        """Streak should include yesterday and prior days when no entry today."""
+        today = datetime.now()
+        entries = [
+            {"date": (today - timedelta(days=1)).strftime("%Y-%m-%d"), "duration": 30},
+            {"date": (today - timedelta(days=2)).strftime("%Y-%m-%d"), "duration": 30},
+            {"date": (today - timedelta(days=3)).strftime("%Y-%m-%d"), "duration": 30},
+        ]
+        assert check_activity_streak(entries) == 3
+
+    def test_old_entry_no_streak(self):
+        """Entry from 2+ days ago with no yesterday entry should be 0."""
+        today = datetime.now()
+        entries = [
+            {"date": (today - timedelta(days=2)).strftime("%Y-%m-%d"), "duration": 30},
+        ]
         assert check_activity_streak(entries) == 0
 
     def test_multiple_entries_same_day(self):
