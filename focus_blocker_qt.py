@@ -952,10 +952,14 @@ class TimerTab(QtWidgets.QWidget):
         if self.timer_running:
             return
         
+        # Set immediately to prevent race condition from double-clicks
+        self.timer_running = True
+        
         hours = self.hours_spin.value()
         minutes = self.minutes_spin.value()
         total_minutes = hours * 60 + minutes
         if total_minutes <= 0:
+            self.timer_running = False  # Reset on validation failure
             QtWidgets.QMessageBox.warning(self, "Invalid Duration", "Please set a time greater than 0 minutes.")
             return
 
@@ -978,10 +982,10 @@ class TimerTab(QtWidgets.QWidget):
 
         success, message = self.blocker.block_sites(duration_seconds=total_seconds)
         if not success:
+            self.timer_running = False  # Reset on blocking failure
             QtWidgets.QMessageBox.critical(self, "Cannot Start Session", message)
             return
 
-        self.timer_running = True
         self.remaining_seconds = total_seconds
         self.session_start = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch()
         self.timer_label.setText(self._format_time(self.remaining_seconds))
@@ -1140,6 +1144,11 @@ class TimerTab(QtWidgets.QWidget):
             self.blocker.adhd_buster["inventory"] = []
         self.blocker.adhd_buster["inventory"].append(item)
         self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
+        
+        # Cap inventory size to prevent unbounded growth (keep newest items)
+        MAX_INVENTORY_SIZE = 500
+        if len(self.blocker.adhd_buster["inventory"]) > MAX_INVENTORY_SIZE:
+            self.blocker.adhd_buster["inventory"] = self.blocker.adhd_buster["inventory"][-MAX_INVENTORY_SIZE:]
 
         # Auto-equip if slot empty
         slot = item.get("slot")
@@ -10393,8 +10402,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 self.admin_label.setText("⚠ Not Admin")
                 self.admin_label.setStyleSheet("color: #d32f2f; font-weight: bold;")
                 self.admin_label.setToolTip(
-                    "Not running as administrator - website blocking won't work!\\n\\n"
-                    "Right-click the app and select 'Run as administrator',\\n"
+                    "Not running as administrator - website blocking won't work!\n\n"
+                    "Right-click the app and select 'Run as administrator',\n"
                     "or use the 'run_as_admin.bat' script."
                 )
 
