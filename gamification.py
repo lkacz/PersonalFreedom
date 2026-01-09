@@ -2678,6 +2678,10 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         suffixes = ITEM_SUFFIXES
         theme_id = "warrior"
     
+    # Validate rarity BEFORE using it (prevent invalid key access)
+    if rarity not in ITEM_RARITIES:
+        rarity = "Common"
+    
     # Generate the item
     slot = random.choice(list(item_types.keys()))
     item_type = random.choice(item_types[slot])
@@ -2685,10 +2689,6 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     suffix = random.choice(suffixes.get(rarity, suffixes.get("Common", ["Mystery"])))
     
     name = f"{adjective} {item_type} of {suffix}"
-    
-    # Validate rarity and use defaults for invalid values
-    if rarity not in ITEM_RARITIES:
-        rarity = "Common"
     
     return {
         "name": name,
@@ -6813,7 +6813,8 @@ Only then will the Final Door reveal YOUR ending.
 Decisions made: {}/3
 """.format(len(decision_path))
         else:
-            ending = chapter.get("endings", {}).get(decision_path)
+            endings = chapter.get("endings") or {}
+            ending = endings.get(decision_path)
             if ending:
                 content = ending["content"]
             else:
@@ -6838,9 +6839,12 @@ Decisions made: {}/3
             if prefix in variations:
                 content = variations[prefix]
                 break
-        # Fallback to first variation if no match
+        # Fallback to first variation if no match, or chapter content
         if content is None:
-            content = chapter.get("content", list(variations.values())[0])
+            if variations:
+                content = list(variations.values())[0]
+            else:
+                content = chapter.get("content", "")
     
     # Simple chapters
     else:
@@ -8371,12 +8375,13 @@ def get_historical_comparisons(weight_entries: list, current_date: str = None) -
         
         if closest_entry:
             change = current_weight - closest_entry["weight"]
+            entry_weight = closest_entry.get("weight") or 0
             comparisons[key] = {
                 "label": label,
                 "date": closest_entry["date"],
                 "weight": closest_entry["weight"],
                 "change": change,
-                "change_pct": (change / closest_entry["weight"]) * 100 if closest_entry["weight"] else 0,
+                "change_pct": (change / entry_weight) * 100 if entry_weight else 0,
             }
     
     return comparisons
@@ -9849,8 +9854,12 @@ def get_xp_for_level(level: int) -> int:
     """Calculate total XP needed to reach a given level."""
     if not isinstance(level, (int, float)) or level <= 1:
         return 0
+    # Convert to int first, then check again (level 1.9 -> 1 -> return 0)
+    level_int = int(level)
+    if level_int <= 1:
+        return 0
     # Formula: 100 * (level^1.5) - gives smooth progression
-    return int(100 * (int(level) ** 1.5))
+    return int(100 * (level_int ** 1.5))
 
 
 def get_level_from_xp(total_xp: int) -> tuple:
@@ -10740,10 +10749,10 @@ def calculate_combo_multiplier(adhd_buster: dict) -> dict:
     
     today = datetime.now().strftime("%Y-%m-%d")
     
-    # Sessions today
-    daily_stats = adhd_buster.get("daily_stats", {})
-    today_stats = daily_stats.get(today, {})
-    sessions_today = today_stats.get("sessions", 0)
+    # Sessions today (handle None values)
+    daily_stats = adhd_buster.get("daily_stats") or {}
+    today_stats = daily_stats.get(today) or {}
+    sessions_today = today_stats.get("sessions", 0) or 0
     
     if sessions_today >= 5:
         multiplier *= 1.5

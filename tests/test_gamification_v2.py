@@ -813,3 +813,18 @@ class TestV532EdgeCases:
         actual = random.random()
         
         assert actual == expected, "generate_weekly_challenges affected global random state"
+
+    def test_get_xp_for_level_float_near_boundary(self):
+        """Float level 1.9 should be treated as level 1 (return 0)."""
+        assert get_xp_for_level(1.9) == 0  # 1.9 -> int(1) -> level 1 -> 0
+        assert get_xp_for_level(1.1) == 0
+        assert get_xp_for_level(1.999) == 0
+        # But 2.0 and above should work
+        assert get_xp_for_level(2.0) > 0
+        assert get_xp_for_level(2.5) == get_xp_for_level(2)
+
+    def test_calculate_combo_multiplier_none_daily_stats(self):
+        """Combo multiplier should handle None daily_stats gracefully."""
+        adhd_buster = {"daily_stats": None}
+        result = calculate_combo_multiplier(adhd_buster)
+        assert result["total_multiplier"] >= 1.0  # Should still return valid result
