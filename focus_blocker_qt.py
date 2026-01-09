@@ -7908,7 +7908,23 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self.merge_selected = []
         self.slot_combos: Dict[str, QtWidgets.QComboBox] = {}
         self.slot_labels: Dict[str, QtWidgets.QLabel] = {}  # Store slot label references for theme updates
+        self._refreshing = False  # Prevent recursive refresh loops
         self._build_ui()
+
+    def refresh_all(self) -> None:
+        """Comprehensive refresh of all UI elements - call after any data change."""
+        if self._refreshing:
+            return  # Prevent recursive refresh loops
+        self._refreshing = True
+        try:
+            # Refresh in the correct order to ensure consistent state
+            self._refresh_all_slot_combos()  # Equipment dropdowns first
+            self._refresh_inventory()         # Then inventory list
+            self._refresh_character()         # Then power/stats display
+            # Update merge selection state
+            self._update_merge_selection()
+        finally:
+            self._refreshing = False
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
@@ -8148,6 +8164,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
 
         for slot in slots:
             combo = QtWidgets.QComboBox()
+            # Disable mouse wheel to prevent accidental changes
+            combo.wheelEvent = lambda event: event.ignore()
+            combo.setFocusPolicy(QtCore.Qt.StrongFocus)
             combo.addItem("[Empty]")
             slot_items = [item for item in inventory if item.get("slot") == slot]
             for idx, item in enumerate(slot_items):
@@ -8208,6 +8227,13 @@ class ADHDBusterDialog(QtWidgets.QDialog):
 
         # Buttons
         btn_layout = QtWidgets.QHBoxLayout()
+        
+        # Refresh button for manual refresh
+        refresh_btn = QtWidgets.QPushButton("🔄 Refresh")
+        refresh_btn.setToolTip("Refresh all displays to show current state")
+        refresh_btn.clicked.connect(self.refresh_all)
+        btn_layout.addWidget(refresh_btn)
+        
         diary_btn = QtWidgets.QPushButton("📖 Adventure Diary")
         diary_btn.clicked.connect(self._open_diary)
         btn_layout.addWidget(diary_btn)
@@ -8241,8 +8267,8 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         if GAMIFICATION_AVAILABLE:
             sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
-        # Immediately refresh all dependent displays
-        self._refresh_character()
+        # Use deferred refresh to prevent UI lag
+        QtCore.QTimer.singleShot(0, self._refresh_character)
 
     def _refresh_sets_display(self, power_info: dict = None) -> None:
         """Refresh the active set bonuses display."""
@@ -8503,38 +8529,12 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             self.inv_list.addItem(list_item)
 
     def refresh_gear_combos(self) -> None:
-        """Refresh gear dropdown combos to reflect new inventory items."""
-        inventory = self.blocker.adhd_buster.get("inventory", [])
-        equipped = self.blocker.adhd_buster.get("equipped", {})
+        """Refresh gear dropdown combos to reflect new inventory items.
         
-        for slot, combo in self.slot_combos.items():
-            # Remember current selection
-            current = equipped.get(slot)
-            current_name = current.get("name") if current else None
-            
-            # Block signals to prevent triggering equip changes
-            combo.blockSignals(True)
-            combo.clear()
-            combo.addItem("[Empty]")
-            
-            # Add all items for this slot
-            slot_items = [item for item in inventory if item.get("slot") == slot]
-            for item in slot_items:
-                display = f"{item['name']} (+{item.get('power', 10)}) [{item['rarity'][:1]}]"
-                combo.addItem(display, item)
-            
-            # Restore selection
-            if current_name:
-                for i in range(1, combo.count()):
-                    if combo.itemData(i) and combo.itemData(i).get("name") == current_name:
-                        combo.setCurrentIndex(i)
-                        break
-            
-            combo.blockSignals(False)
-        
-        # Also refresh inventory list and stats
-        self._refresh_inventory()
-        self._refresh_character()
+        This is called externally (e.g., after item drops), so it uses
+        the comprehensive refresh_all() method.
+        """
+        self.refresh_all()
 
     def _update_merge_selection(self) -> None:
         self.merge_selected = [item.data(QtCore.Qt.UserRole) for item in self.inv_list.selectedItems()]
@@ -8721,10 +8721,8 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                 f"Roll: {result['roll_pct']} (needed < {result['needed_pct']})\n\n"
                 f"{len(items)} items lost forever.")
         
-        # Refresh both inventory and equipment dropdowns
-        self._refresh_inventory()
-        self._refresh_all_slot_combos()
-        self._refresh_character()
+        # Comprehensive refresh after merge
+        self.refresh_all()
 
     def _on_story_change(self, index: int) -> None:
         """Handle story selection change."""
@@ -8759,13 +8757,11 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         select_story(self.blocker.adhd_buster, story_id)
         self.blocker.save_config()
         
-        # Refresh all UI elements for the new hero
+        # Comprehensive refresh for the new hero
         self._update_story_description()
         self._update_story_progress_labels()
         self._refresh_story_chapter_list()
-        self._refresh_inventory()
-        self._refresh_all_slot_combos()
-        self._refresh_character()
+        self.refresh_all()
 
     def _on_restart_story(self) -> None:
         """Handle restart story button click - reset current story's hero."""
@@ -8813,13 +8809,11 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         if success:
             self.blocker.save_config()
             
-            # Refresh all UI elements
+            # Comprehensive refresh
             self._update_story_description()
             self._update_story_progress_labels()
             self._refresh_story_chapter_list()
-            self._refresh_inventory()
-            self._refresh_all_slot_combos()
-            self._refresh_character()
+            self.refresh_all()
             
             QtWidgets.QMessageBox.information(
                 self, "Story Restarted",
@@ -8864,9 +8858,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
 
         # Update UI to reflect mode change
         self._update_mode_ui_state()
-        self._refresh_inventory()
-        self._refresh_all_slot_combos()
-        self._refresh_character()
+        self.refresh_all()
 
     def _update_mode_ui_state(self) -> None:
         """Update UI elements based on current mode (enable/disable story controls)."""
@@ -9215,11 +9207,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
         
-        # Refresh all displays
-        self._refresh_all_slot_combos()
-        self._refresh_character()
-        self._refresh_inventory()
-        
+        # Show result message first
         if result["power_gain"] > 0:
             QtWidgets.QMessageBox.information(
                 self, "Gear Optimized! ⚡",
@@ -9231,6 +9219,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                 self, "Gear Updated! ⚔️",
                 f"Gear configuration updated.\nPower: {result['new_power']}"
             )
+        
+        # Comprehensive refresh after optimization
+        self.refresh_all()
 
     def _salvage_duplicates(self) -> None:
         inventory = self.blocker.adhd_buster.get("inventory", [])
@@ -9277,8 +9268,8 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
         QtWidgets.QMessageBox.information(self, "Salvage Complete!", f"✨ Salvaged {len(to_remove)} items!\n🍀 Total luck: +{cur_luck + luck_bonus}")
-        self._refresh_inventory()
-        self._refresh_all_slot_combos()
+        # Comprehensive refresh after salvage
+        self.refresh_all()
 
 
 class DiaryDialog(QtWidgets.QDialog):
