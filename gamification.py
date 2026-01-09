@@ -8980,3 +8980,802 @@ def format_activity_duration(minutes: int) -> str:
     if mins == 0:
         return f"{hours}h"
     return f"{hours}h {mins}m"
+
+
+# ============================================================================
+# SLEEP TRACKING: GAMIFIED SLEEP HEALTH
+# ============================================================================
+# Based on scientific sleep recommendations:
+# - Adults need 7-9 hours (National Sleep Foundation)
+# - Optimal bedtime before midnight for circadian health
+# - Consistent sleep schedule improves quality
+# - Chronotype affects optimal sleep windows
+
+# Chronotypes with recommended sleep windows
+# (chronotype_id, display_name, emoji, optimal_bedtime_start, optimal_bedtime_end, description)
+SLEEP_CHRONOTYPES = [
+    ("early_bird", "Early Bird (Lark)", "🌅", "21:00", "22:30", 
+     "Naturally wake early. Optimal bedtime: 9-10:30 PM"),
+    ("moderate", "Moderate", "⏰", "22:00", "23:30", 
+     "Balanced schedule. Optimal bedtime: 10-11:30 PM"),
+    ("night_owl", "Night Owl", "🦉", "23:00", "00:30", 
+     "Naturally stay up late. Optimal bedtime: 11 PM-12:30 AM"),
+]
+
+# Sleep quality factors user can report
+# (quality_id, display_name, emoji, score_multiplier)
+SLEEP_QUALITY_FACTORS = [
+    ("excellent", "Excellent", "😴💤", 1.3),
+    ("good", "Good", "😊", 1.1),
+    ("fair", "Fair", "😐", 1.0),
+    ("poor", "Poor", "😓", 0.8),
+    ("terrible", "Terrible", "😵", 0.6),
+]
+
+# Sleep disruption tags
+# (tag_id, display_name, emoji, impact)
+SLEEP_DISRUPTION_TAGS = [
+    ("none", "No disruptions", "✅", 0),
+    ("woke_once", "Woke once", "1️⃣", -5),
+    ("woke_multiple", "Woke multiple times", "🔄", -15),
+    ("nightmares", "Bad dreams", "😰", -10),
+    ("noise", "Noise disruption", "🔊", -10),
+    ("stress", "Stress/anxiety", "😟", -15),
+    ("late_caffeine", "Late caffeine", "☕", -10),
+    ("late_screen", "Late screen time", "📱", -10),
+    ("alcohol", "Alcohol", "🍷", -15),
+]
+
+# Recommended sleep duration by age (hours)
+# Adults 18-64: 7-9 hours, 65+: 7-8 hours
+SLEEP_DURATION_TARGETS = {
+    "minimum": 7.0,     # Below this = sleep deprived
+    "optimal_low": 7.5,  # Start of optimal range
+    "optimal_high": 9.0, # End of optimal range
+    "maximum": 10.0,     # Above this may indicate health issues
+}
+
+# Base scores for sleep metrics
+SLEEP_SCORE_COMPONENTS = {
+    "duration_weight": 40,      # 40% of score from duration
+    "bedtime_weight": 25,       # 25% from bedtime consistency
+    "quality_weight": 25,       # 25% from quality
+    "consistency_weight": 10,   # 10% from schedule consistency
+}
+
+# Reward thresholds based on sleep score (0-100)
+SLEEP_REWARD_THRESHOLDS = [
+    (50, "Common"),      # 50+ score
+    (65, "Uncommon"),    # 65+ score
+    (80, "Rare"),        # 80+ score
+    (90, "Epic"),        # 90+ score
+    (97, "Legendary"),   # 97+ score (exceptional sleep)
+]
+
+# Streak thresholds for sleep (consecutive days with good sleep 7+ hours)
+SLEEP_STREAK_THRESHOLDS = [
+    (3, "Uncommon", "3-night streak"),
+    (7, "Rare", "7-night streak (full week!)"),
+    (14, "Epic", "14-night streak"),
+    (30, "Legendary", "30-night streak (monthly!)"),
+    (60, "Legendary", "60-night streak"),
+    (90, "Legendary", "90-night streak (quarterly!)"),
+]
+
+# Sleep milestones
+SLEEP_MILESTONES = [
+    {"id": "first_sleep", "name": "First Log", "description": "Log your first sleep entry",
+     "check": "first_entry", "rarity": "Uncommon"},
+    {"id": "week_tracked", "name": "Week Tracker", "description": "Track sleep for 7 days",
+     "check": "total_entries", "threshold": 7, "rarity": "Uncommon"},
+    {"id": "month_tracked", "name": "Month Monitor", "description": "Track sleep for 30 days",
+     "check": "total_entries", "threshold": 30, "rarity": "Rare"},
+    {"id": "perfect_night", "name": "Perfect Night", "description": "Achieve a 95+ sleep score",
+     "check": "single_score", "threshold": 95, "rarity": "Epic"},
+    {"id": "early_bedtime_5", "name": "Early Riser", "description": "5 nights in bed before your optimal time",
+     "check": "early_bedtime_count", "threshold": 5, "rarity": "Uncommon"},
+    {"id": "consistent_week", "name": "Clockwork", "description": "Same bedtime (±30min) for 7 days",
+     "check": "consistent_week", "rarity": "Rare"},
+    {"id": "quality_streak_7", "name": "Quality Sleeper", "description": "7 days of Good or better quality",
+     "check": "quality_streak", "threshold": 7, "rarity": "Rare"},
+    {"id": "total_100hr", "name": "Century Sleeper", "description": "100 hours of tracked sleep",
+     "check": "total_hours", "threshold": 100, "rarity": "Rare"},
+    {"id": "total_500hr", "name": "Sleep Master", "description": "500 hours of tracked sleep",
+     "check": "total_hours", "threshold": 500, "rarity": "Epic"},
+    {"id": "total_1000hr", "name": "Dream Legend", "description": "1000 hours of tracked sleep",
+     "check": "total_hours", "threshold": 1000, "rarity": "Legendary"},
+]
+
+
+def get_chronotype(chronotype_id: str) -> Optional[tuple]:
+    """Get chronotype tuple by ID."""
+    for chrono in SLEEP_CHRONOTYPES:
+        if chrono[0] == chronotype_id:
+            return chrono
+    return None
+
+
+def get_sleep_quality(quality_id: str) -> Optional[tuple]:
+    """Get sleep quality tuple by ID."""
+    for quality in SLEEP_QUALITY_FACTORS:
+        if quality[0] == quality_id:
+            return quality
+    return None
+
+
+def get_disruption_tag(tag_id: str) -> Optional[tuple]:
+    """Get disruption tag tuple by ID."""
+    for tag in SLEEP_DISRUPTION_TAGS:
+        if tag[0] == tag_id:
+            return tag
+    return None
+
+
+def time_to_minutes(time_str: str) -> int:
+    """Convert HH:MM time string to minutes since midnight."""
+    try:
+        h, m = time_str.split(":")
+        return int(h) * 60 + int(m)
+    except (ValueError, AttributeError):
+        return 0
+
+
+def minutes_to_time(minutes: int) -> str:
+    """Convert minutes since midnight to HH:MM format."""
+    minutes = minutes % (24 * 60)  # Wrap around
+    h = minutes // 60
+    m = minutes % 60
+    return f"{h:02d}:{m:02d}"
+
+
+def calculate_bedtime_score(bedtime: str, chronotype_id: str) -> tuple:
+    """
+    Calculate bedtime score based on how close to optimal window.
+    
+    Args:
+        bedtime: Bedtime in HH:MM format
+        chronotype_id: User's chronotype
+    
+    Returns:
+        Tuple of (score 0-100, message)
+    """
+    chrono = get_chronotype(chronotype_id)
+    if not chrono:
+        chrono = SLEEP_CHRONOTYPES[1]  # Default to moderate
+    
+    optimal_start = time_to_minutes(chrono[3])
+    optimal_end = time_to_minutes(chrono[4])
+    bedtime_mins = time_to_minutes(bedtime)
+    
+    # Handle overnight times (after midnight = add 24 hours in logic)
+    if optimal_end < optimal_start:  # Crosses midnight
+        if bedtime_mins < 12 * 60:  # Bedtime is after midnight
+            bedtime_mins += 24 * 60
+        optimal_end += 24 * 60
+    
+    # Perfect if within optimal window
+    if optimal_start <= bedtime_mins <= optimal_end:
+        return (100, "🌟 Perfect bedtime!")
+    
+    # Calculate deviation in minutes
+    if bedtime_mins < optimal_start:
+        deviation = optimal_start - bedtime_mins
+        direction = "early"
+    else:
+        deviation = bedtime_mins - optimal_end
+        direction = "late"
+    
+    # Deduct points for deviation (10 points per 30 min deviation)
+    penalty = min(deviation // 3, 100)  # ~10 points per 30 min
+    score = max(0, 100 - penalty)
+    
+    if deviation <= 30:
+        msg = f"👍 Close to optimal ({deviation}min {direction})"
+    elif deviation <= 60:
+        msg = f"⚠️ {deviation}min {direction} - try adjusting"
+    else:
+        hours = deviation // 60
+        mins = deviation % 60
+        msg = f"😴 {hours}h {mins}m {direction} - affects sleep quality"
+    
+    return (score, msg)
+
+
+def calculate_duration_score(sleep_hours: float) -> tuple:
+    """
+    Calculate duration score based on recommended sleep.
+    
+    Args:
+        sleep_hours: Total sleep duration in hours
+    
+    Returns:
+        Tuple of (score 0-100, message)
+    """
+    min_hours = SLEEP_DURATION_TARGETS["minimum"]
+    opt_low = SLEEP_DURATION_TARGETS["optimal_low"]
+    opt_high = SLEEP_DURATION_TARGETS["optimal_high"]
+    max_hours = SLEEP_DURATION_TARGETS["maximum"]
+    
+    if opt_low <= sleep_hours <= opt_high:
+        return (100, f"🌟 Perfect! {sleep_hours:.1f}h is optimal")
+    
+    if sleep_hours < min_hours:
+        # Sleep deprived - significant penalty
+        deficit = min_hours - sleep_hours
+        score = max(0, 100 - int(deficit * 20))  # -20 per hour deficit
+        return (score, f"😴 Sleep deprived! {sleep_hours:.1f}h (need 7+)")
+    
+    if min_hours <= sleep_hours < opt_low:
+        # Slightly under optimal
+        return (85, f"👍 Good ({sleep_hours:.1f}h), aim for 7.5+")
+    
+    if opt_high < sleep_hours <= max_hours:
+        # Slightly over optimal (not necessarily bad)
+        return (90, f"💤 Long sleep ({sleep_hours:.1f}h) - typically fine")
+    
+    # Very long sleep (>10h) - might indicate health issues
+    return (70, f"⚠️ Very long sleep ({sleep_hours:.1f}h) - consult doctor if frequent")
+
+
+def calculate_sleep_score(sleep_hours: float, bedtime: str, quality_id: str,
+                          disruptions: list, chronotype_id: str) -> dict:
+    """
+    Calculate comprehensive sleep score.
+    
+    Args:
+        sleep_hours: Total sleep duration in hours
+        bedtime: Bedtime in HH:MM format
+        quality_id: Quality rating ID
+        disruptions: List of disruption tag IDs
+        chronotype_id: User's chronotype
+    
+    Returns:
+        Dict with score breakdown and total
+    """
+    weights = SLEEP_SCORE_COMPONENTS
+    
+    # Duration score (40%)
+    dur_score, dur_msg = calculate_duration_score(sleep_hours)
+    
+    # Bedtime score (25%)
+    bed_score, bed_msg = calculate_bedtime_score(bedtime, chronotype_id)
+    
+    # Quality score (25%)
+    quality = get_sleep_quality(quality_id)
+    quality_mult = quality[3] if quality else 1.0
+    quality_base = 80  # Base score
+    quality_score = min(100, int(quality_base * quality_mult))
+    quality_msg = f"{quality[1]} quality" if quality else "Unknown quality"
+    
+    # Apply disruption penalties
+    disruption_penalty = 0
+    disruption_msgs = []
+    for tag_id in disruptions:
+        tag = get_disruption_tag(tag_id)
+        if tag and tag[3] != 0:
+            disruption_penalty += abs(tag[3])
+            disruption_msgs.append(f"{tag[1]} ({tag[3]})")
+    
+    quality_score = max(0, quality_score - disruption_penalty)
+    
+    # Weighted total
+    total = (
+        dur_score * weights["duration_weight"] / 100 +
+        bed_score * weights["bedtime_weight"] / 100 +
+        quality_score * weights["quality_weight"] / 100
+        # Consistency bonus calculated separately based on history
+    )
+    
+    return {
+        "total_score": int(total),
+        "duration_score": dur_score,
+        "duration_message": dur_msg,
+        "bedtime_score": bed_score,
+        "bedtime_message": bed_msg,
+        "quality_score": quality_score,
+        "quality_message": quality_msg,
+        "disruption_penalty": disruption_penalty,
+        "disruption_details": disruption_msgs,
+    }
+
+
+def check_sleep_streak(sleep_entries: list) -> int:
+    """
+    Calculate current sleep streak (consecutive days with 7+ hours sleep).
+    
+    Args:
+        sleep_entries: List of sleep entries with date and sleep_hours fields
+    
+    Returns:
+        Current streak count
+    """
+    from datetime import datetime, timedelta
+    
+    if not sleep_entries:
+        return 0
+    
+    # Get dates with good sleep (7+ hours)
+    good_dates = set()
+    for entry in sleep_entries:
+        if entry.get("date") and entry.get("sleep_hours", 0) >= 7:
+            good_dates.add(entry["date"])
+    
+    if not good_dates:
+        return 0
+    
+    today = datetime.now().strftime("%Y-%m-%d")
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    
+    # Streak can start from today or yesterday (in case user hasn't logged today yet)
+    if today in good_dates:
+        streak_start = today
+    elif yesterday in good_dates:
+        streak_start = yesterday
+    else:
+        return 0
+    
+    streak = 1 if streak_start == today else 0
+    current = datetime.strptime(streak_start, "%Y-%m-%d") if streak_start == today else datetime.now()
+    
+    # Count backwards
+    while True:
+        current = current - timedelta(days=1)
+        date_str = current.strftime("%Y-%m-%d")
+        if date_str in good_dates:
+            streak += 1
+        else:
+            break
+    
+    return streak
+
+
+def get_sleep_reward_rarity(score: int) -> Optional[str]:
+    """
+    Get reward rarity based on sleep score.
+    
+    Args:
+        score: Sleep score (0-100)
+    
+    Returns:
+        Rarity string or None if below threshold
+    """
+    min_threshold = SLEEP_REWARD_THRESHOLDS[0][0] if SLEEP_REWARD_THRESHOLDS else 50
+    if score < min_threshold:
+        return None
+    
+    rarity = None
+    for threshold, r in SLEEP_REWARD_THRESHOLDS:
+        if score >= threshold:
+            rarity = r
+    
+    return rarity
+
+
+def check_sleep_entry_reward(sleep_hours: float, bedtime: str, quality_id: str,
+                              disruptions: list, chronotype_id: str,
+                              story_id: str = None) -> dict:
+    """
+    Check what reward a sleep entry earns.
+    
+    Args:
+        sleep_hours: Hours of sleep
+        bedtime: Bedtime in HH:MM
+        quality_id: Quality rating
+        disruptions: List of disruption tag IDs
+        chronotype_id: User's chronotype
+        story_id: Story theme for item generation
+    
+    Returns:
+        Dict with reward info
+    """
+    result = {
+        "reward": None,
+        "score": 0,
+        "score_breakdown": {},
+        "rarity": None,
+        "messages": [],
+    }
+    
+    if sleep_hours < 3:
+        result["messages"].append(
+            "😴 Less than 3 hours tracked. Naps are great but log full nights for rewards!"
+        )
+        return result
+    
+    score_info = calculate_sleep_score(
+        sleep_hours, bedtime, quality_id, disruptions, chronotype_id
+    )
+    result["score"] = score_info["total_score"]
+    result["score_breakdown"] = score_info
+    
+    rarity = get_sleep_reward_rarity(score_info["total_score"])
+    result["rarity"] = rarity
+    
+    if rarity:
+        result["reward"] = generate_item(rarity=rarity, story_id=story_id)
+        result["messages"].append(
+            f"🌙 {sleep_hours:.1f}h sleep with {score_info['total_score']} score! "
+            f"Earned a {rarity} item!"
+        )
+    else:
+        result["messages"].append(
+            f"🌙 Sleep logged! Score: {score_info['total_score']}/100 "
+            f"(need 50+ for rewards)"
+        )
+    
+    # Add helpful messages
+    result["messages"].append(score_info["duration_message"])
+    result["messages"].append(score_info["bedtime_message"])
+    
+    return result
+
+
+def check_sleep_streak_reward(sleep_entries: list, achieved_milestones: list,
+                               story_id: str = None) -> Optional[dict]:
+    """
+    Check if current streak earns a milestone reward.
+    
+    Args:
+        sleep_entries: List of sleep entries
+        achieved_milestones: Already achieved milestone IDs
+        story_id: Story theme
+    
+    Returns:
+        Reward dict or None
+    """
+    streak = check_sleep_streak(sleep_entries)
+    
+    for days, rarity, name in SLEEP_STREAK_THRESHOLDS:
+        milestone_id = f"sleep_streak_{days}"
+        if streak >= days and milestone_id not in achieved_milestones:
+            return {
+                "milestone_id": milestone_id,
+                "streak_days": days,
+                "name": name,
+                "item": generate_item(rarity=rarity, story_id=story_id),
+                "message": f"🌙 {days}-night sleep streak! Earned a {rarity} item!",
+            }
+    
+    return None
+
+
+def check_sleep_milestones(sleep_entries: list, achieved_milestones: list,
+                            chronotype_id: str = "moderate",
+                            story_id: str = None) -> list:
+    """
+    Check for newly achieved sleep milestones.
+    
+    Args:
+        sleep_entries: List of sleep entries
+        achieved_milestones: Already achieved milestone IDs
+        chronotype_id: User's chronotype
+        story_id: Story theme
+    
+    Returns:
+        List of newly achieved milestones with rewards
+    """
+    new_milestones = []
+    
+    if not sleep_entries:
+        return new_milestones
+    
+    # Calculate stats for milestone checks
+    total_hours = sum(e.get("sleep_hours", 0) for e in sleep_entries)
+    
+    for milestone in SLEEP_MILESTONES:
+        mid = milestone["id"]
+        if mid in achieved_milestones:
+            continue
+        
+        achieved = False
+        check = milestone.get("check")
+        
+        if check == "first_entry":
+            achieved = len(sleep_entries) >= 1
+        
+        elif check == "total_entries":
+            achieved = len(sleep_entries) >= milestone.get("threshold", 0)
+        
+        elif check == "total_hours":
+            achieved = total_hours >= milestone.get("threshold", 0)
+        
+        elif check == "single_score":
+            # Check if any entry has high enough score
+            threshold = milestone.get("threshold", 95)
+            for entry in sleep_entries:
+                if entry.get("score", 0) >= threshold:
+                    achieved = True
+                    break
+        
+        elif check == "early_bedtime_count":
+            # Count entries with bedtime before optimal window start
+            chrono = get_chronotype(chronotype_id) or SLEEP_CHRONOTYPES[1]
+            optimal_start = time_to_minutes(chrono[3])
+            count = 0
+            for entry in sleep_entries:
+                if entry.get("bedtime"):
+                    bedtime_mins = time_to_minutes(entry["bedtime"])
+                    # Handle after-midnight bedtimes
+                    if bedtime_mins < 12 * 60:
+                        bedtime_mins += 24 * 60
+                    if optimal_start > 12 * 60:  # Evening time
+                        if bedtime_mins < optimal_start or bedtime_mins > 24 * 60:
+                            count += 1
+                    elif bedtime_mins <= optimal_start:
+                        count += 1
+            achieved = count >= milestone.get("threshold", 5)
+        
+        elif check == "consistent_week":
+            # Check for 7 consecutive days with consistent bedtime (±30min)
+            achieved = _check_consistent_bedtime_week(sleep_entries)
+        
+        elif check == "quality_streak":
+            # Check for consecutive good/excellent quality days
+            threshold = milestone.get("threshold", 7)
+            achieved = _check_quality_streak(sleep_entries, threshold)
+        
+        if achieved:
+            new_milestones.append({
+                "milestone_id": mid,
+                "name": milestone["name"],
+                "description": milestone["description"],
+                "item": generate_item(rarity=milestone["rarity"], story_id=story_id),
+                "message": f"🏆 {milestone['name']}! {milestone['description']}",
+            })
+    
+    return new_milestones
+
+
+def _check_consistent_bedtime_week(sleep_entries: list) -> bool:
+    """Check if there are 7 consecutive days with consistent bedtime."""
+    from datetime import datetime, timedelta
+    
+    if len(sleep_entries) < 7:
+        return False
+    
+    # Create date->bedtime map
+    date_bedtime = {}
+    for entry in sleep_entries:
+        if entry.get("date") and entry.get("bedtime"):
+            date_bedtime[entry["date"]] = time_to_minutes(entry["bedtime"])
+    
+    if len(date_bedtime) < 7:
+        return False
+    
+    # Sort dates
+    sorted_dates = sorted(date_bedtime.keys())
+    
+    # Check for 7 consecutive days
+    for i in range(len(sorted_dates) - 6):
+        start_date = datetime.strptime(sorted_dates[i], "%Y-%m-%d")
+        consecutive = True
+        bedtimes = []
+        
+        for j in range(7):
+            check_date = (start_date + timedelta(days=j)).strftime("%Y-%m-%d")
+            if check_date not in date_bedtime:
+                consecutive = False
+                break
+            bedtimes.append(date_bedtime[check_date])
+        
+        if consecutive and bedtimes:
+            # Check if all bedtimes are within 30 min of average
+            avg = sum(bedtimes) / len(bedtimes)
+            all_consistent = all(abs(b - avg) <= 30 for b in bedtimes)
+            if all_consistent:
+                return True
+    
+    return False
+
+
+def _check_quality_streak(sleep_entries: list, threshold: int) -> bool:
+    """Check for quality streak (consecutive good/excellent)."""
+    from datetime import datetime, timedelta
+    
+    if len(sleep_entries) < threshold:
+        return False
+    
+    # Create date->quality map
+    date_quality = {}
+    for entry in sleep_entries:
+        if entry.get("date") and entry.get("quality"):
+            date_quality[entry["date"]] = entry["quality"]
+    
+    if len(date_quality) < threshold:
+        return False
+    
+    good_qualities = {"excellent", "good"}
+    
+    # Sort dates and check for consecutive good quality
+    sorted_dates = sorted(date_quality.keys())
+    streak = 0
+    
+    for date in sorted_dates:
+        if date_quality[date] in good_qualities:
+            streak += 1
+            if streak >= threshold:
+                return True
+        else:
+            streak = 0
+    
+    return False
+
+
+def check_all_sleep_rewards(sleep_entries: list, sleep_hours: float, bedtime: str,
+                             wake_time: str, quality_id: str, disruptions: list,
+                             current_date: str, achieved_milestones: list,
+                             chronotype_id: str = "moderate",
+                             story_id: str = None) -> dict:
+    """
+    Comprehensive check for all sleep-related rewards.
+    
+    Args:
+        sleep_entries: Existing entries (WITHOUT the new entry)
+        sleep_hours: Hours of sleep for new entry
+        bedtime: Bedtime for new entry
+        wake_time: Wake time for new entry
+        quality_id: Quality rating
+        disruptions: List of disruption tags
+        current_date: Today's date
+        achieved_milestones: Already achieved milestone IDs
+        chronotype_id: User's chronotype
+        story_id: Story theme
+    
+    Returns:
+        Dict with all reward information
+    """
+    # Get base reward for this sleep entry
+    base_rewards = check_sleep_entry_reward(
+        sleep_hours, bedtime, quality_id, disruptions, chronotype_id, story_id
+    )
+    
+    # Create temp entries list including new entry for streak/milestone checks
+    new_entry = {
+        "date": current_date,
+        "sleep_hours": sleep_hours,
+        "bedtime": bedtime,
+        "wake_time": wake_time,
+        "quality": quality_id,
+        "disruptions": disruptions,
+        "score": base_rewards.get("score", 0),
+    }
+    temp_entries = sleep_entries + [new_entry]
+    
+    # Check streak rewards
+    streak_reward = check_sleep_streak_reward(temp_entries, achieved_milestones, story_id)
+    
+    # Check milestone achievements
+    new_milestones = check_sleep_milestones(
+        temp_entries, achieved_milestones, chronotype_id, story_id
+    )
+    
+    # Compile all results
+    result = {
+        **base_rewards,
+        "streak_reward": streak_reward,
+        "new_milestones": new_milestones,
+        "current_streak": check_sleep_streak(temp_entries),
+    }
+    
+    # Add streak message
+    if streak_reward:
+        result["messages"].append(streak_reward["message"])
+    
+    # Add milestone messages
+    for milestone in new_milestones:
+        result["messages"].append(milestone["message"])
+    
+    return result
+
+
+def get_sleep_stats(sleep_entries: list) -> dict:
+    """
+    Calculate sleep statistics for display.
+    
+    Args:
+        sleep_entries: List of sleep entries
+    
+    Returns:
+        Dict with stats
+    """
+    from datetime import datetime, timedelta
+    
+    if not sleep_entries:
+        return {
+            "total_hours": 0,
+            "total_nights": 0,
+            "avg_hours": 0,
+            "avg_score": 0,
+            "this_week_avg": 0,
+            "best_score": 0,
+            "current_streak": 0,
+            "nights_on_target": 0,  # Nights with 7+ hours
+        }
+    
+    total_hours = sum(e.get("sleep_hours", 0) for e in sleep_entries)
+    total_nights = len(sleep_entries)
+    scores = [e.get("score", 0) for e in sleep_entries if e.get("score")]
+    
+    # This week
+    today = datetime.now()
+    week_ago = (today - timedelta(days=7)).strftime("%Y-%m-%d")
+    
+    week_entries = [e for e in sleep_entries if e.get("date", "") >= week_ago]
+    week_hours = [e.get("sleep_hours", 0) for e in week_entries]
+    
+    # Nights on target (7+ hours)
+    nights_on_target = sum(1 for e in sleep_entries if e.get("sleep_hours", 0) >= 7)
+    
+    return {
+        "total_hours": total_hours,
+        "total_nights": total_nights,
+        "avg_hours": total_hours / total_nights if total_nights else 0,
+        "avg_score": sum(scores) / len(scores) if scores else 0,
+        "this_week_avg": sum(week_hours) / len(week_hours) if week_hours else 0,
+        "best_score": max(scores) if scores else 0,
+        "current_streak": check_sleep_streak(sleep_entries),
+        "nights_on_target": nights_on_target,
+        "target_rate": (nights_on_target / total_nights * 100) if total_nights else 0,
+    }
+
+
+def format_sleep_duration(hours: float) -> str:
+    """Format hours as hours and minutes string."""
+    full_hours = int(hours)
+    mins = int((hours - full_hours) * 60)
+    if mins == 0:
+        return f"{full_hours}h"
+    return f"{full_hours}h {mins}m"
+
+
+def get_sleep_recommendation(chronotype_id: str) -> dict:
+    """
+    Get personalized sleep recommendations based on chronotype.
+    
+    Args:
+        chronotype_id: User's chronotype
+    
+    Returns:
+        Dict with recommendations
+    """
+    chrono = get_chronotype(chronotype_id) or SLEEP_CHRONOTYPES[1]
+    
+    bedtime_start = chrono[3]
+    bedtime_end = chrono[4]
+    
+    # Calculate recommended wake times (assuming 7.5-8h sleep)
+    bed_start_mins = time_to_minutes(bedtime_start)
+    wake_start = minutes_to_time((bed_start_mins + 7 * 60 + 30) % (24 * 60))
+    wake_end = minutes_to_time((bed_start_mins + 9 * 60) % (24 * 60))
+    
+    tips = []
+    if chronotype_id == "early_bird":
+        tips = [
+            "🌅 Your natural rhythm favors early mornings",
+            "⏰ Wind down starting at 8:30 PM",
+            "📵 Avoid screens after 9 PM",
+            "🌙 Aim to be in bed by 10 PM latest",
+        ]
+    elif chronotype_id == "night_owl":
+        tips = [
+            "🦉 Your natural rhythm is later than average",
+            "⏰ Try to avoid very late nights (after 1 AM)",
+            "☀️ Get bright light in the morning to help regulate",
+            "🏃 Exercise in the afternoon, not evening",
+        ]
+    else:
+        tips = [
+            "⏰ You have a balanced sleep rhythm",
+            "🌙 Aim for bed by 11:30 PM most nights",
+            "📵 Start winding down 1 hour before bed",
+            "☀️ Consistent wake times help sleep quality",
+        ]
+    
+    return {
+        "chronotype": chrono[1],
+        "emoji": chrono[2],
+        "optimal_bedtime": f"{bedtime_start} - {bedtime_end}",
+        "recommended_wake": f"{wake_start} - {wake_end}",
+        "target_hours": "7-9 hours",
+        "tips": tips,
+    }

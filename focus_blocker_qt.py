@@ -410,6 +410,40 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
     except ImportError:
         pass
     
+    # Sleep tracking functions
+    global SLEEP_CHRONOTYPES, SLEEP_QUALITY_FACTORS, SLEEP_DISRUPTION_TAGS
+    global check_all_sleep_rewards, get_sleep_stats, format_sleep_duration
+    global check_sleep_streak, get_sleep_recommendation
+    SLEEP_CHRONOTYPES = []
+    SLEEP_QUALITY_FACTORS = []
+    SLEEP_DISRUPTION_TAGS = []
+    check_all_sleep_rewards = None
+    get_sleep_stats = None
+    format_sleep_duration = None
+    check_sleep_streak = None
+    get_sleep_recommendation = None
+    try:
+        from gamification import (
+            SLEEP_CHRONOTYPES as _SLEEP_CHRONOTYPES,
+            SLEEP_QUALITY_FACTORS as _SLEEP_QUALITY_FACTORS,
+            SLEEP_DISRUPTION_TAGS as _SLEEP_DISRUPTION_TAGS,
+            check_all_sleep_rewards as _check_all_sleep_rewards,
+            get_sleep_stats as _get_sleep_stats,
+            format_sleep_duration as _format_sleep_duration,
+            check_sleep_streak as _check_sleep_streak,
+            get_sleep_recommendation as _get_sleep_recommendation,
+        )
+        SLEEP_CHRONOTYPES = _SLEEP_CHRONOTYPES
+        SLEEP_QUALITY_FACTORS = _SLEEP_QUALITY_FACTORS
+        SLEEP_DISRUPTION_TAGS = _SLEEP_DISRUPTION_TAGS
+        check_all_sleep_rewards = _check_all_sleep_rewards
+        get_sleep_stats = _get_sleep_stats
+        format_sleep_duration = _format_sleep_duration
+        check_sleep_streak = _check_sleep_streak
+        get_sleep_recommendation = _get_sleep_recommendation
+    except ImportError:
+        pass
+    
     if splash:
         splash.set_status("Initializing interface...")
 
@@ -4189,6 +4223,618 @@ class ActivityTab(QtWidgets.QWidget):
         """Update reminder settings."""
         self.blocker.activity_reminder_enabled = self.reminder_checkbox.isChecked()
         self.blocker.activity_reminder_time = self.reminder_time.time().toString("HH:mm")
+        self.blocker.save_config()
+        self._setup_reminder()
+
+
+class SleepTab(QtWidgets.QWidget):
+    """Sleep tracking tab with gamification rewards based on scientific recommendations."""
+    
+    def __init__(self, blocker: 'BlockerCore', parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self._reminder_timer = None
+        self._build_ui()
+        self._refresh_display()
+        self._setup_reminder()
+        self.destroyed.connect(self._cleanup_timer)
+    
+    def _cleanup_timer(self) -> None:
+        """Stop the reminder timer when the widget is destroyed."""
+        if self._reminder_timer is not None:
+            self._reminder_timer.stop()
+            self._reminder_timer = None
+    
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(15, 15, 15, 15)
+        
+        # Header
+        header = QtWidgets.QLabel("😴 Sleep Tracker")
+        header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
+        layout.addWidget(header)
+        
+        # Main content split
+        content_layout = QtWidgets.QHBoxLayout()
+        
+        # Left: Log sleep form
+        left_panel = QtWidgets.QGroupBox("Log Sleep")
+        left_layout = QtWidgets.QVBoxLayout(left_panel)
+        
+        # Date input (sleep date = night of)
+        date_layout = QtWidgets.QHBoxLayout()
+        date_layout.addWidget(QtWidgets.QLabel("Night of:"))
+        self.date_edit = QtWidgets.QDateEdit()
+        self.date_edit.setCalendarPopup(True)
+        # Default to yesterday (logging last night's sleep)
+        yesterday = QtCore.QDate.currentDate().addDays(-1)
+        self.date_edit.setDate(yesterday)
+        self.date_edit.setMaximumDate(QtCore.QDate.currentDate())
+        date_layout.addWidget(self.date_edit)
+        date_layout.addStretch()
+        left_layout.addLayout(date_layout)
+        
+        # Bedtime
+        bed_layout = QtWidgets.QHBoxLayout()
+        bed_layout.addWidget(QtWidgets.QLabel("Bedtime:"))
+        self.bedtime_edit = QtWidgets.QTimeEdit()
+        self.bedtime_edit.setDisplayFormat("HH:mm")
+        self.bedtime_edit.setTime(QtCore.QTime(23, 0))
+        self.bedtime_edit.timeChanged.connect(self._update_sleep_duration)
+        bed_layout.addWidget(self.bedtime_edit)
+        bed_layout.addStretch()
+        left_layout.addLayout(bed_layout)
+        
+        # Wake time
+        wake_layout = QtWidgets.QHBoxLayout()
+        wake_layout.addWidget(QtWidgets.QLabel("Wake time:"))
+        self.wake_edit = QtWidgets.QTimeEdit()
+        self.wake_edit.setDisplayFormat("HH:mm")
+        self.wake_edit.setTime(QtCore.QTime(7, 0))
+        self.wake_edit.timeChanged.connect(self._update_sleep_duration)
+        wake_layout.addWidget(self.wake_edit)
+        wake_layout.addStretch()
+        left_layout.addLayout(wake_layout)
+        
+        # Calculated sleep duration
+        self.duration_label = QtWidgets.QLabel("💤 Sleep duration: 8h 0m")
+        self.duration_label.setStyleSheet("font-weight: bold; color: #4caf50;")
+        left_layout.addWidget(self.duration_label)
+        
+        # Quality rating
+        quality_layout = QtWidgets.QHBoxLayout()
+        quality_layout.addWidget(QtWidgets.QLabel("Sleep quality:"))
+        self.quality_combo = QtWidgets.QComboBox()
+        for quality_id, name, emoji, _ in SLEEP_QUALITY_FACTORS:
+            self.quality_combo.addItem(f"{emoji} {name}", quality_id)
+        self.quality_combo.setCurrentIndex(1)  # Good
+        quality_layout.addWidget(self.quality_combo)
+        left_layout.addLayout(quality_layout)
+        
+        # Disruptions (checkboxes)
+        disruptions_group = QtWidgets.QGroupBox("Disruptions (optional)")
+        disruptions_layout = QtWidgets.QGridLayout(disruptions_group)
+        self.disruption_checks = {}
+        for i, (tag_id, name, emoji, _) in enumerate(SLEEP_DISRUPTION_TAGS):
+            if tag_id == "none":
+                continue  # Skip "none" as it's the default
+            cb = QtWidgets.QCheckBox(f"{emoji} {name}")
+            cb.setProperty("tag_id", tag_id)
+            self.disruption_checks[tag_id] = cb
+            disruptions_layout.addWidget(cb, i // 2, i % 2)
+        left_layout.addWidget(disruptions_group)
+        
+        # Note
+        note_layout = QtWidgets.QHBoxLayout()
+        note_layout.addWidget(QtWidgets.QLabel("Note:"))
+        self.note_input = QtWidgets.QLineEdit()
+        self.note_input.setPlaceholderText("Optional note (dreams, how you feel...)")
+        self.note_input.setMaxLength(150)
+        note_layout.addWidget(self.note_input)
+        left_layout.addLayout(note_layout)
+        
+        # Log button
+        self.log_btn = QtWidgets.QPushButton("🌙 Log Sleep")
+        self.log_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #673ab7;
+                color: white;
+                font-size: 14px;
+                font-weight: bold;
+                padding: 10px;
+                border-radius: 5px;
+            }
+            QPushButton:hover { background-color: #7c4dff; }
+        """)
+        self.log_btn.clicked.connect(self._log_sleep)
+        left_layout.addWidget(self.log_btn)
+        
+        # Quick presets
+        presets_label = QtWidgets.QLabel("Quick Presets:")
+        presets_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
+        left_layout.addWidget(presets_label)
+        
+        presets_layout = QtWidgets.QGridLayout()
+        presets = [
+            ("🌙 Early (22:00-6:00)", "22:00", "06:00"),
+            ("😴 Standard (23:00-7:00)", "23:00", "07:00"),
+            ("🦉 Late (00:00-8:00)", "00:00", "08:00"),
+            ("💤 Long (22:00-7:00)", "22:00", "07:00"),
+        ]
+        for i, (label, bed, wake) in enumerate(presets):
+            btn = QtWidgets.QPushButton(label)
+            btn.setStyleSheet("padding: 5px;")
+            btn.clicked.connect(lambda _, b=bed, w=wake: self._apply_preset(b, w))
+            presets_layout.addWidget(btn, i // 2, i % 2)
+        left_layout.addLayout(presets_layout)
+        
+        left_layout.addStretch()
+        content_layout.addWidget(left_panel)
+        
+        # Right: Stats, recommendations, and history
+        right_panel = QtWidgets.QGroupBox("Stats & Recommendations")
+        right_layout = QtWidgets.QVBoxLayout(right_panel)
+        
+        # Chronotype selector
+        chrono_layout = QtWidgets.QHBoxLayout()
+        chrono_layout.addWidget(QtWidgets.QLabel("Your chronotype:"))
+        self.chronotype_combo = QtWidgets.QComboBox()
+        for chrono_id, name, emoji, _, _, desc in SLEEP_CHRONOTYPES:
+            self.chronotype_combo.addItem(f"{emoji} {name}", chrono_id)
+            self.chronotype_combo.setItemData(
+                self.chronotype_combo.count() - 1, desc, QtCore.Qt.ToolTipRole
+            )
+        # Set current chronotype
+        for i in range(self.chronotype_combo.count()):
+            if self.chronotype_combo.itemData(i) == self.blocker.sleep_chronotype:
+                self.chronotype_combo.setCurrentIndex(i)
+                break
+        self.chronotype_combo.currentIndexChanged.connect(self._on_chronotype_change)
+        chrono_layout.addWidget(self.chronotype_combo)
+        right_layout.addLayout(chrono_layout)
+        
+        # Recommendations display
+        self.recommendations_label = QtWidgets.QLabel()
+        self.recommendations_label.setWordWrap(True)
+        self.recommendations_label.setStyleSheet("background-color: #1e1e2e; padding: 10px; border-radius: 5px;")
+        right_layout.addWidget(self.recommendations_label)
+        self._update_recommendations()
+        
+        # Stats display
+        self.stats_label = QtWidgets.QLabel()
+        self.stats_label.setWordWrap(True)
+        self.stats_label.setStyleSheet("background-color: #1e1e2e; padding: 10px; border-radius: 5px;")
+        right_layout.addWidget(self.stats_label)
+        
+        # History list
+        history_label = QtWidgets.QLabel("📋 Recent Sleep History:")
+        history_label.setStyleSheet("font-weight: bold;")
+        right_layout.addWidget(history_label)
+        
+        self.history_list = QtWidgets.QListWidget()
+        self.history_list.setMaximumHeight(200)
+        self.history_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.history_list.customContextMenuRequested.connect(self._show_context_menu)
+        right_layout.addWidget(self.history_list)
+        
+        # Reminder settings
+        reminder_box = QtWidgets.QGroupBox("⏰ Bedtime Reminder")
+        reminder_layout = QtWidgets.QHBoxLayout(reminder_box)
+        self.reminder_checkbox = QtWidgets.QCheckBox("Enable reminder")
+        self.reminder_checkbox.setChecked(self.blocker.sleep_reminder_enabled)
+        self.reminder_checkbox.stateChanged.connect(self._update_reminder_setting)
+        reminder_layout.addWidget(self.reminder_checkbox)
+        reminder_layout.addWidget(QtWidgets.QLabel("at"))
+        self.reminder_time = QtWidgets.QTimeEdit()
+        self.reminder_time.setDisplayFormat("HH:mm")
+        try:
+            h, m = self.blocker.sleep_reminder_time.split(":")
+            self.reminder_time.setTime(QtCore.QTime(int(h), int(m)))
+        except:
+            self.reminder_time.setTime(QtCore.QTime(21, 0))
+        self.reminder_time.timeChanged.connect(self._update_reminder_setting)
+        reminder_layout.addWidget(self.reminder_time)
+        reminder_layout.addStretch()
+        right_layout.addWidget(reminder_box)
+        
+        right_layout.addStretch()
+        content_layout.addWidget(right_panel)
+        
+        layout.addLayout(content_layout)
+        
+        self._update_sleep_duration()
+    
+    def _update_sleep_duration(self) -> None:
+        """Update the calculated sleep duration display."""
+        bedtime = self.bedtime_edit.time()
+        wake_time = self.wake_edit.time()
+        
+        bed_mins = bedtime.hour() * 60 + bedtime.minute()
+        wake_mins = wake_time.hour() * 60 + wake_time.minute()
+        
+        # Handle overnight sleep
+        if wake_mins <= bed_mins:
+            duration_mins = (24 * 60 - bed_mins) + wake_mins
+        else:
+            duration_mins = wake_mins - bed_mins
+        
+        hours = duration_mins // 60
+        mins = duration_mins % 60
+        
+        # Color based on duration
+        if 7 <= hours + mins/60 <= 9:
+            color = "#4caf50"  # Green - optimal
+            emoji = "🌟"
+        elif 6 <= hours + mins/60 < 7:
+            color = "#ff9800"  # Orange - slightly low
+            emoji = "⚠️"
+        elif hours + mins/60 > 9:
+            color = "#2196f3"  # Blue - long
+            emoji = "💤"
+        else:
+            color = "#f44336"  # Red - too short
+            emoji = "😴"
+        
+        self.duration_label.setText(f"{emoji} Sleep duration: {hours}h {mins}m")
+        self.duration_label.setStyleSheet(f"font-weight: bold; color: {color};")
+    
+    def _apply_preset(self, bedtime: str, wake_time: str) -> None:
+        """Apply a quick preset."""
+        h, m = bedtime.split(":")
+        self.bedtime_edit.setTime(QtCore.QTime(int(h), int(m)))
+        h, m = wake_time.split(":")
+        self.wake_edit.setTime(QtCore.QTime(int(h), int(m)))
+    
+    def _on_chronotype_change(self) -> None:
+        """Handle chronotype selection change."""
+        chrono_id = self.chronotype_combo.currentData()
+        if chrono_id:
+            self.blocker.sleep_chronotype = chrono_id
+            self.blocker.save_config()
+            self._update_recommendations()
+    
+    def _update_recommendations(self) -> None:
+        """Update the recommendations display based on chronotype."""
+        if not get_sleep_recommendation:
+            self.recommendations_label.setText("Sleep recommendations unavailable.")
+            return
+        
+        rec = get_sleep_recommendation(self.blocker.sleep_chronotype)
+        tips_html = "<br>".join(rec["tips"])
+        
+        self.recommendations_label.setText(
+            f"<b>{rec['emoji']} {rec['chronotype']}</b><br><br>"
+            f"🛏️ Optimal bedtime: {rec['optimal_bedtime']}<br>"
+            f"☀️ Recommended wake: {rec['recommended_wake']}<br>"
+            f"⏰ Target: {rec['target_hours']}<br><br>"
+            f"<b>Tips:</b><br>{tips_html}"
+        )
+    
+    def _log_sleep(self) -> None:
+        """Log a sleep entry and check for rewards."""
+        date_str = self.date_edit.date().toString("yyyy-MM-dd")
+        bedtime = self.bedtime_edit.time().toString("HH:mm")
+        wake_time = self.wake_edit.time().toString("HH:mm")
+        quality_id = self.quality_combo.currentData()
+        note = self.note_input.text().strip()
+        
+        # Calculate sleep hours
+        bed_mins = self.bedtime_edit.time().hour() * 60 + self.bedtime_edit.time().minute()
+        wake_mins = self.wake_edit.time().hour() * 60 + self.wake_edit.time().minute()
+        if wake_mins <= bed_mins:
+            duration_mins = (24 * 60 - bed_mins) + wake_mins
+        else:
+            duration_mins = wake_mins - bed_mins
+        sleep_hours = duration_mins / 60
+        
+        # Get disruptions
+        disruptions = [tag_id for tag_id, cb in self.disruption_checks.items() if cb.isChecked()]
+        if not disruptions:
+            disruptions = ["none"]
+        
+        # Check for existing entry on this date
+        existing_idx = -1
+        for i, entry in enumerate(self.blocker.sleep_entries):
+            if entry.get("date") == date_str:
+                existing_idx = i
+                break
+        
+        # Get rewards
+        entries_for_reward = [e for e in self.blocker.sleep_entries if e.get("date") != date_str]
+        reward_info = None
+        if check_all_sleep_rewards and GAMIFICATION_AVAILABLE:
+            active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+            reward_info = check_all_sleep_rewards(
+                entries_for_reward,
+                sleep_hours,
+                bedtime,
+                wake_time,
+                quality_id,
+                disruptions,
+                date_str,
+                self.blocker.sleep_milestones,
+                self.blocker.sleep_chronotype,
+                story_id=active_story,
+            )
+        
+        # Create new entry
+        new_entry = {
+            "date": date_str,
+            "sleep_hours": round(sleep_hours, 2),
+            "bedtime": bedtime,
+            "wake_time": wake_time,
+            "quality": quality_id,
+            "disruptions": disruptions,
+            "score": reward_info.get("score", 0) if reward_info else 0,
+            "note": note,
+        }
+        
+        # Handle existing entry
+        if existing_idx >= 0:
+            reply = QtWidgets.QMessageBox.question(
+                self, "Entry Exists",
+                f"You already have a sleep entry for {date_str}.\nReplace it?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+            if reply != QtWidgets.QMessageBox.Yes:
+                return
+            self.blocker.sleep_entries[existing_idx] = new_entry
+        else:
+            self.blocker.sleep_entries.append(new_entry)
+            self.blocker.sleep_entries.sort(key=lambda x: x.get("date", ""), reverse=True)
+        
+        # Handle rewards
+        if reward_info and GAMIFICATION_AVAILABLE:
+            items_earned = []
+            
+            # Base reward
+            if reward_info.get("reward"):
+                item = reward_info["reward"]
+                
+                # Maybe upgrade item based on luck
+                def maybe_upgrade_item(item: dict) -> dict:
+                    luck = self.blocker.adhd_buster.get("luck_bonus", 0)
+                    if luck > 0:
+                        luck_chance = min(luck / 100, 10)
+                        if random.random() * 100 < luck_chance:
+                            rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+                            try:
+                                current_idx = rarity_order.index(item["rarity"])
+                                if current_idx < len(rarity_order) - 1:
+                                    active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+                                    item = generate_item(rarity=rarity_order[current_idx + 1],
+                                                        story_id=active_story)
+                                    item["lucky_upgrade"] = True
+                            except ValueError:
+                                pass
+                    return item
+                
+                item = maybe_upgrade_item(item)
+                if "inventory" not in self.blocker.adhd_buster:
+                    self.blocker.adhd_buster["inventory"] = []
+                self.blocker.adhd_buster["inventory"].append(item)
+                items_earned.append(item)
+            
+            # Streak reward
+            if reward_info.get("streak_reward"):
+                streak_item = reward_info["streak_reward"]["item"]
+                self.blocker.adhd_buster["inventory"].append(streak_item)
+                items_earned.append(streak_item)
+                self.blocker.sleep_milestones.append(reward_info["streak_reward"]["milestone_id"])
+            
+            # Milestone rewards
+            new_milestone_ids = []
+            for milestone in reward_info.get("new_milestones", []):
+                self.blocker.adhd_buster["inventory"].append(milestone["item"])
+                items_earned.append(milestone["item"])
+                new_milestone_ids.append(milestone["milestone_id"])
+            
+            if new_milestone_ids:
+                self.blocker.sleep_milestones.extend(new_milestone_ids)
+            
+            # Sync hero data
+            if GAMIFICATION_AVAILABLE:
+                sync_hero_data(self.blocker.adhd_buster)
+        
+        self.blocker.save_config()
+        
+        # Show feedback
+        score = new_entry.get("score", 0)
+        msg = f"🌙 Sleep logged for {date_str}\n\n"
+        msg += f"Duration: {format_sleep_duration(sleep_hours) if format_sleep_duration else f'{sleep_hours:.1f}h'}\n"
+        msg += f"Score: {score}/100\n"
+        
+        if reward_info:
+            for m in reward_info.get("messages", [])[:5]:  # Limit messages
+                msg += f"\n{m}"
+            
+            if reward_info.get("reward"):
+                rarity = reward_info["reward"]["rarity"]
+                msg += f"\n\n🎁 Earned: {rarity} item!"
+        
+        QtWidgets.QMessageBox.information(self, "Sleep Logged! 😴", msg)
+        
+        # Clear form
+        self.note_input.clear()
+        for cb in self.disruption_checks.values():
+            cb.setChecked(False)
+        
+        self._refresh_display()
+    
+    def _refresh_display(self) -> None:
+        """Refresh stats and history display."""
+        # Update stats
+        if get_sleep_stats:
+            stats = get_sleep_stats(self.blocker.sleep_entries)
+            streak = stats.get("current_streak", 0)
+            streak_emoji = "🔥" if streak >= 3 else "📊"
+            
+            self.stats_label.setText(
+                f"<b>📊 Your Sleep Stats</b><br><br>"
+                f"🌙 Total nights tracked: {stats['total_nights']}<br>"
+                f"⏰ Average sleep: {stats['avg_hours']:.1f}h<br>"
+                f"📈 This week average: {stats['this_week_avg']:.1f}h<br>"
+                f"🏆 Best score: {stats['best_score']:.0f}/100<br>"
+                f"✅ Nights on target (7+h): {stats['nights_on_target']} "
+                f"({stats['target_rate']:.0f}%)<br>"
+                f"{streak_emoji} Current streak: {streak} nights"
+            )
+        else:
+            entries = self.blocker.sleep_entries
+            self.stats_label.setText(f"📊 {len(entries)} sleep entries logged")
+        
+        # Update history
+        self.history_list.clear()
+        for entry in self.blocker.sleep_entries[:20]:  # Last 20 entries
+            date = entry.get("date", "Unknown")
+            hours = entry.get("sleep_hours", 0)
+            score = entry.get("score", 0)
+            quality = entry.get("quality", "unknown")
+            
+            # Find quality emoji
+            quality_emoji = "😴"
+            for q_id, _, emoji, _ in SLEEP_QUALITY_FACTORS:
+                if q_id == quality:
+                    quality_emoji = emoji
+                    break
+            
+            # Score color
+            if score >= 80:
+                score_color = "🟢"
+            elif score >= 60:
+                score_color = "🟡"
+            else:
+                score_color = "🔴"
+            
+            text = f"{date}: {hours:.1f}h {quality_emoji} {score_color} {score}pts"
+            if entry.get("note"):
+                text += f" 📝"
+            
+            item = QtWidgets.QListWidgetItem(text)
+            item.setData(QtCore.Qt.UserRole, entry)
+            self.history_list.addItem(item)
+    
+    def _show_context_menu(self, pos: QtCore.QPoint) -> None:
+        """Show context menu for history items."""
+        item = self.history_list.itemAt(pos)
+        if not item:
+            return
+        
+        entry_index = self.history_list.row(item)
+        menu = QtWidgets.QMenu(self)
+        
+        view_action = menu.addAction("📋 View Details")
+        delete_action = menu.addAction("🗑️ Delete Entry")
+        
+        action = menu.exec(self.history_list.mapToGlobal(pos))
+        
+        if action == view_action:
+            self._view_entry_details(entry_index)
+        elif action == delete_action:
+            self._delete_entry(entry_index)
+    
+    def _view_entry_details(self, entry_index: int) -> None:
+        """Show details for a sleep entry."""
+        if entry_index < 0 or entry_index >= len(self.blocker.sleep_entries):
+            return
+        entry = self.blocker.sleep_entries[entry_index]
+        
+        disruptions = entry.get("disruptions", [])
+        disruption_text = ""
+        for d in disruptions:
+            for tag_id, name, emoji, _ in SLEEP_DISRUPTION_TAGS:
+                if tag_id == d:
+                    disruption_text += f"  {emoji} {name}\n"
+                    break
+        if not disruption_text:
+            disruption_text = "  None\n"
+        
+        details = (
+            f"📅 Date: {entry.get('date', 'Unknown')}\n"
+            f"🛏️ Bedtime: {entry.get('bedtime', 'Unknown')}\n"
+            f"☀️ Wake time: {entry.get('wake_time', 'Unknown')}\n"
+            f"⏰ Duration: {entry.get('sleep_hours', 0):.1f} hours\n"
+            f"⭐ Quality: {entry.get('quality', 'Unknown')}\n"
+            f"📊 Score: {entry.get('score', 0)}/100\n"
+            f"\n📋 Disruptions:\n{disruption_text}"
+        )
+        if entry.get("note"):
+            details += f"\n📝 Note: {entry['note']}"
+        
+        QtWidgets.QMessageBox.information(self, "Sleep Entry Details", details)
+    
+    def _delete_entry(self, entry_index: int) -> None:
+        """Delete a sleep entry."""
+        if entry_index < 0 or entry_index >= len(self.blocker.sleep_entries):
+            return
+        entry = self.blocker.sleep_entries[entry_index]
+        
+        reply = QtWidgets.QMessageBox.question(
+            self, "Delete Entry",
+            f"Delete sleep entry for {entry.get('date', 'Unknown')}?",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        )
+        
+        if reply == QtWidgets.QMessageBox.Yes:
+            del self.blocker.sleep_entries[entry_index]
+            self.blocker.save_config()
+            self._refresh_display()
+    
+    def _setup_reminder(self) -> None:
+        """Setup bedtime reminder timer."""
+        if self._reminder_timer is not None:
+            self._reminder_timer.stop()
+        
+        if not self.blocker.sleep_reminder_enabled:
+            return
+        
+        self._reminder_timer = QtCore.QTimer(self)
+        self._reminder_timer.timeout.connect(self._check_reminder)
+        self._reminder_timer.start(60000)  # Check every minute
+    
+    def _check_reminder(self) -> None:
+        """Check if it's time to show bedtime reminder."""
+        if not self.blocker.sleep_reminder_enabled:
+            return
+        
+        today = datetime.now().strftime("%Y-%m-%d")
+        if self.blocker.sleep_last_reminder_date == today:
+            return
+        
+        current_time = QtCore.QTime.currentTime()
+        try:
+            h, m = self.blocker.sleep_reminder_time.split(":")
+            reminder_time = QtCore.QTime(int(h), int(m))
+        except:
+            return
+        
+        if current_time >= reminder_time:
+            self.blocker.sleep_last_reminder_date = today
+            self.blocker.save_config()
+            
+            # Get personalized recommendation
+            if get_sleep_recommendation:
+                rec = get_sleep_recommendation(self.blocker.sleep_chronotype)
+                bedtime_rec = rec['optimal_bedtime']
+            else:
+                bedtime_rec = "before midnight"
+            
+            QtWidgets.QMessageBox.information(
+                self, "🌙 Bedtime Reminder",
+                f"Time to start winding down!\n\n"
+                f"Your optimal bedtime: {bedtime_rec}\n\n"
+                "Tips for better sleep:\n"
+                "• Dim the lights\n"
+                "• Put away screens\n"
+                "• Relax and prepare for rest\n\n"
+                "Good sleep = rewards for your hero! 😴"
+            )
+    
+    def _update_reminder_setting(self) -> None:
+        """Update reminder settings."""
+        self.blocker.sleep_reminder_enabled = self.reminder_checkbox.isChecked()
+        self.blocker.sleep_reminder_time = self.reminder_time.time().toString("HH:mm")
         self.blocker.save_config()
         self._setup_reminder()
 
@@ -9592,6 +10238,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Activity tracking tab
         self.activity_tab = ActivityTab(self.blocker, self)
         self.tabs.addTab(self.activity_tab, "🏃 Activity")
+        
+        # Sleep tracking tab
+        self.sleep_tab = SleepTab(self.blocker, self)
+        self.tabs.addTab(self.sleep_tab, "😴 Sleep")
 
         if AI_AVAILABLE:
             self.ai_tab = AITab(self.blocker, self)
