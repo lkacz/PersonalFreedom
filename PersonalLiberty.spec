@@ -1,29 +1,16 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-# Light build - no heavy AI libraries (torch, transformers, sentence-transformers)
-# This reduces the app size from ~3GB to ~100MB
-
-datas = [('productivity_ai.py', '.'), ('gamification.py', '.')]
-binaries = []
-hiddenimports = ['productivity_ai', 'numpy']
-
-# Exclude heavy ML libraries that are no longer used
-excludes = [
-    'torch', 'transformers', 'sentence_transformers', 'huggingface_hub',
-    'tokenizers', 'torchaudio', 'torchvision', 'cupy', 'triton'
-]
-
 
 a = Analysis(
     ['focus_blocker_qt.py'],
     pathex=[],
-    binaries=binaries,
-    datas=datas,
-    hiddenimports=hiddenimports,
+    binaries=[],
+    datas=[('productivity_ai.py', '.'), ('gamification.py', '.')],
+    hiddenimports=['productivity_ai', 'numpy'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=excludes,
+    excludes=['torch', 'transformers', 'sentence_transformers', 'huggingface_hub', 'tokenizers', 'torchaudio', 'torchvision', 'cupy', 'triton'],
     noarchive=False,
     optimize=0,
 )

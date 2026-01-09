@@ -198,6 +198,9 @@ GEAR_SLOTS = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", 
 STORY_GEAR_THEMES = {}
 get_story_gear_theme = None
 get_slot_display_name = None
+# Gear optimization
+optimize_equipped_gear = None
+find_potential_set_bonuses = None
 
 
 def load_heavy_modules(splash: Optional[SplashScreen] = None):
@@ -215,6 +218,7 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
     global set_story_mode, get_story_mode, switch_story, ensure_hero_structure
     global sync_hero_data, is_gamification_enabled
     global GEAR_SLOTS, STORY_GEAR_THEMES, get_story_gear_theme, get_slot_display_name
+    global optimize_equipped_gear, find_potential_set_bonuses
     
     if splash:
         splash.set_status("Loading core modules...")
@@ -4289,9 +4293,13 @@ class SleepTab(QtWidgets.QWidget):
         bed_layout.addWidget(QtWidgets.QLabel("Bedtime:"))
         self.bedtime_edit = QtWidgets.QTimeEdit()
         self.bedtime_edit.setDisplayFormat("HH:mm")
+        self.bedtime_edit.setWrapping(True)  # Allow wrapping past midnight
         self.bedtime_edit.setTime(QtCore.QTime(23, 0))
         self.bedtime_edit.timeChanged.connect(self._update_sleep_duration)
         bed_layout.addWidget(self.bedtime_edit)
+        bed_hint = QtWidgets.QLabel("(wraps past midnight)")
+        bed_hint.setStyleSheet("color: #888; font-size: 11px;")
+        bed_layout.addWidget(bed_hint)
         bed_layout.addStretch()
         left_layout.addLayout(bed_layout)
         
@@ -4300,6 +4308,7 @@ class SleepTab(QtWidgets.QWidget):
         wake_layout.addWidget(QtWidgets.QLabel("Wake time:"))
         self.wake_edit = QtWidgets.QTimeEdit()
         self.wake_edit.setDisplayFormat("HH:mm")
+        self.wake_edit.setWrapping(True)  # Allow wrapping past midnight
         self.wake_edit.setTime(QtCore.QTime(7, 0))
         self.wake_edit.timeChanged.connect(self._update_sleep_duration)
         wake_layout.addWidget(self.wake_edit)
@@ -4368,8 +4377,8 @@ class SleepTab(QtWidgets.QWidget):
         presets = [
             ("🌙 Early (22:00-6:00)", "22:00", "06:00"),
             ("😴 Standard (23:00-7:00)", "23:00", "07:00"),
-            ("🦉 Late (00:00-8:00)", "00:00", "08:00"),
-            ("💤 Long (22:00-7:00)", "22:00", "07:00"),
+            ("🦉 Night Owl (01:00-9:00)", "01:00", "09:00"),
+            ("🌃 Late Night (02:00-10:00)", "02:00", "10:00"),
         ]
         for i, (label, bed, wake) in enumerate(presets):
             btn = QtWidgets.QPushButton(label)
@@ -10606,7 +10615,14 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     def _quit_application(self) -> None:
         """Force quit the application (bypasses minimize to tray)."""
         self._force_quit = True
+        # Stop tray icon and update timer
+        if self.tray_icon:
+            self.tray_icon.hide()
+        if hasattr(self, 'tray_update_timer') and self.tray_update_timer:
+            self.tray_update_timer.stop()
+        # Force close the window and quit the app
         self.close()
+        QtWidgets.QApplication.instance().quit()
 
     def changeEvent(self, event: QtCore.QEvent) -> None:
         """Handle window state changes."""
@@ -10671,9 +10687,18 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             )
             return
         
-        self.adhd_dialog = ADHDBusterDialog(self.blocker, self)
-        self.adhd_dialog.finished.connect(self._on_adhd_dialog_closed)
-        self.adhd_dialog.exec()
+        try:
+            self.adhd_dialog = ADHDBusterDialog(self.blocker, self)
+            self.adhd_dialog.finished.connect(self._on_adhd_dialog_closed)
+            self.adhd_dialog.exec()
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(
+                self, "Error",
+                f"Failed to open ADHD Buster dialog:\n\n{e}"
+            )
+            import traceback
+            traceback.print_exc()
+            return
         if GAMIFICATION_AVAILABLE and hasattr(self, "buster_btn"):
             # Update button visibility and text based on mode
             enabled = is_gamification_enabled(self.blocker.adhd_buster)
@@ -10744,7 +10769,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if self.timer_tab.blocker.mode == BlockMode.HARDCORE:
                 reply = QtWidgets.QMessageBox.question(
                     self,
-                    "� Hardcore Mode Active",
+                    "🔥 Hardcore Mode Active",
                     "A Hardcore session is running!\n\n"
                     "You must solve the math challenge to exit.\n\nContinue?",
                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
@@ -10755,6 +10780,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                     if dialog.exec() == QtWidgets.QDialog.Accepted:
                         self.timer_tab._force_stop_session()
                         event.accept()
+                        QtWidgets.QApplication.instance().quit()
                     else:
                         event.ignore()
                 else:
@@ -10771,10 +10797,12 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if reply == QtWidgets.QMessageBox.Yes:
                 self.timer_tab._force_stop_session()
                 event.accept()
+                QtWidgets.QApplication.instance().quit()
             else:
                 event.ignore()
         else:
             event.accept()
+            QtWidgets.QApplication.instance().quit()
 
     def show_ai_session_complete(self, session_duration: int) -> None:
         """Show session complete dialog with break suggestions."""
@@ -10834,6 +10862,86 @@ def check_single_instance():
         return True
 
 
+def find_and_activate_existing_window():
+    """Try to find and activate an existing Personal Liberty window."""
+    if platform.system() != "Windows":
+        return False
+    
+    try:
+        import ctypes
+        from ctypes import wintypes
+        
+        user32 = ctypes.windll.user32
+        
+        # Find window by title
+        hwnd = user32.FindWindowW(None, "Personal Liberty")
+        if hwnd:
+            # Constants
+            SW_RESTORE = 9
+            SW_SHOW = 5
+            
+            # Restore if minimized
+            user32.ShowWindow(hwnd, SW_RESTORE)
+            # Bring to foreground
+            user32.SetForegroundWindow(hwnd)
+            return True
+        
+        # Try partial match with version
+        EnumWindows = user32.EnumWindows
+        EnumWindowsProc = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+        GetWindowTextW = user32.GetWindowTextW
+        GetWindowTextLengthW = user32.GetWindowTextLengthW
+        
+        found_hwnd = [None]
+        
+        def enum_callback(hwnd, lParam):
+            length = GetWindowTextLengthW(hwnd)
+            if length > 0:
+                buff = ctypes.create_unicode_buffer(length + 1)
+                GetWindowTextW(hwnd, buff, length + 1)
+                title = buff.value
+                if "Personal Liberty" in title:
+                    found_hwnd[0] = hwnd
+                    return False  # Stop enumeration
+            return True
+        
+        EnumWindows(EnumWindowsProc(enum_callback), 0)
+        
+        if found_hwnd[0]:
+            user32.ShowWindow(found_hwnd[0], 9)  # SW_RESTORE
+            user32.SetForegroundWindow(found_hwnd[0])
+            return True
+        
+        return False
+    except Exception:
+        return False
+
+
+def kill_existing_instances():
+    """Kill all existing PersonalLiberty processes except the current one."""
+    if platform.system() != "Windows":
+        return False
+    
+    try:
+        import subprocess
+        current_pid = os.getpid()
+        
+        # Use taskkill to terminate PersonalLiberty.exe processes
+        result = subprocess.run(
+            ["taskkill", "/F", "/IM", "PersonalLiberty.exe"],
+            capture_output=True,
+            text=True
+        )
+        
+        # Give processes time to terminate
+        import time
+        time.sleep(1)
+        
+        return True
+    except Exception:
+        return False
+
+
 def main() -> None:
     # Set application attributes before creating QApplication
     QtWidgets.QApplication.setHighDpiScaleFactorRoundingPolicy(
@@ -10849,12 +10957,46 @@ def main() -> None:
     # Check for single instance first
     mutex_handle = check_single_instance()
     if mutex_handle is None:
-        QtWidgets.QMessageBox.warning(
-            None,
-            "Already Running",
-            "Personal Liberty is already running.\n\nCheck your system tray or taskbar."
-        )
-        sys.exit(0)
+        # Another instance is running - ask user what to do
+        msg_box = QtWidgets.QMessageBox()
+        msg_box.setWindowTitle("Already Running")
+        msg_box.setText("Personal Liberty is already running.")
+        msg_box.setInformativeText("What would you like to do?")
+        msg_box.setIcon(QtWidgets.QMessageBox.Question)
+        
+        switch_btn = msg_box.addButton("Switch to Running App", QtWidgets.QMessageBox.AcceptRole)
+        kill_btn = msg_box.addButton("Kill && Restart", QtWidgets.QMessageBox.DestructiveRole)
+        cancel_btn = msg_box.addButton("Cancel", QtWidgets.QMessageBox.RejectRole)
+        
+        msg_box.exec()
+        clicked = msg_box.clickedButton()
+        
+        if clicked == switch_btn:
+            # Try to activate existing window
+            if find_and_activate_existing_window():
+                sys.exit(0)
+            else:
+                QtWidgets.QMessageBox.warning(
+                    None, "Not Found",
+                    "Could not find the running window.\n\n"
+                    "The app may be minimized to system tray.\n"
+                    "Check your system tray icons."
+                )
+                sys.exit(0)
+        elif clicked == kill_btn:
+            # Kill existing instances and continue
+            kill_existing_instances()
+            # Try to acquire mutex again
+            mutex_handle = check_single_instance()
+            if mutex_handle is None:
+                QtWidgets.QMessageBox.critical(
+                    None, "Failed",
+                    "Could not terminate the existing instance.\n\n"
+                    "Please close it manually from Task Manager."
+                )
+                sys.exit(1)
+        else:
+            sys.exit(0)
     
     # Parse command-line arguments
     start_minimized = "--minimized" in sys.argv or "--tray" in sys.argv
@@ -10886,7 +11028,18 @@ def main() -> None:
     else:
         window.show()
     
-    sys.exit(app.exec())
+    exit_code = app.exec()
+    
+    # Release the mutex on exit
+    if mutex_handle and mutex_handle is not True:
+        try:
+            import ctypes
+            ctypes.windll.kernel32.ReleaseMutex(mutex_handle)
+            ctypes.windll.kernel32.CloseHandle(mutex_handle)
+        except Exception:
+            pass
+    
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":
