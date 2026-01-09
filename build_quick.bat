@@ -22,7 +22,6 @@ echo [1/2] Building Main GUI (PySide6/Qt)...
 pyinstaller --noconfirm --onefile --windowed --uac-admin ^
     --name "PersonalLiberty" ^
     --add-data "productivity_ai.py;." ^
-    --add-data "local_ai.py;." ^
     --add-data "gamification.py;." ^
     --hidden-import=productivity_ai ^
     --hidden-import=PySide6 ^
