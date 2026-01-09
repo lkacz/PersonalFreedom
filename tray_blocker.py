@@ -499,6 +499,21 @@ class TrayBlocker:
 
     def start_session(self, minutes):
         """Start a focus session"""
+        # Validate minutes
+        try:
+            minutes = int(minutes)
+        except (TypeError, ValueError):
+            print("Invalid session duration!")
+            return
+        
+        if minutes <= 0:
+            print("Session duration must be positive!")
+            return
+        
+        # Cap at reasonable maximum (24 hours)
+        if minutes > 1440:
+            minutes = 1440
+        
         if self.is_blocking:
             print("Session already active!")
             return

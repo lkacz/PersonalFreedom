@@ -7,7 +7,7 @@ Includes: item generation, set bonuses, lucky merge, diary entries.
 
 import random
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 # ============================================================================
@@ -10509,7 +10509,7 @@ def generate_weekly_challenges(week_start: str = None) -> list:
     if week_start is None:
         today = datetime.now()
         # Get Monday of current week
-        monday = today - __import__('datetime').timedelta(days=today.weekday())
+        monday = today - timedelta(days=today.weekday())
         week_start = monday.strftime("%Y-%m-%d")
     
     random.seed(hash(week_start + "weekly"))
@@ -10555,7 +10555,7 @@ def update_challenge_progress(adhd_buster: dict, event_type: str, amount: int = 
     
     # Check weekly challenges
     today_dt = datetime.now()
-    monday = today_dt - __import__('datetime').timedelta(days=today_dt.weekday())
+    monday = today_dt - timedelta(days=today_dt.weekday())
     week_start = monday.strftime("%Y-%m-%d")
     
     if "weekly_challenges" not in adhd_buster or adhd_buster.get("weekly_challenges_start") != week_start:
@@ -10715,7 +10715,7 @@ def use_streak_freeze(adhd_buster: dict, streak_type: str = "focus") -> dict:
 def check_streak_frozen(adhd_buster: dict, streak_type: str, check_date: str = None) -> bool:
     """Check if a streak was frozen on a given date."""
     if check_date is None:
-        yesterday = datetime.now() - __import__('datetime').timedelta(days=1)
+        yesterday = datetime.now() - timedelta(days=1)
         check_date = yesterday.strftime("%Y-%m-%d")
     
     frozen_streaks = adhd_buster.get("frozen_streaks", {})

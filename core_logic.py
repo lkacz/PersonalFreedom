@@ -257,9 +257,10 @@ class BlockerCore:
                     config = json.load(f)
                     self.blacklist = config.get('blacklist', default_blacklist)
                     self.whitelist = config.get('whitelist', [])
-                    self.categories_enabled = config.get(
-                        'categories_enabled',
-                        {cat: True for cat in SITE_CATEGORIES})
+                    # Merge loaded categories with current defaults (for new categories)
+                    default_categories = {cat: True for cat in SITE_CATEGORIES}
+                    loaded_categories = config.get('categories_enabled', {})
+                    self.categories_enabled = {**default_categories, **loaded_categories}
                     self.password_hash = config.get('password_hash')
                     self.pomodoro_work = config.get('pomodoro_work', 25)
                     self.pomodoro_break = config.get('pomodoro_break', 5)

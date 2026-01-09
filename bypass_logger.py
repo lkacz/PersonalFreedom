@@ -385,12 +385,16 @@ class BypassLogger:
         return insights
 
 
-# Singleton instance
+# Singleton instance with thread-safe initialization
 _bypass_logger_instance = None
+_bypass_logger_lock = threading.Lock()
 
 def get_bypass_logger() -> BypassLogger:
-    """Get the singleton bypass logger instance."""
+    """Get the singleton bypass logger instance (thread-safe)."""
     global _bypass_logger_instance
     if _bypass_logger_instance is None:
-        _bypass_logger_instance = BypassLogger()
+        with _bypass_logger_lock:
+            # Double-check after acquiring lock
+            if _bypass_logger_instance is None:
+                _bypass_logger_instance = BypassLogger()
     return _bypass_logger_instance
