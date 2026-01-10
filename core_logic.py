@@ -263,14 +263,19 @@ class BlockerCore:
                     loaded_categories = config.get('categories_enabled', {})
                     self.categories_enabled = {**default_categories, **loaded_categories}
                     self.password_hash = config.get('password_hash')
-                    self.pomodoro_work = config.get('pomodoro_work', 25)
-                    self.pomodoro_break = config.get('pomodoro_break', 5)
-                    self.pomodoro_long_break = config.get('pomodoro_long_break', 15)
+                    # Validate numeric config values to prevent crashes from corrupted config
+                    pomo_work = config.get('pomodoro_work', 25)
+                    self.pomodoro_work = pomo_work if isinstance(pomo_work, (int, float)) and pomo_work > 0 else 25
+                    pomo_break = config.get('pomodoro_break', 5)
+                    self.pomodoro_break = pomo_break if isinstance(pomo_break, (int, float)) and pomo_break > 0 else 5
+                    pomo_long = config.get('pomodoro_long_break', 15)
+                    self.pomodoro_long_break = pomo_long if isinstance(pomo_long, (int, float)) and pomo_long > 0 else 15
                     self.schedules = config.get('schedules', [])
                     self.priorities = config.get('priorities', [])
                     self.show_priorities_on_startup = config.get('show_priorities_on_startup', False)
                     self.priority_checkin_enabled = config.get('priority_checkin_enabled', False)
-                    self.priority_checkin_interval = config.get('priority_checkin_interval', 30)
+                    checkin_interval = config.get('priority_checkin_interval', 30)
+                    self.priority_checkin_interval = checkin_interval if isinstance(checkin_interval, (int, float)) and checkin_interval > 0 else 30
                     self.minimize_to_tray = config.get('minimize_to_tray', True)
                     self.adhd_buster = config.get('adhd_buster', {"inventory": [], "equipped": {}})
                     # Weight tracking - validate entries on load

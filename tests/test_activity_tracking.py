@@ -140,7 +140,7 @@ class TestEffectiveMinutesCalculation:
 
 
 class TestActivityRewardRarity:
-    """Test reward rarity calculation based on effective minutes."""
+    """Test reward rarity calculation based on effective minutes (moving window)."""
 
     def test_below_minimum_no_reward(self):
         """Below minimum threshold (8) should give no reward."""
@@ -148,33 +148,53 @@ class TestActivityRewardRarity:
         assert get_activity_reward_rarity(7) is None
         assert get_activity_reward_rarity(7.9) is None
 
-    def test_minimum_gives_common(self):
-        """8+ effective minutes should give Common (10 min light walk = 8)."""
-        assert get_activity_reward_rarity(8) == "Common"
-        assert get_activity_reward_rarity(10) == "Common"
-        assert get_activity_reward_rarity(15) == "Common"
-        assert get_activity_reward_rarity(19) == "Common"
+    def test_minimum_gives_common_weighted(self):
+        """8+ effective minutes should give Common-centered distribution (75% Common)."""
+        from collections import Counter
+        counts = Counter(get_activity_reward_rarity(8) for _ in range(100))
+        # Should be heavily weighted toward Common
+        assert counts.get("Common", 0) >= 50, f"Expected mostly Common, got {counts}"
+        # Should not get Epic or Legendary
+        assert counts.get("Epic", 0) == 0
+        assert counts.get("Legendary", 0) == 0
 
-    def test_20_gives_uncommon(self):
-        """20+ effective minutes should give Uncommon."""
-        assert get_activity_reward_rarity(20) == "Uncommon"
-        assert get_activity_reward_rarity(35) == "Uncommon"
-        assert get_activity_reward_rarity(39) == "Uncommon"
+    def test_20_gives_uncommon_weighted(self):
+        """20+ effective minutes should give Uncommon-centered distribution."""
+        from collections import Counter
+        counts = Counter(get_activity_reward_rarity(20) for _ in range(100))
+        # Uncommon should be most common
+        assert counts.get("Uncommon", 0) >= 30, f"Expected mostly Uncommon, got {counts}"
+        # Should not get Legendary
+        assert counts.get("Legendary", 0) == 0
 
-    def test_40_gives_rare(self):
-        """40+ effective minutes should give Rare."""
-        assert get_activity_reward_rarity(40) == "Rare"
-        assert get_activity_reward_rarity(60) == "Rare"
-        assert get_activity_reward_rarity(69) == "Rare"
+    def test_40_gives_rare_weighted(self):
+        """40+ effective minutes should give Rare-centered distribution."""
+        from collections import Counter
+        counts = Counter(get_activity_reward_rarity(40) for _ in range(100))
+        # Rare should be most common
+        assert counts.get("Rare", 0) >= 30, f"Expected mostly Rare, got {counts}"
 
-    def test_70_gives_epic(self):
-        """70+ effective minutes should give Epic."""
-        assert get_activity_reward_rarity(70) == "Epic"
-        assert get_activity_reward_rarity(100) == "Epic"
-        assert get_activity_reward_rarity(119) == "Epic"
+    def test_70_gives_epic_weighted(self):
+        """70+ effective minutes should give Epic-centered distribution."""
+        from collections import Counter
+        counts = Counter(get_activity_reward_rarity(70) for _ in range(100))
+        # Epic should be most common
+        assert counts.get("Epic", 0) >= 30, f"Expected mostly Epic, got {counts}"
+        # Should not get Common
+        assert counts.get("Common", 0) == 0
+
+    def test_100_gives_legendary_weighted(self):
+        """100+ effective minutes should give Legendary-centered distribution (75%)."""
+        from collections import Counter
+        counts = Counter(get_activity_reward_rarity(100) for _ in range(100))
+        # Legendary should be dominant
+        assert counts.get("Legendary", 0) >= 50, f"Expected mostly Legendary, got {counts}"
+        # Should not get Common or Uncommon
+        assert counts.get("Common", 0) == 0
+        assert counts.get("Uncommon", 0) == 0
 
     def test_120_gives_legendary(self):
-        """120+ effective minutes should give Legendary."""
+        """120+ effective minutes should give 100% Legendary."""
         assert get_activity_reward_rarity(120) == "Legendary"
         assert get_activity_reward_rarity(180) == "Legendary"
         assert get_activity_reward_rarity(500) == "Legendary"
@@ -262,18 +282,18 @@ class TestActivityEntryReward:
         """10 min moderate walk should give Common reward."""
         result = check_activity_entry_reward(10, "walking", "moderate")
         assert result["reward"] is not None
-        assert result["rarity"] == "Common"
+        assert result["rarity"] in ["Common", "Uncommon", "Rare"]  # 8 min → Common-centered
 
     def test_30min_run_gives_good_reward(self):
-        """30 min vigorous run should give good reward."""
-        # 30 * 2.0 * 1.3 = 78 effective minutes -> Epic
+        """30 min vigorous run should give Epic-centered reward."""
+        # 30 * 2.0 * 1.3 = 78 effective minutes -> Epic-centered distribution
         result = check_activity_entry_reward(30, "running", "vigorous")
         assert result["reward"] is not None
-        assert result["rarity"] == "Epic"
+        assert result["rarity"] in ["Rare", "Epic", "Legendary"]  # 78 min → Epic-centered
 
     def test_60min_hiit_gives_legendary(self):
         """60 min intense HIIT should give Legendary."""
-        # 60 * 2.5 * 1.6 = 240 effective minutes -> Legendary
+        # 60 * 2.5 * 1.6 = 240 effective minutes -> 100% Legendary
         result = check_activity_entry_reward(60, "hiit", "intense")
         assert result["reward"] is not None
         assert result["rarity"] == "Legendary"
@@ -500,12 +520,13 @@ class TestStreakThresholds:
 class TestEdgeCases:
     """Test edge cases and boundary conditions."""
 
-    def test_10min_light_walk_earns_common(self):
-        """Per user spec: 10 min light walking should earn at least Common."""
-        # 10 min * 1.0 (walking) * 0.8 (light) = 8 effective min
+    def test_10min_light_walk_earns_common_weighted(self):
+        """Per user spec: 10 min light walking should earn Common-weighted reward."""
+        # 10 min * 1.0 (walking) * 0.8 (light) = 8 effective min → Common-centered
         result = check_activity_entry_reward(10, "walking", "light")
         assert result["reward"] is not None
-        assert result["rarity"] == "Common"
+        # With moving window, 8 min gives Common 75%, Uncommon 20%, Rare 5%
+        assert result["rarity"] in ["Common", "Uncommon", "Rare"]
 
     def test_10min_light_stretching_earns_common(self):
         """10 min light stretching should still earn Common."""
@@ -515,11 +536,12 @@ class TestEdgeCases:
         assert result["effective_minutes"] == 6.4
 
     def test_13min_stretching_light_earns_reward(self):
-        """13 min light stretching reaches 8+ effective minutes."""
-        # 13 * 0.8 * 0.8 = 8.32 effective min
+        """13 min light stretching reaches 8+ effective minutes (Common-weighted)."""
+        # 13 * 0.8 * 0.8 = 8.32 effective min → Common-centered distribution
         result = check_activity_entry_reward(13, "stretching", "light")
         assert result["reward"] is not None
-        assert result["rarity"] == "Common"
+        # With moving window, Common is most likely but not guaranteed
+        assert result["rarity"] in ["Common", "Uncommon", "Rare"]
 
     def test_below_10min_duration_no_reward_check(self):
         """Activities under 10 min duration skip reward calculation."""

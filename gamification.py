@@ -2497,35 +2497,66 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
 
 
 def calculate_rarity_bonuses(session_minutes: int = 0, streak_days: int = 0) -> dict:
-    """Calculate rarity weight adjustments based on session length and streak."""
-    session_bonus = 0
-    if session_minutes >= 120:
-        session_bonus = 50
-    elif session_minutes >= 90:
-        session_bonus = 35
-    elif session_minutes >= 60:
-        session_bonus = 20
-    elif session_minutes >= 30:
-        session_bonus = 10
-    elif session_minutes >= 15:
-        session_bonus = 5
+    """
+    Calculate rarity distribution using a moving window system.
     
-    streak_bonus = 0
+    The window [5%, 20%, 50%, 20%, 5%] shifts through tiers based on session length:
+    - 30min: Center on Common (tier 0)
+    - 60min: Center on Uncommon (tier 1)
+    - 2hr: Center on Rare (tier 2)
+    - 3hr: Center on Epic (tier 3)
+    - 4hr: Center on Legendary (tier 4)
+    - 5hr: Center on tier 5 (virtual, overflow to Legendary)
+    - 6hr+: 100% Legendary
+    - 7hr+: 100% Legendary + 20% chance of bonus item
+    - 8hr+: 100% Legendary + 50% chance of bonus item
+    """
+    # Determine center tier based on session length
+    # Tiers: 0=Common, 1=Uncommon, 2=Rare, 3=Epic, 4=Legendary
+    if session_minutes >= 360:      # 6hr+ = 100% Legendary
+        center_tier = 6  # Far enough that window gives 100% Legendary
+    elif session_minutes >= 300:    # 5hr
+        center_tier = 5
+    elif session_minutes >= 240:    # 4hr
+        center_tier = 4
+    elif session_minutes >= 180:    # 3hr
+        center_tier = 3
+    elif session_minutes >= 120:    # 2hr
+        center_tier = 2
+    elif session_minutes >= 60:     # 1hr
+        center_tier = 1
+    elif session_minutes >= 30:     # 30min
+        center_tier = 0
+    else:
+        center_tier = -1  # Use base distribution for <30min
+    
+    # Calculate bonus item chance for 7hr+
+    bonus_item_chance = 0
+    if session_minutes >= 480:      # 8hr = 50% chance
+        bonus_item_chance = 50
+    elif session_minutes >= 420:    # 7hr = 20% chance
+        bonus_item_chance = 20
+    
+    # Streak bonus (adds to center tier)
+    streak_tier_bonus = 0
     if streak_days >= 60:
-        streak_bonus = 60
+        streak_tier_bonus = 2
     elif streak_days >= 30:
-        streak_bonus = 40
+        streak_tier_bonus = 1.5
     elif streak_days >= 14:
-        streak_bonus = 25
+        streak_tier_bonus = 1
     elif streak_days >= 7:
-        streak_bonus = 15
-    elif streak_days >= 3:
-        streak_bonus = 5
+        streak_tier_bonus = 0.5
     
     return {
-        "session_bonus": session_bonus,
-        "streak_bonus": streak_bonus,
-        "total_bonus": session_bonus + streak_bonus
+        "center_tier": center_tier,
+        "streak_tier_bonus": streak_tier_bonus,
+        "bonus_item_chance": bonus_item_chance,
+        "session_minutes": session_minutes,
+        # Keep legacy fields for compatibility
+        "session_bonus": min(session_minutes, 480) // 4.8 if session_minutes > 0 else 0,
+        "streak_bonus": streak_tier_bonus * 20,
+        "total_bonus": (center_tier + streak_tier_bonus) * 20 if center_tier >= 0 else 0
     }
 
 
@@ -2650,6 +2681,11 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     """
     Generate a random item with rarity influenced by session length and streak.
     
+    Uses a moving window system where longer sessions shift the probability
+    distribution toward higher rarities:
+    - Window pattern: [5%, 20%, 50%, 20%, 5%] centered on a tier
+    - Overflow at edges is absorbed by the edge tier
+    
     Args:
         rarity: Force a specific rarity (None = random based on weights)
         session_minutes: Session length for luck bonus
@@ -2660,21 +2696,28 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         dict with item properties including story_theme for display
     """
     if rarity is None:
-        rarities = list(ITEM_RARITIES.keys())
+        rarities = list(ITEM_RARITIES.keys())  # [Common, Uncommon, Rare, Epic, Legendary]
         base_weights = [ITEM_RARITIES[r]["weight"] for r in rarities]
         
         bonuses = calculate_rarity_bonuses(session_minutes, streak_days)
-        total_bonus = bonuses["total_bonus"]
+        center_tier = bonuses.get("center_tier", -1)
+        streak_bonus = bonuses.get("streak_tier_bonus", 0)
         
-        if total_bonus > 0:
-            weights = base_weights.copy()
-            shift_amount = min(weights[0] * (total_bonus / 100), weights[0] * 0.7)
-            weights[0] -= shift_amount
-            weights[1] += shift_amount * 0.25
-            weights[2] += shift_amount * 0.35
-            weights[3] += shift_amount * 0.25
-            weights[4] += shift_amount * 0.15
+        # Adjust center tier with streak bonus
+        effective_center = center_tier + streak_bonus
+        
+        if effective_center >= 0:
+            # Moving window: [5%, 20%, 50%, 20%, 5%] centered on effective_center
+            window = [5, 20, 50, 20, 5]  # -2, -1, 0, +1, +2 from center
+            weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+            
+            for offset, pct in zip([-2, -1, 0, 1, 2], window):
+                target_tier = int(effective_center + offset)
+                # Clamp to valid range [0, 4] - overflow absorbed at edges
+                clamped_tier = max(0, min(4, target_tier))
+                weights[clamped_tier] += pct
         else:
+            # No bonus (<30min) - use base distribution
             weights = base_weights
         
         rarity = random.choices(rarities, weights=weights)[0]
@@ -2715,6 +2758,51 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         "story_theme": theme_id,  # Track which theme generated this item
         "obtained_at": datetime.now().isoformat()
     }
+
+
+def generate_session_items(session_minutes: int = 0, streak_days: int = 0,
+                           story_id: str = None) -> list:
+    """
+    Generate items for a completed session, potentially including bonus items.
+    
+    For sessions 7hr+, there's a chance to get a bonus Legendary item:
+    - 7hr: 20% chance of bonus Legendary
+    - 8hr: 50% chance of bonus Legendary
+    
+    Args:
+        session_minutes: Session length in minutes
+        streak_days: Streak days for luck bonus
+        story_id: Story theme to use for item generation
+    
+    Returns:
+        List of generated items (1-2 items)
+    """
+    items = []
+    
+    # Generate primary item
+    primary_item = generate_item(
+        session_minutes=session_minutes,
+        streak_days=streak_days,
+        story_id=story_id
+    )
+    items.append(primary_item)
+    
+    # Check for bonus item (7hr+ sessions)
+    bonuses = calculate_rarity_bonuses(session_minutes, streak_days)
+    bonus_chance = bonuses.get("bonus_item_chance", 0)
+    
+    if bonus_chance > 0 and random.randint(1, 100) <= bonus_chance:
+        # Bonus item is always Legendary
+        bonus_item = generate_item(
+            rarity="Legendary",
+            session_minutes=session_minutes,
+            streak_days=streak_days,
+            story_id=story_id
+        )
+        bonus_item["is_bonus"] = True  # Mark as bonus item
+        items.append(bonus_item)
+    
+    return items
 
 
 def calculate_character_power(adhd_buster: dict, include_set_bonus: bool = True) -> int:
@@ -7016,8 +7104,21 @@ def ensure_hero_structure(adhd_buster: dict) -> dict:
     if active_story not in adhd_buster.get("story_heroes", {}):
         adhd_buster["story_heroes"][active_story] = _create_empty_hero()
     
-    # Sync flat structure for backward compatibility
-    _sync_active_hero_to_flat_internal(adhd_buster)
+    # Ensure flat keys exist (init with defaults if missing, but DO NOT overwrite)
+    # OLD: _sync_active_hero_to_flat_internal(adhd_buster) -- caused data loss by overwriting changes
+    target_keys = {
+        "inventory": [],
+        "equipped": {},
+        "story_decisions": {},
+        "diary": [],
+        "luck_bonus": 0,
+        "total_collected": 0,
+        "last_daily_reward_date": "",
+        "max_power_reached": 0
+    }
+    for k, v in target_keys.items():
+        if k not in adhd_buster:
+            adhd_buster[k] = v
     
     return adhd_buster
 
@@ -7092,6 +7193,10 @@ def set_story_mode(adhd_buster: dict, mode: str) -> bool:
         return False
     
     ensure_hero_structure(adhd_buster)
+    
+    # Save current state before switching
+    _sync_flat_to_active_hero(adhd_buster)
+    
     adhd_buster["story_mode"] = mode
     _sync_active_hero_to_flat(adhd_buster)
     return True
@@ -7149,12 +7254,28 @@ def _sync_flat_to_active_hero(adhd_buster: dict) -> None:
     """
     Sync the flat structure back to the active hero's data.
     Call this after any code modifies the flat structure.
-    """
-    ensure_hero_structure(adhd_buster)
-    hero = get_active_hero(adhd_buster)
     
-    if hero is None:
+    NOTE: Does NOT call ensure_hero_structure to avoid the circular sync issue
+    where ensure_hero_structure would overwrite flat data from hero data.
+    """
+    mode = adhd_buster.get("story_mode", STORY_MODE_ACTIVE)
+    
+    if mode == STORY_MODE_DISABLED:
         return  # Disabled mode, nothing to sync
+    
+    # Get hero directly without ensure_hero_structure to avoid circular sync
+    if mode == STORY_MODE_HERO_ONLY:
+        hero = adhd_buster.get("free_hero")
+        if hero is None:
+            adhd_buster["free_hero"] = _create_empty_hero()
+            hero = adhd_buster["free_hero"]
+    else:
+        story_id = adhd_buster.get("active_story", "warrior")
+        heroes = adhd_buster.get("story_heroes", {})
+        if story_id not in heroes:
+            heroes[story_id] = _create_empty_hero()
+            adhd_buster["story_heroes"] = heroes
+        hero = heroes[story_id]
     
     # Sync flat data back to hero
     hero["inventory"] = adhd_buster.get("inventory", [])
@@ -7472,24 +7593,57 @@ def calculate_weight_loss(current_weight: float, previous_weight: float) -> floa
 
 def get_daily_weight_reward_rarity(weight_loss_grams: float) -> str:
     """
-    Determine item rarity based on daily weight loss.
+    Determine item rarity based on daily weight loss using moving window.
+    
+    Uses a moving window system where higher weight loss shifts probability
+    toward higher rarities:
+    - Window pattern: [5%, 20%, 50%, 20%, 5%] centered on a tier
+    - Overflow at edges is absorbed by the edge tier
+    
+    Distribution:
+    - 0g: Common-centered (75% C, 20% U, 5% R)
+    - 100g: Uncommon-centered (25% C, 50% U, 20% R, 5% E)
+    - 200g: Rare-centered (5% C, 20% U, 50% R, 20% E, 5% L)
+    - 300g: Epic-centered (5% U, 20% R, 50% E, 25% L)
+    - 400g: Legendary-centered (5% R, 20% E, 75% L)
+    - 500g+: 100% Legendary
     
     Args:
         weight_loss_grams: Weight lost since previous entry (in grams)
     
     Returns:
-        Rarity string
+        Rarity string selected from weighted distribution
     """
     if weight_loss_grams < 0:
         return None  # No reward for weight gain
     
-    # Find the highest threshold that was met
-    rarity = "Common"
-    for threshold, tier in sorted(WEIGHT_DAILY_THRESHOLDS.items()):
-        if weight_loss_grams >= threshold:
-            rarity = tier
+    # Determine center tier based on weight loss
+    # Tiers: 0=Common, 1=Uncommon, 2=Rare, 3=Epic, 4=Legendary
+    if weight_loss_grams >= 500:
+        center_tier = 6  # Far enough for 100% Legendary
+    elif weight_loss_grams >= 400:
+        center_tier = 5
+    elif weight_loss_grams >= 300:
+        center_tier = 3  # Epic-centered
+    elif weight_loss_grams >= 200:
+        center_tier = 2  # Rare-centered
+    elif weight_loss_grams >= 100:
+        center_tier = 1  # Uncommon-centered
+    else:  # 0-99g (maintained or small loss) - Common centered
+        center_tier = 0
     
-    return rarity
+    # Moving window: [5%, 20%, 50%, 20%, 5%] centered on center_tier
+    window = [5, 20, 50, 20, 5]  # -2, -1, 0, +1, +2 from center
+    weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+    
+    for offset, pct in zip([-2, -1, 0, 1, 2], window):
+        target_tier = center_tier + offset
+        # Clamp to valid range [0, 4] - overflow absorbed at edges
+        clamped_tier = max(0, min(4, target_tier))
+        weights[clamped_tier] += pct
+    
+    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    return random.choices(rarities, weights=weights)[0]
 
 
 def check_weight_entry_rewards(weight_entries: list, new_weight: float, 
@@ -8682,7 +8836,10 @@ def calculate_effective_minutes(duration_minutes: int, activity_id: str,
 
 def get_activity_reward_rarity(effective_minutes: float) -> Optional[str]:
     """
-    Get reward rarity based on effective minutes.
+    Get reward rarity based on effective minutes using moving window distribution.
+    
+    The window [5%, 20%, 50%, 20%, 5%] shifts through rarity tiers based on effort.
+    Overflow at edges is absorbed by the edge tier.
     
     Args:
         effective_minutes: Calculated effective minutes
@@ -8690,17 +8847,58 @@ def get_activity_reward_rarity(effective_minutes: float) -> Optional[str]:
     Returns:
         Rarity string or None if below threshold
     """
-    # Use first threshold from ACTIVITY_REWARD_THRESHOLDS for minimum
-    min_threshold = ACTIVITY_REWARD_THRESHOLDS[0][0] if ACTIVITY_REWARD_THRESHOLDS else 8
-    if effective_minutes < min_threshold:
+    import random
+    
+    # Minimum threshold for any reward
+    if effective_minutes < 8:
         return None
     
-    rarity = None
-    for threshold, r in ACTIVITY_REWARD_THRESHOLDS:
-        if effective_minutes >= threshold:
-            rarity = r
+    # Determine center tier based on effective minutes
+    # 8min → Common-centered, 20min → Uncommon, 40min → Rare, 70min → Epic, 100min → Legendary (75%), 120min+ → 100% Legendary
+    if effective_minutes >= 120:
+        return "Legendary"  # 100% Legendary for 120+ effective minutes
+    elif effective_minutes >= 100:
+        center_tier = 5  # Legendary-centered (75%)
+    elif effective_minutes >= 70:
+        center_tier = 4  # Epic-centered
+    elif effective_minutes >= 40:
+        center_tier = 3  # Rare-centered
+    elif effective_minutes >= 20:
+        center_tier = 2  # Uncommon-centered
+    else:  # 8-19 min
+        center_tier = 1  # Common-centered
     
-    return rarity
+    # Rarity tiers: 1=Common, 2=Uncommon, 3=Rare, 4=Epic, 5=Legendary
+    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    
+    # Base window distribution: [5%, 20%, 50%, 20%, 5%]
+    # Centered on center_tier, so offsets are [-2, -1, 0, +1, +2]
+    base_weights = [5, 20, 50, 20, 5]  # percentages for tiers center-2 to center+2
+    
+    # Calculate actual weights for each rarity tier (1-5)
+    weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+    
+    for offset, weight in enumerate(base_weights):
+        tier = center_tier - 2 + offset  # tier position in 1-5 range
+        if tier < 1:
+            # Below Common - absorb into Common
+            weights[0] += weight
+        elif tier > 5:
+            # Above Legendary - absorb into Legendary
+            weights[4] += weight
+        else:
+            # Valid tier - add to that rarity
+            weights[tier - 1] += weight
+    
+    # Select rarity based on weights
+    roll = random.randint(1, 100)
+    cumulative = 0
+    for i, w in enumerate(weights):
+        cumulative += w
+        if roll <= cumulative:
+            return rarities[i]
+    
+    return "Legendary"  # Fallback
 
 
 def check_activity_streak(activity_entries: list) -> int:
@@ -9376,7 +9574,20 @@ def check_sleep_streak(sleep_entries: list) -> int:
 
 def get_sleep_reward_rarity(score: int) -> Optional[str]:
     """
-    Get reward rarity based on sleep score.
+    Get reward rarity based on sleep score using moving window.
+    
+    Uses a moving window system where higher sleep scores shift probability
+    toward higher rarities:
+    - Window pattern: [5%, 20%, 50%, 20%, 5%] centered on a tier
+    - Overflow at edges is absorbed by the edge tier
+    
+    Distribution:
+    - <50: No reward
+    - 50: Common-centered (75% C, 20% U, 5% R)
+    - 65: Uncommon-centered (25% C, 50% U, 20% R, 5% E)
+    - 80: Rare-centered (5% C, 20% U, 50% R, 20% E, 5% L)
+    - 90: Epic-centered (5% U, 20% R, 50% E, 25% L)
+    - 97+: 100% Legendary
     
     Args:
         score: Sleep score (0-100)
@@ -9384,16 +9595,38 @@ def get_sleep_reward_rarity(score: int) -> Optional[str]:
     Returns:
         Rarity string or None if below threshold
     """
-    min_threshold = SLEEP_REWARD_THRESHOLDS[0][0] if SLEEP_REWARD_THRESHOLDS else 50
-    if score < min_threshold:
+    if score < 50:
         return None
     
-    rarity = None
-    for threshold, r in SLEEP_REWARD_THRESHOLDS:
-        if score >= threshold:
-            rarity = r
+    # Determine center tier based on sleep score
+    # Tiers: 0=Common, 1=Uncommon, 2=Rare, 3=Epic, 4=Legendary
+    if score >= 97:
+        center_tier = 6  # Far enough for 100% Legendary
+    elif score >= 93:
+        center_tier = 5  # 95% Legendary
+    elif score >= 90:
+        center_tier = 4  # Legendary-centered (75% L)
+    elif score >= 80:
+        center_tier = 3  # Epic-centered
+    elif score >= 65:
+        center_tier = 2  # Rare-centered
+    elif score >= 50:
+        center_tier = 1  # Uncommon-centered
+    else:
+        center_tier = 0  # Common-centered
     
-    return rarity
+    # Moving window: [5%, 20%, 50%, 20%, 5%] centered on center_tier
+    window = [5, 20, 50, 20, 5]  # -2, -1, 0, +1, +2 from center
+    weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+    
+    for offset, pct in zip([-2, -1, 0, 1, 2], window):
+        target_tier = center_tier + offset
+        # Clamp to valid range [0, 4] - overflow absorbed at edges
+        clamped_tier = max(0, min(4, target_tier))
+        weights[clamped_tier] += pct
+    
+    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    return random.choices(rarities, weights=weights)[0]
 
 
 def check_sleep_entry_reward(sleep_hours: float, bedtime: str, quality_id: str,

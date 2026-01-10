@@ -60,8 +60,14 @@ def main():
             input("Press Enter to exit...")
             return
         module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        module.main()
+        try:
+            spec.loader.exec_module(module)
+            module.main()
+        except Exception as e:
+            print(f"Error running application: {e}")
+            import traceback
+            traceback.print_exc()
+            input("Press Enter to exit...")
     else:
         print(f"Error: {main_script} not found!")
         input("Press Enter to exit...")

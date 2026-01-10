@@ -1,0 +1,60 @@
+=========================================
+MICROSOFT STORE SUBMISSION INFO - WIN32 APP
+=========================================
+
+App Name:          Personal Liberty
+Current Version:   5.3.12
+Installer File:    installer_output\PersonalLiberty_Setup_v5.3.12.exe
+Installer Type:    EXE
+Silent Install Command: /VERYSILENT /SUPPRESSMSGBOXES
+
+-----------------------------------------
+SHORT DESCRIPTION (Plain Text)
+-----------------------------------------
+Achieve flow state with Personal Liberty. A powerful, gamified focus blocker that helps you conquer ADHD and distractions by blocking websites at the system level while turning your productivity into an RPG adventure.
+
+-----------------------------------------
+FULL DESCRIPTION
+-----------------------------------------
+Personal Liberty is a comprehensive productivity tool designed to help you reclaim your time and attention. Unlike browser extensions that are easily disabled, Personal Liberty works at the system level to block distracting websites across all browsers.
+
+KEY FEATURES:
+
+🛡️ SYSTEM-LEVEL BLOCKING
+Blocks websites directly via the Windows HOSTS file, ensuring distractions are blocked in Chrome, Edge, Firefox, and Brave simultaneously.
+
+⚔️ RPG GAMIFICATION
+Turn productivity into a game!
+- Create your own Hero character
+- Earn EXP and Gold for every minute of focus
+- Find and equip powerful Items (Weapons, Armor, Artifacts)
+- Level up and unlock achievements
+- "ADHD Buster" mode: A dedicated RPG tab to visualize your progress
+
+🤖 AI PRODUCTIVITY COACH
+Get personalized tips and motivation based on your work habits.
+
+📊 DETAILED STATISTICS
+- Track your focus time, streaks, and sessions.
+- Visualize your productivity patterns.
+- Unlock 50+ unique achievements.
+
+🔒 PRIVACY FOCUSED
+- 100% Local data storage.
+- No account required.
+- No tracking or data collection.
+
+NOTES:
+- Requires Administrator privileges to modify the system HOSTS file.
+- Designed for Windows 10 and Windows 11.
+
+-----------------------------------------
+SEARCH KEYWORDS
+-----------------------------------------
+Focus, Productivity, ADHD, Block Websites, Gamification, RPG, Pomodoro, Distraction Blocker, Time Management
+
+-----------------------------------------
+COPYRIGHT & LICENSE
+-----------------------------------------
+Copyright 2024-2026 Personal Liberty Contributors.
+Released under MIT License.

@@ -92,26 +92,38 @@ class TestWeightHelperFunctions:
 
 
 class TestDailyWeightRewards:
-    """Test daily weight reward rarity calculation."""
+    """Test daily weight reward rarity calculation with moving window."""
 
-    def test_same_weight_common(self):
-        """Same weight should give Common item."""
-        assert get_daily_weight_reward_rarity(0) == "Common"
+    def test_same_weight_mostly_common(self):
+        """Same weight should mostly give Common item (75% chance)."""
+        # With moving window, 0g is Common-centered (75% C, 20% U, 5% R)
+        results = [get_daily_weight_reward_rarity(0) for _ in range(100)]
+        common_count = results.count("Common")
+        # Should be mostly Common (allow for randomness)
+        assert common_count >= 50, f"Expected mostly Common, got {common_count}/100"
 
-    def test_100g_loss_uncommon(self):
-        """100g loss should give Uncommon item."""
-        assert get_daily_weight_reward_rarity(100) == "Uncommon"
+    def test_100g_loss_mostly_uncommon(self):
+        """100g loss should mostly give Uncommon item (50% chance)."""
+        # With moving window, 100g is Uncommon-centered (25% C, 50% U, 20% R, 5% E)
+        results = [get_daily_weight_reward_rarity(100) for _ in range(100)]
+        uncommon_count = results.count("Uncommon")
+        # Should be mostly Uncommon (allow for randomness)
+        assert uncommon_count >= 30, f"Expected mostly Uncommon, got {uncommon_count}/100"
 
-    def test_200g_loss_rare(self):
-        """200g loss should give Rare item."""
-        assert get_daily_weight_reward_rarity(200) == "Rare"
+    def test_200g_loss_mostly_rare(self):
+        """200g loss should mostly give Rare item (50% chance)."""
+        results = [get_daily_weight_reward_rarity(200) for _ in range(100)]
+        rare_count = results.count("Rare")
+        assert rare_count >= 30, f"Expected mostly Rare, got {rare_count}/100"
 
-    def test_300g_loss_epic(self):
-        """300g loss should give Epic item."""
-        assert get_daily_weight_reward_rarity(300) == "Epic"
+    def test_300g_loss_mostly_epic(self):
+        """300g loss should mostly give Epic item (50% chance)."""
+        results = [get_daily_weight_reward_rarity(300) for _ in range(100)]
+        epic_count = results.count("Epic")
+        assert epic_count >= 30, f"Expected mostly Epic, got {epic_count}/100"
 
     def test_500g_loss_legendary(self):
-        """500g+ loss should give Legendary item."""
+        """500g+ loss should give Legendary item (100% chance)."""
         assert get_daily_weight_reward_rarity(500) == "Legendary"
         assert get_daily_weight_reward_rarity(1000) == "Legendary"
 
@@ -155,13 +167,14 @@ class TestCheckWeightEntryRewards:
         assert result["monthly_reward"] is not None
         assert result["monthly_reward"]["rarity"] == "Legendary"
 
-    def test_same_weight_gives_common(self):
-        """Same weight should give Common item."""
+    def test_same_weight_gives_item(self):
+        """Same weight should give an item (probabilistic rarity)."""
         entries = [{"date": "2026-01-07", "weight": 80.0}]
         result = check_weight_entry_rewards(entries, 80.0, "2026-01-08")
         
         assert result["daily_reward"] is not None
-        assert result["daily_reward"]["rarity"] == "Common"
+        # With moving window, 0g loss is Common-centered but could be other rarities
+        assert result["daily_reward"]["rarity"] in ["Common", "Uncommon", "Rare"]
 
     def test_weight_gain_no_daily_reward(self):
         """Weight gain should not give daily reward."""
@@ -1019,15 +1032,28 @@ class TestEdgeCasesAndGoalDirections:
         assert abs(loss - 1) < 0.5  # Should be ~1g, not some weird float
 
     def test_daily_reward_threshold_boundaries(self):
-        """Test exact threshold boundaries."""
-        assert get_daily_weight_reward_rarity(0) == "Common"
-        assert get_daily_weight_reward_rarity(99) == "Common"
-        assert get_daily_weight_reward_rarity(100) == "Uncommon"
-        assert get_daily_weight_reward_rarity(199) == "Uncommon"
-        assert get_daily_weight_reward_rarity(200) == "Rare"
-        assert get_daily_weight_reward_rarity(299) == "Rare"
-        assert get_daily_weight_reward_rarity(300) == "Epic"
-        assert get_daily_weight_reward_rarity(499) == "Epic"
+        """Test that threshold boundaries produce expected distributions."""
+        # 0g: Common-centered (75% C)
+        results_0 = [get_daily_weight_reward_rarity(0) for _ in range(50)]
+        assert results_0.count("Common") >= 25, "0g should be mostly Common"
+        
+        # 99g: Still Common-centered
+        results_99 = [get_daily_weight_reward_rarity(99) for _ in range(50)]
+        assert results_99.count("Common") >= 25, "99g should be mostly Common"
+        
+        # 100g: Uncommon-centered (50% U)
+        results_100 = [get_daily_weight_reward_rarity(100) for _ in range(50)]
+        assert results_100.count("Uncommon") >= 15, "100g should be mostly Uncommon"
+        
+        # 200g: Rare-centered (50% R)
+        results_200 = [get_daily_weight_reward_rarity(200) for _ in range(50)]
+        assert results_200.count("Rare") >= 15, "200g should be mostly Rare"
+        
+        # 300g: Epic-centered (50% E)
+        results_300 = [get_daily_weight_reward_rarity(300) for _ in range(50)]
+        assert results_300.count("Epic") >= 15, "300g should be mostly Epic"
+        
+        # 500g+: 100% Legendary
         assert get_daily_weight_reward_rarity(500) == "Legendary"
 
     def test_get_previous_weight_entry_same_day(self):
@@ -1065,9 +1091,10 @@ class TestEdgeCasesAndGoalDirections:
         assert format_weight_change(0, "kg") == "→ 0 kg"
 
     def test_check_weight_entry_rewards_same_weight(self):
-        """Same weight should give Common item for consistency."""
+        """Same weight should give item (probabilistic rarity with moving window)."""
         entries = [{"date": "2026-01-07", "weight": 80.0}]
         result = check_weight_entry_rewards(entries, 80.0, "2026-01-08")
         assert result["daily_reward"] is not None
-        assert result["daily_reward"]["rarity"] == "Common"
+        # With moving window, 0g is Common-centered but could be other rarities
+        assert result["daily_reward"]["rarity"] in ["Common", "Uncommon", "Rare"]
         assert result["daily_loss_grams"] == 0
