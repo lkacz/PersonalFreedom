@@ -309,19 +309,20 @@ class TestSleepStreak(unittest.TestCase):
 
 
 class TestSleepRewards(unittest.TestCase):
-    """Tests for sleep reward functions."""
+    """Tests for sleep reward functions with moving window distribution."""
     
     def test_reward_rarity_below_threshold(self) -> None:
         """Test no reward for low score."""
         self.assertIsNone(get_sleep_reward_rarity(30))
     
-    def test_reward_rarity_common(self) -> None:
-        """Test common reward for decent score."""
+    def test_reward_rarity_low_score(self) -> None:
+        """Test reward distribution for decent score (Uncommon-centered at 50+)."""
+        # With moving window, 55 is in the 50+ range (Uncommon-centered)
         rarity = get_sleep_reward_rarity(55)
-        self.assertEqual(rarity, "Common")
+        self.assertIn(rarity, ["Common", "Uncommon", "Rare", "Epic"])
     
     def test_reward_rarity_legendary(self) -> None:
-        """Test legendary reward for exceptional score."""
+        """Test legendary reward for exceptional score (100% at 97+)."""
         rarity = get_sleep_reward_rarity(98)
         self.assertEqual(rarity, "Legendary")
     

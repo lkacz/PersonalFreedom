@@ -266,6 +266,12 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
             get_item_themes as _get_item_themes,
             get_diary_power_tier as _get_diary_power_tier,
             calculate_character_power as _calculate_character_power,
+            # XP and leveling system
+            calculate_session_xp as _calculate_session_xp,
+            award_xp as _award_xp,
+            get_level_from_xp as _get_level_from_xp,
+            get_level_title as _get_level_title,
+            get_celebration_message as _get_celebration_message,
             get_power_breakdown as _get_power_breakdown,
             calculate_rarity_bonuses as _calculate_rarity_bonuses,
             calculate_merge_success_rate as _calculate_merge_success_rate,
@@ -303,6 +309,12 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         get_item_themes = _get_item_themes
         get_diary_power_tier = _get_diary_power_tier
         calculate_character_power = _calculate_character_power
+        # XP and leveling system
+        calculate_session_xp = _calculate_session_xp
+        award_xp = _award_xp
+        get_level_from_xp = _get_level_from_xp
+        get_level_title = _get_level_title
+        get_celebration_message = _get_celebration_message
         get_power_breakdown = _get_power_breakdown
         calculate_rarity_bonuses = _calculate_rarity_bonuses
         calculate_merge_success_rate = _calculate_merge_success_rate
@@ -466,7 +478,7 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
         super().__init__(parent)
         self.setWindowTitle("💪 Hardcore Challenge")
         self.setModal(True)
-        self.setMinimumWidth(500)
+        self.setMinimumWidth(580)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         
         # Generate two different math problems
@@ -626,21 +638,32 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
     
     def _render_problem_as_image(self, a: int, b: int, op: str) -> QtGui.QPixmap:
         """Render the math problem as a pixmap to prevent text selection/copying."""
-        # Create a pixmap
-        width, height = 400, 60
+        # Format the expression first to calculate required width
+        expression = f"{a:,}  {op}  {b:,}  =  ?"
+        
+        # Use a monospace font for clear number display
+        font = QtGui.QFont("Consolas", 24, QtGui.QFont.Bold)
+        
+        # Calculate text width using font metrics
+        metrics = QtGui.QFontMetrics(font)
+        text_width = metrics.horizontalAdvance(expression)
+        text_height = metrics.height()
+        
+        # Add padding for comfortable display
+        width = text_width + 60
+        height = text_height + 30
+        
+        # Ensure minimum dimensions
+        width = max(width, 480)
+        height = max(height, 60)
+        
         pixmap = QtGui.QPixmap(width, height)
         pixmap.fill(QtCore.Qt.transparent)
         
         painter = QtGui.QPainter(pixmap)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        
-        # Use a monospace font for clear number display
-        font = QtGui.QFont("Consolas", 28, QtGui.QFont.Bold)
         painter.setFont(font)
         painter.setPen(QtGui.QColor("#00ff88"))
-        
-        # Format the expression
-        expression = f"{a:,}  {op}  {b:,}  =  ?"
         
         # Draw centered
         rect = QtCore.QRect(0, 0, width, height)
@@ -811,6 +834,7 @@ class TimerTab(QtWidgets.QWidget):
 
     timer_tick = QtCore.Signal(int)  # remaining seconds
     session_complete = QtCore.Signal(int)  # elapsed seconds
+    session_started = QtCore.Signal()  # emitted when a session starts
 
     def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
@@ -908,6 +932,31 @@ class TimerTab(QtWidgets.QWidget):
         self.status_label = QtWidgets.QLabel("Ready to focus")
         self.status_label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(self.status_label)
+        
+        # Rewards info section
+        rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
+        rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
+        rewards_info = QtWidgets.QLabel(
+            "<b>How it works:</b> Complete a focus session to earn 1 random item. Longer sessions shift the rarity distribution higher.<br>"
+            "<table style='font-size:10px; color:#888888; margin-top:5px;'>"
+            "<tr><th>Session</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th><th>Bonus Item</th></tr>"
+            "<tr><td>&lt;30min</td><td>50%</td><td>30%</td><td>15%</td><td>4%</td><td>1%</td><td>-</td></tr>"
+            "<tr><td>30min</td><td>75%</td><td>20%</td><td>5%</td><td>-</td><td>-</td><td>-</td></tr>"
+            "<tr><td>1hr</td><td>25%</td><td>50%</td><td>20%</td><td>5%</td><td>-</td><td>-</td></tr>"
+            "<tr><td>2hr</td><td>5%</td><td>20%</td><td>50%</td><td>20%</td><td>5%</td><td>-</td></tr>"
+            "<tr><td>3hr</td><td>-</td><td>5%</td><td>20%</td><td>50%</td><td>25%</td><td>-</td></tr>"
+            "<tr><td>4hr</td><td>-</td><td>-</td><td>5%</td><td>20%</td><td>75%</td><td>-</td></tr>"
+            "<tr><td>5hr</td><td>-</td><td>-</td><td>-</td><td>5%</td><td>95%</td><td>-</td></tr>"
+            "<tr><td>6hr+</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td><td>-</td></tr>"
+            "<tr><td>7hr+</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td><td>+20% chance</td></tr>"
+            "<tr><td>8hr+</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td><td>+50% chance</td></tr>"
+            "</table>"
+            "<br><b>XP:</b> 25 base + 2/min + streak bonus | <b>Bonus Item:</b> Extra Legendary item at 7hr+"
+        )
+        rewards_info.setWordWrap(True)
+        rewards_info.setStyleSheet("color: #888888; font-size: 10px;")
+        rewards_layout.addWidget(rewards_info)
+        layout.addWidget(rewards_group)
 
         layout.addStretch(1)
 
@@ -998,6 +1047,9 @@ class TimerTab(QtWidgets.QWidget):
         if mode != BlockMode.POMODORO:
             self.status_label.setText("🔒 BLOCKING")
         self.qt_timer.start()
+
+        # Emit session started signal
+        self.session_started.emit()
 
         # Update tray icon to blocking state
         main_window = self.window()
@@ -1112,7 +1164,7 @@ class TimerTab(QtWidgets.QWidget):
             self._give_session_rewards(session_minutes)
 
     def _give_session_rewards(self, session_minutes: int) -> None:
-        """Give item drop and diary entry rewards."""
+        """Give item drop, XP, and diary entry rewards."""
         if not GAMIFICATION_AVAILABLE:
             return
         # Skip if gamification mode is disabled
@@ -1124,6 +1176,11 @@ class TimerTab(QtWidgets.QWidget):
         
         # Get active story for themed item generation
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        
+        # Award XP for the focus session
+        xp_info = calculate_session_xp(session_minutes, streak)
+        xp_result = award_xp(self.blocker.adhd_buster, xp_info["total_xp"], source="focus_session")
+        leveled_up = xp_result.get("leveled_up", False)
 
         # Generate item (generate_item already imported at top)
         item = generate_item(session_minutes=session_minutes, streak_days=streak,
@@ -1183,13 +1240,17 @@ class TimerTab(QtWidgets.QWidget):
             sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
 
+        # Show level-up celebration first (most exciting!)
+        if leveled_up:
+            LevelUpCelebrationDialog(xp_result, self.window()).exec()
+
         # Show item drop dialog
         ItemDropDialog(self.blocker, item, session_minutes, streak, self.window()).exec()
 
-        # Refresh ADHD dialog if open (so new gear shows in dropdowns)
+        # Refresh ADHD Buster tab (so new gear shows in dropdowns)
         main_window = self.window()
-        if hasattr(main_window, 'refresh_adhd_dialog'):
-            main_window.refresh_adhd_dialog()
+        if hasattr(main_window, 'refresh_adhd_tab'):
+            main_window.refresh_adhd_tab()
 
         # Show diary entry reveal
         if diary_entry:
@@ -1378,6 +1439,9 @@ class TimerTab(QtWidgets.QWidget):
         self.stop_btn.setEnabled(True)
         self.status_label.setText(f"🍅 WORK #{self.pomodoro_session_count + 1}")
         self.qt_timer.start()
+        
+        # Emit session started signal
+        self.session_started.emit()
 
     def _start_pomodoro_break(self, break_minutes: int) -> None:
         """Start a Pomodoro break period."""
@@ -1391,6 +1455,9 @@ class TimerTab(QtWidgets.QWidget):
         self.timer_label.setText(self._format_time(self.remaining_seconds))
         self.status_label.setText("☕ BREAK")
         self.qt_timer.start()
+        
+        # Emit session started signal (breaks also lock controls)
+        self.session_started.emit()
 
     def _end_pomodoro_session(self) -> None:
         """End the Pomodoro session completely."""
@@ -2985,9 +3052,19 @@ class WeightTab(QtWidgets.QWidget):
         rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
         rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
         rewards_info = QtWidgets.QLabel(
-            "<b>Daily:</b> 0g=Common, 100g=Uncommon, 200g=Rare, 300g=Epic, 500g+=Legendary | "
-            "<b>Weekly:</b> 500g=Legendary | <b>Monthly:</b> 2kg=Legendary | "
-            "<b>Streaks:</b> 7d=Rare, 14d=Epic, 30d=Legendary"
+            "<b>How it works:</b> Log daily weight to earn 1 item. Reward rarity based on weight loss since previous entry.<br>"
+            "<i>Weight gain = no daily reward (maintain streak for rewards)</i><br>"
+            "<table style='font-size:10px; color:#888888; margin-top:5px;'>"
+            "<tr><th>Daily Loss</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
+            "<tr><td>0g (maintain)</td><td>75%</td><td>20%</td><td>5%</td><td>-</td><td>-</td></tr>"
+            "<tr><td>100g+</td><td>25%</td><td>50%</td><td>20%</td><td>5%</td><td>-</td></tr>"
+            "<tr><td>200g+</td><td>5%</td><td>20%</td><td>50%</td><td>20%</td><td>5%</td></tr>"
+            "<tr><td>300g+</td><td>-</td><td>5%</td><td>20%</td><td>50%</td><td>25%</td></tr>"
+            "<tr><td>400g+</td><td>-</td><td>-</td><td>-</td><td>5%</td><td>95%</td></tr>"
+            "<tr><td>500g+</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td></tr>"
+            "</table>"
+            "<br><b>Weekly:</b> 300g=Epic, 500g=Legendary | <b>Monthly:</b> 1.5kg=Epic, 2kg=Legendary | "
+            "<b>Streaks:</b> 7d=Rare, 14d=Epic, 30d+=Legendary"
         )
         rewards_info.setWordWrap(True)
         rewards_info.setStyleSheet("color: #888888; font-size: 10px;")
@@ -3217,12 +3294,20 @@ class WeightTab(QtWidgets.QWidget):
             
             self.blocker.save_config()
             
-            # Build reward message
+            # Build reward message with rarity colors
+            rarity_colors = {
+                "Common": "#9e9e9e",
+                "Uncommon": "#4caf50", 
+                "Rare": "#2196f3",
+                "Epic": "#9c27b0",
+                "Legendary": "#ff9800"
+            }
             msg_parts = []
             for source, item in items_earned:
                 rarity = item.get("rarity", "Common")
                 name = item.get("name", "Unknown Item")
-                msg_parts.append(f"<b>{source}:</b> {rarity} - {name}")
+                color = rarity_colors.get(rarity, "#9e9e9e")
+                msg_parts.append(f"<b>{source}:</b> <span style='color:{color}; font-weight:bold;'>[{rarity}]</span> {name}")
             
             # Add loss stats
             stats_parts = []
@@ -3254,10 +3339,10 @@ class WeightTab(QtWidgets.QWidget):
             if diary_entry:
                 DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes=0, parent=self.window()).exec()
             
-            # Refresh ADHD dialog if open (so new gear shows in dropdowns)
+            # Refresh ADHD Buster tab (so new gear shows in dropdowns)
             main_window = self.window()
-            if hasattr(main_window, 'refresh_adhd_dialog'):
-                main_window.refresh_adhd_dialog()
+            if hasattr(main_window, 'refresh_adhd_tab'):
+                main_window.refresh_adhd_tab()
         elif rewards.get("messages"):
             # Show info messages even if no rewards
             QtWidgets.QMessageBox.information(
@@ -3349,10 +3434,11 @@ class WeightTab(QtWidgets.QWidget):
             note_display = format_entry_note(note) if format_entry_note and note else ""
             self.entries_table.setItem(i, 2, QtWidgets.QTableWidgetItem(note_display))
             
-            # Change
+            # Change (from previous entry to this entry)
             if i < len(sorted_entries) - 1:
                 prev_weight = sorted_entries[i + 1].get("weight", weight_kg)
-                change = (prev_weight - weight_kg) * 1000  # in grams
+                # change = current - previous (negative = lost weight, positive = gained)
+                change = (weight_kg - prev_weight) * 1000  # in grams
                 if unit == "lbs":
                     # Convert grams to kg, then kg to lbs
                     change_lbs = (change / 1000) * 2.20462
@@ -3361,9 +3447,9 @@ class WeightTab(QtWidgets.QWidget):
                     change_text = f"{change:+.0f}g" if abs(change) >= 10 else "—"
                 
                 change_item = QtWidgets.QTableWidgetItem(change_text)
-                if change > 0:
+                if change < 0:
                     change_item.setForeground(QtGui.QColor("#00ff88"))  # Green = lost weight
-                elif change < 0:
+                elif change > 0:
                     change_item.setForeground(QtGui.QColor("#ff6464"))  # Red = gained
                 self.entries_table.setItem(i, 3, change_item)
             else:
@@ -3879,6 +3965,30 @@ class ActivityTab(QtWidgets.QWidget):
         reminder_layout.addWidget(self.reminder_time)
         reminder_layout.addStretch()
         layout.addLayout(reminder_layout)
+        
+        # Rewards info section
+        rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
+        rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
+        rewards_info = QtWidgets.QLabel(
+            "<b>How it works:</b> Log activity (10+ min) to earn 1 item. Rarity based on effective minutes.<br>"
+            "<i>Effective min = duration × activity multiplier × intensity multiplier</i><br>"
+            "<i>Example: 30min jog (2.0×) at moderate (1.0×) = 60 effective min</i><br>"
+            "<table style='font-size:10px; color:#888888; margin-top:5px;'>"
+            "<tr><th>Eff. Min</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
+            "<tr><td>&lt;8</td><td colspan='5' style='text-align:center;'>No reward</td></tr>"
+            "<tr><td>8+</td><td>75%</td><td>20%</td><td>5%</td><td>-</td><td>-</td></tr>"
+            "<tr><td>20+</td><td>25%</td><td>50%</td><td>20%</td><td>5%</td><td>-</td></tr>"
+            "<tr><td>40+</td><td>5%</td><td>20%</td><td>50%</td><td>20%</td><td>5%</td></tr>"
+            "<tr><td>70+</td><td>-</td><td>5%</td><td>20%</td><td>50%</td><td>25%</td></tr>"
+            "<tr><td>100+</td><td>-</td><td>-</td><td>5%</td><td>20%</td><td>75%</td></tr>"
+            "<tr><td>120+</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td></tr>"
+            "</table>"
+            "<br><b>Streaks:</b> 3d=Uncommon, 7d=Rare, 14d=Epic, 30d=Legendary"
+        )
+        rewards_info.setWordWrap(True)
+        rewards_info.setStyleSheet("color: #888888; font-size: 10px;")
+        rewards_layout.addWidget(rewards_info)
+        layout.addWidget(rewards_group)
     
     def _apply_preset(self, activity: str, duration: int, intensity: str) -> None:
         """Apply a quick preset to the form."""
@@ -3943,35 +4053,10 @@ class ActivityTab(QtWidgets.QWidget):
             new_entry["note"] = note
         
         # Check for existing entry on same date
-        existing_idx = None
-        for i, entry in enumerate(self.blocker.activity_entries):
-            if entry.get("date") == date_str and entry.get("activity_type") == activity_id:
-                existing_idx = i
-                break
-        
-        if existing_idx is not None:
-            activity_name = self.activity_combo.currentText()
-            reply = QtWidgets.QMessageBox.question(
-                self, "Update Entry",
-                f"You already have a {activity_name} entry for {date_str}.\n"
-                f"Add to existing ({self.blocker.activity_entries[existing_idx]['duration']} min) or replace?",
-                QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No | QtWidgets.QMessageBox.StandardButton.Cancel,
-                QtWidgets.QMessageBox.StandardButton.Yes
-            )
-            if reply == QtWidgets.QMessageBox.StandardButton.Cancel:
-                return
-            elif reply == QtWidgets.QMessageBox.StandardButton.Yes:
-                # Add to existing
-                self.blocker.activity_entries[existing_idx]["duration"] += duration
-                if note:
-                    old_note = self.blocker.activity_entries[existing_idx].get("note", "")
-                    self.blocker.activity_entries[existing_idx]["note"] = f"{old_note}; {note}" if old_note else note
-            else:
-                # Replace
-                self.blocker.activity_entries[existing_idx] = new_entry
-        else:
-            self.blocker.activity_entries.append(new_entry)
-            self.blocker.activity_entries.sort(key=lambda x: x.get("date", ""), reverse=True)
+        # User feedback indicates they prefer separate entries (e.g., multiple walks)
+        # rather than merging them. So we simply append the new entry.
+        self.blocker.activity_entries.append(new_entry)
+        self.blocker.activity_entries.sort(key=lambda x: x.get("date", ""), reverse=True)
         
         self.blocker.save_config()
         
@@ -4070,12 +4155,20 @@ class ActivityTab(QtWidgets.QWidget):
             
             self.blocker.save_config()
             
-            # Build reward message
+            # Build reward message with rarity colors
+            rarity_colors = {
+                "Common": "#9e9e9e",
+                "Uncommon": "#4caf50", 
+                "Rare": "#2196f3",
+                "Epic": "#9c27b0",
+                "Legendary": "#ff9800"
+            }
             msg_parts = []
             for source, item in items_earned:
                 rarity = item.get("rarity", "Common")
                 name = item.get("name", "Unknown Item")
-                msg_parts.append(f"<b>{source}:</b> {rarity} - {name}")
+                color = rarity_colors.get(rarity, "#9e9e9e")
+                msg_parts.append(f"<b>{source}:</b> <span style='color:{color}; font-weight:bold;'>[{rarity}]</span> {name}")
             
             # Add effective minutes info
             if rewards.get("effective_minutes"):
@@ -4095,10 +4188,10 @@ class ActivityTab(QtWidgets.QWidget):
             if diary_entry:
                 DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes=0, parent=self.window()).exec()
             
-            # Refresh ADHD dialog
+            # Refresh ADHD Buster tab
             main_window = self.window()
-            if hasattr(main_window, 'refresh_adhd_dialog'):
-                main_window.refresh_adhd_dialog()
+            if hasattr(main_window, 'refresh_adhd_tab'):
+                main_window.refresh_adhd_tab()
         elif rewards.get("messages"):
             QtWidgets.QMessageBox.information(
                 self, "Activity Logged",
@@ -4139,6 +4232,27 @@ class ActivityTab(QtWidgets.QWidget):
                         fav_name = f"{emoji} {name}"
                         break
             
+            # Calculate Today's Breakdown
+            today_str = datetime.now().strftime("%Y-%m-%d")
+            today_totals = {}
+            for e in entries:
+                if e.get("date") == today_str:
+                    aid = e.get("activity_type")
+                    today_totals[aid] = today_totals.get(aid, 0) + e.get("duration", 0)
+            
+            today_html = ""
+            if today_totals:
+                today_html = "<br><b>Today's Totals:</b><br>"
+                sorted_today = sorted(today_totals.items(), key=lambda x: x[1], reverse=True)
+                for aid, mins in sorted_today:
+                    aname = aid.title()
+                    # Try to match with emoji
+                    for taid, tname, temoji, _ in ACTIVITY_TYPES:
+                        if taid == aid:
+                            aname = f"{temoji} {tname}"
+                            break
+                    today_html += f"{aname}: {mins} min<br>"
+            
             stats_html = f"""
 <b>📊 Your Activity Stats</b><br><br>
 <b>Total Time:</b> {format_activity_duration(stats['total_minutes']) if format_activity_duration else f"{stats['total_minutes']} min"}<br>
@@ -4147,7 +4261,8 @@ class ActivityTab(QtWidgets.QWidget):
 <b>This Month:</b> {format_activity_duration(stats['this_month_minutes']) if format_activity_duration else f"{stats['this_month_minutes']} min"}<br>
 <b>Avg Duration:</b> {stats['avg_duration']:.0f} min<br>
 <b>Favorite:</b> {fav_name}<br>
-<b>Streak:</b> 🔥 {stats['current_streak']} days
+<b>Streak:</b> 🔥 {stats['current_streak']} days<br>
+{today_html}
 """
             self.stats_label.setText(stats_html)
         
@@ -4461,6 +4576,28 @@ class SleepTab(QtWidgets.QWidget):
         
         layout.addLayout(content_layout)
         
+        # Rewards info section
+        rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
+        rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
+        rewards_info = QtWidgets.QLabel(
+            "<b>How it works:</b> Log sleep to earn 1 item. Rarity based on your sleep score (0-100).<br>"
+            "<i>Score = duration (40%) + bedtime alignment (25%) + quality (25%) + consistency (10%)</i><br>"
+            "<table style='font-size:10px; color:#888888; margin-top:5px;'>"
+            "<tr><th>Score</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
+            "<tr><td>&lt;50</td><td colspan='5' style='text-align:center'>No reward</td></tr>"
+            "<tr><td>50+</td><td>25%</td><td>50%</td><td>20%</td><td>5%</td><td>-</td></tr>"
+            "<tr><td>65+</td><td>5%</td><td>20%</td><td>50%</td><td>20%</td><td>5%</td></tr>"
+            "<tr><td>80+</td><td>-</td><td>5%</td><td>20%</td><td>50%</td><td>25%</td></tr>"
+            "<tr><td>90+</td><td>-</td><td>-</td><td>5%</td><td>20%</td><td>75%</td></tr>"
+            "<tr><td>97+</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td></tr>"
+            "</table>"
+            "<br><b>Streaks:</b> 3 nights=Uncommon, 7n=Rare, 14n=Epic, 30n=Legendary (consecutive nights with 7+ hrs)"
+        )
+        rewards_info.setWordWrap(True)
+        rewards_info.setStyleSheet("color: #888888; font-size: 10px;")
+        rewards_layout.addWidget(rewards_info)
+        layout.addWidget(rewards_group)
+        
         self._update_sleep_duration()
     
     def _update_sleep_duration(self) -> None:
@@ -4558,10 +4695,10 @@ class SleepTab(QtWidgets.QWidget):
                 existing_idx = i
                 break
         
-        # Get rewards
+        # Get rewards (skip if gamification mode is disabled)
         entries_for_reward = [e for e in self.blocker.sleep_entries if e.get("date") != date_str]
         reward_info = None
-        if check_all_sleep_rewards and GAMIFICATION_AVAILABLE:
+        if check_all_sleep_rewards and GAMIFICATION_AVAILABLE and is_gamification_enabled(self.blocker.adhd_buster):
             active_story = self.blocker.adhd_buster.get("active_story", "warrior")
             reward_info = check_all_sleep_rewards(
                 entries_for_reward,
@@ -4606,6 +4743,10 @@ class SleepTab(QtWidgets.QWidget):
         if reward_info and GAMIFICATION_AVAILABLE:
             items_earned = []
             
+            # Ensure inventory exists before processing any rewards
+            if "inventory" not in self.blocker.adhd_buster:
+                self.blocker.adhd_buster["inventory"] = []
+            
             # Base reward
             if reward_info.get("reward"):
                 item = reward_info["reward"]
@@ -4629,8 +4770,6 @@ class SleepTab(QtWidgets.QWidget):
                     return item
                 
                 item = maybe_upgrade_item(item)
-                if "inventory" not in self.blocker.adhd_buster:
-                    self.blocker.adhd_buster["inventory"] = []
                 self.blocker.adhd_buster["inventory"].append(item)
                 items_earned.append(item)
             
@@ -4651,6 +4790,18 @@ class SleepTab(QtWidgets.QWidget):
             if new_milestone_ids:
                 self.blocker.sleep_milestones.extend(new_milestone_ids)
             
+            # Update total collected count (same as other trackers)
+            if items_earned:
+                self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + len(items_earned)
+                
+                # Auto-equip to empty slots (same as other trackers)
+                if "equipped" not in self.blocker.adhd_buster:
+                    self.blocker.adhd_buster["equipped"] = {}
+                for item in items_earned:
+                    slot = item.get("slot")
+                    if slot and not self.blocker.adhd_buster["equipped"].get(slot):
+                        self.blocker.adhd_buster["equipped"][slot] = item.copy()
+            
             # Sync hero data
             if GAMIFICATION_AVAILABLE:
                 sync_hero_data(self.blocker.adhd_buster)
@@ -4669,7 +4820,16 @@ class SleepTab(QtWidgets.QWidget):
             
             if reward_info.get("reward"):
                 rarity = reward_info["reward"]["rarity"]
-                msg += f"\n\n🎁 Earned: {rarity} item!"
+                rarity_colors = {
+                    "Common": "#9e9e9e",
+                    "Uncommon": "#4caf50", 
+                    "Rare": "#2196f3",
+                    "Epic": "#9c27b0",
+                    "Legendary": "#ff9800"
+                }
+                color = rarity_colors.get(rarity, "#9e9e9e")
+                name = reward_info["reward"].get("name", "Unknown Item")
+                msg += f"\n\n🎁 Earned: <span style='color:{color}; font-weight:bold;'>[{rarity}]</span> {name}"
         
         QtWidgets.QMessageBox.information(self, "Sleep Logged! 😴", msg)
         
@@ -4998,8 +5158,14 @@ class AITab(QtWidgets.QWidget):
                     self.unlocked_achievements_list.addItem(item)
                 else:
                     # Locked achievement - show as challenge with encouraging text
-                    remaining = prog["target"] - prog["current"]
-                    challenge_text = f"{data['icon']} {data['name']}: {data.get('description', '')} — {prog['current']}/{prog['target']} ({remaining} to go!)"
+                    current_val = prog["current"]
+                    target_val = prog["target"]
+                    
+                    # Clamp display values to meaningful ranges
+                    display_current = min(current_val, target_val)
+                    remaining = max(0, target_val - current_val)
+                    
+                    challenge_text = f"{data['icon']} {data['name']}: {data.get('description', '')} — {display_current}/{target_val} ({remaining} to go!)"
                     locked_items.append((pct, challenge_text, data))
             
             # Sort challenges by progress (closest to completion first)
@@ -7897,19 +8063,19 @@ class CharacterCanvas(QtWidgets.QWidget):
         painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🏢 {self.power}")
 
 
-class ADHDBusterDialog(QtWidgets.QDialog):
-    """Dialog for viewing and managing the ADHD Buster character and inventory."""
+class ADHDBusterTab(QtWidgets.QWidget):
+    """Tab for viewing and managing the ADHD Buster character and inventory."""
 
     def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
         self.blocker = blocker
-        self.setWindowTitle("🦸 ADHD Buster - Character & Inventory")
-        self.resize(750, 850)
         self.merge_selected = []
         self.slot_combos: Dict[str, QtWidgets.QComboBox] = {}
         self.slot_labels: Dict[str, QtWidgets.QLabel] = {}  # Store slot label references for theme updates
         self._refreshing = False  # Prevent recursive refresh loops
+        self._session_active = False  # Track if a focus session is active
         self._build_ui()
+        self.refresh_all()  # Initial data load
 
     def refresh_all(self) -> None:
         """Comprehensive refresh of all UI elements - call after any data change."""
@@ -7920,14 +8086,72 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             # Refresh in the correct order to ensure consistent state
             self._refresh_all_slot_combos()  # Equipment dropdowns first
             self._refresh_inventory()         # Then inventory list
-            self._refresh_character()         # Then power/stats display
+            self._refresh_character()         # Then power/stats display (also updates story)
             # Update merge selection state
             self._update_merge_selection()
+            # Update story description (for story switches)
+            if hasattr(self, 'story_desc_lbl'):
+                self._update_story_description()
+            # Sync story combo selection with current data
+            self._sync_story_combo_selection()
+            # Update mode UI state (enable/disable controls based on mode)
+            self._update_mode_ui_state()
         finally:
             self._refreshing = False
+    
+    def _sync_story_combo_selection(self) -> None:
+        """Sync the story combo box selection with the current active story."""
+        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'story_combo'):
+            return
+        from gamification import get_selected_story
+        current_story = get_selected_story(self.blocker.adhd_buster)
+        # Block signals to prevent triggering _on_story_change
+        self.story_combo.blockSignals(True)
+        for i in range(self.story_combo.count()):
+            if self.story_combo.itemData(i) == current_story:
+                self.story_combo.setCurrentIndex(i)
+                break
+        self.story_combo.blockSignals(False)
+
+    def set_session_active(self, active: bool) -> None:
+        """Enable/disable interactive controls during focus sessions."""
+        self._session_active = active
+        
+        # Show/hide session banner
+        if hasattr(self, 'session_banner'):
+            self.session_banner.setVisible(active)
+        
+        # Disable/enable equipment dropdowns
+        for combo in self.slot_combos.values():
+            combo.setEnabled(not active)
+        
+        # Disable/enable action buttons
+        if hasattr(self, '_action_buttons'):
+            for btn in self._action_buttons:
+                btn.setEnabled(not active)
+        
+        # Disable/enable merge button
+        if hasattr(self, 'merge_btn'):
+            self.merge_btn.setEnabled(not active and len(self.merge_selected) >= 2)
+        
+        # Disable/enable inventory selection
+        if hasattr(self, 'inv_list'):
+            self.inv_list.setEnabled(not active)
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
+
+        # Session active warning banner (hidden by default)
+        self.session_banner = QtWidgets.QLabel(
+            "🔒 Focus session active - Equipment changes disabled until session ends"
+        )
+        self.session_banner.setStyleSheet(
+            "background-color: #ff9800; color: white; padding: 10px; "
+            "font-weight: bold; border-radius: 5px;"
+        )
+        self.session_banner.setAlignment(QtCore.Qt.AlignCenter)
+        self.session_banner.setVisible(False)
+        layout.addWidget(self.session_banner)
 
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
@@ -7974,6 +8198,50 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         self.stats_lbl.setStyleSheet("color: gray;")
         self.inner_layout.addWidget(self.stats_lbl)
 
+        # Level and XP Progress Section
+        if GAMIFICATION_AVAILABLE:
+            level_frame = QtWidgets.QFrame()
+            level_frame.setStyleSheet("background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #e8f5e9, stop:1 #f1f8e9); border-radius: 8px; padding: 5px;")
+            level_layout = QtWidgets.QVBoxLayout(level_frame)
+            level_layout.setContentsMargins(15, 10, 15, 10)
+            level_layout.setSpacing(5)
+            
+            # Get level info
+            total_xp = self.blocker.adhd_buster.get("total_xp", 0)
+            level, xp_in_level, xp_needed, progress = get_level_from_xp(total_xp)
+            title, emoji = get_level_title(level)
+            
+            # Level header row
+            level_header = QtWidgets.QHBoxLayout()
+            self.level_title_lbl = QtWidgets.QLabel(f"{emoji} <b>Level {level}</b> - {title}")
+            self.level_title_lbl.setStyleSheet("font-size: 14px; color: #2e7d32;")
+            level_header.addWidget(self.level_title_lbl)
+            level_header.addStretch()
+            self.total_xp_lbl = QtWidgets.QLabel(f"✨ {total_xp:,} Total XP")
+            self.total_xp_lbl.setStyleSheet("color: #558b2f; font-weight: bold;")
+            level_header.addWidget(self.total_xp_lbl)
+            level_layout.addLayout(level_header)
+            
+            # XP Progress bar
+            self.xp_progress_bar = QtWidgets.QProgressBar()
+            self.xp_progress_bar.setMaximum(100)
+            self.xp_progress_bar.setValue(int(progress))
+            self.xp_progress_bar.setTextVisible(False)
+            self.xp_progress_bar.setFixedHeight(12)
+            self.xp_progress_bar.setStyleSheet(
+                "QProgressBar { background: rgba(0,0,0,0.1); border-radius: 6px; }"
+                "QProgressBar::chunk { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4caf50, stop:1 #8bc34a); border-radius: 6px; }"
+            )
+            level_layout.addWidget(self.xp_progress_bar)
+            
+            # XP text
+            self.xp_text_lbl = QtWidgets.QLabel(f"{xp_in_level:,} / {xp_needed:,} XP to Level {level + 1}")
+            self.xp_text_lbl.setStyleSheet("color: #689f38; font-size: 11px;")
+            self.xp_text_lbl.setAlignment(QtCore.Qt.AlignCenter)
+            level_layout.addWidget(self.xp_text_lbl)
+            
+            self.inner_layout.addWidget(level_frame)
+
         # Story Progress Section (at top for visibility)
         story_group = QtWidgets.QGroupBox("📜 Your Story")
         story_layout = QtWidgets.QVBoxLayout(story_group)
@@ -7997,10 +8265,10 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                 self.mode_disabled_radio.setChecked(True)
             else:
                 self.mode_story_radio.setChecked(True)
-            # Connect signals
-            self.mode_story_radio.toggled.connect(self._on_mode_radio_changed)
-            self.mode_hero_radio.toggled.connect(self._on_mode_radio_changed)
-            self.mode_disabled_radio.toggled.connect(self._on_mode_radio_changed)
+            # Connect signals - use lambda to filter to only checked state
+            self.mode_story_radio.toggled.connect(lambda checked: checked and self._on_mode_radio_changed())
+            self.mode_hero_radio.toggled.connect(lambda checked: checked and self._on_mode_radio_changed())
+            self.mode_disabled_radio.toggled.connect(lambda checked: checked and self._on_mode_radio_changed())
             mode_bar.addStretch()
             story_layout.addLayout(mode_bar)
         
@@ -8170,7 +8438,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             combo.addItem("[Empty]")
             slot_items = [item for item in inventory if item.get("slot") == slot]
             for idx, item in enumerate(slot_items):
-                display = f"{item['name']} (+{item.get('power', 10)}) [{item['rarity'][:1]}]"
+                item_name = item.get('name', 'Unknown')
+                item_rarity = item.get('rarity', 'Common')
+                display = f"{item_name} (+{item.get('power', 10)}) [{item_rarity[:1]}]"
                 combo.addItem(display, item)
             current = equipped.get(slot)
             if current:
@@ -8245,9 +8515,8 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         optimize_btn.clicked.connect(self._optimize_gear)
         btn_layout.addWidget(optimize_btn)
         btn_layout.addStretch()
-        close_btn = QtWidgets.QPushButton("Close")
-        close_btn.clicked.connect(self.accept)
-        btn_layout.addWidget(close_btn)
+        # Store button references for enabling/disabling during sessions
+        self._action_buttons = [refresh_btn, diary_btn, salvage_btn, optimize_btn]
         self.inner_layout.addLayout(btn_layout)
 
         scroll.setWidget(container)
@@ -8267,8 +8536,8 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         if GAMIFICATION_AVAILABLE:
             sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
-        # Use deferred refresh to prevent UI lag
-        QtCore.QTimer.singleShot(0, self._refresh_character)
+        # Use deferred refresh to update character, inventory, and power displays
+        QtCore.QTimer.singleShot(0, self.refresh_all)
 
     def _refresh_sets_display(self, power_info: dict = None) -> None:
         """Refresh the active set bonuses display."""
@@ -8375,6 +8644,16 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         luck = self.blocker.adhd_buster.get("luck_bonus", 0)
         self.stats_lbl.setText(f"📦 {total_items} in bag  |  🎁 {total_collected} collected  |  🔥 {streak} day streak  |  🍀 {luck} luck")
         
+        # Update level and XP display
+        if hasattr(self, 'level_title_lbl'):
+            total_xp = self.blocker.adhd_buster.get("total_xp", 0)
+            level, xp_in_level, xp_needed, progress = get_level_from_xp(total_xp)
+            title, emoji = get_level_title(level)
+            self.level_title_lbl.setText(f"{emoji} <b>Level {level}</b> - {title}")
+            self.total_xp_lbl.setText(f"✨ {total_xp:,} Total XP")
+            self.xp_progress_bar.setValue(int(progress))
+            self.xp_text_lbl.setText(f"{xp_in_level:,} / {xp_needed:,} XP to Level {level + 1}")
+        
         # Update set bonuses display
         self._refresh_sets_display(power_info)
         
@@ -8408,6 +8687,15 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         equipped = self.blocker.adhd_buster.get("equipped", {})
         needs_save = False
         
+        # Rarity colors for visual distinction
+        rarity_colors = {
+            "Common": "#9e9e9e",
+            "Uncommon": "#4caf50",
+            "Rare": "#2196f3",
+            "Epic": "#9c27b0",
+            "Legendary": "#ff9800"
+        }
+        
         # Update slot labels with themed names
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         for slot, label in self.slot_labels.items():
@@ -8422,8 +8710,16 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             
             slot_items = [item for item in inventory if item.get("slot") == slot]
             for item in slot_items:
-                display = f"{item['name']} (+{item.get('power', 10)}) [{item['rarity'][:1]}]"
+                item_name = item.get('name', 'Unknown')
+                item_rarity = item.get('rarity', 'Common')
+                item_color = rarity_colors.get(item_rarity, "#9e9e9e")
+                power = item.get('power', 10)
+                # Show full rarity name with color indicator
+                display = f"{item_name} (+{power}) [{item_rarity}]"
                 combo.addItem(display, item)
+                # Set foreground color for this item
+                idx = combo.count() - 1
+                combo.setItemData(idx, QtGui.QColor(item_color), QtCore.Qt.ForegroundRole)
             
             # Re-select current equipped item if it exists in inventory
             current = equipped.get(slot)
@@ -8506,16 +8802,18 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             # Use robust equipped check that handles items with/without timestamps
             is_eq = self._is_item_equipped(item, equipped)
             prefix = "✓ " if is_eq else ""
-            power = item.get("power", RARITY_POWER.get(item.get("rarity", "Common"), 10))
-            text = f"{prefix}{item['name']} (+{power}) [{item['rarity'][:1]}]"
+            item_name = item.get("name", "Unknown Item")
+            item_rarity = item.get("rarity", "Common")
+            power = item.get("power", RARITY_POWER.get(item_rarity, 10))
+            text = f"{prefix}{item_name} (+{power}) [{item_rarity[:1]}]"
             list_item = QtWidgets.QListWidgetItem(text)
             list_item.setData(QtCore.Qt.UserRole, orig_idx)
             # Add tooltip with full item details (use themed slot name)
             active_story = self.blocker.adhd_buster.get("active_story", "warrior")
             slot_display = get_slot_display_name(item.get('slot', 'Unknown'), active_story) if get_slot_display_name else item.get('slot', 'Unknown')
             list_item.setToolTip(
-                f"{item['name']}\n"
-                f"Rarity: {item.get('rarity', 'Common')}\n"
+                f"{item_name}\n"
+                f"Rarity: {item_rarity}\n"
                 f"Slot: {slot_display}\n"
                 f"Power: +{power}\n"
                 f"{'[✓ EQUIPPED - unequip to merge]' if is_eq else '[Click to select for merge]'}"
@@ -8546,6 +8844,13 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         count = len(valid_indices)
         
         self.merge_btn.setText(f"🎲 Merge Selected ({count})")
+        
+        # Never enable merge during active session
+        if self._session_active:
+            self.merge_btn.setEnabled(False)
+            self.merge_rate_lbl.setText("🔒 Merging disabled during focus session")
+            return
+        
         if count >= 2 and GAMIFICATION_AVAILABLE:
             items = [inventory[idx] for idx in valid_indices]
             
@@ -8601,7 +8906,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         luck = self.blocker.adhd_buster.get("luck_bonus", 0)
         rate = calculate_merge_success_rate(items, luck)
         result_rarity = get_merge_result_rarity(items)
-        summary = "\n".join([f"  • {i['name']} ({i['rarity']})" for i in items])
+        summary = "\n".join([f"  • {i.get('name', 'Unknown')} ({i.get('rarity', 'Common')})" for i in items])
         if QtWidgets.QMessageBox.question(
             self, "⚠️ Lucky Merge",
             f"Merge {len(items)} items?\n\n{summary}\n\nSuccess rate: {rate*100:.0f}%\n"
@@ -8747,20 +9052,19 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
             )
             if reply != QtWidgets.QMessageBox.Yes:
-                # Revert combo to current story
+                # Revert combo to current story - block signals to prevent recursion
+                self.story_combo.blockSignals(True)
                 for i in range(self.story_combo.count()):
                     if self.story_combo.itemData(i) == current:
                         self.story_combo.setCurrentIndex(i)
                         break
+                self.story_combo.blockSignals(False)
                 return
         
         select_story(self.blocker.adhd_buster, story_id)
         self.blocker.save_config()
         
-        # Comprehensive refresh for the new hero
-        self._update_story_description()
-        self._update_story_progress_labels()
-        self._refresh_story_chapter_list()
+        # Comprehensive refresh for the new hero (includes story description, progress, chapters)
         self.refresh_all()
 
     def _on_restart_story(self) -> None:
@@ -8809,10 +9113,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         if success:
             self.blocker.save_config()
             
-            # Comprehensive refresh
-            self._update_story_description()
-            self._update_story_progress_labels()
-            self._refresh_story_chapter_list()
+            # Comprehensive refresh (includes story description, progress, chapters)
             self.refresh_all()
             
             QtWidgets.QMessageBox.information(
@@ -8865,7 +9166,26 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         if not GAMIFICATION_AVAILABLE:
             return
         enabled = is_gamification_enabled(self.blocker.adhd_buster)
-        story_mode = get_story_mode(self.blocker.adhd_buster) == STORY_MODE_ACTIVE
+        current_mode = get_story_mode(self.blocker.adhd_buster)
+        story_mode = current_mode == STORY_MODE_ACTIVE
+        
+        # Sync radio button selection with current mode (block signals to prevent loop)
+        if hasattr(self, 'mode_story_radio'):
+            self.mode_story_radio.blockSignals(True)
+            self.mode_hero_radio.blockSignals(True)
+            self.mode_disabled_radio.blockSignals(True)
+            
+            if current_mode == STORY_MODE_HERO_ONLY:
+                self.mode_hero_radio.setChecked(True)
+            elif current_mode == STORY_MODE_DISABLED:
+                self.mode_disabled_radio.setChecked(True)
+            else:
+                self.mode_story_radio.setChecked(True)
+            
+            self.mode_story_radio.blockSignals(False)
+            self.mode_hero_radio.blockSignals(False)
+            self.mode_disabled_radio.blockSignals(False)
+        
         # Enable story combo only in story mode
         if hasattr(self, "story_combo"):
             self.story_combo.setEnabled(story_mode)
@@ -8961,6 +9281,19 @@ class ADHDBusterDialog(QtWidgets.QDialog):
         if not chapter_num:
             return
         
+        import re
+        def format_story_text(text: str) -> str:
+            """Convert markdown-like text to HTML."""
+            formatted = text.strip()
+            # Bold: **text** -> <b>text</b>
+            formatted = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', formatted)
+            # Italic: *text* -> <i>text</i> (but not inside bold tags)
+            formatted = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'<i>\1</i>', formatted)
+            # Paragraphs and line breaks
+            formatted = formatted.replace("\n\n", "</p><p>")
+            formatted = formatted.replace("\n", "<br>")
+            return f"<p style='font-size: 13px; line-height: 1.6;'>{formatted}</p>"
+        
         from gamification import get_chapter_content, get_decision_for_chapter, has_made_decision, make_story_decision
         chapter = get_chapter_content(chapter_num, self.blocker.adhd_buster)
         
@@ -8998,12 +9331,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
             content_text.setReadOnly(True)
             
             # Format content with markdown-like bold/italic
-            formatted = chapter['content'].strip()
-            formatted = formatted.replace("**", "<b>").replace("**", "</b>")
-            formatted = formatted.replace("*", "<i>").replace("*", "</i>")
-            formatted = formatted.replace("\n\n", "</p><p>")
-            formatted = formatted.replace("\n", "<br>")
-            formatted = f"<p style='font-size: 13px; line-height: 1.6;'>{formatted}</p>"
+            formatted = format_story_text(chapter['content'])
             
             content_text.setHtml(formatted)
             content_text.setStyleSheet("background-color: #1a1a2e; color: #eee; padding: 10px;")
@@ -9085,12 +9413,7 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                     content_text.setReadOnly(True)
                     
                     # Format the full updated content
-                    formatted = updated_chapter['content'].strip()
-                    formatted = formatted.replace("**", "<b>").replace("**", "</b>")
-                    formatted = formatted.replace("*", "<i>").replace("*", "</i>")
-                    formatted = formatted.replace("\n\n", "</p><p>")
-                    formatted = formatted.replace("\n", "<br>")
-                    formatted = f"<p style='font-size: 13px; line-height: 1.6;'>{formatted}</p>"
+                    formatted = format_story_text(updated_chapter['content'])
                     
                     content_text.setHtml(formatted)
                     content_text.setStyleSheet("background-color: #1a1a2e; color: #eee; padding: 10px;")
@@ -9103,9 +9426,8 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                     
                     continuation_dialog.exec()
                     
-                    # Refresh all story-related UI after decision
-                    self._refresh_story_chapter_list()
-                    self._update_story_progress_labels()
+                    # Comprehensive refresh after story decision
+                    self.refresh_all()
                 
                 btn_a.clicked.connect(lambda: make_choice("A", choice_a))
                 btn_b.clicked.connect(lambda: make_choice("B", choice_b))
@@ -9147,7 +9469,9 @@ class ADHDBusterDialog(QtWidgets.QDialog):
                 if ch.get("decision_made"):
                     decision_marker = " ⚡"  # Decision made
                 elif ch.get("unlocked"):
-                    decision_marker = " ❓"  # Decision pending
+                    decision_marker = " ⚡"  # Decision pending (unlocked)
+                else:
+                    decision_marker = " ⚡"  # Decision awaits (locked chapter)
             
             self.chapter_combo.addItem(
                 f"{emoji} Chapter {ch['number']}: {ch['title']}{decision_marker}",
@@ -9411,6 +9735,197 @@ class DiaryDialog(QtWidgets.QDialog):
             sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
         self.accept()
+
+
+class LevelUpCelebrationDialog(QtWidgets.QDialog):
+    """Exciting celebration dialog shown when the player levels up."""
+
+    def __init__(self, level_info: dict, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.level_info = level_info
+        self.new_level = level_info.get("level", 1)
+        self.levels_gained = level_info.get("levels_gained", 1)
+        self.new_title = level_info.get("new_title", "")
+        self.title_changed = level_info.get("title_changed", False)
+        self.xp_earned = level_info.get("xp_earned", 0)
+        self.setWindowTitle("⬆️ LEVEL UP!")
+        self.setFixedSize(450, 380)
+        self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
+        self._animation_step = 0
+        self._particles = []
+        self._build_ui()
+        self._start_celebration()
+        # Auto-close after celebration
+        close_time = 8000 + (self.levels_gained - 1) * 2000  # Longer for multi-level
+        QtCore.QTimer.singleShot(close_time, self.accept)
+
+    def _build_ui(self) -> None:
+        # Gradient background based on level milestone
+        if self.new_level >= 50:
+            bg = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ffd700, stop:1 #ff8c00)"
+            accent = "#ffd700"
+        elif self.new_level >= 30:
+            bg = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #9c27b0, stop:1 #e91e63)"
+            accent = "#e040fb"
+        elif self.new_level >= 20:
+            bg = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #2196f3, stop:1 #00bcd4)"
+            accent = "#03a9f4"
+        elif self.new_level >= 10:
+            bg = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #4caf50, stop:1 #8bc34a)"
+            accent = "#66bb6a"
+        else:
+            bg = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #3f51b5, stop:1 #7986cb)"
+            accent = "#7c4dff"
+        
+        self.setStyleSheet(f"background: {bg};")
+        
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(30, 25, 30, 25)
+        layout.setSpacing(15)
+        
+        # Big celebratory header
+        if self.levels_gained > 1:
+            header_text = f"🎉 MULTI LEVEL UP! 🎉"
+        else:
+            header_text = "🎉 LEVEL UP! 🎉"
+        self.header_lbl = QtWidgets.QLabel(header_text)
+        self.header_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        self.header_lbl.setStyleSheet(
+            f"font-size: 28px; font-weight: bold; color: white; "
+            f"text-shadow: 2px 2px 4px rgba(0,0,0,0.5);"
+        )
+        layout.addWidget(self.header_lbl)
+        
+        # Level number with animated feel
+        level_text = f"Level {self.new_level}"
+        if self.levels_gained > 1:
+            old_level = self.new_level - self.levels_gained
+            level_text = f"Level {old_level} → {self.new_level}"
+        self.level_lbl = QtWidgets.QLabel(level_text)
+        self.level_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        self.level_lbl.setStyleSheet(
+            "font-size: 48px; font-weight: bold; color: white; "
+            "text-shadow: 3px 3px 6px rgba(0,0,0,0.4);"
+        )
+        layout.addWidget(self.level_lbl)
+        
+        # Title display
+        if self.new_title:
+            title_prefix = "NEW TITLE: " if self.title_changed else ""
+            self.title_lbl = QtWidgets.QLabel(f"{title_prefix}{self.new_title}")
+            self.title_lbl.setAlignment(QtCore.Qt.AlignCenter)
+            style = "font-size: 20px; font-weight: bold; color: #fff8e1;"
+            if self.title_changed:
+                style += " text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700;"
+            self.title_lbl.setStyleSheet(style)
+            layout.addWidget(self.title_lbl)
+        
+        # XP earned info
+        if self.xp_earned > 0:
+            xp_lbl = QtWidgets.QLabel(f"+{self.xp_earned:,} XP")
+            xp_lbl.setAlignment(QtCore.Qt.AlignCenter)
+            xp_lbl.setStyleSheet("font-size: 18px; color: #e1f5fe;")
+            layout.addWidget(xp_lbl)
+        
+        # Progress to next level
+        progress = self.level_info.get("progress", 0)
+        xp_in = self.level_info.get("xp_in_level", 0)
+        xp_needed = self.level_info.get("xp_needed", 100)
+        
+        progress_frame = QtWidgets.QFrame()
+        progress_frame.setStyleSheet("background: rgba(255,255,255,0.2); border-radius: 10px;")
+        progress_layout = QtWidgets.QVBoxLayout(progress_frame)
+        progress_layout.setContentsMargins(15, 10, 15, 10)
+        
+        next_lbl = QtWidgets.QLabel(f"Progress to Level {self.new_level + 1}")
+        next_lbl.setStyleSheet("color: white; font-size: 12px;")
+        next_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        progress_layout.addWidget(next_lbl)
+        
+        progress_bar = QtWidgets.QProgressBar()
+        progress_bar.setMaximum(100)
+        progress_bar.setValue(int(progress))
+        progress_bar.setTextVisible(False)
+        progress_bar.setFixedHeight(20)
+        progress_bar.setStyleSheet(
+            f"QProgressBar {{ background: rgba(0,0,0,0.3); border-radius: 10px; }}"
+            f"QProgressBar::chunk {{ background: {accent}; border-radius: 10px; }}"
+        )
+        progress_layout.addWidget(progress_bar)
+        
+        xp_text = QtWidgets.QLabel(f"{xp_in:,} / {xp_needed:,} XP")
+        xp_text.setStyleSheet("color: white; font-size: 11px;")
+        xp_text.setAlignment(QtCore.Qt.AlignCenter)
+        progress_layout.addWidget(xp_text)
+        
+        layout.addWidget(progress_frame)
+        
+        # Motivational message
+        messages = [
+            "Your focus powers grow stronger! 💪",
+            "The path to mastery continues! 🌟",
+            "You're becoming unstoppable! 🚀",
+            "Champions are made through dedication! 🏆",
+            "Every level brings new strength! ⚡",
+        ]
+        if self.new_level >= 50:
+            messages = ["LEGENDARY STATUS! You're a focus god! 👑", "The legends speak of your discipline! ⚡"]
+        elif self.new_level >= 30:
+            messages = ["Master level focus achieved! 🔮", "Your willpower is legendary! ✨"]
+        
+        msg_lbl = QtWidgets.QLabel(random.choice(messages))
+        msg_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        msg_lbl.setStyleSheet("font-size: 14px; color: white; font-style: italic;")
+        layout.addWidget(msg_lbl)
+        
+        # Click to dismiss
+        dismiss_lbl = QtWidgets.QLabel("(Click anywhere to continue)")
+        dismiss_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        dismiss_lbl.setStyleSheet("color: rgba(255,255,255,0.7); font-size: 10px;")
+        layout.addWidget(dismiss_lbl)
+
+    def _start_celebration(self) -> None:
+        """Start the celebration animation."""
+        # Pulse animation for header
+        self._animation_timer = QtCore.QTimer(self)
+        self._animation_timer.timeout.connect(self._animate_step)
+        self._animation_timer.start(150)
+        
+        # Play sound
+        try:
+            import winsound
+            # Multiple beeps for level up excitement
+            for _ in range(min(self.levels_gained, 3)):
+                winsound.MessageBeep(winsound.MB_ICONASTERISK)
+        except Exception:
+            pass
+
+    def _animate_step(self) -> None:
+        """Animate the celebration."""
+        self._animation_step += 1
+        
+        # Pulse the header with different emojis
+        emojis = ["🎉", "⭐", "🌟", "✨", "🎊", "💫"]
+        emoji = emojis[self._animation_step % len(emojis)]
+        
+        if self.levels_gained > 1:
+            self.header_lbl.setText(f"{emoji} MULTI LEVEL UP! {emoji}")
+        else:
+            self.header_lbl.setText(f"{emoji} LEVEL UP! {emoji}")
+        
+        # Stop after a while
+        if self._animation_step >= 40:
+            self._animation_timer.stop()
+
+    def mousePressEvent(self, event) -> None:
+        if hasattr(self, '_animation_timer'):
+            self._animation_timer.stop()
+        self.accept()
+
+    def closeEvent(self, event) -> None:
+        if hasattr(self, '_animation_timer'):
+            self._animation_timer.stop()
+        super().closeEvent(event)
 
 
 class ItemDropDialog(QtWidgets.QDialog):
@@ -10228,8 +10743,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         self.timer_tab = TimerTab(self.blocker, self)
         self.tabs.addTab(self.timer_tab, "⏱ Timer")
-        # Connect session complete signal to refresh stats
+        # Connect session signals to refresh stats and manage ADHD tab state
         self.timer_tab.session_complete.connect(self._on_session_complete)
+        self.timer_tab.session_started.connect(self._on_session_started)
 
         self.sites_tab = SitesTab(self.blocker, self)
         self.tabs.addTab(self.sites_tab, "🌐 Sites")
@@ -10258,6 +10774,11 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.sleep_tab = SleepTab(self.blocker, self)
         self.tabs.addTab(self.sleep_tab, "😴 Sleep")
 
+        # ADHD Buster tab (gamification)
+        if GAMIFICATION_AVAILABLE:
+            self.adhd_tab = ADHDBusterTab(self.blocker, self)
+            self.tabs.addTab(self.adhd_tab, "🦸 Hero")
+
         if AI_AVAILABLE:
             self.ai_tab = AITab(self.blocker, self)
             self.tabs.addTab(self.ai_tab, "🧠 AI Insights")
@@ -10268,8 +10789,6 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.tray_icon = None
         self.minimize_to_tray = self.blocker.minimize_to_tray  # Load from config
         
-        # Track open ADHD Buster dialog for refresh on loot drops
-        self.adhd_dialog = None
         self._setup_system_tray()
 
         # Check for crash recovery on startup
@@ -10669,43 +11188,34 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                                    "Set your desired duration and click Start Focus!")
 
     def _open_adhd_buster(self) -> None:
-        # Prevent interaction during active focus sessions
-        if self.timer_tab.timer_running:
-            QtWidgets.QMessageBox.information(
-                self, "Session Active",
-                "You cannot modify your ADHD Buster during a focus session.\n\n"
-                "Complete or stop your session first to access inventory and equipment."
+        """Switch to the ADHD Buster tab."""
+        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'adhd_tab'):
+            QtWidgets.QMessageBox.warning(
+                self, "Unavailable",
+                "ADHD Buster features are not available."
             )
             return
         
-        try:
-            self.adhd_dialog = ADHDBusterDialog(self.blocker, self)
-            self.adhd_dialog.finished.connect(self._on_adhd_dialog_closed)
-            self.adhd_dialog.exec()
-        except Exception as e:
-            QtWidgets.QMessageBox.critical(
-                self, "Error",
-                f"Failed to open ADHD Buster dialog:\n\n{e}"
-            )
-            import traceback
-            traceback.print_exc()
-            return
-        if GAMIFICATION_AVAILABLE and hasattr(self, "buster_btn"):
-            # Update button visibility and text based on mode
+        # Find the index of the ADHD tab and switch to it
+        tab_index = self.tabs.indexOf(self.adhd_tab)
+        if tab_index >= 0:
+            self.tabs.setCurrentIndex(tab_index)
+            # Refresh the tab and set session state
+            self.adhd_tab.set_session_active(self.timer_tab.timer_running)
+            self.adhd_tab.refresh_all()
+        
+        # Update button text
+        if hasattr(self, "buster_btn"):
             enabled = is_gamification_enabled(self.blocker.adhd_buster)
             self.buster_btn.setVisible(enabled)
             if enabled:
                 power = calculate_character_power(self.blocker.adhd_buster)
                 self.buster_btn.setText(f"🦸 ADHD Buster  ⚔ {power}")
 
-    def _on_adhd_dialog_closed(self) -> None:
-        """Clear reference when ADHD dialog closes."""
-        self.adhd_dialog = None
-
-    def refresh_adhd_dialog(self) -> None:
-        """Refresh ADHD Buster dialog if it's open."""
-        if hasattr(self, 'adhd_dialog') and self.adhd_dialog is not None:
-            self.adhd_dialog.refresh_gear_combos()
+    def refresh_adhd_tab(self) -> None:
+        """Refresh ADHD Buster tab if it exists."""
+        if GAMIFICATION_AVAILABLE and hasattr(self, 'adhd_tab'):
+            self.adhd_tab.refresh_all()
 
     def _open_diary(self) -> None:
         dialog = DiaryDialog(self.blocker, self)
@@ -10812,6 +11322,32 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Refresh AI tab if available
         if AI_AVAILABLE and hasattr(self, 'ai_tab'):
             self.ai_tab._refresh_data()
+        
+        # Re-enable all tabs after session ends
+        self._set_tabs_enabled(True)
+        
+        # Refresh ADHD Buster tab after session ends
+        if GAMIFICATION_AVAILABLE and hasattr(self, 'adhd_tab'):
+            self.adhd_tab.set_session_active(False)
+            self.adhd_tab.refresh_all()
+
+    def _on_session_started(self) -> None:
+        """Handle session start - disable non-essential tabs to minimize distraction."""
+        self._set_tabs_enabled(False)
+        if GAMIFICATION_AVAILABLE and hasattr(self, 'adhd_tab'):
+            self.adhd_tab.set_session_active(True)
+    
+    def _set_tabs_enabled(self, enabled: bool) -> None:
+        """Enable or disable non-essential tabs during focus sessions.
+        
+        Only the Timer tab (index 0) remains enabled during sessions,
+        as it's needed to stop the session or view remaining time.
+        """
+        for i in range(self.tabs.count()):
+            # Keep Timer tab (index 0) always enabled
+            if i == 0:
+                continue
+            self.tabs.setTabEnabled(i, enabled)
 
     def _on_tab_changed(self, index: int) -> None:
         """Handle tab changes - refresh data for the newly selected tab."""
@@ -10825,6 +11361,11 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Refresh AI tab when switched to
         elif AI_AVAILABLE and hasattr(self, 'ai_tab') and widget == self.ai_tab:
             self.ai_tab._refresh_data()
+        
+        # Refresh ADHD Buster tab when switched to
+        elif GAMIFICATION_AVAILABLE and hasattr(self, 'adhd_tab') and widget == self.adhd_tab:
+            self.adhd_tab.set_session_active(self.timer_tab.timer_running)
+            self.adhd_tab.refresh_all()
 
 
 def check_single_instance():
