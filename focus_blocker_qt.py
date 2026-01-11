@@ -9948,6 +9948,13 @@ class HydrationTab(QtWidgets.QWidget):
             icon = "✅" if glasses >= HYDRATION_MAX_DAILY_GLASSES else "💧"
             item = QtWidgets.QListWidgetItem(f"{icon} {date}: {glasses} glasses")
             self.history_list.addItem(item)
+        
+        # Update main timeline widget if parent window has it
+        if self.parent() and hasattr(self.parent(), 'timeline_widget'):
+            try:
+                self.parent().timeline_widget.update_data()
+            except Exception:
+                pass
 
 
 class HydrationTimelineWidget(QtWidgets.QWidget):
@@ -13031,6 +13038,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         today_str = today_date.strftime("%Y-%m-%d")
         yesterday_str = yesterday_date.strftime("%Y-%m-%d")
 
+        # Add sleep events
         try:
             sleep_entries = getattr(self.blocker, 'sleep_entries', [])
             for entry in sleep_entries:
@@ -13086,6 +13094,31 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                         })
         except Exception as e:
             pass 
+
+        # Add water events (mark moments when water was logged)
+        try:
+            water_entries = getattr(self.blocker, 'water_entries', [])
+            for entry in water_entries:
+                entry_date = entry.get('date')
+                entry_time = entry.get('time')
+                
+                if entry_date == today_str and entry_time:
+                    try:
+                        # Parse time
+                        h, m = map(int, entry_time.split(':'))
+                        if 0 <= h <= 23 and 0 <= m <= 59:
+                            time_float = h + m/60.0
+                            # Show as a 5-minute block
+                            events.append({
+                                'start': time_float,
+                                'end': min(time_float + 5/60.0, 24.0),
+                                'color': QtGui.QColor("#4fc3f7"), # Cyan
+                                'label': '💧 Water'
+                            })
+                    except (ValueError, AttributeError, TypeError):
+                        continue
+        except Exception:
+            pass
 
         self.timeline.set_events(events)
 
