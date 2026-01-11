@@ -382,6 +382,84 @@ STORY_GEAR_THEMES = {
             "Startup": {"words": ["startup", "viral", "disrupt", "billion"], "bonus_per_match": 22, "emoji": "🚀"},
         },
     },
+
+    # =========================================================================
+    # SCIENTIST THEME - Modern Scientific Research
+    # =========================================================================
+    "scientist": {
+        "theme_id": "scientist",
+        "theme_name": "🔬 Lab Equipment",
+        "slot_display": {
+            "Helmet": "Eyewear",
+            "Chestplate": "Lab Coat",
+            "Gauntlets": "Gloves",
+            "Boots": "Safety Shoes",
+            "Shield": "Notebook",
+            "Weapon": "Instrument",
+            "Cloak": "Hazmat Suit",
+            "Amulet": "Badge",
+        },
+        "item_types": {
+            "Helmet": ["Safety Goggles", "Protective Visor", "Magnifying Glasses", "Lab Spectacles", "Electron Microscope Viewer", "Quantum Lens", "Reality Scanner"],
+            "Chestplate": ["Lab Coat", "Chemical-Resistant Vest", "Radiation Suit", "Research Smock", "Polymer Jacket", "Quantum Armor", "Field Jacket"],
+            "Gauntlets": ["Latex Gloves", "Chemical Gloves", "Handling Mitts", "Precision Grips", "Nano-Fiber Gloves", "Force-Field Gauntlets", "Quantum Manipulators"],
+            "Boots": ["Lab Boots", "Steel-Toed Shoes", "Sterile Slippers", "Chemical Treads", "Magnetic Boots", "Anti-Gravity Soles", "Dimension Steppers"],
+            "Shield": ["Research Notebook", "Data Tablet", "Lab Manual", "Formula Compendium", "Periodic Table", "Quantum Computer", "Reality Buffer"],
+            "Weapon": ["Microscope", "Spectrometer", "Beaker Set", "Pipette", "Centrifuge", "Particle Accelerator", "Laser Cutter", "Plasma Torch"],
+            "Cloak": ["Hazmat Suit", "Radiation Shield", "Bio-Safety Cape", "Sterile Drape", "Energy Cloak", "Force Field", "Time-Loop Generator"],
+            "Amulet": ["ID Badge", "Security Clearance", "Nobel Medal", "Patent Pendant", "Discovery Charm", "Breakthrough Token", "Eureka Gem"],
+        },
+        "adjectives": {
+            "Common": [
+                "Contaminated", "Expired", "Miscalibrated", "Cracked", "Outdated", "Broken",
+                "Dusty", "Rusted", "Stained", "Cheap", "Generic", "Defective"
+            ],
+            "Uncommon": [
+                "Calibrated", "Sterile", "Precision", "Peer-Reviewed", "Lab-Grade", "Certified",
+                "Validated", "Quality-Controlled", "Standard-Issue", "Professional", "Accurate"
+            ],
+            "Rare": [
+                "Patented", "Nobel-Worthy", "Groundbreaking", "Revolutionary", "Published",
+                "Peer-Acclaimed", "Grant-Winning", "Cutting-Edge", "State-of-the-Art"
+            ],
+            "Epic": [
+                "Paradigm-Shifting", "Theory-Rewriting", "Nobel-Prize", "Einsteinian",
+                "Quantum-Leap", "World-Changing", "Discovery-Class", "Breakthrough"
+            ],
+            "Legendary": [
+                "Reality-Defining", "Universe-Explaining", "Laws-of-Physics-Breaking",
+                "God-Particle", "Theory-of-Everything", "Infinite-Knowledge", "Absolute-Truth"
+            ],
+        },
+        "suffixes": {
+            "Common": [
+                "Failed Experiments", "Null Results", "Rejected Papers", "Budget Cuts",
+                "Lab Accidents", "Broken Beakers", "Contaminated Samples", "Lost Data"
+            ],
+            "Uncommon": [
+                "Reproducible Results", "Peer Review", "Grant Funding", "Clean Data",
+                "Successful Trials", "Published Findings", "Lab Safety", "Steady Progress"
+            ],
+            "Rare": [
+                "Major Discovery", "Breakthrough Moment", "Patent Approval", "Nature Publication",
+                "Validation", "Theory Confirmation", "Eureka", "the Hypothesis"
+            ],
+            "Epic": [
+                "Nobel Recognition", "Paradigm Shift", "Scientific Revolution",
+                "Universal Truth", "Reality Unveiled", "Cosmic Understanding", "Perfect Theory"
+            ],
+            "Legendary": [
+                "Ultimate Knowledge", "Final Theory", "Unified Field", "God's Equation",
+                "Reality Itself", "Infinite Understanding", "the Answer", "Truth Absolute"
+            ],
+        },
+        "set_themes": {
+            "Quantum": {"words": ["quantum", "particle", "atom", "electron"], "bonus_per_match": 30, "emoji": "⚛️"},
+            "Chemical": {"words": ["chemical", "molecule", "polymer", "compound"], "bonus_per_match": 20, "emoji": "🧪"},
+            "Nobel": {"words": ["nobel", "discovery", "breakthrough", "patent"], "bonus_per_match": 25, "emoji": "🏅"},
+            "Radiation": {"words": ["radiation", "nuclear", "radioactive", "plasma"], "bonus_per_match": 22, "emoji": "☢️"},
+        },
+    },
 }
 
 
@@ -3105,6 +3183,12 @@ AVAILABLE_STORIES = {
         "title": "🏆 The Unlikely Champion",
         "description": "The smallest moves can topple the tallest towers. Patience is a weapon.",
         "theme": "realistic",
+    },
+    "scientist": {
+        "id": "scientist",
+        "title": "🔬 The Breakthrough Protocol",
+        "description": "Every discovery requires discipline. Every breakthrough demands countless failed experiments.",
+        "theme": "scientific",
     },
 }
 
@@ -6627,6 +6711,1373 @@ THE END: The unlikely champion wins everything—and deserves all of it.
 ]
 
 # ============================================================================
+# STORY 5: THE BREAKTHROUGH PROTOCOL (Scientist)
+# ============================================================================
+
+SCIENTIST_DECISIONS = {
+    2: {
+        "id": "scientist_method",
+        "prompt": "Dr. Rivera's lab just published results using your preliminary hypothesis—without citation. Your breakthrough, their paper. Do you...",
+        "choices": {
+            "A": {
+                "label": "🔥 Expose Them Publicly",
+                "short": "aggressive",
+                "description": "Present your original notes at the conference. Burn their credibility.",
+            },
+            "B": {
+                "label": "🧪 Outwork Them Quietly",
+                "short": "methodical",
+                "description": "Let them have the preliminary. You'll publish the full breakthrough.",
+            },
+        },
+    },
+    4: {
+        "id": "scientist_collaboration",
+        "prompt": "Dr. Chen offers collaboration—her lab has funding and equipment you need. But she wants co-authorship on YOUR discovery. Do you...",
+        "choices": {
+            "A": {
+                "label": "🤝 Accept Partnership",
+                "short": "collaboration",
+                "description": "Share the credit. Science is bigger than ego.",
+            },
+            "B": {
+                "label": "🔬 Stay Independent",
+                "short": "independence",
+                "description": "Work alone. The breakthrough will be yours alone.",
+            },
+        },
+    },
+    6: {
+        "id": "scientist_ethics",
+        "prompt": "The data shows promising results—but one trial failed catastrophically. Rivera would hide it. Chen would publish everything. The grant committee meets tomorrow. Do you...",
+        "choices": {
+            "A": {
+                "label": "📊 Report All Data",
+                "short": "honest",
+                "description": "Include the failure. Science demands truth, not convenience.",
+            },
+            "B": {
+                "label": "⏱️ Request Extension",
+                "short": "pragmatic",
+                "description": "Ask for six more months. Fix the failure before publishing.",
+            },
+        },
+    },
+}
+
+SCIENTIST_CHAPTERS = [
+    {
+        "title": "Chapter 1: The Failed Experiment",
+        "threshold": 0,
+        "has_decision": False,
+        "content": """
+Three years. Three YEARS of failed experiments.
+Your lab notebook reads like a catalog of disasters.
+Trial 47: Failed. Trial 48: Inconclusive. Trial 49: Equipment malfunction.
+
+**Analysis paralysis.** That's what your advisor called it.
+You plan every variable. Control for every factor.
+Run simulations before experiments. Models before prototypes.
+
+And still. NOTHING works.
+
+Your colleague Dr. Rivera gets results weekly—sloppy, fast, publishable.
+"You overthink everything," Rivera says. "Science is about action, not perfection."
+
+But you've seen Rivera's data. The shortcuts. The assumptions.
+The "statistically significant" results that won't replicate.
+That's not science. That's theater.
+
+Your workspace: {helmet} on the bench, {weapon} beside your lab notebook.
+Power level {current_power}. Zero breakthroughs.
+
+Dr. Alexis Chen works in the adjacent lab.
+She's brilliant—published in Nature twice before age 30.
+"The best scientists fail more than they succeed," she told you once.
+"The question is whether you learn from it."
+
+Today's experiment: Trial 50.
+You've run the numbers seventeen times.
+Checked every calculation. Verified every measurement.
+
+This time. THIS time, it has to work.
+
+Your hands are steady. Your notes are perfect.
+The timer starts.
+
+**Every breakthrough begins with discipline. Every discovery demands persistence.**
+**You are not failing. You are iterating toward truth.**
+"""
+    },
+    {
+        "title": "Chapter 2: The Stolen Hypothesis",
+        "threshold": 50,
+        "has_decision": True,
+        "decision_id": "scientist_method",
+        "content": """
+Trial 50: **PARTIAL SUCCESS.**
+
+Not a breakthrough. Not yet. But PROGRESS.
+The data shows a pattern—preliminary, fragile, but REAL.
+
+You write it up carefully. Share it at the lab meeting.
+"Interesting," Dr. Chen says. "Keep going."
+"Waste of time," Rivera mutters. "Too slow."
+
+Two weeks later: Rivera's lab publishes in *Scientific Reports*.
+Your hypothesis. Your preliminary data. Their paper.
+
+"We reached similar conclusions independently," Rivera claims.
+
+**BULLSHIT.** You showed them the data. You explained the method.
+They took your idea, ran one sloppy trial, and rushed to publication.
+
+Now the science community thinks Rivera discovered it first.
+Your advisor suggests "moving on to something else."
+"These things happen in science. Don't burn bridges."
+
+But Dr. Chen pulls you aside after the meeting.
+"I have your original lab notes timestamped on the server.
+You can prove they stole this. But proving it will destroy them—
+and make you look vindictive. Or..."
+
+She pauses.
+
+"You can let them have the preliminary finding.
+It's incomplete anyway. Work on the FULL breakthrough.
+When you publish the complete mechanism, everyone will know
+who did the real science. Rivera will look like an amateur."
+
+**The conference is in three days.**
+**You have a platform. You have evidence.**
+**Do you expose theft, or do you outwork it?**
+""",
+        "content_after_decision": {
+            "A": """
+**YOU CHOOSE: EXPOSE THEM PUBLICLY**
+
+The conference hall is packed. Rivera presents first—
+your hypothesis, poorly explained, barely understood.
+
+Then it's your turn.
+
+You show the timestamped notes. The original calculations.
+The discrepancies in Rivera's methodology.
+
+"Dr. Rivera's paper is based on preliminary data
+shared at our departmental meeting—which I presented
+two weeks before their publication date."
+
+The room goes silent.
+
+Rivera's face turns red. The department chair takes notes.
+
+**You won. Rivera is finished.**
+
+But as you leave the podium, you catch Dr. Chen's expression.
+Not pride. Something else. **Concern?**
+
+"You just made every scientist in this room afraid to share ideas with you.
+You were RIGHT—but now you're the person who destroys colleagues.
+Good luck finding collaborators."
+
+The breakthrough is still yours to discover.
+But now, you'll discover it alone.
+
+Power level {current_power}. Your {weapon} gleams in the lab light.
+The vindication felt good. But the isolation feels cold.
+
+**Truth was served. But was it worth the cost?**
+""",
+            "B": """
+**YOU CHOOSE: OUTWORK THEM QUIETLY**
+
+The conference happens. Rivera presents.
+You sit in the audience and take notes.
+
+They got the surface-level insight right—barely.
+But they missed THE KEY VARIABLE.
+The thing that makes it actually work.
+
+"Interesting preliminary findings," someone comments.
+"Yes, preliminary," you think. "And wrong."
+
+You return to your lab. Double down.
+The {weapon} beside you. The {helmet} shielding your eyes.
+Power level {current_power}. Focus like a laser.
+
+Three months pass.
+
+You find it. **THE MECHANISM.**
+Not just "this probably works"—but WHY it works.
+The mathematics. The biochemistry. The complete picture.
+
+Your paper goes to *Nature*. Peer review is brutal.
+But your data is PERFECT. Your methodology is FLAWLESS.
+
+Accepted.
+
+When it publishes, the science community sees immediately:
+Rivera found a shadow. You found the sun.
+
+Dr. Chen sends you a message:
+"This is how real science is done. I'm impressed."
+
+Rivera's paper gets cited as "preliminary findings—
+see [Your Name] et al for complete mechanism."
+
+**You didn't destroy them. You simply did better science.**
+The community respects you. Collaborators reach out.
+And Rivera? No one takes them seriously anymore.
+
+Power level {current_power}. The {weapon} in your hands.
+Victory through excellence, not vengeance.
+
+**Discipline beats shortcuts. Always.**
+"""
+        },
+    },
+    {
+        "title": "Chapter 3: The Research Path",
+        "threshold": 120,
+        "has_decision": False,
+        "content_variations": {
+            "A": """
+Six months after the conference incident.
+
+Your lab is quieter now. Grad students avoid you.
+Post-docs request transfers. "Difficult to work with," they say.
+
+Not because you're wrong. Because you're RIGHT—loudly, publicly, devastatingly.
+
+Dr. Chen still talks to you. Barely.
+"You made your point. Rivera's career is over.
+Are you happy? Was it worth it?"
+
+You want to say yes. But the data doesn't lie—
+your productivity has dropped. Collaboration requests: zero.
+Grant applications: rejected. "Concerns about collegiality."
+
+Rivera works at a teaching college now. You heard they're happy there.
+You work alone. You told yourself you preferred it this way.
+
+But the breakthrough is harder alone.
+
+Your {helmet} on. Your {weapon} ready.
+Power level {current_power}. Progress is SLOW.
+
+Trial 73: Failed.
+Trial 74: Inconclusive.
+Trial 75: Promising, but you need verification.
+
+Verification requires a second lab. A collaborator.
+Someone willing to work with you.
+
+Dr. Chen knocks on your door.
+"I heard you need mass spectrometry verification.
+I have the equipment. I'll help—but only if you can
+work with someone without burning them."
+
+**The isolation you chose is becoming the isolation that limits you.**
+**Science is collaborative. But can you collaborate without compromising?**
+""",
+            "B": """
+Six months after outworking Rivera.
+
+Your lab is busier than ever.
+Three grad students requested placement with you.
+Two post-docs want to join your research group.
+"The person who does the best science," they say.
+
+Dr. Chen drops by regularly now.
+Not just as a colleague—as a friend.
+"Coffee?" she asks on Fridays. You always say yes.
+
+Somewhere between the failed experiments and the breakthrough,
+you started to enjoy the process. Not just the results.
+
+Trial 73: Failed—but the failure revealed something unexpected.
+Trial 74: Inconclusive—but Chen suggested a modification that worked.
+Trial 75: **MAJOR PROGRESS.**
+
+The data is beautiful. Clean. Reproducible.
+Two labs verified it independently (Chen's and Cornell's).
+
+Your paper draft is 47 pages. Single-authored.
+Chen offered co-authorship. You declined.
+"You advised. You didn't discover. This is yours," she said.
+
+But you thanked her in the acknowledgments.
+Science is collaborative—even when the credit isn't shared.
+
+Your {helmet} on your desk. {weapon} beside your laptop.
+Power level {current_power}. The rhythm of research.
+
+The breakthrough is close. You can FEEL it.
+Not because you rushed. Because you were METHODICAL.
+Not because you destroyed competitors. Because you did BETTER WORK.
+
+Dr. Chen knocks. "Lab meeting in ten. You presenting?"
+
+"Always."
+
+**Excellence is patient. Excellence is collaborative. Excellence WINS.**
+"""
+        },
+    },
+    {
+        "title": "Chapter 4: The Collaboration Offer",
+        "threshold": 250,
+        "has_decision": True,
+        "decision_id": "scientist_collaboration",
+        "content": """
+The breakthrough is within reach. You know it.
+Every experiment brings you closer to THE MECHANISM—
+the key that unlocks everything.
+
+But you've hit a wall.
+
+Your equipment is outdated. Your funding is limited.
+The next phase requires tools you don't have:
+Advanced imaging. Mass spectrometry at resolutions your lab can't achieve.
+Computational modeling beyond your server's capacity.
+
+You could apply for grants. Wait six months. Maybe get funding.
+Or you could borrow time on Cornell's equipment. Political favors.
+Or you could accept Dr. Chen's offer.
+
+She knocks on your lab door. Again.
+
+"I've been watching your progress. It's brilliant.
+But you're stuck—not because of the science,
+because of RESOURCES. My lab has everything you need."
+
+You know this. Chen's lab is state-of-the-art.
+Funded by a multi-million dollar NSF grant.
+Equipment you'd need years to acquire.
+
+"I want to collaborate. Officially.
+You lead the experimental design. My lab provides resources.
+We publish together. Co-first authorship."
+
+**Co-authorship.** Sharing YOUR discovery.
+
+"This could accelerate your timeline by a year," Chen continues.
+"But I understand if you want to work alone.
+Science is personal. Breakthroughs are personal."
+
+She understands. That's what makes this harder.
+
+Your {helmet} rests on the bench. {weapon} beside your notes.
+Power level {current_power}. Every session focused on THIS.
+
+Chen is brilliant. Her lab is professional. She's ETHICAL.
+But the discovery will have two names on it.
+
+Or you work alone. Slower. But YOURS alone.
+
+Rivera appears in your mind—the thief, the shortcut-taker.
+If you collaborate, how are you different from someone
+who shares credit they didn't fully earn?
+
+But you remember: Chen isn't Rivera.
+She's offering tools, not stealing ideas.
+
+**Do you accelerate the breakthrough by sharing credit?**
+**Or do you slow down to keep it entirely yours?**
+""",
+        "content_after_decision": {
+            "A": """
+**YOU CHOOSE: ACCEPT PARTNERSHIP**
+
+"Yes. Let's collaborate."
+
+Chen smiles. "Good. I'll draft the agreement.
+You retain lead authorship. Equal contribution clause.
+No one takes credit they didn't earn."
+
+The paperwork takes a week.
+The experiments start immediately.
+
+Chen's imaging equipment is INCREDIBLE.
+Resolution ten times better than yours.
+You see structures you only theorized about.
+
+"This is what you needed," Chen says, looking at the images.
+"This is the proof."
+
+Weeks become months. The data grows.
+Chen's post-doc helps with computational modeling.
+Your grad student handles synthesis.
+
+It's FASTER. More rigorous. Better science.
+
+But in the quiet moments, you wonder:
+Would you have found it alone eventually?
+Does sharing credit diminish the achievement?
+
+Then the results come back.
+Trial 92: **COMPLETE MECHANISM CONFIRMED.**
+
+You and Chen stare at the data together.
+
+"We did it," she says.
+
+"WE did it," you repeat. The word feels strange. But TRUE.
+
+The paper goes to *Nature*: [Your Name] & Chen, co-first authors.
+Peer review is brutal. But the data is PERFECT.
+
+Accepted.
+
+When it publishes, the community celebrates.
+"Groundbreaking collaboration," they say.
+"This is how science should be done."
+
+Your name is first. But Chen's name is there too.
+And honestly? The discovery is BETTER because she was involved.
+
+Power level {current_power}. {weapon} in your lab.
+You learned something Rivera never did:
+**Great scientists don't work alone. They work with equals.**
+""",
+            "B": """
+**YOU CHOOSE: STAY INDEPENDENT**
+
+"I appreciate the offer. But I need to do this alone."
+
+Chen nods slowly. "I understand. The door stays open
+if you change your mind."
+
+She leaves. You return to your work.
+
+Your {helmet}. Your {weapon}. Your {current_power} sessions.
+ALONE. As it should be.
+
+Weeks become months. Progress is SLOW.
+
+You apply for equipment grants. Rejected.
+"Insufficient preliminary data." But the data requires the equipment.
+Catch-22.
+
+You borrow time on Cornell's mass spec. Three hours per week.
+Not enough. But it's what you have.
+
+Trial 82: Promising, but verification needed.
+Trial 83: Equipment malfunction (not your fault).
+Trial 84: Inconclusive.
+
+You see Chen in the hallway sometimes.
+Her lab published two papers this quarter.
+Collaborations with MIT and Stanford.
+
+"How's your project going?" she asks.
+
+"Slowly," you admit.
+
+She doesn't say "I told you so." But you hear it anyway.
+
+Nine months pass. You're CLOSER. Not there yet.
+
+Then Chen appears at your door. Again.
+
+"I'm not offering collaboration anymore.
+But I AM offering you three days of dedicated equipment time.
+No co-authorship. No strings. Just... scientist to scientist."
+
+You want to say no. Pride says refuse help.
+
+But science says: **Take the data opportunity.**
+
+"Why?" you ask.
+
+"Because good science matters more than ego.
+And because I want to see what you discover—
+even if my name isn't on it."
+
+You accept. Three days. You work 72 hours straight.
+
+The data comes through. **PARTIAL MECHANISM CONFIRMED.**
+
+Not complete. Not yet. But closer.
+
+Power level {current_power}. {weapon} steady in your hands.
+
+The breakthrough will be yours alone.
+But it's taking EVERYTHING you have.
+
+**Independence is powerful. But is it efficient?**
+"""
+        },
+    },
+    {
+        "title": "Chapter 5: The Critical Error",
+        "threshold": 450,
+        "has_decision": False,
+        "content_variations": {
+            "AA": """
+One year into the collaboration.
+
+You and Dr. Chen have become partners—not just in research,
+but in how you approach science. She challenges your perfectionism.
+You sharpen her methodology.
+
+The project is moving faster than you imagined.
+Trial 103: Successful.
+Trial 104: Reproducible.
+Trial 105: **BREAKTHROUGH CONFIRMED.**
+
+You're writing the paper. Co-first authorship.
+Chen handles the theoretical framework.
+You handle the experimental validation.
+
+Then you find it.
+
+**ERROR IN TRIAL 97.**
+
+Not a small error. A CRITICAL miscalculation in the dosage.
+The results from that trial—which informed Trials 98-102—are WRONG.
+
+You check the notes. Chen's post-doc ran Trial 97.
+You supervised, but you didn't catch the error.
+
+If this error invalidates the downstream experiments...
+the ENTIRE breakthrough might be compromised.
+
+You sit alone in the lab at 2 AM.
+Your {helmet} on the desk. {weapon} untouched.
+Power level {current_power}. All that focus.
+
+For what? A mistake you should have caught?
+
+You could:
+1) Tell Chen immediately. Halt everything. Re-run Trials 98-105.
+2) Re-check the math. Maybe the error doesn't propagate.
+3) Bury it. The final results look good. No one will check Trial 97.
+
+Option 3 is what Rivera would do.
+
+You think of Dr. Chen. The trust you've built.
+The partnership that made this possible.
+
+You call her at 2:15 AM.
+
+"We have a problem."
+
+She arrives within twenty minutes. You show her the error.
+
+She goes pale. "This could invalidate..."
+
+"Everything downstream. Yes."
+
+Silence.
+
+"We re-run it," Chen says finally. "All of it.
+This is science. We don't publish errors."
+
+Three months of re-experiments. Verification. Cross-checks.
+
+Trial 97 (corrected): Different results.
+Trials 98-102: Need adjustment.
+Trial 103-105: **STILL VALID, but with modified interpretation.**
+
+The breakthrough HOLDS. But the mechanism is more nuanced.
+Actually MORE interesting than the original finding.
+
+Chen sends you a message at 3 AM:
+"Finding that error saved us from publishing something wrong.
+That's what good collaboration looks like."
+
+Power level {current_power}. The {weapon} gleaming.
+
+**Excellence requires catching your own mistakes.**
+**Great partnerships make that possible.**
+""",
+            "AB": """
+One year after declining Chen's collaboration.
+
+Your breakthrough came. Eventually.
+Not as fast as Chen's labs. Not as elegant.
+But it's YOURS. Every data point. Every conclusion.
+
+Trial 114: **MECHANISM PARTIALLY CONFIRMED.**
+
+"Partially" because you lack the verification equipment.
+"Confirmed" because your methodology is FLAWLESS.
+
+You submit to *Nature*. The paper is brilliant.
+Single-author. Your name only.
+
+Peer review comes back: "Impressive work, but..."
+
+**BUT.**
+
+"Results require independent verification.
+Computational modeling needed for theoretical validation.
+High-resolution imaging would strengthen conclusions."
+
+Everything Chen's lab could have provided.
+
+You request revisions time. Six months granted.
+
+You contact universities. Beg for equipment time.
+"We can give you four hours next quarter..."
+
+Not enough.
+
+Chen appears at a conference. You haven't spoken in a year.
+
+"I heard about the *Nature* submission," she says.
+"Congratulations on getting that far."
+
+"It's in revisions. They want verification I can't provide."
+
+"I could help. Still. If you want."
+
+**Pride says no. Science says yes.**
+
+"Would you... verify independently? Not collaborate.
+Just confirm my results in your lab?"
+
+"Of course. That's what scientists do."
+
+She runs the verification. Three weeks.
+The results come back: **CONFIRMED.**
+
+She sends you the data with a note:
+"Your mechanism is correct. Beautiful work.
+You can cite this as independent verification."
+
+The paper gets accepted. Single-author.
+But Chen's verification is in the acknowledgments.
+
+She helped you. Even after you refused her.
+
+At the pub after the acceptance celebration:
+
+"Why did you help me?" you ask.
+
+"Because the science mattered more than ego.
+Yours OR mine."
+
+Power level {current_power}. The {weapon} in your hands.
+
+You got your solo breakthrough.
+But you learned: **Even lone wolves need the pack sometimes.**
+""",
+            "BA": """
+One year after accepting Chen's collaboration.
+
+The project is thriving. You've published two papers together—
+major findings, well-cited, contributing to the field.
+
+But something's been bothering you.
+
+The CORE breakthrough—the mechanism you discovered alone—
+is listed as "co-first authorship" in your current draft.
+
+Chen's lab provided equipment. Resources. Verification.
+But the INSIGHT was yours. The experimental design: yours.
+
+You're in the lab late when Chen finds you.
+
+"You've been distant lately. What's wrong?"
+
+"I don't know how to say this without sounding ungrateful..."
+
+"Just say it."
+
+"The core mechanism. The breakthrough. I discovered that
+BEFORE our collaboration. Your lab verified it. Enhanced it.
+But it was MY finding."
+
+Chen sits down. "You're right."
+
+You blink. "I'm... what?"
+
+"You discovered the core mechanism. I provided resources
+that accelerated validation. But the insight was yours first."
+
+She pulls out the draft paper. Red pen in hand.
+
+"What if we restructure? You're sole first author on the
+mechanism paper. I'm second author for verification.
+Then we co-author the APPLICATIONS paper together?"
+
+"You'd do that?"
+
+"It's the truth. Good science is truthful—
+about data AND about credit."
+
+You restructure. Two papers:
+1) The Mechanism: [Your Name] (first), Chen (second)
+2) Applications: [Your Name] & Chen (co-first)
+
+Both get accepted. The community sees EXACTLY who contributed what.
+
+Rivera's name comes up at a conference.
+"Whatever happened to them?"
+
+"Teaching at a community college," someone says.
+"They tried shortcuts. This is what real science looks like."
+
+Power level {current_power}. The {weapon} gleaming.
+
+You and Chen in the lab:
+
+"You know what's better than solo glory?" she asks.
+
+"What?"
+
+"Partnership that's HONEST about contributions.
+We both win. The science wins."
+
+**Excellence is collaborative. But credit must be accurate.**
+""",
+            "BB": """
+One year after staying independent.
+
+You're CLOSE. So close to the breakthrough.
+
+Trial 127: Promising.
+Trial 128: Needs verification.
+Trial 129: **MECHANISM PARTIALLY CONFIRMED.**
+
+Your single-author paper is 63 pages.
+Every experiment run by you. Every calculation verified three times.
+
+You submit to *Nature*.
+
+Peer review: "Insufficient verification. Independent replication required."
+
+You don't have another lab. You've worked alone.
+
+The rejection stings. Not because you failed—
+because you did EXCELLENT science that no one will see
+until you can verify it.
+
+Dr. Chen published three papers this year.
+Collaborations with top labs. Each paper: multiple authors.
+Each paper: accepted on first submission.
+
+You see her at a conference.
+
+"I heard about the rejection," she says gently.
+"That's brutal. Your science is solid."
+
+"Not solid enough without verification."
+
+"Have you considered—"
+
+"Collaboration? Yes. Every day."
+
+"It's not too late. I'd still work with you."
+
+You look at her. Really look at her.
+
+Not as a competitor. Not as someone who wants YOUR glory.
+As another scientist who wants good science published.
+
+"What would collaboration look like NOW?" you ask.
+
+"You publish your mechanism paper. Solo.
+I verify it independently—cited as verification, not co-author.
+Then we collaborate on the NEXT phase together.
+You keep your breakthrough. We share future discoveries."
+
+It's FAIR. It's ethical. It's good science.
+
+You accept.
+
+Chen's lab verifies in three weeks.
+*Nature* accepts your paper with the verification.
+Single-author. Your name. Your breakthrough.
+
+Then you start the next project. Together.
+
+Power level {current_power}. {weapon} beside Chen's equipment.
+
+You learned the hard way:
+**You can do great science alone. But you can do MORE together.**
+
+The breakthrough is yours.
+But the future belongs to both of you.
+"""
+        },
+    },
+    {
+        "title": "Chapter 6: The Ethical Crossroads",
+        "threshold": 800,
+        "has_decision": True,
+        "decision_id": "scientist_ethics",
+        "content": """
+The final experiments. The complete breakthrough.
+Everything you've worked for is HERE.
+
+Trial 147: Successful.
+Trial 148: Successful.
+Trial 149: Successful.
+Trial 150: **CATASTROPHIC FAILURE.**
+
+Not just "inconclusive." Not just "needs adjustment."
+**CATASTROPHIC.** The mechanism you discovered—
+under specific conditions—causes complete system collapse.
+
+You've run 150 trials. 149 show promise.
+But Trial 150? If this were medical research, someone could die.
+
+You check the conditions. Obscure. Unlikely in real-world use.
+Temperature 15 degrees higher than normal.
+pH slightly acidic. Pressure elevated.
+
+"Edge case," a lesser scientist would say. Rivera would say.
+
+But Chen walks in. Sees the data.
+
+"Oh no."
+
+"Oh no" is right.
+
+The grant committee meets TOMORROW.
+This research is your tenure case. Your career.
+Three years of work. Your entire professional future.
+
+If you report Trial 150, the committee will:
+- Question your methodology (even though it's perfect)
+- Delay funding (even though 149/150 trials succeeded)
+- Possibly REJECT the entire project (even though it's groundbreaking)
+
+Dr. Chen sits beside you.
+
+"This is the choice that defines a scientist.
+
+Option A: Report everything. Include Trial 150.
+Explain it's an edge case. Show the full data.
+Be HONEST—and risk losing everything.
+
+Option B: Request a six-month extension.
+Tell them you need to 'expand the scope.'
+Use that time to solve Trial 150 before revealing it.
+
+Rivera would hide it. Just publish the 149 successes.
+
+But Chen looks at you.
+
+"What kind of scientist do you want to be?"
+
+Your {helmet} on the bench. {weapon} beside the data.
+Power level {current_power}. All for this moment.
+
+**The committee meets in 14 hours.**
+**The choice defines not just your career—**
+**but the kind of science you believe in.**
+""",
+        "content_after_decision": {
+            "A": """
+**YOU CHOOSE: REPORT ALL DATA**
+
+The committee meeting. 9 AM.
+
+You present. 150 trials. Full methodology.
+Trials 1-149: Successful.
+Trial 150: Catastrophic failure under specific conditions.
+
+The room goes quiet.
+
+"You're reporting a FAILURE?" one committee member asks.
+"In a grant continuation meeting?"
+
+"I'm reporting THE TRUTH," you reply.
+
+"This is either the most ethical thing I've seen—
+or the most career-ending," another mutters.
+
+Dr. Chen (attending as collaborator or reference, depending on your earlier choice) speaks:
+
+"Trial 150 isn't a failure. It's a FINDING.
+[Your Name] discovered not just what works—
+but the CONDITIONS under which it fails.
+That's more valuable than hiding problems."
+
+The committee deliberates. You wait outside.
+
+One hour. Two hours. Three.
+
+The door opens.
+
+"We're extending your grant. Full funding.
+But with one condition: you MUST investigate Trial 150 fully.
+We want to know WHY it fails—that's as important as why it works."
+
+You got the funding. BECAUSE you were honest.
+
+Rivera's lab lost funding last year—
+their "successful" results couldn't be replicated.
+They hid the failures. It caught up with them.
+
+You reported the failure. And the committee RESPECTED it.
+
+Power level {current_power}. The {weapon} steady.
+
+Six months later: You solve Trial 150.
+The mechanism works universally—with ONE modification.
+Your paper: "Complete Mechanism and Failure Modes"
+gets published in *Science*.
+
+Reviewers: "Unprecedented honesty. This is science at its best."
+
+**Integrity costs nothing. Deception costs everything.**
+""",
+            "B": """
+**YOU CHOOSE: REQUEST EXTENSION**
+
+The committee meeting. 9 AM.
+
+You present. Trials 1-149. Promising results.
+"But I need six more months to expand the scope."
+
+"Expand? Your preliminary data looks complete."
+
+"I want to test edge cases. Ensure robustness.
+Good science requires thorough validation."
+
+It's not a LIE. It's... selective truth.
+
+The committee grants the extension.
+
+You have six months to fix Trial 150 before anyone knows it exists.
+
+Back in the lab: You and your team work frantically.
+
+Why did Trial 150 fail?
+What conditions caused it?
+Can it be prevented?
+
+Three months in: You find it.
+A modification to the mechanism.
+One additional stabilization step.
+
+Trial 151 (with modification): Successful.
+Trial 152: Successful.
+Trial 153: Successful.
+
+You solved it. Trial 150 is now a footnote:
+"Early trials revealed edge-case instability;
+addressed through [modification] protocol."
+
+The full paper goes to *Science*:
+149 successful trials. Edge case identified and solved.
+
+**No one ever knows you hid the failure temporarily.**
+
+Peer review: "Thorough work. Well-validated."
+
+Accepted.
+
+Your career is secure. The breakthrough is complete.
+
+But late at night, you think about Trial 150.
+
+What if someone tries to replicate your work
+WITHOUT the modification? Will they hit the same failure?
+
+You add a supplementary note to the publication:
+"Warning: Mechanism unstable under [conditions].
+See modification protocol in Section 4.3."
+
+It's buried in the appendix. But it's THERE.
+
+Dr. Chen (if collaborating) notices.
+
+"You almost didn't include that warning, did you?"
+
+"I considered it."
+
+"But you did include it. That's what matters."
+
+Power level {current_power}. {weapon} gleaming.
+
+The breakthrough is published. Your career is saved.
+
+You were pragmatic—but you didn't cross the line Rivera crossed.
+
+**Sometimes the ethical choice is about what you DON'T hide—eventually.**
+"""
+        },
+    },
+    {
+        "title": "Chapter 7: The Breakthrough",
+        "threshold": 1500,
+        "has_decision": False,
+        "content": """
+Two years after Trial 1.
+Power level {current_power}.
+
+Your complete findings are published.
+The mechanism is understood. The applications are clear.
+The science community has ACCEPTED it.
+
+But your story has eight endings, depending on the choices you made.
+
+**What kind of scientist did you become?**
+""",
+        "endings": {
+            "AAA": {
+                "title": "THE VINDICATED TRUTH-TELLER",
+                "content": """
+You exposed Rivera. You stayed independent. You reported all data.
+
+**THE BRUTAL HONESTY ENDING**
+
+Your paper is cited 247 times in two years.
+"Groundbreaking," they say. "Unprecedented integrity."
+
+But you work alone. Always alone.
+
+Collaboration requests come in—but you decline them.
+"I work better solo," you say.
+"Collaboration introduces... complications."
+
+Dr. Chen tried to stay friends. But you see her differently now.
+She wanted to SHARE credit. You wanted EARNED credit.
+
+The breakthrough is entirely yours.
+Your name only. Your discovery alone.
+
+But at conferences, people whisper:
+"Brilliant—but difficult."
+"Great scientist—wouldn't want to work with them."
+
+Rivera teaches at a community college now. Happy there, they say.
+You're at a top-tier university. Miserable here, you don't say.
+
+You won. Completely. Correctly. Alone.
+
+Power level {current_power}.
+The {weapon} on your desk. The {helmet} gathering dust.
+
+**Was the solo victory worth the isolation?**
+
+THE END: The truth-teller stands alone—vindicated, but lonely.
+"""
+            },
+            "AAB": {
+                "title": "THE PRAGMATIC PERFECTIONIST",
+                "content": """
+You exposed Rivera. You stayed independent. You requested time to fix the failure.
+
+**THE STRATEGIC TRUTH ENDING**
+
+Your paper is cited 198 times. "Thorough work," they say.
+
+You stayed solo. But you learned when to show strength
+and when to buy time.
+
+Rivera's career ended publicly. Yours thrived quietly.
+
+Dr. Chen respects you—from a distance.
+"You're a great scientist," she told you once.
+"But you trust process more than people."
+
+Your lab is efficient. Productive. Silent.
+
+Grad students work for you—but don't confide in you.
+Post-docs publish with you—but don't stay close.
+
+The breakthrough is entirely yours.
+And the loneliness is entirely yours too.
+
+You fixed Trial 150 before revealing it.
+Pragmatic? Yes. Ethical? Mostly.
+
+But late at night, you wonder:
+What would collaboration have unlocked?
+What discoveries are impossible for one person alone?
+
+Power level {current_power}.
+The {weapon} precise. The {helmet} unworn.
+
+**Excellence achieved. At the cost of partnership.**
+
+THE END: The perfectionist wins alone—and wonders what could have been.
+"""
+            },
+            "ABA": {
+                "title": "THE RELUCTANT COLLABORATOR",
+                "content": """
+You exposed Rivera. You accepted Chen's partnership. You reported all data.
+
+**THE HONEST PARTNERSHIP ENDING**
+
+Your co-authored paper is cited 312 times.
+"Model collaboration," they say. "Groundbreaking honesty."
+
+You learned: Integrity + Partnership = Excellence.
+
+Rivera is gone. But you didn't just destroy them—
+you showed a BETTER way to do science.
+
+Dr. Chen is your closest colleague. Not just professionally.
+At conferences, you present together.
+In the lab, you challenge each other.
+
+"We make each other better scientists," she says.
+
+Your grant applications list both names.
+Your papers cite each other's work.
+
+The exposure of Rivera was necessary. Brutal, but necessary.
+
+But the partnership with Chen? That was TRANSFORMATIVE.
+
+You learned: You can stand alone when ethics demand it.
+But you can achieve MORE when partnership enables it.
+
+Power level {current_power}.
+Your {weapon} beside Chen's microscope.
+
+**Truth without collaboration is justice.**
+**Truth WITH collaboration is progress.**
+
+THE END: The honest collaborator wins—and lifts others up in the process.
+"""
+            },
+            "ABB": {
+                "title": "THE STRATEGIC COLLABORATOR",
+                "content": """
+You exposed Rivera. You accepted Chen's partnership. You requested time.
+
+**THE PRAGMATIC TEAM ENDING**
+
+Your co-authored paper is cited 276 times. "Solid work," they say.
+
+You learned: Partnership works—when both partners are strategic.
+
+Rivera's public exposure ended them. Some call you vindictive.
+But your results speak louder than gossip.
+
+Dr. Chen is your research partner. Professional. Effective.
+
+"We work well together," she says.
+Not "we're close." Not "we're friends."
+**We work well together.**
+
+The Trial 150 situation showed you:
+Good partnerships allow breathing room.
+Chen never questioned your six-month extension.
+She trusted you to handle it.
+
+Your lab is productive. Well-funded. Professional.
+
+But at night, you wonder:
+Is this collaboration—or just efficient division of labor?
+
+Power level {current_power}.
+The {weapon} clean. The {helmet} functional.
+
+**You built a successful partnership.**
+**But did you build a meaningful one?**
+
+THE END: The strategic collaborator succeeds—but keeps emotional distance.
+"""
+            },
+            "BAA": {
+                "title": "THE PATIENT SCIENTIST",
+                "content": """
+You outworked Rivera quietly. You stayed independent. You reported all data.
+
+**THE METHODICAL TRUTH ENDING**
+
+Your paper is cited 265 times. "Exemplary methodology," they say.
+
+You didn't destroy Rivera—you simply did BETTER science.
+
+The community respects that. Deeply.
+
+Dr. Chen offers collaboration occasionally. You decline.
+Not because you dislike her—because you work best alone.
+
+"I understand," she says. "Some scientists are solo performers."
+
+Your breakthrough took longer. Was harder. Required more focus.
+
+But it's YOURS. Entirely yours.
+
+The Trial 150 failure? You reported it immediately.
+Cost you six months. Almost cost you tenure.
+
+But the committee respected it: "Integrity over convenience."
+
+You're the scientist other scientists point to:
+"That's how research should be done.
+Patient. Honest. Excellent."
+
+Rivera? They're teaching intro biology now.
+Their shortcuts caught up with them.
+
+You? You're writing the textbook on your mechanism.
+Single-author. As it should be.
+
+Power level {current_power}.
+The {weapon} pristine. The {helmet} on the shelf.
+
+**Slow science. Good science. Honest science.**
+
+THE END: The patient scientist wins—on their own terms, in their own time.
+"""
+            },
+            "BAB": {
+                "title": "THE PRAGMATIC SOLO SCIENTIST",
+                "content": """
+You outworked Rivera quietly. You stayed independent. You requested time.
+
+**THE STRATEGIC SOLO ENDING**
+
+Your paper is cited 189 times. "Good work," they say.
+
+You didn't destroy Rivera publicly. You outworked them quietly.
+You stayed independent. You bought time when you needed it.
+
+**Efficient. Pragmatic. Successful.**
+
+Dr. Chen respects you. "You know your limits," she says.
+"And you work within them effectively."
+
+It's not a compliment about brilliance.
+It's a compliment about STRATEGY.
+
+Your lab is small. Just you and two grad students.
+Efficient. No drama. No collaboration politics.
+
+The Trial 150 situation taught you:
+Sometimes you hide problems until you solve them.
+Sometimes you report problems immediately.
+
+**The question is: When is hiding strategic, and when is it unethical?**
+
+You walked that line. Never crossed it.
+But you got CLOSE.
+
+Power level {current_power}.
+The {weapon} maintained. The {helmet} ready.
+
+Your career is stable. Your results are solid.
+You're not famous. But you're RELIABLE.
+
+**Sometimes good science is about knowing when to be honest—**
+**and when to be strategic.**
+
+THE END: The pragmatic soloist succeeds—by knowing the system and working it efficiently.
+"""
+            },
+            "BBA": {
+                "title": "THE COLLABORATIVE TRUTH-TELLER",
+                "content": """
+You outworked Rivera quietly. You accepted Chen's partnership. You reported all data.
+
+**THE ETHICAL PARTNERSHIP ENDING**
+
+Your co-authored paper is cited 389 times.
+"Model of scientific collaboration and integrity," they say.
+
+You learned: Excellence + Partnership + Honesty = Legacy.
+
+Rivera wasn't destroyed by you—they were outworked by better science.
+The community saw the difference: Shortcuts vs. Excellence.
+
+Dr. Chen is more than a colleague. She's a TRUE partner.
+
+At conferences, you present together.
+In grant meetings, you advocate for each other.
+In the lab, you make each other better.
+
+The Trial 150 failure? You reported it together.
+Chen stood beside you. "This is what integrity looks like."
+
+The committee respected it. Funded it. Celebrated it.
+
+Your follow-up paper: "Mechanism, Failures, and Solutions"
+is now THE reference work in your field.
+
+Co-first authorship. Equal credit. TRUE collaboration.
+
+Rivera teaches at a small college. You heard they're mentoring
+undergrads who "need a second chance."
+Maybe they learned something.
+
+Power level {current_power}.
+Your {weapon} beside Chen's equipment.
+
+**Excellence is collaborative. Ethics is non-negotiable.**
+**Together, they create LEGENDARY science.**
+
+THE END: The collaborative truth-teller builds a legacy—together with a true partner.
+"""
+            },
+            "BBB": {
+                "title": "THE HAPPY ENDING",
+                "content": """
+You outworked Rivera quietly. You accepted Chen's partnership. You requested time.
+
+**THE COMPLETE SCIENTIST ENDING**
+
+Your co-authored paper is cited 421 times.
+"Definitive work," they say. "Career-defining."
+
+You learned EVERYTHING:
+- Excellence beats shortcuts (Rivera learned that the hard way)
+- Partnership amplifies individual brilliance (Chen proved that)
+- Strategic patience beats premature disclosure (Trial 150 taught that)
+
+Dr. Chen isn't just a colleague. She's a FRIEND.
+
+Your labs are adjacent now. Shared equipment. Shared students.
+Separate projects—but constant collaboration.
+
+At coffee on Fridays, she asks:
+"What are you working on next?"
+
+And you TELL her. Not because you have to.
+Because collaboration makes the next discovery BETTER.
+
+Rivera? Teaching at a community college.
+You wrote them a recommendation letter.
+"Everyone deserves a second chance," you said.
+
+Chen approved. "That's the kind of scientist you are."
+
+The Trial 150 failure? You fixed it quietly.
+Published the solution transparently.
+
+"We had six months. We used them well," Chen said.
+
+**Strategic when needed. Honest when required.**
+
+Power level {current_power}.
+Your {weapon} gleaming. Your {helmet} worn with pride.
+
+The breakthrough is complete. Your career is secure.
+Your partnership is strong. Your integrity is intact.
+
+You didn't destroy your rival. You outworked them.
+You didn't work alone forever. You found an equal.
+You didn't rush to publish. You took the time to do it RIGHT.
+
+At the Nobel ceremony—yes, NOBEL—you and Chen stand together.
+
+"This is for every scientist who chose patience over glory.
+Partnership over ego. Truth over convenience."
+
+**You became the scientist the world needs.**
+
+THE END: The complete scientist wins everything—and deserves all of it.
+"""
+            },
+        },
+    },
+]
+
+# ============================================================================
 # UNIFIED STORY DATA
 # ============================================================================
 
@@ -6647,6 +8098,10 @@ STORY_DATA = {
     "underdog": {
         "decisions": UNDERDOG_DECISIONS,
         "chapters": UNDERDOG_CHAPTERS,
+    },
+    "scientist": {
+        "decisions": SCIENTIST_DECISIONS,
+        "chapters": SCIENTIST_CHAPTERS,
     },
 }
 

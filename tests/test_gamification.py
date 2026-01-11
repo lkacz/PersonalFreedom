@@ -857,11 +857,12 @@ class TestMultiStorySystem(unittest.TestCase):
     def test_available_stories_defined(self) -> None:
         """Test that multiple stories are available."""
         from gamification import AVAILABLE_STORIES
-        self.assertEqual(len(AVAILABLE_STORIES), 4)
+        self.assertEqual(len(AVAILABLE_STORIES), 5)
         self.assertIn("warrior", AVAILABLE_STORIES)
         self.assertIn("scholar", AVAILABLE_STORIES)
         self.assertIn("wanderer", AVAILABLE_STORIES)
         self.assertIn("underdog", AVAILABLE_STORIES)
+        self.assertIn("scientist", AVAILABLE_STORIES)
     
     def test_story_has_required_fields(self) -> None:
         """Test that each story has required fields."""
@@ -1145,8 +1146,8 @@ class TestHeroManagement(unittest.TestCase):
         self.assertIn("free_hero", summary)
         self.assertEqual(summary["story_mode"], "story")
         
-        # Should have all 4 stories
-        self.assertEqual(len(summary["story_heroes"]), 4)
+        # Should have all stories
+        self.assertEqual(len(summary["story_heroes"]), 5)
         
         # Warrior and scholar should have progress
         warrior = next(h for h in summary["story_heroes"] if h["story_id"] == "warrior")
