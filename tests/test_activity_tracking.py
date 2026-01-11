@@ -287,9 +287,10 @@ class TestActivityEntryReward:
     def test_30min_run_gives_good_reward(self):
         """30 min vigorous run should give Epic-centered reward."""
         # 30 * 2.0 * 1.3 = 78 effective minutes -> Epic-centered distribution
+        # Moving window [5%, 20%, 50%, 20%, 5%] means small chance of Uncommon
         result = check_activity_entry_reward(30, "running", "vigorous")
         assert result["reward"] is not None
-        assert result["rarity"] in ["Rare", "Epic", "Legendary"]  # 78 min → Epic-centered
+        assert result["rarity"] in ["Uncommon", "Rare", "Epic", "Legendary"]  # 78 min → Epic-centered
 
     def test_60min_hiit_gives_legendary(self):
         """60 min intense HIIT should give Legendary."""

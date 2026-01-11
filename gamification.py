@@ -9572,6 +9572,338 @@ def check_sleep_streak(sleep_entries: list) -> int:
     return streak
 
 
+# =============================================================================
+# HYDRATION TRACKING
+# =============================================================================
+
+# Constants for hydration tracking
+HYDRATION_MIN_INTERVAL_HOURS = 2  # Minimum 2 hours between glasses
+HYDRATION_MAX_DAILY_GLASSES = 5  # Maximum 5 glasses per day
+
+
+def get_water_reward_rarity(glass_number: int) -> Optional[str]:
+    """
+    Get reward rarity for logging a glass of water.
+    
+    Uses moving window [5%, 20%, 50%, 20%, 5%] with tier increasing each glass:
+    - Glass 1: Common-centered
+    - Glass 2: Uncommon-centered
+    - Glass 3: Rare-centered
+    - Glass 4: Epic-centered
+    - Glass 5: Legendary-centered (100% Legendary at max)
+    
+    Args:
+        glass_number: Which glass this is today (1-5)
+    
+    Returns:
+        Rarity string or None if over daily limit
+    """
+    import random
+    
+    if glass_number < 1 or glass_number > HYDRATION_MAX_DAILY_GLASSES:
+        return None
+    
+    # Glass number maps to tier: 1->0(Common), 2->1(Uncommon), 3->2(Rare), 4->3(Epic), 5->4(Legendary)
+    center_tier = glass_number - 1
+    
+    if center_tier >= 4:
+        return "Legendary"  # Glass 5 = 100% Legendary
+    
+    # Moving window: [5%, 20%, 50%, 20%, 5%] centered on center_tier
+    window = [5, 20, 50, 20, 5]
+    weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+    
+    for offset, pct in zip([-2, -1, 0, 1, 2], window):
+        target_tier = center_tier + offset
+        clamped_tier = max(0, min(4, target_tier))
+        weights[clamped_tier] += pct
+    
+    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    return random.choices(rarities, weights=weights)[0]
+
+
+def get_hydration_streak_bonus_rarity(streak_days: int) -> Optional[str]:
+    """
+    Get bonus reward for hydration streak (hitting 5 glasses daily).
+    
+    Args:
+        streak_days: Consecutive days hitting 5 glasses
+    
+    Returns:
+        Rarity string or None if not a milestone
+    """
+    if streak_days == 3:
+        return "Uncommon"
+    elif streak_days == 7:
+        return "Rare"
+    elif streak_days == 14:
+        return "Epic"
+    elif streak_days == 30:
+        return "Legendary"
+    elif streak_days > 0 and streak_days % 30 == 0:
+        return "Legendary"  # Every 30 days
+    return None
+
+
+def can_log_water(water_entries: list, current_time: Optional[str] = None) -> dict:
+    """
+    Check if user can log water based on timing rules.
+    
+    Args:
+        water_entries: List of water log entries
+        current_time: Current datetime string (for testing), or None for now
+    
+    Returns:
+        Dict with can_log, reason, next_available_time, glasses_today, minutes_remaining
+    """
+    from datetime import datetime, timedelta
+    
+    now = datetime.now() if current_time is None else datetime.strptime(current_time, "%Y-%m-%d %H:%M")
+    today = now.strftime("%Y-%m-%d")
+    
+    # Count today's glasses and find last glass time
+    today_entries = [e for e in water_entries if e.get("date") == today]
+    glasses_today = len(today_entries)
+    
+    # Check daily limit
+    if glasses_today >= HYDRATION_MAX_DAILY_GLASSES:
+        return {
+            "can_log": False,
+            "reason": f"🎯 Daily goal complete! You've had {HYDRATION_MAX_DAILY_GLASSES} glasses today.",
+            "next_available_time": None,
+            "glasses_today": glasses_today,
+            "minutes_remaining": 0
+        }
+    
+    # Check timing - must wait 2 hours between glasses
+    if today_entries:
+        last_entry = max(today_entries, key=lambda e: e.get("time", "00:00"))
+        last_time_str = last_entry.get("time", "00:00")
+        try:
+            last_time = datetime.strptime(f"{today} {last_time_str}", "%Y-%m-%d %H:%M")
+            next_available = last_time + timedelta(hours=HYDRATION_MIN_INTERVAL_HOURS)
+            
+            if now < next_available:
+                minutes_remaining = int((next_available - now).total_seconds() / 60)
+                return {
+                    "can_log": False,
+                    "reason": f"⏳ Wait {minutes_remaining} min for healthy absorption.",
+                    "next_available_time": next_available.strftime("%H:%M"),
+                    "glasses_today": glasses_today,
+                    "minutes_remaining": minutes_remaining
+                }
+        except ValueError:
+            pass  # Invalid time format, allow logging
+    
+    return {
+        "can_log": True,
+        "reason": "Ready to log!",
+        "next_available_time": None,
+        "glasses_today": glasses_today,
+        "minutes_remaining": 0
+    }
+
+
+def check_water_entry_reward(
+    glasses_today: int,
+    streak_days: int,
+    story_id: str = "warrior"
+) -> dict:
+    """
+    Check all rewards for logging a glass of water.
+    
+    Args:
+        glasses_today: Glasses logged today (before this one)
+        streak_days: Current hydration streak (5 glasses/day)
+        story_id: Active story for item generation
+    
+    Returns:
+        Dict with reward info and items earned
+    """
+    new_glass_number = glasses_today + 1
+    
+    result = {
+        "glass_reward": None,
+        "streak_bonus": None,
+        "items": [],
+        "messages": [],
+        "glasses_today": new_glass_number,
+        "is_complete": new_glass_number >= HYDRATION_MAX_DAILY_GLASSES
+    }
+    
+    # Per-glass reward with escalating rarity
+    if new_glass_number <= HYDRATION_MAX_DAILY_GLASSES:
+        glass_rarity = get_water_reward_rarity(new_glass_number)
+        if glass_rarity:
+            glass_item = generate_item(rarity=glass_rarity, story_id=story_id)
+            glass_item["source"] = f"hydration_glass_{new_glass_number}"
+            result["glass_reward"] = glass_item
+            result["items"].append(glass_item)
+            result["messages"].append(f"💧 Glass #{new_glass_number} logged!")
+            
+            if new_glass_number == HYDRATION_MAX_DAILY_GLASSES:
+                result["messages"].append("🎯 Daily hydration complete! Great job!")
+    
+    # Check streak bonus (only when hitting 5 glasses)
+    if glasses_today < HYDRATION_MAX_DAILY_GLASSES <= new_glass_number and streak_days > 0:
+        streak_rarity = get_hydration_streak_bonus_rarity(streak_days + 1)
+        if streak_rarity:
+            streak_item = generate_item(rarity=streak_rarity, story_id=story_id)
+            streak_item["source"] = "hydration_streak"
+            result["streak_bonus"] = streak_item
+            result["items"].append(streak_item)
+            result["messages"].append(f"🔥 Hydration streak: {streak_days + 1} days!")
+    
+    return result
+
+
+def get_hydration_stats(water_entries: list) -> dict:
+    """
+    Calculate hydration statistics from water log entries.
+    
+    Args:
+        water_entries: List of water log entries with date and glasses count
+    
+    Returns:
+        Dict with hydration statistics
+    """
+    from datetime import datetime, timedelta
+    
+    if not water_entries:
+        return {
+            "total_glasses": 0,
+            "total_days": 0,
+            "avg_daily": 0.0,
+            "days_on_target": 0,
+            "target_rate": 0.0,
+            "current_streak": 0,
+            "best_streak": 0,
+            "today_glasses": 0
+        }
+    
+    today = datetime.now().strftime("%Y-%m-%d")
+    
+    # Group by date
+    daily_totals = {}
+    for entry in water_entries:
+        date = entry.get("date", "")
+        glasses = entry.get("glasses", 1)
+        if date:
+            daily_totals[date] = daily_totals.get(date, 0) + glasses
+    
+    total_glasses = sum(daily_totals.values())
+    total_days = len(daily_totals)
+    avg_daily = total_glasses / total_days if total_days > 0 else 0.0
+    days_on_target = sum(1 for g in daily_totals.values() if g >= HYDRATION_MAX_DAILY_GLASSES)
+    target_rate = (days_on_target / total_days * 100) if total_days > 0 else 0.0
+    today_glasses = daily_totals.get(today, 0)
+    
+    # Calculate streak
+    current_streak = 0
+    best_streak = 0
+    streak = 0
+    
+    sorted_dates = sorted(daily_totals.keys(), reverse=True)
+    for i, date in enumerate(sorted_dates):
+        if daily_totals[date] >= 8:
+            streak += 1
+            if i == 0 or (i > 0 and is_consecutive_day(sorted_dates[i-1], date)):
+                current_streak = streak
+            best_streak = max(best_streak, streak)
+        else:
+            if i == 0:
+                current_streak = 0
+            streak = 0
+    
+    return {
+        "total_glasses": total_glasses,
+        "total_days": total_days,
+        "avg_daily": avg_daily,
+        "days_on_target": days_on_target,
+        "target_rate": target_rate,
+        "current_streak": current_streak,
+        "best_streak": best_streak,
+        "today_glasses": today_glasses
+    }
+
+
+def is_consecutive_day(date1: str, date2: str) -> bool:
+    """Check if date2 is the day before date1."""
+    from datetime import datetime, timedelta
+    try:
+        d1 = datetime.strptime(date1, "%Y-%m-%d")
+        d2 = datetime.strptime(date2, "%Y-%m-%d")
+        return (d1 - d2).days == 1
+    except (ValueError, TypeError):
+        return False
+
+
+def get_screen_off_bonus_rarity(screen_off_time: str) -> Optional[str]:
+    """
+    Get bonus reward rarity based on when user turned off their screen.
+    
+    Uses the same moving window [5%, 20%, 50%, 20%, 5%] pattern.
+    Earlier screen-off times give better rewards:
+    - 21:00 or earlier: 100% Legendary (perfect digital hygiene!)
+    - 22:00: Legendary-centered (75% Legendary)
+    - 23:00: Epic-centered
+    - 00:00: Uncommon-centered
+    - 01:00+: No bonus (too late)
+    
+    Args:
+        screen_off_time: Time in HH:MM format when screen was turned off
+    
+    Returns:
+        Rarity string or None if too late for bonus
+    """
+    import random
+    
+    try:
+        h, m = screen_off_time.split(":")
+        hour = int(h)
+        minute = int(m)
+        # Validate hour and minute ranges
+        if not (0 <= hour <= 23) or not (0 <= minute <= 59):
+            return None
+        # Convert to minutes past midnight, treating pre-6am as next day
+        if hour < 6:
+            total_minutes = (24 + hour) * 60 + minute  # e.g., 01:00 = 25*60
+        else:
+            total_minutes = hour * 60 + minute
+    except (ValueError, AttributeError):
+        return None
+    
+    # Thresholds in minutes (21:00 = 21*60 = 1260, etc.)
+    # 21:00 or earlier = 100% Legendary
+    # 22:00 = Legendary-centered (75%)
+    # 23:00 = Epic-centered
+    # 00:00 = Uncommon-centered (24*60 = 1440)
+    # 01:00+ = No bonus (25*60 = 1500)
+    
+    if total_minutes <= 21 * 60:  # 21:00 or earlier
+        return "Legendary"  # 100% Legendary for exceptional discipline
+    elif total_minutes <= 22 * 60:  # Up to 22:00
+        center_tier = 4  # Legendary-centered
+    elif total_minutes <= 23 * 60:  # Up to 23:00
+        center_tier = 3  # Epic-centered
+    elif total_minutes < 25 * 60:  # Up to 00:59 (before 01:00)
+        center_tier = 1  # Uncommon-centered
+    else:  # 01:00 or later
+        return None  # Too late for bonus
+    
+    # Moving window: [5%, 20%, 50%, 20%, 5%] centered on center_tier
+    window = [5, 20, 50, 20, 5]
+    weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+    
+    for offset, pct in zip([-2, -1, 0, 1, 2], window):
+        target_tier = center_tier + offset
+        clamped_tier = max(0, min(4, target_tier))
+        weights[clamped_tier] += pct
+    
+    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    return random.choices(rarities, weights=weights)[0]
+
+
 def get_sleep_reward_rarity(score: int) -> Optional[str]:
     """
     Get reward rarity based on sleep score using moving window.
