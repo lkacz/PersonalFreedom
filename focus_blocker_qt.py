@@ -4116,6 +4116,13 @@ class ActivityTab(QtWidgets.QWidget):
         if rewards and GAMIFICATION_AVAILABLE:
             self._process_rewards(rewards)
         
+        # Update main timeline widget if parent window has it
+        if self.parent() and hasattr(self.parent(), 'timeline_widget'):
+            try:
+                self.parent().timeline_widget.update_data()
+            except Exception:
+                pass
+        
         # Reset form
         self.note_input.clear()
         self._refresh_display()
@@ -5100,6 +5107,13 @@ class SleepTab(QtWidgets.QWidget):
         
         self.blocker.save_config()
         
+        # Update main timeline widget if parent window has it
+        if self.parent() and hasattr(self.parent(), 'timeline_widget'):
+            try:
+                self.parent().timeline_widget.update_data()
+            except Exception:
+                pass
+        
         # Show feedback
         score = new_entry.get("score", 0)
         msg = f"🌙 Sleep logged for {date_str}\n\n"
@@ -5271,6 +5285,13 @@ class SleepTab(QtWidgets.QWidget):
             del self.blocker.sleep_entries[entry_index]
             self.blocker.save_config()
             self._refresh_display()
+            
+            # Update main timeline widget if parent window has it
+            if self.parent() and hasattr(self.parent(), 'timeline_widget'):
+                try:
+                    self.parent().timeline_widget.update_data()
+                except Exception:
+                    pass
     
     def _setup_reminder(self) -> None:
         """Setup bedtime reminder timer."""
@@ -13117,6 +13138,40 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                             })
                     except (ValueError, AttributeError, TypeError):
                         continue
+        except Exception:
+            pass
+
+        # Add active focus session (if currently running)
+        try:
+            if hasattr(self.blocker, 'session_start') and self.blocker.session_start:
+                session_start_ts = self.blocker.session_start
+                now_ts = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch()
+                
+                # Convert to datetime objects
+                session_start_dt = datetime.fromtimestamp(session_start_ts)
+                now_dt = datetime.fromtimestamp(now_ts)
+                
+                # Check if session started today
+                if session_start_dt.date() == today_date:
+                    start_hour = session_start_dt.hour + session_start_dt.minute / 60.0
+                    end_hour = now_dt.hour + now_dt.minute / 60.0
+                    
+                    # Handle sessions that cross midnight
+                    if end_hour < start_hour:
+                        # Session continues past midnight - show until end of day
+                        events.append({
+                            'start': start_hour,
+                            'end': 24.0,
+                            'color': QtGui.QColor("#4caf50"), # Green for active session
+                            'label': '🎯 Focus Session (Active)'
+                        })
+                    else:
+                        events.append({
+                            'start': start_hour,
+                            'end': end_hour,
+                            'color': QtGui.QColor("#4caf50"), # Green for active session
+                            'label': '🎯 Focus Session (Active)'
+                        })
         except Exception:
             pass
 
