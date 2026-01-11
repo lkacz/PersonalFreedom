@@ -202,6 +202,12 @@ get_slot_display_name = None
 # Gear optimization
 optimize_equipped_gear = None
 find_potential_set_bonuses = None
+# Lucky options system
+calculate_total_lucky_bonuses = None
+format_lucky_options = None
+# Neighbor effects system
+format_neighbor_effect = None
+get_neighbor_effect_emoji = None
 # XP and leveling system
 calculate_session_xp = None
 award_xp = None
@@ -365,6 +371,12 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
             # Gear optimization
             optimize_equipped_gear as _optimize_equipped_gear,
             find_potential_set_bonuses as _find_potential_set_bonuses,
+            # Lucky options system
+            calculate_total_lucky_bonuses as _calculate_total_lucky_bonuses,
+            format_lucky_options as _format_lucky_options,
+            # Neighbor effects system
+            format_neighbor_effect as _format_neighbor_effect,
+            get_neighbor_effect_emoji as _get_neighbor_effect_emoji,
         )
         GAMIFICATION_AVAILABLE = True
         RARITY_POWER = _RARITY_POWER
@@ -408,6 +420,12 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         # Gear optimization
         optimize_equipped_gear = _optimize_equipped_gear
         find_potential_set_bonuses = _find_potential_set_bonuses
+        # Lucky options system
+        calculate_total_lucky_bonuses = _calculate_total_lucky_bonuses
+        format_lucky_options = _format_lucky_options
+        # Neighbor effects system
+        format_neighbor_effect = _format_neighbor_effect
+        get_neighbor_effect_emoji = _get_neighbor_effect_emoji
     except ImportError:
         GAMIFICATION_AVAILABLE = False
     
@@ -1256,6 +1274,18 @@ class TimerTab(QtWidgets.QWidget):
         if self.session_is_strategic:
             coins_earned = int(coins_earned * 2.5)
         
+        # Apply lucky options coin bonus from equipped gear
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        lucky_bonuses = {"coin_bonus": 0, "xp_bonus": 0, "drop_luck": 0, "merge_luck": 0}
+        if calculate_total_lucky_bonuses:
+            lucky_bonuses = calculate_total_lucky_bonuses(equipped)
+        coin_bonus_pct = lucky_bonuses.get("coin_bonus", 0)
+        if coin_bonus_pct > 0:
+            # Cap at 200% to prevent overflow
+            coin_bonus_pct = min(coin_bonus_pct, 200)
+            bonus_coins = int(coins_earned * (coin_bonus_pct / 100.0))
+            coins_earned += bonus_coins
+        
         # Add streak bonus coins (logarithmic scaling)
         streak_bonus = 0
         if streak >= 30:
@@ -1273,13 +1303,26 @@ class TimerTab(QtWidgets.QWidget):
         current_coins = self.blocker.adhd_buster.get("coins", 0)
         self.blocker.adhd_buster["coins"] = current_coins + coins_earned
         
-        # Award XP for the focus session
-        xp_info = calculate_session_xp(session_minutes, streak)
+        # Award XP for the focus session (with lucky XP bonus from gear)
+        xp_bonus_pct = lucky_bonuses.get("xp_bonus", 0)
+        # Cap at 200% to prevent overflow
+        xp_bonus_pct = min(xp_bonus_pct, 200)
+        xp_info = calculate_session_xp(session_minutes, streak, lucky_xp_bonus=xp_bonus_pct)
         xp_result = award_xp(self.blocker.adhd_buster, xp_info["total_xp"], source="focus_session")
         leveled_up = xp_result.get("leveled_up", False)
 
+        # Apply drop luck from gear (increases rarity chances)
+        drop_luck_bonus = lucky_bonuses.get("drop_luck", 0)
+        effective_session_mins = session_minutes
+        if drop_luck_bonus > 0:
+            # Each 1% drop luck = +6 extra "virtual" minutes for rarity calculation
+            # Cap at 100% bonus (600 minutes) to prevent overflow
+            drop_luck_bonus = min(drop_luck_bonus, 100)
+            # This shifts the rarity distribution toward better items
+            effective_session_mins = session_minutes + (drop_luck_bonus * 6)
+        
         # Generate item (generate_item already imported at top)
-        item = generate_item(session_minutes=session_minutes, streak_days=streak,
+        item = generate_item(session_minutes=effective_session_mins, streak_days=streak,
                               story_id=active_story)
 
         # Lucky upgrade chance based on luck bonus
@@ -1287,23 +1330,26 @@ class TimerTab(QtWidgets.QWidget):
         if luck > 0 and random.random() * 100 < luck_chance:
             rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
             try:
-                current_idx = rarity_order.index(item["rarity"])
+                current_idx = rarity_order.index(item.get("rarity", "Common"))
                 if current_idx < len(rarity_order) - 1:
                     item = generate_item(rarity=rarity_order[current_idx + 1],
                                           session_minutes=session_minutes, streak_days=streak,
                                           story_id=active_story)
                     item["lucky_upgrade"] = True
-            except ValueError:
+            except (ValueError, KeyError):
                 pass  # Skip upgrade if rarity is invalid
 
         # Ensure item has all required fields
         if "obtained_at" not in item:
             item["obtained_at"] = datetime.now().isoformat()
         
-        # Add to inventory (use defensive copy)
+        # Add to inventory (use deep copy to preserve lucky_options)
         if "inventory" not in self.blocker.adhd_buster:
             self.blocker.adhd_buster["inventory"] = []
-        self.blocker.adhd_buster["inventory"].append(item.copy())
+        inventory_item = item.copy()
+        if "lucky_options" in item and isinstance(item["lucky_options"], dict):
+            inventory_item["lucky_options"] = item["lucky_options"].copy()
+        self.blocker.adhd_buster["inventory"].append(inventory_item)
         self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
         
         # Cap inventory size to prevent unbounded growth (keep newest items)
@@ -1311,12 +1357,15 @@ class TimerTab(QtWidgets.QWidget):
         if len(self.blocker.adhd_buster["inventory"]) > MAX_INVENTORY_SIZE:
             self.blocker.adhd_buster["inventory"] = self.blocker.adhd_buster["inventory"][-MAX_INVENTORY_SIZE:]
 
-        # Auto-equip if slot empty (use another copy)
+        # Auto-equip if slot empty (use deep copy to preserve lucky_options)
         slot = item.get("slot")
         if "equipped" not in self.blocker.adhd_buster:
             self.blocker.adhd_buster["equipped"] = {}
         if not self.blocker.adhd_buster["equipped"].get(slot):
-            self.blocker.adhd_buster["equipped"][slot] = item.copy()
+            equipped_item = item.copy()
+            if "lucky_options" in item and isinstance(item["lucky_options"], dict):
+                equipped_item["lucky_options"] = item["lucky_options"].copy()
+            self.blocker.adhd_buster["equipped"][slot] = equipped_item
 
         # Generate diary entry (once per day)
         today = datetime.now().strftime("%Y-%m-%d")
@@ -5135,13 +5184,13 @@ class SleepTab(QtWidgets.QWidget):
                         if random.random() * 100 < luck_chance:
                             rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
                             try:
-                                current_idx = rarity_order.index(item["rarity"])
+                                current_idx = rarity_order.index(item.get("rarity", "Common"))
                                 if current_idx < len(rarity_order) - 1:
                                     active_story = self.blocker.adhd_buster.get("active_story", "warrior")
                                     item = generate_item(rarity=rarity_order[current_idx + 1],
                                                         story_id=active_story)
                                     item["lucky_upgrade"] = True
-                            except ValueError:
+                            except (ValueError, KeyError):
                                 pass
                     return item
                 
@@ -5230,7 +5279,7 @@ class SleepTab(QtWidgets.QWidget):
             
             # Show screen-off bonus if earned
             if screenoff_bonus_item:
-                rarity = screenoff_bonus_item["rarity"]
+                rarity = screenoff_bonus_item.get("rarity", "Common")
                 rarity_colors = {
                     "Common": "#9e9e9e",
                     "Uncommon": "#4caf50", 
@@ -6729,7 +6778,11 @@ class CharacterCanvas(QtWidgets.QWidget):
         # === LEGS (hidden by robe, just shoes visible) ===
         # Robe covers most of legs, draw minimal legs
         robe_grad = QtGui.QLinearGradient(cx - 25, cy + 25, cx + 25, cy + 25)
-        robe_color = QtGui.QColor("#1a1a4a") if not self.equipped.get("Chestplate") else QtGui.QColor(self.equipped["Chestplate"].get("color", "#1a1a4a"))
+        chestplate = self.equipped.get("Chestplate")
+        if chestplate and isinstance(chestplate, dict):
+            robe_color = QtGui.QColor(chestplate.get("color", "#1a1a4a"))
+        else:
+            robe_color = QtGui.QColor("#1a1a4a")
         robe_grad.setColorAt(0, robe_color.darker(120))
         robe_grad.setColorAt(0.5, robe_color)
         robe_grad.setColorAt(1, robe_color.darker(120))
@@ -7336,7 +7389,11 @@ class CharacterCanvas(QtWidgets.QWidget):
             painter.drawLine(cx, cy - 10, cx, cy + 72)
 
         # === LEGS (hidden by flowing robes) ===
-        robe_color = QtGui.QColor("#2a2a5a") if not self.equipped.get("Chestplate") else QtGui.QColor(self.equipped["Chestplate"].get("color", "#2a2a5a"))
+        chestplate = self.equipped.get("Chestplate")
+        if chestplate and isinstance(chestplate, dict):
+            robe_color = QtGui.QColor(chestplate.get("color", "#2a2a5a"))
+        else:
+            robe_color = QtGui.QColor("#2a2a5a")
         robe_grad = QtGui.QLinearGradient(cx - 25, cy + 25, cx + 25, cy + 25)
         robe_grad.setColorAt(0, robe_color.darker(120))
         robe_grad.setColorAt(0.5, robe_color)
@@ -8060,7 +8117,11 @@ class CharacterCanvas(QtWidgets.QWidget):
             painter.drawRoundedRect(cx + 4, cy + 60, 18, 16, 4, 4)
 
         # === ARMS (Shirt sleeves) ===
-        shirt_color = QtGui.QColor("#74b9ff") if not self.equipped.get("Chestplate") else QtGui.QColor(self.equipped["Chestplate"].get("color", "#74b9ff"))
+        chestplate = self.equipped.get("Chestplate")
+        if chestplate and isinstance(chestplate, dict):
+            shirt_color = QtGui.QColor(chestplate.get("color", "#74b9ff"))
+        else:
+            shirt_color = QtGui.QColor("#74b9ff")
         arm_grad_l = QtGui.QLinearGradient(cx - 42, cy - 5, cx - 26, cy - 5)
         arm_grad_l.setColorAt(0, shirt_color.darker(120))
         arm_grad_l.setColorAt(0.5, shirt_color)
@@ -10268,6 +10329,13 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self.potential_sets_layout.setContentsMargins(0, 0, 0, 0)
         self._refresh_potential_sets_display()
         self.inner_layout.addWidget(self.potential_sets_container)
+        
+        # Lucky bonuses from equipped gear
+        self.lucky_bonuses_container = QtWidgets.QWidget()
+        self.lucky_bonuses_layout = QtWidgets.QVBoxLayout(self.lucky_bonuses_container)
+        self.lucky_bonuses_layout.setContentsMargins(0, 0, 0, 0)
+        self._refresh_lucky_bonuses_display()
+        self.inner_layout.addWidget(self.lucky_bonuses_container)
 
         # Stats summary
         total_items = len(self.blocker.adhd_buster.get("inventory", []))
@@ -10532,6 +10600,26 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 item_color = rarity_colors.get(item_rarity, "#9e9e9e")
                 power = item.get('power', 10)
                 display = f"{item_name} (+{power}) [{item_rarity}]"
+                
+                # Add lucky options summary to dropdown text if present
+                lucky_options = item.get("lucky_options", {})
+                if lucky_options and format_lucky_options:
+                    try:
+                        lucky_text = format_lucky_options(lucky_options)
+                        if lucky_text:
+                            display += f" ✨{lucky_text}"
+                    except Exception:
+                        pass  # Skip if formatting fails
+                
+                # Add neighbor effect indicator if present
+                if get_neighbor_effect_emoji:
+                    try:
+                        neighbor_emoji = get_neighbor_effect_emoji(item)
+                        if neighbor_emoji:
+                            display += f" {neighbor_emoji}"
+                    except Exception:
+                        pass  # Skip if formatting fails
+                
                 combo.addItem(display, item)
                 # Set foreground color for this item
                 combo.setItemData(combo.count() - 1, QtGui.QColor(item_color), QtCore.Qt.ForegroundRole)
@@ -10582,10 +10670,19 @@ class ADHDBusterTab(QtWidgets.QWidget):
         # Inventory
         inv_group = QtWidgets.QGroupBox("📦 Inventory (click items to select for merge)")
         inv_layout = QtWidgets.QVBoxLayout(inv_group)
+        
+        # Inventory stats header
+        stats_layout = QtWidgets.QHBoxLayout()
+        self.inv_stats_label = QtWidgets.QLabel()
+        self.inv_stats_label.setStyleSheet("color: #666; font-size: 10px;")
+        stats_layout.addWidget(self.inv_stats_label)
+        stats_layout.addStretch()
+        inv_layout.addLayout(stats_layout)
+        
         sort_bar = QtWidgets.QHBoxLayout()
         sort_bar.addWidget(QtWidgets.QLabel("Sort:"))
         self.sort_combo = QtWidgets.QComboBox()
-        self.sort_combo.addItems(["newest", "rarity", "slot", "power"])
+        self.sort_combo.addItems(["newest", "rarity", "slot", "power", "lucky"])
         self.sort_combo.currentTextChanged.connect(self._refresh_inventory)
         sort_bar.addWidget(self.sort_combo)
         sort_bar.addStretch()
@@ -10634,7 +10731,11 @@ class ADHDBusterTab(QtWidgets.QWidget):
         else:
             item = combo.currentData()
             if item:
-                self.blocker.adhd_buster["equipped"][slot] = item.copy()
+                # Create deep copy to preserve lucky_options
+                equipped_item = item.copy()
+                if "lucky_options" in item and isinstance(item["lucky_options"], dict):
+                    equipped_item["lucky_options"] = item["lucky_options"].copy()
+                self.blocker.adhd_buster["equipped"][slot] = equipped_item
         # Sync changes to active hero before saving
         if GAMIFICATION_AVAILABLE:
             sync_hero_data(self.blocker.adhd_buster)
@@ -10664,6 +10765,66 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
                 sets_inner.addWidget(lbl)
             self.sets_layout.addWidget(sets_group)
+    
+    def _refresh_lucky_bonuses_display(self) -> None:
+        """Refresh the lucky bonuses display showing total bonuses from equipped gear."""
+        # Clear existing widgets
+        while self.lucky_bonuses_layout.count():
+            child = self.lucky_bonuses_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+        
+        if not GAMIFICATION_AVAILABLE or not calculate_total_lucky_bonuses:
+            return
+        
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        lucky_bonuses = calculate_total_lucky_bonuses(equipped)
+        
+        # Check if there are any non-zero bonuses
+        has_bonuses = any(v > 0 for v in lucky_bonuses.values())
+        
+        if has_bonuses:
+            lucky_group = QtWidgets.QGroupBox("✨ Lucky Options (Total from Equipped Gear)")
+            lucky_inner = QtWidgets.QVBoxLayout(lucky_group)
+            lucky_inner.setSpacing(5)
+            
+            # Build display for each bonus type
+            bonus_displays = []
+            if lucky_bonuses.get("coin_bonus", 0) > 0:
+                bonus_displays.append(
+                    (f"💰 <b>+{lucky_bonuses['coin_bonus']}% Coins</b> - Earn more coins from sessions and activities",
+                     "#f59e0b")
+                )
+            if lucky_bonuses.get("xp_bonus", 0) > 0:
+                bonus_displays.append(
+                    (f"⭐ <b>+{lucky_bonuses['xp_bonus']}% XP</b> - Level up faster with bonus experience",
+                     "#8b5cf6")
+                )
+            if lucky_bonuses.get("drop_luck", 0) > 0:
+                bonus_displays.append(
+                    (f"🎁 <b>+{lucky_bonuses['drop_luck']}% Drop Luck</b> - Better chance at higher rarity items",
+                     "#10b981")
+                )
+            if lucky_bonuses.get("merge_luck", 0) > 0:
+                bonus_displays.append(
+                    (f"🎲 <b>+{lucky_bonuses['merge_luck']}% Merge Success</b> - Higher chance for successful merges",
+                     "#3b82f6")
+                )
+            
+            for text, color in bonus_displays:
+                lbl = QtWidgets.QLabel(text)
+                lbl.setStyleSheet(f"color: {color}; font-size: 12px; padding: 3px;")
+                lbl.setTextFormat(QtCore.Qt.RichText)
+                lucky_inner.addWidget(lbl)
+            
+            # Add summary
+            total_bonuses = sum(lucky_bonuses.values())
+            summary_lbl = QtWidgets.QLabel(f"<i>Total Lucky Stat Points: {total_bonuses}</i>")
+            summary_lbl.setStyleSheet("color: #888; font-size: 11px; margin-top: 5px;")
+            summary_lbl.setTextFormat(QtCore.Qt.RichText)
+            lucky_inner.addWidget(summary_lbl)
+            
+            self.lucky_bonuses_layout.addWidget(lucky_group)
 
     def _refresh_potential_sets_display(self) -> None:
         """Refresh the potential set bonuses display from inventory."""
@@ -10733,9 +10894,14 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self.char_canvas.tier = get_diary_power_tier(power_info["total_power"])  # Recalculate tier
         self.char_canvas.update()  # Trigger repaint
         
-        # Update power label
-        if power_info["set_bonus"] > 0:
+        # Update power label with neighbor effects
+        neighbor_adjustment = power_info.get("neighbor_adjustment", 0)
+        if power_info["set_bonus"] > 0 and neighbor_adjustment != 0:
+            power_txt = f"⚔ Power: {power_info['total_power']} ({power_info['base_power']} + {power_info['set_bonus']} set + {neighbor_adjustment:+d} neighbor)"
+        elif power_info["set_bonus"] > 0:
             power_txt = f"⚔ Power: {power_info['total_power']} ({power_info['base_power']} + {power_info['set_bonus']} set)"
+        elif neighbor_adjustment != 0:
+            power_txt = f"⚔ Power: {power_info['total_power']} ({power_info['base_power']} + {neighbor_adjustment:+d} neighbor)"
         else:
             power_txt = f"⚔ Power: {power_info['total_power']}"
         self.power_lbl.setText(power_txt)
@@ -10763,6 +10929,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
         # Update potential set bonuses from inventory
         if hasattr(self, 'potential_sets_layout'):
             self._refresh_potential_sets_display()
+        
+        # Update lucky bonuses display
+        if hasattr(self, 'lucky_bonuses_layout'):
+            self._refresh_lucky_bonuses_display()
         
         # Update story progress labels if available
         if hasattr(self, 'story_progress_lbl'):
@@ -10827,6 +10997,16 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 power = item.get('power', 10)
                 # Show full rarity name with color indicator
                 display = f"{item_name} (+{power}) [{item_rarity}]"
+                
+                # Add neighbor effect indicator if present
+                if get_neighbor_effect_emoji:
+                    try:
+                        neighbor_emoji = get_neighbor_effect_emoji(item)
+                        if neighbor_emoji:
+                            display += f" {neighbor_emoji}"
+                    except Exception:
+                        pass
+                
                 combo.addItem(display, item)
                 # Set foreground color for this item
                 idx = combo.count() - 1
@@ -10912,13 +11092,37 @@ class ADHDBusterTab(QtWidgets.QWidget):
             indexed.sort(key=lambda x: x[1].get("slot", ""))
         elif sort_key == "power":
             indexed.sort(key=lambda x: x[1].get("power", 10), reverse=True)
+        elif sort_key == "lucky":
+            # Sort by: has lucky options (yes first), then by number of lucky options, then by power
+            def lucky_sort_key(item_tuple):
+                item = item_tuple[1]
+                lucky_opts = item.get("lucky_options", {})
+                has_lucky = 1 if lucky_opts else 0
+                num_opts = len(lucky_opts) if lucky_opts else 0
+                power = item.get("power", 10)
+                return (has_lucky, num_opts, power)
+            indexed.sort(key=lucky_sort_key, reverse=True)
         else:
             indexed.reverse()
+
+        # Update inventory stats
+        lucky_items_count = sum(1 for item in inventory if item.get("lucky_options", {}))
+        total_items = len(inventory)
+        if hasattr(self, 'inv_stats_label'):
+            stats_text = f"Total: {total_items} items"
+            if lucky_items_count > 0:
+                stats_text += f" | ✨ Lucky: {lucky_items_count} ({lucky_items_count*100//total_items if total_items > 0 else 0}%)"
+            self.inv_stats_label.setText(stats_text)
 
         for orig_idx, item in indexed:
             # Use robust equipped check that handles items with/without timestamps
             is_eq = self._is_item_equipped(item, equipped)
             prefix = "✓ " if is_eq else ""
+            
+            # Add sparkle prefix for items with lucky options
+            if item.get("lucky_options", {}):
+                prefix = "✨ " + prefix
+            
             item_name = item.get("name", "Unknown Item")
             item_rarity = item.get("rarity", "Common")
             power = item.get("power", RARITY_POWER.get(item_rarity, 10))
@@ -10928,13 +11132,31 @@ class ADHDBusterTab(QtWidgets.QWidget):
             # Add tooltip with full item details (use themed slot name)
             active_story = self.blocker.adhd_buster.get("active_story", "warrior")
             slot_display = get_slot_display_name(item.get('slot', 'Unknown'), active_story) if get_slot_display_name else item.get('slot', 'Unknown')
-            list_item.setToolTip(
-                f"{item_name}\n"
-                f"Rarity: {item_rarity}\n"
-                f"Slot: {slot_display}\n"
-                f"Power: +{power}\n"
-                f"{'[✓ EQUIPPED - unequip to merge]' if is_eq else '[Click to select for merge]'}"
-            )
+            
+            # Build tooltip with lucky options if present
+            tooltip_parts = [
+                f"{item_name}",
+                f"Rarity: {item_rarity}",
+                f"Slot: {slot_display}",
+                f"Power: +{power}"
+            ]
+            
+            # Add lucky options if present
+            lucky_options = item.get("lucky_options", {})
+            if lucky_options:
+                try:
+                    if format_lucky_options:
+                        lucky_text = format_lucky_options(lucky_options)
+                        if lucky_text:  # Only add if there's formatted text
+                            tooltip_parts.append(f"✨ Lucky Options: {lucky_text}")
+                except Exception:
+                    # Silently skip if formatting fails
+                    pass
+            
+            # Add equipped/merge status
+            tooltip_parts.append('✓ EQUIPPED - unequip to merge' if is_eq else 'Click to select for merge')
+            
+            list_item.setToolTip("\n".join(tooltip_parts))
             # Block equipped items from being selected for merge
             if is_eq:
                 list_item.setFlags(list_item.flags() & ~QtCore.Qt.ItemIsSelectable)
@@ -10952,11 +11174,14 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self.refresh_all()
 
     def _update_merge_selection(self) -> None:
-        self.merge_selected = [item.data(QtCore.Qt.UserRole) for item in self.inv_list.selectedItems()]
+        # Get selected indices and validate they're integers
+        raw_selected = [item.data(QtCore.Qt.UserRole) for item in self.inv_list.selectedItems()]
+        self.merge_selected = [idx for idx in raw_selected if isinstance(idx, int)]
+        
         inventory = self.blocker.adhd_buster.get("inventory", [])
         equipped = self.blocker.adhd_buster.get("equipped", {})
         
-        # Filter to only valid indices
+        # Filter to only valid indices within inventory bounds
         valid_indices = [idx for idx in self.merge_selected if 0 <= idx < len(inventory)]
         count = len(valid_indices)
         
@@ -10985,9 +11210,22 @@ class ADHDBusterTab(QtWidgets.QWidget):
             else:
                 self.merge_btn.setEnabled(True)
                 luck = self.blocker.adhd_buster.get("luck_bonus", 0)
-                rate = calculate_merge_success_rate(items, luck)
-                result_rarity = get_merge_result_rarity(items)
-                self.merge_rate_lbl.setText(f"Success rate: {rate*100:.0f}% → {result_rarity} item")
+                
+                # Get merge luck bonus from equipped gear for preview
+                equipped_items = self.blocker.adhd_buster.get("equipped", {})
+                if calculate_total_lucky_bonuses:
+                    lucky_bonuses = calculate_total_lucky_bonuses(equipped_items)
+                    merge_luck_bonus = lucky_bonuses.get("merge_luck", 0)
+                    rate = calculate_merge_success_rate(items, luck, gear_merge_luck=merge_luck_bonus)
+                    result_rarity = get_merge_result_rarity(items)
+                    if merge_luck_bonus > 0:
+                        self.merge_rate_lbl.setText(f"Success rate: {rate*100:.0f}% (+{merge_luck_bonus}% gear) → {result_rarity} item")
+                    else:
+                        self.merge_rate_lbl.setText(f"Success rate: {rate*100:.0f}% → {result_rarity} item")
+                else:
+                    rate = calculate_merge_success_rate(items, luck)
+                    result_rarity = get_merge_result_rarity(items)
+                    self.merge_rate_lbl.setText(f"Success rate: {rate*100:.0f}% → {result_rarity} item")
         else:
             self.merge_btn.setEnabled(False)
             self.merge_rate_lbl.setText("Select 2+ items to merge")
@@ -11002,8 +11240,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
         # Re-fetch inventory fresh to avoid stale indices
         inventory = self.blocker.adhd_buster.get("inventory", [])
         
-        # Validate indices are still valid
-        valid_indices = [idx for idx in self.merge_selected if 0 <= idx < len(inventory)]
+        # Validate indices are integers and within bounds
+        valid_indices = [idx for idx in self.merge_selected if isinstance(idx, int) and 0 <= idx < len(inventory)]
         if len(valid_indices) < 2:
             QtWidgets.QMessageBox.warning(self, "Invalid Selection", 
                 "Selected items are no longer valid. Please refresh and try again.")
@@ -11021,12 +11259,24 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self.blocker.save_config()
         
         luck = self.blocker.adhd_buster.get("luck_bonus", 0)
-        rate = calculate_merge_success_rate(items, luck)
+        
+        # Get merge luck bonus from equipped gear
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        merge_luck_bonus = 0
+        if calculate_total_lucky_bonuses:
+            lucky_bonuses = calculate_total_lucky_bonuses(equipped)
+            merge_luck_bonus = lucky_bonuses.get("merge_luck", 0)
+        
+        rate = calculate_merge_success_rate(items, luck, gear_merge_luck=merge_luck_bonus)
         result_rarity = get_merge_result_rarity(items)
         summary = "\n".join([f"  • {i.get('name', 'Unknown')} ({i.get('rarity', 'Common')})" for i in items])
+        
+        # Show merge luck bonus in dialog if present
+        bonus_text = f"\n\n✨ Gear Bonus: +{merge_luck_bonus}% Merge Success!" if merge_luck_bonus > 0 else ""
+        
         if QtWidgets.QMessageBox.question(
             self, "⚠️ Lucky Merge",
-            f"Merge {len(items)} items?\n\n{summary}\n\nSuccess rate: {rate*100:.0f}%\n"
+            f"Merge {len(items)} items?\n\n{summary}\n\nSuccess rate: {rate*100:.0f}%{bonus_text}\n"
             f"On success: {result_rarity}+ item\nOn failure: ALL items LOST!",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
         ) != QtWidgets.QMessageBox.Yes:
@@ -11057,7 +11307,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
             return
         
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
-        result = perform_lucky_merge(items, luck, story_id=active_story)
+        result = perform_lucky_merge(items, luck, story_id=active_story, gear_merge_luck=merge_luck_bonus)
         
         # Remove merged items from inventory
         # Create a set of items to remove using multiple identifiers
@@ -11129,10 +11379,21 @@ class ADHDBusterTab(QtWidgets.QWidget):
             if result.get("tier_jump", 1) > 1:
                 tier_info = f" (+{result['tier_jump']} tiers! 🎯)"
             
+            # Show lucky options if the result has them
+            lucky_info = ""
+            result_item = result.get('result_item', {})
+            if result_item.get("lucky_options") and format_lucky_options:
+                try:
+                    lucky_text = format_lucky_options(result_item["lucky_options"])
+                    if lucky_text:
+                        lucky_info = f"\n✨ Lucky Options: {lucky_text}"
+                except Exception:
+                    pass
+            
             QtWidgets.QMessageBox.information(self, "🎉 MERGE SUCCESS!",
                 f"Roll: {result['roll_pct']} (needed < {result['needed_pct']})\n\n"
                 f"Created: {result['result_item']['name']}{tier_info}\n"
-                f"Rarity: {result['result_item']['rarity']}, Power: +{result['result_item']['power']}")
+                f"Rarity: {result['result_item']['rarity']}, Power: +{result['result_item']['power']}{lucky_info}")
         else:
             self.blocker.adhd_buster["inventory"] = new_inventory
             # Sync changes to active hero before saving
@@ -11599,7 +11860,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         DiaryDialog(self.blocker, self).exec()
 
     def _optimize_gear(self) -> None:
-        """Automatically equip the best gear for maximum power."""
+        """Automatically equip the best gear based on user criteria."""
         if not GAMIFICATION_AVAILABLE:
             QtWidgets.QMessageBox.warning(self, "Optimize Gear", "Gamification module not available!")
             return
@@ -11610,14 +11871,103 @@ class ADHDBusterTab(QtWidgets.QWidget):
         if not inventory and not any(equipped.values()):
             QtWidgets.QMessageBox.information(self, "Optimize Gear", "No gear available to optimize!")
             return
+
+        # Show dialog for optimization criteria
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("Optimize Gear Strategy")
+        try:
+            # Try setting icon if available in resources
+            dialog.setWindowIcon(QtGui.QIcon(":/icons/shield.png"))
+        except:
+            pass
+            
+        layout = QtWidgets.QVBoxLayout(dialog)
+        
+        layout.addWidget(QtWidgets.QLabel("Select an optimization strategy:", dialog))
+        
+        # Radio buttons
+        btn_group = QtWidgets.QButtonGroup(dialog)
+        
+        rb_power = QtWidgets.QRadioButton("Maximize Power (Default)", dialog)
+        rb_power.setToolTip("Equip items that give the highest total power, considering set bonuses.")
+        rb_power.setChecked(True)
+        btn_group.addButton(rb_power)
+        layout.addWidget(rb_power)
+        
+        rb_options = QtWidgets.QRadioButton("Maximize Lucky Options", dialog)
+        rb_options.setToolTip("Equip items with the best lucky bonuses (Coins, XP, etc). Power is secondary.")
+        btn_group.addButton(rb_options)
+        layout.addWidget(rb_options)
+        
+        rb_balanced = QtWidgets.QRadioButton("Balanced (Power + Options)", dialog)
+        rb_balanced.setToolTip("Find a balance between raw power and lucky bonuses.")
+        btn_group.addButton(rb_balanced)
+        layout.addWidget(rb_balanced)
+        
+        # Options sub-selection (hidden unless Options/Balanced selected)
+        options_frame = QtWidgets.QFrame(dialog)
+        options_layout = QtWidgets.QHBoxLayout(options_frame)
+        options_layout.setContentsMargins(20, 0, 0, 0)
+        options_layout.addWidget(QtWidgets.QLabel("Target:", options_frame))
+        
+        combo_target = QtWidgets.QComboBox(options_frame)
+        combo_target.addItems([
+            "All Lucky Options 🍀",
+            "Coin Bonus 💰",
+            "XP Bonus ✨",
+            "Drop Luck 🎲",
+            "Merge Luck ⚒️"
+        ])
+        options_layout.addWidget(combo_target)
+        layout.addWidget(options_frame)
+        options_frame.setVisible(False)
+        
+        def update_options_visibility():
+            options_frame.setVisible(rb_options.isChecked() or rb_balanced.isChecked())
+            
+        rb_power.toggled.connect(update_options_visibility)
+        rb_options.toggled.connect(update_options_visibility)
+        rb_balanced.toggled.connect(update_options_visibility)
+        
+        # Dialog buttons
+        buttons = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel,
+            parent=dialog
+        )
+        buttons.accepted.connect(dialog.accept)
+        buttons.rejected.connect(dialog.reject)
+        layout.addWidget(buttons)
+        
+        if dialog.exec_() != QtWidgets.QDialog.Accepted:
+            return
+            
+        # Determine mode and target
+        mode = "power"
+        if rb_options.isChecked():
+            mode = "options"
+        elif rb_balanced.isChecked():
+            mode = "balanced"
+            
+        target_map = {
+            0: "all",
+            1: "coin_bonus",
+            2: "xp_bonus",
+            3: "drop_luck",
+            4: "merge_luck"
+        }
+        target_opt = target_map.get(combo_target.currentIndex(), "all")
         
         # Calculate optimal gear
-        result = optimize_equipped_gear(self.blocker.adhd_buster)
+        result = optimize_equipped_gear(
+            self.blocker.adhd_buster, 
+            mode=mode, 
+            target_opt=target_opt
+        )
         
         if not result["changes"]:
             QtWidgets.QMessageBox.information(
                 self, "Optimize Gear",
-                "Your gear is already optimized! ⚔️\n\n"
+                "Your gear is already optimized for this strategy! ⚔️\n\n"
                 f"Current power: {result['old_power']}"
             )
             return
@@ -11625,44 +11975,78 @@ class ADHDBusterTab(QtWidgets.QWidget):
         # Show preview of changes
         changes_text = "\n".join(f"  • {c}" for c in result["changes"]) if result["changes"] else "  No changes needed"
         
+        # Calculate lucky bonuses difference
+        lucky_summary = ""
+        if calculate_total_lucky_bonuses:  # BUG FIX #36: Check function exists
+            try:
+                old_bonuses = calculate_total_lucky_bonuses(equipped)
+                new_bonuses = calculate_total_lucky_bonuses(result["new_equipped"])
+                
+                bonus_changes = []
+                for bonus_type in ["coin_bonus", "xp_bonus", "drop_luck", "merge_luck"]:
+                    old_val = old_bonuses.get(bonus_type, 0)
+                    new_val = new_bonuses.get(bonus_type, 0)
+                    if old_val != new_val:
+                        diff = new_val - old_val
+                        sign = "+" if diff > 0 else ""
+                        names = {"coin_bonus": "Coins", "xp_bonus": "XP", "drop_luck": "Drop Luck", "merge_luck": "Merge Success"}
+                        bonus_changes.append(f"{names[bonus_type]}: {old_val}% → {new_val}% ({sign}{diff}%)")
+                
+                if bonus_changes:
+                    lucky_summary = "\n\nBonuses Changes:\n" + "\n".join(f"  • {c}" for c in bonus_changes)
+            except Exception:
+                # Silently ignore if calculation fails
+                pass
+
+        # BUG FIX #28: Show appropriate strategy description
+        strategy_desc = mode.title()
+        if mode != "power" and target_opt != "all":
+            strategy_desc += f" ({target_opt.replace('_', ' ').title()})"
+        elif mode != "power":
+            strategy_desc += " (All Bonuses)"
+            
         msg = (
-            f"🔧 Gear Optimization Preview\n\n"
-            f"Current Power: {result['old_power']}\n"
-            f"Optimized Power: {result['new_power']}\n"
-            f"Power Gain: +{result['power_gain']}\n\n"
-            f"Changes:\n{changes_text}\n\n"
-            f"Apply these changes?"
+            f"Found a better gear configuration!\n"
+            f"Strategy: {strategy_desc}\n\n"
+            f"Power Gain: {result['power_gain']:+d} ({result['old_power']} → {result['new_power']})\n\n"
+            f"Changes:\n{changes_text}"
+            f"{lucky_summary}\n\n"
+            "Do you want to equip this gear?"
         )
         
-        if QtWidgets.QMessageBox.question(
+        reply = QtWidgets.QMessageBox.question(
             self, "Optimize Gear", msg,
-            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
-        ) != QtWidgets.QMessageBox.Yes:
-            return
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.Yes
+        )
         
-        # Apply the optimized gear
-        self.blocker.adhd_buster["equipped"] = result["new_equipped"]
-        
-        # Sync changes to active hero before saving
-        if GAMIFICATION_AVAILABLE:
-            sync_hero_data(self.blocker.adhd_buster)
-        self.blocker.save_config()
-        
-        # Show result message first
-        if result["power_gain"] > 0:
-            QtWidgets.QMessageBox.information(
-                self, "Gear Optimized! ⚡",
-                f"Power increased from {result['old_power']} to {result['new_power']}!\n"
-                f"(+{result['power_gain']} power)"
-            )
-        else:
-            QtWidgets.QMessageBox.information(
-                self, "Gear Updated! ⚔️",
-                f"Gear configuration updated.\nPower: {result['new_power']}"
-            )
-        
-        # Comprehensive refresh after optimization
-        self.refresh_all()
+        if reply == QtWidgets.QMessageBox.Yes:
+            # Apply changes
+            self.blocker.adhd_buster["equipped"] = result["new_equipped"]
+            
+            # Sync to hero and save
+            if GAMIFICATION_AVAILABLE:
+                sync_hero_data(self.blocker.adhd_buster)
+            self.blocker.save_config()
+            
+            # Show result message
+            if result["power_gain"] > 0:
+                QtWidgets.QMessageBox.information(
+                    self, "Gear Optimized! ⚡",
+                    f"Power increased from {result['old_power']} to {result['new_power']}!\n"
+                    f"(+{result['power_gain']} power)"
+                )
+            else:
+                QtWidgets.QMessageBox.information(
+                    self, "Gear Updated! ⚔️",
+                    f"Gear configuration updated.\nPower: {result['new_power']}"
+                )
+            
+            # Play sound if available
+            if hasattr(self, "_play_sound"):
+                self._play_sound("equip")
+                
+            self.refresh_all()
 
     def _salvage_duplicates(self) -> None:
         inventory = self.blocker.adhd_buster.get("inventory", [])
@@ -11691,10 +12075,17 @@ class ADHDBusterTab(QtWidgets.QWidget):
         if not to_remove:
             QtWidgets.QMessageBox.information(self, "Salvage", "No duplicates found!")
             return
+        
+        # Count items with lucky options being salvaged
+        lucky_items_count = sum(1 for i in to_remove if i.get("lucky_options", {}))
+        lucky_warning = ""
+        if lucky_items_count > 0:
+            lucky_warning = f"\n⚠️ Warning: {lucky_items_count} item(s) with lucky options will be lost!"
+        
         luck_bonus = sum(i.get("power", 10) // 10 for i in to_remove)
         if QtWidgets.QMessageBox.question(
             self, "Salvage Duplicates",
-            f"Salvage {len(to_remove)} duplicate items?\nLuck bonus earned: +{luck_bonus} 🍀",
+            f"Salvage {len(to_remove)} duplicate items?\nLuck bonus earned: +{luck_bonus} 🍀{lucky_warning}",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
         ) != QtWidgets.QMessageBox.Yes:
             return
@@ -12061,17 +12452,27 @@ class ItemDropDialog(QtWidgets.QDialog):
         # Dialog stays visible until the user clicks to close it
 
     def _build_ui(self) -> None:
+        # Validate item has required fields
+        if not isinstance(self.item, dict):
+            self.item = {"name": "Unknown Item", "rarity": "Common", "color": "#999", "slot": "Unknown"}
+        
+        # Ensure required fields with defaults
+        self.item.setdefault("name", "Unknown Item")
+        self.item.setdefault("rarity", "Common")
+        self.item.setdefault("color", "#999")
+        self.item.setdefault("slot", "Unknown")
+        
         bg_colors = {"Common": "#f5f5f5", "Uncommon": "#e8f5e9", "Rare": "#e3f2fd", "Epic": "#f3e5f5", "Legendary": "#fff3e0"}
-        bg = bg_colors.get(self.item["rarity"], "#f5f5f5")
+        bg = bg_colors.get(self.item.get("rarity", "Common"), "#f5f5f5")
         self.setStyleSheet(f"background-color: {bg};")
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(20, 15, 20, 15)
 
         if self.item.get("lucky_upgrade"):
             header_text = "🍀 LUCKY UPGRADE! 🍀"
-        elif self.item["rarity"] == "Legendary":
+        elif self.item.get("rarity") == "Legendary":
             header_text = "⭐ LEGENDARY DROP! ⭐"
-        elif self.item["rarity"] == "Epic":
+        elif self.item.get("rarity") == "Epic":
             header_text = "💎 EPIC DROP! 💎"
         else:
             header_text = "✨ LOOT DROP! ✨"
@@ -12091,18 +12492,31 @@ class ItemDropDialog(QtWidgets.QDialog):
         found_lbl = QtWidgets.QLabel("Your ADHD Buster found:")
         found_lbl.setStyleSheet("color: #333;")
         layout.addWidget(found_lbl)
-        name_lbl = QtWidgets.QLabel(self.item["name"])
-        name_lbl.setStyleSheet(f"color: {self.item['color']}; font-size: 12px; font-weight: bold;")
+        name_lbl = QtWidgets.QLabel(self.item.get("name", "Unknown Item"))
+        name_lbl.setStyleSheet(f"color: {self.item.get('color', '#999')}; font-size: 12px; font-weight: bold;")
         name_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(name_lbl)
-        power = self.item.get("power", RARITY_POWER.get(self.item["rarity"], 10))
+        power = self.item.get("power", RARITY_POWER.get(self.item.get("rarity", "Common"), 10))
         # Get themed slot display name
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
-        slot_display = get_slot_display_name(self.item['slot'], active_story) if get_slot_display_name else self.item['slot']
-        info_lbl = QtWidgets.QLabel(f"[{self.item['rarity']} {slot_display}] +{power} Power")
-        info_lbl.setStyleSheet(f"color: {self.item['color']};")
+        slot_display = get_slot_display_name(self.item.get('slot', 'Unknown'), active_story) if get_slot_display_name else self.item.get('slot', 'Unknown')
+        info_lbl = QtWidgets.QLabel(f"[{self.item.get('rarity', 'Common')} {slot_display}] +{power} Power")
+        info_lbl.setStyleSheet(f"color: {self.item.get('color', '#999')};")
         info_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(info_lbl)
+        
+        # Display lucky options if item has them
+        lucky_options = self.item.get("lucky_options", {})
+        if lucky_options and format_lucky_options:
+            try:
+                lucky_text = format_lucky_options(lucky_options)
+                if lucky_text:
+                    lucky_lbl = QtWidgets.QLabel(f"✨ {lucky_text}")
+                    lucky_lbl.setStyleSheet("color: #8b5cf6; font-weight: bold; font-size: 11px;")
+                    lucky_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                    layout.addWidget(lucky_lbl)
+            except Exception:
+                pass  # Silently skip if formatting fails
 
         if GAMIFICATION_AVAILABLE:
             bonuses = calculate_rarity_bonuses(self.session_minutes, self.streak_days)
@@ -12123,7 +12537,7 @@ class ItemDropDialog(QtWidgets.QDialog):
                     "Rare": ["Rare drop! You're on fire! 🔥", "Sweet loot! ⚡"],
                     "Epic": ["EPIC! Your dedication shows! 💜", "Champion tier! 👑"],
                     "Legendary": ["LEGENDARY! You are unstoppable! ⭐", "GODLIKE FOCUS! 🏆"]}
-        msg = random.choice(messages.get(self.item["rarity"], messages["Common"]))
+        msg = random.choice(messages.get(self.item.get("rarity", "Common"), messages["Common"]))
         msg_lbl = QtWidgets.QLabel(msg)
         msg_lbl.setStyleSheet("font-weight: bold; color: #555;")
         msg_lbl.setAlignment(QtCore.Qt.AlignCenter)
@@ -13519,11 +13933,21 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             # Coin counter
             coins = self.blocker.adhd_buster.get("coins", 0)
             self.coin_label = QtWidgets.QPushButton(f"💰 {coins:,} Coins")
+            
+            # Build tooltip with lucky bonus info if available
+            tooltip = "Your currency for unlocking features and boosters"
+            if calculate_total_lucky_bonuses:
+                equipped = self.blocker.adhd_buster.get("equipped", {})
+                lucky_bonuses = calculate_total_lucky_bonuses(equipped)
+                coin_bonus = lucky_bonuses.get("coin_bonus", 0)
+                if coin_bonus > 0:
+                    tooltip += f"\n✨ Gear Bonus: +{coin_bonus}% Coins from sessions!"
+            
             self.coin_label.setStyleSheet(
                 "font-weight: bold; padding: 6px 12px; "
                 "background-color: #f59e0b; color: white;"
             )
-            self.coin_label.setToolTip("Your currency for unlocking features and boosters")
+            self.coin_label.setToolTip(tooltip)
             self.coin_label.clicked.connect(self._show_coin_info)
             if not is_gamification_enabled(self.blocker.adhd_buster):
                 self.coin_label.setVisible(False)
@@ -13752,13 +14176,25 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         msg_box = QtWidgets.QMessageBox(self)
         msg_box.setWindowTitle("💰 Coin Economy")
         msg_box.setText(f"<h2>Your Balance: {coins:,} Coins</h2>")
+        
+        # Build bonus info if lucky gear is equipped
+        bonus_info = ""
+        if calculate_total_lucky_bonuses:
+            equipped = self.blocker.adhd_buster.get("equipped", {})
+            lucky_bonuses = calculate_total_lucky_bonuses(equipped)
+            coin_bonus = lucky_bonuses.get("coin_bonus", 0)
+            if coin_bonus > 0:
+                bonus_info = f"<p style='color: #8b5cf6;'><b>✨ Active Gear Bonus: +{coin_bonus}% Coins!</b></p>"
+        
         msg_box.setInformativeText(
+            f"{bonus_info}"
             "<p><b>How to Earn Coins:</b></p>"
             "<ul>"
             "<li><b>Focus Sessions:</b> 10 Coins per hour</li>"
             "<li><b>Strategic Priority:</b> 25 Coins per hour (2.5x bonus!)</li>"
             "<li><b>Complete Priority:</b> 100 Coins</li>"
             "<li><b>Streak Bonuses:</b> Up to 100 Coins/day at 30+ day streaks</li>"
+            "<li><b>✨ Lucky Gear:</b> Bonus coins from equipped items with coin_bonus!</li>"
             "</ul>"
             "<p><b>What You Can Buy:</b></p>"
             "<ul>"
