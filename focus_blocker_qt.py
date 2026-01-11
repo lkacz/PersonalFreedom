@@ -1248,10 +1248,14 @@ class TimerTab(QtWidgets.QWidget):
             except ValueError:
                 pass  # Skip upgrade if rarity is invalid
 
-        # Add to inventory
+        # Ensure item has all required fields
+        if "obtained_at" not in item:
+            item["obtained_at"] = datetime.now().isoformat()
+        
+        # Add to inventory (use defensive copy)
         if "inventory" not in self.blocker.adhd_buster:
             self.blocker.adhd_buster["inventory"] = []
-        self.blocker.adhd_buster["inventory"].append(item)
+        self.blocker.adhd_buster["inventory"].append(item.copy())
         self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
         
         # Cap inventory size to prevent unbounded growth (keep newest items)
@@ -1259,7 +1263,7 @@ class TimerTab(QtWidgets.QWidget):
         if len(self.blocker.adhd_buster["inventory"]) > MAX_INVENTORY_SIZE:
             self.blocker.adhd_buster["inventory"] = self.blocker.adhd_buster["inventory"][-MAX_INVENTORY_SIZE:]
 
-        # Auto-equip if slot empty
+        # Auto-equip if slot empty (use another copy)
         slot = item.get("slot")
         if "equipped" not in self.blocker.adhd_buster:
             self.blocker.adhd_buster["equipped"] = {}
@@ -3262,35 +3266,35 @@ class WeightTab(QtWidgets.QWidget):
                     pass  # Skip upgrade if rarity is invalid
             return item
         
-        # Collect all earned items - Daily/Weekly/Monthly
+        # Collect all earned items - Daily/Weekly/Monthly (use defensive copies)
         if rewards.get("daily_reward"):
             item = maybe_upgrade_item(rewards["daily_reward"])
             items_earned.append(("Daily", item))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item.copy())
         
         if rewards.get("weekly_reward"):
             item = maybe_upgrade_item(rewards["weekly_reward"])
             items_earned.append(("Weekly Bonus", item))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item.copy())
         
         if rewards.get("monthly_reward"):
             item = maybe_upgrade_item(rewards["monthly_reward"])
             items_earned.append(("Monthly Bonus", item))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item.copy())
         
         # Streak reward
         if rewards.get("streak_reward"):
             streak_data = rewards["streak_reward"]
             item = maybe_upgrade_item(streak_data["item"])
             items_earned.append((f"🔥 {streak_data['streak_days']}-Day Streak", item))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item.copy())
             new_milestone_ids.append(streak_data["milestone_id"])
         
         # Milestone rewards
         for milestone in rewards.get("new_milestones", []):
             item = maybe_upgrade_item(milestone["item"])
             items_earned.append((f"🏆 {milestone['name']}", item))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item.copy())
             new_milestone_ids.append(milestone["milestone_id"])
         
         # Maintenance reward (only if no daily reward to avoid double-rewarding)
@@ -3298,7 +3302,7 @@ class WeightTab(QtWidgets.QWidget):
             maint_data = rewards["maintenance_reward"]
             item = maybe_upgrade_item(maint_data["item"])
             items_earned.append(("⚖️ Maintenance", item))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item.copy())
         
         # Save new milestones
         if new_milestone_ids:
@@ -4141,25 +4145,25 @@ class ActivityTab(QtWidgets.QWidget):
                     pass  # Skip upgrade if rarity is invalid
             return item
         
-        # Base activity reward
+        # Base activity reward (use defensive copies)
         if rewards.get("reward"):
             item = maybe_upgrade_item(rewards["reward"])
             items_earned.append(("Activity", item))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item.copy())
         
         # Streak reward
         if rewards.get("streak_reward"):
             streak_data = rewards["streak_reward"]
             item = maybe_upgrade_item(streak_data["item"])
             items_earned.append((f"🔥 {streak_data['streak_days']}-Day Streak", item))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item.copy())
             new_milestone_ids.append(streak_data["milestone_id"])
         
         # Milestone rewards
         for milestone in rewards.get("new_milestones", []):
             item = maybe_upgrade_item(milestone["item"])
             items_earned.append((f"🏆 {milestone['name']}", item))
-            self.blocker.adhd_buster.setdefault("inventory", []).append(item)
+            self.blocker.adhd_buster.setdefault("inventory", []).append(item.copy())
             new_milestone_ids.append(milestone["milestone_id"])
         
         # Save new milestones
@@ -4849,31 +4853,63 @@ class SleepTab(QtWidgets.QWidget):
             )
             return
         
+        # Confirmation dialog before claiming bonus
+        rarity_emojis = {
+            "Legendary": "🌟✨",
+            "Epic": "💎",
+            "Rare": "💙",
+            "Uncommon": "💚",
+            "Common": "⚪",
+        }
+        emoji = rarity_emojis.get(rarity, "🎁")
+        
+        confirm = QtWidgets.QMessageBox(self)
+        confirm.setWindowTitle("🌙 Claim Nighty-Night Bonus?")
+        confirm.setText(
+            f"{emoji} <b>Ready for bed?</b>\n\n"
+            f"Claiming your Nighty-Night bonus at {current_time}\n"
+            f"will earn you a <b>{rarity}</b> reward!\n\n"
+            f"Are you ready to turn off the screen and sleep?"
+        )
+        confirm.setIcon(QtWidgets.QMessageBox.Question)
+        confirm.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        confirm.setDefaultButton(QtWidgets.QMessageBox.Yes)
+        
+        if confirm.exec() != QtWidgets.QMessageBox.Yes:
+            return
+        
         # Generate reward
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         item = generate_item(rarity=rarity, story_id=active_story)
+        
+        # Add source and validate item has all required fields
         item["source"] = "sleep_now_bonus"
+        if "obtained_at" not in item:
+            item["obtained_at"] = datetime.now().isoformat()
         
         # Ensure inventory exists
         if "inventory" not in self.blocker.adhd_buster:
             self.blocker.adhd_buster["inventory"] = []
         
-        self.blocker.adhd_buster["inventory"].append(item)
+        # Add to inventory (use defensive copy to avoid reference issues)
+        self.blocker.adhd_buster["inventory"].append(item.copy())
         self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
         self.blocker.adhd_buster["last_sleep_now_date"] = today
         
-        # Auto-equip if slot empty
+        # Auto-equip if slot empty (use another copy)
         if "equipped" not in self.blocker.adhd_buster:
             self.blocker.adhd_buster["equipped"] = {}
         slot = item.get("slot")
         if slot and not self.blocker.adhd_buster["equipped"].get(slot):
             self.blocker.adhd_buster["equipped"][slot] = item.copy()
         
-        # Sync hero data
+        # CRITICAL: Save config BEFORE syncing to ensure inventory is persisted
+        self.blocker.save_config()
+        
+        # Sync hero data AFTER saving
         if GAMIFICATION_AVAILABLE:
             sync_hero_data(self.blocker.adhd_buster)
-        
-        self.blocker.save_config()
+            self.blocker.save_config()  # Save again after sync
         
         # Show reward with celebratory message
         rarity_emojis = {
@@ -4900,6 +4936,10 @@ class SleepTab(QtWidgets.QWidget):
         # Update preview to show it's been used
         self.sleep_now_btn.setEnabled(False)
         self.sleep_now_info.setText(f"✓ Claimed at {current_time}! Sweet dreams!")
+        
+        # Refresh Hero tab inventory if available
+        if hasattr(self.parent(), 'adhd_tab') and self.parent().adhd_tab:
+            self.parent().adhd_tab.refresh_all()
 
     def _log_sleep(self) -> None:
         """Log a sleep entry and check for rewards."""
@@ -5008,20 +5048,20 @@ class SleepTab(QtWidgets.QWidget):
                     return item
                 
                 item = maybe_upgrade_item(item)
-                self.blocker.adhd_buster["inventory"].append(item)
+                self.blocker.adhd_buster["inventory"].append(item.copy())
                 items_earned.append(item)
             
             # Streak reward
             if reward_info.get("streak_reward"):
                 streak_item = reward_info["streak_reward"]["item"]
-                self.blocker.adhd_buster["inventory"].append(streak_item)
+                self.blocker.adhd_buster["inventory"].append(streak_item.copy())
                 items_earned.append(streak_item)
                 self.blocker.sleep_milestones.append(reward_info["streak_reward"]["milestone_id"])
             
             # Milestone rewards
             new_milestone_ids = []
             for milestone in reward_info.get("new_milestones", []):
-                self.blocker.adhd_buster["inventory"].append(milestone["item"])
+                self.blocker.adhd_buster["inventory"].append(milestone["item"].copy())
                 items_earned.append(milestone["item"])
                 new_milestone_ids.append(milestone["milestone_id"])
             
@@ -5037,7 +5077,9 @@ class SleepTab(QtWidgets.QWidget):
                     active_story = self.blocker.adhd_buster.get("active_story", "warrior")
                     screenoff_bonus_item = generate_item(rarity=screenoff_rarity, story_id=active_story)
                     screenoff_bonus_item["source"] = "nighty_night_bonus"
-                    self.blocker.adhd_buster["inventory"].append(screenoff_bonus_item)
+                    if "obtained_at" not in screenoff_bonus_item:
+                        screenoff_bonus_item["obtained_at"] = datetime.now().isoformat()
+                    self.blocker.adhd_buster["inventory"].append(screenoff_bonus_item.copy())
                     items_earned.append(screenoff_bonus_item)
             
             # Update total collected count (same as other trackers)
@@ -8540,7 +8582,7 @@ class HydrationTab(QtWidgets.QWidget):
             messages = reward_info.get("messages", [])
             
             for item in reward_info.get("items", []):
-                self.blocker.adhd_buster["inventory"].append(item)
+                self.blocker.adhd_buster["inventory"].append(item.copy())
                 items_earned.append(item)
             
             if items_earned:
@@ -11254,15 +11296,23 @@ class PrioritiesDialog(QtWidgets.QDialog):
             item = result["item"]
             rarity_color = item.get("color", "#ffffff")
             
-            # Add to inventory (use the proper adhd_buster reference)
+            # Ensure item has all required fields
+            if "obtained_at" not in item:
+                item["obtained_at"] = datetime.now().isoformat()
+            
+            # Add to inventory (use defensive copy)
             if "inventory" not in self.blocker.adhd_buster:
                 self.blocker.adhd_buster["inventory"] = []
-            self.blocker.adhd_buster["inventory"].append(item)
+            self.blocker.adhd_buster["inventory"].append(item.copy())
             self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
-            # Sync changes to active hero before saving
+            
+            # Save config BEFORE syncing
+            self.blocker.save_config()
+            
+            # Sync changes to active hero and save again
             if GAMIFICATION_AVAILABLE:
                 sync_hero_data(self.blocker.adhd_buster)
-            self.blocker.save_config()
+                self.blocker.save_config()
             
             # Show win dialog
             msg = QtWidgets.QMessageBox(self)
@@ -11841,8 +11891,15 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Menu bar
         self._create_menu_bar()
 
+        # Make window scrollable with scroll area
+        scroll_area = QtWidgets.QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.setCentralWidget(scroll_area)
+        
         central = QtWidgets.QWidget()
-        self.setCentralWidget(central)
+        scroll_area.setWidget(central)
         main_layout = QtWidgets.QVBoxLayout(central)
 
         # Quick access bar
@@ -12137,15 +12194,23 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             # Generate boosted item with correct story theme
             item = generate_daily_reward_item(self.blocker.adhd_buster, story_id=active_story)
             
-            # Add to inventory
+            # Ensure item has all required fields
+            if "obtained_at" not in item:
+                item["obtained_at"] = datetime.now().isoformat()
+            
+            # Add to inventory (use defensive copy)
             if "inventory" not in self.blocker.adhd_buster:
                 self.blocker.adhd_buster["inventory"] = []
-            self.blocker.adhd_buster["inventory"].append(item)
+            self.blocker.adhd_buster["inventory"].append(item.copy())
             self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
-            # Sync changes to active hero before saving
+            
+            # Save config BEFORE syncing
+            self.blocker.save_config()
+            
+            # Sync changes to active hero and save again
             if GAMIFICATION_AVAILABLE:
                 sync_hero_data(self.blocker.adhd_buster)
-            self.blocker.save_config()
+                self.blocker.save_config()
             
             # Show reward dialog with themed slot name
             current_tier = get_current_tier(self.blocker.adhd_buster)
