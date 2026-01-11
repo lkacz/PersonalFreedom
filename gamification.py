@@ -3708,16 +3708,48 @@ def optimize_equipped_gear(adhd_buster: dict, mode: str = "power", target_opt: s
             except (TypeError, ValueError):
                 opt_val = 0
             
+        # Heuristic for neighbor effects (to help good support items bubble up)
+        heuristic_bonus = 0
+        n_effect = item.get("neighbor_effect")
+        if n_effect and isinstance(n_effect, dict):
+            n_target = n_effect.get("target", "")
+            n_mult = n_effect.get("multiplier", 1.0)
+            
+            # Estimate value of effect based on conservative average neighbor stats
+            # Average Power ~100, Average Luck ~10
+            slot = item.get("slot")
+            num_neighbors = len(SLOT_NEIGHBORS.get(slot, [])) if slot else 1
+            
+            if n_target == "power":
+                # Value = Impact on neighbors' power
+                val = (n_mult - 1.0) * 100 * num_neighbors
+                if mode == "power" or mode == "balanced":
+                    heuristic_bonus += val
+                elif mode == "options":
+                    heuristic_bonus += val  # Secondary factor
+            
+            elif isinstance(n_target, str) and "luck" in n_target:
+                # Value = Impact on neighbors' luck
+                luck_impact = (n_mult - 1.0) * 10 * num_neighbors
+                
+                if n_target == "luck_all":
+                    luck_impact *= 4  # 4 stats affected
+                
+                if mode == "options":
+                    heuristic_bonus += luck_impact * 1000
+                elif mode == "balanced":
+                    heuristic_bonus += luck_impact * 10
+
         if mode == "options":
             # Primary: Options, Secondary: Power
             # 1% option is worth 1000 power for sorting purposes
-            return opt_val * 1000 + pwr 
+            return opt_val * 1000 + pwr + heuristic_bonus
             
         if mode == "balanced":
             # Power + (Option Sum * 10)
-            return pwr + (opt_val * 10)
+            return pwr + (opt_val * 10) + heuristic_bonus
             
-        return pwr
+        return pwr + heuristic_bonus
     
     # Sort items within each slot by specified criteria (highest first)
     for slot in items_by_slot:
@@ -3770,21 +3802,48 @@ def optimize_equipped_gear(adhd_buster: dict, mode: str = "power", target_opt: s
     best_equipped = {}
     best_score = -999999  # BUG FIX #30: Use large negative instead of -1 (scores can be negative)
     
-    if total_items <= 50:
-        # Brute force for small inventories - try top 3 items per slot
+    # Calculate complexity of brute force approach
+    # We prioritize extensive search (Top 3-4 candidates) for better accuracy
+    # unless complexity is too high.
+    
+    # Try Top 4 candidates first (Preferred for smaller sets)
+    candidates_top4 = []
+    complexity_top4 = 1
+    for slot in GEAR_SLOTS:
+        count = min(len(items_by_slot[slot]), 4) + 1  # +1 for None option
+        candidates_top4.append([None] + items_by_slot[slot][:4])
+        complexity_top4 *= count
+
+    # Try Top 3 candidates (Standard "intensive" mode)
+    candidates_top3 = []
+    complexity_top3 = 1
+    for slot in GEAR_SLOTS:
+        count = min(len(items_by_slot[slot]), 3) + 1
+        candidates_top3.append([None] + items_by_slot[slot][:3])
+        complexity_top3 *= count
+
+    MAX_COMPLEXITY = 200000  # ~3-5 seconds of processing
+    
+    candidates_to_use = None
+    
+    if complexity_top4 <= MAX_COMPLEXITY:
+        # Use Top 4 candidates (Very intensive)
+        candidates_to_use = candidates_top4
+    elif complexity_top3 <= MAX_COMPLEXITY:
+        # Use Top 3 candidates (Standard intensive)
+        candidates_to_use = candidates_top3
+    else:
+        # Fallback to Greedy for huge sets
+        candidates_to_use = None
+
+    if candidates_to_use:
+        # Brute force optimization
         best_equipped = {}
         
         from itertools import product
         
-        # Get top 3 candidates per slot (plus empty option)
-        candidates_per_slot = []
-        for slot in GEAR_SLOTS:
-            slot_items = items_by_slot[slot][:3]  # Top 3 based on get_item_score
-            # Add None option for empty slot
-            candidates_per_slot.append([None] + slot_items)
-        
         # Try all combinations
-        for combo in product(*candidates_per_slot):
+        for combo in product(*candidates_to_use):
             test_equipped = {}
             for i, slot in enumerate(GEAR_SLOTS):
                 test_equipped[slot] = combo[i]
