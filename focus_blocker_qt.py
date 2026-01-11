@@ -11672,8 +11672,8 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         self.timer.start(30000) # Every 30 seconds
         self.destroyed.connect(self._cleanup_timer)
         
-        # Initial update
-        QtCore.QTimer.singleShot(100, self.update_data)
+        # Initial update - delayed to avoid blocking window creation
+        QtCore.QTimer.singleShot(1000, self.update_data)
     
     def _cleanup_timer(self):
         """Stop timer when widget is destroyed."""
@@ -11721,6 +11721,10 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         layout.addWidget(self.timeline, stretch=1)
 
     def update_data(self):
+        """Update all timeline data. Called periodically and on events."""
+        if not self.isVisible():
+            return
+            
         # 1. Update Focus Ring
         try:
             today = datetime.now().strftime("%Y-%m-%d")
