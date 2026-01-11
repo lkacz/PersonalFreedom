@@ -748,6 +748,9 @@ def roll_neighbor_effect(rarity: str) -> Optional[dict]:
     multiplier += random.uniform(-0.02, 0.02)
     multiplier = round(multiplier, 3)
     
+    # Clamp multiplier to reasonable range (0.5x to 2.0x)
+    multiplier = max(0.5, min(2.0, multiplier))
+    
     return {
         "type": effect_type,
         "target": target,
@@ -784,6 +787,18 @@ def calculate_neighbor_effects(equipped: dict) -> dict:
         
         neighbor_effect = item.get("neighbor_effect")
         if not neighbor_effect or not isinstance(neighbor_effect, dict):
+            continue
+        
+        # Validate neighbor_effect has all required fields
+        if not all(key in neighbor_effect for key in ["type", "target", "multiplier"]):
+            continue  # Skip malformed neighbor effects
+        
+        # Validate field types
+        if not isinstance(neighbor_effect["type"], str):
+            continue
+        if not isinstance(neighbor_effect["target"], str):
+            continue
+        if not isinstance(neighbor_effect["multiplier"], (int, float)):
             continue
         
         # Apply effect to neighboring slots
@@ -869,6 +884,8 @@ def calculate_effective_power(equipped: dict, include_set_bonus: bool = True,
             # Calculate adjustment
             if total_multiplier != 1.0:
                 adjusted_power = int(base_power * total_multiplier)
+                # Clamp to prevent negative power (minimum 1)
+                adjusted_power = max(1, adjusted_power)
                 adjustment = adjusted_power - base_power
                 neighbor_adjustments[slot] = adjustment
                 neighbor_effects_detail[slot] = {
