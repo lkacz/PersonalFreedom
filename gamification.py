@@ -1101,13 +1101,13 @@ def format_neighbor_effect(neighbor_effect: dict) -> str:
     # Get target name
     target_name = NEIGHBOR_EFFECT_TYPES.get(target, {}).get("name", target)
     
-    # Format with emoji and sign
+    # Format with emoji and sign (always use absolute value for display)
     if effect_type == "friendly":
         emoji = "⬆️"
-        sign = "+" if pct_change > 0 else ""
+        sign = "+"
     else:
         emoji = "⬇️"
-        sign = "" if pct_change < 0 else "-"
+        sign = "-"
     
     return f"{emoji} {sign}{abs(pct_change)}% {target_name} to neighbors"
 
