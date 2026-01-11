@@ -201,6 +201,51 @@ get_slot_display_name = None
 # Gear optimization
 optimize_equipped_gear = None
 find_potential_set_bonuses = None
+# XP and leveling system
+calculate_session_xp = None
+award_xp = None
+get_level_from_xp = None
+get_level_title = None
+get_celebration_message = None
+# Weight tracking functions
+check_weight_entry_rewards = None
+get_weight_stats = None
+format_weight_change = None
+check_all_weight_rewards = None
+calculate_bmi = None
+get_bmi_classification = None
+get_ideal_weight_range = None
+predict_goal_date = None
+get_historical_comparisons = None
+get_weekly_insights = None
+WEIGHT_ENTRY_TAGS = []
+format_entry_note = None
+# Activity tracking functions
+ACTIVITY_TYPES = []
+INTENSITY_LEVELS = []
+ACTIVITY_MIN_DURATION = 10
+check_all_activity_rewards = None
+get_activity_stats = None
+format_activity_duration = None
+check_activity_streak = None
+# Sleep tracking functions
+SLEEP_CHRONOTYPES = []
+SLEEP_QUALITY_FACTORS = []
+SLEEP_DISRUPTION_TAGS = []
+check_all_sleep_rewards = None
+get_sleep_stats = None
+format_sleep_duration = None
+check_sleep_streak = None
+get_sleep_recommendation = None
+get_screen_off_bonus_rarity = None
+# Hydration tracking functions
+get_water_reward_rarity = None
+can_log_water = None
+get_hydration_streak_bonus_rarity = None
+check_water_entry_reward = None
+get_hydration_stats = None
+HYDRATION_MIN_INTERVAL_HOURS = 2
+HYDRATION_MAX_DAILY_GLASSES = 5
 
 
 def load_heavy_modules(splash: Optional[SplashScreen] = None):
@@ -219,6 +264,23 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
     global sync_hero_data, is_gamification_enabled
     global GEAR_SLOTS, STORY_GEAR_THEMES, get_story_gear_theme, get_slot_display_name
     global optimize_equipped_gear, find_potential_set_bonuses
+    global calculate_session_xp, award_xp, get_level_from_xp, get_level_title, get_celebration_message
+    # Weight tracking
+    global check_weight_entry_rewards, get_weight_stats, format_weight_change, check_all_weight_rewards
+    global calculate_bmi, get_bmi_classification, get_ideal_weight_range
+    global predict_goal_date, get_historical_comparisons, get_weekly_insights
+    global WEIGHT_ENTRY_TAGS, format_entry_note
+    # Activity tracking
+    global ACTIVITY_TYPES, INTENSITY_LEVELS, ACTIVITY_MIN_DURATION
+    global check_all_activity_rewards, get_activity_stats, format_activity_duration, check_activity_streak
+    # Sleep tracking
+    global SLEEP_CHRONOTYPES, SLEEP_QUALITY_FACTORS, SLEEP_DISRUPTION_TAGS
+    global check_all_sleep_rewards, get_sleep_stats, format_sleep_duration
+    global check_sleep_streak, get_sleep_recommendation, get_screen_off_bonus_rarity
+    # Hydration tracking
+    global get_water_reward_rarity, can_log_water
+    global get_hydration_streak_bonus_rarity, check_water_entry_reward, get_hydration_stats
+    global HYDRATION_MIN_INTERVAL_HOURS, HYDRATION_MAX_DAILY_GLASSES
     
     if splash:
         splash.set_status("Loading core modules...")
@@ -349,22 +411,6 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         GAMIFICATION_AVAILABLE = False
     
     # Weight tracking functions (separate try for backward compat)
-    global check_weight_entry_rewards, get_weight_stats, format_weight_change, check_all_weight_rewards
-    global calculate_bmi, get_bmi_classification, get_ideal_weight_range
-    global predict_goal_date, get_historical_comparisons, get_weekly_insights
-    global WEIGHT_ENTRY_TAGS, format_entry_note
-    check_weight_entry_rewards = None
-    get_weight_stats = None
-    format_weight_change = None
-    check_all_weight_rewards = None
-    calculate_bmi = None
-    get_bmi_classification = None
-    get_ideal_weight_range = None
-    predict_goal_date = None
-    get_historical_comparisons = None
-    get_weekly_insights = None
-    WEIGHT_ENTRY_TAGS = []
-    format_entry_note = None
     try:
         from gamification import (
             check_weight_entry_rewards as _check_weight_entry_rewards,
@@ -396,16 +442,6 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         pass
     
     # Activity tracking functions
-    global ACTIVITY_TYPES, INTENSITY_LEVELS, ACTIVITY_MIN_DURATION
-    global check_all_activity_rewards, get_activity_stats, format_activity_duration
-    global check_activity_streak
-    ACTIVITY_TYPES = []
-    INTENSITY_LEVELS = []
-    ACTIVITY_MIN_DURATION = 10
-    check_all_activity_rewards = None
-    get_activity_stats = None
-    format_activity_duration = None
-    check_activity_streak = None
     try:
         from gamification import (
             ACTIVITY_TYPES as _ACTIVITY_TYPES,
@@ -427,18 +463,6 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         pass
     
     # Sleep tracking functions
-    global SLEEP_CHRONOTYPES, SLEEP_QUALITY_FACTORS, SLEEP_DISRUPTION_TAGS
-    global check_all_sleep_rewards, get_sleep_stats, format_sleep_duration
-    global check_sleep_streak, get_sleep_recommendation, get_screen_off_bonus_rarity
-    SLEEP_CHRONOTYPES = []
-    SLEEP_QUALITY_FACTORS = []
-    SLEEP_DISRUPTION_TAGS = []
-    check_all_sleep_rewards = None
-    get_sleep_stats = None
-    format_sleep_duration = None
-    check_sleep_streak = None
-    get_sleep_recommendation = None
-    get_screen_off_bonus_rarity = None
     try:
         from gamification import (
             SLEEP_CHRONOTYPES as _SLEEP_CHRONOTYPES,
@@ -464,16 +488,6 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         pass
     
     # Hydration tracking functions
-    global get_water_reward_rarity, can_log_water
-    global get_hydration_streak_bonus_rarity, check_water_entry_reward, get_hydration_stats
-    global HYDRATION_MIN_INTERVAL_HOURS, HYDRATION_MAX_DAILY_GLASSES
-    get_water_reward_rarity = None
-    can_log_water = None
-    get_hydration_streak_bonus_rarity = None
-    check_water_entry_reward = None
-    get_hydration_stats = None
-    HYDRATION_MIN_INTERVAL_HOURS = 2
-    HYDRATION_MAX_DAILY_GLASSES = 5
     try:
         from gamification import (
             get_water_reward_rarity as _get_water_reward_rarity,
