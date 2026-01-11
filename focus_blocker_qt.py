@@ -4517,7 +4517,44 @@ class SleepTab(QtWidgets.QWidget):
         
         # Screen-Off Bonus (Nighty-Night Gift)
         screenoff_group = QtWidgets.QGroupBox("🌙 Nighty-Night Bonus")
-        screenoff_layout = QtWidgets.QHBoxLayout(screenoff_group)
+        screenoff_main_layout = QtWidgets.QVBoxLayout(screenoff_group)
+        
+        # Go to Sleep NOW button - immediate reward
+        sleep_now_layout = QtWidgets.QHBoxLayout()
+        self.sleep_now_btn = QtWidgets.QPushButton("🛏️ Go to Sleep NOW!")
+        self.sleep_now_btn.setToolTip(
+            "Click when going to sleep right now to get an immediate reward!\n"
+            "Earlier = better rewards. Reward is based on current time."
+        )
+        self.sleep_now_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #1565c0;
+                color: white;
+                font-size: 13px;
+                font-weight: bold;
+                padding: 8px 15px;
+                border-radius: 5px;
+            }
+            QPushButton:hover { background-color: #1976d2; }
+            QPushButton:disabled { background-color: #455a64; color: #888; }
+        """)
+        self.sleep_now_btn.clicked.connect(self._go_to_sleep_now)
+        sleep_now_layout.addWidget(self.sleep_now_btn)
+        self.sleep_now_info = QtWidgets.QLabel()
+        self.sleep_now_info.setStyleSheet("color: #888; font-size: 11px;")
+        self._update_sleep_now_preview()
+        sleep_now_layout.addWidget(self.sleep_now_info)
+        sleep_now_layout.addStretch()
+        screenoff_main_layout.addLayout(sleep_now_layout)
+        
+        # Separator
+        sep_line = QtWidgets.QFrame()
+        sep_line.setFrameShape(QtWidgets.QFrame.HLine)
+        sep_line.setStyleSheet("color: #444;")
+        screenoff_main_layout.addWidget(sep_line)
+        
+        # Existing screen-off time selector (for logging past sleep)
+        screenoff_layout = QtWidgets.QHBoxLayout()
         self.screenoff_checkbox = QtWidgets.QCheckBox("I turned off my screen at:")
         self.screenoff_checkbox.setToolTip("Earn a bonus item for healthy digital habits!\nEarlier = better rewards.")
         screenoff_layout.addWidget(self.screenoff_checkbox)
@@ -4530,6 +4567,7 @@ class SleepTab(QtWidgets.QWidget):
         )
         screenoff_layout.addWidget(self.screenoff_time)
         screenoff_layout.addStretch()
+        screenoff_main_layout.addLayout(screenoff_layout)
         left_layout.addWidget(screenoff_group)
         
         # Log button
@@ -4656,9 +4694,10 @@ class SleepTab(QtWidgets.QWidget):
             "<tr><td>90+</td><td>-</td><td>-</td><td>5%</td><td>20%</td><td>75%</td></tr>"
             "<tr><td>97+</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td></tr>"
             "</table>"
-            "<br><b>🌙 Nighty-Night Bonus:</b> Extra item for turning off screen early!<br>"
+            "<br><b>🛏️ Go to Sleep NOW:</b> Immediate reward for going to sleep! (1x per night)<br>"
+            "<b>🌙 Nighty-Night Bonus:</b> Extra item when logging past sleep with screen-off time.<br>"
             "<table style='font-size:10px; color:#888888; margin-top:3px;'>"
-            "<tr><th>Screen Off</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
+            "<tr><th>Time</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
             "<tr><td>21:00-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td></tr>"
             "<tr><td>22:00</td><td>-</td><td>-</td><td>5%</td><td>20%</td><td>75%</td></tr>"
             "<tr><td>23:00</td><td>-</td><td>5%</td><td>20%</td><td>50%</td><td>25%</td></tr>"
@@ -4740,6 +4779,128 @@ class SleepTab(QtWidgets.QWidget):
             f"<b>Tips:</b><br>{tips_html}"
         )
     
+    def _update_sleep_now_preview(self) -> None:
+        """Update the 'Go to Sleep NOW' preview showing expected reward tier."""
+        now = QtCore.QTime.currentTime()
+        current_time = now.toString("HH:mm")
+        
+        if not get_screen_off_bonus_rarity:
+            self.sleep_now_info.setText(f"Now: {current_time}")
+            return
+        
+        rarity = get_screen_off_bonus_rarity(current_time)
+        if rarity:
+            rarity_colors = {
+                "Legendary": "#ffd700",
+                "Epic": "#a335ee",
+                "Rare": "#0070dd",
+                "Uncommon": "#1eff00",
+                "Common": "#ffffff",
+            }
+            color = rarity_colors.get(rarity, "#888")
+            self.sleep_now_info.setText(f"Now: {current_time} → <b style='color:{color}'>{rarity}</b> item!")
+            self.sleep_now_btn.setEnabled(True)
+        else:
+            self.sleep_now_info.setText(f"Now: {current_time} (too late for bonus)")
+            self.sleep_now_btn.setEnabled(False)
+    
+    def _go_to_sleep_now(self) -> None:
+        """Handle 'Go to Sleep NOW' button - give immediate reward based on current time."""
+        if not GAMIFICATION_AVAILABLE or not is_gamification_enabled(self.blocker.adhd_buster):
+            QtWidgets.QMessageBox.information(
+                self, "Gamification Disabled",
+                "Enable gamification mode to earn rewards!"
+            )
+            return
+        
+        if not get_screen_off_bonus_rarity:
+            QtWidgets.QMessageBox.warning(
+                self, "Feature Unavailable",
+                "Sleep tracking module not fully loaded."
+            )
+            return
+        
+        # Get current time and calculate reward
+        now = QtCore.QTime.currentTime()
+        current_time = now.toString("HH:mm")
+        rarity = get_screen_off_bonus_rarity(current_time)
+        
+        if not rarity:
+            QtWidgets.QMessageBox.information(
+                self, "Too Late",
+                "It's too late for the Nighty-Night bonus.\n"
+                "Go to sleep before 01:00 to earn rewards!\n\n"
+                "Earlier = better rewards:\n"
+                "• 21:00 or earlier: Legendary\n"
+                "• 22:00: Epic-Legendary\n"
+                "• 23:00: Rare-Epic\n"
+                "• 00:00: Common-Rare"
+            )
+            return
+        
+        # Check if already used today (based on sleep-now timestamp)
+        today = datetime.now().strftime("%Y-%m-%d")
+        last_sleep_now = self.blocker.adhd_buster.get("last_sleep_now_date", "")
+        if last_sleep_now == today:
+            QtWidgets.QMessageBox.information(
+                self, "Already Used",
+                "You already claimed your Nighty-Night bonus today!\n"
+                "Come back tomorrow for another reward."
+            )
+            return
+        
+        # Generate reward
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        item = generate_item(rarity=rarity, story_id=active_story)
+        item["source"] = "sleep_now_bonus"
+        
+        # Ensure inventory exists
+        if "inventory" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["inventory"] = []
+        
+        self.blocker.adhd_buster["inventory"].append(item)
+        self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
+        self.blocker.adhd_buster["last_sleep_now_date"] = today
+        
+        # Auto-equip if slot empty
+        if "equipped" not in self.blocker.adhd_buster:
+            self.blocker.adhd_buster["equipped"] = {}
+        slot = item.get("slot")
+        if slot and not self.blocker.adhd_buster["equipped"].get(slot):
+            self.blocker.adhd_buster["equipped"][slot] = item.copy()
+        
+        # Sync hero data
+        if GAMIFICATION_AVAILABLE:
+            sync_hero_data(self.blocker.adhd_buster)
+        
+        self.blocker.save_config()
+        
+        # Show reward with celebratory message
+        rarity_emojis = {
+            "Legendary": "🌟✨",
+            "Epic": "💎",
+            "Rare": "💙",
+            "Uncommon": "💚",
+            "Common": "⚪",
+        }
+        emoji = rarity_emojis.get(rarity, "🎁")
+        
+        msg = QtWidgets.QMessageBox(self)
+        msg.setWindowTitle("🛏️ Sweet Dreams!")
+        msg.setText(
+            f"{emoji} <b>Nighty-Night Reward!</b>\n\n"
+            f"For going to sleep at {current_time}, you earned:\n\n"
+            f"<b style='font-size:14px'>{item['name']}</b>\n"
+            f"<i>{item['rarity']}</i> {item.get('slot', 'item')}\n\n"
+            f"Now turn off that screen and get some rest! 😴"
+        )
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.exec()
+        
+        # Update preview to show it's been used
+        self.sleep_now_btn.setEnabled(False)
+        self.sleep_now_info.setText(f"✓ Claimed at {current_time}! Sweet dreams!")
+
     def _log_sleep(self) -> None:
         """Log a sleep entry and check for rewards."""
         date_str = self.date_edit.date().toString("yyyy-MM-dd")
@@ -4934,7 +5095,13 @@ class SleepTab(QtWidgets.QWidget):
                 name = screenoff_bonus_item.get("name", "Unknown Item")
                 msg += f"\n\n🌙 Nighty-Night Bonus: <span style='color:{color}; font-weight:bold;'>[{rarity}]</span> {name}"
         
-        QtWidgets.QMessageBox.information(self, "Sleep Logged! 😴", msg)
+        # Use custom QMessageBox to render HTML
+        msg_box = QtWidgets.QMessageBox(self)
+        msg_box.setWindowTitle("Sleep Logged! 😴")
+        msg_box.setIcon(QtWidgets.QMessageBox.Information)
+        msg_box.setTextFormat(QtCore.Qt.RichText)
+        msg_box.setText(msg.replace("\n", "<br>"))
+        msg_box.exec()
         
         # Clear form
         self.note_input.clear()
@@ -8971,6 +9138,15 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         # Get current story for themed slot names
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        
+        # Rarity colors for visual distinction
+        rarity_colors = {
+            "Common": "#9e9e9e",
+            "Uncommon": "#4caf50",
+            "Rare": "#2196f3",
+            "Epic": "#9c27b0",
+            "Legendary": "#ff9800"
+        }
 
         for slot in slots:
             combo = QtWidgets.QComboBox()
@@ -8982,19 +9158,33 @@ class ADHDBusterTab(QtWidgets.QWidget):
             for idx, item in enumerate(slot_items):
                 item_name = item.get('name', 'Unknown')
                 item_rarity = item.get('rarity', 'Common')
-                display = f"{item_name} (+{item.get('power', 10)}) [{item_rarity[:1]}]"
+                item_color = rarity_colors.get(item_rarity, "#9e9e9e")
+                power = item.get('power', 10)
+                display = f"{item_name} (+{power}) [{item_rarity}]"
                 combo.addItem(display, item)
+                # Set foreground color for this item
+                combo.setItemData(combo.count() - 1, QtGui.QColor(item_color), QtCore.Qt.ForegroundRole)
             current = equipped.get(slot)
             if current:
                 for i in range(1, combo.count()):
                     if combo.itemData(i) and combo.itemData(i).get("name") == current.get("name"):
                         combo.setCurrentIndex(i)
+                        # Apply color to the combo box text for selected item
+                        curr_rarity = current.get("rarity", "Common")
+                        curr_color = rarity_colors.get(curr_rarity, "#9e9e9e")
+                        combo.setStyleSheet(f"QComboBox {{ color: {curr_color}; font-weight: bold; }}")
                         break
             combo.currentIndexChanged.connect(lambda idx, s=slot, c=combo: self._on_equip_change(s, c))
             self.slot_combos[slot] = combo
-            # Use themed slot display name
+            # Use themed slot display name with rarity color if equipped
             display_name = get_slot_display_name(slot, active_story) if get_slot_display_name else slot
-            slot_label = QtWidgets.QLabel(f"{display_name}:")
+            if current:
+                item_rarity = current.get("rarity", "Common")
+                item_color = rarity_colors.get(item_rarity, "#9e9e9e")
+                slot_label = QtWidgets.QLabel(f'{display_name}: <span style="color:{item_color}; font-weight:bold;">[{item_rarity}]</span>')
+                slot_label.setTextFormat(QtCore.Qt.RichText)
+            else:
+                slot_label = QtWidgets.QLabel(f"{display_name}:")
             self.slot_labels[slot] = slot_label
             equip_layout.addRow(slot_label, combo)
         char_equip.addWidget(equip_group)
@@ -9238,11 +9428,19 @@ class ADHDBusterTab(QtWidgets.QWidget):
             "Legendary": "#ff9800"
         }
         
-        # Update slot labels with themed names
+        # Update slot labels with themed names and equipped item rarity
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         for slot, label in self.slot_labels.items():
             display_name = get_slot_display_name(slot, active_story) if get_slot_display_name else slot
-            label.setText(f"{display_name}:")
+            current_item = equipped.get(slot)
+            if current_item:
+                rarity = current_item.get("rarity", "Common")
+                color = rarity_colors.get(rarity, "#9e9e9e")
+                label.setText(f'{display_name}: <span style="color:{color}; font-weight:bold;">[{rarity}]</span>')
+                label.setTextFormat(QtCore.Qt.RichText)
+            else:
+                label.setText(f"{display_name}:")
+                label.setTextFormat(QtCore.Qt.PlainText)
         
         for slot, combo in self.slot_combos.items():
             # Block signals to prevent triggering _on_equip_change
@@ -9272,14 +9470,20 @@ class ADHDBusterTab(QtWidgets.QWidget):
                     if item_data and item_data.get("obtained_at") == current.get("obtained_at"):
                         combo.setCurrentIndex(i)
                         found = True
+                        # Apply color to the combo box text for selected item
+                        item_rarity = current.get("rarity", "Common")
+                        item_color = rarity_colors.get(item_rarity, "#9e9e9e")
+                        combo.setStyleSheet(f"QComboBox {{ color: {item_color}; font-weight: bold; }}")
                         break
                 if not found:
                     # Equipped item no longer in inventory, clear it
                     self.blocker.adhd_buster["equipped"][slot] = None
                     combo.setCurrentIndex(0)
+                    combo.setStyleSheet("")  # Reset style for empty slot
                     needs_save = True
             else:
                 combo.setCurrentIndex(0)
+                combo.setStyleSheet("")  # Reset style for empty slot
             
             combo.blockSignals(False)
         

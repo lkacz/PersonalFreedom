@@ -646,5 +646,52 @@ class TestEdgeCasesAndBugFixes(unittest.TestCase):
         self.assertEqual(streak, 3)  # Should count all 3 days
 
 
+class TestScreenOffBonusRarity(unittest.TestCase):
+    """Tests for the screen-off bonus rarity calculation (used by Go to Sleep NOW feature)."""
+    
+    def setUp(self) -> None:
+        from gamification import get_screen_off_bonus_rarity
+        self.get_rarity = get_screen_off_bonus_rarity
+    
+    def test_very_early_screenoff_legendary(self) -> None:
+        """Test that 21:00 or earlier gives Legendary."""
+        self.assertEqual(self.get_rarity("21:00"), "Legendary")
+        self.assertEqual(self.get_rarity("20:30"), "Legendary")
+        self.assertEqual(self.get_rarity("19:00"), "Legendary")
+    
+    def test_2200_high_tier(self) -> None:
+        """Test that 22:00 gives high-tier rewards (Legendary-centered)."""
+        # At 22:00, center_tier=4 (Legendary-centered), so mostly Legendary/Epic
+        rarity = self.get_rarity("22:00")
+        self.assertIn(rarity, ["Epic", "Legendary", "Rare"])
+    
+    def test_2300_mid_tier(self) -> None:
+        """Test that 23:00 gives mid-tier rewards (Epic-centered)."""
+        rarity = self.get_rarity("23:00")
+        self.assertIn(rarity, ["Rare", "Epic", "Legendary", "Uncommon"])
+    
+    def test_midnight_low_tier(self) -> None:
+        """Test that midnight gives low-tier rewards (Uncommon-centered)."""
+        rarity = self.get_rarity("00:00")
+        self.assertIn(rarity, ["Common", "Uncommon", "Rare", "Epic", "Legendary"])
+    
+    def test_0100_no_bonus(self) -> None:
+        """Test that 01:00 or later gives no bonus."""
+        self.assertIsNone(self.get_rarity("01:00"))
+        self.assertIsNone(self.get_rarity("02:00"))
+        self.assertIsNone(self.get_rarity("05:00"))
+    
+    def test_invalid_time_returns_none(self) -> None:
+        """Test that invalid times return None."""
+        self.assertIsNone(self.get_rarity("invalid"))
+        self.assertIsNone(self.get_rarity(""))
+        self.assertIsNone(self.get_rarity(None))
+    
+    def test_boundary_just_before_cutoff(self) -> None:
+        """Test time just before 01:00 cutoff."""
+        rarity = self.get_rarity("00:59")
+        self.assertIsNotNone(rarity)  # Should still get a reward
+
+
 if __name__ == "__main__":
     unittest.main()
