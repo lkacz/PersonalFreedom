@@ -1,0 +1,16 @@
+The system has been updated to use a dynamic complexity-based approach for gear optimization.
+
+### Changes Implemented:
+
+1.  **Dynamic Candidate Selection:**
+    *   Instead of a hard limit (like 50 items), the system now calculates the "complexity" (number of combinations) based on available gear in each slot.
+    *   It checks `Top 4` candidates first ($5^8 \approx 390k$ max).
+    *   If that's too complex (> 200,000 combinations), it falls back to `Top 3` candidates ($4^8 \approx 65k$ max).
+    *   Only if `Top 3` is *still* too complex (unlikely, as max is 65k) does it use the Greedy approach.
+
+2.  **Impact:**
+    *   **Small/Medium Inventories (<100 items):** Will now use the **Top 4** candidate search (Very Intensive), finding deeper synergies that might be missed by Top 3.
+    *   **Large Inventories:** Will use **Top 3** search (Standard Intensive), which is still very accurate.
+    *   **Greedy Mode:** Only used in theoretical extreme cases where slots are overloaded (effectively never with Top 3 limits).
+
+This meets the requirement of being "more intensive for smaller gears" (Top 4) and handling "most cases" without arbitrary limits.
