@@ -4,7 +4,7 @@ import random
 import platform
 from pathlib import Path
 from typing import Optional, Dict, List
-from datetime import datetime
+from datetime import datetime, timedelta
 
 try:
     from __version__ import __version__ as APP_VERSION
@@ -11441,6 +11441,391 @@ class AISessionCompleteDialog(QtWidgets.QDialog):
         self.blocker.save_stats()
 
 
+# ============================================================================
+# Daily Timeline Widgets
+# ============================================================================
+
+class FocusRingWidget(QtWidgets.QWidget):
+    """Circular progress bar for daily focus goal."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.percentage = 0.0
+        self.text = "0%"
+        self.subtext = "Focus"
+        self.setMinimumSize(60, 60)
+
+    def set_progress(self, current_seconds, goal_seconds):
+        # Guard against negative values
+        current_seconds = max(0, current_seconds)
+        goal_seconds = max(1, goal_seconds)  # Minimum 1 to avoid division by zero
+        
+        self.percentage = min(current_seconds / goal_seconds, 1.0)
+            
+        hours = int(current_seconds // 3600)
+        mins = int((current_seconds % 3600) // 60)
+        
+        # If less than an hour, show minutes only or "0h 30m"
+        if hours > 0:
+            self.text = f"{hours}h {mins}m"
+        else:
+            self.text = f"{mins}m"
+            
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        
+        # Adjust rect to ensure stroke doesn't clip
+        rect = self.rect().adjusted(5, 5, -5, -5)
+        
+        # Draw Background Track
+        pen = QtGui.QPen(QtGui.QColor("#2a2a4a"), 6)
+        pen.setCapStyle(QtCore.Qt.RoundCap)
+        painter.setPen(pen)
+        painter.drawEllipse(rect)
+        
+        # Draw Progress Arc
+        # QPainter draws arcs in 1/16th of a degree
+        # 0 degrees is 3 o'clock. We want to start at 12 o'clock (90 degrees)
+        # Positive span is counter-clockwise? No, generic is counter-clockwise.
+        # But wait, 90 is 12 o'clock. 
+        # To draw clockwise, we need negative span.
+        
+        pen.setColor(QtGui.QColor("#6366f1"))
+        painter.setPen(pen)
+        
+        start_angle = 90 * 16
+        span_angle = -int(self.percentage * 360 * 16)
+        
+        # If full circle, draw ellipse to avoid artifact? Arc is fine.
+        painter.drawArc(rect, start_angle, span_angle)
+        
+        # Draw Text
+        painter.setPen(QtGui.QColor("#ffffff"))
+        
+        # Center Text
+        font = painter.font()
+        font.setPixelSize(13)
+        font.setBold(True)
+        painter.setFont(font)
+        
+        # Draw main text in center
+        text_rect = QtCore.QRectF(rect)
+        painter.drawText(text_rect, QtCore.Qt.AlignmentFlag.AlignCenter, self.text)
+        
+        # Draw subtext below
+        font.setPixelSize(10)
+        font.setBold(False)
+        painter.setFont(font)
+        sub_rect = QtCore.QRectF(rect.adjusted(0, 20, 0, 0))
+        painter.setPen(QtGui.QColor("#aaaaaa"))
+        painter.drawText(sub_rect, QtCore.Qt.AlignmentFlag.AlignCenter, self.subtext)
+
+
+class ChronoStreamWidget(QtWidgets.QWidget):
+    """Timeline visualization for 24h events."""
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.events = []  # List of dicts with 'start', 'end', 'color', 'label'
+        self.setMinimumHeight(60)
+        
+        # Update current time indicator periodically
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.update) # Just repaint
+        self.timer.start(60000) # Every minute
+        self.destroyed.connect(self._cleanup_timer)
+    
+    def _cleanup_timer(self):
+        """Stop timer when widget is destroyed."""
+        if self.timer:
+            self.timer.stop()
+
+    def set_events(self, events):
+        self.events = events
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        
+        rect = self.rect()
+        width = rect.width()
+        height = rect.height()
+        
+        # Guard against zero/invalid dimensions
+        if width < 10 or height < 10:
+            return
+        
+        # Colors
+        bg_color = QtGui.QColor("#16213e")
+        line_color = QtGui.QColor("#4a4a6a")
+        text_color = QtGui.QColor("#8888aa")
+        
+        # Background
+        painter.fillRect(rect, bg_color)
+        
+        # Geometry
+        # Top half: Visualization blocks
+        # Bottom half: Ruler
+        ruler_y = int(height * 0.7)
+        block_y = int(height * 0.2)
+        block_h = int(height * 0.4)
+        
+        # Draw Ruler Line
+        pen = QtGui.QPen(line_color)
+        painter.setPen(pen)
+        painter.drawLine(0, ruler_y, width, ruler_y)
+        
+        # Draw Hour Markers
+        painter.setFont(QtGui.QFont("Segoe UI", 8))
+        for h in range(0, 25, 4): # 0, 4, 8, 12...
+            x = int((h / 24.0) * width)
+            
+            # Tick
+            painter.drawLine(x, ruler_y, x, ruler_y + 5)
+            
+            # Label
+            # Adjust x for text centering
+            label = f"{h:02}"
+            text_rect = QtCore.QRect(x - 15, ruler_y + 8, 30, 20)
+            painter.setPen(text_color)
+            painter.drawText(text_rect, QtCore.Qt.AlignmentFlag.AlignCenter, label)
+            painter.setPen(line_color) # Reset for next line
+
+        # Draw Events
+        for evt in self.events:
+            start = evt.get('start', 0)
+            end = evt.get('end', 0)
+            color = evt.get('color', QtGui.QColor("#4caf50"))
+            
+            # Validate and clamp values to 0-24 range
+            start = max(0.0, min(24.0, start))
+            end = max(0.0, min(24.0, end))
+            
+            # Skip if start == end (zero duration)
+            if abs(end - start) < 0.01:
+                continue
+            
+            # Normalize to 0-24
+            # Handle wrapping
+            blocks = []
+            if end < start:
+                blocks.append((start, 24.0))
+                blocks.append((0.0, end))
+            else:
+                blocks.append((start, end))
+                
+            painter.setBrush(QtGui.QBrush(color))
+            painter.setPen(QtCore.Qt.PenStyle.NoPen)
+            
+            for s, e in blocks:
+                # Calculate coords
+                x = (s / 24.0) * width
+                w = ((e - s) / 24.0) * width
+                
+                block_rect = QtCore.QRectF(x, block_y, w, block_h)
+                painter.drawRoundedRect(block_rect, 4, 4)
+
+        # Draw Current Time Indicator
+        now = datetime.now()
+        curr_h = now.hour + now.minute / 60.0
+        cx = int((curr_h / 24.0) * width)
+        
+        pen_curr = QtGui.QPen(QtGui.QColor("#ff5252"), 2)
+        painter.setPen(pen_curr)
+        painter.drawLine(cx, 0, cx, height)
+        
+        # Draw "Now" bubble
+        bubble_rect = QtCore.QRectF(cx - 16, 5, 32, 16)
+        painter.setBrush(QtGui.QBrush(QtGui.QColor("#ff5252")))
+        painter.setPen(QtCore.Qt.PenStyle.NoPen)
+        painter.drawRoundedRect(bubble_rect, 8, 8)
+        
+        painter.setPen(QtGui.QColor("#ffffff"))
+        font = painter.font()
+        font.setPixelSize(9)
+        font.setBold(True)
+        painter.setFont(font)
+        painter.drawText(bubble_rect, QtCore.Qt.AlignmentFlag.AlignCenter, "NOW")
+
+
+class DailyTimelineWidget(QtWidgets.QFrame):
+    """Container widget for the Daily Timeline (Hybrid View)."""
+    def __init__(self, blocker: 'BlockerCore', parent=None):
+        super().__init__(parent)
+        self.blocker = blocker
+        self.setObjectName("DailyTimeline")
+        self.setStyleSheet("""
+            #DailyTimeline {
+                background-color: #1a1a2e;
+                border-bottom: 1px solid #2a2a4a;
+            }
+        """)
+        self.setFixedHeight(110)
+        
+        self._init_ui()
+        
+        # Timer for periodic updates
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.update_data)
+        self.timer.start(30000) # Every 30 seconds
+        self.destroyed.connect(self._cleanup_timer)
+        
+        # Initial update
+        QtCore.QTimer.singleShot(100, self.update_data)
+    
+    def _cleanup_timer(self):
+        """Stop timer when widget is destroyed."""
+        if hasattr(self, 'timer') and self.timer:
+            self.timer.stop()
+
+    def _init_ui(self):
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(15, 10, 15, 10)
+        layout.setSpacing(20)
+        
+        # 1. Summary Section (Docker)
+        summary_layout = QtWidgets.QVBoxLayout()
+        summary_layout.setSpacing(5)
+        
+        # Water
+        self.water_label = QtWidgets.QLabel("💧 0 / 8")
+        self.water_label.setStyleSheet("color: #4fc3f7; font-weight: bold; font-size: 14px;")
+        summary_layout.addWidget(self.water_label)
+        
+        # XP / Level (if gamification)
+        self.xp_label = QtWidgets.QLabel("XP: 0")
+        self.xp_label.setStyleSheet("color: #ffd700; font-weight: bold; font-size: 13px;")
+        summary_layout.addWidget(self.xp_label)
+        
+        summary_layout.addStretch()
+        
+        # Focus Ring
+        self.focus_ring = FocusRingWidget()
+        self.focus_ring.setFixedSize(70, 70)
+        
+        # Add Summary Components
+        layout.addWidget(self.focus_ring)
+        layout.addLayout(summary_layout)
+        
+        # Separator
+        line = QtWidgets.QFrame()
+        line.setFrameShape(QtWidgets.QFrame.Shape.VLine)
+        line.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
+        line.setStyleSheet("background-color: #2a2a4a;")
+        layout.addWidget(line)
+        
+        # 2. Chrono-Stream
+        self.timeline = ChronoStreamWidget()
+        layout.addWidget(self.timeline, stretch=1)
+
+    def update_data(self):
+        # 1. Update Focus Ring
+        try:
+            today = datetime.now().strftime("%Y-%m-%d")
+            daily_stats = self.blocker.stats.get("daily_stats", {}).get(today, {})
+            focus_sec = daily_stats.get("focus_time", 0)
+            
+            # Todo: Get goal from somewhere. Defaulting to 4 hours.
+            goal_sec = 4 * 3600 
+            
+            self.focus_ring.set_progress(focus_sec, goal_sec)
+        except Exception:
+            pass
+
+        # 2. Update Water
+        try:
+            today_date = datetime.now().strftime("%Y-%m-%d")
+            water_entries = getattr(self.blocker, 'water_entries', [])
+            today_water = sum(1 for e in water_entries if e.get('date') == today_date)
+            self.water_label.setText(f"💧 {today_water} / 8")
+        except Exception:
+             self.water_label.setText("💧 0 / 8")
+
+        # 3. Update XP
+        try:
+            if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
+                hero = self.blocker.adhd_buster.get('hero', {})
+                xp = hero.get('xp', 0)
+                lvl = hero.get('level', 1)
+                
+                if hero.get('class'):
+                     self.xp_label.setText(f"{hero['class']} Lv.{lvl} - XP: {xp}")
+                else:
+                    self.xp_label.setText(f"Lv.{lvl} XP: {xp}")
+            else:
+                self.xp_label.setVisible(False)
+        except Exception:
+             pass
+
+        # 4. Update Timeline Events
+        events = []
+        
+        today_date = datetime.now().date()
+        yesterday_date = today_date - timedelta(days=1)
+        today_str = today_date.strftime("%Y-%m-%d")
+        yesterday_str = yesterday_date.strftime("%Y-%m-%d")
+
+        try:
+            sleep_entries = getattr(self.blocker, 'sleep_entries', [])
+            for entry in sleep_entries:
+                entry_date = entry.get('date')
+                bedtime_str = entry.get('bedtime')
+                waketime_str = entry.get('wake_time')
+                
+                if not (bedtime_str and waketime_str): 
+                    continue
+                    
+                # Convert times to floats
+                try:
+                    bh, bm = map(int, bedtime_str.split(':'))
+                    wh, wm = map(int, waketime_str.split(':'))
+                    
+                    # Validate time ranges
+                    if not (0 <= bh <= 23 and 0 <= bm <= 59 and 0 <= wh <= 23 and 0 <= wm <= 59):
+                        continue
+                    
+                    b_float = bh + bm/60.0
+                    w_float = wh + wm/60.0
+                except (ValueError, AttributeError, TypeError):
+                    continue
+
+                if entry_date == yesterday_str:
+                    # Sleep started yesterday. Ends today?
+                    if w_float < b_float:
+                        # Ends today (standard sleep)
+                        events.append({
+                            'start': 0.0,
+                            'end': w_float,
+                            'color': QtGui.QColor("#3949ab"), # Indigo
+                            'label': 'Sleep'
+                        })
+                
+                elif entry_date == today_str:
+                    # Sleep starts today
+                    if w_float < b_float:
+                        # Wraps to tomorrow
+                        events.append({
+                            'start': b_float,
+                            'end': 24.0,
+                            'color': QtGui.QColor("#3949ab"),
+                            'label': 'Sleep'
+                        })
+                    else:
+                        # Nap
+                        events.append({
+                            'start': b_float,
+                            'end': w_float,
+                            'color': QtGui.QColor("#3949ab"),
+                            'label': 'Nap'
+                        })
+        except Exception as e:
+            pass 
+
+        self.timeline.set_events(events)
+
+
 class FocusBlockerWindow(QtWidgets.QMainWindow):
     def __init__(self) -> None:
         super().__init__()
@@ -11482,6 +11867,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         main_layout.addLayout(quick_bar)
 
         self._update_admin_label()
+
+        # Daily Timeline (Hybrid View)
+        self.timeline_widget = DailyTimelineWidget(self.blocker, self)
+        main_layout.addWidget(self.timeline_widget)
 
         self.tabs = QtWidgets.QTabWidget()
         self.tabs.currentChanged.connect(self._on_tab_changed)
@@ -12072,6 +12461,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Refresh AI tab if available
         if AI_AVAILABLE and hasattr(self, 'ai_tab'):
             self.ai_tab._refresh_data()
+        
+        # Refresh Timeline
+        if hasattr(self, 'timeline_widget'):
+            self.timeline_widget.update_data()
         
         # Re-enable all tabs after session ends
         self._set_tabs_enabled(True)
