@@ -1095,21 +1095,16 @@ def format_neighbor_effect(neighbor_effect: dict) -> str:
     if not effect_type or not target:
         return ""
     
-    # Calculate percentage change
-    pct_change = int((multiplier - 1.0) * 100)
+    # Calculate percentage change (absolute value)
+    pct_change = abs(int((multiplier - 1.0) * 100))
     
     # Get target name
     target_name = NEIGHBOR_EFFECT_TYPES.get(target, {}).get("name", target)
     
-    # Format with emoji and sign (always use absolute value for display)
-    if effect_type == "friendly":
-        emoji = "⬆️"
-        sign = "+"
-    else:
-        emoji = "⬇️"
-        sign = "-"
+    # Format with emoji (emoji indicates direction, no need for +/-)
+    emoji = "⬆️" if effect_type == "friendly" else "⬇️"
     
-    return f"{emoji} {sign}{abs(pct_change)}% {target_name} to neighbors"
+    return f"{emoji} {pct_change}% {target_name} to neighbors"
 
 
 def get_neighbor_effect_emoji(item: dict) -> str:
