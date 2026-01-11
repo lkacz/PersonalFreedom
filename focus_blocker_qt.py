@@ -2,6 +2,7 @@ import sys
 import json
 import random
 import platform
+import copy
 from pathlib import Path
 from typing import Optional, Dict, List
 from datetime import datetime, timedelta
@@ -533,6 +534,7 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
         self.problems = self._generate_problems()
         self.current_problem = 0
         self.solved_count = 0
+        self._ready_to_finish = False
         
         self._build_ui()
         self._show_current_problem()
@@ -754,10 +756,18 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
             self.current_problem += 1
             
             if self.solved_count >= 2:
-                # All problems solved!
-                self.feedback_label.setText("✅ Correct! Session will stop...")
+                # All problems solved! Require explicit confirmation to close.
+                self.feedback_label.setText("✅ Correct! Click 'End Session' to finish.")
                 self.feedback_label.setStyleSheet("font-size: 14px; color: #28a745; min-height: 30px;")
-                QtCore.QTimer.singleShot(500, self.accept)
+                self.answer_input.setEnabled(False)
+                self.submit_btn.setText("End Session")
+                if not self._ready_to_finish:
+                    try:
+                        self.submit_btn.clicked.disconnect(self._check_answer)
+                    except TypeError:
+                        pass
+                    self.submit_btn.clicked.connect(self.accept)
+                    self._ready_to_finish = True
             else:
                 # Show next problem
                 self.feedback_label.setText("✅ Correct! One more to go...")
@@ -898,6 +908,10 @@ class TimerTab(QtWidgets.QWidget):
         
         # Priority check-in tracking
         self.last_checkin_time: Optional[float] = None
+        
+        # Track if session is on a strategic priority for coin bonus
+        self.session_is_strategic: bool = False
+        self.session_priority_title: Optional[str] = None
 
         self._build_ui()
         self._connect_signals()
@@ -1073,6 +1087,14 @@ class TimerTab(QtWidgets.QWidget):
         self.pomodoro_total_work_time = 0
         self.last_checkin_time = None
         self._checkin_count = 0  # Reset priority check-in counter
+        
+        # Reset strategic priority tracking (will be set by priority dialog if applicable)
+        # Only reset if not already set by _start_priority_session
+        if not hasattr(self, '_preserve_strategic_flag'):
+            self.session_is_strategic = False
+            self.session_priority_title = None
+        else:
+            delattr(self, '_preserve_strategic_flag')
 
         # Pomodoro uses its own durations
         if mode == BlockMode.POMODORO:
@@ -1225,6 +1247,32 @@ class TimerTab(QtWidgets.QWidget):
         # Get active story for themed item generation
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         
+        # Calculate coin earnings
+        session_hours = session_minutes / 60.0
+        base_coins_per_hour = 10
+        coins_earned = int(session_hours * base_coins_per_hour)
+        
+        # Apply strategic priority bonus (+150% = 2.5x multiplier)
+        if self.session_is_strategic:
+            coins_earned = int(coins_earned * 2.5)
+        
+        # Add streak bonus coins (logarithmic scaling)
+        streak_bonus = 0
+        if streak >= 30:
+            streak_bonus = 100
+        elif streak >= 14:
+            streak_bonus = 50
+        elif streak >= 7:
+            streak_bonus = 25
+        elif streak >= 3:
+            streak_bonus = 10
+        
+        coins_earned += streak_bonus
+        
+        # Award coins
+        current_coins = self.blocker.adhd_buster.get("coins", 0)
+        self.blocker.adhd_buster["coins"] = current_coins + coins_earned
+        
         # Award XP for the focus session
         xp_info = calculate_session_xp(session_minutes, streak)
         xp_result = award_xp(self.blocker.adhd_buster, xp_info["total_xp"], source="focus_session")
@@ -1291,13 +1339,29 @@ class TimerTab(QtWidgets.QWidget):
         if GAMIFICATION_AVAILABLE:
             sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
+        
+        # Update coin display in UI
+        main_window = self.window()
+        if hasattr(main_window, '_update_coin_display'):
+            main_window._update_coin_display()
 
         # Show level-up celebration first (most exciting!)
         if leveled_up:
             LevelUpCelebrationDialog(xp_result, self.window()).exec()
 
-        # Show item drop dialog
-        ItemDropDialog(self.blocker, item, session_minutes, streak, self.window()).exec()
+        # Show item drop dialog with coin info
+        dialog = ItemDropDialog(self.blocker, item, session_minutes, streak, self.window())
+        # Add coin earnings info to dialog if available
+        if hasattr(dialog, 'set_coin_earnings'):
+            strategic_text = " (Strategic Priority Bonus!)" if self.session_is_strategic else ""
+            streak_text = f" + {streak_bonus} (Streak Bonus)" if streak_bonus > 0 else ""
+            dialog.set_coin_earnings(coins_earned, f"{strategic_text}{streak_text}")
+        dialog.exec()
+        
+        # Update coin display after showing dialog
+        main_window = self.window()
+        if hasattr(main_window, '_update_coin_display'):
+            main_window._update_coin_display()
 
         # Refresh ADHD Buster tab (so new gear shows in dropdowns)
         main_window = self.window()
@@ -4112,9 +4176,27 @@ class ActivityTab(QtWidgets.QWidget):
         
         self.blocker.save_config()
         
+        # Award coins for activity (5-20 coins based on effective minutes)
+        coins_earned = 0
+        if GAMIFICATION_AVAILABLE and is_gamification_enabled(self.blocker.adhd_buster):
+            if rewards and rewards.get("effective_minutes"):
+                effective_mins = rewards["effective_minutes"]
+                # Scale: 30 eff min = 5 coins, 60+ = 10 coins, 120+ = 20 coins
+                if effective_mins >= 120:
+                    coins_earned = 20
+                elif effective_mins >= 60:
+                    coins_earned = 10
+                elif effective_mins >= 30:
+                    coins_earned = 5
+                
+                if coins_earned > 0:
+                    current_coins = self.blocker.adhd_buster.get("coins", 0)
+                    self.blocker.adhd_buster["coins"] = current_coins + coins_earned
+                    self.blocker.save_config()
+        
         # Process rewards
         if rewards and GAMIFICATION_AVAILABLE:
-            self._process_rewards(rewards)
+            self._process_rewards(rewards, coins_earned=coins_earned)
         
         # Update main timeline widget if parent window has it
         if self.parent() and hasattr(self.parent(), 'timeline_widget'):
@@ -4127,7 +4209,7 @@ class ActivityTab(QtWidgets.QWidget):
         self.note_input.clear()
         self._refresh_display()
     
-    def _process_rewards(self, rewards: dict) -> None:
+    def _process_rewards(self, rewards: dict, coins_earned: int = 0) -> None:
         """Process and show activity rewards."""
         items_earned = []
         new_milestone_ids = []
@@ -4237,11 +4319,20 @@ class ActivityTab(QtWidgets.QWidget):
             if rewards.get("current_streak", 0) > 0:
                 msg_parts.append(f"<i>Streak: {rewards['current_streak']} days 🔥</i>")
             
+            # Add coin earnings
+            if coins_earned > 0:
+                msg_parts.append(f"<br><b style='color: #f59e0b;'>💰 +{coins_earned} Coins earned!</b>")
+            
             msg = "<br>".join(msg_parts)
             QtWidgets.QMessageBox.information(
                 self, "🏆 Activity Rewards!",
                 f"<h3>Great workout!</h3>{msg}"
             )
+            
+            # Update coin display
+            main_window = self.window()
+            if hasattr(main_window, '_update_coin_display'):
+                main_window._update_coin_display()
             
             # Show diary entry reveal
             if diary_entry:
@@ -11781,9 +11872,7 @@ class LevelUpCelebrationDialog(QtWidgets.QDialog):
         self._particles = []
         self._build_ui()
         self._start_celebration()
-        # Auto-close after celebration
-        close_time = 8000 + (self.levels_gained - 1) * 2000  # Longer for multi-level
-        QtCore.QTimer.singleShot(close_time, self.accept)
+        # Dialog now stays open until the user dismisses it
 
     def _build_ui(self) -> None:
         # Gradient background based on level milestone
@@ -11964,12 +12053,12 @@ class ItemDropDialog(QtWidgets.QDialog):
         self.item = item
         self.session_minutes = session_minutes
         self.streak_days = streak_days
+        self.coin_earnings_label: Optional[QtWidgets.QLabel] = None
         self.setWindowTitle("🎁 Item Drop!")
         self.setFixedSize(400, 280)
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
         self._build_ui()
-        close_time = {"Common": 8000, "Uncommon": 10000, "Rare": 12000, "Epic": 15000, "Legendary": 20000}
-        QtCore.QTimer.singleShot(close_time.get(item["rarity"], 10000), self.accept)
+        # Dialog stays visible until the user clicks to close it
 
     def _build_ui(self) -> None:
         bg_colors = {"Common": "#f5f5f5", "Uncommon": "#e8f5e9", "Rare": "#e3f2fd", "Epic": "#f3e5f5", "Legendary": "#fff3e0"}
@@ -11990,6 +12079,15 @@ class ItemDropDialog(QtWidgets.QDialog):
         header_lbl.setAlignment(QtCore.Qt.AlignCenter)
         header_lbl.setStyleSheet("font-size: 14px; font-weight: bold; color: #333;")
         layout.addWidget(header_lbl)
+
+        # Visual card representing the item
+        art_pixmap = self._create_item_pixmap()
+        if art_pixmap:
+            art_lbl = QtWidgets.QLabel()
+            art_lbl.setAlignment(QtCore.Qt.AlignCenter)
+            art_lbl.setPixmap(art_pixmap)
+            layout.addWidget(art_lbl)
+
         found_lbl = QtWidgets.QLabel("Your ADHD Buster found:")
         found_lbl.setStyleSheet("color: #333;")
         layout.addWidget(found_lbl)
@@ -12030,15 +12128,99 @@ class ItemDropDialog(QtWidgets.QDialog):
         msg_lbl.setStyleSheet("font-weight: bold; color: #555;")
         msg_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(msg_lbl)
+        
+        # Placeholder for coin earnings (will be set later if available)
+        self.coin_earnings_label = QtWidgets.QLabel("")
+        self.coin_earnings_label.setStyleSheet("font-weight: bold; color: #f59e0b; font-size: 11px;")
+        self.coin_earnings_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.coin_earnings_label.setVisible(False)
+        layout.addWidget(self.coin_earnings_label)
+        
         adventure_lbl = QtWidgets.QLabel("📖 Your adventure awaits...")
         adventure_lbl.setStyleSheet("color: #555;")
         layout.addWidget(adventure_lbl)
-        dismiss_lbl = QtWidgets.QLabel("(Click anywhere or wait to dismiss)")
+        dismiss_lbl = QtWidgets.QLabel("(Click anywhere to dismiss)")
         dismiss_lbl.setStyleSheet("color: #777; font-size: 10px;")
         layout.addWidget(dismiss_lbl)
+    
+    def set_coin_earnings(self, coins: int, bonus_text: str = "") -> None:
+        """Set the coin earnings message to display."""
+        if self.coin_earnings_label and coins > 0:
+            text = f"💰 +{coins} Coins earned!{bonus_text}"
+            self.coin_earnings_label.setText(text)
+            self.coin_earnings_label.setVisible(True)
 
     def mousePressEvent(self, event) -> None:
         self.accept()
+
+    def _create_item_pixmap(self, size: int = 180) -> Optional[QtGui.QPixmap]:
+        """Render a stylized pixmap for the awarded item."""
+        try:
+            color_hex = self.item.get("color", "#9e9e9e")
+            base_color = QtGui.QColor(color_hex)
+            if not base_color.isValid():
+                base_color = QtGui.QColor("#9e9e9e")
+
+            pixmap = QtGui.QPixmap(size, size)
+            pixmap.fill(QtCore.Qt.transparent)
+            painter = QtGui.QPainter(pixmap)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+
+            gradient = QtGui.QLinearGradient(0, 0, 0, size)
+            gradient.setColorAt(0.0, base_color.lighter(135))
+            gradient.setColorAt(1.0, base_color.darker(125))
+            painter.setBrush(QtGui.QBrush(gradient))
+            painter.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0, 110), 6))
+
+            rect = QtCore.QRectF(8, 8, size - 16, size - 16)
+            painter.drawRoundedRect(rect, 26, 26)
+
+            # Determine story emoji for flair
+            story_theme = self.item.get("story_theme")
+            emoji = "🎁"
+            if STORY_GEAR_THEMES and story_theme in STORY_GEAR_THEMES:
+                theme_name = STORY_GEAR_THEMES[story_theme].get("theme_name", "").strip()
+                if theme_name:
+                    emoji = theme_name.split(" ", 1)[0]
+
+            painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff")))
+            painter.setFont(QtGui.QFont("Segoe UI Emoji", int(size * 0.38)))
+            painter.drawText(rect, QtCore.Qt.AlignCenter, emoji)
+
+            # Draw rarity stars
+            rarity = self.item.get("rarity", "Common")
+            stars = {
+                "Common": 1,
+                "Uncommon": 2,
+                "Rare": 3,
+                "Epic": 4,
+                "Legendary": 5,
+            }.get(rarity, 1)
+            star_rect = QtCore.QRectF(rect.left(), rect.top() + 12, rect.width(), 26)
+            painter.setFont(QtGui.QFont("Segoe UI", 12))
+            painter.setPen(QtGui.QPen(QtGui.QColor(255, 255, 255, 220)))
+            painter.drawText(star_rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop, "★" * stars)
+
+            # Slot ribbon at bottom
+            slot_name = self.item.get("slot", "")
+            if get_slot_display_name and story_theme:
+                try:
+                    slot_name = get_slot_display_name(slot_name, story_theme) or slot_name
+                except Exception:
+                    pass
+            slot_text = slot_name.upper()
+            ribbon_rect = QtCore.QRectF(rect.left() + 12, rect.bottom() - 48, rect.width() - 24, 34)
+            painter.setBrush(QtGui.QColor(0, 0, 0, 140))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawRoundedRect(ribbon_rect, 12, 12)
+            painter.setFont(QtGui.QFont("Segoe UI", 12, QtGui.QFont.Bold))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff")))
+            painter.drawText(ribbon_rect, QtCore.Qt.AlignCenter, slot_text)
+
+            painter.end()
+            return pixmap
+        except Exception:
+            return None
 
 
 class DiaryEntryRevealDialog(QtWidgets.QDialog):
@@ -12053,9 +12235,7 @@ class DiaryEntryRevealDialog(QtWidgets.QDialog):
         self.setWindowTitle("📖 Today's Adventure")
         self.setFixedSize(520, 380)
         self._build_ui()
-        story_len = len(entry.get("story", ""))
-        close_time = max(20000, min(45000, story_len * 100))
-        QtCore.QTimer.singleShot(close_time, self.accept)
+        # Dialog remains until user clicks, no auto-close timer
 
     def _build_ui(self) -> None:
         tier = self.entry.get("tier", "pathetic")
@@ -12120,7 +12300,7 @@ class DiaryEntryRevealDialog(QtWidgets.QDialog):
         mins_lbl.setStyleSheet("color: #666;")
         mins_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(mins_lbl)
-        dismiss_lbl = QtWidgets.QLabel("(Click anywhere or wait to dismiss)")
+        dismiss_lbl = QtWidgets.QLabel("(Click anywhere to dismiss)")
         dismiss_lbl.setStyleSheet("color: #777; font-size: 10px;")
         layout.addWidget(dismiss_lbl)
 
@@ -12234,7 +12414,7 @@ class PriorityCheckinDialog(QtWidgets.QDialog):
         self.setWindowTitle("Priority Check-in ⏰")
         self.resize(420, 380)
         self._build_ui()
-        QtCore.QTimer.singleShot(60000, self.reject)  # Auto-close after 60s
+        # Dialog stays open until the user chooses an option
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
@@ -12300,15 +12480,27 @@ class PrioritiesDialog(QtWidgets.QDialog):
         self.on_start_callback = on_start_callback
         self.setWindowTitle("🎯 My Priorities")
         self.resize(550, 620)
-        self.priorities = list(self.blocker.priorities) if self.blocker.priorities else []
-        while len(self.priorities) < 3:
-            self.priorities.append({"title": "", "days": [], "active": False})
-        self.title_edits: list = []
-        self.day_checks: list = []
-        self.planned_spins: list = []
-        self.priority_groups: list = []
-        self.complete_buttons: list = []
+        self.priorities = copy.deepcopy(self.blocker.priorities) if self.blocker.priorities else []
+        if not self.priorities:
+            self.priorities.append(self._empty_priority())
+        self.title_edits: List[QtWidgets.QLineEdit] = []
+        self.day_checks: List[List[tuple]] = []
+        self.planned_spins: List[QtWidgets.QDoubleSpinBox] = []
+        self.priority_list_layout: Optional[QtWidgets.QVBoxLayout] = None
+        self.add_priority_btn: Optional[QtWidgets.QPushButton] = None
+        self.strategic_group: Optional[QtWidgets.QButtonGroup] = None
         self._build_ui()
+
+    def _empty_priority(self) -> dict:
+        """Return a placeholder priority record."""
+        return {
+            "title": "",
+            "days": [],
+            "active": False,
+            "planned_hours": 0,
+            "logged_hours": 0,
+            "strategic": False,
+        }
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
@@ -12320,10 +12512,21 @@ class PrioritiesDialog(QtWidgets.QDialog):
         header.addWidget(QtWidgets.QLabel(today))
         layout.addLayout(header)
 
-        layout.addWidget(QtWidgets.QLabel("Set up to 3 priority tasks. These can span multiple days."))
+        layout.addWidget(QtWidgets.QLabel("Set as many priority tasks as you need. These can span multiple days."))
 
-        for i in range(3):
-            self._create_priority_row(layout, i)
+        self.scroll_area = QtWidgets.QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.priority_list_container = QtWidgets.QWidget()
+        self.priority_list_layout = QtWidgets.QVBoxLayout(self.priority_list_container)
+        self.priority_list_layout.setContentsMargins(0, 0, 0, 0)
+        self.priority_list_layout.setSpacing(12)
+        self.priority_list_layout.setAlignment(QtCore.Qt.AlignTop)
+        self.scroll_area.setWidget(self.priority_list_container)
+        layout.addWidget(self.scroll_area)
+
+        self.add_priority_btn = QtWidgets.QPushButton("➕ Add Priority")
+        self.add_priority_btn.clicked.connect(self._add_priority)
+        layout.addWidget(self.add_priority_btn)
 
         # Today's Focus
         today_box = QtWidgets.QGroupBox("📌 Today's Focus")
@@ -12331,6 +12534,8 @@ class PrioritiesDialog(QtWidgets.QDialog):
         self.today_lbl = QtWidgets.QLabel()
         today_layout.addWidget(self.today_lbl)
         layout.addWidget(today_box)
+
+        self._rebuild_priority_rows()
         self._refresh_today_focus()
 
         btn_layout = QtWidgets.QHBoxLayout()
@@ -12376,31 +12581,43 @@ class PrioritiesDialog(QtWidgets.QDialog):
         
         layout.addWidget(settings_box)
 
-    def _create_priority_row(self, parent_layout: QtWidgets.QVBoxLayout, index: int) -> None:
+    def _create_priority_row(self, index: int) -> None:
+        priority = self.priorities[index]
         group = QtWidgets.QGroupBox(f"Priority #{index + 1}")
-        self.priority_groups.append(group)
         g_layout = QtWidgets.QVBoxLayout(group)
 
-        # Title row with complete button
+        # Title row with actions
         title_row = QtWidgets.QHBoxLayout()
-        title_edit = QtWidgets.QLineEdit(self.priorities[index].get("title", ""))
+        title_edit = QtWidgets.QLineEdit(priority.get("title", ""))
         title_edit.setPlaceholderText("Enter priority title...")
         title_row.addWidget(title_edit)
-        
+
+        strategic_radio = QtWidgets.QRadioButton("Strategic (+50% XP)")
+        strategic_radio.setToolTip("Sessions focused on this priority grant +50% XP.")
+        strategic_radio.setChecked(priority.get("strategic", False))
+        if self.strategic_group is not None:
+            self.strategic_group.addButton(strategic_radio, index)
+        title_row.addWidget(strategic_radio)
+
         complete_btn = QtWidgets.QPushButton("✅ Complete")
         complete_btn.setToolTip("Mark this priority as complete and roll for a Lucky Gift!")
         complete_btn.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold;")
-        complete_btn.clicked.connect(lambda checked, idx=index: self._complete_priority(idx))
+        complete_btn.clicked.connect(lambda checked=False, idx=index: self._complete_priority(idx))
         title_row.addWidget(complete_btn)
-        self.complete_buttons.append(complete_btn)
-        
+
+        remove_btn = QtWidgets.QPushButton("🗑 Remove")
+        remove_btn.setToolTip("Remove this priority entry")
+        remove_btn.clicked.connect(lambda checked=False, idx=index: self._remove_priority(idx))
+        remove_btn.setEnabled(len(self.priorities) > 1)
+        title_row.addWidget(remove_btn)
+
         g_layout.addLayout(title_row)
         self.title_edits.append(title_edit)
 
         days_layout = QtWidgets.QHBoxLayout()
         days_layout.addWidget(QtWidgets.QLabel("Days:"))
         day_checks = []
-        saved_days = self.priorities[index].get("days", [])
+        saved_days = priority.get("days", [])
         for day in self.DAYS:
             cb = QtWidgets.QCheckBox(day[:3])
             cb.setChecked(day in saved_days)
@@ -12413,29 +12630,98 @@ class PrioritiesDialog(QtWidgets.QDialog):
         planned_layout.addWidget(QtWidgets.QLabel("Planned hours:"))
         planned_spin = QtWidgets.QDoubleSpinBox()
         planned_spin.setRange(0, 100)
-        planned_spin.setValue(self.priorities[index].get("planned_hours", 0))
+        planned_spin.setValue(priority.get("planned_hours", 0))
         planned_layout.addWidget(planned_spin)
-        
-        logged = self.priorities[index].get("logged_hours", 0)
-        planned = self.priorities[index].get("planned_hours", 0)
-        
-        # Progress bar
+
+        logged = priority.get("logged_hours", 0)
+        planned = priority.get("planned_hours", 0)
+
         if planned > 0:
             p_bar = QtWidgets.QProgressBar()
             p_bar.setMaximum(100)
-            pct = min(100, int((logged / planned) * 100))
+            pct = min(100, int((logged / planned) * 100)) if planned else 0
             p_bar.setValue(pct)
             p_bar.setFormat(f"{logged:.1f}/{planned:.1f} hrs ({pct}%)")
-            p_bar.setFixedWidth(150)
+            p_bar.setFixedWidth(160)
             planned_layout.addWidget(p_bar)
         else:
             planned_layout.addWidget(QtWidgets.QLabel(f"Logged: {logged:.1f} hrs"))
-            
+
         planned_layout.addStretch()
         self.planned_spins.append(planned_spin)
         g_layout.addLayout(planned_layout)
 
-        parent_layout.addWidget(group)
+        if self.priority_list_layout is not None:
+            self.priority_list_layout.addWidget(group)
+
+    def _sync_ui_into_priorities(self) -> None:
+        """Update the stored priorities with the current widget values."""
+        if not self.title_edits:
+            return
+        for idx, priority in enumerate(self.priorities):
+            if idx >= len(self.title_edits):
+                break
+            priority["title"] = self.title_edits[idx].text().strip()
+            priority["days"] = [day for day, cb in self.day_checks[idx] if cb.isChecked()]
+            priority["planned_hours"] = self.planned_spins[idx].value()
+
+        checked_id = self.strategic_group.checkedId() if self.strategic_group else -1
+        for idx, priority in enumerate(self.priorities):
+            priority["strategic"] = (idx == checked_id)
+
+    def _rebuild_priority_rows(self) -> None:
+        """Recreate the priority row widgets to reflect current data."""
+        if self.priority_list_layout is None:
+            return
+
+        self._sync_ui_into_priorities()
+
+        strategic_seen = False
+        for priority in self.priorities:
+            if priority.get("strategic") and not strategic_seen:
+                strategic_seen = True
+            else:
+                priority["strategic"] = False
+
+        if self.strategic_group is not None:
+            self.strategic_group.deleteLater()
+        self.strategic_group = QtWidgets.QButtonGroup(self)
+        self.strategic_group.setExclusive(True)
+
+        while self.priority_list_layout.count():
+            item = self.priority_list_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+
+        self.title_edits = []
+        self.day_checks = []
+        self.planned_spins = []
+
+        if not self.priorities:
+            self.priorities.append(self._empty_priority())
+
+        for idx in range(len(self.priorities)):
+            self._create_priority_row(idx)
+
+    def _add_priority(self) -> None:
+        """Append a new blank priority entry."""
+        self._sync_ui_into_priorities()
+        self.priorities.append(self._empty_priority())
+        self._rebuild_priority_rows()
+        self._refresh_today_focus()
+
+    def _remove_priority(self, index: int) -> None:
+        """Remove a priority by index or clear the final remaining entry."""
+        self._sync_ui_into_priorities()
+        if index < 0 or index >= len(self.priorities):
+            return
+        if len(self.priorities) <= 1:
+            self.priorities[0] = self._empty_priority()
+        else:
+            self.priorities.pop(index)
+        self._rebuild_priority_rows()
+        self._refresh_today_focus()
 
     def _refresh_today_focus(self) -> None:
         today = datetime.now().strftime("%A")
@@ -12451,12 +12737,10 @@ class PrioritiesDialog(QtWidgets.QDialog):
             self.today_lbl.setText("No priorities set for today.")
 
     def _save_priorities(self) -> None:
-        for i in range(3):
-            self.priorities[i]["title"] = self.title_edits[i].text().strip()
-            self.priorities[i]["days"] = [day for day, cb in self.day_checks[i] if cb.isChecked()]
-            self.priorities[i]["planned_hours"] = self.planned_spins[i].value()
-        self.blocker.priorities = self.priorities
+        self._sync_ui_into_priorities()
+        self.blocker.priorities = copy.deepcopy(self.priorities)
         self.blocker.save_config()
+        self._rebuild_priority_rows()
         self._refresh_today_focus()
         QtWidgets.QMessageBox.information(self, "Saved", "Priorities saved!")
 
@@ -12496,6 +12780,7 @@ class PrioritiesDialog(QtWidgets.QDialog):
 
     def _complete_priority(self, index: int) -> None:
         """Mark a priority as complete and roll for a lucky gift reward."""
+        self._sync_ui_into_priorities()
         title = self.title_edits[index].text().strip()
         if not title:
             QtWidgets.QMessageBox.warning(self, "No Priority", 
@@ -12524,6 +12809,11 @@ class PrioritiesDialog(QtWidgets.QDialog):
         
         if reply != QtWidgets.QMessageBox.StandardButton.Yes:
             return
+        
+        # Award 100 coins for completing a priority
+        if GAMIFICATION_AVAILABLE:
+            current_coins = self.blocker.adhd_buster.get("coins", 0)
+            self.blocker.adhd_buster["coins"] = current_coins + 100
         
         # Roll for reward with story theme and logged hours
         from gamification import roll_priority_completion_reward
@@ -12564,6 +12854,7 @@ class PrioritiesDialog(QtWidgets.QDialog):
                 f"<p><b>Rarity:</b> <span style='color: {rarity_color};'>{item['rarity']}</span><br>"
                 f"<b>Slot:</b> {slot_display}<br>"
                 f"<b>Power:</b> +{item['power']}</p>"
+                f"<p>💰 <b>+100 Coins</b> for completing priority!</p>"
                 f"<p><i>Check your ADHD Buster inventory!</i></p>"
             )
             msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
@@ -12572,20 +12863,25 @@ class PrioritiesDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.information(
                 self, "Priority Complete!",
                 f"✅ '{title}' marked as complete!\n\n"
+                f"💰 +100 Coins earned!\n\n"
                 f"🎲 {result['message']}"
             )
         
         # Clear the completed priority
-        self.priorities[index] = {"title": "", "days": [], "active": False, "planned_hours": 0, "logged_hours": 0}
-        self.title_edits[index].setText("")
-        for day, cb in self.day_checks[index]:
-            cb.setChecked(False)
-        self.planned_spins[index].setValue(0)
+        self.priorities[index] = self._empty_priority()
         
         # Save and refresh
-        self.blocker.priorities = self.priorities
+        self.blocker.priorities = copy.deepcopy(self.priorities)
         self.blocker.save_config()
+        self._rebuild_priority_rows()
         self._refresh_today_focus()
+        
+        # Update coin display in main window
+        main_window = self.parent()
+        while main_window and not isinstance(main_window, QtWidgets.QMainWindow):
+            main_window = main_window.parent()
+        if main_window and hasattr(main_window, '_update_coin_display'):
+            main_window._update_coin_display()
 
 
 class AISessionCompleteDialog(QtWidgets.QDialog):
@@ -13219,6 +13515,19 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if not is_gamification_enabled(self.blocker.adhd_buster):
                 self.buster_btn.setVisible(False)
             quick_bar.addWidget(self.buster_btn)
+            
+            # Coin counter
+            coins = self.blocker.adhd_buster.get("coins", 0)
+            self.coin_label = QtWidgets.QPushButton(f"💰 {coins:,} Coins")
+            self.coin_label.setStyleSheet(
+                "font-weight: bold; padding: 6px 12px; "
+                "background-color: #f59e0b; color: white;"
+            )
+            self.coin_label.setToolTip("Your currency for unlocking features and boosters")
+            self.coin_label.clicked.connect(self._show_coin_info)
+            if not is_gamification_enabled(self.blocker.adhd_buster):
+                self.coin_label.setVisible(False)
+            quick_bar.addWidget(self.coin_label)
 
         quick_bar.addStretch()
         self.admin_label = QtWidgets.QLabel()
@@ -13429,6 +13738,41 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                     "Right-click the app and select 'Run as administrator',\n"
                     "or use the 'run_as_admin.bat' script."
                 )
+    
+    def _update_coin_display(self) -> None:
+        """Update the coin counter in the toolbar."""
+        if GAMIFICATION_AVAILABLE and hasattr(self, 'coin_label'):
+            coins = self.blocker.adhd_buster.get("coins", 0)
+            self.coin_label.setText(f"💰 {coins:,} Coins")
+    
+    def _show_coin_info(self) -> None:
+        """Show information about the coin economy."""
+        coins = self.blocker.adhd_buster.get("coins", 0)
+        
+        msg_box = QtWidgets.QMessageBox(self)
+        msg_box.setWindowTitle("💰 Coin Economy")
+        msg_box.setText(f"<h2>Your Balance: {coins:,} Coins</h2>")
+        msg_box.setInformativeText(
+            "<p><b>How to Earn Coins:</b></p>"
+            "<ul>"
+            "<li><b>Focus Sessions:</b> 10 Coins per hour</li>"
+            "<li><b>Strategic Priority:</b> 25 Coins per hour (2.5x bonus!)</li>"
+            "<li><b>Complete Priority:</b> 100 Coins</li>"
+            "<li><b>Streak Bonuses:</b> Up to 100 Coins/day at 30+ day streaks</li>"
+            "</ul>"
+            "<p><b>What You Can Buy:</b></p>"
+            "<ul>"
+            "<li><b>Streak Freeze:</b> 2,000 Coins - Skip a day without losing your streak</li>"
+            "<li><b>Reward Reroll:</b> 150 Coins - Reroll your last item drop</li>"
+            "<li><b>Rarity Incense:</b> 300 Coins - +10% luck for next session</li>"
+            "<li><b>New Stories:</b> 1,000 Coins - Unlock new character themes</li>"
+            "<li><b>App Features:</b> 500-1,000 Coins - Advanced analytics, themes, etc.</li>"
+            "</ul>"
+            "<p><i>💡 Tip: Mark one priority as 'Strategic' to maximize coin earnings!</i></p>"
+            "<p><i>⚠️ Note: Marketplace features coming soon!</i></p>"
+        )
+        msg_box.setIcon(QtWidgets.QMessageBox.Information)
+        msg_box.exec()
 
     def _check_scheduled_blocking(self) -> None:
         """Check if we should be blocking based on schedule."""
@@ -13688,9 +14032,23 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         dialog.exec()
 
     def _start_priority_session(self, priority_title: str) -> None:
+        # Find if this priority is strategic
+        is_strategic = False
+        for priority in self.blocker.priorities:
+            if priority.get("title", "").strip() == priority_title:
+                is_strategic = priority.get("strategic", False)
+                break
+        
+        # Store priority context in timer tab
+        self.timer_tab.session_priority_title = priority_title
+        self.timer_tab.session_is_strategic = is_strategic
+        self.timer_tab._preserve_strategic_flag = True  # Prevent reset in _start_session
+        
+        strategic_msg = "\n\n💰 This is a STRATEGIC priority!\nYou'll earn 2.5x Coins (25/hour instead of 10/hour)" if is_strategic else ""
+        
         self.tabs.setCurrentWidget(self.timer_tab)
         QtWidgets.QMessageBox.information(self, "Priority Session", 
-                                   f"Starting focus session for:\n\n\"{priority_title}\"\n\n"
+                                   f"Starting focus session for:\n\n\"{priority_title}\"{strategic_msg}\n\n"
                                    "Set your desired duration and click Start Focus!")
 
     def _open_adhd_buster(self) -> None:
@@ -13820,6 +14178,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """Handle session completion - refresh stats and related UI."""
         # Reload stats from file to ensure we have latest data
         self.blocker.load_stats()
+        
+        # Update coin display if gamification is available
+        if GAMIFICATION_AVAILABLE:
+            self._update_coin_display()
         
         # Refresh the stats tab to show updated focus time
         if hasattr(self, 'stats_tab'):

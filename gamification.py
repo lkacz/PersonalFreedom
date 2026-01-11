@@ -3252,7 +3252,7 @@ WARRIOR_DECISIONS = {
 # Placeholders: {helmet}, {weapon}, {chestplate}, {shield}, {amulet}, {boots}, {gauntlets}, {cloak}
 WARRIOR_CHAPTERS = [
     {
-        "title": "Chapter 1: Where It Begins",
+        "title": "Chapter 1: The Echoing Room",
         "threshold": 0,
         "has_decision": False,
         "content": """
@@ -3293,7 +3293,7 @@ And it's smiling.
 """,
     },
     {
-        "title": "Chapter 2: Shattered Glass",
+        "title": "Chapter 2: Splinters and Whispers",
         "threshold": 50,
         "has_decision": True,
         "decision_id": "warrior_mirror",
@@ -3386,7 +3386,7 @@ Wait. Those aren't visions. Those are MEMORIES. The shard belonged to one of the
         },
     },
     {
-        "title": "Chapter 3: Old Friends, New Lies",
+        "title": "Chapter 3: Mirrors in Fog",
         "threshold": 120,
         "has_decision": False,
         "content_variations": {
@@ -3473,7 +3473,7 @@ Wearing Lyra's smile.
         },
     },
     {
-        "title": "Chapter 4: What You Deserve",
+        "title": "Chapter 4: Rooms That Breathe",
         "threshold": 250,
         "has_decision": True,
         "decision_id": "warrior_fortress",
@@ -3588,7 +3588,7 @@ They haven't noticed you noticed. But now everything is a question.
         },
     },
     {
-        "title": "Chapter 5: When Tomorrow Met Yesterday",
+        "title": "Chapter 5: Letters From Elsewhere",
         "threshold": 450,
         "has_decision": False,
         "content_variations": {
@@ -3766,7 +3766,7 @@ WHAT.
         },
     },
     {
-        "title": "Chapter 6: Family Reunion",
+        "title": "Chapter 6: The Double Shadow",
         "threshold": 800,
         "has_decision": True,
         "decision_id": "warrior_war",
@@ -3918,7 +3918,7 @@ Applause. From OUTSIDE the realm. Someone's been WATCHING.
         },
     },
     {
-        "title": "Chapter 7: Going Home",
+        "title": "Chapter 7: Doors Without Locks",
         "threshold": 1500,
         "has_decision": False,
         "endings": {
@@ -4247,7 +4247,7 @@ SCHOLAR_DECISIONS = {
 
 SCHOLAR_CHAPTERS = [
     {
-        "title": "Chapter 1: A Terrible Mess",
+        "title": "Chapter 1: Shelves in Waiting",
         "threshold": 0,
         "has_decision": False,
         "content": """
@@ -4295,7 +4295,7 @@ Your journey begins with unanswered questions. Typical.
 """,
     },
     {
-        "title": "Chapter 2: Do Not Read This",
+        "title": "Chapter 2: Unauthorized Margins",
         "threshold": 50,
         "has_decision": True,
         "decision_id": "scholar_library",
@@ -4392,7 +4392,7 @@ You and Echo share something now. A link.
         },
     },
     {
-        "title": "Chapter 3: Building Something",
+        "title": "Chapter 3: Rooms That Remember",
         "threshold": 120,
         "has_decision": False,
         "content_variations": {
@@ -4460,7 +4460,7 @@ And someone is starting to trust you with their broken heart.
         },
     },
     {
-        "title": "Chapter 4: The Impossible Machine",
+        "title": "Chapter 4: The Whispering Engine",
         "threshold": 250,
         "has_decision": True,
         "decision_id": "scholar_paradox",
@@ -4555,7 +4555,7 @@ The Curator is silent now. That's either victory...
         },
     },
     {
-        "title": "Chapter 5: Connecting the Dots",
+        "title": "Chapter 5: Patterns in Dust",
         "threshold": 450,
         "has_decision": False,
         "content_variations": {
@@ -4658,7 +4658,7 @@ You're not building a library anymore.
         },
     },
     {
-        "title": "Chapter 6: QED",
+        "title": "Chapter 6: Proof by Candlelight",
         "threshold": 800,
         "has_decision": True,
         "decision_id": "scholar_truth",
@@ -4758,7 +4758,7 @@ You're not sure you believe that. But you HAVE to try.
         },
     },
     {
-        "title": "Chapter 7: The Last Page",
+        "title": "Chapter 7: The Unwritten Spine",
         "threshold": 1500,
         "has_decision": False,
         "endings": {
@@ -5056,7 +5056,7 @@ WANDERER_DECISIONS = {
 
 WANDERER_CHAPTERS = [
     {
-        "title": "Chapter 1: 2:47 AM",
+        "title": "Chapter 1: Clocks in the Fog",
         "threshold": 0,
         "has_decision": False,
         "content": """
@@ -5108,7 +5108,7 @@ Your journey begins with a threat. As all good journeys do.
 """,
     },
     {
-        "title": "Chapter 2: Left or Right?",
+        "title": "Chapter 2: The Forked Echo",
         "threshold": 50,
         "has_decision": True,
         "decision_id": "wanderer_gate",
@@ -5223,7 +5223,7 @@ The Somnambulist can't see you anymore. Your joy is blinding them.
         },
     },
     {
-        "title": "Chapter 3: Further Down",
+        "title": "Chapter 3: Gravity Whispers",
         "threshold": 120,
         "has_decision": False,
         "content_variations": {
@@ -5306,7 +5306,7 @@ Behind you, Reverie grabs your hand. "It's okay," they whisper.
         },
     },
     {
-        "title": "Chapter 4: What You Forgot",
+        "title": "Chapter 4: The Uninvited Spotlight",
         "threshold": 250,
         "has_decision": True,
         "decision_id": "wanderer_memory",
@@ -5415,7 +5415,7 @@ The Sandman is crying. Just a little.
         },
     },
     {
-        "title": "Chapter 5: It Makes Sense Here",
+        "title": "Chapter 5: Memory Weather",
         "threshold": 450,
         "has_decision": False,
         "content_variations": {
@@ -5529,7 +5529,7 @@ For not giving up on me. For not burning me away OR losing me in light."
         },
     },
     {
-        "title": "Chapter 6: Wake Up",
+        "title": "Chapter 6: The Soft Alarm",
         "threshold": 800,
         "has_decision": True,
         "decision_id": "wanderer_wake",
@@ -5651,7 +5651,7 @@ You don't wake up. But neither does Reverie.
         },
     },
     {
-        "title": "Chapter 7: Eyes Open",
+        "title": "Chapter 7: Optional Mornings",
         "threshold": 1500,
         "has_decision": False,
         "endings": {
@@ -5927,7 +5927,7 @@ UNDERDOG_DECISIONS = {
 
 UNDERDOG_CHAPTERS = [
     {
-        "title": "Chapter 1: Just Another Day",
+        "title": "Chapter 1: Commuter Static",
         "threshold": 0,
         "has_decision": False,
         "content": """
@@ -5968,7 +5968,7 @@ This is the moment. The one that defines who you become.
 """,
     },
     {
-        "title": "Chapter 2: Receipts",
+        "title": "Chapter 2: Paper Trails",
         "threshold": 50,
         "has_decision": True,
         "decision_id": "underdog_evidence",
@@ -6072,7 +6072,7 @@ Sam is waiting outside. "You absolute MANIAC. I can't believe that worked."
         },
     },
     {
-        "title": "Chapter 3: Friends in Low Places",
+        "title": "Chapter 3: Whisper Networks",
         "threshold": 120,
         "has_decision": False,
         "content_variations": {
@@ -6141,7 +6141,7 @@ Time to figure out who you can REALLY trust.
         },
     },
     {
-        "title": "Chapter 4: Plot Twist",
+        "title": "Chapter 4: The Quiet Offer",
         "threshold": 250,
         "has_decision": True,
         "decision_id": "underdog_alliance",
@@ -6244,7 +6244,7 @@ Your coalition is smaller now. But it's YOURS.
         },
     },
     {
-        "title": "Chapter 5: Conference Room B",
+        "title": "Chapter 5: Agenda Item Zero",
         "threshold": 450,
         "has_decision": False,
         "content_variations": {
@@ -6359,7 +6359,7 @@ This isn't just career theft anymore. This is CRIMINAL.
         },
     },
     {
-        "title": "Chapter 6: The Higher They Climb",
+        "title": "Chapter 6: Ladders in Smoke",
         "threshold": 800,
         "has_decision": True,
         "decision_id": "underdog_victory",
@@ -6460,7 +6460,7 @@ A month later, you get a letter. From Marcus.
         },
     },
     {
-        "title": "Chapter 7: The Corner Office",
+        "title": "Chapter 7: Windows Facing In",
         "threshold": 1500,
         "has_decision": False,
         "endings": {
@@ -6767,7 +6767,7 @@ SCIENTIST_DECISIONS = {
 
 SCIENTIST_CHAPTERS = [
     {
-        "title": "Chapter 1: The Failed Experiment",
+        "title": "Chapter 1: Lab Notes in Ash",
         "threshold": 0,
         "has_decision": False,
         "content": """
@@ -6810,7 +6810,7 @@ The timer starts.
 """
     },
     {
-        "title": "Chapter 2: The Stolen Hypothesis",
+        "title": "Chapter 2: Echoes in Peer Review",
         "threshold": 50,
         "has_decision": True,
         "decision_id": "scientist_method",
@@ -6938,7 +6938,7 @@ Victory through excellence, not vengeance.
         },
     },
     {
-        "title": "Chapter 3: The Research Path",
+        "title": "Chapter 3: Instruments in Orbit",
         "threshold": 120,
         "has_decision": False,
         "content_variations": {
@@ -7026,7 +7026,7 @@ Dr. Chen knocks. "Lab meeting in ten. You presenting?"
         },
     },
     {
-        "title": "Chapter 4: The Collaboration Offer",
+        "title": "Chapter 4: Shared Keys",
         "threshold": 250,
         "has_decision": True,
         "decision_id": "scientist_collaboration",
@@ -7211,7 +7211,7 @@ But it's taking EVERYTHING you have.
         },
     },
     {
-        "title": "Chapter 5: The Critical Error",
+        "title": "Chapter 5: Data at 3AM",
         "threshold": 450,
         "has_decision": False,
         "content_variations": {
@@ -7506,7 +7506,7 @@ But the future belongs to both of you.
         },
     },
     {
-        "title": "Chapter 6: The Ethical Crossroads",
+        "title": "Chapter 6: The Quiet Committee",
         "threshold": 800,
         "has_decision": True,
         "decision_id": "scientist_ethics",
@@ -7706,7 +7706,7 @@ You were pragmatic—but you didn't cross the line Rivera crossed.
         },
     },
     {
-        "title": "Chapter 7: The Breakthrough",
+        "title": "Chapter 7: Lights Behind Glass",
         "threshold": 1500,
         "has_decision": False,
         "content": """
