@@ -197,7 +197,7 @@ class BlockerCore:
         self.notify_on_complete = True  # Notify when session ends
         
         # ADHD Buster gamification
-        self.adhd_buster = {"inventory": [], "equipped": {}}
+        self.adhd_buster = {"inventory": [], "equipped": {}, "coins": 200}
         
         # Weight tracking
         self.weight_entries = []  # List of {"date": "YYYY-MM-DD", "weight": float, "note": str}
@@ -280,7 +280,10 @@ class BlockerCore:
                     checkin_interval = config.get('priority_checkin_interval', 30)
                     self.priority_checkin_interval = checkin_interval if isinstance(checkin_interval, (int, float)) and checkin_interval > 0 else 30
                     self.minimize_to_tray = config.get('minimize_to_tray', True)
-                    self.adhd_buster = config.get('adhd_buster', {"inventory": [], "equipped": {}})
+                    self.adhd_buster = config.get('adhd_buster', {"inventory": [], "equipped": {}, "coins": 200})
+                    # Ensure coins field exists for existing profiles
+                    if "coins" not in self.adhd_buster:
+                        self.adhd_buster["coins"] = 200
                     # Weight tracking - validate entries on load
                     raw_entries = config.get('weight_entries', [])
                     self.weight_entries = [
