@@ -429,7 +429,7 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
     # Sleep tracking functions
     global SLEEP_CHRONOTYPES, SLEEP_QUALITY_FACTORS, SLEEP_DISRUPTION_TAGS
     global check_all_sleep_rewards, get_sleep_stats, format_sleep_duration
-    global check_sleep_streak, get_sleep_recommendation
+    global check_sleep_streak, get_sleep_recommendation, get_screen_off_bonus_rarity
     SLEEP_CHRONOTYPES = []
     SLEEP_QUALITY_FACTORS = []
     SLEEP_DISRUPTION_TAGS = []
@@ -438,6 +438,7 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
     format_sleep_duration = None
     check_sleep_streak = None
     get_sleep_recommendation = None
+    get_screen_off_bonus_rarity = None
     try:
         from gamification import (
             SLEEP_CHRONOTYPES as _SLEEP_CHRONOTYPES,
@@ -448,6 +449,7 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
             format_sleep_duration as _format_sleep_duration,
             check_sleep_streak as _check_sleep_streak,
             get_sleep_recommendation as _get_sleep_recommendation,
+            get_screen_off_bonus_rarity as _get_screen_off_bonus_rarity,
         )
         SLEEP_CHRONOTYPES = _SLEEP_CHRONOTYPES
         SLEEP_QUALITY_FACTORS = _SLEEP_QUALITY_FACTORS
@@ -457,6 +459,38 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         format_sleep_duration = _format_sleep_duration
         check_sleep_streak = _check_sleep_streak
         get_sleep_recommendation = _get_sleep_recommendation
+        get_screen_off_bonus_rarity = _get_screen_off_bonus_rarity
+    except ImportError:
+        pass
+    
+    # Hydration tracking functions
+    global get_water_reward_rarity, can_log_water
+    global get_hydration_streak_bonus_rarity, check_water_entry_reward, get_hydration_stats
+    global HYDRATION_MIN_INTERVAL_HOURS, HYDRATION_MAX_DAILY_GLASSES
+    get_water_reward_rarity = None
+    can_log_water = None
+    get_hydration_streak_bonus_rarity = None
+    check_water_entry_reward = None
+    get_hydration_stats = None
+    HYDRATION_MIN_INTERVAL_HOURS = 2
+    HYDRATION_MAX_DAILY_GLASSES = 5
+    try:
+        from gamification import (
+            get_water_reward_rarity as _get_water_reward_rarity,
+            can_log_water as _can_log_water,
+            get_hydration_streak_bonus_rarity as _get_hydration_streak_bonus_rarity,
+            check_water_entry_reward as _check_water_entry_reward,
+            get_hydration_stats as _get_hydration_stats,
+            HYDRATION_MIN_INTERVAL_HOURS as _HYDRATION_MIN_INTERVAL_HOURS,
+            HYDRATION_MAX_DAILY_GLASSES as _HYDRATION_MAX_DAILY_GLASSES,
+        )
+        get_water_reward_rarity = _get_water_reward_rarity
+        can_log_water = _can_log_water
+        get_hydration_streak_bonus_rarity = _get_hydration_streak_bonus_rarity
+        check_water_entry_reward = _check_water_entry_reward
+        get_hydration_stats = _get_hydration_stats
+        HYDRATION_MIN_INTERVAL_HOURS = _HYDRATION_MIN_INTERVAL_HOURS
+        HYDRATION_MAX_DAILY_GLASSES = _HYDRATION_MAX_DAILY_GLASSES
     except ImportError:
         pass
     
@@ -4467,6 +4501,23 @@ class SleepTab(QtWidgets.QWidget):
         note_layout.addWidget(self.note_input)
         left_layout.addLayout(note_layout)
         
+        # Screen-Off Bonus (Nighty-Night Gift)
+        screenoff_group = QtWidgets.QGroupBox("🌙 Nighty-Night Bonus")
+        screenoff_layout = QtWidgets.QHBoxLayout(screenoff_group)
+        self.screenoff_checkbox = QtWidgets.QCheckBox("I turned off my screen at:")
+        self.screenoff_checkbox.setToolTip("Earn a bonus item for healthy digital habits!\nEarlier = better rewards.")
+        screenoff_layout.addWidget(self.screenoff_checkbox)
+        self.screenoff_time = QtWidgets.QTimeEdit()
+        self.screenoff_time.setDisplayFormat("HH:mm")
+        self.screenoff_time.setTime(QtCore.QTime(22, 0))
+        self.screenoff_time.setEnabled(False)
+        self.screenoff_checkbox.stateChanged.connect(
+            lambda state: self.screenoff_time.setEnabled(state == QtCore.Qt.CheckState.Checked.value)
+        )
+        screenoff_layout.addWidget(self.screenoff_time)
+        screenoff_layout.addStretch()
+        left_layout.addWidget(screenoff_group)
+        
         # Log button
         self.log_btn = QtWidgets.QPushButton("🌙 Log Sleep")
         self.log_btn.setStyleSheet("""
@@ -4591,7 +4642,16 @@ class SleepTab(QtWidgets.QWidget):
             "<tr><td>90+</td><td>-</td><td>-</td><td>5%</td><td>20%</td><td>75%</td></tr>"
             "<tr><td>97+</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td></tr>"
             "</table>"
-            "<br><b>Streaks:</b> 3 nights=Uncommon, 7n=Rare, 14n=Epic, 30n=Legendary (consecutive nights with 7+ hrs)"
+            "<br><b>🌙 Nighty-Night Bonus:</b> Extra item for turning off screen early!<br>"
+            "<table style='font-size:10px; color:#888888; margin-top:3px;'>"
+            "<tr><th>Screen Off</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
+            "<tr><td>21:00-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td></tr>"
+            "<tr><td>22:00</td><td>-</td><td>-</td><td>5%</td><td>20%</td><td>75%</td></tr>"
+            "<tr><td>23:00</td><td>-</td><td>5%</td><td>20%</td><td>50%</td><td>25%</td></tr>"
+            "<tr><td>00:00</td><td>5%</td><td>50%</td><td>25%</td><td>15%</td><td>5%</td></tr>"
+            "<tr><td>01:00+</td><td colspan='5' style='text-align:center'>No bonus</td></tr>"
+            "</table>"
+            "<br><b>Streaks:</b> 3n=Uncommon, 7n=Rare, 14n=Epic, 30n=Legendary (consecutive nights with 7+ hrs)"
         )
         rewards_info.setWordWrap(True)
         rewards_info.setStyleSheet("color: #888888; font-size: 10px;")
@@ -4739,6 +4799,9 @@ class SleepTab(QtWidgets.QWidget):
             self.blocker.sleep_entries.append(new_entry)
             self.blocker.sleep_entries.sort(key=lambda x: x.get("date", ""), reverse=True)
         
+        # Track screen-off bonus outside the reward block
+        screenoff_bonus_item = None
+        
         # Handle rewards
         if reward_info and GAMIFICATION_AVAILABLE:
             items_earned = []
@@ -4790,6 +4853,18 @@ class SleepTab(QtWidgets.QWidget):
             if new_milestone_ids:
                 self.blocker.sleep_milestones.extend(new_milestone_ids)
             
+            # Screen-Off (Nighty-Night) bonus reward
+            screenoff_bonus_item = None
+            if self.screenoff_checkbox.isChecked() and get_screen_off_bonus_rarity:
+                screenoff_time = self.screenoff_time.time().toString("HH:mm")
+                screenoff_rarity = get_screen_off_bonus_rarity(screenoff_time)
+                if screenoff_rarity:
+                    active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+                    screenoff_bonus_item = generate_item(rarity=screenoff_rarity, story_id=active_story)
+                    screenoff_bonus_item["source"] = "nighty_night_bonus"
+                    self.blocker.adhd_buster["inventory"].append(screenoff_bonus_item)
+                    items_earned.append(screenoff_bonus_item)
+            
             # Update total collected count (same as other trackers)
             if items_earned:
                 self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + len(items_earned)
@@ -4830,6 +4905,20 @@ class SleepTab(QtWidgets.QWidget):
                 color = rarity_colors.get(rarity, "#9e9e9e")
                 name = reward_info["reward"].get("name", "Unknown Item")
                 msg += f"\n\n🎁 Earned: <span style='color:{color}; font-weight:bold;'>[{rarity}]</span> {name}"
+            
+            # Show screen-off bonus if earned
+            if screenoff_bonus_item:
+                rarity = screenoff_bonus_item["rarity"]
+                rarity_colors = {
+                    "Common": "#9e9e9e",
+                    "Uncommon": "#4caf50", 
+                    "Rare": "#2196f3",
+                    "Epic": "#9c27b0",
+                    "Legendary": "#ff9800"
+                }
+                color = rarity_colors.get(rarity, "#9e9e9e")
+                name = screenoff_bonus_item.get("name", "Unknown Item")
+                msg += f"\n\n🌙 Nighty-Night Bonus: <span style='color:{color}; font-weight:bold;'>[{rarity}]</span> {name}"
         
         QtWidgets.QMessageBox.information(self, "Sleep Logged! 😴", msg)
         
@@ -4837,6 +4926,7 @@ class SleepTab(QtWidgets.QWidget):
         self.note_input.clear()
         for cb in self.disruption_checks.values():
             cb.setChecked(False)
+        self.screenoff_checkbox.setChecked(False)
         
         self._refresh_display()
     
@@ -8063,6 +8153,444 @@ class CharacterCanvas(QtWidgets.QWidget):
         painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🏢 {self.power}")
 
 
+class HydrationTab(QtWidgets.QWidget):
+    """Hydration tracking tab - log water intake for rewards."""
+    
+    def __init__(self, blocker: 'BlockerCore', parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        self._refresh_timer = QtCore.QTimer(self)
+        self._refresh_timer.timeout.connect(self._refresh_display)
+        self._refresh_timer.start(60000)  # Refresh every minute for countdown
+        self._build_ui()
+        self._refresh_display()
+    
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(15, 15, 15, 15)
+        
+        # Header
+        header = QtWidgets.QLabel("💧 Hydration Tracker")
+        header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
+        layout.addWidget(header)
+        
+        # Main content split
+        content_layout = QtWidgets.QHBoxLayout()
+        
+        # Left: Quick log and timeline
+        left_panel = QtWidgets.QGroupBox("Log Water")
+        left_layout = QtWidgets.QVBoxLayout(left_panel)
+        
+        # Big water button
+        self.water_btn = QtWidgets.QPushButton("💧 Log Glass of Water")
+        self.water_btn.setMinimumHeight(60)
+        self.water_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #4fc3f7, stop:1 #0288d1);
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 10px;
+                border: 2px solid #0288d1;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #81d4fa, stop:1 #03a9f4);
+            }
+            QPushButton:pressed {
+                background: #0277bd;
+            }
+            QPushButton:disabled {
+                background: #555555;
+                border: 2px solid #444444;
+                color: #888888;
+            }
+        """)
+        self.water_btn.clicked.connect(self._log_water)
+        left_layout.addWidget(self.water_btn)
+        
+        # Status/countdown label
+        self.status_label = QtWidgets.QLabel("🕐 Ready to log!")
+        self.status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #4caf50;")
+        self.status_label.setAlignment(QtCore.Qt.AlignCenter)
+        left_layout.addWidget(self.status_label)
+        
+        # Today's progress
+        progress_group = QtWidgets.QGroupBox("Today's Progress")
+        progress_layout = QtWidgets.QVBoxLayout(progress_group)
+        
+        self.glasses_label = QtWidgets.QLabel("0 / 5 glasses")
+        self.glasses_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #4fc3f7;")
+        self.glasses_label.setAlignment(QtCore.Qt.AlignCenter)
+        progress_layout.addWidget(self.glasses_label)
+        
+        self.progress_bar = QtWidgets.QProgressBar()
+        self.progress_bar.setMaximum(HYDRATION_MAX_DAILY_GLASSES)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setStyleSheet("""
+            QProgressBar {
+                background: #2d3436;
+                border: 1px solid #4fc3f7;
+                border-radius: 5px;
+                height: 20px;
+            }
+            QProgressBar::chunk {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #4fc3f7, stop:1 #0288d1);
+                border-radius: 4px;
+            }
+        """)
+        progress_layout.addWidget(self.progress_bar)
+        
+        left_layout.addWidget(progress_group)
+        
+        # Timeline graph
+        timeline_group = QtWidgets.QGroupBox("📊 Today's Timeline")
+        timeline_layout = QtWidgets.QVBoxLayout(timeline_group)
+        
+        self.timeline_widget = HydrationTimelineWidget()
+        self.timeline_widget.setMinimumHeight(80)
+        timeline_layout.addWidget(self.timeline_widget)
+        
+        left_layout.addWidget(timeline_group)
+        
+        # Rewards info
+        rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
+        rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
+        rewards_info = QtWidgets.QLabel(
+            "<b>How it works:</b><br>"
+            "• Max 5 glasses/day (safe hydration)<br>"
+            "• Wait 2 hours between glasses<br>"
+            "• Each glass increases reward tier!<br><br>"
+            "<b>💧 Per-Glass Reward:</b><br>"
+            "<table style='font-size:10px; color:#888888;'>"
+            "<tr><th>Glass</th><th>Center Tier</th></tr>"
+            "<tr><td>1st</td><td>Common-centered</td></tr>"
+            "<tr><td>2nd</td><td>Uncommon-centered</td></tr>"
+            "<tr><td>3rd</td><td>Rare-centered</td></tr>"
+            "<tr><td>4th</td><td>Epic-centered</td></tr>"
+            "<tr><td>5th</td><td>100% Legendary!</td></tr>"
+            "</table>"
+            "<br><b>🔥 Streaks (5 glasses/day):</b><br>"
+            "3d=Uncommon, 7d=Rare, 14d=Epic, 30d=Legendary"
+        )
+        rewards_info.setWordWrap(True)
+        rewards_info.setStyleSheet("color: #888888; font-size: 10px;")
+        rewards_layout.addWidget(rewards_info)
+        left_layout.addWidget(rewards_group)
+        
+        left_layout.addStretch()
+        content_layout.addWidget(left_panel)
+        
+        # Right: Stats and history
+        right_panel = QtWidgets.QGroupBox("Stats & History")
+        right_layout = QtWidgets.QVBoxLayout(right_panel)
+        
+        self.stats_label = QtWidgets.QLabel("Loading stats...")
+        self.stats_label.setWordWrap(True)
+        self.stats_label.setStyleSheet("font-size: 12px;")
+        right_layout.addWidget(self.stats_label)
+        
+        # History list
+        history_label = QtWidgets.QLabel("<b>Recent History:</b>")
+        right_layout.addWidget(history_label)
+        
+        self.history_list = QtWidgets.QListWidget()
+        self.history_list.setMaximumHeight(200)
+        self.history_list.setStyleSheet("""
+            QListWidget {
+                background: #2d3436;
+                border: 1px solid #4a5568;
+                border-radius: 5px;
+            }
+            QListWidget::item {
+                padding: 5px;
+                border-bottom: 1px solid #3d4852;
+            }
+        """)
+        right_layout.addWidget(self.history_list)
+        
+        right_layout.addStretch()
+        content_layout.addWidget(right_panel)
+        
+        layout.addLayout(content_layout)
+    
+    def _log_water(self) -> None:
+        """Log a glass of water and award rewards."""
+        from datetime import datetime
+        
+        # Initialize water entries if needed
+        if not hasattr(self.blocker, 'water_entries'):
+            self.blocker.water_entries = []
+        
+        # Check if we can log
+        if can_log_water:
+            check = can_log_water(self.blocker.water_entries)
+            if not check["can_log"]:
+                QtWidgets.QMessageBox.information(self, "Hydration", check["reason"])
+                return
+        
+        now = datetime.now()
+        today = now.strftime("%Y-%m-%d")
+        
+        # Count today's glasses
+        glasses_today = sum(
+            1 for e in self.blocker.water_entries 
+            if e.get("date") == today
+        )
+        
+        # Calculate streak
+        streak_days = self._calculate_streak()
+        
+        # Check rewards
+        items_earned = []
+        messages = []
+        
+        if check_water_entry_reward and GAMIFICATION_AVAILABLE:
+            reward_info = check_water_entry_reward(
+                glasses_today=glasses_today,
+                streak_days=streak_days,
+                story_id=self.blocker.adhd_buster.get("active_story", "warrior")
+            )
+            
+            messages = reward_info.get("messages", [])
+            
+            for item in reward_info.get("items", []):
+                self.blocker.adhd_buster["inventory"].append(item)
+                items_earned.append(item)
+            
+            if items_earned:
+                self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + len(items_earned)
+                
+                # Auto-equip
+                if "equipped" not in self.blocker.adhd_buster:
+                    self.blocker.adhd_buster["equipped"] = {}
+                for item in items_earned:
+                    slot = item.get("slot")
+                    if slot and not self.blocker.adhd_buster["equipped"].get(slot):
+                        self.blocker.adhd_buster["equipped"][slot] = item.copy()
+                
+                if GAMIFICATION_AVAILABLE:
+                    sync_hero_data(self.blocker.adhd_buster)
+        else:
+            messages = [f"💧 Glass #{glasses_today + 1} logged!"]
+        
+        # Log the entry
+        entry = {
+            "date": today,
+            "time": now.strftime("%H:%M"),
+            "glasses": 1
+        }
+        self.blocker.water_entries.append(entry)
+        
+        self.blocker.save_config()
+        
+        # Show feedback
+        msg = "\n".join(messages)
+        if items_earned:
+            msg += "\n\n<b>Items earned:</b>"
+            rarity_colors = {
+                "Common": "#9e9e9e",
+                "Uncommon": "#4caf50",
+                "Rare": "#2196f3",
+                "Epic": "#9c27b0",
+                "Legendary": "#ff9800"
+            }
+            for item in items_earned:
+                rarity = item.get("rarity", "Common")
+                color = rarity_colors.get(rarity, "#9e9e9e")
+                name = item.get("name", "Unknown Item")
+                msg += f"\n<span style='color:{color}; font-weight:bold;'>[{rarity}]</span> {name}"
+        
+        QtWidgets.QMessageBox.information(self, "Water Logged! 💧", msg)
+        self._refresh_display()
+    
+    def _calculate_streak(self) -> int:
+        """Calculate current hydration streak (5 glasses/day)."""
+        from datetime import datetime, timedelta
+        
+        if not hasattr(self.blocker, 'water_entries') or not self.blocker.water_entries:
+            return 0
+        
+        # Group by date
+        daily_totals = {}
+        for entry in self.blocker.water_entries:
+            date = entry.get("date", "")
+            if date:
+                daily_totals[date] = daily_totals.get(date, 0) + entry.get("glasses", 1)
+        
+        # Count consecutive days with 5 glasses
+        streak = 0
+        check_date = datetime.now().date() - timedelta(days=1)  # Start from yesterday
+        
+        while True:
+            date_str = check_date.strftime("%Y-%m-%d")
+            if daily_totals.get(date_str, 0) >= HYDRATION_MAX_DAILY_GLASSES:
+                streak += 1
+                check_date -= timedelta(days=1)
+            else:
+                break
+        
+        return streak
+    
+    def _refresh_display(self) -> None:
+        """Refresh stats and history display."""
+        from datetime import datetime
+        
+        today = datetime.now().strftime("%Y-%m-%d")
+        
+        if not hasattr(self.blocker, 'water_entries'):
+            self.blocker.water_entries = []
+        
+        # Get today's entries
+        today_entries = [e for e in self.blocker.water_entries if e.get("date") == today]
+        glasses_today = len(today_entries)
+        
+        # Update progress display
+        self.glasses_label.setText(f"{glasses_today} / {HYDRATION_MAX_DAILY_GLASSES} glasses")
+        self.progress_bar.setValue(min(glasses_today, HYDRATION_MAX_DAILY_GLASSES))
+        
+        if glasses_today >= HYDRATION_MAX_DAILY_GLASSES:
+            self.glasses_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #4caf50;")
+        else:
+            self.glasses_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #4fc3f7;")
+        
+        # Update status/countdown
+        if can_log_water:
+            check = can_log_water(self.blocker.water_entries)
+            if check["can_log"]:
+                self.water_btn.setEnabled(True)
+                self.status_label.setText("✅ Ready to log!")
+                self.status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #4caf50;")
+            else:
+                if check.get("minutes_remaining", 0) > 0:
+                    mins = check["minutes_remaining"]
+                    next_time = check.get("next_available_time", "")
+                    self.water_btn.setEnabled(False)
+                    self.status_label.setText(f"⏳ Wait {mins} min (next at {next_time})")
+                    self.status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #ff9800;")
+                else:
+                    self.water_btn.setEnabled(False)
+                    self.status_label.setText("🎯 Daily goal complete!")
+                    self.status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #4caf50;")
+        
+        # Update timeline
+        times_today = [e.get("time", "") for e in today_entries if e.get("time")]
+        self.timeline_widget.set_times(times_today)
+        
+        # Update stats
+        if get_hydration_stats:
+            stats = get_hydration_stats(self.blocker.water_entries)
+            streak = stats.get("current_streak", 0)
+            streak_emoji = "🔥" if streak >= 3 else "📊"
+            
+            self.stats_label.setText(
+                f"<b>📊 Your Hydration Stats</b><br><br>"
+                f"💧 Total glasses: {stats.get('total_glasses', 0)}<br>"
+                f"📅 Days tracked: {stats.get('total_days', 0)}<br>"
+                f"⏰ Average daily: {stats.get('avg_daily', 0):.1f} glasses<br>"
+                f"🎯 Days on target ({HYDRATION_MAX_DAILY_GLASSES}+): {stats.get('days_on_target', 0)} "
+                f"({stats.get('target_rate', 0):.0f}%)<br>"
+                f"{streak_emoji} Current streak: {streak} days"
+            )
+        else:
+            self.stats_label.setText("Stats unavailable")
+        
+        # Update history
+        self.history_list.clear()
+        
+        # Group entries by date
+        daily_totals = {}
+        for entry in self.blocker.water_entries:
+            date = entry.get("date", "")
+            if date:
+                daily_totals[date] = daily_totals.get(date, 0) + entry.get("glasses", 1)
+        
+        # Show last 10 days
+        for date in sorted(daily_totals.keys(), reverse=True)[:10]:
+            glasses = daily_totals[date]
+            icon = "✅" if glasses >= HYDRATION_MAX_DAILY_GLASSES else "💧"
+            item = QtWidgets.QListWidgetItem(f"{icon} {date}: {glasses} glasses")
+            self.history_list.addItem(item)
+
+
+class HydrationTimelineWidget(QtWidgets.QWidget):
+    """Custom widget to show water intake timeline for the day."""
+    
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self._times: list = []  # List of "HH:MM" strings
+        self.setMinimumHeight(60)
+    
+    def set_times(self, times: list) -> None:
+        """Set the times when water was logged."""
+        self._times = times
+        self.update()
+    
+    def paintEvent(self, event) -> None:
+        """Draw the timeline."""
+        from datetime import datetime
+        
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        
+        rect = self.rect()
+        margin = 30
+        timeline_y = rect.height() // 2
+        
+        # Draw timeline background
+        painter.setPen(QtGui.QPen(QtGui.QColor("#4a5568"), 2))
+        painter.drawLine(margin, timeline_y, rect.width() - margin, timeline_y)
+        
+        # Draw hour markers (6am to 10pm)
+        start_hour = 6
+        end_hour = 22
+        total_hours = end_hour - start_hour
+        timeline_width = rect.width() - 2 * margin
+        
+        painter.setPen(QtGui.QColor("#666666"))
+        painter.setFont(QtGui.QFont("Segoe UI", 8))
+        
+        for h in range(start_hour, end_hour + 1, 2):
+            x = margin + (h - start_hour) / total_hours * timeline_width
+            painter.drawLine(int(x), timeline_y - 5, int(x), timeline_y + 5)
+            painter.drawText(int(x) - 10, timeline_y + 20, f"{h:02d}")
+        
+        # Draw water drops at logged times
+        drop_color = QtGui.QColor("#4fc3f7")
+        painter.setBrush(drop_color)
+        painter.setPen(QtGui.QPen(QtGui.QColor("#0288d1"), 2))
+        
+        for time_str in self._times:
+            try:
+                h, m = map(int, time_str.split(":"))
+                hour_decimal = h + m / 60.0
+                
+                if start_hour <= hour_decimal <= end_hour:
+                    x = margin + (hour_decimal - start_hour) / total_hours * timeline_width
+                    # Draw water drop
+                    painter.drawEllipse(int(x) - 8, timeline_y - 20, 16, 16)
+                    # Draw time label
+                    painter.setPen(QtGui.QColor("#4fc3f7"))
+                    painter.drawText(int(x) - 15, timeline_y - 25, time_str)
+                    painter.setPen(QtGui.QPen(QtGui.QColor("#0288d1"), 2))
+            except (ValueError, AttributeError):
+                continue
+        
+        # Draw current time marker
+        now = datetime.now()
+        current_hour = now.hour + now.minute / 60.0
+        if start_hour <= current_hour <= end_hour:
+            x = margin + (current_hour - start_hour) / total_hours * timeline_width
+            painter.setPen(QtGui.QPen(QtGui.QColor("#ff9800"), 2))
+            painter.drawLine(int(x), timeline_y - 15, int(x), timeline_y + 15)
+        
+        painter.end()
+
+
 class ADHDBusterTab(QtWidgets.QWidget):
     """Tab for viewing and managing the ADHD Buster character and inventory."""
 
@@ -10773,6 +11301,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Sleep tracking tab
         self.sleep_tab = SleepTab(self.blocker, self)
         self.tabs.addTab(self.sleep_tab, "😴 Sleep")
+        
+        # Hydration tracking tab
+        self.hydration_tab = HydrationTab(self.blocker, self)
+        self.tabs.addTab(self.hydration_tab, "💧 Water")
 
         # ADHD Buster tab (gamification)
         if GAMIFICATION_AVAILABLE:

@@ -223,6 +223,9 @@ class BlockerCore:
         self.sleep_reminder_enabled = False  # Daily reminder
         self.sleep_reminder_time = "21:00"  # Reminder time HH:MM (bedtime reminder)
         self.sleep_last_reminder_date = None  # Last reminder shown
+        
+        # Hydration tracking
+        self.water_entries = []  # List of {"date": "YYYY-MM-DD", "time": "HH:MM", "glasses": 1}
 
         # Statistics
         self.stats = self._default_stats()
@@ -321,6 +324,13 @@ class BlockerCore:
                     self.sleep_reminder_enabled = config.get('sleep_reminder_enabled', False)
                     self.sleep_reminder_time = config.get('sleep_reminder_time', '21:00')
                     self.sleep_last_reminder_date = config.get('sleep_last_reminder_date', None)
+                    # Hydration tracking - validate entries on load
+                    raw_water = config.get('water_entries', [])
+                    self.water_entries = [
+                        e for e in raw_water
+                        if isinstance(e, dict)
+                        and e.get("date")
+                    ]
                     # Initialize/migrate hero management structure
                     if HERO_MANAGEMENT_AVAILABLE and _ensure_hero_structure:
                         _ensure_hero_structure(self.adhd_buster)
@@ -369,6 +379,7 @@ class BlockerCore:
                 'sleep_reminder_enabled': self.sleep_reminder_enabled,
                 'sleep_reminder_time': self.sleep_reminder_time,
                 'sleep_last_reminder_date': self.sleep_last_reminder_date,
+                'water_entries': self.water_entries,
             }
             atomic_write_json(CONFIG_PATH, config)
         except (IOError, OSError) as e:
