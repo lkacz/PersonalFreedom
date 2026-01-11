@@ -74,7 +74,7 @@ class PreviewWindow(QtWidgets.QWidget):
         window_layout.addWidget(title)
 
         # Subtitle
-        subtitle = QtWidgets.QLabel("All 4 story themes: Warrior, Scholar, Wanderer & Underdog")
+        subtitle = QtWidgets.QLabel("All 5 story themes: Warrior, Scholar, Wanderer, Underdog & Scientist")
         subtitle.setStyleSheet("font-size: 14px; color: #aaa;")
         subtitle.setAlignment(QtCore.Qt.AlignCenter)
         window_layout.addWidget(subtitle)
@@ -169,7 +169,24 @@ class PreviewWindow(QtWidgets.QWidget):
 
         main_layout.addWidget(underdog_group)
 
-        # Row 5: Warrior Gear Sets
+        # Row 5: Scientist Power Tiers
+        scientist_group = QtWidgets.QGroupBox("🧪 Scientist Theme - Power Tiers")
+        scientist_layout = QtWidgets.QHBoxLayout(scientist_group)
+        scientist_layout.setSpacing(12)
+
+        for tier_name, power in tiers:
+            container = QtWidgets.QVBoxLayout()
+            canvas = CharacterCanvas({}, power, 100, 140, story_theme="scientist")
+            container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
+            label = QtWidgets.QLabel(f"{tier_name}")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            label.setStyleSheet("font-size: 9px;")
+            container.addWidget(label)
+            scientist_layout.addLayout(container)
+
+        main_layout.addWidget(scientist_group)
+
+        # Row 6: Warrior Gear Sets
         warrior_gear_group = QtWidgets.QGroupBox("⚔️ Warrior Equipment Sets")
         warrior_gear_layout = QtWidgets.QHBoxLayout(warrior_gear_group)
         warrior_gear_layout.setSpacing(12)
@@ -403,7 +420,62 @@ class PreviewWindow(QtWidgets.QWidget):
 
         main_layout.addWidget(underdog_gear_group)
 
-        # Row 9: Random Underdogs
+        # Row 9: Scientist Equipment Sets
+        scientist_gear_group = QtWidgets.QGroupBox("🧪 Scientist Equipment Sets")
+        scientist_gear_layout = QtWidgets.QHBoxLayout(scientist_gear_group)
+        scientist_gear_layout.setSpacing(12)
+
+        scientist_sets = [
+            ("Grad Student", 50, {
+                "Helmet": {"color": "#4db8ff"},  # Safety goggles
+                "Chestplate": {"color": "#e8e8e8"},  # Lab coat
+                "Gauntlets": {"color": "#b0e0ff"},  # Latex gloves
+                "Boots": {"color": "#34495e"},  # Lab shoes
+            }),
+            ("Researcher", 350, {
+                "Helmet": {"color": "#4db8ff"},
+                "Chestplate": {"color": "#f5f5f5"},
+                "Gauntlets": {"color": "#b0e0ff"},
+                "Boots": {"color": "#34495e"},
+                "Shield": {"color": "#37474f"},  # Lab notebook
+                "Weapon": {"color": "#78909c"},  # Pipette
+                "Amulet": {"color": "#ffd700"},  # ID badge
+            }),
+            ("Scientist", 650, {
+                "Helmet": {"color": "#4db8ff"},
+                "Chestplate": {"color": "#ffffff"},
+                "Gauntlets": {"color": "#b0e0ff"},
+                "Boots": {"color": "#34495e"},
+                "Cloak": {"color": "#ffeb3b"},  # Hazmat suit
+                "Shield": {"color": "#37474f"},  # Digital tablet
+                "Weapon": {"color": "#78909c"},  # Spectrometer
+                "Amulet": {"color": "#ffd700"},
+            }),
+            ("Nobel Laureate", 1100, {
+                "Helmet": {"color": "#4db8ff"},
+                "Chestplate": {"color": "#ffffff"},
+                "Gauntlets": {"color": "#b0e0ff"},
+                "Boots": {"color": "#34495e"},
+                "Cloak": {"color": "#ffeb3b"},
+                "Shield": {"color": "#37474f"},
+                "Weapon": {"color": "#78909c"},  # Quantum analyzer
+                "Amulet": {"color": "#ffd700"},  # ID with Nobel medal
+            }),
+        ]
+
+        for name, power, gear in scientist_sets:
+            container = QtWidgets.QVBoxLayout()
+            canvas = CharacterCanvas(gear, power, 110, 150, story_theme="scientist")
+            container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
+            label = QtWidgets.QLabel(f"{name}")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            label.setStyleSheet("font-size: 10px; font-weight: bold;")
+            container.addWidget(label)
+            scientist_gear_layout.addLayout(container)
+
+        main_layout.addWidget(scientist_gear_group)
+
+        # Row 10: Random Underdogs
         underdog_random_group = QtWidgets.QGroupBox("🏢 Random Office Workers")
         underdog_random_layout = QtWidgets.QHBoxLayout(underdog_random_group)
         underdog_random_layout.setSpacing(10)

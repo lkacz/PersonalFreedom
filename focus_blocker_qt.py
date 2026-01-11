@@ -5721,6 +5721,8 @@ class CharacterCanvas(QtWidgets.QWidget):
             self._draw_wanderer_character(event)
         elif self.story_theme == "underdog":
             self._draw_underdog_character(event)
+        elif self.story_theme == "scientist":
+            self._draw_scientist_character(event)
         else:
             self._draw_warrior_character(event)
 
@@ -8374,6 +8376,1214 @@ class CharacterCanvas(QtWidgets.QWidget):
         
         painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
         painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🏢 {self.power}")
+
+    def _draw_scientist_character(self, event) -> None:
+        """Draw the modern research scientist character."""
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+
+        w, h = self.width(), self.height()
+        cx, cy = w // 2, h // 2 + 5
+
+        # Background with sterile laboratory gradient (cyan/green lab aesthetic)
+        bg_gradient = QtGui.QLinearGradient(0, 0, 0, h)
+        bg_gradient.setColorAt(0, QtGui.QColor("#004d40"))  # Dark teal
+        bg_gradient.setColorAt(0.4, QtGui.QColor("#00695c"))  # Teal
+        bg_gradient.setColorAt(0.7, QtGui.QColor("#00897b"))  # Light teal
+        bg_gradient.setColorAt(1, QtGui.QColor("#26a69a"))  # Cyan-green
+        painter.fillRect(self.rect(), bg_gradient)
+        
+        # Lab equipment shelves in background (left side)
+        painter.setOpacity(0.4)
+        painter.setBrush(QtGui.QColor("#263238"))
+        painter.setPen(QtGui.QPen(QtGui.QColor("#37474f"), 2))
+        # Shelving unit
+        painter.drawRect(10, cy - 60, 45, 90)
+        painter.drawLine(10, cy - 30, 55, cy - 30)
+        painter.drawLine(10, cy, 55, cy)
+        # Beakers and flasks on shelves
+        painter.setOpacity(0.5)
+        # Top shelf - Erlenmeyer flask
+        painter.setBrush(QtGui.QColor("#4fc3f7"))
+        flask_path = QtGui.QPainterPath()
+        flask_path.moveTo(25, cy - 55)
+        flask_path.lineTo(22, cy - 45)
+        flask_path.quadTo(20, cy - 35, 28, cy - 35)
+        flask_path.lineTo(32, cy - 35)
+        flask_path.quadTo(40, cy - 35, 38, cy - 45)
+        flask_path.lineTo(35, cy - 55)
+        flask_path.closeSubpath()
+        painter.drawPath(flask_path)
+        # Middle shelf - Beaker
+        painter.setBrush(QtGui.QColor("#8bc34a"))
+        painter.drawRect(18, cy - 25, 12, 18)
+        painter.drawLine(18, cy - 15, 30, cy - 15)
+        # Bottom shelf - Round flask
+        painter.setBrush(QtGui.QColor("#ff9800"))
+        painter.drawEllipse(22, cy + 5, 16, 16)
+        painter.drawRect(28, cy + 3, 4, 6)
+        painter.setOpacity(1.0)
+        
+        # Lab equipment on right side (microscope stand for high tiers)
+        if self.tier in ["heroic", "epic", "legendary", "godlike"]:
+            painter.setOpacity(0.35)
+            painter.setBrush(QtGui.QColor("#455a64"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#607d8b"), 2))
+            # Microscope base
+            painter.drawRect(w - 60, cy + 10, 40, 8)
+            # Stand
+            painter.drawRect(w - 44, cy - 40, 8, 50)
+            # Microscope body
+            painter.drawEllipse(w - 50, cy - 45, 20, 15)
+            painter.setOpacity(1.0)
+        
+        # Biohazard symbols on walls (all tiers)
+        painter.setOpacity(0.25)
+        painter.setBrush(QtCore.Qt.NoBrush)
+        painter.setPen(QtGui.QPen(QtGui.QColor("#ffeb3b"), 2))
+        # Left wall biohazard
+        painter.drawEllipse(15, 25, 25, 25)
+        painter.drawEllipse(22, 32, 11, 11)
+        # Draw 3 biohazard segments
+        for angle in [0, 120, 240]:
+            painter.save()
+            painter.translate(27.5, 37.5)
+            painter.rotate(angle)
+            painter.drawEllipse(8, -3, 6, 6)
+            painter.restore()
+        painter.setOpacity(1.0)
+        
+        # Centrifuge (spinning lab equipment) for mid+ tiers
+        if self.tier not in ["pathetic", "modest"]:
+            painter.setOpacity(0.3)
+            painter.setBrush(QtGui.QColor("#37474f"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#546e7a"), 2))
+            # Centrifuge body
+            painter.drawRect(w - 55, cy - 75, 35, 25)
+            # Lid with motion blur effect
+            painter.setOpacity(0.15)
+            for blur in range(3):
+                painter.drawArc(w - 53 + blur * 2, cy - 73, 15, 15, 45 * 16, 270 * 16)
+            painter.setOpacity(1.0)
+        
+        # Fume hood with glowing interior (epic+)
+        if self.tier in ["epic", "legendary", "godlike"]:
+            painter.setOpacity(0.25)
+            painter.setBrush(QtGui.QColor("#263238"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#37474f"), 2))
+            # Hood structure
+            painter.drawRect(w - 90, 50, 70, 60)
+            # Glowing interior
+            fume_glow = QtGui.QRadialGradient(w - 55, 80, 30)
+            fume_glow.setColorAt(0, QtGui.QColor("#00e676"))
+            fume_glow.setColorAt(1, QtGui.QColor("#00695c"))
+            painter.setBrush(fume_glow)
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawRect(w - 85, 55, 60, 50)
+            painter.setOpacity(1.0)
+        
+        # Achievement certificates/awards on back wall for high tiers
+        if self.tier in ["epic", "legendary", "godlike"]:
+            painter.setOpacity(0.3)
+            painter.setBrush(QtGui.QColor("#ffd700" if self.tier == "godlike" else "#c0c0c0"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#8b7500" if self.tier == "godlike" else "#808080"), 1))
+            # Certificate frame (top right)
+            painter.drawRect(w - 80, 20, 60, 45)
+            painter.drawRect(w - 77, 23, 54, 39)
+            # Medal/award (top left) for godlike
+            if self.tier == "godlike":
+                painter.setBrush(QtGui.QColor("#ffd700"))
+                painter.drawEllipse(20, 15, 30, 30)
+                painter.setPen(QtGui.QPen(QtGui.QColor("#ff6b6b"), 2))
+                painter.drawLine(35, 45, 35, 60)
+            painter.setOpacity(1.0)
+        
+        # Whiteboard with formulas (heroic+ tiers)
+        if self.tier in ["heroic", "epic", "legendary", "godlike"]:
+            painter.setOpacity(0.35)
+            painter.setBrush(QtGui.QColor("#f5f5f5"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#757575"), 2))
+            # Whiteboard on right wall
+            painter.drawRect(w - 90, cy - 50, 70, 50)
+            # Formulas written on board
+            painter.setPen(QtGui.QPen(QtGui.QColor("#1e88e5"), 1))
+            painter.drawText(w - 85, cy - 40, "E=mc²")
+            painter.drawText(w - 85, cy - 30, "ΔG=ΔH-TΔS")
+            painter.setPen(QtGui.QPen(QtGui.QColor("#d32f2f"), 1))
+            painter.drawLine(w - 85, cy - 20, w - 35, cy - 22)
+            painter.drawLine(w - 85, cy - 15, w - 50, cy - 16)
+            painter.setOpacity(1.0)
+        
+        # Computer workstation (legendary/godlike only)
+        if self.tier in ["legendary", "godlike"]:
+            painter.setOpacity(0.4)
+            painter.setBrush(QtGui.QColor("#263238"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#37474f"), 1))
+            # Monitor
+            painter.drawRect(w - 75, cy + 15, 50, 35)
+            # Glowing screen
+            screen_glow = QtGui.QRadialGradient(w - 50, cy + 32, 25)
+            screen_glow.setColorAt(0, QtGui.QColor("#00e676"))
+            screen_glow.setColorAt(1, QtGui.QColor("#00c853"))
+            painter.setBrush(screen_glow)
+            painter.drawRect(w - 72, cy + 18, 44, 29)
+            # Data visualization on screen
+            painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1))
+            for i in range(5):
+                h = 5 + i * 3
+                painter.drawLine(w - 68 + i * 8, cy + 42, w - 68 + i * 8, cy + 42 - h)
+            painter.setOpacity(1.0)
+        
+        # Laboratory floor tiles
+        painter.setPen(QtGui.QPen(QtGui.QColor(255, 255, 255, 50), 1))
+        for i in range(-3, 4):
+            x = cx + i * 25
+            painter.drawLine(x, cy + 50, x + 12, cy + 80)
+        for j in range(3):
+            y = cy + 55 + j * 10
+            painter.drawLine(cx - 70, y, cx + 70, y + 6)
+        
+        # Floor shadow (clean lab floor)
+        floor_gradient = QtGui.QLinearGradient(cx - 45, cy + 65, cx + 45, cy + 80)
+        floor_gradient.setColorAt(0, QtGui.QColor(50, 50, 100, 30))
+        floor_gradient.setColorAt(0.5, QtGui.QColor(30, 30, 80, 90))
+        floor_gradient.setColorAt(1, QtGui.QColor(50, 50, 100, 30))
+        painter.setBrush(floor_gradient)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawEllipse(cx - 45, cy + 65, 90, 18)
+
+        body_color = QtGui.QColor(self.TIER_COLORS.get(self.tier, "#bdbdbd"))
+        body_outline = QtGui.QColor(self.TIER_OUTLINE.get(self.tier, "#888"))
+        glow = self.TIER_GLOW.get(self.tier)
+
+        def darken(color: str, amount: int = 130) -> QtGui.QColor:
+            c = QtGui.QColor(color)
+            return c.darker(amount)
+        
+        def lighten(color: str, amount: int = 130) -> QtGui.QColor:
+            c = QtGui.QColor(color)
+            return c.lighter(amount)
+
+        # Scientific aura for high tiers (golden/quantum glow)
+        if glow:
+            glow_color = QtGui.QColor(glow)
+            painter.setBrush(QtCore.Qt.NoBrush)
+            for i, opacity in enumerate([0.08, 0.12, 0.18, 0.28]):
+                painter.setOpacity(opacity)
+                size = 150 - i * 18
+                painter.setPen(QtGui.QPen(glow_color, 2))
+                painter.drawEllipse(cx - size//2, cy - 75, size, int(size * 1.2))
+            painter.setOpacity(1.0)
+            # Inner scientific glow
+            painter.setBrush(glow_color)
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.setOpacity(0.18)
+            painter.drawEllipse(cx - 55, cy - 65, 110, 140)
+            painter.setOpacity(1.0)
+        
+        # Floating scientific particles (chemical formulas and periodic elements)
+        particles = self.TIER_PARTICLES.get(self.tier)
+        if particles:
+            p_color, p_count = particles
+            # Chemical formulas and periodic elements
+            elements = ["H₂O", "CO₂", "NaCl", "Au", "Fe", "C", "O₂", "N₂", "CH₄", "H₂SO₄"]
+            element_colors = ["#4fc3f7", "#66bb6a", "#ffa726", "#ffd700", "#ef5350", 
+                            "#9e9e9e", "#42a5f5", "#ba68c8", "#26c6da", "#ffeb3b"]
+            
+            for i, (px, py, ps) in enumerate(self._particles[:p_count]):
+                painter.setOpacity(0.55 + (i % 3) * 0.15)
+                if i % 8 == 0:
+                    # Periodic table element box
+                    elem_color = QtGui.QColor(element_colors[i % len(element_colors)])
+                    painter.setBrush(elem_color)
+                    painter.setPen(QtGui.QPen(elem_color.darker(130), 1))
+                    painter.drawRect(cx + px - ps*2, cy + py - ps*2, ps*4, ps*4)
+                    painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 1))
+                    painter.setFont(QtGui.QFont("Arial", max(6, ps)))
+                    painter.drawText(cx + px - ps, cy + py + ps//2, elements[i % len(elements)][:2])
+                    painter.setPen(QtCore.Qt.NoPen)
+                elif i % 8 == 1:
+                    # Chemical formula text
+                    painter.setPen(QtGui.QPen(QtGui.QColor(p_color), 1))
+                    painter.setFont(QtGui.QFont("Arial", max(7, ps + 2)))
+                    painter.drawText(cx + px - ps*2, cy + py, elements[i % len(elements)])
+                    painter.setPen(QtCore.Qt.NoPen)
+                elif i % 8 == 2:
+                    # Benzene ring (hexagon)
+                    painter.setPen(QtGui.QPen(QtGui.QColor(p_color), 2))
+                    painter.setBrush(QtCore.Qt.NoBrush)
+                    hex_path = QtGui.QPainterPath()
+                    for angle in range(0, 360, 60):
+                        rad = angle * 3.14159 / 180
+                        x = cx + px + ps * 2 * QtCore.qCos(rad)
+                        y = cy + py + ps * 2 * QtCore.qSin(rad)
+                        if angle == 0:
+                            hex_path.moveTo(x, y)
+                        else:
+                            hex_path.lineTo(x, y)
+                    hex_path.closeSubpath()
+                    painter.drawPath(hex_path)
+                    painter.setPen(QtCore.Qt.NoPen)
+                elif i % 8 == 3:
+                    # DNA helix segment
+                    painter.setPen(QtGui.QPen(QtGui.QColor(p_color), 2))
+                    painter.drawLine(cx + px - ps, cy + py - ps*2, cx + px + ps, cy + py + ps*2)
+                    painter.drawLine(cx + px + ps, cy + py - ps*2, cx + px - ps, cy + py + ps*2)
+                    painter.setPen(QtCore.Qt.NoPen)
+                elif i % 8 == 4:
+                    # Molecule with bonds
+                    painter.setBrush(QtGui.QColor(p_color))
+                    painter.drawEllipse(cx + px - ps, cy + py - ps, ps * 2, ps * 2)
+                    painter.setPen(QtGui.QPen(QtGui.QColor(p_color), 1))
+                    painter.drawLine(cx + px, cy + py, cx + px + ps*2, cy + py + ps*2)
+                    painter.setPen(QtCore.Qt.NoPen)
+                    painter.drawEllipse(cx + px + ps, cy + py + ps, ps * 2, ps * 2)
+                elif i % 8 == 5:
+                    # Sine wave (data visualization)
+                    painter.setPen(QtGui.QPen(QtGui.QColor(p_color), 2))
+                    wave_path = QtGui.QPainterPath()
+                    wave_path.moveTo(cx + px - ps*2, cy + py)
+                    for wx in range(-ps*2, ps*2, 2):
+                        wy = ps * QtCore.qSin(wx * 0.3)
+                        wave_path.lineTo(cx + px + wx, cy + py + wy)
+                    painter.drawPath(wave_path)
+                    painter.setPen(QtCore.Qt.NoPen)
+                else:
+                    # Atom with electron cloud
+                    painter.setBrush(QtGui.QColor(p_color))
+                    painter.drawEllipse(cx + px - ps, cy + py - ps, ps * 2, ps * 2)
+                    painter.setPen(QtGui.QPen(QtGui.QColor(p_color), 1))
+                    painter.drawEllipse(cx + px - ps*2, cy + py - ps//2, ps*4, ps)
+                    painter.setPen(QtCore.Qt.NoPen)
+            painter.setOpacity(1.0)
+
+        # === CHESTPLATE (Lab Coat - behind body) ===
+        coat = self.equipped.get("Chestplate")
+        if coat:
+            # Pathetic tier has old, dingy gray coat instead of white
+            if self.tier == "pathetic":
+                cc = QtGui.QColor("#d7ccc8")  # Dingy beige/gray
+            else:
+                cc = QtGui.QColor(coat.get("color", "#e8e8e8"))  # Default white lab coat
+            # Professional lab coat shape
+            path = QtGui.QPainterPath()
+            path.moveTo(cx - 28, cy - 28)
+            path.lineTo(cx + 28, cy - 28)
+            path.quadTo(cx + 38, cy, cx + 36, cy + 50)
+            path.lineTo(cx + 32, cy + 70)
+            path.quadTo(cx, cy + 74, cx - 32, cy + 70)
+            path.lineTo(cx - 36, cy + 50)
+            path.quadTo(cx - 38, cy, cx - 28, cy - 28)
+            # Clean lab coat gradient
+            coat_gradient = QtGui.QLinearGradient(cx - 30, cy - 30, cx + 30, cy + 70)
+            coat_gradient.setColorAt(0, cc.lighter(108))
+            coat_gradient.setColorAt(0.5, cc)
+            coat_gradient.setColorAt(1, darken(coat.get("color", "#e8e8e8"), 115))
+            painter.setBrush(coat_gradient)
+            painter.setPen(QtGui.QPen(darken(coat.get("color", "#e8e8e8"), 125), 2))
+            painter.drawPath(path)
+            # Lab coat lapels
+            painter.setPen(QtGui.QPen(cc.darker(115), 2))
+            painter.drawLine(cx - 12, cy - 26, cx - 18, cy + 25)
+            painter.drawLine(cx + 12, cy - 26, cx + 18, cy + 25)
+            # Lab coat pockets (signature feature)
+            painter.setBrush(cc.darker(108))
+            painter.drawRect(cx - 26, cy + 28, 14, 12)
+            painter.drawRect(cx + 12, cy + 28, 14, 12)
+            # Pocket details
+            painter.setPen(QtGui.QPen(cc.darker(120), 1))
+            painter.drawLine(cx - 26, cy + 30, cx - 12, cy + 30)
+            painter.drawLine(cx + 12, cy + 30, cx + 26, cy + 30)
+            # Pocket protector with multiple colored pens (iconic scientist accessory)
+            if self.tier in ["heroic", "epic", "legendary", "godlike"]:
+                # Pocket protector (white plastic)
+                painter.setBrush(QtGui.QColor("#f5f5f5"))
+                painter.setPen(QtGui.QPen(QtGui.QColor("#bdbdbd"), 1))
+                painter.drawRect(cx - 26, cy + 20, 14, 18)
+                # Red pen
+                painter.setBrush(QtGui.QColor("#e53935"))
+                painter.setPen(QtGui.QPen(QtGui.QColor("#c62828"), 1))
+                painter.drawRect(cx - 24, cy + 22, 2, 8)
+                painter.drawEllipse(cx - 24, cy + 21, 2, 2)
+                # Blue pen
+                painter.setBrush(QtGui.QColor("#1976d2"))
+                painter.setPen(QtGui.QPen(QtGui.QColor("#0d47a1"), 1))
+                painter.drawRect(cx - 21, cy + 24, 2, 8)
+                painter.drawEllipse(cx - 21, cy + 23, 2, 2)
+                # Green pen
+                painter.setBrush(QtGui.QColor("#43a047"))
+                painter.setPen(QtGui.QPen(QtGui.QColor("#2e7d32"), 1))
+                painter.drawRect(cx - 18, cy + 22, 2, 8)
+                painter.drawEllipse(cx - 18, cy + 21, 2, 2)
+            elif self.tier in ["decent"]:
+                # Single pen for decent tier
+                painter.setBrush(QtGui.QColor("#1976d2"))
+                painter.setPen(QtGui.QPen(QtGui.QColor("#0d47a1"), 1))
+                painter.drawRect(cx - 24, cy + 22, 3, 8)
+                painter.drawEllipse(cx - 24, cy + 20, 3, 3)
+            # Lab coat stains for lower tiers (realistic research struggle)
+            if self.tier == "pathetic":
+                # VERY stained and worn coat - multiple large stains
+                painter.setOpacity(0.6)
+                painter.setBrush(QtGui.QColor("#8b4513"))
+                painter.setPen(QtCore.Qt.NoPen)
+                # Large coffee stain on chest
+                painter.drawEllipse(cx + 12, cy - 10, 10, 10)
+                painter.drawEllipse(cx - 10, cy + 5, 8, 8)
+                # Chemical splash marks (multiple)
+                painter.setBrush(QtGui.QColor("#ff6b6b"))
+                painter.drawEllipse(cx - 22, cy + 15, 6, 6)
+                painter.drawEllipse(cx - 18, cy + 20, 5, 5)
+                painter.drawEllipse(cx + 18, cy + 35, 7, 7)
+                # Ink stain
+                painter.setBrush(QtGui.QColor("#1a237e"))
+                painter.drawEllipse(cx - 20, cy - 5, 5, 8)
+                # Mystery yellow stain
+                painter.setBrush(QtGui.QColor("#fbc02d"))
+                painter.drawEllipse(cx + 20, cy + 25, 6, 6)
+                painter.setOpacity(1.0)
+            elif self.tier == "modest":
+                # Moderately stained
+                painter.setOpacity(0.5)
+                painter.setBrush(QtGui.QColor("#8b4513"))
+                painter.setPen(QtCore.Qt.NoPen)
+                # Coffee stains
+                painter.drawEllipse(cx + 14, cy - 8, 7, 7)
+                painter.drawEllipse(cx - 12, cy + 8, 5, 5)
+                # Chemical splash marks
+                painter.setBrush(QtGui.QColor("#ff6b6b"))
+                painter.drawEllipse(cx - 18, cy + 15, 5, 5)
+                painter.drawEllipse(cx - 16, cy + 18, 4, 4)
+                painter.setOpacity(1.0)
+
+        # === CLOAK (Hazmat Suit overlay for high-tier containment) ===
+        cloak = self.equipped.get("Cloak")
+        if cloak:
+            cloak_c = QtGui.QColor(cloak.get("color", "#ffeb3b"))  # Yellow hazmat default
+            painter.setOpacity(0.35)
+            # Transparent hazmat suit overlay
+            hazmat_grad = QtGui.QLinearGradient(cx - 35, cy - 30, cx + 35, cy + 60)
+            hazmat_grad.setColorAt(0, cloak_c.lighter(120))
+            hazmat_grad.setColorAt(0.5, cloak_c)
+            hazmat_grad.setColorAt(1, cloak_c.darker(110))
+            painter.setBrush(hazmat_grad)
+            painter.setPen(QtGui.QPen(cloak_c.darker(130), 2))
+            # Hazmat suit shape (wider than lab coat, more protective)
+            hazmat_path = QtGui.QPainterPath()
+            hazmat_path.moveTo(cx - 32, cy - 30)
+            hazmat_path.lineTo(cx + 32, cy - 30)
+            hazmat_path.quadTo(cx + 42, cy, cx + 40, cy + 55)
+            hazmat_path.lineTo(cx + 36, cy + 72)
+            hazmat_path.quadTo(cx, cy + 76, cx - 36, cy + 72)
+            hazmat_path.lineTo(cx - 40, cy + 55)
+            hazmat_path.quadTo(cx - 42, cy, cx - 32, cy - 30)
+            hazmat_path.closeSubpath()
+            painter.drawPath(hazmat_path)
+            painter.setOpacity(1.0)
+            # Hazmat suit seams/details
+            painter.setOpacity(0.6)
+            painter.setPen(QtGui.QPen(cloak_c.darker(140), 2))
+            painter.drawLine(cx - 30, cy - 28, cx - 32, cy + 70)
+            painter.drawLine(cx + 30, cy - 28, cx + 32, cy + 70)
+            painter.drawLine(cx, cy - 28, cx, cy + 70)
+            # Hazmat zipper
+            painter.setPen(QtGui.QPen(QtGui.QColor("#455a64"), 2))
+            for z in range(cy - 26, cy + 70, 8):
+                painter.drawLine(cx - 2, z, cx + 2, z)
+            painter.setOpacity(1.0)
+            # Warning stripes (biohazard theme)
+            painter.setOpacity(0.5)
+            painter.setBrush(QtGui.QColor("#ff5722"))
+            painter.setPen(QtCore.Qt.NoPen)
+            for stripe in range(3):
+                y_pos = cy + 15 + stripe * 20
+                painter.drawRect(cx - 38, y_pos, 76, 4)
+            painter.setOpacity(1.0)
+
+        # === LEGS (Dress pants/Slacks) ===
+        pants_color = QtGui.QColor("#2c3e50")
+        pants_grad = QtGui.QLinearGradient(cx - 20, cy + 25, cx + 20, cy + 25)
+        pants_grad.setColorAt(0, pants_color.darker(118))
+        pants_grad.setColorAt(0.5, pants_color)
+        pants_grad.setColorAt(1, pants_color.darker(118))
+        painter.setBrush(pants_grad)
+        painter.setPen(QtGui.QPen(pants_color.darker(145), 2))
+        # Left leg
+        left_leg = QtGui.QPainterPath()
+        left_leg.moveTo(cx - 20, cy + 25)
+        left_leg.lineTo(cx - 5, cy + 25)
+        left_leg.lineTo(cx - 7, cy + 62)
+        left_leg.lineTo(cx - 22, cy + 62)
+        left_leg.closeSubpath()
+        painter.drawPath(left_leg)
+        # Right leg
+        right_leg = QtGui.QPainterPath()
+        right_leg.moveTo(cx + 5, cy + 25)
+        right_leg.lineTo(cx + 20, cy + 25)
+        right_leg.lineTo(cx + 22, cy + 62)
+        right_leg.lineTo(cx + 7, cy + 62)
+        right_leg.closeSubpath()
+        painter.drawPath(right_leg)
+
+        # === BOOTS (Comfortable sneakers - not dress shoes!) ===
+        boots = self.equipped.get("Boots")
+        if boots:
+            bc = QtGui.QColor(boots.get("color", "#34495e"))
+            boot_grad = QtGui.QLinearGradient(0, cy + 58, 0, cy + 78)
+            boot_grad.setColorAt(0, bc.lighter(130))
+            boot_grad.setColorAt(0.5, bc)
+            boot_grad.setColorAt(1, bc.darker(118))
+            painter.setBrush(boot_grad)
+            painter.setPen(QtGui.QPen(bc.darker(135), 2))
+            # Left sneaker - athletic style
+            left_shoe = QtGui.QPainterPath()
+            left_shoe.moveTo(cx - 24, cy + 62)
+            left_shoe.lineTo(cx - 5, cy + 62)
+            left_shoe.lineTo(cx - 3, cy + 72)
+            left_shoe.quadTo(cx - 10, cy + 77, cx - 20, cy + 76)
+            left_shoe.quadTo(cx - 27, cy + 72, cx - 26, cy + 65)
+            left_shoe.closeSubpath()
+            painter.drawPath(left_shoe)
+            # Right sneaker
+            right_shoe = QtGui.QPainterPath()
+            right_shoe.moveTo(cx + 5, cy + 62)
+            right_shoe.lineTo(cx + 24, cy + 62)
+            right_shoe.quadTo(cx + 27, cy + 68, cx + 26, cy + 72)
+            right_shoe.quadTo(cx + 20, cy + 77, cx + 10, cy + 76)
+            right_shoe.lineTo(cx + 3, cy + 72)
+            right_shoe.closeSubpath()
+            painter.drawPath(right_shoe)
+            # Sneaker details (rubber sole, laces)
+            # Rubber sole stripe
+            painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
+            painter.drawLine(cx - 24, cy + 70, cx - 6, cy + 72)
+            painter.drawLine(cx + 6, cy + 72, cx + 24, cy + 70)
+            # Laces
+            painter.setPen(QtGui.QPen(bc.darker(150), 1))
+            for lace_x in range(-18, -8, 4):
+                painter.drawLine(cx + lace_x, cy + 64, cx + lace_x + 3, cy + 66)
+            for lace_x in range(10, 20, 4):
+                painter.drawLine(cx + lace_x, cy + 64, cx + lace_x + 3, cy + 66)
+        else:
+            # Basic sneakers
+            painter.setBrush(QtGui.QColor("#546e7a"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#37474f"), 1))
+            painter.drawRoundedRect(cx - 24, cy + 60, 19, 17, 6, 6)
+            painter.drawRoundedRect(cx + 5, cy + 60, 19, 17, 6, 6)
+            # White rubber sole
+            painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
+            painter.drawLine(cx - 22, cy + 72, cx - 8, cy + 74)
+            painter.drawLine(cx + 7, cy + 74, cx + 21, cy + 72)
+
+        # === ARMS (Shirt sleeves under lab coat) ===
+        shirt_color = QtGui.QColor("#74b9ff")
+        arm_grad_l = QtGui.QLinearGradient(cx - 44, cy - 5, cx - 28, cy - 5)
+        arm_grad_l.setColorAt(0, shirt_color.darker(125))
+        arm_grad_l.setColorAt(0.5, shirt_color)
+        arm_grad_l.setColorAt(1, shirt_color.darker(108))
+        painter.setBrush(arm_grad_l)
+        painter.setPen(QtGui.QPen(shirt_color.darker(145), 2))
+        # Left arm
+        left_arm = QtGui.QPainterPath()
+        left_arm.moveTo(cx - 28, cy - 24)
+        left_arm.quadTo(cx - 36, cy - 22, cx - 42, cy - 12)
+        left_arm.quadTo(cx - 48, cy + 6, cx - 46, cy + 26)
+        left_arm.lineTo(cx - 34, cy + 23)
+        left_arm.quadTo(cx - 32, cy - 4, cx - 28, cy - 24)
+        painter.drawPath(left_arm)
+        # Right arm
+        arm_grad_r = QtGui.QLinearGradient(cx + 28, cy - 5, cx + 44, cy - 5)
+        arm_grad_r.setColorAt(0, shirt_color.darker(108))
+        arm_grad_r.setColorAt(0.5, shirt_color)
+        arm_grad_r.setColorAt(1, shirt_color.darker(125))
+        painter.setBrush(arm_grad_r)
+        right_arm = QtGui.QPainterPath()
+        right_arm.moveTo(cx + 28, cy - 24)
+        right_arm.quadTo(cx + 36, cy - 22, cx + 42, cy - 12)
+        right_arm.quadTo(cx + 48, cy + 6, cx + 46, cy + 26)
+        right_arm.lineTo(cx + 34, cy + 23)
+        right_arm.quadTo(cx + 32, cy - 4, cx + 28, cy - 24)
+        painter.drawPath(right_arm)
+
+        # === GAUNTLETS (Latex Gloves) ===
+        gaunt = self.equipped.get("Gauntlets")
+        # Pathetic tier has no gloves - too expensive
+        if self.tier == "pathetic":
+            gaunt = None
+        if gaunt:
+            gc = QtGui.QColor(gaunt.get("color", "#b0e0ff"))  # Light blue latex default
+            # Left glove
+            painter.setBrush(gc)
+            painter.setPen(QtGui.QPen(gc.darker(125), 1))
+            left_hand = QtGui.QPainterPath()
+            left_hand.moveTo(cx - 48, cy + 18)
+            left_hand.quadTo(cx - 52, cy + 22, cx - 50, cy + 28)
+            left_hand.quadTo(cx - 46, cy + 30, cx - 44, cy + 26)
+            left_hand.quadTo(cx - 44, cy + 20, cx - 48, cy + 18)
+            painter.drawPath(left_hand)
+            # Glove cuff
+            painter.drawRect(cx - 49, cy + 15, 10, 6)
+            # Right glove
+            right_hand = QtGui.QPainterPath()
+            right_hand.moveTo(cx + 48, cy + 18)
+            right_hand.quadTo(cx + 52, cy + 22, cx + 50, cy + 28)
+            right_hand.quadTo(cx + 46, cy + 30, cx + 44, cy + 26)
+            right_hand.quadTo(cx + 44, cy + 20, cx + 48, cy + 18)
+            painter.drawPath(right_hand)
+            painter.drawRect(cx + 39, cy + 15, 10, 6)
+        else:
+            # Bare hands
+            painter.setBrush(QtGui.QColor("#e6c8a0"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#c9a066"), 1))
+            painter.drawEllipse(cx - 48, cy + 17, 15, 13)
+            painter.drawEllipse(cx + 33, cy + 17, 15, 13)
+
+        # === TORSO (Casual untucked shirt under lab coat) ===
+        torso_grad = QtGui.QLinearGradient(cx - 26, cy, cx + 26, cy)
+        torso_grad.setColorAt(0, shirt_color.darker(112))
+        torso_grad.setColorAt(0.3, shirt_color)
+        torso_grad.setColorAt(0.7, shirt_color)
+        torso_grad.setColorAt(1, shirt_color.darker(112))
+        painter.setBrush(torso_grad)
+        painter.setPen(QtGui.QPen(shirt_color.darker(145), 2))
+        torso_path = QtGui.QPainterPath()
+        torso_path.moveTo(cx - 26, cy - 28)
+        torso_path.quadTo(cx - 28, cy - 7, cx - 20, cy + 28)
+        torso_path.lineTo(cx + 20, cy + 28)
+        torso_path.quadTo(cx + 28, cy - 7, cx + 26, cy - 28)
+        torso_path.closeSubpath()
+        painter.drawPath(torso_path)
+
+        # === CHEST LAYER (Casual T-shirt or polo - NO TIE) ===
+        cc = QtGui.QColor("#7e57c2") if self.tier in ["pathetic", "modest"] else QtGui.QColor("#3498db")
+        chest_grad = QtGui.QLinearGradient(cx - 22, cy - 26, cx + 22, cy + 22)
+        chest_grad.setColorAt(0, cc.lighter(118))
+        chest_grad.setColorAt(0.5, cc)
+        chest_grad.setColorAt(1, cc.darker(112))
+        painter.setBrush(chest_grad)
+        painter.setPen(QtGui.QPen(cc.darker(135), 2))
+        # Casual shirt (untucked, wrinkled appearance)
+        shirt_path = QtGui.QPainterPath()
+        shirt_path.moveTo(cx - 22, cy - 26)
+        shirt_path.quadTo(cx, cy - 30, cx + 22, cy - 26)
+        # Untucked bottom edge showing below lab coat opening
+        shirt_path.lineTo(cx + 18, cy + 26)
+        shirt_path.quadTo(cx + 12, cy + 30, cx, cy + 31)  # Hanging out
+        shirt_path.quadTo(cx - 12, cy + 30, cx - 18, cy + 26)
+        shirt_path.closeSubpath()
+        painter.drawPath(shirt_path)
+        # Simple V-neck collar (casual, not button-down)
+        painter.setPen(QtGui.QPen(cc.darker(125), 2))
+        painter.drawLine(cx - 9, cy - 26, cx, cy - 22)
+        painter.drawLine(cx + 9, cy - 26, cx, cy - 22)
+        # NO TIE - scientists are casual!
+        # Wrinkle lines for realism
+        painter.setOpacity(0.3)
+        painter.setPen(QtGui.QPen(cc.darker(120), 1))
+        painter.drawLine(cx - 12, cy - 8, cx + 10, cy - 6)
+        painter.drawLine(cx - 8, cy + 4, cx + 12, cy + 6)
+        painter.setOpacity(1.0)
+
+        # === SHIELD (Lab Notebook / Data Tablet) ===
+        shield = self.equipped.get("Shield")
+        if shield:
+            sc = QtGui.QColor(shield.get("color", "#37474f"))  # Dark gray notebook default
+            # Notebook/tablet held at side
+            notebook_grad = QtGui.QLinearGradient(cx + 32, cy - 8, cx + 44, cy + 12)
+            notebook_grad.setColorAt(0, sc.lighter(115))
+            notebook_grad.setColorAt(0.5, sc)
+            notebook_grad.setColorAt(1, sc.darker(115))
+            painter.setBrush(notebook_grad)
+            painter.setPen(QtGui.QPen(sc.darker(140), 2))
+            # Notebook rectangle
+            painter.drawRoundedRect(cx + 32, cy - 8, 16, 22, 2, 2)
+            # Notebook binding/spine
+            painter.setPen(QtGui.QPen(sc.darker(150), 3))
+            painter.drawLine(cx + 33, cy - 8, cx + 33, cy + 14)
+            # Page lines (scientific notes)
+            painter.setPen(QtGui.QPen(sc.lighter(140), 1))
+            for line_y in range(cy - 6, cy + 13, 3):
+                painter.drawLine(cx + 35, line_y, cx + 46, line_y)
+            # Digital variant for epic+ tiers
+            if self.tier in ["epic", "legendary", "godlike"]:
+                # Glowing screen effect
+                painter.setOpacity(0.6)
+                screen_glow = QtGui.QRadialGradient(cx + 40, cy + 3, 12)
+                screen_glow.setColorAt(0, QtGui.QColor("#4fc3f7"))
+                screen_glow.setColorAt(1, QtGui.QColor("#0277bd"))
+                painter.setBrush(screen_glow)
+                painter.setPen(QtCore.Qt.NoPen)
+                painter.drawRoundedRect(cx + 34, cy - 6, 12, 18, 1, 1)
+                painter.setOpacity(1.0)
+                # Digital data symbols
+                painter.setPen(QtGui.QPen(QtGui.QColor("#e0f7ff"), 1))
+                painter.drawText(cx + 36, cy - 2, "01")
+                painter.drawText(cx + 36, cy + 4, "10")
+                painter.drawText(cx + 36, cy + 10, "11")
+
+        # === WEAPON (Scientific Instrument) ===
+        weap = self.equipped.get("Weapon")
+        if weap:
+            wc = QtGui.QColor(weap.get("color", "#78909c"))  # Steel-gray instrument default
+            # Instrument held in left hand (microscope, spectrometer, pipette design)
+            # Handle/grip
+            handle_grad = QtGui.QLinearGradient(cx - 50, cy + 5, cx - 46, cy + 20)
+            handle_grad.setColorAt(0, QtGui.QColor("#546e7a"))
+            handle_grad.setColorAt(0.5, QtGui.QColor("#607d8b"))
+            handle_grad.setColorAt(1, QtGui.QColor("#455a64"))
+            painter.setBrush(handle_grad)
+            painter.setPen(QtGui.QPen(QtGui.QColor("#37474f"), 2))
+            painter.drawRoundedRect(cx - 54, cy + 8, 8, 24, 3, 3)
+            # Grip texture
+            painter.setPen(QtGui.QPen(QtGui.QColor("#455a64"), 1))
+            for grip_line in range(cy + 10, cy + 30, 4):
+                painter.drawLine(cx - 54, grip_line, cx - 46, grip_line)
+            # Instrument body (varies by tier)
+            body_grad = QtGui.QLinearGradient(cx - 52, cy - 12, cx - 44, cy + 8)
+            body_grad.setColorAt(0, wc.lighter(125))
+            body_grad.setColorAt(0.3, wc)
+            body_grad.setColorAt(1, wc.darker(115))
+            painter.setBrush(body_grad)
+            painter.setPen(QtGui.QPen(wc.darker(135), 2))
+            if self.tier in ["legendary", "godlike"]:
+                # Advanced quantum analyzer
+                painter.drawRoundedRect(cx - 58, cy - 14, 16, 22, 3, 3)
+                # Glowing display panel
+                painter.setOpacity(0.7)
+                panel_glow = QtGui.QRadialGradient(cx - 50, cy - 3, 8)
+                panel_glow.setColorAt(0, QtGui.QColor("#00e676"))
+                panel_glow.setColorAt(1, QtGui.QColor("#00c853"))
+                painter.setBrush(panel_glow)
+                painter.setPen(QtCore.Qt.NoPen)
+                painter.drawRect(cx - 56, cy - 10, 12, 14)
+                painter.setOpacity(1.0)
+                # Digital readout
+                painter.setPen(QtGui.QPen(QtGui.QColor("#e0f7ff"), 1))
+                painter.drawText(cx - 54, cy - 4, "99.9%")
+                # Antenna/sensor array
+                painter.setPen(QtGui.QPen(wc, 2))
+                painter.drawLine(cx - 50, cy - 14, cx - 50, cy - 22)
+                painter.drawEllipse(cx - 52, cy - 24, 4, 4)
+            elif self.tier in ["epic", "heroic"]:
+                # Precision spectrometer
+                painter.drawRoundedRect(cx - 56, cy - 12, 14, 20, 2, 2)
+                # Lens/measurement window
+                painter.setBrush(QtGui.QColor("#4fc3f7"))
+                painter.setPen(QtGui.QPen(QtGui.QColor("#0277bd"), 1))
+                painter.drawEllipse(cx - 53, cy - 8, 8, 8)
+                # Measurement dial
+                painter.setPen(QtGui.QPen(wc.darker(130), 1))
+                painter.drawArc(cx - 52, cy - 7, 6, 6, 0, 270 * 16)
+                painter.drawLine(cx - 49, cy - 4, cx - 46, cy - 4)
+            else:
+                # Basic microscope/pipette
+                painter.drawRoundedRect(cx - 54, cy - 10, 12, 18, 2, 2)
+                # Measurement marks
+                painter.setPen(QtGui.QPen(wc.darker(140), 1))
+                for mark in range(cy - 8, cy + 6, 3):
+                    painter.drawLine(cx - 54, mark, cx - 50, mark)
+                # Glass tip (pipette style)
+                painter.setBrush(QtGui.QColor("#b0e0ff"))
+                painter.setPen(QtGui.QPen(QtGui.QColor("#4fc3f7"), 1))
+                tip_path = QtGui.QPainterPath()
+                tip_path.moveTo(cx - 51, cy + 8)
+                tip_path.lineTo(cx - 49, cy + 8)
+                tip_path.lineTo(cx - 49, cy + 16)
+                tip_path.lineTo(cx - 50, cy + 18)
+                tip_path.lineTo(cx - 51, cy + 16)
+                tip_path.closeSubpath()
+                painter.drawPath(tip_path)
+                # Liquid drop at tip for realism
+                if self.tier in ["decent", "modest", "heroic"]:
+                    painter.setBrush(QtGui.QColor("#1976d2"))
+                    painter.setPen(QtCore.Qt.NoPen)
+                    painter.drawEllipse(cx - 51, cy + 18, 2, 3)
+
+        # === NECK ===
+        neck_grad = QtGui.QLinearGradient(cx - 9, cy - 34, cx + 9, cy - 34)
+        neck_grad.setColorAt(0, QtGui.QColor("#d4b090"))
+        neck_grad.setColorAt(0.5, QtGui.QColor("#e6c8a0"))
+        neck_grad.setColorAt(1, QtGui.QColor("#d4b090"))
+        painter.setBrush(neck_grad)
+        painter.setPen(QtGui.QPen(QtGui.QColor("#c49a70"), 1))
+        painter.drawRect(cx - 9, cy - 36, 18, 13)
+
+        # === HEAD ===
+        head_gradient = QtGui.QRadialGradient(cx - 5, cy - 54, 30)
+        head_gradient.setColorAt(0, QtGui.QColor("#f5e0c8"))
+        head_gradient.setColorAt(0.5, QtGui.QColor("#e6c8a0"))
+        head_gradient.setColorAt(0.8, QtGui.QColor("#d4a870"))
+        head_gradient.setColorAt(1, QtGui.QColor("#c49060"))
+        painter.setBrush(head_gradient)
+        painter.setPen(QtGui.QPen(QtGui.QColor("#b08050"), 2))
+        head_path = QtGui.QPainterPath()
+        head_path.moveTo(cx - 2, cy - 32)
+        head_path.quadTo(cx - 22, cy - 35, cx - 22, cy - 52)
+        head_path.quadTo(cx - 22, cy - 72, cx, cy - 72)
+        head_path.quadTo(cx + 22, cy - 72, cx + 22, cy - 52)
+        head_path.quadTo(cx + 22, cy - 35, cx + 2, cy - 32)
+        head_path.closeSubpath()
+        painter.drawPath(head_path)
+
+        # === HELMET (Safety Goggles) ===
+        helm = self.equipped.get("Helmet")
+        # Pathetic tier can't afford goggles - force to basic appearance
+        if self.tier == "pathetic":
+            helm = None
+        if helm:
+            hc = QtGui.QColor(helm.get("color", "#4db8ff"))  # Light blue goggles default
+            # Goggles strap
+            painter.setBrush(QtCore.Qt.NoBrush)
+            painter.setPen(QtGui.QPen(hc.darker(140), 3))
+            painter.drawArc(cx - 24, cy - 75, 48, 32, 0, 180 * 16)
+            # Left goggle lens
+            painter.setBrush(hc)
+            painter.setPen(QtGui.QPen(hc.darker(135), 2))
+            painter.drawEllipse(cx - 24, cy - 58, 14, 12)
+            # Lens reflection
+            lens_grad_l = QtGui.QRadialGradient(cx - 19, cy - 54, 7)
+            lens_grad_l.setColorAt(0, QtGui.QColor("#e0f7ff"))
+            lens_grad_l.setColorAt(0.7, hc)
+            lens_grad_l.setColorAt(1, hc.darker(125))
+            painter.setBrush(lens_grad_l)
+            painter.drawEllipse(cx - 23, cy - 57, 12, 10)
+            # Right goggle lens
+            painter.setBrush(hc)
+            painter.setPen(QtGui.QPen(hc.darker(135), 2))
+            painter.drawEllipse(cx + 10, cy - 58, 14, 12)
+            lens_grad_r = QtGui.QRadialGradient(cx + 15, cy - 54, 7)
+            lens_grad_r.setColorAt(0, QtGui.QColor("#e0f7ff"))
+            lens_grad_r.setColorAt(0.7, hc)
+            lens_grad_r.setColorAt(1, hc.darker(125))
+            painter.setBrush(lens_grad_r)
+            painter.drawEllipse(cx + 11, cy - 57, 12, 10)
+            # Bridge
+            painter.setPen(QtGui.QPen(hc.darker(140), 3))
+            painter.drawLine(cx - 10, cy - 52, cx + 10, cy - 52)
+            # Messy Einstein-style hair showing above goggles
+            hair_color = QtGui.QColor("#4a3728") if self.tier not in ["legendary", "godlike"] else QtGui.QColor("#9e9e9e")  # Gray for Nobel tier
+            hair_grad = QtGui.QRadialGradient(cx, cy - 67, 24)
+            hair_grad.setColorAt(0, hair_color.lighter(125))
+            hair_grad.setColorAt(0.6, hair_color)
+            hair_grad.setColorAt(1, hair_color.darker(118))
+            painter.setBrush(hair_grad)
+            painter.setPen(QtCore.Qt.NoPen)
+            # Messy hairstyle with wild spikes above goggles
+            hair_path = QtGui.QPainterPath()
+            hair_path.moveTo(cx - 22, cy - 57)
+            # Left side spike
+            hair_path.quadTo(cx - 28, cy - 70, cx - 24, cy - 82)
+            hair_path.quadTo(cx - 18, cy - 85, cx - 14, cy - 80)
+            # Center spike (Einstein wild hair)
+            hair_path.quadTo(cx - 8, cy - 86, cx, cy - 88)
+            hair_path.quadTo(cx + 8, cy - 86, cx + 14, cy - 80)
+            # Right side spike
+            hair_path.quadTo(cx + 18, cy - 85, cx + 24, cy - 82)
+            hair_path.quadTo(cx + 28, cy - 70, cx + 22, cy - 57)
+            hair_path.lineTo(cx + 10, cy - 58)
+            hair_path.lineTo(cx - 10, cy - 58)
+            hair_path.closeSubpath()
+            painter.drawPath(hair_path)
+            # Add individual hair strands sticking up
+            painter.setPen(QtGui.QPen(hair_color.darker(130), 2))
+            painter.drawLine(cx - 16, cy - 78, cx - 18, cy - 84)
+            painter.drawLine(cx - 6, cy - 82, cx - 4, cy - 88)
+            painter.drawLine(cx + 6, cy - 82, cx + 8, cy - 88)
+            painter.drawLine(cx + 16, cy - 78, cx + 18, cy - 84)
+            painter.setPen(QtCore.Qt.NoPen)
+        else:
+            # Messy Einstein-style hair (no goggles)
+            hair_color = QtGui.QColor("#4a3728") if self.tier not in ["legendary", "godlike"] else QtGui.QColor("#9e9e9e")
+            hair_grad = QtGui.QRadialGradient(cx, cy - 67, 24)
+            hair_grad.setColorAt(0, hair_color.lighter(125))
+            hair_grad.setColorAt(0.6, hair_color)
+            hair_grad.setColorAt(1, hair_color.darker(118))
+            painter.setBrush(hair_grad)
+            painter.setPen(QtCore.Qt.NoPen)
+            # Wild, unkempt hair
+            hair_path = QtGui.QPainterPath()
+            hair_path.moveTo(cx - 22, cy - 57)
+            # Left spike
+            hair_path.quadTo(cx - 28, cy - 72, cx - 24, cy - 84)
+            hair_path.quadTo(cx - 16, cy - 87, cx - 10, cy - 82)
+            # Center wild tuft
+            hair_path.quadTo(cx - 6, cy - 88, cx, cy - 90)
+            hair_path.quadTo(cx + 6, cy - 88, cx + 10, cy - 82)
+            # Right spike
+            hair_path.quadTo(cx + 16, cy - 87, cx + 24, cy - 84)
+            hair_path.quadTo(cx + 28, cy - 72, cx + 22, cy - 57)
+            hair_path.quadTo(cx + 20, cy - 60, cx + 14, cy - 64)
+            hair_path.quadTo(cx, cy - 68, cx - 14, cy - 64)
+            hair_path.quadTo(cx - 20, cy - 60, cx - 22, cy - 57)
+            painter.drawPath(hair_path)
+            # Wild side tufts
+            painter.drawEllipse(cx - 26, cy - 62, 7, 16)
+            painter.drawEllipse(cx + 19, cy - 62, 7, 16)
+            # Individual strands
+            painter.setPen(QtGui.QPen(hair_color.darker(130), 2))
+            painter.drawLine(cx - 18, cy - 80, cx - 20, cy - 86)
+            painter.drawLine(cx - 8, cy - 84, cx - 6, cy - 90)
+            painter.drawLine(cx + 8, cy - 84, cx + 10, cy - 90)
+            painter.drawLine(cx + 18, cy - 80, cx + 20, cy - 86)
+            painter.setPen(QtCore.Qt.NoPen)
+
+        # === FACE ===
+        # Stubble for low-tier scientists (too busy to shave)
+        if self.tier in ["pathetic", "modest"]:
+            painter.setOpacity(0.4)
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.setBrush(QtGui.QColor("#3e2723"))
+            # Stippled beard effect
+            for stubble_y in range(cy - 38, cy - 32, 2):
+                for stubble_x in range(cx - 14, cx + 14, 2):
+                    if (stubble_x + stubble_y) % 3 == 0:
+                        painter.drawEllipse(stubble_x, stubble_y, 1, 1)
+            painter.setOpacity(1.0)
+        
+        # Face mask hanging around neck (iconic scientist accessory)
+        painter.setOpacity(0.7)
+        painter.setBrush(QtGui.QColor("#e3f2fd"))
+        painter.setPen(QtGui.QPen(QtGui.QColor("#90caf9"), 1))
+        # Mask hanging loose
+        mask_path = QtGui.QPainterPath()
+        mask_path.moveTo(cx - 14, cy - 30)
+        mask_path.quadTo(cx - 16, cy - 26, cx - 12, cy - 24)
+        mask_path.lineTo(cx + 12, cy - 24)
+        mask_path.quadTo(cx + 16, cy - 26, cx + 14, cy - 30)
+        mask_path.closeSubpath()
+        painter.drawPath(mask_path)
+        # Elastic straps
+        painter.setPen(QtGui.QPen(QtGui.QColor("#90caf9"), 1))
+        painter.drawLine(cx - 14, cy - 28, cx - 20, cy - 36)
+        painter.drawLine(cx + 14, cy - 28, cx + 20, cy - 36)
+        # Pleats on mask
+        painter.drawLine(cx - 8, cy - 27, cx - 8, cy - 25)
+        painter.drawLine(cx, cy - 27, cx, cy - 25)
+        painter.drawLine(cx + 8, cy - 27, cx + 8, cy - 25)
+        painter.setOpacity(1.0)
+        
+        # Intelligent, focused eyebrows
+        painter.setPen(QtGui.QPen(QtGui.QColor("#4a3728"), 2))
+        if self.tier in ["legendary", "godlike"]:
+            # Confident scientist brows
+            painter.drawLine(cx - 13, cy - 59, cx - 5, cy - 61)
+            painter.drawLine(cx + 5, cy - 61, cx + 13, cy - 59)
+        elif self.tier in ["epic", "heroic"]:
+            # Focused researcher brows
+            painter.drawLine(cx - 13, cy - 58, cx - 5, cy - 59)
+            painter.drawLine(cx + 5, cy - 59, cx + 13, cy - 58)
+        else:
+            # Thoughtful brows
+            painter.drawLine(cx - 12, cy - 57, cx - 5, cy - 58)
+            painter.drawLine(cx + 5, cy - 58, cx + 12, cy - 57)
+        
+        # Eyes (intelligent, observant, slightly squinted from screen work) - positioned lower when wearing goggles
+        eye_y = cy - 52 if not helm else cy - 50
+        painter.setBrush(QtGui.QColor("#e8dcc8"))
+        painter.setPen(QtCore.Qt.NoPen)
+        # Slightly narrower eyes (squinting)
+        painter.drawEllipse(cx - 13, eye_y + 1, 11, 8)
+        painter.drawEllipse(cx + 2, eye_y + 1, 11, 8)
+        # Eye whites
+        painter.setBrush(QtGui.QColor("#fff"))
+        painter.drawEllipse(cx - 12, eye_y + 1, 9, 9)
+        painter.drawEllipse(cx + 3, eye_y + 1, 9, 9)
+        # Iris (scientific colors - deep blue for intelligence)
+        iris_colors = {
+            "pathetic": "#795548", "modest": "#6d4c41", "decent": "#5d4037",
+            "heroic": "#1976d2", "epic": "#1565c0", "legendary": "#0d47a1", "godlike": "#01579b"
+        }
+        iris_color = QtGui.QColor(iris_colors.get(self.tier, "#6d4c41"))
+        iris_grad = QtGui.QRadialGradient(cx - 8, eye_y + 4, 5)
+        iris_grad.setColorAt(0, iris_color.lighter(135))
+        iris_grad.setColorAt(1, iris_color)
+        painter.setBrush(iris_grad)
+        painter.drawEllipse(cx - 10, eye_y + 2, 7, 7)
+        iris_grad2 = QtGui.QRadialGradient(cx + 7, eye_y + 4, 5)
+        iris_grad2.setColorAt(0, iris_color.lighter(135))
+        iris_grad2.setColorAt(1, iris_color)
+        painter.setBrush(iris_grad2)
+        painter.drawEllipse(cx + 5, eye_y + 2, 7, 7)
+        # Pupils
+        painter.setBrush(QtGui.QColor("#1a1a1a"))
+        painter.drawEllipse(cx - 8, eye_y + 3, 3, 3)
+        painter.drawEllipse(cx + 6, eye_y + 3, 3, 3)
+        # Eye shine (intelligence sparkle)
+        painter.setBrush(QtGui.QColor("#fff"))
+        painter.drawEllipse(cx - 9, eye_y + 3, 2, 2)
+        painter.drawEllipse(cx + 5, eye_y + 3, 2, 2)
+        # Under-eye bags/circles for tired low-tier scientists
+        if self.tier == "pathetic":
+            # VERY dark, puffy bags - severe exhaustion
+            painter.setOpacity(0.6)
+            painter.setBrush(QtGui.QColor("#5d4037"))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx - 13, eye_y + 8, 11, 6)
+            painter.drawEllipse(cx + 2, eye_y + 8, 11, 6)
+            painter.setOpacity(1.0)
+            # Eye fatigue redness - severe
+            painter.setOpacity(0.4)
+            painter.setPen(QtGui.QPen(QtGui.QColor("#ff6b6b"), 2))
+            painter.drawLine(cx - 10, eye_y + 2, cx - 6, eye_y + 4)
+            painter.drawLine(cx + 5, eye_y + 2, cx + 9, eye_y + 4)
+            painter.drawLine(cx - 11, eye_y + 4, cx - 8, eye_y + 6)
+            painter.drawLine(cx + 6, eye_y + 4, cx + 10, eye_y + 6)
+            painter.setOpacity(1.0)
+        elif self.tier == "modest":
+            # Moderate bags
+            painter.setOpacity(0.4)
+            painter.setBrush(QtGui.QColor("#8b7355"))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawEllipse(cx - 13, eye_y + 8, 11, 4)
+            painter.drawEllipse(cx + 2, eye_y + 8, 11, 4)
+            painter.setOpacity(1.0)
+
+        # Nose
+        painter.setPen(QtGui.QPen(QtGui.QColor("#c49060"), 1))
+        painter.drawLine(cx, cy - 46, cx - 1, cy - 40)
+        painter.drawArc(cx - 4, cy - 40, 4, 3, 180 * 16, 180 * 16)
+        painter.drawArc(cx, cy - 40, 4, 3, 180 * 16, 180 * 16)
+
+        # Mouth (thoughtful, determined expressions)
+        painter.setPen(QtGui.QPen(QtGui.QColor("#a06050"), 2))
+        if self.tier in ["legendary", "godlike"]:
+            # Satisfied breakthrough smile
+            painter.drawArc(cx - 11, cy - 42, 22, 13, 210 * 16, 120 * 16)
+            painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 1))
+            painter.drawLine(cx - 7, cy - 34, cx + 7, cy - 34)
+        elif self.tier in ["epic", "heroic"]:
+            # Confident researcher smile
+            painter.drawArc(cx - 9, cy - 40, 18, 9, 220 * 16, 100 * 16)
+        elif self.tier == "decent":
+            # Slight smile of progress
+            painter.drawArc(cx - 7, cy - 38, 14, 7, 220 * 16, 100 * 16)
+        elif self.tier == "modest":
+            # Slight frown of frustration
+            painter.drawArc(cx - 6, cy - 38, 12, 6, 30 * 16, 120 * 16)
+        else:
+            # Stressed/worried (pathetic tier)
+            painter.drawArc(cx - 7, cy - 38, 14, 8, 20 * 16, 140 * 16)
+
+        # Ears (visible when no goggles or above goggles)
+        if not helm:
+            painter.setBrush(QtGui.QColor("#e6c8a0"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#c49a70"), 1))
+            painter.drawEllipse(cx - 24, cy - 54, 5, 10)
+            painter.drawEllipse(cx + 19, cy - 54, 5, 10)
+
+        # === AMULET (ID Badge / Research Credentials) ===
+        amulet = self.equipped.get("Amulet")
+        if amulet:
+            ac = QtGui.QColor(amulet.get("color", "#ffd700"))
+            # Lanyard
+            painter.setPen(QtGui.QPen(QtGui.QColor("#2c3e50"), 2))
+            painter.drawLine(cx - 9, cy - 28, cx - 7, cy - 14)
+            painter.drawLine(cx + 9, cy - 28, cx + 7, cy - 14)
+            # ID Badge/Credentials
+            badge_grad = QtGui.QLinearGradient(cx - 14, cy - 14, cx + 14, cy + 10)
+            badge_grad.setColorAt(0, QtGui.QColor("#fff"))
+            badge_grad.setColorAt(0.3, QtGui.QColor("#f8f9fa"))
+            badge_grad.setColorAt(1, QtGui.QColor("#e9ecef"))
+            painter.setBrush(badge_grad)
+            painter.setPen(QtGui.QPen(QtGui.QColor("#adb5bd"), 1))
+            painter.drawRoundedRect(cx - 14, cy - 14, 28, 32, 3, 3)
+            # Photo area
+            painter.setBrush(QtGui.QColor("#ced4da"))
+            painter.drawRect(cx - 10, cy - 10, 20, 14)
+            # Institution logo/seal
+            painter.setBrush(ac)
+            painter.setPen(QtGui.QPen(ac.darker(130), 1))
+            painter.drawEllipse(cx - 5, cy + 6, 10, 10)
+            # Logo detail
+            painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
+            painter.drawLine(cx - 2, cy + 11, cx + 2, cy + 11)
+            painter.drawLine(cx, cy + 9, cx, cy + 13)
+            # Barcode for security
+            painter.setPen(QtGui.QPen(QtGui.QColor("#212529"), 1))
+            for i in range(9):
+                x = cx - 9 + i * 2
+                painter.drawLine(x, cy + 2, x, cy + 4)
+            # Security hologram for high tiers
+            if self.tier in ["epic", "legendary", "godlike"]:
+                painter.setBrush(QtGui.QColor("#00d9ff"))
+                painter.setPen(QtCore.Qt.NoPen)
+                painter.setOpacity(0.6)
+                painter.drawRect(cx + 8, cy - 12, 4, 4)
+                painter.setOpacity(1.0)
+            # Nobel Prize indicator for godlike tier
+            if self.tier == "godlike":
+                painter.setBrush(QtGui.QColor("#ffd700"))
+                painter.setPen(QtGui.QPen(QtGui.QColor("#b8860b"), 1))
+                painter.drawEllipse(cx - 16, cy - 16, 6, 6)
+                # Medal ribbon
+                painter.setPen(QtGui.QPen(QtGui.QColor("#0066cc"), 2))
+                painter.drawLine(cx - 13, cy - 10, cx - 13, cy - 14)
+
+        # === WEAPON (Microscope/Lab Equipment) ===
+        weap = self.equipped.get("Weapon")
+        if weap:
+            wc = QtGui.QColor(weap.get("color", "#546e7a"))
+            # Microscope held in left hand
+            # Base
+            painter.setBrush(wc.darker(125))
+            painter.setPen(QtGui.QPen(wc.darker(145), 2))
+            painter.drawRect(cx - 62, cy + 20, 20, 8)
+            # Arm/column
+            painter.setBrush(wc)
+            painter.drawRect(cx - 58, cy - 10, 8, 32)
+            # Eyepiece
+            microscope_grad = QtGui.QLinearGradient(cx - 60, cy - 18, cx - 48, cy - 10)
+            microscope_grad.setColorAt(0, wc.darker(115))
+            microscope_grad.setColorAt(0.5, wc)
+            microscope_grad.setColorAt(1, wc.lighter(112))
+            painter.setBrush(microscope_grad)
+            painter.drawEllipse(cx - 62, cy - 18, 12, 10)
+            # Lens turret
+            painter.setBrush(wc.darker(110))
+            painter.drawEllipse(cx - 59, cy + 8, 10, 8)
+            # Objective lenses
+            painter.setBrush(QtGui.QColor("#37474f"))
+            painter.drawRect(cx - 57, cy + 14, 6, 6)
+            # Stage (sample platform)
+            painter.setBrush(wc.lighter(108))
+            painter.drawRect(cx - 60, cy + 10, 14, 3)
+            # Focus knobs
+            painter.setBrush(QtGui.QColor("#263238"))
+            painter.drawEllipse(cx - 48, cy + 8, 5, 5)
+            painter.drawEllipse(cx - 48, cy + 14, 5, 5)
+            # Light source for high tiers
+            if self.tier in ["heroic", "epic", "legendary", "godlike"]:
+                light_grad = QtGui.QRadialGradient(cx - 54, cy + 22, 4)
+                light_grad.setColorAt(0, QtGui.QColor("#ffeb3b"))
+                light_grad.setColorAt(0.5, QtGui.QColor("#fbc02d"))
+                light_grad.setColorAt(1, wc.darker(110))
+                painter.setBrush(light_grad)
+                painter.setPen(QtCore.Qt.NoPen)
+                painter.drawEllipse(cx - 57, cy + 22, 6, 6)
+
+        # === SHIELD (Clipboard with Data Charts - iconic scientist accessory) ===
+        shield = self.equipped.get("Shield")
+        # Pathetic tier has no clipboard yet - using scraps of paper
+        if self.tier == "pathetic":
+            shield = None
+        if shield:
+            sc = QtGui.QColor(shield.get("color", "#795548"))  # Brown clipboard
+            # Clipboard held in right hand at waist level
+            # Clipboard backing board
+            board_grad = QtGui.QLinearGradient(cx + 30, cy, cx + 58, cy + 35)
+            board_grad.setColorAt(0, sc.lighter(118))
+            board_grad.setColorAt(0.5, sc)
+            board_grad.setColorAt(1, sc.darker(118))
+            painter.setBrush(board_grad)
+            painter.setPen(QtGui.QPen(sc.darker(135), 2))
+            # Clipboard board (rectangular)
+            painter.drawRoundedRect(cx + 30, cy, 28, 38, 2, 2)
+            
+            # Metal clip at top
+            painter.setBrush(QtGui.QColor("#757575"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#424242"), 1))
+            painter.drawRect(cx + 38, cy - 2, 12, 4)
+            painter.drawArc(cx + 40, cy - 4, 8, 6, 0, 180 * 16)
+            
+            # White paper with data
+            painter.setBrush(QtGui.QColor("#ffffff"))
+            painter.setPen(QtCore.Qt.NoPen)
+            painter.drawRect(cx + 32, cy + 4, 24, 32)
+            
+            # Data visualization on clipboard
+            painter.setPen(QtGui.QPen(QtGui.QColor("#1e88e5"), 1))
+            # Title text
+            painter.setFont(QtGui.QFont("Arial", 5, QtGui.QFont.Bold))
+            painter.drawText(cx + 34, cy + 8, "DATA")
+            
+            # Bar chart
+            painter.setBrush(QtGui.QColor("#4caf50"))
+            painter.setPen(QtCore.Qt.NoPen)
+            bar_heights = [6, 10, 8, 12, 14] if self.tier in ["heroic", "epic", "legendary", "godlike"] else [4, 3, 5, 4, 3]
+            for i, bar_h in enumerate(bar_heights):
+                painter.drawRect(cx + 34 + i * 4, cy + 24 - bar_h, 3, bar_h)
+            
+            # Grid lines
+            painter.setPen(QtGui.QPen(QtGui.QColor("#e0e0e0"), 1))
+            for i in range(4):
+                y_line = cy + 12 + i * 4
+                painter.drawLine(cx + 34, y_line, cx + 54, y_line)
+            
+            # Checkboxes for low tiers (to-do list)
+            if self.tier in ["pathetic", "modest", "decent"]:
+                painter.setPen(QtGui.QPen(QtGui.QColor("#616161"), 1))
+                painter.setBrush(QtCore.Qt.NoBrush)
+                for i in range(3):
+                    y_check = cy + 26 + i * 5
+                    painter.drawRect(cx + 34, y_check, 3, 3)
+                    # Checkmark for completed items
+                    if i < 1 or self.tier == "decent":
+                        painter.setPen(QtGui.QPen(QtGui.QColor("#4caf50"), 2))
+                        painter.drawLine(cx + 34, y_check + 2, cx + 35, y_check + 3)
+                        painter.drawLine(cx + 35, y_check + 3, cx + 37, y_check)
+                        painter.setPen(QtGui.QPen(QtGui.QColor("#616161"), 1))
+            
+            # Coffee stain on paper for pathetic tier
+            if self.tier == "pathetic":
+                painter.setOpacity(0.3)
+                painter.setBrush(QtGui.QColor("#8b4513"))
+                painter.setPen(QtCore.Qt.NoPen)
+                painter.drawEllipse(cx + 48, cy + 30, 6, 6)
+                painter.setOpacity(1.0)
+        else:
+            # Pathetic tier - crumpled paper notes in hand (no proper clipboard)
+            if self.tier == "pathetic":
+                painter.setOpacity(0.8)
+                painter.setBrush(QtGui.QColor("#f5f5dc"))
+                painter.setPen(QtGui.QPen(QtGui.QColor("#8b7355"), 1))
+                # Crumpled paper
+                paper_path = QtGui.QPainterPath()
+                paper_path.moveTo(cx + 38, cy + 8)
+                paper_path.lineTo(cx + 50, cy + 6)
+                paper_path.lineTo(cx + 52, cy + 18)
+                paper_path.lineTo(cx + 48, cy + 22)
+                paper_path.lineTo(cx + 40, cy + 20)
+                paper_path.closeSubpath()
+                painter.drawPath(paper_path)
+                # Wrinkle lines
+                painter.setPen(QtGui.QPen(QtGui.QColor("#9e9e9e"), 1))
+                painter.drawLine(cx + 42, cy + 10, cx + 48, cy + 12)
+                painter.drawLine(cx + 44, cy + 15, cx + 50, cy + 16)
+                painter.setOpacity(1.0)
+
+        # === CLOAK (Hazmat Suit overlay) ===
+        cloak = self.equipped.get("Cloak")
+        if cloak:
+            haz = QtGui.QColor(cloak.get("color", "#cfd8dc"))
+            painter.setOpacity(0.16)
+            painter.setBrush(haz)
+            painter.setPen(QtGui.QPen(haz.darker(130), 2))
+            # Suit body overlay
+            painter.drawRoundedRect(cx - 38, cy - 30, 76, 110, 10, 10)
+            # Hood overlay
+            painter.drawRoundedRect(cx - 28, cy - 82, 56, 60, 18, 18)
+            painter.setOpacity(1.0)
+
+        # === POWER LABEL ===
+        label_rect = QtCore.QRect(0, h - 28, w, 25)
+        painter.fillRect(label_rect, QtGui.QColor(0, 0, 0, 130))
+        
+        if self.tier in ["legendary", "godlike"]:
+            painter.setPen(QtGui.QColor("#ffd700"))
+            painter.setOpacity(0.5)
+            for offset in [(-1, -1), (1, -1), (-1, 1), (1, 1)]:
+                painter.drawText(label_rect.adjusted(offset[0], offset[1], 0, 0), 
+                               QtCore.Qt.AlignCenter, f"🔬 {self.power}")
+            painter.setOpacity(1.0)
+        elif self.tier in ["epic"]:
+            painter.setPen(QtGui.QColor("#42a5f5"))
+        elif self.tier in ["heroic"]:
+            painter.setPen(QtGui.QColor("#64b5f6"))
+        else:
+            painter.setPen(QtGui.QColor("#90caf9"))
+        
+        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🔬 {self.power}")
 
 
 class HydrationTab(QtWidgets.QWidget):
