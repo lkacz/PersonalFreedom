@@ -13932,14 +13932,18 @@ class PrioritiesDialog(QtWidgets.QDialog):
         self.setWindowTitle("🎯 My Priorities")
         self.resize(550, 620)
         self.priorities = copy.deepcopy(self.blocker.priorities) if self.blocker.priorities else []
+        # Mark loaded priorities as existing (locked strategic status)
+        for p in self.priorities:
+            p["_existing"] = True
+
         if not self.priorities:
             self.priorities.append(self._empty_priority())
         self.title_edits: List[QtWidgets.QLineEdit] = []
         self.day_checks: List[List[tuple]] = []
         self.planned_spins: List[QtWidgets.QDoubleSpinBox] = []
+        self.strategic_checks: List[QtWidgets.QCheckBox] = []
         self.priority_list_layout: Optional[QtWidgets.QVBoxLayout] = None
         self.add_priority_btn: Optional[QtWidgets.QPushButton] = None
-        self.strategic_group: Optional[QtWidgets.QButtonGroup] = None
         self._build_ui()
 
     def _empty_priority(self) -> dict:
@@ -14043,12 +14047,32 @@ class PrioritiesDialog(QtWidgets.QDialog):
         title_edit.setPlaceholderText("Enter priority title...")
         title_row.addWidget(title_edit)
 
-        strategic_radio = QtWidgets.QRadioButton("Strategic (+50% XP)")
-        strategic_radio.setToolTip("Sessions focused on this priority grant +50% XP.")
-        strategic_radio.setChecked(priority.get("strategic", False))
-        if self.strategic_group is not None:
-            self.strategic_group.addButton(strategic_radio, index)
-        title_row.addWidget(strategic_radio)
+        # Strategic Priority Checkbox (Locked for existing items)
+        is_existing = priority.get("_existing", False)
+        # Check if any OTHER priority is ALREADY strategic and locked (existing)
+        # We look at the data source self.priorities because widgets might not be built yet
+        locked_strategic_exists = any(p.get("strategic", False) and p.get("_existing", False) for p in self.priorities)
+
+        strategic_chk = QtWidgets.QCheckBox("Strategic (+50% XP)")
+        is_strategic = priority.get("strategic", False)
+        strategic_chk.setChecked(is_strategic)
+
+        # Locking Logic:
+        # 1. If priority is existing, strategic status is immutable -> Disabled
+        # 2. If priority is new, but there is already a locked strategic priority -> Disabled
+        if is_existing:
+            strategic_chk.setEnabled(False)
+            strategic_chk.setToolTip("Strategic status cannot be changed for existing priorities.")
+        elif locked_strategic_exists:
+            strategic_chk.setEnabled(False)
+            strategic_chk.setToolTip("A strategic priority is already active and cannot be superseded.")
+        else:
+            strategic_chk.setEnabled(True)
+            strategic_chk.setToolTip("Sessions focused on this priority grant +50% XP.")
+            strategic_chk.toggled.connect(lambda checked, idx=index: self._on_strategic_toggled(idx, checked))
+
+        title_row.addWidget(strategic_chk)
+        self.strategic_checks.append(strategic_chk)
 
         complete_btn = QtWidgets.QPushButton("✅ Complete")
         complete_btn.setToolTip("Mark this priority as complete and roll for a Lucky Gift!")
@@ -14095,30 +14119,18 @@ class PrioritiesDialog(QtWidgets.QDialog):
             p_bar.setFormat(f"{logged:.1f}/{planned:.1f} hrs ({pct}%)")
             p_bar.setFixedWidth(160)
             planned_layout.addWidget(p_bar)
-        else:
-            planned_layout.addWidget(QtWidgets.QLabel(f"Logged: {logged:.1f} hrs"))
+            if idx < len(self.strategic_checks):
+                priority["strategic"] = self.strategic_checks[idx].isChecked()
 
-        planned_layout.addStretch()
-        self.planned_spins.append(planned_spin)
-        g_layout.addLayout(planned_layout)
-
-        if self.priority_list_layout is not None:
-            self.priority_list_layout.addWidget(group)
-
-    def _sync_ui_into_priorities(self) -> None:
-        """Update the stored priorities with the current widget values."""
-        if not self.title_edits:
+    def _on_strategic_toggled(self, index: int, checked: bool) -> None:
+        """Handle strategic status changes with exclusivity."""
+        if not checked:
             return
-        for idx, priority in enumerate(self.priorities):
-            if idx >= len(self.title_edits):
-                break
-            priority["title"] = self.title_edits[idx].text().strip()
-            priority["days"] = [day for day, cb in self.day_checks[idx] if cb.isChecked()]
-            priority["planned_hours"] = self.planned_spins[idx].value()
 
-        checked_id = self.strategic_group.checkedId() if self.strategic_group else -1
-        for idx, priority in enumerate(self.priorities):
-            priority["strategic"] = (idx == checked_id)
+        # If this one is checked, uncheck all OTHER NEW strategic checkboxes
+        for i, chk in enumerate(self.strategic_checks):
+            if i != index and chk.isEnabled() and chk.isChecked():
+                chk.setChecked(False)
 
     def _rebuild_priority_rows(self) -> None:
         """Recreate the priority row widgets to reflect current data."""
@@ -14127,7 +14139,20 @@ class PrioritiesDialog(QtWidgets.QDialog):
 
         self._sync_ui_into_priorities()
 
-        strategic_seen = False
+        # Clean up widgets
+        while self.priority_list_layout.count():
+            item = self.priority_list_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+
+        self.title_edits = []
+        self.day_checks = []
+        self.planned_spins = []
+        self.strategic_checks = []
+
+        for i in range(len(self.priorities)):
+            self._create_priority_row(i)
         for priority in self.priorities:
             if priority.get("strategic") and not strategic_seen:
                 strategic_seen = True
