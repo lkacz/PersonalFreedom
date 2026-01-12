@@ -10,6 +10,9 @@ import re
 from datetime import datetime, timedelta
 from typing import Optional
 
+# Module availability flag for optional imports
+GAMIFICATION_AVAILABLE = True
+
 # ============================================================================
 # ADHD Buster Gamification System
 # ============================================================================
