@@ -1464,7 +1464,6 @@ class TimerTab(QtWidgets.QWidget):
             return
         
         try:
-            from gamification import equip_item
             slot = item.get("slot", "Unknown")
             
             # Check if slot is empty
@@ -1478,18 +1477,39 @@ class TimerTab(QtWidgets.QWidget):
                 )
                 return
             
-            # Equip the item
-            success = equip_item(self.blocker.adhd_buster, item)
-            if success:
-                QtWidgets.QMessageBox.information(
+            # Get game state manager
+            game_state = get_game_state()
+            if not game_state:
+                QtWidgets.QMessageBox.warning(
                     self.window(),
-                    "Item Equipped!",
-                    f"✓ {item.get('name', 'Item')} equipped to {slot} slot!"
+                    "Error",
+                    "Game state manager not available."
                 )
-                # Refresh UI
-                main_window = self.window()
-                if hasattr(main_window, 'refresh_adhd_tab'):
-                    main_window.refresh_adhd_tab()
+                return
+            
+            # Create deep copy to preserve lucky_options
+            new_item = item.copy()
+            if "lucky_options" in item and isinstance(item["lucky_options"], dict):
+                new_item["lucky_options"] = item["lucky_options"].copy()
+            
+            # Equip the item using GameState
+            game_state.swap_equipped_item(slot, new_item)
+            
+            # Sync changes to active hero
+            from gamification import sync_hero_data
+            sync_hero_data(self.blocker.adhd_buster)
+            
+            QtWidgets.QMessageBox.information(
+                self.window(),
+                "Item Equipped!",
+                f"✓ {item.get('name', 'Item')} equipped to {slot} slot!"
+            )
+            
+            # Refresh UI
+            main_window = self.window()
+            if hasattr(main_window, 'refresh_adhd_tab'):
+                main_window.refresh_adhd_tab()
+                
         except Exception as e:
             QtWidgets.QMessageBox.warning(
                 self.window(),

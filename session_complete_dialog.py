@@ -10,9 +10,10 @@ from typing import Optional
 from PySide6 import QtWidgets, QtCore, QtGui
 
 try:
-    from gamification import GAMIFICATION_AVAILABLE
+    from gamification import GAMIFICATION_AVAILABLE, ITEM_RARITIES
 except ImportError:
     GAMIFICATION_AVAILABLE = False
+    ITEM_RARITIES = {}
 
 
 class SessionStatsWidget(QtWidgets.QWidget):

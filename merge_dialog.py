@@ -595,12 +595,12 @@ class LuckyMergeDialog(QtWidgets.QDialog):
     
     def _show_success_dialog(self):
         """Show success result dialog."""
-        result_item = self.merge_result.get("result_item", {})
+        result_item = self.merge_result.get("result_item", {}) if self.merge_result else {}
         rarity = result_item.get("rarity", "Common")
         name = result_item.get("name", "Unknown Item")
         power = result_item.get("power", 0)
-        roll = self.merge_result.get("roll_pct", 0)
-        needed = self.merge_result.get("needed_pct", 0)
+        roll = self.merge_result.get("roll_pct", 0) if self.merge_result else 0
+        needed = self.merge_result.get("needed_pct", 0) if self.merge_result else 0
         
         rarity_color = ITEM_RARITIES.get(rarity, {}).get("color", "#9e9e9e")
         
@@ -642,8 +642,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
     
     def _show_failure_dialog(self):
         """Show failure result dialog."""
-        roll = self.merge_result.get("roll_pct", 0)
-        needed = self.merge_result.get("needed_pct", 0)
+        roll = self.merge_result.get("roll_pct", 0) if self.merge_result else 0
+        needed = self.merge_result.get("needed_pct", 0) if self.merge_result else 0
         
         msg = QtWidgets.QMessageBox(self)
         msg.setWindowTitle("💔 Merge Failed")
