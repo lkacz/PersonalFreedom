@@ -451,17 +451,102 @@ effective_minutes = 60 + 30 = 90
 # Shifts from Rare-center to ~Epic-center
 ```
 
-#### 4. Merge Luck
+#### 4. Merge Luck (From Items Being Merged)
 ```python
-base_rate = 0.15  # 15%
-merge_luck_bonus = 10  # 10%
+# NOTE: merge_luck is calculated from ITEMS BEING MERGED, not equipped gear
+# This encourages sacrificing items with merge_luck for better odds
+# The merge_luck values are weighted: 1% is common, 15% is very rare
+# There's also a 50% skip chance - merge_luck often doesn't appear at all
+
+base_rate = 0.25  # 25% base
+items_merge_luck = 5  # Sum of merge_luck from items being merged
 
 # Direct percentage addition
-merge_luck_bonus_decimal = 10 / 100 = 0.10
-total_rate = 0.15 + 0.10 = 0.25  # 25%
+items_merge_luck_decimal = 5 / 100 = 0.05
+total_rate = 0.25 + 0.05 = 0.30  # 30%
 
-# Capped by MERGE_MAX_SUCCESS_RATE (35%)
-total_rate = min(0.25, 0.35) = 0.25
+# Capped by MERGE_MAX_SUCCESS_RATE (90%) - always some risk!
+total_rate = min(0.30, 0.90) = 0.30
+
+# With boost (+25% for 50 coins):
+total_rate = min(0.30 + 0.25, 1.0) = 0.55
+```
+
+#### Merge Lucky Options System
+
+**merge_luck is special:**
+- 50% skip chance (often doesn't appear at all)
+- Weighted values: `[40, 25, 15, 10, 5, 3, 2]` for `[1%, 2%, 3%, 5%, 8%, 10%, 15%]`
+- 1% is 40x more likely than 15%
+- Encourages sacrificing many low-value items for merge success
+
+**Coin Options in Merge Dialog:**
+| Option | Cost | Effect |
+|--------|------|--------|
+| Base Merge | 50 🪙 | Attempt merge with base rate |
+| Boost (+25%) | +50 🪙 | Adds +25% to success rate |
+| Tier Upgrade | +50 🪙 | On success, result is +1 rarity tier |
+
+**On Failure (within 5% of success) - Recovery Options:**
+| Option | Cost | Effect |
+|--------|------|--------|
+| Retry | 50 🪙 | Re-roll the merge |
+| Claim Item | 100 🪙 | Get the merged item directly (skip RNG) |
+
+**Common Items as Fuel:**
+- Common items do NOT decrease the result tier
+- They add +3% per item (after first two) to success rate
+- They contribute their merge_luck to the total
+- Use Common items to fuel merges without risking quality loss!
+
+### Merge Result Tier Determination
+
+**How Result Rarity is Calculated:**
+```python
+# Step 1: Filter out Common items (they don't affect tier)
+tier_affecting_items = [item for item in items if item["rarity"] != "Common"]
+fuel_items = [item for item in items if item["rarity"] == "Common"]
+
+# Step 2: Calculate median rarity from non-Common items only
+if tier_affecting_items:
+    rarity_values = [RARITY_ORDER[item["rarity"]] for item in tier_affecting_items]
+    median_rarity = statistics.median(rarity_values)
+else:
+    median_rarity = 0  # If only Common items, result is Common
+
+# Step 3: Apply tier upgrade if enabled (+1 tier for +50 coins)
+if tier_upgrade_enabled:
+    median_rarity = min(median_rarity + 1, len(RARITY_ORDER) - 1)
+```
+
+**Rarity Order (for reference):**
+| Index | Rarity |
+|-------|--------|
+| 0 | Common |
+| 1 | Uncommon |
+| 2 | Rare |
+| 3 | Epic |
+| 4 | Legendary |
+| 5 | Mythic |
+| 6 | Godly |
+
+**Examples:**
+1. **Rare + Rare + 2x Common** → Result: Rare (Common items ignored)
+2. **Epic + Rare + Common** → Result: Epic (median of [Epic, Rare] = Epic)
+3. **Rare + Rare + Rare + Tier Upgrade** → Result: Epic (+1 tier)
+4. **5x Common** → Result: Common (no non-Common items)
+
+### Merge Failure & Retry
+
+When a merge fails by a narrow margin (≤5%), the failure dialog shows:
+- How close you were (e.g., "Rolled 42.5%, needed 45%")
+- Option to retry with +5% boost for 50 coins
+
+**Edge Case Retry Logic:**
+```python
+# In failure dialog
+if (needed - rolled) <= 5.0:  # Within 5% of success
+    show_retry_option(cost=50, bonus=5)
 ```
 
 ---

@@ -99,7 +99,11 @@ def test_equip_item_deep_copy_isolation(game_state):
 
 
 def test_award_items_batch_no_duplication(game_state):
-    """CRITICAL: Test that award_items_batch doesn't create duplicate items when auto-equipping."""
+    """Test that award_items_batch properly adds all items to inventory and auto-equips to empty slots.
+    
+    Design: All awarded items go to inventory. Auto-equip sets the equipped slot
+    to reference the item in inventory. Items are always in inventory.
+    """
     # Create items for all equipment slots
     items_to_award = [
         {"name": "Auto Helmet", "slot": "Helmet", "rarity": "Common", "power": 10},
@@ -120,20 +124,14 @@ def test_award_items_batch_no_duplication(game_state):
     assert "Weapon" in equipped
     assert equipped["Weapon"]["name"] == "Auto Sword"
     
-    # Spare helmet should be in inventory (slot already occupied)
-    assert len(inventory) == 1
-    assert inventory[0]["name"] == "Spare Helmet"
-    
-    # CRITICAL: Items should NOT be in BOTH inventory AND equipped
-    helmet_in_inventory = any(item["name"] == "Auto Helmet" for item in inventory)
-    sword_in_inventory = any(item["name"] == "Auto Sword" for item in inventory)
-    
-    assert not helmet_in_inventory, "DUPLICATION BUG: Equipped helmet also found in inventory!"
-    assert not sword_in_inventory, "DUPLICATION BUG: Equipped sword also found in inventory!"
+    # ALL items should be in inventory (equipped items stay in inventory)
+    assert len(inventory) == 3
+    inventory_names = {item["name"] for item in inventory}
+    assert inventory_names == {"Auto Helmet", "Auto Sword", "Spare Helmet"}
     
     # Verify return values are correct
     assert len(result["equipped"]) == 2, "Should report 2 equipped items"
-    assert len(result["items"]) == 1, "Should report 1 item added to inventory"
+    assert len(result["items"]) == 3, "Should report 3 items added to inventory"
 
 
 def test_award_items_batch_deep_copy_isolation(game_state):
@@ -173,7 +171,11 @@ def test_award_items_batch_deep_copy_isolation(game_state):
 
 
 def test_swap_equipped_item_isolation(game_state):
-    """Test that swap_equipped_item maintains isolation between inventory and equipped."""
+    """Test that swap_equipped_item maintains isolation between inventory and equipped.
+    
+    Design: Items stay in inventory when equipped. Equipped dict holds a deep copy
+    to prevent mutation of inventory items via equipped references.
+    """
     # Add item to inventory
     inventory_item = {
         "name": "Swap Test Item",
@@ -189,11 +191,11 @@ def test_swap_equipped_item_isolation(game_state):
     inventory = game_state.adhd_buster["inventory"]
     stored_ref = inventory[0]
     
-    # Equip it via swap (removes from inventory, adds to equipped)
+    # Equip it via swap (item stays in inventory, equipped gets a deep copy)
     result = game_state.swap_equipped_item("Weapon", stored_ref)
     
-    # Verify item is no longer in inventory
-    assert len(game_state.adhd_buster["inventory"]) == 0, f"Item should be removed from inventory after equipping. Inventory: {game_state.adhd_buster['inventory']}"
+    # Item should STILL be in inventory (equipped items stay in inventory)
+    assert len(game_state.adhd_buster["inventory"]) == 1, f"Item should stay in inventory after equipping. Inventory: {game_state.adhd_buster['inventory']}"
     
     # Verify item is in equipped
     equipped = game_state.adhd_buster["equipped"]
@@ -210,32 +212,35 @@ def test_swap_equipped_item_isolation(game_state):
 
 
 def test_no_duplication_exploit_via_unequip_reequip(game_state):
-    """Test that unequip->equip cycle doesn't create duplicates."""
+    """Test that unequip->equip cycle maintains a single item in inventory.
+    
+    Design: All items are in inventory. Equip/unequip just updates the equipped dict.
+    """
     # Award an item with auto-equip
     item = {"name": "Test Item", "slot": "Helmet", "rarity": "Rare", "power": 50}
     game_state.award_items_batch([item], auto_equip=True)
     
-    # Verify initial state: 1 in equipped, 0 in inventory
+    # Verify initial state: 1 in equipped, 1 in inventory (item is in both)
     assert "Helmet" in game_state.adhd_buster["equipped"]
-    assert len(game_state.adhd_buster["inventory"]) == 0
+    assert len(game_state.adhd_buster["inventory"]) == 1
     
-    # Unequip the item (moves to inventory)
+    # Unequip the item (item stays in inventory, just removed from equipped)
     unequipped = game_state.unequip_item("Helmet")
     assert unequipped is not None
-    assert len(game_state.adhd_buster["inventory"]) == 1
+    assert len(game_state.adhd_buster["inventory"]) == 1  # Still 1 in inventory
     assert "Helmet" not in game_state.adhd_buster["equipped"]
     
-    # Re-equip via swap (moves back to equipped)
+    # Re-equip via swap (item stays in inventory, equipped is updated)
     inv_item = game_state.adhd_buster["inventory"][0]
     game_state.swap_equipped_item("Helmet", inv_item)
     
-    # Verify final state: 1 in equipped, 0 in inventory (no duplication)
+    # Verify final state: 1 in equipped, 1 in inventory (same item, no duplication)
     assert "Helmet" in game_state.adhd_buster["equipped"]
-    assert len(game_state.adhd_buster["inventory"]) == 0
+    assert len(game_state.adhd_buster["inventory"]) == 1
     
-    # CRITICAL: Total items in system should still be 1
-    total_items = len(game_state.adhd_buster["inventory"]) + len(game_state.adhd_buster["equipped"])
-    assert total_items == 1, f"DUPLICATION BUG: Found {total_items} items, expected 1!"
+    # CRITICAL: Only 1 unique item in system (in inventory, referenced by equipped)
+    assert game_state.adhd_buster["inventory"][0]["name"] == "Test Item"
+    assert game_state.adhd_buster["equipped"]["Helmet"]["name"] == "Test Item"
 
 
 def test_award_items_batch_auto_equip_false(game_state):
@@ -262,7 +267,10 @@ def test_award_items_batch_auto_equip_false(game_state):
 
 
 def test_multiple_items_same_slot_with_auto_equip(game_state):
-    """Test handling of multiple items for the same slot with auto-equip."""
+    """Test handling of multiple items for the same slot with auto-equip.
+    
+    Design: All items go to inventory. Only first item for empty slot is auto-equipped.
+    """
     items = [
         {"name": "Helmet 1", "slot": "Helmet", "rarity": "Common", "power": 10},
         {"name": "Helmet 2", "slot": "Helmet", "rarity": "Rare", "power": 30},
@@ -277,19 +285,23 @@ def test_multiple_items_same_slot_with_auto_equip(game_state):
     assert "Helmet" in equipped
     assert equipped["Helmet"]["name"] == "Helmet 1"
     
-    # Other two helmets should be in inventory
+    # ALL helmets should be in inventory (equipped items stay in inventory)
     inventory = game_state.adhd_buster["inventory"]
-    assert len(inventory) == 2
+    assert len(inventory) == 3
     helmet_names = {item["name"] for item in inventory}
-    assert helmet_names == {"Helmet 2", "Helmet 3"}
+    assert helmet_names == {"Helmet 1", "Helmet 2", "Helmet 3"}
     
     # Verify counts
     assert len(result["equipped"]) == 1
-    assert len(result["items"]) == 2
+    assert len(result["items"]) == 3
 
 
 def test_unequip_item_deep_copy_isolation(game_state):
-    """Test that unequip_item uses deep copy to prevent reference leaks."""
+    """Test that unequip_item uses deep copy to prevent reference leaks.
+    
+    Design: Items are always in inventory. Unequip just removes from equipped dict.
+    The returned item is a deep copy for safety.
+    """
     # Award and auto-equip an item with nested properties
     item = {
         "name": "Test Helmet",
@@ -300,16 +312,17 @@ def test_unequip_item_deep_copy_isolation(game_state):
     }
     game_state.award_items_batch([item], auto_equip=True)
     
-    # Verify it's equipped
+    # Verify it's equipped AND in inventory
     assert "Helmet" in game_state.adhd_buster["equipped"]
+    assert len(game_state.adhd_buster["inventory"]) == 1
     equipped_item = game_state.adhd_buster["equipped"]["Helmet"]
     
     # Unequip and get the returned value
     returned_item = game_state.unequip_item("Helmet")
     
-    # Verify it moved to inventory
+    # Verify it's no longer equipped but still in inventory
     assert "Helmet" not in game_state.adhd_buster["equipped"]
-    assert len(game_state.adhd_buster["inventory"]) == 1
+    assert len(game_state.adhd_buster["inventory"]) == 1  # Still 1 item
     inventory_item = game_state.adhd_buster["inventory"][0]
     
     # Test 1: Mutating the returned item should NOT affect inventory

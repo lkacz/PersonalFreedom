@@ -4,6 +4,7 @@ Lucky Merge Dialog - Industry-Standard UX
 Professional merge UI with visual feedback, animations, and comprehensive information display.
 """
 
+import random
 from datetime import datetime
 from typing import Optional
 from PySide6 import QtWidgets, QtCore, QtGui
@@ -12,14 +13,317 @@ try:
     from gamification import (
         calculate_merge_success_rate, 
         get_merge_result_rarity,
-        calculate_total_lucky_bonuses,
         perform_lucky_merge,
         ITEM_RARITIES,
-        RARITY_POWER
+        RARITY_POWER,
+        RARITY_ORDER,
+        RARITY_UPGRADE,
+        COIN_COSTS,
+        MERGE_BOOST_BONUS
     )
     GAMIFICATION_AVAILABLE = True
 except ImportError:
     GAMIFICATION_AVAILABLE = False
+    COIN_COSTS = {"merge_base": 50, "merge_boost": 50, "merge_tier_upgrade": 50, "merge_retry_bump": 50, "merge_claim": 100}
+    MERGE_BOOST_BONUS = 0.25
+    RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    RARITY_UPGRADE = {"Common": "Uncommon", "Uncommon": "Rare", "Rare": "Epic", "Epic": "Legendary", "Legendary": "Legendary"}
+
+
+class MergeRollAnimationDialog(QtWidgets.QDialog):
+    """Dramatic slider animation for merge roll reveal."""
+    
+    finished_signal = QtCore.Signal(bool)  # Emits success/failure when done
+    
+    def __init__(self, target_roll: float, success_threshold: float, 
+                 parent: Optional[QtWidgets.QWidget] = None):
+        super().__init__(parent)
+        self.target_roll = target_roll * 100  # Convert to percentage
+        self.success_threshold = success_threshold * 100
+        self.current_position = 0.0  # Current slider position (0-100)
+        self.is_success = target_roll < success_threshold
+        
+        # Animation parameters
+        self.tick_interval = 25  # ms between updates
+        self.total_ticks = 0
+        self.max_ticks = 100  # Total animation ticks
+        self.direction = 1  # 1 = right, -1 = left
+        self.speed = 8.0  # Initial speed
+        
+        self._setup_ui()
+        self._start_animation()
+    
+    def _setup_ui(self):
+        """Build the slider animation UI."""
+        self.setWindowTitle("🎲 Rolling...")
+        self.setModal(True)
+        self.setFixedSize(500, 200)
+        self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
+        
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Main container
+        container = QtWidgets.QWidget()
+        container.setStyleSheet("""
+            QWidget {
+                background: #1a1a2e;
+                border: 3px solid #ffd700;
+                border-radius: 12px;
+            }
+        """)
+        container_layout = QtWidgets.QVBoxLayout(container)
+        container_layout.setSpacing(12)
+        container_layout.setContentsMargins(20, 16, 20, 16)
+        
+        # Title
+        title = QtWidgets.QLabel("🎲 Rolling the Dice...")
+        title.setAlignment(QtCore.Qt.AlignCenter)
+        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffd700;")
+        container_layout.addWidget(title)
+        
+        # The slider track widget (custom painted)
+        self.slider_widget = MergeSliderWidget(self.success_threshold)
+        self.slider_widget.setFixedHeight(60)
+        container_layout.addWidget(self.slider_widget)
+        
+        # Current roll display
+        self.roll_label = QtWidgets.QLabel("0.0%")
+        self.roll_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.roll_label.setStyleSheet("""
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            font-family: 'Consolas', 'Monaco', monospace;
+        """)
+        container_layout.addWidget(self.roll_label)
+        
+        # Status
+        self.status_label = QtWidgets.QLabel("⚡ Spinning...")
+        self.status_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.status_label.setStyleSheet("color: #aaa; font-size: 12px;")
+        container_layout.addWidget(self.status_label)
+        
+        layout.addWidget(container)
+    
+    def _start_animation(self):
+        """Start the slider animation."""
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self._tick)
+        self.timer.start(self.tick_interval)
+    
+    def _tick(self):
+        """Update animation state - slider bounces back and forth, slowing down."""
+        self.total_ticks += 1
+        progress = self.total_ticks / self.max_ticks
+        
+        # Decrease speed over time
+        decay = 1.0 - (progress * 0.9)  # Starts at 1.0, ends at 0.1
+        current_speed = self.speed * decay
+        
+        # Move slider
+        self.current_position += self.direction * current_speed
+        
+        # Bounce off edges
+        if self.current_position >= 100:
+            self.current_position = 100
+            self.direction = -1
+        elif self.current_position <= 0:
+            self.current_position = 0
+            self.direction = 1
+        
+        # Update display
+        self.slider_widget.set_position(self.current_position)
+        self.roll_label.setText(f"{self.current_position:.1f}%")
+        
+        # Color based on position
+        if self.current_position < self.success_threshold:
+            self.roll_label.setStyleSheet("""
+                font-size: 28px; font-weight: bold; color: #4caf50;
+                font-family: 'Consolas', 'Monaco', monospace;
+            """)
+        else:
+            self.roll_label.setStyleSheet("""
+                font-size: 28px; font-weight: bold; color: #f44336;
+                font-family: 'Consolas', 'Monaco', monospace;
+            """)
+        
+        # Update status based on phase
+        if progress < 0.5:
+            self.status_label.setText("⚡ Spinning...")
+        elif progress < 0.8:
+            self.status_label.setText("🎯 Slowing down...")
+        else:
+            self.status_label.setText("🎲 Almost there...")
+        
+        # When slow enough, snap to target
+        if progress >= 0.95 or (progress > 0.8 and current_speed < 0.5):
+            self.timer.stop()
+            self._animate_to_target()
+    
+    def _animate_to_target(self):
+        """Smoothly animate to the final target position."""
+        self.snap_timer = QtCore.QTimer(self)
+        self.snap_steps = 15
+        self.snap_current = 0
+        self.snap_start = self.current_position
+        self.snap_timer.timeout.connect(self._snap_tick)
+        self.snap_timer.start(30)
+    
+    def _snap_tick(self):
+        """Animate snapping to target."""
+        self.snap_current += 1
+        t = self.snap_current / self.snap_steps
+        # Ease out cubic
+        t = 1 - (1 - t) ** 3
+        
+        self.current_position = self.snap_start + (self.target_roll - self.snap_start) * t
+        self.slider_widget.set_position(self.current_position)
+        self.roll_label.setText(f"{self.current_position:.1f}%")
+        
+        if self.snap_current >= self.snap_steps:
+            self.snap_timer.stop()
+            self.current_position = self.target_roll
+            self.slider_widget.set_position(self.target_roll)
+            self._show_final_result()
+    
+    def _show_final_result(self):
+        """Show the final result."""
+        self.roll_label.setText(f"{self.target_roll:.1f}%")
+        
+        if self.is_success:
+            self.roll_label.setStyleSheet("""
+                font-size: 28px; font-weight: bold; color: #4caf50;
+                font-family: 'Consolas', 'Monaco', monospace;
+            """)
+            self.status_label.setText("✨ SUCCESS! ✨")
+            self.status_label.setStyleSheet("color: #4caf50; font-size: 16px; font-weight: bold;")
+            self.slider_widget.set_result(True)
+        else:
+            self.roll_label.setStyleSheet("""
+                font-size: 28px; font-weight: bold; color: #f44336;
+                font-family: 'Consolas', 'Monaco', monospace;
+            """)
+            self.status_label.setText("💔 FAILED 💔")
+            self.status_label.setStyleSheet("color: #f44336; font-size: 16px; font-weight: bold;")
+            self.slider_widget.set_result(False)
+        
+        # Auto-close after showing result
+        QtCore.QTimer.singleShot(1200, self.accept)
+
+
+class MergeSliderWidget(QtWidgets.QWidget):
+    """Custom widget that draws the probability bar with sliding marker."""
+    
+    def __init__(self, threshold: float, parent=None):
+        super().__init__(parent)
+        self.threshold = threshold  # Success threshold (0-100)
+        self.position = 0.0  # Current marker position (0-100)
+        self.result = None  # None, True (success), or False (failure)
+        self.setMinimumWidth(400)
+    
+    def set_position(self, pos: float):
+        """Set the marker position (0-100)."""
+        self.position = max(0, min(100, pos))
+        self.update()
+    
+    def set_result(self, success: bool):
+        """Set the final result for visual feedback."""
+        self.result = success
+        self.update()
+    
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        
+        w = self.width()
+        h = self.height()
+        margin = 10
+        bar_height = 20
+        bar_y = (h - bar_height) // 2
+        
+        # Draw the track background
+        track_rect = QtCore.QRectF(margin, bar_y, w - 2*margin, bar_height)
+        
+        # Success zone (green) - left side up to threshold
+        threshold_x = margin + (self.threshold / 100.0) * (w - 2*margin)
+        success_rect = QtCore.QRectF(margin, bar_y, threshold_x - margin, bar_height)
+        painter.setBrush(QtGui.QColor("#2e7d32"))  # Dark green
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawRoundedRect(success_rect, 4, 4)
+        
+        # Failure zone (red) - right side from threshold
+        fail_rect = QtCore.QRectF(threshold_x, bar_y, w - margin - threshold_x, bar_height)
+        painter.setBrush(QtGui.QColor("#c62828"))  # Dark red
+        painter.drawRoundedRect(fail_rect, 4, 4)
+        
+        # Draw threshold line
+        painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
+        painter.drawLine(int(threshold_x), bar_y - 5, int(threshold_x), bar_y + bar_height + 5)
+        
+        # Threshold label
+        painter.setFont(QtGui.QFont("Arial", 9, QtGui.QFont.Bold))
+        painter.drawText(int(threshold_x) - 15, bar_y - 8, f"{self.threshold:.0f}%")
+        
+        # Draw 0% and 100% labels
+        painter.setPen(QtGui.QColor("#888"))
+        painter.setFont(QtGui.QFont("Arial", 8))
+        painter.drawText(margin, bar_y + bar_height + 15, "0%")
+        painter.drawText(w - margin - 25, bar_y + bar_height + 15, "100%")
+        
+        # Draw "WIN" and "LOSE" zone labels
+        painter.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
+        if threshold_x - margin > 40:
+            painter.setPen(QtGui.QColor("#4caf50"))
+            win_x = margin + (threshold_x - margin) / 2 - 15
+            painter.drawText(int(win_x), bar_y + bar_height // 2 + 5, "WIN")
+        if w - margin - threshold_x > 40:
+            painter.setPen(QtGui.QColor("#f44336"))
+            lose_x = threshold_x + (w - margin - threshold_x) / 2 - 18
+            painter.drawText(int(lose_x), bar_y + bar_height // 2 + 5, "LOSE")
+        
+        # Draw the sliding marker
+        marker_x = margin + (self.position / 100.0) * (w - 2*margin)
+        marker_size = 16
+        
+        # Marker color based on position
+        if self.result is not None:
+            marker_color = "#4caf50" if self.result else "#f44336"
+            glow_color = "#4caf50" if self.result else "#f44336"
+        elif self.position < self.threshold:
+            marker_color = "#66bb6a"
+            glow_color = None
+        else:
+            marker_color = "#ef5350"
+            glow_color = None
+        
+        # Draw glow if result shown
+        if glow_color:
+            for i in range(3):
+                glow_size = marker_size + (3-i) * 4
+                painter.setBrush(QtGui.QColor(glow_color))
+                painter.setOpacity(0.2)
+                painter.drawEllipse(
+                    QtCore.QPointF(marker_x, bar_y + bar_height // 2),
+                    glow_size, glow_size
+                )
+            painter.setOpacity(1.0)
+        
+        # Draw marker (triangle pointing down)
+        painter.setBrush(QtGui.QColor(marker_color))
+        painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
+        
+        # Triangle marker
+        triangle = QtGui.QPolygonF([
+            QtCore.QPointF(marker_x, bar_y - 2),
+            QtCore.QPointF(marker_x - 8, bar_y - 14),
+            QtCore.QPointF(marker_x + 8, bar_y - 14),
+        ])
+        painter.drawPolygon(triangle)
+        
+        # Marker line
+        painter.setPen(QtGui.QPen(QtGui.QColor(marker_color), 3))
+        painter.drawLine(int(marker_x), bar_y, int(marker_x), bar_y + bar_height)
 
 
 class ItemPreviewWidget(QtWidgets.QWidget):
@@ -121,7 +425,54 @@ class SuccessRateWidget(QtWidgets.QWidget):
         super().__init__(parent)
         self.rate = rate
         self.breakdown = breakdown
+        self.progress_bar = None
+        self.breakdown_details = None  # Store reference for updates
         self._build_ui()
+    
+    def update_rate(self, new_rate: float, boost_active: bool = False):
+        """Update the displayed success rate and breakdown."""
+        self.rate = new_rate
+        if self.progress_bar:
+            self.progress_bar.setValue(int(self.rate * 100))
+            
+            # Format with boost indicator
+            boost_text = " 🚀" if boost_active else ""
+            self.progress_bar.setFormat(f"{self.rate * 100:.1f}%{boost_text}")
+            
+            # Update breakdown to show/hide boost
+            if self.breakdown_details:
+                breakdown_text = ""
+                for component, value in self.breakdown.items():
+                    breakdown_text += f"  • {component}: +{value}%\n"
+                if boost_active:
+                    breakdown_text += f"  • <b style='color:#64b5f6;'>🚀 Boost: +25%</b>\n"
+                self.breakdown_details.setText(breakdown_text.strip())
+            
+            # Update color
+            if self.rate >= 0.7:
+                color = "#4caf50"  # Green
+            elif self.rate >= 0.4:
+                color = "#ff9800"  # Orange
+            else:
+                color = "#f44336"  # Red
+            
+            self.progress_bar.setStyleSheet(f"""
+                QProgressBar {{
+                    border: 2px solid #555;
+                    border-radius: 8px;
+                    text-align: center;
+                    font-weight: bold;
+                    font-size: 16px;
+                    color: white;
+                    background-color: #2a2a3a;
+                    height: 32px;
+                }}
+                QProgressBar::chunk {{
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                        stop:0 {color}, stop:1 {self._lighten_color(color)});
+                    border-radius: 6px;
+                }}
+            """)
     
     def _build_ui(self):
         """Build the success rate visualization."""
@@ -131,7 +482,7 @@ class SuccessRateWidget(QtWidgets.QWidget):
         
         # Header
         header = QtWidgets.QLabel("🎲 Success Probability")
-        header.setStyleSheet("font-weight: bold; font-size: 14px; color: #333;")
+        header.setStyleSheet("font-weight: bold; font-size: 14px; color: #fff;")
         layout.addWidget(header)
         
         # Progress bar
@@ -139,11 +490,11 @@ class SuccessRateWidget(QtWidgets.QWidget):
         progress_layout = QtWidgets.QHBoxLayout(progress_container)
         progress_layout.setContentsMargins(0, 0, 0, 0)
         
-        progress = QtWidgets.QProgressBar()
-        progress.setRange(0, 100)
-        progress.setValue(int(self.rate * 100))
-        progress.setFormat(f"{self.rate * 100:.1f}%")
-        progress.setTextVisible(True)
+        self.progress_bar = QtWidgets.QProgressBar()
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(int(self.rate * 100))
+        self.progress_bar.setFormat(f"{self.rate * 100:.1f}%")
+        self.progress_bar.setTextVisible(True)
         
         # Color based on rate
         if self.rate >= 0.7:
@@ -153,14 +504,15 @@ class SuccessRateWidget(QtWidgets.QWidget):
         else:
             color = "#f44336"  # Red
         
-        progress.setStyleSheet(f"""
+        self.progress_bar.setStyleSheet(f"""
             QProgressBar {{
-                border: 2px solid #ddd;
+                border: 2px solid #555;
                 border-radius: 8px;
                 text-align: center;
                 font-weight: bold;
                 font-size: 16px;
-                background-color: #f5f5f5;
+                color: white;
+                background-color: #2a2a3a;
                 height: 32px;
             }}
             QProgressBar::chunk {{
@@ -169,21 +521,22 @@ class SuccessRateWidget(QtWidgets.QWidget):
                 border-radius: 6px;
             }}
         """)
-        progress_layout.addWidget(progress)
+        progress_layout.addWidget(self.progress_bar)
         layout.addWidget(progress_container)
         
         # Breakdown
         breakdown_label = QtWidgets.QLabel("<b>Calculation Breakdown:</b>")
-        breakdown_label.setStyleSheet("color: #666; font-size: 11px;")
+        breakdown_label.setStyleSheet("color: #aaa; font-size: 11px;")
         layout.addWidget(breakdown_label)
         
         breakdown_text = ""
         for component, value in self.breakdown.items():
             breakdown_text += f"  • {component}: +{value}%\n"
         
-        breakdown_details = QtWidgets.QLabel(breakdown_text.strip())
-        breakdown_details.setStyleSheet("color: #888; font-size: 10px; padding-left: 10px;")
-        layout.addWidget(breakdown_details)
+        self.breakdown_details = QtWidgets.QLabel(breakdown_text.strip())
+        self.breakdown_details.setStyleSheet("color: #888; font-size: 10px; padding-left: 10px;")
+        self.breakdown_details.setTextFormat(QtCore.Qt.RichText)  # Enable rich text for boost styling
+        layout.addWidget(self.breakdown_details)
     
     def _lighten_color(self, hex_color: str, factor: float = 1.2) -> str:
         """Lighten a hex color."""
@@ -228,7 +581,7 @@ class ResultPreviewWidget(QtWidgets.QWidget):
         # Result title
         title = QtWidgets.QLabel("On Success")
         title.setAlignment(QtCore.Qt.AlignCenter)
-        title.setStyleSheet("font-weight: bold; font-size: 12px; color: #666;")
+        title.setStyleSheet("font-weight: bold; font-size: 12px; color: #aaa;")
         layout.addWidget(title)
         
         # Rarity
@@ -247,12 +600,12 @@ class ResultPreviewWidget(QtWidgets.QWidget):
         # Power range
         power_label = QtWidgets.QLabel(f"⚔ ~{power}")
         power_label.setAlignment(QtCore.Qt.AlignCenter)
-        power_label.setStyleSheet("color: #666; font-size: 12px;")
+        power_label.setStyleSheet("color: #aaa; font-size: 12px;")
         layout.addWidget(power_label)
         
         self.setStyleSheet(f"""
             ResultPreviewWidget {{
-                background: #f9f9f9;
+                background: #2a2a3a;
                 border: 2px dashed {color};
                 border-radius: 12px;
             }}
@@ -277,48 +630,75 @@ class LuckyMergeDialog(QtWidgets.QDialog):
     - Risk/reward clarity
     - Animated execution feedback
     - Accessibility-compliant colors
+    - Optional boost for +25% success rate
     """
     
     def __init__(self, items: list, luck: int, equipped: dict, 
-                 parent: Optional[QtWidgets.QWidget] = None):
+                 parent: Optional[QtWidgets.QWidget] = None, player_coins: int = 0):
         super().__init__(parent)
         self.items = items
         self.luck = luck
         self.equipped = equipped
         self.merge_result = None
+        self.player_coins = player_coins
+        self.boost_enabled = False
+        self.tier_upgrade_enabled = False  # +50 coins to upgrade result tier
         
-        # Calculate merge stats
-        if GAMIFICATION_AVAILABLE and calculate_total_lucky_bonuses:
-            lucky_bonuses = calculate_total_lucky_bonuses(equipped)
-            self.merge_luck_bonus = lucky_bonuses.get("merge_luck", 0)
-        else:
-            self.merge_luck_bonus = 0
+        # Use centralized costs from COIN_COSTS
+        self.merge_cost = COIN_COSTS.get("merge_base", 50)
+        self.boost_cost = COIN_COSTS.get("merge_boost", 50)
+        self.tier_upgrade_cost = COIN_COSTS.get("merge_tier_upgrade", 50)
+        self.retry_bump_cost = COIN_COSTS.get("merge_retry_bump", 50)
+        self.claim_cost = COIN_COSTS.get("merge_claim", 100)  # Claim item on near-miss
+        self.boost_bonus = MERGE_BOOST_BONUS  # +25% success rate
+        
+        # Calculate merge luck from ITEMS BEING MERGED (not equipped gear)
+        # This encourages players to sacrifice items with merge_luck for better odds
+        self.items_merge_luck = 0
+        for item in items:
+            if item and isinstance(item, dict):
+                lucky_opts = item.get("lucky_options", {})
+                if isinstance(lucky_opts, dict):
+                    self.items_merge_luck += lucky_opts.get("merge_luck", 0)
         
         if GAMIFICATION_AVAILABLE:
-            self.success_rate = calculate_merge_success_rate(
-                items, luck, gear_merge_luck=self.merge_luck_bonus
+            self.base_success_rate = calculate_merge_success_rate(
+                items, luck, items_merge_luck=self.items_merge_luck
             )
+            self.success_rate = self.base_success_rate
             self.result_rarity = get_merge_result_rarity(items)
         else:
+            self.base_success_rate = 0.5
             self.success_rate = 0.5
             self.result_rarity = "Rare"
         
-        # Calculate breakdown
-        base_rate = 0.10
-        item_bonus = max(0, len(items) - 1) * 0.03
+        # Calculate upgraded result rarity (for tier upgrade option)
+        try:
+            result_idx = RARITY_ORDER.index(self.result_rarity)
+            self.upgraded_rarity = RARITY_ORDER[min(result_idx + 1, len(RARITY_ORDER) - 1)]
+        except (ValueError, IndexError):
+            self.upgraded_rarity = self.result_rarity
+        
+        # Determine which items affect tier (non-Common only)
+        self.tier_affecting_items = [i for i in items if i and i.get("rarity", "Common") != "Common"]
+        self.fuel_items = [i for i in items if i and i.get("rarity", "Common") == "Common"]
+        
+        # Calculate breakdown (matches gamification.py constants)
+        base_rate = 0.25  # MERGE_BASE_SUCCESS_RATE from gamification.py
+        item_bonus = max(0, len(items) - 2) * 0.03  # +3% per item after first two
         luck_bonus = luck * 0.02
-        gear_bonus = self.merge_luck_bonus / 100.0
+        items_merge_bonus = self.items_merge_luck / 100.0
         
         self.breakdown = {
             "Base Rate": int(base_rate * 100),
             f"Item Count ({len(items)} items)": int(item_bonus * 100),
             f"Legacy Luck ({luck})": int(luck_bonus * 100),
         }
-        if self.merge_luck_bonus > 0:
-            self.breakdown[f"Equipped Gear Bonus"] = self.merge_luck_bonus
+        if self.items_merge_luck > 0:
+            self.breakdown["Items Merge Luck"] = self.items_merge_luck
         
         self.setWindowTitle("⚡ Lucky Merge")
-        self.setMinimumSize(700, 600)
+        self.setMinimumSize(700, 650)
         self._build_ui()
     
     def _build_ui(self):
@@ -332,24 +712,24 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         header.setStyleSheet("""
             font-size: 24px;
             font-weight: bold;
-            color: #333;
+            color: #fff;
             padding: 10px;
         """)
         header.setAlignment(QtCore.Qt.AlignCenter)
         main_layout.addWidget(header)
         
-        # Subtitle
+        # Subtitle with cost info
         subtitle = QtWidgets.QLabel(
-            f"Combining {len(self.items)} items into something greater..."
+            f"Combining {len(self.items)} items • Cost: {self.merge_cost} coins 🪙"
         )
-        subtitle.setStyleSheet("color: #666; font-size: 12px;")
+        subtitle.setStyleSheet("color: #aaa; font-size: 12px;")
         subtitle.setAlignment(QtCore.Qt.AlignCenter)
         main_layout.addWidget(subtitle)
         
         # Separator
         line = QtWidgets.QFrame()
         line.setFrameShape(QtWidgets.QFrame.HLine)
-        line.setStyleSheet("background-color: #ddd;")
+        line.setStyleSheet("background-color: #555;")
         main_layout.addWidget(line)
         
         # Items preview section
@@ -367,15 +747,23 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         middle_layout = QtWidgets.QHBoxLayout(middle_section)
         middle_layout.setSpacing(20)
         
-        # Success rate on left
-        success_widget = SuccessRateWidget(self.success_rate, self.breakdown)
-        middle_layout.addWidget(success_widget, stretch=2)
+        # Success rate on left - store reference for boost updates
+        self.success_widget = SuccessRateWidget(self.success_rate, self.breakdown)
+        middle_layout.addWidget(self.success_widget, stretch=2)
         
         # Result preview on right
-        result_widget = ResultPreviewWidget(self.result_rarity)
+        result_widget = self._create_result_preview_with_info()
         middle_layout.addWidget(result_widget, stretch=1)
         
         main_layout.addWidget(middle_section)
+        
+        # Boost section (optional +25% for 50 coins)
+        boost_section = self._create_boost_section()
+        main_layout.addWidget(boost_section)
+        
+        # Tier upgrade section (optional +1 tier for 50 coins)
+        tier_upgrade_section = self._create_tier_upgrade_section()
+        main_layout.addWidget(tier_upgrade_section)
         
         # Warning section
         warning_box = self._create_warning_box()
@@ -391,7 +779,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Set dialog style
         self.setStyleSheet("""
             QDialog {
-                background-color: #fafafa;
+                background-color: #1e1e2e;
             }
             QPushButton {
                 padding: 10px 24px;
@@ -406,43 +794,32 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         """)
     
     def _create_items_section(self) -> QtWidgets.QWidget:
-        """Create the items preview section."""
+        """Create the items preview section as a list."""
         section = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(section)
-        layout.setSpacing(12)
+        layout.setSpacing(8)
         
         # Title
         title = QtWidgets.QLabel("📦 Items to Merge")
-        title.setStyleSheet("font-weight: bold; font-size: 14px; color: #333;")
+        title.setStyleSheet("font-weight: bold; font-size: 14px; color: #fff;")
         layout.addWidget(title)
         
-        # Items grid
-        scroll = QtWidgets.QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setMaximumHeight(220)
-        scroll.setStyleSheet("""
-            QScrollArea {
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                background-color: white;
-            }
-        """)
-        
-        scroll_content = QtWidgets.QWidget()
-        grid = QtWidgets.QGridLayout(scroll_content)
-        grid.setSpacing(12)
-        grid.setContentsMargins(12, 12, 12, 12)
-        
-        # Add item preview widgets
-        items_per_row = 4
-        for idx, item in enumerate(self.items):
-            row = idx // items_per_row
-            col = idx % items_per_row
-            preview = ItemPreviewWidget(item)
-            grid.addWidget(preview, row, col)
-        
-        scroll.setWidget(scroll_content)
-        layout.addWidget(scroll)
+        # Items list (text-based for readability)
+        for item in self.items:
+            rarity = item.get("rarity", "Common")
+            rarity_info = ITEM_RARITIES.get(rarity, ITEM_RARITIES.get("Common", {}))
+            color = rarity_info.get("color", "#9e9e9e")
+            name = item.get("name", "Unknown Item")
+            power = item.get("power", 0)
+            slot = item.get("slot", "Unknown")
+            
+            item_label = QtWidgets.QLabel(
+                f"• <span style='color:{color};'><b>{name}</b></span> "
+                f"<span style='color:#888;'>({slot}, +{power} power) [{rarity}]</span>"
+            )
+            item_label.setTextFormat(QtCore.Qt.RichText)
+            item_label.setStyleSheet("font-size: 12px; padding: 4px 0;")
+            layout.addWidget(item_label)
         
         return section
     
@@ -463,12 +840,12 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             "This action cannot be undone!"
         )
         text.setWordWrap(True)
-        text.setStyleSheet("color: #d32f2f; font-size: 12px;")
+        text.setStyleSheet("color: #ff6b6b; font-size: 12px;")
         warning_layout.addWidget(text, stretch=1)
         
         warning.setStyleSheet("""
             QWidget {
-                background-color: #ffebee;
+                background-color: #3a2020;
                 border: 2px solid #f44336;
                 border-radius: 8px;
             }
@@ -476,6 +853,229 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         
         return warning
     
+    def _create_boost_section(self) -> QtWidgets.QWidget:
+        """Create the boost option section."""
+        boost_frame = QtWidgets.QWidget()
+        boost_layout = QtWidgets.QHBoxLayout(boost_frame)
+        boost_layout.setContentsMargins(16, 12, 16, 12)
+        
+        # Boost icon
+        icon = QtWidgets.QLabel("🚀")
+        icon.setStyleSheet("font-size: 24px;")
+        boost_layout.addWidget(icon)
+        
+        # Boost checkbox
+        self.boost_checkbox = QtWidgets.QCheckBox("Boost Success Rate (+25%)")
+        self.boost_checkbox.setStyleSheet("""
+            QCheckBox {
+                font-size: 14px;
+                font-weight: bold;
+                color: #64b5f6;
+            }
+            QCheckBox::indicator {
+                width: 20px;
+                height: 20px;
+            }
+        """)
+        self.boost_checkbox.toggled.connect(self._on_boost_toggled)
+        boost_layout.addWidget(self.boost_checkbox)
+        
+        # Cost label
+        self.boost_cost_label = QtWidgets.QLabel(f"(+{self.boost_cost} 🪙)")
+        self.boost_cost_label.setStyleSheet("font-size: 13px; color: #aaa;")
+        boost_layout.addWidget(self.boost_cost_label)
+        
+        boost_layout.addStretch()
+        
+        # Total cost display
+        self.total_cost_label = QtWidgets.QLabel(f"Total: {self.merge_cost} 🪙")
+        self.total_cost_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #fff;")
+        boost_layout.addWidget(self.total_cost_label)
+        
+        # Check if player can afford boost
+        can_afford_boost = self.player_coins >= (self.merge_cost + self.boost_cost)
+        if not can_afford_boost:
+            self.boost_checkbox.setEnabled(False)
+            self.boost_checkbox.setToolTip(f"Need {self.merge_cost + self.boost_cost} coins (you have {self.player_coins})")
+            self.boost_cost_label.setStyleSheet("font-size: 13px; color: #666;")
+        
+        boost_frame.setStyleSheet("""
+            QWidget {
+                background-color: #1a3a5c;
+                border: 2px solid #2196f3;
+                border-radius: 8px;
+            }
+        """)
+        
+        return boost_frame
+    
+    def _on_boost_toggled(self, checked: bool):
+        """Handle boost checkbox toggle."""
+        self.boost_enabled = checked
+        
+        # Update success rate
+        if checked:
+            self.success_rate = min(self.base_success_rate + 0.25, 1.0)  # Cap at 100%
+        else:
+            self.success_rate = self.base_success_rate
+        
+        # Update total cost label
+        self._update_total_cost()
+        
+        # Update success rate display via success widget
+        if hasattr(self, 'success_widget') and self.success_widget:
+            self.success_widget.update_rate(self.success_rate, boost_active=checked)
+    
+    def _update_total_cost(self):
+        """Update the total cost label based on selected options."""
+        total = self.merge_cost
+        if self.boost_enabled:
+            total += self.boost_cost
+        if self.tier_upgrade_enabled:
+            total += self.tier_upgrade_cost
+        self.total_cost_label.setText(f"Total: {total} 🪙")
+    
+    def _create_result_preview_with_info(self) -> QtWidgets.QWidget:
+        """Create result preview with tier determination explanation."""
+        container = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(container)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(8)
+        
+        rarity_info = ITEM_RARITIES.get(self.result_rarity, ITEM_RARITIES.get("Common", {}))
+        color = rarity_info.get("color", "#9e9e9e")
+        power = RARITY_POWER.get(self.result_rarity, 10) if GAMIFICATION_AVAILABLE else 10
+        
+        # Result title
+        title = QtWidgets.QLabel("On Success")
+        title.setAlignment(QtCore.Qt.AlignCenter)
+        title.setStyleSheet("font-weight: bold; font-size: 12px; color: #aaa;")
+        layout.addWidget(title)
+        
+        # Rarity with emoji
+        self.result_rarity_label = QtWidgets.QLabel(f"<b style='color:{color};'>✨ {self.result_rarity}</b>")
+        self.result_rarity_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.result_rarity_label.setStyleSheet("font-size: 18px;")
+        layout.addWidget(self.result_rarity_label)
+        
+        # Power range
+        power_label = QtWidgets.QLabel(f"⚔ ~{power} Power")
+        power_label.setAlignment(QtCore.Qt.AlignCenter)
+        power_label.setStyleSheet("color: #aaa; font-size: 12px;")
+        layout.addWidget(power_label)
+        
+        # Separator
+        sep = QtWidgets.QFrame()
+        sep.setFrameShape(QtWidgets.QFrame.HLine)
+        sep.setStyleSheet("background-color: #444;")
+        layout.addWidget(sep)
+        
+        # Tier determination explanation
+        info_label = QtWidgets.QLabel()
+        info_label.setWordWrap(True)
+        info_label.setAlignment(QtCore.Qt.AlignCenter)
+        
+        if self.tier_affecting_items:
+            lowest_rarity = min(
+                (i.get("rarity", "Common") for i in self.tier_affecting_items),
+                key=lambda r: RARITY_ORDER.index(r) if r in RARITY_ORDER else 0
+            )
+            info_text = f"<span style='color:#888; font-size:10px;'>"
+            info_text += f"Tier based on lowest non-Common: <b style='color:{ITEM_RARITIES.get(lowest_rarity, {}).get('color', '#fff')};'>{lowest_rarity}</b><br>"
+            info_text += f"→ Upgrades to {self.result_rarity}"
+            if len(self.fuel_items) > 0:
+                info_text += f"<br><span style='color:#4caf50;'>+{len(self.fuel_items)} Common items as fuel (no tier loss)</span>"
+            info_text += "</span>"
+        else:
+            info_text = "<span style='color:#4caf50; font-size:10px;'>All Common items → Upgrades to Uncommon</span>"
+        
+        info_label.setText(info_text)
+        layout.addWidget(info_label)
+        
+        container.setStyleSheet(f"""
+            QWidget {{
+                background: #2a2a3a;
+                border: 2px dashed {color};
+                border-radius: 12px;
+            }}
+        """)
+        
+        return container
+    
+    def _create_tier_upgrade_section(self) -> QtWidgets.QWidget:
+        """Create the tier upgrade option section (+50 coins for +1 tier)."""
+        frame = QtWidgets.QWidget()
+        layout = QtWidgets.QHBoxLayout(frame)
+        layout.setContentsMargins(16, 12, 16, 12)
+        
+        # Icon
+        icon = QtWidgets.QLabel("⬆️")
+        icon.setStyleSheet("font-size: 24px;")
+        layout.addWidget(icon)
+        
+        # Checkbox
+        upgraded_color = ITEM_RARITIES.get(self.upgraded_rarity, {}).get("color", "#fff")
+        self.tier_upgrade_checkbox = QtWidgets.QCheckBox(
+            f"Upgrade Result (+1 Tier → {self.upgraded_rarity})"
+        )
+        self.tier_upgrade_checkbox.setStyleSheet(f"""
+            QCheckBox {{
+                font-size: 14px;
+                font-weight: bold;
+                color: {upgraded_color};
+            }}
+            QCheckBox::indicator {{
+                width: 20px;
+                height: 20px;
+            }}
+        """)
+        self.tier_upgrade_checkbox.toggled.connect(self._on_tier_upgrade_toggled)
+        layout.addWidget(self.tier_upgrade_checkbox)
+        
+        # Cost label
+        cost_label = QtWidgets.QLabel(f"(+{self.tier_upgrade_cost} 🪙)")
+        cost_label.setStyleSheet("font-size: 13px; color: #aaa;")
+        layout.addWidget(cost_label)
+        
+        layout.addStretch()
+        
+        # Can't upgrade if already Legendary
+        if self.result_rarity == "Legendary":
+            self.tier_upgrade_checkbox.setEnabled(False)
+            self.tier_upgrade_checkbox.setText("Already Legendary!")
+            self.tier_upgrade_checkbox.setStyleSheet("color: #666; font-size: 14px;")
+        elif self.player_coins < (self.merge_cost + self.tier_upgrade_cost):
+            self.tier_upgrade_checkbox.setEnabled(False)
+            self.tier_upgrade_checkbox.setToolTip(f"Need {self.merge_cost + self.tier_upgrade_cost} coins")
+        
+        frame.setStyleSheet("""
+            QWidget {
+                background-color: #3a2a1a;
+                border: 2px solid #ff9800;
+                border-radius: 8px;
+            }
+        """)
+        
+        return frame
+    
+    def _on_tier_upgrade_toggled(self, checked: bool):
+        """Handle tier upgrade checkbox toggle."""
+        self.tier_upgrade_enabled = checked
+        self._update_total_cost()
+        
+        # Update the result preview label
+        if hasattr(self, 'result_rarity_label'):
+            if checked:
+                color = ITEM_RARITIES.get(self.upgraded_rarity, {}).get("color", "#fff")
+                self.result_rarity_label.setText(f"<b style='color:{color};'>✨ {self.upgraded_rarity} ⬆️</b>")
+            else:
+                color = ITEM_RARITIES.get(self.result_rarity, {}).get("color", "#fff")
+                self.result_rarity_label.setText(f"<b style='color:{color};'>✨ {self.result_rarity}</b>")
+        
+        # Update success rate display via success widget
+        if hasattr(self, 'success_widget') and self.success_widget:
+            self.success_widget.update_rate(self.success_rate, boost_active=checked)
+
     def _create_button_box(self) -> QtWidgets.QWidget:
         """Create the action button box."""
         button_box = QtWidgets.QWidget()
@@ -527,7 +1127,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         return button_box
     
     def execute_merge(self):
-        """Execute the merge with animated feedback."""
+        """Execute the merge with dramatic roll animation."""
         if not GAMIFICATION_AVAILABLE:
             QtWidgets.QMessageBox.warning(
                 self, "Feature Unavailable",
@@ -535,19 +1135,46 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             )
             return
         
-        # Show processing overlay
-        self._show_processing()
+        # Disable all buttons during merge
+        for button in self.findChildren(QtWidgets.QPushButton):
+            button.setEnabled(False)
         
-        # Perform merge
+        # Perform merge with boost if enabled
         story_id = self.items[0].get("story_theme", "warrior") if self.items else "warrior"
+        # Add 25% boost bonus (as percentage points) if boost is enabled
+        boost_bonus = 25 if self.boost_enabled else 0
+        # Use merge_luck from items being merged (sacrificed) + boost
+        total_items_merge_luck = self.items_merge_luck + boost_bonus
         self.merge_result = perform_lucky_merge(
             self.items, self.luck,
             story_id=story_id,
-            gear_merge_luck=self.merge_luck_bonus
+            items_merge_luck=total_items_merge_luck
         )
         
-        # Delay to show animation
-        QtCore.QTimer.singleShot(1500, self._show_result)
+        # Apply tier upgrade if enabled and merge succeeded
+        if self.merge_result.get("success") and self.tier_upgrade_enabled:
+            result_item = self.merge_result.get("result_item", {})
+            if result_item:
+                current_rarity = result_item.get("rarity", "Common")
+                try:
+                    current_idx = RARITY_ORDER.index(current_rarity)
+                    new_idx = min(current_idx + 1, len(RARITY_ORDER) - 1)
+                    result_item["rarity"] = RARITY_ORDER[new_idx]
+                    # Update power based on new rarity
+                    result_item["power"] = RARITY_POWER.get(result_item["rarity"], result_item.get("power", 10))
+                    self.merge_result["tier_upgraded"] = True
+                except (ValueError, IndexError):
+                    pass
+        
+        # Show dramatic roll animation
+        roll_value = self.merge_result.get("roll", 0)
+        threshold = self.merge_result.get("needed", 0.5)
+        
+        animation_dialog = MergeRollAnimationDialog(roll_value, threshold, self)
+        animation_dialog.exec_()
+        
+        # Show result after animation
+        self._show_result()
     
     def _show_processing(self):
         """Show processing/merging animation overlay."""
@@ -599,21 +1226,36 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         rarity = result_item.get("rarity", "Common")
         name = result_item.get("name", "Unknown Item")
         power = result_item.get("power", 0)
-        roll = self.merge_result.get("roll_pct", 0) if self.merge_result else 0
-        needed = self.merge_result.get("needed_pct", 0) if self.merge_result else 0
+        # Fix: roll_pct already has % sign, just use the raw values
+        roll_raw = self.merge_result.get("roll", 0) if self.merge_result else 0
+        needed_raw = self.merge_result.get("needed", 0) if self.merge_result else 0
         
         rarity_color = ITEM_RARITIES.get(rarity, {}).get("color", "#9e9e9e")
         
         msg = QtWidgets.QMessageBox(self)
         msg.setWindowTitle("🎉 MERGE SUCCESS!")
-        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setIcon(QtWidgets.QMessageBox.NoIcon)  # Disable icon/sound
+        
+        # Build breakdown text showing merge luck contribution
+        breakdown_parts = []
+        if self.items_merge_luck > 0:
+            breakdown_parts.append(f"+{self.items_merge_luck}% from items")
+        if self.boost_enabled:
+            breakdown_parts.append("+25% boost")
+        breakdown_text = f" ({', '.join(breakdown_parts)})" if breakdown_parts else ""
+        
+        # Show tier upgrade info if applied
+        tier_upgrade_text = ""
+        if self.merge_result.get("tier_upgraded"):
+            tier_upgrade_text = "<p style='color: #ff9800;'>⬆️ <b>Tier Upgraded!</b> (+50 🪙)</p>"
         
         text = f"""
         <div style='text-align: center;'>
             <h2 style='color: {rarity_color};'>✨ Success! ✨</h2>
-            <p><b>Roll:</b> {roll}% (needed &lt; {needed}%)</p>
+            <p style='color: #aaa;'><b>Roll:</b> {roll_raw*100:.1f}% (needed &lt; {needed_raw*100:.1f}%{breakdown_text})</p>
+            {tier_upgrade_text}
             <hr>
-            <p style='font-size: 16px;'><b>{name}</b></p>
+            <p style='font-size: 16px; color: #fff;'><b>{name}</b></p>
             <p style='color: {rarity_color};'><b>{rarity}</b> • ⚔ Power: {power}</p>
         </div>
         """
@@ -624,7 +1266,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             try:
                 lucky_text = format_lucky_options(result_item["lucky_options"])
                 if lucky_text:
-                    text += f"<p>✨ <b>Lucky Options:</b> {lucky_text}</p>"
+                    text += f"<p style='color: #ffd700;'>✨ <b>Lucky Options:</b> {lucky_text}</p>"
             except Exception:
                 pass
         
@@ -632,41 +1274,314 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.setStyleSheet(f"""
             QMessageBox {{
-                background-color: #f1f8e9;
+                background-color: #1e2e1e;
             }}
             QLabel {{
+                color: #fff;
                 font-size: 13px;
+            }}
+            QPushButton {{
+                background-color: #4caf50;
+                color: white;
+                padding: 8px 20px;
+                border-radius: 4px;
+                font-weight: bold;
             }}
         """)
         msg.exec_()
     
     def _show_failure_dialog(self):
-        """Show failure result dialog."""
-        roll = self.merge_result.get("roll_pct", 0) if self.merge_result else 0
-        needed = self.merge_result.get("needed_pct", 0) if self.merge_result else 0
+        """Show failure result dialog with retry, claim, and salvage options."""
+        roll_raw = self.merge_result.get("roll", 0) if self.merge_result else 0
+        needed_raw = self.merge_result.get("needed", 0) if self.merge_result else 0
         
-        msg = QtWidgets.QMessageBox(self)
+        # Calculate how close the roll was
+        margin = roll_raw - needed_raw  # positive = failed by this much
+        is_near_miss = margin <= 0.05  # Within 5% of success
+        
+        # Calculate remaining coins after merge cost will be deducted
+        # (merge cost is deducted AFTER dialog closes, so account for it here)
+        total_merge_cost = self.merge_cost
+        if self.boost_enabled:
+            total_merge_cost += self.boost_cost
+        if self.tier_upgrade_enabled:
+            total_merge_cost += self.tier_upgrade_cost
+        remaining_coins = self.player_coins - total_merge_cost
+        
+        can_afford_retry = remaining_coins >= self.retry_bump_cost
+        can_afford_claim = remaining_coins >= self.claim_cost
+        
+        # Salvage option - save one random item (always available if can afford)
+        salvage_cost = COIN_COSTS.get("merge_salvage", 50)
+        can_afford_salvage = remaining_coins >= salvage_cost
+        
+        # Check if retry would help
+        new_needed = min(needed_raw + 0.05, 1.0)  # +5% boost
+        would_succeed_with_retry = roll_raw < new_needed
+        
+        # Store result for claim action
+        self.near_miss_claimed = False
+        self.salvage_requested = False
+        
+        msg = QtWidgets.QDialog(self)
         msg.setWindowTitle("💔 Merge Failed")
-        msg.setIcon(QtWidgets.QMessageBox.Critical)
+        msg.setMinimumWidth(450)
         
-        text = f"""
-        <div style='text-align: center;'>
-            <h2 style='color: #f44336;'>💔 Failed 💔</h2>
-            <p><b>Roll:</b> {roll}% (needed &lt; {needed}%)</p>
-            <hr>
-            <p style='color: #d32f2f;'><b>{len(self.items)} items lost forever.</b></p>
-            <p>Better luck next time!</p>
-        </div>
-        """
+        layout = QtWidgets.QVBoxLayout(msg)
+        layout.setSpacing(16)
+        layout.setContentsMargins(24, 24, 24, 24)
         
-        msg.setText(text)
-        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        msg.setStyleSheet("""
-            QMessageBox {
-                background-color: #ffebee;
-            }
-            QLabel {
-                font-size: 13px;
+        # Header
+        header = QtWidgets.QLabel("<h2 style='color: #f44336;'>💔 Failed 💔</h2>")
+        header.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(header)
+        
+        # Roll info
+        roll_info = QtWidgets.QLabel(
+            f"<p style='color: #aaa;'><b>Roll:</b> {roll_raw*100:.1f}% (needed &lt; {needed_raw*100:.1f}%)</p>"
+            f"<p style='color: #888;'>Missed by: {margin*100:.1f}%</p>"
+        )
+        roll_info.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(roll_info)
+        
+        # Near-miss options (only if within 5%)
+        if is_near_miss:
+            options_frame = QtWidgets.QWidget()
+            options_frame.setStyleSheet("""
+                QWidget {
+                    background-color: #3a3a1a;
+                    border: 2px solid #ffeb3b;
+                    border-radius: 8px;
+                    padding: 12px;
+                }
+            """)
+            options_layout = QtWidgets.QVBoxLayout(options_frame)
+            options_layout.setSpacing(12)
+            
+            # Header for near-miss options
+            near_miss_header = QtWidgets.QLabel(
+                "<p style='color: #ffeb3b; font-size: 14px;'><b>⚡ SO CLOSE! Recovery Options:</b></p>"
+            )
+            near_miss_header.setAlignment(QtCore.Qt.AlignCenter)
+            options_layout.addWidget(near_miss_header)
+            
+            # Option buttons layout
+            btn_layout = QtWidgets.QHBoxLayout()
+            btn_layout.setSpacing(12)
+            
+            # Retry button (50 coins to re-roll)
+            retry_btn = QtWidgets.QPushButton(f"🎲 Retry\n{self.retry_bump_cost} 🪙")
+            retry_btn.setMinimumHeight(60)
+            if can_afford_retry:
+                retry_btn.setStyleSheet("""
+                    QPushButton {
+                        background-color: #ff9800;
+                        color: white;
+                        padding: 8px 16px;
+                        border-radius: 6px;
+                        font-weight: bold;
+                        font-size: 12px;
+                    }
+                    QPushButton:hover { background-color: #ffa726; }
+                """)
+                retry_btn.setToolTip("Pay to re-roll the merge")
+            else:
+                retry_btn.setEnabled(False)
+                retry_btn.setStyleSheet("""
+                    QPushButton {
+                        background-color: #555;
+                        color: #888;
+                        padding: 8px 16px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                    }
+                """)
+                retry_btn.setToolTip("Not enough coins")
+            btn_layout.addWidget(retry_btn)
+            
+            # Claim button (+100 coins to get item directly)
+            claim_btn = QtWidgets.QPushButton(f"✨ Claim Item\n{self.claim_cost} 🪙")
+            claim_btn.setMinimumHeight(60)
+            if can_afford_claim:
+                claim_btn.setStyleSheet("""
+                    QPushButton {
+                        background-color: #9c27b0;
+                        color: white;
+                        padding: 8px 16px;
+                        border-radius: 6px;
+                        font-weight: bold;
+                        font-size: 12px;
+                    }
+                    QPushButton:hover { background-color: #ab47bc; }
+                """)
+                claim_btn.setToolTip("Pay to claim the merged item anyway!")
+            else:
+                claim_btn.setEnabled(False)
+                claim_btn.setStyleSheet("""
+                    QPushButton {
+                        background-color: #555;
+                        color: #888;
+                        padding: 8px 16px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                    }
+                """)
+                claim_btn.setToolTip("Not enough coins")
+            btn_layout.addWidget(claim_btn)
+            
+            options_layout.addLayout(btn_layout)
+            
+            # Info text
+            info_text = QtWidgets.QLabel(
+                "<p style='color: #888; font-size: 10px;'>Retry: Re-roll the merge | Claim: Get the item directly</p>"
+            )
+            info_text.setAlignment(QtCore.Qt.AlignCenter)
+            options_layout.addWidget(info_text)
+            
+            layout.addWidget(options_frame)
+            
+            # Connect buttons
+            def on_claim():
+                self.near_miss_claimed = True
+                msg.accept()
+            
+            claim_btn.clicked.connect(on_claim)
+            # Retry just closes - we don't implement actual retry here, just info
+            retry_btn.clicked.connect(msg.reject)
+        
+        # Loss info
+        loss_label = QtWidgets.QLabel(
+            f"<p style='color: #ff6b6b;'><b>{len(self.items)} items lost forever.</b></p>"
+        )
+        loss_label.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(loss_label)
+        
+        # Salvage option - always available on failure
+        salvage_frame = QtWidgets.QWidget()
+        salvage_frame.setStyleSheet("""
+            QWidget {
+                background-color: #1a2e1a;
+                border: 2px solid #4caf50;
+                border-radius: 8px;
+                padding: 8px;
             }
         """)
-        msg.exec_()
+        salvage_layout = QtWidgets.QVBoxLayout(salvage_frame)
+        salvage_layout.setSpacing(8)
+        
+        salvage_header = QtWidgets.QLabel(
+            "<p style='color: #4caf50; font-size: 12px;'><b>🛡️ Salvage Option:</b></p>"
+        )
+        salvage_header.setAlignment(QtCore.Qt.AlignCenter)
+        salvage_layout.addWidget(salvage_header)
+        
+        salvage_btn = QtWidgets.QPushButton(f"🎁 Save Random Item ({salvage_cost} 🪙)")
+        salvage_btn.setMinimumHeight(40)
+        if can_afford_salvage and len(self.items) > 0:
+            salvage_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #4caf50;
+                    color: white;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    font-weight: bold;
+                    font-size: 12px;
+                }
+                QPushButton:hover { background-color: #66bb6a; }
+            """)
+            salvage_btn.setToolTip("Save one random item from the merge")
+        else:
+            salvage_btn.setEnabled(False)
+            salvage_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #555;
+                    color: #888;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                }
+            """)
+            salvage_btn.setToolTip("Not enough coins" if not can_afford_salvage else "No items to salvage")
+        
+        def on_salvage():
+            self.salvage_requested = True
+            msg.accept()
+        
+        salvage_btn.clicked.connect(on_salvage)
+        salvage_layout.addWidget(salvage_btn)
+        
+        salvage_info = QtWidgets.QLabel(
+            "<p style='color: #888; font-size: 10px;'>One random item from the merge will be returned to your inventory</p>"
+        )
+        salvage_info.setAlignment(QtCore.Qt.AlignCenter)
+        salvage_layout.addWidget(salvage_info)
+        
+        layout.addWidget(salvage_frame)
+        
+        # Accept Loss button
+        ok_btn = QtWidgets.QPushButton("😢 Accept Loss")
+        ok_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #f44336;
+                color: white;
+                padding: 10px 24px;
+                border-radius: 4px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #e53935; }
+        """)
+        ok_btn.clicked.connect(msg.accept)
+        layout.addWidget(ok_btn)
+        
+        msg.setStyleSheet("background-color: #2e1e1e;")
+        result = msg.exec_()
+        
+        # Handle salvage action first (if requested)
+        if self.salvage_requested and can_afford_salvage and len(self.items) > 0:
+            # Deduct coins
+            self.player_coins -= salvage_cost
+            # Pick a random item to save
+            import random
+            saved_item = random.choice(self.items)
+            # Mark in merge_result that we salvaged one item
+            self.merge_result["salvaged_item"] = saved_item
+            self.merge_result["salvage_cost"] = salvage_cost
+            # Show confirmation
+            item_name = saved_item.get("name", "Unknown")
+            item_rarity = saved_item.get("rarity", "Common")
+            QtWidgets.QMessageBox.information(
+                self, "🎁 Item Salvaged!",
+                f"<b style='color: #4caf50;'>{item_name}</b> ({item_rarity}) has been saved!<br><br>"
+                f"It will be returned to your inventory."
+            )
+            return
+        
+        # Handle claim action
+        if self.near_miss_claimed and can_afford_claim:
+            # Deduct coins and generate the item
+            self.player_coins -= self.claim_cost
+            # Generate the item that would have been created
+            from gamification import generate_item
+            claimed_item = generate_item(
+                rarity=self.result_rarity,
+                story_id=self.items[0].get("story_id") if self.items else None
+            )
+            # Apply tier upgrade if it was enabled
+            if self.tier_upgrade_enabled:
+                try:
+                    current_idx = RARITY_ORDER.index(claimed_item.get("rarity", "Common"))
+                    if current_idx < len(RARITY_ORDER) - 1:
+                        new_rarity = RARITY_ORDER[current_idx + 1]
+                        claimed_item["rarity"] = new_rarity
+                        from gamification import RARITY_POWER
+                        claimed_item["power"] = RARITY_POWER.get(new_rarity, claimed_item.get("power", 10))
+                except (ValueError, IndexError):
+                    pass
+            
+            # Update merge_result to show success
+            self.merge_result["success"] = True
+            self.merge_result["result_item"] = claimed_item
+            self.merge_result["claimed_with_coins"] = True
+            
+            # Show success dialog for the claimed item
+            self._show_success_dialog()
