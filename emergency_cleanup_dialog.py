@@ -203,26 +203,40 @@ class EmergencyCleanupDialog(QtWidgets.QDialog):
             "emergency_cleanup": "⚠️ Emergency Cleanup"
         }
         self.setWindowTitle(titles.get(cleanup_type, "⚠️ Confirm Action"))
-        self.setMinimumSize(500, 600)
+        # Reduced height with scrolling support
+        self.setMinimumSize(500, 450)
+        self.setMaximumHeight(650)  # Fit on 768px screens
         
         self._build_ui()
     
     def _build_ui(self):
         """Build the complete dialog UI."""
         main_layout = QtWidgets.QVBoxLayout(self)
-        main_layout.setSpacing(16)
-        main_layout.setContentsMargins(24, 24, 24, 24)
+        main_layout.setSpacing(12)
+        main_layout.setContentsMargins(16, 16, 16, 16)
+        
+        # Create scroll area for main content
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
+        scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
+        
+        scroll_content = QtWidgets.QWidget()
+        content_layout = QtWidgets.QVBoxLayout(scroll_content)
+        content_layout.setSpacing(12)
+        content_layout.setContentsMargins(8, 8, 8, 8)
         
         # Header with warning
         header_label = QtWidgets.QLabel("⚠️ EMERGENCY ACTION ⚠️")
         header_label.setAlignment(QtCore.Qt.AlignCenter)
         header_label.setStyleSheet("""
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             color: #d32f2f;
-            padding: 12px;
+            padding: 10px;
+            background: transparent;
         """)
-        main_layout.addWidget(header_label)
+        content_layout.addWidget(header_label)
         
         # Action description
         descriptions = {
@@ -237,47 +251,49 @@ class EmergencyCleanupDialog(QtWidgets.QDialog):
         desc_label.setWordWrap(True)
         desc_label.setAlignment(QtCore.Qt.AlignCenter)
         desc_label.setStyleSheet("""
-            font-size: 14px;
+            font-size: 13px;
             color: #555;
-            padding: 8px;
+            padding: 6px;
+            background: transparent;
         """)
-        main_layout.addWidget(desc_label)
+        content_layout.addWidget(desc_label)
         
         # Impact preview
         impact_preview = ImpactPreviewWidget(self.impact_data)
-        main_layout.addWidget(impact_preview)
+        content_layout.addWidget(impact_preview)
         
         # Alternative actions
         alternatives = self._create_alternatives_section()
-        main_layout.addWidget(alternatives)
+        content_layout.addWidget(alternatives)
         
         # Separator
         line = QtWidgets.QFrame()
         line.setFrameShape(QtWidgets.QFrame.HLine)
         line.setStyleSheet("background-color: #ddd;")
-        main_layout.addWidget(line)
+        content_layout.addWidget(line)
         
-        # Safety confirmation checkbox
+        # Finalize scroll area
+        scroll.setWidget(scroll_content)
+        main_layout.addWidget(scroll)
+        
+        # Safety confirmation checkbox (outside scroll)
         self.confirm_checkbox = QtWidgets.QCheckBox("I understand this action cannot be undone")
         self.confirm_checkbox.setStyleSheet("""
             QCheckBox {
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: bold;
                 color: #d32f2f;
-                padding: 8px;
+                padding: 6px;
             }
             QCheckBox::indicator {
-                width: 20px;
-                height: 20px;
+                width: 18px;
+                height: 18px;
             }
         """)
         self.confirm_checkbox.stateChanged.connect(self._on_checkbox_changed)
         main_layout.addWidget(self.confirm_checkbox)
         
-        # Spacer
-        main_layout.addStretch()
-        
-        # Action buttons
+        # Action buttons (outside scroll)
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.setSpacing(12)
         
