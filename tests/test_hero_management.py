@@ -408,8 +408,8 @@ class TestCalculateCharacterPower(unittest.TestCase):
         """Test power sums from equipped items."""
         adhd = {
             "equipped": {
-                "weapon": {"rarity": "Common", "power": 10},
-                "armor": {"rarity": "Rare", "power": 50},
+                "Weapon": {"rarity": "Common", "power": 10},
+                "Chestplate": {"rarity": "Rare", "power": 50},
             }
         }
         # 10 + 50 = 60, plus any set bonuses
@@ -420,7 +420,7 @@ class TestCalculateCharacterPower(unittest.TestCase):
         """Test power calculation uses rarity default if power key missing."""
         adhd = {
             "equipped": {
-                "weapon": {"rarity": "Epic"},  # No power key
+                "Weapon": {"rarity": "Epic"},  # No power key
             }
         }
         power = calculate_character_power(adhd, include_set_bonus=False)

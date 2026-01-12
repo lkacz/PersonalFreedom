@@ -329,15 +329,15 @@ class TestLuckyMergeSystem(unittest.TestCase):
         from gamification import calculate_merge_success_rate
         items = [{"rarity": "Common"}, {"rarity": "Common"}]
         rate = calculate_merge_success_rate(items, luck_bonus=0)
-        self.assertAlmostEqual(rate, 0.10, places=2)  # 10% base
+        self.assertAlmostEqual(rate, 0.25, places=2)  # 25% base
     
     def test_merge_success_rate_with_extra_items(self) -> None:
         """Test merge success rate increases with more items."""
         from gamification import calculate_merge_success_rate
         items = [{"rarity": "Common"} for _ in range(5)]  # 5 items
         rate = calculate_merge_success_rate(items, luck_bonus=0)
-        # Base 10% + 3% per extra item (5-2=3 extras) = 19%
-        self.assertAlmostEqual(rate, 0.19, places=2)
+        # Base 25% + 3% per extra item (5-2=3 extras) = 34%
+        self.assertAlmostEqual(rate, 0.34, places=2)
     
     def test_merge_success_rate_with_luck(self) -> None:
         """Test luck bonus affects merge rate."""
@@ -351,14 +351,19 @@ class TestLuckyMergeSystem(unittest.TestCase):
         self.assertAlmostEqual(rate_with_luck - rate_no_luck, 0.01, places=3)
     
     def test_merge_success_rate_capped(self) -> None:
-        """Test merge success rate is capped at 35%."""
+        """Test merge success rate is capped at 90%."""
         from gamification import calculate_merge_success_rate
         items = [{"rarity": "Common"} for _ in range(20)]  # Many items
         rate = calculate_merge_success_rate(items, luck_bonus=1000)
-        self.assertLessEqual(rate, 0.35)
+        self.assertLessEqual(rate, 0.90)
     
     def test_get_merge_result_rarity(self) -> None:
-        """Test merge result is one tier above lowest."""
+        """Test merge result is one tier above HIGHEST non-Common.
+        
+        Common items are treated as 'fuel' and don't affect tier.
+        Only non-Common items determine the base tier.
+        Result = highest rarity + 1 tier (capped at Legendary).
+        """
         from gamification import get_merge_result_rarity
         items = [
             {"rarity": "Common"},
@@ -366,8 +371,8 @@ class TestLuckyMergeSystem(unittest.TestCase):
             {"rarity": "Epic"}
         ]
         result = get_merge_result_rarity(items)
-        # Lowest is Common, upgrade to Uncommon
-        self.assertEqual(result, "Uncommon")
+        # Common is ignored, highest non-Common is Epic -> Legendary
+        self.assertEqual(result, "Legendary")
     
     def test_get_merge_result_same_rarity(self) -> None:
         """Test merge result with same rarity items."""
@@ -377,7 +382,7 @@ class TestLuckyMergeSystem(unittest.TestCase):
             {"rarity": "Rare"}
         ]
         result = get_merge_result_rarity(items)
-        # Rare -> Epic
+        # Highest is Rare -> Epic
         self.assertEqual(result, "Epic")
     
     def test_perform_lucky_merge_returns_structure(self) -> None:

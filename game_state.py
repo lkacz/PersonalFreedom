@@ -364,7 +364,10 @@ class GameStateManager(QtCore.QObject):
         return True
     
     def unequip_item(self, slot: str) -> Optional[dict]:
-        """Unequip an item from a slot, returning it to inventory.
+        """Unequip an item from a slot.
+        
+        Note: Items are always in inventory even when equipped.
+        This just removes the equipped reference - no need to add to inventory.
         
         Handles edge cases:
         - Slot not in equipped dict
@@ -382,12 +385,8 @@ class GameStateManager(QtCore.QObject):
             self._emit(self.equipment_changed, slot)
             return None
         
-        # Remove from equipped
+        # Remove from equipped (item remains in inventory)
         del equipped[slot]
-        
-        # Return to inventory (deep copy to ensure isolation)
-        item_copy = deep_copy_item(item)
-        self.adhd_buster.setdefault("inventory", []).append(item_copy)
         self._save_config()
         
         self._emit(self.item_unequipped, slot)
@@ -772,12 +771,11 @@ class GameStateManager(QtCore.QObject):
         Swap equipped item in a slot. Returns the previously equipped item.
         
         If new_item is None, just unequips the current item.
-        Handles moving old item back to inventory automatically.
+        Items stay in inventory when equipped (visible with Eq checkmark).
         
         Edge cases handled:
         - Empty slot value
         - new_item not in inventory (still equips, as item may come from other sources)
-        - Item matching uses flexible _match_item for removal from inventory
         """
         if not slot:
             logger.warning("swap_equipped_item called with empty slot")
@@ -786,43 +784,16 @@ class GameStateManager(QtCore.QObject):
         self.begin_batch()
         try:
             equipped = self.adhd_buster.setdefault("equipped", {})
-            inventory = self.adhd_buster.setdefault("inventory", [])
+            self.adhd_buster.setdefault("inventory", [])
             
             old_item = equipped.get(slot)
             
-            # Return old item to inventory if exists and is valid
-            # Deep copy to ensure the returned item is isolated from equipped dict
+            # Emit unequip signal for old item (item stays in inventory)
             if old_item and isinstance(old_item, dict):
-                old_item_copy = deep_copy_item(old_item)
-                inventory.append(old_item_copy)
                 self._emit(self.item_unequipped, slot)
             
-            # Equip new item
+            # Equip new item (item stays in inventory, just reference in equipped dict)
             if new_item and isinstance(new_item, dict):
-                # Remove new item from inventory using flexible matching
-                item_id = new_item.get("id") or new_item.get("obtained_at") or ""
-                new_inventory = []
-                removed = False
-                
-                for item in inventory:
-                    if removed:
-                        new_inventory.append(item)
-                        continue
-                    
-                    # Strategy 1: If we have an ID, use ID matching
-                    if item_id and self._match_item(item, item_id):
-                        removed = True
-                        continue
-                    
-                    # Strategy 2: If no ID, try object identity (exact same object)
-                    if not item_id and item is new_item:
-                        removed = True
-                        continue
-                    
-                    new_inventory.append(item)
-                
-                self.adhd_buster["inventory"] = new_inventory
-                
                 # Deep copy the new item to ensure equipped version is isolated
                 equipped[slot] = deep_copy_item(new_item)
                 self._emit(self.item_equipped, slot, equipped[slot])
@@ -933,25 +904,23 @@ class GameStateManager(QtCore.QObject):
                 if not item:
                     continue
                 
-                # Check if item can be auto-equipped to an empty slot
-                equipped_to_slot = False
+                # Deep copy to prevent mutation leaking
+                item_copy = deep_copy_item(item)
+                
+                # Always add to inventory first
+                inventory.append(item_copy)
+                added_items.append(item_copy)
+                self._emit(self.item_added, item_copy)
+                
+                # Auto-equip to empty slot if enabled
                 if auto_equip:
-                    slot = item.get("slot")
+                    slot = item_copy.get("slot")
                     if slot and not equipped.get(slot):
-                        # Equip directly (don't add to inventory)
-                        equipped_copy = deep_copy_item(item)
+                        # Equip a deep copy (inventory and equipped should be isolated)
+                        equipped_copy = deep_copy_item(item_copy)
                         equipped[slot] = equipped_copy
                         equipped_items.append(equipped_copy)
-                        equipped_to_slot = True
                         self._emit(self.item_equipped, slot, equipped_copy)
-                
-                # Only add to inventory if NOT auto-equipped
-                if not equipped_to_slot:
-                    # Deep copy to prevent mutation leaking
-                    item_copy = deep_copy_item(item)
-                    inventory.append(item_copy)
-                    added_items.append(item_copy)
-                    self._emit(self.item_added, item_copy)
             
             # Update total collected
             if items:

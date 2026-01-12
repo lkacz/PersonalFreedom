@@ -14,6 +14,55 @@ from typing import Optional
 GAMIFICATION_AVAILABLE = True
 
 # ============================================================================
+# COIN ECONOMY SYSTEM - Centralized Money Sink Configuration
+# ============================================================================
+# All coin costs are defined here for easy balancing and scalability.
+# To add a new coin sink: add it here and import COIN_COSTS in the UI.
+
+COIN_COSTS = {
+    # Lucky Merge System
+    "merge_base": 50,           # Base cost for merging items
+    "merge_boost": 50,          # Additional cost for +25% success rate boost
+    "merge_tier_upgrade": 50,   # Upgrade result tier by one on success
+    "merge_retry_bump": 50,     # On failure, bump success % by 5% and retry
+    "merge_claim": 100,         # On near-miss failure (≤5%), claim item directly
+    "merge_salvage": 50,        # On failure, save one random item from the merge
+    
+    # Gear Optimization
+    "optimize_gear": 10,        # Cost to auto-equip best gear
+    
+    # Story System
+    "story_unlock": 100,        # Cost to unlock a new story (Underdog is free)
+    
+    # Future coin sinks (placeholder for scalability)
+    # "reroll_item_stats": 25,  # Reroll an item's power/options
+    # "rename_item": 10,        # Give an item a custom name
+    # "transmog": 50,           # Change item appearance
+    # "expand_inventory": 200,  # Add more inventory slots
+    # "instant_heal": 30,       # Skip recovery cooldown
+    # "xp_boost": 100,          # 2x XP for next session
+    # "coin_boost": 100,        # 2x coins for next session
+}
+
+# Helper function to get cost with optional discount
+def get_coin_cost(action: str, discount_percent: int = 0) -> int:
+    """Get the coin cost for an action with optional discount.
+    
+    Args:
+        action: Key from COIN_COSTS dict
+        discount_percent: Discount to apply (0-100)
+    
+    Returns:
+        Final cost after discount (minimum 1)
+    """
+    base_cost = COIN_COSTS.get(action, 0)
+    if discount_percent > 0:
+        discount = base_cost * (discount_percent / 100)
+        return max(1, int(base_cost - discount))
+    return base_cost
+
+
+# ============================================================================
 # ADHD Buster Gamification System
 # ============================================================================
 
@@ -589,11 +638,14 @@ RARITY_POWER = {
 # ============================================================================
 
 # Lucky option types and their possible values
+# Note: merge_luck has special weighted distribution and 50% skip chance - see roll_lucky_options()
 LUCKY_OPTION_TYPES = {
     "coin_bonus": {"name": "Coin Bonus", "suffix": "% Coins", "values": [1, 2, 3, 5, 8, 10, 15]},
     "xp_bonus": {"name": "XP Bonus", "suffix": "% XP", "values": [1, 2, 3, 5, 8, 10, 15]},
     "drop_luck": {"name": "Item Drop Luck", "suffix": "% Better Drops", "values": [1, 2, 3, 5, 8, 10]},
-    "merge_luck": {"name": "Merge Success", "suffix": "% Merge", "values": [1, 2, 3, 5, 8, 10, 15]},
+    "merge_luck": {"name": "Merge Success", "suffix": "% Merge", "values": [1, 2, 3, 5, 8, 10, 15],
+                   "weights": [40, 25, 15, 10, 5, 3, 2],  # 1% is 40x more likely than 15%
+                   "skip_chance": 50},  # 50% chance to not roll merge_luck at all
 }
 
 # Chance to roll lucky options by rarity (cumulative)
@@ -634,7 +686,16 @@ def roll_lucky_options(rarity: str) -> dict:
     
     # Randomly select which option types to apply (no duplicates)
     available_types = list(LUCKY_OPTION_TYPES.keys())
-    selected_types = random.sample(available_types, min(num_options, len(available_types)))
+    
+    # Handle skip_chance for certain option types (like merge_luck has 50% skip)
+    filtered_types = []
+    for opt_type in available_types:
+        skip_chance = LUCKY_OPTION_TYPES[opt_type].get("skip_chance", 0)
+        if skip_chance > 0 and random.randint(1, 100) <= skip_chance:
+            continue  # Skip this option type
+        filtered_types.append(opt_type)
+    
+    selected_types = random.sample(filtered_types, min(num_options, len(filtered_types)))
     
     # Roll values for each selected type
     lucky_options = {}
@@ -660,7 +721,18 @@ def roll_lucky_options(rarity: str) -> dict:
         if len(weights) < num_values:
             weights.extend([1] * (num_values - len(weights)))
         
-        value = random.choices(possible_values, weights=weights)[0]
+        # Special handling for merge_luck - use fixed weights regardless of rarity
+        # This makes high merge_luck values very rare (encourages sacrificing many items)
+        if option_type == "merge_luck" and "weights" in LUCKY_OPTION_TYPES[option_type]:
+            merge_weights = LUCKY_OPTION_TYPES[option_type]["weights"]
+            # Pad or truncate to match values length
+            if len(merge_weights) < num_values:
+                merge_weights = merge_weights + [1] * (num_values - len(merge_weights))
+            elif len(merge_weights) > num_values:
+                merge_weights = merge_weights[:num_values]
+            value = random.choices(possible_values, weights=merge_weights)[0]
+        else:
+            value = random.choices(possible_values, weights=weights)[0]
         lucky_options[option_type] = value
     
     return lucky_options
@@ -1279,9 +1351,12 @@ def calculate_set_bonuses(equipped: dict) -> dict:
 # LUCKY MERGE SYSTEM - High Risk, High Reward Item Fusion!
 # ============================================================================
 
-MERGE_BASE_SUCCESS_RATE = 0.10  # 10% base chance
+MERGE_COST = COIN_COSTS["merge_base"]  # Use centralized cost
+MERGE_BOOST_COST = COIN_COSTS["merge_boost"]  # Boost cost for +25% success
+MERGE_BASE_SUCCESS_RATE = 0.25  # 25% base chance
+MERGE_BOOST_BONUS = 0.25  # +25% success rate when boosted
 MERGE_BONUS_PER_ITEM = 0.03    # +3% per additional item after the first two
-MERGE_MAX_SUCCESS_RATE = 0.35  # Cap at 35% success rate
+MERGE_MAX_SUCCESS_RATE = 0.90  # Cap at 90% success rate - always some risk!
 
 # Rarity upgrade paths
 RARITY_UPGRADE = {
@@ -1295,14 +1370,14 @@ RARITY_UPGRADE = {
 RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
 
 
-def calculate_merge_success_rate(items: list, luck_bonus: int = 0, gear_merge_luck: int = 0) -> float:
+def calculate_merge_success_rate(items: list, luck_bonus: int = 0, items_merge_luck: int = 0) -> float:
     """
     Calculate the success rate for a lucky merge.
     
     Args:
         items: List of items to merge
         luck_bonus: Legacy luck bonus from adhd_buster (deprecated)
-        gear_merge_luck: Merge luck% from equipped gear lucky options
+        items_merge_luck: Total merge_luck% from items being merged (sacrificed for the merge)
     
     Returns:
         Merge success rate as float (0.0 to MERGE_MAX_SUCCESS_RATE)
@@ -1318,17 +1393,23 @@ def calculate_merge_success_rate(items: list, luck_bonus: int = 0, gear_merge_lu
     luck_bonus_pct = min(max(luck_bonus, 0) / 100 * 0.01, 0.10)
     rate += luck_bonus_pct
     
-    # Gear merge luck bonus (new system) - direct percentage bonus
-    # Each 1% merge luck = +1% success rate
-    if gear_merge_luck > 0:
-        gear_bonus = gear_merge_luck / 100.0
-        rate += gear_bonus
+    # Items merge luck bonus - from items being sacrificed in the merge
+    # Each 1% merge luck on merged items = +1% success rate
+    # This encourages players to sacrifice items with merge_luck for better odds
+    if items_merge_luck > 0:
+        items_bonus = items_merge_luck / 100.0
+        rate += items_bonus
     
     return min(rate, MERGE_MAX_SUCCESS_RATE)
 
 
 def get_merge_result_rarity(items: list) -> str:
-    """Determine the rarity of the merged item result."""
+    """Determine the rarity of the merged item result.
+    
+    Result is the highest rarity among merged items + 1 tier (capped at Legendary).
+    Common items are ignored when determining base tier - they add merge fuel
+    without affecting the result tier. Only non-Common items affect the result.
+    """
     # Filter out None items
     valid_items = [item for item in items if item is not None]
     if not valid_items:
@@ -1342,15 +1423,20 @@ def get_merge_result_rarity(items: list) -> str:
         except ValueError:
             return 0  # Default to Common if invalid rarity
     
-    # Get all indices first to avoid empty generator error
-    rarity_indices = [safe_rarity_idx(item) for item in valid_items]
-    if not rarity_indices:
-        return "Common"
+    # Filter out Common items - they don't affect the tier
+    non_common_items = [item for item in valid_items if item.get("rarity", "Common") != "Common"]
     
-    lowest_idx = min(rarity_indices)
-    lowest_rarity = RARITY_ORDER[lowest_idx]
+    if not non_common_items:
+        # All items are Common - result is Uncommon (upgrade from Common)
+        return "Uncommon"
     
-    return RARITY_UPGRADE.get(lowest_rarity, "Uncommon")
+    # Get HIGHEST rarity from non-Common items + 1 tier
+    rarity_indices = [safe_rarity_idx(item) for item in non_common_items]
+    highest_idx = max(rarity_indices)
+    highest_rarity = RARITY_ORDER[highest_idx]
+    
+    # Upgrade by 1 tier (capped at Legendary via RARITY_UPGRADE)
+    return RARITY_UPGRADE.get(highest_rarity, "Legendary")
 
 
 def is_merge_worthwhile(items: list) -> tuple:
@@ -1402,7 +1488,7 @@ def get_random_tier_jump() -> int:
     return 1  # Fallback
 
 
-def perform_lucky_merge(items: list, luck_bonus: int = 0, story_id: str = None, gear_merge_luck: int = 0) -> dict:
+def perform_lucky_merge(items: list, luck_bonus: int = 0, story_id: str = None, items_merge_luck: int = 0) -> dict:
     """Attempt a lucky merge of items.
     
     On success, the resulting item can be +1 to +4 tiers higher than
@@ -1416,14 +1502,14 @@ def perform_lucky_merge(items: list, luck_bonus: int = 0, story_id: str = None, 
         items: List of items to merge
         luck_bonus: Luck bonus from character stats
         story_id: Story theme for the resulting item
-        gear_merge_luck: Merge luck% from equipped gear lucky options
+        items_merge_luck: Total merge_luck% from items being merged (sacrificed)
     """
     # Filter out None items
     valid_items = [item for item in items if item is not None]
     if len(valid_items) < 2:
         return {"success": False, "error": "Need at least 2 items to merge"}
     
-    success_rate = calculate_merge_success_rate(valid_items, luck_bonus, gear_merge_luck=gear_merge_luck)
+    success_rate = calculate_merge_success_rate(valid_items, luck_bonus, items_merge_luck=items_merge_luck)
     roll = random.random()
     
     result = {

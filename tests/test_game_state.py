@@ -115,19 +115,28 @@ class TestGameStateManager:
         assert len(signals_emitted) >= 1  # At least coins_changed and inventory_changed
     
     def test_swap_equipped_item(self, game_state, mock_blocker):
-        """Test swapping equipped item."""
+        """Test swapping equipped item.
+        
+        Design: Items are ALWAYS in inventory, equipped dict holds references.
+        When swapping, both old and new items remain in inventory.
+        """
         old_item = {"id": "old", "name": "Old Helmet", "slot": "Helmet"}
         new_item = {"id": "new", "name": "New Helmet", "slot": "Helmet"}
         
+        # Both items are in inventory, old item is equipped
         mock_blocker.adhd_buster["equipped"]["Helmet"] = old_item
-        mock_blocker.adhd_buster["inventory"] = [new_item]
+        mock_blocker.adhd_buster["inventory"] = [old_item, new_item]
         
         returned = game_state.swap_equipped_item("Helmet", new_item)
         
-        assert returned == old_item
-        assert mock_blocker.adhd_buster["equipped"]["Helmet"] == new_item
-        # Old item should be back in inventory
+        # Old item is returned
+        assert returned["id"] == "old"
+        # New item is now equipped (as a deep copy)
+        assert mock_blocker.adhd_buster["equipped"]["Helmet"]["id"] == "new"
+        # Both items still in inventory
+        assert len(mock_blocker.adhd_buster["inventory"]) == 2
         assert any(i["id"] == "old" for i in mock_blocker.adhd_buster["inventory"])
+        assert any(i["id"] == "new" for i in mock_blocker.adhd_buster["inventory"])
     
     def test_sell_item(self, game_state, mock_blocker):
         """Test selling an item."""
