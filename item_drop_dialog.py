@@ -182,15 +182,24 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
         rarity_info = ITEM_RARITIES.get(rarity, {})
         color = rarity_info.get("color", "#9e9e9e")
         
-        # Background colors by rarity
-        bg_colors = {
-            "Common": "#f5f5f5",
-            "Uncommon": "#e8f5e9",
-            "Rare": "#e3f2fd",
-            "Epic": "#f3e5f5",
-            "Legendary": "#fff3e0"
-        }
-        bg_color = bg_colors.get(rarity, "#f5f5f5")
+        # Background colors by rarity (darker for lucky upgrades)
+        if self.item.get("lucky_upgrade"):
+            bg_colors = {
+                "Common": "#2c2c2c",
+                "Uncommon": "#1b3a1b",
+                "Rare": "#1a2742",
+                "Epic": "#2d1b3a",
+                "Legendary": "#3a2c1b"
+            }
+        else:
+            bg_colors = {
+                "Common": "#f5f5f5",
+                "Uncommon": "#e8f5e9",
+                "Rare": "#e3f2fd",
+                "Epic": "#f3e5f5",
+                "Legendary": "#fff3e0"
+            }
+        bg_color = bg_colors.get(rarity, "#f5f5f5" if not self.item.get("lucky_upgrade") else "#2c2c2c")
         
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.setSpacing(16)
@@ -210,11 +219,14 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
         
         self.header_label = QtWidgets.QLabel(header_text)
         self.header_label.setAlignment(QtCore.Qt.AlignCenter)
+        # Use bright colors for lucky upgrade dark background
+        text_color = "#ffffff" if self.item.get("lucky_upgrade") else color
         self.header_label.setStyleSheet(f"""
             font-size: 22px;
             font-weight: bold;
-            color: {color};
+            color: {text_color};
             padding: 10px;
+            background: transparent;
         """)
         main_layout.addWidget(self.header_label)
         
@@ -226,10 +238,13 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
         name_label = QtWidgets.QLabel(self.item.get("name", "Unknown Item"))
         name_label.setAlignment(QtCore.Qt.AlignCenter)
         name_label.setWordWrap(True)
+        # Bright color for lucky upgrade dark background
+        name_color = "#ffffff" if self.item.get("lucky_upgrade") else color
         name_label.setStyleSheet(f"""
             font-size: 16px;
             font-weight: bold;
-            color: {color};
+            color: {name_color};
+            background: transparent;
         """)
         main_layout.addWidget(name_label)
         
@@ -238,7 +253,8 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
         slot = self.item.get("slot", "Unknown")
         stats_label = QtWidgets.QLabel(f"[{rarity} {slot}] ⚔ +{power} Power")
         stats_label.setAlignment(QtCore.Qt.AlignCenter)
-        stats_label.setStyleSheet(f"color: {color}; font-size: 13px;")
+        stats_color = "#cccccc" if self.item.get("lucky_upgrade") else color
+        stats_label.setStyleSheet(f"color: {stats_color}; font-size: 13px; background: transparent;")
         main_layout.addWidget(stats_label)
         
         # Lucky options

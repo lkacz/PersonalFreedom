@@ -212,7 +212,9 @@ class EnhancedLevelUpDialog(QtWidgets.QDialog):
             self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
             self.showFullScreen()
         else:
-            self.setMinimumSize(550, 650)
+            # Constrain height to fit most screens (leave room for taskbar)
+            self.setMinimumSize(550, 500)
+            self.setMaximumHeight(700)  # Max height to fit on 768px screens
             self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
         
         self._build_ui()
@@ -221,22 +223,37 @@ class EnhancedLevelUpDialog(QtWidgets.QDialog):
     def _build_ui(self):
         """Build the complete dialog UI."""
         main_layout = QtWidgets.QVBoxLayout(self)
-        main_layout.setSpacing(20)
-        main_layout.setContentsMargins(32, 32, 32, 32)
+        main_layout.setSpacing(10)
+        main_layout.setContentsMargins(16, 16, 16, 16)
         
-        if self.fullscreen_mode:
-            main_layout.setAlignment(QtCore.Qt.AlignCenter)
+        # Create scroll area for content in windowed mode
+        if not self.fullscreen_mode:
+            scroll = QtWidgets.QScrollArea()
+            scroll.setWidgetResizable(True)
+            scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
+            scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
+            
+            scroll_content = QtWidgets.QWidget()
+            content_layout = QtWidgets.QVBoxLayout(scroll_content)
+            content_layout.setSpacing(15)
+            content_layout.setContentsMargins(16, 16, 16, 16)
+        else:
+            content_layout = main_layout
+            content_layout.setAlignment(QtCore.Qt.AlignCenter)
         
         # Celebration header
         self.header_label = QtWidgets.QLabel("🎊 LEVEL UP! 🎊")
         self.header_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.header_label.setStyleSheet("""
-            font-size: 48px;
+        # Smaller header for windowed mode
+        header_size = "48px" if self.fullscreen_mode else "32px"
+        self.header_label.setStyleSheet(f"""
+            font-size: {header_size};
             font-weight: bold;
             color: #4caf50;
-            padding: 20px;
+            padding: 15px;
+            background: transparent;
         """)
-        main_layout.addWidget(self.header_label)
+        content_layout.addWidget(self.header_label)
         
         # Level difference message
         levels_gained = self.new_level - self.old_level
@@ -244,13 +261,15 @@ class EnhancedLevelUpDialog(QtWidgets.QDialog):
             msg = f"🌟 {levels_gained} LEVELS GAINED! 🌟"
             multi_label = QtWidgets.QLabel(msg)
             multi_label.setAlignment(QtCore.Qt.AlignCenter)
-            multi_label.setStyleSheet("""
-                font-size: 24px;
+            multi_size = "24px" if self.fullscreen_mode else "18px"
+            multi_label.setStyleSheet(f"""
+                font-size: {multi_size};
                 font-weight: bold;
                 color: #ff9800;
-                padding: 10px;
+                padding: 8px;
+                background: transparent;
             """)
-            main_layout.addWidget(multi_label)
+            content_layout.addWidget(multi_label)
         
         # Stats showcase (in container for centering)
         showcase_container = QtWidgets.QWidget()
@@ -262,7 +281,7 @@ class EnhancedLevelUpDialog(QtWidgets.QDialog):
         showcase = StatShowcaseWidget(self.old_level, self.new_level, self.stats)
         showcase_layout.addWidget(showcase)
         
-        main_layout.addWidget(showcase_container, alignment=QtCore.Qt.AlignCenter)
+        content_layout.addWidget(showcase_container, alignment=QtCore.Qt.AlignCenter if self.fullscreen_mode else QtCore.Qt.AlignLeft)
         
         # Motivational message
         messages = [
@@ -276,19 +295,22 @@ class EnhancedLevelUpDialog(QtWidgets.QDialog):
         msg = random.choice(messages)
         msg_label = QtWidgets.QLabel(msg)
         msg_label.setAlignment(QtCore.Qt.AlignCenter)
-        msg_label.setStyleSheet("""
-            font-size: 16px;
+        msg_size = "16px" if self.fullscreen_mode else "13px"
+        msg_label.setStyleSheet(f"""
+            font-size: {msg_size};
             font-weight: bold;
             color: #555;
-            padding: 10px;
+            padding: 8px;
+            background: transparent;
         """)
-        main_layout.addWidget(msg_label)
+        content_layout.addWidget(msg_label)
         
-        # Spacer
+        # Finalize scroll area in windowed mode
         if not self.fullscreen_mode:
-            main_layout.addStretch()
+            scroll.setWidget(scroll_content)
+            main_layout.addWidget(scroll)
         
-        # Action buttons
+        # Action buttons (outside scroll area)
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.setSpacing(12)
         
