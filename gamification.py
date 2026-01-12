@@ -3583,13 +3583,16 @@ def get_power_breakdown(adhd_buster: dict, include_neighbor_effects: bool = True
             include_set_bonus=True,
             include_neighbor_effects=True
         )
+        # Get active sets details for display
+        set_info = calculate_set_bonuses(equipped)
         return {
             "base_power": breakdown["base_power"],
             "set_bonus": breakdown["set_bonus"],
             "neighbor_adjustment": breakdown.get("neighbor_adjustment", 0),
             "total_power": breakdown["total_power"],
             "power_by_slot": breakdown.get("power_by_slot", {}),
-            "neighbor_effects": breakdown.get("neighbor_effects", {})
+            "neighbor_effects": breakdown.get("neighbor_effects", {}),
+            "active_sets": set_info.get("active_sets", [])
         }
     else:
         # Legacy calculation without neighbor effects

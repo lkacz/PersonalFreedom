@@ -28,6 +28,18 @@ import uuid
 logger = logging.getLogger(__name__)
 
 
+def deep_copy_item(item: dict) -> dict:
+    """Create a deep copy of an item dict, handling nested structures.
+    
+    This ensures lucky_options, neighbor_effect, and other nested dicts
+    are properly copied to prevent mutations leaking between copies.
+    """
+    if not item:
+        return {}
+    # Use copy.deepcopy for full isolation
+    return copy.deepcopy(item)
+
+
 class _BatchContext:
     """Context manager for batch operations."""
     
@@ -173,7 +185,7 @@ class GameStateManager(QtCore.QObject):
         try:
             # Save once at end if any operation requested it
             if self._save_pending:
-                self._blocker.save_config()
+                self._sync_and_save()
                 self._save_pending = False
             
             # Deduplicate signals (keep last occurrence for each signal type)
@@ -207,12 +219,24 @@ class GameStateManager(QtCore.QObject):
         """
         return _BatchContext(self)
     
+    def _sync_and_save(self):
+        """Sync gamification data and save to disk."""
+        try:
+            from gamification import sync_hero_data
+            sync_hero_data(self.adhd_buster)
+        except ImportError:
+            pass
+        except Exception as e:
+            logger.error(f"Error syncing hero data: {e}")
+            
+        self._blocker.save_config()
+
     def _save_config(self):
         """Save config, or defer if in batch mode."""
         if self._batch_mode:
             self._save_pending = True
         else:
-            self._blocker.save_config()
+            self._sync_and_save()
     
     def _emit(self, signal, *args):
         """Emit a signal, or queue it if in batch mode."""
@@ -262,11 +286,17 @@ class GameStateManager(QtCore.QObject):
         """Add an item to inventory and emit appropriate signals.
         
         Args:
-            item: The item to add
+            item: The item to add (will be deep copied to prevent external mutation)
             track_collected: Whether to increment total_collected counter (default True)
         """
+        if not item:
+            logger.warning("add_item called with empty item")
+            return
+        
         inventory = self.adhd_buster.setdefault("inventory", [])
-        inventory.append(item)
+        # Deep copy to prevent external code from retaining references that could mutate inventory
+        item_copy = deep_copy_item(item)
+        inventory.append(item_copy)
         
         # Track total collected
         if track_collected:
@@ -278,7 +308,7 @@ class GameStateManager(QtCore.QObject):
         
         self._save_config()
         
-        self._emit(self.item_added, item)
+        self._emit(self.item_added, item_copy)
         self._emit(self.inventory_changed)
     
     def remove_item(self, item_id: str) -> bool:
@@ -305,7 +335,7 @@ class GameStateManager(QtCore.QObject):
         
         Args:
             slot: Equipment slot (must be a valid slot name)
-            item: Item to equip (must be a dict with at least a 'name' key)
+            item: Item to equip (will be deep copied to prevent external mutation)
         
         Returns:
             True if equipped successfully, False on validation failure
@@ -323,10 +353,12 @@ class GameStateManager(QtCore.QObject):
         equipped = self.adhd_buster.setdefault("equipped", {})
         old_item = equipped.get(slot)
         
-        equipped[slot] = item
+        # Deep copy to prevent external code from retaining references that could mutate equipped gear
+        item_copy = deep_copy_item(item)
+        equipped[slot] = item_copy
         self._save_config()
         
-        self._emit(self.item_equipped, slot, item)
+        self._emit(self.item_equipped, slot, item_copy)
         self._emit(self.equipment_changed, slot)
         self._emit_power_update()
         return True
@@ -353,15 +385,18 @@ class GameStateManager(QtCore.QObject):
         # Remove from equipped
         del equipped[slot]
         
-        # Return to inventory
-        self.adhd_buster.setdefault("inventory", []).append(item)
+        # Return to inventory (deep copy to ensure isolation)
+        item_copy = deep_copy_item(item)
+        self.adhd_buster.setdefault("inventory", []).append(item_copy)
         self._save_config()
         
         self._emit(self.item_unequipped, slot)
         self._emit(self.equipment_changed, slot)
         self._emit(self.inventory_changed)
         self._emit_power_update()
-        return item
+        
+        # Return a copy for the caller (defensive programming)
+        return deep_copy_item(item)
     
     def add_coins(self, amount: int) -> int:
         """Add coins and emit signal. Returns new total.
@@ -380,6 +415,73 @@ class GameStateManager(QtCore.QObject):
         
         self._emit(self.coins_changed, new_total)
         return new_total
+    
+    def add_luck_bonus(self, amount: int) -> int:
+        """Add luck bonus and return new total.
+        
+        Args:
+            amount: Luck bonus to add (must be non-negative)
+        """
+        if amount < 0:
+            logger.warning(f"add_luck_bonus called with negative amount {amount}")
+            return self.adhd_buster.get("luck_bonus", 0)
+        
+        current = self.adhd_buster.get("luck_bonus", 0)
+        new_total = current + amount
+        self.adhd_buster["luck_bonus"] = new_total
+        self._save_config()
+        return new_total
+    
+    def bulk_remove_items(self, items: List[dict]) -> int:
+        """Remove multiple items from inventory. Returns number removed.
+        
+        Matches items by obtained_at or name+slot+rarity.
+        """
+        if not items:
+            return 0
+        
+        self.begin_batch()
+        try:
+            inventory = self.adhd_buster.get("inventory", [])
+            
+            # Build removal set using multiple identifiers
+            items_to_remove = set()
+            for i in items:
+                if i.get("obtained_at"):
+                    items_to_remove.add(("ts", i.get("obtained_at")))
+                items_to_remove.add(("key", (i.get("name"), i.get("slot"), i.get("rarity"))))
+            
+            removed_keys = set()
+            new_inventory = []
+            removed_count = 0
+            
+            for item in inventory:
+                item_ts = item.get("obtained_at")
+                item_key = (item.get("name"), item.get("slot"), item.get("rarity"))
+                
+                should_remove = False
+                if item_ts and ("ts", item_ts) in items_to_remove and ("ts", item_ts) not in removed_keys:
+                    should_remove = True
+                    removed_keys.add(("ts", item_ts))
+                elif not item_ts and ("key", item_key) in items_to_remove:
+                    remove_identifier = ("key_instance", item_key)
+                    if remove_identifier not in removed_keys:
+                        should_remove = True
+                        removed_keys.add(remove_identifier)
+                
+                if should_remove:
+                    removed_count += 1
+                    self._emit(self.item_removed, item.get("id") or item.get("obtained_at") or "")
+                else:
+                    new_inventory.append(item)
+            
+            self.adhd_buster["inventory"] = new_inventory
+            self._save_config()
+            self._emit(self.inventory_changed)
+            
+            return removed_count
+        finally:
+            self.end_batch()
     
     def spend_coins(self, amount: int) -> bool:
         """Spend coins if sufficient. Returns True if successful.
@@ -447,6 +549,7 @@ class GameStateManager(QtCore.QObject):
         """Merge items into a new item.
         
         Uses flexible item matching that handles items without 'id' fields.
+        Deep copies the result_item to ensure isolation.
         """
         if not item_ids:
             logger.warning("merge_items called with empty item_ids list")
@@ -472,15 +575,121 @@ class GameStateManager(QtCore.QObject):
         # Remove items in reverse order to maintain indices
         new_inventory = [item for idx, item in enumerate(inventory) if idx not in items_to_remove]
         
-        # Add result
-        new_inventory.append(result_item)
+        # Deep copy result item to ensure isolation
+        result_copy = deep_copy_item(result_item)
+        new_inventory.append(result_copy)
         self.adhd_buster["inventory"] = new_inventory
         self._save_config()
         
-        self._emit(self.items_merged, result_item)
+        self._emit(self.items_merged, result_copy)
         self._emit(self.inventory_changed)
         self._emit_power_update()  # In case merged item is equipped
         return True
+    
+    def perform_merge(self, items: List[dict], result_item: Optional[dict], 
+                      success: bool) -> bool:
+        """
+        Perform a merge operation - remove source items, add result if successful.
+        
+        This is the preferred method for UI code to perform merges. It handles:
+        - Removing source items by matching obtained_at or name+slot+rarity
+        - Adding the result item (deep copied) on success
+        - Proper signal emission
+        
+        Args:
+            items: List of source items to remove
+            result_item: The result item to add (None if merge failed)
+            success: Whether the merge succeeded
+        
+        Returns:
+            True if operation completed successfully
+        """
+        if not items:
+            logger.warning("perform_merge called with empty items list")
+            return False
+        
+        self.begin_batch()
+        try:
+            inventory = self.adhd_buster.get("inventory", [])
+            
+            # Build removal set using multiple identifiers
+            items_to_remove = set()
+            for i in items:
+                # Use timestamp if available
+                if i.get("obtained_at"):
+                    items_to_remove.add(("ts", i.get("obtained_at")))
+                # Also add name+slot+rarity as fallback identifier
+                items_to_remove.add(("key", (i.get("name"), i.get("slot"), i.get("rarity"))))
+            
+            # Track which items have been removed (to handle duplicates correctly)
+            removed_keys = set()
+            new_inventory = []
+            for item in inventory:
+                item_ts = item.get("obtained_at")
+                item_key = (item.get("name"), item.get("slot"), item.get("rarity"))
+                
+                # Check if this item should be removed
+                should_remove = False
+                if item_ts and ("ts", item_ts) in items_to_remove and ("ts", item_ts) not in removed_keys:
+                    should_remove = True
+                    removed_keys.add(("ts", item_ts))
+                elif not item_ts and ("key", item_key) in items_to_remove:
+                    # For items without timestamp, remove only one instance
+                    remove_identifier = ("key_instance", item_key)
+                    if remove_identifier not in removed_keys:
+                        should_remove = True
+                        removed_keys.add(remove_identifier)
+                
+                if not should_remove:
+                    new_inventory.append(item)
+            
+            # Add result item if merge succeeded
+            if success and result_item:
+                result_copy = deep_copy_item(result_item)
+                new_inventory.append(result_copy)
+                self._emit(self.items_merged, result_copy)
+            
+            self.adhd_buster["inventory"] = new_inventory
+            self._save_config()
+            self._emit(self.inventory_changed)
+            self._emit_power_update()
+            
+            return True
+        finally:
+            self.end_batch()
+    
+    def set_all_equipped(self, new_equipped: Dict[str, dict]) -> None:
+        """
+        Replace all equipped items with a new configuration.
+        
+        This is used by gear optimization to apply a new loadout.
+        Deep copies all items to ensure isolation.
+        
+        Args:
+            new_equipped: Dict mapping slot names to item dicts
+        """
+        self.begin_batch()
+        try:
+            # Deep copy each equipped item
+            copied_equipped = {}
+            for slot, item in new_equipped.items():
+                if item and isinstance(item, dict):
+                    copied_equipped[slot] = deep_copy_item(item)
+                else:
+                    copied_equipped[slot] = None
+            
+            # Remove None values
+            copied_equipped = {k: v for k, v in copied_equipped.items() if v}
+            
+            self.adhd_buster["equipped"] = copied_equipped
+            self._save_config()
+            
+            # Emit signal for each slot that changed
+            for slot in copied_equipped:
+                self._emit(self.equipment_changed, slot)
+            self._emit_power_update()
+        finally:
+            self.end_batch()
     
     def set_story(self, story_id: str) -> None:
         """Change the active story theme."""
@@ -582,26 +791,41 @@ class GameStateManager(QtCore.QObject):
             old_item = equipped.get(slot)
             
             # Return old item to inventory if exists and is valid
+            # Deep copy to ensure the returned item is isolated from equipped dict
             if old_item and isinstance(old_item, dict):
-                inventory.append(old_item)
+                old_item_copy = deep_copy_item(old_item)
+                inventory.append(old_item_copy)
                 self._emit(self.item_unequipped, slot)
             
             # Equip new item
             if new_item and isinstance(new_item, dict):
                 # Remove new item from inventory using flexible matching
                 item_id = new_item.get("id") or new_item.get("obtained_at") or ""
-                if item_id:
-                    new_inventory = []
-                    removed = False
-                    for item in inventory:
-                        if not removed and self._match_item(item, item_id):
-                            removed = True
-                            continue
-                        new_inventory.append(item)
-                    self.adhd_buster["inventory"] = new_inventory
+                new_inventory = []
+                removed = False
                 
-                equipped[slot] = new_item
-                self._emit(self.item_equipped, slot, new_item)
+                for item in inventory:
+                    if removed:
+                        new_inventory.append(item)
+                        continue
+                    
+                    # Strategy 1: If we have an ID, use ID matching
+                    if item_id and self._match_item(item, item_id):
+                        removed = True
+                        continue
+                    
+                    # Strategy 2: If no ID, try object identity (exact same object)
+                    if not item_id and item is new_item:
+                        removed = True
+                        continue
+                    
+                    new_inventory.append(item)
+                
+                self.adhd_buster["inventory"] = new_inventory
+                
+                # Deep copy the new item to ensure equipped version is isolated
+                equipped[slot] = deep_copy_item(new_item)
+                self._emit(self.item_equipped, slot, equipped[slot])
             else:
                 # Just unequip
                 if slot in equipped:
@@ -701,22 +925,33 @@ class GameStateManager(QtCore.QObject):
         self.begin_batch()
         try:
             equipped_items = []
+            added_items = []  # Track what was actually added
             inventory = self.adhd_buster.setdefault("inventory", [])
             equipped = self.adhd_buster.setdefault("equipped", {})
             
             for item in items:
-                # Add to inventory
-                item_copy = item.copy()
-                inventory.append(item_copy)
-                self._emit(self.item_added, item_copy)
+                if not item:
+                    continue
                 
-                # Auto-equip to empty slot
+                # Check if item can be auto-equipped to an empty slot
+                equipped_to_slot = False
                 if auto_equip:
                     slot = item.get("slot")
                     if slot and not equipped.get(slot):
-                        equipped[slot] = item_copy.copy()
-                        equipped_items.append(item_copy)
-                        self._emit(self.item_equipped, slot, item_copy)
+                        # Equip directly (don't add to inventory)
+                        equipped_copy = deep_copy_item(item)
+                        equipped[slot] = equipped_copy
+                        equipped_items.append(equipped_copy)
+                        equipped_to_slot = True
+                        self._emit(self.item_equipped, slot, equipped_copy)
+                
+                # Only add to inventory if NOT auto-equipped
+                if not equipped_to_slot:
+                    # Deep copy to prevent mutation leaking
+                    item_copy = deep_copy_item(item)
+                    inventory.append(item_copy)
+                    added_items.append(item_copy)
+                    self._emit(self.item_added, item_copy)
             
             # Update total collected
             if items:
@@ -739,7 +974,7 @@ class GameStateManager(QtCore.QObject):
             self._log_change("award_items_batch", f"source={source}, items={len(items)}, coins={coins}")
             
             return {
-                "items": items,
+                "items": added_items,  # Return the copies that were actually added
                 "coins": coins,
                 "coin_total": new_coin_total,
                 "equipped": equipped_items
