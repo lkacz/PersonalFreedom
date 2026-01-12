@@ -5998,6 +5998,94 @@ class AITab(QtWidgets.QWidget):
 
 
 # ============================================================================
+# Collapsible Section Widget
+# ============================================================================
+
+class CollapsibleSection(QtWidgets.QWidget):
+    """A collapsible section widget with a toggle button header."""
+    
+    collapsed_changed = QtCore.Signal(str, bool)  # section_id, is_collapsed
+    
+    def __init__(self, title: str, section_id: str, parent=None, collapsed: bool = False):
+        super().__init__(parent)
+        self.section_id = section_id
+        self._collapsed = collapsed
+        
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
+        
+        # Header button
+        self.toggle_btn = QtWidgets.QPushButton()
+        self.toggle_btn.setCheckable(True)
+        self.toggle_btn.setChecked(not collapsed)
+        self.toggle_btn.clicked.connect(self._on_toggle)
+        self.toggle_btn.setCursor(QtCore.Qt.PointingHandCursor)
+        self._update_header(title)
+        self.toggle_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255,255,255,0.05);
+                border: none;
+                border-radius: 4px;
+                padding: 6px 10px;
+                text-align: left;
+                font-weight: bold;
+                color: #ccc;
+            }
+            QPushButton:hover {
+                background: rgba(255,255,255,0.1);
+            }
+            QPushButton:checked {
+                color: #fff;
+            }
+        """)
+        self.main_layout.addWidget(self.toggle_btn)
+        
+        # Content container
+        self.content_widget = QtWidgets.QWidget()
+        self.content_layout = QtWidgets.QVBoxLayout(self.content_widget)
+        self.content_layout.setContentsMargins(0, 4, 0, 4)
+        self.content_layout.setSpacing(4)
+        self.main_layout.addWidget(self.content_widget)
+        
+        # Set initial state
+        self.content_widget.setVisible(not collapsed)
+        self._title = title
+    
+    def _update_header(self, title: str):
+        arrow = "▼" if not self._collapsed else "▶"
+        self.toggle_btn.setText(f"{arrow} {title}")
+    
+    def _on_toggle(self):
+        self._collapsed = not self.toggle_btn.isChecked()
+        self.content_widget.setVisible(not self._collapsed)
+        self._update_header(self._title)
+        self.collapsed_changed.emit(self.section_id, self._collapsed)
+    
+    def set_title(self, title: str):
+        self._title = title
+        self._update_header(title)
+    
+    def add_widget(self, widget: QtWidgets.QWidget):
+        self.content_layout.addWidget(widget)
+    
+    def clear_content(self):
+        while self.content_layout.count():
+            child = self.content_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+    
+    def set_collapsed(self, collapsed: bool):
+        self._collapsed = collapsed
+        self.toggle_btn.setChecked(not collapsed)
+        self.content_widget.setVisible(not collapsed)
+        self._update_header(self._title)
+    
+    def is_collapsed(self) -> bool:
+        return self._collapsed
+
+
+# ============================================================================
 # ADHD Buster Gamification Dialogs (Qt Implementation)
 # ============================================================================
 
@@ -10613,6 +10701,9 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self._refreshing = False  # Prevent recursive refresh loops
         self._session_active = False  # Track if a focus session is active
         
+        # Collapsible section states (stored in blocker config)
+        self._collapsed_sections = self.blocker.adhd_buster.get("collapsed_sections", {})
+        
         # Connect to game state manager for reactive updates
         self._game_state = get_game_state()
         if self._game_state:
@@ -10624,6 +10715,14 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         self._build_ui()
         self.refresh_all()  # Initial data load
+    
+    # === Collapsible Section Management ===
+    
+    def _on_section_collapsed(self, section_id: str, collapsed: bool) -> None:
+        """Save collapsed state when user toggles a section."""
+        self._collapsed_sections[section_id] = collapsed
+        self.blocker.adhd_buster["collapsed_sections"] = self._collapsed_sections
+        self.blocker.save_config()
     
     # === GameState Signal Handlers ===
     
@@ -10648,7 +10747,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
     
     def _on_set_bonus_changed(self, breakdown: dict) -> None:
         """Handle set bonus change - update sets display."""
-        if hasattr(self, 'sets_container'):
+        if hasattr(self, 'sets_section'):
             self._refresh_sets_display(breakdown)
     
     def _on_story_changed(self, story_id: str) -> None:
@@ -10775,26 +10874,32 @@ class ADHDBusterTab(QtWidgets.QWidget):
             
         self.inner_layout.addLayout(header)
 
-        # Active set bonuses (container for dynamic updates)
-        self.sets_container = QtWidgets.QWidget()
-        self.sets_layout = QtWidgets.QVBoxLayout(self.sets_container)
-        self.sets_layout.setContentsMargins(0, 0, 0, 0)
+        # Active set bonuses (collapsible section)
+        self.sets_section = CollapsibleSection(
+            "🎯 Active Set Bonuses", "sets",
+            collapsed=self._collapsed_sections.get("sets", False)
+        )
+        self.sets_section.collapsed_changed.connect(self._on_section_collapsed)
         self._refresh_sets_display(power_info)
-        self.inner_layout.addWidget(self.sets_container)
+        self.inner_layout.addWidget(self.sets_section)
 
-        # Potential set bonuses from inventory (container for dynamic updates)
-        self.potential_sets_container = QtWidgets.QWidget()
-        self.potential_sets_layout = QtWidgets.QVBoxLayout(self.potential_sets_container)
-        self.potential_sets_layout.setContentsMargins(0, 0, 0, 0)
+        # Potential set bonuses from inventory (collapsible section)
+        self.potential_sets_section = CollapsibleSection(
+            "💡 Potential Set Bonuses (in your inventory)", "potential_sets",
+            collapsed=self._collapsed_sections.get("potential_sets", False)
+        )
+        self.potential_sets_section.collapsed_changed.connect(self._on_section_collapsed)
         self._refresh_potential_sets_display()
-        self.inner_layout.addWidget(self.potential_sets_container)
+        self.inner_layout.addWidget(self.potential_sets_section)
         
-        # Lucky bonuses from equipped gear
-        self.lucky_bonuses_container = QtWidgets.QWidget()
-        self.lucky_bonuses_layout = QtWidgets.QVBoxLayout(self.lucky_bonuses_container)
-        self.lucky_bonuses_layout.setContentsMargins(0, 0, 0, 0)
+        # Gear bonuses (collapsible section)
+        self.lucky_bonuses_section = CollapsibleSection(
+            "✨ Gear Bonuses & Effects", "lucky_bonuses",
+            collapsed=self._collapsed_sections.get("lucky_bonuses", False)
+        )
+        self.lucky_bonuses_section.collapsed_changed.connect(self._on_section_collapsed)
         self._refresh_lucky_bonuses_display()
-        self.inner_layout.addWidget(self.lucky_bonuses_container)
+        self.inner_layout.addWidget(self.lucky_bonuses_section)
 
         # Stats summary
         total_items = len(self.blocker.adhd_buster.get("inventory", []))
@@ -11299,24 +11404,17 @@ class ADHDBusterTab(QtWidgets.QWidget):
         sep2.setStyleSheet("background: #555; border: none;")
         details_layout.addWidget(sep2)
         
-        # Special attributes section
+        # Special attributes section (dynamic container)
         self.details_special_header = QtWidgets.QLabel("✨ Special Attributes")
         self.details_special_header.setStyleSheet("font-weight: bold; color: #fbbf24; border: none;")
         details_layout.addWidget(self.details_special_header)
         
-        self.details_luck_boost = QtWidgets.QLabel("")
-        self.details_luck_boost.setStyleSheet("color: #22c55e; border: none;")
-        details_layout.addWidget(self.details_luck_boost)
-        
-        self.details_lucky_options = QtWidgets.QLabel("")
-        self.details_lucky_options.setStyleSheet("color: #a78bfa; border: none;")
-        self.details_lucky_options.setWordWrap(True)
-        details_layout.addWidget(self.details_lucky_options)
-        
-        self.details_neighbor = QtWidgets.QLabel("")
-        self.details_neighbor.setStyleSheet("color: #06b6d4; border: none;")
-        self.details_neighbor.setWordWrap(True)
-        details_layout.addWidget(self.details_neighbor)
+        # Container for dynamic special attributes list
+        self.details_special_container = QtWidgets.QWidget()
+        self.details_special_layout = QtWidgets.QVBoxLayout(self.details_special_container)
+        self.details_special_layout.setContentsMargins(0, 0, 0, 0)
+        self.details_special_layout.setSpacing(2)
+        details_layout.addWidget(self.details_special_container)
         
         # Status
         self.details_status = QtWidgets.QLabel("")
@@ -11386,26 +11484,29 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
     def _refresh_sets_display(self, power_info: dict = None) -> None:
         """Refresh the active set bonuses display."""
-        # Clear existing widgets from sets_layout
-        while self.sets_layout.count():
-            child = self.sets_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
+        # Clear existing content in collapsible section
+        self.sets_section.clear_content()
         
         if not GAMIFICATION_AVAILABLE:
+            self.sets_section.setVisible(False)
             return
             
         if power_info is None:
             power_info = get_power_breakdown(self.blocker.adhd_buster)
         
-        if power_info.get("active_sets"):
-            sets_group = QtWidgets.QGroupBox("🎯 Active Set Bonuses")
-            sets_inner = QtWidgets.QVBoxLayout(sets_group)
-            for s in power_info["active_sets"]:
-                lbl = QtWidgets.QLabel(f"{s['emoji']} {s['name']} ({s['count']} items): +{s['bonus']} power")
-                lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
-                sets_inner.addWidget(lbl)
-            self.sets_layout.addWidget(sets_group)
+        active_sets = power_info.get("active_sets", [])
+        if active_sets:
+            self.sets_section.setVisible(True)
+            # Compact horizontal layout for sets
+            for s in active_sets:
+                lbl = QtWidgets.QLabel(f"{s['emoji']} {s['name']} ({s['count']} items): <b>+{s['bonus']} power</b>")
+                lbl.setTextFormat(QtCore.Qt.RichText)
+                lbl.setStyleSheet("color: #4caf50; font-size: 11px; padding: 2px 0;")
+                self.sets_section.add_widget(lbl)
+            # Update title with count
+            self.sets_section.set_title(f"🎯 Active Set Bonuses ({len(active_sets)})")
+        else:
+            self.sets_section.setVisible(False)
 
     def _show_power_analysis(self) -> None:
         """Show the detailed power analysis dialog."""
@@ -11419,14 +11520,12 @@ class ADHDBusterTab(QtWidgets.QWidget):
         dlg.exec()
     
     def _refresh_lucky_bonuses_display(self) -> None:
-        """Refresh the lucky bonuses display showing total bonuses from equipped gear."""
-        # Clear existing widgets
-        while self.lucky_bonuses_layout.count():
-            child = self.lucky_bonuses_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
+        """Refresh the gear bonuses display showing total bonuses from equipped gear."""
+        # Clear existing content in collapsible section
+        self.lucky_bonuses_section.clear_content()
         
         if not GAMIFICATION_AVAILABLE:
+            self.lucky_bonuses_section.setVisible(False)
             return
         
         equipped = self.blocker.adhd_buster.get("equipped", {})
@@ -11466,7 +11565,6 @@ class ADHDBusterTab(QtWidgets.QWidget):
                     for effect in slot_effects:
                         if effect.get("target") == "power":
                             mult = effect.get("multiplier", 1.0)
-                            # Get the target slot's base power to calculate adjustment
                             if mult > 1.0:
                                 neighbor_power_adjustment += int((mult - 1.0) * 100)
                             else:
@@ -11479,180 +11577,60 @@ class ADHDBusterTab(QtWidgets.QWidget):
         has_other_bonuses = total_luck_boost > 0 or friendly_neighbor_count > 0 or unfriendly_neighbor_count > 0
         
         if has_lucky_bonuses or has_other_bonuses:
-            lucky_group = QtWidgets.QGroupBox("✨ Gear Bonuses & Effects")
-            lucky_inner = QtWidgets.QVBoxLayout(lucky_group)
-            lucky_inner.setSpacing(8)
+            # Build compact display items
+            bonus_items = []
             
-            # Build display for each bonus type with detailed explanations
-            bonus_displays = []
-            
-            # === LUCK BOOST SECTION ===
             if total_luck_boost > 0:
-                bonus_displays.append({
-                    "icon": "🍀",
-                    "title": f"+{total_luck_boost}% Luck Boost",
-                    "effect": "Increases chance for rare item drops",
-                    "detail": f"Your items have {total_luck_boost}% better odds at higher rarities",
-                    "color": "#22c55e"
-                })
-            
-            # === LUCKY OPTIONS SECTION ===
+                bonus_items.append(("🍀", f"+{total_luck_boost}% Luck Boost", "#22c55e", "Better rare drops"))
             if lucky_bonuses.get("coin_bonus", 0) > 0:
-                val = lucky_bonuses['coin_bonus']
-                bonus_displays.append({
-                    "icon": "💰",
-                    "title": f"+{val}% Coins",
-                    "effect": "Earn more coins from focus sessions",
-                    "detail": f"Session rewards: Base × 1.{val:02d}",
-                    "color": "#f59e0b"
-                })
+                bonus_items.append(("💰", f"+{lucky_bonuses['coin_bonus']}% Coins", "#f59e0b", "More coins"))
             if lucky_bonuses.get("xp_bonus", 0) > 0:
-                val = lucky_bonuses['xp_bonus']
-                bonus_displays.append({
-                    "icon": "⭐",
-                    "title": f"+{val}% XP",
-                    "effect": "Level up faster",
-                    "detail": f"Experience gains: Base × 1.{val:02d}",
-                    "color": "#8b5cf6"
-                })
+                bonus_items.append(("⭐", f"+{lucky_bonuses['xp_bonus']}% XP", "#8b5cf6", "Level faster"))
             if lucky_bonuses.get("drop_luck", 0) > 0:
-                val = lucky_bonuses['drop_luck']
-                bonus_displays.append({
-                    "icon": "🎁",
-                    "title": f"+{val}% Drop Luck",
-                    "effect": "Higher chance at better rarity items",
-                    "detail": f"Rarity probability shifted up by {val}%",
-                    "color": "#10b981"
-                })
+                bonus_items.append(("🎁", f"+{lucky_bonuses['drop_luck']}% Drop Luck", "#10b981", "Better drops"))
             if lucky_bonuses.get("merge_luck", 0) > 0:
-                val = lucky_bonuses['merge_luck']
-                bonus_displays.append({
-                    "icon": "🎲",
-                    "title": f"+{val}% Merge Success",
-                    "effect": "Better chance for successful merges",
-                    "detail": f"Merge success: Base + {val}%",
-                    "color": "#3b82f6"
-                })
-            
-            # === NEIGHBOR EFFECTS SECTION ===
+                bonus_items.append(("🎲", f"+{lucky_bonuses['merge_luck']}% Merge Luck", "#3b82f6", "Better merges"))
             if friendly_neighbor_count > 0:
-                bonus_displays.append({
-                    "icon": "⬆️",
-                    "title": f"{friendly_neighbor_count} Friendly Neighbor(s)",
-                    "effect": "Boost power of adjacent gear slots",
-                    "detail": "Multiplies stats of items in neighboring slots (1.05x-1.25x)",
-                    "color": "#06b6d4"
-                })
+                bonus_items.append(("⬆️", f"{friendly_neighbor_count} Friendly Neighbor(s)", "#06b6d4", "Power boost (1.05x-1.25x)"))
             if unfriendly_neighbor_count > 0:
-                bonus_displays.append({
-                    "icon": "⬇️",
-                    "title": f"{unfriendly_neighbor_count} Unfriendly Neighbor(s)",
-                    "effect": "Reduce power of adjacent gear slots",
-                    "detail": "Multiplies stats of items in neighboring slots (0.75x-0.95x)",
-                    "color": "#ef4444"
-                })
+                bonus_items.append(("⬇️", f"{unfriendly_neighbor_count} Unfriendly Neighbor(s)", "#ef4444", "Power reduction"))
             
-            # Render each bonus with icon, title, and collapsible detail
-            for bonus in bonus_displays:
-                bonus_widget = QtWidgets.QFrame()
-                bonus_widget.setStyleSheet(f"""
-                    QFrame {{
-                        background: rgba(255,255,255,0.03);
-                        border-left: 3px solid {bonus['color']};
-                        border-radius: 4px;
-                        padding: 5px;
-                        margin: 2px 0;
-                    }}
-                """)
-                bonus_layout = QtWidgets.QVBoxLayout(bonus_widget)
-                bonus_layout.setSpacing(2)
-                bonus_layout.setContentsMargins(8, 4, 8, 4)
-                
-                # Title line with icon
-                title_lbl = QtWidgets.QLabel(f"<b>{bonus['icon']} {bonus['title']}</b>")
-                title_lbl.setStyleSheet(f"color: {bonus['color']}; font-size: 12px;")
-                title_lbl.setTextFormat(QtCore.Qt.RichText)
-                bonus_layout.addWidget(title_lbl)
-                
-                # Effect description
-                effect_lbl = QtWidgets.QLabel(bonus['effect'])
-                effect_lbl.setStyleSheet("color: #ccc; font-size: 11px;")
-                bonus_layout.addWidget(effect_lbl)
-                
-                # Detailed explanation
-                detail_lbl = QtWidgets.QLabel(f"<i>{bonus['detail']}</i>")
-                detail_lbl.setStyleSheet("color: #888; font-size: 10px;")
-                detail_lbl.setTextFormat(QtCore.Qt.RichText)
-                bonus_layout.addWidget(detail_lbl)
-                
-                lucky_inner.addWidget(bonus_widget)
+            self.lucky_bonuses_section.setVisible(True)
+            self.lucky_bonuses_section.set_title(f"✨ Gear Bonuses & Effects ({len(bonus_items)})")
             
-            # Add overall summary box
-            total_lucky_points = sum(lucky_bonuses.values())
-            summary_frame = QtWidgets.QFrame()
-            summary_frame.setStyleSheet("""
-                QFrame {
-                    background: rgba(139, 92, 246, 0.1);
-                    border: 1px solid rgba(139, 92, 246, 0.3);
-                    border-radius: 6px;
-                    padding: 8px;
-                    margin-top: 5px;
-                }
-            """)
-            summary_layout = QtWidgets.QVBoxLayout(summary_frame)
-            summary_layout.setSpacing(4)
+            # Compact list with colored items
+            for icon, title, color, tooltip in bonus_items:
+                lbl = QtWidgets.QLabel(f"<b>{icon} {title}</b> <span style='color:#888;'>— {tooltip}</span>")
+                lbl.setTextFormat(QtCore.Qt.RichText)
+                lbl.setStyleSheet(f"color: {color}; font-size: 11px; padding: 2px 0;")
+                self.lucky_bonuses_section.add_widget(lbl)
             
-            summary_title = QtWidgets.QLabel("<b>📊 Overall Impact</b>")
-            summary_title.setStyleSheet("color: #a78bfa; font-size: 12px;")
-            summary_title.setTextFormat(QtCore.Qt.RichText)
-            summary_layout.addWidget(summary_title)
-            
-            impact_lines = []
+            # Compact summary
+            summary_parts = []
             if total_luck_boost > 0:
-                impact_lines.append(f"• Item drops are {total_luck_boost}% more likely to be higher rarity")
+                summary_parts.append(f"{total_luck_boost}% luck")
             if lucky_bonuses.get("coin_bonus", 0) > 0:
-                impact_lines.append(f"• Earning {lucky_bonuses['coin_bonus']}% more coins per session")
+                summary_parts.append(f"+{lucky_bonuses['coin_bonus']}% coins")
             if lucky_bonuses.get("xp_bonus", 0) > 0:
-                impact_lines.append(f"• Gaining {lucky_bonuses['xp_bonus']}% more XP per activity")
-            if lucky_bonuses.get("merge_luck", 0) > 0:
-                impact_lines.append(f"• Merges have {lucky_bonuses['merge_luck']}% better success rate")
+                summary_parts.append(f"+{lucky_bonuses['xp_bonus']}% XP")
             if friendly_neighbor_count > 0:
-                impact_lines.append(f"• {friendly_neighbor_count} gear slot(s) receiving power boost from neighbors")
-            if unfriendly_neighbor_count > 0:
-                impact_lines.append(f"• {unfriendly_neighbor_count} gear slot(s) reduced by neighbor penalties")
+                summary_parts.append(f"+{friendly_neighbor_count} neighbor boosts")
             
-            if impact_lines:
-                for line in impact_lines:
-                    line_lbl = QtWidgets.QLabel(line)
-                    line_lbl.setStyleSheet("color: #bbb; font-size: 11px;")
-                    summary_layout.addWidget(line_lbl)
-            else:
-                no_impact = QtWidgets.QLabel("Equip gear with special attributes to gain bonuses!")
-                no_impact.setStyleSheet("color: #888; font-size: 11px; font-style: italic;")
-                summary_layout.addWidget(no_impact)
-            
-            lucky_inner.addWidget(summary_frame)
-            self.lucky_bonuses_layout.addWidget(lucky_group)
+            if summary_parts:
+                summary_lbl = QtWidgets.QLabel(f"📊 <b>Overall:</b> {' | '.join(summary_parts)}")
+                summary_lbl.setTextFormat(QtCore.Qt.RichText)
+                summary_lbl.setStyleSheet("color: #a78bfa; font-size: 11px; padding: 4px; background: rgba(139,92,246,0.1); border-radius: 4px;")
+                self.lucky_bonuses_section.add_widget(summary_lbl)
         else:
-            # Show hint when no bonuses are active
-            hint_lbl = QtWidgets.QLabel(
-                "<i>💡 Tip: Equip gear with ✨ Lucky Options, 🍀 Luck Boost, or 👥 Neighbor Effects "
-                "to gain bonuses like extra coins, XP, and better item drops!</i>"
-            )
-            hint_lbl.setStyleSheet("color: #666; font-size: 11px; padding: 10px;")
-            hint_lbl.setTextFormat(QtCore.Qt.RichText)
-            hint_lbl.setWordWrap(True)
-            self.lucky_bonuses_layout.addWidget(hint_lbl)
+            self.lucky_bonuses_section.setVisible(False)
 
     def _refresh_potential_sets_display(self) -> None:
         """Refresh the potential set bonuses display from inventory."""
-        # Clear existing widgets
-        while self.potential_sets_layout.count():
-            child = self.potential_sets_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
+        # Clear existing content in collapsible section
+        self.potential_sets_section.clear_content()
         
         if not GAMIFICATION_AVAILABLE:
+            self.potential_sets_section.setVisible(False)
             return
         
         inventory = self.blocker.adhd_buster.get("inventory", [])
@@ -11667,34 +11645,34 @@ class ADHDBusterTab(QtWidgets.QWidget):
         ]
         
         if improvable_sets:
-            hint_group = QtWidgets.QGroupBox("💡 Potential Set Bonuses (in your inventory)")
-            hint_inner = QtWidgets.QVBoxLayout(hint_group)
+            self.potential_sets_section.setVisible(True)
+            self.potential_sets_section.set_title(f"💡 Potential Set Bonuses ({len(improvable_sets)})")
             
             for s in improvable_sets[:5]:  # Show top 5 potential sets
                 if s["current_bonus"] > 0:
                     # Already have some items equipped for this set
-                    hint_text = (
-                        f"{s['emoji']} {s['name']}: {s['equipped_count']} equipped + "
-                        f"{s['inventory_count']} in bag → could be +{s['potential_bonus']} power"
+                    lbl = QtWidgets.QLabel(
+                        f"{s['emoji']} {s['name']}: <b>{s['equipped_count']} equipped</b> + "
+                        f"{s['inventory_count']} in bag → could be <b>+{s['potential_bonus']} power</b>"
                     )
-                    lbl = QtWidgets.QLabel(hint_text)
-                    lbl.setStyleSheet("color: #ff9800;")  # Orange for partial sets
+                    lbl.setTextFormat(QtCore.Qt.RichText)
+                    lbl.setStyleSheet("color: #ff9800; font-size: 11px; padding: 2px 0;")
                 else:
                     # No items equipped yet
-                    hint_text = (
-                        f"{s['emoji']} {s['name']}: {s['inventory_count']} items in bag → "
-                        f"could be +{s['potential_bonus']} power (need {s['max_equippable']} equipped)"
+                    lbl = QtWidgets.QLabel(
+                        f"{s['emoji']} {s['name']}: {s['inventory_count']} in bag → "
+                        f"could be <b>+{s['potential_bonus']} power</b> (need {s['max_equippable']} equipped)"
                     )
-                    lbl = QtWidgets.QLabel(hint_text)
-                    lbl.setStyleSheet("color: #2196f3;")  # Blue for unequipped sets
+                    lbl.setTextFormat(QtCore.Qt.RichText)
+                    lbl.setStyleSheet("color: #2196f3; font-size: 11px; padding: 2px 0;")
                 
-                hint_inner.addWidget(lbl)
+                self.potential_sets_section.add_widget(lbl)
             
             tip_lbl = QtWidgets.QLabel("💡 Use 'Optimize Gear' to automatically equip the best items!")
-            tip_lbl.setStyleSheet("color: gray; font-style: italic; font-size: 10px;")
-            hint_inner.addWidget(tip_lbl)
-            
-            self.potential_sets_layout.addWidget(hint_group)
+            tip_lbl.setStyleSheet("color: #888; font-style: italic; font-size: 10px;")
+            self.potential_sets_section.add_widget(tip_lbl)
+        else:
+            self.potential_sets_section.setVisible(False)
 
     def _refresh_character(self) -> None:
         """Refresh all power-related displays after gear changes."""
@@ -11745,11 +11723,11 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self._refresh_sets_display(power_info)
         
         # Update potential set bonuses from inventory
-        if hasattr(self, 'potential_sets_layout'):
+        if hasattr(self, 'potential_sets_section'):
             self._refresh_potential_sets_display()
         
         # Update lucky bonuses display
-        if hasattr(self, 'lucky_bonuses_layout'):
+        if hasattr(self, 'lucky_bonuses_section'):
             self._refresh_lucky_bonuses_display()
         
         # Update story progress labels if available
@@ -12235,9 +12213,13 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self.details_power.setText("Power: -")
             self.details_set.setText("Set: -")
             self.details_neighbors.setText("Neighbors: -")
-            self.details_luck_boost.setText("")
-            self.details_lucky_options.setText("")
-            self.details_neighbor.setText("")
+            # Clear special attributes container
+            while self.details_special_layout.count():
+                child = self.details_special_layout.takeAt(0)
+                if child.widget():
+                    child.widget().deleteLater()
+            self.details_special_header.setVisible(False)
+            self.details_special_container.setVisible(False)
             self.details_status.setText("")
             return
         
@@ -12296,31 +12278,33 @@ class ADHDBusterTab(QtWidgets.QWidget):
         except Exception:
             self.details_neighbors.setText("Neighbors: -")
         
-        # Special attributes
-        has_special = False
+        # Special attributes - build dynamic list
+        # Clear existing special attribute labels
+        while self.details_special_layout.count():
+            child = self.details_special_layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+        
+        special_attrs = []
         
         # Luck boost
         luck_boost = item.get("luck_boost", 0)
         if luck_boost > 0:
-            self.details_luck_boost.setText(f"🍀 Luck Boost: +{luck_boost}%")
-            has_special = True
-        else:
-            self.details_luck_boost.setText("")
+            special_attrs.append(("🍀 Luck Boost", f"+{luck_boost}%", "#22c55e"))
         
-        # Lucky options
+        # Lucky options - show each individually
         lucky_options = item.get("lucky_options", {})
-        if lucky_options and format_lucky_options:
-            try:
-                lucky_text = format_lucky_options(lucky_options)
-                if lucky_text:
-                    self.details_lucky_options.setText(f"✨ Lucky: {lucky_text}")
-                    has_special = True
-                else:
-                    self.details_lucky_options.setText("")
-            except Exception:
-                self.details_lucky_options.setText("")
-        else:
-            self.details_lucky_options.setText("")
+        if lucky_options:
+            option_info = {
+                "coin_bonus": ("💰 Coin Bonus", "#fbbf24"),
+                "xp_bonus": ("⭐ XP Bonus", "#8b5cf6"),
+                "drop_luck": ("🎁 Drop Luck", "#ec4899"),
+                "merge_luck": ("🎲 Merge Luck", "#06b6d4")
+            }
+            for opt_key, (opt_name, opt_color) in option_info.items():
+                value = lucky_options.get(opt_key, 0)
+                if value > 0:
+                    special_attrs.append((opt_name, f"+{value}%", opt_color))
         
         # Neighbor effect
         neighbor_effect = item.get("neighbor_effect")
@@ -12328,17 +12312,20 @@ class ADHDBusterTab(QtWidgets.QWidget):
             try:
                 neighbor_text = format_neighbor_effect(neighbor_effect)
                 if neighbor_text:
-                    self.details_neighbor.setText(f"👥 Neighbor: {neighbor_text}")
-                    has_special = True
-                else:
-                    self.details_neighbor.setText("")
+                    special_attrs.append(("👥 Neighbor Effect", neighbor_text, "#06b6d4"))
             except Exception:
-                self.details_neighbor.setText("")
-        else:
-            self.details_neighbor.setText("")
+                pass
+        
+        # Add labels for each special attribute
+        for attr_name, attr_value, attr_color in special_attrs:
+            lbl = QtWidgets.QLabel(f"{attr_name}: {attr_value}")
+            lbl.setStyleSheet(f"color: {attr_color}; border: none; padding-left: 8px;")
+            self.details_special_layout.addWidget(lbl)
         
         # Show/hide special header based on whether there are special attributes
+        has_special = len(special_attrs) > 0
         self.details_special_header.setVisible(has_special)
+        self.details_special_container.setVisible(has_special)
         
         # Equipped status
         is_eq = self._is_item_equipped(item, equipped)
