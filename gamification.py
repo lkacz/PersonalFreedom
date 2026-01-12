@@ -595,11 +595,11 @@ LUCKY_OPTION_TYPES = {
 
 # Chance to roll lucky options by rarity (cumulative)
 LUCKY_OPTION_CHANCES = {
-    "Common": {"base_chance": 5, "max_options": 1},      # 5% chance for 1 option
-    "Uncommon": {"base_chance": 15, "max_options": 2},  # 15% for 1-2 options
-    "Rare": {"base_chance": 35, "max_options": 3},      # 35% for 1-3 options
-    "Epic": {"base_chance": 60, "max_options": 4},      # 60% for 1-4 options
-    "Legendary": {"base_chance": 90, "max_options": 4}, # 90% for 1-4 options (all possible)
+    "Common": {"base_chance": 15, "max_options": 1},      # 15% chance for 1 option
+    "Uncommon": {"base_chance": 35, "max_options": 2},   # 35% for 1-2 options
+    "Rare": {"base_chance": 55, "max_options": 3},       # 55% for 1-3 options
+    "Epic": {"base_chance": 75, "max_options": 4},       # 75% for 1-4 options
+    "Legendary": {"base_chance": 95, "max_options": 4},  # 95% for 1-4 options (all possible)
 }
 
 
@@ -691,12 +691,55 @@ SLOT_NEIGHBORS = {
 
 # Chance to roll neighbor effects by rarity
 NEIGHBOR_EFFECT_CHANCES = {
-    "Common": 5,      # 5% chance
-    "Uncommon": 10,   # 10% chance
-    "Rare": 20,       # 20% chance
-    "Epic": 35,       # 35% chance
-    "Legendary": 50,  # 50% chance
+    "Common": 10,      # 10% chance
+    "Uncommon": 25,    # 25% chance
+    "Rare": 40,        # 40% chance
+    "Epic": 60,        # 60% chance
+    "Legendary": 80,   # 80% chance
 }
+
+# Chance to roll luck boost by rarity (independent of other bonuses)
+LUCK_BOOST_CHANCES = {
+    "Common": 10,      # 10% chance
+    "Uncommon": 25,    # 25% chance
+    "Rare": 40,        # 40% chance
+    "Epic": 60,        # 60% chance
+    "Legendary": 80,   # 80% chance
+}
+
+# Luck boost value ranges by rarity (percentage bonus)
+LUCK_BOOST_RANGES = {
+    "Common": (1, 3),       # +1-3%
+    "Uncommon": (2, 5),     # +2-5%
+    "Rare": (3, 8),         # +3-8%
+    "Epic": (5, 12),        # +5-12%
+    "Legendary": (8, 20),   # +8-20%
+}
+
+
+def roll_luck_boost(rarity: str) -> int:
+    """
+    Roll for a luck boost on an item based on its rarity.
+    
+    Luck boost is a global luck percentage that increases chance of
+    better item drops, successful merges, and rare events.
+    
+    Args:
+        rarity: Item rarity
+    
+    Returns:
+        int: Luck boost percentage (0 if not rolled)
+    """
+    if rarity not in LUCK_BOOST_CHANCES:
+        return 0
+    
+    chance = LUCK_BOOST_CHANCES[rarity]
+    if random.randint(1, 100) > chance:
+        return 0  # No luck boost
+    
+    # Roll luck boost value based on rarity
+    min_val, max_val = LUCK_BOOST_RANGES.get(rarity, (1, 3))
+    return random.randint(min_val, max_val)
 
 
 def roll_neighbor_effect(rarity: str) -> Optional[dict]:
@@ -3409,6 +3452,9 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     # Roll for neighbor effect
     neighbor_effect = roll_neighbor_effect(rarity)
     
+    # Roll for luck boost
+    luck_boost = roll_luck_boost(rarity)
+    
     item_data = {
         "name": name,
         "rarity": rarity,
@@ -3427,6 +3473,10 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     # Add neighbor effect if rolled
     if neighbor_effect:
         item_data["neighbor_effect"] = neighbor_effect
+    
+    # Add luck boost if rolled
+    if luck_boost > 0:
+        item_data["luck_boost"] = luck_boost
     
     return item_data
 
