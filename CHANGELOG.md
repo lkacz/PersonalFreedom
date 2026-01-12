@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.6.3] - 2026-01-11
+
+### Improved
+- **ADHD Buster Tab UX Overhaul**:
+  - Made "Active Set Bonuses", "Potential Set Bonuses", and "Gear Bonus Effects" sections collapsible.
+  - Collapsible sections remember their collapsed/expanded state across sessions.
+  - Converted verbose multi-line bonus displays to compact single-line format, significantly reducing vertical space.
+  - Used colored icons and inline descriptions for better visual scanning.
+- **Item Details Panel**:
+  - Fixed special attributes display to show ALL lucky options individually (Coin Bonus, XP Bonus, Drop Luck, Merge Luck).
+  - Each special attribute now displayed on its own line with distinctive icon and color.
+  - Replaced combined "Lucky Options" string with individual attribute breakdown.
+
 ## [5.1.2] - 2026-01-08
 
 ### Fixed
