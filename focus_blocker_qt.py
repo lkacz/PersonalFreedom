@@ -11402,10 +11402,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
             "Rarity Tier\nItem quality from Common to Legendary:\nC=Common, U=Uncommon, R=Rare, E=Epic, L=Legendary\nHigher tiers have better stats and bonuses",
             "Power Level\nThe item's combat power contribution\nHigher power = stronger hero\nTotal power from all equipped items is shown in hero stats",
             "Item Set\nItems from the same set provide bonus effects\nCollect matching set pieces for additional power",
-            "🍀 Luck Bonus (Item Stat)\nChance to upgrade item rarity after generation\nEach item adds to your CHARACTER's luck_bonus stat\nUpgrade chance = luck_bonus / 100 (capped at 10% @ 1000)\n⏰ Decays by 1 per hour to maintain balance\n\nExample: 500 total luck_bonus = 5% upgrade chance\n(Common→Uncommon, Rare→Epic, etc.)",
+            "(Removed)\nLuck stat no longer used",
             "💰 Coin Bonus\nBonus coins earned from focus sessions\nHigher % = more coins per session\nGreat for saving up for merges and purchases",
             "⭐ XP Bonus\nBonus experience points from focus sessions\nHigher % = faster leveling\nLevel up to unlock new features and rewards",
-            "🎁 Drop Luck\nShifts rarity distribution toward higher tiers\nAdds 'virtual minutes' to session length (6 min per 1%)\nHigher % = better quality items (not more drops)\nExample: 10% drop luck on 30min = generates as if 90min",
+            "(Removed)\nDrop Luck no longer affects item generation",
             "🎲 Merge Luck\nIncreases success chance in Lucky Merge\nBase merge success is 25%, this adds to it\nVery valuable for upgrading your gear!",
             "👥 Neighbor Effect\nBonus applied when equipped next to matching items\nSet bonuses and synergies with adjacent slots\nCheck item details for specific effects"
         ]
@@ -15835,52 +15835,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Check for daily gear reward (delayed until after onboarding so story is selected)
         if GAMIFICATION_AVAILABLE:
             QtCore.QTimer.singleShot(900, self._show_onboarding_prompt)
-            
-            # Setup hourly luck decay timer
-            self._luck_decay_timer = QtCore.QTimer(self)
-            self._luck_decay_timer.setInterval(3600000)  # 1 hour = 3,600,000 ms
-            self._luck_decay_timer.timeout.connect(self._on_luck_decay)
-            self._luck_decay_timer.start()
-            
-            # Also check for missed decay on startup (if app was closed)
-            QtCore.QTimer.singleShot(1000, self._check_missed_luck_decay)
 
-    def _on_luck_decay(self) -> None:
-        """Called every hour to decay luck bonus by 1."""
-        if not GAMIFICATION_AVAILABLE or not self.game_state:
-            return
-        
-        current_luck = self.blocker.adhd_buster.get("luck_bonus", 0)
-        if current_luck > 0:
-            new_luck = self.game_state.decay_luck_bonus(1)
-            logger.info(f"Hourly luck decay: {current_luck} -> {new_luck}")
-    
-    def _check_missed_luck_decay(self) -> None:
-        """Check if luck should have decayed while app was closed and apply catch-up decay."""
-        if not GAMIFICATION_AVAILABLE or not self.game_state:
-            return
-        
-        import time
-        
-        current_luck = self.blocker.adhd_buster.get("luck_bonus", 0)
-        if current_luck <= 0:
-            return
-        
-        last_decay = self.blocker.adhd_buster.get("luck_last_decay", 0)
-        if last_decay == 0:
-            # First time - set initial timestamp
-            self.blocker.adhd_buster["luck_last_decay"] = int(time.time())
-            self.blocker.save_config()
-            return
-        
-        current_time = int(time.time())
-        elapsed_hours = (current_time - last_decay) // 3600
-        
-        if elapsed_hours > 0:
-            decay_amount = min(elapsed_hours, current_luck)  # Can't decay below 0
-            if decay_amount > 0:
-                new_luck = self.game_state.decay_luck_bonus(decay_amount)
-                logger.info(f"Catch-up luck decay: {current_luck} -> {new_luck} ({elapsed_hours} hours missed)")
+
 
     def _show_onboarding_prompt(self) -> None:
         """Ask the user how they want to play this session."""
