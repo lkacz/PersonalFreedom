@@ -87,6 +87,7 @@ class GameStateManager(QtCore.QObject):
     # Power/Stats signals
     power_changed = QtCore.Signal(int)  # New total power
     set_bonus_changed = QtCore.Signal(dict)  # Set bonus info
+    luck_bonus_changed = QtCore.Signal(int)  # New luck_bonus total
     
     # Currency signals
     coins_changed = QtCore.Signal(int)  # New coin total
@@ -429,6 +430,32 @@ class GameStateManager(QtCore.QObject):
         new_total = current + amount
         self.adhd_buster["luck_bonus"] = new_total
         self._save_config()
+        self.luck_bonus_changed.emit(new_total)
+        return new_total
+    
+    def decay_luck_bonus(self, amount: int = 1) -> int:
+        """Decay luck bonus by specified amount (minimum 0). Returns new total.
+        
+        This is called hourly to gradually reduce accumulated luck.
+        
+        Args:
+            amount: Amount to decay (default 1 per hour)
+        """
+        import time
+        
+        current = self.adhd_buster.get("luck_bonus", 0)
+        if current <= 0:
+            return 0
+        
+        new_total = max(0, current - amount)
+        self.adhd_buster["luck_bonus"] = new_total
+        
+        # Track last decay time
+        self.adhd_buster["luck_last_decay"] = int(time.time())
+        
+        self._save_config()
+        self.luck_bonus_changed.emit(new_total)
+        logger.info(f"Luck bonus decayed: {current} -> {new_total} (-{amount})")
         return new_total
     
     def bulk_remove_items(self, items: List[dict]) -> int:
@@ -518,20 +545,37 @@ class GameStateManager(QtCore.QObject):
             return (hero.get("xp", 0), hero.get("level", 1), False)
         
         hero = self.adhd_buster.get("hero", {})
-        current_xp = hero.get("xp", 0)
-        current_level = hero.get("level", 1)
-        
-        new_xp = current_xp + amount
-        new_level = current_level
-        leveled_up = False
-        
-        # Simple level up logic (100 XP per level)
-        xp_for_next = current_level * 100
-        while new_xp >= xp_for_next:
-            new_xp -= xp_for_next
-            new_level += 1
-            leveled_up = True
-            xp_for_next = new_level * 100
+
+        # --- Update Total XP (Source of Truth for XP Ring) ---
+        current_total = self.adhd_buster.get("total_xp", 0)
+        new_total_xp = current_total + amount
+        # Cap at 2B to prevent overflow
+        new_total_xp = min(new_total_xp, 2_000_000_000)
+        self.adhd_buster["total_xp"] = new_total_xp
+
+        # --- Calculate Level ---
+        try:
+            from gamification import get_level_from_xp
+            new_level, xp_in_level, xp_needed, progress = get_level_from_xp(new_total_xp)
+            # Use calculated values
+            new_xp = xp_in_level
+            old_level = hero.get("level", 1)
+            leveled_up = new_level > old_level
+        except ImportError:
+            # Fallback (Legacy Logic)
+            current_xp = hero.get("xp", 0)
+            current_level = hero.get("level", 1)
+            
+            new_xp = current_xp + amount
+            new_level = current_level
+            leveled_up = False
+            
+            xp_for_next = current_level * 100
+            while new_xp >= xp_for_next:
+                new_xp -= xp_for_next
+                new_level += 1
+                leveled_up = True
+                xp_for_next = new_level * 100
         
         hero["xp"] = new_xp
         hero["level"] = new_level

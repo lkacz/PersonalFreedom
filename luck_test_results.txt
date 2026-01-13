@@ -1,0 +1,56 @@
+test_luck_cap_effectiveness (test_luck_mechanics.TestLuckBonusCharacterStat.test_luck_cap_effectiveness)
+Test that luck beyond 1000 doesn't increase upgrade chance above 10%. ... ok
+test_merge_success_bonus_calculation (test_luck_mechanics.TestLuckBonusCharacterStat.test_merge_success_bonus_calculation)
+Test that merge success bonus is luck * 0.02 (1 luck = 0.02%). ... ok
+test_rarity_upgrade_chance_calculation (test_luck_mechanics.TestLuckBonusCharacterStat.test_rarity_upgrade_chance_calculation)
+Test that rarity upgrade chance is luck / 100, capped at 10%. ... ok
+test_rarity_upgrade_probability (test_luck_mechanics.TestLuckBonusCharacterStat.test_rarity_upgrade_probability)
+Test that rarity upgrade rolls work correctly with different luck values. ... ok
+test_salvage_calculates_luck_correctly (test_luck_mechanics.TestLuckBonusCharacterStat.test_salvage_calculates_luck_correctly)
+Test that salvaging items calculates luck based on power // 10. ... ok
+test_drop_luck_cap (test_luck_mechanics.TestDropLuckGearStat.test_drop_luck_cap)
+Test that drop luck is capped at 100% (600 virtual minutes). ... ok
+test_drop_luck_multiplier_effect (test_luck_mechanics.TestDropLuckGearStat.test_drop_luck_multiplier_effect)
+Test that higher drop luck significantly increases effective session time. ... FAIL
+test_virtual_minutes_calculation (test_luck_mechanics.TestDropLuckGearStat.test_virtual_minutes_calculation)
+Test that drop luck adds 6 virtual minutes per 1%. ... ok
+test_both_luck_types_are_independent (test_luck_mechanics.TestLuckInteraction.test_both_luck_types_are_independent)
+Test that Luck Bonus and Drop Luck don't interfere with each other. ... ok
+test_total_luck_benefit_stacking (test_luck_mechanics.TestLuckInteraction.test_total_luck_benefit_stacking)
+Test the combined benefit of both luck types on item quality. ... ok
+test_high_luck_merge_scaling (test_luck_mechanics.TestMergeSuccessWithLuck.test_high_luck_merge_scaling)
+Test that high luck values significantly boost merge success. ... Luck 0: 28.0% merge success
+Luck 500: 38.0% merge success
+Luck 1000: 48.0% merge success
+Luck 2500: 78.0% merge success
+Luck 5000: 128.0% merge success
+ok
+test_merge_success_formula (test_luck_mechanics.TestMergeSuccessWithLuck.test_merge_success_formula)
+Test complete merge success rate calculation. ... FAIL
+test_multiplier_degradation (test_luck_mechanics.TestPushYourLuckMechanic.test_multiplier_degradation)
+Test that each re-roll reduces success by 20% (×0.80). ... ok
+test_push_luck_risk_escalation (test_luck_mechanics.TestPushYourLuckMechanic.test_push_luck_risk_escalation)
+Test that risk escalates dramatically with each re-roll. ... ok
+
+======================================================================
+FAIL: test_drop_luck_multiplier_effect (test_luck_mechanics.TestDropLuckGearStat.test_drop_luck_multiplier_effect)
+Test that higher drop luck significantly increases effective session time.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "F:\_DEV\PersonalFreedom\test_luck_mechanics.py", line 156, in test_drop_luck_multiplier_effect
+    self.assertAlmostEqual(drop_luck_50 / base_session, 12.0, places=1)
+AssertionError: 11.0 != 12.0 within 1 places (1.0 difference)
+
+======================================================================
+FAIL: test_merge_success_formula (test_luck_mechanics.TestMergeSuccessWithLuck.test_merge_success_formula)
+Test complete merge success rate calculation.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "F:\_DEV\PersonalFreedom\test_luck_mechanics.py", line 225, in test_merge_success_formula
+    self.assertAlmostEqual(total_rate, expected, places=2,
+AssertionError: 0.32030000000000003 != 0.35000000000000003 within 2 places (0.029700000000000004 difference) : Total merge rate should be sum of all bonuses
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.002s
+
+FAILED (failures=2)

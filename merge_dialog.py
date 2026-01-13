@@ -40,15 +40,57 @@ class MergeRollAnimationDialog(QtWidgets.QDialog):
         super().__init__(parent)
         self.target_roll = target_roll * 100  # Convert to percentage
         self.success_threshold = success_threshold * 100
-        self.current_position = 0.0  # Current slider position (0-100)
+        self.current_position = 50.0  # Start in the middle
         self.is_success = target_roll < success_threshold
         
-        # Animation parameters
-        self.tick_interval = 25  # ms between updates
-        self.total_ticks = 0
-        self.max_ticks = 100  # Total animation ticks
-        self.direction = 1  # 1 = right, -1 = left
-        self.speed = 8.0  # Initial speed
+        # Industry Standard "Ping-Pong" Deceleration Animation
+        # Slider bounces off walls, losing speed (quadratic friction),
+        # eventually stopping exactly on the target.
+        self.tick_interval = 16  # 60 FPS
+        self.elapsed_time = 0.0
+        self.animation_duration = 5.0  # Seconds
+        
+        # 1. Generate path segments
+        # Start at 50, visit walls (0/100) multiple times, end at target
+        self.path_points = [50.0]
+        
+        # Random start direction
+        going_up = random.choice([True, False])
+        
+        # Number of full bounces (wall-to-wall traversals)
+        # 4-6 bounces creates nice suspense
+        num_bounces = random.randint(4, 6)
+        
+        for _ in range(num_bounces):
+            if going_up:
+                self.path_points.append(100.0)
+                self.path_points.append(0.0)
+            else:
+                self.path_points.append(0.0)
+                self.path_points.append(100.0)
+        
+        # Add final target
+        self.path_points.append(self.target_roll)
+        
+        # 2. Pre-calculate distance segments for O(1) interpolation
+        self.segments = []
+        self.total_distance = 0.0
+        
+        for i in range(len(self.path_points) - 1):
+            start = self.path_points[i]
+            end = self.path_points[i+1]
+            dist = abs(end - start)
+            
+            # Skip zero-length segments if any
+            if dist > 0.001:
+                self.segments.append({
+                    "start": start,
+                    "end": end,
+                    "dist": dist,
+                    "cum_start": self.total_distance,
+                    "cum_end": self.total_distance + dist
+                })
+                self.total_distance += dist
         
         self._setup_ui()
         self._start_animation()
@@ -107,30 +149,94 @@ class MergeRollAnimationDialog(QtWidgets.QDialog):
         layout.addWidget(container)
     
     def _start_animation(self):
-        """Start the slider animation."""
+        """Start the damped oscillation animation."""
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self._tick)
         self.timer.start(self.tick_interval)
     
     def _tick(self):
-        """Update animation state - slider bounces back and forth, slowing down."""
-        self.total_ticks += 1
-        progress = self.total_ticks / self.max_ticks
+        """Update animation by traversing the pre-calculated bounce path."""
+        # Update elapsed time
+        self.elapsed_time += self.tick_interval / 1000.0  # seconds
         
-        # Decrease speed over time
-        decay = 1.0 - (progress * 0.9)  # Starts at 1.0, ends at 0.1
-        current_speed = self.speed * decay
+        # Calculate normalized progress (0.0 to 1.0)
+        t = min(1.0, self.elapsed_time / self.animation_duration)
         
-        # Move slider
-        self.current_position += self.direction * current_speed
+        # Apply easing function for realistic friction/deceleration
+        # EaseOutQuart: 1 - (1-t)^4
+        # Starts fast, slows down significantly at the end
+        eased_progress = 1.0 - (1.0 - t) ** 4
         
-        # Bounce off edges
-        if self.current_position >= 100:
-            self.current_position = 100
-            self.direction = -1
-        elif self.current_position <= 0:
-            self.current_position = 0
-            self.direction = 1
+        # Calculate current distance traveled along the path
+        current_travel = eased_progress * self.total_distance
+        
+        # Find which segment we are in
+        # O(N) search is fine since N is small (< 10)
+        found_pos = self.target_roll # Default fallback
+        
+        for seg in self.segments:
+            if current_travel >= seg["cum_start"] and current_travel <= seg["cum_end"]:
+                # Interpolate within this segment
+                # local_t = how far into this segment (0.0 to 1.0)
+                local_dist = current_travel - seg["cum_start"]
+                local_progress = local_dist / seg["dist"]
+                
+                # Lerp: start + (end - start) * progress
+                found_pos = seg["start"] + (seg["end"] - seg["start"]) * local_progress
+                break
+            elif current_travel > seg["cum_end"]:
+                # Past this segment, keep checking
+                continue
+            else:
+                # Before first segment (shouldn't happen with 0 start)
+                break
+        else:
+            # If loop finishes without break, we are at the end
+            if current_travel >= self.total_distance:
+                found_pos = self.target_roll
+
+        self.current_position = found_pos
+        
+        # End condition
+        if t >= 1.0:
+            self.timer.stop()
+            self.current_position = self.target_roll
+            self.slider_widget.set_position(self.target_roll)
+            self.roll_label.setText(f"{self.target_roll:.1f}%")
+            self._show_final_result()
+            return
+            
+        # Update display
+        # Ensure bounds 0-100 just in case
+        self.current_position = max(0.0, min(100.0, self.current_position))
+        self.slider_widget.set_position(self.current_position)
+        self.roll_label.setText(f"{self.current_position:.1f}%")
+        
+        # Color based on position
+        if self.current_position < self.success_threshold:
+            self.roll_label.setStyleSheet("""
+                font-size: 28px; font-weight: bold; color: #4caf50;
+                font-family: 'Consolas', 'Monaco', monospace;
+            """)
+        else:
+            self.roll_label.setStyleSheet("""
+                font-size: 28px; font-weight: bold; color: #f44336;
+                font-family: 'Consolas', 'Monaco', monospace;
+            """)
+        
+        # Update status based on speed (derivative of eased_progress)
+        speed = 4 * (1.0 - t) ** 3  # derivative of 1-(1-t)^4
+        if speed > 2.0:
+            self.status_label.setText("⚡ Spinning...")
+        elif speed > 0.8:
+            self.status_label.setText("🎯 Slowing down...")
+        elif speed > 0.2:
+            self.status_label.setText("🎲 Almost there...")
+        else:
+            self.status_label.setText("✨ Settling...")
+        
+        # Clamp to valid range (with bounce visualization logic if needed, but simple clamp is fine)
+        self.current_position = max(0.0, min(100.0, self.current_position))
         
         # Update display
         self.slider_widget.set_position(self.current_position)
@@ -148,44 +254,15 @@ class MergeRollAnimationDialog(QtWidgets.QDialog):
                 font-family: 'Consolas', 'Monaco', monospace;
             """)
         
-        # Update status based on phase
-        if progress < 0.5:
+        # Update status based on elapsed time phases
+        if t < 1.0:
             self.status_label.setText("⚡ Spinning...")
-        elif progress < 0.8:
+        elif t < 3.0:
             self.status_label.setText("🎯 Slowing down...")
-        else:
+        elif t < 4.0:
             self.status_label.setText("🎲 Almost there...")
-        
-        # When slow enough, snap to target
-        if progress >= 0.95 or (progress > 0.8 and current_speed < 0.5):
-            self.timer.stop()
-            self._animate_to_target()
-    
-    def _animate_to_target(self):
-        """Smoothly animate to the final target position."""
-        self.snap_timer = QtCore.QTimer(self)
-        self.snap_steps = 15
-        self.snap_current = 0
-        self.snap_start = self.current_position
-        self.snap_timer.timeout.connect(self._snap_tick)
-        self.snap_timer.start(30)
-    
-    def _snap_tick(self):
-        """Animate snapping to target."""
-        self.snap_current += 1
-        t = self.snap_current / self.snap_steps
-        # Ease out cubic
-        t = 1 - (1 - t) ** 3
-        
-        self.current_position = self.snap_start + (self.target_roll - self.snap_start) * t
-        self.slider_widget.set_position(self.current_position)
-        self.roll_label.setText(f"{self.current_position:.1f}%")
-        
-        if self.snap_current >= self.snap_steps:
-            self.snap_timer.stop()
-            self.current_position = self.target_roll
-            self.slider_widget.set_position(self.target_roll)
-            self._show_final_result()
+        else:
+            self.status_label.setText("✨ Settling...")
     
     def _show_final_result(self):
         """Show the final result."""
@@ -551,9 +628,10 @@ class SuccessRateWidget(QtWidgets.QWidget):
 class ResultPreviewWidget(QtWidgets.QWidget):
     """Preview of potential merge result."""
     
-    def __init__(self, result_rarity: str, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(self, result_rarity: str, items: list = None, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
         self.result_rarity = result_rarity
+        self.items = items if items is not None else []
         self._build_ui()
     
     def _build_ui(self):
@@ -579,16 +657,39 @@ class ResultPreviewWidget(QtWidgets.QWidget):
         layout.addWidget(icon)
         
         # Result title
-        title = QtWidgets.QLabel("On Success")
+        title = QtWidgets.QLabel("Possible Result")
         title.setAlignment(QtCore.Qt.AlignCenter)
         title.setStyleSheet("font-weight: bold; font-size: 12px; color: #aaa;")
         layout.addWidget(title)
         
-        # Rarity
-        rarity_label = QtWidgets.QLabel(f"<b>{self.result_rarity}</b> Item")
+        # Rarity - show range since tier jump is random
+        # Calculate minimum (lowest item tier) and maximum (with max tier jump + upgrade)
+        min_rarity_idx = min([RARITY_ORDER.index(item.get("rarity", "Common")) for item in self.items if item])
+        max_tier_jump = 4  # Maximum possible tier jump
+        max_rarity_idx = min(min_rarity_idx + max_tier_jump, len(RARITY_ORDER) - 1)
+        
+        if hasattr(self, 'tier_upgrade_enabled') and self.tier_upgrade_enabled:
+            max_rarity_idx = min(max_rarity_idx + 1, len(RARITY_ORDER) - 1)
+        
+        min_rarity = RARITY_ORDER[min_rarity_idx]
+        max_rarity = RARITY_ORDER[max_rarity_idx]
+        
+        if min_rarity == max_rarity:
+            rarity_text = f"<b>{max_rarity}</b> Item"
+        else:
+            rarity_text = f"<b>{min_rarity}</b> to <b>{max_rarity}</b>"
+        
+        rarity_label = QtWidgets.QLabel(rarity_text)
         rarity_label.setAlignment(QtCore.Qt.AlignCenter)
         rarity_label.setStyleSheet(f"color: {color}; font-size: 14px;")
         layout.addWidget(rarity_label)
+        
+        # Add explanation about tier jumps
+        if min_rarity != max_rarity:
+            tier_note = QtWidgets.QLabel("✨ Lucky tier jumps possible!")
+            tier_note.setAlignment(QtCore.Qt.AlignCenter)
+            tier_note.setStyleSheet("color: #888; font-size: 10px; font-style: italic;")
+            layout.addWidget(tier_note)
         
         # Stars
         stars = min(5, max(1, list(ITEM_RARITIES.keys()).index(self.result_rarity) + 1))
@@ -652,6 +753,10 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.claim_cost = COIN_COSTS.get("merge_claim", 100)  # Claim item on near-miss
         self.boost_bonus = MERGE_BOOST_BONUS  # +25% success rate
         
+        self.retry_cost_accumulated = 0
+        self.near_miss_claimed = False
+        self.salvage_requested = False
+        
         # Calculate merge luck from ITEMS BEING MERGED (not equipped gear)
         # This encourages players to sacrifice items with merge_luck for better odds
         self.items_merge_luck = 0
@@ -686,26 +791,84 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Calculate breakdown (matches gamification.py constants)
         base_rate = 0.25  # MERGE_BASE_SUCCESS_RATE from gamification.py
         item_bonus = max(0, len(items) - 2) * 0.03  # +3% per item after first two
-        luck_bonus = luck * 0.02
+        # Match the actual formula from gamification.py line 1417
+        luck_bonus = min(max(luck, 0) / 100 * 0.01, 0.10)  # Capped at 10%
         items_merge_bonus = self.items_merge_luck / 100.0
         
         self.breakdown = {
             "Base Rate": int(base_rate * 100),
             f"Item Count ({len(items)} items)": int(item_bonus * 100),
-            f"Legacy Luck ({luck})": int(luck_bonus * 100),
+            f"Character Luck ({luck})": int(luck_bonus * 100),
         }
         if self.items_merge_luck > 0:
             self.breakdown["Items Merge Luck"] = self.items_merge_luck
         
         self.setWindowTitle("⚡ Lucky Merge")
-        self.setMinimumSize(700, 650)
+        self.setMinimumSize(700, 500)
+        self.setMaximumHeight(800)  # Limit max height
         self._build_ui()
     
     def _build_ui(self):
         """Build the complete merge dialog UI."""
-        main_layout = QtWidgets.QVBoxLayout(self)
+        # Main layout for the dialog
+        dialog_layout = QtWidgets.QVBoxLayout(self)
+        dialog_layout.setSpacing(0)
+        dialog_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Scroll area to handle overflow
+        scroll_area = QtWidgets.QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        scroll_area.setStyleSheet("""
+            QScrollArea {
+                border: none;
+                background-color: #1e1e2e;
+            }
+            QScrollBar:vertical {
+                background-color: #2d2d3d;
+                width: 10px;
+                border-radius: 5px;
+            }
+            QScrollBar::handle:vertical {
+                background-color: #555;
+                border-radius: 5px;
+                min-height: 20px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background-color: #666;
+            }
+        """)
+        
+        # Content widget inside scroll area
+        content_widget = QtWidgets.QWidget()
+        content_widget.setStyleSheet("background-color: #1e1e2e;")
+        main_layout = QtWidgets.QVBoxLayout(content_widget)
         main_layout.setSpacing(20)
         main_layout.setContentsMargins(24, 24, 24, 24)
+        
+        # Top bar with coin balance
+        top_bar = QtWidgets.QWidget()
+        top_bar_layout = QtWidgets.QHBoxLayout(top_bar)
+        top_bar_layout.setContentsMargins(0, 0, 0, 0)
+        
+        top_bar_layout.addStretch()
+        
+        # Coin balance display
+        coin_icon = QtWidgets.QLabel("🪙")
+        coin_icon.setStyleSheet("font-size: 20px;")
+        top_bar_layout.addWidget(coin_icon)
+        
+        self.coin_balance_label = QtWidgets.QLabel(f"{self.player_coins:,}")
+        self.coin_balance_label.setStyleSheet("""
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffd700;
+            padding-left: 4px;
+        """)
+        top_bar_layout.addWidget(self.coin_balance_label)
+        
+        main_layout.addWidget(top_bar)
         
         # Header
         header = QtWidgets.QLabel("⚡ Lucky Merge")
@@ -775,6 +938,10 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Buttons
         button_box = self._create_button_box()
         main_layout.addWidget(button_box)
+        
+        # Add content widget to scroll area
+        scroll_area.setWidget(content_widget)
+        dialog_layout.addWidget(scroll_area)
         
         # Set dialog style
         self.setStyleSheet("""
@@ -947,16 +1114,41 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         power = RARITY_POWER.get(self.result_rarity, 10) if GAMIFICATION_AVAILABLE else 10
         
         # Result title
-        title = QtWidgets.QLabel("On Success")
+        title = QtWidgets.QLabel("Possible Result")
         title.setAlignment(QtCore.Qt.AlignCenter)
         title.setStyleSheet("font-weight: bold; font-size: 12px; color: #aaa;")
         layout.addWidget(title)
         
-        # Rarity with emoji
-        self.result_rarity_label = QtWidgets.QLabel(f"<b style='color:{color};'>✨ {self.result_rarity}</b>")
+        # Calculate rarity range (minimum from lowest item, maximum with tier jumps)
+        min_rarity_idx = min([RARITY_ORDER.index(item.get("rarity", "Common")) for item in self.items if item])
+        max_tier_jump = 4  # Maximum possible tier jump
+        max_rarity_idx = min(min_rarity_idx + max_tier_jump, len(RARITY_ORDER) - 1)
+        
+        if self.tier_upgrade_enabled:
+            max_rarity_idx = min(max_rarity_idx + 1, len(RARITY_ORDER) - 1)
+        
+        min_rarity = RARITY_ORDER[min_rarity_idx]
+        max_rarity = RARITY_ORDER[max_rarity_idx]
+        
+        # Rarity with emoji - show range
+        if min_rarity == max_rarity:
+            rarity_text = f"<b style='color:{color};'>✨ {max_rarity}</b>"
+        else:
+            min_color = ITEM_RARITIES.get(min_rarity, {}).get("color", "#9e9e9e")
+            max_color = ITEM_RARITIES.get(max_rarity, {}).get("color", "#9e9e9e")
+            rarity_text = f"<b style='color:{min_color};'>✨ {min_rarity}</b> to <b style='color:{max_color};'>{max_rarity}</b>"
+        
+        self.result_rarity_label = QtWidgets.QLabel(rarity_text)
         self.result_rarity_label.setAlignment(QtCore.Qt.AlignCenter)
         self.result_rarity_label.setStyleSheet("font-size: 18px;")
         layout.addWidget(self.result_rarity_label)
+        
+        # Add tier jump note if range exists
+        if min_rarity != max_rarity:
+            tier_note = QtWidgets.QLabel("✨ Lucky tier jumps possible!")
+            tier_note.setAlignment(QtCore.Qt.AlignCenter)
+            tier_note.setStyleSheet("color: #888; font-size: 10px; font-style: italic;")
+            layout.addWidget(tier_note)
         
         # Power range
         power_label = QtWidgets.QLabel(f"⚔ ~{power} Power")
@@ -1072,9 +1264,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
                 color = ITEM_RARITIES.get(self.result_rarity, {}).get("color", "#fff")
                 self.result_rarity_label.setText(f"<b style='color:{color};'>✨ {self.result_rarity}</b>")
         
-        # Update success rate display via success widget
-        if hasattr(self, 'success_widget') and self.success_widget:
-            self.success_widget.update_rate(self.success_rate, boost_active=checked)
+        # Tier upgrade doesn't affect success rate - don't update the display
+        # (The success rate display should only show boost_active based on self.boost_enabled)
 
     def _create_button_box(self) -> QtWidgets.QWidget:
         """Create the action button box."""
@@ -1129,10 +1320,12 @@ class LuckyMergeDialog(QtWidgets.QDialog):
     def execute_merge(self):
         """Execute the merge with dramatic roll animation."""
         if not GAMIFICATION_AVAILABLE:
-            QtWidgets.QMessageBox.warning(
-                self, "Feature Unavailable",
-                "Gamification features are not available."
-            )
+            msg = QtWidgets.QMessageBox(self)
+            msg.setWindowTitle("Feature Unavailable")
+            msg.setText("Gamification features are not available.")
+            msg.setIcon(QtWidgets.QMessageBox.NoIcon)
+            msg.setOption(QtWidgets.QMessageBox.DontUseNativeDialog, True)
+            msg.exec_()
             return
         
         # Disable all buttons during merge
@@ -1215,18 +1408,240 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Show result
         if self.merge_result["success"]:
             self._show_success_dialog()
+            self.accept()
         else:
             self._show_failure_dialog()
+            
+            # If retry was requested, restart the merge sequence
+            if getattr(self, "is_retrying", False):
+                self.is_retrying = False # Reset flag
+                # Small delay to let dialog close and UI refresh
+                QtCore.QTimer.singleShot(100, self.execute_merge)
+                return # Do NOT close the main dialog
         
         self.accept()
     
     def _show_success_dialog(self):
-        """Show success result dialog."""
+        """Show success result dialog with optional 'Push Your Luck' re-roll."""
         result_item = self.merge_result.get("result_item", {}) if self.merge_result else {}
+        rarity = result_item.get("rarity", "Common")
+        
+        # Check if Push Your Luck is available (not Legendary)
+        if rarity != "Legendary":
+            choice = self._show_push_your_luck_dialog(result_item)
+            if choice == "reroll":
+                # Player wants to risk it for next tier
+                self._execute_push_your_luck()
+                return  # Don't close dialog yet
+        
+        # Show standard success message (either kept item or reached Legendary)
+        self._show_final_success_message(result_item)
+    
+    def _show_push_your_luck_dialog(self, current_item: dict) -> str:
+        """Show dialog offering to keep item or risk for next tier. Returns 'keep' or 'reroll'."""
+        rarity = current_item.get("rarity", "Common")
+        name = current_item.get("name", "Unknown Item")
+        power = current_item.get("power", 0)
+        
+        # Calculate next tier and success chance
+        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+        current_idx = rarity_order.index(rarity) if rarity in rarity_order else 0
+        next_rarity = rarity_order[min(current_idx + 1, len(rarity_order) - 1)]
+        
+        # Get current success rate and apply 0.80 multiplier for push your luck
+        push_luck_multiplier = getattr(self, 'push_luck_multiplier', 1.0)
+        new_multiplier = push_luck_multiplier * 0.80
+        reroll_chance = self.success_rate * new_multiplier
+        
+        rarity_color = ITEM_RARITIES.get(rarity, {}).get("color", "#9e9e9e")
+        next_color = ITEM_RARITIES.get(next_rarity, {}).get("color", "#fff")
+        
+        # Create custom dialog
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("🎉 SUCCESS - Push Your Luck?")
+        dialog.setModal(True)
+        dialog.setMinimumWidth(500)
+        
+        layout = QtWidgets.QVBoxLayout(dialog)
+        layout.setSpacing(16)
+        
+        # Success header
+        header = QtWidgets.QLabel("🎉 <b>MERGE SUCCESS!</b> 🎉")
+        header.setAlignment(QtCore.Qt.AlignCenter)
+        header.setStyleSheet("font-size: 18px; color: #4caf50; padding: 10px;")
+        layout.addWidget(header)
+        
+        # Current item display
+        current_box = QtWidgets.QGroupBox("✅ You Won:")
+        current_layout = QtWidgets.QVBoxLayout(current_box)
+        current_lbl = QtWidgets.QLabel(
+            f"<p style='text-align:center;'>"
+            f"<span style='font-size:16px; font-weight:bold;'>{name}</span><br>"
+            f"<span style='color:{rarity_color}; font-size:14px;'>{rarity}</span> • "
+            f"<span style='color:#aaa;'>⚔ {power} Power</span>"
+            f"</p>"
+        )
+        current_lbl.setTextFormat(QtCore.Qt.RichText)
+        current_layout.addWidget(current_lbl)
+        current_box.setStyleSheet(f"QGroupBox {{ background: #2a3a2a; border: 2px solid {rarity_color}; border-radius: 8px; padding: 12px; }}")
+        layout.addWidget(current_box)
+        
+        # Separator
+        sep = QtWidgets.QLabel("⬇️ <b>OR RISK IT ALL FOR...</b> ⬇️")
+        sep.setAlignment(QtCore.Qt.AlignCenter)
+        sep.setStyleSheet("font-size: 13px; color: #ff9800; padding: 8px;")
+        layout.addWidget(sep)
+        
+        # Next tier preview
+        next_box = QtWidgets.QGroupBox("🎲 Gamble for Higher Tier:")
+        next_layout = QtWidgets.QVBoxLayout(next_box)
+        next_lbl = QtWidgets.QLabel(
+            f"<p style='text-align:center;'>"
+            f"<span style='color:{next_color}; font-size:16px; font-weight:bold;'>{next_rarity}</span><br>"
+            f"<span style='color:#aaa; font-size:12px;'>Success Chance: <b>{reroll_chance*100:.1f}%</b></span><br>"
+            f"<span style='color:#f44336; font-size:11px;'>⚠️ Lose everything if you fail!</span>"
+            f"</p>"
+        )
+        next_lbl.setTextFormat(QtCore.Qt.RichText)
+        next_layout.addWidget(next_lbl)
+        next_box.setStyleSheet(f"QGroupBox {{ background: #3a2a1a; border: 2px dashed {next_color}; border-radius: 8px; padding: 12px; }}")
+        layout.addWidget(next_box)
+        
+        # Warning
+        warning = QtWidgets.QLabel("⚠️ Each re-roll reduces success chance by 20% (×0.80)")
+        warning.setAlignment(QtCore.Qt.AlignCenter)
+        warning.setStyleSheet("font-size: 10px; color: #d32f2f; font-style: italic;")
+        layout.addWidget(warning)
+        
+        # Buttons
+        btn_layout = QtWidgets.QHBoxLayout()
+        
+        keep_btn = QtWidgets.QPushButton("✅ Keep This Item")
+        keep_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4caf50;
+                color: white;
+                padding: 12px 24px;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 6px;
+            }
+            QPushButton:hover { background-color: #388e3c; }
+        """)
+        keep_btn.clicked.connect(lambda: dialog.done(0))
+        
+        reroll_btn = QtWidgets.QPushButton(f"🎲 Risk for {next_rarity}!")
+        reroll_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #ff9800;
+                color: white;
+                padding: 12px 24px;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 6px;
+            }
+            QPushButton:hover { background-color: #f57c00; }
+        """)
+        reroll_btn.clicked.connect(lambda: dialog.done(1))
+        
+        btn_layout.addWidget(keep_btn)
+        btn_layout.addWidget(reroll_btn)
+        layout.addLayout(btn_layout)
+        
+        dialog.setStyleSheet("QDialog { background-color: #1e1e2e; }")
+        
+        result = dialog.exec_()
+        return "reroll" if result == 1 else "keep"
+    
+    def _execute_push_your_luck(self):
+        """Execute the push-your-luck re-roll with animation."""
+        import random
+        
+        # Apply 0.80 multiplier to current success rate
+        if not hasattr(self, 'push_luck_multiplier'):
+            self.push_luck_multiplier = 1.0
+        self.push_luck_multiplier *= 0.80
+        
+        adjusted_rate = self.success_rate * self.push_luck_multiplier
+        roll = random.random()
+        
+        # Show dramatic roll animation
+        animation_dialog = MergeRollAnimationDialog(roll, adjusted_rate, self)
+        animation_dialog.exec_()
+        
+        current_item = self.merge_result.get("result_item", {})
+        rarity = current_item.get("rarity", "Common")
+        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+        current_idx = rarity_order.index(rarity) if rarity in rarity_order else 0
+        next_rarity = rarity_order[min(current_idx + 1, len(rarity_order) - 1)]
+        
+        if roll < adjusted_rate:
+            # SUCCESS! Upgrade to next tier
+            from gamification import generate_item
+            story_id = current_item.get("story_id", "warrior")
+            new_item = generate_item(rarity=next_rarity, story_id=story_id)
+            
+            # Preserve some attributes from original
+            if current_item.get("lucky_options"):
+                new_item["lucky_options"] = current_item["lucky_options"]
+            
+            # Update merge result
+            self.merge_result["result_item"] = new_item
+            self.merge_result["success"] = True
+            
+            # Show success and offer another re-roll if not Legendary
+            self._show_success_dialog()
+        else:
+            # FAILURE! Lose everything
+            self.merge_result["success"] = False
+            self.merge_result["push_luck_failed"] = True
+            self.merge_result["roll"] = roll
+            self.merge_result["needed"] = adjusted_rate
+            
+            # Show failure message
+            self._show_push_luck_failure_dialog()
+            self.accept()  # Close main dialog
+    
+    def _show_push_luck_failure_dialog(self):
+        """Show failure message for push-your-luck."""
+        roll = self.merge_result.get("roll", 0)
+        needed = self.merge_result.get("needed", 0)
+        
+        msg = QtWidgets.QMessageBox(self)
+        msg.setWindowTitle("💥 GAMBLE FAILED!")
+        msg.setIcon(QtWidgets.QMessageBox.NoIcon)
+        
+        text = f"""
+        <div style='text-align: center;'>
+            <h2 style='color: #f44336;'>💥 You Lost Everything! 💥</h2>
+            <p style='color: #aaa;'>You rolled <b>{roll*100:.1f}%</b> (needed &lt; {needed*100:.1f}%)</p>
+            <hr>
+            <p style='color: #ff9800; font-size: 13px;'>
+                ⚠️ The gamble didn't pay off this time.<br>
+                All items have been lost.
+            </p>
+        </div>
+        """
+        
+        msg.setText(text)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.setStyleSheet("""
+            QMessageBox { background-color: #2e1e1e; }
+            QLabel { color: #fff; font-size: 13px; }
+            QPushButton {
+                background-color: #757575;
+                color: white;
+                padding: 8px 20px;
+                border-radius: 4px;
+            }
+        """)
+        msg.exec_()
+    
+    def _show_final_success_message(self, result_item: dict):
+        """Show final success message (no more re-roll options)."""
         rarity = result_item.get("rarity", "Common")
         name = result_item.get("name", "Unknown Item")
         power = result_item.get("power", 0)
-        # Fix: roll_pct already has % sign, just use the raw values
         roll_raw = self.merge_result.get("roll", 0) if self.merge_result else 0
         needed_raw = self.merge_result.get("needed", 0) if self.merge_result else 0
         
@@ -1234,9 +1649,9 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         
         msg = QtWidgets.QMessageBox(self)
         msg.setWindowTitle("🎉 MERGE SUCCESS!")
-        msg.setIcon(QtWidgets.QMessageBox.NoIcon)  # Disable icon/sound
+        msg.setIcon(QtWidgets.QMessageBox.NoIcon)
         
-        # Build breakdown text showing merge luck contribution
+        # Build breakdown text
         breakdown_parts = []
         if self.items_merge_luck > 0:
             breakdown_parts.append(f"+{self.items_merge_luck}% from items")
@@ -1244,7 +1659,6 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             breakdown_parts.append("+25% boost")
         breakdown_text = f" ({', '.join(breakdown_parts)})" if breakdown_parts else ""
         
-        # Show tier upgrade info if applied
         tier_upgrade_text = ""
         if self.merge_result.get("tier_upgraded"):
             tier_upgrade_text = "<p style='color: #ff9800;'>⬆️ <b>Tier Upgraded!</b> (+50 🪙)</p>"
@@ -1260,7 +1674,6 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         </div>
         """
         
-        # Add lucky options if present
         if result_item.get("lucky_options"):
             from gamification import format_lucky_options
             try:
@@ -1273,13 +1686,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         msg.setText(text)
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.setStyleSheet(f"""
-            QMessageBox {{
-                background-color: #1e2e1e;
-            }}
-            QLabel {{
-                color: #fff;
-                font-size: 13px;
-            }}
+            QMessageBox {{ background-color: #1e2e1e; }}
+            QLabel {{ color: #fff; font-size: 13px; }}
             QPushButton {{
                 background-color: #4caf50;
                 color: white;
@@ -1306,6 +1714,10 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             total_merge_cost += self.boost_cost
         if self.tier_upgrade_enabled:
             total_merge_cost += self.tier_upgrade_cost
+            
+        # Add accumulated retry costs
+        total_merge_cost += self.retry_cost_accumulated
+            
         remaining_coins = self.player_coins - total_merge_cost
         
         can_afford_retry = remaining_coins >= self.retry_bump_cost
@@ -1445,9 +1857,13 @@ class LuckyMergeDialog(QtWidgets.QDialog):
                 self.near_miss_claimed = True
                 msg.accept()
             
+            def on_retry():
+                self.retry_cost_accumulated += self.retry_bump_cost
+                self.is_retrying = True
+                msg.reject()
+            
             claim_btn.clicked.connect(on_claim)
-            # Retry just closes - we don't implement actual retry here, just info
-            retry_btn.clicked.connect(msg.reject)
+            retry_btn.clicked.connect(on_retry)
         
         # Loss info
         loss_label = QtWidgets.QLabel(
@@ -1549,11 +1965,15 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             # Show confirmation
             item_name = saved_item.get("name", "Unknown")
             item_rarity = saved_item.get("rarity", "Common")
-            QtWidgets.QMessageBox.information(
-                self, "🎁 Item Salvaged!",
+            msg = QtWidgets.QMessageBox(self)
+            msg.setWindowTitle("🎁 Item Salvaged!")
+            msg.setText(
                 f"<b style='color: #4caf50;'>{item_name}</b> ({item_rarity}) has been saved!<br><br>"
                 f"It will be returned to your inventory."
             )
+            msg.setIcon(QtWidgets.QMessageBox.NoIcon)
+            msg.setOption(QtWidgets.QMessageBox.DontUseNativeDialog, True)
+            msg.exec_()
             return
         
         # Handle claim action
