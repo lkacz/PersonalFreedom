@@ -1399,7 +1399,7 @@ def calculate_merge_success_rate(items: list, luck_bonus: int = 0, items_merge_l
     
     Args:
         items: List of items to merge
-        luck_bonus: Legacy luck bonus from adhd_buster (deprecated)
+        luck_bonus: Unused (kept for compatibility)
         items_merge_luck: Total merge_luck% from items being merged (sacrificed for the merge)
     
     Returns:
@@ -1411,10 +1411,6 @@ def calculate_merge_success_rate(items: list, luck_bonus: int = 0, items_merge_l
         return 0.0
     
     rate = MERGE_BASE_SUCCESS_RATE + (len(valid_items) - 2) * MERGE_BONUS_PER_ITEM
-    
-    # Legacy luck bonus (deprecated but kept for backward compat)
-    luck_bonus_pct = min(max(luck_bonus, 0) / 100 * 0.01, 0.10)
-    rate += luck_bonus_pct
     
     # Items merge luck bonus - from items being sacrificed in the merge
     # Each 1% merge luck on merged items = +1% success rate
@@ -3564,9 +3560,6 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     # Roll for neighbor effect
     neighbor_effect = roll_neighbor_effect(rarity)
     
-    # Roll for luck boost
-    luck_boost = roll_luck_boost(rarity)
-    
     item_data = {
         "name": name,
         "rarity": rarity,
@@ -3585,10 +3578,6 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     # Add neighbor effect if rolled
     if neighbor_effect:
         item_data["neighbor_effect"] = neighbor_effect
-    
-    # Add luck boost if rolled
-    if luck_boost > 0:
-        item_data["luck_boost"] = luck_boost
     
     return item_data
 

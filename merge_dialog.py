@@ -791,14 +791,11 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Calculate breakdown (matches gamification.py constants)
         base_rate = 0.25  # MERGE_BASE_SUCCESS_RATE from gamification.py
         item_bonus = max(0, len(items) - 2) * 0.03  # +3% per item after first two
-        # Match the actual formula from gamification.py line 1417
-        luck_bonus = min(max(luck, 0) / 100 * 0.01, 0.10)  # Capped at 10%
         items_merge_bonus = self.items_merge_luck / 100.0
         
         self.breakdown = {
             "Base Rate": int(base_rate * 100),
             f"Item Count ({len(items)} items)": int(item_bonus * 100),
-            f"Character Luck ({luck})": int(luck_bonus * 100),
         }
         if self.items_merge_luck > 0:
             self.breakdown["Items Merge Luck"] = self.items_merge_luck
