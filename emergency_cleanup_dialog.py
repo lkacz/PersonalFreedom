@@ -409,14 +409,15 @@ class EmergencyCleanupDialog(QtWidgets.QDialog):
     
     def _on_confirm(self):
         """Handle confirm action."""
-        # Double-check with system dialog
-        reply = QtWidgets.QMessageBox.critical(
-            self,
-            "Final Confirmation",
-            "Are you absolutely sure?\n\nThis action CANNOT be undone!",
-            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-            QtWidgets.QMessageBox.No
-        )
+        # Double-check with system dialog (silent - no sound)
+        msg = QtWidgets.QMessageBox(self)
+        msg.setWindowTitle("Final Confirmation")
+        msg.setText("Are you absolutely sure?\n\nThis action CANNOT be undone!")
+        msg.setIcon(QtWidgets.QMessageBox.NoIcon)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        msg.setDefaultButton(QtWidgets.QMessageBox.No)
+        msg.setOption(QtWidgets.QMessageBox.DontUseNativeDialog, True)
+        reply = msg.exec_()
         
         if reply == QtWidgets.QMessageBox.Yes:
             self.confirmed = True

@@ -638,14 +638,34 @@ RARITY_POWER = {
 # ============================================================================
 
 # Lucky option types and their possible values
-# Note: merge_luck has special weighted distribution and 50% skip chance - see roll_lucky_options()
+# All options use weighted distribution - lower values are more common
+# Higher rarities slightly shift odds toward better values
 LUCKY_OPTION_TYPES = {
-    "coin_bonus": {"name": "Coin Bonus", "suffix": "% Coins", "values": [1, 2, 3, 5, 8, 10, 15]},
-    "xp_bonus": {"name": "XP Bonus", "suffix": "% XP", "values": [1, 2, 3, 5, 8, 10, 15]},
-    "drop_luck": {"name": "Item Drop Luck", "suffix": "% Better Drops", "values": [1, 2, 3, 5, 8, 10]},
-    "merge_luck": {"name": "Merge Success", "suffix": "% Merge", "values": [1, 2, 3, 5, 8, 10, 15],
-                   "weights": [40, 25, 15, 10, 5, 3, 2],  # 1% is 40x more likely than 15%
-                   "skip_chance": 50},  # 50% chance to not roll merge_luck at all
+    "coin_bonus": {
+        "name": "Coin Bonus", 
+        "suffix": "% Coins", 
+        "values": [1, 2, 3, 5, 8, 10, 15],
+        "weights": [35, 25, 18, 12, 6, 3, 1],  # 1% is 35x more likely than 15%
+    },
+    "xp_bonus": {
+        "name": "XP Bonus", 
+        "suffix": "% XP", 
+        "values": [1, 2, 3, 5, 8, 10, 15],
+        "weights": [35, 25, 18, 12, 6, 3, 1],  # 1% is 35x more likely than 15%
+    },
+    "drop_luck": {
+        "name": "Item Drop Luck", 
+        "suffix": "% Better Drops", 
+        "values": [1, 2, 3, 5, 8, 10],
+        "weights": [40, 28, 18, 10, 3, 1],  # 1% is 40x more likely than 10%
+    },
+    "merge_luck": {
+        "name": "Merge Success", 
+        "suffix": "% Merge", 
+        "values": [1, 2, 3, 5, 8, 10, 15],
+        "weights": [45, 25, 14, 9, 4, 2, 1],  # 1% is 45x more likely than 15% (rarest)
+        "skip_chance": 50,  # 50% chance to not roll merge_luck at all
+    },
 }
 
 # Chance to roll lucky options by rarity (cumulative)
@@ -701,38 +721,41 @@ def roll_lucky_options(rarity: str) -> dict:
     lucky_options = {}
     for option_type in selected_types:
         possible_values = LUCKY_OPTION_TYPES[option_type]["values"]
-        # Higher rarities bias toward higher values
+        num_values = len(possible_values)
+        
+        # Get base weights from option definition
+        base_weights = LUCKY_OPTION_TYPES[option_type].get("weights", [1] * num_values)
+        
+        # Pad or truncate to match values length
+        if len(base_weights) < num_values:
+            base_weights = list(base_weights) + [1] * (num_values - len(base_weights))
+        elif len(base_weights) > num_values:
+            base_weights = list(base_weights[:num_values])
+        else:
+            base_weights = list(base_weights)
+        
+        # Apply rarity modifier - higher rarities shift odds slightly toward better values
         try:
             rarity_idx = list(LUCKY_OPTION_CHANCES.keys()).index(rarity)
         except ValueError:
-            rarity_idx = 0  # Default to Common weights if rarity not found
+            rarity_idx = 0
         
-        # Weight toward higher values for higher rarities
-        # Ensure weights match the number of possible values
-        num_values = len(possible_values)
-        if rarity_idx >= 3:  # Epic+
-            weights = [1, 1, 2, 3, 4, 5, 6][:num_values]
-        elif rarity_idx >= 2:  # Rare+
-            weights = [1, 2, 3, 3, 2, 1, 1][:num_values]
-        else:
-            weights = [5, 4, 3, 2, 1, 1, 1][:num_values]
+        # Rarity bonus: Epic/Legendary get slight boost to higher value odds
+        # This doesn't eliminate rarity of high values, just makes them slightly more likely
+        if rarity_idx >= 4:  # Legendary
+            # Reduce weight of lowest values, increase highest
+            for i in range(min(2, num_values)):
+                base_weights[i] = max(1, base_weights[i] // 2)
+            for i in range(max(0, num_values - 2), num_values):
+                base_weights[i] = base_weights[i] * 2
+        elif rarity_idx >= 3:  # Epic
+            # Slight reduction of lowest, slight increase of highest
+            if num_values > 0:
+                base_weights[0] = max(1, int(base_weights[0] * 0.7))
+            if num_values > 1:
+                base_weights[-1] = int(base_weights[-1] * 1.5)
         
-        # Pad weights if they're shorter than values (shouldn't happen, but safety)
-        if len(weights) < num_values:
-            weights.extend([1] * (num_values - len(weights)))
-        
-        # Special handling for merge_luck - use fixed weights regardless of rarity
-        # This makes high merge_luck values very rare (encourages sacrificing many items)
-        if option_type == "merge_luck" and "weights" in LUCKY_OPTION_TYPES[option_type]:
-            merge_weights = LUCKY_OPTION_TYPES[option_type]["weights"]
-            # Pad or truncate to match values length
-            if len(merge_weights) < num_values:
-                merge_weights = merge_weights + [1] * (num_values - len(merge_weights))
-            elif len(merge_weights) > num_values:
-                merge_weights = merge_weights[:num_values]
-            value = random.choices(possible_values, weights=merge_weights)[0]
-        else:
-            value = random.choices(possible_values, weights=weights)[0]
+        value = random.choices(possible_values, weights=base_weights)[0]
         lucky_options[option_type] = value
     
     return lucky_options
