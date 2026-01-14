@@ -242,6 +242,14 @@ class BlockerCore:
         
         # Hydration tracking
         self.water_entries = []  # List of {"date": "YYYY-MM-DD", "time": "HH:MM", "glasses": 1}
+        self.water_reminder_enabled = False  # Periodic hydration reminder
+        self.water_reminder_interval = 60  # Minutes between reminders
+        self.water_last_reminder_time = None  # Last reminder timestamp
+        
+        # Eye & Breath tracking
+        self.eye_reminder_enabled = False  # Periodic eye routine reminder
+        self.eye_reminder_interval = 60  # Minutes between reminders (default 1 hour)
+        self.eye_last_reminder_time = None  # Last reminder timestamp
 
         # Statistics
         self.stats = self._default_stats()
@@ -350,6 +358,13 @@ class BlockerCore:
                         if isinstance(e, dict)
                         and e.get("date")
                     ]
+                    self.water_reminder_enabled = config.get('water_reminder_enabled', False)
+                    self.water_reminder_interval = config.get('water_reminder_interval', 60)
+                    self.water_last_reminder_time = config.get('water_last_reminder_time', None)
+                    # Eye & Breath reminder settings
+                    self.eye_reminder_enabled = config.get('eye_reminder_enabled', False)
+                    self.eye_reminder_interval = config.get('eye_reminder_interval', 60)
+                    self.eye_last_reminder_time = config.get('eye_last_reminder_time', None)
                     # Initialize/migrate hero management structure
                     if HERO_MANAGEMENT_AVAILABLE and _ensure_hero_structure:
                         _ensure_hero_structure(self.adhd_buster)
@@ -399,6 +414,12 @@ class BlockerCore:
                 'sleep_reminder_time': self.sleep_reminder_time,
                 'sleep_last_reminder_date': self.sleep_last_reminder_date,
                 'water_entries': self.water_entries,
+                'water_reminder_enabled': self.water_reminder_enabled,
+                'water_reminder_interval': self.water_reminder_interval,
+                'water_last_reminder_time': self.water_last_reminder_time,
+                'eye_reminder_enabled': self.eye_reminder_enabled,
+                'eye_reminder_interval': self.eye_reminder_interval,
+                'eye_last_reminder_time': self.eye_last_reminder_time,
             }
             atomic_write_json(self.config_path, config)
         except (IOError, OSError) as e:

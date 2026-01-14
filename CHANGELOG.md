@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Health Reminder Notifications**:
+  - Eye & Breath tab: Toggle periodic toast reminders (configurable interval, default 60 min).
+  - Water tab: Toggle periodic hydration reminders (configurable interval, default 60 min).
+  - Activity tab: Existing daily reminder at a specific time.
+  - All reminders use system tray toast notifications for non-intrusive alerts.
 - **Eye & Breath Protection**:
   - New tab "🌬️ Eye & Breath" dedicated to eye strain relief and mindful breathing.
   - Interactive routine with guided blinking (Close/Hold/Open) and breathing (4s Inhale / 6s Exhale).

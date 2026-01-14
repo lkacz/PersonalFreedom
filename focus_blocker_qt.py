@@ -10347,6 +10347,30 @@ class HydrationTab(QtWidgets.QWidget):
         content_layout.addWidget(right_panel)
         
         layout.addLayout(content_layout)
+        
+        # Reminder Settings Section
+        reminder_layout = QtWidgets.QHBoxLayout()
+        self.reminder_checkbox = QtWidgets.QCheckBox("🔔 Remind me every")
+        self.reminder_checkbox.setChecked(getattr(self.blocker, 'water_reminder_enabled', False))
+        self.reminder_checkbox.stateChanged.connect(self._update_reminder_setting)
+        reminder_layout.addWidget(self.reminder_checkbox)
+        
+        self.reminder_interval = QtWidgets.QSpinBox()
+        self.reminder_interval.setRange(15, 180)
+        self.reminder_interval.setValue(getattr(self.blocker, 'water_reminder_interval', 60))
+        self.reminder_interval.setSuffix(" min")
+        self.reminder_interval.valueChanged.connect(self._update_reminder_setting)
+        reminder_layout.addWidget(self.reminder_interval)
+        
+        reminder_layout.addWidget(QtWidgets.QLabel("(via toast notification)"))
+        reminder_layout.addStretch()
+        layout.addLayout(reminder_layout)
+    
+    def _update_reminder_setting(self) -> None:
+        """Save reminder settings when changed."""
+        self.blocker.water_reminder_enabled = self.reminder_checkbox.isChecked()
+        self.blocker.water_reminder_interval = self.reminder_interval.value()
+        self.blocker.save_config()
     
     def _log_water(self) -> None:
         """Log a glass of water and award rewards."""
@@ -15957,6 +15981,11 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.minimize_to_tray = self.blocker.minimize_to_tray  # Load from config
         
         self._setup_system_tray()
+        
+        # Health reminder notification timer (checks every minute)
+        self._health_reminder_timer = QtCore.QTimer(self)
+        self._health_reminder_timer.timeout.connect(self._check_health_reminders)
+        self._health_reminder_timer.start(60000)  # Check every 60 seconds
 
         # Check for crash recovery on startup
         QtCore.QTimer.singleShot(500, self._check_crash_recovery)
@@ -16101,6 +16130,67 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                     "Right-click the app and select 'Run as administrator',\n"
                     "or use the 'run_as_admin.bat' script."
                 )
+    
+    def _check_health_reminders(self) -> None:
+        """Check if any health reminder notifications should be shown."""
+        from datetime import datetime
+        now = datetime.now()
+        
+        # Check Eye & Breath reminder
+        if getattr(self.blocker, 'eye_reminder_enabled', False):
+            interval = getattr(self.blocker, 'eye_reminder_interval', 60)
+            last_time_str = getattr(self.blocker, 'eye_last_reminder_time', None)
+            
+            should_remind = False
+            if not last_time_str:
+                should_remind = True
+            else:
+                try:
+                    last_time = datetime.fromisoformat(last_time_str)
+                    elapsed = (now - last_time).total_seconds() / 60
+                    if elapsed >= interval:
+                        should_remind = True
+                except (ValueError, TypeError):
+                    should_remind = True
+            
+            if should_remind:
+                self.blocker.eye_last_reminder_time = now.isoformat()
+                self.blocker.save_config()
+                if self.tray_icon:
+                    self.tray_icon.showMessage(
+                        "👁️ Eye & Breath Reminder",
+                        "Time for an eye routine! Rest your eyes with blinks and far gazing.",
+                        QtWidgets.QSystemTrayIcon.Information,
+                        5000
+                    )
+        
+        # Check Water/Hydration reminder
+        if getattr(self.blocker, 'water_reminder_enabled', False):
+            interval = getattr(self.blocker, 'water_reminder_interval', 60)
+            last_time_str = getattr(self.blocker, 'water_last_reminder_time', None)
+            
+            should_remind = False
+            if not last_time_str:
+                should_remind = True
+            else:
+                try:
+                    last_time = datetime.fromisoformat(last_time_str)
+                    elapsed = (now - last_time).total_seconds() / 60
+                    if elapsed >= interval:
+                        should_remind = True
+                except (ValueError, TypeError):
+                    should_remind = True
+            
+            if should_remind:
+                self.blocker.water_last_reminder_time = now.isoformat()
+                self.blocker.save_config()
+                if self.tray_icon:
+                    self.tray_icon.showMessage(
+                        "💧 Hydration Reminder",
+                        "Time to drink some water! Stay hydrated for better focus.",
+                        QtWidgets.QSystemTrayIcon.Information,
+                        5000
+                    )
     
     def _update_coin_display(self) -> None:
         """Update the coin counter in the toolbar."""

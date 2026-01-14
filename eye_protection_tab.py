@@ -173,6 +173,27 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.start_btn.clicked.connect(self.start_routine)
         layout.addWidget(self.start_btn)
 
+        # Reminder Settings Section
+        reminder_frame = QtWidgets.QFrame()
+        reminder_frame.setStyleSheet("background-color: #2d2d2d; border-radius: 10px; padding: 10px;")
+        reminder_layout = QtWidgets.QHBoxLayout(reminder_frame)
+        
+        self.reminder_checkbox = QtWidgets.QCheckBox("🔔 Remind me every")
+        self.reminder_checkbox.setChecked(getattr(self.blocker, 'eye_reminder_enabled', False))
+        self.reminder_checkbox.stateChanged.connect(self._update_reminder_setting)
+        reminder_layout.addWidget(self.reminder_checkbox)
+        
+        self.reminder_interval = QtWidgets.QSpinBox()
+        self.reminder_interval.setRange(15, 180)
+        self.reminder_interval.setValue(getattr(self.blocker, 'eye_reminder_interval', 60))
+        self.reminder_interval.setSuffix(" min")
+        self.reminder_interval.valueChanged.connect(self._update_reminder_setting)
+        reminder_layout.addWidget(self.reminder_interval)
+        
+        reminder_layout.addWidget(QtWidgets.QLabel("(via toast notification)"))
+        reminder_layout.addStretch()
+        layout.addWidget(reminder_frame)
+
         # Reward Info Box
         info_frame = QtWidgets.QFrame()
         info_frame.setStyleSheet("background-color: #2d2d2d; border-radius: 10px; padding: 10px;")
@@ -186,6 +207,12 @@ class EyeProtectionTab(QtWidgets.QWidget):
         layout.addWidget(info_frame)
         
         layout.addStretch()
+    
+    def _update_reminder_setting(self):
+        """Save reminder settings when changed."""
+        self.blocker.eye_reminder_enabled = self.reminder_checkbox.isChecked()
+        self.blocker.eye_reminder_interval = self.reminder_interval.value()
+        self.blocker.save_config()
 
     def get_daily_count(self):
         """Get number of routines performed today (reset at 5 AM)."""
