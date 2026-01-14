@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from PySide6 import QtWidgets, QtCore, QtGui
 from gamification import generate_item
 from game_state import get_game_state
+from lottery_animation import TwoStageLotteryDialog
 
 # Platform-safe sound support
 try:
@@ -367,17 +368,13 @@ class EyeProtectionTab(QtWidgets.QWidget):
         current_count = self.get_daily_count()
         new_count = current_count + 1
         
-        # Determine Reward
-        # 1. Tier Lottery
-        leg_pct = min(100, 5 + current_count)
-        is_legendary = random.randint(1, 100) <= leg_pct
-        tier = "Legendary" if is_legendary else "Epic"
+        # Calculate lottery chances (same logic as before)
+        # Drop chance: 1% base + 1% per routine done today
+        drop_chance = min(100, 1 + current_count) / 100.0
+        # Tier chance: 5% base + 1% per routine for Legendary
+        tier_chance = min(100, 5 + current_count) / 100.0
         
-        # 2. Acquisition Lottery
-        drop_pct = min(100, 1 + current_count)
-        dropped = random.randint(1, 100) <= drop_pct
-        
-        # Save Stats
+        # Save Stats first
         if "eye_protection" not in self.blocker.stats:
             self.blocker.stats["eye_protection"] = {}
             
@@ -385,14 +382,19 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.blocker.stats["eye_protection"]["daily_count"] = new_count
         self.blocker.save_stats()
         
-        # Award?
-        msg = f"Routine #{new_count} done!\n\n"
-        msg += f"🎲 Item Chance: {drop_pct}% -> {'WON!' if dropped else 'Missed'}\n"
-        if dropped:
-            msg += f"✨ Tier Chance: {leg_pct}% Leg -> GOT {tier.upper()}!"
-            
+        # Show the animated two-stage lottery dialog
+        lottery = TwoStageLotteryDialog(
+            drop_chance=drop_chance,
+            tier_chance=tier_chance,
+            parent=self
+        )
+        lottery.exec()
+        
+        # Get results after animation completes
+        won_item, tier = lottery.get_results()
+        
+        if won_item:
             # Generate Item
-            # adhd_buster dict usually on blocker, or just pass None for default theme
             adhd_data = getattr(self.blocker, 'adhd_buster', {})
             story_theme = adhd_data.get('story_active', 'warrior') if adhd_data else 'warrior'
             
@@ -404,10 +406,5 @@ class EyeProtectionTab(QtWidgets.QWidget):
             
             self.routine_completed.emit(new_item)
         else:
-            msg += f"Next time: {min(100, drop_pct+1)}% chance."
             self.routine_completed.emit({})
             
-        QtWidgets.QMessageBox.information(self, "Reward Result", msg)
-        self.update_stats_display()
-        self.status_label.setText("Well done! Rest your eyes again in 20 min.")
-
