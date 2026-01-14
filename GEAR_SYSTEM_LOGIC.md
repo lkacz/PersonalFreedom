@@ -82,15 +82,15 @@ lucky_options = roll_lucky_options(rarity)
 ```python
 # 90% chance passes
 # Roll 1-4 options: let's say 3
-# Select 3 random types from: [coin_bonus, xp_bonus, drop_luck, merge_luck]
-# Selected: coin_bonus, xp_bonus, drop_luck
+# Select 3 random types from: [coin_discount, xp_bonus, merge_luck]
+# Selected: coin_discount, xp_bonus, merge_luck
 
 # For each type, roll value from weighted distribution:
-# coin_bonus values: [1, 2, 3, 5, 8, 10, 15]
+# coin_discount values: [1, 2, 3, 5, 8, 10, 15]
 # Legendary uses weights: [1, 1, 2, 3, 4, 5, 6]
 # Higher values more likely for Legendary
 
-# Result: {"coin_bonus": 10, "xp_bonus": 8, "drop_luck": 5}
+# Result: {"coin_discount": 10, "xp_bonus": 8, "merge_luck": 5}
 ```
 
 **Value Weights by Rarity:**
@@ -378,7 +378,7 @@ equipped = {
 
 ```python
 def calculate_total_lucky_bonuses(equipped):
-    totals = {"coin_bonus": 0, "xp_bonus": 0, "drop_luck": 0, "merge_luck": 0}
+    totals = {"coin_discount": 0, "xp_bonus": 0, "merge_luck": 0}
     
     for item in equipped.values():
         lucky_options = item.get("lucky_options", {})
@@ -412,16 +412,16 @@ totals = {
 
 ### Application Points
 
-#### 1. Coin Rewards (Session End)
+#### 1. Merge Cost Discount
 ```python
-base_coins = 100
-coin_bonus_pct = 15  # From lucky options
+# Calculate discount from equipped gear (capped at 90%)
+coin_discount_pct = 15  # From lucky options
+coin_discount_pct = min(coin_discount_pct, 90)
 
-# Cap at 200%
-coin_bonus_pct = min(coin_bonus_pct, 200)
-
-bonus_coins = int(100 * (15 / 100)) = 15
-total_coins = 100 + 15 = 115
+# Apply to merge costs
+base_merge_cost = 50
+discounted_cost = int(50 * (1 - 15/100)) = 42  # Save 8 coins!
+total_cost = max(discounted_cost, 1)  # Never free
 ```
 
 #### 2. XP Rewards

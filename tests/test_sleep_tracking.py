@@ -653,11 +653,16 @@ class TestScreenOffBonusRarity(unittest.TestCase):
         from gamification import get_screen_off_bonus_rarity
         self.get_rarity = get_screen_off_bonus_rarity
     
-    def test_very_early_screenoff_legendary(self) -> None:
-        """Test that 21:00 or earlier gives Legendary."""
-        self.assertEqual(self.get_rarity("21:00"), "Legendary")
-        self.assertEqual(self.get_rarity("20:30"), "Legendary")
-        self.assertEqual(self.get_rarity("19:00"), "Legendary")
+    def test_too_early_returns_none(self) -> None:
+        """Test that before 22:00 gives no bonus (suggestion hidden)."""
+        self.assertIsNone(self.get_rarity("21:59"))
+        self.assertIsNone(self.get_rarity("21:00"))
+        self.assertIsNone(self.get_rarity("19:00"))
+
+    def test_2200_window_legendary(self) -> None:
+        """Test that 22:00 to 22:30 gives 100% Legendary."""
+        self.assertEqual(self.get_rarity("22:00"), "Legendary")
+        self.assertEqual(self.get_rarity("22:30"), "Legendary")
     
     def test_2200_high_tier(self) -> None:
         """Test that 22:00 gives high-tier rewards (Legendary-centered)."""
