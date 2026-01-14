@@ -125,7 +125,20 @@ class EyeProtectionTab(QtWidgets.QWidget):
         # Timer for routine steps
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.on_timer_tick)
+        
+        # Ensure cleanup on widget destruction
+        self.destroyed.connect(self._on_destroyed)
     
+    def _on_destroyed(self):
+        """Handle widget destruction - stop timers."""
+        self.cleanup()
+    
+    def cleanup(self):
+        """Stop any running timers. Call this before destroying the widget."""
+        if hasattr(self, 'timer') and self.timer.isActive():
+            self.timer.stop()
+        self.is_running = False
+
     def init_ui(self):
         layout = QtWidgets.QVBoxLayout(self)
         layout.setSpacing(20)
@@ -224,7 +237,10 @@ class EyeProtectionTab(QtWidgets.QWidget):
         if not last_date_str:
             return 0
         
-        last_dt = datetime.fromisoformat(last_date_str)
+        try:
+            last_dt = datetime.fromisoformat(last_date_str)
+        except (ValueError, TypeError):
+            return 0  # Treat corrupted date as no history
         now = datetime.now()
         
         # Calculate 5 AM cutoff for today (or yesterday if before 5 AM)
@@ -265,12 +281,16 @@ class EyeProtectionTab(QtWidgets.QWidget):
         stats = self.blocker.stats.get("eye_protection", {})
         last_date_str = stats.get("last_date", "")
         if last_date_str:
-            last_dt = datetime.fromisoformat(last_date_str)
-            elapsed = datetime.now() - last_dt
-            if elapsed < timedelta(minutes=20):
-                remaining = int(20 - elapsed.total_seconds() / 60)
-                QtWidgets.QMessageBox.warning(self, "Resting Eyes", f"You eyes need to work a bit before resting again!\nWait {remaining} minutes.")
-                return
+            try:
+                last_dt = datetime.fromisoformat(last_date_str)
+            except (ValueError, TypeError):
+                last_dt = None  # Corrupted date, allow routine
+            if last_dt:
+                elapsed = datetime.now() - last_dt
+                if elapsed < timedelta(minutes=20):
+                    remaining = int(20 - elapsed.total_seconds() / 60)
+                    QtWidgets.QMessageBox.warning(self, "Resting Eyes", f"You eyes need to work a bit before resting again!\nWait {remaining} minutes.")
+                    return
 
         self.is_running = True
         self.start_btn.setEnabled(False)
@@ -289,6 +309,10 @@ class EyeProtectionTab(QtWidgets.QWidget):
         QtCore.QTimer.singleShot(2000, self.start_blink_cycle)
 
     def start_blink_cycle(self):
+        # Guard: Don't run if routine stopped or widget destroyed
+        if not self.is_running or not self.isVisible():
+            return
+            
         if self.blink_count >= 5:
             self.start_gaze_phase()
             return
@@ -306,6 +330,9 @@ class EyeProtectionTab(QtWidgets.QWidget):
         QtCore.QTimer.singleShot(1500, self.do_blink_hold)
         
     def do_blink_hold(self):
+        # Guard: Don't run if routine stopped
+        if not self.is_running:
+            return
         self.blink_state = "hold"
         self.cue_label.setText("HOLD...")
         SoundGenerator.play_blink_hold()
@@ -313,6 +340,9 @@ class EyeProtectionTab(QtWidgets.QWidget):
         QtCore.QTimer.singleShot(500, self.do_blink_open)
         
     def do_blink_open(self):
+        # Guard: Don't run if routine stopped
+        if not self.is_running:
+            return
         self.blink_state = "open"
         self.cue_label.setText("OPEN eyes")
         SoundGenerator.play_blink_open() # Is silent
@@ -320,6 +350,9 @@ class EyeProtectionTab(QtWidgets.QWidget):
         QtCore.QTimer.singleShot(1500, self.start_blink_cycle)
 
     def start_gaze_phase(self):
+        # Guard: Don't run if routine stopped
+        if not self.is_running:
+            return
         self.step_phase = "gazing"
         self.gaze_seconds_left = 20
         self.status_label.setText("Step B: Far Gaze + Breathing\n(Blink normally!)")
@@ -330,33 +363,43 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.on_timer_tick() # Execute first tick immediately
 
     def on_timer_tick(self):
-        if self.step_phase == "gazing":
-            # 20s total duration
-            # 0-4s: Inhale (4s) -> T: 20->16
-            # 4-10s: Exhale (6s) -> T: 16->10
-            # 10-14s: Inhale (4s) -> T: 10->6
-            # 14-20s: Exhale (6s) -> T: 6->0
-            
-            t = self.gaze_seconds_left
-            
-            if t > 16: # Inhale 1
-                if t == 20: SoundGenerator.play_inhale()
-                self.cue_label.setText(f"Look away + INHALE... {t-16}")
-            elif t > 10: # Exhale 1
-                if t == 16: SoundGenerator.play_exhale()
-                self.cue_label.setText(f"Look away + EXHALE... {t-10}")
-            elif t > 6: # Inhale 2
-                if t == 10: SoundGenerator.play_inhale()
-                self.cue_label.setText(f"Look away + INHALE... {t-6}")
-            elif t > 0: # Exhale 2
-                if t == 6: SoundGenerator.play_exhale()
-                self.cue_label.setText(f"Look away + EXHALE... {t}")
-            
-            self.gaze_seconds_left -= 1
-            
-            if self.gaze_seconds_left < 0:
-                self.timer.stop()
-                self.complete_routine()
+        try:
+            if self.step_phase == "gazing":
+                # 20s total duration
+                # 0-4s: Inhale (4s) -> T: 20->16
+                # 4-10s: Exhale (6s) -> T: 16->10
+                # 10-14s: Inhale (4s) -> T: 10->6
+                # 14-20s: Exhale (6s) -> T: 6->0
+                
+                t = self.gaze_seconds_left
+                
+                if t > 16:  # Inhale 1
+                    if t == 20:
+                        SoundGenerator.play_inhale()
+                    self.cue_label.setText(f"Look away + INHALE... {t-16}")
+                elif t > 10:  # Exhale 1
+                    if t == 16:
+                        SoundGenerator.play_exhale()
+                    self.cue_label.setText(f"Look away + EXHALE... {t-10}")
+                elif t > 6:  # Inhale 2
+                    if t == 10:
+                        SoundGenerator.play_inhale()
+                    self.cue_label.setText(f"Look away + INHALE... {t-6}")
+                elif t > 0:  # Exhale 2
+                    if t == 6:
+                        SoundGenerator.play_exhale()
+                    self.cue_label.setText(f"Look away + EXHALE... {t}")
+                
+                self.gaze_seconds_left -= 1
+                
+                if self.gaze_seconds_left < 0:
+                    self.timer.stop()
+                    self.complete_routine()
+        except Exception:
+            # Stop timer safely on any error
+            self.timer.stop()
+            self.is_running = False
+            self.step_phase = "idle"  # Reset to idle state on error
 
     def complete_routine(self):
         self.is_running = False
@@ -400,9 +443,15 @@ class EyeProtectionTab(QtWidgets.QWidget):
             
             new_item = generate_item(rarity=tier, theme=story_theme)
             
+            # Validate generated item before adding
+            if not new_item or not isinstance(new_item, dict):
+                self.routine_completed.emit({})
+                return
+            
             # Use GameStateManager to add item safely
             gs = get_game_state(self.blocker)
-            gs.add_item(new_item)
+            if gs:
+                gs.add_item(new_item)
             
             self.routine_completed.emit(new_item)
         else:

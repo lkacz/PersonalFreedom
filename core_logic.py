@@ -305,10 +305,27 @@ class BlockerCore:
                     checkin_interval = config.get('priority_checkin_interval', 30)
                     self.priority_checkin_interval = checkin_interval if isinstance(checkin_interval, (int, float)) and checkin_interval > 0 else 30
                     self.minimize_to_tray = config.get('minimize_to_tray', True)
-                    self.adhd_buster = config.get('adhd_buster', {"inventory": [], "equipped": {}, "coins": 200})
-                    # Ensure coins field exists for existing profiles
-                    if "coins" not in self.adhd_buster:
+                    self.adhd_buster = config.get('adhd_buster', {})
+                    # Ensure all required adhd_buster fields exist with correct types
+                    adhd_defaults = {
+                        "inventory": [],
+                        "equipped": {},
+                        "coins": 200,
+                        "total_xp": 0,
+                        "xp_history": []
+                    }
+                    for key, default in adhd_defaults.items():
+                        if key not in self.adhd_buster:
+                            self.adhd_buster[key] = default
+                    # Type validation for critical fields
+                    if not isinstance(self.adhd_buster.get("inventory"), list):
+                        self.adhd_buster["inventory"] = []
+                    if not isinstance(self.adhd_buster.get("equipped"), dict):
+                        self.adhd_buster["equipped"] = {}
+                    if not isinstance(self.adhd_buster.get("coins"), (int, float)):
                         self.adhd_buster["coins"] = 200
+                    if not isinstance(self.adhd_buster.get("total_xp"), (int, float)):
+                        self.adhd_buster["total_xp"] = 0
                     # Weight tracking - validate entries on load
                     raw_entries = config.get('weight_entries', [])
                     self.weight_entries = [
@@ -360,17 +377,30 @@ class BlockerCore:
                         and e.get("date")
                     ]
                     self.water_reminder_enabled = config.get('water_reminder_enabled', False)
-                    self.water_reminder_interval = config.get('water_reminder_interval', 60)
+                    water_interval = config.get('water_reminder_interval', 60)
+                    self.water_reminder_interval = water_interval if isinstance(water_interval, (int, float)) and water_interval > 0 else 60
                     self.water_last_reminder_time = config.get('water_last_reminder_time', None)
                     self.water_lottery_attempts = config.get('water_lottery_attempts', 0)
                     # Eye & Breath reminder settings
                     self.eye_reminder_enabled = config.get('eye_reminder_enabled', False)
-                    self.eye_reminder_interval = config.get('eye_reminder_interval', 60)
+                    eye_interval = config.get('eye_reminder_interval', 60)
+                    self.eye_reminder_interval = eye_interval if isinstance(eye_interval, (int, float)) and eye_interval > 0 else 60
                     self.eye_last_reminder_time = config.get('eye_last_reminder_time', None)
                     # Initialize/migrate hero management structure
                     if HERO_MANAGEMENT_AVAILABLE and _ensure_hero_structure:
                         _ensure_hero_structure(self.adhd_buster)
-            except (json.JSONDecodeError, IOError, OSError):
+            except (json.JSONDecodeError, IOError, OSError) as e:
+                # Backup corrupted config to aid recovery/debugging
+                try:
+                    if self.config_path.exists():
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        backup_path = self.config_path.with_suffix(f".corrupted.{timestamp}.bak")
+                        shutil.copy2(self.config_path, backup_path)
+                        logger.error(f"Config corrupted, backed up to {backup_path}")
+                except Exception as backup_error:
+                    logger.warning(f"Failed to back up corrupted config: {backup_error}")
+                
+                logger.warning(f"Could not load config ({e}), using defaults")
                 self.blacklist = default_blacklist
                 self.categories_enabled = {cat: True for cat in SITE_CATEGORIES}
         else:
@@ -726,6 +756,10 @@ class BlockerCore:
         Args:
             duration_seconds: Planned session duration for crash recovery
         """
+        # State validation: prevent double-blocking
+        if self.is_blocking:
+            return False, "Already blocking! Stop the current session first."
+        
         if not self.is_admin():
             return False, "Administrator privileges required!\\n\\nPlease restart the app as administrator:\\n• Right-click the app → Run as administrator\\n• Or use the 'run_as_admin.bat' script"
 
@@ -820,6 +854,8 @@ class BlockerCore:
 
     def add_site(self, site):
         """Add a site to the blacklist"""
+        if not site or not isinstance(site, str):
+            return False
         site = site.lower().strip()
         for prefix in ['https://', 'http://', 'www.']:
             if site.startswith(prefix):
@@ -854,6 +890,8 @@ class BlockerCore:
 
     def add_to_whitelist(self, site):
         """Add a site to the whitelist"""
+        if not site or not isinstance(site, str):
+            return False
         site = site.lower().strip()
         for prefix in ['https://', 'http://', 'www.']:
             if site.startswith(prefix):
@@ -947,12 +985,16 @@ class BlockerCore:
             with open(filepath, 'r', encoding='utf-8') as f:
                 config = json.load(f)
             if 'blacklist' in config:
-                self.blacklist.extend([s for s in config['blacklist'] if s not in self.blacklist])
+                blacklist_data = config['blacklist']
+                if isinstance(blacklist_data, list):
+                    self.blacklist.extend([s for s in blacklist_data if s not in self.blacklist])
             if 'whitelist' in config:
-                self.whitelist.extend([s for s in config['whitelist'] if s not in self.whitelist])
+                whitelist_data = config['whitelist']
+                if isinstance(whitelist_data, list):
+                    self.whitelist.extend([s for s in whitelist_data if s not in self.whitelist])
             self.save_config()
             return True
-        except (IOError, OSError, json.JSONDecodeError, KeyError) as e:
+        except (IOError, OSError, json.JSONDecodeError, KeyError, TypeError) as e:
             logger.warning(f"Failed to import config: {e}")
             return False
 

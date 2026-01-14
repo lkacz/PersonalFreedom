@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import List, Optional
 
+
 class UserManager:
     def __init__(self, base_dir: Path):
         self.base_dir = base_dir
@@ -13,9 +14,9 @@ class UserManager:
         
         # Files that should be moved to user directory during migration
         self.user_files = [
-            "config.json", 
-            "stats.json", 
-            "goals.json", 
+            "config.json",
+            "stats.json",
+            "goals.json",
             ".session_state.json"
         ]
 
@@ -28,45 +29,60 @@ class UserManager:
         """Return a list of user names."""
         if not self.users_dir.exists():
             return []
-        
+
         # List subdirectories in users folder
         users = [d.name for d in self.users_dir.iterdir() if d.is_dir()]
         return sorted(users)
 
     def user_exists(self, username: str) -> bool:
-        return (self.users_dir / username).exists()
+        """Check if user exists, using sanitized name."""
+        clean_name = self._sanitize_username(username)
+        if not clean_name:
+            return False
+        return (self.users_dir / clean_name).exists()
 
     def create_user(self, username: str) -> bool:
         """Create a new user directory."""
         self.ensure_directories()
-        
+
         clean_name = self._sanitize_username(username)
         if not clean_name:
             return False
-            
+
         user_path = self.users_dir / clean_name
         if user_path.exists():
             return False
-            
+
         user_path.mkdir(parents=True)
         
         # Create default config if needed, or copy template
         # For now, just creating the directory is enough, app logic handles missing config
-        
         return True
 
     def delete_user(self, username: str) -> bool:
-        """Delete a user directory."""
-        if not self.user_exists(username):
+        """Delete a user directory safely."""
+        clean_name = self._sanitize_username(username)
+        if not clean_name:
             return False
             
-        shutil.rmtree(self.users_dir / username)
+        if not self.user_exists(clean_name):
+            return False
+
+        user_path = self.users_dir / clean_name
+        
+        # Safety check: ensure path is inside users_dir (prevent path traversal)
+        try:
+            user_path.resolve().relative_to(self.users_dir.resolve())
+        except ValueError:
+            return False  # Path escapes users_dir
+            
+        shutil.rmtree(user_path)
         return True
 
     def migrate_if_needed(self):
         """Migrate root files to 'Default' user if users directory implies first run with new system."""
         self.ensure_directories()
-        
+
         users = self.get_users()
         if users:
             # Users already exist, assume migration happened or new system is in use
@@ -74,7 +90,6 @@ class UserManager:
 
         # Check if we have root files to migrate
         files_found = any((self.base_dir / f).exists() for f in self.user_files)
-        
         if files_found:
             # Migration needed
             print("Migrating single user data to 'Default' user profile...")
@@ -84,7 +99,6 @@ class UserManager:
             for filename in self.user_files:
                 src = self.base_dir / filename
                 dst = default_user_path / filename
-                
                 if src.exists():
                     try:
                         shutil.move(str(src), str(dst))
@@ -97,13 +111,20 @@ class UserManager:
 
     def _sanitize_username(self, username: str) -> str:
         """Sanitize username to be safe for filesystem."""
+        if not username:
+            return ""
         # Simple cleanup, remove special chars
         keep = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_ "
         cleaned = "".join(c for c in username if c in keep).strip()
-        return cleaned
+        # Limit length to prevent filesystem issues
+        return cleaned[:50] if cleaned else ""
 
     def get_user_dir(self, username: str) -> Path:
-        return self.users_dir / username
+        """Get user directory path, using sanitized name."""
+        clean_name = self._sanitize_username(username)
+        if not clean_name:
+            raise ValueError("Invalid username")
+        return self.users_dir / clean_name
 
     def save_last_user(self, username: str):
         """Save the last used username."""
@@ -117,7 +138,7 @@ class UserManager:
         """Get the last used username if it exists and is valid."""
         if not self.last_user_file.exists():
             return None
-            
+
         try:
             with open(self.last_user_file, 'r', encoding='utf-8') as f:
                 username = f.read().strip()

@@ -1248,8 +1248,12 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         
         if self.won:
             # Generate the actual item
-            from gamification import generate_item
-            self.won_item = generate_item(rarity=self.won_rarity, story_id=story_id)
+            try:
+                from gamification import generate_item
+                self.won_item = generate_item(rarity=self.won_rarity, story_id=story_id)
+            except (ImportError, Exception):
+                # Fallback if gamification unavailable
+                self.won_item = {"name": f"{self.won_rarity} Item", "rarity": self.won_rarity, "power": 10}
         
         self.current_stage = 0
         self._setup_ui()
@@ -2757,8 +2761,12 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         # Generate item if won
         self.won_item = None
         if self.won:
-            from gamification import generate_item
-            self.won_item = generate_item(rarity=self.rolled_tier, story_id=story_id)
+            try:
+                from gamification import generate_item
+                self.won_item = generate_item(rarity=self.rolled_tier, story_id=story_id)
+            except (ImportError, Exception):
+                # Fallback if gamification unavailable
+                self.won_item = {"name": f"{self.rolled_tier} Item", "rarity": self.rolled_tier, "power": 10}
         
         # Attempt counter logic: +1 always, reset to 0 on win
         self.new_attempts = 0 if self.won else (lottery_attempts + 1)

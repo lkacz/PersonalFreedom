@@ -97,10 +97,13 @@ class UserSelectionDialog(QtWidgets.QDialog):
         )
         
         if confirm == QtWidgets.QMessageBox.Yes:
-            if self.user_manager.delete_user(username):
-                self.refresh_user_list()
-            else:
-                 QtWidgets.QMessageBox.warning(self, "Error", "Could not delete user.")
+            try:
+                if self.user_manager.delete_user(username):
+                    self.refresh_user_list()
+                else:
+                    QtWidgets.QMessageBox.warning(self, "Error", "Could not delete user.")
+            except (PermissionError, OSError) as e:
+                QtWidgets.QMessageBox.warning(self, "Error", f"Failed to delete: {e}")
 
     def accept_selection(self):
         current_item = self.user_list.currentItem()

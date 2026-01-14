@@ -246,10 +246,15 @@ class ItemPreviewWidget(QtWidgets.QWidget):
     
     def _darken_color(self, hex_color: str, factor: float = 0.8) -> str:
         """Darken a hex color."""
-        hex_color = hex_color.lstrip('#')
-        r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-        r, g, b = int(r * factor), int(g * factor), int(b * factor)
-        return f"#{r:02x}{g:02x}{b:02x}"
+        try:
+            hex_color = hex_color.lstrip('#')
+            if len(hex_color) < 6:
+                return "#666666"
+            r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+            r, g, b = int(r * factor), int(g * factor), int(b * factor)
+            return f"#{r:02x}{g:02x}{b:02x}"
+        except (ValueError, IndexError):
+            return "#666666"
 
 
 class SuccessRateWidget(QtWidgets.QWidget):
@@ -374,12 +379,17 @@ class SuccessRateWidget(QtWidgets.QWidget):
     
     def _lighten_color(self, hex_color: str, factor: float = 1.2) -> str:
         """Lighten a hex color."""
-        hex_color = hex_color.lstrip('#')
-        r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-        r = min(255, int(r * factor))
-        g = min(255, int(g * factor))
-        b = min(255, int(b * factor))
-        return f"#{r:02x}{g:02x}{b:02x}"
+        try:
+            hex_color = hex_color.lstrip('#')
+            if len(hex_color) < 6:
+                return "#aaaaaa"
+            r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+            r = min(255, int(r * factor))
+            g = min(255, int(g * factor))
+            b = min(255, int(b * factor))
+            return f"#{r:02x}{g:02x}{b:02x}"
+        except (ValueError, IndexError):
+            return "#aaaaaa"
 
 
 class ResultPreviewWidget(QtWidgets.QWidget):
@@ -421,7 +431,11 @@ class ResultPreviewWidget(QtWidgets.QWidget):
         
         # Rarity - show range since tier jump is random
         # Calculate minimum (lowest item tier) and maximum (with max tier jump + upgrade)
-        min_rarity_idx = min([RARITY_ORDER.index(item.get("rarity", "Common")) for item in self.items if item])
+        valid_items = [item for item in self.items if item and item.get("rarity")]
+        if not valid_items:
+            min_rarity_idx = 0  # Default to Common if no valid items
+        else:
+            min_rarity_idx = min([RARITY_ORDER.index(item.get("rarity", "Common")) for item in valid_items])
         max_tier_jump = 4  # Maximum possible tier jump
         max_rarity_idx = min(min_rarity_idx + max_tier_jump, len(RARITY_ORDER) - 1)
         
@@ -476,10 +490,15 @@ class ResultPreviewWidget(QtWidgets.QWidget):
     
     def _darken_color(self, hex_color: str, factor: float = 0.8) -> str:
         """Darken a hex color."""
-        hex_color = hex_color.lstrip('#')
-        r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-        r, g, b = int(r * factor), int(g * factor), int(b * factor)
-        return f"#{r:02x}{g:02x}{b:02x}"
+        try:
+            hex_color = hex_color.lstrip('#')
+            if len(hex_color) < 6:
+                return "#666666"
+            r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+            r, g, b = int(r * factor), int(g * factor), int(b * factor)
+            return f"#{r:02x}{g:02x}{b:02x}"
+        except (ValueError, IndexError):
+            return "#666666"
 
 
 class LuckyMergeDialog(QtWidgets.QDialog):
@@ -920,7 +939,11 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         layout.addWidget(title)
         
         # Calculate rarity range (minimum from lowest item, maximum with tier jumps)
-        min_rarity_idx = min([RARITY_ORDER.index(item.get("rarity", "Common")) for item in self.items if item])
+        valid_items = [item for item in self.items if item and item.get("rarity")]
+        if not valid_items:
+            min_rarity_idx = 0  # Default to Common if no valid items
+        else:
+            min_rarity_idx = min([RARITY_ORDER.index(item.get("rarity", "Common")) for item in valid_items])
         max_tier_jump = 4  # Maximum possible tier jump
         max_rarity_idx = min(min_rarity_idx + max_tier_jump, len(RARITY_ORDER) - 1)
         
