@@ -690,6 +690,11 @@ class ResultPreviewWidget(QtWidgets.QWidget):
             tier_note.setAlignment(QtCore.Qt.AlignCenter)
             tier_note.setStyleSheet("color: #888; font-size: 10px; font-style: italic;")
             layout.addWidget(tier_note)
+        elif getattr(self, "all_legendary", False):
+            reroll_note = QtWidgets.QLabel("Legendary reroll: result stays Legendary, slot/type may change.")
+            reroll_note.setAlignment(QtCore.Qt.AlignCenter)
+            reroll_note.setStyleSheet("color: #888; font-size: 10px; font-style: italic;")
+            layout.addWidget(reroll_note)
         
         # Stars
         stars = min(5, max(1, list(ITEM_RARITIES.keys()).index(self.result_rarity) + 1))
@@ -735,7 +740,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
     """
     
     def __init__(self, items: list, luck: int, equipped: dict, 
-                 parent: Optional[QtWidgets.QWidget] = None, player_coins: int = 0):
+                 parent: Optional[QtWidgets.QWidget] = None, player_coins: int = 0, coin_discount: int = 0):
         super().__init__(parent)
         self.items = items
         self.luck = luck
@@ -744,14 +749,25 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.player_coins = player_coins
         self.boost_enabled = False
         self.tier_upgrade_enabled = False  # +50 coins to upgrade result tier
+        self.coin_discount = coin_discount  # Discount percentage from equipped gear (0-90)
+        self.all_legendary = all(i.get("rarity") == "Legendary" for i in items if i)
         
-        # Use centralized costs from COIN_COSTS
-        self.merge_cost = COIN_COSTS.get("merge_base", 50)
-        self.boost_cost = COIN_COSTS.get("merge_boost", 50)
-        self.tier_upgrade_cost = COIN_COSTS.get("merge_tier_upgrade", 50)
-        self.retry_bump_cost = COIN_COSTS.get("merge_retry_bump", 50)
-        self.claim_cost = COIN_COSTS.get("merge_claim", 100)  # Claim item on near-miss
+        # Import discount helper from gamification
+        from gamification import apply_coin_discount
+        
+        # DEBUG: Check discount values
+        print(f"[MERGE DEBUG] coin_discount passed: {coin_discount}%")
+        print(f"[MERGE DEBUG] Original merge_base cost: {COIN_COSTS.get('merge_base', 50)}")
+        
+        # Use centralized costs from COIN_COSTS with discount applied
+        self.merge_cost = apply_coin_discount(COIN_COSTS.get("merge_base", 50), coin_discount)
+        self.boost_cost = apply_coin_discount(COIN_COSTS.get("merge_boost", 50), coin_discount)
+        self.tier_upgrade_cost = apply_coin_discount(COIN_COSTS.get("merge_tier_upgrade", 50), coin_discount)
+        self.retry_bump_cost = apply_coin_discount(COIN_COSTS.get("merge_retry_bump", 50), coin_discount)
+        self.claim_cost = apply_coin_discount(COIN_COSTS.get("merge_claim", 100), coin_discount)  # Claim item on near-miss
         self.boost_bonus = MERGE_BOOST_BONUS  # +25% success rate
+        
+        print(f"[MERGE DEBUG] Discounted merge_cost: {self.merge_cost}")
         
         self.retry_cost_accumulated = 0
         self.near_miss_claimed = False
@@ -768,7 +784,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         
         if GAMIFICATION_AVAILABLE:
             self.base_success_rate = calculate_merge_success_rate(
-                items, luck, items_merge_luck=self.items_merge_luck
+                items, items_merge_luck=self.items_merge_luck
             )
             self.success_rate = self.base_success_rate
             self.result_rarity = get_merge_result_rarity(items)
@@ -879,9 +895,12 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         main_layout.addWidget(header)
         
         # Subtitle with cost info
-        subtitle = QtWidgets.QLabel(
-            f"Combining {len(self.items)} items • Cost: {self.merge_cost} coins 🪙"
-        )
+        if self.coin_discount > 0:
+            original_cost = COIN_COSTS.get("merge_base", 50)
+            cost_text = f"Combining {len(self.items)} items • Cost: <span style='text-decoration: line-through; color: #666;'>{original_cost}</span> {self.merge_cost} coins 🪙 <span style='color: #8b5cf6;'>(✨ {self.coin_discount}% off = -{original_cost - self.merge_cost} saved!)</span>"
+        else:
+            cost_text = f"Combining {len(self.items)} items • Cost: {self.merge_cost} coins 🪙"
+        subtitle = QtWidgets.QLabel(cost_text)
         subtitle.setStyleSheet("color: #aaa; font-size: 12px;")
         subtitle.setAlignment(QtCore.Qt.AlignCenter)
         main_layout.addWidget(subtitle)
@@ -999,10 +1018,18 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         warning_layout.addWidget(icon)
         
         # Warning text
-        text = QtWidgets.QLabel(
-            "<b>Warning:</b> Merge failure will destroy ALL selected items permanently. "
-            "This action cannot be undone!"
-        )
+        if getattr(self, "all_legendary", False):
+            warning_msg = (
+                "<b>Legendary Reroll:</b> Failure destroys all Legendary items. "
+                "Success creates a new Legendary (slot/type may change)."
+            )
+        else:
+            warning_msg = (
+                "<b>Warning:</b> Merge failure will destroy ALL selected items permanently. "
+                "This action cannot be undone!"
+            )
+
+        text = QtWidgets.QLabel(warning_msg)
         text.setWordWrap(True)
         text.setStyleSheet("color: #ff6b6b; font-size: 12px;")
         warning_layout.addWidget(text, stretch=1)
@@ -1044,8 +1071,13 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.boost_checkbox.toggled.connect(self._on_boost_toggled)
         boost_layout.addWidget(self.boost_checkbox)
         
-        # Cost label
-        self.boost_cost_label = QtWidgets.QLabel(f"(+{self.boost_cost} 🪙)")
+        # Cost label with discount info
+        if self.coin_discount > 0:
+            original_boost = COIN_COSTS.get("merge_boost", 50)
+            savings = original_boost - self.boost_cost
+            self.boost_cost_label = QtWidgets.QLabel(f"(+{self.boost_cost} 🪙) <span style='color: #8b5cf6;'>✨ Save {savings}</span>")
+        else:
+            self.boost_cost_label = QtWidgets.QLabel(f"(+{self.boost_cost} 🪙)")
         self.boost_cost_label.setStyleSheet("font-size: 13px; color: #aaa;")
         boost_layout.addWidget(self.boost_cost_label)
         
@@ -1221,8 +1253,13 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.tier_upgrade_checkbox.toggled.connect(self._on_tier_upgrade_toggled)
         layout.addWidget(self.tier_upgrade_checkbox)
         
-        # Cost label
-        cost_label = QtWidgets.QLabel(f"(+{self.tier_upgrade_cost} 🪙)")
+        # Cost label with discount info
+        if self.coin_discount > 0:
+            original_tier = COIN_COSTS.get("merge_tier_upgrade", 50)
+            savings = original_tier - self.tier_upgrade_cost
+            cost_label = QtWidgets.QLabel(f"(+{self.tier_upgrade_cost} 🪙) <span style='color: #8b5cf6;'>✨ Save {savings}</span>")
+        else:
+            cost_label = QtWidgets.QLabel(f"(+{self.tier_upgrade_cost} 🪙)")
         cost_label.setStyleSheet("font-size: 13px; color: #aaa;")
         layout.addWidget(cost_label)
         
@@ -1336,7 +1373,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Use merge_luck from items being merged (sacrificed) + boost
         total_items_merge_luck = self.items_merge_luck + boost_bonus
         self.merge_result = perform_lucky_merge(
-            self.items, self.luck,
+            self.items,
             story_id=story_id,
             items_merge_luck=total_items_merge_luck
         )
@@ -1439,6 +1476,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         rarity = current_item.get("rarity", "Common")
         name = current_item.get("name", "Unknown Item")
         power = current_item.get("power", 0)
+        slot = current_item.get("slot", "Unknown Slot")
         
         # Calculate next tier and success chance
         rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
@@ -1475,7 +1513,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             f"<p style='text-align:center;'>"
             f"<span style='font-size:16px; font-weight:bold;'>{name}</span><br>"
             f"<span style='color:{rarity_color}; font-size:14px;'>{rarity}</span> • "
-            f"<span style='color:#aaa;'>⚔ {power} Power</span>"
+            f"<span style='color:#aaa;'>⚔ {power} Power</span><br>"
+            f"<span style='color:#8bc34a;'>Slot: {slot}</span>"
             f"</p>"
         )
         current_lbl.setTextFormat(QtCore.Qt.RichText)
@@ -1639,6 +1678,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         rarity = result_item.get("rarity", "Common")
         name = result_item.get("name", "Unknown Item")
         power = result_item.get("power", 0)
+        slot = result_item.get("slot", "Unknown Slot")
         roll_raw = self.merge_result.get("roll", 0) if self.merge_result else 0
         needed_raw = self.merge_result.get("needed", 0) if self.merge_result else 0
         
@@ -1668,6 +1708,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             <hr>
             <p style='font-size: 16px; color: #fff;'><b>{name}</b></p>
             <p style='color: {rarity_color};'><b>{rarity}</b> • ⚔ Power: {power}</p>
+            <p style='color: #8bc34a;'>Slot: {slot}</p>
         </div>
         """
         
@@ -1719,9 +1760,9 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         
         can_afford_retry = remaining_coins >= self.retry_bump_cost
         can_afford_claim = remaining_coins >= self.claim_cost
-        
-        # Salvage option - save one random item (always available if can afford)
-        salvage_cost = COIN_COSTS.get("merge_salvage", 50)
+
+        # Salvage option - save one random item (discounted)
+        salvage_cost = apply_coin_discount(COIN_COSTS.get("merge_salvage", 50), self.coin_discount)
         can_afford_salvage = remaining_coins >= salvage_cost
         
         # Check if retry would help
@@ -1779,7 +1820,12 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             btn_layout.setSpacing(12)
             
             # Retry button (50 coins to re-roll)
-            retry_btn = QtWidgets.QPushButton(f"🎲 Retry\n{self.retry_bump_cost} 🪙")
+            retry_text = f"🎲 Retry\n{self.retry_bump_cost} 🪙"
+            if self.coin_discount > 0:
+                original_retry = COIN_COSTS.get("merge_retry_bump", 50)
+                savings = original_retry - self.retry_bump_cost
+                retry_text = f"🎲 Retry\n{self.retry_bump_cost} 🪙 ✨-{savings}"
+            retry_btn = QtWidgets.QPushButton(retry_text)
             retry_btn.setMinimumHeight(60)
             if can_afford_retry:
                 retry_btn.setStyleSheet("""
@@ -1809,7 +1855,12 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             btn_layout.addWidget(retry_btn)
             
             # Claim button (+100 coins to get item directly)
-            claim_btn = QtWidgets.QPushButton(f"✨ Claim Item\n{self.claim_cost} 🪙")
+            claim_text = f"✨ Claim Item\n{self.claim_cost} 🪙"
+            if self.coin_discount > 0:
+                original_claim = COIN_COSTS.get("merge_claim", 100)
+                savings = original_claim - self.claim_cost
+                claim_text = f"✨ Claim Item\n{self.claim_cost} 🪙 ✨-{savings}"
+            claim_btn = QtWidgets.QPushButton(claim_text)
             claim_btn.setMinimumHeight(60)
             if can_afford_claim:
                 claim_btn.setStyleSheet("""

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Eye & Breath Protection**:
+  - New tab "🌬️ Eye & Breath" dedicated to eye strain relief and mindful breathing.
+  - Interactive routine with guided blinking (Close/Hold/Open) and breathing (4s Inhale / 6s Exhale).
+  - Uses specific sound cues for each phase to allow users to follow along without looking at the screen.
+  - Rising/Falling pitch sequences for breath guidance.
+  - Rewards users with "Lottery" items upon completing the routine (5% base chance for Legendary, increasing daily).
+
+### Improved
+- **Sound System**:
+  - Refactored `SoundGenerator` to use threaded playback, preventing UI freezes during sound sequences.
+  - Added new sound patterns: Rising pitch (Inhale), Falling pitch (Exhale), and 3-tone Blink cues.
+- **Sleep Logic**:
+  - Sleep suggestions ("Go to Sleep") are now suppressed before 22:00 to prevent nagging.
+  - Sleep rewards (Screen Off Bonus) configured to start effectively after 22:00.
+
 ## [5.6.3] - 2026-01-11
 
 ### Improved

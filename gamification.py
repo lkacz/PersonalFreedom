@@ -641,9 +641,9 @@ RARITY_POWER = {
 # All options use weighted distribution - lower values are more common
 # Higher rarities slightly shift odds toward better values
 LUCKY_OPTION_TYPES = {
-    "coin_bonus": {
-        "name": "Coin Bonus", 
-        "suffix": "% Coins", 
+    "coin_discount": {
+        "name": "Coin Discount", 
+        "suffix": "% Off", 
         "values": [1, 2, 3, 5, 8, 10, 15],
         "weights": [35, 25, 18, 12, 6, 3, 1],  # 1% is 35x more likely than 15%
     },
@@ -652,12 +652,6 @@ LUCKY_OPTION_TYPES = {
         "suffix": "% XP", 
         "values": [1, 2, 3, 5, 8, 10, 15],
         "weights": [35, 25, 18, 12, 6, 3, 1],  # 1% is 35x more likely than 15%
-    },
-    "drop_luck": {
-        "name": "Item Drop Luck", 
-        "suffix": "% Better Drops", 
-        "values": [1, 2, 3, 5, 8, 10],
-        "weights": [40, 28, 18, 10, 3, 1],  # 1% is 40x more likely than 10%
     },
     "merge_luck": {
         "name": "Merge Success", 
@@ -673,8 +667,8 @@ LUCKY_OPTION_CHANCES = {
     "Common": {"base_chance": 15, "max_options": 1},      # 15% chance for 1 option
     "Uncommon": {"base_chance": 35, "max_options": 2},   # 35% for 1-2 options
     "Rare": {"base_chance": 55, "max_options": 3},       # 55% for 1-3 options
-    "Epic": {"base_chance": 75, "max_options": 4},       # 75% for 1-4 options
-    "Legendary": {"base_chance": 95, "max_options": 4},  # 95% for 1-4 options (all possible)
+    "Epic": {"base_chance": 75, "max_options": 3},       # 75% for 1-3 options
+    "Legendary": {"base_chance": 95, "max_options": 3},  # 95% for 1-3 options (all possible)
 }
 
 
@@ -688,7 +682,7 @@ def roll_lucky_options(rarity: str) -> dict:
         rarity: Item rarity
     
     Returns:
-        dict of lucky options {"coin_bonus": 5, "xp_bonus": 2, ...}
+        dict of lucky options {"coin_discount": 5, "xp_bonus": 2, ...}
     """
     if rarity not in LUCKY_OPTION_CHANCES:
         return {}
@@ -762,219 +756,46 @@ def roll_lucky_options(rarity: str) -> dict:
 
 
 # ============================================================================
-# NEIGHBOR EFFECTS SYSTEM - Positional Gear Synergies
+# NEIGHBOR EFFECTS SYSTEM - REMOVED (was too complex)
 # ============================================================================
-
-# Neighbor effect types and their multiplier ranges
-NEIGHBOR_EFFECT_TYPES = {
-    "power": {"name": "Power", "friendly_range": (1.05, 1.25), "unfriendly_range": (0.75, 0.95)},
-    "luck_all": {"name": "All Luck", "friendly_range": (1.05, 1.20), "unfriendly_range": (0.80, 0.95)},
-    "luck_coin": {"name": "Coin Luck", "friendly_range": (1.05, 1.20), "unfriendly_range": (0.80, 0.95)},
-    "luck_xp": {"name": "XP Luck", "friendly_range": (1.05, 1.20), "unfriendly_range": (0.80, 0.95)},
-    "luck_drop": {"name": "Drop Luck", "friendly_range": (1.05, 1.20), "unfriendly_range": (0.80, 0.95)},
-    "luck_merge": {"name": "Merge Luck", "friendly_range": (1.05, 1.20), "unfriendly_range": (0.80, 0.95)},
-}
-
-# Positional mapping - which slots are neighbors (based on vertical UI layout)
-SLOT_NEIGHBORS = {
-    "Helmet": ["Chestplate"],
-    "Chestplate": ["Helmet", "Gauntlets"],
-    "Gauntlets": ["Chestplate", "Boots"],
-    "Boots": ["Gauntlets", "Shield"],
-    "Shield": ["Boots", "Weapon"],
-    "Weapon": ["Shield", "Cloak"],
-    "Cloak": ["Weapon", "Amulet"],
-    "Amulet": ["Cloak"],
-}
-
-# Chance to roll neighbor effects by rarity
-NEIGHBOR_EFFECT_CHANCES = {
-    "Common": 10,      # 10% chance
-    "Uncommon": 25,    # 25% chance
-    "Rare": 40,        # 40% chance
-    "Epic": 60,        # 60% chance
-    "Legendary": 80,   # 80% chance
-}
-
-# Chance to roll luck boost by rarity (independent of other bonuses)
-LUCK_BOOST_CHANCES = {
-    "Common": 10,      # 10% chance
-    "Uncommon": 25,    # 25% chance
-    "Rare": 40,        # 40% chance
-    "Epic": 60,        # 60% chance
-    "Legendary": 80,   # 80% chance
-}
-
-# Luck boost value ranges by rarity (percentage bonus)
-LUCK_BOOST_RANGES = {
-    "Common": (1, 3),       # +1-3%
-    "Uncommon": (2, 5),     # +2-5%
-    "Rare": (3, 8),         # +3-8%
-    "Epic": (5, 12),        # +5-12%
-    "Legendary": (8, 20),   # +8-20%
-}
-
-
-def roll_luck_boost(rarity: str) -> int:
-    """
-    Roll for a luck boost on an item based on its rarity.
-    
-    Luck boost is a global luck percentage that increases chance of
-    better item drops, successful merges, and rare events.
-    
-    Args:
-        rarity: Item rarity
-    
-    Returns:
-        int: Luck boost percentage (0 if not rolled)
-    """
-    if rarity not in LUCK_BOOST_CHANCES:
-        return 0
-    
-    chance = LUCK_BOOST_CHANCES[rarity]
-    if random.randint(1, 100) > chance:
-        return 0  # No luck boost
-    
-    # Roll luck boost value based on rarity
-    min_val, max_val = LUCK_BOOST_RANGES.get(rarity, (1, 3))
-    return random.randint(min_val, max_val)
-
-
-def roll_neighbor_effect(rarity: str) -> Optional[dict]:
-    """
-    Roll for a neighbor effect on an item based on its rarity.
-    
-    Neighbor effects are special attributes that affect adjacent gear slots,
-    either boosting (friendly) or penalizing (unfriendly) their stats.
-    
-    Args:
-        rarity: Item rarity
-    
-    Returns:
-        dict with neighbor effect or None: 
-        {
-            "type": "friendly" or "unfriendly",
-            "target": "power" or "luck_*",
-            "multiplier": float (1.05-1.25 friendly, 0.75-0.95 unfriendly)
-        }
-    """
-    if rarity not in NEIGHBOR_EFFECT_CHANCES:
-        return None
-    
-    chance = NEIGHBOR_EFFECT_CHANCES[rarity]
-    if random.randint(1, 100) > chance:
-        return None  # No neighbor effect
-    
-    # Randomly select effect type (friendly or unfriendly)
-    effect_type = random.choice(["friendly", "unfriendly"])
-    
-    # Randomly select target attribute
-    target = random.choice(list(NEIGHBOR_EFFECT_TYPES.keys()))
-    
-    # Roll multiplier based on type and rarity
-    effect_config = NEIGHBOR_EFFECT_TYPES[target]
-    if effect_type == "friendly":
-        min_mult, max_mult = effect_config["friendly_range"]
-    else:
-        min_mult, max_mult = effect_config["unfriendly_range"]
-    
-    # Higher rarities get more extreme multipliers
-    rarity_idx = list(NEIGHBOR_EFFECT_CHANCES.keys()).index(rarity) if rarity in NEIGHBOR_EFFECT_CHANCES else 0
-    
-    # Scale toward max for higher rarities
-    t = rarity_idx / (len(NEIGHBOR_EFFECT_CHANCES) - 1)  # 0.0 to 1.0
-    multiplier = min_mult + (max_mult - min_mult) * t
-    
-    # Add some randomness
-    multiplier += random.uniform(-0.02, 0.02)
-    multiplier = round(multiplier, 3)
-    
-    # Clamp multiplier to reasonable range (0.5x to 2.0x)
-    multiplier = max(0.5, min(2.0, multiplier))
-    
-    return {
-        "type": effect_type,
-        "target": target,
-        "multiplier": multiplier
-    }
+# Neighbor effects system has been removed to simplify the gear system.
+# The function below is kept as a no-op stub for backward compatibility.
 
 
 def calculate_neighbor_effects(equipped: dict) -> dict:
     """
-    Calculate all neighbor effects from equipped gear.
+    Calculate neighbor effects (DEPRECATED - always returns empty dict).
+    Neighbor effects system has been removed to simplify gameplay.
     
     Args:
         equipped: Dict of equipped items by slot
     
     Returns:
-        dict mapping slot -> list of effects affecting that slot:
-        {
-            "Helmet": [
-                {"source": "Chestplate", "type": "friendly", "target": "power", "multiplier": 1.15},
-                ...
-            ],
-            ...
-        }
+        Empty dict mapping slots to empty effect lists
     """
-    effects_by_slot = {slot: [] for slot in GEAR_SLOTS}
-    
-    if not isinstance(equipped, dict):
-        return effects_by_slot
-    
-    # Check each equipped item for neighbor effects
-    for source_slot, item in equipped.items():
-        if not item or not isinstance(item, dict):
-            continue
-        
-        neighbor_effect = item.get("neighbor_effect")
-        if not neighbor_effect or not isinstance(neighbor_effect, dict):
-            continue
-        
-        # Validate neighbor_effect has all required fields
-        if not all(key in neighbor_effect for key in ["type", "target", "multiplier"]):
-            continue  # Skip malformed neighbor effects
-        
-        # Validate field types
-        if not isinstance(neighbor_effect["type"], str):
-            continue
-        if not isinstance(neighbor_effect["target"], str):
-            continue
-        if not isinstance(neighbor_effect["multiplier"], (int, float)):
-            continue
-        
-        # Apply effect to neighboring slots
-        neighbors = SLOT_NEIGHBORS.get(source_slot, [])
-        for neighbor_slot in neighbors:
-            # Only apply if neighbor slot has an item equipped
-            if neighbor_slot in equipped and equipped[neighbor_slot]:
-                effects_by_slot[neighbor_slot].append({
-                    "source": source_slot,
-                    "type": neighbor_effect["type"],
-                    "target": neighbor_effect["target"],
-                    "multiplier": neighbor_effect["multiplier"]
-                })
-    
-    return effects_by_slot
+    # Return empty effects - system removed
+    return {slot: [] for slot in GEAR_SLOTS}
 
 
 def calculate_effective_power(equipped: dict, include_set_bonus: bool = True,
                                include_neighbor_effects: bool = True) -> dict:
     """
-    Calculate effective power considering base power, set bonuses, and neighbor effects.
+    Calculate effective power considering base power and set bonuses.
     
     Args:
         equipped: Dict of equipped items by slot
         include_set_bonus: Whether to include set bonuses
-        include_neighbor_effects: Whether to include neighbor effects
+        include_neighbor_effects: (DEPRECATED - ignored, kept for compatibility)
     
     Returns:
         dict with detailed breakdown:
         {
             "base_power": int,
             "set_bonus": int,
-            "neighbor_effects": dict,  # per-slot power adjustments
+            "neighbor_effects": dict,  # always empty (system removed)
+            "neighbor_adjustment": int,  # always 0 (system removed)
             "total_power": int,
-            "power_by_slot": dict  # effective power per slot after all effects
+            "power_by_slot": dict  # power per slot
         }
     """
     if not isinstance(equipped, dict):
@@ -998,155 +819,37 @@ def calculate_effective_power(equipped: dict, include_set_bonus: bool = True,
         set_info = calculate_set_bonuses(equipped)
         set_bonus = set_info["total_bonus"]
     
-    # Calculate neighbor effects
-    neighbor_adjustments = {slot: 0 for slot in GEAR_SLOTS}
-    neighbor_effects_detail = {}
-    
-    if include_neighbor_effects:
-        effects = calculate_neighbor_effects(equipped)
-        
-        for slot, slot_effects in effects.items():
-            if not slot_effects:
-                continue
-            
-            base_power = power_by_slot[slot]
-            if base_power == 0:
-                continue
-            
-            # Apply all power multipliers to this slot
-            total_multiplier = 1.0
-            slot_effect_details = []
-            
-            for effect in slot_effects:
-                if effect["target"] == "power":
-                    total_multiplier *= effect["multiplier"]
-                    slot_effect_details.append(effect)
-            
-            # Calculate adjustment
-            if total_multiplier != 1.0:
-                adjusted_power = int(base_power * total_multiplier)
-                # Clamp to prevent negative power (minimum 1)
-                adjusted_power = max(1, adjusted_power)
-                adjustment = adjusted_power - base_power
-                neighbor_adjustments[slot] = adjustment
-                neighbor_effects_detail[slot] = {
-                    "effects": slot_effect_details,
-                    "multiplier": total_multiplier,
-                    "adjustment": adjustment
-                }
-    
-    # Calculate total with neighbor adjustments
-    total_neighbor_adjustment = sum(neighbor_adjustments.values())
-    total_power = base_total + set_bonus + total_neighbor_adjustment
-    
-    # Update power by slot with neighbor effects
-    for slot in GEAR_SLOTS:
-        power_by_slot[slot] += neighbor_adjustments[slot]
+    # Neighbor effects removed - return empty structures for compatibility
+    total_power = base_total + set_bonus
     
     return {
         "base_power": base_total,
         "set_bonus": set_bonus,
-        "neighbor_effects": neighbor_effects_detail,
-        "neighbor_adjustment": total_neighbor_adjustment,
+        "neighbor_effects": {},  # Empty - neighbor system removed
+        "neighbor_adjustment": 0,  # Always 0 - neighbor system removed
         "total_power": total_power,
         "power_by_slot": power_by_slot
     }
 
 
-def calculate_effective_luck_bonuses(equipped: dict, include_neighbor_effects: bool = True) -> dict:
+def calculate_effective_luck_bonuses(equipped: dict) -> dict:
     """
-    Calculate effective luck bonuses considering neighbor effects.
+    Calculate effective luck bonuses (neighbor effects removed).
     
     Args:
         equipped: Dict of equipped items by slot
-        include_neighbor_effects: Whether to include neighbor effects
     
     Returns:
         dict with luck bonuses:
         {
-            "coin_bonus": int,
+            "coin_discount": int,
             "xp_bonus": int,
-            "drop_luck": int,
-            "merge_luck": int,
-            "neighbor_effects": dict  # details of neighbor effect adjustments
+            "merge_luck": int
         }
     """
-    # Calculate base luck bonuses
+    # Calculate base luck bonuses (neighbor effects removed)
     base_luck = calculate_total_lucky_bonuses(equipped)
-    
-    if not include_neighbor_effects or not isinstance(equipped, dict):
-        return {**base_luck, "neighbor_effects": {}}
-    
-    # Calculate neighbor effects
-    effects = calculate_neighbor_effects(equipped)
-    
-    # Map luck types to option keys
-    luck_mapping = {
-        "luck_coin": "coin_bonus",
-        "luck_xp": "xp_bonus",
-        "luck_drop": "drop_luck",
-        "luck_merge": "merge_luck"
-    }
-    
-    neighbor_effects_detail = {}
-    adjusted_luck = base_luck.copy()
-    
-    # Apply neighbor effects to luck bonuses
-    for slot, slot_effects in effects.items():
-        if not slot_effects:
-            continue
-        
-        item = equipped.get(slot)
-        if not item or not isinstance(item, dict):
-            continue
-        
-        lucky_options = item.get("lucky_options", {})
-        if not isinstance(lucky_options, dict):
-            continue
-        
-        for effect in slot_effects:
-            target = effect["target"]
-            
-            # Handle "luck_all" - affects all luck types
-            if target == "luck_all":
-                for luck_key in ["coin_bonus", "xp_bonus", "drop_luck", "merge_luck"]:
-                    if luck_key in lucky_options:
-                        base_value = int(lucky_options.get(luck_key, 0))
-                        if base_value > 0:
-                            adjusted_value = int(base_value * effect["multiplier"])
-                            adjustment = adjusted_value - base_value
-                            adjusted_luck[luck_key] += adjustment
-                            
-                            if slot not in neighbor_effects_detail:
-                                neighbor_effects_detail[slot] = []
-                            neighbor_effects_detail[slot].append({
-                                "source": effect["source"],
-                                "type": effect["type"],
-                                "target": "all_luck",
-                                "luck_type": luck_key,
-                                "adjustment": adjustment
-                            })
-            
-            # Handle specific luck types
-            elif target in luck_mapping:
-                luck_key = luck_mapping[target]
-                if luck_key in lucky_options:
-                    base_value = int(lucky_options.get(luck_key, 0))
-                    if base_value > 0:
-                        adjusted_value = int(base_value * effect["multiplier"])
-                        adjustment = adjusted_value - base_value
-                        adjusted_luck[luck_key] += adjustment
-                        
-                        if slot not in neighbor_effects_detail:
-                            neighbor_effects_detail[slot] = []
-                        neighbor_effects_detail[slot].append({
-                            "source": effect["source"],
-                            "type": effect["type"],
-                            "target": target,
-                            "adjustment": adjustment
-                        })
-    
-    return {**adjusted_luck, "neighbor_effects": neighbor_effects_detail}
+    return base_luck
 
 
 def calculate_total_lucky_bonuses(equipped: dict) -> dict:
@@ -1157,9 +860,9 @@ def calculate_total_lucky_bonuses(equipped: dict) -> dict:
         equipped: Dict of equipped items by slot
     
     Returns:
-        dict with total bonuses: {"coin_bonus": 15, "xp_bonus": 8, ...}
+        dict with total bonuses: {"coin_discount": 15, "xp_bonus": 8, "merge_luck": 10}
     """
-    totals = {"coin_bonus": 0, "xp_bonus": 0, "drop_luck": 0, "merge_luck": 0}
+    totals = {"coin_discount": 0, "xp_bonus": 0, "merge_luck": 0}
     
     # Validate equipped is a dict
     if not isinstance(equipped, dict):
@@ -1186,6 +889,64 @@ def calculate_total_lucky_bonuses(equipped: dict) -> dict:
                     continue  # Skip invalid values
     
     return totals
+
+
+def calculate_merge_discount(items: list | dict) -> int:
+    """Calculate merge cost discount from the items being merged.
+
+    Coin discount is intended to come from the items consumed in the merge,
+    not from equipped gear. Accepts either a list of item dicts (preferred)
+    or an equipped dict; both are flattened to collect `coin_discount` values.
+    """
+    if not items:
+        return 0
+
+    # Normalize to iterable of items
+    if isinstance(items, dict):
+        items_iterable = items.values()
+    elif isinstance(items, list):
+        items_iterable = items
+    else:
+        return 0
+
+    total_discount = 0
+    for item in items_iterable:
+        if not isinstance(item, dict):
+            continue
+        lucky_opts = item.get("lucky_options", {})
+        if not isinstance(lucky_opts, dict):
+            continue
+        value = lucky_opts.get("coin_discount", 0)
+        try:
+            value = int(value) if value else 0
+            if value > 0:
+                total_discount += value
+        except (TypeError, ValueError):
+            continue
+
+    # Cap at 90% to ensure merge costs are never completely free
+    return min(total_discount, 90)
+
+
+def apply_coin_discount(cost: int, discount_pct: int) -> int:
+    """
+    Apply coin discount to a cost.
+    
+    Args:
+        cost: Original cost in coins
+        discount_pct: Discount percentage (0-90)
+    
+    Returns:
+        int: Discounted cost (rounded down)
+    """
+    if discount_pct <= 0:
+        return cost
+    # Cap discount at 90% just in case
+    discount_pct = min(discount_pct, 90)
+    # Calculate discounted cost
+    discounted = int(cost * (1 - discount_pct / 100))
+    # Ensure cost is at least 1 coin (never free)
+    return max(discounted, 1)
 
 
 def format_lucky_options(lucky_options: dict) -> str:
@@ -1216,148 +977,173 @@ def format_lucky_options(lucky_options: dict) -> str:
     return ", ".join(parts)
 
 
-def format_neighbor_effect(neighbor_effect: dict) -> str:
-    """
-    Format neighbor effect for display.
-    
-    Args:
-        neighbor_effect: Dict with type, target, multiplier
-    
-    Returns:
-        Formatted string like "⬆️ +15% Power to neighbors" or "⬇️ -20% Coin Luck to neighbors"
-    """
-    if not neighbor_effect or not isinstance(neighbor_effect, dict):
-        return ""
-    
-    effect_type = neighbor_effect.get("type")
-    target = neighbor_effect.get("target")
-    multiplier = neighbor_effect.get("multiplier", 1.0)
-    
-    if not effect_type or not target:
-        return ""
-    
-    # Calculate percentage change (absolute value)
-    pct_change = abs(int((multiplier - 1.0) * 100))
-    
-    # Get target name
-    target_name = NEIGHBOR_EFFECT_TYPES.get(target, {}).get("name", target)
-    
-    # Format with emoji (emoji indicates direction, no need for +/-)
-    emoji = "⬆️" if effect_type == "friendly" else "⬇️"
-    
-    return f"{emoji} {pct_change}% {target_name} to neighbors"
-
-
-def get_neighbor_effect_emoji(item: dict) -> str:
-    """
-    Get a simple emoji indicator for neighbor effect.
-    
-    Returns:
-        "⬆️" for friendly, "⬇️" for unfriendly, "" for none
-    """
-    if not item or not isinstance(item, dict):
-        return ""
-    
-    neighbor_effect = item.get("neighbor_effect")
-    if not neighbor_effect or not isinstance(neighbor_effect, dict):
-        return ""
-    
-    effect_type = neighbor_effect.get("type")
-    if effect_type == "friendly":
-        return "⬆️"
-    elif effect_type == "unfriendly":
-        return "⬇️"
-    return ""
-
-
 # ============================================================================
-# SET BONUS SYSTEM - Matching themed items give power bonuses!
+# SET BONUS SYSTEM - Matching items with same first word (adjective) give power bonuses!
 # ============================================================================
 
-# Theme categories that items can belong to (extracted from item names)
-ITEM_THEMES = {
-    # Creature themes
-    "Goblin": {"words": ["goblin", "gremlin", "imp"], "bonus_per_match": 15, "emoji": "👺"},
-    "Dragon": {"words": ["dragon", "drake", "wyrm", "draconic"], "bonus_per_match": 25, "emoji": "🐉"},
-    "Phoenix": {"words": ["phoenix", "flame", "fire", "burning", "blazing"], "bonus_per_match": 20, "emoji": "🔥"},
-    "Void": {"words": ["void", "shadow", "dark", "abyss", "abyssal"], "bonus_per_match": 20, "emoji": "🌑"},
-    "Celestial": {"words": ["celestial", "astral", "cosmic", "star", "divine"], "bonus_per_match": 25, "emoji": "⭐"},
-    "Titan": {"words": ["titan", "giant", "colossal", "primordial"], "bonus_per_match": 25, "emoji": "🗿"},
-    "Arcane": {"words": ["arcane", "mystic", "enchanted", "magical", "rune"], "bonus_per_match": 18, "emoji": "✨"},
-    "Ancient": {"words": ["ancient", "old", "eternal", "timeless"], "bonus_per_match": 18, "emoji": "📜"},
-    "Crystal": {"words": ["crystal", "gem", "jewel", "diamond"], "bonus_per_match": 15, "emoji": "💎"},
-    "Iron": {"words": ["iron", "steel", "metal", "forge", "forged"], "bonus_per_match": 12, "emoji": "⚔️"},
-    # Silly themes  
-    "Procrastination": {"words": ["procrastination", "lazy", "distract", "coffee"], "bonus_per_match": 10, "emoji": "☕"},
-    "Focus": {"words": ["focus", "clarity", "discipline", "determination"], "bonus_per_match": 20, "emoji": "🎯"},
-    "Chaos": {"words": ["chaos", "random", "wild", "unpredictable"], "bonus_per_match": 15, "emoji": "🌀"},
-    "Quantum": {"words": ["quantum", "reality", "dimension", "paradox"], "bonus_per_match": 30, "emoji": "🔮"},
+# Set bonuses are based on the first word of item names (the adjective).
+# Items generated with the same adjective form a set.
+# Example: "Mystic Helm of Power" and "Mystic Boots of Speed" form a "Mystic" set.
+
+# Bonus tiers based on rarity of the adjective
+# Higher rarity adjectives give bigger set bonuses
+SET_BONUS_BY_RARITY = {
+    # Common adjectives - small bonus
+    "Rusty": 8, "Worn-out": 8, "Home-made": 8, "Dusty": 8, "Crooked": 8,
+    "Moth-eaten": 8, "Crumbling": 8, "Patched": 8, "Wobbly": 8, "Dented": 8,
+    "Tattered": 8, "Chipped": 8,
+    # Uncommon adjectives - moderate bonus
+    "Sturdy": 12, "Reliable": 12, "Polished": 12, "Refined": 12, "Gleaming": 12,
+    "Solid": 12, "Reinforced": 12, "Balanced": 12, "Tempered": 12, "Seasoned": 12,
+    "Crafted": 12, "Honed": 12,
+    # Rare adjectives - good bonus
+    "Enchanted": 18, "Mystic": 18, "Glowing": 18, "Ancient": 18, "Blessed": 18,
+    "Arcane": 18, "Shimmering": 18, "Ethereal": 18, "Spectral": 18, "Radiant": 18,
+    "Infused": 18, "Rune-carved": 18,
+    # Epic adjectives - great bonus
+    "Legendary": 25, "Celestial": 25, "Void-touched": 25, "Dragon-forged": 25,
+    "Titan's": 25, "Phoenix": 25, "Astral": 25, "Cosmic": 25, "Eldritch": 25,
+    "Primordial": 25, "Abyssal": 25,
+    # Legendary adjectives - massive bonus
+    "Quantum": 35, "Omniscient": 35, "Transcendent": 35, "Reality-bending": 35,
+    "Godslayer": 35, "Universe-forged": 35, "Eternal": 35, "Infinity": 35,
+    "Apotheosis": 35, "Mythic": 35, "Supreme": 35,
 }
+
+# Emojis for set display based on rarity tier
+SET_EMOJI_BY_RARITY = {
+    "Common": "🪨",
+    "Uncommon": "🌿",
+    "Rare": "💎",
+    "Epic": "🔮",
+    "Legendary": "👑",
+}
+
+# Adjective to rarity mapping for emoji lookup
+ADJECTIVE_RARITY = {}
+for rarity, data in ITEM_RARITIES.items():
+    for adj in data["adjectives"]:
+        ADJECTIVE_RARITY[adj] = rarity
+
+# Default bonus for unknown adjectives (story-specific items, etc.)
+DEFAULT_SET_BONUS = 15
 
 # Minimum matches required for set bonus activation
 SET_BONUS_MIN_MATCHES = 2
 
 
-def get_item_themes(item: dict) -> list:
-    """Extract theme(s) from an item based on its name."""
+def get_item_set_name(item: dict) -> str:
+    """
+    Get the set name for an item (its first word/adjective).
+    
+    Items with the same first word belong to the same set.
+    Example: "Mystic Helm of Power" -> "Mystic"
+    """
     if not item:
-        return []
+        return ""
     
-    name_lower = item.get("name", "").lower()
-    themes = []
+    name = item.get("name", "")
+    if not name:
+        return ""
     
-    for theme_name, theme_data in ITEM_THEMES.items():
-        for word in theme_data["words"]:
-            # Use word boundary matching to avoid partial matches
-            pattern = r'\b' + re.escape(word) + r'\b'
-            if re.search(pattern, name_lower):
-                themes.append(theme_name)
-                break  # Only count each theme once per item
+    # Get the first word (the adjective)
+    first_word = name.split()[0] if name.split() else ""
+    return first_word
+
+
+def get_set_theme_data(set_name: str) -> dict:
+    """
+    Get theme data for a set (bonus_per_match, emoji).
     
-    return themes
+    Works with the new first-word based system.
+    """
+    bonus = SET_BONUS_BY_RARITY.get(set_name, DEFAULT_SET_BONUS)
+    rarity = ADJECTIVE_RARITY.get(set_name, "Rare")
+    emoji = SET_EMOJI_BY_RARITY.get(rarity, "⚔️")
+    return {
+        "bonus_per_match": bonus,
+        "emoji": emoji,
+        "rarity": rarity
+    }
+
+
+# Backwards compatibility - ITEM_THEMES is now generated dynamically
+# This provides the old interface for code that still references ITEM_THEMES
+ITEM_THEMES = {}
+for adj, bonus in SET_BONUS_BY_RARITY.items():
+    rarity = ADJECTIVE_RARITY.get(adj, "Rare")
+    emoji = SET_EMOJI_BY_RARITY.get(rarity, "⚔️")
+    ITEM_THEMES[adj] = {
+        "words": [adj.lower()],
+        "bonus_per_match": bonus,
+        "emoji": emoji
+    }
+
+
+def get_item_themes(item: dict) -> list:
+    """
+    Extract theme(s) from an item based on its first word (adjective).
+    
+    This is the deterministic set system - items with the same
+    first word form a set.
+    """
+    set_name = get_item_set_name(item)
+    if set_name:
+        return [set_name]
+    return []
 
 
 def calculate_set_bonuses(equipped: dict) -> dict:
     """
-    Calculate set bonuses from equipped items sharing themes.
+    Calculate set bonuses from equipped items sharing the same first word (adjective).
+    
+    The set system is deterministic:
+    - Items with the same first word (adjective) form a set
+    - 2+ items with the same adjective activate the set bonus
+    - Bonus per item depends on the rarity of the adjective
     
     Returns a dict with:
-    - active_sets: list of {name, emoji, count, bonus}
+    - active_sets: list of {name, emoji, count, bonus, slots}
     - total_bonus: total power bonus from all sets
     """
     if not equipped:
         return {"active_sets": [], "total_bonus": 0}
     
-    # Count themes across all equipped items
-    theme_counts = {}
-    theme_items = {}
+    # Count items by their first word (adjective)
+    adjective_counts = {}
+    adjective_items = {}
     
     for slot, item in equipped.items():
         if not item:
             continue
-        themes = get_item_themes(item)
-        for theme in themes:
-            theme_counts[theme] = theme_counts.get(theme, 0) + 1
-            if theme not in theme_items:
-                theme_items[theme] = []
-            theme_items[theme].append(slot)
+        adjective = get_item_set_name(item)
+        if not adjective:
+            continue
+        adjective_counts[adjective] = adjective_counts.get(adjective, 0) + 1
+        if adjective not in adjective_items:
+            adjective_items[adjective] = []
+        adjective_items[adjective].append(slot)
     
-    # Calculate bonuses for themes with enough matches
+    # Calculate bonuses for adjectives with enough matches
     active_sets = []
     total_bonus = 0
     
-    for theme_name, count in theme_counts.items():
+    for adjective, count in adjective_counts.items():
         if count >= SET_BONUS_MIN_MATCHES:
-            theme_data = ITEM_THEMES.get(theme_name)
-            if theme_data is None:
-                continue  # Skip unknown themes (e.g., story-specific themes)
-            bonus = theme_data["bonus_per_match"] * count
+            # Get bonus per match based on adjective rarity
+            bonus_per_match = SET_BONUS_BY_RARITY.get(adjective, DEFAULT_SET_BONUS)
+            bonus = bonus_per_match * count
+            
+            # Get emoji based on adjective's rarity
+            rarity = ADJECTIVE_RARITY.get(adjective, "Rare")  # Default to Rare for unknown
+            emoji = SET_EMOJI_BY_RARITY.get(rarity, "⚔️")
+            
             active_sets.append({
-                "name": theme_name,
-                "emoji": theme_data["emoji"],
+                "name": adjective,
+                "emoji": emoji,
                 "count": count,
                 "bonus": bonus,
-                "slots": theme_items[theme_name]
+                "slots": adjective_items[adjective]
             })
             total_bonus += bonus
     
@@ -1368,6 +1154,7 @@ def calculate_set_bonuses(equipped: dict) -> dict:
         "active_sets": active_sets,
         "total_bonus": total_bonus
     }
+
 
 
 # ============================================================================
@@ -1393,13 +1180,12 @@ RARITY_UPGRADE = {
 RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
 
 
-def calculate_merge_success_rate(items: list, luck_bonus: int = 0, items_merge_luck: int = 0) -> float:
+def calculate_merge_success_rate(items: list, items_merge_luck: int = 0) -> float:
     """
     Calculate the success rate for a lucky merge.
     
     Args:
         items: List of items to merge
-        luck_bonus: Unused (kept for compatibility)
         items_merge_luck: Total merge_luck% from items being merged (sacrificed for the merge)
     
     Returns:
@@ -1467,7 +1253,8 @@ def is_merge_worthwhile(items: list) -> tuple:
     
     all_legendary = all(item.get("rarity") == "Legendary" for item in valid_items)
     if all_legendary:
-        return False, "All items are Legendary - merge cannot upgrade!"
+        # Allow legendary-only merges as a reroll to a new legendary item/slot.
+        return True, ""
     
     return True, ""
 
@@ -1507,7 +1294,7 @@ def get_random_tier_jump() -> int:
     return 1  # Fallback
 
 
-def perform_lucky_merge(items: list, luck_bonus: int = 0, story_id: str = None, items_merge_luck: int = 0) -> dict:
+def perform_lucky_merge(items: list, story_id: str = None, items_merge_luck: int = 0) -> dict:
     """Attempt a lucky merge of items.
     
     On success, the resulting item can be +1 to +4 tiers higher than
@@ -1519,7 +1306,6 @@ def perform_lucky_merge(items: list, luck_bonus: int = 0, story_id: str = None, 
     
     Args:
         items: List of items to merge
-        luck_bonus: Luck bonus from character stats
         story_id: Story theme for the resulting item
         items_merge_luck: Total merge_luck% from items being merged (sacrificed)
     """
@@ -1528,7 +1314,7 @@ def perform_lucky_merge(items: list, luck_bonus: int = 0, story_id: str = None, 
     if len(valid_items) < 2:
         return {"success": False, "error": "Need at least 2 items to merge"}
     
-    success_rate = calculate_merge_success_rate(valid_items, luck_bonus, items_merge_luck=items_merge_luck)
+    success_rate = calculate_merge_success_rate(valid_items, items_merge_luck=items_merge_luck)
     roll = random.random()
     
     result = {
@@ -3557,9 +3343,6 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     # Roll for lucky options
     lucky_options = roll_lucky_options(rarity)
     
-    # Roll for neighbor effect
-    neighbor_effect = roll_neighbor_effect(rarity)
-    
     item_data = {
         "name": name,
         "rarity": rarity,
@@ -3574,10 +3357,6 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     # Add lucky options if any were rolled
     if lucky_options:
         item_data["lucky_options"] = lucky_options
-    
-    # Add neighbor effect if rolled
-    if neighbor_effect:
-        item_data["neighbor_effect"] = neighbor_effect
     
     return item_data
 
@@ -3670,46 +3449,32 @@ def get_power_breakdown(adhd_buster: dict, include_neighbor_effects: bool = True
     
     Args:
         adhd_buster: Character data
-        include_neighbor_effects: Include neighbor effects in calculation
+        include_neighbor_effects: (DEPRECATED - ignored, kept for compatibility)
     
     Returns:
         Detailed power breakdown dict
     """
     equipped = adhd_buster.get("equipped", {})
     
-    if include_neighbor_effects:
-        # Use new system with neighbor effects
-        breakdown = calculate_effective_power(
-            equipped,
-            include_set_bonus=True,
-            include_neighbor_effects=True
-        )
-        # Get active sets details for display
-        set_info = calculate_set_bonuses(equipped)
-        return {
-            "base_power": breakdown["base_power"],
-            "set_bonus": breakdown["set_bonus"],
-            "neighbor_adjustment": breakdown.get("neighbor_adjustment", 0),
-            "total_power": breakdown["total_power"],
-            "power_by_slot": breakdown.get("power_by_slot", {}),
-            "neighbor_effects": breakdown.get("neighbor_effects", {}),
-            "active_sets": set_info.get("active_sets", [])
-        }
-    else:
-        # Legacy calculation without neighbor effects
-        base_power = 0
-        for item in equipped.values():
-            if item:
-                base_power += item.get("power", RARITY_POWER.get(item.get("rarity", "Common"), 10))
-        
-        set_info = calculate_set_bonuses(equipped)
-        
-        return {
-            "base_power": base_power,
-            "set_bonus": set_info["total_bonus"],
-            "total_power": base_power + set_info["total_bonus"],
-            "set_info": set_info
-        }
+    # Calculate power with set bonuses (neighbor effects removed)
+    breakdown = calculate_effective_power(
+        equipped,
+        include_set_bonus=True,
+        include_neighbor_effects=False  # Always False - system removed
+    )
+    
+    # Get active sets details for display
+    set_info = calculate_set_bonuses(equipped)
+    
+    return {
+        "base_power": breakdown["base_power"],
+        "set_bonus": breakdown["set_bonus"],
+        "neighbor_adjustment": 0,  # Always 0 - neighbor system removed
+        "total_power": breakdown["total_power"],
+        "power_by_slot": breakdown.get("power_by_slot", {}),
+        "neighbor_effects": {},  # Always empty - neighbor system removed
+        "active_sets": set_info.get("active_sets", [])
+    }
 
 
 def find_potential_set_bonuses(inventory: list, equipped: dict) -> list:
@@ -3796,7 +3561,7 @@ def optimize_equipped_gear(adhd_buster: dict, mode: str = "power", target_opt: s
     Find the optimal gear configuration.
     
     mode: "power", "options", "balanced"
-    target_opt: "all", "coin_bonus", "xp_bonus", "drop_luck", "merge_luck"
+    target_opt: "all", "coin_discount", "xp_bonus", "merge_luck"
     
     Returns:
     - new_equipped: dict mapping slot -> item (or None)
@@ -3862,48 +3627,18 @@ def optimize_equipped_gear(adhd_buster: dict, mode: str = "power", target_opt: s
             except (TypeError, ValueError):
                 opt_val = 0
             
-        # Heuristic for neighbor effects (to help good support items bubble up)
-        heuristic_bonus = 0
-        n_effect = item.get("neighbor_effect")
-        if n_effect and isinstance(n_effect, dict):
-            n_target = n_effect.get("target", "")
-            n_mult = n_effect.get("multiplier", 1.0)
-            
-            # Estimate value of effect based on conservative average neighbor stats
-            # Average Power ~100, Average Luck ~10
-            slot = item.get("slot")
-            num_neighbors = len(SLOT_NEIGHBORS.get(slot, [])) if slot else 1
-            
-            if n_target == "power":
-                # Value = Impact on neighbors' power
-                val = (n_mult - 1.0) * 100 * num_neighbors
-                if mode == "power" or mode == "balanced":
-                    heuristic_bonus += val
-                elif mode == "options":
-                    heuristic_bonus += val  # Secondary factor
-            
-            elif isinstance(n_target, str) and "luck" in n_target:
-                # Value = Impact on neighbors' luck
-                luck_impact = (n_mult - 1.0) * 10 * num_neighbors
-                
-                if n_target == "luck_all":
-                    luck_impact *= 4  # 4 stats affected
-                
-                if mode == "options":
-                    heuristic_bonus += luck_impact * 1000
-                elif mode == "balanced":
-                    heuristic_bonus += luck_impact * 10
+        # Neighbor system removed - no heuristic bonus needed
 
         if mode == "options":
             # Primary: Options, Secondary: Power
             # 1% option is worth 1000 power for sorting purposes
-            return opt_val * 1000 + pwr + heuristic_bonus
+            return opt_val * 1000 + pwr
             
         if mode == "balanced":
             # Power + (Option Sum * 10)
-            return pwr + (opt_val * 10) + heuristic_bonus
+            return pwr + (opt_val * 10)
             
-        return pwr + heuristic_bonus
+        return pwr
     
     # Sort items within each slot by specified criteria (highest first)
     for slot in items_by_slot:
@@ -3918,25 +3653,23 @@ def optimize_equipped_gear(adhd_buster: dict, mode: str = "power", target_opt: s
         if not isinstance(equip_set, dict):
             return -999999
         
-        # Calculate Power with neighbor effects
+        # Calculate Power (neighbor effects removed)
         power_breakdown = calculate_effective_power(
             equip_set,
-            include_set_bonus=True,
-            include_neighbor_effects=True
+            include_set_bonus=True
         )
         total_power = power_breakdown["total_power"]
         
         if mode == "power":
             return total_power
             
-        # Calculate Options with neighbor effects
+        # Calculate Options (neighbor effects removed)
         luck_bonuses = calculate_effective_luck_bonuses(
-            equip_set,
-            include_neighbor_effects=True
+            equip_set
         )
         opt_val = 0
         if target_opt == "all":
-            opt_val = sum(luck_bonuses.get(k, 0) for k in ["coin_bonus", "xp_bonus", "drop_luck", "merge_luck"])
+            opt_val = sum(luck_bonuses.get(k, 0) for k in ["coin_discount", "xp_bonus", "merge_luck"])
         else:
             opt_val = luck_bonuses.get(target_opt, 0)
             
@@ -12270,20 +12003,23 @@ def get_screen_off_bonus_rarity(screen_off_time: str) -> Optional[str]:
     except (ValueError, AttributeError):
         return None
     
-    # Thresholds in minutes (21:00 = 21*60 = 1260, etc.)
-    # 21:00 or earlier = 100% Legendary
-    # 22:00 = Legendary-centered (75%)
-    # 23:00 = Epic-centered
-    # 00:00 = Uncommon-centered (24*60 = 1440)
-    # 01:00+ = No bonus (25*60 = 1500)
+    # Thresholds in minutes
+    # < 22:00 = No bonus (user preference)
+    # 22:00 - 22:30 = 100% Legendary
+    # 22:30 - 23:30 = Legendary-centered
+    # 23:30 - 00:30 = Epic-centered
+    # 00:30 - 01:00 = Uncommon-centered
+    # 01:00+ = No bonus
     
-    if total_minutes <= 21 * 60:  # 21:00 or earlier
-        return "Legendary"  # 100% Legendary for exceptional discipline
-    elif total_minutes <= 22 * 60:  # Up to 22:00
+    if total_minutes < 22 * 60:  # Before 22:00
+        return None
+    elif total_minutes <= 22 * 60 + 30:  # 22:00 to 22:30
+        return "Legendary"
+    elif total_minutes <= 23 * 60 + 30:  # 22:31 to 23:30
         center_tier = 4  # Legendary-centered
-    elif total_minutes <= 23 * 60:  # Up to 23:00
+    elif total_minutes <= 24 * 60 + 30:  # 23:31 to 00:30
         center_tier = 3  # Epic-centered
-    elif total_minutes < 25 * 60:  # Up to 00:59 (before 01:00)
+    elif total_minutes < 25 * 60:  # 00:31 to 00:59
         center_tier = 1  # Uncommon-centered
     else:  # 01:00 or later
         return None  # Too late for bonus

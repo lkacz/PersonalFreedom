@@ -22,6 +22,7 @@ except ImportError:
 
 from pathlib import Path
 from datetime import datetime
+from user_manager import UserManager
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -165,7 +166,22 @@ class BlockMode:
 class BlockerCore:
     """Core blocking engine with enhanced features"""
 
-    def __init__(self):
+    def __init__(self, username: Optional[str] = None):
+        # Initialize paths
+        self.user_manager = UserManager(APP_DIR)
+        
+        if username:
+            self.user_dir = self.user_manager.get_user_dir(username)
+            self.config_path = self.user_dir / "config.json"
+            self.stats_path = self.user_dir / "stats.json"
+            self.goals_path = self.user_dir / "goals.json"
+            self.session_state_path = self.user_dir / ".session_state.json"
+        else:
+            self.config_path = CONFIG_PATH
+            self.stats_path = STATS_PATH
+            self.goals_path = GOALS_PATH
+            self.session_state_path = SESSION_STATE_PATH
+
         self.blacklist = []
         self.whitelist = []
         self.categories_enabled = {}
@@ -255,9 +271,9 @@ class BlockerCore:
         for sites in SITE_CATEGORIES.values():
             default_blacklist.extend(sites)
 
-        if CONFIG_PATH.exists():
+        if self.config_path.exists():
             try:
-                with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+                with open(self.config_path, 'r', encoding='utf-8') as f:
                     config = json.load(f)
                     self.blacklist = config.get('blacklist', default_blacklist)
                     self.whitelist = config.get('whitelist', [])
@@ -384,15 +400,15 @@ class BlockerCore:
                 'sleep_last_reminder_date': self.sleep_last_reminder_date,
                 'water_entries': self.water_entries,
             }
-            atomic_write_json(CONFIG_PATH, config)
+            atomic_write_json(self.config_path, config)
         except (IOError, OSError) as e:
             logger.error(f"Could not save config: {e}")
 
     def load_stats(self):
         """Load statistics from file"""
-        if STATS_PATH.exists():
+        if self.stats_path.exists():
             try:
-                with open(STATS_PATH, 'r', encoding='utf-8') as f:
+                with open(self.stats_path, 'r', encoding='utf-8') as f:
                     loaded = json.load(f)
                     self.stats = {**self._default_stats(), **loaded}
             except (json.JSONDecodeError, IOError):
@@ -401,7 +417,7 @@ class BlockerCore:
     def save_stats(self):
         """Save statistics to file atomically (crash-safe)"""
         try:
-            atomic_write_json(STATS_PATH, self.stats)
+            atomic_write_json(self.stats_path, self.stats)
         except (IOError, OSError):
             pass
 
@@ -421,15 +437,15 @@ class BlockerCore:
             "pid": os.getpid(),
         }
         try:
-            atomic_write_json(SESSION_STATE_PATH, state)
+            atomic_write_json(self.session_state_path, state)
         except (IOError, OSError) as e:
             logger.warning(f"Could not save session state: {e}")
 
     def clear_session_state(self) -> None:
         """Remove the session state file (called on clean shutdown)."""
         try:
-            if SESSION_STATE_PATH.exists():
-                SESSION_STATE_PATH.unlink()
+            if self.session_state_path.exists():
+                self.session_state_path.unlink()
         except (IOError, OSError) as e:
             logger.warning(f"Could not clear session state: {e}")
 
@@ -438,11 +454,11 @@ class BlockerCore:
         
         Returns session info if orphaned session found, None otherwise.
         """
-        if not SESSION_STATE_PATH.exists():
+        if not self.session_state_path.exists():
             return None
 
         try:
-            with open(SESSION_STATE_PATH, 'r', encoding='utf-8') as f:
+            with open(self.session_state_path, 'r', encoding='utf-8') as f:
                 state = json.load(f)
 
             # Check if the old process is still running
