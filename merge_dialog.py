@@ -9,6 +9,9 @@ from datetime import datetime
 from typing import Optional
 from PySide6 import QtWidgets, QtCore, QtGui
 
+# Import reusable lottery animation components
+from lottery_animation import LotteryRollDialog, LotterySliderWidget, MergeTwoStageLotteryDialog
+
 try:
     from gamification import (
         calculate_merge_success_rate, 
@@ -29,285 +32,62 @@ except ImportError:
     RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     RARITY_UPGRADE = {"Common": "Uncommon", "Uncommon": "Rare", "Rare": "Epic", "Epic": "Legendary", "Legendary": "Legendary"}
 
+# Backwards compatibility aliases for this module
+MergeRollAnimationDialog = LotteryRollDialog
+MergeSliderWidget = LotterySliderWidget
 
-class MergeRollAnimationDialog(QtWidgets.QDialog):
-    """Dramatic slider animation for merge roll reveal."""
+
+class RarityDistributionWidget(QtWidgets.QWidget):
+    """Visual widget showing the rarity distribution for merge lottery.
     
-    finished_signal = QtCore.Signal(bool)  # Emits success/failure when done
+    Uses a moving window centered on the base rarity result, showing distribution
+    across all tiers that are reachable from the merge.
+    """
     
-    def __init__(self, target_roll: float, success_threshold: float, 
-                 parent: Optional[QtWidgets.QWidget] = None):
+    # Moving window distribution: [5, 15, 60, 15, 5] centered on base result
+    # Base gives 60% to the result tier, tapering to nearby tiers
+    BASE_WINDOW = [5, 15, 60, 15, 5]
+    # Upgraded shifts the window +1 tier higher
+    UPGRADED_WINDOW = [5, 10, 25, 45, 15]
+    
+    def __init__(self, base_rarity: str = "Common", upgraded: bool = False, parent=None):
         super().__init__(parent)
-        self.target_roll = target_roll * 100  # Convert to percentage
-        self.success_threshold = success_threshold * 100
-        self.current_position = 50.0  # Start in the middle
-        self.is_success = target_roll < success_threshold
+        self.base_rarity = base_rarity
+        self.upgraded = upgraded
+        self.setMinimumHeight(70)
+        self._calculate_distribution()
+    
+    def _calculate_distribution(self):
+        """Calculate the rarity distribution using moving window centered on base rarity."""
+        window = self.UPGRADED_WINDOW if self.upgraded else self.BASE_WINDOW
         
-        # Industry Standard "Ping-Pong" Deceleration Animation
-        # Slider bounces off walls, losing speed (quadratic friction),
-        # eventually stopping exactly on the target.
-        self.tick_interval = 16  # 60 FPS
-        self.elapsed_time = 0.0
-        self.animation_duration = 5.0  # Seconds
+        # Get base rarity index (center of the window)
+        try:
+            base_idx = RARITY_ORDER.index(self.base_rarity)
+        except ValueError:
+            base_idx = 0
         
-        # 1. Generate path segments
-        # Start at 50, visit walls (0/100) multiple times, end at target
-        self.path_points = [50.0]
+        # Apply moving window centered on base_idx
+        # Window offsets: [-2, -1, 0, +1, +2] from center
+        self.distribution = {}  # rarity -> percentage
         
-        # Random start direction
-        going_up = random.choice([True, False])
-        
-        # Number of full bounces (wall-to-wall traversals)
-        # 4-6 bounces creates nice suspense
-        num_bounces = random.randint(4, 6)
-        
-        for _ in range(num_bounces):
-            if going_up:
-                self.path_points.append(100.0)
-                self.path_points.append(0.0)
-            else:
-                self.path_points.append(0.0)
-                self.path_points.append(100.0)
-        
-        # Add final target
-        self.path_points.append(self.target_roll)
-        
-        # 2. Pre-calculate distance segments for O(1) interpolation
-        self.segments = []
-        self.total_distance = 0.0
-        
-        for i in range(len(self.path_points) - 1):
-            start = self.path_points[i]
-            end = self.path_points[i+1]
-            dist = abs(end - start)
+        for offset, pct in zip([-2, -1, 0, 1, 2], window):
+            target_idx = base_idx + offset
+            # Clamp to valid tier range [0, 4]
+            clamped_idx = max(0, min(len(RARITY_ORDER) - 1, target_idx))
+            target_rarity = RARITY_ORDER[clamped_idx]
             
-            # Skip zero-length segments if any
-            if dist > 0.001:
-                self.segments.append({
-                    "start": start,
-                    "end": end,
-                    "dist": dist,
-                    "cum_start": self.total_distance,
-                    "cum_end": self.total_distance + dist
-                })
-                self.total_distance += dist
-        
-        self._setup_ui()
-        self._start_animation()
-    
-    def _setup_ui(self):
-        """Build the slider animation UI."""
-        self.setWindowTitle("🎲 Rolling...")
-        self.setModal(True)
-        self.setFixedSize(500, 200)
-        self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
-        
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Main container
-        container = QtWidgets.QWidget()
-        container.setStyleSheet("""
-            QWidget {
-                background: #1a1a2e;
-                border: 3px solid #ffd700;
-                border-radius: 12px;
-            }
-        """)
-        container_layout = QtWidgets.QVBoxLayout(container)
-        container_layout.setSpacing(12)
-        container_layout.setContentsMargins(20, 16, 20, 16)
-        
-        # Title
-        title = QtWidgets.QLabel("🎲 Rolling the Dice...")
-        title.setAlignment(QtCore.Qt.AlignCenter)
-        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffd700;")
-        container_layout.addWidget(title)
-        
-        # The slider track widget (custom painted)
-        self.slider_widget = MergeSliderWidget(self.success_threshold)
-        self.slider_widget.setFixedHeight(60)
-        container_layout.addWidget(self.slider_widget)
-        
-        # Current roll display
-        self.roll_label = QtWidgets.QLabel("0.0%")
-        self.roll_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.roll_label.setStyleSheet("""
-            font-size: 28px;
-            font-weight: bold;
-            color: #fff;
-            font-family: 'Consolas', 'Monaco', monospace;
-        """)
-        container_layout.addWidget(self.roll_label)
-        
-        # Status
-        self.status_label = QtWidgets.QLabel("⚡ Spinning...")
-        self.status_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.status_label.setStyleSheet("color: #aaa; font-size: 12px;")
-        container_layout.addWidget(self.status_label)
-        
-        layout.addWidget(container)
-    
-    def _start_animation(self):
-        """Start the damped oscillation animation."""
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self._tick)
-        self.timer.start(self.tick_interval)
-    
-    def _tick(self):
-        """Update animation by traversing the pre-calculated bounce path."""
-        # Update elapsed time
-        self.elapsed_time += self.tick_interval / 1000.0  # seconds
-        
-        # Calculate normalized progress (0.0 to 1.0)
-        t = min(1.0, self.elapsed_time / self.animation_duration)
-        
-        # Apply easing function for realistic friction/deceleration
-        # EaseOutQuart: 1 - (1-t)^4
-        # Starts fast, slows down significantly at the end
-        eased_progress = 1.0 - (1.0 - t) ** 4
-        
-        # Calculate current distance traveled along the path
-        current_travel = eased_progress * self.total_distance
-        
-        # Find which segment we are in
-        # O(N) search is fine since N is small (< 10)
-        found_pos = self.target_roll # Default fallback
-        
-        for seg in self.segments:
-            if current_travel >= seg["cum_start"] and current_travel <= seg["cum_end"]:
-                # Interpolate within this segment
-                # local_t = how far into this segment (0.0 to 1.0)
-                local_dist = current_travel - seg["cum_start"]
-                local_progress = local_dist / seg["dist"]
-                
-                # Lerp: start + (end - start) * progress
-                found_pos = seg["start"] + (seg["end"] - seg["start"]) * local_progress
-                break
-            elif current_travel > seg["cum_end"]:
-                # Past this segment, keep checking
-                continue
+            if target_rarity in self.distribution:
+                self.distribution[target_rarity] += pct
             else:
-                # Before first segment (shouldn't happen with 0 start)
-                break
-        else:
-            # If loop finishes without break, we are at the end
-            if current_travel >= self.total_distance:
-                found_pos = self.target_roll
-
-        self.current_position = found_pos
-        
-        # End condition
-        if t >= 1.0:
-            self.timer.stop()
-            self.current_position = self.target_roll
-            self.slider_widget.set_position(self.target_roll)
-            self.roll_label.setText(f"{self.target_roll:.1f}%")
-            self._show_final_result()
-            return
-            
-        # Update display
-        # Ensure bounds 0-100 just in case
-        self.current_position = max(0.0, min(100.0, self.current_position))
-        self.slider_widget.set_position(self.current_position)
-        self.roll_label.setText(f"{self.current_position:.1f}%")
-        
-        # Color based on position
-        if self.current_position < self.success_threshold:
-            self.roll_label.setStyleSheet("""
-                font-size: 28px; font-weight: bold; color: #4caf50;
-                font-family: 'Consolas', 'Monaco', monospace;
-            """)
-        else:
-            self.roll_label.setStyleSheet("""
-                font-size: 28px; font-weight: bold; color: #f44336;
-                font-family: 'Consolas', 'Monaco', monospace;
-            """)
-        
-        # Update status based on speed (derivative of eased_progress)
-        speed = 4 * (1.0 - t) ** 3  # derivative of 1-(1-t)^4
-        if speed > 2.0:
-            self.status_label.setText("⚡ Spinning...")
-        elif speed > 0.8:
-            self.status_label.setText("🎯 Slowing down...")
-        elif speed > 0.2:
-            self.status_label.setText("🎲 Almost there...")
-        else:
-            self.status_label.setText("✨ Settling...")
-        
-        # Clamp to valid range (with bounce visualization logic if needed, but simple clamp is fine)
-        self.current_position = max(0.0, min(100.0, self.current_position))
-        
-        # Update display
-        self.slider_widget.set_position(self.current_position)
-        self.roll_label.setText(f"{self.current_position:.1f}%")
-        
-        # Color based on position
-        if self.current_position < self.success_threshold:
-            self.roll_label.setStyleSheet("""
-                font-size: 28px; font-weight: bold; color: #4caf50;
-                font-family: 'Consolas', 'Monaco', monospace;
-            """)
-        else:
-            self.roll_label.setStyleSheet("""
-                font-size: 28px; font-weight: bold; color: #f44336;
-                font-family: 'Consolas', 'Monaco', monospace;
-            """)
-        
-        # Update status based on elapsed time phases
-        if t < 1.0:
-            self.status_label.setText("⚡ Spinning...")
-        elif t < 3.0:
-            self.status_label.setText("🎯 Slowing down...")
-        elif t < 4.0:
-            self.status_label.setText("🎲 Almost there...")
-        else:
-            self.status_label.setText("✨ Settling...")
+                self.distribution[target_rarity] = pct
     
-    def _show_final_result(self):
-        """Show the final result."""
-        self.roll_label.setText(f"{self.target_roll:.1f}%")
-        
-        if self.is_success:
-            self.roll_label.setStyleSheet("""
-                font-size: 28px; font-weight: bold; color: #4caf50;
-                font-family: 'Consolas', 'Monaco', monospace;
-            """)
-            self.status_label.setText("✨ SUCCESS! ✨")
-            self.status_label.setStyleSheet("color: #4caf50; font-size: 16px; font-weight: bold;")
-            self.slider_widget.set_result(True)
-        else:
-            self.roll_label.setStyleSheet("""
-                font-size: 28px; font-weight: bold; color: #f44336;
-                font-family: 'Consolas', 'Monaco', monospace;
-            """)
-            self.status_label.setText("💔 FAILED 💔")
-            self.status_label.setStyleSheet("color: #f44336; font-size: 16px; font-weight: bold;")
-            self.slider_widget.set_result(False)
-        
-        # Auto-close after showing result
-        QtCore.QTimer.singleShot(1200, self.accept)
-
-
-class MergeSliderWidget(QtWidgets.QWidget):
-    """Custom widget that draws the probability bar with sliding marker."""
-    
-    def __init__(self, threshold: float, parent=None):
-        super().__init__(parent)
-        self.threshold = threshold  # Success threshold (0-100)
-        self.position = 0.0  # Current marker position (0-100)
-        self.result = None  # None, True (success), or False (failure)
-        self.setMinimumWidth(400)
-    
-    def set_position(self, pos: float):
-        """Set the marker position (0-100)."""
-        self.position = max(0, min(100, pos))
-        self.update()
-    
-    def set_result(self, success: bool):
-        """Set the final result for visual feedback."""
-        self.result = success
-        self.update()
+    def set_upgraded(self, upgraded: bool):
+        """Update the upgrade status and recalculate distribution."""
+        if self.upgraded != upgraded:
+            self.upgraded = upgraded
+            self._calculate_distribution()
+            self.update()
     
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -316,91 +96,68 @@ class MergeSliderWidget(QtWidgets.QWidget):
         w = self.width()
         h = self.height()
         margin = 10
-        bar_height = 20
-        bar_y = (h - bar_height) // 2
+        bar_height = 30
+        bar_y = 25
         
-        # Draw the track background
-        track_rect = QtCore.QRectF(margin, bar_y, w - 2*margin, bar_height)
-        
-        # Success zone (green) - left side up to threshold
-        threshold_x = margin + (self.threshold / 100.0) * (w - 2*margin)
-        success_rect = QtCore.QRectF(margin, bar_y, threshold_x - margin, bar_height)
-        painter.setBrush(QtGui.QColor("#2e7d32"))  # Dark green
-        painter.setPen(QtCore.Qt.NoPen)
-        painter.drawRoundedRect(success_rect, 4, 4)
-        
-        # Failure zone (red) - right side from threshold
-        fail_rect = QtCore.QRectF(threshold_x, bar_y, w - margin - threshold_x, bar_height)
-        painter.setBrush(QtGui.QColor("#c62828"))  # Dark red
-        painter.drawRoundedRect(fail_rect, 4, 4)
-        
-        # Draw threshold line
-        painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
-        painter.drawLine(int(threshold_x), bar_y - 5, int(threshold_x), bar_y + bar_height + 5)
-        
-        # Threshold label
-        painter.setFont(QtGui.QFont("Arial", 9, QtGui.QFont.Bold))
-        painter.drawText(int(threshold_x) - 15, bar_y - 8, f"{self.threshold:.0f}%")
-        
-        # Draw 0% and 100% labels
-        painter.setPen(QtGui.QColor("#888"))
-        painter.setFont(QtGui.QFont("Arial", 8))
-        painter.drawText(margin, bar_y + bar_height + 15, "0%")
-        painter.drawText(w - margin - 25, bar_y + bar_height + 15, "100%")
-        
-        # Draw "WIN" and "LOSE" zone labels
+        # Title
+        painter.setPen(QtGui.QColor("#aaa"))
         painter.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
-        if threshold_x - margin > 40:
-            painter.setPen(QtGui.QColor("#4caf50"))
-            win_x = margin + (threshold_x - margin) / 2 - 15
-            painter.drawText(int(win_x), bar_y + bar_height // 2 + 5, "WIN")
-        if w - margin - threshold_x > 40:
-            painter.setPen(QtGui.QColor("#f44336"))
-            lose_x = threshold_x + (w - margin - threshold_x) / 2 - 18
-            painter.drawText(int(lose_x), bar_y + bar_height // 2 + 5, "LOSE")
+        title = "🎲 Rarity Lottery Distribution"
+        if self.upgraded:
+            title += " ⬆️"
+        painter.drawText(margin, 16, title)
         
-        # Draw the sliding marker
-        marker_x = margin + (self.position / 100.0) * (w - 2*margin)
-        marker_size = 16
+        # Draw distribution bars
+        cumulative_x = margin
+        bar_width = w - 2 * margin
         
-        # Marker color based on position
-        if self.result is not None:
-            marker_color = "#4caf50" if self.result else "#f44336"
-            glow_color = "#4caf50" if self.result else "#f44336"
-        elif self.position < self.threshold:
-            marker_color = "#66bb6a"
-            glow_color = None
-        else:
-            marker_color = "#ef5350"
-            glow_color = None
+        # Get ordered rarities (only those in distribution)
+        ordered_rarities = [r for r in RARITY_ORDER if r in self.distribution]
         
-        # Draw glow if result shown
-        if glow_color:
-            for i in range(3):
-                glow_size = marker_size + (3-i) * 4
-                painter.setBrush(QtGui.QColor(glow_color))
-                painter.setOpacity(0.2)
-                painter.drawEllipse(
-                    QtCore.QPointF(marker_x, bar_y + bar_height // 2),
-                    glow_size, glow_size
-                )
-            painter.setOpacity(1.0)
+        for i, rarity in enumerate(ordered_rarities):
+            pct = self.distribution[rarity]
+            if pct <= 0:
+                continue
+            
+            zone_width = (pct / 100) * bar_width
+            color = ITEM_RARITIES.get(rarity, {}).get("color", "#666")
+            
+            # Draw zone
+            painter.setBrush(QtGui.QColor(color))
+            painter.setPen(QtCore.Qt.NoPen)
+            
+            rect = QtCore.QRectF(cumulative_x, bar_y, zone_width, bar_height)
+            if i == 0:
+                path = QtGui.QPainterPath()
+                path.addRoundedRect(rect, 4, 4)
+                painter.drawPath(path)
+            elif i == len(ordered_rarities) - 1:
+                path = QtGui.QPainterPath()
+                path.addRoundedRect(rect, 4, 4)
+                painter.drawPath(path)
+            else:
+                painter.drawRect(rect)
+            
+            # Draw label with percentage
+            if zone_width > 35:
+                painter.setPen(QtGui.QColor("#fff"))
+                painter.setFont(QtGui.QFont("Arial", 9, QtGui.QFont.Bold))
+                label = f"{rarity[:3]}:{pct:.0f}%"
+                label_rect = QtCore.QRectF(cumulative_x, bar_y, zone_width, bar_height)
+                painter.drawText(label_rect, QtCore.Qt.AlignCenter, label)
+            
+            # Draw separator
+            if i < len(ordered_rarities) - 1:
+                painter.setPen(QtGui.QPen(QtGui.QColor("#1a1a2e"), 2))
+                sep_x = cumulative_x + zone_width
+                painter.drawLine(int(sep_x), bar_y, int(sep_x), bar_y + bar_height)
+            
+            cumulative_x += zone_width
         
-        # Draw marker (triangle pointing down)
-        painter.setBrush(QtGui.QColor(marker_color))
-        painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
-        
-        # Triangle marker
-        triangle = QtGui.QPolygonF([
-            QtCore.QPointF(marker_x, bar_y - 2),
-            QtCore.QPointF(marker_x - 8, bar_y - 14),
-            QtCore.QPointF(marker_x + 8, bar_y - 14),
-        ])
-        painter.drawPolygon(triangle)
-        
-        # Marker line
-        painter.setPen(QtGui.QPen(QtGui.QColor(marker_color), 3))
-        painter.drawLine(int(marker_x), bar_y, int(marker_x), bar_y + bar_height)
+        # Draw border
+        painter.setPen(QtGui.QPen(QtGui.QColor("#444"), 1))
+        painter.setBrush(QtCore.Qt.NoBrush)
+        painter.drawRoundedRect(margin, bar_y, bar_width, bar_height, 4, 4)
 
 
 class ItemPreviewWidget(QtWidgets.QWidget):
@@ -940,6 +697,20 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         boost_section = self._create_boost_section()
         main_layout.addWidget(boost_section)
         
+        # Rarity distribution widget (shows lottery probabilities)
+        self.rarity_dist_widget = RarityDistributionWidget(
+            base_rarity=self.result_rarity,
+            upgraded=False
+        )
+        self.rarity_dist_widget.setStyleSheet("""
+            QWidget {
+                background-color: #252540;
+                border: 2px solid #555;
+                border-radius: 8px;
+            }
+        """)
+        main_layout.addWidget(self.rarity_dist_widget)
+        
         # Tier upgrade section (optional +1 tier for 50 coins)
         tier_upgrade_section = self._create_tier_upgrade_section()
         main_layout.addWidget(tier_upgrade_section)
@@ -1298,6 +1069,10 @@ class LuckyMergeDialog(QtWidgets.QDialog):
                 color = ITEM_RARITIES.get(self.result_rarity, {}).get("color", "#fff")
                 self.result_rarity_label.setText(f"<b style='color:{color};'>✨ {self.result_rarity}</b>")
         
+        # Update the rarity distribution widget to show shifted probabilities
+        if hasattr(self, 'rarity_dist_widget'):
+            self.rarity_dist_widget.set_upgraded(checked)
+        
         # Tier upgrade doesn't affect success rate - don't update the display
         # (The success rate display should only show boost_active based on self.boost_enabled)
 
@@ -1352,7 +1127,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         return button_box
     
     def execute_merge(self):
-        """Execute the merge with dramatic roll animation."""
+        """Execute the merge with dramatic two-stage roll animation."""
         if not GAMIFICATION_AVAILABLE:
             msg = QtWidgets.QMessageBox(self)
             msg.setWindowTitle("Feature Unavailable")
@@ -1366,39 +1141,88 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         for button in self.findChildren(QtWidgets.QPushButton):
             button.setEnabled(False)
         
-        # Perform merge with boost if enabled
+        # Calculate success rate first
         story_id = self.items[0].get("story_theme", "warrior") if self.items else "warrior"
-        # Add 25% boost bonus (as percentage points) if boost is enabled
         boost_bonus = 25 if self.boost_enabled else 0
-        # Use merge_luck from items being merged (sacrificed) + boost
         total_items_merge_luck = self.items_merge_luck + boost_bonus
-        self.merge_result = perform_lucky_merge(
-            self.items,
-            story_id=story_id,
-            items_merge_luck=total_items_merge_luck
-        )
         
-        # Apply tier upgrade if enabled and merge succeeded
-        if self.merge_result.get("success") and self.tier_upgrade_enabled:
-            result_item = self.merge_result.get("result_item", {})
-            if result_item:
+        # Calculate the success threshold
+        success_rate = calculate_merge_success_rate(self.items, items_merge_luck=total_items_merge_luck)
+        
+        # Roll for success
+        success_roll = random.random()
+        is_success = success_roll < success_rate
+        
+        # Determine base rarity for display
+        base_rarity = self.result_rarity  # Calculated in __init__
+        
+        # Show dramatic two-stage animation (success + tier jump)
+        # Pass tier_upgrade_enabled to show boosted distribution
+        animation_dialog = MergeTwoStageLotteryDialog(
+            success_roll, success_rate,
+            tier_upgrade_enabled=self.tier_upgrade_enabled,
+            base_rarity=base_rarity,
+            parent=self
+        )
+        animation_dialog.exec_()
+        
+        # Get results from animation (tier jump is determined by the animation)
+        _, animated_tier_jump = animation_dialog.get_results()
+        
+        # Now build the merge result using the animated tier jump
+        if is_success:
+            # Get base rarity from lowest item
+            def safe_rarity_idx(item):
+                rarity = item.get("rarity", "Common")
+                try:
+                    return RARITY_ORDER.index(rarity)
+                except ValueError:
+                    return 0
+            
+            valid_items = [item for item in self.items if item is not None]
+            rarity_indices = [safe_rarity_idx(item) for item in valid_items]
+            lowest_idx = min(rarity_indices) if rarity_indices else 0
+            
+            # Use the tier jump from the animation
+            tier_jump = animated_tier_jump
+            final_idx = min(lowest_idx + tier_jump, len(RARITY_ORDER) - 1)
+            final_rarity = RARITY_ORDER[final_idx]
+            
+            # Generate the result item
+            from gamification import generate_item
+            result_item = generate_item(rarity=final_rarity, story_id=story_id)
+            
+            self.merge_result = {
+                "success": True,
+                "items_lost": valid_items,
+                "roll": success_roll,
+                "needed": success_rate,
+                "tier_jump": tier_jump,
+                "result_item": result_item,
+                "base_rarity": RARITY_ORDER[lowest_idx],
+                "final_rarity": final_rarity
+            }
+            
+            # Apply tier upgrade if enabled
+            if self.tier_upgrade_enabled:
                 current_rarity = result_item.get("rarity", "Common")
                 try:
                     current_idx = RARITY_ORDER.index(current_rarity)
                     new_idx = min(current_idx + 1, len(RARITY_ORDER) - 1)
                     result_item["rarity"] = RARITY_ORDER[new_idx]
-                    # Update power based on new rarity
                     result_item["power"] = RARITY_POWER.get(result_item["rarity"], result_item.get("power", 10))
                     self.merge_result["tier_upgraded"] = True
                 except (ValueError, IndexError):
                     pass
-        
-        # Show dramatic roll animation
-        roll_value = self.merge_result.get("roll", 0)
-        threshold = self.merge_result.get("needed", 0.5)
-        
-        animation_dialog = MergeRollAnimationDialog(roll_value, threshold, self)
-        animation_dialog.exec_()
+        else:
+            self.merge_result = {
+                "success": False,
+                "items_lost": self.items,
+                "roll": success_roll,
+                "needed": success_rate,
+                "tier_jump": 0,
+                "result_item": None
+            }
         
         # Show result after animation
         self._show_result()
@@ -1602,7 +1426,13 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         roll = random.random()
         
         # Show dramatic roll animation
-        animation_dialog = MergeRollAnimationDialog(roll, adjusted_rate, self)
+        animation_dialog = MergeRollAnimationDialog(
+            roll, adjusted_rate,
+            title="🎲 Push Your Luck!",
+            success_text="✨ LUCK HOLDS! ✨",
+            failure_text="💔 LUCK RAN OUT 💔",
+            parent=self
+        )
         animation_dialog.exec_()
         
         current_item = self.merge_result.get("result_item", {})
@@ -1762,6 +1592,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         can_afford_claim = remaining_coins >= self.claim_cost
 
         # Salvage option - save one random item (discounted)
+        from gamification import apply_coin_discount
         salvage_cost = apply_coin_discount(COIN_COSTS.get("merge_salvage", 50), self.coin_discount)
         can_afford_salvage = remaining_coins >= salvage_cost
         

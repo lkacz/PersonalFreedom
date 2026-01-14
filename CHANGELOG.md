@@ -8,6 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Reusable Lottery Animation System** (`lottery_animation.py`):
+  - Factored out dramatic slot-machine style roll animation from merge dialog into reusable module.
+  - `LotteryRollDialog`: Single-stage bouncing slider animation with configurable threshold.
+  - `LotterySliderWidget`: Custom-painted probability bar with WIN/LOSE zones.
+  - `TwoStageLotteryDialog`: Two-stage lottery for Item Drop + Tier determination.
+  - `MultiTierLotterySlider`: 5-tier rarity visualization for Priority Completion rewards.
+  - `PriorityLotteryDialog`: Two-stage lottery specifically for Priority Completion (Win/Lose + Rarity roll).
+  - `TierJumpSliderWidget`: 4-zone visualization for merge tier jumps (+1/+2/+3/+4).
+  - `MergeTwoStageLotteryDialog`: Two-stage lottery for gear merging (Success + Tier Jump).
+  - Eye Protection tab now uses the same animation system as gear merging for consistent UX.
+  - **Priority Completion now shows animated lottery** instead of plain message boxes:
+    - Stage 1: Win/Lose roll (15-99% based on logged hours)
+    - Stage 2: Rarity roll (5% Common, 10% Uncommon, 30% Rare, 35% Epic, 20% Legendary)
+  - **Gear Merge now shows two-stage animated lottery**:
+    - Stage 1: Success/Fail roll (based on item count and merge luck)
+    - Stage 2: Tier Jump roll (+1: 50%, +2: 30%, +3: 15%, +4 JACKPOT: 5%)
 - **Health Reminder Notifications**:
   - Eye & Breath tab: Toggle periodic toast reminders (configurable interval, default 60 min).
   - Water tab: Toggle periodic hydration reminders (configurable interval, default 60 min).
@@ -27,6 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sleep Logic**:
   - Sleep suggestions ("Go to Sleep") are now suppressed before 22:00 to prevent nagging.
   - Sleep rewards (Screen Off Bonus) configured to start effectively after 22:00.
+- **Code Architecture**:
+  - Removed ~270 lines of duplicate animation code from `merge_dialog.py` (now imports from shared module).
 
 ## [5.6.3] - 2026-01-11
 

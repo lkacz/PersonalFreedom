@@ -245,6 +245,7 @@ class BlockerCore:
         self.water_reminder_enabled = False  # Periodic hydration reminder
         self.water_reminder_interval = 60  # Minutes between reminders
         self.water_last_reminder_time = None  # Last reminder timestamp
+        self.water_lottery_attempts = 0  # Cumulative lottery rolls (win chance +1% per attempt)
         
         # Eye & Breath tracking
         self.eye_reminder_enabled = False  # Periodic eye routine reminder
@@ -361,6 +362,7 @@ class BlockerCore:
                     self.water_reminder_enabled = config.get('water_reminder_enabled', False)
                     self.water_reminder_interval = config.get('water_reminder_interval', 60)
                     self.water_last_reminder_time = config.get('water_last_reminder_time', None)
+                    self.water_lottery_attempts = config.get('water_lottery_attempts', 0)
                     # Eye & Breath reminder settings
                     self.eye_reminder_enabled = config.get('eye_reminder_enabled', False)
                     self.eye_reminder_interval = config.get('eye_reminder_interval', 60)
@@ -417,6 +419,7 @@ class BlockerCore:
                 'water_reminder_enabled': self.water_reminder_enabled,
                 'water_reminder_interval': self.water_reminder_interval,
                 'water_last_reminder_time': self.water_last_reminder_time,
+                'water_lottery_attempts': self.water_lottery_attempts,
                 'eye_reminder_enabled': self.eye_reminder_enabled,
                 'eye_reminder_interval': self.eye_reminder_interval,
                 'eye_last_reminder_time': self.eye_last_reminder_time,

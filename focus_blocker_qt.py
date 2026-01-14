@@ -1088,19 +1088,15 @@ class TimerTab(QtWidgets.QWidget):
         rewards_info = QtWidgets.QLabel(
             "<b>How it works:</b> Complete a focus session to earn 1 random item. Longer sessions shift the rarity distribution higher.<br>"
             "<table style='font-size:10px; color:#888888; margin-top:5px;'>"
-            "<tr><th>Session</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th><th>Bonus Item</th></tr>"
-            "<tr><td>&lt;30min</td><td>50%</td><td>30%</td><td>15%</td><td>4%</td><td>1%</td><td>-</td></tr>"
-            "<tr><td>30min</td><td>75%</td><td>20%</td><td>5%</td><td>-</td><td>-</td><td>-</td></tr>"
-            "<tr><td>1hr</td><td>25%</td><td>50%</td><td>20%</td><td>5%</td><td>-</td><td>-</td></tr>"
-            "<tr><td>2hr</td><td>5%</td><td>20%</td><td>50%</td><td>20%</td><td>5%</td><td>-</td></tr>"
-            "<tr><td>3hr</td><td>-</td><td>5%</td><td>20%</td><td>50%</td><td>25%</td><td>-</td></tr>"
-            "<tr><td>4hr</td><td>-</td><td>-</td><td>5%</td><td>20%</td><td>75%</td><td>-</td></tr>"
-            "<tr><td>5hr</td><td>-</td><td>-</td><td>-</td><td>5%</td><td>95%</td><td>-</td></tr>"
-            "<tr><td>6hr+</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td><td>-</td></tr>"
-            "<tr><td>7hr+</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td><td>+20% chance</td></tr>"
-            "<tr><td>8hr+</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td><td>+50% chance</td></tr>"
+            "<tr><th>Session</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
+            "<tr><td>&lt;30min</td><td>50%</td><td>30%</td><td>15%</td><td>4%</td><td>1%</td></tr>"
+            "<tr><td>30min</td><td><b>80%</b></td><td>15%</td><td>5%</td><td>-</td><td>-</td></tr>"
+            "<tr><td>1hr</td><td>20%</td><td><b>60%</b></td><td>15%</td><td>5%</td><td>-</td></tr>"
+            "<tr><td>2hr</td><td>5%</td><td>15%</td><td><b>60%</b></td><td>15%</td><td>5%</td></tr>"
+            "<tr><td>3hr</td><td>-</td><td>5%</td><td>15%</td><td><b>60%</b></td><td>20%</td></tr>"
+            "<tr><td>4hr+</td><td>-</td><td>-</td><td>5%</td><td>15%</td><td><b>80%</b></td></tr>"
             "</table>"
-            "<br><b>XP:</b> 25 base + 2/min + streak bonus | <b>Bonus Item:</b> Extra Legendary item at 7hr+"
+            "<br><b>Streak bonus:</b> +1 tier per 7-day streak | <b>XP:</b> 25 base + 2/min + streak bonus"
         )
         rewards_info.setWordWrap(True)
         rewards_info.setStyleSheet("color: #888888; font-size: 10px;")
@@ -1321,7 +1317,7 @@ class TimerTab(QtWidgets.QWidget):
             self._give_session_rewards(session_minutes)
 
     def _give_session_rewards(self, session_minutes: int) -> None:
-        """Give item drop, XP, and diary entry rewards."""
+        """Give item drop, XP, and diary entry rewards with lottery animation."""
         if not GAMIFICATION_AVAILABLE:
             return
         # Skip if gamification mode is disabled
@@ -1367,11 +1363,19 @@ class TimerTab(QtWidgets.QWidget):
         xp_bonus_pct = min(xp_bonus_pct, 200)
         xp_info = calculate_session_xp(session_minutes, streak, lucky_xp_bonus=xp_bonus_pct)
 
-        # Generate item
+        # Generate item (100% guaranteed drop)
         item = generate_item(session_minutes=session_minutes, streak_days=streak,
                               story_id=active_story)
 
-        # Lucky upgrade chance based on luck bonus (removed)
+        # Show lottery animation for tier reveal (item is always awarded)
+        from lottery_animation import FocusTimerLotteryDialog
+        lottery_dialog = FocusTimerLotteryDialog(
+            session_minutes=session_minutes,
+            streak_days=streak,
+            item=item,
+            parent=self.window()
+        )
+        lottery_dialog.exec()
 
         # Ensure item has all required fields
         if "obtained_at" not in item:
@@ -10373,12 +10377,16 @@ class HydrationTab(QtWidgets.QWidget):
         self.blocker.save_config()
     
     def _log_water(self) -> None:
-        """Log a glass of water and award rewards."""
+        """Log a glass of water with animated lottery for reward."""
         from datetime import datetime
         
         # Initialize water entries if needed
         if not hasattr(self.blocker, 'water_entries'):
             self.blocker.water_entries = []
+        
+        # Initialize lottery attempts counter if needed
+        if not hasattr(self.blocker, 'water_lottery_attempts'):
+            self.blocker.water_lottery_attempts = 0
         
         # Check if we can log
         if can_log_water:
@@ -10390,96 +10398,81 @@ class HydrationTab(QtWidgets.QWidget):
         now = datetime.now()
         today = now.strftime("%Y-%m-%d")
         
-        # Count today's glasses
+        # Count today's glasses (before this one)
         glasses_today = sum(
             1 for e in self.blocker.water_entries 
             if e.get("date") == today
         )
+        glass_number = glasses_today + 1  # This glass
         
-        # Calculate streak
-        streak_days = self._calculate_streak()
-        
-        # Check rewards
-        items_earned = []
-        messages = []
-        
-        if check_water_entry_reward and GAMIFICATION_AVAILABLE:
-            reward_info = check_water_entry_reward(
-                glasses_today=glasses_today,
-                streak_days=streak_days,
-                story_id=self.blocker.adhd_buster.get("active_story", "warrior")
+        # Show animated lottery dialog
+        if GAMIFICATION_AVAILABLE:
+            from lottery_animation import WaterLotteryDialog
+            
+            active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+            lottery = WaterLotteryDialog(
+                glass_number=glass_number,
+                lottery_attempts=self.blocker.water_lottery_attempts,
+                story_id=active_story,
+                parent=self
             )
             
-            messages = reward_info.get("messages", [])
+            lottery.exec()
+            won, tier, item, new_attempts = lottery.get_results()
             
-            # Collect items for batch award
-            for item in reward_info.get("items", []):
-                items_earned.append(item)
+            # Update attempt counter
+            self.blocker.water_lottery_attempts = new_attempts
             
-            if items_earned:
-                # Use GameState manager for reactive updates
+            # Log the water entry
+            entry = {
+                "date": today,
+                "time": now.strftime("%H:%M"),
+                "glasses": 1
+            }
+            self.blocker.water_entries.append(entry)
+            
+            # Award item if won
+            if won and item:
+                item["source"] = f"hydration_glass_{glass_number}"
+                
                 main_window = self.window()
                 game_state = getattr(main_window, 'game_state', None)
-                if not game_state:
-                    logger.error("GameStateManager not available - cannot award hydration rewards")
-                else:
-                    # Use batch award - handles inventory, auto-equip, save, and signals
-                    game_state.award_items_batch(items_earned, coins=0, auto_equip=True, source="hydration_tracking")
-                
-                if GAMIFICATION_AVAILABLE:
-                    sync_hero_data(self.blocker.adhd_buster)
+                if game_state:
+                    game_state.award_items_batch([item], coins=0, auto_equip=True, source="hydration_tracking")
+                    
+                    if GAMIFICATION_AVAILABLE:
+                        sync_hero_data(self.blocker.adhd_buster)
+            
+            # Check streak bonus (when completing 5 glasses)
+            if glass_number >= 5:
+                streak_days = self._calculate_streak()
+                if streak_days > 0 and get_hydration_streak_bonus_rarity:
+                    streak_rarity = get_hydration_streak_bonus_rarity(streak_days + 1)
+                    if streak_rarity:
+                        from gamification import generate_item
+                        streak_item = generate_item(rarity=streak_rarity, story_id=active_story)
+                        streak_item["source"] = "hydration_streak"
+                        
+                        main_window = self.window()
+                        game_state = getattr(main_window, 'game_state', None)
+                        if game_state:
+                            game_state.award_items_batch([streak_item], coins=0, auto_equip=True, source="hydration_streak")
+                            show_info(self, "Streak Bonus!", f"🔥 {streak_days + 1}-day streak: [{streak_rarity}] {streak_item.get('name')}!")
+            
+            self.blocker.save_config()
         else:
-            messages = [f"💧 Glass #{glasses_today + 1} logged!"]
-        
-        # Log the entry
-        entry = {
-            "date": today,
-            "time": now.strftime("%H:%M"),
-            "glasses": 1
-        }
-        self.blocker.water_entries.append(entry)
-        
-        self.blocker.save_config()
-        
-        # Show feedback
-        msg = "\n".join(messages)
-        if items_earned:
-            msg += "\n\nItems earned:"
-            rarity_colors = {
-                "Common": "#9e9e9e",
-                "Uncommon": "#4caf50",
-                "Rare": "#2196f3",
-                "Epic": "#9c27b0",
-                "Legendary": "#ff9800"
+            # Fallback without gamification
+            entry = {
+                "date": today,
+                "time": now.strftime("%H:%M"),
+                "glasses": 1
             }
-            for item in items_earned:
-                rarity = item.get("rarity", "Common")
-                color = rarity_colors.get(rarity, "#9e9e9e")
-                name = item.get("name", "Unknown Item")
-                msg += f"\n[{rarity}] {name}"
+            self.blocker.water_entries.append(entry)
+            self.blocker.save_config()
+            show_info(self, "Water Logged! 💧", f"💧 Glass #{glass_number} logged!")
         
-        # Use custom message box with rich text for colored items
-        msgbox = QtWidgets.QMessageBox(self)
-        msgbox.setWindowTitle("Water Logged! 💧")
-        msgbox.setIcon(QtWidgets.QMessageBox.Icon.Information)
-        
-        if items_earned:
-            # Build rich text version
-            rich_msg = "\n".join(messages)
-            rich_msg += "<br><br><b>Items earned:</b>"
-            for item in items_earned:
-                rarity = item.get("rarity", "Common")
-                color = rarity_colors.get(rarity, "#9e9e9e")
-                name = item.get("name", "Unknown Item")
-                rich_msg += f"<br><span style='color:{color}; font-weight:bold;'>[{rarity}]</span> {name}"
-            msgbox.setTextFormat(QtCore.Qt.TextFormat.RichText)
-            msgbox.setText(rich_msg)
-        else:
-            msgbox.setText(msg)
-        
-        msgbox.exec()
         self._refresh_display()
-    
+
     def _calculate_streak(self) -> int:
         """Calculate current hydration streak (5 glasses/day)."""
         from datetime import datetime, timedelta
@@ -14757,23 +14750,30 @@ class PrioritiesDialog(QtWidgets.QDialog):
         if reply != QtWidgets.QMessageBox.StandardButton.Yes:
             return
         
-        # Roll for reward with story theme and logged hours
-        from gamification import roll_priority_completion_reward
+        # Show animated lottery dialog for priority completion
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
-        result = roll_priority_completion_reward(story_id=active_story, logged_hours=logged_hours)
+        
+        from lottery_animation import PriorityLotteryDialog
+        lottery = PriorityLotteryDialog(
+            win_chance=chance / 100.0,
+            priority_title=title,
+            logged_hours=logged_hours,
+            story_id=active_story,
+            parent=self
+        )
+        lottery.exec()
+        
+        # Get results from lottery
+        won, rarity, item = lottery.get_results()
         
         # Prepare items and coins for batch award
         items_earned = []
         coins_earned = 100  # Base coins for completing a priority
         
-        if result["won"]:
-            item = result["item"]
-            rarity_color = item.get("color", "#ffffff")
-            
+        if won and item:
             # Ensure item has all required fields
             if "obtained_at" not in item:
                 item["obtained_at"] = datetime.now().isoformat()
-            
             items_earned.append(item)
         
         # Use GameState manager for reactive updates
@@ -14790,35 +14790,6 @@ class PrioritiesDialog(QtWidgets.QDialog):
         if GAMIFICATION_AVAILABLE:
             sync_hero_data(self.blocker.adhd_buster)
             self.blocker.save_config()
-        
-        if result["won"]:
-            item = result["item"]
-            rarity_color = item.get("color", "#ffffff")
-            
-            # Show win dialog
-            msg = QtWidgets.QMessageBox(self)
-            msg.setWindowTitle("🎁 Lucky Gift!")
-            msg.setText(f"<h2 style='color: {rarity_color};'>🎉 YOU WON! 🎉</h2>")
-            slot_display = get_slot_display_name(item['slot'], active_story) if get_slot_display_name else item['slot']
-            msg.setInformativeText(
-                f"<p style='font-size: 14px;'>{result['message']}</p>"
-                f"<p style='font-size: 16px; color: {rarity_color}; font-weight: bold;'>"
-                f"{item['name']}</p>"
-                f"<p><b>Rarity:</b> <span style='color: {rarity_color};'>{item['rarity']}</span><br>"
-                f"<b>Slot:</b> {slot_display}<br>"
-                f"<b>Power:</b> +{item['power']}</p>"
-                f"<p>💰 <b>+100 Coins</b> for completing priority!</p>"
-                f"<p><i>Check your ADHD Buster inventory!</i></p>"
-            )
-            msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
-            msg.exec()
-        else:
-            show_info(
-                self, "Priority Complete!",
-                f"✅ '{title}' marked as complete!\n\n"
-                f"💰 +100 Coins earned!\n\n"
-                f"🎲 {result['message']}"
-            )
         
         # Clear the completed priority
         self.priorities[index] = self._empty_priority()
@@ -15760,6 +15731,22 @@ class DevTab(QtWidgets.QWidget):
         
         layout.addWidget(xp_group)
 
+        # Cooldown Reset Section
+        cooldown_group = QtWidgets.QGroupBox("⏱️ Reset Cooldowns")
+        cooldown_layout = QtWidgets.QHBoxLayout(cooldown_group)
+        
+        water_reset_btn = QtWidgets.QPushButton("💧 Reset Water Cooldown")
+        water_reset_btn.setStyleSheet("background-color: #2196f3; color: white; font-weight: bold; padding: 8px;")
+        water_reset_btn.clicked.connect(self._reset_water_cooldown)
+        cooldown_layout.addWidget(water_reset_btn)
+        
+        water_attempts_btn = QtWidgets.QPushButton("🎰 Reset Lottery Attempts")
+        water_attempts_btn.setStyleSheet("background-color: #9c27b0; color: white; font-weight: bold; padding: 8px;")
+        water_attempts_btn.clicked.connect(self._reset_water_lottery_attempts)
+        cooldown_layout.addWidget(water_attempts_btn)
+        
+        layout.addWidget(cooldown_group)
+
         # Status display
         self.status_label = QtWidgets.QLabel("")
         self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
@@ -15817,6 +15804,50 @@ class DevTab(QtWidgets.QWidget):
             else:
                 self.status_label.setText(f"✅ Added {amount} XP! Level {new_level}, {new_xp} XP")
             self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _reset_water_cooldown(self) -> None:
+        """Reset water logging cooldown by clearing today's last entry time."""
+        try:
+            from datetime import datetime
+            today = datetime.now().strftime("%Y-%m-%d")
+            
+            # Find all entries for today and set their times to 00:00
+            if hasattr(self.blocker, 'water_entries') and self.blocker.water_entries:
+                today_entries = [e for e in self.blocker.water_entries if e.get("date") == today]
+                if today_entries:
+                    # Set ALL today's entry times to 00:00 to ensure cooldown is bypassed
+                    for entry in today_entries:
+                        entry["time"] = "00:00"
+                    self.blocker.save_config()
+                    self.status_label.setText(f"✅ Water cooldown reset! ({len(today_entries)} entries set to 00:00)")
+                    self.status_label.setStyleSheet("color: #2196f3; padding: 10px;")
+                else:
+                    self.status_label.setText("ℹ️ No water entries today - no cooldown to reset")
+                    self.status_label.setStyleSheet("color: #888; padding: 10px;")
+            else:
+                self.status_label.setText("ℹ️ No water entries - no cooldown to reset")
+                self.status_label.setStyleSheet("color: #888; padding: 10px;")
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _reset_water_lottery_attempts(self) -> None:
+        """Reset water lottery attempts counter to 0."""
+        try:
+            if hasattr(self.blocker, 'water_lottery_attempts'):
+                old_attempts = self.blocker.water_lottery_attempts
+                self.blocker.water_lottery_attempts = 0
+                self.blocker.save_config()
+                self.status_label.setText(f"✅ Lottery attempts reset! (was {old_attempts}, now 0 → 1% win chance)")
+                self.status_label.setStyleSheet("color: #9c27b0; padding: 10px;")
+            else:
+                self.blocker.water_lottery_attempts = 0
+                self.blocker.save_config()
+                self.status_label.setText("✅ Lottery attempts initialized to 0")
+                self.status_label.setStyleSheet("color: #9c27b0; padding: 10px;")
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
