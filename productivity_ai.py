@@ -35,6 +35,9 @@ class ProductivityAnalyzer:
 
         # Analyze session start times (would need to track this)
         for date, data in self.stats.get('daily_stats', {}).items():
+            # Skip invalid data entries (corrupted config)
+            if not isinstance(data, dict):
+                continue
             # Simplified - in real implementation, track session times
             focus_time = data.get('focus_time', 0)
             if focus_time > 0:
@@ -82,6 +85,9 @@ class ProductivityAnalyzer:
 
         for date_str, data in self.stats.get('daily_stats', {}).items():
             try:
+                # Skip invalid data entries (corrupted config)
+                if not isinstance(data, dict):
+                    continue
                 date = datetime.strptime(date_str, '%Y-%m-%d')
                 time_spent = data.get('focus_time', 0)
 
@@ -89,7 +95,7 @@ class ProductivityAnalyzer:
                     weekday_total += time_spent
                 else:
                     weekend_total += time_spent
-            except (ValueError, TypeError, KeyError):
+            except (ValueError, TypeError, KeyError, AttributeError):
                 continue
 
         if weekday_total > weekend_total * 1.5:
@@ -105,7 +111,14 @@ class ProductivityAnalyzer:
             return 'building'
 
         recent_days = sorted(daily_stats.keys())[-7:]
-        focus_times = [daily_stats[d].get('focus_time', 0) for d in recent_days]
+        # Safely extract focus_times, handling corrupted data
+        focus_times = []
+        for d in recent_days:
+            day_data = daily_stats.get(d)
+            if isinstance(day_data, dict):
+                focus_times.append(day_data.get('focus_time', 0))
+            else:
+                focus_times.append(0)
 
         # Guard against empty focus_times (shouldn't happen but defensive)
         if not focus_times:

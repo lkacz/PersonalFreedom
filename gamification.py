@@ -7,11 +7,34 @@ Includes: item generation, set bonuses, lucky merge, diary entries.
 
 import random
 import re
+import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
 # Module availability flag for optional imports
 GAMIFICATION_AVAILABLE = True
+
+logger = logging.getLogger(__name__)
+
+
+def safe_parse_date(date_str: str, fmt: str = "%Y-%m-%d", default: Optional[datetime] = None) -> Optional[datetime]:
+    """Safely parse a date string, returning default on failure.
+    
+    Args:
+        date_str: Date string to parse
+        fmt: Date format string (default: %Y-%m-%d)
+        default: Value to return on parse failure (default: None)
+    
+    Returns:
+        Parsed datetime or default value
+    """
+    if not date_str or not isinstance(date_str, str):
+        return default
+    try:
+        return datetime.strptime(date_str, fmt)
+    except (ValueError, TypeError):
+        logger.debug(f"Failed to parse date '{date_str}' with format '{fmt}'")
+        return default
 
 # ============================================================================
 # COIN ECONOMY SYSTEM - Centralized Money Sink Configuration
@@ -1106,7 +1129,7 @@ def calculate_set_bonuses(equipped: dict) -> dict:
     - active_sets: list of {name, emoji, count, bonus, slots}
     - total_bonus: total power bonus from all sets
     """
-    if not equipped:
+    if not equipped or not isinstance(equipped, dict):
         return {"active_sets": [], "total_bonus": 0}
     
     # Count items by their first word (adjective)
@@ -2995,12 +3018,17 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
         theme = STORY_DIARY_THEMES[story_id]
         theme_name = theme["theme_name"]
         
-        # Get themed content, falling back to defaults if tier not found
-        verb = random.choice(theme["verbs"].get(verb_tier, DIARY_VERBS[verb_tier]))
-        target = random.choice(theme["targets"].get(tier, DIARY_TARGETS[tier]))
-        location = random.choice(theme["locations"].get(tier, DIARY_LOCATIONS[tier]))
-        outcome = random.choice(theme["outcomes"].get(tier, DIARY_OUTCOMES[tier]))
-        flavor = random.choice(theme["flavor"].get(tier, DIARY_FLAVOR[tier]))
+        # Get themed content, falling back to defaults if tier not found or list is empty
+        verb_list = theme["verbs"].get(verb_tier) or DIARY_VERBS.get(verb_tier, ["acted"])
+        verb = random.choice(verb_list) if verb_list else "acted"
+        target_list = theme["targets"].get(tier) or DIARY_TARGETS.get(tier, ["something"])
+        target = random.choice(target_list) if target_list else "something"
+        location_list = theme["locations"].get(tier) or DIARY_LOCATIONS.get(tier, ["somewhere"])
+        location = random.choice(location_list) if location_list else "somewhere"
+        outcome_list = theme["outcomes"].get(tier) or DIARY_OUTCOMES.get(tier, ["completed"])
+        outcome = random.choice(outcome_list) if outcome_list else "completed"
+        flavor_list = theme["flavor"].get(tier) or DIARY_FLAVOR.get(tier, [""])
+        flavor = random.choice(flavor_list) if flavor_list else ""
         # Use theme-specific adjectives if available, otherwise fall back to defaults
         if "adjectives" in theme and tier in theme["adjectives"]:
             adjective = random.choice(theme["adjectives"][tier])
@@ -10511,21 +10539,18 @@ def predict_goal_date(weight_entries: list, goal_weight: float,
         }
     
     # Calculate rate of change (linear regression over last 30 days)
-    first_date = datetime.strptime(sorted_entries[-1]["date"], "%Y-%m-%d")
+    first_date = safe_parse_date(sorted_entries[-1].get("date", ""), default=datetime.now())
     
     dates = []
     weights = []
     cutoff = datetime.now() - timedelta(days=30)
     
     for entry in sorted_entries:
-        try:
-            d = datetime.strptime(entry["date"], "%Y-%m-%d")
-            if d >= cutoff:
-                days = (d - first_date).days
-                dates.append(days)
-                weights.append(entry["weight"])
-        except ValueError:
-            continue
+        d = safe_parse_date(entry.get("date", ""))
+        if d and d >= cutoff:
+            days = (d - first_date).days
+            dates.append(days)
+            weights.append(entry.get("weight", 0))
     
     if len(dates) < 5:
         return {
@@ -11788,7 +11813,11 @@ def can_log_water(water_entries: list, current_time: Optional[str] = None) -> di
     """
     from datetime import datetime, timedelta
     
-    now = datetime.now() if current_time is None else datetime.strptime(current_time, "%Y-%m-%d %H:%M")
+    now = datetime.now()
+    if current_time is not None:
+        parsed_now = safe_parse_date(current_time, "%Y-%m-%d %H:%M")
+        if parsed_now:
+            now = parsed_now
     today = now.strftime("%Y-%m-%d")
     
     # Count today's glasses and find last glass time
@@ -11809,8 +11838,8 @@ def can_log_water(water_entries: list, current_time: Optional[str] = None) -> di
     if today_entries:
         last_entry = max(today_entries, key=lambda e: e.get("time", "00:00"))
         last_time_str = last_entry.get("time", "00:00")
-        try:
-            last_time = datetime.strptime(f"{today} {last_time_str}", "%Y-%m-%d %H:%M")
+        last_time = safe_parse_date(f"{today} {last_time_str}", "%Y-%m-%d %H:%M")
+        if last_time:
             next_available = last_time + timedelta(hours=HYDRATION_MIN_INTERVAL_HOURS)
             
             if now < next_available:
@@ -11822,8 +11851,6 @@ def can_log_water(water_entries: list, current_time: Optional[str] = None) -> di
                     "glasses_today": glasses_today,
                     "minutes_remaining": minutes_remaining
                 }
-        except ValueError:
-            pass  # Invalid time format, allow logging
     
     return {
         "can_log": True,
@@ -12571,6 +12598,8 @@ def get_xp_for_level(level: int) -> int:
     level_int = int(level)
     if level_int <= 1:
         return 0
+    # Cap level to prevent integer overflow at extreme values
+    level_int = min(level_int, 999)
     # Formula: 100 * (level^1.5) - gives smooth progression
     return int(100 * (level_int ** 1.5))
 
@@ -12837,9 +12866,11 @@ def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
     
     # Calculate login streak
     if last_login:
-        try:
-            last_date = datetime.strptime(last_login, "%Y-%m-%d")
-            today_date = datetime.strptime(today, "%Y-%m-%d")
+        last_date = safe_parse_date(last_login)
+        today_date = safe_parse_date(today)
+        if not last_date or not today_date:
+            adhd_buster["login_streak"] = 1
+        else:
             days_diff = (today_date - last_date).days
             
             if days_diff == 1:
@@ -12856,8 +12887,6 @@ def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
                 else:
                     # Reset streak
                     adhd_buster["login_streak"] = 1
-        except ValueError:
-            adhd_buster["login_streak"] = 1
     else:
         adhd_buster["login_streak"] = 1
     

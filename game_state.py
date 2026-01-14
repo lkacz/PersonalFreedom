@@ -229,8 +229,12 @@ class GameStateManager(QtCore.QObject):
             pass
         except Exception as e:
             logger.error(f"Error syncing hero data: {e}")
-            
-        self._blocker.save_config()
+        
+        try:
+            self._blocker.save_config()
+        except Exception as e:
+            logger.error(f"Error saving config: {e}")
+            # Don't re-raise - log and continue to prevent cascading failures
 
     def _save_config(self):
         """Save config, or defer if in batch mode."""
@@ -244,10 +248,13 @@ class GameStateManager(QtCore.QObject):
         if self._batch_mode:
             self._pending_signals.append((signal, args if args else None))
         else:
-            if args:
-                signal.emit(*args)
-            else:
-                signal.emit()
+            try:
+                if args:
+                    signal.emit(*args)
+                else:
+                    signal.emit()
+            except Exception:
+                pass  # Silently handle signal emission errors
     
     # === State Modification Methods ===
     
@@ -263,12 +270,18 @@ class GameStateManager(QtCore.QObject):
         Handles items that may not have an 'id' field by falling back to
         matching by 'obtained_at' timestamp or name+slot+rarity combination.
         """
-        # Primary: match by id
-        if item.get("id") == item_id:
+        # Guard: require valid item_id
+        if not item_id:
+            return False
+        
+        # Primary: match by id (ensure non-empty)
+        item_actual_id = item.get("id")
+        if item_actual_id and item_actual_id == item_id:
             return True
         
         # Fallback: id might be the obtained_at timestamp
-        if item.get("obtained_at") == item_id:
+        obtained_at = item.get("obtained_at")
+        if obtained_at and obtained_at == item_id:
             return True
         
         # Fallback: id might be a composite key "name:slot:rarity"
@@ -409,7 +422,8 @@ class GameStateManager(QtCore.QObject):
             return self.adhd_buster.get("coins", 0)
         
         current = self.adhd_buster.get("coins", 0)
-        new_total = current + amount
+        # Cap coins to prevent integer overflow (2 billion max)
+        new_total = min(current + amount, 2_000_000_000)
         self.adhd_buster["coins"] = new_total
         self._save_config()
         
@@ -427,7 +441,8 @@ class GameStateManager(QtCore.QObject):
             return self.adhd_buster.get("luck_bonus", 0)
         
         current = self.adhd_buster.get("luck_bonus", 0)
-        new_total = current + amount
+        # Cap luck bonus to reasonable maximum (10000)
+        new_total = min(current + amount, 10_000)
         self.adhd_buster["luck_bonus"] = new_total
         self._save_config()
         self.luck_bonus_changed.emit(new_total)

@@ -514,7 +514,9 @@ class TrayBlocker:
         if minutes > 1440:
             minutes = 1440
         
-        if self.is_blocking:
+        with self._state_lock:
+            already_blocking = self.is_blocking
+        if already_blocking:
             print("Session already active!")
             return
 
@@ -568,9 +570,10 @@ class TrayBlocker:
             elapsed = int(time_module.time() - session_start)
             with self._state_lock:
                 completed = self.remaining_seconds <= 0 and self.is_blocking
+                still_blocking = self.is_blocking
 
             # Session ended
-            if self.is_blocking:
+            if still_blocking:
                 self.unblock_sites()
                 self.update_icon()
                 
@@ -621,7 +624,9 @@ class TrayBlocker:
         """Update the tray icon"""
         if self.icon:
             try:
-                self.icon.icon = self.create_icon_image(self.is_blocking)
+                with self._state_lock:
+                    blocking = self.is_blocking
+                self.icon.icon = self.create_icon_image(blocking)
             except Exception:
                 pass
 
@@ -635,8 +640,11 @@ class TrayBlocker:
 
     def get_status_text(self, item):
         """Get current status text for menu"""
-        if self.is_blocking:
-            return f"🔒 Blocking - {self.format_time(self.remaining_seconds)}"
+        with self._state_lock:
+            blocking = self.is_blocking
+            remaining = self.remaining_seconds
+        if blocking:
+            return f"🔒 Blocking - {self.format_time(remaining)}"
         admin_status = "✅" if is_admin() else "⚠️ No Admin"
         return f"{admin_status} Ready"
 
@@ -653,11 +661,16 @@ class TrayBlocker:
                 pystray.MenuItem("4 hours", lambda icon, item: self.start_session(240)),
             )),
             pystray.MenuItem("⬛ Stop Session", self.stop_session,
-                           enabled=self.is_blocking),
+                           enabled=self._is_blocking_safe()),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("🖥 Open Full App", self.open_full_app),
             pystray.MenuItem("❌ Exit", self.exit_app),
         )
+    
+    def _is_blocking_safe(self) -> bool:
+        """Thread-safe check if currently blocking."""
+        with self._state_lock:
+            return self.is_blocking
 
     def open_full_app(self, icon=None, item=None):
         """Open the full GUI application"""
@@ -684,7 +697,7 @@ class TrayBlocker:
     def exit_app(self, icon=None, item=None):
         """Exit the application"""
         print("Exiting...")
-        if self.is_blocking:
+        if self._is_blocking_safe():
             self.unblock_sites()
         self._stop_event.set()
         if self.icon:

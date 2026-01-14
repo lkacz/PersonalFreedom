@@ -157,7 +157,8 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
                  session_minutes: int = 0, streak_days: int = 0, coins_earned: int = 0,
                  parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
-        self.item = item
+        # Handle None item gracefully
+        self.item = item if item is not None else {}
         self.equipped_item = equipped_item
         self.session_minutes = session_minutes
         self.streak_days = streak_days
@@ -313,7 +314,8 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
             "Legendary": ["LEGENDARY! Unstoppable! ⭐", "GODLIKE FOCUS! 🏆", "You are a legend!"]
         }
         import random
-        msg = random.choice(messages.get(rarity, messages["Common"]))
+        default_messages = ["Nice find!"]
+        msg = random.choice(messages.get(rarity, default_messages))
         msg_label = QtWidgets.QLabel(msg)
         msg_label.setAlignment(QtCore.Qt.AlignCenter)
         msg_label.setStyleSheet("font-weight: bold; color: #555; font-size: 13px;")
@@ -402,7 +404,11 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
         
         # Use pixmap if available, otherwise show large emoji
         rarity = self.item.get("rarity", "Common")
-        stars = ["Common", "Uncommon", "Rare", "Epic", "Legendary"].index(rarity) + 1
+        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+        try:
+            stars = rarity_order.index(rarity) + 1
+        except ValueError:
+            stars = 1  # Default to 1 star for unknown rarity
         star_text = "★" * stars
         
         text = f"🎁\n{star_text}"

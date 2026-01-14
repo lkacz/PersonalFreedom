@@ -21,7 +21,7 @@ class SessionStatsWidget(QtWidgets.QWidget):
     
     def __init__(self, elapsed_seconds: int, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
-        self.elapsed_seconds = elapsed_seconds
+        self.elapsed_seconds = max(0, elapsed_seconds)  # Ensure non-negative
         self._build_ui()
     
     def _build_ui(self):
@@ -446,3 +446,9 @@ class SessionCompleteDialog(QtWidgets.QDialog):
         """Handle view priorities."""
         self.view_priorities.emit()
         # Don't close dialog - let user see priorities then come back
+    
+    def closeEvent(self, event):
+        """Clean up animations on close."""
+        if hasattr(self, '_celebration_animation'):
+            self._celebration_animation.stop()
+        super().closeEvent(event)

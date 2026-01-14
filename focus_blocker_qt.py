@@ -2250,7 +2250,10 @@ class StatsTab(QtWidgets.QWidget):
         self.weekly_target = QtWidgets.QDoubleSpinBox()
         self.weekly_target.setRange(1, 200)
         self.weekly_target.setSuffix(" h")
-        self.weekly_target.setValue(float(self.blocker.stats.get("weekly_goal_hours", 10)))
+        try:
+            self.weekly_target.setValue(float(self.blocker.stats.get("weekly_goal_hours", 10)))
+        except (ValueError, TypeError):
+            self.weekly_target.setValue(10.0)
         weekly_set = QtWidgets.QPushButton("Set")
         weekly_set.clicked.connect(self._set_weekly_goal)
         weekly_row.addWidget(self.weekly_target)
@@ -2267,7 +2270,10 @@ class StatsTab(QtWidgets.QWidget):
         self.monthly_target = QtWidgets.QDoubleSpinBox()
         self.monthly_target.setRange(1, 1000)
         self.monthly_target.setSuffix(" h")
-        self.monthly_target.setValue(float(self.blocker.stats.get("monthly_goal_hours", 40)))
+        try:
+            self.monthly_target.setValue(float(self.blocker.stats.get("monthly_goal_hours", 40)))
+        except (ValueError, TypeError):
+            self.monthly_target.setValue(40.0)
         monthly_set = QtWidgets.QPushButton("Set")
         monthly_set.clicked.connect(self._set_monthly_goal)
         monthly_row.addWidget(self.monthly_target)
@@ -2333,8 +2339,14 @@ class StatsTab(QtWidgets.QWidget):
         self.best_streak_lbl.setText(f"{stats['best_streak']} days")
 
         # Goals progress
-        weekly_target = float(self.blocker.stats.get("weekly_goal_hours", 10))
-        monthly_target = float(self.blocker.stats.get("monthly_goal_hours", 40))
+        try:
+            weekly_target = float(self.blocker.stats.get("weekly_goal_hours", 10))
+        except (ValueError, TypeError):
+            weekly_target = 10.0
+        try:
+            monthly_target = float(self.blocker.stats.get("monthly_goal_hours", 40))
+        except (ValueError, TypeError):
+            monthly_target = 40.0
         weekly_minutes = self._sum_focus_minutes(7)
         monthly_minutes = self._sum_focus_minutes(30)
 
@@ -3805,6 +3817,9 @@ class WeightTab(QtWidgets.QWidget):
             self.blocker.weight_entries.append(new_entry)
             # Sort by date
             self.blocker.weight_entries.sort(key=lambda x: x.get("date", ""))
+            # Prune to last 365 entries to prevent unbounded growth
+            if len(self.blocker.weight_entries) > 365:
+                self.blocker.weight_entries = self.blocker.weight_entries[-365:]
         
         self.blocker.save_config()
         
@@ -5308,10 +5323,13 @@ class SleepTab(QtWidgets.QWidget):
     
     def _apply_preset(self, bedtime: str, wake_time: str) -> None:
         """Apply a quick preset."""
-        h, m = bedtime.split(":")
-        self.bedtime_edit.setTime(QtCore.QTime(int(h), int(m)))
-        h, m = wake_time.split(":")
-        self.wake_edit.setTime(QtCore.QTime(int(h), int(m)))
+        try:
+            h, m = bedtime.split(":")
+            self.bedtime_edit.setTime(QtCore.QTime(int(h), int(m)))
+            h, m = wake_time.split(":")
+            self.wake_edit.setTime(QtCore.QTime(int(h), int(m)))
+        except (ValueError, AttributeError):
+            pass  # Invalid preset format, ignore
     
     def _on_chronotype_change(self) -> None:
         """Handle chronotype selection change."""
@@ -5569,6 +5587,9 @@ class SleepTab(QtWidgets.QWidget):
         else:
             self.blocker.sleep_entries.append(new_entry)
             self.blocker.sleep_entries.sort(key=lambda x: x.get("date", ""), reverse=True)
+            # Prune to last 365 entries to prevent unbounded growth
+            if len(self.blocker.sleep_entries) > 365:
+                self.blocker.sleep_entries = self.blocker.sleep_entries[:365]
         
         # Track screen-off bonus outside the reward block
         screenoff_bonus_item = None
@@ -10430,6 +10451,9 @@ class HydrationTab(QtWidgets.QWidget):
                 "glasses": 1
             }
             self.blocker.water_entries.append(entry)
+            # Prune to last 2000 entries (~1 year at 5 glasses/day)
+            if len(self.blocker.water_entries) > 2000:
+                self.blocker.water_entries = self.blocker.water_entries[-2000:]
             
             # Award item if won
             if won and item:
@@ -10468,6 +10492,9 @@ class HydrationTab(QtWidgets.QWidget):
                 "glasses": 1
             }
             self.blocker.water_entries.append(entry)
+            # Prune to last 2000 entries (~1 year at 5 glasses/day)
+            if len(self.blocker.water_entries) > 2000:
+                self.blocker.water_entries = self.blocker.water_entries[-2000:]
             self.blocker.save_config()
             show_info(self, "Water Logged! 💧", f"💧 Glass #{glass_number} logged!")
         
@@ -10490,8 +10517,9 @@ class HydrationTab(QtWidgets.QWidget):
         # Count consecutive days with 5 glasses
         streak = 0
         check_date = datetime.now().date() - timedelta(days=1)  # Start from yesterday
+        max_streak_check = 3650  # Max 10 years to prevent infinite loop with corrupted data
         
-        while True:
+        while streak < max_streak_check:
             date_str = check_date.strftime("%Y-%m-%d")
             if daily_totals.get(date_str, 0) >= HYDRATION_MAX_DAILY_GLASSES:
                 streak += 1
@@ -13110,8 +13138,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
         try:
             # Try setting icon if available in resources
             dialog.setWindowIcon(QtGui.QIcon(":/icons/shield.png"))
-        except:
-            pass
+        except (FileNotFoundError, OSError, Exception):
+            pass  # Icon not available, use default
             
         layout = QtWidgets.QVBoxLayout(dialog)
         
@@ -13405,10 +13433,15 @@ class SellItemsDialog(QtWidgets.QDialog):
 
     def _darken_color(self, hex_color: str) -> str:
         """Darken a hex color by 20% for hover effects."""
-        hex_color = hex_color.lstrip('#')
-        r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
-        r, g, b = max(0, int(r * 0.8)), max(0, int(g * 0.8)), max(0, int(b * 0.8))
-        return f"#{r:02x}{g:02x}{b:02x}"
+        try:
+            hex_color = hex_color.lstrip('#')
+            if len(hex_color) < 6:
+                return "#666666"  # Fallback for invalid color
+            r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+            r, g, b = max(0, int(r * 0.8)), max(0, int(g * 0.8)), max(0, int(b * 0.8))
+            return f"#{r:02x}{g:02x}{b:02x}"
+        except (ValueError, IndexError):
+            return "#666666"  # Fallback for invalid color
 
     def _calculate_coin_value(self, item: dict) -> int:
         """Calculate coin value: 1 base + sum of all % bonuses in lucky options."""
@@ -14290,7 +14323,7 @@ class PriorityTimeLogDialog(QtWidgets.QDialog):
                 spin.setValue(0)
 
     def _split_evenly(self) -> None:
-        if self.time_spins:
+        if self.time_spins and len(self.time_spins) > 0:
             per = self.session_minutes // len(self.time_spins)
             for spin in self.time_spins:
                 spin.setValue(per)
@@ -16685,6 +16718,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.tray_icon.hide()
         if hasattr(self, 'tray_update_timer') and self.tray_update_timer:
             self.tray_update_timer.stop()
+        if hasattr(self, '_health_reminder_timer') and self._health_reminder_timer:
+            self._health_reminder_timer.stop()
 
         if self.timer_tab.timer_running:
             # For Hardcore mode, require solving the challenge to exit

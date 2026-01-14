@@ -52,22 +52,27 @@ class BypassAttemptHandler(BaseHTTPRequestHandler):
     
     def _handle_request(self):
         """Log the bypass attempt and return a focus reminder page."""
-        # Extract the host from the request
-        host = self.headers.get('Host', 'unknown')
-        
-        # Log the attempt
-        if self.bypass_logger:
-            self.bypass_logger.log_attempt(host, self.path)
-        
-        # Send focus reminder page
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html; charset=utf-8')
-        self.end_headers()
-        
-        # Escape host to prevent XSS
-        safe_host = html.escape(host)
-        page_html = self._generate_reminder_page(safe_host)
-        self.wfile.write(page_html.encode('utf-8'))
+        try:
+            # Extract the host from the request
+            host = self.headers.get('Host', 'unknown')
+            
+            # Log the attempt
+            if self.bypass_logger:
+                self.bypass_logger.log_attempt(host, self.path)
+            
+            # Send focus reminder page
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html; charset=utf-8')
+            self.end_headers()
+            
+            # Escape host to prevent XSS
+            safe_host = html.escape(host)
+            page_html = self._generate_reminder_page(safe_host)
+            self.wfile.write(page_html.encode('utf-8'))
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass  # Client disconnected, ignore
+        except Exception:
+            pass  # Silently handle any other HTTP handler errors
     
     def _generate_reminder_page(self, blocked_site: str) -> str:
         """Generate an HTML page reminding user to stay focused."""
@@ -178,8 +183,10 @@ class BypassLogger:
     def _save_attempts(self):
         """Save bypass attempts to file atomically."""
         try:
+            import copy
             with self._lock:
-                data_to_save = dict(self.attempts)
+                # Deep copy required to prevent race condition with nested dicts
+                data_to_save = copy.deepcopy(self.attempts)
             
             # Write to temp file first, then atomically rename
             temp_path = BYPASS_LOG_PATH.with_suffix('.tmp')
@@ -214,6 +221,11 @@ class BypassLogger:
         }
         
         with self._lock:
+            # Skip logging if server was started (server_thread exists) but is now stopping
+            # This prevents race condition during shutdown
+            if self.server_thread is not None and not self._running:
+                return
+            
             # Update statistics
             self.attempts["total_attempts"] += 1
             
@@ -243,8 +255,9 @@ class BypassLogger:
     
     def start_server(self, port: int = 80) -> bool:
         """Start the HTTP server to catch bypass attempts."""
-        if self._running:
-            return True
+        with self._lock:
+            if self._running:
+                return True
         
         # Set the handler's logger reference
         BypassAttemptHandler.bypass_logger = self
@@ -252,7 +265,8 @@ class BypassLogger:
         try:
             # Try to bind to port 80 first
             self.server = HTTPServer(('127.0.0.1', port), BypassAttemptHandler)
-            self._running = True
+            with self._lock:
+                self._running = True
             
             self.server_thread = threading.Thread(target=self._run_server, daemon=True)
             self.server_thread.start()
@@ -276,13 +290,21 @@ class BypassLogger:
         except Exception as e:
             logger.error(f"Bypass logger server error: {e}")
         finally:
-            self._running = False
+            with self._lock:
+                self._running = False
     
     def stop_server(self):
         """Stop the HTTP server."""
         if self.server:
+            # Set running flag BEFORE shutdown to prevent race condition
+            # where HTTP handler tries to log after server starts shutting down
+            with self._lock:
+                self._running = False
             self.server.shutdown()
-            self._running = False
+            
+            # Wait for server thread to finish (prevent data loss during shutdown)
+            if self.server_thread and self.server_thread.is_alive():
+                self.server_thread.join(timeout=5.0)
             
             with self._lock:
                 # Save session summary
@@ -297,6 +319,13 @@ class BypassLogger:
                     # Keep only last 100 sessions
                     if len(self.attempts["session_history"]) > 100:
                         self.attempts["session_history"] = self.attempts["session_history"][-100:]
+                
+                # Prune daily_attempts to prevent unbounded growth (keep last 90 days)
+                if len(self.attempts["daily_attempts"]) > 90:
+                    sorted_days = sorted(self.attempts["daily_attempts"].keys())
+                    days_to_remove = sorted_days[:-90]
+                    for day in days_to_remove:
+                        del self.attempts["daily_attempts"][day]
                 
                 self.current_session_attempts = []
             
