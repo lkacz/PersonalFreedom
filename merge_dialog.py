@@ -595,6 +595,11 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.setWindowTitle("⚡ Lucky Merge")
         self.setMinimumSize(700, 500)
         self.setMaximumHeight(800)  # Limit max height
+        
+        # Load saved geometry
+        from lottery_animation import load_dialog_geometry
+        load_dialog_geometry(self, "LuckyMergeDialog", QtCore.QSize(700, 600))
+        
         self._build_ui()
     
     def _build_ui(self):
@@ -697,20 +702,9 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         arrow.setStyleSheet("font-size: 32px; color: #999;")
         main_layout.addWidget(arrow)
         
-        # Result preview and success rate side by side
-        middle_section = QtWidgets.QWidget()
-        middle_layout = QtWidgets.QHBoxLayout(middle_section)
-        middle_layout.setSpacing(20)
-        
-        # Success rate on left - store reference for boost updates
+        # Success rate widget (full width)
         self.success_widget = SuccessRateWidget(self.success_rate, self.breakdown)
-        middle_layout.addWidget(self.success_widget, stretch=2)
-        
-        # Result preview on right
-        result_widget = self._create_result_preview_with_info()
-        middle_layout.addWidget(result_widget, stretch=1)
-        
-        main_layout.addWidget(middle_section)
+        main_layout.addWidget(self.success_widget)
         
         # Boost section (optional +25% for 50 coins)
         boost_section = self._create_boost_section()
@@ -1189,12 +1183,15 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         )
         animation_dialog.exec_()
         
-        # Get results from animation (tier jump is determined by the animation)
-        _, animated_tier_jump = animation_dialog.get_results()
+        # Get results from animation (rolled_tier is the actual rarity name)
+        _, rolled_rarity = animation_dialog.get_results()
         
-        # Now build the merge result using the animated tier jump
+        # Now build the merge result using the rolled rarity
         if is_success:
-            # Get base rarity from lowest item
+            # Use the rolled rarity directly from animation
+            final_rarity = rolled_rarity if rolled_rarity else self.result_rarity
+            
+            # Calculate tier_jump for backwards compatibility with result display
             def safe_rarity_idx(item):
                 rarity = item.get("rarity", "Common")
                 try:
@@ -1205,11 +1202,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             valid_items = [item for item in self.items if item is not None]
             rarity_indices = [safe_rarity_idx(item) for item in valid_items]
             lowest_idx = min(rarity_indices) if rarity_indices else 0
-            
-            # Use the tier jump from the animation
-            tier_jump = animated_tier_jump
-            final_idx = min(lowest_idx + tier_jump, len(RARITY_ORDER) - 1)
-            final_rarity = RARITY_ORDER[final_idx]
+            final_idx = RARITY_ORDER.index(final_rarity) if final_rarity in RARITY_ORDER else lowest_idx
+            tier_jump = max(1, final_idx - lowest_idx + 1)
             
             # Generate the result item
             from gamification import generate_item

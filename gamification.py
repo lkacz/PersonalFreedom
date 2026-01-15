@@ -9678,9 +9678,16 @@ def get_weight_from_date(weight_entries: list, target_date: str) -> Optional[flo
     Returns:
         Weight value or None if not found
     """
+    if not isinstance(target_date, str) or not target_date:
+        return None
+
     for entry in weight_entries:
-        if entry.get("date") == target_date:
-            return entry.get("weight")
+        if not isinstance(entry, dict):
+            continue
+        entry_date = entry.get("date")
+        if entry_date == target_date:
+            weight = entry.get("weight")
+            return weight if isinstance(weight, (int, float)) else None
     return None
 
 
@@ -9695,15 +9702,23 @@ def get_closest_weight_before_date(weight_entries: list, target_date: str) -> Op
     Returns:
         Entry dict with date and weight, or None if no entries before target
     """
-    if not weight_entries:
+    if not weight_entries or not isinstance(target_date, str) or not target_date:
         return None
     
     # Sort entries by date descending
-    sorted_entries = sorted(
-        [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
-        key=lambda x: x["date"],
-        reverse=True
-    )
+    valid_entries = []
+    for entry in weight_entries:
+        if not isinstance(entry, dict):
+            continue
+        date_value = entry.get("date")
+        weight_value = entry.get("weight")
+        if not isinstance(date_value, str) or not date_value:
+            continue
+        if not isinstance(weight_value, (int, float)):
+            continue
+        valid_entries.append(entry)
+
+    sorted_entries = sorted(valid_entries, key=lambda x: x["date"], reverse=True)
     
     for entry in sorted_entries:
         if entry["date"] <= target_date:
@@ -9722,14 +9737,23 @@ def get_previous_weight_entry(weight_entries: list, current_date: str) -> Option
     Returns:
         Previous entry dict or None
     """
-    if not weight_entries:
+    if not weight_entries or not isinstance(current_date, str) or not current_date:
         return None
     
-    sorted_entries = sorted(
-        [e for e in weight_entries if e.get("date") and e.get("weight") is not None and e["date"] < current_date],
-        key=lambda x: x["date"],
-        reverse=True
-    )
+    valid_entries = []
+    for entry in weight_entries:
+        if not isinstance(entry, dict):
+            continue
+        date_value = entry.get("date")
+        weight_value = entry.get("weight")
+        if not isinstance(date_value, str) or not date_value:
+            continue
+        if not isinstance(weight_value, (int, float)):
+            continue
+        if date_value < current_date:
+            valid_entries.append(entry)
+
+    sorted_entries = sorted(valid_entries, key=lambda x: x["date"], reverse=True)
     
     return sorted_entries[0] if sorted_entries else None
 
@@ -9745,11 +9769,13 @@ def calculate_weight_loss(current_weight: float, previous_weight: float) -> floa
     Returns:
         Weight loss in grams (positive = lost weight, negative = gained)
     """
+    if not isinstance(current_weight, (int, float)) or not isinstance(previous_weight, (int, float)):
+        return 0
     # Round to avoid floating point precision issues (e.g., 99.999 instead of 100)
     return round((previous_weight - current_weight) * 1000, 1)
 
 
-def get_daily_weight_reward_rarity(weight_loss_grams: float) -> str:
+def get_daily_weight_reward_rarity(weight_loss_grams: float) -> Optional[str]:
     """
     Determine item rarity based on daily weight loss using moving window.
     
@@ -9780,7 +9806,7 @@ def get_daily_weight_reward_rarity(weight_loss_grams: float) -> str:
     if weight_loss_grams >= 500:
         center_tier = 6  # Far enough for 100% Legendary
     elif weight_loss_grams >= 400:
-        center_tier = 5
+        center_tier = 4  # Legendary-centered distribution
     elif weight_loss_grams >= 300:
         center_tier = 3  # Epic-centered
     elif weight_loss_grams >= 200:
@@ -9850,9 +9876,10 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
                     f"🎉 Daily Progress: Lost {daily_loss:.0f}g! Earned a {rarity} item!"
                 )
         elif daily_loss == 0:
-            # Same weight - still give a common item for consistency
-            result["daily_reward"] = generate_item(rarity="Common", story_id=story_id)
-            result["messages"].append("💪 Maintained weight! Earned a Common item.")
+            # Same weight - still give a reward using the moving window distribution
+            rarity = get_daily_weight_reward_rarity(0) or "Common"
+            result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+            result["messages"].append(f"💪 Maintained weight! Earned a {rarity} item.")
         else:
             result["messages"].append(f"📈 Weight up {abs(daily_loss):.0f}g - keep going!")
     
@@ -9930,7 +9957,11 @@ def get_weight_stats(weight_entries: list, unit: str = "kg") -> dict:
     
     # Sort by date
     sorted_entries = sorted(
-        [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
+        [e for e in weight_entries
+         if isinstance(e, dict)
+         and isinstance(e.get("date"), str)
+         and e.get("date")
+         and isinstance(e.get("weight"), (int, float))],
         key=lambda x: x["date"]
     )
     
@@ -10118,6 +10149,8 @@ def _check_weight_loss(weight_entries: list, starting_weight: float, target_loss
     """Check if user has lost at least target_loss_kg from starting weight."""
     if not weight_entries or starting_weight is None:
         return False
+    if not isinstance(starting_weight, (int, float)):
+        return False
     
     sorted_entries = sorted(
         [e for e in weight_entries if e.get("date") and e.get("weight") is not None],
@@ -10129,12 +10162,16 @@ def _check_weight_loss(weight_entries: list, starting_weight: float, target_loss
         return False
     
     current = sorted_entries[0]["weight"]
+    if not isinstance(current, (int, float)):
+        return False
     return (starting_weight - current) >= target_loss_kg
 
 
 def _check_goal_reached(weight_entries: list, goal: float) -> bool:
     """Check if user has reached their goal weight (works for both loss and gain goals)."""
     if not weight_entries or goal is None:
+        return False
+    if not isinstance(goal, (int, float)):
         return False
     
     sorted_entries = sorted(
@@ -10147,6 +10184,8 @@ def _check_goal_reached(weight_entries: list, goal: float) -> bool:
     
     starting = sorted_entries[0]["weight"]
     current = sorted_entries[-1]["weight"]
+    if not isinstance(starting, (int, float)) or not isinstance(current, (int, float)):
+        return False
     
     # Determine goal direction from starting weight
     if starting > goal:
@@ -10993,7 +11032,7 @@ def get_activity_reward_rarity(effective_minutes: float) -> Optional[str]:
     """
     Get reward rarity based on effective minutes using moving window distribution.
     
-    The window [5%, 20%, 50%, 20%, 5%] shifts through rarity tiers based on effort.
+    The window [5%, 15%, 60%, 15%, 5%] shifts through rarity tiers based on effort.
     Overflow at edges is absorbed by the edge tier.
     
     Args:
@@ -11026,9 +11065,9 @@ def get_activity_reward_rarity(effective_minutes: float) -> Optional[str]:
     # Rarity tiers: 1=Common, 2=Uncommon, 3=Rare, 4=Epic, 5=Legendary
     rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     
-    # Base window distribution: [5%, 20%, 50%, 20%, 5%]
+    # Base window distribution: [5%, 15%, 60%, 15%, 5%]
     # Centered on center_tier, so offsets are [-2, -1, 0, +1, +2]
-    base_weights = [5, 20, 50, 20, 5]  # percentages for tiers center-2 to center+2
+    base_weights = [5, 15, 60, 15, 5]  # percentages for tiers center-2 to center+2
     
     # Calculate actual weights for each rarity tier (1-5)
     weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
@@ -11736,36 +11775,43 @@ HYDRATION_MIN_INTERVAL_HOURS = 2  # Minimum 2 hours between glasses
 HYDRATION_MAX_DAILY_GLASSES = 5  # Maximum 5 glasses per day
 
 
-def get_water_reward_rarity(glass_number: int) -> Optional[str]:
+def get_water_reward_rarity(glass_number: int, success_roll: float = None) -> tuple:
     """
     Get reward rarity for logging a glass of water.
     
-    Uses moving window [5%, 20%, 50%, 20%, 5%] with tier increasing each glass:
-    - Glass 1: Common-centered
-    - Glass 2: Uncommon-centered
-    - Glass 3: Rare-centered
-    - Glass 4: Epic-centered
-    - Glass 5: Legendary-centered (100% Legendary at max)
+    Uses moving window [5%, 15%, 60%, 15%, 5%] with tier increasing each glass:
+    - Glass 1: Common-centered, 99% success rate
+    - Glass 2: Uncommon-centered, 80% success rate
+    - Glass 3: Rare-centered, 60% success rate
+    - Glass 4: Epic-centered, 40% success rate
+    - Glass 5: Legendary-centered, 20% success rate
     
     Args:
         glass_number: Which glass this is today (1-5)
+        success_roll: Pre-rolled success value (0.0-1.0) or None to generate
     
     Returns:
-        Rarity string or None if over daily limit
+        (base_rarity: str, success_rate: float, rolled_tier: str or None)
+        Returns (None, 0.0, None) if over daily limit
     """
     import random
     
     if glass_number < 1 or glass_number > HYDRATION_MAX_DAILY_GLASSES:
-        return None
+        return (None, 0.0, None)
     
     # Glass number maps to tier: 1->0(Common), 2->1(Uncommon), 3->2(Rare), 4->3(Epic), 5->4(Legendary)
     center_tier = glass_number - 1
     
-    if center_tier >= 4:
-        return "Legendary"  # Glass 5 = 100% Legendary
+    # Success rate decreases: 99%, 80%, 60%, 40%, 20%
+    success_rates = [0.99, 0.80, 0.60, 0.40, 0.20]
+    success_rate = success_rates[min(center_tier, len(success_rates) - 1)]
     
-    # Moving window: [5%, 20%, 50%, 20%, 5%] centered on center_tier
-    window = [5, 20, 50, 20, 5]
+    # Tier names
+    tier_names = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    base_rarity = tier_names[center_tier]
+    
+    # Moving window: [5%, 15%, 60%, 15%, 5%] centered on center_tier (same as merge/eye)
+    window = [5, 15, 60, 15, 5]
     weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
     
     for offset, pct in zip([-2, -1, 0, 1, 2], window):
@@ -11774,7 +11820,18 @@ def get_water_reward_rarity(glass_number: int) -> Optional[str]:
         weights[clamped_tier] += pct
     
     rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-    return random.choices(rarities, weights=weights)[0]
+    
+    # Roll success first
+    if success_roll is None:
+        success_roll = random.random()
+    
+    if success_roll < success_rate:
+        # Success - roll for tier using moving window
+        rolled_tier = random.choices(rarities, weights=weights)[0]
+        return (base_rarity, success_rate, rolled_tier)
+    else:
+        # Failed - no tier
+        return (base_rarity, success_rate, None)
 
 
 def get_hydration_streak_bonus_rarity(streak_days: int) -> Optional[str]:
