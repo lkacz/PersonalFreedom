@@ -68,7 +68,9 @@ MARKER_END = "# === Personal Liberty BLOCK END ==="
 
 # Config file paths
 if getattr(sys, 'frozen', False):
-    APP_DIR = Path(sys.executable).parent
+    # When running as executable, use AppData for user-writable files
+    APP_DIR = Path(os.environ.get('APPDATA', os.path.expanduser('~'))) / "PersonalLiberty"
+    APP_DIR.mkdir(parents=True, exist_ok=True)
 else:
     APP_DIR = Path(__file__).parent
 
@@ -169,14 +171,21 @@ class BlockerCore:
     def __init__(self, username: Optional[str] = None):
         # Initialize paths
         self.user_manager = UserManager(APP_DIR)
+        self.username = username  # Store for later validation
         
         if username:
-            self.user_dir = self.user_manager.get_user_dir(username)
-            self.config_path = self.user_dir / "config.json"
-            self.stats_path = self.user_dir / "stats.json"
-            self.goals_path = self.user_dir / "goals.json"
-            self.session_state_path = self.user_dir / ".session_state.json"
+            try:
+                self.user_dir = self.user_manager.get_user_dir(username)
+                self.user_dir.mkdir(parents=True, exist_ok=True)
+                self.config_path = self.user_dir / "config.json"
+                self.stats_path = self.user_dir / "stats.json"
+                self.goals_path = self.user_dir / "goals.json"
+                self.session_state_path = self.user_dir / ".session_state.json"
+            except (ValueError, OSError) as e:
+                logger.error(f"Failed to initialize user profile '{username}': {e}")
+                raise RuntimeError(f"Cannot initialize user profile '{username}'. The user directory may have been deleted or is inaccessible.") from e
         else:
+            self.user_dir = None
             self.config_path = CONFIG_PATH
             self.stats_path = STATS_PATH
             self.goals_path = GOALS_PATH
@@ -289,6 +298,8 @@ class BlockerCore:
                     # Merge loaded categories with current defaults (for new categories)
                     default_categories = {cat: True for cat in SITE_CATEGORIES}
                     loaded_categories = config.get('categories_enabled', {})
+                    if not isinstance(loaded_categories, dict):
+                        loaded_categories = {}
                     self.categories_enabled = {**default_categories, **loaded_categories}
                     self.password_hash = config.get('password_hash')
                     # Validate numeric config values to prevent crashes from corrupted config
@@ -306,6 +317,8 @@ class BlockerCore:
                     self.priority_checkin_interval = checkin_interval if isinstance(checkin_interval, (int, float)) and checkin_interval > 0 else 30
                     self.minimize_to_tray = config.get('minimize_to_tray', True)
                     self.adhd_buster = config.get('adhd_buster', {})
+                    if not isinstance(self.adhd_buster, dict):
+                        self.adhd_buster = {}
                     # Ensure all required adhd_buster fields exist with correct types
                     adhd_defaults = {
                         "inventory": [],
@@ -411,6 +424,7 @@ class BlockerCore:
     def save_config(self) -> None:
         """Save configuration to file atomically (crash-safe)"""
         try:
+            self.config_path.parent.mkdir(parents=True, exist_ok=True)
             config = {
                 'blacklist': self.blacklist,
                 'whitelist': self.whitelist,
@@ -1020,6 +1034,9 @@ class BlockerCore:
         # Validate time format (HH:MM)
         import re
         time_pattern = re.compile(r'^([01]?\d|2[0-3]):([0-5]\d)$')
+        if not isinstance(start_time, str) or not isinstance(end_time, str):
+            logger.warning("Invalid schedule: start_time/end_time must be strings")
+            return None
         if not time_pattern.match(start_time):
             logger.warning(f"Invalid schedule: start_time '{start_time}' not in HH:MM format")
             return None

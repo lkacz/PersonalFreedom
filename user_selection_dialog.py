@@ -8,7 +8,7 @@ class UserSelectionDialog(QtWidgets.QDialog):
         self.user_manager = user_manager
         self.selected_user: Optional[str] = None
         self.setWindowTitle("Select User")
-        self.setFixedWidth(300)
+        self.setMinimumWidth(300)
         self.setModal(True)
         self._build_ui()
 
@@ -22,6 +22,7 @@ class UserSelectionDialog(QtWidgets.QDialog):
 
         # User List
         self.user_list = QtWidgets.QListWidget()
+        self.user_list.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
         self.refresh_user_list()
         self.user_list.itemDoubleClicked.connect(self.accept_selection)
         layout.addWidget(self.user_list)
@@ -63,8 +64,8 @@ class UserSelectionDialog(QtWidgets.QDialog):
         for user in users:
             self.user_list.addItem(user)
         
-        if self.user_list.count() > 0:
-            self.user_list.setCurrentRow(0)
+        # Do not auto-select the first user (row 0) to avoid accidental logins to the wrong account.
+        # User must explicitly choose.
 
     def create_new_user(self):
         name, ok = QtWidgets.QInputDialog.getText(self, "New User", "Enter profile name:")
@@ -73,10 +74,15 @@ class UserSelectionDialog(QtWidgets.QDialog):
             if not name:
                 return
             
+            clean_name = self.user_manager.sanitize_username(name)
+            if not clean_name:
+                QtWidgets.QMessageBox.warning(self, "Invalid Name", "Name contains invalid characters.\nAllowed: A-Z, 0-9, space, -, _")
+                return
+
             if self.user_manager.create_user(name):
                 self.refresh_user_list()
                 # Select the new user
-                items = self.user_list.findItems(name, QtCore.Qt.MatchExactly)
+                items = self.user_list.findItems(clean_name, QtCore.Qt.MatchFlag.MatchExactly)
                 if items:
                     self.user_list.setCurrentItem(items[0])
             else:
@@ -93,17 +99,14 @@ class UserSelectionDialog(QtWidgets.QDialog):
             self, 
             "Confirm Deletion", 
             f"Are you sure you want to delete profile '{username}'?\nThis cannot be undone.",
-            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No
         )
         
-        if confirm == QtWidgets.QMessageBox.Yes:
-            try:
-                if self.user_manager.delete_user(username):
-                    self.refresh_user_list()
-                else:
-                    QtWidgets.QMessageBox.warning(self, "Error", "Could not delete user.")
-            except (PermissionError, OSError) as e:
-                QtWidgets.QMessageBox.warning(self, "Error", f"Failed to delete: {e}")
+        if confirm == QtWidgets.QMessageBox.StandardButton.Yes:
+            if self.user_manager.delete_user(username):
+                self.refresh_user_list()
+            else:
+                QtWidgets.QMessageBox.warning(self, "Error", "Could not delete user.")
 
     def accept_selection(self):
         current_item = self.user_list.currentItem()

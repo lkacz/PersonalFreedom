@@ -2206,6 +2206,10 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         
         container_layout.addWidget(self.stage2_frame)
         
+        # Hide stage 2 if guaranteed success
+        if self.success_threshold >= 1.0:
+            self.stage2_frame.hide()
+        
         # Final result
         self.final_result = QtWidgets.QLabel("")
         self.final_result.setAlignment(QtCore.Qt.AlignCenter)
@@ -2274,6 +2278,14 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.stage1_result.setText(label)
         self.stage1_result.setStyleSheet(f"color: {color}; font-size: 16px; font-weight: bold;")
         self.stage1_slider.set_result(self.rolled_tier)
+        
+        # Skip stage 2 if guaranteed success (100%)
+        if self.success_threshold >= 1.0:
+            self.stage2_frame.hide()
+            self.final_result.setText(f"You got {self.rolled_tier}!")
+            self.final_result.setStyleSheet(f"color: {color}; font-size: 14px;")
+            QtCore.QTimer.singleShot(1500, self._finish)
+            return
         
         # Enable stage 2
         self.stage2_frame.setStyleSheet("""
@@ -2482,10 +2494,10 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         """Get the results.
         
         Returns:
-            (success: bool, tier_jump: int) - tier_jump is 0 if failed
-            Note: tier_jump is kept for backwards compatibility
+            (success: bool, rolled_tier: str) - rolled_tier is "" if failed
+            Returns the actual tier name that was rolled, not a jump number
         """
-        return (self.is_success, self.tier_jump if self.is_success else 0)
+        return (self.is_success, self.rolled_tier if self.is_success else "")
     
     def closeEvent(self, event):
         """Clean up timers and save geometry."""
@@ -2715,15 +2727,18 @@ class WaterLotteryDialog(QtWidgets.QDialog):
     
     Stage 1: Tier Roll (rarity based on glass number - moving window)
         Uses [5, 15, 60, 15, 5] distribution centered on glass tier:
-        - Glass 1: Common-centered [60+15+5=80% C, 15% U, 5% R, 0% E, 0% L]
-        - Glass 2: Uncommon-centered [20% C, 60% U, 15% R, 5% E, 0% L]
-        - Glass 3: Rare-centered [5% C, 15% U, 60% R, 15% E, 5% L]
-        - Glass 4: Epic-centered [0% C, 5% U, 15% R, 60% E, 20% L]
-        - Glass 5: Legendary-centered [0% C, 0% U, 5% R, 15% E, 80% L]
+        - Glass 1: Common-centered, 99% success rate
+        - Glass 2: Uncommon-centered, 80% success rate
+        - Glass 3: Rare-centered, 60% success rate
+        - Glass 4: Epic-centered, 40% success rate
+        - Glass 5: Legendary-centered, 20% success rate
     
-    Stage 2: Win/Lose Roll (progressive chance)
-        - Starts at 1%, adds +1% per accumulated roll
-        - Resets to 0 after a WIN
+    Stage 2: Win/Lose Roll (decreasing success rate)
+        - Glass 1: 99% success rate
+        - Glass 2: 80% success rate
+        - Glass 3: 60% success rate
+        - Glass 4: 40% success rate
+        - Glass 5: 20% success rate
     
     Order: Roll tier FIRST (what you're playing for), then roll win/lose.
     
@@ -2738,7 +2753,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         """
         Args:
             glass_number: Which glass this is today (1-5)
-            lottery_attempts: Cumulative lottery attempts (determines win chance)
+            lottery_attempts: Not used anymore (kept for backwards compatibility)
             story_id: Story theme for item generation
             parent: Parent widget
         """
@@ -2747,16 +2762,17 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.lottery_attempts = lottery_attempts
         self.story_id = story_id
         
-        # Win chance: 1% + 1% per attempt, capped at 99%
-        self.win_chance = min(0.99, (lottery_attempts + 1) / 100.0)
+        # Success rate decreases with each glass: 99%, 80%, 60%, 40%, 20%
+        success_rates = [0.99, 0.80, 0.60, 0.40, 0.20]
+        self.success_rate = success_rates[min(glass_number - 1, len(success_rates) - 1)]
         
         # Pre-roll tier result
         self.tier_roll = random.random() * 100
         self.rolled_tier = self._determine_tier(self.tier_roll)
         
         # Pre-roll win/lose result  
-        self.win_roll = random.random() * 100
-        self.won = self.win_roll < (self.win_chance * 100)
+        self.win_roll = random.random()
+        self.won = self.win_roll < self.success_rate
         
         # Generate item if won
         self.won_item = None
@@ -2768,8 +2784,8 @@ class WaterLotteryDialog(QtWidgets.QDialog):
                 # Fallback if gamification unavailable
                 self.won_item = {"name": f"{self.rolled_tier} Item", "rarity": self.rolled_tier, "power": 10}
         
-        # Attempt counter logic: +1 always, reset to 0 on win
-        self.new_attempts = 0 if self.won else (lottery_attempts + 1)
+        # No longer using attempt counter - kept for compatibility
+        self.new_attempts = 0
         
         self.current_stage = 0
         self._setup_ui()
@@ -2820,12 +2836,12 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         header.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(header)
         
-        # Attempt counter info
-        attempt_info = QtWidgets.QLabel(f"🎰 Attempt #{self.lottery_attempts + 1} • Win chance: {self.win_chance*100:.0f}%")
-        attempt_info.setFont(QtGui.QFont("Arial", 10))
-        attempt_info.setAlignment(QtCore.Qt.AlignCenter)
-        attempt_info.setStyleSheet("color: #888;")
-        layout.addWidget(attempt_info)
+        # Success rate info
+        success_info = QtWidgets.QLabel(f"🎲 Success rate: {self.success_rate*100:.0f}%")
+        success_info.setFont(QtGui.QFont("Arial", 10))
+        success_info.setAlignment(QtCore.Qt.AlignCenter)
+        success_info.setStyleSheet("color: #888;")
+        layout.addWidget(success_info)
         
         # Stage 1: Tier Roll
         self.stage1_frame = QtWidgets.QFrame()
@@ -2852,11 +2868,11 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.stage2_frame.setStyleSheet("QFrame { opacity: 0.4; }")
         stage2_layout = QtWidgets.QVBoxLayout(self.stage2_frame)
         
-        self.stage2_title = QtWidgets.QLabel(f"🎲 Stage 2: Win or Lose? ({self.win_chance*100:.0f}% chance)")
+        self.stage2_title = QtWidgets.QLabel(f"🎲 Stage 2: Win or Lose? ({self.success_rate*100:.0f}% chance)")
         self.stage2_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
         stage2_layout.addWidget(self.stage2_title)
         
-        self.win_slider = WaterWinSliderWidget(self.win_chance)
+        self.win_slider = WaterWinSliderWidget(self.success_rate)
         stage2_layout.addWidget(self.win_slider)
         
         self.stage2_result = QtWidgets.QLabel("Waiting...")
@@ -2875,21 +2891,75 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         layout.addStretch()
     
     def _start_stage_1(self):
-        """Start tier roll animation."""
+        """Start tier roll animation using bounce path (same as merge dialog)."""
         self.current_stage = 1
         self.stage1_frame.setStyleSheet("QFrame { border: 2px solid #ff9800; }")
         
-        self._anim_start_time = None
-        self._anim_duration = 9000
-        self._anim_bounces = 5
-        self._anim_target = self.tier_roll
-        self._anim_slider = self.tier_slider
-        self._anim_result = self.stage1_result
-        self._anim_callback = self._finish_stage_1
+        # Generate bounce path (same as merge dialog)
+        self._stage1_path_points = [50.0]
+        going_up = random.choice([True, False])
+        num_bounces = random.randint(4, 6)
         
-        self._anim_timer = QtCore.QTimer(self)
-        self._anim_timer.timeout.connect(self._animate_step)
-        self._anim_timer.start(16)
+        for _ in range(num_bounces):
+            if going_up:
+                self._stage1_path_points.extend([100.0, 0.0])
+            else:
+                self._stage1_path_points.extend([0.0, 100.0])
+        self._stage1_path_points.append(self.tier_roll)
+        
+        # Pre-compute segments for smoother animation
+        self._stage1_segments = []
+        self._stage1_total_dist = 0.0
+        for i in range(len(self._stage1_path_points) - 1):
+            start, end = self._stage1_path_points[i], self._stage1_path_points[i+1]
+            dist = abs(end - start)
+            if dist > 0.001:
+                self._stage1_segments.append({
+                    "start": start, "end": end, "dist": dist,
+                    "cum_start": self._stage1_total_dist,
+                    "cum_end": self._stage1_total_dist + dist
+                })
+                self._stage1_total_dist += dist
+        
+        self._stage1_elapsed = 0.0
+        self._stage1_duration = 9.0
+        
+        self._stage1_timer = QtCore.QTimer(self)
+        self._stage1_timer.timeout.connect(self._animate_stage1_tick)
+        self._stage1_timer.start(16)
+    
+    def _animate_stage1_tick(self):
+        """Tier roll animation tick."""
+        self._stage1_elapsed += 0.016
+        t = min(1.0, self._stage1_elapsed / self._stage1_duration)
+        eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
+        
+        current_travel = eased * self._stage1_total_dist
+        pos = self.tier_roll
+        
+        for seg in self._stage1_segments:
+            if seg["cum_start"] <= current_travel <= seg["cum_end"]:
+                local = (current_travel - seg["cum_start"]) / seg["dist"]
+                pos = seg["start"] + (seg["end"] - seg["start"]) * local
+                break
+        
+        pos = max(0, min(100, pos))
+        self.tier_slider.set_position(pos)
+        
+        # Show current tier during animation
+        tier = self.tier_slider.get_tier_at_position(pos)
+        tier_colors = {
+            "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
+            "Epic": "#9c27b0", "Legendary": "#ff9800"
+        }
+        color = tier_colors.get(tier, "#fff")
+        self.stage1_result.setStyleSheet(f"color: {color}; font-size: 14px;")
+        self.stage1_result.setText(f"🎲 {pos:.1f}% → {tier}")
+        
+        if t >= 1.0:
+            self._stage1_timer.stop()
+            self.tier_slider.set_position(self.tier_roll)
+            self._finish_stage_1()
     
     def _finish_stage_1(self):
         """Finish tier roll, show result and start stage 2."""
@@ -2904,35 +2974,90 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.stage1_frame.setStyleSheet("QFrame { border: 2px solid #4caf50; }")
         
         # Update stage 2 title
-        self.stage2_title.setText(f"🎲 Stage 2: Claim your {self.rolled_tier}! ({self.win_chance*100:.0f}% chance)")
+        self.stage2_title.setText(f"🎲 Stage 2: Claim your {self.rolled_tier}! ({self.success_rate*100:.0f}% chance)")
         
         # Enable and start stage 2
         QtCore.QTimer.singleShot(800, self._start_stage_2)
     
     def _start_stage_2(self):
-        """Start win/lose roll animation."""
+        """Start win/lose roll animation using bounce path (same as merge dialog)."""
         self.current_stage = 2
         self.stage2_frame.setEnabled(True)
         self.stage2_frame.setStyleSheet("QFrame { border: 2px solid #ff9800; }")
         
-        self._anim_start_time = None
-        self._anim_duration = 8000
-        self._anim_bounces = 4
-        self._anim_target = self.win_roll
-        self._anim_slider = self.win_slider
-        self._anim_result = self.stage2_result
-        self._anim_callback = self._finish_stage_2
+        # Generate bounce path (same as merge dialog)
+        self._stage2_path_points = [50.0]
+        going_up = random.choice([True, False])
+        num_bounces = random.randint(4, 6)
         
-        self._anim_timer = QtCore.QTimer(self)
-        self._anim_timer.timeout.connect(self._animate_step)
-        self._anim_timer.start(16)
+        for _ in range(num_bounces):
+            if going_up:
+                self._stage2_path_points.extend([100.0, 0.0])
+            else:
+                self._stage2_path_points.extend([0.0, 100.0])
+        # Convert 0-1 roll to 0-100 for slider position
+        self._stage2_path_points.append(self.win_roll * 100)
+        
+        # Pre-compute segments for smoother animation
+        self._stage2_segments = []
+        self._stage2_total_dist = 0.0
+        for i in range(len(self._stage2_path_points) - 1):
+            start, end = self._stage2_path_points[i], self._stage2_path_points[i+1]
+            dist = abs(end - start)
+            if dist > 0.001:
+                self._stage2_segments.append({
+                    "start": start, "end": end, "dist": dist,
+                    "cum_start": self._stage2_total_dist,
+                    "cum_end": self._stage2_total_dist + dist
+                })
+                self._stage2_total_dist += dist
+        
+        self._stage2_elapsed = 0.0
+        self._stage2_duration = 9.0
+        
+        self._stage2_timer = QtCore.QTimer(self)
+        self._stage2_timer.timeout.connect(self._animate_stage2_tick)
+        self._stage2_timer.start(16)
+    
+    def _animate_stage2_tick(self):
+        """Win/lose animation tick."""
+        self._stage2_elapsed += 0.016
+        t = min(1.0, self._stage2_elapsed / self._stage2_duration)
+        eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
+        
+        current_travel = eased * self._stage2_total_dist
+        pos = self.win_roll * 100  # Convert to 0-100 for display
+        
+        for seg in self._stage2_segments:
+            if seg["cum_start"] <= current_travel <= seg["cum_end"]:
+                local = (current_travel - seg["cum_start"]) / seg["dist"]
+                pos = seg["start"] + (seg["end"] - seg["start"]) * local
+                break
+        
+        pos = max(0, min(100, pos))
+        self.win_slider.set_position(pos)
+        
+        # Show win/lose status during animation
+        success_pct = self.success_rate * 100
+        if pos < success_pct:
+            self.stage2_result.setStyleSheet("color: #4caf50; font-size: 14px;")
+            self.stage2_result.setText(f"🎲 {pos:.1f}% (WIN ZONE!)")
+        else:
+            self.stage2_result.setStyleSheet("color: #f44336; font-size: 14px;")
+            self.stage2_result.setText(f"🎲 {pos:.1f}%")
+        
+        if t >= 1.0:
+            self._stage2_timer.stop()
+            self.win_slider.set_position(self.win_roll * 100)
+            self._finish_stage_2()
     
     def _finish_stage_2(self):
         """Finish win/lose roll, show final result."""
-        win_pct = self.win_chance * 100
+        success_pct = self.success_rate * 100
+        win_roll_pct = self.win_roll * 100
         
         if self.won:
-            self.stage2_result.setText(f"<b style='color:#4caf50;'>✅ WIN! ({self.win_roll:.1f}% < {win_pct:.0f}%)</b>")
+            self.stage2_result.setText(f"<b style='color:#4caf50;'>✅ WIN! ({win_roll_pct:.1f}% < {success_pct:.0f}%)</b>")
             self.stage2_frame.setStyleSheet("QFrame { border: 2px solid #4caf50; }")
             
             tier_colors = {
@@ -2950,11 +3075,16 @@ class WaterLotteryDialog(QtWidgets.QDialog):
             self.final_result.setTextFormat(QtCore.Qt.RichText)
             self.final_result.setStyleSheet(f"color: {color};")
         else:
-            self.stage2_result.setText(f"<b style='color:#f44336;'>❌ LOSE ({self.win_roll:.1f}% ≥ {win_pct:.0f}%)</b>")
+            self.stage2_result.setText(f"<b style='color:#f44336;'>❌ LOSE ({win_roll_pct:.1f}% ≥ {success_pct:.0f}%)</b>")
             self.stage2_frame.setStyleSheet("QFrame { border: 2px solid #f44336; }")
             
-            next_chance = min(99, (self.new_attempts + 1))
-            self.final_result.setText(f"💔 Not this time... Next attempt: {next_chance}% chance!")
+            # Show decreasing success rate message
+            if self.glass_number < 5:
+                next_glass_rates = [99, 80, 60, 40, 20]
+                next_rate = next_glass_rates[self.glass_number]  # Next glass rate
+                self.final_result.setText(f"💔 Not this time... Next glass: {next_rate}% success rate!")
+            else:
+                self.final_result.setText(f"💔 Not this time... Try again tomorrow!")
             self.final_result.setStyleSheet("color: #f44336;")
         
         self.stage2_result.setTextFormat(QtCore.Qt.RichText)
@@ -2962,54 +3092,6 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         
         # Auto-close after delay
         QtCore.QTimer.singleShot(2500, self._finish)
-    
-    def _animate_step(self):
-        """Single animation frame using EaseOutQuart with bounces."""
-        if self._anim_start_time is None:
-            self._anim_start_time = time.time() * 1000
-        
-        elapsed = time.time() * 1000 - self._anim_start_time
-        t = min(1.0, elapsed / self._anim_duration)
-        
-        # EaseOutQuart
-        ease = 1 - pow(1 - t, 4)
-        
-        # Smooth bouncing effect (no random - use deterministic oscillation)
-        if t < 1.0:
-            bounce_amplitude = (1 - t) * 50
-            bounce_freq = self._anim_bounces * 2 * 3.14159
-            # Use math.sin directly for smooth oscillation
-            bounce = bounce_amplitude * math.sin(t * bounce_freq)
-            pos = self._anim_target + bounce * (1 - ease)
-            pos = max(0, min(100, pos))
-        else:
-            pos = self._anim_target
-        
-        self._anim_slider.set_position(pos)
-        
-        # Update result text during animation
-        if self.current_stage == 1:
-            tier = self.tier_slider.get_tier_at_position(pos)
-            tier_colors = {
-                "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
-                "Epic": "#9c27b0", "Legendary": "#ff9800"
-            }
-            color = tier_colors.get(tier, "#fff")
-            self._anim_result.setStyleSheet(f"color: {color}; font-size: 14px;")
-            self._anim_result.setText(f"🎲 {pos:.1f}% → {tier}")
-        else:
-            win_pct = self.win_chance * 100
-            if pos < win_pct:
-                self._anim_result.setStyleSheet("color: #4caf50; font-size: 14px;")
-                self._anim_result.setText(f"🎲 {pos:.1f}% (WIN ZONE!)")
-            else:
-                self._anim_result.setStyleSheet("color: #f44336; font-size: 14px;")
-                self._anim_result.setText(f"🎲 {pos:.1f}%")
-        
-        if t >= 1.0:
-            self._anim_timer.stop()
-            self._anim_slider.set_position(self._anim_target)
-            self._anim_callback()
     
     def _finish(self):
         """Emit result and close."""
@@ -3026,9 +3108,12 @@ class WaterLotteryDialog(QtWidgets.QDialog):
     
     def closeEvent(self, event):
         """Clean up timers and save geometry."""
+        # Stop timers first to prevent any callbacks during cleanup
+        if hasattr(self, '_stage1_timer') and self._stage1_timer:
+            self._stage1_timer.stop()
+        if hasattr(self, '_stage2_timer') and self._stage2_timer:
+            self._stage2_timer.stop()
         save_dialog_geometry(self, "WaterLotteryDialog")
-        if hasattr(self, '_anim_timer'):
-            self._anim_timer.stop()
         super().closeEvent(event)
 
 
@@ -3345,36 +3430,56 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         layout.addWidget(container)
     
     def _start_animation(self):
-        """Start tier roll animation."""
-        self._anim_start_time = None
-        self._anim_duration = 8000  # 8 seconds
-        self._anim_bounces = 5
+        """Start tier roll animation using bounce path (same as merge dialog)."""
+        # Generate bounce path (same as merge dialog)
+        self._path_points = [50.0]
+        going_up = random.choice([True, False])
+        num_bounces = random.randint(4, 6)
+        
+        for _ in range(num_bounces):
+            if going_up:
+                self._path_points.extend([100.0, 0.0])
+            else:
+                self._path_points.extend([0.0, 100.0])
+        self._path_points.append(self.tier_roll)
+        
+        # Pre-compute segments for smoother animation
+        self._segments = []
+        self._total_dist = 0.0
+        for i in range(len(self._path_points) - 1):
+            start, end = self._path_points[i], self._path_points[i+1]
+            dist = abs(end - start)
+            if dist > 0.001:
+                self._segments.append({
+                    "start": start, "end": end, "dist": dist,
+                    "cum_start": self._total_dist,
+                    "cum_end": self._total_dist + dist
+                })
+                self._total_dist += dist
+        
+        self._anim_elapsed = 0.0
+        self._anim_duration = 8.0
         
         self._anim_timer = QtCore.QTimer(self)
         self._anim_timer.timeout.connect(self._animate_step)
         self._anim_timer.start(16)
     
     def _animate_step(self):
-        """Animation frame."""
-        if self._anim_start_time is None:
-            self._anim_start_time = time.time() * 1000
+        """Animation frame using bounce path."""
+        self._anim_elapsed += 0.016
+        t = min(1.0, self._anim_elapsed / self._anim_duration)
+        eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
         
-        elapsed = time.time() * 1000 - self._anim_start_time
-        t = min(1.0, elapsed / self._anim_duration)
+        current_travel = eased * self._total_dist
+        pos = self.tier_roll
         
-        # EaseOutQuart
-        ease = 1 - pow(1 - t, 4)
+        for seg in self._segments:
+            if seg["cum_start"] <= current_travel <= seg["cum_end"]:
+                local = (current_travel - seg["cum_start"]) / seg["dist"]
+                pos = seg["start"] + (seg["end"] - seg["start"]) * local
+                break
         
-        # Smooth bouncing
-        if t < 1.0:
-            bounce_amplitude = (1 - t) * 40
-            bounce_freq = self._anim_bounces * 2 * 3.14159
-            bounce = bounce_amplitude * math.sin(t * bounce_freq)
-            pos = self.tier_roll + bounce * (1 - ease)
-            pos = max(0, min(100, pos))
-        else:
-            pos = self.tier_roll
-        
+        pos = max(0, min(100, pos))
         self.tier_slider.set_position(pos)
         
         # Update rolling text
@@ -3455,6 +3560,308 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         if hasattr(self, '_anim_timer'):
             self._anim_timer.stop()
         super().closeEvent(event)
+
+
+class ActivityLotteryDialog(QtWidgets.QDialog):
+    """Single-stage rarity lottery for physical activity rewards.
+    
+    Shows dramatic animation revealing the rarity tier based on effective minutes.
+    Uses moving window [5, 15, 60, 15, 5] distribution centered on effective minutes tier.
+    """
+    
+    finished_signal = QtCore.Signal(str, object)  # (rarity, item)
+    
+    TIERS = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    TIER_COLORS = {
+        "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
+        "Epic": "#9c27b0", "Legendary": "#ff9800"
+    }
+    BASE_WINDOW = [5, 15, 60, 15, 5]
+    
+    def __init__(self, effective_minutes: float, pre_rolled_rarity: str,
+                 story_id: str = None, parent: Optional[QtWidgets.QWidget] = None):
+        """
+        Args:
+            effective_minutes: Calculated effective minutes for display
+            pre_rolled_rarity: The rarity that was already determined (from gamification.py)
+            story_id: Story theme for display
+            parent: Parent widget
+        """
+        super().__init__(parent)
+        self.effective_minutes = effective_minutes
+        self.rolled_tier = pre_rolled_rarity
+        self.story_id = story_id
+        self.item = None  # Item will be generated after showing animation
+        
+        # Calculate tier distribution for display
+        self.tier_weights = self._calculate_tier_weights()
+        
+        # Pre-roll the position (0-100) for animation target
+        self.tier_roll = self._get_position_for_tier(self.rolled_tier)
+        
+        self._setup_ui()
+        QtCore.QTimer.singleShot(300, self._start_animation)
+    
+    def _calculate_tier_weights(self) -> list:
+        """Calculate tier weights based on effective minutes."""
+        # Determine center tier (same logic as gamification.py)
+        if self.effective_minutes >= 100:
+            center_tier = 4  # Legendary-centered (75%)
+        elif self.effective_minutes >= 70:
+            center_tier = 3  # Epic-centered
+        elif self.effective_minutes >= 40:
+            center_tier = 2  # Rare-centered
+        elif self.effective_minutes >= 20:
+            center_tier = 1  # Uncommon-centered
+        else:  # 8-19 min
+            center_tier = 0  # Common-centered
+        
+        weights = [0, 0, 0, 0, 0]
+        
+        for offset, pct in zip([-2, -1, 0, 1, 2], self.BASE_WINDOW):
+            target_tier = center_tier + offset
+            clamped_tier = max(0, min(4, target_tier))
+            weights[clamped_tier] += pct
+        
+        return weights
+    
+    def _get_position_for_tier(self, tier: str) -> float:
+        """Get a random position within the zone for the given tier."""
+        import random
+        
+        cumulative = 0.0
+        for t, weight in zip(self.TIERS, self.tier_weights):
+            zone_size = weight
+            if t == tier:
+                # Random position within this zone
+                return cumulative + random.random() * zone_size
+            cumulative += zone_size
+        return 50.0  # Fallback
+    
+    def _setup_ui(self):
+        """Build the activity lottery UI."""
+        self.setWindowTitle("🏃 Activity Reward!")
+        self.setModal(True)
+        self.setMinimumSize(440, 280)
+        load_dialog_geometry(self, "ActivityLotteryDialog", QtCore.QSize(500, 320))
+        self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
+        
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Header
+        header = QtWidgets.QLabel(f"🏃 Activity Reward - {self.effective_minutes:.0f} eff. min")
+        header.setFont(QtGui.QFont("Arial", 16, QtGui.QFont.Bold))
+        header.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(header)
+        
+        # Tier slider widget
+        self.tier_slider = ActivityTierSliderWidget(self.tier_weights)
+        self.tier_slider.setMinimumHeight(60)
+        layout.addWidget(self.tier_slider)
+        
+        # Result label
+        self.result_label = QtWidgets.QLabel("Rolling...")
+        self.result_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.result_label.setStyleSheet("font-size: 14px; color: #888;")
+        layout.addWidget(self.result_label)
+        
+        # Final result (hidden initially)
+        self.final_result = QtWidgets.QLabel("")
+        self.final_result.setAlignment(QtCore.Qt.AlignCenter)
+        self.final_result.setStyleSheet("font-size: 16px; font-weight: bold; color: #4caf50;")
+        self.final_result.hide()
+        layout.addWidget(self.final_result)
+    
+    def _start_animation(self):
+        """Start the tier roll animation using bounce path."""
+        # Build bounce path (same logic as other lottery dialogs)
+        self._path_points = [50.0]  # Start at center
+        
+        # 5 full bar sweeps with decreasing amplitude
+        for bounce in range(5):
+            amplitude = 1.0 - (bounce * 0.18)
+            self._path_points.append(100 * amplitude)
+            self._path_points.append(0)
+        
+        # Final approach to target
+        self._path_points.append(self.tier_roll)
+        
+        # Calculate segment distances
+        self._segments = []
+        self._total_dist = 0.0
+        
+        for i in range(len(self._path_points) - 1):
+            start, end = self._path_points[i], self._path_points[i+1]
+            dist = abs(end - start)
+            if dist > 0.001:
+                self._segments.append({
+                    "start": start, "end": end, "dist": dist,
+                    "cum_start": self._total_dist,
+                    "cum_end": self._total_dist + dist
+                })
+                self._total_dist += dist
+        
+        self._elapsed = 0.0
+        self._duration = 6.0
+        
+        self._anim_timer = QtCore.QTimer(self)
+        self._anim_timer.timeout.connect(self._anim_tick)
+        self._anim_timer.start(16)
+    
+    def _anim_tick(self):
+        """Animation tick."""
+        self._elapsed += 0.016
+        t = min(1.0, self._elapsed / self._duration)
+        eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
+        
+        current_travel = eased * self._total_dist
+        pos = self.tier_roll
+        
+        for seg in self._segments:
+            if seg["cum_start"] <= current_travel <= seg["cum_end"]:
+                local = (current_travel - seg["cum_start"]) / seg["dist"]
+                pos = seg["start"] + (seg["end"] - seg["start"]) * local
+                break
+        
+        pos = max(0, min(100, pos))
+        self.tier_slider.set_position(pos)
+        
+        # Show current tier during animation
+        tier = self.tier_slider.get_tier_at_position(pos)
+        tier_colors = {
+            "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
+            "Epic": "#9c27b0", "Legendary": "#ff9800"
+        }
+        color = tier_colors.get(tier, "#fff")
+        self.result_label.setStyleSheet(f"color: {color}; font-size: 14px;")
+        self.result_label.setText(f"🎲 {pos:.1f}% → {tier}")
+        
+        if t >= 1.0:
+            self._anim_timer.stop()
+            self.tier_slider.set_position(self.tier_roll)
+            self._finish_animation()
+    
+    def _finish_animation(self):
+        """Show final result."""
+        color = self.TIER_COLORS.get(self.rolled_tier, "#aaa")
+        self.result_label.setText(f"✨ Rolled: {self.rolled_tier}!")
+        self.result_label.setStyleSheet(f"color: {color}; font-size: 14px; font-weight: bold;")
+        
+        # Generate item
+        try:
+            from gamification import generate_item
+            self.item = generate_item(rarity=self.rolled_tier, story_id=self.story_id)
+        except (ImportError, Exception):
+            self.item = {"name": f"{self.rolled_tier} Item", "rarity": self.rolled_tier, "power": 10}
+        
+        # Show item name
+        item_name = self.item.get("name", "Unknown Item")
+        self.final_result.setText(f"🎁 {item_name}")
+        self.final_result.setStyleSheet(f"color: {color}; font-size: 14px; font-weight: bold;")
+        self.final_result.show()
+        
+        # Auto-close after delay
+        QtCore.QTimer.singleShot(3000, self._finish)
+    
+    def _finish(self):
+        """Emit result and close."""
+        self.finished_signal.emit(self.rolled_tier, self.item)
+        self.accept()
+    
+    def get_results(self) -> tuple:
+        """Get the results."""
+        return (self.rolled_tier, self.item)
+    
+    def closeEvent(self, event):
+        """Clean up timers and save geometry."""
+        save_dialog_geometry(self, "ActivityLotteryDialog")
+        if hasattr(self, '_anim_timer'):
+            self._anim_timer.stop()
+        super().closeEvent(event)
+
+
+class ActivityTierSliderWidget(QtWidgets.QWidget):
+    """5-zone tier slider for activity lottery with dynamic weights."""
+    
+    TIER_COLORS = {
+        "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
+        "Epic": "#9c27b0", "Legendary": "#ff9800"
+    }
+    TIERS = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    
+    def __init__(self, tier_weights: list, parent=None):
+        super().__init__(parent)
+        self.tier_weights = tier_weights  # [Common%, Uncommon%, Rare%, Epic%, Legendary%]
+        self.position = 0.0
+        self.setMinimumSize(400, 60)
+    
+    def set_position(self, pos: float):
+        """Set marker position (0-100)."""
+        self.position = max(0.0, min(100.0, pos))
+        self.update()
+    
+    def get_tier_at_position(self, pos: float) -> str:
+        """Get the tier at a given position."""
+        cumulative = 0.0
+        for tier, weight in zip(self.TIERS, self.tier_weights):
+            if pos < cumulative + weight:
+                return tier
+            cumulative += weight
+        return "Legendary"
+    
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        
+        # Bar dimensions
+        bar_y = 20
+        bar_height = 30
+        bar_width = self.width() - 20
+        x_offset = 10
+        
+        # Draw tier zones
+        cumulative_x = x_offset
+        for tier, weight in zip(self.TIERS, self.tier_weights):
+            if weight <= 0:
+                continue
+            zone_width = (weight / 100) * bar_width
+            color = QtGui.QColor(self.TIER_COLORS[tier])
+            painter.fillRect(
+                int(cumulative_x), bar_y,
+                int(zone_width), bar_height,
+                color
+            )
+            # Zone label (only if wide enough)
+            if zone_width > 35:
+                painter.setPen(QtGui.QColor("#ffffff"))
+                painter.setFont(QtGui.QFont("Arial", 8, QtGui.QFont.Bold))
+                painter.drawText(
+                    int(cumulative_x), bar_y,
+                    int(zone_width), bar_height,
+                    QtCore.Qt.AlignCenter,
+                    tier[0]  # First letter
+                )
+            cumulative_x += zone_width
+        
+        # Marker
+        marker_x = x_offset + (self.position / 100) * bar_width
+        marker_color = self.TIER_COLORS.get(self.get_tier_at_position(self.position), "#fff")
+        
+        # Marker triangle
+        painter.setBrush(QtGui.QColor(marker_color))
+        painter.setPen(QtGui.QPen(QtGui.QColor("#000"), 1))
+        triangle = [
+            QtCore.QPointF(marker_x, bar_y - 5),
+            QtCore.QPointF(marker_x - 6, bar_y - 15),
+            QtCore.QPointF(marker_x + 6, bar_y - 15)
+        ]
+        painter.drawPolygon(triangle)
+        
+        # Marker line
+        painter.setPen(QtGui.QPen(QtGui.QColor(marker_color), 3))
+        painter.drawLine(int(marker_x), bar_y, int(marker_x), bar_y + bar_height)
 
 
 # Backwards compatibility aliases

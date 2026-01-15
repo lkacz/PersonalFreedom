@@ -166,19 +166,39 @@ class BypassLogger:
     
     def _load_attempts(self) -> dict:
         """Load existing bypass attempts from file."""
-        if BYPASS_LOG_PATH.exists():
-            try:
-                with open(BYPASS_LOG_PATH, 'r', encoding='utf-8') as f:
-                    return json.load(f)
-            except (json.JSONDecodeError, IOError):
-                pass
-        return {
+        defaults = {
             "total_attempts": 0,
             "attempts_by_site": {},
             "attempts_by_hour": {str(i): 0 for i in range(24)},
             "daily_attempts": {},
             "session_history": []
         }
+        loaded = {}
+        if BYPASS_LOG_PATH.exists():
+            try:
+                with open(BYPASS_LOG_PATH, 'r', encoding='utf-8') as f:
+                    loaded = json.load(f)
+            except (json.JSONDecodeError, IOError):
+                loaded = {}
+        if not isinstance(loaded, dict):
+            loaded = {}
+
+        # Merge and normalize schema
+        data = {**defaults, **loaded}
+        if not isinstance(data.get("attempts_by_site"), dict):
+            data["attempts_by_site"] = {}
+        if not isinstance(data.get("attempts_by_hour"), dict):
+            data["attempts_by_hour"] = {}
+        if not isinstance(data.get("daily_attempts"), dict):
+            data["daily_attempts"] = {}
+        if not isinstance(data.get("session_history"), list):
+            data["session_history"] = []
+
+        # Ensure all hour buckets exist
+        for hour in range(24):
+            data["attempts_by_hour"].setdefault(str(hour), 0)
+
+        return data
     
     def _save_attempts(self):
         """Save bypass attempts to file atomically."""
@@ -230,16 +250,15 @@ class BypassLogger:
             self.attempts["total_attempts"] += 1
             
             # By site
-            if site not in self.attempts["attempts_by_site"]:
-                self.attempts["attempts_by_site"][site] = 0
+            self.attempts["attempts_by_site"].setdefault(site, 0)
             self.attempts["attempts_by_site"][site] += 1
             
             # By hour
+            self.attempts["attempts_by_hour"].setdefault(hour, 0)
             self.attempts["attempts_by_hour"][hour] += 1
             
             # By day
-            if today not in self.attempts["daily_attempts"]:
-                self.attempts["daily_attempts"][today] = 0
+            self.attempts["daily_attempts"].setdefault(today, 0)
             self.attempts["daily_attempts"][today] += 1
             
             # Current session

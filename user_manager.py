@@ -22,28 +22,39 @@ class UserManager:
 
     def ensure_directories(self):
         """Ensure users directory exists."""
-        if not self.users_dir.exists():
-            self.users_dir.mkdir(parents=True)
+        if self.users_dir.exists():
+            if not self.users_dir.is_dir():
+                raise NotADirectoryError(f"Users path is not a directory: {self.users_dir}")
+            return
+
+        self.users_dir.mkdir(parents=True)
 
     def get_users(self) -> List[str]:
         """Return a list of user names."""
-        if not self.users_dir.exists():
+        if not self.users_dir.exists() or not self.users_dir.is_dir():
             return []
 
         # List subdirectories in users folder
-        users = [d.name for d in self.users_dir.iterdir() if d.is_dir()]
-        return sorted(users)
+        try:
+            users = [d.name for d in self.users_dir.iterdir() if d.is_dir()]
+            # Sort case-insensitively for better UX
+            return sorted(users, key=lambda s: s.lower())
+        except (OSError, PermissionError):
+            return []
 
     def user_exists(self, username: str) -> bool:
         """Check if user exists, using sanitized name."""
         clean_name = self._sanitize_username(username)
         if not clean_name:
             return False
-        return (self.users_dir / clean_name).exists()
+        return (self.users_dir / clean_name).is_dir()
 
     def create_user(self, username: str) -> bool:
         """Create a new user directory."""
-        self.ensure_directories()
+        try:
+            self.ensure_directories()
+        except OSError:
+            return False
 
         clean_name = self._sanitize_username(username)
         if not clean_name:
@@ -53,7 +64,10 @@ class UserManager:
         if user_path.exists():
             return False
 
-        user_path.mkdir(parents=True)
+        try:
+            user_path.mkdir(parents=True)
+        except OSError:
+            return False
         
         # Create default config if needed, or copy template
         # For now, just creating the directory is enough, app logic handles missing config
@@ -76,8 +90,11 @@ class UserManager:
         except ValueError:
             return False  # Path escapes users_dir
             
-        shutil.rmtree(user_path)
-        return True
+        try:
+            shutil.rmtree(user_path)
+            return True
+        except (OSError, PermissionError):
+            return False
 
     def migrate_if_needed(self):
         """Migrate root files to 'Default' user if users directory implies first run with new system."""
@@ -119,6 +136,10 @@ class UserManager:
         # Limit length to prevent filesystem issues
         return cleaned[:50] if cleaned else ""
 
+    def sanitize_username(self, username: str) -> str:
+        """Public wrapper for username sanitization."""
+        return self._sanitize_username(username)
+
     def get_user_dir(self, username: str) -> Path:
         """Get user directory path, using sanitized name."""
         clean_name = self._sanitize_username(username)
@@ -129,8 +150,11 @@ class UserManager:
     def save_last_user(self, username: str):
         """Save the last used username."""
         try:
+            clean_name = self._sanitize_username(username)
+            if not clean_name:
+                return
             with open(self.last_user_file, 'w', encoding='utf-8') as f:
-                f.write(username)
+                f.write(clean_name)
         except Exception as e:
             print(f"Failed to save last user: {e}")
 
@@ -142,10 +166,13 @@ class UserManager:
         try:
             with open(self.last_user_file, 'r', encoding='utf-8') as f:
                 username = f.read().strip()
-                if self.user_exists(username):
-                    return username
+                # Validate user exists AND directory is accessible
+                if username and self.user_exists(username):
+                    user_dir = self.users_dir / self._sanitize_username(username)
+                    if user_dir.exists() and user_dir.is_dir():
+                        return username
         except Exception:
-            return None
+            pass
         return None
 
     def clear_last_user(self):
