@@ -13903,6 +13903,9 @@ def attempt_entitidex_bond(adhd_buster: dict, entity_id: str) -> dict:
     """
     Attempt to bond with an encountered entity.
     
+    On success, there's a 5% chance to get an EXCEPTIONAL variant
+    with unique randomly-generated premium colors.
+    
     Args:
         adhd_buster: Hero data dictionary
         entity_id: ID of the entity to bond with
@@ -13915,7 +13918,9 @@ def attempt_entitidex_bond(adhd_buster: dict, entity_id: str) -> dict:
             "probability": float,
             "pity_bonus": float,
             "consecutive_fails": int,
-            "message": str
+            "message": str,
+            "is_exceptional": bool,
+            "exceptional_colors": dict or None
         }
     """
     from entitidex import get_entity_by_id
@@ -13928,7 +13933,9 @@ def attempt_entitidex_bond(adhd_buster: dict, entity_id: str) -> dict:
             "probability": 0.0,
             "pity_bonus": 0.0,
             "consecutive_fails": 0,
-            "message": "Entity not found"
+            "message": "Entity not found",
+            "is_exceptional": False,
+            "exceptional_colors": None
         }
     
     # Get entitidex manager (configured with hero_power)
@@ -13947,8 +13954,21 @@ def attempt_entitidex_bond(adhd_buster: dict, entity_id: str) -> dict:
             "probability": 0.0,
             "pity_bonus": 0.0,
             "consecutive_fails": failed_before,
-            "message": "Could not attempt bond"
+            "message": "Could not attempt bond",
+            "is_exceptional": False,
+            "exceptional_colors": None
         }
+    
+    # Check for exceptional roll on success (5% chance)
+    is_exceptional = False
+    exceptional_colors = None
+    
+    if catch_result.success:
+        exceptional_roll = random.random()
+        if exceptional_roll < 0.05:  # 5% chance
+            is_exceptional = True
+            exceptional_colors = _generate_exceptional_colors()
+            manager.progress.mark_exceptional(entity_id, exceptional_colors)
     
     # Save progress
     save_entitidex_progress(adhd_buster, manager)
@@ -13958,7 +13978,10 @@ def attempt_entitidex_bond(adhd_buster: dict, entity_id: str) -> dict:
     
     # Generate appropriate message
     if catch_result.success:
-        message = f"🎉 {entity.name} has joined your team!"
+        if is_exceptional:
+            message = f"🌟✨ EXCEPTIONAL {entity.name} has joined your team! ✨🌟"
+        else:
+            message = f"🎉 {entity.name} has joined your team!"
     else:
         message = f"💨 {entity.name} slipped away... Try again next time!"
     
@@ -13968,7 +13991,64 @@ def attempt_entitidex_bond(adhd_buster: dict, entity_id: str) -> dict:
         "probability": catch_result.probability,
         "pity_bonus": 0.0,  # Could calculate this from failed_before
         "consecutive_fails": failed_after,
-        "message": message
+        "message": message,
+        "is_exceptional": is_exceptional,
+        "exceptional_colors": exceptional_colors
+    }
+
+
+# Premium color palettes for exceptional entities
+EXCEPTIONAL_COLOR_PALETTES = [
+    # Holographic / Rainbow
+    {"border": "#FF6B9D", "glow": "#00FFFF"},  # Pink + Cyan
+    {"border": "#FFD700", "glow": "#FF00FF"},  # Gold + Magenta
+    {"border": "#00FF88", "glow": "#FF6600"},  # Neon Green + Orange
+    # Celestial
+    {"border": "#E6E6FA", "glow": "#9370DB"},  # Lavender + Purple
+    {"border": "#87CEEB", "glow": "#FFD700"},  # Sky Blue + Gold
+    {"border": "#FFB6C1", "glow": "#DDA0DD"},  # Light Pink + Plum
+    # Elemental
+    {"border": "#FF4500", "glow": "#FFD700"},  # Fire (OrangeRed + Gold)
+    {"border": "#00CED1", "glow": "#E0FFFF"},  # Ice (DarkTurquoise + LightCyan)
+    {"border": "#7CFC00", "glow": "#32CD32"},  # Nature (LawnGreen + LimeGreen)
+    {"border": "#9932CC", "glow": "#DA70D6"},  # Arcane (DarkOrchid + Orchid)
+    # Precious Metals
+    {"border": "#FFD700", "glow": "#FFA500"},  # Gold
+    {"border": "#C0C0C0", "glow": "#E8E8E8"},  # Silver
+    {"border": "#E5C100", "glow": "#FFE135"},  # Platinum
+    {"border": "#B76E79", "glow": "#F7CAC9"},  # Rose Gold
+    # Cosmic
+    {"border": "#191970", "glow": "#E6E6FA"},  # Midnight + Stardust
+    {"border": "#4B0082", "glow": "#00FFFF"},  # Indigo + Cosmic Cyan
+    {"border": "#2F4F4F", "glow": "#98FB98"},  # Dark Slate + Pale Green
+]
+
+
+def _generate_exceptional_colors() -> dict:
+    """
+    Generate unique premium colors for an exceptional entity.
+    Randomly selects from premium palettes with slight variations.
+    """
+    base_palette = random.choice(EXCEPTIONAL_COLOR_PALETTES)
+    
+    # Add slight random variation to make each truly unique
+    def vary_color(hex_color: str, variation: int = 20) -> str:
+        """Add slight random variation to a hex color."""
+        # Parse hex
+        r = int(hex_color[1:3], 16)
+        g = int(hex_color[3:5], 16)
+        b = int(hex_color[5:7], 16)
+        
+        # Add random variation
+        r = max(0, min(255, r + random.randint(-variation, variation)))
+        g = max(0, min(255, g + random.randint(-variation, variation)))
+        b = max(0, min(255, b + random.randint(-variation, variation)))
+        
+        return f"#{r:02X}{g:02X}{b:02X}"
+    
+    return {
+        "border": vary_color(base_palette["border"]),
+        "glow": vary_color(base_palette["glow"]),
     }
 
 

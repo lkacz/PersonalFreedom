@@ -7,6 +7,7 @@ Shows all entities in the current story theme with:
 """
 
 import os
+import math
 from pathlib import Path
 from typing import Optional
 
@@ -42,6 +43,68 @@ RARITY_BG = {
 
 # Path to entity SVGs
 ENTITY_ICONS_PATH = Path(__file__).parent / "icons" / "entities"
+
+# =============================================================================
+# EXCEPTIONAL/SHINY ENTITY COLORS
+# Predefined contrasting colors for each entity when it's exceptional
+# Format: {entity_id: (R, G, B)} - complementary/contrasting to original
+# =============================================================================
+EXCEPTIONAL_ENTITY_COLORS = {
+    # WARRIOR THEME - Fire/Red creatures get cool blue/teal versions
+    "warrior_001": (0, 200, 200),      # Hatchling Drake: Red → Cyan/Teal
+    "warrior_002": (100, 50, 150),     # Training Dummy: Brown → Purple
+    "warrior_003": (255, 100, 200),    # Battle Falcon: Brown → Pink
+    "warrior_004": (50, 200, 100),     # War Horse: Brown → Emerald Green
+    "warrior_005": (0, 180, 255),      # Dragon Whelp Ember: Orange → Sky Blue
+    "warrior_006": (200, 100, 255),    # Battle Standard: Red → Violet
+    "warrior_007": (0, 255, 150),      # Battle Dragon Crimson: Red → Jade Green
+    "warrior_008": (255, 200, 50),     # Dire Wolf Fenris: Gray → Golden Yellow
+    "warrior_009": (255, 50, 50),      # Old War Ant: Black → Crimson Red
+    
+    # SCHOLAR THEME - Books/Paper get vibrant magical colors
+    "scholar_001": (255, 150, 200),    # Library Mouse: White → Pink
+    "scholar_002": (200, 50, 255),     # Study Owl: Brown → Purple
+    "scholar_003": (50, 255, 200),     # Reading Candle: Orange → Turquoise
+    "scholar_004": (150, 100, 255),    # Library Cat: Orange → Lavender
+    "scholar_005": (255, 50, 100),     # Living Bookmark: Gold → Ruby Red
+    "scholar_006": (50, 255, 100),     # Sentient Tome: Brown → Lime Green
+    "scholar_007": (255, 100, 0),      # Ancient Star Map: Blue → Orange
+    "scholar_008": (0, 200, 255),      # Archive Phoenix: Red/Orange → Cyan
+    "scholar_009": (255, 215, 0),      # Blank Parchment: Yellow → Gold Shimmer
+    
+    # WANDERER THEME - Travel gear gets mystical colors
+    "wanderer_001": (50, 255, 50),     # Lucky Coin: Copper → Green
+    "wanderer_002": (255, 50, 150),    # Brass Compass: Gold → Magenta
+    "wanderer_003": (100, 200, 255),   # Journey Journal: Brown → Sky Blue
+    "wanderer_004": (255, 255, 100),   # Road Dog: Brown → Bright Yellow
+    "wanderer_005": (200, 50, 255),    # Self-Drawing Map: Parchment → Purple
+    "wanderer_006": (50, 255, 200),    # Wanderer's Carriage: Brown → Aqua
+    "wanderer_007": (255, 100, 50),    # Timeworn Backpack: Brown → Sunset Orange
+    "wanderer_008": (255, 50, 255),    # Sky Balloon: Rainbow → Magenta
+    "wanderer_009": (0, 255, 200),     # Hobo Rat: Gray → Mint Green
+    
+    # UNDERDOG THEME - Office items get neon/cyber colors
+    "underdog_001": (0, 255, 255),     # Office Rat: Gray → Cyan
+    "underdog_002": (255, 100, 255),   # Lucky Sticky Note: Yellow → Magenta
+    "underdog_003": (255, 200, 50),    # Vending Machine Coin: Silver → Gold
+    "underdog_004": (100, 255, 100),   # Window Pigeon: Gray → Neon Green
+    "underdog_005": (255, 50, 150),    # Desk Succulent: Green → Pink
+    "underdog_006": (50, 200, 255),    # Coffee Maker: Black → Electric Blue
+    "underdog_007": (255, 150, 50),    # Corner Office Chair: Black → Orange
+    "underdog_008": (150, 255, 200),   # AGI Assistant: Blue → Mint
+    "underdog_009": (255, 100, 100),   # Break Room Fridge: Beige → Salmon Pink
+    
+    # SCIENTIST THEME - Lab equipment gets bioluminescent colors
+    "scientist_001": (200, 50, 255),   # Cracked Test Tube: Clear → Purple
+    "scientist_002": (0, 255, 150),    # Old Bunsen Burner: Blue Flame → Green Flame
+    "scientist_003": (255, 150, 50),   # Lucky Petri Dish: Clear → Amber
+    "scientist_004": (255, 200, 255),  # Wise Lab Rat: Gray → Light Pink
+    "scientist_005": (50, 255, 255),   # Vintage Microscope: Brass → Cyan
+    "scientist_006": (255, 50, 200),   # Bubbling Flask: Multi → Hot Pink
+    "scientist_007": (255, 200, 0),    # Tesla Coil: Purple → Gold Electric
+    "scientist_008": (100, 255, 200),  # Golden DNA Helix: Gold → Aquamarine
+    "scientist_009": (200, 150, 255),  # White Mouse: White → Lavender
+}
 
 
 def _resolve_entity_svg_path(entity: Entity) -> Optional[str]:
@@ -120,39 +183,83 @@ class EntityCard(QtWidgets.QFrame):
     Card widget for displaying a single entity.
     Shows full details if collected, silhouette if not.
     Uses the same layout as preview_entities.py (180x220 with 128x128 SVG).
+    
+    Exceptional entities get special animated border effects with
+    unique random colors.
     """
     
     clicked = QtCore.Signal(object)  # Emits Entity when clicked
     
-    def __init__(self, entity: Entity, is_collected: bool, is_encountered: bool = False, parent=None):
+    def __init__(self, entity: Entity, is_collected: bool, is_encountered: bool = False, 
+                 is_exceptional: bool = False, exceptional_colors: dict = None, parent=None):
         super().__init__(parent)
         self.entity = entity
         self.is_collected = is_collected
         self.is_encountered = is_encountered
+        self.is_exceptional = is_exceptional
+        self.exceptional_colors = exceptional_colors or {}
         
         self.setFrameStyle(QtWidgets.QFrame.StyledPanel | QtWidgets.QFrame.Raised)
         self.setLineWidth(2)  # Match preview_entities.py
         self.setCursor(QtCore.Qt.PointingHandCursor)
+        
+        # Animation for exceptional cards
+        self._glow_animation = None
+        self._glow_value = 0.0
+        self._sparkle_labels = []  # For sparkle decorations
+        
         self._build_ui()
         
-    def _build_ui(self):
+        # Start glow animation for exceptional entities
+        if self.is_exceptional and self.is_collected:
+            self._start_glow_animation()
+        
+    def _start_glow_animation(self):
+        """Start the pulsing glow animation for exceptional entities."""
+        self._glow_animation = QtCore.QPropertyAnimation(self, b"glow_value")
+        self._glow_animation.setDuration(2000)  # 2 second pulse
+        self._glow_animation.setStartValue(0.0)
+        self._glow_animation.setEndValue(1.0)
+        self._glow_animation.setLoopCount(-1)  # Infinite loop
+        self._glow_animation.setEasingCurve(QtCore.QEasingCurve.InOutSine)
+        self._glow_animation.start()
+    
+    def _get_glow_value(self):
+        return self._glow_value
+    
+    def _set_glow_value(self, value):
+        self._glow_value = value
+        self._update_exceptional_style()
+    
+    glow_value = QtCore.Property(float, _get_glow_value, _set_glow_value)
+    
+    def _update_exceptional_style(self):
+        """Update the stylesheet for animated border shimmer effect."""
+        if not self.is_exceptional:
+            return
+        
+        # Use rarity background
         rarity = self.entity.rarity.lower()
-        rarity_color = RARITY_COLORS.get(rarity, "#9E9E9E")
+        bg_base = RARITY_BG.get(rarity, "#2D2D2D")
+        gradient_start = "#0D0D0D"
+        gradient_end = bg_base
         
-        # Card styling based on collection status - gradient background with rarity border
-        if self.is_collected:
-            # Gradient from darker center to slightly lighter edges matching rarity
-            bg_base = RARITY_BG.get(rarity, "#2D2D2D")
-            border_color = rarity_color
-            # Create radial gradient effect with darker center
-            gradient_start = "#0D0D0D"  # Very dark center
-            gradient_end = bg_base  # Rarity-tinted outer
-        else:
-            # Darker, mysterious look for uncollected
-            gradient_start = "#080808"
-            gradient_end = "#1A1A1A"
-            border_color = "#2A2A2A"
+        # Get predefined shiny color for this entity
+        shiny_color = EXCEPTIONAL_ENTITY_COLORS.get(self.entity.id, (255, 215, 0))  # Default gold
         
+        # Create color shimmer effect for border
+        r_base, g_base, b_base = shiny_color
+        
+        # Pulse between the base color and a brighter version
+        brightness_factor = 0.3 + 0.7 * (0.5 + 0.5 * math.sin(self._glow_value * math.pi * 2))
+        
+        r = min(255, int(r_base + (255 - r_base) * (1 - brightness_factor) * 0.5))
+        g = min(255, int(g_base + (255 - g_base) * (1 - brightness_factor) * 0.5))
+        b = min(255, int(b_base + (255 - b_base) * (1 - brightness_factor) * 0.5))
+        
+        border_color = f"#{r:02X}{g:02X}{b:02X}"
+        
+        # Fixed border width (no bouncing)
         self.setStyleSheet(f"""
             EntityCard {{
                 background: qradialgradient(
@@ -164,16 +271,136 @@ class EntityCard(QtWidgets.QFrame):
                 border: 3px solid {border_color};
                 border-radius: 12px;
             }}
-            EntityCard:hover {{
-                border: 3px solid {'#FFD700' if self.is_collected else '#444444'};
-                background: qradialgradient(
-                    cx: 0.5, cy: 0.5, radius: 0.8,
-                    fx: 0.5, fy: 0.5,
-                    stop: 0 {'#151515' if self.is_collected else '#101010'},
-                    stop: 1 {gradient_end if self.is_collected else '#222222'}
-                );
-            }}
         """)
+        
+        # Animate sparkle positions around the card
+        self._update_sparkle_positions()
+    
+    def _update_sparkle_positions(self):
+        """Animate sparkle decorations floating around the card."""
+        if not self._sparkle_labels:
+            return
+        
+        # Get shiny color for sparkle tint
+        shiny_color = EXCEPTIONAL_ENTITY_COLORS.get(self.entity.id, (255, 215, 0))
+        r, g, b = shiny_color
+        
+        # Sparkle positions orbit around the card
+        positions = [
+            (10, 10), (160, 10),   # Top corners
+            (5, 100), (165, 100),  # Sides
+            (40, 200), (130, 200), # Bottom
+        ]
+        
+        for i, sparkle in enumerate(self._sparkle_labels):
+            # Oscillate position and opacity
+            phase = (self._glow_value * math.pi * 2) + (i * math.pi / 3)
+            
+            base_x, base_y = positions[i % len(positions)]
+            offset_x = math.sin(phase) * 5
+            offset_y = math.cos(phase) * 5
+            
+            sparkle.move(int(base_x + offset_x), int(base_y + offset_y))
+            
+            # Pulse opacity (0.3 - 1.0)
+            opacity = 0.3 + 0.7 * (0.5 + 0.5 * math.sin(phase))
+            sparkle.setStyleSheet(f"color: rgb({r},{g},{b}); background: transparent; font-size: 12px; opacity: {opacity};")
+    
+    def _add_sparkle_decorations(self):
+        """Add floating sparkle decorations around the card for exceptional entities."""
+        shiny_color = EXCEPTIONAL_ENTITY_COLORS.get(self.entity.id, (255, 215, 0))
+        r, g, b = shiny_color
+        
+        # Create sparkle emoji labels positioned absolutely on card
+        sparkle_chars = ["✦", "✧", "★", "✦", "✧", "★"]
+        positions = [
+            (10, 10), (160, 10),   # Top corners
+            (5, 100), (165, 100),  # Sides
+            (40, 200), (130, 200), # Bottom
+        ]
+        
+        for i, (x, y) in enumerate(positions):
+            sparkle = QtWidgets.QLabel(sparkle_chars[i], self)
+            sparkle.setStyleSheet(f"color: rgb({r},{g},{b}); background: transparent; font-size: 12px;")
+            sparkle.setFixedSize(16, 16)
+            sparkle.move(x, y)
+            sparkle.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+            sparkle.show()
+            self._sparkle_labels.append(sparkle)
+        
+    def _build_ui(self):
+        rarity = self.entity.rarity.lower()
+        rarity_color = RARITY_COLORS.get(rarity, "#9E9E9E")
+        bg_base = RARITY_BG.get(rarity, "#2D2D2D")
+        gradient_start = "#0D0D0D"  # Very dark center
+        gradient_end = bg_base  # Rarity-tinted outer
+        
+        # Exceptional entities get golden outline with rarity background
+        if self.is_exceptional and self.is_collected:
+            # Get predefined shiny color for border
+            shiny_color = EXCEPTIONAL_ENTITY_COLORS.get(self.entity.id, (255, 215, 0))
+            shiny_hex = f"#{shiny_color[0]:02X}{shiny_color[1]:02X}{shiny_color[2]:02X}"
+            self.setStyleSheet(f"""
+                EntityCard {{
+                    background: qradialgradient(
+                        cx: 0.5, cy: 0.5, radius: 0.8,
+                        fx: 0.5, fy: 0.5,
+                        stop: 0 {gradient_start},
+                        stop: 1 {gradient_end}
+                    );
+                    border: 3px solid {shiny_hex};
+                    border-radius: 12px;
+                }}
+            """)
+        elif self.is_collected:
+            # Card styling based on collection status - gradient background with rarity border
+            self.setStyleSheet(f"""
+                EntityCard {{
+                    background: qradialgradient(
+                        cx: 0.5, cy: 0.5, radius: 0.8,
+                        fx: 0.5, fy: 0.5,
+                        stop: 0 {gradient_start},
+                        stop: 1 {gradient_end}
+                    );
+                    border: 3px solid {rarity_color};
+                    border-radius: 12px;
+                }}
+                EntityCard:hover {{
+                    border: 3px solid #FFD700;
+                    background: qradialgradient(
+                        cx: 0.5, cy: 0.5, radius: 0.8,
+                        fx: 0.5, fy: 0.5,
+                        stop: 0 #151515,
+                        stop: 1 {gradient_end}
+                    );
+                }}
+            """)
+        else:
+            # Darker, mysterious look for uncollected
+            gradient_start = "#080808"
+            gradient_end = "#1A1A1A"
+            border_color = "#2A2A2A"
+            self.setStyleSheet(f"""
+                EntityCard {{
+                    background: qradialgradient(
+                        cx: 0.5, cy: 0.5, radius: 0.8,
+                        fx: 0.5, fy: 0.5,
+                        stop: 0 {gradient_start},
+                        stop: 1 {gradient_end}
+                    );
+                    border: 3px solid {border_color};
+                    border-radius: 12px;
+                }}
+                EntityCard:hover {{
+                    border: 3px solid #444444;
+                    background: qradialgradient(
+                        cx: 0.5, cy: 0.5, radius: 0.8,
+                        fx: 0.5, fy: 0.5,
+                        stop: 0 #101010,
+                        stop: 1 #222222
+                    );
+                }}
+            """)
         
         layout = QtWidgets.QVBoxLayout(self)
         layout.setSpacing(6)
@@ -194,6 +421,7 @@ class EntityCard(QtWidgets.QFrame):
                 icon_widget = QSvgWidget(svg_path)
                 icon_widget.setFixedSize(128, 128)
                 icon_widget.setStyleSheet("background: transparent;")
+                # Entity keeps original colors - no colorize effect
             else:
                 # Silhouette for uncollected - also 128x128
                 icon_widget = SilhouetteSvgWidget(svg_path)
@@ -255,8 +483,24 @@ class EntityCard(QtWidgets.QFrame):
         rarity_label.setStyleSheet(f"color: {rarity_label_color}; background: transparent;")
         layout.addWidget(rarity_label)
         
+        # Exceptional indicator (separate from rarity)
+        if self.is_collected and self.is_exceptional:
+            exceptional_label = QtWidgets.QLabel("✨ EXCEPTIONAL ✨")
+            exceptional_label.setAlignment(QtCore.Qt.AlignCenter)
+            exceptional_label.setFont(QtGui.QFont("Segoe UI", 8, QtGui.QFont.Bold))
+            # Use entity's shiny color for exceptional badge
+            shiny_color = EXCEPTIONAL_ENTITY_COLORS.get(self.entity.id, (255, 215, 0))
+            r, g, b = shiny_color
+            exceptional_label.setStyleSheet(f"color: rgb({r},{g},{b}); background: transparent;")
+            layout.addWidget(exceptional_label)
+        layout.addWidget(rarity_label)
+        
         # Match preview_entities.py card size: 180x220
         self.setFixedSize(180, 220)
+        
+        # Add sparkle decorations for exceptional entities (after setFixedSize so they can be positioned)
+        if self.is_collected and self.is_exceptional:
+            self._add_sparkle_decorations()
     
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
@@ -302,8 +546,10 @@ class EntitidexTab(QtWidgets.QWidget):
                     collected = set(entitidex_data.get("collected_entity_ids", 
                                     entitidex_data.get("collected", [])))
                     encounters = entitidex_data.get("encounters", {})
+                    exceptional = entitidex_data.get("exceptional_entities", {})
                     self.progress.collected_entity_ids = collected
                     self.progress.encounters = encounters
+                    self.progress.exceptional_entities = exceptional
         except Exception as e:
             print(f"Error loading entitidex progress: {e}")
     
@@ -314,6 +560,7 @@ class EntitidexTab(QtWidgets.QWidget):
                 self.blocker.adhd_buster["entitidex"] = {
                     "collected_entity_ids": list(self.progress.collected_entity_ids),
                     "encounters": self.progress.encounters,
+                    "exceptional_entities": self.progress.exceptional_entities,
                 }
                 self.blocker.save_config()
         except Exception as e:
@@ -569,8 +816,14 @@ class EntitidexTab(QtWidgets.QWidget):
             
             is_collected = self.progress.is_collected(entity.id)
             is_encountered = self.progress.is_encountered(entity.id)
+            is_exceptional = self.progress.is_exceptional(entity.id)
+            exceptional_colors = self.progress.get_exceptional_colors(entity.id)
             
-            card = EntityCard(entity, is_collected, is_encountered)
+            card = EntityCard(
+                entity, is_collected, is_encountered,
+                is_exceptional=is_exceptional,
+                exceptional_colors=exceptional_colors
+            )
             card.clicked.connect(self._on_entity_clicked)
             cards_layout.addWidget(card, row, col)
     
