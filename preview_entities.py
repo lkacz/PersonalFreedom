@@ -142,12 +142,13 @@ class EntityCard(QFrame):
         
         layout.addWidget(svg_container)
         
-        # Name label
+        # Name label - smaller font with word wrap, centered
         name_label = QLabel(name)
         name_label.setAlignment(Qt.AlignCenter)
-        name_label.setFont(QFont("Segoe UI", 11, QFont.Bold))
-        name_label.setStyleSheet(f"color: {border_color};")
-        layout.addWidget(name_label)
+        name_label.setWordWrap(True)
+        name_label.setFont(QFont("Segoe UI", 8, QFont.Bold))
+        name_label.setStyleSheet(f"color: {border_color}; background: transparent;")
+        layout.addWidget(name_label, 0, Qt.AlignCenter)
         
         # Power label
         power_label = QLabel(f"⚔️ Power: {power}")
@@ -160,7 +161,7 @@ class EntityCard(QFrame):
         rarity_label = QLabel(rarity.upper())
         rarity_label.setAlignment(Qt.AlignCenter)
         rarity_label.setFont(QFont("Segoe UI", 8, QFont.Bold))
-        rarity_label.setStyleSheet(f"color: {border_color};")
+        rarity_label.setStyleSheet(f"color: {border_color}; background: transparent;")
         layout.addWidget(rarity_label)
         
         self.setFixedSize(180, 220)
