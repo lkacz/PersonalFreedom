@@ -22,12 +22,17 @@ class EntitidexProgress:
     - Encounter history (entities seen but not caught)
     - Failed catch attempts (for pity system)
     - Detailed capture records
+    - Exceptional entity variants (5% chance on catch)
     """
     
     # Core tracking data
     collected_entity_ids: Set[str] = field(default_factory=set)
     encounters: Dict[str, int] = field(default_factory=dict)  # entity_id -> count
     failed_catches: Dict[str, int] = field(default_factory=dict)  # entity_id -> count
+    
+    # Exceptional entities - stores random premium colors for each
+    # Format: {entity_id: {"border": "#HEX", "glow": "#HEX"}}
+    exceptional_entities: Dict[str, dict] = field(default_factory=dict)
     
     # Detailed capture records
     captures: List[EntityCapture] = field(default_factory=list)
@@ -58,6 +63,14 @@ class EntitidexProgress:
         """Get the number of failed catch attempts for an entity."""
         return self.failed_catches.get(entity_id, 0)
     
+    def is_exceptional(self, entity_id: str) -> bool:
+        """Check if an entity is an exceptional variant."""
+        return entity_id in self.exceptional_entities
+    
+    def get_exceptional_colors(self, entity_id: str) -> Optional[dict]:
+        """Get the exceptional color palette for an entity."""
+        return self.exceptional_entities.get(entity_id)
+    
     # ==========================================================================
     # RECORDING EVENTS
     # ==========================================================================
@@ -81,6 +94,16 @@ class EntitidexProgress:
         """
         self.failed_catches[entity_id] = self.failed_catches.get(entity_id, 0) + 1
         self.total_catch_attempts += 1
+    
+    def mark_exceptional(self, entity_id: str, colors: dict) -> None:
+        """
+        Mark an entity as exceptional with unique colors.
+        
+        Args:
+            entity_id: The ID of the exceptional entity
+            colors: Dict with "border" and "glow" hex colors
+        """
+        self.exceptional_entities[entity_id] = colors
     
     def record_successful_catch(
         self,
@@ -303,6 +326,7 @@ class EntitidexProgress:
             "collected_entity_ids": list(self.collected_entity_ids),
             "encounters": self.encounters.copy(),
             "failed_catches": self.failed_catches.copy(),
+            "exceptional_entities": self.exceptional_entities.copy(),
             "captures": [c.to_dict() for c in self.captures],
             "current_tier": self.current_tier,
             "total_catch_attempts": self.total_catch_attempts,
@@ -318,6 +342,7 @@ class EntitidexProgress:
         progress.collected_entity_ids = set(data.get("collected_entity_ids", []))
         progress.encounters = data.get("encounters", {}).copy()
         progress.failed_catches = data.get("failed_catches", {}).copy()
+        progress.exceptional_entities = data.get("exceptional_entities", {}).copy()
         progress.captures = [
             EntityCapture.from_dict(c) for c in data.get("captures", [])
         ]

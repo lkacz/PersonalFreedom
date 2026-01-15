@@ -218,6 +218,8 @@ def show_entity_encounter(entity, join_probability: float,
     try:
         result = bond_logic_callback(entity.id)
         success = result.get("success", False)
+        is_exceptional = result.get("is_exceptional", False)
+        exceptional_colors = result.get("exceptional_colors", None)
     except Exception as e:
         QtWidgets.QMessageBox.critical(parent, "Error", f"Bonding error: {str(e)}")
         return
@@ -233,11 +235,18 @@ def show_entity_encounter(entity, join_probability: float,
         roll = random.uniform(min(0.99, join_probability + 0.01), 1.0)
     
     # 4. Show the dramatic lottery animation
+    if is_exceptional:
+        # Special success text for exceptional
+        border_col = exceptional_colors.get("border", "#FFD700") if exceptional_colors else "#FFD700"
+        success_text = f"🌟✨ EXCEPTIONAL {entity.name}! ✨🌟"
+    else:
+        success_text = f"✨ BONDED: {entity.name}! ✨"
+    
     anim_dialog = LotteryRollDialog(
         target_roll=roll,
         success_threshold=join_probability,
         title=f"🎲 Bonding with {entity.name}...",
-        success_text=f"✨ BONDED: {entity.name}! ✨",
+        success_text=success_text,
         failure_text="💔 Bond Failed",
         animation_duration=4.0, 
         parent=parent
@@ -245,15 +254,52 @@ def show_entity_encounter(entity, join_probability: float,
     
     anim_dialog.exec()
     
-    # 5. Optional: Show detailed result if needed (e.g. pity bonus info)
-    # The LotteryRollDialog just shows success/fail. 
-    # If we want to show "Pity Bonus Increased", we might need another msg box
-    # or rely on the status bar updates usually done by the caller.
-    if not success and result.get("consecutive_fails", 0) > 0:
+    # 5. Show special exceptional celebration dialog
+    if success and is_exceptional:
+        _show_exceptional_celebration(entity, exceptional_colors, parent)
+    elif not success and result.get("consecutive_fails", 0) > 0:
         fails = result["consecutive_fails"]
-        if fails % 3 == 0: # Only annoy user occasionally
+        if fails % 3 == 0:  # Only annoy user occasionally
              QtWidgets.QMessageBox.information(
                  parent, "Bond Failed", 
                  f"Don't worry! Pity bonus is building up.\nConsecutive fails: {fails}"
              )
+
+
+def _show_exceptional_celebration(entity, exceptional_colors: dict, parent: QtWidgets.QWidget):
+    """Show special celebration dialog for catching an exceptional entity."""
+    border_col = exceptional_colors.get("border", "#FFD700") if exceptional_colors else "#FFD700"
+    glow_col = exceptional_colors.get("glow", "#FF6B9D") if exceptional_colors else "#FF6B9D"
+    
+    msg_box = QtWidgets.QMessageBox(parent)
+    msg_box.setWindowTitle("🌟 EXCEPTIONAL! 🌟")
+    msg_box.setText(f"<h2 style='color: {border_col};'>✨ EXCEPTIONAL {entity.name}! ✨</h2>")
+    msg_box.setInformativeText(
+        f"<p style='font-size: 14px;'>You found an <b>EXCEPTIONAL</b> variant!</p>"
+        f"<p style='font-size: 12px; color: #888;'>Only 5% of caught entities become Exceptional. "
+        f"This one has unique colors that no other player will have!</p>"
+        f"<p style='font-size: 12px;'>Border: <span style='color: {border_col};'>■ {border_col}</span><br>"
+        f"Glow: <span style='color: {glow_col};'>■ {glow_col}</span></p>"
+    )
+    msg_box.setIcon(QtWidgets.QMessageBox.Information)
+    msg_box.setStyleSheet(f"""
+        QMessageBox {{
+            background-color: #1a1a2e;
+        }}
+        QMessageBox QLabel {{
+            color: #FFFFFF;
+        }}
+        QPushButton {{
+            background-color: {border_col};
+            color: #000000;
+            font-weight: bold;
+            padding: 8px 20px;
+            border-radius: 4px;
+            min-width: 80px;
+        }}
+        QPushButton:hover {{
+            background-color: {glow_col};
+        }}
+    """)
+    msg_box.exec()
 

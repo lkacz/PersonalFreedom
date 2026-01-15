@@ -16496,6 +16496,25 @@ class DevTab(QtWidgets.QWidget):
         view_btn.clicked.connect(self._view_entitidex)
         entity_layout.addWidget(view_btn)
         
+        # Generate Exceptional Entity button
+        exceptional_btn = QtWidgets.QPushButton("🌟 Generate EXCEPTIONAL Entity (Guaranteed)")
+        exceptional_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #FF6B9D, stop:0.5 #FFD700, stop:1 #00FFFF);
+                color: black;
+                font-weight: bold;
+                padding: 10px;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #00FFFF, stop:0.5 #FF6B9D, stop:1 #FFD700);
+            }
+        """)
+        exceptional_btn.clicked.connect(self._generate_exceptional_entity)
+        entity_layout.addWidget(exceptional_btn)
+        
         layout.addWidget(entity_group)
 
         # Status display
@@ -16761,6 +16780,57 @@ class DevTab(QtWidgets.QWidget):
             color = {"common": "#9e9e9e", "uncommon": "#4caf50", "rare": "#2196f3", 
                      "epic": "#9c27b0", "legendary": "#ff9800"}.get(rarity, "#4caf50")
             self.status_label.setStyleSheet(f"color: {color}; padding: 10px;")
+            
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _generate_exceptional_entity(self) -> None:
+        """Generate a guaranteed exceptional entity (bypasses 5% roll)."""
+        try:
+            from entitidex import get_entities_for_story, calculate_join_probability
+            from gamification import _generate_exceptional_colors, get_entitidex_manager, save_entitidex_progress
+            from entity_drop_dialog import _show_exceptional_celebration
+            import random
+            
+            story_id = self.story_combo.currentText()
+            entities = get_entities_for_story(story_id)
+            
+            if not entities:
+                self.status_label.setText(f"❌ No entities for story: {story_id}")
+                return
+            
+            # Pick a random entity
+            entity = random.choice(entities)
+            
+            # Generate exceptional colors
+            exceptional_colors = _generate_exceptional_colors()
+            
+            # Get the entitidex manager and add the entity as collected + exceptional
+            manager = get_entitidex_manager(self.blocker.adhd_buster)
+            
+            # Mark as collected if not already
+            if entity.id not in manager.progress.collected_entity_ids:
+                manager.progress.collected_entity_ids.add(entity.id)
+            
+            # Mark as exceptional with unique colors
+            manager.progress.mark_exceptional(entity.id, exceptional_colors)
+            
+            # Save progress
+            save_entitidex_progress(self.blocker.adhd_buster, manager)
+            self.blocker.save_config()
+            
+            # Refresh entitidex tab
+            main_win = self.window()
+            if hasattr(main_win, 'entitidex_tab'):
+                main_win.entitidex_tab.refresh()
+            
+            # Show celebration
+            _show_exceptional_celebration(entity, exceptional_colors, self.window())
+            
+            border_col = exceptional_colors.get("border", "#FFD700")
+            self.status_label.setText(f"🌟 EXCEPTIONAL {entity.name} added!")
+            self.status_label.setStyleSheet(f"color: {border_col}; padding: 10px; font-weight: bold;")
             
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
