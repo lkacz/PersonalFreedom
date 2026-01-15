@@ -16648,6 +16648,10 @@ class DevTab(QtWidgets.QWidget):
                 from gamification import attempt_entitidex_bond
                 result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
                 self.status_label.setText(f"Result: {'Success' if result.get('success') else 'Failed'}")
+                # Refresh entitidex tab after bond attempt
+                main_win = self.window()
+                if hasattr(main_win, 'entitidex_tab'):
+                    main_win.entitidex_tab.refresh()
                 return result
 
             show_entity_encounter(
@@ -16691,6 +16695,10 @@ class DevTab(QtWidgets.QWidget):
                 from gamification import attempt_entitidex_bond
                 result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
                 self.status_label.setText(f"Result: {result['success']}")
+                # Refresh entitidex tab after bond attempt
+                main_win = self.window()
+                if hasattr(main_win, 'entitidex_tab'):
+                    main_win.entitidex_tab.refresh()
                 return result
 
             show_entity_encounter(
@@ -16736,6 +16744,10 @@ class DevTab(QtWidgets.QWidget):
             def bond_callback_wrapper(entity_id: str):
                 from gamification import attempt_entitidex_bond
                 result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
+                # Refresh entitidex tab after bond attempt
+                main_win = self.window()
+                if hasattr(main_win, 'entitidex_tab'):
+                    main_win.entitidex_tab.refresh()
                 return result
 
             show_entity_encounter(
