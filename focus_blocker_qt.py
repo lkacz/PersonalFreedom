@@ -1010,13 +1010,33 @@ class TimerTab(QtWidgets.QWidget):
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(10)
+        layout.setSpacing(15)
+        layout.setContentsMargins(15, 15, 15, 15)
 
-        # Timer display
+        # Timer display with modern card design
+        timer_card = QtWidgets.QFrame()
+        timer_card.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2d3436, stop:1 #1a1a1a);
+                border: 3px solid #5f27cd;
+                border-radius: 20px;
+                padding: 30px;
+            }
+        """)
+        timer_layout = QtWidgets.QVBoxLayout(timer_card)
+        timer_layout.setContentsMargins(20, 20, 20, 20)
+        
         self.timer_label = QtWidgets.QLabel("00:00:00")
         self.timer_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.timer_label.setStyleSheet("font: 700 36px 'Consolas';")
-        layout.addWidget(self.timer_label)
+        self.timer_label.setStyleSheet("""
+            font: 700 48px 'Consolas';
+            color: #a29bfe;
+            background: transparent;
+            padding: 20px;
+        """)
+        timer_layout.addWidget(self.timer_label)
+        layout.addWidget(timer_card)
 
         # Mode selection
         mode_box = QtWidgets.QGroupBox("Mode")
@@ -1037,8 +1057,49 @@ class TimerTab(QtWidgets.QWidget):
         self.mode_buttons[BlockMode.NORMAL].setChecked(True)
         layout.addWidget(mode_box)
 
-        # Duration inputs
-        duration_box = QtWidgets.QGroupBox("Duration")
+        # Duration inputs with modern gradient card
+        duration_box = QtWidgets.QGroupBox("⏱️ Session Duration")
+        duration_box.setStyleSheet("""
+            QGroupBox {
+                font-size: 14px;
+                font-weight: bold;
+                color: #74b9ff;
+                border: 2px solid #2d3436;
+                border-radius: 12px;
+                margin-top: 10px;
+                padding: 15px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2d3436, stop:1 #1a1a1a);
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+            QLabel {
+                color: #b2bec3;
+                font-size: 13px;
+            }
+            QSpinBox {
+                background: #1a1a1a;
+                border: 2px solid #0984e3;
+                border-radius: 6px;
+                padding: 5px;
+                color: #74b9ff;
+                font-size: 14px;
+                font-weight: bold;
+                min-width: 60px;
+            }
+            QSpinBox::up-button, QSpinBox::down-button {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #0984e3, stop:1 #0652a8);
+                border-radius: 3px;
+                width: 20px;
+            }
+            QSpinBox::up-button:hover, QSpinBox::down-button:hover {
+                background: #74b9ff;
+            }
+        """)
         duration_layout = QtWidgets.QHBoxLayout(duration_box)
         self.hours_spin = QtWidgets.QSpinBox()
         self.hours_spin.setRange(0, 12)
@@ -1052,54 +1113,206 @@ class TimerTab(QtWidgets.QWidget):
         duration_layout.addWidget(self.minutes_spin)
         layout.addWidget(duration_box)
 
-        # Presets
-        preset_box = QtWidgets.QGroupBox("Presets")
+        # Presets with modern gradient buttons
+        preset_box = QtWidgets.QGroupBox("⚡ Quick Presets")
+        preset_box.setStyleSheet("""
+            QGroupBox {
+                font-size: 14px;
+                font-weight: bold;
+                color: #ffeaa7;
+                border: 2px solid #2d3436;
+                border-radius: 12px;
+                margin-top: 10px;
+                padding: 15px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2d3436, stop:1 #1a1a1a);
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+        """)
         preset_layout = QtWidgets.QHBoxLayout(preset_box)
         presets = [("25m", 25), ("45m", 45), ("1h", 60), ("2h", 120), ("4h", 240)]
         for label, minutes in presets:
             btn = QtWidgets.QPushButton(label)
+            btn.setStyleSheet("""
+                QPushButton {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #fdcb6e, stop:1 #e17055);
+                    color: white;
+                    font-size: 12px;
+                    font-weight: bold;
+                    border-radius: 8px;
+                    border: 2px solid #d63031;
+                    padding: 8px 15px;
+                }
+                QPushButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #ffeaa7, stop:1 #fab1a0);
+                }
+                QPushButton:pressed {
+                    background: #d63031;
+                }
+            """)
             btn.clicked.connect(lambda _=False, m=minutes: self._set_preset(m))
             preset_layout.addWidget(btn)
         layout.addWidget(preset_box)
 
-        # Notification option
+        # Notification option with modern styling
         self.notify_checkbox = QtWidgets.QCheckBox("🔔 Notify me when session ends")
         self.notify_checkbox.setChecked(getattr(self.blocker, 'notify_on_complete', True))
         self.notify_checkbox.setToolTip("Show a desktop notification when your focus session completes")
+        self.notify_checkbox.setStyleSheet("""
+            QCheckBox {
+                color: #dfe6e9;
+                font-size: 13px;
+                spacing: 8px;
+                padding: 8px;
+            }
+            QCheckBox::indicator {
+                width: 20px;
+                height: 20px;
+                border-radius: 4px;
+                border: 2px solid #00b894;
+                background: #1a1a1a;
+            }
+            QCheckBox::indicator:checked {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 #55efc4, stop:1 #00b894);
+                border: 2px solid #55efc4;
+            }
+        """)
         layout.addWidget(self.notify_checkbox)
 
-        # Start/Stop buttons
+        # Start/Stop buttons with modern gradient styling
         btn_layout = QtWidgets.QHBoxLayout()
-        self.start_btn = QtWidgets.QPushButton("▶ Start Focus")
-        self.stop_btn = QtWidgets.QPushButton("⬛ Stop")
+        btn_layout.setSpacing(15)
+        
+        self.start_btn = QtWidgets.QPushButton("▶ Start Focus Session")
+        self.start_btn.setMinimumHeight(65)
+        self.start_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #00b894, stop:1 #00a884);
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 12px;
+                border: 3px solid #00cec9;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #55efc4, stop:1 #00b894);
+                border: 3px solid #55efc4;
+            }
+            QPushButton:pressed {
+                background: #00a884;
+            }
+            QPushButton:disabled {
+                background: #555555;
+                border: 3px solid #444444;
+                color: #888888;
+            }
+        """)
+        
+        self.stop_btn = QtWidgets.QPushButton("⬛ Stop Session")
+        self.stop_btn.setMinimumHeight(65)
         self.stop_btn.setEnabled(False)
+        self.stop_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #d63031, stop:1 #c0392b);
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 12px;
+                border: 3px solid #e74c3c;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ff7675, stop:1 #d63031);
+                border: 3px solid #ff7675;
+            }
+            QPushButton:pressed {
+                background: #c0392b;
+            }
+            QPushButton:disabled {
+                background: #555555;
+                border: 3px solid #444444;
+                color: #888888;
+            }
+        """)
+        
         btn_layout.addWidget(self.start_btn)
         btn_layout.addWidget(self.stop_btn)
         layout.addLayout(btn_layout)
 
-        # Status label
-        self.status_label = QtWidgets.QLabel("Ready to focus")
-        self.status_label.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(self.status_label)
+        # Status label with modern card design
+        status_card = QtWidgets.QFrame()
+        status_card.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2d3436, stop:1 #1a1a1a);
+                border: 2px solid #00b894;
+                border-radius: 10px;
+                padding: 12px;
+            }
+        """)
+        status_layout = QtWidgets.QVBoxLayout(status_card)
+        status_layout.setContentsMargins(0, 0, 0, 0)
         
-        # Rewards info section
-        rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
+        self.status_label = QtWidgets.QLabel("✨ Ready to focus")
+        self.status_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.status_label.setStyleSheet("""
+            font-size: 16px;
+            font-weight: bold;
+            color: #00b894;
+            background: transparent;
+            padding: 5px;
+        """)
+        status_layout.addWidget(self.status_label)
+        layout.addWidget(status_card)
+        
+        # Rewards info section with modern gradient styling
+        rewards_group = QtWidgets.QGroupBox("🎁 Session Rewards")
+        rewards_group.setStyleSheet("""
+            QGroupBox {
+                font-size: 14px;
+                font-weight: bold;
+                color: #ffd700;
+                border: 2px solid #2d3436;
+                border-radius: 12px;
+                margin-top: 10px;
+                padding: 15px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2d3436, stop:1 #1a1a1a);
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+        """)
         rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
         rewards_info = QtWidgets.QLabel(
-            "<b>How it works:</b> Complete a focus session to earn 1 random item. Longer sessions shift the rarity distribution higher.<br>"
-            "<table style='font-size:10px; color:#888888; margin-top:5px;'>"
-            "<tr><th>Session</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
+            "<b style='color:#ffeaa7;'>How it works:</b> <span style='color:#dfe6e9;'>Complete a focus session to earn 1 random item. Longer sessions shift the rarity distribution higher.</span><br>"
+            "<table style='font-size:10px; color:#b2bec3; margin-top:5px;'>"
+            "<tr style='color:#ffeaa7;'><th>Session</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
             "<tr><td>&lt;30min</td><td>50%</td><td>30%</td><td>15%</td><td>4%</td><td>1%</td></tr>"
-            "<tr><td>30min</td><td><b>80%</b></td><td>15%</td><td>5%</td><td>-</td><td>-</td></tr>"
-            "<tr><td>1hr</td><td>20%</td><td><b>60%</b></td><td>15%</td><td>5%</td><td>-</td></tr>"
-            "<tr><td>2hr</td><td>5%</td><td>15%</td><td><b>60%</b></td><td>15%</td><td>5%</td></tr>"
-            "<tr><td>3hr</td><td>-</td><td>5%</td><td>15%</td><td><b>60%</b></td><td>20%</td></tr>"
-            "<tr><td>4hr+</td><td>-</td><td>-</td><td>5%</td><td>15%</td><td><b>80%</b></td></tr>"
+            "<tr><td>30min</td><td><b style='color:#4caf50;'>80%</b></td><td>15%</td><td>5%</td><td>-</td><td>-</td></tr>"
+            "<tr><td>1hr</td><td>20%</td><td><b style='color:#4caf50;'>60%</b></td><td>15%</td><td>5%</td><td>-</td></tr>"
+            "<tr><td>2hr</td><td>5%</td><td>15%</td><td><b style='color:#2196f3;'>60%</b></td><td>15%</td><td>5%</td></tr>"
+            "<tr><td>3hr</td><td>-</td><td>5%</td><td>15%</td><td><b style='color:#9c27b0;'>60%</b></td><td>20%</td></tr>"
+            "<tr><td>4hr+</td><td>-</td><td>-</td><td>5%</td><td>15%</td><td><b style='color:#ff9800;'>80%</b></td></tr>"
             "</table>"
-            "<br><b>Streak bonus:</b> +1 tier per 7-day streak | <b>XP:</b> 25 base + 2/min + streak bonus"
+            "<br><b style='color:#74b9ff;'>Streak bonus:</b> <span style='color:#dfe6e9;'>+1 tier per 7-day streak</span> | <b style='color:#fdcb6e;'>XP:</b> <span style='color:#dfe6e9;'>25 base + 2/min + streak bonus</span>"
         )
         rewards_info.setWordWrap(True)
-        rewards_info.setStyleSheet("color: #888888; font-size: 10px;")
+        rewards_info.setStyleSheet("color: #dfe6e9; font-size: 11px; background: transparent; padding: 8px;")
         rewards_layout.addWidget(rewards_info)
         layout.addWidget(rewards_group)
 
@@ -4643,6 +4856,8 @@ class ActivityTab(QtWidgets.QWidget):
         
         # Check for rewards
         rewards = None
+        effective_mins = 0
+        rarity = None
         if GAMIFICATION_AVAILABLE and check_all_activity_rewards and is_gamification_enabled(self.blocker.adhd_buster):
             story_id = self.blocker.adhd_buster.get("active_story", "warrior")
             rewards = check_all_activity_rewards(
@@ -4654,6 +4869,26 @@ class ActivityTab(QtWidgets.QWidget):
                 self.blocker.activity_milestones,
                 story_id
             )
+            
+            # Get effective minutes and rarity for lottery animation
+            if rewards and rewards.get("reward"):
+                effective_mins = rewards.get("effective_minutes", 0)
+                rarity = rewards.get("rarity")
+        
+        # Show lottery animation if we got a reward
+        if rarity and effective_mins >= 8:
+            from lottery_animation import MergeTwoStageLotteryDialog
+            
+            # Use merge lottery with 100% success (activity rewards are guaranteed)
+            lottery = MergeTwoStageLotteryDialog(
+                success_roll=0.0,  # Guaranteed success
+                success_threshold=1.0,  # 100% success rate
+                tier_upgrade_enabled=False,
+                base_rarity=rarity,
+                parent=self
+            )
+            lottery.exec()
+            # Lottery animation shows the rarity but doesn't change the reward
         
         # Create entry
         new_entry = {
@@ -7120,8 +7355,10 @@ class CharacterCanvas(QtWidgets.QWidget):
         else:
             painter.setPen(QtGui.QColor("#fff"))
         
-        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"⚔ {self.power}")
+        # Only draw final text for non-glowing tiers (glow loop already drew it)
+        if self.tier not in ["legendary", "godlike"]:
+            painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+            painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"⚔ {self.power}")
 
     def _draw_scholar_character(self, event) -> None:
         """Draw the academic/scholar themed character."""
@@ -7710,8 +7947,10 @@ class CharacterCanvas(QtWidgets.QWidget):
         else:
             painter.setPen(QtGui.QColor("#fff"))
         
-        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"📚 {self.power}")
+        # Only draw final text for non-glowing tiers (glow loop already drew it)
+        if self.tier not in ["legendary", "godlike"]:
+            painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+            painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"📚 {self.power}")
 
     def _draw_wanderer_character(self, event) -> None:
         """Draw the mystical/dreamweaver themed character."""
@@ -8375,8 +8614,10 @@ class CharacterCanvas(QtWidgets.QWidget):
         else:
             painter.setPen(QtGui.QColor("#d0d0ff"))
         
-        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🌙 {self.power}")
+        # Only draw final text for non-glowing tiers (glow loop already drew it)
+        if self.tier not in ["legendary", "godlike"]:
+            painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+            painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🌙 {self.power}")
 
     def _draw_underdog_character(self, event) -> None:
         """Draw the modern office/corporate themed character."""
@@ -8996,8 +9237,10 @@ class CharacterCanvas(QtWidgets.QWidget):
         else:
             painter.setPen(QtGui.QColor("#b2bec3"))
         
-        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🏢 {self.power}")
+        # Only draw final text for non-glowing tiers (glow loop already drew it)
+        if self.tier not in ["legendary", "godlike"]:
+            painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+            painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🏢 {self.power}")
 
     def _draw_scientist_character(self, event) -> None:
         """Draw the modern research scientist character."""
@@ -10204,8 +10447,10 @@ class CharacterCanvas(QtWidgets.QWidget):
         else:
             painter.setPen(QtGui.QColor("#90caf9"))
         
-        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🔬 {self.power}")
+        # Only draw final text for non-glowing tiers (glow loop already drew it)
+        if self.tier not in ["legendary", "godlike"]:
+            painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+            painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🔬 {self.power}")
 
 
 class HydrationTab(QtWidgets.QWidget):
@@ -10517,7 +10762,7 @@ class HydrationTab(QtWidgets.QWidget):
         # Count consecutive days with 5 glasses
         streak = 0
         check_date = datetime.now().date() - timedelta(days=1)  # Start from yesterday
-        max_streak_check = 3650  # Max 10 years to prevent infinite loop with corrupted data
+        max_streak_check = 365  # Max 1 year (realistic maximum streak to display)
         
         while streak < max_streak_check:
             date_str = check_date.strftime("%Y-%m-%d")
@@ -17075,23 +17320,55 @@ def main() -> None:
         selected_user = None
 
         if last_user:
-            selected_user = last_user
-            splash.set_status(f"Auto-loading profile: {selected_user}...")
-        else:
+            # Validate that auto-login user still exists with proper directory
+            if user_manager.user_exists(last_user):
+                try:
+                    user_dir = user_manager.get_user_dir(last_user)
+                    if user_dir.exists() and user_dir.is_dir():
+                        selected_user = last_user
+                        splash.set_status(f"Auto-loading profile: {selected_user}...")
+                    else:
+                        # Directory was deleted - clear invalid last_user
+                        user_manager.clear_last_user()
+                        last_user = None
+                except (ValueError, OSError):
+                    # Invalid user - clear and prompt
+                    user_manager.clear_last_user()
+                    last_user = None
+            else:
+                # User no longer exists - clear invalid last_user
+                user_manager.clear_last_user()
+                last_user = None
+        
+        if not selected_user:
             splash.hide() # Hide splash for dialog
             
             selection_dialog = UserSelectionDialog(user_manager)
             if selection_dialog.exec() == QtWidgets.QDialog.Accepted:
                 selected_user = selection_dialog.selected_user
-                user_manager.save_last_user(selected_user)
-                splash.show()
-                splash.set_status(f"Loading profile: {selected_user}...")
+                if selected_user:  # Validate selection is not None
+                    user_manager.save_last_user(selected_user)
+                    splash.show()
+                    splash.set_status(f"Loading profile: {selected_user}...")
+                else:
+                    show_error(None, "Selection Error", "No user profile was selected.")
+                    sys.exit(1)
             else:
                 sys.exit(0)
+    except ImportError as e:
+        show_error(None, "Startup Error", f"Failed to import required modules:\n{e}")
+        sys.exit(1)
+    except KeyboardInterrupt:
+        sys.exit(0)
     except Exception as e:
-        print(f"Error in user selection: {e}")
-        selected_user = None
-        splash.show()
+        import traceback
+        show_error(
+            None, 
+            "Unexpected Error", 
+            f"An unexpected error occurred during user selection:\n{e}\n\nPlease report this issue."
+        )
+        traceback.print_exc()
+        sys.exit(1)
     
     splash.set_status("Creating main window...")
     

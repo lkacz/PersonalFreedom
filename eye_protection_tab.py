@@ -2,12 +2,12 @@
 import sys
 import random
 import time
+import math
 import threading
 from datetime import datetime, timedelta
 from PySide6 import QtWidgets, QtCore, QtGui
 from gamification import generate_item
 from game_state import get_game_state
-from lottery_animation import TwoStageLotteryDialog
 
 # Platform-safe sound support
 try:
@@ -144,52 +144,159 @@ class EyeProtectionTab(QtWidgets.QWidget):
         layout.setSpacing(20)
         layout.setContentsMargins(30, 30, 30, 30)
         
-        # Title
+        # Title with gradient background
         title = QtWidgets.QLabel("👁️ Eye & Breath Relief")
-        title.setStyleSheet("font-size: 24px; font-weight: bold; color: #4caf50;")
+        title.setStyleSheet("""
+            font-size: 22px;
+            font-weight: bold;
+            color: #ffffff;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 #66bb6a, stop:1 #43a047);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #4caf50;
+        """)
         title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
-        # Instructions / Status Area
+        # Cooldown Status Label with modern card design
+        cooldown_card = QtWidgets.QFrame()
+        cooldown_card.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2d3436, stop:1 #1e272e);
+                border: 2px solid #4caf50;
+                border-radius: 12px;
+                padding: 15px;
+            }
+        """)
+        cooldown_layout = QtWidgets.QVBoxLayout(cooldown_card)
+        self.cooldown_status_label = QtWidgets.QLabel("✅ Ready to start!")
+        self.cooldown_status_label.setStyleSheet("""
+            font-size: 20px;
+            font-weight: bold;
+            color: #4caf50;
+            background: transparent;
+            padding: 5px;
+        """)
+        self.cooldown_status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        cooldown_layout.addWidget(self.cooldown_status_label)
+        layout.addWidget(cooldown_card)
+
+        # Instructions / Status Area with gradient card
+        instructions_frame = QtWidgets.QGroupBox("📋 Instructions & Status")
+        instructions_frame.setStyleSheet("""
+            QGroupBox {
+                font-size: 14px;
+                font-weight: bold;
+                color: #4fc3f7;
+                border: 2px solid #2d3436;
+                border-radius: 10px;
+                margin-top: 10px;
+                padding: 15px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2d3436, stop:1 #1a1a1a);
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+        """)
+        instructions_layout = QtWidgets.QVBoxLayout(instructions_frame)
+        
         instructions = (
-            "<b>INSTRUCTIONS (Read before starting):</b><br>"
-            "1. <b>Step A (Blinks):</b> You will hear a low tone to CLOSE, a higher tone to HOLD, then silence to OPEN. Do this 5 times.<br>"
-            "2. <b>Step B (Gaze & Breath):</b> Look 20ft (6m) away. Follow the rising sound to INHALE (4s) and falling sound to EXHALE (6s).<br>"
-            "<i>* Blink normally during Step B to avoid dryness!</i>"
+            "<b style='color:#66bb6a;'>INSTRUCTIONS (Read before starting):</b><br><br>"
+            "<span style='color:#81c784;'>1. <b>Step A (Blinks):</b></span> Low tone = CLOSE, Higher tone = HOLD, Silence = OPEN. Repeat 5x.<br>"
+            "<span style='color:#81c784;'>2. <b>Step B (Gaze & Breath):</b></span> Look 20ft (6m) away. Rising sound = INHALE (4s), Falling sound = EXHALE (6s).<br><br>"
+            "<i style='color:#ffa726;'>💡 Tip: Blink normally during Step B to avoid dryness!</i>"
         )
         self.status_label = QtWidgets.QLabel(instructions)
-        self.status_label.setStyleSheet("font-size: 16px; color: #eee; background-color: #333; padding: 10px; border-radius: 5px;")
-        self.status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.status_label.setStyleSheet("font-size: 13px; color: #e0e0e0; background: transparent; padding: 5px;")
+        self.status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
         self.status_label.setWordWrap(True)
-        layout.addWidget(self.status_label)
+        instructions_layout.addWidget(self.status_label)
+        layout.addWidget(instructions_frame)
 
-        # Big Visual Cue (Icon or Text)
+        # Big Visual Cue with modern card design
+        cue_card = QtWidgets.QFrame()
+        cue_card.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1e3c72, stop:1 #2a5298);
+                border: 3px solid #2196f3;
+                border-radius: 15px;
+                padding: 20px;
+            }
+        """)
+        cue_layout = QtWidgets.QVBoxLayout(cue_card)
+        cue_layout.setContentsMargins(0, 0, 0, 0)
+        
         self.cue_label = QtWidgets.QLabel("Start when you are ready")
-        self.cue_label.setStyleSheet("font-size: 32px; font-weight: bold; color: #2196f3;")
+        self.cue_label.setStyleSheet("""
+            font-size: 36px;
+            font-weight: bold;
+            color: #64b5f6;
+            background: transparent;
+            padding: 20px;
+        """)
         self.cue_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.cue_label.setMinimumHeight(150)
-        layout.addWidget(self.cue_label)
+        cue_layout.addWidget(self.cue_label)
+        layout.addWidget(cue_card)
 
-        # Start Button
-        self.start_btn = QtWidgets.QPushButton("Start Routine (1 min)")
-        self.start_btn.setMinimumHeight(60)
+        # Start Button with modern gradient (matching HydrationTab style)
+        self.start_btn = QtWidgets.QPushButton("👁️ Start Routine (1 min)")
+        self.start_btn.setMinimumHeight(70)
         self.start_btn.setStyleSheet("""
             QPushButton {
-                background-color: #2196f3;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #66bb6a, stop:1 #43a047);
                 color: white;
                 font-size: 18px;
                 font-weight: bold;
-                border-radius: 10px;
+                border-radius: 12px;
+                border: 3px solid #4caf50;
+                padding: 10px;
             }
-            QPushButton:hover { background-color: #1976d2; }
-            QPushButton:disabled { background-color: #555; color: #aaa; }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #81c784, stop:1 #66bb6a);
+                border: 3px solid #66bb6a;
+            }
+            QPushButton:pressed {
+                background: #388e3c;
+                border: 3px solid #2e7d32;
+            }
+            QPushButton:disabled {
+                background: #555555;
+                border: 3px solid #444444;
+                color: #888888;
+            }
         """)
         self.start_btn.clicked.connect(self.start_routine)
         layout.addWidget(self.start_btn)
 
-        # Reminder Settings Section
-        reminder_frame = QtWidgets.QFrame()
-        reminder_frame.setStyleSheet("background-color: #2d2d2d; border-radius: 10px; padding: 10px;")
+        # Reminder Settings Section with gradient card
+        reminder_frame = QtWidgets.QGroupBox("🔔 Reminders")
+        reminder_frame.setStyleSheet("""
+            QGroupBox {
+                font-size: 13px;
+                font-weight: bold;
+                color: #ffa726;
+                border: 2px solid #2d3436;
+                border-radius: 10px;
+                margin-top: 10px;
+                padding: 15px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2d3436, stop:1 #1a1a1a);
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+        """)
         reminder_layout = QtWidgets.QHBoxLayout(reminder_frame)
         
         self.reminder_checkbox = QtWidgets.QCheckBox("🔔 Remind me every")
@@ -208,19 +315,49 @@ class EyeProtectionTab(QtWidgets.QWidget):
         reminder_layout.addStretch()
         layout.addWidget(reminder_frame)
 
-        # Reward Info Box
-        info_frame = QtWidgets.QFrame()
-        info_frame.setStyleSheet("background-color: #2d2d2d; border-radius: 10px; padding: 10px;")
+        # Reward Info Box with modern gradient card
+        info_frame = QtWidgets.QGroupBox("🎁 Today's Progress & Rewards")
+        info_frame.setStyleSheet("""
+            QGroupBox {
+                font-size: 14px;
+                font-weight: bold;
+                color: #ffd700;
+                border: 2px solid #3d3d3d;
+                border-radius: 10px;
+                margin-top: 10px;
+                padding: 15px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2d3436, stop:1 #1a1a1a);
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+        """)
         info_layout = QtWidgets.QVBoxLayout(info_frame)
         
         self.stats_label = QtWidgets.QLabel()
-        self.stats_label.setStyleSheet("color: #bbb; font-size: 14px;")
+        self.stats_label.setStyleSheet("""
+            color: #e0e0e0;
+            font-size: 13px;
+            background: transparent;
+            padding: 10px;
+        """)
         self.stats_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         
         info_layout.addWidget(self.stats_label)
         layout.addWidget(info_frame)
         
         layout.addStretch()
+        
+        # Start cooldown update timer (refresh every minute like hydration)
+        self.cooldown_timer = QtCore.QTimer(self)
+        self.cooldown_timer.timeout.connect(self._update_cooldown_display)
+        self.cooldown_timer.start(60000)  # Update every minute
+        
+        # Initial update
+        self._update_cooldown_display()
     
     def _update_reminder_setting(self):
         """Save reminder settings when changed."""
@@ -228,11 +365,51 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.blocker.eye_reminder_interval = self.reminder_interval.value()
         self.blocker.save_config()
 
+    def _update_cooldown_display(self):
+        """Update cooldown status display like hydration tracker."""
+        stats = self.blocker.stats.get("eye_protection", {})
+        last_date_str = stats.get("last_date", "")
+        count = self.get_daily_count()
+        
+        # Check daily limit (capped at 20)
+        if count >= 20:
+            self.cooldown_status_label.setText("🎯 Daily limit reached! (20/20)")
+            self.cooldown_status_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #4caf50; padding: 10px;")
+            self.start_btn.setEnabled(False)
+            return
+        
+        # Check 20-minute cooldown
+        if last_date_str:
+            try:
+                last_dt = datetime.fromisoformat(last_date_str)
+                elapsed = datetime.now() - last_dt
+                
+                if elapsed < timedelta(minutes=20):
+                    remaining = math.ceil(20 - elapsed.total_seconds() / 60)
+                    next_time = (last_dt + timedelta(minutes=20)).strftime("%H:%M")
+                    self.cooldown_status_label.setText(f"⏳ Wait {remaining} min (next at {next_time})")
+                    self.cooldown_status_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #ff9800; padding: 10px;")
+                    self.start_btn.setEnabled(False)
+                    return
+            except (ValueError, TypeError):
+                pass  # Corrupted date, allow routine
+        
+        # Ready to start
+        self.cooldown_status_label.setText("✅ Ready to start!")
+        self.cooldown_status_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #4caf50; padding: 10px;")
+        self.start_btn.setEnabled(True)
+    
     def get_daily_count(self):
         """Get number of routines performed today (reset at 5 AM)."""
         stats = self.blocker.stats.get("eye_protection", {})
         last_date_str = stats.get("last_date", "")
         count = stats.get("daily_count", 0)
+        
+        # Validate and sanitize count value
+        if not isinstance(count, int) or count < 0:
+            count = 0
+        elif count > 20:
+            count = 20  # Clamp to max daily limit
         
         if not last_date_str:
             return 0
@@ -255,29 +432,54 @@ class EyeProtectionTab(QtWidgets.QWidget):
 
     def update_stats_display(self):
         count = self.get_daily_count()
-        # Legendary chance: 5% + 1% per routine (max 100%)
-        # Drop chance: 1% + 1% per routine (max 100%)
         
-        # User said: "It continues and resets at 5:00 AM." "starts at 1% chances... increases by 1% each next time"
-        # So for the NEXT routine (count + 1):
-        # Legendary chance (for the item IF dropped)
-        leg_chance = min(100, 5 + count) 
-        epic_chance = 100 - leg_chance
+        # Check if at daily limit
+        if count >= 20:
+            text = (
+                f"<b>Today's Routines: {count} / 20</b><br><br>"
+                f"<span style='color:#4caf50;'>🎯 Daily limit reached!</span><br>"
+                f"Come back tomorrow for more rewards!"
+            )
+            self.stats_label.setText(text)
+            return
         
-        # Actual drop chance
-        drop_chance = min(100, 1 + count)
+        # Moving window: every 4 routines = +1 tier (cap 20)
+        # Routines 1-4: Tier 0 (Common), 99% success
+        # Routines 5-8: Tier 1 (Uncommon), 80% success
+        # Routines 9-12: Tier 2 (Rare), 60% success
+        # Routines 13-16: Tier 3 (Epic), 40% success
+        # Routines 17-20: Tier 4 (Legendary), 20% success
+        
+        next_count = min(count + 1, 20)
+        window_tier = min((next_count - 1) // 4, 4)
+        tier_names = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+        tier_colors = ["#9e9e9e", "#4caf50", "#2196f3", "#9c27b0", "#ff9800"]
+        success_rates = [99, 80, 60, 40, 20]
+        
+        base_tier = tier_names[window_tier]
+        base_color = tier_colors[window_tier]
+        success_rate = success_rates[window_tier]
+        
+        # Show which window we're in
+        window_start = window_tier * 4 + 1
+        window_end = min((window_tier + 1) * 4, 20)
         
         text = (
-            f"<b>Today's Routines: {count}</b><br><br>"
-            f"Next Reward Chances:<br>"
-            f"🎲 Item Drop Chance: <span style='color:#4caf50'>{drop_chance}%</span><br>"
-            f"✨ If Item Drops: <span style='color:#a335ee'>{epic_chance}% Epic</span> / "
-            f"<span style='color:#ff9800'>{leg_chance}% Legendary</span>"
+            f"<b>Today's Routines: {count} / 20</b><br><br>"
+            f"Next Routine Window: <span style='color:{base_color};'>{window_start}-{window_end} ({base_tier}-centered)</span><br>"
+            f"🎲 Success Rate: <span style='color:#4caf50'>{success_rate}%</span><br>"
+            f"🎰 Tier Distribution: [5%, 15%, <span style='color:{base_color};'><b>60%</b></span>, 15%, 5%]"
         )
         self.stats_label.setText(text)
 
     def start_routine(self):
-        # Check cooldown (20 minutes)
+        # Cooldown check is now handled by _update_cooldown_display
+        # Double-check before starting
+        count = self.get_daily_count()
+        if count >= 20:
+            QtWidgets.QMessageBox.information(self, "Daily Limit", "You've reached the daily limit of 20 routines!")
+            return
+        
         stats = self.blocker.stats.get("eye_protection", {})
         last_date_str = stats.get("last_date", "")
         if last_date_str:
@@ -409,13 +611,23 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         # Update stats
         current_count = self.get_daily_count()
-        new_count = current_count + 1
+        new_count = min(current_count + 1, 20)  # Cap at 20
         
-        # Calculate lottery chances (same logic as before)
-        # Drop chance: 1% base + 1% per routine done today
-        drop_chance = min(100, 1 + current_count) / 100.0
-        # Tier chance: 5% base + 1% per routine for Legendary
-        tier_chance = min(100, 5 + current_count) / 100.0
+        # Moving window: Every 4 routines = +1 tier, cap at tier 4 (Legendary)
+        # Routines 1-4: Tier 0 (Common-centered)
+        # Routines 5-8: Tier 1 (Uncommon-centered)
+        # Routines 9-12: Tier 2 (Rare-centered)
+        # Routines 13-16: Tier 3 (Epic-centered)
+        # Routines 17-20: Tier 4 (Legendary-centered)
+        window_tier = min((new_count - 1) // 4, 4)
+        
+        # Success rate decreases: 99%, 80%, 60%, 40%, 20%
+        success_rates = [0.99, 0.80, 0.60, 0.40, 0.20]
+        success_rate = success_rates[min(window_tier, len(success_rates) - 1)]
+        
+        # Map tier to base rarity
+        tier_names = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+        base_rarity = tier_names[window_tier]
         
         # Save Stats first
         if "eye_protection" not in self.blocker.stats:
@@ -425,10 +637,15 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.blocker.stats["eye_protection"]["daily_count"] = new_count
         self.blocker.save_stats()
         
-        # Show the animated two-stage lottery dialog
-        lottery = TwoStageLotteryDialog(
-            drop_chance=drop_chance,
-            tier_chance=tier_chance,
+        # Import the merge lottery dialog for moving window animation
+        from lottery_animation import MergeTwoStageLotteryDialog
+        
+        # Show the animated two-stage lottery dialog with moving window
+        lottery = MergeTwoStageLotteryDialog(
+            success_roll=0.0,  # Will be re-rolled inside
+            success_threshold=success_rate,
+            tier_upgrade_enabled=False,
+            base_rarity=base_rarity,
             parent=self
         )
         lottery.exec()
@@ -456,4 +673,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
             self.routine_completed.emit(new_item)
         else:
             self.routine_completed.emit({})
-            
+        
+        # Update cooldown display and stats after completion
+        self._update_cooldown_display()
+        self.update_stats_display()
