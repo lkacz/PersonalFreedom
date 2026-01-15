@@ -16,6 +16,7 @@ except ImportError:
 # Import game state manager for reactive UI updates (required)
 from game_state import GameStateManager, init_game_state, get_game_state
 from eye_protection_tab import EyeProtectionTab
+from entitidex_tab import EntitidexTab
 
 # Hide console window on Windows
 if platform.system() == "Windows":
@@ -1782,7 +1783,7 @@ class TimerTab(QtWidgets.QWidget):
         
         try:
             from gamification import check_entitidex_encounter, attempt_entitidex_bond
-            from entity_encounter_dialog import EntityEncounterDialog, BondResultDialog
+            # from entity_encounter_dialog import EntityEncounterDialog, BondResultDialog (DEPRECATED)
             
             # Check for encounter
             encounter = check_entitidex_encounter(
@@ -1794,45 +1795,36 @@ class TimerTab(QtWidgets.QWidget):
             if not encounter["triggered"] or not encounter["entity"]:
                 return
             
-            # Show encounter dialog
+            # Show encounter dialog using new merge-style flow
             entity = encounter["entity"]
-            dialog = EntityEncounterDialog(
-                entity=entity,
-                join_probability=encounter["join_probability"],
-                hero_power=encounter["hero_power"],
-                parent=self.window()
-            )
             
-            # Connect signals
-            bond_attempted = [False]  # Use list for closure
+            try:
+                from entity_drop_dialog import show_entity_encounter
             
-            def on_bond_attempt(entity_id: str):
-                bond_attempted[0] = True
-                # Attempt the bond
-                result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
-                
-                # Show result dialog
-                result_dialog = BondResultDialog(
-                    entity=result["entity"],
-                    success=result["success"],
-                    probability=result["probability"],
-                    pity_bonus=result["pity_bonus"],
-                    consecutive_fails=result["consecutive_fails"],
+                # wrapper callback for the bonding logic
+                def bond_callback_wrapper(entity_id: str):
+                    # Attempt the bond
+                    result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
+                    
+                    # Save the updated data immediately
+                    from gamification import sync_hero_data
+                    sync_hero_data(self.blocker.adhd_buster)
+                    
+                    # Get game state and save
+                    game_state = getattr(self.window(), 'game_state', None)
+                    if game_state:
+                        game_state.force_save()
+                        
+                    return result
+
+                show_entity_encounter(
+                    entity=entity,
+                    join_probability=encounter["join_probability"],
+                    bond_logic_callback=bond_callback_wrapper,
                     parent=self.window()
                 )
-                result_dialog.exec()
-                
-                # Save the updated data
-                from gamification import sync_hero_data
-                sync_hero_data(self.blocker.adhd_buster)
-                
-                # Get game state and save
-                game_state = getattr(self.window(), 'game_state', None)
-                if game_state:
-                    game_state.force_save()
-            
-            dialog.bond_attempted.connect(on_bond_attempt)
-            dialog.exec()
+            except ImportError:
+                 logger.error("Could not import entity_drop_dialog logic")
             
         except ImportError as e:
             # Entitidex not available - silently skip
@@ -16459,6 +16451,53 @@ class DevTab(QtWidgets.QWidget):
         
         layout.addWidget(cooldown_group)
 
+        # Entity Encounter Section
+        entity_group = QtWidgets.QGroupBox("🐾 Entity Encounter Test")
+        entity_layout = QtWidgets.QVBoxLayout(entity_group)
+        
+        # Story selector
+        story_layout = QtWidgets.QHBoxLayout()
+        story_layout.addWidget(QtWidgets.QLabel("Story:"))
+        self.story_combo = NoScrollComboBox()
+        self.story_combo.addItems(["warrior", "scholar", "underdog", "scientist", "wanderer"])
+        story_layout.addWidget(self.story_combo)
+        story_layout.addStretch()
+        entity_layout.addLayout(story_layout)
+        
+        # Encounter buttons
+        encounter_btn_layout = QtWidgets.QHBoxLayout()
+        
+        trigger_btn = QtWidgets.QPushButton("🎲 Trigger Encounter")
+        trigger_btn.setStyleSheet("background-color: #2196f3; color: white; font-weight: bold; padding: 8px;")
+        trigger_btn.clicked.connect(self._trigger_entity_encounter)
+        encounter_btn_layout.addWidget(trigger_btn)
+        
+        random_btn = QtWidgets.QPushButton("🎯 Random Entity")
+        random_btn.setStyleSheet("background-color: #9c27b0; color: white; font-weight: bold; padding: 8px;")
+        random_btn.clicked.connect(self._show_random_entity)
+        encounter_btn_layout.addWidget(random_btn)
+        
+        entity_layout.addLayout(encounter_btn_layout)
+        
+        # Rarity-specific encounter buttons
+        rarity_btn_layout = QtWidgets.QHBoxLayout()
+        for rarity in ["common", "uncommon", "rare", "epic", "legendary"]:
+            btn = QtWidgets.QPushButton(rarity.capitalize())
+            color = {"common": "#9e9e9e", "uncommon": "#4caf50", "rare": "#2196f3", 
+                     "epic": "#9c27b0", "legendary": "#ff9800"}[rarity]
+            btn.setStyleSheet(f"background-color: {color}; color: white; font-weight: bold; padding: 6px;")
+            btn.clicked.connect(lambda checked, r=rarity: self._encounter_by_rarity(r))
+            rarity_btn_layout.addWidget(btn)
+        entity_layout.addLayout(rarity_btn_layout)
+        
+        # Entitidex viewer button
+        view_btn = QtWidgets.QPushButton("📖 View Entitidex")
+        view_btn.setStyleSheet("background-color: #ff9800; color: white; font-weight: bold; padding: 8px;")
+        view_btn.clicked.connect(self._view_entitidex)
+        entity_layout.addWidget(view_btn)
+        
+        layout.addWidget(entity_group)
+
         # Status display
         self.status_label = QtWidgets.QLabel("")
         self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
@@ -16560,6 +16599,245 @@ class DevTab(QtWidgets.QWidget):
                 self.blocker.save_config()
                 self.status_label.setText("✅ Lottery attempts initialized to 0")
                 self.status_label.setStyleSheet("color: #9c27b0; padding: 10px;")
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _trigger_entity_encounter(self) -> None:
+        """Trigger a full entity encounter with the encounter dialog."""
+        try:
+            from entitidex import (
+                select_encounter_entity,
+                calculate_join_probability,
+                EntitidexProgress,
+                get_entities_for_story,
+            )
+            # from entity_encounter_dialog import EntityEncounterDialog
+            
+            game_state = get_game_state()
+            if not game_state:
+                self.status_label.setText("❌ Game state not available")
+                return
+            
+            story_id = self.story_combo.currentText()
+            hero_power = game_state.get_current_power()
+            
+            # Get or create progress tracker
+            progress = EntitidexProgress(story_id)
+            
+            # Select an entity for encounter
+            entity = select_encounter_entity(progress, hero_power, story_id)
+            
+            if not entity:
+                # Fallback: get a random entity from the story
+                entities = get_entities_for_story(story_id)
+                if entities:
+                    import random
+                    entity = random.choice(entities)
+                else:
+                    self.status_label.setText("❌ No entities available")
+                    return
+            
+            # Calculate join probability
+            join_prob = calculate_join_probability(hero_power, entity.power)
+            
+            # Show encounter dialog using new merge-style flow
+            from entity_drop_dialog import show_entity_encounter
+            
+            def bond_callback_wrapper(entity_id: str):
+                from gamification import attempt_entitidex_bond
+                result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
+                self.status_label.setText(f"Result: {'Success' if result.get('success') else 'Failed'}")
+                return result
+
+            show_entity_encounter(
+                entity=entity,
+                join_probability=join_prob,
+                bond_logic_callback=bond_callback_wrapper,
+                parent=self.window()
+            )
+            
+        except ImportError as e:
+            self.status_label.setText(f"❌ Import error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _show_random_entity(self) -> None:
+        """Show a random entity encounter from the selected story."""
+        try:
+            from entitidex import get_entities_for_story, calculate_join_probability
+            # from entity_encounter_dialog import EntityEncounterDialog
+            import random
+            
+            game_state = get_game_state()
+            hero_power = game_state.get_current_power() if game_state else 100
+            
+            story_id = self.story_combo.currentText()
+            entities = get_entities_for_story(story_id)
+            
+            if not entities:
+                self.status_label.setText(f"❌ No entities for story: {story_id}")
+                return
+            
+            entity = random.choice(entities)
+            join_prob = calculate_join_probability(hero_power, entity.power)
+            
+            # Show encounter dialog using new merge-style flow
+            from entity_drop_dialog import show_entity_encounter
+            
+            def bond_callback_wrapper(entity_id: str):
+                from gamification import attempt_entitidex_bond
+                result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
+                self.status_label.setText(f"Result: {result['success']}")
+                return result
+
+            show_entity_encounter(
+                entity=entity, 
+                join_probability=join_prob,
+                bond_logic_callback=bond_callback_wrapper,
+                parent=self.window()
+            )
+            
+            self.status_label.setText(f"✨ Encountered: {entity.name} ({entity.rarity})")
+            self.status_label.setStyleSheet("color: #2196f3; padding: 10px;")
+            
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _encounter_by_rarity(self, rarity: str) -> None:
+        """Show an entity encounter for a specific rarity."""
+        try:
+            from entitidex import get_entities_for_story, calculate_join_probability
+            # from entity_encounter_dialog import EntityEncounterDialog
+            import random
+            
+            game_state = get_game_state()
+            hero_power = game_state.get_current_power() if game_state else 100
+            
+            story_id = self.story_combo.currentText()
+            entities = get_entities_for_story(story_id)
+            
+            # Filter by rarity
+            matching = [e for e in entities if e.rarity.lower() == rarity.lower()]
+            
+            if not matching:
+                self.status_label.setText(f"❌ No {rarity} entities for {story_id}")
+                return
+            
+            entity = random.choice(matching)
+            join_prob = calculate_join_probability(hero_power, entity.power)
+            
+            # Show encounter dialog using new merge-style flow
+            from entity_drop_dialog import show_entity_encounter
+            
+            def bond_callback_wrapper(entity_id: str):
+                from gamification import attempt_entitidex_bond
+                result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
+                return result
+
+            show_entity_encounter(
+                entity=entity, 
+                join_probability=join_prob,
+                bond_logic_callback=bond_callback_wrapper,
+                parent=self.window()
+            )
+            
+            self.status_label.setText(f"✨ {rarity.upper()}: {entity.name}")
+            color = {"common": "#9e9e9e", "uncommon": "#4caf50", "rare": "#2196f3", 
+                     "epic": "#9c27b0", "legendary": "#ff9800"}.get(rarity, "#4caf50")
+            self.status_label.setStyleSheet(f"color: {color}; padding: 10px;")
+            
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _view_entitidex(self) -> None:
+        """Open the Entitidex viewer dialog."""
+        try:
+            from entitidex import get_entities_for_story
+            
+            story_id = self.story_combo.currentText()
+            entities = get_entities_for_story(story_id)
+            
+            # Create a simple viewer dialog
+            dialog = QtWidgets.QDialog(self)
+            dialog.setWindowTitle(f"📖 Entitidex - {story_id.capitalize()}")
+            dialog.setFixedSize(600, 500)
+            dialog.setStyleSheet("background: #1E1E1E;")
+            
+            layout = QtWidgets.QVBoxLayout(dialog)
+            
+            # Title
+            title = QtWidgets.QLabel(f"🐾 {story_id.capitalize()} Entities ({len(entities)} total)")
+            title.setStyleSheet("font-size: 16px; font-weight: bold; color: #FFD700; padding: 10px;")
+            title.setAlignment(QtCore.Qt.AlignCenter)
+            layout.addWidget(title)
+            
+            # Scroll area for entities
+            scroll = QtWidgets.QScrollArea()
+            scroll.setWidgetResizable(True)
+            scroll.setStyleSheet("QScrollArea { border: none; }")
+            
+            content = QtWidgets.QWidget()
+            grid = QtWidgets.QGridLayout(content)
+            grid.setSpacing(10)
+            
+            rarity_colors = {
+                "common": "#9e9e9e", "uncommon": "#4caf50", "rare": "#2196f3",
+                "epic": "#9c27b0", "legendary": "#ff9800"
+            }
+            
+            for i, entity in enumerate(entities):
+                row, col = i // 3, i % 3
+                
+                card = QtWidgets.QFrame()
+                color = rarity_colors.get(entity.rarity.lower(), "#9e9e9e")
+                card.setStyleSheet(f"""
+                    QFrame {{
+                        background: #2D2D2D;
+                        border: 2px solid {color};
+                        border-radius: 8px;
+                        padding: 8px;
+                    }}
+                """)
+                card.setFixedSize(170, 100)
+                
+                card_layout = QtWidgets.QVBoxLayout(card)
+                card_layout.setSpacing(2)
+                card_layout.setContentsMargins(5, 5, 5, 5)
+                
+                name = QtWidgets.QLabel(entity.name)
+                name.setStyleSheet(f"color: {color}; font-weight: bold; font-size: 10px;")
+                name.setWordWrap(True)
+                card_layout.addWidget(name)
+                
+                power = QtWidgets.QLabel(f"⚡ {entity.power}")
+                power.setStyleSheet("color: #FFD700; font-size: 10px;")
+                card_layout.addWidget(power)
+                
+                rarity_lbl = QtWidgets.QLabel(entity.rarity.upper())
+                rarity_lbl.setStyleSheet(f"color: {color}; font-size: 9px;")
+                card_layout.addWidget(rarity_lbl)
+                
+                grid.addWidget(card, row, col)
+            
+            scroll.setWidget(content)
+            layout.addWidget(scroll)
+            
+            # Close button
+            close_btn = QtWidgets.QPushButton("Close")
+            close_btn.setStyleSheet("background: #444; color: white; padding: 8px; border-radius: 5px;")
+            close_btn.clicked.connect(dialog.close)
+            layout.addWidget(close_btn)
+            
+            dialog.exec()
+            
+            self.status_label.setText(f"📖 Viewing {len(entities)} {story_id} entities")
+            self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
+            
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
@@ -16707,6 +16985,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         if GAMIFICATION_AVAILABLE:
             self.adhd_tab = ADHDBusterTab(self.blocker, self)
             self.tabs.addTab(self.adhd_tab, "🦸 Hero")
+            
+            # Entitidex tab (entity collection)
+            self.entitidex_tab = EntitidexTab(self.blocker, self)
+            self.tabs.addTab(self.entitidex_tab, "📖 Entitidex")
 
         if AI_AVAILABLE:
             self.ai_tab = AITab(self.blocker, self)
