@@ -6,9 +6,11 @@ focus sessions. Features an animated reveal with bonding attempt mechanics.
 """
 
 import random
+import os
 from typing import Optional
 
 from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtSvgWidgets import QSvgWidget
 
 # Import entitidex components
 from entitidex import Entity
@@ -64,25 +66,39 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         self.hero_power = hero_power
         self.bond_result: Optional[bool] = None
         
+        self._anims = [] # Keep references to animations
+        
         self._setup_ui()
-        self._start_reveal_animation()
+    
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        """Handle dialog show event to ensure proper layout."""
+        super().showEvent(event)
+        # Start animation shortly after show
+        QtCore.QTimer.singleShot(100, self._start_reveal_animation)
+        
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        """Handle cleanup."""
+        self._anims.clear()
+        super().closeEvent(event)
     
     def _setup_ui(self) -> None:
         """Set up the dialog UI."""
         self.setWindowTitle("✨ Entity Encountered!")
-        self.setFixedSize(500, 600)
+        self.setFixedSize(500, 700)
+        # Use standard Dialog flags to prevent OS-level resize anomalies
         self.setWindowFlags(
-            QtCore.Qt.Window |
+            QtCore.Qt.Dialog |
             QtCore.Qt.WindowTitleHint |
-            QtCore.Qt.CustomizeWindowHint
+            QtCore.Qt.WindowCloseButtonHint
         )
+        self.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         
         # Get rarity color
         rarity_color = self.RARITY_COLORS.get(self.entity.rarity.lower(), "#9E9E9E")
-        glow_color = self.RARITY_GLOW.get(self.entity.rarity.lower(), "rgba(158, 158, 158, 0.3)")
         
         # Main layout
         layout = QtWidgets.QVBoxLayout(self)
+        layout.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)
         layout.setSpacing(15)
         layout.setContentsMargins(25, 25, 25, 25)
         
@@ -101,6 +117,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         
         # Entity display card
         self.entity_card = QtWidgets.QFrame()
+        self.entity_card.setMinimumHeight(280)
         self.entity_card.setStyleSheet(f"""
             QFrame {{
                 background: qlineargradient(
@@ -115,55 +132,86 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         
         card_layout = QtWidgets.QVBoxLayout(self.entity_card)
         card_layout.setSpacing(12)
+        card_layout.setContentsMargins(15, 15, 15, 15)
         
-        # Entity name (hidden initially for reveal)
+        # Entity name
         self.name_label = QtWidgets.QLabel(self.entity.name)
         self.name_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.name_label.setFixedHeight(35)  # Fixed height
         self.name_label.setStyleSheet(f"""
             QLabel {{
                 font-size: 24px;
                 font-weight: bold;
                 color: {rarity_color};
                 padding: 5px;
+                border: none;
             }}
         """)
-        self.name_label.setVisible(False)
         card_layout.addWidget(self.name_label)
         
-        # Rarity badge
+        # Entity SVG container
+        self.svg_container = QtWidgets.QWidget()
+        self.svg_container.setFixedHeight(120)  # Fix height to prevent collapsing/clipping
+        self.svg_container.setStyleSheet("border: none; background: transparent;")
+        svg_layout = QtWidgets.QHBoxLayout(self.svg_container)
+        svg_layout.setContentsMargins(0, 0, 0, 0)
+        svg_layout.addStretch()
+        
+        # SVG Widget
+        self.entity_svg = QSvgWidget()
+        self.entity_svg.setFixedSize(120, 120)
+        
+        # Construct SVG filename: entity_id + name in snake_case
+        name_snake = self.entity.name.lower().replace(" ", "_").replace("'", "")
+        svg_filename = f"{self.entity.id}_{name_snake}.svg"
+        svg_path = os.path.join(os.path.dirname(__file__), "icons", "entities", svg_filename)
+        if os.path.exists(svg_path):
+            self.entity_svg.load(svg_path)
+        self.entity_svg.setStyleSheet("border: none; background: transparent;")
+        
+        svg_layout.addWidget(self.entity_svg)
+        svg_layout.addStretch()
+        card_layout.addWidget(self.svg_container)
+        
+        # Rarity badge context
+        self.rarity_container = QtWidgets.QWidget()
+        self.rarity_container.setFixedHeight(30)  # Fixed height
+        self.rarity_container.setStyleSheet("border: none; background: transparent;")
+        rarity_layout = QtWidgets.QHBoxLayout(self.rarity_container)
+        rarity_layout.setContentsMargins(0, 0, 0, 0)
+        rarity_layout.addStretch()
+        
         self.rarity_label = QtWidgets.QLabel(self.entity.rarity.upper())
         self.rarity_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.rarity_label.setMinimumHeight(28)
+        self.rarity_label.setFixedWidth(120)
         self.rarity_label.setStyleSheet(f"""
             QLabel {{
                 font-size: 12px;
                 font-weight: bold;
                 color: white;
                 background: {rarity_color};
+                border: none;
                 border-radius: 8px;
                 padding: 4px 12px;
             }}
         """)
-        self.rarity_label.setFixedWidth(120)
-        self.rarity_label.setVisible(False)
-        
-        rarity_container = QtWidgets.QWidget()
-        rarity_layout = QtWidgets.QHBoxLayout(rarity_container)
-        rarity_layout.addStretch()
         rarity_layout.addWidget(self.rarity_label)
         rarity_layout.addStretch()
-        card_layout.addWidget(rarity_container)
+        card_layout.addWidget(self.rarity_container)
         
         # Power display
         self.power_label = QtWidgets.QLabel(f"⚡ Power: {self.entity.power}")
         self.power_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.power_label.setFixedHeight(28)  # Fixed height
         self.power_label.setStyleSheet("""
             QLabel {
                 font-size: 16px;
                 color: #FFD700;
+                border: none;
                 padding: 5px;
             }
         """)
-        self.power_label.setVisible(False)
         card_layout.addWidget(self.power_label)
         
         # Theme badge
@@ -171,34 +219,38 @@ class EntityEncounterDialog(QtWidgets.QDialog):
             "warrior": "🛡️ Warrior's Path",
             "scholar": "📚 Scholar's Study",
             "wanderer": "🧭 Wanderer's Journey",
-            "underdog": "💪 Underdog's Rise"
+            "underdog": "💪 Underdog's Rise",
+            "scientist": "🔬 Scientist's Lab"
         }
         theme_display = theme_names.get(self.entity.theme_set, self.entity.theme_set)
         self.theme_label = QtWidgets.QLabel(theme_display)
         self.theme_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.theme_label.setFixedHeight(22)  # Fixed height
         self.theme_label.setStyleSheet("""
             QLabel {
                 font-size: 12px;
                 color: #AAAAAA;
                 font-style: italic;
+                border: none;
             }
         """)
-        self.theme_label.setVisible(False)
         card_layout.addWidget(self.theme_label)
         
         # Lore text
         self.lore_label = QtWidgets.QLabel(self.entity.lore)
         self.lore_label.setAlignment(QtCore.Qt.AlignCenter)
         self.lore_label.setWordWrap(True)
+        self.lore_label.setMinimumHeight(80)
+        self.lore_label.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.MinimumExpanding)
         self.lore_label.setStyleSheet("""
             QLabel {
                 font-size: 14px;
                 color: #CCCCCC;
+                border: none;
                 padding: 10px;
                 line-height: 1.4;
             }
         """)
-        self.lore_label.setVisible(False)
         card_layout.addWidget(self.lore_label)
         
         layout.addWidget(self.entity_card)
@@ -215,7 +267,6 @@ class EntityEncounterDialog(QtWidgets.QDialog):
                 padding: 10px;
             }
         """)
-        self.prob_frame.setVisible(False)
         
         prob_layout = QtWidgets.QVBoxLayout(self.prob_frame)
         
@@ -284,7 +335,6 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         
         # Buttons
         self.button_frame = QtWidgets.QFrame()
-        self.button_frame.setVisible(False)
         button_layout = QtWidgets.QHBoxLayout(self.button_frame)
         button_layout.setSpacing(15)
         
@@ -339,7 +389,35 @@ class EntityEncounterDialog(QtWidgets.QDialog):
                 background: #121212;
             }
         """)
-    
+
+        # APPLY OPACITY EFFECTS (Initially Invisible)
+        self._set_opacity(self.name_label, 0)
+        self._set_opacity(self.svg_container, 0)
+        self._set_opacity(self.rarity_container, 0)
+        self._set_opacity(self.power_label, 0)
+        self._set_opacity(self.theme_label, 0)
+        self._set_opacity(self.lore_label, 0)
+        self._set_opacity(self.prob_frame, 0)
+        self._set_opacity(self.button_frame, 0)
+
+    def _set_opacity(self, widget: QtWidgets.QWidget, opacity: float) -> None:
+        """Helper to set opacity effect on a widget."""
+        effect = QtWidgets.QGraphicsOpacityEffect(widget)
+        effect.setOpacity(opacity)
+        widget.setGraphicsEffect(effect)
+
+    def _fade_in(self, widget: QtWidgets.QWidget, duration: int = 500) -> None:
+        """Start fade in animation for a widget."""
+        effect = widget.graphicsEffect()
+        if effect:
+            anim = QtCore.QPropertyAnimation(effect, b"opacity")
+            anim.setDuration(duration)
+            anim.setStartValue(0.0)
+            anim.setEndValue(1.0)
+            anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
+            anim.start()
+            self._anims.append(anim)
+
     def _get_probability_color(self, percent: int) -> str:
         """Get color based on probability percentage."""
         if percent >= 75:
@@ -355,37 +433,41 @@ class EntityEncounterDialog(QtWidgets.QDialog):
     
     def _start_reveal_animation(self) -> None:
         """Start the entity reveal animation sequence."""
+        # Note: No layout activation/recalculation needed as widgets are already there
+        
         # Phase 1: Show title with suspense (0-1s)
         QtCore.QTimer.singleShot(1000, self._reveal_entity_name)
     
     def _reveal_entity_name(self) -> None:
-        """Reveal the entity name with animation."""
+        """Reveal the entity name and image."""
         self.title_label.setText(f"✨ {self.entity.name} ✨")
-        self.name_label.setVisible(True)
-        self.rarity_label.setVisible(True)
+        
+        self._fade_in(self.name_label)
+        self._fade_in(self.svg_container)
+        self._fade_in(self.rarity_container)
         
         # Phase 2: Show power and theme (0.5s later)
         QtCore.QTimer.singleShot(500, self._reveal_stats)
     
     def _reveal_stats(self) -> None:
         """Reveal power and theme info."""
-        self.power_label.setVisible(True)
-        self.theme_label.setVisible(True)
+        self._fade_in(self.power_label)
+        self._fade_in(self.theme_label)
         
         # Phase 3: Show lore (0.5s later)
         QtCore.QTimer.singleShot(500, self._reveal_lore)
     
     def _reveal_lore(self) -> None:
         """Reveal the entity lore."""
-        self.lore_label.setVisible(True)
+        self._fade_in(self.lore_label)
         
         # Phase 4: Show probability and buttons (0.5s later)
         QtCore.QTimer.singleShot(500, self._show_actions)
     
     def _show_actions(self) -> None:
         """Show probability display and action buttons."""
-        self.prob_frame.setVisible(True)
-        self.button_frame.setVisible(True)
+        self._fade_in(self.prob_frame)
+        self._fade_in(self.button_frame)
     
     def _on_bond(self) -> None:
         """Handle bond button click."""
