@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Sky Balloon Explorer - Rainbow hot air balloon -->
+  <defs>
+    <linearGradient id="rainbowStripe1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F44336"/>
+      <stop offset="100%" style="stop-color:#E53935"/>
+    </linearGradient>
+    <linearGradient id="rainbowStripe2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9800"/>
+      <stop offset="100%" style="stop-color:#FB8C00"/>
+    </linearGradient>
+    <linearGradient id="rainbowStripe3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFEB3B"/>
+      <stop offset="100%" style="stop-color:#FDD835"/>
+    </linearGradient>
+    <linearGradient id="rainbowStripe4" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4CAF50"/>
+      <stop offset="100%" style="stop-color:#43A047"/>
+    </linearGradient>
+    <linearGradient id="rainbowStripe5" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2196F3"/>
+      <stop offset="100%" style="stop-color:#1E88E5"/>
+    </linearGradient>
+    <linearGradient id="rainbowStripe6" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9C27B0"/>
+      <stop offset="100%" style="stop-color:#8E24AA"/>
+    </linearGradient>
+    <linearGradient id="epicPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#CE93D8"/>
+      <stop offset="50%" style="stop-color:#9C27B0"/>
+      <stop offset="100%" style="stop-color:#7B1FA2"/>
+    </linearGradient>
+    <linearGradient id="basket" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#A1887F"/>
+      <stop offset="100%" style="stop-color:#6D4C41"/>
+    </linearGradient>
+    <filter id="epicGlow">
+      <feGaussianBlur stdDeviation="3" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Epic aura -->
+  <ellipse cx="32" cy="28" rx="26" ry="28" fill="url(#epicPurple)" filter="url(#epicGlow)" opacity="0.15"/>
+  
+  <!-- Sky background hint -->
+  <g fill="#E3F2FD" opacity="0.3">
+    <circle cx="8" cy="16" r="4"/>
+    <circle cx="56" cy="12" r="5"/>
+    <circle cx="12" cy="8" r="3"/>
+    <circle cx="52" cy="20" r="3"/>
+  </g>
+  
+  <!-- Balloon envelope (rainbow stripes) -->
+  <g>
+    <!-- Base balloon shape clipping -->
+    <path id="balloonShape" d="M32 4 Q8 8, 10 28 Q12 42, 32 48 Q52 42, 54 28 Q56 8, 32 4" fill="none"/>
+    
+    <!-- Rainbow stripes -->
+    <path d="M32 4 Q18 6, 14 14 L18 14 Q22 6, 32 4" fill="url(#rainbowStripe1)"/>
+    <path d="M32 4 Q42 6, 46 14 L50 14 Q46 6, 32 4" fill="url(#rainbowStripe1)"/>
+    
+    <path d="M14 14 Q12 20, 12 26 L16 26 L18 14" fill="url(#rainbowStripe2)"/>
+    <path d="M50 14 Q52 20, 52 26 L48 26 L46 14" fill="url(#rainbowStripe2)"/>
+    
+    <path d="M12 26 Q14 34, 20 40 L24 38 L16 26" fill="url(#rainbowStripe3)"/>
+    <path d="M52 26 Q50 34, 44 40 L40 38 L48 26" fill="url(#rainbowStripe3)"/>
+    
+    <path d="M20 40 Q26 46, 32 48 L32 44 L24 38" fill="url(#rainbowStripe4)"/>
+    <path d="M44 40 Q38 46, 32 48 L32 44 L40 38" fill="url(#rainbowStripe4)"/>
+    
+    <!-- Central panels -->
+    <path d="M18 14 L16 26 L24 38 L32 44 L40 38 L48 26 L46 14 Q32 10, 18 14" fill="url(#rainbowStripe5)"/>
+    
+    <!-- Top cap -->
+    <ellipse cx="32" cy="6" rx="8" ry="3" fill="url(#rainbowStripe6)"/>
+  </g>
+  
+  <!-- Balloon highlight/shine -->
+  <ellipse cx="24" cy="20" rx="6" ry="10" fill="white" opacity="0.2"/>
+  
+  <!-- Rope lines connecting to basket -->
+  <g stroke="#8D6E63" stroke-width="0.8">
+    <line x1="20" y1="44" x2="24" y2="54"/>
+    <line x1="32" y1="48" x2="32" y2="54"/>
+    <line x1="44" y1="44" x2="40" y2="54"/>
+  </g>
+  
+  <!-- Basket -->
+  <rect x="22" y="54" width="20" height="8" rx="2" fill="url(#basket)" stroke="#5D4037" stroke-width="1"/>
+  
+  <!-- Basket weave pattern -->
+  <g stroke="#5D4037" stroke-width="0.3" opacity="0.4">
+    <line x1="22" y1="56" x2="42" y2="56"/>
+    <line x1="22" y1="58" x2="42" y2="58"/>
+    <line x1="22" y1="60" x2="42" y2="60"/>
+    <line x1="26" y1="54" x2="26" y2="62"/>
+    <line x1="32" y1="54" x2="32" y2="62"/>
+    <line x1="38" y1="54" x2="38" y2="62"/>
+  </g>
+  
+  <!-- Basket rim -->
+  <rect x="21" y="53" width="22" height="2" rx="1" fill="#6D4C41"/>
+  
+  <!-- Flame/burner -->
+  <g transform="translate(32, 52)">
+    <ellipse cx="0" cy="0" rx="3" ry="2" fill="#FF6F00"/>
+    <ellipse cx="0" cy="-1" rx="2" ry="2" fill="#FFCA28">
+      <animate attributeName="ry" values="2;3;2" dur="0.3s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="0" cy="-2" rx="1" ry="1.5" fill="#FFF59D"/>
+  </g>
+  
+  <!-- Epic sparkles -->
+  <g fill="url(#epicPurple)" opacity="0.7">
+    <circle cx="8" cy="32" r="2">
+      <animate attributeName="opacity" values="0.7;0.3;0.7" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="56" cy="36" r="1.5">
+      <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="4" cy="48" r="1"/>
+    <circle cx="60" cy="52" r="1.2"/>
+    <circle cx="32" cy="2" r="1.5">
+      <animate attributeName="opacity" values="0.5;0.8;0.5" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Little flag on top -->
+  <line x1="32" y1="4" x2="32" y2="0" stroke="#4E342E" stroke-width="0.5"/>
+  <polygon points="32,0 38,2 32,4" fill="url(#epicPurple)">
+    <animate attributeName="points" values="32,0 38,2 32,4;32,0 37,3 32,4;32,0 38,2 32,4" dur="2s" repeatCount="indefinite"/>
+  </polygon>
+</svg>

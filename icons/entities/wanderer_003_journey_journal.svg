@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Journey Journal - Leather diary that writes itself -->
+  <defs>
+    <linearGradient id="leatherBrown" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8D6E63"/>
+      <stop offset="50%" style="stop-color:#6D4C41"/>
+      <stop offset="100%" style="stop-color:#4E342E"/>
+    </linearGradient>
+    <linearGradient id="pagesCream" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFF8E1"/>
+      <stop offset="100%" style="stop-color:#FFECB3"/>
+    </linearGradient>
+    <linearGradient id="uncommonGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#81C784"/>
+      <stop offset="100%" style="stop-color:#4CAF50"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Uncommon glow -->
+  <rect x="8" y="6" width="48" height="52" rx="4" fill="url(#uncommonGreen)" opacity="0.1"/>
+  
+  <!-- Shadow -->
+  <rect x="14" y="56" width="40" height="4" rx="2" fill="#00000020"/>
+  
+  <!-- Back cover -->
+  <rect x="12" y="8" width="42" height="48" rx="3" fill="url(#leatherBrown)"/>
+  
+  <!-- Pages (layered, showing thickness) -->
+  <rect x="14" y="10" width="38" height="44" rx="1" fill="url(#pagesCream)"/>
+  <rect x="14" y="10" width="38" height="44" rx="1" fill="none" stroke="#D7CCC8" stroke-width="0.5"/>
+  
+  <!-- Page edge lines -->
+  <g stroke="#BCAAA4" stroke-width="0.3">
+    <line x1="52" y1="12" x2="52" y2="52"/>
+    <line x1="51" y1="12" x2="51" y2="52"/>
+    <line x1="50" y1="12" x2="50" y2="52"/>
+  </g>
+  
+  <!-- Front cover (slightly open) -->
+  <rect x="10" y="6" width="40" height="50" rx="3" fill="url(#leatherBrown)" stroke="#3E2723" stroke-width="1"/>
+  
+  <!-- Leather texture/stitching -->
+  <rect x="12" y="8" width="36" height="46" rx="2" fill="none" stroke="#5D4037" stroke-width="0.5" stroke-dasharray="2,2"/>
+  
+  <!-- Decorative border on cover -->
+  <rect x="14" y="10" width="32" height="42" rx="1" fill="none" stroke="#A1887F" stroke-width="0.8"/>
+  
+  <!-- Title embossing -->
+  <text x="30" y="26" font-family="serif" font-size="5" fill="#4E342E" text-anchor="middle" font-weight="bold">JOURNAL</text>
+  
+  <!-- Decorative compass rose emblem -->
+  <g transform="translate(30, 36)" fill="#5D4037" opacity="0.6">
+    <polygon points="0,-8 2,-2 0,0 -2,-2"/>
+    <polygon points="0,8 2,2 0,0 -2,2"/>
+    <polygon points="-8,0 -2,-2 0,0 -2,2"/>
+    <polygon points="8,0 2,-2 0,0 2,2"/>
+    <circle cx="0" cy="0" r="2"/>
+  </g>
+  
+  <!-- Ribbon bookmark -->
+  <path d="M40 6 L40 58 L44 54 L48 58 L48 6" fill="#C62828"/>
+  
+  <!-- Self-writing magic effect (text appearing) -->
+  <g font-family="cursive" font-size="3" fill="url(#uncommonGreen)" opacity="0.6">
+    <text x="20" y="38">
+      <animate attributeName="opacity" values="0;0.6;0" dur="3s" repeatCount="indefinite"/>
+      milestone...
+    </text>
+    <text x="22" y="44">
+      <animate attributeName="opacity" values="0.6;0;0.6" dur="4s" repeatCount="indefinite"/>
+      adventure...
+    </text>
+  </g>
+  
+  <!-- Coffee stain (adventure memories) -->
+  <circle cx="42" cy="48" r="3" fill="#6D4C41" opacity="0.15"/>
+  
+  <!-- Uncommon sparkles -->
+  <g fill="url(#uncommonGreen)" opacity="0.6">
+    <circle cx="8" cy="14" r="1.5"/>
+    <circle cx="56" cy="20" r="1"/>
+    <circle cx="6" cy="48" r="1"/>
+  </g>
+  
+  <!-- Pen tucked in binding -->
+  <rect x="8" y="24" width="2" height="20" fill="#5D4037"/>
+  <ellipse cx="9" cy="24" rx="1" ry="0.5" fill="#FFD54F"/>
+</svg>

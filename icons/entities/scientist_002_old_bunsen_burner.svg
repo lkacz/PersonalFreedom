@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Old Bunsen Burner - Dented brass burner with blue flame -->
+  <defs>
+    <linearGradient id="brassGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD54F"/>
+      <stop offset="30%" style="stop-color:#FFC107"/>
+      <stop offset="70%" style="stop-color:#FF8F00"/>
+      <stop offset="100%" style="stop-color:#E65100"/>
+    </linearGradient>
+    <linearGradient id="flameBlue" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#1565C0"/>
+      <stop offset="40%" style="stop-color:#42A5F5"/>
+      <stop offset="70%" style="stop-color:#90CAF9"/>
+      <stop offset="100%" style="stop-color:#E3F2FD"/>
+    </linearGradient>
+    <linearGradient id="flameInner" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#1976D2"/>
+      <stop offset="50%" style="stop-color:#64B5F6"/>
+      <stop offset="100%" style="stop-color:white"/>
+    </linearGradient>
+    <filter id="flameGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Shadow -->
+  <ellipse cx="32" cy="60" rx="14" ry="3" fill="#00000022"/>
+  
+  <!-- Base (wide, sturdy) -->
+  <ellipse cx="32" cy="56" rx="14" ry="4" fill="url(#brassGold)"/>
+  <ellipse cx="32" cy="54" rx="12" ry="3" fill="#FFC107"/>
+  
+  <!-- Main barrel (vertical tube) -->
+  <rect x="26" y="32" width="12" height="22" fill="url(#brassGold)"/>
+  
+  <!-- Air holes (classic bunsen design) -->
+  <rect x="24" y="44" width="4" height="6" rx="1" fill="#424242"/>
+  <rect x="36" y="44" width="4" height="6" rx="1" fill="#424242"/>
+  
+  <!-- Adjustment collar -->
+  <rect x="24" y="40" width="16" height="4" rx="1" fill="#E65100"/>
+  <rect x="25" y="41" width="14" height="2" fill="#FF8F00"/>
+  
+  <!-- Gas inlet (side tube) -->
+  <rect x="38" y="48" width="10" height="4" rx="1" fill="url(#brassGold)"/>
+  <ellipse cx="48" cy="50" rx="2" ry="2" fill="#FF8F00"/>
+  
+  <!-- Rubber hose connector -->
+  <rect x="48" y="47" width="6" height="6" rx="2" fill="#424242"/>
+  
+  <!-- DENT (character!) -->
+  <ellipse cx="28" cy="38" rx="3" ry="4" fill="#E65100" opacity="0.5"/>
+  
+  <!-- Burner top (where flame comes out) -->
+  <ellipse cx="32" cy="32" rx="6" ry="2" fill="#424242"/>
+  <ellipse cx="32" cy="31" rx="4" ry="1.5" fill="#212121"/>
+  
+  <!-- THE BLUE FLAME (animated) -->
+  <g filter="url(#flameGlow)">
+    <!-- Outer flame -->
+    <path d="M32 30 Q26 20, 28 12 Q30 6, 32 4 Q34 6, 36 12 Q38 20, 32 30" 
+          fill="url(#flameBlue)" opacity="0.8">
+      <animate attributeName="d" 
+               values="M32 30 Q26 20, 28 12 Q30 6, 32 4 Q34 6, 36 12 Q38 20, 32 30;
+                       M32 30 Q24 18, 27 10 Q30 4, 32 2 Q34 4, 37 10 Q40 18, 32 30;
+                       M32 30 Q26 20, 28 12 Q30 6, 32 4 Q34 6, 36 12 Q38 20, 32 30" 
+               dur="0.5s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Inner flame (hotter) -->
+    <path d="M32 30 Q28 22, 30 16 Q31 10, 32 8 Q33 10, 34 16 Q36 22, 32 30" 
+          fill="url(#flameInner)" opacity="0.9">
+      <animate attributeName="d" 
+               values="M32 30 Q28 22, 30 16 Q31 10, 32 8 Q33 10, 34 16 Q36 22, 32 30;
+                       M32 30 Q27 20, 29 14 Q31 8, 32 6 Q33 8, 35 14 Q37 20, 32 30;
+                       M32 30 Q28 22, 30 16 Q31 10, 32 8 Q33 10, 34 16 Q36 22, 32 30" 
+               dur="0.4s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Heat shimmer lines -->
+  <g stroke="#90CAF9" stroke-width="0.5" fill="none" opacity="0.3">
+    <path d="M24 8 Q22 4, 24 0">
+      <animate attributeName="opacity" values="0.3;0.1;0.3" dur="1s" repeatCount="indefinite"/>
+    </path>
+    <path d="M40 10 Q42 6, 40 2">
+      <animate attributeName="opacity" values="0.1;0.3;0.1" dur="1.2s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Shine on brass -->
+  <path d="M28 34 L28 52" stroke="white" stroke-width="1" opacity="0.3"/>
+</svg>

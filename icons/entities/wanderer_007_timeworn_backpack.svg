@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Timeworn Backpack - Weathered pack with infinite pockets, weighs nothing -->
+  <defs>
+    <linearGradient id="wornCanvas" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8D6E63"/>
+      <stop offset="50%" style="stop-color:#6D4C41"/>
+      <stop offset="100%" style="stop-color:#5D4037"/>
+    </linearGradient>
+    <linearGradient id="leatherStrap" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#5D4037"/>
+      <stop offset="50%" style="stop-color:#4E342E"/>
+      <stop offset="100%" style="stop-color:#5D4037"/>
+    </linearGradient>
+    <linearGradient id="epicPurpleGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#CE93D8"/>
+      <stop offset="100%" style="stop-color:#9C27B0"/>
+    </linearGradient>
+    <filter id="infiniteGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Epic aura -->
+  <ellipse cx="32" cy="36" rx="24" ry="26" fill="url(#epicPurpleGlow)" filter="url(#infiniteGlow)" opacity="0.12"/>
+  
+  <!-- Shadow -->
+  <ellipse cx="34" cy="60" rx="18" ry="3" fill="#00000020"/>
+  
+  <!-- Straps (behind pack) -->
+  <path d="M18 20 L14 58" stroke="url(#leatherStrap)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M46 20 L50 58" stroke="url(#leatherStrap)" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Main backpack body -->
+  <path d="M14 18 Q12 24, 14 46 Q16 56, 32 58 Q48 56, 50 46 Q52 24, 50 18 Q46 10, 32 8 Q18 10, 14 18" 
+        fill="url(#wornCanvas)" stroke="#4E342E" stroke-width="1.5"/>
+  
+  <!-- Worn texture/patches -->
+  <g fill="#5D4037" opacity="0.3">
+    <ellipse cx="22" cy="36" rx="6" ry="8"/>
+    <ellipse cx="42" cy="30" rx="5" ry="6"/>
+  </g>
+  
+  <!-- Stitching repair patches (character) -->
+  <g stroke="#8D6E63" stroke-width="0.5" fill="none">
+    <rect x="18" y="28" width="8" height="10" rx="1"/>
+    <path d="M18 30 L26 30 M18 34 L26 34"/>
+    <rect x="36" y="38" width="10" height="8" rx="1"/>
+    <path d="M38 38 L38 46 M42 38 L42 46"/>
+  </g>
+  
+  <!-- Flap top -->
+  <path d="M16 18 Q18 12, 32 10 Q46 12, 48 18 L48 24 Q32 28, 16 24 Z" 
+        fill="url(#wornCanvas)" stroke="#4E342E" stroke-width="1"/>
+  
+  <!-- Buckle on flap -->
+  <rect x="28" y="22" width="8" height="6" rx="1" fill="#B8860B" stroke="#8B6914" stroke-width="0.5"/>
+  <rect x="30" y="24" width="4" height="2" fill="#4E342E"/>
+  
+  <!-- Side pockets (many pockets!) -->
+  <rect x="10" y="30" width="6" height="12" rx="1" fill="#6D4C41" stroke="#4E342E" stroke-width="0.5"/>
+  <rect x="48" y="30" width="6" height="12" rx="1" fill="#6D4C41" stroke="#4E342E" stroke-width="0.5"/>
+  
+  <!-- Front pockets -->
+  <rect x="20" y="44" width="10" height="8" rx="1" fill="#6D4C41" stroke="#4E342E" stroke-width="0.5"/>
+  <rect x="34" y="44" width="10" height="8" rx="1" fill="#6D4C41" stroke="#4E342E" stroke-width="0.5"/>
+  
+  <!-- Pocket buttons -->
+  <circle cx="25" cy="47" r="1.5" fill="#B8860B"/>
+  <circle cx="39" cy="47" r="1.5" fill="#B8860B"/>
+  
+  <!-- Rope/cord tied around -->
+  <path d="M14 40 Q20 42, 32 40 Q44 38, 50 40" stroke="#A1887F" stroke-width="1.5" fill="none"/>
+  
+  <!-- Items sticking out (bedroll on top) -->
+  <ellipse cx="32" cy="6" rx="12" ry="3" fill="#7CB342"/>
+  <g stroke="#558B2F" stroke-width="0.3">
+    <line x1="22" y1="6" x2="22" y2="4"/>
+    <line x1="32" y1="6" x2="32" y2="3"/>
+    <line x1="42" y1="6" x2="42" y2="4"/>
+  </g>
+  
+  <!-- Compass hanging -->
+  <circle cx="12" cy="48" r="3" fill="#FFD54F" stroke="#B8860B" stroke-width="0.5"/>
+  <line x1="12" y1="45" x2="12" y2="48" stroke="#B8860B" stroke-width="0.5"/>
+  
+  <!-- INFINITE POCKET MAGIC - things appearing/disappearing -->
+  <g fill="url(#epicPurpleGlow)" opacity="0.6">
+    <!-- Magic sparkles from pockets -->
+    <circle cx="25" cy="50" r="1">
+      <animate attributeName="opacity" values="0;0.6;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="39" cy="50" r="1">
+      <animate attributeName="opacity" values="0.6;0;0.6" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="13" cy="36" r="0.8">
+      <animate attributeName="opacity" values="0.3;0.6;0.3" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="51" cy="36" r="0.8">
+      <animate attributeName="opacity" values="0.6;0.3;0.6" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Weight hint (floating slightly - weighs nothing!) -->
+  <g stroke="#CE93D8" stroke-width="0.5" fill="none" opacity="0.3">
+    <path d="M28 60 Q32 62, 36 60">
+      <animate attributeName="d" values="M28 60 Q32 62, 36 60;M28 58 Q32 60, 36 58;M28 60 Q32 62, 36 60" dur="3s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Epic sparkles -->
+  <g fill="url(#epicPurpleGlow)" opacity="0.5">
+    <circle cx="6" cy="24" r="1.5"/>
+    <circle cx="58" cy="18" r="1"/>
+    <circle cx="4" cy="50" r="1"/>
+  </g>
+  
+  <!-- Old travel stickers/badges -->
+  <circle cx="40" cy="32" r="3" fill="#F44336" opacity="0.3"/>
+  <circle cx="24" cy="40" r="2.5" fill="#2196F3" opacity="0.3"/>
+</svg>

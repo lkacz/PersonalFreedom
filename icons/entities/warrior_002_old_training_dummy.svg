@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Old Training Dummy - Battered wooden practice dummy with sword marks -->
+  <defs>
+    <linearGradient id="woodGrain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8D6E63"/>
+      <stop offset="50%" style="stop-color:#6D4C41"/>
+      <stop offset="100%" style="stop-color:#5D4037"/>
+    </linearGradient>
+    <linearGradient id="poleWood" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#795548"/>
+      <stop offset="50%" style="stop-color:#5D4037"/>
+      <stop offset="100%" style="stop-color:#4E342E"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Base/Stand -->
+  <ellipse cx="32" cy="58" rx="14" ry="4" fill="#4E342E"/>
+  <rect x="29" y="42" width="6" height="16" fill="url(#poleWood)"/>
+  
+  <!-- Main body (barrel-shaped torso) -->
+  <ellipse cx="32" cy="32" rx="12" ry="14" fill="url(#woodGrain)"/>
+  
+  <!-- Head (round wooden ball) -->
+  <circle cx="32" cy="14" r="8" fill="#A1887F"/>
+  <circle cx="32" cy="14" r="6" fill="url(#woodGrain)"/>
+  
+  <!-- Drawn-on face (faded chalk) -->
+  <circle cx="28" cy="12" r="2" fill="none" stroke="#D7CCC8" stroke-width="1.5" opacity="0.7"/>
+  <circle cx="36" cy="12" r="2" fill="none" stroke="#D7CCC8" stroke-width="1.5" opacity="0.7"/>
+  <path d="M28 17 Q32 20, 36 17" fill="none" stroke="#D7CCC8" stroke-width="1.5" opacity="0.7"/>
+  
+  <!-- Arms (crossbeam) -->
+  <rect x="10" y="28" width="44" height="5" rx="2" fill="url(#poleWood)"/>
+  
+  <!-- Sword cut marks (battle scars) -->
+  <line x1="26" y1="25" x2="30" y2="32" stroke="#3E2723" stroke-width="1.5" opacity="0.6"/>
+  <line x1="34" y1="28" x2="38" y2="35" stroke="#3E2723" stroke-width="1.5" opacity="0.6"/>
+  <line x1="28" y1="38" x2="36" y2="40" stroke="#3E2723" stroke-width="1.5" opacity="0.6"/>
+  <line x1="22" y1="32" x2="24" y2="38" stroke="#3E2723" stroke-width="1.5" opacity="0.6"/>
+  
+  <!-- Deep gash on torso -->
+  <path d="M38 30 Q42 34, 40 38" stroke="#3E2723" stroke-width="2" fill="none" opacity="0.7"/>
+  
+  <!-- Head damage (chunk missing) -->
+  <path d="M38 10 Q42 12, 40 16" stroke="#5D4037" stroke-width="3" fill="#5D4037"/>
+  
+  <!-- Splinters sticking out -->
+  <line x1="40" y1="26" x2="44" y2="24" stroke="#A1887F" stroke-width="1"/>
+  <line x1="24" y1="36" x2="20" y2="38" stroke="#A1887F" stroke-width="1"/>
+  
+  <!-- Target painted on chest (faded) -->
+  <circle cx="32" cy="34" r="6" fill="none" stroke="#C62828" stroke-width="1" opacity="0.3"/>
+  <circle cx="32" cy="34" r="3" fill="none" stroke="#C62828" stroke-width="1" opacity="0.3"/>
+  <circle cx="32" cy="34" r="1" fill="#C62828" opacity="0.3"/>
+  
+  <!-- Bandages (patched up with love) -->
+  <path d="M18 30 L22 28 L22 32 L18 30" fill="#EFEBE9"/>
+  <rect x="12" y="29" width="8" height="3" fill="#EFEBE9" opacity="0.8"/>
+</svg>

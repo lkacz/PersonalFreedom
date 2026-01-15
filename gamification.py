@@ -9191,6 +9191,7 @@ def _create_empty_hero() -> dict:
         "total_collected": 0,
         "last_daily_reward_date": "",
         "max_power_reached": 0,  # Highest power ever achieved - chapters stay unlocked
+        "entitidex": {},  # Entitidex collection progress (see entitidex package)
     }
 
 
@@ -9272,7 +9273,8 @@ def ensure_hero_structure(adhd_buster: dict) -> dict:
         "luck_bonus": 0,
         "total_collected": 0,
         "last_daily_reward_date": "",
-        "max_power_reached": 0
+        "max_power_reached": 0,
+        "entitidex": {},
     }
     for k, v in target_keys.items():
         if k not in adhd_buster:
@@ -13804,3 +13806,231 @@ def get_celebration_message(event_type: str, **kwargs) -> str:
         return message.format(**kwargs)
     except KeyError:
         return message  # Return unformatted if keys missing
+
+
+# ============================================================================
+# ENTITIDEX INTEGRATION
+# ============================================================================
+
+def get_entitidex_manager(adhd_buster: dict) -> "EntitidexManager":
+    """
+    Get an EntitidexManager for the current hero.
+    
+    Creates the manager with the hero's entitidex progress data.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        
+    Returns:
+        EntitidexManager instance loaded with hero's progress
+    """
+    from entitidex import EntitidexManager, EntitidexProgress
+    
+    # Ensure entitidex data structure exists
+    if "entitidex" not in adhd_buster:
+        adhd_buster["entitidex"] = {}
+    
+    # Load existing progress or create new
+    progress_data = adhd_buster["entitidex"]
+    progress = EntitidexProgress.from_dict(progress_data) if progress_data else EntitidexProgress()
+    
+    # Get current configuration
+    active_story = adhd_buster.get("active_story", "warrior")
+    hero_power = calculate_character_power(adhd_buster)
+    
+    return EntitidexManager(
+        progress=progress,
+        story_id=active_story,
+        hero_power=hero_power
+    )
+
+
+def save_entitidex_progress(adhd_buster: dict, manager: "EntitidexManager") -> None:
+    """
+    Save entitidex progress back to hero data.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        manager: EntitidexManager with updated progress
+    """
+    adhd_buster["entitidex"] = manager.progress.to_dict()
+
+
+def check_entitidex_encounter(adhd_buster: dict, session_minutes: int,
+                               perfect_session: bool = False) -> dict:
+    """
+    Check for an entitidex encounter after a focus session.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        session_minutes: Duration of completed session
+        perfect_session: Whether session had no interruptions
+        
+    Returns:
+        dict with encounter result:
+        {
+            "triggered": bool,
+            "entity": Entity or None,
+            "hero_power": int,
+            "entity_power": int,
+            "join_probability": float
+        }
+    """
+    # Get entitidex manager (already configured with story & power)
+    manager = get_entitidex_manager(adhd_buster)
+    
+    # Check for encounter
+    encounter_result = manager.check_for_encounter(
+        session_minutes=session_minutes,
+        was_perfect_session=perfect_session,
+    )
+    
+    # Save progress (encounter attempts are tracked)
+    save_entitidex_progress(adhd_buster, manager)
+    
+    hero_power = calculate_character_power(adhd_buster)
+    
+    return {
+        "triggered": encounter_result.occurred,
+        "entity": encounter_result.entity,
+        "hero_power": hero_power,
+        "entity_power": encounter_result.entity.power if encounter_result.entity else 0,
+        "join_probability": encounter_result.catch_probability
+    }
+
+
+def attempt_entitidex_bond(adhd_buster: dict, entity_id: str) -> dict:
+    """
+    Attempt to bond with an encountered entity.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        entity_id: ID of the entity to bond with
+        
+    Returns:
+        dict with bond attempt result:
+        {
+            "success": bool,
+            "entity": Entity,
+            "probability": float,
+            "pity_bonus": float,
+            "consecutive_fails": int,
+            "message": str
+        }
+    """
+    from entitidex import get_entity_by_id
+    
+    entity = get_entity_by_id(entity_id)
+    if not entity:
+        return {
+            "success": False,
+            "entity": None,
+            "probability": 0.0,
+            "pity_bonus": 0.0,
+            "consecutive_fails": 0,
+            "message": "Entity not found"
+        }
+    
+    # Get entitidex manager (configured with hero_power)
+    manager = get_entitidex_manager(adhd_buster)
+    
+    # Get failed attempts for tracking
+    failed_before = manager.progress.get_failed_attempts(entity_id)
+    
+    # Attempt the bond (hero_power is already set in manager)
+    catch_result = manager.attempt_catch(entity)
+    
+    if catch_result is None:
+        return {
+            "success": False,
+            "entity": entity,
+            "probability": 0.0,
+            "pity_bonus": 0.0,
+            "consecutive_fails": failed_before,
+            "message": "Could not attempt bond"
+        }
+    
+    # Save progress
+    save_entitidex_progress(adhd_buster, manager)
+    
+    # Get updated fail count (only increases on failure)
+    failed_after = manager.progress.get_failed_attempts(entity_id)
+    
+    # Generate appropriate message
+    if catch_result.success:
+        message = f"🎉 {entity.name} has joined your team!"
+    else:
+        message = f"💨 {entity.name} slipped away... Try again next time!"
+    
+    return {
+        "success": catch_result.success,
+        "entity": catch_result.entity,
+        "probability": catch_result.probability,
+        "pity_bonus": 0.0,  # Could calculate this from failed_before
+        "consecutive_fails": failed_after,
+        "message": message
+    }
+
+
+def get_entitidex_stats(adhd_buster: dict) -> dict:
+    """
+    Get entitidex collection statistics for the hero.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        
+    Returns:
+        dict with collection stats:
+        {
+            "total_caught": int,
+            "total_encounters": int,
+            "completion_percentage": float,
+            "collection_by_theme": dict,
+            "collection_by_rarity": dict,
+            "captured_entities": list
+        }
+    """
+    from entitidex import get_entities_for_story
+    
+    manager = get_entitidex_manager(adhd_buster)
+    progress = manager.progress
+    
+    # Calculate completion percentage
+    total_entities = 36  # 9 per story * 4 stories
+    collected_count = len(progress.collected_entity_ids)
+    completion_pct = (collected_count / total_entities * 100) if total_entities > 0 else 0.0
+    
+    # Group by theme
+    collection_by_theme = {}
+    for story_id in ["warrior", "scholar", "wanderer", "underdog"]:
+        collected_in_theme = [
+            eid for eid in progress.collected_entity_ids
+            if eid.startswith(story_id)
+        ]
+        collection_by_theme[story_id] = collected_in_theme
+    
+    # Group by rarity
+    collection_by_rarity = {
+        "common": [],
+        "uncommon": [],
+        "rare": [],
+        "epic": [],
+        "legendary": []
+    }
+    for entity_id in progress.collected_entity_ids:
+        # Look up entity to get rarity
+        from entitidex import get_entity_by_id
+        entity = get_entity_by_id(entity_id)
+        if entity:
+            rarity = entity.rarity.lower()
+            if rarity in collection_by_rarity:
+                collection_by_rarity[rarity].append(entity_id)
+    
+    return {
+        "total_caught": collected_count,
+        "total_encounters": progress.total_encounters,
+        "completion_percentage": completion_pct,
+        "collection_by_theme": collection_by_theme,
+        "collection_by_rarity": collection_by_rarity,
+        "captured_entities": [c.to_dict() for c in progress.captures]
+    }

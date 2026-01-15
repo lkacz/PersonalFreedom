@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Dragon Whelp Ember - Young dragon, size of large dog, playful but fierce -->
+  <defs>
+    <linearGradient id="emberBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E65100"/>
+      <stop offset="100%" style="stop-color:#BF360C"/>
+    </linearGradient>
+    <linearGradient id="emberBelly" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFCC80"/>
+      <stop offset="100%" style="stop-color:#FFB74D"/>
+    </linearGradient>
+    <linearGradient id="emberWing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6F00"/>
+      <stop offset="100%" style="stop-color:#E65100"/>
+    </linearGradient>
+    <radialGradient id="fireGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFEB3B" stop-opacity="0.8"/>
+      <stop offset="100%" style="stop-color:#FF9800" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Fire breath glow -->
+  <ellipse cx="54" cy="22" rx="8" ry="6" fill="url(#fireGlow)"/>
+  
+  <!-- Fire breath -->
+  <path d="M48 24 Q54 20, 58 22 Q62 24, 60 28 Q56 26, 52 28 Q54 24, 48 26" fill="#FF5722"/>
+  <path d="M50 24 Q54 22, 56 24 Q58 26, 54 26" fill="#FFEB3B"/>
+  
+  <!-- Tail -->
+  <path d="M8 36 Q4 32, 6 26 Q8 22, 12 24 Q10 28, 12 32" stroke="#BF360C" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M6 24 L2 20 L8 24 L4 26 L8 24" fill="#E65100"/>
+  
+  <!-- Back leg -->
+  <ellipse cx="18" cy="46" rx="4" ry="6" fill="#BF360C"/>
+  <path d="M15 50 L13 54 M18 50 L18 55 M21 50 L23 54" stroke="#BF360C" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Body (athletic young dragon) -->
+  <ellipse cx="28" cy="36" rx="14" ry="10" fill="url(#emberBody)"/>
+  
+  <!-- Belly scales -->
+  <ellipse cx="28" cy="38" rx="8" ry="6" fill="url(#emberBelly)"/>
+  <path d="M22 36 L24 38 L22 40 M26 35 L28 38 L26 41 M30 36 L32 38 L30 40" stroke="#FFB74D" stroke-width="0.5" fill="none"/>
+  
+  <!-- Wing (partially spread, playful pose) -->
+  <path d="M18 28 Q10 20, 8 28 Q6 36, 14 38 Q20 34, 22 30 Z" fill="url(#emberWing)" stroke="#E65100" stroke-width="0.5"/>
+  <path d="M10 28 L8 34 M14 30 L12 36" stroke="#BF360C" stroke-width="1"/>
+  
+  <!-- Right wing hint -->
+  <path d="M36 30 Q42 26, 44 30 Q44 34, 38 34 Z" fill="url(#emberWing)" opacity="0.8"/>
+  
+  <!-- Front leg -->
+  <ellipse cx="36" cy="44" rx="4" ry="6" fill="url(#emberBody)"/>
+  <path d="M33 48 L31 52 M36 48 L36 53 M39 48 L41 52" stroke="#BF360C" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Neck -->
+  <path d="M38 34 Q44 30, 44 24 Q44 20, 42 22" fill="url(#emberBody)"/>
+  
+  <!-- Head (young, but fierce) -->
+  <ellipse cx="46" cy="22" rx="8" ry="7" fill="url(#emberBody)"/>
+  
+  <!-- Snout -->
+  <ellipse cx="52" cy="24" rx="4" ry="3" fill="#E65100"/>
+  <circle cx="53" cy="22" r="0.8" fill="#BF360C"/>
+  <circle cx="55" cy="22" r="0.8" fill="#BF360C"/>
+  
+  <!-- Playful but fierce eyes -->
+  <ellipse cx="44" cy="20" rx="3" ry="2.5" fill="#FFF8E1"/>
+  <circle cx="44" cy="20" r="2" fill="#FF6F00"/>
+  <ellipse cx="44" cy="20" rx="1" ry="1.5" fill="#1A1A1A"/>
+  <circle cx="44.5" cy="19" r="0.5" fill="white"/>
+  
+  <!-- Fierce brow but young -->
+  <path d="M41 17 L46 18" stroke="#BF360C" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Young horns (growing) -->
+  <path d="M42 14 L40 8 L44 12" fill="#E65100"/>
+  <path d="M48 14 L50 8 L48 12" fill="#E65100"/>
+  
+  <!-- Spines down neck -->
+  <path d="M40 16 L38 12 L40 18 M38 20 L34 18 L38 22 M36 26 L32 24 L36 28" fill="#FF6F00"/>
+  
+  <!-- Playful tongue (optional cute touch) -->
+  <path d="M52 26 Q54 28, 52 30" stroke="#E91E63" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Ground shadow -->
+  <ellipse cx="28" cy="56" rx="16" ry="2" fill="#1A1A1A" opacity="0.3"/>
+</svg>

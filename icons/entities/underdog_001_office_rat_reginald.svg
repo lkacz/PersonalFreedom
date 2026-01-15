@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Office Rat Reginald - Friendly gray rat in desk drawer, eats crumbs, tiny squeaks -->
+  <defs>
+    <linearGradient id="grayFur" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9E9E9E"/>
+      <stop offset="100%" style="stop-color:#616161"/>
+    </linearGradient>
+    <linearGradient id="drawerWood" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8D6E63"/>
+      <stop offset="100%" style="stop-color:#5D4037"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Desk drawer (open) -->
+  <rect x="4" y="36" width="56" height="24" rx="2" fill="url(#drawerWood)"/>
+  <rect x="6" y="38" width="52" height="20" fill="#3E2723"/>
+  <rect x="28" y="34" width="8" height="4" rx="1" fill="#BDBDBD"/>
+  
+  <!-- Paper clips and crumbs in drawer -->
+  <ellipse cx="12" cy="52" rx="2" ry="1" fill="#E0E0E0"/>
+  <ellipse cx="50" cy="50" rx="3" ry="1.5" fill="#FFE0B2"/>
+  <circle cx="46" cy="54" r="1" fill="#FFCC80"/>
+  <circle cx="14" cy="48" r="0.5" fill="#FFCC80"/>
+  
+  <!-- Rat body (peeking out of drawer) -->
+  <ellipse cx="32" cy="42" rx="12" ry="8" fill="url(#grayFur)"/>
+  
+  <!-- Rat head -->
+  <circle cx="38" cy="32" r="10" fill="url(#grayFur)"/>
+  
+  <!-- Big friendly ears -->
+  <circle cx="32" cy="22" r="5" fill="#BDBDBD"/>
+  <circle cx="32" cy="22" r="3" fill="#F8BBD9"/>
+  <circle cx="46" cy="24" r="5" fill="#BDBDBD"/>
+  <circle cx="46" cy="24" r="3" fill="#F8BBD9"/>
+  
+  <!-- Friendly eyes (big and cute) -->
+  <circle cx="34" cy="30" r="4" fill="#212121"/>
+  <circle cx="35" cy="29" r="1.5" fill="white"/>
+  <circle cx="42" cy="30" r="3" fill="#212121"/>
+  <circle cx="43" cy="29" r="1" fill="white"/>
+  
+  <!-- Pink nose -->
+  <ellipse cx="46" cy="34" rx="2" ry="1.5" fill="#F48FB1"/>
+  
+  <!-- Whiskers -->
+  <line x1="46" y1="32" x2="54" y2="30" stroke="#BDBDBD" stroke-width="0.5"/>
+  <line x1="46" y1="34" x2="56" y2="34" stroke="#BDBDBD" stroke-width="0.5"/>
+  <line x1="46" y1="36" x2="54" y2="38" stroke="#BDBDBD" stroke-width="0.5"/>
+  
+  <!-- Front paws on drawer edge -->
+  <ellipse cx="26" cy="38" rx="3" ry="2" fill="#BDBDBD"/>
+  <ellipse cx="34" cy="38" rx="3" ry="2" fill="#BDBDBD"/>
+  
+  <!-- Tail curling out -->
+  <path d="M20 44 Q12 48, 8 44 Q4 40, 8 36" stroke="#757575" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Tiny crumb being held -->
+  <circle cx="30" cy="36" r="2" fill="#FFCC80"/>
+  
+  <!-- Happy blush -->
+  <circle cx="44" cy="36" r="2" fill="#F8BBD9" opacity="0.5"/>
+  
+  <!-- Squeak lines! -->
+  <path d="M50 26 Q52 24, 54 26" stroke="#BDBDBD" stroke-width="0.8" fill="none"/>
+  <path d="M52 22 Q54 20, 56 22" stroke="#BDBDBD" stroke-width="0.6" fill="none"/>
+</svg>

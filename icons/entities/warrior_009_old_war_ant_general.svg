@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Old War Ant General - Tiny black ant, missing two legs, covered in scars -->
+  <!-- The most powerful entity - once commanded millions -->
+  <defs>
+    <linearGradient id="antBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#37474F"/>
+      <stop offset="100%" style="stop-color:#1A1A1A"/>
+    </linearGradient>
+    <linearGradient id="antShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#546E7A"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    <radialGradient id="legendaryGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD700" stop-opacity="0.4"/>
+      <stop offset="60%" style="stop-color:#FFD700" stop-opacity="0.1"/>
+      <stop offset="100%" style="stop-color:#FFD700" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="wisdomGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFFFFF" stop-opacity="0.3"/>
+      <stop offset="100%" style="stop-color:#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Legendary golden aura (subtle, earned through countless battles) -->
+  <circle cx="32" cy="36" r="28" fill="url(#legendaryGlow)"/>
+  
+  <!-- Wisdom glow around head -->
+  <circle cx="34" cy="24" r="12" fill="url(#wisdomGlow)"/>
+  
+  <!-- === THE ANT - Small but commanding presence === -->
+  
+  <!-- Gaster (abdomen) - battle-scarred -->
+  <ellipse cx="24" cy="42" rx="8" ry="6" fill="url(#antBody)"/>
+  <ellipse cx="24" cy="41" rx="6" ry="4" fill="url(#antShine)"/>
+  <!-- Deep scar across gaster -->
+  <path d="M18 40 L30 44" stroke="#546E7A" stroke-width="1" opacity="0.6"/>
+  <path d="M20 44 L28 40" stroke="#546E7A" stroke-width="0.8" opacity="0.5"/>
+  
+  <!-- Petiole (waist segment) -->
+  <ellipse cx="30" cy="38" rx="3" ry="2.5" fill="url(#antBody)"/>
+  
+  <!-- Thorax (middle) - armored, scarred -->
+  <ellipse cx="34" cy="34" rx="6" ry="5" fill="url(#antBody)"/>
+  <ellipse cx="34" cy="33" rx="4" ry="3" fill="url(#antShine)"/>
+  <!-- Battle scar on thorax -->
+  <path d="M30 32 L38 36" stroke="#546E7A" stroke-width="1" opacity="0.5"/>
+  
+  <!-- === LEGS - 4 remaining (2 missing from battle) === -->
+  
+  <!-- Back legs (both present) -->
+  <path d="M20 44 Q16 48, 14 52 Q12 54, 10 56" stroke="#1A1A1A" stroke-width="1.5" fill="none"/>
+  <path d="M28 44 Q30 48, 32 52 Q34 54, 36 56" stroke="#1A1A1A" stroke-width="1.5" fill="none"/>
+  
+  <!-- Middle legs - LEFT ONE MISSING (stump) -->
+  <path d="M30 36 Q28 37, 26 36" stroke="#1A1A1A" stroke-width="1.5" fill="none"/>
+  <circle cx="26" cy="36" r="1" fill="#37474F"/> <!-- Healed stump -->
+  <!-- Right middle leg present -->
+  <path d="M38 36 Q42 38, 46 40 Q48 42, 50 44" stroke="#1A1A1A" stroke-width="1.5" fill="none"/>
+  
+  <!-- Front legs - RIGHT ONE MISSING (stump) -->
+  <path d="M36 30 Q40 28, 42 26" stroke="#1A1A1A" stroke-width="1.5" fill="none"/>
+  <circle cx="42" cy="26" r="1" fill="#37474F"/> <!-- Healed stump -->
+  <!-- Left front leg present -->
+  <path d="M32 30 Q28 26, 24 22 Q22 20, 20 18" stroke="#1A1A1A" stroke-width="1.5" fill="none"/>
+  
+  <!-- === HEAD - wise, battle-worn === -->
+  <ellipse cx="40" cy="26" rx="7" ry="6" fill="url(#antBody)"/>
+  <ellipse cx="40" cy="25" rx="5" ry="4" fill="url(#antShine)"/>
+  
+  <!-- Major scar across head -->
+  <path d="M36 24 L44 28" stroke="#546E7A" stroke-width="1.5" opacity="0.6"/>
+  
+  <!-- Mandibles (strong, experienced) -->
+  <path d="M46 28 Q50 30, 48 32 Q46 30, 46 28" fill="#263238"/>
+  <path d="M46 26 Q50 24, 52 26 Q50 28, 46 28" fill="#263238"/>
+  
+  <!-- Antennae (one partially broken - battle damage) -->
+  <path d="M38 20 Q36 16, 34 12 Q32 10, 30 8" stroke="#1A1A1A" stroke-width="1" fill="none"/>
+  <circle cx="30" cy="8" r="1" fill="#263238"/>
+  <!-- Broken antenna (shorter) -->
+  <path d="M42 20 Q44 16, 46 14" stroke="#1A1A1A" stroke-width="1" fill="none"/>
+  <circle cx="46" cy="14" r="0.8" fill="#263238"/> <!-- Healed break -->
+  
+  <!-- Eyes (compound, wise, seen a million battles) -->
+  <ellipse cx="44" cy="24" rx="2.5" ry="2" fill="#263238"/>
+  <ellipse cx="44.5" cy="23.5" rx="1" ry="0.8" fill="#455A64"/>
+  <!-- Slight golden glint (legendary wisdom) -->
+  <circle cx="45" cy="23" r="0.5" fill="#FFD700" opacity="0.6"/>
+  
+  <!-- === MEDALS/HONORS (tiny, on thorax) === -->
+  <circle cx="34" cy="32" r="1.5" fill="#FFD700" opacity="0.7"/>
+  <circle cx="34" cy="32" r="0.8" fill="#FFF8E1"/>
+  
+  <!-- === TINY GENERAL'S INSIGNIA === -->
+  <path d="M36 30 L37 28 L38 30 L37 29 Z" fill="#FFD700" opacity="0.8"/>
+  
+  <!-- Shadow (small, humble) -->
+  <ellipse cx="32" cy="58" rx="10" ry="2" fill="#1A1A1A" opacity="0.3"/>
+  
+  <!-- Dust motes around (showing scale - sitting on shoulder) -->
+  <circle cx="12" cy="20" r="0.5" fill="#BDBDBD" opacity="0.4"/>
+  <circle cx="52" cy="44" r="0.5" fill="#BDBDBD" opacity="0.4"/>
+  <circle cx="8" cy="50" r="0.4" fill="#BDBDBD" opacity="0.3"/>
+  <circle cx="56" cy="18" r="0.4" fill="#BDBDBD" opacity="0.3"/>
+</svg>

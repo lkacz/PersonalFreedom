@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Study Owl Athena - Wise little owl, perches on desk, hoots softly -->
+  <defs>
+    <linearGradient id="owlBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8D6E63"/>
+      <stop offset="100%" style="stop-color:#5D4037"/>
+    </linearGradient>
+    <linearGradient id="owlBelly" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#EFEBE9"/>
+      <stop offset="100%" style="stop-color:#D7CCC8"/>
+    </linearGradient>
+    <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFEB3B" stop-opacity="0.3"/>
+      <stop offset="100%" style="stop-color:#FFEB3B" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Body (round, fluffy owl) -->
+  <ellipse cx="32" cy="40" rx="16" ry="18" fill="url(#owlBody)"/>
+  
+  <!-- Belly feathers pattern -->
+  <ellipse cx="32" cy="44" rx="10" ry="12" fill="url(#owlBelly)"/>
+  <path d="M26 38 L28 42 L26 46 M30 36 L32 42 L30 48 M34 38 L36 42 L34 46" 
+        stroke="#A1887F" stroke-width="0.5" fill="none"/>
+  
+  <!-- Head -->
+  <circle cx="32" cy="22" r="14" fill="url(#owlBody)"/>
+  
+  <!-- Ear tufts -->
+  <path d="M20 14 L18 6 L24 12" fill="#6D4C41"/>
+  <path d="M44 14 L46 6 L40 12" fill="#6D4C41"/>
+  
+  <!-- Facial disc (lighter feathers around eyes) -->
+  <ellipse cx="32" cy="24" rx="12" ry="10" fill="#D7CCC8"/>
+  
+  <!-- Eye glow -->
+  <circle cx="26" cy="22" r="8" fill="url(#eyeGlow)"/>
+  <circle cx="38" cy="22" r="8" fill="url(#eyeGlow)"/>
+  
+  <!-- Big wise eyes -->
+  <circle cx="26" cy="22" r="6" fill="#FFF8E1"/>
+  <circle cx="26" cy="22" r="4" fill="#FF8F00"/>
+  <circle cx="26" cy="22" r="2" fill="#1A1A1A"/>
+  <circle cx="27" cy="21" r="1" fill="white"/>
+  
+  <circle cx="38" cy="22" r="6" fill="#FFF8E1"/>
+  <circle cx="38" cy="22" r="4" fill="#FF8F00"/>
+  <circle cx="38" cy="22" r="2" fill="#1A1A1A"/>
+  <circle cx="39" cy="21" r="1" fill="white"/>
+  
+  <!-- Beak -->
+  <path d="M32 26 L30 30 L32 32 L34 30 Z" fill="#FFB300"/>
+  
+  <!-- Wings (folded at sides) -->
+  <path d="M16 38 Q12 44, 14 52 Q18 50, 20 44" fill="#6D4C41"/>
+  <path d="M48 38 Q52 44, 50 52 Q46 50, 44 44" fill="#6D4C41"/>
+  
+  <!-- Wing feather details -->
+  <path d="M14 46 L16 44 M14 50 L18 48" stroke="#5D4037" stroke-width="1"/>
+  <path d="M50 46 L48 44 M50 50 L46 48" stroke="#5D4037" stroke-width="1"/>
+  
+  <!-- Tiny graduation cap! -->
+  <rect x="24" y="6" width="16" height="2" fill="#1A1A1A"/>
+  <rect x="26" y="4" width="12" height="3" fill="#1A1A1A"/>
+  <circle cx="32" cy="4" r="1" fill="#FFD54F"/>
+  <path d="M32 4 L34 0 L36 2" stroke="#FFD54F" stroke-width="0.5" fill="none"/>
+  
+  <!-- Feet on branch/perch -->
+  <rect x="22" y="56" width="20" height="4" rx="2" fill="#5D4037"/>
+  <path d="M26 56 L24 54 L26 56 L28 54 L26 56" stroke="#FF8F00" stroke-width="1.5"/>
+  <path d="M38 56 L36 54 L38 56 L40 54 L38 56" stroke="#FF8F00" stroke-width="1.5"/>
+</svg>

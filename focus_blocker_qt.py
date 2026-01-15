@@ -1690,6 +1690,10 @@ class TimerTab(QtWidgets.QWidget):
         # The game_state.end_batch() above triggers power_changed, coins_changed,
         # and inventory_changed signals which update the UI reactively.
 
+        # === Entitidex Encounter Check ===
+        # After item rewards, check for entity encounter based on session
+        self._check_entitidex_encounter(session_minutes)
+
         # Show diary entry reveal
         if diary_entry:
             DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes, self.window()).exec()
@@ -1761,6 +1765,80 @@ class TimerTab(QtWidgets.QWidget):
                 "Equip Failed",
                 f"Could not equip item: {str(e)}"
             )
+
+    def _check_entitidex_encounter(self, session_minutes: int) -> None:
+        """
+        Check for and handle entitidex entity encounter after session completion.
+        
+        Args:
+            session_minutes: Duration of the completed session in minutes
+        """
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        # Skip if gamification mode is disabled
+        if not is_gamification_enabled(self.blocker.adhd_buster):
+            return
+        
+        try:
+            from gamification import check_entitidex_encounter, attempt_entitidex_bond
+            from entity_encounter_dialog import EntityEncounterDialog, BondResultDialog
+            
+            # Check for encounter
+            encounter = check_entitidex_encounter(
+                self.blocker.adhd_buster,
+                session_minutes,
+                perfect_session=False  # TODO: Track perfect sessions
+            )
+            
+            if not encounter["triggered"] or not encounter["entity"]:
+                return
+            
+            # Show encounter dialog
+            entity = encounter["entity"]
+            dialog = EntityEncounterDialog(
+                entity=entity,
+                join_probability=encounter["join_probability"],
+                hero_power=encounter["hero_power"],
+                parent=self.window()
+            )
+            
+            # Connect signals
+            bond_attempted = [False]  # Use list for closure
+            
+            def on_bond_attempt(entity_id: str):
+                bond_attempted[0] = True
+                # Attempt the bond
+                result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
+                
+                # Show result dialog
+                result_dialog = BondResultDialog(
+                    entity=result["entity"],
+                    success=result["success"],
+                    probability=result["probability"],
+                    pity_bonus=result["pity_bonus"],
+                    consecutive_fails=result["consecutive_fails"],
+                    parent=self.window()
+                )
+                result_dialog.exec()
+                
+                # Save the updated data
+                from gamification import sync_hero_data
+                sync_hero_data(self.blocker.adhd_buster)
+                
+                # Get game state and save
+                game_state = getattr(self.window(), 'game_state', None)
+                if game_state:
+                    game_state.force_save()
+            
+            dialog.bond_attempted.connect(on_bond_attempt)
+            dialog.exec()
+            
+        except ImportError as e:
+            # Entitidex not available - silently skip
+            logger.debug(f"Entitidex not available: {e}")
+        except Exception as e:
+            logger.warning(f"Error checking entitidex encounter: {e}")
 
     def _show_inventory_dialog(self) -> None:
         """Show inventory management dialog."""
@@ -2421,121 +2499,464 @@ class StatsTab(QtWidgets.QWidget):
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
 
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("""
+            QScrollArea {
+                border: none;
+                background: transparent;
+            }
+        """)
         container = QtWidgets.QWidget()
         inner = QtWidgets.QVBoxLayout(container)
+        inner.setSpacing(20)
 
-        # Overview cards
-        overview_group = QtWidgets.QGroupBox("📊 Overview")
+        # Title
+        title = QtWidgets.QLabel("📊 Focus Statistics & Performance")
+        title.setFont(QtGui.QFont("Arial", 18, QtGui.QFont.Bold))
+        title.setAlignment(QtCore.Qt.AlignCenter)
+        title.setStyleSheet("""
+            QLabel {
+                color: #2196f3;
+                padding: 10px;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 rgba(33,150,243,0.1), stop:0.5 rgba(33,150,243,0.2), stop:1 rgba(33,150,243,0.1));
+                border-radius: 8px;
+                margin-bottom: 10px;
+            }
+        """)
+        inner.addWidget(title)
+
+        # Overview cards with modern gradient cards
+        overview_group = QtWidgets.QGroupBox()
+        overview_group.setStyleSheet("""
+            QGroupBox {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #f8f9fa, stop:1 #e9ecef);
+                border: 2px solid #dee2e6;
+                border-radius: 12px;
+                padding: 20px;
+                margin-top: 10px;
+            }
+        """)
         overview_layout = QtWidgets.QGridLayout(overview_group)
+        overview_layout.setSpacing(15)
+        
+        # Create stat cards with gradients
+        def create_stat_card(icon: str, label_text: str, value_widget, color: str) -> QtWidgets.QWidget:
+            card = QtWidgets.QFrame()
+            card.setStyleSheet(f"""
+                QFrame {{
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 {color}15, stop:1 {color}25);
+                    border: 2px solid {color}40;
+                    border-radius: 10px;
+                    padding: 15px;
+                }}
+            """)
+            card_layout = QtWidgets.QVBoxLayout(card)
+            card_layout.setSpacing(8)
+            
+            label = QtWidgets.QLabel(f"{icon} {label_text}")
+            label.setFont(QtGui.QFont("Arial", 10))
+            label.setStyleSheet(f"color: {color}; font-weight: bold;")
+            card_layout.addWidget(label)
+            
+            value_widget.setFont(QtGui.QFont("Arial", 24, QtGui.QFont.Bold))
+            value_widget.setStyleSheet(f"color: {color}; padding: 5px;")
+            value_widget.setAlignment(QtCore.Qt.AlignCenter)
+            card_layout.addWidget(value_widget)
+            
+            return card
+        
         self.total_hours_lbl = QtWidgets.QLabel("0h")
-        self.total_hours_lbl.setStyleSheet("font-size: 18px; font-weight: bold;")
         self.sessions_lbl = QtWidgets.QLabel("0")
-        self.sessions_lbl.setStyleSheet("font-size: 18px; font-weight: bold;")
         self.streak_lbl = QtWidgets.QLabel("0 days")
-        self.streak_lbl.setStyleSheet("font-size: 18px; font-weight: bold;")
         self.best_streak_lbl = QtWidgets.QLabel("0 days")
-        self.best_streak_lbl.setStyleSheet("font-size: 18px; font-weight: bold;")
-
-        overview_layout.addWidget(QtWidgets.QLabel("Total Focus Time"), 0, 0)
-        overview_layout.addWidget(self.total_hours_lbl, 1, 0)
-        overview_layout.addWidget(QtWidgets.QLabel("Sessions Completed"), 0, 1)
-        overview_layout.addWidget(self.sessions_lbl, 1, 1)
-        overview_layout.addWidget(QtWidgets.QLabel("Current Streak"), 2, 0)
-        overview_layout.addWidget(self.streak_lbl, 3, 0)
-        overview_layout.addWidget(QtWidgets.QLabel("Best Streak"), 2, 1)
-        overview_layout.addWidget(self.best_streak_lbl, 3, 1)
+        
+        overview_layout.addWidget(
+            create_stat_card("⏱️", "Total Focus Time", self.total_hours_lbl, "#2196f3"), 0, 0
+        )
+        overview_layout.addWidget(
+            create_stat_card("✅", "Sessions Completed", self.sessions_lbl, "#4caf50"), 0, 1
+        )
+        overview_layout.addWidget(
+            create_stat_card("🔥", "Current Streak", self.streak_lbl, "#ff9800"), 1, 0
+        )
+        overview_layout.addWidget(
+            create_stat_card("🏆", "Best Streak", self.best_streak_lbl, "#9c27b0"), 1, 1
+        )
         inner.addWidget(overview_group)
 
-        # Focus goals dashboard (weekly/monthly targets)
-        goals_group = QtWidgets.QGroupBox("🎯 Focus Goals Dashboard")
+        # Focus goals dashboard (weekly/monthly targets) with modern styling
+        goals_group = QtWidgets.QGroupBox()
+        goals_group.setStyleSheet("""
+            QGroupBox {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #fff8e1, stop:1 #ffecb3);
+                border: 2px solid #ffc107;
+                border-radius: 12px;
+                padding: 20px;
+                margin-top: 10px;
+            }
+        """)
         goals_layout = QtWidgets.QVBoxLayout(goals_group)
+        goals_layout.setSpacing(15)
+        
+        # Goals title
+        goals_title = QtWidgets.QLabel("🎯 Focus Goals Dashboard")
+        goals_title.setFont(QtGui.QFont("Arial", 14, QtGui.QFont.Bold))
+        goals_title.setStyleSheet("color: #f57c00; padding: 5px;")
+        goals_layout.addWidget(goals_title)
 
-        # Weekly goal
-        weekly_row = QtWidgets.QHBoxLayout()
-        weekly_row.addWidget(QtWidgets.QLabel("Weekly Goal:"))
+        # Weekly goal with modern styling
+        weekly_card = QtWidgets.QFrame()
+        weekly_card.setStyleSheet("""
+            QFrame {
+                background: white;
+                border-radius: 8px;
+                padding: 12px;
+            }
+        """)
+        weekly_layout = QtWidgets.QVBoxLayout(weekly_card)
+        weekly_layout.setSpacing(8)
+        
+        weekly_label = QtWidgets.QLabel("📅 Weekly Goal")
+        weekly_label.setFont(QtGui.QFont("Arial", 11, QtGui.QFont.Bold))
+        weekly_label.setStyleSheet("color: #1976d2;")
+        weekly_layout.addWidget(weekly_label)
+        
         self.weekly_bar = QtWidgets.QProgressBar()
         self.weekly_bar.setMaximum(100)
         self.weekly_bar.setTextVisible(True)
-        weekly_row.addWidget(self.weekly_bar, stretch=1)
+        self.weekly_bar.setStyleSheet("""
+            QProgressBar {
+                border: 2px solid #1976d2;
+                border-radius: 6px;
+                text-align: center;
+                background: #e3f2fd;
+                height: 28px;
+            }
+            QProgressBar::chunk {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #1976d2, stop:1 #42a5f5);
+                border-radius: 4px;
+            }
+        """)
+        weekly_layout.addWidget(self.weekly_bar)
+        
+        weekly_controls = QtWidgets.QHBoxLayout()
+        weekly_controls.addWidget(QtWidgets.QLabel("Target:"))
         self.weekly_target = QtWidgets.QDoubleSpinBox()
         self.weekly_target.setRange(1, 200)
         self.weekly_target.setSuffix(" h")
+        self.weekly_target.setStyleSheet("""
+            QDoubleSpinBox {
+                border: 1px solid #1976d2;
+                border-radius: 4px;
+                padding: 4px;
+                min-width: 80px;
+            }
+        """)
         try:
             self.weekly_target.setValue(float(self.blocker.stats.get("weekly_goal_hours", 10)))
         except (ValueError, TypeError):
             self.weekly_target.setValue(10.0)
-        weekly_set = QtWidgets.QPushButton("Set")
+        weekly_controls.addWidget(self.weekly_target)
+        
+        weekly_set = QtWidgets.QPushButton("Set Goal")
+        weekly_set.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1976d2, stop:1 #1565c0);
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 6px 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1565c0, stop:1 #0d47a1);
+            }
+        """)
         weekly_set.clicked.connect(self._set_weekly_goal)
-        weekly_row.addWidget(self.weekly_target)
-        weekly_row.addWidget(weekly_set)
-        goals_layout.addLayout(weekly_row)
+        weekly_controls.addWidget(weekly_set)
+        weekly_controls.addStretch()
+        weekly_layout.addLayout(weekly_controls)
+        goals_layout.addWidget(weekly_card)
 
-        # Monthly goal
-        monthly_row = QtWidgets.QHBoxLayout()
-        monthly_row.addWidget(QtWidgets.QLabel("Monthly Goal:"))
+        # Monthly goal with modern styling
+        monthly_card = QtWidgets.QFrame()
+        monthly_card.setStyleSheet("""
+            QFrame {
+                background: white;
+                border-radius: 8px;
+                padding: 12px;
+            }
+        """)
+        monthly_layout = QtWidgets.QVBoxLayout(monthly_card)
+        monthly_layout.setSpacing(8)
+        
+        monthly_label = QtWidgets.QLabel("📆 Monthly Goal")
+        monthly_label.setFont(QtGui.QFont("Arial", 11, QtGui.QFont.Bold))
+        monthly_label.setStyleSheet("color: #7b1fa2;")
+        monthly_layout.addWidget(monthly_label)
+        
         self.monthly_bar = QtWidgets.QProgressBar()
         self.monthly_bar.setMaximum(100)
         self.monthly_bar.setTextVisible(True)
-        monthly_row.addWidget(self.monthly_bar, stretch=1)
+        self.monthly_bar.setStyleSheet("""
+            QProgressBar {
+                border: 2px solid #7b1fa2;
+                border-radius: 6px;
+                text-align: center;
+                background: #f3e5f5;
+                height: 28px;
+            }
+            QProgressBar::chunk {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #7b1fa2, stop:1 #ab47bc);
+                border-radius: 4px;
+            }
+        """)
+        monthly_layout.addWidget(self.monthly_bar)
+        
+        monthly_controls = QtWidgets.QHBoxLayout()
+        monthly_controls.addWidget(QtWidgets.QLabel("Target:"))
         self.monthly_target = QtWidgets.QDoubleSpinBox()
         self.monthly_target.setRange(1, 1000)
         self.monthly_target.setSuffix(" h")
+        self.monthly_target.setStyleSheet("""
+            QDoubleSpinBox {
+                border: 1px solid #7b1fa2;
+                border-radius: 4px;
+                padding: 4px;
+                min-width: 80px;
+            }
+        """)
         try:
             self.monthly_target.setValue(float(self.blocker.stats.get("monthly_goal_hours", 40)))
         except (ValueError, TypeError):
             self.monthly_target.setValue(40.0)
-        monthly_set = QtWidgets.QPushButton("Set")
+        monthly_controls.addWidget(self.monthly_target)
+        
+        monthly_set = QtWidgets.QPushButton("Set Goal")
+        monthly_set.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #7b1fa2, stop:1 #6a1b9a);
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 6px 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #6a1b9a, stop:1 #4a148c);
+            }
+        """)
         monthly_set.clicked.connect(self._set_monthly_goal)
-        monthly_row.addWidget(self.monthly_target)
-        monthly_row.addWidget(monthly_set)
-        goals_layout.addLayout(monthly_row)
+        monthly_controls.addWidget(monthly_set)
+        monthly_controls.addStretch()
+        monthly_layout.addLayout(monthly_controls)
+        goals_layout.addWidget(monthly_card)
 
         inner.addWidget(goals_group)
 
-        # Weekly chart (text-based)
-        week_group = QtWidgets.QGroupBox("📈 This Week")
+        # Weekly chart with graphical bars
+        week_group = QtWidgets.QGroupBox()
+        week_group.setStyleSheet("""
+            QGroupBox {
+                background: white;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                padding: 15px;
+                margin-top: 10px;
+            }
+        """)
         week_layout = QtWidgets.QVBoxLayout(week_group)
-        self.week_text = QtWidgets.QTextEdit()
-        self.week_text.setReadOnly(True)
-        self.week_text.setFont(QtGui.QFont("Consolas", 10))
-        self.week_text.setMaximumHeight(200)
-        week_layout.addWidget(self.week_text)
+        week_layout.setSpacing(8)
+        
+        week_title = QtWidgets.QLabel("📊 Weekly Focus Time")
+        week_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
+        week_title.setStyleSheet("color: #424242; padding: 0px 0px 5px 0px;")
+        week_layout.addWidget(week_title)
+        
+        # Store weekly progress bars
+        self.week_bars = {}
+        days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        for day in days:
+            day_layout = QtWidgets.QHBoxLayout()
+            day_layout.setSpacing(8)
+            
+            day_label = QtWidgets.QLabel(day)
+            day_label.setFixedWidth(35)
+            day_label.setStyleSheet("color: #757575; font-weight: bold;")
+            day_layout.addWidget(day_label)
+            
+            progress = QtWidgets.QProgressBar()
+            progress.setMaximum(100)
+            progress.setValue(0)
+            progress.setTextVisible(True)
+            progress.setFixedHeight(20)
+            progress.setStyleSheet("""
+                QProgressBar {
+                    border: 1px solid #e0e0e0;
+                    border-radius: 4px;
+                    background: #f5f5f5;
+                    text-align: center;
+                    color: #424242;
+                    font-size: 10px;
+                }
+                QProgressBar::chunk {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                        stop:0 #81c784, stop:1 #66bb6a);
+                    border-radius: 3px;
+                }
+            """)
+            day_layout.addWidget(progress, 1)
+            
+            week_layout.addLayout(day_layout)
+            self.week_bars[day] = progress
+        
+        # Total summary
+        self.week_total_label = QtWidgets.QLabel("")
+        self.week_total_label.setStyleSheet("""
+            color: #424242;
+            font-weight: bold;
+            padding: 8px 0px 0px 0px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 5px;
+        """)
+        week_layout.addWidget(self.week_total_label)
+        
         inner.addWidget(week_group)
 
-        # Distraction attempts (bypass) if available
+        # Distraction attempts (bypass) if available with modern styling
         if BYPASS_LOGGER_AVAILABLE:
-            bypass_group = QtWidgets.QGroupBox("🚫 Distraction Attempts")
+            bypass_group = QtWidgets.QGroupBox()
+            bypass_group.setStyleSheet("""
+                QGroupBox {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #ffebee, stop:1 #ffcdd2);
+                    border: 2px solid #f44336;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin-top: 10px;
+                }
+            """)
             bypass_layout = QtWidgets.QVBoxLayout(bypass_group)
-
+            bypass_layout.setSpacing(12)
+            
+            bypass_title = QtWidgets.QLabel("🚫 Distraction Attempts")
+            bypass_title.setFont(QtGui.QFont("Arial", 14, QtGui.QFont.Bold))
+            bypass_title.setStyleSheet("color: #c62828; padding: 5px;")
+            bypass_layout.addWidget(bypass_title)
+            
+            # Session stats card
+            session_card = QtWidgets.QFrame()
+            session_card.setStyleSheet("""
+                QFrame {
+                    background: white;
+                    border-radius: 6px;
+                    padding: 10px;
+                }
+            """)
+            session_layout = QtWidgets.QVBoxLayout(session_card)
+            
             self.bypass_session_label = QtWidgets.QLabel("Current Session: 0 attempts")
+            self.bypass_session_label.setFont(QtGui.QFont("Arial", 11, QtGui.QFont.Bold))
+            self.bypass_session_label.setStyleSheet("color: #d32f2f;")
+            session_layout.addWidget(self.bypass_session_label)
+            
             self.bypass_session_sites = QtWidgets.QLabel("No sites accessed")
-            self.bypass_session_sites.setStyleSheet("color: gray;")
-            bypass_layout.addWidget(self.bypass_session_label)
-            bypass_layout.addWidget(self.bypass_session_sites)
+            self.bypass_session_sites.setStyleSheet("color: #757575; padding-left: 10px;")
+            session_layout.addWidget(self.bypass_session_sites)
+            bypass_layout.addWidget(session_card)
+            
+            # Overall stats card
+            overall_card = QtWidgets.QFrame()
+            overall_card.setStyleSheet("""
+                QFrame {
+                    background: white;
+                    border-radius: 6px;
+                    padding: 10px;
+                }
+            """)
+            overall_layout = QtWidgets.QVBoxLayout(overall_card)
 
             self.bypass_total_label = QtWidgets.QLabel("Total attempts: 0")
+            self.bypass_total_label.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
+            overall_layout.addWidget(self.bypass_total_label)
+            
             self.bypass_top_sites = QtWidgets.QLabel("Top distractions: -")
+            self.bypass_top_sites.setStyleSheet("padding-left: 10px; color: #424242;")
+            overall_layout.addWidget(self.bypass_top_sites)
+            
             self.bypass_peak_hours = QtWidgets.QLabel("Peak hours: -")
-            bypass_layout.addWidget(self.bypass_total_label)
-            bypass_layout.addWidget(self.bypass_top_sites)
-            bypass_layout.addWidget(self.bypass_peak_hours)
+            self.bypass_peak_hours.setStyleSheet("padding-left: 10px; color: #424242;")
+            overall_layout.addWidget(self.bypass_peak_hours)
+            bypass_layout.addWidget(overall_card)
 
+            # Insights
             self.bypass_insights = QtWidgets.QTextEdit()
             self.bypass_insights.setReadOnly(True)
             self.bypass_insights.setMaximumHeight(80)
+            self.bypass_insights.setStyleSheet("""
+                QTextEdit {
+                    background: #fff3e0;
+                    border: 1px solid #ff9800;
+                    border-radius: 6px;
+                    padding: 8px;
+                    color: #e65100;
+                }
+            """)
             bypass_layout.addWidget(self.bypass_insights)
 
             refresh_bypass = QtWidgets.QPushButton("🔄 Refresh Attempts")
+            refresh_bypass.setStyleSheet("""
+                QPushButton {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #f44336, stop:1 #d32f2f);
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    padding: 8px 16px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #d32f2f, stop:1 #b71c1c);
+                }
+            """)
             refresh_bypass.clicked.connect(self._refresh_bypass_stats)
             bypass_layout.addWidget(refresh_bypass)
 
             inner.addWidget(bypass_group)
 
-        # Reset button
+        # Reset button with modern styling
         reset_btn = QtWidgets.QPushButton("🔄 Reset All Statistics")
+        reset_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #9e9e9e, stop:1 #757575);
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #757575, stop:1 #616161);
+            }
+        """)
         reset_btn.clicked.connect(self._reset_stats)
         inner.addWidget(reset_btn)
 
@@ -2571,28 +2992,41 @@ class StatsTab(QtWidgets.QWidget):
         self.monthly_bar.setFormat(f"{monthly_minutes/60:.1f}h / {monthly_target:.0f}h ({monthly_pct}%)")
         self.monthly_bar.setValue(monthly_pct)
 
-        # Weekly chart
+        # Weekly chart with graphical bars
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         today = datetime.now()
-        week_data = []
+        week_data = {}
         max_time = 1
+        total_week = 0
+        
         for i in range(6, -1, -1):
             date_str = (today - timedelta(days=i)).strftime("%Y-%m-%d")
-            daily = self.blocker.stats.get("daily_stats", {}).get(date_str, {})
-            time_min = daily.get("focus_time", 0) // 60
-            week_data.append((date_str, time_min))
-            max_time = max(max_time, time_min)
-
-        lines = ["Focus time this week:\n"]
-        for date_str, time_min in week_data:
             dt = datetime.strptime(date_str, "%Y-%m-%d")
             day_name = days[dt.weekday()]
-            bar_len = int((time_min / max_time) * 30) if max_time > 0 else 0
-            bar = "█" * bar_len + "░" * (30 - bar_len)
-            lines.append(f"  {day_name}  {bar} {time_min}m")
-        total_week = sum(t for _, t in week_data)
-        lines.append(f"\n  Total: {total_week} min ({total_week // 60}h {total_week % 60}m)")
-        self.week_text.setPlainText("\n".join(lines))
+            daily = self.blocker.stats.get("daily_stats", {}).get(date_str, {})
+            time_min = daily.get("focus_time", 0) // 60
+            week_data[day_name] = time_min
+            max_time = max(max_time, time_min)
+            total_week += time_min
+
+        # Update each day's progress bar
+        for day in days:
+            time_min = week_data.get(day, 0)
+            percentage = int((time_min / max_time) * 100) if max_time > 0 else 0
+            bar = self.week_bars.get(day)
+            if bar:
+                bar.setValue(percentage)
+                hours = time_min // 60
+                mins = time_min % 60
+                if hours > 0:
+                    bar.setFormat(f"{hours}h {mins}m")
+                else:
+                    bar.setFormat(f"{mins}m")
+        
+        # Update total
+        total_hours = total_week // 60
+        total_mins = total_week % 60
+        self.week_total_label.setText(f"Total: {total_hours}h {total_mins}m")
 
         if BYPASS_LOGGER_AVAILABLE:
             self._refresh_bypass_stats()

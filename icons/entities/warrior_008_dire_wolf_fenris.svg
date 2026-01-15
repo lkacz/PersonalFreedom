@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Dire Wolf Fenris - Massive gray wolf, scarred, loyal to one master -->
+  <defs>
+    <linearGradient id="wolfBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#78909C"/>
+      <stop offset="100%" style="stop-color:#455A64"/>
+    </linearGradient>
+    <linearGradient id="wolfDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#546E7A"/>
+      <stop offset="100%" style="stop-color:#37474F"/>
+    </linearGradient>
+    <linearGradient id="wolfBelly" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#CFD8DC"/>
+      <stop offset="100%" style="stop-color:#B0BEC5"/>
+    </linearGradient>
+    <radialGradient id="eyeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFEB3B" stop-opacity="0.6"/>
+      <stop offset="100%" style="stop-color:#FFEB3B" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Tail (massive, bushy) -->
+  <path d="M4 32 Q0 28, 2 22 Q6 18, 10 22 Q8 26, 10 30 Q8 34, 10 36" 
+        fill="url(#wolfBody)" stroke="#455A64" stroke-width="0.5"/>
+  <path d="M2 22 Q4 20, 6 22" stroke="#37474F" stroke-width="1"/>
+  <path d="M4 26 Q6 24, 8 26" stroke="#37474F" stroke-width="1"/>
+  
+  <!-- Back legs -->
+  <rect x="12" y="44" width="6" height="14" rx="2" fill="url(#wolfDark)"/>
+  <rect x="18" y="46" width="6" height="12" rx="2" fill="url(#wolfBody)"/>
+  
+  <!-- Paws (back) -->
+  <ellipse cx="15" cy="58" rx="4" ry="3" fill="#37474F"/>
+  <ellipse cx="21" cy="58" rx="4" ry="3" fill="#455A64"/>
+  <path d="M13 58 L12 61 M15 58 L15 62 M17 58 L18 61" stroke="#263238" stroke-width="1.5"/>
+  <path d="M19 58 L18 61 M21 58 L21 62 M23 58 L24 61" stroke="#263238" stroke-width="1.5"/>
+  
+  <!-- Body (massive, muscular wolf) -->
+  <ellipse cx="30" cy="38" rx="18" ry="12" fill="url(#wolfBody)"/>
+  
+  <!-- Belly fur -->
+  <ellipse cx="30" cy="42" rx="12" ry="8" fill="url(#wolfBelly)"/>
+  
+  <!-- Battle scars on body -->
+  <line x1="24" y1="34" x2="30" y2="38" stroke="#B0BEC5" stroke-width="1.5" opacity="0.6"/>
+  <line x1="34" y1="32" x2="38" y2="40" stroke="#B0BEC5" stroke-width="1.5" opacity="0.6"/>
+  <line x1="22" y1="40" x2="28" y2="44" stroke="#B0BEC5" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Front legs -->
+  <rect x="40" y="42" width="6" height="16" rx="2" fill="url(#wolfBody)"/>
+  <rect x="46" y="44" width="6" height="14" rx="2" fill="url(#wolfDark)"/>
+  
+  <!-- Paws (front) -->
+  <ellipse cx="43" cy="58" rx="4" ry="3" fill="#455A64"/>
+  <ellipse cx="49" cy="58" rx="4" ry="3" fill="#37474F"/>
+  <path d="M41 58 L40 61 M43 58 L43 62 M45 58 L46 61" stroke="#263238" stroke-width="1.5"/>
+  <path d="M47 58 L46 61 M49 58 L49 62 M51 58 L52 61" stroke="#263238" stroke-width="1.5"/>
+  
+  <!-- Neck (thick, powerful) -->
+  <path d="M44 34 Q52 30, 52 22 Q52 16, 48 18" fill="url(#wolfBody)"/>
+  
+  <!-- Neck fur (mane-like) -->
+  <path d="M46 28 Q50 26, 48 22 Q52 24, 50 28" fill="url(#wolfDark)"/>
+  <path d="M44 32 Q48 30, 46 26" fill="url(#wolfDark)"/>
+  
+  <!-- Head (noble, fierce) -->
+  <ellipse cx="54" cy="20" rx="10" ry="9" fill="url(#wolfBody)"/>
+  
+  <!-- Snout -->
+  <ellipse cx="62" cy="22" rx="6" ry="4" fill="url(#wolfDark)"/>
+  
+  <!-- Nose -->
+  <ellipse cx="64" cy="21" rx="2" ry="1.5" fill="#263238"/>
+  <ellipse cx="64" cy="20.5" rx="1" ry="0.5" fill="#455A64"/>
+  
+  <!-- Scar across face (battle-hardened) -->
+  <line x1="48" y1="16" x2="58" y2="24" stroke="#CFD8DC" stroke-width="2" opacity="0.7"/>
+  
+  <!-- Eyes (intense, loyal) with slight glow -->
+  <circle cx="52" cy="16" r="4" fill="url(#eyeGlow)"/>
+  <ellipse cx="52" cy="16" rx="3" ry="2.5" fill="#FFF8E1"/>
+  <circle cx="52" cy="16" r="2" fill="#FFB300"/>
+  <ellipse cx="52" cy="16" rx="1" ry="1.5" fill="#1A1A1A"/>
+  <circle cx="52.5" cy="15.5" r="0.5" fill="white"/>
+  
+  <!-- Fierce brow -->
+  <path d="M48 13 L54 14" stroke="#455A64" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Ears (alert, pointed) -->
+  <path d="M48 12 L44 4 L50 10" fill="url(#wolfDark)"/>
+  <path d="M54 10 L56 2 L58 10" fill="url(#wolfDark)"/>
+  <path d="M46 6 L48 10" fill="#B0BEC5"/>
+  <path d="M56 4 L56 8" fill="#B0BEC5"/>
+  
+  <!-- Mouth (slight snarl showing fangs) -->
+  <path d="M60 24 L64 26 L62 24" fill="#37474F"/>
+  <path d="M60 24 L58 26 L60 25" fill="#FAFAFA"/>
+  <path d="M62 25 L64 27" fill="#FAFAFA"/>
+  
+  <!-- Ear notch (battle damage) -->
+  <path d="M56 4 L58 6 L56 6" fill="#37474F"/>
+  
+  <!-- Howling moon reflection in eye (subtle) -->
+  <circle cx="53" cy="15" r="0.3" fill="#FAFAFA" opacity="0.5"/>
+  
+  <!-- Ground shadow -->
+  <ellipse cx="32" cy="62" rx="22" ry="2" fill="#1A1A1A" opacity="0.4"/>
+</svg>

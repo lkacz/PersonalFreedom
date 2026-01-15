@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Library Mouse Pip - Tiny white mouse living in bookshelves, loves cheese and knowledge -->
+  <defs>
+    <linearGradient id="mouseBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FAFAFA"/>
+      <stop offset="100%" style="stop-color:#E0E0E0"/>
+    </linearGradient>
+    <linearGradient id="bookSpine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#5D4037"/>
+      <stop offset="100%" style="stop-color:#3E2723"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Book stack behind mouse -->
+  <rect x="8" y="38" width="48" height="8" rx="1" fill="#1565C0"/>
+  <rect x="10" y="46" width="44" height="8" rx="1" fill="#C62828"/>
+  <rect x="6" y="54" width="52" height="6" rx="1" fill="#2E7D32"/>
+  
+  <!-- Book pages visible -->
+  <rect x="9" y="39" width="1" height="6" fill="#FFF8E1"/>
+  <rect x="11" y="47" width="1" height="6" fill="#FFF8E1"/>
+  
+  <!-- Mouse body (sitting on book) -->
+  <ellipse cx="32" cy="32" rx="12" ry="10" fill="url(#mouseBody)"/>
+  
+  <!-- Mouse head -->
+  <circle cx="40" cy="24" r="10" fill="url(#mouseBody)"/>
+  
+  <!-- Big round ears (cute mouse ears) -->
+  <circle cx="34" cy="14" r="6" fill="#FFCDD2"/>
+  <circle cx="34" cy="14" r="4" fill="#FFEBEE"/>
+  <circle cx="48" cy="16" r="6" fill="#FFCDD2"/>
+  <circle cx="48" cy="16" r="4" fill="#FFEBEE"/>
+  
+  <!-- Cute big eyes -->
+  <circle cx="38" cy="22" r="4" fill="#212121"/>
+  <circle cx="39" cy="21" r="1.5" fill="white"/>
+  <circle cx="44" cy="22" r="3" fill="#212121"/>
+  <circle cx="45" cy="21" r="1" fill="white"/>
+  
+  <!-- Pink nose -->
+  <ellipse cx="48" cy="26" rx="2" ry="1.5" fill="#F48FB1"/>
+  
+  <!-- Whiskers -->
+  <line x1="48" y1="24" x2="56" y2="22" stroke="#9E9E9E" stroke-width="0.5"/>
+  <line x1="48" y1="26" x2="58" y2="26" stroke="#9E9E9E" stroke-width="0.5"/>
+  <line x1="48" y1="28" x2="56" y2="30" stroke="#9E9E9E" stroke-width="0.5"/>
+  
+  <!-- Little paws -->
+  <ellipse cx="26" cy="38" rx="3" ry="2" fill="#FFCDD2"/>
+  <ellipse cx="38" cy="38" rx="3" ry="2" fill="#FFCDD2"/>
+  
+  <!-- Long tail curling -->
+  <path d="M20 32 Q12 28, 8 32 Q4 36, 8 40" stroke="#E0E0E0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Tiny reading glasses (scholar!) -->
+  <circle cx="38" cy="22" r="5" fill="none" stroke="#5D4037" stroke-width="0.8"/>
+  <circle cx="45" cy="22" r="4" fill="none" stroke="#5D4037" stroke-width="0.8"/>
+  <line x1="43" y1="22" x2="41" y2="22" stroke="#5D4037" stroke-width="0.8"/>
+  <line x1="33" y1="20" x2="32" y2="18" stroke="#5D4037" stroke-width="0.8"/>
+  
+  <!-- Small cheese wedge being held -->
+  <path d="M24 28 L20 34 L28 34 Z" fill="#FFD54F"/>
+  <circle cx="23" cy="32" r="1" fill="#FFF8E1"/>
+  <circle cx="25" cy="31" r="0.5" fill="#FFF8E1"/>
+</svg>
