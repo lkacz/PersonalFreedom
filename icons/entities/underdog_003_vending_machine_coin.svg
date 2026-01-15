@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Vending Machine Coin - A worn quarter that always returns from machines -->
+  <defs>
+    <linearGradient id="coinSilver" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E0E0E0"/>
+      <stop offset="30%" style="stop-color:#BDBDBD"/>
+      <stop offset="70%" style="stop-color:#9E9E9E"/>
+      <stop offset="100%" style="stop-color:#757575"/>
+    </linearGradient>
+    <linearGradient id="coinShine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:white;stop-opacity:0"/>
+      <stop offset="50%" style="stop-color:white;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:white;stop-opacity:0"/>
+    </linearGradient>
+    <linearGradient id="greenGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#81C784"/>
+      <stop offset="100%" style="stop-color:#4CAF50"/>
+    </linearGradient>
+    <filter id="coinGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Lucky glow behind coin -->
+  <circle cx="32" cy="32" r="26" fill="url(#greenGlow)" filter="url(#coinGlow)" opacity="0.3"/>
+  
+  <!-- Coin shadow -->
+  <ellipse cx="34" cy="50" rx="18" ry="4" fill="#00000033"/>
+  
+  <!-- Main coin body (slightly tilted for 3D effect) -->
+  <ellipse cx="32" cy="32" rx="22" ry="22" fill="url(#coinSilver)" stroke="#757575" stroke-width="2"/>
+  
+  <!-- Inner ring -->
+  <ellipse cx="32" cy="32" rx="18" ry="18" fill="none" stroke="#9E9E9E" stroke-width="1"/>
+  
+  <!-- Worn edge details (ridges) -->
+  <g stroke="#757575" stroke-width="0.5" opacity="0.5">
+    <line x1="32" y1="10" x2="32" y2="12"/>
+    <line x1="44" y1="14" x2="43" y2="16"/>
+    <line x1="52" y1="24" x2="50" y2="25"/>
+    <line x1="54" y1="32" x2="52" y2="32"/>
+    <line x1="52" y1="40" x2="50" y2="39"/>
+    <line x1="44" y1="50" x2="43" y2="48"/>
+    <line x1="32" y1="54" x2="32" y2="52"/>
+    <line x1="20" y1="50" x2="21" y2="48"/>
+    <line x1="12" y1="40" x2="14" y2="39"/>
+    <line x1="10" y1="32" x2="12" y2="32"/>
+    <line x1="12" y1="24" x2="14" y2="25"/>
+    <line x1="20" y1="14" x2="21" y2="16"/>
+  </g>
+  
+  <!-- Simple eagle/bird silhouette (worn) -->
+  <g opacity="0.4" fill="#616161">
+    <path d="M32 20 L26 26 L24 24 L32 28 L40 24 L38 26 Z"/>
+    <ellipse cx="32" cy="32" rx="6" ry="8"/>
+    <path d="M26 36 L20 42 L24 40 L28 44 L32 38"/>
+    <path d="M38 36 L44 42 L40 40 L36 44 L32 38"/>
+  </g>
+  
+  <!-- "25" marking (very worn) -->
+  <text x="32" y="48" font-family="serif" font-size="8" fill="#616161" text-anchor="middle" opacity="0.4">25</text>
+  
+  <!-- Shine across coin -->
+  <ellipse cx="26" cy="26" rx="12" ry="8" fill="url(#coinShine)" transform="rotate(-30, 26, 26)"/>
+  
+  <!-- Lucky sparkles -->
+  <g fill="#81C784">
+    <circle cx="12" cy="14" r="2" opacity="0.7"/>
+    <circle cx="52" cy="18" r="1.5" opacity="0.6"/>
+    <circle cx="50" cy="48" r="1.5" opacity="0.5"/>
+    <circle cx="14" cy="46" r="1" opacity="0.6"/>
+  </g>
+  
+  <!-- Return arrow symbol (ghostly, representing its power) -->
+  <g opacity="0.25">
+    <path d="M8 32 Q4 24, 12 20" stroke="#4CAF50" stroke-width="1.5" fill="none"/>
+    <path d="M10 18 L12 20 L8 22" fill="#4CAF50"/>
+  </g>
+  
+  <!-- Tiny scratch marks showing wear -->
+  <g stroke="#757575" stroke-width="0.3" opacity="0.3">
+    <line x1="20" y1="22" x2="24" y2="26"/>
+    <line x1="38" y1="36" x2="42" y2="40"/>
+    <line x1="28" y1="38" x2="30" y2="42"/>
+  </g>
+</svg>

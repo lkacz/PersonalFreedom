@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Brass Compass - Worn compass that never gets you lost -->
+  <defs>
+    <linearGradient id="brassMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4AF37"/>
+      <stop offset="30%" style="stop-color:#C5A028"/>
+      <stop offset="70%" style="stop-color:#B8860B"/>
+      <stop offset="100%" style="stop-color:#996515"/>
+    </linearGradient>
+    <linearGradient id="compassGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E3F2FD;stop-opacity:0.8"/>
+      <stop offset="50%" style="stop-color:#BBDEFB;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#90CAF9;stop-opacity:0.6"/>
+    </linearGradient>
+    <linearGradient id="needleRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#EF5350"/>
+      <stop offset="100%" style="stop-color:#C62828"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Shadow -->
+  <ellipse cx="34" cy="58" rx="20" ry="4" fill="#00000020"/>
+  
+  <!-- Outer brass case -->
+  <circle cx="32" cy="32" r="26" fill="url(#brassMetal)" stroke="#996515" stroke-width="2"/>
+  
+  <!-- Decorative ring -->
+  <circle cx="32" cy="32" r="23" fill="none" stroke="#C5A028" stroke-width="1.5"/>
+  
+  <!-- Inner compass face (cream colored) -->
+  <circle cx="32" cy="32" r="20" fill="#FFF8E1"/>
+  
+  <!-- Glass cover -->
+  <circle cx="32" cy="32" r="20" fill="url(#compassGlass)"/>
+  
+  <!-- Direction markings -->
+  <g font-family="serif" font-size="6" fill="#5D4037" text-anchor="middle">
+    <text x="32" y="18">N</text>
+    <text x="32" y="52">S</text>
+    <text x="16" y="35">W</text>
+    <text x="48" y="35">E</text>
+  </g>
+  
+  <!-- Degree marks -->
+  <g stroke="#8D6E63" stroke-width="0.5">
+    <line x1="32" y1="14" x2="32" y2="16"/>
+    <line x1="32" y1="48" x2="32" y2="50"/>
+    <line x1="14" y1="32" x2="16" y2="32"/>
+    <line x1="48" y1="32" x2="50" y2="32"/>
+    <!-- 45 degree marks -->
+    <line x1="44" y1="20" x2="43" y2="21"/>
+    <line x1="44" y1="44" x2="43" y2="43"/>
+    <line x1="20" y1="20" x2="21" y2="21"/>
+    <line x1="20" y1="44" x2="21" y2="43"/>
+  </g>
+  
+  <!-- THE NEEDLE (pointing cheerfully) -->
+  <g transform="rotate(15, 32, 32)">
+    <!-- Red north pointer -->
+    <polygon points="32,14 28,32 32,30 36,32" fill="url(#needleRed)"/>
+    <!-- White south pointer -->
+    <polygon points="32,50 28,32 32,34 36,32" fill="#ECEFF1"/>
+    <!-- Center pivot -->
+    <circle cx="32" cy="32" r="3" fill="url(#brassMetal)"/>
+    <circle cx="32" cy="32" r="1.5" fill="#996515"/>
+  </g>
+  
+  <!-- Hinge/ring at top -->
+  <circle cx="32" cy="4" r="4" fill="url(#brassMetal)" stroke="#996515" stroke-width="1"/>
+  <circle cx="32" cy="4" r="2" fill="none" stroke="#996515" stroke-width="1"/>
+  
+  <!-- Worn scratches on brass -->
+  <g stroke="#996515" stroke-width="0.3" opacity="0.3">
+    <line x1="10" y1="24" x2="14" y2="28"/>
+    <line x1="50" y1="38" x2="54" y2="42"/>
+  </g>
+  
+  <!-- Glass reflection -->
+  <ellipse cx="26" cy="26" rx="8" ry="4" fill="white" opacity="0.3" transform="rotate(-30, 26, 26)"/>
+  
+  <!-- Cheerful spin indicator -->
+  <g stroke="#4CAF50" stroke-width="0.5" fill="none" opacity="0.4">
+    <path d="M38 12 Q42 14, 40 18"/>
+    <path d="M42 16 L40 18 L38 16"/>
+  </g>
+</svg>

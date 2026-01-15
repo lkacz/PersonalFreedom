@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Bubbling Flask - Erlenmeyer flask that never stops bubbling, changes color -->
+  <defs>
+    <linearGradient id="flaskGlass" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#E3F2FD;stop-opacity:0.9"/>
+      <stop offset="30%" style="stop-color:#BBDEFB;stop-opacity:0.6"/>
+      <stop offset="70%" style="stop-color:#E3F2FD;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#90CAF9;stop-opacity:0.8"/>
+    </linearGradient>
+    <linearGradient id="magicLiquid" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#CE93D8">
+        <animate attributeName="stop-color" values="#CE93D8;#81D4FA;#A5D6A7;#FFD54F;#CE93D8" dur="8s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#9C27B0">
+        <animate attributeName="stop-color" values="#9C27B0;#0288D1;#388E3C;#F57C00;#9C27B0" dur="8s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    <linearGradient id="epicPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#CE93D8"/>
+      <stop offset="100%" style="stop-color:#9C27B0"/>
+    </linearGradient>
+    <filter id="bubbleGlow">
+      <feGaussianBlur stdDeviation="1" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Epic aura -->
+  <ellipse cx="32" cy="36" rx="26" ry="26" fill="url(#epicPurple)" opacity="0.15"/>
+  
+  <!-- Shadow -->
+  <ellipse cx="34" cy="60" rx="16" ry="3" fill="#00000020"/>
+  
+  <!-- Flask body (Erlenmeyer shape) -->
+  <path d="M22 56 L12 56 Q8 56, 10 52 L26 20 L26 10 L38 10 L38 20 L54 52 Q56 56, 52 56 L42 56" 
+        fill="url(#flaskGlass)" stroke="#90CAF9" stroke-width="1"/>
+  
+  <!-- Neck -->
+  <rect x="26" y="6" width="12" height="16" fill="url(#flaskGlass)" stroke="#90CAF9" stroke-width="1"/>
+  
+  <!-- Rim -->
+  <ellipse cx="32" cy="6" rx="7" ry="2" fill="#BBDEFB" stroke="#90CAF9" stroke-width="0.5"/>
+  
+  <!-- THE PERFECT SOLUTION (color-changing liquid) -->
+  <path d="M14 52 L26 24 L38 24 L50 52 Q52 54, 48 54 L16 54 Q12 54, 14 52" 
+        fill="url(#magicLiquid)" opacity="0.85"/>
+  
+  <!-- Bubbles (never stops!) -->
+  <g filter="url(#bubbleGlow)">
+    <circle cx="24" cy="44" r="3" fill="white" opacity="0.6">
+      <animate attributeName="cy" values="48;36;28" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.3;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="32" cy="50" r="2.5" fill="white" opacity="0.5">
+      <animate attributeName="cy" values="50;38;26" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.2;0" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="40" cy="46" r="2" fill="white" opacity="0.5">
+      <animate attributeName="cy" values="46;34;24" dur="2.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.2;0" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="28" cy="52" r="1.5" fill="white" opacity="0.4">
+      <animate attributeName="cy" values="52;40;30" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.2;0" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="36" cy="48" r="2" fill="white" opacity="0.5">
+      <animate attributeName="cy" values="48;36;26" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.25;0" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Surface bubbles -->
+  <g fill="white" opacity="0.4">
+    <circle cx="22" cy="28" r="1"/>
+    <circle cx="30" cy="26" r="1.5"/>
+    <circle cx="38" cy="27" r="1"/>
+    <circle cx="44" cy="30" r="0.8"/>
+  </g>
+  
+  <!-- Glass shine -->
+  <path d="M16 50 L24 26" stroke="white" stroke-width="1.5" opacity="0.3"/>
+  <path d="M28 8 L28 18" stroke="white" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Cork/stopper (loose, bubbles escape) -->
+  <ellipse cx="32" cy="4" rx="5" ry="1.5" fill="#8D6E63"/>
+  <rect x="28" y="2" width="8" height="3" fill="#A1887F"/>
+  
+  <!-- Steam/vapor wisps -->
+  <g stroke="url(#epicPurple)" stroke-width="0.8" fill="none" opacity="0.4">
+    <path d="M30 2 Q28 -2, 30 -4">
+      <animate attributeName="d" values="M30 2 Q28 -2, 30 -4;M30 2 Q32 -2, 30 -4;M30 2 Q28 -2, 30 -4" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <path d="M34 2 Q36 -2, 34 -4">
+      <animate attributeName="d" values="M34 2 Q36 -2, 34 -4;M34 2 Q32 -2, 34 -4;M34 2 Q36 -2, 34 -4" dur="2.5s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Epic sparkles -->
+  <g fill="url(#epicPurple)" opacity="0.7">
+    <circle cx="6" cy="30" r="1.5"/>
+    <circle cx="58" cy="24" r="2"/>
+    <circle cx="8" cy="52" r="1"/>
+    <circle cx="56" cy="48" r="1.5"/>
+  </g>
+</svg>

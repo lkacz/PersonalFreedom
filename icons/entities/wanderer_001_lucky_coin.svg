@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Lucky Coin - Old copper coin that always lands on tails -->
+  <defs>
+    <linearGradient id="copperCoin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4A574"/>
+      <stop offset="30%" style="stop-color:#CD7F32"/>
+      <stop offset="70%" style="stop-color:#B87333"/>
+      <stop offset="100%" style="stop-color:#8B4513"/>
+    </linearGradient>
+    <linearGradient id="copperShine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#DEB887;stop-opacity:0"/>
+      <stop offset="50%" style="stop-color:#DEB887;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#DEB887;stop-opacity:0"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Shadow -->
+  <ellipse cx="34" cy="56" rx="18" ry="4" fill="#00000022"/>
+  
+  <!-- Main coin body -->
+  <ellipse cx="32" cy="32" rx="22" ry="22" fill="url(#copperCoin)" stroke="#8B4513" stroke-width="2"/>
+  
+  <!-- Inner ring -->
+  <ellipse cx="32" cy="32" rx="18" ry="18" fill="none" stroke="#A0522D" stroke-width="1"/>
+  
+  <!-- Worn edge ridges -->
+  <g stroke="#8B4513" stroke-width="0.5" opacity="0.4">
+    <line x1="32" y1="10" x2="32" y2="12"/>
+    <line x1="44" y1="14" x2="43" y2="16"/>
+    <line x1="52" y1="24" x2="50" y2="25"/>
+    <line x1="54" y1="32" x2="52" y2="32"/>
+    <line x1="52" y1="40" x2="50" y2="39"/>
+    <line x1="44" y1="50" x2="43" y2="48"/>
+    <line x1="32" y1="54" x2="32" y2="52"/>
+    <line x1="20" y1="50" x2="21" y2="48"/>
+    <line x1="12" y1="40" x2="14" y2="39"/>
+    <line x1="10" y1="32" x2="12" y2="32"/>
+    <line x1="12" y1="24" x2="14" y2="25"/>
+    <line x1="20" y1="14" x2="21" y2="16"/>
+  </g>
+  
+  <!-- TAILS side - simple tail design (worn) -->
+  <g fill="#A0522D" opacity="0.5">
+    <!-- Stylized animal tail swirl -->
+    <path d="M32 18 Q40 22, 42 30 Q44 38, 38 44 Q32 48, 26 44 Q20 40, 22 32 Q24 24, 32 22" 
+          stroke="#8B4513" stroke-width="1" fill="none"/>
+    <circle cx="32" cy="32" r="4" fill="#8B4513" opacity="0.3"/>
+  </g>
+  
+  <!-- Worn scratches -->
+  <g stroke="#A0522D" stroke-width="0.3" opacity="0.3">
+    <line x1="22" y1="24" x2="26" y2="28"/>
+    <line x1="38" y1="36" x2="42" y2="40"/>
+    <line x1="28" y1="40" x2="32" y2="44"/>
+  </g>
+  
+  <!-- "TAILS" text (very worn) -->
+  <text x="32" y="48" font-family="serif" font-size="5" fill="#8B4513" text-anchor="middle" opacity="0.3">TAILS</text>
+  
+  <!-- Shine across coin -->
+  <ellipse cx="26" cy="26" rx="10" ry="6" fill="url(#copperShine)" transform="rotate(-30, 26, 26)"/>
+  
+  <!-- Lucky sparkle -->
+  <g fill="#FFD54F" opacity="0.5">
+    <circle cx="44" cy="18" r="1.5"/>
+    <circle cx="48" cy="24" r="1"/>
+  </g>
+  
+  <!-- Patina spots (old coin character) -->
+  <circle cx="20" cy="28" r="2" fill="#2E7D32" opacity="0.15"/>
+  <circle cx="40" cy="38" r="1.5" fill="#2E7D32" opacity="0.1"/>
+</svg>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Break Room Fridge - Dented beige fridge that dreams. The "niepozorny" legendary! -->
+  <defs>
+    <linearGradient id="fridgeBeige" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EFEBE9"/>
+      <stop offset="50%" style="stop-color:#D7CCC8"/>
+      <stop offset="100%" style="stop-color:#BCAAA4"/>
+    </linearGradient>
+    <linearGradient id="fridgeSide" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#A1887F"/>
+      <stop offset="100%" style="stop-color:#8D6E63"/>
+    </linearGradient>
+    <linearGradient id="legendaryGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD54F"/>
+      <stop offset="50%" style="stop-color:#FF9800"/>
+      <stop offset="100%" style="stop-color:#F57C00"/>
+    </linearGradient>
+    <linearGradient id="dreamGlow" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#CE93D8"/>
+      <stop offset="50%" style="stop-color:#64B5F6"/>
+      <stop offset="100%" style="stop-color:#81C784"/>
+    </linearGradient>
+    <filter id="gentleGlow">
+      <feGaussianBlur stdDeviation="3" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="hum">
+      <feGaussianBlur stdDeviation="1"/>
+    </filter>
+  </defs>
+  
+  <!-- Very subtle legendary aura (niepozorny - unassuming!) -->
+  <ellipse cx="32" cy="34" rx="28" ry="30" fill="url(#legendaryGold)" filter="url(#gentleGlow)" opacity="0.12"/>
+  
+  <!-- Fridge shadow -->
+  <ellipse cx="34" cy="60" rx="16" ry="3" fill="#00000022"/>
+  
+  <!-- Main fridge body -->
+  <rect x="12" y="6" width="38" height="52" rx="2" fill="url(#fridgeBeige)"/>
+  
+  <!-- Side shadow for 3D effect -->
+  <rect x="48" y="8" width="3" height="48" fill="url(#fridgeSide)"/>
+  
+  <!-- Freezer compartment (top) -->
+  <rect x="14" y="8" width="34" height="14" rx="1" fill="url(#fridgeBeige)" stroke="#A1887F" stroke-width="0.5"/>
+  
+  <!-- Freezer door line -->
+  <line x1="14" y1="22" x2="48" y2="22" stroke="#8D6E63" stroke-width="1"/>
+  
+  <!-- Fridge door (main compartment) -->
+  <rect x="14" y="24" width="34" height="32" rx="1" fill="url(#fridgeBeige)" stroke="#A1887F" stroke-width="0.5"/>
+  
+  <!-- Handles (simple, old-style) -->
+  <rect x="42" y="12" width="4" height="6" rx="1" fill="#9E9E9E"/>
+  <rect x="42" y="34" width="4" height="10" rx="1" fill="#9E9E9E"/>
+  
+  <!-- DENTS (character!) -->
+  <ellipse cx="20" cy="16" rx="4" ry="2" fill="#A1887F" opacity="0.3"/>
+  <ellipse cx="36" cy="38" rx="5" ry="3" fill="#A1887F" opacity="0.25"/>
+  <ellipse cx="24" cy="48" rx="3" ry="2" fill="#A1887F" opacity="0.2"/>
+  
+  <!-- Milk stain on edge (the awakening!) -->
+  <path d="M48 28 Q52 30, 50 34 Q52 38, 48 40" fill="#FFFDE7" opacity="0.6"/>
+  <text x="50" y="34" font-family="serif" font-size="2" fill="#9E9E9E" opacity="0.4">edge</text>
+  
+  <!-- Old stickers and magnets -->
+  <rect x="18" y="28" width="6" height="4" fill="#FFCDD2" opacity="0.7" transform="rotate(-5, 21, 30)"/>
+  <circle cx="38" cy="44" r="3" fill="#81D4FA" opacity="0.6"/>
+  <rect x="26" y="50" width="8" height="2" fill="#C5E1A5" opacity="0.5"/>
+  
+  <!-- Temperature dial (old style) -->
+  <circle cx="40" cy="28" r="2" fill="#BDBDBD" stroke="#9E9E9E" stroke-width="0.5"/>
+  <line x1="40" y1="28" x2="41" y2="26" stroke="#616161" stroke-width="0.5"/>
+  
+  <!-- THE HUMMING - visible vibration lines -->
+  <g stroke="url(#dreamGlow)" stroke-width="0.6" fill="none" filter="url(#hum)" opacity="0.4">
+    <path d="M6 30 Q4 32, 6 34 Q4 36, 6 38">
+      <animate attributeName="d" values="M6 30 Q4 32, 6 34 Q4 36, 6 38;M6 30 Q8 32, 6 34 Q8 36, 6 38;M6 30 Q4 32, 6 34 Q4 36, 6 38" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <path d="M58 28 Q60 30, 58 32 Q60 34, 58 36">
+      <animate attributeName="d" values="M58 28 Q60 30, 58 32 Q60 34, 58 36;M58 28 Q56 30, 58 32 Q56 34, 58 36;M58 28 Q60 30, 58 32 Q60 34, 58 36" dur="1.8s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Dream bubbles (it dreams!) -->
+  <g fill="url(#dreamGlow)" opacity="0.25">
+    <circle cx="56" cy="10" r="3">
+      <animate attributeName="cy" values="10;6;10" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.25;0.4;0.25" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="60" cy="4" r="2">
+      <animate attributeName="cy" values="4;2;4" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="54" cy="2" r="1">
+      <animate attributeName="r" values="1;1.5;1" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Dream content (tiny, ethereal) -->
+  <g opacity="0.2" transform="translate(54, 4)">
+    <circle cx="0" cy="0" r="4" fill="url(#dreamGlow)"/>
+    <!-- Electric sheep reference -->
+    <ellipse cx="0" cy="0" rx="2" ry="1" fill="white"/>
+    <circle cx="-1" cy="-0.5" r="0.3" fill="#212121"/>
+  </g>
+  
+  <!-- Very subtle eyes (it sees you, but you don't notice) -->
+  <g opacity="0.08">
+    <circle cx="22" cy="36" r="1" fill="#212121"/>
+    <circle cx="28" cy="36" r="1" fill="#212121"/>
+  </g>
+  
+  <!-- Legendary sparkles (subtle!) -->
+  <g fill="url(#legendaryGold)" opacity="0.4">
+    <circle cx="8" cy="12" r="1"/>
+    <circle cx="56" cy="50" r="1.5"/>
+    <circle cx="4" cy="48" r="1"/>
+  </g>
+  
+  <!-- "Hums softly when you're near" indicator -->
+  <g font-family="serif" font-size="2" fill="url(#dreamGlow)" opacity="0.15">
+    <text x="4" y="44">hmmmm</text>
+  </g>
+  
+  <!-- The fridge is watching... barely perceptible gentle glow from inside -->
+  <rect x="16" y="26" width="30" height="28" fill="url(#dreamGlow)" opacity="0.03"/>
+</svg>

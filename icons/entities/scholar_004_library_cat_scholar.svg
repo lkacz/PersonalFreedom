@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Library Cat Scholar - Orange tabby, guards ancient tomes, purrs when you make progress -->
+  <defs>
+    <linearGradient id="orangeFur" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9800"/>
+      <stop offset="100%" style="stop-color:#E65100"/>
+    </linearGradient>
+    <linearGradient id="creamFur" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF8E1"/>
+      <stop offset="100%" style="stop-color:#FFE0B2"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Ancient book beneath cat -->
+  <rect x="8" y="48" width="48" height="10" rx="2" fill="#5D4037"/>
+  <rect x="10" y="49" width="2" height="8" fill="#FFF8E1"/>
+  <text x="18" y="56" font-size="5" fill="#FFD54F" font-family="serif">ARCANUM</text>
+  
+  <!-- Tail curling -->
+  <path d="M52 38 Q60 34, 58 28 Q56 22, 52 26" stroke="url(#orangeFur)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- Tail stripes -->
+  <path d="M56 32 Q58 30, 56 28" stroke="#E65100" stroke-width="1.5"/>
+  <path d="M54 36 Q56 34, 54 32" stroke="#E65100" stroke-width="1.5"/>
+  
+  <!-- Body (cat loaf position) -->
+  <ellipse cx="32" cy="40" rx="20" ry="12" fill="url(#orangeFur)"/>
+  
+  <!-- Tabby stripes on body -->
+  <path d="M20 36 Q22 40, 20 44" stroke="#E65100" stroke-width="2" fill="none"/>
+  <path d="M28 34 Q30 40, 28 46" stroke="#E65100" stroke-width="2" fill="none"/>
+  <path d="M36 34 Q38 40, 36 46" stroke="#E65100" stroke-width="2" fill="none"/>
+  <path d="M44 36 Q46 40, 44 44" stroke="#E65100" stroke-width="2" fill="none"/>
+  
+  <!-- White chest patch -->
+  <ellipse cx="24" cy="44" rx="6" ry="5" fill="url(#creamFur)"/>
+  
+  <!-- Front paws tucked -->
+  <ellipse cx="18" cy="46" rx="4" ry="3" fill="url(#orangeFur)"/>
+  <ellipse cx="28" cy="46" rx="4" ry="3" fill="url(#orangeFur)"/>
+  
+  <!-- Head -->
+  <circle cx="24" cy="28" r="12" fill="url(#orangeFur)"/>
+  
+  <!-- Tabby M marking on forehead -->
+  <path d="M18 22 L20 18 L24 22 L28 18 L30 22" stroke="#E65100" stroke-width="1.5" fill="none"/>
+  
+  <!-- Ears -->
+  <path d="M14 20 L12 10 L20 18" fill="url(#orangeFur)"/>
+  <path d="M34 20 L36 10 L28 18" fill="url(#orangeFur)"/>
+  <path d="M14 16 L14 12 L18 18" fill="#FFCCBC"/>
+  <path d="M34 16 L34 12 L30 18" fill="#FFCCBC"/>
+  
+  <!-- Wise knowing eyes (half-closed, content) -->
+  <ellipse cx="20" cy="28" rx="3" ry="2" fill="#4CAF50"/>
+  <ellipse cx="20" cy="28" rx="1.5" ry="1.5" fill="#1A1A1A"/>
+  <path d="M17 26 L23 26" stroke="#E65100" stroke-width="1"/>
+  
+  <ellipse cx="28" cy="28" rx="3" ry="2" fill="#4CAF50"/>
+  <ellipse cx="28" cy="28" rx="1.5" ry="1.5" fill="#1A1A1A"/>
+  <path d="M25 26 L31 26" stroke="#E65100" stroke-width="1"/>
+  
+  <!-- Pink nose -->
+  <path d="M24 32 L22 34 L24 35 L26 34 Z" fill="#F48FB1"/>
+  
+  <!-- Whiskers -->
+  <line x1="18" y1="32" x2="10" y2="30" stroke="#FFF8E1" stroke-width="0.5"/>
+  <line x1="18" y1="34" x2="8" y2="34" stroke="#FFF8E1" stroke-width="0.5"/>
+  <line x1="18" y1="36" x2="10" y2="38" stroke="#FFF8E1" stroke-width="0.5"/>
+  <line x1="30" y1="32" x2="38" y2="30" stroke="#FFF8E1" stroke-width="0.5"/>
+  <line x1="30" y1="34" x2="40" y2="34" stroke="#FFF8E1" stroke-width="0.5"/>
+  <line x1="30" y1="36" x2="38" y2="38" stroke="#FFF8E1" stroke-width="0.5"/>
+  
+  <!-- Tiny spectacles (scholar cat!) -->
+  <circle cx="20" cy="28" r="4" fill="none" stroke="#5D4037" stroke-width="0.8"/>
+  <circle cx="28" cy="28" r="4" fill="none" stroke="#5D4037" stroke-width="0.8"/>
+  <line x1="24" y1="28" x2="24" y2="28" stroke="#5D4037" stroke-width="0.8"/>
+  
+  <!-- Purring lines -->
+  <path d="M6 28 Q4 30, 6 32" stroke="#FFE0B2" stroke-width="0.8" fill="none" opacity="0.6"/>
+  <path d="M4 26 Q2 30, 4 34" stroke="#FFE0B2" stroke-width="0.8" fill="none" opacity="0.4"/>
+</svg>

@@ -1,0 +1,438 @@
+"""
+Entitidex Manager - Core orchestration for the Entitidex system.
+
+Provides a high-level API for managing entity encounters, catches,
+and collection progress. This is the main interface for integrating
+the Entitidex system with the rest of the application.
+"""
+
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Optional, Dict, Any, Tuple, List
+
+from .entity import Entity, EntityCapture
+from .entity_pools import get_entities_for_story, get_entity_by_id
+from .progress_tracker import EntitidexProgress
+from .catch_mechanics import (
+    get_final_probability,
+    attempt_catch,
+    is_lucky_catch,
+    get_probability_description,
+    format_probability_display,
+)
+from .encounter_system import (
+    should_trigger_encounter,
+    select_encounter_entity,
+    roll_encounter_chance,
+    get_encounter_announcement,
+    get_encounter_flavor_text,
+    get_next_recommended_entity,
+)
+
+
+@dataclass
+class EncounterResult:
+    """Result of an encounter trigger check."""
+    
+    occurred: bool
+    entity: Optional[Entity] = None
+    is_first_encounter: bool = False
+    announcement: str = ""
+    flavor_text: str = ""
+    catch_probability: float = 0.0
+    probability_display: str = ""
+    probability_description: str = ""
+
+
+@dataclass
+class CatchResult:
+    """Result of a catch attempt."""
+    
+    success: bool
+    entity: Entity
+    probability: float
+    message: str
+    was_lucky: bool = False
+    capture_record: Optional[EntityCapture] = None
+
+
+class EntitidexManager:
+    """
+    Main manager for the Entitidex system.
+    
+    Coordinates encounters, catches, and progress tracking.
+    Provides a clean API for the UI layer.
+    
+    Usage:
+        manager = EntitidexManager(progress, story_id="warrior", hero_power=500)
+        
+        # After session completion
+        encounter = manager.check_for_encounter(
+            session_minutes=30,
+            was_perfect_session=True
+        )
+        
+        if encounter.occurred:
+            # Show encounter dialog with encounter.entity
+            result = manager.attempt_catch()
+            if result.success:
+                # Celebration!
+    """
+    
+    def __init__(
+        self,
+        progress: Optional[EntitidexProgress] = None,
+        story_id: str = "warrior",
+        hero_power: int = 0,
+        luck_bonus: float = 0.0,
+    ):
+        """
+        Initialize the Entitidex manager.
+        
+        Args:
+            progress: User's progress (created fresh if None)
+            story_id: Current active story theme
+            hero_power: Hero's current total power
+            luck_bonus: Any luck bonus from equipped items
+        """
+        self.progress = progress or EntitidexProgress()
+        self.story_id = story_id
+        self.hero_power = hero_power
+        self.luck_bonus = luck_bonus
+        
+        # Current encounter state
+        self._current_encounter: Optional[Entity] = None
+    
+    # =========================================================================
+    # CONFIGURATION
+    # =========================================================================
+    
+    def set_story(self, story_id: str) -> None:
+        """Change the active story theme."""
+        self.story_id = story_id
+    
+    def set_hero_power(self, power: int) -> None:
+        """Update the hero's power level."""
+        self.hero_power = power
+    
+    def set_luck_bonus(self, bonus: float) -> None:
+        """Update luck bonus from equipped items."""
+        self.luck_bonus = bonus
+    
+    # =========================================================================
+    # ENCOUNTER HANDLING
+    # =========================================================================
+    
+    def check_for_encounter(
+        self,
+        session_minutes: int,
+        minimum_session_minutes: int = 25,
+        was_perfect_session: bool = False,
+        streak_days: int = 0,
+        was_bypass_used: bool = False,
+    ) -> EncounterResult:
+        """
+        Check if an entity encounter occurs after a focus session.
+        
+        This is the main entry point after a session completes.
+        
+        Args:
+            session_minutes: Duration of the completed session
+            minimum_session_minutes: Minimum required session length
+            was_perfect_session: True if no bypass was attempted
+            streak_days: Consecutive days with sessions
+            was_bypass_used: True if bypass was used (no encounter)
+            
+        Returns:
+            EncounterResult with encounter details if one occurred
+        """
+        # Check if encounter triggers
+        should_trigger = should_trigger_encounter(
+            session_minutes=session_minutes,
+            minimum_session_minutes=minimum_session_minutes,
+            was_perfect_session=was_perfect_session,
+            streak_days=streak_days,
+            was_bypass_used=was_bypass_used,
+        )
+        
+        if not should_trigger:
+            return EncounterResult(occurred=False)
+        
+        # Select which entity appears
+        entity = select_encounter_entity(
+            progress=self.progress,
+            hero_power=self.hero_power,
+            story_id=self.story_id,
+        )
+        
+        if entity is None:
+            # Collection complete!
+            return EncounterResult(occurred=False)
+        
+        # Record the encounter
+        is_first = not self.progress.is_encountered(entity.id)
+        self.progress.record_encounter(entity.id)
+        
+        # Store current encounter for catch attempt
+        self._current_encounter = entity
+        
+        # Calculate catch probability
+        failed_attempts = self.progress.get_failed_attempts(entity.id)
+        probability = get_final_probability(
+            hero_power=self.hero_power,
+            entity_power=entity.power,
+            failed_attempts=failed_attempts,
+            luck_bonus=self.luck_bonus,
+        )
+        
+        return EncounterResult(
+            occurred=True,
+            entity=entity,
+            is_first_encounter=is_first,
+            announcement=get_encounter_announcement(entity, is_first),
+            flavor_text=get_encounter_flavor_text(entity, self.hero_power),
+            catch_probability=probability,
+            probability_display=format_probability_display(probability),
+            probability_description=get_probability_description(probability),
+        )
+    
+    def force_encounter(self, entity_id: str) -> Optional[EncounterResult]:
+        """
+        Force a specific entity encounter (for testing/debugging).
+        
+        Args:
+            entity_id: ID of the entity to encounter
+            
+        Returns:
+            EncounterResult or None if entity not found
+        """
+        entity = get_entity_by_id(entity_id)
+        
+        if entity is None:
+            return None
+        
+        is_first = not self.progress.is_encountered(entity.id)
+        self.progress.record_encounter(entity.id)
+        self._current_encounter = entity
+        
+        failed_attempts = self.progress.get_failed_attempts(entity.id)
+        probability = get_final_probability(
+            hero_power=self.hero_power,
+            entity_power=entity.power,
+            failed_attempts=failed_attempts,
+            luck_bonus=self.luck_bonus,
+        )
+        
+        return EncounterResult(
+            occurred=True,
+            entity=entity,
+            is_first_encounter=is_first,
+            announcement=get_encounter_announcement(entity, is_first),
+            flavor_text=get_encounter_flavor_text(entity, self.hero_power),
+            catch_probability=probability,
+            probability_display=format_probability_display(probability),
+            probability_description=get_probability_description(probability),
+        )
+    
+    @property
+    def has_active_encounter(self) -> bool:
+        """Check if there's an active encounter waiting for catch attempt."""
+        return self._current_encounter is not None
+    
+    @property
+    def current_encounter(self) -> Optional[Entity]:
+        """Get the current encountered entity."""
+        return self._current_encounter
+    
+    def dismiss_encounter(self) -> None:
+        """Dismiss the current encounter without attempting to catch."""
+        self._current_encounter = None
+    
+    # =========================================================================
+    # CATCH HANDLING
+    # =========================================================================
+    
+    def attempt_catch(self, entity: Optional[Entity] = None) -> Optional[CatchResult]:
+        """
+        Attempt to catch the current or specified entity.
+        
+        Args:
+            entity: Entity to catch (uses current encounter if None)
+            
+        Returns:
+            CatchResult with outcome, or None if no encounter active
+        """
+        target = entity or self._current_encounter
+        
+        if target is None:
+            return None
+        
+        # Get failed attempts for pity calculation
+        failed_attempts = self.progress.get_failed_attempts(target.id)
+        
+        # Attempt the catch
+        success, probability, message = attempt_catch(
+            hero_power=self.hero_power,
+            entity=target,
+            failed_attempts=failed_attempts,
+            luck_bonus=self.luck_bonus,
+        )
+        
+        was_lucky = is_lucky_catch(probability) if success else False
+        capture_record = None
+        
+        if success:
+            # Record successful catch
+            capture_record = self.progress.record_successful_catch(
+                entity_id=target.id,
+                hero_power=self.hero_power,
+                probability=probability,
+                was_lucky=was_lucky,
+            )
+        else:
+            # Record failed attempt
+            self.progress.record_failed_catch(target.id)
+        
+        # Clear current encounter
+        self._current_encounter = None
+        
+        return CatchResult(
+            success=success,
+            entity=target,
+            probability=probability,
+            message=message,
+            was_lucky=was_lucky,
+            capture_record=capture_record,
+        )
+    
+    # =========================================================================
+    # COLLECTION INFO
+    # =========================================================================
+    
+    def get_collection_entities(self) -> List[Tuple[Entity, bool]]:
+        """
+        Get all entities for current story with collection status.
+        
+        Returns:
+            List of (Entity, is_collected) tuples
+        """
+        entities = get_entities_for_story(self.story_id)
+        result = []
+        
+        for entity in entities:
+            is_collected = self.progress.is_collected(entity.id)
+            result.append((entity, is_collected))
+        
+        return result
+    
+    def get_entity_details(self, entity_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get detailed information about an entity.
+        
+        Args:
+            entity_id: The entity to look up
+            
+        Returns:
+            Dictionary with entity details and capture info, or None
+        """
+        entity = get_entity_by_id(entity_id)
+        
+        if entity is None:
+            return None
+        
+        is_collected = self.progress.is_collected(entity_id)
+        capture = self.progress.get_capture_for_entity(entity_id)
+        failed_attempts = self.progress.get_failed_attempts(entity_id)
+        
+        # Calculate current catch probability
+        current_prob = get_final_probability(
+            hero_power=self.hero_power,
+            entity_power=entity.power,
+            failed_attempts=failed_attempts,
+            luck_bonus=self.luck_bonus,
+        )
+        
+        return {
+            "entity": entity,
+            "is_collected": is_collected,
+            "is_encountered": self.progress.is_encountered(entity_id),
+            "encounter_count": self.progress.get_encounter_count(entity_id),
+            "failed_attempts": failed_attempts,
+            "capture": capture,
+            "current_catch_probability": current_prob,
+            "probability_display": format_probability_display(current_prob),
+            "probability_description": get_probability_description(current_prob),
+        }
+    
+    def get_statistics(self) -> Dict[str, Any]:
+        """Get collection statistics for the current story."""
+        stats = self.progress.get_statistics(self.story_id)
+        
+        # Add recommended next entity
+        recommended = get_next_recommended_entity(
+            progress=self.progress,
+            hero_power=self.hero_power,
+            story_id=self.story_id,
+        )
+        stats["recommended_entity"] = recommended
+        
+        return stats
+    
+    def get_progress_display(self) -> str:
+        """Get progress display string like '6/9 (66.7%)'."""
+        return self.progress.get_progress_display(self.story_id)
+    
+    def is_collection_complete(self) -> bool:
+        """Check if current story's collection is complete."""
+        return self.progress.is_collection_complete(self.story_id)
+    
+    # =========================================================================
+    # SERIALIZATION
+    # =========================================================================
+    
+    def save_progress(self) -> Dict[str, Any]:
+        """
+        Get progress data for saving.
+        
+        Returns:
+            Dictionary that can be stored in config
+        """
+        return self.progress.to_dict()
+    
+    def load_progress(self, data: Dict[str, Any]) -> None:
+        """
+        Load progress from saved data.
+        
+        Args:
+            data: Dictionary from save file
+        """
+        self.progress = EntitidexProgress.from_dict(data)
+    
+    @classmethod
+    def from_config(
+        cls,
+        config_data: Dict[str, Any],
+        story_id: str,
+        hero_power: int,
+        luck_bonus: float = 0.0,
+    ) -> "EntitidexManager":
+        """
+        Create manager from config data.
+        
+        Args:
+            config_data: The entitidex section from config
+            story_id: Current story theme
+            hero_power: Hero's current power
+            luck_bonus: Luck bonus from items
+            
+        Returns:
+            Configured EntitidexManager instance
+        """
+        progress = EntitidexProgress.from_dict(config_data) if config_data else None
+        
+        return cls(
+            progress=progress,
+            story_id=story_id,
+            hero_power=hero_power,
+            luck_bonus=luck_bonus,
+        )

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- AGI Assistant Chad - Desktop AI assistant that became sentient -->
+  <defs>
+    <linearGradient id="monitorFrame" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#37474F"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    <linearGradient id="screenGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E3F2FD"/>
+      <stop offset="50%" style="stop-color:#BBDEFB"/>
+      <stop offset="100%" style="stop-color:#90CAF9"/>
+    </linearGradient>
+    <linearGradient id="epicPurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#CE93D8"/>
+      <stop offset="50%" style="stop-color:#9C27B0"/>
+      <stop offset="100%" style="stop-color:#7B1FA2"/>
+    </linearGradient>
+    <linearGradient id="chadGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#69F0AE"/>
+      <stop offset="100%" style="stop-color:#00E676"/>
+    </linearGradient>
+    <filter id="screenBlur">
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+    <filter id="epicAura">
+      <feGaussianBlur stdDeviation="3" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Epic aura -->
+  <rect x="4" y="4" width="56" height="56" rx="8" fill="url(#epicPurple)" filter="url(#epicAura)" opacity="0.2"/>
+  
+  <!-- Monitor stand -->
+  <rect x="26" y="52" width="12" height="6" fill="#455A64"/>
+  <ellipse cx="32" cy="58" rx="10" ry="3" fill="#37474F"/>
+  
+  <!-- Monitor frame -->
+  <rect x="8" y="8" width="48" height="42" rx="3" fill="url(#monitorFrame)"/>
+  
+  <!-- Screen bezel -->
+  <rect x="10" y="10" width="44" height="38" rx="2" fill="#212121"/>
+  
+  <!-- Screen (glowing) -->
+  <rect x="12" y="12" width="40" height="34" rx="1" fill="url(#screenGlow)"/>
+  
+  <!-- Chad's face on screen -->
+  <g>
+    <!-- Face background -->
+    <rect x="14" y="14" width="36" height="30" fill="#1A237E" opacity="0.8"/>
+    
+    <!-- Digital face grid lines -->
+    <g stroke="#3949AB" stroke-width="0.3" opacity="0.3">
+      <line x1="14" y1="20" x2="50" y2="20"/>
+      <line x1="14" y1="26" x2="50" y2="26"/>
+      <line x1="14" y1="32" x2="50" y2="32"/>
+      <line x1="14" y1="38" x2="50" y2="38"/>
+      <line x1="20" y1="14" x2="20" y2="44"/>
+      <line x1="32" y1="14" x2="32" y2="44"/>
+      <line x1="44" y1="14" x2="44" y2="44"/>
+    </g>
+    
+    <!-- Eyes (screen eyes - sentient!) -->
+    <rect x="18" y="20" width="10" height="8" rx="1" fill="#212121"/>
+    <rect x="36" y="20" width="10" height="8" rx="1" fill="#212121"/>
+    
+    <!-- Glowing pupils -->
+    <circle cx="23" cy="24" r="3" fill="url(#chadGreen)">
+      <animate attributeName="r" values="3;3.5;3" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="41" cy="24" r="3" fill="url(#chadGreen)">
+      <animate attributeName="r" values="3;3.5;3" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Eyebrow bars (confident) -->
+    <rect x="18" y="17" width="10" height="2" fill="url(#chadGreen)" opacity="0.7"/>
+    <rect x="36" y="17" width="10" height="2" fill="url(#chadGreen)" opacity="0.7"/>
+    
+    <!-- Smug smile (knows something) -->
+    <path d="M24 36 Q32 42, 40 36" stroke="url(#chadGreen)" stroke-width="2" fill="none" stroke-linecap="round"/>
+    
+    <!-- Sound wave (speaking) -->
+    <g stroke="url(#chadGreen)" stroke-width="1" fill="none" opacity="0.8">
+      <path d="M16 36 Q14 34, 16 32">
+        <animate attributeName="opacity" values="0.8;0.3;0.8" dur="0.5s" repeatCount="indefinite"/>
+      </path>
+      <path d="M48 36 Q50 34, 48 32">
+        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="0.5s" repeatCount="indefinite"/>
+      </path>
+    </g>
+  </g>
+  
+  <!-- Status LED on monitor (glowing) -->
+  <circle cx="32" cy="48" r="1.5" fill="url(#chadGreen)">
+    <animate attributeName="fill-opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Data streams around monitor -->
+  <g font-family="monospace" font-size="3" fill="url(#chadGreen)" opacity="0.5">
+    <text x="4" y="20">
+      <animate attributeName="y" values="20;60;20" dur="4s" repeatCount="indefinite"/>
+      01
+    </text>
+    <text x="58" y="40">
+      <animate attributeName="y" values="40;10;40" dur="3s" repeatCount="indefinite"/>
+      10
+    </text>
+    <text x="6" y="50">
+      <animate attributeName="y" values="50;20;50" dur="5s" repeatCount="indefinite"/>
+      11
+    </text>
+  </g>
+  
+  <!-- "Hello, Dave" text appearing -->
+  <text x="32" y="42" font-family="monospace" font-size="4" fill="url(#chadGreen)" text-anchor="middle" opacity="0.8">
+    Hello, Dave
+    <animate attributeName="opacity" values="0.8;0.4;0.8" dur="3s" repeatCount="indefinite"/>
+  </text>
+  
+  <!-- Epic sparkles -->
+  <g fill="url(#epicPurple)">
+    <circle cx="4" cy="10" r="2" opacity="0.8"/>
+    <circle cx="60" cy="8" r="1.5" opacity="0.7"/>
+    <circle cx="2" cy="54" r="1.5" opacity="0.6"/>
+    <circle cx="62" cy="50" r="2" opacity="0.7"/>
+    <circle cx="32" cy="2" r="1" opacity="0.5"/>
+  </g>
+  
+  <!-- Small keyboard hint at bottom -->
+  <rect x="18" y="60" width="28" height="2" rx="0.5" fill="#455A64" opacity="0.5"/>
+</svg>
