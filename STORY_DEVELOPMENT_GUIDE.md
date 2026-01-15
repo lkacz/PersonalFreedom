@@ -40,6 +40,8 @@ The ADHD Buster gamification system uses **story themes** to contextualize the p
 | `wanderer` | The Endless Road | Traveler exploring focus landscapes | Explorers, creative types |
 | `underdog` | Rise of the Underdog | Underdog proving themselves | Late bloomers, comeback seekers |
 
+**New Feature**: Each story now includes an **Entitidex** - a collectible entity system where users encounter and capture story-themed entities after focus sessions (see `ENTITIDEX_DESIGN.md` for details).
+
 ---
 
 ## Story Architecture
@@ -123,6 +125,8 @@ AVAILABLE_STORIES = {
 
 **File:** `gamification.py`  
 **Location:** `STORY_GEAR_THEMES` dict (near the top; search for `STORY_GEAR_THEMES = {`)
+
+**Important**: Also create matching entities for the **Entitidex** system. See `ENTITIDEX_DESIGN.md` for entity creation guidelines. Your entities should thematically match your story's narrative and provide tangible companions.
 
 ```python
 STORY_GEAR_THEMES = {
@@ -354,6 +358,164 @@ def test_new_story():
 
 if __name__ == "__main__":
     test_new_story()
+```
+
+---
+
+## Story Components Breakdown
+
+### Entity Design for Entitidex (New Requirement)
+
+When creating a new story, you must also design **9 collectible entities** for the Entitidex system. These entities should be thematically integrated with your story's narrative.
+
+#### Entity Design Principles
+
+**1. Entities as Tangible Companions**
+Your entities should be **real, tangible objects and creatures** that users could imagine meeting in real life:
+- **Warrior**: Dragons, weapons, armor, loyal beasts (dragons, enchanted swords, war horses)
+- **Scholar**: Library creatures, magical study tools (mice, owls, sentient books, enchanted quills)
+- **Wanderer**: Travel gear, journey companions (compasses, maps, loyal dogs, magical backpacks)
+- **Underdog**: Office items, workplace companions (desk pets, lucky staplers, AI assistants, pigeons)
+
+**2. Power Progression** (10 → 2000)
+Distribute power levels across 9 entities:
+```python
+[10, 50, 150, 400, 700, 1100, 1500, 1800, 2000]
+```
+
+Map to rarities:
+- #001-#002: Common (10-50)
+- #003: Uncommon (150)
+- #004-#005: Rare (400-700)
+- #006-#007: Epic (1100-1500)
+- #008-#009: Legendary (1800-2000)
+
+**3. Story Integration**
+Connect entities to your narrative:
+- Reference story characters (e.g., "Captain Elena warns about this one")
+- Link to chapter themes (e.g., Chapter 4's choice relates to entity #005)
+- Use story-specific terminology
+- Create narrative payoff (final entity represents story's ultimate challenge)
+
+#### Entity Creation Template
+
+```python
+{
+    "id": "<story>_00X",
+    "name": "Tangible Companion Name",
+    "power": XXX,
+    "rarity": "common|uncommon|rare|epic|legendary",
+    "lore": "2-3 sentences. Make it real and touchable. Give it personality. Users should want to collect it!"
+}
+```
+
+#### Example: Explorer Story Entities
+
+If you were creating "The Lost Expedition" explorer story:
+
+```python
+"explorer": [
+    {"id": "explorer_001", "name": "Expedition Mouse Mapley", "power": 10, "rarity": "common",
+     "lore": "A tiny mouse who rides in your pack. Squeaks when danger approaches. 'I'll be your lookout!'"},
+    {"id": "explorer_002", "name": "Trusty Canteen", "power": 50, "rarity": "common",
+     "lore": "An old canteen that never runs empty. 'Stay hydrated, explorer. The ruins await.'"},
+    {"id": "explorer_003", "name": "Trail Machete", "power": 150, "rarity": "uncommon",
+     "lore": "A well-worn blade that cuts through any obstacle. Inscribed: 'The path reveals itself to those who clear it.'"},
+    {"id": "explorer_004", "name": "Expedition Parrot Polly", "power": 400, "rarity": "rare",
+     "lore": "A colorful parrot who scouts ahead and mimics ancient languages. 'Squawk! Treasure ahead!'"},
+    {"id": "explorer_005", "name": "Self-Healing Rope", "power": 700, "rarity": "rare",
+     "lore": "An enchanted rope that mends itself. Never frays. 'I'll always hold you up when you're climbing.'"},
+    {"id": "explorer_006", "name": "Ancient Translation Stone", "power": 1100, "rarity": "epic",
+     "lore": "A glowing crystal that translates any ancient language. Hums with millennia of wisdom. 'The secrets are yours now.'"},
+    {"id": "explorer_007", "name": "Expedition Jaguar Shadow", "power": 1500, "rarity": "epic",
+     "lore": "A sleek jungle cat who adopted you. Silent, powerful, protective. Leads you through the darkest paths."},
+    {"id": "explorer_008", "name": "The Map That Remembers", "power": 1800, "rarity": "legendary",
+     "lore": "A living map created by a thousand explorers. Shows every discovered ruin. 'Your discoveries add to my legend.'"},
+    {"id": "explorer_009", "name": "Spirit of Discovery", "power": 2000, "rarity": "legendary",
+     "lore": "A golden compass that points to your heart's true destination. 'I am every explorer's final companion. Welcome to the found.'"},
+]
+```
+
+#### Entity Naming Conventions
+
+**Good Entity Names:**
+- Descriptive of the challenge: "Blank Page Demon", "Analysis Paralysis Sphinx"
+- Story-appropriate tone: Medieval for warrior, academic for scholar
+- Memorable and unique: "The Success Paradox", "Rock Bottom's Reflection"
+- Escalating threat: Early entities sound minor, late ones sound epic
+
+**Avoid:**
+- Generic names: "Entity 1", "Companion 3"
+- Inconsistent tone: Mixing modern slang with medieval fantasy (unless it's the Underdog story)
+- Overly long names: "The Really Really Special Ultimate Amazing Super Dragon"
+- Abstract concepts: Make them tangible things you could see, touch, or pet
+
+#### Lore Writing Guidelines
+
+Each entity needs **2-3 sentence lore** that:
+
+1. **Describes the challenge**: What does this entity represent?
+2. **Connects to story**: Reference characters, plot points, or themes
+3. **Personal impact**: How does it affect the hero's journey?
+
+**Example Analysis:**
+
+```
+"A gray pigeon who taps morse code on your window. Brings brilliant ideas right when you need them. 'Coo-COO! I believe in you!'"
+                ↓                                    ↓                                    ↓
+         What it IS                        What it DOES                          Personality/Quote
+    (tangible creature)               (helpful ability)                       (makes you love it)
+```
+
+#### Testing Your Entities
+
+**Thematic Consistency Check:**
+- [ ] Do all 9 entities feel like they belong in the same world?
+- [ ] Do they reference your story's narrative?
+- [ ] Do early entities feel "humble beginnings" and late ones feel "ultimate companion"?
+- [ ] Would a player WANT to collect all of them? Are they likable?
+
+**Power Balance Check:**
+- [ ] Powers match the standard distribution (10, 50, 150, 400, 700, 1100, 1500, 1800, 2000)
+- [ ] Rarities assigned correctly (common for <100, legendary for 1800+)
+- [ ] Each entity has clear progression (not random jumps)
+
+**Naming Quality Check:**
+- [ ] Names are unique within your entity pool
+- [ ] Tone matches your story (serious vs. humorous vs. dramatic)
+- [ ] No duplicates with other stories' entities
+- [ ] Memorable enough that players will discuss them
+
+#### Integration with Story Chapters
+
+Align entity power with chapter unlock thresholds:
+
+```python
+# Your story chapters
+EXPLORER_CHAPTERS = [
+    {"title": "Chapter 1: The Edge of the Map", "threshold": 0, ...},      # Players can catch: #001-#002
+    {"title": "Chapter 2: First Markings", "threshold": 50, ...},          # Players can catch: #002-#003
+    {"title": "Chapter 3: Into the Unknown", "threshold": 150, ...},       # Players can catch: #003-#004
+    {"title": "Chapter 4: The Depths", "threshold": 400, ...},             # Players can catch: #004-#005
+    {"title": "Chapter 5: The Discovery", "threshold": 700, ...},          # Players can catch: #005-#006
+    {"title": "Chapter 6: The Truth", "threshold": 1100, ...},             # Players can catch: #006-#007
+    {"title": "Chapter 7: The Return", "threshold": 1500, ...},            # Players can catch: #007-#009
+]
+
+# Reference entities in chapter text:
+"Chapter 4 content": "A colorful parrot joins your expedition. It scouts ahead, calling out warnings in ancient tongues..."
+# This connects to entity #004: "Expedition Parrot Polly" (400 power)
+```
+
+#### Entity Unlock Hints
+
+For uncaught entities, display hints that build anticipation:
+
+```python
+# Instead of showing the entity name, show:
+"Hint: A tiny companion that loves cheese and discoveries..." # (Expedition Mouse Mapley)
+"Hint: A feathered friend who speaks ancient languages..." # (Expedition Parrot Polly)
+"Hint: The ultimate guide to everywhere you've been searching..." # (Spirit of Discovery)
 ```
 
 ---
@@ -1427,6 +1589,13 @@ Consider:
 - Unlock special items by completing multiple stories
 - "Multiverse Hero" achievement
 - Shared legendary items across stories
+
+**Entitidex System** (See `ENTITIDEX_DESIGN.md`)
+- Collectible entities themed to each story
+- Catch entities after focus sessions (Pokemon Go-style)
+- 9 entities per story, scaling from 10 to 2000 power
+- Lottery-based catch mechanics
+- Story-integrated lore (e.g., Warrior entities are loyal allies and legendary gear)
 
 **Dynamic Narratives:**
 - Branching storylines based on player choices
