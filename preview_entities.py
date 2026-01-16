@@ -148,6 +148,7 @@ class EntityCard(QFrame):
         name_label.setWordWrap(True)
         name_label.setFont(QFont("Segoe UI", 8, QFont.Bold))
         name_label.setStyleSheet(f"color: {border_color}; background: transparent;")
+        name_label.setMinimumHeight(32)  # Reserve space for two lines
         layout.addWidget(name_label, 0, Qt.AlignCenter)
         
         # Power label
@@ -164,7 +165,7 @@ class EntityCard(QFrame):
         rarity_label.setStyleSheet(f"color: {border_color}; background: transparent;")
         layout.addWidget(rarity_label)
         
-        self.setFixedSize(180, 220)
+        self.setFixedSize(180, 235)  # Extra height for two-line names
 
 
 class EntityPreviewWindow(QMainWindow):

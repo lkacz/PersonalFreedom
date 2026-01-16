@@ -709,8 +709,12 @@ class EntityCard(QtWidgets.QFrame):
         layout.addWidget(svg_container)
         
         # Entity name - matching preview_entities.py style
+        # For exceptional entities, show the playful exceptional_name if available
         if self.is_collected:
-            name_text = self.entity.name
+            if self.is_exceptional and self.entity.exceptional_name:
+                name_text = self.entity.exceptional_name
+            else:
+                name_text = self.entity.name
             name_color = rarity_color
         elif self.is_encountered:
             name_text = "???"
@@ -727,8 +731,9 @@ class EntityCard(QtWidgets.QFrame):
         name_label = QtWidgets.QLabel(name_text)
         name_label.setAlignment(QtCore.Qt.AlignCenter)
         name_label.setWordWrap(True)
-        name_label.setFont(QtGui.QFont("Segoe UI", 9, QtGui.QFont.Bold))
+        name_label.setFont(QtGui.QFont("Segoe UI", 8, QtGui.QFont.Bold))
         name_label.setStyleSheet(f"color: {name_color}; background: transparent;")
+        name_label.setMinimumHeight(32)  # Reserve space for two lines
         layout.addWidget(name_label, 0, QtCore.Qt.AlignCenter)
         
         # Power display - matching preview_entities.py style
@@ -768,8 +773,8 @@ class EntityCard(QtWidgets.QFrame):
         rarity_label.setStyleSheet(f"color: {rarity_label_color}; background: transparent;")
         layout.addWidget(rarity_label)
         
-        # Match preview_entities.py card size: 180x220
-        self.setFixedSize(180, 220)
+        # Card size: 180 wide, 235 tall (extra height for two-line names)
+        self.setFixedSize(180, 235)
         
         # Add sparkle decorations for exceptional entities (after setFixedSize so they can be positioned)
         if self.is_collected and self.is_exceptional:
@@ -1214,7 +1219,9 @@ class EntitidexTab(QtWidgets.QWidget):
             if is_exceptional:
                 shiny_color = EXCEPTIONAL_ENTITY_COLORS.get(entity.id, (255, 215, 0))
                 rarity_color = f"#{shiny_color[0]:02X}{shiny_color[1]:02X}{shiny_color[2]:02X}"
-            self.detail_name.setText(f"{variant_text}{entity.name}")
+            # Use exceptional_name for exceptional entities if available
+            display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
+            self.detail_name.setText(f"{variant_text}{display_name}")
             self.detail_name.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {rarity_color};")
             if is_exceptional:
                 self.detail_lore.setText(f"⭐ EXCEPTIONAL VARIANT ⭐\n\n{entity.lore}\n\n✨ This rare variant has unique coloring and special animations!")

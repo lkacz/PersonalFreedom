@@ -13899,16 +13899,21 @@ def check_entitidex_encounter(adhd_buster: dict, session_minutes: int,
     }
 
 
-def attempt_entitidex_bond(adhd_buster: dict, entity_id: str) -> dict:
+def attempt_entitidex_bond(
+    adhd_buster: dict, 
+    entity_id: str, 
+    is_exceptional: bool = False
+) -> dict:
     """
     Attempt to bond with an encountered entity.
     
-    On success, there's a 5% chance to get an EXCEPTIONAL variant
-    with unique randomly-generated premium colors.
+    The exceptional flag is determined at encounter time (20% chance).
+    Normal and exceptional are separate collectibles.
     
     Args:
         adhd_buster: Hero data dictionary
         entity_id: ID of the entity to bond with
+        is_exceptional: Whether this is an exceptional variant encounter
         
     Returns:
         dict with bond attempt result:
@@ -13941,11 +13946,12 @@ def attempt_entitidex_bond(adhd_buster: dict, entity_id: str) -> dict:
     # Get entitidex manager (configured with hero_power)
     manager = get_entitidex_manager(adhd_buster)
     
-    # Get failed attempts for tracking
-    failed_before = manager.progress.get_failed_attempts(entity_id)
+    # Get failed attempts for the specific variant being attempted
+    failed_before = manager.progress.get_failed_attempts(entity_id, is_exceptional)
     
     # Attempt the bond (hero_power is already set in manager)
-    catch_result = manager.attempt_catch(entity)
+    # Pass is_exceptional to handle pity tracking correctly
+    catch_result = manager.attempt_catch(entity, is_exceptional=is_exceptional)
     
     if catch_result is None:
         return {
@@ -13955,35 +13961,59 @@ def attempt_entitidex_bond(adhd_buster: dict, entity_id: str) -> dict:
             "pity_bonus": 0.0,
             "consecutive_fails": failed_before,
             "message": "Could not attempt bond",
-            "is_exceptional": False,
+            "is_exceptional": is_exceptional,
             "exceptional_colors": None
         }
     
-    # Check for exceptional roll on success (5% chance)
-    is_exceptional = False
+    # Generate exceptional colors if this is an exceptional catch
     exceptional_colors = None
-    
-    if catch_result.success:
-        exceptional_roll = random.random()
-        if exceptional_roll < 0.05:  # 5% chance
-            is_exceptional = True
-            exceptional_colors = _generate_exceptional_colors()
-            manager.progress.mark_exceptional(entity_id, exceptional_colors)
+    if catch_result.success and is_exceptional:
+        exceptional_colors = _generate_exceptional_colors()
+        manager.progress.mark_exceptional(entity_id, exceptional_colors)
     
     # Save progress
     save_entitidex_progress(adhd_buster, manager)
     
+    # Award XP for successful catches
+    xp_awarded = 0
+    if catch_result.success:
+        # Base XP based on entity rarity
+        rarity_xp = {
+            "common": 25,
+            "uncommon": 50,
+            "rare": 100,
+            "epic": 200,
+            "legendary": 500,
+        }
+        base_xp = rarity_xp.get(entity.rarity.lower(), 50)
+        
+        # Double XP for exceptional catches!
+        if is_exceptional:
+            xp_awarded = base_xp * 2
+            xp_source = f"entitidex_exceptional_{entity.rarity}"
+        else:
+            xp_awarded = base_xp
+            xp_source = f"entitidex_catch_{entity.rarity}"
+        
+        award_xp(adhd_buster, xp_awarded, xp_source)
+    
     # Get updated fail count (only increases on failure)
-    failed_after = manager.progress.get_failed_attempts(entity_id)
+    failed_after = manager.progress.get_failed_attempts(entity_id, is_exceptional)
     
     # Generate appropriate message
+    # For exceptional entities, use the playful exceptional_name if available
+    display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
+    
     if catch_result.success:
         if is_exceptional:
-            message = f"🌟✨ EXCEPTIONAL {entity.name} has joined your team! ✨🌟"
+            message = f"🌟✨ EXCEPTIONAL {display_name} has joined your team! +{xp_awarded} XP! ✨🌟"
         else:
-            message = f"🎉 {entity.name} has joined your team!"
+            message = f"🎉 {entity.name} has joined your team! +{xp_awarded} XP!"
     else:
-        message = f"💨 {entity.name} slipped away... Try again next time!"
+        if is_exceptional:
+            message = f"💨 {display_name} slipped away... Try again next time!"
+        else:
+            message = f"💨 {entity.name} slipped away... Try again next time!"
     
     return {
         "success": catch_result.success,
@@ -13993,7 +14023,8 @@ def attempt_entitidex_bond(adhd_buster: dict, entity_id: str) -> dict:
         "consecutive_fails": failed_after,
         "message": message,
         "is_exceptional": is_exceptional,
-        "exceptional_colors": exceptional_colors
+        "exceptional_colors": exceptional_colors,
+        "xp_awarded": xp_awarded,
     }
 
 
