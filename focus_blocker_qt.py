@@ -17115,8 +17115,16 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Check for daily gear reward (delayed until after onboarding so story is selected)
         if GAMIFICATION_AVAILABLE:
             QtCore.QTimer.singleShot(900, self._show_onboarding_prompt)
+            # Pre-load Entitidex tab in background for instant display when user clicks it
+            QtCore.QTimer.singleShot(2000, self._preload_entitidex_tab)
 
-
+    def _preload_entitidex_tab(self) -> None:
+        """Pre-load the Entitidex tab UI in background for instant display."""
+        if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
+            try:
+                self.entitidex_tab.preload()
+            except Exception as e:
+                logger.warning(f"Failed to preload Entitidex tab: {e}")
 
     def _show_onboarding_prompt(self) -> None:
         """Ask the user how they want to play this session."""
