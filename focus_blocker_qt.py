@@ -403,6 +403,8 @@ find_potential_set_bonuses = None
 # Lucky options system
 calculate_total_lucky_bonuses = None
 format_lucky_options = None
+# Entity power perks for hero display
+get_entity_power_perks = None
 # XP and leveling system
 calculate_session_xp = None
 award_xp = None
@@ -466,6 +468,7 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
     global sync_hero_data, is_gamification_enabled
     global GEAR_SLOTS, STORY_GEAR_THEMES, get_story_gear_theme, get_slot_display_name
     global optimize_equipped_gear, find_potential_set_bonuses
+    global calculate_total_lucky_bonuses, format_lucky_options, get_entity_power_perks
     global calculate_session_xp, award_xp, get_level_from_xp, get_level_title, get_celebration_message
     # Weight tracking
     global check_weight_entry_rewards, get_weight_stats, format_weight_change, check_all_weight_rewards
@@ -571,6 +574,8 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
             # Lucky options system
             calculate_total_lucky_bonuses as _calculate_total_lucky_bonuses,
             format_lucky_options as _format_lucky_options,
+            # Entity power perks for hero display
+            get_entity_power_perks as _get_entity_power_perks,
         )
         GAMIFICATION_AVAILABLE = True
         RARITY_POWER = _RARITY_POWER
@@ -617,6 +622,8 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
         # Lucky options system
         calculate_total_lucky_bonuses = _calculate_total_lucky_bonuses
         format_lucky_options = _format_lucky_options
+        # Entity power perks for hero display
+        get_entity_power_perks = _get_entity_power_perks
     except ImportError:
         GAMIFICATION_AVAILABLE = False
     
@@ -4557,8 +4564,50 @@ class WeightTab(QtWidgets.QWidget):
         rewards_layout.addWidget(rewards_info)
         layout.addWidget(rewards_group)
         
+        # Entity Perk Card (Rodent Squad) - shows when rat/mouse entities are collected
+        self.weight_entity_perk_card = QtWidgets.QFrame()
+        self.weight_entity_perk_card.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2e3f4a, stop:1 #1a262f);
+                border: 2px solid #7986cb;
+                border-radius: 8px;
+                padding: 6px;
+            }
+        """)
+        entity_perk_layout = QtWidgets.QHBoxLayout(self.weight_entity_perk_card)
+        entity_perk_layout.setContentsMargins(8, 4, 8, 4)
+        entity_perk_layout.setSpacing(8)
+        
+        # SVG icon containers for multiple entities (up to 5)
+        self.weight_entity_svg_labels = []
+        for _ in range(5):
+            svg_label = QtWidgets.QLabel()
+            svg_label.setFixedSize(32, 32)
+            svg_label.setStyleSheet("background: transparent;")
+            svg_label.hide()
+            entity_perk_layout.addWidget(svg_label)
+            self.weight_entity_svg_labels.append(svg_label)
+        
+        # Perk description
+        self.weight_entity_perk_label = QtWidgets.QLabel()
+        self.weight_entity_perk_label.setStyleSheet("""
+            font-size: 12px;
+            font-weight: bold;
+            color: #9fa8da;
+            background: transparent;
+        """)
+        self.weight_entity_perk_label.setWordWrap(True)
+        entity_perk_layout.addWidget(self.weight_entity_perk_label, 1)
+        
+        layout.addWidget(self.weight_entity_perk_card)
+        self.weight_entity_perk_card.hide()  # Hidden until we check perks
+        
         # Initialize settings from saved values
         self._load_settings()
+        
+        # Update entity perk display
+        self._update_weight_entity_perk_display()
     
     def _on_goal_toggle(self, state: int) -> None:
         """Handle goal checkbox toggle."""
@@ -4633,7 +4682,8 @@ class WeightTab(QtWidgets.QWidget):
                 date_str,
                 self.blocker.weight_goal,
                 self.blocker.weight_milestones,
-                story_id
+                story_id,
+                self.blocker.adhd_buster
             )
         elif GAMIFICATION_AVAILABLE and check_weight_entry_rewards and is_gamification_enabled(self.blocker.adhd_buster):
             # Fallback to basic rewards
@@ -4642,7 +4692,8 @@ class WeightTab(QtWidgets.QWidget):
                 entries_for_reward, 
                 weight_kg, 
                 date_str,
-                story_id
+                story_id,
+                self.blocker.adhd_buster
             )
         
         # Update or add entry
@@ -5176,6 +5227,105 @@ class WeightTab(QtWidgets.QWidget):
                     "Don't forget to log your weight today!"
                 )
     
+    def _update_weight_entity_perk_display(self) -> None:
+        """Update the entity perk display card if rat/mouse entities are collected."""
+        try:
+            adhd_data = getattr(self.blocker, 'adhd_buster', {})
+            if not adhd_data:
+                self.weight_entity_perk_card.hide()
+                return
+            
+            from gamification import get_entity_weight_perks
+            weight_perks = get_entity_weight_perks(adhd_data)
+            legendary_bonus = weight_perks.get("legendary_bonus", 0)
+            contributors = weight_perks.get("contributors", [])
+            
+            # Hide all SVG labels first
+            for label in self.weight_entity_svg_labels:
+                label.hide()
+            
+            # Hide if no bonus
+            if legendary_bonus <= 0 or not contributors:
+                self.weight_entity_perk_card.hide()
+                return
+            
+            # Load SVGs for each contributing entity
+            for i, contrib in enumerate(contributors[:5]):
+                self._load_weight_entity_svg(i, contrib["entity_id"], contrib["is_exceptional"])
+                self.weight_entity_svg_labels[i].show()
+            
+            # Build description
+            if len(contributors) == 1:
+                c = contributors[0]
+                perk_text = (
+                    f"<b>{c['icon']} {c['name']}</b><br>"
+                    f"<span style='color:#9fa8da;'>+{c['bonus']}% Legendary when logging weight</span>"
+                )
+            else:
+                names = ", ".join([c["name"].split()[0] for c in contributors])  # First names only
+                perk_text = (
+                    f"<b>🐀 Rodent Squad ({len(contributors)})</b><br>"
+                    f"<span style='color:#9fa8da;'>+{legendary_bonus}% Legendary when logging weight</span>"
+                )
+            self.weight_entity_perk_label.setText(perk_text)
+            
+            # Update border color - purple if any exceptional
+            has_exceptional = any(c["is_exceptional"] for c in contributors)
+            if has_exceptional:
+                self.weight_entity_perk_card.setStyleSheet("""
+                    QFrame {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #3d2e4a, stop:1 #261a2f);
+                        border: 2px solid #ba68c8;
+                        border-radius: 8px;
+                        padding: 6px;
+                    }
+                """)
+            else:
+                self.weight_entity_perk_card.setStyleSheet("""
+                    QFrame {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #2e3f4a, stop:1 #1a262f);
+                        border: 2px solid #7986cb;
+                        border-radius: 8px;
+                        padding: 6px;
+                    }
+                """)
+            
+            self.weight_entity_perk_card.show()
+            
+        except Exception as e:
+            print(f"[Weight Tab] Error updating entity perk display: {e}")
+            self.weight_entity_perk_card.hide()
+    
+    def _load_weight_entity_svg(self, index: int, entity_id: str, is_exceptional: bool) -> None:
+        """Load and display an entity SVG icon at the given index."""
+        try:
+            from PySide6.QtSvg import QSvgRenderer
+            from entitidex_tab import _resolve_entity_svg_path
+            from entitidex.entity_pools import get_entity_by_id
+            
+            entity = get_entity_by_id(entity_id)
+            if not entity:
+                return
+            
+            svg_path = _resolve_entity_svg_path(entity, is_exceptional)
+            if not svg_path:
+                return
+            
+            renderer = QSvgRenderer(svg_path)
+            if renderer.isValid():
+                icon_size = 32
+                pixmap = QtGui.QPixmap(icon_size, icon_size)
+                pixmap.fill(QtCore.Qt.transparent)
+                painter = QtGui.QPainter(pixmap)
+                renderer.render(painter)
+                painter.end()
+                self.weight_entity_svg_labels[index].setPixmap(pixmap)
+                
+        except Exception as e:
+            print(f"[Weight Tab] Error loading entity SVG for {entity_id}: {e}")
+
     def _show_weekly_insights(self) -> None:
         """Show weekly insights in a dialog."""
         if not get_weekly_insights:
@@ -5992,6 +6142,44 @@ class SleepTab(QtWidgets.QWidget):
         sleep_now_layout.addStretch()
         screenoff_main_layout.addLayout(sleep_now_layout)
         
+        # Entity Perk Card (Owl Athena) - shows when scholar_002 is collected
+        self.sleep_entity_perk_card = QtWidgets.QFrame()
+        self.sleep_entity_perk_card.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2e3f4a, stop:1 #1a262f);
+                border: 2px solid #5c6bc0;
+                border-radius: 8px;
+                padding: 6px;
+            }
+        """)
+        entity_perk_layout = QtWidgets.QHBoxLayout(self.sleep_entity_perk_card)
+        entity_perk_layout.setContentsMargins(8, 4, 8, 4)
+        entity_perk_layout.setSpacing(10)
+        
+        # SVG icon container
+        self.sleep_entity_svg_label = QtWidgets.QLabel()
+        self.sleep_entity_svg_label.setFixedSize(40, 40)
+        self.sleep_entity_svg_label.setStyleSheet("background: transparent;")
+        entity_perk_layout.addWidget(self.sleep_entity_svg_label)
+        
+        # Perk description
+        self.sleep_entity_perk_label = QtWidgets.QLabel()
+        self.sleep_entity_perk_label.setStyleSheet("""
+            font-size: 12px;
+            font-weight: bold;
+            color: #9fa8da;
+            background: transparent;
+        """)
+        self.sleep_entity_perk_label.setWordWrap(True)
+        entity_perk_layout.addWidget(self.sleep_entity_perk_label, 1)
+        
+        screenoff_main_layout.addWidget(self.sleep_entity_perk_card)
+        self.sleep_entity_perk_card.hide()  # Hidden until we check perks
+        
+        # Update entity perk display
+        self._update_sleep_entity_perk_display()
+        
         # Separator
         sep_line = QtWidgets.QFrame()
         sep_line.setFrameShape(QtWidgets.QFrame.HLine)
@@ -6236,8 +6424,17 @@ class SleepTab(QtWidgets.QWidget):
             self.sleep_now_info.setText(f"Now: {current_time}")
             return
         
-        rarity = get_screen_off_bonus_rarity(current_time)
-        if rarity:
+        base_rarity = get_screen_off_bonus_rarity(current_time)
+        if base_rarity:
+            # Apply entity perk tier bonus for preview
+            from gamification import get_entity_sleep_perks, get_boosted_rarity
+            sleep_perks = get_entity_sleep_perks(self.blocker.adhd_buster)
+            tier_bonus = sleep_perks.get("sleep_tier_bonus", 0)
+            
+            rarity = base_rarity
+            for _ in range(tier_bonus):
+                rarity = get_boosted_rarity(rarity)
+            
             rarity_colors = {
                 "Legendary": "#ffd700",
                 "Epic": "#a335ee",
@@ -6246,7 +6443,10 @@ class SleepTab(QtWidgets.QWidget):
                 "Common": "#ffffff",
             }
             color = rarity_colors.get(rarity, "#888")
-            self.sleep_now_info.setText(f"Now: {current_time} → <b style='color:{color}'>{rarity}</b> item!")
+            
+            # Show bonus indicator if tier is boosted
+            bonus_text = f" (+{tier_bonus}🦉)" if tier_bonus > 0 else ""
+            self.sleep_now_info.setText(f"Now: {current_time} → <b style='color:{color}'>{rarity}</b>{bonus_text} item!")
             self.sleep_now_btn.setEnabled(True)
         else:
             # Check if it is too early (between 06:00 and 22:00)
@@ -6257,6 +6457,93 @@ class SleepTab(QtWidgets.QWidget):
             self.sleep_now_info.setText(f"Now: {current_time} {msg}")
             self.sleep_now_btn.setEnabled(False)
     
+    def _update_sleep_entity_perk_display(self) -> None:
+        """Update the entity perk display card if Study Owl Athena is collected."""
+        try:
+            adhd_data = getattr(self.blocker, 'adhd_buster', {})
+            if not adhd_data:
+                self.sleep_entity_perk_card.hide()
+                return
+            
+            from gamification import get_entity_sleep_perks
+            sleep_perks = get_entity_sleep_perks(adhd_data)
+            tier_bonus = sleep_perks.get("sleep_tier_bonus", 0)
+            
+            # Hide if no tier bonus
+            if tier_bonus <= 0:
+                self.sleep_entity_perk_card.hide()
+                return
+            
+            # Show the perk card
+            entity_name = sleep_perks.get("entity_name", "Study Owl Athena")
+            is_exceptional = sleep_perks.get("is_exceptional", False)
+            description = sleep_perks.get("description", f"+{tier_bonus} Sleep Tier")
+            
+            perk_text = (
+                f"<b>🦉 {entity_name}</b><br>"
+                f"<span style='color:#9fa8da;'>{description}</span>"
+            )
+            self.sleep_entity_perk_label.setText(perk_text)
+            
+            # Load and display SVG
+            self._load_sleep_entity_svg(is_exceptional)
+            
+            # Update border color for exceptional
+            if is_exceptional:
+                self.sleep_entity_perk_card.setStyleSheet("""
+                    QFrame {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #3d2e4a, stop:1 #261a2f);
+                        border: 2px solid #ba68c8;
+                        border-radius: 8px;
+                        padding: 6px;
+                    }
+                """)
+            else:
+                self.sleep_entity_perk_card.setStyleSheet("""
+                    QFrame {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #2e3f4a, stop:1 #1a262f);
+                        border: 2px solid #5c6bc0;
+                        border-radius: 8px;
+                        padding: 6px;
+                    }
+                """)
+            
+            self.sleep_entity_perk_card.show()
+            
+        except Exception as e:
+            print(f"[Sleep Tab] Error updating entity perk display: {e}")
+            self.sleep_entity_perk_card.hide()
+    
+    def _load_sleep_entity_svg(self, is_exceptional: bool) -> None:
+        """Load and display the owl entity SVG icon."""
+        try:
+            from PySide6.QtSvg import QSvgRenderer
+            from entitidex_tab import _resolve_entity_svg_path
+            from entitidex.entity_pools import get_entity_by_id
+            
+            entity = get_entity_by_id("scholar_002")
+            if not entity:
+                return
+            
+            svg_path = _resolve_entity_svg_path(entity, is_exceptional)
+            if not svg_path:
+                return
+            
+            renderer = QSvgRenderer(svg_path)
+            if renderer.isValid():
+                icon_size = 40
+                pixmap = QtGui.QPixmap(icon_size, icon_size)
+                pixmap.fill(QtCore.Qt.transparent)
+                painter = QtGui.QPainter(pixmap)
+                renderer.render(painter)
+                painter.end()
+                self.sleep_entity_svg_label.setPixmap(pixmap)
+                
+        except Exception as e:
+            print(f"[Sleep Tab] Error loading entity SVG: {e}")
+
     def _go_to_sleep_now(self) -> None:
         """Handle 'Go to Sleep NOW' button - give immediate reward based on current time."""
         if not GAMIFICATION_AVAILABLE or not is_gamification_enabled(self.blocker.adhd_buster):
@@ -6276,9 +6563,9 @@ class SleepTab(QtWidgets.QWidget):
         # Get current time and calculate reward
         now = QtCore.QTime.currentTime()
         current_time = now.toString("HH:mm")
-        rarity = get_screen_off_bonus_rarity(current_time)
+        base_rarity = get_screen_off_bonus_rarity(current_time)
         
-        if not rarity:
+        if not base_rarity:
             show_info(
                 self, "Bonus Window Missed",
                 "It's outside the Nighty-Night bonus window.\n"
@@ -6290,6 +6577,16 @@ class SleepTab(QtWidgets.QWidget):
                 "• 00:30 - 01:00: Uncommon"
             )
             return
+        
+        # Apply entity perk tier bonus (Study Owl Athena)
+        from gamification import get_entity_sleep_perks, get_boosted_rarity
+        sleep_perks = get_entity_sleep_perks(self.blocker.adhd_buster)
+        tier_bonus = sleep_perks.get("sleep_tier_bonus", 0)
+        
+        # Boost rarity by tier_bonus levels (capped at Legendary)
+        rarity = base_rarity
+        for _ in range(tier_bonus):
+            rarity = get_boosted_rarity(rarity)
         
         # Check if already used today (based on sleep-now timestamp)
         today = datetime.now().strftime("%Y-%m-%d")
@@ -6312,12 +6609,17 @@ class SleepTab(QtWidgets.QWidget):
         }
         emoji = rarity_emojis.get(rarity, "🎁")
         
+        # Build bonus info for confirmation
+        bonus_info = ""
+        if tier_bonus > 0:
+            bonus_info = f"\n\n🦉 <i>{sleep_perks.get('entity_name', 'Owl')} boosts your reward by +{tier_bonus} tier!</i>"
+        
         confirm = QtWidgets.QMessageBox(self)
         confirm.setWindowTitle("🌙 Claim Nighty-Night Bonus?")
         confirm.setText(
             f"{emoji} <b>Ready for bed?</b>\n\n"
             f"Claiming your Nighty-Night bonus at {current_time}\n"
-            f"will earn you a <b>{rarity}</b> reward!\n\n"
+            f"will earn you a <b>{rarity}</b> reward!{bonus_info}\n\n"
             f"Are you ready to turn off the screen and sleep?"
         )
         confirm.setIcon(QtWidgets.QMessageBox.NoIcon)
@@ -11111,6 +11413,13 @@ class HydrationTab(QtWidgets.QWidget):
         header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
         layout.addWidget(header)
         
+        # Entity perk contributors section (if any)
+        self.entity_perks_container = QtWidgets.QWidget()
+        self.entity_perks_layout = QtWidgets.QVBoxLayout(self.entity_perks_container)
+        self.entity_perks_layout.setContentsMargins(0, 0, 0, 8)
+        layout.addWidget(self.entity_perks_container)
+        self._refresh_entity_perks_display()
+        
         # Main content split
         content_layout = QtWidgets.QHBoxLayout()
         
@@ -11523,6 +11832,54 @@ class HydrationTab(QtWidgets.QWidget):
                 self.parent().timeline_widget.update_data()
             except Exception:
                 pass
+    
+    def _refresh_entity_perks_display(self) -> None:
+        """Refresh the entity perks display showing which entities boost hydration."""
+        # Clear existing content
+        while self.entity_perks_layout.count():
+            item = self.entity_perks_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        
+        try:
+            from gamification import get_entity_hydration_perk_contributors
+            
+            perks = get_entity_hydration_perk_contributors(self.blocker.adhd_buster)
+            contributors = perks.get("contributors", [])
+            
+            if not contributors:
+                self.entity_perks_container.hide()
+                return
+            
+            self.entity_perks_container.show()
+            
+            # Create title with totals
+            total_cd = perks.get("total_cooldown_reduction", 0)
+            total_cap = perks.get("total_cap_bonus", 0)
+            parts = []
+            if total_cd > 0:
+                parts.append(f"-{total_cd}min cooldown")
+            if total_cap > 0:
+                parts.append(f"+{total_cap} cap")
+            title_text = f"✨ Entity Patrons ({', '.join(parts)})" if parts else "✨ Entity Patrons"
+            
+            title = QtWidgets.QLabel(title_text)
+            title.setStyleSheet("color: #888; font-size: 10px; font-weight: bold;")
+            self.entity_perks_layout.addWidget(title)
+            
+            # Create mini-cards using shared function
+            from merge_dialog import create_entity_perk_mini_cards
+            perk_labels = {
+                "cooldown": "⏱️",
+                "cap": "🥛",
+            }
+            cards_widget = create_entity_perk_mini_cards(contributors, perk_labels)
+            if cards_widget:
+                self.entity_perks_layout.addWidget(cards_widget)
+                
+        except Exception as e:
+            print(f"[Hydration] Error refreshing entity perks: {e}")
+            self.entity_perks_container.hide()
 
 
 class HydrationTimelineWidget(QtWidgets.QWidget):
@@ -11826,8 +12183,35 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self._sync_story_combo_selection()
             # Update mode UI state (enable/disable controls based on mode)
             self._update_mode_ui_state()
+            # Update optimize button label based on entity perks
+            self._update_optimize_button_label()
         finally:
             self._refreshing = False
+    
+    def _update_optimize_button_label(self) -> None:
+        """Update the Optimize Gear button label based on Hobo/Robo Rat perk."""
+        if not hasattr(self, '_optimize_btn') or not GAMIFICATION_AVAILABLE:
+            return
+        try:
+            from gamification import get_entity_optimize_gear_cost
+            optimize_perk = get_entity_optimize_gear_cost(self.blocker.adhd_buster)
+            cost = optimize_perk["cost"]
+            
+            if optimize_perk["has_perk"]:
+                if cost == 0:
+                    # Robo Rat: FREE
+                    self._optimize_btn.setText("⚡ Optimize Gear (FREE 🤖)")
+                    self._optimize_btn.setToolTip(f"{optimize_perk['description']}")
+                else:
+                    # Hobo Rat: 1 coin
+                    self._optimize_btn.setText(f"⚡ Optimize Gear ({cost}🪙 🐀)")
+                    self._optimize_btn.setToolTip(f"{optimize_perk['description']}")
+            else:
+                # Default: 10 coins
+                self._optimize_btn.setText(f"⚡ Optimize Gear ({cost}🪙)")
+                self._optimize_btn.setToolTip("Automatically equip the best gear for maximum power")
+        except Exception as e:
+            print(f"[GamificationTab] Error updating optimize button: {e}")
     
     def _sync_story_combo_selection(self) -> None:
         """Sync the story combo box selection with the current active story."""
@@ -11900,10 +12284,17 @@ class ADHDBusterTab(QtWidgets.QWidget):
         header.addStretch()
 
         power = calculate_character_power(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else 0
-        power_info = get_power_breakdown(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else {"base_power": 0, "set_bonus": 0, "active_sets": [], "total_power": 0}
+        power_info = get_power_breakdown(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else {"base_power": 0, "set_bonus": 0, "entity_bonus": 0, "active_sets": [], "total_power": 0}
 
-        if power_info["set_bonus"] > 0:
-            power_txt = f"⚔ Power: {power_info['total_power']} ({power_info['base_power']} + {power_info['set_bonus']} set)"
+        # Build power breakdown string showing all components
+        power_parts = [str(power_info['base_power'])]
+        if power_info.get("set_bonus", 0) > 0:
+            power_parts.append(f"+{power_info['set_bonus']} set")
+        if power_info.get("entity_bonus", 0) > 0:
+            power_parts.append(f"+{power_info['entity_bonus']} patrons")
+        
+        if len(power_parts) > 1:
+            power_txt = f"⚔ Power: {power_info['total_power']} ({' '.join(power_parts)})"
         else:
             power_txt = f"⚔ Power: {power_info['total_power']}"
         self.power_lbl = QtWidgets.QLabel(power_txt)
@@ -11941,6 +12332,15 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self.sets_section.collapsed_changed.connect(self._on_section_collapsed)
         self._refresh_sets_display(power_info)
         self.inner_layout.addWidget(self.sets_section)
+
+        # Entity Patrons - entities boosting hero power (collapsible section)
+        self.entity_patrons_section = CollapsibleSection(
+            "🐉 Entity Patrons", "entity_patrons",
+            collapsed=self._collapsed_sections.get("entity_patrons", False)
+        )
+        self.entity_patrons_section.collapsed_changed.connect(self._on_section_collapsed)
+        self._refresh_entity_patrons_display()
+        self.inner_layout.addWidget(self.entity_patrons_section)
 
         # Potential set bonuses from inventory (collapsible section)
         self.potential_sets_section = CollapsibleSection(
@@ -12438,14 +12838,17 @@ class ADHDBusterTab(QtWidgets.QWidget):
         sell_btn = QtWidgets.QPushButton("💰 Sell Items")
         sell_btn.clicked.connect(self._sell_items)
         btn_layout.addWidget(sell_btn)
-        optimize_btn = QtWidgets.QPushButton("⚡ Optimize Gear (10🪙)")
-        optimize_btn.setToolTip("Automatically equip the best gear for maximum power (costs 10 coins)")
-        optimize_btn.clicked.connect(self._optimize_gear)
-        btn_layout.addWidget(optimize_btn)
+        self._optimize_btn = QtWidgets.QPushButton("⚡ Optimize Gear (10🪙)")
+        self._optimize_btn.setToolTip("Automatically equip the best gear for maximum power")
+        self._optimize_btn.clicked.connect(self._optimize_gear)
+        btn_layout.addWidget(self._optimize_btn)
         btn_layout.addStretch()
         # Store button references for enabling/disabling during sessions
-        self._action_buttons = [refresh_btn, diary_btn, sell_btn, optimize_btn]
+        self._action_buttons = [refresh_btn, diary_btn, sell_btn, self._optimize_btn]
         layout.addLayout(btn_layout)
+        
+        # Update optimize button label based on entity perks
+        self._update_optimize_button_label()
 
     def _on_equip_change(self, slot: str, combo: QtWidgets.QComboBox) -> None:
         """Handle equipment slot change - use GameState for reactive updates."""
@@ -12535,6 +12938,146 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self.sets_section.set_title(f"🎯 Active Set Bonuses ({len(active_sets)})")
         else:
             self.sets_section.setVisible(False)
+
+    def _refresh_entity_patrons_display(self) -> None:
+        """Refresh the entity patrons display showing collected entities that boost hero power."""
+        # Clear existing content in collapsible section
+        self.entity_patrons_section.clear_content()
+        
+        if not GAMIFICATION_AVAILABLE or not get_entity_power_perks:
+            self.entity_patrons_section.setVisible(False)
+            return
+        
+        # Get entity power perks with contributor details
+        power_perks = get_entity_power_perks(self.blocker.adhd_buster)
+        contributors = power_perks.get("contributors", [])
+        total_power = power_perks.get("total_power", 0)
+        
+        if contributors:
+            self.entity_patrons_section.setVisible(True)
+            self.entity_patrons_section.set_title(f"🐉 Entity Patrons (+{total_power} Power)")
+            
+            # Try to import entity icon resolver
+            try:
+                from entitidex_tab import _resolve_entity_svg_path
+                from entitidex.entity_pools import get_entity_by_id as get_entity
+                from PySide6.QtSvg import QSvgRenderer
+                has_svg_support = True
+            except ImportError:
+                has_svg_support = False
+            
+            # Create a horizontal flow layout for entity cards
+            patrons_container = QtWidgets.QWidget()
+            patrons_layout = QtWidgets.QHBoxLayout(patrons_container)
+            patrons_layout.setContentsMargins(5, 5, 5, 5)
+            patrons_layout.setSpacing(8)
+            
+            for entity_data in contributors:
+                # Create a mini card for each entity
+                card = QtWidgets.QFrame()
+                is_exceptional = entity_data.get("is_exceptional", False)
+                
+                # Style cards - exceptional gets slightly lighter border
+                if is_exceptional:
+                    card.setStyleSheet("""
+                        QFrame {
+                            background-color: #2a2a2a;
+                            border: 1px solid #555;
+                            border-radius: 6px;
+                            padding: 4px;
+                        }
+                        QFrame:hover {
+                            border-color: #666;
+                            background-color: #333;
+                        }
+                    """)
+                else:
+                    card.setStyleSheet("""
+                        QFrame {
+                            background-color: #2a2a2a;
+                            border: 1px solid #444;
+                            border-radius: 6px;
+                            padding: 4px;
+                        }
+                        QFrame:hover {
+                            border-color: #e65100;
+                            background-color: #333;
+                        }
+                    """)
+                
+                card_layout = QtWidgets.QVBoxLayout(card)
+                card_layout.setContentsMargins(8, 6, 8, 6)
+                card_layout.setSpacing(4)
+                
+                # Try to load entity SVG icon
+                entity_id = entity_data.get("entity_id", "")
+                icon_loaded = False
+                
+                if has_svg_support and entity_id:
+                    try:
+                        entity_obj = get_entity(entity_id)
+                        if entity_obj:
+                            svg_path = _resolve_entity_svg_path(entity_obj, is_exceptional)
+                            if svg_path:
+                                renderer = QSvgRenderer(svg_path)
+                                if renderer.isValid():
+                                    # Create pixmap from SVG (40x40 size for mini cards)
+                                    icon_size = 40
+                                    pixmap = QtGui.QPixmap(icon_size, icon_size)
+                                    pixmap.fill(QtCore.Qt.transparent)
+                                    painter = QtGui.QPainter(pixmap)
+                                    renderer.render(painter)
+                                    painter.end()
+                                    
+                                    icon_lbl = QtWidgets.QLabel()
+                                    icon_lbl.setPixmap(pixmap)
+                                    icon_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                                    icon_lbl.setFixedSize(icon_size, icon_size)
+                                    card_layout.addWidget(icon_lbl, alignment=QtCore.Qt.AlignCenter)
+                                    icon_loaded = True
+                    except Exception:
+                        pass  # Fall back to text display
+                
+                # Entity name with exceptional styling
+                name = entity_data.get("name", "Unknown")
+                # Truncate long names
+                if len(name) > 18:
+                    display_name = name[:15] + "..."
+                else:
+                    display_name = name
+                
+                if is_exceptional:
+                    name_style = "color: #ffd700; font-weight: bold; font-size: 10px;"
+                    prefix = "⭐ " if not icon_loaded else ""
+                else:
+                    name_style = "color: #ccc; font-size: 10px;"
+                    prefix = ""
+                
+                name_lbl = QtWidgets.QLabel(f"{prefix}{display_name}")
+                name_lbl.setStyleSheet(name_style)
+                name_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                name_lbl.setToolTip(f"{name}\n{entity_data.get('description', '')}")
+                name_lbl.setWordWrap(True)
+                card_layout.addWidget(name_lbl)
+                
+                # Power value
+                power_val = entity_data.get("power", 0)
+                power_lbl = QtWidgets.QLabel(f"<b>+{power_val}</b> ⚔")
+                power_lbl.setStyleSheet("color: #e65100; font-size: 12px;")
+                power_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                card_layout.addWidget(power_lbl)
+                
+                patrons_layout.addWidget(card)
+            
+            patrons_layout.addStretch()
+            self.entity_patrons_section.add_widget(patrons_container)
+            
+            # Add a tip
+            tip_lbl = QtWidgets.QLabel("💡 Collect more Warrior entities in Entitidex to boost your hero's power!")
+            tip_lbl.setStyleSheet("color: #888; font-style: italic; font-size: 10px; padding-top: 4px;")
+            self.entity_patrons_section.add_widget(tip_lbl)
+        else:
+            self.entity_patrons_section.setVisible(False)
 
     def _show_power_analysis(self) -> None:
         """Show the detailed power analysis dialog."""
@@ -12687,9 +13230,15 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self.char_canvas.tier = get_diary_power_tier(power_info["total_power"])  # Recalculate tier
         self.char_canvas.update()  # Trigger repaint
         
-        # Update power label (neighbor system removed)
-        if power_info["set_bonus"] > 0:
-            power_txt = f"⚔ Power: {power_info['total_power']} ({power_info['base_power']} + {power_info['set_bonus']} set)"
+        # Update power label with all components (gear + sets + entity patrons)
+        power_parts = [str(power_info['base_power'])]
+        if power_info.get("set_bonus", 0) > 0:
+            power_parts.append(f"+{power_info['set_bonus']} set")
+        if power_info.get("entity_bonus", 0) > 0:
+            power_parts.append(f"+{power_info['entity_bonus']} patrons")
+        
+        if len(power_parts) > 1:
+            power_txt = f"⚔ Power: {power_info['total_power']} ({' '.join(power_parts)})"
         else:
             power_txt = f"⚔ Power: {power_info['total_power']}"
         self.power_lbl.setText(power_txt)
@@ -12705,6 +13254,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         # Update set bonuses display
         self._refresh_sets_display(power_info)
+        
+        # Update entity patrons display
+        if hasattr(self, 'entity_patrons_section'):
+            self._refresh_entity_patrons_display()
         
         # Update potential set bonuses from inventory
         if hasattr(self, 'potential_sets_section'):
@@ -13321,10 +13874,18 @@ class ADHDBusterTab(QtWidgets.QWidget):
             return
 
         # Check if player has enough coins for the discounted base merge cost
-        from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount
+        from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount, apply_coin_flat_reduction, get_entity_merge_perk_contributors
         current_coins = self.blocker.adhd_buster.get("coins", 0)
         temp_discount = calculate_merge_discount([inventory[idx] for idx in valid_indices])
-        temp_base_cost = apply_coin_discount(COIN_COSTS.get("merge_base", 50), temp_discount)
+        
+        # Get entity flat coin reduction
+        entity_perks = get_entity_merge_perk_contributors(self.blocker.adhd_buster)
+        entity_coin_flat = entity_perks.get("total_coin_discount", 0)
+        
+        temp_base_cost = apply_coin_flat_reduction(
+            apply_coin_discount(COIN_COSTS.get("merge_base", 50), temp_discount),
+            entity_coin_flat
+        )
         if current_coins < temp_base_cost:
             show_warning(self, "Not Enough Coins", 
                 f"Lucky Merge base cost is {temp_base_cost} coins after discount.\n\n"
@@ -13346,12 +13907,9 @@ class ADHDBusterTab(QtWidgets.QWidget):
         equipped = self.blocker.adhd_buster.get("equipped", {})
         
         # Calculate coin discount from items being merged (not equipped)
-        from gamification import calculate_merge_discount, get_entity_perk_bonuses
+        from gamification import calculate_merge_discount
         coin_discount = calculate_merge_discount(items)
         print(f"[DEBUG] Calculated coin_discount from merge items: {coin_discount}%")
-        
-        # Get entity perk bonuses for merge operations
-        entity_perks = get_entity_perk_bonuses(self.blocker.adhd_buster)
         print(f"[DEBUG] Entity perk bonuses: {entity_perks}")
         
         # Show new professional merge dialog with player coins for boost option
@@ -13367,24 +13925,27 @@ class ADHDBusterTab(QtWidgets.QWidget):
             return
         
         # Calculate total cost (base + optional boost + tier upgrade) using centralized costs
-        from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount
+        from gamification import COIN_COSTS, apply_coin_discount, apply_coin_flat_reduction
         boost_enabled = getattr(dialog, 'boost_enabled', False)
         tier_upgrade_enabled = getattr(dialog, 'tier_upgrade_enabled', False)
         
         # Calculate discount from ITEMS BEING MERGED (not equipped)
         discount_pct = calculate_merge_discount(items)
         
-        # Calculate costs with discount applied
-        base_cost = apply_coin_discount(COIN_COSTS.get("merge_base", 50), discount_pct)
-        boost_cost = apply_coin_discount(COIN_COSTS.get("merge_boost", 50), discount_pct) if boost_enabled else 0
-        tier_upgrade_cost = apply_coin_discount(COIN_COSTS.get("merge_tier_upgrade", 50), discount_pct) if tier_upgrade_enabled else 0
+        # Get entity flat coin reduction from dialog
+        entity_coin_flat = getattr(dialog, 'entity_coin_flat', 0)
+        
+        # Calculate costs: percentage discount first, then flat reduction
+        base_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_base", 50), discount_pct), entity_coin_flat)
+        boost_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_boost", 50), discount_pct), entity_coin_flat) if boost_enabled else 0
+        tier_upgrade_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_tier_upgrade", 50), discount_pct), entity_coin_flat) if tier_upgrade_enabled else 0
         # Add retry costs if any
         retry_cost = getattr(dialog, 'retry_cost_accumulated', 0)
         
         # Add claim cost if item was claimed via near-miss recovery (discounted)
         claim_cost = 0
         if result.get("claimed_with_coins"):
-            claim_cost = apply_coin_discount(COIN_COSTS.get("merge_claim", 100), discount_pct)
+            claim_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_claim", 100), discount_pct), entity_coin_flat)
             
         total_cost = base_cost + boost_cost + tier_upgrade_cost + retry_cost + claim_cost
         
@@ -14037,11 +14598,14 @@ class ADHDBusterTab(QtWidgets.QWidget):
             show_warning(self, "Optimize Gear", "Gamification module not available!")
             return
         
-        # Check if player has enough coins (use centralized costs)
-        from gamification import COIN_COSTS
-        OPTIMIZE_COST = COIN_COSTS.get("optimize_gear", 10)
+        # Check if player has enough coins (use centralized costs with entity perk)
+        from gamification import COIN_COSTS, get_entity_optimize_gear_cost
+        optimize_perk = get_entity_optimize_gear_cost(self.blocker.adhd_buster)
+        OPTIMIZE_COST = optimize_perk["cost"]
         current_coins = self.blocker.adhd_buster.get("coins", 0)
-        if current_coins < OPTIMIZE_COST:
+        
+        # Only check coins if cost > 0
+        if OPTIMIZE_COST > 0 and current_coins < OPTIMIZE_COST:
             show_warning(self, "Not Enough Coins", 
                 f"Optimize Gear costs {OPTIMIZE_COST} coins.\n\n"
                 f"You have: {current_coins} coins\n"
@@ -14074,8 +14638,15 @@ class ADHDBusterTab(QtWidgets.QWidget):
         coin_bar.addWidget(coin_label)
         layout.addLayout(coin_bar)
         
-        # Cost info
-        cost_label = QtWidgets.QLabel(f"<span style='color: #aaa;'>Cost: {OPTIMIZE_COST} coins</span>")
+        # Cost info (with entity perk if applicable)
+        if optimize_perk["has_perk"]:
+            if OPTIMIZE_COST == 0:
+                cost_text = f"<span style='color: #00ff88;'>{optimize_perk['description']}</span>"
+            else:
+                cost_text = f"<span style='color: #ffd700;'>{optimize_perk['description']}</span>"
+        else:
+            cost_text = f"<span style='color: #aaa;'>Cost: {OPTIMIZE_COST} coins</span>"
+        cost_label = QtWidgets.QLabel(cost_text)
         cost_label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(cost_label)
         
@@ -14198,6 +14769,14 @@ class ADHDBusterTab(QtWidgets.QWidget):
             strategy_desc += f" ({target_opt.replace('_', ' ').title()})"
         elif mode != "power":
             strategy_desc += " (All Bonuses)"
+        
+        # Show cost based on entity perk (Robo Rat = FREE)
+        if OPTIMIZE_COST == 0:
+            cost_str = "🤖 FREE (Robo Rat)"
+        elif OPTIMIZE_COST == 1:
+            cost_str = "🐀 1 coin (Hobo Rat)"
+        else:
+            cost_str = f"💰 {OPTIMIZE_COST} coins"
             
         msg = (
             f"Found a better gear configuration!\n"
@@ -14205,7 +14784,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
             f"Power Gain: {result['power_gain']:+d} ({result['old_power']} → {result['new_power']})\n\n"
             f"Changes:\n{changes_text}"
             f"{lucky_summary}\n\n"
-            "💰 Cost: 10 coins\n\n"
+            f"{cost_str}\n\n"
             "Do you want to equip this gear?"
         )
         
@@ -14217,17 +14796,19 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         if reply == QtWidgets.QMessageBox.Yes:
             # Spend coins for optimization (use same cost from earlier check)
-            if self._game_state:
-                if not self._game_state.spend_coins(OPTIMIZE_COST):
-                    show_warning(self, "Error", "Failed to spend coins for optimization.")
-                    return
-            else:
-                # Fallback: directly deduct coins if no game state manager
-                current_coins = self.blocker.adhd_buster.get("coins", 0)
-                if current_coins < OPTIMIZE_COST:
-                    show_warning(self, "Error", "Not enough coins for optimization.")
-                    return
-                self.blocker.adhd_buster["coins"] = current_coins - OPTIMIZE_COST
+            # Skip spending if cost is 0 (Robo Rat perk)
+            if OPTIMIZE_COST > 0:
+                if self._game_state:
+                    if not self._game_state.spend_coins(OPTIMIZE_COST):
+                        show_warning(self, "Error", "Failed to spend coins for optimization.")
+                        return
+                else:
+                    # Fallback: directly deduct coins if no game state manager
+                    current_coins = self.blocker.adhd_buster.get("coins", 0)
+                    if current_coins < OPTIMIZE_COST:
+                        show_warning(self, "Error", "Not enough coins for optimization.")
+                        return
+                    self.blocker.adhd_buster["coins"] = current_coins - OPTIMIZE_COST
             
             # Apply changes via GameStateManager for proper deep copying and signals
             if self._game_state:
@@ -14343,6 +14924,9 @@ class SellItemsDialog(QtWidgets.QDialog):
         select_btn.clicked.connect(self._sell_by_selection)
         layout.addWidget(select_btn)
 
+        # 🪑 Entity Perk Card (Office Chair sell bonus)
+        self._add_sell_perk_display(layout)
+
         # Info label
         info_label = QtWidgets.QLabel("💡 Earn 1 coin per item + all % from lucky options")
         info_label.setStyleSheet("color: #666; font-style: italic; font-size: 10px;")
@@ -14366,8 +14950,96 @@ class SellItemsDialog(QtWidgets.QDialog):
         except (ValueError, IndexError):
             return "#666666"  # Fallback for invalid color
 
-    def _calculate_coin_value(self, item: dict) -> int:
-        """Calculate coin value: 1 base + sum of all % bonuses in lucky options + entity salvage bonus."""
+    def _add_sell_perk_display(self, layout: QtWidgets.QVBoxLayout) -> None:
+        """Add entity perk display card for sell bonuses (Office Chair) - matches ADHD Buster patron style."""
+        try:
+            from gamification import get_entity_sell_perks
+            sell_perks = get_entity_sell_perks(self.blocker.adhd_buster)
+            
+            if not sell_perks.get("has_perk"):
+                return  # No perk to display
+            
+            is_exceptional = sell_perks.get("is_exceptional", False)
+            
+            # Create perk card frame - dark gradient style matching ADHD Buster patron cards
+            perk_card = QtWidgets.QFrame()
+            if is_exceptional:
+                # Purple exceptional variant
+                perk_card.setStyleSheet("""
+                    QFrame {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #3d2e4a, stop:1 #251a2f);
+                        border: 2px solid #9c27b0;
+                        border-radius: 8px;
+                        padding: 6px;
+                    }
+                """)
+                text_color = "#ce93d8"
+            else:
+                # Orange normal variant
+                perk_card.setStyleSheet("""
+                    QFrame {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #4a3d2e, stop:1 #2f251a);
+                        border: 2px solid #ff9800;
+                        border-radius: 8px;
+                        padding: 6px;
+                    }
+                """)
+                text_color = "#ffcc80"
+            
+            card_layout = QtWidgets.QHBoxLayout(perk_card)
+            card_layout.setContentsMargins(8, 4, 8, 4)
+            card_layout.setSpacing(10)
+            
+            # SVG Icon
+            svg_label = QtWidgets.QLabel()
+            svg_label.setFixedSize(40, 40)
+            svg_label.setStyleSheet("background: transparent;")
+            icon_path = sell_perks.get("icon_path", "")
+            if icon_path and os.path.exists(icon_path):
+                try:
+                    from PySide6.QtSvg import QSvgRenderer
+                    from PySide6.QtGui import QPixmap, QPainter
+                    renderer = QSvgRenderer(icon_path)
+                    if renderer.isValid():
+                        pixmap = QPixmap(40, 40)
+                        pixmap.fill(QtCore.Qt.transparent)
+                        painter = QPainter(pixmap)
+                        renderer.render(painter)
+                        painter.end()
+                        svg_label.setPixmap(pixmap)
+                except Exception:
+                    svg_label.setText("🪑")
+                    svg_label.setStyleSheet("font-size: 24px; background: transparent;")
+            else:
+                svg_label.setText("🪑")
+                svg_label.setStyleSheet("font-size: 24px; background: transparent;")
+            card_layout.addWidget(svg_label)
+            
+            # Perk description
+            desc_label = QtWidgets.QLabel(sell_perks.get("description", ""))
+            desc_label.setStyleSheet(f"""
+                font-size: 12px;
+                font-weight: bold;
+                color: {text_color};
+                background: transparent;
+            """)
+            desc_label.setWordWrap(True)
+            card_layout.addWidget(desc_label, 1)
+            
+            layout.addWidget(perk_card)
+            
+        except Exception as e:
+            print(f"[SellItemsDialog] Error adding perk display: {e}")
+
+    def _calculate_coin_value(self, item: dict, sell_perks: dict = None) -> int:
+        """Calculate coin value: 1 base + sum of all % bonuses in lucky options + entity bonuses.
+        
+        Args:
+            item: The item dict to calculate value for
+            sell_perks: Pre-fetched sell perks dict (optional, for efficiency)
+        """
         coins = 1
         # Add all % values from lucky options
         lucky_options = item.get("lucky_options", {})
@@ -14381,6 +15053,26 @@ class SellItemsDialog(QtWidgets.QDialog):
             coin_perks = get_entity_coin_perks(self.blocker.adhd_buster, source="salvage")
             salvage_bonus = coin_perks.get("salvage_bonus", 0)
             coins += salvage_bonus
+        except Exception:
+            pass  # Silently ignore if perks unavailable
+        
+        # 🪑 OFFICE CHAIR PERK: Apply rarity multiplier for Epic/Legendary items
+        try:
+            # Use pre-fetched perks if available (more efficient)
+            if sell_perks is None:
+                from gamification import get_entity_sell_perks
+                sell_perks = get_entity_sell_perks(self.blocker.adhd_buster)
+            
+            if sell_perks.get("has_perk"):
+                item_rarity = item.get("rarity", "Common")
+                if item_rarity == "Epic" and sell_perks.get("epic_bonus", 1.0) > 1.0:
+                    # Apply 25% bonus - minimum +1 coin for qualifying items
+                    bonus_coins = max(1, int(coins * (sell_perks.get("epic_bonus", 1.0) - 1.0) + 0.5))
+                    coins += bonus_coins
+                elif item_rarity == "Legendary" and sell_perks.get("legendary_bonus", 1.0) > 1.0:
+                    # Apply 25% bonus - minimum +1 coin for qualifying items
+                    bonus_coins = max(1, int(coins * (sell_perks.get("legendary_bonus", 1.0) - 1.0) + 0.5))
+                    coins += bonus_coins
         except Exception:
             pass  # Silently ignore if perks unavailable
         
@@ -14408,8 +15100,15 @@ class SellItemsDialog(QtWidgets.QDialog):
             show_info(self, "Sell Items", f"No {rarity} items to sell!")
             return
 
+        # Cache sell perks for efficiency
+        try:
+            from gamification import get_entity_sell_perks
+            sell_perks = get_entity_sell_perks(self.blocker.adhd_buster)
+        except Exception:
+            sell_perks = None
+
         # Calculate total coins
-        total_coins = sum(self._calculate_coin_value(item) for item in to_sell)
+        total_coins = sum(self._calculate_coin_value(item, sell_perks) for item in to_sell)
 
         # Confirm
         if show_question(
@@ -14470,6 +15169,13 @@ class SellItemsDialog(QtWidgets.QDialog):
         scroll_widget = QtWidgets.QWidget()
         scroll_layout = QtWidgets.QVBoxLayout(scroll_widget)
 
+        # Cache sell perks for efficiency
+        try:
+            from gamification import get_entity_sell_perks
+            sell_perks = get_entity_sell_perks(self.blocker.adhd_buster)
+        except Exception:
+            sell_perks = None
+
         checkboxes = []
         for item in sellable_items:
             cb = QtWidgets.QCheckBox()
@@ -14478,7 +15184,7 @@ class SellItemsDialog(QtWidgets.QDialog):
             power = item.get("power", 10)
             slot = item.get("slot", "Unknown")
             rarity = item.get("rarity", "Common")
-            coin_value = self._calculate_coin_value(item)
+            coin_value = self._calculate_coin_value(item, sell_perks)
             
             cb.setText(f"{name} [{rarity} {slot}] +{power} Power → {coin_value} coins")
             cb.setStyleSheet(f"color: {rarity_color}; font-weight: bold;")
@@ -14496,7 +15202,7 @@ class SellItemsDialog(QtWidgets.QDialog):
 
         def update_preview():
             selected = [cb for cb in checkboxes if cb.isChecked()]
-            total_coins = sum(self._calculate_coin_value(cb.item_data) for cb in selected)
+            total_coins = sum(self._calculate_coin_value(cb.item_data, sell_perks) for cb in selected)
             coin_preview.setText(f"Selected: {len(selected)} items → {total_coins} coins")
 
         for cb in checkboxes:
@@ -14534,7 +15240,14 @@ class SellItemsDialog(QtWidgets.QDialog):
             show_info(self, "Sell Items", "No items selected!")
             return
 
-        total_coins = sum(self._calculate_coin_value(item) for item in items)
+        # Cache sell perks for efficiency
+        try:
+            from gamification import get_entity_sell_perks
+            sell_perks = get_entity_sell_perks(self.blocker.adhd_buster)
+        except Exception:
+            sell_perks = None
+
+        total_coins = sum(self._calculate_coin_value(item, sell_perks) for item in items)
 
         if show_question(
             self, "Sell Items",

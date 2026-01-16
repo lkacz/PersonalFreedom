@@ -3,10 +3,11 @@ import sys
 import random
 import time
 import math
+import os
 import threading
 from datetime import datetime, timedelta
-from PySide6 import QtWidgets, QtCore, QtGui
-from gamification import generate_item, get_entity_qol_perks
+from PySide6 import QtWidgets, QtCore, QtGui, QtSvg
+from gamification import generate_item, get_entity_qol_perks, get_entity_eye_perks
 from game_state import get_game_state
 
 # Base daily eye rest cap (can be increased by entity perks)
@@ -161,6 +162,44 @@ class EyeProtectionTab(QtWidgets.QWidget):
         """)
         title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
+
+        # Entity Perk Card (Sam's Focus) - shows when underdog_005 is collected
+        self.entity_perk_card = QtWidgets.QFrame()
+        self.entity_perk_card.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2e4a3f, stop:1 #1a2f26);
+                border: 2px solid #66bb6a;
+                border-radius: 10px;
+                padding: 8px;
+            }
+        """)
+        entity_perk_layout = QtWidgets.QHBoxLayout(self.entity_perk_card)
+        entity_perk_layout.setContentsMargins(10, 5, 10, 5)
+        entity_perk_layout.setSpacing(12)
+        
+        # SVG icon container
+        self.entity_svg_label = QtWidgets.QLabel()
+        self.entity_svg_label.setFixedSize(48, 48)
+        self.entity_svg_label.setStyleSheet("background: transparent;")
+        entity_perk_layout.addWidget(self.entity_svg_label)
+        
+        # Perk description
+        self.entity_perk_label = QtWidgets.QLabel()
+        self.entity_perk_label.setStyleSheet("""
+            font-size: 14px;
+            font-weight: bold;
+            color: #a5d6a7;
+            background: transparent;
+        """)
+        self.entity_perk_label.setWordWrap(True)
+        entity_perk_layout.addWidget(self.entity_perk_label, 1)
+        
+        layout.addWidget(self.entity_perk_card)
+        self.entity_perk_card.hide()  # Hidden until we check perks
+        
+        # Update entity perk display
+        self._update_entity_perk_display()
 
         # Cooldown Status Label with modern card design
         cooldown_card = QtWidgets.QFrame()
@@ -368,6 +407,103 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.blocker.eye_reminder_interval = self.reminder_interval.value()
         self.blocker.save_config()
 
+    def _update_entity_perk_display(self):
+        """Update the entity perk display card if Sam/Pam is collected."""
+        try:
+            adhd_data = getattr(self.blocker, 'adhd_buster', {})
+            if not adhd_data:
+                self.entity_perk_card.hide()
+                return
+                
+            eye_perks = get_entity_eye_perks(adhd_data)
+            tier_bonus = eye_perks.get("eye_tier_bonus", 0)
+            reroll_chance = eye_perks.get("eye_reroll_chance", 0)
+            
+            # Hide if neither perk is active
+            if tier_bonus <= 0 and reroll_chance <= 0:
+                self.entity_perk_card.hide()
+                return
+            
+            # Show the perk card
+            entity_name = eye_perks.get("entity_name", "Desk Succulent Sam")
+            is_exceptional = eye_perks.get("is_exceptional", False)
+            
+            # Update label text based on which perk is active
+            if is_exceptional:
+                # Pam: 50% Reroll only
+                perk_text = (
+                    f"<b>🌵 {entity_name}</b><br>"
+                    f"<span style='color:#ffa726;'>{reroll_chance}% Reroll on Fail</span>"
+                )
+            else:
+                # Sam: +1 Eye Tier only
+                perk_text = (
+                    f"<b>🌵 {entity_name}</b><br>"
+                    f"<span style='color:#81c784;'>+{tier_bonus} Eye Tier</span>"
+                )
+            self.entity_perk_label.setText(perk_text)
+            
+            # Load and display SVG (static, not animated)
+            self._load_entity_svg(is_exceptional)
+            
+            # Update border color for exceptional
+            if is_exceptional:
+                self.entity_perk_card.setStyleSheet("""
+                    QFrame {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #3d2e4a, stop:1 #261a2f);
+                        border: 2px solid #ba68c8;
+                        border-radius: 10px;
+                        padding: 8px;
+                    }
+                """)
+            else:
+                self.entity_perk_card.setStyleSheet("""
+                    QFrame {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #2e4a3f, stop:1 #1a2f26);
+                        border: 2px solid #66bb6a;
+                        border-radius: 10px;
+                        padding: 8px;
+                    }
+                """)
+            
+            self.entity_perk_card.show()
+            
+        except Exception as e:
+            print(f"[Eye Tab] Error updating entity perk display: {e}")
+            self.entity_perk_card.hide()
+    
+    def _load_entity_svg(self, is_exceptional: bool):
+        """Load Sam's SVG icon into the label (static, not animated)."""
+        try:
+            # Determine the SVG path
+            base_path = os.path.dirname(os.path.abspath(__file__))
+            if is_exceptional:
+                svg_path = os.path.join(base_path, "icons", "entities", "exceptional", 
+                                        "underdog_005_desk_succulent_sam_exceptional.svg")
+            else:
+                svg_path = os.path.join(base_path, "icons", "entities", 
+                                        "underdog_005_desk_succulent_sam.svg")
+            
+            if os.path.exists(svg_path):
+                # Render SVG to pixmap (static rendering)
+                renderer = QtSvg.QSvgRenderer(svg_path)
+                if renderer.isValid():
+                    pixmap = QtGui.QPixmap(48, 48)
+                    pixmap.fill(QtCore.Qt.GlobalColor.transparent)
+                    painter = QtGui.QPainter(pixmap)
+                    renderer.render(painter)
+                    painter.end()
+                    self.entity_svg_label.setPixmap(pixmap)
+                else:
+                    self.entity_svg_label.setText("🌵")
+            else:
+                self.entity_svg_label.setText("🌵")
+        except Exception as e:
+            print(f"[Eye Tab] Error loading SVG: {e}")
+            self.entity_svg_label.setText("🌵")
+
     def _update_cooldown_display(self):
         """Update cooldown status display like hydration tracker."""
         stats = self.blocker.stats.get("eye_protection", {})
@@ -469,19 +605,45 @@ class EyeProtectionTab(QtWidgets.QWidget):
         tier_colors = ["#9e9e9e", "#4caf50", "#2196f3", "#9c27b0", "#ff9800"]
         success_rates = [99, 80, 60, 40, 20]
         
+        # Get entity perk tier bonus
+        tier_bonus = 0
+        try:
+            adhd_data = getattr(self.blocker, 'adhd_buster', {})
+            if adhd_data:
+                eye_perks = get_entity_eye_perks(adhd_data)
+                tier_bonus = eye_perks.get("eye_tier_bonus", 0)
+        except Exception:
+            pass
+        
+        # Apply tier bonus (capped at tier 4 = Legendary)
+        effective_tier = min(window_tier + tier_bonus, 4)
+        
         base_tier = tier_names[window_tier]
         base_color = tier_colors[window_tier]
+        effective_tier_name = tier_names[effective_tier]
+        effective_color = tier_colors[effective_tier]
         success_rate = success_rates[window_tier]
         
         # Show which window we're in
         window_start = window_tier * 4 + 1
         window_end = min((window_tier + 1) * 4, daily_cap)
         
+        # Build tier display text
+        if tier_bonus > 0:
+            tier_display = (
+                f"<span style='color:{base_color};'>{base_tier}</span> "
+                f"<span style='color:#66bb6a;'>→</span> "
+                f"<span style='color:{effective_color};'><b>{effective_tier_name}</b></span> "
+                f"<span style='color:#a5d6a7;'>(+{tier_bonus} 🌵)</span>"
+            )
+        else:
+            tier_display = f"<span style='color:{base_color};'>{window_start}-{window_end} ({base_tier}-centered)</span>"
+        
         text = (
             f"<b>Today's Routines: {count} / {daily_cap}</b><br><br>"
-            f"Next Routine Window: <span style='color:{base_color};'>{window_start}-{window_end} ({base_tier}-centered)</span><br>"
+            f"Next Routine: {tier_display}<br>"
             f"🎲 Success Rate: <span style='color:#4caf50'>{success_rate}%</span><br>"
-            f"🎰 Tier Distribution: [5%, 15%, <span style='color:{base_color};'><b>60%</b></span>, 15%, 5%]"
+            f"🎰 Tier Distribution: [5%, 15%, <span style='color:{effective_color};'><b>60%</b></span>, 15%, 5%]"
         )
         self.stats_label.setText(text)
 
@@ -635,13 +797,30 @@ class EyeProtectionTab(QtWidgets.QWidget):
         # Routines 17-20: Tier 4 (Legendary-centered)
         window_tier = min((new_count - 1) // 4, 4)
         
+        # Get entity perk tier bonus and reroll chance
+        tier_bonus = 0
+        reroll_chance = 0
+        entity_name = ""
+        try:
+            adhd_data = getattr(self.blocker, 'adhd_buster', {})
+            if adhd_data:
+                eye_perks = get_entity_eye_perks(adhd_data)
+                tier_bonus = eye_perks.get("eye_tier_bonus", 0)
+                reroll_chance = eye_perks.get("eye_reroll_chance", 0)
+                entity_name = eye_perks.get("entity_name", "")
+        except Exception:
+            pass
+        
+        # Apply tier bonus (capped at tier 4 = Legendary)
+        effective_tier = min(window_tier + tier_bonus, 4)
+        
         # Success rate decreases: 99%, 80%, 60%, 40%, 20%
         success_rates = [0.99, 0.80, 0.60, 0.40, 0.20]
         success_rate = success_rates[min(window_tier, len(success_rates) - 1)]
         
-        # Map tier to base rarity
+        # Map tier to base rarity (using effective tier with bonus!)
         tier_names = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-        base_rarity = tier_names[window_tier]
+        base_rarity = tier_names[effective_tier]
         
         # Save Stats first
         if "eye_protection" not in self.blocker.stats:
@@ -666,6 +845,30 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         # Get results after animation completes
         won_item, tier = lottery.get_results()
+        
+        # ✨ REROLL MECHANIC: If failed and have reroll chance, try again (50% probability)
+        if not won_item and reroll_chance > 0:
+            # 50% chance to get the opportunity to reroll
+            if random.randint(1, 100) <= reroll_chance:
+                # Show reroll message
+                QtWidgets.QMessageBox.information(
+                    self, 
+                    f"🌵 {entity_name}'s Second Chance!",
+                    f"{entity_name} grants you another roll!\n\n"
+                    f"\"If I can survive fluorescent lights, you can survive this!\"",
+                    QtWidgets.QMessageBox.StandardButton.Ok
+                )
+                
+                # Do the reroll with same parameters
+                lottery2 = MergeTwoStageLotteryDialog(
+                    success_roll=0.0,
+                    success_threshold=success_rate,
+                    tier_upgrade_enabled=False,
+                    base_rarity=base_rarity,
+                    parent=self
+                )
+                lottery2.exec()
+                won_item, tier = lottery2.get_results()
         
         if won_item:
             # Generate Item

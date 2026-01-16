@@ -32,9 +32,160 @@ except ImportError:
     RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     RARITY_UPGRADE = {"Common": "Uncommon", "Uncommon": "Rare", "Rare": "Epic", "Epic": "Legendary", "Legendary": "Legendary"}
 
+# Try to import SVG support for entity icons
+try:
+    from PySide6.QtSvg import QSvgRenderer
+    HAS_SVG_SUPPORT = True
+except ImportError:
+    HAS_SVG_SUPPORT = False
+
 # Backwards compatibility aliases for this module
 MergeRollAnimationDialog = LotteryRollDialog
 MergeSliderWidget = LotterySliderWidget
+
+
+def create_entity_perk_mini_cards(contributors: list, perk_labels: dict = None) -> QtWidgets.QWidget:
+    """
+    Create a horizontal layout of mini-cards showing entity perk contributors.
+    
+    Args:
+        contributors: List of dicts with entity_id, name, perk_type, value, icon, 
+                     is_exceptional, description
+        perk_labels: Optional dict mapping perk_type to display label 
+                    (e.g., {"merge_luck": "🍀", "coin_discount": "💰"})
+    
+    Returns:
+        QWidget containing the mini-cards
+    """
+    if not contributors:
+        return None
+    
+    container = QtWidgets.QWidget()
+    layout = QtWidgets.QHBoxLayout(container)
+    layout.setContentsMargins(5, 5, 5, 5)
+    layout.setSpacing(6)
+    
+    # Try to import entity icon resolver
+    try:
+        from entitidex_tab import _resolve_entity_svg_path
+        from entitidex.entity_pools import get_entity_by_id
+        has_entity_support = True and HAS_SVG_SUPPORT
+    except ImportError:
+        has_entity_support = False
+    
+    for entity_data in contributors:
+        card = QtWidgets.QFrame()
+        is_exceptional = entity_data.get("is_exceptional", False)
+        
+        # Style cards
+        if is_exceptional:
+            card.setStyleSheet("""
+                QFrame {
+                    background-color: #2a2a2a;
+                    border: 1px solid #555;
+                    border-radius: 5px;
+                    padding: 2px;
+                }
+                QFrame:hover {
+                    border-color: #666;
+                    background-color: #333;
+                }
+            """)
+        else:
+            card.setStyleSheet("""
+                QFrame {
+                    background-color: #2a2a2a;
+                    border: 1px solid #444;
+                    border-radius: 5px;
+                    padding: 2px;
+                }
+                QFrame:hover {
+                    border-color: #555;
+                    background-color: #333;
+                }
+            """)
+        
+        card_layout = QtWidgets.QVBoxLayout(card)
+        card_layout.setContentsMargins(6, 4, 6, 4)
+        card_layout.setSpacing(2)
+        
+        # Try to load entity SVG icon
+        entity_id = entity_data.get("entity_id", "")
+        icon_loaded = False
+        
+        if has_entity_support and entity_id:
+            try:
+                entity_obj = get_entity_by_id(entity_id)
+                if entity_obj:
+                    svg_path = _resolve_entity_svg_path(entity_obj, is_exceptional)
+                    if svg_path:
+                        renderer = QSvgRenderer(svg_path)
+                        if renderer.isValid():
+                            icon_size = 32
+                            pixmap = QtGui.QPixmap(icon_size, icon_size)
+                            pixmap.fill(QtCore.Qt.transparent)
+                            painter = QtGui.QPainter(pixmap)
+                            renderer.render(painter)
+                            painter.end()
+                            
+                            icon_lbl = QtWidgets.QLabel()
+                            icon_lbl.setPixmap(pixmap)
+                            icon_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                            icon_lbl.setFixedSize(icon_size, icon_size)
+                            card_layout.addWidget(icon_lbl, alignment=QtCore.Qt.AlignCenter)
+                            icon_loaded = True
+            except Exception:
+                pass
+        
+        # Entity name
+        name = entity_data.get("name", "Unknown")
+        display_name = name[:12] + "..." if len(name) > 15 else name
+        
+        if is_exceptional:
+            name_style = "color: #ffd700; font-weight: bold; font-size: 9px;"
+            prefix = "⭐ " if not icon_loaded else ""
+        else:
+            name_style = "color: #bbb; font-size: 9px;"
+            prefix = ""
+        
+        name_lbl = QtWidgets.QLabel(f"{prefix}{display_name}")
+        name_lbl.setStyleSheet(name_style)
+        name_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        name_lbl.setToolTip(f"{name}\n{entity_data.get('description', '')}")
+        name_lbl.setWordWrap(True)
+        card_layout.addWidget(name_lbl)
+        
+        # Perk value with optional perk label
+        value = entity_data.get("value", 0)
+        perk_type = entity_data.get("perk_type", "")
+        perk_icon = perk_labels.get(perk_type, "") if perk_labels else ""
+        
+        # Choose color based on perk type
+        if perk_type in ("merge_luck", "merge_success", "all_luck"):
+            value_color = "#4caf50"  # Green for luck
+            value_text = f"+{value}% {perk_icon}"
+        elif perk_type == "coin_discount":
+            value_color = "#ffb74d"  # Orange for coin
+            value_text = f"-{value} {perk_icon}"
+        elif perk_type == "cooldown":
+            value_color = "#64b5f6"  # Blue for cooldown
+            value_text = f"-{value}m {perk_icon}"
+        elif perk_type == "cap":
+            value_color = "#81c784"  # Light green for cap
+            value_text = f"+{value} {perk_icon}"
+        else:
+            value_color = "#aaa"
+            value_text = f"+{value}"
+        
+        value_lbl = QtWidgets.QLabel(value_text)
+        value_lbl.setStyleSheet(f"color: {value_color}; font-size: 10px; font-weight: bold;")
+        value_lbl.setAlignment(QtCore.Qt.AlignCenter)
+        card_layout.addWidget(value_lbl)
+        
+        layout.addWidget(card)
+    
+    layout.addStretch()
+    return container
 
 
 class RarityDistributionWidget(QtWidgets.QWidget):
@@ -530,34 +681,54 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.entity_perks = entity_perks or {}  # Entity perk bonuses
         self.all_legendary = all(i.get("rarity") == "Legendary" for i in items if i)
         
-        # Extract entity perk bonuses
-        self.entity_coin_discount = self.entity_perks.get("coin_discount", 0)
-        self.entity_merge_luck = self.entity_perks.get("merge_luck", 0)
-        self.entity_merge_success = self.entity_perks.get("merge_success", 0)
-        self.entity_all_luck = self.entity_perks.get("all_luck", 0)
+        # Extract entity perk bonuses (supports both old and new format)
+        # New format from get_entity_merge_perk_contributors:
+        #   total_merge_luck, total_coin_discount, contributors
+        # Old format from get_entity_perk_bonuses:
+        #   coin_discount, merge_luck, merge_success, all_luck
+        self.entity_coin_discount = self.entity_perks.get("total_coin_discount", 
+                                    self.entity_perks.get("coin_discount", 0))
         
-        # Combined entity merge luck (merge_luck + all_luck + merge_success)
-        self.total_entity_merge_luck = self.entity_merge_luck + self.entity_all_luck + self.entity_merge_success
+        # For merge luck, prefer total_merge_luck if available (new format)
+        # Otherwise calculate from individual values (old format)
+        if "total_merge_luck" in self.entity_perks:
+            self.entity_merge_luck = 0
+            self.entity_merge_success = 0
+            self.entity_all_luck = 0
+            self.total_entity_merge_luck = self.entity_perks.get("total_merge_luck", 0)
+        else:
+            self.entity_merge_luck = self.entity_perks.get("merge_luck", 0)
+            self.entity_merge_success = self.entity_perks.get("merge_success", 0)
+            self.entity_all_luck = self.entity_perks.get("all_luck", 0)
+            self.total_entity_merge_luck = self.entity_merge_luck + self.entity_all_luck + self.entity_merge_success
         
-        # Import discount helper from gamification
-        from gamification import apply_coin_discount
+        # Get detailed contributors for display
+        self.entity_perk_contributors = self.entity_perks.get("contributors", [])
         
-        # Calculate total discount (item discount + entity perk discount, capped at 90%)
-        total_discount = min(coin_discount + self.entity_coin_discount, 90)
-        self.total_coin_discount = total_discount  # Store for UI display
+        # Import discount helpers from gamification
+        from gamification import apply_coin_discount, apply_coin_flat_reduction
+        
+        # Entity coin_discount is a FLAT coin reduction (e.g., -2 coins from Vending Machine perk)
+        # Item coin_discount is a PERCENTAGE discount
+        self.entity_coin_flat = self.entity_coin_discount  # Renamed for clarity - this is FLAT coins
+        self.item_coin_discount_pct = coin_discount  # This is percentage
+        
+        # Store total coin discount for UI (percentage only, flat is separate)
+        self.total_coin_discount = coin_discount  # Just the percentage part
         
         # DEBUG: Check discount values
         print(f"[MERGE DEBUG] Item coin_discount: {coin_discount}%")
-        print(f"[MERGE DEBUG] Entity coin_discount: {self.entity_coin_discount}%")
-        print(f"[MERGE DEBUG] Total discount: {total_discount}%")
+        print(f"[MERGE DEBUG] Entity coin flat reduction: -{self.entity_coin_flat} coins")
         print(f"[MERGE DEBUG] Original merge_base cost: {COIN_COSTS.get('merge_base', 50)}")
         
-        # Use centralized costs from COIN_COSTS with TOTAL discount applied
-        self.merge_cost = apply_coin_discount(COIN_COSTS.get("merge_base", 50), total_discount)
-        self.boost_cost = apply_coin_discount(COIN_COSTS.get("merge_boost", 50), total_discount)
-        self.tier_upgrade_cost = apply_coin_discount(COIN_COSTS.get("merge_tier_upgrade", 50), total_discount)
-        self.retry_bump_cost = apply_coin_discount(COIN_COSTS.get("merge_retry_bump", 50), total_discount)
-        self.claim_cost = apply_coin_discount(COIN_COSTS.get("merge_claim", 100), total_discount)  # Claim item on near-miss
+        # Apply percentage discount first, then flat reduction
+        # Step 1: Apply item percentage discount
+        # Step 2: Apply entity flat coin reduction
+        self.merge_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_base", 50), coin_discount), self.entity_coin_flat)
+        self.boost_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_boost", 50), coin_discount), self.entity_coin_flat)
+        self.tier_upgrade_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_tier_upgrade", 50), coin_discount), self.entity_coin_flat)
+        self.retry_bump_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_retry_bump", 50), coin_discount), self.entity_coin_flat)
+        self.claim_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_claim", 100), coin_discount), self.entity_coin_flat)  # Claim item on near-miss
         self.boost_bonus = MERGE_BOOST_BONUS  # +25% success rate
         
         print(f"[MERGE DEBUG] Discounted merge_cost: {self.merge_cost}")
@@ -741,6 +912,12 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.success_widget = SuccessRateWidget(self.success_rate, self.breakdown)
         main_layout.addWidget(self.success_widget)
         
+        # Entity Perk Contributors section (if any entities contribute to merge bonuses)
+        if self.entity_perk_contributors:
+            entity_section = self._create_entity_perks_section()
+            if entity_section:
+                main_layout.addWidget(entity_section)
+        
         # Boost section (optional +25% for 50 coins)
         boost_section = self._create_boost_section()
         main_layout.addWidget(boost_section)
@@ -862,6 +1039,43 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         """)
         
         return warning
+    
+    def _create_entity_perks_section(self) -> Optional[QtWidgets.QWidget]:
+        """Create the entity perks mini-cards section showing which entities contribute."""
+        if not self.entity_perk_contributors:
+            return None
+        
+        section = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(section)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(4)
+        
+        # Section title
+        title = QtWidgets.QLabel("✨ Entity Patrons Boosting Merge")
+        title.setStyleSheet("color: #888; font-size: 10px; font-weight: bold;")
+        layout.addWidget(title)
+        
+        # Create mini-cards using the helper function
+        perk_labels = {
+            "merge_luck": "🍀",
+            "merge_success": "🎯",
+            "all_luck": "⭐",
+            "coin_discount": "💰",
+        }
+        cards_widget = create_entity_perk_mini_cards(self.entity_perk_contributors, perk_labels)
+        if cards_widget:
+            layout.addWidget(cards_widget)
+        
+        # Style the section
+        section.setStyleSheet("""
+            QWidget {
+                background-color: #1a1a2a;
+                border: 1px solid #333;
+                border-radius: 6px;
+            }
+        """)
+        
+        return section
     
     def _create_boost_section(self) -> QtWidgets.QWidget:
         """Create the boost option section."""
@@ -1100,7 +1314,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         frame.setStyleSheet("""
             QWidget {
                 background-color: #3a2a1a;
-                border: 2px solid #ff9800;
+                border: 1px solid #555;
                 border-radius: 8px;
             }
         """)
@@ -1643,9 +1857,12 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         can_afford_retry = remaining_coins >= self.retry_bump_cost
         can_afford_claim = remaining_coins >= self.claim_cost
 
-        # Salvage option - save one random item (discounted)
-        from gamification import apply_coin_discount
-        salvage_cost = apply_coin_discount(COIN_COSTS.get("merge_salvage", 50), self.coin_discount)
+        # Salvage option - save one random item (discounted with both percentage and flat)
+        from gamification import apply_coin_discount, apply_coin_flat_reduction
+        salvage_cost = apply_coin_flat_reduction(
+            apply_coin_discount(COIN_COSTS.get("merge_salvage", 50), self.item_coin_discount_pct),
+            self.entity_coin_flat
+        )
         can_afford_salvage = remaining_coins >= salvage_cost
         
         # Check if retry would help
@@ -1683,7 +1900,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             options_frame.setStyleSheet("""
                 QWidget {
                     background-color: #3a3a1a;
-                    border: 2px solid #ffeb3b;
+                    border: 1px solid #555;
                     border-radius: 8px;
                     padding: 12px;
                 }

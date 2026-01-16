@@ -35,7 +35,7 @@ from entitidex import (
     Entity,
     EntitidexProgress,
 )
-from entitidex.entity_perks import calculate_active_perks, ENTITY_PERKS, PerkType
+from entitidex.entity_perks import calculate_active_perks, ENTITY_PERKS, PerkType, get_perk_description
 
 
 # Rarity colors
@@ -1027,8 +1027,23 @@ class EntityCard(QtWidgets.QFrame):
         rarity_label.setStyleSheet(f"color: {rarity_label_color}; background: transparent;")
         layout.addWidget(rarity_label)
         
-        # Card size: 180 wide, 235 tall (extra height for two-line names)
-        self.setFixedSize(180, 235)
+        # Perk label - show brief perk info for collected entities
+        if self.is_collected:
+            perk = ENTITY_PERKS.get(self.entity.id)
+            if perk:
+                # Brief perk text: icon + short description
+                value = perk.exceptional_value if self.is_exceptional else perk.normal_value
+                # Format compact perk text (e.g., "+5% XP" or "+2 Power")
+                perk_brief = self._format_brief_perk(perk, value)
+                perk_label = QtWidgets.QLabel(perk_brief)
+                perk_label.setAlignment(QtCore.Qt.AlignCenter)
+                perk_label.setFont(QtGui.QFont("Segoe UI", 8))
+                perk_label.setStyleSheet("color: #7FDBFF; background: transparent;")  # Cyan for perks
+                perk_label.setToolTip(get_perk_description(self.entity.id, self.is_exceptional))
+                layout.addWidget(perk_label)
+        
+        # Card size: 180 wide, 255 tall (extra height for perk label)
+        self.setFixedSize(180, 255)
         
         # Set hover tooltip with entity info
         self._setup_tooltip()
@@ -1042,6 +1057,59 @@ class EntityCard(QtWidgets.QFrame):
             self.clicked.emit(self.entity, self.is_exceptional)
         super().mousePressEvent(event)
     
+    def _format_brief_perk(self, perk, value: float) -> str:
+        """Format a brief perk description for display on the card.
+        
+        Args:
+            perk: EntityPerk object
+            value: The perk value (normal or exceptional)
+            
+        Returns:
+            Brief string like "+5% XP" or "+2 Power"
+        """
+        ptype = perk.perk_type
+        
+        # Categorize by perk type for compact display
+        if ptype == PerkType.POWER_FLAT:
+            return f"{perk.icon} +{int(value)} Power"
+        elif ptype in (PerkType.XP_PERCENT, PerkType.XP_SESSION, PerkType.XP_LONG_SESSION, 
+                       PerkType.XP_NIGHT, PerkType.XP_MORNING, PerkType.XP_STORY):
+            return f"{perk.icon} +{int(value)}% XP"
+        elif ptype == PerkType.COIN_FLAT:
+            return f"{perk.icon} +{int(value)} Coins"
+        elif ptype == PerkType.COIN_PERCENT:
+            return f"{perk.icon} +{int(value)}% Coins"
+        elif ptype == PerkType.SALVAGE_BONUS:
+            return f"{perk.icon} +{int(value)} Salvage"
+        elif ptype in (PerkType.DROP_LUCK, PerkType.MERGE_LUCK, PerkType.ALL_LUCK, PerkType.MERGE_SUCCESS):
+            return f"{perk.icon} +{int(value)}% Luck"
+        elif ptype == PerkType.RARITY_BIAS:
+            return f"{perk.icon} +{int(value)}% Rarity"
+        elif ptype in (PerkType.ENCOUNTER_CHANCE, PerkType.CAPTURE_BONUS):
+            return f"{perk.icon} +{int(value)}% Catch"
+        elif ptype == PerkType.PITY_BONUS:
+            return f"{perk.icon} +{int(value)}% Pity"
+        elif ptype == PerkType.HYDRATION_COOLDOWN:
+            return f"{perk.icon} -{int(value)}min Water"
+        elif ptype == PerkType.HYDRATION_CAP:
+            return f"{perk.icon} +{int(value)} Glass Cap"
+        elif ptype == PerkType.EYE_REST_CAP:
+            return f"{perk.icon} +{int(value)} Eye Rest"
+        elif ptype == PerkType.EYE_TIER_BONUS:
+            if int(value) > 0:
+                return f"{perk.icon} +{int(value)} Eye Tier"
+            else:
+                return f"{perk.icon} 50% Eye Reroll"
+        elif ptype == PerkType.INVENTORY_SLOTS:
+            return f"{perk.icon} +{int(value)} Slots"
+        elif ptype == PerkType.PERFECT_SESSION:
+            return f"{perk.icon} +{int(value)}% Perfect"
+        elif ptype == PerkType.STREAK_SAVE:
+            return f"{perk.icon} +{int(value)}% Streak"
+        else:
+            # Fallback: use description template
+            return f"{perk.icon} +{int(value)}"
+    
     def _setup_tooltip(self):
         """Setup rich hover tooltip with entity info."""
         if self.is_collected:
@@ -1050,7 +1118,11 @@ class EntityCard(QtWidgets.QFrame):
             name = self.entity.exceptional_name if self.is_exceptional and self.entity.exceptional_name else self.entity.name
             rarity = self.entity.rarity.upper()
             rarity_color = RARITY_COLORS.get(self.entity.rarity.lower(), "#9E9E9E")
-            lore = self.entity.lore
+            # Use exceptional lore if available for exceptional entities
+            if self.is_exceptional and self.entity.exceptional_lore:
+                lore = self.entity.exceptional_lore
+            else:
+                lore = self.entity.lore
             # Wrap lore text for readability
             lore_lines = []
             words = lore.split()
@@ -1064,12 +1136,19 @@ class EntityCard(QtWidgets.QFrame):
                 lore_lines.append(' '.join(current_line))
             lore_wrapped = '<br>'.join(lore_lines)
             
+            # Get perk info for tooltip
+            perk = ENTITY_PERKS.get(self.entity.id)
+            perk_html = ""
+            if perk:
+                perk_desc = get_perk_description(self.entity.id, self.is_exceptional)
+                perk_html = f'<br><hr style="border-color: #444;"><span style="color: #7FDBFF;">✨ PERK: {perk_desc}</span>'
+            
             tooltip = f'''
 <div style="padding: 8px; max-width: 300px;">
 <b style="color: {rarity_color}; font-size: 14px;">{variant} {name}</b><br>
 <span style="color: {rarity_color};">⚔️ Power: {self.entity.power} | {rarity}</span>
 <hr style="border-color: #444;">
-<span style="color: #CCC;">{lore_wrapped}</span>
+<span style="color: #CCC;">{lore_wrapped}</span>{perk_html}
 </div>
 '''.strip()
         elif self.is_encountered:
@@ -1243,14 +1322,9 @@ class EntitidexTab(QtWidgets.QWidget):
             if hasattr(self.blocker, 'adhd_buster'):
                 entitidex_data = self.blocker.adhd_buster.get("entitidex", {})
                 if entitidex_data:
-                    # Support both old "collected" and new "collected_entity_ids" keys
-                    collected = set(entitidex_data.get("collected_entity_ids", 
-                                    entitidex_data.get("collected", [])))
-                    encounters = entitidex_data.get("encounters", {})
-                    exceptional = entitidex_data.get("exceptional_entities", {})
-                    self.progress.collected_entity_ids = collected
-                    self.progress.encounters = encounters
-                    self.progress.exceptional_entities = exceptional
+                    # Use from_dict() to load ALL fields including failed_catches, 
+                    # captures, stats, etc. for pity system and statistics
+                    self.progress = EntitidexProgress.from_dict(entitidex_data)
         except Exception:
             _logger.exception("Error loading entitidex progress")
     
@@ -1258,11 +1332,8 @@ class EntitidexTab(QtWidgets.QWidget):
         """Save entitidex progress to blocker config."""
         try:
             if hasattr(self.blocker, 'adhd_buster'):
-                self.blocker.adhd_buster["entitidex"] = {
-                    "collected_entity_ids": list(self.progress.collected_entity_ids),
-                    "encounters": self.progress.encounters,
-                    "exceptional_entities": self.progress.exceptional_entities,
-                }
+                # Use to_dict() to save ALL fields including failed_catches, captures, stats
+                self.blocker.adhd_buster["entitidex"] = self.progress.to_dict()
                 self.blocker.save_config()
         except Exception:
             _logger.exception("Error saving entitidex progress")
