@@ -506,10 +506,11 @@ class EntityCard(QtWidgets.QFrame):
             # Vary font size for twinkling effect (10-16px)
             size = int(10 + 6 * (0.5 + 0.5 * math.sin(phase * 1.5)))
             
-            # Pulse opacity (0.4 - 1.0)
-            opacity = 0.4 + 0.6 * (0.5 + 0.5 * math.sin(phase))
+            # Pulse opacity - very subtle (0.1 - 0.25) for background touch
+            opacity = 0.1 + 0.15 * (0.5 + 0.5 * math.sin(phase))
+            alpha = int(255 * opacity)
             sparkle.setStyleSheet(f"""
-                color: rgb({r},{g},{b}); 
+                color: rgba({r},{g},{b},{alpha}); 
                 background: transparent; 
                 font-size: {size}px;
             """)
@@ -538,10 +539,11 @@ class EntityCard(QtWidgets.QFrame):
             
             particle.move(int(x), int(y))
             
-            # Pulse opacity based on position (brighter at top)
-            opacity_factor = 0.5 + 0.5 * math.sin(angle + math.pi / 2)
+            # Pulse opacity based on position - very subtle (15-35% opacity)
+            opacity_factor = 0.15 + 0.2 * (0.5 + 0.5 * math.sin(angle + math.pi / 2))
+            alpha = int(255 * opacity_factor)
             particle.setStyleSheet(f"""
-                color: rgba({r},{g},{b},{int(150 + 105 * opacity_factor)}); 
+                color: rgba({r},{g},{b},{alpha}); 
                 background: transparent; 
                 font-size: 10px;
             """)
@@ -561,7 +563,8 @@ class EntityCard(QtWidgets.QFrame):
         
         for i, (x, y) in enumerate(positions):
             sparkle = QtWidgets.QLabel(sparkle_chars[i], self)
-            sparkle.setStyleSheet(f"color: rgb({r},{g},{b}); background: transparent; font-size: 12px;")
+            # Start with low opacity (15%) for subtle effect
+            sparkle.setStyleSheet(f"color: rgba({r},{g},{b},38); background: transparent; font-size: 12px;")
             sparkle.setFixedSize(20, 20)  # Slightly larger for size animation
             sparkle.move(x, y)
             sparkle.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
@@ -581,7 +584,8 @@ class EntityCard(QtWidgets.QFrame):
         
         for i, char in enumerate(particle_chars):
             particle = QtWidgets.QLabel(char, self)
-            particle.setStyleSheet(f"color: rgb({r},{g},{b}); background: transparent; font-size: 10px;")
+            # Start with low opacity (20%) for subtle effect
+            particle.setStyleSheet(f"color: rgba({r},{g},{b},51); background: transparent; font-size: 10px;")
             particle.setFixedSize(12, 12)
             particle.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
             particle.show()
@@ -1224,7 +1228,7 @@ class EntitidexTab(QtWidgets.QWidget):
             self.detail_name.setText(f"{variant_text}{display_name}")
             self.detail_name.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {rarity_color};")
             if is_exceptional:
-                self.detail_lore.setText(f"⭐ EXCEPTIONAL VARIANT ⭐\n\n{entity.lore}\n\n✨ This rare variant has unique coloring and special animations!")
+                self.detail_lore.setText(f"⭐ EXCEPTIONAL VARIANT ⭐\n\n{entity.lore}\n\n✨ A rare and special version of this companion!")
             else:
                 self.detail_lore.setText(entity.lore)
             self.detail_panel.setVisible(True)
@@ -1234,9 +1238,9 @@ class EntitidexTab(QtWidgets.QWidget):
                 self.detail_name.setText("⭐ ??? Exceptional Unknown")
                 self.detail_name.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFD700;")
                 if is_normal_collected:
-                    self.detail_lore.setText(f"You have the normal {entity.name}, but not the exceptional variant!\n\n✨ Exceptional entities are rare special versions with unique colors and animations.\n\nKeep completing focus sessions for a chance to find this exceptional variant!")
+                    self.detail_lore.setText(f"You have the normal {entity.name}, but not the exceptional variant!\n\n✨ Exceptional entities are rare special versions.\n\nKeep completing focus sessions for a chance to find this exceptional variant!")
                 else:
-                    self.detail_lore.setText("This exceptional entity awaits discovery.\n\n✨ Exceptional entities are rare special versions with unique colors.\n\nComplete focus sessions to encounter entities - some may be exceptional!")
+                    self.detail_lore.setText("This exceptional entity awaits discovery.\n\n✨ Exceptional entities are rare special versions.\n\nComplete focus sessions to encounter entities - some may be exceptional!")
             else:
                 self.detail_name.setText("??? Unknown Entity")
                 self.detail_name.setStyleSheet("font-size: 18px; font-weight: bold; color: #666666;")
