@@ -258,11 +258,21 @@ class GameStateManager(QtCore.QObject):
     
     # === State Modification Methods ===
     
-    # Maximum inventory size to prevent unbounded growth
+    # Base maximum inventory size to prevent unbounded growth
     MAX_INVENTORY_SIZE = 500
     
     # Valid equipment slots
     VALID_SLOTS = {"head", "chest", "legs", "feet", "main_hand", "off_hand", "accessory"}
+    
+    def get_max_inventory_size(self) -> int:
+        """Get maximum inventory size including entity perk bonuses."""
+        try:
+            from gamification import get_entity_qol_perks
+            qol_perks = get_entity_qol_perks(self.adhd_buster)
+            bonus_slots = qol_perks.get("inventory_slots", 0)
+            return self.MAX_INVENTORY_SIZE + bonus_slots
+        except Exception:
+            return self.MAX_INVENTORY_SIZE
     
     def _match_item(self, item: dict, item_id: str) -> bool:
         """Match an item by ID or fallback identifiers.
@@ -316,9 +326,10 @@ class GameStateManager(QtCore.QObject):
         if track_collected:
             self.adhd_buster["total_collected"] = self.adhd_buster.get("total_collected", 0) + 1
         
-        # Cap inventory size to prevent unbounded growth
-        if len(inventory) > self.MAX_INVENTORY_SIZE:
-            self.adhd_buster["inventory"] = inventory[-self.MAX_INVENTORY_SIZE:]
+        # Cap inventory size (with entity perk bonus) to prevent unbounded growth
+        max_size = self.get_max_inventory_size()
+        if len(inventory) > max_size:
+            self.adhd_buster["inventory"] = inventory[-max_size:]
         
         self._save_config()
         

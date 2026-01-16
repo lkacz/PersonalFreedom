@@ -516,7 +516,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
     """
     
     def __init__(self, items: list, luck: int, equipped: dict, 
-                 parent: Optional[QtWidgets.QWidget] = None, player_coins: int = 0, coin_discount: int = 0):
+                 parent: Optional[QtWidgets.QWidget] = None, player_coins: int = 0, 
+                 coin_discount: int = 0, entity_perks: Optional[dict] = None):
         super().__init__(parent)
         self.items = items
         self.luck = luck
@@ -525,22 +526,38 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.player_coins = player_coins
         self.boost_enabled = False
         self.tier_upgrade_enabled = False  # +50 coins to upgrade result tier
-        self.coin_discount = coin_discount  # Discount percentage from equipped gear (0-90)
+        self.coin_discount = coin_discount  # Discount percentage from merged items (0-90)
+        self.entity_perks = entity_perks or {}  # Entity perk bonuses
         self.all_legendary = all(i.get("rarity") == "Legendary" for i in items if i)
+        
+        # Extract entity perk bonuses
+        self.entity_coin_discount = self.entity_perks.get("coin_discount", 0)
+        self.entity_merge_luck = self.entity_perks.get("merge_luck", 0)
+        self.entity_merge_success = self.entity_perks.get("merge_success", 0)
+        self.entity_all_luck = self.entity_perks.get("all_luck", 0)
+        
+        # Combined entity merge luck (merge_luck + all_luck + merge_success)
+        self.total_entity_merge_luck = self.entity_merge_luck + self.entity_all_luck + self.entity_merge_success
         
         # Import discount helper from gamification
         from gamification import apply_coin_discount
         
+        # Calculate total discount (item discount + entity perk discount, capped at 90%)
+        total_discount = min(coin_discount + self.entity_coin_discount, 90)
+        self.total_coin_discount = total_discount  # Store for UI display
+        
         # DEBUG: Check discount values
-        print(f"[MERGE DEBUG] coin_discount passed: {coin_discount}%")
+        print(f"[MERGE DEBUG] Item coin_discount: {coin_discount}%")
+        print(f"[MERGE DEBUG] Entity coin_discount: {self.entity_coin_discount}%")
+        print(f"[MERGE DEBUG] Total discount: {total_discount}%")
         print(f"[MERGE DEBUG] Original merge_base cost: {COIN_COSTS.get('merge_base', 50)}")
         
-        # Use centralized costs from COIN_COSTS with discount applied
-        self.merge_cost = apply_coin_discount(COIN_COSTS.get("merge_base", 50), coin_discount)
-        self.boost_cost = apply_coin_discount(COIN_COSTS.get("merge_boost", 50), coin_discount)
-        self.tier_upgrade_cost = apply_coin_discount(COIN_COSTS.get("merge_tier_upgrade", 50), coin_discount)
-        self.retry_bump_cost = apply_coin_discount(COIN_COSTS.get("merge_retry_bump", 50), coin_discount)
-        self.claim_cost = apply_coin_discount(COIN_COSTS.get("merge_claim", 100), coin_discount)  # Claim item on near-miss
+        # Use centralized costs from COIN_COSTS with TOTAL discount applied
+        self.merge_cost = apply_coin_discount(COIN_COSTS.get("merge_base", 50), total_discount)
+        self.boost_cost = apply_coin_discount(COIN_COSTS.get("merge_boost", 50), total_discount)
+        self.tier_upgrade_cost = apply_coin_discount(COIN_COSTS.get("merge_tier_upgrade", 50), total_discount)
+        self.retry_bump_cost = apply_coin_discount(COIN_COSTS.get("merge_retry_bump", 50), total_discount)
+        self.claim_cost = apply_coin_discount(COIN_COSTS.get("merge_claim", 100), total_discount)  # Claim item on near-miss
         self.boost_bonus = MERGE_BOOST_BONUS  # +25% success rate
         
         print(f"[MERGE DEBUG] Discounted merge_cost: {self.merge_cost}")
@@ -558,9 +575,13 @@ class LuckyMergeDialog(QtWidgets.QDialog):
                 if isinstance(lucky_opts, dict):
                     self.items_merge_luck += lucky_opts.get("merge_luck", 0)
         
+        # Combine items merge luck with entity perk merge luck
+        self.total_merge_luck = self.items_merge_luck + self.total_entity_merge_luck
+        
         if GAMIFICATION_AVAILABLE:
+            # Pass combined merge luck (items + entity perks)
             self.base_success_rate = calculate_merge_success_rate(
-                items, items_merge_luck=self.items_merge_luck
+                items, items_merge_luck=self.total_merge_luck
             )
             self.success_rate = self.base_success_rate
             self.result_rarity = get_merge_result_rarity(items)
@@ -591,6 +612,9 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         }
         if self.items_merge_luck > 0:
             self.breakdown["Items Merge Luck"] = self.items_merge_luck
+        # Add entity perk luck to breakdown (with sparkle icon for visibility)
+        if self.total_entity_merge_luck > 0:
+            self.breakdown["✨ Entity Perks"] = self.total_entity_merge_luck
         
         self.setWindowTitle("⚡ Lucky Merge")
         self.setMinimumSize(700, 500)
@@ -675,10 +699,21 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         header.setAlignment(QtCore.Qt.AlignCenter)
         main_layout.addWidget(header)
         
-        # Subtitle with cost info
-        if self.coin_discount > 0:
-            original_cost = COIN_COSTS.get("merge_base", 50)
-            cost_text = f"Combining {len(self.items)} items • Cost: <span style='text-decoration: line-through; color: #666;'>{original_cost}</span> {self.merge_cost} coins 🪙 <span style='color: #8b5cf6;'>(✨ {self.coin_discount}% off = -{original_cost - self.merge_cost} saved!)</span>"
+        # Subtitle with cost info - show combined discount breakdown
+        original_cost = COIN_COSTS.get("merge_base", 50)
+        if self.total_coin_discount > 0:
+            # Build discount breakdown text
+            discount_parts = []
+            if self.coin_discount > 0:
+                discount_parts.append(f"Items: {self.coin_discount}%")
+            if self.entity_coin_discount > 0:
+                discount_parts.append(f"✨ Entities: {self.entity_coin_discount}%")
+            discount_breakdown = " + ".join(discount_parts)
+            
+            cost_text = (f"Combining {len(self.items)} items • Cost: "
+                        f"<span style='text-decoration: line-through; color: #666;'>{original_cost}</span> "
+                        f"{self.merge_cost} coins 🪙 <span style='color: #8b5cf6;'>"
+                        f"({discount_breakdown} = -{original_cost - self.merge_cost} saved!)</span>")
         else:
             cost_text = f"Combining {len(self.items)} items • Cost: {self.merge_cost} coins 🪙"
         subtitle = QtWidgets.QLabel(cost_text)

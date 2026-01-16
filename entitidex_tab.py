@@ -35,6 +35,7 @@ from entitidex import (
     Entity,
     EntitidexProgress,
 )
+from entitidex.entity_perks import calculate_active_perks, ENTITY_PERKS, PerkType
 
 
 # Rarity colors
@@ -1285,6 +1286,27 @@ class EntitidexTab(QtWidgets.QWidget):
         """)
         header_layout.addWidget(title)
         
+        # Add Active Perks "Badge"
+        self.perks_button = QtWidgets.QPushButton("✨ Active Perks")
+        self.perks_button.setCursor(QtCore.Qt.PointingHandCursor)
+        self.perks_button.setStyleSheet("""
+            QPushButton {
+                background-color: #4B0082;
+                color: #E6E6FA;
+                border: 1px solid #9370DB;
+                padding: 4px 10px;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            QPushButton:hover {
+                background-color: #6A5ACD;
+                border-color: #ffffff;
+            }
+        """)
+        self.perks_button.clicked.connect(self._show_perks_summary)
+        header_layout.addWidget(self.perks_button)
+        
         header_layout.addStretch()
         
         # Overall progress label
@@ -1597,6 +1619,52 @@ class EntitidexTab(QtWidgets.QWidget):
             f"Total: {total_collected}/{total_slots} ({total_percent}%) | "
             f"Normal: {total_normal} | ⭐ Exceptional: {total_exceptional}"
         )
+
+    def _show_perks_summary(self):
+        """Show a dialog listing all active entity perks."""
+        active_perks = calculate_active_perks(self.progress)
+        
+        if not active_perks:
+            QtWidgets.QMessageBox.information(self, "No Active Perks", 
+                "Collect entities to unlock passive perks!\n\n"
+                "Each collected entity grants a bonus to power, coins, XP, or luck.")
+            return
+
+        # Format details
+        lines = ["<h3>✨ Active Entity Bonuses</h3>"]
+        
+        # Sort by value type roughly
+        sorted_keys = sorted(active_perks.keys(), key=lambda k: k.value)
+        
+        for perk_type in sorted_keys:
+            val = active_perks[perk_type]
+            if val == 0: continue
+            
+            # Icon and label mapping
+            icon = "🔹"
+            name = perk_type.name.replace("_", " ").title()
+            suffix = ""
+            
+            if "POWER" in perk_type.name: 
+                icon = "💪"; suffix = ""; name = "Hero Power"
+            elif "XP" in perk_type.name: 
+                icon = "📜"; suffix = "%"
+            elif "COIN" in perk_type.name: 
+                icon = "🪙"; suffix = "" if "FLAT" in perk_type.name else "%"
+            elif "LUCK" in perk_type.name: 
+                icon = "🍀"; suffix = "%"
+            elif "HYDRATION" in perk_type.name:
+                icon = "💧"; suffix = "m" if "COOLDOWN" in perk_type.name else ""
+                
+            lines.append(f"{icon} <b>{name}:</b> +{val}{suffix}")
+
+        lines.append("<br><span style='color:gray'><i>Hover over individual entity cards for details!</i></span>")
+        
+        msg = QtWidgets.QMessageBox(self)
+        msg.setWindowTitle("Active Perks")
+        msg.setTextFormat(QtCore.Qt.RichText)
+        msg.setText("<br>".join(lines))
+        msg.exec()
     
     def _on_story_changed(self, story: str):
         """Legacy method - kept for compatibility."""

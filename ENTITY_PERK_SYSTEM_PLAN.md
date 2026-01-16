@@ -362,59 +362,53 @@ Session Complete!
 
 ## Implementation Phases
 
-### Phase 1: Core System (Day 1)
-- [ ] Create `entitidex/entity_perks.py` with perk definitions
-- [ ] Implement `calculate_active_perks()` function
-- [ ] Add perk type enum and data structures
+### Phase 1: Core System ✅ COMPLETE
+- [x] Create `entitidex/entity_perks.py` with perk definitions (45 entities, 21 PerkTypes)
+- [x] Implement `calculate_active_perks()` function
+- [x] Add perk type enum and data structures
+- [x] Integrate power perks into `calculate_character_power()`
 
-### Phase 2: Power Integration (Day 1)
-- [ ] Modify `calculate_character_power()` to include perks
-- [ ] Add perk display to Hero stats panel
-- [ ] Show power breakdown with perk contributions
+### Phase 2: Coin Integration ✅ COMPLETE
+- [x] Add `get_entity_perk_bonuses()` helper in gamification.py
+- [x] Add perk discounts to merge dialog (combined with item discounts, capped at 90%)
+- [x] Update merge dialog with entity perk luck bonuses
 
-### Phase 3: Coin Integration (Day 2)
-- [ ] Add perk modifiers to coin rewards
-- [ ] Add perk discounts to coin costs
-- [ ] Update merge dialog with perk costs
+### Phase 3: Luck & Encounter Integration ✅ COMPLETE
+- [x] Integrate encounter chance perks in `should_trigger_encounter()`
+- [x] Integrate capture probability perks in `attempt_catch()`
+- [x] Add active_perks parameter throughout encounter system
 
-### Phase 4: Luck Integration (Day 2)
-- [ ] Integrate merge luck perks
-- [ ] Integrate drop luck perks
-- [ ] Add luck display in relevant UIs
+### Phase 4: Hydration System ✅ COMPLETE
+- [x] Add `get_hydration_cooldown_minutes()` with perk reduction (min 30 min)
+- [x] Add `get_hydration_daily_cap()` with perk bonus
+- [x] Modify `can_log_water()` to use perk-modified values
+- [x] Display perk-enhanced cap with ✨ indicator in UI
 
-### Phase 5: Hydration & Eye Rest (Day 3)
-- [ ] Modify hydration cooldown calculation
-- [ ] Modify daily hydration cap
-- [ ] Modify eye rest claim limits
+### Phase 5: Visual Feedback System ✅ COMPLETE
+- [x] Create `PerkToast` widget with fade in/out animations
+- [x] Add `show_perk_toast()` helper function
+- [x] Show toast notifications when merge perks contribute
+- [x] Show toast notifications when hydration perks apply
+- [x] Show toast notifications when encounter/capture perks trigger
+- [x] Add perk bonus tracking to `EncounterResult` dataclass
 
-### Phase 6: Entity System Integration (Day 3)
-- [ ] Add encounter chance perks
-- [ ] Add capture probability perks
-- [ ] Enhance pity system with perks
-
-### Phase 7: UI Feedback (Day 4)
+### Phase 6: Entitidex UI (Future Enhancement)
+- [x] Add "✨ Active Perks" button to Entitidex tab
+- [ ] Create detailed "Active Perks" summary panel
 - [ ] Add perk tooltips to entity cards
-- [ ] Create "Active Perks" summary panel
-- [ ] Add perk activation notifications
-- [ ] Update session complete dialog
-
-### Phase 8: Testing & Polish (Day 4)
-- [ ] Write unit tests for perk calculations
-- [ ] Test perk stacking behavior
-- [ ] Verify exceptional bonuses work
-- [ ] Balance pass on values
+- [ ] Update session complete dialog with perk breakdown
 
 ---
 
-## Testing Checklist
+## Testing Status ✅
 
-- [ ] Perks activate only for collected entities
-- [ ] Exceptional variants give enhanced perks
-- [ ] Perks stack correctly from multiple entities
-- [ ] UI shows accurate perk totals
-- [ ] Notifications appear when perks activate
-- [ ] Perks persist across app restarts
-- [ ] Perks update immediately when entities collected
+- [x] 7 unit tests passing in `test_entity_perks_integration.py`
+- [x] Power calculation with perks
+- [x] Merge bonuses (coin discount + luck)
+- [x] Hydration cooldown reduction
+- [x] Hydration cap increase
+- [x] Empty data handling
+- [x] All files compile without errors
 
 ---
 

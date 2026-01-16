@@ -83,6 +83,128 @@ def show_question(parent, title: str, text: str,
 
 
 # ============================================================================
+# Entity Perk Toast Notification - Non-blocking feedback when perks activate
+# ============================================================================
+
+class PerkToast(QtWidgets.QWidget):
+    """
+    A non-blocking toast notification for entity perk activation.
+    
+    Shows a brief message that fades in and out automatically.
+    Used to provide visual feedback when entity perks affect gameplay.
+    """
+    
+    _active_toasts = []  # Track active toasts for stacking
+    
+    def __init__(self, message: str, icon: str = "✨", duration_ms: int = 2500,
+                 parent: Optional[QtWidgets.QWidget] = None):
+        super().__init__(parent)
+        self.setWindowFlags(
+            QtCore.Qt.WindowType.FramelessWindowHint |
+            QtCore.Qt.WindowType.Tool |
+            QtCore.Qt.WindowType.WindowStaysOnTopHint
+        )
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        
+        # Create layout
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setContentsMargins(12, 8, 12, 8)
+        
+        # Icon
+        icon_label = QtWidgets.QLabel(icon)
+        icon_label.setStyleSheet("font-size: 18px;")
+        layout.addWidget(icon_label)
+        
+        # Message
+        msg_label = QtWidgets.QLabel(message)
+        msg_label.setStyleSheet("""
+            color: #fff;
+            font-size: 13px;
+            font-weight: bold;
+        """)
+        layout.addWidget(msg_label)
+        
+        # Container styling
+        self.setStyleSheet("""
+            PerkToast {
+                background-color: rgba(139, 92, 246, 0.95);
+                border-radius: 8px;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+        """)
+        
+        # Animation setup
+        self.opacity = QtWidgets.QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(self.opacity)
+        
+        self.fade_in = QtCore.QPropertyAnimation(self.opacity, b"opacity")
+        self.fade_in.setDuration(200)
+        self.fade_in.setStartValue(0.0)
+        self.fade_in.setEndValue(1.0)
+        
+        self.fade_out = QtCore.QPropertyAnimation(self.opacity, b"opacity")
+        self.fade_out.setDuration(400)
+        self.fade_out.setStartValue(1.0)
+        self.fade_out.setEndValue(0.0)
+        self.fade_out.finished.connect(self._on_finished)
+        
+        # Timer for auto-dismiss
+        self.dismiss_timer = QtCore.QTimer()
+        self.dismiss_timer.setSingleShot(True)
+        self.dismiss_timer.timeout.connect(self._start_fade_out)
+        self.dismiss_timer.setInterval(duration_ms)
+        
+    def show_at_bottom_right(self, parent: Optional[QtWidgets.QWidget] = None):
+        """Show the toast at bottom-right of parent or screen."""
+        self.adjustSize()
+        
+        # Calculate position
+        if parent:
+            parent_rect = parent.geometry()
+            screen_pos = parent.mapToGlobal(QtCore.QPoint(0, 0))
+            x = screen_pos.x() + parent_rect.width() - self.width() - 20
+            y = screen_pos.y() + parent_rect.height() - self.height() - 20
+        else:
+            screen = QtWidgets.QApplication.primaryScreen().availableGeometry()
+            x = screen.right() - self.width() - 20
+            y = screen.bottom() - self.height() - 20
+        
+        # Stack below other active toasts
+        offset = len(PerkToast._active_toasts) * 50
+        y -= offset
+        
+        self.move(x, y)
+        PerkToast._active_toasts.append(self)
+        
+        self.show()
+        self.fade_in.start()
+        self.dismiss_timer.start()
+        
+    def _start_fade_out(self):
+        self.fade_out.start()
+        
+    def _on_finished(self):
+        if self in PerkToast._active_toasts:
+            PerkToast._active_toasts.remove(self)
+        self.close()
+        self.deleteLater()
+
+
+def show_perk_toast(message: str, icon: str = "✨", parent: QtWidgets.QWidget = None):
+    """
+    Show a non-blocking toast notification for perk activation.
+    
+    Args:
+        message: The perk effect message (e.g., "Saved 1 coin!")
+        icon: Emoji icon to display
+        parent: Parent widget for positioning
+    """
+    toast = PerkToast(message, icon, parent=parent)
+    toast.show_at_bottom_right(parent)
+
+
+# ============================================================================
 # No-Scroll ComboBox - Prevents accidental changes via scroll wheel
 # ============================================================================
 
@@ -1530,6 +1652,24 @@ class TimerTab(QtWidgets.QWidget):
         if dialog.result and GAMIFICATION_AVAILABLE:
             self._give_session_rewards(session_minutes)
 
+    def _is_perfect_session(self) -> bool:
+        """
+        Check if the current session was perfect (no distraction attempts).
+        
+        A perfect session means the user didn't try to access any blocked sites.
+        Returns True if bypass logger shows 0 attempts, or if bypass logger is unavailable.
+        """
+        if not BYPASS_LOGGER_AVAILABLE:
+            return False  # Conservative: if we can't track, assume not perfect
+        
+        try:
+            from bypass_logger import get_bypass_logger
+            bypass_logger = get_bypass_logger()
+            stats = bypass_logger.get_statistics()
+            return stats.get("current_session", 0) == 0
+        except Exception:
+            return False  # Error getting stats, assume not perfect
+
     def _give_session_rewards(self, session_minutes: int) -> None:
         """Give item drop, XP, and diary entry rewards with lottery animation."""
         if not GAMIFICATION_AVAILABLE:
@@ -1571,15 +1711,58 @@ class TimerTab(QtWidgets.QWidget):
         
         coins_earned += streak_bonus
         
-        # Award XP for the focus session (with lucky XP bonus from gear)
+        # ✨ ENTITY PERK BONUS: Apply coin perks from collected entities
+        entity_coin_bonus = 0
+        coin_perk_breakdown = []
+        try:
+            from gamification import get_entity_coin_perks
+            coin_perks = get_entity_coin_perks(self.blocker.adhd_buster, source="session")
+            
+            # Add flat coin bonus
+            if coin_perks["coin_flat"] > 0:
+                entity_coin_bonus += coin_perks["coin_flat"]
+                coin_perk_breakdown.append(f"+{coin_perks['coin_flat']} coins")
+            
+            # Apply percent bonus
+            if coin_perks["coin_percent"] > 0:
+                pct_bonus = int(coins_earned * (coin_perks["coin_percent"] / 100.0))
+                entity_coin_bonus += pct_bonus
+                coin_perk_breakdown.append(f"+{coin_perks['coin_percent']}% coins")
+            
+            coins_earned += entity_coin_bonus
+        except Exception as e:
+            print(f"[Entity Perks] Error applying coin perks: {e}")
+        
+        # ✨ PERFECT SESSION BONUS: Apply bonus if no distraction attempts
+        is_perfect = self._is_perfect_session()
+        perfect_session_bonus_pct = 0
+        if is_perfect:
+            try:
+                from gamification import get_entity_qol_perks
+                qol_perks = get_entity_qol_perks(self.blocker.adhd_buster)
+                perfect_session_bonus_pct = qol_perks.get("perfect_session_bonus", 0)
+                if perfect_session_bonus_pct > 0:
+                    perfect_coin_bonus = int(coins_earned * (perfect_session_bonus_pct / 100.0))
+                    coins_earned += perfect_coin_bonus
+                    coin_perk_breakdown.append(f"+{perfect_session_bonus_pct}% perfect session")
+            except Exception as e:
+                print(f"[Perfect Session] Error applying bonus: {e}")
+        
+        # Award XP for the focus session (with lucky XP bonus from gear AND entity perks)
         xp_bonus_pct = lucky_bonuses.get("xp_bonus", 0)
+        # Add perfect session bonus to XP if applicable
+        if is_perfect and perfect_session_bonus_pct > 0:
+            xp_bonus_pct += perfect_session_bonus_pct
         # Cap at 200% to prevent overflow
         xp_bonus_pct = min(xp_bonus_pct, 200)
-        xp_info = calculate_session_xp(session_minutes, streak, lucky_xp_bonus=xp_bonus_pct)
+        xp_info = calculate_session_xp(
+            session_minutes, streak, lucky_xp_bonus=xp_bonus_pct,
+            adhd_buster=self.blocker.adhd_buster
+        )
 
-        # Generate item (100% guaranteed drop)
+        # Generate item (100% guaranteed drop) with entity rarity perks
         item = generate_item(session_minutes=session_minutes, streak_days=streak,
-                              story_id=active_story)
+                              story_id=active_story, adhd_buster=self.blocker.adhd_buster)
 
         # Show lottery animation for tier reveal (item is always awarded)
         from lottery_animation import FocusTimerLotteryDialog
@@ -1785,15 +1968,28 @@ class TimerTab(QtWidgets.QWidget):
             from gamification import check_entitidex_encounter, attempt_entitidex_bond
             # from entity_encounter_dialog import EntityEncounterDialog, BondResultDialog (DEPRECATED)
             
+            # Check if this was a perfect session (no distraction attempts)
+            is_perfect = self._is_perfect_session()
+            
             # Check for encounter
             encounter = check_entitidex_encounter(
                 self.blocker.adhd_buster,
                 session_minutes,
-                perfect_session=False  # TODO: Track perfect sessions
+                perfect_session=is_perfect
             )
             
             if not encounter["triggered"] or not encounter["entity"]:
                 return
+            
+            # Show perk toast if entity perks helped with encounter
+            if encounter.get("perk_bonus_applied"):
+                perk_parts = []
+                if encounter.get("encounter_perk_bonus", 0) > 0:
+                    perk_parts.append(f"+{int(encounter['encounter_perk_bonus'])}% encounter")
+                if encounter.get("capture_perk_bonus", 0) > 0:
+                    perk_parts.append(f"+{int(encounter['capture_perk_bonus'])}% capture")
+                if perk_parts:
+                    show_perk_toast(f"Entity Perks: {', '.join(perk_parts)}", "🌟", self)
             
             # Show encounter dialog using new merge-style flow
             entity = encounter["entity"]
@@ -1992,7 +2188,10 @@ class TimerTab(QtWidgets.QWidget):
         if calculate_total_lucky_bonuses:
             lucky_bonuses = calculate_total_lucky_bonuses(equipped)
         xp_bonus_pct = min(lucky_bonuses.get("xp_bonus", 0), 200)
-        xp_info = calculate_session_xp(session_minutes, streak, lucky_xp_bonus=xp_bonus_pct)
+        xp_info = calculate_session_xp(
+            session_minutes, streak, lucky_xp_bonus=xp_bonus_pct,
+            adhd_buster=self.blocker.adhd_buster
+        )
         rewards["xp"] = xp_info["total_xp"]
         
         # Calculate coins
@@ -2012,6 +2211,17 @@ class TimerTab(QtWidgets.QWidget):
             coins_earned += 25
         elif streak >= 3:
             coins_earned += 10
+        
+        # ✨ ENTITY PERK BONUS: Apply coin perks from collected entities
+        try:
+            from gamification import get_entity_coin_perks
+            coin_perks = get_entity_coin_perks(self.blocker.adhd_buster, source="session")
+            if coin_perks["coin_flat"] > 0:
+                coins_earned += coin_perks["coin_flat"]
+            if coin_perks["coin_percent"] > 0:
+                coins_earned += int(coins_earned * (coin_perks["coin_percent"] / 100.0))
+        except Exception:
+            pass
         
         rewards["coins"] = coins_earned
         
@@ -11080,12 +11290,15 @@ class HydrationTab(QtWidgets.QWidget):
         if not hasattr(self.blocker, 'water_lottery_attempts'):
             self.blocker.water_lottery_attempts = 0
         
-        # Check if we can log
+        # Check if we can log (with entity perk support)
+        hydration_perks_active = False
         if can_log_water:
-            check = can_log_water(self.blocker.water_entries)
+            check = can_log_water(self.blocker.water_entries, adhd_buster=self.blocker.adhd_buster)
             if not check["can_log"]:
                 show_info(self, "Hydration", check["reason"])
                 return
+            # Track if entity perks are helping with hydration
+            hydration_perks_active = check.get("perk_bonus_applied", False)
         
         now = datetime.now()
         today = now.strftime("%Y-%m-%d")
@@ -11155,6 +11368,19 @@ class HydrationTab(QtWidgets.QWidget):
                             show_info(self, "Streak Bonus!", f"🔥 {streak_days + 1}-day streak: [{streak_rarity}] {streak_item.get('name')}!")
             
             self.blocker.save_config()
+            
+            # Show perk toast if entity perks helped with hydration
+            if hydration_perks_active:
+                from gamification import get_hydration_cooldown_minutes, get_hydration_daily_cap, HYDRATION_MIN_INTERVAL_HOURS, HYDRATION_MAX_DAILY_GLASSES
+                cooldown = get_hydration_cooldown_minutes(self.blocker.adhd_buster)
+                cap = get_hydration_daily_cap(self.blocker.adhd_buster)
+                perk_parts = []
+                if cooldown < HYDRATION_MIN_INTERVAL_HOURS * 60:
+                    perk_parts.append(f"{int(HYDRATION_MIN_INTERVAL_HOURS * 60) - cooldown} min faster")
+                if cap > HYDRATION_MAX_DAILY_GLASSES:
+                    perk_parts.append(f"+{cap - HYDRATION_MAX_DAILY_GLASSES} daily glasses")
+                if perk_parts:
+                    show_perk_toast(f"Hydration Perks: {', '.join(perk_parts)}", "💧", self)
         else:
             # Fallback without gamification
             entry = {
@@ -11203,28 +11429,36 @@ class HydrationTab(QtWidgets.QWidget):
     def _refresh_display(self) -> None:
         """Refresh stats and history display."""
         from datetime import datetime
+        from gamification import get_hydration_daily_cap
         
         today = datetime.now().strftime("%Y-%m-%d")
         
         if not hasattr(self.blocker, 'water_entries'):
             self.blocker.water_entries = []
         
+        # Get perk-modified daily cap
+        daily_cap = get_hydration_daily_cap(self.blocker.adhd_buster) if get_hydration_daily_cap else HYDRATION_MAX_DAILY_GLASSES
+        
         # Get today's entries
         today_entries = [e for e in self.blocker.water_entries if e.get("date") == today]
         glasses_today = len(today_entries)
         
-        # Update progress display
-        self.glasses_label.setText(f"{glasses_today} / {HYDRATION_MAX_DAILY_GLASSES} glasses")
-        self.progress_bar.setValue(min(glasses_today, HYDRATION_MAX_DAILY_GLASSES))
+        # Update progress display (use perk-modified cap)
+        cap_label = f"{glasses_today} / {daily_cap} glasses"
+        if daily_cap > HYDRATION_MAX_DAILY_GLASSES:
+            cap_label += " ✨"  # Entity perk indicator
+        self.glasses_label.setText(cap_label)
+        self.progress_bar.setMaximum(daily_cap)
+        self.progress_bar.setValue(min(glasses_today, daily_cap))
         
-        if glasses_today >= HYDRATION_MAX_DAILY_GLASSES:
+        if glasses_today >= daily_cap:
             self.glasses_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #4caf50;")
         else:
             self.glasses_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #4fc3f7;")
         
-        # Update status/countdown
+        # Update status/countdown (with entity perk support)
         if can_log_water:
-            check = can_log_water(self.blocker.water_entries)
+            check = can_log_water(self.blocker.water_entries, adhd_buster=self.blocker.adhd_buster)
             if check["can_log"]:
                 self.water_btn.setEnabled(True)
                 self.status_label.setText("✅ Ready to log!")
@@ -11233,8 +11467,11 @@ class HydrationTab(QtWidgets.QWidget):
                 if check.get("minutes_remaining", 0) > 0:
                     mins = check["minutes_remaining"]
                     next_time = check.get("next_available_time", "")
+                    status_text = f"⏳ Wait {mins} min (next at {next_time})"
+                    if check.get("perk_bonus_applied"):
+                        status_text = status_text.replace("⏳", "⏳✨")  # Perk indicator
                     self.water_btn.setEnabled(False)
-                    self.status_label.setText(f"⏳ Wait {mins} min (next at {next_time})")
+                    self.status_label.setText(status_text)
                     self.status_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #ff9800;")
                 else:
                     self.water_btn.setEnabled(False)
@@ -11256,7 +11493,7 @@ class HydrationTab(QtWidgets.QWidget):
                 f"💧 Total glasses: {stats.get('total_glasses', 0)}<br>"
                 f"📅 Days tracked: {stats.get('total_days', 0)}<br>"
                 f"⏰ Average daily: {stats.get('avg_daily', 0):.1f} glasses<br>"
-                f"🎯 Days on target ({HYDRATION_MAX_DAILY_GLASSES}+): {stats.get('days_on_target', 0)} "
+                f"🎯 Days on target ({daily_cap}+): {stats.get('days_on_target', 0)} "
                 f"({stats.get('target_rate', 0):.0f}%)<br>"
                 f"{streak_emoji} Current streak: {streak} days"
             )
@@ -13109,13 +13346,18 @@ class ADHDBusterTab(QtWidgets.QWidget):
         equipped = self.blocker.adhd_buster.get("equipped", {})
         
         # Calculate coin discount from items being merged (not equipped)
-        from gamification import calculate_merge_discount
+        from gamification import calculate_merge_discount, get_entity_perk_bonuses
         coin_discount = calculate_merge_discount(items)
         print(f"[DEBUG] Calculated coin_discount from merge items: {coin_discount}%")
         
+        # Get entity perk bonuses for merge operations
+        entity_perks = get_entity_perk_bonuses(self.blocker.adhd_buster)
+        print(f"[DEBUG] Entity perk bonuses: {entity_perks}")
+        
         # Show new professional merge dialog with player coins for boost option
         from merge_dialog import LuckyMergeDialog
-        dialog = LuckyMergeDialog(items, 0, equipped, parent=self, player_coins=current_coins, coin_discount=coin_discount)
+        dialog = LuckyMergeDialog(items, 0, equipped, parent=self, player_coins=current_coins, 
+                                  coin_discount=coin_discount, entity_perks=entity_perks)
         if dialog.exec() != QtWidgets.QDialog.Accepted:
             return
         
@@ -13211,6 +13453,16 @@ class ADHDBusterTab(QtWidgets.QWidget):
         # Result feedback already shown by dialog
         # Clear merge selection
         self.merge_selected = []
+        
+        # Show perk toast if entity perks contributed to the merge
+        if entity_perks.get("coin_discount", 0) > 0 or entity_perks.get("merge_luck", 0) > 0:
+            perk_parts = []
+            if entity_perks.get("coin_discount", 0) > 0:
+                perk_parts.append(f"-{entity_perks['coin_discount']}% coins")
+            if entity_perks.get("merge_luck", 0) > 0:
+                perk_parts.append(f"+{entity_perks['merge_luck']}% luck")
+            if perk_parts:
+                show_perk_toast(f"Entity Perks: {', '.join(perk_parts)}", "✨", self)
         
         # Only do manual refresh if GameState not available
         if not self._game_state:
@@ -14115,13 +14367,23 @@ class SellItemsDialog(QtWidgets.QDialog):
             return "#666666"  # Fallback for invalid color
 
     def _calculate_coin_value(self, item: dict) -> int:
-        """Calculate coin value: 1 base + sum of all % bonuses in lucky options."""
+        """Calculate coin value: 1 base + sum of all % bonuses in lucky options + entity salvage bonus."""
         coins = 1
         # Add all % values from lucky options
         lucky_options = item.get("lucky_options", {})
         coins += lucky_options.get("coin_discount", 0)
         coins += lucky_options.get("xp_bonus", 0)
         coins += lucky_options.get("merge_luck", 0)
+        
+        # ✨ ENTITY PERK BONUS: Add salvage bonus from collected entities
+        try:
+            from gamification import get_entity_coin_perks
+            coin_perks = get_entity_coin_perks(self.blocker.adhd_buster, source="salvage")
+            salvage_bonus = coin_perks.get("salvage_bonus", 0)
+            coins += salvage_bonus
+        except Exception:
+            pass  # Silently ignore if perks unavailable
+        
         return coins
 
     def _sell_by_tier(self, rarity: str) -> None:
