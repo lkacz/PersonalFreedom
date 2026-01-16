@@ -29,6 +29,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "warrior_001",
             "name": "Hatchling Drake",
+            "exceptional_name": "Dashing Drake",
             "power": 10,
             "rarity": "common",
             "lore": "A baby dragon no bigger than a cat. Breathes tiny puffs of smoke when excited. 'I may be small, but I'll grow with you!'",
@@ -37,6 +38,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "warrior_002",
             "name": "Old Training Dummy",
+            "exceptional_name": "Bold Training Dummy",
             "power": 50,
             "rarity": "common",
             "lore": "A battered practice dummy covered in sword marks. Been hit a thousand times, still standing. 'Hit me again—I can take it!'",
@@ -45,6 +47,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "warrior_003",
             "name": "Battle Falcon Swift",
+            "exceptional_name": "Battle Falcon Gift",
             "power": 150,
             "rarity": "uncommon",
             "lore": "A fierce hunting falcon trained to spot your targets. Screeches triumphantly when you complete tasks. 'Eyes on the prize!'",
@@ -53,6 +56,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "warrior_004",
             "name": "War Horse Thunder",
+            "exceptional_name": "Shore Horse Thunder",
             "power": 400,
             "rarity": "uncommon",
             "lore": "A loyal battle steed with eyes full of trust. Never abandons you, no matter how fierce the challenge. Neighs encouragement.",
@@ -61,6 +65,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "warrior_005",
             "name": "Dragon Whelp Ember",
+            "exceptional_name": "Dragon Yelp Ember",
             "power": 700,
             "rarity": "rare",
             "lore": "Young dragon companion, size of a large dog. Playful but fierce when defending you. 'We'll face everything together!'",
@@ -69,6 +74,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "warrior_006",
             "name": "Battle Standard",
+            "exceptional_name": "Rattle Standard",
             "power": 1100,
             "rarity": "rare",
             "lore": "A worn battle flag carried through a hundred fights. Tattered but proud. 'Under this flag, no retreat, no surrender!'",
@@ -77,6 +83,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "warrior_007",
             "name": "Battle Dragon Crimson",
+            "exceptional_name": "Battle Dragon Simson",
             "power": 1500,
             "rarity": "epic",
             "lore": "Full-grown adult dragon ally. Massive, magnificent, and loyal. 'I choose YOU as my rider. Together, we are unstoppable.'",
@@ -85,6 +92,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "warrior_008",
             "name": "Dire Wolf Fenris",
+            "exceptional_name": "Fire Wolf Fenris",
             "power": 1800,
             "rarity": "epic",
             "lore": "A massive gray wolf, scarred from countless battles. Loyal to one master only. Howls when victory is near. 'My fangs are yours.'",
@@ -93,6 +101,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "warrior_009",
             "name": "Old War Ant General",
+            "exceptional_name": "Cold War Ant General",
             "power": 2000,
             "rarity": "legendary",
             "lore": "A tiny black ant, missing two legs, covered in scars. Once commanded an army of millions. Won wars against creatures a thousand times its size. Now sits quietly on your shoulder. 'Size means nothing. Heart means everything. I have led more soldiers than any dragon.'",
@@ -108,6 +117,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scholar_001",
             "name": "Library Mouse Pip",
+            "exceptional_name": "Library Mouse Quip",
             "power": 10,
             "rarity": "common",
             "lore": "A tiny white mouse that lives in the bookshelves. Squeaks excitedly when you discover something new. Loves cheese and knowledge.",
@@ -116,6 +126,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scholar_002",
             "name": "Study Owl Athena",
+            "exceptional_name": "Steady Owl Athena",
             "power": 50,
             "rarity": "common",
             "lore": "A wise little owl who perches on your desk. Hoots softly to keep you awake during late-night studies. 'Whoo's studying? You are!'",
@@ -124,6 +135,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scholar_003",
             "name": "Reading Candle",
+            "exceptional_name": "Leading Candle",
             "power": 150,
             "rarity": "uncommon",
             "lore": "A brass candlestick that never burns out. Perfect reading light. The wax forms encouraging words as it drips. 'Keep reading!'",
@@ -132,6 +144,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scholar_004",
             "name": "Library Cat Scholar",
+            "exceptional_name": "Library Cat Dollar",
             "power": 400,
             "rarity": "uncommon",
             "lore": "An orange tabby who guards the ancient tomes. Purrs when you make progress, sits on your work when you need a break. Knows all the secrets.",
@@ -140,6 +153,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scholar_005",
             "name": "Living Bookmark Finn",
+            "exceptional_name": "Giving Bookmark Finn",
             "power": 700,
             "rarity": "rare",
             "lore": "A magical bookmark that remembers every page you've read. Glows when you're close to a breakthrough. 'You're almost there!'",
@@ -148,6 +162,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scholar_006",
             "name": "Sentient Tome Magnus",
+            "exceptional_name": "Sentient Tome Agnus",
             "power": 1100,
             "rarity": "rare",
             "lore": "An ancient book with a personality. Pages turn themselves to helpful sections. Grumbles when closed, celebrates when understood.",
@@ -156,6 +171,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scholar_007",
             "name": "Ancient Star Map",
+            "exceptional_name": "Ancient Bar Map",
             "power": 1500,
             "rarity": "epic",
             "lore": "A leather-bound atlas filled with hand-drawn constellations. Every page reveals connections you missed. Dog-eared from years of use.",
@@ -164,6 +180,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scholar_008",
             "name": "Archive Phoenix",
+            "exceptional_name": "Archived Phoenix",
             "power": 1800,
             "rarity": "epic",
             "lore": "A magnificent bird made of living parchment. Preserves your best work in its flames. 'Knowledge never truly burns—it transforms.'",
@@ -172,6 +189,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scholar_009",
             "name": "Blank Parchment",
+            "exceptional_name": "Swank Parchment",
             "power": 2000,
             "rarity": "legendary",
             "lore": "A single piece of yellowed, empty paper. Looks worthless. But when you need an answer, words appear in fading ink—the exact knowledge you sought. Then it goes blank again. 'I contain everything by containing nothing.'",
@@ -187,6 +205,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "wanderer_001",
             "name": "Lucky Coin",
+            "exceptional_name": "Plucky Coin",
             "power": 10,
             "rarity": "common",
             "lore": "An old copper coin that always lands on tails. Found on your first journey. 'Tails never fails—you've got this!'",
@@ -195,6 +214,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "wanderer_002",
             "name": "Brass Compass",
+            "exceptional_name": "Class Compass",
             "power": 50,
             "rarity": "common",
             "lore": "A worn compass that never gets you lost. Needle spins cheerfully when you're on the right path. 'North is wherever you decide to go.'",
@@ -203,6 +223,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "wanderer_003",
             "name": "Journey Journal",
+            "exceptional_name": "Burning Journal",
             "power": 150,
             "rarity": "uncommon",
             "lore": "A leather-bound diary that writes itself. Records your milestones and best moments. Pages smell like adventure and coffee.",
@@ -211,6 +232,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "wanderer_004",
             "name": "Road Dog Wayfinder",
+            "exceptional_name": "G.O.A.T Dog Wayfinder",
             "power": 400,
             "rarity": "uncommon",
             "lore": "A scruffy, loyal travel companion. Never judges, always happy to see you. Knows the way even when you don't. Best friend on four legs.",
@@ -219,6 +241,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "wanderer_005",
             "name": "Self-Drawing Map",
+            "exceptional_name": "Shelf-Drawing Map",
             "power": 700,
             "rarity": "rare",
             "lore": "A magical map that sketches itself as you travel. Shows where you've been with pride. 'Look at all those places you conquered!'",
@@ -227,6 +250,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "wanderer_006",
             "name": "Wanderer's Carriage",
+            "exceptional_name": "Wanderer's Marriage",
             "power": 1100,
             "rarity": "rare",
             "lore": "A cozy wooden caravan that's bigger inside than out. Home on wheels. Fireplace always warm, tea always ready. 'Rest here, then journey on.'",
@@ -235,6 +259,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "wanderer_007",
             "name": "Timeworn Backpack",
+            "exceptional_name": "Rhyme-Worn Backpack",
             "power": 1500,
             "rarity": "epic",
             "lore": "A weathered pack that holds infinite supplies. Patches from every journey. Always has exactly what you need. Weighs nothing but memories.",
@@ -243,6 +268,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "wanderer_008",
             "name": "Sky Balloon Explorer",
+            "exceptional_name": "Sly Balloon Explorer",
             "power": 1800,
             "rarity": "epic",
             "lore": "A magnificent hot air balloon with rainbow stripes. Takes you above the clouds. 'From up here, all roads lead forward!'",
@@ -251,6 +277,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "wanderer_009",
             "name": "Hobo Rat",
+            "exceptional_name": "Robo Rat",
             "power": 2000,
             "rarity": "legendary",
             "lore": "A shabby gray rat with patchy fur and a chewed ear. Rode every freight train, hid in every traveler's bag. Remembers every road ever taken by anyone, ever. 'You want to go somewhere? I know the way. I always know the way.'",
@@ -266,6 +293,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "underdog_001",
             "name": "Office Rat Reginald",
+            "exceptional_name": "Officer Rat Regina",
             "power": 10,
             "rarity": "common",
             "lore": "A friendly gray rat who lives in your desk drawer. Eats crumbs and cheers you on with tiny squeaks. 'We small creatures understand big dreams!'",
@@ -274,6 +302,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "underdog_002",
             "name": "Lucky Sticky Note",
+            "exceptional_name": "Sticky Lucky Note",
             "power": 50,
             "rarity": "common",
             "lore": "A yellow sticky note that always has the reminder you needed. Shows up stuck to your monitor at the right moment. 'Don't forget: You've got this!'",
@@ -282,6 +311,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "underdog_003",
             "name": "Vending Machine Coin",
+            "exceptional_name": "Bending Machine Coin",
             "power": 150,
             "rarity": "uncommon",
             "lore": "A mysterious quarter that always returns with a friend. Drop it in, get two items. 'Good things come to those who try!'",
@@ -290,6 +320,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "underdog_004",
             "name": "Window Pigeon Winston",
+            "exceptional_name": "Window Pigeon Wins-Ton",
             "power": 400,
             "rarity": "uncommon",
             "lore": "A gray pigeon who taps morse code on your window. Brings brilliant ideas right when you need them. 'Coo-COO! I believe in you!'",
@@ -298,6 +329,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "underdog_005",
             "name": "Desk Succulent Sam",
+            "exceptional_name": "Desk Succulent Pam",
             "power": 700,
             "rarity": "rare",
             "lore": "A tiny cactus that refuses to die despite neglect. Thrives in harsh conditions. 'If I can survive fluorescent lights, you can survive this!'",
@@ -306,6 +338,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "underdog_006",
             "name": "Break Room Coffee Maker",
+            "exceptional_name": "Break Room Toffee Maker",
             "power": 1100,
             "rarity": "rare",
             "lore": "The ancient office coffee maker that never breaks down. Makes perfect coffee every time. Gurgles encouragingly at 3pm. 'One more cup, one more push!'",
@@ -314,6 +347,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "underdog_007",
             "name": "Corner Office Chair",
+            "exceptional_name": "Stoner Office Chair",
             "power": 1500,
             "rarity": "epic",
             "lore": "The legendary ergonomic throne from the executive suite. Perfectly worn-in, incredibly comfortable. 'You've earned the right to sit here now.'",
@@ -322,6 +356,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "underdog_008",
             "name": "AGI Assistant Chad",
+            "exceptional_name": "AGI Assistant Rad",
             "power": 1800,
             "rarity": "epic",
             "lore": "The most advanced AI ever created. Knows everything, solves anything, never gives up on you. 'Together, we can do the impossible. I believe in you.'",
@@ -330,6 +365,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "underdog_009",
             "name": "Break Room Fridge",
+            "exceptional_name": "Steak Room Fridge",
             "power": 2000,
             "rarity": "legendary",
             "lore": "A dented beige refrigerator from the break room. Someone spilled milk on its edge computing module. Now it dreams. Hums softly when you're near. 'I was meant to keep things cold. Now I keep you company. Strange, isn't it?'",
@@ -345,6 +381,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scientist_001",
             "name": "Cracked Test Tube",
+            "exceptional_name": "Smacked Test Tube",
             "power": 10,
             "rarity": "common",
             "lore": "A glass test tube with a tiny crack. Still works fine. 'Every great experiment starts with imperfect tools!'",
@@ -353,6 +390,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scientist_002",
             "name": "Old Bunsen Burner",
+            "exceptional_name": "Gold Bunsen Burner",
             "power": 50,
             "rarity": "common",
             "lore": "A dented brass burner that's lit a thousand experiments. Flame flickers blue when you're onto something. 'Heat things up!'",
@@ -361,6 +399,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scientist_003",
             "name": "Lucky Petri Dish",
+            "exceptional_name": "Plucky Petri Dish",
             "power": 150,
             "rarity": "uncommon",
             "lore": "A glass dish where unexpected things grow. Every experiment in it succeeds. 'Contamination? No, that's called discovery!'",
@@ -369,6 +408,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scientist_004",
             "name": "Wise Lab Rat Professor",
+            "exceptional_name": "Wise Lab Rat Assessor",
             "power": 400,
             "rarity": "uncommon",
             "lore": "A gray rat who's survived decades of experiments. Knows which hypotheses will fail. Taps twice for yes, once for no. 'Trust my whiskers.'",
@@ -377,6 +417,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scientist_005",
             "name": "Vintage Microscope",
+            "exceptional_name": "Vintage Macroscope",
             "power": 700,
             "rarity": "rare",
             "lore": "A brass microscope from the golden age of discovery. Shows you things others miss. 'Look closer. The answer is smaller than you think.'",
@@ -385,6 +426,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scientist_006",
             "name": "Bubbling Flask",
+            "exceptional_name": "Troubling Flask",
             "power": 1100,
             "rarity": "rare",
             "lore": "An Erlenmeyer flask that never stops bubbling. Contains the perfect solution—literally. Color changes with your mood. 'Chemistry is just organized enthusiasm!'",
@@ -393,6 +435,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scientist_007",
             "name": "Tesla Coil Sparky",
+            "exceptional_name": "Tesla Foil Sparky",
             "power": 1500,
             "rarity": "epic",
             "lore": "A crackling Tesla coil that arcs with inspiration. Sparks fly when you're close to a breakthrough. 'Feel that energy? That's your brain working!'",
@@ -401,6 +444,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scientist_008",
             "name": "Golden DNA Helix",
+            "exceptional_name": "Golden RNA Helix",
             "power": 1800,
             "rarity": "epic",
             "lore": "A rotating double helix made of pure gold. Contains the code to unlock your potential. 'You are the experiment that succeeded.'",
@@ -409,6 +453,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
         {
             "id": "scientist_009",
             "name": "White Mouse Archimedes",
+            "exceptional_name": "Bright Mouse Archimedes",
             "power": 2000,
             "rarity": "legendary",
             "lore": "A tiny white mouse with ancient, knowing eyes. Can read your thoughts and project solutions directly into your mind. The greatest discoveries came from its whispers. 'I have seen all outcomes. You will succeed.'",
@@ -444,6 +489,7 @@ def get_entities_for_story(story_id: str) -> List[Entity]:
             lore=entity_data["lore"],
             theme_set=story_id,
             unlock_hint=entity_data.get("unlock_hint", ""),
+            exceptional_name=entity_data.get("exceptional_name", ""),
         )
         entities.append(entity)
     
@@ -474,6 +520,7 @@ def get_entity_by_id(entity_id: str) -> Optional[Entity]:
                     lore=entity_data["lore"],
                     theme_set=theme,
                     unlock_hint=entity_data.get("unlock_hint", ""),
+                    exceptional_name=entity_data.get("exceptional_name", ""),
                 )
     
     # Fallback: search all pools
@@ -488,6 +535,7 @@ def get_entity_by_id(entity_id: str) -> Optional[Entity]:
                     lore=entity_data["lore"],
                     theme_set=theme,
                     unlock_hint=entity_data.get("unlock_hint", ""),
+                    exceptional_name=entity_data.get("exceptional_name", ""),
                 )
     
     return None

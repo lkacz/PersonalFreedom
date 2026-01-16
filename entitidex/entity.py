@@ -26,6 +26,7 @@ class Entity:
     silhouette_path: str = ""   # Path to locked/unknown state icon
     unlock_hint: str = ""       # Cryptic hint about the entity
     collection_tier: int = 1    # Which "page" of collection (for scaling)
+    exceptional_name: str = ""  # Playful name variant for exceptional cards
     
     @property
     def rarity_emoji(self) -> str:
@@ -64,6 +65,7 @@ class Entity:
             "silhouette_path": self.silhouette_path,
             "unlock_hint": self.unlock_hint,
             "collection_tier": self.collection_tier,
+            "exceptional_name": self.exceptional_name,
         }
     
     @classmethod
@@ -80,6 +82,7 @@ class Entity:
             silhouette_path=data.get("silhouette_path", ""),
             unlock_hint=data.get("unlock_hint", ""),
             collection_tier=data.get("collection_tier", 1),
+            exceptional_name=data.get("exceptional_name", ""),
         )
 
 

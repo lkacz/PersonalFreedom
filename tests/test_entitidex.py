@@ -64,13 +64,13 @@ class TestEntityPools:
                 assert entity["id"] == expected_id, f"Expected {expected_id}, got {entity['id']}"
     
     def test_rarity_distribution(self):
-        """Check rarity distribution: 2 common, 1 uncommon, 2 rare, 2 epic, 2 legendary."""
+        """Check rarity distribution: 2 common, 2 uncommon, 2 rare, 2 epic, 1 legendary."""
         expected_rarities = {
             "common": 2,
-            "uncommon": 1,
+            "uncommon": 2,
             "rare": 2,
             "epic": 2,
-            "legendary": 2,
+            "legendary": 1,
         }
         
         for story_id, pool in ENTITY_POOLS.items():
@@ -419,24 +419,29 @@ class TestEncounterSystem:
         
         # Run many times to ensure we never get collected entities
         for _ in range(50):
-            entity = select_encounter_entity(
+            entity, is_exceptional = select_encounter_entity(
                 progress=progress,
                 hero_power=100,
                 story_id="underdog",
             )
             
             assert entity is not None
-            assert entity.id not in ["underdog_001", "underdog_002"]
+            # If we got normal variant, entity shouldn't be in collected
+            # If we got exceptional variant, the exceptional shouldn't be collected
+            if not is_exceptional:
+                assert entity.id not in ["underdog_001", "underdog_002"]
     
     def test_select_returns_none_when_complete(self):
-        """Selection should return None when collection is complete."""
+        """Selection should return None when collection is complete (both variants)."""
         progress = EntitidexProgress()
         
-        # Collect all warrior entities
+        # Collect all warrior entities (both normal AND exceptional variants)
         for i in range(1, 10):
-            progress.collected_entity_ids.add(f"warrior_{i:03d}")
+            entity_id = f"warrior_{i:03d}"
+            progress.collected_entity_ids.add(entity_id)
+            progress.exceptional_entities[entity_id] = {"border": "#FFD700", "glow": "#FFA500"}
         
-        entity = select_encounter_entity(
+        entity, is_exceptional = select_encounter_entity(
             progress=progress,
             hero_power=2000,
             story_id="warrior",

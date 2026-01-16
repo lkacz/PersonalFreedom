@@ -16644,8 +16644,8 @@ class DevTab(QtWidgets.QWidget):
             # Get or create progress tracker
             progress = EntitidexProgress(story_id)
             
-            # Select an entity for encounter
-            entity = select_encounter_entity(progress, hero_power, story_id)
+            # Select an entity for encounter (now returns tuple with is_exceptional)
+            entity, is_exceptional = select_encounter_entity(progress, hero_power, story_id)
             
             if not entity:
                 # Fallback: get a random entity from the story
@@ -16653,6 +16653,7 @@ class DevTab(QtWidgets.QWidget):
                 if entities:
                     import random
                     entity = random.choice(entities)
+                    is_exceptional = random.random() < 0.20  # 20% exceptional chance
                 else:
                     self.status_label.setText("❌ No entities available")
                     return
@@ -16663,9 +16664,13 @@ class DevTab(QtWidgets.QWidget):
             # Show encounter dialog using new merge-style flow
             from entity_drop_dialog import show_entity_encounter
             
-            def bond_callback_wrapper(entity_id: str):
+            def bond_callback_wrapper(entity_id: str, exceptional: bool = is_exceptional):
                 from gamification import attempt_entitidex_bond
-                result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
+                result = attempt_entitidex_bond(
+                    self.blocker.adhd_buster, 
+                    entity_id,
+                    is_exceptional=exceptional
+                )
                 self.status_label.setText(f"Result: {'Success' if result.get('success') else 'Failed'}")
                 # Refresh entitidex tab after bond attempt
                 main_win = self.window()
@@ -16677,7 +16682,8 @@ class DevTab(QtWidgets.QWidget):
                 entity=entity,
                 join_probability=join_prob,
                 bond_logic_callback=bond_callback_wrapper,
-                parent=self.window()
+                parent=self.window(),
+                is_exceptional=is_exceptional,
             )
             
         except ImportError as e:
@@ -16828,8 +16834,10 @@ class DevTab(QtWidgets.QWidget):
             # Show celebration
             _show_exceptional_celebration(entity, exceptional_colors, self.window())
             
+            # Use exceptional_name if available
+            display_name = entity.exceptional_name if entity.exceptional_name else entity.name
             border_col = exceptional_colors.get("border", "#FFD700")
-            self.status_label.setText(f"🌟 EXCEPTIONAL {entity.name} added!")
+            self.status_label.setText(f"🌟 EXCEPTIONAL {display_name} added!")
             self.status_label.setStyleSheet(f"color: {border_col}; padding: 10px; font-weight: bold;")
             
         except Exception as e:

@@ -37,6 +37,7 @@ class EncounterResult:
     occurred: bool
     entity: Optional[Entity] = None
     is_first_encounter: bool = False
+    is_exceptional: bool = False  # True if this is an exceptional variant (20% chance)
     announcement: str = ""
     flavor_text: str = ""
     catch_probability: float = 0.0
@@ -102,6 +103,7 @@ class EntitidexManager:
         
         # Current encounter state
         self._current_encounter: Optional[Entity] = None
+        self._current_encounter_is_exceptional: bool = False
     
     # =========================================================================
     # CONFIGURATION
@@ -158,8 +160,8 @@ class EntitidexManager:
         if not should_trigger:
             return EncounterResult(occurred=False)
         
-        # Select which entity appears
-        entity = select_encounter_entity(
+        # Select which entity appears (now returns tuple with is_exceptional)
+        entity, is_exceptional = select_encounter_entity(
             progress=self.progress,
             hero_power=self.hero_power,
             story_id=self.story_id,
@@ -173,11 +175,12 @@ class EntitidexManager:
         is_first = not self.progress.is_encountered(entity.id)
         self.progress.record_encounter(entity.id)
         
-        # Store current encounter for catch attempt
+        # Store current encounter for catch attempt (including exceptional status)
         self._current_encounter = entity
+        self._current_encounter_is_exceptional = is_exceptional
         
-        # Calculate catch probability
-        failed_attempts = self.progress.get_failed_attempts(entity.id)
+        # Calculate catch probability (use variant-specific failed attempts)
+        failed_attempts = self.progress.get_failed_attempts(entity.id, is_exceptional)
         probability = get_final_probability(
             hero_power=self.hero_power,
             entity_power=entity.power,
@@ -189,7 +192,8 @@ class EntitidexManager:
             occurred=True,
             entity=entity,
             is_first_encounter=is_first,
-            announcement=get_encounter_announcement(entity, is_first),
+            is_exceptional=is_exceptional,
+            announcement=get_encounter_announcement(entity, is_first, is_exceptional),
             flavor_text=get_encounter_flavor_text(entity, self.hero_power),
             catch_probability=probability,
             probability_display=format_probability_display(probability),
@@ -247,17 +251,26 @@ class EntitidexManager:
     def dismiss_encounter(self) -> None:
         """Dismiss the current encounter without attempting to catch."""
         self._current_encounter = None
+        self._current_encounter_is_exceptional = False
     
     # =========================================================================
     # CATCH HANDLING
     # =========================================================================
     
-    def attempt_catch(self, entity: Optional[Entity] = None) -> Optional[CatchResult]:
+    def attempt_catch(
+        self, 
+        entity: Optional[Entity] = None,
+        is_exceptional: Optional[bool] = None,
+        exceptional_colors: Optional[dict] = None,
+    ) -> Optional[CatchResult]:
         """
         Attempt to catch the current or specified entity.
         
         Args:
             entity: Entity to catch (uses current encounter if None)
+            is_exceptional: True if this is an exceptional variant attempt
+                           (uses stored value if None)
+            exceptional_colors: Colors to use for exceptional variant
             
         Returns:
             CatchResult with outcome, or None if no encounter active
@@ -267,8 +280,11 @@ class EntitidexManager:
         if target is None:
             return None
         
-        # Get failed attempts for pity calculation
-        failed_attempts = self.progress.get_failed_attempts(target.id)
+        # Use provided is_exceptional or fall back to stored state
+        exceptional = is_exceptional if is_exceptional is not None else self._current_encounter_is_exceptional
+        
+        # Get failed attempts for pity calculation (specific to the variant)
+        failed_attempts = self.progress.get_failed_attempts(target.id, exceptional)
         
         # Attempt the catch
         success, probability, message = attempt_catch(
@@ -282,19 +298,22 @@ class EntitidexManager:
         capture_record = None
         
         if success:
-            # Record successful catch
+            # Record successful catch with variant tracking
             capture_record = self.progress.record_successful_catch(
                 entity_id=target.id,
                 hero_power=self.hero_power,
                 probability=probability,
                 was_lucky=was_lucky,
+                is_exceptional=exceptional,
+                exceptional_colors=exceptional_colors,
             )
         else:
-            # Record failed attempt
-            self.progress.record_failed_catch(target.id)
+            # Record failed attempt for the specific variant
+            self.progress.record_failed_catch(target.id, exceptional)
         
-        # Clear current encounter
+        # Clear current encounter state
         self._current_encounter = None
+        self._current_encounter_is_exceptional = False
         
         return CatchResult(
             success=success,

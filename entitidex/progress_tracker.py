@@ -7,7 +7,7 @@ and capture history.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 from .entity import Entity, EntityCapture
 from .entity_pools import get_entities_for_story, get_entity_by_id, get_total_entity_count
 
@@ -18,21 +18,23 @@ class EntitidexProgress:
     Tracks a user's Entitidex collection progress.
     
     This class manages:
-    - Which entities have been collected
+    - Which entities have been collected (normal variants)
+    - Which exceptional entity variants have been collected (separate from normal)
     - Encounter history (entities seen but not caught)
     - Failed catch attempts (for pity system)
     - Detailed capture records
-    - Exceptional entity variants (5% chance on catch)
     """
     
-    # Core tracking data
+    # Core tracking data - normal variants
     collected_entity_ids: Set[str] = field(default_factory=set)
     encounters: Dict[str, int] = field(default_factory=dict)  # entity_id -> count
     failed_catches: Dict[str, int] = field(default_factory=dict)  # entity_id -> count
     
-    # Exceptional entities - stores random premium colors for each
+    # Exceptional entity variants - SEPARATE collectibles (20% encounter chance)
     # Format: {entity_id: {"border": "#HEX", "glow": "#HEX"}}
     exceptional_entities: Dict[str, dict] = field(default_factory=dict)
+    # Failed catches for exceptional variants specifically
+    exceptional_failed_catches: Dict[str, int] = field(default_factory=dict)
     
     # Detailed capture records
     captures: List[EntityCapture] = field(default_factory=list)
@@ -59,17 +61,35 @@ class EntitidexProgress:
         """Get the number of times an entity has been encountered."""
         return self.encounters.get(entity_id, 0)
     
-    def get_failed_attempts(self, entity_id: str) -> int:
-        """Get the number of failed catch attempts for an entity."""
+    def get_failed_attempts(self, entity_id: str, is_exceptional: bool = False) -> int:
+        """Get the number of failed catch attempts for an entity variant."""
+        if is_exceptional:
+            return self.exceptional_failed_catches.get(entity_id, 0)
         return self.failed_catches.get(entity_id, 0)
     
     def is_exceptional(self, entity_id: str) -> bool:
-        """Check if an entity is an exceptional variant."""
+        """Check if an exceptional variant of this entity has been collected."""
         return entity_id in self.exceptional_entities
     
     def get_exceptional_colors(self, entity_id: str) -> Optional[dict]:
         """Get the exceptional color palette for an entity."""
         return self.exceptional_entities.get(entity_id)
+    
+    def is_variant_available(self, entity_id: str, is_exceptional: bool) -> bool:
+        """
+        Check if a specific variant (normal or exceptional) can still be encountered.
+        
+        Args:
+            entity_id: The entity ID
+            is_exceptional: True for exceptional variant, False for normal
+            
+        Returns:
+            True if this variant hasn't been collected yet
+        """
+        if is_exceptional:
+            return entity_id not in self.exceptional_entities
+        else:
+            return entity_id not in self.collected_entity_ids
     
     # ==========================================================================
     # RECORDING EVENTS
@@ -85,14 +105,18 @@ class EntitidexProgress:
         self.encounters[entity_id] = self.encounters.get(entity_id, 0) + 1
         self.total_encounters += 1
     
-    def record_failed_catch(self, entity_id: str) -> None:
+    def record_failed_catch(self, entity_id: str, is_exceptional: bool = False) -> None:
         """
-        Record a failed catch attempt.
+        Record a failed catch attempt for a specific variant.
         
         Args:
             entity_id: The ID of the entity that escaped
+            is_exceptional: True if this was an exceptional variant encounter
         """
-        self.failed_catches[entity_id] = self.failed_catches.get(entity_id, 0) + 1
+        if is_exceptional:
+            self.exceptional_failed_catches[entity_id] = self.exceptional_failed_catches.get(entity_id, 0) + 1
+        else:
+            self.failed_catches[entity_id] = self.failed_catches.get(entity_id, 0) + 1
         self.total_catch_attempts += 1
     
     def mark_exceptional(self, entity_id: str, colors: dict) -> None:
@@ -111,6 +135,8 @@ class EntitidexProgress:
         hero_power: int,
         probability: float,
         was_lucky: bool = False,
+        is_exceptional: bool = False,
+        exceptional_colors: Optional[dict] = None,
     ) -> EntityCapture:
         """
         Record a successful entity catch.
@@ -120,12 +146,17 @@ class EntitidexProgress:
             hero_power: Hero's power at time of catch
             probability: The catch probability that was rolled against
             was_lucky: Whether this was a lucky catch (<50% odds)
+            is_exceptional: True if this was an exceptional variant
+            exceptional_colors: Colors dict for exceptional variant
             
         Returns:
             The EntityCapture record that was created
         """
-        # Calculate attempts (failed + this success)
-        attempts = self.failed_catches.get(entity_id, 0) + 1
+        # Calculate attempts (failed + this success) based on variant
+        if is_exceptional:
+            attempts = self.exceptional_failed_catches.get(entity_id, 0) + 1
+        else:
+            attempts = self.failed_catches.get(entity_id, 0) + 1
         
         # Create capture record
         capture = EntityCapture(
@@ -137,17 +168,32 @@ class EntitidexProgress:
             was_lucky_catch=was_lucky,
         )
         
-        # Update tracking
-        self.collected_entity_ids.add(entity_id)
+        # Update tracking based on variant
+        if is_exceptional:
+            # Mark as exceptional with colors
+            if exceptional_colors:
+                self.exceptional_entities[entity_id] = exceptional_colors
+            else:
+                # Default colors if none provided
+                self.exceptional_entities[entity_id] = {
+                    "border": "#FFD700",
+                    "glow": "#FFA500"
+                }
+            # Reset exceptional failed attempts
+            if entity_id in self.exceptional_failed_catches:
+                del self.exceptional_failed_catches[entity_id]
+        else:
+            # Normal variant collected
+            self.collected_entity_ids.add(entity_id)
+            # Reset failed attempts for this entity
+            if entity_id in self.failed_catches:
+                del self.failed_catches[entity_id]
+        
         self.captures.append(capture)
         self.total_catch_attempts += 1
         
         if was_lucky:
             self.lucky_catches += 1
-        
-        # Reset failed attempts for this entity (they joined!)
-        if entity_id in self.failed_catches:
-            del self.failed_catches[entity_id]
         
         return capture
     
@@ -221,6 +267,9 @@ class EntitidexProgress:
         """
         Get list of Entity objects not yet collected for a story.
         
+        Note: This returns entities where the NORMAL variant isn't collected.
+        Use get_available_entity_variants for the new dual-track system.
+        
         Args:
             story_id: The story theme to check
             
@@ -229,6 +278,43 @@ class EntitidexProgress:
         """
         entities = get_entities_for_story(story_id)
         return [e for e in entities if e.id not in self.collected_entity_ids]
+    
+    def get_available_entity_variants(
+        self, story_id: str, is_exceptional: bool
+    ) -> List[Entity]:
+        """
+        Get entities that have the specified variant still available.
+        
+        Args:
+            story_id: The story theme to check
+            is_exceptional: True to get entities missing exceptional variant,
+                          False to get entities missing normal variant
+                          
+        Returns:
+            List of Entity objects with the specified variant available
+        """
+        entities = get_entities_for_story(story_id)
+        if is_exceptional:
+            # Return entities where we DON'T have the exceptional variant
+            return [e for e in entities if e.id not in self.exceptional_entities]
+        else:
+            # Return entities where we DON'T have the normal variant
+            return [e for e in entities if e.id not in self.collected_entity_ids]
+    
+    def has_any_available_variants(self, story_id: str) -> Tuple[bool, bool]:
+        """
+        Check if there are any normal or exceptional variants available.
+        
+        Args:
+            story_id: The story theme to check
+            
+        Returns:
+            Tuple of (has_normal_available, has_exceptional_available)
+        """
+        entities = get_entities_for_story(story_id)
+        has_normal = any(e.id not in self.collected_entity_ids for e in entities)
+        has_exceptional = any(e.id not in self.exceptional_entities for e in entities)
+        return has_normal, has_exceptional
     
     def get_catch_success_rate(self) -> float:
         """
@@ -326,6 +412,7 @@ class EntitidexProgress:
             "collected_entity_ids": list(self.collected_entity_ids),
             "encounters": self.encounters.copy(),
             "failed_catches": self.failed_catches.copy(),
+            "exceptional_failed_catches": self.exceptional_failed_catches.copy(),
             "exceptional_entities": self.exceptional_entities.copy(),
             "captures": [c.to_dict() for c in self.captures],
             "current_tier": self.current_tier,
@@ -342,6 +429,7 @@ class EntitidexProgress:
         progress.collected_entity_ids = set(data.get("collected_entity_ids", []))
         progress.encounters = data.get("encounters", {}).copy()
         progress.failed_catches = data.get("failed_catches", {}).copy()
+        progress.exceptional_failed_catches = data.get("exceptional_failed_catches", {}).copy()
         progress.exceptional_entities = data.get("exceptional_entities", {}).copy()
         progress.captures = [
             EntityCapture.from_dict(c) for c in data.get("captures", [])

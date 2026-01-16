@@ -73,25 +73,49 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         "legendary": "#d35400"
     }
     
-    def __init__(self, entity, join_probability: float, parent=None):
+    def __init__(self, entity, join_probability: float, parent=None, is_exceptional: bool = False):
         super().__init__(parent)
         self.entity = entity
         self.join_probability = join_probability
         self.accepted_bond = False
+        self.is_exceptional = is_exceptional
         
         self._setup_ui()
     
     def _setup_ui(self):
-        self.setWindowTitle("✨ Entity Encountered!")
-        self.setFixedSize(320, 400)
+        # Different title for exceptional encounters
+        if self.is_exceptional:
+            self.setWindowTitle("🌟 EXCEPTIONAL Entity Encountered! 🌟")
+        else:
+            self.setWindowTitle("✨ Entity Encountered!")
+        self.setFixedSize(320, 420 if self.is_exceptional else 400)
         self.setModal(True)
         
         color = self.RARITY_COLORS.get(self.entity.rarity.lower(), "#2c3e50")
+        
+        # For exceptional, use gold accent
+        exceptional_color = "#FFD700"
+        display_color = exceptional_color if self.is_exceptional else color
         
         # Main layout
         layout = QtWidgets.QVBoxLayout(self)
         layout.setSpacing(12)
         layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Exceptional banner (only for exceptional encounters)
+        if self.is_exceptional:
+            exceptional_banner = QtWidgets.QLabel("⚡ EXCEPTIONAL VARIANT! ⚡")
+            exceptional_banner.setAlignment(QtCore.Qt.AlignCenter)
+            exceptional_banner.setStyleSheet(f"""
+                font-size: 16px;
+                font-weight: bold;
+                color: {exceptional_color};
+                background: {exceptional_color}30;
+                padding: 6px 12px;
+                border-radius: 8px;
+                border: 1px solid {exceptional_color};
+            """)
+            layout.addWidget(exceptional_banner)
         
         # Title
         title = QtWidgets.QLabel(f"You encountered:")
@@ -99,25 +123,27 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         title.setStyleSheet("font-size: 14px; color: #aaa;")
         layout.addWidget(title)
         
-        # Entity name
-        name_label = QtWidgets.QLabel(self.entity.name)
+        # Entity name - use exceptional_name if available and this is exceptional
+        display_name = self.entity.exceptional_name if self.is_exceptional and self.entity.exceptional_name else self.entity.name
+        name_label = QtWidgets.QLabel(display_name)
         name_label.setAlignment(QtCore.Qt.AlignCenter)
         name_label.setWordWrap(True)
         name_label.setStyleSheet(f"""
             font-size: 18px;
             font-weight: bold;
-            color: {color};
+            color: {display_color};
         """)
         layout.addWidget(name_label)
         
-        # SVG Container
+        # SVG Container - gold border for exceptional
         svg_container = QtWidgets.QFrame()
         svg_container.setFixedSize(140, 140)
+        border_color = exceptional_color if self.is_exceptional else color
         svg_container.setStyleSheet(f"""
             QFrame {{
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 {color}40, stop:1 #1a1a2e);
-                border: 2px solid {color};
+                    stop:0 {display_color}40, stop:1 #1a1a2e);
+                border: 3px solid {border_color};
                 border-radius: 12px;
             }}
         """)
@@ -128,23 +154,24 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         svg_widget = QSvgWidget()
         svg_widget.setFixedSize(120, 120)
         
-        # Load SVG using the helper function (normal variant for encounter)
-        svg_path = _resolve_entity_svg_path(self.entity, is_exceptional=False)
+        # Load SVG using the helper function - try exceptional first if applicable
+        svg_path = _resolve_entity_svg_path(self.entity, is_exceptional=self.is_exceptional)
         if svg_path:
             svg_widget.load(svg_path)
         
         svg_layout.addWidget(svg_widget, alignment=QtCore.Qt.AlignCenter)
         layout.addWidget(svg_container, alignment=QtCore.Qt.AlignCenter)
         
-        # Rarity badge
-        rarity_label = QtWidgets.QLabel(f"⭐ {self.entity.rarity.upper()}")
+        # Rarity badge (exceptional adds shine)
+        rarity_text = f"🌟 {self.entity.rarity.upper()} +" if self.is_exceptional else f"⭐ {self.entity.rarity.upper()}"
+        rarity_label = QtWidgets.QLabel(rarity_text)
         rarity_label.setAlignment(QtCore.Qt.AlignCenter)
         rarity_label.setStyleSheet(f"""
             font-size: 12px;
             font-weight: bold;
-            color: {color};
+            color: {display_color};
             padding: 4px 12px;
-            background: {color}30;
+            background: {display_color}30;
             border-radius: 8px;
         """)
         layout.addWidget(rarity_label, alignment=QtCore.Qt.AlignCenter)
@@ -189,15 +216,15 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         bond_btn.setFixedHeight(36)
         bond_btn.setStyleSheet(f"""
             QPushButton {{
-                background: {color};
-                color: white;
+                background: {display_color};
+                color: {'#000' if self.is_exceptional else 'white'};
                 border: none;
                 border-radius: 6px;
                 padding: 8px 20px;
                 font-size: 13px;
                 font-weight: bold;
             }}
-            QPushButton:hover {{ background: {color}dd; }}
+            QPushButton:hover {{ background: {display_color}dd; }}
         """)
         bond_btn.clicked.connect(self._on_bond)
         btn_layout.addWidget(bond_btn)
@@ -218,7 +245,8 @@ class EntityEncounterDialog(QtWidgets.QDialog):
 
 def show_entity_encounter(entity, join_probability: float, 
                           bond_logic_callback: Callable[[str], dict],
-                          parent: QtWidgets.QWidget = None) -> None:
+                          parent: QtWidgets.QWidget = None,
+                          is_exceptional: bool = False) -> None:
     """
     Show the entity encounter flow using standard widgets and lottery animation.
     
@@ -228,20 +256,22 @@ def show_entity_encounter(entity, join_probability: float,
         bond_logic_callback: Function that takes entity_id and returns result dict
                              (from gamification.attempt_entitidex_bond).
         parent: Parent widget.
+        is_exceptional: True if this is an exceptional variant encounter (20% chance).
     """
     
-    # 1. Show encounter dialog with SVG
-    dialog = EntityEncounterDialog(entity, join_probability, parent)
+    # 1. Show encounter dialog with SVG (pass is_exceptional for display)
+    dialog = EntityEncounterDialog(entity, join_probability, parent, is_exceptional)
     result_code = dialog.exec()
     
     if not dialog.accepted_bond:
         return
         
-    # 2. Perform the ACTUAL logic
+    # 2. Perform the ACTUAL logic - is_exceptional is already baked into the callback
     try:
         result = bond_logic_callback(entity.id)
         success = result.get("success", False)
-        is_exceptional = result.get("is_exceptional", False)
+        # Use the is_exceptional from the result (should match what we passed)
+        result_is_exceptional = result.get("is_exceptional", is_exceptional)
         exceptional_colors = result.get("exceptional_colors", None)
     except Exception as e:
         QtWidgets.QMessageBox.critical(parent, "Error", f"Bonding error: {str(e)}")
@@ -258,17 +288,20 @@ def show_entity_encounter(entity, join_probability: float,
         roll = random.uniform(min(0.99, join_probability + 0.01), 1.0)
     
     # 4. Show the dramatic lottery animation
-    if is_exceptional:
+    # For exceptional entities, use the playful exceptional_name if available
+    display_name = entity.exceptional_name if result_is_exceptional and entity.exceptional_name else entity.name
+    
+    if result_is_exceptional:
         # Special success text for exceptional
         border_col = exceptional_colors.get("border", "#FFD700") if exceptional_colors else "#FFD700"
-        success_text = f"🌟✨ EXCEPTIONAL {entity.name}! ✨🌟"
+        success_text = f"🌟✨ EXCEPTIONAL {display_name}! ✨🌟"
     else:
         success_text = f"✨ BONDED: {entity.name}! ✨"
     
     anim_dialog = LotteryRollDialog(
         target_roll=roll,
         success_threshold=join_probability,
-        title=f"🎲 Bonding with {entity.name}...",
+        title=f"🎲 Bonding with {display_name if result_is_exceptional else entity.name}...",
         success_text=success_text,
         failure_text="💔 Bond Failed",
         animation_duration=4.0, 
@@ -278,7 +311,9 @@ def show_entity_encounter(entity, join_probability: float,
     anim_dialog.exec()
     
     # 5. Show special exceptional celebration dialog
-    if success and is_exceptional:
+    if success and result_is_exceptional:
+        # Show exciting "WAIT!" message before celebration
+        _show_exceptional_surprise(parent)
         _show_exceptional_celebration(entity, exceptional_colors, parent)
     elif not success and result.get("consecutive_fails", 0) > 0:
         fails = result["consecutive_fails"]
@@ -289,10 +324,60 @@ def show_entity_encounter(entity, join_probability: float,
              )
 
 
+def _show_exceptional_surprise(parent: QtWidgets.QWidget):
+    """Show a brief exciting 'WAIT!' message when catching an exceptional entity."""
+    dialog = QtWidgets.QDialog(parent)
+    dialog.setWindowTitle("✨")
+    dialog.setFixedSize(320, 180)
+    dialog.setModal(True)
+    dialog.setWindowFlags(dialog.windowFlags() | QtCore.Qt.FramelessWindowHint)
+    
+    layout = QtWidgets.QVBoxLayout(dialog)
+    layout.setContentsMargins(20, 20, 20, 20)
+    
+    # Exciting message
+    wait_label = QtWidgets.QLabel("⚡ WAIT! ⚡")
+    wait_label.setAlignment(QtCore.Qt.AlignCenter)
+    wait_label.setStyleSheet("""
+        font-size: 32px;
+        font-weight: bold;
+        color: #FFD700;
+    """)
+    layout.addWidget(wait_label)
+    
+    message_label = QtWidgets.QLabel("We bonded with an\nEXCEPTIONAL one!")
+    message_label.setAlignment(QtCore.Qt.AlignCenter)
+    message_label.setWordWrap(True)
+    message_label.setStyleSheet("""
+        font-size: 18px;
+        font-weight: bold;
+        color: #FF6B9D;
+    """)
+    layout.addWidget(message_label)
+    
+    # Style the dialog
+    dialog.setStyleSheet("""
+        QDialog {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 #1a1a2e, stop:0.5 #2d1b4e, stop:1 #1a1a2e);
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+        }
+    """)
+    
+    # Auto-close after 1.5 seconds
+    QtCore.QTimer.singleShot(1500, dialog.accept)
+    
+    dialog.exec()
+
+
 def _show_exceptional_celebration(entity, exceptional_colors: dict, parent: QtWidgets.QWidget):
     """Show special celebration dialog for catching an exceptional entity with its unique SVG."""
     border_col = exceptional_colors.get("border", "#FFD700") if exceptional_colors else "#FFD700"
     glow_col = exceptional_colors.get("glow", "#FF6B9D") if exceptional_colors else "#FF6B9D"
+    
+    # Use exceptional_name for the celebration if available
+    display_name = entity.exceptional_name if entity.exceptional_name else entity.name
     
     # Create a custom dialog to show the exceptional SVG
     dialog = QtWidgets.QDialog(parent)
@@ -305,7 +390,7 @@ def _show_exceptional_celebration(entity, exceptional_colors: dict, parent: QtWi
     layout.setContentsMargins(20, 20, 20, 20)
     
     # Title
-    title = QtWidgets.QLabel(f"✨ EXCEPTIONAL {entity.name}! ✨")
+    title = QtWidgets.QLabel(f"✨ EXCEPTIONAL {display_name}! ✨")
     title.setAlignment(QtCore.Qt.AlignCenter)
     title.setWordWrap(True)
     title.setStyleSheet(f"""

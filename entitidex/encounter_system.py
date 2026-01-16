@@ -39,6 +39,9 @@ ENCOUNTER_CONFIG = {
     "power_near_threshold": 200,
     "power_close_threshold": 500,
     "power_medium_threshold": 1000,
+    
+    # Exceptional encounter chance (20%)
+    "exceptional_chance": 0.20,
 }
 
 
@@ -190,11 +193,12 @@ def select_encounter_entity(
     progress: EntitidexProgress,
     hero_power: int,
     story_id: str,
-) -> Optional[Entity]:
+) -> Tuple[Optional[Entity], bool]:
     """
     Select which entity appears during an encounter.
     
-    Prioritizes uncaught entities near the hero's power level.
+    First rolls whether this is an exceptional encounter (20% chance).
+    Then prioritizes uncaught entities (of that variant) near the hero's power level.
     Entities that have been failed before get a pity bonus.
     
     Args:
@@ -203,31 +207,52 @@ def select_encounter_entity(
         story_id: Current story theme
         
     Returns:
-        Entity to encounter, or None if collection is complete
+        Tuple of (Entity to encounter or None, is_exceptional flag)
     """
-    # Get all uncollected entities for this story
-    uncollected = progress.get_uncollected_entities(story_id)
+    # First, roll whether this is an exceptional encounter (20% chance)
+    is_exceptional = random.random() < ENCOUNTER_CONFIG["exceptional_chance"]
     
-    if not uncollected:
-        return None  # Collection complete!
+    # Check what variants are available
+    has_normal, has_exceptional = progress.has_any_available_variants(story_id)
+    
+    # If we rolled exceptional but there are no exceptional variants left,
+    # fall back to normal. If we rolled normal but there are no normal left,
+    # try exceptional.
+    if is_exceptional and not has_exceptional:
+        if has_normal:
+            is_exceptional = False
+        else:
+            return None, False  # Collection complete!
+    elif not is_exceptional and not has_normal:
+        if has_exceptional:
+            is_exceptional = True
+        else:
+            return None, False  # Collection complete!
+    
+    # Get entities with the chosen variant still available
+    available = progress.get_available_entity_variants(story_id, is_exceptional)
+    
+    if not available:
+        return None, False  # This shouldn't happen given checks above
     
     # Calculate weights for each entity
     weights = []
-    for entity in uncollected:
-        failed_attempts = progress.get_failed_attempts(entity.id)
+    for entity in available:
+        failed_attempts = progress.get_failed_attempts(entity.id, is_exceptional)
         weight = _calculate_entity_weight(entity, hero_power, failed_attempts)
         weights.append(weight)
     
     # Weighted random selection
-    selected = random.choices(uncollected, weights=weights, k=1)[0]
+    selected = random.choices(available, weights=weights, k=1)[0]
     
-    return selected
+    return selected, is_exceptional
 
 
 def get_encounter_preview(
     progress: EntitidexProgress,
     hero_power: int,
     story_id: str,
+    is_exceptional: bool = False,
 ) -> List[Tuple[Entity, float]]:
     """
     Preview which entities are most likely to appear and their relative chances.
@@ -238,19 +263,20 @@ def get_encounter_preview(
         progress: User's Entitidex progress
         hero_power: Hero's current power
         story_id: Story theme
+        is_exceptional: If True, preview exceptional variants; False for normal
         
     Returns:
         List of (Entity, probability) sorted by probability descending
     """
-    uncollected = progress.get_uncollected_entities(story_id)
+    available = progress.get_available_entity_variants(story_id, is_exceptional)
     
-    if not uncollected:
+    if not available:
         return []
     
     # Calculate weights
     weights = []
-    for entity in uncollected:
-        failed_attempts = progress.get_failed_attempts(entity.id)
+    for entity in available:
+        failed_attempts = progress.get_failed_attempts(entity.id, is_exceptional)
         weight = _calculate_entity_weight(entity, hero_power, failed_attempts)
         weights.append(weight)
     
@@ -258,7 +284,7 @@ def get_encounter_preview(
     
     # Convert to probabilities
     preview = []
-    for entity, weight in zip(uncollected, weights):
+    for entity, weight in zip(available, weights):
         probability = weight / total_weight if total_weight > 0 else 0
         preview.append((entity, probability))
     
@@ -272,21 +298,30 @@ def get_encounter_preview(
 # ENCOUNTER MESSAGES
 # =============================================================================
 
-def get_encounter_announcement(entity: Entity, is_first_time: bool) -> str:
+def get_encounter_announcement(entity: Entity, is_first_time: bool, is_exceptional: bool = False) -> str:
     """
     Get the announcement message for an entity encounter.
     
     Args:
         entity: The encountered entity
         is_first_time: True if this is the first time encountering this entity
+        is_exceptional: True if this is an exceptional variant
         
     Returns:
         Announcement message string
     """
-    if is_first_time:
-        return f"✨ A new companion seeks you! ✨\n\n{entity.name} has appeared!"
+    if is_exceptional:
+        # Use exceptional name if available
+        display_name = entity.exceptional_name or entity.name
+        if is_first_time:
+            return f"🌟 EXCEPTIONAL! 🌟\n\n{display_name} has appeared!"
+        else:
+            return f"🌟 Another chance at an EXCEPTIONAL! 🌟\n\n{display_name} returns!"
     else:
-        return f"🔄 A familiar friend returns!\n\n{entity.name} wants another chance to join you!"
+        if is_first_time:
+            return f"✨ A new companion seeks you! ✨\n\n{entity.name} has appeared!"
+        else:
+            return f"🔄 A familiar friend returns!\n\n{entity.name} wants another chance to join you!"
 
 
 def get_encounter_flavor_text(entity: Entity, hero_power: int) -> str:
