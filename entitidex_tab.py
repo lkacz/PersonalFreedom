@@ -518,19 +518,26 @@ class AnimatedSvgWidget(QtWidgets.QWidget):
         self.web_view.setHtml(html, base_url)
     
     def stop_animations(self) -> None:
-        """Stop WebEngine rendering to free resources when widget is hidden.
+        """Pause WebEngine animations without destroying content.
         
-        Industry best practice: Explicitly stop embedded Chromium processes
-        when animations are not needed to reduce CPU/memory usage.
+        Industry best practice: Use CSS animation-play-state to pause
+        animations instead of unloading content, avoiding expensive re-render.
         """
         if self.web_view:
-            # Load empty page to stop all JS/CSS animations
-            self.web_view.setHtml('')
+            # Pause all CSS/SMIL animations via JavaScript without unloading
+            self.web_view.page().runJavaScript(
+                "document.querySelectorAll('*').forEach(el => el.style.animationPlayState = 'paused');"
+                "document.querySelectorAll('animate, animateTransform, animateMotion').forEach(el => el.endElement ? el.endElement() : null);"
+            )
     
     def restart_animations(self) -> None:
-        """Restart WebEngine rendering when widget becomes visible again."""
+        """Resume WebEngine animations."""
         if self.web_view:
-            self._load_svg()
+            # Resume CSS animations; SMIL animations restart automatically on visibility
+            self.web_view.page().runJavaScript(
+                "document.querySelectorAll('*').forEach(el => el.style.animationPlayState = '');"
+                "document.querySelectorAll('animate, animateTransform, animateMotion').forEach(el => el.beginElement ? el.beginElement() : null);"
+            )
 
 
 class EntityCard(QtWidgets.QFrame):
@@ -1022,6 +1029,9 @@ class EntityCard(QtWidgets.QFrame):
         # Card size: 180 wide, 235 tall (extra height for two-line names)
         self.setFixedSize(180, 235)
         
+        # Set hover tooltip with entity info
+        self._setup_tooltip()
+        
         # Add sparkle decorations for exceptional entities (after setFixedSize so they can be positioned)
         if self.is_collected and self.is_exceptional:
             self._add_sparkle_decorations()
@@ -1030,6 +1040,63 @@ class EntityCard(QtWidgets.QFrame):
         if event.button() == QtCore.Qt.LeftButton:
             self.clicked.emit(self.entity, self.is_exceptional)
         super().mousePressEvent(event)
+    
+    def _setup_tooltip(self):
+        """Setup rich hover tooltip with entity info."""
+        if self.is_collected:
+            # Show full entity info
+            variant = "⭐ EXCEPTIONAL" if self.is_exceptional else ""
+            name = self.entity.exceptional_name if self.is_exceptional and self.entity.exceptional_name else self.entity.name
+            rarity = self.entity.rarity.upper()
+            rarity_color = RARITY_COLORS.get(self.entity.rarity.lower(), "#9E9E9E")
+            lore = self.entity.lore
+            # Wrap lore text for readability
+            lore_lines = []
+            words = lore.split()
+            current_line = []
+            for word in words:
+                current_line.append(word)
+                if len(' '.join(current_line)) > 50:
+                    lore_lines.append(' '.join(current_line))
+                    current_line = []
+            if current_line:
+                lore_lines.append(' '.join(current_line))
+            lore_wrapped = '<br>'.join(lore_lines)
+            
+            tooltip = f'''
+<div style="padding: 8px; max-width: 300px;">
+<b style="color: {rarity_color}; font-size: 14px;">{variant} {name}</b><br>
+<span style="color: {rarity_color};">⚔️ Power: {self.entity.power} | {rarity}</span>
+<hr style="border-color: #444;">
+<span style="color: #CCC;">{lore_wrapped}</span>
+</div>
+'''.strip()
+        elif self.is_encountered:
+            tooltip = '''
+<div style="padding: 8px;">
+<b style="color: #666;">??? Unknown Entity</b><br>
+<span style="color: #888;">You've seen this entity before!</span><br>
+<span style="color: #666;">Complete focus sessions to bond with it.</span>
+</div>
+'''.strip()
+        else:
+            if self.is_exceptional:
+                tooltip = '''
+<div style="padding: 8px;">
+<b style="color: #FFD700;">⭐ ??? Exceptional Unknown</b><br>
+<span style="color: #888;">A rare exceptional variant awaits...</span><br>
+<span style="color: #666;">Complete focus sessions to discover it!</span>
+</div>
+'''.strip()
+            else:
+                tooltip = '''
+<div style="padding: 8px;">
+<b style="color: #555;">??? Unknown Entity</b><br>
+<span style="color: #666;">Complete focus sessions to encounter new companions!</span>
+</div>
+'''.strip()
+        
+        self.setToolTip(tooltip)
     
     def pause_animations(self) -> None:
         """Pause all animations to save CPU when tab is not visible.
@@ -1053,11 +1120,8 @@ class EntityCard(QtWidgets.QFrame):
         if self._shimmer_timer and self._shimmer_timer.isActive():
             self._shimmer_timer.stop()
         
-        # Industry standard: Stop WebEngine animations AND hide to stop Chromium completely
-        if hasattr(self, '_icon_widget') and self._icon_widget and HAS_WEBENGINE:
-            if isinstance(self._icon_widget, AnimatedSvgWidget):
-                self._icon_widget.stop_animations()  # Unload HTML to stop JS/CSS animations
-                self._icon_widget.setVisible(False)
+        # Note: WebEngine animations are NOT paused to avoid delay/flicker on tab switch.
+        # The CPU cost of small SVG animations is negligible compared to re-render delays.
     
     def resume_animations(self) -> None:
         """Resume animations when tab becomes visible.
@@ -1081,11 +1145,7 @@ class EntityCard(QtWidgets.QFrame):
         if self._shimmer_timer and not self._shimmer_timer.isActive():
             self._shimmer_timer.start(50)
         
-        # Industry standard: Reload WebEngine content when resuming
-        if hasattr(self, '_icon_widget') and self._icon_widget and HAS_WEBENGINE:
-            if isinstance(self._icon_widget, AnimatedSvgWidget):
-                self._icon_widget.setVisible(True)
-                self._icon_widget.restart_animations()  # Reload HTML to restart animations
+        # Note: WebEngine animations run continuously (never paused) to avoid delay/flicker.
 
 
 # Theme info for tabs (matching preview_entities.py)
@@ -1128,6 +1188,26 @@ class EntitidexTab(QtWidgets.QWidget):
         self._placeholder_label.setStyleSheet("color: #666; font-size: 16px;")
         self._placeholder_layout.addWidget(self._placeholder_label)
     
+    def preload(self) -> None:
+        """Pre-initialize the tab in background for instant display.
+        
+        Call this from the main window after startup to build the UI
+        before the user clicks the tab, eliminating load delay.
+        """
+        if self._initialized:
+            return
+        self._initialized = True
+        # Remove placeholder label
+        if self._placeholder_label:
+            self._placeholder_label.deleteLater()
+            self._placeholder_label = None
+        # Load data and build real UI (reuses existing layout)
+        self._load_progress()
+        self._build_ui()
+        # Start with animations paused since tab isn't visible yet
+        for card in self._all_cards:
+            card.pause_animations()
+    
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         """Called when tab becomes visible - lazy init and resume animations."""
         super().showEvent(event)
@@ -1136,12 +1216,10 @@ class EntitidexTab(QtWidgets.QWidget):
         # Lazy initialization on first show
         if not self._initialized:
             self._initialized = True
-            # Remove placeholder
+            # Remove placeholder label
             self._placeholder_label.deleteLater()
-            # Clear placeholder layout
-            while self._placeholder_layout.count():
-                self._placeholder_layout.takeAt(0)
-            # Load data and build real UI
+            self._placeholder_label = None
+            # Load data and build real UI (reuses existing layout)
             self._load_progress()
             self._build_ui()
         
@@ -1189,7 +1267,8 @@ class EntitidexTab(QtWidgets.QWidget):
             _logger.exception("Error saving entitidex progress")
     
     def _build_ui(self):
-        layout = QtWidgets.QVBoxLayout(self)
+        # Reuse the existing placeholder layout instead of creating a new one
+        layout = self._placeholder_layout
         layout.setSpacing(10)
         layout.setContentsMargins(15, 15, 15, 15)
         
@@ -1248,47 +1327,7 @@ class EntitidexTab(QtWidgets.QWidget):
         
         layout.addWidget(self.theme_tab_widget)
         
-        # Detail panel (shown when entity is clicked)
-        self.detail_panel = QtWidgets.QFrame()
-        self.detail_panel.setStyleSheet("""
-            QFrame {
-                background: #1E1E1E;
-                border-radius: 10px;
-                padding: 15px;
-            }
-        """)
-        self.detail_panel.setVisible(False)
-        
-        detail_layout = QtWidgets.QVBoxLayout(self.detail_panel)
-        
-        self.detail_name = QtWidgets.QLabel()
-        self.detail_name.setStyleSheet("font-size: 18px; font-weight: bold;")
-        self.detail_name.setAlignment(QtCore.Qt.AlignCenter)
-        detail_layout.addWidget(self.detail_name)
-        
-        self.detail_lore = QtWidgets.QLabel()
-        self.detail_lore.setWordWrap(True)
-        self.detail_lore.setStyleSheet("color: #CCCCCC; font-size: 12px; padding: 10px;")
-        self.detail_lore.setAlignment(QtCore.Qt.AlignCenter)
-        detail_layout.addWidget(self.detail_lore)
-        
-        close_btn = QtWidgets.QPushButton("Close")
-        close_btn.setStyleSheet("""
-            QPushButton {
-                background: #444;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                padding: 8px 20px;
-            }
-            QPushButton:hover {
-                background: #555;
-            }
-        """)
-        close_btn.clicked.connect(lambda: self.detail_panel.setVisible(False))
-        detail_layout.addWidget(close_btn, 0, QtCore.Qt.AlignCenter)
-        
-        layout.addWidget(self.detail_panel)
+        # Note: Entity info is now shown via hover tooltips on cards (cleaner UX)
         
         # Load initial data
         self._refresh_all_tabs()
@@ -1370,6 +1409,11 @@ class EntitidexTab(QtWidgets.QWidget):
         
         cards_container = QtWidgets.QWidget()
         cards_container.setObjectName(f"cards_container_{theme_key}")
+        # Prevent container from requesting excessive size
+        cards_container.setSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, 
+            QtWidgets.QSizePolicy.Preferred
+        )
         cards_layout = QtWidgets.QGridLayout(cards_container)
         cards_layout.setSpacing(16)
         cards_layout.setContentsMargins(16, 16, 16, 16)
@@ -1398,7 +1442,7 @@ class EntitidexTab(QtWidgets.QWidget):
             is_exceptional=False,
             exceptional_colors={}
         )
-        normal_card.clicked.connect(self._on_entity_clicked)
+        # Note: Click removed - hover tooltips show entity info now
         pair_layout.addWidget(normal_card)
         
         # Exceptional card
@@ -1410,7 +1454,7 @@ class EntitidexTab(QtWidgets.QWidget):
             is_exceptional=True,
             exceptional_colors=exceptional_colors
         )
-        exceptional_card.clicked.connect(self._on_entity_clicked)
+        # Note: Click removed - hover tooltips show entity info now
         pair_layout.addWidget(exceptional_card)
         
         # Register cards for lifecycle management (pause/resume)
@@ -1562,52 +1606,7 @@ class EntitidexTab(QtWidgets.QWidget):
         if story in theme_keys:
             self.theme_tab_widget.setCurrentIndex(theme_keys.index(story))
     
-    def _on_entity_clicked(self, entity: Entity, is_exceptional: bool = False):
-        """Handle entity card click - show details if collected."""
-        # Check if this specific variant is collected
-        is_normal_collected = self.progress.is_collected(entity.id)
-        is_exceptional_collected = self.progress.is_exceptional(entity.id)
-        
-        # Determine which variant was clicked and if it's collected
-        if is_exceptional:
-            is_this_collected = is_exceptional_collected
-            variant_text = "⭐ Exceptional "
-        else:
-            is_this_collected = is_normal_collected
-            variant_text = ""
-        
-        if is_this_collected:
-            rarity_color = RARITY_COLORS.get(entity.rarity.lower(), "#9E9E9E")
-            # Use shiny color for exceptional
-            if is_exceptional:
-                shiny_color = EXCEPTIONAL_ENTITY_COLORS.get(entity.id, (255, 215, 0))
-                rarity_color = f"#{shiny_color[0]:02X}{shiny_color[1]:02X}{shiny_color[2]:02X}"
-            # Use exceptional_name for exceptional entities if available
-            display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
-            self.detail_name.setText(f"{variant_text}{display_name}")
-            self.detail_name.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {rarity_color};")
-            if is_exceptional:
-                self.detail_lore.setText(f"⭐ EXCEPTIONAL VARIANT ⭐\n\n{entity.lore}\n\n✨ A rare and special version of this companion!")
-            else:
-                self.detail_lore.setText(entity.lore)
-            self.detail_panel.setVisible(True)
-        else:
-            # Show hint for uncollected
-            if is_exceptional:
-                self.detail_name.setText("⭐ ??? Exceptional Unknown")
-                self.detail_name.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFD700;")
-                if is_normal_collected:
-                    self.detail_lore.setText(f"You have the normal {entity.name}, but not the exceptional variant!\n\n✨ Exceptional entities are rare special versions.\n\nKeep completing focus sessions for a chance to find this exceptional variant!")
-                else:
-                    self.detail_lore.setText("This exceptional entity awaits discovery.\n\n✨ Exceptional entities are rare special versions.\n\nComplete focus sessions to encounter entities - some may be exceptional!")
-            else:
-                self.detail_name.setText("??? Unknown Entity")
-                self.detail_name.setStyleSheet("font-size: 18px; font-weight: bold; color: #666666;")
-                if self.progress.is_encountered(entity.id):
-                    self.detail_lore.setText("You've seen this entity before, but haven't bonded yet.\nComplete focus sessions to encounter it again!")
-                else:
-                    self.detail_lore.setText("This entity awaits discovery.\nComplete focus sessions to encounter new companions!")
-            self.detail_panel.setVisible(True)
+    # Note: _on_entity_clicked removed - entity info now shown via hover tooltips
     
     def add_collected_entity(self, entity_id: str):
         """Mark an entity as collected and refresh display."""
