@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Break Room Fridge - Cosmic aurora portal fridge variant (legendary!) -->
+  <defs>
+    <linearGradient id="cosmicMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1A237E"/>
+      <stop offset="50%" style="stop-color:#0D1B2A"/>
+      <stop offset="100%" style="stop-color:#000814"/>
+    </linearGradient>
+    <linearGradient id="cosmicSide" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3F51B5"/>
+      <stop offset="100%" style="stop-color:#1A237E"/>
+    </linearGradient>
+    <linearGradient id="auroraGlow" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#E040FB"/>
+      <stop offset="25%" style="stop-color:#00E5FF"/>
+      <stop offset="50%" style="stop-color:#76FF03"/>
+      <stop offset="75%" style="stop-color:#FFEA00"/>
+      <stop offset="100%" style="stop-color:#FF4081"/>
+    </linearGradient>
+    <linearGradient id="starGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8EAF6"/>
+      <stop offset="100%" style="stop-color:#C5CAE9"/>
+    </linearGradient>
+    <filter id="cosmicGlow">
+      <feGaussianBlur stdDeviation="3.5" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Cosmic aurora aura -->
+  <ellipse cx="32" cy="34" rx="28" ry="30" fill="url(#auroraGlow)" filter="url(#cosmicGlow)" opacity="0.2"/>
+  
+  <!-- Fridge shadow -->
+  <ellipse cx="34" cy="60" rx="16" ry="3" fill="#3F51B5" opacity="0.2"/>
+  
+  <!-- Main cosmic fridge body -->
+  <rect x="12" y="6" width="38" height="52" rx="2" fill="url(#cosmicMetal)"/>
+  
+  <!-- Side cosmic effect -->
+  <rect x="48" y="8" width="3" height="48" fill="url(#cosmicSide)"/>
+  
+  <!-- Stars embedded in fridge surface - twinkling -->
+  <g fill="white" opacity="0.6">
+    <circle cx="18" cy="14" r="0.8">
+      <animate attributeName="opacity" values="0.6;1;0.6;0.4;0.6" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="40" cy="18" r="0.5">
+      <animate attributeName="opacity" values="0.4;0.6;1;0.6;0.4" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="22" cy="30" r="0.6">
+      <animate attributeName="opacity" values="0.6;0.4;0.6;1;0.6" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="44" cy="42" r="0.7">
+      <animate attributeName="opacity" values="1;0.6;0.4;0.6;1" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="16" cy="48" r="0.5">
+      <animate attributeName="opacity" values="0.5;0.8;0.5;1;0.5" dur="2.1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="38" cy="52" r="0.6">
+      <animate attributeName="opacity" values="0.8;0.5;0.8;0.6;0.8" dur="1.9s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Freezer compartment (aurora window) -->
+  <rect x="14" y="8" width="34" height="14" rx="1" fill="url(#cosmicMetal)" stroke="#5C6BC0" stroke-width="0.5"/>
+  <!-- Aurora glow in freezer -->
+  <rect x="16" y="10" width="30" height="10" rx="1" fill="url(#auroraGlow)" opacity="0.3" filter="url(#cosmicGlow)"/>
+  
+  <!-- Freezer door line -->
+  <line x1="14" y1="22" x2="48" y2="22" stroke="#5C6BC0" stroke-width="1"/>
+  
+  <!-- Fridge door (main compartment) -->
+  <rect x="14" y="24" width="34" height="32" rx="1" fill="url(#cosmicMetal)" stroke="#5C6BC0" stroke-width="0.5"/>
+  <!-- Aurora glow in main -->
+  <rect x="16" y="26" width="30" height="28" rx="1" fill="url(#auroraGlow)" opacity="0.2" filter="url(#cosmicGlow)"/>
+  
+  <!-- Crystal handles -->
+  <rect x="42" y="12" width="4" height="6" rx="1" fill="url(#starGlow)" filter="url(#cosmicGlow)"/>
+  <rect x="42" y="34" width="4" height="10" rx="1" fill="url(#starGlow)" filter="url(#cosmicGlow)"/>
+  
+  <!-- Dent marks (now like meteor impacts with glow) -->
+  <ellipse cx="24" cy="36" rx="4" ry="3" fill="#3F51B5" opacity="0.3"/>
+  <circle cx="24" cy="36" r="1" fill="#E040FB" filter="url(#cosmicGlow)" opacity="0.5"/>
+  <ellipse cx="36" cy="48" rx="3" ry="2" fill="#3F51B5" opacity="0.3"/>
+  <circle cx="36" cy="48" r="0.8" fill="#00E5FF" filter="url(#cosmicGlow)" opacity="0.5"/>
+  
+  <!-- Dream bubble (cosmic nebula) - with swirling galaxy -->
+  <g filter="url(#cosmicGlow)">
+    <circle cx="54" cy="10" r="6" fill="#0D1B2A" stroke="#5C6BC0" stroke-width="0.5"/>
+    <!-- Mini galaxy inside - slowly rotating -->
+    <ellipse cx="54" cy="10" rx="3" ry="1.5" fill="url(#auroraGlow)" opacity="0.6" transform="rotate(30, 54, 10)">
+      <animateTransform attributeName="transform" type="rotate" values="30 54 10;390 54 10" dur="8s" repeatCount="indefinite"/>
+    </ellipse>
+    <circle cx="52" cy="9" r="0.5" fill="white">
+      <animate attributeName="opacity" values="1;0.5;1" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="56" cy="11" r="0.3" fill="white">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="1.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Connection bubbles -->
+  <circle cx="50" cy="16" r="1.5" fill="#5C6BC0" opacity="0.5"/>
+  <circle cx="48" cy="20" r="1" fill="#5C6BC0" opacity="0.3"/>
+  
+  <!-- Aurora particles - floating with cosmic energy -->
+  <circle cx="6" cy="18" r="1.5" fill="#E040FB" opacity="0.6" filter="url(#cosmicGlow)">
+    <animate attributeName="cy" values="18;14;18;22;18" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0.9;0.6;0.4;0.6" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="58" cy="30" r="1" fill="#00E5FF" opacity="0.5">
+    <animate attributeName="cy" values="30;26;30;34;30" dur="3.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.8;0.5;0.3;0.5" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="4" cy="46" r="1.2" fill="#76FF03" opacity="0.4">
+    <animate attributeName="cy" values="46;42;46;50;46" dur="4.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.7;0.4;0.2;0.4" dur="4.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="60" cy="52" r="0.8" fill="#FFEA00" opacity="0.5">
+    <animate attributeName="cy" values="52;48;52;56;52" dur="3.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.8;0.5;0.3;0.5" dur="3.8s" repeatCount="indefinite"/>
+  </circle>
+</svg>

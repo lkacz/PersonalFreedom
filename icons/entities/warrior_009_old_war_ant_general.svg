@@ -75,12 +75,22 @@
   <path d="M46 28 Q50 30, 48 32 Q46 30, 46 28" fill="#263238"/>
   <path d="M46 26 Q50 24, 52 26 Q50 28, 46 28" fill="#263238"/>
   
-  <!-- Antennae (one partially broken - battle damage) -->
-  <path d="M38 20 Q36 16, 34 12 Q32 10, 30 8" stroke="#1A1A1A" stroke-width="1" fill="none"/>
-  <circle cx="30" cy="8" r="1" fill="#263238"/>
-  <!-- Broken antenna (shorter) -->
-  <path d="M42 20 Q44 16, 46 14" stroke="#1A1A1A" stroke-width="1" fill="none"/>
-  <circle cx="46" cy="14" r="0.8" fill="#263238"/> <!-- Healed break -->
+  <!-- Antennae (one partially broken - battle damage) - twitching -->
+  <path d="M38 20 Q36 16, 34 12 Q32 10, 30 8" stroke="#1A1A1A" stroke-width="1" fill="none">
+    <animate attributeName="d" values="M38 20 Q36 16, 34 12 Q32 10, 30 8;M38 20 Q34 16, 32 12 Q30 9, 28 6;M38 20 Q36 16, 34 12 Q32 10, 30 8" dur="1.5s" repeatCount="indefinite"/>
+  </path>
+  <circle cx="30" cy="8" r="1" fill="#263238">
+    <animate attributeName="cx" values="30;28;30" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="8;6;8" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <!-- Broken antenna (shorter) - twitching -->
+  <path d="M42 20 Q44 16, 46 14" stroke="#1A1A1A" stroke-width="1" fill="none">
+    <animate attributeName="d" values="M42 20 Q44 16, 46 14;M42 20 Q46 16, 48 12;M42 20 Q44 16, 46 14" dur="1.8s" repeatCount="indefinite"/>
+  </path>
+  <circle cx="46" cy="14" r="0.8" fill="#263238"> <!-- Healed break -->
+    <animate attributeName="cx" values="46;48;46" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="14;12;14" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
   
   <!-- Eyes (compound, wise, seen a million battles) -->
   <ellipse cx="44" cy="24" rx="2.5" ry="2" fill="#263238"/>

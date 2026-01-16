@@ -65,28 +65,56 @@
   <!-- Curl at top of head (like rolled parchment) -->
   <path d="M36 12 Q34 8, 38 6 Q42 4, 44 8 Q46 12, 42 14" fill="url(#parchmentBody)" stroke="#D7CCC8" stroke-width="0.5"/>
   
-  <!-- Wise eyes -->
+  <!-- Wise eyes with saccadic movement -->
   <ellipse cx="38" cy="18" rx="2.5" ry="2" fill="#FFF8E1"/>
   <circle cx="38" cy="18" r="1.5" fill="#FF8F00"/>
-  <circle cx="38" cy="18" r="0.8" fill="#1A1A1A"/>
-  <circle cx="38.4" cy="17.6" r="0.3" fill="white"/>
+  <circle cx="38" cy="18" r="0.8" fill="#1A1A1A">
+    <animate attributeName="cx" values="38;38;38.5;38;37.5;38;38" dur="3.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="18;18;17.5;18;18;18.5;18" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="38.4" cy="17.6" r="0.3" fill="white">
+    <animate attributeName="cx" values="38.4;38.4;38.9;38.4;37.9;38.4;38.4" dur="3.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="17.6;17.6;17.1;17.6;17.6;18.1;17.6" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <!-- Left eye blink -->
+  <ellipse cx="38" cy="18" rx="2.5" ry="0" fill="#FFE082">
+    <animate attributeName="ry" values="0;2;0" keyTimes="0;0.98;1" dur="5.9s" begin="0.8s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
   
   <ellipse cx="44" cy="18" rx="2.5" ry="2" fill="#FFF8E1"/>
   <circle cx="44" cy="18" r="1.5" fill="#FF8F00"/>
-  <circle cx="44" cy="18" r="0.8" fill="#1A1A1A"/>
-  <circle cx="44.4" cy="17.6" r="0.3" fill="white"/>
+  <circle cx="44" cy="18" r="0.8" fill="#1A1A1A">
+    <animate attributeName="cx" values="44;44;44.5;44;43.5;44;44" dur="3.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="18;18;17.5;18;18;18.5;18" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="44.4" cy="17.6" r="0.3" fill="white">
+    <animate attributeName="cx" values="44.4;44.4;44.9;44.4;43.9;44.4;44.4" dur="3.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="17.6;17.6;17.1;17.6;17.6;18.1;17.6" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <!-- Right eye blink -->
+  <ellipse cx="44" cy="18" rx="2.5" ry="0" fill="#FFE082">
+    <animate attributeName="ry" values="0;2;0" keyTimes="0;0.98;1" dur="5.9s" begin="0.8s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
   
   <!-- Beak (quill pen tip!) -->
   <path d="M46 20 L52 22 L46 24 Z" fill="url(#goldInk)"/>
   <line x1="52" y1="22" x2="56" y2="22" stroke="url(#goldInk)" stroke-width="0.5"/>
   
-  <!-- Small flames at wing tips -->
-  <path d="M4 34 Q2 32, 4 30 Q6 32, 4 34" fill="#FF9800"/>
-  <path d="M60 34 Q62 32, 60 30 Q58 32, 60 34" fill="#FF9800"/>
+  <!-- Small flames at wing tips - flickering -->
+  <path d="M4 34 Q2 32, 4 30 Q6 32, 4 34" fill="#FF9800">
+    <animate attributeName="d" values="M4 34 Q2 32, 4 30 Q6 32, 4 34;M4 33 Q1 31, 4 29 Q7 31, 4 33;M4 34 Q2 32, 4 30 Q6 32, 4 34" dur="0.4s" repeatCount="indefinite"/>
+  </path>
+  <path d="M60 34 Q62 32, 60 30 Q58 32, 60 34" fill="#FF9800">
+    <animate attributeName="d" values="M60 34 Q62 32, 60 30 Q58 32, 60 34;M60 33 Q63 31, 60 29 Q57 31, 60 33;M60 34 Q62 32, 60 30 Q58 32, 60 34" dur="0.35s" repeatCount="indefinite"/>
+  </path>
   
-  <!-- Preservation flames (golden, not destructive) -->
-  <path d="M24 50 Q22 46, 26 44 Q24 48, 28 50" fill="#FFD54F" opacity="0.7"/>
-  <path d="M40 50 Q42 46, 38 44 Q40 48, 36 50" fill="#FFD54F" opacity="0.7"/>
+  <!-- Preservation flames (golden, not destructive) - animated -->
+  <path d="M24 50 Q22 46, 26 44 Q24 48, 28 50" fill="#FFD54F" opacity="0.7">
+    <animate attributeName="d" values="M24 50 Q22 46, 26 44 Q24 48, 28 50;M24 49 Q21 45, 26 43 Q23 47, 29 49;M24 50 Q22 46, 26 44 Q24 48, 28 50" dur="0.5s" repeatCount="indefinite"/>
+  </path>
+  <path d="M40 50 Q42 46, 38 44 Q40 48, 36 50" fill="#FFD54F" opacity="0.7">
+    <animate attributeName="d" values="M40 50 Q42 46, 38 44 Q40 48, 36 50;M40 49 Q43 45, 38 43 Q41 47, 35 49;M40 50 Q42 46, 38 44 Q40 48, 36 50" dur="0.45s" repeatCount="indefinite"/>
+  </path>
   
   <!-- Floating preserved words/letters -->
   <text x="10" y="28" font-size="4" fill="url(#goldInk)" opacity="0.6" font-family="serif">✦</text>

@@ -94,9 +94,19 @@
     <line x1="8" y1="38" x2="4" y2="42"/>
   </g>
   
-  <!-- Eyes - WISE, knowing, seen everything -->
-  <ellipse cx="16" cy="32" rx="3" ry="4" fill="#424242"/>
-  <circle cx="17" cy="31" r="1.5" fill="white"/>
+  <!-- Eyes - WISE, knowing, seen everything with saccadic movement -->
+  <ellipse cx="16" cy="32" rx="3" ry="4" fill="#424242">
+    <animate attributeName="cx" values="16;16;17;16;15;16;16" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="32;32;31;32;32;33;32" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  <circle cx="17" cy="31" r="1.5" fill="white">
+    <animate attributeName="cx" values="17;17;18;17;16;17;17" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="31;31;30;31;31;32;31" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <!-- Eye blink -->
+  <ellipse cx="16" cy="32" rx="3" ry="0" fill="#757575">
+    <animate attributeName="ry" values="0;4;0" keyTimes="0;0.98;1" dur="6.9s" begin="1.8s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
   <!-- Tiny golden wisdom sparkle in eye -->
   <circle cx="15" cy="33" r="0.5" fill="url(#hoboGold)" opacity="0.6"/>
   

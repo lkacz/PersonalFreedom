@@ -15,6 +15,15 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtSvg import QSvgRenderer
 
+# Try to import QWebEngineView for animated SVG support
+try:
+    from PySide6.QtWebEngineWidgets import QWebEngineView
+    from PySide6.QtWebEngineCore import QWebEngineSettings
+    HAS_WEBENGINE = True
+except ImportError:
+    HAS_WEBENGINE = False
+    print("Warning: QWebEngineView not available - SVG animations disabled")
+
 # Import entitidex components
 from entitidex import (
     get_entities_for_story,
@@ -43,6 +52,7 @@ RARITY_BG = {
 
 # Path to entity SVGs
 ENTITY_ICONS_PATH = Path(__file__).parent / "icons" / "entities"
+EXCEPTIONAL_ICONS_PATH = ENTITY_ICONS_PATH / "exceptional"
 
 # =============================================================================
 # EXCEPTIONAL/SHINY ENTITY COLORS
@@ -107,19 +117,42 @@ EXCEPTIONAL_ENTITY_COLORS = {
 }
 
 
-def _resolve_entity_svg_path(entity: Entity) -> Optional[str]:
+def _resolve_entity_svg_path(entity: Entity, is_exceptional: bool = False) -> Optional[str]:
     """
     Resolve the SVG path for an entity using multiple strategies.
     
     SVG files are named: {id}_{name_snake_case}.svg
     e.g., warrior_003_battle_falcon_swift.svg
+    
+    Exceptional variants are in icons/entities/exceptional/ with _exceptional suffix.
+    e.g., warrior_003_battle_falcon_swift_exceptional.svg
+    
+    Args:
+        entity: The Entity to find SVG for
+        is_exceptional: If True, look for exceptional variant first
+    
+    Returns:
+        Path to SVG file or None if not found
     """
+    name_snake = entity.name.lower().replace(" ", "_").replace("-", "_").replace("'", "")
+    
+    # If exceptional, try to find the exceptional variant first
+    if is_exceptional and EXCEPTIONAL_ICONS_PATH.exists():
+        # Strategy 1: Try filename pattern {id}_{name_snake_case}_exceptional.svg
+        exceptional_path = EXCEPTIONAL_ICONS_PATH / f"{entity.id}_{name_snake}_exceptional.svg"
+        if exceptional_path.exists():
+            return str(exceptional_path)
+        
+        # Strategy 2: Search for file starting with entity id in exceptional folder
+        for svg_file in EXCEPTIONAL_ICONS_PATH.glob(f"{entity.id}*_exceptional.svg"):
+            return str(svg_file)
+    
+    # Fall back to regular SVG resolution
     # Strategy 1: Try entity's icon_path if provided
     if entity.icon_path and os.path.exists(entity.icon_path):
         return entity.icon_path
     
     # Strategy 2: Try filename pattern {id}_{name_snake_case}.svg
-    name_snake = entity.name.lower().replace(" ", "_").replace("-", "_").replace("'", "")
     pattern_path = ENTITY_ICONS_PATH / f"{entity.id}_{name_snake}.svg"
     if pattern_path.exists():
         return str(pattern_path)
@@ -178,17 +211,107 @@ class SilhouetteSvgWidget(QtWidgets.QWidget):
         painter.end()
 
 
+class AnimatedSvgWidget(QtWidgets.QWidget):
+    """
+    Widget that displays SVG with full animation support using QWebEngineView.
+    Used for exceptional entities to show their embedded SMIL animations
+    (e.g., wagging tails, electricity effects, rotating elements).
+    
+    Falls back to QSvgWidget if WebEngine is not available.
+    """
+    
+    def __init__(self, svg_path: str, parent=None):
+        super().__init__(parent)
+        self.svg_path = svg_path
+        self.setFixedSize(128, 128)
+        
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        
+        if HAS_WEBENGINE:
+            # Use WebEngine for full SVG animation support
+            self.web_view = QWebEngineView()
+            self.web_view.setFixedSize(128, 128)
+            
+            # Configure for transparent background
+            self.web_view.page().setBackgroundColor(QtCore.Qt.transparent)
+            self.web_view.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+            
+            # Disable scrollbars and interactions
+            settings = self.web_view.settings()
+            settings.setAttribute(QWebEngineSettings.ShowScrollBars, False)
+            settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)  # For CSS animations
+            
+            # Load SVG with transparent background HTML wrapper
+            self._load_svg()
+            
+            layout.addWidget(self.web_view)
+        else:
+            # Fallback to static QSvgWidget
+            self.svg_widget = QSvgWidget(svg_path)
+            self.svg_widget.setFixedSize(128, 128)
+            self.svg_widget.setStyleSheet("background: transparent;")
+            layout.addWidget(self.svg_widget)
+    
+    def _load_svg(self):
+        """Load the SVG file into WebEngine with proper styling."""
+        # Read SVG content
+        try:
+            with open(self.svg_path, 'r', encoding='utf-8') as f:
+                svg_content = f.read()
+        except Exception as e:
+            print(f"Error loading SVG {self.svg_path}: {e}")
+            svg_content = '<svg></svg>'
+        
+        # Wrap SVG in HTML with transparent background and scaled display
+        # SVGs are 64x64 viewBox, scale to 128x128 display
+        html = f'''<!DOCTYPE html>
+<html>
+<head>
+<style>
+    * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+    html, body {{ 
+        width: 128px; 
+        height: 128px; 
+        overflow: hidden;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }}
+    svg {{
+        width: 128px;
+        height: 128px;
+        display: block;
+    }}
+</style>
+</head>
+<body>
+{svg_content}
+</body>
+</html>'''
+        
+        # Load with file:// base URL to allow relative references
+        base_url = QtCore.QUrl.fromLocalFile(str(Path(self.svg_path).parent) + '/')
+        self.web_view.setHtml(html, base_url)
+
+
 class EntityCard(QtWidgets.QFrame):
     """
     Card widget for displaying a single entity.
     Shows full details if collected, silhouette if not.
     Uses the same layout as preview_entities.py (180x220 with 128x128 SVG).
     
-    Exceptional entities get special animated border effects with
-    unique random colors.
+    Exceptional entities get special animated effects:
+    - Pulsing border glow
+    - Floating sparkle decorations
+    - Shimmer sweep effect
+    - Icon breathing/pulse effect
+    - Rotating halo particles
     """
     
-    clicked = QtCore.Signal(object)  # Emits Entity when clicked
+    clicked = QtCore.Signal(object, bool)  # Emits (Entity, is_exceptional) when clicked
     
     def __init__(self, entity: Entity, is_collected: bool, is_encountered: bool = False, 
                  is_exceptional: bool = False, exceptional_colors: dict = None, parent=None):
@@ -207,12 +330,18 @@ class EntityCard(QtWidgets.QFrame):
         self._glow_animation = None
         self._glow_value = 0.0
         self._sparkle_labels = []  # For sparkle decorations
+        self._shimmer_widget = None  # Shimmer sweep overlay
+        self._halo_particles = []  # Rotating particles around icon
+        self._icon_widget = None  # Store reference for animation
+        self._icon_scale_animation = None
         
         self._build_ui()
         
-        # Start glow animation for exceptional entities
+        # Start animations for exceptional entities
         if self.is_exceptional and self.is_collected:
             self._start_glow_animation()
+            self._start_icon_breathing()
+            self._create_shimmer_overlay()
         
     def _start_glow_animation(self):
         """Start the pulsing glow animation for exceptional entities."""
@@ -223,6 +352,77 @@ class EntityCard(QtWidgets.QFrame):
         self._glow_animation.setLoopCount(-1)  # Infinite loop
         self._glow_animation.setEasingCurve(QtCore.QEasingCurve.InOutSine)
         self._glow_animation.start()
+        
+    def _start_icon_breathing(self):
+        """Create a subtle opacity pulse animation for the icon (breathing effect).
+        
+        Note: Skipped when using AnimatedSvgWidget since the SVG already has
+        native SMIL animations (e.g., wagging tails, electricity effects).
+        """
+        if not self._icon_widget:
+            return
+        
+        # Skip breathing effect for AnimatedSvgWidget - it has native SVG animations
+        if HAS_WEBENGINE and isinstance(self._icon_widget, AnimatedSvgWidget):
+            return
+            
+        # Use graphics effect for scale simulation via opacity pulse
+        self._icon_effect = QtWidgets.QGraphicsOpacityEffect(self._icon_widget)
+        self._icon_widget.setGraphicsEffect(self._icon_effect)
+        
+        self._icon_opacity_anim = QtCore.QPropertyAnimation(self._icon_effect, b"opacity")
+        self._icon_opacity_anim.setDuration(1500)
+        self._icon_opacity_anim.setStartValue(0.85)
+        self._icon_opacity_anim.setEndValue(1.0)
+        self._icon_opacity_anim.setLoopCount(-1)
+        self._icon_opacity_anim.setEasingCurve(QtCore.QEasingCurve.InOutSine)
+        # Ping-pong by using keyframes
+        self._icon_opacity_anim.setKeyValueAt(0.5, 1.0)
+        self._icon_opacity_anim.setKeyValueAt(1.0, 0.85)
+        self._icon_opacity_anim.start()
+        
+    def _create_shimmer_overlay(self):
+        """Create a shimmer sweep effect that moves across the card."""
+        # Create a transparent overlay widget for the shimmer
+        self._shimmer_widget = QtWidgets.QWidget(self)
+        self._shimmer_widget.setFixedSize(180, 220)
+        self._shimmer_widget.move(0, 0)
+        self._shimmer_widget.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        self._shimmer_widget.setStyleSheet("background: transparent;")
+        self._shimmer_widget.lower()  # Behind sparkles but above background
+        
+        # Store shimmer position for animation
+        self._shimmer_pos = -60  # Start off-screen left
+        
+        # Timer for shimmer animation
+        self._shimmer_timer = QtCore.QTimer(self)
+        self._shimmer_timer.timeout.connect(self._update_shimmer)
+        self._shimmer_timer.start(50)  # 20 FPS for smooth animation
+        
+    def _update_shimmer(self):
+        """Update shimmer sweep position."""
+        if not self._shimmer_widget:
+            return
+            
+        self._shimmer_pos += 3  # Speed of shimmer sweep
+        if self._shimmer_pos > 240:  # Past card width + buffer
+            self._shimmer_pos = -60  # Reset to start
+            
+        # Get shiny color for shimmer
+        shiny_color = EXCEPTIONAL_ENTITY_COLORS.get(self.entity.id, (255, 215, 0))
+        r, g, b = shiny_color
+        
+        # Create gradient shimmer effect at current position
+        pos_pct = max(0, min(100, int((self._shimmer_pos / 180) * 100)))
+        
+        self._shimmer_widget.setStyleSheet(f"""
+            background: qlineargradient(
+                x1: 0, y1: 0, x2: 1, y2: 0.5,
+                stop: {max(0, pos_pct - 15) / 100:.2f} transparent,
+                stop: {pos_pct / 100:.2f} rgba({r}, {g}, {b}, 40),
+                stop: {min(100, pos_pct + 15) / 100:.2f} transparent
+            );
+        """)
     
     def _get_glow_value(self):
         return self._glow_value
@@ -277,7 +477,7 @@ class EntityCard(QtWidgets.QFrame):
         self._update_sparkle_positions()
     
     def _update_sparkle_positions(self):
-        """Animate sparkle decorations floating around the card."""
+        """Animate sparkle decorations floating around the card with varying sizes."""
         if not self._sparkle_labels:
             return
         
@@ -293,18 +493,58 @@ class EntityCard(QtWidgets.QFrame):
         ]
         
         for i, sparkle in enumerate(self._sparkle_labels):
-            # Oscillate position and opacity
+            # Oscillate position and opacity with different phases
             phase = (self._glow_value * math.pi * 2) + (i * math.pi / 3)
             
             base_x, base_y = positions[i % len(positions)]
-            offset_x = math.sin(phase) * 5
-            offset_y = math.cos(phase) * 5
+            # Larger orbit movement
+            offset_x = math.sin(phase) * 8
+            offset_y = math.cos(phase) * 8
             
             sparkle.move(int(base_x + offset_x), int(base_y + offset_y))
             
-            # Pulse opacity (0.3 - 1.0)
-            opacity = 0.3 + 0.7 * (0.5 + 0.5 * math.sin(phase))
-            sparkle.setStyleSheet(f"color: rgb({r},{g},{b}); background: transparent; font-size: 12px; opacity: {opacity};")
+            # Vary font size for twinkling effect (10-16px)
+            size = int(10 + 6 * (0.5 + 0.5 * math.sin(phase * 1.5)))
+            
+            # Pulse opacity (0.4 - 1.0)
+            opacity = 0.4 + 0.6 * (0.5 + 0.5 * math.sin(phase))
+            sparkle.setStyleSheet(f"""
+                color: rgb({r},{g},{b}); 
+                background: transparent; 
+                font-size: {size}px;
+            """)
+        
+        # Update halo particles if they exist
+        self._update_halo_particles()
+    
+    def _update_halo_particles(self):
+        """Update rotating halo particles around the icon."""
+        if not self._halo_particles:
+            return
+            
+        shiny_color = EXCEPTIONAL_ENTITY_COLORS.get(self.entity.id, (255, 215, 0))
+        r, g, b = shiny_color
+        
+        # Icon center position (90, 74 for 128x128 icon centered in 180 width card)
+        center_x, center_y = 90, 74
+        radius = 70  # Orbit radius around icon
+        
+        for i, particle in enumerate(self._halo_particles):
+            # Each particle has different phase offset for smooth rotation
+            angle = (self._glow_value * math.pi * 2) + (i * math.pi * 2 / len(self._halo_particles))
+            
+            x = center_x + radius * math.cos(angle) - 6  # -6 to center the particle
+            y = center_y + radius * math.sin(angle) - 6
+            
+            particle.move(int(x), int(y))
+            
+            # Pulse opacity based on position (brighter at top)
+            opacity_factor = 0.5 + 0.5 * math.sin(angle + math.pi / 2)
+            particle.setStyleSheet(f"""
+                color: rgba({r},{g},{b},{int(150 + 105 * opacity_factor)}); 
+                background: transparent; 
+                font-size: 10px;
+            """)
     
     def _add_sparkle_decorations(self):
         """Add floating sparkle decorations around the card for exceptional entities."""
@@ -322,11 +562,30 @@ class EntityCard(QtWidgets.QFrame):
         for i, (x, y) in enumerate(positions):
             sparkle = QtWidgets.QLabel(sparkle_chars[i], self)
             sparkle.setStyleSheet(f"color: rgb({r},{g},{b}); background: transparent; font-size: 12px;")
-            sparkle.setFixedSize(16, 16)
+            sparkle.setFixedSize(20, 20)  # Slightly larger for size animation
             sparkle.move(x, y)
             sparkle.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
             sparkle.show()
             self._sparkle_labels.append(sparkle)
+        
+        # Add rotating halo particles around the icon
+        self._add_halo_particles()
+    
+    def _add_halo_particles(self):
+        """Add rotating particle effect around the entity icon."""
+        shiny_color = EXCEPTIONAL_ENTITY_COLORS.get(self.entity.id, (255, 215, 0))
+        r, g, b = shiny_color
+        
+        # Create 8 small particles that will orbit the icon
+        particle_chars = ["•", "◦", "·", "•", "◦", "·", "•", "◦"]
+        
+        for i, char in enumerate(particle_chars):
+            particle = QtWidgets.QLabel(char, self)
+            particle.setStyleSheet(f"color: rgb({r},{g},{b}); background: transparent; font-size: 10px;")
+            particle.setFixedSize(12, 12)
+            particle.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+            particle.show()
+            self._halo_particles.append(particle)
         
     def _build_ui(self):
         rarity = self.entity.rarity.lower()
@@ -379,7 +638,11 @@ class EntityCard(QtWidgets.QFrame):
             # Darker, mysterious look for uncollected
             gradient_start = "#080808"
             gradient_end = "#1A1A1A"
-            border_color = "#2A2A2A"
+            # Give exceptional uncollected slots a subtle golden border hint
+            if self.is_exceptional:
+                border_color = "#3A3A20"  # Dim gold hint
+            else:
+                border_color = "#2A2A2A"
             self.setStyleSheet(f"""
                 EntityCard {{
                     background: qradialgradient(
@@ -392,7 +655,7 @@ class EntityCard(QtWidgets.QFrame):
                     border-radius: 12px;
                 }}
                 EntityCard:hover {{
-                    border: 3px solid #444444;
+                    border: 3px solid {"#5A5A30" if self.is_exceptional else "#444444"};
                     background: qradialgradient(
                         cx: 0.5, cy: 0.5, radius: 0.8,
                         fx: 0.5, fy: 0.5,
@@ -407,7 +670,9 @@ class EntityCard(QtWidgets.QFrame):
         layout.setContentsMargins(10, 10, 10, 10)
         
         # Entity icon - resolve SVG path properly
-        svg_path = _resolve_entity_svg_path(self.entity)
+        # Use exceptional SVG if entity is collected and exceptional
+        use_exceptional = self.is_collected and self.is_exceptional
+        svg_path = _resolve_entity_svg_path(self.entity, is_exceptional=use_exceptional)
         
         # Center the SVG (matching preview_entities.py layout)
         svg_container = QtWidgets.QWidget()
@@ -417,11 +682,17 @@ class EntityCard(QtWidgets.QFrame):
         
         if svg_path and os.path.exists(svg_path):
             if self.is_collected:
-                # Full color SVG for collected - 128x128 like preview cards
-                icon_widget = QSvgWidget(svg_path)
-                icon_widget.setFixedSize(128, 128)
-                icon_widget.setStyleSheet("background: transparent;")
-                # Entity keeps original colors - no colorize effect
+                if HAS_WEBENGINE:
+                    # Use AnimatedSvgWidget for all collected entities (supports SMIL animations)
+                    # This enables wagging tails, electricity effects, rotating elements, etc.
+                    icon_widget = AnimatedSvgWidget(svg_path)
+                else:
+                    # Fallback to QSvgWidget if WebEngine not available
+                    icon_widget = QSvgWidget(svg_path)
+                    icon_widget.setFixedSize(128, 128)
+                    icon_widget.setStyleSheet("background: transparent;")
+                # Store reference for animation
+                self._icon_widget = icon_widget
             else:
                 # Silhouette for uncollected - also 128x128
                 icon_widget = SilhouetteSvgWidget(svg_path)
@@ -448,6 +719,11 @@ class EntityCard(QtWidgets.QFrame):
             name_text = "???"
             name_color = "#333333"
         
+        # Add star prefix for exceptional slot
+        if self.is_exceptional and not self.is_collected:
+            name_text = f"⭐ {name_text}"
+            name_color = "#4A4A2A"  # Dim gold hint
+        
         name_label = QtWidgets.QLabel(name_text)
         name_label.setAlignment(QtCore.Qt.AlignCenter)
         name_label.setWordWrap(True)
@@ -471,28 +747,25 @@ class EntityCard(QtWidgets.QFrame):
         
         # Rarity badge - styled like preview_entities.py
         if self.is_collected:
-            rarity_text = rarity.upper()
+            # Add star icon for exceptional entities
+            if self.is_exceptional:
+                rarity_text = f"⭐ {rarity.upper()}"
+            else:
+                rarity_text = rarity.upper()
             rarity_label_color = rarity_color
         else:
-            rarity_text = "???"
-            rarity_label_color = "#333333"
+            # Show star hint for exceptional slot
+            if self.is_exceptional:
+                rarity_text = "⭐ ???"
+                rarity_label_color = "#4A4A2A"  # Dim gold hint
+            else:
+                rarity_text = "???"
+                rarity_label_color = "#333333"
         
         rarity_label = QtWidgets.QLabel(rarity_text)
         rarity_label.setAlignment(QtCore.Qt.AlignCenter)
         rarity_label.setFont(QtGui.QFont("Segoe UI", 9, QtGui.QFont.Bold))
         rarity_label.setStyleSheet(f"color: {rarity_label_color}; background: transparent;")
-        layout.addWidget(rarity_label)
-        
-        # Exceptional indicator (separate from rarity)
-        if self.is_collected and self.is_exceptional:
-            exceptional_label = QtWidgets.QLabel("✨ EXCEPTIONAL ✨")
-            exceptional_label.setAlignment(QtCore.Qt.AlignCenter)
-            exceptional_label.setFont(QtGui.QFont("Segoe UI", 8, QtGui.QFont.Bold))
-            # Use entity's shiny color for exceptional badge
-            shiny_color = EXCEPTIONAL_ENTITY_COLORS.get(self.entity.id, (255, 215, 0))
-            r, g, b = shiny_color
-            exceptional_label.setStyleSheet(f"color: rgb({r},{g},{b}); background: transparent;")
-            layout.addWidget(exceptional_label)
         layout.addWidget(rarity_label)
         
         # Match preview_entities.py card size: 180x220
@@ -504,7 +777,7 @@ class EntityCard(QtWidgets.QFrame):
     
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
-            self.clicked.emit(self.entity)
+            self.clicked.emit(self.entity, self.is_exceptional)
         super().mousePressEvent(event)
 
 
@@ -757,6 +1030,42 @@ class EntitidexTab(QtWidgets.QWidget):
         
         return tab_container
     
+    def _create_entity_pair_widget(self, entity: Entity) -> QtWidgets.QWidget:
+        """Create a widget containing both normal and exceptional cards for an entity."""
+        pair_widget = QtWidgets.QWidget()
+        pair_layout = QtWidgets.QHBoxLayout(pair_widget)
+        pair_layout.setContentsMargins(0, 0, 0, 0)
+        pair_layout.setSpacing(8)
+        
+        # Normal card
+        is_collected_normal = self.progress.is_collected(entity.id) and not self.progress.is_exceptional(entity.id)
+        # If user has exceptional, they also have normal (exceptional is upgrade)
+        if self.progress.is_collected(entity.id):
+            is_collected_normal = True
+        is_encountered = self.progress.is_encountered(entity.id)
+        
+        normal_card = EntityCard(
+            entity, is_collected_normal, is_encountered,
+            is_exceptional=False,
+            exceptional_colors={}
+        )
+        normal_card.clicked.connect(self._on_entity_clicked)
+        pair_layout.addWidget(normal_card)
+        
+        # Exceptional card
+        is_collected_exceptional = self.progress.is_exceptional(entity.id)
+        exceptional_colors = self.progress.get_exceptional_colors(entity.id)
+        
+        exceptional_card = EntityCard(
+            entity, is_collected_exceptional, is_encountered,
+            is_exceptional=True,
+            exceptional_colors=exceptional_colors
+        )
+        exceptional_card.clicked.connect(self._on_entity_clicked)
+        pair_layout.addWidget(exceptional_card)
+        
+        return pair_widget
+
     def _refresh_theme_tab(self, theme_key: str):
         """Refresh a single theme tab."""
         if theme_key not in self.theme_tabs:
@@ -781,55 +1090,79 @@ class EntitidexTab(QtWidgets.QWidget):
         entities = get_entities_for_story(theme_key)
         entities_sorted = sorted(entities, key=lambda e: e.power)
         
-        # Calculate progress
-        collected_count = 0
+        # Calculate progress - count normal and exceptional separately
+        collected_normal = 0
+        collected_exceptional = 0
         encountered_count = 0
         
         for entity in entities_sorted:
             if self.progress.is_collected(entity.id):
-                collected_count += 1
+                collected_normal += 1
+                if self.progress.is_exceptional(entity.id):
+                    collected_exceptional += 1
             elif self.progress.is_encountered(entity.id):
                 encountered_count += 1
         
-        total = len(entities_sorted)
-        progress_percent = int((collected_count / total) * 100) if total > 0 else 0
+        total_entities = len(entities_sorted)
+        total_slots = total_entities * 2  # Normal + Exceptional for each
+        total_collected = collected_normal + collected_exceptional
+        progress_percent = int((total_collected / total_slots) * 100) if total_slots > 0 else 0
         
         # Update progress display for this tab
         progress_bar = tab_widget.findChild(QtWidgets.QProgressBar, f"progress_bar_{theme_key}")
         if progress_bar:
             progress_bar.setValue(progress_percent)
-            progress_bar.setFormat(f"{collected_count}/{total} ({progress_percent}%)")
+            progress_bar.setFormat(f"{total_collected}/{total_slots} ({progress_percent}%)")
         
         stats_label = tab_widget.findChild(QtWidgets.QLabel, f"stats_label_{theme_key}")
         if stats_label:
             stats_label.setText(
-                f"✅ Collected: {collected_count}  |  "
-                f"👁️ Encountered: {encountered_count}  |  "
-                f"❓ Unknown: {total - collected_count - encountered_count}"
+                f"✅ Normal: {collected_normal}/{total_entities}  |  "
+                f"⭐ Exceptional: {collected_exceptional}/{total_entities}  |  "
+                f"👁️ Encountered: {encountered_count}"
             )
         
-        # Create cards - 5 columns like preview_entities.py
-        cols = 5
-        for i, entity in enumerate(entities_sorted):
-            row = i // cols
-            col = i % cols
-            
-            is_collected = self.progress.is_collected(entity.id)
-            is_encountered = self.progress.is_encountered(entity.id)
-            is_exceptional = self.progress.is_exceptional(entity.id)
-            exceptional_colors = self.progress.get_exceptional_colors(entity.id)
-            
-            card = EntityCard(
-                entity, is_collected, is_encountered,
-                is_exceptional=is_exceptional,
-                exceptional_colors=exceptional_colors
-            )
-            card.clicked.connect(self._on_entity_clicked)
-            cards_layout.addWidget(card, row, col)
+        # Create paired cards - Layout: Each entity gets [Normal | Exceptional] pair
+        # Sort by rarity for proper grouping
+        rarity_order = {"common": 0, "uncommon": 1, "rare": 2, "epic": 3, "legendary": 4}
+        entities_by_rarity = sorted(entities_sorted, key=lambda e: rarity_order.get(e.rarity.lower(), 0))
+        
+        # Separate legendary from others
+        legendary = [e for e in entities_by_rarity if e.rarity.lower() == "legendary"]
+        others = [e for e in entities_by_rarity if e.rarity.lower() != "legendary"]
+        
+        # Layout grid with paired cards (each pair is wider, so 2 pairs per row)
+        # Row 0: Legendary pair centered
+        # Row 1-2: Epic pairs
+        # Row 3-4: Rare pairs  
+        # Row 5-6: Uncommon pairs
+        # Row 7-8: Common pairs
+        
+        current_row = 0
+        
+        # Add legendary at top center
+        for entity in legendary:
+            pair_widget = self._create_entity_pair_widget(entity)
+            cards_layout.addWidget(pair_widget, current_row, 0, 1, 1, QtCore.Qt.AlignCenter)
+            current_row += 1
+        
+        # Sort remaining by rarity (highest first for display)
+        epic = [e for e in others if e.rarity.lower() == "epic"]
+        rare = [e for e in others if e.rarity.lower() == "rare"]
+        uncommon = [e for e in others if e.rarity.lower() == "uncommon"]
+        common = [e for e in others if e.rarity.lower() == "common"]
+        
+        # Add each rarity group - one entity pair per row, centered
+        for rarity_group in [epic, rare, uncommon, common]:
+            for entity in rarity_group:
+                pair_widget = self._create_entity_pair_widget(entity)
+                cards_layout.addWidget(pair_widget, current_row, 0, 1, 1, QtCore.Qt.AlignCenter)
+                current_row += 1
     
     def _refresh_all_tabs(self):
         """Refresh all theme tabs and update total progress."""
-        total_collected = 0
+        total_normal = 0
+        total_exceptional = 0
         total_entities = 0
         
         for theme_key in THEME_INFO.keys():
@@ -840,11 +1173,18 @@ class EntitidexTab(QtWidgets.QWidget):
             total_entities += len(entities)
             for entity in entities:
                 if self.progress.is_collected(entity.id):
-                    total_collected += 1
+                    total_normal += 1
+                    if self.progress.is_exceptional(entity.id):
+                        total_exceptional += 1
         
-        # Update total progress label
-        total_percent = int((total_collected / total_entities) * 100) if total_entities > 0 else 0
-        self.total_progress_label.setText(f"Total: {total_collected}/{total_entities} ({total_percent}%)")
+        # Update total progress label (both normal and exceptional)
+        total_slots = total_entities * 2  # Normal + Exceptional for each
+        total_collected = total_normal + total_exceptional
+        total_percent = int((total_collected / total_slots) * 100) if total_slots > 0 else 0
+        self.total_progress_label.setText(
+            f"Total: {total_collected}/{total_slots} ({total_percent}%) | "
+            f"Normal: {total_normal} | ⭐ Exceptional: {total_exceptional}"
+        )
     
     def _on_story_changed(self, story: str):
         """Legacy method - kept for compatibility."""
@@ -854,22 +1194,49 @@ class EntitidexTab(QtWidgets.QWidget):
         if story in theme_keys:
             self.theme_tab_widget.setCurrentIndex(theme_keys.index(story))
     
-    def _on_entity_clicked(self, entity: Entity):
+    def _on_entity_clicked(self, entity: Entity, is_exceptional: bool = False):
         """Handle entity card click - show details if collected."""
-        if self.progress.is_collected(entity.id):
+        # Check if this specific variant is collected
+        is_normal_collected = self.progress.is_collected(entity.id)
+        is_exceptional_collected = self.progress.is_exceptional(entity.id)
+        
+        # Determine which variant was clicked and if it's collected
+        if is_exceptional:
+            is_this_collected = is_exceptional_collected
+            variant_text = "⭐ Exceptional "
+        else:
+            is_this_collected = is_normal_collected
+            variant_text = ""
+        
+        if is_this_collected:
             rarity_color = RARITY_COLORS.get(entity.rarity.lower(), "#9E9E9E")
-            self.detail_name.setText(f"{entity.name}")
+            # Use shiny color for exceptional
+            if is_exceptional:
+                shiny_color = EXCEPTIONAL_ENTITY_COLORS.get(entity.id, (255, 215, 0))
+                rarity_color = f"#{shiny_color[0]:02X}{shiny_color[1]:02X}{shiny_color[2]:02X}"
+            self.detail_name.setText(f"{variant_text}{entity.name}")
             self.detail_name.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {rarity_color};")
-            self.detail_lore.setText(entity.lore)
+            if is_exceptional:
+                self.detail_lore.setText(f"⭐ EXCEPTIONAL VARIANT ⭐\n\n{entity.lore}\n\n✨ This rare variant has unique coloring and special animations!")
+            else:
+                self.detail_lore.setText(entity.lore)
             self.detail_panel.setVisible(True)
         else:
             # Show hint for uncollected
-            self.detail_name.setText("??? Unknown Entity")
-            self.detail_name.setStyleSheet("font-size: 18px; font-weight: bold; color: #666666;")
-            if self.progress.is_encountered(entity.id):
-                self.detail_lore.setText("You've seen this entity before, but haven't bonded yet.\nComplete focus sessions to encounter it again!")
+            if is_exceptional:
+                self.detail_name.setText("⭐ ??? Exceptional Unknown")
+                self.detail_name.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFD700;")
+                if is_normal_collected:
+                    self.detail_lore.setText(f"You have the normal {entity.name}, but not the exceptional variant!\n\n✨ Exceptional entities are rare special versions with unique colors and animations.\n\nKeep completing focus sessions for a chance to find this exceptional variant!")
+                else:
+                    self.detail_lore.setText("This exceptional entity awaits discovery.\n\n✨ Exceptional entities are rare special versions with unique colors.\n\nComplete focus sessions to encounter entities - some may be exceptional!")
             else:
-                self.detail_lore.setText("This entity awaits discovery.\nComplete focus sessions to encounter new companions!")
+                self.detail_name.setText("??? Unknown Entity")
+                self.detail_name.setStyleSheet("font-size: 18px; font-weight: bold; color: #666666;")
+                if self.progress.is_encountered(entity.id):
+                    self.detail_lore.setText("You've seen this entity before, but haven't bonded yet.\nComplete focus sessions to encounter it again!")
+                else:
+                    self.detail_lore.setText("This entity awaits discovery.\nComplete focus sessions to encounter new companions!")
             self.detail_panel.setVisible(True)
     
     def add_collected_entity(self, entity_id: str):

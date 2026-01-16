@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Reading Candle - Turquoise spirit flame candle -->
+  <defs>
+    <linearGradient id="turquoiseWax" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#40E0C8"/>
+      <stop offset="100%" style="stop-color:#20A090"/>
+    </linearGradient>
+    <linearGradient id="spiritFlame" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#32FFC8"/>
+      <stop offset="50%" style="stop-color:#80FFE0"/>
+      <stop offset="100%" style="stop-color:#FFFFFF"/>
+    </linearGradient>
+    <filter id="flameGlow">
+      <feGaussianBlur stdDeviation="3" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Spirit flame aura -->
+  <ellipse cx="32" cy="20" rx="20" ry="24" fill="#32FFC8" opacity="0.15" filter="url(#flameGlow)"/>
+  
+  <!-- Flame (large, spirit-like, dancing) -->
+  <path d="M32 6 Q24 14, 26 22 Q22 18, 24 26 Q20 22, 26 30 Q32 26, 32 32
+           Q32 26, 38 30 Q44 22, 40 26 Q42 18, 38 22 Q40 14, 32 6" 
+        fill="url(#spiritFlame)" filter="url(#flameGlow)">
+    <animate attributeName="d" values="M32 6 Q24 14, 26 22 Q22 18, 24 26 Q20 22, 26 30 Q32 26, 32 32 Q32 26, 38 30 Q44 22, 40 26 Q42 18, 38 22 Q40 14, 32 6;M32 4 Q22 12, 24 20 Q20 16, 22 24 Q18 20, 24 28 Q30 24, 32 30 Q34 24, 40 28 Q46 20, 42 24 Q44 16, 40 20 Q42 12, 32 4;M32 6 Q24 14, 26 22 Q22 18, 24 26 Q20 22, 26 30 Q32 26, 32 32 Q32 26, 38 30 Q44 22, 40 26 Q42 18, 38 22 Q40 14, 32 6" dur="0.8s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Inner flame core - flickering brightly -->
+  <path d="M32 12 Q28 18, 30 24 Q32 20, 32 26 Q32 20, 34 24 Q36 18, 32 12" 
+        fill="white" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.7;0.9;0.8" dur="0.5s" repeatCount="indefinite"/>
+    <animate attributeName="d" values="M32 12 Q28 18, 30 24 Q32 20, 32 26 Q32 20, 34 24 Q36 18, 32 12;M32 10 Q26 16, 28 22 Q30 18, 32 24 Q34 18, 36 22 Q38 16, 32 10;M32 12 Q28 18, 30 24 Q32 20, 32 26 Q32 20, 34 24 Q36 18, 32 12" dur="0.6s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Flame eyes (the candle has a face!) with saccadic movement -->
+  <ellipse cx="28" cy="18" rx="2" ry="1.5" fill="#006050">
+    <animate attributeName="cx" values="28;28;29;28;27;28;28" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="18;18;17;18;18;19;18" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  <circle cx="28.5" cy="17.5" r="0.5" fill="white">
+    <animate attributeName="cx" values="28.5;28.5;29.5;28.5;27.5;28.5;28.5" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="17.5;17.5;16.5;17.5;17.5;18.5;17.5" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <!-- Left eye blink -->
+  <ellipse cx="28" cy="18" rx="2" ry="0" fill="#40E0D0">
+    <animate attributeName="ry" values="0;1.5;0" keyTimes="0;0.98;1" dur="5.2s" begin="0.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="36" cy="18" rx="2" ry="1.5" fill="#006050">
+    <animate attributeName="cx" values="36;36;37;36;35;36;36" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="18;18;17;18;18;19;18" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  <circle cx="36.5" cy="17.5" r="0.5" fill="white">
+    <animate attributeName="cx" values="36.5;36.5;37.5;36.5;35.5;36.5;36.5" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="17.5;17.5;16.5;17.5;17.5;18.5;17.5" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <!-- Right eye blink -->
+  <ellipse cx="36" cy="18" rx="2" ry="0" fill="#40E0D0">
+    <animate attributeName="ry" values="0;1.5;0" keyTimes="0;0.98;1" dur="5.2s" begin="0.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Wick -->
+  <rect x="30" y="30" width="4" height="6" fill="#1A1A1A"/>
+  
+  <!-- Candle body (turquoise crystal-like) -->
+  <rect x="20" y="36" width="24" height="24" rx="2" fill="url(#turquoiseWax)"/>
+  
+  <!-- Crystal facets -->
+  <path d="M24 40 L28 44 L24 48 M40 40 L36 44 L40 48" 
+        stroke="#80FFE0" stroke-width="0.5" fill="none" opacity="0.5"/>
+  
+  <!-- Dripping wax (turquoise glowing drips) -->
+  <path d="M22 36 Q20 42, 22 48 Q18 44, 20 52" fill="url(#turquoiseWax)"/>
+  <path d="M42 36 Q44 40, 42 46 Q46 42, 44 50" fill="url(#turquoiseWax)"/>
+  
+  <!-- Candle holder (silver mystical) -->
+  <ellipse cx="32" cy="60" rx="14" ry="3" fill="#A0A0B0"/>
+  <rect x="18" y="56" width="28" height="4" fill="#C0C0D0"/>
+  <ellipse cx="32" cy="56" rx="14" ry="2" fill="#D0D0E0"/>
+  
+  <!-- Mystical rune on holder -->
+  <circle cx="32" cy="58" r="3" fill="none" stroke="#32FFC8" stroke-width="0.5" opacity="0.6"/>
+  <circle cx="32" cy="58" r="1" fill="#32FFC8" opacity="0.4"/>
+  
+  <!-- Floating spirit wisps - drifting upward -->
+  <path d="M14 16 Q12 12, 16 14" stroke="#80FFE0" stroke-width="1" fill="none" opacity="0.5">
+    <animate attributeName="d" values="M14 16 Q12 12, 16 14;M14 12 Q10 8, 14 10;M14 8 Q12 4, 16 6;M14 16 Q12 12, 16 14" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.3;0.1;0.5" dur="3s" repeatCount="indefinite"/>
+  </path>
+  <path d="M50 18 Q52 14, 48 16" stroke="#80FFE0" stroke-width="1" fill="none" opacity="0.4">
+    <animate attributeName="d" values="M50 18 Q52 14, 48 16;M50 14 Q54 10, 50 12;M50 10 Q52 6, 48 8;M50 18 Q52 14, 48 16" dur="3.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.2;0;0.4" dur="3.5s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Sparkles - twinkling mystically -->
+  <circle cx="18" cy="10" r="1" fill="white" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.4;0.9;1;0.9" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1;1.5;1;0.8;1" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="46" cy="8" r="0.8" fill="white" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="12" cy="26" r="1.2" fill="#80FFE0" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.9;0.6;0.2;0.6" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="52" cy="24" r="1" fill="#80FFE0" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;0.8;0.5;0.2;0.5" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+</svg>

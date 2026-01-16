@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Blank Parchment - Enchanted golden shimmer scroll -->
+  <defs>
+    <linearGradient id="goldenScroll" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="50%" style="stop-color:#FFA500"/>
+      <stop offset="100%" style="stop-color:#FF8C00"/>
+    </linearGradient>
+    <linearGradient id="shimmerGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF8DC"/>
+      <stop offset="50%" style="stop-color:#FFE44D"/>
+      <stop offset="100%" style="stop-color:#FFF8DC"/>
+    </linearGradient>
+    <filter id="goldGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Golden aura -->
+  <ellipse cx="32" cy="32" rx="28" ry="26" fill="#FFD700" opacity="0.15" filter="url(#goldGlow)"/>
+  
+  <!-- Floating golden motes - drifting magically -->
+  <circle cx="10" cy="14" r="2" fill="#FFE44D" opacity="0.6">
+    <animate attributeName="cy" values="14;10;14;18;14" dur="5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0.9;0.6;0.4;0.6" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="54" cy="12" r="1.5" fill="#FFF8DC" opacity="0.5">
+    <animate attributeName="cy" values="12;8;12;16;12" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.8;0.5;0.3;0.5" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="8" cy="52" r="1.5" fill="#FFD700" opacity="0.4">
+    <animate attributeName="cy" values="52;48;52;56;52" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.6;0.4;0.2;0.4" dur="6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="56" cy="50" r="2" fill="#FFE44D" opacity="0.5">
+    <animate attributeName="cy" values="50;46;50;54;50" dur="4.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.7;0.5;0.3;0.5" dur="4.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Main parchment with curl -->
+  <path d="M14 8 L50 8 L52 10 Q54 12, 52 14 L52 56 L14 56 Q10 56, 10 52 L10 14 Q10 10, 14 8 Z" 
+        fill="url(#goldenScroll)"/>
+  
+  <!-- Curled corner (3D effect) -->
+  <path d="M50 8 L50 16 Q50 20, 54 20 L52 14 Q54 12, 52 10 Z" 
+        fill="url(#shimmerGold)"/>
+  <path d="M50 8 L50 16 Q50 20, 54 20" stroke="#CC8800" stroke-width="0.5" fill="none"/>
+  
+  <!-- Magical runes appearing - fading in and out -->
+  <text x="20" y="28" fill="#8B4513" font-size="6" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;1;0.6;0.2;0.6" dur="3s" repeatCount="indefinite"/>
+    ✧
+  </text>
+  <text x="30" y="24" fill="#8B4513" font-size="5" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;0.9;0.5;0.1;0.5" dur="3.5s" repeatCount="indefinite"/>
+    ◇
+  </text>
+  <text x="40" y="30" fill="#8B4513" font-size="6" opacity="0.6">
+    <animate attributeName="opacity" values="0.2;0.6;1;0.6;0.2" dur="4s" repeatCount="indefinite"/>
+    ✦
+  </text>
+  <text x="25" y="40" fill="#8B4513" font-size="5" opacity="0.5">
+    <animate attributeName="opacity" values="0.1;0.5;0.9;0.5;0.1" dur="3.2s" repeatCount="indefinite"/>
+    ⬡
+  </text>
+  <text x="38" y="44" fill="#8B4513" font-size="6" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.2;0.6;1;0.6" dur="3.8s" repeatCount="indefinite"/>
+    ✧
+  </text>
+  
+  <!-- Magical lines (text forming) -->
+  <path d="M18 32 Q24 30, 32 32 Q40 34, 46 32" stroke="#CC8800" stroke-width="0.5" fill="none" opacity="0.4"/>
+  <path d="M18 38 Q26 36, 38 38" stroke="#CC8800" stroke-width="0.5" fill="none" opacity="0.3"/>
+  <path d="M18 48 Q28 46, 42 48" stroke="#CC8800" stroke-width="0.5" fill="none" opacity="0.3"/>
+  
+  <!-- Seal at bottom -->
+  <circle cx="32" cy="52" r="4" fill="#CC6600"/>
+  <circle cx="32" cy="52" r="3" fill="#FFD700" filter="url(#goldGlow)"/>
+  <text x="30" y="54" fill="#8B4513" font-size="4">⚜</text>
+  
+  <!-- Golden ribbon -->
+  <path d="M28 52 Q24 56, 20 58 L22 60 L26 56 Q28 54, 28 52" fill="#FFD700"/>
+  <path d="M36 52 Q40 56, 44 58 L42 60 L38 56 Q36 54, 36 52" fill="#FFD700"/>
+  
+  <!-- Shimmer highlights -->
+  <line x1="16" y1="14" x2="24" y2="12" stroke="white" stroke-width="1" opacity="0.5"/>
+  <line x1="18" y1="20" x2="28" y2="18" stroke="white" stroke-width="0.5" opacity="0.4"/>
+  
+  <!-- Sparkles - twinkling with golden light -->
+  <circle cx="46" cy="14" r="1.5" fill="white" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.4;0.9;1;0.9" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1.5;2;1.5;1.2;1.5" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="14" cy="22" r="1" fill="#FFF8DC" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.8;0.4;0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="48" cy="40" r="1.2" fill="white" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;1;0.7;0.4;0.7" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="16" cy="46" r="0.8" fill="#FFE44D" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.9;0.6;0.3;0.6" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+</svg>

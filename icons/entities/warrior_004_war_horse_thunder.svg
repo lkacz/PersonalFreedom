@@ -43,9 +43,13 @@
   <!-- Neck -->
   <path d="M44 32 Q52 28, 50 18 Q48 12, 46 16 Q42 24, 44 32" fill="url(#horseBody)"/>
   
-  <!-- Mane -->
-  <path d="M46 14 Q44 10, 48 8 Q50 12, 48 16 Q46 18, 48 22 Q44 20, 46 14" fill="url(#horseMane)"/>
-  <path d="M44 20 Q40 18, 42 24 Q44 22, 44 20" fill="url(#horseMane)"/>
+  <!-- Mane - flowing in wind -->
+  <path d="M46 14 Q44 10, 48 8 Q50 12, 48 16 Q46 18, 48 22 Q44 20, 46 14" fill="url(#horseMane)">
+    <animate attributeName="d" values="M46 14 Q44 10, 48 8 Q50 12, 48 16 Q46 18, 48 22 Q44 20, 46 14;M46 14 Q42 10, 46 6 Q48 10, 46 14 Q44 18, 46 22 Q42 20, 46 14;M46 14 Q44 10, 48 8 Q50 12, 48 16 Q46 18, 48 22 Q44 20, 46 14" dur="1.5s" repeatCount="indefinite"/>
+  </path>
+  <path d="M44 20 Q40 18, 42 24 Q44 22, 44 20" fill="url(#horseMane)">
+    <animate attributeName="d" values="M44 20 Q40 18, 42 24 Q44 22, 44 20;M44 20 Q38 17, 40 23 Q42 21, 44 20;M44 20 Q40 18, 42 24 Q44 22, 44 20" dur="1.8s" repeatCount="indefinite"/>
+  </path>
   
   <!-- Head -->
   <path d="M50 18 Q58 16, 58 22 Q58 28, 52 30 Q48 28, 48 24 Q48 20, 50 18" fill="url(#horseBody)"/>
@@ -53,10 +57,20 @@
   <!-- Blaze (white mark on face) -->
   <path d="M52 20 Q54 22, 54 26 Q52 28, 52 24 Q52 22, 52 20" fill="#EFEBE9"/>
   
-  <!-- Eye (full of trust and loyalty) -->
+  <!-- Eye (full of trust and loyalty) with saccadic movement -->
   <ellipse cx="54" cy="22" rx="2.5" ry="3" fill="#212121"/>
-  <circle cx="54.5" cy="21.5" r="1" fill="#5D4037"/>
-  <circle cx="55" cy="21" r="0.5" fill="white"/>
+  <circle cx="54.5" cy="21.5" r="1" fill="#5D4037">
+    <animate attributeName="cx" values="54.5;54.5;55;54.5;54;54.5;54.5" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="21.5;21.5;21;21.5;21.5;22;21.5" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="55" cy="21" r="0.5" fill="white">
+    <animate attributeName="cx" values="55;55;55.5;55;54.5;55;55" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="21;21;20.5;21;21;21.5;21" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <!-- Eye blink -->
+  <ellipse cx="54" cy="22" rx="2.5" ry="0" fill="#5D4037">
+    <animate attributeName="ry" values="0;3;0" keyTimes="0;0.98;1" dur="6.3s" begin="1.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
   
   <!-- Nostril -->
   <ellipse cx="56" cy="28" rx="1" ry="1.5" fill="#3E2723"/>
