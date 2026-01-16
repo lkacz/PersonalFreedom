@@ -43,6 +43,9 @@ class EncounterResult:
     catch_probability: float = 0.0
     probability_display: str = ""
     probability_description: str = ""
+    perk_bonus_applied: bool = False  # True if entity perks contributed to encounter/capture
+    encounter_perk_bonus: float = 0.0  # Encounter chance bonus from perks (percentage)
+    capture_perk_bonus: float = 0.0  # Capture probability bonus from perks (percentage)
 
 
 @dataclass
@@ -86,6 +89,7 @@ class EntitidexManager:
         story_id: str = "warrior",
         hero_power: int = 0,
         luck_bonus: float = 0.0,
+        active_perks: Optional[Dict] = None,
     ):
         """
         Initialize the Entitidex manager.
@@ -95,11 +99,13 @@ class EntitidexManager:
             story_id: Current active story theme
             hero_power: Hero's current total power
             luck_bonus: Any luck bonus from equipped items
+            active_perks: Dictionary of active entity perks (from entity_perks.py)
         """
         self.progress = progress or EntitidexProgress()
         self.story_id = story_id
         self.hero_power = hero_power
         self.luck_bonus = luck_bonus
+        self.active_perks = active_perks or {}
         
         # Current encounter state
         self._current_encounter: Optional[Entity] = None
@@ -120,6 +126,10 @@ class EntitidexManager:
     def set_luck_bonus(self, bonus: float) -> None:
         """Update luck bonus from equipped items."""
         self.luck_bonus = bonus
+    
+    def set_active_perks(self, perks: Dict) -> None:
+        """Update active entity perks."""
+        self.active_perks = perks or {}
     
     # =========================================================================
     # ENCOUNTER HANDLING
@@ -148,13 +158,14 @@ class EntitidexManager:
         Returns:
             EncounterResult with encounter details if one occurred
         """
-        # Check if encounter triggers
+        # Check if encounter triggers (now with perk support)
         should_trigger = should_trigger_encounter(
             session_minutes=session_minutes,
             minimum_session_minutes=minimum_session_minutes,
             was_perfect_session=was_perfect_session,
             streak_days=streak_days,
             was_bypass_used=was_bypass_used,
+            active_perks=self.active_perks,
         )
         
         if not should_trigger:
@@ -181,12 +192,30 @@ class EntitidexManager:
         
         # Calculate catch probability (use variant-specific failed attempts)
         failed_attempts = self.progress.get_failed_attempts(entity.id, is_exceptional)
+        
+        # Combine luck_bonus with entity perk capture bonus
+        total_luck_bonus = self.luck_bonus
+        capture_perk = 0.0
+        encounter_perk = 0.0
+        if self.active_perks:
+            from .entity_perks import PerkType
+            capture_bonus = self.active_perks.get(PerkType.CAPTURE_BONUS, 0)
+            encounter_bonus = self.active_perks.get(PerkType.ENCOUNTER_CHANCE, 0)
+            if capture_bonus > 0:
+                total_luck_bonus += capture_bonus / 100.0  # Convert to probability bonus
+                capture_perk = capture_bonus
+                print(f"[Entity Perks] ✨ Capture boosted by +{capture_bonus}% from collected entities!")
+            if encounter_bonus > 0:
+                encounter_perk = encounter_bonus
+        
         probability = get_final_probability(
             hero_power=self.hero_power,
             entity_power=entity.power,
             failed_attempts=failed_attempts,
-            luck_bonus=self.luck_bonus,
+            luck_bonus=total_luck_bonus,
         )
+        
+        perk_bonus = capture_perk > 0 or encounter_perk > 0
         
         return EncounterResult(
             occurred=True,
@@ -198,6 +227,9 @@ class EntitidexManager:
             catch_probability=probability,
             probability_display=format_probability_display(probability),
             probability_description=get_probability_description(probability),
+            perk_bonus_applied=perk_bonus,
+            encounter_perk_bonus=encounter_perk,
+            capture_perk_bonus=capture_perk,
         )
     
     def force_encounter(self, entity_id: str) -> Optional[EncounterResult]:
@@ -220,11 +252,22 @@ class EntitidexManager:
         self._current_encounter = entity
         
         failed_attempts = self.progress.get_failed_attempts(entity.id)
+        
+        # Apply entity perk capture bonus
+        total_luck_bonus = self.luck_bonus
+        capture_perk = 0.0
+        if self.active_perks:
+            from .entity_perks import PerkType
+            capture_bonus = self.active_perks.get(PerkType.CAPTURE_BONUS, 0)
+            if capture_bonus > 0:
+                total_luck_bonus += capture_bonus / 100.0
+                capture_perk = capture_bonus
+        
         probability = get_final_probability(
             hero_power=self.hero_power,
             entity_power=entity.power,
             failed_attempts=failed_attempts,
-            luck_bonus=self.luck_bonus,
+            luck_bonus=total_luck_bonus,
         )
         
         return EncounterResult(
@@ -236,6 +279,9 @@ class EntitidexManager:
             catch_probability=probability,
             probability_display=format_probability_display(probability),
             probability_description=get_probability_description(probability),
+            perk_bonus_applied=capture_perk > 0,
+            encounter_perk_bonus=0.0,  # Force encounter bypasses encounter chance
+            capture_perk_bonus=capture_perk,
         )
     
     @property
@@ -286,12 +332,30 @@ class EntitidexManager:
         # Get failed attempts for pity calculation (specific to the variant)
         failed_attempts = self.progress.get_failed_attempts(target.id, exceptional)
         
+        # Apply pity bonus from entity perks (accelerates pity progression)
+        effective_failed_attempts = failed_attempts
+        if self.active_perks:
+            from .entity_perks import PerkType
+            pity_bonus_pct = self.active_perks.get(PerkType.PITY_BONUS, 0)
+            if pity_bonus_pct > 0:
+                # Boost effective failed attempts by the perk percentage
+                # e.g. 20% bonus with 5 fails = 6 effective fails
+                effective_failed_attempts = int(failed_attempts * (1 + pity_bonus_pct / 100.0))
+        
+        # Combine luck_bonus with entity perk capture bonus
+        total_luck_bonus = self.luck_bonus
+        if self.active_perks:
+            from .entity_perks import PerkType
+            capture_bonus = self.active_perks.get(PerkType.CAPTURE_BONUS, 0)
+            if capture_bonus > 0:
+                total_luck_bonus += capture_bonus / 100.0  # Convert to probability bonus
+        
         # Attempt the catch
         success, probability, message = attempt_catch(
             hero_power=self.hero_power,
             entity=target,
-            failed_attempts=failed_attempts,
-            luck_bonus=self.luck_bonus,
+            failed_attempts=effective_failed_attempts,
+            luck_bonus=total_luck_bonus,
         )
         
         was_lucky = is_lucky_catch(probability) if success else False

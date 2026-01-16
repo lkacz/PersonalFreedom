@@ -374,19 +374,20 @@ class TestEncounterSystem:
         """Base encounter chance should be 40%."""
         from entitidex.encounter_system import calculate_encounter_chance
         
-        chance = calculate_encounter_chance(
+        chance, perk_bonus = calculate_encounter_chance(
             session_minutes=25,
             minimum_session_minutes=25,
         )
         
         assert abs(chance - ENCOUNTER_CONFIG["base_chance"]) < 0.01
+        assert perk_bonus == 0.0  # No perks applied
     
     def test_longer_session_bonus(self):
         """Longer sessions should increase encounter chance."""
         from entitidex.encounter_system import calculate_encounter_chance
         
-        base_chance = calculate_encounter_chance(25, 25)
-        bonus_chance = calculate_encounter_chance(55, 25)  # 30 min extra = 2x15min blocks
+        base_chance, _ = calculate_encounter_chance(25, 25)
+        bonus_chance, _ = calculate_encounter_chance(55, 25)  # 30 min extra = 2x15min blocks
         
         expected_bonus = 2 * ENCOUNTER_CONFIG["bonus_per_15min"]
         assert abs(bonus_chance - (base_chance + expected_bonus)) < 0.01
@@ -395,8 +396,8 @@ class TestEncounterSystem:
         """Perfect sessions should increase encounter chance."""
         from entitidex.encounter_system import calculate_encounter_chance
         
-        normal = calculate_encounter_chance(25, 25, was_perfect_session=False)
-        perfect = calculate_encounter_chance(25, 25, was_perfect_session=True)
+        normal, _ = calculate_encounter_chance(25, 25, was_perfect_session=False)
+        perfect, _ = calculate_encounter_chance(25, 25, was_perfect_session=True)
         
         assert perfect == normal + ENCOUNTER_CONFIG["bonus_perfect_session"]
     

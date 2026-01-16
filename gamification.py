@@ -11,22 +11,16 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
+# Entity System Integration
+try:
+    from entitidex.entity_perks import calculate_active_perks, PerkType
+    ENTITY_SYSTEM_AVAILABLE = True
+except ImportError:
+    ENTITY_SYSTEM_AVAILABLE = False
+    logging.warning("Entity system modules not found. Perks will be disabled.")
+
 # Module availability flag for optional imports
 GAMIFICATION_AVAILABLE = True
-
-# Entitidex Perk System Integration
-try:
-    from entitidex.entity_perks import PerkType, calculate_active_perks_from_dict
-    ENTITIDEX_AVAILABLE = True
-except ImportError:
-    ENTITIDEX_AVAILABLE = False
-    class PerkType:
-        POWER_FLAT = "power_flat"
-        COIN_DISCOUNT = "coin_discount"
-        COIN_PERCENT = "coin_percent"
-        COIN_FLAT = "coin_flat"
-        HYDRATION_COOLDOWN = "hydration_cd"
-        HYDRATION_CAP = "hydration_cap"
 
 logger = logging.getLogger(__name__)
 
@@ -82,26 +76,21 @@ COIN_COSTS = {
 }
 
 # Helper function to get cost with optional discount
-def get_coin_cost(action: str, discount_percent: int = 0, discount_flat: int = 0) -> int:
+def get_coin_cost(action: str, discount_percent: int = 0) -> int:
     """Get the coin cost for an action with optional discount.
     
     Args:
         action: Key from COIN_COSTS dict
         discount_percent: Discount to apply (0-100)
-        discount_flat: Flat amount to subtract (e.g. from perks)
     
     Returns:
         Final cost after discount (minimum 1)
     """
     base_cost = COIN_COSTS.get(action, 0)
-    
-    # Apply percentage discount
-    pct_deduction = 0
     if discount_percent > 0:
-        pct_deduction = base_cost * (discount_percent / 100)
-        
-    final_cost = base_cost - pct_deduction - discount_flat
-    return max(1, int(final_cost))
+        discount = base_cost * (discount_percent / 100)
+        return max(1, int(base_cost - discount))
+    return base_cost
 
 
 # ============================================================================
@@ -989,6 +978,285 @@ def apply_coin_discount(cost: int, discount_pct: int) -> int:
     discounted = int(cost * (1 - discount_pct / 100))
     # Ensure cost is at least 1 coin (never free)
     return max(discounted, 1)
+
+
+def get_entity_perk_bonuses(adhd_buster: dict) -> dict:
+    """
+    Get entity perk bonuses relevant to merge operations and economy.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys: coin_discount, merge_luck, merge_success, all_luck
+    """
+    result = {
+        "coin_discount": 0,
+        "merge_luck": 0,
+        "merge_success": 0,
+        "all_luck": 0,
+    }
+    
+    try:
+        from entitidex.entity_perks import calculate_active_perks, PerkType
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        
+        # Extract relevant perk values
+        result["coin_discount"] = int(perks.get(PerkType.COIN_DISCOUNT, 0))
+        result["merge_luck"] = int(perks.get(PerkType.MERGE_LUCK, 0))
+        result["merge_success"] = int(perks.get(PerkType.MERGE_SUCCESS, 0))
+        result["all_luck"] = int(perks.get(PerkType.ALL_LUCK, 0))
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting perk bonuses: {e}")
+        
+    return result
+
+
+def get_entity_xp_perks(adhd_buster: dict, source: str = "session", 
+                        session_minutes: int = 0, is_morning: bool = False,
+                        is_night: bool = False) -> dict:
+    """
+    Get XP-related entity perk bonuses.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        source: XP source type ("session", "story", "other")
+        session_minutes: Duration of focus session (for long session bonus)
+        is_morning: True if current time is 6AM-12PM
+        is_night: True if current time is 8PM-6AM
+        
+    Returns:
+        Dict with keys: xp_percent, bonus_breakdown, total_bonus_percent
+    """
+    result = {
+        "xp_percent": 0,         # General XP bonus
+        "xp_session": 0,         # Focus session XP bonus
+        "xp_long_session": 0,    # Long session (>1h) bonus  
+        "xp_morning": 0,         # Morning XP bonus
+        "xp_night": 0,           # Night XP bonus
+        "xp_story": 0,           # Story XP bonus
+        "total_bonus_percent": 0,
+        "bonus_breakdown": [],
+    }
+    
+    try:
+        from entitidex.entity_perks import calculate_active_perks, PerkType
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        
+        # General XP bonus (always applies)
+        xp_percent = int(perks.get(PerkType.XP_PERCENT, 0))
+        if xp_percent > 0:
+            result["xp_percent"] = xp_percent
+            result["bonus_breakdown"].append(f"+{xp_percent}% All XP")
+        
+        # Session-specific bonuses
+        if source == "session":
+            xp_session = int(perks.get(PerkType.XP_SESSION, 0))
+            if xp_session > 0:
+                result["xp_session"] = xp_session
+                result["bonus_breakdown"].append(f"+{xp_session}% Focus XP")
+            
+            # Long session bonus (>60 minutes)
+            if session_minutes >= 60:
+                xp_long = int(perks.get(PerkType.XP_LONG_SESSION, 0))
+                if xp_long > 0:
+                    result["xp_long_session"] = xp_long
+                    result["bonus_breakdown"].append(f"+{xp_long}% Long Session")
+        
+        # Time-of-day bonuses
+        if is_morning:
+            xp_morning = int(perks.get(PerkType.XP_MORNING, 0))
+            if xp_morning > 0:
+                result["xp_morning"] = xp_morning
+                result["bonus_breakdown"].append(f"+{xp_morning}% Morning")
+        
+        if is_night:
+            xp_night = int(perks.get(PerkType.XP_NIGHT, 0))
+            if xp_night > 0:
+                result["xp_night"] = xp_night
+                result["bonus_breakdown"].append(f"+{xp_night}% Night Owl")
+        
+        # Story XP bonus
+        if source == "story":
+            xp_story = int(perks.get(PerkType.XP_STORY, 0))
+            if xp_story > 0:
+                result["xp_story"] = xp_story
+                result["bonus_breakdown"].append(f"+{xp_story}% Story XP")
+        
+        # Calculate total
+        result["total_bonus_percent"] = (
+            result["xp_percent"] + result["xp_session"] + 
+            result["xp_long_session"] + result["xp_morning"] + 
+            result["xp_night"] + result["xp_story"]
+        )
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting XP perks: {e}")
+        
+    return result
+
+
+def get_entity_coin_perks(adhd_buster: dict, source: str = "session") -> dict:
+    """
+    Get coin-related entity perk bonuses.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        source: Coin source type ("session", "salvage", "store", "other")
+        
+    Returns:
+        Dict with keys: coin_flat, coin_percent, salvage_bonus, store_discount, 
+                       total_flat_bonus, total_percent_bonus, bonus_breakdown
+    """
+    result = {
+        "coin_flat": 0,          # Flat coins per session
+        "coin_percent": 0,       # Percent bonus to all coins
+        "salvage_bonus": 0,      # Bonus coins on salvage
+        "store_discount": 0,     # Store refresh discount
+        "total_flat_bonus": 0,
+        "total_percent_bonus": 0,
+        "bonus_breakdown": [],
+    }
+    
+    try:
+        from entitidex.entity_perks import calculate_active_perks, PerkType
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        
+        # Flat coin bonus (applies to sessions)
+        if source == "session":
+            coin_flat = int(perks.get(PerkType.COIN_FLAT, 0))
+            if coin_flat > 0:
+                result["coin_flat"] = coin_flat
+                result["total_flat_bonus"] = coin_flat
+                result["bonus_breakdown"].append(f"+{coin_flat} coins")
+        
+        # Percent coin bonus (always applies)
+        coin_percent = int(perks.get(PerkType.COIN_PERCENT, 0))
+        if coin_percent > 0:
+            result["coin_percent"] = coin_percent
+            result["total_percent_bonus"] = coin_percent
+            result["bonus_breakdown"].append(f"+{coin_percent}% coins")
+        
+        # Salvage bonus
+        if source == "salvage":
+            salvage = int(perks.get(PerkType.SALVAGE_BONUS, 0))
+            if salvage > 0:
+                result["salvage_bonus"] = salvage
+                result["total_flat_bonus"] += salvage
+                result["bonus_breakdown"].append(f"+{salvage} salvage")
+        
+        # Store discount
+        if source == "store":
+            store_disc = int(perks.get(PerkType.STORE_DISCOUNT, 0))
+            if store_disc > 0:
+                result["store_discount"] = store_disc
+                result["bonus_breakdown"].append(f"-{store_disc} refresh cost")
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting coin perks: {e}")
+        
+    return result
+
+
+def get_entity_luck_perks(adhd_buster: dict) -> dict:
+    """
+    Get luck-related entity perk bonuses.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys: drop_luck, streak_save, rarity_bias, pity_bonus, 
+                       all_luck, bonus_breakdown
+    """
+    result = {
+        "drop_luck": 0,          # Item drop chance bonus
+        "streak_save": 0,        # Streak save chance
+        "rarity_bias": 0,        # Higher rarity chance
+        "pity_bonus": 0,         # Pity system progress bonus
+        "all_luck": 0,           # General luck bonus
+        "bonus_breakdown": [],
+    }
+    
+    try:
+        from entitidex.entity_perks import calculate_active_perks, PerkType
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        
+        # Drop luck
+        drop_luck = int(perks.get(PerkType.DROP_LUCK, 0))
+        if drop_luck > 0:
+            result["drop_luck"] = drop_luck
+            result["bonus_breakdown"].append(f"+{drop_luck}% drops")
+        
+        # Streak save
+        streak_save = int(perks.get(PerkType.STREAK_SAVE, 0))
+        if streak_save > 0:
+            result["streak_save"] = streak_save
+            result["bonus_breakdown"].append(f"+{streak_save}% streak save")
+        
+        # Rarity bias
+        rarity = int(perks.get(PerkType.RARITY_BIAS, 0))
+        if rarity > 0:
+            result["rarity_bias"] = rarity
+            result["bonus_breakdown"].append(f"+{rarity}% rare finds")
+        
+        # Pity bonus
+        pity = int(perks.get(PerkType.PITY_BONUS, 0))
+        if pity > 0:
+            result["pity_bonus"] = pity
+            result["bonus_breakdown"].append(f"+{pity}% pity progress")
+        
+        # All luck
+        all_luck = int(perks.get(PerkType.ALL_LUCK, 0))
+        if all_luck > 0:
+            result["all_luck"] = all_luck
+            result["bonus_breakdown"].append(f"+{all_luck}% all luck")
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting luck perks: {e}")
+        
+    return result
+
+
+def get_entity_qol_perks(adhd_buster: dict) -> dict:
+    """
+    Get quality-of-life entity perk bonuses.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys: inventory_slots, eye_rest_cap, perfect_session_bonus
+    """
+    result = {
+        "inventory_slots": 0,       # Extra inventory slots
+        "eye_rest_cap": 0,          # Extra daily eye rest claims
+        "perfect_session_bonus": 0, # Bonus for perfect sessions
+    }
+    
+    try:
+        from entitidex.entity_perks import calculate_active_perks, PerkType
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        
+        result["inventory_slots"] = int(perks.get(PerkType.INVENTORY_SLOTS, 0))
+        result["eye_rest_cap"] = int(perks.get(PerkType.EYE_REST_CAP, 0))
+        result["perfect_session_bonus"] = int(perks.get(PerkType.PERFECT_SESSION, 0))
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting QoL perks: {e}")
+        
+    return result
 
 
 def format_lucky_options(lucky_options: dict) -> str:
@@ -3316,7 +3584,7 @@ def roll_priority_completion_reward(story_id: str = None, logged_hours: float = 
 
 
 def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int = 0,
-                  story_id: str = None) -> dict:
+                  story_id: str = None, adhd_buster: dict = None) -> dict:
     """
     Generate a random item with rarity influenced by session length and streak.
     
@@ -3330,6 +3598,7 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         session_minutes: Session length for luck bonus
         streak_days: Streak days for luck bonus
         story_id: Story theme to use for item generation (None = use fallback)
+        adhd_buster: Hero data for entity perk calculation (optional)
     
     Returns:
         dict with item properties including story_theme for display
@@ -3342,8 +3611,24 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         center_tier = bonuses.get("center_tier", -1)
         streak_bonus = bonuses.get("streak_tier_bonus", 0)
         
-        # Adjust center tier with streak bonus
-        effective_center = center_tier + streak_bonus
+        # ✨ ENTITY PERK BONUS: Apply rarity_bias and drop_luck from collected entities
+        entity_rarity_bonus = 0.0
+        if adhd_buster:
+            luck_perks = get_entity_luck_perks(adhd_buster)
+            # Rarity bias shifts weights toward higher rarities
+            # Each 1% rarity_bias = 0.1 tier shift (e.g., 10% = +1 tier)
+            rarity_bias = luck_perks.get("rarity_bias", 0)
+            if rarity_bias > 0:
+                entity_rarity_bonus += rarity_bias / 10.0  # 10% = +1 tier shift
+            
+            # Drop luck also improves item quality (since items always drop)
+            # Each 1% drop_luck = 0.05 tier shift (e.g., 20% = +1 tier)
+            drop_luck = luck_perks.get("drop_luck", 0)
+            if drop_luck > 0:
+                entity_rarity_bonus += drop_luck / 20.0  # 20% = +1 tier shift
+        
+        # Adjust center tier with streak bonus and entity rarity bonus
+        effective_center = center_tier + streak_bonus + entity_rarity_bonus
         
         if effective_center >= 0:
             # Moving window: [5%, 20%, 50%, 20%, 5%] centered on effective_center
@@ -3468,6 +3753,8 @@ def calculate_character_power(adhd_buster: dict, include_set_bonus: bool = True,
     """
     equipped = adhd_buster.get("equipped", {})
     
+    # Calculate base gear power
+    gear_power = 0
     if include_neighbor_effects:
         # Use new system that accounts for neighbor effects
         power_breakdown = calculate_effective_power(
@@ -3475,7 +3762,7 @@ def calculate_character_power(adhd_buster: dict, include_set_bonus: bool = True,
             include_set_bonus=include_set_bonus,
             include_neighbor_effects=True
         )
-        total = power_breakdown["total_power"]
+        gear_power = power_breakdown["total_power"]
     else:
         # Legacy calculation without neighbor effects
         total_power = 0
@@ -3487,16 +3774,16 @@ def calculate_character_power(adhd_buster: dict, include_set_bonus: bool = True,
             set_info = calculate_set_bonuses(equipped)
             total_power += set_info["total_bonus"]
         
-        total = total_power
+        gear_power = total_power
 
     # Add Entity Perks
-    if ENTITIDEX_AVAILABLE:
-        entitidex_data = adhd_buster.get('entitidex', {})
-        perks = calculate_active_perks_from_dict(entitidex_data)
-        perk_bonus = perks.get(PerkType.POWER_FLAT, 0)
-        total += int(perk_bonus)
+    perk_power = 0
+    if ENTITY_SYSTEM_AVAILABLE:
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        perk_power = int(perks.get(PerkType.POWER_FLAT, 0))
 
-    return total
+    return gear_power + perk_power
 
 
 def get_power_breakdown(adhd_buster: dict, include_neighbor_effects: bool = True) -> dict:
@@ -3521,20 +3808,20 @@ def get_power_breakdown(adhd_buster: dict, include_neighbor_effects: bool = True
     
     # Get active sets details for display
     set_info = calculate_set_bonuses(equipped)
-
-    # Calculate Entity Perks
-    perk_bonus = 0
-    if ENTITIDEX_AVAILABLE:
-        entitidex_data = adhd_buster.get('entitidex', {})
-        perks = calculate_active_perks_from_dict(entitidex_data)
-        perk_bonus = int(perks.get(PerkType.POWER_FLAT, 0))
+    
+    # Calculate Entity Perk Bonus
+    entity_bonus = 0
+    if ENTITY_SYSTEM_AVAILABLE:
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        entity_bonus = int(perks.get(PerkType.POWER_FLAT, 0))
     
     return {
         "base_power": breakdown["base_power"],
         "set_bonus": breakdown["set_bonus"],
+        "entity_bonus": entity_bonus,
         "neighbor_adjustment": 0,  # Always 0 - neighbor system removed
-        "entity_perk_bonus": perk_bonus,
-        "total_power": breakdown["total_power"] + perk_bonus,
+        "total_power": breakdown["total_power"] + entity_bonus,
         "power_by_slot": breakdown.get("power_by_slot", {}),
         "neighbor_effects": {},  # Always empty - neighbor system removed
         "active_sets": set_info.get("active_sets", [])
@@ -11813,30 +12100,99 @@ HYDRATION_MIN_INTERVAL_HOURS = 2  # Minimum 2 hours between glasses
 HYDRATION_MAX_DAILY_GLASSES = 5  # Maximum 5 glasses per day
 
 
-def get_water_reward_rarity(glass_number: int, success_roll: float = None, active_perks: dict = None) -> tuple:
+def get_hydration_cooldown_minutes(adhd_buster: dict) -> int:
+    """
+    Get the hydration cooldown in minutes, reduced by entity perks.
+    
+    Base: 2 hours (120 minutes)
+    Entity perks with HYDRATION_COOLDOWN reduce this.
+    
+    Args:
+        adhd_buster: Hero data dict with entitidex progress
+        
+    Returns:
+        Cooldown in minutes (minimum 30 minutes)
+    """
+    base_minutes = HYDRATION_MIN_INTERVAL_HOURS * 60  # 120 minutes
+    
+    try:
+        from entitidex.entity_perks import calculate_active_perks, PerkType
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        
+        # Get cooldown reduction (stored as minutes, e.g., 5 = -5 minutes)
+        cooldown_reduction = int(perks.get(PerkType.HYDRATION_COOLDOWN, 0))
+        
+        if cooldown_reduction > 0:
+            print(f"[Entity Perks] ✨ Hydration cooldown reduced by {cooldown_reduction} min!")
+            
+        # Apply reduction with minimum of 30 minutes
+        return max(30, base_minutes - cooldown_reduction)
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting hydration cooldown: {e}")
+        return base_minutes
+
+
+def get_hydration_daily_cap(adhd_buster: dict) -> int:
+    """
+    Get the daily hydration glass cap, increased by entity perks.
+    
+    Base: 5 glasses per day
+    Entity perks with HYDRATION_CAP increase this.
+    
+    Args:
+        adhd_buster: Hero data dict with entitidex progress
+        
+    Returns:
+        Maximum glasses per day
+    """
+    base_cap = HYDRATION_MAX_DAILY_GLASSES
+    
+    try:
+        from entitidex.entity_perks import calculate_active_perks, PerkType
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        
+        # Get cap increase (stored as count, e.g., 1 = +1 glass)
+        cap_increase = int(perks.get(PerkType.HYDRATION_CAP, 0))
+        
+        if cap_increase > 0:
+            print(f"[Entity Perks] ✨ Daily hydration cap increased by {cap_increase}!")
+            
+        return base_cap + cap_increase
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting hydration cap: {e}")
+        return base_cap
+
+
+def get_water_reward_rarity(glass_number: int, success_roll: float = None) -> tuple:
     """
     Get reward rarity for logging a glass of water.
-    ...
+    
+    Uses moving window [5%, 15%, 60%, 15%, 5%] with tier increasing each glass:
+    - Glass 1: Common-centered, 99% success rate
+    - Glass 2: Uncommon-centered, 80% success rate
+    - Glass 3: Rare-centered, 60% success rate
+    - Glass 4: Epic-centered, 40% success rate
+    - Glass 5: Legendary-centered, 20% success rate
+    
     Args:
-        glass_number: Which glass this is today (1-5+)
+        glass_number: Which glass this is today (1-5)
         success_roll: Pre-rolled success value (0.0-1.0) or None to generate
-        active_perks: Dictionary of active entity perks
-    ...
+    
+    Returns:
+        (base_rarity: str, success_rate: float, rolled_tier: str or None)
+        Returns (None, 0.0, None) if over daily limit
     """
     import random
     
-    # Determine max glasses dynamically
-    max_glasses = HYDRATION_MAX_DAILY_GLASSES
-    if active_perks:
-        max_glasses += int(active_perks.get(PerkType.HYDRATION_CAP, 0))
-    
-    if glass_number < 1 or glass_number > max_glasses:
+    if glass_number < 1 or glass_number > HYDRATION_MAX_DAILY_GLASSES:
         return (None, 0.0, None)
     
-    # Glass number maps to tier. If perks increase cap beyond 5, cap tier at 4 (Legendary)
-    # 1->0, 2->1, 3->2, 4->3, 5->4, 6->4, 7->4...
-    center_tier = min(4, glass_number - 1)
-
+    # Glass number maps to tier: 1->0(Common), 2->1(Uncommon), 3->2(Rare), 4->3(Epic), 5->4(Legendary)
+    center_tier = glass_number - 1
     
     # Success rate decreases: 99%, 80%, 60%, 40%, 20%
     success_rates = [0.99, 0.80, 0.60, 0.40, 0.20]
@@ -11893,29 +12249,21 @@ def get_hydration_streak_bonus_rarity(streak_days: int) -> Optional[str]:
     return None
 
 
-def can_log_water(water_entries: list, current_time: Optional[str] = None, active_perks: dict = None) -> dict:
+def can_log_water(water_entries: list, current_time: Optional[str] = None, 
+                  adhd_buster: Optional[dict] = None) -> dict:
     """
     Check if user can log water based on timing rules.
     
     Args:
         water_entries: List of water log entries
         current_time: Current datetime string (for testing), or None for now
-        active_perks: Dictionary of active entity perks
+        adhd_buster: Hero data dict for entity perk bonuses (optional)
     
     Returns:
-        Dict with can_log, reason, next_available_time, glasses_today, minutes_remaining
+        Dict with can_log, reason, next_available_time, glasses_today, minutes_remaining,
+        and perk_bonus_applied (bool) if perks modified the result
     """
     from datetime import datetime, timedelta
-    
-    # Determine dynamic constants
-    max_daily_glasses = HYDRATION_MAX_DAILY_GLASSES
-    min_interval_hours = HYDRATION_MIN_INTERVAL_HOURS
-    
-    if active_perks:
-        max_daily_glasses += int(active_perks.get(PerkType.HYDRATION_CAP, 0))
-        
-        reduction = active_perks.get(PerkType.HYDRATION_COOLDOWN, 0)
-        min_interval_hours = max(0.5, min_interval_hours - (reduction / 60.0))
     
     now = datetime.now()
     if current_time is not None:
@@ -11924,36 +12272,61 @@ def can_log_water(water_entries: list, current_time: Optional[str] = None, activ
             now = parsed_now
     today = now.strftime("%Y-%m-%d")
     
+    # Get perk-modified limits (or use defaults if no adhd_buster)
+    if adhd_buster:
+        daily_cap = get_hydration_daily_cap(adhd_buster)
+        cooldown_minutes = get_hydration_cooldown_minutes(adhd_buster)
+    else:
+        daily_cap = HYDRATION_MAX_DAILY_GLASSES
+        cooldown_minutes = HYDRATION_MIN_INTERVAL_HOURS * 60
+    
+    # Track if perks provided a bonus
+    cap_bonus = daily_cap > HYDRATION_MAX_DAILY_GLASSES
+    cooldown_bonus = cooldown_minutes < (HYDRATION_MIN_INTERVAL_HOURS * 60)
+    
     # Count today's glasses and find last glass time
     today_entries = [e for e in water_entries if e.get("date") == today]
     glasses_today = len(today_entries)
     
-    # Check daily limit
-    if glasses_today >= max_daily_glasses:
+    # Check daily limit (using perk-modified cap)
+    if glasses_today >= daily_cap:
+        reason = f"🎯 Daily goal complete! You've had {daily_cap} glasses today."
+        if cap_bonus:
+            reason += " ✨ (Entity perk bonus!)"
         return {
             "can_log": False,
-            "reason": f"🎯 Daily goal complete! You've had {max_daily_glasses} glasses today.",
+            "reason": reason,
             "next_available_time": None,
             "glasses_today": glasses_today,
-            "minutes_remaining": 0
+            "minutes_remaining": 0,
+            "daily_cap": daily_cap,
+            "perk_bonus_applied": cap_bonus
         }
     
-    # Check timing - must wait 2 hours between glasses
+    # Check timing (using perk-modified cooldown)
     if today_entries:
         last_entry = max(today_entries, key=lambda e: e.get("time", "00:00"))
         last_time_str = last_entry.get("time", "00:00")
         last_time = safe_parse_date(f"{today} {last_time_str}", "%Y-%m-%d %H:%M")
         if last_time:
-            next_available = last_time + timedelta(hours=min_interval_hours)
+            next_available = last_time + timedelta(minutes=cooldown_minutes)
             
             if now < next_available:
                 minutes_remaining = int((next_available - now).total_seconds() / 60)
+                reason = f"⏳ Wait {minutes_remaining} min for healthy absorption."
+                if cooldown_bonus:
+                    original_remaining = int((last_time + timedelta(hours=HYDRATION_MIN_INTERVAL_HOURS) - now).total_seconds() / 60)
+                    saved = original_remaining - minutes_remaining
+                    if saved > 0:
+                        reason += f" ✨ (Saved {saved} min from perks!)"
                 return {
                     "can_log": False,
-                    "reason": f"⏳ Wait {minutes_remaining} min for healthy absorption.",
+                    "reason": reason,
                     "next_available_time": next_available.strftime("%H:%M"),
                     "glasses_today": glasses_today,
-                    "minutes_remaining": minutes_remaining
+                    "minutes_remaining": minutes_remaining,
+                    "daily_cap": daily_cap,
+                    "perk_bonus_applied": cooldown_bonus
                 }
     
     return {
@@ -11961,7 +12334,9 @@ def can_log_water(water_entries: list, current_time: Optional[str] = None, activ
         "reason": "Ready to log!",
         "next_available_time": None,
         "glasses_today": glasses_today,
-        "minutes_remaining": 0
+        "minutes_remaining": 0,
+        "daily_cap": daily_cap,
+        "perk_bonus_applied": cap_bonus or cooldown_bonus
     }
 
 
@@ -12777,7 +13152,8 @@ XP_REWARDS = {
 
 
 def calculate_session_xp(duration_minutes: int, streak_days: int = 0, 
-                         multiplier: float = 1.0, lucky_xp_bonus: int = 0) -> dict:
+                         multiplier: float = 1.0, lucky_xp_bonus: int = 0,
+                         adhd_buster: dict = None) -> dict:
     """
     Calculate XP earned from a focus session.
     
@@ -12786,6 +13162,7 @@ def calculate_session_xp(duration_minutes: int, streak_days: int = 0,
         streak_days: Current streak days
         multiplier: XP multiplier (e.g., 1.5 for strategic priority)
         lucky_xp_bonus: Bonus XP% from lucky options on gear (e.g., 5 = +5%)
+        adhd_buster: Hero data for entity perk calculation (optional)
     
     Returns dict with breakdown of XP sources.
     """
@@ -12807,16 +13184,42 @@ def calculate_session_xp(duration_minutes: int, streak_days: int = 0,
     # Apply lucky XP bonus from gear (additive after multiplier)
     if lucky_xp_bonus > 0:
         lucky_bonus_xp = int(subtotal * (lucky_xp_bonus / 100.0))
-        total = subtotal + lucky_bonus_xp
+        subtotal_after_gear = subtotal + lucky_bonus_xp
     else:
         lucky_bonus_xp = 0
-        total = subtotal
+        subtotal_after_gear = subtotal
+    
+    # ✨ ENTITY PERK BONUS: Apply XP bonuses from collected entities
+    entity_xp_bonus = 0
+    entity_xp_breakdown = []
+    if adhd_buster:
+        # Determine time of day for time-based perks
+        from datetime import datetime
+        hour = datetime.now().hour
+        is_morning = 6 <= hour < 12
+        is_night = hour >= 20 or hour < 6
+        
+        xp_perks = get_entity_xp_perks(
+            adhd_buster, 
+            source="session",
+            session_minutes=duration_minutes,
+            is_morning=is_morning,
+            is_night=is_night
+        )
+        
+        if xp_perks["total_bonus_percent"] > 0:
+            entity_xp_bonus = int(subtotal_after_gear * (xp_perks["total_bonus_percent"] / 100.0))
+            entity_xp_breakdown = xp_perks["bonus_breakdown"]
+    
+    total = subtotal_after_gear + entity_xp_bonus
     
     breakdown_parts = [f"Base: {base_xp}", f"Duration: {duration_xp}", f"Streak: {streak_bonus}"]
     if multiplier != 1.0:
         breakdown_parts.append(f"Multiplier: {multiplier}x")
     if lucky_xp_bonus > 0:
         breakdown_parts.append(f"Lucky Bonus: +{lucky_xp_bonus}% ({lucky_bonus_xp} XP)")
+    if entity_xp_bonus > 0:
+        breakdown_parts.append(f"Entity Perks: +{entity_xp_bonus} XP")
     
     return {
         "base_xp": base_xp,
@@ -12825,6 +13228,8 @@ def calculate_session_xp(duration_minutes: int, streak_days: int = 0,
         "multiplier": multiplier,
         "lucky_xp_bonus": lucky_xp_bonus,
         "lucky_bonus_xp": lucky_bonus_xp,
+        "entity_xp_bonus": entity_xp_bonus,
+        "entity_xp_breakdown": entity_xp_breakdown,
         "total_xp": total,
         "breakdown": " + ".join(breakdown_parts)
     }
@@ -12981,7 +13386,7 @@ def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
                 # Consecutive day
                 adhd_buster["login_streak"] = adhd_buster.get("login_streak", 0) + 1
             elif days_diff > 1:
-                # Streak broken - check for streak freeze
+                # Streak broken - check for streak freeze token first
                 freeze_count = adhd_buster.get("streak_freeze_tokens", 0)
                 if freeze_count > 0 and days_diff == 2:
                     # Use streak freeze
@@ -12989,8 +13394,22 @@ def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
                     adhd_buster["login_streak"] = adhd_buster.get("login_streak", 0) + 1
                     adhd_buster["streak_freezes_used"] = adhd_buster.get("streak_freezes_used", 0) + 1
                 else:
-                    # Reset streak
-                    adhd_buster["login_streak"] = 1
+                    # ✨ ENTITY PERK: Check for streak_save perk (chance to save streak)
+                    streak_saved = False
+                    if days_diff == 2:  # Only works for 1-day gap
+                        luck_perks = get_entity_luck_perks(adhd_buster)
+                        streak_save_chance = luck_perks.get("streak_save", 0)
+                        if streak_save_chance > 0:
+                            import random
+                            if random.randint(1, 100) <= streak_save_chance:
+                                streak_saved = True
+                                adhd_buster["login_streak"] = adhd_buster.get("login_streak", 0) + 1
+                                adhd_buster["entity_streak_saves"] = adhd_buster.get("entity_streak_saves", 0) + 1
+                                print(f"[Entity Perks] ✨ Streak saved by entity perk! ({streak_save_chance}% chance)")
+                    
+                    if not streak_saved:
+                        # Reset streak
+                        adhd_buster["login_streak"] = 1
     else:
         adhd_buster["login_streak"] = 1
     
@@ -13861,13 +14280,13 @@ def get_entitidex_manager(adhd_buster: dict) -> "EntitidexManager":
     """
     Get an EntitidexManager for the current hero.
     
-    Creates the manager with the hero's entitidex progress data.
+    Creates the manager with the hero's entitidex progress data and active perks.
     
     Args:
         adhd_buster: Hero data dictionary
         
     Returns:
-        EntitidexManager instance loaded with hero's progress
+        EntitidexManager instance loaded with hero's progress and perks
     """
     from entitidex import EntitidexManager, EntitidexProgress
     
@@ -13883,10 +14302,19 @@ def get_entitidex_manager(adhd_buster: dict) -> "EntitidexManager":
     active_story = adhd_buster.get("active_story", "warrior")
     hero_power = calculate_character_power(adhd_buster)
     
+    # Get active entity perks for encounter bonuses
+    active_perks = {}
+    try:
+        from entitidex.entity_perks import calculate_active_perks
+        active_perks = calculate_active_perks(progress_data)
+    except Exception as e:
+        print(f"[Entity Perks] Could not load perks: {e}")
+    
     return EntitidexManager(
         progress=progress,
         story_id=active_story,
-        hero_power=hero_power
+        hero_power=hero_power,
+        active_perks=active_perks
     )
 
 
@@ -13940,7 +14368,10 @@ def check_entitidex_encounter(adhd_buster: dict, session_minutes: int,
         "entity": encounter_result.entity,
         "hero_power": hero_power,
         "entity_power": encounter_result.entity.power if encounter_result.entity else 0,
-        "join_probability": encounter_result.catch_probability
+        "join_probability": encounter_result.catch_probability,
+        "perk_bonus_applied": encounter_result.perk_bonus_applied,
+        "encounter_perk_bonus": encounter_result.encounter_perk_bonus,
+        "capture_perk_bonus": encounter_result.capture_perk_bonus,
     }
 
 

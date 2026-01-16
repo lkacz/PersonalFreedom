@@ -6,8 +6,11 @@ import math
 import threading
 from datetime import datetime, timedelta
 from PySide6 import QtWidgets, QtCore, QtGui
-from gamification import generate_item
+from gamification import generate_item, get_entity_qol_perks
 from game_state import get_game_state
+
+# Base daily eye rest cap (can be increased by entity perks)
+BASE_EYE_REST_CAP = 20
 
 # Platform-safe sound support
 try:
@@ -370,10 +373,11 @@ class EyeProtectionTab(QtWidgets.QWidget):
         stats = self.blocker.stats.get("eye_protection", {})
         last_date_str = stats.get("last_date", "")
         count = self.get_daily_count()
+        daily_cap = self.get_daily_cap()
         
-        # Check daily limit (capped at 20)
-        if count >= 20:
-            self.cooldown_status_label.setText("🎯 Daily limit reached! (20/20)")
+        # Check daily limit (can be increased by entity perks)
+        if count >= daily_cap:
+            self.cooldown_status_label.setText(f"🎯 Daily limit reached! ({daily_cap}/{daily_cap})")
             self.cooldown_status_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #4caf50; padding: 10px;")
             self.start_btn.setEnabled(False)
             return
@@ -408,8 +412,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         # Validate and sanitize count value
         if not isinstance(count, int) or count < 0:
             count = 0
-        elif count > 20:
-            count = 20  # Clamp to max daily limit
+        # Note: Cap is enforced in get_daily_cap(), not here (perks can increase it)
         
         if not last_date_str:
             return 0
@@ -430,27 +433,37 @@ class EyeProtectionTab(QtWidgets.QWidget):
             return 0
         return count
 
+    def get_daily_cap(self) -> int:
+        """Get the daily eye rest cap (base + entity perks)."""
+        try:
+            qol_perks = get_entity_qol_perks(self.blocker.adhd_buster)
+            perk_bonus = qol_perks.get("eye_rest_cap", 0)
+            return BASE_EYE_REST_CAP + perk_bonus
+        except Exception:
+            return BASE_EYE_REST_CAP
+
     def update_stats_display(self):
         count = self.get_daily_count()
+        daily_cap = self.get_daily_cap()
         
         # Check if at daily limit
-        if count >= 20:
+        if count >= daily_cap:
             text = (
-                f"<b>Today's Routines: {count} / 20</b><br><br>"
+                f"<b>Today's Routines: {count} / {daily_cap}</b><br><br>"
                 f"<span style='color:#4caf50;'>🎯 Daily limit reached!</span><br>"
                 f"Come back tomorrow for more rewards!"
             )
             self.stats_label.setText(text)
             return
         
-        # Moving window: every 4 routines = +1 tier (cap 20)
+        # Moving window: every 4 routines = +1 tier (up to daily_cap)
         # Routines 1-4: Tier 0 (Common), 99% success
         # Routines 5-8: Tier 1 (Uncommon), 80% success
         # Routines 9-12: Tier 2 (Rare), 60% success
         # Routines 13-16: Tier 3 (Epic), 40% success
-        # Routines 17-20: Tier 4 (Legendary), 20% success
+        # Routines 17-20+: Tier 4 (Legendary), 20% success
         
-        next_count = min(count + 1, 20)
+        next_count = min(count + 1, daily_cap)
         window_tier = min((next_count - 1) // 4, 4)
         tier_names = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
         tier_colors = ["#9e9e9e", "#4caf50", "#2196f3", "#9c27b0", "#ff9800"]
@@ -462,10 +475,10 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         # Show which window we're in
         window_start = window_tier * 4 + 1
-        window_end = min((window_tier + 1) * 4, 20)
+        window_end = min((window_tier + 1) * 4, daily_cap)
         
         text = (
-            f"<b>Today's Routines: {count} / 20</b><br><br>"
+            f"<b>Today's Routines: {count} / {daily_cap}</b><br><br>"
             f"Next Routine Window: <span style='color:{base_color};'>{window_start}-{window_end} ({base_tier}-centered)</span><br>"
             f"🎲 Success Rate: <span style='color:#4caf50'>{success_rate}%</span><br>"
             f"🎰 Tier Distribution: [5%, 15%, <span style='color:{base_color};'><b>60%</b></span>, 15%, 5%]"
@@ -476,8 +489,9 @@ class EyeProtectionTab(QtWidgets.QWidget):
         # Cooldown check is now handled by _update_cooldown_display
         # Double-check before starting
         count = self.get_daily_count()
-        if count >= 20:
-            QtWidgets.QMessageBox.information(self, "Daily Limit", "You've reached the daily limit of 20 routines!")
+        daily_cap = self.get_daily_cap()
+        if count >= daily_cap:
+            QtWidgets.QMessageBox.information(self, "Daily Limit", f"You've reached the daily limit of {daily_cap} routines!")
             return
         
         stats = self.blocker.stats.get("eye_protection", {})
