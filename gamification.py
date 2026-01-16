@@ -14,6 +14,20 @@ from typing import Optional
 # Module availability flag for optional imports
 GAMIFICATION_AVAILABLE = True
 
+# Entitidex Perk System Integration
+try:
+    from entitidex.entity_perks import PerkType, calculate_active_perks_from_dict
+    ENTITIDEX_AVAILABLE = True
+except ImportError:
+    ENTITIDEX_AVAILABLE = False
+    class PerkType:
+        POWER_FLAT = "power_flat"
+        COIN_DISCOUNT = "coin_discount"
+        COIN_PERCENT = "coin_percent"
+        COIN_FLAT = "coin_flat"
+        HYDRATION_COOLDOWN = "hydration_cd"
+        HYDRATION_CAP = "hydration_cap"
+
 logger = logging.getLogger(__name__)
 
 
@@ -68,21 +82,26 @@ COIN_COSTS = {
 }
 
 # Helper function to get cost with optional discount
-def get_coin_cost(action: str, discount_percent: int = 0) -> int:
+def get_coin_cost(action: str, discount_percent: int = 0, discount_flat: int = 0) -> int:
     """Get the coin cost for an action with optional discount.
     
     Args:
         action: Key from COIN_COSTS dict
         discount_percent: Discount to apply (0-100)
+        discount_flat: Flat amount to subtract (e.g. from perks)
     
     Returns:
         Final cost after discount (minimum 1)
     """
     base_cost = COIN_COSTS.get(action, 0)
+    
+    # Apply percentage discount
+    pct_deduction = 0
     if discount_percent > 0:
-        discount = base_cost * (discount_percent / 100)
-        return max(1, int(base_cost - discount))
-    return base_cost
+        pct_deduction = base_cost * (discount_percent / 100)
+        
+    final_cost = base_cost - pct_deduction - discount_flat
+    return max(1, int(final_cost))
 
 
 # ============================================================================
@@ -3456,7 +3475,7 @@ def calculate_character_power(adhd_buster: dict, include_set_bonus: bool = True,
             include_set_bonus=include_set_bonus,
             include_neighbor_effects=True
         )
-        return power_breakdown["total_power"]
+        total = power_breakdown["total_power"]
     else:
         # Legacy calculation without neighbor effects
         total_power = 0
@@ -3468,7 +3487,16 @@ def calculate_character_power(adhd_buster: dict, include_set_bonus: bool = True,
             set_info = calculate_set_bonuses(equipped)
             total_power += set_info["total_bonus"]
         
-        return total_power
+        total = total_power
+
+    # Add Entity Perks
+    if ENTITIDEX_AVAILABLE:
+        entitidex_data = adhd_buster.get('entitidex', {})
+        perks = calculate_active_perks_from_dict(entitidex_data)
+        perk_bonus = perks.get(PerkType.POWER_FLAT, 0)
+        total += int(perk_bonus)
+
+    return total
 
 
 def get_power_breakdown(adhd_buster: dict, include_neighbor_effects: bool = True) -> dict:
@@ -3493,12 +3521,20 @@ def get_power_breakdown(adhd_buster: dict, include_neighbor_effects: bool = True
     
     # Get active sets details for display
     set_info = calculate_set_bonuses(equipped)
+
+    # Calculate Entity Perks
+    perk_bonus = 0
+    if ENTITIDEX_AVAILABLE:
+        entitidex_data = adhd_buster.get('entitidex', {})
+        perks = calculate_active_perks_from_dict(entitidex_data)
+        perk_bonus = int(perks.get(PerkType.POWER_FLAT, 0))
     
     return {
         "base_power": breakdown["base_power"],
         "set_bonus": breakdown["set_bonus"],
         "neighbor_adjustment": 0,  # Always 0 - neighbor system removed
-        "total_power": breakdown["total_power"],
+        "entity_perk_bonus": perk_bonus,
+        "total_power": breakdown["total_power"] + perk_bonus,
         "power_by_slot": breakdown.get("power_by_slot", {}),
         "neighbor_effects": {},  # Always empty - neighbor system removed
         "active_sets": set_info.get("active_sets", [])
@@ -11777,32 +11813,30 @@ HYDRATION_MIN_INTERVAL_HOURS = 2  # Minimum 2 hours between glasses
 HYDRATION_MAX_DAILY_GLASSES = 5  # Maximum 5 glasses per day
 
 
-def get_water_reward_rarity(glass_number: int, success_roll: float = None) -> tuple:
+def get_water_reward_rarity(glass_number: int, success_roll: float = None, active_perks: dict = None) -> tuple:
     """
     Get reward rarity for logging a glass of water.
-    
-    Uses moving window [5%, 15%, 60%, 15%, 5%] with tier increasing each glass:
-    - Glass 1: Common-centered, 99% success rate
-    - Glass 2: Uncommon-centered, 80% success rate
-    - Glass 3: Rare-centered, 60% success rate
-    - Glass 4: Epic-centered, 40% success rate
-    - Glass 5: Legendary-centered, 20% success rate
-    
+    ...
     Args:
-        glass_number: Which glass this is today (1-5)
+        glass_number: Which glass this is today (1-5+)
         success_roll: Pre-rolled success value (0.0-1.0) or None to generate
-    
-    Returns:
-        (base_rarity: str, success_rate: float, rolled_tier: str or None)
-        Returns (None, 0.0, None) if over daily limit
+        active_perks: Dictionary of active entity perks
+    ...
     """
     import random
     
-    if glass_number < 1 or glass_number > HYDRATION_MAX_DAILY_GLASSES:
+    # Determine max glasses dynamically
+    max_glasses = HYDRATION_MAX_DAILY_GLASSES
+    if active_perks:
+        max_glasses += int(active_perks.get(PerkType.HYDRATION_CAP, 0))
+    
+    if glass_number < 1 or glass_number > max_glasses:
         return (None, 0.0, None)
     
-    # Glass number maps to tier: 1->0(Common), 2->1(Uncommon), 3->2(Rare), 4->3(Epic), 5->4(Legendary)
-    center_tier = glass_number - 1
+    # Glass number maps to tier. If perks increase cap beyond 5, cap tier at 4 (Legendary)
+    # 1->0, 2->1, 3->2, 4->3, 5->4, 6->4, 7->4...
+    center_tier = min(4, glass_number - 1)
+
     
     # Success rate decreases: 99%, 80%, 60%, 40%, 20%
     success_rates = [0.99, 0.80, 0.60, 0.40, 0.20]
@@ -11859,18 +11893,29 @@ def get_hydration_streak_bonus_rarity(streak_days: int) -> Optional[str]:
     return None
 
 
-def can_log_water(water_entries: list, current_time: Optional[str] = None) -> dict:
+def can_log_water(water_entries: list, current_time: Optional[str] = None, active_perks: dict = None) -> dict:
     """
     Check if user can log water based on timing rules.
     
     Args:
         water_entries: List of water log entries
         current_time: Current datetime string (for testing), or None for now
+        active_perks: Dictionary of active entity perks
     
     Returns:
         Dict with can_log, reason, next_available_time, glasses_today, minutes_remaining
     """
     from datetime import datetime, timedelta
+    
+    # Determine dynamic constants
+    max_daily_glasses = HYDRATION_MAX_DAILY_GLASSES
+    min_interval_hours = HYDRATION_MIN_INTERVAL_HOURS
+    
+    if active_perks:
+        max_daily_glasses += int(active_perks.get(PerkType.HYDRATION_CAP, 0))
+        
+        reduction = active_perks.get(PerkType.HYDRATION_COOLDOWN, 0)
+        min_interval_hours = max(0.5, min_interval_hours - (reduction / 60.0))
     
     now = datetime.now()
     if current_time is not None:
@@ -11884,10 +11929,10 @@ def can_log_water(water_entries: list, current_time: Optional[str] = None) -> di
     glasses_today = len(today_entries)
     
     # Check daily limit
-    if glasses_today >= HYDRATION_MAX_DAILY_GLASSES:
+    if glasses_today >= max_daily_glasses:
         return {
             "can_log": False,
-            "reason": f"🎯 Daily goal complete! You've had {HYDRATION_MAX_DAILY_GLASSES} glasses today.",
+            "reason": f"🎯 Daily goal complete! You've had {max_daily_glasses} glasses today.",
             "next_available_time": None,
             "glasses_today": glasses_today,
             "minutes_remaining": 0
@@ -11899,7 +11944,7 @@ def can_log_water(water_entries: list, current_time: Optional[str] = None) -> di
         last_time_str = last_entry.get("time", "00:00")
         last_time = safe_parse_date(f"{today} {last_time_str}", "%Y-%m-%d %H:%M")
         if last_time:
-            next_available = last_time + timedelta(hours=HYDRATION_MIN_INTERVAL_HOURS)
+            next_available = last_time + timedelta(hours=min_interval_hours)
             
             if now < next_available:
                 minutes_remaining = int((next_available - now).total_seconds() / 60)

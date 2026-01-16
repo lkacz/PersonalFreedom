@@ -54,6 +54,7 @@ def calculate_encounter_chance(
     minimum_session_minutes: int = 25,
     was_perfect_session: bool = False,
     streak_days: int = 0,
+    active_perks: dict = None,
 ) -> float:
     """
     Calculate the chance of encountering an entity after a focus session.
@@ -63,6 +64,7 @@ def calculate_encounter_chance(
         minimum_session_minutes: The minimum required session length
         was_perfect_session: True if no bypass was attempted
         streak_days: Number of consecutive days with completed sessions
+        active_perks: Dictionary of active entity perks
         
     Returns:
         Probability between 0.0 and max_chance
@@ -81,6 +83,12 @@ def calculate_encounter_chance(
     # Bonus for streak
     chance += streak_days * ENCOUNTER_CONFIG["bonus_per_streak_day"]
     
+    # Bonus from Entity Perks
+    if active_perks:
+        from .entity_perks import PerkType
+        perk_bonus = active_perks.get(PerkType.ENCOUNTER_CHANCE, 0)
+        chance += (perk_bonus / 100.0)
+    
     # Cap at maximum
     return min(chance, ENCOUNTER_CONFIG["max_chance"])
 
@@ -90,6 +98,7 @@ def roll_encounter_chance(
     minimum_session_minutes: int = 25,
     was_perfect_session: bool = False,
     streak_days: int = 0,
+    active_perks: dict = None,
 ) -> Tuple[bool, float]:
     """
     Roll to determine if an encounter occurs.
@@ -99,6 +108,7 @@ def roll_encounter_chance(
         minimum_session_minutes: The minimum required session length
         was_perfect_session: True if no bypass was attempted
         streak_days: Number of consecutive days with sessions
+        active_perks: Dictionary of active entity perks
         
     Returns:
         Tuple of (encounter_occurred: bool, chance: float)
@@ -108,6 +118,7 @@ def roll_encounter_chance(
         minimum_session_minutes=minimum_session_minutes,
         was_perfect_session=was_perfect_session,
         streak_days=streak_days,
+        active_perks=active_perks,
     )
     
     roll = random.random()
@@ -120,6 +131,7 @@ def should_trigger_encounter(
     was_perfect_session: bool = False,
     streak_days: int = 0,
     was_bypass_used: bool = False,
+    active_perks: dict = None,
 ) -> bool:
     """
     Determine if an entity encounter should trigger.
@@ -130,6 +142,7 @@ def should_trigger_encounter(
         was_perfect_session: True if no bypass was attempted
         streak_days: Number of consecutive days with sessions
         was_bypass_used: True if bypass was used (no encounter possible)
+        active_perks: Dictionary of active entity perks
         
     Returns:
         True if an encounter should occur
@@ -143,6 +156,7 @@ def should_trigger_encounter(
         minimum_session_minutes=minimum_session_minutes,
         was_perfect_session=was_perfect_session,
         streak_days=streak_days,
+        active_perks=active_perks,
     )
     
     return occurred
