@@ -50,7 +50,8 @@ class EntityEncounterDialog(QtWidgets.QDialog):
     }
     
     def __init__(self, entity: Entity, join_probability: float,
-                 hero_power: int, parent: Optional[QtWidgets.QWidget] = None):
+                 hero_power: int, parent: Optional[QtWidgets.QWidget] = None,
+                 is_exceptional: bool = False):
         """
         Initialize the entity encounter dialog.
         
@@ -59,11 +60,13 @@ class EntityEncounterDialog(QtWidgets.QDialog):
             join_probability: Probability (0.0-1.0) of successful bond
             hero_power: Current hero power for display
             parent: Parent widget
+            is_exceptional: True if this is an exceptional variant encounter
         """
         super().__init__(parent)
         self.entity = entity
         self.join_probability = join_probability
         self.hero_power = hero_power
+        self.is_exceptional = is_exceptional
         self.bond_result: Optional[bool] = None
         
         self._anims = [] # Keep references to animations
@@ -134,8 +137,12 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         card_layout.setSpacing(12)
         card_layout.setContentsMargins(15, 15, 15, 15)
         
-        # Entity name
-        self.name_label = QtWidgets.QLabel(self.entity.name)
+        # Entity name - use exceptional name if available for exceptional encounters
+        if self.is_exceptional and self.entity.exceptional_name:
+            display_name = self.entity.exceptional_name
+        else:
+            display_name = self.entity.name
+        self.name_label = QtWidgets.QLabel(display_name)
         self.name_label.setAlignment(QtCore.Qt.AlignCenter)
         self.name_label.setFixedHeight(35)  # Fixed height
         self.name_label.setStyleSheet(f"""
@@ -236,8 +243,12 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         """)
         card_layout.addWidget(self.theme_label)
         
-        # Lore text
-        self.lore_label = QtWidgets.QLabel(self.entity.lore)
+        # Lore text - use exceptional lore if available for exceptional encounters
+        if self.is_exceptional and self.entity.exceptional_lore:
+            display_lore = self.entity.exceptional_lore
+        else:
+            display_lore = self.entity.lore
+        self.lore_label = QtWidgets.QLabel(display_lore)
         self.lore_label.setAlignment(QtCore.Qt.AlignCenter)
         self.lore_label.setWordWrap(True)
         self.lore_label.setMinimumHeight(80)
@@ -440,7 +451,12 @@ class EntityEncounterDialog(QtWidgets.QDialog):
     
     def _reveal_entity_name(self) -> None:
         """Reveal the entity name and image."""
-        self.title_label.setText(f"✨ {self.entity.name} ✨")
+        # Use exceptional name if available for exceptional encounters
+        if self.is_exceptional and self.entity.exceptional_name:
+            display_name = self.entity.exceptional_name
+        else:
+            display_name = self.entity.name
+        self.title_label.setText(f"✨ {display_name} ✨")
         
         self._fade_in(self.name_label)
         self._fade_in(self.svg_container)

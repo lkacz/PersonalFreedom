@@ -980,6 +980,25 @@ def apply_coin_discount(cost: int, discount_pct: int) -> int:
     return max(discounted, 1)
 
 
+def apply_coin_flat_reduction(cost: int, flat_reduction: int) -> int:
+    """
+    Apply flat coin reduction to a cost (e.g., from Vending Machine entity perk).
+    
+    Args:
+        cost: Original cost in coins (after any percentage discounts)
+        flat_reduction: Flat number of coins to subtract
+    
+    Returns:
+        int: Reduced cost (minimum 1 coin)
+    """
+    if flat_reduction <= 0:
+        return cost
+    # Subtract flat amount
+    reduced = cost - flat_reduction
+    # Ensure cost is at least 1 coin (never free)
+    return max(reduced, 1)
+
+
 def get_entity_perk_bonuses(adhd_buster: dict) -> dict:
     """
     Get entity perk bonuses relevant to merge operations and economy.
@@ -1011,6 +1030,252 @@ def get_entity_perk_bonuses(adhd_buster: dict) -> dict:
         
     except Exception as e:
         print(f"[Entity Perks] Error getting perk bonuses: {e}")
+        
+    return result
+
+
+def get_entity_merge_perk_contributors(adhd_buster: dict) -> dict:
+    """
+    Get merge-related entity perk bonuses with detailed contributor info.
+    Used to display which entities contribute to merge bonuses.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys:
+            - total_merge_luck: int - Combined merge_luck + all_luck + merge_success
+            - total_coin_discount: int - Coin discount bonus
+            - contributors: list of dicts with:
+                - entity_id: str
+                - name: str  
+                - perk_type: str - "merge_luck", "merge_success", "all_luck", "coin_discount"
+                - value: int
+                - icon: str
+                - is_exceptional: bool
+                - description: str
+    """
+    result = {
+        "total_merge_luck": 0,
+        "total_coin_discount": 0,
+        "contributors": [],
+    }
+    
+    try:
+        from entitidex.entity_perks import ENTITY_PERKS, PerkType
+        from entitidex.entity_pools import get_entity_by_id
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        collected = entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set()))
+        exceptional = entitidex_data.get("exceptional_entities", {})
+        
+        if not collected:
+            return result
+        
+        # Perk types relevant to merge
+        merge_perk_types = {
+            PerkType.MERGE_LUCK: "merge_luck",
+            PerkType.MERGE_SUCCESS: "merge_success", 
+            PerkType.ALL_LUCK: "all_luck",
+            PerkType.COIN_DISCOUNT: "coin_discount",
+        }
+        
+        for entity_id in collected:
+            perk = ENTITY_PERKS.get(entity_id)
+            if perk and perk.perk_type in merge_perk_types:
+                is_exceptional = entity_id in exceptional
+                value = perk.exceptional_value if is_exceptional else perk.normal_value
+                
+                # Get entity details
+                entity = get_entity_by_id(entity_id)
+                entity_name = entity.name if entity else entity_id
+                
+                # Get description
+                if is_exceptional and perk.exceptional_description:
+                    description = perk.exceptional_description.format(value=int(value))
+                else:
+                    description = perk.description.format(value=int(value))
+                
+                perk_type_name = merge_perk_types[perk.perk_type]
+                
+                result["contributors"].append({
+                    "entity_id": entity_id,
+                    "name": entity_name,
+                    "perk_type": perk_type_name,
+                    "value": int(value),
+                    "icon": perk.icon,
+                    "is_exceptional": is_exceptional,
+                    "description": description,
+                })
+                
+                # Update totals
+                if perk_type_name in ("merge_luck", "merge_success", "all_luck"):
+                    result["total_merge_luck"] += int(value)
+                elif perk_type_name == "coin_discount":
+                    result["total_coin_discount"] += int(value)
+        
+        # Sort by value descending
+        result["contributors"].sort(key=lambda x: x["value"], reverse=True)
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting merge perk contributors: {e}")
+        
+    return result
+
+
+def get_entity_hydration_perk_contributors(adhd_buster: dict) -> dict:
+    """
+    Get hydration-related entity perk bonuses with detailed contributor info.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys:
+            - total_cooldown_reduction: int - Minutes reduced from cooldown
+            - total_cap_bonus: int - Extra daily glasses
+            - contributors: list of dicts with entity details
+    """
+    result = {
+        "total_cooldown_reduction": 0,
+        "total_cap_bonus": 0,
+        "contributors": [],
+    }
+    
+    try:
+        from entitidex.entity_perks import ENTITY_PERKS, PerkType
+        from entitidex.entity_pools import get_entity_by_id
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        collected = entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set()))
+        exceptional = entitidex_data.get("exceptional_entities", {})
+        
+        if not collected:
+            return result
+        
+        hydration_perk_types = {
+            PerkType.HYDRATION_COOLDOWN: "cooldown",
+            PerkType.HYDRATION_CAP: "cap",
+        }
+        
+        for entity_id in collected:
+            perk = ENTITY_PERKS.get(entity_id)
+            if perk and perk.perk_type in hydration_perk_types:
+                is_exceptional = entity_id in exceptional
+                value = perk.exceptional_value if is_exceptional else perk.normal_value
+                
+                entity = get_entity_by_id(entity_id)
+                entity_name = entity.name if entity else entity_id
+                
+                if is_exceptional and perk.exceptional_description:
+                    description = perk.exceptional_description.format(value=int(value))
+                else:
+                    description = perk.description.format(value=int(value))
+                
+                perk_type_name = hydration_perk_types[perk.perk_type]
+                
+                result["contributors"].append({
+                    "entity_id": entity_id,
+                    "name": entity_name,
+                    "perk_type": perk_type_name,
+                    "value": int(value),
+                    "icon": perk.icon,
+                    "is_exceptional": is_exceptional,
+                    "description": description,
+                })
+                
+                if perk_type_name == "cooldown":
+                    result["total_cooldown_reduction"] += int(value)
+                else:
+                    result["total_cap_bonus"] += int(value)
+        
+        result["contributors"].sort(key=lambda x: x["value"], reverse=True)
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting hydration perk contributors: {e}")
+        
+    return result
+
+
+def get_entity_qol_perk_contributors(adhd_buster: dict) -> dict:
+    """
+    Get quality-of-life entity perk bonuses with detailed contributor info.
+    Includes inventory slots, eye rest cap, and perfect session bonuses.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys:
+            - total_inventory_slots: int
+            - total_eye_rest_cap: int
+            - total_perfect_session: int
+            - contributors: list of dicts with entity details
+    """
+    result = {
+        "total_inventory_slots": 0,
+        "total_eye_rest_cap": 0,
+        "total_perfect_session": 0,
+        "contributors": [],
+    }
+    
+    try:
+        from entitidex.entity_perks import ENTITY_PERKS, PerkType
+        from entitidex.entity_pools import get_entity_by_id
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        collected = entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set()))
+        exceptional = entitidex_data.get("exceptional_entities", {})
+        
+        if not collected:
+            return result
+        
+        qol_perk_types = {
+            PerkType.INVENTORY_SLOTS: "inventory",
+            PerkType.EYE_REST_CAP: "eye_rest",
+            PerkType.PERFECT_SESSION: "perfect_session",
+        }
+        
+        for entity_id in collected:
+            perk = ENTITY_PERKS.get(entity_id)
+            if perk and perk.perk_type in qol_perk_types:
+                is_exceptional = entity_id in exceptional
+                value = perk.exceptional_value if is_exceptional else perk.normal_value
+                
+                entity = get_entity_by_id(entity_id)
+                entity_name = entity.name if entity else entity_id
+                
+                if is_exceptional and perk.exceptional_description:
+                    description = perk.exceptional_description.format(value=int(value))
+                else:
+                    description = perk.description.format(value=int(value))
+                
+                perk_type_name = qol_perk_types[perk.perk_type]
+                
+                result["contributors"].append({
+                    "entity_id": entity_id,
+                    "name": entity_name,
+                    "perk_type": perk_type_name,
+                    "value": int(value),
+                    "icon": perk.icon,
+                    "is_exceptional": is_exceptional,
+                    "description": description,
+                })
+                
+                if perk_type_name == "inventory":
+                    result["total_inventory_slots"] += int(value)
+                elif perk_type_name == "eye_rest":
+                    result["total_eye_rest_cap"] += int(value)
+                else:
+                    result["total_perfect_session"] += int(value)
+        
+        result["contributors"].sort(key=lambda x: x["value"], reverse=True)
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting QoL perk contributors: {e}")
         
     return result
 
@@ -1255,6 +1520,428 @@ def get_entity_qol_perks(adhd_buster: dict) -> dict:
         
     except Exception as e:
         print(f"[Entity Perks] Error getting QoL perks: {e}")
+        
+    return result
+
+
+def get_entity_eye_perks(adhd_buster: dict) -> dict:
+    """
+    Get Eye & Breath tab entity perk bonuses.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys: 
+            eye_tier_bonus (int): Tier bonus for eye routine rewards (Sam only)
+            eye_reroll_chance (int): Chance % to re-roll on failure (Pam only)
+            entity_id (str): ID of the entity providing the perk (empty if none)
+            entity_name (str): Display name of the entity
+            is_exceptional (bool): Whether the entity is exceptional
+    """
+    result = {
+        "eye_tier_bonus": 0,
+        "eye_reroll_chance": 0,
+        "entity_id": "",
+        "entity_name": "",
+        "is_exceptional": False,
+    }
+    
+    try:
+        from entitidex.entity_perks import calculate_active_perks, PerkType, ENTITY_PERKS
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        
+        # Find the entity providing this perk (underdog_005)
+        collected = entitidex_data.get("collected_entity_ids", [])
+        if isinstance(collected, set):
+            collected = list(collected)
+        # Check both formats: exceptional_entity_ids (list) and exceptional_entities (dict)
+        exceptional_ids = entitidex_data.get("exceptional_entity_ids", [])
+        if isinstance(exceptional_ids, set):
+            exceptional_ids = list(exceptional_ids)
+        exceptional_dict = entitidex_data.get("exceptional_entities", {})
+        
+        # Check if underdog_005 (Desk Succulent Sam/Pam) is collected
+        if "underdog_005" in collected:
+            result["entity_id"] = "underdog_005"
+            is_exceptional = "underdog_005" in exceptional_ids or "underdog_005" in exceptional_dict
+            result["is_exceptional"] = is_exceptional
+            
+            if is_exceptional:
+                # Pam (exceptional): 50% Reroll only
+                result["entity_name"] = "Desk Succulent Pam"
+                result["eye_reroll_chance"] = 50
+                result["eye_tier_bonus"] = 0
+            else:
+                # Sam (normal): +1 Eye Tier only
+                result["entity_name"] = "Desk Succulent Sam"
+                result["eye_tier_bonus"] = 1
+                result["eye_reroll_chance"] = 0
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting eye perks: {e}")
+        
+    return result
+
+
+def get_entity_sleep_perks(adhd_buster: dict) -> dict:
+    """
+    Get Sleep tab entity perk bonuses (Study Owl Athena).
+    
+    The owl provides +1 tier bonus to "Go to Sleep Now" rewards as a secondary perk.
+    Its primary perk (XP_NIGHT) remains unchanged - this is an additional benefit.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys: 
+            sleep_tier_bonus (int): Tier bonus for sleep rewards (1 normal, 2 exceptional)
+            entity_id (str): ID of the entity providing the perk (empty if none)
+            entity_name (str): Display name of the entity
+            is_exceptional (bool): Whether the entity is exceptional
+            description (str): Perk description for display
+    """
+    result = {
+        "sleep_tier_bonus": 0,
+        "entity_id": "",
+        "entity_name": "",
+        "is_exceptional": False,
+        "description": "",
+    }
+    
+    try:
+        entitidex_data = adhd_buster.get("entitidex", {})
+        
+        # Find the entity providing this perk (scholar_002 = Study Owl Athena)
+        collected = entitidex_data.get("collected_entity_ids", [])
+        if isinstance(collected, set):
+            collected = list(collected)
+        # Check both formats: exceptional_entity_ids (list) and exceptional_entities (dict)
+        exceptional_ids = entitidex_data.get("exceptional_entity_ids", [])
+        if isinstance(exceptional_ids, set):
+            exceptional_ids = list(exceptional_ids)
+        exceptional_dict = entitidex_data.get("exceptional_entities", {})
+        
+        # Check if scholar_002 (Study Owl Athena) is collected
+        if "scholar_002" in collected:
+            result["entity_id"] = "scholar_002"
+            is_exceptional = "scholar_002" in exceptional_ids or "scholar_002" in exceptional_dict
+            result["is_exceptional"] = is_exceptional
+            
+            if is_exceptional:
+                # Exceptional: +2 Sleep Tier
+                result["entity_name"] = "Steady Owl Athena"
+                result["sleep_tier_bonus"] = 2
+                result["description"] = "Moonlit Slumber: +2 Sleep Reward Tier"
+            else:
+                # Normal: +1 Sleep Tier
+                result["entity_name"] = "Study Owl Athena"
+                result["sleep_tier_bonus"] = 1
+                result["description"] = "Night Owl's Gift: +1 Sleep Reward Tier"
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting sleep perks: {e}")
+        
+    return result
+
+
+# Rat/mouse entity IDs that provide weight legendary bonus
+WEIGHT_RAT_ENTITIES = {
+    "scholar_001": {"normal_name": "Library Mouse Pip", "exceptional_name": "Library Mouse Quip", "icon": "🐭"},
+    "scientist_004": {"normal_name": "Wise Lab Rat Professor", "exceptional_name": "Wise Lab Rat Assessor", "icon": "🐭"},
+    "scientist_009": {"normal_name": "White Mouse Archimedes", "exceptional_name": "Bright Mouse Archimedes", "icon": "🐁"},
+    "underdog_001": {"normal_name": "Office Rat Reginald", "exceptional_name": "Officer Rat Regina", "icon": "🐁"},
+    "wanderer_009": {"normal_name": "Hobo Rat", "exceptional_name": "Robo Rat", "icon": "🐀"},
+}
+
+
+def get_entity_weight_perks(adhd_buster: dict) -> dict:
+    """
+    Get Weight tab entity perk bonuses (rat/mouse entities).
+    
+    Each collected rat/mouse entity provides +1% Legendary chance when logging weight.
+    Exceptional variants provide +2% instead.
+    
+    Rat/Mouse entities:
+    - scholar_001: Library Mouse Pip/Quip
+    - scientist_004: Wise Lab Rat Professor/Assessor
+    - scientist_009: White Mouse Archimedes
+    - underdog_001: Office Rat Reginald/Regina
+    - wanderer_009: Hobo Rat/Robo Rat
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys: 
+            legendary_bonus (int): Total % bonus to Legendary chance (0-10)
+            contributors (list): List of contributing entities with details
+            description (str): Combined perk description for display
+    """
+    result = {
+        "legendary_bonus": 0,
+        "contributors": [],
+        "description": "",
+    }
+    
+    try:
+        entitidex_data = adhd_buster.get("entitidex", {})
+        
+        collected = entitidex_data.get("collected_entity_ids", [])
+        if isinstance(collected, set):
+            collected = list(collected)
+        # Check both formats: exceptional_entity_ids (list) and exceptional_entities (dict)
+        exceptional_ids = entitidex_data.get("exceptional_entity_ids", [])
+        if isinstance(exceptional_ids, set):
+            exceptional_ids = list(exceptional_ids)
+        exceptional_dict = entitidex_data.get("exceptional_entities", {})
+        
+        total_bonus = 0
+        contributors = []
+        
+        for entity_id, info in WEIGHT_RAT_ENTITIES.items():
+            if entity_id in collected:
+                is_exceptional = entity_id in exceptional_ids or entity_id in exceptional_dict
+                bonus = 2 if is_exceptional else 1
+                name = info["exceptional_name"] if is_exceptional else info["normal_name"]
+                
+                total_bonus += bonus
+                contributors.append({
+                    "entity_id": entity_id,
+                    "name": name,
+                    "bonus": bonus,
+                    "icon": info["icon"],
+                    "is_exceptional": is_exceptional,
+                })
+        
+        result["legendary_bonus"] = total_bonus
+        result["contributors"] = contributors
+        
+        if contributors:
+            # Build description
+            if len(contributors) == 1:
+                c = contributors[0]
+                result["description"] = f"{c['icon']} {c['name']}: +{c['bonus']}% Legendary"
+            else:
+                result["description"] = f"🐀 Rodent Squad: +{total_bonus}% Legendary ({len(contributors)} creatures)"
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting weight perks: {e}")
+        
+    return result
+
+
+def get_entity_optimize_gear_cost(adhd_buster: dict) -> dict:
+    """
+    Get Optimize Gear cost based on Hobo Rat / Robo Rat entity.
+    
+    The Hobo Rat (wanderer_009) provides a special secondary perk:
+    - Normal (Hobo Rat): Optimize Gear costs 1 coin (telepathic gear tips)
+    - Exceptional (Robo Rat): Optimize Gear is FREE (0 coins)
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys:
+            cost (int): Actual cost for Optimize Gear (0, 1, or default 10)
+            entity_id (str): ID of the entity providing the perk (empty if none)
+            entity_name (str): Display name of the entity
+            is_exceptional (bool): Whether the entity is exceptional
+            description (str): Perk description for display
+            has_perk (bool): Whether the perk is active
+    """
+    # Default cost from COIN_COSTS
+    default_cost = COIN_COSTS.get("optimize_gear", 10)
+    
+    result = {
+        "cost": default_cost,
+        "entity_id": "",
+        "entity_name": "",
+        "is_exceptional": False,
+        "description": "",
+        "has_perk": False,
+    }
+    
+    try:
+        entitidex_data = adhd_buster.get("entitidex", {})
+        
+        collected = entitidex_data.get("collected_entity_ids", [])
+        if isinstance(collected, set):
+            collected = list(collected)
+        
+        # Check both formats: exceptional_entity_ids (list) and exceptional_entities (dict)
+        exceptional_ids = entitidex_data.get("exceptional_entity_ids", [])
+        if isinstance(exceptional_ids, set):
+            exceptional_ids = list(exceptional_ids)
+        exceptional_dict = entitidex_data.get("exceptional_entities", {})
+        
+        # Check if wanderer_009 (Hobo Rat / Robo Rat) is collected
+        if "wanderer_009" in collected:
+            result["entity_id"] = "wanderer_009"
+            result["has_perk"] = True
+            # Check both formats for exceptional status
+            is_exceptional = "wanderer_009" in exceptional_ids or "wanderer_009" in exceptional_dict
+            result["is_exceptional"] = is_exceptional
+            
+            if is_exceptional:
+                # Exceptional Robo Rat: FREE optimization
+                result["entity_name"] = "Robo Rat"
+                result["cost"] = 0
+                result["description"] = "🤖 Robo Rat: Optimize Gear is FREE!"
+            else:
+                # Normal Hobo Rat: 1 coin only
+                result["entity_name"] = "Hobo Rat"
+                result["cost"] = 1
+                result["description"] = "🐀 Hobo Rat: Optimize Gear costs only 1🪙"
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting optimize gear cost: {e}")
+        
+    return result
+
+
+def get_entity_sell_perks(adhd_buster: dict) -> dict:
+    """
+    Get sell item bonuses from Corner Office Chair / Stoner Office Chair (underdog_007).
+    
+    The Corner Office Chair provides sell bonuses:
+    - Normal (Corner Office Chair): +25% value when selling Epic items
+    - Exceptional (Stoner Office Chair): +25% value when selling Epic AND Legendary items
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys:
+            has_perk (bool): Whether the perk is active
+            entity_id (str): ID of the entity providing the perk
+            entity_name (str): Display name of the entity
+            is_exceptional (bool): Whether the entity is exceptional
+            epic_bonus (float): Multiplier for Epic items (1.25 or 1.0)
+            legendary_bonus (float): Multiplier for Legendary items (1.25 or 1.0)
+            description (str): Perk description for display
+            icon_path (str): Path to entity SVG icon
+    """
+    result = {
+        "has_perk": False,
+        "entity_id": "",
+        "entity_name": "",
+        "is_exceptional": False,
+        "epic_bonus": 1.0,
+        "legendary_bonus": 1.0,
+        "description": "",
+        "icon_path": "",
+    }
+    
+    try:
+        entitidex_data = adhd_buster.get("entitidex", {})
+        
+        collected = entitidex_data.get("collected_entity_ids", [])
+        if isinstance(collected, set):
+            collected = list(collected)
+        # Check both formats: exceptional_entity_ids (list) and exceptional_entities (dict)
+        exceptional_ids = entitidex_data.get("exceptional_entity_ids", [])
+        if isinstance(exceptional_ids, set):
+            exceptional_ids = list(exceptional_ids)
+        exceptional_dict = entitidex_data.get("exceptional_entities", {})
+        
+        # Check if underdog_007 (Corner Office Chair) is collected
+        if "underdog_007" in collected:
+            result["entity_id"] = "underdog_007"
+            result["has_perk"] = True
+            is_exceptional = "underdog_007" in exceptional_ids or "underdog_007" in exceptional_dict
+            result["is_exceptional"] = is_exceptional
+            result["epic_bonus"] = 1.25  # Always +25% for Epic
+            
+            if is_exceptional:
+                # Exceptional Stoner Office Chair: +25% for Legendary too
+                result["entity_name"] = "Stoner Office Chair"
+                result["legendary_bonus"] = 1.25
+                result["description"] = "🪑 Stoner Office Chair: +25% coins for Epic & Legendary!"
+                result["icon_path"] = "icons/entities/exceptional/underdog_007_corner_office_chair_exceptional.svg"
+            else:
+                # Normal Corner Office Chair: +25% for Epic only
+                result["entity_name"] = "Corner Office Chair"
+                result["description"] = "🪑 Corner Office Chair: +25% coins for Epic items!"
+                result["icon_path"] = "icons/entities/underdog_007_corner_office_chair.svg"
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting sell perks: {e}")
+        
+    return result
+
+
+def get_entity_power_perks(adhd_buster: dict) -> dict:
+    """
+    Get hero power bonuses from collected entities with contributor details.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys:
+            - total_power: int - Total power bonus from all entities
+            - contributors: list - List of dicts with entity details:
+                - entity_id: str
+                - name: str
+                - power: int - Power bonus value
+                - icon: str - Perk icon emoji
+                - is_exceptional: bool
+                - description: str - Perk description
+    """
+    result = {
+        "total_power": 0,
+        "contributors": [],
+    }
+    
+    try:
+        from entitidex.entity_perks import ENTITY_PERKS, PerkType
+        from entitidex.entity_pools import get_entity_by_id
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        # Support both old "collected" and new "collected_entity_ids" keys
+        collected = entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set()))
+        exceptional = entitidex_data.get("exceptional_entities", {})
+        
+        if not collected:
+            return result
+            
+        # Find all collected entities that provide POWER_FLAT perk
+        for entity_id in collected:
+            perk = ENTITY_PERKS.get(entity_id)
+            if perk and perk.perk_type == PerkType.POWER_FLAT:
+                is_exceptional = entity_id in exceptional
+                value = perk.exceptional_value if is_exceptional else perk.normal_value
+                
+                # Get entity details for display
+                entity = get_entity_by_id(entity_id)
+                entity_name = entity.name if entity else entity_id
+                
+                # Get description
+                if is_exceptional and perk.exceptional_description:
+                    description = perk.exceptional_description.format(value=int(value))
+                else:
+                    description = perk.description.format(value=int(value))
+                
+                result["contributors"].append({
+                    "entity_id": entity_id,
+                    "name": entity_name,
+                    "power": int(value),
+                    "icon": perk.icon,
+                    "is_exceptional": is_exceptional,
+                    "description": description,
+                })
+                result["total_power"] += int(value)
+        
+        # Sort by power value descending
+        result["contributors"].sort(key=lambda x: x["power"], reverse=True)
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting power perks: {e}")
         
     return result
 
@@ -10100,7 +10787,7 @@ def calculate_weight_loss(current_weight: float, previous_weight: float) -> floa
     return round((previous_weight - current_weight) * 1000, 1)
 
 
-def get_daily_weight_reward_rarity(weight_loss_grams: float) -> Optional[str]:
+def get_daily_weight_reward_rarity(weight_loss_grams: float, legendary_bonus: int = 0) -> Optional[str]:
     """
     Determine item rarity based on daily weight loss using moving window.
     
@@ -10117,8 +10804,13 @@ def get_daily_weight_reward_rarity(weight_loss_grams: float) -> Optional[str]:
     - 400g: Legendary-centered (5% R, 20% E, 75% L)
     - 500g+: 100% Legendary
     
+    Entity Bonus (rat/mouse entities):
+    - Each collected rat/mouse entity adds +1% (or +2% if exceptional) to
+      Legendary chance, subtracted from lower tiers proportionally.
+    
     Args:
         weight_loss_grams: Weight lost since previous entry (in grams)
+        legendary_bonus: Extra % chance to add to Legendary (from rat/mouse entities)
     
     Returns:
         Rarity string selected from weighted distribution
@@ -10151,12 +10843,28 @@ def get_daily_weight_reward_rarity(weight_loss_grams: float) -> Optional[str]:
         clamped_tier = max(0, min(4, target_tier))
         weights[clamped_tier] += pct
     
+    # Apply legendary bonus from rat/mouse entities
+    if legendary_bonus > 0 and weights[4] < 100:
+        # Cap bonus so Legendary doesn't exceed 100%
+        actual_bonus = min(legendary_bonus, 100 - weights[4])
+        weights[4] += actual_bonus
+        
+        # Subtract bonus proportionally from lower tiers (Common to Epic)
+        remaining = actual_bonus
+        for i in range(3, -1, -1):  # Epic -> Common
+            if remaining <= 0:
+                break
+            subtract = min(weights[i], remaining)
+            weights[i] -= subtract
+            remaining -= subtract
+    
     rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     return random.choices(rarities, weights=weights)[0]
 
 
 def check_weight_entry_rewards(weight_entries: list, new_weight: float, 
-                                current_date: str, story_id: str = None) -> dict:
+                                current_date: str, story_id: str = None,
+                                adhd_buster: dict = None) -> dict:
     """
     Check and generate rewards for a new weight entry.
     
@@ -10165,6 +10873,7 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
         new_weight: The new weight being entered
         current_date: Today's date (YYYY-MM-DD)
         story_id: Story theme for item generation
+        adhd_buster: Optional main data dict for entity perk bonuses
     
     Returns:
         Dict with:
@@ -10175,6 +10884,7 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
             - weekly_loss_grams: float or None
             - monthly_loss_grams: float or None
             - messages: list of reward messages
+            - entity_bonus: int (legendary bonus from entities)
     """
     result = {
         "daily_reward": None,
@@ -10184,7 +10894,15 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
         "weekly_loss_grams": None,
         "monthly_loss_grams": None,
         "messages": [],
+        "entity_bonus": 0,
     }
+    
+    # Get entity legendary bonus from rat/mouse entities
+    legendary_bonus = 0
+    if adhd_buster:
+        weight_perks = get_entity_weight_perks(adhd_buster)
+        legendary_bonus = weight_perks.get("legendary_bonus", 0)
+        result["entity_bonus"] = legendary_bonus
     
     # Check for previous entry (daily comparison)
     prev_entry = get_previous_weight_entry(weight_entries, current_date)
@@ -10194,15 +10912,16 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
         result["daily_loss_grams"] = daily_loss
         
         if daily_loss > 0:
-            rarity = get_daily_weight_reward_rarity(daily_loss)
+            rarity = get_daily_weight_reward_rarity(daily_loss, legendary_bonus)
             if rarity:
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+                bonus_note = f" (+{legendary_bonus}% 🐀)" if legendary_bonus > 0 else ""
                 result["messages"].append(
-                    f"🎉 Daily Progress: Lost {daily_loss:.0f}g! Earned a {rarity} item!"
+                    f"🎉 Daily Progress: Lost {daily_loss:.0f}g! Earned a {rarity} item!{bonus_note}"
                 )
         elif daily_loss == 0:
             # Same weight - still give a reward using the moving window distribution
-            rarity = get_daily_weight_reward_rarity(0) or "Common"
+            rarity = get_daily_weight_reward_rarity(0, legendary_bonus) or "Common"
             result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
             result["messages"].append(f"💪 Maintained weight! Earned a {rarity} item.")
         else:
@@ -10687,7 +11406,7 @@ def check_weight_maintenance(weight_entries: list, goal: float,
 
 def check_all_weight_rewards(weight_entries: list, new_weight: float, current_date: str,
                              goal: float, achieved_milestones: list, 
-                             story_id: str = None) -> dict:
+                             story_id: str = None, adhd_buster: dict = None) -> dict:
     """
     Comprehensive check for all weight-related rewards.
     
@@ -10700,13 +11419,14 @@ def check_all_weight_rewards(weight_entries: list, new_weight: float, current_da
         goal: Goal weight or None
         achieved_milestones: List of already achieved milestone IDs
         story_id: Story theme
+        adhd_buster: Optional main data dict for entity perk bonuses
     
     Returns:
         Dict with all reward information
     """
     # Get base rewards (daily/weekly/monthly)
     base_rewards = check_weight_entry_rewards(
-        weight_entries, new_weight, current_date, story_id
+        weight_entries, new_weight, current_date, story_id, adhd_buster
     )
     
     # Create temp entries list including new entry for milestone checks

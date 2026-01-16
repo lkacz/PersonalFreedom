@@ -27,6 +27,7 @@ class Entity:
     unlock_hint: str = ""       # Cryptic hint about the entity
     collection_tier: int = 1    # Which "page" of collection (for scaling)
     exceptional_name: str = ""  # Playful name variant for exceptional cards
+    exceptional_lore: str = ""  # Unique lore for exceptional variant
     
     @property
     def rarity_emoji(self) -> str:
@@ -66,6 +67,7 @@ class Entity:
             "unlock_hint": self.unlock_hint,
             "collection_tier": self.collection_tier,
             "exceptional_name": self.exceptional_name,
+            "exceptional_lore": self.exceptional_lore,
         }
     
     @classmethod
@@ -83,6 +85,7 @@ class Entity:
             unlock_hint=data.get("unlock_hint", ""),
             collection_tier=data.get("collection_tier", 1),
             exceptional_name=data.get("exceptional_name", ""),
+            exceptional_lore=data.get("exceptional_lore", ""),
         )
 
 

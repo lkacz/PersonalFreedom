@@ -261,8 +261,8 @@ class GameStateManager(QtCore.QObject):
     # Base maximum inventory size to prevent unbounded growth
     MAX_INVENTORY_SIZE = 500
     
-    # Valid equipment slots
-    VALID_SLOTS = {"head", "chest", "legs", "feet", "main_hand", "off_hand", "accessory"}
+    # Valid equipment slots (must match GEAR_SLOTS in gamification.py)
+    VALID_SLOTS = {"Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"}
     
     def get_max_inventory_size(self) -> int:
         """Get maximum inventory size including entity perk bonuses."""

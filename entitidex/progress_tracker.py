@@ -426,7 +426,9 @@ class EntitidexProgress:
         """Create progress from dictionary."""
         progress = cls()
         
-        progress.collected_entity_ids = set(data.get("collected_entity_ids", []))
+        # Support both old "collected" and new "collected_entity_ids" keys for backwards compatibility
+        collected_data = data.get("collected_entity_ids", data.get("collected", []))
+        progress.collected_entity_ids = set(collected_data)
         progress.encounters = data.get("encounters", {}).copy()
         progress.failed_catches = data.get("failed_catches", {}).copy()
         progress.exceptional_failed_catches = data.get("exceptional_failed_catches", {}).copy()
