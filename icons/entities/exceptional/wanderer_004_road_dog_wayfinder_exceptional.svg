@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Road Dog Wayfinder - Arctic white spirit wolf variant -->
+  <defs>
+    <linearGradient id="arcticFur" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5F5F5"/>
+      <stop offset="50%" style="stop-color:#E0E0E0"/>
+      <stop offset="100%" style="stop-color:#BDBDBD"/>
+    </linearGradient>
+    <linearGradient id="iceBlueAura" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#B3E5FC"/>
+      <stop offset="100%" style="stop-color:#4FC3F7"/>
+    </linearGradient>
+    <filter id="frostGlow">
+      <feGaussianBlur stdDeviation="2.5" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Ice aura -->
+  <ellipse cx="32" cy="38" rx="28" ry="24" fill="url(#iceBlueAura)" filter="url(#frostGlow)" opacity="0.15"/>
+  
+  <!-- Ground/snow hint -->
+  <ellipse cx="32" cy="58" rx="22" ry="4" fill="#E0E0E0" opacity="0.3"/>
+  
+  <!-- Back legs (white) -->
+  <rect x="18" y="48" width="6" height="10" rx="2" fill="url(#arcticFur)"/>
+  <rect x="40" y="48" width="6" height="10" rx="2" fill="url(#arcticFur)"/>
+  
+  <!-- Paws (ice blue tint) -->
+  <ellipse cx="21" cy="58" rx="4" ry="2" fill="#B3E5FC"/>
+  <ellipse cx="43" cy="58" rx="4" ry="2" fill="#B3E5FC"/>
+  
+  <!-- Body (fluffy white) -->
+  <ellipse cx="32" cy="44" rx="16" ry="10" fill="url(#arcticFur)" filter="url(#frostGlow)"/>
+  
+  <!-- Scruffy fur texture on body (frost lines) -->
+  <g stroke="#4FC3F7" stroke-width="0.5" fill="none" opacity="0.4">
+    <path d="M20 40 Q22 38, 20 36"/>
+    <path d="M44 40 Q42 38, 44 36"/>
+    <path d="M28 36 Q30 34, 32 36"/>
+    <path d="M36 36 Q34 34, 32 36"/>
+  </g>
+  
+  <!-- Chest (pure white) -->
+  <ellipse cx="32" cy="46" rx="8" ry="6" fill="white"/>
+  
+  <!-- Head -->
+  <circle cx="46" cy="32" r="12" fill="url(#arcticFur)" filter="url(#frostGlow)"/>
+  
+  <!-- Ears (pointed, with ice blue inner) -->
+  <polygon points="38,24 34,12 42,20" fill="url(#arcticFur)"/>
+  <polygon points="54,24 58,12 50,20" fill="url(#arcticFur)"/>
+  <polygon points="38,22 36,16 40,20" fill="#B3E5FC"/>
+  <polygon points="54,22 56,16 52,20" fill="#B3E5FC"/>
+  
+  <!-- Snout -->
+  <ellipse cx="54" cy="36" rx="6" ry="4" fill="#F5F5F5"/>
+  
+  <!-- Nose (ice blue) -->
+  <ellipse cx="58" cy="36" rx="2" ry="1.5" fill="#4FC3F7"/>
+  
+  <!-- Eyes (glowing ice blue) with saccadic movement and blinking -->
+  <circle cx="42" cy="30" r="3" fill="white"/>
+  <circle cx="50" cy="30" r="3" fill="white"/>
+  <circle cx="42" cy="30" r="2" fill="#4FC3F7" filter="url(#frostGlow)">
+    <animate attributeName="cx" values="42;42;43;42;41;42;42;42" dur="4.2s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="30;30;29;30;30;31;30;30" dur="5.3s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="50" cy="30" r="2" fill="#4FC3F7" filter="url(#frostGlow)">
+    <animate attributeName="cx" values="50;50;51;50;49;50;50;50" dur="4.2s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="30;30;29;30;30;31;30;30" dur="5.3s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="43" cy="29" r="1" fill="white">
+    <animate attributeName="cx" values="43;43;44;43;42;43;43;43" dur="4.2s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="29;29;28;29;29;30;29;29" dur="5.3s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="51" cy="29" r="1" fill="white">
+    <animate attributeName="cx" values="51;51;52;51;50;51;51;51" dur="4.2s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="29;29;28;29;29;30;29;29" dur="5.3s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <ellipse cx="42" cy="30" rx="3" ry="0" fill="#E0E0E0">
+    <animate attributeName="ry" values="0;3;0" keyTimes="0;0.98;1" dur="5.4s" begin="0.7s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="50" cy="30" rx="3" ry="0" fill="#E0E0E0">
+    <animate attributeName="ry" values="0;3;0" keyTimes="0;0.98;1" dur="5.4s" begin="0.7s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Tail (fluffy, upward) - swishing in arctic wind -->
+  <path d="M16 44 Q8 38, 6 28 Q10 32, 12 38 Q8 30, 4 26 Q12 34, 16 40" fill="url(#arcticFur)" filter="url(#frostGlow)">
+    <animate attributeName="d" values="M16 44 Q8 38, 6 28 Q10 32, 12 38 Q8 30, 4 26 Q12 34, 16 40;M16 44 Q6 36, 4 26 Q8 30, 10 36 Q6 28, 2 24 Q10 32, 16 40;M16 44 Q8 38, 6 28 Q10 32, 12 38 Q8 30, 4 26 Q12 34, 16 40" dur="3s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Travel bandana (ice blue) -->
+  <path d="M34 38 Q38 34, 46 36 Q44 40, 34 38" fill="#4FC3F7"/>
+  <polygon points="34,38 30,46 36,44" fill="#4FC3F7"/>
+  
+  <!-- Frost particles - floating in frozen air -->
+  <circle cx="8" cy="20" r="1.5" fill="#B3E5FC" opacity="0.6">
+    <animate attributeName="cy" values="20;16;20;24;20" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0.9;0.6;0.4;0.6" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="58" cy="14" r="1" fill="white" opacity="0.5">
+    <animate attributeName="cy" values="14;10;14;18;14" dur="3.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.8;0.5;0.3;0.5" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="4" cy="44" r="1" fill="#B3E5FC" opacity="0.4">
+    <animate attributeName="cy" values="44;40;44;48;44" dur="4.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.7;0.4;0.2;0.4" dur="4.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Sparkles - twinkling with frost light -->
+  <circle cx="36" cy="18" r="1.5" fill="white" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.5;0.9;1;0.9" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1.5;2;1.5;1.3;1.5" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="56" cy="22" r="1" fill="white" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.8;0.5;0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="10" cy="34" r="1.2" fill="#B3E5FC" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;1;0.7;0.4;0.7" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+</svg>

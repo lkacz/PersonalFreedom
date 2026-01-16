@@ -68,12 +68,18 @@
     <rect x="18" y="20" width="10" height="8" rx="1" fill="#212121"/>
     <rect x="36" y="20" width="10" height="8" rx="1" fill="#212121"/>
     
-    <!-- Glowing pupils -->
+    <!-- Glowing pupils with saccadic movement -->
     <circle cx="23" cy="24" r="3" fill="url(#chadGreen)">
       <animate attributeName="r" values="3;3.5;3" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="23;23;23.5;23;22.5;23;23" dur="3.5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="24;24;23.5;24;24;24.5;24" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;1;0.1;1" keyTimes="0;0.97;0.99;1" dur="5.8s" begin="0.3s" calcMode="discrete" repeatCount="indefinite"/>
     </circle>
     <circle cx="41" cy="24" r="3" fill="url(#chadGreen)">
       <animate attributeName="r" values="3;3.5;3" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="41;41;41.5;41;40.5;41;41" dur="3.5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="24;24;23.5;24;24;24.5;24" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;1;0.1;1" keyTimes="0;0.97;0.99;1" dur="5.8s" begin="0.3s" calcMode="discrete" repeatCount="indefinite"/>
     </circle>
     
     <!-- Eyebrow bars (confident) -->

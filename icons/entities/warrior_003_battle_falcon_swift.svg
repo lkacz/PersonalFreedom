@@ -30,8 +30,10 @@
   <circle cx="35" cy="37" r="0.8" fill="#5D4037" opacity="0.5"/>
   <circle cx="29" cy="41" r="0.8" fill="#5D4037" opacity="0.5"/>
   
-  <!-- Left wing (spread for attack) -->
-  <path d="M16 36 Q8 30, 6 38 Q4 46, 12 48 Q18 44, 20 40 Z" fill="url(#falconWing)" stroke="#3E2723" stroke-width="0.5"/>
+  <!-- Left wing (spread for attack) - fluttering -->
+  <path d="M16 36 Q8 30, 6 38 Q4 46, 12 48 Q18 44, 20 40 Z" fill="url(#falconWing)" stroke="#3E2723" stroke-width="0.5">
+    <animate attributeName="d" values="M16 36 Q8 30, 6 38 Q4 46, 12 48 Q18 44, 20 40 Z;M16 36 Q6 28, 4 36 Q2 44, 12 46 Q18 42, 20 40 Z;M16 36 Q8 30, 6 38 Q4 46, 12 48 Q18 44, 20 40 Z" dur="0.8s" repeatCount="indefinite"/>
+  </path>
   <path d="M8 38 L6 42 M10 40 L8 45 M12 42 L10 47" stroke="#4E342E" stroke-width="1"/>
   
   <!-- Right wing (tucked) -->
@@ -44,16 +46,36 @@
   <path d="M38 24 L36 32 L34 28" fill="#1A1A1A"/>
   <path d="M44 24 L46 32 L48 28" fill="#1A1A1A"/>
   
-  <!-- Sharp fierce eyes -->
+  <!-- Sharp fierce eyes with saccadic movement -->
   <ellipse cx="36" cy="22" rx="3" ry="2.5" fill="#FFF8E1"/>
   <circle cx="36" cy="22" r="1.5" fill="#FF6F00"/>
-  <circle cx="36" cy="22" r="0.8" fill="#1A1A1A"/>
-  <circle cx="36.5" cy="21.5" r="0.4" fill="white"/>
+  <circle cx="36" cy="22" r="0.8" fill="#1A1A1A">
+    <animate attributeName="cx" values="36;36;36.5;36;35.5;36;36" dur="3.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="22;22;21.5;22;22;22.5;22" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="36.5" cy="21.5" r="0.4" fill="white">
+    <animate attributeName="cx" values="36.5;36.5;37;36.5;36;36.5;36.5" dur="3.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="21.5;21.5;21;21.5;21.5;22;21.5" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <!-- Left eye blink -->
+  <ellipse cx="36" cy="22" rx="3" ry="0" fill="#3E2723">
+    <animate attributeName="ry" values="0;2.5;0" keyTimes="0;0.98;1" dur="4.9s" begin="0.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
   
   <ellipse cx="44" cy="22" rx="3" ry="2.5" fill="#FFF8E1"/>
   <circle cx="44" cy="22" r="1.5" fill="#FF6F00"/>
-  <circle cx="44" cy="22" r="0.8" fill="#1A1A1A"/>
-  <circle cx="44.5" cy="21.5" r="0.4" fill="white"/>
+  <circle cx="44" cy="22" r="0.8" fill="#1A1A1A">
+    <animate attributeName="cx" values="44;44;44.5;44;43.5;44;44" dur="3.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="22;22;21.5;22;22;22.5;22" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="44.5" cy="21.5" r="0.4" fill="white">
+    <animate attributeName="cx" values="44.5;44.5;45;44.5;44;44.5;44.5" dur="3.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="21.5;21.5;21;21.5;21.5;22;21.5" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <!-- Right eye blink -->
+  <ellipse cx="44" cy="22" rx="3" ry="0" fill="#3E2723">
+    <animate attributeName="ry" values="0;2.5;0" keyTimes="0;0.98;1" dur="4.9s" begin="0.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
   
   <!-- Angry brow -->
   <path d="M33 19 L38 20" stroke="#3E2723" stroke-width="1.5" stroke-linecap="round"/>

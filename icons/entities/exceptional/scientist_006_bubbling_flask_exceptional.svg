@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Bubbling Flask - Volcanic lava flask variant -->
+  <defs>
+    <linearGradient id="obsidianGlass" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#37474F;stop-opacity:0.9"/>
+      <stop offset="30%" style="stop-color:#263238;stop-opacity:0.7"/>
+      <stop offset="70%" style="stop-color:#37474F;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#1A1A1A;stop-opacity:0.8"/>
+    </linearGradient>
+    <linearGradient id="lavaLiquid" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#BF360C"/>
+      <stop offset="30%" style="stop-color:#E65100"/>
+      <stop offset="50%" style="stop-color:#FF6D00"/>
+      <stop offset="70%" style="stop-color:#FF9100"/>
+      <stop offset="100%" style="stop-color:#FFAB00"/>
+    </linearGradient>
+    <linearGradient id="fireGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6D00"/>
+      <stop offset="100%" style="stop-color:#FF3D00"/>
+    </linearGradient>
+    <filter id="lavaGlow">
+      <feGaussianBlur stdDeviation="2.5" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Volcanic aura -->
+  <ellipse cx="32" cy="36" rx="26" ry="26" fill="url(#fireGlow)" filter="url(#lavaGlow)" opacity="0.2"/>
+  
+  <!-- Shadow (hot) -->
+  <ellipse cx="34" cy="60" rx="16" ry="3" fill="#BF360C" opacity="0.2"/>
+  
+  <!-- Flask body (obsidian black) -->
+  <path d="M22 56 L12 56 Q8 56, 10 52 L26 20 L26 10 L38 10 L38 20 L54 52 Q56 56, 52 56 L42 56" 
+        fill="url(#obsidianGlass)" stroke="#37474F" stroke-width="1"/>
+  
+  <!-- Neck -->
+  <rect x="26" y="6" width="12" height="16" fill="url(#obsidianGlass)" stroke="#455A64" stroke-width="1"/>
+  
+  <!-- Rim (dark metal) -->
+  <ellipse cx="32" cy="6" rx="7" ry="2" fill="#37474F" stroke="#455A64" stroke-width="0.5"/>
+  
+  <!-- MOLTEN LAVA LIQUID -->
+  <path d="M14 52 L26 24 L38 24 L50 52 Q52 54, 48 54 L16 54 Q12 54, 14 52" 
+        fill="url(#lavaLiquid)" filter="url(#lavaGlow)"/>
+  
+  <!-- Lava surface crust pattern -->
+  <g stroke="#BF360C" stroke-width="1" fill="none" opacity="0.5">
+    <path d="M20 48 Q28 46, 36 48 Q44 50, 48 48"/>
+    <path d="M24 44 Q32 42, 40 44"/>
+  </g>
+  
+  <!-- Fire bubbles -->
+  <g filter="url(#lavaGlow)">
+    <circle cx="24" cy="44" r="3" fill="#FFAB00" opacity="0.8">
+      <animate attributeName="cy" values="48;36;28" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0.4;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="32" cy="50" r="2.5" fill="#FF6D00" opacity="0.7">
+      <animate attributeName="cy" values="50;38;26" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;0.3;0" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="40" cy="46" r="2" fill="#FF9100" opacity="0.6">
+      <animate attributeName="cy" values="46;32;20" dur="2.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.2;0" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Steam/smoke from top -->
+  <g fill="#757575" opacity="0.4" filter="url(#lavaGlow)">
+    <circle cx="30" cy="2" r="2">
+      <animate attributeName="cy" values="4;-4;-12" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.2;0" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="34" cy="0" r="1.5">
+      <animate attributeName="cy" values="2;-6;-14" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.1;0" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Ember sparks -->
+  <circle cx="18" cy="38" r="1.5" fill="#FFAB00" filter="url(#lavaGlow)"/>
+  <circle cx="46" cy="42" r="1" fill="#FF6D00" filter="url(#lavaGlow)"/>
+  <circle cx="14" cy="46" r="1.2" fill="#FF3D00" filter="url(#lavaGlow)"/>
+  
+  <!-- Sparkles -->
+  <circle cx="8" cy="24" r="1.5" fill="white" opacity="0.8"/>
+  <circle cx="56" cy="28" r="1" fill="#FFAB00" opacity="0.7"/>
+</svg>

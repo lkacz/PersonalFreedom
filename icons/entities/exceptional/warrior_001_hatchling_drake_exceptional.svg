@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Hatchling Drake - Ice/Crystal variant, breathes frost -->
+  <defs>
+    <linearGradient id="iceDrakeBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00E5E5"/>
+      <stop offset="100%" style="stop-color:#00A0A0"/>
+    </linearGradient>
+    <linearGradient id="iceDrakeBelly" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E0FFFF"/>
+      <stop offset="100%" style="stop-color:#B0FFFF"/>
+    </linearGradient>
+    <linearGradient id="crystalShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#00FFFF;stop-opacity:0.2"/>
+    </linearGradient>
+    <filter id="frostGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Frost aura -->
+  <ellipse cx="32" cy="38" rx="22" ry="18" fill="#00FFFF" opacity="0.15" filter="url(#frostGlow)"/>
+  
+  <!-- Frost breath (crystalline, not smoke) - exhaling winter mist -->
+  <polygon points="48,22 52,18 50,22 55,17 52,21 56,15" fill="#B0FFFF" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.9;0.4;0.7;0.6" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="transform" type="translate" values="0,0;2,-4;4,-6;6,-8" dur="3s" repeatCount="indefinite"/>
+  </polygon>
+  <polygon points="50,24 54,20 53,24 58,19" fill="#E0FFFF" opacity="0.4">
+    <animate attributeName="opacity" values="0.4;0.7;0.2;0.5;0.4" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="transform" type="translate" values="0,0;3,-5;5,-8" dur="3.5s" repeatCount="indefinite"/>
+  </polygon>
+  
+  <!-- Ice crystal particles - floating in cold air -->
+  <polygon points="54,12 55,10 56,12 55,14" fill="#FFFFFF" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;0.3;0.8;0.5;0.7" dur="3s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="rotate" values="0 55 12;360 55 12" dur="8s" repeatCount="indefinite"/>
+  </polygon>
+  <polygon points="58,16 59,14 60,16 59,18" fill="#E0FFFF" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;0.8;0.3;0.6;0.5" dur="3.5s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="rotate" values="0 59 16;-360 59 16" dur="10s" repeatCount="indefinite"/>
+  </polygon>
+  
+  <!-- Body (round, cute, ice dragon) -->
+  <ellipse cx="32" cy="38" rx="14" ry="12" fill="url(#iceDrakeBody)"/>
+  
+  <!-- Crystal scales pattern - shimmer with cold energy -->
+  <path d="M26 36 L28 32 L30 36 M32 34 L34 30 L36 34 M38 36 L40 32 L42 36" 
+        stroke="#00FFFF" stroke-width="0.5" fill="none" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.9;0.4;0.7;0.6" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-width" values="0.5;1;0.5;0.8;0.5" dur="2.5s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Belly -->
+  <ellipse cx="32" cy="40" rx="8" ry="7" fill="url(#iceDrakeBelly)"/>
+  
+  <!-- Head -->
+  <circle cx="38" cy="26" r="10" fill="url(#iceDrakeBody)"/>
+  
+  <!-- Crystal crest on head -->
+  <polygon points="36,18 38,12 40,18" fill="#E0FFFF" stroke="#00FFFF" stroke-width="0.5"/>
+  
+  <!-- Cute big eyes (icy blue) with saccadic movement and blinking -->
+  <circle cx="40" cy="24" r="4" fill="white"/>
+  <circle cx="41" cy="24" r="2.5" fill="#0097A7">
+    <animate attributeName="cx" values="41;41;42;41;40;41;41;42;41" dur="4.3s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="24;24;23;24;25;24;24;24;24" dur="5.2s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="42" cy="23" r="1" fill="white">
+    <animate attributeName="cx" values="42;42;43;42;41;42;42;43;42" dur="4.3s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="23;23;22;23;24;23;23;23;23" dur="5.2s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <ellipse cx="40" cy="24" rx="4" ry="0" fill="#B8E8E8">
+    <animate attributeName="ry" values="0;4;0" keyTimes="0;0.98;1" dur="5.8s" begin="0.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Small snout -->
+  <ellipse cx="46" cy="28" rx="4" ry="3" fill="#00B8B8"/>
+  <circle cx="47" cy="27" r="0.8" fill="#006666"/>
+  <circle cx="49" cy="27" r="0.8" fill="#006666"/>
+  
+  <!-- Ice crystal horns -->
+  <polygon points="34,18 35,12 37,18" fill="#E0FFFF" stroke="#00D0D0" stroke-width="0.5"/>
+  <polygon points="40,17 42,10 45,17" fill="#E0FFFF" stroke="#00D0D0" stroke-width="0.5"/>
+  
+  <!-- Tiny wings (crystalline, translucent) -->
+  <path d="M20 34 Q16 28, 22 26 Q26 28, 24 34 Z" fill="url(#crystalShine)" stroke="#00FFFF" stroke-width="0.5"/>
+  
+  <!-- Little legs -->
+  <ellipse cx="26" cy="48" rx="3" ry="4" fill="#008080"/>
+  <ellipse cx="38" cy="48" rx="3" ry="4" fill="#008080"/>
+  
+  <!-- Ice claws -->
+  <path d="M24 51 L23 55 M26 51 L26 55 M28 51 L29 55" stroke="#00B0B0" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M36 51 L35 55 M38 51 L38 55 M40 51 L41 55" stroke="#00B0B0" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Short tail with ice crystal spade -->
+  <path d="M18 40 Q12 42, 10 38 Q8 34, 12 32" stroke="#008080" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <polygon points="11,30 7,26 12,32 7,38 11,34" fill="#E0FFFF" stroke="#00FFFF" stroke-width="0.5"/>
+  
+  <!-- Frost blush -->
+  <circle cx="44" cy="30" r="2" fill="#B0E0E6" opacity="0.6"/>
+  
+  <!-- Sparkle effects -->
+  <circle cx="16" cy="30" r="1" fill="white" opacity="0.8"/>
+  <circle cx="50" cy="20" r="0.8" fill="white" opacity="0.6"/>
+  <circle cx="24" cy="22" r="0.6" fill="#E0FFFF" opacity="0.7"/>
+</svg>

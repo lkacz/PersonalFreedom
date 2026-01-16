@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Sentient Tome Magnus - Lime green nature tome -->
+  <defs>
+    <linearGradient id="natureCover" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#32FF64"/>
+      <stop offset="50%" style="stop-color:#28CC50"/>
+      <stop offset="100%" style="stop-color:#1EA040"/>
+    </linearGradient>
+    <linearGradient id="leafDecor" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#80FF80"/>
+      <stop offset="100%" style="stop-color:#40FF60"/>
+    </linearGradient>
+    <linearGradient id="pageColor" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F0FFF0"/>
+      <stop offset="100%" style="stop-color:#E0FFE8"/>
+    </linearGradient>
+    <filter id="natureGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Nature aura -->
+  <ellipse cx="32" cy="32" rx="30" ry="28" fill="#32FF64" opacity="0.12" filter="url(#natureGlow)"/>
+  
+  <!-- Floating leaves - drifting gently -->
+  <path d="M6 18 Q8 16, 10 18 Q8 20, 6 18" fill="#80FF80" opacity="0.6">
+    <animate attributeName="d" values="M6 18 Q8 16, 10 18 Q8 20, 6 18;M8 14 Q10 12, 12 14 Q10 16, 8 14;M4 22 Q6 20, 8 22 Q6 24, 4 22;M6 18 Q8 16, 10 18 Q8 20, 6 18" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0.8;0.4;0.6" dur="6s" repeatCount="indefinite"/>
+  </path>
+  <path d="M56 14 Q58 12, 60 14 Q58 16, 56 14" fill="#80FF80" opacity="0.5">
+    <animate attributeName="d" values="M56 14 Q58 12, 60 14 Q58 16, 56 14;M54 10 Q56 8, 58 10 Q56 12, 54 10;M58 18 Q60 16, 62 18 Q60 20, 58 18;M56 14 Q58 12, 60 14 Q58 16, 56 14" dur="5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.7;0.3;0.5" dur="5s" repeatCount="indefinite"/>
+  </path>
+  <path d="M4 44 Q6 42, 8 44 Q6 46, 4 44" fill="#80FF80" opacity="0.4">
+    <animate attributeName="d" values="M4 44 Q6 42, 8 44 Q6 46, 4 44;M6 40 Q8 38, 10 40 Q8 42, 6 40;M2 48 Q4 46, 6 48 Q4 50, 2 48;M4 44 Q6 42, 8 44 Q6 46, 4 44" dur="7s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.6;0.2;0.4" dur="7s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Book standing open -->
+  <!-- Back cover -->
+  <path d="M8 12 L8 56 L32 52 L32 8 Z" fill="url(#natureCover)"/>
+  
+  <!-- Spine (vine-wrapped) -->
+  <rect x="30" y="8" width="4" height="46" fill="#1EA040"/>
+  <path d="M31 12 Q33 16, 31 20 Q33 24, 31 28 Q33 32, 31 36 Q33 40, 31 44 Q33 48, 31 52" 
+        stroke="#80FF80" stroke-width="1" fill="none" opacity="0.6"/>
+  
+  <!-- Front cover -->
+  <path d="M56 12 L56 56 L32 52 L32 8 Z" fill="url(#natureCover)"/>
+  
+  <!-- Leaf corner decorations -->
+  <path d="M10 14 Q14 12, 18 14 Q14 18, 10 14" fill="url(#leafDecor)"/>
+  <path d="M10 54 Q14 52, 18 54 Q14 56, 10 54" fill="url(#leafDecor)"/>
+  <path d="M54 14 Q50 12, 46 14 Q50 18, 54 14" fill="url(#leafDecor)"/>
+  <path d="M54 54 Q50 52, 46 54 Q50 56, 54 54" fill="url(#leafDecor)"/>
+  
+  <!-- Pages -->
+  <path d="M12 16 L12 50 L30 48 L30 14 Z" fill="url(#pageColor)"/>
+  <path d="M34 14 L34 48 L52 50 L52 16 Z" fill="url(#pageColor)"/>
+  
+  <!-- Page lines (nature symbols) -->
+  <path d="M16 22 Q20 20, 24 22" stroke="#90D090" stroke-width="0.5" fill="none"/>
+  <path d="M16 28 Q22 26, 28 28" stroke="#90D090" stroke-width="0.5" fill="none"/>
+  <path d="M38 22 Q42 20, 46 22" stroke="#90D090" stroke-width="0.5" fill="none"/>
+  <path d="M38 28 Q44 26, 50 28" stroke="#90D090" stroke-width="0.5" fill="none"/>
+  
+  <!-- THE FACE! -->
+  <!-- Eyes (nature green, wise) with saccadic movement -->
+  <ellipse cx="20" cy="34" rx="4" ry="3" fill="#F0FFF0"/>
+  <circle cx="20" cy="34" r="2.5" fill="#228B22"/>
+  <circle cx="20" cy="34" r="1.2" fill="#1A1A1A">
+    <animate attributeName="cx" values="20;20;21;20;19;20;20" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="34;34;33;34;34;35;34" dur="5.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="20.5" cy="33.5" r="0.5" fill="white">
+    <animate attributeName="cx" values="20.5;20.5;21.5;20.5;19.5;20.5;20.5" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="33.5;33.5;32.5;33.5;33.5;34.5;33.5" dur="5.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <!-- Left eye blink -->
+  <ellipse cx="20" cy="34" rx="4" ry="0" fill="#C0DDC0">
+    <animate attributeName="ry" values="0;3;0" keyTimes="0;0.98;1" dur="6.8s" begin="1.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <ellipse cx="44" cy="34" rx="4" ry="3" fill="#F0FFF0"/>
+  <circle cx="44" cy="34" r="2.5" fill="#228B22"/>
+  <circle cx="44" cy="34" r="1.2" fill="#1A1A1A">
+    <animate attributeName="cx" values="44;44;45;44;43;44;44" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="34;34;33;34;34;35;34" dur="5.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="44.5" cy="33.5" r="0.5" fill="white">
+    <animate attributeName="cx" values="44.5;44.5;45.5;44.5;43.5;44.5;44.5" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="33.5;33.5;32.5;33.5;33.5;34.5;33.5" dur="5.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <!-- Right eye blink -->
+  <ellipse cx="44" cy="34" rx="4" ry="0" fill="#C0DDC0">
+    <animate attributeName="ry" values="0;3;0" keyTimes="0;0.98;1" dur="6.8s" begin="1.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Leafy eyebrows -->
+  <path d="M16 30 Q20 28, 24 30" stroke="#1EA040" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M48 30 Q44 28, 40 30" stroke="#1EA040" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  
+  <!-- Content smile -->
+  <path d="M30 42 Q32 44, 34 42" stroke="#1EA040" stroke-width="1.5" fill="none"/>
+  
+  <!-- Floating page (leaf-shaped!) - fluttering -->
+  <path d="M40 8 Q46 4, 52 8 Q48 10, 44 8" fill="#E0FFE8" stroke="#90D090" stroke-width="0.5">
+    <animate attributeName="d" values="M40 8 Q46 4, 52 8 Q48 10, 44 8;M38 6 Q44 2, 50 6 Q46 8, 42 6;M42 10 Q48 6, 54 10 Q50 12, 46 10;M40 8 Q46 4, 52 8 Q48 10, 44 8" dur="3s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Nature sparkles (flowers) - pulsing -->
+  <circle cx="48" cy="6" r="2" fill="#FFB0C0">
+    <animate attributeName="r" values="2;2.5;2;1.8;2" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0.7;1;0.9;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="8" cy="24" r="1.5" fill="#FFE080">
+    <animate attributeName="r" values="1.5;2;1.5;1.3;1.5" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0.6;1;0.8;1" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="56" cy="40" r="1.5" fill="#B0C0FF">
+    <animate attributeName="r" values="1.5;2;1.5;1.2;1.5" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0.7;1;0.9;1" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Title (in vines) -->
+  <text x="38" y="48" font-size="4" fill="url(#leafDecor)" font-family="serif" transform="rotate(3, 38, 48)">MAGNUS</text>
+</svg>

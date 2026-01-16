@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Dire Wolf Fenris - Golden celestial wolf -->
+  <defs>
+    <linearGradient id="goldenFur" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFC832"/>
+      <stop offset="100%" style="stop-color:#CC9600"/>
+    </linearGradient>
+    <linearGradient id="goldenMane" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFE080"/>
+      <stop offset="100%" style="stop-color:#FFC832"/>
+    </linearGradient>
+    <linearGradient id="goldenGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFA0"/>
+      <stop offset="100%" style="stop-color:#FFD040"/>
+    </linearGradient>
+    <filter id="sunGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Celestial aura -->
+  <ellipse cx="32" cy="36" rx="30" ry="26" fill="#FFC832" opacity="0.15" filter="url(#sunGlow)"/>
+  
+  <!-- Star particles - drifting divine energy -->
+  <text x="8" y="16" font-size="5" fill="#FFFFA0" opacity="0.7">
+    ★
+    <animate attributeName="y" values="16;12;16;20;16" dur="5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.7;1;0.4;0.8;0.7" dur="5s" repeatCount="indefinite"/>
+  </text>
+  <text x="54" y="12" font-size="4" fill="#FFFFA0" opacity="0.6">
+    ✦
+    <animate attributeName="y" values="12;8;12;16;12" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0.9;0.3;0.7;0.6" dur="6s" repeatCount="indefinite"/>
+  </text>
+  <text x="52" y="50" font-size="3" fill="#FFE080" opacity="0.5">
+    ★
+    <animate attributeName="y" values="50;46;50;54;50" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.8;0.3;0.6;0.5" dur="4s" repeatCount="indefinite"/>
+  </text>
+  
+  <!-- Body (massive, legendary wolf) -->
+  <ellipse cx="32" cy="40" rx="18" ry="12" fill="url(#goldenFur)"/>
+  
+  <!-- Golden fur pattern -->
+  <path d="M18 38 Q22 34, 26 38 Q30 34, 34 38 Q38 34, 42 38 Q46 34, 48 38" 
+        stroke="#FFE080" stroke-width="0.8" fill="none" opacity="0.5"/>
+  
+  <!-- Back legs -->
+  <ellipse cx="42" cy="48" rx="4" ry="6" fill="#CC9600"/>
+  <rect x="40" y="50" width="4" height="8" fill="#CC9600"/>
+  <ellipse cx="42" cy="58" rx="3" ry="2" fill="#996600"/>
+  
+  <!-- Front legs -->
+  <ellipse cx="22" cy="48" rx="4" ry="6" fill="url(#goldenFur)"/>
+  <rect x="20" y="50" width="4" height="8" fill="url(#goldenFur)"/>
+  <ellipse cx="22" cy="58" rx="3" ry="2" fill="#996600"/>
+  
+  <!-- Tail (flowing, golden flame-like) - waving majestically -->
+  <path d="M50 38 Q58 36, 60 42 Q62 36, 58 32 Q62 28, 56 30" 
+        fill="url(#goldenMane)" opacity="0.9">
+    <animate attributeName="d" values="M50 38 Q58 36, 60 42 Q62 36, 58 32 Q62 28, 56 30;M50 38 Q60 34, 62 40 Q64 34, 60 30 Q64 26, 58 28;M50 38 Q56 38, 58 44 Q60 38, 56 34 Q60 30, 54 32;M50 38 Q58 36, 60 42 Q62 36, 58 32 Q62 28, 56 30" dur="3s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Neck and chest (powerful) -->
+  <path d="M14 38 Q8 30, 14 20 Q16 14, 20 16" fill="url(#goldenFur)"/>
+  
+  <!-- Chest fluff (celestial glow) -->
+  <path d="M16 34 Q12 38, 14 44 Q18 40, 16 34" fill="url(#goldenGlow)" opacity="0.7"/>
+  
+  <!-- Head (noble, fierce) -->
+  <ellipse cx="16" cy="18" rx="10" ry="9" fill="url(#goldenFur)"/>
+  
+  <!-- Celestial crown/halo suggestion - pulsing with divine radiance -->
+  <path d="M8 8 Q16 4, 24 8" stroke="#FFFFA0" stroke-width="1.5" fill="none" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;1;0.4;0.8;0.6" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-width" values="1.5;2.5;1.5;2;1.5" dur="3s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Ears (pointed, majestic) -->
+  <path d="M8 12 L4 2 L12 10" fill="url(#goldenMane)"/>
+  <path d="M20 10 L24 0 L26 10" fill="url(#goldenMane)"/>
+  <path d="M6 8 L6 4" stroke="#FFE080" stroke-width="0.5"/>
+  <path d="M22 6 L24 2" stroke="#FFE080" stroke-width="0.5"/>
+  
+  <!-- Mane (flowing, radiant) - billowing with divine energy -->
+  <path d="M24 12 Q32 8, 30 18 Q36 12, 32 22 Q38 18, 32 26" 
+        fill="url(#goldenMane)" opacity="0.9">
+    <animate attributeName="d" values="M24 12 Q32 8, 30 18 Q36 12, 32 22 Q38 18, 32 26;M24 12 Q34 6, 32 16 Q38 10, 34 20 Q40 16, 34 24;M24 12 Q30 10, 28 20 Q34 14, 30 24 Q36 20, 30 28;M24 12 Q32 8, 30 18 Q36 12, 32 22 Q38 18, 32 26" dur="4s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Eyes (burning golden, wise) with saccadic movement and blinking -->
+  <ellipse cx="12" cy="16" rx="3" ry="2.5" fill="#FFFFA0"/>
+  <ellipse cx="12" cy="16" rx="2" ry="2" fill="#CC6600"/>
+  <ellipse cx="12" cy="16" rx="1" ry="1.5" fill="#1A1A1A">
+    <animate attributeName="cx" values="12;12;12;13;12;11;12;12;12" dur="5.2s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="16;16;15;16;16;16;17;16;16" dur="6.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  <circle cx="12.5" cy="15.5" r="0.5" fill="white">
+    <animate attributeName="cx" values="12.5;12.5;12.5;13.5;12.5;11.5;12.5;12.5;12.5" dur="5.2s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="15.5;15.5;14.5;15.5;15.5;15.5;16.5;15.5;15.5" dur="6.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <ellipse cx="12" cy="16" rx="3" ry="0" fill="#E6A800">
+    <animate attributeName="ry" values="0;2.5;0" keyTimes="0;0.98;1" dur="7.2s" begin="0.8s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Snout -->
+  <ellipse cx="8" cy="22" rx="5" ry="4" fill="#E6A800"/>
+  <ellipse cx="6" cy="20" rx="2" ry="1.5" fill="#1A1A1A"/>
+  
+  <!-- Teeth hint -->
+  <path d="M6 24 L4 26 M8 24 L8 26" stroke="white" stroke-width="1" stroke-linecap="round"/>
+  
+  <!-- Sparkles -->
+  <circle cx="2" cy="6" r="1" fill="white" opacity="0.9"/>
+  <circle cx="60" cy="40" r="0.8" fill="white" opacity="0.8"/>
+  <circle cx="30" cy="4" r="1.2" fill="#FFFFA0" opacity="0.7"/>
+</svg>

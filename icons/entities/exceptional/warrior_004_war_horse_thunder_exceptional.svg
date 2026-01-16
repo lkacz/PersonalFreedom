@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL War Horse Thunder - Emerald forest spirit horse -->
+  <defs>
+    <linearGradient id="emeraldBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#32C864"/>
+      <stop offset="100%" style="stop-color:#1A7A3A"/>
+    </linearGradient>
+    <linearGradient id="emeraldMane" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#80FF80"/>
+      <stop offset="100%" style="stop-color:#32C864"/>
+    </linearGradient>
+    <linearGradient id="leafShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#80FF80;stop-opacity:0.2"/>
+    </linearGradient>
+    <filter id="forestGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Forest spirit aura -->
+  <ellipse cx="32" cy="36" rx="28" ry="24" fill="#32C864" opacity="0.12" filter="url(#forestGlow)"/>
+  
+  <!-- Floating leaves around - drifting on forest breeze -->
+  <path d="M8 20 Q10 18, 12 20 Q10 22, 8 20" fill="#80FF80" opacity="0.6">
+    <animate attributeName="transform" type="translate" values="0,0;4,-8;8,-4;4,0;0,0" dur="5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0.8;0.4;0.7;0.6" dur="5s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="rotate" values="0 10 20;20 10 20;-10 10 20;0 10 20" dur="5s" repeatCount="indefinite" additive="sum"/>
+  </path>
+  <path d="M54 14 Q56 12, 58 14 Q56 16, 54 14" fill="#80FF80" opacity="0.5">
+    <animate attributeName="transform" type="translate" values="0,0;-6,-6;-4,2;-2,-4;0,0" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.8;0.3;0.6;0.5" dur="6s" repeatCount="indefinite"/>
+  </path>
+  <path d="M52 48 Q54 46, 56 48 Q54 50, 52 48" fill="#80FF80" opacity="0.4">
+    <animate attributeName="transform" type="translate" values="0,0;-4,-6;2,-8;-2,-4;0,0" dur="7s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.7;0.2;0.5;0.4" dur="7s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Body (powerful, nature-infused) -->
+  <ellipse cx="32" cy="38" rx="16" ry="12" fill="url(#emeraldBody)"/>
+  
+  <!-- Vine patterns on body - pulsing with nature energy -->
+  <path d="M20 36 Q24 32, 28 36 Q32 32, 36 36" stroke="#80FF80" stroke-width="0.8" fill="none" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;0.8;0.4;0.7;0.5" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-width" values="0.8;1.2;0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
+  </path>
+  <path d="M22 42 Q28 38, 34 42" stroke="#80FF80" stroke-width="0.6" fill="none" opacity="0.4">
+    <animate attributeName="opacity" values="0.4;0.7;0.3;0.6;0.4" dur="3.5s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-width" values="0.6;1;0.6;0.8;0.6" dur="3.5s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Legs (strong, with leaf hooves) -->
+  <rect x="20" y="44" width="5" height="14" rx="2" fill="#1A7A3A"/>
+  <rect x="39" y="44" width="5" height="14" rx="2" fill="#1A7A3A"/>
+  
+  <!-- Leaf hooves -->
+  <ellipse cx="22.5" cy="58" rx="4" ry="2" fill="#80FF80"/>
+  <ellipse cx="41.5" cy="58" rx="4" ry="2" fill="#80FF80"/>
+  
+  <!-- Neck -->
+  <path d="M42 34 Q48 28, 44 18 Q42 14, 40 16" fill="url(#emeraldBody)"/>
+  
+  <!-- Head -->
+  <ellipse cx="38" cy="14" rx="8" ry="6" fill="url(#emeraldBody)"/>
+  
+  <!-- Flower crown - blooming with life -->
+  <circle cx="32" cy="8" r="2" fill="#FFB0E0">
+    <animate attributeName="r" values="2;2.3;2;1.8;2" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="36" cy="6" r="2.5" fill="#FFFFA0">
+    <animate attributeName="r" values="2.5;2.8;2.5;2.2;2.5" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="40" cy="7" r="2" fill="#FFB0E0">
+    <animate attributeName="r" values="2;1.8;2;2.3;2" dur="4.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="44" cy="9" r="2.5" fill="#A0FFFF">
+    <animate attributeName="r" values="2.5;2.2;2.5;2.8;2.5" dur="3.8s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Gentle wise eye with saccadic movement and blinking -->
+  <ellipse cx="34" cy="12" rx="2.5" ry="2" fill="white"/>
+  <circle cx="34.5" cy="12" r="1.5" fill="#006400">
+    <animate attributeName="cx" values="34.5;34.5;35.5;34.5;33.5;34.5;34.5" dur="5.4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="12;12;11;12;12;13;12" dur="6.3s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="35" cy="11.5" r="0.5" fill="white">
+    <animate attributeName="cx" values="35;35;36;35;34;35;35" dur="5.4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="11.5;11.5;10.5;11.5;11.5;12.5;11.5" dur="6.3s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <ellipse cx="34" cy="12" rx="2.5" ry="0" fill="#90C090">
+    <animate attributeName="ry" values="0;2;0" keyTimes="0;0.98;1" dur="6.8s" begin="0.9s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Soft muzzle -->
+  <ellipse cx="32" cy="18" rx="4" ry="3" fill="#2A9A4A"/>
+  <ellipse cx="30" cy="17" rx="0.8" ry="0.5" fill="#1A6A3A"/>
+  <ellipse cx="34" cy="17" rx="0.8" ry="0.5" fill="#1A6A3A"/>
+  
+  <!-- Flowing leaf mane -->
+  <path d="M44 10 Q52 8, 50 16 Q56 12, 52 20 Q58 18, 52 26 Q54 24, 48 30" 
+        fill="url(#emeraldMane)" opacity="0.9"/>
+  
+  <!-- Leaf tail -->
+  <path d="M16 40 Q8 44, 6 38 Q2 42, 6 50 Q10 46, 8 52" 
+        fill="url(#emeraldMane)" opacity="0.8"/>
+  
+  <!-- Sparkles -->
+  <circle cx="12" cy="24" r="1" fill="white" opacity="0.9"/>
+  <circle cx="56" cy="30" r="0.8" fill="#FFFFA0" opacity="0.7"/>
+  <circle cx="26" cy="8" r="0.6" fill="white" opacity="0.8"/>
+</svg>

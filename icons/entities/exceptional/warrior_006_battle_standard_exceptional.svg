@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Battle Standard - Violet arcane battle standard -->
+  <defs>
+    <linearGradient id="violetPole" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9C64FF"/>
+      <stop offset="50%" style="stop-color:#C864FF"/>
+      <stop offset="100%" style="stop-color:#9C64FF"/>
+    </linearGradient>
+    <linearGradient id="violetFlag" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#C864FF"/>
+      <stop offset="100%" style="stop-color:#8040C0"/>
+    </linearGradient>
+    <linearGradient id="arcaneGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E0B0FF"/>
+      <stop offset="100%" style="stop-color:#C864FF"/>
+    </linearGradient>
+    <filter id="magicGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Arcane aura -->
+  <ellipse cx="32" cy="32" rx="26" ry="26" fill="#C864FF" opacity="0.12" filter="url(#magicGlow)"/>
+  
+  <!-- Floating runes - drifting with arcane energy -->
+  <text x="8" y="24" font-size="6" fill="#E0B0FF" opacity="0.5">
+    ✧
+    <animate attributeName="y" values="24;20;24;28;24" dur="5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.8;0.3;0.6;0.5" dur="5s" repeatCount="indefinite"/>
+  </text>
+  <text x="52" y="18" font-size="5" fill="#E0B0FF" opacity="0.4">
+    ✦
+    <animate attributeName="y" values="18;14;18;22;18" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.7;0.2;0.5;0.4" dur="6s" repeatCount="indefinite"/>
+  </text>
+  <text x="10" y="48" font-size="4" fill="#E0B0FF" opacity="0.3">
+    ★
+    <animate attributeName="y" values="48;44;48;52;48" dur="7s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.6;0.1;0.4;0.3" dur="7s" repeatCount="indefinite"/>
+  </text>
+  
+  <!-- Pole (arcane crystal) -->
+  <rect x="28" y="8" width="4" height="50" fill="url(#violetPole)"/>
+  
+  <!-- Crystal finial -->
+  <polygon points="30,8 26,2 30,0 34,2 34,8" fill="#E0B0FF" stroke="#C864FF" stroke-width="0.5"/>
+  
+  <!-- Arcane rings on pole -->
+  <ellipse cx="30" cy="20" rx="3" ry="1" fill="#E0B0FF" opacity="0.6"/>
+  <ellipse cx="30" cy="35" rx="3" ry="1" fill="#E0B0FF" opacity="0.6"/>
+  <ellipse cx="30" cy="50" rx="3" ry="1" fill="#E0B0FF" opacity="0.6"/>
+  
+  <!-- Flag (flowing, ethereal) - waving in mystical wind -->
+  <path d="M34 10 Q50 14, 48 22 Q56 24, 52 32 Q58 36, 50 42 Q42 40, 34 44" 
+        fill="url(#violetFlag)" stroke="#8040C0" stroke-width="0.5">
+    <animate attributeName="d" values="M34 10 Q50 14, 48 22 Q56 24, 52 32 Q58 36, 50 42 Q42 40, 34 44;M34 10 Q48 16, 46 24 Q54 26, 50 34 Q56 38, 48 44 Q40 42, 34 44;M34 10 Q52 12, 50 20 Q58 22, 54 30 Q60 34, 52 40 Q44 38, 34 44;M34 10 Q50 14, 48 22 Q56 24, 52 32 Q58 36, 50 42 Q42 40, 34 44" dur="4s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Arcane symbol on flag - pulsing with magical power -->
+  <circle cx="44" cy="26" r="8" fill="none" stroke="#E0B0FF" stroke-width="1" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.5;0.9;0.8" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="8;8.5;8;7.5;8" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <path d="M44 20 L44 32 M38 26 L50 26" stroke="#E0B0FF" stroke-width="1.5">
+    <animate attributeName="opacity" values="1;0.6;1;0.8;1" dur="3s" repeatCount="indefinite"/>
+  </path>
+  <circle cx="44" cy="26" r="3" fill="#E0B0FF" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.9;0.4;0.7;0.6" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="3;3.5;3;2.5;3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Energy wisps coming off - flowing magical currents -->
+  <path d="M48 12 Q54 10, 56 14" stroke="url(#arcaneGlow)" stroke-width="1" fill="none" opacity="0.6">
+    <animate attributeName="d" values="M48 12 Q54 10, 56 14;M48 12 Q56 8, 60 12;M48 12 Q54 10, 56 14" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0.9;0.3;0.6" dur="3s" repeatCount="indefinite"/>
+  </path>
+  <path d="M52 36 Q58 38, 56 44" stroke="url(#arcaneGlow)" stroke-width="1" fill="none" opacity="0.5">
+    <animate attributeName="d" values="M52 36 Q58 38, 56 44;M52 36 Q60 40, 58 48;M52 36 Q58 38, 56 44" dur="3.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.8;0.2;0.5" dur="3.5s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Ground base (arcane circle) -->
+  <ellipse cx="30" cy="58" rx="10" ry="3" fill="#8040C0"/>
+  <ellipse cx="30" cy="58" rx="7" ry="2" fill="none" stroke="#E0B0FF" stroke-width="0.5" opacity="0.6"/>
+  
+  <!-- Sparkles -->
+  <circle cx="56" cy="28" r="1" fill="white" opacity="0.9"/>
+  <circle cx="26" cy="6" r="0.8" fill="white" opacity="0.8"/>
+  <circle cx="48" cy="44" r="1.2" fill="#E0B0FF" opacity="0.7"/>
+</svg>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Tesla Coil Sparky - Rainbow plasma storm variant -->
+  <defs>
+    <linearGradient id="chromeMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ECEFF1"/>
+      <stop offset="50%" style="stop-color:#CFD8DC"/>
+      <stop offset="100%" style="stop-color:#90A4AE"/>
+    </linearGradient>
+    <linearGradient id="plasmaCoil" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#E040FB"/>
+      <stop offset="25%" style="stop-color:#00E5FF"/>
+      <stop offset="50%" style="stop-color:#76FF03"/>
+      <stop offset="75%" style="stop-color:#FFEA00"/>
+      <stop offset="100%" style="stop-color:#FF4081"/>
+    </linearGradient>
+    <linearGradient id="rainbowArc" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#E040FB"/>
+      <stop offset="50%" style="stop-color:#00E5FF"/>
+      <stop offset="100%" style="stop-color:#76FF03"/>
+    </linearGradient>
+    <filter id="plasmaGlow">
+      <feGaussianBlur stdDeviation="3" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Rainbow plasma aura -->
+  <ellipse cx="32" cy="32" rx="28" ry="28" fill="url(#plasmaCoil)" filter="url(#plasmaGlow)" opacity="0.2"/>
+  
+  <!-- Base platform (chrome) -->
+  <rect x="16" y="54" width="32" height="6" rx="2" fill="url(#chromeMetal)"/>
+  <rect x="18" y="52" width="28" height="4" fill="#78909C"/>
+  
+  <!-- Primary coil (rainbow plasma) -->
+  <g filter="url(#plasmaGlow)">
+    <ellipse cx="32" cy="50" rx="12" ry="3" fill="#E040FB" opacity="0.8"/>
+    <ellipse cx="32" cy="47" rx="11" ry="2.5" fill="#00E5FF" opacity="0.8"/>
+    <ellipse cx="32" cy="44" rx="10" ry="2" fill="#76FF03" opacity="0.8"/>
+  </g>
+  
+  <!-- Secondary coil tower (dark) -->
+  <rect x="28" y="16" width="8" height="28" fill="#263238"/>
+  
+  <!-- Rainbow plasma windings -->
+  <g stroke-width="1.5" fill="none" filter="url(#plasmaGlow)">
+    <ellipse cx="32" cy="42" rx="6" ry="1.5" stroke="#E040FB"/>
+    <ellipse cx="32" cy="39" rx="6" ry="1.5" stroke="#D500F9"/>
+    <ellipse cx="32" cy="36" rx="6" ry="1.5" stroke="#00E5FF"/>
+    <ellipse cx="32" cy="33" rx="6" ry="1.5" stroke="#00B8D4"/>
+    <ellipse cx="32" cy="30" rx="6" ry="1.5" stroke="#76FF03"/>
+    <ellipse cx="32" cy="27" rx="6" ry="1.5" stroke="#64DD17"/>
+    <ellipse cx="32" cy="24" rx="6" ry="1.5" stroke="#FFEA00"/>
+    <ellipse cx="32" cy="21" rx="6" ry="1.5" stroke="#FF4081"/>
+  </g>
+  
+  <!-- Toroid (discharge terminal - chrome with plasma) -->
+  <ellipse cx="32" cy="14" rx="10" ry="4" fill="url(#chromeMetal)"/>
+  <ellipse cx="32" cy="14" rx="8" ry="3" fill="url(#plasmaCoil)" opacity="0.5" filter="url(#plasmaGlow)"/>
+  
+  <!-- RAINBOW LIGHTNING ARCS -->
+  <g filter="url(#plasmaGlow)">
+    <!-- Arc 1 - Magenta to Cyan -->
+    <path d="M32 10 Q24 4, 14 6 Q10 2, 6 4" stroke="#E040FB" stroke-width="2" fill="none">
+      <animate attributeName="d" values="M32 10 Q24 4, 14 6 Q10 2, 6 4;M32 10 Q20 0, 12 8 Q6 4, 4 8;M32 10 Q24 4, 14 6 Q10 2, 6 4" dur="0.3s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Arc 2 - Cyan to Green -->
+    <path d="M32 10 Q40 2, 50 8 Q54 4, 58 6" stroke="#00E5FF" stroke-width="2" fill="none">
+      <animate attributeName="d" values="M32 10 Q40 2, 50 8 Q54 4, 58 6;M32 10 Q44 -2, 52 4 Q58 0, 60 4;M32 10 Q40 2, 50 8 Q54 4, 58 6" dur="0.25s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Arc 3 - Yellow upward -->
+    <path d="M32 10 Q28 -2, 32 -8" stroke="#FFEA00" stroke-width="2" fill="none">
+      <animate attributeName="d" values="M32 10 Q28 -2, 32 -8;M32 10 Q36 -4, 32 -10;M32 10 Q28 -2, 32 -8" dur="0.35s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Plasma orbs at arc ends -->
+  <circle cx="6" cy="4" r="3" fill="#E040FB" filter="url(#plasmaGlow)" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0.4;0.8" dur="0.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="58" cy="6" r="2.5" fill="#00E5FF" filter="url(#plasmaGlow)" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;0.3;0.7" dur="0.25s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="32" cy="-6" r="2" fill="#FFEA00" filter="url(#plasmaGlow)" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.2;0.6" dur="0.3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Sparkles -->
+  <circle cx="10" cy="20" r="1.5" fill="white" opacity="0.9"/>
+  <circle cx="54" cy="18" r="1" fill="#E040FB" opacity="0.8"/>
+</svg>

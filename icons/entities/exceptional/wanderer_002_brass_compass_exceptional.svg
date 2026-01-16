@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Brass Compass - Rose gold enchanted compass variant -->
+  <defs>
+    <linearGradient id="roseGoldBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F4C2C2"/>
+      <stop offset="50%" style="stop-color:#E8A090"/>
+      <stop offset="100%" style="stop-color:#CD7F7F"/>
+    </linearGradient>
+    <linearGradient id="roseShine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFF0F0;stop-opacity:0"/>
+      <stop offset="50%" style="stop-color:#FFF0F0;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#FFF0F0;stop-opacity:0"/>
+    </linearGradient>
+    <filter id="roseGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Rose gold aura -->
+  <ellipse cx="32" cy="32" rx="28" ry="28" fill="#F4C2C2" opacity="0.15" filter="url(#roseGlow)"/>
+  
+  <!-- Shadow -->
+  <ellipse cx="34" cy="58" rx="14" ry="3" fill="#00000022"/>
+  
+  <!-- Compass body (rose gold) -->
+  <circle cx="32" cy="32" r="24" fill="url(#roseGoldBody)" stroke="#CD7F7F" stroke-width="2" filter="url(#roseGlow)"/>
+  
+  <!-- Inner face -->
+  <circle cx="32" cy="32" r="20" fill="#FFF8F8"/>
+  
+  <!-- Decorative ring -->
+  <circle cx="32" cy="32" r="18" fill="none" stroke="#E8A090" stroke-width="0.5"/>
+  
+  <!-- Direction markers -->
+  <text x="30" y="16" fill="#CD7F7F" font-size="6" font-weight="bold">N</text>
+  <text x="30" y="54" fill="#CD7F7F" font-size="6" font-weight="bold">S</text>
+  <text x="14" y="34" fill="#CD7F7F" font-size="6" font-weight="bold">W</text>
+  <text x="48" y="34" fill="#CD7F7F" font-size="6" font-weight="bold">E</text>
+  
+  <!-- Tick marks -->
+  <line x1="32" y1="12" x2="32" y2="16" stroke="#E8A090" stroke-width="1"/>
+  <line x1="32" y1="48" x2="32" y2="52" stroke="#E8A090" stroke-width="1"/>
+  <line x1="12" y1="32" x2="16" y2="32" stroke="#E8A090" stroke-width="1"/>
+  <line x1="48" y1="32" x2="52" y2="32" stroke="#E8A090" stroke-width="1"/>
+  
+  <!-- Compass needle (rose gold with ruby tip) -->
+  <polygon points="32,16 29,32 32,36 35,32" fill="#DC143C" filter="url(#roseGlow)"/>
+  <polygon points="32,48 29,32 32,28 35,32" fill="#E8A090"/>
+  
+  <!-- Center pin -->
+  <circle cx="32" cy="32" r="4" fill="url(#roseGoldBody)" stroke="#CD7F7F" stroke-width="1"/>
+  <circle cx="32" cy="32" r="2" fill="#DC143C" filter="url(#roseGlow)"/>
+  
+  <!-- Glass dome highlight -->
+  <ellipse cx="26" cy="24" rx="8" ry="6" fill="url(#roseShine)"/>
+  
+  <!-- Lid hinge -->
+  <rect x="6" y="30" width="4" height="4" rx="1" fill="#CD7F7F"/>
+  
+  <!-- Floating particles - drifting with rose gold shimmer -->
+  <circle cx="10" cy="14" r="1.5" fill="#F4C2C2" opacity="0.5">
+    <animate attributeName="cy" values="14;10;14;18;14" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.8;0.5;0.3;0.5" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="54" cy="12" r="1" fill="#E8A090" opacity="0.4">
+    <animate attributeName="cy" values="12;8;12;16;12" dur="3.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.7;0.4;0.2;0.4" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Sparkles - twinkling with rose gold radiance -->
+  <circle cx="38" cy="14" r="1.5" fill="white" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.5;0.9;1;0.9" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1.5;2;1.5;1.3;1.5" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="48" cy="24" r="1" fill="white" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.8;0.5;0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="16" cy="42" r="1.2" fill="#FFF0F0" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;1;0.7;0.4;0.7" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+</svg>

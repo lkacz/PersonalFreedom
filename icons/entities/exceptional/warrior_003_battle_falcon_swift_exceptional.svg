@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Battle Falcon Swift - Pink/Magenta phoenix variant -->
+  <defs>
+    <linearGradient id="phoenixBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF64C8"/>
+      <stop offset="100%" style="stop-color:#C83296"/>
+    </linearGradient>
+    <linearGradient id="phoenixWing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFB0E0"/>
+      <stop offset="100%" style="stop-color:#FF64C8"/>
+    </linearGradient>
+    <linearGradient id="phoenixFlame" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF64C8"/>
+      <stop offset="50%" style="stop-color:#FFB0E0"/>
+      <stop offset="100%" style="stop-color:#FFFFFF"/>
+    </linearGradient>
+    <filter id="flameGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Flame aura -->
+  <ellipse cx="32" cy="32" rx="26" ry="24" fill="#FF64C8" opacity="0.15" filter="url(#flameGlow)"/>
+  
+  <!-- Flame trail - dancing flames behind phoenix -->
+  <path d="M8 44 Q4 38, 8 32 Q6 26, 10 28" fill="url(#phoenixFlame)" opacity="0.6">
+    <animate attributeName="d" values="M8 44 Q4 38, 8 32 Q6 26, 10 28;M8 44 Q2 36, 6 30 Q4 24, 8 26;M8 44 Q6 40, 10 34 Q8 28, 12 30;M8 44 Q4 38, 8 32 Q6 26, 10 28" dur="1.2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0.9;0.5;0.7;0.6" dur="1.2s" repeatCount="indefinite"/>
+  </path>
+  <path d="M12 48 Q8 42, 12 36" fill="url(#phoenixFlame)" opacity="0.4">
+    <animate attributeName="d" values="M12 48 Q8 42, 12 36;M12 48 Q6 40, 10 34;M12 48 Q10 44, 14 38;M12 48 Q8 42, 12 36" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.7;0.3;0.5;0.4" dur="1.5s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Wing (spread wide, flame-like feathers) -->
+  <path d="M10 20 Q2 30, 8 40 Q16 36, 18 30 Q14 24, 10 20" fill="url(#phoenixWing)"/>
+  <path d="M8 24 L4 28 M8 30 L2 34 M10 36 L6 40" stroke="#FFD0F0" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Body (sleek, fierce) -->
+  <ellipse cx="32" cy="34" rx="10" ry="8" fill="url(#phoenixBody)"/>
+  
+  <!-- Flame feathers on back - breathing fire -->
+  <path d="M26 28 Q24 22, 28 26 Q26 20, 30 24 Q28 18, 32 22" fill="url(#phoenixFlame)" opacity="0.7">
+    <animate attributeName="d" values="M26 28 Q24 22, 28 26 Q26 20, 30 24 Q28 18, 32 22;M26 28 Q22 20, 26 24 Q24 18, 28 22 Q26 16, 30 20;M26 28 Q26 24, 30 28 Q28 22, 32 26 Q30 20, 34 24;M26 28 Q24 22, 28 26 Q26 20, 30 24 Q28 18, 32 22" dur="1s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.7;0.9;0.5;0.8;0.7" dur="1s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Head -->
+  <circle cx="42" cy="26" r="8" fill="url(#phoenixBody)"/>
+  
+  <!-- Crest (flame-like) - dancing fire crown -->
+  <path d="M38 18 Q36 12, 40 14 Q38 8, 42 12 Q40 6, 46 10" fill="url(#phoenixFlame)">
+    <animate attributeName="d" values="M38 18 Q36 12, 40 14 Q38 8, 42 12 Q40 6, 46 10;M38 18 Q34 10, 38 12 Q36 6, 44 10 Q42 4, 48 8;M38 18 Q38 14, 42 16 Q40 10, 40 14 Q38 8, 44 12;M38 18 Q36 12, 40 14 Q38 8, 42 12 Q40 6, 46 10" dur="0.8s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Sharp fierce eye with saccadic movement and blinking -->
+  <ellipse cx="44" cy="24" rx="2.5" ry="2" fill="white"/>
+  <ellipse cx="44.5" cy="24" rx="1.5" ry="1.5" fill="#880044">
+    <animate attributeName="cx" values="44.5;44.5;45.5;44.5;43.5;44.5;44.5" dur="3.8s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="24;24;23;24;24;25;24" dur="4.7s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  <circle cx="45" cy="23.5" r="0.5" fill="white">
+    <animate attributeName="cx" values="45;45;46;45;44;45;45" dur="3.8s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="23.5;23.5;22.5;23.5;23.5;24.5;23.5" dur="4.7s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <ellipse cx="44" cy="24" rx="2.5" ry="0" fill="#FFE0E8">
+    <animate attributeName="ry" values="0;2;0" keyTimes="0;0.98;1" dur="4.1s" begin="1.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Sharp beak -->
+  <path d="M50 26 L56 28 L50 30 Z" fill="#FFD700"/>
+  <line x1="50" y1="28" x2="54" y2="28" stroke="#FFA000" stroke-width="0.5"/>
+  
+  <!-- Tail (flowing flame) - majestic fire dance -->
+  <path d="M22 38 Q14 42, 10 38 Q6 44, 8 50 Q12 46, 14 50 Q16 44, 20 42" 
+        fill="url(#phoenixFlame)" opacity="0.8">
+    <animate attributeName="d" values="M22 38 Q14 42, 10 38 Q6 44, 8 50 Q12 46, 14 50 Q16 44, 20 42;M22 38 Q12 40, 8 36 Q4 42, 6 48 Q10 44, 12 48 Q14 42, 18 40;M22 38 Q16 44, 12 40 Q8 46, 10 52 Q14 48, 16 52 Q18 46, 22 44;M22 38 Q14 42, 10 38 Q6 44, 8 50 Q12 46, 14 50 Q16 44, 20 42" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.8;1;0.6;0.9;0.8" dur="1.5s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Talons -->
+  <path d="M30 42 L28 48 L26 52 M30 42 L30 50 L30 54 M30 42 L32 48 L34 52" 
+        stroke="#880044" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Sparkles -->
+  <circle cx="6" cy="26" r="1" fill="white" opacity="0.9"/>
+  <circle cx="56" cy="18" r="0.8" fill="#FFD0F0" opacity="0.7"/>
+  <circle cx="18" cy="50" r="1.2" fill="white" opacity="0.6"/>
+  <circle cx="48" cy="10" r="0.6" fill="white" opacity="0.8"/>
+</svg>

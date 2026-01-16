@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Library Cat Scholar - Lavender moonlight cat -->
+  <defs>
+    <linearGradient id="lavenderFur" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9664FF"/>
+      <stop offset="100%" style="stop-color:#7040C0"/>
+    </linearGradient>
+    <linearGradient id="moonGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E0C0FF"/>
+      <stop offset="100%" style="stop-color:#C0A0FF"/>
+    </linearGradient>
+    <filter id="moonlightGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Moonlight aura -->
+  <ellipse cx="32" cy="32" rx="28" ry="26" fill="#9664FF" opacity="0.12" filter="url(#moonlightGlow)"/>
+  
+  <!-- Moon phases floating - gentle drift -->
+  <circle cx="8" cy="12" r="3" fill="#E0C0FF" opacity="0.4">
+    <animate attributeName="cy" values="12;8;12;16;12" dur="6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.6;0.4;0.3;0.4" dur="6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="56" cy="16" r="2" fill="#C0A0FF" opacity="0.3">
+    <animate attributeName="cy" values="16;12;16;20;16" dur="5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.5;0.3;0.2;0.3" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Book pile (mystical tomes) -->
+  <rect x="8" y="46" width="48" height="8" rx="1" fill="#5030A0"/>
+  <rect x="10" y="40" width="44" height="6" rx="1" fill="#6040B0"/>
+  
+  <!-- Cat body (sitting elegantly on books) -->
+  <ellipse cx="32" cy="36" rx="12" ry="10" fill="url(#lavenderFur)"/>
+  
+  <!-- Fluffy chest -->
+  <ellipse cx="32" cy="38" rx="6" ry="6" fill="url(#moonGlow)"/>
+  
+  <!-- Cat head -->
+  <circle cx="32" cy="22" r="12" fill="url(#lavenderFur)"/>
+  
+  <!-- Elegant ears with moon crescents -->
+  <path d="M22 14 L18 4 L26 12" fill="url(#lavenderFur)"/>
+  <path d="M20 8 Q22 6, 22 10" stroke="#E0C0FF" stroke-width="1" fill="none"/>
+  
+  <path d="M42 14 L46 4 L38 12" fill="url(#lavenderFur)"/>
+  <path d="M44 8 Q42 6, 42 10" stroke="#E0C0FF" stroke-width="1" fill="none"/>
+  
+  <!-- Beautiful almond eyes (glowing lavender) with saccadic movement and blinking -->
+  <ellipse cx="26" cy="20" rx="4" ry="3" fill="white"/>
+  <ellipse cx="26" cy="20" rx="3" ry="2.5" fill="#9C27B0"/>
+  <ellipse cx="26" cy="20" rx="1.5" ry="2" fill="#1A1A1A">
+    <animate attributeName="cx" values="26;26;27;26;25;26;26;26" dur="4.1s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="20;20;19;20;20;21;20;20" dur="5.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  <circle cx="27" cy="19" r="0.8" fill="white">
+    <animate attributeName="cx" values="27;27;28;27;26;27;27;27" dur="4.1s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="19;19;18;19;19;20;19;19" dur="5.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <ellipse cx="26" cy="20" rx="4" ry="0" fill="#D8BFD8">
+    <animate attributeName="ry" values="0;3;0" keyTimes="0;0.98;1" dur="4.8s" begin="0.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <ellipse cx="38" cy="20" rx="4" ry="3" fill="white"/>
+  <ellipse cx="38" cy="20" rx="3" ry="2.5" fill="#9C27B0"/>
+  <ellipse cx="38" cy="20" rx="1.5" ry="2" fill="#1A1A1A">
+    <animate attributeName="cx" values="38;38;39;38;37;38;38;38" dur="4.1s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="20;20;19;20;20;21;20;20" dur="5.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  <circle cx="39" cy="19" r="0.8" fill="white">
+    <animate attributeName="cx" values="39;39;40;39;38;39;39;39" dur="4.1s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="19;19;18;19;19;20;19;19" dur="5.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <ellipse cx="38" cy="20" rx="4" ry="0" fill="#D8BFD8">
+    <animate attributeName="ry" values="0;3;0" keyTimes="0;0.98;1" dur="4.8s" begin="0.5s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Cute pink nose -->
+  <path d="M32 26 L30 28 L32 30 L34 28 Z" fill="#FF96C8"/>
+  
+  <!-- Whiskers -->
+  <line x1="30" y1="28" x2="22" y2="26" stroke="#E0C0FF" stroke-width="0.5"/>
+  <line x1="30" y1="30" x2="20" y2="30" stroke="#E0C0FF" stroke-width="0.5"/>
+  <line x1="34" y1="28" x2="42" y2="26" stroke="#E0C0FF" stroke-width="0.5"/>
+  <line x1="34" y1="30" x2="44" y2="30" stroke="#E0C0FF" stroke-width="0.5"/>
+  
+  <!-- Paws (resting on book) -->
+  <ellipse cx="26" cy="44" rx="4" ry="3" fill="url(#moonGlow)"/>
+  <ellipse cx="38" cy="44" rx="4" ry="3" fill="url(#moonGlow)"/>
+  
+  <!-- Elegant curling tail - graceful swish -->
+  <path d="M44 38 Q54 40, 56 34 Q58 28, 54 24 Q58 22, 54 20" 
+        stroke="url(#lavenderFur)" stroke-width="4" fill="none" stroke-linecap="round">
+    <animate attributeName="d" values="M44 38 Q54 40, 56 34 Q58 28, 54 24 Q58 22, 54 20;M44 38 Q56 42, 58 36 Q60 30, 56 26 Q60 24, 56 22;M44 38 Q52 38, 54 32 Q56 26, 52 22 Q56 20, 52 18;M44 38 Q54 40, 56 34 Q58 28, 54 24 Q58 22, 54 20" dur="4s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Spectacles (silver moon-shaped) -->
+  <ellipse cx="26" cy="20" rx="5" ry="4" fill="none" stroke="#C0C0D0" stroke-width="0.8"/>
+  <ellipse cx="38" cy="20" rx="5" ry="4" fill="none" stroke="#C0C0D0" stroke-width="0.8"/>
+  <line x1="31" y1="20" x2="33" y2="20" stroke="#C0C0D0" stroke-width="0.8"/>
+  
+  <!-- Star sparkles - twinkling -->
+  <text x="10" y="8" font-size="4" fill="#E0C0FF" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;1;0.7;0.4;0.7" dur="2s" repeatCount="indefinite"/>
+    ★
+  </text>
+  <text x="52" y="10" font-size="3" fill="#C0A0FF" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.9;0.6;0.3;0.6" dur="2.5s" repeatCount="indefinite"/>
+    ✦
+  </text>
+  
+  <!-- Sparkles - twinkling -->
+  <circle cx="6" cy="20" r="1" fill="white" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.4;0.9;1;0.9" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1;1.3;1;0.8;1" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="58" cy="28" r="0.8" fill="white" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+</svg>

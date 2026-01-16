@@ -38,16 +38,37 @@
   <circle cx="26" cy="22" r="8" fill="url(#eyeGlow)"/>
   <circle cx="38" cy="22" r="8" fill="url(#eyeGlow)"/>
   
-  <!-- Big wise eyes -->
-  <circle cx="26" cy="22" r="6" fill="#FFF8E1"/>
-  <circle cx="26" cy="22" r="4" fill="#FF8F00"/>
-  <circle cx="26" cy="22" r="2" fill="#1A1A1A"/>
-  <circle cx="27" cy="21" r="1" fill="white"/>
-  
-  <circle cx="38" cy="22" r="6" fill="#FFF8E1"/>
-  <circle cx="38" cy="22" r="4" fill="#FF8F00"/>
-  <circle cx="38" cy="22" r="2" fill="#1A1A1A"/>
-  <circle cx="39" cy="21" r="1" fill="white"/>
+  <!-- Big wise eyes - with saccadic movement and blinking -->
+  <g>
+    <circle cx="26" cy="22" r="6" fill="#FFF8E1"/>
+    <circle cx="26" cy="22" r="4" fill="#FF8F00"/>
+    <circle cx="26" cy="22" r="2" fill="#1A1A1A">
+      <animate attributeName="cx" values="26;26;27;26;25;26;26" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="22;22;21;22;22;23;22" dur="5.5s" calcMode="discrete" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="27" cy="21" r="1" fill="white">
+      <animate attributeName="cx" values="27;27;28;27;26;27;27" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="21;21;20;21;21;22;21" dur="5.5s" calcMode="discrete" repeatCount="indefinite"/>
+    </circle>
+    <ellipse cx="26" cy="22" rx="7" ry="0" fill="#8D6E63">
+      <animate attributeName="ry" values="0;7;0" keyTimes="0;0.98;1" dur="6.2s" begin="1.3s" calcMode="discrete" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+  <g>
+    <circle cx="38" cy="22" r="6" fill="#FFF8E1"/>
+    <circle cx="38" cy="22" r="4" fill="#FF8F00"/>
+    <circle cx="38" cy="22" r="2" fill="#1A1A1A">
+      <animate attributeName="cx" values="38;38;39;38;37;38;38" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="22;22;21;22;22;23;22" dur="5.5s" calcMode="discrete" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="39" cy="21" r="1" fill="white">
+      <animate attributeName="cx" values="39;39;40;39;38;39;39" dur="4.5s" calcMode="discrete" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="21;21;20;21;21;22;21" dur="5.5s" calcMode="discrete" repeatCount="indefinite"/>
+    </circle>
+    <ellipse cx="38" cy="22" rx="7" ry="0" fill="#8D6E63">
+      <animate attributeName="ry" values="0;7;0" keyTimes="0;0.98;1" dur="6.2s" begin="1.3s" calcMode="discrete" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
   
   <!-- Beak -->
   <path d="M32 26 L30 30 L32 32 L34 30 Z" fill="#FFB300"/>

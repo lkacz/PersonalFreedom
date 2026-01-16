@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Study Owl Athena - Purple mystic owl -->
+  <defs>
+    <linearGradient id="mysticFeathers" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#C832FF"/>
+      <stop offset="100%" style="stop-color:#8020C0"/>
+    </linearGradient>
+    <linearGradient id="mysticChest" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8A0FF"/>
+      <stop offset="100%" style="stop-color:#D080FF"/>
+    </linearGradient>
+    <filter id="mysticGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Mystic aura -->
+  <ellipse cx="32" cy="32" rx="28" ry="28" fill="#C832FF" opacity="0.12" filter="url(#mysticGlow)"/>
+  
+  <!-- Floating arcane symbols - drifting and pulsing -->
+  <text x="8" y="18" font-size="5" fill="#E8A0FF" opacity="0.5">
+    <animate attributeName="y" values="18;14;18;22;18" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.8;0.5;0.3;0.5" dur="4s" repeatCount="indefinite"/>
+    ✧
+  </text>
+  <text x="52" y="14" font-size="4" fill="#E8A0FF" opacity="0.4">
+    <animate attributeName="y" values="14;10;14;18;14" dur="3.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.7;0.4;0.2;0.4" dur="3.5s" repeatCount="indefinite"/>
+    ★
+  </text>
+  <text x="6" y="50" font-size="3" fill="#D080FF" opacity="0.3">
+    <animate attributeName="y" values="50;46;50;54;50" dur="5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.6;0.3;0.1;0.3" dur="5s" repeatCount="indefinite"/>
+    ✦
+  </text>
+  
+  <!-- Branch (mystical glowing) -->
+  <path d="M4 52 Q20 48, 44 54 Q56 56, 62 52" stroke="#6A1B9A" stroke-width="4" fill="none"/>
+  <path d="M4 52 Q20 48, 44 54 Q56 56, 62 52" stroke="#C832FF" stroke-width="1" fill="none" opacity="0.4"/>
+  
+  <!-- Body (round, fluffy, mystic) -->
+  <ellipse cx="32" cy="40" rx="14" ry="12" fill="url(#mysticFeathers)"/>
+  
+  <!-- Chest feathers pattern -->
+  <ellipse cx="32" cy="42" rx="8" ry="8" fill="url(#mysticChest)"/>
+  <path d="M28 38 L30 44 L28 50 M32 36 L34 44 L32 52 M36 38 L34 44 L36 50" 
+        stroke="#E8A0FF" stroke-width="0.5" fill="none" opacity="0.5"/>
+  
+  <!-- Head (wise, large) -->
+  <circle cx="32" cy="22" r="14" fill="url(#mysticFeathers)"/>
+  
+  <!-- Ear tufts (magical flames) -->
+  <path d="M20 12 Q18 6, 22 8 Q20 4, 24 6" fill="#E8A0FF"/>
+  <path d="M44 12 Q46 6, 42 8 Q44 4, 40 6" fill="#E8A0FF"/>
+  
+  <!-- Facial disc (mystic pattern) -->
+  <ellipse cx="32" cy="24" rx="10" ry="9" fill="#D080FF" opacity="0.5"/>
+  <circle cx="32" cy="24" r="7" fill="none" stroke="#E8A0FF" stroke-width="0.5" opacity="0.4"/>
+  
+  <!-- BIG wise eyes (glowing purple) with saccadic movement and blinking -->
+  <circle cx="26" cy="22" r="5" fill="white"/>
+  <circle cx="26" cy="22" r="4" fill="#9C27B0"/>
+  <circle cx="26" cy="22" r="2" fill="#1A1A1A">
+    <animate attributeName="cx" values="26;26;27;27;26;25;26;26" dur="4.2s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="22;22;22;21;22;22;23;22" dur="5.3s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="27" cy="21" r="1.2" fill="white">
+    <animate attributeName="cx" values="27;27;28;28;27;26;27;27" dur="4.2s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="21;21;21;20;21;21;22;21" dur="5.3s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <ellipse cx="26" cy="22" rx="5" ry="0" fill="#D080FF">
+    <animate attributeName="ry" values="0;5;0" keyTimes="0;0.98;1" dur="5.7s" begin="0.3s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <circle cx="38" cy="22" r="5" fill="white"/>
+  <circle cx="38" cy="22" r="4" fill="#9C27B0"/>
+  <circle cx="38" cy="22" r="2" fill="#1A1A1A">
+    <animate attributeName="cx" values="38;38;39;39;38;37;38;38" dur="4.2s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="22;22;22;21;22;22;23;22" dur="5.3s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="39" cy="21" r="1.2" fill="white">
+    <animate attributeName="cx" values="39;39;40;40;39;38;39;39" dur="4.2s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="21;21;21;20;21;21;22;21" dur="5.3s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <ellipse cx="38" cy="22" rx="5" ry="0" fill="#D080FF">
+    <animate attributeName="ry" values="0;5;0" keyTimes="0;0.98;1" dur="5.7s" begin="0.3s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Third eye (mystic wisdom) - pulsing with power -->
+  <ellipse cx="32" cy="14" rx="2" ry="1.5" fill="#E8A0FF">
+    <animate attributeName="rx" values="2;2.5;2;1.8;2" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="1.5;2;1.5;1.2;1.5" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
+  <circle cx="32" cy="14" r="0.8" fill="white">
+    <animate attributeName="r" values="0.8;1.2;0.8;0.6;0.8" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0.6;1;0.8;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Beak -->
+  <path d="M32 28 L30 32 L32 34 L34 32 Z" fill="#FFB300"/>
+  
+  <!-- Wings (folded, mystical markings) -->
+  <path d="M16 36 Q10 40, 12 48 Q16 44, 18 48" fill="url(#mysticFeathers)"/>
+  <path d="M48 36 Q54 40, 52 48 Q48 44, 46 48" fill="url(#mysticFeathers)"/>
+  
+  <!-- Talons -->
+  <path d="M26 52 L24 56 M28 52 L28 57 M30 52 L32 56" stroke="#6A1B9A" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M34 52 L32 56 M36 52 L36 57 M38 52 L40 56" stroke="#6A1B9A" stroke-width="1.5" stroke-linecap="round"/>
+  
+  <!-- Sparkles - twinkling mystically -->
+  <circle cx="14" cy="10" r="1" fill="white" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.4;0.9;1;0.9" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1;1.4;1;0.7;1" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="50" cy="8" r="0.8" fill="white" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.8;0.3;0.8" dur="2.2s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="0.8;1.1;0.8;0.5;0.8" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="56" cy="38" r="1.2" fill="#E8A0FF" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.9;0.6;0.2;0.6" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1.2;1.6;1.2;0.9;1.2" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>

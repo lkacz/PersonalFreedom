@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Timeworn Backpack - Celestial starweave void bag variant -->
+  <defs>
+    <linearGradient id="voidCanvas" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1A237E"/>
+      <stop offset="50%" style="stop-color:#0D1B2A"/>
+      <stop offset="100%" style="stop-color:#0A0F14"/>
+    </linearGradient>
+    <linearGradient id="cosmicStrap" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#5C6BC0"/>
+      <stop offset="50%" style="stop-color:#3F51B5"/>
+      <stop offset="100%" style="stop-color:#5C6BC0"/>
+    </linearGradient>
+    <linearGradient id="starGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8EAF6"/>
+      <stop offset="100%" style="stop-color:#9FA8DA"/>
+    </linearGradient>
+    <filter id="cosmicGlow">
+      <feGaussianBlur stdDeviation="2.5" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Cosmic aura -->
+  <ellipse cx="32" cy="36" rx="24" ry="26" fill="url(#starGlow)" filter="url(#cosmicGlow)" opacity="0.12"/>
+  
+  <!-- Shadow -->
+  <ellipse cx="34" cy="60" rx="18" ry="3" fill="#00000020"/>
+  
+  <!-- Straps (cosmic blue) -->
+  <path d="M18 20 L14 58" stroke="url(#cosmicStrap)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M46 20 L50 58" stroke="url(#cosmicStrap)" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Main backpack body (void/night sky) -->
+  <path d="M14 18 Q12 24, 14 46 Q16 56, 32 58 Q48 56, 50 46 Q52 24, 50 18 Q46 10, 32 8 Q18 10, 14 18" 
+        fill="url(#voidCanvas)" stroke="#3F51B5" stroke-width="1.5"/>
+  
+  <!-- Stars in the void (the infinite pockets) - twinkling like distant galaxies -->
+  <g fill="white" filter="url(#cosmicGlow)">
+    <circle cx="22" cy="26" r="1" opacity="0.9">
+      <animate attributeName="opacity" values="0.9;0.3;0.9;0.6;0.9" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="1;1.4;1;0.8;1" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="28" cy="38" r="1.2" opacity="0.8">
+      <animate attributeName="opacity" values="0.8;0.5;1;0.3;0.8" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="38" cy="32" r="0.8" opacity="0.9">
+      <animate attributeName="opacity" values="0.9;0.2;0.9;0.7;0.9" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="42" cy="44" r="1" opacity="0.7">
+      <animate attributeName="opacity" values="0.7;1;0.4;0.7;1;0.7" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="1;1.3;1;0.7;1" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="20" cy="48" r="0.6" opacity="0.8">
+      <animate attributeName="opacity" values="0.8;0.2;0.8;0.5;0.8" dur="2.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="34" cy="22" r="0.8" opacity="0.6">
+      <animate attributeName="opacity" values="0.6;1;0.3;0.6;0.9;0.6" dur="4.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="44" cy="24" r="1.1" opacity="0.7">
+      <animate attributeName="opacity" values="0.7;0.3;0.9;0.5;0.7" dur="3.2s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="1.1;1.5;1.1;0.9;1.1" dur="3.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="26" cy="50" r="0.9" opacity="0.5">
+      <animate attributeName="opacity" values="0.5;0.9;0.3;0.7;0.5" dur="3.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Constellation lines - slowly tracing like being drawn by cosmic hand -->
+  <g stroke="#9FA8DA" stroke-width="0.3" fill="none" opacity="0.4">
+    <path d="M22 26 L28 38 L34 22" stroke-dasharray="30" stroke-dashoffset="0">
+      <animate attributeName="stroke-dashoffset" values="30;0;0;30" dur="8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.4;0.6;0.4;0" dur="8s" repeatCount="indefinite"/>
+    </path>
+    <path d="M38 32 L42 44" stroke-dasharray="20" stroke-dashoffset="0">
+      <animate attributeName="stroke-dashoffset" values="20;0;0;20" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.5;0.5;0" dur="6s" repeatCount="indefinite"/>
+    </path>
+    <path d="M44 24 L42 44" stroke-dasharray="25" stroke-dashoffset="0">
+      <animate attributeName="stroke-dashoffset" values="25;0;0;25" dur="7s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.4;0.4;0" dur="7s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Silver stitching repair patches (cosmic character) -->
+  <g stroke="#C5CAE9" stroke-width="0.5" fill="none">
+    <rect x="18" y="28" width="8" height="10" rx="1"/>
+    <path d="M18 30 L26 30 M18 34 L26 34"/>
+    <rect x="36" y="38" width="10" height="8" rx="1"/>
+    <path d="M38 38 L38 46 M42 38 L42 46"/>
+  </g>
+  
+  <!-- Flap top (dark void) -->
+  <path d="M16 18 Q18 12, 32 10 Q46 12, 48 18 L48 24 Q32 28, 16 24 Z" 
+        fill="url(#voidCanvas)" stroke="#3F51B5" stroke-width="1"/>
+  
+  <!-- Moon buckle on flap (silver) - lunar phase glow cycle -->
+  <ellipse cx="32" cy="18" rx="5" ry="4" fill="#E8EAF6" filter="url(#cosmicGlow)">
+    <animate attributeName="opacity" values="0.7;1;0.9;0.7;0.8;1;0.7" dur="10s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="34" cy="18" rx="3" ry="2.5" fill="url(#voidCanvas)">
+    <animate attributeName="rx" values="3;2.5;1.5;0.5;1.5;2.5;3" dur="10s" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Side pocket (glowing) -->
+  <rect x="8" y="32" width="6" height="12" rx="2" fill="#3F51B5" stroke="#5C6BC0" stroke-width="0.5"/>
+  <ellipse cx="11" cy="38" rx="2" ry="1.5" fill="#9FA8DA" opacity="0.5"/>
+  
+  <!-- Sparkles around bag -->
+  <circle cx="6" cy="20" r="1.5" fill="white" opacity="0.8"/>
+  <circle cx="58" cy="16" r="1" fill="#E8EAF6" opacity="0.6"/>
+  <circle cx="8" cy="52" r="1.2" fill="#9FA8DA" opacity="0.5"/>
+  <circle cx="56" cy="44" r="0.8" fill="white" opacity="0.7"/>
+</svg>

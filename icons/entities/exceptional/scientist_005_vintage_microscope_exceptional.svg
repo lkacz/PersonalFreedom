@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- EXCEPTIONAL Vintage Microscope - Crystalline moonsilver microscope variant -->
+  <defs>
+    <linearGradient id="moonsilver" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8EAF6"/>
+      <stop offset="30%" style="stop-color:#C5CAE9"/>
+      <stop offset="70%" style="stop-color:#9FA8DA"/>
+      <stop offset="100%" style="stop-color:#7986CB"/>
+    </linearGradient>
+    <linearGradient id="crystalLens" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E1BEE7"/>
+      <stop offset="50%" style="stop-color:#CE93D8"/>
+      <stop offset="100%" style="stop-color:#BA68C8"/>
+    </linearGradient>
+    <linearGradient id="lunarGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8EAF6"/>
+      <stop offset="100%" style="stop-color:#C5CAE9"/>
+    </linearGradient>
+    <filter id="moonGlow">
+      <feGaussianBlur stdDeviation="2" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Lunar aura -->
+  <ellipse cx="32" cy="36" rx="26" ry="26" fill="url(#lunarGlow)" filter="url(#moonGlow)" opacity="0.18"/>
+  
+  <!-- Heavy base (moonsilver) -->
+  <path d="M12 56 Q12 60, 16 60 L48 60 Q52 60, 52 56 L52 52 L12 52 Z" fill="url(#moonsilver)" filter="url(#moonGlow)"/>
+  <rect x="14" y="50" width="36" height="4" fill="#C5CAE9"/>
+  
+  <!-- Rune engravings on base - pulsing with moon magic -->
+  <text x="20" y="58" fill="#7986CB" font-size="4" opacity="0.5">
+    <animate attributeName="opacity" values="0.5;0.9;0.5;0.3;0.5" dur="3s" repeatCount="indefinite"/>
+    ✧
+  </text>
+  <text x="40" y="58" fill="#7986CB" font-size="4" opacity="0.5">
+    <animate attributeName="opacity" values="0.3;0.5;0.9;0.5;0.3" dur="3s" repeatCount="indefinite"/>
+    ✧
+  </text>
+  
+  <!-- Stage (crystal platform) -->
+  <rect x="20" y="42" width="24" height="4" rx="1" fill="url(#moonsilver)"/>
+  <rect x="22" y="40" width="20" height="4" fill="#1A1A2E"/>
+  
+  <!-- Stage clips (silver) -->
+  <rect x="18" y="42" width="4" height="2" fill="#9FA8DA"/>
+  <rect x="42" y="42" width="4" height="2" fill="#9FA8DA"/>
+  
+  <!-- Crystal slide on stage (glowing) -->
+  <rect x="24" y="41" width="16" height="3" fill="url(#crystalLens)" opacity="0.8" filter="url(#moonGlow)"/>
+  
+  <!-- Pillar/arm (silver with engravings) -->
+  <rect x="28" y="20" width="8" height="26" fill="url(#moonsilver)"/>
+  <g stroke="#7986CB" stroke-width="0.5" opacity="0.4">
+    <line x1="30" y1="24" x2="30" y2="44"/>
+    <line x1="34" y1="24" x2="34" y2="44"/>
+  </g>
+  
+  <!-- Curved arm at top -->
+  <path d="M28 20 Q28 12, 32 10 Q36 8, 38 14 L38 20 Z" fill="url(#moonsilver)"/>
+  
+  <!-- Eyepiece tube (crystal topped) -->
+  <rect x="30" y="4" width="8" height="10" rx="2" fill="url(#moonsilver)"/>
+  <ellipse cx="34" cy="4" rx="5" ry="2" fill="#C5CAE9"/>
+  <ellipse cx="34" cy="3" rx="4" ry="1.5" fill="url(#crystalLens)" filter="url(#moonGlow)"/>
+  
+  <!-- Objective lenses (magical crystal) -->
+  <circle cx="32" cy="36" r="6" fill="#1A1A2E"/>
+  <rect x="30" y="36" width="4" height="8" rx="1" fill="url(#moonsilver)"/>
+  <circle cx="32" cy="44" r="2" fill="url(#crystalLens)" filter="url(#moonGlow)"/>
+  
+  <!-- Focus knobs (silver) -->
+  <circle cx="24" cy="32" r="4" fill="url(#moonsilver)"/>
+  <circle cx="24" cy="32" r="2" fill="#9FA8DA"/>
+  <circle cx="40" cy="32" r="4" fill="url(#moonsilver)"/>
+  <circle cx="40" cy="32" r="2" fill="#9FA8DA"/>
+  
+  <!-- Moon phases decorating the arm - glowing softly -->
+  <circle cx="32" cy="16" r="1.5" fill="white" filter="url(#moonGlow)">
+    <animate attributeName="r" values="1.5;2;1.5;1.8;1.5" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0.8;1;0.9;1" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Sparkles - twinkling with lunar light -->
+  <circle cx="10" cy="44" r="1.5" fill="white" opacity="0.9">
+    <animate attributeName="opacity" values="0.9;0.5;0.9;1;0.9" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="r" values="1.5;2;1.5;1.3;1.5" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="54" cy="46" r="1" fill="#E1BEE7" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;1;0.8;0.5;0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="8" cy="28" r="1.2" fill="#C5CAE9" opacity="0.7">
+    <animate attributeName="opacity" values="0.7;1;0.7;0.4;0.7" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="56" cy="24" r="0.8" fill="white" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.9;0.6;0.3;0.6" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+</svg>

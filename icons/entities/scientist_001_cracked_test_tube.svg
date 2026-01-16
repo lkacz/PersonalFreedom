@@ -28,10 +28,19 @@
   <!-- Liquid inside (partial fill) -->
   <path d="M26 32 L26 48 Q26 54, 32 54 Q38 54, 38 48 L38 32 Z" fill="url(#liquidBlue)" opacity="0.8"/>
   
-  <!-- Bubbles in liquid -->
-  <circle cx="30" cy="44" r="2" fill="white" opacity="0.5"/>
-  <circle cx="34" cy="48" r="1.5" fill="white" opacity="0.4"/>
-  <circle cx="32" cy="38" r="1" fill="white" opacity="0.3"/>
+  <!-- Bubbles in liquid - rising -->
+  <circle cx="30" cy="44" r="2" fill="white" opacity="0.5">
+    <animate attributeName="cy" values="44;38;32;44" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.7;0.2;0.5" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="34" cy="48" r="1.5" fill="white" opacity="0.4">
+    <animate attributeName="cy" values="48;42;36;48" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.6;0.1;0.4" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="32" cy="38" r="1" fill="white" opacity="0.3">
+    <animate attributeName="cy" values="38;34;30;38" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.5;0.1;0.3" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
   
   <!-- THE CRACK (small but visible) -->
   <path d="M36 20 L38 24 L36 28 L39 32" stroke="#455A64" stroke-width="1" fill="none" stroke-linecap="round"/>
@@ -46,10 +55,14 @@
   <line x1="29" y1="18" x2="35" y2="18" stroke="#78909C" stroke-width="0.5"/>
   <line x1="29" y1="20" x2="33" y2="20" stroke="#78909C" stroke-width="0.5"/>
   
-  <!-- Sparkle (it works despite crack!) -->
+  <!-- Sparkle (it works despite crack!) - twinkling -->
   <g fill="#FFD54F" opacity="0.7">
-    <circle cx="42" cy="16" r="1.5"/>
-    <circle cx="44" cy="20" r="1"/>
+    <circle cx="42" cy="16" r="1.5">
+      <animate attributeName="opacity" values="0.7;0.3;0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="44" cy="20" r="1">
+      <animate attributeName="opacity" values="0.5;0.9;0.5;0.2;0.5" dur="1.2s" repeatCount="indefinite"/>
+    </circle>
   </g>
   
   <!-- Tiny smiley reflection (optimistic tube) -->

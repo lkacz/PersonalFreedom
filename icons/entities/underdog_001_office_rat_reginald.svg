@@ -35,11 +35,31 @@
   <circle cx="46" cy="24" r="5" fill="#BDBDBD"/>
   <circle cx="46" cy="24" r="3" fill="#F8BBD9"/>
   
-  <!-- Friendly eyes (big and cute) -->
-  <circle cx="34" cy="30" r="4" fill="#212121"/>
-  <circle cx="35" cy="29" r="1.5" fill="white"/>
-  <circle cx="42" cy="30" r="3" fill="#212121"/>
-  <circle cx="43" cy="29" r="1" fill="white"/>
+  <!-- Friendly eyes (big and cute) with saccadic movement -->
+  <circle cx="34" cy="30" r="4" fill="#212121">
+    <animate attributeName="cx" values="34;34;35;34;33;34;34" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="30;30;29;30;30;31;30" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="35" cy="29" r="1.5" fill="white">
+    <animate attributeName="cx" values="35;35;36;35;34;35;35" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="29;29;28;29;29;30;29" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <!-- Left eye blink -->
+  <ellipse cx="34" cy="30" rx="4" ry="0" fill="#9E9E9E">
+    <animate attributeName="ry" values="0;4;0" keyTimes="0;0.98;1" dur="5.7s" begin="0.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
+  <circle cx="42" cy="30" r="3" fill="#212121">
+    <animate attributeName="cx" values="42;42;43;42;41;42;42" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="30;30;29;30;30;31;30" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="43" cy="29" r="1" fill="white">
+    <animate attributeName="cx" values="43;43;44;43;42;43;43" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="29;29;28;29;29;30;29" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+  </circle>
+  <!-- Right eye blink -->
+  <ellipse cx="42" cy="30" rx="3" ry="0" fill="#9E9E9E">
+    <animate attributeName="ry" values="0;3;0" keyTimes="0;0.98;1" dur="5.7s" begin="0.4s" calcMode="discrete" repeatCount="indefinite"/>
+  </ellipse>
   
   <!-- Pink nose -->
   <ellipse cx="46" cy="34" rx="2" ry="1.5" fill="#F48FB1"/>
@@ -53,8 +73,10 @@
   <ellipse cx="26" cy="38" rx="3" ry="2" fill="#BDBDBD"/>
   <ellipse cx="34" cy="38" rx="3" ry="2" fill="#BDBDBD"/>
   
-  <!-- Tail curling out -->
-  <path d="M20 44 Q12 48, 8 44 Q4 40, 8 36" stroke="#757575" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Tail curling out - animated -->
+  <path d="M20 44 Q12 48, 8 44 Q4 40, 8 36" stroke="#757575" stroke-width="2.5" fill="none" stroke-linecap="round">
+    <animate attributeName="d" values="M20 44 Q12 48, 8 44 Q4 40, 8 36;M20 44 Q10 50, 6 46 Q2 42, 6 38;M20 44 Q12 48, 8 44 Q4 40, 8 36" dur="1.5s" repeatCount="indefinite"/>
+  </path>
   
   <!-- Tiny crumb being held -->
   <circle cx="30" cy="36" r="2" fill="#FFCC80"/>

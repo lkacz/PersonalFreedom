@@ -7,11 +7,56 @@ the reliable lottery animation.
 """
 
 import os
+from pathlib import Path
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtSvgWidgets import QSvgWidget
 from lottery_animation import LotteryRollDialog
 import random
 from typing import Callable, Optional
+
+# Path constants for entity SVGs
+ENTITY_ICONS_PATH = Path(__file__).parent / "icons" / "entities"
+EXCEPTIONAL_ICONS_PATH = ENTITY_ICONS_PATH / "exceptional"
+
+
+def _resolve_entity_svg_path(entity, is_exceptional: bool = False) -> Optional[str]:
+    """
+    Resolve the SVG path for an entity.
+    
+    Args:
+        entity: The Entity object
+        is_exceptional: If True, look for exceptional variant first
+    
+    Returns:
+        Path to SVG file or None if not found
+    """
+    name_snake = entity.name.lower().replace(" ", "_").replace("-", "_").replace("'", "")
+    
+    # If exceptional, try to find the exceptional variant first
+    if is_exceptional and EXCEPTIONAL_ICONS_PATH.exists():
+        # Try filename pattern {id}_{name_snake_case}_exceptional.svg
+        exceptional_path = EXCEPTIONAL_ICONS_PATH / f"{entity.id}_{name_snake}_exceptional.svg"
+        if exceptional_path.exists():
+            return str(exceptional_path)
+        
+        # Search for file starting with entity id in exceptional folder
+        for svg_file in EXCEPTIONAL_ICONS_PATH.glob(f"{entity.id}*_exceptional.svg"):
+            return str(svg_file)
+    
+    # Fall back to regular SVG resolution
+    # Try filename pattern {id}_{name_snake_case}.svg
+    pattern_path = ENTITY_ICONS_PATH / f"{entity.id}_{name_snake}.svg"
+    if pattern_path.exists():
+        return str(pattern_path)
+    
+    # Search for file starting with entity id
+    if ENTITY_ICONS_PATH.exists():
+        for svg_file in ENTITY_ICONS_PATH.glob(f"{entity.id}*.svg"):
+            # Skip exceptional variants
+            if "_exceptional" not in svg_file.name:
+                return str(svg_file)
+    
+    return None
 
 
 class EntityEncounterDialog(QtWidgets.QDialog):
@@ -83,32 +128,10 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         svg_widget = QSvgWidget()
         svg_widget.setFixedSize(120, 120)
         
-        # Load SVG - try multiple path patterns
-        svg_loaded = False
-        icon_path = getattr(self.entity, 'icon_path', '')
-        
-        # 1. Try direct icon_path from entity
-        if icon_path and os.path.exists(icon_path):
-            svg_widget.load(icon_path)
-            svg_loaded = True
-        
-        if not svg_loaded:
-            # 2. Try filename pattern: {id}_{name_snake_case}.svg
-            name_snake = self.entity.name.lower().replace(" ", "_").replace("-", "_")
-            pattern_path = os.path.join("icons", "entities", f"{self.entity.id}_{name_snake}.svg")
-            if os.path.exists(pattern_path):
-                svg_widget.load(pattern_path)
-                svg_loaded = True
-        
-        if not svg_loaded:
-            # 3. Try searching for file starting with entity id
-            icons_dir = os.path.join("icons", "entities")
-            if os.path.isdir(icons_dir):
-                for filename in os.listdir(icons_dir):
-                    if filename.startswith(self.entity.id + "_") and filename.endswith(".svg"):
-                        svg_widget.load(os.path.join(icons_dir, filename))
-                        svg_loaded = True
-                        break
+        # Load SVG using the helper function (normal variant for encounter)
+        svg_path = _resolve_entity_svg_path(self.entity, is_exceptional=False)
+        if svg_path:
+            svg_widget.load(svg_path)
         
         svg_layout.addWidget(svg_widget, alignment=QtCore.Qt.AlignCenter)
         layout.addWidget(svg_container, alignment=QtCore.Qt.AlignCenter)
@@ -267,39 +290,122 @@ def show_entity_encounter(entity, join_probability: float,
 
 
 def _show_exceptional_celebration(entity, exceptional_colors: dict, parent: QtWidgets.QWidget):
-    """Show special celebration dialog for catching an exceptional entity."""
+    """Show special celebration dialog for catching an exceptional entity with its unique SVG."""
     border_col = exceptional_colors.get("border", "#FFD700") if exceptional_colors else "#FFD700"
     glow_col = exceptional_colors.get("glow", "#FF6B9D") if exceptional_colors else "#FF6B9D"
     
-    msg_box = QtWidgets.QMessageBox(parent)
-    msg_box.setWindowTitle("🌟 EXCEPTIONAL! 🌟")
-    msg_box.setText(f"<h2 style='color: {border_col};'>✨ EXCEPTIONAL {entity.name}! ✨</h2>")
-    msg_box.setInformativeText(
-        f"<p style='font-size: 14px;'>You found an <b>EXCEPTIONAL</b> variant!</p>"
-        f"<p style='font-size: 12px; color: #888;'>Only 5% of caught entities become Exceptional. "
-        f"This one has unique colors that no other player will have!</p>"
-        f"<p style='font-size: 12px;'>Border: <span style='color: {border_col};'>■ {border_col}</span><br>"
-        f"Glow: <span style='color: {glow_col};'>■ {glow_col}</span></p>"
+    # Create a custom dialog to show the exceptional SVG
+    dialog = QtWidgets.QDialog(parent)
+    dialog.setWindowTitle("🌟 EXCEPTIONAL! 🌟")
+    dialog.setFixedSize(380, 500)
+    dialog.setModal(True)
+    
+    layout = QtWidgets.QVBoxLayout(dialog)
+    layout.setSpacing(15)
+    layout.setContentsMargins(20, 20, 20, 20)
+    
+    # Title
+    title = QtWidgets.QLabel(f"✨ EXCEPTIONAL {entity.name}! ✨")
+    title.setAlignment(QtCore.Qt.AlignCenter)
+    title.setWordWrap(True)
+    title.setStyleSheet(f"""
+        font-size: 22px;
+        font-weight: bold;
+        color: {border_col};
+    """)
+    layout.addWidget(title)
+    
+    # SVG Container with glow effect
+    svg_container = QtWidgets.QFrame()
+    svg_container.setFixedSize(180, 180)
+    svg_container.setStyleSheet(f"""
+        QFrame {{
+            background: qradialgradient(cx:0.5, cy:0.5, radius:0.8,
+                fx:0.5, fy:0.5,
+                stop:0 {glow_col}40, stop:0.5 {border_col}20, stop:1 #1a1a2e);
+            border: 3px solid {border_col};
+            border-radius: 16px;
+        }}
+    """)
+    svg_layout = QtWidgets.QVBoxLayout(svg_container)
+    svg_layout.setContentsMargins(15, 15, 15, 15)
+    
+    # Load the EXCEPTIONAL SVG variant
+    svg_widget = QSvgWidget()
+    svg_widget.setFixedSize(150, 150)
+    exceptional_svg_path = _resolve_entity_svg_path(entity, is_exceptional=True)
+    if exceptional_svg_path:
+        svg_widget.load(exceptional_svg_path)
+    svg_widget.setStyleSheet("background: transparent;")
+    svg_layout.addWidget(svg_widget, alignment=QtCore.Qt.AlignCenter)
+    
+    # Center the SVG container
+    svg_wrapper = QtWidgets.QWidget()
+    svg_wrapper_layout = QtWidgets.QHBoxLayout(svg_wrapper)
+    svg_wrapper_layout.addStretch()
+    svg_wrapper_layout.addWidget(svg_container)
+    svg_wrapper_layout.addStretch()
+    layout.addWidget(svg_wrapper)
+    
+    # Info text
+    info_label = QtWidgets.QLabel(
+        f"<p style='text-align: center; font-size: 14px;'>"
+        f"You found an <b>EXCEPTIONAL</b> variant!</p>"
+        f"<p style='text-align: center; font-size: 12px; color: #888;'>"
+        f"Only 5% of caught entities become Exceptional.<br>"
+        f"This one has a unique appearance!</p>"
     )
-    msg_box.setIcon(QtWidgets.QMessageBox.Information)
-    msg_box.setStyleSheet(f"""
-        QMessageBox {{
-            background-color: #1a1a2e;
-        }}
-        QMessageBox QLabel {{
-            color: #FFFFFF;
-        }}
+    info_label.setAlignment(QtCore.Qt.AlignCenter)
+    info_label.setStyleSheet("color: #FFFFFF;")
+    layout.addWidget(info_label)
+    
+    # Rarity badge
+    rarity_color = {
+        "common": "#7f8c8d", "uncommon": "#27ae60", "rare": "#2980b9",
+        "epic": "#8e44ad", "legendary": "#d35400"
+    }.get(entity.rarity.lower(), "#2c3e50")
+    
+    rarity_label = QtWidgets.QLabel(f"✨ EXCEPTIONAL {entity.rarity.upper()} ✨")
+    rarity_label.setAlignment(QtCore.Qt.AlignCenter)
+    rarity_label.setStyleSheet(f"""
+        font-size: 14px;
+        font-weight: bold;
+        color: {border_col};
+        padding: 8px 16px;
+        background: {border_col}30;
+        border: 2px solid {border_col};
+        border-radius: 8px;
+    """)
+    layout.addWidget(rarity_label, alignment=QtCore.Qt.AlignCenter)
+    
+    layout.addStretch()
+    
+    # OK button
+    ok_btn = QtWidgets.QPushButton("Amazing! 🎉")
+    ok_btn.setFixedHeight(44)
+    ok_btn.setStyleSheet(f"""
         QPushButton {{
             background-color: {border_col};
             color: #000000;
+            font-size: 16px;
             font-weight: bold;
             padding: 8px 20px;
-            border-radius: 4px;
-            min-width: 80px;
+            border-radius: 8px;
+            min-width: 120px;
         }}
         QPushButton:hover {{
             background-color: {glow_col};
         }}
     """)
-    msg_box.exec()
+    ok_btn.clicked.connect(dialog.accept)
+    layout.addWidget(ok_btn, alignment=QtCore.Qt.AlignCenter)
+    
+    # Dialog styling
+    dialog.setStyleSheet("""
+        QDialog {
+            background-color: #1a1a2e;
+        }
+    """)
+    
+    dialog.exec()
 
