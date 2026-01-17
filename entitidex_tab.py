@@ -2042,7 +2042,7 @@ class EntitidexTab(QtWidgets.QWidget):
         entity = item["entity"]
         enc_data = item["saved_encounter"]
         is_exceptional = enc_data.get("is_exceptional", False)
-        saved_probability = enc_data.get("saved_probability", 0.5)
+        saved_probability = enc_data.get("catch_probability", 0.5)
         
         # Card frame
         card = QtWidgets.QFrame()
@@ -2158,7 +2158,7 @@ class EntitidexTab(QtWidgets.QWidget):
         entity = item["entity"]
         enc_data = item["saved_encounter"]
         is_exceptional = enc_data.get("is_exceptional", False)
-        saved_probability = enc_data.get("saved_probability", 0.5)
+        saved_probability = enc_data.get("catch_probability", 0.5)
         
         # Create a bond callback that opens the saved encounter
         def bond_callback(entity_id: str) -> dict:
