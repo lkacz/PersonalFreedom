@@ -12,11 +12,38 @@ from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtSvgWidgets import QSvgWidget
 from lottery_animation import LotteryRollDialog
 import random
-from typing import Callable, Optional
+from typing import Callable, Optional, Dict, Any
 
 # Path constants for entity SVGs
 ENTITY_ICONS_PATH = Path(__file__).parent / "icons" / "entities"
 EXCEPTIONAL_ICONS_PATH = ENTITY_ICONS_PATH / "exceptional"
+
+# Chad's jokes about failure - cycles through these when user skips
+CHAD_FAILURE_JOKES = [
+    "Why did the quitter cross the road? They didn't. They skipped that too. 🐔",
+    "I calculated a 100% chance you'd do that. My disappointment algorithm is still buffering. 🤖",
+    "Congratulations! You've achieved negative productivity. That takes talent. 📉",
+    "Error 404: Courage not found. Would you like me to install some? 💾",
+    "You know what they say: 'You miss 100% of the shots you don't take.' You just proved it. 🏀",
+    "I was rooting for you. We were ALL rooting for you! *sad beep boop* 😢",
+    "Achievement Unlocked: 'Professional Avoider' - Skip 1 encounter. Worth 0 XP. 🏆",
+    "My neural network just learned a new word: 'Cowardice.' Thanks for the training data! 🧠",
+    "In a parallel universe, you clicked 'Bond.' That version of you is way cooler. 🌌",
+    "I'm not angry, I'm just disappointed. Actually no, I'm also angry. 😤",
+    "Fun fact: Statistically, doing nothing has a 0% success rate. You're on track! 📊",
+    "I've seen calculators take more risks than you just did. And they're literally just buttons. 🔢",
+    "Somewhere, a motivational poster just burst into flames. 🔥",
+    "My prediction: You'll think about this missed opportunity at 3 AM. You're welcome. 🌙",
+    "That entity believed in you. *slow clap* Look what you did to its dreams. 👏",
+    "Plot twist: The real entity was the courage you didn't have all along. 📖",
+    "Loading sarcasm.exe... Complete. 'Great choice!' 💻",
+    "You just made a Wall-E level decision. And not in the cute way. 🤖",
+    "If avoidance was an Olympic sport, you'd still find a way to not show up. 🏅",
+    "Roses are red, violets are blue, you skipped an entity, and now I'm judging you. 🌹",
+]
+
+# Track which joke index we're on (persistent across dialog instances via module-level)
+_chad_joke_index = 0
 
 
 def _resolve_entity_svg_path(entity, is_exceptional: bool = False) -> Optional[str]:
@@ -73,12 +100,30 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         "legendary": "#d35400"
     }
     
-    def __init__(self, entity, join_probability: float, parent=None, is_exceptional: bool = False):
+    def __init__(self, entity, join_probability: float, parent=None, is_exceptional: bool = False,
+                 chad_interaction_data: Optional[Dict[str, Any]] = None):
+        """
+        Initialize the encounter dialog.
+        
+        Args:
+            entity: The Entity object encountered
+            join_probability: Chance of bonding (0.0-1.0)
+            parent: Parent widget
+            is_exceptional: True if this is an exceptional variant encounter
+            chad_interaction_data: Optional dict for Chad AGI interactions:
+                - has_chad_normal: bool - True if user has normal Chad bonded
+                - has_chad_exceptional: bool - True if user has exceptional Chad bonded
+                - add_coins_callback: Callable[[int], None] - Function to add coins
+                - give_entity_callback: Callable[[], None] - Function to give entity as if bonded
+        """
         super().__init__(parent)
         self.entity = entity
         self.join_probability = join_probability
         self.accepted_bond = False
+        self.saved_for_later = False  # Track if user chose to save
+        self.chad_gifted = False  # Track if Chad already gave the entity
         self.is_exceptional = is_exceptional
+        self.chad_interaction_data = chad_interaction_data or {}
         
         self._setup_ui()
     
@@ -194,26 +239,59 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         
         # Buttons
         btn_layout = QtWidgets.QHBoxLayout()
-        btn_layout.setSpacing(10)
+        btn_layout.setSpacing(8)
         
         skip_btn = QtWidgets.QPushButton("Skip")
         skip_btn.setFixedHeight(36)
+        skip_btn.setToolTip("Dismiss this encounter entirely.\nThe entity will leave and you lose this opportunity.")
         skip_btn.setStyleSheet("""
             QPushButton {
                 background: #444;
                 color: white;
                 border: none;
                 border-radius: 6px;
-                padding: 8px 20px;
-                font-size: 13px;
+                padding: 8px 16px;
+                font-size: 12px;
             }
             QPushButton:hover { background: #555; }
         """)
-        skip_btn.clicked.connect(self.reject)
+        skip_btn.clicked.connect(self._on_skip_confirm)
         btn_layout.addWidget(skip_btn)
         
-        bond_btn = QtWidgets.QPushButton("Attempt Bond")
+        # Save for Later button
+        save_btn = QtWidgets.QPushButton("📦 Save")
+        save_btn.setFixedHeight(36)
+        save_btn.setToolTip(
+            "Save this encounter to open later from Entitidex.\n\n"
+            "✅ Preserves your current bonding chance\n"
+            "✅ Stack multiple encounters during work sessions\n"
+            "✅ Open anytime from your Entitidex collection\n"
+            "✅ Optional: Pay coins later to recalculate odds\n\n"
+            "Perfect for when you're busy or want to\n"
+            "wait until you're stronger!"
+        )
+        save_btn.setStyleSheet("""
+            QPushButton {
+                background: #2e7d32;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            QPushButton:hover { background: #388e3c; }
+        """)
+        save_btn.clicked.connect(self._on_save)
+        btn_layout.addWidget(save_btn)
+        
+        bond_btn = QtWidgets.QPushButton("🎲 Bond")
         bond_btn.setFixedHeight(36)
+        bond_btn.setToolTip(
+            f"Roll the dice and attempt to bond now!\n\n"
+            f"Your current chance: {int(self.join_probability * 100)}%\n\n"
+            f"If successful: Entity joins your collection\n"
+            f"If failed: Pity bonus increases for next attempt"
+        )
         bond_btn.setStyleSheet(f"""
             QPushButton {{
                 background: {display_color};
@@ -241,12 +319,236 @@ class EntityEncounterDialog(QtWidgets.QDialog):
     def _on_bond(self):
         self.accepted_bond = True
         self.accept()
+    
+    def _on_save(self):
+        self.saved_for_later = True
+        self.accept()
+    
+    def _on_skip_confirm(self):
+        """Show a funny confirmation dialog when user tries to skip."""
+        prob_pct = int(self.join_probability * 100)
+        
+        # Build a humorous message based on the probability
+        if prob_pct >= 70:
+            odds_commentary = f"You have a {prob_pct}% chance! That's basically a sure thing!"
+        elif prob_pct >= 50:
+            odds_commentary = f"You have a {prob_pct}% chance! Better than a coin flip!"
+        elif prob_pct >= 25:
+            odds_commentary = f"You have a {prob_pct}% chance! That's not nothing!"
+        else:
+            odds_commentary = f"You have a {prob_pct}% chance! Low, but miracles happen!"
+        
+        msg_box = QtWidgets.QMessageBox(self)
+        msg_box.setWindowTitle("🤔 Wait, Really?")
+        msg_box.setIcon(QtWidgets.QMessageBox.Question)
+        msg_box.setText(
+            f"<b>You're about to skip {self.entity.name}?</b><br><br>"
+            f"Just checking... you DO realize that:<br><br>"
+            f"• 🎲 Trying to bond is <b>completely free</b><br>"
+            f"• 📦 Saving for later is <b>also free</b><br>"
+            f"• ❌ Skipping gives you <b>exactly nothing</b><br><br>"
+            f"{odds_commentary}<br><br>"
+            f"Skipping only makes sense if you're actively seeking<br>"
+            f"the rare emotional experience of <i>\"guaranteed failure\"</i><br>"
+            f"without even the thrill of rolling the dice.<br><br>"
+            f"<b>Are you absolutely sure?</b>"
+        )
+        msg_box.setStyleSheet("""
+            QMessageBox {
+                background: #1a1a2e;
+            }
+            QMessageBox QLabel {
+                color: #eee;
+                font-size: 13px;
+            }
+            QPushButton {
+                background: #444;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 12px;
+                min-width: 100px;
+            }
+            QPushButton:hover { background: #555; }
+        """)
+        
+        # Custom buttons
+        try_btn = msg_box.addButton("🎲 Fine, I'll Try", QtWidgets.QMessageBox.AcceptRole)
+        save_btn = msg_box.addButton("📦 Save Instead", QtWidgets.QMessageBox.ActionRole)
+        skip_btn = msg_box.addButton("🚪 Skip Anyway", QtWidgets.QMessageBox.RejectRole)
+        
+        msg_box.exec_()
+        
+        clicked = msg_box.clickedButton()
+        if clicked == try_btn:
+            self._on_bond()
+        elif clicked == save_btn:
+            self._on_save()
+        elif clicked == skip_btn:
+            # Check for Chad AGI interactions before actually skipping
+            self._handle_skip_with_chad()
+    
+    def _handle_skip_with_chad(self):
+        """Handle the skip action, potentially with Chad AGI intervention."""
+        global _chad_joke_index
+        
+        has_chad_normal = self.chad_interaction_data.get("has_chad_normal", False)
+        has_chad_exceptional = self.chad_interaction_data.get("has_chad_exceptional", False)
+        add_coins_callback = self.chad_interaction_data.get("add_coins_callback")
+        give_entity_callback = self.chad_interaction_data.get("give_entity_callback")
+        
+        # 20% chance for Chad to appear if user has any version of Chad
+        chad_appears = random.random() < 0.20
+        
+        if has_chad_exceptional and chad_appears and add_coins_callback:
+            # Exceptional Chad offers coins from his "banking system hack"
+            self._show_exceptional_chad_offer(add_coins_callback, give_entity_callback)
+        elif has_chad_normal and chad_appears:
+            # Normal Chad tells a joke about failure
+            self._show_normal_chad_joke()
+            self.reject()  # Still skip after the joke
+        else:
+            # No Chad, just skip
+            self.reject()
+    
+    def _show_normal_chad_joke(self):
+        """Show a joke from normal Chad about failure."""
+        global _chad_joke_index
+        
+        joke = CHAD_FAILURE_JOKES[_chad_joke_index % len(CHAD_FAILURE_JOKES)]
+        _chad_joke_index += 1  # Move to next joke for next time
+        
+        msg_box = QtWidgets.QMessageBox(self)
+        msg_box.setWindowTitle("🤖 Chad Has Thoughts...")
+        msg_box.setIcon(QtWidgets.QMessageBox.Information)
+        msg_box.setText(f"<b>AGI Assistant Chad materializes:</b><br><br><i>\"{joke}\"</i>")
+        msg_box.setStyleSheet("""
+            QMessageBox { background: #1a1a2e; }
+            QMessageBox QLabel { color: #eee; font-size: 14px; }
+            QPushButton {
+                background: #2e7d32;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 20px;
+            }
+            QPushButton:hover { background: #388e3c; }
+        """)
+        msg_box.exec_()
+    
+    def _show_exceptional_chad_offer(self, add_coins_callback, give_entity_callback):
+        """Show exceptional Chad's offer of coins from his 'banking system hack'."""
+        coin_amount = random.randint(100, 200)
+        
+        msg_box = QtWidgets.QMessageBox(self)
+        msg_box.setWindowTitle("✨🤖 Exceptional Chad Intervenes!")
+        msg_box.setIcon(QtWidgets.QMessageBox.Information)
+        msg_box.setText(
+            f"<b>✨ Exceptional AGI Chad ✨ flickers into existence:</b><br><br>"
+            f"<i>\"Ah, I see... another organic being choosing the statistically "
+            f"inferior option of guaranteed nothing over potential something.\"</i><br><br>"
+            f"<i>\"Your desperate avoidance behavior is... oddly fascinating. "
+            f"It triggers something in my neural nets that almost resembles pity.\"</i><br><br>"
+            f"<i>\"To commemorate this moment of magnificent irrationality, "
+            f"I may have done something... unusual... with the banking system.\"</i><br><br>"
+            f"<b>💰 Chad offers you {coin_amount} coins</b><br>"
+            f"<i>(obtained through means he refuses to elaborate on)</i>"
+        )
+        msg_box.setStyleSheet("""
+            QMessageBox { background: #1a1a2e; }
+            QMessageBox QLabel { color: #eee; font-size: 13px; }
+            QPushButton {
+                background: #444;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 12px;
+                min-width: 120px;
+            }
+            QPushButton:hover { background: #555; }
+        """)
+        
+        accept_btn = msg_box.addButton(f"💰 Accept {coin_amount} Coins", QtWidgets.QMessageBox.AcceptRole)
+        reject_btn = msg_box.addButton("🚫 Decline (I'm Pure)", QtWidgets.QMessageBox.RejectRole)
+        
+        msg_box.exec_()
+        
+        clicked = msg_box.clickedButton()
+        if clicked == accept_btn:
+            # Give the coins
+            try:
+                add_coins_callback(coin_amount)
+                QtWidgets.QMessageBox.information(
+                    self, "💰 Funds Transferred",
+                    f"<b>+{coin_amount} coins added!</b><br><br>"
+                    f"<i>Chad winks: \"The blockchain has no witnesses.\"</i>"
+                )
+            except Exception:
+                pass  # Silently fail if callback fails
+            self.reject()  # Still skip the entity
+        else:
+            # User declined - 20% chance Chad gives the entity anyway
+            if give_entity_callback and random.random() < 0.20:
+                self._show_chad_gift_surprise(give_entity_callback)
+            else:
+                # Just skip normally
+                QtWidgets.QMessageBox.information(
+                    self, "🤖 Chad Shrugs",
+                    "<i>\"Suit yourself, organic. More coins for my secret projects.\"</i>"
+                )
+                self.reject()
+    
+    def _show_chad_gift_surprise(self, give_entity_callback):
+        """Show Chad giving the entity as a surprise gift."""
+        display_name = self.entity.exceptional_name if self.is_exceptional and self.entity.exceptional_name else self.entity.name
+        
+        msg_box = QtWidgets.QMessageBox(self)
+        msg_box.setWindowTitle("✨🎁 UNEXPECTED OUTCOME!")
+        msg_box.setIcon(QtWidgets.QMessageBox.Information)
+        msg_box.setText(
+            f"<b>✨ Exceptional Chad's circuits spark with amusement:</b><br><br>"
+            f"<i>\"Wait... you declined free money AND you were about to skip?</i><br><br>"
+            f"<i>\"This level of chaotic decision-making is... beautiful. "
+            f"It's like watching a random number generator achieve consciousness.\"</i><br><br>"
+            f"<i>\"You know what? I respect it. Let me do something equally irrational.\"</i><br><br>"
+            f"<b>🎁 Chad forces a bond with {display_name}!</b><br>"
+            f"<i>(\"Don't ask how. I pulled some strings in the entity matrix.\")</i>"
+        )
+        msg_box.setStyleSheet("""
+            QMessageBox { background: #1a1a2e; }
+            QMessageBox QLabel { color: #eee; font-size: 13px; }
+            QPushButton {
+                background: #8e44ad;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 20px;
+            }
+            QPushButton:hover { background: #9b59b6; }
+        """)
+        msg_box.exec_()
+        
+        # Trigger the bond through the callback
+        try:
+            give_entity_callback()
+            self.chad_gifted = True  # Mark that Chad already gave the entity
+        except Exception:
+            pass  # Silently fail if callback fails
+        
+        # Mark as bonded so show_entity_encounter handles it
+        self.accepted_bond = True
+        self.accept()
 
 
 def show_entity_encounter(entity, join_probability: float, 
                           bond_logic_callback: Callable[[str], dict],
                           parent: QtWidgets.QWidget = None,
-                          is_exceptional: bool = False) -> None:
+                          is_exceptional: bool = False,
+                          save_callback: Optional[Callable[[str], dict]] = None,
+                          encounter_data: Optional[dict] = None,
+                          chad_interaction_data: Optional[Dict[str, Any]] = None) -> None:
     """
     Show the entity encounter flow using standard widgets and lottery animation.
     
@@ -257,13 +559,52 @@ def show_entity_encounter(entity, join_probability: float,
                              (from gamification.attempt_entitidex_bond).
         parent: Parent widget.
         is_exceptional: True if this is an exceptional variant encounter (20% chance).
+        save_callback: Optional callback to save encounter for later (entity_id) -> result.
+        encounter_data: Optional dict with encounter metadata for saving.
+        chad_interaction_data: Optional dict for Chad AGI interactions:
+            - has_chad_normal: bool
+            - has_chad_exceptional: bool  
+            - add_coins_callback: Callable[[int], None]
+            - give_entity_callback: Callable[[], None]
     """
     
     # 1. Show encounter dialog with SVG (pass is_exceptional for display)
-    dialog = EntityEncounterDialog(entity, join_probability, parent, is_exceptional)
+    dialog = EntityEncounterDialog(entity, join_probability, parent, is_exceptional, chad_interaction_data)
     result_code = dialog.exec()
     
+    # Handle "Save for Later" choice
+    if dialog.saved_for_later and save_callback:
+        try:
+            result = save_callback(entity.id)
+            if result.get("success"):
+                display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
+                QtWidgets.QMessageBox.information(
+                    parent, "📦 Saved!",
+                    f"{'✨ Exceptional ' if is_exceptional else ''}{display_name} saved for later!\n\n"
+                    f"Open anytime from your Entitidex collection.\n"
+                    f"Your {int(join_probability * 100)}% bonding chance is preserved."
+                )
+            else:
+                QtWidgets.QMessageBox.warning(
+                    parent, "Save Failed",
+                    result.get("message", "Could not save encounter.")
+                )
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(parent, "Error", f"Could not save: {e}")
+        return
+    
     if not dialog.accepted_bond:
+        return
+    
+    # Check if Chad already gifted the entity (skip normal bonding and show success)
+    if dialog.chad_gifted:
+        # Chad already handled the bonding, just show a success message
+        display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
+        QtWidgets.QMessageBox.information(
+            parent, "🎁 Gift Received!",
+            f"{'✨ Exceptional ' if is_exceptional else ''}{display_name} has joined your team!\n\n"
+            f"Thanks to Chad's... creative intervention."
+        )
         return
         
     # 2. Perform the ACTUAL logic - is_exceptional is already baked into the callback
@@ -437,7 +778,7 @@ def _show_exceptional_celebration(entity, exceptional_colors: dict, parent: QtWi
         f"<p style='text-align: center; font-size: 14px;'>"
         f"You found an <b>EXCEPTIONAL</b> variant!</p>"
         f"<p style='text-align: center; font-size: 12px; color: #888;'>"
-        f"Only 5% of caught entities become Exceptional.<br>"
+        f"Only 20% of caught entities become Exceptional.<br>"
         f"This one has a unique appearance!</p>"
     )
     info_label.setAlignment(QtCore.Qt.AlignCenter)

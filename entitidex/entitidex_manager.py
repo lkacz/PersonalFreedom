@@ -250,6 +250,7 @@ class EntitidexManager:
         is_first = not self.progress.is_encountered(entity.id)
         self.progress.record_encounter(entity.id)
         self._current_encounter = entity
+        self._current_encounter_is_exceptional = False  # Debug encounters default to normal
         
         failed_attempts = self.progress.get_failed_attempts(entity.id)
         

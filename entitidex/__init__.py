@@ -5,7 +5,7 @@ A Pokemon Go-style collection feature where users encounter and bond with
 story-themed entities after completing focus sessions.
 """
 
-from .entity import Entity, EntityCapture
+from .entity import Entity, EntityCapture, SavedEncounter
 from .entity_pools import ENTITY_POOLS, get_entities_for_story, get_entity_by_id
 from .catch_mechanics import (
     calculate_join_probability,
@@ -26,6 +26,7 @@ __all__ = [
     # Data models
     "Entity",
     "EntityCapture",
+    "SavedEncounter",
     "EntitidexProgress",
     # Entity data
     "ENTITY_POOLS",
