@@ -5,7 +5,7 @@ import platform
 import copy
 import math
 from pathlib import Path
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 from datetime import datetime, timedelta
 
 try:
@@ -2113,6 +2113,7 @@ class TimerTab(QtWidgets.QWidget):
                     is_exceptional=encounter_is_exceptional,
                     save_callback=save_callback_wrapper,
                     chad_interaction_data=chad_interaction_data,
+                    coin_data=self._get_coin_data(),
                 )
             except ImportError:
                  logger.error("Could not import entity_drop_dialog logic")
@@ -2122,6 +2123,31 @@ class TimerTab(QtWidgets.QWidget):
             logger.debug(f"Entitidex not available: {e}")
         except Exception as e:
             logger.warning(f"Error checking entitidex encounter: {e}")
+
+    def _get_coin_data(self) -> Optional[Dict[str, Any]]:
+        """
+        Get coin operation callbacks for special entity bonding rewards.
+        
+        Returns:
+            Dict with get_coins_callback and add_coins_callback, or None if unavailable.
+        """
+        try:
+            from game_state import get_game_state
+            gs = get_game_state()
+            if gs:
+                def get_coins_callback() -> int:
+                    return gs.coins
+                
+                def add_coins_callback(amount: int) -> None:
+                    gs.add_coins(amount)
+                
+                return {
+                    "get_coins_callback": get_coins_callback,
+                    "add_coins_callback": add_coins_callback,
+                }
+        except Exception as e:
+            logger.debug(f"Could not get coin data: {e}")
+        return None
 
     def _show_inventory_dialog(self) -> None:
         """Show inventory management dialog."""
@@ -5754,6 +5780,93 @@ class WeightTab(QtWidgets.QWidget):
         rewards_layout.addWidget(rewards_info)
         layout.addWidget(rewards_group)
         
+        # =====================================================================
+        # Rodent Tips Section - Shows daily weight control tips when any rodent is collected
+        # Requires scientist_009 (White Mouse Archimedes) for translation from "rodent language"
+        # =====================================================================
+        self.rodent_tips_section = QtWidgets.QFrame()
+        self.rodent_tips_section.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #3a3a2a, stop:1 #252518);
+                border: 2px solid #8b7355;
+                border-radius: 8px;
+                padding: 6px;
+            }
+        """)
+        rodent_tips_layout = QtWidgets.QHBoxLayout(self.rodent_tips_section)
+        rodent_tips_layout.setContentsMargins(8, 6, 8, 6)
+        rodent_tips_layout.setSpacing(10)
+        
+        # Left: Icon (rodent entity icon)
+        self.rodent_icon_label = QtWidgets.QLabel()
+        self.rodent_icon_label.setFixedSize(40, 40)
+        self.rodent_icon_label.setStyleSheet("""
+            QLabel {
+                background: #333;
+                border: 1px solid #444;
+                border-radius: 4px;
+            }
+        """)
+        rodent_tips_layout.addWidget(self.rodent_icon_label)
+        
+        # Middle: Title + Tip text (expandable)
+        rodent_content_col = QtWidgets.QVBoxLayout()
+        rodent_content_col.setSpacing(2)
+        
+        # Title row with entity name and tip number
+        rodent_title_row = QtWidgets.QHBoxLayout()
+        self.rodent_section_title = QtWidgets.QLabel("🐀 Rodent Squad Weight Tips")
+        self.rodent_section_title.setStyleSheet("color: #c4a35a; font-size: 11px; font-weight: bold;")
+        rodent_title_row.addWidget(self.rodent_section_title)
+        
+        self.rodent_tip_number = QtWidgets.QLabel("Tip #1 of 100")
+        self.rodent_tip_number.setStyleSheet("color: #8b7355; font-size: 10px;")
+        rodent_title_row.addWidget(self.rodent_tip_number)
+        rodent_title_row.addStretch()
+        rodent_content_col.addLayout(rodent_title_row)
+        
+        # Tip text (compact)
+        self.rodent_tip_text = QtWidgets.QLabel("Loading tip...")
+        self.rodent_tip_text.setStyleSheet("color: #d4c4a4; font-size: 11px;")
+        self.rodent_tip_text.setWordWrap(True)
+        rodent_content_col.addWidget(self.rodent_tip_text)
+        
+        # Hidden: tracks if user has the telepathic translator
+        self.has_translator = False
+        
+        rodent_tips_layout.addLayout(rodent_content_col, 1)
+        
+        # Right: Acknowledge button (compact)
+        self.rodent_acknowledge_btn = QtWidgets.QPushButton("📖 +1🪙")
+        self.rodent_acknowledge_btn.setFixedWidth(70)
+        self.rodent_acknowledge_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #8b7355, stop:1 #6b5335);
+                color: white;
+                font-size: 11px;
+                font-weight: bold;
+                border-radius: 4px;
+                border: 1px solid #5b4325;
+                padding: 6px 8px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #a68365, stop:1 #8b7355);
+            }
+            QPushButton:disabled {
+                background: #444;
+                color: #777;
+                border: 1px solid #333;
+            }
+        """)
+        self.rodent_acknowledge_btn.clicked.connect(self._acknowledge_rodent_tip)
+        rodent_tips_layout.addWidget(self.rodent_acknowledge_btn)
+        
+        layout.addWidget(self.rodent_tips_section)
+        self.rodent_tips_section.hide()  # Hidden until we check if any rodent is collected
+        
         # Entity Perk Section (Rodent Squad) - shows when rat/mouse entities are collected
         # Uses same mini-card pattern as ADHD Buster patrons
         self.weight_entity_section = CollapsibleSection("🐀 Rodent Squad", "weight_entity_section", parent=self)
@@ -5765,6 +5878,9 @@ class WeightTab(QtWidgets.QWidget):
         
         # Update entity perk display
         self._update_weight_entity_perk_display()
+        
+        # Refresh rodent tips
+        self._refresh_rodent_tips()
     
     def _on_goal_toggle(self, state: int) -> None:
         """Handle goal checkbox toggle."""
@@ -6532,6 +6648,247 @@ class WeightTab(QtWidgets.QWidget):
         except Exception as e:
             print(f"[Weight Tab] Error updating entity perk display: {e}")
             self.weight_entity_section.setVisible(False)
+
+    def _refresh_rodent_tips(self) -> None:
+        """Refresh the Rodent Squad weight control tips section.
+        
+        Shows tips when user has any rodent entity collected.
+        If user has scientist_009 (White Mouse Archimedes), they can understand
+        the tips in human language. Otherwise, tips appear as "rodent language" squeaks.
+        """
+        from datetime import datetime
+        
+        # Rodent entity IDs that contribute to weight perks
+        RODENT_ENTITY_IDS = ["scholar_001", "underdog_001", "scientist_004", 
+                            "wanderer_009", "scientist_009"]
+        TRANSLATOR_ENTITY_ID = "scientist_009"  # White Mouse Archimedes
+        
+        try:
+            from gamification import get_entitidex_manager
+            from entitidex_tab import _resolve_entity_svg_path
+            from entitidex.entity_pools import get_entity_by_id as get_entity
+            from weight_control_tips import get_tip_by_index, get_tip_count, has_telepathic_translator
+        except ImportError as e:
+            # Dependencies not available
+            self.rodent_tips_section.setVisible(False)
+            return
+        
+        # Get entitidex manager to check entity collection
+        try:
+            manager = get_entitidex_manager(self.blocker.adhd_buster)
+        except Exception:
+            self.rodent_tips_section.setVisible(False)
+            return
+        
+        # Check if user has ANY rodent entity collected
+        has_any_rodent = False
+        first_rodent_id = None
+        first_rodent_exceptional = False
+        
+        for entity_id in RODENT_ENTITY_IDS:
+            has_normal = entity_id in manager.progress.collected_entity_ids
+            has_exceptional = manager.progress.is_exceptional(entity_id)
+            if has_normal or has_exceptional:
+                has_any_rodent = True
+                if first_rodent_id is None:
+                    first_rodent_id = entity_id
+                    first_rodent_exceptional = has_exceptional
+                break
+        
+        if not has_any_rodent:
+            # No rodent entities collected - hide section
+            self.rodent_tips_section.setVisible(False)
+            return
+        
+        # At least one rodent is collected - show section
+        self.rodent_tips_section.setVisible(True)
+        
+        # Check if user has the telepathic translator (Archimedes)
+        self.has_translator = has_telepathic_translator(self.blocker.adhd_buster)
+        
+        # Update section title and styling based on translator status
+        if self.has_translator:
+            self.rodent_section_title.setText("🐁 Rodent Squad Weight Control Tips")
+            self.rodent_section_title.setStyleSheet("color: #81c784; font-size: 11px; font-weight: bold;")
+            self.rodent_tips_section.setStyleSheet("""
+                QFrame {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #2a3a2a, stop:1 #182518);
+                    border: 2px solid #66bb6a;
+                    border-radius: 8px;
+                    padding: 6px;
+                }
+            """)
+        else:
+            self.rodent_section_title.setText("🐭 Rodent Squad Tips (???)")
+            self.rodent_section_title.setStyleSheet("color: #c4a35a; font-size: 11px; font-weight: bold;")
+            self.rodent_tips_section.setStyleSheet("""
+                QFrame {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #3a3a2a, stop:1 #252518);
+                    border: 2px solid #8b7355;
+                    border-radius: 8px;
+                    padding: 6px;
+                }
+            """)
+        
+        # Load first collected rodent's icon
+        try:
+            if first_rodent_id:
+                entity = get_entity(first_rodent_id)
+                if entity:
+                    svg_path = _resolve_entity_svg_path(entity, first_rodent_exceptional)
+                    if svg_path:
+                        from PySide6.QtSvg import QSvgRenderer
+                        renderer = QSvgRenderer(svg_path)
+                        if renderer.isValid():
+                            icon_size = 40
+                            pixmap = QtGui.QPixmap(icon_size, icon_size)
+                            pixmap.fill(QtCore.Qt.transparent)
+                            painter = QtGui.QPainter(pixmap)
+                            renderer.render(painter)
+                            painter.end()
+                            self.rodent_icon_label.setPixmap(pixmap)
+                            
+                            # Update icon border based on translator status
+                            if self.has_translator:
+                                self.rodent_icon_label.setStyleSheet("""
+                                    QLabel {
+                                        background: #333;
+                                        border: 2px solid #66bb6a;
+                                        border-radius: 6px;
+                                    }
+                                """)
+                            else:
+                                self.rodent_icon_label.setStyleSheet("""
+                                    QLabel {
+                                        background: #333;
+                                        border: 1px solid #8b7355;
+                                        border-radius: 6px;
+                                    }
+                                """)
+        except Exception:
+            # Fallback - just show text
+            self.rodent_icon_label.setText("🐭")
+        
+        # Get current tip index (sequential cycling)
+        tip_key = "rodent_tip_index_translated" if self.has_translator else "rodent_tip_index_squeaks"
+        tip_index = self.blocker.stats.get(tip_key, 0)
+        total_tips = get_tip_count(self.has_translator)
+        
+        # Get the tip at current index
+        tip_text, category_emoji = get_tip_by_index(tip_index, self.has_translator)
+        
+        # Update tip display
+        self.rodent_tip_number.setText(f"Tip #{tip_index + 1} of {total_tips}")
+        
+        if self.has_translator:
+            self.rodent_tip_text.setText(f"{category_emoji} {tip_text}")
+            self.rodent_tip_text.setStyleSheet("color: #c5e1c5; font-size: 11px;")
+        else:
+            # Show rodent language with a hint
+            self.rodent_tip_text.setText(f"🐭 {tip_text}\n\n<i style='color:#888;'>💡 Collect White Mouse Archimedes to understand rodent language!</i>")
+            self.rodent_tip_text.setStyleSheet("color: #d4c4a4; font-size: 11px;")
+        
+        # Check if already acknowledged today
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        ack_key = "rodent_tip_acknowledged_date_translated" if self.has_translator else "rodent_tip_acknowledged_date_squeaks"
+        last_acknowledged = self.blocker.stats.get(ack_key, "")
+        
+        if last_acknowledged == today_str:
+            # Already acknowledged today
+            self.rodent_acknowledge_btn.setText("✓ Done")
+            self.rodent_acknowledge_btn.setEnabled(False)
+        else:
+            # Can acknowledge
+            self.rodent_acknowledge_btn.setText("📖 +1🪙")
+            self.rodent_acknowledge_btn.setEnabled(True)
+            
+        # Update button styling based on translator status
+        if self.has_translator:
+            self.rodent_acknowledge_btn.setStyleSheet("""
+                QPushButton {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #66bb6a, stop:1 #4caf50);
+                    color: white;
+                    font-size: 11px;
+                    font-weight: bold;
+                    border-radius: 4px;
+                    border: 1px solid #388e3c;
+                    padding: 6px 8px;
+                }
+                QPushButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #81c784, stop:1 #66bb6a);
+                }
+                QPushButton:disabled {
+                    background: #444;
+                    color: #777;
+                    border: 1px solid #333;
+                }
+            """)
+        else:
+            self.rodent_acknowledge_btn.setStyleSheet("""
+                QPushButton {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #8b7355, stop:1 #6b5335);
+                    color: white;
+                    font-size: 11px;
+                    font-weight: bold;
+                    border-radius: 4px;
+                    border: 1px solid #5b4325;
+                    padding: 6px 8px;
+                }
+                QPushButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #a68365, stop:1 #8b7355);
+                }
+                QPushButton:disabled {
+                    background: #444;
+                    color: #777;
+                    border: 1px solid #333;
+                }
+            """)
+
+    def _acknowledge_rodent_tip(self) -> None:
+        """Handle acknowledging the rodent tip - award coin and advance to next tip."""
+        from datetime import datetime
+        from weight_control_tips import get_tip_count
+        
+        try:
+            # Determine if user has translator
+            from weight_control_tips import has_telepathic_translator
+            has_translator = has_telepathic_translator(self.blocker.adhd_buster)
+            
+            # Get keys based on translator status
+            tip_key = "rodent_tip_index_translated" if has_translator else "rodent_tip_index_squeaks"
+            ack_key = "rodent_tip_acknowledged_date_translated" if has_translator else "rodent_tip_acknowledged_date_squeaks"
+            
+            # Get current index and total
+            current_index = self.blocker.stats.get(tip_key, 0)
+            total_tips = get_tip_count(has_translator)
+            
+            # Advance to next tip (with wraparound)
+            next_index = (current_index + 1) % total_tips
+            self.blocker.stats[tip_key] = next_index
+            
+            # Record acknowledgment date
+            today_str = datetime.now().strftime("%Y-%m-%d")
+            self.blocker.stats[ack_key] = today_str
+            
+            # Award coin
+            adhd_buster = self.blocker.adhd_buster
+            adhd_buster["coins"] = adhd_buster.get("coins", 0) + 1
+            
+            # Save data
+            self.blocker.save_config()
+            
+            # Update button to show collected
+            self.rodent_acknowledge_btn.setText("✓ Done")
+            self.rodent_acknowledge_btn.setEnabled(False)
+            
+        except Exception as e:
+            print(f"[Weight Tab] Error acknowledging rodent tip: {e}")
 
     def _show_weekly_insights(self) -> None:
         """Show weekly insights in a dialog."""
@@ -18949,22 +19306,35 @@ class DevTab(QtWidgets.QWidget):
         story_layout.addWidget(QtWidgets.QLabel("Story:"))
         self.story_combo = NoScrollComboBox()
         self.story_combo.addItems(["warrior", "scholar", "underdog", "scientist", "wanderer"])
+        self.story_combo.currentTextChanged.connect(self._refresh_entity_selector)
         story_layout.addWidget(self.story_combo)
         story_layout.addStretch()
         entity_layout.addLayout(story_layout)
         
+        # Entity selector
+        entity_select_layout = QtWidgets.QHBoxLayout()
+        entity_select_layout.addWidget(QtWidgets.QLabel("Entity:"))
+        self.entity_combo = NoScrollComboBox()
+        self.entity_combo.setMinimumWidth(250)
+        entity_select_layout.addWidget(self.entity_combo)
+        entity_select_layout.addStretch()
+        entity_layout.addLayout(entity_select_layout)
+        
+        # Initialize entity list
+        QtCore.QTimer.singleShot(50, self._refresh_entity_selector)
+        
         # Encounter buttons
         encounter_btn_layout = QtWidgets.QHBoxLayout()
         
-        trigger_btn = QtWidgets.QPushButton("🎲 Trigger Encounter")
+        selected_btn = QtWidgets.QPushButton("🎯 Encounter Selected")
+        selected_btn.setStyleSheet("background-color: #4caf50; color: white; font-weight: bold; padding: 8px;")
+        selected_btn.clicked.connect(self._encounter_selected_entity)
+        encounter_btn_layout.addWidget(selected_btn)
+        
+        trigger_btn = QtWidgets.QPushButton("🎲 Random Encounter")
         trigger_btn.setStyleSheet("background-color: #2196f3; color: white; font-weight: bold; padding: 8px;")
         trigger_btn.clicked.connect(self._trigger_entity_encounter)
         encounter_btn_layout.addWidget(trigger_btn)
-        
-        random_btn = QtWidgets.QPushButton("🎯 Random Entity")
-        random_btn.setStyleSheet("background-color: #9c27b0; color: white; font-weight: bold; padding: 8px;")
-        random_btn.clicked.connect(self._show_random_entity)
-        encounter_btn_layout.addWidget(random_btn)
         
         entity_layout.addLayout(encounter_btn_layout)
         
@@ -19005,6 +19375,65 @@ class DevTab(QtWidgets.QWidget):
         entity_layout.addWidget(exceptional_btn)
         
         layout.addWidget(entity_group)
+
+        # Entity Lock/Unlock Section
+        lock_group = QtWidgets.QGroupBox("🔓 Entity Lock/Unlock (Testing)")
+        lock_layout = QtWidgets.QVBoxLayout(lock_group)
+        
+        # Story selector for lock/unlock
+        lock_story_layout = QtWidgets.QHBoxLayout()
+        lock_story_layout.addWidget(QtWidgets.QLabel("Story:"))
+        self.lock_story_combo = NoScrollComboBox()
+        self.lock_story_combo.addItems(["warrior", "scholar", "underdog", "scientist", "wanderer"])
+        self.lock_story_combo.currentTextChanged.connect(self._refresh_entity_lock_list)
+        lock_story_layout.addWidget(self.lock_story_combo)
+        lock_story_layout.addStretch()
+        lock_layout.addLayout(lock_story_layout)
+        
+        # Entity list with checkboxes (scrollable)
+        self.entity_lock_list = QtWidgets.QListWidget()
+        self.entity_lock_list.setStyleSheet("""
+            QListWidget {
+                background: #2D2D2D;
+                border: 1px solid #444;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QListWidget::item {
+                padding: 4px;
+                border-radius: 3px;
+            }
+            QListWidget::item:selected {
+                background: #3D3D3D;
+            }
+        """)
+        self.entity_lock_list.setMaximumHeight(200)
+        lock_layout.addWidget(self.entity_lock_list)
+        
+        # Quick action buttons
+        quick_btn_layout = QtWidgets.QHBoxLayout()
+        
+        unlock_all_btn = QtWidgets.QPushButton("🔓 Unlock All")
+        unlock_all_btn.setStyleSheet("background-color: #4caf50; color: white; font-weight: bold; padding: 8px;")
+        unlock_all_btn.clicked.connect(self._unlock_all_entities)
+        quick_btn_layout.addWidget(unlock_all_btn)
+        
+        lock_all_btn = QtWidgets.QPushButton("🔒 Lock All")
+        lock_all_btn.setStyleSheet("background-color: #f44336; color: white; font-weight: bold; padding: 8px;")
+        lock_all_btn.clicked.connect(self._lock_all_entities)
+        quick_btn_layout.addWidget(lock_all_btn)
+        
+        apply_btn = QtWidgets.QPushButton("💾 Apply Changes")
+        apply_btn.setStyleSheet("background-color: #2196f3; color: white; font-weight: bold; padding: 8px;")
+        apply_btn.clicked.connect(self._apply_entity_lock_changes)
+        quick_btn_layout.addWidget(apply_btn)
+        
+        lock_layout.addLayout(quick_btn_layout)
+        
+        layout.addWidget(lock_group)
+        
+        # Initial population of entity list
+        QtCore.QTimer.singleShot(100, self._refresh_entity_lock_list)
 
         # Status display
         self.status_label = QtWidgets.QLabel("")
@@ -19067,6 +19496,30 @@ class DevTab(QtWidgets.QWidget):
             self.status_label.setText(f"❌ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
+    def _get_coin_data(self) -> Optional[Dict[str, Any]]:
+        """
+        Get coin operation callbacks for special entity bonding rewards.
+        
+        Returns:
+            Dict with get_coins_callback and add_coins_callback, or None if unavailable.
+        """
+        try:
+            gs = get_game_state()
+            if gs:
+                def get_coins_callback() -> int:
+                    return gs.coins
+                
+                def add_coins_callback(amount: int) -> None:
+                    gs.add_coins(amount)
+                
+                return {
+                    "get_coins_callback": get_coins_callback,
+                    "add_coins_callback": add_coins_callback,
+                }
+        except Exception as e:
+            logger.debug(f"Could not get coin data: {e}")
+        return None
+
     def _reset_water_cooldown(self) -> None:
         """Reset water logging cooldown by clearing today's last entry time."""
         try:
@@ -19107,6 +19560,160 @@ class DevTab(QtWidgets.QWidget):
                 self.blocker.save_config()
                 self.status_label.setText("✅ Lottery attempts initialized to 0")
                 self.status_label.setStyleSheet("color: #9c27b0; padding: 10px;")
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _refresh_entity_selector(self) -> None:
+        """Refresh the entity selector dropdown based on selected story."""
+        try:
+            from entitidex import get_entities_for_story
+            
+            story_id = self.story_combo.currentText()
+            entities = get_entities_for_story(story_id)
+            
+            self.entity_combo.clear()
+            
+            # Sort entities by rarity for easier navigation
+            rarity_order = {"common": 0, "uncommon": 1, "rare": 2, "epic": 3, "legendary": 4}
+            sorted_entities = sorted(entities, key=lambda e: (rarity_order.get(e.rarity.lower(), 5), e.name))
+            
+            for entity in sorted_entities:
+                rarity_icon = {"common": "⚪", "uncommon": "🟢", "rare": "🔵", 
+                               "epic": "🟣", "legendary": "🟠"}.get(entity.rarity.lower(), "⚪")
+                self.entity_combo.addItem(f"{rarity_icon} {entity.name} ({entity.id})", entity.id)
+            
+        except Exception as e:
+            self.status_label.setText(f"❌ Error loading entities: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _encounter_selected_entity(self) -> None:
+        """Trigger an encounter with the selected entity."""
+        try:
+            from entitidex import get_entities_for_story, calculate_join_probability
+            from entity_drop_dialog import show_entity_encounter
+            from gamification import attempt_entitidex_bond
+            import random
+            
+            game_state = get_game_state()
+            if not game_state:
+                self.status_label.setText("❌ Game state not available")
+                return
+            
+            story_id = self.story_combo.currentText()
+            entity_id = self.entity_combo.currentData()
+            
+            if not entity_id:
+                self.status_label.setText("❌ No entity selected")
+                return
+            
+            # Find the entity
+            entities = get_entities_for_story(story_id)
+            entity = next((e for e in entities if e.id == entity_id), None)
+            
+            if not entity:
+                self.status_label.setText(f"❌ Entity not found: {entity_id}")
+                return
+            
+            hero_power = game_state.get_current_power()
+            join_prob = calculate_join_probability(hero_power, entity.power)
+            is_exceptional = random.random() < 0.20  # 20% exceptional chance
+            
+            def bond_callback_wrapper(eid: str, exceptional: bool = is_exceptional):
+                result = attempt_entitidex_bond(
+                    self.blocker.adhd_buster, 
+                    eid,
+                    is_exceptional=exceptional
+                )
+                self.status_label.setText(f"Result: {'Success' if result.get('success') else 'Failed'}")
+                xp_awarded = result.get('xp_awarded', 0)
+                if xp_awarded > 0:
+                    gs = get_game_state()
+                    if gs:
+                        total_xp = self.blocker.adhd_buster.get('total_xp', 0)
+                        level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
+                        gs.xp_changed.emit(total_xp, level)
+                main_win = self.window()
+                if hasattr(main_win, 'entitidex_tab'):
+                    main_win.entitidex_tab.refresh()
+                return result
+
+            # Build Chad interaction data for skip interactions
+            CHAD_ENTITY_ID = "underdog_008"
+            chad_interaction_data = None
+            try:
+                from gamification import get_entitidex_manager
+                manager = get_entitidex_manager(self.blocker.adhd_buster)
+                
+                has_chad_normal = CHAD_ENTITY_ID in manager.progress.collected_entity_ids
+                has_chad_exceptional = manager.progress.is_exceptional(CHAD_ENTITY_ID)
+                
+                if has_chad_normal or has_chad_exceptional:
+                    # Callback to add coins (for exceptional Chad's "banking hack")
+                    def add_coins_callback(amount: int):
+                        gs = get_game_state()
+                        if gs:
+                            gs.add_coins(amount)
+                    
+                    # Callback to give entity as if bonded (for exceptional Chad's gift)
+                    def give_entity_callback():
+                        result = attempt_entitidex_bond(
+                            self.blocker.adhd_buster, entity.id,
+                            is_exceptional=is_exceptional,
+                            force_success=True  # Chad guarantees the bond!
+                        )
+                        from gamification import sync_hero_data
+                        sync_hero_data(self.blocker.adhd_buster)
+                        gs = get_game_state()
+                        if gs:
+                            xp_awarded = result.get('xp_awarded', 0)
+                            if xp_awarded > 0:
+                                total_xp = self.blocker.adhd_buster.get('total_xp', 0)
+                                level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
+                                gs.xp_changed.emit(total_xp, level)
+                            gs.force_save()
+                        main_win = self.window()
+                        if hasattr(main_win, 'entitidex_tab'):
+                            main_win.entitidex_tab.refresh()
+                    
+                    chad_interaction_data = {
+                        "has_chad_normal": has_chad_normal,
+                        "has_chad_exceptional": has_chad_exceptional,
+                        "add_coins_callback": add_coins_callback,
+                        "give_entity_callback": give_entity_callback,
+                    }
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).debug(f"Could not check for Chad entity: {e}")
+
+            def save_callback_wrapper(entity_id: str):
+                from gamification import save_encounter_for_later
+                result = save_encounter_for_later(
+                    self.blocker.adhd_buster,
+                    entity_id,
+                    is_exceptional=is_exceptional,
+                    catch_probability=join_prob
+                )
+                self.blocker.save_config()
+                main_win = self.window()
+                if hasattr(main_win, 'entitidex_tab'):
+                    main_win.entitidex_tab._update_saved_button_count()
+                return result
+
+            show_entity_encounter(
+                entity=entity,
+                join_probability=join_prob,
+                bond_logic_callback=bond_callback_wrapper,
+                parent=self.window(),
+                is_exceptional=is_exceptional,
+                chad_interaction_data=chad_interaction_data,
+                coin_data=self._get_coin_data() if hasattr(self, '_get_coin_data') else None,
+                save_callback=save_callback_wrapper,
+            )
+            
+            self.status_label.setText(f"✨ Encountered: {entity.name} ({entity.rarity}){' ⭐' if is_exceptional else ''}")
+            self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+            
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
@@ -19176,12 +19783,28 @@ class DevTab(QtWidgets.QWidget):
                     main_win.entitidex_tab.refresh()
                 return result
 
+            def save_callback_wrapper(entity_id: str):
+                from gamification import save_encounter_for_later
+                result = save_encounter_for_later(
+                    self.blocker.adhd_buster,
+                    entity_id,
+                    is_exceptional=is_exceptional,
+                    catch_probability=join_prob
+                )
+                self.blocker.save_config()
+                main_win = self.window()
+                if hasattr(main_win, 'entitidex_tab'):
+                    main_win.entitidex_tab._update_saved_button_count()
+                return result
+
             show_entity_encounter(
                 entity=entity,
                 join_probability=join_prob,
                 bond_logic_callback=bond_callback_wrapper,
                 parent=self.window(),
                 is_exceptional=is_exceptional,
+                coin_data=self._get_coin_data() if hasattr(self, '_get_coin_data') else None,
+                save_callback=save_callback_wrapper,
             )
             
         except ImportError as e:
@@ -19236,12 +19859,28 @@ class DevTab(QtWidgets.QWidget):
                     main_win.entitidex_tab.refresh()
                 return result
 
+            def save_callback_wrapper(entity_id: str):
+                from gamification import save_encounter_for_later
+                result = save_encounter_for_later(
+                    self.blocker.adhd_buster,
+                    entity_id,
+                    is_exceptional=is_exceptional,
+                    catch_probability=join_prob
+                )
+                self.blocker.save_config()
+                main_win = self.window()
+                if hasattr(main_win, 'entitidex_tab'):
+                    main_win.entitidex_tab._update_saved_button_count()
+                return result
+
             show_entity_encounter(
                 entity=entity, 
                 join_probability=join_prob,
                 bond_logic_callback=bond_callback_wrapper,
                 parent=self.window(),
                 is_exceptional=is_exceptional,
+                coin_data=self._get_coin_data() if hasattr(self, '_get_coin_data') else None,
+                save_callback=save_callback_wrapper,
             )
             
             self.status_label.setText(f"✨ Encountered: {entity.name} ({entity.rarity}){' ⭐' if is_exceptional else ''}")
@@ -19298,12 +19937,28 @@ class DevTab(QtWidgets.QWidget):
                     main_win.entitidex_tab.refresh()
                 return result
 
+            def save_callback_wrapper(entity_id: str):
+                from gamification import save_encounter_for_later
+                result = save_encounter_for_later(
+                    self.blocker.adhd_buster,
+                    entity_id,
+                    is_exceptional=is_exceptional,
+                    catch_probability=join_prob
+                )
+                self.blocker.save_config()
+                main_win = self.window()
+                if hasattr(main_win, 'entitidex_tab'):
+                    main_win.entitidex_tab._update_saved_button_count()
+                return result
+
             show_entity_encounter(
                 entity=entity, 
                 join_probability=join_prob,
                 bond_logic_callback=bond_callback_wrapper,
                 parent=self.window(),
                 is_exceptional=is_exceptional,
+                coin_data=self._get_coin_data() if hasattr(self, '_get_coin_data') else None,
+                save_callback=save_callback_wrapper,
             )
             
             self.status_label.setText(f"✨ {rarity.upper()}: {entity.name}{' ⭐' if is_exceptional else ''}")
@@ -19454,6 +20109,198 @@ class DevTab(QtWidgets.QWidget):
             
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _refresh_entity_lock_list(self) -> None:
+        """Refresh the entity lock/unlock list for the selected story."""
+        try:
+            from entitidex import get_entities_for_story
+            from gamification import get_entitidex_manager
+            
+            self.entity_lock_list.clear()
+            
+            story_id = self.lock_story_combo.currentText()
+            entities = get_entities_for_story(story_id)
+            
+            # Get current collection state
+            manager = get_entitidex_manager(self.blocker.adhd_buster)
+            collected = manager.progress.collected_entity_ids
+            exceptional = manager.progress.exceptional_entities
+            
+            rarity_colors = {
+                "common": "#9e9e9e", "uncommon": "#4caf50", "rare": "#2196f3",
+                "epic": "#9c27b0", "legendary": "#ff9800"
+            }
+            
+            for entity in sorted(entities, key=lambda e: (
+                ["common", "uncommon", "rare", "epic", "legendary"].index(e.rarity.lower()),
+                e.name
+            )):
+                color = rarity_colors.get(entity.rarity.lower(), "#9e9e9e")
+                
+                # Normal variant row
+                normal_item = QtWidgets.QListWidgetItem()
+                normal_item.setData(QtCore.Qt.UserRole, entity.id)
+                normal_item.setData(QtCore.Qt.UserRole + 1, False)  # Normal variant
+                
+                is_normal_unlocked = entity.id in collected
+                normal_checkbox = QtWidgets.QCheckBox(f"  {entity.name} ({entity.rarity}) ⚡{entity.power}")
+                normal_checkbox.setChecked(is_normal_unlocked)
+                normal_checkbox.setStyleSheet(f"color: {color}; font-weight: bold;")
+                
+                normal_item.setSizeHint(normal_checkbox.sizeHint())
+                self.entity_lock_list.addItem(normal_item)
+                self.entity_lock_list.setItemWidget(normal_item, normal_checkbox)
+                
+                # Exceptional variant row
+                exceptional_item = QtWidgets.QListWidgetItem()
+                exceptional_item.setData(QtCore.Qt.UserRole, entity.id)
+                exceptional_item.setData(QtCore.Qt.UserRole + 1, True)  # Exceptional variant
+                
+                is_exceptional_unlocked = entity.id in exceptional
+                exc_name = entity.exceptional_name if entity.exceptional_name else f"{entity.name} ⭐"
+                exceptional_checkbox = QtWidgets.QCheckBox(f"  ⭐ {exc_name}")
+                exceptional_checkbox.setChecked(is_exceptional_unlocked)
+                # Golden gradient style for exceptional
+                exceptional_checkbox.setStyleSheet(
+                    "color: #FFD700; font-weight: bold; font-style: italic;"
+                )
+                
+                exceptional_item.setSizeHint(exceptional_checkbox.sizeHint())
+                self.entity_lock_list.addItem(exceptional_item)
+                self.entity_lock_list.setItemWidget(exceptional_item, exceptional_checkbox)
+            
+            collected_count = sum(1 for e in entities if e.id in collected)
+            exceptional_count = sum(1 for e in entities if e.id in exceptional)
+            self.status_label.setText(
+                f"📋 {story_id}: {collected_count}/{len(entities)} normal, "
+                f"{exceptional_count}/{len(entities)} exceptional ⭐"
+            )
+            self.status_label.setStyleSheet("color: #2196f3; padding: 10px;")
+            
+        except Exception as e:
+            self.status_label.setText(f"❌ Error loading entities: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _unlock_all_entities(self) -> None:
+        """Check all entity checkboxes (unlock all)."""
+        for i in range(self.entity_lock_list.count()):
+            item = self.entity_lock_list.item(i)
+            checkbox = self.entity_lock_list.itemWidget(item)
+            if checkbox:
+                checkbox.setChecked(True)
+        self.status_label.setText("✅ All entities marked for unlock - click 'Apply Changes' to save")
+        self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+
+    def _lock_all_entities(self) -> None:
+        """Uncheck all entity checkboxes (lock all)."""
+        for i in range(self.entity_lock_list.count()):
+            item = self.entity_lock_list.item(i)
+            checkbox = self.entity_lock_list.itemWidget(item)
+            if checkbox:
+                checkbox.setChecked(False)
+        self.status_label.setText("🔒 All entities marked for lock - click 'Apply Changes' to save")
+        self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _apply_entity_lock_changes(self) -> None:
+        """Apply the current checkbox states to the entitidex progress."""
+        try:
+            from entitidex import get_entity_by_id
+            from gamification import get_entitidex_manager, save_entitidex_progress, _generate_exceptional_colors
+            
+            manager = get_entitidex_manager(self.blocker.adhd_buster)
+            hero_power = manager.hero_power
+            
+            normal_unlocked = 0
+            normal_locked = 0
+            exceptional_unlocked = 0
+            exceptional_locked = 0
+            
+            for i in range(self.entity_lock_list.count()):
+                item = self.entity_lock_list.item(i)
+                entity_id = item.data(QtCore.Qt.UserRole)
+                is_exceptional = item.data(QtCore.Qt.UserRole + 1)
+                checkbox = self.entity_lock_list.itemWidget(item)
+                
+                if not checkbox:
+                    continue
+                    
+                is_checked = checkbox.isChecked()
+                
+                if is_exceptional:
+                    # Handle exceptional variant
+                    was_exceptional = entity_id in manager.progress.exceptional_entities
+                    
+                    if is_checked and not was_exceptional:
+                        # Unlock exceptional - generate colors and record catch
+                        exceptional_colors = _generate_exceptional_colors()
+                        manager.progress.record_successful_catch(
+                            entity_id=entity_id,
+                            hero_power=hero_power,
+                            probability=1.0,  # Dev forced unlock
+                            was_lucky=False,
+                            is_exceptional=True,
+                            exceptional_colors=exceptional_colors,
+                        )
+                        # Also record as encountered if not already
+                        if not manager.progress.is_encountered(entity_id):
+                            manager.progress.record_encounter(entity_id)
+                        exceptional_unlocked += 1
+                    elif not is_checked and was_exceptional:
+                        # Lock exceptional (remove from exceptional_entities)
+                        del manager.progress.exceptional_entities[entity_id]
+                        exceptional_locked += 1
+                else:
+                    # Handle normal variant
+                    was_collected = entity_id in manager.progress.collected_entity_ids
+                    
+                    if is_checked and not was_collected:
+                        # Unlock normal entity
+                        manager.progress.record_successful_catch(
+                            entity_id=entity_id,
+                            hero_power=hero_power,
+                            probability=1.0,  # Dev forced unlock
+                            was_lucky=False,
+                            is_exceptional=False,
+                            exceptional_colors=None,
+                        )
+                        # Also record as encountered if not already
+                        if not manager.progress.is_encountered(entity_id):
+                            manager.progress.record_encounter(entity_id)
+                        normal_unlocked += 1
+                    elif not is_checked and was_collected:
+                        # Lock normal entity (remove from collection)
+                        manager.progress.collected_entity_ids.discard(entity_id)
+                        normal_locked += 1
+            
+            # Save changes
+            save_entitidex_progress(self.blocker.adhd_buster, manager)
+            self.blocker.save_config()
+            
+            # Refresh entitidex tab if available
+            main_win = self.window()
+            if hasattr(main_win, 'entitidex_tab'):
+                main_win.entitidex_tab.refresh()
+            
+            # Build status message
+            parts = []
+            if normal_unlocked > 0:
+                parts.append(f"{normal_unlocked} normal unlocked")
+            if normal_locked > 0:
+                parts.append(f"{normal_locked} normal locked")
+            if exceptional_unlocked > 0:
+                parts.append(f"{exceptional_unlocked} exceptional ⭐ unlocked")
+            if exceptional_locked > 0:
+                parts.append(f"{exceptional_locked} exceptional ⭐ locked")
+            
+            if parts:
+                self.status_label.setText(f"✅ Applied: {', '.join(parts)}")
+            else:
+                self.status_label.setText("ℹ️ No changes to apply")
+            self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+            
+        except Exception as e:
+            self.status_label.setText(f"❌ Error applying changes: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
 
@@ -20714,6 +21561,7 @@ def main() -> None:
     
     # Close splash and show main window
     splash.close()
+    app.processEvents()  # Ensure splash is fully closed before showing window
     
     if start_minimized and window.tray_icon:
         # Start minimized to system tray
@@ -20726,6 +21574,8 @@ def main() -> None:
         )
     else:
         window.show()
+        window.raise_()
+        window.activateWindow()
     
     exit_code = app.exec()
     

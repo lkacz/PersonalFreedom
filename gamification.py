@@ -15241,8 +15241,8 @@ def attempt_entitidex_bond(
     # Force success path (for Chad gifts)
     if force_success:
         # Directly record a successful catch without probability roll
-        from entitidex.catch_mechanics import calculate_catch_probability
-        probability = calculate_catch_probability(manager.hero_power, entity, failed_before)
+        from entitidex.catch_mechanics import get_final_probability
+        probability = get_final_probability(manager.hero_power, entity.power, failed_before)
         
         # Generate exceptional colors if needed
         exceptional_colors = None
@@ -15258,9 +15258,6 @@ def attempt_entitidex_bond(
             is_exceptional=is_exceptional,
             exceptional_colors=exceptional_colors,
         )
-        
-        if is_exceptional:
-            manager.progress.mark_exceptional(entity_id, exceptional_colors)
         
         # Save progress
         save_entitidex_progress(adhd_buster, manager)
@@ -15541,6 +15538,15 @@ def save_encounter_for_later(
         session_minutes=session_minutes,
         was_perfect_session=was_perfect_session,
     )
+    
+    # Entity cannot be saved (already saved or already collected)
+    if saved is None:
+        display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
+        variant = "✨ Exceptional " if is_exceptional else ""
+        return {
+            "success": False,
+            "message": f"⚠️ {variant}{display_name} already exists in your collection or saved encounters!",
+        }
     
     save_entitidex_progress(adhd_buster, manager)
     

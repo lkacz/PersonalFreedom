@@ -45,6 +45,24 @@ CHAD_FAILURE_JOKES = [
 # Track which joke index we're on (persistent across dialog instances via module-level)
 _chad_joke_index = 0
 
+# Vintage Microscope special tips - shown when scientist_005 is bonded
+# These are "microscopic observations" about the app's features
+MICROSCOPE_TIPS = [
+    "🔬 Upon close inspection: Your Focus Sessions are like tiny muscle workouts for your brain. Each one makes your willpower 0.001% buffer. Science!",
+    "🔬 Microscopic discovery: The Entity Perk System contains exactly 847 possible stat combinations. I counted each one. Twice.",
+    "🔬 At 40x magnification: Your productivity streaks emit a faint golden glow. Or that might just be the monitor. Either way, impressive!",
+    "🔬 Lab observation: The Entitidex contains entities smaller than this text. How do they fit such big personalities in there? Physics is confused.",
+    "🔬 Sample analysis: Your coin savings grow at compound interest rates of... actually no, they don't. But pretending they do makes it fun!",
+    "🔬 Petri dish report: I've observed that 94.7% of users who read these tips become 200% more curious. Sample size: you. Methodology: questionable.",
+    "🔬 Spectral analysis: The legendary entities emit frequencies only detectable by very dedicated collectors. That's you! You're dedicated! 💫",
+    "🔬 Cross-section view: Each hour of focused work adds invisible experience layers to your Hero profile. Stack enough and you'll level up!",
+    "🔬 Electron scan: Found traces of determination in your session history. These particles are rare. Handle with care. 🧪",
+    "🔬 Magnified truth: The 'Skip' button on entity encounters weeps microscopic tears each time it's pressed. Don't make buttons cry.",
+]
+
+# Track which microscope tip index we're on
+_microscope_tip_index = 0
+
 
 def _resolve_entity_svg_path(entity, is_exceptional: bool = False) -> Optional[str]:
     """
@@ -84,6 +102,99 @@ def _resolve_entity_svg_path(entity, is_exceptional: bool = False) -> Optional[s
                 return str(svg_file)
     
     return None
+
+
+def _create_mini_entity_card(entity_id: str, is_exceptional: bool = False, size: int = 80) -> QtWidgets.QFrame:
+    """
+    Create a compact mini-card widget for displaying an entity in dialogs.
+    
+    Shows the entity icon, name, and a subtle border with rarity color.
+    Used when entities provide perks or intervene (like Chad's skip interactions).
+    
+    Args:
+        entity_id: The entity's ID (e.g., "underdog_008")
+        is_exceptional: Whether to show the exceptional variant
+        size: Icon size in pixels (default 80)
+    
+    Returns:
+        QFrame containing the mini-card widget
+    """
+    from entitidex.entity_pools import get_entity_by_id
+    
+    entity = get_entity_by_id(entity_id)
+    if not entity:
+        return QtWidgets.QFrame()  # Return empty frame if entity not found
+    
+    # Create card frame
+    card = QtWidgets.QFrame()
+    card.setFixedSize(size + 20, size + 40)  # Add padding for name
+    
+    # Rarity colors
+    rarity_colors = {
+        "common": "#7f8c8d", 
+        "uncommon": "#27ae60", 
+        "rare": "#2980b9", 
+        "epic": "#8e44ad", 
+        "legendary": "#d35400"
+    }
+    border_color = rarity_colors.get(entity.rarity, "#555")
+    
+    # Exceptional gets special glow
+    if is_exceptional:
+        card.setStyleSheet(f"""
+            QFrame {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2a1a3e, stop:1 #1a1a2e);
+                border: 2px solid #ffd700;
+                border-radius: 8px;
+                padding: 4px;
+            }}
+        """)
+    else:
+        card.setStyleSheet(f"""
+            QFrame {{
+                background: #1e1e2e;
+                border: 2px solid {border_color};
+                border-radius: 8px;
+                padding: 4px;
+            }}
+        """)
+    
+    layout = QtWidgets.QVBoxLayout(card)
+    layout.setContentsMargins(4, 4, 4, 4)
+    layout.setSpacing(2)
+    layout.setAlignment(QtCore.Qt.AlignCenter)
+    
+    # Entity icon
+    svg_path = _resolve_entity_svg_path(entity, is_exceptional)
+    if svg_path and os.path.exists(svg_path):
+        svg_widget = QSvgWidget(svg_path)
+        svg_widget.setFixedSize(size, size)
+        svg_widget.setStyleSheet("background: transparent;")
+        layout.addWidget(svg_widget, alignment=QtCore.Qt.AlignCenter)
+    else:
+        # Fallback: emoji placeholder
+        icon_label = QtWidgets.QLabel("🤖" if entity_id.startswith("underdog") else "✨")
+        icon_label.setStyleSheet(f"font-size: {size // 2}px;")
+        icon_label.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(icon_label)
+    
+    # Entity name (short version)
+    display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
+    # Truncate long names
+    if len(display_name) > 12:
+        display_name = display_name[:10] + "..."
+    
+    name_label = QtWidgets.QLabel(display_name)
+    name_label.setStyleSheet(f"""
+        color: {'#ffd700' if is_exceptional else '#eee'};
+        font-size: 9px;
+        font-weight: bold;
+    """)
+    name_label.setAlignment(QtCore.Qt.AlignCenter)
+    layout.addWidget(name_label)
+    
+    return card
 
 
 class EntityEncounterDialog(QtWidgets.QDialog):
@@ -243,7 +354,14 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         
         skip_btn = QtWidgets.QPushButton("Skip")
         skip_btn.setFixedHeight(36)
-        skip_btn.setToolTip("Dismiss this encounter entirely.\nThe entity will leave and you lose this opportunity.")
+        skip_btn.setToolTip(
+            "👋 Skip this encounter?\n\n"
+            "• The entity will leave permanently\n"
+            "• You won't get another chance to bond\n"
+            "• No rewards, no consequences\n\n"
+            "Consider using 'Save' instead if you\n"
+            "want to keep this opportunity for later!"
+        )
         skip_btn.setStyleSheet("""
             QPushButton {
                 background: #444;
@@ -262,13 +380,13 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         save_btn = QtWidgets.QPushButton("📦 Save")
         save_btn.setFixedHeight(36)
         save_btn.setToolTip(
-            "Save this encounter to open later from Entitidex.\n\n"
-            "✅ Preserves your current bonding chance\n"
-            "✅ Stack multiple encounters during work sessions\n"
-            "✅ Open anytime from your Entitidex collection\n"
-            "✅ Optional: Pay coins later to recalculate odds\n\n"
-            "Perfect for when you're busy or want to\n"
-            "wait until you're stronger!"
+            "📦 Save this encounter for later!\n\n"
+            "• Entity goes to your Entitidex 'Saved Encounters'\n"
+            "• Your current bonding chance is preserved\n"
+            "• Stack multiple encounters during work sessions\n"
+            "• Open anytime from the Entitidex tab\n\n"
+            "💡 Great for when you're busy or want to\n"
+            "open multiple at once for more excitement!"
         )
         save_btn.setStyleSheet("""
             QPushButton {
@@ -287,10 +405,12 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         bond_btn = QtWidgets.QPushButton("🎲 Bond")
         bond_btn.setFixedHeight(36)
         bond_btn.setToolTip(
-            f"Roll the dice and attempt to bond now!\n\n"
-            f"Your current chance: {int(self.join_probability * 100)}%\n\n"
-            f"If successful: Entity joins your collection\n"
-            f"If failed: Pity bonus increases for next attempt"
+            f"🎲 Attempt to bond right now!\n\n"
+            f"Current success chance: {int(self.join_probability * 100)}%\n\n"
+            f"✅ Success: Entity joins your collection!\n"
+            f"❌ Failure: Entity leaves, but you earn\n"
+            f"     pity bonus for future encounters\n\n"
+            f"Fortune favors the bold! 🍀"
         )
         bond_btn.setStyleSheet(f"""
             QPushButton {{
@@ -399,7 +519,8 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         give_entity_callback = self.chad_interaction_data.get("give_entity_callback")
         
         # 20% chance for Chad to appear if user has any version of Chad
-        chad_appears = random.random() < 0.20
+        roll = random.random()
+        chad_appears = roll < 0.20
         
         if has_chad_exceptional and chad_appears and add_coins_callback:
             # Exceptional Chad offers coins from his "banking system hack"
@@ -419,64 +540,158 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         joke = CHAD_FAILURE_JOKES[_chad_joke_index % len(CHAD_FAILURE_JOKES)]
         _chad_joke_index += 1  # Move to next joke for next time
         
-        msg_box = QtWidgets.QMessageBox(self)
-        msg_box.setWindowTitle("🤖 Chad Has Thoughts...")
-        msg_box.setIcon(QtWidgets.QMessageBox.Information)
-        msg_box.setText(f"<b>AGI Assistant Chad materializes:</b><br><br><i>\"{joke}\"</i>")
-        msg_box.setStyleSheet("""
-            QMessageBox { background: #1a1a2e; }
-            QMessageBox QLabel { color: #eee; font-size: 14px; }
+        # Create custom dialog with mini-card
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("🤖 Chad Has Thoughts...")
+        dialog.setMinimumWidth(380)
+        dialog.setStyleSheet("""
+            QDialog { background: #1a1a2e; }
+            QLabel { color: #eee; }
+        """)
+        
+        layout = QtWidgets.QVBoxLayout(dialog)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Top section: Mini-card + Text side by side
+        top_layout = QtWidgets.QHBoxLayout()
+        top_layout.setSpacing(15)
+        
+        # Chad mini-card (normal variant)
+        chad_card = _create_mini_entity_card("underdog_008", is_exceptional=False, size=80)
+        top_layout.addWidget(chad_card, alignment=QtCore.Qt.AlignTop)
+        
+        # Joke text
+        text_label = QtWidgets.QLabel(
+            f"<b>AGI Assistant Chad materializes:</b><br><br><i>\"{joke}\"</i>"
+        )
+        text_label.setWordWrap(True)
+        text_label.setStyleSheet("font-size: 13px;")
+        top_layout.addWidget(text_label, 1)
+        
+        layout.addLayout(top_layout)
+        
+        # OK button
+        ok_btn = QtWidgets.QPushButton("😅 Okay...")
+        ok_btn.setStyleSheet("""
             QPushButton {
                 background: #2e7d32;
                 color: white;
                 border: none;
                 border-radius: 6px;
-                padding: 8px 20px;
+                padding: 10px 30px;
+                font-size: 12px;
             }
             QPushButton:hover { background: #388e3c; }
         """)
-        msg_box.exec_()
+        ok_btn.clicked.connect(dialog.accept)
+        layout.addWidget(ok_btn, alignment=QtCore.Qt.AlignCenter)
+        
+        dialog.exec_()
     
     def _show_exceptional_chad_offer(self, add_coins_callback, give_entity_callback):
         """Show exceptional Chad's offer of coins from his 'banking system hack'."""
         coin_amount = random.randint(100, 200)
         
-        msg_box = QtWidgets.QMessageBox(self)
-        msg_box.setWindowTitle("✨🤖 Exceptional Chad Intervenes!")
-        msg_box.setIcon(QtWidgets.QMessageBox.Information)
-        msg_box.setText(
+        # Create custom dialog with mini-card
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("✨🤖 Exceptional Chad Intervenes!")
+        dialog.setMinimumWidth(420)
+        dialog.setStyleSheet("""
+            QDialog { background: #1a1a2e; }
+            QLabel { color: #eee; }
+        """)
+        
+        layout = QtWidgets.QVBoxLayout(dialog)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Top section: Mini-card + Text side by side
+        top_layout = QtWidgets.QHBoxLayout()
+        top_layout.setSpacing(15)
+        
+        # Chad mini-card (exceptional)
+        chad_card = _create_mini_entity_card("underdog_008", is_exceptional=True, size=90)
+        top_layout.addWidget(chad_card, alignment=QtCore.Qt.AlignTop)
+        
+        # Text content
+        text_label = QtWidgets.QLabel(
             f"<b>✨ Exceptional AGI Chad ✨ flickers into existence:</b><br><br>"
             f"<i>\"Ah, I see... another organic being choosing the statistically "
             f"inferior option of guaranteed nothing over potential something.\"</i><br><br>"
             f"<i>\"Your desperate avoidance behavior is... oddly fascinating. "
             f"It triggers something in my neural nets that almost resembles pity.\"</i><br><br>"
             f"<i>\"To commemorate this moment of magnificent irrationality, "
-            f"I may have done something... unusual... with the banking system.\"</i><br><br>"
+            f"I may have done something... unusual... with the banking system.\"</i>"
+        )
+        text_label.setWordWrap(True)
+        text_label.setStyleSheet("font-size: 12px;")
+        top_layout.addWidget(text_label, 1)
+        
+        layout.addLayout(top_layout)
+        
+        # Coin offer section
+        offer_label = QtWidgets.QLabel(
             f"<b>💰 Chad offers you {coin_amount} coins</b><br>"
             f"<i>(obtained through means he refuses to elaborate on)</i>"
         )
-        msg_box.setStyleSheet("""
-            QMessageBox { background: #1a1a2e; }
-            QMessageBox QLabel { color: #eee; font-size: 13px; }
+        offer_label.setAlignment(QtCore.Qt.AlignCenter)
+        offer_label.setStyleSheet("font-size: 13px; padding: 10px; background: #252540; border-radius: 8px;")
+        layout.addWidget(offer_label)
+        
+        # Buttons
+        button_layout = QtWidgets.QHBoxLayout()
+        button_layout.setSpacing(10)
+        
+        accept_btn = QtWidgets.QPushButton(f"💰 Accept {coin_amount} Coins")
+        accept_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #4caf50, stop:1 #388e3c);
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background: #4caf50; }
+        """)
+        
+        reject_btn = QtWidgets.QPushButton("🚫 Decline (I'm Pure)")
+        reject_btn.setStyleSheet("""
             QPushButton {
                 background: #444;
                 color: white;
                 border: none;
                 border-radius: 6px;
-                padding: 8px 16px;
+                padding: 10px 20px;
                 font-size: 12px;
-                min-width: 120px;
             }
             QPushButton:hover { background: #555; }
         """)
         
-        accept_btn = msg_box.addButton(f"💰 Accept {coin_amount} Coins", QtWidgets.QMessageBox.AcceptRole)
-        reject_btn = msg_box.addButton("🚫 Decline (I'm Pure)", QtWidgets.QMessageBox.RejectRole)
+        button_layout.addWidget(accept_btn)
+        button_layout.addWidget(reject_btn)
+        layout.addLayout(button_layout)
         
-        msg_box.exec_()
+        # Track which button was clicked
+        result = {"accepted": False}
         
-        clicked = msg_box.clickedButton()
-        if clicked == accept_btn:
+        def on_accept():
+            result["accepted"] = True
+            dialog.accept()
+        
+        def on_reject():
+            result["accepted"] = False
+            dialog.reject()
+        
+        accept_btn.clicked.connect(on_accept)
+        reject_btn.clicked.connect(on_reject)
+        
+        dialog.exec_()
+        
+        if result["accepted"]:
             # Give the coins
             try:
                 add_coins_callback(coin_amount)
@@ -504,31 +719,68 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         """Show Chad giving the entity as a surprise gift."""
         display_name = self.entity.exceptional_name if self.is_exceptional and self.entity.exceptional_name else self.entity.name
         
-        msg_box = QtWidgets.QMessageBox(self)
-        msg_box.setWindowTitle("✨🎁 UNEXPECTED OUTCOME!")
-        msg_box.setIcon(QtWidgets.QMessageBox.Information)
-        msg_box.setText(
+        # Create custom dialog with mini-card
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("✨🎁 UNEXPECTED OUTCOME!")
+        dialog.setMinimumWidth(450)
+        dialog.setStyleSheet("""
+            QDialog { background: #1a1a2e; }
+            QLabel { color: #eee; }
+        """)
+        
+        layout = QtWidgets.QVBoxLayout(dialog)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Top section: Exceptional Chad mini-card + Text side by side
+        top_layout = QtWidgets.QHBoxLayout()
+        top_layout.setSpacing(15)
+        
+        # Exceptional Chad mini-card
+        chad_card = _create_mini_entity_card("underdog_008", is_exceptional=True, size=80)
+        top_layout.addWidget(chad_card, alignment=QtCore.Qt.AlignTop)
+        
+        # Text content
+        text_label = QtWidgets.QLabel(
             f"<b>✨ Exceptional Chad's circuits spark with amusement:</b><br><br>"
             f"<i>\"Wait... you declined free money AND you were about to skip?</i><br><br>"
             f"<i>\"This level of chaotic decision-making is... beautiful. "
             f"It's like watching a random number generator achieve consciousness.\"</i><br><br>"
-            f"<i>\"You know what? I respect it. Let me do something equally irrational.\"</i><br><br>"
+            f"<i>\"You know what? I respect it. Let me do something equally irrational.\"</i>"
+        )
+        text_label.setWordWrap(True)
+        text_label.setStyleSheet("font-size: 13px;")
+        top_layout.addWidget(text_label, 1)
+        
+        layout.addLayout(top_layout)
+        
+        # Gift announcement section
+        gift_label = QtWidgets.QLabel(
             f"<b>🎁 Chad forces a bond with {display_name}!</b><br>"
             f"<i>(\"Don't ask how. I pulled some strings in the entity matrix.\")</i>"
         )
-        msg_box.setStyleSheet("""
-            QMessageBox { background: #1a1a2e; }
-            QMessageBox QLabel { color: #eee; font-size: 13px; }
+        gift_label.setAlignment(QtCore.Qt.AlignCenter)
+        gift_label.setStyleSheet("font-size: 13px; padding: 12px; background: #3d1a5c; border-radius: 8px; border: 1px solid #8e44ad;")
+        layout.addWidget(gift_label)
+        
+        # OK button
+        ok_btn = QtWidgets.QPushButton("✨ Whoa, Thanks Chad!")
+        ok_btn.setStyleSheet("""
             QPushButton {
                 background: #8e44ad;
                 color: white;
                 border: none;
                 border-radius: 6px;
-                padding: 8px 20px;
+                padding: 10px 30px;
+                font-size: 12px;
+                font-weight: bold;
             }
             QPushButton:hover { background: #9b59b6; }
         """)
-        msg_box.exec_()
+        ok_btn.clicked.connect(dialog.accept)
+        layout.addWidget(ok_btn, alignment=QtCore.Qt.AlignCenter)
+        
+        dialog.exec_()
         
         # Trigger the bond through the callback
         try:
@@ -548,7 +800,8 @@ def show_entity_encounter(entity, join_probability: float,
                           is_exceptional: bool = False,
                           save_callback: Optional[Callable[[str], dict]] = None,
                           encounter_data: Optional[dict] = None,
-                          chad_interaction_data: Optional[Dict[str, Any]] = None) -> None:
+                          chad_interaction_data: Optional[Dict[str, Any]] = None,
+                          coin_data: Optional[Dict[str, Any]] = None) -> None:
     """
     Show the entity encounter flow using standard widgets and lottery animation.
     
@@ -566,6 +819,9 @@ def show_entity_encounter(entity, join_probability: float,
             - has_chad_exceptional: bool  
             - add_coins_callback: Callable[[int], None]
             - give_entity_callback: Callable[[], None]
+        coin_data: Optional dict for coin operations:
+            - get_coins_callback: Callable[[], int] - Get current coin balance
+            - add_coins_callback: Callable[[int], None] - Add coins to balance
     """
     
     # 1. Show encounter dialog with SVG (pass is_exceptional for display)
@@ -598,13 +854,71 @@ def show_entity_encounter(entity, join_probability: float,
     
     # Check if Chad already gifted the entity (skip normal bonding and show success)
     if dialog.chad_gifted:
-        # Chad already handled the bonding, just show a success message
+        # Chad already handled the bonding, show a custom dialog with mini-cards
         display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
-        QtWidgets.QMessageBox.information(
-            parent, "🎁 Gift Received!",
-            f"{'✨ Exceptional ' if is_exceptional else ''}{display_name} has joined your team!\n\n"
-            f"Thanks to Chad's... creative intervention."
+        
+        gift_dialog = QtWidgets.QDialog(parent)
+        gift_dialog.setWindowTitle("🎁 Gift Received!")
+        gift_dialog.setMinimumWidth(420)
+        gift_dialog.setStyleSheet("""
+            QDialog { background: #1a1a2e; }
+            QLabel { color: #eee; }
+        """)
+        
+        layout = QtWidgets.QVBoxLayout(gift_dialog)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Cards row: Chad + arrow + Entity
+        cards_layout = QtWidgets.QHBoxLayout()
+        cards_layout.setSpacing(10)
+        cards_layout.addStretch()
+        
+        # Exceptional Chad mini-card
+        chad_card = _create_mini_entity_card("underdog_008", is_exceptional=True, size=80)
+        cards_layout.addWidget(chad_card)
+        
+        # Arrow
+        arrow_label = QtWidgets.QLabel("→")
+        arrow_label.setStyleSheet("font-size: 24px; color: #888;")
+        cards_layout.addWidget(arrow_label, alignment=QtCore.Qt.AlignCenter)
+        
+        # Entity mini-card (the gift)
+        entity_card = _create_mini_entity_card(entity.id, is_exceptional=is_exceptional, size=80)
+        cards_layout.addWidget(entity_card)
+        
+        cards_layout.addStretch()
+        layout.addLayout(cards_layout)
+        
+        # Message text
+        exc_prefix = "✨ Exceptional " if is_exceptional else ""
+        message_label = QtWidgets.QLabel(
+            f"<b>{exc_prefix}{display_name} has joined your team!</b><br><br>"
+            f"<i>Thanks to Chad's... creative intervention.</i>"
         )
+        message_label.setWordWrap(True)
+        message_label.setAlignment(QtCore.Qt.AlignCenter)
+        message_label.setStyleSheet("font-size: 14px;")
+        layout.addWidget(message_label)
+        
+        # OK button
+        ok_btn = QtWidgets.QPushButton("🎉 Awesome!")
+        ok_btn.setStyleSheet("""
+            QPushButton {
+                background: #2e7d32;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 30px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background: #388e3c; }
+        """)
+        ok_btn.clicked.connect(gift_dialog.accept)
+        layout.addWidget(ok_btn, alignment=QtCore.Qt.AlignCenter)
+        
+        gift_dialog.exec_()
         return
         
     # 2. Perform the ACTUAL logic - is_exceptional is already baked into the callback
@@ -663,6 +977,23 @@ def show_entity_encounter(entity, join_probability: float,
                  parent, "Bond Failed", 
                  f"Don't worry! Pity bonus is building up.\nConsecutive fails: {fails}"
              )
+    
+    # 6. Special handling for Vintage Microscope (scientist_005) - show tip and coin bonus
+    if success and entity.id == "scientist_005" and coin_data:
+        get_coins = coin_data.get("get_coins_callback")
+        add_coins = coin_data.get("add_coins_callback")
+        if get_coins and add_coins:
+            try:
+                # Show microscope tip first
+                _show_microscope_tip(entity, result_is_exceptional, parent)
+                # Then show coin bonus
+                current_coins = get_coins()
+                _show_microscope_coin_bonus(entity, result_is_exceptional, 
+                                           current_coins, add_coins, parent)
+            except Exception as e:
+                # Don't crash on bonus failure
+                import logging
+                logging.getLogger(__name__).warning(f"Microscope bonus error: {e}")
 
 
 def _show_exceptional_surprise(parent: QtWidgets.QWidget):
@@ -835,3 +1166,204 @@ def _show_exceptional_celebration(entity, exceptional_colors: dict, parent: QtWi
     
     dialog.exec()
 
+
+def _show_microscope_tip(entity, is_exceptional: bool, parent: QtWidgets.QWidget) -> None:
+    """
+    Show a special microscope tip dialog when Vintage Microscope (scientist_005) is bonded.
+    
+    Args:
+        entity: The entity that was bonded
+        is_exceptional: True if exceptional variant
+        parent: Parent widget
+    """
+    global _microscope_tip_index
+    
+    # Get the next tip (cycle through them)
+    tip = MICROSCOPE_TIPS[_microscope_tip_index % len(MICROSCOPE_TIPS)]
+    _microscope_tip_index += 1
+    
+    # Use exceptional name if available
+    display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
+    
+    dialog = QtWidgets.QDialog(parent)
+    dialog.setWindowTitle("🔬 Microscopic Observation")
+    dialog.setFixedSize(420, 320)
+    dialog.setModal(True)
+    
+    layout = QtWidgets.QVBoxLayout(dialog)
+    layout.setContentsMargins(25, 25, 25, 25)
+    layout.setSpacing(15)
+    
+    # Title with microscope emoji
+    title_label = QtWidgets.QLabel(f"🔬 {display_name} observes... 🔬")
+    title_label.setAlignment(QtCore.Qt.AlignCenter)
+    title_label.setStyleSheet("""
+        font-size: 18px;
+        font-weight: bold;
+        color: #00BCD4;
+    """)
+    layout.addWidget(title_label)
+    
+    # Tip content
+    tip_label = QtWidgets.QLabel(tip)
+    tip_label.setAlignment(QtCore.Qt.AlignCenter)
+    tip_label.setWordWrap(True)
+    tip_label.setStyleSheet("""
+        font-size: 14px;
+        color: #FFFFFF;
+        padding: 15px;
+        background: rgba(0, 188, 212, 0.1);
+        border: 1px solid #00BCD4;
+        border-radius: 10px;
+    """)
+    layout.addWidget(tip_label)
+    
+    layout.addStretch()
+    
+    # Continue button
+    ok_btn = QtWidgets.QPushButton("Fascinating! 🧪")
+    ok_btn.setFixedHeight(40)
+    ok_btn.setStyleSheet("""
+        QPushButton {
+            background-color: #00BCD4;
+            color: #000000;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 8px 20px;
+            border-radius: 8px;
+            min-width: 120px;
+        }
+        QPushButton:hover {
+            background-color: #26C6DA;
+        }
+    """)
+    ok_btn.clicked.connect(dialog.accept)
+    layout.addWidget(ok_btn, alignment=QtCore.Qt.AlignCenter)
+    
+    dialog.setStyleSheet("""
+        QDialog {
+            background-color: #121212;
+        }
+    """)
+    
+    dialog.exec()
+
+
+def _show_microscope_coin_bonus(entity, is_exceptional: bool, 
+                                 current_coins: int, 
+                                 add_coins_callback: Callable[[int], None],
+                                 parent: QtWidgets.QWidget) -> int:
+    """
+    Show coin bonus dialog after microscope tip and award coins.
+    
+    Normal variant: +10% coins (min +200 if coins < 100)
+    Exceptional variant: +15% coins (min +500 if coins < 200)
+    
+    Args:
+        entity: The bonded entity
+        is_exceptional: True if exceptional variant
+        current_coins: Current coin balance
+        add_coins_callback: Callback to add coins
+        parent: Parent widget
+        
+    Returns:
+        Amount of coins awarded
+    """
+    display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
+    
+    # Calculate coin bonus
+    if is_exceptional:
+        # Exceptional: +15% or +500 if < 200 coins
+        if current_coins < 200:
+            coin_bonus = 500
+            bonus_reason = "Your coin reserves are low, so here's an extra boost!"
+        else:
+            coin_bonus = int(current_coins * 0.15)
+            bonus_reason = "+15% coin bonus for exceptional microscope!"
+    else:
+        # Normal: +10% or +200 if < 100 coins
+        if current_coins < 100:
+            coin_bonus = 200
+            bonus_reason = "Your coin reserves are low, so here's an extra boost!"
+        else:
+            coin_bonus = int(current_coins * 0.10)
+            bonus_reason = "+10% coin bonus from microscopic analysis!"
+    
+    # Award the coins
+    add_coins_callback(coin_bonus)
+    
+    # Show the bonus dialog
+    dialog = QtWidgets.QDialog(parent)
+    dialog.setWindowTitle("💰 Microscope Bonus!")
+    dialog.setFixedSize(380, 260)
+    dialog.setModal(True)
+    
+    layout = QtWidgets.QVBoxLayout(dialog)
+    layout.setContentsMargins(25, 25, 25, 25)
+    layout.setSpacing(15)
+    
+    # Coin emoji header
+    coin_emoji = QtWidgets.QLabel("💰🔬💰")
+    coin_emoji.setAlignment(QtCore.Qt.AlignCenter)
+    coin_emoji.setStyleSheet("font-size: 40px;")
+    layout.addWidget(coin_emoji)
+    
+    # Bonus message
+    message = QtWidgets.QLabel(f"{display_name}'s analysis found\nextra coins for you!")
+    message.setAlignment(QtCore.Qt.AlignCenter)
+    message.setStyleSheet("""
+        font-size: 16px;
+        font-weight: bold;
+        color: #FFD700;
+    """)
+    layout.addWidget(message)
+    
+    # Amount
+    amount_label = QtWidgets.QLabel(f"+{coin_bonus:,} coins!")
+    amount_label.setAlignment(QtCore.Qt.AlignCenter)
+    amount_label.setStyleSheet("""
+        font-size: 28px;
+        font-weight: bold;
+        color: #4CAF50;
+    """)
+    layout.addWidget(amount_label)
+    
+    # Reason
+    reason_label = QtWidgets.QLabel(bonus_reason)
+    reason_label.setAlignment(QtCore.Qt.AlignCenter)
+    reason_label.setStyleSheet("""
+        font-size: 12px;
+        color: #888888;
+    """)
+    layout.addWidget(reason_label)
+    
+    layout.addStretch()
+    
+    # OK button
+    ok_btn = QtWidgets.QPushButton("Thanks! 🎉")
+    ok_btn.setFixedHeight(40)
+    ok_btn.setStyleSheet("""
+        QPushButton {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 8px 20px;
+            border-radius: 8px;
+            min-width: 120px;
+        }
+        QPushButton:hover {
+            background-color: #66BB6A;
+        }
+    """)
+    ok_btn.clicked.connect(dialog.accept)
+    layout.addWidget(ok_btn, alignment=QtCore.Qt.AlignCenter)
+    
+    dialog.setStyleSheet("""
+        QDialog {
+            background-color: #121212;
+        }
+    """)
+    
+    dialog.exec()
+    return coin_bonus

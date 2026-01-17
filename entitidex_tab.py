@@ -1378,6 +1378,32 @@ class EntitidexTab(QtWidgets.QWidget):
         self.perks_button.clicked.connect(self._show_perks_summary)
         header_layout.addWidget(self.perks_button)
         
+        # Add Saved Encounters button
+        self.saved_button = QtWidgets.QPushButton("📦 Saved Encounters (0)")
+        self.saved_button.setCursor(QtCore.Qt.PointingHandCursor)
+        self.saved_button.setToolTip(
+            "View and open your saved encounters!\n\n"
+            "Encounters saved during focus sessions\n"
+            "can be opened here anytime."
+        )
+        self.saved_button.setStyleSheet("""
+            QPushButton {
+                background-color: #2e5d2e;
+                color: #E6E6FA;
+                border: 1px solid #4CAF50;
+                padding: 4px 10px;
+                border-radius: 4px;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            QPushButton:hover {
+                background-color: #3e7d3e;
+                border-color: #ffffff;
+            }
+        """)
+        self.saved_button.clicked.connect(self._show_saved_encounters)
+        header_layout.addWidget(self.saved_button)
+        
         header_layout.addStretch()
         
         # Overall progress label
@@ -1424,6 +1450,7 @@ class EntitidexTab(QtWidgets.QWidget):
         
         # Load initial data
         self._refresh_all_tabs()
+        self._update_saved_button_count()
     
     def _create_theme_tab(self, theme_key: str) -> QtWidgets.QWidget:
         """Create a tab widget for a specific theme."""
@@ -1692,7 +1719,10 @@ class EntitidexTab(QtWidgets.QWidget):
         )
 
     def _show_perks_summary(self):
-        """Show a dialog listing all active entity perks."""
+        """Show a dialog listing all active entity perks in a table format."""
+        from entitidex.entity_perks import ENTITY_PERKS, PerkType
+        from entitidex.entity_pools import get_entity_by_id
+        
         active_perks = calculate_active_perks(self.progress)
         
         if not active_perks:
@@ -1701,41 +1731,467 @@ class EntitidexTab(QtWidgets.QWidget):
                 "Each collected entity grants a bonus to power, coins, XP, or luck.")
             return
 
-        # Format details
-        lines = ["<h3>✨ Active Entity Bonuses</h3>"]
+        # Build contributor mapping: perk_type -> list of (entity_id, value, is_exceptional)
+        perk_contributors: dict = {}
+        collected = self.progress.collected_entity_ids or set()
+        exceptional = self.progress.exceptional_entities or {}
         
-        # Sort by value type roughly
+        for entity_id in collected:
+            perk = ENTITY_PERKS.get(entity_id)
+            if perk:
+                is_exc = entity_id in exceptional
+                value = perk.exceptional_value if is_exc else perk.normal_value
+                if perk.perk_type not in perk_contributors:
+                    perk_contributors[perk.perk_type] = []
+                perk_contributors[perk.perk_type].append((entity_id, value, is_exc))
+
+        # Create dialog
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("✨ Active Perks")
+        dialog.setMinimumSize(520, 400)
+        dialog.setMaximumSize(700, 600)
+        dialog.setStyleSheet("""
+            QDialog { background-color: #1a1a2e; }
+            QLabel { color: #E6E6FA; }
+            QTableWidget {
+                background-color: #16213e;
+                color: #E6E6FA;
+                gridline-color: #0f3460;
+                border: 1px solid #0f3460;
+                border-radius: 4px;
+            }
+            QTableWidget::item { padding: 4px; }
+            QHeaderView::section {
+                background-color: #0f3460;
+                color: #E6E6FA;
+                padding: 6px;
+                border: none;
+                font-weight: bold;
+            }
+            QPushButton {
+                background-color: #0f3460;
+                color: #E6E6FA;
+                border: 1px solid #4CAF50;
+                padding: 8px 20px;
+                border-radius: 4px;
+            }
+            QPushButton:hover { background-color: #1a4a7a; }
+        """)
+        
+        layout = QtWidgets.QVBoxLayout(dialog)
+        layout.setSpacing(10)
+        
+        # Header
+        header = QtWidgets.QLabel("<h2>✨ Active Entity Bonuses</h2>")
+        header.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(header)
+        
+        # Perk descriptions mapping
+        PERK_DESCRIPTIONS = {
+            PerkType.POWER_FLAT: "Increases your Hero Power stat",
+            PerkType.COIN_FLAT: "Bonus coins per session",
+            PerkType.COIN_PERCENT: "Percentage boost to all coin gains",
+            PerkType.COIN_DISCOUNT: "Reduces coin costs",
+            PerkType.STORE_DISCOUNT: "Reduces store refresh cost",
+            PerkType.SALVAGE_BONUS: "Bonus coins when salvaging items",
+            PerkType.XP_PERCENT: "Percentage boost to all XP gains",
+            PerkType.XP_SESSION: "Bonus XP from focus sessions",
+            PerkType.XP_LONG_SESSION: "Bonus XP for sessions over 1 hour",
+            PerkType.XP_NIGHT: "Bonus XP during night (8PM-6AM)",
+            PerkType.XP_MORNING: "Bonus XP during morning (6AM-12PM)",
+            PerkType.XP_STORY: "Bonus XP from story chapters",
+            PerkType.MERGE_LUCK: "Increases merge success chance",
+            PerkType.MERGE_SUCCESS: "Increases merge success rate",
+            PerkType.DROP_LUCK: "Increases item drop chance",
+            PerkType.ALL_LUCK: "Boosts all luck-related stats",
+            PerkType.STREAK_SAVE: "Chance to save your streak",
+            PerkType.ENCOUNTER_CHANCE: "Increases entity encounter rate",
+            PerkType.CAPTURE_BONUS: "Increases capture probability",
+            PerkType.RARITY_BIAS: "Higher chance for rare entities",
+            PerkType.PITY_BONUS: "Faster pity system progress",
+            PerkType.HYDRATION_COOLDOWN: "Reduces water reminder cooldown",
+            PerkType.HYDRATION_CAP: "Increases daily hydration cap",
+            PerkType.INVENTORY_SLOTS: "Extra inventory space",
+            PerkType.EYE_REST_CAP: "Extra daily eye rest claims",
+            PerkType.PERFECT_SESSION: "Bonus for distraction-free sessions",
+            PerkType.EYE_TIER_BONUS: "Better eye routine rewards",
+            PerkType.EYE_REROLL_CHANCE: "Retry on eye routine failure",
+            PerkType.SLEEP_TIER_BONUS: "Better sleep rewards",
+            PerkType.WEIGHT_LEGENDARY: "Legendary chance on weight log",
+            PerkType.OPTIMIZE_GEAR_DISCOUNT: "Cheaper gear optimization",
+            PerkType.SELL_RARITY_BONUS: "Better sell value for rares",
+            PerkType.GAMBLE_LUCK: "Improved gamble success",
+            PerkType.GAMBLE_SAFETY: "Chance to keep item on gamble fail",
+        }
+        
+        # Create table
+        table = QtWidgets.QTableWidget()
+        table.setColumnCount(4)
+        table.setHorizontalHeaderLabels(["Perk", "Bonus", "Effect", "Contributors"])
+        table.horizontalHeader().setStretchLastSection(True)
+        table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
+        table.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        table.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        table.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
+        table.verticalHeader().setVisible(False)
+        table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        table.setAlternatingRowColors(True)
+        table.setStyleSheet(table.styleSheet() + """
+            QTableWidget { alternate-background-color: #1a2744; }
+        """)
+        
+        # Sort perks and populate table
         sorted_keys = sorted(active_perks.keys(), key=lambda k: k.value)
+        table.setRowCount(len([k for k in sorted_keys if active_perks[k] != 0]))
         
+        row = 0
         for perk_type in sorted_keys:
             val = active_perks[perk_type]
-            if val == 0: continue
+            if val == 0:
+                continue
             
-            # Icon and label mapping
+            # Determine icon, name, and suffix
             icon = "🔹"
             name = perk_type.name.replace("_", " ").title()
             suffix = ""
             
             if "POWER" in perk_type.name: 
-                icon = "💪"; suffix = ""; name = "Hero Power"
+                icon = "💪"; name = "Hero Power"
             elif "XP" in perk_type.name: 
                 icon = "📜"; suffix = "%"
             elif "COIN" in perk_type.name: 
                 icon = "🪙"; suffix = "" if "FLAT" in perk_type.name else "%"
-            elif "LUCK" in perk_type.name: 
+            elif "LUCK" in perk_type.name or "SUCCESS" in perk_type.name: 
                 icon = "🍀"; suffix = "%"
             elif "HYDRATION" in perk_type.name:
                 icon = "💧"; suffix = "m" if "COOLDOWN" in perk_type.name else ""
-                
-            lines.append(f"{icon} <b>{name}:</b> +{val}{suffix}")
-
-        lines.append("<br><span style='color:gray'><i>Hover over individual entity cards for details!</i></span>")
+            elif "CAPTURE" in perk_type.name or "ENCOUNTER" in perk_type.name:
+                icon = "🎯"; suffix = "%"
+            elif "SALVAGE" in perk_type.name or "DISCOUNT" in perk_type.name:
+                icon = "💰"
+            elif "INVENTORY" in perk_type.name:
+                icon = "🎒"
+            elif "PERFECT" in perk_type.name:
+                icon = "⭐"; suffix = "%"
+            elif "GAMBLE" in perk_type.name:
+                icon = "🎲"; suffix = "%"
+            elif "RARITY" in perk_type.name or "PITY" in perk_type.name:
+                icon = "✨"; suffix = "%"
+            elif "EYE" in perk_type.name or "SLEEP" in perk_type.name:
+                icon = "👁️"
+            elif "STREAK" in perk_type.name:
+                icon = "🔥"; suffix = "%"
+            
+            # Perk name cell
+            perk_item = QtWidgets.QTableWidgetItem(f"{icon} {name}")
+            perk_item.setToolTip(PERK_DESCRIPTIONS.get(perk_type, "Entity perk bonus"))
+            table.setItem(row, 0, perk_item)
+            
+            # Bonus value cell
+            bonus_text = f"+{val}{suffix}"
+            bonus_item = QtWidgets.QTableWidgetItem(bonus_text)
+            bonus_item.setTextAlignment(QtCore.Qt.AlignCenter)
+            bonus_item.setForeground(QtGui.QColor("#4CAF50"))
+            table.setItem(row, 1, bonus_item)
+            
+            # Effect description cell
+            effect_text = PERK_DESCRIPTIONS.get(perk_type, "Entity perk bonus")
+            effect_item = QtWidgets.QTableWidgetItem(effect_text)
+            effect_item.setForeground(QtGui.QColor("#aaaaaa"))
+            table.setItem(row, 2, effect_item)
+            
+            # Contributors cell
+            contributors = perk_contributors.get(perk_type, [])
+            contributor_names = []
+            for entity_id, contrib_val, is_exc in contributors:
+                entity = get_entity_by_id(entity_id)
+                if entity:
+                    if is_exc:
+                        contributor_names.append(f"⭐{entity.name}")
+                    else:
+                        contributor_names.append(entity.name)
+            
+            # Show abbreviated if too many
+            if len(contributor_names) > 3:
+                display_text = f"{contributor_names[0]}, {contributor_names[1]}... +{len(contributor_names)-2}"
+                full_text = ", ".join(contributor_names)
+            else:
+                display_text = ", ".join(contributor_names)
+                full_text = display_text
+            
+            contrib_item = QtWidgets.QTableWidgetItem(display_text)
+            contrib_item.setToolTip(f"Contributors:\n{full_text}")
+            contrib_item.setForeground(QtGui.QColor("#87CEEB"))
+            table.setItem(row, 3, contrib_item)
+            
+            row += 1
         
-        msg = QtWidgets.QMessageBox(self)
-        msg.setWindowTitle("Active Perks")
-        msg.setTextFormat(QtCore.Qt.RichText)
-        msg.setText("<br>".join(lines))
-        msg.exec()
+        table.resizeRowsToContents()
+        layout.addWidget(table)
+        
+        # Footer hint
+        hint = QtWidgets.QLabel("<i style='color: #888;'>💡 Hover over cells for more details. Collect more entities to stack bonuses!</i>")
+        hint.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(hint)
+        
+        # OK button
+        btn_layout = QtWidgets.QHBoxLayout()
+        btn_layout.addStretch()
+        ok_btn = QtWidgets.QPushButton("OK")
+        ok_btn.clicked.connect(dialog.accept)
+        ok_btn.setFixedWidth(100)
+        btn_layout.addWidget(ok_btn)
+        btn_layout.addStretch()
+        layout.addLayout(btn_layout)
+        
+        dialog.exec()
+    
+    def _show_saved_encounters(self):
+        """Show a dialog to view and open saved encounters."""
+        from gamification import get_saved_encounters, open_saved_encounter
+        
+        if not hasattr(self.blocker, 'adhd_buster'):
+            QtWidgets.QMessageBox.warning(self, "Error", "Could not access saved encounters.")
+            return
+        
+        saved_list = get_saved_encounters(self.blocker.adhd_buster)
+        
+        if not saved_list:
+            QtWidgets.QMessageBox.information(
+                self, "📦 No Saved Encounters",
+                "You don't have any saved encounters yet!\n\n"
+                "When you encounter an entity during a focus session,\n"
+                "you can choose 'Save' to keep it for later.\n\n"
+                "Saved encounters preserve your bonding chance\n"
+                "so you can open them when you're ready!"
+            )
+            return
+        
+        # Create custom dialog
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle(f"📦 Saved Encounters ({len(saved_list)})")
+        dialog.setMinimumWidth(450)
+        dialog.setMinimumHeight(400)
+        dialog.setStyleSheet("""
+            QDialog { background: #1a1a2e; }
+            QLabel { color: #eee; }
+            QScrollArea { border: none; background: transparent; }
+        """)
+        
+        layout = QtWidgets.QVBoxLayout(dialog)
+        layout.setSpacing(10)
+        layout.setContentsMargins(15, 15, 15, 15)
+        
+        # Header
+        header = QtWidgets.QLabel(f"<b>📦 Saved Encounters ({len(saved_list)})</b>")
+        header.setStyleSheet("font-size: 16px; color: #c4b5fd;")
+        layout.addWidget(header)
+        
+        info = QtWidgets.QLabel(
+            "<i>Click 'Open' to attempt bonding with a saved encounter.</i>"
+        )
+        info.setStyleSheet("color: #888; font-size: 11px;")
+        layout.addWidget(info)
+        
+        # Scroll area for encounters
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        
+        scroll_content = QtWidgets.QWidget()
+        scroll_layout = QtWidgets.QVBoxLayout(scroll_content)
+        scroll_layout.setSpacing(8)
+        scroll_layout.setContentsMargins(5, 5, 5, 5)
+        
+        # Add each saved encounter as a card
+        for item in saved_list:
+            enc_widget = self._create_saved_encounter_card(item, dialog)
+            scroll_layout.addWidget(enc_widget)
+        
+        scroll_layout.addStretch()
+        scroll.setWidget(scroll_content)
+        layout.addWidget(scroll)
+        
+        # Close button
+        close_btn = QtWidgets.QPushButton("Close")
+        close_btn.setStyleSheet("""
+            QPushButton {
+                background: #444;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 20px;
+                font-size: 12px;
+            }
+            QPushButton:hover { background: #555; }
+        """)
+        close_btn.clicked.connect(dialog.accept)
+        layout.addWidget(close_btn, alignment=QtCore.Qt.AlignCenter)
+        
+        dialog.exec_()
+        
+        # Refresh after closing in case encounters were opened
+        self._update_saved_button_count()
+    
+    def _create_saved_encounter_card(self, item: dict, parent_dialog: QtWidgets.QDialog) -> QtWidgets.QWidget:
+        """Create a card widget for a saved encounter."""
+        from gamification import open_saved_encounter
+        from entity_drop_dialog import show_entity_encounter
+        
+        entity = item["entity"]
+        enc_data = item["saved_encounter"]
+        is_exceptional = enc_data.get("is_exceptional", False)
+        saved_probability = enc_data.get("saved_probability", 0.5)
+        
+        # Card frame
+        card = QtWidgets.QFrame()
+        rarity_color = RARITY_COLORS.get(entity.rarity.lower(), "#888")
+        if is_exceptional:
+            border_color = "#FFD700"
+        else:
+            border_color = rarity_color
+        
+        card.setStyleSheet(f"""
+            QFrame {{
+                background: #252540;
+                border: 2px solid {border_color};
+                border-radius: 8px;
+                padding: 8px;
+            }}
+        """)
+        
+        card_layout = QtWidgets.QHBoxLayout(card)
+        card_layout.setSpacing(10)
+        card_layout.setContentsMargins(10, 10, 10, 10)
+        
+        # Entity icon (small)
+        icon_label = QtWidgets.QLabel()
+        icon_path = self._get_entity_icon_path(entity.id, is_exceptional)
+        if icon_path and os.path.exists(icon_path):
+            pixmap = QtGui.QPixmap(icon_path)
+            if not pixmap.isNull():
+                scaled = pixmap.scaled(50, 50, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+                icon_label.setPixmap(scaled)
+        icon_label.setFixedSize(50, 50)
+        card_layout.addWidget(icon_label)
+        
+        # Info section
+        info_layout = QtWidgets.QVBoxLayout()
+        info_layout.setSpacing(2)
+        
+        # Name with variant
+        display_name = item["display_name"]
+        variant_label = item["variant_label"]
+        name_label = QtWidgets.QLabel(f"<b>{variant_label}</b> {display_name}")
+        name_label.setStyleSheet(f"color: {border_color}; font-size: 12px;")
+        info_layout.addWidget(name_label)
+        
+        # Rarity and chance
+        chance_pct = int(saved_probability * 100)
+        details = QtWidgets.QLabel(f"⭐ {entity.rarity.capitalize()} | 🎲 {chance_pct}% chance")
+        details.setStyleSheet("color: #aaa; font-size: 11px;")
+        info_layout.addWidget(details)
+        
+        card_layout.addLayout(info_layout, 1)
+        
+        # Open button
+        open_btn = QtWidgets.QPushButton("🎲 Open")
+        open_btn.setToolTip("Attempt to bond with this entity now!")
+        open_btn.setStyleSheet("""
+            QPushButton {
+                background: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background: #66BB6A; }
+        """)
+        
+        # Capture index for closure
+        idx = item["index"]
+        
+        def on_open():
+            parent_dialog.accept()  # Close the list dialog
+            self._open_saved_encounter_flow(idx)
+        
+        open_btn.clicked.connect(on_open)
+        card_layout.addWidget(open_btn)
+        
+        return card
+    
+    def _get_entity_icon_path(self, entity_id: str, is_exceptional: bool = False) -> str:
+        """Get the path to an entity's icon."""
+        if is_exceptional:
+            path = EXCEPTIONAL_ICONS_PATH / f"{entity_id}.svg"
+            if path.exists():
+                return str(path)
+        # Fall back to normal icon
+        path = ENTITY_ICONS_PATH / f"{entity_id}.svg"
+        if path.exists():
+            return str(path)
+        return ""
+    
+    def _open_saved_encounter_flow(self, index: int):
+        """Open a saved encounter and show the entity encounter dialog."""
+        from gamification import (
+            open_saved_encounter, 
+            attempt_entitidex_bond,
+            get_saved_encounters,
+        )
+        from entity_drop_dialog import show_entity_encounter
+        from entitidex import get_entity_by_id
+        
+        if not hasattr(self.blocker, 'adhd_buster'):
+            return
+        
+        # Get the saved encounter info first
+        saved_list = get_saved_encounters(self.blocker.adhd_buster)
+        if index >= len(saved_list):
+            QtWidgets.QMessageBox.warning(self, "Error", "Saved encounter not found.")
+            return
+        
+        item = saved_list[index]
+        entity = item["entity"]
+        enc_data = item["saved_encounter"]
+        is_exceptional = enc_data.get("is_exceptional", False)
+        saved_probability = enc_data.get("saved_probability", 0.5)
+        
+        # Create a bond callback that opens the saved encounter
+        def bond_callback(entity_id: str) -> dict:
+            result = open_saved_encounter(self.blocker.adhd_buster, index)
+            if result.get("success"):
+                self.refresh()  # Refresh the collection
+            return result
+        
+        # Show the encounter dialog
+        show_entity_encounter(
+            entity=entity,
+            join_probability=saved_probability,
+            bond_logic_callback=bond_callback,
+            parent=self,
+            is_exceptional=is_exceptional,
+            save_callback=None,  # No save option for already-saved encounters
+        )
+        
+        # Refresh after dialog closes
+        self._update_saved_button_count()
+        self.refresh()
+    
+    def _update_saved_button_count(self):
+        """Update the saved encounters button count."""
+        if not hasattr(self, 'saved_button'):
+            return
+        try:
+            from gamification import get_saved_encounter_count
+            if hasattr(self.blocker, 'adhd_buster'):
+                count = get_saved_encounter_count(self.blocker.adhd_buster)
+                self.saved_button.setText(f"📦 Saved Encounters ({count})")
+        except Exception:
+            pass
     
     def _on_story_changed(self, story: str):
         """Legacy method - kept for compatibility."""
@@ -1763,3 +2219,4 @@ class EntitidexTab(QtWidgets.QWidget):
         """Public method to refresh the display."""
         self._load_progress()
         self._refresh_all_tabs()
+        self._update_saved_button_count()

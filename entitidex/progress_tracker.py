@@ -215,12 +215,15 @@ class EntitidexProgress:
         exceptional_colors: Optional[dict] = None,
         session_minutes: int = 0,
         was_perfect_session: bool = False,
-    ) -> SavedEncounter:
+    ) -> Optional[SavedEncounter]:
         """
         Save an encounter for later instead of attempting bond now.
         
         This allows users to stack up encounters and open them later
         like loot boxes in the Entitidex tab.
+        
+        Only one instance of each entity variant exists in the universe,
+        so the same entity cannot be saved twice or saved if already collected.
         
         Args:
             entity_id: The ID of the encountered entity
@@ -234,8 +237,21 @@ class EntitidexProgress:
             was_perfect_session: Whether session was distraction-free
             
         Returns:
-            The SavedEncounter that was created
+            The SavedEncounter that was created, or None if entity already saved/collected
         """
+        # Check if entity is already saved (same variant type)
+        saved_ids = self.get_saved_entity_ids(is_exceptional=is_exceptional)
+        if entity_id in saved_ids:
+            return None  # Entity already saved for later
+        
+        # Check if entity is already collected
+        if is_exceptional:
+            if entity_id in self.exceptional_entities:
+                return None  # Exceptional variant already collected
+        else:
+            if entity_id in self.collected_entity_ids:
+                return None  # Normal variant already collected
+        
         # Get current failed attempts for this variant (preserved for pity)
         if is_exceptional:
             failed_attempts = self.exceptional_failed_catches.get(entity_id, 0)
@@ -315,6 +331,24 @@ class EntitidexProgress:
         count = len(self.saved_encounters)
         self.saved_encounters.clear()
         return count
+    
+    def get_saved_entity_ids(self, is_exceptional: Optional[bool] = None) -> Set[str]:
+        """
+        Get set of entity IDs currently in saved encounters.
+        
+        Saved entities are "reserved" and shouldn't appear in wild encounters.
+        
+        Args:
+            is_exceptional: If None, return all saved IDs. 
+                           If True, only exceptional saved IDs.
+                           If False, only normal saved IDs.
+        
+        Returns:
+            Set of entity IDs that are saved for later
+        """
+        if is_exceptional is None:
+            return {e.entity_id for e in self.saved_encounters}
+        return {e.entity_id for e in self.saved_encounters if e.is_exceptional == is_exceptional}
     
     # ==========================================================================
     # PROGRESS CALCULATIONS
@@ -404,6 +438,10 @@ class EntitidexProgress:
         """
         Get entities that have the specified variant still available.
         
+        Excludes entities that are:
+        - Already collected (for that variant)
+        - Currently saved for later (reserved)
+        
         Args:
             story_id: The story theme to check
             is_exceptional: True to get entities missing exceptional variant,
@@ -413,16 +451,27 @@ class EntitidexProgress:
             List of Entity objects with the specified variant available
         """
         entities = get_entities_for_story(story_id)
+        # Get IDs of saved entities (reserved, can't appear in wild)
+        saved_ids = self.get_saved_entity_ids(is_exceptional)
+        
         if is_exceptional:
             # Return entities where we DON'T have the exceptional variant
-            return [e for e in entities if e.id not in self.exceptional_entities]
+            # AND it's not saved for later
+            return [e for e in entities 
+                    if e.id not in self.exceptional_entities 
+                    and e.id not in saved_ids]
         else:
             # Return entities where we DON'T have the normal variant
-            return [e for e in entities if e.id not in self.collected_entity_ids]
+            # AND it's not saved for later
+            return [e for e in entities 
+                    if e.id not in self.collected_entity_ids 
+                    and e.id not in saved_ids]
     
     def has_any_available_variants(self, story_id: str) -> Tuple[bool, bool]:
         """
         Check if there are any normal or exceptional variants available.
+        
+        Excludes entities that are saved for later (reserved).
         
         Args:
             story_id: The story theme to check
@@ -431,8 +480,17 @@ class EntitidexProgress:
             Tuple of (has_normal_available, has_exceptional_available)
         """
         entities = get_entities_for_story(story_id)
-        has_normal = any(e.id not in self.collected_entity_ids for e in entities)
-        has_exceptional = any(e.id not in self.exceptional_entities for e in entities)
+        saved_normal = self.get_saved_entity_ids(is_exceptional=False)
+        saved_exceptional = self.get_saved_entity_ids(is_exceptional=True)
+        
+        has_normal = any(
+            e.id not in self.collected_entity_ids and e.id not in saved_normal 
+            for e in entities
+        )
+        has_exceptional = any(
+            e.id not in self.exceptional_entities and e.id not in saved_exceptional 
+            for e in entities
+        )
         return has_normal, has_exceptional
     
     def get_catch_success_rate(self) -> float:
