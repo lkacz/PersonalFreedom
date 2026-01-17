@@ -40,7 +40,6 @@ class PerkType(Enum):
     CAPTURE_BONUS = "capture_bonus"        # +X% capture probability
     RARITY_BIAS = "rarity_bias"            # +X% chance for higher rarity
     PITY_BONUS = "pity_bonus"              # +X% to pity system progress
-    HINT_REVEAL = "hint_reveal"            # Reveal hints
     
     # Quality of Life
     HYDRATION_COOLDOWN = "hydration_cd"    # -X minutes hydration cooldown
@@ -146,7 +145,7 @@ ENTITY_PERKS: Dict[str, EntityPerk] = {
     "scientist_002": EntityPerk("scientist_002", PerkType.MERGE_SUCCESS, 1, 2, "Lab Safety: +{value}% Merge Success", "🔥", "Controlled Combustion: +{value}% Merge Success"),
     "scientist_003": EntityPerk("scientist_003", PerkType.RARITY_BIAS, 1, 2, "Culture Growth: +{value}% Rare Chance", "🧫", "Perfect Specimen: +{value}% Rare Chance"),
     "scientist_004": EntityPerk("scientist_004", PerkType.PITY_BONUS, 5, 8, "Peer Review: +{value}% Pity Progress", "🐭", "Nobel Recognition: +{value}% Pity Progress"),
-    "scientist_005": EntityPerk("scientist_005", PerkType.HINT_REVEAL, 1, 2, "Micro-Insight: Reveal Hints", "🔬", "Quantum Vision: Reveal All Hints"),
+    "scientist_005": EntityPerk("scientist_005", PerkType.XP_SESSION, 2, 4, "Micro-Focus: +{value}% Focus XP", "🔬", "Quantum Focus: +{value}% Focus XP"),
     "scientist_006": EntityPerk("scientist_006", PerkType.RARITY_BIAS, 2, 4, "Reaction Base: +{value}% Epic Chance", "⚗️", "Philosopher's Stone: +{value}% Epic Chance"),
     "scientist_007": EntityPerk("scientist_007", PerkType.GAMBLE_LUCK, 5, 20, "Risk Assessment: +{value}% Gamble Chance", "⚡", "Lightning Luck: +{value}% Gamble Chance"),
     "scientist_008": EntityPerk("scientist_008", PerkType.RARITY_BIAS, 1, 2, "Golden Standard: +{value}% Legendary Chance", "🧬", "Divine Helix: +{value}% Legendary Chance"),

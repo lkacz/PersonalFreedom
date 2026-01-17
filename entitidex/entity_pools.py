@@ -622,25 +622,25 @@ RARITY_INFO = {
     "uncommon": {
         "color": "#32CD32",      # Green
         "emoji": "🟢",
-        "power_range": (150, 150),
-        "slots": [3],
+        "power_range": (150, 400),
+        "slots": [3, 4],
     },
     "rare": {
         "color": "#1E90FF",      # Blue
         "emoji": "🔵",
-        "power_range": (400, 700),
-        "slots": [4, 5],
+        "power_range": (700, 1100),
+        "slots": [5, 6],
     },
     "epic": {
         "color": "#9932CC",      # Purple
         "emoji": "🟣",
-        "power_range": (1100, 1500),
-        "slots": [6, 7],
+        "power_range": (1500, 1800),
+        "slots": [7, 8],
     },
     "legendary": {
         "color": "#FFD700",      # Gold
         "emoji": "🟡",
-        "power_range": (1800, 2000),
-        "slots": [8, 9],
+        "power_range": (2000, 2000),
+        "slots": [9],
     },
 }
