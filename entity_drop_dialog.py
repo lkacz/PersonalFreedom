@@ -614,7 +614,17 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         
         # Custom buttons
         try_btn = msg_box.addButton("🎲 Fine, I'll Try", QtWidgets.QMessageBox.AcceptRole)
-        save_btn = msg_box.addButton("📦 Save Instead", QtWidgets.QMessageBox.ActionRole)
+        
+        save_cost = self.save_cost
+        save_label = f"📦 Save Instead ({save_cost}🪙)" if save_cost > 0 else "📦 Save Instead"
+        save_btn = msg_box.addButton(save_label, QtWidgets.QMessageBox.ActionRole)
+        
+        # Disable save if slots full
+        can_save = self.bookmark_data.get("can_save", True)
+        if not can_save:
+            save_btn.setEnabled(False)
+            save_btn.setToolTip("Save slots are full!")
+            
         skip_btn = msg_box.addButton("🚪 Skip Anyway", QtWidgets.QMessageBox.RejectRole)
         
         msg_box.exec_()
