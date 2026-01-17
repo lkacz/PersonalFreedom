@@ -128,3 +128,65 @@ class EntityCapture:
             catch_probability=data.get("catch_probability", 0.5),
             was_lucky_catch=data.get("was_lucky_catch", False),
         )
+
+@dataclass
+class SavedEncounter:
+    """
+    Represents a postponed entity encounter saved for later.
+    
+    When a user clicks "Save for Later" instead of attempting to bond,
+    the encounter is stored with all its parameters preserved. This allows
+    users to stack up encounters during work sessions and "open" them later
+    like loot boxes in the Entitidex tab.
+    """
+    
+    entity_id: str                              # ID of the encountered entity
+    is_exceptional: bool = False                # Whether this is an exceptional variant
+    catch_probability: float = 0.5              # The bonding probability at time of encounter
+    hero_power_at_encounter: int = 0            # User's power when encountered
+    failed_attempts: int = 0                    # Failed attempts at time of save (for pity)
+    saved_at: datetime = field(default_factory=datetime.now)
+    encounter_perk_bonus: float = 0.0           # Encounter bonus from perks (preserved)
+    capture_perk_bonus: float = 0.0             # Capture bonus from perks (preserved)
+    exceptional_colors: Optional[dict] = None   # Colors for exceptional variant
+    session_minutes: int = 0                    # Session duration that triggered this
+    was_perfect_session: bool = False           # Whether session was distraction-free
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for serialization."""
+        return {
+            "entity_id": self.entity_id,
+            "is_exceptional": self.is_exceptional,
+            "catch_probability": self.catch_probability,
+            "hero_power_at_encounter": self.hero_power_at_encounter,
+            "failed_attempts": self.failed_attempts,
+            "saved_at": self.saved_at.isoformat(),
+            "encounter_perk_bonus": self.encounter_perk_bonus,
+            "capture_perk_bonus": self.capture_perk_bonus,
+            "exceptional_colors": self.exceptional_colors,
+            "session_minutes": self.session_minutes,
+            "was_perfect_session": self.was_perfect_session,
+        }
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> "SavedEncounter":
+        """Create SavedEncounter from dictionary."""
+        saved_at = data.get("saved_at")
+        if isinstance(saved_at, str):
+            saved_at = datetime.fromisoformat(saved_at)
+        elif saved_at is None:
+            saved_at = datetime.now()
+        
+        return cls(
+            entity_id=data["entity_id"],
+            is_exceptional=data.get("is_exceptional", False),
+            catch_probability=data.get("catch_probability", 0.5),
+            hero_power_at_encounter=data.get("hero_power_at_encounter", 0),
+            failed_attempts=data.get("failed_attempts", 0),
+            saved_at=saved_at,
+            encounter_perk_bonus=data.get("encounter_perk_bonus", 0.0),
+            capture_perk_bonus=data.get("capture_perk_bonus", 0.0),
+            exceptional_colors=data.get("exceptional_colors"),
+            session_minutes=data.get("session_minutes", 0),
+            was_perfect_session=data.get("was_perfect_session", False),
+        )

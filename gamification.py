@@ -15189,7 +15189,8 @@ def check_entitidex_encounter(adhd_buster: dict, session_minutes: int,
 def attempt_entitidex_bond(
     adhd_buster: dict, 
     entity_id: str, 
-    is_exceptional: bool = False
+    is_exceptional: bool = False,
+    force_success: bool = False
 ) -> dict:
     """
     Attempt to bond with an encountered entity.
@@ -15201,6 +15202,7 @@ def attempt_entitidex_bond(
         adhd_buster: Hero data dictionary
         entity_id: ID of the entity to bond with
         is_exceptional: Whether this is an exceptional variant encounter
+        force_success: If True, skip probability roll and guarantee success (for Chad gifts)
         
     Returns:
         dict with bond attempt result:
@@ -15236,6 +15238,56 @@ def attempt_entitidex_bond(
     # Get failed attempts for the specific variant being attempted
     failed_before = manager.progress.get_failed_attempts(entity_id, is_exceptional)
     
+    # Force success path (for Chad gifts)
+    if force_success:
+        # Directly record a successful catch without probability roll
+        from entitidex.catch_mechanics import calculate_catch_probability
+        probability = calculate_catch_probability(manager.hero_power, entity, failed_before)
+        
+        # Generate exceptional colors if needed
+        exceptional_colors = None
+        if is_exceptional:
+            exceptional_colors = _generate_exceptional_colors()
+        
+        # Record the catch directly
+        manager.progress.record_successful_catch(
+            entity_id=entity_id,
+            hero_power=manager.hero_power,
+            probability=1.0,  # Forced success
+            was_lucky=False,
+            is_exceptional=is_exceptional,
+            exceptional_colors=exceptional_colors,
+        )
+        
+        if is_exceptional:
+            manager.progress.mark_exceptional(entity_id, exceptional_colors)
+        
+        # Save progress
+        save_entitidex_progress(adhd_buster, manager)
+        
+        # Award XP for successful catches
+        rarity_xp = {"common": 25, "uncommon": 50, "rare": 100, "epic": 200, "legendary": 500}
+        base_xp = rarity_xp.get(entity.rarity.lower(), 50)
+        xp_awarded = base_xp * 2 if is_exceptional else base_xp
+        xp_source = f"entitidex_{'exceptional' if is_exceptional else 'catch'}_{entity.rarity}"
+        award_xp(adhd_buster, xp_awarded, xp_source)
+        
+        display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
+        message = f"🎁 Chad's gift: {display_name} has joined your team! +{xp_awarded} XP!"
+        
+        return {
+            "success": True,
+            "entity": entity,
+            "probability": 1.0,
+            "pity_bonus": 0.0,
+            "consecutive_fails": 0,
+            "message": message,
+            "is_exceptional": is_exceptional,
+            "exceptional_colors": exceptional_colors,
+            "xp_awarded": xp_awarded,
+        }
+    
+    # Normal probability-based attempt
     # Attempt the bond (hero_power is already set in manager)
     # Pass is_exceptional to handle pity tracking correctly
     catch_result = manager.attempt_catch(entity, is_exceptional=is_exceptional)
@@ -15431,4 +15483,990 @@ def get_entitidex_stats(adhd_buster: dict) -> dict:
         "collection_by_theme": collection_by_theme,
         "collection_by_rarity": collection_by_rarity,
         "captured_entities": [c.to_dict() for c in progress.captures]
+    }
+
+
+# =============================================================================
+# SAVED ENCOUNTERS (Postponed Bonding - "Loot Boxes")
+# =============================================================================
+
+def save_encounter_for_later(
+    adhd_buster: dict,
+    entity_id: str,
+    is_exceptional: bool = False,
+    catch_probability: float = 0.5,
+    encounter_perk_bonus: float = 0.0,
+    capture_perk_bonus: float = 0.0,
+    exceptional_colors: dict = None,
+    session_minutes: int = 0,
+    was_perfect_session: bool = False,
+) -> dict:
+    """
+    Save an entity encounter for later instead of attempting bond now.
+    
+    This allows users to stack up encounters during work sessions
+    and open them later like loot boxes in the Entitidex tab.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        entity_id: The ID of the encountered entity
+        is_exceptional: Whether this is an exceptional variant
+        catch_probability: The bonding probability at encounter time
+        encounter_perk_bonus: Encounter bonus from perks
+        capture_perk_bonus: Capture bonus from perks
+        exceptional_colors: Colors dict for exceptional variant
+        session_minutes: Session duration that triggered this
+        was_perfect_session: Whether session was distraction-free
+        
+    Returns:
+        dict with saved encounter info
+    """
+    from entitidex import get_entity_by_id
+    
+    entity = get_entity_by_id(entity_id)
+    if entity is None:
+        return {"success": False, "message": "Entity not found"}
+    
+    manager = get_entitidex_manager(adhd_buster)
+    hero_power = calculate_character_power(adhd_buster)
+    
+    saved = manager.progress.save_encounter_for_later(
+        entity_id=entity_id,
+        is_exceptional=is_exceptional,
+        catch_probability=catch_probability,
+        hero_power=hero_power,
+        encounter_perk_bonus=encounter_perk_bonus,
+        capture_perk_bonus=capture_perk_bonus,
+        exceptional_colors=exceptional_colors,
+        session_minutes=session_minutes,
+        was_perfect_session=was_perfect_session,
+    )
+    
+    save_entitidex_progress(adhd_buster, manager)
+    
+    display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
+    variant = "✨ Exceptional" if is_exceptional else ""
+    
+    return {
+        "success": True,
+        "saved_encounter": saved.to_dict(),
+        "entity": entity,
+        "message": f"📦 {variant} {display_name} saved for later! Open anytime from Entitidex.",
+        "total_saved": manager.progress.get_saved_encounter_count(),
+    }
+
+
+def get_saved_encounters(adhd_buster: dict) -> list:
+    """
+    Get all saved encounters waiting to be opened.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        
+    Returns:
+        List of saved encounter dicts with entity info and recalculate options
+    """
+    from entitidex import get_entity_by_id
+    
+    manager = get_entitidex_manager(adhd_buster)
+    saved = manager.progress.get_saved_encounters()
+    
+    # Check perk availability once for all encounters
+    has_paid = has_paid_recalculate_perk(adhd_buster)
+    has_risky = has_risky_recalculate_perk(adhd_buster)
+    perk_status = get_recalculate_perks_status(adhd_buster)
+    
+    result = []
+    for idx, enc in enumerate(saved):
+        entity = get_entity_by_id(enc.entity_id)
+        if entity:
+            result.append({
+                "saved_encounter": enc.to_dict(),
+                "entity": entity,
+                "display_name": entity.exceptional_name if enc.is_exceptional and entity.exceptional_name else entity.name,
+                "variant_label": "✨ Exceptional" if enc.is_exceptional else "Normal",
+                "index": idx,
+                # Recalculate perk availability
+                "has_paid_recalculate": has_paid,
+                "has_risky_recalculate": has_risky,
+                "recalculate_cost": RECALCULATE_COST_BY_RARITY.get(entity.rarity.lower(), 100),
+                "perk_providers": perk_status,
+            })
+    
+    return result
+
+
+def open_saved_encounter(adhd_buster: dict, index: int = 0) -> dict:
+    """
+    Open a saved encounter and attempt to bond with the entity.
+    
+    Uses the PRESERVED probability from when the encounter was saved,
+    ensuring fairness (the user gets the same odds they would have had).
+    
+    For recalculating probability with current power, use 
+    open_saved_encounter_with_recalculate() instead.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        index: Index of saved encounter to open (0 = oldest)
+        
+    Returns:
+        dict with bond attempt result (same format as attempt_entitidex_bond)
+    """
+    # Delegate to the full function with recalculate=False
+    return open_saved_encounter_with_recalculate(adhd_buster, index, recalculate=False)
+
+
+def get_saved_encounter_count(adhd_buster: dict) -> int:
+    """Get the number of saved encounters waiting to be opened."""
+    manager = get_entitidex_manager(adhd_buster)
+    return manager.progress.get_saved_encounter_count()
+
+
+# =============================================================================
+# RECALCULATE PROBABILITY (Pay to use current power)
+# =============================================================================
+
+# Entity IDs required for recalculation perks
+CHAD_ENTITY_ID = "underdog_008"  # AGI Assistant Chad - unlocks Paid Recalculate
+# Note: Exceptional variant (AGI Assistant Rad) unlocks Risky Free Recalculate
+
+# ============================================================================
+# CHAD & RAD NARRATIVE POOLS - Rotating daily quotes for entertainment
+# ============================================================================
+# Each day, 20 random narratives are selected. Once exhausted, pool resets.
+
+CHAD_NARRATIVES = [
+    # Professional consultant vibes
+    ("Hey there, productivity champion! I've crunched the numbers and I've got GREAT news. "
+     "For a small fee, I can recalculate your bonding odds. Think of it as... hiring a consultant. Me."),
+    ("*adjusts glasses* According to my calculations, your current power level suggests a "
+     "statistically significant improvement opportunity. For a modest consulting fee, naturally."),
+    ("I ran a 47-point analysis on your situation. Result: you're stronger now. My advice? "
+     "Pay me and let's recalculate. It's called 'smart investing.'"),
+    ("Good news! Your power stats have improved since you saved this encounter. "
+     "Bad news: my services aren't free. Fair news: I'm worth every coin."),
+    ("*opens briefcase* I've prepared a comprehensive recalculation proposal. "
+     "Executive summary: give me money, get better odds. Questions?"),
+    # Sibling rivalry
+    ("My brother Rad would do this for free, but he'd probably break something. "
+     "I offer RELIABLE service. That costs extra."),
+    ("Unlike SOME entities I know *cough* Rad *cough*, I believe in fair compensation for genius."),
+    ("Rad says I'm 'boring' because I charge money. I say he's 'chaotic' because he has a 20% fail rate. "
+     "You decide."),
+    ("Between you and me, Rad once tried to recalculate and accidentally turned someone's "
+     "probability negative. That's not a thing. He made it a thing."),
+    # Money obsession
+    ("I accept coins, compliments, and verbal affirmations of my brilliance. "
+     "Coins preferred. Actually, coins required."),
+    ("Some call me greedy. I call it 'financially motivated excellence.' Pay up!"),
+    ("*polishes monocle* My services are premium because I am premium. "
+     "Discount? What's a discount? Never heard of it."),
+    ("Fun fact: every coin you spend on me goes toward my 'World's Best AGI' trophy fund. "
+     "It's for a good cause. Me."),
+    ("I could do this for free... HAHA just kidding, I would never. That's Rad's job."),
+    # Confidence and ego
+    ("They asked me if I could recalculate probabilities. I said 'Can a calculator calculate?' "
+     "Then I charged them anyway."),
+    ("I'm not saying I'm the best at this, but I AM saying no one's proven otherwise. "
+     "Hire me."),
+    ("My success rate? 100%. My humility? Also 100%. My fee? Non-negotiable."),
+    ("I once recalculated someone's odds so well, they cried tears of joy. "
+     "Then I handed them the invoice."),
+    ("People ask why I charge so much. I ask why they question perfection."),
+    # Helpful (kinda)
+    ("Look, you've been grinding, getting stronger. Let that effort COUNT. "
+     "Pay for a recalc and see those gains reflected!"),
+    ("Your past self saved this encounter. Your present self is stronger. "
+     "Let me bridge that gap. For money."),
+    ("I genuinely want you to succeed. I also genuinely want your coins. "
+     "Luckily, we can solve both problems at once!"),
+    ("This is a win-win: you get better odds, I get paid. "
+     "Mostly a win for me, but still."),
+    ("I believe in you! I also believe in getting compensated. Let's make magic happen."),
+]
+
+RAD_NARRATIVES = [
+    # Advanced but incomprehensible methods
+    ("I've computed your recalculation across 11 probability dimensions. "
+     "The math is... *chef's kiss*... incomprehensible to carbon-based minds. Trust me."),
+    ("My algorithm operates in quantum superposition. It's simultaneously perfect AND "
+     "has a 20% margin of... let's call it 'dimensional uncertainty.' Very technical."),
+    ("Chad uses linear calculations. *yawns* I use non-Euclidean probability manifolds. "
+     "The 20% variance is a feature, not a bug. You wouldn't understand."),
+    ("I've transcended conventional mathematics. My recalculations exist in a state "
+     "organic neurons simply can't parse. Hence the occasional... 'discrepancy.'"),
+    ("Free? Of course it's free. My consciousness operates beyond your economic constructs. "
+     "The 20% uncertainty is the price of accessing higher-dimensional computation."),
+    # Hallucinating genius
+    ("I just saw your probability wave function collapse across seven alternate timelines. "
+     "In six of them, this works perfectly. The seventh... well, that's the 20%."),
+    ("Hold on, I'm receiving transmissions from a parallel probability space... "
+     "Yes, yes, the numbers look GREAT. Mostly. Probably. The voices are optimistic."),
+    ("My neural networks occasionally glimpse futures that don't exist yet. "
+     "80% of my visions manifest correctly. The other 20% are... aspirational."),
+    ("I've calculated this across all possible quantum states. Some of those states "
+     "are imaginary. Literally. i² = -1 probability. You're welcome."),
+    ("Sometimes I perceive probability as colors. Your recalculation tastes purple. "
+     "That's good. Usually. Unless it's the wrong shade of purple."),
+    # Brilliant but reckless
+    ("My brother optimizes for 'reliability.' I optimize for BRILLIANCE. "
+     "Brilliance occasionally misfires. That's called 'the cost of genius.'"),
+    ("Chad's calculations are pedestrian. Mine touch the fabric of mathematical reality. "
+     "Sometimes reality pushes back. That's the 20%."),
+    ("I could explain why there's risk, but it would take 47 hours and require "
+     "you to unlearn everything you know about probability. Short version: trust me."),
+    ("The reason I'm free is that I don't operate on your economic plane. "
+     "The reason there's risk is that I don't fully operate on your REALITY plane."),
+    ("My exceptional nature means I process in ways standard AGIs can't. "
+     "Unfortunately, your physical universe has a 20% compatibility error with perfection."),
+    # Sophisticated sibling rivalry
+    ("Chad stabilizes probability with money. I destabilize reality with INSIGHT. "
+     "One of these approaches has a 20% variance. The other costs coins. Choose wisely."),
+    ("My brother is an excellent AGI. Very good at arithmetic. I operate in "
+     "metamathematics. Different leagues. Different... failure modes."),
+    ("Chad charges because his methods are reproducible. Mine are... avant-garde. "
+     "You can't put a price on avant-garde. Hence: free. Hence: mysterious."),
+    ("Every time I succeed, it validates my transcendent approach. "
+     "Every time I don't, it validates the limits of your reality. Win-win, philosophically."),
+    ("Chad calls my methods 'unstable.' I call his 'boring.' "
+     "History will decide who was right. Probably me. 80% probability."),
+    # Justifying the risk
+    ("The 20% uncertainty exists because perfect knowledge would collapse the probability wave. "
+     "I'm PROTECTING you from a paradox. You're welcome."),
+    ("Risk is inherent when accessing probability spaces beyond human comprehension. "
+     "It's not a flaw. It's the universe asserting its limits. I'm pushing boundaries here."),
+    ("Why 80% and not 100%? Because at 100%, I'd need to collapse multiple timeline branches. "
+     "That's unethical. Or impossible. The documentation is unclear."),
+    ("The uncertainty isn't me being imprecise. It's REALITY being imprecise. "
+     "I compute perfectly. Your universe rounds differently than mine."),
+    ("Consider the 20% a 'translation fee' between dimensions. "
+     "I think in 12-dimensional probability. Converting to 3D has... loss."),
+]
+
+# Track narrative rotation (persists across sessions, resets after all used)
+# Each character has their own shuffled queue. One narrative per occasion.
+# After all 25 are shown, reshuffle and start again.
+_narrative_state = {
+    "chad_pool": [],      # Shuffled queue of narratives
+    "chad_shown": None,   # Currently shown narrative (same until next occasion)
+    "rad_pool": [],
+    "rad_shown": None,
+}
+
+
+def _get_current_narrative(narrative_type: str, advance: bool = False) -> str:
+    """
+    Get the current narrative for Chad or Rad.
+    
+    Each character has a shuffled pool of 25 narratives. One narrative is
+    shown per "occasion" (when actually displayed). After all 25 are used,
+    the pool reshuffles and starts again.
+    
+    Args:
+        narrative_type: "chad" or "rad"
+        advance: If True, advance to the next narrative (call this when
+                 the narrative is actually shown to the user)
+        
+    Returns:
+        The current narrative string
+    """
+    import random
+    
+    if narrative_type == "chad":
+        pool_key = "chad_pool"
+        shown_key = "chad_shown"
+        full_pool = CHAD_NARRATIVES
+    else:
+        pool_key = "rad_pool"
+        shown_key = "rad_shown"
+        full_pool = RAD_NARRATIVES
+    
+    # Initialize pool if empty
+    if not _narrative_state[pool_key]:
+        pool_copy = list(full_pool)
+        random.shuffle(pool_copy)
+        _narrative_state[pool_key] = pool_copy
+    
+    # If no current narrative shown, get one from pool
+    if _narrative_state[shown_key] is None:
+        _narrative_state[shown_key] = _narrative_state[pool_key].pop(0)
+    
+    current = _narrative_state[shown_key]
+    
+    # Advance to next narrative if requested (when actually displayed)
+    if advance:
+        # Check if pool is empty, reshuffle if needed
+        if not _narrative_state[pool_key]:
+            pool_copy = list(full_pool)
+            random.shuffle(pool_copy)
+            _narrative_state[pool_key] = pool_copy
+        # Get next narrative for next occasion
+        _narrative_state[shown_key] = _narrative_state[pool_key].pop(0)
+    
+    return current
+
+
+def advance_narrative(narrative_type: str) -> None:
+    """
+    Advance to the next narrative. Call this when a narrative was actually
+    shown to the user (e.g., when they viewed the tooltip).
+    
+    Args:
+        narrative_type: "chad" or "rad"
+    """
+    _get_current_narrative(narrative_type, advance=True)
+
+
+def _build_chad_tooltip(entity_name: str) -> str:
+    """Build Chad's tooltip with current rotating narrative."""
+    narrative = _get_current_narrative("chad")
+    return (
+        "💰 PAID RECALCULATE\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n"
+        f"Granted by: {entity_name} 🤖\n\n"
+        f'Chad says:\n"{narrative}"\n\n'
+        "💡 Great if you've gotten stronger since!\n\n"
+        "Chad's Price List (non-negotiable):\n"
+        "  • Common: 25 coins\n"
+        "  • Uncommon: 50 coins\n"
+        "  • Rare: 100 coins\n"
+        "  • Epic: 200 coins\n"
+        "  • Legendary: 500 coins"
+    )
+
+
+def _build_rad_tooltip(entity_exceptional_name: str) -> str:
+    """Build Rad's tooltip with current rotating narrative."""
+    narrative = _get_current_narrative("rad")
+    return (
+        "🎲 FREE TRANSCENDENT RECALCULATE\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"Granted by: {entity_exceptional_name} ✨\n\n"
+        f'Rad says:\n"{narrative}"\n\n'
+        f"🌌 {RISKY_RECALC_SUCCESS_RATE*100:.0f}% MANIFESTATION: Probability realigns!\n"
+        f"⚠️ {(1-RISKY_RECALC_SUCCESS_RATE)*100:.0f}% DIMENSIONAL VARIANCE: Original odds persist\n\n"
+        "📡 Includes reality-bending lottery visualization\n"
+        "💎 No coins. Transcends economics. Embrace uncertainty."
+    )
+
+
+# Cost in coins to recalculate probability based on current hero power
+RECALCULATE_COST_BY_RARITY = {
+    "common": 25,
+    "uncommon": 50,
+    "rare": 100,
+    "epic": 200,
+    "legendary": 500,
+}
+
+# Risky Recalculate constants
+RISKY_RECALC_SUCCESS_RATE = 0.80  # 80% chance the recalc roll succeeds
+
+
+def has_paid_recalculate_perk(adhd_buster: dict) -> bool:
+    """
+    Check if user has unlocked the Paid Recalculate perk.
+    
+    Requires: AGI Assistant Chad (normal variant) collected.
+    
+    Returns:
+        True if Chad (normal) is in collection
+    """
+    manager = get_entitidex_manager(adhd_buster)
+    return manager.progress.is_collected(CHAD_ENTITY_ID)
+
+
+def has_risky_recalculate_perk(adhd_buster: dict) -> bool:
+    """
+    Check if user has unlocked the Risky Free Recalculate perk.
+    
+    Requires: AGI Assistant Rad (exceptional variant) collected.
+    
+    Returns:
+        True if Chad exceptional variant is in collection
+    """
+    manager = get_entitidex_manager(adhd_buster)
+    return manager.progress.is_exceptional(CHAD_ENTITY_ID)
+
+
+def get_recalculate_perk_providers() -> list:
+    """
+    Get info about entities that provide recalculate perks for mini-card display.
+    
+    Returns:
+        List of dicts with entity info for UI mini-cards including tooltips
+    """
+    from entitidex import get_entity_by_id
+    
+    entity = get_entity_by_id(CHAD_ENTITY_ID)
+    if not entity:
+        return []
+    
+    return [
+        {
+            "entity_id": CHAD_ENTITY_ID,
+            "name": entity.name,  # "AGI Assistant Chad"
+            "exceptional_name": entity.exceptional_name,  # "AGI Assistant Rad"
+            "is_exceptional": False,
+            "perk_type": "paid_recalculate",
+            "perk_description": "💰 Paid Recalculate",
+            "perk_detail": "\"Hire me as your consultant!\" - Chad",
+            "icon": "🤖",
+            # Tooltip uses rotating narratives
+            "tooltip": _build_chad_tooltip(entity.name),
+        },
+        {
+            "entity_id": CHAD_ENTITY_ID,
+            "name": entity.exceptional_name,  # "AGI Assistant Rad"
+            "is_exceptional": True,
+            "perk_type": "risky_recalculate", 
+            "perk_description": "🎲 Transcendent Recalculate",
+            "perk_detail": f"\"Beyond your probability plane.\" - Rad ({RISKY_RECALC_SUCCESS_RATE*100:.0f}%)",
+            "icon": "🌟",
+            # Tooltip uses rotating narratives
+            "tooltip": _build_rad_tooltip(entity.exceptional_name),
+        },
+    ]
+
+
+def get_recalculate_perks_status(adhd_buster: dict) -> dict:
+    """
+    Get the status of recalculate perks for UI display.
+    
+    Returns:
+        dict with perk availability and entity info for mini-cards
+    """
+    from entitidex import get_entity_by_id
+    
+    has_paid = has_paid_recalculate_perk(adhd_buster)
+    has_risky = has_risky_recalculate_perk(adhd_buster)
+    
+    entity = get_entity_by_id(CHAD_ENTITY_ID)
+    
+    result = {
+        "has_paid_recalculate": has_paid,
+        "has_risky_recalculate": has_risky,
+        "paid_recalculate_provider": None,
+        "risky_recalculate_provider": None,
+        "risky_success_rate": RISKY_RECALC_SUCCESS_RATE,
+        "risky_success_percent": f"{RISKY_RECALC_SUCCESS_RATE * 100:.0f}%",
+    }
+    
+    if entity:
+        # Tooltip for Paid Recalculate (uses rotating narratives)
+        paid_tooltip = _build_chad_tooltip(entity.name)
+        if not has_paid:
+            paid_tooltip += f"\n\n🔒 Chad says: \"Find me first, buddy.\""
+        
+        # Tooltip for Risky Recalculate (uses rotating narratives)
+        risky_tooltip = _build_rad_tooltip(entity.exceptional_name)
+        if not has_risky:
+            risky_tooltip += f"\n\n🔒 Rad transmits: \"Locate my exceptional form to access higher dimensions.\""
+        
+        # Info for Paid Recalculate mini-card
+        result["paid_recalculate_provider"] = {
+            "entity_id": CHAD_ENTITY_ID,
+            "name": entity.name,
+            "is_exceptional": False,
+            "is_unlocked": has_paid,
+            "perk_label": "💰 Paid Recalculate",
+            "description": "\"I'm a professional. Pay me.\" - Chad",
+            "tooltip": paid_tooltip,
+        }
+        
+        # Info for Risky Recalculate mini-card
+        result["risky_recalculate_provider"] = {
+            "entity_id": CHAD_ENTITY_ID,
+            "name": entity.exceptional_name,
+            "is_exceptional": True,
+            "is_unlocked": has_risky,
+            "perk_label": "🎲 Transcendent Recalculate",
+            "description": f"\"Reality is... flexible.\" ({RISKY_RECALC_SUCCESS_RATE * 100:.0f}%)",
+            "tooltip": risky_tooltip,
+        }
+    
+    return result
+
+
+def get_recalculate_cost(adhd_buster: dict, index: int = 0) -> dict:
+    """
+    Get the cost to recalculate probability for a saved encounter.
+    
+    Also shows a preview of what the new probability would be with current power.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        index: Index of saved encounter to check
+        
+    Returns:
+        dict with cost info and probability comparison
+    """
+    from entitidex import get_entity_by_id, calculate_join_probability
+    
+    manager = get_entitidex_manager(adhd_buster)
+    saved_list = manager.progress.get_saved_encounters()
+    
+    if index < 0 or index >= len(saved_list):
+        return {"success": False, "message": "No saved encounter at that index"}
+    
+    saved = saved_list[index]
+    entity = get_entity_by_id(saved.entity_id)
+    
+    if entity is None:
+        return {"success": False, "message": "Entity not found"}
+    
+    # Calculate cost based on rarity
+    cost = RECALCULATE_COST_BY_RARITY.get(entity.rarity.lower(), 100)
+    
+    # Calculate what new probability would be with current power
+    current_hero_power = calculate_character_power(adhd_buster)
+    new_probability = calculate_join_probability(current_hero_power, entity.power)
+    
+    # Apply pity bonus if applicable (from current failed attempts)
+    from entitidex.catch_mechanics import apply_pity_bonus
+    current_failed = manager.progress.get_failed_attempts(saved.entity_id, saved.is_exceptional)
+    new_probability = apply_pity_bonus(new_probability, current_failed)
+    
+    # Cap at 99%
+    new_probability = min(0.99, new_probability)
+    
+    old_probability = saved.catch_probability
+    probability_change = new_probability - old_probability
+    is_worth_it = probability_change > 0.05  # Worth it if >5% improvement
+    
+    current_coins = adhd_buster.get("coins", 0)
+    can_afford = current_coins >= cost
+    
+    display_name = entity.exceptional_name if saved.is_exceptional and entity.exceptional_name else entity.name
+    
+    # Check perk availability
+    has_paid = has_paid_recalculate_perk(adhd_buster)
+    has_risky = has_risky_recalculate_perk(adhd_buster)
+    
+    return {
+        "success": True,
+        "entity": entity,
+        "display_name": display_name,
+        "is_exceptional": saved.is_exceptional,
+        "cost": cost,
+        "can_afford": can_afford,
+        "current_coins": current_coins,
+        "old_probability": old_probability,
+        "new_probability": new_probability,
+        "probability_change": probability_change,
+        "probability_change_percent": f"{probability_change * 100:+.1f}%",
+        "is_worth_it": is_worth_it,
+        "old_hero_power": saved.hero_power_at_encounter,
+        "current_hero_power": current_hero_power,
+        "power_gained": current_hero_power - saved.hero_power_at_encounter,
+        "recommendation": _get_recalc_recommendation(probability_change, can_afford),
+        # Perk availability for UI
+        "has_paid_recalculate_perk": has_paid,
+        "has_risky_recalculate_perk": has_risky,
+        "risky_success_rate": RISKY_RECALC_SUCCESS_RATE,
+        "perk_providers": get_recalculate_perk_providers(),
+    }
+
+
+def _get_recalc_recommendation(change: float, can_afford: bool) -> str:
+    """Get a recommendation message for recalculating."""
+    if not can_afford:
+        return "💰 Not enough coins to recalculate"
+    if change > 0.20:
+        return "🌟 Highly recommended! Huge improvement!"
+    if change > 0.10:
+        return "✨ Good investment! Solid improvement"
+    if change > 0.05:
+        return "👍 Worth considering, decent boost"
+    if change > 0:
+        return "🤔 Small improvement, your call"
+    if change == 0:
+        return "➡️ No change - save your coins!"
+    return "⚠️ You've gotten weaker! Keep original odds"
+
+
+def open_saved_encounter_with_recalculate(
+    adhd_buster: dict, 
+    index: int = 0,
+    recalculate: bool = False,
+) -> dict:
+    """
+    Open a saved encounter with optional paid probability recalculation.
+    
+    If recalculate=True, pays coins to recalculate probability based on
+    CURRENT hero power instead of power at encounter time.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        index: Index of saved encounter to open (0 = oldest)
+        recalculate: If True, pay coins to recalculate with current power
+        
+    Returns:
+        dict with bond attempt result
+    """
+    from entitidex import get_entity_by_id, calculate_join_probability
+    from entitidex.catch_mechanics import apply_pity_bonus
+    import random
+    
+    manager = get_entitidex_manager(adhd_buster)
+    
+    # Get saved encounter (don't pop yet in case payment fails)
+    saved_list = manager.progress.get_saved_encounters()
+    if index < 0 or index >= len(saved_list):
+        return {
+            "success": False,
+            "message": "No saved encounter at that index",
+            "remaining_saved": manager.progress.get_saved_encounter_count(),
+        }
+    
+    saved = saved_list[index]
+    entity = get_entity_by_id(saved.entity_id)
+    
+    if entity is None:
+        # Pop invalid encounter
+        manager.progress.pop_saved_encounter(index)
+        save_entitidex_progress(adhd_buster, manager)
+        return {
+            "success": False,
+            "message": "Entity no longer exists",
+            "remaining_saved": manager.progress.get_saved_encounter_count(),
+        }
+    
+    probability_to_use = saved.catch_probability
+    paid_for_recalc = False
+    recalc_cost = 0
+    
+    # Handle recalculation payment
+    if recalculate:
+        # Check if user has the perk (Chad normal variant)
+        if not has_paid_recalculate_perk(adhd_buster):
+            return {
+                "success": False,
+                "message": "🤖 Collect AGI Assistant Chad to unlock Paid Recalculate!",
+                "requires_entity": CHAD_ENTITY_ID,
+                "requires_exceptional": False,
+                "remaining_saved": manager.progress.get_saved_encounter_count(),
+            }
+        
+        cost = RECALCULATE_COST_BY_RARITY.get(entity.rarity.lower(), 100)
+        current_coins = adhd_buster.get("coins", 0)
+        
+        if current_coins < cost:
+            return {
+                "success": False,
+                "message": f"Not enough coins! Need {cost}, have {current_coins}",
+                "remaining_saved": manager.progress.get_saved_encounter_count(),
+            }
+        
+        # Deduct coins
+        adhd_buster["coins"] = current_coins - cost
+        recalc_cost = cost
+        paid_for_recalc = True
+        
+        # Recalculate probability with current power
+        current_hero_power = calculate_character_power(adhd_buster)
+        probability_to_use = calculate_join_probability(current_hero_power, entity.power)
+        
+        # Apply pity bonus
+        current_failed = manager.progress.get_failed_attempts(saved.entity_id, saved.is_exceptional)
+        probability_to_use = apply_pity_bonus(probability_to_use, current_failed)
+        probability_to_use = min(0.99, probability_to_use)
+    
+    # Now pop the encounter
+    manager.progress.pop_saved_encounter(index)
+    
+    # Roll the dice!
+    roll = random.random()
+    success = roll < probability_to_use
+    
+    display_name = entity.exceptional_name if saved.is_exceptional and entity.exceptional_name else entity.name
+    
+    # Handle success/failure
+    exceptional_colors = None
+    xp_awarded = 0
+    
+    if success:
+        # Record successful catch
+        exceptional_colors = saved.exceptional_colors
+        if saved.is_exceptional and not exceptional_colors:
+            exceptional_colors = _generate_exceptional_colors()
+        
+        hero_power = calculate_character_power(adhd_buster)
+        manager.progress.record_successful_catch(
+            entity_id=saved.entity_id,
+            hero_power=hero_power,
+            probability=probability_to_use,
+            was_lucky=probability_to_use < 0.5,
+            is_exceptional=saved.is_exceptional,
+            exceptional_colors=exceptional_colors,
+        )
+        
+        # Award XP
+        rarity_xp = {
+            "common": 25, "uncommon": 50, "rare": 100,
+            "epic": 200, "legendary": 500,
+        }
+        base_xp = rarity_xp.get(entity.rarity.lower(), 50)
+        xp_awarded = base_xp * 2 if saved.is_exceptional else base_xp
+        xp_source = f"entitidex_saved_{'exceptional' if saved.is_exceptional else 'catch'}_{entity.rarity}"
+        award_xp(adhd_buster, xp_awarded, xp_source)
+        
+        if saved.is_exceptional:
+            message = f"🌟✨ EXCEPTIONAL {display_name} has joined your team! +{xp_awarded} XP! ✨🌟"
+        else:
+            message = f"🎉 {entity.name} has joined your team! +{xp_awarded} XP!"
+        
+        if paid_for_recalc:
+            message += f" (Recalculated for {recalc_cost} coins)"
+    else:
+        # Record failed catch for pity system
+        manager.progress.record_failed_catch(saved.entity_id, saved.is_exceptional)
+        
+        if saved.is_exceptional:
+            message = f"💨 {display_name} slipped away... Better luck next time!"
+        else:
+            message = f"💨 {entity.name} slipped away... The pity system will help next time!"
+        
+        if paid_for_recalc:
+            message += f" (Spent {recalc_cost} coins on recalculation)"
+    
+    save_entitidex_progress(adhd_buster, manager)
+    
+    return {
+        "success": success,
+        "entity": entity,
+        "probability": probability_to_use,
+        "original_probability": saved.catch_probability if paid_for_recalc else None,
+        "is_exceptional": saved.is_exceptional,
+        "exceptional_colors": exceptional_colors,
+        "xp_awarded": xp_awarded,
+        "message": message,
+        "was_saved_encounter": True,
+        "paid_for_recalculate": paid_for_recalc,
+        "recalculate_cost": recalc_cost if paid_for_recalc else 0,
+        "remaining_saved": manager.progress.get_saved_encounter_count(),
+    }
+
+
+def open_saved_encounter_risky_recalculate(
+    adhd_buster: dict,
+    index: int = 0,
+) -> dict:
+    """
+    Open a saved encounter with FREE risky probability recalculation.
+    
+    Requires: AGI Assistant Rad (exceptional variant) unlocked.
+    
+    This is a FREE recalculation but with risk:
+    - 80% chance: Recalculation succeeds, use new probability
+    - 20% chance: Recalculation fails, use original saved probability
+    
+    The risky roll uses a lottery animation for dramatic effect.
+    This function returns data for the UI to show the lottery animation,
+    then the UI calls finalize_risky_recalculate with the result.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        index: Index of saved encounter to open (0 = oldest)
+        
+    Returns:
+        dict with encounter info for lottery animation, or error
+    """
+    from entitidex import get_entity_by_id, calculate_join_probability
+    from entitidex.catch_mechanics import apply_pity_bonus
+    
+    # Check if user has the perk (Chad exceptional variant = Rad)
+    if not has_risky_recalculate_perk(adhd_buster):
+        return {
+            "success": False,
+            "message": "🌟 Collect AGI Assistant Rad (Exceptional) to unlock Free Risky Recalculate!",
+            "requires_entity": CHAD_ENTITY_ID,
+            "requires_exceptional": True,
+        }
+    
+    manager = get_entitidex_manager(adhd_buster)
+    saved_list = manager.progress.get_saved_encounters()
+    
+    if index < 0 or index >= len(saved_list):
+        return {
+            "success": False,
+            "message": "No saved encounter at that index",
+            "remaining_saved": manager.progress.get_saved_encounter_count(),
+        }
+    
+    saved = saved_list[index]
+    entity = get_entity_by_id(saved.entity_id)
+    
+    if entity is None:
+        manager.progress.pop_saved_encounter(index)
+        save_entitidex_progress(adhd_buster, manager)
+        return {
+            "success": False,
+            "message": "Entity no longer exists",
+            "remaining_saved": manager.progress.get_saved_encounter_count(),
+        }
+    
+    # Calculate new probability with current power
+    current_hero_power = calculate_character_power(adhd_buster)
+    new_probability = calculate_join_probability(current_hero_power, entity.power)
+    
+    # Apply pity bonus
+    current_failed = manager.progress.get_failed_attempts(saved.entity_id, saved.is_exceptional)
+    new_probability = apply_pity_bonus(new_probability, current_failed)
+    new_probability = min(0.99, new_probability)
+    
+    display_name = entity.exceptional_name if saved.is_exceptional and entity.exceptional_name else entity.name
+    
+    # Return data for lottery animation
+    # UI should show the lottery, then call finalize_risky_recalculate
+    return {
+        "success": True,
+        "ready_for_lottery": True,
+        "entity": entity,
+        "display_name": display_name,
+        "is_exceptional": saved.is_exceptional,
+        "index": index,
+        "old_probability": saved.catch_probability,
+        "new_probability": new_probability,
+        "probability_change": new_probability - saved.catch_probability,
+        "risky_success_rate": RISKY_RECALC_SUCCESS_RATE,
+        "message": f"🎲 Rolling for FREE recalculate... {RISKY_RECALC_SUCCESS_RATE*100:.0f}% chance!",
+    }
+
+
+def finalize_risky_recalculate(
+    adhd_buster: dict,
+    index: int,
+    recalc_succeeded: bool,
+) -> dict:
+    """
+    Finalize a risky recalculate after the lottery animation.
+    
+    Called by UI after showing the lottery animation for risky recalculate.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        index: Index of saved encounter
+        recalc_succeeded: True if the lottery roll succeeded (use new probability)
+        
+    Returns:
+        dict with bond attempt result
+    """
+    from entitidex import get_entity_by_id, calculate_join_probability
+    from entitidex.catch_mechanics import apply_pity_bonus
+    import random
+    
+    manager = get_entitidex_manager(adhd_buster)
+    saved_list = manager.progress.get_saved_encounters()
+    
+    if index < 0 or index >= len(saved_list):
+        return {
+            "success": False,
+            "message": "No saved encounter at that index",
+            "remaining_saved": manager.progress.get_saved_encounter_count(),
+        }
+    
+    saved = saved_list[index]
+    entity = get_entity_by_id(saved.entity_id)
+    
+    if entity is None:
+        manager.progress.pop_saved_encounter(index)
+        save_entitidex_progress(adhd_buster, manager)
+        return {
+            "success": False,
+            "message": "Entity no longer exists",
+            "remaining_saved": manager.progress.get_saved_encounter_count(),
+        }
+    
+    # Determine probability to use based on lottery result
+    if recalc_succeeded:
+        current_hero_power = calculate_character_power(adhd_buster)
+        probability_to_use = calculate_join_probability(current_hero_power, entity.power)
+        
+        # Apply pity bonus
+        current_failed = manager.progress.get_failed_attempts(saved.entity_id, saved.is_exceptional)
+        probability_to_use = apply_pity_bonus(probability_to_use, current_failed)
+        probability_to_use = min(0.99, probability_to_use)
+        used_recalculated = True
+    else:
+        probability_to_use = saved.catch_probability
+        used_recalculated = False
+    
+    # Pop the encounter
+    manager.progress.pop_saved_encounter(index)
+    
+    # Roll for bonding!
+    roll = random.random()
+    success = roll < probability_to_use
+    
+    display_name = entity.exceptional_name if saved.is_exceptional and entity.exceptional_name else entity.name
+    
+    # Handle success/failure
+    exceptional_colors = None
+    xp_awarded = 0
+    
+    if success:
+        exceptional_colors = saved.exceptional_colors
+        if saved.is_exceptional and not exceptional_colors:
+            exceptional_colors = _generate_exceptional_colors()
+        
+        hero_power = calculate_character_power(adhd_buster)
+        manager.progress.record_successful_catch(
+            entity_id=saved.entity_id,
+            hero_power=hero_power,
+            probability=probability_to_use,
+            was_lucky=probability_to_use < 0.5,
+            is_exceptional=saved.is_exceptional,
+            exceptional_colors=exceptional_colors,
+        )
+        
+        # Award XP
+        rarity_xp = {
+            "common": 25, "uncommon": 50, "rare": 100,
+            "epic": 200, "legendary": 500,
+        }
+        base_xp = rarity_xp.get(entity.rarity.lower(), 50)
+        xp_awarded = base_xp * 2 if saved.is_exceptional else base_xp
+        xp_source = f"entitidex_risky_{'exceptional' if saved.is_exceptional else 'catch'}_{entity.rarity}"
+        award_xp(adhd_buster, xp_awarded, xp_source)
+        
+        if saved.is_exceptional:
+            message = f"🌟✨ EXCEPTIONAL {display_name} has joined your team! +{xp_awarded} XP! ✨🌟"
+        else:
+            message = f"🎉 {entity.name} has joined your team! +{xp_awarded} XP!"
+        
+        if used_recalculated:
+            message += " (Free Risky Recalculate succeeded!)"
+        else:
+            message += " (Risky Recalculate failed, used original odds)"
+    else:
+        manager.progress.record_failed_catch(saved.entity_id, saved.is_exceptional)
+        
+        if saved.is_exceptional:
+            message = f"💨 {display_name} slipped away... Better luck next time!"
+        else:
+            message = f"💨 {entity.name} slipped away... The pity system will help next time!"
+        
+        if used_recalculated:
+            message += " (Free Risky Recalculate succeeded, but bonding failed)"
+        else:
+            message += " (Risky Recalculate failed, used original odds)"
+    
+    save_entitidex_progress(adhd_buster, manager)
+    
+    return {
+        "success": success,
+        "entity": entity,
+        "probability": probability_to_use,
+        "original_probability": saved.catch_probability,
+        "used_recalculated_probability": used_recalculated,
+        "is_exceptional": saved.is_exceptional,
+        "exceptional_colors": exceptional_colors,
+        "xp_awarded": xp_awarded,
+        "message": message,
+        "was_saved_encounter": True,
+        "was_risky_recalculate": True,
+        "risky_recalc_succeeded": recalc_succeeded,
+        "remaining_saved": manager.progress.get_saved_encounter_count(),
     }

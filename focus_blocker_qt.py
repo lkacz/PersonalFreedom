@@ -2005,6 +2005,7 @@ class TimerTab(QtWidgets.QWidget):
             
             try:
                 from entity_drop_dialog import show_entity_encounter
+                from gamification import save_encounter_for_later
             
                 # wrapper callback for the bonding logic
                 def bond_callback_wrapper(entity_id: str):
@@ -2033,12 +2034,85 @@ class TimerTab(QtWidgets.QWidget):
                         
                     return result
 
+                # wrapper callback for saving encounter for later
+                def save_callback_wrapper(entity_id: str):
+                    result = save_encounter_for_later(
+                        adhd_buster=self.blocker.adhd_buster,
+                        entity_id=entity_id,
+                        is_exceptional=encounter_is_exceptional,
+                        catch_probability=encounter["join_probability"],
+                        encounter_perk_bonus=encounter.get("encounter_perk_bonus", 0.0),
+                        capture_perk_bonus=encounter.get("capture_perk_bonus", 0.0),
+                        session_minutes=session_minutes,
+                        was_perfect_session=is_perfect,
+                    )
+                    
+                    # Save updated data
+                    from gamification import sync_hero_data
+                    sync_hero_data(self.blocker.adhd_buster)
+                    
+                    from game_state import get_game_state
+                    game_state = get_game_state()
+                    if game_state:
+                        game_state.force_save()
+                    
+                    return result
+
+                # Check if user has Chad AGI bonded for special interactions on skip
+                CHAD_ENTITY_ID = "underdog_008"
+                chad_interaction_data = None
+                try:
+                    from entitidex import EntitidexManager
+                    manager = EntitidexManager()
+                    manager.load(self.blocker.adhd_buster.get("entitidex", {}))
+                    
+                    has_chad_normal = CHAD_ENTITY_ID in manager.progress.collected_entity_ids
+                    has_chad_exceptional = manager.progress.is_exceptional(CHAD_ENTITY_ID)
+                    
+                    if has_chad_normal or has_chad_exceptional:
+                        from game_state import get_game_state
+                        gs = get_game_state()
+                        
+                        # Callback to add coins (for exceptional Chad's "banking hack")
+                        def add_coins_callback(amount: int):
+                            if gs:
+                                gs.add_coins(amount)
+                        
+                        # Callback to give entity as if bonded (for exceptional Chad's gift)
+                        def give_entity_callback():
+                            # Call the bond logic with guaranteed success (Chad's gift)
+                            result = attempt_entitidex_bond(
+                                self.blocker.adhd_buster, entity.id,
+                                is_exceptional=encounter_is_exceptional,
+                                force_success=True  # Chad guarantees the bond!
+                            )
+                            from gamification import sync_hero_data
+                            sync_hero_data(self.blocker.adhd_buster)
+                            if gs:
+                                xp_awarded = result.get('xp_awarded', 0)
+                                if xp_awarded > 0:
+                                    total_xp = self.blocker.adhd_buster.get('total_xp', 0)
+                                    level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
+                                    gs.xp_changed.emit(total_xp, level)
+                                gs.force_save()
+                        
+                        chad_interaction_data = {
+                            "has_chad_normal": has_chad_normal and not has_chad_exceptional,
+                            "has_chad_exceptional": has_chad_exceptional,
+                            "add_coins_callback": add_coins_callback,
+                            "give_entity_callback": give_entity_callback,
+                        }
+                except Exception as e:
+                    logger.debug(f"Could not check for Chad entity: {e}")
+
                 show_entity_encounter(
                     entity=entity,
                     join_probability=encounter["join_probability"],
                     bond_logic_callback=bond_callback_wrapper,
                     parent=self.window(),
                     is_exceptional=encounter_is_exceptional,
+                    save_callback=save_callback_wrapper,
+                    chad_interaction_data=chad_interaction_data,
                 )
             except ImportError:
                  logger.error("Could not import entity_drop_dialog logic")
@@ -19043,7 +19117,7 @@ class DevTab(QtWidgets.QWidget):
             from entitidex import (
                 select_encounter_entity,
                 calculate_join_probability,
-                EntitidexProgress,
+                load_entitidex_progress,
                 get_entities_for_story,
             )
             # from entity_encounter_dialog import EntityEncounterDialog
@@ -19056,8 +19130,8 @@ class DevTab(QtWidgets.QWidget):
             story_id = self.story_combo.currentText()
             hero_power = game_state.get_current_power()
             
-            # Get or create progress tracker
-            progress = EntitidexProgress(story_id)
+            # Load real progress from file
+            progress = load_entitidex_progress(story_id)
             
             # Select an entity for encounter (now returns tuple with is_exceptional)
             entity, is_exceptional = select_encounter_entity(progress, hero_power, story_id)
@@ -19136,13 +19210,16 @@ class DevTab(QtWidgets.QWidget):
             
             entity = random.choice(entities)
             join_prob = calculate_join_probability(hero_power, entity.power)
+            is_exceptional = random.random() < 0.20  # 20% exceptional chance
             
             # Show encounter dialog using new merge-style flow
             from entity_drop_dialog import show_entity_encounter
             
-            def bond_callback_wrapper(entity_id: str):
+            def bond_callback_wrapper(entity_id: str, exceptional: bool = is_exceptional):
                 from gamification import attempt_entitidex_bond
-                result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
+                result = attempt_entitidex_bond(
+                    self.blocker.adhd_buster, entity_id, is_exceptional=exceptional
+                )
                 self.status_label.setText(f"Result: {result['success']}")
                 # Emit XP signal if XP was awarded
                 xp_awarded = result.get('xp_awarded', 0)
@@ -19163,10 +19240,11 @@ class DevTab(QtWidgets.QWidget):
                 entity=entity, 
                 join_probability=join_prob,
                 bond_logic_callback=bond_callback_wrapper,
-                parent=self.window()
+                parent=self.window(),
+                is_exceptional=is_exceptional,
             )
             
-            self.status_label.setText(f"✨ Encountered: {entity.name} ({entity.rarity})")
+            self.status_label.setText(f"✨ Encountered: {entity.name} ({entity.rarity}){' ⭐' if is_exceptional else ''}")
             self.status_label.setStyleSheet("color: #2196f3; padding: 10px;")
             
         except Exception as e:
@@ -19195,13 +19273,16 @@ class DevTab(QtWidgets.QWidget):
             
             entity = random.choice(matching)
             join_prob = calculate_join_probability(hero_power, entity.power)
+            is_exceptional = random.random() < 0.20  # 20% exceptional chance
             
             # Show encounter dialog using new merge-style flow
             from entity_drop_dialog import show_entity_encounter
             
-            def bond_callback_wrapper(entity_id: str):
+            def bond_callback_wrapper(entity_id: str, exceptional: bool = is_exceptional):
                 from gamification import attempt_entitidex_bond
-                result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
+                result = attempt_entitidex_bond(
+                    self.blocker.adhd_buster, entity_id, is_exceptional=exceptional
+                )
                 # Emit XP signal if XP was awarded
                 xp_awarded = result.get('xp_awarded', 0)
                 if xp_awarded > 0:
@@ -19221,10 +19302,11 @@ class DevTab(QtWidgets.QWidget):
                 entity=entity, 
                 join_probability=join_prob,
                 bond_logic_callback=bond_callback_wrapper,
-                parent=self.window()
+                parent=self.window(),
+                is_exceptional=is_exceptional,
             )
             
-            self.status_label.setText(f"✨ {rarity.upper()}: {entity.name}")
+            self.status_label.setText(f"✨ {rarity.upper()}: {entity.name}{' ⭐' if is_exceptional else ''}")
             color = {"common": "#9e9e9e", "uncommon": "#4caf50", "rare": "#2196f3", 
                      "epic": "#9c27b0", "legendary": "#ff9800"}.get(rarity, "#4caf50")
             self.status_label.setStyleSheet(f"color: {color}; padding: 10px;")

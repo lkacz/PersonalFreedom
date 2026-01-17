@@ -8,7 +8,7 @@ and capture history.
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple
-from .entity import Entity, EntityCapture
+from .entity import Entity, EntityCapture, SavedEncounter
 from .entity_pools import get_entities_for_story, get_entity_by_id, get_total_entity_count
 
 
@@ -38,6 +38,9 @@ class EntitidexProgress:
     
     # Detailed capture records
     captures: List[EntityCapture] = field(default_factory=list)
+    
+    # Saved encounters (postponed bonding attempts - "loot boxes")
+    saved_encounters: List[SavedEncounter] = field(default_factory=list)
     
     # Progress metadata
     current_tier: int = 1
@@ -196,6 +199,122 @@ class EntitidexProgress:
             self.lucky_catches += 1
         
         return capture
+    
+    # ==========================================================================
+    # SAVED ENCOUNTERS (Postponed Bonding - "Loot Boxes")
+    # ==========================================================================
+    
+    def save_encounter_for_later(
+        self,
+        entity_id: str,
+        is_exceptional: bool = False,
+        catch_probability: float = 0.5,
+        hero_power: int = 0,
+        encounter_perk_bonus: float = 0.0,
+        capture_perk_bonus: float = 0.0,
+        exceptional_colors: Optional[dict] = None,
+        session_minutes: int = 0,
+        was_perfect_session: bool = False,
+    ) -> SavedEncounter:
+        """
+        Save an encounter for later instead of attempting bond now.
+        
+        This allows users to stack up encounters and open them later
+        like loot boxes in the Entitidex tab.
+        
+        Args:
+            entity_id: The ID of the encountered entity
+            is_exceptional: Whether this is an exceptional variant
+            catch_probability: The bonding probability at encounter time
+            hero_power: User's power when encountered
+            encounter_perk_bonus: Encounter bonus from perks
+            capture_perk_bonus: Capture bonus from perks
+            exceptional_colors: Colors dict for exceptional variant
+            session_minutes: Session duration that triggered this
+            was_perfect_session: Whether session was distraction-free
+            
+        Returns:
+            The SavedEncounter that was created
+        """
+        # Get current failed attempts for this variant (preserved for pity)
+        if is_exceptional:
+            failed_attempts = self.exceptional_failed_catches.get(entity_id, 0)
+        else:
+            failed_attempts = self.failed_catches.get(entity_id, 0)
+        
+        saved = SavedEncounter(
+            entity_id=entity_id,
+            is_exceptional=is_exceptional,
+            catch_probability=catch_probability,
+            hero_power_at_encounter=hero_power,
+            failed_attempts=failed_attempts,
+            encounter_perk_bonus=encounter_perk_bonus,
+            capture_perk_bonus=capture_perk_bonus,
+            exceptional_colors=exceptional_colors,
+            session_minutes=session_minutes,
+            was_perfect_session=was_perfect_session,
+        )
+        
+        self.saved_encounters.append(saved)
+        return saved
+    
+    def get_saved_encounter_count(self) -> int:
+        """Get the number of saved encounters waiting to be opened."""
+        return len(self.saved_encounters)
+    
+    def get_saved_encounters(self) -> List[SavedEncounter]:
+        """Get all saved encounters, sorted by save date (oldest first)."""
+        return sorted(self.saved_encounters, key=lambda e: e.saved_at)
+    
+    def pop_saved_encounter(self, index: int = 0) -> Optional[SavedEncounter]:
+        """
+        Remove and return a saved encounter by index.
+        
+        Args:
+            index: Index of the encounter to pop (default: oldest first)
+            
+        Returns:
+            The SavedEncounter or None if index invalid
+        """
+        sorted_encounters = self.get_saved_encounters()
+        if 0 <= index < len(sorted_encounters):
+            encounter = sorted_encounters[index]
+            self.saved_encounters.remove(encounter)
+            return encounter
+        return None
+    
+    def pop_saved_encounter_by_entity(
+        self, 
+        entity_id: str, 
+        is_exceptional: Optional[bool] = None
+    ) -> Optional[SavedEncounter]:
+        """
+        Remove and return a saved encounter for a specific entity.
+        
+        Args:
+            entity_id: The entity ID to find
+            is_exceptional: If specified, match only this variant type
+            
+        Returns:
+            The SavedEncounter or None if not found
+        """
+        for encounter in self.saved_encounters:
+            if encounter.entity_id == entity_id:
+                if is_exceptional is None or encounter.is_exceptional == is_exceptional:
+                    self.saved_encounters.remove(encounter)
+                    return encounter
+        return None
+    
+    def clear_saved_encounters(self) -> int:
+        """
+        Clear all saved encounters.
+        
+        Returns:
+            Number of encounters that were cleared
+        """
+        count = len(self.saved_encounters)
+        self.saved_encounters.clear()
+        return count
     
     # ==========================================================================
     # PROGRESS CALCULATIONS
@@ -419,6 +538,7 @@ class EntitidexProgress:
             "total_catch_attempts": self.total_catch_attempts,
             "total_encounters": self.total_encounters,
             "lucky_catches": self.lucky_catches,
+            "saved_encounters": [e.to_dict() for e in self.saved_encounters],
         }
     
     @classmethod
@@ -440,6 +560,9 @@ class EntitidexProgress:
         progress.total_catch_attempts = data.get("total_catch_attempts", 0)
         progress.total_encounters = data.get("total_encounters", 0)
         progress.lucky_catches = data.get("lucky_catches", 0)
+        progress.saved_encounters = [
+            SavedEncounter.from_dict(e) for e in data.get("saved_encounters", [])
+        ]
         
         return progress
     
