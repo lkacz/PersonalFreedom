@@ -15136,7 +15136,8 @@ def save_entitidex_progress(adhd_buster: dict, manager: "EntitidexManager") -> N
 
 
 def check_entitidex_encounter(adhd_buster: dict, session_minutes: int,
-                               perfect_session: bool = False) -> dict:
+                               perfect_session: bool = False,
+                               was_bypass_used: bool = False) -> dict:
     """
     Check for an entitidex encounter after a focus session.
     
@@ -15144,6 +15145,10 @@ def check_entitidex_encounter(adhd_buster: dict, session_minutes: int,
         adhd_buster: Hero data dictionary
         session_minutes: Duration of completed session
         perfect_session: Whether session had no interruptions
+        was_bypass_used: Whether session was ended early via bypass
+            (reduces encounter chance but doesn't eliminate it -
+            allows users to use bypass for emergencies without
+            feeling completely punished)
         
     Returns:
         dict with encounter result:
@@ -15166,6 +15171,7 @@ def check_entitidex_encounter(adhd_buster: dict, session_minutes: int,
     encounter_result = manager.check_for_encounter(
         session_minutes=session_minutes,
         was_perfect_session=perfect_session,
+        was_bypass_used=was_bypass_used,
     )
     
     # Save progress (encounter attempts are tracked)

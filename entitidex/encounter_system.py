@@ -42,6 +42,10 @@ ENCOUNTER_CONFIG = {
     
     # Exceptional encounter chance (20%)
     "exceptional_chance": 0.20,
+    
+    # Bypass penalty - reduced chance when session ended early via bypass
+    # 0.25 = 25% of normal chance (75% penalty)
+    "bypass_penalty_multiplier": 0.25,
 }
 
 
@@ -102,6 +106,7 @@ def roll_encounter_chance(
     was_perfect_session: bool = False,
     streak_days: int = 0,
     active_perks: Optional[dict] = None,
+    was_bypass_used: bool = False,
 ) -> Tuple[bool, float, float]:
     """
     Roll to determine if an encounter occurs.
@@ -112,6 +117,8 @@ def roll_encounter_chance(
         was_perfect_session: True if no bypass was attempted
         streak_days: Number of consecutive days with sessions
         active_perks: Dict with entity perk bonuses
+        was_bypass_used: True if session was ended early via bypass
+            (reduces chance but doesn't eliminate it)
         
     Returns:
         Tuple of (encounter_occurred: bool, chance: float, perk_bonus: float)
@@ -123,6 +130,13 @@ def roll_encounter_chance(
         streak_days=streak_days,
         active_perks=active_perks,
     )
+    
+    # Apply bypass penalty - reduced chance but not zero
+    # This allows users to use bypass when needed (fatigue/emergencies)
+    # without feeling completely punished
+    if was_bypass_used:
+        penalty = ENCOUNTER_CONFIG["bypass_penalty_multiplier"]
+        chance = chance * penalty
     
     roll = random.random()
     return roll < chance, chance, perk_bonus
@@ -144,27 +158,29 @@ def should_trigger_encounter(
         minimum_session_minutes: The minimum required session length
         was_perfect_session: True if no bypass was attempted
         streak_days: Number of consecutive days with sessions
-        was_bypass_used: True if bypass was used (no encounter possible)
+        was_bypass_used: True if session ended early via bypass
+            (reduces encounter chance but doesn't eliminate it)
         active_perks: Dict with entity perk bonuses
         
     Returns:
         True if an encounter should occur
     """
-    # No encounters on bypassed sessions
-    if was_bypass_used:
-        return False
-    
-    occurred, _, perk_bonus = roll_encounter_chance(
+    occurred, chance, perk_bonus = roll_encounter_chance(
         session_minutes=session_minutes,
         minimum_session_minutes=minimum_session_minutes,
         was_perfect_session=was_perfect_session,
         streak_days=streak_days,
         active_perks=active_perks,
+        was_bypass_used=was_bypass_used,
     )
     
     # Log perk contribution if any
     if perk_bonus > 0 and occurred:
         print(f"[Entity Perks] ✨ Encounter boosted by +{perk_bonus*100:.1f}% from collected entities!")
+    
+    # Log bypass penalty if applied
+    if was_bypass_used and occurred:
+        print(f"[Entitidex] 🎁 Bypass session still triggered encounter! (reduced {int(ENCOUNTER_CONFIG['bypass_penalty_multiplier']*100)}% chance)")
     
     return occurred
 
