@@ -1597,6 +1597,13 @@ class TimerTab(QtWidgets.QWidget):
         if elapsed > 60:
             self.blocker.update_stats(elapsed, completed=False)
             self.session_complete.emit(elapsed)
+            
+            # Check for entity encounter with reduced chance (bypass penalty)
+            # Users who need to stop early (fatigue, emergencies) still have
+            # a small chance at encounters to avoid feeling punished
+            session_minutes = elapsed // 60
+            if session_minutes >= 10:  # Minimum 10 minutes for bypass encounter
+                self._check_entitidex_encounter_bypass(session_minutes)
 
     def _on_tick(self) -> None:
         if not self.timer_running:
@@ -2123,6 +2130,103 @@ class TimerTab(QtWidgets.QWidget):
             logger.debug(f"Entitidex not available: {e}")
         except Exception as e:
             logger.warning(f"Error checking entitidex encounter: {e}")
+
+    def _check_entitidex_encounter_bypass(self, session_minutes: int) -> None:
+        """
+        Check for entity encounter after a bypassed session (early stop).
+        
+        Users who need to stop early (fatigue, emergencies) still have a reduced
+        chance at encounters. This avoids the "hard gate" problem where bypass
+        feels punitive, potentially causing users to avoid using bypass when
+        they genuinely need it.
+        
+        The bypass_penalty_multiplier in ENCOUNTER_CONFIG controls the reduction
+        (default: 25% of normal chance).
+        
+        Args:
+            session_minutes: Duration of the bypassed session in minutes
+        """
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        # Skip if gamification mode is disabled
+        if not is_gamification_enabled(self.blocker.adhd_buster):
+            return
+        
+        try:
+            from gamification import check_entitidex_encounter, attempt_entitidex_bond
+            
+            # Bypass sessions are never "perfect" 
+            is_perfect = False
+            
+            # Check for encounter with bypass penalty applied
+            encounter = check_entitidex_encounter(
+                self.blocker.adhd_buster,
+                session_minutes,
+                perfect_session=is_perfect,
+                was_bypass_used=True,  # Apply bypass penalty
+            )
+            
+            if not encounter["triggered"] or not encounter["entity"]:
+                return
+            
+            # Show a special toast noting the lucky bypass encounter
+            show_perk_toast("Lucky! Encounter despite early stop 🎁", "✨", self)
+            
+            # Show encounter dialog using the same flow as normal sessions
+            entity = encounter["entity"]
+            encounter_is_exceptional = encounter.get("is_exceptional", False)
+            
+            try:
+                from entity_drop_dialog import show_entity_encounter
+                from gamification import save_encounter_for_later
+            
+                # wrapper callback for the bonding logic
+                def bond_callback_wrapper() -> dict:
+                    return attempt_entitidex_bond(
+                        self.blocker.adhd_buster,
+                        entity.id,
+                        is_exceptional=encounter_is_exceptional
+                    )
+                
+                # wrapper callback for saving encounter
+                def save_callback_wrapper() -> bool:
+                    try:
+                        save_encounter_for_later(
+                            self.blocker.adhd_buster, 
+                            entity.id,
+                            is_exceptional=encounter_is_exceptional
+                        )
+                        return True
+                    except Exception as e:
+                        logger.error(f"Failed to save encounter: {e}")
+                        return False
+                
+                # Get chad interaction data if available
+                chad_interaction_data = None
+                try:
+                    from gamification import get_chad_interaction_data
+                    chad_interaction_data = get_chad_interaction_data(self.blocker.adhd_buster)
+                except ImportError:
+                    pass
+                
+                show_entity_encounter(
+                    entity=entity,
+                    join_probability=encounter["join_probability"],
+                    bond_logic_callback=bond_callback_wrapper,
+                    parent=self.window(),
+                    is_exceptional=encounter_is_exceptional,
+                    save_callback=save_callback_wrapper,
+                    chad_interaction_data=chad_interaction_data,
+                    coin_data=self._get_coin_data(),
+                )
+            except ImportError:
+                 logger.error("Could not import entity_drop_dialog logic")
+            
+        except ImportError as e:
+            logger.debug(f"Entitidex not available: {e}")
+        except Exception as e:
+            logger.warning(f"Error checking bypass entitidex encounter: {e}")
 
     def _get_coin_data(self) -> Optional[Dict[str, Any]]:
         """

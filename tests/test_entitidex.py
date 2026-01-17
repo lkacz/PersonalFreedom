@@ -401,16 +401,35 @@ class TestEncounterSystem:
         
         assert perfect == normal + ENCOUNTER_CONFIG["bonus_perfect_session"]
     
-    def test_bypass_prevents_encounter(self):
-        """Bypass should prevent any encounter."""
-        result = should_trigger_encounter(
+    def test_bypass_reduces_encounter_chance(self):
+        """Bypass should reduce encounter chance, not eliminate it.
+        
+        This allows users to use bypass when genuinely needed (fatigue, emergencies)
+        without feeling completely punished.
+        """
+        from entitidex.encounter_system import roll_encounter_chance
+        
+        # Get normal chance
+        _, normal_chance, _ = roll_encounter_chance(
+            session_minutes=60,
+            was_perfect_session=True,
+            streak_days=10,
+            was_bypass_used=False,
+        )
+        
+        # Get bypass chance
+        _, bypass_chance, _ = roll_encounter_chance(
             session_minutes=60,
             was_perfect_session=True,
             streak_days=10,
             was_bypass_used=True,
         )
         
-        assert result is False
+        # Bypass chance should be reduced by the penalty multiplier
+        expected_bypass_chance = normal_chance * ENCOUNTER_CONFIG["bypass_penalty_multiplier"]
+        assert bypass_chance == expected_bypass_chance
+        assert bypass_chance > 0  # Still has a chance, not zero
+        assert bypass_chance < normal_chance  # But reduced
     
     def test_select_encounter_entity_from_uncollected(self):
         """Entity selection should only return uncollected entities."""
@@ -484,16 +503,31 @@ class TestEntitidexManager:
         assert result.entity is not None
         assert result.catch_probability > 0
     
-    def test_check_for_encounter_bypass(self):
-        """Bypass should prevent encounters."""
+    def test_check_for_encounter_bypass_has_reduced_chance(self):
+        """Bypass should have reduced but non-zero encounter chance."""
+        from entitidex.encounter_system import ENCOUNTER_CONFIG
+        
         manager = EntitidexManager(story_id="warrior", hero_power=100)
         
-        result = manager.check_for_encounter(
-            session_minutes=30,
-            was_bypass_used=True,
-        )
+        # Test multiple times - bypass reduces chance to 25% of normal
+        # With 40% base chance, bypass gives ~10% chance
+        # So about 90% of attempts should NOT trigger
+        bypass_results = []
+        for _ in range(100):
+            result = manager.check_for_encounter(
+                session_minutes=30,
+                was_bypass_used=True,
+            )
+            bypass_results.append(result.occurred)
         
-        assert result.occurred is False
+        # Most should be False (reduced chance)
+        trigger_rate = sum(bypass_results) / len(bypass_results)
+        
+        # Expected rate is ~10% (40% base * 25% penalty)
+        # Allow for statistical variance
+        assert trigger_rate < 0.30  # Much lower than normal 40%
+        # Note: We don't assert > 0 because with 10% chance, 
+        # getting 0/100 is possible (0.003% probability)
     
     def test_force_encounter(self):
         """Force encounter should work with valid entity ID."""
