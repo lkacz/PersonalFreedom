@@ -715,7 +715,7 @@ class EntityCard(QtWidgets.QFrame):
                     stop: 0 {gradient_start},
                     stop: 1 {gradient_end}
                 );
-                border: 3px solid {border_color};
+                border: 2px solid {border_color};
                 border-radius: 12px;
             }}
         """)
@@ -858,7 +858,7 @@ class EntityCard(QtWidgets.QFrame):
                         stop: 0 {gradient_start},
                         stop: 1 {gradient_end}
                     );
-                    border: 3px solid {shiny_hex};
+                    border: 2px solid {shiny_hex};
                     border-radius: 12px;
                 }}
             """)
@@ -872,11 +872,11 @@ class EntityCard(QtWidgets.QFrame):
                         stop: 0 {gradient_start},
                         stop: 1 {gradient_end}
                     );
-                    border: 3px solid {rarity_color};
+                    border: 2px solid {rarity_color};
                     border-radius: 12px;
                 }}
                 EntityCard:hover {{
-                    border: 3px solid #FFD700;
+                    border: 2px solid #8b8bb8;
                     background: qradialgradient(
                         cx: 0.5, cy: 0.5, radius: 0.8,
                         fx: 0.5, fy: 0.5,
@@ -902,11 +902,11 @@ class EntityCard(QtWidgets.QFrame):
                         stop: 0 {gradient_start},
                         stop: 1 {gradient_end}
                     );
-                    border: 3px solid {border_color};
+                    border: 2px solid {border_color};
                     border-radius: 12px;
                 }}
                 EntityCard:hover {{
-                    border: 3px solid {"#5A5A30" if self.is_exceptional else "#444444"};
+                    border: 2px solid {"#5A5A30" if self.is_exceptional else "#444444"};
                     background: qradialgradient(
                         cx: 0.5, cy: 0.5, radius: 0.8,
                         fx: 0.5, fy: 0.5,
@@ -1352,7 +1352,7 @@ class EntitidexTab(QtWidgets.QWidget):
             QLabel {
                 font-size: 24px;
                 font-weight: bold;
-                color: #FFD700;
+                color: #c4b5fd;
             }
         """)
         header_layout.addWidget(title)

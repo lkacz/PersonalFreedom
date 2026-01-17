@@ -74,7 +74,7 @@ class StatShowcaseWidget(QtWidgets.QWidget):
             font-size: 22px;
             font-weight: bold;
             color: white;
-            border: 3px solid #2e7d32;
+            border: 2px solid #388e3c;
         """)
         layout.addWidget(new_label)
         
@@ -387,8 +387,8 @@ class EnhancedLevelUpDialog(QtWidgets.QDialog):
                 QDialog {
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                                                  stop:0 #e8f5e9, stop:1 #c8e6c9);
-                    border: 4px solid #4caf50;
-                    border-radius: 16px;
+                    border: 2px solid #66bb6a;
+                    border-radius: 12px;
                 }
             """)
     

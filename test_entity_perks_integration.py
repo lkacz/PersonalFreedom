@@ -84,18 +84,18 @@ class TestEntityPerks(unittest.TestCase):
     def test_hydration_cooldown_perk(self):
         """Test hydration cooldown reduction from entity perks."""
         # wanderer_004 = HYDRATION_COOLDOWN -5min (normal), -10min (exceptional)
-        # underdog_005 = HYDRATION_COOLDOWN -5min (normal), -10min (exceptional)
+        # Note: Only wanderer_004 has HYDRATION_COOLDOWN perk
         adhd_buster = {
             "entitidex": {
-                "collected_entity_ids": ["wanderer_004", "underdog_005"],
-                "exceptional_entities": {"wanderer_004"}  # -10min exceptional
+                "collected_entity_ids": ["wanderer_004"],
+                "exceptional_entities": {"wanderer_004": {"colors": ["#123456"]}}  # -10min exceptional
             }
         }
         
-        # Expected: -10 (wanderer_004 exceptional) + -5 (underdog_005 normal) = -15 min
-        # Base is 120 min, so result should be 105 min
+        # Expected: -10 (wanderer_004 exceptional replaces normal)
+        # Base is 120 min, so result should be 110 min
         cooldown = get_hydration_cooldown_minutes(adhd_buster)
-        self.assertEqual(cooldown, 120 - 15)  # 105 minutes
+        self.assertEqual(cooldown, 120 - 10)  # 110 minutes
         
     def test_hydration_cap_perk(self):
         """Test hydration cap increase from entity perks."""

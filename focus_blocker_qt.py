@@ -1149,7 +1149,7 @@ class TimerTab(QtWidgets.QWidget):
             QFrame {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 #2d3436, stop:1 #1a1a1a);
-                border: 3px solid #5f27cd;
+                border: 2px solid #5f27cd;
                 border-radius: 20px;
                 padding: 30px;
             }
@@ -1330,20 +1330,20 @@ class TimerTab(QtWidgets.QWidget):
                 font-size: 16px;
                 font-weight: bold;
                 border-radius: 12px;
-                border: 3px solid #00cec9;
+                border: 2px solid #00cec9;
                 padding: 10px;
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 #55efc4, stop:1 #00b894);
-                border: 3px solid #55efc4;
+                border: 2px solid #55efc4;
             }
             QPushButton:pressed {
                 background: #00a884;
             }
             QPushButton:disabled {
                 background: #555555;
-                border: 3px solid #444444;
+                border: 2px solid #444444;
                 color: #888888;
             }
         """)
@@ -1359,20 +1359,20 @@ class TimerTab(QtWidgets.QWidget):
                 font-size: 16px;
                 font-weight: bold;
                 border-radius: 12px;
-                border: 3px solid #e74c3c;
+                border: 2px solid #e74c3c;
                 padding: 10px;
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 #ff7675, stop:1 #d63031);
-                border: 3px solid #ff7675;
+                border: 2px solid #ff7675;
             }
             QPushButton:pressed {
                 background: #c0392b;
             }
             QPushButton:disabled {
                 background: #555555;
-                border: 3px solid #444444;
+                border: 2px solid #444444;
                 color: #888888;
             }
         """)
@@ -1413,7 +1413,7 @@ class TimerTab(QtWidgets.QWidget):
             QGroupBox {
                 font-size: 14px;
                 font-weight: bold;
-                color: #ffd700;
+                color: #a5b4fc;
                 border: 2px solid #2d3436;
                 border-radius: 12px;
                 margin-top: 10px;
@@ -2697,6 +2697,235 @@ class ScheduleTab(QtWidgets.QWidget):
             self._refresh_table()
 
 
+# ============================================================================
+# PRODUCTIVITY ANALYTICS WIDGETS
+# ============================================================================
+
+class HourlyTimelineWidget(QtWidgets.QWidget):
+    """
+    Custom widget that renders a 24-hour timeline showing focus time distribution.
+    Uses heatmap-style coloring with hour labels at 00:00-24:00.
+    """
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.hourly_data = [0.0] * 24  # Average minutes per hour
+        self.setMinimumHeight(80)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+    
+    def set_data(self, hourly_data: list):
+        """Set the hourly data (list of 24 floats representing avg minutes per hour)."""
+        self.hourly_data = hourly_data[:24] if len(hourly_data) >= 24 else hourly_data + [0.0] * (24 - len(hourly_data))
+        self.update()
+    
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        
+        rect = self.rect()
+        margin_left = 30
+        margin_right = 10
+        margin_top = 15
+        margin_bottom = 25
+        
+        chart_left = margin_left
+        chart_right = rect.width() - margin_right
+        chart_top = margin_top
+        chart_bottom = rect.height() - margin_bottom
+        chart_width = chart_right - chart_left
+        chart_height = chart_bottom - chart_top
+        
+        if chart_width < 50 or chart_height < 20:
+            return
+        
+        # Background
+        painter.fillRect(rect, QtGui.QColor("#333333"))
+        
+        # Find max value for scaling
+        max_val = max(self.hourly_data) if max(self.hourly_data) > 0 else 1
+        
+        # Draw bars
+        bar_width = chart_width / 24
+        for hour, value in enumerate(self.hourly_data):
+            x = chart_left + hour * bar_width
+            
+            # Calculate bar height
+            bar_height = (value / max_val) * chart_height if max_val > 0 else 0
+            
+            # Calculate color intensity (gradient from dark to bright cyan/green)
+            intensity = value / max_val if max_val > 0 else 0
+            if intensity > 0.8:
+                color = QtGui.QColor("#10b981")  # Bright green for peak
+            elif intensity > 0.6:
+                color = QtGui.QColor("#34d399")  # Medium green
+            elif intensity > 0.4:
+                color = QtGui.QColor("#6ee7b7")  # Light green
+            elif intensity > 0.2:
+                color = QtGui.QColor("#99f6e4")  # Very light cyan
+            elif intensity > 0:
+                color = QtGui.QColor("#5eead4")  # Light cyan
+            else:
+                color = QtGui.QColor("#374151")  # Dark gray for zero
+            
+            # Draw bar
+            bar_rect = QtCore.QRectF(x + 1, chart_bottom - bar_height, bar_width - 2, bar_height)
+            painter.fillRect(bar_rect, color)
+            
+            # Draw subtle border
+            painter.setPen(QtGui.QPen(QtGui.QColor("#555"), 0.5))
+            painter.drawRect(bar_rect)
+        
+        # Draw hour labels (every 3 hours)
+        painter.setPen(QtGui.QColor("#9ca3af"))
+        painter.setFont(QtGui.QFont("Arial", 8))
+        for hour in range(0, 25, 3):
+            x = chart_left + hour * bar_width
+            if hour < 24:
+                label = f"{hour:02d}"
+            else:
+                label = "24"
+                x = chart_right
+            painter.drawText(int(x - 8), chart_bottom + 15, label)
+        
+        # Draw "00:00" and "24:00" labels at edges
+        painter.drawText(chart_left - 5, chart_bottom + 15, "00")
+        
+        # Draw Y-axis labels (max value)
+        painter.setPen(QtGui.QColor("#6b7280"))
+        if max_val > 0:
+            painter.drawText(2, chart_top + 10, f"{int(max_val)}m")
+        painter.drawText(2, chart_bottom, "0m")
+        
+        # Draw horizontal grid line at top
+        painter.setPen(QtGui.QPen(QtGui.QColor("#444"), 1, QtCore.Qt.DashLine))
+        painter.drawLine(chart_left, chart_top, chart_right, chart_top)
+
+
+class DayOfWeekPatternWidget(QtWidgets.QWidget):
+    """
+    Custom widget showing day-of-week patterns with confidence intervals.
+    Displays bars for each day with error bars showing 95% CI.
+    """
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # Data: [(mean, lower_ci, upper_ci) for each day Mon-Sun]
+        self.dow_data = [(0.0, 0.0, 0.0)] * 7
+        self.day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        self.setMinimumHeight(120)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+    
+    def set_data(self, dow_data: list):
+        """Set day-of-week data: list of 7 tuples (mean, lower_ci, upper_ci)."""
+        self.dow_data = dow_data[:7] if len(dow_data) >= 7 else dow_data + [(0.0, 0.0, 0.0)] * (7 - len(dow_data))
+        self.update()
+    
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        
+        rect = self.rect()
+        margin_left = 35
+        margin_right = 10
+        margin_top = 15
+        margin_bottom = 30
+        
+        chart_left = margin_left
+        chart_right = rect.width() - margin_right
+        chart_top = margin_top
+        chart_bottom = rect.height() - margin_bottom
+        chart_width = chart_right - chart_left
+        chart_height = chart_bottom - chart_top
+        
+        if chart_width < 50 or chart_height < 30:
+            return
+        
+        # Background
+        painter.fillRect(rect, QtGui.QColor("#333333"))
+        
+        # Find max value for scaling (use upper CI bounds)
+        max_val = max(d[2] for d in self.dow_data) if any(d[2] > 0 for d in self.dow_data) else 60
+        max_val = max(max_val, 10)  # Minimum scale of 10 minutes
+        
+        # Draw bars with confidence intervals
+        bar_width = chart_width / 7
+        bar_inner_width = bar_width * 0.6
+        
+        for day_idx, (mean, lower_ci, upper_ci) in enumerate(self.dow_data):
+            center_x = chart_left + day_idx * bar_width + bar_width / 2
+            bar_left = center_x - bar_inner_width / 2
+            
+            # Calculate heights
+            mean_height = (mean / max_val) * chart_height if max_val > 0 else 0
+            lower_height = (lower_ci / max_val) * chart_height if max_val > 0 else 0
+            upper_height = (upper_ci / max_val) * chart_height if max_val > 0 else 0
+            
+            # Determine bar color (gradient based on value)
+            intensity = mean / max_val if max_val > 0 else 0
+            if intensity > 0.8:
+                bar_color = QtGui.QColor("#8b5cf6")  # Purple for highest
+            elif intensity > 0.6:
+                bar_color = QtGui.QColor("#a78bfa")
+            elif intensity > 0.4:
+                bar_color = QtGui.QColor("#c4b5fd")
+            elif intensity > 0.2:
+                bar_color = QtGui.QColor("#6366f1")  # Indigo
+            else:
+                bar_color = QtGui.QColor("#4f46e5")  # Darker indigo
+            
+            # Draw confidence interval (error bar)
+            if upper_ci > lower_ci:
+                ci_x = int(center_x)
+                ci_top = int(chart_bottom - upper_height)
+                ci_bottom = int(chart_bottom - lower_height)
+                
+                # Vertical line
+                painter.setPen(QtGui.QPen(QtGui.QColor("#6b7280"), 2))
+                painter.drawLine(ci_x, ci_top, ci_x, ci_bottom)
+                
+                # Horizontal caps
+                cap_width = 4
+                painter.drawLine(ci_x - cap_width, ci_top, ci_x + cap_width, ci_top)
+                painter.drawLine(ci_x - cap_width, ci_bottom, ci_x + cap_width, ci_bottom)
+            
+            # Draw main bar
+            bar_rect = QtCore.QRectF(bar_left, chart_bottom - mean_height, bar_inner_width, mean_height)
+            painter.fillRect(bar_rect, bar_color)
+            painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 0.5))
+            painter.drawRect(bar_rect)
+            
+            # Draw value on top of bar
+            if mean > 0:
+                painter.setPen(QtGui.QColor("#e5e7eb"))
+                painter.setFont(QtGui.QFont("Arial", 8, QtGui.QFont.Bold))
+                value_text = f"{int(mean)}m" if mean < 60 else f"{mean/60:.1f}h"
+                text_rect = QtCore.QRectF(bar_left - 5, chart_bottom - mean_height - 15, bar_inner_width + 10, 15)
+                painter.drawText(text_rect, QtCore.Qt.AlignCenter, value_text)
+        
+        # Draw day labels
+        painter.setPen(QtGui.QColor("#9ca3af"))
+        painter.setFont(QtGui.QFont("Arial", 9))
+        for day_idx, day_name in enumerate(self.day_names):
+            center_x = chart_left + day_idx * bar_width + bar_width / 2
+            text_rect = QtCore.QRectF(center_x - 20, chart_bottom + 5, 40, 20)
+            painter.drawText(text_rect, QtCore.Qt.AlignCenter, day_name)
+        
+        # Draw Y-axis labels
+        painter.setPen(QtGui.QColor("#6b7280"))
+        painter.setFont(QtGui.QFont("Arial", 8))
+        if max_val >= 60:
+            painter.drawText(2, chart_top + 10, f"{max_val/60:.1f}h")
+        else:
+            painter.drawText(2, chart_top + 10, f"{int(max_val)}m")
+        painter.drawText(2, chart_bottom, "0")
+        
+        # Draw horizontal grid lines
+        painter.setPen(QtGui.QPen(QtGui.QColor("#444"), 1, QtCore.Qt.DashLine))
+        painter.drawLine(chart_left, chart_top, chart_right, chart_top)
+        mid_y = chart_top + chart_height / 2
+        painter.drawLine(chart_left, int(mid_y), chart_right, int(mid_y))
+
+
 class StatsTab(QtWidgets.QWidget):
     """Statistics tab - focus time, sessions, streaks, weekly chart."""
 
@@ -2724,58 +2953,147 @@ class StatsTab(QtWidgets.QWidget):
         inner.setSpacing(20)
 
         # Title
-        title = QtWidgets.QLabel("📊 Focus Statistics & Performance")
-        title.setFont(QtGui.QFont("Arial", 18, QtGui.QFont.Bold))
+        title = QtWidgets.QLabel("📊 Focus Statistics")
+        title.setFont(QtGui.QFont("Arial", 16, QtGui.QFont.Bold))
         title.setAlignment(QtCore.Qt.AlignCenter)
         title.setStyleSheet("""
             QLabel {
-                color: #2196f3;
-                padding: 10px;
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 rgba(33,150,243,0.1), stop:0.5 rgba(33,150,243,0.2), stop:1 rgba(33,150,243,0.1));
-                border-radius: 8px;
-                margin-bottom: 10px;
+                color: #a5b4fc;
+                padding: 8px;
+                margin-bottom: 8px;
             }
         """)
         inner.addWidget(title)
 
-        # Overview cards with modern gradient cards
+        # AGI Assistant Chad Tips Section - hidden by default until entity is unlocked
+        self.chad_tips_section = QtWidgets.QGroupBox()
+        self.chad_tips_section.setStyleSheet("""
+            QGroupBox {
+                background: #2a2a2a;
+                border: 1px solid #3d3d3d;
+                border-radius: 8px;
+                padding: 16px;
+                margin-top: 8px;
+            }
+        """)
+        self.chad_tips_section.setVisible(False)  # Hidden until entity is unlocked
+        
+        chad_layout = QtWidgets.QVBoxLayout(self.chad_tips_section)
+        chad_layout.setSpacing(12)
+        
+        # Chad section title
+        self.chad_section_title = QtWidgets.QLabel("🤖 AGI Assistant Productivity Tips")
+        self.chad_section_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
+        self.chad_section_title.setStyleSheet("color: #a5b4fc; padding: 4px;")
+        chad_layout.addWidget(self.chad_section_title)
+        
+        # Entity card container (icon + name)
+        chad_card_container = QtWidgets.QHBoxLayout()
+        chad_card_container.setSpacing(12)
+        
+        # Entity icon (48x48)
+        self.chad_icon_label = QtWidgets.QLabel()
+        self.chad_icon_label.setFixedSize(48, 48)
+        self.chad_icon_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.chad_icon_label.setStyleSheet("""
+            QLabel {
+                background: #333;
+                border: 1px solid #444;
+                border-radius: 6px;
+            }
+        """)
+        chad_card_container.addWidget(self.chad_icon_label)
+        
+        # Entity name and tip number
+        chad_info = QtWidgets.QVBoxLayout()
+        self.chad_entity_name = QtWidgets.QLabel("AGI Assistant Chad")
+        self.chad_entity_name.setStyleSheet("color: #e5e7eb; font-weight: bold; font-size: 12px;")
+        chad_info.addWidget(self.chad_entity_name)
+        
+        self.chad_tip_number = QtWidgets.QLabel("Tip #1 of 100")
+        self.chad_tip_number.setStyleSheet("color: #9ca3af; font-size: 10px;")
+        chad_info.addWidget(self.chad_tip_number)
+        
+        chad_card_container.addLayout(chad_info)
+        chad_card_container.addStretch()
+        chad_layout.addLayout(chad_card_container)
+        
+        # Tip text display
+        self.chad_tip_text = QtWidgets.QLabel("")
+        self.chad_tip_text.setWordWrap(True)
+        self.chad_tip_text.setStyleSheet("""
+            QLabel {
+                background: #333;
+                border: 1px solid #444;
+                border-radius: 6px;
+                padding: 12px;
+                color: #e5e7eb;
+                font-size: 11px;
+                line-height: 1.4;
+            }
+        """)
+        chad_layout.addWidget(self.chad_tip_text)
+        
+        # Acknowledge button
+        self.chad_acknowledge_btn = QtWidgets.QPushButton("✓ Got it! (+1 🪙)")
+        self.chad_acknowledge_btn.setStyleSheet("""
+            QPushButton {
+                background: #4ade80;
+                color: #1a1a1a;
+                border: none;
+                border-radius: 4px;
+                padding: 10px 18px;
+                font-weight: 600;
+                font-size: 11px;
+            }
+            QPushButton:hover {
+                background: #22c55e;
+            }
+            QPushButton:disabled {
+                background: #3d3d3d;
+                color: #888;
+            }
+        """)
+        self.chad_acknowledge_btn.clicked.connect(self._acknowledge_chad_tip)
+        chad_layout.addWidget(self.chad_acknowledge_btn)
+        
+        inner.addWidget(self.chad_tips_section)
+
+        # Overview cards - dark theme
         overview_group = QtWidgets.QGroupBox()
         overview_group.setStyleSheet("""
             QGroupBox {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #f8f9fa, stop:1 #e9ecef);
-                border: 2px solid #dee2e6;
-                border-radius: 12px;
-                padding: 20px;
-                margin-top: 10px;
+                background: #2a2a2a;
+                border: 1px solid #3d3d3d;
+                border-radius: 8px;
+                padding: 16px;
+                margin-top: 8px;
             }
         """)
         overview_layout = QtWidgets.QGridLayout(overview_group)
-        overview_layout.setSpacing(15)
+        overview_layout.setSpacing(12)
         
-        # Create stat cards with gradients
+        # Create stat cards - dark theme
         def create_stat_card(icon: str, label_text: str, value_widget, color: str) -> QtWidgets.QWidget:
             card = QtWidgets.QFrame()
             card.setStyleSheet(f"""
                 QFrame {{
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 {color}15, stop:1 {color}25);
-                    border: 2px solid {color}40;
-                    border-radius: 10px;
-                    padding: 15px;
+                    background: #333333;
+                    border: 1px solid #444444;
+                    border-radius: 8px;
+                    padding: 12px;
                 }}
             """)
             card_layout = QtWidgets.QVBoxLayout(card)
-            card_layout.setSpacing(8)
+            card_layout.setSpacing(6)
             
             label = QtWidgets.QLabel(f"{icon} {label_text}")
-            label.setFont(QtGui.QFont("Arial", 10))
-            label.setStyleSheet(f"color: {color}; font-weight: bold;")
+            label.setFont(QtGui.QFont("Arial", 9))
+            label.setStyleSheet("color: #9ca3af; font-weight: 500;")
             card_layout.addWidget(label)
             
-            value_widget.setFont(QtGui.QFont("Arial", 24, QtGui.QFont.Bold))
-            value_widget.setStyleSheet(f"color: {color}; padding: 5px;")
+            value_widget.setFont(QtGui.QFont("Arial", 20, QtGui.QFont.Bold))
+            value_widget.setStyleSheet(f"color: #e5e7eb; padding: 4px;")
             value_widget.setAlignment(QtCore.Qt.AlignCenter)
             card_layout.addWidget(value_widget)
             
@@ -2800,42 +3118,42 @@ class StatsTab(QtWidgets.QWidget):
         )
         inner.addWidget(overview_group)
 
-        # Focus goals dashboard (weekly/monthly targets) with modern styling
+        # Focus goals dashboard - dark theme
         goals_group = QtWidgets.QGroupBox()
         goals_group.setStyleSheet("""
             QGroupBox {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #fff8e1, stop:1 #ffecb3);
-                border: 2px solid #ffc107;
-                border-radius: 12px;
-                padding: 20px;
-                margin-top: 10px;
+                background: #2a2a2a;
+                border: 1px solid #3d3d3d;
+                border-radius: 8px;
+                padding: 16px;
+                margin-top: 8px;
             }
         """)
         goals_layout = QtWidgets.QVBoxLayout(goals_group)
-        goals_layout.setSpacing(15)
+        goals_layout.setSpacing(12)
         
         # Goals title
-        goals_title = QtWidgets.QLabel("🎯 Focus Goals Dashboard")
-        goals_title.setFont(QtGui.QFont("Arial", 14, QtGui.QFont.Bold))
-        goals_title.setStyleSheet("color: #f57c00; padding: 5px;")
+        goals_title = QtWidgets.QLabel("🎯 Focus Goals")
+        goals_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
+        goals_title.setStyleSheet("color: #a5b4fc; padding: 4px;")
         goals_layout.addWidget(goals_title)
 
-        # Weekly goal with modern styling
+        # Weekly goal - dark theme
         weekly_card = QtWidgets.QFrame()
         weekly_card.setStyleSheet("""
             QFrame {
-                background: white;
-                border-radius: 8px;
-                padding: 12px;
+                background: #333333;
+                border: 1px solid #444444;
+                border-radius: 6px;
+                padding: 10px;
             }
         """)
         weekly_layout = QtWidgets.QVBoxLayout(weekly_card)
-        weekly_layout.setSpacing(8)
+        weekly_layout.setSpacing(6)
         
         weekly_label = QtWidgets.QLabel("📅 Weekly Goal")
-        weekly_label.setFont(QtGui.QFont("Arial", 11, QtGui.QFont.Bold))
-        weekly_label.setStyleSheet("color: #1976d2;")
+        weekly_label.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
+        weekly_label.setStyleSheet("color: #93c5fd;")
         weekly_layout.addWidget(weekly_label)
         
         self.weekly_bar = QtWidgets.QProgressBar()
@@ -2843,31 +3161,35 @@ class StatsTab(QtWidgets.QWidget):
         self.weekly_bar.setTextVisible(True)
         self.weekly_bar.setStyleSheet("""
             QProgressBar {
-                border: 2px solid #1976d2;
-                border-radius: 6px;
+                border: 1px solid #4a4a4a;
+                border-radius: 4px;
                 text-align: center;
-                background: #e3f2fd;
-                height: 28px;
+                background: #2a2a2a;
+                height: 24px;
+                color: #e5e7eb;
             }
             QProgressBar::chunk {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #1976d2, stop:1 #42a5f5);
-                border-radius: 4px;
+                background: #6366f1;
+                border-radius: 3px;
             }
         """)
         weekly_layout.addWidget(self.weekly_bar)
         
         weekly_controls = QtWidgets.QHBoxLayout()
-        weekly_controls.addWidget(QtWidgets.QLabel("Target:"))
+        target_lbl = QtWidgets.QLabel("Target:")
+        target_lbl.setStyleSheet("color: #9ca3af;")
+        weekly_controls.addWidget(target_lbl)
         self.weekly_target = QtWidgets.QDoubleSpinBox()
         self.weekly_target.setRange(1, 200)
         self.weekly_target.setSuffix(" h")
         self.weekly_target.setStyleSheet("""
             QDoubleSpinBox {
-                border: 1px solid #1976d2;
+                border: 1px solid #4a4a4a;
                 border-radius: 4px;
                 padding: 4px;
                 min-width: 80px;
+                background: #2a2a2a;
+                color: #e5e7eb;
             }
         """)
         try:
@@ -2879,17 +3201,15 @@ class StatsTab(QtWidgets.QWidget):
         weekly_set = QtWidgets.QPushButton("Set Goal")
         weekly_set.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #1976d2, stop:1 #1565c0);
+                background: #6366f1;
                 color: white;
                 border: none;
                 border-radius: 4px;
-                padding: 6px 16px;
-                font-weight: bold;
+                padding: 6px 14px;
+                font-weight: 500;
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #1565c0, stop:1 #0d47a1);
+                background: #4f46e5;
             }
         """)
         weekly_set.clicked.connect(self._set_weekly_goal)
@@ -2898,21 +3218,22 @@ class StatsTab(QtWidgets.QWidget):
         weekly_layout.addLayout(weekly_controls)
         goals_layout.addWidget(weekly_card)
 
-        # Monthly goal with modern styling
+        # Monthly goal - dark theme
         monthly_card = QtWidgets.QFrame()
         monthly_card.setStyleSheet("""
             QFrame {
-                background: white;
-                border-radius: 8px;
-                padding: 12px;
+                background: #333333;
+                border: 1px solid #444444;
+                border-radius: 6px;
+                padding: 10px;
             }
         """)
         monthly_layout = QtWidgets.QVBoxLayout(monthly_card)
-        monthly_layout.setSpacing(8)
+        monthly_layout.setSpacing(6)
         
         monthly_label = QtWidgets.QLabel("📆 Monthly Goal")
-        monthly_label.setFont(QtGui.QFont("Arial", 11, QtGui.QFont.Bold))
-        monthly_label.setStyleSheet("color: #7b1fa2;")
+        monthly_label.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
+        monthly_label.setStyleSheet("color: #c4b5fd;")
         monthly_layout.addWidget(monthly_label)
         
         self.monthly_bar = QtWidgets.QProgressBar()
@@ -2920,31 +3241,35 @@ class StatsTab(QtWidgets.QWidget):
         self.monthly_bar.setTextVisible(True)
         self.monthly_bar.setStyleSheet("""
             QProgressBar {
-                border: 2px solid #7b1fa2;
-                border-radius: 6px;
+                border: 1px solid #4a4a4a;
+                border-radius: 4px;
                 text-align: center;
-                background: #f3e5f5;
-                height: 28px;
+                background: #2a2a2a;
+                height: 24px;
+                color: #e5e7eb;
             }
             QProgressBar::chunk {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #7b1fa2, stop:1 #ab47bc);
-                border-radius: 4px;
+                background: #8b5cf6;
+                border-radius: 3px;
             }
         """)
         monthly_layout.addWidget(self.monthly_bar)
         
         monthly_controls = QtWidgets.QHBoxLayout()
-        monthly_controls.addWidget(QtWidgets.QLabel("Target:"))
+        target_lbl2 = QtWidgets.QLabel("Target:")
+        target_lbl2.setStyleSheet("color: #9ca3af;")
+        monthly_controls.addWidget(target_lbl2)
         self.monthly_target = QtWidgets.QDoubleSpinBox()
         self.monthly_target.setRange(1, 1000)
         self.monthly_target.setSuffix(" h")
         self.monthly_target.setStyleSheet("""
             QDoubleSpinBox {
-                border: 1px solid #7b1fa2;
+                border: 1px solid #4a4a4a;
                 border-radius: 4px;
                 padding: 4px;
                 min-width: 80px;
+                background: #2a2a2a;
+                color: #e5e7eb;
             }
         """)
         try:
@@ -2956,17 +3281,15 @@ class StatsTab(QtWidgets.QWidget):
         monthly_set = QtWidgets.QPushButton("Set Goal")
         monthly_set.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #7b1fa2, stop:1 #6a1b9a);
+                background: #8b5cf6;
                 color: white;
                 border: none;
                 border-radius: 4px;
-                padding: 6px 16px;
-                font-weight: bold;
+                padding: 6px 14px;
+                font-weight: 500;
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #6a1b9a, stop:1 #4a148c);
+                background: #7c3aed;
             }
         """)
         monthly_set.clicked.connect(self._set_monthly_goal)
@@ -2977,23 +3300,23 @@ class StatsTab(QtWidgets.QWidget):
 
         inner.addWidget(goals_group)
 
-        # Weekly chart with graphical bars
+        # Weekly chart - dark theme
         week_group = QtWidgets.QGroupBox()
         week_group.setStyleSheet("""
             QGroupBox {
-                background: white;
-                border: 1px solid #e0e0e0;
+                background: #2a2a2a;
+                border: 1px solid #3d3d3d;
                 border-radius: 8px;
-                padding: 15px;
-                margin-top: 10px;
+                padding: 12px;
+                margin-top: 8px;
             }
         """)
         week_layout = QtWidgets.QVBoxLayout(week_group)
-        week_layout.setSpacing(8)
+        week_layout.setSpacing(6)
         
         week_title = QtWidgets.QLabel("📊 Weekly Focus Time")
-        week_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
-        week_title.setStyleSheet("color: #424242; padding: 0px 0px 5px 0px;")
+        week_title.setFont(QtGui.QFont("Arial", 11, QtGui.QFont.Bold))
+        week_title.setStyleSheet("color: #a5b4fc; padding: 0px 0px 4px 0px;")
         week_layout.addWidget(week_title)
         
         # Store weekly progress bars
@@ -3005,27 +3328,26 @@ class StatsTab(QtWidgets.QWidget):
             
             day_label = QtWidgets.QLabel(day)
             day_label.setFixedWidth(35)
-            day_label.setStyleSheet("color: #757575; font-weight: bold;")
+            day_label.setStyleSheet("color: #9ca3af; font-weight: 500;")
             day_layout.addWidget(day_label)
             
             progress = QtWidgets.QProgressBar()
             progress.setMaximum(100)
             progress.setValue(0)
             progress.setTextVisible(True)
-            progress.setFixedHeight(20)
+            progress.setFixedHeight(18)
             progress.setStyleSheet("""
                 QProgressBar {
-                    border: 1px solid #e0e0e0;
-                    border-radius: 4px;
-                    background: #f5f5f5;
+                    border: 1px solid #444444;
+                    border-radius: 3px;
+                    background: #333333;
                     text-align: center;
-                    color: #424242;
+                    color: #e5e7eb;
                     font-size: 10px;
                 }
                 QProgressBar::chunk {
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                        stop:0 #81c784, stop:1 #66bb6a);
-                    border-radius: 3px;
+                    background: #10b981;
+                    border-radius: 2px;
                 }
             """)
             day_layout.addWidget(progress, 1)
@@ -3036,42 +3358,281 @@ class StatsTab(QtWidgets.QWidget):
         # Total summary
         self.week_total_label = QtWidgets.QLabel("")
         self.week_total_label.setStyleSheet("""
-            color: #424242;
-            font-weight: bold;
-            padding: 8px 0px 0px 0px;
-            border-top: 1px solid #e0e0e0;
-            margin-top: 5px;
+            color: #e5e7eb;
+            font-weight: 500;
+            padding: 6px 0px 0px 0px;
+            border-top: 1px solid #444444;
+            margin-top: 4px;
         """)
         week_layout.addWidget(self.week_total_label)
         
         inner.addWidget(week_group)
 
-        # Distraction attempts (bypass) if available with modern styling
+        # ═══════════════════════════════════════════════════════════════════════
+        # PRODUCTIVITY ANALYTICS SECTION - State-of-the-art visualization
+        # ═══════════════════════════════════════════════════════════════════════
+        
+        analytics_group = QtWidgets.QGroupBox()
+        analytics_group.setStyleSheet("""
+            QGroupBox {
+                background: #2a2a2a;
+                border: 1px solid #3d3d3d;
+                border-radius: 8px;
+                padding: 12px;
+                margin-top: 8px;
+            }
+        """)
+        analytics_layout = QtWidgets.QVBoxLayout(analytics_group)
+        analytics_layout.setSpacing(12)
+        
+        # Analytics header with period selector
+        analytics_header = QtWidgets.QHBoxLayout()
+        analytics_title = QtWidgets.QLabel("📈 Productivity Analytics")
+        analytics_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
+        analytics_title.setStyleSheet("color: #a5b4fc; padding: 4px;")
+        analytics_header.addWidget(analytics_title)
+        analytics_header.addStretch()
+        
+        # Period selector
+        period_label = QtWidgets.QLabel("Period:")
+        period_label.setStyleSheet("color: #9ca3af;")
+        analytics_header.addWidget(period_label)
+        
+        self.analytics_period = NoScrollComboBox()
+        self.analytics_period.addItem("Last 7 Days", 7)
+        self.analytics_period.addItem("Last 30 Days", 30)
+        self.analytics_period.addItem("Last 60 Days", 60)
+        self.analytics_period.addItem("Last 6 Months", 180)
+        self.analytics_period.addItem("Lifetime", -1)
+        self.analytics_period.setCurrentIndex(1)  # Default: 30 days
+        self.analytics_period.setStyleSheet("""
+            QComboBox {
+                background: #333;
+                color: #e5e7eb;
+                border: 1px solid #444;
+                border-radius: 4px;
+                padding: 4px 8px;
+                min-width: 120px;
+            }
+            QComboBox::drop-down {
+                border: none;
+            }
+            QComboBox QAbstractItemView {
+                background: #333;
+                color: #e5e7eb;
+                selection-background-color: #4f46e5;
+            }
+        """)
+        self.analytics_period.currentIndexChanged.connect(self._refresh_analytics)
+        analytics_header.addWidget(self.analytics_period)
+        analytics_layout.addLayout(analytics_header)
+        
+        # 24-Hour Timeline Section
+        timeline_card = QtWidgets.QFrame()
+        timeline_card.setStyleSheet("""
+            QFrame {
+                background: #333333;
+                border: 1px solid #444444;
+                border-radius: 6px;
+                padding: 10px;
+            }
+        """)
+        timeline_layout = QtWidgets.QVBoxLayout(timeline_card)
+        timeline_layout.setSpacing(8)
+        
+        timeline_title = QtWidgets.QLabel("🕐 24-Hour Focus Timeline")
+        timeline_title.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
+        timeline_title.setStyleSheet("color: #93c5fd;")
+        timeline_layout.addWidget(timeline_title)
+        
+        timeline_subtitle = QtWidgets.QLabel("Average focus time by hour of day")
+        timeline_subtitle.setStyleSheet("color: #6b7280; font-size: 10px;")
+        timeline_layout.addWidget(timeline_subtitle)
+        
+        # Timeline canvas widget
+        self.timeline_canvas = HourlyTimelineWidget()
+        self.timeline_canvas.setMinimumHeight(100)
+        self.timeline_canvas.setMaximumHeight(120)
+        timeline_layout.addWidget(self.timeline_canvas)
+        
+        # Peak hours label
+        self.peak_hours_label = QtWidgets.QLabel("Peak productivity: -")
+        self.peak_hours_label.setStyleSheet("color: #10b981; font-size: 10px; font-weight: 500;")
+        timeline_layout.addWidget(self.peak_hours_label)
+        
+        analytics_layout.addWidget(timeline_card)
+        
+        # Day-of-Week Pattern Analysis with Confidence Intervals
+        dow_card = QtWidgets.QFrame()
+        dow_card.setStyleSheet("""
+            QFrame {
+                background: #333333;
+                border: 1px solid #444444;
+                border-radius: 6px;
+                padding: 10px;
+            }
+        """)
+        dow_layout = QtWidgets.QVBoxLayout(dow_card)
+        dow_layout.setSpacing(8)
+        
+        dow_title = QtWidgets.QLabel("📅 Weekly Productivity Patterns")
+        dow_title.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
+        dow_title.setStyleSheet("color: #c4b5fd;")
+        dow_layout.addWidget(dow_title)
+        
+        dow_subtitle = QtWidgets.QLabel("Average focus time per day of week (with 95% confidence intervals)")
+        dow_subtitle.setStyleSheet("color: #6b7280; font-size: 10px;")
+        dow_layout.addWidget(dow_subtitle)
+        
+        # Day of week canvas
+        self.dow_canvas = DayOfWeekPatternWidget()
+        self.dow_canvas.setMinimumHeight(140)
+        self.dow_canvas.setMaximumHeight(160)
+        dow_layout.addWidget(self.dow_canvas)
+        
+        # Best/worst day labels
+        self.best_day_label = QtWidgets.QLabel("Most productive: -")
+        self.best_day_label.setStyleSheet("color: #10b981; font-size: 10px; font-weight: 500;")
+        dow_layout.addWidget(self.best_day_label)
+        
+        self.worst_day_label = QtWidgets.QLabel("Least productive: -")
+        self.worst_day_label.setStyleSheet("color: #f87171; font-size: 10px; font-weight: 500;")
+        dow_layout.addWidget(self.worst_day_label)
+        
+        analytics_layout.addWidget(dow_card)
+        
+        # Statistics summary card
+        stats_summary_card = QtWidgets.QFrame()
+        stats_summary_card.setStyleSheet("""
+            QFrame {
+                background: #333333;
+                border: 1px solid #444444;
+                border-radius: 6px;
+                padding: 10px;
+            }
+        """)
+        stats_summary_layout = QtWidgets.QVBoxLayout(stats_summary_card)
+        
+        stats_summary_title = QtWidgets.QLabel("📊 Statistical Summary")
+        stats_summary_title.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
+        stats_summary_title.setStyleSheet("color: #fbbf24;")
+        stats_summary_layout.addWidget(stats_summary_title)
+        
+        # Grid of statistics
+        stats_grid = QtWidgets.QGridLayout()
+        stats_grid.setSpacing(8)
+        
+        # Create stat labels
+        def create_mini_stat(label_text: str, color: str) -> tuple:
+            container = QtWidgets.QWidget()
+            container_layout = QtWidgets.QVBoxLayout(container)
+            container_layout.setContentsMargins(4, 4, 4, 4)
+            container_layout.setSpacing(2)
+            
+            value_lbl = QtWidgets.QLabel("-")
+            value_lbl.setFont(QtGui.QFont("Arial", 14, QtGui.QFont.Bold))
+            value_lbl.setStyleSheet(f"color: {color};")
+            value_lbl.setAlignment(QtCore.Qt.AlignCenter)
+            container_layout.addWidget(value_lbl)
+            
+            label = QtWidgets.QLabel(label_text)
+            label.setStyleSheet("color: #6b7280; font-size: 9px;")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            container_layout.addWidget(label)
+            
+            return container, value_lbl
+        
+        # Row 1: Productivity Score, Total Time, Sessions, Avg/day
+        c0, self.stat_productivity_score = create_mini_stat("Score", "#10b981")
+        c1, self.stat_total_time = create_mini_stat("Total Time", "#60a5fa")
+        c2, self.stat_total_sessions = create_mini_stat("Sessions", "#34d399")
+        c3, self.stat_avg_daily = create_mini_stat("Avg/Day", "#a78bfa")
+        
+        stats_grid.addWidget(c0, 0, 0)
+        stats_grid.addWidget(c1, 0, 1)
+        stats_grid.addWidget(c2, 0, 2)
+        stats_grid.addWidget(c3, 0, 3)
+        
+        # Row 2: Consistency, Deep Work %, Avg Session, Goal Rate
+        c4, self.stat_consistency = create_mini_stat("Consistency", "#fbbf24")
+        c5, self.stat_deep_work = create_mini_stat("Deep Work", "#f472b6")
+        c6, self.stat_avg_session = create_mini_stat("Avg Session", "#2dd4bf")
+        c7, self.stat_goal_rate = create_mini_stat("Goal Rate", "#fb923c")
+        
+        stats_grid.addWidget(c4, 1, 0)
+        stats_grid.addWidget(c5, 1, 1)
+        stats_grid.addWidget(c6, 1, 2)
+        stats_grid.addWidget(c7, 1, 3)
+        
+        # Row 3: Active Days, Best Day, Std Dev, Trend
+        c8, self.stat_active_days = create_mini_stat("Active Days", "#818cf8")
+        c9, self.stat_max_day = create_mini_stat("Best Day", "#f97316")
+        c10, self.stat_std_dev = create_mini_stat("Variability", "#94a3b8")
+        c11, self.stat_trend = create_mini_stat("Trend", "#22d3ee")
+        
+        stats_grid.addWidget(c8, 2, 0)
+        stats_grid.addWidget(c9, 2, 1)
+        stats_grid.addWidget(c10, 2, 2)
+        stats_grid.addWidget(c11, 2, 3)
+        
+        # Row 4: Week-over-week change
+        wow_container = QtWidgets.QWidget()
+        wow_layout = QtWidgets.QHBoxLayout(wow_container)
+        wow_layout.setContentsMargins(4, 8, 4, 4)
+        wow_layout.setSpacing(12)
+        
+        self.stat_wow_label = QtWidgets.QLabel("📈 Week-over-Week:")
+        self.stat_wow_label.setStyleSheet("color: #9ca3af; font-size: 10px;")
+        wow_layout.addWidget(self.stat_wow_label)
+        
+        self.stat_wow_value = QtWidgets.QLabel("-")
+        self.stat_wow_value.setFont(QtGui.QFont("Arial", 11, QtGui.QFont.Bold))
+        self.stat_wow_value.setStyleSheet("color: #22d3ee;")
+        wow_layout.addWidget(self.stat_wow_value)
+        
+        self.stat_vs_avg_label = QtWidgets.QLabel("   vs. Period Avg:")
+        self.stat_vs_avg_label.setStyleSheet("color: #9ca3af; font-size: 10px;")
+        wow_layout.addWidget(self.stat_vs_avg_label)
+        
+        self.stat_vs_avg_value = QtWidgets.QLabel("-")
+        self.stat_vs_avg_value.setFont(QtGui.QFont("Arial", 11, QtGui.QFont.Bold))
+        self.stat_vs_avg_value.setStyleSheet("color: #a78bfa;")
+        wow_layout.addWidget(self.stat_vs_avg_value)
+        
+        wow_layout.addStretch()
+        stats_grid.addWidget(wow_container, 3, 0, 1, 4)
+        
+        stats_summary_layout.addLayout(stats_grid)
+        analytics_layout.addWidget(stats_summary_card)
+        
+        inner.addWidget(analytics_group)
+
+        # Distraction attempts (bypass) - dark theme
         if BYPASS_LOGGER_AVAILABLE:
             bypass_group = QtWidgets.QGroupBox()
             bypass_group.setStyleSheet("""
                 QGroupBox {
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #ffebee, stop:1 #ffcdd2);
-                    border: 2px solid #f44336;
-                    border-radius: 12px;
-                    padding: 20px;
-                    margin-top: 10px;
+                    background: #2a2a2a;
+                    border: 1px solid #3d3d3d;
+                    border-radius: 8px;
+                    padding: 16px;
+                    margin-top: 8px;
                 }
             """)
             bypass_layout = QtWidgets.QVBoxLayout(bypass_group)
-            bypass_layout.setSpacing(12)
+            bypass_layout.setSpacing(10)
             
             bypass_title = QtWidgets.QLabel("🚫 Distraction Attempts")
-            bypass_title.setFont(QtGui.QFont("Arial", 14, QtGui.QFont.Bold))
-            bypass_title.setStyleSheet("color: #c62828; padding: 5px;")
+            bypass_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
+            bypass_title.setStyleSheet("color: #fca5a5; padding: 4px;")
             bypass_layout.addWidget(bypass_title)
             
             # Session stats card
             session_card = QtWidgets.QFrame()
             session_card.setStyleSheet("""
                 QFrame {
-                    background: white;
+                    background: #3d2a2a;
+                    border: 1px solid #5c4444;
                     border-radius: 6px;
                     padding: 10px;
                 }
@@ -3079,12 +3640,12 @@ class StatsTab(QtWidgets.QWidget):
             session_layout = QtWidgets.QVBoxLayout(session_card)
             
             self.bypass_session_label = QtWidgets.QLabel("Current Session: 0 attempts")
-            self.bypass_session_label.setFont(QtGui.QFont("Arial", 11, QtGui.QFont.Bold))
-            self.bypass_session_label.setStyleSheet("color: #d32f2f;")
+            self.bypass_session_label.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
+            self.bypass_session_label.setStyleSheet("color: #f87171;")
             session_layout.addWidget(self.bypass_session_label)
             
             self.bypass_session_sites = QtWidgets.QLabel("No sites accessed")
-            self.bypass_session_sites.setStyleSheet("color: #757575; padding-left: 10px;")
+            self.bypass_session_sites.setStyleSheet("color: #9ca3af; padding-left: 8px;")
             session_layout.addWidget(self.bypass_session_sites)
             bypass_layout.addWidget(session_card)
             
@@ -3092,7 +3653,8 @@ class StatsTab(QtWidgets.QWidget):
             overall_card = QtWidgets.QFrame()
             overall_card.setStyleSheet("""
                 QFrame {
-                    background: white;
+                    background: #333333;
+                    border: 1px solid #444444;
                     border-radius: 6px;
                     padding: 10px;
                 }
@@ -3101,28 +3663,29 @@ class StatsTab(QtWidgets.QWidget):
 
             self.bypass_total_label = QtWidgets.QLabel("Total attempts: 0")
             self.bypass_total_label.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
+            self.bypass_total_label.setStyleSheet("color: #e5e7eb;")
             overall_layout.addWidget(self.bypass_total_label)
             
             self.bypass_top_sites = QtWidgets.QLabel("Top distractions: -")
-            self.bypass_top_sites.setStyleSheet("padding-left: 10px; color: #424242;")
+            self.bypass_top_sites.setStyleSheet("padding-left: 8px; color: #9ca3af;")
             overall_layout.addWidget(self.bypass_top_sites)
             
             self.bypass_peak_hours = QtWidgets.QLabel("Peak hours: -")
-            self.bypass_peak_hours.setStyleSheet("padding-left: 10px; color: #424242;")
+            self.bypass_peak_hours.setStyleSheet("padding-left: 8px; color: #9ca3af;")
             overall_layout.addWidget(self.bypass_peak_hours)
             bypass_layout.addWidget(overall_card)
 
             # Insights
             self.bypass_insights = QtWidgets.QTextEdit()
             self.bypass_insights.setReadOnly(True)
-            self.bypass_insights.setMaximumHeight(80)
+            self.bypass_insights.setMaximumHeight(70)
             self.bypass_insights.setStyleSheet("""
                 QTextEdit {
-                    background: #fff3e0;
-                    border: 1px solid #ff9800;
+                    background: #3d3a2a;
+                    border: 1px solid #5c5944;
                     border-radius: 6px;
                     padding: 8px;
-                    color: #e65100;
+                    color: #fbbf24;
                 }
             """)
             bypass_layout.addWidget(self.bypass_insights)
@@ -3130,17 +3693,15 @@ class StatsTab(QtWidgets.QWidget):
             refresh_bypass = QtWidgets.QPushButton("🔄 Refresh Attempts")
             refresh_bypass.setStyleSheet("""
                 QPushButton {
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #f44336, stop:1 #d32f2f);
+                    background: #ef4444;
                     color: white;
                     border: none;
-                    border-radius: 6px;
-                    padding: 8px 16px;
-                    font-weight: bold;
+                    border-radius: 4px;
+                    padding: 8px 14px;
+                    font-weight: 500;
                 }
                 QPushButton:hover {
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #d32f2f, stop:1 #b71c1c);
+                    background: #dc2626;
                 }
             """)
             refresh_bypass.clicked.connect(self._refresh_bypass_stats)
@@ -3148,22 +3709,20 @@ class StatsTab(QtWidgets.QWidget):
 
             inner.addWidget(bypass_group)
 
-        # Reset button with modern styling
+        # Reset button - dark theme
         reset_btn = QtWidgets.QPushButton("🔄 Reset All Statistics")
         reset_btn.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #9e9e9e, stop:1 #757575);
+                background: #4b5563;
                 color: white;
                 border: none;
-                border-radius: 6px;
-                padding: 10px 20px;
-                font-weight: bold;
-                font-size: 12px;
+                border-radius: 4px;
+                padding: 10px 18px;
+                font-weight: 500;
+                font-size: 11px;
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #757575, stop:1 #616161);
+                background: #374151;
             }
         """)
         reset_btn.clicked.connect(self._reset_stats)
@@ -3239,6 +3798,12 @@ class StatsTab(QtWidgets.QWidget):
 
         if BYPASS_LOGGER_AVAILABLE:
             self._refresh_bypass_stats()
+        
+        # Refresh productivity analytics
+        self._refresh_analytics()
+        
+        # Refresh AGI Assistant Chad tips
+        self._refresh_chad_tips()
 
     def _sum_focus_minutes(self, days_back: int) -> int:
         from datetime import datetime, timedelta
@@ -3301,6 +3866,541 @@ class StatsTab(QtWidgets.QWidget):
             self.bypass_insights.setPlainText("\n".join(insights))
         else:
             self.bypass_insights.setPlainText("No insights yet. Keep focusing!")
+
+    def _refresh_analytics(self) -> None:
+        """Refresh the productivity analytics section with statistical analysis."""
+        from datetime import datetime, timedelta
+        import math
+        
+        # Get selected period
+        period_days = self.analytics_period.currentData()
+        
+        # Collect daily stats for the period
+        daily_stats = self.blocker.stats.get("daily_stats", {})
+        today = datetime.now()
+        
+        # Filter dates within period
+        if period_days == -1:  # Lifetime
+            relevant_dates = sorted(daily_stats.keys())
+        else:
+            cutoff = today - timedelta(days=period_days)
+            relevant_dates = [d for d in daily_stats.keys() 
+                            if datetime.strptime(d, "%Y-%m-%d") >= cutoff]
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # 24-HOUR TIMELINE ANALYSIS
+        # ═══════════════════════════════════════════════════════════════════
+        
+        hourly_totals = [0.0] * 24
+        hourly_counts = [0] * 24
+        
+        for date_str in relevant_dates:
+            day_data = daily_stats.get(date_str, {})
+            hourly = day_data.get("hourly", {})
+            for hour_str, seconds in hourly.items():
+                try:
+                    hour = int(hour_str)
+                    if 0 <= hour < 24:
+                        hourly_totals[hour] += seconds / 60  # Convert to minutes
+                        hourly_counts[hour] += 1
+                except ValueError:
+                    pass
+        
+        # Calculate averages
+        hourly_averages = [
+            hourly_totals[h] / max(hourly_counts[h], 1) 
+            for h in range(24)
+        ]
+        
+        # Update timeline widget
+        self.timeline_canvas.set_data(hourly_averages)
+        
+        # Find peak hours
+        peak_hours = sorted(enumerate(hourly_averages), key=lambda x: x[1], reverse=True)[:3]
+        if peak_hours[0][1] > 0:
+            peak_text = ", ".join([f"{h:02d}:00 ({m:.0f}m)" for h, m in peak_hours if m > 0])
+            self.peak_hours_label.setText(f"🔥 Peak productivity: {peak_text}")
+        else:
+            self.peak_hours_label.setText("Peak productivity: No data yet")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # DAY-OF-WEEK PATTERN ANALYSIS WITH CONFIDENCE INTERVALS
+        # ═══════════════════════════════════════════════════════════════════
+        
+        # Collect data by day of week
+        dow_data = {i: [] for i in range(7)}  # 0=Monday, 6=Sunday
+        
+        for date_str in relevant_dates:
+            try:
+                dt = datetime.strptime(date_str, "%Y-%m-%d")
+                day_of_week = dt.weekday()
+                day_data = daily_stats.get(date_str, {})
+                focus_minutes = day_data.get("focus_time", 0) / 60
+                dow_data[day_of_week].append(focus_minutes)
+            except ValueError:
+                pass
+        
+        # Calculate statistics with 95% confidence intervals
+        dow_stats = []
+        day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        
+        for dow in range(7):
+            values = dow_data[dow]
+            if len(values) > 1:
+                n = len(values)
+                mean = sum(values) / n
+                variance = sum((x - mean) ** 2 for x in values) / (n - 1) if n > 1 else 0
+                std_dev = math.sqrt(variance)
+                std_error = std_dev / math.sqrt(n)
+                
+                # 95% CI using t-distribution approximation (z ≈ 1.96 for large n)
+                # For small n, use t-value (approximation)
+                if n >= 30:
+                    t_value = 1.96
+                elif n >= 10:
+                    t_value = 2.228
+                else:
+                    t_value = 2.571
+                
+                margin = t_value * std_error
+                lower_ci = max(0, mean - margin)
+                upper_ci = mean + margin
+                dow_stats.append((mean, lower_ci, upper_ci))
+            elif len(values) == 1:
+                dow_stats.append((values[0], values[0], values[0]))
+            else:
+                dow_stats.append((0.0, 0.0, 0.0))
+        
+        # Update DOW widget
+        self.dow_canvas.set_data(dow_stats)
+        
+        # Find best and worst days
+        valid_days = [(i, dow_stats[i][0]) for i in range(7) if dow_stats[i][0] > 0]
+        if valid_days:
+            best_day_idx = max(valid_days, key=lambda x: x[1])[0]
+            worst_day_idx = min(valid_days, key=lambda x: x[1])[0]
+            best_mean = dow_stats[best_day_idx][0]
+            worst_mean = dow_stats[worst_day_idx][0]
+            
+            if best_mean >= 60:
+                self.best_day_label.setText(f"🏆 Most productive: {day_names[best_day_idx]} ({best_mean/60:.1f}h avg)")
+            else:
+                self.best_day_label.setText(f"🏆 Most productive: {day_names[best_day_idx]} ({best_mean:.0f}m avg)")
+            
+            if worst_mean >= 60:
+                self.worst_day_label.setText(f"📉 Least productive: {day_names[worst_day_idx]} ({worst_mean/60:.1f}h avg)")
+            else:
+                self.worst_day_label.setText(f"📉 Least productive: {day_names[worst_day_idx]} ({worst_mean:.0f}m avg)")
+        else:
+            self.best_day_label.setText("🏆 Most productive: -")
+            self.worst_day_label.setText("📉 Least productive: -")
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # STATISTICAL SUMMARY (Industry-Standard Metrics)
+        # ═══════════════════════════════════════════════════════════════════
+        
+        # Collect all daily focus times and session details
+        all_daily_focus = []
+        total_sessions = 0
+        session_lengths = []  # Individual session lengths for analysis
+        deep_work_sessions = 0  # Sessions >= 45 minutes
+        
+        for date_str in relevant_dates:
+            day_data = daily_stats.get(date_str, {})
+            focus_min = day_data.get("focus_time", 0) / 60
+            sessions = day_data.get("sessions", 0)
+            all_daily_focus.append(focus_min)
+            total_sessions += sessions
+            
+            # Estimate average session length for this day
+            if sessions > 0:
+                avg_session_this_day = focus_min / sessions
+                session_lengths.append(avg_session_this_day)
+                # Count deep work (assume session >= 45min is deep work)
+                if avg_session_this_day >= 45:
+                    deep_work_sessions += sessions
+        
+        # Calculate core statistics
+        total_focus = sum(all_daily_focus)
+        active_days = len([f for f in all_daily_focus if f > 0])
+        num_days = len(all_daily_focus) if all_daily_focus else 1
+        
+        avg_daily = total_focus / num_days if num_days > 0 else 0
+        
+        if len(all_daily_focus) > 1:
+            variance = sum((x - avg_daily) ** 2 for x in all_daily_focus) / (len(all_daily_focus) - 1)
+            std_dev = math.sqrt(variance)
+        else:
+            std_dev = 0
+        
+        max_day = max(all_daily_focus) if all_daily_focus else 0
+        
+        # ───────────────────────────────────────────────────────────────────
+        # INDUSTRY-STANDARD METRICS
+        # ───────────────────────────────────────────────────────────────────
+        
+        # 1. PRODUCTIVITY SCORE (0-100)
+        # Composite score based on: consistency, avg focus, trend, goal achievement
+        # Industry standard: RescueTime uses similar composite scoring
+        
+        # Normalize avg daily (assume 120min/day = 100% baseline for solo productivity)
+        daily_target = 120  # 2 hours of focused work
+        avg_score = min(100, (avg_daily / daily_target) * 100) if daily_target > 0 else 0
+        
+        # Consistency score (active days percentage, weighted 30%)
+        consistency = (active_days / num_days * 100) if num_days > 0 else 0
+        consistency_score = consistency  # Already 0-100
+        
+        # Regularity score (lower std dev = more regular = better)
+        # If std_dev is less than 30% of avg, that's good regularity
+        if avg_daily > 0:
+            cv = (std_dev / avg_daily) if avg_daily > 0 else 1  # Coefficient of variation
+            regularity_score = max(0, min(100, (1 - cv) * 100))
+        else:
+            regularity_score = 0
+        
+        # Calculate final productivity score (weighted average)
+        productivity_score = int(
+            avg_score * 0.4 +          # 40% weight on avg focus
+            consistency_score * 0.35 + # 35% weight on consistency
+            regularity_score * 0.25    # 25% weight on regularity
+        )
+        productivity_score = max(0, min(100, productivity_score))
+        
+        # 2. DEEP WORK PERCENTAGE
+        # Sessions >= 45 min (Cal Newport's definition)
+        deep_work_pct = (deep_work_sessions / total_sessions * 100) if total_sessions > 0 else 0
+        
+        # 3. AVERAGE SESSION LENGTH
+        avg_session = sum(session_lengths) / len(session_lengths) if session_lengths else 0
+        
+        # 4. GOAL COMPLETION RATE
+        # Compare against weekly and monthly goals
+        try:
+            weekly_target = float(self.blocker.stats.get("weekly_goal_hours", 10)) * 60  # Convert to minutes
+        except (ValueError, TypeError):
+            weekly_target = 600  # Default 10 hours
+        
+        # Calculate goal rate based on period
+        if period_days == 7:
+            goal_rate = min(100, (total_focus / weekly_target * 100)) if weekly_target > 0 else 0
+        elif period_days in [30, 60, 180, -1]:
+            # Scale weekly goal to period
+            weeks_in_period = num_days / 7 if num_days > 0 else 1
+            period_target = weekly_target * weeks_in_period
+            goal_rate = min(100, (total_focus / period_target * 100)) if period_target > 0 else 0
+        else:
+            goal_rate = 0
+        
+        # 5. WEEK-OVER-WEEK CHANGE
+        # Compare last 7 days vs previous 7 days
+        last_7_days = []
+        prev_7_days = []
+        for i, date_str in enumerate(sorted(relevant_dates, reverse=True)):
+            if i < 7:
+                day_data = daily_stats.get(date_str, {})
+                last_7_days.append(day_data.get("focus_time", 0) / 60)
+            elif i < 14:
+                day_data = daily_stats.get(date_str, {})
+                prev_7_days.append(day_data.get("focus_time", 0) / 60)
+        
+        last_7_total = sum(last_7_days)
+        prev_7_total = sum(prev_7_days) if prev_7_days else 0
+        
+        if prev_7_total > 0:
+            wow_change = ((last_7_total - prev_7_total) / prev_7_total) * 100
+        else:
+            wow_change = 100 if last_7_total > 0 else 0
+        
+        # 6. VS PERIOD AVERAGE
+        if avg_daily > 0 and len(last_7_days) >= 7:
+            last_7_avg = last_7_total / 7
+            vs_avg_pct = ((last_7_avg - avg_daily) / avg_daily) * 100
+        else:
+            vs_avg_pct = 0
+        
+        # 7. TREND (compare first half vs second half)
+        if len(all_daily_focus) >= 4:
+            half = len(all_daily_focus) // 2
+            first_half_avg = sum(all_daily_focus[:half]) / half if half > 0 else 0
+            second_half_avg = sum(all_daily_focus[half:]) / (len(all_daily_focus) - half) if (len(all_daily_focus) - half) > 0 else 0
+            
+            if first_half_avg > 0:
+                trend_pct = ((second_half_avg - first_half_avg) / first_half_avg) * 100
+                if trend_pct > 5:
+                    trend_text = f"↗+{trend_pct:.0f}%"
+                    self.stat_trend.setStyleSheet("color: #10b981; font-weight: bold;")
+                elif trend_pct < -5:
+                    trend_text = f"↘{trend_pct:.0f}%"
+                    self.stat_trend.setStyleSheet("color: #f87171; font-weight: bold;")
+                else:
+                    trend_text = "→ 0%"
+                    self.stat_trend.setStyleSheet("color: #94a3b8;")
+            else:
+                trend_text = "-"
+                self.stat_trend.setStyleSheet("color: #94a3b8;")
+        else:
+            trend_text = "-"
+            self.stat_trend.setStyleSheet("color: #94a3b8;")
+        
+        # ───────────────────────────────────────────────────────────────────
+        # UPDATE UI LABELS
+        # ───────────────────────────────────────────────────────────────────
+        
+        # Productivity Score with color coding
+        if productivity_score >= 80:
+            self.stat_productivity_score.setStyleSheet("color: #10b981; font-weight: bold;")
+        elif productivity_score >= 60:
+            self.stat_productivity_score.setStyleSheet("color: #34d399;")
+        elif productivity_score >= 40:
+            self.stat_productivity_score.setStyleSheet("color: #fbbf24;")
+        else:
+            self.stat_productivity_score.setStyleSheet("color: #f87171;")
+        self.stat_productivity_score.setText(f"{productivity_score}")
+        
+        # Total time
+        if total_focus >= 60:
+            self.stat_total_time.setText(f"{total_focus/60:.1f}h")
+        else:
+            self.stat_total_time.setText(f"{total_focus:.0f}m")
+        
+        self.stat_total_sessions.setText(str(total_sessions))
+        
+        # Avg daily
+        if avg_daily >= 60:
+            self.stat_avg_daily.setText(f"{avg_daily/60:.1f}h")
+        else:
+            self.stat_avg_daily.setText(f"{avg_daily:.0f}m")
+        
+        # Consistency
+        self.stat_consistency.setText(f"{consistency:.0f}%")
+        
+        # Deep work percentage
+        if deep_work_pct >= 50:
+            self.stat_deep_work.setStyleSheet("color: #10b981; font-weight: bold;")
+        elif deep_work_pct >= 25:
+            self.stat_deep_work.setStyleSheet("color: #f472b6;")
+        else:
+            self.stat_deep_work.setStyleSheet("color: #94a3b8;")
+        self.stat_deep_work.setText(f"{deep_work_pct:.0f}%")
+        
+        # Average session length
+        if avg_session >= 45:
+            self.stat_avg_session.setStyleSheet("color: #10b981; font-weight: bold;")
+        elif avg_session >= 25:
+            self.stat_avg_session.setStyleSheet("color: #2dd4bf;")
+        else:
+            self.stat_avg_session.setStyleSheet("color: #94a3b8;")
+        self.stat_avg_session.setText(f"{avg_session:.0f}m")
+        
+        # Goal completion rate
+        if goal_rate >= 100:
+            self.stat_goal_rate.setStyleSheet("color: #10b981; font-weight: bold;")
+        elif goal_rate >= 75:
+            self.stat_goal_rate.setStyleSheet("color: #34d399;")
+        elif goal_rate >= 50:
+            self.stat_goal_rate.setStyleSheet("color: #fbbf24;")
+        else:
+            self.stat_goal_rate.setStyleSheet("color: #fb923c;")
+        self.stat_goal_rate.setText(f"{goal_rate:.0f}%")
+        
+        # Active days
+        self.stat_active_days.setText(str(active_days))
+        
+        # Best day (max)
+        if max_day >= 60:
+            self.stat_max_day.setText(f"{max_day/60:.1f}h")
+        else:
+            self.stat_max_day.setText(f"{max_day:.0f}m")
+        
+        # Std dev (variability)
+        if std_dev >= 60:
+            self.stat_std_dev.setText(f"±{std_dev/60:.1f}h")
+        else:
+            self.stat_std_dev.setText(f"±{std_dev:.0f}m")
+        
+        # Trend
+        self.stat_trend.setText(trend_text)
+        
+        # Week-over-week change
+        if wow_change > 0:
+            self.stat_wow_value.setText(f"↗ +{wow_change:.0f}%")
+            self.stat_wow_value.setStyleSheet("color: #10b981; font-weight: bold;")
+        elif wow_change < 0:
+            self.stat_wow_value.setText(f"↘ {wow_change:.0f}%")
+            self.stat_wow_value.setStyleSheet("color: #f87171; font-weight: bold;")
+        else:
+            self.stat_wow_value.setText("→ 0%")
+            self.stat_wow_value.setStyleSheet("color: #94a3b8;")
+        
+        # Vs period average
+        if vs_avg_pct > 0:
+            self.stat_vs_avg_value.setText(f"↗ +{vs_avg_pct:.0f}%")
+            self.stat_vs_avg_value.setStyleSheet("color: #10b981; font-weight: bold;")
+        elif vs_avg_pct < 0:
+            self.stat_vs_avg_value.setText(f"↘ {vs_avg_pct:.0f}%")
+            self.stat_vs_avg_value.setStyleSheet("color: #f87171; font-weight: bold;")
+        else:
+            self.stat_vs_avg_value.setText("→ 0%")
+            self.stat_vs_avg_value.setStyleSheet("color: #94a3b8;")
+
+    def _refresh_chad_tips(self) -> None:
+        """Refresh the AGI Assistant Chad productivity tips section."""
+        from datetime import datetime
+        
+        CHAD_ENTITY_ID = "underdog_008"  # AGI Assistant Chad
+        
+        try:
+            from gamification import get_entitidex_manager
+            from entitidex_tab import _resolve_entity_svg_path
+            from entitidex.entity_pools import get_entity_by_id as get_entity
+            from PySide6.QtSvg import QSvgRenderer
+            from productivity_tips import get_tip_by_index, get_tip_count
+        except ImportError as e:
+            # Dependencies not available
+            self.chad_tips_section.setVisible(False)
+            return
+        
+        # Get entitidex manager to check entity collection
+        try:
+            manager = get_entitidex_manager(self.blocker.adhd_buster)
+        except Exception:
+            self.chad_tips_section.setVisible(False)
+            return
+        
+        # Check if user has collected Chad (normal or exceptional)
+        has_normal = CHAD_ENTITY_ID in manager.progress.collected_entity_ids
+        has_exceptional = manager.progress.is_exceptional(CHAD_ENTITY_ID)
+        
+        if not has_normal and not has_exceptional:
+            # Entity not collected - hide section
+            self.chad_tips_section.setVisible(False)
+            return
+        
+        # Entity is collected - show section
+        self.chad_tips_section.setVisible(True)
+        
+        # Determine if we use exceptional tips
+        is_exceptional = has_exceptional
+        
+        # Update section title based on variant
+        if is_exceptional:
+            self.chad_section_title.setText("⭐ AGI Assistant (Exceptional) Advanced Tips")
+            self.chad_section_title.setStyleSheet("color: #ffd700; padding: 4px;")
+            self.chad_entity_name.setText("⭐ AGI Assistant Chad")
+            self.chad_entity_name.setStyleSheet("color: #ffd700; font-weight: bold; font-size: 12px;")
+        else:
+            self.chad_section_title.setText("🤖 AGI Assistant Productivity Tips")
+            self.chad_section_title.setStyleSheet("color: #a5b4fc; padding: 4px;")
+            self.chad_entity_name.setText("AGI Assistant Chad")
+            self.chad_entity_name.setStyleSheet("color: #e5e7eb; font-weight: bold; font-size: 12px;")
+        
+        # Load entity icon
+        try:
+            entity = get_entity(CHAD_ENTITY_ID)
+            if entity:
+                svg_path = _resolve_entity_svg_path(entity, is_exceptional)
+                if svg_path:
+                    renderer = QSvgRenderer(svg_path)
+                    if renderer.isValid():
+                        icon_size = 48
+                        pixmap = QtGui.QPixmap(icon_size, icon_size)
+                        pixmap.fill(QtCore.Qt.transparent)
+                        painter = QtGui.QPainter(pixmap)
+                        renderer.render(painter)
+                        painter.end()
+                        self.chad_icon_label.setPixmap(pixmap)
+                        
+                        # Update icon border for exceptional
+                        if is_exceptional:
+                            self.chad_icon_label.setStyleSheet("""
+                                QLabel {
+                                    background: #333;
+                                    border: 2px solid #ffd700;
+                                    border-radius: 6px;
+                                }
+                            """)
+                        else:
+                            self.chad_icon_label.setStyleSheet("""
+                                QLabel {
+                                    background: #333;
+                                    border: 1px solid #444;
+                                    border-radius: 6px;
+                                }
+                            """)
+        except Exception:
+            # Fallback - just show text
+            self.chad_icon_label.setText("🤖")
+        
+        # Get current tip index (sequential cycling)
+        tip_key = "chad_tip_index_exceptional" if is_exceptional else "chad_tip_index"
+        tip_index = self.blocker.stats.get(tip_key, 0)
+        total_tips = get_tip_count(is_exceptional)
+        
+        # Get the tip at current index
+        tip_text, category_emoji = get_tip_by_index(tip_index, is_exceptional)
+        
+        # Update tip display
+        self.chad_tip_number.setText(f"Tip #{tip_index + 1} of {total_tips}")
+        self.chad_tip_text.setText(f"{category_emoji} {tip_text}")
+        
+        # Check if already acknowledged today
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        ack_key = "chad_tip_acknowledged_date_exceptional" if is_exceptional else "chad_tip_acknowledged_date"
+        last_acknowledged = self.blocker.stats.get(ack_key, "")
+        
+        if last_acknowledged == today_str:
+            # Already acknowledged today
+            self.chad_acknowledge_btn.setEnabled(False)
+            self.chad_acknowledge_btn.setText("✓ +1 🪙 collected!")
+        else:
+            # Can acknowledge
+            self.chad_acknowledge_btn.setEnabled(True)
+            self.chad_acknowledge_btn.setText("✓ Got it! (+1 🪙)")
+    
+    def _acknowledge_chad_tip(self) -> None:
+        """Acknowledge the daily Chad tip and award 1 coin."""
+        from datetime import datetime
+        from productivity_tips import get_tip_count
+        
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        
+        # Determine if we're using exceptional tips
+        try:
+            from gamification import get_entitidex_manager
+            manager = get_entitidex_manager(self.blocker.adhd_buster)
+            is_exceptional = manager.progress.is_exceptional("underdog_008")
+        except Exception:
+            is_exceptional = False
+        
+        # Use appropriate keys based on variant
+        ack_key = "chad_tip_acknowledged_date_exceptional" if is_exceptional else "chad_tip_acknowledged_date"
+        tip_key = "chad_tip_index_exceptional" if is_exceptional else "chad_tip_index"
+        
+        # Check if already acknowledged today (prevent double rewards)
+        last_acknowledged = self.blocker.stats.get(ack_key, "")
+        if last_acknowledged == today_str:
+            return
+        
+        # Mark as acknowledged
+        self.blocker.stats[ack_key] = today_str
+        
+        # Increment tip index for next time (cycle back to 0 after all tips shown)
+        current_index = self.blocker.stats.get(tip_key, 0)
+        total_tips = get_tip_count(is_exceptional)
+        next_index = (current_index + 1) % total_tips
+        self.blocker.stats[tip_key] = next_index
+        
+        self.blocker.save_stats()
+        
+        # Award 1 coin
+        current_coins = self.blocker.adhd_buster.get("coins", 0)
+        self.blocker.adhd_buster["coins"] = current_coins + 1
+        self.blocker.save_config()
+        
+        # Update button state - no dialog, just update text
+        self.chad_acknowledge_btn.setEnabled(False)
+        self.chad_acknowledge_btn.setText("✓ +1 🪙 collected!")
 
     def _reset_stats(self) -> None:
         if show_question(self, "Reset Stats", "Reset all statistics?") == QtWidgets.QMessageBox.Yes:
@@ -4564,44 +5664,11 @@ class WeightTab(QtWidgets.QWidget):
         rewards_layout.addWidget(rewards_info)
         layout.addWidget(rewards_group)
         
-        # Entity Perk Card (Rodent Squad) - shows when rat/mouse entities are collected
-        self.weight_entity_perk_card = QtWidgets.QFrame()
-        self.weight_entity_perk_card.setStyleSheet("""
-            QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #2e3f4a, stop:1 #1a262f);
-                border: 2px solid #7986cb;
-                border-radius: 8px;
-                padding: 6px;
-            }
-        """)
-        entity_perk_layout = QtWidgets.QHBoxLayout(self.weight_entity_perk_card)
-        entity_perk_layout.setContentsMargins(8, 4, 8, 4)
-        entity_perk_layout.setSpacing(8)
-        
-        # SVG icon containers for multiple entities (up to 5)
-        self.weight_entity_svg_labels = []
-        for _ in range(5):
-            svg_label = QtWidgets.QLabel()
-            svg_label.setFixedSize(32, 32)
-            svg_label.setStyleSheet("background: transparent;")
-            svg_label.hide()
-            entity_perk_layout.addWidget(svg_label)
-            self.weight_entity_svg_labels.append(svg_label)
-        
-        # Perk description
-        self.weight_entity_perk_label = QtWidgets.QLabel()
-        self.weight_entity_perk_label.setStyleSheet("""
-            font-size: 12px;
-            font-weight: bold;
-            color: #9fa8da;
-            background: transparent;
-        """)
-        self.weight_entity_perk_label.setWordWrap(True)
-        entity_perk_layout.addWidget(self.weight_entity_perk_label, 1)
-        
-        layout.addWidget(self.weight_entity_perk_card)
-        self.weight_entity_perk_card.hide()  # Hidden until we check perks
+        # Entity Perk Section (Rodent Squad) - shows when rat/mouse entities are collected
+        # Uses same mini-card pattern as ADHD Buster patrons
+        self.weight_entity_section = CollapsibleSection("🐀 Rodent Squad", "weight_entity_section", parent=self)
+        self.weight_entity_section.setVisible(False)
+        layout.addWidget(self.weight_entity_section)
         
         # Initialize settings from saved values
         self._load_settings()
@@ -5228,11 +6295,11 @@ class WeightTab(QtWidgets.QWidget):
                 )
     
     def _update_weight_entity_perk_display(self) -> None:
-        """Update the entity perk display card if rat/mouse entities are collected."""
+        """Update the entity perk display using mini-cards like ADHD Buster patrons."""
         try:
             adhd_data = getattr(self.blocker, 'adhd_buster', {})
             if not adhd_data:
-                self.weight_entity_perk_card.hide()
+                self.weight_entity_section.setVisible(False)
                 return
             
             from gamification import get_entity_weight_perks
@@ -5240,91 +6307,141 @@ class WeightTab(QtWidgets.QWidget):
             legendary_bonus = weight_perks.get("legendary_bonus", 0)
             contributors = weight_perks.get("contributors", [])
             
-            # Hide all SVG labels first
-            for label in self.weight_entity_svg_labels:
-                label.hide()
-            
             # Hide if no bonus
             if legendary_bonus <= 0 or not contributors:
-                self.weight_entity_perk_card.hide()
+                self.weight_entity_section.setVisible(False)
                 return
             
-            # Load SVGs for each contributing entity
-            for i, contrib in enumerate(contributors[:5]):
-                self._load_weight_entity_svg(i, contrib["entity_id"], contrib["is_exceptional"])
-                self.weight_entity_svg_labels[i].show()
+            # Show section with appropriate title
+            self.weight_entity_section.setVisible(True)
+            self.weight_entity_section.set_title(f"🐀 Rodent Squad (+{legendary_bonus}% Legendary)")
             
-            # Build description
-            if len(contributors) == 1:
-                c = contributors[0]
-                perk_text = (
-                    f"<b>{c['icon']} {c['name']}</b><br>"
-                    f"<span style='color:#9fa8da;'>+{c['bonus']}% Legendary when logging weight</span>"
-                )
-            else:
-                names = ", ".join([c["name"].split()[0] for c in contributors])  # First names only
-                perk_text = (
-                    f"<b>🐀 Rodent Squad ({len(contributors)})</b><br>"
-                    f"<span style='color:#9fa8da;'>+{legendary_bonus}% Legendary when logging weight</span>"
-                )
-            self.weight_entity_perk_label.setText(perk_text)
+            # Clear previous content
+            self.weight_entity_section.clear_content()
             
-            # Update border color - purple if any exceptional
-            has_exceptional = any(c["is_exceptional"] for c in contributors)
-            if has_exceptional:
-                self.weight_entity_perk_card.setStyleSheet("""
-                    QFrame {
-                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 #3d2e4a, stop:1 #261a2f);
-                        border: 2px solid #ba68c8;
-                        border-radius: 8px;
-                        padding: 6px;
-                    }
-                """)
-            else:
-                self.weight_entity_perk_card.setStyleSheet("""
-                    QFrame {
-                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 #2e3f4a, stop:1 #1a262f);
-                        border: 2px solid #7986cb;
-                        border-radius: 8px;
-                        padding: 6px;
-                    }
-                """)
+            # Try to import entity icon resolver
+            try:
+                from entitidex_tab import _resolve_entity_svg_path
+                from entitidex.entity_pools import get_entity_by_id as get_entity
+                from PySide6.QtSvg import QSvgRenderer
+                has_svg_support = True
+            except ImportError:
+                has_svg_support = False
             
-            self.weight_entity_perk_card.show()
+            # Create a horizontal flow layout for entity cards
+            patrons_container = QtWidgets.QWidget()
+            patrons_layout = QtWidgets.QHBoxLayout(patrons_container)
+            patrons_layout.setContentsMargins(5, 5, 5, 5)
+            patrons_layout.setSpacing(8)
+            
+            for entity_data in contributors:
+                # Create a mini card for each entity
+                card = QtWidgets.QFrame()
+                is_exceptional = entity_data.get("is_exceptional", False)
+                
+                # Style cards - exceptional gets slightly lighter border
+                if is_exceptional:
+                    card.setStyleSheet("""
+                        QFrame {
+                            background-color: #2a2a2a;
+                            border: 1px solid #555;
+                            border-radius: 6px;
+                            padding: 4px;
+                        }
+                        QFrame:hover {
+                            border-color: #666;
+                            background-color: #333;
+                        }
+                    """)
+                else:
+                    card.setStyleSheet("""
+                        QFrame {
+                            background-color: #2a2a2a;
+                            border: 1px solid #444;
+                            border-radius: 6px;
+                            padding: 4px;
+                        }
+                        QFrame:hover {
+                            border-color: #7986cb;
+                            background-color: #333;
+                        }
+                    """)
+                
+                card_layout = QtWidgets.QVBoxLayout(card)
+                card_layout.setContentsMargins(8, 6, 8, 6)
+                card_layout.setSpacing(4)
+                
+                # Try to load entity SVG icon
+                entity_id = entity_data.get("entity_id", "")
+                icon_loaded = False
+                
+                if has_svg_support and entity_id:
+                    try:
+                        entity_obj = get_entity(entity_id)
+                        if entity_obj:
+                            svg_path = _resolve_entity_svg_path(entity_obj, is_exceptional)
+                            if svg_path:
+                                renderer = QSvgRenderer(svg_path)
+                                if renderer.isValid():
+                                    # Create pixmap from SVG (40x40 size for mini cards)
+                                    icon_size = 40
+                                    pixmap = QtGui.QPixmap(icon_size, icon_size)
+                                    pixmap.fill(QtCore.Qt.transparent)
+                                    painter = QtGui.QPainter(pixmap)
+                                    renderer.render(painter)
+                                    painter.end()
+                                    
+                                    icon_lbl = QtWidgets.QLabel()
+                                    icon_lbl.setPixmap(pixmap)
+                                    icon_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                                    icon_lbl.setFixedSize(icon_size, icon_size)
+                                    card_layout.addWidget(icon_lbl, alignment=QtCore.Qt.AlignCenter)
+                                    icon_loaded = True
+                    except Exception:
+                        pass  # Fall back to text display
+                
+                # Entity name with exceptional styling
+                name = entity_data.get("name", "Unknown")
+                # Truncate long names
+                if len(name) > 18:
+                    display_name = name[:15] + "..."
+                else:
+                    display_name = name
+                
+                if is_exceptional:
+                    name_style = "color: #ffd700; font-weight: bold; font-size: 10px;"
+                    prefix = "⭐ " if not icon_loaded else ""
+                else:
+                    name_style = "color: #ccc; font-size: 10px;"
+                    prefix = ""
+                
+                name_lbl = QtWidgets.QLabel(f"{prefix}{display_name}")
+                name_lbl.setStyleSheet(name_style)
+                name_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                name_lbl.setToolTip(f"{name}")
+                name_lbl.setWordWrap(True)
+                card_layout.addWidget(name_lbl)
+                
+                # Bonus value
+                bonus_val = entity_data.get("bonus", 0)
+                bonus_lbl = QtWidgets.QLabel(f"<b>+{bonus_val}%</b> 🎲")
+                bonus_lbl.setStyleSheet("color: #7986cb; font-size: 12px;")
+                bonus_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                card_layout.addWidget(bonus_lbl)
+                
+                patrons_layout.addWidget(card)
+            
+            patrons_layout.addStretch()
+            self.weight_entity_section.add_widget(patrons_container)
+            
+            # Add a tip
+            tip_lbl = QtWidgets.QLabel("💡 Collect more Rodent entities in Entitidex to boost Legendary chance when logging weight!")
+            tip_lbl.setStyleSheet("color: #888; font-style: italic; font-size: 10px; padding-top: 4px;")
+            self.weight_entity_section.add_widget(tip_lbl)
             
         except Exception as e:
             print(f"[Weight Tab] Error updating entity perk display: {e}")
-            self.weight_entity_perk_card.hide()
-    
-    def _load_weight_entity_svg(self, index: int, entity_id: str, is_exceptional: bool) -> None:
-        """Load and display an entity SVG icon at the given index."""
-        try:
-            from PySide6.QtSvg import QSvgRenderer
-            from entitidex_tab import _resolve_entity_svg_path
-            from entitidex.entity_pools import get_entity_by_id
-            
-            entity = get_entity_by_id(entity_id)
-            if not entity:
-                return
-            
-            svg_path = _resolve_entity_svg_path(entity, is_exceptional)
-            if not svg_path:
-                return
-            
-            renderer = QSvgRenderer(svg_path)
-            if renderer.isValid():
-                icon_size = 32
-                pixmap = QtGui.QPixmap(icon_size, icon_size)
-                pixmap.fill(QtCore.Qt.transparent)
-                painter = QtGui.QPainter(pixmap)
-                renderer.render(painter)
-                painter.end()
-                self.weight_entity_svg_labels[index].setPixmap(pixmap)
-                
-        except Exception as e:
-            print(f"[Weight Tab] Error loading entity SVG for {entity_id}: {e}")
+            self.weight_entity_section.setVisible(False)
 
     def _show_weekly_insights(self) -> None:
         """Show weekly insights in a dialog."""
@@ -5577,6 +6694,14 @@ class ActivityTab(QtWidgets.QWidget):
         reminder_layout.addWidget(self.reminder_time)
         reminder_layout.addStretch()
         layout.addLayout(reminder_layout)
+        
+        # Entity XP Perk Section - shows entities that boost XP
+        self.activity_entity_section = CollapsibleSection("⚡ XP Boosters", "activity_entity_section", parent=self)
+        self.activity_entity_section.setVisible(False)
+        layout.addWidget(self.activity_entity_section)
+        
+        # Update entity perk display
+        self._update_activity_entity_perk_display()
         
         # Rewards info section
         rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
@@ -5996,6 +7121,155 @@ class ActivityTab(QtWidgets.QWidget):
         self.blocker.activity_reminder_time = self.reminder_time.time().toString("HH:mm")
         self.blocker.save_config()
         self._setup_reminder()
+
+    def _update_activity_entity_perk_display(self) -> None:
+        """Update the entity perk display using mini-cards for XP boosters."""
+        try:
+            adhd_data = getattr(self.blocker, 'adhd_buster', {})
+            if not adhd_data:
+                self.activity_entity_section.setVisible(False)
+                return
+            
+            from gamification import get_entity_xp_perk_contributors
+            xp_perks = get_entity_xp_perk_contributors(adhd_data)
+            total_xp_bonus = xp_perks.get("total_xp_bonus", 0)
+            contributors = xp_perks.get("contributors", [])
+            
+            # Hide if no contributors
+            if total_xp_bonus <= 0 or not contributors:
+                self.activity_entity_section.setVisible(False)
+                return
+            
+            # Show section with appropriate title
+            self.activity_entity_section.setVisible(True)
+            self.activity_entity_section.set_title(f"⚡ XP Boosters (+{total_xp_bonus}% XP)")
+            
+            # Clear previous content
+            self.activity_entity_section.clear_content()
+            
+            # Try to import entity icon resolver
+            try:
+                from entitidex_tab import _resolve_entity_svg_path
+                from entitidex.entity_pools import get_entity_by_id as get_entity
+                from PySide6.QtSvg import QSvgRenderer
+                has_svg_support = True
+            except ImportError:
+                has_svg_support = False
+            
+            # Create a horizontal flow layout for entity cards
+            patrons_container = QtWidgets.QWidget()
+            patrons_layout = QtWidgets.QHBoxLayout(patrons_container)
+            patrons_layout.setContentsMargins(5, 5, 5, 5)
+            patrons_layout.setSpacing(8)
+            
+            for entity_data in contributors:
+                # Create a mini card for each entity
+                card = QtWidgets.QFrame()
+                is_exceptional = entity_data.get("is_exceptional", False)
+                
+                # Style cards - exceptional gets slightly lighter border
+                if is_exceptional:
+                    card.setStyleSheet("""
+                        QFrame {
+                            background-color: #2a2a2a;
+                            border: 1px solid #555;
+                            border-radius: 6px;
+                            padding: 4px;
+                        }
+                        QFrame:hover {
+                            border-color: #666;
+                            background-color: #333;
+                        }
+                    """)
+                else:
+                    card.setStyleSheet("""
+                        QFrame {
+                            background-color: #2a2a2a;
+                            border: 1px solid #444;
+                            border-radius: 6px;
+                            padding: 4px;
+                        }
+                        QFrame:hover {
+                            border-color: #4caf50;
+                            background-color: #333;
+                        }
+                    """)
+                
+                card_layout = QtWidgets.QVBoxLayout(card)
+                card_layout.setContentsMargins(8, 6, 8, 6)
+                card_layout.setSpacing(4)
+                
+                # Try to load entity SVG icon
+                entity_id = entity_data.get("entity_id", "")
+                icon_loaded = False
+                
+                if has_svg_support and entity_id:
+                    try:
+                        entity_obj = get_entity(entity_id)
+                        if entity_obj:
+                            svg_path = _resolve_entity_svg_path(entity_obj, is_exceptional)
+                            if svg_path:
+                                renderer = QSvgRenderer(svg_path)
+                                if renderer.isValid():
+                                    # Create pixmap from SVG (40x40 size for mini cards)
+                                    icon_size = 40
+                                    pixmap = QtGui.QPixmap(icon_size, icon_size)
+                                    pixmap.fill(QtCore.Qt.transparent)
+                                    painter = QtGui.QPainter(pixmap)
+                                    renderer.render(painter)
+                                    painter.end()
+                                    
+                                    icon_lbl = QtWidgets.QLabel()
+                                    icon_lbl.setPixmap(pixmap)
+                                    icon_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                                    icon_lbl.setFixedSize(icon_size, icon_size)
+                                    card_layout.addWidget(icon_lbl, alignment=QtCore.Qt.AlignCenter)
+                                    icon_loaded = True
+                    except Exception:
+                        pass  # Fall back to text display
+                
+                # Entity name with exceptional styling
+                name = entity_data.get("name", "Unknown")
+                # Truncate long names
+                if len(name) > 18:
+                    display_name = name[:15] + "..."
+                else:
+                    display_name = name
+                
+                if is_exceptional:
+                    name_style = "color: #ffd700; font-weight: bold; font-size: 10px;"
+                    prefix = "⭐ " if not icon_loaded else ""
+                else:
+                    name_style = "color: #ccc; font-size: 10px;"
+                    prefix = ""
+                
+                name_lbl = QtWidgets.QLabel(f"{prefix}{display_name}")
+                name_lbl.setStyleSheet(name_style)
+                name_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                name_lbl.setToolTip(entity_data.get("description", name))
+                name_lbl.setWordWrap(True)
+                card_layout.addWidget(name_lbl)
+                
+                # Bonus value
+                bonus_val = entity_data.get("value", 0)
+                bonus_lbl = QtWidgets.QLabel(f"<b>+{bonus_val}%</b> ⚡")
+                bonus_lbl.setStyleSheet("color: #4caf50; font-size: 12px;")
+                bonus_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                card_layout.addWidget(bonus_lbl)
+                
+                patrons_layout.addWidget(card)
+            
+            patrons_layout.addStretch()
+            self.activity_entity_section.add_widget(patrons_container)
+            
+            # Add a tip
+            tip_lbl = QtWidgets.QLabel("💡 Collect more entities in Entitidex to boost XP gains!")
+            tip_lbl.setStyleSheet("color: #888; font-style: italic; font-size: 10px; padding-top: 4px;")
+            self.activity_entity_section.add_widget(tip_lbl)
+            
+        except Exception as e:
+            print(f"[Activity Tab] Error updating entity perk display: {e}")
+            self.activity_entity_section.setVisible(False)
 
 
 class SleepTab(QtWidgets.QWidget):
@@ -16933,6 +18207,116 @@ class FocusRingWidget(QtWidgets.QWidget):
         super().mousePressEvent(event)
 
 
+class EntitiesRingWidget(QtWidgets.QWidget):
+    """Circular progress bar for entities bonded (Entitidex collection)."""
+    clicked = QtCore.Signal()
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.percentage = 0.0
+        self.normal_count = 0
+        self.exceptional_count = 0
+        self.total_possible = 45  # 9 entities × 5 story pools
+        self.setMinimumSize(60, 60)
+        self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+
+    def set_progress(self, normal_count: int, exceptional_count: int, total_possible: int = 45):
+        """Set entities bonded progress.
+        
+        Args:
+            normal_count: Number of normal entities collected
+            exceptional_count: Number of exceptional entities collected
+            total_possible: Total entities that can be collected
+        """
+        self.normal_count = normal_count
+        self.exceptional_count = exceptional_count
+        self.total_possible = max(1, total_possible)
+        total_bonded = normal_count + exceptional_count
+        self.percentage = min(total_bonded / self.total_possible, 1.0)
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        
+        rect = self.rect().adjusted(5, 5, -5, -5)
+        
+        # Background Track
+        pen = QtGui.QPen(QtGui.QColor("#2a2a3a"), 6)
+        pen.setCapStyle(QtCore.Qt.RoundCap)
+        painter.setPen(pen)
+        painter.drawEllipse(rect)
+        
+        # Progress Arc (purple/magenta for entities)
+        # Golden glow if we have any exceptional entities
+        if self.exceptional_count > 0:
+            arc_color = "#ba68c8"  # Purple for exceptional
+        else:
+            arc_color = "#9c27b0"  # Darker purple for normal only
+        
+        pen.setColor(QtGui.QColor(arc_color))
+        painter.setPen(pen)
+        
+        start_angle = 90 * 16
+        span_angle = -int(self.percentage * 360 * 16)
+        painter.drawArc(rect, start_angle, span_angle)
+        
+        # Main text: total count with star emoji, exceptional part in brighter color
+        total_bonded = self.normal_count + self.exceptional_count
+        font = painter.font()
+        font.setPixelSize(14)
+        font.setBold(True)
+        painter.setFont(font)
+        
+        main_rect = QtCore.QRectF(rect)
+        
+        # Draw the count with exceptional part highlighted
+        if self.exceptional_count > 0 and self.normal_count > 0:
+            # Format: ⭐normal+exceptional where exceptional is brighter
+            text = f"⭐{self.normal_count}"
+            exc_text = f"+{self.exceptional_count}"
+            
+            # Calculate positions for centered text
+            fm = QtGui.QFontMetrics(font)
+            full_text = text + exc_text
+            total_width = fm.horizontalAdvance(full_text)
+            center_x = main_rect.center().x()
+            start_x = center_x - total_width / 2
+            text_y = main_rect.center().y() + fm.ascent() / 2 - 2
+            
+            # Draw normal part in white
+            painter.setPen(QtGui.QColor("#ffffff"))
+            painter.drawText(QtCore.QPointF(start_x, text_y), text)
+            
+            # Draw exceptional part in bright gold
+            painter.setPen(QtGui.QColor("#ffd700"))
+            painter.drawText(QtCore.QPointF(start_x + fm.horizontalAdvance(text), text_y), exc_text)
+        else:
+            # Just show total in appropriate color
+            if self.exceptional_count > 0:
+                painter.setPen(QtGui.QColor("#ffd700"))  # All exceptional - gold
+            else:
+                painter.setPen(QtGui.QColor("#ffffff"))  # Normal only - white
+            painter.drawText(main_rect, QtCore.Qt.AlignmentFlag.AlignCenter, f"⭐{total_bonded}")
+        
+        # Subtext: "Bonded" or show exceptional count if any
+        font.setPixelSize(10)
+        font.setBold(False)
+        painter.setFont(font)
+        sub_rect = QtCore.QRectF(rect.adjusted(0, 20, 0, 0))
+        painter.setPen(QtGui.QColor(arc_color))
+        
+        if self.exceptional_count > 0:
+            painter.drawText(sub_rect, QtCore.Qt.AlignmentFlag.AlignCenter, f"✨{self.exceptional_count}")
+        else:
+            painter.drawText(sub_rect, QtCore.Qt.AlignmentFlag.AlignCenter, "Bonded")
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+        super().mousePressEvent(event)
+
+
 class ChronoStreamWidget(QtWidgets.QWidget):
     """Timeline visualization for 24h events."""
     def __init__(self, parent=None):
@@ -17068,6 +18452,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
     chapter_clicked = QtCore.Signal()
     focus_clicked = QtCore.Signal()
     xp_clicked = QtCore.Signal()
+    entities_clicked = QtCore.Signal()
     
     def __init__(self, blocker: 'BlockerCore', parent=None):
         super().__init__(parent)
@@ -17102,7 +18487,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         layout.setContentsMargins(15, 10, 15, 10)
         layout.setSpacing(12)
         
-        # Ring widgets in order: Water, Chapter, Focus, XP
+        # Ring widgets in order: Water, Chapter, Focus, Entities, XP
         
         # Water Ring
         self.water_ring = WaterRingWidget()
@@ -17121,6 +18506,12 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         self.focus_ring.setFixedSize(70, 70)
         self.focus_ring.clicked.connect(self.focus_clicked.emit)
         layout.addWidget(self.focus_ring)
+        
+        # Entities Ring (Entitidex bonded count)
+        self.entities_ring = EntitiesRingWidget()
+        self.entities_ring.setFixedSize(70, 70)
+        self.entities_ring.clicked.connect(self.entities_clicked.emit)
+        layout.addWidget(self.entities_ring)
         
         # XP Ring
         self.xp_ring = XPRingWidget()
@@ -17157,14 +18548,24 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         except Exception:
             pass
 
-        # 2. Update Water Ring
+        # 2. Update Water Ring (with entity perk-enhanced cap)
         try:
             today_date = datetime.now().strftime("%Y-%m-%d")
             water_entries = getattr(self.blocker, 'water_entries', [])
             today_water = sum(1 for e in water_entries if e.get('date') == today_date)
-            self.water_ring.set_progress(today_water, 5)
+            
+            # Get perk-enhanced daily cap (default 8, but entity perks can increase it)
+            daily_cap = 8
+            if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
+                try:
+                    from gamification import get_hydration_daily_cap
+                    daily_cap = get_hydration_daily_cap(self.blocker.adhd_buster)
+                except Exception:
+                    pass
+            
+            self.water_ring.set_progress(today_water, daily_cap)
         except Exception:
-            self.water_ring.set_progress(0, 5)
+            self.water_ring.set_progress(0, 8)
 
         # 3. Update Chapter Ring (power-based story progress)
         try:
@@ -17215,7 +18616,30 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         except Exception:
             pass
 
-        # 5. Update Timeline Events
+        # 5. Update Entities Ring (Entitidex bonded count)
+        try:
+            if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
+                entitidex_data = self.blocker.adhd_buster.get("entitidex", {})
+                collected = entitidex_data.get("collected_entity_ids", [])
+                exceptional = entitidex_data.get("exceptional_entity_ids", [])
+                
+                # collected_entity_ids contains ALL collected (both normal + exceptional)
+                # exceptional_entity_ids is a SUBSET of collected
+                total_collected = len(collected)
+                exceptional_count = len(exceptional)
+                normal_count = total_collected - exceptional_count  # Subtract to get normal-only count
+                
+                # Total possible: 9 entities × 5 story pools = 45
+                total_possible = 45
+                
+                self.entities_ring.set_progress(normal_count, exceptional_count, total_possible)
+                self.entities_ring.setVisible(True)
+            else:
+                self.entities_ring.set_progress(0, 0, 45)
+        except Exception:
+            self.entities_ring.set_progress(0, 0, 45)
+
+        # 6. Update Timeline Events
         events = []
         
         today_date = datetime.now().date()
@@ -18019,7 +19443,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.tabs.addTab(self.schedule_tab, "📅 Schedule")
 
         self.stats_tab = StatsTab(self.blocker, self)
-        self.tabs.addTab(self.stats_tab, "📊 Stats")
+        self.tabs.addTab(self.stats_tab, "📊 Productivity")
 
         self.settings_tab = SettingsTab(self.blocker, self)
         self.tabs.addTab(self.settings_tab, "⚙ Settings")

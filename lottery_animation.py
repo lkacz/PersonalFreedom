@@ -288,18 +288,18 @@ class LotteryRollDialog(QtWidgets.QDialog):
         container.setStyleSheet("""
             QWidget {
                 background: #1a1a2e;
-                border: 3px solid #ffd700;
+                border: 2px solid #4a4a6a;
                 border-radius: 12px;
             }
         """)
         container_layout = QtWidgets.QVBoxLayout(container)
         container_layout.setSpacing(12)
         container_layout.setContentsMargins(20, 16, 20, 16)
-        
+
         # Title
         title = QtWidgets.QLabel(self.title_text)
         title.setAlignment(QtCore.Qt.AlignCenter)
-        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffd700;")
+        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #9ca3af;")
         container_layout.addWidget(title)
         
         # The slider track widget (custom painted)
@@ -667,19 +667,19 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         container.setStyleSheet("""
             QWidget {
                 background: #1a1a2e;
-                border: 3px solid #ffd700;
+                border: 2px solid #4a4a6a;
                 border-radius: 12px;
             }
         """)
         container_layout = QtWidgets.QVBoxLayout(container)
         container_layout.setSpacing(12)
         container_layout.setContentsMargins(24, 16, 24, 16)
-        
+
         # Main title
         self.main_title = QtWidgets.QLabel("🎰 Eye Protection Lottery 🎰")
         self.main_title.setAlignment(QtCore.Qt.AlignCenter)
         self.main_title.setStyleSheet(
-            "font-size: 20px; font-weight: bold; color: #ffd700;"
+            "font-size: 20px; font-weight: bold; color: #9ca3af;"
         )
         container_layout.addWidget(self.main_title)
         
@@ -766,11 +766,11 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         self.stage1_frame.setStyleSheet("""
             QFrame {
                 background: #252540;
-                border: 2px solid #ffd700;
+                border: 2px solid #6366f1;
                 border-radius: 8px;
             }
         """)
-        self.stage1_title.setStyleSheet("color: #ffd700; font-size: 12px; font-weight: bold;")
+        self.stage1_title.setStyleSheet("color: #a5b4fc; font-size: 12px; font-weight: bold;")
         self.stage1_title.setText("✨ Stage 1: Rolling for Tier...")
         self.stage1_result.setText("Rolling...")
         
@@ -809,11 +809,11 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         self.stage2_frame.setStyleSheet("""
             QFrame {
                 background: #252540;
-                border: 2px solid #ffd700;
+                border: 2px solid #6366f1;
                 border-radius: 8px;
             }
         """)
-        self.stage2_title.setStyleSheet("color: #ffd700; font-size: 12px; font-weight: bold;")
+        self.stage2_title.setStyleSheet("color: #a5b4fc; font-size: 12px; font-weight: bold;")
         self.stage2_title.setText(f"🎲 Stage 2: Claim your {self.tier}! ({self.drop_chance*100:.0f}%)")
         self.stage2_slider.setEnabled(True)
         self.stage2_result.setText("Rolling...")
@@ -1289,18 +1289,18 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         container.setStyleSheet("""
             QWidget {
                 background: #1a1a2e;
-                border: 3px solid #ffd700;
+                border: 2px solid #4a4a6a;
                 border-radius: 12px;
             }
         """)
         container_layout = QtWidgets.QVBoxLayout(container)
         container_layout.setSpacing(12)
         container_layout.setContentsMargins(24, 16, 24, 16)
-        
+
         # Header
         header = QtWidgets.QLabel("🎁 Priority Complete! Rolling for Lucky Gift... 🎁")
         header.setAlignment(QtCore.Qt.AlignCenter)
-        header.setStyleSheet("font-size: 16px; font-weight: bold; color: #ffd700;")
+        header.setStyleSheet("font-size: 16px; font-weight: bold; color: #9ca3af;")
         container_layout.addWidget(header)
         
         # Priority info
@@ -1379,11 +1379,11 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         self.stage1_frame.setStyleSheet("""
             QFrame {
                 background: #252540;
-                border: 2px solid #ffd700;
+                border: 2px solid #6366f1;
                 border-radius: 8px;
             }
         """)
-        self.stage1_title.setStyleSheet("color: #ffd700; font-size: 12px; font-weight: bold;")
+        self.stage1_title.setStyleSheet("color: #a5b4fc; font-size: 12px; font-weight: bold;")
         self.stage1_result.setText("Rolling...")
         
         self._animate_stage(
@@ -1404,11 +1404,11 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
             self.stage2_frame.setStyleSheet("""
                 QFrame {
                     background: #252540;
-                    border: 2px solid #ffd700;
+                    border: 2px solid #6366f1;
                     border-radius: 8px;
                 }
             """)
-            self.stage2_title.setStyleSheet("color: #ffd700; font-size: 12px; font-weight: bold;")
+            self.stage2_title.setStyleSheet("color: #a5b4fc; font-size: 12px; font-weight: bold;")
             self.stage2_title.setText("✨ Stage 2: What rarity did you get?")
             self.stage2_slider.setEnabled(True)
             self.stage2_result.setText("Rolling for rarity...")
@@ -2134,21 +2134,21 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         container.setStyleSheet("""
             QWidget {
                 background: #1a1a2e;
-                border: 3px solid #ffd700;
+                border: 2px solid #4a4a6a;
                 border-radius: 12px;
             }
         """)
         container_layout = QtWidgets.QVBoxLayout(container)
         container_layout.setSpacing(10)
         container_layout.setContentsMargins(24, 16, 24, 16)
-        
+
         # Header
         header_text = "⚔️ Lucky Merge ⚔️"
         if self.tier_upgrade_enabled:
             header_text = "⚔️ Lucky Merge ⬆️ UPGRADED ⚔️"
         header = QtWidgets.QLabel(header_text)
         header.setAlignment(QtCore.Qt.AlignCenter)
-        header.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {'#ff9800' if self.tier_upgrade_enabled else '#ffd700'};")
+        header.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {'#ff9800' if self.tier_upgrade_enabled else '#9ca3af'};")
         container_layout.addWidget(header)
         
         # Stage 1: Tier Roll
@@ -2252,9 +2252,9 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         """Start tier roll animation."""
         self.current_stage = 1
         self.stage1_frame.setStyleSheet("""
-            QFrame { background: #252540; border: 2px solid #ffd700; border-radius: 8px; }
+            QFrame { background: #252540; border: 2px solid #6366f1; border-radius: 8px; }
         """)
-        self.stage1_title.setStyleSheet("color: #ffd700; font-size: 12px; font-weight: bold;")
+        self.stage1_title.setStyleSheet("color: #a5b4fc; font-size: 12px; font-weight: bold;")
         self.stage1_result.setText("Rolling...")
         
         self._animate_tier_stage(
@@ -2289,9 +2289,9 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         
         # Enable stage 2
         self.stage2_frame.setStyleSheet("""
-            QFrame { background: #252540; border: 2px solid #ffd700; border-radius: 8px; }
+            QFrame { background: #252540; border: 2px solid #6366f1; border-radius: 8px; }
         """)
-        self.stage2_title.setStyleSheet("color: #ffd700; font-size: 12px; font-weight: bold;")
+        self.stage2_title.setStyleSheet("color: #a5b4fc; font-size: 12px; font-weight: bold;")
         self.stage2_title.setText(f"🎲 Stage 2: Will you get the {self.rolled_tier}? ({self.success_threshold*100:.0f}% chance)")
         self.stage2_slider.setEnabled(True)
         self.stage2_result.setText("Rolling for success...")
@@ -3352,18 +3352,18 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         container.setStyleSheet("""
             QWidget {
                 background: #1a1a2e;
-                border: 3px solid #ffd700;
+                border: 2px solid #4a4a6a;
                 border-radius: 12px;
             }
         """)
         container_layout = QtWidgets.QVBoxLayout(container)
         container_layout.setSpacing(12)
         container_layout.setContentsMargins(24, 16, 24, 16)
-        
+
         # Header
         header = QtWidgets.QLabel("🎁 Session Reward! 🎁")
         header.setAlignment(QtCore.Qt.AlignCenter)
-        header.setStyleSheet("font-size: 20px; font-weight: bold; color: #ffd700;")
+        header.setStyleSheet("font-size: 20px; font-weight: bold; color: #9ca3af;")
         container_layout.addWidget(header)
         
         # Session info

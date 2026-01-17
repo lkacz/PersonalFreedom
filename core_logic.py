@@ -623,10 +623,18 @@ class BlockerCore:
             self.stats["daily_stats"] = {}
 
         if today not in self.stats["daily_stats"]:
-            self.stats["daily_stats"][today] = {"focus_time": 0, "sessions": 0}
+            self.stats["daily_stats"][today] = {"focus_time": 0, "sessions": 0, "hourly": {}}
 
         self.stats["daily_stats"][today]["focus_time"] += focus_seconds
         self.stats["daily_stats"][today]["sessions"] += 1
+        
+        # Track hourly focus time distribution (for 24h timeline)
+        if "hourly" not in self.stats["daily_stats"][today]:
+            self.stats["daily_stats"][today]["hourly"] = {}
+        hour_key = str(current_hour)
+        if hour_key not in self.stats["daily_stats"][today]["hourly"]:
+            self.stats["daily_stats"][today]["hourly"][hour_key] = 0
+        self.stats["daily_stats"][today]["hourly"][hour_key] += focus_seconds
         
         # Cap daily_stats to last 365 days to prevent unbounded growth
         MAX_DAILY_STATS_DAYS = 365

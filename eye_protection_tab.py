@@ -145,23 +145,41 @@ class EyeProtectionTab(QtWidgets.QWidget):
 
     def init_ui(self):
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(20)
-        layout.setContentsMargins(30, 30, 30, 30)
+        layout.setSpacing(12)
+        layout.setContentsMargins(20, 20, 20, 20)
         
-        # Title with gradient background
+        # Header row: Title + Cooldown Status
+        header_row = QtWidgets.QHBoxLayout()
+        header_row.setSpacing(10)
+        
         title = QtWidgets.QLabel("👁️ Eye & Breath Relief")
         title.setStyleSheet("""
-            font-size: 22px;
+            font-size: 18px;
             font-weight: bold;
             color: #ffffff;
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                 stop:0 #66bb6a, stop:1 #43a047);
-            padding: 15px;
-            border-radius: 10px;
+            padding: 10px 15px;
+            border-radius: 8px;
             border: 2px solid #4caf50;
         """)
-        title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(title)
+        header_row.addWidget(title, 1)
+        
+        # Cooldown status in header
+        self.cooldown_status_label = QtWidgets.QLabel("✅ Ready!")
+        self.cooldown_status_label.setStyleSheet("""
+            font-size: 14px;
+            font-weight: bold;
+            color: #4caf50;
+            background: #2d3436;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 2px solid #4caf50;
+        """)
+        self.cooldown_status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        header_row.addWidget(self.cooldown_status_label)
+        
+        layout.addLayout(header_row)
 
         # Entity Perk Card (Sam's Focus) - shows when underdog_005 is collected
         self.entity_perk_card = QtWidgets.QFrame()
@@ -201,123 +219,187 @@ class EyeProtectionTab(QtWidgets.QWidget):
         # Update entity perk display
         self._update_entity_perk_display()
 
-        # Cooldown Status Label with modern card design
-        cooldown_card = QtWidgets.QFrame()
-        cooldown_card.setStyleSheet("""
+        # =====================================================================
+        # Owl Tips Section (Study Owl Athena - scholar_002) - Compact Layout
+        # Shows daily eye protection tips when entity is collected
+        # =====================================================================
+        self.owl_tips_section = QtWidgets.QFrame()
+        self.owl_tips_section.setStyleSheet("""
             QFrame {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #2d3436, stop:1 #1e272e);
-                border: 2px solid #4caf50;
-                border-radius: 12px;
-                padding: 15px;
+                    stop:0 #2a3a4a, stop:1 #1a2530);
+                border: 2px solid #5c6bc0;
+                border-radius: 8px;
+                padding: 6px;
             }
         """)
-        cooldown_layout = QtWidgets.QVBoxLayout(cooldown_card)
-        self.cooldown_status_label = QtWidgets.QLabel("✅ Ready to start!")
-        self.cooldown_status_label.setStyleSheet("""
-            font-size: 20px;
-            font-weight: bold;
-            color: #4caf50;
-            background: transparent;
-            padding: 5px;
-        """)
-        self.cooldown_status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        cooldown_layout.addWidget(self.cooldown_status_label)
-        layout.addWidget(cooldown_card)
-
-        # Instructions / Status Area with gradient card
-        instructions_frame = QtWidgets.QGroupBox("📋 Instructions & Status")
-        instructions_frame.setStyleSheet("""
-            QGroupBox {
-                font-size: 14px;
-                font-weight: bold;
-                color: #4fc3f7;
-                border: 2px solid #2d3436;
-                border-radius: 10px;
-                margin-top: 10px;
-                padding: 15px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #2d3436, stop:1 #1a1a1a);
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px;
-            }
-        """)
-        instructions_layout = QtWidgets.QVBoxLayout(instructions_frame)
+        owl_tips_layout = QtWidgets.QHBoxLayout(self.owl_tips_section)
+        owl_tips_layout.setContentsMargins(8, 6, 8, 6)
+        owl_tips_layout.setSpacing(10)
         
-        instructions = (
-            "<b style='color:#66bb6a;'>INSTRUCTIONS (Read before starting):</b><br><br>"
-            "<span style='color:#81c784;'>1. <b>Step A (Blinks):</b></span> Low tone = CLOSE, Higher tone = HOLD, Silence = OPEN. Repeat 5x.<br>"
-            "<span style='color:#81c784;'>2. <b>Step B (Gaze & Breath):</b></span> Look 20ft (6m) away. Rising sound = INHALE (4s), Falling sound = EXHALE (6s).<br><br>"
-            "<i style='color:#ffa726;'>💡 Tip: Blink normally during Step B to avoid dryness!</i>"
-        )
-        self.status_label = QtWidgets.QLabel(instructions)
-        self.status_label.setStyleSheet("font-size: 13px; color: #e0e0e0; background: transparent; padding: 5px;")
-        self.status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
-        self.status_label.setWordWrap(True)
-        instructions_layout.addWidget(self.status_label)
-        layout.addWidget(instructions_frame)
+        # Left: Icon
+        self.owl_icon_label = QtWidgets.QLabel()
+        self.owl_icon_label.setFixedSize(40, 40)
+        self.owl_icon_label.setStyleSheet("""
+            QLabel {
+                background: #333;
+                border: 1px solid #444;
+                border-radius: 4px;
+            }
+        """)
+        owl_tips_layout.addWidget(self.owl_icon_label)
+        
+        # Middle: Title + Tip text (expandable)
+        owl_content_col = QtWidgets.QVBoxLayout()
+        owl_content_col.setSpacing(2)
+        
+        # Title row with entity name and tip number
+        owl_title_row = QtWidgets.QHBoxLayout()
+        self.owl_section_title = QtWidgets.QLabel("🦉 Study Owl Eye Care Tips")
+        self.owl_section_title.setStyleSheet("color: #9fa8da; font-size: 11px; font-weight: bold;")
+        owl_title_row.addWidget(self.owl_section_title)
+        
+        self.owl_tip_number = QtWidgets.QLabel("Tip #1 of 100")
+        self.owl_tip_number.setStyleSheet("color: #7986cb; font-size: 10px;")
+        owl_title_row.addWidget(self.owl_tip_number)
+        owl_title_row.addStretch()
+        owl_content_col.addLayout(owl_title_row)
+        
+        # Tip text (compact)
+        self.owl_tip_text = QtWidgets.QLabel("Loading tip...")
+        self.owl_tip_text.setStyleSheet("color: #c5cae9; font-size: 11px;")
+        self.owl_tip_text.setWordWrap(True)
+        owl_content_col.addWidget(self.owl_tip_text)
+        
+        # Hidden entity name label (used for tracking)
+        self.owl_entity_name = QtWidgets.QLabel("Study Owl Athena")
+        self.owl_entity_name.hide()
+        
+        owl_tips_layout.addLayout(owl_content_col, 1)
+        
+        # Right: Acknowledge button (compact)
+        self.owl_acknowledge_btn = QtWidgets.QPushButton("📖 +1🪙")
+        self.owl_acknowledge_btn.setFixedWidth(70)
+        self.owl_acknowledge_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #5c6bc0, stop:1 #3949ab);
+                color: white;
+                font-size: 11px;
+                font-weight: bold;
+                border-radius: 4px;
+                border: 1px solid #3f51b5;
+                padding: 6px 8px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #7986cb, stop:1 #5c6bc0);
+            }
+            QPushButton:disabled {
+                background: #444;
+                color: #777;
+                border: 1px solid #333;
+            }
+        """)
+        self.owl_acknowledge_btn.clicked.connect(self._acknowledge_owl_tip)
+        owl_tips_layout.addWidget(self.owl_acknowledge_btn)
+        
+        layout.addWidget(self.owl_tips_section)
+        self.owl_tips_section.hide()  # Hidden until we check if entity is collected
+        
+        # Refresh owl tips
+        self._refresh_owl_tips()
 
-        # Big Visual Cue with modern card design
-        cue_card = QtWidgets.QFrame()
-        cue_card.setStyleSheet("""
+        # Compact Instructions - collapsible hint
+        instructions_hint = QtWidgets.QLabel(
+            "<span style='color:#81c784;'>📋 Step A:</span> Low→CLOSE, High→HOLD, Silence→OPEN (5x) | "
+            "<span style='color:#81c784;'>Step B:</span> Look far, Rising=INHALE(4s), Falling=EXHALE(6s)"
+        )
+        instructions_hint.setStyleSheet("""
+            font-size: 11px;
+            color: #b0bec5;
+            background: #1a1a1a;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #333;
+        """)
+        instructions_hint.setWordWrap(True)
+        layout.addWidget(instructions_hint)
+
+        # Combined action row: Status | Visual Cue | Start Button
+        action_row = QtWidgets.QFrame()
+        action_row.setStyleSheet("""
             QFrame {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 #1e3c72, stop:1 #2a5298);
-                border: 3px solid #2196f3;
-                border-radius: 15px;
-                padding: 20px;
+                border: 2px solid #2196f3;
+                border-radius: 10px;
+                padding: 8px;
             }
         """)
-        cue_layout = QtWidgets.QVBoxLayout(cue_card)
-        cue_layout.setContentsMargins(0, 0, 0, 0)
+        action_layout = QtWidgets.QHBoxLayout(action_row)
+        action_layout.setContentsMargins(10, 8, 10, 8)
+        action_layout.setSpacing(15)
         
-        self.cue_label = QtWidgets.QLabel("Start when you are ready")
+        # Status label (shows instructions or current step during routine)
+        self.status_label = QtWidgets.QLabel("📋 Ready")
+        self.status_label.setStyleSheet("""
+            font-size: 12px;
+            font-weight: bold;
+            color: #90caf9;
+            background: transparent;
+        """)
+        self.status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.status_label.setMinimumWidth(80)
+        action_layout.addWidget(self.status_label)
+        
+        # Visual Cue (center, takes most space)
+        self.cue_label = QtWidgets.QLabel("START WHEN READY")
         self.cue_label.setStyleSheet("""
-            font-size: 36px;
+            font-size: 24px;
             font-weight: bold;
             color: #64b5f6;
             background: transparent;
-            padding: 20px;
+            padding: 10px;
         """)
         self.cue_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.cue_label.setMinimumHeight(150)
-        cue_layout.addWidget(self.cue_label)
-        layout.addWidget(cue_card)
-
-        # Start Button with modern gradient (matching HydrationTab style)
-        self.start_btn = QtWidgets.QPushButton("👁️ Start Routine (1 min)")
-        self.start_btn.setMinimumHeight(70)
+        self.cue_label.setMinimumHeight(60)
+        action_layout.addWidget(self.cue_label, 1)
+        
+        # Start Button (right side)
+        self.start_btn = QtWidgets.QPushButton("👁️ Start (1 min)")
+        self.start_btn.setMinimumHeight(50)
+        self.start_btn.setMinimumWidth(130)
         self.start_btn.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 #66bb6a, stop:1 #43a047);
                 color: white;
-                font-size: 18px;
+                font-size: 14px;
                 font-weight: bold;
-                border-radius: 12px;
-                border: 3px solid #4caf50;
-                padding: 10px;
+                border-radius: 8px;
+                border: 2px solid #4caf50;
+                padding: 8px;
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 #81c784, stop:1 #66bb6a);
-                border: 3px solid #66bb6a;
+                border: 2px solid #66bb6a;
             }
             QPushButton:pressed {
                 background: #388e3c;
-                border: 3px solid #2e7d32;
+                border: 2px solid #2e7d32;
             }
             QPushButton:disabled {
                 background: #555555;
-                border: 3px solid #444444;
+                border: 2px solid #444444;
                 color: #888888;
             }
         """)
         self.start_btn.clicked.connect(self.start_routine)
-        layout.addWidget(self.start_btn)
+        action_layout.addWidget(self.start_btn)
+        
+        layout.addWidget(action_row)
 
         # Reminder Settings Section with gradient card
         reminder_frame = QtWidgets.QGroupBox("🔔 Reminders")
@@ -503,6 +585,160 @@ class EyeProtectionTab(QtWidgets.QWidget):
         except Exception as e:
             print(f"[Eye Tab] Error loading SVG: {e}")
             self.entity_svg_label.setText("🌵")
+
+    def _refresh_owl_tips(self) -> None:
+        """Refresh the Study Owl Athena eye protection tips section."""
+        from datetime import datetime
+        
+        OWL_ENTITY_ID = "scholar_002"  # Study Owl Athena
+        
+        try:
+            from gamification import get_entitidex_manager
+            from entitidex_tab import _resolve_entity_svg_path
+            from entitidex.entity_pools import get_entity_by_id as get_entity
+            from eye_protection_tips import get_tip_by_index, get_tip_count
+        except ImportError as e:
+            # Dependencies not available
+            self.owl_tips_section.setVisible(False)
+            return
+        
+        # Get entitidex manager to check entity collection
+        try:
+            manager = get_entitidex_manager(self.blocker.adhd_buster)
+        except Exception:
+            self.owl_tips_section.setVisible(False)
+            return
+        
+        # Check if user has collected Athena (normal or exceptional)
+        has_normal = OWL_ENTITY_ID in manager.progress.collected_entity_ids
+        has_exceptional = manager.progress.is_exceptional(OWL_ENTITY_ID)
+        
+        if not has_normal and not has_exceptional:
+            # Entity not collected - hide section
+            self.owl_tips_section.setVisible(False)
+            return
+        
+        # Entity is collected - show section
+        self.owl_tips_section.setVisible(True)
+        
+        # Determine if we use exceptional tips
+        is_exceptional = has_exceptional
+        
+        # Update section title based on variant
+        if is_exceptional:
+            self.owl_section_title.setText("⭐ Study Owl (Exceptional) Advanced Eye Tips")
+            self.owl_section_title.setStyleSheet("color: #ffd700; padding: 4px;")
+            self.owl_entity_name.setText("⭐ Study Owl Athena")
+            self.owl_entity_name.setStyleSheet("color: #ffd700; font-weight: bold; font-size: 12px;")
+        else:
+            self.owl_section_title.setText("🦉 Study Owl Eye Care Tips")
+            self.owl_section_title.setStyleSheet("color: #9fa8da; padding: 4px;")
+            self.owl_entity_name.setText("Study Owl Athena")
+            self.owl_entity_name.setStyleSheet("color: #e5e7eb; font-weight: bold; font-size: 12px;")
+        
+        # Load entity icon
+        try:
+            entity = get_entity(OWL_ENTITY_ID)
+            if entity:
+                svg_path = _resolve_entity_svg_path(entity, is_exceptional)
+                if svg_path:
+                    renderer = QtSvg.QSvgRenderer(svg_path)
+                    if renderer.isValid():
+                        icon_size = 48
+                        pixmap = QtGui.QPixmap(icon_size, icon_size)
+                        pixmap.fill(QtCore.Qt.transparent)
+                        painter = QtGui.QPainter(pixmap)
+                        renderer.render(painter)
+                        painter.end()
+                        self.owl_icon_label.setPixmap(pixmap)
+                        
+                        # Update icon border for exceptional
+                        if is_exceptional:
+                            self.owl_icon_label.setStyleSheet("""
+                                QLabel {
+                                    background: #333;
+                                    border: 2px solid #ffd700;
+                                    border-radius: 6px;
+                                }
+                            """)
+                        else:
+                            self.owl_icon_label.setStyleSheet("""
+                                QLabel {
+                                    background: #333;
+                                    border: 1px solid #444;
+                                    border-radius: 6px;
+                                }
+                            """)
+        except Exception:
+            # Fallback - just show text
+            self.owl_icon_label.setText("🦉")
+        
+        # Get current tip index (sequential cycling)
+        tip_key = "owl_tip_index_exceptional" if is_exceptional else "owl_tip_index"
+        tip_index = self.blocker.stats.get(tip_key, 0)
+        total_tips = get_tip_count(is_exceptional)
+        
+        # Get the tip at current index
+        tip_text, category_emoji = get_tip_by_index(tip_index, is_exceptional)
+        
+        # Update tip display
+        self.owl_tip_number.setText(f"Tip #{tip_index + 1} of {total_tips}")
+        self.owl_tip_text.setText(f"{category_emoji} {tip_text}")
+        
+        # Check if already acknowledged today
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        ack_key = "owl_tip_acknowledged_date_exceptional" if is_exceptional else "owl_tip_acknowledged_date"
+        last_acknowledged = self.blocker.stats.get(ack_key, "")
+        
+        if last_acknowledged == today_str:
+            # Already acknowledged today
+            self.owl_acknowledge_btn.setText("✓ Done")
+            self.owl_acknowledge_btn.setEnabled(False)
+        else:
+            # Can acknowledge
+            self.owl_acknowledge_btn.setText("📖 +1🪙")
+            self.owl_acknowledge_btn.setEnabled(True)
+
+    def _acknowledge_owl_tip(self) -> None:
+        """Handle acknowledging the owl tip - award coin and advance to next tip."""
+        from datetime import datetime
+        from eye_protection_tips import get_tip_count
+        
+        try:
+            # Determine if exceptional
+            from gamification import get_entitidex_manager
+            manager = get_entitidex_manager(self.blocker.adhd_buster)
+            is_exceptional = manager.progress.is_exceptional("scholar_002")
+            
+            # Get keys based on variant
+            tip_key = "owl_tip_index_exceptional" if is_exceptional else "owl_tip_index"
+            ack_key = "owl_tip_acknowledged_date_exceptional" if is_exceptional else "owl_tip_acknowledged_date"
+            
+            # Get current index and total
+            current_index = self.blocker.stats.get(tip_key, 0)
+            total_tips = get_tip_count(is_exceptional)
+            
+            # Advance to next tip (with wraparound)
+            next_index = (current_index + 1) % total_tips
+            self.blocker.stats[tip_key] = next_index
+            
+            # Record acknowledgment date
+            today_str = datetime.now().strftime("%Y-%m-%d")
+            self.blocker.stats[ack_key] = today_str
+            
+            # Award coin
+            adhd_buster = self.blocker.adhd_buster
+            adhd_buster["coins"] = adhd_buster.get("coins", 0) + 1
+            
+            # Save data
+            self.blocker.save_user_data()
+            
+            # Update button to show collected
+            self.owl_acknowledge_btn.setText("✓ Done")
+            self.owl_acknowledge_btn.setEnabled(False)
+            
+        except Exception as e:
+            print(f"[Eye Tab] Error acknowledging owl tip: {e}")
 
     def _update_cooldown_display(self):
         """Update cooldown status display like hydration tracker."""
