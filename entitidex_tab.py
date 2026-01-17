@@ -2163,6 +2163,10 @@ class EntitidexTab(QtWidgets.QWidget):
         # Create a bond callback that opens the saved encounter
         def bond_callback(entity_id: str) -> dict:
             result = open_saved_encounter(self.blocker.adhd_buster, index)
+            
+            # Persist to disk (critical: encounter was consumed, must save)
+            self.blocker.save_config()
+            
             if result.get("success"):
                 self.refresh()  # Refresh the collection
             return result
