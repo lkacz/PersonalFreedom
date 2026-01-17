@@ -2042,7 +2042,7 @@ class TimerTab(QtWidgets.QWidget):
                     return result
 
                 # wrapper callback for saving encounter for later
-                def save_callback_wrapper(entity_id: str):
+                def save_callback_wrapper(entity_id: str, coin_cost: int = 0):
                     result = save_encounter_for_later(
                         adhd_buster=self.blocker.adhd_buster,
                         entity_id=entity_id,
@@ -2052,6 +2052,7 @@ class TimerTab(QtWidgets.QWidget):
                         capture_perk_bonus=encounter.get("capture_perk_bonus", 0.0),
                         session_minutes=session_minutes,
                         was_perfect_session=is_perfect,
+                        coin_cost=coin_cost,
                     )
                     
                     # Save updated data
@@ -2112,6 +2113,24 @@ class TimerTab(QtWidgets.QWidget):
                 except Exception as e:
                     logger.debug(f"Could not check for Chad entity: {e}")
 
+                # Build bookmark data for save slot limits
+                bookmark_data = None
+                try:
+                    from gamification import get_bookmark_entity_status, get_save_slot_cost
+                    bookmark_status = get_bookmark_entity_status(self.blocker.adhd_buster)
+                    slot_info = get_save_slot_cost(self.blocker.adhd_buster, bookmark_status["current_saved"])
+                    bookmark_data = {
+                        "has_normal": bookmark_status["has_normal"],
+                        "has_exceptional": bookmark_status["has_exceptional"],
+                        "max_free_slots": bookmark_status["max_free_slots"],
+                        "current_saved": bookmark_status["current_saved"],
+                        "slot_cost": slot_info["cost"],
+                        "can_save": slot_info["can_save"],
+                        "slot_reason": slot_info.get("reason", ""),
+                    }
+                except Exception as e:
+                    logger.debug(f"Could not get bookmark data: {e}")
+
                 show_entity_encounter(
                     entity=entity,
                     join_probability=encounter["join_probability"],
@@ -2121,6 +2140,7 @@ class TimerTab(QtWidgets.QWidget):
                     save_callback=save_callback_wrapper,
                     chad_interaction_data=chad_interaction_data,
                     coin_data=self._get_coin_data(),
+                    bookmark_data=bookmark_data,
                 )
             except ImportError:
                  logger.error("Could not import entity_drop_dialog logic")
@@ -2190,17 +2210,22 @@ class TimerTab(QtWidgets.QWidget):
                     )
                 
                 # wrapper callback for saving encounter
-                def save_callback_wrapper() -> bool:
+                def save_callback_wrapper(entity_id: str, coin_cost: int = 0) -> dict:
                     try:
-                        save_encounter_for_later(
+                        return save_encounter_for_later(
                             self.blocker.adhd_buster, 
                             entity.id,
-                            is_exceptional=encounter_is_exceptional
+                            is_exceptional=encounter_is_exceptional,
+                            catch_probability=encounter["join_probability"],
+                            encounter_perk_bonus=encounter.get("encounter_perk_bonus", 0.0),
+                            capture_perk_bonus=encounter.get("capture_perk_bonus", 0.0),
+                            session_minutes=session_minutes,
+                            was_perfect_session=is_perfect,
+                            coin_cost=coin_cost,
                         )
-                        return True
                     except Exception as e:
                         logger.error(f"Failed to save encounter: {e}")
-                        return False
+                        return {"success": False, "message": str(e)}
                 
                 # Get chad interaction data if available
                 chad_interaction_data = None
@@ -2210,6 +2235,24 @@ class TimerTab(QtWidgets.QWidget):
                 except ImportError:
                     pass
                 
+                # Build bookmark data for save slot limits
+                bookmark_data = None
+                try:
+                    from gamification import get_bookmark_entity_status, get_save_slot_cost
+                    bookmark_status = get_bookmark_entity_status(self.blocker.adhd_buster)
+                    slot_info = get_save_slot_cost(self.blocker.adhd_buster, bookmark_status["current_saved"])
+                    bookmark_data = {
+                        "has_normal": bookmark_status["has_normal"],
+                        "has_exceptional": bookmark_status["has_exceptional"],
+                        "max_free_slots": bookmark_status["max_free_slots"],
+                        "current_saved": bookmark_status["current_saved"],
+                        "slot_cost": slot_info["cost"],
+                        "can_save": slot_info["can_save"],
+                        "slot_reason": slot_info.get("reason", ""),
+                    }
+                except Exception as e:
+                    logger.debug(f"Could not get bookmark data: {e}")
+
                 show_entity_encounter(
                     entity=entity,
                     join_probability=encounter["join_probability"],
@@ -2219,6 +2262,7 @@ class TimerTab(QtWidgets.QWidget):
                     save_callback=save_callback_wrapper,
                     chad_interaction_data=chad_interaction_data,
                     coin_data=self._get_coin_data(),
+                    bookmark_data=bookmark_data,
                 )
             except ImportError:
                  logger.error("Could not import entity_drop_dialog logic")
@@ -19657,19 +19701,39 @@ class DevTab(QtWidgets.QWidget):
                 import logging
                 logging.getLogger(__name__).debug(f"Could not check for Chad entity: {e}")
 
-            def save_callback_wrapper(entity_id: str):
+            def save_callback_wrapper(entity_id: str, coin_cost: int = 0):
                 from gamification import save_encounter_for_later
                 result = save_encounter_for_later(
                     self.blocker.adhd_buster,
                     entity_id,
                     is_exceptional=is_exceptional,
-                    catch_probability=join_prob
+                    catch_probability=join_prob,
+                    coin_cost=coin_cost
                 )
                 self.blocker.save_config()
                 main_win = self.window()
                 if hasattr(main_win, 'entitidex_tab'):
                     main_win.entitidex_tab._update_saved_button_count()
                 return result
+
+            # Build bookmark data for save slot limits
+            bookmark_data = None
+            try:
+                from gamification import get_bookmark_entity_status, get_save_slot_cost
+                bookmark_status = get_bookmark_entity_status(self.blocker.adhd_buster)
+                slot_info = get_save_slot_cost(self.blocker.adhd_buster, bookmark_status["current_saved"])
+                bookmark_data = {
+                    "has_normal": bookmark_status["has_normal"],
+                    "has_exceptional": bookmark_status["has_exceptional"],
+                    "max_free_slots": bookmark_status["max_free_slots"],
+                    "current_saved": bookmark_status["current_saved"],
+                    "slot_cost": slot_info["cost"],
+                    "can_save": slot_info["can_save"],
+                    "slot_reason": slot_info.get("reason", ""),
+                }
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).debug(f"Could not get bookmark data: {e}")
 
             show_entity_encounter(
                 entity=entity,
@@ -19680,6 +19744,7 @@ class DevTab(QtWidgets.QWidget):
                 chad_interaction_data=chad_interaction_data,
                 coin_data=self._get_coin_data() if hasattr(self, '_get_coin_data') else None,
                 save_callback=save_callback_wrapper,
+                bookmark_data=bookmark_data,
             )
             
             self.status_label.setText(f"✨ Encountered: {entity.name} ({entity.rarity}){' ⭐' if is_exceptional else ''}")
@@ -19754,19 +19819,39 @@ class DevTab(QtWidgets.QWidget):
                     main_win.entitidex_tab.refresh()
                 return result
 
-            def save_callback_wrapper(entity_id: str):
+            def save_callback_wrapper(entity_id: str, coin_cost: int = 0):
                 from gamification import save_encounter_for_later
                 result = save_encounter_for_later(
                     self.blocker.adhd_buster,
                     entity_id,
                     is_exceptional=is_exceptional,
-                    catch_probability=join_prob
+                    catch_probability=join_prob,
+                    coin_cost=coin_cost
                 )
                 self.blocker.save_config()
                 main_win = self.window()
                 if hasattr(main_win, 'entitidex_tab'):
                     main_win.entitidex_tab._update_saved_button_count()
                 return result
+
+            # Build bookmark data for save slot limits
+            bookmark_data = None
+            try:
+                from gamification import get_bookmark_entity_status, get_save_slot_cost
+                bookmark_status = get_bookmark_entity_status(self.blocker.adhd_buster)
+                slot_info = get_save_slot_cost(self.blocker.adhd_buster, bookmark_status["current_saved"])
+                bookmark_data = {
+                    "has_normal": bookmark_status["has_normal"],
+                    "has_exceptional": bookmark_status["has_exceptional"],
+                    "max_free_slots": bookmark_status["max_free_slots"],
+                    "current_saved": bookmark_status["current_saved"],
+                    "slot_cost": slot_info["cost"],
+                    "can_save": slot_info["can_save"],
+                    "slot_reason": slot_info.get("reason", ""),
+                }
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).debug(f"Could not get bookmark data: {e}")
 
             show_entity_encounter(
                 entity=entity,
@@ -19776,6 +19861,7 @@ class DevTab(QtWidgets.QWidget):
                 is_exceptional=is_exceptional,
                 coin_data=self._get_coin_data() if hasattr(self, '_get_coin_data') else None,
                 save_callback=save_callback_wrapper,
+                bookmark_data=bookmark_data,
             )
             
         except ImportError as e:
@@ -19830,19 +19916,39 @@ class DevTab(QtWidgets.QWidget):
                     main_win.entitidex_tab.refresh()
                 return result
 
-            def save_callback_wrapper(entity_id: str):
+            def save_callback_wrapper(entity_id: str, coin_cost: int = 0):
                 from gamification import save_encounter_for_later
                 result = save_encounter_for_later(
                     self.blocker.adhd_buster,
                     entity_id,
                     is_exceptional=is_exceptional,
-                    catch_probability=join_prob
+                    catch_probability=join_prob,
+                    coin_cost=coin_cost
                 )
                 self.blocker.save_config()
                 main_win = self.window()
                 if hasattr(main_win, 'entitidex_tab'):
                     main_win.entitidex_tab._update_saved_button_count()
                 return result
+
+            # Build bookmark data for save slot limits
+            bookmark_data = None
+            try:
+                from gamification import get_bookmark_entity_status, get_save_slot_cost
+                bookmark_status = get_bookmark_entity_status(self.blocker.adhd_buster)
+                slot_info = get_save_slot_cost(self.blocker.adhd_buster, bookmark_status["current_saved"])
+                bookmark_data = {
+                    "has_normal": bookmark_status["has_normal"],
+                    "has_exceptional": bookmark_status["has_exceptional"],
+                    "max_free_slots": bookmark_status["max_free_slots"],
+                    "current_saved": bookmark_status["current_saved"],
+                    "slot_cost": slot_info["cost"],
+                    "can_save": slot_info["can_save"],
+                    "slot_reason": slot_info.get("reason", ""),
+                }
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).debug(f"Could not get bookmark data: {e}")
 
             show_entity_encounter(
                 entity=entity, 
@@ -19852,6 +19958,7 @@ class DevTab(QtWidgets.QWidget):
                 is_exceptional=is_exceptional,
                 coin_data=self._get_coin_data() if hasattr(self, '_get_coin_data') else None,
                 save_callback=save_callback_wrapper,
+                bookmark_data=bookmark_data,
             )
             
             self.status_label.setText(f"✨ Encountered: {entity.name} ({entity.rarity}){' ⭐' if is_exceptional else ''}")
@@ -19908,19 +20015,39 @@ class DevTab(QtWidgets.QWidget):
                     main_win.entitidex_tab.refresh()
                 return result
 
-            def save_callback_wrapper(entity_id: str):
+            def save_callback_wrapper(entity_id: str, coin_cost: int = 0):
                 from gamification import save_encounter_for_later
                 result = save_encounter_for_later(
                     self.blocker.adhd_buster,
                     entity_id,
                     is_exceptional=is_exceptional,
-                    catch_probability=join_prob
+                    catch_probability=join_prob,
+                    coin_cost=coin_cost
                 )
                 self.blocker.save_config()
                 main_win = self.window()
                 if hasattr(main_win, 'entitidex_tab'):
                     main_win.entitidex_tab._update_saved_button_count()
                 return result
+
+            # Build bookmark data for save slot limits
+            bookmark_data = None
+            try:
+                from gamification import get_bookmark_entity_status, get_save_slot_cost
+                bookmark_status = get_bookmark_entity_status(self.blocker.adhd_buster)
+                slot_info = get_save_slot_cost(self.blocker.adhd_buster, bookmark_status["current_saved"])
+                bookmark_data = {
+                    "has_normal": bookmark_status["has_normal"],
+                    "has_exceptional": bookmark_status["has_exceptional"],
+                    "max_free_slots": bookmark_status["max_free_slots"],
+                    "current_saved": bookmark_status["current_saved"],
+                    "slot_cost": slot_info["cost"],
+                    "can_save": slot_info["can_save"],
+                    "slot_reason": slot_info.get("reason", ""),
+                }
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).debug(f"Could not get bookmark data: {e}")
 
             show_entity_encounter(
                 entity=entity, 
@@ -19930,6 +20057,7 @@ class DevTab(QtWidgets.QWidget):
                 is_exceptional=is_exceptional,
                 coin_data=self._get_coin_data() if hasattr(self, '_get_coin_data') else None,
                 save_callback=save_callback_wrapper,
+                bookmark_data=bookmark_data,
             )
             
             self.status_label.setText(f"✨ {rarity.upper()}: {entity.name}{' ⭐' if is_exceptional else ''}")

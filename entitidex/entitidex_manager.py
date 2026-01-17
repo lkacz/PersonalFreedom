@@ -223,7 +223,7 @@ class EntitidexManager:
             is_first_encounter=is_first,
             is_exceptional=is_exceptional,
             announcement=get_encounter_announcement(entity, is_first, is_exceptional),
-            flavor_text=get_encounter_flavor_text(entity, self.hero_power),
+            flavor_text=get_encounter_flavor_text(entity, self.hero_power, is_exceptional),
             catch_probability=probability,
             probability_display=format_probability_display(probability),
             probability_description=get_probability_description(probability),

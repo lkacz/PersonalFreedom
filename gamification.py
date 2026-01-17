@@ -15493,6 +15493,102 @@ def get_entitidex_stats(adhd_buster: dict) -> dict:
 # SAVED ENCOUNTERS (Postponed Bonding - "Loot Boxes")
 # =============================================================================
 
+# Entity ID for Living Bookmark Finn - unlocks extra save slots
+BOOKMARK_ENTITY_ID = "scholar_005"  # Living Bookmark Finn / Giving Bookmark Finn
+
+# Save slot limits based on bookmark entity status
+SAVE_SLOTS_BASE = 3           # No bookmark entity
+SAVE_SLOTS_NORMAL = 5         # Has normal Living Bookmark Finn
+SAVE_SLOTS_EXCEPTIONAL = 20   # Has exceptional Giving Bookmark Finn
+
+
+def get_bookmark_entity_status(adhd_buster: dict) -> dict:
+    """
+    Check if user has Living Bookmark Finn bonded and which variant.
+    
+    Returns:
+        dict with:
+            - has_normal: bool - Has normal Living Bookmark Finn
+            - has_exceptional: bool - Has exceptional Giving Bookmark Finn
+            - max_free_slots: int - Maximum free save slots
+            - extra_slot_cost: callable(slot_index) -> int - Cost for extra slots
+    """
+    manager = get_entitidex_manager(adhd_buster)
+    has_normal = manager.progress.is_collected(BOOKMARK_ENTITY_ID)
+    has_exceptional = manager.progress.is_exceptional(BOOKMARK_ENTITY_ID)
+    
+    # Calculate max free slots and cost function
+    if has_exceptional:
+        max_free_slots = SAVE_SLOTS_EXCEPTIONAL
+        # Exceptional: flat 100 coins per extra slot
+        def extra_slot_cost(slot_index: int) -> int:
+            return 100
+    elif has_normal:
+        max_free_slots = SAVE_SLOTS_NORMAL
+        # Normal: exponential cost (1, 10, 100, 1000, ...)
+        def extra_slot_cost(slot_index: int) -> int:
+            extra_position = slot_index - max_free_slots  # 0-based position beyond free slots
+            return 10 ** extra_position  # 1, 10, 100, 1000, ...
+    else:
+        max_free_slots = SAVE_SLOTS_BASE
+        # No bookmark: cannot save beyond base limit
+        def extra_slot_cost(slot_index: int) -> int:
+            return -1  # -1 indicates "not available"
+    
+    return {
+        "has_normal": has_normal,
+        "has_exceptional": has_exceptional,
+        "max_free_slots": max_free_slots,
+        "extra_slot_cost": extra_slot_cost,
+        "entity_id": BOOKMARK_ENTITY_ID,
+    }
+
+
+def get_save_slot_cost(adhd_buster: dict, current_saved_count: int) -> dict:
+    """
+    Calculate the cost to save the next encounter.
+    
+    Args:
+        adhd_buster: Hero data dictionary
+        current_saved_count: Number of encounters already saved
+    
+    Returns:
+        dict with:
+            - cost: int - Coin cost (0 = free, -1 = cannot save)
+            - can_save: bool - Whether saving is allowed
+            - reason: str - Explanation for UI
+            - slot_number: int - Which slot this would be (1-indexed)
+    """
+    bookmark_status = get_bookmark_entity_status(adhd_buster)
+    slot_number = current_saved_count + 1  # 1-indexed for display
+    
+    if slot_number <= bookmark_status["max_free_slots"]:
+        # Free slot available
+        return {
+            "cost": 0,
+            "can_save": True,
+            "reason": f"Free slot ({slot_number}/{bookmark_status['max_free_slots']})",
+            "slot_number": slot_number,
+        }
+    else:
+        # Need to pay for extra slot
+        cost = bookmark_status["extra_slot_cost"](slot_number - 1)  # 0-indexed for cost calc
+        if cost == -1:
+            return {
+                "cost": -1,
+                "can_save": False,
+                "reason": f"Maximum {SAVE_SLOTS_BASE} slots reached. Bond with Living Bookmark Finn for more!",
+                "slot_number": slot_number,
+            }
+        else:
+            return {
+                "cost": cost,
+                "can_save": True,
+                "reason": f"Extra slot costs {cost} coins",
+                "slot_number": slot_number,
+            }
+
+
 def save_encounter_for_later(
     adhd_buster: dict,
     entity_id: str,
@@ -15503,12 +15599,18 @@ def save_encounter_for_later(
     exceptional_colors: dict = None,
     session_minutes: int = 0,
     was_perfect_session: bool = False,
+    coin_cost: int = 0,
 ) -> dict:
     """
     Save an entity encounter for later instead of attempting bond now.
     
     This allows users to stack up encounters during work sessions
     and open them later like loot boxes in the Entitidex tab.
+    
+    Save slot limits are enforced based on Living Bookmark Finn status:
+    - No bookmark: 3 slots max (hard limit)
+    - Normal bookmark: 5 free slots, then exponential cost (1, 10, 100, ...)
+    - Exceptional bookmark: 20 free slots, then flat 100 coins per slot
     
     Args:
         adhd_buster: Hero data dictionary
@@ -15520,6 +15622,7 @@ def save_encounter_for_later(
         exceptional_colors: Colors dict for exceptional variant
         session_minutes: Session duration that triggered this
         was_perfect_session: Whether session was distraction-free
+        coin_cost: Coin cost to pay for this save slot (0 = free)
         
     Returns:
         dict with saved encounter info
@@ -15531,6 +15634,35 @@ def save_encounter_for_later(
         return {"success": False, "message": "Entity not found"}
     
     manager = get_entitidex_manager(adhd_buster)
+    
+    # Check save slot availability
+    current_saved = manager.progress.get_saved_encounter_count()
+    slot_info = get_save_slot_cost(adhd_buster, current_saved)
+    
+    if not slot_info["can_save"]:
+        return {
+            "success": False,
+            "message": slot_info["reason"],
+            "needs_bookmark": True,
+        }
+    
+    # Check if coin cost matches expected (prevent tampering)
+    if slot_info["cost"] > 0:
+        if coin_cost < slot_info["cost"]:
+            return {
+                "success": False,
+                "message": f"Insufficient payment. This slot costs {slot_info['cost']} coins.",
+            }
+        # Deduct coins
+        current_coins = adhd_buster.get("coins", 0)
+        if current_coins < coin_cost:
+            return {
+                "success": False,
+                "message": f"Not enough coins! Need {coin_cost}, have {current_coins}.",
+                "insufficient_coins": True,
+            }
+        adhd_buster["coins"] = current_coins - coin_cost
+    
     hero_power = calculate_character_power(adhd_buster)
     
     saved = manager.progress.save_encounter_for_later(
@@ -15547,6 +15679,9 @@ def save_encounter_for_later(
     
     # Entity cannot be saved (already saved or already collected)
     if saved is None:
+        # Refund coins if we already deducted
+        if coin_cost > 0:
+            adhd_buster["coins"] = adhd_buster.get("coins", 0) + coin_cost
         display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
         variant = "✨ Exceptional " if is_exceptional else ""
         return {
@@ -15559,12 +15694,15 @@ def save_encounter_for_later(
     display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
     variant = "✨ Exceptional" if is_exceptional else ""
     
+    cost_note = f" (cost: {coin_cost} coins)" if coin_cost > 0 else ""
+    
     return {
         "success": True,
         "saved_encounter": saved.to_dict(),
         "entity": entity,
-        "message": f"📦 {variant} {display_name} saved for later! Open anytime from Entitidex.",
+        "message": f"📦 {variant} {display_name} saved for later!{cost_note} Open anytime from Entitidex.",
         "total_saved": manager.progress.get_saved_encounter_count(),
+        "coins_spent": coin_cost,
     }
 
 

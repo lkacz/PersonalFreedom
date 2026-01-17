@@ -212,7 +212,8 @@ class EntityEncounterDialog(QtWidgets.QDialog):
     }
     
     def __init__(self, entity, join_probability: float, parent=None, is_exceptional: bool = False,
-                 chad_interaction_data: Optional[Dict[str, Any]] = None):
+                 chad_interaction_data: Optional[Dict[str, Any]] = None,
+                 bookmark_data: Optional[Dict[str, Any]] = None):
         """
         Initialize the encounter dialog.
         
@@ -226,6 +227,14 @@ class EntityEncounterDialog(QtWidgets.QDialog):
                 - has_chad_exceptional: bool - True if user has exceptional Chad bonded
                 - add_coins_callback: Callable[[int], None] - Function to add coins
                 - give_entity_callback: Callable[[], None] - Function to give entity as if bonded
+            bookmark_data: Optional dict for save slot info:
+                - has_normal: bool - Has normal Living Bookmark Finn
+                - has_exceptional: bool - Has exceptional Giving Bookmark Finn
+                - max_free_slots: int - Max free save slots
+                - current_saved: int - Currently saved encounters
+                - slot_cost: int - Cost for next slot (0=free, -1=unavailable)
+                - can_save: bool - Whether saving is allowed
+                - slot_reason: str - Explanation for UI
         """
         super().__init__(parent)
         self.entity = entity
@@ -235,6 +244,8 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         self.chad_gifted = False  # Track if Chad already gave the entity
         self.is_exceptional = is_exceptional
         self.chad_interaction_data = chad_interaction_data or {}
+        self.bookmark_data = bookmark_data or {}
+        self.save_cost = self.bookmark_data.get("slot_cost", 0)
         
         self._setup_ui()
     
@@ -376,31 +387,139 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         skip_btn.clicked.connect(self._on_skip_confirm)
         btn_layout.addWidget(skip_btn)
         
-        # Save for Later button
-        save_btn = QtWidgets.QPushButton("📦 Save")
+        # Save for Later button with bookmark integration
+        save_container = QtWidgets.QWidget()
+        save_container_layout = QtWidgets.QVBoxLayout(save_container)
+        save_container_layout.setContentsMargins(0, 0, 0, 0)
+        save_container_layout.setSpacing(4)
+        
+        # Build save button text and tooltip based on bookmark status
+        has_bookmark = self.bookmark_data.get("has_normal", False) or self.bookmark_data.get("has_exceptional", False)
+        can_save = self.bookmark_data.get("can_save", True)
+        current_saved = self.bookmark_data.get("current_saved", 0)
+        max_free = self.bookmark_data.get("max_free_slots", 3)
+        slot_cost = self.bookmark_data.get("slot_cost", 0)
+        
+        # Determine button text
+        if slot_cost > 0:
+            save_text = f"📦 Save ({slot_cost}🪙)"
+        elif not can_save:
+            save_text = "📦 Save (Full!)"
+        else:
+            save_text = "📦 Save"
+        
+        save_btn = QtWidgets.QPushButton(save_text)
         save_btn.setFixedHeight(36)
+        
+        # Build tooltip based on bookmark status
+        if self.bookmark_data.get("has_exceptional", False):
+            bookmark_tip = (
+                "📖 Giving Bookmark Finn's Gift!\n\n"
+                f"Finn's exceptional memory grants you {max_free} free save slots!\n"
+                f"Currently using: {current_saved}/{max_free}\n"
+            )
+            if slot_cost > 0:
+                bookmark_tip += f"Next slot costs: {slot_cost}🪙 (flat rate - Finn's generous!)\n"
+            bookmark_tip += (
+                "\n🦊 'As a Giving Bookmark, I remember EVERYTHING!\n"
+                "   Every page, every encounter, every adventure.\n"
+                "   My exceptional memory is at your service!'"
+            )
+        elif self.bookmark_data.get("has_normal", False):
+            bookmark_tip = (
+                "📖 Living Bookmark Finn Helps!\n\n"
+                f"Finn's memory grants you {max_free} free save slots!\n"
+                f"Currently using: {current_saved}/{max_free}\n"
+            )
+            if slot_cost > 0:
+                bookmark_tip += f"Next slot costs: {slot_cost}🪙 (exponential - Finn's brain is stretching!)\n"
+            bookmark_tip += (
+                "\n🦊 'I'm doing my best to remember all these!\n"
+                "   But my memory gets expensive to expand...\n"
+                "   Each extra slot costs more than the last!'"
+            )
+        else:
+            bookmark_tip = (
+                "📦 Save this encounter for later!\n\n"
+                f"⚠️ Limited to {max_free} slots without a bookmark!\n"
+                f"Currently using: {current_saved}/{max_free}\n\n"
+                "💡 TIP: Bond with 'Living Bookmark Finn' in the\n"
+                "📚 Scholar theme to unlock more save slots!\n\n"
+                "• Normal Finn: 5 slots + exponential cost expansion\n"
+                "• Exceptional Finn: 20 slots + flat 100🪙 expansion"
+            )
+        
         save_btn.setToolTip(
-            "📦 Save this encounter for later!\n\n"
+            bookmark_tip + "\n\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
             "• Entity goes to your Entitidex 'Saved Encounters'\n"
             "• Your current bonding chance is preserved\n"
             "• Stack multiple encounters during work sessions\n"
-            "• Open anytime from the Entitidex tab\n\n"
-            "💡 Great for when you're busy or want to\n"
-            "open multiple at once for more excitement!"
+            "• Open anytime from the Entitidex tab"
         )
-        save_btn.setStyleSheet("""
-            QPushButton {
-                background: #2e7d32;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 16px;
-                font-size: 12px;
-            }
-            QPushButton:hover { background: #388e3c; }
-        """)
+        
+        # Style based on availability
+        if not can_save:
+            save_btn.setEnabled(False)
+            save_btn.setStyleSheet("""
+                QPushButton {
+                    background: #555;
+                    color: #888;
+                    border: none;
+                    border-radius: 6px;
+                    padding: 8px 16px;
+                    font-size: 12px;
+                }
+            """)
+        elif slot_cost > 0:
+            save_btn.setStyleSheet("""
+                QPushButton {
+                    background: #1565c0;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    padding: 8px 16px;
+                    font-size: 12px;
+                }
+                QPushButton:hover { background: #1976d2; }
+            """)
+        else:
+            save_btn.setStyleSheet("""
+                QPushButton {
+                    background: #2e7d32;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    padding: 8px 16px;
+                    font-size: 12px;
+                }
+                QPushButton:hover { background: #388e3c; }
+            """)
+        
         save_btn.clicked.connect(self._on_save)
-        btn_layout.addWidget(save_btn)
+        save_container_layout.addWidget(save_btn)
+        
+        # Add mini bookmark indicator if user has Finn
+        if has_bookmark:
+            bookmark_indicator = QtWidgets.QLabel()
+            variant_type = "exceptional" if self.bookmark_data.get("has_exceptional", False) else "normal"
+            indicator_color = "#FFD700" if variant_type == "exceptional" else "#4CAF50"
+            bookmark_indicator.setText(f"📖 {current_saved}/{max_free}")
+            bookmark_indicator.setStyleSheet(f"""
+                QLabel {{
+                    color: {indicator_color};
+                    font-size: 10px;
+                    font-weight: bold;
+                }}
+            """)
+            bookmark_indicator.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            bookmark_indicator.setToolTip(
+                f"🦊 Living Bookmark Finn ({variant_type.title()}) is helping!\n"
+                f"Slots used: {current_saved} / {max_free}"
+            )
+            save_container_layout.addWidget(bookmark_indicator)
+        
+        btn_layout.addWidget(save_container)
         
         bond_btn = QtWidgets.QPushButton("🎲 Bond")
         bond_btn.setFixedHeight(36)
@@ -798,10 +917,11 @@ def show_entity_encounter(entity, join_probability: float,
                           bond_logic_callback: Callable[[str], dict],
                           parent: QtWidgets.QWidget = None,
                           is_exceptional: bool = False,
-                          save_callback: Optional[Callable[[str], dict]] = None,
+                          save_callback: Optional[Callable[[str, int], dict]] = None,
                           encounter_data: Optional[dict] = None,
                           chad_interaction_data: Optional[Dict[str, Any]] = None,
-                          coin_data: Optional[Dict[str, Any]] = None) -> None:
+                          coin_data: Optional[Dict[str, Any]] = None,
+                          bookmark_data: Optional[Dict[str, Any]] = None) -> None:
     """
     Show the entity encounter flow using standard widgets and lottery animation.
     
@@ -812,7 +932,7 @@ def show_entity_encounter(entity, join_probability: float,
                              (from gamification.attempt_entitidex_bond).
         parent: Parent widget.
         is_exceptional: True if this is an exceptional variant encounter (20% chance).
-        save_callback: Optional callback to save encounter for later (entity_id) -> result.
+        save_callback: Optional callback to save encounter for later (entity_id, coin_cost) -> result.
         encounter_data: Optional dict with encounter metadata for saving.
         chad_interaction_data: Optional dict for Chad AGI interactions:
             - has_chad_normal: bool
@@ -822,29 +942,54 @@ def show_entity_encounter(entity, join_probability: float,
         coin_data: Optional dict for coin operations:
             - get_coins_callback: Callable[[], int] - Get current coin balance
             - add_coins_callback: Callable[[int], None] - Add coins to balance
+        bookmark_data: Optional dict for save slot limits:
+            - has_normal: bool - Has normal Living Bookmark Finn
+            - has_exceptional: bool - Has exceptional Giving Bookmark Finn
+            - max_free_slots: int - Max free save slots
+            - current_saved: int - Currently saved encounters
+            - slot_cost: int - Cost for next slot (0=free, -1=unavailable)
+            - can_save: bool - Whether saving is allowed
+            - slot_reason: str - Explanation for UI
     """
     
     # 1. Show encounter dialog with SVG (pass is_exceptional for display)
-    dialog = EntityEncounterDialog(entity, join_probability, parent, is_exceptional, chad_interaction_data)
+    dialog = EntityEncounterDialog(entity, join_probability, parent, is_exceptional, chad_interaction_data, bookmark_data)
     result_code = dialog.exec()
     
     # Handle "Save for Later" choice
     if dialog.saved_for_later and save_callback:
         try:
-            result = save_callback(entity.id)
+            # Get save cost from dialog (0 if free, positive if costs coins)
+            save_cost = dialog.save_cost if hasattr(dialog, 'save_cost') else 0
+            result = save_callback(entity.id, save_cost)
             if result.get("success"):
                 display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
+                cost_msg = f"\n💰 Cost: {save_cost} coins" if save_cost > 0 else ""
                 QtWidgets.QMessageBox.information(
                     parent, "📦 Saved!",
                     f"{'✨ Exceptional ' if is_exceptional else ''}{display_name} saved for later!\n\n"
                     f"Open anytime from your Entitidex collection.\n"
-                    f"Your {int(join_probability * 100)}% bonding chance is preserved."
+                    f"Your {int(join_probability * 100)}% bonding chance is preserved.{cost_msg}"
                 )
             else:
-                QtWidgets.QMessageBox.warning(
-                    parent, "Save Failed",
-                    result.get("message", "Could not save encounter.")
-                )
+                # Check if this is a slot limit issue that could be solved with Finn
+                needs_bookmark = result.get("needs_bookmark", False)
+                if needs_bookmark:
+                    QtWidgets.QMessageBox.warning(
+                        parent, "📦 Save Slots Full!",
+                        "You've reached the maximum of 3 save slots!\n\n"
+                        "💡 TIP: Bond with 'Living Bookmark Finn' in the\n"
+                        "📚 Scholar theme to unlock more save slots!\n\n"
+                        "• Normal Finn: 5 free slots + paid expansion\n"
+                        "• Exceptional Finn: 20 free slots + cheap expansion\n\n"
+                        "🦊 Finn is a magical bookmark who helps you\n"
+                        "remember more encounters for later!"
+                    )
+                else:
+                    QtWidgets.QMessageBox.warning(
+                        parent, "Save Failed",
+                        result.get("message", "Could not save encounter.")
+                    )
         except Exception as e:
             QtWidgets.QMessageBox.warning(parent, "Error", f"Could not save: {e}")
         return

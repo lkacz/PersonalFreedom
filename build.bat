@@ -38,6 +38,7 @@ echo.
 echo [1/2] Building GUI version (lightweight, ~100MB)...
 pyinstaller --onefile --windowed --name "PersonalLiberty" ^
     --icon=icons\app.ico ^
+    --version-file="version_info.txt" ^
     --add-data "productivity_ai.py;." ^
     --add-data "gamification.py;." ^
     %HIDDEN_IMPORTS% ^
