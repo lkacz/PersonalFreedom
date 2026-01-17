@@ -716,11 +716,6 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Store total coin discount for UI (percentage only, flat is separate)
         self.total_coin_discount = coin_discount  # Just the percentage part
         
-        # DEBUG: Check discount values
-        print(f"[MERGE DEBUG] Item coin_discount: {coin_discount}%")
-        print(f"[MERGE DEBUG] Entity coin flat reduction: -{self.entity_coin_flat} coins")
-        print(f"[MERGE DEBUG] Original merge_base cost: {COIN_COSTS.get('merge_base', 50)}")
-        
         # Apply percentage discount first, then flat reduction
         # Step 1: Apply item percentage discount
         # Step 2: Apply entity flat coin reduction
@@ -730,8 +725,6 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.retry_bump_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_retry_bump", 50), coin_discount), self.entity_coin_flat)
         self.claim_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_claim", 100), coin_discount), self.entity_coin_flat)  # Claim item on near-miss
         self.boost_bonus = MERGE_BOOST_BONUS  # +25% success rate
-        
-        print(f"[MERGE DEBUG] Discounted merge_cost: {self.merge_cost}")
         
         self.retry_cost_accumulated = 0
         self.near_miss_claimed = False

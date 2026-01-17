@@ -15630,8 +15630,6 @@ class ADHDBusterTab(QtWidgets.QWidget):
         # Calculate coin discount from items being merged (not equipped)
         from gamification import calculate_merge_discount
         coin_discount = calculate_merge_discount(items)
-        print(f"[DEBUG] Calculated coin_discount from merge items: {coin_discount}%")
-        print(f"[DEBUG] Entity perk bonuses: {entity_perks}")
         
         # Show new professional merge dialog with player coins for boost option
         from merge_dialog import LuckyMergeDialog
