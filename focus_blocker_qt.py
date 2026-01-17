@@ -2000,22 +2000,35 @@ class TimerTab(QtWidgets.QWidget):
             
             # Show encounter dialog using new merge-style flow
             entity = encounter["entity"]
+            # Capture is_exceptional from encounter result for bond attempt
+            encounter_is_exceptional = encounter.get("is_exceptional", False)
             
             try:
                 from entity_drop_dialog import show_entity_encounter
             
                 # wrapper callback for the bonding logic
                 def bond_callback_wrapper(entity_id: str):
-                    # Attempt the bond
-                    result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
+                    # Attempt the bond - pass is_exceptional from encounter
+                    result = attempt_entitidex_bond(
+                        self.blocker.adhd_buster, entity_id, 
+                        is_exceptional=encounter_is_exceptional
+                    )
                     
                     # Save the updated data immediately
                     from gamification import sync_hero_data
                     sync_hero_data(self.blocker.adhd_buster)
                     
-                    # Get game state and save
-                    game_state = getattr(self.window(), 'game_state', None)
+                    # Get game state and emit XP signal if XP was awarded
+                    from game_state import get_game_state
+                    game_state = get_game_state()
                     if game_state:
+                        # Emit XP signal so UI updates (XP was already added to adhd_buster)
+                        xp_awarded = result.get('xp_awarded', 0)
+                        if xp_awarded > 0:
+                            # Get current XP and level for signal emission
+                            total_xp = self.blocker.adhd_buster.get('total_xp', 0)
+                            level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
+                            game_state.xp_changed.emit(total_xp, level)
                         game_state.force_save()
                         
                     return result
@@ -2024,7 +2037,8 @@ class TimerTab(QtWidgets.QWidget):
                     entity=entity,
                     join_probability=encounter["join_probability"],
                     bond_logic_callback=bond_callback_wrapper,
-                    parent=self.window()
+                    parent=self.window(),
+                    is_exceptional=encounter_is_exceptional,
                 )
             except ImportError:
                  logger.error("Could not import entity_drop_dialog logic")
@@ -2128,6 +2142,10 @@ class TimerTab(QtWidgets.QWidget):
         if session_minutes > 0:
             rewards_info = self._collect_session_rewards(session_minutes)
         
+        # Emit session_complete EARLY so stats refresh immediately
+        # (will emit again after rewards to capture XP/item changes)
+        self.session_complete.emit(elapsed)
+        
         # Show new professional session complete dialog
         from session_complete_dialog import SessionCompleteDialog
         dialog = SessionCompleteDialog(elapsed, rewards_info, parent=self)
@@ -2144,8 +2162,6 @@ class TimerTab(QtWidgets.QWidget):
         # Process rewards after dialog shown
         if session_minutes > 0:
             QtCore.QTimer.singleShot(50, lambda: self._give_session_rewards_deferred(session_minutes))
-        else:
-            self.session_complete.emit(elapsed)
 
     def _give_session_rewards_deferred(self, session_minutes: int) -> None:
         """Deferred session rewards to keep UI responsive.
@@ -18621,12 +18637,12 @@ class DailyTimelineWidget(QtWidgets.QFrame):
             if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
                 entitidex_data = self.blocker.adhd_buster.get("entitidex", {})
                 collected = entitidex_data.get("collected_entity_ids", [])
-                exceptional = entitidex_data.get("exceptional_entity_ids", [])
+                exceptional_entities = entitidex_data.get("exceptional_entities", {})
                 
                 # collected_entity_ids contains ALL collected (both normal + exceptional)
-                # exceptional_entity_ids is a SUBSET of collected
+                # exceptional_entities is a dict keyed by entity_id for exceptional ones
                 total_collected = len(collected)
-                exceptional_count = len(exceptional)
+                exceptional_count = len(exceptional_entities)
                 normal_count = total_collected - exceptional_count  # Subtract to get normal-only count
                 
                 # Total possible: 9 entities × 5 story pools = 45
@@ -19071,6 +19087,15 @@ class DevTab(QtWidgets.QWidget):
                     is_exceptional=exceptional
                 )
                 self.status_label.setText(f"Result: {'Success' if result.get('success') else 'Failed'}")
+                # Emit XP signal if XP was awarded
+                xp_awarded = result.get('xp_awarded', 0)
+                if xp_awarded > 0:
+                    from game_state import get_game_state
+                    gs = get_game_state()
+                    if gs:
+                        total_xp = self.blocker.adhd_buster.get('total_xp', 0)
+                        level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
+                        gs.xp_changed.emit(total_xp, level)
                 # Refresh entitidex tab after bond attempt
                 main_win = self.window()
                 if hasattr(main_win, 'entitidex_tab'):
@@ -19119,6 +19144,15 @@ class DevTab(QtWidgets.QWidget):
                 from gamification import attempt_entitidex_bond
                 result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
                 self.status_label.setText(f"Result: {result['success']}")
+                # Emit XP signal if XP was awarded
+                xp_awarded = result.get('xp_awarded', 0)
+                if xp_awarded > 0:
+                    from game_state import get_game_state
+                    gs = get_game_state()
+                    if gs:
+                        total_xp = self.blocker.adhd_buster.get('total_xp', 0)
+                        level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
+                        gs.xp_changed.emit(total_xp, level)
                 # Refresh entitidex tab after bond attempt
                 main_win = self.window()
                 if hasattr(main_win, 'entitidex_tab'):
@@ -19168,6 +19202,15 @@ class DevTab(QtWidgets.QWidget):
             def bond_callback_wrapper(entity_id: str):
                 from gamification import attempt_entitidex_bond
                 result = attempt_entitidex_bond(self.blocker.adhd_buster, entity_id)
+                # Emit XP signal if XP was awarded
+                xp_awarded = result.get('xp_awarded', 0)
+                if xp_awarded > 0:
+                    from game_state import get_game_state
+                    gs = get_game_state()
+                    if gs:
+                        total_xp = self.blocker.adhd_buster.get('total_xp', 0)
+                        level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
+                        gs.xp_changed.emit(total_xp, level)
                 # Refresh entitidex tab after bond attempt
                 main_win = self.window()
                 if hasattr(main_win, 'entitidex_tab'):

@@ -1594,12 +1594,12 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             entitidex_data = self.adhd_buster.get("entitidex", {})
             collected_ids = entitidex_data.get("collected_entity_ids", 
                             entitidex_data.get("collected", []))
-            exceptional_ids = entitidex_data.get("exceptional_entity_ids", [])
+            exceptional_entities = entitidex_data.get("exceptional_entities", {})
             
             # Tesla Coil check
             if "scientist_007" in collected_ids:
                 tesla_coil_collected = True
-                tesla_coil_is_exceptional = "scientist_007" in exceptional_ids
+                tesla_coil_is_exceptional = "scientist_007" in exceptional_entities
                 
                 if tesla_coil_is_exceptional:
                     gamble_multiplier = 1.20  # +20% chance (bonus!)
@@ -1609,7 +1609,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             # Blank Parchment check
             if "scholar_009" in collected_ids:
                 blank_parchment_collected = True
-                blank_parchment_is_exceptional = "scholar_009" in exceptional_ids
+                blank_parchment_is_exceptional = "scholar_009" in exceptional_entities
                 blank_parchment_chance = 20 if blank_parchment_is_exceptional else 10
         except Exception as e:
             print(f"[Gamble Perk] Error checking perks: {e}")
@@ -2005,18 +2005,18 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         try:
             entitidex_data = self.adhd_buster.get("entitidex", {})
             collected = entitidex_data.get("collected_entity_ids", [])
-            exceptional = entitidex_data.get("exceptional_entity_ids", [])
+            exceptional_entities = entitidex_data.get("exceptional_entities", {})
             
             # Tesla Coil check
             if "scientist_007" in collected:
-                if "scientist_007" in exceptional:
+                if "scientist_007" in exceptional_entities:
                     gamble_multiplier = 1.20  # +20% chance (bonus!)
                 else:
                     gamble_multiplier = 1.00  # No penalty (protection)
             
             # Blank Parchment check for item recovery
             if "scholar_009" in collected:
-                blank_parchment_is_exceptional = "scholar_009" in exceptional
+                blank_parchment_is_exceptional = "scholar_009" in exceptional_entities
                 gamble_safety_chance = 20 if blank_parchment_is_exceptional else 10
         except Exception:
             pass
@@ -2048,12 +2048,12 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         if roll < adjusted_rate:
             # SUCCESS! Upgrade to next tier
             from gamification import generate_item
-            story_id = current_item.get("story_id", "warrior")
+            story_id = current_item.get("story_theme", "warrior")
             new_item = generate_item(rarity=next_rarity, story_id=story_id)
             
             # Preserve some attributes from original
             if current_item.get("lucky_options"):
-                new_item["lucky_options"] = current_item["lucky_options"]
+                new_item["lucky_options"] = current_item["lucky_options"].copy()
             
             # Update merge result
             self.merge_result["result_item"] = new_item
@@ -2563,7 +2563,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             from gamification import generate_item
             claimed_item = generate_item(
                 rarity=self.result_rarity,
-                story_id=self.items[0].get("story_id") if self.items else None
+                story_id=self.items[0].get("story_theme") if self.items else None
             )
             # Apply tier upgrade if it was enabled
             if self.tier_upgrade_enabled:

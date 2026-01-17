@@ -148,7 +148,7 @@ ENTITY_PERKS: Dict[str, EntityPerk] = {
     "scientist_004": EntityPerk("scientist_004", PerkType.PITY_BONUS, 5, 8, "Peer Review: +{value}% Pity Progress", "🐭", "Nobel Recognition: +{value}% Pity Progress"),
     "scientist_005": EntityPerk("scientist_005", PerkType.HINT_REVEAL, 1, 2, "Micro-Insight: Reveal Hints", "🔬", "Quantum Vision: Reveal All Hints"),
     "scientist_006": EntityPerk("scientist_006", PerkType.RARITY_BIAS, 2, 4, "Reaction Base: +{value}% Epic Chance", "⚗️", "Philosopher's Stone: +{value}% Epic Chance"),
-    "scientist_007": EntityPerk("scientist_007", PerkType.GAMBLE_LUCK, -10, 20, "Risk Assessment: {value}% Gamble Chance", "⚡", "Lightning Luck: +{value}% Gamble Chance"),
+    "scientist_007": EntityPerk("scientist_007", PerkType.GAMBLE_LUCK, 5, 20, "Risk Assessment: +{value}% Gamble Chance", "⚡", "Lightning Luck: +{value}% Gamble Chance"),
     "scientist_008": EntityPerk("scientist_008", PerkType.RARITY_BIAS, 1, 2, "Golden Standard: +{value}% Legendary Chance", "🧬", "Divine Helix: +{value}% Legendary Chance"),
     "scientist_009": EntityPerk("scientist_009", PerkType.XP_PERCENT, 3, 5, "Eureka Moment: +{value}% Discovery XP", "🐁", "Genius Awakening: +{value}% Discovery XP"),
 }
