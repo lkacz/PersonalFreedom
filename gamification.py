@@ -15152,7 +15152,11 @@ def check_entitidex_encounter(adhd_buster: dict, session_minutes: int,
             "entity": Entity or None,
             "hero_power": int,
             "entity_power": int,
-            "join_probability": float
+            "join_probability": float,
+            "is_exceptional": bool,  # True if exceptional variant (20% chance)
+            "perk_bonus_applied": bool,
+            "encounter_perk_bonus": float,
+            "capture_perk_bonus": float
         }
     """
     # Get entitidex manager (already configured with story & power)
@@ -15175,6 +15179,7 @@ def check_entitidex_encounter(adhd_buster: dict, session_minutes: int,
         "hero_power": hero_power,
         "entity_power": encounter_result.entity.power if encounter_result.entity else 0,
         "join_probability": encounter_result.catch_probability,
+        "is_exceptional": encounter_result.is_exceptional,  # CRITICAL: Pass exceptional status
         "perk_bonus_applied": encounter_result.perk_bonus_applied,
         "encounter_perk_bonus": encounter_result.encounter_perk_bonus,
         "capture_perk_bonus": encounter_result.capture_perk_bonus,
