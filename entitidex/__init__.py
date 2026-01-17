@@ -21,6 +21,17 @@ from .encounter_system import (
     ENCOUNTER_CONFIG,
 )
 from .entitidex_manager import EntitidexManager
+from .theme_completion import (
+    ThemeCelebration,
+    THEME_CELEBRATIONS,
+    get_theme_celebration,
+    get_all_theme_ids,
+)
+from .celebration_audio import (
+    CelebrationAudioManager,
+    play_celebration_sound,
+    preload_celebration_sounds,
+)
 
 __all__ = [
     # Data models
@@ -44,6 +55,15 @@ __all__ = [
     "ENCOUNTER_CONFIG",
     # Manager
     "EntitidexManager",
+    # Theme completion
+    "ThemeCelebration",
+    "THEME_CELEBRATIONS",
+    "get_theme_celebration",
+    "get_all_theme_ids",
+    # Celebration audio
+    "CelebrationAudioManager",
+    "play_celebration_sound",
+    "preload_celebration_sounds",
 ]
 
 __version__ = "1.0.0"

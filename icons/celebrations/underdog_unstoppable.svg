@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width="150" height="150">
+  <defs>
+    <!-- Victory glow -->
+    <radialGradient id="victoryGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF8C00">
+        <animate attributeName="stop-color" values="#FF8C00;#FF4500;#FF8C00" dur="2s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#3F1F0F"/>
+    </radialGradient>
+    
+    <!-- Trophy shine -->
+    <linearGradient id="trophyShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700">
+        <animate attributeName="offset" values="0%;30%;0%" dur="2s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" stop-color="#FFA500"/>
+      <stop offset="100%" stop-color="#FF8C00"/>
+    </linearGradient>
+    
+    <!-- Star burst -->
+    <radialGradient id="starBurst" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FFD700"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Background victory aura -->
+  <circle cx="75" cy="75" r="65" fill="url(#victoryGlow)" opacity="0.4">
+    <animate attributeName="r" values="60;68;60" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Rising fist -->
+  <path d="M55 90 L55 60 Q55 45 65 45 L85 45 Q95 45 95 60 L95 90 L95 100 L55 100 Z" 
+        fill="#DEB887" stroke="#8B4513" stroke-width="2">
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="1.5s" repeatCount="indefinite"/>
+  </path>
+  <!-- Fist details -->
+  <line x1="65" y1="55" x2="65" y2="75" stroke="#8B4513" stroke-width="1" opacity="0.5">
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <line x1="75" y1="55" x2="75" y2="75" stroke="#8B4513" stroke-width="1" opacity="0.5">
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <line x1="85" y1="55" x2="85" y2="75" stroke="#8B4513" stroke-width="1" opacity="0.5">
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  
+  <!-- Victory stars radiating -->
+  <polygon points="30,30 33,38 42,38 35,43 38,52 30,47 22,52 25,43 18,38 27,38" fill="url(#starBurst)">
+    <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="scale" from="0.5" to="1.2" dur="1.5s" repeatCount="indefinite"/>
+  </polygon>
+  <polygon points="120,25 122,31 129,31 124,35 126,42 120,38 114,42 116,35 111,31 118,31" fill="#FFD700">
+    <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite"/>
+  </polygon>
+  <polygon points="25,90 27,95 33,95 29,98 30,104 25,101 20,104 21,98 17,95 23,95" fill="#FF8C00">
+    <animate attributeName="opacity" values="0;1;0" dur="1.3s" repeatCount="indefinite"/>
+  </polygon>
+  <polygon points="125,85 127,90 133,90 129,93 130,99 125,96 120,99 121,93 117,90 123,90" fill="url(#starBurst)">
+    <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+  </polygon>
+  
+  <!-- Lightning bolts -->
+  <path d="M40 50 L45 65 L40 65 L48 85" fill="none" stroke="#FFD700" stroke-width="3" stroke-linecap="round">
+    <animate attributeName="opacity" values="0;1;0" dur="0.8s" repeatCount="indefinite"/>
+  </path>
+  <path d="M110 55 L105 70 L110 70 L102 90" fill="none" stroke="#FFD700" stroke-width="3" stroke-linecap="round">
+    <animate attributeName="opacity" values="0;1;0" dur="0.9s" repeatCount="indefinite" begin="0.4s"/>
+  </path>
+  
+  <!-- Flames beneath -->
+  <ellipse cx="75" cy="115" rx="30" ry="10" fill="#FF4500" opacity="0.6">
+    <animate attributeName="rx" values="25;35;25" dur="0.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.7;0.4" dur="0.8s" repeatCount="indefinite"/>
+  </ellipse>
+  <path d="M55 115 Q60 100 65 115 Q70 95 75 115 Q80 100 85 115 Q90 95 95 115" fill="#FF8C00" opacity="0.5">
+    <animate attributeName="d" 
+             values="M55 115 Q60 100 65 115 Q70 95 75 115 Q80 100 85 115 Q90 95 95 115;
+                     M55 115 Q58 95 65 115 Q72 100 75 115 Q78 95 85 115 Q92 100 95 115;
+                     M55 115 Q60 100 65 115 Q70 95 75 115 Q80 100 85 115 Q90 95 95 115" 
+             dur="0.6s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Victory banner -->
+  <rect x="25" y="120" width="100" height="20" rx="3" fill="#FF4500" stroke="#FFD700" stroke-width="2"/>
+  <polygon points="25,125 15,130 25,135" fill="#CC3700"/>
+  <polygon points="125,125 135,130 125,135" fill="#CC3700"/>
+  
+  <!-- Text -->
+  <text x="75" y="135" text-anchor="middle" font-family="Impact" font-size="12" fill="#FFFFFF">
+    UNSTOPPABLE
+    <animate attributeName="fill" values="#FFFFFF;#FFD700;#FFFFFF" dur="1.5s" repeatCount="indefinite"/>
+  </text>
+</svg>
