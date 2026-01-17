@@ -34,6 +34,9 @@ from entitidex import (
     get_entities_for_story,
     Entity,
     EntitidexProgress,
+    get_theme_celebration,
+    play_celebration_sound,
+    preload_celebration_sounds,
 )
 from entitidex.entity_perks import calculate_active_perks, ENTITY_PERKS, PerkType, get_perk_description
 
@@ -1228,6 +1231,305 @@ class EntityCard(QtWidgets.QFrame):
         # Note: WebEngine animations run continuously (never paused) to avoid delay/flicker.
 
 
+# =============================================================================
+# CELEBRATION CARD - Theme Completion Reward
+# Displayed when user collects all entities from a theme
+# =============================================================================
+
+# Path to celebration SVGs and sounds
+CELEBRATION_ICONS_PATH = Path(__file__).parent / "icons" / "celebrations"
+CELEBRATION_SOUNDS_PATH = Path(__file__).parent / "icons" / "sounds"
+
+
+class CelebrationCard(QtWidgets.QFrame):
+    """
+    Epic celebration card displayed when a theme is fully completed.
+    
+    Features:
+    - Animated SVG background (theme-specific)
+    - Chirpy sound on click
+    - Pulsing rainbow border glow
+    - Floating sparkle particles
+    - Shimmer sweep effects
+    - Grand visual presentation (wider than entity cards)
+    
+    This is the CONGRATULATIONS card that rewards theme mastery.
+    """
+    
+    clicked = QtCore.Signal(str)  # Emits theme_id when clicked
+    
+    def __init__(self, theme_id: str, parent=None):
+        super().__init__(parent)
+        self.theme_id = theme_id
+        self.celebration = get_theme_celebration(theme_id)
+        
+        if not self.celebration:
+            _logger.warning("No celebration data for theme: %s", theme_id)
+            return
+        
+        # Animation state
+        self._glow_animation = None
+        self._glow_value = 0.0
+        self._shimmer_timer = None
+        self._shimmer_pos = -100
+        self._shimmer_widget = None
+        self._particle_labels = []
+        self._animations_paused = False
+        
+        self.setFrameStyle(QtWidgets.QFrame.StyledPanel | QtWidgets.QFrame.Raised)
+        self.setLineWidth(3)
+        self.setCursor(QtCore.Qt.PointingHandCursor)
+        self.setFixedSize(400, 280)  # Wider than entity cards for epic presentation
+        
+        self._build_ui()
+        self._start_animations()
+        
+    def _build_ui(self):
+        """Build the celebration card UI."""
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(8)
+        
+        # Title banner with gradient
+        title_label = QtWidgets.QLabel("🎉 THEME COMPLETE! 🎉")
+        title_label.setAlignment(QtCore.Qt.AlignCenter)
+        title_label.setFont(QtGui.QFont("Segoe UI", 16, QtGui.QFont.Bold))
+        title_label.setStyleSheet("""
+            color: #FFD700;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 rgba(255,215,0,30), stop:0.5 rgba(255,255,255,50), stop:1 rgba(255,215,0,30));
+            border-radius: 8px;
+            padding: 5px;
+        """)
+        layout.addWidget(title_label)
+        
+        # SVG container with animation
+        svg_container = QtWidgets.QWidget()
+        svg_layout = QtWidgets.QHBoxLayout(svg_container)
+        svg_layout.setContentsMargins(0, 0, 0, 0)
+        svg_layout.addStretch()
+        
+        # Load celebration SVG
+        svg_path = CELEBRATION_ICONS_PATH / self.celebration.svg_filename
+        if svg_path.exists() and HAS_WEBENGINE:
+            svg_widget = AnimatedSvgWidget(str(svg_path), svg_container)
+            svg_widget.setFixedSize(150, 150)
+        elif svg_path.exists():
+            svg_widget = QSvgWidget(str(svg_path), svg_container)
+            svg_widget.setFixedSize(150, 150)
+        else:
+            # Placeholder emoji for missing SVG
+            svg_widget = QtWidgets.QLabel("🏆")
+            svg_widget.setAlignment(QtCore.Qt.AlignCenter)
+            svg_widget.setFixedSize(150, 150)
+            svg_widget.setStyleSheet("font-size: 80px; background: transparent;")
+        
+        svg_layout.addWidget(svg_widget)
+        svg_layout.addStretch()
+        layout.addWidget(svg_container)
+        
+        # Theme-specific title
+        theme_title = QtWidgets.QLabel(self.celebration.title)
+        theme_title.setAlignment(QtCore.Qt.AlignCenter)
+        theme_title.setFont(QtGui.QFont("Segoe UI", 14, QtGui.QFont.Bold))
+        primary_color = self.celebration.accent_color
+        theme_title.setStyleSheet(f"color: {primary_color}; background: transparent;")
+        layout.addWidget(theme_title)
+        
+        # Subtitle
+        subtitle = QtWidgets.QLabel(self.celebration.subtitle)
+        subtitle.setAlignment(QtCore.Qt.AlignCenter)
+        subtitle.setFont(QtGui.QFont("Segoe UI", 10))
+        subtitle.setStyleSheet("color: #AAAAAA; background: transparent;")
+        layout.addWidget(subtitle)
+        
+        # Description
+        desc_label = QtWidgets.QLabel(self.celebration.description)
+        desc_label.setAlignment(QtCore.Qt.AlignCenter)
+        desc_label.setWordWrap(True)
+        desc_label.setFont(QtGui.QFont("Segoe UI", 9))
+        desc_label.setStyleSheet("color: #888888; background: transparent; font-style: italic;")
+        layout.addWidget(desc_label)
+        
+        # Click hint
+        click_hint = QtWidgets.QLabel("🔊 Click for celebration fanfare!")
+        click_hint.setAlignment(QtCore.Qt.AlignCenter)
+        click_hint.setFont(QtGui.QFont("Segoe UI", 8))
+        click_hint.setStyleSheet("color: #666666; background: transparent;")
+        layout.addWidget(click_hint)
+        
+        # Add floating particles
+        self._create_particle_decorations()
+        
+        # Create shimmer overlay
+        self._create_shimmer_overlay()
+        
+        # Set initial style
+        self._update_style()
+        
+    def _create_particle_decorations(self):
+        """Create floating particle decorations around the card."""
+        particle_chars = ["✨", "⭐", "💫", "🌟", "✦", "❋"]
+        positions = [
+            (20, 20), (370, 20), (10, 130), (380, 130),
+            (30, 250), (360, 250), (190, 10), (190, 260)
+        ]
+        
+        for i, (x, y) in enumerate(positions):
+            particle = QtWidgets.QLabel(particle_chars[i % len(particle_chars)], self)
+            particle.setStyleSheet("font-size: 16px; background: transparent;")
+            particle.move(x, y)
+            particle.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+            self._particle_labels.append(particle)
+    
+    def _create_shimmer_overlay(self):
+        """Create golden shimmer sweep effect."""
+        self._shimmer_widget = QtWidgets.QWidget(self)
+        self._shimmer_widget.setFixedSize(400, 280)
+        self._shimmer_widget.move(0, 0)
+        self._shimmer_widget.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        self._shimmer_widget.setStyleSheet("background: transparent;")
+        self._shimmer_widget.lower()
+    
+    def _start_animations(self):
+        """Start all celebration animations."""
+        # Pulsing glow animation
+        self._glow_animation = QtCore.QPropertyAnimation(self, b"glow_value")
+        self._glow_animation.setDuration(2500)  # Slower for epic effect
+        self._glow_animation.setStartValue(0.0)
+        self._glow_animation.setEndValue(1.0)
+        self._glow_animation.setLoopCount(-1)
+        self._glow_animation.setEasingCurve(QtCore.QEasingCurve.InOutSine)
+        self._glow_animation.start()
+        
+        # Shimmer timer
+        self._shimmer_timer = QtCore.QTimer(self)
+        self._shimmer_timer.timeout.connect(self._update_shimmer)
+        self._shimmer_timer.start(40)  # 25 FPS
+    
+    def _update_shimmer(self):
+        """Update shimmer and particle positions."""
+        if not self._shimmer_widget:
+            return
+        
+        # Move shimmer across card
+        self._shimmer_pos += 4
+        if self._shimmer_pos > 500:
+            self._shimmer_pos = -100
+        
+        pos_pct = max(0, min(100, int((self._shimmer_pos / 400) * 100)))
+        
+        self._shimmer_widget.setStyleSheet(f"""
+            background: qlineargradient(
+                x1: 0, y1: 0, x2: 1, y2: 0.3,
+                stop: {max(0, pos_pct - 20) / 100:.2f} transparent,
+                stop: {pos_pct / 100:.2f} rgba(255, 215, 0, 60),
+                stop: {min(100, pos_pct + 20) / 100:.2f} transparent
+            );
+        """)
+        
+        # Animate particles
+        self._update_particles()
+    
+    def _update_particles(self):
+        """Animate floating particles with oscillating motion."""
+        positions = [
+            (20, 20), (370, 20), (10, 130), (380, 130),
+            (30, 250), (360, 250), (190, 10), (190, 260)
+        ]
+        
+        for i, particle in enumerate(self._particle_labels):
+            phase = (self._glow_value * math.pi * 2) + (i * math.pi / 4)
+            base_x, base_y = positions[i % len(positions)]
+            offset_x = math.sin(phase) * 10
+            offset_y = math.cos(phase) * 10
+            
+            opacity = 0.6 + 0.4 * math.sin(phase + math.pi / 2)
+            size = 14 + int(4 * math.sin(phase))
+            
+            particle.move(int(base_x + offset_x), int(base_y + offset_y))
+            particle.setStyleSheet(f"font-size: {size}px; background: transparent; opacity: {opacity};")
+    
+    def _get_glow_value(self):
+        return self._glow_value
+    
+    def _set_glow_value(self, value):
+        self._glow_value = value
+        self._update_style()
+    
+    glow_value = QtCore.Property(float, _get_glow_value, _set_glow_value)
+    
+    def _update_style(self):
+        """Update card style with animated rainbow border."""
+        if not self.celebration:
+            return
+        
+        # Rainbow hue cycling based on glow value
+        hue = int(self._glow_value * 360)
+        
+        # Create HSV color for border
+        from colorsys import hsv_to_rgb
+        r, g, b = hsv_to_rgb(hue / 360.0, 0.7, 1.0)
+        border_color = f"#{int(r*255):02X}{int(g*255):02X}{int(b*255):02X}"
+        
+        # Subtle pulsing shadow
+        shadow_alpha = int(100 + 50 * math.sin(self._glow_value * math.pi * 2))
+        
+        self.setStyleSheet(f"""
+            CelebrationCard {{
+                background: qradialgradient(
+                    cx: 0.5, cy: 0.5, radius: 0.9,
+                    fx: 0.5, fy: 0.5,
+                    stop: 0 #1A1A2E,
+                    stop: 0.7 #0D0D1A,
+                    stop: 1 #050510
+                );
+                border: 3px solid {border_color};
+                border-radius: 16px;
+            }}
+        """)
+        
+        # Update particles
+        self._update_particles()
+    
+    def mousePressEvent(self, event):
+        """Handle click - play celebration sound."""
+        if event.button() == QtCore.Qt.LeftButton:
+            # Play celebration sound
+            sound_path = CELEBRATION_SOUNDS_PATH / self.celebration.sound_filename
+            if sound_path.exists():
+                play_celebration_sound(self.theme_id)
+            else:
+                _logger.info("Celebration sound not found: %s", sound_path)
+            
+            self.clicked.emit(self.theme_id)
+        super().mousePressEvent(event)
+    
+    def pause_animations(self):
+        """Pause animations when card is not visible."""
+        if self._animations_paused:
+            return
+        self._animations_paused = True
+        
+        if self._glow_animation and self._glow_animation.state() == QtCore.QAbstractAnimation.Running:
+            self._glow_animation.pause()
+        
+        if self._shimmer_timer and self._shimmer_timer.isActive():
+            self._shimmer_timer.stop()
+    
+    def resume_animations(self):
+        """Resume animations when card becomes visible."""
+        if not self._animations_paused:
+            return
+        self._animations_paused = False
+        
+        if self._glow_animation and self._glow_animation.state() == QtCore.QAbstractAnimation.Paused:
+            self._glow_animation.resume()
+        
+        if self._shimmer_timer and not self._shimmer_timer.isActive():
+            self._shimmer_timer.start(40)
+
+
 # Theme info for tabs (matching preview_entities.py)
 THEME_INFO = {
     "warrior": ("🗡️ Warrior", "#C62828"),
@@ -1654,6 +1956,33 @@ class EntitidexTab(QtWidgets.QWidget):
                 f"👁️ Encountered: {encountered_count}"
             )
         
+        # =====================================================================
+        # THEME COMPLETION CELEBRATION CARD
+        # Show epic celebration card at top when theme is 100% complete
+        # =====================================================================
+        current_row = 0
+        
+        # Check if theme is fully complete (all normal + all exceptional)
+        if self.progress.is_theme_fully_complete(theme_key):
+            # Record completion if not already recorded
+            if theme_key not in self.progress.theme_completions:
+                self.progress.record_theme_completion(theme_key)
+                self._save_progress()
+            
+            # Create and add the celebration card
+            celebration_card = CelebrationCard(theme_key, cards_container)
+            if celebration_card.celebration:  # Only add if valid
+                cards_layout.addWidget(celebration_card, current_row, 0, 1, 1, QtCore.Qt.AlignCenter)
+                current_row += 1
+                
+                # Add separator line below celebration
+                separator = QtWidgets.QFrame()
+                separator.setFrameShape(QtWidgets.QFrame.HLine)
+                separator.setStyleSheet("background-color: #444444; margin: 10px 50px;")
+                separator.setFixedHeight(2)
+                cards_layout.addWidget(separator, current_row, 0, 1, 1, QtCore.Qt.AlignCenter)
+                current_row += 1
+        
         # Create paired cards - Layout: Each entity gets [Normal | Exceptional] pair
         # Sort by rarity for proper grouping
         rarity_order = {"common": 0, "uncommon": 1, "rare": 2, "epic": 3, "legendary": 4}
@@ -1664,13 +1993,12 @@ class EntitidexTab(QtWidgets.QWidget):
         others = [e for e in entities_by_rarity if e.rarity.lower() != "legendary"]
         
         # Layout grid with paired cards (each pair is wider, so 2 pairs per row)
-        # Row 0: Legendary pair centered
-        # Row 1-2: Epic pairs
-        # Row 3-4: Rare pairs  
-        # Row 5-6: Uncommon pairs
-        # Row 7-8: Common pairs
-        
-        current_row = 0
+        # Row 0: Celebration card (if theme complete) + separator
+        # Row N: Legendary pair centered
+        # Row N+1-2: Epic pairs
+        # Row N+3-4: Rare pairs  
+        # Row N+5-6: Uncommon pairs
+        # Row N+7-8: Common pairs
         
         # Add legendary at top center
         for entity in legendary:

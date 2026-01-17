@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width="150" height="150">
+  <defs>
+    <!-- Science glow -->
+    <radialGradient id="scienceGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00BFFF">
+        <animate attributeName="stop-color" values="#00BFFF;#1E90FF;#00BFFF" dur="3s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#0F1F3F"/>
+    </radialGradient>
+    
+    <!-- Flask liquid -->
+    <linearGradient id="flaskLiquid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00FF7F">
+        <animate attributeName="stop-color" values="#00FF7F;#00BFFF;#FF69B4;#00FF7F" dur="4s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#006400"/>
+    </linearGradient>
+    
+    <!-- Glass shine -->
+    <linearGradient id="glassShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.3)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background scientific aura -->
+  <circle cx="75" cy="75" r="65" fill="url(#scienceGlow)" opacity="0.35">
+    <animate attributeName="r" values="60;68;60" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Atom symbol orbits -->
+  <g transform="translate(75,55)">
+    <ellipse cx="0" cy="0" rx="35" ry="12" fill="none" stroke="#00BFFF" stroke-width="2" opacity="0.7">
+      <animateTransform attributeName="transform" type="rotate" values="0;360" dur="4s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="0" cy="0" rx="35" ry="12" fill="none" stroke="#FF69B4" stroke-width="2" opacity="0.7" transform="rotate(60)">
+      <animateTransform attributeName="transform" type="rotate" values="60;420" dur="5s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="0" cy="0" rx="35" ry="12" fill="none" stroke="#00FF7F" stroke-width="2" opacity="0.7" transform="rotate(-60)">
+      <animateTransform attributeName="transform" type="rotate" values="-60;300" dur="6s" repeatCount="indefinite"/>
+    </ellipse>
+    <!-- Nucleus -->
+    <circle cx="0" cy="0" r="8" fill="#FFD700">
+      <animate attributeName="r" values="7;9;7" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Orbiting electrons -->
+  <circle cx="75" cy="20" r="4" fill="#00BFFF">
+    <animateMotion dur="4s" repeatCount="indefinite">
+      <mpath href="#orbit1"/>
+    </animateMotion>
+    <animate attributeName="fill" values="#00BFFF;#FFFFFF;#00BFFF" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="40" cy="55" r="3" fill="#FF69B4">
+    <animateMotion dur="5s" repeatCount="indefinite">
+      <mpath href="#orbit2"/>
+    </animateMotion>
+  </circle>
+  <circle cx="110" cy="55" r="3.5" fill="#00FF7F">
+    <animateMotion dur="6s" repeatCount="indefinite">
+      <mpath href="#orbit3"/>
+    </animateMotion>
+  </circle>
+  
+  <!-- Hidden orbit paths -->
+  <path id="orbit1" d="M40,55 A35,12 0 1,1 110,55 A35,12 0 1,1 40,55" fill="none"/>
+  <path id="orbit2" d="M40,55 A35,12 60 1,1 110,55 A35,12 60 1,1 40,55" fill="none"/>
+  <path id="orbit3" d="M40,55 A35,12 -60 1,1 110,55 A35,12 -60 1,1 40,55" fill="none"/>
+  
+  <!-- Beaker at bottom -->
+  <path d="M55 110 L45 140 L105 140 L95 110 Z" fill="rgba(255,255,255,0.2)" stroke="#87CEEB" stroke-width="2"/>
+  <path d="M55 110 L55 95 L95 95 L95 110" fill="none" stroke="#87CEEB" stroke-width="2"/>
+  
+  <!-- Bubbling liquid in beaker -->
+  <rect x="48" y="115" width="54" height="22" fill="url(#flaskLiquid)" rx="2"/>
+  
+  <!-- Bubbles -->
+  <circle cx="60" cy="125" r="3" fill="rgba(255,255,255,0.5)">
+    <animate attributeName="cy" values="130;115" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.8;0" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="75" cy="130" r="2" fill="rgba(255,255,255,0.4)">
+    <animate attributeName="cy" values="132;118" dur="1.2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.7;0" dur="1.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="88" cy="128" r="2.5" fill="rgba(255,255,255,0.5)">
+    <animate attributeName="cy" values="130;116" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- DNA helix hints -->
+  <path d="M15 40 Q20 50 15 60 Q10 70 15 80" fill="none" stroke="#00FF7F" stroke-width="2" opacity="0.5">
+    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite"/>
+  </path>
+  <path d="M20 40 Q15 50 20 60 Q25 70 20 80" fill="none" stroke="#FF69B4" stroke-width="2" opacity="0.5">
+    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite"/>
+  </path>
+  
+  <path d="M130 35 Q135 45 130 55 Q125 65 130 75" fill="none" stroke="#00BFFF" stroke-width="2" opacity="0.5">
+    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2.5s" repeatCount="indefinite"/>
+  </path>
+  <path d="M135 35 Q130 45 135 55 Q140 65 135 75" fill="none" stroke="#FFD700" stroke-width="2" opacity="0.5">
+    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2.5s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Sparkles -->
+  <circle cx="25" cy="100" r="2" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;1;0" dur="1.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="125" cy="95" r="2" fill="#00BFFF">
+    <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Text -->
+  <text x="75" y="148" text-anchor="middle" font-family="Arial Black" font-size="10" fill="#00BFFF">
+    VISIONARY
+    <animate attributeName="fill" values="#00BFFF;#FFFFFF;#00BFFF" dur="2s" repeatCount="indefinite"/>
+  </text>
+</svg>

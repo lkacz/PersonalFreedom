@@ -48,6 +48,12 @@ class EntitidexProgress:
     total_encounters: int = 0
     lucky_catches: int = 0
     
+    # Theme completion tracking
+    # Format: {theme_id: ISO timestamp string of completion}
+    theme_completions: Dict[str, str] = field(default_factory=dict)
+    # Track if the first-time celebration popup was shown
+    celebration_seen: Dict[str, bool] = field(default_factory=dict)
+    
     # ==========================================================================
     # COLLECTION STATE
     # ==========================================================================
@@ -597,6 +603,8 @@ class EntitidexProgress:
             "total_encounters": self.total_encounters,
             "lucky_catches": self.lucky_catches,
             "saved_encounters": [e.to_dict() for e in self.saved_encounters],
+            "theme_completions": self.theme_completions.copy(),
+            "celebration_seen": self.celebration_seen.copy(),
         }
     
     @classmethod
@@ -621,6 +629,8 @@ class EntitidexProgress:
         progress.saved_encounters = [
             SavedEncounter.from_dict(e) for e in data.get("saved_encounters", [])
         ]
+        progress.theme_completions = data.get("theme_completions", {}).copy()
+        progress.celebration_seen = data.get("celebration_seen", {}).copy()
         
         return progress
     
@@ -655,3 +665,102 @@ class EntitidexProgress:
             True if all entities are collected
         """
         return self.get_collection_rate(story_id) >= 1.0
+    
+    # ==========================================================================
+    # THEME COMPLETION TRACKING
+    # ==========================================================================
+    
+    def is_theme_fully_complete(self, theme_id: str) -> bool:
+        """
+        Check if ALL variants (normal + exceptional) are collected for a theme.
+        
+        This is the requirement for unlocking the celebration card.
+        
+        Args:
+            theme_id: The theme identifier (e.g., "warrior", "scholar")
+            
+        Returns:
+            True if every entity in the theme has BOTH normal and exceptional collected
+        """
+        entities = get_entities_for_story(theme_id)
+        
+        for entity in entities:
+            # Must have normal variant
+            if entity.id not in self.collected_entity_ids:
+                return False
+            # Must have exceptional variant
+            if entity.id not in self.exceptional_entities:
+                return False
+        
+        return len(entities) > 0  # Must have at least 1 entity
+    
+    def get_theme_completion_stats(self, theme_id: str) -> dict:
+        """
+        Get detailed completion statistics for a theme.
+        
+        Args:
+            theme_id: The theme identifier
+            
+        Returns:
+            Dict with normal_collected, exceptional_collected, total, percent, etc.
+        """
+        entities = get_entities_for_story(theme_id)
+        total = len(entities)
+        
+        normal_collected = sum(
+            1 for e in entities if e.id in self.collected_entity_ids
+        )
+        exceptional_collected = sum(
+            1 for e in entities if e.id in self.exceptional_entities
+        )
+        
+        # Total slots = normal + exceptional for each entity
+        total_slots = total * 2
+        total_collected = normal_collected + exceptional_collected
+        percent = (total_collected / total_slots * 100) if total_slots > 0 else 0
+        
+        return {
+            "theme_id": theme_id,
+            "total_entities": total,
+            "normal_collected": normal_collected,
+            "exceptional_collected": exceptional_collected,
+            "total_slots": total_slots,
+            "total_collected": total_collected,
+            "percent": percent,
+            "is_complete": self.is_theme_fully_complete(theme_id),
+            "completion_date": self.theme_completions.get(theme_id),
+            "celebration_seen": self.celebration_seen.get(theme_id, False),
+        }
+    
+    def record_theme_completion(self, theme_id: str) -> bool:
+        """
+        Record that a theme was just completed (if not already recorded).
+        
+        Call this after a successful catch to check if completion was achieved.
+        
+        Args:
+            theme_id: The theme that may have been completed
+            
+        Returns:
+            True if this is a NEW completion (first time)
+        """
+        if theme_id in self.theme_completions:
+            return False  # Already recorded
+        
+        if self.is_theme_fully_complete(theme_id):
+            self.theme_completions[theme_id] = datetime.now().isoformat()
+            return True
+        
+        return False
+    
+    def mark_celebration_seen(self, theme_id: str) -> None:
+        """Mark that the celebration popup was shown for a theme."""
+        self.celebration_seen[theme_id] = True
+    
+    def has_seen_celebration(self, theme_id: str) -> bool:
+        """Check if the celebration popup was already shown."""
+        return self.celebration_seen.get(theme_id, False)
+    
+    def get_completed_themes(self) -> list:
+        """Get list of theme IDs that have been fully completed."""
+        return list(self.theme_completions.keys())
