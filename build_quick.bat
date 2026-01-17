@@ -21,6 +21,7 @@ echo.
 echo [1/2] Building Main GUI (PySide6/Qt)...
 pyinstaller --noconfirm --onefile --windowed --uac-admin ^
     --name "PersonalLiberty" ^
+    --version-file="version_info.txt" ^
     --add-data "productivity_ai.py;." ^
     --add-data "gamification.py;." ^
     --hidden-import=productivity_ai ^
@@ -37,6 +38,7 @@ echo.
 echo [2/2] Building System Tray version...
 pyinstaller --noconfirm --onefile --windowed --uac-admin ^
     --name "PersonalLibertyTray" ^
+    --version-file="version_info.txt" ^
     tray_blocker.py
 
 if %errorlevel% neq 0 (

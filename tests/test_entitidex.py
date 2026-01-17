@@ -676,6 +676,70 @@ class TestIntegration:
         
         assert manager.is_collection_complete()
 
+# =============================================================================
+# EXCEPTIONAL VARIANT AVAILABILITY
+# =============================================================================
+
+class TestExceptionalAvailability:
+    """Tests specifically checking that exceptional variants remain obtainable."""
+
+    def test_exceptional_variant_available_after_normal_catch(self):
+        """
+        CRITICAL: Collecting the normal version MUST NOT block the exceptional version.
+        This validates user requirement: 'exceptional versions are still obtainable'.
+        """
+        progress = EntitidexProgress()
+        entity_id = "warrior_001"
+        
+        # 1. Initially, both should be available
+        assert progress.is_variant_available(entity_id, is_exceptional=False)
+        assert progress.is_variant_available(entity_id, is_exceptional=True)
+        
+        # 2. Collect the NORMAL version
+        progress.collected_entity_ids.add(entity_id)
+        
+        # 3. Verify availability
+        # Normal should be GONE (already have it)
+        assert not progress.is_variant_available(entity_id, is_exceptional=False)
+        
+        # Exceptional should STILL BE AVAILABLE
+        assert progress.is_variant_available(entity_id, is_exceptional=True)
+        
+        # 4. Verify getting available variants for story
+        # This is what the encounter system actually calls
+        available_exceptional = progress.get_available_entity_variants("warrior", is_exceptional=True)
+        available_ids = [e.id for e in available_exceptional]
+        
+        assert entity_id in available_ids, "Exceptional variant should appear in available list even if normal is collected"
+
+    def test_normal_variant_available_after_exceptional_catch(self):
+        """Converting rare->normal logic (less common but possible flow)."""
+        progress = EntitidexProgress()
+        entity_id = "warrior_002"
+        
+        # 1. Collect EXCEPTIONAL first
+        progress.mark_exceptional(entity_id, {"border": "#FFD700", "glow": "#FFA500"})
+        
+        # 2. Verify availability
+        # Exceptional should be GONE
+        assert not progress.is_variant_available(entity_id, is_exceptional=True)
+        
+        # Normal should STILL BE AVAILABLE
+        assert progress.is_variant_available(entity_id, is_exceptional=False)
+
+    def test_both_variants_collected(self):
+        """Verify unavailable when both are collected."""
+        progress = EntitidexProgress()
+        entity_id = "warrior_003"
+        
+        # Collect BOTH
+        progress.collected_entity_ids.add(entity_id)
+        progress.mark_exceptional(entity_id, {"border": "#000", "glow": "#000"})
+        
+        # Both gone
+        assert not progress.is_variant_available(entity_id, is_exceptional=False)
+        assert not progress.is_variant_available(entity_id, is_exceptional=True)
+
 
 # =============================================================================
 # MAIN
