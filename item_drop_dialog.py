@@ -392,7 +392,7 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
         self.setStyleSheet(f"""
             QDialog {{
                 background-color: {bg_color};
-                border: 3px solid {color};
+                border: 2px solid {color};
                 border-radius: 12px;
             }}
         """)

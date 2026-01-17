@@ -1366,6 +1366,92 @@ def get_entity_xp_perks(adhd_buster: dict, source: str = "session",
     return result
 
 
+def get_entity_xp_perk_contributors(adhd_buster: dict) -> dict:
+    """
+    Get XP-related entity perk bonuses with detailed contributor info.
+    Used to display which entities contribute to XP bonuses in Activity tab.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        
+    Returns:
+        Dict with keys:
+            - total_xp_bonus: int - Combined XP bonus
+            - contributors: list of dicts with:
+                - entity_id: str
+                - name: str  
+                - perk_type: str - "xp_percent", "xp_session", etc.
+                - value: int
+                - icon: str
+                - is_exceptional: bool
+                - description: str
+    """
+    result = {
+        "total_xp_bonus": 0,
+        "contributors": [],
+    }
+    
+    try:
+        from entitidex.entity_perks import ENTITY_PERKS, PerkType
+        from entitidex.entity_pools import get_entity_by_id
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        collected = entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set()))
+        exceptional = entitidex_data.get("exceptional_entities", {})
+        
+        if not collected:
+            return result
+        
+        # Perk types relevant to XP
+        xp_perk_types = {
+            PerkType.XP_PERCENT: "xp_percent",
+            PerkType.XP_SESSION: "xp_session", 
+            PerkType.XP_LONG_SESSION: "xp_long_session",
+            PerkType.XP_MORNING: "xp_morning",
+            PerkType.XP_NIGHT: "xp_night",
+            PerkType.XP_STORY: "xp_story",
+        }
+        
+        for entity_id in collected:
+            perk = ENTITY_PERKS.get(entity_id)
+            if perk and perk.perk_type in xp_perk_types:
+                is_exceptional = entity_id in exceptional
+                value = perk.exceptional_value if is_exceptional else perk.normal_value
+                
+                # Get entity details
+                entity = get_entity_by_id(entity_id)
+                entity_name = entity.name if entity else entity_id
+                
+                # Get description
+                if is_exceptional and perk.exceptional_description:
+                    description = perk.exceptional_description.format(value=int(value))
+                else:
+                    description = perk.description.format(value=int(value))
+                
+                perk_type_name = xp_perk_types[perk.perk_type]
+                
+                result["contributors"].append({
+                    "entity_id": entity_id,
+                    "name": entity_name,
+                    "perk_type": perk_type_name,
+                    "value": int(value),
+                    "icon": perk.icon,
+                    "is_exceptional": is_exceptional,
+                    "description": description,
+                })
+                
+                result["total_xp_bonus"] += int(value)
+        
+        # Sort by value descending
+        result["contributors"].sort(key=lambda x: x["value"], reverse=True)
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting XP perk contributors: {e}")
+        
+    return result
+
+
 def get_entity_coin_perks(adhd_buster: dict, source: str = "session") -> dict:
     """
     Get coin-related entity perk bonuses.

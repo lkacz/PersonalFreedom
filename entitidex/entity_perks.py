@@ -64,6 +64,10 @@ class PerkType(Enum):
     
     # Sell Items (Corner Office Chair / Stoner Office Chair)
     SELL_RARITY_BONUS = "sell_rarity_bonus"  # +X% sell value for Epic/Legendary items
+    
+    # Gamble / Push Your Luck
+    GAMBLE_LUCK = "gamble_luck"              # +X% gamble success chance (Push Your Luck)
+    GAMBLE_SAFETY = "gamble_safety"          # X% chance to keep item on gamble failure
 
 
 @dataclass
@@ -107,7 +111,7 @@ ENTITY_PERKS: Dict[str, EntityPerk] = {
     "scholar_006": EntityPerk("scholar_006", PerkType.XP_SESSION, 2, 4, "Ancient Wisdom: +{value}% Focus XP", "📖", "Forbidden Knowledge: +{value}% Focus XP"),
     "scholar_007": EntityPerk("scholar_007", PerkType.RARITY_BIAS, 1, 2, "Star Chart: +{value}% Rare Finds", "🗺️", "Celestial Atlas: +{value}% Rare Finds"),
     "scholar_008": EntityPerk("scholar_008", PerkType.XP_STORY, 5, 8, "Phoenix Rebirth: +{value}% Story XP", "🐦", "Eternal Flame: +{value}% Story XP"),
-    "scholar_009": EntityPerk("scholar_009", PerkType.XP_PERCENT, 5, 8, "Tabula Rasa: +{value}% All XP", "📜", "Omniscient Scroll: +{value}% All XP"),
+    "scholar_009": EntityPerk("scholar_009", PerkType.GAMBLE_SAFETY, 10, 20, "Tabula Rasa: {value}% Item Recovery", "📜", "Omniscient Scroll: {value}% Item Recovery"),
 
     # -------------------------------------------------------------------------
     # WANDERER (Travel & Coins)
@@ -144,7 +148,7 @@ ENTITY_PERKS: Dict[str, EntityPerk] = {
     "scientist_004": EntityPerk("scientist_004", PerkType.PITY_BONUS, 5, 8, "Peer Review: +{value}% Pity Progress", "🐭", "Nobel Recognition: +{value}% Pity Progress"),
     "scientist_005": EntityPerk("scientist_005", PerkType.HINT_REVEAL, 1, 2, "Micro-Insight: Reveal Hints", "🔬", "Quantum Vision: Reveal All Hints"),
     "scientist_006": EntityPerk("scientist_006", PerkType.RARITY_BIAS, 2, 4, "Reaction Base: +{value}% Epic Chance", "⚗️", "Philosopher's Stone: +{value}% Epic Chance"),
-    "scientist_007": EntityPerk("scientist_007", PerkType.PERFECT_SESSION, 3, 5, "High Voltage: +{value}% Perfect Bonus", "⚡", "Lightning Mastery: +{value}% Perfect Bonus"),
+    "scientist_007": EntityPerk("scientist_007", PerkType.GAMBLE_LUCK, -10, 20, "Risk Assessment: {value}% Gamble Chance", "⚡", "Lightning Luck: +{value}% Gamble Chance"),
     "scientist_008": EntityPerk("scientist_008", PerkType.RARITY_BIAS, 1, 2, "Golden Standard: +{value}% Legendary Chance", "🧬", "Divine Helix: +{value}% Legendary Chance"),
     "scientist_009": EntityPerk("scientist_009", PerkType.XP_PERCENT, 3, 5, "Eureka Moment: +{value}% Discovery XP", "🐁", "Genius Awakening: +{value}% Discovery XP"),
 }

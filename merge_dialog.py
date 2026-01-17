@@ -1573,10 +1573,51 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         current_idx = rarity_order.index(rarity) if rarity in rarity_order else 0
         next_rarity = rarity_order[min(current_idx + 1, len(rarity_order) - 1)]
         
-        # Get current success rate and apply 0.80 multiplier for push your luck
+        # Get current success rate and apply penalty multiplier for push your luck
+        # Base penalty is 0.80, but Tesla Coil can modify this
         push_luck_multiplier = getattr(self, 'push_luck_multiplier', 1.0)
-        new_multiplier = push_luck_multiplier * 0.80
+        
+        # Check for Tesla Coil (scientist_007) gamble perk BEFORE calculating chance
+        # No Tesla Coil: 0.80 multiplier (penalty applied)
+        # Normal Tesla Coil: 1.00 multiplier (penalty removed)
+        # Exceptional Tesla Coil: 1.20 multiplier (bonus!)
+        gamble_multiplier = 0.80  # Default: penalty without Tesla Coil
+        tesla_coil_collected = False
+        tesla_coil_is_exceptional = False
+        
+        # Check for Blank Parchment (scholar_009) item recovery perk
+        blank_parchment_collected = False
+        blank_parchment_is_exceptional = False
+        blank_parchment_chance = 0
+        
+        try:
+            entitidex_data = self.adhd_buster.get("entitidex", {})
+            collected_ids = entitidex_data.get("collected_entity_ids", 
+                            entitidex_data.get("collected", []))
+            exceptional_ids = entitidex_data.get("exceptional_entity_ids", [])
+            
+            # Tesla Coil check
+            if "scientist_007" in collected_ids:
+                tesla_coil_collected = True
+                tesla_coil_is_exceptional = "scientist_007" in exceptional_ids
+                
+                if tesla_coil_is_exceptional:
+                    gamble_multiplier = 1.20  # +20% chance (bonus!)
+                else:
+                    gamble_multiplier = 1.00  # No penalty (protection)
+            
+            # Blank Parchment check
+            if "scholar_009" in collected_ids:
+                blank_parchment_collected = True
+                blank_parchment_is_exceptional = "scholar_009" in exceptional_ids
+                blank_parchment_chance = 20 if blank_parchment_is_exceptional else 10
+        except Exception as e:
+            print(f"[Gamble Perk] Error checking perks: {e}")
+        
+        # Apply the gamble multiplier (which may be modified by Tesla Coil)
+        new_multiplier = push_luck_multiplier * gamble_multiplier
         reroll_chance = self.success_rate * new_multiplier
+        reroll_chance = max(0.01, min(0.99, reroll_chance))  # Clamp between 1% and 99%
         
         rarity_color = ITEM_RARITIES.get(rarity, {}).get("color", "#9e9e9e")
         next_color = ITEM_RARITIES.get(next_rarity, {}).get("color", "#fff")
@@ -1618,13 +1659,24 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         sep.setStyleSheet("font-size: 13px; color: #ff9800; padding: 8px;")
         layout.addWidget(sep)
         
-        # Next tier preview
+        # Next tier preview with perk info
         next_box = QtWidgets.QGroupBox("🎲 Gamble for Higher Tier:")
         next_layout = QtWidgets.QVBoxLayout(next_box)
+        
+        # Build chance text with perk indicator
+        chance_text = f"Success Chance: <b>{reroll_chance*100:.1f}%</b>"
+        if tesla_coil_collected:
+            if tesla_coil_is_exceptional:
+                chance_text += f" <span style='color:#4caf50;'>(×1.20 ⚡ Bonus!)</span>"
+            else:
+                chance_text += f" <span style='color:#8bc34a;'>(×1.00 ⚡ Protected)</span>"
+        else:
+            chance_text += f" <span style='color:#f44336;'>(×0.80 penalty)</span>"
+        
         next_lbl = QtWidgets.QLabel(
             f"<p style='text-align:center;'>"
             f"<span style='color:{next_color}; font-size:16px; font-weight:bold;'>{next_rarity}</span><br>"
-            f"<span style='color:#aaa; font-size:12px;'>Success Chance: <b>{reroll_chance*100:.1f}%</b></span><br>"
+            f"<span style='color:#aaa; font-size:12px;'>{chance_text}</span><br>"
             f"<span style='color:#f44336; font-size:11px;'>⚠️ Lose everything if you fail!</span>"
             f"</p>"
         )
@@ -1633,10 +1685,33 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         next_box.setStyleSheet(f"QGroupBox {{ background: #3a2a1a; border: 2px dashed {next_color}; border-radius: 8px; padding: 12px; }}")
         layout.addWidget(next_box)
         
-        # Warning
-        warning = QtWidgets.QLabel("⚠️ Each re-roll reduces success chance by 20% (×0.80)")
+        # Tesla Coil perk card (if collected)
+        if tesla_coil_collected:
+            perk_card = self._create_tesla_coil_perk_card(tesla_coil_is_exceptional, gamble_multiplier)
+            if perk_card:
+                layout.addWidget(perk_card)
+        
+        # Blank Parchment safety net card (if collected)
+        if blank_parchment_collected:
+            safety_card = self._create_blank_parchment_perk_card(blank_parchment_is_exceptional, blank_parchment_chance)
+            if safety_card:
+                layout.addWidget(safety_card)
+        
+        # Warning - different text based on Tesla Coil status
+        if tesla_coil_collected:
+            if tesla_coil_is_exceptional:
+                warning_text = "⚡ Tesla Coil boosts your luck by +20%!"
+                warning_color = "#4caf50"
+            else:
+                warning_text = "⚡ Tesla Coil protects you from the re-roll penalty"
+                warning_color = "#8bc34a"
+        else:
+            warning_text = "⚠️ Each re-roll reduces success chance by 20% (×0.80)"
+            warning_color = "#d32f2f"
+        
+        warning = QtWidgets.QLabel(warning_text)
         warning.setAlignment(QtCore.Qt.AlignCenter)
-        warning.setStyleSheet("font-size: 10px; color: #d32f2f; font-style: italic;")
+        warning.setStyleSheet(f"font-size: 10px; color: {warning_color}; font-style: italic;")
         layout.addWidget(warning)
         
         # Buttons
@@ -1679,16 +1754,279 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         result = dialog.exec_()
         return "reroll" if result == 1 else "keep"
     
+    def _create_tesla_coil_perk_card(self, is_exceptional: bool, multiplier_value: float) -> Optional[QtWidgets.QWidget]:
+        """Create a mini perk card showing Tesla Coil's gamble multiplier (same style as ADHD Buster patrons)."""
+        try:
+            from entitidex.entity_pools import get_entity_by_id
+            entity = get_entity_by_id("scientist_007")
+            if not entity:
+                return None
+            
+            # Container with title
+            container = QtWidgets.QFrame()
+            container.setStyleSheet("""
+                QFrame {
+                    background-color: #252530;
+                    border: 1px solid #3a3a4a;
+                    border-radius: 8px;
+                    padding: 4px;
+                }
+            """)
+            container_layout = QtWidgets.QVBoxLayout(container)
+            container_layout.setContentsMargins(8, 6, 8, 6)
+            container_layout.setSpacing(6)
+            
+            # Title for the perk
+            if is_exceptional:
+                title_text = "⚡ Lightning Luck Active"
+                title_color = "#ba68c8"
+            else:
+                title_text = "⚡ Static Shield Active"
+                title_color = "#4caf50"
+            
+            title = QtWidgets.QLabel(title_text)
+            title.setStyleSheet(f"color: {title_color}; font-size: 11px; font-weight: bold; background: transparent;")
+            title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            container_layout.addWidget(title)
+            
+            # Entity card (same style as ADHD Buster patrons)
+            card = QtWidgets.QFrame()
+            if is_exceptional:
+                card.setStyleSheet("""
+                    QFrame {
+                        background-color: #2a2a3a;
+                        border: 2px solid #ba68c8;
+                        border-radius: 6px;
+                        padding: 4px;
+                    }
+                """)
+            else:
+                card.setStyleSheet("""
+                    QFrame {
+                        background-color: #2a3a2a;
+                        border: 2px solid #4caf50;
+                        border-radius: 6px;
+                        padding: 4px;
+                    }
+                """)
+            
+            card_layout = QtWidgets.QVBoxLayout(card)
+            card_layout.setContentsMargins(8, 6, 8, 6)
+            card_layout.setSpacing(4)
+            
+            # Try to load entity SVG icon
+            try:
+                from entitidex_tab import _resolve_entity_svg_path
+                from PySide6.QtSvg import QSvgRenderer
+                
+                svg_path = _resolve_entity_svg_path(entity, is_exceptional)
+                if svg_path:
+                    renderer = QSvgRenderer(svg_path)
+                    if renderer.isValid():
+                        icon_size = 48
+                        pixmap = QtGui.QPixmap(icon_size, icon_size)
+                        pixmap.fill(QtCore.Qt.GlobalColor.transparent)
+                        painter = QtGui.QPainter(pixmap)
+                        renderer.render(painter)
+                        painter.end()
+                        
+                        icon_lbl = QtWidgets.QLabel()
+                        icon_lbl.setPixmap(pixmap)
+                        icon_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                        icon_lbl.setFixedSize(icon_size, icon_size)
+                        icon_lbl.setStyleSheet("background: transparent; border: none;")
+                        card_layout.addWidget(icon_lbl, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+            except Exception:
+                # Fallback emoji
+                icon_lbl = QtWidgets.QLabel("⚡")
+                icon_lbl.setStyleSheet("font-size: 28px; background: transparent; border: none;")
+                icon_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                card_layout.addWidget(icon_lbl)
+            
+            # Entity name
+            variant_text = "✨ " if is_exceptional else ""
+            name_color = "#ffd700" if is_exceptional else "#bbb"
+            name_label = QtWidgets.QLabel(f"{variant_text}Tesla Coil Sparky")
+            name_label.setStyleSheet(f"font-size: 10px; font-weight: bold; color: {name_color}; background: transparent; border: none;")
+            name_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            card_layout.addWidget(name_label)
+            
+            # Perk value
+            if is_exceptional:
+                bonus_color = "#4caf50"
+                bonus_text = f"×{multiplier_value:.2f} (+20%)"
+            else:
+                bonus_color = "#8bc34a"
+                bonus_text = f"×{multiplier_value:.2f} (Protected)"
+            
+            value_lbl = QtWidgets.QLabel(bonus_text)
+            value_lbl.setStyleSheet(f"color: {bonus_color}; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+            value_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            card_layout.addWidget(value_lbl)
+            
+            container_layout.addWidget(card, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+            
+            return container
+            
+        except Exception as e:
+            print(f"[Tesla Coil Card] Error creating perk card: {e}")
+            return None
+
+    def _create_blank_parchment_perk_card(self, is_exceptional: bool, save_chance: float) -> Optional[QtWidgets.QWidget]:
+        """Create a mini perk card showing Blank Parchment's item save chance (same style as ADHD Buster patrons)."""
+        try:
+            from entitidex.entity_pools import get_entity_by_id
+            entity = get_entity_by_id("scholar_009")
+            if not entity:
+                return None
+            
+            # Container with title
+            container = QtWidgets.QFrame()
+            container.setStyleSheet("""
+                QFrame {
+                    background-color: #252530;
+                    border: 1px solid #3a3a4a;
+                    border-radius: 8px;
+                    padding: 4px;
+                }
+            """)
+            container_layout = QtWidgets.QVBoxLayout(container)
+            container_layout.setContentsMargins(8, 6, 8, 6)
+            container_layout.setSpacing(6)
+            
+            # Title for the perk
+            if is_exceptional:
+                title_text = "📜 Omniscient Scroll Active"
+                title_color = "#ffd700"
+                border_color = "#ffd700"
+            else:
+                title_text = "📜 Tabula Rasa Active"
+                title_color = "#d7ccc8"
+                border_color = "#d7ccc8"
+            
+            title = QtWidgets.QLabel(title_text)
+            title.setStyleSheet(f"color: {title_color}; font-size: 11px; font-weight: bold; background: transparent;")
+            title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            container_layout.addWidget(title)
+            
+            # Entity card (same style as ADHD Buster patrons)
+            card = QtWidgets.QFrame()
+            if is_exceptional:
+                card.setStyleSheet(f"""
+                    QFrame {{
+                        background-color: #3a3a2a;
+                        border: 2px solid {border_color};
+                        border-radius: 6px;
+                        padding: 4px;
+                    }}
+                """)
+            else:
+                card.setStyleSheet(f"""
+                    QFrame {{
+                        background-color: #3a3530;
+                        border: 2px solid {border_color};
+                        border-radius: 6px;
+                        padding: 4px;
+                    }}
+                """)
+            
+            card_layout = QtWidgets.QVBoxLayout(card)
+            card_layout.setContentsMargins(8, 6, 8, 6)
+            card_layout.setSpacing(4)
+            
+            # Try to load entity SVG icon
+            try:
+                from entitidex_tab import _resolve_entity_svg_path
+                from PySide6.QtSvg import QSvgRenderer
+                
+                svg_path = _resolve_entity_svg_path(entity, is_exceptional)
+                if svg_path:
+                    renderer = QSvgRenderer(svg_path)
+                    if renderer.isValid():
+                        icon_size = 48
+                        pixmap = QtGui.QPixmap(icon_size, icon_size)
+                        pixmap.fill(QtCore.Qt.GlobalColor.transparent)
+                        painter = QtGui.QPainter(pixmap)
+                        renderer.render(painter)
+                        painter.end()
+                        
+                        icon_lbl = QtWidgets.QLabel()
+                        icon_lbl.setPixmap(pixmap)
+                        icon_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                        icon_lbl.setFixedSize(icon_size, icon_size)
+                        icon_lbl.setStyleSheet("background: transparent; border: none;")
+                        card_layout.addWidget(icon_lbl, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+            except Exception:
+                # Fallback emoji
+                icon_lbl = QtWidgets.QLabel("📜")
+                icon_lbl.setStyleSheet("font-size: 28px; background: transparent; border: none;")
+                icon_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                card_layout.addWidget(icon_lbl)
+            
+            # Entity name
+            variant_text = "✨ " if is_exceptional else ""
+            name_color = "#ffd700" if is_exceptional else "#bbb"
+            name_label = QtWidgets.QLabel(f"{variant_text}Blank Parchment")
+            name_label.setStyleSheet(f"font-size: 10px; font-weight: bold; color: {name_color}; background: transparent; border: none;")
+            name_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            card_layout.addWidget(name_label)
+            
+            # Perk value
+            save_color = "#4caf50" if is_exceptional else "#8bc34a"
+            value_lbl = QtWidgets.QLabel(f"{save_chance:.0f}% Item Recovery")
+            value_lbl.setStyleSheet(f"color: {save_color}; font-size: 11px; font-weight: bold; background: transparent; border: none;")
+            value_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            card_layout.addWidget(value_lbl)
+            
+            container_layout.addWidget(card, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+            
+            return container
+            
+        except Exception as e:
+            print(f"[Blank Parchment Card] Error creating perk card: {e}")
+            return None
+    
     def _execute_push_your_luck(self):
         """Execute the push-your-luck re-roll with animation."""
         import random
         
-        # Apply 0.80 multiplier to current success rate
+        # Track cumulative multiplier for multiple re-rolls
         if not hasattr(self, 'push_luck_multiplier'):
             self.push_luck_multiplier = 1.0
-        self.push_luck_multiplier *= 0.80
+        
+        # Apply Tesla Coil gamble perk (modifies the base 0.80 penalty)
+        # No Tesla Coil: 0.80 multiplier (penalty applied)
+        # Normal Tesla Coil: 1.00 multiplier (penalty removed)
+        # Exceptional Tesla Coil: 1.20 multiplier (bonus!)
+        gamble_multiplier = 0.80  # Default: penalty without Tesla Coil
+        gamble_safety_chance = 0
+        blank_parchment_is_exceptional = False
+        
+        try:
+            entitidex_data = self.adhd_buster.get("entitidex", {})
+            collected = entitidex_data.get("collected_entity_ids", [])
+            exceptional = entitidex_data.get("exceptional_entity_ids", [])
+            
+            # Tesla Coil check
+            if "scientist_007" in collected:
+                if "scientist_007" in exceptional:
+                    gamble_multiplier = 1.20  # +20% chance (bonus!)
+                else:
+                    gamble_multiplier = 1.00  # No penalty (protection)
+            
+            # Blank Parchment check for item recovery
+            if "scholar_009" in collected:
+                blank_parchment_is_exceptional = "scholar_009" in exceptional
+                gamble_safety_chance = 20 if blank_parchment_is_exceptional else 10
+        except Exception:
+            pass
+        
+        # Apply the gamble multiplier to cumulative tracker
+        self.push_luck_multiplier *= gamble_multiplier
         
         adjusted_rate = self.success_rate * self.push_luck_multiplier
+        adjusted_rate = max(0.01, min(0.99, adjusted_rate))  # Clamp between 1% and 99%
+        
         roll = random.random()
         
         # Show dramatic roll animation
@@ -1724,15 +2062,108 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             # Show success and offer another re-roll if not Legendary
             self._show_success_dialog()
         else:
-            # FAILURE! Lose everything
-            self.merge_result["success"] = False
-            self.merge_result["push_luck_failed"] = True
-            self.merge_result["roll"] = roll
-            self.merge_result["needed"] = adjusted_rate
+            # FAILURE! But check for Blank Parchment item recovery
+            item_saved = False
+            if gamble_safety_chance > 0:
+                save_roll = random.random()
+                if save_roll < (gamble_safety_chance / 100.0):
+                    item_saved = True
+                    self._show_item_saved_dialog(current_item, gamble_safety_chance, blank_parchment_is_exceptional, save_roll)
             
-            # Show failure message
-            self._show_push_luck_failure_dialog()
-            self.accept()  # Close main dialog
+            if not item_saved:
+                # Lose everything
+                self.merge_result["success"] = False
+                self.merge_result["push_luck_failed"] = True
+                self.merge_result["roll"] = roll
+                self.merge_result["needed"] = adjusted_rate
+                
+                # Show failure message
+                self._show_push_luck_failure_dialog()
+                self.accept()  # Close main dialog
+    
+    def _show_item_saved_dialog(self, saved_item: dict, save_chance: float, is_exceptional: bool, save_roll: float):
+        """Show dialog when Blank Parchment saves the item from gamble failure."""
+        from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout
+        
+        rarity = saved_item.get("rarity", "Common")
+        name = saved_item.get("name", "Unknown Item")
+        power = saved_item.get("power", 0)
+        rarity_color = ITEM_RARITIES.get(rarity, {}).get("color", "#9e9e9e")
+        
+        dialog = QDialog(self)
+        dialog.setWindowTitle("📜 ITEM SAVED!")
+        dialog.setModal(True)
+        dialog.setMinimumWidth(350)
+        dialog.setStyleSheet("""
+            QDialog { background-color: #2a3a2a; }
+            QLabel { color: #fff; }
+        """)
+        
+        layout = QVBoxLayout(dialog)
+        layout.setSpacing(12)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Title with scroll animation
+        title = QLabel("📜 Ancient Wisdom Prevails! 📜")
+        title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #4caf50;")
+        layout.addWidget(title)
+        
+        # Roll info
+        roll_info = QLabel(f"Recovery roll: {save_roll*100:.1f}% (needed < {save_chance:.0f}%)")
+        roll_info.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        roll_info.setStyleSheet("font-size: 11px; color: #aaa;")
+        layout.addWidget(roll_info)
+        
+        # Blank Parchment perk card
+        perk_card = self._create_blank_parchment_perk_card(is_exceptional, save_chance)
+        if perk_card:
+            card_container = QHBoxLayout()
+            card_container.addStretch()
+            card_container.addWidget(perk_card)
+            card_container.addStretch()
+            layout.addLayout(card_container)
+        
+        # Saved item info
+        item_label = QLabel(f"""
+            <div style='text-align: center; padding: 10px;'>
+                <p style='font-size: 14px; color: #8bc34a;'>✨ Your item was preserved! ✨</p>
+                <p style='font-size: 16px; font-weight: bold; color: #fff;'>{name}</p>
+                <p style='color: {rarity_color};'><b>{rarity}</b> • ⚔ Power: {power}</p>
+            </div>
+        """)
+        item_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(item_label)
+        
+        # Note
+        note = QLabel("The gamble failed, but you keep your current item!")
+        note.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        note.setStyleSheet("font-size: 11px; color: #8bc34a; font-style: italic;")
+        layout.addWidget(note)
+        
+        # OK button
+        ok_btn = QPushButton("✓ Claim Item")
+        ok_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4caf50;
+                color: white;
+                font-size: 14px;
+                font-weight: bold;
+                padding: 10px 24px;
+                border-radius: 6px;
+                border: none;
+            }
+            QPushButton:hover { background-color: #66bb6a; }
+        """)
+        ok_btn.clicked.connect(dialog.accept)
+        layout.addWidget(ok_btn, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
+        
+        dialog.exec_()
+        
+        # Keep the current item - set success to True so item is retained
+        self.merge_result["success"] = True
+        self.merge_result["item_saved_by_perk"] = True
+        self.accept()
     
     def _show_push_luck_failure_dialog(self):
         """Show failure message for push-your-luck."""

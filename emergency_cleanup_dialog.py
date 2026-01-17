@@ -346,7 +346,7 @@ class EmergencyCleanupDialog(QtWidgets.QDialog):
         self.setStyleSheet("""
             QDialog {
                 background-color: #fafafa;
-                border: 3px solid #ef5350;
+                border: 2px solid #e57373;
                 border-radius: 12px;
             }
         """)

@@ -223,7 +223,7 @@ class EntityPreviewWindow(QMainWindow):
         header = QLabel("✨ ENTITIDEX - Complete Entity Collection (45 Entities)")
         header.setFont(QFont("Segoe UI", 18, QFont.Bold))
         header.setAlignment(Qt.AlignCenter)
-        header.setStyleSheet("color: #FFD700; margin: 10px;")
+        header.setStyleSheet("color: #a5b4fc; margin: 10px;")
         main_layout.addWidget(header)
         
         # Tab widget for themes

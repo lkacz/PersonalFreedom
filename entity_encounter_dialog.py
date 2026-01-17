@@ -127,7 +127,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
                     x1:0, y1:0, x2:1, y2:1,
                     stop:0 #2D2D2D, stop:1 #1A1A1A
                 );
-                border: 3px solid {rarity_color};
+                border: 2px solid {rarity_color};
                 border-radius: 15px;
                 padding: 15px;
             }}

@@ -143,7 +143,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
             QFrame {{
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 {display_color}40, stop:1 #1a1a2e);
-                border: 3px solid {border_color};
+                border: 2px solid {border_color};
                 border-radius: 12px;
             }}
         """)
@@ -360,7 +360,7 @@ def _show_exceptional_surprise(parent: QtWidgets.QWidget):
         QDialog {
             background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
                 stop:0 #1a1a2e, stop:0.5 #2d1b4e, stop:1 #1a1a2e);
-            border: 3px solid #FFD700;
+            border: 2px solid #9370DB;
             border-radius: 15px;
         }
     """)
@@ -408,7 +408,7 @@ def _show_exceptional_celebration(entity, exceptional_colors: dict, parent: QtWi
             background: qradialgradient(cx:0.5, cy:0.5, radius:0.8,
                 fx:0.5, fy:0.5,
                 stop:0 {glow_col}40, stop:0.5 {border_col}20, stop:1 #1a1a2e);
-            border: 3px solid {border_col};
+            border: 2px solid {border_col};
             border-radius: 16px;
         }}
     """)

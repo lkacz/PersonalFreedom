@@ -35,7 +35,7 @@ class PreviewWindow(QtWidgets.QWidget):
             QWidget { background-color: #1a1a2e; }
             QLabel { color: #fff; font-family: 'Segoe UI'; }
             QGroupBox { 
-                color: #ffd700; 
+                color: #a5b4fc; 
                 font-weight: bold; 
                 border: 2px solid #444; 
                 border-radius: 8px; 
@@ -54,7 +54,7 @@ class PreviewWindow(QtWidgets.QWidget):
                 border-radius: 6px;
             }
             QScrollBar::handle:vertical {
-                background: #ffd700;
+                background: #6366f1;
                 border-radius: 6px;
                 min-height: 30px;
             }
@@ -69,7 +69,7 @@ class PreviewWindow(QtWidgets.QWidget):
 
         # Title (outside scroll area)
         title = QtWidgets.QLabel("⚔️ Hero Character Art Preview ⚔️")
-        title.setStyleSheet("font-size: 24px; font-weight: bold; color: #ffd700; padding: 10px;")
+        title.setStyleSheet("font-size: 24px; font-weight: bold; color: #a5b4fc; padding: 10px;")
         title.setAlignment(QtCore.Qt.AlignCenter)
         window_layout.addWidget(title)
 
