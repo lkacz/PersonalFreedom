@@ -15444,138 +15444,6 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self.merge_btn.setEnabled(False)
             self.merge_rate_lbl.setText("Select 2+ items to merge")
 
-    def _update_item_details_panel(self) -> None:
-        pass
-        # DEPRECATED
-        """Update the item details panel based on current selection."""
-        return
-        # Get selected rows from table
-        selected_rows = set(item.row() for item in self.inv_table.selectedItems())
-        inventory = self.blocker.adhd_buster.get("inventory", [])
-        equipped = self.blocker.adhd_buster.get("equipped", {})
-        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
-        
-        if not selected_rows:
-            # No selection - show placeholder
-            self.details_name.setText("Select an item to view details")
-            self.details_item_type.setText("")
-            self.details_rarity.setText("Rarity: -")
-            self.details_slot.setText("Slot: -")
-            self.details_power.setText("Power: -")
-            self.details_set.setText("Set: -")
-            self.details_neighbors.setText("Neighbors: -")
-            # Clear special attributes container
-            while self.details_special_layout.count():
-                child = self.details_special_layout.takeAt(0)
-                if child.widget():
-                    child.widget().deleteLater()
-            self.details_special_header.setVisible(False)
-            self.details_special_container.setVisible(False)
-            self.details_status.setText("")
-            return
-        
-        # Show details for the last selected row
-        last_row = max(selected_rows)
-        name_item = self.inv_table.item(last_row, 0)
-        if not name_item:
-            return
-        idx = name_item.data(QtCore.Qt.UserRole)
-        
-        if not isinstance(idx, int) or idx < 0 or idx >= len(inventory):
-            return
-        
-        item = inventory[idx]
-        
-        # Item name with rarity color
-        rarity = item.get("rarity", "Common")
-        rarity_colors = {
-            "Common": "#9e9e9e",
-            "Uncommon": "#4caf50",
-            "Rare": "#2196f3",
-            "Epic": "#9c27b0",
-            "Legendary": "#ff9800"
-        }
-        color = rarity_colors.get(rarity, "#9e9e9e")
-        self.details_name.setText(item.get("name", "Unknown Item"))
-        self.details_name.setStyleSheet(f"font-size: 13px; font-weight: bold; color: {color}; border: none;")
-        
-        # Item type (from the item_type field)
-        item_type = item.get("item_type", "")
-        if item_type:
-            self.details_item_type.setText(f"Type: {item_type}")
-        else:
-            self.details_item_type.setText("")
-        
-        # Core stats
-        self.details_rarity.setText(f"Rarity: {rarity}")
-        self.details_rarity.setStyleSheet(f"color: {color}; border: none;")
-        
-        slot = item.get("slot", "Unknown")
-        slot_display = get_slot_display_name(slot, active_story) if get_slot_display_name else slot
-        self.details_slot.setText(f"Slot: {slot_display}")
-        
-        power = item.get("power", 10)
-        self.details_power.setText(f"Power: +{power}")
-        
-        item_set = item.get("set", None)
-        self.details_set.setText(f"Set: {item_set}" if item_set else "Set: None")
-        
-        # Neighbor system removed - hide neighbor display
-        self.details_neighbors.setText("Neighbors: (System Removed)")
-        self.details_neighbors.setVisible(False)
-        
-        # Special attributes - build dynamic list
-        # Clear existing special attribute labels
-        while self.details_special_layout.count():
-            child = self.details_special_layout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-        
-        special_attrs = []
-        
-        # Lucky options - show each individually
-        lucky_options = item.get("lucky_options", {})
-        if lucky_options:
-            option_info = {
-                "coin_discount": ("💰 Coin Discount", "#fbbf24"),
-                "xp_bonus": ("⭐ XP Bonus", "#8b5cf6"),
-                "merge_luck": ("🎲 Merge Luck", "#06b6d4")
-            }
-            for opt_key, (opt_name, opt_color) in option_info.items():
-                value = lucky_options.get(opt_key, 0)
-                if value > 0:
-                    special_attrs.append((opt_name, f"+{value}%", opt_color))
-        
-        # Add labels for each special attribute
-        for attr_name, attr_value, attr_color in special_attrs:
-            lbl = QtWidgets.QLabel(f"{attr_name}: {attr_value}")
-            lbl.setStyleSheet(f"color: {attr_color}; border: none; padding-left: 8px;")
-            self.details_special_layout.addWidget(lbl)
-        
-        # Show/hide special header based on whether there are special attributes
-        has_special = len(special_attrs) > 0
-        self.details_special_header.setVisible(has_special)
-        self.details_special_container.setVisible(has_special)
-        
-        # Equipped status
-        is_eq = self._is_item_equipped(item, equipped)
-        if is_eq:
-            self.details_status.setText("✓ Currently Equipped")
-            self.details_status.setStyleSheet("color: #4caf50; font-style: italic; border: none;")
-        else:
-            # Show obtained date if available
-            obtained = item.get("obtained_at", "")
-            if obtained:
-                try:
-                    from datetime import datetime
-                    dt = datetime.fromisoformat(obtained)
-                    self.details_status.setText(f"Obtained: {dt.strftime('%b %d, %Y')}")
-                except Exception:
-                    self.details_status.setText("")
-            else:
-                self.details_status.setText("")
-            self.details_status.setStyleSheet("color: #888; font-style: italic; border: none;")
-
     def _do_merge(self) -> None:
         if len(self.merge_selected) < 2:
             return
@@ -18986,8 +18854,9 @@ class DailyTimelineWidget(QtWidgets.QFrame):
             daily_stats = self.blocker.stats.get("daily_stats", {}).get(today, {})
             focus_sec = daily_stats.get("focus_time", 0)
             
-            # Todo: Get goal from somewhere. Defaulting to 4 hours.
-            goal_sec = 4 * 3600 
+            # Derive daily goal from weekly goal (default 10 hours/week = ~1.4 hours/day)
+            weekly_goal_hours = float(self.blocker.stats.get("weekly_goal_hours", 10))
+            goal_sec = int((weekly_goal_hours / 7) * 3600)
             
             self.focus_ring.set_progress(focus_sec, goal_sec)
         except Exception:
