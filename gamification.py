@@ -811,7 +811,7 @@ def calculate_neighbor_effects(equipped: dict) -> dict:
 def calculate_effective_power(equipped: dict, include_set_bonus: bool = True,
                                include_neighbor_effects: bool = True) -> dict:
     """
-    Calculate effective power considering base power and set bonuses.
+    Calculate effective power considering base power, set bonuses, and style bonuses.
     
     Args:
         equipped: Dict of equipped items by slot
@@ -823,6 +823,8 @@ def calculate_effective_power(equipped: dict, include_set_bonus: bool = True,
         {
             "base_power": int,
             "set_bonus": int,
+            "style_bonus": int,  # Legendary Minimalist bonus
+            "style_info": dict,  # Style bonus details (if active)
             "neighbor_effects": dict,  # always empty (system removed)
             "neighbor_adjustment": int,  # always 0 (system removed)
             "total_power": int,
@@ -850,12 +852,18 @@ def calculate_effective_power(equipped: dict, include_set_bonus: bool = True,
         set_info = calculate_set_bonuses(equipped)
         set_bonus = set_info["total_bonus"]
     
+    # Calculate Legendary Minimalist style bonus
+    style_result = calculate_legendary_minimalist_bonus(equipped)
+    style_bonus = style_result["bonus"] if include_set_bonus else 0
+    
     # Neighbor effects removed - return empty structures for compatibility
-    total_power = base_total + set_bonus
+    total_power = base_total + set_bonus + style_bonus
     
     return {
         "base_power": base_total,
         "set_bonus": set_bonus,
+        "style_bonus": style_bonus,
+        "style_info": style_result if style_result["active"] else None,
         "neighbor_effects": {},  # Empty - neighbor system removed
         "neighbor_adjustment": 0,  # Always 0 - neighbor system removed
         "total_power": total_power,
@@ -2113,6 +2121,107 @@ DEFAULT_SET_BONUS = 15
 
 # Minimum matches required for set bonus activation
 SET_BONUS_MIN_MATCHES = 2
+
+
+# =============================================================================
+# LEGENDARY MINIMALIST STYLE BONUS
+# =============================================================================
+# If all 7 equipped items are Legendary and 1 slot is intentionally empty,
+# the player gets a special +350 style bonus with a unique title based on
+# which slot is empty.
+
+LEGENDARY_MINIMALIST_BONUS = 350
+
+LEGENDARY_MINIMALIST_STYLES = {
+    "Helmet": {
+        "name": "Haircut Protector",
+        "emoji": "💇",
+        "description": "Your perfectly styled hair is weapon enough"
+    },
+    "Chestplate": {
+        "name": "Sun-Kissed Warrior", 
+        "emoji": "☀️",
+        "description": "Your tanned abs ARE the armor"
+    },
+    "Gauntlets": {
+        "name": "Bare-Knuckle Champion",
+        "emoji": "👊",
+        "description": "Fists need no protection"
+    },
+    "Boots": {
+        "name": "Hobbit Style",
+        "emoji": "🦶",
+        "description": "Tough soles, tougher soul"
+    },
+    "Shield": {
+        "name": "Unshielded Livewire",
+        "emoji": "⚡",
+        "description": "Defense is for the cautious"
+    },
+    "Weapon": {
+        "name": "Body Linguist",
+        "emoji": "🧠",
+        "description": "Your mind is the ultimate weapon"
+    },
+    "Cloak": {
+        "name": "Rear View Legend",
+        "emoji": "🔙",
+        "description": "Nothing to hide, everything to show"
+    },
+    "Amulet": {
+        "name": "Anti-Decorator",
+        "emoji": "✨",
+        "description": "The power comes from within"
+    },
+}
+
+
+def calculate_legendary_minimalist_bonus(equipped: dict) -> dict:
+    """
+    Check if player qualifies for the Legendary Minimalist style bonus.
+    
+    Condition: Exactly 7 slots have Legendary items, and 1 slot is empty.
+    
+    Returns:
+        dict with:
+        - active: bool - whether bonus is active
+        - empty_slot: str - which slot is empty (if active)
+        - style: dict - style info (name, emoji, description)
+        - bonus: int - power bonus (350 if active, 0 otherwise)
+    """
+    if not equipped or not isinstance(equipped, dict):
+        return {"active": False, "empty_slot": None, "style": None, "bonus": 0}
+    
+    legendary_slots = []
+    empty_slots = []
+    non_legendary_slots = []
+    
+    for slot in GEAR_SLOTS:
+        item = equipped.get(slot)
+        # Consider slot empty if no item, or item is not a valid dict with a name
+        if not item or not isinstance(item, dict) or not item.get("name"):
+            empty_slots.append(slot)
+        elif item.get("rarity") == "Legendary":
+            legendary_slots.append(slot)
+        else:
+            non_legendary_slots.append(slot)
+    
+    # Must have exactly 7 legendary items and 1 empty slot
+    if len(legendary_slots) == 7 and len(empty_slots) == 1 and len(non_legendary_slots) == 0:
+        empty_slot = empty_slots[0]
+        style = LEGENDARY_MINIMALIST_STYLES.get(empty_slot, {
+            "name": "Minimalist Master",
+            "emoji": "🎯",
+            "description": "Less is more"
+        })
+        return {
+            "active": True,
+            "empty_slot": empty_slot,
+            "style": style,
+            "bonus": LEGENDARY_MINIMALIST_BONUS
+        }
+    
+    return {"active": False, "empty_slot": None, "style": None, "bonus": 0}
 
 
 def get_item_set_name(item: dict) -> str:
@@ -4546,6 +4655,9 @@ def calculate_character_power(adhd_buster: dict, include_set_bonus: bool = True,
         if include_set_bonus:
             set_info = calculate_set_bonuses(equipped)
             total_power += set_info["total_bonus"]
+            # Include style bonus
+            style_result = calculate_legendary_minimalist_bonus(equipped)
+            total_power += style_result["bonus"]
         
         gear_power = total_power
 
@@ -4592,6 +4704,8 @@ def get_power_breakdown(adhd_buster: dict, include_neighbor_effects: bool = True
     return {
         "base_power": breakdown["base_power"],
         "set_bonus": breakdown["set_bonus"],
+        "style_bonus": breakdown.get("style_bonus", 0),
+        "style_info": breakdown.get("style_info"),
         "entity_bonus": entity_bonus,
         "neighbor_adjustment": 0,  # Always 0 - neighbor system removed
         "total_power": breakdown["total_power"] + entity_bonus,
