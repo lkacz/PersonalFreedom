@@ -2160,8 +2160,8 @@ LEGENDARY_MINIMALIST_STYLES = {
     },
     "Weapon": {
         "name": "Body Linguist",
-        "emoji": "🧠",
-        "description": "Your mind is the ultimate weapon"
+        "emoji": "👊",
+        "description": "Your fist is the ultimate argument"
     },
     "Cloak": {
         "name": "Rear View Legend",
@@ -4892,11 +4892,14 @@ def optimize_equipped_gear(adhd_buster: dict, mode: str = "power", target_opt: s
             return -999999
         
         # Calculate Power (neighbor effects removed)
+        # NOTE: Exclude style_bonus - the Legendary Minimalist bonus is an easter egg
+        # that the user must discover on their own, optimizer should not suggest it
         power_breakdown = calculate_effective_power(
             equip_set,
             include_set_bonus=True
         )
-        total_power = power_breakdown["total_power"]
+        # Use base_power + set_bonus only, deliberately exclude style_bonus
+        total_power = power_breakdown["base_power"] + power_breakdown["set_bonus"]
         
         if mode == "power":
             return total_power
