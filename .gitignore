@@ -62,4 +62,7 @@ Thumbs.db
 voices/*.onnx
 
 # Log files
-log*.txt
+log*.txtcrash_log.txt
+
+# User data (runtime state, not source code)
+users/*/stats.json
