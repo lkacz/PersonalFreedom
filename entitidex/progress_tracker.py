@@ -53,6 +53,12 @@ class EntitidexProgress:
     theme_completions: Dict[str, str] = field(default_factory=dict)
     # Track if the first-time celebration popup was shown
     celebration_seen: Dict[str, bool] = field(default_factory=dict)
+    # Track celebration card click counts per theme for milestone rewards
+    celebration_clicks: Dict[str, int] = field(default_factory=dict)
+    # Track which quote to show next (separate from click count so milestones don't skip quotes)
+    celebration_quote_index: Dict[str, int] = field(default_factory=dict)
+    # User preference: enable/disable TTS voice for celebration quotes
+    celebration_voice_enabled: bool = True
     
     # ==========================================================================
     # COLLECTION STATE
@@ -605,6 +611,9 @@ class EntitidexProgress:
             "saved_encounters": [e.to_dict() for e in self.saved_encounters],
             "theme_completions": self.theme_completions.copy(),
             "celebration_seen": self.celebration_seen.copy(),
+            "celebration_clicks": self.celebration_clicks.copy(),
+            "celebration_quote_index": self.celebration_quote_index.copy(),
+            "celebration_voice_enabled": self.celebration_voice_enabled,
         }
     
     @classmethod
@@ -631,6 +640,9 @@ class EntitidexProgress:
         ]
         progress.theme_completions = data.get("theme_completions", {}).copy()
         progress.celebration_seen = data.get("celebration_seen", {}).copy()
+        progress.celebration_clicks = data.get("celebration_clicks", {}).copy()
+        progress.celebration_quote_index = data.get("celebration_quote_index", {}).copy()
+        progress.celebration_voice_enabled = data.get("celebration_voice_enabled", True)
         
         return progress
     

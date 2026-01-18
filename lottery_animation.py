@@ -2051,21 +2051,25 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
     def __init__(self, success_roll: float, success_threshold: float,
                  tier_upgrade_enabled: bool = False,
                  base_rarity: str = "Common",
+                 title: str = "",
                  parent: Optional[QtWidgets.QWidget] = None):
         """
         Args:
-            success_roll: The actual success roll (0.0-1.0)
+            success_roll: The actual success roll (0.0-1.0). If <= 0, generates random roll.
             success_threshold: Success threshold (0.0-1.0). Roll < threshold = success.
             tier_upgrade_enabled: Whether +50 coin tier upgrade is active
             base_rarity: The RESULT rarity (center of distribution)
+            title: Custom title for the dialog (empty = default "Lucky Merge")
             parent: Parent widget
         """
         super().__init__(parent)
-        self.success_roll = success_roll
+        # Generate random roll if not provided (or invalid)
+        self.success_roll = success_roll if success_roll > 0 else random.random()
         self.success_threshold = success_threshold
-        self.is_success = success_roll < success_threshold
+        self.is_success = self.success_roll < success_threshold
         self.tier_upgrade_enabled = tier_upgrade_enabled
         self.result_rarity = base_rarity  # This is the CENTER of distribution
+        self.custom_title = title  # Store custom title
         
         # Calculate tier weights using moving window
         self.tier_weights = self._calculate_tier_weights()
@@ -2121,7 +2125,11 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
     
     def _setup_ui(self):
         """Build two-stage merge lottery UI."""
-        self.setWindowTitle("⚔️ Lucky Merge")
+        # Use custom title if provided
+        if self.custom_title:
+            self.setWindowTitle(self.custom_title)
+        else:
+            self.setWindowTitle("⚔️ Lucky Merge")
         self.setModal(True)
         self.setMinimumSize(440, 380)
         load_dialog_geometry(self, "MergeLotteryDialog", QtCore.QSize(540, 480))
@@ -2142,10 +2150,13 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         container_layout.setSpacing(10)
         container_layout.setContentsMargins(24, 16, 24, 16)
 
-        # Header
-        header_text = "⚔️ Lucky Merge ⚔️"
-        if self.tier_upgrade_enabled:
+        # Header - use custom title if provided
+        if self.custom_title:
+            header_text = self.custom_title
+        elif self.tier_upgrade_enabled:
             header_text = "⚔️ Lucky Merge ⬆️ UPGRADED ⚔️"
+        else:
+            header_text = "⚔️ Lucky Merge ⚔️"
         header = QtWidgets.QLabel(header_text)
         header.setAlignment(QtCore.Qt.AlignCenter)
         header.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {'#ff9800' if self.tier_upgrade_enabled else '#9ca3af'};")

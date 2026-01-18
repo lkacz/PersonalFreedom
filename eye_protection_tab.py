@@ -5,104 +5,336 @@ import time
 import math
 import os
 import threading
+import wave
+import io
+from pathlib import Path
 from datetime import datetime, timedelta
 from PySide6 import QtWidgets, QtCore, QtGui, QtSvg
+from PySide6.QtCore import QSettings
+
 from gamification import generate_item, get_entity_qol_perks, get_entity_eye_perks
 from game_state import get_game_state
+from entitidex.celebration_audio import CelebrationAudioManager, Synthesizer
+from styled_dialog import styled_info, styled_warning
+
+# Try to import piper for offline TTS
+try:
+    from piper import PiperVoice
+    PIPER_AVAILABLE = True
+except ImportError:
+    PIPER_AVAILABLE = False
+    PiperVoice = None
 
 # Base daily eye rest cap (can be increased by entity perks)
 BASE_EYE_REST_CAP = 20
 
-# Platform-safe sound support
-try:
-    import winsound
-except ImportError:
-    winsound = None
-
-class SoundGenerator:
-    """
-    Generates distinct sounds for the eye routine.
-    Using threading to ensure UI remains responsive (Non-blocking).
-    """
+class EyeGuidanceSettings:
+    """Manages persistence for guidance type."""
+    KEY = "EyeGuidanceType"
+    KEY_VOICE = "EyeGuidanceVoice" # New: Selected voice name
+    
+    MODE_SILENT = "Silent"
+    MODE_SOUND = "Sound"
+    MODE_VOICE = "Voice"
     
     @staticmethod
-    def _play_async(sequence):
-        """Play a sequence of (freq, duration) tuples in a separate thread."""
-        if not winsound:
+    def get_mode():
+        s = QSettings("PersonalFreedom", "EyeProtection")
+        return s.value(EyeGuidanceSettings.KEY, EyeGuidanceSettings.MODE_SOUND)
+
+    @staticmethod
+    def set_mode(mode):
+        s = QSettings("PersonalFreedom", "EyeProtection")
+        s.setValue(EyeGuidanceSettings.KEY, mode)
+
+    @staticmethod
+    def get_voice_name():
+        s = QSettings("PersonalFreedom", "EyeProtection")
+        return s.value(EyeGuidanceSettings.KEY_VOICE, "")
+
+    @staticmethod
+    def set_voice_name(name):
+        s = QSettings("PersonalFreedom", "EyeProtection")
+        s.setValue(EyeGuidanceSettings.KEY_VOICE, name)
+
+
+class GuidanceManager(QtCore.QObject):
+    """
+    Manages audio and voice feedback for the eye routine.
+    Uses Piper TTS for high-quality offline English voice synthesis.
+    """
+    _instance = None
+    
+    # Signal emitted from worker thread, delivered to GUI thread via queued connection
+    tts_ready = QtCore.Signal(bytes)
+    
+    # Available voice models (relative to app directory)
+    AVAILABLE_VOICES = {
+        "Lessac (Female, US)": {
+            "file": "voices/en_US-lessac-medium.onnx",
+            "sample_rate": 22050,
+        },
+        "Ryan (Male, US - High Quality)": {
+            "file": "voices/en_US-ryan-high.onnx",
+            "sample_rate": 22050,
+        },
+    }
+    DEFAULT_VOICE = "Lessac (Female, US)"
+    
+    def __init__(self):
+        super().__init__()
+        self.mode = EyeGuidanceSettings.get_mode()
+        self._current_voice_name = EyeGuidanceSettings.get_voice_name() or self.DEFAULT_VOICE
+        self._voice_sample_rate = 22050  # Default, updated when voice loads
+        
+        # Access audio manager for sound effects
+        self.audio = CelebrationAudioManager.get_instance()
+        # Pre-render eye sounds (and others) to prevent lag during routine
+        self.audio.preload_all()
+        
+        # Connect TTS signal with queued connection for thread-safe GUI delivery
+        self.tts_ready.connect(self._play_tts_audio, QtCore.Qt.ConnectionType.QueuedConnection)
+        
+        # Lock to serialize Piper calls (espeak-ng has global state)
+        self._tts_lock = threading.Lock()
+        
+        # Initialize Piper TTS
+        self.piper_voice = None
+        self._init_piper()
+    
+    def _init_piper(self):
+        """Initialize Piper voice for offline TTS."""
+        if not PIPER_AVAILABLE:
+            print("[GuidanceManager] Piper not available, voice mode disabled")
             return
             
-        def run():
-            try:
-                for freq, ms in sequence:
-                    if freq == 0:
-                        time.sleep(ms / 1000.0)
-                    else:
-                        winsound.Beep(freq, ms)
-            except Exception:
-                pass
-                
-        threading.Thread(target=run, daemon=True).start()
+        try:
+            # Get voice config for selected voice
+            voice_config = self.AVAILABLE_VOICES.get(self._current_voice_name)
+            if not voice_config:
+                voice_config = self.AVAILABLE_VOICES[self.DEFAULT_VOICE]
+                self._current_voice_name = self.DEFAULT_VOICE
+            
+            # Find voice model path
+            app_dir = Path(__file__).parent
+            model_path = app_dir / voice_config["file"]
+            
+            if not model_path.exists():
+                print(f"[GuidanceManager] Voice model not found: {model_path}")
+                # Try fallback to default voice
+                if self._current_voice_name != self.DEFAULT_VOICE:
+                    print(f"[GuidanceManager] Trying default voice instead...")
+                    self._current_voice_name = self.DEFAULT_VOICE
+                    voice_config = self.AVAILABLE_VOICES[self.DEFAULT_VOICE]
+                    model_path = app_dir / voice_config["file"]
+                    if not model_path.exists():
+                        return
+                else:
+                    return
+            
+            self.piper_voice = PiperVoice.load(str(model_path))
+            self._voice_sample_rate = voice_config["sample_rate"]
+            print(f"[GuidanceManager] Piper voice loaded: {model_path.name}")
+            
+        except Exception as e:
+            print(f"[GuidanceManager] Failed to load Piper voice: {e}")
+            self.piper_voice = None
     
-    @staticmethod
-    def play_start():
-        """Distinct start sound."""
-        # 1000Hz (200ms) -> pause (100ms) -> 1500Hz (300ms)
-        SoundGenerator._play_async([(1000, 200), (0, 100), (1500, 300)])
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
 
-    @staticmethod
-    def play_blink_close():
-        """Cue for closing eyes (Low tone)."""
-        SoundGenerator._play_async([(300, 400)])
+    def get_voice_names(self):
+        """Return available voice names."""
+        # Return voices that have their model files present
+        app_dir = Path(__file__).parent
+        available = []
+        for name, config in self.AVAILABLE_VOICES.items():
+            model_path = app_dir / config["file"]
+            if model_path.exists():
+                available.append(name)
+        return available
+    
+    def get_current_voice(self):
+        """Return the currently selected voice name."""
+        return self._current_voice_name
 
-    @staticmethod
-    def play_blink_hold():
-        """Cue for keeping eyes closed (Higher tone)."""
-        SoundGenerator._play_async([(500, 150)])
+    def set_voice(self, name, save=True):
+        """Set and load a different voice.
+        
+        Args:
+            name: Voice name from AVAILABLE_VOICES
+            save: Whether to persist the setting
+            
+        Returns:
+            True if voice was loaded successfully
+        """
+        if name not in self.AVAILABLE_VOICES:
+            return False
+        
+        # Check if model exists
+        app_dir = Path(__file__).parent
+        voice_config = self.AVAILABLE_VOICES[name]
+        model_path = app_dir / voice_config["file"]
+        if not model_path.exists():
+            print(f"[GuidanceManager] Voice model not found: {model_path}")
+            return False
+        
+        # Load the new voice
+        self._current_voice_name = name
+        if save:
+            EyeGuidanceSettings.set_voice_name(name)
+        
+        # Re-initialize with new voice
+        self.piper_voice = None
+        self._init_piper()
+        
+        return self.piper_voice is not None
+    
+    @QtCore.Slot(bytes)
+    def _play_tts_audio(self, pcm_44100: bytes):
+        """Play TTS audio on the GUI thread (called via queued signal)."""
+        from PySide6.QtCore import QByteArray
+        qa = QByteArray(pcm_44100)
+        self.audio.play_buffer(qa)
+    
+    def say(self, text: str):
+        """Speak text using Piper TTS (non-blocking)."""
+        if not self.piper_voice:
+            print("[GuidanceManager] No piper voice available")
+            return
+        
+        # Run synthesis in a worker thread to avoid blocking UI
+        def _synthesize_worker():
+            try:
+                import array
+                
+                # Serialize Piper calls (espeak-ng phonemizer has global state)
+                with self._tts_lock:
+                    audio_chunks = [c.audio_int16_bytes for c in self.piper_voice.synthesize(text)]
+                
+                if not audio_chunks:
+                    print("[GuidanceManager] No audio chunks generated")
+                    return
+                
+                # Combine all chunks
+                pcm_22050 = b''.join(audio_chunks)
+                
+                # Upsample from 22050 to 44100 by duplicating each sample
+                samples = array.array('h')  # signed 16-bit
+                samples.frombytes(pcm_22050)
+                
+                # Create upsampled array (2x size) - more efficient pre-allocation
+                upsampled = array.array('h', [0]) * (2 * len(samples))
+                for i, s in enumerate(samples):
+                    upsampled[2*i] = s
+                    upsampled[2*i + 1] = s
+                
+                pcm_44100 = upsampled.tobytes()
+                
+                # Emit signal - thread-safe, will be delivered to GUI thread
+                self.tts_ready.emit(pcm_44100)
+                
+            except Exception as e:
+                print(f"[GuidanceManager] TTS error: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        # Start synthesis thread
+        threading.Thread(target=_synthesize_worker, daemon=True).start()
+    
+    def set_mode(self, mode):
+        self.mode = mode
+        EyeGuidanceSettings.set_mode(mode)
+        
+        # Test sound
+        if mode == EyeGuidanceSettings.MODE_VOICE:
+            self.say("Voice guidance enabled.")
+        elif mode == EyeGuidanceSettings.MODE_SOUND:
+            self.audio.play("eye_blink_open")
 
-    @staticmethod
-    def play_blink_open():
-        """Cue for opening eyes (Silent/Visual Only)."""
-        pass # Silence as requested
 
-    @staticmethod
-    def play_gaze_start():
-        """Cue for starting far gaze."""
-        SoundGenerator._play_async([(1200, 300)])
 
-    @staticmethod
-    def play_tick():
-        """Soft tick timer."""
-        # Very short blip
-        SoundGenerator._play_async([(400, 30)])
+    def play_start(self):
+        if self.mode == EyeGuidanceSettings.MODE_SILENT: return
+        
+        if self.mode == EyeGuidanceSettings.MODE_VOICE:
+            self.say("Starting eye routine. Relax.")
+        else:
+            # Transition sound - "Wind chime" effect
+            self.audio.play("eye_start")
 
-    @staticmethod
-    def play_complete():
-        """Success fanfare."""
-        # Fanfare pattern
-        SoundGenerator._play_async([(1000, 100), (1200, 100), (1500, 300)])
+    def play_blink_close(self):
+        if self.mode == EyeGuidanceSettings.MODE_SILENT: return
+        
+        if self.mode == EyeGuidanceSettings.MODE_VOICE:
+            self.say("Close eyes.")
+        else:
+            # Gentle Low "Boop"
+            self.audio.play("eye_blink_close")
 
-    @staticmethod
-    def play_inhale():
-        """Rising pitch for inhale (Continuous-like)."""
-        # Generated sequence: 300 -> 500 Hz over ~3s
-        # 10 steps of 300ms is too choppy, let's do 20 steps of 150ms?
-        # A long breath sound might be annoying if monotonic steps. 
-        # Using shorter steps: 6 steps of 200ms -> 1.2s cue? 
-        # User said "Inhale 4s". "increasing for inhale".
-        # Let's try 3 seconds of sound to cue the 4s inhale.
-        # 10 steps of 300ms = 3s.
-        freqs = range(300, 600, 30) # 300, 330, 360 ... 10 steps
-        seq = [(f, 200) for f in freqs]
-        SoundGenerator._play_async(seq)
+    def play_blink_hold(self):
+        # usually silent in hold, or quiet hum?
+        if self.mode == EyeGuidanceSettings.MODE_SILENT: return
+        
+        if self.mode == EyeGuidanceSettings.MODE_VOICE:
+            # self.say("Hold.") # Might be too chatty if repeated blinking
+            pass 
+        else:
+            # Very quiet higher tone
+            self.audio.play("eye_blink_hold")
+            
+    def play_blink_open(self):
+        if self.mode == EyeGuidanceSettings.MODE_SILENT: return
+        
+        if self.mode == EyeGuidanceSettings.MODE_VOICE:
+            self.say("Open.")
+        else:
+            # High ping
+            self.audio.play("eye_blink_open")
 
-    @staticmethod
-    def play_exhale():
-        """Lowering pitch for exhale (Continuous-like)."""
-        # Generated sequence: 600 -> 300 Hz over ~4s
-        freqs = range(600, 300, -25) 
-        seq = [(f, 250) for f in freqs]
-        SoundGenerator._play_async(seq)
+    def play_gaze_start(self):
+        if self.mode == EyeGuidanceSettings.MODE_SILENT: return
+        
+        if self.mode == EyeGuidanceSettings.MODE_VOICE:
+            self.say("Look far away. Relax focus.")
+        else:
+            # Transition sound - "Wind chime" effect
+            self.play_start() # Reuse start chime
 
+    def play_tick(self):
+        if self.mode == EyeGuidanceSettings.MODE_SILENT: return
+        if self.mode == EyeGuidanceSettings.MODE_VOICE: return # No voice ticks
+        
+        # Soft woodblock click
+        self.audio.play("eye_tick")
+
+    def play_complete(self):
+        if self.mode == EyeGuidanceSettings.MODE_SILENT: return
+        
+        if self.mode == EyeGuidanceSettings.MODE_VOICE:
+            self.say("Session complete. Great job.")
+        # Sound mode: no fanfare, silent completion
+
+    def play_inhale(self):
+        if self.mode == EyeGuidanceSettings.MODE_SILENT: return
+        
+        if self.mode == EyeGuidanceSettings.MODE_VOICE:
+            self.say("Inhale deeply.")
+        else:
+            # Rising gentle wave (3 seconds)
+            self.audio.play("eye_inhale")
+
+    def play_exhale(self):
+        if self.mode == EyeGuidanceSettings.MODE_SILENT: return
+        
+        if self.mode == EyeGuidanceSettings.MODE_VOICE:
+            self.say("Exhale slowly.")
+        else:
+            # Falling gentle wave (4 seconds)
+            self.audio.play("eye_exhale")
 
 class EyeProtectionTab(QtWidgets.QWidget):
     """
@@ -116,6 +348,9 @@ class EyeProtectionTab(QtWidgets.QWidget):
         super().__init__()
         self.blocker = blocker_core
         self.is_running = False
+        
+        # Audio Manager
+        self.guidance = GuidanceManager.get_instance()
         
         # State
         self.step_phase = "idle" # idle, blinking, gazing
@@ -178,6 +413,69 @@ class EyeProtectionTab(QtWidgets.QWidget):
         """)
         self.cooldown_status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         header_row.addWidget(self.cooldown_status_label)
+        
+        # Guidance Settings (New)
+        guidance_label = QtWidgets.QLabel("Speaker:")
+        guidance_label.setStyleSheet("color: #b0bec5; font-weight: bold; margin-left: 10px;")
+        
+        self.guidance_combo = QtWidgets.QComboBox()
+        self.guidance_combo.addItems([
+            EyeGuidanceSettings.MODE_SILENT, 
+            EyeGuidanceSettings.MODE_SOUND, 
+            EyeGuidanceSettings.MODE_VOICE
+        ])
+        self.guidance_combo.setCurrentText(self.guidance.mode)
+        self.guidance_combo.currentTextChanged.connect(self.guidance.set_mode)
+        self.guidance_combo.setStyleSheet("""
+            QComboBox {
+                background: #2d3436;
+                color: #e0e0e0;
+                border: 1px solid #4caf50;
+                border-radius: 4px;
+                padding: 4px;
+                min-width: 80px;
+            }
+            QComboBox QAbstractItemView {
+                background: #2d3436;
+                color: #e0e0e0;
+                selection-background-color: #4caf50;
+            }
+        """)
+        
+        header_row.addWidget(guidance_label)
+        header_row.addWidget(self.guidance_combo)
+
+        # Voice Selection (Hidden by default unless Voice mode active)
+        self.voice_combo = QtWidgets.QComboBox()
+        self.voice_combo.addItems(self.guidance.get_voice_names())
+        
+        # Set current selection
+        current_voice = EyeGuidanceSettings.get_voice_name()
+        if current_voice:
+            self.voice_combo.setCurrentText(current_voice)
+            
+        self.voice_combo.currentTextChanged.connect(self.guidance.set_voice)
+        self.voice_combo.setStyleSheet("""
+            QComboBox {
+                background: #2d3436;
+                color: #e0e0e0;
+                border: 1px solid #4caf50;
+                border-radius: 4px;
+                padding: 4px;
+                min-width: 120px;
+            }
+            QComboBox QAbstractItemView {
+                background: #2d3436;
+                color: #e0e0e0;
+                selection-background-color: #4caf50;
+            }
+        """)
+        
+        header_row.addWidget(self.voice_combo)
+        
+        # Initial visibility state
+        self._update_voice_combo_visibility(self.guidance.mode)
+        self.guidance_combo.currentTextChanged.connect(self._update_voice_combo_visibility)
         
         layout.addLayout(header_row)
 
@@ -482,6 +780,13 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         # Initial update
         self._update_cooldown_display()
+
+    def _update_voice_combo_visibility(self, mode):
+        """Show voice combo box only when Voice mode is selected."""
+        if mode == EyeGuidanceSettings.MODE_VOICE:
+            self.voice_combo.show()
+        else:
+            self.voice_combo.hide()
     
     def _update_reminder_setting(self):
         """Save reminder settings when changed."""
@@ -731,7 +1036,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
             adhd_buster["coins"] = adhd_buster.get("coins", 0) + 1
             
             # Save data
-            self.blocker.save_user_data()
+            self.blocker.save_stats()
             
             # Update button to show collected
             self.owl_acknowledge_btn.setText("✓ Done")
@@ -889,7 +1194,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         count = self.get_daily_count()
         daily_cap = self.get_daily_cap()
         if count >= daily_cap:
-            QtWidgets.QMessageBox.information(self, "Daily Limit", f"You've reached the daily limit of {daily_cap} routines!")
+            styled_info(self, "Daily Limit", f"You've reached the daily limit of {daily_cap} routines!")
             return
         
         stats = self.blocker.stats.get("eye_protection", {})
@@ -903,7 +1208,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
                 elapsed = datetime.now() - last_dt
                 if elapsed < timedelta(minutes=20):
                     remaining = int(20 - elapsed.total_seconds() / 60)
-                    QtWidgets.QMessageBox.warning(self, "Resting Eyes", f"You eyes need to work a bit before resting again!\nWait {remaining} minutes.")
+                    styled_warning(self, "Resting Eyes", f"Your eyes need to work a bit before resting again!\nWait {remaining} minutes.")
                     return
 
         self.is_running = True
@@ -913,7 +1218,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.blink_state = "ready"
         
         # Sound
-        SoundGenerator.play_start()
+        self.guidance.play_start()
         
         # Start Step A logic
         self.status_label.setText("Step A: 5 Gentle Blinks")
@@ -937,7 +1242,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.cue_label.setText("CLOSE eyes")
         # Reuse status area for progress, but users have eyes closed mostly
         # self.status_label.setText(f"Blink {self.blink_count}/5") 
-        SoundGenerator.play_blink_close()
+        self.guidance.play_blink_close()
         
         # Schedule next sub-steps
         # Close duration ~1.5s -> Then Hold signal
@@ -949,7 +1254,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
             return
         self.blink_state = "hold"
         self.cue_label.setText("HOLD...")
-        SoundGenerator.play_blink_hold()
+        self.guidance.play_blink_hold()
         # Hold duration ~0.5s -> Then Open (Silence)
         QtCore.QTimer.singleShot(500, self.do_blink_open)
         
@@ -959,7 +1264,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
             return
         self.blink_state = "open"
         self.cue_label.setText("OPEN eyes")
-        SoundGenerator.play_blink_open() # Is silent
+        self.guidance.play_blink_open() # Is silent
         # Open duration ~1.5s -> Next cycle
         QtCore.QTimer.singleShot(1500, self.start_blink_cycle)
 
@@ -971,7 +1276,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.gaze_seconds_left = 20
         self.status_label.setText("Step B: Far Gaze + Breathing\n(Blink normally!)")
         self.cue_label.setText("Look away (20ft/6m)")
-        SoundGenerator.play_gaze_start()
+        self.guidance.play_gaze_start()
         
         self.timer.start(1000) # One tick per second
         self.on_timer_tick() # Execute first tick immediately
@@ -989,19 +1294,19 @@ class EyeProtectionTab(QtWidgets.QWidget):
                 
                 if t > 16:  # Inhale 1
                     if t == 20:
-                        SoundGenerator.play_inhale()
+                        self.guidance.play_inhale()
                     self.cue_label.setText(f"Look away + INHALE... {t-16}")
                 elif t > 10:  # Exhale 1
                     if t == 16:
-                        SoundGenerator.play_exhale()
+                        self.guidance.play_exhale()
                     self.cue_label.setText(f"Look away + EXHALE... {t-10}")
                 elif t > 6:  # Inhale 2
                     if t == 10:
-                        SoundGenerator.play_inhale()
+                        self.guidance.play_inhale()
                     self.cue_label.setText(f"Look away + INHALE... {t-6}")
                 elif t > 0:  # Exhale 2
                     if t == 6:
-                        SoundGenerator.play_exhale()
+                        self.guidance.play_exhale()
                     self.cue_label.setText(f"Look away + EXHALE... {t}")
                 
                 self.gaze_seconds_left -= 1
@@ -1019,7 +1324,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.is_running = False
         self.start_btn.setEnabled(True)
         self.cue_label.setText("COMPLETE!")
-        SoundGenerator.play_complete()
+        self.guidance.play_complete()
         
         # Update stats
         current_count = self.get_daily_count()
@@ -1071,10 +1376,11 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         # Show the animated two-stage lottery dialog with moving window
         lottery = MergeTwoStageLotteryDialog(
-            success_roll=0.0,  # Will be re-rolled inside
+            success_roll=0.0,  # Auto-generate random roll
             success_threshold=success_rate,
             tier_upgrade_enabled=False,
             base_rarity=base_rarity,
+            title="👁️‍🗨️ Eye & Breath Reward 👁️‍🗨️",
             parent=self
         )
         lottery.exec()
@@ -1087,12 +1393,11 @@ class EyeProtectionTab(QtWidgets.QWidget):
             # 50% chance to get the opportunity to reroll
             if random.randint(1, 100) <= reroll_chance:
                 # Show reroll message
-                QtWidgets.QMessageBox.information(
+                styled_info(
                     self, 
-                    f"🌵 {entity_name}'s Second Chance!",
+                    f"{entity_name}'s Second Chance! 🌵",
                     f"{entity_name} grants you another roll!\n\n"
-                    f"\"If I can survive fluorescent lights, you can survive this!\"",
-                    QtWidgets.QMessageBox.StandardButton.Ok
+                    f"\"If I can survive fluorescent lights, you can survive this!\""
                 )
                 
                 # Do the reroll with same parameters
@@ -1101,6 +1406,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
                     success_threshold=success_rate,
                     tier_upgrade_enabled=False,
                     base_rarity=base_rarity,
+                    title="🌀 Second Chance Roll 🌀",
                     parent=self
                 )
                 lottery2.exec()

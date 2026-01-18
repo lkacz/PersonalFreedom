@@ -2195,6 +2195,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
     
     def _show_final_success_message(self, result_item: dict):
         """Show final success message (no more re-roll options)."""
+        from styled_dialog import StyledDialog
+        
         rarity = result_item.get("rarity", "Common")
         name = result_item.get("name", "Unknown Item")
         power = result_item.get("power", 0)
@@ -2204,10 +2206,6 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         
         rarity_color = ITEM_RARITIES.get(rarity, {}).get("color", "#9e9e9e")
         
-        msg = QtWidgets.QMessageBox(self)
-        msg.setWindowTitle("🎉 MERGE SUCCESS!")
-        msg.setIcon(QtWidgets.QMessageBox.NoIcon)
-        
         # Build breakdown text
         breakdown_parts = []
         if self.items_merge_luck > 0:
@@ -2216,45 +2214,80 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             breakdown_parts.append("+25% boost")
         breakdown_text = f" ({', '.join(breakdown_parts)})" if breakdown_parts else ""
         
-        tier_upgrade_text = ""
-        if self.merge_result.get("tier_upgraded"):
-            tier_upgrade_text = "<p style='color: #ff9800;'>⬆️ <b>Tier Upgraded!</b> (+50 🪙)</p>"
+        tier_upgraded = self.merge_result.get("tier_upgraded", False) if self.merge_result else False
         
-        text = f"""
-        <div style='text-align: center;'>
-            <h2 style='color: {rarity_color};'>✨ Success! ✨</h2>
-            <p style='color: #aaa;'><b>Roll:</b> {roll_raw*100:.1f}% (needed &lt; {needed_raw*100:.1f}%{breakdown_text})</p>
-            {tier_upgrade_text}
-            <hr>
-            <p style='font-size: 16px; color: #fff;'><b>{name}</b></p>
-            <p style='color: {rarity_color};'><b>{rarity}</b> • ⚔ Power: {power}</p>
-            <p style='color: #8bc34a;'>Slot: {slot}</p>
-        </div>
-        """
-        
+        # Get lucky options text
+        lucky_text = ""
         if result_item.get("lucky_options"):
             from gamification import format_lucky_options
             try:
                 lucky_text = format_lucky_options(result_item["lucky_options"])
-                if lucky_text:
-                    text += f"<p style='color: #ffd700;'>✨ <b>Lucky Options:</b> {lucky_text}</p>"
             except Exception:
                 pass
         
-        msg.setText(text)
-        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        msg.setStyleSheet(f"""
-            QMessageBox {{ background-color: #1e2e1e; }}
-            QLabel {{ color: #fff; font-size: 13px; }}
-            QPushButton {{
-                background-color: #4caf50;
-                color: white;
-                padding: 8px 20px;
-                border-radius: 4px;
-                font-weight: bold;
-            }}
-        """)
-        msg.exec_()
+        # Create styled dialog
+        class MergeSuccessDialog(StyledDialog):
+            def _build_content(inner_self, layout):
+                # Success header
+                success_lbl = QtWidgets.QLabel("✨ Success! ✨")
+                success_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                success_lbl.setStyleSheet(f"font-size: 22px; font-weight: bold; color: {rarity_color};")
+                layout.addWidget(success_lbl)
+                
+                # Roll info
+                roll_lbl = QtWidgets.QLabel(f"<b>Roll:</b> {roll_raw*100:.1f}% (needed < {needed_raw*100:.1f}%{breakdown_text})")
+                roll_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                roll_lbl.setStyleSheet("color: #999; font-size: 11px;")
+                layout.addWidget(roll_lbl)
+                
+                # Tier upgrade notice
+                if tier_upgraded:
+                    tier_lbl = QtWidgets.QLabel("⬆️ Tier Upgraded! (+50 🪙)")
+                    tier_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                    tier_lbl.setStyleSheet("color: #ff9800; font-weight: bold; font-size: 13px;")
+                    layout.addWidget(tier_lbl)
+                
+                layout.addSpacing(15)
+                
+                # Separator
+                line = QtWidgets.QFrame()
+                line.setFrameShape(QtWidgets.QFrame.HLine)
+                line.setStyleSheet("background-color: #444; max-height: 1px;")
+                layout.addWidget(line)
+                layout.addSpacing(15)
+                
+                # Item name
+                name_lbl = QtWidgets.QLabel(f"<b>{name}</b>")
+                name_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                name_lbl.setStyleSheet("font-size: 18px; color: #fff;")
+                layout.addWidget(name_lbl)
+                
+                # Rarity and power
+                info_lbl = QtWidgets.QLabel(f"<span style='color:{rarity_color};'><b>{rarity}</b></span> • ⚔ Power: {power}")
+                info_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                info_lbl.setStyleSheet("font-size: 14px; color: #ddd;")
+                layout.addWidget(info_lbl)
+                
+                # Slot
+                slot_lbl = QtWidgets.QLabel(f"Slot: {slot}")
+                slot_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                slot_lbl.setStyleSheet("color: #8bc34a; font-size: 12px;")
+                layout.addWidget(slot_lbl)
+                
+                # Lucky options
+                if lucky_text:
+                    layout.addSpacing(10)
+                    lucky_lbl = QtWidgets.QLabel(f"✨ <b>Lucky:</b> {lucky_text}")
+                    lucky_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                    lucky_lbl.setWordWrap(True)
+                    lucky_lbl.setStyleSheet("color: #ffd700; font-size: 11px;")
+                    layout.addWidget(lucky_lbl)
+                
+                layout.addSpacing(15)
+                inner_self.add_button_row(layout, [("OK", "primary", inner_self.accept)])
+        
+        dialog = MergeSuccessDialog(self, "Merge Success!", "🎉", 420, 380, closable=True)
+        dialog.exec_()
     
     def _show_failure_dialog(self):
         """Show failure result dialog with retry, claim, and salvage options."""
