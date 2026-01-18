@@ -1,13 +1,16 @@
 """
-Session Complete Dialog - Industry-Standard UX
-===============================================
+Session Complete Dialog - Styled Frameless Design
+==================================================
 Celebratory dialog shown when a focus session completes successfully.
+Uses the app's StyledDialog base class for consistent look and feel.
 Features visual feedback, stats breakdown, rewards, and quick actions.
 """
 
 from datetime import datetime, timedelta
 from typing import Optional
 from PySide6 import QtWidgets, QtCore, QtGui
+
+from styled_dialog import StyledDialog
 
 try:
     from gamification import GAMIFICATION_AVAILABLE, ITEM_RARITIES
@@ -16,39 +19,116 @@ except ImportError:
     ITEM_RARITIES = {}
 
 
-class SessionStatsWidget(QtWidgets.QWidget):
-    """Visual display of session statistics."""
+class SessionCompleteDialog(StyledDialog):
+    """
+    Styled session complete dialog with celebration and stats.
     
-    def __init__(self, elapsed_seconds: int, parent: Optional[QtWidgets.QWidget] = None):
-        super().__init__(parent)
+    Features:
+    - Frameless dark themed design matching app style
+    - Large time display with celebration
+    - Session statistics breakdown
+    - Rewards earned display
+    - Streak information
+    - Quick action buttons
+    - Motivational messages
+    """
+    
+    start_another_session = QtCore.Signal()
+    view_stats = QtCore.Signal()
+    view_priorities = QtCore.Signal()
+    
+    def __init__(self, elapsed_seconds: int, rewards: Optional[dict] = None,
+                 parent: Optional[QtWidgets.QWidget] = None):
         self.elapsed_seconds = max(0, elapsed_seconds)  # Ensure non-negative
-        self._build_ui()
+        self.rewards = rewards or {}
+        
+        super().__init__(
+            parent=parent,
+            title="Session Complete!",
+            header_icon="🎉",
+            min_width=480,
+            max_width=550,
+            modal=True,
+        )
+        
+        # Start celebration animation
+        QtCore.QTimer.singleShot(100, self._animate_celebration)
     
-    def _build_ui(self):
-        """Build the stats display."""
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(12)
-        layout.setContentsMargins(0, 0, 0, 0)
+    def _build_content(self, layout: QtWidgets.QVBoxLayout):
+        """Build the complete dialog content."""
+        # Motivational message
+        message = self._get_motivational_message()
+        message_label = QtWidgets.QLabel(message)
+        message_label.setAlignment(QtCore.Qt.AlignCenter)
+        message_label.setWordWrap(True)
+        message_label.setStyleSheet("""
+            font-size: 13px;
+            color: #888888;
+            padding: 0 10px 10px 10px;
+        """)
+        layout.addWidget(message_label)
+        
+        # Separator
+        self._add_separator(layout)
         
         # Time display - large and prominent
         time_display = self._format_time(self.elapsed_seconds)
         time_label = QtWidgets.QLabel(time_display)
+        time_label.setObjectName("timeDisplay")
         time_label.setAlignment(QtCore.Qt.AlignCenter)
         time_label.setStyleSheet("""
             font-size: 56px;
             font-weight: bold;
-            color: #2196f3;
-            padding: 20px;
+            color: #4CAF50;
+            padding: 15px;
         """)
         layout.addWidget(time_label)
         
         # Stats grid
-        stats_grid = QtWidgets.QWidget()
-        grid_layout = QtWidgets.QGridLayout(stats_grid)
+        stats_widget = self._build_stats_widget()
+        layout.addWidget(stats_widget)
+        
+        # Separator
+        self._add_separator(layout)
+        
+        # Rewards section
+        if self.rewards:
+            rewards_widget = self._build_rewards_widget()
+            layout.addWidget(rewards_widget)
+            self._add_separator(layout)
+        
+        # Quick actions section
+        actions_label = QtWidgets.QLabel("What's next?")
+        actions_label.setStyleSheet("font-weight: bold; font-size: 13px; color: #FFD700;")
+        layout.addWidget(actions_label)
+        
+        quick_actions = self._build_quick_actions()
+        layout.addWidget(quick_actions)
+        
+        # Spacer
+        layout.addStretch()
+        
+        # Done button using button row helper
+        self.add_button_row(layout, [
+            ("✓ Done", "secondary", self.accept),
+        ])
+    
+    def _add_separator(self, layout: QtWidgets.QVBoxLayout):
+        """Add a styled separator line."""
+        line = QtWidgets.QFrame()
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setStyleSheet("background-color: #333344; max-height: 1px;")
+        layout.addWidget(line)
+    
+    def _build_stats_widget(self) -> QtWidgets.QWidget:
+        """Build the stats display grid."""
+        stats_widget = QtWidgets.QWidget()
+        grid_layout = QtWidgets.QGridLayout(stats_widget)
         grid_layout.setSpacing(16)
+        grid_layout.setContentsMargins(10, 10, 10, 10)
         
         minutes = self.elapsed_seconds // 60
-        hours = minutes // 60
+        time_display = self._format_time(self.elapsed_seconds)
         
         # Define stats to display
         stats = [
@@ -75,16 +155,147 @@ class SessionStatsWidget(QtWidgets.QWidget):
             text_layout.setContentsMargins(0, 0, 0, 0)
             
             label_widget = QtWidgets.QLabel(label)
-            label_widget.setStyleSheet("color: #666; font-size: 11px;")
+            label_widget.setStyleSheet("color: #888888; font-size: 11px;")
             text_layout.addWidget(label_widget)
             
             value_widget = QtWidgets.QLabel(value)
-            value_widget.setStyleSheet("font-weight: bold; font-size: 14px; color: #333;")
+            value_widget.setStyleSheet("font-weight: bold; font-size: 14px; color: #E0E0E0;")
             text_layout.addWidget(value_widget)
             
             grid_layout.addWidget(text_widget, row, col + 1)
         
-        layout.addWidget(stats_grid)
+        return stats_widget
+    
+    def _build_rewards_widget(self) -> QtWidgets.QWidget:
+        """Build the rewards display."""
+        container = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(container)
+        layout.setSpacing(8)
+        layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Title
+        title = QtWidgets.QLabel("🎁 Rewards Earned")
+        title.setStyleSheet("font-weight: bold; font-size: 14px; color: #FFD700;")
+        layout.addWidget(title)
+        
+        # Rewards container
+        rewards_box = QtWidgets.QWidget()
+        rewards_box.setStyleSheet("""
+            QWidget {
+                background-color: rgba(26, 26, 46, 0.7);
+                border-radius: 8px;
+                padding: 12px;
+            }
+        """)
+        rewards_layout = QtWidgets.QVBoxLayout(rewards_box)
+        rewards_layout.setSpacing(6)
+        rewards_layout.setContentsMargins(12, 12, 12, 12)
+        
+        # XP
+        if self.rewards.get("xp", 0) > 0:
+            xp_label = QtWidgets.QLabel(f"✨ +{self.rewards['xp']} XP")
+            xp_label.setStyleSheet("color: #9c27b0; font-weight: bold; font-size: 13px;")
+            rewards_layout.addWidget(xp_label)
+        
+        # Coins
+        if self.rewards.get("coins", 0) > 0:
+            coins_label = QtWidgets.QLabel(f"🪙 +{self.rewards['coins']} Coins")
+            coins_label.setStyleSheet("color: #ff9800; font-weight: bold; font-size: 13px;")
+            rewards_layout.addWidget(coins_label)
+        
+        # Items - just show teaser, lottery animation will reveal the actual item
+        if self.rewards.get("items"):
+            item_label = QtWidgets.QLabel("🎁 Item incoming... (lottery next!)")
+            item_label.setStyleSheet("color: #FFD700; font-weight: bold; font-size: 13px; font-style: italic;")
+            rewards_layout.addWidget(item_label)
+        
+        # Streak
+        if self.rewards.get("streak_maintained"):
+            streak_label = QtWidgets.QLabel(f"🔥 Streak: {self.rewards.get('current_streak', 1)} days")
+            streak_label.setStyleSheet("color: #f44336; font-weight: bold; font-size: 13px;")
+            rewards_layout.addWidget(streak_label)
+        
+        # If no rewards, show motivational message
+        if not any([self.rewards.get("xp"), self.rewards.get("coins"), 
+                   self.rewards.get("items"), self.rewards.get("streak_maintained")]):
+            no_rewards = QtWidgets.QLabel("Keep going! Longer sessions unlock more rewards.")
+            no_rewards.setStyleSheet("color: #888888; font-style: italic; font-size: 11px;")
+            rewards_layout.addWidget(no_rewards)
+        
+        layout.addWidget(rewards_box)
+        return container
+    
+    def _build_quick_actions(self) -> QtWidgets.QWidget:
+        """Build the quick action buttons."""
+        container = QtWidgets.QWidget()
+        layout = QtWidgets.QHBoxLayout(container)
+        layout.setSpacing(8)
+        layout.setContentsMargins(0, 5, 0, 5)
+        
+        # Start another session
+        start_btn = QtWidgets.QPushButton("▶ Start Another")
+        start_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #4CAF50, stop:1 #388E3C);
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 16px;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #5CBF60, stop:1 #43A047);
+            }
+        """)
+        start_btn.clicked.connect(self._on_start_another)
+        layout.addWidget(start_btn)
+        
+        # View stats
+        stats_btn = QtWidgets.QPushButton("📊 Stats")
+        stats_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2196F3, stop:1 #1976D2);
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 16px;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #42A5F5, stop:1 #2196F3);
+            }
+        """)
+        stats_btn.clicked.connect(self._on_view_stats)
+        layout.addWidget(stats_btn)
+        
+        # View priorities
+        priorities_btn = QtWidgets.QPushButton("🎯 Priorities")
+        priorities_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #FF9800, stop:1 #F57C00);
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 16px;
+                font-weight: bold;
+                font-size: 12px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #FFB74D, stop:1 #FF9800);
+            }
+        """)
+        priorities_btn.clicked.connect(self._on_view_priorities)
+        layout.addWidget(priorities_btn)
+        
+        return container
     
     def _format_time(self, seconds: int) -> str:
         """Format seconds into HH:MM:SS or MM:SS."""
@@ -110,290 +321,6 @@ class SessionStatsWidget(QtWidgets.QWidget):
             return "Decent"
         else:
             return "Starting out"
-
-
-class RewardsWidget(QtWidgets.QWidget):
-    """Display of rewards earned during session."""
-    
-    def __init__(self, rewards: dict, parent: Optional[QtWidgets.QWidget] = None):
-        super().__init__(parent)
-        self.rewards = rewards
-        self._build_ui()
-    
-    def _build_ui(self):
-        """Build the rewards display."""
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(8)
-        layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Title
-        title = QtWidgets.QLabel("🎁 Rewards Earned")
-        title.setStyleSheet("font-weight: bold; font-size: 14px; color: #333;")
-        layout.addWidget(title)
-        
-        # Rewards list
-        rewards_container = QtWidgets.QWidget()
-        rewards_container.setStyleSheet("""
-            QWidget {
-                background-color: #f5f5f5;
-                border-radius: 8px;
-                padding: 12px;
-            }
-        """)
-        rewards_layout = QtWidgets.QVBoxLayout(rewards_container)
-        rewards_layout.setSpacing(6)
-        
-        # XP
-        if self.rewards.get("xp", 0) > 0:
-            xp_label = QtWidgets.QLabel(f"✨ +{self.rewards['xp']} XP")
-            xp_label.setStyleSheet("color: #9c27b0; font-weight: bold; font-size: 13px;")
-            rewards_layout.addWidget(xp_label)
-        
-        # Coins
-        if self.rewards.get("coins", 0) > 0:
-            coins_label = QtWidgets.QLabel(f"🪙 +{self.rewards['coins']} Coins")
-            coins_label.setStyleSheet("color: #ff9800; font-weight: bold; font-size: 13px;")
-            rewards_layout.addWidget(coins_label)
-        
-        # Items
-        if self.rewards.get("items"):
-            for item in self.rewards["items"]:
-                item_name = item.get("name", "Unknown Item")
-                rarity = item.get("rarity", "Common")
-                rarity_colors = {
-                    "Common": "#9e9e9e",
-                    "Uncommon": "#4caf50",
-                    "Rare": "#2196f3",
-                    "Epic": "#9c27b0",
-                    "Legendary": "#ff9800"
-                }
-                color = rarity_colors.get(rarity, "#9e9e9e")
-                
-                item_label = QtWidgets.QLabel(f"🎁 {item_name}")
-                item_label.setStyleSheet(f"color: {color}; font-weight: bold; font-size: 13px;")
-                rewards_layout.addWidget(item_label)
-        
-        # Streak
-        if self.rewards.get("streak_maintained"):
-            streak_label = QtWidgets.QLabel(f"🔥 Streak: {self.rewards.get('current_streak', 1)} days")
-            streak_label.setStyleSheet("color: #f44336; font-weight: bold; font-size: 13px;")
-            rewards_layout.addWidget(streak_label)
-        
-        # If no rewards, show motivational message
-        if not any([self.rewards.get("xp"), self.rewards.get("coins"), 
-                   self.rewards.get("items"), self.rewards.get("streak_maintained")]):
-            no_rewards = QtWidgets.QLabel("Keep going! Longer sessions unlock more rewards.")
-            no_rewards.setStyleSheet("color: #666; font-style: italic; font-size: 11px;")
-            rewards_layout.addWidget(no_rewards)
-        
-        layout.addWidget(rewards_container)
-
-
-class QuickActionsWidget(QtWidgets.QWidget):
-    """Quick action buttons for next steps."""
-    
-    start_another = QtCore.Signal()
-    view_stats = QtCore.Signal()
-    view_priorities = QtCore.Signal()
-    
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
-        super().__init__(parent)
-        self._build_ui()
-    
-    def _build_ui(self):
-        """Build the quick actions buttons."""
-        layout = QtWidgets.QHBoxLayout(self)
-        layout.setSpacing(8)
-        layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Start another session
-        start_btn = QtWidgets.QPushButton("▶️ Start Another")
-        start_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #4caf50;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 16px;
-                font-weight: bold;
-                font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #388e3c;
-            }
-        """)
-        start_btn.clicked.connect(self.start_another.emit)
-        layout.addWidget(start_btn)
-        
-        # View stats
-        stats_btn = QtWidgets.QPushButton("📊 Stats")
-        stats_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #2196f3;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 16px;
-                font-weight: bold;
-                font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #1976d2;
-            }
-        """)
-        stats_btn.clicked.connect(self.view_stats.emit)
-        layout.addWidget(stats_btn)
-        
-        # View priorities
-        priorities_btn = QtWidgets.QPushButton("🎯 Priorities")
-        priorities_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #ff9800;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 16px;
-                font-weight: bold;
-                font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #f57c00;
-            }
-        """)
-        priorities_btn.clicked.connect(self.view_priorities.emit)
-        layout.addWidget(priorities_btn)
-
-
-class SessionCompleteDialog(QtWidgets.QDialog):
-    """
-    Industry-standard session complete dialog with celebration and stats.
-    
-    Features:
-    - Large time display with celebration
-    - Session statistics breakdown
-    - Rewards earned display
-    - Streak information
-    - Quick action buttons
-    - Motivational messages
-    - WCAG AA compliant colors
-    """
-    
-    start_another_session = QtCore.Signal()
-    view_stats = QtCore.Signal()
-    view_priorities = QtCore.Signal()
-    
-    def __init__(self, elapsed_seconds: int, rewards: Optional[dict] = None,
-                 parent: Optional[QtWidgets.QWidget] = None):
-        super().__init__(parent)
-        self.elapsed_seconds = elapsed_seconds
-        self.rewards = rewards or {}
-        
-        self.setWindowTitle("🎉 Session Complete!")
-        self.setMinimumSize(500, 550)
-        self._build_ui()
-        
-        # Start celebration animation
-        QtCore.QTimer.singleShot(100, self._animate_celebration)
-    
-    def _build_ui(self):
-        """Build the complete dialog UI."""
-        main_layout = QtWidgets.QVBoxLayout(self)
-        main_layout.setSpacing(20)
-        main_layout.setContentsMargins(24, 24, 24, 24)
-        
-        # Header with celebration
-        header = QtWidgets.QLabel("🎉 Great Work! 🎉")
-        header.setAlignment(QtCore.Qt.AlignCenter)
-        header.setStyleSheet("""
-            font-size: 28px;
-            font-weight: bold;
-            color: #4caf50;
-            padding: 10px;
-        """)
-        main_layout.addWidget(header)
-        
-        # Motivational message
-        message = self._get_motivational_message()
-        message_label = QtWidgets.QLabel(message)
-        message_label.setAlignment(QtCore.Qt.AlignCenter)
-        message_label.setWordWrap(True)
-        message_label.setStyleSheet("""
-            font-size: 13px;
-            color: #666;
-            padding: 0 20px;
-        """)
-        main_layout.addWidget(message_label)
-        
-        # Separator
-        line = QtWidgets.QFrame()
-        line.setFrameShape(QtWidgets.QFrame.HLine)
-        line.setStyleSheet("background-color: #ddd;")
-        main_layout.addWidget(line)
-        
-        # Session stats
-        stats_widget = SessionStatsWidget(self.elapsed_seconds)
-        main_layout.addWidget(stats_widget)
-        
-        # Separator
-        line2 = QtWidgets.QFrame()
-        line2.setFrameShape(QtWidgets.QFrame.HLine)
-        line2.setStyleSheet("background-color: #ddd;")
-        main_layout.addWidget(line2)
-        
-        # Rewards section
-        if self.rewards:
-            rewards_widget = RewardsWidget(self.rewards)
-            main_layout.addWidget(rewards_widget)
-            
-            # Separator
-            line3 = QtWidgets.QFrame()
-            line3.setFrameShape(QtWidgets.QFrame.HLine)
-            line3.setStyleSheet("background-color: #ddd;")
-            main_layout.addWidget(line3)
-        
-        # Quick actions
-        actions_label = QtWidgets.QLabel("What's next?")
-        actions_label.setStyleSheet("font-weight: bold; font-size: 13px; color: #333;")
-        main_layout.addWidget(actions_label)
-        
-        quick_actions = QuickActionsWidget()
-        quick_actions.start_another.connect(self._on_start_another)
-        quick_actions.view_stats.connect(self._on_view_stats)
-        quick_actions.view_priorities.connect(self._on_view_priorities)
-        main_layout.addWidget(quick_actions)
-        
-        # Spacer
-        main_layout.addStretch()
-        
-        # Close button
-        close_layout = QtWidgets.QHBoxLayout()
-        close_layout.addStretch()
-        close_btn = QtWidgets.QPushButton("✓ Done")
-        close_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #757575;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 10px 24px;
-                font-weight: bold;
-                font-size: 13px;
-            }
-            QPushButton:hover {
-                background-color: #616161;
-            }
-        """)
-        close_btn.clicked.connect(self.accept)
-        close_layout.addWidget(close_btn)
-        close_layout.addStretch()
-        main_layout.addLayout(close_layout)
-        
-        # Dialog style
-        self.setStyleSheet("""
-            QDialog {
-                background-color: #fafafa;
-            }
-        """)
     
     def _get_motivational_message(self) -> str:
         """Get contextual motivational message based on session length."""
@@ -415,12 +342,11 @@ class SessionCompleteDialog(QtWidgets.QDialog):
             return "Nice start! Even short sessions build the foundation for greater focus."
     
     def _animate_celebration(self):
-        """Animate the celebration header."""
-        # Simple fade-in effect for the header
-        header = self.findChild(QtWidgets.QLabel)
-        if header and header.text().startswith("🎉"):
-            effect = QtWidgets.QGraphicsOpacityEffect(header)
-            header.setGraphicsEffect(effect)
+        """Animate the time display with a pulse effect."""
+        time_label = self.findChild(QtWidgets.QLabel, "timeDisplay")
+        if time_label:
+            effect = QtWidgets.QGraphicsOpacityEffect(time_label)
+            time_label.setGraphicsEffect(effect)
             
             animation = QtCore.QPropertyAnimation(effect, b"opacity")
             animation.setDuration(800)
