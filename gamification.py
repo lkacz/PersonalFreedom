@@ -11426,8 +11426,41 @@ WEIGHT_MILESTONES = {
 }
 
 
+def _is_weekend(date_obj) -> bool:
+    """Check if a date is Saturday (5) or Sunday (6)."""
+    return date_obj.weekday() in (5, 6)
+
+
+def _get_previous_required_day(from_date, entry_dates: set) -> tuple:
+    """
+    Get the previous day that was required for streak (skipping weekends).
+    
+    Returns:
+        (date_obj, date_str, was_weekend_skipped)
+    """
+    from datetime import timedelta
+    
+    current = from_date - timedelta(days=1)
+    
+    # Skip weekends - they don't break streaks
+    while _is_weekend(current):
+        date_str = current.strftime("%Y-%m-%d")
+        # But if they logged on weekend, count it!
+        if date_str in entry_dates:
+            return current, date_str, False
+        current = current - timedelta(days=1)
+    
+    return current, current.strftime("%Y-%m-%d"), False
+
+
 def _check_streak(weight_entries: list) -> int:
-    """Calculate current logging streak (consecutive days with entries)."""
+    """
+    Calculate current logging streak (consecutive days with entries).
+    
+    Weekend tolerance: Not logging on Saturday/Sunday doesn't break the streak.
+    If you log Friday and Monday, the streak continues.
+    Logging on weekends still counts toward the streak.
+    """
     if not weight_entries:
         return 0
     
@@ -11446,23 +11479,37 @@ def _check_streak(weight_entries: list) -> int:
     
     today = datetime.now().strftime("%Y-%m-%d")
     yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    today_dt = datetime.now()
+    yesterday_dt = today_dt - timedelta(days=1)
     
-    # Streak can start from today or yesterday (in case user hasn't logged today yet)
+    # Find the most recent valid entry point (today, yesterday, or last Friday if weekend)
     if today in entry_dates:
         current = datetime.strptime(today, "%Y-%m-%d")
         streak = 1
     elif yesterday in entry_dates:
         current = datetime.strptime(yesterday, "%Y-%m-%d")
         streak = 1
+    elif _is_weekend(today_dt):
+        # It's weekend and no entry today/yesterday - check if Friday had entry
+        days_to_friday = (today_dt.weekday() - 4) % 7
+        if days_to_friday == 0:
+            days_to_friday = 7  # If it's Friday, look at last Friday
+        last_friday = today_dt - timedelta(days=days_to_friday)
+        friday_str = last_friday.strftime("%Y-%m-%d")
+        if friday_str in entry_dates:
+            current = last_friday
+            streak = 1
+        else:
+            return 0
     else:
         return 0
     
-    # Count backwards from current
+    # Count backwards from current, skipping weekends if needed
     while True:
-        current = current - timedelta(days=1)
-        date_str = current.strftime("%Y-%m-%d")
-        if date_str in entry_dates:
+        prev_date, prev_str, _ = _get_previous_required_day(current, entry_dates)
+        if prev_str in entry_dates:
             streak += 1
+            current = prev_date
         else:
             break
     
@@ -12428,6 +12475,10 @@ def check_activity_streak(activity_entries: list) -> int:
     """
     Calculate current activity streak (consecutive days with activity).
     
+    Weekend tolerance: Not logging on Saturday/Sunday doesn't break the streak.
+    If you exercise Friday and Monday, the streak continues.
+    Logging on weekends still counts toward the streak.
+    
     Args:
         activity_entries: List of activity entries with date field
     
@@ -12450,23 +12501,37 @@ def check_activity_streak(activity_entries: list) -> int:
     
     today = datetime.now().strftime("%Y-%m-%d")
     yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    today_dt = datetime.now()
+    yesterday_dt = today_dt - timedelta(days=1)
     
-    # Streak can start from today or yesterday (in case user hasn't logged today yet)
+    # Find the most recent valid entry point
     if today in dates:
         current = datetime.strptime(today, "%Y-%m-%d")
         streak = 1
     elif yesterday in dates:
         current = datetime.strptime(yesterday, "%Y-%m-%d")
         streak = 1
+    elif _is_weekend(today_dt):
+        # It's weekend and no entry today/yesterday - check if Friday had entry
+        days_to_friday = (today_dt.weekday() - 4) % 7
+        if days_to_friday == 0:
+            days_to_friday = 7
+        last_friday = today_dt - timedelta(days=days_to_friday)
+        friday_str = last_friday.strftime("%Y-%m-%d")
+        if friday_str in dates:
+            current = last_friday
+            streak = 1
+        else:
+            return 0
     else:
         return 0
     
-    # Count backwards from current
+    # Count backwards from current, skipping weekends if needed
     while True:
-        current = current - timedelta(days=1)
-        date_str = current.strftime("%Y-%m-%d")
-        if date_str in dates:
+        prev_date, prev_str, _ = _get_previous_required_day(current, dates)
+        if prev_str in dates:
             streak += 1
+            current = prev_date
         else:
             break
     
@@ -13050,6 +13115,10 @@ def check_sleep_streak(sleep_entries: list) -> int:
     """
     Calculate current sleep streak (consecutive days with 7+ hours sleep).
     
+    Weekend tolerance: Not logging on Saturday/Sunday doesn't break the streak.
+    Good sleep on Friday followed by Monday continues the streak.
+    Logging on weekends still counts toward the streak.
+    
     Args:
         sleep_entries: List of sleep entries with date and sleep_hours fields
     
@@ -13072,23 +13141,37 @@ def check_sleep_streak(sleep_entries: list) -> int:
     
     today = datetime.now().strftime("%Y-%m-%d")
     yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+    today_dt = datetime.now()
+    yesterday_dt = today_dt - timedelta(days=1)
     
-    # Streak can start from today or yesterday (in case user hasn't logged today yet)
+    # Find the most recent valid entry point
     if today in good_dates:
         current = datetime.strptime(today, "%Y-%m-%d")
         streak = 1
     elif yesterday in good_dates:
         current = datetime.strptime(yesterday, "%Y-%m-%d")
         streak = 1
+    elif _is_weekend(today_dt):
+        # It's weekend and no entry today/yesterday - check if Friday had entry
+        days_to_friday = (today_dt.weekday() - 4) % 7
+        if days_to_friday == 0:
+            days_to_friday = 7
+        last_friday = today_dt - timedelta(days=days_to_friday)
+        friday_str = last_friday.strftime("%Y-%m-%d")
+        if friday_str in good_dates:
+            current = last_friday
+            streak = 1
+        else:
+            return 0
     else:
         return 0
     
-    # Count backwards from current
+    # Count backwards from current, skipping weekends if needed
     while True:
-        current = current - timedelta(days=1)
-        date_str = current.strftime("%Y-%m-%d")
-        if date_str in good_dates:
+        prev_date, prev_str, _ = _get_previous_required_day(current, good_dates)
+        if prev_str in good_dates:
             streak += 1
+            current = prev_date
         else:
             break
     

@@ -668,7 +668,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
     
     def __init__(self, items: list, luck: int, equipped: dict, 
                  parent: Optional[QtWidgets.QWidget] = None, player_coins: int = 0, 
-                 coin_discount: int = 0, entity_perks: Optional[dict] = None):
+                 coin_discount: int = 0, entity_perks: Optional[dict] = None,
+                 adhd_buster: Optional[dict] = None):
         super().__init__(parent)
         self.items = items
         self.luck = luck
@@ -678,6 +679,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.boost_enabled = False
         self.tier_upgrade_enabled = False  # +50 coins to upgrade result tier
         self.coin_discount = coin_discount  # Discount percentage from merged items (0-90)
+        self.adhd_buster = adhd_buster or {}  # For entity perk checks (Tesla Coil, Blank Parchment)
         self.entity_perks = entity_perks or {}  # Entity perk bonuses
         self.all_legendary = all(i.get("rarity") == "Legendary" for i in items if i)
         
@@ -1038,26 +1040,49 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         if not self.entity_perk_contributors:
             return None
         
+        # Split contributors into merge luck boosters and coin discount entities
+        luck_contributors = [c for c in self.entity_perk_contributors 
+                            if c.get("perk_type") in ("merge_luck", "merge_success", "all_luck")]
+        coin_contributors = [c for c in self.entity_perk_contributors 
+                            if c.get("perk_type") == "coin_discount"]
+        
+        if not luck_contributors and not coin_contributors:
+            return None
+        
         section = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(section)
         layout.setContentsMargins(8, 8, 8, 8)
-        layout.setSpacing(4)
+        layout.setSpacing(8)
         
-        # Section title
-        title = QtWidgets.QLabel("✨ Entity Patrons Boosting Merge")
-        title.setStyleSheet("color: #888; font-size: 10px; font-weight: bold;")
-        layout.addWidget(title)
+        # Section for merge luck boosters
+        if luck_contributors:
+            luck_title = QtWidgets.QLabel("✨ Entity Patrons Boosting Merge")
+            luck_title.setStyleSheet("color: #888; font-size: 10px; font-weight: bold;")
+            layout.addWidget(luck_title)
+            
+            # Create mini-cards for luck boosters
+            luck_labels = {
+                "merge_luck": "🍀",
+                "merge_success": "🎯",
+                "all_luck": "⭐",
+            }
+            luck_cards = create_entity_perk_mini_cards(luck_contributors, luck_labels)
+            if luck_cards:
+                layout.addWidget(luck_cards)
         
-        # Create mini-cards using the helper function
-        perk_labels = {
-            "merge_luck": "🍀",
-            "merge_success": "🎯",
-            "all_luck": "⭐",
-            "coin_discount": "💰",
-        }
-        cards_widget = create_entity_perk_mini_cards(self.entity_perk_contributors, perk_labels)
-        if cards_widget:
-            layout.addWidget(cards_widget)
+        # Section for coin discount entities
+        if coin_contributors:
+            coin_title = QtWidgets.QLabel("💰 Entity Patrons Reducing Cost")
+            coin_title.setStyleSheet("color: #888; font-size: 10px; font-weight: bold;")
+            layout.addWidget(coin_title)
+            
+            # Create mini-cards for coin discount entities
+            coin_labels = {
+                "coin_discount": "💰",
+            }
+            coin_cards = create_entity_perk_mini_cards(coin_contributors, coin_labels)
+            if coin_cards:
+                layout.addWidget(coin_cards)
         
         # Style the section
         section.setStyleSheet("""
@@ -1403,7 +1428,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Calculate success rate first
         story_id = self.items[0].get("story_theme", "warrior") if self.items else "warrior"
         boost_bonus = 25 if self.boost_enabled else 0
-        total_items_merge_luck = self.items_merge_luck + boost_bonus
+        # Include: items merge luck + entity perk merge luck + boost bonus
+        total_items_merge_luck = self.items_merge_luck + self.total_entity_merge_luck + boost_bonus
         
         # Calculate the success threshold
         success_rate = calculate_merge_success_rate(self.items, items_merge_luck=total_items_merge_luck)
@@ -1426,7 +1452,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         animation_dialog.exec_()
         
         # Get results from animation (rolled_tier is the actual rarity name)
-        _, rolled_rarity = animation_dialog.get_results()
+        # Use the dialog's authoritative is_success result
+        is_success, rolled_rarity = animation_dialog.get_results()
         
         # Now build the merge result using the rolled rarity
         if is_success:
@@ -1526,15 +1553,22 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         if self.merge_result["success"]:
             self._show_success_dialog()
             self.accept()
-        else:
-            self._show_failure_dialog()
-            
-            # If retry was requested, restart the merge sequence
-            if getattr(self, "is_retrying", False):
-                self.is_retrying = False # Reset flag
-                # Small delay to let dialog close and UI refresh
-                QtCore.QTimer.singleShot(100, self.execute_merge)
-                return # Do NOT close the main dialog
+            return
+        
+        # Failure path
+        self._show_failure_dialog()
+        
+        # If retry was requested, restart the merge sequence
+        if getattr(self, "is_retrying", False):
+            self.is_retrying = False  # Reset flag
+            # Small delay to let dialog close and UI refresh
+            QtCore.QTimer.singleShot(100, self.execute_merge)
+            return  # Do NOT close the main dialog
+        
+        # If claim converted failure to success, don't double-accept
+        if self.merge_result.get("success"):
+            self.accept()
+            return
         
         self.accept()
     

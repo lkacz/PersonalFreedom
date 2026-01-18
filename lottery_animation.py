@@ -56,6 +56,18 @@ class LotterySliderWidget(QtWidgets.QWidget):
     with a marker that slides to the final position.
     """
     
+    # Cached colors for performance (avoid creating QColor objects each frame)
+    _COLOR_SUCCESS_ZONE = QtGui.QColor("#2e7d32")
+    _COLOR_FAIL_ZONE = QtGui.QColor("#c62828")
+    _COLOR_WHITE = QtGui.QColor("#fff")
+    _COLOR_GRAY = QtGui.QColor("#888")
+    _COLOR_WIN_TEXT = QtGui.QColor("#4caf50")
+    _COLOR_LOSE_TEXT = QtGui.QColor("#f44336")
+    _COLOR_MARKER_WIN = QtGui.QColor("#66bb6a")
+    _COLOR_MARKER_LOSE = QtGui.QColor("#ef5350")
+    _COLOR_MARKER_SUCCESS = QtGui.QColor("#4caf50")
+    _COLOR_MARKER_FAIL = QtGui.QColor("#f44336")
+    
     def __init__(self, threshold: float, parent=None):
         """
         Args:
@@ -67,6 +79,15 @@ class LotterySliderWidget(QtWidgets.QWidget):
         self.position = 0.0  # Current marker position (0-100)
         self.result = None  # None, True (success), or False (failure)
         self.setMinimumWidth(400)
+        
+        # Cache fonts for performance
+        self._font_threshold = QtGui.QFont("Arial", 9, QtGui.QFont.Bold)
+        self._font_label = QtGui.QFont("Arial", 8)
+        self._font_zone = QtGui.QFont("Arial", 10, QtGui.QFont.Bold)
+        
+        # Cache pens for performance
+        self._pen_threshold = QtGui.QPen(self._COLOR_WHITE, 2)
+        self._pen_marker_outline = QtGui.QPen(self._COLOR_WHITE, 2)
     
     def set_position(self, pos: float):
         """Set the marker position (0-100)."""
@@ -94,37 +115,37 @@ class LotterySliderWidget(QtWidgets.QWidget):
         # Success zone (green) - left side up to threshold
         threshold_x = margin + (self.threshold / 100.0) * (w - 2*margin)
         success_rect = QtCore.QRectF(margin, bar_y, threshold_x - margin, bar_height)
-        painter.setBrush(QtGui.QColor("#2e7d32"))  # Dark green
+        painter.setBrush(self._COLOR_SUCCESS_ZONE)  # Use cached color
         painter.setPen(QtCore.Qt.NoPen)
         painter.drawRoundedRect(success_rect, 4, 4)
         
         # Failure zone (red) - right side from threshold
         fail_rect = QtCore.QRectF(threshold_x, bar_y, w - margin - threshold_x, bar_height)
-        painter.setBrush(QtGui.QColor("#c62828"))  # Dark red
+        painter.setBrush(self._COLOR_FAIL_ZONE)  # Use cached color
         painter.drawRoundedRect(fail_rect, 4, 4)
         
         # Draw threshold line
-        painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
+        painter.setPen(self._pen_threshold)  # Use cached pen
         painter.drawLine(int(threshold_x), bar_y - 5, int(threshold_x), bar_y + bar_height + 5)
         
         # Threshold label
-        painter.setFont(QtGui.QFont("Arial", 9, QtGui.QFont.Bold))
+        painter.setFont(self._font_threshold)  # Use cached font
         painter.drawText(int(threshold_x) - 15, bar_y - 8, f"{self.threshold:.0f}%")
         
         # Draw 0% and 100% labels
-        painter.setPen(QtGui.QColor("#888"))
-        painter.setFont(QtGui.QFont("Arial", 8))
+        painter.setPen(self._COLOR_GRAY)  # Use cached color
+        painter.setFont(self._font_label)  # Use cached font
         painter.drawText(margin, bar_y + bar_height + 15, "0%")
         painter.drawText(w - margin - 25, bar_y + bar_height + 15, "100%")
         
         # Draw "WIN" and "LOSE" zone labels
-        painter.setFont(QtGui.QFont("Arial", 10, QtGui.QFont.Bold))
+        painter.setFont(self._font_zone)  # Use cached font
         if threshold_x - margin > 40:
-            painter.setPen(QtGui.QColor("#4caf50"))
+            painter.setPen(self._COLOR_WIN_TEXT)  # Use cached color
             win_x = margin + (threshold_x - margin) / 2 - 15
             painter.drawText(int(win_x), bar_y + bar_height // 2 + 5, "WIN")
         if w - margin - threshold_x > 40:
-            painter.setPen(QtGui.QColor("#f44336"))
+            painter.setPen(self._COLOR_LOSE_TEXT)  # Use cached color
             lose_x = threshold_x + (w - margin - threshold_x) / 2 - 18
             painter.drawText(int(lose_x), bar_y + bar_height // 2 + 5, "LOSE")
         
@@ -132,22 +153,22 @@ class LotterySliderWidget(QtWidgets.QWidget):
         marker_x = margin + (self.position / 100.0) * (w - 2*margin)
         marker_size = 16
         
-        # Marker color based on position
+        # Marker color based on position (use cached colors)
         if self.result is not None:
-            marker_color = "#4caf50" if self.result else "#f44336"
-            glow_color = "#4caf50" if self.result else "#f44336"
+            marker_color = self._COLOR_MARKER_SUCCESS if self.result else self._COLOR_MARKER_FAIL
+            glow_color = marker_color
         elif self.position < self.threshold:
-            marker_color = "#66bb6a"
+            marker_color = self._COLOR_MARKER_WIN
             glow_color = None
         else:
-            marker_color = "#ef5350"
+            marker_color = self._COLOR_MARKER_LOSE
             glow_color = None
         
         # Draw glow if result shown
         if glow_color:
             for i in range(3):
                 glow_size = marker_size + (3-i) * 4
-                painter.setBrush(QtGui.QColor(glow_color))
+                painter.setBrush(glow_color)
                 painter.setOpacity(0.2)
                 painter.drawEllipse(
                     QtCore.QPointF(marker_x, bar_y + bar_height // 2),
@@ -156,8 +177,8 @@ class LotterySliderWidget(QtWidgets.QWidget):
             painter.setOpacity(1.0)
         
         # Draw marker (triangle pointing down)
-        painter.setBrush(QtGui.QColor(marker_color))
-        painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
+        painter.setBrush(marker_color)
+        painter.setPen(self._pen_marker_outline)  # Use cached pen
         
         # Triangle marker
         triangle = QtGui.QPolygonF([
@@ -167,8 +188,8 @@ class LotterySliderWidget(QtWidgets.QWidget):
         ])
         painter.drawPolygon(triangle)
         
-        # Marker line
-        painter.setPen(QtGui.QPen(QtGui.QColor(marker_color), 3))
+        # Marker line (need to create pen with dynamic color)
+        painter.setPen(QtGui.QPen(marker_color, 3))
         painter.drawLine(int(marker_x), bar_y, int(marker_x), bar_y + bar_height)
 
 
@@ -220,9 +241,13 @@ class LotteryRollDialog(QtWidgets.QDialog):
         self.failure_text = failure_text
         
         # Animation settings
-        self.tick_interval = 16  # ~60 FPS
+        self.tick_interval = 20  # ~50 FPS (smooth enough, reduces CPU load)
         self.elapsed_time = 0.0
         self.animation_duration = animation_duration
+        
+        # Style state tracking to avoid redundant setStyleSheet calls
+        self._last_roll_style = None  # "success" or "fail"
+        self._last_status_text = None
         
         # Generate bounce path
         self._generate_bounce_path()
@@ -379,28 +404,35 @@ class LotteryRollDialog(QtWidgets.QDialog):
         self.slider_widget.set_position(self.current_position)
         self.roll_label.setText(f"{self.current_position:.1f}%")
         
-        # Color based on position
-        if self.current_position < self.success_threshold:
-            self.roll_label.setStyleSheet("""
-                font-size: 28px; font-weight: bold; color: #4caf50;
-                font-family: 'Consolas', 'Monaco', monospace;
-            """)
-        else:
-            self.roll_label.setStyleSheet("""
-                font-size: 28px; font-weight: bold; color: #f44336;
-                font-family: 'Consolas', 'Monaco', monospace;
-            """)
+        # Color based on position - only update style if state changed
+        new_style = "success" if self.current_position < self.success_threshold else "fail"
+        if new_style != self._last_roll_style:
+            self._last_roll_style = new_style
+            if new_style == "success":
+                self.roll_label.setStyleSheet("""
+                    font-size: 28px; font-weight: bold; color: #4caf50;
+                    font-family: 'Consolas', 'Monaco', monospace;
+                """)
+            else:
+                self.roll_label.setStyleSheet("""
+                    font-size: 28px; font-weight: bold; color: #f44336;
+                    font-family: 'Consolas', 'Monaco', monospace;
+                """)
         
-        # Update status based on speed (derivative of eased_progress)
+        # Update status based on speed (derivative of eased_progress) - only if changed
         speed = 4 * (1.0 - t) ** 3
         if speed > 2.0:
-            self.status_label.setText("⚡ Spinning...")
+            new_status = "⚡ Spinning..."
         elif speed > 0.8:
-            self.status_label.setText("🎯 Slowing down...")
+            new_status = "🎯 Slowing down..."
         elif speed > 0.2:
-            self.status_label.setText("🎲 Almost there...")
+            new_status = "🎲 Almost there..."
         else:
-            self.status_label.setText("✨ Settling...")
+            new_status = "✨ Settling..."
+        
+        if new_status != self._last_status_text:
+            self._last_status_text = new_status
+            self.status_label.setText(new_status)
     
     def _show_final_result(self):
         """Show the final result."""
@@ -912,16 +944,20 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         self._tier_anim_elapsed = 0.0
         self._tier_anim_duration = 9.0  # Longer for dramatic effect
         
+        # Style state tracking for performance
+        self._tier_last_tier = None
+        
         self._tier_anim_timer = QtCore.QTimer(self)
         self._tier_anim_timer.timeout.connect(self._tier_anim_tick)
-        self._tier_anim_timer.start(16)
+        self._tier_anim_timer.start(20)  # 50 FPS for smoother performance
     
     def _tier_anim_tick(self):
         """Animation tick for tier stage."""
-        tier_colors = {"Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3", 
+        # Cached tier colors (class constant would be better but works for this method)
+        TIER_COLORS = {"Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3", 
                        "Epic": "#9c27b0", "Legendary": "#ff9800"}
         
-        self._tier_anim_elapsed += 0.016
+        self._tier_anim_elapsed += 0.020  # Match timer interval
         t = min(1.0, self._tier_anim_elapsed / self._tier_anim_duration)
         eased = 1.0 - (1.0 - t) ** 4
         
@@ -937,11 +973,13 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         pos = max(0, min(100, pos))
         self._tier_anim_slider.set_position(pos)
         
-        # Update result label with current tier
+        # Update result label with current tier - only update style if tier changed
         current_tier = self._tier_anim_slider.get_tier_at_position(pos)
-        color = tier_colors.get(current_tier, "#aaa")
+        if current_tier != self._tier_last_tier:
+            self._tier_last_tier = current_tier
+            color = TIER_COLORS.get(current_tier, "#aaa")
+            self._tier_anim_result.setStyleSheet(f"color: {color}; font-size: 14px;")
         self._tier_anim_result.setText(f"🎲 {pos:.1f}% → {current_tier}")
-        self._tier_anim_result.setStyleSheet(f"color: {color}; font-size: 14px;")
         
         if t >= 1.0:
             self._tier_anim_timer.stop()
@@ -990,13 +1028,16 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         self._anim_elapsed = 0.0
         self._anim_duration = 8.0  # Doubled for more dramatic effect
         
+        # Style state tracking for performance
+        self._anim_last_zone = None
+        
         self._anim_timer = QtCore.QTimer(self)
         self._anim_timer.timeout.connect(self._anim_tick)
-        self._anim_timer.start(16)
+        self._anim_timer.start(20)  # 50 FPS for smoother performance
     
     def _anim_tick(self):
         """Animation tick for current stage."""
-        self._anim_elapsed += 0.016
+        self._anim_elapsed += 0.020  # Match timer interval
         t = min(1.0, self._anim_elapsed / self._anim_duration)
         eased = 1.0 - (1.0 - t) ** 4
         
@@ -1012,13 +1053,15 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         pos = max(0, min(100, pos))
         self._anim_slider.set_position(pos)
         
-        # Update result label color during animation
-        if pos < self._anim_threshold:
-            self._anim_result.setStyleSheet("color: #4caf50; font-size: 14px;")
-            self._anim_result.setText(f"🎲 {pos:.1f}%")
-        else:
-            self._anim_result.setStyleSheet("color: #f44336; font-size: 14px;")
-            self._anim_result.setText(f"🎲 {pos:.1f}%")
+        # Update result label color during animation - only if zone changed
+        is_in_win_zone = pos < self._anim_threshold
+        if is_in_win_zone != self._anim_last_zone:
+            self._anim_last_zone = is_in_win_zone
+            if is_in_win_zone:
+                self._anim_result.setStyleSheet("color: #4caf50; font-size: 14px;")
+            else:
+                self._anim_result.setStyleSheet("color: #f44336; font-size: 14px;")
+        self._anim_result.setText(f"🎲 {pos:.1f}%")
         
         if t >= 1.0:
             self._anim_timer.stop()
@@ -1532,13 +1575,17 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         self._anim_elapsed = 0.0
         self._anim_duration = 9.0  # 2x slower for dramatic effect
         
+        # Style state tracking for performance
+        self._anim_last_rarity = None
+        self._anim_last_zone = None
+        
         self._anim_timer = QtCore.QTimer(self)
         self._anim_timer.timeout.connect(self._anim_tick)
-        self._anim_timer.start(16)
+        self._anim_timer.start(20)  # 50 FPS for smoother performance
     
     def _anim_tick(self):
         """Animation tick."""
-        self._anim_elapsed += 0.016
+        self._anim_elapsed += 0.020  # Match timer interval
         t = min(1.0, self._anim_elapsed / self._anim_duration)
         eased = 1.0 - (1.0 - t) ** 4
         
@@ -1554,23 +1601,30 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         pos = max(0, min(100, pos))
         self._anim_slider.set_position(pos)
         
-        # Update result label
+        # Update result label - only update style if state changed
         if self._anim_is_rarity:
             rarity = self._anim_slider.get_rarity_at_position(pos)
-            rarity_colors = {
-                "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
-                "Epic": "#9c27b0", "Legendary": "#ff9800"
-            }
-            color = rarity_colors.get(rarity, "#aaa")
+            if rarity != self._anim_last_rarity:
+                self._anim_last_rarity = rarity
+                rarity_colors = {
+                    "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
+                    "Epic": "#9c27b0", "Legendary": "#ff9800"
+                }
+                color = rarity_colors.get(rarity, "#aaa")
+                self._anim_result.setStyleSheet(f"color: {color}; font-size: 14px;")
             self._anim_result.setText(f"🎲 {pos:.1f}% → {rarity}")
-            self._anim_result.setStyleSheet(f"color: {color}; font-size: 14px;")
         else:
             threshold = self.win_chance * 100
-            if pos < threshold:
-                self._anim_result.setStyleSheet("color: #4caf50; font-size: 14px;")
+            is_in_win_zone = pos < threshold
+            if is_in_win_zone != self._anim_last_zone:
+                self._anim_last_zone = is_in_win_zone
+                if is_in_win_zone:
+                    self._anim_result.setStyleSheet("color: #4caf50; font-size: 14px;")
+                else:
+                    self._anim_result.setStyleSheet("color: #f44336; font-size: 14px;")
+            if is_in_win_zone:
                 self._anim_result.setText(f"🎲 {pos:.1f}% (IN THE WIN ZONE!)")
             else:
-                self._anim_result.setStyleSheet("color: #f44336; font-size: 14px;")
                 self._anim_result.setText(f"🎲 {pos:.1f}%")
         
         if t >= 1.0:
@@ -2063,8 +2117,9 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             parent: Parent widget
         """
         super().__init__(parent)
-        # Generate random roll if not provided (or invalid)
-        self.success_roll = success_roll if success_roll > 0 else random.random()
+        # Generate random roll if not provided (negative means "generate one")
+        # Note: 0.0 is a valid roll (guaranteed success), so only check for negative
+        self.success_roll = success_roll if success_roll >= 0 else random.random()
         self.success_threshold = success_threshold
         self.is_success = self.success_roll < success_threshold
         self.tier_upgrade_enabled = tier_upgrade_enabled
@@ -2393,13 +2448,16 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self._anim_elapsed = 0.0
         self._anim_duration = 9.0
         
+        # Style state tracking for performance
+        self._tier_last_style = None
+        
         self._tier_anim_timer = QtCore.QTimer(self)
         self._tier_anim_timer.timeout.connect(self._tier_anim_tick)
-        self._tier_anim_timer.start(16)
+        self._tier_anim_timer.start(20)  # 50 FPS for smoother performance
     
     def _tier_anim_tick(self):
         """Tier animation tick."""
-        self._anim_elapsed += 0.016
+        self._anim_elapsed += 0.020  # Match timer interval
         t = min(1.0, self._anim_elapsed / self._anim_duration)
         eased = 1.0 - (1.0 - t) ** 4
         
@@ -2415,11 +2473,13 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         pos = max(0, min(100, pos))
         self._anim_slider.set_position(pos)
         
-        # Show current tier
+        # Show current tier - only update style if tier changed
         tier = self._anim_slider.get_tier_at_position(pos)
-        color = self.TIER_COLORS.get(tier, "#aaa")
+        if tier != self._tier_last_style:
+            self._tier_last_style = tier
+            color = self.TIER_COLORS.get(tier, "#aaa")
+            self._anim_result.setStyleSheet(f"color: {color}; font-size: 14px;")
         self._anim_result.setText(f"🎲 {pos:.1f}% → {tier}")
-        self._anim_result.setStyleSheet(f"color: {color}; font-size: 14px;")
         
         if t >= 1.0:
             self._tier_anim_timer.stop()
@@ -2461,13 +2521,16 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self._success_elapsed = 0.0
         self._success_duration = 9.0
         
+        # Style state tracking for performance
+        self._success_last_style = None
+        
         self._success_anim_timer = QtCore.QTimer(self)
         self._success_anim_timer.timeout.connect(self._success_anim_tick)
-        self._success_anim_timer.start(16)
+        self._success_anim_timer.start(20)  # 50 FPS for smoother performance
     
     def _success_anim_tick(self):
         """Success animation tick."""
-        self._success_elapsed += 0.016
+        self._success_elapsed += 0.020  # Match timer interval
         t = min(1.0, self._success_elapsed / self._success_duration)
         eased = 1.0 - (1.0 - t) ** 4
         
@@ -2484,11 +2547,19 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self._success_slider.set_position(pos)
         
         threshold = self.success_threshold * 100
-        if pos < threshold:
-            self._success_result.setStyleSheet("color: #4caf50; font-size: 14px;")
+        is_in_success_zone = pos < threshold
+        
+        # Only update style if zone changed
+        if is_in_success_zone != self._success_last_style:
+            self._success_last_style = is_in_success_zone
+            if is_in_success_zone:
+                self._success_result.setStyleSheet("color: #4caf50; font-size: 14px;")
+            else:
+                self._success_result.setStyleSheet("color: #f44336; font-size: 14px;")
+        
+        if is_in_success_zone:
             self._success_result.setText(f"🎲 {pos:.1f}% (SUCCESS ZONE!)")
         else:
-            self._success_result.setStyleSheet("color: #f44336; font-size: 14px;")
             self._success_result.setText(f"🎲 {pos:.1f}%")
         
         if t >= 1.0:
@@ -2935,13 +3006,22 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self._stage1_elapsed = 0.0
         self._stage1_duration = 9.0
         
+        # Style state tracking for performance
+        self._stage1_last_tier = None
+        
         self._stage1_timer = QtCore.QTimer(self)
         self._stage1_timer.timeout.connect(self._animate_stage1_tick)
-        self._stage1_timer.start(16)
+        self._stage1_timer.start(20)  # 50 FPS for smoother performance
     
     def _animate_stage1_tick(self):
         """Tier roll animation tick."""
-        self._stage1_elapsed += 0.016
+        # Cached tier colors for performance
+        TIER_COLORS = {
+            "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
+            "Epic": "#9c27b0", "Legendary": "#ff9800"
+        }
+        
+        self._stage1_elapsed += 0.020  # Match timer interval
         t = min(1.0, self._stage1_elapsed / self._stage1_duration)
         eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
         
@@ -2957,14 +3037,12 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         pos = max(0, min(100, pos))
         self.tier_slider.set_position(pos)
         
-        # Show current tier during animation
+        # Show current tier during animation - only update style if tier changed
         tier = self.tier_slider.get_tier_at_position(pos)
-        tier_colors = {
-            "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
-            "Epic": "#9c27b0", "Legendary": "#ff9800"
-        }
-        color = tier_colors.get(tier, "#fff")
-        self.stage1_result.setStyleSheet(f"color: {color}; font-size: 14px;")
+        if tier != self._stage1_last_tier:
+            self._stage1_last_tier = tier
+            color = TIER_COLORS.get(tier, "#fff")
+            self.stage1_result.setStyleSheet(f"color: {color}; font-size: 14px;")
         self.stage1_result.setText(f"🎲 {pos:.1f}% → {tier}")
         
         if t >= 1.0:
@@ -3026,13 +3104,16 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self._stage2_elapsed = 0.0
         self._stage2_duration = 9.0
         
+        # Style state tracking for performance
+        self._stage2_last_zone = None
+        
         self._stage2_timer = QtCore.QTimer(self)
         self._stage2_timer.timeout.connect(self._animate_stage2_tick)
-        self._stage2_timer.start(16)
+        self._stage2_timer.start(20)  # 50 FPS for smoother performance
     
     def _animate_stage2_tick(self):
         """Win/lose animation tick."""
-        self._stage2_elapsed += 0.016
+        self._stage2_elapsed += 0.020  # Match timer interval
         t = min(1.0, self._stage2_elapsed / self._stage2_duration)
         eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
         
@@ -3048,13 +3129,19 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         pos = max(0, min(100, pos))
         self.win_slider.set_position(pos)
         
-        # Show win/lose status during animation
+        # Show win/lose status during animation - only update style if zone changed
         success_pct = self.success_rate * 100
-        if pos < success_pct:
-            self.stage2_result.setStyleSheet("color: #4caf50; font-size: 14px;")
+        is_in_win_zone = pos < success_pct
+        if is_in_win_zone != self._stage2_last_zone:
+            self._stage2_last_zone = is_in_win_zone
+            if is_in_win_zone:
+                self.stage2_result.setStyleSheet("color: #4caf50; font-size: 14px;")
+            else:
+                self.stage2_result.setStyleSheet("color: #f44336; font-size: 14px;")
+        
+        if is_in_win_zone:
             self.stage2_result.setText(f"🎲 {pos:.1f}% (WIN ZONE!)")
         else:
-            self.stage2_result.setStyleSheet("color: #f44336; font-size: 14px;")
             self.stage2_result.setText(f"🎲 {pos:.1f}%")
         
         if t >= 1.0:
@@ -3471,13 +3558,22 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         self._anim_elapsed = 0.0
         self._anim_duration = 8.0
         
+        # Style state tracking for performance
+        self._anim_last_tier = None
+        
         self._anim_timer = QtCore.QTimer(self)
         self._anim_timer.timeout.connect(self._animate_step)
-        self._anim_timer.start(16)
+        self._anim_timer.start(20)  # 50 FPS for smoother performance
     
     def _animate_step(self):
         """Animation frame using bounce path."""
-        self._anim_elapsed += 0.016
+        # Cached tier colors for performance
+        TIER_COLORS = {
+            "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
+            "Epic": "#9c27b0", "Legendary": "#ff9800"
+        }
+        
+        self._anim_elapsed += 0.020  # Match timer interval
         t = min(1.0, self._anim_elapsed / self._anim_duration)
         eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
         
@@ -3493,14 +3589,12 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         pos = max(0, min(100, pos))
         self.tier_slider.set_position(pos)
         
-        # Update rolling text
+        # Update rolling text - only update style if tier changed
         current_tier = self.tier_slider.get_tier_at_position(pos)
-        tier_colors = {
-            "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
-            "Epic": "#9c27b0", "Legendary": "#ff9800"
-        }
-        color = tier_colors.get(current_tier, "#fff")
-        self.lottery_result.setStyleSheet(f"color: {color}; font-size: 14px;")
+        if current_tier != self._anim_last_tier:
+            self._anim_last_tier = current_tier
+            color = TIER_COLORS.get(current_tier, "#fff")
+            self.lottery_result.setStyleSheet(f"color: {color}; font-size: 14px;")
         self.lottery_result.setText(f"🎲 {pos:.1f}% → {current_tier}")
         
         if t >= 1.0:
@@ -3717,13 +3811,22 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         self._elapsed = 0.0
         self._duration = 6.0
         
+        # Style state tracking for performance
+        self._last_tier = None
+        
         self._anim_timer = QtCore.QTimer(self)
         self._anim_timer.timeout.connect(self._anim_tick)
-        self._anim_timer.start(16)
+        self._anim_timer.start(20)  # 50 FPS for smoother performance
     
     def _anim_tick(self):
         """Animation tick."""
-        self._elapsed += 0.016
+        # Cached tier colors for performance
+        TIER_COLORS = {
+            "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
+            "Epic": "#9c27b0", "Legendary": "#ff9800"
+        }
+        
+        self._elapsed += 0.020  # Match timer interval
         t = min(1.0, self._elapsed / self._duration)
         eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
         
@@ -3739,14 +3842,12 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         pos = max(0, min(100, pos))
         self.tier_slider.set_position(pos)
         
-        # Show current tier during animation
+        # Show current tier during animation - only update style if tier changed
         tier = self.tier_slider.get_tier_at_position(pos)
-        tier_colors = {
-            "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
-            "Epic": "#9c27b0", "Legendary": "#ff9800"
-        }
-        color = tier_colors.get(tier, "#fff")
-        self.result_label.setStyleSheet(f"color: {color}; font-size: 14px;")
+        if tier != self._last_tier:
+            self._last_tier = tier
+            color = TIER_COLORS.get(tier, "#fff")
+            self.result_label.setStyleSheet(f"color: {color}; font-size: 14px;")
         self.result_label.setText(f"🎲 {pos:.1f}% → {tier}")
         
         if t >= 1.0:

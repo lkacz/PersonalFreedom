@@ -220,6 +220,7 @@ class BlockerCore:
         # UI preferences
         self.minimize_to_tray = True  # Close button minimizes to tray
         self.notify_on_complete = True  # Notify when session ends
+        self.toggle_hotkey = ""  # Global hotkey for show/hide window
         
         # ADHD Buster gamification
         self.adhd_buster = {"inventory": [], "equipped": {}, "coins": 200}
@@ -316,6 +317,7 @@ class BlockerCore:
                     checkin_interval = config.get('priority_checkin_interval', 30)
                     self.priority_checkin_interval = checkin_interval if isinstance(checkin_interval, (int, float)) and checkin_interval > 0 else 30
                     self.minimize_to_tray = config.get('minimize_to_tray', True)
+                    self.toggle_hotkey = config.get('toggle_hotkey', "")
                     self.adhd_buster = config.get('adhd_buster', {})
                     if not isinstance(self.adhd_buster, dict):
                         self.adhd_buster = {}
@@ -439,6 +441,7 @@ class BlockerCore:
                 'priority_checkin_enabled': self.priority_checkin_enabled,
                 'priority_checkin_interval': self.priority_checkin_interval,
                 'minimize_to_tray': self.minimize_to_tray,
+                'toggle_hotkey': self.toggle_hotkey,
                 'adhd_buster': self.adhd_buster,
                 'weight_entries': self.weight_entries,
                 'weight_unit': self.weight_unit,

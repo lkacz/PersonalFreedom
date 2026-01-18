@@ -199,15 +199,37 @@ class TrayBlocker:
         self.stats["daily_stats"][today]["focus_time"] += focus_seconds
         self.stats["daily_stats"][today]["sessions"] += 1
         
-        # Update streak
+        # Update streak (weekend tolerance: not logging on weekends doesn't break streak)
         if self.stats.get("last_session_date"):
             try:
                 last_date = datetime.strptime(self.stats["last_session_date"], "%Y-%m-%d")
                 today_date = datetime.strptime(today, "%Y-%m-%d")
+                days_diff = (today_date - last_date).days
                 
-                if (today_date - last_date).days == 1:
+                if days_diff == 1:
+                    # Consecutive day
                     self.stats["streak_days"] = self.stats.get("streak_days", 0) + 1
-                elif (today_date - last_date).days > 1:
+                elif days_diff == 0:
+                    # Same day - don't change streak
+                    pass
+                elif days_diff <= 3:
+                    # Check if gap is only weekends
+                    all_weekend = True
+                    check_date = last_date
+                    for _ in range(days_diff - 1):
+                        check_date = check_date + timedelta(days=1)
+                        if check_date.weekday() not in (5, 6):  # Not Sat/Sun
+                            all_weekend = False
+                            break
+                    
+                    if all_weekend:
+                        # Gap was only weekends - continue streak
+                        self.stats["streak_days"] = self.stats.get("streak_days", 0) + 1
+                    else:
+                        # Non-weekend day was missed - reset streak
+                        self.stats["streak_days"] = 1
+                else:
+                    # More than 3 days gap - definitely reset
                     self.stats["streak_days"] = 1
             except ValueError:
                 self.stats["streak_days"] = 1

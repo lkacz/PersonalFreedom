@@ -28,6 +28,7 @@ EntitidexTab = None
 # Hide console window on Windows
 if platform.system() == "Windows":
     import ctypes
+    from ctypes import wintypes
     try:
         # ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
         pass
@@ -43,7 +44,7 @@ from emergency_cleanup_dialog import EmergencyCleanupDialog, show_emergency_clea
 from styled_dialog import (
     StyledDialog, StyledMessageBox, StyledInputDialog,
     styled_info, styled_warning, styled_error, styled_question, styled_input,
-    create_tab_help_button, add_help_button_to_header
+    create_tab_help_button, add_help_button_to_header, add_tab_help_button
 )
 
 
@@ -997,11 +998,8 @@ class TimerTab(QtWidgets.QWidget):
         layout.setSpacing(15)
         layout.setContentsMargins(15, 15, 15, 15)
 
-        # Header with help button
-        header_row = QtWidgets.QHBoxLayout()
-        header_row.addStretch()
-        header_row.addWidget(create_tab_help_button("timer", self))
-        layout.addLayout(header_row)
+        # Help button (moves to bottom after read)
+        add_tab_help_button(layout, "timer", self)
 
         # Timer display with modern card design
         timer_card = QtWidgets.QFrame()
@@ -2559,11 +2557,8 @@ class SitesTab(QtWidgets.QWidget):
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
 
-        # Header with help button
-        header_row = QtWidgets.QHBoxLayout()
-        header_row.addStretch()
-        header_row.addWidget(create_tab_help_button("sites", self))
-        layout.addLayout(header_row)
+        # Help button (moves to bottom after read)
+        add_tab_help_button(layout, "sites", self)
 
         # Blacklist section
         black_group = QtWidgets.QGroupBox("Blocked Sites (Custom)")
@@ -2671,12 +2666,8 @@ class CategoriesTab(QtWidgets.QWidget):
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
         
-        # Header with help button
-        header_row = QtWidgets.QHBoxLayout()
-        header_row.addWidget(QtWidgets.QLabel("Enable/disable entire categories of sites:"))
-        header_row.addStretch()
-        header_row.addWidget(create_tab_help_button("categories", self))
-        layout.addLayout(header_row)
+        layout.addWidget(QtWidgets.QLabel("Enable/disable entire categories of sites:"))
+        add_tab_help_button(layout, "categories", self)
 
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
@@ -2738,12 +2729,8 @@ class ScheduleTab(QtWidgets.QWidget):
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
         
-        # Header with help button
-        header_row = QtWidgets.QHBoxLayout()
-        header_row.addWidget(QtWidgets.QLabel("Automatic blocking schedules:"))
-        header_row.addStretch()
-        header_row.addWidget(create_tab_help_button("schedule", self))
-        layout.addLayout(header_row)
+        layout.addWidget(QtWidgets.QLabel("Automatic blocking schedules:"))
+        add_tab_help_button(layout, "schedule", self)
 
         # Schedule table
         self.table = QtWidgets.QTableWidget(0, 3)
@@ -3095,7 +3082,6 @@ class StatsTab(QtWidgets.QWidget):
         inner.setSpacing(20)
 
         # Header row with title and help button
-        header_row = QtWidgets.QHBoxLayout()
         title = QtWidgets.QLabel("📊 Focus Statistics")
         title.setFont(QtGui.QFont("Arial", 16, QtGui.QFont.Bold))
         title.setStyleSheet("""
@@ -3105,11 +3091,8 @@ class StatsTab(QtWidgets.QWidget):
                 margin-bottom: 8px;
             }
         """)
-        header_row.addStretch()
-        header_row.addWidget(title)
-        header_row.addStretch()
-        header_row.addWidget(create_tab_help_button("stats", self))
-        inner.addLayout(header_row)
+        inner.addWidget(title)
+        add_tab_help_button(inner, "stats", self)
 
         # AGI Assistant Chad Tips Section - hidden by default until entity is unlocked
         self.chad_tips_section = QtWidgets.QGroupBox()
@@ -4566,11 +4549,8 @@ class SettingsTab(QtWidgets.QWidget):
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
 
-        # Header with help button
-        header_row = QtWidgets.QHBoxLayout()
-        header_row.addStretch()
-        header_row.addWidget(create_tab_help_button("settings", self))
-        layout.addLayout(header_row)
+        # Help button (moves to bottom after read)
+        add_tab_help_button(layout, "settings", self)
 
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
@@ -4691,6 +4671,33 @@ class SettingsTab(QtWidgets.QWidget):
         
         # Populate voice combo after UI is built
         self._populate_voice_combo()
+
+        # Global hotkey
+        hotkey_group = QtWidgets.QGroupBox("🧲 Global Hotkey")
+        hotkey_layout = QtWidgets.QVBoxLayout(hotkey_group)
+        hotkey_layout.addWidget(QtWidgets.QLabel(
+            "Set a key combo to show/hide the window (minimize to tray when visible).\n"
+            "Tip: Use at least one modifier (Ctrl/Alt/Shift/Win)."
+        ))
+
+        hotkey_row = QtWidgets.QHBoxLayout()
+        hotkey_row.addWidget(QtWidgets.QLabel("Hotkey:"))
+        self.hotkey_edit = QtWidgets.QKeySequenceEdit()
+        self.hotkey_edit.setClearButtonEnabled(True)
+        if self.blocker.toggle_hotkey:
+            self.hotkey_edit.setKeySequence(QtGui.QKeySequence(self.blocker.toggle_hotkey))
+        hotkey_row.addWidget(self.hotkey_edit)
+
+        save_hotkey_btn = QtWidgets.QPushButton("Save Hotkey")
+        save_hotkey_btn.clicked.connect(self._save_hotkey)
+        hotkey_row.addWidget(save_hotkey_btn)
+
+        clear_hotkey_btn = QtWidgets.QPushButton("Clear")
+        clear_hotkey_btn.clicked.connect(self._clear_hotkey)
+        hotkey_row.addWidget(clear_hotkey_btn)
+        hotkey_row.addStretch()
+        hotkey_layout.addLayout(hotkey_row)
+        inner.addWidget(hotkey_group)
 
         # System Tray (if available)
         if QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
@@ -5107,6 +5114,31 @@ class SettingsTab(QtWidgets.QWidget):
             # Persist the setting
             self.blocker.minimize_to_tray = checked
             self.blocker.save_config()
+
+    def _save_hotkey(self) -> None:
+        """Save and register the global hotkey."""
+        seq = self.hotkey_edit.keySequence().toString().strip()
+        main_window = self.window()
+        if hasattr(main_window, "_apply_hotkey_setting"):
+            ok = main_window._apply_hotkey_setting(seq)
+            if ok:
+                show_info(self, "Saved", "Hotkey saved!")
+            else:
+                show_warning(self, "Invalid Hotkey", "Please choose a valid key combination with at least one modifier (Ctrl/Alt/Shift/Win).")
+        else:
+            self.blocker.toggle_hotkey = seq
+            self.blocker.save_config()
+            show_info(self, "Saved", "Hotkey saved!")
+
+    def _clear_hotkey(self) -> None:
+        """Clear the hotkey and unregister it."""
+        self.hotkey_edit.setKeySequence(QtGui.QKeySequence())
+        main_window = self.window()
+        if hasattr(main_window, "_apply_hotkey_setting"):
+            main_window._apply_hotkey_setting("")
+        self.blocker.toggle_hotkey = ""
+        self.blocker.save_config()
+        show_info(self, "Cleared", "Hotkey cleared.")
 
     def _populate_voice_combo(self) -> None:
         """Populate the voice selection combo with available voices."""
@@ -5652,6 +5684,8 @@ class WeightTab(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout(self)
         layout.setSpacing(10)
         layout.setContentsMargins(15, 15, 15, 15)
+
+        add_tab_help_button(layout, "weight", self)
         
         # Header with insights button
         header_layout = QtWidgets.QHBoxLayout()
@@ -5664,9 +5698,94 @@ class WeightTab(QtWidgets.QWidget):
         insights_btn.clicked.connect(self._show_weekly_insights)
         header_layout.addWidget(insights_btn)
         
-        header_layout.addWidget(create_tab_help_button("weight", self))
-        
         layout.addLayout(header_layout)
+        
+        # =====================================================================
+        # Rodent Tips Section - Shows daily weight control tips when any rodent is collected
+        # Requires scientist_009 (White Mouse Archimedes) for translation from "rodent language"
+        # =====================================================================
+        self.rodent_tips_section = QtWidgets.QFrame()
+        self.rodent_tips_section.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #3a3a2a, stop:1 #252518);
+                border: 2px solid #8b7355;
+                border-radius: 8px;
+                padding: 6px;
+            }
+        """)
+        rodent_tips_layout = QtWidgets.QHBoxLayout(self.rodent_tips_section)
+        rodent_tips_layout.setContentsMargins(8, 6, 8, 6)
+        rodent_tips_layout.setSpacing(10)
+        
+        # Left: Icon (rodent entity icon)
+        self.rodent_icon_label = QtWidgets.QLabel()
+        self.rodent_icon_label.setFixedSize(40, 40)
+        self.rodent_icon_label.setStyleSheet("""
+            QLabel {
+                background: #333;
+                border: 1px solid #444;
+                border-radius: 4px;
+            }
+        """)
+        rodent_tips_layout.addWidget(self.rodent_icon_label)
+        
+        # Middle: Title + Tip text (expandable)
+        rodent_content_col = QtWidgets.QVBoxLayout()
+        rodent_content_col.setSpacing(2)
+        
+        # Title row with entity name and tip number
+        rodent_title_row = QtWidgets.QHBoxLayout()
+        self.rodent_section_title = QtWidgets.QLabel("🐀 Rodent Squad Weight Tips")
+        self.rodent_section_title.setStyleSheet("color: #c4a35a; font-size: 12px; font-weight: bold;")
+        rodent_title_row.addWidget(self.rodent_section_title)
+        
+        self.rodent_tip_number = QtWidgets.QLabel("Tip #1 of 100")
+        self.rodent_tip_number.setStyleSheet("color: #8b7355; font-size: 11px;")
+        rodent_title_row.addWidget(self.rodent_tip_number)
+        rodent_title_row.addStretch()
+        rodent_content_col.addLayout(rodent_title_row)
+        
+        # Tip text (larger, more readable)
+        self.rodent_tip_text = QtWidgets.QLabel("Loading tip...")
+        self.rodent_tip_text.setStyleSheet("color: #d4c4a4; font-size: 14px;")
+        self.rodent_tip_text.setWordWrap(True)
+        rodent_content_col.addWidget(self.rodent_tip_text)
+        
+        # Hidden: tracks if user has the telepathic translator
+        self.has_translator = False
+        
+        rodent_tips_layout.addLayout(rodent_content_col, 1)
+        
+        # Right: Acknowledge button (compact)
+        self.rodent_acknowledge_btn = QtWidgets.QPushButton("📖 +1🪙")
+        self.rodent_acknowledge_btn.setFixedWidth(70)
+        self.rodent_acknowledge_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #8b7355, stop:1 #6b5335);
+                color: white;
+                font-size: 11px;
+                font-weight: bold;
+                border-radius: 4px;
+                border: 1px solid #5b4325;
+                padding: 6px 8px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #a68365, stop:1 #8b7355);
+            }
+            QPushButton:disabled {
+                background: #444;
+                color: #777;
+                border: 1px solid #333;
+            }
+        """)
+        self.rodent_acknowledge_btn.clicked.connect(self._acknowledge_rodent_tip)
+        rodent_tips_layout.addWidget(self.rodent_acknowledge_btn)
+        
+        layout.addWidget(self.rodent_tips_section)
+        self.rodent_tips_section.hide()  # Hidden until we check if any rodent is collected
         
         # Top section: Input and stats side by side
         top_layout = QtWidgets.QHBoxLayout()
@@ -5883,93 +6002,6 @@ class WeightTab(QtWidgets.QWidget):
         rewards_info.setStyleSheet("color: #888888; font-size: 10px;")
         rewards_layout.addWidget(rewards_info)
         layout.addWidget(rewards_group)
-        
-        # =====================================================================
-        # Rodent Tips Section - Shows daily weight control tips when any rodent is collected
-        # Requires scientist_009 (White Mouse Archimedes) for translation from "rodent language"
-        # =====================================================================
-        self.rodent_tips_section = QtWidgets.QFrame()
-        self.rodent_tips_section.setStyleSheet("""
-            QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #3a3a2a, stop:1 #252518);
-                border: 2px solid #8b7355;
-                border-radius: 8px;
-                padding: 6px;
-            }
-        """)
-        rodent_tips_layout = QtWidgets.QHBoxLayout(self.rodent_tips_section)
-        rodent_tips_layout.setContentsMargins(8, 6, 8, 6)
-        rodent_tips_layout.setSpacing(10)
-        
-        # Left: Icon (rodent entity icon)
-        self.rodent_icon_label = QtWidgets.QLabel()
-        self.rodent_icon_label.setFixedSize(40, 40)
-        self.rodent_icon_label.setStyleSheet("""
-            QLabel {
-                background: #333;
-                border: 1px solid #444;
-                border-radius: 4px;
-            }
-        """)
-        rodent_tips_layout.addWidget(self.rodent_icon_label)
-        
-        # Middle: Title + Tip text (expandable)
-        rodent_content_col = QtWidgets.QVBoxLayout()
-        rodent_content_col.setSpacing(2)
-        
-        # Title row with entity name and tip number
-        rodent_title_row = QtWidgets.QHBoxLayout()
-        self.rodent_section_title = QtWidgets.QLabel("🐀 Rodent Squad Weight Tips")
-        self.rodent_section_title.setStyleSheet("color: #c4a35a; font-size: 11px; font-weight: bold;")
-        rodent_title_row.addWidget(self.rodent_section_title)
-        
-        self.rodent_tip_number = QtWidgets.QLabel("Tip #1 of 100")
-        self.rodent_tip_number.setStyleSheet("color: #8b7355; font-size: 10px;")
-        rodent_title_row.addWidget(self.rodent_tip_number)
-        rodent_title_row.addStretch()
-        rodent_content_col.addLayout(rodent_title_row)
-        
-        # Tip text (compact)
-        self.rodent_tip_text = QtWidgets.QLabel("Loading tip...")
-        self.rodent_tip_text.setStyleSheet("color: #d4c4a4; font-size: 11px;")
-        self.rodent_tip_text.setWordWrap(True)
-        rodent_content_col.addWidget(self.rodent_tip_text)
-        
-        # Hidden: tracks if user has the telepathic translator
-        self.has_translator = False
-        
-        rodent_tips_layout.addLayout(rodent_content_col, 1)
-        
-        # Right: Acknowledge button (compact)
-        self.rodent_acknowledge_btn = QtWidgets.QPushButton("📖 +1🪙")
-        self.rodent_acknowledge_btn.setFixedWidth(70)
-        self.rodent_acknowledge_btn.setStyleSheet("""
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #8b7355, stop:1 #6b5335);
-                color: white;
-                font-size: 11px;
-                font-weight: bold;
-                border-radius: 4px;
-                border: 1px solid #5b4325;
-                padding: 6px 8px;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #a68365, stop:1 #8b7355);
-            }
-            QPushButton:disabled {
-                background: #444;
-                color: #777;
-                border: 1px solid #333;
-            }
-        """)
-        self.rodent_acknowledge_btn.clicked.connect(self._acknowledge_rodent_tip)
-        rodent_tips_layout.addWidget(self.rodent_acknowledge_btn)
-        
-        layout.addWidget(self.rodent_tips_section)
-        self.rodent_tips_section.hide()  # Hidden until we check if any rodent is collected
         
         # Entity Perk Section (Rodent Squad) - shows when rat/mouse entities are collected
         # Uses same mini-card pattern as ADHD Buster patrons
@@ -7104,13 +7136,14 @@ class ActivityTab(QtWidgets.QWidget):
         layout.setSpacing(10)
         layout.setContentsMargins(15, 15, 15, 15)
         
-        # Header with help button
+        add_tab_help_button(layout, "activity", self)
+        
+        # Header
         header_layout = QtWidgets.QHBoxLayout()
         header = QtWidgets.QLabel("🏃 Activity Tracker")
         header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
         header_layout.addWidget(header)
         header_layout.addStretch()
-        header_layout.addWidget(create_tab_help_button("activity", self))
         layout.addLayout(header_layout)
         
         # Main content split
@@ -7350,7 +7383,7 @@ class ActivityTab(QtWidgets.QWidget):
             
             # Use lottery animation for activity rewards (guaranteed success)
             lottery = MergeTwoStageLotteryDialog(
-                success_roll=0.0,  # Guaranteed success
+                success_roll=-1,  # Auto-generate (any roll succeeds with 100% threshold)
                 success_threshold=1.0,  # 100% success rate
                 tier_upgrade_enabled=False,
                 base_rarity=rarity,
@@ -7846,13 +7879,14 @@ class SleepTab(QtWidgets.QWidget):
         layout.setSpacing(10)
         layout.setContentsMargins(15, 15, 15, 15)
         
-        # Header with help button
+        add_tab_help_button(layout, "sleep", self)
+        
+        # Header
         header_layout = QtWidgets.QHBoxLayout()
         header = QtWidgets.QLabel("😴 Sleep Tracker")
         header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
         header_layout.addWidget(header)
         header_layout.addStretch()
-        header_layout.addWidget(create_tab_help_button("sleep", self))
         layout.addLayout(header_layout)
         
         # Main content split
@@ -8895,12 +8929,7 @@ class AITab(QtWidgets.QWidget):
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
-
-        # Header with help button
-        header_row = QtWidgets.QHBoxLayout()
-        header_row.addStretch()
-        header_row.addWidget(create_tab_help_button("ai", self))
-        layout.addLayout(header_row)
+        add_tab_help_button(layout, "ai", self)
 
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
@@ -13230,13 +13259,14 @@ class HydrationTab(QtWidgets.QWidget):
         layout.setSpacing(10)
         layout.setContentsMargins(15, 15, 15, 15)
         
-        # Header with help button
+        add_tab_help_button(layout, "water", self)
+        
+        # Header
         header_layout = QtWidgets.QHBoxLayout()
         header = QtWidgets.QLabel("💧 Hydration Tracker")
         header.setStyleSheet("font-size: 18px; font-weight: bold; color: #ffffff;")
         header_layout.addWidget(header)
         header_layout.addStretch()
-        header_layout.addWidget(create_tab_help_button("water", self))
         layout.addLayout(header_layout)
         
         # Entity perk contributors section (if any)
@@ -14095,6 +14125,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         upper_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
         container = QtWidgets.QWidget()
         self.inner_layout = QtWidgets.QVBoxLayout(container)
+        add_tab_help_button(self.inner_layout, "hero", self)
 
         # Header with power
         header = QtWidgets.QHBoxLayout()
@@ -14104,8 +14135,6 @@ class ADHDBusterTab(QtWidgets.QWidget):
         power = calculate_character_power(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else 0
         power_info = get_power_breakdown(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else {"base_power": 0, "set_bonus": 0, "entity_bonus": 0, "active_sets": [], "total_power": 0}
         
-        header.addWidget(create_tab_help_button("hero", self))
-
         # Build power breakdown string showing all components
         power_parts = [str(power_info['base_power'])]
         if power_info.get("set_bonus", 0) > 0:
@@ -14143,6 +14172,110 @@ class ADHDBusterTab(QtWidgets.QWidget):
             header.addWidget(self.details_btn)
             
         self.inner_layout.addLayout(header)
+
+        # Character canvas and equipment side by side - MOVED TO TOP for visibility
+        char_equip = QtWidgets.QHBoxLayout()
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        self.char_canvas = CharacterCanvas(equipped, power_info["total_power"], parent=self, story_theme=active_story)
+        char_equip.addWidget(self.char_canvas)
+        self.char_equip_layout = char_equip  # Store reference for refresh
+
+        equip_group = QtWidgets.QGroupBox("⚔ Equipped Gear (change with dropdown)")
+        equip_layout = QtWidgets.QFormLayout(equip_group)
+        slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
+        inventory = self.blocker.adhd_buster.get("inventory", [])
+        
+        # Rarity colors for visual distinction
+        rarity_colors = {
+            "Common": "#9e9e9e",
+            "Uncommon": "#4caf50",
+            "Rare": "#2196f3",
+            "Epic": "#9c27b0",
+            "Legendary": "#ff9800"
+        }
+
+        for slot in slots:
+            combo = NoScrollComboBox()
+            combo.setFocusPolicy(QtCore.Qt.StrongFocus)
+            combo.addItem("[Empty]")
+            slot_items = [item for item in inventory if item.get("slot") == slot]
+            for idx, item in enumerate(slot_items):
+                item_name = item.get('name', 'Unknown')
+                item_rarity = item.get('rarity', 'Common')
+                item_color = rarity_colors.get(item_rarity, "#9e9e9e")
+                power = item.get('power', 10)
+                display = f"{item_name} (+{power}) [{item_rarity}]"
+                
+                # Add lucky options summary to dropdown text if present
+                lucky_options = item.get("lucky_options", {})
+                if lucky_options and format_lucky_options:
+                    try:
+                        lucky_text = format_lucky_options(lucky_options)
+                        if lucky_text:
+                            display += f" ✨{lucky_text}"
+                    except Exception:
+                        pass  # Skip if formatting fails
+                
+                combo.addItem(display, item)
+                combo_idx = combo.count() - 1
+                # Set foreground color for this item
+                combo.setItemData(combo_idx, QtGui.QColor(item_color), QtCore.Qt.ForegroundRole)
+                
+                # Build comprehensive tooltip for this item
+                slot_display = get_slot_display_name(slot, active_story) if get_slot_display_name else slot
+                tooltip_parts = [f"<b style='color:{item_color};'>{item_name}</b>"]
+                item_type = item.get("item_type", "")
+                if item_type:
+                    tooltip_parts.append(f"<br><i>{item_type}</i>")
+                tooltip_parts.append(f"<br>⚔️ Power: +{power}")
+                tooltip_parts.append(f"<br>🎭 Rarity: {item_rarity}")
+                tooltip_parts.append(f"<br>🎯 Slot: {slot_display}")
+                item_set = item.get("set")
+                if item_set:
+                    tooltip_parts.append(f"<br>🏷️ Set: {item_set}")
+                
+                # Special attributes section
+                has_special = False
+                special_parts = []
+                
+                if lucky_options and format_lucky_options:
+                    try:
+                        lucky_text = format_lucky_options(lucky_options)
+                        if lucky_text:
+                            special_parts.append(f"✨ Lucky Options: {lucky_text}")
+                            has_special = True
+                    except Exception:
+                        pass
+                
+                if has_special:
+                    tooltip_parts.append("<br><br><b>✨ Special Attributes:</b>")
+                    for sp in special_parts:
+                        tooltip_parts.append(f"<br>  {sp}")
+                
+                tooltip_html = "".join(tooltip_parts)
+                combo.setItemData(combo_idx, tooltip_html, QtCore.Qt.ToolTipRole)
+                
+            current = equipped.get(slot)
+            if current:
+                for i in range(1, combo.count()):
+                    if combo.itemData(i) and combo.itemData(i).get("name") == current.get("name"):
+                        combo.setCurrentIndex(i)
+                        # Apply color to the combo box text for selected item
+                        curr_rarity = current.get("rarity", "Common")
+                        curr_color = rarity_colors.get(curr_rarity, "#9e9e9e")
+                        combo.setStyleSheet(f"QComboBox {{ color: {curr_color}; font-weight: bold; }}")
+                        break
+            combo.currentIndexChanged.connect(lambda idx, s=slot, c=combo: self._on_equip_change(s, c))
+            self.slot_combos[slot] = combo
+            # Use themed slot display name - power info shown in separate label
+            display_name = get_slot_display_name(slot, active_story) if get_slot_display_name else slot
+            slot_label = QtWidgets.QLabel(f"{display_name}:")
+            self.slot_labels[slot] = slot_label
+            equip_layout.addRow(slot_label, combo)
+        
+        char_equip.addWidget(equip_group)
+        self.inner_layout.addLayout(char_equip)
 
         # Active set bonuses (collapsible section)
         self.sets_section = CollapsibleSection(
@@ -14373,115 +14506,6 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         diary_bubble_layout.addWidget(self.speech_bubble)
         self.inner_layout.addWidget(diary_bubble_group)
-
-        # Character canvas and equipment side by side
-        char_equip = QtWidgets.QHBoxLayout()
-        equipped = self.blocker.adhd_buster.get("equipped", {})
-        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
-        self.char_canvas = CharacterCanvas(equipped, power_info["total_power"], parent=self, story_theme=active_story)
-        char_equip.addWidget(self.char_canvas)
-        self.char_equip_layout = char_equip  # Store reference for refresh
-
-        equip_group = QtWidgets.QGroupBox("⚔ Equipped Gear (change with dropdown)")
-        equip_layout = QtWidgets.QFormLayout(equip_group)
-        slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
-        inventory = self.blocker.adhd_buster.get("inventory", [])
-        
-        # Get current story for themed slot names
-        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
-        
-        # Rarity colors for visual distinction
-        rarity_colors = {
-            "Common": "#9e9e9e",
-            "Uncommon": "#4caf50",
-            "Rare": "#2196f3",
-            "Epic": "#9c27b0",
-            "Legendary": "#ff9800"
-        }
-
-        for slot in slots:
-            combo = NoScrollComboBox()
-            combo.setFocusPolicy(QtCore.Qt.StrongFocus)
-            combo.addItem("[Empty]")
-            slot_items = [item for item in inventory if item.get("slot") == slot]
-            for idx, item in enumerate(slot_items):
-                item_name = item.get('name', 'Unknown')
-                item_rarity = item.get('rarity', 'Common')
-                item_color = rarity_colors.get(item_rarity, "#9e9e9e")
-                power = item.get('power', 10)
-                display = f"{item_name} (+{power}) [{item_rarity}]"
-                
-                # Add lucky options summary to dropdown text if present
-                lucky_options = item.get("lucky_options", {})
-                if lucky_options and format_lucky_options:
-                    try:
-                        lucky_text = format_lucky_options(lucky_options)
-                        if lucky_text:
-                            display += f" ✨{lucky_text}"
-                    except Exception:
-                        pass  # Skip if formatting fails
-                
-                combo.addItem(display, item)
-                combo_idx = combo.count() - 1
-                # Set foreground color for this item
-                combo.setItemData(combo_idx, QtGui.QColor(item_color), QtCore.Qt.ForegroundRole)
-                
-                # Build comprehensive tooltip for this item
-                slot_display = get_slot_display_name(slot, active_story) if get_slot_display_name else slot
-                tooltip_parts = [f"<b style='color:{item_color};'>{item_name}</b>"]
-                item_type = item.get("item_type", "")
-                if item_type:
-                    tooltip_parts.append(f"<br><i>{item_type}</i>")
-                tooltip_parts.append(f"<br>⚔️ Power: +{power}")
-                tooltip_parts.append(f"<br>🎭 Rarity: {item_rarity}")
-                tooltip_parts.append(f"<br>🎯 Slot: {slot_display}")
-                item_set = item.get("set")
-                if item_set:
-                    tooltip_parts.append(f"<br>🏷️ Set: {item_set}")
-                
-                # Neighbor system removed - no longer showing neighbor slots
-                
-                # Special attributes section
-                has_special = False
-                special_parts = []
-                
-                if lucky_options and format_lucky_options:
-                    try:
-                        lucky_text = format_lucky_options(lucky_options)
-                        if lucky_text:
-                            special_parts.append(f"✨ Lucky Options: {lucky_text}")
-                            has_special = True
-                    except Exception:
-                        pass
-                
-                if has_special:
-                    tooltip_parts.append("<br><br><b>✨ Special Attributes:</b>")
-                    for sp in special_parts:
-                        tooltip_parts.append(f"<br>  {sp}")
-                
-                tooltip_html = "".join(tooltip_parts)
-                combo.setItemData(combo_idx, tooltip_html, QtCore.Qt.ToolTipRole)
-                
-            current = equipped.get(slot)
-            if current:
-                for i in range(1, combo.count()):
-                    if combo.itemData(i) and combo.itemData(i).get("name") == current.get("name"):
-                        combo.setCurrentIndex(i)
-                        # Apply color to the combo box text for selected item
-                        curr_rarity = current.get("rarity", "Common")
-                        curr_color = rarity_colors.get(curr_rarity, "#9e9e9e")
-                        combo.setStyleSheet(f"QComboBox {{ color: {curr_color}; font-weight: bold; }}")
-                        break
-            combo.currentIndexChanged.connect(lambda idx, s=slot, c=combo: self._on_equip_change(s, c))
-            self.slot_combos[slot] = combo
-            # Use themed slot display name - power info shown in separate label
-            display_name = get_slot_display_name(slot, active_story) if get_slot_display_name else slot
-            slot_label = QtWidgets.QLabel(f"{display_name}:")
-            self.slot_labels[slot] = slot_label
-            equip_layout.addRow(slot_label, combo)
-        
-        char_equip.addWidget(equip_group)
-        self.inner_layout.addLayout(char_equip)
         
         # End of upper section - set it in the scroll area
         upper_scroll.setWidget(container)
@@ -14519,10 +14543,9 @@ class ADHDBusterTab(QtWidgets.QWidget):
         # Inventory Table
         self.inv_table = QtWidgets.QTableWidget()
         self.inv_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        self.inv_table.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-        self.inv_table.itemSelectionChanged.connect(self._update_merge_selection)
-        # self.inv_table.itemSelectionChanged.connect(self._update_item_details_panel) # Panel removed
-        self.inv_table.setAlternatingRowColors(True)
+        self.inv_table.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)  # Disable row selection, use checkboxes
+        self.inv_table.cellClicked.connect(self._on_inventory_cell_clicked)  # Handle checkbox clicks
+        self.inv_table.setAlternatingRowColors(False)  # Disable striped rows for cleaner merge selection
         self.inv_table.verticalHeader().setVisible(False)
         self.inv_table.setShowGrid(False)
         self.inv_table.setSortingEnabled(True) # Enable sorting
@@ -14543,9 +14566,6 @@ class ADHDBusterTab(QtWidgets.QWidget):
             QTableWidget::item:selected {
                 background-color: #4a6fa5;
             }
-            QTableWidget::item:alternate {
-                background-color: #333333;
-            }
             QHeaderView::section {
                 background-color: #1e1e2e;
                 color: #aaa;
@@ -14561,9 +14581,9 @@ class ADHDBusterTab(QtWidgets.QWidget):
             }
         """)
         
-        # Set up columns: Eq, Name, Slot, Tier, Power, Set, +3 bonuses
+        # Set up columns: Merge checkbox, Eq, Name, Slot, Tier, Power, Set, +3 bonuses
         columns = [
-            "Eq", "Name", "Slot", "Tier", "Pwr", "Set", 
+            "🔀", "Eq", "Name", "Slot", "Tier", "Pwr", "Set", 
             "💰", "⭐", "🎲"
         ]
         self.inv_table.setColumnCount(len(columns))
@@ -14571,7 +14591,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         # Tooltips for headers - detailed explanations
         header_tooltips = [
-            "Equipped Status\n✓ = Currently equipped on your hero\nClick to equip/unequip items",
+            "Select for Merge\n☑ = Selected for merging\nClick to toggle selection",
+            "Equipped Status\n✓ = Currently equipped on your hero\nEquipped items cannot be merged",
             "Item Name\nThe name of the item including its rarity adjective\nHigher tier items have more impressive names",
             "Equipment Slot\nWhere this item is equipped:\n• Helmet, Chestplate, Gauntlets, Boots\n• Shield, Weapon, Ring, Necklace",
             "Rarity Tier\nItem quality from Common to Legendary:\nC=Common, U=Uncommon, R=Rare, E=Epic, L=Legendary\nHigher tiers have better stats and bonuses",
@@ -15394,71 +15415,85 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 it = QtWidgets.QTableWidgetItem(str(text))
                 it.setFlags(QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable)
                 it.setTextAlignment(align)
-                # Don't gray out equipped items - the Eq column already shows status
-                if is_eq:
-                    it.setFlags(it.flags() & ~QtCore.Qt.ItemIsSelectable) 
                 return it
 
-            # 0: Equipped
+            # 0: Merge checkbox - clickable for non-equipped items
+            if is_eq:
+                merge_check = create_item("🔒", QtCore.Qt.AlignCenter)
+                merge_check.setToolTip("Equipped items cannot be merged")
+                merge_check.setForeground(QtGui.QColor("#666666"))
+            else:
+                merge_check = create_item("☐", QtCore.Qt.AlignCenter)
+                merge_check.setToolTip("Click to select for merge")
+                merge_check.setForeground(QtGui.QColor("#888888"))
+            merge_check.setData(QtCore.Qt.UserRole, orig_idx)
+            merge_check.setData(QtCore.Qt.UserRole + 1, False)  # Store checked state
+            merge_check.setData(QtCore.Qt.UserRole + 2, is_eq)  # Store equipped state
+            self.inv_table.setItem(row, 0, merge_check)
+
+            # 1: Equipped
             eq_item = create_item("✓" if is_eq else "", QtCore.Qt.AlignCenter)
             if is_eq:
                 eq_item.setForeground(QtGui.QColor("#4caf50"))
             eq_item.setToolTip("Equipped" if is_eq else "Not Equipped")
-            self.inv_table.setItem(row, 0, eq_item)
+            self.inv_table.setItem(row, 1, eq_item)
             
-            # 1: Name
+            # 2: Name
             name_prefix = "✨ " if lucky_options else ""
             name_item = create_item(f"{name_prefix}{item_name}")
             name_item.setForeground(QtGui.QColor(rarity_color))
             name_item.setData(QtCore.Qt.UserRole, orig_idx)
             name_item.setToolTip(f"{item_name}\nRarity: {item_rarity}\n{'Equipped' if is_eq else 'In Inventory'}")
-            self.inv_table.setItem(row, 1, name_item)
+            self.inv_table.setItem(row, 2, name_item)
             
-            # 2: Slot
+            # 3: Slot
             slot_item = create_item(slot_display[:4], QtCore.Qt.AlignCenter)
             slot_item.setToolTip(f"Slot: {slot_display}")
-            self.inv_table.setItem(row, 2, slot_item)
+            self.inv_table.setItem(row, 3, slot_item)
             
-            # 3: Tier
+            # 4: Tier
             tier_item = create_item(item_rarity[:1], QtCore.Qt.AlignCenter)
             tier_item.setForeground(QtGui.QColor(rarity_color))
             tier_item.setToolTip(f"Rarity: {item_rarity}")
-            self.inv_table.setItem(row, 3, tier_item)
+            self.inv_table.setItem(row, 4, tier_item)
             
-            # 4: Power
+            # 5: Power
             pwr_item = create_item(str(power), QtCore.Qt.AlignCenter)
             pwr_item.setToolTip(f"Power Level: {power}")
-            self.inv_table.setItem(row, 4, pwr_item)
+            self.inv_table.setItem(row, 5, pwr_item)
             
-            # 5: Set
+            # 6: Set
             set_item = create_item(item_set if item_set else "-", QtCore.Qt.AlignCenter)
             set_item.setToolTip(f"Set: {item_set}" if item_set else "No Set")
-            self.inv_table.setItem(row, 5, set_item)
+            self.inv_table.setItem(row, 6, set_item)
             
-            # 6: Coin
+            # 7: Coin
             coin_text = f"{coin_discount}%" if coin_discount else ""
             coin_item = create_item(coin_text, QtCore.Qt.AlignCenter)
             if coin_discount: coin_item.setForeground(QtGui.QColor("#fbbf24"))
             coin_item.setToolTip(f"Coin Discount: {coin_discount}% off merge costs")
-            self.inv_table.setItem(row, 6, coin_item)
+            self.inv_table.setItem(row, 7, coin_item)
             
-            # 7: XP
+            # 8: XP
             xp_text = f"{xp_bonus}%" if xp_bonus else ""
             xp_item = create_item(xp_text, QtCore.Qt.AlignCenter)
             if xp_bonus: xp_item.setForeground(QtGui.QColor("#8b5cf6"))
             xp_item.setToolTip(f"XP Bonus: +{xp_bonus}%")
-            self.inv_table.setItem(row, 7, xp_item)
+            self.inv_table.setItem(row, 8, xp_item)
             
-            # 8: Merge
+            # 9: Merge Luck
             merge_text = f"{merge_luck}%" if merge_luck else ""
             merge_item = create_item(merge_text, QtCore.Qt.AlignCenter)
             if merge_luck: merge_item.setForeground(QtGui.QColor("#06b6d4"))
             merge_item.setToolTip(f"Merge Luck: +{merge_luck}%")
-            self.inv_table.setItem(row, 8, merge_item)
+            self.inv_table.setItem(row, 9, merge_item)
             
             self.inv_table.setRowHeight(row, 24)
             
         self.inv_table.setSortingEnabled(True)
+        
+        # Update merge button text to reflect cleared selection
+        self._update_merge_selection()
 
     def refresh_gear_combos(self) -> None:
         """Refresh gear dropdown combos to reflect new inventory items.
@@ -15468,17 +15503,55 @@ class ADHDBusterTab(QtWidgets.QWidget):
         """
         self.refresh_all()
 
+    def _on_inventory_cell_clicked(self, row: int, col: int) -> None:
+        """Handle clicks on inventory table cells - toggle merge checkbox."""
+        # Get the checkbox item in column 0
+        check_item = self.inv_table.item(row, 0)
+        if not check_item:
+            return
+            
+        # Check if item is equipped (can't merge equipped items)
+        is_eq = check_item.data(QtCore.Qt.UserRole + 2)
+        if is_eq:
+            return  # Can't toggle equipped items
+            
+        # Toggle the checked state
+        is_checked = check_item.data(QtCore.Qt.UserRole + 1)
+        new_checked = not is_checked
+        check_item.setData(QtCore.Qt.UserRole + 1, new_checked)
+        
+        # Update visual appearance
+        if new_checked:
+            check_item.setText("✅")
+            check_item.setForeground(QtGui.QColor("#00ff00"))
+            check_item.setToolTip("Selected for merge - click to deselect")
+            # Highlight the entire row
+            for c in range(self.inv_table.columnCount()):
+                cell = self.inv_table.item(row, c)
+                if cell:
+                    cell.setBackground(QtGui.QColor("#2a4a2a"))  # Green tint
+        else:
+            check_item.setText("☐")
+            check_item.setForeground(QtGui.QColor("#888888"))
+            check_item.setToolTip("Click to select for merge")
+            # Remove row highlight
+            for c in range(self.inv_table.columnCount()):
+                cell = self.inv_table.item(row, c)
+                if cell:
+                    cell.setBackground(QtGui.QColor("transparent"))
+        
+        # Update merge selection
+        self._update_merge_selection()
+
     def _update_merge_selection(self) -> None:
-        # Get selected indices from table (column 1 stores the UserRole data - Name column)
-        selected_rows = set(item.row() for item in self.inv_table.selectedItems())
-        raw_selected = []
-        for row in selected_rows:
-            item = self.inv_table.item(row, 1)  # Name column has UserRole data
-            if item:
-                idx = item.data(QtCore.Qt.UserRole)
-                if idx is not None:
-                    raw_selected.append(idx)
-        self.merge_selected = [idx for idx in raw_selected if isinstance(idx, int)]
+        # Get selected indices from checkbox states (column 0)
+        self.merge_selected = []
+        for row in range(self.inv_table.rowCount()):
+            check_item = self.inv_table.item(row, 0)
+            if check_item and check_item.data(QtCore.Qt.UserRole + 1):  # Is checked
+                idx = check_item.data(QtCore.Qt.UserRole)  # Original inventory index
+                if idx is not None and isinstance(idx, int):
+                    self.merge_selected.append(idx)
         
         inventory = self.blocker.adhd_buster.get("inventory", [])
         equipped = self.blocker.adhd_buster.get("equipped", {})
@@ -15601,7 +15674,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
         # Show new professional merge dialog with player coins for boost option
         from merge_dialog import LuckyMergeDialog
         dialog = LuckyMergeDialog(items, 0, equipped, parent=self, player_coins=current_coins, 
-                                  coin_discount=coin_discount, entity_perks=entity_perks)
+                                  coin_discount=coin_discount, entity_perks=entity_perks,
+                                  adhd_buster=self.blocker.adhd_buster)
         if dialog.exec() != QtWidgets.QDialog.Accepted:
             return
         
@@ -15702,12 +15776,12 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self.merge_selected = []
         
         # Show perk toast if entity perks contributed to the merge
-        if entity_perks.get("coin_discount", 0) > 0 or entity_perks.get("merge_luck", 0) > 0:
+        if entity_perks.get("total_coin_discount", 0) > 0 or entity_perks.get("total_merge_luck", 0) > 0:
             perk_parts = []
-            if entity_perks.get("coin_discount", 0) > 0:
-                perk_parts.append(f"-{entity_perks['coin_discount']}% coins")
-            if entity_perks.get("merge_luck", 0) > 0:
-                perk_parts.append(f"+{entity_perks['merge_luck']}% luck")
+            if entity_perks.get("total_coin_discount", 0) > 0:
+                perk_parts.append(f"-{entity_perks['total_coin_discount']} coins")
+            if entity_perks.get("total_merge_luck", 0) > 0:
+                perk_parts.append(f"+{entity_perks['total_merge_luck']}% luck")
             if perk_parts:
                 show_perk_toast(f"Entity Perks: {', '.join(perk_parts)}", "✨", self)
         
@@ -17713,6 +17787,7 @@ class PrioritiesDialog(StyledDialog):
         self.strategic_checks: List[QtWidgets.QCheckBox] = []
         self.priority_list_layout: Optional[QtWidgets.QVBoxLayout] = None
         self.add_priority_btn: Optional[QtWidgets.QPushButton] = None
+        self.strategic_group: Optional[QtWidgets.QButtonGroup] = None
         
         super().__init__(
             parent=parent,
@@ -19158,14 +19233,15 @@ class DevTab(QtWidgets.QWidget):
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
         
-        # Header row with help button
+        add_tab_help_button(layout, "dev", self)
+
+        # Header row
         header_row = QtWidgets.QHBoxLayout()
         warning = QtWidgets.QLabel("⚠️ Developer Tools - For Testing Only")
         warning.setStyleSheet("color: #ff9800; font-weight: bold; font-size: 14px; padding: 10px;")
         header_row.addStretch()
         header_row.addWidget(warning)
         header_row.addStretch()
-        header_row.addWidget(create_tab_help_button("dev", self))
         layout.addLayout(header_row)
 
         # Generate Item Section
@@ -20375,6 +20451,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         if username and username != "Default":
             self.setWindowTitle(f"Personal Liberty v{APP_VERSION} - {username}")
         self.resize(900, 700)
+        
+        # Set application icon
+        self._set_app_icon()
 
         self.blocker = BlockerCore(username=username)
         
@@ -20529,8 +20608,12 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # System Tray setup
         self.tray_icon = None
         self.minimize_to_tray = self.blocker.minimize_to_tray  # Load from config
+        self._hotkey_id = 1
+        self._hotkey_registered = False
+        self._registered_hotkey = ""
         
         self._setup_system_tray()
+        self._update_hotkey_registration()
         
         # Health reminder notification timer (checks every minute)
         self._health_reminder_timer = QtCore.QTimer(self)
@@ -20814,21 +20897,24 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             "<p><b>How to Earn Coins:</b></p>"
             "<ul>"
             "<li><b>Focus Sessions:</b> 10 Coins per hour</li>"
-            "<li><b>Strategic Priority:</b> 25 Coins per hour (2.5x bonus!)</li>"
-            "<li><b>Complete Priority:</b> 100 Coins</li>"
-            "<li><b>Streak Bonuses:</b> Up to 100 Coins/day at 30+ day streaks</li>"
-            "<li><b>✨ Lucky Gear:</b> Discount on merge costs from equipped items with coin_discount!</li>"
+            "<li><b>Strategic Priority:</b> 25 Coins per hour (2.5x multiplier!)</li>"
+            "<li><b>Streak Bonuses:</b> 10 coins @ 3 days, 25 @ 7 days, 50 @ 14 days, 100 @ 30+ days</li>"
+            "<li><b>Entity Perks:</b> Collected entities can grant flat coin bonuses or % boosts</li>"
+            "<li><b>Perfect Session:</b> Some entities reward extra coins for no distraction attempts</li>"
             "</ul>"
             "<p><b>What You Can Buy:</b></p>"
             "<ul>"
-            "<li><b>Streak Freeze:</b> 2,000 Coins - Skip a day without losing your streak</li>"
-            "<li><b>Reward Reroll:</b> 150 Coins - Reroll your last item drop</li>"
-            "<li><b>Rarity Incense:</b> 300 Coins - +10% luck for next session</li>"
-            "<li><b>New Stories:</b> 1,000 Coins - Unlock new character themes</li>"
-            "<li><b>App Features:</b> 500-1,000 Coins - Advanced analytics, themes, etc.</li>"
+            "<li><b>Lucky Merge (Base):</b> 50 Coins - Merge 3 items into 1 better item</li>"
+            "<li><b>Merge Boost:</b> 50 Coins - +25% success rate for merge</li>"
+            "<li><b>Tier Upgrade:</b> 50 Coins - Upgrade result tier by one on success</li>"
+            "<li><b>Retry Bump:</b> 50 Coins - On failure, bump success % by 5% and retry</li>"
+            "<li><b>Claim Near-Miss:</b> 100 Coins - Claim item on near-miss failure (≤5%)</li>"
+            "<li><b>Salvage:</b> 50 Coins - On failure, save one random item from merge</li>"
+            "<li><b>Optimize Gear:</b> 10 Coins - Auto-equip best gear for power/lucky options</li>"
+            "<li><b>Unlock Story:</b> 100 Coins - Unlock new character themes (Underdog is free)</li>"
             "</ul>"
-            "<p><i>💡 Tip: Mark one priority as 'Strategic' to maximize coin earnings!</i></p>"
-            "<p><i>⚠️ Note: Marketplace features coming soon!</i></p>"
+            "<p><i>💡 Tip: Mark one priority as 'Strategic' to get 2.5x coins per hour!</i></p>"
+            "<p><i>✨ Lucky Gear with coin_discount reduces merge costs by up to 90%!</i></p>"
         )
         msg_box.setIcon(QtWidgets.QMessageBox.NoIcon)
         msg_box.setOption(QtWidgets.QMessageBox.DontUseNativeDialog, True)
@@ -20972,6 +21058,23 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         if not self.tray_icon:
             return
 
+        # Try to load icon from file first
+        icon_name = "tray_blocking.png" if blocking else "tray_ready.png"
+        script_dir = Path(__file__).parent
+        
+        # Check various locations for icon files
+        icon_paths = [
+            script_dir / "icons" / icon_name,
+            script_dir / icon_name,
+            script_dir.parent / "icons" / icon_name,
+        ]
+        
+        for icon_path in icon_paths:
+            if icon_path.exists():
+                self.tray_icon.setIcon(QtGui.QIcon(str(icon_path)))
+                return
+        
+        # Fallback: generate icon dynamically if files not found
         size = 64
         pixmap = QtGui.QPixmap(size, size)
         pixmap.fill(QtCore.Qt.transparent)
@@ -20980,25 +21083,35 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
 
         if blocking:
-            # Red circle with lock when blocking
-            painter.setBrush(QtGui.QColor("#e74c3c"))
-            painter.setPen(QtGui.QPen(QtGui.QColor("#c0392b"), 2))
+            # Blue circle when blocking
+            painter.setBrush(QtGui.QColor("#0EA5E9"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#0369A1"), 2))
             painter.drawEllipse(4, 4, size - 8, size - 8)
-            # Lock symbol
+            # Sword symbol
             painter.setBrush(QtGui.QColor("white"))
             painter.setPen(QtCore.Qt.NoPen)
-            painter.drawRect(20, 30, 24, 20)
-            painter.setPen(QtGui.QPen(QtGui.QColor("white"), 4))
-            painter.drawArc(24, 18, 16, 16, 0, 180 * 16)
+            # Blade
+            points = [QtCore.QPoint(32, 8), QtCore.QPoint(38, 40), QtCore.QPoint(26, 40)]
+            painter.drawPolygon(points)
+            # Guard
+            painter.drawRect(22, 40, 20, 4)
+            # Grip
+            painter.drawRect(29, 44, 6, 10)
         else:
-            # Green circle with check when ready
-            painter.setBrush(QtGui.QColor("#2ecc71"))
-            painter.setPen(QtGui.QPen(QtGui.QColor("#27ae60"), 2))
+            # Green circle when ready
+            painter.setBrush(QtGui.QColor("#10B981"))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#047857"), 2))
             painter.drawEllipse(4, 4, size - 8, size - 8)
-            # Check mark
-            painter.setPen(QtGui.QPen(QtGui.QColor("white"), 4))
-            painter.drawLine(20, 32, 28, 42)
-            painter.drawLine(28, 42, 44, 22)
+            # Sword symbol
+            painter.setBrush(QtGui.QColor("white"))
+            painter.setPen(QtCore.Qt.NoPen)
+            # Blade
+            points = [QtCore.QPoint(32, 8), QtCore.QPoint(38, 40), QtCore.QPoint(26, 40)]
+            painter.drawPolygon(points)
+            # Guard
+            painter.drawRect(22, 40, 20, 4)
+            # Grip
+            painter.drawRect(29, 44, 6, 10)
 
         painter.end()
 
@@ -21038,6 +21151,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     def _quit_application(self) -> None:
         """Force quit the application (bypasses minimize to tray)."""
         self._force_quit = True
+        self._unregister_hotkey()
         # Stop tray icon and update timer
         if self.tray_icon:
             self.tray_icon.hide()
@@ -21081,6 +21195,143 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 QtWidgets.QSystemTrayIcon.Information,
                 2000
             )
+
+    def _toggle_window_visibility(self) -> None:
+        """Toggle window visibility via global hotkey."""
+        if self.isVisible() and not self.isMinimized():
+            if self.tray_icon and self.minimize_to_tray:
+                self._hide_to_tray()
+            else:
+                self.showMinimized()
+        else:
+            self._restore_from_tray()
+
+    def _apply_hotkey_setting(self, seq_str: str) -> bool:
+        """Apply and persist a hotkey setting."""
+        if not seq_str:
+            self.blocker.toggle_hotkey = ""
+            self.blocker.save_config()
+            self._unregister_hotkey()
+            return True
+
+        ok = self._update_hotkey_registration(seq_str)
+        if ok:
+            self.blocker.toggle_hotkey = seq_str
+            self.blocker.save_config()
+        return ok
+
+    def _update_hotkey_registration(self, seq_override: Optional[str] = None) -> bool:
+        """Register or update the global hotkey (Windows only)."""
+        seq_str = seq_override if seq_override is not None else self.blocker.toggle_hotkey
+        if platform.system() != "Windows":
+            return seq_str == ""
+
+        self._unregister_hotkey()
+        if not seq_str:
+            return True
+
+        parsed = self._parse_hotkey_sequence(seq_str)
+        if not parsed:
+            return False
+
+        modifiers, vk = parsed
+        user32 = ctypes.windll.user32
+        hwnd = int(self.winId())
+        if not user32.RegisterHotKey(hwnd, self._hotkey_id, modifiers, vk):
+            return False
+
+        self._hotkey_registered = True
+        self._registered_hotkey = seq_str
+        return True
+
+    def _unregister_hotkey(self) -> None:
+        if platform.system() != "Windows":
+            return
+        if self._hotkey_registered:
+            try:
+                ctypes.windll.user32.UnregisterHotKey(int(self.winId()), self._hotkey_id)
+            except Exception:
+                pass
+        self._hotkey_registered = False
+        self._registered_hotkey = ""
+
+    def _parse_hotkey_sequence(self, seq_str: str) -> Optional[tuple[int, int]]:
+        seq = QtGui.QKeySequence(seq_str)
+        if seq.count() == 0:
+            return None
+        key = int(seq[0])
+        mod_mask = int(
+            QtCore.Qt.KeyboardModifier.ShiftModifier
+            | QtCore.Qt.KeyboardModifier.ControlModifier
+            | QtCore.Qt.KeyboardModifier.AltModifier
+            | QtCore.Qt.KeyboardModifier.MetaModifier
+        )
+        mods = key & mod_mask
+        if mods == 0:
+            return None
+        key_code = key & ~mod_mask
+        vk = self._qt_key_to_vk(key_code)
+        if vk is None:
+            return None
+
+        mod_flags = 0
+        if mods & int(QtCore.Qt.KeyboardModifier.AltModifier):
+            mod_flags |= 0x0001  # MOD_ALT
+        if mods & int(QtCore.Qt.KeyboardModifier.ControlModifier):
+            mod_flags |= 0x0002  # MOD_CONTROL
+        if mods & int(QtCore.Qt.KeyboardModifier.ShiftModifier):
+            mod_flags |= 0x0004  # MOD_SHIFT
+        if mods & int(QtCore.Qt.KeyboardModifier.MetaModifier):
+            mod_flags |= 0x0008  # MOD_WIN
+
+        return mod_flags, vk
+
+    def _qt_key_to_vk(self, key_code: int) -> Optional[int]:
+        if QtCore.Qt.Key_A <= key_code <= QtCore.Qt.Key_Z:
+            return ord('A') + (key_code - QtCore.Qt.Key_A)
+        if QtCore.Qt.Key_0 <= key_code <= QtCore.Qt.Key_9:
+            return ord('0') + (key_code - QtCore.Qt.Key_0)
+        if QtCore.Qt.Key_F1 <= key_code <= QtCore.Qt.Key_F12:
+            return 0x70 + (key_code - QtCore.Qt.Key_F1)
+        if key_code == QtCore.Qt.Key_Space:
+            return 0x20
+        if key_code == QtCore.Qt.Key_Tab:
+            return 0x09
+        if key_code == QtCore.Qt.Key_Escape:
+            return 0x1B
+        if key_code in (QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter):
+            return 0x0D
+        return None
+
+    def nativeEvent(self, eventType, message):
+        if platform.system() == "Windows":
+            msg = wintypes.MSG.from_address(int(message))
+            if msg.message == 0x0312 and msg.wParam == self._hotkey_id:
+                self._toggle_window_visibility()
+                return True, 0
+        return super().nativeEvent(eventType, message)
+
+    def _set_app_icon(self) -> None:
+        """Set the application window icon from the icons folder."""
+        # Try to find app.ico in various locations
+        script_dir = Path(__file__).parent
+        icon_paths = [
+            script_dir / "icons" / "app.ico",
+            script_dir / "app.ico",
+            script_dir.parent / "icons" / "app.ico",
+        ]
+        
+        for icon_path in icon_paths:
+            if icon_path.exists():
+                self.setWindowIcon(QtGui.QIcon(str(icon_path)))
+                return
+        
+        # Fallback: try PNG version
+        for icon_path in icon_paths:
+            png_path = icon_path.with_suffix('.png')
+            if png_path.exists():
+                self.setWindowIcon(QtGui.QIcon(str(png_path)))
+                return
 
     def _create_menu_bar(self) -> None:
         menu_bar = self.menuBar()
@@ -21227,6 +21478,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             event.ignore()
             self._hide_to_tray()
             return
+
+        self._unregister_hotkey()
 
         # Stop tray icon and update timer
         if self.tray_icon:
