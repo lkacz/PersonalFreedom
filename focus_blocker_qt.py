@@ -215,7 +215,7 @@ def show_perk_toast(message: str, icon: str = "✨", parent: QtWidgets.QWidget =
 
 
 # ============================================================================
-# No-Scroll ComboBox - Prevents accidental changes via scroll wheel
+# No-Scroll Widgets - Prevents accidental changes via scroll wheel
 # ============================================================================
 
 class NoScrollComboBox(QtWidgets.QComboBox):
@@ -231,10 +231,36 @@ class NoScrollComboBox(QtWidgets.QComboBox):
         event.ignore()
 
 
+class NoScrollSpinBox(QtWidgets.QSpinBox):
+    """
+    A QSpinBox that ignores scroll wheel events.
+    
+    This prevents users from accidentally changing values
+    while scrolling through the application.
+    """
+    
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        """Ignore scroll wheel events to prevent accidental changes."""
+        event.ignore()
+
+
+class NoScrollDoubleSpinBox(QtWidgets.QDoubleSpinBox):
+    """
+    A QDoubleSpinBox that ignores scroll wheel events.
+    
+    This prevents users from accidentally changing values
+    while scrolling through the application.
+    """
+    
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        """Ignore scroll wheel events to prevent accidental changes."""
+        event.ignore()
+
 
 # Module-level variables for deferred imports (initialized in load_heavy_modules)
 BlockerCore = None
 BlockMode = None
+EnforcementMode = None
 SITE_CATEGORIES = None
 AI_AVAILABLE = False
 GOALS_PATH = None
@@ -333,7 +359,7 @@ HYDRATION_MAX_DAILY_GLASSES = 5
 
 def load_heavy_modules():
     """Load heavy modules at startup."""
-    global BlockerCore, BlockMode, SITE_CATEGORIES, AI_AVAILABLE
+    global BlockerCore, BlockMode, EnforcementMode, SITE_CATEGORIES, AI_AVAILABLE
     global GOALS_PATH, STATS_PATH, BYPASS_LOGGER_AVAILABLE
     global ProductivityAnalyzer, GamificationEngine, FocusGoals
     global GAMIFICATION_AVAILABLE, RARITY_POWER, ITEM_THEMES, get_item_themes
@@ -388,6 +414,7 @@ def load_heavy_modules():
     from core_logic import (
         BlockerCore as _BlockerCore,
         BlockMode as _BlockMode,
+        EnforcementMode as _EnforcementMode,
         SITE_CATEGORIES as _SITE_CATEGORIES,
         AI_AVAILABLE as _AI_AVAILABLE,
         GOALS_PATH as _GOALS_PATH,
@@ -397,6 +424,7 @@ def load_heavy_modules():
     )
     BlockerCore = _BlockerCore
     BlockMode = _BlockMode
+    EnforcementMode = _EnforcementMode
     SITE_CATEGORIES = _SITE_CATEGORIES
     AI_AVAILABLE = _AI_AVAILABLE
     GOALS_PATH = _GOALS_PATH
@@ -1089,10 +1117,10 @@ class TimerTab(QtWidgets.QWidget):
             }
         """)
         duration_layout = QtWidgets.QHBoxLayout(duration_box)
-        self.hours_spin = QtWidgets.QSpinBox()
+        self.hours_spin = NoScrollSpinBox()
         self.hours_spin.setRange(0, 12)
         self.hours_spin.setValue(0)
-        self.minutes_spin = QtWidgets.QSpinBox()
+        self.minutes_spin = NoScrollSpinBox()
         self.minutes_spin.setRange(0, 59)
         self.minutes_spin.setValue(25)
         duration_layout.addWidget(QtWidgets.QLabel("Hours"))
@@ -1399,7 +1427,11 @@ class TimerTab(QtWidgets.QWidget):
         self.start_btn.setEnabled(False)
         self.stop_btn.setEnabled(True)
         if mode != BlockMode.POMODORO:
-            self.status_label.setText("🔒 BLOCKING")
+            # Different status for Full vs Light mode
+            if self.blocker.enforcement_mode == EnforcementMode.LIGHT:
+                self.status_label.setText("🔔 MONITORING")
+            else:
+                self.status_label.setText("🔒 BLOCKING")
         self.qt_timer.start()
 
         # Emit session started signal
@@ -2354,14 +2386,9 @@ class TimerTab(QtWidgets.QWidget):
         
         rewards["coins"] = coins_earned
         
-        # Estimate item drop (without actually generating)
-        # Just show that an item will be earned
-        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
-        
-        # Generate preview item (won't be saved)
-        preview_item = generate_item(session_minutes=session_minutes, 
-                                     streak_days=streak, story_id=active_story)
-        rewards["items"] = [preview_item]
+        # Mark that an item will be earned (actual item revealed via lottery animation)
+        # Don't generate preview - the lottery will generate the real item
+        rewards["items"] = [{"teaser": True}]  # Just a flag that item is coming
         
         return rewards
 
@@ -3308,7 +3335,7 @@ class StatsTab(QtWidgets.QWidget):
         target_lbl = QtWidgets.QLabel("Target:")
         target_lbl.setStyleSheet("color: #9ca3af;")
         weekly_controls.addWidget(target_lbl)
-        self.weekly_target = QtWidgets.QDoubleSpinBox()
+        self.weekly_target = NoScrollDoubleSpinBox()
         self.weekly_target.setRange(1, 200)
         self.weekly_target.setSuffix(" h")
         self.weekly_target.setStyleSheet("""
@@ -3388,7 +3415,7 @@ class StatsTab(QtWidgets.QWidget):
         target_lbl2 = QtWidgets.QLabel("Target:")
         target_lbl2.setStyleSheet("color: #9ca3af;")
         monthly_controls.addWidget(target_lbl2)
-        self.monthly_target = QtWidgets.QDoubleSpinBox()
+        self.monthly_target = NoScrollDoubleSpinBox()
         self.monthly_target.setRange(1, 1000)
         self.monthly_target.setSuffix(" h")
         self.monthly_target.setStyleSheet("""
@@ -4607,15 +4634,15 @@ class SettingsTab(QtWidgets.QWidget):
         # Pomodoro settings
         pomo_group = QtWidgets.QGroupBox("🍅 Pomodoro Settings")
         pomo_layout = QtWidgets.QFormLayout(pomo_group)
-        self.pomo_work_spin = QtWidgets.QSpinBox()
+        self.pomo_work_spin = NoScrollSpinBox()
         self.pomo_work_spin.setRange(1, 120)
         self.pomo_work_spin.setValue(self.blocker.pomodoro_work)
         pomo_layout.addRow("Work duration (min):", self.pomo_work_spin)
-        self.pomo_break_spin = QtWidgets.QSpinBox()
+        self.pomo_break_spin = NoScrollSpinBox()
         self.pomo_break_spin.setRange(1, 60)
         self.pomo_break_spin.setValue(self.blocker.pomodoro_break)
         pomo_layout.addRow("Short break (min):", self.pomo_break_spin)
-        self.pomo_long_spin = QtWidgets.QSpinBox()
+        self.pomo_long_spin = NoScrollSpinBox()
         self.pomo_long_spin.setRange(1, 60)
         self.pomo_long_spin.setValue(self.blocker.pomodoro_long_break)
         pomo_layout.addRow("Long break (min):", self.pomo_long_spin)
@@ -4655,7 +4682,7 @@ class SettingsTab(QtWidgets.QWidget):
         
         voice_combo_layout = QtWidgets.QHBoxLayout()
         voice_combo_layout.addWidget(QtWidgets.QLabel("Voice:"))
-        self.voice_combo = QtWidgets.QComboBox()
+        self.voice_combo = NoScrollComboBox()
         self.voice_combo.setMinimumWidth(250)
         voice_combo_layout.addWidget(self.voice_combo)
         voice_combo_layout.addStretch()
@@ -4698,6 +4725,50 @@ class SettingsTab(QtWidgets.QWidget):
         hotkey_row.addStretch()
         hotkey_layout.addLayout(hotkey_row)
         inner.addWidget(hotkey_group)
+
+        # Enforcement Mode Group - Full vs Light
+        enforce_group = QtWidgets.QGroupBox("🛡️ Enforcement Mode")
+        enforce_layout = QtWidgets.QVBoxLayout(enforce_group)
+        
+        enforce_desc = QtWidgets.QLabel(
+            "Choose how the app enforces focus sessions:"
+        )
+        enforce_desc.setWordWrap(True)
+        enforce_layout.addWidget(enforce_desc)
+        
+        # Radio buttons for enforcement mode
+        self.enforce_full_radio = QtWidgets.QRadioButton("🔒 Full Mode (Recommended)")
+        self.enforce_full_radio.setToolTip("Modifies system hosts file to block sites. Requires admin privileges.")
+        self.enforce_light_radio = QtWidgets.QRadioButton("🔔 Light Mode (No Admin Required)")
+        self.enforce_light_radio.setToolTip("Monitors browser and shows notifications. Does not modify system files.")
+        
+        # Set current selection
+        if self.blocker.enforcement_mode == EnforcementMode.LIGHT:
+            self.enforce_light_radio.setChecked(True)
+        else:
+            self.enforce_full_radio.setChecked(True)
+        
+        self.enforce_full_radio.toggled.connect(self._toggle_enforcement_mode)
+        
+        enforce_layout.addWidget(self.enforce_full_radio)
+        full_desc = QtWidgets.QLabel(
+            "   • Blocks sites at system level - impossible to bypass\n"
+            "   • Requires running the app as Administrator\n"
+            "   • Best for serious focus sessions"
+        )
+        full_desc.setStyleSheet("color: #9ca3af; margin-left: 20px;")
+        enforce_layout.addWidget(full_desc)
+        
+        enforce_layout.addWidget(self.enforce_light_radio)
+        light_desc = QtWidgets.QLabel(
+            "   • Shows reminder notifications when visiting blocked sites\n"
+            "   • No admin privileges needed - minimal system impact\n"
+            "   • Good for building awareness and habits"
+        )
+        light_desc.setStyleSheet("color: #9ca3af; margin-left: 20px;")
+        enforce_layout.addWidget(light_desc)
+        
+        inner.addWidget(enforce_group)
 
         # System Tray (if available)
         if QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
@@ -5114,6 +5185,19 @@ class SettingsTab(QtWidgets.QWidget):
             # Persist the setting
             self.blocker.minimize_to_tray = checked
             self.blocker.save_config()
+
+    def _toggle_enforcement_mode(self, full_mode_checked: bool) -> None:
+        """Toggle between Full and Light enforcement modes."""
+        if full_mode_checked:
+            self.blocker.enforcement_mode = EnforcementMode.FULL
+        else:
+            self.blocker.enforcement_mode = EnforcementMode.LIGHT
+        self.blocker.save_config()
+        
+        # Update the main window's enforcement mode display if needed
+        main_window = self.window()
+        if hasattr(main_window, '_update_enforcement_mode_display'):
+            main_window._update_enforcement_mode_display()
 
     def _save_hotkey(self) -> None:
         """Save and register the global hotkey."""
@@ -5797,7 +5881,7 @@ class WeightTab(QtWidgets.QWidget):
         
         # Weight input
         weight_row = QtWidgets.QHBoxLayout()
-        self.weight_input = QtWidgets.QDoubleSpinBox()
+        self.weight_input = NoScrollDoubleSpinBox()
         self.weight_input.setRange(20, 500)
         self.weight_input.setDecimals(1)
         self.weight_input.setSingleStep(0.1)
@@ -5842,7 +5926,7 @@ class WeightTab(QtWidgets.QWidget):
         self.goal_enabled.stateChanged.connect(self._on_goal_toggle)
         goal_row.addWidget(self.goal_enabled)
         
-        self.goal_input = QtWidgets.QDoubleSpinBox()
+        self.goal_input = NoScrollDoubleSpinBox()
         self.goal_input.setRange(1, 500)
         self.goal_input.setDecimals(1)
         self.goal_input.setSingleStep(0.1)
@@ -5860,7 +5944,7 @@ class WeightTab(QtWidgets.QWidget):
         
         # Height input for BMI
         height_row = QtWidgets.QHBoxLayout()
-        self.height_input = QtWidgets.QSpinBox()
+        self.height_input = NoScrollSpinBox()
         self.height_input.setRange(100, 250)
         self.height_input.setValue(170)
         self.height_input.setSuffix(" cm")
@@ -7177,7 +7261,7 @@ class ActivityTab(QtWidgets.QWidget):
         # Duration
         duration_layout = QtWidgets.QHBoxLayout()
         duration_layout.addWidget(QtWidgets.QLabel("Duration:"))
-        self.duration_spin = QtWidgets.QSpinBox()
+        self.duration_spin = NoScrollSpinBox()
         self.duration_spin.setRange(1, 480)  # 1 min to 8 hours
         self.duration_spin.setValue(30)
         self.duration_spin.setSuffix(" min")
@@ -13426,7 +13510,7 @@ class HydrationTab(QtWidgets.QWidget):
         self.reminder_checkbox.stateChanged.connect(self._update_reminder_setting)
         reminder_layout.addWidget(self.reminder_checkbox)
         
-        self.reminder_interval = QtWidgets.QSpinBox()
+        self.reminder_interval = NoScrollSpinBox()
         self.reminder_interval.setRange(15, 180)
         self.reminder_interval.setValue(getattr(self.blocker, 'water_reminder_interval', 60))
         self.reminder_interval.setSuffix(" min")
@@ -13832,6 +13916,9 @@ class PowerAnalysisDialog(StyledDialog):
         total = breakdown.get("total_power", 0)
         base = breakdown.get("base_power", 0)
         set_bonus = breakdown.get("set_bonus", 0)
+        style_bonus = breakdown.get("style_bonus", 0)
+        style_info = breakdown.get("style_info")
+        entity_bonus = breakdown.get("entity_bonus", 0)
         
         header_widget = QtWidgets.QWidget()
         header_widget.setStyleSheet("background-color: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px;")
@@ -13842,9 +13929,16 @@ class PowerAnalysisDialog(StyledDialog):
         title.setAlignment(QtCore.Qt.AlignCenter)
         header_layout.addWidget(title)
         
-        formula = QtWidgets.QLabel(
-            f"Base Power ({base}) + Set Bonuses ({set_bonus})"
-        )
+        # Build formula parts
+        formula_parts = [f"Base Power ({base})"]
+        if set_bonus > 0:
+            formula_parts.append(f"Set Bonuses ({set_bonus})")
+        if style_bonus > 0 and style_info and style_info.get("style"):
+            formula_parts.append(f"{style_info['style'].get('name', 'Style')} ({style_bonus})")
+        if entity_bonus > 0:
+            formula_parts.append(f"Entity Perks ({entity_bonus})")
+        
+        formula = QtWidgets.QLabel(" + ".join(formula_parts))
         formula.setStyleSheet("font-size: 14px; color: #B0B0B0;")
         formula.setAlignment(QtCore.Qt.AlignCenter)
         header_layout.addWidget(formula)
@@ -13929,6 +14023,39 @@ class PowerAnalysisDialog(StyledDialog):
 
         layout.addWidget(table)
         
+        # Style Bonus (Legendary Minimalist) - show prominently if active
+        if style_bonus > 0 and style_info and style_info.get("style"):
+            style_data = style_info.get("style", {})
+            style_widget = QtWidgets.QWidget()
+            style_widget.setStyleSheet("""
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 rgba(255, 215, 0, 0.2), stop:0.5 rgba(255, 215, 0, 0.3), stop:1 rgba(255, 215, 0, 0.2));
+                border: 2px solid #FFD700;
+                border-radius: 10px;
+                padding: 10px;
+                margin: 5px;
+            """)
+            style_layout = QtWidgets.QVBoxLayout(style_widget)
+            style_layout.setSpacing(4)
+            
+            style_title = QtWidgets.QLabel(f"{style_data.get('emoji', '👑')} {style_data.get('name', 'Style Bonus')}")
+            style_title.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFD700; background: transparent;")
+            style_title.setAlignment(QtCore.Qt.AlignCenter)
+            style_layout.addWidget(style_title)
+            
+            style_desc = QtWidgets.QLabel(style_data.get('description', 'Legendary Minimalist'))
+            style_desc.setStyleSheet("font-size: 12px; color: #E0E0E0; font-style: italic; background: transparent;")
+            style_desc.setAlignment(QtCore.Qt.AlignCenter)
+            style_layout.addWidget(style_desc)
+            
+            empty_slot = style_info.get('empty_slot', 'Unknown')
+            style_bonus_lbl = QtWidgets.QLabel(f"+{style_bonus} Style Power (7 Legendary items, {empty_slot} slot empty)")
+            style_bonus_lbl.setStyleSheet("font-size: 14px; font-weight: bold; color: #4CAF50; background: transparent;")
+            style_bonus_lbl.setAlignment(QtCore.Qt.AlignCenter)
+            style_layout.addWidget(style_bonus_lbl)
+            
+            layout.addWidget(style_widget)
+        
         # Bottom info - Show active set details
         active_sets = breakdown.get("active_sets", [])
         if active_sets:
@@ -13947,6 +14074,93 @@ class PowerAnalysisDialog(StyledDialog):
         self.add_button_row(layout, [("Close", "primary", self.accept)])
 
 
+class LegendaryMinimalistDialog(StyledDialog):
+    """Celebration dialog when player achieves the Legendary Minimalist style bonus."""
+    
+    def __init__(self, style_info: dict, parent=None):
+        self.style_info = style_info
+        super().__init__(
+            parent,
+            "STYLE BONUS UNLOCKED!",
+            "👑",
+            min_width=450,
+            max_width=550,
+            modal=True,
+            closable=True
+        )
+    
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
+        style = self.style_info.get("style", {})
+        empty_slot = self.style_info.get("empty_slot", "Unknown")
+        bonus = self.style_info.get("bonus", 350)
+        
+        # Trophy/celebration visual
+        trophy = QtWidgets.QLabel("🏆")
+        trophy.setStyleSheet("font-size: 72px; background: transparent;")
+        trophy.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(trophy)
+        
+        # Style name with emoji
+        style_name = QtWidgets.QLabel(f"{style.get('emoji', '✨')} {style.get('name', 'Minimalist Master')}")
+        style_name.setStyleSheet("""
+            font-size: 28px;
+            font-weight: bold;
+            color: #FFD700;
+            background: transparent;
+        """)
+        style_name.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(style_name)
+        
+        # Description
+        desc = QtWidgets.QLabel(style.get("description", "Less is more"))
+        desc.setStyleSheet("font-size: 14px; color: #E0E0E0; font-style: italic; background: transparent;")
+        desc.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(desc)
+        
+        layout.addSpacing(20)
+        
+        # Bonus box
+        bonus_widget = QtWidgets.QWidget()
+        bonus_widget.setStyleSheet("""
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 rgba(76, 175, 80, 0.3), stop:1 rgba(76, 175, 80, 0.1));
+            border: 2px solid #4CAF50;
+            border-radius: 12px;
+            padding: 15px;
+        """)
+        bonus_layout = QtWidgets.QVBoxLayout(bonus_widget)
+        bonus_layout.setSpacing(8)
+        
+        bonus_title = QtWidgets.QLabel(f"+{bonus} POWER")
+        bonus_title.setStyleSheet("font-size: 32px; font-weight: bold; color: #4CAF50; background: transparent;")
+        bonus_title.setAlignment(QtCore.Qt.AlignCenter)
+        bonus_layout.addWidget(bonus_title)
+        
+        bonus_desc = QtWidgets.QLabel("Style Bonus Added to Your Total Power!")
+        bonus_desc.setStyleSheet("font-size: 12px; color: #A5D6A7; background: transparent;")
+        bonus_desc.setAlignment(QtCore.Qt.AlignCenter)
+        bonus_layout.addWidget(bonus_desc)
+        
+        layout.addWidget(bonus_widget)
+        
+        layout.addSpacing(15)
+        
+        # Explanation
+        expl = QtWidgets.QLabel(
+            f"You've equipped <b>7 Legendary items</b> while keeping<br>"
+            f"your <b>{empty_slot}</b> slot deliberately empty.<br><br>"
+            f"True power comes from knowing what NOT to wear!"
+        )
+        expl.setTextFormat(QtCore.Qt.RichText)
+        expl.setStyleSheet("font-size: 12px; color: #B0B0B0; background: transparent;")
+        expl.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(expl)
+        
+        layout.addStretch()
+        
+        self.add_button_row(layout, [("Awesome!", "primary", self.accept)])
+
+
 class ADHDBusterTab(QtWidgets.QWidget):
     """Tab for viewing and managing the ADHD Buster character and inventory."""
 
@@ -13958,6 +14172,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self.slot_labels: Dict[str, QtWidgets.QLabel] = {}  # Store slot label references for theme updates
         self._refreshing = False  # Prevent recursive refresh loops
         self._session_active = False  # Track if a focus session is active
+        self._shown_style_bonuses = set()  # Track which style bonuses have been shown
         
         # Collapsible section states (stored in blocker config)
         self._collapsed_sections = self.blocker.adhd_buster.get("collapsed_sections", {})
@@ -13987,21 +14202,62 @@ class ADHDBusterTab(QtWidgets.QWidget):
     def _on_power_changed(self, new_power: int) -> None:
         """Handle power change - update power label."""
         if hasattr(self, 'power_lbl'):
-            power_info = get_power_breakdown(self.blocker.adhd_buster) if get_power_breakdown else {"base_power": new_power, "set_bonus": 0, "total_power": new_power}
-            if power_info.get("set_bonus", 0) > 0:
-                power_txt = f"⚔ Power: {power_info['total_power']} ({power_info['base_power']} + {power_info['set_bonus']} set)"
+            power_info = get_power_breakdown(self.blocker.adhd_buster) if get_power_breakdown else {"base_power": new_power, "set_bonus": 0, "style_bonus": 0, "total_power": new_power}
+            style_bonus = power_info.get("style_bonus", 0)
+            set_bonus = power_info.get("set_bonus", 0)
+            style_info = power_info.get("style_info")
+            
+            if style_bonus > 0 and style_info and style_info.get("style"):
+                # Show style bonus prominently
+                style_name = style_info["style"].get("name", "Style")
+                power_txt = f"⚔ Power: {power_info['total_power']} (👑 {style_name} +{style_bonus})"
+            elif set_bonus > 0:
+                power_txt = f"⚔ Power: {power_info['total_power']} ({power_info['base_power']} + {set_bonus} set)"
             else:
                 power_txt = f"⚔ Power: {power_info['total_power']}"
             self.power_lbl.setText(power_txt)
         # Also update character display
         if hasattr(self, 'char_widget'):
             self.char_widget.update_from_data(self.blocker.adhd_buster)
+        
+        # Check for Legendary Minimalist style bonus
+        self._check_style_bonus_unlocked()
+    
+    def _check_style_bonus_unlocked(self) -> None:
+        """Check if player just unlocked a Legendary Minimalist style bonus and show celebration."""
+        try:
+            from gamification import calculate_legendary_minimalist_bonus
+            equipped = self.blocker.adhd_buster.get("equipped", {})
+            style_result = calculate_legendary_minimalist_bonus(equipped)
+            
+            if style_result.get("active"):
+                # Create unique key for this style bonus
+                style_key = style_result.get("empty_slot", "")
+                
+                # Check if we've already shown this bonus
+                shown_bonuses = self.blocker.adhd_buster.get("shown_style_bonuses", [])
+                if style_key not in shown_bonuses:
+                    # Show celebration dialog
+                    dialog = LegendaryMinimalistDialog(style_result, self)
+                    dialog.exec()
+                    
+                    # Mark as shown so we don't show again
+                    shown_bonuses.append(style_key)
+                    self.blocker.adhd_buster["shown_style_bonuses"] = shown_bonuses
+                    self.blocker.save_config()
+        except ImportError:
+            pass  # gamification not available
+        except Exception as e:
+            logger.debug(f"Error checking style bonus: {e}")
     
     def _on_equipment_changed(self, slot: str) -> None:
         """Handle equipment change - update specific slot combo."""
         if slot in self.slot_combos:
             self._refresh_slot_combo(slot)
         self._refresh_character()
+        
+        # Check for style bonus after equipment change
+        self._check_style_bonus_unlocked()
     
     def _on_set_bonus_changed(self, breakdown: dict) -> None:
         """Handle set bonus change - update sets display."""
@@ -17628,7 +17884,7 @@ class PriorityTimeLogDialog(StyledDialog):
                 lbl = QtWidgets.QLabel(f"#{i+1}: {title}")
                 lbl.setStyleSheet("color: #E0E0E0;")
                 row.addWidget(lbl, 1)
-                spin = QtWidgets.QSpinBox()
+                spin = NoScrollSpinBox()
                 spin.setRange(0, self.session_minutes)
                 spin.setValue(0)
                 spin.setSuffix(" min")
@@ -17879,7 +18135,7 @@ class PrioritiesDialog(StyledDialog):
         self.checkin_enabled.toggled.connect(self._toggle_checkin)
         checkin_layout.addWidget(self.checkin_enabled)
         
-        self.checkin_interval_spin = QtWidgets.QSpinBox()
+        self.checkin_interval_spin = NoScrollSpinBox()
         self.checkin_interval_spin.setRange(5, 120)
         self.checkin_interval_spin.setValue(self.blocker.priority_checkin_interval)
         self.checkin_interval_spin.valueChanged.connect(self._update_checkin_interval)
@@ -17958,7 +18214,7 @@ class PrioritiesDialog(StyledDialog):
 
         planned_layout = QtWidgets.QHBoxLayout()
         planned_layout.addWidget(QtWidgets.QLabel("Planned hours:"))
-        planned_spin = QtWidgets.QDoubleSpinBox()
+        planned_spin = NoScrollDoubleSpinBox()
         planned_spin.setRange(0, 100)
         planned_spin.setValue(priority.get("planned_hours", 0))
         planned_layout.addWidget(planned_spin)
@@ -20457,6 +20713,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         self.blocker = BlockerCore(username=username)
         
+        # Browser monitor for Light Mode (notifications instead of blocking)
+        self.browser_monitor = None
+        
         # Initialize centralized game state manager for reactive UI updates (required)
         self.game_state = None
         if GAMIFICATION_AVAILABLE:
@@ -21548,6 +21807,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
     def _on_session_complete(self, elapsed_seconds: int) -> None:
         """Handle session completion - refresh stats and related UI."""
+        # Stop browser monitor if running (Light Mode)
+        self._stop_browser_monitor()
+        
         # Reload stats from file to ensure we have latest data
         self.blocker.load_stats()
         
@@ -21580,6 +21842,44 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self._set_tabs_enabled(False)
         if GAMIFICATION_AVAILABLE and hasattr(self, 'adhd_tab'):
             self.adhd_tab.set_session_active(True)
+        
+        # Start browser monitor in Light Mode
+        if self.blocker.enforcement_mode == EnforcementMode.LIGHT:
+            self._start_browser_monitor()
+    
+    def _start_browser_monitor(self) -> None:
+        """Start the browser monitor for Light Mode notifications."""
+        try:
+            from browser_monitor import create_browser_monitor
+            
+            blocked_sites = self.blocker.get_effective_blacklist()
+            self.browser_monitor = create_browser_monitor(
+                blocked_sites,
+                self._on_browser_violation
+            )
+            self.browser_monitor.start()
+        except Exception as e:
+            print(f"Warning: Could not start browser monitor: {e}")
+    
+    def _stop_browser_monitor(self) -> None:
+        """Stop the browser monitor."""
+        if self.browser_monitor:
+            try:
+                self.browser_monitor.stop()
+            except Exception:
+                pass
+            self.browser_monitor = None
+    
+    def _on_browser_violation(self, domain: str) -> None:
+        """Handle when user visits a blocked site in Light Mode."""
+        # Show toast notification
+        if self.tray_icon:
+            self.tray_icon.showMessage(
+                "🔔 Focus Reminder",
+                f"You're visiting {domain} during a focus session.\nStay focused! 💪",
+                QtWidgets.QSystemTrayIcon.Information,
+                5000  # 5 seconds
+            )
     
     def _set_tabs_enabled(self, enabled: bool) -> None:
         """Enable or disable non-essential tabs during focus sessions.
