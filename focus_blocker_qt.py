@@ -15327,10 +15327,14 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self.char_canvas.tier = get_diary_power_tier(power_info["total_power"])  # Recalculate tier
         self.char_canvas.update()  # Trigger repaint
         
-        # Update power label with all components (gear + sets + entity patrons)
+        # Update power label with all components (gear + sets + style + entity patrons)
         power_parts = [str(power_info['base_power'])]
         if power_info.get("set_bonus", 0) > 0:
             power_parts.append(f"+{power_info['set_bonus']} set")
+        if power_info.get("style_bonus", 0) > 0:
+            style_info = power_info.get("style_info")
+            style_name = style_info.get("style", {}).get("name", "style") if style_info else "style"
+            power_parts.append(f"+{power_info['style_bonus']} {style_name}")
         if power_info.get("entity_bonus", 0) > 0:
             power_parts.append(f"+{power_info['entity_bonus']} patrons")
         
