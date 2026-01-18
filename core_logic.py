@@ -165,6 +165,12 @@ class BlockMode:
     HARDCORE = "hardcore"
 
 
+class EnforcementMode:
+    """Enforcement level for blocking - how aggressively sites are blocked"""
+    FULL = "full"      # Uses hosts file - requires admin, fully blocks sites
+    LIGHT = "light"    # Monitor-only mode - no admin needed, just notifications
+
+
 class BlockerCore:
     """Core blocking engine with enhanced features"""
 
@@ -221,6 +227,9 @@ class BlockerCore:
         self.minimize_to_tray = True  # Close button minimizes to tray
         self.notify_on_complete = True  # Notify when session ends
         self.toggle_hotkey = ""  # Global hotkey for show/hide window
+        
+        # Enforcement mode: "full" (hosts file) or "light" (monitor + notifications only)
+        self.enforcement_mode = EnforcementMode.FULL
         
         # ADHD Buster gamification
         self.adhd_buster = {"inventory": [], "equipped": {}, "coins": 200}
@@ -318,6 +327,9 @@ class BlockerCore:
                     self.priority_checkin_interval = checkin_interval if isinstance(checkin_interval, (int, float)) and checkin_interval > 0 else 30
                     self.minimize_to_tray = config.get('minimize_to_tray', True)
                     self.toggle_hotkey = config.get('toggle_hotkey', "")
+                    # Load enforcement mode (full = hosts file, light = notifications only)
+                    enforcement = config.get('enforcement_mode', EnforcementMode.FULL)
+                    self.enforcement_mode = enforcement if enforcement in (EnforcementMode.FULL, EnforcementMode.LIGHT) else EnforcementMode.FULL
                     self.adhd_buster = config.get('adhd_buster', {})
                     if not isinstance(self.adhd_buster, dict):
                         self.adhd_buster = {}
@@ -442,6 +454,7 @@ class BlockerCore:
                 'priority_checkin_interval': self.priority_checkin_interval,
                 'minimize_to_tray': self.minimize_to_tray,
                 'toggle_hotkey': self.toggle_hotkey,
+                'enforcement_mode': self.enforcement_mode,
                 'adhd_buster': self.adhd_buster,
                 'weight_entries': self.weight_entries,
                 'weight_unit': self.weight_unit,
@@ -776,7 +789,7 @@ class BlockerCore:
         return list(effective)
 
     def block_sites(self, duration_seconds: int = 0):
-        """Add blocked sites to hosts file
+        """Add blocked sites to hosts file (full mode) or start monitoring (light mode)
         
         Args:
             duration_seconds: Planned session duration for crash recovery
@@ -785,12 +798,21 @@ class BlockerCore:
         if self.is_blocking:
             return False, "Already blocking! Stop the current session first."
         
-        if not self.is_admin():
-            return False, "Administrator privileges required!\\n\\nPlease restart the app as administrator:\\n• Right-click the app → Run as administrator\\n• Or use the 'run_as_admin.bat' script"
-
         sites_to_block = self.get_effective_blacklist()
         if not sites_to_block:
             return False, "No sites to block! Add some sites in the Sites or Categories tab first."
+
+        # Light mode: just start session tracking without hosts file modification
+        if self.enforcement_mode == EnforcementMode.LIGHT:
+            self.is_blocking = True
+            self.session_id = str(uuid.uuid4())
+            # Save session state for crash recovery
+            self.save_session_state(duration_seconds)
+            return True, f"🔔 Light Mode: Monitoring {len(sites_to_block)} sites (no blocking)"
+        
+        # Full mode: requires admin privileges to modify hosts file
+        if not self.is_admin():
+            return False, "Administrator privileges required!\\n\\nPlease restart the app as administrator:\\n• Right-click the app → Run as administrator\\n• Or use the 'run_as_admin.bat' script\\n\\n💡 Tip: Switch to Light Mode in Settings if you prefer not to run as admin."
 
         try:
             with open(HOSTS_PATH, 'r', encoding='utf-8', errors='ignore') as f:
@@ -839,6 +861,17 @@ class BlockerCore:
             password: Password for strict mode
             force: If True, bypass password check (used for natural timer completion)
         """
+        # Light mode: just clear session state, no hosts file changes
+        if self.enforcement_mode == EnforcementMode.LIGHT:
+            if self.mode == BlockMode.STRICT and self.is_blocking and not force:
+                if self.password_hash and not self.verify_password(password or ""):
+                    return False, "Incorrect password!"
+            self.is_blocking = False
+            self.session_id = None
+            self.clear_session_state()
+            return True, "Session ended!"
+        
+        # Full mode: requires admin privileges
         if not self.is_admin():
             return False, "Administrator privileges required!"
 

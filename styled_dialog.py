@@ -14,6 +14,13 @@ from PySide6 import QtWidgets, QtCore, QtGui
 from typing import Optional
 
 
+# No-Scroll Widgets - Prevents accidental value changes via scroll wheel
+class NoScrollComboBox(QtWidgets.QComboBox):
+    """A QComboBox that ignores scroll wheel events."""
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        event.ignore()
+
+
 class StyledDialog(QtWidgets.QDialog):
     """Base class for all styled dialogs in the app.
     
@@ -949,7 +956,7 @@ class OptimizeGearDialog(StyledDialog):
         target_label.setStyleSheet("color: #bbb;")
         options_layout.addWidget(target_label)
         
-        self.combo_target = QtWidgets.QComboBox()
+        self.combo_target = NoScrollComboBox()
         self.combo_target.addItems([
             "All Lucky Options 🍀",
             "Coin Discount 💰",

@@ -25,6 +25,20 @@ except ImportError:
     PIPER_AVAILABLE = False
     PiperVoice = None
 
+
+# No-Scroll Widgets - Prevents accidental value changes via scroll wheel
+class NoScrollComboBox(QtWidgets.QComboBox):
+    """A QComboBox that ignores scroll wheel events."""
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        event.ignore()
+
+
+class NoScrollSpinBox(QtWidgets.QSpinBox):
+    """A QSpinBox that ignores scroll wheel events."""
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        event.ignore()
+
+
 # Base daily eye rest cap (can be increased by entity perks)
 BASE_EYE_REST_CAP = 20
 
@@ -420,7 +434,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         guidance_label = QtWidgets.QLabel("Speaker:")
         guidance_label.setStyleSheet("color: #b0bec5; font-weight: bold; margin-left: 10px;")
         
-        self.guidance_combo = QtWidgets.QComboBox()
+        self.guidance_combo = NoScrollComboBox()
         self.guidance_combo.addItems([
             EyeGuidanceSettings.MODE_SILENT, 
             EyeGuidanceSettings.MODE_SOUND, 
@@ -448,7 +462,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         header_row.addWidget(self.guidance_combo)
 
         # Voice Selection (Hidden by default unless Voice mode active)
-        self.voice_combo = QtWidgets.QComboBox()
+        self.voice_combo = NoScrollComboBox()
         self.voice_combo.addItems(self.guidance.get_voice_names())
         
         # Set current selection
@@ -728,7 +742,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.reminder_checkbox.stateChanged.connect(self._update_reminder_setting)
         reminder_layout.addWidget(self.reminder_checkbox)
         
-        self.reminder_interval = QtWidgets.QSpinBox()
+        self.reminder_interval = NoScrollSpinBox()
         self.reminder_interval.setRange(15, 180)
         self.reminder_interval.setValue(getattr(self.blocker, 'eye_reminder_interval', 60))
         self.reminder_interval.setSuffix(" min")

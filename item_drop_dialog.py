@@ -1,12 +1,15 @@
 """
-Enhanced Item Drop Dialog - Industry-Standard UX
-=================================================
+Enhanced Item Drop Dialog - Styled Dark Theme
+==============================================
 Celebratory dialog with animations, comparisons, and quick actions.
+Uses StyledDialog base for consistent frameless dark design.
 """
 
 from datetime import datetime
 from typing import Optional
 from PySide6 import QtWidgets, QtCore, QtGui
+
+from styled_dialog import StyledDialog
 
 try:
     from gamification import (
@@ -21,7 +24,7 @@ except ImportError:
 
 
 class ItemComparisonWidget(QtWidgets.QWidget):
-    """Side-by-side comparison of new item vs currently equipped."""
+    """Side-by-side comparison of new item vs currently equipped (dark theme)."""
     
     def __init__(self, new_item: dict, equipped_item: Optional[dict] = None,
                  parent: Optional[QtWidgets.QWidget] = None):
@@ -46,8 +49,9 @@ class ItemComparisonWidget(QtWidgets.QWidget):
         vs_label.setStyleSheet("""
             font-size: 18px;
             font-weight: bold;
-            color: #999;
+            color: #888888;
             padding: 0 8px;
+            background: transparent;
         """)
         layout.addWidget(vs_label)
         
@@ -59,7 +63,7 @@ class ItemComparisonWidget(QtWidgets.QWidget):
         layout.addWidget(current_widget)
     
     def _create_item_card(self, item: dict, title: str, is_new: bool) -> QtWidgets.QWidget:
-        """Create item card widget."""
+        """Create item card widget with dark theme."""
         card = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(card)
         layout.setSpacing(4)
@@ -67,7 +71,7 @@ class ItemComparisonWidget(QtWidgets.QWidget):
         # Title
         title_label = QtWidgets.QLabel(title)
         title_label.setAlignment(QtCore.Qt.AlignCenter)
-        title_label.setStyleSheet("font-size: 10px; color: #666; font-weight: bold;")
+        title_label.setStyleSheet("font-size: 10px; color: #888888; font-weight: bold; background: transparent;")
         layout.addWidget(title_label)
         
         # Rarity color
@@ -84,6 +88,7 @@ class ItemComparisonWidget(QtWidgets.QWidget):
             color: {color};
             font-weight: bold;
             font-size: 11px;
+            background: transparent;
         """)
         layout.addWidget(name_label)
         
@@ -91,14 +96,14 @@ class ItemComparisonWidget(QtWidgets.QWidget):
         power = item.get("power", RARITY_POWER.get(rarity, 10))
         power_label = QtWidgets.QLabel(f"⚔ {power}")
         power_label.setAlignment(QtCore.Qt.AlignCenter)
-        power_label.setStyleSheet("color: #333; font-size: 12px; font-weight: bold;")
+        power_label.setStyleSheet("color: #E0E0E0; font-size: 12px; font-weight: bold; background: transparent;")
         layout.addWidget(power_label)
         
-        # Card styling
-        border_color = "#4caf50" if is_new else "#999"
+        # Card styling - dark theme
+        border_color = "#4caf50" if is_new else "#666666"
         card.setStyleSheet(f"""
             QWidget {{
-                background: white;
+                background: #1A1A2E;
                 border: 2px solid {border_color};
                 border-radius: 8px;
                 padding: 8px;
@@ -109,25 +114,25 @@ class ItemComparisonWidget(QtWidgets.QWidget):
         return card
     
     def _create_empty_card(self) -> QtWidgets.QWidget:
-        """Create empty slot placeholder."""
+        """Create empty slot placeholder with dark theme."""
         card = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(card)
         layout.setSpacing(4)
         
         empty_label = QtWidgets.QLabel("Empty Slot")
         empty_label.setAlignment(QtCore.Qt.AlignCenter)
-        empty_label.setStyleSheet("color: #999; font-size: 11px; font-style: italic;")
+        empty_label.setStyleSheet("color: #666666; font-size: 11px; font-style: italic; background: transparent;")
         layout.addWidget(empty_label)
         
         icon_label = QtWidgets.QLabel("∅")
         icon_label.setAlignment(QtCore.Qt.AlignCenter)
-        icon_label.setStyleSheet("color: #ccc; font-size: 32px;")
+        icon_label.setStyleSheet("color: #444444; font-size: 32px; background: transparent;")
         layout.addWidget(icon_label)
         
         card.setStyleSheet("""
             QWidget {
-                background: #f9f9f9;
-                border: 2px dashed #ccc;
+                background: #0D0D1A;
+                border: 2px dashed #444466;
                 border-radius: 8px;
                 padding: 8px;
             }
@@ -137,17 +142,17 @@ class ItemComparisonWidget(QtWidgets.QWidget):
         return card
 
 
-class EnhancedItemDropDialog(QtWidgets.QDialog):
+class EnhancedItemDropDialog(StyledDialog):
     """
-    Enhanced item drop dialog with modern UX.
+    Enhanced item drop dialog with dark themed modern UX.
     
     Features:
+    - Frameless dark theme matching app style
     - Animated reveal
     - Item comparison with equipped gear
     - Quick equip button
     - Detailed stats and bonuses
     - Celebration based on rarity
-    - Professional animations
     """
     
     quick_equip_requested = QtCore.Signal()
@@ -156,7 +161,6 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
     def __init__(self, item: dict, equipped_item: Optional[dict] = None,
                  session_minutes: int = 0, streak_days: int = 0, coins_earned: int = 0,
                  parent: Optional[QtWidgets.QWidget] = None):
-        super().__init__(parent)
         # Handle None item gracefully
         self.item = item if item is not None else {}
         self.equipped_item = equipped_item
@@ -170,93 +174,64 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
         self.item.setdefault("slot", "Unknown")
         self.item.setdefault("power", 10)
         
-        self.setWindowTitle("🎁 Item Acquired!")
-        self.setMinimumSize(450, 500)
-        self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
+        # Determine header based on rarity
+        rarity = self.item.get("rarity", "Common")
+        if self.item.get("lucky_upgrade"):
+            header_text = "LUCKY UPGRADE!"
+            header_icon = "🍀"
+        elif rarity == "Legendary":
+            header_text = "LEGENDARY DROP!"
+            header_icon = "⭐"
+        elif rarity == "Epic":
+            header_text = "EPIC DROP!"
+            header_icon = "💎"
+        elif rarity == "Rare":
+            header_text = "RARE FIND!"
+            header_icon = "💠"
+        else:
+            header_text = "ITEM ACQUIRED!"
+            header_icon = "✨"
         
-        self._build_ui()
+        super().__init__(
+            parent=parent,
+            title=header_text,
+            header_icon=header_icon,
+            min_width=450,
+            max_width=550,
+            modal=True,
+        )
+        
         QtCore.QTimer.singleShot(100, self._start_celebration)
     
-    def _build_ui(self):
-        """Build the complete dialog UI."""
+    def _build_content(self, layout: QtWidgets.QVBoxLayout):
+        """Build the complete dialog content."""
         rarity = self.item.get("rarity", "Common")
         rarity_info = ITEM_RARITIES.get(rarity, {})
         color = rarity_info.get("color", "#9e9e9e")
         
-        # Background colors by rarity (darker for lucky upgrades)
-        if self.item.get("lucky_upgrade"):
-            bg_colors = {
-                "Common": "#2c2c2c",
-                "Uncommon": "#1b3a1b",
-                "Rare": "#1a2742",
-                "Epic": "#2d1b3a",
-                "Legendary": "#3a2c1b"
-            }
-        else:
-            bg_colors = {
-                "Common": "#f5f5f5",
-                "Uncommon": "#e8f5e9",
-                "Rare": "#e3f2fd",
-                "Epic": "#f3e5f5",
-                "Legendary": "#fff3e0"
-            }
-        bg_color = bg_colors.get(rarity, "#f5f5f5" if not self.item.get("lucky_upgrade") else "#2c2c2c")
-        
-        main_layout = QtWidgets.QVBoxLayout(self)
-        main_layout.setSpacing(16)
-        main_layout.setContentsMargins(24, 24, 24, 24)
-        
-        # Header with rarity-based celebration
-        if self.item.get("lucky_upgrade"):
-            header_text = "🍀 LUCKY UPGRADE! 🍀"
-        elif rarity == "Legendary":
-            header_text = "⭐ LEGENDARY DROP! ⭐"
-        elif rarity == "Epic":
-            header_text = "💎 EPIC DROP! 💎"
-        elif rarity == "Rare":
-            header_text = "💠 RARE FIND! 💠"
-        else:
-            header_text = "✨ ITEM ACQUIRED! ✨"
-        
-        self.header_label = QtWidgets.QLabel(header_text)
-        self.header_label.setAlignment(QtCore.Qt.AlignCenter)
-        # Use bright colors for lucky upgrade dark background
-        text_color = "#ffffff" if self.item.get("lucky_upgrade") else color
-        self.header_label.setStyleSheet(f"""
-            font-size: 22px;
-            font-weight: bold;
-            color: {text_color};
-            padding: 10px;
-            background: transparent;
-        """)
-        main_layout.addWidget(self.header_label)
-        
         # Item visual
         item_visual = self._create_item_visual()
-        main_layout.addWidget(item_visual)
+        layout.addWidget(item_visual)
         
         # Item name and details
         name_label = QtWidgets.QLabel(self.item.get("name", "Unknown Item"))
         name_label.setAlignment(QtCore.Qt.AlignCenter)
         name_label.setWordWrap(True)
-        # Bright color for lucky upgrade dark background
-        name_color = "#ffffff" if self.item.get("lucky_upgrade") else color
         name_label.setStyleSheet(f"""
             font-size: 16px;
             font-weight: bold;
-            color: {name_color};
+            color: {color};
             background: transparent;
         """)
-        main_layout.addWidget(name_label)
+        layout.addWidget(name_label)
         
         # Stats line
         power = self.item.get("power", 10)
         slot = self.item.get("slot", "Unknown")
         stats_label = QtWidgets.QLabel(f"[{rarity} {slot}] ⚔ +{power} Power")
         stats_label.setAlignment(QtCore.Qt.AlignCenter)
-        stats_color = "#cccccc" if self.item.get("lucky_upgrade") else color
-        stats_label.setStyleSheet(f"color: {stats_color}; font-size: 13px; background: transparent;")
-        main_layout.addWidget(stats_label)
+        stats_label.setStyleSheet(f"color: {color}; font-size: 13px; background: transparent;")
+        layout.addWidget(stats_label)
         
         # Lucky options
         lucky_options = self.item.get("lucky_options", {})
@@ -266,44 +241,24 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
                 if lucky_text:
                     lucky_label = QtWidgets.QLabel(f"✨ {lucky_text}")
                     lucky_label.setAlignment(QtCore.Qt.AlignCenter)
-                    lucky_label.setStyleSheet("color: #8b5cf6; font-weight: bold; font-size: 12px;")
-                    main_layout.addWidget(lucky_label)
+                    lucky_label.setStyleSheet("color: #8b5cf6; font-weight: bold; font-size: 12px; background: transparent;")
+                    layout.addWidget(lucky_label)
             except Exception:
                 pass
         
         # Separator
-        line = QtWidgets.QFrame()
-        line.setFrameShape(QtWidgets.QFrame.HLine)
-        line.setStyleSheet("background-color: #ddd;")
-        main_layout.addWidget(line)
+        self._add_separator(layout)
         
         # Comparison with equipped
-        if self.equipped_item or True:  # Always show comparison
-            comparison = ItemComparisonWidget(self.item, self.equipped_item)
-            main_layout.addWidget(comparison)
-        
-        # Bonuses info
-        if GAMIFICATION_AVAILABLE and (self.session_minutes > 0 or self.streak_days > 0):
-            bonuses = calculate_rarity_bonuses(self.session_minutes, self.streak_days)
-            if bonuses["total_bonus"] > 0:
-                bonus_parts = []
-                if bonuses["session_bonus"] > 0:
-                    bonus_parts.append(f"⏱️ {self.session_minutes}min")
-                if bonuses["streak_bonus"] > 0:
-                    bonus_parts.append(f"🔥 {self.streak_days}day streak")
-                bonus_text = " + ".join(bonus_parts) + f" = +{bonuses['total_bonus']}% drop luck!"
-                
-                bonus_label = QtWidgets.QLabel(bonus_text)
-                bonus_label.setAlignment(QtCore.Qt.AlignCenter)
-                bonus_label.setStyleSheet("color: #e65100; font-weight: bold; font-size: 11px;")
-                main_layout.addWidget(bonus_label)
+        comparison = ItemComparisonWidget(self.item, self.equipped_item)
+        layout.addWidget(comparison)
         
         # Coins earned
         if self.coins_earned > 0:
             coins_label = QtWidgets.QLabel(f"💰 +{self.coins_earned} Coins earned!")
             coins_label.setAlignment(QtCore.Qt.AlignCenter)
-            coins_label.setStyleSheet("color: #f59e0b; font-weight: bold; font-size: 12px;")
-            main_layout.addWidget(coins_label)
+            coins_label.setStyleSheet("color: #f59e0b; font-weight: bold; font-size: 12px; background: transparent;")
+            layout.addWidget(coins_label)
         
         # Motivational message
         messages = {
@@ -318,11 +273,11 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
         msg = random.choice(messages.get(rarity, default_messages))
         msg_label = QtWidgets.QLabel(msg)
         msg_label.setAlignment(QtCore.Qt.AlignCenter)
-        msg_label.setStyleSheet("font-weight: bold; color: #555; font-size: 13px;")
-        main_layout.addWidget(msg_label)
+        msg_label.setStyleSheet("font-weight: bold; color: #888888; font-size: 13px; background: transparent;")
+        layout.addWidget(msg_label)
         
         # Spacer
-        main_layout.addStretch()
+        layout.addStretch()
         
         # Action buttons
         button_layout = QtWidgets.QHBoxLayout()
@@ -333,7 +288,8 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
             equip_btn = QtWidgets.QPushButton("⚡ Quick Equip")
             equip_btn.setStyleSheet("""
                 QPushButton {
-                    background-color: #4caf50;
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #4CAF50, stop:1 #388E3C);
                     color: white;
                     border: none;
                     border-radius: 6px;
@@ -342,7 +298,8 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
                     font-size: 12px;
                 }
                 QPushButton:hover {
-                    background-color: #388e3c;
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #5CBF60, stop:1 #43A047);
                 }
             """)
             equip_btn.clicked.connect(self._on_quick_equip)
@@ -352,7 +309,8 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
         inventory_btn = QtWidgets.QPushButton("📦 Inventory")
         inventory_btn.setStyleSheet("""
             QPushButton {
-                background-color: #2196f3;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2196F3, stop:1 #1976D2);
                 color: white;
                 border: none;
                 border-radius: 6px;
@@ -361,7 +319,8 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
                 font-size: 12px;
             }
             QPushButton:hover {
-                background-color: #1976d2;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #42A5F5, stop:1 #2196F3);
             }
         """)
         inventory_btn.clicked.connect(self._on_view_inventory)
@@ -371,31 +330,31 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
         close_btn = QtWidgets.QPushButton("✓ Continue")
         close_btn.setStyleSheet("""
             QPushButton {
-                background-color: #757575;
-                color: white;
-                border: none;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #4A4A6A, stop:1 #2A2A4A);
+                color: #FFD700;
+                border: 1px solid #FFD700;
                 border-radius: 6px;
                 padding: 10px 20px;
                 font-weight: bold;
                 font-size: 12px;
             }
             QPushButton:hover {
-                background-color: #616161;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #5A5A7A, stop:1 #3A3A5A);
             }
         """)
         close_btn.clicked.connect(self.accept)
         button_layout.addWidget(close_btn)
         
-        main_layout.addLayout(button_layout)
-        
-        # Dialog style
-        self.setStyleSheet(f"""
-            QDialog {{
-                background-color: {bg_color};
-                border: 2px solid {color};
-                border-radius: 12px;
-            }}
-        """)
+        layout.addLayout(button_layout)
+    
+    def _add_separator(self, layout: QtWidgets.QVBoxLayout):
+        """Add a styled separator line."""
+        line = QtWidgets.QFrame()
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setStyleSheet("background-color: #333344; max-height: 1px;")
+        layout.addWidget(line)
     
     def _create_item_visual(self) -> QtWidgets.QWidget:
         """Create visual representation of the item."""
@@ -416,6 +375,7 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
         visual.setStyleSheet("""
             font-size: 48px;
             padding: 20px;
+            background: transparent;
         """)
         
         return visual
@@ -423,12 +383,6 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
     def _start_celebration(self):
         """Start celebration animation."""
         rarity = self.item.get("rarity", "Common")
-        
-        # Pulse animation for header
-        self._animation_step = 0
-        self._animation_timer = QtCore.QTimer(self)
-        self._animation_timer.timeout.connect(self._animate_pulse)
-        self._animation_timer.start(200)
         
         # Play sound for Epic and Legendary
         if rarity in ["Epic", "Legendary"]:
@@ -440,38 +394,6 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
             except Exception:
                 pass
     
-    def _animate_pulse(self):
-        """Pulse animation for header."""
-        self._animation_step += 1
-        
-        # Stop after 30 steps
-        if self._animation_step >= 30:
-            self._animation_timer.stop()
-            return
-        
-        # Pulse effect with emoji rotation
-        rarity = self.item.get("rarity", "Common")
-        emojis = {
-            "Legendary": ["⭐", "🌟", "✨", "💫", "🌠"],
-            "Epic": ["💎", "💜", "✨", "🔮"],
-            "Rare": ["💠", "🔷", "💙"],
-            "Uncommon": ["✨", "🌟"],
-            "Common": ["✨"]
-        }
-        emoji_list = emojis.get(rarity, ["✨"])
-        emoji = emoji_list[self._animation_step % len(emoji_list)]
-        
-        if self.item.get("lucky_upgrade"):
-            self.header_label.setText(f"{emoji} LUCKY UPGRADE! {emoji}")
-        elif rarity == "Legendary":
-            self.header_label.setText(f"{emoji} LEGENDARY DROP! {emoji}")
-        elif rarity == "Epic":
-            self.header_label.setText(f"{emoji} EPIC DROP! {emoji}")
-        elif rarity == "Rare":
-            self.header_label.setText(f"{emoji} RARE FIND! {emoji}")
-        else:
-            self.header_label.setText(f"{emoji} ITEM ACQUIRED! {emoji}")
-    
     def _on_quick_equip(self):
         """Handle quick equip action."""
         self.quick_equip_requested.emit()
@@ -482,13 +404,6 @@ class EnhancedItemDropDialog(QtWidgets.QDialog):
         self.view_inventory.emit()
         # Don't close dialog - let user manage inventory
     
-    def mousePressEvent(self, event):
-        """Allow clicking anywhere to close (except buttons)."""
-        # Only close if clicking outside buttons
-        pass  # Let button clicks handle themselves
-    
     def closeEvent(self, event):
         """Clean up animations."""
-        if hasattr(self, '_animation_timer'):
-            self._animation_timer.stop()
         super().closeEvent(event)
