@@ -10764,6 +10764,62 @@ WEIGHT_WEEKLY_LEGENDARY_THRESHOLD = 500  # 500g in a week
 # Monthly weight loss threshold for legendary (in grams)
 WEIGHT_MONTHLY_LEGENDARY_THRESHOLD = 2000  # 2kg in a month
 
+# Weight mode types based on BMI/goal
+WEIGHT_MODE_LOSS = "loss"           # Overweight: reward weight loss
+WEIGHT_MODE_GAIN = "gain"           # Underweight: reward weight gain
+WEIGHT_MODE_MAINTAIN = "maintain"   # Normal weight: reward maintaining
+
+# BMI thresholds for automatic mode detection
+BMI_UNDERWEIGHT_THRESHOLD = 18.5
+BMI_OVERWEIGHT_THRESHOLD = 25.0
+
+
+def determine_weight_mode(current_weight: float, height_cm: float = None, 
+                          goal_weight: float = None) -> str:
+    """
+    Determine weight tracking mode based on BMI and goal.
+    
+    Priority:
+    1. If goal is set: compare current to goal
+    2. If height available: use BMI classification
+    3. Default: loss mode (legacy behavior)
+    
+    Args:
+        current_weight: Current weight in kg
+        height_cm: Height in cm (optional)
+        goal_weight: Target weight in kg (optional)
+    
+    Returns:
+        Weight mode: 'loss', 'gain', or 'maintain'
+    """
+    if not current_weight or current_weight <= 0:
+        return WEIGHT_MODE_LOSS
+    
+    # If goal is set, use goal-based logic
+    if goal_weight and goal_weight > 0:
+        diff_kg = goal_weight - current_weight
+        if diff_kg > 2.0:  # Need to gain more than 2kg
+            return WEIGHT_MODE_GAIN
+        elif diff_kg < -2.0:  # Need to lose more than 2kg
+            return WEIGHT_MODE_LOSS
+        else:  # Within 2kg of goal - maintenance mode
+            return WEIGHT_MODE_MAINTAIN
+    
+    # If height available, use BMI
+    if height_cm and height_cm > 0:
+        height_m = height_cm / 100
+        bmi = current_weight / (height_m ** 2)
+        
+        if bmi < BMI_UNDERWEIGHT_THRESHOLD:
+            return WEIGHT_MODE_GAIN
+        elif bmi > BMI_OVERWEIGHT_THRESHOLD:
+            return WEIGHT_MODE_LOSS
+        else:
+            return WEIGHT_MODE_MAINTAIN
+    
+    # Default to loss mode (legacy behavior)
+    return WEIGHT_MODE_LOSS
+
 
 def get_weight_from_date(weight_entries: list, target_date: str) -> Optional[float]:
     """
@@ -10950,9 +11006,15 @@ def get_daily_weight_reward_rarity(weight_loss_grams: float, legendary_bonus: in
 
 def check_weight_entry_rewards(weight_entries: list, new_weight: float, 
                                 current_date: str, story_id: str = None,
-                                adhd_buster: dict = None) -> dict:
+                                adhd_buster: dict = None, height_cm: float = None,
+                                goal_weight: float = None) -> dict:
     """
     Check and generate rewards for a new weight entry.
+    
+    Supports three weight modes:
+    - LOSS mode (overweight): Rewards weight loss
+    - GAIN mode (underweight): Rewards healthy weight gain  
+    - MAINTAIN mode (normal weight): Rewards staying stable
     
     Args:
         weight_entries: List of existing weight entries
@@ -10960,28 +11022,39 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
         current_date: Today's date (YYYY-MM-DD)
         story_id: Story theme for item generation
         adhd_buster: Optional main data dict for entity perk bonuses
+        height_cm: User's height in cm (for BMI-based mode detection)
+        goal_weight: Target weight in kg (for goal-based mode detection)
     
     Returns:
         Dict with:
             - daily_reward: item dict or None
             - weekly_reward: item dict or None  
             - monthly_reward: item dict or None
-            - daily_loss_grams: float
-            - weekly_loss_grams: float or None
-            - monthly_loss_grams: float or None
+            - daily_change_grams: float (positive = good direction)
+            - weekly_change_grams: float or None
+            - monthly_change_grams: float or None
             - messages: list of reward messages
             - entity_bonus: int (legendary bonus from entities)
+            - weight_mode: str ('loss', 'gain', or 'maintain')
     """
     result = {
         "daily_reward": None,
         "weekly_reward": None,
         "monthly_reward": None,
-        "daily_loss_grams": 0,
-        "weekly_loss_grams": None,
-        "monthly_loss_grams": None,
+        "daily_change_grams": 0,
+        "daily_loss_grams": 0,  # Legacy compatibility
+        "weekly_change_grams": None,
+        "weekly_loss_grams": None,  # Legacy compatibility
+        "monthly_change_grams": None,
+        "monthly_loss_grams": None,  # Legacy compatibility
         "messages": [],
         "entity_bonus": 0,
+        "weight_mode": WEIGHT_MODE_LOSS,
     }
+    
+    # Determine weight mode based on BMI/goal
+    weight_mode = determine_weight_mode(new_weight, height_cm, goal_weight)
+    result["weight_mode"] = weight_mode
     
     # Get entity legendary bonus from rat/mouse entities
     legendary_bonus = 0
@@ -10994,24 +11067,95 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
     prev_entry = get_previous_weight_entry(weight_entries, current_date)
     if prev_entry:
         prev_weight = prev_entry["weight"]
-        daily_loss = calculate_weight_loss(new_weight, prev_weight)
-        result["daily_loss_grams"] = daily_loss
+        # Raw change: positive = lost weight, negative = gained weight
+        raw_change = calculate_weight_loss(new_weight, prev_weight)
         
-        if daily_loss > 0:
-            rarity = get_daily_weight_reward_rarity(daily_loss, legendary_bonus)
-            if rarity:
+        # Normalize change based on mode (positive = good progress)
+        if weight_mode == WEIGHT_MODE_GAIN:
+            # For underweight: weight gain is good (invert the sign)
+            daily_progress = -raw_change
+            progress_verb_good = "gained"
+            progress_verb_bad = "lost"
+            emoji_good = "💪"
+        elif weight_mode == WEIGHT_MODE_MAINTAIN:
+            # For maintenance: staying same is best, small changes ok
+            daily_progress = abs(raw_change)  # Use absolute for maintain mode
+            progress_verb_good = "maintained"
+            progress_verb_bad = "changed"
+            emoji_good = "⚖️"
+        else:  # WEIGHT_MODE_LOSS (default)
+            daily_progress = raw_change
+            progress_verb_good = "lost"
+            progress_verb_bad = "gained"
+            emoji_good = "🎉"
+        
+        result["daily_change_grams"] = daily_progress
+        result["daily_loss_grams"] = raw_change  # Legacy compatibility
+        
+        # LOSS mode: reward weight loss
+        if weight_mode == WEIGHT_MODE_LOSS:
+            if raw_change > 0:
+                rarity = get_daily_weight_reward_rarity(raw_change, legendary_bonus)
+                if rarity:
+                    result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+                    bonus_note = f" (+{legendary_bonus}% 🐀)" if legendary_bonus > 0 else ""
+                    result["messages"].append(
+                        f"🎉 Daily Progress: Lost {raw_change:.0f}g! Earned a {rarity} item!{bonus_note}"
+                    )
+            elif raw_change == 0:
+                rarity = get_daily_weight_reward_rarity(0, legendary_bonus) or "Common"
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-                bonus_note = f" (+{legendary_bonus}% 🐀)" if legendary_bonus > 0 else ""
+                result["messages"].append(f"💪 Maintained weight! Earned a {rarity} item.")
+            else:
+                result["messages"].append(f"📈 Weight up {abs(raw_change):.0f}g - keep going!")
+        
+        # GAIN mode: reward weight gain (for underweight users)
+        elif weight_mode == WEIGHT_MODE_GAIN:
+            weight_gain = -raw_change  # Make positive for gain
+            if weight_gain > 0:
+                # Use same rarity distribution, but for gain instead of loss
+                rarity = get_daily_weight_reward_rarity(weight_gain, legendary_bonus)
+                if rarity:
+                    result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+                    bonus_note = f" (+{legendary_bonus}% 🐀)" if legendary_bonus > 0 else ""
+                    result["messages"].append(
+                        f"💪 Healthy Gain: +{weight_gain:.0f}g! Earned a {rarity} item!{bonus_note}"
+                    )
+            elif weight_gain == 0:
+                rarity = get_daily_weight_reward_rarity(0, legendary_bonus) or "Common"
+                result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+                result["messages"].append(f"⚖️ Stable weight - Earned a {rarity} item.")
+            else:
+                result["messages"].append(f"📉 Weight down {abs(weight_gain):.0f}g - eat well!")
+        
+        # MAINTAIN mode: reward staying within range
+        else:  # WEIGHT_MODE_MAINTAIN
+            abs_change = abs(raw_change)
+            # More reward for staying closer to same weight
+            if abs_change <= 100:  # Within 100g is excellent
+                rarity = get_daily_weight_reward_rarity(200, legendary_bonus) or "Rare"
+                result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(
-                    f"🎉 Daily Progress: Lost {daily_loss:.0f}g! Earned a {rarity} item!{bonus_note}"
+                    f"⚖️ Perfect maintenance! (±{abs_change:.0f}g) Earned a {rarity} item!"
                 )
-        elif daily_loss == 0:
-            # Same weight - still give a reward using the moving window distribution
-            rarity = get_daily_weight_reward_rarity(0, legendary_bonus) or "Common"
-            result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-            result["messages"].append(f"💪 Maintained weight! Earned a {rarity} item.")
-        else:
-            result["messages"].append(f"📈 Weight up {abs(daily_loss):.0f}g - keep going!")
+            elif abs_change <= 200:  # Within 200g is good
+                rarity = get_daily_weight_reward_rarity(100, legendary_bonus) or "Uncommon"
+                result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+                result["messages"].append(
+                    f"⚖️ Good stability! (±{abs_change:.0f}g) Earned a {rarity} item."
+                )
+            elif abs_change <= 500:  # Within 500g is acceptable
+                rarity = get_daily_weight_reward_rarity(0, legendary_bonus) or "Common"
+                result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+                change_dir = "up" if raw_change < 0 else "down"
+                result["messages"].append(
+                    f"⚖️ Weight {change_dir} {abs_change:.0f}g - Earned a {rarity} item."
+                )
+            else:
+                change_dir = "up" if raw_change < 0 else "down"
+                result["messages"].append(
+                    f"📊 Weight {change_dir} {abs_change:.0f}g - stay balanced!"
+                )
     
     # Calculate date 7 days ago for weekly check
     from datetime import datetime, timedelta
@@ -11025,38 +11169,88 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
     # Check weekly progress (vs ~7 days ago)
     week_ago_entry = get_closest_weight_before_date(weight_entries, week_ago_date)
     if week_ago_entry and week_ago_entry["date"] != current_date:
-        weekly_loss = calculate_weight_loss(new_weight, week_ago_entry["weight"])
-        result["weekly_loss_grams"] = weekly_loss
+        weekly_change = calculate_weight_loss(new_weight, week_ago_entry["weight"])
+        result["weekly_change_grams"] = weekly_change
+        result["weekly_loss_grams"] = weekly_change  # Legacy compatibility
         
-        if weekly_loss >= WEIGHT_WEEKLY_LEGENDARY_THRESHOLD:
-            result["weekly_reward"] = generate_item(rarity="Legendary", story_id=story_id)
-            result["messages"].append(
-                f"🌟 WEEKLY LEGENDARY! Lost {weekly_loss:.0f}g this week! "
-                f"(vs {week_ago_entry['date']})"
-            )
-        elif weekly_loss >= 300:
-            result["weekly_reward"] = generate_item(rarity="Epic", story_id=story_id)
-            result["messages"].append(
-                f"🏆 Great week! Lost {weekly_loss:.0f}g - Epic reward!"
-            )
+        # Determine threshold based on mode
+        if weight_mode == WEIGHT_MODE_GAIN:
+            weekly_gain = -weekly_change
+            if weekly_gain >= WEIGHT_WEEKLY_LEGENDARY_THRESHOLD:
+                result["weekly_reward"] = generate_item(rarity="Legendary", story_id=story_id)
+                result["messages"].append(
+                    f"🌟 WEEKLY LEGENDARY! Gained {weekly_gain:.0f}g this week! "
+                    f"(vs {week_ago_entry['date']})"
+                )
+            elif weekly_gain >= 300:
+                result["weekly_reward"] = generate_item(rarity="Epic", story_id=story_id)
+                result["messages"].append(
+                    f"🏆 Great week! Gained {weekly_gain:.0f}g - Epic reward!"
+                )
+        elif weight_mode == WEIGHT_MODE_MAINTAIN:
+            abs_weekly = abs(weekly_change)
+            if abs_weekly <= 200:  # Very stable week
+                result["weekly_reward"] = generate_item(rarity="Rare", story_id=story_id)
+                result["messages"].append(
+                    f"⚖️ Stable week! (±{abs_weekly:.0f}g) Rare reward!"
+                )
+        else:  # WEIGHT_MODE_LOSS
+            if weekly_change >= WEIGHT_WEEKLY_LEGENDARY_THRESHOLD:
+                result["weekly_reward"] = generate_item(rarity="Legendary", story_id=story_id)
+                result["messages"].append(
+                    f"🌟 WEEKLY LEGENDARY! Lost {weekly_change:.0f}g this week! "
+                    f"(vs {week_ago_entry['date']})"
+                )
+            elif weekly_change >= 300:
+                result["weekly_reward"] = generate_item(rarity="Epic", story_id=story_id)
+                result["messages"].append(
+                    f"🏆 Great week! Lost {weekly_change:.0f}g - Epic reward!"
+                )
     
     # Check monthly progress (vs ~30 days ago)
     month_ago_entry = get_closest_weight_before_date(weight_entries, month_ago_date)
     if month_ago_entry and month_ago_entry["date"] != current_date:
-        monthly_loss = calculate_weight_loss(new_weight, month_ago_entry["weight"])
-        result["monthly_loss_grams"] = monthly_loss
+        monthly_change = calculate_weight_loss(new_weight, month_ago_entry["weight"])
+        result["monthly_change_grams"] = monthly_change
+        result["monthly_loss_grams"] = monthly_change  # Legacy compatibility
         
-        if monthly_loss >= WEIGHT_MONTHLY_LEGENDARY_THRESHOLD:
-            result["monthly_reward"] = generate_item(rarity="Legendary", story_id=story_id)
-            result["messages"].append(
-                f"👑 MONTHLY LEGENDARY! Lost {monthly_loss/1000:.1f}kg this month! "
-                f"(vs {month_ago_entry['date']})"
-            )
-        elif monthly_loss >= 1500:
-            result["monthly_reward"] = generate_item(rarity="Epic", story_id=story_id)
-            result["messages"].append(
-                f"🎊 Amazing month! Lost {monthly_loss/1000:.1f}kg - Epic reward!"
-            )
+        if weight_mode == WEIGHT_MODE_GAIN:
+            monthly_gain = -monthly_change
+            if monthly_gain >= WEIGHT_MONTHLY_LEGENDARY_THRESHOLD:
+                result["monthly_reward"] = generate_item(rarity="Legendary", story_id=story_id)
+                result["messages"].append(
+                    f"👑 MONTHLY LEGENDARY! Gained {monthly_gain/1000:.1f}kg this month! "
+                    f"(vs {month_ago_entry['date']})"
+                )
+            elif monthly_gain >= 1500:
+                result["monthly_reward"] = generate_item(rarity="Epic", story_id=story_id)
+                result["messages"].append(
+                    f"🎊 Amazing month! Gained {monthly_gain/1000:.1f}kg - Epic reward!"
+                )
+        elif weight_mode == WEIGHT_MODE_MAINTAIN:
+            abs_monthly = abs(monthly_change)
+            if abs_monthly <= 500:  # Very stable month
+                result["monthly_reward"] = generate_item(rarity="Epic", story_id=story_id)
+                result["messages"].append(
+                    f"⚖️ Rock-solid month! (±{abs_monthly:.0f}g) Epic reward!"
+                )
+            elif abs_monthly <= 1000:  # Fairly stable
+                result["monthly_reward"] = generate_item(rarity="Rare", story_id=story_id)
+                result["messages"].append(
+                    f"⚖️ Good month! (±{abs_monthly:.0f}g) Rare reward!"
+                )
+        else:  # WEIGHT_MODE_LOSS
+            if monthly_change >= WEIGHT_MONTHLY_LEGENDARY_THRESHOLD:
+                result["monthly_reward"] = generate_item(rarity="Legendary", story_id=story_id)
+                result["messages"].append(
+                    f"👑 MONTHLY LEGENDARY! Lost {monthly_change/1000:.1f}kg this month! "
+                    f"(vs {month_ago_entry['date']})"
+                )
+            elif monthly_change >= 1500:
+                result["monthly_reward"] = generate_item(rarity="Epic", story_id=story_id)
+                result["messages"].append(
+                    f"🎊 Amazing month! Lost {monthly_change/1000:.1f}kg - Epic reward!"
+                )
     
     return result
 
@@ -11492,11 +11686,13 @@ def check_weight_maintenance(weight_entries: list, goal: float,
 
 def check_all_weight_rewards(weight_entries: list, new_weight: float, current_date: str,
                              goal: float, achieved_milestones: list, 
-                             story_id: str = None, adhd_buster: dict = None) -> dict:
+                             story_id: str = None, adhd_buster: dict = None,
+                             height_cm: float = None) -> dict:
     """
     Comprehensive check for all weight-related rewards.
     
     Combines daily/weekly/monthly rewards with streak, milestone, and maintenance rewards.
+    Supports three weight modes: loss (overweight), gain (underweight), maintain (normal).
     
     Args:
         weight_entries: Existing entries (WITHOUT the new entry)
@@ -11506,13 +11702,15 @@ def check_all_weight_rewards(weight_entries: list, new_weight: float, current_da
         achieved_milestones: List of already achieved milestone IDs
         story_id: Story theme
         adhd_buster: Optional main data dict for entity perk bonuses
+        height_cm: User's height in cm for BMI-based mode detection
     
     Returns:
         Dict with all reward information
     """
-    # Get base rewards (daily/weekly/monthly)
+    # Get base rewards (daily/weekly/monthly) with mode-aware logic
     base_rewards = check_weight_entry_rewards(
-        weight_entries, new_weight, current_date, story_id, adhd_buster
+        weight_entries, new_weight, current_date, story_id, adhd_buster,
+        height_cm=height_cm, goal_weight=goal
     )
     
     # Create temp entries list including new entry for milestone checks
