@@ -15,7 +15,7 @@ from PySide6.QtCore import QSettings
 from gamification import generate_item, get_entity_qol_perks, get_entity_eye_perks
 from game_state import get_game_state
 from entitidex.celebration_audio import CelebrationAudioManager, Synthesizer
-from styled_dialog import styled_info, styled_warning
+from styled_dialog import styled_info, styled_warning, create_tab_help_button
 
 # Try to import piper for offline TTS
 try:
@@ -413,6 +413,9 @@ class EyeProtectionTab(QtWidgets.QWidget):
         """)
         self.cooldown_status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         header_row.addWidget(self.cooldown_status_label)
+        
+        # Help button
+        header_row.addWidget(create_tab_help_button("eye", self))
         
         # Guidance Settings (New)
         guidance_label = QtWidgets.QLabel("Speaker:")

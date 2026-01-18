@@ -39,6 +39,7 @@ from entitidex import (
     preload_celebration_sounds,
 )
 from entitidex.entity_perks import calculate_active_perks, ENTITY_PERKS, PerkType, get_perk_description
+from styled_dialog import create_tab_help_button
 
 
 # Rarity colors
@@ -2178,6 +2179,9 @@ class EntitidexTab(QtWidgets.QWidget):
         self.total_progress_label = QtWidgets.QLabel()
         self.total_progress_label.setStyleSheet("color: #AAAAAA; font-size: 12px;")
         header_layout.addWidget(self.total_progress_label)
+        
+        # Help button
+        header_layout.addWidget(create_tab_help_button("entitidex", self))
         
         layout.addLayout(header_layout)
         
