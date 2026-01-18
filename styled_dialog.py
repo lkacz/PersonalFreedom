@@ -1346,39 +1346,88 @@ But we're not your mom. Do what you want. 🔓"""
 }
 
 
+def _is_help_read(tab_id: str) -> bool:
+    """Check if help for this tab has been read."""
+    from PySide6.QtCore import QSettings
+    settings = QSettings("PersonalLiberty", "HelpStatus")
+    return settings.value(f"help_read_{tab_id}", False, type=bool)
+
+
+def _mark_help_read(tab_id: str) -> None:
+    """Mark help for this tab as read."""
+    from PySide6.QtCore import QSettings
+    settings = QSettings("PersonalLiberty", "HelpStatus")
+    settings.setValue(f"help_read_{tab_id}", True)
+
+
 def create_tab_help_button(tab_id: str, parent: QtWidgets.QWidget = None) -> QtWidgets.QPushButton:
     """Create a styled ? help button for a tab.
+    
+    Button appearance and placement changes after first read:
+    - Unread: Bright gold, larger (28x28), positioned at top
+    - Read: Dimmer gray, smaller (20x20), positioned at bottom
     
     Args:
         tab_id: Key in TAB_HELP_CONTENT dict (e.g., "timer", "sites")
         parent: Parent widget
         
     Returns:
-        QPushButton configured as help button
+        QPushButton configured as help button with 'is_read' property
     """
+    is_read = _is_help_read(tab_id)
+    
     btn = QtWidgets.QPushButton("?")
-    btn.setFixedSize(28, 28)
+    btn.setProperty("is_read", is_read)  # Store read state for layout logic
+    
+    if is_read:
+        # Smaller, dimmer style for read buttons
+        btn.setFixedSize(20, 20)
+        btn.setToolTip("Help (already read)")
+        btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #3A3A4A, stop:1 #2A2A3A);
+                color: #888888;
+                border: 1px solid #666666;
+                border-radius: 10px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #4A4A5A, stop:1 #3A3A4A);
+                border-color: #888888;
+                color: #AAAAAA;
+            }
+            QPushButton:pressed {
+                background: #2A2A3A;
+            }
+        """)
+    else:
+        # Bright, prominent style for unread buttons
+        btn.setFixedSize(28, 28)
+        btn.setToolTip("❓ NEW! Click for help about this tab")
+        btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #4A4A6A, stop:1 #2A2A4A);
+                color: #FFD700;
+                border: 2px solid #FFD700;
+                border-radius: 14px;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #5A5A7A, stop:1 #3A3A5A);
+                border-color: #FFEA00;
+            }
+            QPushButton:pressed {
+                background: #2A2A4A;
+            }
+        """)
+    
     btn.setCursor(QtCore.Qt.PointingHandCursor)
-    btn.setToolTip("Click for help about this tab")
-    btn.setStyleSheet("""
-        QPushButton {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #4A4A6A, stop:1 #2A2A4A);
-            color: #FFD700;
-            border: 2px solid #FFD700;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #5A5A7A, stop:1 #3A3A5A);
-            border-color: #FFEA00;
-        }
-        QPushButton:pressed {
-            background: #2A2A4A;
-        }
-    """)
     
     def show_help():
         help_data = TAB_HELP_CONTENT.get(tab_id, {})
@@ -1389,9 +1438,40 @@ def create_tab_help_button(tab_id: str, parent: QtWidgets.QWidget = None) -> QtW
         content = help_data.get("content", "No help available.")
         icon = help_data.get("icon", "❓")
         
+        # Mark as read when opened and update button appearance
+        was_unread = not _is_help_read(tab_id)
+        if was_unread:
+            _mark_help_read(tab_id)
+        
         # Create custom help dialog
-        dialog = TabHelpDialog(parent, title, icon, content)
+        dialog = TabHelpDialog(parent, title, icon, content, tab_id)
         dialog.exec()
+        
+        # Update button style to "read" state after dialog closes
+        if was_unread:
+            btn.setProperty("is_read", True)
+            btn.setFixedSize(20, 20)
+            btn.setToolTip("Help (already read)")
+            btn.setStyleSheet("""
+                QPushButton {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #3A3A4A, stop:1 #2A2A3A);
+                    color: #888888;
+                    border: 1px solid #666666;
+                    border-radius: 10px;
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #4A4A5A, stop:1 #3A3A4A);
+                    border-color: #888888;
+                    color: #AAAAAA;
+                }
+                QPushButton:pressed {
+                    background: #2A2A3A;
+                }
+            """)
     
     btn.clicked.connect(show_help)
     return btn
@@ -1406,8 +1486,10 @@ class TabHelpDialog(StyledDialog):
         title: str = "Help",
         icon: str = "❓",
         content: str = "",
+        tab_id: str = "",
     ):
         self._help_content = content
+        self._tab_id = tab_id
         super().__init__(
             parent=parent,
             title=title,
@@ -1449,6 +1531,19 @@ class TabHelpDialog(StyledDialog):
         """)
         help_label.setTextFormat(QtCore.Qt.RichText)
         content_layout.addWidget(help_label)
+        
+        # Add note about button relocation if this is first read
+        if self._tab_id and not _is_help_read(self._tab_id):
+            note_label = QtWidgets.QLabel(
+                "<i style='color: #888888; font-size: 11px;'>"
+                "💡 The help button will move to the bottom of this tab after you close this dialog."
+                "</i>"
+            )
+            note_label.setWordWrap(True)
+            note_label.setTextFormat(QtCore.Qt.RichText)
+            note_label.setStyleSheet("padding: 5px; margin-top: 10px;")
+            content_layout.addWidget(note_label)
+        
         content_layout.addStretch()
         
         scroll.setWidget(content_widget)
@@ -1467,6 +1562,8 @@ def add_help_button_to_header(
 ) -> QtWidgets.QPushButton:
     """Helper to add a ? button to an existing header row layout.
     
+    DEPRECATED: Use add_tab_help_button() instead for automatic top/bottom placement.
+    
     Args:
         layout: The QHBoxLayout header row to add to
         tab_id: Key in TAB_HELP_CONTENT
@@ -1481,4 +1578,41 @@ def add_help_button_to_header(
     
     btn = create_tab_help_button(tab_id, parent)
     layout.addWidget(btn)
+    return btn
+
+
+def add_tab_help_button(
+    tab_layout: QtWidgets.QVBoxLayout,
+    tab_id: str,
+    parent: QtWidgets.QWidget = None
+) -> QtWidgets.QPushButton:
+    """Add a help button to a tab layout.
+    
+    Placement depends on read status:
+    - Unread: Top-right of tab (inserted at position 0)
+    - Read: Bottom-right of tab (appended at end)
+    
+    Args:
+        tab_layout: The main QVBoxLayout of the tab
+        tab_id: Key in TAB_HELP_CONTENT
+        parent: Parent widget for the dialog
+        
+    Returns:
+        The created help button
+    """
+    btn = create_tab_help_button(tab_id, parent)
+    is_read = btn.property("is_read")
+    
+    # Create horizontal layout with stretch to push button right
+    help_row = QtWidgets.QHBoxLayout()
+    help_row.addStretch()
+    help_row.addWidget(btn)
+    
+    if is_read:
+        # Place at bottom for read buttons
+        tab_layout.addLayout(help_row)
+    else:
+        # Place at top for unread buttons
+        tab_layout.insertLayout(0, help_row)
+    
     return btn

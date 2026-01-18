@@ -19,33 +19,33 @@
       </feMerge>
     </filter>
   </defs>
-  
+
   <!-- Luxury aura -->
   <ellipse cx="32" cy="38" rx="28" ry="22" fill="#FFD54F" filter="url(#luxuryGlow)" opacity="0.15"/>
-  
+
   <!-- Executive mahogany drawer (open) -->
   <rect x="4" y="36" width="56" height="24" rx="2" fill="url(#executiveDesk)" stroke="#8D6E63" stroke-width="1"/>
   <rect x="6" y="38" width="52" height="20" fill="#1A1A1A"/>
   <rect x="28" y="34" width="8" height="4" rx="1" fill="#FFD700" filter="url(#luxuryGlow)"/>
-  
+
   <!-- Gold coins and premium items in drawer -->
   <circle cx="12" cy="52" r="2.5" fill="#FFD700"/>
   <circle cx="50" cy="50" r="2" fill="#FFD700"/>
   <ellipse cx="46" cy="54" rx="3" ry="1.5" fill="#C0C0C0"/>
   <circle cx="14" cy="48" r="1.5" fill="#FFD700" opacity="0.8"/>
-  
+
   <!-- Golden rat body (peeking out of drawer) -->
   <ellipse cx="32" cy="42" rx="12" ry="8" fill="url(#goldenFur)" filter="url(#luxuryGlow)"/>
-  
+
   <!-- Golden rat head -->
   <circle cx="38" cy="32" r="10" fill="url(#goldenFur)" filter="url(#luxuryGlow)"/>
-  
+
   <!-- Big executive ears (gold interior) -->
   <circle cx="32" cy="22" r="5" fill="#FFC107"/>
   <circle cx="32" cy="22" r="3" fill="#FFE082"/>
   <circle cx="46" cy="24" r="5" fill="#FFC107"/>
   <circle cx="46" cy="24" r="3" fill="#FFE082"/>
-  
+
   <!-- Confident eyes (golden/amber) with saccadic movement and blinking -->
   <circle cx="34" cy="30" r="4" fill="#3E2723"/>
   <circle cx="34" cy="30" r="2.5" fill="#FF8F00">
@@ -67,34 +67,34 @@
   <circle cx="43" cy="29" r="0.8" fill="white">
     <animate attributeName="cx" values="43;43;44;43;42;43;43;43" dur="4.3s" calcMode="discrete" repeatCount="indefinite"/>
     <animate attributeName="cy" values="29;29;28;29;29;30;29;29" dur="5.6s" calcMode="discrete" repeatCount="indefinite"/>
-  </ellipse>
+  </circle>
   <ellipse cx="42" cy="30" rx="3" ry="0" fill="#5D4037">
     <animate attributeName="ry" values="0;3;0" keyTimes="0;0.98;1" dur="5.9s" begin="1.7s" calcMode="discrete" repeatCount="indefinite"/>
   </ellipse>
-  
+
   <!-- Pink nose with gold shimmer -->
   <ellipse cx="46" cy="34" rx="2" ry="1.5" fill="#FFB74D"/>
-  
+
   <!-- Golden whiskers - static (whiskers don't move independently) -->
   <line x1="46" y1="32" x2="54" y2="30" stroke="#FFD54F" stroke-width="0.5"/>
   <line x1="46" y1="34" x2="56" y2="34" stroke="#FFD54F" stroke-width="0.5"/>
   <line x1="46" y1="36" x2="54" y2="38" stroke="#FFD54F" stroke-width="0.5"/>
-  
+
   <!-- Front paws on drawer edge (golden) -->
   <ellipse cx="26" cy="38" rx="3" ry="2" fill="#FFE082"/>
   <ellipse cx="34" cy="38" rx="3" ry="2" fill="#FFE082"/>
-  
+
   <!-- Elegant tail curling out - swishing elegantly -->
   <path d="M20 44 Q12 48, 8 44 Q4 40, 8 36" stroke="#FFC107" stroke-width="2.5" fill="none" stroke-linecap="round">
     <animate attributeName="d" values="M20 44 Q12 48, 8 44 Q4 40, 8 36;M20 44 Q14 46, 10 42 Q6 38, 10 34;M20 44 Q12 48, 8 44 Q4 40, 8 36" dur="3s" repeatCount="indefinite"/>
   </path>
-  
+
   <!-- Tiny gold nugget being held - pulsing with value -->
   <circle cx="30" cy="36" r="2" fill="#FFD700" filter="url(#luxuryGlow)">
     <animate attributeName="r" values="2;2.3;2;1.8;2" dur="2s" repeatCount="indefinite"/>
     <animate attributeName="opacity" values="1;0.8;1;0.9;1" dur="2s" repeatCount="indefinite"/>
   </circle>
-  
+
   <!-- Sparkles - glinting with luxury -->
   <circle cx="8" cy="28" r="1.5" fill="white" opacity="0.8">
     <animate attributeName="opacity" values="0.8;1;0.8;0.4;0.8" dur="1.5s" repeatCount="indefinite"/>
