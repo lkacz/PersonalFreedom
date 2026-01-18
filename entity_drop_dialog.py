@@ -213,7 +213,8 @@ class EntityEncounterDialog(QtWidgets.QDialog):
     
     def __init__(self, entity, join_probability: float, parent=None, is_exceptional: bool = False,
                  chad_interaction_data: Optional[Dict[str, Any]] = None,
-                 bookmark_data: Optional[Dict[str, Any]] = None):
+                 bookmark_data: Optional[Dict[str, Any]] = None,
+                 flavor_text: Optional[str] = None):
         """
         Initialize the encounter dialog.
         
@@ -235,6 +236,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
                 - slot_cost: int - Cost for next slot (0=free, -1=unavailable)
                 - can_save: bool - Whether saving is allowed
                 - slot_reason: str - Explanation for UI
+            flavor_text: Optional personalized text describing behavior/dialogue
         """
         super().__init__(parent)
         self.entity = entity
@@ -246,6 +248,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         self.chad_interaction_data = chad_interaction_data or {}
         self.bookmark_data = bookmark_data or {}
         self.save_cost = self.bookmark_data.get("slot_cost", 0)
+        self.flavor_text = flavor_text
         
         self._setup_ui()
     
@@ -342,6 +345,19 @@ class EntityEncounterDialog(QtWidgets.QDialog):
             border-radius: 8px;
         """)
         layout.addWidget(rarity_label, alignment=QtCore.Qt.AlignCenter)
+        
+        # Flavor Text (if present)
+        if self.flavor_text:
+            flavor_label = QtWidgets.QLabel(f"<i>\"{self.flavor_text}\"</i>")
+            flavor_label.setAlignment(QtCore.Qt.AlignCenter)
+            flavor_label.setWordWrap(True)
+            flavor_label.setStyleSheet("""
+                font-size: 13px;
+                color: #aaa;
+                font-style: italic;
+                padding: 5px;
+            """)
+            layout.addWidget(flavor_label)
         
         # Stats
         stats_label = QtWidgets.QLabel(f"Power: {self.entity.power}")
@@ -931,7 +947,8 @@ def show_entity_encounter(entity, join_probability: float,
                           encounter_data: Optional[dict] = None,
                           chad_interaction_data: Optional[Dict[str, Any]] = None,
                           coin_data: Optional[Dict[str, Any]] = None,
-                          bookmark_data: Optional[Dict[str, Any]] = None) -> None:
+                          bookmark_data: Optional[Dict[str, Any]] = None,
+                          flavor_text: Optional[str] = None) -> None:
     """
     Show the entity encounter flow using standard widgets and lottery animation.
     
@@ -960,10 +977,11 @@ def show_entity_encounter(entity, join_probability: float,
             - slot_cost: int - Cost for next slot (0=free, -1=unavailable)
             - can_save: bool - Whether saving is allowed
             - slot_reason: str - Explanation for UI
+        flavor_text: Optional personalized flavor text for the encounter.
     """
     
     # 1. Show encounter dialog with SVG (pass is_exceptional for display)
-    dialog = EntityEncounterDialog(entity, join_probability, parent, is_exceptional, chad_interaction_data, bookmark_data)
+    dialog = EntityEncounterDialog(entity, join_probability, parent, is_exceptional, chad_interaction_data, bookmark_data, flavor_text)
     result_code = dialog.exec()
     
     # Handle "Save for Later" choice

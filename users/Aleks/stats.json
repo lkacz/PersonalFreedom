@@ -7,8 +7,12 @@
   "last_session_date": null,
   "best_streak": 0,
   "eye_protection": {
-    "last_date": "2026-01-17T01:06:12.018070",
-    "daily_count": 4
+    "last_date": "2026-01-18T13:14:45.518130",
+    "daily_count": 2
   },
-  "chad_tip_acknowledged_date": "2026-01-17"
+  "chad_tip_acknowledged_date": "2026-01-17",
+  "owl_tip_index_exceptional": 3,
+  "owl_tip_acknowledged_date_exceptional": "2026-01-18",
+  "chad_tip_acknowledged_date_exceptional": "2026-01-18",
+  "chad_tip_index_exceptional": 1
 }

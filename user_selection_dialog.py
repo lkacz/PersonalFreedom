@@ -1,74 +1,78 @@
+"""User Selection Dialog - Styled Version
+
+Frameless, dark-themed dialog for selecting user profiles.
+"""
+
 from PySide6 import QtWidgets, QtCore, QtGui
 from user_manager import UserManager
+from styled_dialog import StyledDialog, StyledMessageBox, StyledInputDialog
 from typing import Optional
 
-class UserSelectionDialog(QtWidgets.QDialog):
+
+class UserSelectionDialog(StyledDialog):
+    """Styled dialog for selecting or creating user profiles."""
+    
     def __init__(self, user_manager: UserManager, parent=None):
-        super().__init__(parent)
         self.user_manager = user_manager
         self.selected_user: Optional[str] = None
-        self.setWindowTitle("Select User")
-        self.setMinimumWidth(300)
-        self.setModal(True)
-        self._build_ui()
+        
+        super().__init__(
+            parent=parent,
+            title="Select Profile",
+            header_icon="👤",
+            min_width=350,
+            max_width=450,
+        )
 
-    def _build_ui(self):
-        layout = QtWidgets.QVBoxLayout(self)
-
-        # Title/Instruction
+    def _build_content(self, layout: QtWidgets.QVBoxLayout):
+        # Instruction
         label = QtWidgets.QLabel("Choose your profile:")
-        label.setStyleSheet("font-weight: bold; font-size: 14px;")
+        label.setStyleSheet("font-weight: bold; font-size: 13px; color: #E0E0E0;")
         layout.addWidget(label)
 
         # User List
         self.user_list = QtWidgets.QListWidget()
         self.user_list.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+        self.user_list.setMinimumHeight(150)
         self.refresh_user_list()
         self.user_list.itemDoubleClicked.connect(self.accept_selection)
         layout.addWidget(self.user_list)
 
-        # Buttons Layout
-        btn_layout = QtWidgets.QHBoxLayout()
+        # Management Buttons
+        mgmt_layout = QtWidgets.QHBoxLayout()
         
-        # New User Button
-        new_btn = QtWidgets.QPushButton("+ New Profile")
+        new_btn = QtWidgets.QPushButton("➕ New Profile")
         new_btn.clicked.connect(self.create_new_user)
-        btn_layout.addWidget(new_btn)
+        mgmt_layout.addWidget(new_btn)
         
-        # Delete User Button
-        del_btn = QtWidgets.QPushButton("Delete")
-        del_btn.setStyleSheet("color: #d32f2f;")
+        del_btn = QtWidgets.QPushButton("🗑️ Delete")
+        del_btn.setObjectName("dangerButton")
         del_btn.clicked.connect(self.delete_user)
-        btn_layout.addWidget(del_btn)
-
-        layout.addLayout(btn_layout)
+        mgmt_layout.addWidget(del_btn)
+        
+        layout.addLayout(mgmt_layout)
+        
+        layout.addSpacing(10)
         
         # Bottom Buttons
-        bottom_layout = QtWidgets.QHBoxLayout()
-        
-        ok_btn = QtWidgets.QPushButton("Start")
-        ok_btn.setStyleSheet("font-weight: bold; background-color: #2196f3; color: white; padding: 6px;")
-        ok_btn.clicked.connect(self.accept_selection)
-        
-        cancel_btn = QtWidgets.QPushButton("Exit")
-        cancel_btn.clicked.connect(self.reject)
-        
-        bottom_layout.addWidget(cancel_btn)
-        bottom_layout.addWidget(ok_btn)
-        
-        layout.addLayout(bottom_layout)
+        self.add_button_row(layout, [
+            ("Exit", "default", self.reject),
+            ("Start", "primary", self.accept_selection),
+        ])
 
     def refresh_user_list(self):
         self.user_list.clear()
         users = self.user_manager.get_users()
         for user in users:
             self.user_list.addItem(user)
-        
-        # Do not auto-select the first user (row 0) to avoid accidental logins to the wrong account.
-        # User must explicitly choose.
 
     def create_new_user(self):
-        name, ok = QtWidgets.QInputDialog.getText(self, "New User", "Enter profile name:")
+        name, ok = StyledInputDialog.get_text(
+            self, 
+            "New Profile", 
+            "Enter profile name:",
+            icon="👤"
+        )
         if ok and name:
             name = name.strip()
             if not name:
@@ -76,7 +80,12 @@ class UserSelectionDialog(QtWidgets.QDialog):
             
             clean_name = self.user_manager.sanitize_username(name)
             if not clean_name:
-                QtWidgets.QMessageBox.warning(self, "Invalid Name", "Name contains invalid characters.\nAllowed: A-Z, 0-9, space, -, _")
+                StyledMessageBox.warning(
+                    self, 
+                    "Invalid Name", 
+                    "Name contains invalid characters.",
+                    "Allowed: A-Z, 0-9, space, -, _"
+                )
                 return
 
             if self.user_manager.create_user(name):
@@ -86,7 +95,12 @@ class UserSelectionDialog(QtWidgets.QDialog):
                 if items:
                     self.user_list.setCurrentItem(items[0])
             else:
-                QtWidgets.QMessageBox.warning(self, "Error", "Could not create user. Name might be invalid or already taken.")
+                StyledMessageBox.warning(
+                    self, 
+                    "Error", 
+                    "Could not create user.",
+                    "Name might be invalid or already taken."
+                )
 
     def delete_user(self):
         current_item = self.user_list.currentItem()
@@ -95,18 +109,18 @@ class UserSelectionDialog(QtWidgets.QDialog):
             
         username = current_item.text()
         
-        confirm = QtWidgets.QMessageBox.question(
+        result = StyledMessageBox.question(
             self, 
             "Confirm Deletion", 
-            f"Are you sure you want to delete profile '{username}'?\nThis cannot be undone.",
-            QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No
+            f"Are you sure you want to delete profile '{username}'?\n\nThis cannot be undone.",
+            ["Cancel", "Delete"]
         )
         
-        if confirm == QtWidgets.QMessageBox.StandardButton.Yes:
+        if result == "Delete":
             if self.user_manager.delete_user(username):
                 self.refresh_user_list()
             else:
-                QtWidgets.QMessageBox.warning(self, "Error", "Could not delete user.")
+                StyledMessageBox.warning(self, "Error", "Could not delete user.")
 
     def accept_selection(self):
         current_item = self.user_list.currentItem()
@@ -114,5 +128,4 @@ class UserSelectionDialog(QtWidgets.QDialog):
             self.selected_user = current_item.text()
             self.accept()
         else:
-            QtWidgets.QMessageBox.warning(self, "Select User", "Please select a user profile.")
-
+            StyledMessageBox.warning(self, "Select User", "Please select a user profile.")

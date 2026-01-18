@@ -1203,8 +1203,10 @@ class EntityCard(QtWidgets.QFrame):
         if self._shimmer_timer and self._shimmer_timer.isActive():
             self._shimmer_timer.stop()
         
-        # Note: WebEngine animations are NOT paused to avoid delay/flicker on tab switch.
-        # The CPU cost of small SVG animations is negligible compared to re-render delays.
+        # Pause WebEngine SVG animations via JavaScript injection
+        # This saves CPU when the tab is hidden or minimized for extended periods
+        if self._icon_widget and isinstance(self._icon_widget, AnimatedSvgWidget):
+            self._icon_widget.stop_animations()
     
     def resume_animations(self) -> None:
         """Resume animations when tab becomes visible.
@@ -1228,7 +1230,9 @@ class EntityCard(QtWidgets.QFrame):
         if self._shimmer_timer and not self._shimmer_timer.isActive():
             self._shimmer_timer.start(50)
         
-        # Note: WebEngine animations run continuously (never paused) to avoid delay/flicker.
+        # Resume WebEngine SVG animations
+        if self._icon_widget and isinstance(self._icon_widget, AnimatedSvgWidget):
+            self._icon_widget.restart_animations()
 
 
 # =============================================================================
@@ -1236,9 +1240,11 @@ class EntityCard(QtWidgets.QFrame):
 # Displayed when user collects all entities from a theme
 # =============================================================================
 
-# Path to celebration SVGs and sounds
+# Path to celebration SVGs
 CELEBRATION_ICONS_PATH = Path(__file__).parent / "icons" / "celebrations"
-CELEBRATION_SOUNDS_PATH = Path(__file__).parent / "icons" / "sounds"
+
+# Cache colorsys import for CelebrationCard rainbow effect (avoid per-frame import)
+from colorsys import hsv_to_rgb as _hsv_to_rgb
 
 
 class CelebrationCard(QtWidgets.QFrame):
@@ -1256,6 +1262,10 @@ class CelebrationCard(QtWidgets.QFrame):
     This is the CONGRATULATIONS card that rewards theme mastery.
     """
     
+    # Note: __slots__ not used here - Qt widgets require __dict__ for signal/slot system
+    # and dynamic property binding (glow_value property). Memory overhead is minimal
+    # since only one CelebrationCard exists per completed theme (max 5 total).
+    
     clicked = QtCore.Signal(str)  # Emits theme_id when clicked
     
     def __init__(self, theme_id: str, parent=None):
@@ -1263,11 +1273,7 @@ class CelebrationCard(QtWidgets.QFrame):
         self.theme_id = theme_id
         self.celebration = get_theme_celebration(theme_id)
         
-        if not self.celebration:
-            _logger.warning("No celebration data for theme: %s", theme_id)
-            return
-        
-        # Animation state
+        # Initialize all animation state attributes first (needed for pause/resume calls)
         self._glow_animation = None
         self._glow_value = 0.0
         self._shimmer_timer = None
@@ -1275,11 +1281,18 @@ class CelebrationCard(QtWidgets.QFrame):
         self._shimmer_widget = None
         self._particle_labels = []
         self._animations_paused = False
+        self._svg_widget = None  # Track for animation lifecycle
+        self._last_border_color = None  # Cache to avoid redundant stylesheet updates
+        self._last_click_time = 0.0  # Cooldown: prevent spam clicking
+        
+        if not self.celebration:
+            _logger.warning("No celebration data for theme: %s", theme_id)
+            return
         
         self.setFrameStyle(QtWidgets.QFrame.StyledPanel | QtWidgets.QFrame.Raised)
         self.setLineWidth(3)
         self.setCursor(QtCore.Qt.PointingHandCursor)
-        self.setFixedSize(400, 280)  # Wider than entity cards for epic presentation
+        self.setFixedSize(400, 360)  # Wider & taller for full SVG visibility
         
         self._build_ui()
         self._start_animations()
@@ -1314,6 +1327,7 @@ class CelebrationCard(QtWidgets.QFrame):
         if svg_path.exists() and HAS_WEBENGINE:
             svg_widget = AnimatedSvgWidget(str(svg_path), svg_container)
             svg_widget.setFixedSize(150, 150)
+            self._svg_widget = svg_widget  # Track for animation lifecycle
         elif svg_path.exists():
             svg_widget = QSvgWidget(str(svg_path), svg_container)
             svg_widget.setFixedSize(150, 150)
@@ -1460,20 +1474,25 @@ class CelebrationCard(QtWidgets.QFrame):
     glow_value = QtCore.Property(float, _get_glow_value, _set_glow_value)
     
     def _update_style(self):
-        """Update card style with animated rainbow border."""
+        """Update card style with animated rainbow border.
+        
+        Optimization: Only updates stylesheet when border color actually changes,
+        and uses module-level cached import for hsv_to_rgb.
+        """
         if not self.celebration:
             return
         
         # Rainbow hue cycling based on glow value
         hue = int(self._glow_value * 360)
         
-        # Create HSV color for border
-        from colorsys import hsv_to_rgb
-        r, g, b = hsv_to_rgb(hue / 360.0, 0.7, 1.0)
+        # Create HSV color for border using cached import
+        r, g, b = _hsv_to_rgb(hue / 360.0, 0.7, 1.0)
         border_color = f"#{int(r*255):02X}{int(g*255):02X}{int(b*255):02X}"
         
-        # Subtle pulsing shadow
-        shadow_alpha = int(100 + 50 * math.sin(self._glow_value * math.pi * 2))
+        # Skip update if border color hasn't changed (avoid redundant style recomputation)
+        if border_color == self._last_border_color:
+            return
+        self._last_border_color = border_color
         
         self.setStyleSheet(f"""
             CelebrationCard {{
@@ -1489,21 +1508,388 @@ class CelebrationCard(QtWidgets.QFrame):
             }}
         """)
         
-        # Update particles
-        self._update_particles()
+        # Note: _update_particles() is called from _update_shimmer() timer,
+        # no need to call it here (was causing redundant updates)
     
     def mousePressEvent(self, event):
-        """Handle click - play celebration sound."""
+        """Handle click - play celebration sound and speak the celebration quote.
+        
+        Milestone rewards:
+        - Clicks 1-20: Cycle through 20 unique celebration quotes
+        - Click 7: +7 coins for curiosity
+        - Click 20: Sarcastic message about giving up
+        - Click 21: +1 coin for irrational persistence
+        - Click 22: +22 coins with formal addiction agreement
+        - Click 23+: Same agreement, no coins
+        
+        Cooldown: 20 seconds between clicks to let music and TTS finish.
+        """
+        import time
+        CLICK_COOLDOWN = 20.0  # Seconds between allowed clicks
+        
         if event.button() == QtCore.Qt.LeftButton:
-            # Play celebration sound
-            sound_path = CELEBRATION_SOUNDS_PATH / self.celebration.sound_filename
-            if sound_path.exists():
-                play_celebration_sound(self.theme_id)
-            else:
-                _logger.info("Celebration sound not found: %s", sound_path)
+            # Enforce cooldown to let music and TTS finish
+            current_time = time.time()
+            if current_time - self._last_click_time < CLICK_COOLDOWN:
+                remaining = int(CLICK_COOLDOWN - (current_time - self._last_click_time))
+                _logger.debug("Celebration click cooldown: %d seconds remaining", remaining)
+                super().mousePressEvent(event)
+                return
+            self._last_click_time = current_time
+            
+            # Guard: celebration data must exist
+            if not self.celebration:
+                _logger.warning("No celebration data for theme: %s", self.theme_id)
+                super().mousePressEvent(event)
+                return
+            
+            # Play celebration sound (synthesized music/fanfare)
+            play_celebration_sound(self.theme_id)
+            
+            # Get click count from parent EntitidexTab
+            click_count = self._increment_click_count()
+            
+            # Determine what quote/message to speak and rewards to give
+            # We use separate quote_index tracking so milestone clicks don't skip quotes
+            quote_to_speak = None
+            coins_awarded = 0
+            is_milestone = False  # Track if this is a milestone (no quote shown)
+            
+            if click_count == 7:
+                # Curiosity reward milestone
+                quote_to_speak = self.celebration.curiosity_message or None
+                coins_awarded = 7 if quote_to_speak else 0  # Only award if message exists
+                is_milestone = True
+            elif click_count == 20:
+                # Sarcastic "give up" message
+                quote_to_speak = self.celebration.resignation_message or None
+                is_milestone = True
+            elif click_count == 21:
+                # Irrational persistence reward
+                quote_to_speak = self.celebration.persistence_message or None
+                coins_awarded = 1 if quote_to_speak else 0
+                is_milestone = True
+            elif click_count == 22:
+                # Final reward with addiction agreement
+                quote_to_speak = self.celebration.addiction_agreement or None
+                coins_awarded = 22 if quote_to_speak else 0
+                is_milestone = True
+            elif click_count >= 23:
+                # Same agreement, no coins
+                quote_to_speak = self.celebration.addiction_agreement or None
+                is_milestone = True
+            elif self.celebration.celebration_quotes:
+                # Use separate quote index that increments only for normal quotes
+                quote_index = self._get_and_increment_quote_index()
+                quote_to_speak = self.celebration.celebration_quotes[quote_index]
+            
+            # Award coins if earned
+            if coins_awarded > 0:
+                self._award_coins(coins_awarded, click_count)
+            
+            # Show quote dialog and speak after music finishes
+            if quote_to_speak:
+                self._show_quote_dialog(quote_to_speak, coins_awarded, is_milestone)
             
             self.clicked.emit(self.theme_id)
         super().mousePressEvent(event)
+    
+    def _show_quote_dialog(self, quote: str, coins_awarded: int, is_milestone: bool):
+        """Show a dialog with the celebration quote and speak it after music.
+        
+        Args:
+            quote: The quote text to display and speak
+            coins_awarded: Coins earned (shown in dialog if > 0)
+            is_milestone: Whether this is a milestone message
+        """
+        from PySide6 import QtWidgets, QtCore, QtGui
+        
+        # Create frameless dialog (no title bar)
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog)
+        dialog.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        dialog.setModal(False)  # Non-blocking
+        dialog.setMinimumWidth(420)
+        dialog.setMaximumWidth(500)
+        
+        # Style the dialog
+        dialog.setStyleSheet("""
+            QDialog {
+                background: transparent;
+            }
+            QFrame#dialogFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1A1A2E, stop:1 #0D0D1A);
+                border: 2px solid #FFD700;
+                border-radius: 16px;
+            }
+            QLabel {
+                color: #E0E0E0;
+                background: transparent;
+            }
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #4A4A6A, stop:1 #2A2A4A);
+                color: #FFD700;
+                border: 1px solid #FFD700;
+                border-radius: 8px;
+                padding: 8px 20px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #5A5A7A, stop:1 #3A3A5A);
+            }
+        """)
+        
+        # Outer layout for the dialog
+        outer_layout = QtWidgets.QVBoxLayout(dialog)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Main frame that holds content (this gets the border/background)
+        frame = QtWidgets.QFrame()
+        frame.setObjectName("dialogFrame")
+        outer_layout.addWidget(frame)
+        
+        layout = QtWidgets.QVBoxLayout(frame)
+        layout.setContentsMargins(25, 20, 25, 20)
+        layout.setSpacing(15)
+        
+        # Header with emoji
+        header_text = "🎉 Celebration! 🎉" if not is_milestone else "🏆 Milestone! 🏆"
+        header_label = QtWidgets.QLabel(header_text)
+        header_label.setAlignment(QtCore.Qt.AlignCenter)
+        header_label.setFont(QtGui.QFont("Segoe UI", 14, QtGui.QFont.Bold))
+        header_label.setStyleSheet("color: #FFD700; padding-bottom: 5px;")
+        layout.addWidget(header_label)
+        
+        # Quote text with word wrap
+        quote_label = QtWidgets.QLabel(quote)
+        quote_label.setWordWrap(True)
+        quote_label.setAlignment(QtCore.Qt.AlignCenter)
+        quote_label.setFont(QtGui.QFont("Segoe UI", 12))
+        quote_label.setStyleSheet("color: #FFFFFF; padding: 10px;")
+        layout.addWidget(quote_label)
+        
+        # Show coins if awarded
+        if coins_awarded > 0:
+            coins_label = QtWidgets.QLabel(f"🪙 +{coins_awarded} coins!")
+            coins_label.setAlignment(QtCore.Qt.AlignCenter)
+            coins_label.setFont(QtGui.QFont("Segoe UI", 14, QtGui.QFont.Bold))
+            coins_label.setStyleSheet("color: #FFD700;")
+            layout.addWidget(coins_label)
+        
+        # OK button
+        btn_layout = QtWidgets.QHBoxLayout()
+        btn_layout.addStretch()
+        ok_btn = QtWidgets.QPushButton("OK")
+        ok_btn.clicked.connect(dialog.accept)
+        btn_layout.addWidget(ok_btn)
+        btn_layout.addStretch()
+        layout.addLayout(btn_layout)
+        
+        # Voice toggle checkbox
+        voice_enabled = self._get_voice_enabled()
+        mute_checkbox = QtWidgets.QCheckBox("🔇 Mute the narrator (I can read!)")
+        mute_checkbox.setChecked(not voice_enabled)
+        mute_checkbox.setStyleSheet("""
+            QCheckBox {
+                color: #888888;
+                font-size: 10px;
+                padding-top: 10px;
+            }
+            QCheckBox::indicator {
+                width: 14px;
+                height: 14px;
+            }
+            QCheckBox::indicator:unchecked {
+                border: 1px solid #666;
+                background: #2A2A4A;
+                border-radius: 3px;
+            }
+            QCheckBox::indicator:checked {
+                border: 1px solid #FFD700;
+                background: #4A4A6A;
+                border-radius: 3px;
+            }
+        """)
+        
+        def on_mute_changed(checked):
+            self._set_voice_enabled(not checked)
+        
+        mute_checkbox.stateChanged.connect(on_mute_changed)
+        layout.addWidget(mute_checkbox, alignment=QtCore.Qt.AlignCenter)
+        
+        # Show dialog (non-blocking)
+        dialog.show()
+        
+        # Speak the quote after music finishes (delay ~3 seconds) - only if voice enabled
+        def speak_quote():
+            if not self._get_voice_enabled():
+                return  # Voice muted
+            try:
+                from eye_protection_tab import GuidanceManager
+                guidance = GuidanceManager.get_instance()
+                if guidance and guidance.piper_voice:
+                    guidance.say(quote)
+            except Exception as e:
+                _logger.debug("Failed to speak celebration quote: %s", e)
+        
+        QtCore.QTimer.singleShot(3000, speak_quote)  # 3 second delay for music
+    
+    def _get_voice_enabled(self) -> bool:
+        """Get whether celebration voice is enabled from parent progress."""
+        parent = self.parent()
+        max_depth = 20
+        depth = 0
+        while parent and depth < max_depth:
+            if hasattr(parent, 'progress') and hasattr(parent.progress, 'celebration_voice_enabled'):
+                return parent.progress.celebration_voice_enabled
+            parent = parent.parent()
+            depth += 1
+        return True  # Default enabled
+    
+    def _set_voice_enabled(self, enabled: bool) -> None:
+        """Set celebration voice enabled and save."""
+        parent = self.parent()
+        max_depth = 20
+        depth = 0
+        while parent and depth < max_depth:
+            if hasattr(parent, 'progress') and hasattr(parent.progress, 'celebration_voice_enabled'):
+                parent.progress.celebration_voice_enabled = enabled
+                if hasattr(parent, '_save_progress'):
+                    try:
+                        parent._save_progress()
+                    except Exception as e:
+                        _logger.debug("Failed to save voice preference: %s", e)
+                return
+            parent = parent.parent()
+            depth += 1
+    
+    def _increment_click_count(self) -> int:
+        """Increment and return the click count for this theme's celebration card.
+        
+        Persists via the parent EntitidexTab's progress tracker.
+        Returns click count (1 as fallback if parent not found).
+        """
+        # Find parent with progress tracker (EntitidexTab)
+        # Use hasattr check since EntitidexTab is defined after CelebrationCard
+        parent = self.parent()
+        max_depth = 20  # Prevent infinite loop
+        depth = 0
+        while parent and depth < max_depth:
+            if hasattr(parent, 'progress') and hasattr(parent.progress, 'celebration_clicks'):
+                break
+            parent = parent.parent()
+            depth += 1
+        
+        if parent and hasattr(parent, 'progress'):
+            try:
+                if self.theme_id not in parent.progress.celebration_clicks:
+                    parent.progress.celebration_clicks[self.theme_id] = 0
+                parent.progress.celebration_clicks[self.theme_id] += 1
+                # Save progress (non-critical, wrapped in try)
+                if hasattr(parent, '_save_progress'):
+                    try:
+                        parent._save_progress()
+                    except Exception as e:
+                        _logger.debug("Failed to save celebration click progress: %s", e)
+                return parent.progress.celebration_clicks[self.theme_id]
+            except Exception as e:
+                _logger.warning("Error incrementing celebration clicks: %s", e)
+                return 1
+        
+        _logger.debug("Parent EntitidexTab not found for theme: %s", self.theme_id)
+        return 1  # Fallback
+    
+    def _get_and_increment_quote_index(self) -> int:
+        """Get current quote index and increment for next time.
+        
+        This is separate from click_count so milestone clicks (7, 20, 21, 22, 23+)
+        don't cause quotes to be skipped.
+        
+        Returns:
+            Quote index (0 to len(quotes)-1), wrapping around cyclically.
+        """
+        # Find parent with progress tracker (EntitidexTab)
+        parent = self.parent()
+        max_depth = 20
+        depth = 0
+        while parent and depth < max_depth:
+            if hasattr(parent, 'progress') and hasattr(parent.progress, 'celebration_quote_index'):
+                break
+            parent = parent.parent()
+            depth += 1
+        
+        num_quotes = len(self.celebration.celebration_quotes) if self.celebration.celebration_quotes else 1
+        
+        if parent and hasattr(parent, 'progress'):
+            try:
+                if self.theme_id not in parent.progress.celebration_quote_index:
+                    parent.progress.celebration_quote_index[self.theme_id] = 0
+                
+                # Get current index
+                current_idx = parent.progress.celebration_quote_index[self.theme_id] % num_quotes
+                
+                # Increment for next time (wraps automatically when we use modulo on get)
+                parent.progress.celebration_quote_index[self.theme_id] = (current_idx + 1) % num_quotes
+                
+                # Save progress (non-critical)
+                if hasattr(parent, '_save_progress'):
+                    try:
+                        parent._save_progress()
+                    except Exception as e:
+                        _logger.debug("Failed to save quote index progress: %s", e)
+                
+                return current_idx
+            except Exception as e:
+                _logger.warning("Error getting quote index: %s", e)
+                return 0
+        
+        _logger.debug("Parent EntitidexTab not found for quote index: %s", self.theme_id)
+        return 0  # Fallback
+    
+    def _award_coins(self, amount: int, click_count: int) -> None:
+        """Award coins to the user for milestone achievements.
+        
+        Args:
+            amount: Number of coins to award
+            click_count: Which click milestone this is for (7, 21, or 22)
+        """
+        # Find parent with blocker (EntitidexTab)
+        parent = self.parent()
+        max_depth = 20  # Prevent infinite loop
+        depth = 0
+        while parent and depth < max_depth:
+            if hasattr(parent, 'blocker') and hasattr(parent, 'progress'):
+                break
+            parent = parent.parent()
+            depth += 1
+        
+        if not parent or not hasattr(parent, 'blocker'):
+            _logger.debug("Parent blocker not found for coin award (theme: %s)", self.theme_id)
+            return
+        
+        if not hasattr(parent.blocker, 'adhd_buster') or parent.blocker.adhd_buster is None:
+            _logger.debug("adhd_buster not available for coin award")
+            return
+        
+        try:
+            adhd_buster = parent.blocker.adhd_buster
+            current_coins = adhd_buster.get("coins", 0)
+            adhd_buster["coins"] = current_coins + amount
+            parent.blocker.save_config()
+            
+            # Log notification
+            reason = {
+                7: f"🔍 Curiosity Rewarded! +{amount} coins",
+                21: f"🎯 Irrational Persistence! +{amount} coin",
+                22: f"📜 Final Agreement Signed! +{amount} coins",
+            }.get(click_count, f"+{amount} coins")
+            
+            _logger.info("Celebration milestone: %s (theme: %s)", reason, self.theme_id)
+        except Exception as e:
+            _logger.warning("Failed to award celebration coins: %s", e)
     
     def pause_animations(self):
         """Pause animations when card is not visible."""
@@ -1516,6 +1902,10 @@ class CelebrationCard(QtWidgets.QFrame):
         
         if self._shimmer_timer and self._shimmer_timer.isActive():
             self._shimmer_timer.stop()
+        
+        # Pause SVG animations if using AnimatedSvgWidget
+        if self._svg_widget and isinstance(self._svg_widget, AnimatedSvgWidget):
+            self._svg_widget.stop_animations()
     
     def resume_animations(self):
         """Resume animations when card becomes visible."""
@@ -1528,6 +1918,10 @@ class CelebrationCard(QtWidgets.QFrame):
         
         if self._shimmer_timer and not self._shimmer_timer.isActive():
             self._shimmer_timer.start(40)
+        
+        # Resume SVG animations if using AnimatedSvgWidget
+        if self._svg_widget and isinstance(self._svg_widget, AnimatedSvgWidget):
+            self._svg_widget.restart_animations()
 
 
 # Theme info for tabs (matching preview_entities.py)
@@ -1560,8 +1954,10 @@ class EntitidexTab(QtWidgets.QWidget):
         
         # Performance: Track all cards for animation lifecycle management
         self._all_cards: list = []  # List[EntityCard]
+        self._celebration_cards: list = []  # List[CelebrationCard]
         self._is_visible = False
         self._initialized = False  # Lazy init flag
+        self._current_theme_index = 0  # Track current theme tab
         
         # Lightweight placeholder - actual UI built on first showEvent
         self._placeholder_layout = QtWidgets.QVBoxLayout(self)
@@ -1589,6 +1985,8 @@ class EntitidexTab(QtWidgets.QWidget):
         # Start with animations paused since tab isn't visible yet
         for card in self._all_cards:
             card.pause_animations()
+        for card in self._celebration_cards:
+            card.pause_animations()
     
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         """Called when tab becomes visible - lazy init and resume animations."""
@@ -1605,9 +2003,28 @@ class EntitidexTab(QtWidgets.QWidget):
             self._load_progress()
             self._build_ui()
         
-        # Resume all card animations
-        for card in self._all_cards:
-            card.resume_animations()
+        # Resume all card animations (only for current theme tab)
+        # Guard: theme_tabs may be empty if _build_ui hasn't run yet
+        if not self.theme_tabs:
+            return
+        
+        theme_keys = list(THEME_INFO.keys())
+        current_theme = theme_keys[self._current_theme_index] if self._current_theme_index < len(theme_keys) else None
+        
+        if current_theme:
+            current_container = self.theme_tabs.get(current_theme)
+            if current_container:
+                for card in self._all_cards:
+                    # Check if card belongs to current theme container
+                    parent = card.parent()
+                    while parent and parent != current_container:
+                        parent = parent.parent()
+                    if parent == current_container:
+                        card.resume_animations()
+                # Resume celebration cards on current theme
+                for card in self._celebration_cards:
+                    if hasattr(card, 'theme_id') and card.theme_id == current_theme:
+                        card.resume_animations()
     
     def hideEvent(self, event: QtGui.QHideEvent) -> None:
         """Called when tab is hidden - pause animations to save resources."""
@@ -1617,6 +2034,55 @@ class EntitidexTab(QtWidgets.QWidget):
         # Pause all card animations to save CPU
         for card in self._all_cards:
             card.pause_animations()
+        # Pause all celebration card animations
+        for card in self._celebration_cards:
+            card.pause_animations()
+    
+    def on_window_minimized(self) -> None:
+        """Called by parent window when app is minimized - ensures all animations pause.
+        
+        This provides explicit minimize handling in case Qt's hideEvent doesn't
+        propagate to nested tab widgets. Useful for system tray minimization.
+        """
+        if not self._is_visible:
+            return  # Already paused
+        self._is_visible = False
+        
+        for card in self._all_cards:
+            card.pause_animations()
+        for card in self._celebration_cards:
+            card.pause_animations()
+    
+    def on_window_restored(self) -> None:
+        """Called by parent window when app is restored from minimize/tray.
+        
+        Resumes animations only for the currently visible theme tab.
+        """
+        if self._is_visible:
+            return  # Already running
+        self._is_visible = True
+        
+        if not self._initialized:
+            return  # Not yet built
+        
+        # Only resume animations for the currently visible theme tab
+        theme_keys = list(THEME_INFO.keys())
+        current_theme = theme_keys[self._current_theme_index] if self._current_theme_index < len(theme_keys) else None
+        
+        if current_theme:
+            current_container = self.theme_tabs.get(current_theme)
+            if current_container:
+                for card in self._all_cards:
+                    # Check if card belongs to current theme container
+                    parent = card.parent()
+                    while parent and parent != current_container:
+                        parent = parent.parent()
+                    if parent == current_container:
+                        card.resume_animations()
+                # Resume celebration cards on current theme
+                for card in self._celebration_cards:
+                    if hasattr(card, 'theme_id') and card.theme_id == current_theme:
+                        card.resume_animations()
     
     def _load_progress(self):
         """Load entitidex progress from blocker config."""
@@ -1748,6 +2214,9 @@ class EntitidexTab(QtWidgets.QWidget):
         
         layout.addWidget(self.theme_tab_widget)
         
+        # Connect theme tab changes to pause/resume animations on hidden/visible tabs
+        self.theme_tab_widget.currentChanged.connect(self._on_theme_tab_changed)
+        
         # Note: Entity info is now shown via hover tooltips on cards (cleaner UX)
         
         # Load initial data
@@ -1845,8 +2314,13 @@ class EntitidexTab(QtWidgets.QWidget):
         
         return tab_container
     
-    def _create_entity_pair_widget(self, entity: Entity) -> QtWidgets.QWidget:
-        """Create a widget containing both normal and exceptional cards for an entity."""
+    def _create_entity_pair_widget(self, entity: Entity, theme_key: str = None) -> QtWidgets.QWidget:
+        """Create a widget containing both normal and exceptional cards for an entity.
+        
+        Args:
+            entity: The entity to create cards for
+            theme_key: The theme this entity belongs to (for animation lifecycle)
+        """
         pair_widget = QtWidgets.QWidget()
         pair_layout = QtWidgets.QHBoxLayout(pair_widget)
         pair_layout.setContentsMargins(0, 0, 0, 0)
@@ -1883,8 +2357,16 @@ class EntitidexTab(QtWidgets.QWidget):
         self._all_cards.append(normal_card)
         self._all_cards.append(exceptional_card)
         
-        # If tab is currently hidden, start with animations paused
-        if not self._is_visible:
+        # Determine if cards should start paused
+        # Pause if: 1) Entitidex tab is hidden, OR 2) This is not the current theme tab
+        should_pause = not self._is_visible
+        if theme_key and self._is_visible:
+            theme_keys = list(THEME_INFO.keys())
+            current_theme_key = theme_keys[self._current_theme_index] if self._current_theme_index < len(theme_keys) else None
+            if theme_key != current_theme_key:
+                should_pause = True
+        
+        if should_pause:
             normal_card.pause_animations()
             exceptional_card.pause_animations()
         
@@ -1913,6 +2395,15 @@ class EntitidexTab(QtWidgets.QWidget):
                 cards_to_remove.append(card)
         for card in cards_to_remove:
             self._all_cards.remove(card)
+        
+        # Cleanup: Remove old celebration cards for this theme
+        celebration_cards_to_remove = []
+        for card in self._celebration_cards:
+            if hasattr(card, 'theme_id') and card.theme_id == theme_key:
+                card.pause_animations()  # Stop animations before deletion
+                celebration_cards_to_remove.append(card)
+        for card in celebration_cards_to_remove:
+            self._celebration_cards.remove(card)
         
         # Clear existing cards
         while cards_layout.count():
@@ -1973,6 +2464,12 @@ class EntitidexTab(QtWidgets.QWidget):
             celebration_card = CelebrationCard(theme_key, cards_container)
             if celebration_card.celebration:  # Only add if valid
                 cards_layout.addWidget(celebration_card, current_row, 0, 1, 1, QtCore.Qt.AlignCenter)
+                # Register for lifecycle management (pause/resume)
+                self._celebration_cards.append(celebration_card)
+                # Start paused if tab not visible or this isn't the current theme
+                theme_keys = list(THEME_INFO.keys())
+                if not self._is_visible or theme_keys.index(theme_key) != self._current_theme_index:
+                    celebration_card.pause_animations()
                 current_row += 1
                 
                 # Add separator line below celebration
@@ -2002,7 +2499,7 @@ class EntitidexTab(QtWidgets.QWidget):
         
         # Add legendary at top center
         for entity in legendary:
-            pair_widget = self._create_entity_pair_widget(entity)
+            pair_widget = self._create_entity_pair_widget(entity, theme_key)
             cards_layout.addWidget(pair_widget, current_row, 0, 1, 1, QtCore.Qt.AlignCenter)
             current_row += 1
         
@@ -2015,7 +2512,7 @@ class EntitidexTab(QtWidgets.QWidget):
         # Add each rarity group - one entity pair per row, centered
         for rarity_group in [epic, rare, uncommon, common]:
             for entity in rarity_group:
-                pair_widget = self._create_entity_pair_widget(entity)
+                pair_widget = self._create_entity_pair_widget(entity, theme_key)
                 cards_layout.addWidget(pair_widget, current_row, 0, 1, 1, QtCore.Qt.AlignCenter)
                 current_row += 1
     
@@ -2045,6 +2542,52 @@ class EntitidexTab(QtWidgets.QWidget):
             f"Total: {total_collected}/{total_slots} ({total_percent}%) | "
             f"Normal: {total_normal} | ⭐ Exceptional: {total_exceptional}"
         )
+
+    def _on_theme_tab_changed(self, index: int) -> None:
+        """Handle theme tab changes - pause animations on hidden tabs, resume on visible.
+        
+        Performance optimization: Only run animations for the currently visible theme tab.
+        This can save significant CPU when many entity cards have active animations.
+        """
+        theme_keys = list(THEME_INFO.keys())
+        old_theme = theme_keys[self._current_theme_index] if self._current_theme_index < len(theme_keys) else None
+        new_theme = theme_keys[index] if index < len(theme_keys) else None
+        self._current_theme_index = index
+        
+        if not self._is_visible:
+            return  # Tab not visible, all animations already paused
+        
+        # Pause animations on cards belonging to the old theme
+        if old_theme:
+            old_container = self.theme_tabs.get(old_theme)
+            if old_container:
+                for card in self._all_cards:
+                    # Check if card belongs to old theme container
+                    parent = card.parent()
+                    while parent and parent != old_container:
+                        parent = parent.parent()
+                    if parent == old_container:
+                        card.pause_animations()
+                # Pause celebration cards on old theme
+                for card in self._celebration_cards:
+                    if hasattr(card, 'theme_id') and card.theme_id == old_theme:
+                        card.pause_animations()
+        
+        # Resume animations on cards belonging to the new theme
+        if new_theme:
+            new_container = self.theme_tabs.get(new_theme)
+            if new_container:
+                for card in self._all_cards:
+                    # Check if card belongs to new theme container
+                    parent = card.parent()
+                    while parent and parent != new_container:
+                        parent = parent.parent()
+                    if parent == new_container:
+                        card.resume_animations()
+                # Resume celebration cards on new theme
+                for card in self._celebration_cards:
+                    if hasattr(card, 'theme_id') and card.theme_id == new_theme:
+                        card.resume_animations()
 
     def _show_perks_summary(self):
         """Show a dialog listing all active entity perks in a table format."""

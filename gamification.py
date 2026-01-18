@@ -12928,9 +12928,6 @@ def get_hydration_cooldown_minutes(adhd_buster: dict) -> int:
         
         # Get cooldown reduction (stored as minutes, e.g., 5 = -5 minutes)
         cooldown_reduction = int(perks.get(PerkType.HYDRATION_COOLDOWN, 0))
-        
-        if cooldown_reduction > 0:
-            print(f"[Entity Perks] ✨ Hydration cooldown reduced by {cooldown_reduction} min!")
             
         # Apply reduction with minimum of 30 minutes
         return max(30, base_minutes - cooldown_reduction)
@@ -12962,9 +12959,6 @@ def get_hydration_daily_cap(adhd_buster: dict) -> int:
         
         # Get cap increase (stored as count, e.g., 1 = +1 glass)
         cap_increase = int(perks.get(PerkType.HYDRATION_CAP, 0))
-        
-        if cap_increase > 0:
-            print(f"[Entity Perks] ✨ Daily hydration cap increased by {cap_increase}!")
             
         return base_cap + cap_increase
         

@@ -33,21 +33,25 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from item_drop_dialog import EnhancedItemDropDialog
 from level_up_dialog import EnhancedLevelUpDialog
 from emergency_cleanup_dialog import EmergencyCleanupDialog, show_emergency_cleanup_dialog
+from styled_dialog import (
+    StyledDialog, StyledMessageBox, StyledInputDialog,
+    styled_info, styled_warning, styled_error, styled_question, styled_input
+)
 
 
 # ============================================================================
-# Silent Message Box Helper (no system sound)
+# Silent Message Box Helper (uses styled dialogs)
 # ============================================================================
 
 def show_message(parent, title: str, text: str, icon: QtWidgets.QMessageBox.Icon = QtWidgets.QMessageBox.Information) -> int:
-    """Show a message box without playing the system sound."""
-    msg = QtWidgets.QMessageBox(parent)
-    msg.setWindowTitle(title)
-    msg.setText(text)
-    msg.setIcon(icon)
-    msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-    # Disable the alert sound by setting the window flag
-    msg.setWindowFlags(msg.windowFlags() | QtCore.Qt.WindowType.WindowDoesNotAcceptFocus)
+    """Show a styled message box without playing the system sound."""
+    if icon == QtWidgets.QMessageBox.Warning:
+        styled_warning(parent, title, text)
+    elif icon == QtWidgets.QMessageBox.Critical:
+        styled_error(parent, title, text)
+    else:
+        styled_info(parent, title, text)
+    return QtWidgets.QMessageBox.Ok
     # Alternative: use custom event filter or just show without sound
     msg.setOption(QtWidgets.QMessageBox.Option.DontUseNativeDialog, True)
     return msg.exec()
@@ -732,7 +736,7 @@ def load_heavy_modules(splash: Optional[SplashScreen] = None):
 MUTEX_NAME = "PersonalLiberty_SingleInstance_Mutex"
 
 
-class HardcoreChallengeDialog(QtWidgets.QDialog):
+class HardcoreChallengeDialog(StyledDialog):
     """
     Math challenge dialog for Hardcore mode.
     Requires solving two long number arithmetic problems to stop the session.
@@ -740,20 +744,20 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
     """
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
-        self.setWindowTitle("💪 Hardcore Challenge")
-        self.setModal(True)
-        self.setMinimumWidth(580)
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
-        
         # Generate two different math problems
         self.problems = self._generate_problems()
         self.current_problem = 0
         self.solved_count = 0
         self._ready_to_finish = False
         
-        self._build_ui()
-        self._show_current_problem()
+        super().__init__(
+            parent=parent,
+            title="HARDCORE MODE ACTIVE",
+            header_icon="💪",
+            min_width=550,
+            max_width=650,
+            closable=False,
+        )
     
     def _generate_problems(self) -> list:
         """Generate two challenging math problems with large numbers."""
@@ -788,42 +792,28 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
         
         return problems
     
-    def _build_ui(self) -> None:
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(20)
-        
-        # Warning header
-        header = QtWidgets.QLabel("⚠️ HARDCORE MODE ACTIVE ⚠️")
-        header.setStyleSheet("""
-            font-size: 18px;
-            font-weight: bold;
-            color: #dc3545;
-            padding: 10px;
-        """)
-        header.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(header)
-        
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
         # Instructions
         instructions = QtWidgets.QLabel(
             "To stop this session, you must solve 2 math problems.\n"
             "Type your answers manually - no shortcuts allowed!"
         )
-        instructions.setStyleSheet("font-size: 12px; color: #666;")
+        instructions.setStyleSheet("font-size: 12px; color: #888888;")
         instructions.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(instructions)
         
         # Progress indicator
         self.progress_label = QtWidgets.QLabel()
-        self.progress_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+        self.progress_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #FFD700;")
         self.progress_label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(self.progress_label)
         
-        # Problem display area (using QLabel with custom painting to prevent selection)
+        # Problem display area
         self.problem_frame = QtWidgets.QFrame()
         self.problem_frame.setStyleSheet("""
             QFrame {
-                background-color: #2d2d2d;
-                border: 2px solid #444;
+                background-color: #0D0D1A;
+                border: 2px solid #444466;
                 border-radius: 10px;
                 padding: 20px;
             }
@@ -840,17 +830,11 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
         
         # Answer input
         input_layout = QtWidgets.QHBoxLayout()
-        input_layout.addWidget(QtWidgets.QLabel("Your Answer:"))
+        input_label = QtWidgets.QLabel("Your Answer:")
+        input_label.setStyleSheet("color: #E0E0E0;")
+        input_layout.addWidget(input_label)
         self.answer_input = QtWidgets.QLineEdit()
         self.answer_input.setPlaceholderText("Type the result here...")
-        self.answer_input.setStyleSheet("""
-            QLineEdit {
-                font-size: 20px;
-                padding: 10px;
-                border: 2px solid #007bff;
-                border-radius: 5px;
-            }
-        """)
         # Only allow numbers and minus sign
         self.answer_input.setValidator(QtGui.QIntValidator())
         self.answer_input.returnPressed.connect(self._check_answer)
@@ -860,47 +844,26 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
         # Feedback label
         self.feedback_label = QtWidgets.QLabel("")
         self.feedback_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.feedback_label.setStyleSheet("font-size: 14px; min-height: 30px;")
+        self.feedback_label.setStyleSheet("font-size: 14px; min-height: 30px; color: #E0E0E0;")
         layout.addWidget(self.feedback_label)
         
         # Buttons
         btn_layout = QtWidgets.QHBoxLayout()
         
-        self.submit_btn = QtWidgets.QPushButton("Submit Answer")
-        self.submit_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #28a745;
-                color: white;
-                font-size: 14px;
-                font-weight: bold;
-                padding: 10px 30px;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #218838;
-            }
-        """)
-        self.submit_btn.clicked.connect(self._check_answer)
-        
         self.cancel_btn = QtWidgets.QPushButton("Keep Focusing")
-        self.cancel_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #6c757d;
-                color: white;
-                font-size: 14px;
-                padding: 10px 30px;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #5a6268;
-            }
-        """)
         self.cancel_btn.clicked.connect(self.reject)
+        
+        self.submit_btn = QtWidgets.QPushButton("Submit Answer")
+        self.submit_btn.setObjectName("primaryButton")
+        self.submit_btn.clicked.connect(self._check_answer)
         
         btn_layout.addWidget(self.cancel_btn)
         btn_layout.addStretch()
         btn_layout.addWidget(self.submit_btn)
         layout.addLayout(btn_layout)
+        
+        # Show first problem
+        self._show_current_problem()
     
     def _render_problem_as_image(self, a: int, b: int, op: str) -> QtGui.QPixmap:
         """Render the math problem as a pixmap to prevent text selection/copying."""
@@ -962,7 +925,7 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
             user_answer = int(self.answer_input.text().strip())
         except ValueError:
             self.feedback_label.setText("❌ Please enter a valid number!")
-            self.feedback_label.setStyleSheet("font-size: 14px; color: #dc3545; min-height: 30px;")
+            self.feedback_label.setStyleSheet("font-size: 14px; color: #FF6B6B; min-height: 30px;")
             return
         
         correct_answer = self.problems[self.current_problem]['answer']
@@ -974,7 +937,7 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
             if self.solved_count >= 2:
                 # All problems solved! Require explicit confirmation to close.
                 self.feedback_label.setText("✅ Correct! Click 'End Session' to finish.")
-                self.feedback_label.setStyleSheet("font-size: 14px; color: #28a745; min-height: 30px;")
+                self.feedback_label.setStyleSheet("font-size: 14px; color: #4CAF50; min-height: 30px;")
                 self.answer_input.setEnabled(False)
                 self.submit_btn.setText("End Session")
                 if not self._ready_to_finish:
@@ -987,12 +950,12 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
             else:
                 # Show next problem
                 self.feedback_label.setText("✅ Correct! One more to go...")
-                self.feedback_label.setStyleSheet("font-size: 14px; color: #28a745; min-height: 30px;")
+                self.feedback_label.setStyleSheet("font-size: 14px; color: #4CAF50; min-height: 30px;")
                 QtCore.QTimer.singleShot(800, self._show_current_problem)
         else:
             # Wrong answer - generate new problems and restart
             self.feedback_label.setText("❌ Wrong! Starting over with new problems...")
-            self.feedback_label.setStyleSheet("font-size: 14px; color: #dc3545; min-height: 30px;")
+            self.feedback_label.setStyleSheet("font-size: 14px; color: #FF6B6B; min-height: 30px;")
             
             # Reset with new problems after a delay
             QtCore.QTimer.singleShot(1500, self._reset_challenge)
@@ -1012,32 +975,53 @@ class HardcoreChallengeDialog(QtWidgets.QDialog):
         super().keyPressEvent(event)
 
 
-class OnboardingModeDialog(QtWidgets.QDialog):
+class OnboardingModeDialog(StyledDialog):
     """Prompt the user to pick how they want to play on startup."""
 
     def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
         self.blocker = blocker
         ensure_hero_structure(self.blocker.adhd_buster)
+        self._dont_ask = False
+        
+        super().__init__(
+            parent=parent,
+            title="Choose Gamification Mode",
+            header_icon="🎮",
+            min_width=420,
+            max_width=520,
+        )
+        
+        # Set initial selection after UI is built
+        current_mode = get_story_mode(self.blocker.adhd_buster)
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        
+        if current_mode == STORY_MODE_HERO_ONLY:
+            self.hero_only_radio.setChecked(True)
+        elif current_mode == STORY_MODE_DISABLED:
+            self.disabled_radio.setChecked(True)
+        else:
+            self.story_radio.setChecked(True)
 
-        self.setWindowTitle("Choose Gamification Mode")
-        self.setModal(True)
-        self.setMinimumWidth(420)
-        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        idx = self.story_combo.findData(active_story)
+        if idx >= 0:
+            self.story_combo.setCurrentIndex(idx)
+        
+        self._on_mode_changed()
 
-        layout = QtWidgets.QVBoxLayout(self)
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
         info = QtWidgets.QLabel(
-            "How would you like to play today?\n"
+            "How would you like to play today?\n\n"
             "• Story: each story has its own hero, gear, and decisions.\n"
             "• Hero only: level up a free hero, no story.\n"
             "• Disabled: no gamification for this session."
         )
         info.setWordWrap(True)
+        info.setStyleSheet("color: #E0E0E0; line-height: 1.4;")
         layout.addWidget(info)
 
-        self.story_radio = QtWidgets.QRadioButton("Story mode")
-        self.hero_only_radio = QtWidgets.QRadioButton("Hero only (no story)")
-        self.disabled_radio = QtWidgets.QRadioButton("Disabled")
+        self.story_radio = QtWidgets.QRadioButton("📖 Story mode")
+        self.hero_only_radio = QtWidgets.QRadioButton("⚔️ Hero only (no story)")
+        self.disabled_radio = QtWidgets.QRadioButton("❌ Disabled")
 
         mode_group = QtWidgets.QButtonGroup(self)
         for btn in (self.story_radio, self.hero_only_radio, self.disabled_radio):
@@ -1052,41 +1036,27 @@ class OnboardingModeDialog(QtWidgets.QDialog):
             self.story_combo.addItem("The Focus Warrior", "warrior")
         layout.addWidget(self.story_combo)
 
-        current_mode = get_story_mode(self.blocker.adhd_buster)
-        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
-
-        if current_mode == STORY_MODE_HERO_ONLY:
-            self.hero_only_radio.setChecked(True)
-        elif current_mode == STORY_MODE_DISABLED:
-            self.disabled_radio.setChecked(True)
-        else:
-            self.story_radio.setChecked(True)
-
-        idx = self.story_combo.findData(active_story)
-        if idx >= 0:
-            self.story_combo.setCurrentIndex(idx)
-
         self.story_radio.toggled.connect(self._on_mode_changed)
         self.hero_only_radio.toggled.connect(self._on_mode_changed)
         self.disabled_radio.toggled.connect(self._on_mode_changed)
-        self._on_mode_changed()
 
         # Don't ask again checkbox
         self.dont_ask_checkbox = QtWidgets.QCheckBox("Don't ask again on startup")
         self.dont_ask_checkbox.setToolTip(
             "You can always change your mode from the ADHD Buster dialog (Story Settings)"
         )
+        self.dont_ask_checkbox.setStyleSheet("color: #888888; font-size: 11px; margin-top: 10px;")
         layout.addWidget(self.dont_ask_checkbox)
 
-        buttons = QtWidgets.QDialogButtonBox(
-            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel,
-            QtCore.Qt.Horizontal,
-            self,
-        )
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
+        layout.addSpacing(10)
+        
+        # Buttons
+        self.add_button_row(layout, [
+            ("Cancel", "default", self.reject),
+            ("Start", "primary", self.accept),
+        ])
 
+        current_mode = get_story_mode(self.blocker.adhd_buster)
     def _on_mode_changed(self) -> None:
         self.story_combo.setEnabled(self.story_radio.isChecked())
 
@@ -4780,6 +4750,30 @@ class SettingsTab(QtWidgets.QWidget):
         cleanup_layout.addWidget(cleanup_btn)
         inner.addWidget(cleanup_group)
 
+        # Voice Settings
+        voice_group = QtWidgets.QGroupBox("🎙️ Voice Settings")
+        voice_layout = QtWidgets.QVBoxLayout(voice_group)
+        voice_layout.addWidget(QtWidgets.QLabel("Select a voice for TTS (Eye Routine, Celebration quotes)."))
+        
+        voice_combo_layout = QtWidgets.QHBoxLayout()
+        voice_combo_layout.addWidget(QtWidgets.QLabel("Voice:"))
+        self.voice_combo = QtWidgets.QComboBox()
+        self.voice_combo.setMinimumWidth(250)
+        voice_combo_layout.addWidget(self.voice_combo)
+        voice_combo_layout.addStretch()
+        voice_layout.addLayout(voice_combo_layout)
+        
+        # Test voice button
+        test_voice_btn = QtWidgets.QPushButton("🔊 Test Voice")
+        test_voice_btn.setMaximumWidth(150)
+        test_voice_btn.clicked.connect(self._test_voice)
+        voice_layout.addWidget(test_voice_btn)
+        
+        inner.addWidget(voice_group)
+        
+        # Populate voice combo after UI is built
+        self._populate_voice_combo()
+
         # System Tray (if available)
         if QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
             tray_group = QtWidgets.QGroupBox("🖥️ System Tray")
@@ -5195,6 +5189,46 @@ class SettingsTab(QtWidgets.QWidget):
             # Persist the setting
             self.blocker.minimize_to_tray = checked
             self.blocker.save_config()
+
+    def _populate_voice_combo(self) -> None:
+        """Populate the voice selection combo with available voices."""
+        try:
+            from eye_protection_tab import GuidanceManager
+            guidance = GuidanceManager.get_instance()
+            voices = guidance.get_voice_names()
+            self.voice_combo.clear()
+            self.voice_combo.addItems(voices)
+            # Set current selection
+            current = guidance.get_current_voice()
+            if current in voices:
+                self.voice_combo.setCurrentText(current)
+            # Connect after populating to avoid triggering on initial setup
+            self.voice_combo.currentTextChanged.connect(self._change_voice)
+        except Exception as e:
+            print(f"[SettingsTab] Error populating voice combo: {e}")
+            self.voice_combo.addItem("Default Voice")
+
+    def _change_voice(self, voice_name: str) -> None:
+        """Change the TTS voice."""
+        try:
+            from eye_protection_tab import GuidanceManager
+            guidance = GuidanceManager.get_instance()
+            guidance.set_voice(voice_name, save=True)
+        except Exception as e:
+            print(f"[SettingsTab] Error changing voice: {e}")
+
+    def _test_voice(self) -> None:
+        """Test the selected voice with a sample phrase."""
+        try:
+            from eye_protection_tab import GuidanceManager
+            guidance = GuidanceManager.get_instance()
+            guidance.say("Hello! This is a voice preview. How do I sound?")
+        except Exception as e:
+            print(f"[SettingsTab] Error testing voice: {e}")
+            QtWidgets.QMessageBox.warning(
+                self, "Voice Test Failed",
+                f"Could not test voice: {e}"
+            )
 
 
 class WeightChartWidget(QtWidgets.QWidget):
@@ -13829,42 +13863,36 @@ class HydrationTimelineWidget(QtWidgets.QWidget):
 # Power Analysis Dialog
 # ============================================================================
 
-class PowerAnalysisDialog(QtWidgets.QDialog):
+class PowerAnalysisDialog(StyledDialog):
     """Dialog showing detailed breakdown of power calculation path."""
     def __init__(self, breakdown: dict, equipped: dict, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Power Calculation Analysis")
+        self.breakdown = breakdown
+        self.equipped = equipped
+        super().__init__(parent, "Power Analysis", "⚔️", 700, 900, closable=True)
         self.setMinimumSize(700, 500)
-        self.resize(900, 600)
-        self.setStyleSheet("""
-            QDialog { background-color: #2b2b2b; color: #ffffff; }
-            QLabel { color: #ffffff; }
-            QTableWidget { background-color: #333333; color: #ffffff; gridline-color: #555555; border: none; }
-            QTableWidget::item { padding: 5px; border-bottom: 1px solid #444444; }
-            QHeaderView::section { background-color: #1a1a1a; color: #aaaaaa; padding: 5px; border: none; }
-        """)
-        
-        layout = QtWidgets.QVBoxLayout(self)
+
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
+        breakdown = self.breakdown
+        equipped = self.equipped
         
         # Summary Header
         total = breakdown.get("total_power", 0)
         base = breakdown.get("base_power", 0)
         set_bonus = breakdown.get("set_bonus", 0)
-        # neighbor_adjustment removed - system no longer active
         
         header_widget = QtWidgets.QWidget()
-        header_widget.setStyleSheet("background-color: #1a1a1a; border-radius: 10px; padding: 10px;")
+        header_widget.setStyleSheet("background-color: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px;")
         header_layout = QtWidgets.QVBoxLayout(header_widget)
         
         title = QtWidgets.QLabel(f"Total Power: {total}")
-        title.setStyleSheet("font-size: 24px; font-weight: bold; color: #ffca28;")
+        title.setStyleSheet("font-size: 24px; font-weight: bold; color: #FFD700;")
         title.setAlignment(QtCore.Qt.AlignCenter)
         header_layout.addWidget(title)
         
         formula = QtWidgets.QLabel(
             f"Base Power ({base}) + Set Bonuses ({set_bonus})"
         )
-        formula.setStyleSheet("font-size: 14px; color: #cccccc;")
+        formula.setStyleSheet("font-size: 14px; color: #B0B0B0;")
         formula.setAlignment(QtCore.Qt.AlignCenter)
         header_layout.addWidget(formula)
         
@@ -13963,9 +13991,7 @@ class PowerAnalysisDialog(QtWidgets.QDialog):
             set_box.setStyleSheet("color: #4caf50; margin: 10px;")
             layout.addWidget(set_box)
             
-        btn_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok)
-        btn_box.accepted.connect(self.accept)
-        layout.addWidget(btn_box)
+        self.add_button_row(layout, [("Close", "primary", self.accept)])
 
 
 class ADHDBusterTab(QtWidgets.QWidget):
@@ -16580,7 +16606,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
     def _sell_items(self) -> None:
         """Open the sell items dialog."""
         if not self._game_state:
-            show_warning(self, "Error", "Game State Manager not initialized. Cannot sell items.")
+            styled_warning(self, "Error", "Game State Manager not initialized. Cannot sell items.")
             return
         
         dialog = SellItemsDialog(self.blocker, self._game_state, self)
@@ -16588,28 +16614,23 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
 
 
-class SellItemsDialog(QtWidgets.QDialog):
+class SellItemsDialog(StyledDialog):
     """Dialog for selling items by tier or by selection."""
 
     def __init__(self, blocker: BlockerCore, game_state, parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
         self.blocker = blocker
         self.game_state = game_state
-        self.setWindowTitle("💰 Sell Items")
-        self.resize(500, 400)
-        self._build_ui()
+        
+        super().__init__(
+            parent=parent,
+            title="Sell Items",
+            header_icon="💰",
+            min_width=450,
+            max_width=550,
+        )
+        self.resize(500, 450)
 
-    def _build_ui(self) -> None:
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(15, 15, 15, 15)
-        layout.setSpacing(10)
-
-        # Title
-        title = QtWidgets.QLabel("💰 Sell Items for Coins")
-        title.setStyleSheet("font-size: 14px; font-weight: bold; color: #333;")
-        title.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(title)
-
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
         # Tier selection buttons
         tier_group = QtWidgets.QGroupBox("Sell by Tier")
         tier_layout = QtWidgets.QVBoxLayout(tier_group)
@@ -17009,17 +17030,22 @@ class SellItemsDialog(QtWidgets.QDialog):
             self.parent().refresh_all()
 
 
-class DiaryDialog(QtWidgets.QDialog):
+class DiaryDialog(StyledDialog):
     """Dialog for viewing the ADHD Buster's adventure diary."""
 
     def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
         self.blocker = blocker
-        self.setWindowTitle("📖 Adventure Diary")
-        self.resize(650, 600)
         self._auto_generated_today = False
         self._auto_generate_todays_entry()
-        self._build_ui()
+        
+        super().__init__(
+            parent=parent,
+            title="Adventure Diary",
+            header_icon="📖",
+            min_width=600,
+            max_width=750,
+        )
+        self.resize(650, 600)
 
     def _auto_generate_todays_entry(self) -> None:
         """Auto-generate today's diary entry if one doesn't exist yet."""
@@ -17051,28 +17077,29 @@ class DiaryDialog(QtWidgets.QDialog):
         self.blocker.save_config()
         self._auto_generated_today = True
 
-    def _build_ui(self) -> None:
-        layout = QtWidgets.QVBoxLayout(self)
-
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
         power = calculate_character_power(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else 0
         tier = get_diary_power_tier(power) if GAMIFICATION_AVAILABLE else "pathetic"
 
         header = QtWidgets.QHBoxLayout()
-        header.addWidget(QtWidgets.QLabel("<b style='font-size:16px;'>📖 The Adventures of ADHD Buster</b>"))
+        title_lbl = QtWidgets.QLabel("The Adventures of ADHD Buster")
+        title_lbl.setStyleSheet("font-size: 14px; font-weight: bold; color: #E0E0E0;")
+        header.addWidget(title_lbl)
         header.addStretch()
         tier_lbl = QtWidgets.QLabel(f"⚔ Power: {power} ({tier.capitalize()} Tier)")
-        tier_lbl.setStyleSheet("font-weight: bold; color: #ff9800;")
+        tier_lbl.setStyleSheet("font-weight: bold; color: #FFD700;")
         header.addWidget(tier_lbl)
         layout.addLayout(header)
 
         entries = self.blocker.adhd_buster.get("diary", [])
         if entries:
             stats_lbl = QtWidgets.QLabel(f"📚 {len(entries)} adventures | 🗓️ Latest: {entries[-1].get('short_date', 'Unknown')}")
-            stats_lbl.setStyleSheet("color: gray;")
+            stats_lbl.setStyleSheet("color: #888888;")
             layout.addWidget(stats_lbl)
 
         self.diary_text = QtWidgets.QTextEdit()
         self.diary_text.setReadOnly(True)
+        self.diary_text.setMinimumHeight(350)
         new_entries_cleared = False
         if entries:
             for entry in reversed(entries):
@@ -17087,7 +17114,7 @@ class DiaryDialog(QtWidgets.QDialog):
                     new_badge = "<span style='background-color:#4CAF50;color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-left:8px;'>✨ NEW</span>"
                     entry["is_new"] = False  # Clear the new flag after display
                     new_entries_cleared = True
-                self.diary_text.append(f"<b style='color:#1976d2;'>{date}</b>{new_badge}<br>{story}<br>"
+                self.diary_text.append(f"<b style='color:#FFD700;'>{date}</b>{new_badge}<br><span style='color:#E0E0E0;'>{story}</span><br>"
                                        f"<span style='color:#888;'>Power: {pwr} | Focus: {mins} min | Tier: {tr.capitalize()}</span><br><hr>")
         else:
             self.diary_text.setPlainText("📭 No adventures recorded yet!\n\nComplete focus sessions to record your epic adventures.")
@@ -17102,19 +17129,22 @@ class DiaryDialog(QtWidgets.QDialog):
         btn_layout = QtWidgets.QHBoxLayout()
         if entries:
             clear_btn = QtWidgets.QPushButton("🗑️ Clear All")
+            clear_btn.setObjectName("dangerButton")
             clear_btn.clicked.connect(self._clear_diary)
             btn_layout.addWidget(clear_btn)
-        write_btn = QtWidgets.QPushButton("✍️ Write Today's Entry")
+        write_btn = QtWidgets.QPushButton("✍️ Write Entry")
         write_btn.clicked.connect(self._write_entry)
         btn_layout.addWidget(write_btn)
         btn_layout.addStretch()
         close_btn = QtWidgets.QPushButton("Close")
+        close_btn.setObjectName("primaryButton")
         close_btn.clicked.connect(self.accept)
         btn_layout.addWidget(close_btn)
         layout.addLayout(btn_layout)
 
     def _clear_diary(self) -> None:
-        if show_question(self, "Clear Diary", "Clear all diary entries?") == QtWidgets.QMessageBox.Yes:
+        result = styled_question(self, "Clear Diary", "Clear all diary entries?", ["Cancel", "Clear All"])
+        if result == "Clear All":
             self.blocker.adhd_buster["diary"] = []
             # Sync changes to active hero before saving
             if GAMIFICATION_AVAILABLE:
@@ -17542,35 +17572,37 @@ class ItemDropDialog(QtWidgets.QDialog):
             return None
 
 
-class DiaryEntryRevealDialog(QtWidgets.QDialog):
+class DiaryEntryRevealDialog(StyledDialog):
     """Dramatic reveal dialog for the daily diary entry."""
 
     def __init__(self, blocker: BlockerCore, entry: dict, session_minutes: int = 0,
                  parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
         self.blocker = blocker
         self.entry = entry
         self.session_minutes = session_minutes
-        self.setWindowTitle("📖 Today's Adventure")
-        self.setFixedSize(520, 380)
-        self._build_ui()
-        # Dialog remains until user clicks, no auto-close timer
+        self.tier = entry.get("tier", "pathetic")
+        
+        # Get tier-specific emoji for header
+        tier_emojis = {
+            "pathetic": "🌱", "modest": "🛡️", "decent": "💪",
+            "heroic": "🔥", "epic": "⚡", "legendary": "⭐", "godlike": "🌟"
+        }
+        emoji = tier_emojis.get(self.tier, "📖")
+        
+        super().__init__(parent, "Today's Adventure", emoji, 480, 520, closable=True)
 
-    def _build_ui(self) -> None:
-        tier = self.entry.get("tier", "pathetic")
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
+        tier = self.tier
         tier_styles = {
-            "pathetic": {"bg": "#fafafa", "accent": "#9e9e9e", "emoji": "🌱"},
-            "modest": {"bg": "#f1f8e9", "accent": "#8bc34a", "emoji": "🛡️"},
-            "decent": {"bg": "#e8f5e9", "accent": "#4caf50", "emoji": "💪"},
-            "heroic": {"bg": "#e3f2fd", "accent": "#2196f3", "emoji": "🔥"},
-            "epic": {"bg": "#f3e5f5", "accent": "#9c27b0", "emoji": "⚡"},
-            "legendary": {"bg": "#fff3e0", "accent": "#ff9800", "emoji": "⭐"},
-            "godlike": {"bg": "#fffde7", "accent": "#ffc107", "emoji": "🌟"}
+            "pathetic": {"accent": "#9e9e9e", "emoji": "🌱"},
+            "modest": {"accent": "#8bc34a", "emoji": "🛡️"},
+            "decent": {"accent": "#4caf50", "emoji": "💪"},
+            "heroic": {"accent": "#2196f3", "emoji": "🔥"},
+            "epic": {"accent": "#9c27b0", "emoji": "⚡"},
+            "legendary": {"accent": "#ff9800", "emoji": "⭐"},
+            "godlike": {"accent": "#ffc107", "emoji": "🌟"}
         }
         style = tier_styles.get(tier, tier_styles["pathetic"])
-        self.setStyleSheet(f"background-color: {style['bg']};")
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(25, 20, 25, 20)
 
         tier_boosted = self.entry.get("tier_boosted", False)
         if tier_boosted:
@@ -17579,31 +17611,44 @@ class DiaryEntryRevealDialog(QtWidgets.QDialog):
         else:
             header_text = f"{style['emoji']} Today's Adventure {style['emoji']}"
             subheader = self.entry.get("short_date", "")
+            
         header_lbl = QtWidgets.QLabel(header_text)
-        header_lbl.setStyleSheet(f"font-size: 16px; font-weight: bold; color: {style['accent']};")
+        header_lbl.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {style['accent']};")
         header_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(header_lbl)
+        
         sub_lbl = QtWidgets.QLabel(subheader)
-        sub_lbl.setStyleSheet("color: #666;")
+        sub_lbl.setStyleSheet("color: #999;")
         sub_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(sub_lbl)
 
+        # Separator line
         line = QtWidgets.QFrame()
         line.setFrameShape(QtWidgets.QFrame.HLine)
-        line.setStyleSheet(f"color: {style['accent']};")
+        line.setStyleSheet(f"background-color: {style['accent']}; max-height: 2px;")
         layout.addWidget(line)
+        layout.addSpacing(10)
 
+        # Story content in a styled container
         story = self.entry.get("story", "A mysterious adventure occurred...")
+        story_container = QtWidgets.QWidget()
+        story_container.setStyleSheet("background-color: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px;")
+        story_layout = QtWidgets.QVBoxLayout(story_container)
         story_lbl = QtWidgets.QLabel(story)
         story_lbl.setWordWrap(True)
-        story_lbl.setStyleSheet("font-size: 12px; color: #333;")
-        layout.addWidget(story_lbl)
+        story_lbl.setStyleSheet("font-size: 13px; color: #E0E0E0; line-height: 1.5;")
+        story_layout.addWidget(story_lbl)
+        layout.addWidget(story_container)
+        layout.addSpacing(10)
 
+        # Separator line
         line2 = QtWidgets.QFrame()
         line2.setFrameShape(QtWidgets.QFrame.HLine)
-        line2.setStyleSheet(f"color: {style['accent']};")
+        line2.setStyleSheet(f"background-color: {style['accent']}; max-height: 2px;")
         layout.addWidget(line2)
+        layout.addSpacing(10)
 
+        # Power and tier info
         power = self.entry.get("power_at_time", 0)
         tier_display = tier.capitalize()
         if tier_boosted:
@@ -17612,18 +17657,20 @@ class DiaryEntryRevealDialog(QtWidgets.QDialog):
         else:
             power_text = f"⚔ Power: {power}  |  🎭 {tier_display} Tier"
         pwr_lbl = QtWidgets.QLabel(power_text)
-        pwr_lbl.setStyleSheet(f"font-weight: bold; color: {style['accent']};")
+        pwr_lbl.setStyleSheet(f"font-weight: bold; color: {style['accent']}; font-size: 14px;")
         pwr_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(pwr_lbl)
+        
         mins_lbl = QtWidgets.QLabel(f"⏱️ {self.session_minutes} min focus session")
-        mins_lbl.setStyleSheet("color: #666;")
+        mins_lbl.setStyleSheet("color: #999;")
         mins_lbl.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(mins_lbl)
-        dismiss_lbl = QtWidgets.QLabel("(Click anywhere to dismiss)")
-        dismiss_lbl.setStyleSheet("color: #777; font-size: 10px;")
-        layout.addWidget(dismiss_lbl)
+        
+        layout.addSpacing(10)
+        self.add_button_row(layout, [("Continue", "primary", self.accept)])
 
     def mousePressEvent(self, event) -> None:
+        # Allow clicking anywhere to dismiss
         self.accept()
 
 
@@ -17631,30 +17678,34 @@ class DiaryEntryRevealDialog(QtWidgets.QDialog):
 # Priority Management Dialogs (Qt Implementation)
 # ============================================================================
 
-class PriorityTimeLogDialog(QtWidgets.QDialog):
+class PriorityTimeLogDialog(StyledDialog):
     """Dialog for logging time to priorities after a focus session."""
 
     def __init__(self, blocker: BlockerCore, session_minutes: int,
                  parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
         self.blocker = blocker
         self.session_minutes = session_minutes
         self.time_spins: list = []
         self.priority_indices: list = []
-        self.setWindowTitle("📊 Log Priority Time")
-        self.resize(450, 450)
-        self._build_ui()
+        super().__init__(parent, "Log Priority Time", "📊", 450, 500, closable=True)
 
-    def _build_ui(self) -> None:
-        layout = QtWidgets.QVBoxLayout(self)
-
-        header = QtWidgets.QLabel(f"<b>📊 Log Time to Priorities</b><br>"
-                                  f"You completed a {self.session_minutes} minute focus session.")
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
+        header = QtWidgets.QLabel(f"<b>You completed a {self.session_minutes} minute focus session.</b>")
+        header.setStyleSheet("color: #E0E0E0; font-size: 13px;")
         layout.addWidget(header)
+        layout.addSpacing(10)
 
         today = datetime.now().strftime("%A")
-        priorities_box = QtWidgets.QGroupBox("Today's Priorities")
-        p_layout = QtWidgets.QVBoxLayout(priorities_box)
+        
+        # Priorities container
+        priorities_container = QtWidgets.QWidget()
+        priorities_container.setStyleSheet("background-color: rgba(0,0,0,0.2); border-radius: 8px;")
+        p_layout = QtWidgets.QVBoxLayout(priorities_container)
+        p_layout.setContentsMargins(15, 10, 15, 10)
+        
+        header_lbl = QtWidgets.QLabel("Today's Priorities")
+        header_lbl.setStyleSheet("font-weight: bold; color: #FFD700; font-size: 14px;")
+        p_layout.addWidget(header_lbl)
 
         has_priorities = False
         for i, priority in enumerate(self.blocker.priorities):
@@ -17663,39 +17714,52 @@ class PriorityTimeLogDialog(QtWidgets.QDialog):
             if title and (not days or today in days):
                 has_priorities = True
                 row = QtWidgets.QHBoxLayout()
-                row.addWidget(QtWidgets.QLabel(f"#{i+1}: {title}"))
+                lbl = QtWidgets.QLabel(f"#{i+1}: {title}")
+                lbl.setStyleSheet("color: #E0E0E0;")
+                row.addWidget(lbl, 1)
                 spin = QtWidgets.QSpinBox()
                 spin.setRange(0, self.session_minutes)
                 spin.setValue(0)
                 spin.setSuffix(" min")
+                spin.setMinimumWidth(100)
                 row.addWidget(spin)
                 p_layout.addLayout(row)
                 self.time_spins.append(spin)
                 self.priority_indices.append(i)
 
         if not has_priorities:
-            p_layout.addWidget(QtWidgets.QLabel("No active priorities for today."))
-        layout.addWidget(priorities_box)
+            no_pri_lbl = QtWidgets.QLabel("No active priorities for today.")
+            no_pri_lbl.setStyleSheet("color: #888; font-style: italic;")
+            p_layout.addWidget(no_pri_lbl)
+        layout.addWidget(priorities_container)
+        layout.addSpacing(10)
 
         if has_priorities:
-            quick_box = QtWidgets.QGroupBox("Quick Options")
-            q_layout = QtWidgets.QHBoxLayout(quick_box)
+            # Quick options
+            quick_container = QtWidgets.QWidget()
+            quick_container.setStyleSheet("background-color: rgba(0,0,0,0.2); border-radius: 8px;")
+            q_layout = QtWidgets.QVBoxLayout(quick_container)
+            q_layout.setContentsMargins(15, 10, 15, 10)
+            
+            quick_lbl = QtWidgets.QLabel("Quick Options")
+            quick_lbl.setStyleSheet("font-weight: bold; color: #FFD700; font-size: 12px;")
+            q_layout.addWidget(quick_lbl)
+            
+            btn_row = QtWidgets.QHBoxLayout()
             all_first_btn = QtWidgets.QPushButton(f"All {self.session_minutes} min to first")
             all_first_btn.clicked.connect(self._log_all_to_first)
-            q_layout.addWidget(all_first_btn)
+            btn_row.addWidget(all_first_btn)
             split_btn = QtWidgets.QPushButton("Split evenly")
             split_btn.clicked.connect(self._split_evenly)
-            q_layout.addWidget(split_btn)
-            layout.addWidget(quick_box)
+            btn_row.addWidget(split_btn)
+            q_layout.addLayout(btn_row)
+            layout.addWidget(quick_container)
 
-        btn_layout = QtWidgets.QHBoxLayout()
-        save_btn = QtWidgets.QPushButton("💾 Save & Close")
-        save_btn.clicked.connect(self._save_and_close)
-        btn_layout.addWidget(save_btn)
-        skip_btn = QtWidgets.QPushButton("Skip")
-        skip_btn.clicked.connect(self.reject)
-        btn_layout.addWidget(skip_btn)
-        layout.addLayout(btn_layout)
+        layout.addStretch()
+        self.add_button_row(layout, [
+            ("💾 Save & Close", "primary", self._save_and_close),
+            ("Skip", "default", self.reject)
+        ])
 
     def _log_all_to_first(self) -> None:
         if self.time_spins:
@@ -17720,26 +17784,28 @@ class PriorityTimeLogDialog(QtWidgets.QDialog):
         self.accept()
 
 
-class PriorityCheckinDialog(QtWidgets.QDialog):
+class PriorityCheckinDialog(StyledDialog):
     """Dialog shown during a session to ask if user is working on priorities."""
 
     def __init__(self, blocker: BlockerCore, today_priorities: list, session_minutes: int = 0,
                  parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
         self.blocker = blocker
         self.today_priorities = today_priorities
         self.session_minutes = session_minutes
         self.result: Optional[bool] = None
-        self.setWindowTitle("Priority Check-in ⏰")
-        self.resize(420, 380)
-        self._build_ui()
-        # Dialog stays open until the user chooses an option
+        
+        super().__init__(
+            parent=parent,
+            title="Priority Check-in",
+            header_icon="⏰",
+            min_width=400,
+            max_width=500,
+        )
 
-    def _build_ui(self) -> None:
-        layout = QtWidgets.QVBoxLayout(self)
-
-        layout.addWidget(QtWidgets.QLabel("<b style='font-size:14px;'>🎯 Quick Check-in</b>"))
-        layout.addWidget(QtWidgets.QLabel("Are you currently working on your priority tasks?"))
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
+        q_lbl = QtWidgets.QLabel("Are you currently working on your priority tasks?")
+        q_lbl.setStyleSheet("color: #E0E0E0; font-size: 13px;")
+        layout.addWidget(q_lbl)
 
         if GAMIFICATION_AVAILABLE:
             streak = self.blocker.stats.get("streak_days", 0)
@@ -17751,27 +17817,32 @@ class PriorityCheckinDialog(QtWidgets.QDialog):
                 bonus_parts.append(f"🔥+{bonuses['streak_bonus']}%")
             if bonus_parts:
                 bonus_lbl = QtWidgets.QLabel(f"✨ Loot bonuses: {' '.join(bonus_parts)}")
-                bonus_lbl.setStyleSheet("color: #ff9800;")
+                bonus_lbl.setStyleSheet("color: #FFD700;")
                 layout.addWidget(bonus_lbl)
 
-        p_box = QtWidgets.QGroupBox("Today's Priorities")
+        p_box = QtWidgets.QGroupBox("📌 Today's Priorities")
         p_layout = QtWidgets.QVBoxLayout(p_box)
         text = "\n".join([f"• {p.get('title', '')}" for p in self.today_priorities])
-        p_layout.addWidget(QtWidgets.QLabel(text if text.strip() else "No priorities set"))
+        p_lbl = QtWidgets.QLabel(text if text.strip() else "No priorities set")
+        p_lbl.setStyleSheet("color: #E0E0E0;")
+        p_layout.addWidget(p_lbl)
         layout.addWidget(p_box)
 
         btn_layout = QtWidgets.QHBoxLayout()
-        yes_btn = QtWidgets.QPushButton("✅ Yes, I'm on task!")
-        yes_btn.clicked.connect(self._confirm_on_task)
-        btn_layout.addWidget(yes_btn)
         no_btn = QtWidgets.QPushButton("⚠ Need to refocus")
         no_btn.clicked.connect(self._confirm_off_task)
         btn_layout.addWidget(no_btn)
+        btn_layout.addStretch()
+        yes_btn = QtWidgets.QPushButton("✅ Yes, I'm on task!")
+        yes_btn.setObjectName("primaryButton")
+        yes_btn.clicked.connect(self._confirm_on_task)
+        btn_layout.addWidget(yes_btn)
         layout.addLayout(btn_layout)
 
         dismiss_btn = QtWidgets.QPushButton("Dismiss")
+        dismiss_btn.setStyleSheet("color: #888888; background: transparent; border: none;")
         dismiss_btn.clicked.connect(self.reject)
-        layout.addWidget(dismiss_btn)
+        layout.addWidget(dismiss_btn, alignment=QtCore.Qt.AlignCenter)
 
     def _confirm_on_task(self) -> None:
         self.result = True
@@ -17779,23 +17850,19 @@ class PriorityCheckinDialog(QtWidgets.QDialog):
 
     def _confirm_off_task(self) -> None:
         self.result = False
-        show_info(self, "💪 Time to refocus!",
-                                           "Take a breath and get back to your priorities.\nYou've got this!")
+        styled_info(self, "Time to refocus!", "Take a breath and get back to your priorities.\nYou've got this! 💪")
         self.accept()
 
 
-class PrioritiesDialog(QtWidgets.QDialog):
+class PrioritiesDialog(StyledDialog):
     """Dialog for managing daily priorities with day-of-week reminders."""
 
     DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
     def __init__(self, blocker: BlockerCore, on_start_callback=None,
                  parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
         self.blocker = blocker
         self.on_start_callback = on_start_callback
-        self.setWindowTitle("🎯 My Priorities")
-        self.resize(550, 620)
         self.priorities = copy.deepcopy(self.blocker.priorities) if self.blocker.priorities else []
         # Mark loaded priorities as existing (locked strategic status)
         for p in self.priorities:
@@ -17809,7 +17876,15 @@ class PrioritiesDialog(QtWidgets.QDialog):
         self.strategic_checks: List[QtWidgets.QCheckBox] = []
         self.priority_list_layout: Optional[QtWidgets.QVBoxLayout] = None
         self.add_priority_btn: Optional[QtWidgets.QPushButton] = None
-        self._build_ui()
+        
+        super().__init__(
+            parent=parent,
+            title="My Priorities",
+            header_icon="🎯",
+            min_width=550,
+            max_width=700,
+        )
+        self.resize(600, 650)
 
     def _empty_priority(self) -> dict:
         """Return a placeholder priority record."""
@@ -17822,20 +17897,22 @@ class PrioritiesDialog(QtWidgets.QDialog):
             "strategic": False,
         }
 
-    def _build_ui(self) -> None:
-        layout = QtWidgets.QVBoxLayout(self)
-
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
         header = QtWidgets.QHBoxLayout()
-        header.addWidget(QtWidgets.QLabel("<b style='font-size:16px;'>🎯 My Priorities</b>"))
-        header.addStretch()
         today = datetime.now().strftime("%A, %B %d")
-        header.addWidget(QtWidgets.QLabel(today))
+        today_lbl = QtWidgets.QLabel(today)
+        today_lbl.setStyleSheet("color: #888888;")
+        header.addWidget(today_lbl)
+        header.addStretch()
         layout.addLayout(header)
 
-        layout.addWidget(QtWidgets.QLabel("Set as many priority tasks as you need. These can span multiple days."))
+        desc_lbl = QtWidgets.QLabel("Set as many priority tasks as you need. These can span multiple days.")
+        desc_lbl.setStyleSheet("color: #E0E0E0;")
+        layout.addWidget(desc_lbl)
 
         self.scroll_area = QtWidgets.QScrollArea()
         self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setMinimumHeight(200)
         self.priority_list_container = QtWidgets.QWidget()
         self.priority_list_layout = QtWidgets.QVBoxLayout(self.priority_list_container)
         self.priority_list_layout.setContentsMargins(0, 0, 0, 0)
@@ -17859,11 +17936,12 @@ class PrioritiesDialog(QtWidgets.QDialog):
         self._refresh_today_focus()
 
         btn_layout = QtWidgets.QHBoxLayout()
-        save_btn = QtWidgets.QPushButton("💾 Save Priorities")
+        save_btn = QtWidgets.QPushButton("💾 Save")
+        save_btn.setObjectName("primaryButton")
         save_btn.clicked.connect(self._save_priorities)
         btn_layout.addWidget(save_btn)
         if self.on_start_callback:
-            start_btn = QtWidgets.QPushButton("▶ Start Working on Priority")
+            start_btn = QtWidgets.QPushButton("▶ Start Session")
             start_btn.clicked.connect(self._start_session)
             btn_layout.addWidget(start_btn)
         btn_layout.addStretch()
@@ -18222,66 +18300,67 @@ class PrioritiesDialog(QtWidgets.QDialog):
             main_window._update_coin_display()
 
 
-class AISessionCompleteDialog(QtWidgets.QDialog):
+class AISessionCompleteDialog(StyledDialog):
     """AI-powered session completion dialog with ratings, notes, and break suggestions."""
 
     def __init__(self, blocker: BlockerCore, session_duration: int,
                  parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
         self.blocker = blocker
         self.session_duration = session_duration
         self.selected_rating = ""
-        # Don't create LocalAI here - suggest_break_activity doesn't need it
-        self.setWindowTitle("Session Complete! 🎉")
-        self.resize(500, 520)
-        self.setMinimumSize(450, 400)
-        self._build_ui()
+        
+        super().__init__(
+            parent=parent,
+            title="Session Complete!",
+            header_icon="🎉",
+            min_width=480,
+            max_width=600,
+        )
+        self.resize(520, 550)
 
-    def _build_ui(self) -> None:
-        layout = QtWidgets.QVBoxLayout(self)
-
-        # Congratulations header
-        header = QtWidgets.QLabel("🎉 Great work!")
-        header.setStyleSheet("font-size: 18px; font-weight: bold;")
-        header.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(header)
-
-        duration_label = QtWidgets.QLabel(f"You focused for {self.session_duration // 60} minutes")
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
+        duration_label = QtWidgets.QLabel(f"🎯 You focused for {self.session_duration // 60} minutes")
         duration_label.setAlignment(QtCore.Qt.AlignCenter)
+        duration_label.setStyleSheet("font-size: 14px; color: #E0E0E0;")
         layout.addWidget(duration_label)
 
         # Rating section
         rating_group = QtWidgets.QGroupBox("📝 How was your focus? (optional)")
         rating_layout = QtWidgets.QVBoxLayout(rating_group)
 
-        rating_layout.addWidget(QtWidgets.QLabel("Rate your session:"))
+        rate_lbl = QtWidgets.QLabel("Rate your session:")
+        rate_lbl.setStyleSheet("color: #E0E0E0;")
+        rating_layout.addWidget(rate_lbl)
 
         btn_layout = QtWidgets.QHBoxLayout()
         ratings = [
-            ("😫 Struggled", "Struggled to concentrate, many distractions"),
-            ("😐 Okay", "Decent session, some distractions"),
-            ("😊 Good", "Good session, stayed mostly focused"),
-            ("🌟 Excellent", "Amazing session! In the zone!")
+            ("😫", "Struggled to concentrate, many distractions"),
+            ("😐", "Decent session, some distractions"),
+            ("😊", "Good session, stayed mostly focused"),
+            ("🌟", "Amazing session! In the zone!")
         ]
         self.rating_buttons = []
         for emoji, description in ratings:
             btn = QtWidgets.QPushButton(emoji)
             btn.setProperty("rating_desc", description)
             btn.setCheckable(True)
+            btn.setMinimumWidth(50)
             btn.clicked.connect(lambda checked, d=description, b=btn: self._select_rating(d, b))
             btn_layout.addWidget(btn)
             self.rating_buttons.append(btn)
         rating_layout.addLayout(btn_layout)
 
-        rating_layout.addWidget(QtWidgets.QLabel("Or write your own notes:"))
+        notes_lbl = QtWidgets.QLabel("Or write your own notes:")
+        notes_lbl.setStyleSheet("color: #E0E0E0;")
+        rating_layout.addWidget(notes_lbl)
         self.notes_edit = QtWidgets.QTextEdit()
-        self.notes_edit.setMaximumHeight(100)
+        self.notes_edit.setMaximumHeight(80)
         self.notes_edit.setPlaceholderText("How did the session go?")
         rating_layout.addWidget(self.notes_edit)
 
         # AI analysis display
         self.analysis_label = QtWidgets.QLabel("")
-        self.analysis_label.setStyleSheet("color: #0066cc; font-style: italic;")
+        self.analysis_label.setStyleSheet("color: #FFD700; font-style: italic;")
         self.analysis_label.setWordWrap(True)
         rating_layout.addWidget(self.analysis_label)
 
@@ -18292,6 +18371,7 @@ class AISessionCompleteDialog(QtWidgets.QDialog):
         suggestion_layout = QtWidgets.QVBoxLayout(suggestion_group)
         self.suggestions_label = QtWidgets.QLabel()
         self.suggestions_label.setWordWrap(True)
+        self.suggestions_label.setStyleSheet("color: #E0E0E0;")
         suggestion_layout.addWidget(self.suggestions_label)
         layout.addWidget(suggestion_group)
 
@@ -18300,12 +18380,14 @@ class AISessionCompleteDialog(QtWidgets.QDialog):
 
         # Buttons
         btn_layout2 = QtWidgets.QHBoxLayout()
-        save_btn = QtWidgets.QPushButton("💾 Save & Continue")
-        save_btn.clicked.connect(self._save_and_close)
-        btn_layout2.addWidget(save_btn)
         skip_btn = QtWidgets.QPushButton("Skip")
         skip_btn.clicked.connect(self.accept)
         btn_layout2.addWidget(skip_btn)
+        btn_layout2.addStretch()
+        save_btn = QtWidgets.QPushButton("💾 Save & Continue")
+        save_btn.setObjectName("primaryButton")
+        save_btn.clicked.connect(self._save_and_close)
+        btn_layout2.addWidget(save_btn)
         layout.addLayout(btn_layout2)
 
     def _select_rating(self, description: str, clicked_btn: QtWidgets.QPushButton) -> None:
@@ -19310,6 +19392,11 @@ class DevTab(QtWidgets.QWidget):
         water_attempts_btn.clicked.connect(self._reset_water_lottery_attempts)
         cooldown_layout.addWidget(water_attempts_btn)
         
+        eye_reset_btn = QtWidgets.QPushButton("👁️ Reset Eye Routine Cooldown")
+        eye_reset_btn.setStyleSheet("background-color: #00bcd4; color: white; font-weight: bold; padding: 8px;")
+        eye_reset_btn.clicked.connect(self._reset_eye_routine_cooldown)
+        cooldown_layout.addWidget(eye_reset_btn)
+        
         layout.addWidget(cooldown_group)
 
         # Entity Encounter Section
@@ -19579,6 +19666,28 @@ class DevTab(QtWidgets.QWidget):
             self.status_label.setText(f"❌ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
+    def _reset_eye_routine_cooldown(self) -> None:
+        """Reset eye routine cooldown by clearing the last_date timestamp."""
+        try:
+            if "eye_protection" not in self.blocker.stats:
+                self.blocker.stats["eye_protection"] = {}
+            
+            old_date = self.blocker.stats["eye_protection"].get("last_date", "None")
+            self.blocker.stats["eye_protection"]["last_date"] = ""
+            self.blocker.save_config()
+            
+            self.status_label.setText(f"✅ Eye routine cooldown reset! (was {old_date})")
+            self.status_label.setStyleSheet("color: #00bcd4; padding: 10px;")
+            
+            # Refresh the eye tab display if it exists
+            # Navigate up to main window (parent of DevTab is MainWindow)
+            main_window = self.window()
+            if main_window and hasattr(main_window, 'eye_tab'):
+                main_window.eye_tab._update_cooldown_display()
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
     def _refresh_entity_selector(self) -> None:
         """Refresh the entity selector dropdown based on selected story."""
         try:
@@ -19795,6 +19904,10 @@ class DevTab(QtWidgets.QWidget):
             
             # Show encounter dialog using new merge-style flow
             from entity_drop_dialog import show_entity_encounter
+            from entitidex.encounter_system import get_encounter_flavor_text
+
+            # Generate customized flavor text
+            flavor_text = get_encounter_flavor_text(entity, hero_power, is_exceptional)
             
             def bond_callback_wrapper(entity_id: str, exceptional: bool = is_exceptional):
                 from gamification import attempt_entitidex_bond
@@ -19862,6 +19975,7 @@ class DevTab(QtWidgets.QWidget):
                 coin_data=self._get_coin_data() if hasattr(self, '_get_coin_data') else None,
                 save_callback=save_callback_wrapper,
                 bookmark_data=bookmark_data,
+                flavor_text=flavor_text,
             )
             
         except ImportError as e:
@@ -19894,6 +20008,10 @@ class DevTab(QtWidgets.QWidget):
             
             # Show encounter dialog using new merge-style flow
             from entity_drop_dialog import show_entity_encounter
+            from entitidex.encounter_system import get_encounter_flavor_text
+
+            # Generate customized flavor text
+            flavor_text = get_encounter_flavor_text(entity, hero_power, is_exceptional)
             
             def bond_callback_wrapper(entity_id: str, exceptional: bool = is_exceptional):
                 from gamification import attempt_entitidex_bond
@@ -19959,6 +20077,7 @@ class DevTab(QtWidgets.QWidget):
                 coin_data=self._get_coin_data() if hasattr(self, '_get_coin_data') else None,
                 save_callback=save_callback_wrapper,
                 bookmark_data=bookmark_data,
+                flavor_text=flavor_text,
             )
             
             self.status_label.setText(f"✨ Encountered: {entity.name} ({entity.rarity}){' ⭐' if is_exceptional else ''}")
@@ -19994,6 +20113,10 @@ class DevTab(QtWidgets.QWidget):
             
             # Show encounter dialog using new merge-style flow
             from entity_drop_dialog import show_entity_encounter
+            from entitidex.encounter_system import get_encounter_flavor_text
+            
+            # Generate customized flavor text
+            flavor_text = get_encounter_flavor_text(entity, hero_power, is_exceptional)
             
             def bond_callback_wrapper(entity_id: str, exceptional: bool = is_exceptional):
                 from gamification import attempt_entitidex_bond
@@ -20058,6 +20181,7 @@ class DevTab(QtWidgets.QWidget):
                 coin_data=self._get_coin_data() if hasattr(self, '_get_coin_data') else None,
                 save_callback=save_callback_wrapper,
                 bookmark_data=bookmark_data,
+                flavor_text=flavor_text,
             )
             
             self.status_label.setText(f"✨ {rarity.upper()}: {entity.name}{' ⭐' if is_exceptional else ''}")
@@ -21065,6 +21189,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.showNormal()  # Ensures window is not minimized
         self.raise_()
         self.activateWindow()
+        # Notify Entitidex tab to resume animations if it's currently visible
+        if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
+            self.entitidex_tab.on_window_restored()
         # Tray icon stays visible and timer keeps running
 
     def _quit_application(self) -> None:
@@ -21080,14 +21207,32 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.instance().quit()
 
     def changeEvent(self, event: QtCore.QEvent) -> None:
-        """Handle window state changes."""
-        # Note: We no longer hide to tray on minimize - only on close
-        # This keeps minimize behavior standard (to taskbar)
+        """Handle window state changes - notify tabs about minimize/restore."""
+        if event.type() == QtCore.QEvent.WindowStateChange:
+            if self.windowState() & QtCore.Qt.WindowMinimized:
+                # Window was minimized - notify Entitidex tab to pause animations
+                if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
+                    self.entitidex_tab.on_window_minimized()
+            else:
+                # Window was restored (any non-minimized state)
+                # Check if the old state was minimized
+                try:
+                    # QWindowStateChangeEvent has oldState() method
+                    old_state = event.oldState()
+                    if old_state & QtCore.Qt.WindowMinimized:
+                        # Window was restored from minimized - notify Entitidex tab to resume
+                        if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
+                            self.entitidex_tab.on_window_restored()
+                except AttributeError:
+                    pass  # Not a QWindowStateChangeEvent, ignore
         super().changeEvent(event)
 
     def _hide_to_tray(self) -> None:
         """Hide window to system tray."""
         if self.tray_icon:
+            # Pause Entitidex animations before hiding (saves CPU in background)
+            if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
+                self.entitidex_tab.on_window_minimized()
             self.hide()
             self.tray_icon.showMessage(
                 "Personal Liberty",
@@ -21646,6 +21791,8 @@ def main() -> None:
         sys.exit(0)
     except Exception as e:
         import traceback
+        with open("crash_log.txt", "w") as f:
+            traceback.print_exc(file=f)
         show_error(
             None, 
             "Unexpected Error", 
