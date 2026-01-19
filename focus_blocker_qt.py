@@ -2221,11 +2221,7 @@ class TimerTab(QtWidgets.QWidget):
             if len(self.blocker.adhd_buster["diary"]) > 100:
                 self.blocker.adhd_buster["diary"] = self.blocker.adhd_buster["diary"][-100:]
 
-        # Sync changes to active hero before final save
-        if GAMIFICATION_AVAILABLE:
-            sync_hero_data(self.blocker.adhd_buster)
-        
-        # Final save (game_state already saved during batch, but diary needs saving)
+        # Save diary entry (batch already saved game state, this saves the diary addition)
         game_state.force_save()
 
         # Show level-up celebration first (most exciting!)
@@ -5059,10 +5055,16 @@ class StatsTab(QtWidgets.QWidget):
         
         self.blocker.save_stats()
         
-        # Award 1 coin
-        current_coins = self.blocker.adhd_buster.get("coins", 0)
-        self.blocker.adhd_buster["coins"] = current_coins + 1
-        self.blocker.save_config()
+        # Award 1 coin using GameState for reactive UI update
+        main_window = self.window()
+        game_state = getattr(main_window, 'game_state', None)
+        if game_state:
+            game_state.add_coins(1)
+        else:
+            # Fallback if GameState not available
+            current_coins = self.blocker.adhd_buster.get("coins", 0)
+            self.blocker.adhd_buster["coins"] = current_coins + 1
+            self.blocker.save_config()
         
         # Update button state - no dialog, just update text
         self.chad_acknowledge_btn.setEnabled(False)
@@ -6532,6 +6534,7 @@ class WeightTab(QtWidgets.QWidget):
         
         # Tip text (larger, more readable)
         self.rodent_tip_text = QtWidgets.QLabel("Loading tip...")
+        self.rodent_tip_text.setTextFormat(QtCore.Qt.RichText)
         self.rodent_tip_text.setStyleSheet("color: #f0e6d2; font-size: 14px;")
         self.rodent_tip_text.setWordWrap(True)
         rodent_content_col.addWidget(self.rodent_tip_text)
@@ -7000,11 +7003,6 @@ class WeightTab(QtWidgets.QWidget):
             
             # Use batch award - handles inventory, auto-equip, save, and signals
             game_state.award_items_batch(just_items, coins=0, auto_equip=True, source="weight_tracking")
-            
-            # Sync hero data
-            if GAMIFICATION_AVAILABLE and sync_hero_data:
-                sync_hero_data(self.blocker.adhd_buster)
-                self.blocker.save_config()
             
             # Build reward message with rarity colors
             rarity_colors = {
@@ -7722,7 +7720,7 @@ class WeightTab(QtWidgets.QWidget):
             self.rodent_tip_text.setStyleSheet("color: #c5e1c5; font-size: 11px;")
         else:
             # Show rodent language with a hint
-            self.rodent_tip_text.setText(f"🐭 {tip_text}\n\n<i style='color:#888;'>💡 Collect White Mouse Archimedes to understand rodent language!</i>")
+            self.rodent_tip_text.setText(f"🐭 {tip_text}<br><br><i style='color:#888;'>💡 Telepathic skills would be necessary to understand the rodent language...</i>")
             self.rodent_tip_text.setStyleSheet("color: #d4c4a4; font-size: 11px;")
         
         # Check if already acknowledged today
@@ -7811,12 +7809,19 @@ class WeightTab(QtWidgets.QWidget):
             today_str = datetime.now().strftime("%Y-%m-%d")
             self.blocker.stats[ack_key] = today_str
             
-            # Award coin
-            adhd_buster = self.blocker.adhd_buster
-            adhd_buster["coins"] = adhd_buster.get("coins", 0) + 1
+            # Award coin using GameState for reactive UI update
+            main_window = self.window()
+            game_state = getattr(main_window, 'game_state', None)
+            if game_state:
+                game_state.add_coins(1)
+            else:
+                # Fallback if GameState not available
+                adhd_buster = self.blocker.adhd_buster
+                adhd_buster["coins"] = adhd_buster.get("coins", 0) + 1
+                self.blocker.save_config()
             
-            # Save data
-            self.blocker.save_config()
+            # Save stats data
+            self.blocker.save_stats()
             
             # Update button to show collected
             self.rodent_acknowledge_btn.setText("✓ Done")
@@ -8296,11 +8301,6 @@ class ActivityTab(QtWidgets.QWidget):
             
             # Use batch award - handles inventory, auto-equip, coins, save, and signals
             game_state.award_items_batch(just_items, coins=coins_earned, auto_equip=True, source="activity_tracking")
-            
-            # Sync hero data
-            if GAMIFICATION_AVAILABLE and sync_hero_data:
-                sync_hero_data(self.blocker.adhd_buster)
-                self.blocker.save_config()
             
             # Build extra messages
             extra_msgs = []
@@ -9302,11 +9302,6 @@ class SleepTab(QtWidgets.QWidget):
         
         # Use batch award - handles inventory, auto-equip, save, and signals
         game_state.award_items_batch([item], coins=0, auto_equip=True, source="sleep_now_bonus")
-        
-        # Sync hero data
-        if GAMIFICATION_AVAILABLE:
-            sync_hero_data(self.blocker.adhd_buster)
-            self.blocker.save_config()
         
         # Show reward with ItemRewardDialog for comparison
         equipped = self.blocker.adhd_buster.get("equipped", {})
@@ -20446,18 +20441,35 @@ class StoryTab(QtWidgets.QWidget):
         if not GAMIFICATION_AVAILABLE:
             return
         
-        from gamification import get_story_progress
+        from gamification import get_story_progress, get_selected_story
         progress = get_story_progress(self.blocker.adhd_buster)
         
+        # Check if in preview mode (story not unlocked)
+        story_id = get_selected_story(self.blocker.adhd_buster)
+        unlocked_stories = self.blocker.adhd_buster.get("unlocked_stories", ["underdog"])
+        is_preview = story_id not in unlocked_stories
+        
         if hasattr(self, 'story_progress_lbl'):
-            self.story_progress_lbl.setText(
-                f"📖 Chapters Unlocked: {len(progress['unlocked_chapters'])}/{progress['total_chapters']}  |  "
-                f"⚔ Power: {progress['power']}  |  "
-                f"⚡ Decisions: {progress['decisions_made']}/3"
-            )
+            if is_preview:
+                self.story_progress_lbl.setText(
+                    f"👁️ PREVIEW MODE  |  📖 Chapter 1 FREE  |  💰 Unlock for full story"
+                )
+                self.story_progress_lbl.setStyleSheet("color: #ff9800; font-weight: bold;")
+            else:
+                self.story_progress_lbl.setText(
+                    f"📖 Chapters Unlocked: {len(progress['unlocked_chapters'])}/{progress['total_chapters']}  |  "
+                    f"⚔ Power: {progress['power']}  |  "
+                    f"⚡ Decisions: {progress['decisions_made']}/3"
+                )
+                self.story_progress_lbl.setStyleSheet("")
         
         if hasattr(self, 'story_next_lbl'):
-            if progress['next_threshold']:
+            if is_preview:
+                self.story_next_lbl.setText(
+                    "💡 Read Chapter 1 to try this story, then unlock to continue the adventure!"
+                )
+                self.story_next_lbl.setStyleSheet("color: #2196f3;")
+            elif progress['next_threshold']:
                 self.story_next_lbl.setText(
                     f"🔒 Next chapter unlocks at {progress['next_threshold']} power "
                     f"({progress['power_to_next']} more needed)"
@@ -20495,14 +20507,13 @@ class StoryTab(QtWidgets.QWidget):
             decision_marker = ""
             if ch.get("has_decision"):
                 if ch.get("decision_made"):
-                    decision_marker = " ⚡"
+                    decision_marker = " ✓"  # Decision already made
                 elif ch.get("unlocked"):
-                    decision_marker = " ⚡"
-                else:
-                    decision_marker = " ⚡"
+                    decision_marker = " ⚡"  # Pending decision
+                # If locked, don't show decision marker
             
             self.chapter_combo.addItem(
-                f"{emoji} Chapter {ch['number']}: {ch['title']}{decision_marker}",
+                f"{emoji} {ch['title']}{decision_marker}",
                 ch["number"]
             )
     
@@ -20522,11 +20533,13 @@ class StoryTab(QtWidgets.QWidget):
         current_idx = 0
         for i, (story_id, story_info) in enumerate(AVAILABLE_STORIES.items()):
             is_locked = story_id not in unlocked_stories
-            lock_icon = "🔒 " if is_locked else ""
+            lock_icon = "📖 " if not is_locked else "👁️ "
             self.story_combo.addItem(f"{lock_icon}{story_info['title']}", story_id)
             tooltip = story_info['description']
             if is_locked:
-                tooltip += "\n\n🔒 Costs 100 coins to unlock"
+                tooltip += "\n\n👁️ PREVIEW: Chapter 1 FREE!\n💰 Unlock full story: 100 coins"
+            else:
+                tooltip += "\n\n📖 UNLOCKED: Full story access"
             self.story_combo.setItemData(i, tooltip, QtCore.Qt.ToolTipRole)
             if story_id == current_story:
                 current_idx = i
@@ -20575,55 +20588,32 @@ class StoryTab(QtWidgets.QWidget):
         if not story_id:
             return
         
-        from gamification import select_story, get_selected_story, COIN_COSTS
+        from gamification import select_story, get_selected_story, AVAILABLE_STORIES
         current = get_selected_story(self.blocker.adhd_buster)
         
         if story_id != current:
-            STORY_UNLOCK_COST = COIN_COSTS.get("story_unlock", 100)
             unlocked_stories = self.blocker.adhd_buster.get("unlocked_stories", ["underdog"])
+            is_preview = story_id not in unlocked_stories
             
-            if story_id not in unlocked_stories:
-                current_coins = self.blocker.adhd_buster.get("coins", 0)
-                if current_coins < STORY_UNLOCK_COST:
-                    show_warning(self, "Story Locked", 
-                        f"This story costs {STORY_UNLOCK_COST} coins to unlock.\n\n"
-                        f"You have: {current_coins} coins\n"
-                        f"You need: {STORY_UNLOCK_COST - current_coins} more coins\n\n"
-                        f"Complete focus sessions to earn more coins!")
-                    self._sync_story_combo_selection()
-                    return
-                
-                from gamification import AVAILABLE_STORIES
-                story_info = AVAILABLE_STORIES.get(story_id, {})
-                story_title = story_info.get("title", story_id)
+            story_info = AVAILABLE_STORIES.get(story_id, {})
+            story_title = story_info.get("title", story_id)
+            
+            if is_preview:
+                # Preview mode - can read Chapter 1 for free
                 reply = show_question(
-                    self, "Unlock Story?",
-                    f"Unlock '{story_title}' for {STORY_UNLOCK_COST} coins?\n\n"
-                    f"You have: {current_coins} coins\n"
-                    f"After unlock: {current_coins - STORY_UNLOCK_COST} coins",
+                    self, "Preview Story",
+                    f"📖 Preview '{story_title}'\n\n"
+                    f"Chapter 1 is FREE to read!\n"
+                    f"Unlock the full story (100 coins) to:\n"
+                    f"  • Progress to chapters 2-7\n"
+                    f"  • Make story decisions\n"
+                    f"  • Discover all 8 endings\n\n"
+                    f"Try Chapter 1 now?",
                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
                 )
                 if reply != QtWidgets.QMessageBox.Yes:
                     self._sync_story_combo_selection()
                     return
-                
-                if self._game_state:
-                    if not self._game_state.spend_coins(STORY_UNLOCK_COST):
-                        show_warning(self, "Error", "Failed to spend coins.")
-                        return
-                else:
-                    current_coins = self.blocker.adhd_buster.get("coins", 0)
-                    if current_coins < STORY_UNLOCK_COST:
-                        show_warning(self, "Error", "Not enough coins.")
-                        return
-                    self.blocker.adhd_buster["coins"] = current_coins - STORY_UNLOCK_COST
-                
-                if "unlocked_stories" not in self.blocker.adhd_buster:
-                    self.blocker.adhd_buster["unlocked_stories"] = ["underdog"]
-                self.blocker.adhd_buster["unlocked_stories"].append(story_id)
-                self.blocker.save_config()
-                show_info(self, "Story Unlocked! 🎉", f"You've unlocked '{story_title}'!")
-                self._refresh_story_combo()
             else:
                 reply = show_question(
                     self, "Switch Story?",
@@ -20744,12 +20734,68 @@ class StoryTab(QtWidgets.QWidget):
         
         from gamification import (
             get_story_progress, get_selected_story, AVAILABLE_STORIES, 
-            get_story_data, get_chapter_content
+            get_story_data, get_chapter_content, COIN_COSTS
         )
         
         progress = get_story_progress(self.blocker.adhd_buster)
         story_id = get_selected_story(self.blocker.adhd_buster)
         story_info = AVAILABLE_STORIES.get(story_id, {})
+        
+        # Check if story is unlocked (Chapter 1 is always free)
+        unlocked_stories = self.blocker.adhd_buster.get("unlocked_stories", ["underdog"])
+        story_is_unlocked = story_id in unlocked_stories
+        
+        # For locked stories, only Chapter 1 is available as preview
+        if not story_is_unlocked and chapter_num > 1:
+            STORY_UNLOCK_COST = COIN_COSTS.get("story_unlock", 100)
+            current_coins = self.blocker.adhd_buster.get("coins", 0)
+            story_title = story_info.get("title", story_id)
+            
+            if current_coins < STORY_UNLOCK_COST:
+                show_warning(
+                    self, "🔒 Story Preview Mode",
+                    f"You're previewing '{story_title}'.\n\n"
+                    f"Chapter 1 is FREE! To continue to Chapter {chapter_num}:\n\n"
+                    f"  💰 Unlock cost: {STORY_UNLOCK_COST} coins\n"
+                    f"  💵 You have: {current_coins} coins\n"
+                    f"  📈 Need: {STORY_UNLOCK_COST - current_coins} more coins\n\n"
+                    f"Complete focus sessions to earn coins!"
+                )
+                return
+            
+            # Offer to unlock
+            reply = show_question(
+                self, "🔓 Unlock Full Story?",
+                f"Unlock '{story_title}' for {STORY_UNLOCK_COST} coins?\n\n"
+                f"This unlocks:\n"
+                f"  ✅ All 7 chapters\n"
+                f"  ✅ 3 story decisions\n"
+                f"  ✅ 8 unique endings\n"
+                f"  ✅ Full hero progression\n\n"
+                f"You have: {current_coins} coins\n"
+                f"After unlock: {current_coins - STORY_UNLOCK_COST} coins",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+            if reply != QtWidgets.QMessageBox.Yes:
+                return
+            
+            # Unlock the story
+            if self._game_state:
+                if not self._game_state.spend_coins(STORY_UNLOCK_COST):
+                    show_error(self, "Error", "Failed to spend coins.")
+                    return
+            else:
+                self.blocker.adhd_buster["coins"] = current_coins - STORY_UNLOCK_COST
+            
+            if "unlocked_stories" not in self.blocker.adhd_buster:
+                self.blocker.adhd_buster["unlocked_stories"] = ["underdog"]
+            if story_id not in self.blocker.adhd_buster["unlocked_stories"]:
+                self.blocker.adhd_buster["unlocked_stories"].append(story_id)
+            self.blocker.save_config()
+            
+            show_info(self, "Story Unlocked! 🎉", f"You've unlocked '{story_title}'!\n\nEnjoy the full adventure!")
+            self._refresh_story_combo()
+            # Continue to show the chapter
         
         # Get the full chapter data with content (personalized with gear and decisions)
         chapter_data = get_chapter_content(chapter_num, self.blocker.adhd_buster)
@@ -20768,101 +20814,252 @@ class StoryTab(QtWidgets.QWidget):
             )
             return
         
-        dialog = QtWidgets.QDialog(self)
-        dialog.setWindowTitle(f"📖 {story_info.get('title', 'Story')} - Chapter {chapter_num}")
-        dialog.setMinimumSize(600, 500)
-        layout = QtWidgets.QVBoxLayout(dialog)
+        # Convert markdown-style formatting to HTML
+        def markdown_to_html(text: str) -> str:
+            import re
+            # Convert **bold** to <b>bold</b>
+            text = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', text)
+            # Convert *italic* to <i>italic</i>
+            text = re.sub(r'\*(.+?)\*', r'<i>\1</i>', text)
+            # Convert line breaks to HTML
+            text = text.replace('\n\n', '</p><p style="margin-top: 12px;">')
+            text = text.replace('\n', '<br>')
+            return f'<p>{text}</p>'
         
-        title_lbl = QtWidgets.QLabel(f"<h2>{chapter_data['title']}</h2>")
+        # Use styled frameless dialog
+        dialog = StyledDialog(self, f"📖 {story_info.get('title', 'Story')} - Chapter {chapter_num}")
+        dialog.setMinimumSize(650, 550)
+        layout = dialog._content_layout
+        
+        title_lbl = QtWidgets.QLabel(f"<h2 style='color: #f1c40f; margin-bottom: 15px;'>{chapter_data['title']}</h2>")
+        title_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title_lbl)
         
         content_scroll = QtWidgets.QScrollArea()
         content_scroll.setWidgetResizable(True)
+        content_scroll.setStyleSheet("""
+            QScrollArea { 
+                border: none; 
+                background: transparent; 
+            }
+            QScrollBar:vertical {
+                background: #2d2d2d;
+                width: 10px;
+                border-radius: 5px;
+            }
+            QScrollBar::handle:vertical {
+                background: #555;
+                border-radius: 5px;
+                min-height: 20px;
+            }
+        """)
         content_widget = QtWidgets.QWidget()
+        content_widget.setStyleSheet("background: transparent;")
         content_layout = QtWidgets.QVBoxLayout(content_widget)
+        content_layout.setContentsMargins(10, 10, 10, 10)
         
         # Use personalized content from get_chapter_content (includes gear and decision variations)
-        content_lbl = QtWidgets.QLabel(chapter_data.get("content", "No content available."))
+        raw_content = chapter_data.get("content", "No content available.")
+        html_content = markdown_to_html(raw_content)
+        content_lbl = QtWidgets.QLabel(html_content)
         content_lbl.setWordWrap(True)
-        content_lbl.setStyleSheet("font-size: 13px; line-height: 1.6;")
+        content_lbl.setStyleSheet("""
+            font-size: 14px; 
+            line-height: 1.7; 
+            color: #e0e0e0;
+            padding: 5px;
+        """)
+        content_lbl.setTextFormat(QtCore.Qt.TextFormat.RichText)
         content_layout.addWidget(content_lbl)
         content_layout.addStretch()
         
         content_scroll.setWidget(content_widget)
         layout.addWidget(content_scroll)
         
+        # Container for decision section (will be updated after decision)
+        decision_container = QtWidgets.QWidget()
+        decision_container_layout = QtWidgets.QVBoxLayout(decision_container)
+        decision_container_layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(decision_container)
+        
+        # Store references for inline update after decision
+        dialog._decision_container = decision_container
+        dialog._decision_container_layout = decision_container_layout
+        dialog._content_lbl = content_lbl
+        dialog._content_scroll = content_scroll
+        dialog._chapter_num = chapter_num
+        dialog._markdown_to_html = markdown_to_html
+        
         # Use chapter_data.has_decision (from get_chapter_content) - already accounts for decision_made
         if chapter_data.get("has_decision"):
-            # Fetch decision info from the story decisions dict
-            from gamification import get_story_data
-            story_decisions, _ = get_story_data(self.blocker.adhd_buster)
-            decision_info = story_decisions.get(chapter_num)
-            
-            if decision_info:
-                decision_frame = QtWidgets.QFrame()
-                decision_frame.setStyleSheet("""
-                    QFrame {
-                        background-color: #2d2d2d;
-                        border: 2px solid #f1c40f;
-                        border-radius: 8px;
-                        padding: 15px;
-                    }
-                """)
-                decision_layout = QtWidgets.QVBoxLayout(decision_frame)
-                
-                decision_title = QtWidgets.QLabel("<h3>⚡ A Pivotal Decision</h3>")
-                decision_title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-                decision_layout.addWidget(decision_title)
-                
-                decision_prompt = QtWidgets.QLabel(decision_info.get("prompt", "What will you do?"))
-                decision_prompt.setWordWrap(True)
-                decision_prompt.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-                decision_prompt.setStyleSheet("font-size: 12px; padding: 10px;")
-                decision_layout.addWidget(decision_prompt)
-                
-                btn_layout = QtWidgets.QHBoxLayout()
-                for option_key, option_data in decision_info.get("choices", {}).items():
-                    btn = QtWidgets.QPushButton(option_data.get("label", option_key))
-                    btn.setStyleSheet("padding: 10px 20px; font-size: 12px;")
-                    btn.clicked.connect(lambda checked, ok=option_key, ch=chapter_num: self._make_story_decision(ch, ok, dialog))
-                    btn_layout.addWidget(btn)
-                decision_layout.addLayout(btn_layout)
-                
-                warning_lbl = QtWidgets.QLabel(
-                    "<p style='color: #e74c3c; font-size: 11px; text-align: center;'>"
-                    "⚠️ <b>Warning:</b> This choice is permanent and will affect your story!</p>"
-                )
-                warning_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-                decision_layout.addWidget(warning_lbl)
-                
-                layout.addWidget(decision_frame)
+            self._show_decision_ui(dialog, chapter_num, decision_container_layout)
+        
+        # Add teaser for next chapter
+        if chapter_data.get("next_teaser"):
+            teaser_lbl = QtWidgets.QLabel(f"<p style='color: #3498db; font-style: italic; margin-top: 15px;'>🔮 {chapter_data['next_teaser']}</p>")
+            teaser_lbl.setWordWrap(True)
+            teaser_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(teaser_lbl)
         
         close_btn = QtWidgets.QPushButton("Close")
+        close_btn.setStyleSheet("""
+            QPushButton {
+                padding: 10px 30px;
+                font-size: 13px;
+                background: #555;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                margin-top: 10px;
+            }
+            QPushButton:hover {
+                background: #666;
+            }
+        """)
         close_btn.clicked.connect(dialog.accept)
-        layout.addWidget(close_btn)
+        layout.addWidget(close_btn, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
         
         dialog.exec()
     
+    def _show_decision_ui(self, dialog: QtWidgets.QDialog, chapter_num: int, container_layout: QtWidgets.QVBoxLayout) -> None:
+        """Show the decision UI in the chapter dialog."""
+        from gamification import get_story_data
+        story_decisions, _ = get_story_data(self.blocker.adhd_buster)
+        decision_info = story_decisions.get(chapter_num)
+        
+        if not decision_info:
+            return
+        
+        decision_frame = QtWidgets.QFrame()
+        decision_frame.setStyleSheet("""
+            QFrame {
+                background-color: rgba(241, 196, 15, 0.1);
+                border: 2px solid #f1c40f;
+                border-radius: 10px;
+                padding: 15px;
+                margin-top: 10px;
+            }
+        """)
+        decision_layout = QtWidgets.QVBoxLayout(decision_frame)
+        
+        decision_title = QtWidgets.QLabel("<h3 style='color: #f1c40f;'>⚡ A Pivotal Decision</h3>")
+        decision_title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        decision_layout.addWidget(decision_title)
+        
+        decision_prompt = QtWidgets.QLabel(decision_info.get("prompt", "What will you do?"))
+        decision_prompt.setWordWrap(True)
+        decision_prompt.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        decision_prompt.setStyleSheet("font-size: 13px; padding: 10px; color: #fff;")
+        decision_layout.addWidget(decision_prompt)
+        
+        btn_layout = QtWidgets.QHBoxLayout()
+        for option_key, option_data in decision_info.get("choices", {}).items():
+            btn = QtWidgets.QPushButton(option_data.get("label", option_key))
+            btn.setStyleSheet("""
+                QPushButton {
+                    padding: 12px 25px; 
+                    font-size: 13px;
+                    background: #3498db;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background: #2980b9;
+                }
+            """)
+            btn.clicked.connect(lambda checked, ok=option_key, ch=chapter_num, d=dialog: self._make_story_decision(ch, ok, d))
+            btn_layout.addWidget(btn)
+        decision_layout.addLayout(btn_layout)
+        
+        warning_lbl = QtWidgets.QLabel(
+            "<p style='color: #e74c3c; font-size: 11px; text-align: center;'>"
+            "⚠️ <b>Warning:</b> This choice is permanent and will affect your story!</p>"
+        )
+        warning_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        decision_layout.addWidget(warning_lbl)
+        
+        container_layout.addWidget(decision_frame)
+    
+    def _clear_layout(self, layout: QtWidgets.QLayout) -> None:
+        """Clear all widgets from a layout."""
+        while layout.count():
+            item = layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+            elif item.layout():
+                self._clear_layout(item.layout())
+    
     def _make_story_decision(self, chapter_num: int, option_key: str, dialog: QtWidgets.QDialog) -> None:
-        """Make a story decision for a chapter."""
+        """Make a story decision for a chapter and update UI inline."""
         if not GAMIFICATION_AVAILABLE:
             return
         
-        from gamification import make_story_decision, AVAILABLE_STORIES
+        # Guard against double-clicks: check if decision already being processed
+        if hasattr(dialog, '_decision_in_progress') and dialog._decision_in_progress:
+            return
+        dialog._decision_in_progress = True
+        
+        from gamification import make_story_decision, AVAILABLE_STORIES, get_selected_story, COIN_COSTS, get_chapter_content
+        
+        # Check if story is unlocked (decisions require unlocked story)
+        story_id = get_selected_story(self.blocker.adhd_buster)
+        unlocked_stories = self.blocker.adhd_buster.get("unlocked_stories", ["underdog"])
+        
+        if story_id not in unlocked_stories:
+            STORY_UNLOCK_COST = COIN_COSTS.get("story_unlock", 100)
+            current_coins = self.blocker.adhd_buster.get("coins", 0)
+            story_info = AVAILABLE_STORIES.get(story_id, {})
+            story_title = story_info.get("title", story_id)
+            
+            if current_coins < STORY_UNLOCK_COST:
+                show_warning(
+                    self, "🔒 Preview Mode",
+                    f"Decisions require unlocking the full story.\n\n"
+                    f"💰 Unlock cost: {STORY_UNLOCK_COST} coins\n"
+                    f"💵 You have: {current_coins} coins\n"
+                    f"📈 Need: {STORY_UNLOCK_COST - current_coins} more coins"
+                )
+                dialog._decision_in_progress = False
+                return
+            
+            reply = show_question(
+                self, "🔓 Unlock to Decide?",
+                f"Unlock '{story_title}' for {STORY_UNLOCK_COST} coins?\n\n"
+                f"This unlocks decisions and all chapters!\n\n"
+                f"You have: {current_coins} coins\n"
+                f"After: {current_coins - STORY_UNLOCK_COST} coins",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+            if reply != QtWidgets.QMessageBox.Yes:
+                dialog._decision_in_progress = False
+                return
+            
+            if self._game_state:
+                if not self._game_state.spend_coins(STORY_UNLOCK_COST):
+                    show_error(self, "Error", "Failed to spend coins.")
+                    dialog._decision_in_progress = False
+                    return
+            else:
+                self.blocker.adhd_buster["coins"] = current_coins - STORY_UNLOCK_COST
+            
+            if "unlocked_stories" not in self.blocker.adhd_buster:
+                self.blocker.adhd_buster["unlocked_stories"] = ["underdog"]
+            if story_id not in self.blocker.adhd_buster["unlocked_stories"]:
+                self.blocker.adhd_buster["unlocked_stories"].append(story_id)
+            self.blocker.save_config()
+            self._refresh_story_combo()
+            # Now continue with the decision
         
         # Call with correct 3 arguments: adhd_buster, chapter_number, choice
         result = make_story_decision(self.blocker.adhd_buster, chapter_num, option_key)
         
         if result.get("success"):
+            # Reset flag now that decision is complete (buttons will be removed anyway)
+            dialog._decision_in_progress = False
+            
             self.blocker.save_config()
-            dialog.accept()
-            
-            show_info(
-                self, "Decision Made!",
-                f"You chose: {result.get('choice_label', option_key)}\n\n"
-                f"{result.get('outcome', 'Your choice will shape the story...')}"
-            )
-            
             self._refresh_story_chapter_list()
             
             # Update game state with story from result
@@ -20870,7 +21067,64 @@ class StoryTab(QtWidgets.QWidget):
                 story_id = result.get("story_id")
                 if story_id:
                     self._game_state.set_story(story_id)
+            
+            # Update the UI inline - clear decision container and show outcome
+            if hasattr(dialog, '_decision_container_layout'):
+                self._clear_layout(dialog._decision_container_layout)
+                
+                # Show compact decision outcome
+                outcome_frame = QtWidgets.QFrame()
+                outcome_frame.setStyleSheet("""
+                    QFrame {
+                        background-color: rgba(46, 204, 113, 0.08);
+                        border: 1px solid #2ecc71;
+                        border-radius: 6px;
+                        padding: 8px 12px;
+                        margin-top: 8px;
+                    }
+                """)
+                outcome_layout = QtWidgets.QVBoxLayout(outcome_frame)
+                outcome_layout.setSpacing(4)
+                outcome_layout.setContentsMargins(5, 5, 5, 5)
+                
+                # Compact decision header with choice inline
+                choice_text = f"<p style='font-size: 12px; color: #2ecc71; margin: 0;'><b>✅ You chose:</b> {result.get('choice_label', option_key)}</p>"
+                choice_lbl = QtWidgets.QLabel(choice_text)
+                choice_lbl.setWordWrap(True)
+                outcome_layout.addWidget(choice_lbl)
+                
+                # Outcome/consequence (more subtle)
+                outcome_text = result.get('outcome', 'Your choice will shape the story...')
+                outcome_lbl = QtWidgets.QLabel(f"<p style='font-size: 11px; color: #999; font-style: italic; margin: 2px 0 0 0;'>{outcome_text}</p>")
+                outcome_lbl.setWordWrap(True)
+                outcome_layout.addWidget(outcome_lbl)
+                
+                dialog._decision_container_layout.addWidget(outcome_frame)
+                
+                # Get updated chapter content with continuation
+                updated_chapter = get_chapter_content(chapter_num, self.blocker.adhd_buster)
+                if updated_chapter and updated_chapter.get("content"):
+                    # Update the main content with the new personalized content
+                    if hasattr(dialog, '_markdown_to_html') and hasattr(dialog, '_content_lbl'):
+                        new_content = dialog._markdown_to_html(updated_chapter.get("content", ""))
+                        dialog._content_lbl.setText(new_content)
+                        
+                        # Scroll to show the outcome
+                        if hasattr(dialog, '_content_scroll'):
+                            dialog._content_scroll.verticalScrollBar().setValue(
+                                dialog._content_scroll.verticalScrollBar().maximum()
+                            )
+                    
+                    # Show compact teaser for next chapter if available
+                    if updated_chapter.get("next_teaser"):
+                        teaser = QtWidgets.QLabel(
+                            f"<p style='color: #3498db; font-size: 11px; font-style: italic; margin: 8px 0 0 0;'>"
+                            f"🔮 {updated_chapter['next_teaser']}</p>"
+                        )
+                        teaser.setWordWrap(True)
+                        dialog._decision_container_layout.addWidget(teaser)
         else:
+            dialog._decision_in_progress = False
             show_error(self, "Error", result.get("error", "Failed to make decision."))
 
 

@@ -10176,6 +10176,11 @@ def make_story_decision(adhd_buster: dict, chapter_number: int, choice: str) -> 
     if choice not in ("A", "B"):
         return {"success": False, "error": "Invalid choice - must be A or B"}
     
+    # Check if decision was already made (defense in depth)
+    existing_decisions = adhd_buster.get("story_decisions", {})
+    if decision_info["id"] in existing_decisions:
+        return {"success": False, "error": "Decision already made for this chapter"}
+    
     if "story_decisions" not in adhd_buster:
         adhd_buster["story_decisions"] = {}
     

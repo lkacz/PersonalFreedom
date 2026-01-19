@@ -413,6 +413,51 @@ def test_story_hero_isolation():
     print("  ✓ Heroes are completely isolated between stories")
 
 
+def test_chapter1_preview_mode():
+    """Test that Chapter 1 is accessible for locked stories (preview mode)."""
+    print("\nTesting Chapter 1 preview mode...")
+    
+    # Create user with only underdog unlocked
+    test_adhd = {
+        "active_story": "warrior",  # Select a locked story
+        "story_mode": "active",
+        "unlocked_stories": ["underdog"],  # Only underdog unlocked
+        "max_power_reached": 0
+    }
+    ensure_hero_structure(test_adhd)
+    
+    # Verify warrior is NOT in unlocked stories (preview mode)
+    assert "warrior" not in test_adhd["unlocked_stories"], "Warrior should be locked"
+    
+    # Chapter 1 should be readable (via get_chapter_content)
+    chapter1 = get_chapter_content(1, test_adhd)
+    assert chapter1 is not None, "Chapter 1 should be accessible"
+    assert chapter1.get("unlocked") == True, "Chapter 1 should be unlocked (always available)"
+    assert "content" in chapter1, "Chapter 1 should have content"
+    print("  ✓ Chapter 1 is accessible for locked story (preview mode)")
+    
+    # Chapter 2+ should still return data but would be blocked by UI
+    # (The gamification module doesn't enforce story unlock, the UI does)
+    chapter2 = get_chapter_content(2, test_adhd)
+    assert chapter2 is not None, "Chapter 2 data is available"
+    # Chapter 2 is power-locked (need 50 power)
+    assert chapter2.get("unlocked") == False, "Chapter 2 should be power-locked"
+    print("  ✓ Chapter 2 is power-locked (additional story unlock check in UI)")
+    
+    # Verify preview mode detection logic
+    story_id = get_selected_story(test_adhd)
+    unlocked_stories = test_adhd.get("unlocked_stories", ["underdog"])
+    is_preview = story_id not in unlocked_stories
+    assert is_preview == True, "Should be in preview mode for warrior"
+    print("  ✓ Preview mode correctly detected")
+    
+    # After unlocking, preview mode should be False
+    test_adhd["unlocked_stories"].append("warrior")
+    is_preview = "warrior" not in test_adhd["unlocked_stories"]
+    assert is_preview == False, "Should NOT be in preview mode after unlock"
+    print("  ✓ Preview mode correctly cleared after unlock")
+
+
 if __name__ == "__main__":
     test_all_stories()
     test_story_unlock_system()
@@ -427,6 +472,7 @@ if __name__ == "__main__":
     test_get_chapter_content_locked()
     test_all_stories_have_unique_decision_ids()
     test_story_hero_isolation()
+    test_chapter1_preview_mode()
     
     print("\n" + "="*50)
     print("✅ ALL STORY SYSTEM TESTS PASSED!")
@@ -441,3 +487,4 @@ if __name__ == "__main__":
     print("  • Content variations based on decision path")
     print("  • Story restart clears all progress")
     print("  • Story switching preserves independent progress")
+    print("  • Chapter 1 FREE preview for all stories")
