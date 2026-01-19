@@ -10229,16 +10229,19 @@ def get_chapter_content(chapter_number: int, adhd_buster: dict) -> Optional[dict
         return None
     
     chapter = story_chapters[chapter_number - 1]
-    power = calculate_character_power(adhd_buster)
-    unlocked = power >= chapter["threshold"]
+    current_power = calculate_character_power(adhd_buster)
+    max_power = adhd_buster.get("max_power_reached", 0)
+    # Use max power for unlocking - chapters stay unlocked once reached
+    unlock_power = max(current_power, max_power)
+    unlocked = unlock_power >= chapter["threshold"]
     
     if not unlocked:
         return {
             "title": f"Chapter {chapter_number}: ???",
-            "content": f"🔒 Locked — Reach {chapter['threshold']} power to unlock.\nYour current power: {power}",
+            "content": f"🔒 Locked — Reach {chapter['threshold']} power to unlock.\nYour current power: {current_power}",
             "unlocked": False,
             "threshold": chapter["threshold"],
-            "power_needed": chapter["threshold"] - power,
+            "power_needed": chapter["threshold"] - current_power,
             "has_decision": False,
         }
     
@@ -10275,7 +10278,7 @@ def get_chapter_content(chapter_number: int, adhd_buster: dict) -> Optional[dict
         "boots": get_item_name("Boots"),
         "cloak": get_item_name("Cloak"),
         "amulet": get_item_name("Amulet"),
-        "current_power": str(power),
+        "current_power": str(current_power),
     }
     
     # Get decisions made so far

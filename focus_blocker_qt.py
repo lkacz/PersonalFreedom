@@ -20768,9 +20768,6 @@ class StoryTab(QtWidgets.QWidget):
             )
             return
         
-        # Find the chapter in progress (for decision status)
-        chapter_progress = next((ch for ch in progress["chapters"] if ch["number"] == chapter_num), None)
-        
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle(f"📖 {story_info.get('title', 'Story')} - Chapter {chapter_num}")
         dialog.setMinimumSize(600, 500)
