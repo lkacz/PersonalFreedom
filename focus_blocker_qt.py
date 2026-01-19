@@ -20742,42 +20742,41 @@ class StoryTab(QtWidgets.QWidget):
         if not chapter_num:
             return
         
-        from gamification import get_story_progress, get_selected_story, AVAILABLE_STORIES, get_story_data
+        from gamification import (
+            get_story_progress, get_selected_story, AVAILABLE_STORIES, 
+            get_story_data, get_chapter_content
+        )
         
         progress = get_story_progress(self.blocker.adhd_buster)
         story_id = get_selected_story(self.blocker.adhd_buster)
         story_info = AVAILABLE_STORIES.get(story_id, {})
         
-        # Get the full chapter data with content
-        story_decisions, story_chapters = get_story_data(self.blocker.adhd_buster)
+        # Get the full chapter data with content (personalized with gear and decisions)
+        chapter_data = get_chapter_content(chapter_num, self.blocker.adhd_buster)
         
-        # Find the chapter in progress (for unlock status)
-        chapter_progress = next((ch for ch in progress["chapters"] if ch["number"] == chapter_num), None)
-        if not chapter_progress:
+        if not chapter_data:
             show_error(self, "Error", "Chapter not found!")
             return
         
-        if not chapter_progress.get("unlocked"):
+        if not chapter_data.get("unlocked"):
             show_warning(
                 self, "Chapter Locked",
-                f"This chapter requires {story_chapters[chapter_num - 1].get('threshold', 0)} power to unlock.\n\n"
+                f"This chapter requires {chapter_data.get('threshold', 0)} power to unlock.\n\n"
                 f"Current power: {progress['power']}\n"
+                f"Power needed: {chapter_data.get('power_needed', 0)} more\n"
                 f"Keep building your hero's power!"
             )
             return
         
-        # Get the full chapter with content
-        full_chapter = story_chapters[chapter_num - 1] if chapter_num <= len(story_chapters) else None
-        if not full_chapter:
-            show_error(self, "Error", "Chapter data not found!")
-            return
+        # Find the chapter in progress (for decision status)
+        chapter_progress = next((ch for ch in progress["chapters"] if ch["number"] == chapter_num), None)
         
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle(f"📖 {story_info.get('title', 'Story')} - Chapter {chapter_num}")
         dialog.setMinimumSize(600, 500)
         layout = QtWidgets.QVBoxLayout(dialog)
         
-        title_lbl = QtWidgets.QLabel(f"<h2>Chapter {chapter_num}: {full_chapter['title']}</h2>")
+        title_lbl = QtWidgets.QLabel(f"<h2>{chapter_data['title']}</h2>")
         layout.addWidget(title_lbl)
         
         content_scroll = QtWidgets.QScrollArea()
@@ -20785,7 +20784,8 @@ class StoryTab(QtWidgets.QWidget):
         content_widget = QtWidgets.QWidget()
         content_layout = QtWidgets.QVBoxLayout(content_widget)
         
-        content_lbl = QtWidgets.QLabel(full_chapter.get("content", "No content available."))
+        # Use personalized content from get_chapter_content (includes gear and decision variations)
+        content_lbl = QtWidgets.QLabel(chapter_data.get("content", "No content available."))
         content_lbl.setWordWrap(True)
         content_lbl.setStyleSheet("font-size: 13px; line-height: 1.6;")
         content_layout.addWidget(content_lbl)
@@ -20794,44 +20794,51 @@ class StoryTab(QtWidgets.QWidget):
         content_scroll.setWidget(content_widget)
         layout.addWidget(content_scroll)
         
-        if chapter_progress.get("has_decision") and not chapter_progress.get("decision_made"):
-            decision_frame = QtWidgets.QFrame()
-            decision_frame.setStyleSheet("""
-                QFrame {
-                    background-color: #2d2d2d;
-                    border: 2px solid #f1c40f;
-                    border-radius: 8px;
-                    padding: 15px;
-                }
-            """)
-            decision_layout = QtWidgets.QVBoxLayout(decision_frame)
+        # Use chapter_data.has_decision (from get_chapter_content) - already accounts for decision_made
+        if chapter_data.get("has_decision"):
+            # Fetch decision info from the story decisions dict
+            from gamification import get_story_data
+            story_decisions, _ = get_story_data(self.blocker.adhd_buster)
+            decision_info = story_decisions.get(chapter_num)
             
-            decision_title = QtWidgets.QLabel("<h3>⚡ A Pivotal Decision</h3>")
-            decision_title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-            decision_layout.addWidget(decision_title)
-            
-            decision_prompt = QtWidgets.QLabel(chapter.get("decision_prompt", "What will you do?"))
-            decision_prompt.setWordWrap(True)
-            decision_prompt.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-            decision_prompt.setStyleSheet("font-size: 12px; padding: 10px;")
-            decision_layout.addWidget(decision_prompt)
-            
-            btn_layout = QtWidgets.QHBoxLayout()
-            for option_key, option_data in chapter.get("options", {}).items():
-                btn = QtWidgets.QPushButton(option_data.get("label", option_key))
-                btn.setStyleSheet("padding: 10px 20px; font-size: 12px;")
-                btn.clicked.connect(lambda checked, ok=option_key, ch=chapter_num: self._make_story_decision(ch, ok, dialog))
-                btn_layout.addWidget(btn)
-            decision_layout.addLayout(btn_layout)
-            
-            warning_lbl = QtWidgets.QLabel(
-                "<p style='color: #e74c3c; font-size: 11px; text-align: center;'>"
-                "⚠️ <b>Warning:</b> This choice is permanent and will affect your story!</p>"
-            )
-            warning_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-            decision_layout.addWidget(warning_lbl)
-            
-            layout.addWidget(decision_frame)
+            if decision_info:
+                decision_frame = QtWidgets.QFrame()
+                decision_frame.setStyleSheet("""
+                    QFrame {
+                        background-color: #2d2d2d;
+                        border: 2px solid #f1c40f;
+                        border-radius: 8px;
+                        padding: 15px;
+                    }
+                """)
+                decision_layout = QtWidgets.QVBoxLayout(decision_frame)
+                
+                decision_title = QtWidgets.QLabel("<h3>⚡ A Pivotal Decision</h3>")
+                decision_title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                decision_layout.addWidget(decision_title)
+                
+                decision_prompt = QtWidgets.QLabel(decision_info.get("prompt", "What will you do?"))
+                decision_prompt.setWordWrap(True)
+                decision_prompt.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                decision_prompt.setStyleSheet("font-size: 12px; padding: 10px;")
+                decision_layout.addWidget(decision_prompt)
+                
+                btn_layout = QtWidgets.QHBoxLayout()
+                for option_key, option_data in decision_info.get("choices", {}).items():
+                    btn = QtWidgets.QPushButton(option_data.get("label", option_key))
+                    btn.setStyleSheet("padding: 10px 20px; font-size: 12px;")
+                    btn.clicked.connect(lambda checked, ok=option_key, ch=chapter_num: self._make_story_decision(ch, ok, dialog))
+                    btn_layout.addWidget(btn)
+                decision_layout.addLayout(btn_layout)
+                
+                warning_lbl = QtWidgets.QLabel(
+                    "<p style='color: #e74c3c; font-size: 11px; text-align: center;'>"
+                    "⚠️ <b>Warning:</b> This choice is permanent and will affect your story!</p>"
+                )
+                warning_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+                decision_layout.addWidget(warning_lbl)
+                
+                layout.addWidget(decision_frame)
         
         close_btn = QtWidgets.QPushButton("Close")
         close_btn.clicked.connect(dialog.accept)
@@ -20844,16 +20851,15 @@ class StoryTab(QtWidgets.QWidget):
         if not GAMIFICATION_AVAILABLE:
             return
         
-        from gamification import make_story_decision, get_selected_story, AVAILABLE_STORIES
+        from gamification import make_story_decision, AVAILABLE_STORIES
         
-        story_id = get_selected_story(self.blocker.adhd_buster)
-        result = make_story_decision(self.blocker.adhd_buster, story_id, chapter_num, option_key)
+        # Call with correct 3 arguments: adhd_buster, chapter_number, choice
+        result = make_story_decision(self.blocker.adhd_buster, chapter_num, option_key)
         
         if result.get("success"):
             self.blocker.save_config()
             dialog.accept()
             
-            story_info = AVAILABLE_STORIES.get(story_id, {})
             show_info(
                 self, "Decision Made!",
                 f"You chose: {result.get('choice_label', option_key)}\n\n"
@@ -20862,8 +20868,11 @@ class StoryTab(QtWidgets.QWidget):
             
             self._refresh_story_chapter_list()
             
+            # Update game state with story from result
             if self._game_state:
-                self._game_state.set_story(story_id)
+                story_id = result.get("story_id")
+                if story_id:
+                    self._game_state.set_story(story_id)
         else:
             show_error(self, "Error", result.get("error", "Failed to make decision."))
 
