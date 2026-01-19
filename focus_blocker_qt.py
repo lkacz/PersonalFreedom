@@ -5,8 +5,9 @@ import platform
 import copy
 import math
 import logging
+import threading
 from pathlib import Path
-from typing import Optional, Dict, List, Any
+from typing import Optional, Dict, List, Any, Callable
 from datetime import datetime, timedelta
 
 # Module logger
@@ -36,6 +37,14 @@ if platform.system() == "Windows":
         pass
 
 from PySide6 import QtCore, QtGui, QtWidgets
+
+# pynput for reliable global hotkeys (works even when window hidden)
+try:
+    from pynput import keyboard as pynput_keyboard
+    PYNPUT_AVAILABLE = True
+except ImportError:
+    PYNPUT_AVAILABLE = False
+    pynput_keyboard = None
 
 # Import enhanced dialogs
 from item_drop_dialog import EnhancedItemDropDialog
@@ -21346,13 +21355,231 @@ class DevTab(QtWidgets.QWidget):
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
 
+# ============================================================================
+# Global Hotkey Listener using pynput (reliable even when window hidden)
+# ============================================================================
+
+class HotkeyListener:
+    """
+    Global hotkey listener using pynput.
+    Unlike Windows RegisterHotKey, this works reliably even when the window is hidden.
+    """
+    
+    def __init__(self, callback: Callable[[], None]):
+        """
+        Initialize the hotkey listener.
+        
+        Args:
+            callback: Function to call when hotkey is pressed (must be thread-safe!)
+        """
+        self._callback = callback
+        self._listener: Optional[Any] = None
+        self._running = False
+        
+        # Target key and modifiers
+        self._target_key: Optional[Any] = None
+        self._require_ctrl = False
+        self._require_shift = False
+        self._require_alt = False
+        
+        # Current modifier states
+        self._ctrl_pressed = False
+        self._shift_pressed = False
+        self._alt_pressed = False
+        
+        self._lock = threading.Lock()
+    
+    def set_hotkey(self, key_sequence: str) -> bool:
+        """
+        Set the hotkey to listen for (e.g., "Ctrl+F11", "Ctrl+Shift+H").
+        
+        Args:
+            key_sequence: Qt-style key sequence string
+            
+        Returns:
+            True if hotkey was parsed successfully
+        """
+        if not PYNPUT_AVAILABLE or not pynput_keyboard:
+            logger.warning("pynput not available, hotkey disabled")
+            return False
+        
+        # Parse the key sequence
+        parts = key_sequence.replace("+", " ").split()
+        
+        self._require_ctrl = False
+        self._require_shift = False
+        self._require_alt = False
+        self._target_key = None
+        
+        for part in parts:
+            part_lower = part.lower()
+            if part_lower in ("ctrl", "control"):
+                self._require_ctrl = True
+            elif part_lower == "shift":
+                self._require_shift = True
+            elif part_lower in ("alt", "meta"):
+                self._require_alt = True
+            else:
+                # This is the main key
+                self._target_key = self._parse_key(part)
+        
+        if self._target_key is None:
+            logger.warning(f"Could not parse hotkey: {key_sequence}")
+            return False
+        
+        logger.info(f"Hotkey set: {key_sequence} -> ctrl={self._require_ctrl}, "
+                   f"shift={self._require_shift}, alt={self._require_alt}, key={self._target_key}")
+        return True
+    
+    def _parse_key(self, key_str: str) -> Optional[Any]:
+        """Parse a key string to pynput key."""
+        if not pynput_keyboard:
+            return None
+            
+        key_str = key_str.upper()
+        
+        # Function keys F1-F12
+        if key_str.startswith("F") and key_str[1:].isdigit():
+            fnum = int(key_str[1:])
+            if 1 <= fnum <= 12:
+                return getattr(pynput_keyboard.Key, f"f{fnum}", None)
+        
+        # Special keys
+        special_keys = {
+            "ESCAPE": pynput_keyboard.Key.esc,
+            "ESC": pynput_keyboard.Key.esc,
+            "SPACE": pynput_keyboard.Key.space,
+            "TAB": pynput_keyboard.Key.tab,
+            "ENTER": pynput_keyboard.Key.enter,
+            "RETURN": pynput_keyboard.Key.enter,
+            "BACKSPACE": pynput_keyboard.Key.backspace,
+            "DELETE": pynput_keyboard.Key.delete,
+            "HOME": pynput_keyboard.Key.home,
+            "END": pynput_keyboard.Key.end,
+            "PAGEUP": pynput_keyboard.Key.page_up,
+            "PAGEDOWN": pynput_keyboard.Key.page_down,
+            "UP": pynput_keyboard.Key.up,
+            "DOWN": pynput_keyboard.Key.down,
+            "LEFT": pynput_keyboard.Key.left,
+            "RIGHT": pynput_keyboard.Key.right,
+            "INSERT": pynput_keyboard.Key.insert,
+        }
+        
+        if key_str in special_keys:
+            return special_keys[key_str]
+        
+        # Single character (letter or number)
+        if len(key_str) == 1:
+            return pynput_keyboard.KeyCode.from_char(key_str.lower())
+        
+        return None
+    
+    def _on_press(self, key) -> None:
+        """Handle key press event."""
+        if not pynput_keyboard:
+            return
+            
+        with self._lock:
+            # Track modifier states
+            if key in (pynput_keyboard.Key.ctrl_l, pynput_keyboard.Key.ctrl_r, pynput_keyboard.Key.ctrl):
+                self._ctrl_pressed = True
+            elif key in (pynput_keyboard.Key.shift_l, pynput_keyboard.Key.shift_r, pynput_keyboard.Key.shift):
+                self._shift_pressed = True
+            elif key in (pynput_keyboard.Key.alt_l, pynput_keyboard.Key.alt_r, pynput_keyboard.Key.alt,
+                        pynput_keyboard.Key.alt_gr):
+                self._alt_pressed = True
+            
+            # Check if this is our target key with correct modifiers
+            if self._target_key is not None:
+                key_matches = False
+                
+                # Compare keys
+                if isinstance(self._target_key, pynput_keyboard.Key):
+                    key_matches = (key == self._target_key)
+                elif isinstance(self._target_key, pynput_keyboard.KeyCode):
+                    if hasattr(key, 'char') and key.char:
+                        key_matches = (key.char.lower() == self._target_key.char.lower())
+                    elif hasattr(key, 'vk') and hasattr(self._target_key, 'vk'):
+                        key_matches = (key.vk == self._target_key.vk)
+                
+                if key_matches:
+                    # Check modifiers
+                    ctrl_ok = (self._ctrl_pressed == self._require_ctrl)
+                    shift_ok = (self._shift_pressed == self._require_shift)
+                    alt_ok = (self._alt_pressed == self._require_alt)
+                    
+                    if ctrl_ok and shift_ok and alt_ok:
+                        logger.debug("Hotkey triggered!")
+                        # Call callback (should emit a Qt signal for thread safety)
+                        if self._callback:
+                            self._callback()
+    
+    def _on_release(self, key) -> None:
+        """Handle key release event."""
+        if not pynput_keyboard:
+            return
+            
+        with self._lock:
+            # Track modifier states
+            if key in (pynput_keyboard.Key.ctrl_l, pynput_keyboard.Key.ctrl_r, pynput_keyboard.Key.ctrl):
+                self._ctrl_pressed = False
+            elif key in (pynput_keyboard.Key.shift_l, pynput_keyboard.Key.shift_r, pynput_keyboard.Key.shift):
+                self._shift_pressed = False
+            elif key in (pynput_keyboard.Key.alt_l, pynput_keyboard.Key.alt_r, pynput_keyboard.Key.alt,
+                        pynput_keyboard.Key.alt_gr):
+                self._alt_pressed = False
+    
+    def start(self) -> bool:
+        """Start listening for hotkeys in a background thread."""
+        if not PYNPUT_AVAILABLE or not pynput_keyboard:
+            logger.warning("pynput not available, cannot start hotkey listener")
+            return False
+        
+        if self._running:
+            return True
+        
+        try:
+            self._listener = pynput_keyboard.Listener(
+                on_press=self._on_press,
+                on_release=self._on_release
+            )
+            self._listener.start()
+            self._running = True
+            logger.info("Hotkey listener started")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to start hotkey listener: {e}")
+            return False
+    
+    def stop(self) -> None:
+        """Stop listening for hotkeys."""
+        if self._listener:
+            try:
+                self._listener.stop()
+            except Exception as e:
+                logger.debug(f"Error stopping listener: {e}")
+            self._listener = None
+        self._running = False
+        logger.info("Hotkey listener stopped")
+    
+    def is_running(self) -> bool:
+        """Check if listener is running."""
+        return self._running
+
+
 class FocusBlockerWindow(QtWidgets.QMainWindow):
+    # Signal for cross-thread hotkey toggle (like MouseBrain)
+    toggle_requested = QtCore.Signal()
+    
     def __init__(self, username: Optional[str] = None) -> None:
         super().__init__()
         self.setWindowTitle(f"Personal Liberty v{APP_VERSION}")
         if username and username != "Default":
             self.setWindowTitle(f"Personal Liberty v{APP_VERSION} - {username}")
         self.resize(900, 700)
+        
+        # Connect toggle signal to handler (for cross-thread communication from pynput)
+        self.toggle_requested.connect(self._toggle_window_visibility)
         
         # Set application icon
         self._set_app_icon()
@@ -21516,6 +21743,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self._hotkey_id = 1
         self._hotkey_registered = False
         self._registered_hotkey = ""
+        
+        # pynput-based hotkey listener (more reliable than Windows RegisterHotKey)
+        self._hotkey_listener: Optional[HotkeyListener] = None
+        if PYNPUT_AVAILABLE:
+            self._hotkey_listener = HotkeyListener(
+                callback=lambda: self.toggle_requested.emit()
+            )
         
         self._setup_system_tray()
         self._update_hotkey_registration()
@@ -22176,37 +22410,58 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         return ok
 
     def _update_hotkey_registration(self, seq_override: Optional[str] = None) -> bool:
-        """Register or update the global hotkey (Windows only)."""
+        """Register or update the global hotkey using pynput (cross-platform, reliable)."""
         seq_str = seq_override if seq_override is not None else self.blocker.toggle_hotkey
-        if platform.system() != "Windows":
-            return seq_str == ""
-
+        
+        # First, stop any existing listener
         self._unregister_hotkey()
+        
         if not seq_str:
             return True
-
-        parsed = self._parse_hotkey_sequence(seq_str)
-        if not parsed:
-            return False
-
-        modifiers, vk = parsed
-        user32 = ctypes.windll.user32
-        hwnd = int(self.winId())
-        if not user32.RegisterHotKey(hwnd, self._hotkey_id, modifiers, vk):
-            return False
-
-        self._hotkey_registered = True
-        self._registered_hotkey = seq_str
-        return True
+        
+        # Use pynput-based listener (preferred - works even when window hidden)
+        if self._hotkey_listener:
+            if self._hotkey_listener.set_hotkey(seq_str):
+                if self._hotkey_listener.start():
+                    self._hotkey_registered = True
+                    self._registered_hotkey = seq_str
+                    logger.info(f"Hotkey registered via pynput: {seq_str}")
+                    return True
+                else:
+                    logger.warning(f"Failed to start pynput hotkey listener for: {seq_str}")
+            else:
+                logger.warning(f"Failed to parse hotkey for pynput: {seq_str}")
+        
+        # Fallback to Windows RegisterHotKey if pynput failed
+        if platform.system() == "Windows":
+            parsed = self._parse_hotkey_sequence(seq_str)
+            if parsed:
+                modifiers, vk = parsed
+                user32 = ctypes.windll.user32
+                hwnd = int(self.winId())
+                if user32.RegisterHotKey(hwnd, self._hotkey_id, modifiers, vk):
+                    self._hotkey_registered = True
+                    self._registered_hotkey = seq_str
+                    logger.info(f"Hotkey registered via Windows API (fallback): {seq_str}")
+                    return True
+                else:
+                    logger.warning(f"Windows RegisterHotKey failed for: {seq_str}")
+        
+        return False
 
     def _unregister_hotkey(self) -> None:
-        if platform.system() != "Windows":
-            return
-        if self._hotkey_registered:
+        """Stop the hotkey listener."""
+        # Stop pynput listener
+        if self._hotkey_listener:
+            self._hotkey_listener.stop()
+        
+        # Also unregister Windows hotkey if it was registered as fallback
+        if platform.system() == "Windows" and self._hotkey_registered:
             try:
                 ctypes.windll.user32.UnregisterHotKey(int(self.winId()), self._hotkey_id)
             except Exception:
                 pass
+        
         self._hotkey_registered = False
         self._registered_hotkey = ""
 
