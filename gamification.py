@@ -15660,6 +15660,12 @@ def attempt_entitidex_bond(
         # Save progress
         save_entitidex_progress(adhd_buster, manager)
         
+        # Emit entity collected signal for timeline ring
+        from game_state import get_game_state
+        gs = get_game_state()
+        if gs:
+            gs.notify_entity_collected(entity_id)
+        
         # Award XP for successful catches
         rarity_xp = {"common": 25, "uncommon": 50, "rare": 100, "epic": 200, "legendary": 500}
         base_xp = rarity_xp.get(entity.rarity.lower(), 50)
@@ -16775,6 +16781,13 @@ def open_saved_encounter_with_recalculate(
     
     save_entitidex_progress(adhd_buster, manager)
     
+    # Emit entity collected signal for timeline ring if successful
+    if success:
+        from game_state import get_game_state
+        gs = get_game_state()
+        if gs:
+            gs.notify_entity_collected(saved.entity_id)
+    
     return {
         "success": success,
         "entity": entity,
@@ -16996,6 +17009,13 @@ def finalize_risky_recalculate(
             message += " (Risky Recalculate failed, used original odds)"
     
     save_entitidex_progress(adhd_buster, manager)
+    
+    # Emit entity collected signal for timeline ring if successful
+    if success:
+        from game_state import get_game_state
+        gs = get_game_state()
+        if gs:
+            gs.notify_entity_collected(saved.entity_id)
     
     return {
         "success": success,
