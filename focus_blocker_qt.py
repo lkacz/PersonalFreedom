@@ -888,6 +888,160 @@ class HardcoreChallengeDialog(StyledDialog):
         super().keyPressEvent(event)
 
 
+# ============================================================================
+# Enforcement Mode Selection Dialog - Shown on first run or from Settings
+# ============================================================================
+
+class EnforcementModeDialog(StyledDialog):
+    """
+    Dialog for selecting enforcement mode (Full vs Light).
+    
+    Shown on first run if not set by installer, or when user wants to change mode.
+    Provides clear explanations of each mode's tradeoffs.
+    """
+
+    def __init__(self, blocker: 'BlockerCore', parent: Optional[QtWidgets.QWidget] = None,
+                 is_first_run: bool = False) -> None:
+        self.blocker = blocker
+        self.is_first_run = is_first_run
+        self._selected_mode = blocker.enforcement_mode if hasattr(blocker, 'enforcement_mode') else EnforcementMode.FULL
+        
+        title = "Choose Blocking Mode" if is_first_run else "Change Blocking Mode"
+        
+        super().__init__(
+            parent=parent,
+            title=title,
+            header_icon="🛡️",
+            min_width=480,
+            max_width=550,
+        )
+
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
+        # Introduction
+        if self.is_first_run:
+            intro_text = (
+                "Welcome to Personal Liberty! 🎉\n\n"
+                "Choose how you want the app to block distracting websites. "
+                "This affects how effectively sites are blocked during focus sessions.\n\n"
+                "You can change this anytime in Settings → Enforcement Mode."
+            )
+        else:
+            intro_text = (
+                "Choose how the app should enforce focus sessions.\n"
+                "Changes take effect immediately for new sessions."
+            )
+        
+        intro = QtWidgets.QLabel(intro_text)
+        intro.setWordWrap(True)
+        intro.setStyleSheet("color: #E0E0E0; line-height: 1.4; margin-bottom: 10px;")
+        layout.addWidget(intro)
+        
+        # Mode selection group
+        mode_group = QtWidgets.QGroupBox()
+        mode_group.setStyleSheet("""
+            QGroupBox {
+                border: none;
+                padding: 0;
+                margin: 0;
+            }
+        """)
+        mode_layout = QtWidgets.QVBoxLayout(mode_group)
+        mode_layout.setContentsMargins(0, 0, 0, 0)
+        mode_layout.setSpacing(15)
+        
+        # Full Mode option
+        self.full_radio = QtWidgets.QRadioButton("🔒 Full Mode (Recommended)")
+        self.full_radio.setStyleSheet("font-weight: bold; font-size: 13px;")
+        mode_layout.addWidget(self.full_radio)
+        
+        full_desc = QtWidgets.QLabel(
+            "• Blocks sites at the system level — <b>impossible to bypass</b>\n"
+            "• Requires running as Administrator\n"
+            "• Best for serious focus sessions and building discipline\n"
+            "• Modifies Windows hosts file (automatically cleaned on uninstall)"
+        )
+        full_desc.setWordWrap(True)
+        full_desc.setStyleSheet("color: #9ca3af; margin-left: 24px; line-height: 1.3;")
+        full_desc.setTextFormat(QtCore.Qt.RichText)
+        mode_layout.addWidget(full_desc)
+        
+        # Separator
+        mode_layout.addSpacing(5)
+        
+        # Light Mode option
+        self.light_radio = QtWidgets.QRadioButton("🔔 Light Mode (No Admin Required)")
+        self.light_radio.setStyleSheet("font-weight: bold; font-size: 13px;")
+        mode_layout.addWidget(self.light_radio)
+        
+        light_desc = QtWidgets.QLabel(
+            "• Shows reminder notifications when visiting blocked sites\n"
+            "• <b>No administrator privileges needed</b>\n"
+            "• Good for building awareness and habits\n"
+            "• Does NOT modify any system files — completely portable"
+        )
+        light_desc.setWordWrap(True)
+        light_desc.setStyleSheet("color: #9ca3af; margin-left: 24px; line-height: 1.3;")
+        light_desc.setTextFormat(QtCore.Qt.RichText)
+        mode_layout.addWidget(light_desc)
+        
+        layout.addWidget(mode_group)
+        
+        # Admin status indicator
+        layout.addSpacing(10)
+        
+        is_admin = self._check_admin_status()
+        if is_admin:
+            admin_label = QtWidgets.QLabel("✅ Currently running as Administrator")
+            admin_label.setStyleSheet("color: #10B981; font-size: 11px;")
+        else:
+            admin_label = QtWidgets.QLabel(
+                "⚠️ Not running as Administrator — Full Mode requires admin privileges.\n"
+                "    Restart with 'Run as administrator' or use Light Mode."
+            )
+            admin_label.setStyleSheet("color: #F59E0B; font-size: 11px;")
+        admin_label.setWordWrap(True)
+        layout.addWidget(admin_label)
+        
+        # Set initial selection
+        current_mode = getattr(self.blocker, 'enforcement_mode', EnforcementMode.FULL)
+        if current_mode == EnforcementMode.LIGHT:
+            self.light_radio.setChecked(True)
+        else:
+            self.full_radio.setChecked(True)
+        
+        layout.addSpacing(15)
+        
+        # Buttons
+        btn_text = "Continue" if self.is_first_run else "Save"
+        self.add_button_row(layout, [
+            ("Cancel", "default", self.reject),
+            (btn_text, "primary", self._save_and_accept),
+        ])
+
+    def _check_admin_status(self) -> bool:
+        """Check if running with admin privileges."""
+        try:
+            import ctypes
+            return ctypes.windll.shell32.IsUserAnAdmin() != 0
+        except Exception:
+            return False
+
+    def _save_and_accept(self) -> None:
+        """Save the selected mode and accept the dialog."""
+        if self.light_radio.isChecked():
+            self._selected_mode = EnforcementMode.LIGHT
+        else:
+            self._selected_mode = EnforcementMode.FULL
+        
+        self.blocker.enforcement_mode = self._selected_mode
+        self.blocker.save_config()
+        self.accept()
+
+    def get_selected_mode(self) -> str:
+        """Return the selected enforcement mode."""
+        return self._selected_mode
+
+
 class OnboardingModeDialog(StyledDialog):
     """Prompt the user to pick how they want to play on startup."""
 
@@ -4730,6 +4884,11 @@ class SettingsTab(QtWidgets.QWidget):
         enforce_group = QtWidgets.QGroupBox("🛡️ Enforcement Mode")
         enforce_layout = QtWidgets.QVBoxLayout(enforce_group)
         
+        # Current mode status with admin indicator
+        self.enforce_status_label = QtWidgets.QLabel()
+        self._update_enforcement_status()
+        enforce_layout.addWidget(self.enforce_status_label)
+        
         enforce_desc = QtWidgets.QLabel(
             "Choose how the app enforces focus sessions:"
         )
@@ -5220,6 +5379,37 @@ class SettingsTab(QtWidgets.QWidget):
         except ImportError:
             show_info(self, "Sound Unavailable", "Startup sounds module not found.")
 
+    def _update_enforcement_status(self) -> None:
+        """Update the enforcement mode status label with current mode and admin status."""
+        is_admin = self._check_admin_status()
+        current_mode = self.blocker.enforcement_mode
+        
+        if current_mode == EnforcementMode.LIGHT:
+            mode_text = "🔔 <b>Light Mode</b> active — notifications only, no system changes"
+            status_style = "color: #F59E0B; padding: 8px; background: rgba(245, 158, 11, 0.1); border-radius: 4px;"
+        else:
+            if is_admin:
+                mode_text = "🔒 <b>Full Mode</b> active — sites blocked at system level ✅"
+                status_style = "color: #10B981; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 4px;"
+            else:
+                mode_text = (
+                    "🔒 <b>Full Mode</b> selected but <span style='color: #EF4444;'>NOT running as Admin</span><br>"
+                    "&nbsp;&nbsp;&nbsp;&nbsp;⚠️ Blocking will fail! Restart as Administrator or switch to Light Mode."
+                )
+                status_style = "color: #F59E0B; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 4px;"
+        
+        self.enforce_status_label.setText(mode_text)
+        self.enforce_status_label.setStyleSheet(status_style)
+        self.enforce_status_label.setWordWrap(True)
+
+    def _check_admin_status(self) -> bool:
+        """Check if running with admin privileges."""
+        try:
+            import ctypes
+            return ctypes.windll.shell32.IsUserAnAdmin() != 0
+        except Exception:
+            return False
+
     def _toggle_enforcement_mode(self, full_mode_checked: bool) -> None:
         """Toggle between Full and Light enforcement modes."""
         if full_mode_checked:
@@ -5227,6 +5417,9 @@ class SettingsTab(QtWidgets.QWidget):
         else:
             self.blocker.enforcement_mode = EnforcementMode.LIGHT
         self.blocker.save_config()
+        
+        # Update status label
+        self._update_enforcement_status()
         
         # Update the main window's enforcement mode display if needed
         main_window = self.window()
@@ -20972,6 +21165,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Check for crash recovery on startup
         QtCore.QTimer.singleShot(500, self._check_crash_recovery)
 
+        # Check for first-run enforcement mode selection (before other prompts)
+        QtCore.QTimer.singleShot(550, self._check_enforcement_mode_first_run)
+
         # Check for scheduled blocking
         QtCore.QTimer.singleShot(700, self._check_scheduled_blocking)
 
@@ -20992,6 +21188,53 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 self.entitidex_tab.preload()
             except Exception as e:
                 logger.warning(f"Failed to preload Entitidex tab: {e}")
+
+    def _check_enforcement_mode_first_run(self) -> None:
+        """
+        Check if this is the first run and enforcement mode wasn't set by installer.
+        
+        If the user hasn't made a choice yet (neither installer nor previous run),
+        show the EnforcementModeDialog to let them choose.
+        """
+        # Check if enforcement mode was already set (by installer or previous run)
+        # The installer sets 'enforcement_mode_set_by_installer' flag
+        # After user manually changes mode, we set 'enforcement_mode_user_selected'
+        adhd_buster = self.blocker.adhd_buster
+        
+        # Skip if already configured
+        if adhd_buster.get("enforcement_mode_configured", False):
+            return
+        
+        # Check if installer set the mode (flag in config)
+        # This is read from the config file that installer creates
+        try:
+            import json
+            if self.blocker.config_path.exists():
+                with open(self.blocker.config_path, 'r', encoding='utf-8') as f:
+                    config_data = json.load(f)
+                    if config_data.get("enforcement_mode_set_by_installer", False):
+                        # Installer already set the mode - mark as configured
+                        adhd_buster["enforcement_mode_configured"] = True
+                        self.blocker.save_config()
+                        return
+        except Exception:
+            pass  # Config read failed, continue to show dialog
+        
+        # First run without installer setting - show mode selection dialog
+        dialog = EnforcementModeDialog(self.blocker, self, is_first_run=True)
+        dialog.exec()
+        
+        # Mark as configured so we don't ask again
+        adhd_buster["enforcement_mode_configured"] = True
+        self.blocker.save_config()
+        
+        # Update Settings tab if it exists
+        if hasattr(self, 'settings_tab'):
+            if hasattr(self.settings_tab, 'enforce_full_radio'):
+                if self.blocker.enforcement_mode == EnforcementMode.LIGHT:
+                    self.settings_tab.enforce_light_radio.setChecked(True)
+                else:
+                    self.settings_tab.enforce_full_radio.setChecked(True)
 
     def _show_onboarding_prompt(self) -> None:
         """Ask the user how they want to play this session."""
