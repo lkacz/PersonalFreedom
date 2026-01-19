@@ -275,6 +275,9 @@ class BlockerCore:
         self.eye_reminder_enabled = False  # Periodic eye routine reminder
         self.eye_reminder_interval = 60  # Minutes between reminders (default 1 hour)
         self.eye_last_reminder_time = None  # Last reminder timestamp
+        
+        # Developer mode (hidden by default)
+        self.dev_mode_enabled = False
 
         # Statistics
         self.stats = self._default_stats()
@@ -424,6 +427,8 @@ class BlockerCore:
                     eye_interval = config.get('eye_reminder_interval', 60)
                     self.eye_reminder_interval = eye_interval if isinstance(eye_interval, (int, float)) and eye_interval > 0 else 60
                     self.eye_last_reminder_time = config.get('eye_last_reminder_time', None)
+                    # Developer mode (hidden by default, enabled by tapping version 7 times)
+                    self.dev_mode_enabled = config.get('dev_mode_enabled', False)
                     # Initialize/migrate hero management structure
                     if HERO_MANAGEMENT_AVAILABLE and _ensure_hero_structure:
                         _ensure_hero_structure(self.adhd_buster)
@@ -497,6 +502,7 @@ class BlockerCore:
                 'eye_reminder_enabled': self.eye_reminder_enabled,
                 'eye_reminder_interval': self.eye_reminder_interval,
                 'eye_last_reminder_time': self.eye_last_reminder_time,
+                'dev_mode_enabled': self.dev_mode_enabled,
             }
             atomic_write_json(self.config_path, config)
         except (IOError, OSError) as e:

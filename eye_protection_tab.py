@@ -570,18 +570,19 @@ class EyeProtectionTab(QtWidgets.QWidget):
         # Title row with entity name and tip number
         owl_title_row = QtWidgets.QHBoxLayout()
         self.owl_section_title = QtWidgets.QLabel("🦉 Study Owl Eye Care Tips")
-        self.owl_section_title.setStyleSheet("color: #9fa8da; font-size: 11px; font-weight: bold;")
+        self.owl_section_title.setStyleSheet("color: #7986cb; font-size: 10px;")
         owl_title_row.addWidget(self.owl_section_title)
         
         self.owl_tip_number = QtWidgets.QLabel("Tip #1 of 100")
         self.owl_tip_number.setStyleSheet("color: #7986cb; font-size: 10px;")
+        self.owl_tip_number.hide()  # Hidden - tip number not important
         owl_title_row.addWidget(self.owl_tip_number)
         owl_title_row.addStretch()
         owl_content_col.addLayout(owl_title_row)
         
-        # Tip text (compact)
+        # Tip text (larger, more readable)
         self.owl_tip_text = QtWidgets.QLabel("Loading tip...")
-        self.owl_tip_text.setStyleSheet("color: #c5cae9; font-size: 11px;")
+        self.owl_tip_text.setStyleSheet("color: #e8eaf6; font-size: 14px;")
         self.owl_tip_text.setWordWrap(True)
         owl_content_col.addWidget(self.owl_tip_text)
         

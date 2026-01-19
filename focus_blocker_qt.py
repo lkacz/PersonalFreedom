@@ -3653,11 +3653,12 @@ class StatsTab(QtWidgets.QWidget):
         # Entity name and tip number
         chad_info = QtWidgets.QVBoxLayout()
         self.chad_entity_name = QtWidgets.QLabel("AGI Assistant Chad")
-        self.chad_entity_name.setStyleSheet("color: #e5e7eb; font-weight: bold; font-size: 12px;")
+        self.chad_entity_name.setStyleSheet("color: #9ca3af; font-size: 10px;")
         chad_info.addWidget(self.chad_entity_name)
         
         self.chad_tip_number = QtWidgets.QLabel("Tip #1 of 100")
         self.chad_tip_number.setStyleSheet("color: #9ca3af; font-size: 10px;")
+        self.chad_tip_number.hide()  # Hidden - tip number not important
         chad_info.addWidget(self.chad_tip_number)
         
         chad_card_container.addLayout(chad_info)
@@ -3672,10 +3673,10 @@ class StatsTab(QtWidgets.QWidget):
                 background: #333;
                 border: 1px solid #444;
                 border-radius: 6px;
-                padding: 12px;
-                color: #e5e7eb;
-                font-size: 11px;
-                line-height: 1.4;
+                padding: 14px;
+                color: #f0f0f0;
+                font-size: 14px;
+                line-height: 1.5;
             }
         """)
         chad_layout.addWidget(self.chad_tip_text)
@@ -5057,10 +5058,15 @@ class StatsTab(QtWidgets.QWidget):
 
 class SettingsTab(QtWidgets.QWidget):
     """Settings tab - password, pomodoro settings, backup/restore, cleanup."""
+    
+    # Signal to notify parent that dev mode was enabled
+    dev_mode_enabled = QtCore.Signal()
 
     def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
         self.blocker = blocker
+        self._dev_tap_count = 0
+        self._dev_tap_timer = None
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -5312,8 +5318,36 @@ class SettingsTab(QtWidgets.QWidget):
         # About
         about_group = QtWidgets.QGroupBox("About")
         about_layout = QtWidgets.QVBoxLayout(about_group)
-        about_layout.addWidget(QtWidgets.QLabel(f"Personal Liberty v{APP_VERSION}"))
+        
+        # Clickable version label (tap 7 times to enable Dev mode)
+        self._version_label = QtWidgets.QLabel(f"Personal Liberty v{APP_VERSION}")
+        self._version_label.setCursor(QtCore.Qt.PointingHandCursor)
+        self._version_label.mousePressEvent = self._on_version_tap
+        about_layout.addWidget(self._version_label)
+        
         about_layout.addWidget(QtWidgets.QLabel("A focus and productivity tool for Windows"))
+        
+        # Developer info
+        dev_label = QtWidgets.QLabel("Developed by <b>Lukasz Kaczmarek</b>")
+        dev_label.setTextFormat(QtCore.Qt.RichText)
+        about_layout.addWidget(dev_label)
+        
+        # Feedback/bug report link
+        feedback_label = QtWidgets.QLabel(
+            '📧 Send feedback / report bugs: '
+            '<a href="mailto:lkacz1@gmail.com?subject=Personal Liberty Feedback" style="color: #64B5F6;">lkacz1@gmail.com</a>'
+        )
+        feedback_label.setTextFormat(QtCore.Qt.RichText)
+        feedback_label.setOpenExternalLinks(True)
+        feedback_label.setCursor(QtCore.Qt.PointingHandCursor)
+        about_layout.addWidget(feedback_label)
+        
+        # Show dev mode status hint if enabled
+        if self.blocker.dev_mode_enabled:
+            dev_hint = QtWidgets.QLabel("🛠️ Developer mode enabled")
+            dev_hint.setStyleSheet("color: #ff9800; font-style: italic;")
+            about_layout.addWidget(dev_hint)
+        
         inner.addWidget(about_group)
 
         # Factory Reset - DANGER ZONE
@@ -5862,6 +5896,53 @@ class SettingsTab(QtWidgets.QWidget):
                 self, "Voice Test Failed",
                 f"Could not test voice: {e}"
             )
+
+    def _on_version_tap(self, event) -> None:
+        """Handle taps on version label - 7 taps enables Dev mode (Android-style)."""
+        if self.blocker.dev_mode_enabled:
+            # Already enabled - do nothing special
+            return
+        
+        self._dev_tap_count += 1
+        
+        # Reset tap counter after 2 seconds of no taps
+        if self._dev_tap_timer:
+            self._dev_tap_timer.stop()
+        self._dev_tap_timer = QtCore.QTimer()
+        self._dev_tap_timer.setSingleShot(True)
+        self._dev_tap_timer.timeout.connect(self._reset_dev_tap_counter)
+        self._dev_tap_timer.start(2000)
+        
+        remaining = 7 - self._dev_tap_count
+        
+        if remaining > 0 and remaining <= 3:
+            # Show hint when getting close
+            self._version_label.setText(f"Personal Liberty v{APP_VERSION}  ({remaining} more taps...)")
+        elif remaining <= 0:
+            # Developer mode enabled!
+            self.blocker.dev_mode_enabled = True
+            self.blocker.save_config()
+            
+            self._version_label.setText(f"Personal Liberty v{APP_VERSION}  🛠️")
+            
+            # Show confirmation
+            styled_info(
+                self, "🛠️ Developer Mode Enabled",
+                "You've unlocked Developer Mode!\n\n"
+                "A new 'Dev' tab has been added with testing tools.\n\n"
+                "Note: This is intended for development and testing only. "
+                "Use with caution!"
+            )
+            
+            # Emit signal to parent to add the Dev tab
+            self.dev_mode_enabled.emit()
+            self._dev_tap_count = 0
+
+    def _reset_dev_tap_counter(self) -> None:
+        """Reset the dev mode tap counter."""
+        self._dev_tap_count = 0
+        if not self.blocker.dev_mode_enabled:
+            self._version_label.setText(f"Personal Liberty v{APP_VERSION}")
 
 
 class WeightChartWidget(QtWidgets.QWidget):
@@ -6420,18 +6501,19 @@ class WeightTab(QtWidgets.QWidget):
         # Title row with entity name and tip number
         rodent_title_row = QtWidgets.QHBoxLayout()
         self.rodent_section_title = QtWidgets.QLabel("🐀 Rodent Squad Weight Tips")
-        self.rodent_section_title.setStyleSheet("color: #c4a35a; font-size: 12px; font-weight: bold;")
+        self.rodent_section_title.setStyleSheet("color: #8b7355; font-size: 10px;")
         rodent_title_row.addWidget(self.rodent_section_title)
         
         self.rodent_tip_number = QtWidgets.QLabel("Tip #1 of 100")
-        self.rodent_tip_number.setStyleSheet("color: #8b7355; font-size: 11px;")
+        self.rodent_tip_number.setStyleSheet("color: #8b7355; font-size: 10px;")
+        self.rodent_tip_number.hide()  # Hidden - tip number not important
         rodent_title_row.addWidget(self.rodent_tip_number)
         rodent_title_row.addStretch()
         rodent_content_col.addLayout(rodent_title_row)
         
         # Tip text (larger, more readable)
         self.rodent_tip_text = QtWidgets.QLabel("Loading tip...")
-        self.rodent_tip_text.setStyleSheet("color: #d4c4a4; font-size: 14px;")
+        self.rodent_tip_text.setStyleSheet("color: #f0e6d2; font-size: 14px;")
         self.rodent_tip_text.setWordWrap(True)
         rodent_content_col.addWidget(self.rodent_tip_text)
         
@@ -14527,177 +14609,546 @@ class HydrationTimelineWidget(QtWidgets.QWidget):
 # ============================================================================
 
 class PowerAnalysisDialog(StyledDialog):
-    """Dialog showing detailed breakdown of power calculation path."""
-    def __init__(self, breakdown: dict, equipped: dict, parent=None):
+    """
+    Industry-standard Power Analysis Dialog.
+    
+    Shows comprehensive breakdown of hero power with:
+    - Total power header with formula breakdown
+    - Equipment table with power per slot
+    - Entity Patrons section (power from collected entities)
+    - Lucky Bonuses section (coin/XP/merge luck from gear)
+    - Set Bonuses section (active and potential sets)
+    - Style Bonus section (only if discovered - easter egg)
+    - Tips for improvement
+    """
+    
+    # Rarity colors for consistent display
+    RARITY_COLORS = {
+        "Common": "#9e9e9e",
+        "Uncommon": "#4caf50", 
+        "Rare": "#2196f3",
+        "Epic": "#9c27b0",
+        "Legendary": "#ff9800"
+    }
+    
+    # Max power per slot by rarity
+    RARITY_POWER = {
+        "Common": 10,
+        "Uncommon": 25,
+        "Rare": 50,
+        "Epic": 100,
+        "Legendary": 250
+    }
+    
+    def __init__(self, breakdown: dict, equipped: dict, parent=None, *,
+                 entity_power_info: dict = None,
+                 lucky_bonuses: dict = None,
+                 potential_sets: list = None,
+                 style_discovered: bool = False):
         self.breakdown = breakdown
         self.equipped = equipped
-        super().__init__(parent, "Power Analysis", "⚔️", 700, 900, closable=True)
-        self.setMinimumSize(700, 500)
+        self.entity_power_info = entity_power_info or {}
+        self.lucky_bonuses = lucky_bonuses or {}
+        self.potential_sets = potential_sets or []
+        self.style_discovered = style_discovered
+        super().__init__(parent, "⚔️ Power Analysis", "📊", 750, 850, closable=True)
+        self.setMinimumSize(700, 600)
 
     def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
-        breakdown = self.breakdown
-        equipped = self.equipped
+        # Create scrollable area for all content
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         
-        # Summary Header
+        content = QtWidgets.QWidget()
+        content_layout = QtWidgets.QVBoxLayout(content)
+        content_layout.setSpacing(12)
+        content_layout.setContentsMargins(5, 5, 5, 5)
+        
+        # === SECTION 1: Power Summary Header ===
+        self._build_power_header(content_layout)
+        
+        # === SECTION 2: Equipment Breakdown ===
+        self._build_equipment_section(content_layout)
+        
+        # === SECTION 3: Entity Patrons (Power from Entities) ===
+        self._build_entity_patrons_section(content_layout)
+        
+        # === SECTION 4: Set Bonuses ===
+        self._build_set_bonuses_section(content_layout)
+        
+        # === SECTION 5: Style Bonus (Easter Egg - only if discovered) ===
+        if self.style_discovered:
+            self._build_style_bonus_section(content_layout)
+        
+        # === SECTION 6: Lucky Bonuses from Gear ===
+        self._build_lucky_bonuses_section(content_layout)
+        
+        # === SECTION 7: Power Potential & Tips ===
+        self._build_tips_section(content_layout)
+        
+        content_layout.addStretch()
+        scroll.setWidget(content)
+        layout.addWidget(scroll, 1)
+        
+        # Close button
+        self.add_button_row(layout, [("Close", "primary", self.accept)])
+    
+    def _create_section_header(self, title: str, icon: str = "") -> QtWidgets.QLabel:
+        """Create a styled section header."""
+        header = QtWidgets.QLabel(f"{icon} {title}" if icon else title)
+        header.setStyleSheet("""
+            font-size: 14px;
+            font-weight: bold;
+            color: #e0e0e0;
+            padding: 8px 0px 4px 0px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        """)
+        return header
+    
+    def _create_info_card(self, bg_color: str = "rgba(0,0,0,0.2)", border_color: str = "transparent") -> tuple:
+        """Create a styled card widget and its layout."""
+        card = QtWidgets.QWidget()
+        card.setStyleSheet(f"""
+            background-color: {bg_color};
+            border: 1px solid {border_color};
+            border-radius: 8px;
+            padding: 8px;
+        """)
+        card_layout = QtWidgets.QVBoxLayout(card)
+        card_layout.setSpacing(6)
+        card_layout.setContentsMargins(10, 8, 10, 8)
+        return card, card_layout
+    
+    def _build_power_header(self, layout: QtWidgets.QVBoxLayout) -> None:
+        """Build the power summary header with total and formula."""
+        breakdown = self.breakdown
+        
         total = breakdown.get("total_power", 0)
         base = breakdown.get("base_power", 0)
         set_bonus = breakdown.get("set_bonus", 0)
-        style_bonus = breakdown.get("style_bonus", 0)
-        style_info = breakdown.get("style_info")
+        style_bonus = breakdown.get("style_bonus", 0) if self.style_discovered else 0
         entity_bonus = breakdown.get("entity_bonus", 0)
+        style_info = breakdown.get("style_info")
         
-        header_widget = QtWidgets.QWidget()
-        header_widget.setStyleSheet("background-color: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px;")
-        header_layout = QtWidgets.QVBoxLayout(header_widget)
+        # Calculate max potential (8 legendary slots = 2000 base)
+        max_base = 8 * self.RARITY_POWER["Legendary"]  # 2000
         
-        title = QtWidgets.QLabel(f"Total Power: {total}")
-        title.setStyleSheet("font-size: 24px; font-weight: bold; color: #FFD700;")
-        title.setAlignment(QtCore.Qt.AlignCenter)
-        header_layout.addWidget(title)
+        # Header card with gradient
+        header_card, header_layout = self._create_info_card("rgba(255,215,0,0.1)", "#FFD700")
         
-        # Build formula parts
-        formula_parts = [f"Base Power ({base})"]
+        # Total Power - large display
+        total_row = QtWidgets.QHBoxLayout()
+        total_label = QtWidgets.QLabel("Total Power")
+        total_label.setStyleSheet("font-size: 16px; color: #b0b0b0; background: transparent;")
+        total_value = QtWidgets.QLabel(f"{total:,}")
+        total_value.setStyleSheet("font-size: 36px; font-weight: bold; color: #FFD700; background: transparent;")
+        total_row.addWidget(total_label)
+        total_row.addStretch()
+        total_row.addWidget(total_value)
+        header_layout.addLayout(total_row)
+        
+        # Power formula breakdown
+        formula_parts = []
+        formula_parts.append(f"<span style='color:#64b5f6;'>⚔️ Gear: {base}</span>")
         if set_bonus > 0:
-            formula_parts.append(f"Set Bonuses ({set_bonus})")
+            formula_parts.append(f"<span style='color:#81c784;'>🎯 Sets: +{set_bonus}</span>")
         if style_bonus > 0 and style_info and style_info.get("style"):
-            formula_parts.append(f"{style_info['style'].get('name', 'Style')} ({style_bonus})")
+            style_name = style_info['style'].get('name', 'Style')
+            formula_parts.append(f"<span style='color:#FFD700;'>👑 {style_name}: +{style_bonus}</span>")
         if entity_bonus > 0:
-            formula_parts.append(f"Entity Perks ({entity_bonus})")
+            formula_parts.append(f"<span style='color:#ce93d8;'>🐾 Patrons: +{entity_bonus}</span>")
         
         formula = QtWidgets.QLabel(" + ".join(formula_parts))
-        formula.setStyleSheet("font-size: 14px; color: #B0B0B0;")
+        formula.setTextFormat(QtCore.Qt.RichText)
+        formula.setStyleSheet("font-size: 12px; background: transparent;")
         formula.setAlignment(QtCore.Qt.AlignCenter)
+        formula.setWordWrap(True)
         header_layout.addWidget(formula)
         
-        layout.addWidget(header_widget)
+        # Power potential bar
+        potential_pct = min(100, int((base / max_base) * 100)) if max_base > 0 else 0
         
-        # Explanation
-        expl = QtWidgets.QLabel(
-            "This table shows equipped items and their contribution to total power.\n"
-            "Set bonuses apply when multiple items from the same set are equipped."
-        )
-        expl.setStyleSheet("color: #888888; margin: 10px;")
-        expl.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(expl)
+        potential_row = QtWidgets.QHBoxLayout()
+        potential_label = QtWidgets.QLabel(f"Gear Potential: {potential_pct}%")
+        potential_label.setStyleSheet("font-size: 11px; color: #888; background: transparent;")
+        potential_max = QtWidgets.QLabel(f"(Max: {max_base:,} with all Legendary)")
+        potential_max.setStyleSheet("font-size: 10px; color: #666; background: transparent;")
+        potential_row.addWidget(potential_label)
+        potential_row.addStretch()
+        potential_row.addWidget(potential_max)
+        header_layout.addLayout(potential_row)
         
-        # Main Table
-        table = QtWidgets.QTableWidget()
-        table.setColumnCount(4)
-        table.setHorizontalHeaderLabels([
-            "Slot", "Item", "Power", "Rarity"
-        ])
-        # Configure column sizing for better layout
-        header = table.horizontalHeader()
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)  # Slot
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)  # Item (stretches)
-        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)  # Power
-        header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)  # Rarity
-        table.verticalHeader().setVisible(False)
-        table.setAlternatingRowColors(True)
-        table.setWordWrap(True)
+        # Progress bar for potential
+        progress = QtWidgets.QProgressBar()
+        progress.setRange(0, 100)
+        progress.setValue(potential_pct)
+        progress.setTextVisible(False)
+        progress.setFixedHeight(8)
+        progress.setStyleSheet("""
+            QProgressBar {
+                background-color: rgba(0,0,0,0.3);
+                border-radius: 4px;
+            }
+            QProgressBar::chunk {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #4caf50, stop:0.5 #8bc34a, stop:1 #cddc39);
+                border-radius: 4px;
+            }
+        """)
+        header_layout.addWidget(progress)
         
+        layout.addWidget(header_card)
+    
+    def _build_equipment_section(self, layout: QtWidgets.QVBoxLayout) -> None:
+        """Build the equipment breakdown table."""
+        layout.addWidget(self._create_section_header("Equipment Breakdown", "🛡️"))
+        
+        equipped = self.equipped
         slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
-        table.setRowCount(len(slots))
         
-        power_by_slot = breakdown.get("power_by_slot", {})
+        # Create compact grid for equipment
+        grid = QtWidgets.QGridLayout()
+        grid.setSpacing(4)
         
-        for row, slot in enumerate(slots):
+        # Header row
+        headers = ["Slot", "Item", "Power", "Rarity"]
+        for col, header_text in enumerate(headers):
+            lbl = QtWidgets.QLabel(header_text)
+            lbl.setStyleSheet("font-weight: bold; color: #888; font-size: 11px; padding: 4px;")
+            if col >= 2:
+                lbl.setAlignment(QtCore.Qt.AlignCenter)
+            grid.addWidget(lbl, 0, col)
+        
+        # Equipment rows
+        total_equipped = 0
+        empty_slots = []
+        
+        for row, slot in enumerate(slots, start=1):
             item = equipped.get(slot)
             is_empty = not item or not isinstance(item, dict)
-            item_name = "[Empty Slot]" if is_empty else item.get("name", "Unknown Item")
             
-            # 1. Slot
-            slot_item = QtWidgets.QTableWidgetItem(slot)
-            slot_item.setTextAlignment(QtCore.Qt.AlignVCenter)
-            table.setItem(row, 0, slot_item)
-            
-            # 2. Item Name & Rarity
-            rarity = "Common" if is_empty else item.get("rarity", "Common")
-            name_item = QtWidgets.QTableWidgetItem(item_name)
-            if not is_empty:
-                colors = {"Common": "#bdbdbd", "Uncommon": "#a5d6a7", "Rare": "#81c784", 
-                          "Epic": "#ba68c8", "Legendary": "#ffb74d"}
-                name_item.setForeground(QtGui.QColor(colors.get(rarity, "#bdbdbd")))
-                if len(item_name) > 25:
-                    name_item.setToolTip(item_name)
+            if is_empty:
+                empty_slots.append(slot)
             else:
-                name_item.setForeground(QtGui.QColor("#888888"))
-                italic_font = QtGui.QFont("Segoe UI", 9)
-                italic_font.setItalic(True)
-                name_item.setFont(italic_font)
-            table.setItem(row, 1, name_item)
+                total_equipped += 1
             
-            # 3. Power
-            base_p = 0
-            if item:
-                base_p = item.get("power", 0)
-                if base_p == 0:
-                    from gamification import RARITY_POWER
-                    base_p = RARITY_POWER.get(item.get("rarity", "Common"), 10)
+            # Slot name
+            slot_lbl = QtWidgets.QLabel(slot)
+            slot_lbl.setStyleSheet("color: #b0b0b0; font-size: 11px; padding: 3px;")
+            grid.addWidget(slot_lbl, row, 0)
             
-            power_item = QtWidgets.QTableWidgetItem(str(base_p))
-            power_item.setTextAlignment(QtCore.Qt.AlignCenter)
-            power_item.setFont(QtGui.QFont("Segoe UI", 10, QtGui.QFont.Bold))
-            table.setItem(row, 2, power_item)
+            # Item name
+            if is_empty:
+                name_lbl = QtWidgets.QLabel("[Empty]")
+                name_lbl.setStyleSheet("color: #666; font-style: italic; font-size: 11px; padding: 3px;")
+            else:
+                item_name = item.get("name", "Unknown")
+                if len(item_name) > 28:
+                    item_name = item_name[:25] + "..."
+                rarity = item.get("rarity", "Common")
+                color = self.RARITY_COLORS.get(rarity, "#9e9e9e")
+                name_lbl = QtWidgets.QLabel(item_name)
+                name_lbl.setStyleSheet(f"color: {color}; font-size: 11px; padding: 3px;")
+                name_lbl.setToolTip(item.get("name", ""))
+            grid.addWidget(name_lbl, row, 1)
             
-            # 4. Rarity
-            rarity_item = QtWidgets.QTableWidgetItem(rarity if not is_empty else "-")
-            rarity_item.setTextAlignment(QtCore.Qt.AlignCenter)
-            table.setItem(row, 3, rarity_item)
+            # Power
+            if is_empty:
+                power = 0
+            else:
+                power = item.get("power", self.RARITY_POWER.get(item.get("rarity", "Common"), 10))
+            power_lbl = QtWidgets.QLabel(str(power) if power > 0 else "-")
+            power_lbl.setAlignment(QtCore.Qt.AlignCenter)
+            power_lbl.setStyleSheet("font-weight: bold; color: #64b5f6; font-size: 11px; padding: 3px;" if power > 0 else "color: #555; font-size: 11px; padding: 3px;")
+            grid.addWidget(power_lbl, row, 2)
             
-            table.setRowHeight(row, 40)
-
-        layout.addWidget(table)
+            # Rarity
+            if is_empty:
+                rarity_lbl = QtWidgets.QLabel("-")
+                rarity_lbl.setStyleSheet("color: #555; font-size: 11px; padding: 3px;")
+            else:
+                rarity = item.get("rarity", "Common")
+                color = self.RARITY_COLORS.get(rarity, "#9e9e9e")
+                rarity_lbl = QtWidgets.QLabel(rarity)
+                rarity_lbl.setStyleSheet(f"color: {color}; font-size: 10px; padding: 3px;")
+            rarity_lbl.setAlignment(QtCore.Qt.AlignCenter)
+            grid.addWidget(rarity_lbl, row, 3)
         
-        # Style Bonus (Legendary Minimalist) - show prominently if active
-        if style_bonus > 0 and style_info and style_info.get("style"):
-            style_data = style_info.get("style", {})
-            style_widget = QtWidgets.QWidget()
-            style_widget.setStyleSheet("""
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 rgba(255, 215, 0, 0.2), stop:0.5 rgba(255, 215, 0, 0.3), stop:1 rgba(255, 215, 0, 0.2));
-                border: 2px solid #FFD700;
-                border-radius: 10px;
-                padding: 10px;
-                margin: 5px;
-            """)
-            style_layout = QtWidgets.QVBoxLayout(style_widget)
-            style_layout.setSpacing(4)
-            
-            style_title = QtWidgets.QLabel(f"{style_data.get('emoji', '👑')} {style_data.get('name', 'Style Bonus')}")
-            style_title.setStyleSheet("font-size: 18px; font-weight: bold; color: #FFD700; background: transparent;")
-            style_title.setAlignment(QtCore.Qt.AlignCenter)
-            style_layout.addWidget(style_title)
-            
-            style_desc = QtWidgets.QLabel(style_data.get('description', 'Legendary Minimalist'))
-            style_desc.setStyleSheet("font-size: 12px; color: #E0E0E0; font-style: italic; background: transparent;")
-            style_desc.setAlignment(QtCore.Qt.AlignCenter)
-            style_layout.addWidget(style_desc)
-            
-            empty_slot = style_info.get('empty_slot', 'Unknown')
-            style_bonus_lbl = QtWidgets.QLabel(f"+{style_bonus} Style Power (7 Legendary items, {empty_slot} slot empty)")
-            style_bonus_lbl.setStyleSheet("font-size: 14px; font-weight: bold; color: #4CAF50; background: transparent;")
-            style_bonus_lbl.setAlignment(QtCore.Qt.AlignCenter)
-            style_layout.addWidget(style_bonus_lbl)
-            
-            layout.addWidget(style_widget)
+        # Set column stretches
+        grid.setColumnStretch(0, 1)  # Slot
+        grid.setColumnStretch(1, 3)  # Item (wider)
+        grid.setColumnStretch(2, 1)  # Power
+        grid.setColumnStretch(3, 1)  # Rarity
         
-        # Bottom info - Show active set details
-        active_sets = breakdown.get("active_sets", [])
+        card, card_layout = self._create_info_card()
+        card_layout.addLayout(grid)
+        
+        # Summary line
+        summary = QtWidgets.QLabel(f"📦 {total_equipped}/8 slots equipped")
+        summary.setStyleSheet("color: #888; font-size: 10px; margin-top: 4px;")
+        card_layout.addWidget(summary)
+        
+        layout.addWidget(card)
+    
+    def _build_entity_patrons_section(self, layout: QtWidgets.QVBoxLayout) -> None:
+        """Build the Entity Patrons section showing power from collected entities."""
+        entity_info = self.entity_power_info
+        total_power = entity_info.get("total_power", 0)
+        contributors = entity_info.get("contributors", [])
+        
+        if total_power == 0 and not contributors:
+            return  # Don't show section if no entity patrons
+        
+        layout.addWidget(self._create_section_header(f"Entity Patrons (+{total_power} Power)", "🐾"))
+        
+        card, card_layout = self._create_info_card("rgba(156,39,176,0.1)", "#9c27b0")
+        
+        if contributors:
+            # Show top contributors (limit to 6 for compactness)
+            shown = contributors[:6]
+            for contrib in shown:
+                row = QtWidgets.QHBoxLayout()
+                
+                # Entity icon and name
+                name_part = f"{contrib.get('icon', '✨')} {contrib.get('name', 'Unknown')}"
+                if contrib.get("is_exceptional"):
+                    name_part += " ⭐"
+                name_lbl = QtWidgets.QLabel(name_part)
+                name_lbl.setStyleSheet("color: #ce93d8; font-size: 11px; background: transparent;")
+                
+                # Power value
+                power_lbl = QtWidgets.QLabel(f"+{contrib.get('power', 0)}")
+                power_lbl.setStyleSheet("color: #e1bee7; font-weight: bold; font-size: 11px; background: transparent;")
+                
+                row.addWidget(name_lbl)
+                row.addStretch()
+                row.addWidget(power_lbl)
+                card_layout.addLayout(row)
+            
+            if len(contributors) > 6:
+                more = QtWidgets.QLabel(f"... and {len(contributors) - 6} more patrons")
+                more.setStyleSheet("color: #888; font-size: 10px; font-style: italic; background: transparent;")
+                card_layout.addWidget(more)
+        else:
+            tip = QtWidgets.QLabel(f"Total: +{total_power} power from your collected entities")
+            tip.setStyleSheet("color: #ce93d8; font-size: 11px; background: transparent;")
+            card_layout.addWidget(tip)
+        
+        layout.addWidget(card)
+    
+    def _build_set_bonuses_section(self, layout: QtWidgets.QVBoxLayout) -> None:
+        """Build the Set Bonuses section showing active and potential sets."""
+        active_sets = self.breakdown.get("active_sets", [])
+        set_bonus = self.breakdown.get("set_bonus", 0)
+        potential_sets = self.potential_sets
+        
+        if not active_sets and set_bonus == 0 and not potential_sets:
+            return  # Don't show if no set info
+        
+        header_text = f"Set Bonuses (+{set_bonus} Power)" if set_bonus > 0 else "Set Bonuses"
+        layout.addWidget(self._create_section_header(header_text, "🎯"))
+        
+        card, card_layout = self._create_info_card("rgba(76,175,80,0.1)", "#4caf50" if set_bonus > 0 else "transparent")
+        
+        # Active sets
         if active_sets:
-            set_info_lines = ["<b>Active Set Bonuses:</b>"]
             for s in active_sets:
-                set_info_lines.append(f"  • {s['emoji']} {s['name']}: {s['count']} items = +{s['bonus']} power")
-            set_box = QtWidgets.QLabel("<br>".join(set_info_lines))
-            set_box.setStyleSheet("color: #4caf50; margin: 10px;")
-            layout.addWidget(set_box)
+                row = QtWidgets.QHBoxLayout()
+                set_name = QtWidgets.QLabel(f"{s.get('emoji', '🎯')} {s.get('name', 'Unknown Set')}")
+                set_name.setStyleSheet("color: #81c784; font-size: 11px; background: transparent;")
+                
+                set_info = QtWidgets.QLabel(f"{s.get('count', 0)} items = +{s.get('bonus', 0)}")
+                set_info.setStyleSheet("color: #a5d6a7; font-weight: bold; font-size: 11px; background: transparent;")
+                
+                row.addWidget(set_name)
+                row.addStretch()
+                row.addWidget(set_info)
+                card_layout.addLayout(row)
         elif set_bonus > 0:
-            # Fallback if active_sets missing but bonus exists
-            set_box = QtWidgets.QLabel(f"<b>Set Bonuses:</b> +{set_bonus} power added to final score")
-            set_box.setStyleSheet("color: #4caf50; margin: 10px;")
-            layout.addWidget(set_box)
-            
-        self.add_button_row(layout, [("Close", "primary", self.accept)])
+            info = QtWidgets.QLabel(f"+{set_bonus} power from matching gear themes")
+            info.setStyleSheet("color: #81c784; font-size: 11px; background: transparent;")
+            card_layout.addWidget(info)
+        
+        # Potential sets from inventory
+        if potential_sets:
+            potential_with_upside = [p for p in potential_sets if p.get("potential_bonus", 0) > p.get("current_bonus", 0)]
+            if potential_with_upside:
+                divider = QtWidgets.QLabel("─" * 30)
+                divider.setStyleSheet("color: #444; font-size: 8px; background: transparent;")
+                card_layout.addWidget(divider)
+                
+                header = QtWidgets.QLabel("💡 Potential Sets (in inventory):")
+                header.setStyleSheet("color: #888; font-size: 10px; margin-top: 4px; background: transparent;")
+                card_layout.addWidget(header)
+                
+                for ps in potential_with_upside[:3]:  # Limit to top 3
+                    row = QtWidgets.QHBoxLayout()
+                    name = QtWidgets.QLabel(f"  {ps.get('emoji', '🎯')} {ps.get('name', 'Set')}")
+                    name.setStyleSheet("color: #aaa; font-size: 10px; background: transparent;")
+                    
+                    potential = ps.get("potential_bonus", 0)
+                    current = ps.get("current_bonus", 0)
+                    upside = potential - current
+                    
+                    info = QtWidgets.QLabel(f"+{upside} possible")
+                    info.setStyleSheet("color: #888; font-size: 10px; background: transparent;")
+                    
+                    row.addWidget(name)
+                    row.addStretch()
+                    row.addWidget(info)
+                    card_layout.addLayout(row)
+        
+        if not active_sets and set_bonus == 0:
+            tip = QtWidgets.QLabel("💡 Equip 2+ items with matching themes for set bonuses!")
+            tip.setStyleSheet("color: #888; font-size: 10px; font-style: italic; background: transparent;")
+            card_layout.addWidget(tip)
+        
+        layout.addWidget(card)
+    
+    def _build_style_bonus_section(self, layout: QtWidgets.QVBoxLayout) -> None:
+        """Build the Style Bonus section (only shown if discovered)."""
+        style_bonus = self.breakdown.get("style_bonus", 0)
+        style_info = self.breakdown.get("style_info")
+        
+        if style_bonus == 0 or not style_info:
+            return
+        
+        style_data = style_info.get("style", {})
+        empty_slot = style_info.get("empty_slot", "Unknown")
+        
+        layout.addWidget(self._create_section_header(f"Style Bonus (+{style_bonus} Power)", "👑"))
+        
+        card = QtWidgets.QWidget()
+        card.setStyleSheet("""
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 rgba(255, 215, 0, 0.15), stop:0.5 rgba(255, 215, 0, 0.25), stop:1 rgba(255, 215, 0, 0.15));
+            border: 2px solid #FFD700;
+            border-radius: 10px;
+            padding: 10px;
+        """)
+        card_layout = QtWidgets.QVBoxLayout(card)
+        card_layout.setSpacing(4)
+        
+        # Style name
+        style_name = QtWidgets.QLabel(f"{style_data.get('emoji', '👑')} {style_data.get('name', 'Style Bonus')}")
+        style_name.setStyleSheet("font-size: 16px; font-weight: bold; color: #FFD700; background: transparent;")
+        style_name.setAlignment(QtCore.Qt.AlignCenter)
+        card_layout.addWidget(style_name)
+        
+        # Description
+        desc = QtWidgets.QLabel(style_data.get('description', 'Less is more'))
+        desc.setStyleSheet("font-size: 11px; color: #e0e0e0; font-style: italic; background: transparent;")
+        desc.setAlignment(QtCore.Qt.AlignCenter)
+        card_layout.addWidget(desc)
+        
+        # Bonus details
+        bonus_text = QtWidgets.QLabel(f"+{style_bonus} Power • 7 Legendary items • {empty_slot} slot empty")
+        bonus_text.setStyleSheet("font-size: 12px; color: #4CAF50; font-weight: bold; background: transparent;")
+        bonus_text.setAlignment(QtCore.Qt.AlignCenter)
+        card_layout.addWidget(bonus_text)
+        
+        layout.addWidget(card)
+    
+    def _build_lucky_bonuses_section(self, layout: QtWidgets.QVBoxLayout) -> None:
+        """Build the Lucky Bonuses section showing gear bonuses."""
+        bonuses = self.lucky_bonuses
+        
+        coin = bonuses.get("coin_discount", 0)
+        xp = bonuses.get("xp_bonus", 0)
+        merge = bonuses.get("merge_luck", 0)
+        
+        if coin == 0 and xp == 0 and merge == 0:
+            return  # Don't show if no lucky bonuses
+        
+        layout.addWidget(self._create_section_header("Lucky Bonuses (from Gear)", "🍀"))
+        
+        card, card_layout = self._create_info_card("rgba(245,158,11,0.1)", "#f59e0b")
+        
+        bonuses_row = QtWidgets.QHBoxLayout()
+        bonuses_row.setSpacing(20)
+        
+        if coin > 0:
+            coin_lbl = QtWidgets.QLabel(f"💰 {coin}% Merge Discount")
+            coin_lbl.setStyleSheet("color: #fcd34d; font-size: 11px; background: transparent;")
+            bonuses_row.addWidget(coin_lbl)
+        
+        if xp > 0:
+            xp_lbl = QtWidgets.QLabel(f"⭐ +{xp}% XP")
+            xp_lbl.setStyleSheet("color: #a78bfa; font-size: 11px; background: transparent;")
+            bonuses_row.addWidget(xp_lbl)
+        
+        if merge > 0:
+            merge_lbl = QtWidgets.QLabel(f"🎲 +{merge}% Merge Luck")
+            merge_lbl.setStyleSheet("color: #60a5fa; font-size: 11px; background: transparent;")
+            bonuses_row.addWidget(merge_lbl)
+        
+        bonuses_row.addStretch()
+        card_layout.addLayout(bonuses_row)
+        
+        tip = QtWidgets.QLabel("💡 Lucky bonuses come from special attributes on your gear")
+        tip.setStyleSheet("color: #888; font-size: 10px; font-style: italic; background: transparent;")
+        card_layout.addWidget(tip)
+        
+        layout.addWidget(card)
+    
+    def _build_tips_section(self, layout: QtWidgets.QVBoxLayout) -> None:
+        """Build the Tips section with actionable suggestions."""
+        tips = []
+        
+        # Check for empty slots
+        equipped = self.equipped
+        slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
+        empty_slots = [s for s in slots if not equipped.get(s)]
+        
+        if empty_slots:
+            if len(empty_slots) == 1:
+                tips.append(f"⚔️ Equip your <b>{empty_slots[0]}</b> slot for +10 to +250 power")
+            elif len(empty_slots) <= 3:
+                tips.append(f"⚔️ Fill empty slots: {', '.join(empty_slots)}")
+            else:
+                tips.append(f"⚔️ {len(empty_slots)} empty slots - equip gear for more power!")
+        
+        # Check for upgrade opportunities
+        low_rarity_slots = []
+        for slot in slots:
+            item = equipped.get(slot)
+            if item and item.get("rarity") in ["Common", "Uncommon"]:
+                low_rarity_slots.append(slot)
+        
+        if low_rarity_slots and len(low_rarity_slots) <= 3:
+            tips.append(f"🔄 Merge to upgrade: {', '.join(low_rarity_slots[:3])}")
+        elif low_rarity_slots:
+            tips.append(f"🔄 {len(low_rarity_slots)} slots have Common/Uncommon gear - merge to upgrade!")
+        
+        # Check for potential sets
+        if self.potential_sets:
+            best_potential = max(self.potential_sets, key=lambda x: x.get("potential_bonus", 0) - x.get("current_bonus", 0), default=None)
+            if best_potential and best_potential.get("potential_bonus", 0) > best_potential.get("current_bonus", 0):
+                upside = best_potential["potential_bonus"] - best_potential["current_bonus"]
+                tips.append(f"🎯 Equip {best_potential.get('emoji', '')} {best_potential.get('name', 'set')} items for +{upside} set bonus")
+        
+        # Entity tip
+        entity_bonus = self.breakdown.get("entity_bonus", 0)
+        if entity_bonus == 0:
+            tips.append("🐾 Collect entities during focus sessions for patron power bonuses!")
+        
+        if not tips:
+            return  # No tips needed - player is doing great!
+        
+        layout.addWidget(self._create_section_header("Tips for Improvement", "💡"))
+        
+        card, card_layout = self._create_info_card("rgba(96,165,250,0.1)")
+        
+        for tip in tips[:4]:  # Limit to 4 tips
+            tip_lbl = QtWidgets.QLabel(tip)
+            tip_lbl.setTextFormat(QtCore.Qt.RichText)
+            tip_lbl.setStyleSheet("color: #93c5fd; font-size: 11px; padding: 2px 0; background: transparent;")
+            tip_lbl.setWordWrap(True)
+            card_layout.addWidget(tip_lbl)
+        
+        layout.addWidget(card)
 
 
 class LegendaryMinimalistDialog(StyledDialog):
@@ -15011,11 +15462,11 @@ class ADHDBusterTab(QtWidgets.QWidget):
         upper_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
         container = QtWidgets.QWidget()
         self.inner_layout = QtWidgets.QVBoxLayout(container)
-        add_tab_help_button(self.inner_layout, "hero", self)
+        # Help button moved to header row (next to Analysis button)
 
         # Header with power
         header = QtWidgets.QHBoxLayout()
-        header.addWidget(QtWidgets.QLabel("<b style='font-size:18px;'>🦸 ADHD Buster</b>"))
+        header.addWidget(QtWidgets.QLabel("<b style='font-size:18px;'>🦸 HERO</b>"))
         header.addStretch()
 
         power = calculate_character_power(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else 0
@@ -15060,6 +15511,11 @@ class ADHDBusterTab(QtWidgets.QWidget):
             """)
             self.details_btn.clicked.connect(self._show_power_analysis)
             header.addWidget(self.details_btn)
+        
+        # Help button (next to Analysis to save vertical space)
+        from styled_dialog import create_tab_help_button
+        self._hero_help_btn = create_tab_help_button("hero", self)
+        header.addWidget(self._hero_help_btn)
             
         self.inner_layout.addLayout(header)
 
@@ -15831,7 +16287,33 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 return
 
             equipped = self.blocker.adhd_buster.get("equipped", {})
-            dlg = PowerAnalysisDialog(power_info, equipped, self)
+            inventory = self.blocker.adhd_buster.get("inventory", [])
+            
+            # Check if style bonus has been discovered (easter egg)
+            style_discovered = bool(self.blocker.adhd_buster.get("shown_style_bonuses", []))
+            
+            # Get entity power breakdown for patrons section
+            entity_power_info = None
+            if get_entity_power_perks:
+                entity_power_info = get_entity_power_perks(self.blocker.adhd_buster)
+            
+            # Get lucky bonuses from gear
+            lucky_bonuses = None
+            if calculate_total_lucky_bonuses:
+                lucky_bonuses = calculate_total_lucky_bonuses(equipped)
+            
+            # Get potential set bonuses from inventory
+            potential_sets = None
+            if find_potential_set_bonuses:
+                potential_sets = find_potential_set_bonuses(inventory, equipped)
+            
+            dlg = PowerAnalysisDialog(
+                power_info, equipped, self,
+                entity_power_info=entity_power_info,
+                lucky_bonuses=lucky_bonuses,
+                potential_sets=potential_sets,
+                style_discovered=style_discovered,
+            )
             dlg.exec()
         except Exception as exc:  # Defensive: surface errors to the user
             show_error(
@@ -21600,9 +22082,6 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.game_state.inventory_changed.connect(self._on_inventory_changed)
             self.game_state.full_refresh_required.connect(self._on_full_refresh_required)
 
-        # Menu bar
-        self._create_menu_bar()
-
         # Make window scrollable with scroll area
         scroll_area = QtWidgets.QScrollArea()
         scroll_area.setWidgetResizable(True)
@@ -21626,7 +22105,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # ADHD Buster button (only when gamification is available and not disabled)
         if GAMIFICATION_AVAILABLE:
             power = calculate_character_power(self.blocker.adhd_buster)
-            self.buster_btn = QtWidgets.QPushButton(f"🦸 ADHD Buster  ⚔ {power}")
+            self.buster_btn = QtWidgets.QPushButton(f"🦸 HERO  ⚔ {power}")
             self.buster_btn.setStyleSheet("font-weight: bold; padding: 6px 12px;")
             self.buster_btn.clicked.connect(self._open_adhd_buster)
             # Hide if gamification is disabled
@@ -21674,66 +22153,78 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.tabs.currentChanged.connect(self._on_tab_changed)
         main_layout.addWidget(self.tabs)
 
+        # === TAB ORDER: Timer | Hero | Eye_Breath | Water | Activity | Weight | Sleep | Entitidex | Productivity | Schedule | Categories | Sites | AI Insights | Settings | Dev ===
+        
+        # 1. Timer tab
         self.timer_tab = TimerTab(self.blocker, self)
-        self.tabs.addTab(self.timer_tab, "⏱ Timer")
+        self.tabs.addTab(self.timer_tab, "🎯 Focus")
         # Connect session signals to refresh stats and manage ADHD tab state
         self.timer_tab.session_complete.connect(self._on_session_complete)
         self.timer_tab.session_started.connect(self._on_session_started)
 
-        self.sites_tab = SitesTab(self.blocker, self)
-        self.tabs.addTab(self.sites_tab, "🌐 Sites")
+        # 2. Hero tab (gamification)
+        if GAMIFICATION_AVAILABLE:
+            self.adhd_tab = ADHDBusterTab(self.blocker, self)
+            self.tabs.addTab(self.adhd_tab, "🦸 Hero")
 
-        self.categories_tab = CategoriesTab(self.blocker, self)
-        self.tabs.addTab(self.categories_tab, "📁 Categories")
-
-        self.schedule_tab = ScheduleTab(self.blocker, self)
-        self.tabs.addTab(self.schedule_tab, "📅 Schedule")
-
-        self.stats_tab = StatsTab(self.blocker, self)
-        self.tabs.addTab(self.stats_tab, "📊 Productivity")
-
-        self.settings_tab = SettingsTab(self.blocker, self)
-        self.tabs.addTab(self.settings_tab, "⚙ Settings")
-
-        # Weight tracking tab
-        self.weight_tab = WeightTab(self.blocker, self)
-        self.tabs.addTab(self.weight_tab, "⚖ Weight")
-        
-        # Activity tracking tab
-        self.activity_tab = ActivityTab(self.blocker, self)
-        self.tabs.addTab(self.activity_tab, "🏃 Activity")
-        
-        # Sleep tracking tab
-        self.sleep_tab = SleepTab(self.blocker, self)
-        self.tabs.addTab(self.sleep_tab, "😴 Sleep")
-        
-        # Hydration tracking tab
-        self.hydration_tab = HydrationTab(self.blocker, self)
-        self.tabs.addTab(self.hydration_tab, "💧 Water")
-
-        # Eye Protection tab
+        # 3. Eye Protection tab
         self.eye_tab = EyeProtectionTab(self.blocker)
         self.tabs.addTab(self.eye_tab, "🌬️ Eye & Breath")
         # Connect signal to show item drop dialog if item won
         self.eye_tab.routine_completed.connect(self._on_eye_routine_completed)
 
-        # ADHD Buster tab (gamification)
+        # 4. Hydration tracking tab
+        self.hydration_tab = HydrationTab(self.blocker, self)
+        self.tabs.addTab(self.hydration_tab, "💧 Water")
+
+        # 5. Activity tracking tab
+        self.activity_tab = ActivityTab(self.blocker, self)
+        self.tabs.addTab(self.activity_tab, "🏃 Activity")
+
+        # 6. Weight tracking tab
+        self.weight_tab = WeightTab(self.blocker, self)
+        self.tabs.addTab(self.weight_tab, "⚖ Weight")
+
+        # 7. Sleep tracking tab
+        self.sleep_tab = SleepTab(self.blocker, self)
+        self.tabs.addTab(self.sleep_tab, "😴 Sleep")
+
+        # 8. Entitidex tab (entity collection)
         if GAMIFICATION_AVAILABLE:
-            self.adhd_tab = ADHDBusterTab(self.blocker, self)
-            self.tabs.addTab(self.adhd_tab, "🦸 Hero")
-            
-            # Entitidex tab (entity collection)
             self.entitidex_tab = EntitidexTab(self.blocker, self)
             self.tabs.addTab(self.entitidex_tab, "📖 Entitidex")
 
+        # 9. Productivity/Stats tab
+        self.stats_tab = StatsTab(self.blocker, self)
+        self.tabs.addTab(self.stats_tab, "📊 Productivity")
+
+        # 10. Schedule tab
+        self.schedule_tab = ScheduleTab(self.blocker, self)
+        self.tabs.addTab(self.schedule_tab, "📅 Schedule")
+
+        # 11. Categories tab
+        self.categories_tab = CategoriesTab(self.blocker, self)
+        self.tabs.addTab(self.categories_tab, "📁 Categories")
+
+        # 12. Sites tab
+        self.sites_tab = SitesTab(self.blocker, self)
+        self.tabs.addTab(self.sites_tab, "🌐 Sites")
+
+        # 13. AI Insights tab
         if AI_AVAILABLE:
             self.ai_tab = AITab(self.blocker, self)
             self.tabs.addTab(self.ai_tab, "🧠 AI Insights")
 
-        # Developer tools tab (for testing)
-        if GAMIFICATION_AVAILABLE:
-            self.dev_tab = DevTab(self.blocker, self)
-            self.tabs.addTab(self.dev_tab, "🛠️ Dev")
+        # 14. Settings tab
+        self.settings_tab = SettingsTab(self.blocker, self)
+        self.tabs.addTab(self.settings_tab, "⚙ Settings")
+        # Connect dev mode enabled signal to dynamically add Dev tab
+        self.settings_tab.dev_mode_enabled.connect(self._on_dev_mode_enabled)
+
+        # 15. Developer tools tab (hidden by default, enabled by tapping version 7 times)
+        self.dev_tab = None
+        if GAMIFICATION_AVAILABLE and self.blocker.dev_mode_enabled:
+            self._add_dev_tab()
 
         self.statusBar().showMessage(f"Personal Liberty v{APP_VERSION}")
 
@@ -21873,7 +22364,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.buster_btn.setVisible(enabled)
             if enabled:
                 power = calculate_character_power(self.blocker.adhd_buster)
-                self.buster_btn.setText(f"🦸 ADHD Buster  ⚔ {power}")
+                self.buster_btn.setText(f"🦸 HERO  ⚔ {power}")
 
         self.blocker.save_config()
         
@@ -22033,7 +22524,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     def _on_power_changed(self, new_power: int) -> None:
         """Handle power change signal - update power display in toolbar."""
         if hasattr(self, 'buster_btn'):
-            self.buster_btn.setText(f"🦸 ADHD Buster  ⚔ {new_power}")
+            self.buster_btn.setText(f"🦸 HERO  ⚔ {new_power}")
     
     def _on_coins_changed(self, new_coins: int) -> None:
         """Handle coins change signal - update coin display in toolbar."""
@@ -22061,7 +22552,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self._update_coin_display()
         if hasattr(self, 'buster_btn') and calculate_character_power:
             power = calculate_character_power(self.blocker.adhd_buster)
-            self.buster_btn.setText(f"🦸 ADHD Buster  ⚔ {power}")
+            self.buster_btn.setText(f"🦸 HERO  ⚔ {power}")
     
     def _show_coin_info(self) -> None:
         """Show information about the coin economy."""
@@ -22625,7 +23116,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.buster_btn.setVisible(enabled)
             if enabled:
                 power = calculate_character_power(self.blocker.adhd_buster)
-                self.buster_btn.setText(f"🦸 ADHD Buster  ⚔ {power}")
+                self.buster_btn.setText(f"🦸 HERO  ⚔ {power}")
 
     def refresh_adhd_tab(self) -> None:
         """Refresh ADHD Buster tab if it exists."""
@@ -22688,6 +23179,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.about(self, "About Personal Liberty",
             f"<b>Personal Liberty v{APP_VERSION}</b><br><br>"
             "A focus and productivity tool for Windows.<br><br>"
+            "Developed by <b>Lukasz Kaczmarek</b><br><br>"
+            "📧 Feedback / Bug reports: "
+            "<a href='mailto:lkacz1@gmail.com?subject=Personal Liberty Feedback'>lkacz1@gmail.com</a><br><br>"
             "Built with PySide6 (Qt for Python).")
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
@@ -22814,6 +23308,23 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Start browser monitor in Light Mode
         if self.blocker.enforcement_mode == EnforcementMode.LIGHT:
             self._start_browser_monitor()
+
+    def _add_dev_tab(self) -> None:
+        """Add the Developer tools tab (hidden by default)."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        if self.dev_tab is not None:
+            return  # Already added
+        
+        self.dev_tab = DevTab(self.blocker, self)
+        self.tabs.addTab(self.dev_tab, "🛠️ Dev")
+
+    def _on_dev_mode_enabled(self) -> None:
+        """Handle dev mode being enabled via version tap."""
+        self._add_dev_tab()
+        # Switch to the newly added Dev tab
+        if self.dev_tab:
+            self.tabs.setCurrentWidget(self.dev_tab)
     
     def _start_browser_monitor(self) -> None:
         """Start the browser monitor for Light Mode notifications."""
@@ -22909,6 +23420,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.timeline_widget.chapter_clicked.connect(self._go_to_hero_tab)
         self.timeline_widget.focus_clicked.connect(self._go_to_timer_tab)
         self.timeline_widget.xp_clicked.connect(self._go_to_hero_tab)
+        self.timeline_widget.entities_clicked.connect(self._go_to_entitidex_tab)
     
     def _go_to_water_tab(self) -> None:
         """Navigate to the Water tab."""
@@ -22928,6 +23440,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """Navigate to the Hero tab."""
         if GAMIFICATION_AVAILABLE and hasattr(self, 'adhd_tab'):
             index = self.tabs.indexOf(self.adhd_tab)
+            if index >= 0:
+                self.tabs.setCurrentIndex(index)
+
+    def _go_to_entitidex_tab(self) -> None:
+        """Navigate to the Entitidex tab."""
+        if GAMIFICATION_AVAILABLE and hasattr(self, 'entitidex_tab'):
+            index = self.tabs.indexOf(self.entitidex_tab)
             if index >= 0:
                 self.tabs.setCurrentIndex(index)
 
