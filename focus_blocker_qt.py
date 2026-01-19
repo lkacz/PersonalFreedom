@@ -92,6 +92,170 @@ def show_question(parent, title: str, text: str,
     return msg.exec()
 
 
+def request_system_permission(parent, action: str, title: str, description: str, 
+                               details: str, persistence_info: str, revert_info: str,
+                               blocker) -> bool:
+    """
+    Request user permission for system-level changes with comprehensive information.
+    
+    Args:
+        parent: Parent widget
+        action: Short action name (e.g., "modify_hosts", "startup_registry")
+        title: Short title describing the action (e.g., "Modify Hosts File")
+        description: User-friendly description of what will be changed
+        details: Technical details about what exactly will happen
+        persistence_info: Explanation of whether changes are temporary or permanent
+        revert_info: How to manually revert changes if needed
+        blocker: BlockerCore instance to save preferences
+        
+    Returns:
+        True if user grants permission, False otherwise
+    """
+    # Check if user previously approved this action
+    if blocker.system_permissions.get(action, False):
+        return True
+    
+    # Create custom dialog with comprehensive info
+    dialog = QtWidgets.QDialog(parent)
+    dialog.setWindowTitle("⚠️ System Modification Permission")
+    dialog.setModal(True)
+    dialog.setMinimumWidth(550)
+    dialog.setMaximumWidth(700)
+    
+    layout = QtWidgets.QVBoxLayout(dialog)
+    layout.setSpacing(12)
+    layout.setContentsMargins(20, 20, 20, 20)
+    
+    # Icon and title
+    title_layout = QtWidgets.QHBoxLayout()
+    icon_label = QtWidgets.QLabel("⚠️")
+    icon_label.setStyleSheet("font-size: 40px;")
+    title_label = QtWidgets.QLabel(f"<b>{title}</b>")
+    title_label.setStyleSheet("font-size: 16px; font-weight: bold; color: #e17055;")
+    title_layout.addWidget(icon_label)
+    title_layout.addWidget(title_label)
+    title_layout.addStretch()
+    layout.addLayout(title_layout)
+    
+    # Description
+    desc_label = QtWidgets.QLabel(description)
+    desc_label.setWordWrap(True)
+    desc_label.setStyleSheet("font-size: 13px; color: #dfe6e9; padding: 8px 0;")
+    layout.addWidget(desc_label)
+    
+    # Technical details section (collapsible-style info box)
+    details_frame = QtWidgets.QFrame()
+    details_frame.setStyleSheet("""
+        QFrame {
+            background: rgba(45, 52, 54, 0.8);
+            border: 1px solid #636e72;
+            border-radius: 6px;
+            padding: 10px;
+        }
+    """)
+    details_layout = QtWidgets.QVBoxLayout(details_frame)
+    details_layout.setSpacing(8)
+    
+    # What will happen
+    what_header = QtWidgets.QLabel("📋 <b>What will happen:</b>")
+    what_header.setStyleSheet("font-size: 12px; color: #74b9ff;")
+    details_layout.addWidget(what_header)
+    
+    what_text = QtWidgets.QLabel(details)
+    what_text.setWordWrap(True)
+    what_text.setStyleSheet("font-size: 11px; color: #b2bec3; margin-left: 16px;")
+    details_layout.addWidget(what_text)
+    
+    # Persistence info
+    persist_header = QtWidgets.QLabel("⏱️ <b>Duration of changes:</b>")
+    persist_header.setStyleSheet("font-size: 12px; color: #fdcb6e;")
+    details_layout.addWidget(persist_header)
+    
+    persist_text = QtWidgets.QLabel(persistence_info)
+    persist_text.setWordWrap(True)
+    persist_text.setStyleSheet("font-size: 11px; color: #b2bec3; margin-left: 16px;")
+    details_layout.addWidget(persist_text)
+    
+    # Revert info
+    revert_header = QtWidgets.QLabel("🔄 <b>How to revert manually:</b>")
+    revert_header.setStyleSheet("font-size: 12px; color: #55efc4;")
+    details_layout.addWidget(revert_header)
+    
+    revert_text = QtWidgets.QLabel(revert_info)
+    revert_text.setWordWrap(True)
+    revert_text.setStyleSheet("font-size: 11px; color: #b2bec3; margin-left: 16px;")
+    details_layout.addWidget(revert_text)
+    
+    layout.addWidget(details_frame)
+    
+    # "Don't show again" checkbox
+    dont_ask_checkbox = QtWidgets.QCheckBox("Trust this action — don't ask again")
+    dont_ask_checkbox.setStyleSheet("""
+        QCheckBox {
+            color: #74b9ff;
+            font-size: 12px;
+            spacing: 8px;
+            padding: 8px 0;
+        }
+    """)
+    layout.addWidget(dont_ask_checkbox)
+    
+    # Buttons
+    button_layout = QtWidgets.QHBoxLayout()
+    button_layout.addStretch()
+    
+    deny_btn = QtWidgets.QPushButton("🚫 Deny")
+    deny_btn.setStyleSheet("""
+        QPushButton {
+            background: #636e72;
+            color: white;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 6px;
+            padding: 10px 24px;
+            min-width: 100px;
+        }
+        QPushButton:hover {
+            background: #2d3436;
+        }
+    """)
+    deny_btn.clicked.connect(dialog.reject)
+    
+    allow_btn = QtWidgets.QPushButton("✅ Allow")
+    allow_btn.setStyleSheet("""
+        QPushButton {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #00b894, stop:1 #00a884);
+            color: white;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 6px;
+            padding: 10px 24px;
+            min-width: 100px;
+        }
+        QPushButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #55efc4, stop:1 #00b894);
+        }
+    """)
+    allow_btn.clicked.connect(dialog.accept)
+    allow_btn.setDefault(True)
+    
+    button_layout.addWidget(deny_btn)
+    button_layout.addWidget(allow_btn)
+    layout.addLayout(button_layout)
+    
+    # Show dialog
+    result = dialog.exec()
+    
+    # Save preference if "don't ask again" is checked AND user allowed
+    if dont_ask_checkbox.isChecked() and result == QtWidgets.QDialog.Accepted:
+        blocker.system_permissions[action] = True
+        blocker.save_config()
+    
+    return result == QtWidgets.QDialog.Accepted
+
+
 # ============================================================================
 # Entity Perk Toast Notification - Non-blocking feedback when perks activate
 # ============================================================================
@@ -1169,6 +1333,7 @@ class TimerTab(QtWidgets.QWidget):
 
         self._build_ui()
         self._connect_signals()
+        self._load_last_session_settings()
 
         # QTimer for ticking each second
         self.qt_timer = QtCore.QTimer(self)
@@ -1239,7 +1404,7 @@ class TimerTab(QtWidgets.QWidget):
         self.mode_buttons[BlockMode.NORMAL].setChecked(True)
         layout.addWidget(mode_box)
 
-        # Duration inputs with modern gradient card
+        # Duration slider with time display
         duration_box = QtWidgets.QGroupBox("⏱️ Session Duration")
         duration_box.setStyleSheet("""
             QGroupBox {
@@ -1262,37 +1427,65 @@ class TimerTab(QtWidgets.QWidget):
                 color: #b2bec3;
                 font-size: 13px;
             }
-            QSpinBox {
+            QSlider::groove:horizontal {
+                border: 1px solid #2d3436;
+                height: 8px;
                 background: #1a1a1a;
-                border: 2px solid #0984e3;
-                border-radius: 6px;
-                padding: 5px;
-                color: #74b9ff;
-                font-size: 14px;
-                font-weight: bold;
-                min-width: 60px;
+                border-radius: 4px;
             }
-            QSpinBox::up-button, QSpinBox::down-button {
+            QSlider::handle:horizontal {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #0984e3, stop:1 #0652a8);
-                border-radius: 3px;
+                    stop:0 #74b9ff, stop:1 #0984e3);
+                border: 2px solid #0984e3;
                 width: 20px;
+                margin: -6px 0;
+                border-radius: 10px;
             }
-            QSpinBox::up-button:hover, QSpinBox::down-button:hover {
-                background: #74b9ff;
+            QSlider::handle:horizontal:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #a29bfe, stop:1 #6c5ce7);
+                border: 2px solid #a29bfe;
+            }
+            QSlider::sub-page:horizontal {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #0984e3, stop:1 #74b9ff);
+                border-radius: 4px;
             }
         """)
-        duration_layout = QtWidgets.QHBoxLayout(duration_box)
-        self.hours_spin = NoScrollSpinBox()
-        self.hours_spin.setRange(0, 12)
-        self.hours_spin.setValue(0)
-        self.minutes_spin = NoScrollSpinBox()
-        self.minutes_spin.setRange(0, 59)
-        self.minutes_spin.setValue(25)
-        duration_layout.addWidget(QtWidgets.QLabel("Hours"))
-        duration_layout.addWidget(self.hours_spin)
-        duration_layout.addWidget(QtWidgets.QLabel("Minutes"))
-        duration_layout.addWidget(self.minutes_spin)
+        duration_layout = QtWidgets.QVBoxLayout(duration_box)
+        
+        # Time display label
+        self.duration_display = QtWidgets.QLabel("25 minutes")
+        self.duration_display.setAlignment(QtCore.Qt.AlignCenter)
+        self.duration_display.setStyleSheet("""
+            font-size: 18px;
+            font-weight: bold;
+            color: #74b9ff;
+            padding: 5px;
+        """)
+        duration_layout.addWidget(self.duration_display)
+        
+        # Slider (5 min to 4 hours in 5-min increments = 5 to 240, step 5)
+        self.duration_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.duration_slider.setMinimum(5)
+        self.duration_slider.setMaximum(240)
+        self.duration_slider.setSingleStep(5)
+        self.duration_slider.setPageStep(15)
+        self.duration_slider.setValue(25)
+        self.duration_slider.valueChanged.connect(self._on_duration_changed)
+        duration_layout.addWidget(self.duration_slider)
+        
+        # Min/Max labels
+        range_layout = QtWidgets.QHBoxLayout()
+        min_label = QtWidgets.QLabel("5 min")
+        min_label.setStyleSheet("font-size: 11px; color: #636e72;")
+        max_label = QtWidgets.QLabel("4 hours")
+        max_label.setStyleSheet("font-size: 11px; color: #636e72;")
+        range_layout.addWidget(min_label)
+        range_layout.addStretch()
+        range_layout.addWidget(max_label)
+        duration_layout.addLayout(range_layout)
+        
         layout.addWidget(duration_box)
 
         # Presets with modern gradient buttons
@@ -1342,31 +1535,69 @@ class TimerTab(QtWidgets.QWidget):
             preset_layout.addWidget(btn)
         layout.addWidget(preset_box)
 
-        # Notification option with modern styling
-        self.notify_checkbox = QtWidgets.QCheckBox("🔔 Notify me when session ends")
-        self.notify_checkbox.setChecked(getattr(self.blocker, 'notify_on_complete', True))
-        self.notify_checkbox.setToolTip("Show a desktop notification when your focus session completes")
-        self.notify_checkbox.setStyleSheet("""
-            QCheckBox {
+        # Notification settings with modern styling
+        notify_box = QtWidgets.QGroupBox("🔔 Session End Notification")
+        notify_box.setStyleSheet("""
+            QGroupBox {
+                font-size: 14px;
+                font-weight: bold;
+                color: #00b894;
+                border: 2px solid #2d3436;
+                border-radius: 12px;
+                margin-top: 10px;
+                padding: 15px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2d3436, stop:1 #1a1a1a);
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+            QRadioButton {
                 color: #dfe6e9;
                 font-size: 13px;
-                spacing: 8px;
-                padding: 8px;
+                spacing: 6px;
+                padding: 4px;
             }
-            QCheckBox::indicator {
-                width: 20px;
-                height: 20px;
-                border-radius: 4px;
+            QRadioButton::indicator {
+                width: 18px;
+                height: 18px;
+                border-radius: 9px;
                 border: 2px solid #00b894;
                 background: #1a1a1a;
             }
-            QCheckBox::indicator:checked {
+            QRadioButton::indicator:checked {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
                     stop:0 #55efc4, stop:1 #00b894);
                 border: 2px solid #55efc4;
             }
         """)
-        layout.addWidget(self.notify_checkbox)
+        notify_layout = QtWidgets.QHBoxLayout(notify_box)
+        notify_layout.setSpacing(15)
+        
+        self.notify_buttons: dict[str, QtWidgets.QRadioButton] = {}
+        notify_options = [
+            ("none", "None", "No notification when session ends"),
+            ("dialog", "Dialog Only", "Show a completion dialog"),
+            ("sound", "Sound Only", "Play a notification chime"),
+            ("both", "Both", "Show dialog and play sound"),
+        ]
+        for key, text, tooltip in notify_options:
+            btn = QtWidgets.QRadioButton(text)
+            btn.setToolTip(tooltip)
+            btn.setProperty("notify_value", key)
+            notify_layout.addWidget(btn)
+            self.notify_buttons[key] = btn
+        
+        # Default to "both" for best UX
+        saved_notify = getattr(self.blocker, 'notify_mode', 'both')
+        if saved_notify in self.notify_buttons:
+            self.notify_buttons[saved_notify].setChecked(True)
+        else:
+            self.notify_buttons["both"].setChecked(True)
+        
+        layout.addWidget(notify_box)
 
         # Status label with modern card design
         status_card = QtWidgets.QFrame()
@@ -1437,7 +1668,42 @@ class TimerTab(QtWidgets.QWidget):
 
     def _connect_signals(self) -> None:
         self.action_btn.clicked.connect(self._toggle_session)
-        self.notify_checkbox.stateChanged.connect(self._save_notify_preference)
+        # Save settings when they change
+        for btn in self.mode_buttons.values():
+            btn.toggled.connect(self._save_timer_settings)
+        self.duration_slider.valueChanged.connect(self._save_timer_settings)
+        for btn in self.notify_buttons.values():
+            btn.toggled.connect(self._save_timer_settings)
+
+    def _load_last_session_settings(self) -> None:
+        """Load the last session settings from config."""
+        # Load mode
+        saved_mode = getattr(self.blocker, 'last_session_mode', BlockMode.NORMAL)
+        if saved_mode in self.mode_buttons:
+            self.mode_buttons[saved_mode].setChecked(True)
+        
+        # Load duration (default 25 minutes)
+        saved_duration = getattr(self.blocker, 'last_session_duration', 25)
+        self.duration_slider.setValue(saved_duration)
+        
+        # Load notify mode (default "both")
+        saved_notify = getattr(self.blocker, 'last_notify_mode', 'both')
+        if saved_notify in self.notify_buttons:
+            self.notify_buttons[saved_notify].setChecked(True)
+
+    def _save_timer_settings(self) -> None:
+        """Save current timer settings to config."""
+        # Save mode
+        self.blocker.last_session_mode = self._current_mode()
+        
+        # Save duration
+        self.blocker.last_session_duration = self.duration_slider.value()
+        
+        # Save notify mode
+        self.blocker.last_notify_mode = self._get_notify_mode()
+        
+        # Persist to disk
+        self.blocker.save_config()
 
     def _set_action_btn_start_style(self) -> None:
         """Set the action button to Start style (green)."""
@@ -1494,15 +1760,30 @@ class TimerTab(QtWidgets.QWidget):
         else:
             self._start_session()
 
-    def _save_notify_preference(self) -> None:
-        """Save the notification preference when checkbox changes."""
-        self.blocker.notify_on_complete = self.notify_checkbox.isChecked()
-        self.blocker.save_config()
-
     # === UI helpers ===
+    def _on_duration_changed(self, value: int) -> None:
+        """Update the duration display when slider changes."""
+        # Snap to nearest 5 minutes
+        snapped = round(value / 5) * 5
+        if snapped != value:
+            self.duration_slider.blockSignals(True)
+            self.duration_slider.setValue(snapped)
+            self.duration_slider.blockSignals(False)
+            value = snapped
+        
+        if value >= 60:
+            hours = value // 60
+            mins = value % 60
+            if mins == 0:
+                self.duration_display.setText(f"{hours} hour{'s' if hours > 1 else ''}")
+            else:
+                self.duration_display.setText(f"{hours}h {mins}m")
+        else:
+            self.duration_display.setText(f"{value} minutes")
+
     def _set_preset(self, minutes: int) -> None:
-        self.hours_spin.setValue(minutes // 60)
-        self.minutes_spin.setValue(minutes % 60)
+        """Set the duration slider to a preset value."""
+        self.duration_slider.setValue(minutes)
 
     def _current_mode(self) -> str:
         for value, btn in self.mode_buttons.items():
@@ -1535,9 +1816,7 @@ class TimerTab(QtWidgets.QWidget):
         # Set immediately to prevent race condition from double-clicks
         self.timer_running = True
         
-        hours = self.hours_spin.value()
-        minutes = self.minutes_spin.value()
-        total_minutes = hours * 60 + minutes
+        total_minutes = self.duration_slider.value()
         if total_minutes <= 0:
             self.timer_running = False  # Reset on validation failure
             show_warning(self, "Invalid Duration", "Please set a time greater than 0 minutes.")
@@ -1567,6 +1846,43 @@ class TimerTab(QtWidgets.QWidget):
             self.status_label.setText(f"🍅 WORK #{self.pomodoro_session_count + 1}")
         else:
             total_seconds = total_minutes * 60
+
+        # Request permission for system changes (only in FULL enforcement mode)
+        if self.blocker.enforcement_mode == EnforcementMode.FULL:
+            permission_granted = request_system_permission(
+                parent=self,
+                action="modify_hosts",
+                title="Modify System Hosts File",
+                description=(
+                    "To block distracting websites, this app needs to modify your Windows hosts file. "
+                    "This is a standard technique used by parental control and productivity software."
+                ),
+                details=(
+                    "• File location: C:\\Windows\\System32\\drivers\\etc\\hosts\n"
+                    "• Action: Add entries that redirect blocked sites to 127.0.0.1\n"
+                    "• Blocked sites will show 'connection refused' in your browser\n"
+                    "• Requires administrator privileges (already granted)"
+                ),
+                persistence_info=(
+                    "TEMPORARY — Changes are automatically removed when:\n"
+                    "• Your focus session ends normally\n"
+                    "• You click Stop to end the session early\n"
+                    "• The app is closed or crashes (cleanup on next startup)"
+                ),
+                revert_info=(
+                    "If changes persist after app issues:\n"
+                    "1. Open Notepad as Administrator\n"
+                    "2. Open: C:\\Windows\\System32\\drivers\\etc\\hosts\n"
+                    "3. Delete lines between '# === Personal Liberty BLOCK START ===' "
+                    "and '# === Personal Liberty BLOCK END ==='\n"
+                    "4. Save the file\n"
+                    "Or run the included 'cleanup_hosts.ps1' script as Administrator."
+                ),
+                blocker=self.blocker
+            )
+            if not permission_granted:
+                self.timer_running = False  # Reset if permission denied
+                return
 
         success, message = self.blocker.block_sites(duration_seconds=total_seconds)
         if not success:
@@ -1937,13 +2253,25 @@ class TimerTab(QtWidgets.QWidget):
         if diary_entry:
             DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes, self.window()).exec()
 
-    def _play_notification_sound(self) -> None:
-        """Play a short notification chime on completion."""
-        try:
-            import winsound
+    def _get_notify_mode(self) -> str:
+        """Get the current notification mode from radio buttons."""
+        for key, btn in self.notify_buttons.items():
+            if btn.isChecked():
+                return key
+        return "both"  # Default
 
-            winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
+    def _play_notification_sound(self) -> None:
+        """Play a random notification chime on completion using startup_sounds."""
+        try:
+            from startup_sounds import play_startup_sound, is_sound_available
+            if is_sound_available():
+                play_startup_sound()
+            else:
+                # Fallback to Windows beep
+                import winsound
+                winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
         except Exception:
+            # Silent fallback
             pass
 
     def _quick_equip_item(self, item: dict) -> None:
@@ -2367,10 +2695,7 @@ class TimerTab(QtWidgets.QWidget):
                 main_window.adhd_tab.character_section.show()
 
     def _show_desktop_notification(self, title: str, message: str) -> None:
-        """Show a Windows toast notification."""
-        if not getattr(self, 'notify_checkbox', None) or not self.notify_checkbox.isChecked():
-            return
-        
+        """Show a Windows toast notification via system tray."""
         try:
             # Use Windows tray balloon tip (works on all Windows versions)
             main_window = self.window()
@@ -2401,10 +2726,14 @@ class TimerTab(QtWidgets.QWidget):
         self.blocker.update_stats(elapsed, completed=True)
         self.blocker.unblock_sites(force=True)
 
-        # Notify the user the session has ended
-        self._play_notification_sound()
+        # Get notification mode
+        notify_mode = self._get_notify_mode()
         
-        # Show desktop notification if enabled
+        # Play sound if enabled
+        if notify_mode in ("sound", "both"):
+            self._play_notification_sound()
+        
+        # Show desktop notification (tray balloon) always when running
         session_minutes = elapsed // 60
         self._show_desktop_notification(
             "🎉 Focus Session Complete!",
@@ -2434,18 +2763,19 @@ class TimerTab(QtWidgets.QWidget):
         # (will emit again after rewards to capture XP/item changes)
         self.session_complete.emit(elapsed)
         
-        # Show new professional session complete dialog
-        from session_complete_dialog import SessionCompleteDialog
-        dialog = SessionCompleteDialog(elapsed, rewards_info, parent=self)
-        
-        # Connect quick action signals
-        dialog.start_another_session.connect(self._start_session)
-        dialog.view_stats.connect(lambda: self.window().tabs.setCurrentIndex(1))  # Switch to Stats tab
-        main_window = self.window()
-        if hasattr(main_window, 'show_priorities_dialog'):
-            dialog.view_priorities.connect(main_window.show_priorities_dialog)
-        
-        dialog.exec()
+        # Show session complete dialog if enabled
+        if notify_mode in ("dialog", "both"):
+            from session_complete_dialog import SessionCompleteDialog
+            dialog = SessionCompleteDialog(elapsed, rewards_info, parent=self)
+            
+            # Connect quick action signals
+            dialog.start_another_session.connect(self._start_session)
+            dialog.view_stats.connect(lambda: self.window().tabs.setCurrentIndex(1))  # Switch to Stats tab
+            main_window = self.window()
+            if hasattr(main_window, 'show_priorities_dialog'):
+                dialog.view_priorities.connect(main_window.show_priorities_dialog)
+            
+            dialog.exec()
         
         # Process rewards after dialog shown
         if session_minutes > 0:
@@ -2554,10 +2884,13 @@ class TimerTab(QtWidgets.QWidget):
 
     def _handle_pomodoro_complete(self, elapsed: int) -> None:
         """Handle Pomodoro work/break cycle transitions."""
+        notify_mode = self._get_notify_mode()
+        
         if self.pomodoro_is_break:
             # Break is over, start next work session
             self.pomodoro_is_break = False
-            self._play_notification_sound()
+            if notify_mode in ("sound", "both"):
+                self._play_notification_sound()
             self._show_desktop_notification(
                 "⏰ Break Over!",
                 f"Break time is over!\nReady for another focus session?"
@@ -2579,7 +2912,8 @@ class TimerTab(QtWidgets.QWidget):
             self.pomodoro_session_count += 1
             self.pomodoro_total_work_time += elapsed
             self.blocker.update_stats(elapsed, completed=True)
-            self._play_notification_sound()
+            if notify_mode in ("sound", "both"):
+                self._play_notification_sound()
             
             # Show desktop notification
             session_minutes = elapsed // 60
@@ -4920,6 +5254,18 @@ class SettingsTab(QtWidgets.QWidget):
         light_desc.setStyleSheet("color: #9ca3af; margin-left: 20px;")
         enforce_layout.addWidget(light_desc)
         
+        # Reset permission prompts button
+        perm_reset_layout = QtWidgets.QHBoxLayout()
+        perm_reset_layout.addSpacing(20)
+        reset_perm_btn = QtWidgets.QPushButton("🔄 Reset Permission Prompts")
+        reset_perm_btn.setToolTip("Re-enable all 'Don't ask again' permission dialogs")
+        reset_perm_btn.setMaximumWidth(220)
+        reset_perm_btn.clicked.connect(self._reset_permission_prompts)
+        perm_reset_layout.addWidget(reset_perm_btn)
+        perm_reset_layout.addWidget(QtWidgets.QLabel("(Show permission dialogs again)"))
+        perm_reset_layout.addStretch()
+        enforce_layout.addLayout(perm_reset_layout)
+        
         inner.addWidget(enforce_group)
 
         # System Tray (if available)
@@ -5418,6 +5764,30 @@ class SettingsTab(QtWidgets.QWidget):
         main_window = self.window()
         if hasattr(main_window, '_update_enforcement_mode_display'):
             main_window._update_enforcement_mode_display()
+
+    def _reset_permission_prompts(self) -> None:
+        """Reset all 'Don't ask again' permission preferences."""
+        if not self.blocker.system_permissions:
+            show_info(self, "No Permissions Saved", 
+                     "You haven't saved any 'Don't ask again' preferences yet.")
+            return
+        
+        count = len(self.blocker.system_permissions)
+        confirm = show_question(
+            self, 
+            "Reset Permission Prompts?",
+            f"This will re-enable {count} permission dialog(s).\n\n"
+            "You will be asked for approval again when the app needs to:\n"
+            "• Modify the hosts file (for Full Mode blocking)\n\n"
+            "Continue?"
+        )
+        
+        if confirm == QtWidgets.QMessageBox.Yes:
+            self.blocker.system_permissions = {}
+            self.blocker.save_config()
+            show_info(self, "Permissions Reset", 
+                     "All permission prompts have been reset.\n"
+                     "You will be asked for approval next time the app needs system access.")
 
     def _save_hotkey(self) -> None:
         """Save and register the global hotkey."""
