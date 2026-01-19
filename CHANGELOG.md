@@ -40,6 +40,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sound System**:
   - Refactored `SoundGenerator` to use threaded playback, preventing UI freezes during sound sequences.
   - Added new sound patterns: Rising pitch (Inhale), Falling pitch (Exhale), and 3-tone Blink cues.
+  - **Lottery sounds** (`lottery_sounds.py`): Complete refactoring with data-driven melody composition
+    - Replaced 40 repetitive composer functions with dataclass-based design (`ToneSpec`, `ChordSpec`, `MelodyDefinition`)
+    - Added sound caching for zero-latency playback via `preload_lottery_sounds()`
+    - Added `__all__` exports, comprehensive type hints, and thread safety documentation
+    - Added 51 unit tests covering melody integrity, caching, edge cases, and graceful degradation
 - **Sleep Logic**:
   - Sleep suggestions ("Go to Sleep") are now suppressed before 22:00 to prevent nagging.
   - Sleep rewards (Screen Off Bonus) configured to start effectively after 22:00.
