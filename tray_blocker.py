@@ -643,12 +643,22 @@ class TrayBlocker:
             pass  # Sound not critical
 
     def update_icon(self):
-        """Update the tray icon"""
+        """Update the tray icon and tooltip"""
         if self.icon:
             try:
                 with self._state_lock:
                     blocking = self.is_blocking
+                    remaining = self.remaining_seconds
+                
+                # Update icon image
                 self.icon.icon = self.create_icon_image(blocking)
+                
+                # Update tooltip to show remaining time
+                if blocking and remaining > 0:
+                    time_str = self.format_time(remaining)
+                    self.icon.title = f"Personal Liberty - {time_str} remaining"
+                else:
+                    self.icon.title = "Personal Liberty - Focus Blocker"
             except Exception:
                 pass
 
