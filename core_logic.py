@@ -227,6 +227,8 @@ class BlockerCore:
         self.minimize_to_tray = True  # Close button minimizes to tray
         self.notify_on_complete = True  # Notify when session ends
         self.toggle_hotkey = ""  # Global hotkey for show/hide window
+        self.startup_sound_enabled = True  # Play sound when app starts minimized
+        self.lottery_sound_enabled = True  # Play win/lose sounds after lottery animations
         
         # Enforcement mode: "full" (hosts file) or "light" (monitor + notifications only)
         self.enforcement_mode = EnforcementMode.FULL
@@ -327,6 +329,8 @@ class BlockerCore:
                     self.priority_checkin_interval = checkin_interval if isinstance(checkin_interval, (int, float)) and checkin_interval > 0 else 30
                     self.minimize_to_tray = config.get('minimize_to_tray', True)
                     self.toggle_hotkey = config.get('toggle_hotkey', "")
+                    self.startup_sound_enabled = config.get('startup_sound_enabled', True)
+                    self.lottery_sound_enabled = config.get('lottery_sound_enabled', True)
                     # Load enforcement mode (full = hosts file, light = notifications only)
                     enforcement = config.get('enforcement_mode', EnforcementMode.FULL)
                     self.enforcement_mode = enforcement if enforcement in (EnforcementMode.FULL, EnforcementMode.LIGHT) else EnforcementMode.FULL
@@ -454,6 +458,8 @@ class BlockerCore:
                 'priority_checkin_interval': self.priority_checkin_interval,
                 'minimize_to_tray': self.minimize_to_tray,
                 'toggle_hotkey': self.toggle_hotkey,
+                'startup_sound_enabled': self.startup_sound_enabled,
+                'lottery_sound_enabled': self.lottery_sound_enabled,
                 'enforcement_mode': self.enforcement_mode,
                 'adhd_buster': self.adhd_buster,
                 'weight_entries': self.weight_entries,

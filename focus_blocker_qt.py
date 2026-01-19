@@ -4782,6 +4782,24 @@ class SettingsTab(QtWidgets.QWidget):
                 "When enabled, clicking the close button will hide the app to the system tray.\n"
                 "Double-click the tray icon to restore the window. Use 'Exit' to fully quit."
             ))
+            
+            # Startup sound setting
+            tray_layout.addSpacing(10)
+            self.startup_sound_check = QtWidgets.QCheckBox("🔔 Play notification sound on startup")
+            self.startup_sound_check.setChecked(self.blocker.startup_sound_enabled)
+            self.startup_sound_check.toggled.connect(self._toggle_startup_sound)
+            tray_layout.addWidget(self.startup_sound_check)
+            
+            # Test sound button
+            sound_row = QtWidgets.QHBoxLayout()
+            test_sound_btn = QtWidgets.QPushButton("🎵 Test Sound")
+            test_sound_btn.setMaximumWidth(120)
+            test_sound_btn.clicked.connect(self._test_startup_sound)
+            sound_row.addWidget(test_sound_btn)
+            sound_row.addWidget(QtWidgets.QLabel("Plays a random startup melody"))
+            sound_row.addStretch()
+            tray_layout.addLayout(sound_row)
+            
             inner.addWidget(tray_group)
 
         # About
@@ -5185,6 +5203,22 @@ class SettingsTab(QtWidgets.QWidget):
             # Persist the setting
             self.blocker.minimize_to_tray = checked
             self.blocker.save_config()
+
+    def _toggle_startup_sound(self, checked: bool) -> None:
+        """Toggle startup sound setting and save to config."""
+        self.blocker.startup_sound_enabled = checked
+        self.blocker.save_config()
+
+    def _test_startup_sound(self) -> None:
+        """Play a test startup sound."""
+        try:
+            from startup_sounds import play_startup_sound, is_sound_available
+            if is_sound_available():
+                play_startup_sound()
+            else:
+                show_info(self, "Sound Unavailable", "Sound playback is not available on this system.")
+        except ImportError:
+            show_info(self, "Sound Unavailable", "Startup sounds module not found.")
 
     def _toggle_enforcement_mode(self, full_mode_checked: bool) -> None:
         """Toggle between Full and Light enforcement modes."""
@@ -6338,14 +6372,26 @@ class WeightTab(QtWidgets.QWidget):
             if rewards.get("current_streak", 0) > 0:
                 stats_parts.append(f"Streak: {rewards['current_streak']} days")
             
-            msg = "<br>".join(msg_parts)
+            # Build extra messages from stats
+            extra_msgs = []
             if stats_parts:
-                msg += "<br><br><i>" + " | ".join(stats_parts) + "</i>"
+                extra_msgs.append(" | ".join(stats_parts))
+            for source, item in items_earned:
+                extra_msgs.append(f"{source}: {item.get('name', 'Unknown')}")
             
-            show_info(
-                self, "🎉 Weight Rewards!",
-                f"<h3>Congratulations!</h3>{msg}"
+            # Show ItemRewardDialog with comparison
+            equipped = self.blocker.adhd_buster.get("equipped", {})
+            from styled_dialog import ItemRewardDialog
+            dialog = ItemRewardDialog(
+                parent=self,
+                title="🎉 Weight Rewards!",
+                header_emoji="⚖️",
+                source_label="Weight Tracking Rewards",
+                items_earned=just_items,
+                equipped=equipped,
+                extra_messages=extra_msgs[:3]  # Limit to 3 messages
             )
+            dialog.exec()
             
             # Show diary entry reveal (same as focus sessions)
             if diary_entry:
@@ -8604,28 +8650,19 @@ class SleepTab(QtWidgets.QWidget):
             sync_hero_data(self.blocker.adhd_buster)
             self.blocker.save_config()
         
-        # Show reward with celebratory message
-        rarity_emojis = {
-            "Legendary": "🌟✨",
-            "Epic": "💎",
-            "Rare": "💙",
-            "Uncommon": "💚",
-            "Common": "⚪",
-        }
-        emoji = rarity_emojis.get(rarity, "🎁")
-        
-        msg = QtWidgets.QMessageBox(self)
-        msg.setWindowTitle("🛏️ Sweet Dreams!")
-        msg.setText(
-            f"{emoji} <b>Nighty-Night Reward!</b>\n\n"
-            f"For going to sleep at {current_time}, you earned:\n\n"
-            f"<b style='font-size:14px'>{item['name']}</b>\n"
-            f"<i>{item['rarity']}</i> {item.get('slot', 'item')}\n\n"
-            f"Now turn off that screen and get some rest! 😴"
+        # Show reward with ItemRewardDialog for comparison
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        from styled_dialog import ItemRewardDialog
+        dialog = ItemRewardDialog(
+            parent=self,
+            title="🛏️ Sweet Dreams!",
+            header_emoji="🛏️",
+            source_label=f"Nighty-Night Bonus at {current_time}",
+            items_earned=[item],
+            equipped=equipped,
+            extra_messages=["Now turn off that screen and get some rest! 😴"]
         )
-        msg.setIcon(QtWidgets.QMessageBox.NoIcon)
-        msg.setOption(QtWidgets.QMessageBox.DontUseNativeDialog, True)
-        msg.exec()
+        dialog.exec()
         
         # Update preview to show it's been used
         self.sleep_now_btn.setEnabled(False)
@@ -13595,10 +13632,23 @@ class HydrationTab(QtWidgets.QWidget):
                 main_window = self.window()
                 game_state = getattr(main_window, 'game_state', None)
                 if game_state:
+                    equipped = self.blocker.adhd_buster.get("equipped", {})
                     game_state.award_items_batch([item], coins=0, auto_equip=True, source="hydration_tracking")
                     
                     if GAMIFICATION_AVAILABLE:
                         sync_hero_data(self.blocker.adhd_buster)
+                    
+                    # Show ItemRewardDialog with comparison
+                    from styled_dialog import ItemRewardDialog
+                    dialog = ItemRewardDialog(
+                        parent=self,
+                        title="💧 Hydration Reward!",
+                        header_emoji="💧",
+                        source_label=f"Glass #{glass_number} Lottery Win!",
+                        items_earned=[item],
+                        equipped=equipped
+                    )
+                    dialog.exec()
             
             # Check streak bonus (when completing 5 glasses)
             if glass_number >= 5:
@@ -13613,8 +13663,19 @@ class HydrationTab(QtWidgets.QWidget):
                         main_window = self.window()
                         game_state = getattr(main_window, 'game_state', None)
                         if game_state:
+                            equipped = self.blocker.adhd_buster.get("equipped", {})
                             game_state.award_items_batch([streak_item], coins=0, auto_equip=True, source="hydration_streak")
-                            show_info(self, "Streak Bonus!", f"🔥 {streak_days + 1}-day streak: [{streak_rarity}] {streak_item.get('name')}!")
+                            # Show ItemRewardDialog with comparison
+                            from styled_dialog import ItemRewardDialog
+                            dialog = ItemRewardDialog(
+                                parent=self,
+                                title="💧 Hydration Streak Bonus!",
+                                header_emoji="💧",
+                                source_label=f"🔥 {streak_days + 1}-day Hydration Streak!",
+                                items_earned=[streak_item],
+                                equipped=equipped
+                            )
+                            dialog.exec()
             
             self.blocker.save_config()
             
@@ -14202,17 +14263,21 @@ class ADHDBusterTab(QtWidgets.QWidget):
     def _on_power_changed(self, new_power: int) -> None:
         """Handle power change - update power label."""
         if hasattr(self, 'power_lbl'):
-            power_info = get_power_breakdown(self.blocker.adhd_buster) if get_power_breakdown else {"base_power": new_power, "set_bonus": 0, "style_bonus": 0, "total_power": new_power}
-            style_bonus = power_info.get("style_bonus", 0)
-            set_bonus = power_info.get("set_bonus", 0)
-            style_info = power_info.get("style_info")
+            power_info = get_power_breakdown(self.blocker.adhd_buster) if get_power_breakdown else {"base_power": new_power, "set_bonus": 0, "style_bonus": 0, "entity_bonus": 0, "total_power": new_power}
             
-            if style_bonus > 0 and style_info and style_info.get("style"):
-                # Show style bonus prominently
-                style_name = style_info["style"].get("name", "Style")
-                power_txt = f"⚔ Power: {power_info['total_power']} (👑 {style_name} +{style_bonus})"
-            elif set_bonus > 0:
-                power_txt = f"⚔ Power: {power_info['total_power']} ({power_info['base_power']} + {set_bonus} set)"
+            # Build power breakdown string showing all components (gear + sets + style + entity patrons)
+            power_parts = [str(power_info['base_power'])]
+            if power_info.get("set_bonus", 0) > 0:
+                power_parts.append(f"+{power_info['set_bonus']} set")
+            if power_info.get("style_bonus", 0) > 0:
+                style_info = power_info.get("style_info")
+                style_name = style_info.get("style", {}).get("name", "style") if style_info else "style"
+                power_parts.append(f"+{power_info['style_bonus']} {style_name}")
+            if power_info.get("entity_bonus", 0) > 0:
+                power_parts.append(f"+{power_info['entity_bonus']} patrons")
+            
+            if len(power_parts) > 1:
+                power_txt = f"⚔ Power: {power_info['total_power']} ({' '.join(power_parts)})"
             else:
                 power_txt = f"⚔ Power: {power_info['total_power']}"
             self.power_lbl.setText(power_txt)
@@ -14389,12 +14454,16 @@ class ADHDBusterTab(QtWidgets.QWidget):
         header.addStretch()
 
         power = calculate_character_power(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else 0
-        power_info = get_power_breakdown(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else {"base_power": 0, "set_bonus": 0, "entity_bonus": 0, "active_sets": [], "total_power": 0}
+        power_info = get_power_breakdown(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else {"base_power": 0, "set_bonus": 0, "style_bonus": 0, "entity_bonus": 0, "active_sets": [], "total_power": 0}
         
-        # Build power breakdown string showing all components
+        # Build power breakdown string showing all components (gear + sets + style + entity patrons)
         power_parts = [str(power_info['base_power'])]
         if power_info.get("set_bonus", 0) > 0:
             power_parts.append(f"+{power_info['set_bonus']} set")
+        if power_info.get("style_bonus", 0) > 0:
+            style_info = power_info.get("style_info")
+            style_name = style_info.get("style", {}).get("name", "style") if style_info else "style"
+            power_parts.append(f"+{power_info['style_bonus']} {style_name}")
         if power_info.get("entity_bonus", 0) > 0:
             power_parts.append(f"+{power_info['entity_bonus']} patrons")
         
@@ -18447,6 +18516,9 @@ class PrioritiesDialog(StyledDialog):
             logger.error("GameStateManager not available - cannot award priority completion rewards")
             return
         
+        # Get equipped before awarding for comparison
+        equipped = self.blocker.adhd_buster.get("equipped", {})
+        
         # Use batch award - handles inventory, auto-equip, coins, save, and signals
         game_state.award_items_batch(items_earned, coins=coins_earned, auto_equip=True, source="priority_completion")
         
@@ -18454,6 +18526,20 @@ class PrioritiesDialog(StyledDialog):
         if GAMIFICATION_AVAILABLE:
             sync_hero_data(self.blocker.adhd_buster)
             self.blocker.save_config()
+        
+        # Show ItemRewardDialog with comparison if items were earned
+        if items_earned:
+            from styled_dialog import ItemRewardDialog
+            dialog = ItemRewardDialog(
+                parent=self,
+                title="✅ Priority Complete!",
+                header_emoji="✅",
+                source_label="Priority Completion Reward",
+                items_earned=items_earned,
+                equipped=equipped,
+                coins_earned=coins_earned
+            )
+            dialog.exec()
         
         # Clear the completed priority
         self.priorities[index] = self._empty_priority()
@@ -21263,22 +21349,22 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 sync_hero_data(self.blocker.adhd_buster)
                 self.blocker.save_config()
             
-            # Show reward dialog with themed slot name
+            # Show reward dialog with ItemRewardDialog for comparison
             current_tier = get_current_tier(self.blocker.adhd_buster)
             boosted_tier = get_boosted_rarity(current_tier)
-            slot_display = get_slot_display_name(item['slot'], active_story) if get_slot_display_name else item['slot']
+            equipped = self.blocker.adhd_buster.get("equipped", {})
             
-            show_info(
-                self,
-                f"🎁 {reward_reason}",
-                f"You received a special gear item!\n\n"
-                f"✨ {item['name']}\n"
-                f"⚔ Power: +{item['power']}\n"
-                f"🏆 Rarity: {item['rarity']}\n"
-                f"📍 Slot: {slot_display}\n\n"
-                f"(Based on your current tier: {current_tier} → boosted to {boosted_tier})\n\n"
-                f"Check your ADHD Buster inventory to equip it!"
+            from styled_dialog import ItemRewardDialog
+            dialog = ItemRewardDialog(
+                parent=self,
+                title=f"🎁 {reward_reason}",
+                header_emoji="🎁",
+                source_label="Daily Login Reward",
+                items_earned=[item],
+                equipped=equipped,
+                extra_messages=[f"Tier boost: {current_tier} → {boosted_tier}"]
             )
+            dialog.exec()
 
     def _setup_system_tray(self) -> None:
         """Setup system tray icon if available."""
@@ -21522,7 +21608,16 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         seq = QtGui.QKeySequence(seq_str)
         if seq.count() == 0:
             return None
-        key = int(seq[0])
+        
+        # Handle QKeyCombination in PySide6
+        key_combo = seq[0]
+        if hasattr(key_combo, 'toCombined'):
+            # PySide6 6.5+
+            key = int(key_combo.toCombined())
+        else:
+            # Older PySide6 or direct int
+            key = int(key_combo)
+        
         mod_mask = int(
             QtCore.Qt.KeyboardModifier.ShiftModifier
             | QtCore.Qt.KeyboardModifier.ControlModifier
@@ -21801,7 +21896,15 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """Handle completion of eye protection routine."""
         # If an item was won (dict is not empty), show the drop dialog
         if item:
-            dialog = EnhancedItemDropDialog(item, self)
+            # Get equipped item for comparison
+            equipped_item = None
+            if GAMIFICATION_AVAILABLE:
+                try:
+                    from gamification import get_equipped_item
+                    equipped_item = get_equipped_item(self.blocker.adhd_buster, item.get("slot", "Unknown"))
+                except ImportError:
+                    pass
+            dialog = EnhancedItemDropDialog(item, equipped_item, parent=self)
             dialog.exec()
             
             # Refresh inventory UI if it exists
@@ -21888,12 +21991,39 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     def _set_tabs_enabled(self, enabled: bool) -> None:
         """Enable or disable non-essential tabs during focus sessions.
         
-        Only the Timer tab (index 0) remains enabled during sessions,
-        as it's needed to stop the session or view remaining time.
+        The following tabs remain enabled during sessions:
+        - Timer tab: needed to stop the session or view remaining time
+        - Weight tab: for logging weight during longer sessions
+        - Activity tab: for logging activities during sessions
+        - Sleep tab: for sleep-related tracking
+        - Water tab: for hydration tracking during sessions
+        - Eye & Breath tab: for eye breaks and breathing exercises
+        
+        These health/wellness tabs are allowed because longer focus sessions
+        benefit from users being able to track water intake, take eye breaks,
+        and log activities without breaking their flow.
         """
+        # Tabs that should remain enabled during focus sessions
+        always_enabled_tabs = []
+        
+        # Collect references to always-enabled tabs
+        if hasattr(self, 'timer_tab'):
+            always_enabled_tabs.append(self.timer_tab)
+        if hasattr(self, 'weight_tab'):
+            always_enabled_tabs.append(self.weight_tab)
+        if hasattr(self, 'activity_tab'):
+            always_enabled_tabs.append(self.activity_tab)
+        if hasattr(self, 'sleep_tab'):
+            always_enabled_tabs.append(self.sleep_tab)
+        if hasattr(self, 'hydration_tab'):
+            always_enabled_tabs.append(self.hydration_tab)
+        if hasattr(self, 'eye_tab'):
+            always_enabled_tabs.append(self.eye_tab)
+        
         for i in range(self.tabs.count()):
-            # Keep Timer tab (index 0) always enabled
-            if i == 0:
+            widget = self.tabs.widget(i)
+            # Keep always-enabled tabs accessible during focus sessions
+            if widget in always_enabled_tabs:
                 continue
             self.tabs.setTabEnabled(i, enabled)
 
@@ -21943,6 +22073,18 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     def _on_tab_changed(self, index: int) -> None:
         """Handle tab changes - refresh data for the newly selected tab."""
         widget = self.tabs.widget(index)
+        
+        # === Critical Performance Fix: Pause Entitidex animations when not visible ===
+        # Entitidex cards have shimmer timers (50ms interval) and glow animations
+        # running continuously. When switching away, we MUST pause these to avoid
+        # CPU drain even when the tab is hidden.
+        if GAMIFICATION_AVAILABLE and hasattr(self, 'entitidex_tab'):
+            if widget == self.entitidex_tab:
+                # Switching TO Entitidex - resume animations
+                self.entitidex_tab._resume_all_animations()
+            else:
+                # Switching AWAY from Entitidex - pause animations
+                self.entitidex_tab._pause_all_animations()
         
         # Refresh stats tab when switched to
         if hasattr(self, 'stats_tab') and widget == self.stats_tab:
@@ -22222,6 +22364,16 @@ def main() -> None:
     else:
         # Start minimized to system tray (silent startup)
         window.hide()
+        
+        # Play startup sound if enabled (after short delay for stability)
+        if window.blocker.startup_sound_enabled:
+            try:
+                from startup_sounds import play_startup_sound, is_sound_available
+                if is_sound_available():
+                    # Small delay to let the app fully initialize
+                    QtCore.QTimer.singleShot(500, play_startup_sound)
+            except ImportError:
+                pass  # Startup sounds module not available
     
     exit_code = app.exec()
     

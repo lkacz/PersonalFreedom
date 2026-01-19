@@ -342,6 +342,9 @@ class CelebrationAudioManager(QObject):
     """
     _instance = None
     
+    # Minimum time between plays to prevent audio thread exhaustion (ms)
+    MIN_PLAY_INTERVAL_MS = 150
+    
     def __init__(self):
         super().__init__()
         if CelebrationAudioManager._instance is not None:
@@ -351,6 +354,7 @@ class CelebrationAudioManager(QObject):
         self._cache: Dict[str, QByteArray] = {}
         self._sink: Optional[QAudioSink] = None
         self._current_buffer: Optional[QBuffer] = None
+        self._last_play_time: int = 0  # Track last play time
         self._init_audio()
         
     def _init_audio(self):
@@ -395,9 +399,17 @@ class CelebrationAudioManager(QObject):
                 _logger.error(f"Failed to render {theme_id}: {e}")
 
     def play_buffer(self, data: QByteArray) -> bool:
-        """Play a raw audio buffer."""
+        """Play a raw audio buffer with rate limiting to prevent thread exhaustion."""
         if not self._sink or data.isEmpty():
             return False
+
+        # Rate limit to prevent Windows MMCSS thread exhaustion
+        import time
+        current_time = int(time.time() * 1000)
+        if current_time - self._last_play_time < self.MIN_PLAY_INTERVAL_MS:
+            # Too soon, skip this play request
+            return False
+        self._last_play_time = current_time
 
         # 1. Stop current playback strictly
         self._sink.stop()

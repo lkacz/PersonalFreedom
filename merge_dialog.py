@@ -783,23 +783,124 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             self.breakdown["✨ Entity Perks"] = self.total_entity_merge_luck
         
         self.setWindowTitle("⚡ Lucky Merge")
-        self.setMinimumSize(700, 500)
-        self.setMaximumHeight(800)  # Limit max height
+        
+        # Frameless window with translucent background
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self._drag_pos = None
+        
+        # Size constraints
+        self.setMinimumSize(680, 500)
+        self.setMaximumHeight(900)
         
         # Load saved geometry
         from lottery_animation import load_dialog_geometry
-        load_dialog_geometry(self, "LuckyMergeDialog", QtCore.QSize(700, 600))
+        load_dialog_geometry(self, "LuckyMergeDialog", QtCore.QSize(680, 650))
         
         self._build_ui()
     
     def _build_ui(self):
-        """Build the complete merge dialog UI."""
-        # Main layout for the dialog
-        dialog_layout = QtWidgets.QVBoxLayout(self)
-        dialog_layout.setSpacing(0)
-        dialog_layout.setContentsMargins(0, 0, 0, 0)
+        """Build the complete merge dialog UI with styled frameless design."""
+        # Outer layout (no margins for transparent background)
+        outer_layout = QtWidgets.QVBoxLayout(self)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+        outer_layout.setSpacing(0)
         
-        # Scroll area to handle overflow
+        # Main frame with gold border and dark background
+        main_frame = QtWidgets.QFrame()
+        main_frame.setObjectName("mainFrame")
+        main_frame.setStyleSheet("""
+            QFrame#mainFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1A1A2E, stop:1 #0D0D1A);
+                border: 2px solid #FFD700;
+                border-radius: 16px;
+            }
+        """)
+        outer_layout.addWidget(main_frame)
+        
+        frame_layout = QtWidgets.QVBoxLayout(main_frame)
+        frame_layout.setContentsMargins(0, 0, 0, 0)
+        frame_layout.setSpacing(0)
+        
+        # Header bar (draggable)
+        self._header_frame = QtWidgets.QFrame()
+        self._header_frame.setObjectName("headerFrame")
+        self._header_frame.setCursor(QtCore.Qt.OpenHandCursor)
+        self._header_frame.setStyleSheet("""
+            QFrame#headerFrame {
+                background: transparent;
+                border: none;
+                border-bottom: 1px solid #333344;
+            }
+        """)
+        header_layout = QtWidgets.QHBoxLayout(self._header_frame)
+        header_layout.setContentsMargins(20, 12, 10, 8)
+        
+        # Title with coins display
+        header_left = QtWidgets.QWidget()
+        header_left_layout = QtWidgets.QHBoxLayout(header_left)
+        header_left_layout.setContentsMargins(0, 0, 0, 0)
+        header_left_layout.setSpacing(15)
+        
+        title_label = QtWidgets.QLabel("⚡ Lucky Merge ⚡")
+        title_label.setStyleSheet("""
+            color: #FFD700;
+            font-size: 18px;
+            font-weight: bold;
+        """)
+        header_left_layout.addWidget(title_label)
+        
+        # Coin balance in header
+        coin_widget = QtWidgets.QWidget()
+        coin_layout = QtWidgets.QHBoxLayout(coin_widget)
+        coin_layout.setContentsMargins(8, 2, 8, 2)
+        coin_layout.setSpacing(4)
+        coin_icon = QtWidgets.QLabel("🪙")
+        coin_icon.setStyleSheet("font-size: 16px;")
+        coin_layout.addWidget(coin_icon)
+        self.coin_balance_label = QtWidgets.QLabel(f"{self.player_coins:,}")
+        self.coin_balance_label.setStyleSheet("""
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffd700;
+        """)
+        coin_layout.addWidget(self.coin_balance_label)
+        coin_widget.setStyleSheet("""
+            background-color: rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+        """)
+        header_left_layout.addWidget(coin_widget)
+        
+        header_layout.addWidget(header_left)
+        header_layout.addStretch()
+        
+        # Close button
+        close_btn = QtWidgets.QPushButton("✕")
+        close_btn.setObjectName("closeButton")
+        close_btn.setCursor(QtCore.Qt.PointingHandCursor)
+        close_btn.setStyleSheet("""
+            QPushButton#closeButton {
+                background: transparent;
+                border: none;
+                color: #888888;
+                font-size: 18px;
+                font-weight: bold;
+                padding: 5px 10px;
+                min-width: 30px;
+            }
+            QPushButton#closeButton:hover {
+                color: #FF6B6B;
+                background: rgba(255, 100, 100, 0.1);
+                border-radius: 4px;
+            }
+        """)
+        close_btn.clicked.connect(self.reject)
+        header_layout.addWidget(close_btn)
+        
+        frame_layout.addWidget(self._header_frame)
+        
+        # Scroll area for content
         scroll_area = QtWidgets.QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -807,65 +908,34 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         scroll_area.setStyleSheet("""
             QScrollArea {
                 border: none;
-                background-color: #1e1e2e;
+                background: transparent;
             }
             QScrollBar:vertical {
-                background-color: #2d2d3d;
+                background: #1A1A2E;
                 width: 10px;
                 border-radius: 5px;
             }
             QScrollBar::handle:vertical {
-                background-color: #555;
+                background: #4A4A6A;
                 border-radius: 5px;
                 min-height: 20px;
             }
             QScrollBar::handle:vertical:hover {
-                background-color: #666;
+                background: #5A5A7A;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
             }
         """)
         
         # Content widget inside scroll area
         content_widget = QtWidgets.QWidget()
-        content_widget.setStyleSheet("background-color: #1e1e2e;")
+        content_widget.setStyleSheet("background: transparent;")
         main_layout = QtWidgets.QVBoxLayout(content_widget)
-        main_layout.setSpacing(20)
-        main_layout.setContentsMargins(24, 24, 24, 24)
+        main_layout.setSpacing(12)
+        main_layout.setContentsMargins(20, 15, 20, 15)
         
-        # Top bar with coin balance
-        top_bar = QtWidgets.QWidget()
-        top_bar_layout = QtWidgets.QHBoxLayout(top_bar)
-        top_bar_layout.setContentsMargins(0, 0, 0, 0)
-        
-        top_bar_layout.addStretch()
-        
-        # Coin balance display
-        coin_icon = QtWidgets.QLabel("🪙")
-        coin_icon.setStyleSheet("font-size: 20px;")
-        top_bar_layout.addWidget(coin_icon)
-        
-        self.coin_balance_label = QtWidgets.QLabel(f"{self.player_coins:,}")
-        self.coin_balance_label.setStyleSheet("""
-            font-size: 18px;
-            font-weight: bold;
-            color: #ffd700;
-            padding-left: 4px;
-        """)
-        top_bar_layout.addWidget(self.coin_balance_label)
-        
-        main_layout.addWidget(top_bar)
-        
-        # Header
-        header = QtWidgets.QLabel("⚡ Lucky Merge")
-        header.setStyleSheet("""
-            font-size: 24px;
-            font-weight: bold;
-            color: #fff;
-            padding: 10px;
-        """)
-        header.setAlignment(QtCore.Qt.AlignCenter)
-        main_layout.addWidget(header)
-        
-        # Subtitle with cost info - show combined discount breakdown
+        # Subtitle with cost info
         original_cost = COIN_COSTS.get("merge_base", 50)
         if self.total_coin_discount > 0:
             # Build discount breakdown text
@@ -893,15 +963,9 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         line.setStyleSheet("background-color: #555;")
         main_layout.addWidget(line)
         
-        # Items preview section
+        # Items preview section (collapsible, collapsed by default)
         items_section = self._create_items_section()
         main_layout.addWidget(items_section)
-        
-        # Arrow
-        arrow = QtWidgets.QLabel("⬇")
-        arrow.setAlignment(QtCore.Qt.AlignCenter)
-        arrow.setStyleSheet("font-size: 32px; color: #999;")
-        main_layout.addWidget(arrow)
         
         # Success rate widget (full width)
         self.success_widget = SuccessRateWidget(self.success_rate, self.breakdown)
@@ -936,8 +1000,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         main_layout.addWidget(tier_upgrade_section)
         
         # Warning section
-        warning_box = self._create_warning_box()
-        main_layout.addWidget(warning_box)
+        # Warning box removed - the risk is evident from the UI context
         
         # Spacer
         main_layout.addStretch()
@@ -948,12 +1011,16 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         
         # Add content widget to scroll area
         scroll_area.setWidget(content_widget)
-        dialog_layout.addWidget(scroll_area)
+        frame_layout.addWidget(scroll_area, 1)  # Stretch to fill
         
-        # Set dialog style
+        # Set dialog style for transparent background
         self.setStyleSheet("""
             QDialog {
-                background-color: #1e1e2e;
+                background: transparent;
+            }
+            QLabel {
+                color: #E0E0E0;
+                background: transparent;
             }
             QPushButton {
                 padding: 10px 24px;
@@ -967,16 +1034,89 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             }
         """)
     
+    # ========================================================================
+    # Dragging & Geometry Persistence
+    # ========================================================================
+    
+    def mousePressEvent(self, event):
+        """Handle mouse press for dragging."""
+        if event.button() == QtCore.Qt.LeftButton:
+            # Check if clicking on header
+            if hasattr(self, '_header_frame'):
+                header_rect = self._header_frame.geometry()
+                if header_rect.contains(event.pos()):
+                    self._drag_pos = event.globalPos() - self.frameGeometry().topLeft()
+                    self._header_frame.setCursor(QtCore.Qt.ClosedHandCursor)
+                    event.accept()
+                    return
+        super().mousePressEvent(event)
+    
+    def mouseMoveEvent(self, event):
+        """Handle mouse move for dragging."""
+        if self._drag_pos is not None and event.buttons() == QtCore.Qt.LeftButton:
+            self.move(event.globalPos() - self._drag_pos)
+            event.accept()
+            return
+        super().mouseMoveEvent(event)
+    
+    def mouseReleaseEvent(self, event):
+        """Handle mouse release after dragging."""
+        if self._drag_pos is not None:
+            self._drag_pos = None
+            if hasattr(self, '_header_frame'):
+                self._header_frame.setCursor(QtCore.Qt.OpenHandCursor)
+        super().mouseReleaseEvent(event)
+    
+    def closeEvent(self, event):
+        """Save geometry on close."""
+        from lottery_animation import save_dialog_geometry
+        save_dialog_geometry(self, "LuckyMergeDialog")
+        super().closeEvent(event)
+    
+    def reject(self):
+        """Save geometry when dialog is rejected (closed or cancelled)."""
+        from lottery_animation import save_dialog_geometry
+        save_dialog_geometry(self, "LuckyMergeDialog")
+        super().reject()
+    
     def _create_items_section(self) -> QtWidgets.QWidget:
-        """Create the items preview section as a list."""
+        """Create the items preview section as a collapsible list."""
         section = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(section)
-        layout.setSpacing(8)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
         
-        # Title
-        title = QtWidgets.QLabel("📦 Items to Merge")
-        title.setStyleSheet("font-weight: bold; font-size: 14px; color: #fff;")
-        layout.addWidget(title)
+        # Collapsible header button (collapsed by default)
+        self._items_collapsed = True
+        self._items_toggle_btn = QtWidgets.QPushButton(f"▶ 📦 Items to Merge ({len(self.items)})")
+        self._items_toggle_btn.setCheckable(True)
+        self._items_toggle_btn.setChecked(False)
+        self._items_toggle_btn.setCursor(QtCore.Qt.PointingHandCursor)
+        self._items_toggle_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255,255,255,0.05);
+                border: none;
+                border-radius: 4px;
+                padding: 8px 10px;
+                text-align: left;
+                font-weight: bold;
+                font-size: 13px;
+                color: #ccc;
+            }
+            QPushButton:hover {
+                background: rgba(255,255,255,0.1);
+            }
+            QPushButton:checked {
+                color: #fff;
+            }
+        """)
+        layout.addWidget(self._items_toggle_btn)
+        
+        # Content container (hidden by default)
+        self._items_content = QtWidgets.QWidget()
+        items_layout = QtWidgets.QVBoxLayout(self._items_content)
+        items_layout.setContentsMargins(10, 4, 0, 4)
+        items_layout.setSpacing(2)
         
         # Items list (text-based for readability)
         for item in self.items:
@@ -992,10 +1132,23 @@ class LuckyMergeDialog(QtWidgets.QDialog):
                 f"<span style='color:#888;'>({slot}, +{power} power) [{rarity}]</span>"
             )
             item_label.setTextFormat(QtCore.Qt.RichText)
-            item_label.setStyleSheet("font-size: 12px; padding: 4px 0;")
-            layout.addWidget(item_label)
+            item_label.setStyleSheet("font-size: 12px; padding: 2px 0;")
+            items_layout.addWidget(item_label)
+        
+        self._items_content.setVisible(False)  # Collapsed by default
+        layout.addWidget(self._items_content)
+        
+        # Connect toggle
+        self._items_toggle_btn.clicked.connect(self._toggle_items_section)
         
         return section
+    
+    def _toggle_items_section(self):
+        """Toggle the items section visibility."""
+        self._items_collapsed = not self._items_toggle_btn.isChecked()
+        self._items_content.setVisible(not self._items_collapsed)
+        arrow = "▼" if not self._items_collapsed else "▶"
+        self._items_toggle_btn.setText(f"{arrow} 📦 Items to Merge ({len(self.items)})")
     
     def _create_warning_box(self) -> QtWidgets.QWidget:
         """Create the risk warning box."""
@@ -2228,17 +2381,17 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         msg.exec_()
     
     def _show_final_success_message(self, result_item: dict):
-        """Show final success message (no more re-roll options)."""
-        from styled_dialog import StyledDialog
+        """Show final success message with item comparison to equipped gear."""
+        from styled_dialog import ItemRewardDialog
         
         rarity = result_item.get("rarity", "Common")
-        name = result_item.get("name", "Unknown Item")
-        power = result_item.get("power", 0)
         slot = result_item.get("slot", "Unknown Slot")
         roll_raw = self.merge_result.get("roll", 0) if self.merge_result else 0
         needed_raw = self.merge_result.get("needed", 0) if self.merge_result else 0
+        tier_upgraded = self.merge_result.get("tier_upgraded", False) if self.merge_result else False
         
-        rarity_color = ITEM_RARITIES.get(rarity, {}).get("color", "#9e9e9e")
+        # Build extra messages with roll info
+        extra_msgs = []
         
         # Build breakdown text
         breakdown_parts = []
@@ -2248,80 +2401,26 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             breakdown_parts.append("+25% boost")
         breakdown_text = f" ({', '.join(breakdown_parts)})" if breakdown_parts else ""
         
-        tier_upgraded = self.merge_result.get("tier_upgraded", False) if self.merge_result else False
+        extra_msgs.append(f"Roll: {roll_raw*100:.1f}% (needed < {needed_raw*100:.1f}%{breakdown_text})")
         
-        # Get lucky options text
-        lucky_text = ""
-        if result_item.get("lucky_options"):
-            from gamification import format_lucky_options
-            try:
-                lucky_text = format_lucky_options(result_item["lucky_options"])
-            except Exception:
-                pass
+        if tier_upgraded:
+            extra_msgs.append("⬆️ Tier Upgraded! (+50 🪙)")
         
-        # Create styled dialog
-        class MergeSuccessDialog(StyledDialog):
-            def _build_content(inner_self, layout):
-                # Success header
-                success_lbl = QtWidgets.QLabel("✨ Success! ✨")
-                success_lbl.setAlignment(QtCore.Qt.AlignCenter)
-                success_lbl.setStyleSheet(f"font-size: 22px; font-weight: bold; color: {rarity_color};")
-                layout.addWidget(success_lbl)
-                
-                # Roll info
-                roll_lbl = QtWidgets.QLabel(f"<b>Roll:</b> {roll_raw*100:.1f}% (needed < {needed_raw*100:.1f}%{breakdown_text})")
-                roll_lbl.setAlignment(QtCore.Qt.AlignCenter)
-                roll_lbl.setStyleSheet("color: #999; font-size: 11px;")
-                layout.addWidget(roll_lbl)
-                
-                # Tier upgrade notice
-                if tier_upgraded:
-                    tier_lbl = QtWidgets.QLabel("⬆️ Tier Upgraded! (+50 🪙)")
-                    tier_lbl.setAlignment(QtCore.Qt.AlignCenter)
-                    tier_lbl.setStyleSheet("color: #ff9800; font-weight: bold; font-size: 13px;")
-                    layout.addWidget(tier_lbl)
-                
-                layout.addSpacing(15)
-                
-                # Separator
-                line = QtWidgets.QFrame()
-                line.setFrameShape(QtWidgets.QFrame.HLine)
-                line.setStyleSheet("background-color: #444; max-height: 1px;")
-                layout.addWidget(line)
-                layout.addSpacing(15)
-                
-                # Item name
-                name_lbl = QtWidgets.QLabel(f"<b>{name}</b>")
-                name_lbl.setAlignment(QtCore.Qt.AlignCenter)
-                name_lbl.setStyleSheet("font-size: 18px; color: #fff;")
-                layout.addWidget(name_lbl)
-                
-                # Rarity and power
-                info_lbl = QtWidgets.QLabel(f"<span style='color:{rarity_color};'><b>{rarity}</b></span> • ⚔ Power: {power}")
-                info_lbl.setAlignment(QtCore.Qt.AlignCenter)
-                info_lbl.setStyleSheet("font-size: 14px; color: #ddd;")
-                layout.addWidget(info_lbl)
-                
-                # Slot
-                slot_lbl = QtWidgets.QLabel(f"Slot: {slot}")
-                slot_lbl.setAlignment(QtCore.Qt.AlignCenter)
-                slot_lbl.setStyleSheet("color: #8bc34a; font-size: 12px;")
-                layout.addWidget(slot_lbl)
-                
-                # Lucky options
-                if lucky_text:
-                    layout.addSpacing(10)
-                    lucky_lbl = QtWidgets.QLabel(f"✨ <b>Lucky:</b> {lucky_text}")
-                    lucky_lbl.setAlignment(QtCore.Qt.AlignCenter)
-                    lucky_lbl.setWordWrap(True)
-                    lucky_lbl.setStyleSheet("color: #ffd700; font-size: 11px;")
-                    layout.addWidget(lucky_lbl)
-                
-                layout.addSpacing(15)
-                inner_self.add_button_row(layout, [("OK", "primary", inner_self.accept)])
+        # Get currently equipped items for comparison
+        equipped = self.adhd_buster.get("equipped", {})
         
-        dialog = MergeSuccessDialog(self, "Merge Success!", "🎉", 420, 380, closable=True)
-        dialog.exec_()
+        # Show ItemRewardDialog with comparison
+        dialog = ItemRewardDialog(
+            parent=self,
+            title="🎉 Merge Success!",
+            header_emoji="🎉",
+            source_label="✨ Success! ✨",
+            items_earned=[result_item],
+            equipped=equipped,  # Compare against currently equipped
+            coins_earned=0,
+            extra_messages=extra_msgs
+        )
+        dialog.exec()
     
     def _show_failure_dialog(self):
         """Show failure result dialog with retry, claim, and salvage options."""
