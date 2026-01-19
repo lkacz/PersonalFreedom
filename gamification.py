@@ -10153,22 +10153,28 @@ def has_made_decision(adhd_buster: dict, chapter_number: int) -> bool:
     return decision_info["id"] in decisions
 
 
-def make_story_decision(adhd_buster: dict, chapter_number: int, choice: str) -> bool:
+def make_story_decision(adhd_buster: dict, chapter_number: int, choice: str) -> dict:
     """
-    Record a story decision. Returns True if successful.
+    Record a story decision. Returns result dict with success status and choice info.
     
     Args:
         adhd_buster: The user's ADHD Buster data (will be modified)
         chapter_number: The chapter where the decision is made
         choice: "A" or "B"
+    
+    Returns:
+        dict with 'success', 'choice_label', 'outcome', 'story_id' on success
+        or dict with 'success': False, 'error' on failure
     """
     ensure_hero_structure(adhd_buster)
     story_decisions, _ = get_story_data(adhd_buster)
+    story_id = get_selected_story(adhd_buster)
     decision_info = story_decisions.get(chapter_number)
+    
     if not decision_info:
-        return False
+        return {"success": False, "error": "No decision at this chapter"}
     if choice not in ("A", "B"):
-        return False
+        return {"success": False, "error": "Invalid choice - must be A or B"}
     
     if "story_decisions" not in adhd_buster:
         adhd_buster["story_decisions"] = {}
@@ -10177,7 +10183,16 @@ def make_story_decision(adhd_buster: dict, chapter_number: int, choice: str) -> 
     
     # Sync decision back to the hero
     sync_hero_data(adhd_buster)
-    return True
+    
+    # Get choice details for feedback
+    choice_data = decision_info.get("choices", {}).get(choice, {})
+    return {
+        "success": True,
+        "choice": choice,
+        "choice_label": choice_data.get("label", choice),
+        "outcome": choice_data.get("description", "Your choice will shape the story..."),
+        "story_id": story_id
+    }
 
 
 def get_decision_path(adhd_buster: dict) -> str:
