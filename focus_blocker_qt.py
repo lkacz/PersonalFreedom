@@ -1177,36 +1177,48 @@ class TimerTab(QtWidgets.QWidget):
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(15)
+        layout.setSpacing(12)
         layout.setContentsMargins(15, 15, 15, 15)
 
         # Help button (moves to bottom after read)
         add_tab_help_button(layout, "timer", self)
 
-        # Timer display with modern card design
+        # TOP ROW: Timer display + Start/Stop button in same row
+        top_row = QtWidgets.QHBoxLayout()
+        top_row.setSpacing(15)
+        
+        # Compact timer display
         timer_card = QtWidgets.QFrame()
         timer_card.setStyleSheet("""
             QFrame {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 #2d3436, stop:1 #1a1a1a);
                 border: 2px solid #5f27cd;
-                border-radius: 20px;
-                padding: 30px;
+                border-radius: 12px;
+                padding: 8px;
             }
         """)
         timer_layout = QtWidgets.QVBoxLayout(timer_card)
-        timer_layout.setContentsMargins(20, 20, 20, 20)
+        timer_layout.setContentsMargins(15, 8, 15, 8)
         
         self.timer_label = QtWidgets.QLabel("00:00:00")
         self.timer_label.setAlignment(QtCore.Qt.AlignCenter)
         self.timer_label.setStyleSheet("""
-            font: 700 48px 'Consolas';
+            font: 700 32px 'Consolas';
             color: #a29bfe;
             background: transparent;
-            padding: 20px;
         """)
         timer_layout.addWidget(self.timer_label)
-        layout.addWidget(timer_card)
+        top_row.addWidget(timer_card, stretch=1)
+        
+        # Dynamic Start/Stop button (single button that changes state)
+        self.action_btn = QtWidgets.QPushButton("▶ Start")
+        self.action_btn.setMinimumHeight(60)
+        self.action_btn.setMinimumWidth(140)
+        self._set_action_btn_start_style()
+        top_row.addWidget(self.action_btn)
+        
+        layout.addLayout(top_row)
 
         # Mode selection
         mode_box = QtWidgets.QGroupBox("Mode")
@@ -1356,71 +1368,6 @@ class TimerTab(QtWidgets.QWidget):
         """)
         layout.addWidget(self.notify_checkbox)
 
-        # Start/Stop buttons with modern gradient styling
-        btn_layout = QtWidgets.QHBoxLayout()
-        btn_layout.setSpacing(15)
-        
-        self.start_btn = QtWidgets.QPushButton("▶ Start Focus Session")
-        self.start_btn.setMinimumHeight(65)
-        self.start_btn.setStyleSheet("""
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #00b894, stop:1 #00a884);
-                color: white;
-                font-size: 16px;
-                font-weight: bold;
-                border-radius: 12px;
-                border: 2px solid #00cec9;
-                padding: 10px;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #55efc4, stop:1 #00b894);
-                border: 2px solid #55efc4;
-            }
-            QPushButton:pressed {
-                background: #00a884;
-            }
-            QPushButton:disabled {
-                background: #555555;
-                border: 2px solid #444444;
-                color: #888888;
-            }
-        """)
-        
-        self.stop_btn = QtWidgets.QPushButton("⬛ Stop Session")
-        self.stop_btn.setMinimumHeight(65)
-        self.stop_btn.setEnabled(False)
-        self.stop_btn.setStyleSheet("""
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #d63031, stop:1 #c0392b);
-                color: white;
-                font-size: 16px;
-                font-weight: bold;
-                border-radius: 12px;
-                border: 2px solid #e74c3c;
-                padding: 10px;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #ff7675, stop:1 #d63031);
-                border: 2px solid #ff7675;
-            }
-            QPushButton:pressed {
-                background: #c0392b;
-            }
-            QPushButton:disabled {
-                background: #555555;
-                border: 2px solid #444444;
-                color: #888888;
-            }
-        """)
-        
-        btn_layout.addWidget(self.start_btn)
-        btn_layout.addWidget(self.stop_btn)
-        layout.addLayout(btn_layout)
-
         # Status label with modern card design
         status_card = QtWidgets.QFrame()
         status_card.setStyleSheet("""
@@ -1489,9 +1436,63 @@ class TimerTab(QtWidgets.QWidget):
         layout.addStretch(1)
 
     def _connect_signals(self) -> None:
-        self.start_btn.clicked.connect(self._start_session)
-        self.stop_btn.clicked.connect(self._stop_session)
+        self.action_btn.clicked.connect(self._toggle_session)
         self.notify_checkbox.stateChanged.connect(self._save_notify_preference)
+
+    def _set_action_btn_start_style(self) -> None:
+        """Set the action button to Start style (green)."""
+        self.action_btn.setText("▶ Start")
+        self.action_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #00b894, stop:1 #00a884);
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 12px;
+                border: 2px solid #00cec9;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #55efc4, stop:1 #00b894);
+                border: 2px solid #55efc4;
+            }
+            QPushButton:pressed {
+                background: #00a884;
+            }
+        """)
+
+    def _set_action_btn_stop_style(self) -> None:
+        """Set the action button to Stop style (red)."""
+        self.action_btn.setText("⬛ Stop")
+        self.action_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #d63031, stop:1 #c0392b);
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 12px;
+                border: 2px solid #e74c3c;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ff7675, stop:1 #d63031);
+                border: 2px solid #ff7675;
+            }
+            QPushButton:pressed {
+                background: #c0392b;
+            }
+        """)
+
+    def _toggle_session(self) -> None:
+        """Toggle between starting and stopping a session."""
+        if self.timer_running:
+            self._stop_session()
+        else:
+            self._start_session()
 
     def _save_notify_preference(self) -> None:
         """Save the notification preference when checkbox changes."""
@@ -1519,12 +1520,10 @@ class TimerTab(QtWidgets.QWidget):
         """Update timer label and button states."""
         self.timer_label.setText(self._format_time(self.remaining_seconds))
         if self.timer_running:
-            self.start_btn.setEnabled(False)
-            self.stop_btn.setEnabled(True)
+            self._set_action_btn_stop_style()
             self.status_label.setText("🔒 BLOCKING")
         else:
-            self.start_btn.setEnabled(True)
-            self.stop_btn.setEnabled(False)
+            self._set_action_btn_start_style()
             self.status_label.setText("Ready to focus")
 
     # === Timer control ===
@@ -1578,8 +1577,7 @@ class TimerTab(QtWidgets.QWidget):
         self.remaining_seconds = total_seconds
         self.session_start = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch()
         self.timer_label.setText(self._format_time(self.remaining_seconds))
-        self.start_btn.setEnabled(False)
-        self.stop_btn.setEnabled(True)
+        self._set_action_btn_stop_style()
         if mode != BlockMode.POMODORO:
             # Different status for Full vs Light mode
             if self.blocker.enforcement_mode == EnforcementMode.LIGHT:
@@ -1622,8 +1620,7 @@ class TimerTab(QtWidgets.QWidget):
         self.qt_timer.stop()
         self.remaining_seconds = 0
         self.timer_label.setText("00:00:00")
-        self.start_btn.setEnabled(True)
-        self.stop_btn.setEnabled(False)
+        self._set_action_btn_start_style()
         self.status_label.setText("Ready to focus")
         self.pomodoro_is_break = False
         self.pomodoro_session_count = 0
@@ -2415,8 +2412,7 @@ class TimerTab(QtWidgets.QWidget):
         )
 
         self.timer_label.setText("00:00:00")
-        self.start_btn.setEnabled(True)
-        self.stop_btn.setEnabled(False)
+        self._set_action_btn_start_style()
         self.status_label.setText("Session complete 🎉")
 
         # Update tray icon to ready state
@@ -2634,8 +2630,7 @@ class TimerTab(QtWidgets.QWidget):
         self.last_checkin_time = None
 
         self.timer_label.setText(self._format_time(self.remaining_seconds))
-        self.start_btn.setEnabled(False)
-        self.stop_btn.setEnabled(True)
+        self._set_action_btn_stop_style()
         self.status_label.setText(f"🍅 WORK #{self.pomodoro_session_count + 1}")
         self.qt_timer.start()
         
@@ -2666,8 +2661,7 @@ class TimerTab(QtWidgets.QWidget):
         self.qt_timer.stop()
         self.remaining_seconds = 0
         self.timer_label.setText("00:00:00")
-        self.start_btn.setEnabled(True)
-        self.stop_btn.setEnabled(False)
+        self._set_action_btn_start_style()
         self.pomodoro_is_break = False
 
         # Update tray icon to ready state
@@ -2702,8 +2696,7 @@ class TimerTab(QtWidgets.QWidget):
         self.qt_timer.stop()
         self.remaining_seconds = 0
         self.timer_label.setText("00:00:00")
-        self.start_btn.setEnabled(True)
-        self.stop_btn.setEnabled(False)
+        self._set_action_btn_start_style()
         self.status_label.setText("Ready to focus")
         self.pomodoro_is_break = False
         self.pomodoro_session_count = 0
