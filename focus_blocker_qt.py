@@ -15432,20 +15432,6 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 self._optimize_btn.setToolTip("Automatically equip the best gear for maximum power")
         except Exception as e:
             print(f"[GamificationTab] Error updating optimize button: {e}")
-    
-    def _sync_story_combo_selection(self) -> None:
-        """Sync the story combo box selection with the current active story."""
-        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'story_combo'):
-            return
-        from gamification import get_selected_story
-        current_story = get_selected_story(self.blocker.adhd_buster)
-        # Block signals to prevent triggering _on_story_change
-        self.story_combo.blockSignals(True)
-        for i in range(self.story_combo.count()):
-            if self.story_combo.itemData(i) == current_story:
-                self.story_combo.setCurrentIndex(i)
-                break
-        self.story_combo.blockSignals(False)
 
     def set_session_active(self, active: bool) -> None:
         """Enable/disable interactive controls during focus sessions."""
@@ -16408,14 +16394,6 @@ class ADHDBusterTab(QtWidgets.QWidget):
         # Update lucky bonuses display
         if hasattr(self, 'lucky_bonuses_section'):
             self._refresh_lucky_bonuses_display()
-        
-        # Update story progress labels if available
-        if hasattr(self, 'story_progress_lbl'):
-            self._update_story_progress_labels()
-        
-        # Refresh chapter list in case new chapters were unlocked
-        if hasattr(self, 'chapter_combo'):
-            self._refresh_story_chapter_list()
         
         # Update speech bubble with latest diary entry
         if hasattr(self, 'speech_bubble'):
