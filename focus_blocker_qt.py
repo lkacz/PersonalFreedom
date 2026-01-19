@@ -10077,6 +10077,10 @@ class CollapsibleSection(QtWidgets.QWidget):
 class CharacterCanvas(QtWidgets.QWidget):
     """Qt widget for rendering the ADHD Buster character with equipped gear."""
 
+    # Canonical drawing dimensions - all drawing code uses these coordinates
+    BASE_W = 180
+    BASE_H = 220
+
     TIER_COLORS = {
         "pathetic": "#bdbdbd", "modest": "#a5d6a7", "decent": "#81c784",
         "heroic": "#64b5f6", "epic": "#ba68c8", "legendary": "#ffb74d", "godlike": "#ffd54f"
@@ -10117,23 +10121,49 @@ class CharacterCanvas(QtWidgets.QWidget):
 
     def paintEvent(self, event) -> None:
         """Dispatch to theme-specific drawing method."""
-        if self.story_theme == "scholar":
-            self._draw_scholar_character(event)
-        elif self.story_theme == "wanderer":
-            self._draw_wanderer_character(event)
-        elif self.story_theme == "underdog":
-            self._draw_underdog_character(event)
-        elif self.story_theme == "scientist":
-            self._draw_scientist_character(event)
-        else:
-            self._draw_warrior_character(event)
-
-    def _draw_warrior_character(self, event) -> None:
-        """Draw the classic fantasy warrior character."""
         painter = QtGui.QPainter(self)
+        try:
+            # Apply scaling to map canonical coords (BASE_W x BASE_H) to actual widget size
+            sx = self.width() / self.BASE_W if self.BASE_W else 1
+            sy = self.height() / self.BASE_H if self.BASE_H else 1
+            painter.scale(sx, sy)
+            self.render_content(painter)
+        finally:
+            painter.end()
+
+    def render_content(self, painter: QtGui.QPainter) -> None:
+        """Render the character using the provided painter.
+        
+        Draws using canonical coordinates (BASE_W x BASE_H = 180x220).
+        Caller is responsible for any scaling/translation needed.
+        """
+        painter.save()
+        try:
+            # Reset critical painter state to prevent damage from stale settings
+            painter.setOpacity(1.0)
+            painter.setCompositionMode(QtGui.QPainter.CompositionMode.CompositionMode_SourceOver)
+            painter.setClipping(False)
+            
+            if self.story_theme == "scholar":
+                self._draw_scholar_character(painter)
+            elif self.story_theme == "wanderer":
+                self._draw_wanderer_character(painter)
+            elif self.story_theme == "underdog":
+                self._draw_underdog_character(painter)
+            elif self.story_theme == "scientist":
+                self._draw_scientist_character(painter)
+            else:
+                self._draw_warrior_character(painter)
+        finally:
+            painter.restore()
+
+    def _draw_warrior_character(self, painter: QtGui.QPainter) -> None:
+        """Draw the classic fantasy warrior character."""
+        # painter = QtGui.QPainter(self)  # Uses passed painter
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
 
-        w, h = self.width(), self.height()
+        # Use canonical dimensions for drawing (scaling handled by caller)
+        w, h = self.BASE_W, self.BASE_H
         cx, cy = w // 2, h // 2 + 5
 
         # Background with radial gradient for depth
@@ -10141,7 +10171,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         bg_gradient.setColorAt(0, QtGui.QColor("#404050"))
         bg_gradient.setColorAt(0.5, QtGui.QColor("#2d2d3d"))
         bg_gradient.setColorAt(1, QtGui.QColor("#1a1a2a"))
-        painter.fillRect(self.rect(), bg_gradient)
+        painter.fillRect(0, 0, w, h, bg_gradient)
         
         # Floor with gradient
         floor_gradient = QtGui.QLinearGradient(cx - 40, cy + 70, cx + 40, cy + 85)
@@ -10917,12 +10947,13 @@ class CharacterCanvas(QtWidgets.QWidget):
             painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
             painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"⚔ {self.power}")
 
-    def _draw_scholar_character(self, event) -> None:
+    def _draw_scholar_character(self, painter: QtGui.QPainter) -> None:
         """Draw the academic/scholar themed character."""
-        painter = QtGui.QPainter(self)
+        # painter = QtGui.QPainter(self)  # Uses passed painter
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
 
-        w, h = self.width(), self.height()
+        # Use canonical dimensions for drawing (scaling handled by caller)
+        w, h = self.BASE_W, self.BASE_H
         cx, cy = w // 2, h // 2 + 5
 
         # Background with warm library gradient
@@ -10930,7 +10961,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         bg_gradient.setColorAt(0, QtGui.QColor("#3d3529"))
         bg_gradient.setColorAt(0.5, QtGui.QColor("#2a2419"))
         bg_gradient.setColorAt(1, QtGui.QColor("#1a170f"))
-        painter.fillRect(self.rect(), bg_gradient)
+        painter.fillRect(0, 0, w, h, bg_gradient)
         
         # Floor/desk shadow
         floor_gradient = QtGui.QLinearGradient(cx - 40, cy + 70, cx + 40, cy + 85)
@@ -11509,12 +11540,13 @@ class CharacterCanvas(QtWidgets.QWidget):
             painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
             painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"📚 {self.power}")
 
-    def _draw_wanderer_character(self, event) -> None:
+    def _draw_wanderer_character(self, painter: QtGui.QPainter) -> None:
         """Draw the mystical/dreamweaver themed character."""
-        painter = QtGui.QPainter(self)
+        # painter = QtGui.QPainter(self)  # Uses passed painter
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
 
-        w, h = self.width(), self.height()
+        # Use canonical dimensions for drawing (scaling handled by caller)
+        w, h = self.BASE_W, self.BASE_H
         cx, cy = w // 2, h // 2 + 5
 
         # Background with mystical night sky gradient
@@ -11523,7 +11555,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         bg_gradient.setColorAt(0.4, QtGui.QColor("#0d0d2b"))
         bg_gradient.setColorAt(0.7, QtGui.QColor("#05051a"))
         bg_gradient.setColorAt(1, QtGui.QColor("#000010"))
-        painter.fillRect(self.rect(), bg_gradient)
+        painter.fillRect(0, 0, w, h, bg_gradient)
         
         # Tiny stars in background
         painter.setBrush(QtGui.QColor(255, 255, 255, 180))
@@ -12176,12 +12208,13 @@ class CharacterCanvas(QtWidgets.QWidget):
             painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
             painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🌙 {self.power}")
 
-    def _draw_underdog_character(self, event) -> None:
+    def _draw_underdog_character(self, painter: QtGui.QPainter) -> None:
         """Draw the modern office/corporate themed character."""
-        painter = QtGui.QPainter(self)
+        # painter = QtGui.QPainter(self)  # Uses passed painter
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
 
-        w, h = self.width(), self.height()
+        # Use canonical dimensions for drawing (scaling handled by caller)
+        w, h = self.BASE_W, self.BASE_H
         cx, cy = w // 2, h // 2 + 5
 
         # Background with modern office gradient
@@ -12190,7 +12223,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         bg_gradient.setColorAt(0.3, QtGui.QColor("#636e72"))
         bg_gradient.setColorAt(0.7, QtGui.QColor("#b2bec3"))
         bg_gradient.setColorAt(1, QtGui.QColor("#dfe6e9"))
-        painter.fillRect(self.rect(), bg_gradient)
+        painter.fillRect(0, 0, w, h, bg_gradient)
         
         # Office floor tiles
         painter.setPen(QtGui.QPen(QtGui.QColor(100, 100, 100, 60), 1))
@@ -12799,12 +12832,13 @@ class CharacterCanvas(QtWidgets.QWidget):
             painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
             painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🏢 {self.power}")
 
-    def _draw_scientist_character(self, event) -> None:
+    def _draw_scientist_character(self, painter: QtGui.QPainter) -> None:
         """Draw the modern research scientist character."""
-        painter = QtGui.QPainter(self)
+        # painter = QtGui.QPainter(self)  # Uses passed painter
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
 
-        w, h = self.width(), self.height()
+        # Use canonical dimensions for drawing (scaling handled by caller)
+        w, h = self.BASE_W, self.BASE_H
         cx, cy = w // 2, h // 2 + 5
 
         # Background with sterile laboratory gradient (cyan/green lab aesthetic)
@@ -12813,7 +12847,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         bg_gradient.setColorAt(0.4, QtGui.QColor("#00695c"))  # Teal
         bg_gradient.setColorAt(0.7, QtGui.QColor("#00897b"))  # Light teal
         bg_gradient.setColorAt(1, QtGui.QColor("#26a69a"))  # Cyan-green
-        painter.fillRect(self.rect(), bg_gradient)
+        painter.fillRect(0, 0, w, h, bg_gradient)
         
         # Lab equipment shelves in background (left side)
         painter.setOpacity(0.4)
@@ -14271,6 +14305,12 @@ class HydrationTab(QtWidgets.QWidget):
             # Prune to last 2000 entries (~1 year at 5 glasses/day)
             if len(self.blocker.water_entries) > 2000:
                 self.blocker.water_entries = self.blocker.water_entries[-2000:]
+            
+            # Emit water changed signal for timeline update
+            main_window = self.window()
+            game_state = getattr(main_window, 'game_state', None)
+            if game_state and hasattr(game_state, 'notify_water_changed'):
+                game_state.notify_water_changed(glass_number)
             
             # Award item if won
             if won and item:
@@ -20165,6 +20205,124 @@ class EntitiesRingWidget(QtWidgets.QWidget):
         super().mousePressEvent(event)
 
 
+class MiniHeroWidget(QtWidgets.QWidget):
+    """Wrapper widget that renders CharacterCanvas at full size and scales it down.
+    
+    Uses signal-based updates instead of polling for efficiency.
+    Caches the pixmap and only re-renders when data actually changes.
+    """
+    clicked = QtCore.Signal()
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(70, 90)
+        self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self.setToolTip("Your Hero - Click to view Hero tab")
+        
+        # Store hero data for change detection
+        self._equipped = {}
+        self._power = 0
+        self._story_theme = "warrior"
+        self._cached_pixmap = None
+        self._last_data_hash = None  # For detecting actual changes
+    
+    def _compute_data_hash(self) -> str:
+        """Compute a hash of current data to detect changes."""
+        # Create a simple hash from equipped items + power + theme
+        equipped_str = str(sorted((k, v.get("id", k) if v else None) 
+                                   for k, v in self._equipped.items()))
+        return f"{equipped_str}|{self._power}|{self._story_theme}"
+    
+    def set_hero_data(self, equipped: dict, power: int, story_theme: str = "warrior"):
+        """Update hero display only if data actually changed."""
+        self._equipped = equipped or {}
+        self._power = power
+        self._story_theme = story_theme
+        
+        # Check if data actually changed
+        new_hash = self._compute_data_hash()
+        if new_hash == self._last_data_hash and self._cached_pixmap:
+            return  # No change, skip expensive re-render
+        
+        self._last_data_hash = new_hash
+        
+        # Create CharacterCanvas for its drawing logic (not for display)
+        full_canvas = CharacterCanvas(self._equipped, self._power, 
+                                       width=CharacterCanvas.BASE_W, 
+                                       height=CharacterCanvas.BASE_H, 
+                                       story_theme=self._story_theme)
+        
+        # Use QImage for robust offscreen rendering
+        image = QtGui.QImage(CharacterCanvas.BASE_W, CharacterCanvas.BASE_H, 
+                             QtGui.QImage.Format.Format_ARGB32_Premultiplied)
+        image.fill(QtCore.Qt.GlobalColor.transparent)
+        
+        painter = QtGui.QPainter(image)
+        if not painter.isActive():
+            print("[DEBUG] QPainter failed to activate on QImage!")
+            return
+        
+        try:
+            # Critical state resets before any drawing
+            painter.setOpacity(1.0)
+            painter.setCompositionMode(QtGui.QPainter.CompositionMode.CompositionMode_SourceOver)
+            painter.setClipping(False)
+            painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+            painter.setRenderHint(QtGui.QPainter.RenderHint.TextAntialiasing)
+            painter.setRenderHint(QtGui.QPainter.RenderHint.SmoothPixmapTransform)
+            
+            # render_content draws using canonical BASE_W x BASE_H coordinates
+            full_canvas.render_content(painter)
+        finally:
+            painter.end()
+        
+        # DEBUG: Save the image to verify content
+        debug_path = "F:/_DEV/PersonalFreedom/debug_hero_render.png"
+        saved = image.save(debug_path)
+        print(f"[DEBUG] Hero image saved: {saved}, size: {image.width()}x{image.height()}, isNull: {image.isNull()}")
+        
+        # Convert QImage to QPixmap for display
+        self._cached_pixmap = QtGui.QPixmap.fromImage(image)
+        print(f"[DEBUG] Cached pixmap isNull: {self._cached_pixmap.isNull()}, size: {self._cached_pixmap.width()}x{self._cached_pixmap.height()}")
+        
+        # Update tooltip
+        tier = "pathetic"
+        if GAMIFICATION_AVAILABLE and get_diary_power_tier:
+            tier = get_diary_power_tier(power)
+        self.setToolTip(f"⚔ Power: {power} ({tier.title()})\nClick to view Hero tab")
+        
+        self.update()
+    
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        try:
+            painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+            # Reset painter state to ensure visibility
+            painter.setOpacity(1.0)
+            painter.setCompositionMode(QtGui.QPainter.CompositionMode.CompositionMode_SourceOver)
+            painter.setClipping(False)
+            
+            # Fill background to match timeline
+            painter.fillRect(self.rect(), QtGui.QColor("#1a1a2e"))
+            
+            pm = self._cached_pixmap
+            if pm and not pm.isNull():
+                # Scale to fit widget while keeping aspect ratio
+                scaled = pm.scaled(self.size(),
+                                   QtCore.Qt.AspectRatioMode.KeepAspectRatio,
+                                   QtCore.Qt.TransformationMode.SmoothTransformation)
+                x = (self.width() - scaled.width()) // 2
+                y = (self.height() - scaled.height()) // 2
+                painter.drawPixmap(x, y, scaled)
+        finally:
+            painter.end()
+    
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+        super().mousePressEvent(event)
+
+
 class ChronoStreamWidget(QtWidgets.QWidget):
     """Timeline visualization for 24h events."""
     def __init__(self, parent=None):
@@ -20301,6 +20459,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
     focus_clicked = QtCore.Signal()
     xp_clicked = QtCore.Signal()
     entities_clicked = QtCore.Signal()
+    hero_clicked = QtCore.Signal()
     
     def __init__(self, blocker: 'BlockerCore', parent=None):
         super().__init__(parent)
@@ -20316,24 +20475,202 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         
         self._init_ui()
         
-        # Timer for periodic updates
+        # Timer for fallback periodic updates (reduced frequency since signals handle most updates)
         self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.update_data)
-        self.timer.start(30000) # Every 30 seconds
+        self.timer.timeout.connect(self._update_timeline_events)  # Only update timeline events on timer
+        self.timer.start(60000)  # Every 60 seconds (just for timeline events)
         self.destroyed.connect(self._cleanup_timer)
+        
+        # Connect to GameState signals for efficient updates
+        self._connect_game_state_signals()
         
         # Initial update - delayed to avoid blocking window creation
         QtCore.QTimer.singleShot(1000, self.update_data)
+        QtCore.QTimer.singleShot(1000, self._update_mini_hero)
+    
+    def _connect_game_state_signals(self):
+        """Connect to GameState signals for instant ring updates."""
+        try:
+            from game_state import get_game_state
+            game_state = get_game_state()
+            if game_state:
+                # Hero updates
+                game_state.equipment_changed.connect(self._update_mini_hero)
+                game_state.power_changed.connect(self._update_mini_hero)
+                game_state.story_changed.connect(self._update_mini_hero)
+                
+                # XP ring updates
+                game_state.xp_changed.connect(self._update_xp_ring)
+                
+                # Chapter ring updates (power changes can unlock chapters)
+                game_state.power_changed.connect(self._update_chapter_ring)
+                game_state.story_changed.connect(self._update_chapter_ring)
+                
+                # Water ring updates
+                game_state.water_changed.connect(self._update_water_ring)
+                
+                # Focus ring updates
+                game_state.focus_time_changed.connect(self._update_focus_ring)
+                game_state.session_reward_earned.connect(self._update_focus_ring)
+                
+                # Entities ring updates (only entities_changed to avoid double updates
+                # since notify_entity_collected emits both entity_collected and entities_changed)
+                game_state.entities_changed.connect(self._update_entities_ring)
+                
+                # Full refresh fallback
+                game_state.full_refresh_required.connect(self.update_data)
+        except Exception:
+            pass  # Fall back to timer-based updates
+    
+    def _update_mini_hero(self, *args):
+        """Update the mini hero widget with current data."""
+        print("[DEBUG] _update_mini_hero called")
+        try:
+            if hasattr(self, 'mini_hero') and hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
+                equipped = self.blocker.adhd_buster.get("equipped", {})
+                active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+                if GAMIFICATION_AVAILABLE and calculate_character_power:
+                    power = calculate_character_power(self.blocker.adhd_buster)
+                else:
+                    power = sum(item.get("power", 0) for item in equipped.values() if item)
+                print(f"[DEBUG] Calling set_hero_data with power={power}, theme={active_story}")
+                self.mini_hero.set_hero_data(equipped, power, active_story)
+            else:
+                print(f"[DEBUG] Skipping - mini_hero={hasattr(self, 'mini_hero')}, adhd_buster={hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster is not None}")
+        except Exception as e:
+            print(f"[DEBUG] _update_mini_hero error: {e}")
+    
+    def _update_focus_ring(self, *args):
+        """Update focus ring from signal."""
+        try:
+            today = datetime.now().strftime("%Y-%m-%d")
+            daily_stats = self.blocker.stats.get("daily_stats", {}).get(today, {})
+            focus_sec = daily_stats.get("focus_time", 0)
+            weekly_goal_hours = float(self.blocker.stats.get("weekly_goal_hours", 10))
+            goal_sec = int((weekly_goal_hours / 7) * 3600)
+            self.focus_ring.set_progress(focus_sec, goal_sec)
+        except Exception:
+            pass
+    
+    def _update_water_ring(self, *args):
+        """Update water ring from signal."""
+        try:
+            today_date = datetime.now().strftime("%Y-%m-%d")
+            water_entries = getattr(self.blocker, 'water_entries', [])
+            today_water = sum(1 for e in water_entries if e.get('date') == today_date)
+            daily_cap = 8
+            if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
+                try:
+                    from gamification import get_hydration_daily_cap
+                    daily_cap = get_hydration_daily_cap(self.blocker.adhd_buster)
+                except Exception:
+                    pass
+            self.water_ring.set_progress(today_water, daily_cap)
+        except Exception:
+            pass
+    
+    def _update_chapter_ring(self, *args):
+        """Update chapter ring from signal."""
+        try:
+            if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
+                from gamification import get_story_progress
+                story = get_story_progress(self.blocker.adhd_buster)
+                unlocked = len(story.get('unlocked_chapters', []))
+                total = story.get('total_chapters', 7)
+                if story.get('next_threshold'):
+                    prev_threshold = story.get('prev_threshold', 0)
+                    next_threshold = story['next_threshold']
+                    current_power = story.get('power', 0)
+                    range_size = next_threshold - prev_threshold
+                    if range_size > 0:
+                        progress_in_range = current_power - prev_threshold
+                        chapter_progress = (progress_in_range / range_size) * 100
+                        chapter_progress = max(0, min(100, chapter_progress))
+                    else:
+                        chapter_progress = 100.0
+                    is_complete = False
+                else:
+                    chapter_progress = 100.0
+                    is_complete = True
+                self.chapter_ring.set_progress(unlocked, chapter_progress, total, is_complete)
+        except Exception:
+            pass
+    
+    def _update_xp_ring(self, *args):
+        """Update XP ring from signal."""
+        try:
+            if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
+                total_xp = self.blocker.adhd_buster.get("total_xp", 0)
+                if get_level_from_xp:
+                    level, xp_in_level, xp_needed, progress = get_level_from_xp(total_xp)
+                    self.xp_ring.set_progress(level, xp_in_level, xp_needed, total_xp)
+                    self.xp_ring.setVisible(True)
+        except Exception:
+            pass
+    
+    def _update_entities_ring(self, *args):
+        """Update entities ring from signal."""
+        try:
+            if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
+                entitidex_data = self.blocker.adhd_buster.get("entitidex", {})
+                collected = entitidex_data.get("collected_entity_ids", [])
+                exceptional_entities = entitidex_data.get("exceptional_entities", {})
+                total_collected = len(collected)
+                exceptional_count = len(exceptional_entities)
+                normal_count = total_collected - exceptional_count
+                total_possible = 45
+                self.entities_ring.set_progress(normal_count, exceptional_count, total_possible)
+                self.entities_ring.setVisible(True)
+        except Exception:
+            pass
+    
+    def _update_timeline_events(self):
+        """Update just the timeline events (called on timer)."""
+        if not self.isVisible():
+            return
+        self._refresh_timeline_events()
     
     def _cleanup_timer(self):
-        """Stop timer when widget is destroyed."""
+        """Stop timer and disconnect signals when widget is destroyed."""
         if hasattr(self, 'timer') and self.timer:
             self.timer.stop()
+        # Qt automatically disconnects signals when receiver is destroyed,
+        # but explicit disconnect helps prevent any edge cases during shutdown
+        try:
+            from game_state import get_game_state
+            game_state = get_game_state()
+            if game_state:
+                game_state.equipment_changed.disconnect(self._update_mini_hero)
+                game_state.power_changed.disconnect(self._update_mini_hero)
+                game_state.story_changed.disconnect(self._update_mini_hero)
+                game_state.xp_changed.disconnect(self._update_xp_ring)
+                game_state.power_changed.disconnect(self._update_chapter_ring)
+                game_state.story_changed.disconnect(self._update_chapter_ring)
+                game_state.water_changed.disconnect(self._update_water_ring)
+                game_state.focus_time_changed.disconnect(self._update_focus_ring)
+                game_state.session_reward_earned.disconnect(self._update_focus_ring)
+                game_state.entities_changed.disconnect(self._update_entities_ring)
+                game_state.full_refresh_required.disconnect(self.update_data)
+        except Exception:
+            pass  # Ignore disconnect errors during shutdown
 
     def _init_ui(self):
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(15, 10, 15, 10)
         layout.setSpacing(12)
+        
+        # Mini Hero Widget (first element - shows equipped character)
+        self.mini_hero = MiniHeroWidget()
+        self.mini_hero.setFixedSize(70, 90)
+        self.mini_hero.clicked.connect(self.hero_clicked.emit)
+        layout.addWidget(self.mini_hero)
+        
+        # Separator between hero and rings
+        hero_sep = QtWidgets.QFrame()
+        hero_sep.setFrameShape(QtWidgets.QFrame.Shape.VLine)
+        hero_sep.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
+        hero_sep.setStyleSheet("background-color: #3a3a5a;")
+        layout.addWidget(hero_sep)
         
         # Ring widgets in order: Water, Chapter, Focus, Entities, XP
         
@@ -20379,116 +20716,25 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         layout.addWidget(self.timeline, stretch=1)
 
     def update_data(self):
-        """Update all timeline data. Called periodically and on events."""
+        """Update all timeline data. Called on initial load and full refresh.
+        
+        Individual rings are updated via GameState signals for efficiency.
+        This method is for initial load and full refresh fallback.
+        """
         if not self.isVisible():
             return
-            
-        # 1. Update Focus Ring
-        try:
-            today = datetime.now().strftime("%Y-%m-%d")
-            daily_stats = self.blocker.stats.get("daily_stats", {}).get(today, {})
-            focus_sec = daily_stats.get("focus_time", 0)
-            
-            # Derive daily goal from weekly goal (default 10 hours/week = ~1.4 hours/day)
-            weekly_goal_hours = float(self.blocker.stats.get("weekly_goal_hours", 10))
-            goal_sec = int((weekly_goal_hours / 7) * 3600)
-            
-            self.focus_ring.set_progress(focus_sec, goal_sec)
-        except Exception:
-            pass
-
-        # 2. Update Water Ring (with entity perk-enhanced cap)
-        try:
-            today_date = datetime.now().strftime("%Y-%m-%d")
-            water_entries = getattr(self.blocker, 'water_entries', [])
-            today_water = sum(1 for e in water_entries if e.get('date') == today_date)
-            
-            # Get perk-enhanced daily cap (default 8, but entity perks can increase it)
-            daily_cap = 8
-            if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
-                try:
-                    from gamification import get_hydration_daily_cap
-                    daily_cap = get_hydration_daily_cap(self.blocker.adhd_buster)
-                except Exception:
-                    pass
-            
-            self.water_ring.set_progress(today_water, daily_cap)
-        except Exception:
-            self.water_ring.set_progress(0, 8)
-
-        # 3. Update Chapter Ring (power-based story progress)
-        try:
-            if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
-                from gamification import get_story_progress
-                story = get_story_progress(self.blocker.adhd_buster)
-                
-                unlocked = len(story.get('unlocked_chapters', []))
-                total = story.get('total_chapters', 7)
-                
-                # Calculate progress percentage toward next chapter
-                if story.get('next_threshold'):
-                    prev_threshold = story.get('prev_threshold', 0)
-                    next_threshold = story['next_threshold']
-                    current_power = story.get('power', 0)
-                    
-                    range_size = next_threshold - prev_threshold
-                    if range_size > 0:
-                        progress_in_range = current_power - prev_threshold
-                        chapter_progress = (progress_in_range / range_size) * 100
-                        chapter_progress = max(0, min(100, chapter_progress))
-                    else:
-                        chapter_progress = 100.0
-                    is_complete = False
-                else:
-                    # All chapters unlocked
-                    chapter_progress = 100.0
-                    is_complete = True
-                
-                self.chapter_ring.set_progress(unlocked, chapter_progress, total, is_complete)
-            else:
-                self.chapter_ring.set_progress(0, 0.0, 7, False)
-        except Exception:
-            self.chapter_ring.set_progress(0, 0.0, 7, False)
-
-        # 4. Update XP Ring
-        try:
-            if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
-                total_xp = self.blocker.adhd_buster.get("total_xp", 0)
-                if get_level_from_xp:
-                    level, xp_in_level, xp_needed, progress = get_level_from_xp(total_xp)
-                    self.xp_ring.set_progress(level, xp_in_level, xp_needed, total_xp)
-                    self.xp_ring.setVisible(True)
-                else:
-                    self.xp_ring.setVisible(False)
-            else:
-                self.xp_ring.setVisible(False)
-        except Exception:
-            pass
-
-        # 5. Update Entities Ring (Entitidex bonded count)
-        try:
-            if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
-                entitidex_data = self.blocker.adhd_buster.get("entitidex", {})
-                collected = entitidex_data.get("collected_entity_ids", [])
-                exceptional_entities = entitidex_data.get("exceptional_entities", {})
-                
-                # collected_entity_ids contains ALL collected (both normal + exceptional)
-                # exceptional_entities is a dict keyed by entity_id for exceptional ones
-                total_collected = len(collected)
-                exceptional_count = len(exceptional_entities)
-                normal_count = total_collected - exceptional_count  # Subtract to get normal-only count
-                
-                # Total possible: 9 entities × 5 story pools = 45
-                total_possible = 45
-                
-                self.entities_ring.set_progress(normal_count, exceptional_count, total_possible)
-                self.entities_ring.setVisible(True)
-            else:
-                self.entities_ring.set_progress(0, 0, 45)
-        except Exception:
-            self.entities_ring.set_progress(0, 0, 45)
-
-        # 6. Update Timeline Events
+        
+        # Update all rings (initial load / fallback)
+        self._update_mini_hero()
+        self._update_focus_ring()
+        self._update_water_ring()
+        self._update_chapter_ring()
+        self._update_xp_ring()
+        self._update_entities_ring()
+        self._refresh_timeline_events()
+    
+    def _refresh_timeline_events(self):
+        """Refresh the timeline events (sleep, water, focus sessions)."""
         events = []
         
         today_date = datetime.now().date()
@@ -21435,13 +21681,16 @@ class DevTab(QtWidgets.QWidget):
                 )
                 # Emit XP signal if XP was awarded
                 xp_awarded = result.get('xp_awarded', 0)
-                if xp_awarded > 0:
-                    from game_state import get_game_state
-                    gs = get_game_state()
-                    if gs:
+                from game_state import get_game_state
+                gs = get_game_state()
+                if gs:
+                    if xp_awarded > 0:
                         total_xp = self.blocker.adhd_buster.get('total_xp', 0)
                         level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
                         gs.xp_changed.emit(total_xp, level)
+                    # Emit entity collected signal for timeline ring
+                    if result.get('success'):
+                        gs.notify_entity_collected(entity_id)
                 # Refresh entitidex tab after bond attempt
                 main_win = self.window()
                 if hasattr(main_win, 'entitidex_tab'):
@@ -21537,6 +21786,12 @@ class DevTab(QtWidgets.QWidget):
             # Save progress
             save_entitidex_progress(self.blocker.adhd_buster, manager)
             self.blocker.save_config()
+            
+            # Emit entity collected signal for timeline ring
+            from game_state import get_game_state
+            gs = get_game_state()
+            if gs:
+                gs.notify_entity_collected(entity.id)
             
             # Refresh entitidex tab
             main_win = self.window()
@@ -21809,6 +22064,12 @@ class DevTab(QtWidgets.QWidget):
             # Save changes
             save_entitidex_progress(self.blocker.adhd_buster, manager)
             self.blocker.save_config()
+            
+            # Emit entities changed signal for timeline ring
+            from game_state import get_game_state
+            gs = get_game_state()
+            if gs:
+                gs.notify_entities_changed()
             
             # Refresh entitidex tab if available
             main_win = self.window()
@@ -23275,6 +23536,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Reload stats from file to ensure we have latest data
         self.blocker.load_stats()
         
+        # Emit focus time changed signal for timeline ring
+        if hasattr(self, 'game_state') and self.game_state:
+            self.game_state.notify_focus_time_changed()
+        
         # Update coin display if gamification is available
         if GAMIFICATION_AVAILABLE:
             self._update_coin_display()
@@ -23421,6 +23686,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.timeline_widget.focus_clicked.connect(self._go_to_timer_tab)
         self.timeline_widget.xp_clicked.connect(self._go_to_hero_tab)
         self.timeline_widget.entities_clicked.connect(self._go_to_entitidex_tab)
+        self.timeline_widget.hero_clicked.connect(self._go_to_hero_tab)
     
     def _go_to_water_tab(self) -> None:
         """Navigate to the Water tab."""

@@ -99,6 +99,14 @@ class GameStateManager(QtCore.QObject):
     
     # Session signals
     session_reward_earned = QtCore.Signal(dict)  # Reward data (item, xp, coins)
+    focus_time_changed = QtCore.Signal(int)  # Today's focus time in seconds
+    
+    # Hydration signals
+    water_changed = QtCore.Signal(int)  # Today's water count
+    
+    # Entitidex signals
+    entity_collected = QtCore.Signal(str)  # Entity ID collected
+    entities_changed = QtCore.Signal()  # Any entitidex change
     
     # General refresh (fallback for complex multi-changes)
     full_refresh_required = QtCore.Signal()
@@ -788,6 +796,39 @@ class GameStateManager(QtCore.QObject):
         self._emit(self.inventory_changed)
         self._emit_power_update()
     
+    def notify_water_changed(self, count: int = None) -> None:
+        """Notify that water/hydration tracking changed."""
+        if count is None:
+            # Calculate today's count if not provided
+            from datetime import datetime
+            today = datetime.now().strftime("%Y-%m-%d")
+            entries = getattr(self._blocker, 'water_entries', [])
+            count = sum(1 for e in entries if e.get('date') == today)
+        self._log_change("water_changed", str(count))
+        self._emit(self.water_changed, count)
+    
+    def notify_focus_time_changed(self, seconds: int = None) -> None:
+        """Notify that today's focus time changed."""
+        if seconds is None:
+            # Calculate from stats if not provided
+            from datetime import datetime
+            today = datetime.now().strftime("%Y-%m-%d")
+            daily_stats = self._blocker.stats.get("daily_stats", {}).get(today, {})
+            seconds = daily_stats.get("focus_time", 0)
+        self._log_change("focus_time_changed", str(seconds))
+        self._emit(self.focus_time_changed, seconds)
+    
+    def notify_entity_collected(self, entity_id: str) -> None:
+        """Notify that an entity was collected in the entitidex."""
+        self._log_change("entity_collected", entity_id)
+        self._emit(self.entity_collected, entity_id)
+        self._emit(self.entities_changed)
+    
+    def notify_entities_changed(self) -> None:
+        """Notify that the entitidex changed (any change)."""
+        self._log_change("entities_changed", "")
+        self._emit(self.entities_changed)
+
     def request_full_refresh(self):
         """Request all connected components to do a full refresh."""
         self._log_change("full_refresh_requested", "")
