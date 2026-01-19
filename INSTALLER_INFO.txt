@@ -19,6 +19,24 @@ NO ADDITIONAL SOFTWARE REQUIRED:
 ✓ No manual configuration
 ✓ Just install and run!
 
+BLOCKING MODE CHOICE:
+---------------------
+During installation, you'll choose how the app blocks sites:
+
+🔒 FULL MODE (Recommended)
+   • Blocks sites at the system level - impossible to bypass
+   • Requires running as Administrator
+   • Modifies Windows hosts file (cleaned up on uninstall)
+   • Best for serious focus sessions and building discipline
+
+🔔 LIGHT MODE (No Admin Required)
+   • Shows reminder notifications when visiting blocked sites
+   • No administrator privileges needed
+   • Does NOT modify any system files - completely portable
+   • Good for building awareness and habits
+
+You can change this anytime in Settings → Enforcement Mode.
+
 FIRST LAUNCH:
 -------------
 When you first launch Personal Liberty, it will:

@@ -41,7 +41,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "autostart"; Description: "Start with Windows as Administrator (recommended for blocking to work)"; GroupDescription: "Startup Options:"
+; Autostart task - only shown when Full Mode is selected (controlled by code)
+Name: "autostart"; Description: "Start with Windows as Administrator (recommended for Full Mode)"; GroupDescription: "Startup Options:"; Flags: unchecked
 
 [Files]
 ; Main executable with AI bundled (includes tray functionality)
@@ -70,9 +71,10 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
 [Run]
-; Run as admin is required for hosts file modification
+; Run as admin is required for hosts file modification in Full Mode
+; For Light Mode, we don't need admin elevation
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser shellexec
-; Create scheduled task with admin privileges for autostart
+; Create scheduled task with admin privileges for autostart (Full Mode only)
 Filename: "{sys}\schtasks.exe"; Parameters: "/create /tn ""PersonalLibertyAutostart"" /tr """"""{app}\{#MyAppExeName} --minimized"""""" /sc onlogon /rl highest /f"; Tasks: autostart; Flags: runhidden
 
 [Registry]
@@ -104,6 +106,143 @@ Type: files; Name: "{app}\.session_state.json"
 ; conditionally in InitializeUninstall() based on user's choice to keep settings
 
 [Code]
+// ============================================================================
+// Enforcement Mode Selection Variables
+// ============================================================================
+var
+  EnforcementModePage: TWizardPage;
+  FullModeRadio: TRadioButton;
+  LightModeRadio: TRadioButton;
+  FullModeDesc: TNewStaticText;
+  LightModeDesc: TNewStaticText;
+  ModeInfoLabel: TNewStaticText;
+  SelectedEnforcementMode: String;
+
+// ============================================================================
+// Create the Enforcement Mode Selection Page
+// ============================================================================
+procedure CreateEnforcementModePage();
+var
+  TopPos: Integer;
+begin
+  EnforcementModePage := CreateCustomPage(
+    wpSelectTasks,
+    'Choose Blocking Mode',
+    'Select how Personal Liberty should enforce focus sessions.'
+  );
+
+  TopPos := 8;
+
+  // Introduction text
+  ModeInfoLabel := TNewStaticText.Create(EnforcementModePage);
+  ModeInfoLabel.Parent := EnforcementModePage.Surface;
+  ModeInfoLabel.Left := 0;
+  ModeInfoLabel.Top := TopPos;
+  ModeInfoLabel.Width := EnforcementModePage.SurfaceWidth;
+  ModeInfoLabel.Height := 40;
+  ModeInfoLabel.WordWrap := True;
+  ModeInfoLabel.Caption := 'This choice affects how effectively sites are blocked. You can change this later in Settings.';
+  TopPos := TopPos + 50;
+
+  // Full Mode radio button
+  FullModeRadio := TRadioButton.Create(EnforcementModePage);
+  FullModeRadio.Parent := EnforcementModePage.Surface;
+  FullModeRadio.Left := 0;
+  FullModeRadio.Top := TopPos;
+  FullModeRadio.Width := EnforcementModePage.SurfaceWidth;
+  FullModeRadio.Height := 20;
+  FullModeRadio.Caption := '🔒 Full Mode (Recommended)';
+  FullModeRadio.Font.Style := [fsBold];
+  FullModeRadio.Checked := True;
+  SelectedEnforcementMode := 'full';
+  TopPos := TopPos + 24;
+
+  // Full Mode description
+  FullModeDesc := TNewStaticText.Create(EnforcementModePage);
+  FullModeDesc.Parent := EnforcementModePage.Surface;
+  FullModeDesc.Left := 24;
+  FullModeDesc.Top := TopPos;
+  FullModeDesc.Width := EnforcementModePage.SurfaceWidth - 24;
+  FullModeDesc.Height := 60;
+  FullModeDesc.WordWrap := True;
+  FullModeDesc.Caption := 
+    '• Blocks sites at the system level - impossible to bypass' + #13#10 +
+    '• Requires running the app as Administrator' + #13#10 +
+    '• Best for serious focus sessions and building discipline' + #13#10 +
+    '• Modifies the Windows hosts file (cleaned up on uninstall)';
+  TopPos := TopPos + 75;
+
+  // Light Mode radio button
+  LightModeRadio := TRadioButton.Create(EnforcementModePage);
+  LightModeRadio.Parent := EnforcementModePage.Surface;
+  LightModeRadio.Left := 0;
+  LightModeRadio.Top := TopPos;
+  LightModeRadio.Width := EnforcementModePage.SurfaceWidth;
+  LightModeRadio.Height := 20;
+  LightModeRadio.Caption := '🔔 Light Mode (No Admin Required)';
+  LightModeRadio.Font.Style := [fsBold];
+  TopPos := TopPos + 24;
+
+  // Light Mode description
+  LightModeDesc := TNewStaticText.Create(EnforcementModePage);
+  LightModeDesc.Parent := EnforcementModePage.Surface;
+  LightModeDesc.Left := 24;
+  LightModeDesc.Top := TopPos;
+  LightModeDesc.Width := EnforcementModePage.SurfaceWidth - 24;
+  LightModeDesc.Height := 60;
+  LightModeDesc.WordWrap := True;
+  LightModeDesc.Caption := 
+    '• Shows reminder notifications when visiting blocked sites' + #13#10 +
+    '• No administrator privileges needed' + #13#10 +
+    '• Good for building awareness and habits' + #13#10 +
+    '• Does NOT modify any system files - completely portable';
+end;
+
+// ============================================================================
+// Update selected mode when radio buttons change
+// ============================================================================
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  Result := True;
+  
+  if CurPageID = EnforcementModePage.ID then
+  begin
+    if LightModeRadio.Checked then
+      SelectedEnforcementMode := 'light'
+    else
+      SelectedEnforcementMode := 'full';
+  end;
+end;
+
+// ============================================================================
+// Create initial config file with selected enforcement mode
+// ============================================================================
+procedure CreateInitialConfig();
+var
+  ConfigPath: String;
+  ConfigContent: String;
+begin
+  ConfigPath := ExpandConstant('{userappdata}\PersonalLiberty\users\Default\config.json');
+  
+  // Create directory structure
+  ForceDirectories(ExtractFilePath(ConfigPath));
+  
+  // Only create config if it doesn't exist (preserve user settings on upgrade)
+  if not FileExists(ConfigPath) then
+  begin
+    ConfigContent := '{' + #13#10 +
+      '  "enforcement_mode": "' + SelectedEnforcementMode + '",' + #13#10 +
+      '  "enforcement_mode_set_by_installer": true,' + #13#10 +
+      '  "blacklist": [],' + #13#10 +
+      '  "whitelist": [],' + #13#10 +
+      '  "categories_enabled": {},' + #13#10 +
+      '  "minimize_to_tray": true,' + #13#10 +
+      '  "startup_sound_enabled": true' + #13#10 +
+      '}';
+    SaveStringToFile(ConfigPath, ConfigContent, False);
+  end;
+end;
+
 // Helper function to run PowerShell cleanup script
 function RunCleanupScript(AppPath: String): Boolean;
 var
@@ -213,12 +352,18 @@ begin
   end;
 end;
 
+procedure InitializeWizard();
+begin
+  // Create the enforcement mode selection page
+  CreateEnforcementModePage();
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then
   begin
-    // Clean up any previous config if needed
-    // (Currently we preserve user settings)
+    // Create initial config with selected enforcement mode
+    CreateInitialConfig();
   end;
 end;
 
