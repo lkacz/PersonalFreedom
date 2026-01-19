@@ -151,7 +151,7 @@ begin
   FullModeRadio.Top := TopPos;
   FullModeRadio.Width := EnforcementModePage.SurfaceWidth;
   FullModeRadio.Height := 20;
-  FullModeRadio.Caption := '🔒 Full Mode (Recommended)';
+  FullModeRadio.Caption := 'Full Mode (Recommended)';
   FullModeRadio.Font.Style := [fsBold];
   FullModeRadio.Checked := True;
   SelectedEnforcementMode := 'full';
@@ -166,10 +166,10 @@ begin
   FullModeDesc.Height := 60;
   FullModeDesc.WordWrap := True;
   FullModeDesc.Caption := 
-    '• Blocks sites at the system level - impossible to bypass' + #13#10 +
-    '• Requires running the app as Administrator' + #13#10 +
-    '• Best for serious focus sessions and building discipline' + #13#10 +
-    '• Modifies the Windows hosts file (cleaned up on uninstall)';
+    '* Blocks sites at the system level - impossible to bypass' + #13#10 +
+    '* Requires running the app as Administrator' + #13#10 +
+    '* Best for serious focus sessions and building discipline' + #13#10 +
+    '* Modifies the Windows hosts file (cleaned up on uninstall)';
   TopPos := TopPos + 75;
 
   // Light Mode radio button
@@ -179,7 +179,7 @@ begin
   LightModeRadio.Top := TopPos;
   LightModeRadio.Width := EnforcementModePage.SurfaceWidth;
   LightModeRadio.Height := 20;
-  LightModeRadio.Caption := '🔔 Light Mode (No Admin Required)';
+  LightModeRadio.Caption := 'Light Mode (No Admin Required)';
   LightModeRadio.Font.Style := [fsBold];
   TopPos := TopPos + 24;
 
@@ -192,10 +192,10 @@ begin
   LightModeDesc.Height := 60;
   LightModeDesc.WordWrap := True;
   LightModeDesc.Caption := 
-    '• Shows reminder notifications when visiting blocked sites' + #13#10 +
-    '• No administrator privileges needed' + #13#10 +
-    '• Good for building awareness and habits' + #13#10 +
-    '• Does NOT modify any system files - completely portable';
+    '* Shows reminder notifications when visiting blocked sites' + #13#10 +
+    '* No administrator privileges needed' + #13#10 +
+    '* Good for building awareness and habits' + #13#10 +
+    '* Does NOT modify any system files - completely portable';
 end;
 
 // ============================================================================
