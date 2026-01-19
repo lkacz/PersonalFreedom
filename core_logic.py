@@ -233,6 +233,9 @@ class BlockerCore:
         # Enforcement mode: "full" (hosts file) or "light" (monitor + notifications only)
         self.enforcement_mode = EnforcementMode.FULL
         
+        # System permission preferences (for "Don't ask again" dialogs)
+        self.system_permissions = {}  # Dict of action -> True/False
+        
         # ADHD Buster gamification
         self.adhd_buster = {"inventory": [], "equipped": {}, "coins": 200}
         
@@ -334,6 +337,10 @@ class BlockerCore:
                     # Load enforcement mode (full = hosts file, light = notifications only)
                     enforcement = config.get('enforcement_mode', EnforcementMode.FULL)
                     self.enforcement_mode = enforcement if enforcement in (EnforcementMode.FULL, EnforcementMode.LIGHT) else EnforcementMode.FULL
+                    # Load system permission preferences
+                    self.system_permissions = config.get('system_permissions', {})
+                    if not isinstance(self.system_permissions, dict):
+                        self.system_permissions = {}
                     self.adhd_buster = config.get('adhd_buster', {})
                     if not isinstance(self.adhd_buster, dict):
                         self.adhd_buster = {}
@@ -461,6 +468,7 @@ class BlockerCore:
                 'startup_sound_enabled': self.startup_sound_enabled,
                 'lottery_sound_enabled': self.lottery_sound_enabled,
                 'enforcement_mode': self.enforcement_mode,
+                'system_permissions': self.system_permissions,
                 'adhd_buster': self.adhd_buster,
                 'weight_entries': self.weight_entries,
                 'weight_unit': self.weight_unit,
@@ -820,6 +828,9 @@ class BlockerCore:
         if not self.is_admin():
             return False, "Administrator privileges required!\\n\\nPlease restart the app as administrator:\\n• Right-click the app → Run as administrator\\n• Or use the 'run_as_admin.bat' script\\n\\n💡 Tip: Switch to Light Mode in Settings if you prefer not to run as admin."
 
+        # Request user permission for hosts file modification (GUI only, handled at UI layer)
+        # This check is performed in the UI before calling this method
+        
         try:
             with open(HOSTS_PATH, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
