@@ -22400,7 +22400,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.tabs.currentChanged.connect(self._on_tab_changed)
         main_layout.addWidget(self.tabs)
 
-        # === TAB ORDER: Timer | Hero | Eye_Breath | Water | Activity | Weight | Sleep | Entitidex | Productivity | Schedule | Categories | Sites | AI Insights | Settings | Dev ===
+        # === TAB ORDER: Timer | Hero | Story | Eye_Breath | Water | Activity | Weight | Sleep | Entitidex | Productivity | Schedule | Categories | Sites | AI Insights | Settings | Dev ===
         
         # 1. Timer tab
         self.timer_tab = TimerTab(self.blocker, self)
@@ -23660,9 +23660,11 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         
         Called after tabs are created to enable navigation:
         - Water ring → Water tab
-        - Chapter ring → Hero tab
+        - Chapter ring → Story tab
         - Focus ring → Timer tab
         - XP ring → Hero tab
+        - Hero mini widget → Hero tab
+        - Entities ring → Entitidex tab
         """
         # Use a deferred connection since tabs aren't created yet when this is called
         QtCore.QTimer.singleShot(0, self._do_connect_timeline_signals)
@@ -23673,7 +23675,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             return
             
         self.timeline_widget.water_clicked.connect(self._go_to_water_tab)
-        self.timeline_widget.chapter_clicked.connect(self._go_to_hero_tab)
+        self.timeline_widget.chapter_clicked.connect(self._go_to_story_tab)
         self.timeline_widget.focus_clicked.connect(self._go_to_timer_tab)
         self.timeline_widget.xp_clicked.connect(self._go_to_hero_tab)
         self.timeline_widget.entities_clicked.connect(self._go_to_entitidex_tab)
@@ -23697,6 +23699,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """Navigate to the Hero tab."""
         if GAMIFICATION_AVAILABLE and hasattr(self, 'adhd_tab'):
             index = self.tabs.indexOf(self.adhd_tab)
+            if index >= 0:
+                self.tabs.setCurrentIndex(index)
+
+    def _go_to_story_tab(self) -> None:
+        """Navigate to the Story tab."""
+        if GAMIFICATION_AVAILABLE and hasattr(self, 'story_tab'):
+            index = self.tabs.indexOf(self.story_tab)
             if index >= 0:
                 self.tabs.setCurrentIndex(index)
 
@@ -23736,6 +23745,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         elif GAMIFICATION_AVAILABLE and hasattr(self, 'adhd_tab') and widget == self.adhd_tab:
             self.adhd_tab.set_session_active(self.timer_tab.timer_running)
             self.adhd_tab.refresh_all()
+        
+        # Refresh Story tab when switched to
+        elif GAMIFICATION_AVAILABLE and hasattr(self, 'story_tab') and widget == self.story_tab:
+            self.story_tab._refresh_all()
 
 
 def check_single_instance():
