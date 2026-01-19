@@ -73,32 +73,51 @@ def show_message(parent, title: str, text: str, icon: QtWidgets.QMessageBox.Icon
 
 
 def show_info(parent, title: str, text: str) -> int:
-    """Show an information message box without sound."""
-    return show_message(parent, title, text, QtWidgets.QMessageBox.Information)
+    """Show an information message box using styled frameless dialog."""
+    styled_info(parent, title, text)
+    return QtWidgets.QMessageBox.Ok
 
 
 def show_warning(parent, title: str, text: str) -> int:
-    """Show a warning message box without sound."""
-    return show_message(parent, title, text, QtWidgets.QMessageBox.Warning)
+    """Show a warning message box using styled frameless dialog."""
+    styled_warning(parent, title, text)
+    return QtWidgets.QMessageBox.Ok
 
 
 def show_error(parent, title: str, text: str) -> int:
-    """Show an error/critical message box without sound."""
-    return show_message(parent, title, text, QtWidgets.QMessageBox.Critical)
+    """Show an error/critical message box using styled frameless dialog."""
+    styled_error(parent, title, text)
+    return QtWidgets.QMessageBox.Ok
 
 
 def show_question(parent, title: str, text: str, 
                   buttons: QtWidgets.QMessageBox.StandardButtons = QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
                   default_button: QtWidgets.QMessageBox.StandardButton = QtWidgets.QMessageBox.No) -> int:
-    """Show a question message box with Yes/No buttons without sound."""
-    msg = QtWidgets.QMessageBox(parent)
-    msg.setWindowTitle(title)
-    msg.setText(text)
-    msg.setIcon(QtWidgets.QMessageBox.NoIcon)  # NoIcon = no sound
-    msg.setStandardButtons(buttons)
-    msg.setDefaultButton(default_button)
-    msg.setOption(QtWidgets.QMessageBox.Option.DontUseNativeDialog, True)
-    return msg.exec()
+    """Show a question message box with Yes/No buttons using styled frameless dialog."""
+    # Convert Qt button flags to list of button names
+    button_list = []
+    if buttons & QtWidgets.QMessageBox.Yes:
+        button_list.append("Yes")
+    if buttons & QtWidgets.QMessageBox.No:
+        button_list.append("No")
+    if buttons & QtWidgets.QMessageBox.Ok:
+        button_list.append("OK")
+    if buttons & QtWidgets.QMessageBox.Cancel:
+        button_list.append("Cancel")
+    
+    result = styled_question(parent, title, text, button_list or ["Yes", "No"])
+    
+    # Map result back to Qt constants
+    if result == "Yes":
+        return QtWidgets.QMessageBox.Yes
+    elif result == "No":
+        return QtWidgets.QMessageBox.No
+    elif result == "OK":
+        return QtWidgets.QMessageBox.Ok
+    elif result == "Cancel":
+        return QtWidgets.QMessageBox.Cancel
+    else:
+        return QtWidgets.QMessageBox.No
 
 
 def request_system_permission(parent, action: str, title: str, description: str, 
@@ -5892,7 +5911,7 @@ class SettingsTab(QtWidgets.QWidget):
             guidance.say("Hello! This is a voice preview. How do I sound?")
         except Exception as e:
             print(f"[SettingsTab] Error testing voice: {e}")
-            QtWidgets.QMessageBox.warning(
+            show_warning(
                 self, "Voice Test Failed",
                 f"Could not test voice: {e}"
             )
@@ -7883,11 +7902,7 @@ class WeightTab(QtWidgets.QWidget):
             for insight_text in insights["insights"][:5]:  # Limit to 5
                 msg_parts.append(f"• {insight_text}")
         
-        dialog = QtWidgets.QMessageBox(self)
-        dialog.setWindowTitle("📊 Weekly Insights")
-        dialog.setTextFormat(QtCore.Qt.TextFormat.RichText)
-        dialog.setText("<br>".join(msg_parts))
-        dialog.exec()
+        show_info(self, "📊 Weekly Insights", "<br>".join(msg_parts))
 
 
 class ActivityTab(QtWidgets.QWidget):
@@ -9254,20 +9269,16 @@ class SleepTab(QtWidgets.QWidget):
         if tier_bonus > 0:
             bonus_info = f"\n\n🦉 <i>{sleep_perks.get('entity_name', 'Owl')} boosts your reward by +{tier_bonus} tier!</i>"
         
-        confirm = QtWidgets.QMessageBox(self)
-        confirm.setWindowTitle("🌙 Claim Nighty-Night Bonus?")
-        confirm.setText(
+        reply = show_question(
+            self, "🌙 Claim Nighty-Night Bonus?",
             f"{emoji} <b>Ready for bed?</b>\n\n"
             f"Claiming your Nighty-Night bonus at {current_time}\n"
             f"will earn you a <b>{rarity}</b> reward!{bonus_info}\n\n"
-            f"Are you ready to turn off the screen and sleep?"
+            f"Are you ready to turn off the screen and sleep?",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
         )
-        confirm.setIcon(QtWidgets.QMessageBox.NoIcon)
-        confirm.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-        confirm.setDefaultButton(QtWidgets.QMessageBox.Yes)
-        confirm.setOption(QtWidgets.QMessageBox.DontUseNativeDialog, True)
         
-        if confirm.exec() != QtWidgets.QMessageBox.Yes:
+        if reply != QtWidgets.QMessageBox.Yes:
             return
         
         # Generate reward
@@ -22664,28 +22675,22 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 time_str = start_time
             crash_info = f"A session started at {time_str} (mode: {mode})"
 
-        # Ask user what to do
-        msgbox = QtWidgets.QMessageBox(self)
-        msgbox.setIcon(QtWidgets.QMessageBox.NoIcon)
-        msgbox.setWindowTitle("Crash Recovery Detected")
-        msgbox.setText(f"⚠️ {crash_info} did not shut down properly.\n\nSome websites may still be blocked.")
-        msgbox.setInformativeText("Would you like to remove all blocks and clean up?")
-        msgbox.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.Cancel)
-        msgbox.setDefaultButton(QtWidgets.QMessageBox.Yes)
-        msgbox.button(QtWidgets.QMessageBox.Yes).setText("Remove Blocks")
-        msgbox.button(QtWidgets.QMessageBox.No).setText("Keep Blocks")
-        msgbox.button(QtWidgets.QMessageBox.Cancel).setText("Decide Later")
-        msgbox.setOption(QtWidgets.QMessageBox.DontUseNativeDialog, True)
+        # Ask user what to do - custom buttons
+        result = styled_question(
+            self,
+            "Crash Recovery Detected",
+            f"⚠️ {crash_info} did not shut down properly.\n\nSome websites may still be blocked.\n\n"
+            "Would you like to remove all blocks and clean up?",
+            ["Remove Blocks", "Keep Blocks", "Decide Later"]
+        )
 
-        response = msgbox.exec()
-
-        if response == QtWidgets.QMessageBox.Yes:
+        if result == "Remove Blocks":
             success, message = self.blocker.recover_from_crash()
             if success:
                 show_info(self, "Recovery Complete", "✅ All blocks have been removed.\n\nYour browser should now be able to access all websites.")
             else:
                 show_error(self, "Recovery Failed", f"Could not clean up: {message}\n\nTry using 'Emergency Cleanup' in Settings tab.")
-        elif response == QtWidgets.QMessageBox.No:
+        elif result == "Keep Blocks":
             self.blocker.clear_session_state()
             show_info(self, "Blocks Retained", "The blocks have been kept.\n\nUse 'Emergency Cleanup' in Settings tab when you want to remove them.")
 
@@ -22810,10 +22815,6 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """Show information about the coin economy."""
         coins = self.blocker.adhd_buster.get("coins", 0)
         
-        msg_box = QtWidgets.QMessageBox(self)
-        msg_box.setWindowTitle("💰 Coin Economy")
-        msg_box.setText(f"<h2>Your Balance: {coins:,} Coins</h2>")
-        
         # Build bonus info if lucky gear is equipped
         bonus_info = ""
         if calculate_total_lucky_bonuses:
@@ -22824,7 +22825,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 effective_discount = min(coin_discount, 90)
                 bonus_info = f"<p style='color: #8b5cf6;'><b>✨ Active Gear Bonus: {effective_discount}% off merge costs!</b></p>"
         
-        msg_box.setInformativeText(
+        message = (
+            f"<h2>Your Balance: {coins:,} Coins</h2>"
             f"{bonus_info}"
             "<p><b>How to Earn Coins:</b></p>"
             "<ul>"
@@ -22848,9 +22850,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             "<p><i>💡 Tip: Mark one priority as 'Strategic' to get 2.5x coins per hour!</i></p>"
             "<p><i>✨ Lucky Gear with coin_discount reduces merge costs by up to 90%!</i></p>"
         )
-        msg_box.setIcon(QtWidgets.QMessageBox.NoIcon)
-        msg_box.setOption(QtWidgets.QMessageBox.DontUseNativeDialog, True)
-        msg_box.exec()
+        show_info(self, "💰 Coin Economy", message)
 
     def _check_scheduled_blocking(self) -> None:
         """Check if we should be blocking based on schedule."""
@@ -23873,21 +23873,14 @@ def main() -> None:
     mutex_handle = check_single_instance()
     if mutex_handle is None:
         # Another instance is running - ask user what to do
-        msg_box = QtWidgets.QMessageBox()
-        msg_box.setWindowTitle("Already Running")
-        msg_box.setText("Personal Liberty is already running.")
-        msg_box.setInformativeText("What would you like to do?")
-        msg_box.setIcon(QtWidgets.QMessageBox.NoIcon)
-        msg_box.setOption(QtWidgets.QMessageBox.DontUseNativeDialog, True)
+        result = styled_question(
+            None,
+            "Already Running",
+            "Personal Liberty is already running.\n\nWhat would you like to do?",
+            ["Switch to Running App", "Kill & Restart", "Cancel"]
+        )
         
-        switch_btn = msg_box.addButton("Switch to Running App", QtWidgets.QMessageBox.AcceptRole)
-        kill_btn = msg_box.addButton("Kill && Restart", QtWidgets.QMessageBox.DestructiveRole)
-        cancel_btn = msg_box.addButton("Cancel", QtWidgets.QMessageBox.RejectRole)
-        
-        msg_box.exec()
-        clicked = msg_box.clickedButton()
-        
-        if clicked == switch_btn:
+        if result == "Switch to Running App":
             # Try to activate existing window
             if find_and_activate_existing_window():
                 sys.exit(0)
@@ -23899,7 +23892,7 @@ def main() -> None:
                     "Check your system tray icons."
                 )
                 sys.exit(0)
-        elif clicked == kill_btn:
+        elif result == "Kill & Restart":
             # Kill existing instances and continue
             kill_existing_instances()
             # Try to acquire mutex again
