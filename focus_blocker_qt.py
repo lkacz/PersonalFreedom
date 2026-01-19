@@ -20742,24 +20742,34 @@ class StoryTab(QtWidgets.QWidget):
         if not chapter_num:
             return
         
-        from gamification import get_story_progress, get_selected_story, AVAILABLE_STORIES
+        from gamification import get_story_progress, get_selected_story, AVAILABLE_STORIES, get_story_data
         
         progress = get_story_progress(self.blocker.adhd_buster)
         story_id = get_selected_story(self.blocker.adhd_buster)
         story_info = AVAILABLE_STORIES.get(story_id, {})
         
-        chapter = next((ch for ch in progress["chapters"] if ch["number"] == chapter_num), None)
-        if not chapter:
+        # Get the full chapter data with content
+        story_decisions, story_chapters = get_story_data(self.blocker.adhd_buster)
+        
+        # Find the chapter in progress (for unlock status)
+        chapter_progress = next((ch for ch in progress["chapters"] if ch["number"] == chapter_num), None)
+        if not chapter_progress:
             show_error(self, "Error", "Chapter not found!")
             return
         
-        if not chapter.get("unlocked"):
+        if not chapter_progress.get("unlocked"):
             show_warning(
                 self, "Chapter Locked",
-                f"This chapter requires {chapter.get('power_requirement', 0)} power to unlock.\n\n"
+                f"This chapter requires {story_chapters[chapter_num - 1].get('threshold', 0)} power to unlock.\n\n"
                 f"Current power: {progress['power']}\n"
                 f"Keep building your hero's power!"
             )
+            return
+        
+        # Get the full chapter with content
+        full_chapter = story_chapters[chapter_num - 1] if chapter_num <= len(story_chapters) else None
+        if not full_chapter:
+            show_error(self, "Error", "Chapter data not found!")
             return
         
         dialog = QtWidgets.QDialog(self)
@@ -20767,7 +20777,7 @@ class StoryTab(QtWidgets.QWidget):
         dialog.setMinimumSize(600, 500)
         layout = QtWidgets.QVBoxLayout(dialog)
         
-        title_lbl = QtWidgets.QLabel(f"<h2>Chapter {chapter_num}: {chapter['title']}</h2>")
+        title_lbl = QtWidgets.QLabel(f"<h2>Chapter {chapter_num}: {full_chapter['title']}</h2>")
         layout.addWidget(title_lbl)
         
         content_scroll = QtWidgets.QScrollArea()
@@ -20775,7 +20785,7 @@ class StoryTab(QtWidgets.QWidget):
         content_widget = QtWidgets.QWidget()
         content_layout = QtWidgets.QVBoxLayout(content_widget)
         
-        content_lbl = QtWidgets.QLabel(chapter.get("content", "No content available."))
+        content_lbl = QtWidgets.QLabel(full_chapter.get("content", "No content available."))
         content_lbl.setWordWrap(True)
         content_lbl.setStyleSheet("font-size: 13px; line-height: 1.6;")
         content_layout.addWidget(content_lbl)
@@ -20784,7 +20794,7 @@ class StoryTab(QtWidgets.QWidget):
         content_scroll.setWidget(content_widget)
         layout.addWidget(content_scroll)
         
-        if chapter.get("has_decision") and not chapter.get("decision_made"):
+        if chapter_progress.get("has_decision") and not chapter_progress.get("decision_made"):
             decision_frame = QtWidgets.QFrame()
             decision_frame.setStyleSheet("""
                 QFrame {
