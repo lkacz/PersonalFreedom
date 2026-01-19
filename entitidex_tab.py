@@ -2085,6 +2085,54 @@ class EntitidexTab(QtWidgets.QWidget):
                     if hasattr(card, 'theme_id') and card.theme_id == current_theme:
                         card.resume_animations()
     
+    def _pause_all_animations(self) -> None:
+        """Explicitly pause ALL animations when tab is not visible.
+        
+        Called by MainWindow._on_tab_changed when switching away from Entitidex.
+        This is critical for performance - shimmer timers run at 50ms intervals
+        and glow animations run continuously, consuming CPU even when hidden.
+        """
+        if not self._initialized:
+            return
+        self._is_visible = False
+        
+        for card in self._all_cards:
+            card.pause_animations()
+        for card in self._celebration_cards:
+            card.pause_animations()
+    
+    def _resume_all_animations(self) -> None:
+        """Explicitly resume animations when switching TO this tab.
+        
+        Called by MainWindow._on_tab_changed when Entitidex tab becomes active.
+        Only resumes animations for cards in the currently visible theme sub-tab.
+        """
+        if not self._initialized:
+            return
+        self._is_visible = True
+        
+        # Only resume animations for the currently visible theme tab
+        if not self.theme_tabs:
+            return
+            
+        theme_keys = list(THEME_INFO.keys())
+        current_theme = theme_keys[self._current_theme_index] if self._current_theme_index < len(theme_keys) else None
+        
+        if current_theme:
+            current_container = self.theme_tabs.get(current_theme)
+            if current_container:
+                for card in self._all_cards:
+                    # Check if card belongs to current theme container
+                    parent = card.parent()
+                    while parent and parent != current_container:
+                        parent = parent.parent()
+                    if parent == current_container:
+                        card.resume_animations()
+                # Resume celebration cards on current theme
+                for card in self._celebration_cards:
+                    if hasattr(card, 'theme_id') and card.theme_id == current_theme:
+                        card.resume_animations()
+
     def _load_progress(self):
         """Load entitidex progress from blocker config."""
         try:

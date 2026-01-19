@@ -13,12 +13,139 @@ from PySide6 import QtWidgets, QtCore, QtGui
 
 
 # ============================================================================
+# Shared Paint Cache (avoids creating QColor/QFont/QPen in paintEvent)
+# ============================================================================
+
+class _PaintCache:
+    """Global paint object cache for all lottery widgets.
+    
+    Creating QColor, QFont, QPen objects is expensive. This cache
+    provides pre-created objects to avoid GC churn during 60 FPS animations.
+    """
+    _initialized = False
+    
+    # Tier/rarity colors
+    TIER_COLORS = {}
+    
+    # Common colors
+    COLOR_WHITE = None
+    COLOR_GRAY = None
+    COLOR_DARK_BG = None
+    COLOR_SUCCESS = None
+    COLOR_FAIL = None
+    
+    # Common fonts
+    FONT_LABEL_SMALL = None
+    FONT_LABEL_MEDIUM = None
+    FONT_LABEL_BOLD = None
+    FONT_PERCENT = None
+    
+    # Common pens
+    PEN_SEPARATOR = None
+    PEN_BORDER = None
+    PEN_MARKER_OUTLINE = None
+    PEN_BLACK_OUTLINE = None
+    
+    @classmethod
+    def initialize(cls):
+        """Initialize all cached paint objects (lazy loading, called once)."""
+        if cls._initialized:
+            return
+        
+        # Tier colors (string -> QColor)
+        tier_colors = {
+            "Common": "#9e9e9e",
+            "Uncommon": "#4caf50",
+            "Rare": "#2196f3",
+            "Epic": "#9c27b0",
+            "Legendary": "#ff9800"
+        }
+        cls.TIER_COLORS = {k: QtGui.QColor(v) for k, v in tier_colors.items()}
+        
+        # Common colors
+        cls.COLOR_WHITE = QtGui.QColor("#ffffff")
+        cls.COLOR_GRAY = QtGui.QColor("#888888")
+        cls.COLOR_DARK_BG = QtGui.QColor("#1a1a2e")
+        cls.COLOR_SUCCESS = QtGui.QColor("#4caf50")
+        cls.COLOR_FAIL = QtGui.QColor("#f44336")
+        
+        # Fonts
+        cls.FONT_LABEL_SMALL = QtGui.QFont("Arial", 7, QtGui.QFont.Bold)
+        cls.FONT_LABEL_MEDIUM = QtGui.QFont("Arial", 9, QtGui.QFont.Bold)
+        cls.FONT_LABEL_BOLD = QtGui.QFont("Arial", 10, QtGui.QFont.Bold)
+        cls.FONT_PERCENT = QtGui.QFont("Arial", 8)
+        
+        # Pens
+        cls.PEN_SEPARATOR = QtGui.QPen(cls.COLOR_DARK_BG, 2)
+        cls.PEN_BORDER = QtGui.QPen(QtGui.QColor("#333333"), 2)
+        cls.PEN_MARKER_OUTLINE = QtGui.QPen(cls.COLOR_WHITE, 2)
+        cls.PEN_BLACK_OUTLINE = QtGui.QPen(QtGui.QColor("#000000"), 1)
+        
+        cls._initialized = True
+    
+    @classmethod
+    def get_tier_color(cls, tier: str) -> QtGui.QColor:
+        """Get cached QColor for a tier, with fallback."""
+        cls.initialize()
+        return cls.TIER_COLORS.get(tier, cls.COLOR_GRAY)
+
+
+# ============================================================================
 # Dialog Geometry Persistence Helpers
 # ============================================================================
 
 def _get_dialog_settings() -> QtCore.QSettings:
     """Get QSettings for dialog geometry persistence."""
     return QtCore.QSettings("PersonalFreedom", "LotteryDialogs")
+
+
+def get_lottery_sound_enabled() -> bool:
+    """Get whether lottery sounds are enabled."""
+    settings = _get_dialog_settings()
+    return settings.value("lottery_sound_enabled", True, type=bool)
+
+
+def set_lottery_sound_enabled(enabled: bool) -> None:
+    """Set whether lottery sounds are enabled."""
+    settings = _get_dialog_settings()
+    settings.setValue("lottery_sound_enabled", enabled)
+
+
+# Cache the import to avoid repeated module lookups
+_lottery_sounds_module = None
+_lottery_sounds_import_failed = False
+
+
+def _play_lottery_result_sound(won: bool) -> None:
+    """Play appropriate sound for lottery result if enabled.
+    
+    This is a non-blocking, non-critical operation. Sound failures
+    are logged but do not affect lottery functionality.
+    """
+    global _lottery_sounds_module, _lottery_sounds_import_failed
+    
+    if not get_lottery_sound_enabled():
+        return
+    
+    # Skip if we already know the import failed
+    if _lottery_sounds_import_failed:
+        return
+    
+    try:
+        # Lazy import with caching
+        if _lottery_sounds_module is None:
+            import lottery_sounds
+            _lottery_sounds_module = lottery_sounds
+        
+        _lottery_sounds_module.play_lottery_result(won)
+    except ImportError as e:
+        _lottery_sounds_import_failed = True
+        import logging
+        logging.getLogger(__name__).warning(f"Lottery sounds unavailable: {e}")
+    except Exception as e:
+        # Log but don't crash - sound is non-critical
+        import logging
+        logging.getLogger(__name__).debug(f"Lottery sound playback failed: {e}")
 
 
 def save_dialog_geometry(dialog: QtWidgets.QDialog, dialog_name: str) -> None:
@@ -241,7 +368,7 @@ class LotteryRollDialog(QtWidgets.QDialog):
         self.failure_text = failure_text
         
         # Animation settings
-        self.tick_interval = 20  # ~50 FPS (smooth enough, reduces CPU load)
+        self.tick_interval = 16  # ~60 FPS (smoother animation)
         self.elapsed_time = 0.0
         self.animation_duration = animation_duration
         
@@ -349,6 +476,16 @@ class LotteryRollDialog(QtWidgets.QDialog):
         self.status_label.setStyleSheet("color: #aaa; font-size: 12px;")
         container_layout.addWidget(self.status_label)
         
+        # Sound toggle
+        sound_row = QtWidgets.QHBoxLayout()
+        sound_row.addStretch()
+        self.sound_toggle = QtWidgets.QCheckBox("🔊 Sound")
+        self.sound_toggle.setChecked(get_lottery_sound_enabled())
+        self.sound_toggle.setStyleSheet("color: #666; font-size: 11px;")
+        self.sound_toggle.toggled.connect(set_lottery_sound_enabled)
+        sound_row.addWidget(self.sound_toggle)
+        container_layout.addLayout(sound_row)
+        
         layout.addWidget(container)
     
     def _start_animation(self):
@@ -360,7 +497,7 @@ class LotteryRollDialog(QtWidgets.QDialog):
     def _tick(self):
         """Update animation by traversing the pre-calculated bounce path."""
         # Update elapsed time
-        self.elapsed_time += self.tick_interval / 1000.0  # seconds
+        self.elapsed_time += 0.016  # 16ms interval for 60 FPS
         
         # Calculate normalized progress (0.0 to 1.0)
         t = min(1.0, self.elapsed_time / self.animation_duration)
@@ -455,6 +592,9 @@ class LotteryRollDialog(QtWidgets.QDialog):
             self.status_label.setStyleSheet("color: #f44336; font-size: 16px; font-weight: bold;")
             self.slider_widget.set_result(False)
         
+        # Play lottery result sound
+        _play_lottery_result_sound(self.is_success)
+        
         # Emit signal and auto-close
         self.finished_signal.emit(self.is_success)
         QtCore.QTimer.singleShot(1200, self.accept)
@@ -483,12 +623,30 @@ class EyeProtectionTierSliderWidget(QtWidgets.QWidget):
     }
     TIERS = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     
+    # Cached paint objects for performance (avoid creating in paintEvent)
+    _CACHED_COLORS = None  # Will be initialized on first use
+    _FONT_LABEL = None
+    _PEN_BORDER = None
+    _PEN_MARKER_OUTLINE = None
+    _COLOR_WHITE = None
+    
+    @classmethod
+    def _init_paint_cache(cls):
+        """Initialize cached paint objects (lazy loading)."""
+        if cls._CACHED_COLORS is None:
+            cls._CACHED_COLORS = {t: QtGui.QColor(c) for t, c in cls.TIER_COLORS.items()}
+            cls._FONT_LABEL = QtGui.QFont("Arial", 9, QtGui.QFont.Bold)
+            cls._PEN_BORDER = QtGui.QPen(QtGui.QColor("#333"), 2)
+            cls._PEN_MARKER_OUTLINE = QtGui.QPen(QtGui.QColor("#fff"), 2)
+            cls._COLOR_WHITE = QtGui.QColor("#ffffff")
+    
     def __init__(self, tier_weights: list, parent=None):
         """
         Args:
             tier_weights: List of 5 weights [Common, Uncommon, Rare, Epic, Legendary]
         """
         super().__init__(parent)
+        self._init_paint_cache()  # Ensure cache is ready
         self.zone_widths = tier_weights  # Already percentages that sum to 100
         self.position = 0.0
         self.result_tier = None
@@ -536,13 +694,13 @@ class EyeProtectionTierSliderWidget(QtWidgets.QWidget):
         bar_width = self.width() - 20
         x_offset = 10
         
-        # Draw tier zones
+        # Draw tier zones (use cached colors)
         cumulative_x = x_offset
         for tier, width in zip(self.TIERS, self.zone_widths):
             if width <= 0:
                 continue
             zone_width = (width / 100) * bar_width
-            color = QtGui.QColor(self.TIER_COLORS[tier])
+            color = self._CACHED_COLORS[tier]
             
             # Highlight winning tier
             if self.result_tier and tier == self.result_tier:
@@ -559,8 +717,8 @@ class EyeProtectionTierSliderWidget(QtWidgets.QWidget):
             # Zone label (only if wide enough)
             if zone_width > 30:
                 painter.setOpacity(1.0)
-                painter.setPen(QtGui.QColor("#ffffff"))
-                painter.setFont(QtGui.QFont("Arial", 9, QtGui.QFont.Bold))
+                painter.setPen(self._COLOR_WHITE)
+                painter.setFont(self._FONT_LABEL)
                 painter.drawText(
                     int(cumulative_x), bar_y,
                     int(zone_width), bar_height,
@@ -570,21 +728,21 @@ class EyeProtectionTierSliderWidget(QtWidgets.QWidget):
         
         painter.setOpacity(1.0)
         
-        # Draw border
-        painter.setPen(QtGui.QPen(QtGui.QColor("#333"), 2))
+        # Draw border (use cached pen)
+        painter.setPen(self._PEN_BORDER)
         painter.drawRect(x_offset, bar_y, bar_width, bar_height)
         
         # Draw marker
         marker_x = x_offset + (self.position / 100) * bar_width
         current_tier = self.get_tier_at_position(self.position)
-        marker_color = self.TIER_COLORS.get(current_tier, "#fff")
+        marker_color = self._CACHED_COLORS.get(current_tier, self._COLOR_WHITE)
         
         # Glow effect for result
         if self.result_tier:
-            glow_color = self.TIER_COLORS.get(self.result_tier, "#fff")
+            glow_color = self._CACHED_COLORS.get(self.result_tier, self._COLOR_WHITE)
             for i in range(3):
                 glow_size = 10 + (3-i) * 3
-                painter.setBrush(QtGui.QColor(glow_color))
+                painter.setBrush(glow_color)
                 painter.setOpacity(0.3)
                 painter.drawEllipse(
                     QtCore.QPointF(marker_x, bar_y + bar_height // 2),
@@ -593,8 +751,8 @@ class EyeProtectionTierSliderWidget(QtWidgets.QWidget):
             painter.setOpacity(1.0)
         
         # Marker triangle
-        painter.setBrush(QtGui.QColor(marker_color))
-        painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
+        painter.setBrush(marker_color)
+        painter.setPen(self._PEN_MARKER_OUTLINE)
         triangle = [
             QtCore.QPointF(marker_x, bar_y - 3),
             QtCore.QPointF(marker_x - 8, bar_y - 15),
@@ -602,8 +760,8 @@ class EyeProtectionTierSliderWidget(QtWidgets.QWidget):
         ]
         painter.drawPolygon(triangle)
         
-        # Marker line
-        painter.setPen(QtGui.QPen(QtGui.QColor(marker_color), 3))
+        # Marker line (need dynamic color pen)
+        painter.setPen(QtGui.QPen(marker_color, 3))
         painter.drawLine(int(marker_x), bar_y, int(marker_x), bar_y + bar_height)
 
 
@@ -790,6 +948,16 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         self.final_result.setStyleSheet("color: #fff; font-size: 16px; font-weight: bold;")
         container_layout.addWidget(self.final_result)
         
+        # Sound toggle
+        sound_row = QtWidgets.QHBoxLayout()
+        sound_row.addStretch()
+        self.sound_toggle = QtWidgets.QCheckBox("🔊 Sound")
+        self.sound_toggle.setChecked(get_lottery_sound_enabled())
+        self.sound_toggle.setStyleSheet("color: #666; font-size: 11px;")
+        self.sound_toggle.toggled.connect(set_lottery_sound_enabled)
+        sound_row.addWidget(self.sound_toggle)
+        container_layout.addLayout(sound_row)
+        
         layout.addWidget(container)
     
     def _start_stage_1(self):
@@ -902,6 +1070,9 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
                 self.final_result.setText(f"The {self.tier} item slipped away... Keep exercising! 💪")
             self.final_result.setStyleSheet("color: #aaa; font-size: 14px;")
         
+        # Play sound effect
+        _play_lottery_result_sound(won)
+        
         # Auto close after delay
         QtCore.QTimer.singleShot(2500, self._finish)
     
@@ -942,14 +1113,14 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
                 self._tier_anim_total_dist += dist
         
         self._tier_anim_elapsed = 0.0
-        self._tier_anim_duration = 9.0  # Longer for dramatic effect
+        self._tier_anim_duration = 5.0  # Snappy dramatic effect
         
         # Style state tracking for performance
         self._tier_last_tier = None
         
         self._tier_anim_timer = QtCore.QTimer(self)
         self._tier_anim_timer.timeout.connect(self._tier_anim_tick)
-        self._tier_anim_timer.start(20)  # 50 FPS for smoother performance
+        self._tier_anim_timer.start(16)  # 60 FPS for smoother animation
     
     def _tier_anim_tick(self):
         """Animation tick for tier stage."""
@@ -957,7 +1128,7 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         TIER_COLORS = {"Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3", 
                        "Epic": "#9c27b0", "Legendary": "#ff9800"}
         
-        self._tier_anim_elapsed += 0.020  # Match timer interval
+        self._tier_anim_elapsed += 0.016  # Match 16ms timer interval
         t = min(1.0, self._tier_anim_elapsed / self._tier_anim_duration)
         eased = 1.0 - (1.0 - t) ** 4
         
@@ -1026,18 +1197,18 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
                 self._anim_total_dist += dist
         
         self._anim_elapsed = 0.0
-        self._anim_duration = 8.0  # Doubled for more dramatic effect
+        self._anim_duration = 4.0  # Snappy animation
         
         # Style state tracking for performance
         self._anim_last_zone = None
         
         self._anim_timer = QtCore.QTimer(self)
         self._anim_timer.timeout.connect(self._anim_tick)
-        self._anim_timer.start(20)  # 50 FPS for smoother performance
+        self._anim_timer.start(16)  # 60 FPS for smoother animation
     
     def _anim_tick(self):
         """Animation tick for current stage."""
-        self._anim_elapsed += 0.020  # Match timer interval
+        self._anim_elapsed += 0.016  # Match 16ms timer interval
         t = min(1.0, self._anim_elapsed / self._anim_duration)
         eased = 1.0 - (1.0 - t) ** 4
         
@@ -1099,19 +1270,45 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
     based on their probability weights.
     """
     
+    # Cached paint objects for performance
+    _CACHED_COLORS = None
+    _FONT_LABEL = None
+    _FONT_PERCENT = None
+    _PEN_SEPARATOR = None
+    _COLOR_WHITE = None
+    _COLOR_GRAY = None
+    
+    @classmethod
+    def _init_paint_cache(cls):
+        """Initialize cached paint objects (lazy loading)."""
+        if cls._CACHED_COLORS is None:
+            cls._CACHED_COLORS = {
+                "Common": QtGui.QColor("#9e9e9e"),
+                "Uncommon": QtGui.QColor("#4caf50"),
+                "Rare": QtGui.QColor("#2196f3"),
+                "Epic": QtGui.QColor("#9c27b0"),
+                "Legendary": QtGui.QColor("#ff9800")
+            }
+            cls._FONT_LABEL = QtGui.QFont("Arial", 7, QtGui.QFont.Bold)
+            cls._FONT_PERCENT = QtGui.QFont("Arial", 8)
+            cls._PEN_SEPARATOR = QtGui.QPen(QtGui.QColor("#1a1a2e"), 2)
+            cls._COLOR_WHITE = QtGui.QColor("#fff")
+            cls._COLOR_GRAY = QtGui.QColor("#888")
+    
     def __init__(self, weights: dict, parent=None):
         """
         Args:
             weights: Dict mapping rarity -> weight (e.g., {"Common": 5, ...})
         """
         super().__init__(parent)
+        self._init_paint_cache()  # Ensure cache is ready
         self.weights = weights
         self.total = sum(weights.values())
         self.position = 0.0
         self.result_rarity = None
         self.setMinimumWidth(400)
         
-        # Rarity colors
+        # Rarity colors (string versions for compatibility)
         self.rarity_colors = {
             "Common": "#9e9e9e",
             "Uncommon": "#4caf50",
@@ -1168,8 +1365,9 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
             start_x = margin + (cumulative_pct / 100.0) * (w - 2*margin)
             zone_width = (zone_pct / 100.0) * (w - 2*margin)
             
-            color = self.rarity_colors.get(rarity, "#666")
-            painter.setBrush(QtGui.QColor(color))
+            # Use cached color objects
+            color = self._CACHED_COLORS.get(rarity, self._COLOR_GRAY)
+            painter.setBrush(color)
             painter.setPen(QtCore.Qt.NoPen)
             
             # Round corners only on first/last
@@ -1187,22 +1385,22 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
             
             # Draw rarity label if zone is wide enough
             if zone_width > 35:
-                painter.setPen(QtGui.QColor("#fff"))
-                painter.setFont(QtGui.QFont("Arial", 7, QtGui.QFont.Bold))
+                painter.setPen(self._COLOR_WHITE)
+                painter.setFont(self._FONT_LABEL)
                 label_x = start_x + zone_width/2 - 12
                 painter.drawText(int(label_x), bar_y + bar_height//2 + 4, rarity[:3].upper())
             
             # Draw separator line
             if i < len(rarity_order) - 1:
-                painter.setPen(QtGui.QPen(QtGui.QColor("#1a1a2e"), 2))
+                painter.setPen(self._PEN_SEPARATOR)
                 sep_x = start_x + zone_width
                 painter.drawLine(int(sep_x), bar_y, int(sep_x), bar_y + bar_height)
             
             cumulative_pct += zone_pct
         
         # Draw 0% and 100% labels
-        painter.setPen(QtGui.QColor("#888"))
-        painter.setFont(QtGui.QFont("Arial", 8))
+        painter.setPen(self._COLOR_GRAY)
+        painter.setFont(self._FONT_PERCENT)
         painter.drawText(margin, bar_y + bar_height + 15, "0%")
         painter.drawText(w - margin - 25, bar_y + bar_height + 15, "100%")
         
@@ -1211,14 +1409,14 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
         
         # Marker color based on current zone
         current_rarity = self.get_rarity_at_position(self.position)
-        marker_color = self.rarity_colors.get(current_rarity, "#fff")
+        marker_color = self._CACHED_COLORS.get(current_rarity, self._COLOR_WHITE)
         
         # Glow effect if result
         if self.result_rarity:
-            glow_color = self.rarity_colors.get(self.result_rarity, "#fff")
+            glow_color = self._CACHED_COLORS.get(self.result_rarity, self._COLOR_WHITE)
             for i in range(3):
                 glow_size = 12 + (3-i) * 4
-                painter.setBrush(QtGui.QColor(glow_color))
+                painter.setBrush(glow_color)
                 painter.setOpacity(0.3)
                 painter.drawEllipse(
                     QtCore.QPointF(marker_x, bar_y + bar_height // 2),
@@ -1227,8 +1425,8 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
             painter.setOpacity(1.0)
         
         # Draw marker (triangle)
-        painter.setBrush(QtGui.QColor(marker_color))
-        painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
+        painter.setBrush(marker_color)
+        painter.setPen(QtGui.QPen(self._COLOR_WHITE, 2))
         
         triangle = QtGui.QPolygonF([
             QtCore.QPointF(marker_x, bar_y - 2),
@@ -1238,7 +1436,7 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
         painter.drawPolygon(triangle)
         
         # Marker line
-        painter.setPen(QtGui.QPen(QtGui.QColor(marker_color), 3))
+        painter.setPen(QtGui.QPen(marker_color, 3))
         painter.drawLine(int(marker_x), bar_y, int(marker_x), bar_y + bar_height)
 
 
@@ -1414,6 +1612,16 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         self.final_result.setStyleSheet("color: #fff; font-size: 14px;")
         container_layout.addWidget(self.final_result)
         
+        # Sound toggle
+        sound_row = QtWidgets.QHBoxLayout()
+        sound_row.addStretch()
+        self.sound_toggle = QtWidgets.QCheckBox("🔊 Sound")
+        self.sound_toggle.setChecked(get_lottery_sound_enabled())
+        self.sound_toggle.setStyleSheet("color: #666; font-size: 11px;")
+        self.sound_toggle.toggled.connect(set_lottery_sound_enabled)
+        sound_row.addWidget(self.sound_toggle)
+        container_layout.addLayout(sound_row)
+        
         layout.addWidget(container)
     
     def _start_stage_1(self):
@@ -1465,6 +1673,9 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
             self.stage2_result.setText("(Better luck next time!)")
             self.final_result.setText("Keep completing priorities for more chances! 💪\n+100 Coins earned anyway!")
             self.final_result.setStyleSheet("color: #aaa; font-size: 13px;")
+            
+            # Play lose sound
+            _play_lottery_result_sound(False)
             
             # Auto close
             QtCore.QTimer.singleShot(2500, self._finish)
@@ -1534,6 +1745,9 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
                 )
             self.final_result.setStyleSheet(f"color: {color}; font-size: 13px;")
         
+        # Play win sound
+        _play_lottery_result_sound(True)
+        
         # Auto close
         QtCore.QTimer.singleShot(3000, self._finish)
     
@@ -1573,7 +1787,7 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
                 self._anim_total_dist += dist
         
         self._anim_elapsed = 0.0
-        self._anim_duration = 9.0  # 2x slower for dramatic effect
+        self._anim_duration = 5.0  # Snappy dramatic effect
         
         # Style state tracking for performance
         self._anim_last_rarity = None
@@ -1581,11 +1795,11 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         
         self._anim_timer = QtCore.QTimer(self)
         self._anim_timer.timeout.connect(self._anim_tick)
-        self._anim_timer.start(20)  # 50 FPS for smoother performance
+        self._anim_timer.start(16)  # 60 FPS for smooth performance
     
     def _anim_tick(self):
         """Animation tick."""
-        self._anim_elapsed += 0.020  # Match timer interval
+        self._anim_elapsed += 0.016  # Match timer interval
         t = min(1.0, self._anim_elapsed / self._anim_duration)
         eased = 1.0 - (1.0 - t) ** 4
         
@@ -1678,6 +1892,23 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
     # Upgraded shifts distribution +1 tier higher
     UPGRADED_WINDOW = [5, 10, 25, 45, 15]
     
+    # Cached paint objects for performance
+    _CACHED_COLORS = None
+    _FONT_LABEL = None
+    _PEN_SEPARATOR = None
+    _PEN_MARKER_OUTLINE = None
+    _COLOR_WHITE = None
+    
+    @classmethod
+    def _init_paint_cache(cls):
+        """Initialize cached paint objects (lazy loading)."""
+        if cls._CACHED_COLORS is None:
+            cls._CACHED_COLORS = {t: QtGui.QColor(c) for t, c in cls.TIER_COLORS.items()}
+            cls._FONT_LABEL = QtGui.QFont("Arial", 9, QtGui.QFont.Bold)
+            cls._PEN_SEPARATOR = QtGui.QPen(QtGui.QColor("#1a1a2e"), 2)
+            cls._PEN_MARKER_OUTLINE = QtGui.QPen(QtGui.QColor("#fff"), 2)
+            cls._COLOR_WHITE = QtGui.QColor("#fff")
+    
     def __init__(self, result_rarity: str = "Rare", upgraded: bool = False, parent=None):
         """
         Args:
@@ -1685,6 +1916,7 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
             upgraded: Whether tier upgrade is enabled (shifts window higher)
         """
         super().__init__(parent)
+        self._init_paint_cache()  # Ensure cache is ready
         self.result_rarity = result_rarity
         self.upgraded = upgraded
         self.position = 0.0
@@ -1776,11 +2008,11 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
             zones_to_draw.append((tier, zone_pct))
         
         for i, (tier, zone_pct) in enumerate(zones_to_draw):
-            color = self.TIER_COLORS.get(tier, "#666")
+            color = self._CACHED_COLORS.get(tier, self._COLOR_WHITE)
             start_x = margin + (cumulative_pct / 100.0) * (w - 2*margin)
             zone_width = (zone_pct / 100.0) * (w - 2*margin)
             
-            painter.setBrush(QtGui.QColor(color))
+            painter.setBrush(color)
             painter.setPen(QtCore.Qt.NoPen)
             
             rect = QtCore.QRectF(start_x, bar_y, zone_width, bar_height)
@@ -1797,15 +2029,15 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
             
             # Draw zone label
             if zone_width > 25:
-                painter.setPen(QtGui.QColor("#fff"))
-                painter.setFont(QtGui.QFont("Arial", 9, QtGui.QFont.Bold))
+                painter.setPen(self._COLOR_WHITE)
+                painter.setFont(self._FONT_LABEL)
                 label = tier[:4] if zone_width > 45 else tier[:3]
                 label_rect = QtCore.QRectF(start_x, bar_y, zone_width, bar_height)
                 painter.drawText(label_rect, QtCore.Qt.AlignCenter, label)
             
             # Separator
             if i < len(zones_to_draw) - 1:
-                painter.setPen(QtGui.QPen(QtGui.QColor("#1a1a2e"), 2))
+                painter.setPen(self._PEN_SEPARATOR)
                 sep_x = start_x + zone_width
                 painter.drawLine(int(sep_x), bar_y, int(sep_x), bar_y + bar_height)
             
@@ -1814,14 +2046,14 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
         # Draw marker
         marker_x = margin + (self.position / 100.0) * (w - 2*margin)
         current_tier = self.get_tier_at_position(self.position)
-        marker_color = self.TIER_COLORS.get(current_tier, "#aaa")
+        marker_color = self._CACHED_COLORS.get(current_tier, self._COLOR_WHITE)
         
         # Glow if result set
         if self.result_tier:
-            glow_color = self.TIER_COLORS.get(self.result_tier, "#aaa")
+            glow_color = self._CACHED_COLORS.get(self.result_tier, self._COLOR_WHITE)
             for i in range(3):
                 glow_size = 12 + (3-i) * 4
-                painter.setBrush(QtGui.QColor(glow_color))
+                painter.setBrush(glow_color)
                 painter.setOpacity(0.3)
                 painter.drawEllipse(
                     QtCore.QPointF(marker_x, bar_y + bar_height // 2),
@@ -1830,8 +2062,8 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
             painter.setOpacity(1.0)
         
         # Triangle marker
-        painter.setBrush(QtGui.QColor(marker_color))
-        painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
+        painter.setBrush(marker_color)
+        painter.setPen(self._PEN_MARKER_OUTLINE)
         
         triangle = QtGui.QPolygonF([
             QtCore.QPointF(marker_x, bar_y - 2),
@@ -1840,7 +2072,7 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
         ])
         painter.drawPolygon(triangle)
         
-        painter.setPen(QtGui.QPen(QtGui.QColor(marker_color), 3))
+        painter.setPen(QtGui.QPen(marker_color, 3))
         painter.drawLine(int(marker_x), bar_y, int(marker_x), bar_y + bar_height)
 
 
@@ -1992,6 +2224,7 @@ class TierJumpSliderWidget(QtWidgets.QWidget):
         return 4  # Edge case
     
     def paintEvent(self, event):
+        _PaintCache.initialize()  # Ensure cache is ready
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         
@@ -2012,7 +2245,9 @@ class TierJumpSliderWidget(QtWidgets.QWidget):
             start_x = margin + (cumulative_pct / 100.0) * (w - 2*margin)
             zone_width = (zone_pct / 100.0) * (w - 2*margin)
             
-            painter.setBrush(QtGui.QColor(color))
+            # Use cached tier color if available
+            cached_color = _PaintCache.get_tier_color(rarity)
+            painter.setBrush(cached_color)
             painter.setPen(QtCore.Qt.NoPen)
             
             rect = QtCore.QRectF(start_x, bar_y, zone_width, bar_height)
@@ -2029,8 +2264,8 @@ class TierJumpSliderWidget(QtWidgets.QWidget):
             
             # Draw zone label with RARITY NAME (abbreviated)
             if zone_width > 25:
-                painter.setPen(QtGui.QColor("#fff"))
-                painter.setFont(QtGui.QFont("Arial", 9, QtGui.QFont.Bold))
+                painter.setPen(_PaintCache.COLOR_WHITE)
+                painter.setFont(_PaintCache.FONT_LABEL_MEDIUM)
                 # Use abbreviation for short zones
                 if zone_width < 50:
                     label = rarity[:3]  # "Unc", "Rar", "Epi", "Leg"
@@ -2041,7 +2276,7 @@ class TierJumpSliderWidget(QtWidgets.QWidget):
             
             # Draw separator between different rarities
             if i < len(self.display_rarities) - 1:
-                painter.setPen(QtGui.QPen(QtGui.QColor("#1a1a2e"), 2))
+                painter.setPen(_PaintCache.PEN_SEPARATOR)
                 sep_x = start_x + zone_width
                 painter.drawLine(int(sep_x), bar_y, int(sep_x), bar_y + bar_height)
             
@@ -2050,14 +2285,16 @@ class TierJumpSliderWidget(QtWidgets.QWidget):
         # Draw marker (still uses jump positions internally)
         marker_x = margin + (self.position / 100.0) * (w - 2*margin)
         current_jump = self.get_jump_at_position(self.position)
-        marker_color = self.get_color_for_jump(current_jump)
+        current_rarity = self.get_target_rarity_for_jump(current_jump)
+        marker_color = _PaintCache.get_tier_color(current_rarity)
         
         # Glow if result
         if self.result_jump:
-            glow_color = self.get_color_for_jump(self.result_jump)
+            result_rarity = self.get_target_rarity_for_jump(self.result_jump)
+            glow_color = _PaintCache.get_tier_color(result_rarity)
             for i in range(3):
                 glow_size = 12 + (3-i) * 4
-                painter.setBrush(QtGui.QColor(glow_color))
+                painter.setBrush(glow_color)
                 painter.setOpacity(0.3)
                 painter.drawEllipse(
                     QtCore.QPointF(marker_x, bar_y + bar_height // 2),
@@ -2066,8 +2303,8 @@ class TierJumpSliderWidget(QtWidgets.QWidget):
             painter.setOpacity(1.0)
         
         # Triangle marker
-        painter.setBrush(QtGui.QColor(marker_color))
-        painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
+        painter.setBrush(marker_color)
+        painter.setPen(_PaintCache.PEN_MARKER_OUTLINE)
         
         triangle = QtGui.QPolygonF([
             QtCore.QPointF(marker_x, bar_y - 2),
@@ -2076,7 +2313,7 @@ class TierJumpSliderWidget(QtWidgets.QWidget):
         ])
         painter.drawPolygon(triangle)
         
-        painter.setPen(QtGui.QPen(QtGui.QColor(marker_color), 3))
+        painter.setPen(QtGui.QPen(marker_color, 3))
         painter.drawLine(int(marker_x), bar_y, int(marker_x), bar_y + bar_height)
 
 
@@ -2283,6 +2520,16 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.final_result.setStyleSheet("color: #fff; font-size: 16px;")
         container_layout.addWidget(self.final_result)
         
+        # Sound toggle
+        sound_row = QtWidgets.QHBoxLayout()
+        sound_row.addStretch()
+        self.sound_toggle = QtWidgets.QCheckBox("🔊 Sound")
+        self.sound_toggle.setChecked(get_lottery_sound_enabled())
+        self.sound_toggle.setStyleSheet("color: #666; font-size: 11px;")
+        self.sound_toggle.toggled.connect(set_lottery_sound_enabled)
+        sound_row.addWidget(self.sound_toggle)
+        container_layout.addLayout(sound_row)
+        
         layout.addWidget(container)
     
     def _create_distribution_legend(self) -> QtWidgets.QWidget:
@@ -2403,6 +2650,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
                 self.final_result.setText(f"You got {self.rolled_tier}!")
             
             self.final_result.setStyleSheet(f"color: {color}; font-size: 14px;")
+            _play_lottery_result_sound(True)  # Play win sound
             QtCore.QTimer.singleShot(2500, self._finish)
         else:
             self.stage2_result.setText("💔 FAILED 💔")
@@ -2411,6 +2659,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             
             self.final_result.setText(f"You almost had {self.rolled_tier}... All items were destroyed.")
             self.final_result.setStyleSheet("color: #f44336; font-size: 14px;")
+            _play_lottery_result_sound(False)  # Play lose sound
             QtCore.QTimer.singleShot(2000, self._finish)
     
     def _animate_tier_stage(self, slider, result_label, target_roll, on_complete):
@@ -2446,18 +2695,18 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
                 self._anim_total_dist += dist
         
         self._anim_elapsed = 0.0
-        self._anim_duration = 9.0
+        self._anim_duration = 5.0
         
         # Style state tracking for performance
         self._tier_last_style = None
         
         self._tier_anim_timer = QtCore.QTimer(self)
         self._tier_anim_timer.timeout.connect(self._tier_anim_tick)
-        self._tier_anim_timer.start(20)  # 50 FPS for smoother performance
+        self._tier_anim_timer.start(16)  # 60 FPS for smoother animation
     
     def _tier_anim_tick(self):
         """Tier animation tick."""
-        self._anim_elapsed += 0.020  # Match timer interval
+        self._anim_elapsed += 0.016  # Match 16ms timer interval
         t = min(1.0, self._anim_elapsed / self._anim_duration)
         eased = 1.0 - (1.0 - t) ** 4
         
@@ -2519,18 +2768,18 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
                 self._success_total_dist += dist
         
         self._success_elapsed = 0.0
-        self._success_duration = 9.0
+        self._success_duration = 5.0
         
         # Style state tracking for performance
         self._success_last_style = None
         
         self._success_anim_timer = QtCore.QTimer(self)
         self._success_anim_timer.timeout.connect(self._success_anim_tick)
-        self._success_anim_timer.start(20)  # 50 FPS for smoother performance
+        self._success_anim_timer.start(16)  # 60 FPS for smoother animation
     
     def _success_anim_tick(self):
         """Success animation tick."""
-        self._success_elapsed += 0.020  # Match timer interval
+        self._success_elapsed += 0.016  # Match 16ms timer interval
         t = min(1.0, self._success_elapsed / self._success_duration)
         eased = 1.0 - (1.0 - t) ** 4
         
@@ -2664,6 +2913,7 @@ class WaterTierSliderWidget(QtWidgets.QWidget):
         return 95.0
     
     def paintEvent(self, event):
+        _PaintCache.initialize()  # Ensure cache is ready
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         
@@ -2673,13 +2923,13 @@ class WaterTierSliderWidget(QtWidgets.QWidget):
         bar_width = self.width() - 20
         x_offset = 10
         
-        # Draw tier zones
+        # Draw tier zones (use cached colors)
         cumulative_x = x_offset
         for tier, width in zip(self.TIERS, self.zone_widths):
             if width <= 0:
                 continue
             zone_width = (width / 100) * bar_width
-            color = QtGui.QColor(self.TIER_COLORS[tier])
+            color = _PaintCache.get_tier_color(tier)
             painter.fillRect(
                 int(cumulative_x), bar_y,
                 int(zone_width), bar_height,
@@ -2687,8 +2937,8 @@ class WaterTierSliderWidget(QtWidgets.QWidget):
             )
             # Zone label (only if wide enough)
             if zone_width > 35:
-                painter.setPen(QtGui.QColor("#ffffff"))
-                painter.setFont(QtGui.QFont("Arial", 8, QtGui.QFont.Bold))
+                painter.setPen(_PaintCache.COLOR_WHITE)
+                painter.setFont(_PaintCache.FONT_LABEL_SMALL)
                 painter.drawText(
                     int(cumulative_x), bar_y,
                     int(zone_width), bar_height,
@@ -2697,17 +2947,17 @@ class WaterTierSliderWidget(QtWidgets.QWidget):
             cumulative_x += zone_width
         
         # Draw border
-        painter.setPen(QtGui.QPen(QtGui.QColor("#333"), 2))
+        painter.setPen(_PaintCache.PEN_BORDER)
         painter.drawRect(x_offset, bar_y, bar_width, bar_height)
         
         # Draw marker
         marker_x = x_offset + (self.position / 100) * bar_width
         current_tier = self.get_tier_at_position(self.position)
-        marker_color = self.TIER_COLORS.get(current_tier, "#fff")
+        marker_color = _PaintCache.get_tier_color(current_tier)
         
         # Marker triangle
-        painter.setBrush(QtGui.QColor(marker_color))
-        painter.setPen(QtGui.QPen(QtGui.QColor("#000"), 1))
+        painter.setBrush(marker_color)
+        painter.setPen(_PaintCache.PEN_BLACK_OUTLINE)
         triangle = [
             QtCore.QPointF(marker_x, bar_y - 5),
             QtCore.QPointF(marker_x - 6, bar_y - 15),
@@ -2716,7 +2966,7 @@ class WaterTierSliderWidget(QtWidgets.QWidget):
         painter.drawPolygon(triangle)
         
         # Marker line
-        painter.setPen(QtGui.QPen(QtGui.QColor(marker_color), 3))
+        painter.setPen(QtGui.QPen(marker_color, 3))
         painter.drawLine(int(marker_x), bar_y, int(marker_x), bar_y + bar_height)
 
 
@@ -2745,6 +2995,7 @@ class WaterWinSliderWidget(QtWidgets.QWidget):
         self.update()
     
     def paintEvent(self, event):
+        _PaintCache.initialize()  # Ensure cache is ready
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         
@@ -2758,21 +3009,17 @@ class WaterWinSliderWidget(QtWidgets.QWidget):
         
         # Win zone (green, left side)
         win_width = (win_pct / 100) * bar_width
-        win_color = QtGui.QColor("#4caf50")
-        if self.result_won is True:
-            win_color = QtGui.QColor("#66bb6a")  # Brighter on win
+        win_color = _PaintCache.COLOR_SUCCESS
         painter.fillRect(x_offset, bar_y, int(win_width), bar_height, win_color)
         
         # Lose zone (red, right side)
         lose_width = (lose_pct / 100) * bar_width
-        lose_color = QtGui.QColor("#f44336")
-        if self.result_won is False:
-            lose_color = QtGui.QColor("#ef5350")  # Brighter on lose
+        lose_color = _PaintCache.COLOR_FAIL
         painter.fillRect(int(x_offset + win_width), bar_y, int(lose_width), bar_height, lose_color)
         
         # Labels
-        painter.setPen(QtGui.QColor("#ffffff"))
-        painter.setFont(QtGui.QFont("Arial", 9, QtGui.QFont.Bold))
+        painter.setPen(_PaintCache.COLOR_WHITE)
+        painter.setFont(_PaintCache.FONT_LABEL_MEDIUM)
         if win_width > 30:
             painter.drawText(x_offset, bar_y, int(win_width), bar_height,
                            QtCore.Qt.AlignCenter, f"WIN {win_pct:.0f}%")
@@ -2781,17 +3028,17 @@ class WaterWinSliderWidget(QtWidgets.QWidget):
                            QtCore.Qt.AlignCenter, f"LOSE {lose_pct:.0f}%")
         
         # Border
-        painter.setPen(QtGui.QPen(QtGui.QColor("#333"), 2))
+        painter.setPen(_PaintCache.PEN_BORDER)
         painter.drawRect(x_offset, bar_y, bar_width, bar_height)
         
         # Marker
         marker_x = x_offset + (self.position / 100) * bar_width
         in_win_zone = self.position < win_pct
-        marker_color = "#4caf50" if in_win_zone else "#f44336"
+        marker_color = _PaintCache.COLOR_SUCCESS if in_win_zone else _PaintCache.COLOR_FAIL
         
         # Marker triangle
-        painter.setBrush(QtGui.QColor(marker_color))
-        painter.setPen(QtGui.QPen(QtGui.QColor("#000"), 1))
+        painter.setBrush(marker_color)
+        painter.setPen(_PaintCache.PEN_BLACK_OUTLINE)
         triangle = [
             QtCore.QPointF(marker_x, bar_y - 5),
             QtCore.QPointF(marker_x - 6, bar_y - 15),
@@ -2800,7 +3047,7 @@ class WaterWinSliderWidget(QtWidgets.QWidget):
         painter.drawPolygon(triangle)
         
         # Marker line
-        painter.setPen(QtGui.QPen(QtGui.QColor(marker_color), 3))
+        painter.setPen(QtGui.QPen(marker_color, 3))
         painter.drawLine(int(marker_x), bar_y, int(marker_x), bar_y + bar_height)
 
 
@@ -2970,6 +3217,16 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.final_result.hide()
         layout.addWidget(self.final_result)
         
+        # Sound toggle
+        sound_row = QtWidgets.QHBoxLayout()
+        sound_row.addStretch()
+        self.sound_toggle = QtWidgets.QCheckBox("🔊 Sound")
+        self.sound_toggle.setChecked(get_lottery_sound_enabled())
+        self.sound_toggle.setStyleSheet("color: #666; font-size: 11px;")
+        self.sound_toggle.toggled.connect(set_lottery_sound_enabled)
+        sound_row.addWidget(self.sound_toggle)
+        layout.addLayout(sound_row)
+        
         layout.addStretch()
     
     def _start_stage_1(self):
@@ -3004,14 +3261,14 @@ class WaterLotteryDialog(QtWidgets.QDialog):
                 self._stage1_total_dist += dist
         
         self._stage1_elapsed = 0.0
-        self._stage1_duration = 9.0
+        self._stage1_duration = 5.0
         
         # Style state tracking for performance
         self._stage1_last_tier = None
         
         self._stage1_timer = QtCore.QTimer(self)
         self._stage1_timer.timeout.connect(self._animate_stage1_tick)
-        self._stage1_timer.start(20)  # 50 FPS for smoother performance
+        self._stage1_timer.start(16)  # 60 FPS for smooth performance
     
     def _animate_stage1_tick(self):
         """Tier roll animation tick."""
@@ -3021,7 +3278,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
             "Epic": "#9c27b0", "Legendary": "#ff9800"
         }
         
-        self._stage1_elapsed += 0.020  # Match timer interval
+        self._stage1_elapsed += 0.016  # Match timer interval
         t = min(1.0, self._stage1_elapsed / self._stage1_duration)
         eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
         
@@ -3102,18 +3359,18 @@ class WaterLotteryDialog(QtWidgets.QDialog):
                 self._stage2_total_dist += dist
         
         self._stage2_elapsed = 0.0
-        self._stage2_duration = 9.0
+        self._stage2_duration = 5.0
         
         # Style state tracking for performance
         self._stage2_last_zone = None
         
         self._stage2_timer = QtCore.QTimer(self)
         self._stage2_timer.timeout.connect(self._animate_stage2_tick)
-        self._stage2_timer.start(20)  # 50 FPS for smoother performance
+        self._stage2_timer.start(16)  # 60 FPS for smooth performance
     
     def _animate_stage2_tick(self):
         """Win/lose animation tick."""
-        self._stage2_elapsed += 0.020  # Match timer interval
+        self._stage2_elapsed += 0.016  # Match timer interval
         t = min(1.0, self._stage2_elapsed / self._stage2_duration)
         eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
         
@@ -3187,6 +3444,9 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         
         self.stage2_result.setTextFormat(QtCore.Qt.RichText)
         self.final_result.show()
+        
+        # Play lottery result sound
+        _play_lottery_result_sound(self.won)
         
         # Auto-close after delay
         QtCore.QTimer.singleShot(2500, self._finish)
@@ -3312,6 +3572,7 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
         return 95.0
     
     def paintEvent(self, event):
+        _PaintCache.initialize()  # Ensure cache is ready
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         
@@ -3322,13 +3583,13 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
         bar_width = w - 20
         x_offset = 10
         
-        # Draw tier zones
+        # Draw tier zones (use cached colors)
         cumulative_x = x_offset
         for tier, width in zip(self.TIERS, self.zone_widths):
             if width <= 0:
                 continue
             zone_width = (width / 100) * bar_width
-            color = QtGui.QColor(self.TIER_COLORS[tier])
+            color = _PaintCache.get_tier_color(tier)
             
             # Highlight winning tier
             if self.result_tier and tier == self.result_tier:
@@ -3345,8 +3606,8 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
             # Zone label with percentage
             if zone_width > 30:
                 painter.setOpacity(1.0)
-                painter.setPen(QtGui.QColor("#ffffff"))
-                painter.setFont(QtGui.QFont("Arial", 9, QtGui.QFont.Bold))
+                painter.setPen(_PaintCache.COLOR_WHITE)
+                painter.setFont(_PaintCache.FONT_LABEL_MEDIUM)
                 label = f"{tier[:3]}"
                 painter.drawText(
                     int(cumulative_x), bar_y,
@@ -3358,20 +3619,20 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
         painter.setOpacity(1.0)
         
         # Draw border
-        painter.setPen(QtGui.QPen(QtGui.QColor("#333"), 2))
+        painter.setPen(_PaintCache.PEN_BORDER)
         painter.drawRect(x_offset, bar_y, bar_width, bar_height)
         
         # Draw marker
         marker_x = x_offset + (self.position / 100) * bar_width
         current_tier = self.get_tier_at_position(self.position)
-        marker_color = self.TIER_COLORS.get(current_tier, "#fff")
+        marker_color = _PaintCache.get_tier_color(current_tier)
         
         # Glow effect for result
         if self.result_tier:
-            glow_color = self.TIER_COLORS.get(self.result_tier, "#fff")
+            glow_color = _PaintCache.get_tier_color(self.result_tier)
             for i in range(3):
                 glow_size = 10 + (3-i) * 3
-                painter.setBrush(QtGui.QColor(glow_color))
+                painter.setBrush(glow_color)
                 painter.setOpacity(0.3)
                 painter.drawEllipse(
                     QtCore.QPointF(marker_x, bar_y + bar_height // 2),
@@ -3380,8 +3641,8 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
             painter.setOpacity(1.0)
         
         # Marker triangle
-        painter.setBrush(QtGui.QColor(marker_color))
-        painter.setPen(QtGui.QPen(QtGui.QColor("#fff"), 2))
+        painter.setBrush(marker_color)
+        painter.setPen(_PaintCache.PEN_MARKER_OUTLINE)
         triangle = [
             QtCore.QPointF(marker_x, bar_y - 3),
             QtCore.QPointF(marker_x - 8, bar_y - 15),
@@ -3390,7 +3651,7 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
         painter.drawPolygon(triangle)
         
         # Marker line
-        painter.setPen(QtGui.QPen(QtGui.QColor(marker_color), 3))
+        painter.setPen(QtGui.QPen(marker_color, 3))
         painter.drawLine(int(marker_x), bar_y, int(marker_x), bar_y + bar_height)
 
 
@@ -3525,6 +3786,16 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         
         container_layout.addWidget(self.item_frame)
         
+        # Sound toggle
+        sound_row = QtWidgets.QHBoxLayout()
+        sound_row.addStretch()
+        self.sound_toggle = QtWidgets.QCheckBox("🔊 Sound")
+        self.sound_toggle.setChecked(get_lottery_sound_enabled())
+        self.sound_toggle.setStyleSheet("color: #666; font-size: 11px;")
+        self.sound_toggle.toggled.connect(set_lottery_sound_enabled)
+        sound_row.addWidget(self.sound_toggle)
+        container_layout.addLayout(sound_row)
+        
         layout.addWidget(container)
     
     def _start_animation(self):
@@ -3556,14 +3827,14 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
                 self._total_dist += dist
         
         self._anim_elapsed = 0.0
-        self._anim_duration = 8.0
+        self._anim_duration = 4.0
         
         # Style state tracking for performance
         self._anim_last_tier = None
         
         self._anim_timer = QtCore.QTimer(self)
         self._anim_timer.timeout.connect(self._animate_step)
-        self._anim_timer.start(20)  # 50 FPS for smoother performance
+        self._anim_timer.start(16)  # 60 FPS for smooth performance
     
     def _animate_step(self):
         """Animation frame using bounce path."""
@@ -3573,7 +3844,7 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
             "Epic": "#9c27b0", "Legendary": "#ff9800"
         }
         
-        self._anim_elapsed += 0.020  # Match timer interval
+        self._anim_elapsed += 0.016  # Match timer interval
         t = min(1.0, self._anim_elapsed / self._anim_duration)
         eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
         
@@ -3646,6 +3917,9 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
             f"{lucky_text}"
         )
         self.item_label.setTextFormat(QtCore.Qt.RichText)
+        
+        # Play win sound (FocusTimer always wins an item)
+        _play_lottery_result_sound(True)
         
         # Auto-close after delay
         QtCore.QTimer.singleShot(3000, self._finish)
@@ -3778,6 +4052,16 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         self.final_result.setStyleSheet("font-size: 16px; font-weight: bold; color: #4caf50;")
         self.final_result.hide()
         layout.addWidget(self.final_result)
+        
+        # Sound toggle
+        sound_row = QtWidgets.QHBoxLayout()
+        sound_row.addStretch()
+        self.sound_toggle = QtWidgets.QCheckBox("🔊 Sound")
+        self.sound_toggle.setChecked(get_lottery_sound_enabled())
+        self.sound_toggle.setStyleSheet("color: #666; font-size: 11px;")
+        self.sound_toggle.toggled.connect(set_lottery_sound_enabled)
+        sound_row.addWidget(self.sound_toggle)
+        layout.addLayout(sound_row)
     
     def _start_animation(self):
         """Start the tier roll animation using bounce path."""
@@ -3809,14 +4093,14 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
                 self._total_dist += dist
         
         self._elapsed = 0.0
-        self._duration = 6.0
+        self._duration = 4.0
         
         # Style state tracking for performance
         self._last_tier = None
         
         self._anim_timer = QtCore.QTimer(self)
         self._anim_timer.timeout.connect(self._anim_tick)
-        self._anim_timer.start(20)  # 50 FPS for smoother performance
+        self._anim_timer.start(16)  # 60 FPS for smooth performance
     
     def _anim_tick(self):
         """Animation tick."""
@@ -3826,7 +4110,7 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
             "Epic": "#9c27b0", "Legendary": "#ff9800"
         }
         
-        self._elapsed += 0.020  # Match timer interval
+        self._elapsed += 0.016  # Match timer interval
         t = min(1.0, self._elapsed / self._duration)
         eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
         
@@ -3873,6 +4157,9 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         self.final_result.setText(f"🎁 {item_name}")
         self.final_result.setStyleSheet(f"color: {color}; font-size: 14px; font-weight: bold;")
         self.final_result.show()
+        
+        # Play win sound (activity always awards an item)
+        _play_lottery_result_sound(True)
         
         # Auto-close after delay
         QtCore.QTimer.singleShot(3000, self._finish)
@@ -3924,6 +4211,7 @@ class ActivityTierSliderWidget(QtWidgets.QWidget):
         return "Legendary"
     
     def paintEvent(self, event):
+        _PaintCache.initialize()  # Ensure cache is ready
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         
@@ -3933,13 +4221,13 @@ class ActivityTierSliderWidget(QtWidgets.QWidget):
         bar_width = self.width() - 20
         x_offset = 10
         
-        # Draw tier zones
+        # Draw tier zones (use cached colors)
         cumulative_x = x_offset
         for tier, weight in zip(self.TIERS, self.tier_weights):
             if weight <= 0:
                 continue
             zone_width = (weight / 100) * bar_width
-            color = QtGui.QColor(self.TIER_COLORS[tier])
+            color = _PaintCache.get_tier_color(tier)
             painter.fillRect(
                 int(cumulative_x), bar_y,
                 int(zone_width), bar_height,
@@ -3947,8 +4235,8 @@ class ActivityTierSliderWidget(QtWidgets.QWidget):
             )
             # Zone label (only if wide enough)
             if zone_width > 35:
-                painter.setPen(QtGui.QColor("#ffffff"))
-                painter.setFont(QtGui.QFont("Arial", 8, QtGui.QFont.Bold))
+                painter.setPen(_PaintCache.COLOR_WHITE)
+                painter.setFont(_PaintCache.FONT_LABEL_SMALL)
                 painter.drawText(
                     int(cumulative_x), bar_y,
                     int(zone_width), bar_height,
@@ -3959,11 +4247,11 @@ class ActivityTierSliderWidget(QtWidgets.QWidget):
         
         # Marker
         marker_x = x_offset + (self.position / 100) * bar_width
-        marker_color = self.TIER_COLORS.get(self.get_tier_at_position(self.position), "#fff")
+        marker_color = _PaintCache.get_tier_color(self.get_tier_at_position(self.position))
         
         # Marker triangle
-        painter.setBrush(QtGui.QColor(marker_color))
-        painter.setPen(QtGui.QPen(QtGui.QColor("#000"), 1))
+        painter.setBrush(marker_color)
+        painter.setPen(_PaintCache.PEN_BLACK_OUTLINE)
         triangle = [
             QtCore.QPointF(marker_x, bar_y - 5),
             QtCore.QPointF(marker_x - 6, bar_y - 15),
@@ -3972,7 +4260,7 @@ class ActivityTierSliderWidget(QtWidgets.QWidget):
         painter.drawPolygon(triangle)
         
         # Marker line
-        painter.setPen(QtGui.QPen(QtGui.QColor(marker_color), 3))
+        painter.setPen(QtGui.QPen(marker_color, 3))
         painter.drawLine(int(marker_x), bar_y, int(marker_x), bar_y + bar_height)
 
 
