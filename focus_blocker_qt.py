@@ -15401,13 +15401,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self._refresh_character()         # Then power/stats display (also updates story)
             # Update merge selection state
             self._update_merge_selection()
-            # Update story description (for story switches)
-            if hasattr(self, 'story_desc_lbl'):
-                self._update_story_description()
-            # Sync story combo selection with current data
-            self._sync_story_combo_selection()
-            # Update mode UI state (enable/disable controls based on mode)
-            self._update_mode_ui_state()
+            # Update story indicator (compact label in Hero tab)
+            self._update_story_indicator()
             # Update optimize button label based on entity perks
             self._update_optimize_button_label()
         finally:
@@ -15715,139 +15710,29 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self.xp_progress_bar = None
             self.xp_text_lbl = None
 
-        # Story Progress Section (at top for visibility)
-        story_group = QtWidgets.QGroupBox("📜 Your Story")
-        story_layout = QtWidgets.QVBoxLayout(story_group)
-
-        # Mode selection row
+        # Compact Story Indicator (full story UI now in Story tab)
         if GAMIFICATION_AVAILABLE:
-            mode_bar = QtWidgets.QHBoxLayout()
-            mode_bar.addWidget(QtWidgets.QLabel("Mode:"))
-            self.mode_story_radio = QtWidgets.QRadioButton("Story")
-            self.mode_hero_radio = QtWidgets.QRadioButton("Hero Only")
-            self.mode_disabled_radio = QtWidgets.QRadioButton("Disabled")
-            mode_group = QtWidgets.QButtonGroup(self)
-            for btn in (self.mode_story_radio, self.mode_hero_radio, self.mode_disabled_radio):
-                mode_group.addButton(btn)
-                mode_bar.addWidget(btn)
-            # Set current mode
-            current_mode = get_story_mode(self.blocker.adhd_buster)
-            if current_mode == STORY_MODE_HERO_ONLY:
-                self.mode_hero_radio.setChecked(True)
-            elif current_mode == STORY_MODE_DISABLED:
-                self.mode_disabled_radio.setChecked(True)
-            else:
-                self.mode_story_radio.setChecked(True)
-            # Connect signals - use lambda to filter to only checked state
-            self.mode_story_radio.toggled.connect(lambda checked: checked and self._on_mode_radio_changed())
-            self.mode_hero_radio.toggled.connect(lambda checked: checked and self._on_mode_radio_changed())
-            self.mode_disabled_radio.toggled.connect(lambda checked: checked and self._on_mode_radio_changed())
-            mode_bar.addStretch()
-            story_layout.addLayout(mode_bar)
-        
-        # Story selection row
-        if GAMIFICATION_AVAILABLE:
-            from gamification import AVAILABLE_STORIES, get_selected_story, get_story_progress
+            from gamification import AVAILABLE_STORIES, get_selected_story
             
-            story_select_bar = QtWidgets.QHBoxLayout()
-            story_select_bar.addWidget(QtWidgets.QLabel("Choose Your Story:"))
-            self.story_combo = NoScrollComboBox()
-            self.story_combo.setMinimumWidth(250)
+            story_indicator = QtWidgets.QWidget()
+            story_indicator_layout = QtWidgets.QHBoxLayout(story_indicator)
+            story_indicator_layout.setContentsMargins(10, 8, 10, 8)
             
             current_story = get_selected_story(self.blocker.adhd_buster)
-            unlocked_stories = self.blocker.adhd_buster.get("unlocked_stories", ["underdog"])
-            current_idx = 0
-            for i, (story_id, story_info) in enumerate(AVAILABLE_STORIES.items()):
-                is_locked = story_id not in unlocked_stories
-                lock_icon = "🔒 " if is_locked else ""
-                self.story_combo.addItem(f"{lock_icon}{story_info['title']}", story_id)
-                tooltip = story_info['description']
-                if is_locked:
-                    tooltip += "\n\n🔒 Costs 100 coins to unlock"
-                self.story_combo.setItemData(i, tooltip, QtCore.Qt.ToolTipRole)
-                if story_id == current_story:
-                    current_idx = i
+            story_info = AVAILABLE_STORIES.get(current_story, {})
+            self.story_indicator_lbl = QtWidgets.QLabel(f"📜 Current Story: <b>{story_info.get('title', current_story)}</b>")
+            self.story_indicator_lbl.setStyleSheet("font-size: 13px;")
+            story_indicator_layout.addWidget(self.story_indicator_lbl)
             
-            self.story_combo.setCurrentIndex(current_idx)
-            self.story_combo.currentIndexChanged.connect(self._on_story_change)
-            story_select_bar.addWidget(self.story_combo)
+            story_indicator_layout.addStretch()
             
-            # Restart Story button
-            self.restart_story_btn = QtWidgets.QPushButton("🔄 Restart Story")
-            self.restart_story_btn.setToolTip("Reset this story's hero - lose all gear, progress, and decisions")
-            self.restart_story_btn.setStyleSheet("color: #c62828;")
-            self.restart_story_btn.clicked.connect(self._on_restart_story)
-            story_select_bar.addWidget(self.restart_story_btn)
+            self.go_to_story_btn = QtWidgets.QPushButton("📖 Go to Story Tab")
+            self.go_to_story_btn.setStyleSheet("padding: 5px 15px;")
+            self.go_to_story_btn.setToolTip("Open the Story tab to change stories, read chapters, and track progress")
+            self.go_to_story_btn.clicked.connect(self._go_to_story_tab)
+            story_indicator_layout.addWidget(self.go_to_story_btn)
             
-            story_select_bar.addStretch()
-            story_layout.addLayout(story_select_bar)
-            
-            # Story description
-            self.story_desc_lbl = QtWidgets.QLabel()
-            self.story_desc_lbl.setWordWrap(True)
-            self.story_desc_lbl.setStyleSheet("color: #888; font-style: italic; padding: 5px;")
-            self._update_story_description()
-            story_layout.addWidget(self.story_desc_lbl)
-        
-        # Story progress info
-        if GAMIFICATION_AVAILABLE:
-            progress = get_story_progress(self.blocker.adhd_buster)
-            
-            self.story_progress_lbl = QtWidgets.QLabel()
-            self.story_progress_lbl.setStyleSheet("font-weight: bold;")
-            story_layout.addWidget(self.story_progress_lbl)
-            
-            self.story_next_lbl = QtWidgets.QLabel()
-            self.story_next_lbl.setStyleSheet("color: #666;")
-            story_layout.addWidget(self.story_next_lbl)
-            
-            # Progress bar for next chapter
-            progress_bar_layout = QtWidgets.QHBoxLayout()
-            progress_bar_layout.addWidget(QtWidgets.QLabel("Progress to Next Chapter:"))
-            self.chapter_progress_bar = QtWidgets.QProgressBar()
-            self.chapter_progress_bar.setMinimum(0)
-            self.chapter_progress_bar.setMaximum(100)
-            self.chapter_progress_bar.setTextVisible(True)
-            self.chapter_progress_bar.setStyleSheet("""
-                QProgressBar {
-                    border: 1px solid #444;
-                    border-radius: 5px;
-                    text-align: center;
-                    height: 20px;
-                }
-                QProgressBar::chunk {
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                        stop:0 #4caf50, stop:0.5 #8bc34a, stop:1 #cddc39);
-                    border-radius: 4px;
-                }
-            """)
-            progress_bar_layout.addWidget(self.chapter_progress_bar, 1)
-            story_layout.addLayout(progress_bar_layout)
-            
-            self._update_story_progress_labels()
-        
-        # Chapter selection
-        chapter_bar = QtWidgets.QHBoxLayout()
-        chapter_bar.addWidget(QtWidgets.QLabel("Select Chapter:"))
-        self.chapter_combo = NoScrollComboBox()
-        
-        if GAMIFICATION_AVAILABLE:
-            self._refresh_story_chapter_list()
-        else:
-            self.chapter_combo.addItem("Story unavailable", 0)
-        
-        chapter_bar.addWidget(self.chapter_combo)
-        read_btn = QtWidgets.QPushButton("📖 Read Chapter")
-        read_btn.clicked.connect(self._read_story_chapter)
-        chapter_bar.addWidget(read_btn)
-        chapter_bar.addStretch()
-        story_layout.addLayout(chapter_bar)
-        
-        self.inner_layout.addWidget(story_group)
-
-        # Update mode UI state (enable/disable story controls based on mode)
-        if GAMIFICATION_AVAILABLE:
-            self._update_mode_ui_state()
+            self.inner_layout.addWidget(story_indicator)
 
         # Latest Diary Entry - Speech bubble from the character
         diary_bubble_group = QtWidgets.QWidget()
@@ -17205,169 +17090,6 @@ class ADHDBusterTab(QtWidgets.QWidget):
         if not self._game_state:
             self.refresh_all()
 
-    def _on_story_change(self, index: int) -> None:
-        """Handle story selection change."""
-        if not GAMIFICATION_AVAILABLE:
-            return
-        
-        story_id = self.story_combo.currentData()
-        if not story_id:
-            return
-        
-        from gamification import select_story, get_selected_story, COIN_COSTS
-        current = get_selected_story(self.blocker.adhd_buster)
-        
-        if story_id != current:
-            # Check if story needs to be unlocked (costs coins)
-            STORY_UNLOCK_COST = COIN_COSTS.get("story_unlock", 100)
-            unlocked_stories = self.blocker.adhd_buster.get("unlocked_stories", ["underdog"])  # Underdog is free
-            
-            if story_id not in unlocked_stories:
-                current_coins = self.blocker.adhd_buster.get("coins", 0)
-                if current_coins < STORY_UNLOCK_COST:
-                    show_warning(self, "Story Locked", 
-                        f"This story costs {STORY_UNLOCK_COST} coins to unlock.\n\n"
-                        f"You have: {current_coins} coins\n"
-                        f"You need: {STORY_UNLOCK_COST - current_coins} more coins\n\n"
-                        f"Complete focus sessions to earn more coins!")
-                    # Revert combo
-                    self.story_combo.blockSignals(True)
-                    for i in range(self.story_combo.count()):
-                        if self.story_combo.itemData(i) == current:
-                            self.story_combo.setCurrentIndex(i)
-                            break
-                    self.story_combo.blockSignals(False)
-                    return
-                
-                # Ask to unlock
-                from gamification import AVAILABLE_STORIES
-                story_info = AVAILABLE_STORIES.get(story_id, {})
-                story_title = story_info.get("title", story_id)
-                reply = show_question(
-                    self, "Unlock Story?",
-                    f"Unlock '{story_title}' for {STORY_UNLOCK_COST} coins?\n\n"
-                    f"You have: {current_coins} coins\n"
-                    f"After unlock: {current_coins - STORY_UNLOCK_COST} coins",
-                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
-                )
-                if reply != QtWidgets.QMessageBox.Yes:
-                    self.story_combo.blockSignals(True)
-                    for i in range(self.story_combo.count()):
-                        if self.story_combo.itemData(i) == current:
-                            self.story_combo.setCurrentIndex(i)
-                            break
-                    self.story_combo.blockSignals(False)
-                    return
-                
-                # Spend coins and unlock story
-                if self._game_state:
-                    if not self._game_state.spend_coins(STORY_UNLOCK_COST):
-                        show_warning(self, "Error", "Failed to spend coins.")
-                        return
-                else:
-                    # Fallback: directly deduct coins if no game state manager
-                    current_coins = self.blocker.adhd_buster.get("coins", 0)
-                    if current_coins < STORY_UNLOCK_COST:
-                        show_warning(self, "Error", "Not enough coins.")
-                        return
-                    self.blocker.adhd_buster["coins"] = current_coins - STORY_UNLOCK_COST
-                
-                # Add to unlocked stories
-                if "unlocked_stories" not in self.blocker.adhd_buster:
-                    self.blocker.adhd_buster["unlocked_stories"] = ["underdog"]
-                self.blocker.adhd_buster["unlocked_stories"].append(story_id)
-                self.blocker.save_config()
-                show_info(self, "Story Unlocked! 🎉", f"You've unlocked '{story_title}'!")
-                
-                # Refresh story combo to update lock icons
-                self._refresh_story_combo()
-            else:
-                # Story already unlocked - just confirm switch
-                reply = show_question(
-                    self, "Switch Story?",
-                    f"Each story has its own hero with separate gear and progress.\n\n"
-                    f"Switching will load your hero for this story.\n"
-                    f"(Your current hero's progress will be saved.)\n\n"
-                    f"Switch to the new story?",
-                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
-                )
-                if reply != QtWidgets.QMessageBox.Yes:
-                    # Revert combo to current story - block signals to prevent recursion
-                    self.story_combo.blockSignals(True)
-                    for i in range(self.story_combo.count()):
-                        if self.story_combo.itemData(i) == current:
-                            self.story_combo.setCurrentIndex(i)
-                            break
-                    self.story_combo.blockSignals(False)
-                    return
-        
-        select_story(self.blocker.adhd_buster, story_id)
-        self.blocker.save_config()
-        
-        # Comprehensive refresh for the new hero (includes story description, progress, chapters)
-        self.refresh_all()
-
-    def _on_restart_story(self) -> None:
-        """Handle restart story button click - reset current story's hero."""
-        if not GAMIFICATION_AVAILABLE:
-            return
-        
-        from gamification import restart_story, get_selected_story, AVAILABLE_STORIES
-        
-        story_id = get_selected_story(self.blocker.adhd_buster)
-        story_info = AVAILABLE_STORIES.get(story_id, {})
-        story_title = story_info.get("title", story_id)
-        
-        # Confirm with serious warning
-        reply = show_question(
-            self, "⚠️ Restart Story?",
-            f"Are you sure you want to RESTART '{story_title}'?\n\n"
-            f"This will DELETE:\n"
-            f"  ❌ All gear and inventory for this story\n"
-            f"  ❌ All story decisions and progress\n"
-            f"  ❌ All chapters unlocked\n\n"
-            f"Your hero will start from Chapter 1 with nothing.\n\n"
-            f"This CANNOT be undone!",
-            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-            QtWidgets.QMessageBox.No  # Default to No
-        )
-        
-        if reply != QtWidgets.QMessageBox.Yes:
-            return
-        
-        # Double-confirm for safety
-        confirm = show_question(
-            self, "Final Confirmation",
-            f"Type of restart: FULL RESET\n\n"
-            f"Really delete all progress for '{story_title}'?",
-            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-            QtWidgets.QMessageBox.No
-        )
-        
-        if confirm != QtWidgets.QMessageBox.Yes:
-            return
-        
-        # Perform the restart
-        success = restart_story(self.blocker.adhd_buster, story_id)
-        
-        if success:
-            self.blocker.save_config()
-            
-            # Comprehensive refresh (includes story description, progress, chapters)
-            self.refresh_all()
-            
-            show_info(
-                self, "Story Restarted",
-                f"'{story_title}' has been reset!\n\n"
-                f"Your hero begins anew at Chapter 1.\n"
-                f"Good luck on your fresh journey! 🌟"
-            )
-        else:
-            show_error(
-                self, "Error",
-                "Failed to restart story. Please try again."
-            )
-
     def _save_inventory_state(self) -> None:
         """Save inventory table column configuration."""
         try:
@@ -17387,386 +17109,29 @@ class ADHDBusterTab(QtWidgets.QWidget):
         except Exception as e:
             print(f"Error loading inventory state: {e}")
 
-    def _on_mode_radio_changed(self) -> None:
-        """Handle mode radio button change."""
-        if not GAMIFICATION_AVAILABLE:
-            return
-
-        # Determine which mode is selected
-        if self.mode_disabled_radio.isChecked():
-            new_mode = STORY_MODE_DISABLED
-        elif self.mode_hero_radio.isChecked():
-            new_mode = STORY_MODE_HERO_ONLY
-        else:
-            new_mode = STORY_MODE_ACTIVE
-
-        current_mode = get_story_mode(self.blocker.adhd_buster)
-        if new_mode == current_mode:
-            return
-
-        # Sync any pending changes before mode switch
-        sync_hero_data(self.blocker.adhd_buster)
-
-        if new_mode == STORY_MODE_ACTIVE:
-            # Switch to story mode - use current active story
-            story_id = self.blocker.adhd_buster.get("active_story", "warrior")
-            switch_story(self.blocker.adhd_buster, story_id)
-        else:
-            set_story_mode(self.blocker.adhd_buster, new_mode)
-
-        self.blocker.save_config()
-
-        # Update UI to reflect mode change
-        self._update_mode_ui_state()
-        self.refresh_all()
-
-    def _update_mode_ui_state(self) -> None:
-        """Update UI elements based on current mode (enable/disable story controls)."""
-        if not GAMIFICATION_AVAILABLE:
-            return
-        enabled = is_gamification_enabled(self.blocker.adhd_buster)
-        current_mode = get_story_mode(self.blocker.adhd_buster)
-        story_mode = current_mode == STORY_MODE_ACTIVE
-        
-        # Sync radio button selection with current mode (block signals to prevent loop)
-        if hasattr(self, 'mode_story_radio'):
-            self.mode_story_radio.blockSignals(True)
-            self.mode_hero_radio.blockSignals(True)
-            self.mode_disabled_radio.blockSignals(True)
-            
-            if current_mode == STORY_MODE_HERO_ONLY:
-                self.mode_hero_radio.setChecked(True)
-            elif current_mode == STORY_MODE_DISABLED:
-                self.mode_disabled_radio.setChecked(True)
-            else:
-                self.mode_story_radio.setChecked(True)
-            
-            self.mode_story_radio.blockSignals(False)
-            self.mode_hero_radio.blockSignals(False)
-            self.mode_disabled_radio.blockSignals(False)
-        
-        # Enable story combo only in story mode
-        if hasattr(self, "story_combo"):
-            self.story_combo.setEnabled(story_mode)
-        if hasattr(self, "chapter_combo"):
-            self.chapter_combo.setEnabled(story_mode)
-    
-    def _update_story_description(self) -> None:
-        """Update the story description label."""
-        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'story_desc_lbl'):
-            return
-        
-        from gamification import AVAILABLE_STORIES, get_selected_story
-        story_id = get_selected_story(self.blocker.adhd_buster)
-        story_info = AVAILABLE_STORIES.get(story_id, {})
-        self.story_desc_lbl.setText(f"📖 {story_info.get('description', '')}")
-    
-    def _update_story_progress_labels(self) -> None:
-        """Update story progress labels and progress bar."""
-        if not GAMIFICATION_AVAILABLE:
-            return
-        
-        from gamification import get_story_progress
-        progress = get_story_progress(self.blocker.adhd_buster)
-        
-        if hasattr(self, 'story_progress_lbl'):
-            self.story_progress_lbl.setText(
-                f"📖 Chapters Unlocked: {len(progress['unlocked_chapters'])}/{progress['total_chapters']}  |  "
-                f"⚔ Power: {progress['power']}  |  "
-                f"⚡ Decisions: {progress['decisions_made']}/3"
-            )
-        
-        if hasattr(self, 'story_next_lbl'):
-            if progress['next_threshold']:
-                self.story_next_lbl.setText(
-                    f"🔒 Next chapter unlocks at {progress['next_threshold']} power "
-                    f"({progress['power_to_next']} more needed)"
-                )
-                self.story_next_lbl.setStyleSheet("color: #666;")
-            else:
-                self.story_next_lbl.setText("✨ You have unlocked the entire story!")
-                self.story_next_lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
-        
-        # Update progress bar
-        if hasattr(self, 'chapter_progress_bar'):
-            unlocked = len(progress['unlocked_chapters'])
-            total = progress['total_chapters']
-            
-            if progress['next_threshold']:
-                prev_threshold = progress.get('prev_threshold', 0)
-                next_threshold = progress['next_threshold']
-                current_power = progress['power']
-                next_chapter = unlocked + 1
-                
-                # Calculate progress percentage within current chapter range
-                range_size = next_threshold - prev_threshold
-                if range_size > 0:
-                    progress_in_range = current_power - prev_threshold
-                    percentage = int((progress_in_range / range_size) * 100)
-                    percentage = max(0, min(100, percentage))  # Clamp to 0-100
-                else:
-                    percentage = 100
-                
-                self.chapter_progress_bar.setValue(percentage)
-                self.chapter_progress_bar.setFormat(
-                    f"Ch {unlocked}/{total} | {current_power} → {next_threshold} power ({percentage}% to Ch {next_chapter})"
-                )
-                self.chapter_progress_bar.setVisible(True)
-            else:
-                # All chapters unlocked
-                self.chapter_progress_bar.setValue(100)
-                self.chapter_progress_bar.setFormat("✨ Story Complete!")
-                self.chapter_progress_bar.setStyleSheet("""
-                    QProgressBar {
-                        border: 1px solid #444;
-                        border-radius: 5px;
-                        text-align: center;
-                        height: 20px;
-                    }
-                    QProgressBar::chunk {
-                        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                            stop:0 #ffd700, stop:0.5 #ffcc00, stop:1 #ffaa00);
-                        border-radius: 4px;
-                    }
-                """)
-
-    def _read_story_chapter(self) -> None:
-        """Open a dialog to read the selected story chapter."""
-        if not GAMIFICATION_AVAILABLE:
-            show_warning(self, "Story", "Story system requires gamification module.")
-            return
-        
-        chapter_num = self.chapter_combo.currentData()
-        if not chapter_num:
-            return
-        
-        import re
-        def format_story_text(text: str) -> str:
-            """Convert markdown-like text to HTML."""
-            formatted = text.strip()
-            # Bold: **text** -> <b>text</b>
-            formatted = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', formatted)
-            # Italic: *text* -> <i>text</i> (but not inside bold tags)
-            formatted = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'<i>\1</i>', formatted)
-            # Paragraphs and line breaks
-            formatted = formatted.replace("\n\n", "</p><p>")
-            formatted = formatted.replace("\n", "<br>")
-            return f"<p style='font-size: 13px; line-height: 1.6;'>{formatted}</p>"
-        
-        from gamification import get_chapter_content, get_decision_for_chapter, has_made_decision, make_story_decision
-        chapter = get_chapter_content(chapter_num, self.blocker.adhd_buster)
-        
-        if not chapter:
-            return
-        
-        # Create story dialog
-        dialog = QtWidgets.QDialog(self)
-        dialog.setWindowTitle(f"📜 {chapter['title']}")
-        dialog.resize(650, 550)
-        
-        layout = QtWidgets.QVBoxLayout(dialog)
-        
-        # Title
-        title_lbl = QtWidgets.QLabel(f"<h2>{chapter['title']}</h2>")
-        title_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(title_lbl)
-        
-        if not chapter['unlocked']:
-            # Locked chapter
-            lock_lbl = QtWidgets.QLabel(
-                f"<p style='font-size: 48px; text-align: center;'>🔒</p>"
-                f"<p style='text-align: center; font-size: 14px;'>"
-                f"This chapter is locked.<br><br>"
-                f"<b>Required Power:</b> {chapter['threshold']}<br>"
-                f"<b>Your Power:</b> {chapter['threshold'] - chapter['power_needed']}<br>"
-                f"<b>Power Needed:</b> {chapter['power_needed']}<br><br>"
-                f"<i>Equip stronger gear to unlock this chapter!</i></p>"
-            )
-            lock_lbl.setWordWrap(True)
-            layout.addWidget(lock_lbl)
-        else:
-            # Story content
-            content_text = QtWidgets.QTextEdit()
-            content_text.setReadOnly(True)
-            
-            # Format content with markdown-like bold/italic
-            formatted = format_story_text(chapter['content'])
-            
-            content_text.setHtml(formatted)
-            content_text.setStyleSheet("background-color: #1a1a2e; color: #eee; padding: 10px;")
-            layout.addWidget(content_text)
-            
-            # Check if this chapter has a pending decision (has_decision is True when decision not yet made)
-            if chapter.get('has_decision') and chapter.get('decision'):
-                decision = chapter.get('decision', {})
-                
-                # Decision frame
-                decision_frame = QtWidgets.QFrame()
-                decision_frame.setStyleSheet(
-                    "QFrame { background-color: #2a1a4a; border: 2px solid #9b59b6; "
-                    "border-radius: 10px; padding: 15px; }"
-                )
-                decision_layout = QtWidgets.QVBoxLayout(decision_frame)
-                
-                # Decision prompt
-                prompt_lbl = QtWidgets.QLabel(
-                    f"<h3 style='color: #e74c3c;'>⚔️ CRITICAL DECISION ⚔️</h3>"
-                    f"<p style='font-size: 13px; color: #fff;'>{decision.get('prompt', 'What will you do?')}</p>"
-                )
-                prompt_lbl.setWordWrap(True)
-                prompt_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-                decision_layout.addWidget(prompt_lbl)
-                
-                # Choice buttons
-                choices = decision.get('choices', {})
-                btn_layout = QtWidgets.QHBoxLayout()
-                
-                choice_a = choices.get('A', {})
-                choice_b = choices.get('B', {})
-                
-                btn_a = QtWidgets.QPushButton(f"⚔️ {choice_a.get('label', 'Choice A')}")
-                btn_a.setToolTip(choice_a.get('description', ''))
-                btn_a.setStyleSheet(
-                    "QPushButton { background-color: #c0392b; color: white; font-weight: bold; "
-                    "padding: 15px; border-radius: 8px; font-size: 13px; }"
-                    "QPushButton:hover { background-color: #e74c3c; }"
-                )
-                btn_a.setMinimumHeight(60)
-                
-                btn_b = QtWidgets.QPushButton(f"💡 {choice_b.get('label', 'Choice B')}")
-                btn_b.setToolTip(choice_b.get('description', ''))
-                btn_b.setStyleSheet(
-                    "QPushButton { background-color: #2980b9; color: white; font-weight: bold; "
-                    "padding: 15px; border-radius: 8px; font-size: 13px; }"
-                    "QPushButton:hover { background-color: #3498db; }"
-                )
-                btn_b.setMinimumHeight(60)
-                
-                def make_choice(choice: str, choice_data: dict):
-                    # Make the decision
-                    make_story_decision(self.blocker.adhd_buster, chapter_num, choice)
-                    self.blocker.save_config()
-                    dialog.accept()
-                    
-                    # Get the updated chapter content with the continuation
-                    updated_chapter = get_chapter_content(chapter_num, self.blocker.adhd_buster)
-                    
-                    # Show continuation dialog with the story result
-                    continuation_dialog = QtWidgets.QDialog(self)
-                    continuation_dialog.setWindowTitle(f"⚡ {choice_data.get('label', 'Your Choice')}")
-                    continuation_dialog.resize(650, 550)
-                    cont_layout = QtWidgets.QVBoxLayout(continuation_dialog)
-                    
-                    # Header showing the choice made
-                    choice_lbl = QtWidgets.QLabel(
-                        f"<h2 style='text-align: center; color: #f39c12;'>⚡ The Die is Cast! ⚡</h2>"
-                        f"<p style='text-align: center; font-size: 14px;'>"
-                        f"You chose: <b>{choice_data.get('label', 'Unknown')}</b></p>"
-                    )
-                    choice_lbl.setWordWrap(True)
-                    choice_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-                    cont_layout.addWidget(choice_lbl)
-                    
-                    # Story continuation content
-                    content_text = QtWidgets.QTextEdit()
-                    content_text.setReadOnly(True)
-                    
-                    # Format the full updated content
-                    formatted = format_story_text(updated_chapter['content'])
-                    
-                    content_text.setHtml(formatted)
-                    content_text.setStyleSheet("background-color: #1a1a2e; color: #eee; padding: 10px;")
-                    cont_layout.addWidget(content_text)
-                    
-                    # Continue button
-                    ok_btn = QtWidgets.QPushButton("Continue My Journey")
-                    ok_btn.clicked.connect(continuation_dialog.accept)
-                    cont_layout.addWidget(ok_btn)
-                    
-                    continuation_dialog.exec()
-                    
-                    # Comprehensive refresh after story decision
-                    self.refresh_all()
-                
-                btn_a.clicked.connect(lambda: make_choice("A", choice_a))
-                btn_b.clicked.connect(lambda: make_choice("B", choice_b))
-                
-                btn_layout.addWidget(btn_a)
-                btn_layout.addWidget(btn_b)
-                decision_layout.addLayout(btn_layout)
-                
-                # Warning label
-                warning_lbl = QtWidgets.QLabel(
-                    "<p style='color: #e74c3c; font-size: 11px; text-align: center;'>"
-                    "⚠️ <b>Warning:</b> This choice is permanent and will affect your story!</p>"
-                )
-                warning_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-                decision_layout.addWidget(warning_lbl)
-                
-                layout.addWidget(decision_frame)
-        
-        # Close button
-        close_btn = QtWidgets.QPushButton("Close")
-        close_btn.clicked.connect(dialog.accept)
-        layout.addWidget(close_btn)
-        
-        dialog.exec()
-    
-    def _refresh_story_chapter_list(self) -> None:
-        """Refresh the story chapter dropdown to reflect decisions made."""
-        if not GAMIFICATION_AVAILABLE:
-            return
-        
-        from gamification import get_story_progress
-        progress = get_story_progress(self.blocker.adhd_buster)
-        
-        self.chapter_combo.clear()
-        for ch in progress["chapters"]:
-            emoji = "✅" if ch["unlocked"] else "🔒"
-            decision_marker = ""
-            if ch.get("has_decision"):
-                if ch.get("decision_made"):
-                    decision_marker = " ⚡"  # Decision made
-                elif ch.get("unlocked"):
-                    decision_marker = " ⚡"  # Decision pending (unlocked)
-                else:
-                    decision_marker = " ⚡"  # Decision awaits (locked chapter)
-            
-            self.chapter_combo.addItem(
-                f"{emoji} Chapter {ch['number']}: {ch['title']}{decision_marker}",
-                ch["number"]
-            )
-
-    def _refresh_story_combo(self) -> None:
-        """Refresh story combo to show updated lock status."""
-        if not GAMIFICATION_AVAILABLE:
-            return
-        
-        from gamification import AVAILABLE_STORIES, get_selected_story
-        
-        current_story = get_selected_story(self.blocker.adhd_buster)
-        unlocked_stories = self.blocker.adhd_buster.get("unlocked_stories", ["underdog"])
-        
-        self.story_combo.blockSignals(True)
-        self.story_combo.clear()
-        
-        current_idx = 0
-        for i, (story_id, story_info) in enumerate(AVAILABLE_STORIES.items()):
-            is_locked = story_id not in unlocked_stories
-            lock_icon = "🔒 " if is_locked else ""
-            self.story_combo.addItem(f"{lock_icon}{story_info['title']}", story_id)
-            tooltip = story_info['description']
-            if is_locked:
-                tooltip += "\n\n🔒 Costs 100 coins to unlock"
-            self.story_combo.setItemData(i, tooltip, QtCore.Qt.ToolTipRole)
-            if story_id == current_story:
-                current_idx = i
-        
-        self.story_combo.setCurrentIndex(current_idx)
-        self.story_combo.blockSignals(False)
-
     def _open_diary(self) -> None:
         DiaryDialog(self.blocker, self).exec()
+    
+    def _go_to_story_tab(self) -> None:
+        """Navigate to the Story tab."""
+        # Find parent FocusBlockerWindow and switch to Story tab
+        parent = self.parent()
+        while parent is not None:
+            if hasattr(parent, 'tabs') and hasattr(parent, 'story_tab'):
+                for i in range(parent.tabs.count()):
+                    if parent.tabs.widget(i) == parent.story_tab:
+                        parent.tabs.setCurrentIndex(i)
+                        return
+            parent = parent.parent()
+    
+    def _update_story_indicator(self) -> None:
+        """Update the story indicator label with current story name."""
+        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'story_indicator_lbl'):
+            return
+        from gamification import AVAILABLE_STORIES, get_selected_story
+        current_story = get_selected_story(self.blocker.adhd_buster)
+        story_info = AVAILABLE_STORIES.get(current_story, {})
+        self.story_indicator_lbl.setText(f"📜 Current Story: <b>{story_info.get('title', current_story)}</b>")
 
     def _optimize_gear(self) -> None:
         """Automatically equip the best gear based on user criteria."""
@@ -20861,6 +20226,649 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         self.timeline.set_events(events)
 
 
+class StoryTab(QtWidgets.QWidget):
+    """Tab for story mode, chapter selection, and story progress tracking."""
+
+    def __init__(self, blocker, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.blocker = blocker
+        
+        # Connect to game state manager for reactive updates
+        self._game_state = get_game_state()
+        if self._game_state:
+            self._game_state.story_changed.connect(self._on_story_changed)
+            self._game_state.power_changed.connect(self._on_power_changed)
+        
+        self._build_ui()
+        self._refresh_all()
+    
+    def _build_ui(self) -> None:
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(15)
+        
+        # === Story Mode Selection ===
+        mode_group = QtWidgets.QGroupBox("📜 Story Mode")
+        mode_layout = QtWidgets.QVBoxLayout(mode_group)
+        
+        if GAMIFICATION_AVAILABLE:
+            mode_bar = QtWidgets.QHBoxLayout()
+            mode_bar.addWidget(QtWidgets.QLabel("Mode:"))
+            self.mode_story_radio = QtWidgets.QRadioButton("Story")
+            self.mode_hero_radio = QtWidgets.QRadioButton("Hero Only")
+            self.mode_disabled_radio = QtWidgets.QRadioButton("Disabled")
+            mode_group_btns = QtWidgets.QButtonGroup(self)
+            for btn in (self.mode_story_radio, self.mode_hero_radio, self.mode_disabled_radio):
+                mode_group_btns.addButton(btn)
+                mode_bar.addWidget(btn)
+            
+            # Set current mode
+            current_mode = get_story_mode(self.blocker.adhd_buster)
+            if current_mode == STORY_MODE_HERO_ONLY:
+                self.mode_hero_radio.setChecked(True)
+            elif current_mode == STORY_MODE_DISABLED:
+                self.mode_disabled_radio.setChecked(True)
+            else:
+                self.mode_story_radio.setChecked(True)
+            
+            # Connect signals
+            self.mode_story_radio.toggled.connect(lambda checked: checked and self._on_mode_radio_changed())
+            self.mode_hero_radio.toggled.connect(lambda checked: checked and self._on_mode_radio_changed())
+            self.mode_disabled_radio.toggled.connect(lambda checked: checked and self._on_mode_radio_changed())
+            mode_bar.addStretch()
+            mode_layout.addLayout(mode_bar)
+            
+            # Mode description
+            mode_desc = QtWidgets.QLabel(
+                "<i>Story: Full story progression with chapters • "
+                "Hero Only: Just the character and gear • "
+                "Disabled: No gamification features</i>"
+            )
+            mode_desc.setStyleSheet("color: #666; font-size: 11px;")
+            mode_desc.setWordWrap(True)
+            mode_layout.addWidget(mode_desc)
+        
+        layout.addWidget(mode_group)
+        
+        # === Story Selection ===
+        story_group = QtWidgets.QGroupBox("📖 Choose Your Story")
+        story_layout = QtWidgets.QVBoxLayout(story_group)
+        
+        if GAMIFICATION_AVAILABLE:
+            from gamification import AVAILABLE_STORIES, get_selected_story
+            
+            story_select_bar = QtWidgets.QHBoxLayout()
+            self.story_combo = NoScrollComboBox()
+            self.story_combo.setMinimumWidth(300)
+            
+            current_story = get_selected_story(self.blocker.adhd_buster)
+            unlocked_stories = self.blocker.adhd_buster.get("unlocked_stories", ["underdog"])
+            current_idx = 0
+            for i, (story_id, story_info) in enumerate(AVAILABLE_STORIES.items()):
+                is_locked = story_id not in unlocked_stories
+                lock_icon = "🔒 " if is_locked else ""
+                self.story_combo.addItem(f"{lock_icon}{story_info['title']}", story_id)
+                tooltip = story_info['description']
+                if is_locked:
+                    tooltip += "\n\n🔒 Costs 100 coins to unlock"
+                self.story_combo.setItemData(i, tooltip, QtCore.Qt.ToolTipRole)
+                if story_id == current_story:
+                    current_idx = i
+            
+            self.story_combo.setCurrentIndex(current_idx)
+            self.story_combo.currentIndexChanged.connect(self._on_story_change)
+            story_select_bar.addWidget(self.story_combo)
+            
+            # Restart Story button
+            self.restart_story_btn = QtWidgets.QPushButton("🔄 Restart Story")
+            self.restart_story_btn.setToolTip("Reset this story's hero - lose all gear, progress, and decisions")
+            self.restart_story_btn.setStyleSheet("color: #c62828;")
+            self.restart_story_btn.clicked.connect(self._on_restart_story)
+            story_select_bar.addWidget(self.restart_story_btn)
+            
+            story_select_bar.addStretch()
+            story_layout.addLayout(story_select_bar)
+            
+            # Story description
+            self.story_desc_lbl = QtWidgets.QLabel()
+            self.story_desc_lbl.setWordWrap(True)
+            self.story_desc_lbl.setStyleSheet("color: #888; font-style: italic; padding: 10px; font-size: 12px;")
+            self._update_story_description()
+            story_layout.addWidget(self.story_desc_lbl)
+        
+        layout.addWidget(story_group)
+        
+        # === Story Progress ===
+        progress_group = QtWidgets.QGroupBox("📊 Story Progress")
+        progress_layout = QtWidgets.QVBoxLayout(progress_group)
+        
+        if GAMIFICATION_AVAILABLE:
+            from gamification import get_story_progress
+            
+            self.story_progress_lbl = QtWidgets.QLabel()
+            self.story_progress_lbl.setStyleSheet("font-weight: bold; font-size: 13px;")
+            progress_layout.addWidget(self.story_progress_lbl)
+            
+            self.story_next_lbl = QtWidgets.QLabel()
+            self.story_next_lbl.setStyleSheet("color: #666;")
+            progress_layout.addWidget(self.story_next_lbl)
+            
+            # Progress bar for next chapter
+            progress_bar_layout = QtWidgets.QHBoxLayout()
+            progress_bar_layout.addWidget(QtWidgets.QLabel("Progress to Next Chapter:"))
+            self.chapter_progress_bar = QtWidgets.QProgressBar()
+            self.chapter_progress_bar.setMinimum(0)
+            self.chapter_progress_bar.setMaximum(100)
+            self.chapter_progress_bar.setTextVisible(True)
+            self.chapter_progress_bar.setStyleSheet("""
+                QProgressBar {
+                    border: 1px solid #444;
+                    border-radius: 5px;
+                    text-align: center;
+                    height: 20px;
+                }
+                QProgressBar::chunk {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                        stop:0 #4caf50, stop:0.5 #8bc34a, stop:1 #cddc39);
+                    border-radius: 4px;
+                }
+            """)
+            progress_bar_layout.addWidget(self.chapter_progress_bar, 1)
+            progress_layout.addLayout(progress_bar_layout)
+            
+            self._update_story_progress_labels()
+        
+        layout.addWidget(progress_group)
+        
+        # === Chapter Selection ===
+        chapter_group = QtWidgets.QGroupBox("📚 Chapters")
+        chapter_layout = QtWidgets.QVBoxLayout(chapter_group)
+        
+        chapter_bar = QtWidgets.QHBoxLayout()
+        chapter_bar.addWidget(QtWidgets.QLabel("Select Chapter:"))
+        self.chapter_combo = NoScrollComboBox()
+        self.chapter_combo.setMinimumWidth(300)
+        
+        if GAMIFICATION_AVAILABLE:
+            self._refresh_story_chapter_list()
+        else:
+            self.chapter_combo.addItem("Story unavailable", 0)
+        
+        chapter_bar.addWidget(self.chapter_combo)
+        read_btn = QtWidgets.QPushButton("📖 Read Chapter")
+        read_btn.clicked.connect(self._read_story_chapter)
+        chapter_bar.addWidget(read_btn)
+        chapter_bar.addStretch()
+        chapter_layout.addLayout(chapter_bar)
+        
+        layout.addWidget(chapter_group)
+        
+        # Update mode UI state
+        if GAMIFICATION_AVAILABLE:
+            self._update_mode_ui_state()
+        
+        layout.addStretch()
+    
+    # === Signal Handlers ===
+    
+    def _on_story_changed(self, story_id: str) -> None:
+        """Handle story change signal from game state."""
+        self._refresh_all()
+    
+    def _on_power_changed(self, new_power: int) -> None:
+        """Handle power change - update progress labels."""
+        self._update_story_progress_labels()
+        self._refresh_story_chapter_list()
+    
+    # === UI Update Methods ===
+    
+    def _refresh_all(self) -> None:
+        """Refresh all story UI elements."""
+        self._sync_story_combo_selection()
+        self._update_story_description()
+        self._update_story_progress_labels()
+        self._refresh_story_chapter_list()
+        self._update_mode_ui_state()
+    
+    def _sync_story_combo_selection(self) -> None:
+        """Sync the story combo box selection with the current active story."""
+        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'story_combo'):
+            return
+        from gamification import get_selected_story
+        current_story = get_selected_story(self.blocker.adhd_buster)
+        self.story_combo.blockSignals(True)
+        for i in range(self.story_combo.count()):
+            if self.story_combo.itemData(i) == current_story:
+                self.story_combo.setCurrentIndex(i)
+                break
+        self.story_combo.blockSignals(False)
+    
+    def _update_story_description(self) -> None:
+        """Update the story description label."""
+        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'story_desc_lbl'):
+            return
+        from gamification import AVAILABLE_STORIES, get_selected_story
+        story_id = get_selected_story(self.blocker.adhd_buster)
+        story_info = AVAILABLE_STORIES.get(story_id, {})
+        self.story_desc_lbl.setText(f"📖 {story_info.get('description', '')}")
+    
+    def _update_story_progress_labels(self) -> None:
+        """Update story progress labels and progress bar."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        from gamification import get_story_progress
+        progress = get_story_progress(self.blocker.adhd_buster)
+        
+        if hasattr(self, 'story_progress_lbl'):
+            self.story_progress_lbl.setText(
+                f"📖 Chapters Unlocked: {len(progress['unlocked_chapters'])}/{progress['total_chapters']}  |  "
+                f"⚔ Power: {progress['power']}  |  "
+                f"⚡ Decisions: {progress['decisions_made']}/3"
+            )
+        
+        if hasattr(self, 'story_next_lbl'):
+            if progress['next_threshold']:
+                self.story_next_lbl.setText(
+                    f"🔒 Next chapter unlocks at {progress['next_threshold']} power "
+                    f"({progress['power_to_next']} more needed)"
+                )
+                self.story_next_lbl.setStyleSheet("color: #666;")
+            else:
+                self.story_next_lbl.setText("✨ You have unlocked the entire story!")
+                self.story_next_lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
+        
+        # Update progress bar
+        if hasattr(self, 'chapter_progress_bar'):
+            if progress['next_threshold']:
+                prev_threshold = progress.get('prev_threshold', 0)
+                range_size = progress['next_threshold'] - prev_threshold
+                current_in_range = progress['power'] - prev_threshold
+                percentage = int((current_in_range / range_size) * 100) if range_size > 0 else 0
+                percentage = max(0, min(100, percentage))
+                self.chapter_progress_bar.setValue(percentage)
+                self.chapter_progress_bar.setFormat(f"{percentage}%")
+            else:
+                self.chapter_progress_bar.setValue(100)
+                self.chapter_progress_bar.setFormat("Complete!")
+    
+    def _refresh_story_chapter_list(self) -> None:
+        """Refresh the story chapter dropdown to reflect decisions made."""
+        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'chapter_combo'):
+            return
+        
+        from gamification import get_story_progress
+        progress = get_story_progress(self.blocker.adhd_buster)
+        
+        self.chapter_combo.clear()
+        for ch in progress["chapters"]:
+            emoji = "✅" if ch["unlocked"] else "🔒"
+            decision_marker = ""
+            if ch.get("has_decision"):
+                if ch.get("decision_made"):
+                    decision_marker = " ⚡"
+                elif ch.get("unlocked"):
+                    decision_marker = " ⚡"
+                else:
+                    decision_marker = " ⚡"
+            
+            self.chapter_combo.addItem(
+                f"{emoji} Chapter {ch['number']}: {ch['title']}{decision_marker}",
+                ch["number"]
+            )
+    
+    def _refresh_story_combo(self) -> None:
+        """Refresh story combo to show updated lock status."""
+        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'story_combo'):
+            return
+        
+        from gamification import AVAILABLE_STORIES, get_selected_story
+        
+        current_story = get_selected_story(self.blocker.adhd_buster)
+        unlocked_stories = self.blocker.adhd_buster.get("unlocked_stories", ["underdog"])
+        
+        self.story_combo.blockSignals(True)
+        self.story_combo.clear()
+        
+        current_idx = 0
+        for i, (story_id, story_info) in enumerate(AVAILABLE_STORIES.items()):
+            is_locked = story_id not in unlocked_stories
+            lock_icon = "🔒 " if is_locked else ""
+            self.story_combo.addItem(f"{lock_icon}{story_info['title']}", story_id)
+            tooltip = story_info['description']
+            if is_locked:
+                tooltip += "\n\n🔒 Costs 100 coins to unlock"
+            self.story_combo.setItemData(i, tooltip, QtCore.Qt.ToolTipRole)
+            if story_id == current_story:
+                current_idx = i
+        
+        self.story_combo.setCurrentIndex(current_idx)
+        self.story_combo.blockSignals(False)
+    
+    def _update_mode_ui_state(self) -> None:
+        """Update UI elements based on current mode."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        current_mode = get_story_mode(self.blocker.adhd_buster)
+        story_mode = current_mode == STORY_MODE_ACTIVE
+        
+        # Sync radio button selection
+        if hasattr(self, 'mode_story_radio'):
+            self.mode_story_radio.blockSignals(True)
+            self.mode_hero_radio.blockSignals(True)
+            self.mode_disabled_radio.blockSignals(True)
+            
+            if current_mode == STORY_MODE_HERO_ONLY:
+                self.mode_hero_radio.setChecked(True)
+            elif current_mode == STORY_MODE_DISABLED:
+                self.mode_disabled_radio.setChecked(True)
+            else:
+                self.mode_story_radio.setChecked(True)
+            
+            self.mode_story_radio.blockSignals(False)
+            self.mode_hero_radio.blockSignals(False)
+            self.mode_disabled_radio.blockSignals(False)
+        
+        # Enable story combo only in story mode
+        if hasattr(self, 'story_combo'):
+            self.story_combo.setEnabled(story_mode)
+        if hasattr(self, 'chapter_combo'):
+            self.chapter_combo.setEnabled(story_mode)
+    
+    # === Action Handlers ===
+    
+    def _on_story_change(self, index: int) -> None:
+        """Handle story selection change."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        story_id = self.story_combo.currentData()
+        if not story_id:
+            return
+        
+        from gamification import select_story, get_selected_story, COIN_COSTS
+        current = get_selected_story(self.blocker.adhd_buster)
+        
+        if story_id != current:
+            STORY_UNLOCK_COST = COIN_COSTS.get("story_unlock", 100)
+            unlocked_stories = self.blocker.adhd_buster.get("unlocked_stories", ["underdog"])
+            
+            if story_id not in unlocked_stories:
+                current_coins = self.blocker.adhd_buster.get("coins", 0)
+                if current_coins < STORY_UNLOCK_COST:
+                    show_warning(self, "Story Locked", 
+                        f"This story costs {STORY_UNLOCK_COST} coins to unlock.\n\n"
+                        f"You have: {current_coins} coins\n"
+                        f"You need: {STORY_UNLOCK_COST - current_coins} more coins\n\n"
+                        f"Complete focus sessions to earn more coins!")
+                    self._sync_story_combo_selection()
+                    return
+                
+                from gamification import AVAILABLE_STORIES
+                story_info = AVAILABLE_STORIES.get(story_id, {})
+                story_title = story_info.get("title", story_id)
+                reply = show_question(
+                    self, "Unlock Story?",
+                    f"Unlock '{story_title}' for {STORY_UNLOCK_COST} coins?\n\n"
+                    f"You have: {current_coins} coins\n"
+                    f"After unlock: {current_coins - STORY_UNLOCK_COST} coins",
+                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+                )
+                if reply != QtWidgets.QMessageBox.Yes:
+                    self._sync_story_combo_selection()
+                    return
+                
+                if self._game_state:
+                    if not self._game_state.spend_coins(STORY_UNLOCK_COST):
+                        show_warning(self, "Error", "Failed to spend coins.")
+                        return
+                else:
+                    current_coins = self.blocker.adhd_buster.get("coins", 0)
+                    if current_coins < STORY_UNLOCK_COST:
+                        show_warning(self, "Error", "Not enough coins.")
+                        return
+                    self.blocker.adhd_buster["coins"] = current_coins - STORY_UNLOCK_COST
+                
+                if "unlocked_stories" not in self.blocker.adhd_buster:
+                    self.blocker.adhd_buster["unlocked_stories"] = ["underdog"]
+                self.blocker.adhd_buster["unlocked_stories"].append(story_id)
+                self.blocker.save_config()
+                show_info(self, "Story Unlocked! 🎉", f"You've unlocked '{story_title}'!")
+                self._refresh_story_combo()
+            else:
+                reply = show_question(
+                    self, "Switch Story?",
+                    f"Each story has its own hero with separate gear and progress.\n\n"
+                    f"Switching will load your hero for this story.\n"
+                    f"(Your current hero's progress will be saved.)\n\n"
+                    f"Switch to the new story?",
+                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+                )
+                if reply != QtWidgets.QMessageBox.Yes:
+                    self._sync_story_combo_selection()
+                    return
+        
+        select_story(self.blocker.adhd_buster, story_id)
+        self.blocker.save_config()
+        
+        if self._game_state:
+            self._game_state.set_story(story_id)
+        
+        self._refresh_all()
+    
+    def _on_restart_story(self) -> None:
+        """Handle restart story button click."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        from gamification import restart_story, get_selected_story, AVAILABLE_STORIES
+        
+        story_id = get_selected_story(self.blocker.adhd_buster)
+        story_info = AVAILABLE_STORIES.get(story_id, {})
+        story_title = story_info.get("title", story_id)
+        
+        reply = show_question(
+            self, "⚠️ Restart Story?",
+            f"Are you sure you want to RESTART '{story_title}'?\n\n"
+            f"This will DELETE:\n"
+            f"  ❌ All gear and inventory for this story\n"
+            f"  ❌ All story decisions and progress\n"
+            f"  ❌ All chapters unlocked\n\n"
+            f"Your hero will start from Chapter 1 with nothing.\n\n"
+            f"This CANNOT be undone!",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.No
+        )
+        
+        if reply != QtWidgets.QMessageBox.Yes:
+            return
+        
+        confirm = show_question(
+            self, "Final Confirmation",
+            f"Type of restart: FULL RESET\n\n"
+            f"Really delete all progress for '{story_title}'?",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.No
+        )
+        
+        if confirm != QtWidgets.QMessageBox.Yes:
+            return
+        
+        success = restart_story(self.blocker.adhd_buster, story_id)
+        
+        if success:
+            self.blocker.save_config()
+            
+            if self._game_state:
+                self._game_state.set_story(story_id)
+            
+            self._refresh_all()
+            
+            show_info(
+                self, "Story Restarted",
+                f"'{story_title}' has been reset!\n\n"
+                f"Your hero begins anew at Chapter 1.\n"
+                f"Good luck on your fresh journey! 🌟"
+            )
+        else:
+            show_error(self, "Error", "Failed to restart story. Please try again.")
+    
+    def _on_mode_radio_changed(self) -> None:
+        """Handle mode radio button change."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+
+        if self.mode_disabled_radio.isChecked():
+            new_mode = STORY_MODE_DISABLED
+        elif self.mode_hero_radio.isChecked():
+            new_mode = STORY_MODE_HERO_ONLY
+        else:
+            new_mode = STORY_MODE_ACTIVE
+
+        current_mode = get_story_mode(self.blocker.adhd_buster)
+        if new_mode == current_mode:
+            return
+
+        sync_hero_data(self.blocker.adhd_buster)
+
+        if new_mode == STORY_MODE_ACTIVE:
+            story_id = self.blocker.adhd_buster.get("active_story", "warrior")
+            switch_story(self.blocker.adhd_buster, story_id)
+        else:
+            set_story_mode(self.blocker.adhd_buster, new_mode)
+
+        self.blocker.save_config()
+        self._update_mode_ui_state()
+        
+        if self._game_state:
+            from gamification import get_selected_story
+            self._game_state.set_story(get_selected_story(self.blocker.adhd_buster))
+    
+    def _read_story_chapter(self) -> None:
+        """Open a dialog to read the selected chapter content."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        chapter_num = self.chapter_combo.currentData()
+        if not chapter_num:
+            return
+        
+        from gamification import get_story_progress, get_selected_story, AVAILABLE_STORIES
+        
+        progress = get_story_progress(self.blocker.adhd_buster)
+        story_id = get_selected_story(self.blocker.adhd_buster)
+        story_info = AVAILABLE_STORIES.get(story_id, {})
+        
+        chapter = next((ch for ch in progress["chapters"] if ch["number"] == chapter_num), None)
+        if not chapter:
+            show_error(self, "Error", "Chapter not found!")
+            return
+        
+        if not chapter.get("unlocked"):
+            show_warning(
+                self, "Chapter Locked",
+                f"This chapter requires {chapter.get('power_requirement', 0)} power to unlock.\n\n"
+                f"Current power: {progress['power']}\n"
+                f"Keep building your hero's power!"
+            )
+            return
+        
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle(f"📖 {story_info.get('title', 'Story')} - Chapter {chapter_num}")
+        dialog.setMinimumSize(600, 500)
+        layout = QtWidgets.QVBoxLayout(dialog)
+        
+        title_lbl = QtWidgets.QLabel(f"<h2>Chapter {chapter_num}: {chapter['title']}</h2>")
+        layout.addWidget(title_lbl)
+        
+        content_scroll = QtWidgets.QScrollArea()
+        content_scroll.setWidgetResizable(True)
+        content_widget = QtWidgets.QWidget()
+        content_layout = QtWidgets.QVBoxLayout(content_widget)
+        
+        content_lbl = QtWidgets.QLabel(chapter.get("content", "No content available."))
+        content_lbl.setWordWrap(True)
+        content_lbl.setStyleSheet("font-size: 13px; line-height: 1.6;")
+        content_layout.addWidget(content_lbl)
+        content_layout.addStretch()
+        
+        content_scroll.setWidget(content_widget)
+        layout.addWidget(content_scroll)
+        
+        if chapter.get("has_decision") and not chapter.get("decision_made"):
+            decision_frame = QtWidgets.QFrame()
+            decision_frame.setStyleSheet("""
+                QFrame {
+                    background-color: #2d2d2d;
+                    border: 2px solid #f1c40f;
+                    border-radius: 8px;
+                    padding: 15px;
+                }
+            """)
+            decision_layout = QtWidgets.QVBoxLayout(decision_frame)
+            
+            decision_title = QtWidgets.QLabel("<h3>⚡ A Pivotal Decision</h3>")
+            decision_title.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            decision_layout.addWidget(decision_title)
+            
+            decision_prompt = QtWidgets.QLabel(chapter.get("decision_prompt", "What will you do?"))
+            decision_prompt.setWordWrap(True)
+            decision_prompt.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            decision_prompt.setStyleSheet("font-size: 12px; padding: 10px;")
+            decision_layout.addWidget(decision_prompt)
+            
+            btn_layout = QtWidgets.QHBoxLayout()
+            for option_key, option_data in chapter.get("options", {}).items():
+                btn = QtWidgets.QPushButton(option_data.get("label", option_key))
+                btn.setStyleSheet("padding: 10px 20px; font-size: 12px;")
+                btn.clicked.connect(lambda checked, ok=option_key, ch=chapter_num: self._make_story_decision(ch, ok, dialog))
+                btn_layout.addWidget(btn)
+            decision_layout.addLayout(btn_layout)
+            
+            warning_lbl = QtWidgets.QLabel(
+                "<p style='color: #e74c3c; font-size: 11px; text-align: center;'>"
+                "⚠️ <b>Warning:</b> This choice is permanent and will affect your story!</p>"
+            )
+            warning_lbl.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+            decision_layout.addWidget(warning_lbl)
+            
+            layout.addWidget(decision_frame)
+        
+        close_btn = QtWidgets.QPushButton("Close")
+        close_btn.clicked.connect(dialog.accept)
+        layout.addWidget(close_btn)
+        
+        dialog.exec()
+    
+    def _make_story_decision(self, chapter_num: int, option_key: str, dialog: QtWidgets.QDialog) -> None:
+        """Make a story decision for a chapter."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+        
+        from gamification import make_story_decision, get_selected_story, AVAILABLE_STORIES
+        
+        story_id = get_selected_story(self.blocker.adhd_buster)
+        result = make_story_decision(self.blocker.adhd_buster, story_id, chapter_num, option_key)
+        
+        if result.get("success"):
+            self.blocker.save_config()
+            dialog.accept()
+            
+            story_info = AVAILABLE_STORIES.get(story_id, {})
+            show_info(
+                self, "Decision Made!",
+                f"You chose: {result.get('choice_label', option_key)}\n\n"
+                f"{result.get('outcome', 'Your choice will shape the story...')}"
+            )
+            
+            self._refresh_story_chapter_list()
+            
+            if self._game_state:
+                self._game_state.set_story(story_id)
+        else:
+            show_error(self, "Error", result.get("error", "Failed to make decision."))
+
+
 class DevTab(QtWidgets.QWidget):
     """Developer tools tab for testing - generate items, add coins, add XP."""
 
@@ -22428,7 +22436,12 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.adhd_tab = ADHDBusterTab(self.blocker, self)
             self.tabs.addTab(self.adhd_tab, "🦸 Hero")
 
-        # 3. Eye Protection tab
+        # 3. Story tab (story mode, chapters, progress)
+        if GAMIFICATION_AVAILABLE:
+            self.story_tab = StoryTab(self.blocker, self)
+            self.tabs.addTab(self.story_tab, "📜 Story")
+
+        # 4. Eye Protection tab
         self.eye_tab = EyeProtectionTab(self.blocker)
         self.tabs.addTab(self.eye_tab, "🌬️ Eye & Breath")
         # Connect signal to show item drop dialog if item won
