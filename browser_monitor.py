@@ -3,48 +3,290 @@ Browser URL Monitor for Light Mode
 
 Monitors active browser windows and detects when users visit blocked sites.
 Shows toast notifications instead of blocking. No admin privileges required.
+
+Detection Methods:
+1. UI Automation - Reads the actual URL from browser address bar (most reliable)
+2. Title-to-domain mapping - Maps known site names to domains (e.g., "YouTube" → youtube.com)
+3. Domain extraction from title - Tries to find domains in window titles
 """
 
 import ctypes
+import ctypes.wintypes
 import re
 import threading
 import time
-from typing import Optional, Callable, List, Set
+from typing import Optional, Callable, List, Set, Tuple
 from datetime import datetime, timedelta
 
 
-# Windows API for getting active window title
+# Windows API for getting active window title and process info
 try:
     user32 = ctypes.windll.user32
     kernel32 = ctypes.windll.kernel32
+    oleacc = ctypes.windll.oleacc
     WINDOWS_API_AVAILABLE = True
 except Exception:
     WINDOWS_API_AVAILABLE = False
     user32 = None
     kernel32 = None
+    oleacc = None
 
 
-def get_active_window_title() -> str:
-    """Get the title of the currently active window."""
+# Known site name to domain mappings
+# These map page title patterns to their domains
+KNOWN_SITE_MAPPINGS = {
+    # Social Media
+    'youtube': 'youtube.com',
+    'reddit': 'reddit.com',
+    'twitter': 'twitter.com',
+    'x.com': 'x.com',
+    'facebook': 'facebook.com',
+    'instagram': 'instagram.com',
+    'tiktok': 'tiktok.com',
+    'linkedin': 'linkedin.com',
+    'pinterest': 'pinterest.com',
+    'snapchat': 'snapchat.com',
+    'tumblr': 'tumblr.com',
+    'discord': 'discord.com',
+    'twitch': 'twitch.tv',
+    'threads': 'threads.net',
+    'bluesky': 'bsky.app',
+    'mastodon': 'mastodon.social',
+    
+    # Entertainment / Streaming
+    'netflix': 'netflix.com',
+    'hulu': 'hulu.com',
+    'amazon prime': 'primevideo.com',
+    'prime video': 'primevideo.com',
+    'disney+': 'disneyplus.com',
+    'disney plus': 'disneyplus.com',
+    'hbo max': 'max.com',
+    'paramount+': 'paramountplus.com',
+    'crunchyroll': 'crunchyroll.com',
+    'spotify': 'spotify.com',
+    'soundcloud': 'soundcloud.com',
+    'vimeo': 'vimeo.com',
+    'dailymotion': 'dailymotion.com',
+    
+    # Gaming
+    'steam': 'steampowered.com',
+    'epic games': 'epicgames.com',
+    'itch.io': 'itch.io',
+    'roblox': 'roblox.com',
+    'miniclip': 'miniclip.com',
+    'kongregate': 'kongregate.com',
+    'armor games': 'armorgames.com',
+    'poki': 'poki.com',
+    'crazygames': 'crazygames.com',
+    
+    # News / Media
+    'cnn': 'cnn.com',
+    'bbc': 'bbc.com',
+    'nytimes': 'nytimes.com',
+    'new york times': 'nytimes.com',
+    'washington post': 'washingtonpost.com',
+    'the guardian': 'theguardian.com',
+    'huffpost': 'huffpost.com',
+    'buzzfeed': 'buzzfeed.com',
+    'vice': 'vice.com',
+    
+    # Shopping
+    'amazon': 'amazon.com',
+    'ebay': 'ebay.com',
+    'etsy': 'etsy.com',
+    'alibaba': 'alibaba.com',
+    'aliexpress': 'aliexpress.com',
+    'wish': 'wish.com',
+    'shopify': 'shopify.com',
+    'walmart': 'walmart.com',
+    'target': 'target.com',
+    
+    # Messaging
+    'whatsapp': 'web.whatsapp.com',
+    'telegram': 'web.telegram.org',
+    'messenger': 'messenger.com',
+    'slack': 'slack.com',
+    'signal': 'signal.org',
+    
+    # Dating
+    'tinder': 'tinder.com',
+    'bumble': 'bumble.com',
+    'hinge': 'hinge.co',
+    'okcupid': 'okcupid.com',
+    'match.com': 'match.com',
+    
+    # Other distractions
+    'imgur': 'imgur.com',
+    'giphy': 'giphy.com',
+    '9gag': '9gag.com',
+    'quora': 'quora.com',
+    'medium': 'medium.com',
+}
+
+
+def get_active_window_info() -> Tuple[int, str]:
+    """
+    Get the window handle and title of the currently active window.
+    
+    Returns:
+        Tuple of (hwnd, title)
+    """
     if not WINDOWS_API_AVAILABLE:
-        return ""
+        return 0, ""
     
     try:
         hwnd = user32.GetForegroundWindow()
         if not hwnd:
-            return ""
+            return 0, ""
         
         # Get window title length
         length = user32.GetWindowTextLengthW(hwnd) + 1
         if length <= 1:
-            return ""
+            return hwnd, ""
         
         # Get window title
         buffer = ctypes.create_unicode_buffer(length)
         user32.GetWindowTextW(hwnd, buffer, length)
-        return buffer.value
+        return hwnd, buffer.value
     except Exception:
-        return ""
+        return 0, ""
+
+
+def get_active_window_title() -> str:
+    """Get the title of the currently active window."""
+    _, title = get_active_window_info()
+    return title
+
+
+def get_browser_url_from_address_bar(hwnd: int, browser_name: str) -> Optional[str]:
+    """
+    Try to get the URL from browser address bar using UI Automation.
+    
+    This is the most reliable method but requires optional dependencies.
+    Falls back gracefully if not available.
+    
+    Args:
+        hwnd: Window handle of the browser
+        browser_name: Name of the browser (chrome, edge, firefox, etc.)
+        
+    Returns:
+        URL string if found, None otherwise
+    """
+    if not WINDOWS_API_AVAILABLE or not hwnd:
+        return None
+    
+    # Method 1: Try uiautomation package (most reliable, lightweight)
+    try:
+        import uiautomation as auto
+        
+        # Get control from hwnd
+        control = auto.ControlFromHandle(hwnd)
+        if not control:
+            return None
+        
+        # For Chrome/Edge, the address bar is an Edit control with name containing "Address"
+        # or with AutomationId like "addressEditBox"
+        if browser_name in ('chrome', 'edge', 'chromium', 'brave'):
+            # Try to find the address bar edit control
+            edit = control.EditControl(searchDepth=10, AutomationId='addressEditBox')
+            if not edit.Exists(0, 0):
+                # Try by name
+                edit = control.EditControl(searchDepth=10, Name='Address and search bar')
+            if edit.Exists(0, 0):
+                value = edit.GetValuePattern().Value
+                if value and ('.' in value or '://' in value):
+                    return value
+        
+        elif browser_name == 'firefox':
+            # Firefox uses a different structure
+            edit = control.EditControl(searchDepth=10, AutomationId='urlbar-input')
+            if edit.Exists(0, 0):
+                value = edit.GetValuePattern().Value
+                if value and ('.' in value or '://' in value):
+                    return value
+        
+        return None
+        
+    except ImportError:
+        pass
+    except Exception:
+        pass
+    
+    # Method 2: Try comtypes (heavier dependency)
+    try:
+        import comtypes.client
+        
+        # Initialize UI Automation
+        uia = comtypes.client.CreateObject(
+            "{ff48dba4-60ef-4201-aa87-54103eef594e}",  # CUIAutomation CLSID
+            interface=comtypes.gen.UIAutomationClient.IUIAutomation
+        )
+        
+        # Get the element from window handle
+        element = uia.ElementFromHandle(hwnd)
+        if not element:
+            return None
+        
+        # Create condition to find edit controls (address bar)
+        edit_condition = uia.CreatePropertyCondition(30003, 50004)  # UIA_ControlTypePropertyId
+        edit_elements = element.FindAll(4, edit_condition)  # TreeScope_Descendants
+        
+        if edit_elements:
+            for i in range(edit_elements.Length):
+                edit = edit_elements.GetElement(i)
+                try:
+                    value_pattern = edit.GetCurrentPattern(10002)  # UIA_ValuePatternId
+                    if value_pattern:
+                        value = value_pattern.CurrentValue
+                        if value and ('://' in value or '.' in value):
+                            return value
+                except Exception:
+                    continue
+        
+        return None
+        
+    except ImportError:
+        pass
+    except Exception:
+        pass
+    
+    return None
+
+
+def match_title_to_known_site(title: str) -> Optional[str]:
+    """
+    Check if the window title matches any known site names.
+    
+    Many sites use their name in the title, like "YouTube", "Reddit - ...", etc.
+    
+    Args:
+        title: Browser window title
+        
+    Returns:
+        Domain if matched, None otherwise
+    """
+    if not title:
+        return None
+    
+    title_lower = title.lower()
+    
+    # Check each known site mapping
+    for site_name, domain in KNOWN_SITE_MAPPINGS.items():
+        # Check if site name appears in title
+        # Use word boundary-like matching to avoid false positives
+        if site_name in title_lower:
+            # Verify it's likely a match (not part of another word)
+            # For short names, be more strict
+            if len(site_name) <= 4:
+                # For short names like "x.com", need exact word match
+                pattern = r'\b' + re.escape(site_name) + r'\b'
+                if re.search(pattern, title_lower):
+                    return domain
+            else:
+                # Longer names are less likely to be false positives
+                return domain
+    
+    return None
 
 
 def extract_domain_from_title(title: str) -> Optional[str]:
@@ -206,17 +448,38 @@ class BrowserMonitor:
             time.sleep(self.check_interval)
     
     def _check_active_window(self) -> None:
-        """Check if the active window is visiting a blocked site."""
-        title = get_active_window_title()
+        """
+        Check if the active window is visiting a blocked site.
+        
+        Uses multiple detection methods:
+        1. UI Automation to read actual URL from address bar (most reliable)
+        2. Known site name matching (e.g., "YouTube" → youtube.com)
+        3. Domain extraction from window title (fallback)
+        """
+        hwnd, title = get_active_window_info()
         if not title:
             return
         
         # Check if it looks like a browser window
-        if not self._is_browser_window(title):
+        browser_name = self._get_browser_name(title)
+        if not browser_name:
             return
         
-        # Try to extract domain
-        domain = extract_domain_from_title(title)
+        domain = None
+        
+        # Method 1: Try UI Automation to get actual URL (most reliable)
+        url = get_browser_url_from_address_bar(hwnd, browser_name)
+        if url:
+            domain = _clean_domain(url)
+        
+        # Method 2: Try matching known site names from title
+        if not domain:
+            domain = match_title_to_known_site(title)
+        
+        # Method 3: Try extracting domain from title patterns
+        if not domain:
+            domain = extract_domain_from_title(title)
+        
         if not domain:
             return
         
@@ -242,14 +505,26 @@ class BrowserMonitor:
             except Exception:
                 pass
     
+    def _get_browser_name(self, title: str) -> Optional[str]:
+        """
+        Get browser name from window title if it's a browser window.
+        
+        Returns:
+            Browser name (lowercase) if detected, None otherwise
+        """
+        title_lower = title.lower()
+        
+        # Check for each browser
+        browsers = ['chrome', 'firefox', 'edge', 'opera', 'brave', 'vivaldi', 'chromium']
+        for browser in browsers:
+            if browser in title_lower:
+                return browser
+        
+        return None
+    
     def _is_browser_window(self, title: str) -> bool:
         """Check if window title looks like a browser."""
-        title_lower = title.lower()
-        browsers = [
-            'chrome', 'firefox', 'edge', 'opera', 'brave', 
-            'vivaldi', 'safari', 'chromium'
-        ]
-        return any(browser in title_lower for browser in browsers)
+        return self._get_browser_name(title) is not None
     
     def _matches_blocked(self, domain: str, blocked_sites: Set[str]) -> Optional[str]:
         """
