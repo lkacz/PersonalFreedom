@@ -751,15 +751,24 @@ class TrayBlocker:
         print("Right-click the tray icon to access the menu.")
         print("=" * 50)
 
+        try:
+            icon_image = self.create_icon_image(False)
+            print(f"Icon image created: {icon_image.size if icon_image else 'None'}")
+        except Exception as e:
+            print(f"ERROR creating icon image: {e}")
+            icon_image = None
+
         self.icon = pystray.Icon(
             "PersonalLiberty",
-            self.create_icon_image(False),
+            icon_image,
             "Personal Liberty - Focus Blocker",
             self.create_menu()
         )
+        print("pystray.Icon object created, starting...")
 
         # Show startup notification
         def after_setup(icon):
+            print("Icon setup complete - should be visible in tray now")
             if is_admin():
                 icon.notify("Right-click the icon to start a focus session", "Personal Liberty Ready")
             else:
@@ -772,44 +781,53 @@ def main():
     # Add a small delay to ensure window is ready
     import time
 
+    # Check for --no-admin flag to skip elevation prompt
+    skip_admin = "--no-admin" in sys.argv
+
     print("Personal Liberty Tray starting...")
     print(f"Python: {sys.executable}")
     print(f"Script: {sys.argv[0]}")
     print(f"Working dir: {os.getcwd()}")
+    if skip_admin:
+        print("Mode: --no-admin (skipping elevation prompt)")
     print()
 
-    # Check admin and offer to elevate
+    # Check admin and offer to elevate (unless --no-admin is passed)
     if not is_admin():
         print("Not running as administrator.")
         print()
 
-        # Try to show a dialog
-        try:
-            import tkinter as tk
-            from tkinter import messagebox
+        if skip_admin:
+            print("Skipping admin elevation as requested.")
+            print("Note: Website blocking will NOT work without admin privileges.")
+        else:
+            # Try to show a dialog
+            try:
+                import tkinter as tk
+                from tkinter import messagebox
 
-            root = tk.Tk()
-            root.withdraw()
-            root.attributes('-topmost', True)
+                root = tk.Tk()
+                root.withdraw()
+                root.attributes('-topmost', True)
 
-            result = messagebox.askyesno(
-                "Administrator Required",
-                "Personal Liberty needs administrator privileges to block websites.\n\n"
-                "Without admin rights, blocking will NOT work.\n\n"
-                "Restart as administrator?",
-                icon='warning'
-            )
-            root.destroy()
+                result = messagebox.askyesno(
+                    "Administrator Required",
+                    "Personal Liberty needs administrator privileges to block websites.\n\n"
+                    "Without admin rights, blocking will NOT work.\n\n"
+                    "Restart as administrator?",
+                    icon='warning'
+                )
+                root.destroy()
 
-            if result:
-                if request_admin_and_restart():
-                    print("Elevated process started. Exiting this instance.")
-                    sys.exit(0)
-                else:
-                    print("Failed to elevate. Running without admin...")
-        except Exception as e:
-            print(f"Could not show dialog: {e}")
-            print("Running without admin privileges...")
+                if result:
+                    if request_admin_and_restart():
+                        print("Elevated process started. Exiting this instance.")
+                        sys.exit(0)
+                    else:
+                        print("Failed to elevate. Running without admin...")
+            except Exception as e:
+                print(f"Could not show dialog: {e}")
+                print("Running without admin privileges...")
     else:
         print("Running with administrator privileges ✓")
 
