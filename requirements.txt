@@ -12,6 +12,10 @@ bcrypt>=4.0.0
 # For reliable global hotkey detection
 pynput>=1.7.6
 
+# For offline Text-to-Speech (voice guidance in Eye & Breath tab)
+piper-tts>=1.2.0
+onnxruntime>=1.16.0
+
 # Optional: For enhanced Light Mode browser URL detection (address bar reading)
 # Uncomment if you want the most reliable site detection in Light Mode
 # uiautomation>=2.0.0
