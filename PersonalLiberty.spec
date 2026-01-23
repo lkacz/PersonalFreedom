@@ -17,6 +17,7 @@ a = Analysis(
         ('startup_sounds.py', '.'),
         ('bypass_logger.py', '.'),
         ('weight_control_tips.py', '.'),
+        ('app_utils.py', '.'),
         # Dialog modules
         ('item_drop_dialog.py', '.'),
         ('level_up_dialog.py', '.'),
@@ -50,6 +51,7 @@ a = Analysis(
         'startup_sounds',
         'bypass_logger',
         'weight_control_tips',
+        'app_utils',
         'item_drop_dialog',
         'level_up_dialog',
         'styled_dialog',

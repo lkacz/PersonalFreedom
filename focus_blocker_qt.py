@@ -23178,6 +23178,12 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             # Set reward date FIRST to prevent race conditions (rapid open/close)
             self.blocker.adhd_buster["last_daily_reward_date"] = today
             
+            # CRITICAL: Save immediately to prevent duplicate rewards on crash/restart
+            # This must happen BEFORE any dialog is shown or item is generated
+            if GAMIFICATION_AVAILABLE:
+                sync_hero_data(self.blocker.adhd_buster)
+            self.blocker.save_config()
+            
             # Get active story for themed item generation
             active_story = self.blocker.adhd_buster.get("active_story", "warrior")
             

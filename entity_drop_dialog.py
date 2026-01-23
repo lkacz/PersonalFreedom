@@ -13,9 +13,10 @@ from PySide6.QtSvgWidgets import QSvgWidget
 from lottery_animation import LotteryRollDialog
 import random
 from typing import Callable, Optional, Dict, Any
+from app_utils import get_app_dir
 
-# Path constants for entity SVGs
-ENTITY_ICONS_PATH = Path(__file__).parent / "icons" / "entities"
+# Path constants for entity SVGs (use helper for PyInstaller compatibility)
+ENTITY_ICONS_PATH = get_app_dir() / "icons" / "entities"
 EXCEPTIONAL_ICONS_PATH = ENTITY_ICONS_PATH / "exceptional"
 
 # Chad's jokes about failure - cycles through these when user skips

@@ -13,6 +13,8 @@ from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QFont, QColor, QPalette
 from PySide6.QtSvgWidgets import QSvgWidget
 
+from app_utils import get_app_dir
+
 
 # Entity data for display
 WARRIOR_ENTITIES = [
@@ -240,7 +242,7 @@ class EntityPreviewWindow(QMainWindow):
             "wanderer": ("🗺️ Wanderer", "#2E7D32"),
         }
         
-        entities_dir = Path(__file__).parent / "icons" / "entities"
+        entities_dir = get_app_dir() / "icons" / "entities"
         
         for theme_key, (theme_name, theme_color) in theme_info.items():
             tab = self._create_theme_tab(theme_key, THEME_ENTITIES[theme_key], entities_dir, theme_color)

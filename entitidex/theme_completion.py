@@ -5,14 +5,23 @@ Defines celebration data and rewards for completing all entities
 in a theme (both normal and exceptional variants).
 """
 
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Optional
 
 
-# Path to celebration assets
-CELEBRATIONS_PATH = Path(__file__).parent.parent / "icons" / "celebrations"
-SOUNDS_PATH = Path(__file__).parent.parent / "icons" / "sounds"
+def _get_app_dir() -> Path:
+    """Get the application directory for bundled resources."""
+    if getattr(sys, 'frozen', False):
+        return Path(sys._MEIPASS)
+    else:
+        return Path(__file__).parent.parent
+
+
+# Path to celebration assets (use helper for PyInstaller compatibility)
+CELEBRATIONS_PATH = _get_app_dir() / "icons" / "celebrations"
+SOUNDS_PATH = _get_app_dir() / "icons" / "sounds"
 
 
 @dataclass
