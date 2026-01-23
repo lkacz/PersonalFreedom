@@ -1296,8 +1296,17 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.cue_label.setText("Look away (20ft/6m)")
         self.guidance.play_gaze_start()
         
-        self.timer.start(1000) # One tick per second
-        self.on_timer_tick() # Execute first tick immediately
+        # Delay first tick to allow "Look far away" voice cue to complete
+        # before the first "Inhale" cue plays (prevents audio overlap)
+        QtCore.QTimer.singleShot(2000, self._start_breathing_timer)
+
+    def _start_breathing_timer(self):
+        """Start the breathing timer after initial gaze cue completes."""
+        # Guard: Don't run if routine was stopped during the delay
+        if not self.is_running or self.step_phase != "gazing":
+            return
+        self.timer.start(1000)  # One tick per second
+        self.on_timer_tick()  # Execute first tick immediately
 
     def on_timer_tick(self):
         try:
@@ -1430,12 +1439,16 @@ class EyeProtectionTab(QtWidgets.QWidget):
                 lottery2.exec()
                 won_item, tier = lottery2.get_results()
         
+        # Update cooldown display and stats after completion (before item handling)
+        self._update_cooldown_display()
+        self.update_stats_display()
+        
         if won_item:
             # Generate Item
             adhd_data = getattr(self.blocker, 'adhd_buster', {})
             story_theme = adhd_data.get('story_active', 'warrior') if adhd_data else 'warrior'
             
-            new_item = generate_item(rarity=tier, theme=story_theme)
+            new_item = generate_item(rarity=tier, story_id=story_theme, adhd_buster=adhd_data)
             
             # Validate generated item before adding
             if not new_item or not isinstance(new_item, dict):
@@ -1450,7 +1463,3 @@ class EyeProtectionTab(QtWidgets.QWidget):
             self.routine_completed.emit(new_item)
         else:
             self.routine_completed.emit({})
-        
-        # Update cooldown display and stats after completion
-        self._update_cooldown_display()
-        self.update_stats_display()

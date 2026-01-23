@@ -8666,6 +8666,12 @@ class SleepTab(QtWidgets.QWidget):
             self._reminder_timer.stop()
             self._reminder_timer = None
     
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        """Update the Nighty-Night bonus preview when the tab is shown."""
+        super().showEvent(event)
+        # Refresh the time and expected reward tier each time tab is opened
+        self._update_sleep_now_preview()
+    
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
         layout.setSpacing(10)
