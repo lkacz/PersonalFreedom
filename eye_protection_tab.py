@@ -16,6 +16,7 @@ from gamification import generate_item, get_entity_qol_perks, get_entity_eye_per
 from game_state import get_game_state
 from entitidex.celebration_audio import CelebrationAudioManager, Synthesizer
 from styled_dialog import styled_info, styled_warning, add_tab_help_button
+from app_utils import get_app_dir
 
 # Try to import piper for offline TTS
 try:
@@ -129,8 +130,8 @@ class GuidanceManager(QtCore.QObject):
                 voice_config = self.AVAILABLE_VOICES[self.DEFAULT_VOICE]
                 self._current_voice_name = self.DEFAULT_VOICE
             
-            # Find voice model path
-            app_dir = Path(__file__).parent
+            # Find voice model path (use helper for PyInstaller compatibility)
+            app_dir = get_app_dir()
             model_path = app_dir / voice_config["file"]
             
             if not model_path.exists():
@@ -162,8 +163,8 @@ class GuidanceManager(QtCore.QObject):
 
     def get_voice_names(self):
         """Return available voice names."""
-        # Return voices that have their model files present
-        app_dir = Path(__file__).parent
+        # Return voices that have their model files present (use helper for PyInstaller compatibility)
+        app_dir = get_app_dir()
         available = []
         for name, config in self.AVAILABLE_VOICES.items():
             model_path = app_dir / config["file"]
@@ -188,8 +189,8 @@ class GuidanceManager(QtCore.QObject):
         if name not in self.AVAILABLE_VOICES:
             return False
         
-        # Check if model exists
-        app_dir = Path(__file__).parent
+        # Check if model exists (use helper for PyInstaller compatibility)
+        app_dir = get_app_dir()
         voice_config = self.AVAILABLE_VOICES[name]
         model_path = app_dir / voice_config["file"]
         if not model_path.exists():
@@ -881,8 +882,8 @@ class EyeProtectionTab(QtWidgets.QWidget):
     def _load_entity_svg(self, is_exceptional: bool):
         """Load Sam's SVG icon into the label (static, not animated)."""
         try:
-            # Determine the SVG path
-            base_path = os.path.dirname(os.path.abspath(__file__))
+            # Determine the SVG path (use helper for PyInstaller compatibility)
+            base_path = str(get_app_dir())
             if is_exceptional:
                 svg_path = os.path.join(base_path, "icons", "entities", "exceptional", 
                                         "underdog_005_desk_succulent_sam_exceptional.svg")

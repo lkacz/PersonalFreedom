@@ -14,6 +14,7 @@ from PySide6.QtSvgWidgets import QSvgWidget
 
 # Import entitidex components
 from entitidex import Entity
+from app_utils import get_app_dir
 
 
 class EntityEncounterDialog(QtWidgets.QDialog):
@@ -171,7 +172,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         # Construct SVG filename: entity_id + name in snake_case
         name_snake = self.entity.name.lower().replace(" ", "_").replace("'", "")
         svg_filename = f"{self.entity.id}_{name_snake}.svg"
-        svg_path = os.path.join(os.path.dirname(__file__), "icons", "entities", svg_filename)
+        svg_path = os.path.join(str(get_app_dir()), "icons", "entities", svg_filename)
         if os.path.exists(svg_path):
             self.entity_svg.load(svg_path)
         self.entity_svg.setStyleSheet("border: none; background: transparent;")

@@ -40,6 +40,7 @@ from entitidex import (
 )
 from entitidex.entity_perks import calculate_active_perks, ENTITY_PERKS, PerkType, get_perk_description
 from styled_dialog import add_tab_help_button
+from app_utils import get_app_dir
 
 
 # Rarity colors
@@ -60,8 +61,8 @@ RARITY_BG = {
     "legendary": "#3D2D1B",
 }
 
-# Path to entity SVGs
-ENTITY_ICONS_PATH = Path(__file__).parent / "icons" / "entities"
+# Path to entity SVGs (use helper for PyInstaller compatibility)
+ENTITY_ICONS_PATH = get_app_dir() / "icons" / "entities"
 EXCEPTIONAL_ICONS_PATH = ENTITY_ICONS_PATH / "exceptional"
 
 # =============================================================================
@@ -1241,8 +1242,8 @@ class EntityCard(QtWidgets.QFrame):
 # Displayed when user collects all entities from a theme
 # =============================================================================
 
-# Path to celebration SVGs
-CELEBRATION_ICONS_PATH = Path(__file__).parent / "icons" / "celebrations"
+# Path to celebration SVGs (use helper for PyInstaller compatibility)
+CELEBRATION_ICONS_PATH = get_app_dir() / "icons" / "celebrations"
 
 # Cache colorsys import for CelebrationCard rainbow effect (avoid per-frame import)
 from colorsys import hsv_to_rgb as _hsv_to_rgb
