@@ -14605,16 +14605,42 @@ def get_daily_login_reward(login_streak: int) -> dict:
     return {"day": day_in_cycle, "type": "xp", "amount": 25, "description": "25 XP", "emoji": "✨", "login_streak": login_streak, "day_in_cycle": day_in_cycle, "cycle_number": 1}
 
 
+def get_work_day_date(dt: datetime = None) -> str:
+    """
+    Get the 'work day' date string for a given datetime.
+    
+    Work day starts at 5:00 AM, so anything before 5 AM counts as the previous day.
+    This prevents daily rewards from resetting at midnight for night owls.
+    
+    Args:
+        dt: The datetime to check. Defaults to now.
+    
+    Returns:
+        Date string in YYYY-MM-DD format representing the work day.
+    """
+    if dt is None:
+        dt = datetime.now()
+    
+    # If before 5 AM, count as previous day
+    if dt.hour < 5:
+        dt = dt - timedelta(days=1)
+    
+    return dt.strftime("%Y-%m-%d")
+
+
 def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
     """
     Claim daily login reward. Should be called once per day.
     
+    Work day starts at 5:00 AM - anything before 5 AM counts as the previous day.
+    This prevents daily rewards from resetting at midnight for night owls.
+    
     Returns the reward info and any items/XP granted.
     """
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = get_work_day_date()
     last_login = adhd_buster.get("last_login_date")
     
-    # Check if already claimed today
+    # Check if already claimed today (using work day logic)
     if last_login == today:
         return {"already_claimed": True, "message": "Already claimed today's reward!"}
     
