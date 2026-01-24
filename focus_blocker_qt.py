@@ -479,6 +479,16 @@ generate_item = None
 generate_daily_reward_item = None
 get_current_tier = None
 get_boosted_rarity = None
+
+def _fallback_get_work_day_date(dt=None):
+    """Fallback work day date function - day starts at 5 AM."""
+    if dt is None:
+        dt = datetime.now()
+    if dt.hour < 5:
+        dt = dt - timedelta(days=1)
+    return dt.strftime("%Y-%m-%d")
+
+get_work_day_date = _fallback_get_work_day_date
 AVAILABLE_STORIES = {}
 STORY_MODE_ACTIVE = "story"
 STORY_MODE_HERO_ONLY = "hero_only"
@@ -665,6 +675,7 @@ def load_heavy_modules():
             generate_daily_reward_item as _generate_daily_reward_item,
             get_current_tier as _get_current_tier,
             get_boosted_rarity as _get_boosted_rarity,
+            get_work_day_date as _get_work_day_date,
             AVAILABLE_STORIES as _AVAILABLE_STORIES,
             STORY_MODE_ACTIVE as _STORY_MODE_ACTIVE,
             STORY_MODE_HERO_ONLY as _STORY_MODE_HERO_ONLY,
@@ -714,6 +725,7 @@ def load_heavy_modules():
         generate_daily_reward_item = _generate_daily_reward_item
         get_current_tier = _get_current_tier
         get_boosted_rarity = _get_boosted_rarity
+        get_work_day_date = _get_work_day_date
         AVAILABLE_STORIES = _AVAILABLE_STORIES
         STORY_MODE_ACTIVE = _STORY_MODE_ACTIVE
         STORY_MODE_HERO_ONLY = _STORY_MODE_HERO_ONLY
@@ -1548,34 +1560,33 @@ class TimerTab(QtWidgets.QWidget):
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(12)
-        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(6)
+        layout.setContentsMargins(10, 8, 10, 8)
 
         # Help button (moves to bottom after read)
         add_tab_help_button(layout, "timer", self)
 
         # TOP ROW: Timer display + Start/Stop button in same row
         top_row = QtWidgets.QHBoxLayout()
-        top_row.setSpacing(15)
+        top_row.setSpacing(10)
         
         # Compact timer display
         timer_card = QtWidgets.QFrame()
         timer_card.setStyleSheet("""
             QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #2d3436, stop:1 #1a1a1a);
-                border: 2px solid #5f27cd;
-                border-radius: 12px;
-                padding: 8px;
+                background: rgba(45, 52, 54, 0.5);
+                border: 1px solid #5f27cd;
+                border-radius: 8px;
+                padding: 4px;
             }
         """)
         timer_layout = QtWidgets.QVBoxLayout(timer_card)
-        timer_layout.setContentsMargins(15, 8, 15, 8)
+        timer_layout.setContentsMargins(10, 4, 10, 4)
         
         self.timer_label = QtWidgets.QLabel("00:00:00")
         self.timer_label.setAlignment(QtCore.Qt.AlignCenter)
         self.timer_label.setStyleSheet("""
-            font: 700 32px 'Consolas';
+            font: 700 28px 'Consolas';
             color: #a29bfe;
             background: transparent;
         """)
@@ -1584,8 +1595,8 @@ class TimerTab(QtWidgets.QWidget):
         
         # Dynamic Start/Stop button (single button that changes state)
         self.action_btn = QtWidgets.QPushButton("▶ Start")
-        self.action_btn.setMinimumHeight(60)
-        self.action_btn.setMinimumWidth(140)
+        self.action_btn.setMinimumHeight(48)
+        self.action_btn.setMinimumWidth(120)
         self._set_action_btn_start_style()
         top_row.addWidget(self.action_btn)
         
@@ -1593,7 +1604,27 @@ class TimerTab(QtWidgets.QWidget):
 
         # Mode selection
         mode_box = QtWidgets.QGroupBox("Mode")
+        mode_box.setStyleSheet("""
+            QGroupBox {
+                font-size: 13px;
+                font-weight: bold;
+                color: #74b9ff;
+                border: 1px solid #2d3436;
+                border-radius: 8px;
+                margin-top: 8px;
+                padding-top: 8px;
+                background: rgba(45, 52, 54, 0.5);
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top left;
+                left: 8px;
+                top: 0px;
+            }
+        """)
         mode_layout = QtWidgets.QHBoxLayout(mode_box)
+        mode_layout.setContentsMargins(8, 4, 8, 6)
+        mode_layout.setSpacing(8)
         self.mode_buttons: Dict[str, QtWidgets.QRadioButton] = {}
         modes = [
             ("Normal", BlockMode.NORMAL, "Can stop session anytime"),
@@ -1611,23 +1642,23 @@ class TimerTab(QtWidgets.QWidget):
         layout.addWidget(mode_box)
 
         # Duration slider with time display
-        duration_box = QtWidgets.QGroupBox("⏱️ Session Duration")
+        duration_box = QtWidgets.QGroupBox("⏱ Duration")
         duration_box.setStyleSheet("""
             QGroupBox {
-                font-size: 14px;
+                font-size: 13px;
                 font-weight: bold;
                 color: #74b9ff;
-                border: 2px solid #2d3436;
-                border-radius: 12px;
-                margin-top: 10px;
-                padding: 15px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #2d3436, stop:1 #1a1a1a);
+                border: 1px solid #2d3436;
+                border-radius: 8px;
+                margin-top: 8px;
+                padding-top: 8px;
+                background: rgba(45, 52, 54, 0.5);
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px;
+                subcontrol-position: top left;
+                left: 8px;
+                top: 0px;
             }
             QLabel {
                 color: #b2bec3;
@@ -1659,15 +1690,17 @@ class TimerTab(QtWidgets.QWidget):
             }
         """)
         duration_layout = QtWidgets.QVBoxLayout(duration_box)
+        duration_layout.setContentsMargins(8, 4, 8, 6)
+        duration_layout.setSpacing(2)
         
         # Time display label
         self.duration_display = QtWidgets.QLabel("25 minutes")
         self.duration_display.setAlignment(QtCore.Qt.AlignCenter)
         self.duration_display.setStyleSheet("""
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             color: #74b9ff;
-            padding: 5px;
+            padding: 2px;
         """)
         duration_layout.addWidget(self.duration_display)
         
@@ -1695,26 +1728,28 @@ class TimerTab(QtWidgets.QWidget):
         layout.addWidget(duration_box)
 
         # Presets with modern gradient buttons
-        preset_box = QtWidgets.QGroupBox("⚡ Quick Presets")
+        preset_box = QtWidgets.QGroupBox("⚡ Presets")
         preset_box.setStyleSheet("""
             QGroupBox {
-                font-size: 14px;
+                font-size: 13px;
                 font-weight: bold;
                 color: #ffeaa7;
-                border: 2px solid #2d3436;
-                border-radius: 12px;
-                margin-top: 10px;
-                padding: 15px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #2d3436, stop:1 #1a1a1a);
+                border: 1px solid #2d3436;
+                border-radius: 8px;
+                margin-top: 8px;
+                padding-top: 8px;
+                background: rgba(45, 52, 54, 0.5);
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px;
+                subcontrol-position: top left;
+                left: 8px;
+                top: 0px;
             }
         """)
         preset_layout = QtWidgets.QHBoxLayout(preset_box)
+        preset_layout.setContentsMargins(8, 4, 8, 6)
+        preset_layout.setSpacing(6)
         presets = [("25m", 25), ("45m", 45), ("1h", 60), ("2h", 120), ("4h", 240)]
         for label, minutes in presets:
             btn = QtWidgets.QPushButton(label)
@@ -1723,11 +1758,11 @@ class TimerTab(QtWidgets.QWidget):
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                         stop:0 #fdcb6e, stop:1 #e17055);
                     color: white;
-                    font-size: 12px;
+                    font-size: 11px;
                     font-weight: bold;
-                    border-radius: 8px;
-                    border: 2px solid #d63031;
-                    padding: 8px 15px;
+                    border-radius: 6px;
+                    border: 1px solid #d63031;
+                    padding: 4px 10px;
                 }
                 QPushButton:hover {
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -1742,29 +1777,29 @@ class TimerTab(QtWidgets.QWidget):
         layout.addWidget(preset_box)
 
         # Notification settings with modern styling
-        notify_box = QtWidgets.QGroupBox("🔔 Session End Notification")
+        notify_box = QtWidgets.QGroupBox("🔔 Notification")
         notify_box.setStyleSheet("""
             QGroupBox {
-                font-size: 14px;
+                font-size: 13px;
                 font-weight: bold;
                 color: #00b894;
-                border: 2px solid #2d3436;
-                border-radius: 12px;
-                margin-top: 10px;
-                padding: 15px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #2d3436, stop:1 #1a1a1a);
+                border: 1px solid #2d3436;
+                border-radius: 8px;
+                margin-top: 8px;
+                padding-top: 8px;
+                background: rgba(45, 52, 54, 0.5);
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px;
+                subcontrol-position: top left;
+                left: 8px;
+                top: 0px;
             }
             QRadioButton {
                 color: #dfe6e9;
-                font-size: 13px;
-                spacing: 6px;
-                padding: 4px;
+                font-size: 12px;
+                spacing: 4px;
+                padding: 2px;
             }
             QRadioButton::indicator {
                 width: 18px;
@@ -1780,7 +1815,8 @@ class TimerTab(QtWidgets.QWidget):
             }
         """)
         notify_layout = QtWidgets.QHBoxLayout(notify_box)
-        notify_layout.setSpacing(15)
+        notify_layout.setContentsMargins(8, 4, 8, 6)
+        notify_layout.setSpacing(8)
         
         self.notify_buttons: dict[str, QtWidgets.QRadioButton] = {}
         notify_options = [
@@ -1809,11 +1845,10 @@ class TimerTab(QtWidgets.QWidget):
         status_card = QtWidgets.QFrame()
         status_card.setStyleSheet("""
             QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #2d3436, stop:1 #1a1a1a);
-                border: 2px solid #00b894;
-                border-radius: 10px;
-                padding: 12px;
+                background: rgba(45, 52, 54, 0.5);
+                border: 1px solid #00b894;
+                border-radius: 8px;
+                padding: 6px;
             }
         """)
         status_layout = QtWidgets.QVBoxLayout(status_card)
@@ -1822,36 +1857,38 @@ class TimerTab(QtWidgets.QWidget):
         self.status_label = QtWidgets.QLabel("✨ Ready to focus")
         self.status_label.setAlignment(QtCore.Qt.AlignCenter)
         self.status_label.setStyleSheet("""
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #00b894;
             background: transparent;
-            padding: 5px;
+            padding: 2px;
         """)
         status_layout.addWidget(self.status_label)
         layout.addWidget(status_card)
         
         # Rewards info section with modern gradient styling
-        rewards_group = QtWidgets.QGroupBox("🎁 Session Rewards")
+        rewards_group = QtWidgets.QGroupBox("🎁 Rewards")
         rewards_group.setStyleSheet("""
             QGroupBox {
-                font-size: 14px;
+                font-size: 13px;
                 font-weight: bold;
                 color: #a5b4fc;
-                border: 2px solid #2d3436;
-                border-radius: 12px;
-                margin-top: 10px;
-                padding: 15px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #2d3436, stop:1 #1a1a1a);
+                border: 1px solid #2d3436;
+                border-radius: 8px;
+                margin-top: 8px;
+                padding-top: 8px;
+                background: rgba(45, 52, 54, 0.5);
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
-                left: 10px;
-                padding: 0 5px;
+                subcontrol-position: top left;
+                left: 8px;
+                top: 0px;
             }
         """)
         rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
+        rewards_layout.setContentsMargins(8, 4, 8, 6)
+        rewards_layout.setSpacing(2)
         rewards_info = QtWidgets.QLabel(
             "<b style='color:#ffeaa7;'>How it works:</b> <span style='color:#dfe6e9;'>Complete a focus session to earn 1 random item. Longer sessions shift the rarity distribution higher.</span><br>"
             "<table style='font-size:10px; color:#b2bec3; margin-top:5px;'>"
@@ -1866,7 +1903,7 @@ class TimerTab(QtWidgets.QWidget):
             "<br><b style='color:#74b9ff;'>Streak bonus:</b> <span style='color:#dfe6e9;'>+1 tier per 7-day streak</span> | <b style='color:#fdcb6e;'>XP:</b> <span style='color:#dfe6e9;'>25 base + 2/min + streak bonus</span>"
         )
         rewards_info.setWordWrap(True)
-        rewards_info.setStyleSheet("color: #dfe6e9; font-size: 11px; background: transparent; padding: 8px;")
+        rewards_info.setStyleSheet("color: #dfe6e9; font-size: 10px; background: transparent; padding: 2px;")
         rewards_layout.addWidget(rewards_info)
         layout.addWidget(rewards_group)
 
@@ -1875,14 +1912,13 @@ class TimerTab(QtWidgets.QWidget):
         self.log_past_btn.setToolTip("Forgot to start the timer? Log a focus session you already completed.")
         self.log_past_btn.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #636e72, stop:1 #4a4a4a);
+                background: rgba(99, 110, 114, 0.6);
                 color: #dfe6e9;
-                font-size: 12px;
+                font-size: 11px;
                 font-weight: bold;
-                border-radius: 8px;
+                border-radius: 6px;
                 border: 1px solid #74b9ff;
-                padding: 8px 15px;
+                padding: 4px 10px;
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -23806,6 +23842,9 @@ del "%~f0"
         On first app start: Always award gear.
         On subsequent starts: 10% chance per day.
         Gear is one tier higher than current equipped tier.
+        
+        Work day starts at 5:00 AM - anything before 5 AM counts as the previous day.
+        This prevents rewards from resetting at midnight for night owls.
         """
         if not GAMIFICATION_AVAILABLE:
             return
@@ -23813,11 +23852,12 @@ del "%~f0"
         if not is_gamification_enabled(self.blocker.adhd_buster):
             return
         
-        today = datetime.now().strftime("%Y-%m-%d")
+        # Use work day logic - day starts at 5 AM, not midnight
+        today = get_work_day_date()
         last_reward_date = self.blocker.adhd_buster.get("last_daily_reward_date", "")
         first_launch = self.blocker.adhd_buster.get("first_launch_complete", False)
         
-        # Already received reward today
+        # Already received reward today (using work day)
         if last_reward_date == today:
             return
         
