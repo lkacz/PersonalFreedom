@@ -1398,6 +1398,15 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.blocker.stats["eye_protection"]["daily_count"] = new_count
         self.blocker.save_stats()
         
+        # Notify timeline of eye routine change
+        try:
+            from game_state import get_game_state
+            game_state = get_game_state()
+            if game_state:
+                game_state.notify_eye_routine_changed(new_count)
+        except Exception:
+            pass
+        
         # Import the merge lottery dialog for moving window animation
         from lottery_animation import MergeTwoStageLotteryDialog
         

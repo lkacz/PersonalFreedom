@@ -951,17 +951,23 @@ class EntityCard(QtWidgets.QFrame):
                     icon_widget.setStyleSheet("background: transparent;")
                 # Store reference for animation
                 self._icon_widget = icon_widget
-            else:
-                # Silhouette for uncollected - also 128x128
+            elif self.is_encountered:
+                # Silhouette for encountered but not caught - user knows the shape
                 # Industry standard: Pass parent for proper Qt object ownership/cleanup
                 icon_widget = SilhouetteSvgWidget(svg_path, svg_container)
                 icon_widget.setFixedSize(128, 128)
+            else:
+                # Question mark for never-encountered - complete mystery
+                icon_widget = QtWidgets.QLabel("❓")
+                icon_widget.setAlignment(QtCore.Qt.AlignCenter)
+                icon_widget.setFixedSize(128, 128)
+                icon_widget.setStyleSheet("font-size: 64px; color: #555555; background: transparent;")
         else:
-            # Placeholder if no SVG
-            icon_widget = QtWidgets.QLabel("❓")
+            # X placeholder if SVG file missing or failed to load
+            icon_widget = QtWidgets.QLabel("❌")
             icon_widget.setAlignment(QtCore.Qt.AlignCenter)
             icon_widget.setFixedSize(128, 128)
-            icon_widget.setStyleSheet("font-size: 64px; color: #333333;")
+            icon_widget.setStyleSheet("font-size: 64px; color: #AA3333; background: transparent;")
         
         svg_layout.addWidget(icon_widget)
         svg_layout.addStretch()

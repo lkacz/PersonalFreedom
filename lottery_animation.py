@@ -3700,8 +3700,8 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         
         self.setWindowTitle(title)
         self.setModal(True)
-        self.setMinimumSize(400, 260)
-        load_dialog_geometry(self, "FocusTimerLotteryDialog", QtCore.QSize(500, 320))
+        self.setMinimumSize(450, 380)
+        load_dialog_geometry(self, "FocusTimerLotteryDialog", QtCore.QSize(520, 420))
         self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
         
         layout = QtWidgets.QVBoxLayout(self)

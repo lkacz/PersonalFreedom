@@ -65,6 +65,10 @@ class UserSelectionDialog(StyledDialog):
         users = self.user_manager.get_users()
         for user in users:
             self.user_list.addItem(user)
+        
+        # Auto-select first user if list is not empty
+        if self.user_list.count() > 0:
+            self.user_list.setCurrentRow(0)
 
     def create_new_user(self):
         name, ok = StyledInputDialog.get_text(
@@ -127,5 +131,11 @@ class UserSelectionDialog(StyledDialog):
         if current_item:
             self.selected_user = current_item.text()
             self.accept()
+        elif self.user_list.count() == 0:
+            StyledMessageBox.warning(
+                self, 
+                "No Profiles", 
+                "No user profiles exist yet.\n\nClick '➕ New Profile' to create one."
+            )
         else:
             StyledMessageBox.warning(self, "Select User", "Please select a user profile.")

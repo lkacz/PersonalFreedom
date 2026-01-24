@@ -5242,8 +5242,6 @@ Actually, "concerning" is an understatement. You just released your worst impuls
 
 Somewhere, your Shadow Self is probably already watching cat videos on an infinite screen.
 
-🎲 NEXT TIME: Your evil twin is loose. The mirror shards are glowing. And The Keeper just got a message they're pretending you didn't see...
-
 ⚡ A CHOICE AWAITS... The shattered mirror fragments still glow with power.
 """,
         "content_after_decision": {
@@ -5432,8 +5430,6 @@ There's a note inside. Written in YOUR handwriting.
 
 Wait. WHAT?
 
-🎲 NEXT TIME: Time travel exists here?! The Fortress wants you personally. And that bean bag Kira is sitting in? It's BREATHING.
-
 ⚡ A CHOICE AWAITS... Lyra is spiraling. The Fortress is closing in.
 """,
         "content_after_decision": {
@@ -5499,7 +5495,7 @@ In the Fortress's memories, you saw something else: The Keeper—younger, differ
 
 They haven't noticed you noticed. But now everything is a question.
 
-🎲 NEXT TIME: The Keeper has a TWIN. They're both "The Keeper." Nobody thought to mention this. Also, that rescue army you mentioned? The Archon already recruited them. Plot twist: they VOLUNTEER.
+🎲 NEXT TIME: The Keeper has a TWIN. They're both "The Keeper." Nobody thought to mention this. Also, that rescue army you mentioned? The Archon already recruited them. They VOLUNTEER.
 """,
         },
     },
@@ -5744,8 +5740,6 @@ Wait. The Archon has a Shadow Self too?
 "Had," The Archon corrects. "I absorbed it centuries ago. It's been driving me insane ever since."
 
 Your Shadow Self grins with your face. "So. Still want to absorb me? The Archon is EXHIBIT A of how that ends."
-
-🎲 NEXT TIME: Your mentor has been sabotaging everyone. The Archon might be salvageable. And your Shadow Self just offered to be your THERAPIST.
 
 ⚡ A CHOICE AWAITS... It kneels before you, awaiting judgment.
 """,
@@ -10043,6 +10037,31 @@ def get_selected_story(adhd_buster: dict) -> str:
     return adhd_buster.get("active_story", "warrior")
 
 
+def get_equipped_item(adhd_buster: dict, slot: str) -> Optional[dict]:
+    """
+    Get the currently equipped item in a specific slot.
+    
+    Args:
+        adhd_buster: The player's game state dictionary
+        slot: The equipment slot to check (e.g., "Helmet", "Chestplate", etc.)
+    
+    Returns:
+        The equipped item dict if one exists, or None if the slot is empty.
+    """
+    if not adhd_buster or not isinstance(adhd_buster, dict):
+        return None
+    
+    equipped = adhd_buster.get("equipped", {})
+    if not isinstance(equipped, dict):
+        return None
+    
+    item = equipped.get(slot)
+    if item and isinstance(item, dict):
+        return item
+    
+    return None
+
+
 def select_story(adhd_buster: dict, story_id: str) -> bool:
     """
     Select a story to follow. Uses the new hero management system.
@@ -13703,10 +13722,11 @@ def get_screen_off_bonus_rarity(screen_off_time: str) -> Optional[str]:
     
     Uses the same moving window [5%, 20%, 50%, 20%, 5%] pattern.
     Earlier screen-off times give better rewards:
-    - 21:00 or earlier: 100% Legendary (perfect digital hygiene!)
-    - 22:00: Legendary-centered (75% Legendary)
-    - 23:00: Epic-centered
-    - 00:00: Uncommon-centered
+    - 21:00-21:30: 100% Legendary (perfect digital hygiene!)
+    - 21:30-22:30: Legendary-centered (75% Legendary)
+    - 22:30-23:30: Epic-centered
+    - 23:30-00:30: Rare-centered
+    - 00:30-01:00: Uncommon-centered
     - 01:00+: No bonus (too late)
     
     Args:
@@ -13740,14 +13760,16 @@ def get_screen_off_bonus_rarity(screen_off_time: str) -> Optional[str]:
     # 00:30 - 01:00 = Uncommon-centered
     # 01:00+ = No bonus
     
-    if total_minutes < 22 * 60:  # Before 22:00
+    if total_minutes < 21 * 60:  # Before 21:00
         return None
-    elif total_minutes <= 22 * 60 + 30:  # 22:00 to 22:30
+    elif total_minutes <= 21 * 60 + 30:  # 21:00 to 21:30
         return "Legendary"
-    elif total_minutes <= 23 * 60 + 30:  # 22:31 to 23:30
+    elif total_minutes <= 22 * 60 + 30:  # 21:31 to 22:30
         center_tier = 4  # Legendary-centered
-    elif total_minutes <= 24 * 60 + 30:  # 23:31 to 00:30
+    elif total_minutes <= 23 * 60 + 30:  # 22:31 to 23:30
         center_tier = 3  # Epic-centered
+    elif total_minutes <= 24 * 60 + 30:  # 23:31 to 00:30
+        center_tier = 2  # Rare-centered
     elif total_minutes < 25 * 60:  # 00:31 to 00:59
         center_tier = 1  # Uncommon-centered
     else:  # 01:00 or later

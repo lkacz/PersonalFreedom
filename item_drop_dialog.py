@@ -26,6 +26,17 @@ except ImportError:
 class ItemComparisonWidget(QtWidgets.QWidget):
     """Side-by-side comparison of new item vs currently equipped (dark theme)."""
     
+    # Signal emitted when user requests to equip the new item
+    equip_requested = QtCore.Signal()
+    
+    RARITY_COLORS = {
+        "Common": "#9e9e9e",
+        "Uncommon": "#4caf50", 
+        "Rare": "#2196f3",
+        "Epic": "#9c27b0",
+        "Legendary": "#ff9800"
+    }
+    
     def __init__(self, new_item: dict, equipped_item: Optional[dict] = None,
                  parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
@@ -34,14 +45,57 @@ class ItemComparisonWidget(QtWidgets.QWidget):
         self._build_ui()
     
     def _build_ui(self):
-        """Build comparison display."""
-        layout = QtWidgets.QHBoxLayout(self)
-        layout.setSpacing(16)
-        layout.setContentsMargins(0, 0, 0, 0)
+        """Build comparison display with comprehensive benefit analysis."""
+        main_layout = QtWidgets.QVBoxLayout(self)
+        main_layout.setSpacing(8)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        
+        # Calculate power difference and determine if upgrade
+        new_power = self.new_item.get("power", 0)
+        eq_power = self.equipped_item.get("power", 0) if self.equipped_item else 0
+        power_diff = new_power - eq_power
+        
+        # Calculate lucky bonuses
+        new_lucky = self.new_item.get("lucky_options", {})
+        eq_lucky = self.equipped_item.get("lucky_options", {}) if self.equipped_item else {}
+        
+        new_lucky_score = sum([
+            new_lucky.get("coin_discount", 0),
+            new_lucky.get("xp_bonus", 0),
+            new_lucky.get("merge_luck", 0)
+        ])
+        eq_lucky_score = sum([
+            eq_lucky.get("coin_discount", 0),
+            eq_lucky.get("xp_bonus", 0),
+            eq_lucky.get("merge_luck", 0)
+        ])
+        
+        is_upgrade = power_diff > 0 or (power_diff == 0 and new_lucky_score > eq_lucky_score)
+        is_empty_slot = not self.equipped_item
+        
+        # Upgrade/Status header
+        if is_empty_slot:
+            header = QtWidgets.QLabel("✨ <b>NEW GEAR FOR EMPTY SLOT!</b>")
+            header.setStyleSheet("color: #4caf50; font-size: 12px;")
+        elif is_upgrade:
+            header = QtWidgets.QLabel("⬆️ <b>UPGRADE AVAILABLE!</b>")
+            header.setStyleSheet("color: #FFD700; font-size: 12px;")
+        elif power_diff < 0:
+            header = QtWidgets.QLabel("📊 <b>Comparison</b> (Equipped is stronger)")
+            header.setStyleSheet("color: #888; font-size: 11px;")
+        else:
+            header = QtWidgets.QLabel("📊 <b>Comparison</b> (Similar power)")
+            header.setStyleSheet("color: #888; font-size: 11px;")
+        header.setAlignment(QtCore.Qt.AlignCenter)
+        main_layout.addWidget(header)
+        
+        # Side-by-side cards
+        cards_layout = QtWidgets.QHBoxLayout()
+        cards_layout.setSpacing(16)
         
         # New item (left)
         new_widget = self._create_item_card(self.new_item, "New Item", is_new=True)
-        layout.addWidget(new_widget)
+        cards_layout.addWidget(new_widget)
         
         # VS indicator
         vs_label = QtWidgets.QLabel("vs")
@@ -53,14 +107,49 @@ class ItemComparisonWidget(QtWidgets.QWidget):
             padding: 0 8px;
             background: transparent;
         """)
-        layout.addWidget(vs_label)
+        cards_layout.addWidget(vs_label)
         
         # Current item (right) or "Empty" placeholder
         if self.equipped_item:
             current_widget = self._create_item_card(self.equipped_item, "Equipped", is_new=False)
         else:
             current_widget = self._create_empty_card()
-        layout.addWidget(current_widget)
+        cards_layout.addWidget(current_widget)
+        
+        main_layout.addLayout(cards_layout)
+        
+        # Power difference display (only if there's an equipped item)
+        if self.equipped_item:
+            diff_color = "#4caf50" if power_diff > 0 else ("#f44336" if power_diff < 0 else "#888")
+            diff_sign = "+" if power_diff > 0 else ""
+            diff_label = QtWidgets.QLabel(
+                f"<span style='color:{diff_color}; font-weight:bold; font-size:14px;'>"
+                f"⚔ {diff_sign}{power_diff} Power</span>"
+            )
+            diff_label.setAlignment(QtCore.Qt.AlignCenter)
+            diff_label.setStyleSheet("background: transparent; padding: 4px;")
+            main_layout.addWidget(diff_label)
+            
+            # Lucky options comparison
+            lucky_diffs = []
+            for key, label, emoji in [
+                ("coin_discount", "Merge Cost", "💰"),
+                ("xp_bonus", "XP Bonus", "✨"),
+                ("merge_luck", "Merge Luck", "🎲")
+            ]:
+                new_val = new_lucky.get(key, 0)
+                old_val = eq_lucky.get(key, 0)
+                if new_val != old_val:
+                    diff = new_val - old_val
+                    d_sign = "+" if diff > 0 else ""
+                    d_color = "#4caf50" if diff > 0 else "#f44336"
+                    lucky_diffs.append(f"<span style='color:{d_color};'>{emoji} {label}: {d_sign}{diff}%</span>")
+            
+            if lucky_diffs:
+                lucky_label = QtWidgets.QLabel(" | ".join(lucky_diffs))
+                lucky_label.setAlignment(QtCore.Qt.AlignCenter)
+                lucky_label.setStyleSheet("font-size: 10px; background: transparent;")
+                main_layout.addWidget(lucky_label)
     
     def _create_item_card(self, item: dict, title: str, is_new: bool) -> QtWidgets.QWidget:
         """Create item card widget with dark theme."""
@@ -281,13 +370,27 @@ class EnhancedItemDropDialog(StyledDialog):
         # Spacer
         layout.addStretch()
         
+        # Determine if item is an upgrade
+        new_power = self.item.get("power", 0)
+        eq_power = self.equipped_item.get("power", 0) if self.equipped_item else 0
+        power_diff = new_power - eq_power
+        
+        new_lucky = self.item.get("lucky_options", {})
+        eq_lucky = self.equipped_item.get("lucky_options", {}) if self.equipped_item else {}
+        new_lucky_score = sum([new_lucky.get(k, 0) for k in ("coin_discount", "xp_bonus", "merge_luck")])
+        eq_lucky_score = sum([eq_lucky.get(k, 0) for k in ("coin_discount", "xp_bonus", "merge_luck")])
+        
+        is_upgrade = power_diff > 0 or (power_diff == 0 and new_lucky_score > eq_lucky_score)
+        is_empty_slot = not self.equipped_item
+        
         # Action buttons
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.setSpacing(8)
         
-        # Quick equip (if slot is empty)
-        if not self.equipped_item:
-            equip_btn = QtWidgets.QPushButton("⚡ Quick Equip")
+        # Quick equip (if slot is empty OR if new item is an upgrade)
+        if is_empty_slot or is_upgrade:
+            equip_text = "⚡ Quick Equip" if is_empty_slot else "⚔️ Equip Upgrade"
+            equip_btn = QtWidgets.QPushButton(equip_text)
             equip_btn.setStyleSheet("""
                 QPushButton {
                     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -386,13 +489,11 @@ class EnhancedItemDropDialog(StyledDialog):
         """Start celebration animation."""
         rarity = self.item.get("rarity", "Common")
         
-        # Play sound for Epic and Legendary
+        # Play win sound for Epic and Legendary using lottery sound system
         if rarity in ["Epic", "Legendary"]:
             try:
-                import winsound
-                beeps = 3 if rarity == "Legendary" else 2
-                for _ in range(beeps):
-                    winsound.MessageBeep(winsound.MB_ICONASTERISK)
+                from lottery_sounds import play_win_sound
+                play_win_sound()
             except Exception:
                 pass
     

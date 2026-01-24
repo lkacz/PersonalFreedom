@@ -1335,6 +1335,181 @@ class OnboardingModeDialog(StyledDialog):
         return self.dont_ask_checkbox.isChecked()
 
 
+class LogPastSessionDialog(StyledDialog):
+    """Dialog to log a focus session retroactively.
+    
+    Allows users to record focus time they forgot to track with the timer.
+    Awards the same rewards as a normal timed session.
+    """
+    
+    def __init__(self, blocker: 'BlockerCore', parent: Optional[QtWidgets.QWidget] = None):
+        # Set blocker before super().__init__ because StyledDialog calls _build_content()
+        self.blocker = blocker
+        self.session_minutes = 0
+        super().__init__(parent, title="📝 Log Past Session", min_width=420, max_width=500)
+    
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
+        """Build the dialog content inside the styled frame."""
+        # Info label
+        info_label = QtWidgets.QLabel(
+            "🕐 <b>Forgot to start the timer?</b><br><br>"
+            "Log your focus session here to record your productivity "
+            "and earn rewards retroactively."
+        )
+        info_label.setTextFormat(QtCore.Qt.RichText)
+        info_label.setWordWrap(True)
+        layout.addWidget(info_label)
+        
+        # Duration input section
+        duration_group = QtWidgets.QGroupBox("⏱️ Session Duration")
+        duration_layout = QtWidgets.QVBoxLayout(duration_group)
+        
+        # Time input row
+        time_row = QtWidgets.QHBoxLayout()
+        
+        # Hours spinner
+        self.hours_spin = QtWidgets.QSpinBox()
+        self.hours_spin.setRange(0, 8)
+        self.hours_spin.setSuffix(" hr")
+        self.hours_spin.valueChanged.connect(self._update_preview)
+        time_row.addWidget(self.hours_spin)
+        
+        # Minutes spinner
+        self.minutes_spin = QtWidgets.QSpinBox()
+        self.minutes_spin.setRange(0, 59)
+        self.minutes_spin.setSuffix(" min")
+        self.minutes_spin.setValue(25)  # Default 25 min
+        self.minutes_spin.valueChanged.connect(self._update_preview)
+        time_row.addWidget(self.minutes_spin)
+        
+        duration_layout.addLayout(time_row)
+        
+        # Quick preset buttons
+        preset_row = QtWidgets.QHBoxLayout()
+        presets = [("25m", 25), ("45m", 45), ("1h", 60), ("2h", 120)]
+        for label, mins in presets:
+            btn = QtWidgets.QPushButton(label)
+            btn.clicked.connect(lambda checked, m=mins: self._set_duration(m))
+            preset_row.addWidget(btn)
+        duration_layout.addLayout(preset_row)
+        
+        layout.addWidget(duration_group)
+        
+        # Preview of rewards
+        self.preview_label = QtWidgets.QLabel()
+        self.preview_label.setTextFormat(QtCore.Qt.RichText)
+        self.preview_label.setWordWrap(True)
+        self.preview_label.setStyleSheet("""
+            background: rgba(0, 184, 148, 0.15);
+            border: 1px solid #00b894;
+            border-radius: 8px;
+            padding: 12px;
+        """)
+        layout.addWidget(self.preview_label)
+        
+        # Honesty note
+        honesty_label = QtWidgets.QLabel(
+            "💚 <i>Be honest with yourself - logging fake sessions defeats the purpose!</i>"
+        )
+        honesty_label.setTextFormat(QtCore.Qt.RichText)
+        honesty_label.setStyleSheet("color: #888888; font-size: 11px;")
+        honesty_label.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(honesty_label)
+        
+        # Buttons using the base class helper
+        self.add_button_row(
+            layout,
+            [
+                ("Cancel", "default", self.reject),
+                ("✅ Log Session", "primary", self._on_log),
+            ]
+        )
+        
+        # Store reference to log button for enabling/disabling
+        # Find the primary button we just created
+        for child in self.findChildren(QtWidgets.QPushButton):
+            if child.text() == "✅ Log Session":
+                self.log_btn = child
+                break
+        
+        # Initial preview update
+        self._update_preview()
+    
+    def _set_duration(self, minutes: int) -> None:
+        """Set duration from preset button."""
+        hours = minutes // 60
+        mins = minutes % 60
+        self.hours_spin.setValue(hours)
+        self.minutes_spin.setValue(mins)
+    
+    def _update_preview(self) -> None:
+        """Update the rewards preview based on current duration."""
+        total_minutes = self.hours_spin.value() * 60 + self.minutes_spin.value()
+        
+        if total_minutes == 0:
+            self.preview_label.setText("⚠️ Enter a duration to see rewards preview")
+            self.log_btn.setEnabled(False)
+            return
+        
+        self.log_btn.setEnabled(True)
+        
+        # Calculate approximate rewards
+        streak = self.blocker.stats.get("streak_days", 0)
+        
+        # XP calculation (simplified)
+        base_xp = 25
+        time_xp = total_minutes * 2
+        streak_xp = streak * 5
+        total_xp = base_xp + time_xp + streak_xp
+        
+        # Coins calculation (simplified)
+        session_hours = total_minutes / 60.0
+        coins = int(session_hours * 10)
+        if streak >= 30:
+            coins += 100
+        elif streak >= 14:
+            coins += 50
+        elif streak >= 7:
+            coins += 25
+        elif streak >= 3:
+            coins += 10
+        
+        # Rarity tier based on duration
+        if total_minutes >= 240:
+            rarity = "Legendary"
+            rarity_color = "#ff9800"
+        elif total_minutes >= 180:
+            rarity = "Epic"
+            rarity_color = "#9c27b0"
+        elif total_minutes >= 120:
+            rarity = "Rare"
+            rarity_color = "#2196f3"
+        elif total_minutes >= 60:
+            rarity = "Uncommon"
+            rarity_color = "#4caf50"
+        else:
+            rarity = "Common"
+            rarity_color = "#78909c"
+        
+        self.preview_label.setText(
+            f"<b style='color:#00b894;'>📊 Rewards Preview:</b><br>"
+            f"• <b style='color:#ffd700;'>XP:</b> ~{total_xp}<br>"
+            f"• <b style='color:#f1c40f;'>Coins:</b> ~{coins}<br>"
+            f"• <b style='color:{rarity_color};'>Item:</b> 1x {rarity} gear (guaranteed)"
+        )
+    
+    def _on_log(self) -> None:
+        """Handle log button click."""
+        total_minutes = self.hours_spin.value() * 60 + self.minutes_spin.value()
+        if total_minutes > 0:
+            self.session_minutes = total_minutes
+            self.accept()
+    
+    def get_session_minutes(self) -> int:
+        """Return the logged session duration in minutes."""
+        return self.session_minutes
+
+
 class TimerTab(QtWidgets.QWidget):
     """Qt implementation of the timer tab (start/stop, modes, presets, countdown)."""
 
@@ -1695,7 +1870,31 @@ class TimerTab(QtWidgets.QWidget):
         rewards_layout.addWidget(rewards_info)
         layout.addWidget(rewards_group)
 
-        layout.addStretch(1)
+        # Log Past Session button (for retroactive logging)
+        self.log_past_btn = QtWidgets.QPushButton("📝 Log Past Session")
+        self.log_past_btn.setToolTip("Forgot to start the timer? Log a focus session you already completed.")
+        self.log_past_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #636e72, stop:1 #4a4a4a);
+                color: #dfe6e9;
+                font-size: 12px;
+                font-weight: bold;
+                border-radius: 8px;
+                border: 1px solid #74b9ff;
+                padding: 8px 15px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #74b9ff, stop:1 #0984e3);
+                color: white;
+            }
+            QPushButton:pressed {
+                background: #0984e3;
+            }
+        """)
+        self.log_past_btn.clicked.connect(self._show_log_past_session_dialog)
+        layout.addWidget(self.log_past_btn)
 
     def _connect_signals(self) -> None:
         self.action_btn.clicked.connect(self._toggle_session)
@@ -2166,6 +2365,15 @@ class TimerTab(QtWidgets.QWidget):
         item = generate_item(session_minutes=session_minutes, streak_days=streak,
                               story_id=active_story, adhd_buster=self.blocker.adhd_buster)
 
+        # Get currently equipped item BEFORE awarding the new one (for comparison dialog)
+        equipped_item_before = None
+        if GAMIFICATION_AVAILABLE:
+            try:
+                from gamification import get_equipped_item
+                equipped_item_before = get_equipped_item(self.blocker.adhd_buster, item.get("slot", "Unknown"))
+            except ImportError:
+                pass
+
         # Show lottery animation for tier reveal (item is always awarded)
         from lottery_animation import FocusTimerLotteryDialog
         lottery_dialog = FocusTimerLotteryDialog(
@@ -2247,28 +2455,25 @@ class TimerTab(QtWidgets.QWidget):
             dialog.view_stats.connect(self._show_stats_dialog)
             dialog.exec()
 
-        # Show enhanced item drop dialog with comparison
-        equipped_item = None
-        story_id = None
-        if GAMIFICATION_AVAILABLE:
-            try:
-                from gamification import get_equipped_item, get_selected_story
-                equipped_item = get_equipped_item(self.blocker.adhd_buster, item.get("slot", "Unknown"))
-                story_id = get_selected_story(self.blocker.adhd_buster)
-            except ImportError:
-                pass
+        # Show unified item reward dialog with comparison
+        # Use equipped_item_before which was captured before the item was auto-equipped
+        from styled_dialog import ItemRewardDialog
         
-        dialog = EnhancedItemDropDialog(
-            item,
-            equipped_item,
-            session_minutes,
-            streak,
-            coins_earned,
-            self.window(),
-            story_id=story_id
+        # Build equipped dict for comparison
+        equipped_before = {}
+        if equipped_item_before:
+            equipped_before[item.get("slot", "Unknown")] = equipped_item_before
+        
+        dialog = ItemRewardDialog(
+            parent=self.window(),
+            source_label=f"Focus Session: {session_minutes} min" + (f" • {streak} day streak 🔥" if streak > 0 else ""),
+            items_earned=[item],
+            equipped=equipped_before,
+            coins_earned=coins_earned,
+            game_state=get_game_state(),
+            session_minutes=session_minutes,
+            streak_days=streak,
         )
-        dialog.quick_equip_requested.connect(lambda: self._quick_equip_item(item))
-        dialog.view_inventory.connect(self._show_inventory_dialog)
         dialog.exec()
         
         # Note: UI updates are now handled automatically via GameState signals
@@ -2297,35 +2502,31 @@ class TimerTab(QtWidgets.QWidget):
             if is_sound_available():
                 play_startup_sound()
             else:
-                # Fallback to Windows beep
-                import winsound
-                winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
+                # Fallback to lottery win sound
+                from lottery_sounds import play_win_sound
+                play_win_sound()
         except Exception:
             # Silent fallback
             pass
 
     def _quick_equip_item(self, item: dict) -> None:
-        """Quick equip an item to empty slot."""
+        """Quick equip an item (works for empty slots and upgrades)."""
         if not GAMIFICATION_AVAILABLE:
             return
         
         try:
             slot = item.get("slot", "Unknown")
             
-            # Get themed slot name for display
-            story_id = get_selected_story(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else None
-            display_slot = get_slot_display_name(slot, story_id)
-            
-            # Check if slot is empty
-            equipped = self.blocker.adhd_buster.get("equipped", {})
-            if slot in equipped and equipped[slot]:
-                show_info(
-                    self.window(),
-                    "Slot Occupied",
-                    f"The {display_slot} slot already has an item equipped.\n"
-                    "Use the Inventory to manage your gear."
-                )
-                return
+            # Get themed slot name for display (safely handle None functions)
+            story_id = None
+            display_slot = slot
+            try:
+                if get_selected_story is not None:
+                    story_id = get_selected_story(self.blocker.adhd_buster)
+                if get_slot_display_name is not None:
+                    display_slot = get_slot_display_name(slot, story_id)
+            except Exception:
+                pass
             
             # Get game state manager
             game_state = get_game_state()
@@ -2342,12 +2543,15 @@ class TimerTab(QtWidgets.QWidget):
             if "lucky_options" in item and isinstance(item["lucky_options"], dict):
                 new_item["lucky_options"] = item["lucky_options"].copy()
             
-            # Equip the item using GameState
+            # Equip the item using GameState (handles both empty slots and upgrades)
             game_state.swap_equipped_item(slot, new_item)
             
             # Sync changes to active hero
-            from gamification import sync_hero_data
-            sync_hero_data(self.blocker.adhd_buster)
+            try:
+                from gamification import sync_hero_data as _sync
+                _sync(self.blocker.adhd_buster)
+            except Exception:
+                pass
             
             show_info(
                 self.window(),
@@ -2940,6 +3144,43 @@ class TimerTab(QtWidgets.QWidget):
         )
         if has_priorities:
             PriorityTimeLogDialog(self.blocker, session_minutes, self.window()).exec()
+
+    def _show_log_past_session_dialog(self) -> None:
+        """Show dialog to log a past focus session retroactively."""
+        dialog = LogPastSessionDialog(self.blocker, parent=self.window())
+        if dialog.exec() == QtWidgets.QDialog.Accepted:
+            session_minutes = dialog.get_session_minutes()
+            if session_minutes > 0:
+                # Update stats for the past session
+                self.blocker.update_stats(session_minutes * 60, completed=True)
+                self.blocker.save_stats()
+                
+                # Notify GameState of focus time change
+                try:
+                    from game_state import get_game_state
+                    game_state = get_game_state()
+                    if game_state:
+                        game_state.notify_focus_time_changed()
+                except Exception:
+                    pass
+                
+                # Give rewards (same as a normal session)
+                self._give_session_rewards(session_minutes)
+                
+                # Show priority time log dialog
+                self._show_priority_time_log(session_minutes)
+                
+                # Emit session complete signal
+                self.session_complete.emit(session_minutes * 60)
+                
+                self.status_label.setText(f"✅ Logged {session_minutes} min session")
+                self.status_label.setStyleSheet("""
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #00b894;
+                    background: transparent;
+                    padding: 5px;
+                """)
 
     def _handle_pomodoro_complete(self, elapsed: int) -> None:
         """Handle Pomodoro work/break cycle transitions."""
@@ -5463,6 +5704,17 @@ class SettingsTab(QtWidgets.QWidget):
 
     def _switch_user(self) -> None:
         """Clear last user setting and restart app."""
+        # Check if a session is running - require stop first
+        main_window = self.window()
+        if hasattr(main_window, 'timer_tab') and main_window.timer_tab.timer_running:
+            show_warning(
+                self, 
+                "Session Active",
+                "A focus session is currently running.\n\n"
+                "Please stop the session before switching profiles."
+            )
+            return
+        
         if show_question(self, "Switch User", 
                         "Are you sure you want to switch profiles?\nThe application will restart.") == QtWidgets.QMessageBox.Yes:
             # Clear stored user
@@ -5472,6 +5724,9 @@ class SettingsTab(QtWidgets.QWidget):
                 
                 um = UserManager(APP_DIR)
                 um.clear_last_user()
+                
+                # Save config before switching to ensure all changes are persisted
+                self.blocker.save_config()
                 
                 # Record app close time
                 self.blocker.record_shutdown_time("user_switch")
@@ -8892,7 +9147,7 @@ class SleepTab(QtWidgets.QWidget):
         self.sleep_now_btn = QtWidgets.QPushButton("🛏️ Go to Sleep NOW!")
         self.sleep_now_btn.setToolTip(
             "Click when going to sleep right now to get an immediate reward!\n"
-            "Rewards available 22:00 - 01:00."
+            "Rewards available 21:00 - 01:00."
         )
         self.sleep_now_btn.setStyleSheet("""
             QPushButton {
@@ -8962,11 +9217,11 @@ class SleepTab(QtWidgets.QWidget):
         # Existing screen-off time selector (for logging past sleep)
         screenoff_layout = QtWidgets.QHBoxLayout()
         self.screenoff_checkbox = QtWidgets.QCheckBox("I turned off my screen at:")
-        self.screenoff_checkbox.setToolTip("Earn a bonus item for healthy digital habits!\nRewards available 22:00 - 01:00.")
+        self.screenoff_checkbox.setToolTip("Earn a bonus item for healthy digital habits!\nRewards available 21:00 - 01:00.")
         screenoff_layout.addWidget(self.screenoff_checkbox)
         self.screenoff_time = QtWidgets.QTimeEdit()
         self.screenoff_time.setDisplayFormat("HH:mm")
-        self.screenoff_time.setTime(QtCore.QTime(22, 0))
+        self.screenoff_time.setTime(QtCore.QTime(21, 0))
         self.screenoff_time.setEnabled(False)
         self.screenoff_checkbox.stateChanged.connect(
             lambda state: self.screenoff_time.setEnabled(state == QtCore.Qt.CheckState.Checked.value)
@@ -8999,7 +9254,7 @@ class SleepTab(QtWidgets.QWidget):
         
         presets_layout = QtWidgets.QGridLayout()
         presets = [
-            ("🌙 Early (22:00-6:00)", "22:00", "06:00"),
+            ("🌙 Early (21:00-5:00)", "21:00", "05:00"),
             ("😴 Standard (23:00-7:00)", "23:00", "07:00"),
             ("🦉 Night Owl (01:00-9:00)", "01:00", "09:00"),
             ("🌃 Late Night (02:00-10:00)", "02:00", "10:00"),
@@ -9104,10 +9359,11 @@ class SleepTab(QtWidgets.QWidget):
             "<b>🌙 Nighty-Night Bonus:</b> Extra item when logging past sleep with screen-off time.<br>"
             "<table style='font-size:10px; color:#888888; margin-top:3px;'>"
             "<tr><th>Time</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
-            "<tr><td>21:00-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td></tr>"
-            "<tr><td>22:00</td><td>-</td><td>-</td><td>5%</td><td>20%</td><td>75%</td></tr>"
-            "<tr><td>23:00</td><td>-</td><td>5%</td><td>20%</td><td>50%</td><td>25%</td></tr>"
-            "<tr><td>00:00</td><td>5%</td><td>50%</td><td>25%</td><td>15%</td><td>5%</td></tr>"
+            "<tr><td>21:00-21:30</td><td>-</td><td>-</td><td>-</td><td>-</td><td>100%</td></tr>"
+            "<tr><td>21:30-22:30</td><td>-</td><td>-</td><td>5%</td><td>20%</td><td>75%</td></tr>"
+            "<tr><td>22:30-23:30</td><td>-</td><td>-</td><td>5%</td><td>50%</td><td>45%</td></tr>"
+            "<tr><td>23:30-00:30</td><td>-</td><td>5%</td><td>50%</td><td>25%</td><td>20%</td></tr>"
+            "<tr><td>00:30-01:00</td><td>5%</td><td>50%</td><td>25%</td><td>15%</td><td>5%</td></tr>"
             "<tr><td>01:00+</td><td colspan='5' style='text-align:center'>No bonus</td></tr>"
             "</table>"
             "<br><b>Streaks:</b> 3n=Uncommon, 7n=Rare, 14n=Epic, 30n=Legendary (consecutive nights with 7+ hrs)"
@@ -9222,9 +9478,9 @@ class SleepTab(QtWidgets.QWidget):
             self.sleep_now_info.setText(f"Now: {current_time} → <b style='color:{color}'>{rarity}</b>{bonus_text} item!")
             self.sleep_now_btn.setEnabled(True)
         else:
-            # Check if it is too early (between 06:00 and 22:00)
-            if QtCore.QTime(6, 0) <= now < QtCore.QTime(22, 0):
-                msg = "(starts at 22:00)"
+            # Check if it is too early (between 06:00 and 21:00)
+            if QtCore.QTime(6, 0) <= now < QtCore.QTime(21, 0):
+                msg = "(starts at 21:00)"
             else:
                 msg = "(too late for bonus)"
             self.sleep_now_info.setText(f"Now: {current_time} {msg}")
@@ -9342,11 +9598,12 @@ class SleepTab(QtWidgets.QWidget):
             show_info(
                 self, "Bonus Window Missed",
                 "It's outside the Nighty-Night bonus window.\n"
-                "Sleep between 22:00 and 01:00 to earn rewards!\n\n"
+                "Sleep between 21:00 and 01:00 to earn rewards!\n\n"
                 "Rewards:\n"
-                "• 22:00 - 22:30: Legendary (Best!)\n"
-                "• 22:30 - 23:30: Legendary/Epic\n"
-                "• 23:30 - 00:30: Epic/Rare\n"
+                "• 21:00 - 21:30: Legendary (Best!)\n"
+                "• 21:30 - 22:30: Legendary/Epic\n"
+                "• 22:30 - 23:30: Epic/Rare\n"
+                "• 23:30 - 00:30: Rare/Uncommon\n"
                 "• 00:30 - 01:00: Uncommon"
             )
             return
@@ -16419,7 +16676,12 @@ class ADHDBusterTab(QtWidgets.QWidget):
             )
     
     def _refresh_lucky_bonuses_display(self) -> None:
-        """Refresh the gear bonuses display showing total bonuses from equipped gear."""
+        """Refresh the gear bonuses display showing total bonuses from equipped gear.
+        
+        Note: Only shows passive bonuses that apply while equipped (like XP bonus).
+        Merge-time bonuses (Merge Discount, Merge Luck) are NOT shown here since
+        they only apply during the merge process, not while wearing the gear.
+        """
         # Clear existing content in collapsible section
         self.lucky_bonuses_section.clear_content()
         
@@ -16434,19 +16696,17 @@ class ADHDBusterTab(QtWidgets.QWidget):
         if calculate_total_lucky_bonuses:
             lucky_bonuses = calculate_total_lucky_bonuses(equipped)
         
-        # Check if there are any bonuses to display
-        has_lucky_bonuses = any(v > 0 for v in lucky_bonuses.values())
+        # Only show PASSIVE bonuses that apply while equipped
+        # XP bonus is a passive bonus - you get more XP from activities while wearing the gear
+        # Merge Discount and Merge Luck are NOT passive - they only apply during merging
+        has_passive_bonuses = lucky_bonuses.get("xp_bonus", 0) > 0
         
-        if has_lucky_bonuses:
-            # Build compact display items
+        if has_passive_bonuses:
+            # Build compact display items - only passive bonuses
             bonus_items = []
             
-            if lucky_bonuses.get("coin_discount", 0) > 0:
-                bonus_items.append(("💰", f"{lucky_bonuses['coin_discount']}% Merge Discount", "#f59e0b", "Cheaper merges"))
             if lucky_bonuses.get("xp_bonus", 0) > 0:
                 bonus_items.append(("⭐", f"+{lucky_bonuses['xp_bonus']}% XP", "#8b5cf6", "Level faster"))
-            if lucky_bonuses.get("merge_luck", 0) > 0:
-                bonus_items.append(("🎲", f"+{lucky_bonuses['merge_luck']}% Merge Luck", "#3b82f6", "Better merges"))
             
             self.lucky_bonuses_section.setVisible(True)
             self.lucky_bonuses_section.set_title(f"✨ Gear Bonuses ({len(bonus_items)})")
@@ -16460,8 +16720,6 @@ class ADHDBusterTab(QtWidgets.QWidget):
             
             # Compact summary
             summary_parts = []
-            if lucky_bonuses.get("coin_discount", 0) > 0:
-                summary_parts.append(f"{lucky_bonuses['coin_discount']}% merge discount")
             if lucky_bonuses.get("xp_bonus", 0) > 0:
                 summary_parts.append(f"+{lucky_bonuses['xp_bonus']}% XP")
             
@@ -18191,12 +18449,10 @@ class LevelUpCelebrationDialog(QtWidgets.QDialog):
         self._animation_timer.timeout.connect(self._animate_step)
         self._animation_timer.start(150)
         
-        # Play sound
+        # Play victory sound using lottery sound system
         try:
-            import winsound
-            # Multiple beeps for level up excitement
-            for _ in range(min(self.levels_gained, 3)):
-                winsound.MessageBeep(winsound.MB_ICONASTERISK)
+            from lottery_sounds import play_win_sound
+            play_win_sound()
         except Exception:
             pass
 
@@ -19469,6 +19725,100 @@ class ChapterRingWidget(QtWidgets.QWidget):
         super().mousePressEvent(event)
 
 
+class EyeRingWidget(QtWidgets.QWidget):
+    """Circular progress bar for daily eye routines."""
+    clicked = QtCore.Signal()
+    
+    # Vision progression: blind animals → sharp-eyed predators
+    EYE_CATEGORIES = [
+        (0, "🦔 Mole", "#ff6b6b"),       # 0 routines - nearly blind
+        (1, "🦇 Bat", "#ff8c42"),        # 1 routine - uses echolocation
+        (3, "🐁 Mouse", "#ffa726"),      # 3+ routines - poor vision
+        (5, "🐶 Pup", "#ffca28"),        # 5+ routines - decent
+        (8, "🐱 Cat", "#9ccc65"),        # 8+ routines - good night vision
+        (12, "🦉 Owl", "#66bb6a"),       # 12+ routines - excellent
+        (16, "🦅 Eagle", "#26c6da"),     # 16+ routines - 8x human vision
+        (20, "🦅 Hawk", "#ab47bc"),      # 20+ routines - the best!
+    ]
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.percentage = 0.0
+        self.text = "0"
+        self.subtext = "👀 Screen Zombie"
+        self.ring_color = "#00bcd4"  # Cyan for eye theme
+        self.setMinimumSize(60, 60)
+        self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self.setToolTip("Eye & Breath Routines\nClick to open Eye Protection tab")
+
+    def set_progress(self, current: int, daily_cap: int):
+        """Set eye routine progress."""
+        daily_cap = max(1, daily_cap)  # Avoid division by zero
+        self.percentage = min(current / daily_cap, 1.0)
+        self.text = f"👁️{current}"
+        
+        # Find appropriate category
+        category_text = self.EYE_CATEGORIES[0][1]
+        self.ring_color = self.EYE_CATEGORIES[0][2]
+        
+        for threshold, label, color in self.EYE_CATEGORIES:
+            if current >= threshold:
+                category_text = label
+                self.ring_color = color
+        
+        self.subtext = category_text
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        
+        # Adjust rect to ensure stroke doesn't clip
+        rect = self.rect().adjusted(5, 5, -5, -5)
+        
+        # Draw Background Track
+        pen = QtGui.QPen(QtGui.QColor("#2a2a4a"), 6)
+        pen.setCapStyle(QtCore.Qt.RoundCap)
+        painter.setPen(pen)
+        painter.drawEllipse(rect)
+        
+        # Draw Progress Arc (dynamic color based on category)
+        pen.setColor(QtGui.QColor(self.ring_color))
+        painter.setPen(pen)
+        
+        start_angle = 90 * 16
+        span_angle = -int(self.percentage * 360 * 16)
+        painter.drawArc(rect, start_angle, span_angle)
+        
+        # Draw count text
+        painter.setPen(QtGui.QColor("#ffffff"))
+        font = painter.font()
+        font.setPixelSize(12)
+        font.setBold(True)
+        painter.setFont(font)
+        
+        text_rect = QtCore.QRectF(rect)
+        painter.drawText(text_rect, QtCore.Qt.AlignmentFlag.AlignCenter, self.text)
+        
+        # Draw category subtext below
+        font.setPixelSize(8)
+        font.setBold(False)
+        painter.setFont(font)
+        sub_rect = QtCore.QRectF(rect.adjusted(-5, 22, 5, 0))
+        painter.setPen(QtGui.QColor(self.ring_color))
+        
+        # Truncate long labels
+        subtext = self.subtext
+        if len(subtext) > 14:
+            subtext = subtext[:12] + "…"
+        painter.drawText(sub_rect, QtCore.Qt.AlignmentFlag.AlignCenter, subtext)
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+        super().mousePressEvent(event)
+
+
 class XPRingWidget(QtWidgets.QWidget):
     """Circular progress bar for XP to next level."""
     clicked = QtCore.Signal()
@@ -19993,6 +20343,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
     xp_clicked = QtCore.Signal()
     entities_clicked = QtCore.Signal()
     hero_clicked = QtCore.Signal()
+    eye_clicked = QtCore.Signal()
     
     def __init__(self, blocker: 'BlockerCore', parent=None):
         super().__init__(parent)
@@ -20049,6 +20400,9 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                 # Entities ring updates (only entities_changed to avoid double updates
                 # since notify_entity_collected emits both entity_collected and entities_changed)
                 game_state.entities_changed.connect(self._update_entities_ring)
+                
+                # Eye ring updates
+                game_state.eye_routine_changed.connect(self._update_eye_ring)
                 
                 # Full refresh fallback
                 game_state.full_refresh_required.connect(self.update_data)
@@ -20160,6 +20514,37 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         except Exception:
             pass
     
+    def _update_eye_ring(self, *args):
+        """Update eye ring from signal or timer."""
+        try:
+            from app_utils import get_activity_date
+            from eye_protection_tab import BASE_EYE_REST_CAP
+            
+            # Get current daily count
+            eye_stats = self.blocker.stats.get("eye_protection", {})
+            today = get_activity_date()
+            
+            # Reset count if it's a new day
+            if eye_stats.get("last_date") != today:
+                current_count = 0
+            else:
+                current_count = eye_stats.get("daily_count", 0)
+            
+            # Calculate daily cap (base + entity perk bonus)
+            daily_cap = BASE_EYE_REST_CAP
+            if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
+                try:
+                    from gamification import get_qol_perks_summary
+                    qol_perks = get_qol_perks_summary(self.blocker.adhd_buster)
+                    daily_cap += qol_perks.get("eye_rest_cap", 0)
+                except Exception:
+                    pass
+            
+            self.eye_ring.set_progress(current_count, daily_cap)
+            self.eye_ring.setVisible(True)
+        except Exception:
+            pass
+    
     def _update_timeline_events(self):
         """Update just the timeline events (called on timer)."""
         if not self.isVisible():
@@ -20186,6 +20571,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                 game_state.focus_time_changed.disconnect(self._update_focus_ring)
                 game_state.session_reward_earned.disconnect(self._update_focus_ring)
                 game_state.entities_changed.disconnect(self._update_entities_ring)
+                game_state.eye_routine_changed.disconnect(self._update_eye_ring)
                 game_state.full_refresh_required.disconnect(self.update_data)
         except Exception:
             pass  # Ignore disconnect errors during shutdown
@@ -20240,6 +20626,12 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         self.xp_ring.clicked.connect(self.xp_clicked.emit)
         layout.addWidget(self.xp_ring)
         
+        # Eye Ring (Eye & Breath routines)
+        self.eye_ring = EyeRingWidget()
+        self.eye_ring.setFixedSize(70, 70)
+        self.eye_ring.clicked.connect(self.eye_clicked.emit)
+        layout.addWidget(self.eye_ring)
+        
         # Separator
         line = QtWidgets.QFrame()
         line.setFrameShape(QtWidgets.QFrame.Shape.VLine)
@@ -20267,6 +20659,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         self._update_chapter_ring()
         self._update_xp_ring()
         self._update_entities_ring()
+        self._update_eye_ring()
         self._refresh_timeline_events()
     
     def _refresh_timeline_events(self):
@@ -22858,6 +23251,15 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             quick_bar.addWidget(self.coin_label)
 
         quick_bar.addStretch()
+        
+        # Username button - click to switch users
+        current_user = self.blocker.user_dir.name if hasattr(self.blocker, 'user_dir') else "Default"
+        self.user_btn = QtWidgets.QPushButton(f"👤 {current_user}")
+        self.user_btn.setStyleSheet("font-weight: bold; padding: 6px 12px;")
+        self.user_btn.setToolTip("Click to switch user profiles")
+        self.user_btn.clicked.connect(self._switch_user)
+        quick_bar.addWidget(self.user_btn)
+        
         self.admin_label = QtWidgets.QLabel()
         quick_bar.addWidget(self.admin_label)
         main_layout.addLayout(quick_bar)
@@ -23158,6 +23560,72 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         elif result == "Keep Blocks":
             self.blocker.clear_session_state()
             show_info(self, "Blocks Retained", "The blocks have been kept.\n\nUse 'Emergency Cleanup' in Settings tab when you want to remove them.")
+
+    def _switch_user(self) -> None:
+        """Open user selection dialog to switch profiles."""
+        # Check if a session is running - require stop first
+        if hasattr(self, 'timer_tab') and self.timer_tab.timer_running:
+            show_warning(
+                self, 
+                "Session Active",
+                "A focus session is currently running.\n\n"
+                "Please stop the session before switching profiles."
+            )
+            return
+        
+        if show_question(self, "Switch User", 
+                        "Are you sure you want to switch profiles?\nThe application will restart.") == QtWidgets.QMessageBox.Yes:
+            # Clear stored user
+            try:
+                from core_logic import APP_DIR
+                from user_manager import UserManager
+                
+                um = UserManager(APP_DIR)
+                um.clear_last_user()
+                
+                # Save config before switching to ensure all changes are persisted
+                self.blocker.save_config()
+                
+                # Record app close time
+                self.blocker.record_shutdown_time("user_switch")
+                
+                # Restart app using a detached process
+                import subprocess
+                
+                # Get the executable path
+                if getattr(sys, 'frozen', False):
+                    # Running as PyInstaller bundle - use the exe directly
+                    exe_path = sys.executable
+                    
+                    # Use a batch script to delay restart
+                    import tempfile
+                    batch_content = f'''@echo off
+ping 127.0.0.1 -n 2 > nul
+start "" "{exe_path}"
+del "%~f0"
+'''
+                    # Create temp batch file
+                    with tempfile.NamedTemporaryFile(mode='w', suffix='.bat', delete=False) as f:
+                        f.write(batch_content)
+                        batch_path = f.name
+                    
+                    # Run the batch file detached
+                    DETACHED_PROCESS = 0x00000008
+                    CREATE_NO_WINDOW = 0x08000000
+                    subprocess.Popen(
+                        ['cmd', '/c', batch_path],
+                        creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW,
+                        close_fds=True,
+                    )
+                else:
+                    # Development mode
+                    subprocess.Popen([sys.executable] + sys.argv)
+                
+                # Exit gracefully using Qt's quit
+                self._shutdown_recorded = True
+                QtWidgets.QApplication.instance().quit()
+            except Exception as e:
+                show_error(self, "Error", f"Could not switch user: {e}")
 
     def _update_admin_label(self) -> None:
         if hasattr(self, "admin_label"):
@@ -24026,19 +24494,28 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
     def _on_eye_routine_completed(self, item: dict) -> None:
         """Handle completion of eye protection routine."""
-        # If an item was won (dict is not empty), show the drop dialog
+        # If an item was won (dict is not empty), show the unified reward dialog
         if item:
             # Get equipped item for comparison
-            equipped_item = None
-            story_id = None
+            equipped_before = {}
             if GAMIFICATION_AVAILABLE:
                 try:
-                    from gamification import get_equipped_item, get_selected_story
-                    equipped_item = get_equipped_item(self.blocker.adhd_buster, item.get("slot", "Unknown"))
-                    story_id = get_selected_story(self.blocker.adhd_buster)
+                    from gamification import get_equipped_item
+                    slot = item.get("slot", "Unknown")
+                    equipped_item = get_equipped_item(self.blocker.adhd_buster, slot)
+                    if equipped_item:
+                        equipped_before[slot] = equipped_item
                 except ImportError:
                     pass
-            dialog = EnhancedItemDropDialog(item, equipped_item, parent=self, story_id=story_id)
+            
+            from styled_dialog import ItemRewardDialog
+            dialog = ItemRewardDialog(
+                parent=self,
+                source_label="Eye Protection Routine Complete! 👁️",
+                items_earned=[item],
+                equipped=equipped_before,
+                game_state=get_game_state(),
+            )
             dialog.exec()
             
             # Refresh inventory UI if it exists
@@ -24207,6 +24684,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.timeline_widget.xp_clicked.connect(self._go_to_hero_tab)
         self.timeline_widget.entities_clicked.connect(self._go_to_entitidex_tab)
         self.timeline_widget.hero_clicked.connect(self._go_to_hero_tab)
+        self.timeline_widget.eye_clicked.connect(self._go_to_eye_tab)
     
     def _go_to_water_tab(self) -> None:
         """Navigate to the Water tab."""
@@ -24240,6 +24718,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """Navigate to the Entitidex tab."""
         if GAMIFICATION_AVAILABLE and hasattr(self, 'entitidex_tab'):
             index = self.tabs.indexOf(self.entitidex_tab)
+            if index >= 0:
+                self.tabs.setCurrentIndex(index)
+
+    def _go_to_eye_tab(self) -> None:
+        """Navigate to the Eye & Breath tab."""
+        if hasattr(self, 'eye_tab'):
+            index = self.tabs.indexOf(self.eye_tab)
             if index >= 0:
                 self.tabs.setCurrentIndex(index)
 
