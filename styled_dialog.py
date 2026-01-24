@@ -684,7 +684,17 @@ class StyledInputDialog(StyledDialog):
 
 
 class ItemRewardDialog(StyledDialog):
-    """Dialog for showing item rewards with comparison to currently equipped gear."""
+    """Unified dialog for showing item rewards with comparison to currently equipped gear.
+    
+    Scalable for 1 or many items. Features:
+    - Visual celebration based on best item rarity
+    - Multi-item support with scroll area
+    - Side-by-side comparison with equipped gear
+    - Upgrade detection with "UPGRADE AVAILABLE!" indicator
+    - Click-to-equip functionality
+    - Coins display
+    - Motivational messages
+    """
     
     # Signal emitted when an item is equipped from this dialog
     item_equipped = QtCore.Signal(str, dict)  # slot, item
@@ -695,6 +705,16 @@ class ItemRewardDialog(StyledDialog):
         "Rare": "#2196f3",
         "Epic": "#9c27b0",
         "Legendary": "#ff9800"
+    }
+    
+    RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    
+    MOTIVATIONAL_MESSAGES = {
+        "Common": ["Every item counts! 💪", "Building your arsenal!", "Nice find!"],
+        "Uncommon": ["Nice find! 🌟", "Your focus is paying off!", "Quality gear!"],
+        "Rare": ["Rare drop! You're on fire! 🔥", "Sweet loot! ⚡", "Excellent!"],
+        "Epic": ["EPIC! Your dedication shows! 💜", "Champion tier! 👑", "Incredible!"],
+        "Legendary": ["LEGENDARY! Unstoppable! ⭐", "GODLIKE FOCUS! 🏆", "You are a legend!"]
     }
     
     def __init__(
@@ -711,6 +731,9 @@ class ItemRewardDialog(StyledDialog):
         extra_messages: list = None,  # Additional info messages
         game_state=None,  # GameStateManager for equipping items
         adhd_buster: dict = None,  # Alternative to game_state for themed slot names
+        session_minutes: int = 0,  # Optional: for focus session context
+        streak_days: int = 0,  # Optional: for streak display
+        show_celebration: bool = True,  # Show visual celebration (stars, etc.)
     ):
         self._source_label = source_label
         self._items_earned = items_earned or []
@@ -722,11 +745,69 @@ class ItemRewardDialog(StyledDialog):
         self._game_state = game_state
         self._adhd_buster = adhd_buster  # Fallback for story_id lookup
         self._equip_buttons = []  # Track equip buttons for refresh
+        self._session_minutes = session_minutes
+        self._streak_days = streak_days
+        self._show_celebration = show_celebration
         
-        super().__init__(parent, title, header_emoji, 450, 650, closable=True)
+        # Determine best rarity for title/celebration
+        self._best_rarity = self._get_best_rarity()
+        
+        # Auto-generate title based on best rarity if default
+        if title == "🎁 Item Reward!" and self._items_earned:
+            title, header_emoji = self._get_dynamic_title()
+        
+        super().__init__(parent, title, header_emoji, 480, 700, closable=True)
+        
+        # Play celebration sound for Epic/Legendary
+        if self._show_celebration and self._best_rarity in ["Epic", "Legendary"]:
+            QtCore.QTimer.singleShot(100, self._play_celebration)
+    
+    def _get_best_rarity(self) -> str:
+        """Get the highest rarity among earned items."""
+        best_idx = 0
+        for item in self._items_earned:
+            rarity = item.get("rarity", "Common")
+            try:
+                idx = self.RARITY_ORDER.index(rarity)
+                if idx > best_idx:
+                    best_idx = idx
+            except ValueError:
+                pass
+        return self.RARITY_ORDER[best_idx]
+    
+    def _get_dynamic_title(self) -> tuple:
+        """Generate title and emoji based on best rarity."""
+        rarity = self._best_rarity
+        # Check for lucky upgrade
+        has_lucky = any(item.get("lucky_upgrade") for item in self._items_earned)
+        
+        if has_lucky:
+            return "🍀 LUCKY UPGRADE!", "🍀"
+        elif rarity == "Legendary":
+            return "⭐ LEGENDARY DROP!", "⭐"
+        elif rarity == "Epic":
+            return "💎 EPIC DROP!", "💎"
+        elif rarity == "Rare":
+            return "💠 RARE FIND!", "💠"
+        elif rarity == "Uncommon":
+            return "✨ ITEM ACQUIRED!", "✨"
+        else:
+            return "🎁 Item Reward!", "🎁"
+    
+    def _play_celebration(self):
+        """Play celebration sound."""
+        try:
+            from lottery_sounds import play_win_sound
+            play_win_sound()
+        except Exception:
+            pass
     
     def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
         """Build the item reward content with comparisons."""
+        
+        # Visual celebration (stars) for single or multi-item
+        if self._show_celebration and self._items_earned:
+            self._add_celebration_visual(layout)
         
         # Source label if provided
         if self._source_label:
@@ -734,12 +815,14 @@ class ItemRewardDialog(StyledDialog):
             source_lbl.setAlignment(QtCore.Qt.AlignCenter)
             source_lbl.setStyleSheet("color: #FFD700; font-size: 14px;")
             layout.addWidget(source_lbl)
-            layout.addSpacing(10)
+            layout.addSpacing(5)
         
-        # Scroll area for items (in case of many)
+        # Scroll area for items (scales for 1 or many)
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
-        scroll.setMaximumHeight(350)
+        # Dynamic height based on item count
+        max_height = min(400, max(200, len(self._items_earned) * 150))
+        scroll.setMaximumHeight(max_height)
         scroll.setStyleSheet("""
             QScrollArea { background: transparent; border: none; }
             QScrollArea > QWidget > QWidget { background: transparent; }
@@ -759,25 +842,60 @@ class ItemRewardDialog(StyledDialog):
         scroll.setWidget(scroll_widget)
         layout.addWidget(scroll)
         
-        # Extra messages
-        if self._extra_messages:
-            layout.addSpacing(10)
-            for msg in self._extra_messages:
-                msg_lbl = QtWidgets.QLabel(msg)
-                msg_lbl.setWordWrap(True)
-                msg_lbl.setStyleSheet("color: #B0B0B0; font-size: 11px;")
-                layout.addWidget(msg_lbl)
-        
         # Coins earned
         if self._coins_earned > 0:
-            layout.addSpacing(10)
+            layout.addSpacing(5)
             coins_lbl = QtWidgets.QLabel(f"💰 <b>+{self._coins_earned} Coins earned!</b>")
             coins_lbl.setAlignment(QtCore.Qt.AlignCenter)
             coins_lbl.setStyleSheet("color: #f59e0b; font-size: 13px;")
             layout.addWidget(coins_lbl)
         
+        # Motivational message based on best rarity
+        if self._show_celebration:
+            import random
+            msg = random.choice(self.MOTIVATIONAL_MESSAGES.get(self._best_rarity, ["Nice!"]))
+            msg_lbl = QtWidgets.QLabel(msg)
+            msg_lbl.setAlignment(QtCore.Qt.AlignCenter)
+            msg_lbl.setStyleSheet("font-weight: bold; color: #888888; font-size: 12px;")
+            layout.addWidget(msg_lbl)
+        
+        # Extra messages
+        if self._extra_messages:
+            layout.addSpacing(5)
+            for msg in self._extra_messages:
+                msg_lbl = QtWidgets.QLabel(msg)
+                msg_lbl.setWordWrap(True)
+                msg_lbl.setAlignment(QtCore.Qt.AlignCenter)
+                msg_lbl.setStyleSheet("color: #B0B0B0; font-size: 11px;")
+                layout.addWidget(msg_lbl)
+        
         layout.addSpacing(10)
-        self.add_button_row(layout, [("OK", "primary", self.accept)])
+        self.add_button_row(layout, [("✓ Continue", "primary", self.accept)])
+    
+    def _add_celebration_visual(self, layout: QtWidgets.QVBoxLayout):
+        """Add visual celebration based on best item rarity."""
+        visual = QtWidgets.QLabel()
+        visual.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # Star rating based on best rarity
+        try:
+            stars = self.RARITY_ORDER.index(self._best_rarity) + 1
+        except ValueError:
+            stars = 1
+        
+        star_text = "★" * stars
+        rarity_color = self.RARITY_COLORS.get(self._best_rarity, "#9e9e9e")
+        
+        # Gift emoji + stars
+        visual.setText(f"🎁\n{star_text}")
+        visual.setStyleSheet(f"""
+            font-size: 36px;
+            padding: 10px;
+            background: transparent;
+            color: {rarity_color};
+        """)
+        layout.addWidget(visual)
+        layout.addSpacing(5)
     
     def _create_item_card(self, item: dict) -> QtWidgets.QWidget:
         """Create a card showing the new item and comparison to equipped."""

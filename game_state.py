@@ -104,6 +104,9 @@ class GameStateManager(QtCore.QObject):
     # Hydration signals
     water_changed = QtCore.Signal(int)  # Today's water count
     
+    # Eye protection signals
+    eye_routine_changed = QtCore.Signal(int)  # Today's eye routine count
+    
     # Entitidex signals
     entity_collected = QtCore.Signal(str)  # Entity ID collected
     entities_changed = QtCore.Signal()  # Any entitidex change
@@ -806,6 +809,20 @@ class GameStateManager(QtCore.QObject):
             count = sum(1 for e in entries if e.get('date') == today)
         self._log_change("water_changed", str(count))
         self._emit(self.water_changed, count)
+    
+    def notify_eye_routine_changed(self, count: int = None) -> None:
+        """Notify that eye routine count changed."""
+        if count is None:
+            # Get today's count from stats if not provided
+            from app_utils import get_activity_date
+            today = get_activity_date()
+            eye_stats = self._blocker.stats.get("eye_protection", {})
+            if eye_stats.get("last_date") == today:
+                count = eye_stats.get("daily_count", 0)
+            else:
+                count = 0
+        self._log_change("eye_routine_changed", str(count))
+        self._emit(self.eye_routine_changed, count)
     
     def notify_focus_time_changed(self, seconds: int = None) -> None:
         """Notify that today's focus time changed."""

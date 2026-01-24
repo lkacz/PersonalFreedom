@@ -394,14 +394,10 @@ class EnhancedLevelUpDialog(QtWidgets.QDialog):
     
     def _start_celebration(self):
         """Start celebration animations and effects."""
-        # Victory sound
-        levels_gained = self.new_level - self.old_level
-        beeps = min(levels_gained + 1, 5)  # Max 5 beeps
-        
+        # Victory sound using lottery sound system
         try:
-            import winsound
-            for _ in range(beeps):
-                winsound.MessageBeep(winsound.MB_ICONASTERISK)
+            from lottery_sounds import play_win_sound
+            play_win_sound()
         except Exception:
             pass
         
