@@ -299,6 +299,8 @@ class BlockerCore:
             "streak_days": 0,
             "last_session_date": None,
             "best_streak": 0,
+            "shutdown_times": [],  # List of {timestamp, type} when computer shuts down
+            "startup_times": [],   # List of {timestamp} when app starts
         }
 
     def load_config(self) -> None:
@@ -524,6 +526,35 @@ class BlockerCore:
             atomic_write_json(self.stats_path, self.stats)
         except (IOError, OSError):
             pass
+
+    def record_shutdown_time(self, event_type: str = "shutdown") -> None:
+        """Record the current time as a shutdown event.
+        
+        Args:
+            event_type: Type of shutdown - 'shutdown', 'logoff', 'sleep', or 'app_close'
+        """
+        shutdown_record = {
+            "timestamp": datetime.now().isoformat(),
+            "type": event_type
+        }
+        if "shutdown_times" not in self.stats:
+            self.stats["shutdown_times"] = []
+        self.stats["shutdown_times"].append(shutdown_record)
+        # Keep only last 30 shutdown records to avoid bloat
+        self.stats["shutdown_times"] = self.stats["shutdown_times"][-30:]
+        self.save_stats()
+
+    def record_startup_time(self) -> None:
+        """Record the current time as a startup event."""
+        startup_record = {
+            "timestamp": datetime.now().isoformat()
+        }
+        if "startup_times" not in self.stats:
+            self.stats["startup_times"] = []
+        self.stats["startup_times"].append(startup_record)
+        # Keep only last 30 startup records to avoid bloat
+        self.stats["startup_times"] = self.stats["startup_times"][-30:]
+        self.save_stats()
 
     # === Crash Recovery Methods ===
 

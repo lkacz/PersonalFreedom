@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6.0 or later: https://jrsoftware.org/isinfo.php
 
 #define MyAppName "Personal Liberty"
-#define MyAppVersion "6.0.0"
+#define MyAppVersion "6.0.3"
 #define MyAppPublisher "Personal Liberty"
 #define MyAppURL "https://github.com/lkacz/PersonalLiberty"
 #define MyAppExeName "PersonalLiberty.exe"
@@ -34,6 +34,8 @@ UninstallDisplayIcon={app}\app.ico
 CloseApplications=force
 CloseApplicationsFilter=PersonalLiberty.exe
 RestartApplications=no
+; Suppress warning about admin install using per-user areas (expected: we create per-user desktop shortcuts)
+UsedUserAreasWarning=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -64,6 +66,7 @@ Source: "setup_no_uac.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "cleanup_hosts.ps1"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
+; Start menu and desktop shortcuts - these are updated in code to use scheduled task for admin mode
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app.ico"; WorkingDir: "{app}"; Comment: "AI-Powered Focus & Productivity Tool"
 Name: "{group}\Quick Start Guide"; Filename: "{app}\QUICK_START.md"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
@@ -71,11 +74,15 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
 [Run]
+; Create a "Launcher" scheduled task that can be triggered on-demand to run as admin
+; This is separate from the autostart task and is used by shortcuts
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""$action = New-ScheduledTaskAction -Execute '\""""{app}\{#MyAppExeName}\""""'; $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 0); Register-ScheduledTask -TaskName 'PersonalLibertyLauncher' -Action $action -Principal $principal -Settings $settings -Force"""; Tasks: autostart; Flags: runhidden
 ; Run as admin is required for hosts file modification in Full Mode
 ; For Light Mode, we don't need admin elevation
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser shellexec
 ; Create scheduled task with admin privileges for autostart (Full Mode only)
-Filename: "{sys}\schtasks.exe"; Parameters: "/create /tn ""PersonalLibertyAutostart"" /tr """"""{app}\{#MyAppExeName} --minimized"""""" /sc onlogon /rl highest /f"; Tasks: autostart; Flags: runhidden
+; Use PowerShell to properly handle paths with spaces
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""$action = New-ScheduledTaskAction -Execute '\""""{app}\{#MyAppExeName}\""""' -Argument '--minimized'; $trigger = New-ScheduledTaskTrigger -AtLogon; $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable; Register-ScheduledTask -TaskName 'PersonalLibertyAutostart' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"""; Tasks: autostart; Flags: runhidden
 
 [Registry]
 ; Note: We use Task Scheduler instead of registry for admin autostart
@@ -359,11 +366,51 @@ begin
 end;
 
 procedure CurStepChanged(CurStep: TSetupStep);
+var
+  ShortcutPath: String;
+  PSCommand: String;
+  ResultCode: Integer;
 begin
   if CurStep = ssPostInstall then
   begin
     // Create initial config with selected enforcement mode
     CreateInitialConfig();
+    
+    // If Full Mode (autostart task) is selected, update shortcuts to use scheduled task launcher
+    // This ensures the app always runs as admin when launched from Start menu or desktop
+    if SelectedEnforcementMode = 'full' then
+    begin
+      // Update Start Menu shortcut to use schtasks to run the launcher task
+      ShortcutPath := ExpandConstant('{group}\{#MyAppName}.lnk');
+      PSCommand := '-NoProfile -ExecutionPolicy Bypass -Command "' +
+        '$shell = New-Object -ComObject WScript.Shell; ' +
+        '$shortcut = $shell.CreateShortcut(''' + ShortcutPath + '''); ' +
+        '$shortcut.TargetPath = ''schtasks.exe''; ' +
+        '$shortcut.Arguments = ''/run /tn PersonalLibertyLauncher''; ' +
+        '$shortcut.IconLocation = ''' + ExpandConstant('{app}\app.ico') + ',0''; ' +
+        '$shortcut.WorkingDirectory = ''' + ExpandConstant('{app}') + '''; ' +
+        '$shortcut.WindowStyle = 7; ' +
+        '$shortcut.Description = ''AI-Powered Focus & Productivity Tool (Admin Mode)''; ' +
+        '$shortcut.Save()"';
+      Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'), PSCommand, '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      
+      // Update Desktop shortcut if it exists
+      ShortcutPath := ExpandConstant('{autodesktop}\{#MyAppName}.lnk');
+      if FileExists(ShortcutPath) then
+      begin
+        PSCommand := '-NoProfile -ExecutionPolicy Bypass -Command "' +
+          '$shell = New-Object -ComObject WScript.Shell; ' +
+          '$shortcut = $shell.CreateShortcut(''' + ShortcutPath + '''); ' +
+          '$shortcut.TargetPath = ''schtasks.exe''; ' +
+          '$shortcut.Arguments = ''/run /tn PersonalLibertyLauncher''; ' +
+          '$shortcut.IconLocation = ''' + ExpandConstant('{app}\app.ico') + ',0''; ' +
+          '$shortcut.WorkingDirectory = ''' + ExpandConstant('{app}') + '''; ' +
+          '$shortcut.WindowStyle = 7; ' +
+          '$shortcut.Description = ''AI-Powered Focus & Productivity Tool (Admin Mode)''; ' +
+          '$shortcut.Save()"';
+        Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'), PSCommand, '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      end;
+    end;
   end;
 end;
 
@@ -390,7 +437,6 @@ end;
 
 function InitializeUninstall(): Boolean;
 var
-  ResultCode: Integer;
   AppPath: String;
 begin
   Result := True;

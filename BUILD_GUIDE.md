@@ -53,7 +53,6 @@ build.bat
 
 This creates:
 - `dist\PersonalLiberty.exe` - Main application
-- `dist\PersonalLibertyTray.exe` - System tray version
 - `dist\PersonalLiberty_Package\` - Complete package folder
 
 ### Option C: Build Just the Installer
@@ -73,9 +72,8 @@ Requirements: Must run `build.bat` first + Inno Setup installed
 **What it does:**
 - Bundles Python interpreter
 - Collects PyTorch, Transformers, and all dependencies
-- Creates two executables:
+- Creates the main executable:
   - `PersonalLiberty.exe` - Full GUI with AI
-  - `PersonalLibertyTray.exe` - Minimalist tray version
 - Creates distribution package folder
 
 **Build time:** 5-10 minutes (collecting PyTorch libraries)  
@@ -156,7 +154,6 @@ This ensures users need NOTHING else installed.
 | File | Size | Description |
 |------|------|-------------|
 | `PersonalLiberty.exe` | ~500MB | Main app with bundled AI |
-| `PersonalLibertyTray.exe` | ~50MB | Tray version (no AI) |
 | `PersonalLiberty_Setup.exe` | ~500MB | Windows installer |
 
 ## 🎁 What Makes This Special

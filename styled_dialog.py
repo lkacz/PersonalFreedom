@@ -13,6 +13,16 @@ Features:
 from PySide6 import QtWidgets, QtCore, QtGui
 from typing import Optional
 
+# Import for story-themed slot names
+try:
+    from gamification import get_slot_display_name, get_selected_story
+except ImportError:
+    # Fallback if gamification not available
+    def get_slot_display_name(slot, story_id=None):
+        return slot
+    def get_selected_story(adhd_buster):
+        return "warrior"
+
 
 # No-Scroll Widgets - Prevents accidental value changes via scroll wheel
 class NoScrollComboBox(QtWidgets.QComboBox):
@@ -676,6 +686,9 @@ class StyledInputDialog(StyledDialog):
 class ItemRewardDialog(StyledDialog):
     """Dialog for showing item rewards with comparison to currently equipped gear."""
     
+    # Signal emitted when an item is equipped from this dialog
+    item_equipped = QtCore.Signal(str, dict)  # slot, item
+    
     RARITY_COLORS = {
         "Common": "#9e9e9e",
         "Uncommon": "#4caf50", 
@@ -691,15 +704,24 @@ class ItemRewardDialog(StyledDialog):
         header_emoji: str = "🎁",
         source_label: str = "",  # e.g., "Activity", "Sleep", "Focus Session"
         items_earned: list = None,  # List of item dicts
-        equipped: dict = None,  # Current equipped items by slot
+        equipped: dict = None,  # Current equipped items by slot BEFORE award
+        equipped_after: dict = None,  # Current equipped items by slot AFTER award (for accurate display)
+        auto_equipped_slots: list = None,  # List of slots that were auto-equipped
         coins_earned: int = 0,
         extra_messages: list = None,  # Additional info messages
+        game_state=None,  # GameStateManager for equipping items
+        adhd_buster: dict = None,  # Alternative to game_state for themed slot names
     ):
         self._source_label = source_label
         self._items_earned = items_earned or []
         self._equipped = equipped or {}
+        self._equipped_after = equipped_after  # New: what's equipped NOW
+        self._auto_equipped_slots = set(auto_equipped_slots or [])
         self._coins_earned = coins_earned
         self._extra_messages = extra_messages or []
+        self._game_state = game_state
+        self._adhd_buster = adhd_buster  # Fallback for story_id lookup
+        self._equip_buttons = []  # Track equip buttons for refresh
         
         super().__init__(parent, title, header_emoji, 450, 650, closable=True)
     
@@ -779,14 +801,28 @@ class ItemRewardDialog(StyledDialog):
         power = item.get("power") or 0
         color = self.RARITY_COLORS.get(rarity, "#9e9e9e")
         
+        # Get themed slot display name based on current story
+        story_id = None
+        if self._game_state:
+            try:
+                story_id = get_selected_story(self._game_state.adhd_buster)
+            except Exception:
+                pass
+        elif self._adhd_buster:
+            try:
+                story_id = get_selected_story(self._adhd_buster)
+            except Exception:
+                pass
+        display_slot = get_slot_display_name(slot, story_id) if slot != "Unknown" else slot
+        
         name_lbl = QtWidgets.QLabel(f"<span style='color:{color}; font-weight:bold;'>{name}</span>")
         name_lbl.setWordWrap(True)
         card_layout.addWidget(name_lbl)
         
-        # Rarity, slot, power
+        # Rarity, slot, power - use themed slot name
         info_lbl = QtWidgets.QLabel(
             f"<span style='color:{color};'>[{rarity}]</span> • "
-            f"<span style='color:#8bc34a;'>{slot}</span> • "
+            f"<span style='color:#8bc34a;'>{display_slot}</span> • "
             f"⚔ Power: <b>{power}</b>"
         )
         info_lbl.setStyleSheet("font-size: 11px; color: #ccc;")
@@ -807,27 +843,78 @@ class ItemRewardDialog(StyledDialog):
                 lucky_lbl.setStyleSheet("color: #ffd700; font-size: 10px;")
                 card_layout.addWidget(lucky_lbl)
         
-        # Comparison to equipped item in same slot
-        equipped_item = self._equipped.get(slot)
-        if equipped_item and isinstance(equipped_item, dict):
-            eq_rarity = equipped_item.get("rarity") or "Common"
-            eq_name = equipped_item.get("name") or "Unknown"
-            eq_power = equipped_item.get("power") or 0
+        # Separator
+        sep = QtWidgets.QFrame()
+        sep.setFrameShape(QtWidgets.QFrame.HLine)
+        sep.setStyleSheet("background: #444; max-height: 1px;")
+        card_layout.addWidget(sep)
+        
+        # Check if this item was auto-equipped
+        was_auto_equipped = slot in self._auto_equipped_slots
+        
+        # Get the item that's currently equipped AFTER the award
+        # (This could be this item if auto-equipped, or the pre-existing item)
+        currently_equipped = None
+        if self._equipped_after:
+            currently_equipped = self._equipped_after.get(slot)
+        elif self._equipped:
+            currently_equipped = self._equipped.get(slot)
+        
+        # Check if this specific item is now equipped (by comparing names/power)
+        is_this_item_equipped = False
+        if was_auto_equipped:
+            is_this_item_equipped = True
+        elif currently_equipped:
+            # Check if current equipped matches this item
+            is_this_item_equipped = (
+                currently_equipped.get("name") == name and 
+                currently_equipped.get("power") == power
+            )
+        
+        if is_this_item_equipped:
+            # This item is now equipped
+            equipped_lbl = QtWidgets.QLabel(
+                f"<span style='color:#4caf50; font-weight:bold;'>✓ Equipped!</span>"
+            )
+            equipped_lbl.setStyleSheet("font-size: 11px;")
+            card_layout.addWidget(equipped_lbl)
+        elif currently_equipped and isinstance(currently_equipped, dict):
+            # There's another item equipped - compare
+            eq_rarity = currently_equipped.get("rarity") or "Common"
+            eq_name = currently_equipped.get("name") or "Unknown"
+            eq_power = currently_equipped.get("power") or 0
             eq_color = self.RARITY_COLORS.get(eq_rarity, "#9e9e9e")
+            eq_lucky = currently_equipped.get("lucky_options") or {}
             
             power_diff = power - eq_power
+            
+            # Calculate lucky options score for comparison
+            new_lucky_score = sum([
+                lucky_options.get("coin_discount", 0),
+                lucky_options.get("xp_bonus", 0),
+                lucky_options.get("merge_luck", 0)
+            ])
+            eq_lucky_score = sum([
+                eq_lucky.get("coin_discount", 0),
+                eq_lucky.get("xp_bonus", 0),
+                eq_lucky.get("merge_luck", 0)
+            ])
+            
+            # Determine if this item is "better"
+            is_better = power_diff > 0 or (power_diff == 0 and new_lucky_score > eq_lucky_score)
+            
             diff_color = "#4caf50" if power_diff > 0 else ("#f44336" if power_diff < 0 else "#888")
             diff_sign = "+" if power_diff > 0 else ""
             
-            # Separator
-            sep = QtWidgets.QFrame()
-            sep.setFrameShape(QtWidgets.QFrame.HLine)
-            sep.setStyleSheet("background: #444; max-height: 1px;")
-            card_layout.addWidget(sep)
-            
-            # Comparison header
-            cmp_header = QtWidgets.QLabel("📊 <b>vs Currently Equipped:</b>")
-            cmp_header.setStyleSheet("color: #888; font-size: 10px;")
+            # Comparison header with emphasis if better
+            if is_better:
+                cmp_header = QtWidgets.QLabel(
+                    "<span style='color:#FFD700; font-weight:bold;'>⬆️ UPGRADE AVAILABLE!</span>"
+                )
+                cmp_header.setStyleSheet("font-size: 11px;")
+            else:
+                cmp_header = QtWidgets.QLabel("📊 vs Currently Equipped:")
+                cmp_header.setStyleSheet("color: #888; font-size: 10px;")
             card_layout.addWidget(cmp_header)
             
             # Equipped item info
@@ -845,7 +932,6 @@ class ItemRewardDialog(StyledDialog):
             card_layout.addWidget(diff_lbl)
             
             # Lucky options comparison
-            eq_lucky = equipped_item.get("lucky_options") or {}
             if lucky_options or eq_lucky:
                 lucky_diffs = []
                 for key, label in [("coin_discount", "💰 Merge"), ("xp_bonus", "✨ XP"), ("merge_luck", "🎲 Luck")]:
@@ -861,20 +947,79 @@ class ItemRewardDialog(StyledDialog):
                     luck_diff_lbl = QtWidgets.QLabel(" | ".join(lucky_diffs))
                     luck_diff_lbl.setStyleSheet("font-size: 10px;")
                     card_layout.addWidget(luck_diff_lbl)
-        else:
-            # No item equipped in this slot
-            sep = QtWidgets.QFrame()
-            sep.setFrameShape(QtWidgets.QFrame.HLine)
-            sep.setStyleSheet("background: #444; max-height: 1px;")
-            card_layout.addWidget(sep)
             
-            empty_lbl = QtWidgets.QLabel(
-                f"<span style='color:#4caf50;'>✓ {slot} slot was empty - auto-equipped!</span>"
-            )
-            empty_lbl.setStyleSheet("font-size: 10px;")
-            card_layout.addWidget(empty_lbl)
+            # Add "Equip" button if this item is better and game_state is available
+            if is_better and self._game_state:
+                equip_btn = QtWidgets.QPushButton("⚔️ Equip This Item")
+                equip_btn.setStyleSheet("""
+                    QPushButton {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #4caf50, stop:1 #388e3c);
+                        color: white;
+                        font-weight: bold;
+                        border: none;
+                        border-radius: 4px;
+                        padding: 6px 12px;
+                        margin-top: 4px;
+                    }
+                    QPushButton:hover {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #66bb6a, stop:1 #4caf50);
+                    }
+                    QPushButton:pressed {
+                        background: #2e7d32;
+                    }
+                """)
+                equip_btn.setCursor(QtCore.Qt.PointingHandCursor)
+                equip_btn.clicked.connect(lambda checked, i=item, s=slot, btn=equip_btn: self._equip_item(i, s, btn, card_layout))
+                card_layout.addWidget(equip_btn)
+                self._equip_buttons.append((equip_btn, item, slot))
+        else:
+            # No item was equipped in this slot before - slot was empty, but check if auto-equipped
+            if was_auto_equipped:
+                equipped_lbl = QtWidgets.QLabel(
+                    f"<span style='color:#4caf50;'>✓ {display_slot} slot was empty - auto-equipped!</span>"
+                )
+            else:
+                # Added to inventory only
+                equipped_lbl = QtWidgets.QLabel(
+                    f"<span style='color:#888;'>📦 Added to inventory (slot already filled)</span>"
+                )
+            equipped_lbl.setStyleSheet("font-size: 10px;")
+            card_layout.addWidget(equipped_lbl)
         
         return card
+    
+    def _equip_item(self, item: dict, slot: str, button: QtWidgets.QPushButton, card_layout: QtWidgets.QVBoxLayout) -> None:
+        """Equip an item from the reward dialog."""
+        if not self._game_state:
+            return
+        
+        try:
+            # Equip the item via game state
+            self._game_state.equip_item(slot, item)
+            
+            # Update button to show equipped
+            button.setText("✓ Equipped!")
+            button.setEnabled(False)
+            button.setStyleSheet("""
+                QPushButton {
+                    background: #2e7d32;
+                    color: white;
+                    font-weight: bold;
+                    border: none;
+                    border-radius: 4px;
+                    padding: 6px 12px;
+                    margin-top: 4px;
+                }
+            """)
+            
+            # Emit signal for other parts of app
+            self.item_equipped.emit(slot, item)
+            
+        except Exception as e:
+            button.setText(f"Error: {e}")
+            button.setStyleSheet("background: #f44336; color: white;")
 
 
 class OptimizeGearDialog(StyledDialog):

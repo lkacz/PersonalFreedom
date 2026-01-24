@@ -18,7 +18,6 @@ if not exist "%ISCC%" (
     echo.
     echo Default installation path: C:\Program Files ^(x86^)\Inno Setup 6\
     echo.
-    pause
     exit /b 1
 )
 
@@ -27,7 +26,6 @@ if not exist "dist\PersonalLiberty.exe" (
     echo [ERROR] PersonalLiberty.exe not found!
     echo Please run build.bat first to create the executables.
     echo.
-    pause
     exit /b 1
 )
 
@@ -43,7 +41,6 @@ echo.
 if %errorlevel% neq 0 (
     echo.
     echo [ERROR] Installer compilation failed!
-    pause
     exit /b 1
 )
 
@@ -75,7 +72,6 @@ echo   - Clean uninstall with data preservation option
 echo.
 echo WHAT'S BUNDLED:
 echo   - PersonalLiberty.exe (with ALL AI dependencies)
-echo   - PersonalLibertyTray.exe
 echo   - Complete documentation
 echo   - No Python or pip required
 echo   - GPU auto-detection
@@ -83,4 +79,3 @@ echo.
 echo Users just run the installer - everything works immediately!
 echo (First launch downloads AI models ~400MB, then fully offline)
 echo.
-pause

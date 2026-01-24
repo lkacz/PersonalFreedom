@@ -22,7 +22,9 @@ try:
         RARITY_ORDER,
         RARITY_UPGRADE,
         COIN_COSTS,
-        MERGE_BOOST_BONUS
+        MERGE_BOOST_BONUS,
+        get_slot_display_name,
+        get_selected_story
     )
     GAMIFICATION_AVAILABLE = True
 except ImportError:
@@ -1118,6 +1120,9 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         items_layout.setContentsMargins(10, 4, 0, 4)
         items_layout.setSpacing(2)
         
+        # Get story ID for themed slot names
+        story_id = get_selected_story(self.adhd_buster) if get_selected_story and self.adhd_buster else None
+        
         # Items list (text-based for readability)
         for item in self.items:
             rarity = item.get("rarity", "Common")
@@ -1126,10 +1131,11 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             name = item.get("name", "Unknown Item")
             power = item.get("power", 0)
             slot = item.get("slot", "Unknown")
+            display_slot = get_slot_display_name(slot, story_id) if get_slot_display_name and slot != "Unknown" else slot
             
             item_label = QtWidgets.QLabel(
                 f"• <span style='color:{color};'><b>{name}</b></span> "
-                f"<span style='color:#888;'>({slot}, +{power} power) [{rarity}]</span>"
+                f"<span style='color:#888;'>({display_slot}, +{power} power) [{rarity}]</span>"
             )
             item_label.setTextFormat(QtCore.Qt.RichText)
             item_label.setStyleSheet("font-size: 12px; padding: 2px 0;")
@@ -1748,6 +1754,10 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         power = current_item.get("power", 0)
         slot = current_item.get("slot", "Unknown Slot")
         
+        # Get themed slot display name
+        story_id = get_selected_story(self.adhd_buster) if get_selected_story and self.adhd_buster else None
+        display_slot = get_slot_display_name(slot, story_id) if get_slot_display_name and slot != "Unknown Slot" else slot
+        
         # Calculate next tier and success chance
         rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
         current_idx = rarity_order.index(rarity) if rarity in rarity_order else 0
@@ -1825,7 +1835,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             f"<span style='font-size:16px; font-weight:bold;'>{name}</span><br>"
             f"<span style='color:{rarity_color}; font-size:14px;'>{rarity}</span> • "
             f"<span style='color:#aaa;'>⚔ {power} Power</span><br>"
-            f"<span style='color:#8bc34a;'>Slot: {slot}</span>"
+            f"<span style='color:#8bc34a;'>Slot: {display_slot}</span>"
             f"</p>"
         )
         current_lbl.setTextFormat(QtCore.Qt.RichText)
@@ -2418,19 +2428,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             items_earned=[result_item],
             equipped=equipped,  # Compare against currently equipped
             coins_earned=0,
-            extra_messages=extra_msgs
-        )
-        dialog.exec()
-    
-    def _show_failure_dialog(self):
-        """Show failure result dialog with retry, claim, and salvage options."""
-        roll_raw = self.merge_result.get("roll", 0) if self.merge_result else 0
-        needed_raw = self.merge_result.get("needed", 0) if self.merge_result else 0
-        
-        # Calculate how close the roll was
-        margin = roll_raw - needed_raw  # positive = failed by this much
-        is_near_miss = margin <= 0.05  # Within 5% of success
-        
+            extra_messages=extra_msgs,
+            adhd_buster=self.adhd_buster,  # For themed slot names
         # Calculate remaining coins after merge cost will be deducted
         # (merge cost is deducted AFTER dialog closes, so account for it here)
         total_merge_cost = self.merge_cost

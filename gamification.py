@@ -13485,13 +13485,15 @@ def can_log_water(water_entries: list, current_time: Optional[str] = None,
         and perk_bonus_applied (bool) if perks modified the result
     """
     from datetime import datetime, timedelta
+    from app_utils import get_activity_date
     
     now = datetime.now()
     if current_time is not None:
         parsed_now = safe_parse_date(current_time, "%Y-%m-%d %H:%M")
         if parsed_now:
             now = parsed_now
-    today = now.strftime("%Y-%m-%d")
+    # Use activity date (5 AM cutoff) instead of calendar date
+    today = get_activity_date(now)
     
     # Get perk-modified limits (or use defaults if no adhd_buster)
     if adhd_buster:

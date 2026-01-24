@@ -160,13 +160,14 @@ class EnhancedItemDropDialog(StyledDialog):
     
     def __init__(self, item: dict, equipped_item: Optional[dict] = None,
                  session_minutes: int = 0, streak_days: int = 0, coins_earned: int = 0,
-                 parent: Optional[QtWidgets.QWidget] = None):
+                 parent: Optional[QtWidgets.QWidget] = None, story_id: Optional[str] = None):
         # Handle None item gracefully
         self.item = item if item is not None else {}
         self.equipped_item = equipped_item
         self.session_minutes = session_minutes
         self.streak_days = streak_days
         self.coins_earned = coins_earned
+        self._story_id = story_id  # Store for themed slot names
         
         # Validate and set defaults
         self.item.setdefault("name", "Unknown Item")
@@ -225,10 +226,11 @@ class EnhancedItemDropDialog(StyledDialog):
         """)
         layout.addWidget(name_label)
         
-        # Stats line
+        # Stats line - use themed slot name
         power = self.item.get("power", 10)
         slot = self.item.get("slot", "Unknown")
-        stats_label = QtWidgets.QLabel(f"[{rarity} {slot}] ⚔ +{power} Power")
+        display_slot = get_slot_display_name(slot, self._story_id) if slot != "Unknown" else slot
+        stats_label = QtWidgets.QLabel(f"[{rarity} {display_slot}] ⚔ +{power} Power")
         stats_label.setAlignment(QtCore.Qt.AlignCenter)
         stats_label.setStyleSheet(f"color: {color}; font-size: 13px; background: transparent;")
         layout.addWidget(stats_label)

@@ -4,7 +4,7 @@
 
 echo.
 echo =============================================
-echo   Building Personal Liberty v6.0.0
+echo   Building Personal Liberty v6.0.1
 echo =============================================
 echo.
 
@@ -16,7 +16,6 @@ cd /d "%SCRIPT_DIR%"
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo [ERROR] Python not found!
-    pause
     exit /b 1
 )
 
@@ -45,7 +44,6 @@ pyinstaller --clean PersonalLiberty.spec
 
 if %errorlevel% neq 0 (
     echo [ERROR] Build failed!
-    pause
     exit /b 1
 )
 
@@ -62,7 +60,7 @@ copy "setup_no_uac.bat" "dist\PersonalLiberty_Package\" >nul 2>&1
 :: Create readme for the package
 echo Creating distribution README...
 (
-echo Personal Liberty v6.0.0 - Gamified Focus Blocker
+echo Personal Liberty v6.0.1 - Gamified Focus Blocker
 echo =================================================
 echo.
 echo QUICK START:
@@ -100,7 +98,7 @@ echo Done! Package created in: dist\PersonalLiberty_Package\
 
 echo.
 echo =============================================
-echo   Build Complete! v6.0.0
+echo   Build Complete! v6.0.1
 echo =============================================
 echo.
 echo DISTRIBUTION PACKAGE: %SCRIPT_DIR%dist\PersonalLiberty_Package\
@@ -121,4 +119,3 @@ echo   - All game modules and dialogs
 echo.
 echo To distribute: Zip the PersonalLiberty_Package folder
 echo.
-pause
