@@ -9,14 +9,14 @@ echo =============================================
 echo.
 
 set "SCRIPT_DIR=%~dp0"
-set "EXE_PATH=%SCRIPT_DIR%dist\PersonalLibertyTray.exe"
+set "EXE_PATH=%SCRIPT_DIR%dist\PersonalLiberty.exe"
 set "STARTUP_FOLDER=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
 set "SHORTCUT_PATH=%STARTUP_FOLDER%\PersonalLiberty.lnk"
 set "TASK_NAME=PersonalLibertyAutostart"
 
 :: Check if exe exists
 if not exist "%EXE_PATH%" (
-    echo [ERROR] PersonalLibertyTray.exe not found!
+    echo [ERROR] PersonalLiberty.exe not found!
     echo Please run build.bat first.
     echo.
     pause

@@ -494,6 +494,7 @@ GEAR_SLOTS = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", 
 STORY_GEAR_THEMES = {}
 get_story_gear_theme = None
 get_slot_display_name = None
+get_selected_story = None  # Get current story ID for themed slot names
 # Gear optimization
 optimize_equipped_gear = None
 find_potential_set_bonuses = None
@@ -679,6 +680,7 @@ def load_heavy_modules():
             STORY_GEAR_THEMES as _STORY_GEAR_THEMES,
             get_story_gear_theme as _get_story_gear_theme,
             get_slot_display_name as _get_slot_display_name,
+            get_selected_story as _get_selected_story,
             # Gear optimization
             optimize_equipped_gear as _optimize_equipped_gear,
             find_potential_set_bonuses as _find_potential_set_bonuses,
@@ -727,6 +729,7 @@ def load_heavy_modules():
         STORY_GEAR_THEMES = _STORY_GEAR_THEMES
         get_story_gear_theme = _get_story_gear_theme
         get_slot_display_name = _get_slot_display_name
+        get_selected_story = _get_selected_story
         # Gear optimization
         optimize_equipped_gear = _optimize_equipped_gear
         find_potential_set_bonuses = _find_potential_set_bonuses
@@ -2246,10 +2249,12 @@ class TimerTab(QtWidgets.QWidget):
 
         # Show enhanced item drop dialog with comparison
         equipped_item = None
+        story_id = None
         if GAMIFICATION_AVAILABLE:
             try:
-                from gamification import get_equipped_item
+                from gamification import get_equipped_item, get_selected_story
                 equipped_item = get_equipped_item(self.blocker.adhd_buster, item.get("slot", "Unknown"))
+                story_id = get_selected_story(self.blocker.adhd_buster)
             except ImportError:
                 pass
         
@@ -2259,7 +2264,8 @@ class TimerTab(QtWidgets.QWidget):
             session_minutes,
             streak,
             coins_earned,
-            self.window()
+            self.window(),
+            story_id=story_id
         )
         dialog.quick_equip_requested.connect(lambda: self._quick_equip_item(item))
         dialog.view_inventory.connect(self._show_inventory_dialog)
@@ -2306,13 +2312,17 @@ class TimerTab(QtWidgets.QWidget):
         try:
             slot = item.get("slot", "Unknown")
             
+            # Get themed slot name for display
+            story_id = get_selected_story(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else None
+            display_slot = get_slot_display_name(slot, story_id)
+            
             # Check if slot is empty
             equipped = self.blocker.adhd_buster.get("equipped", {})
             if slot in equipped and equipped[slot]:
                 show_info(
                     self.window(),
                     "Slot Occupied",
-                    f"The {slot} slot already has an item equipped.\n"
+                    f"The {display_slot} slot already has an item equipped.\n"
                     "Use the Inventory to manage your gear."
                 )
                 return
@@ -2342,7 +2352,7 @@ class TimerTab(QtWidgets.QWidget):
             show_info(
                 self.window(),
                 "Item Equipped!",
-                f"✓ {item.get('name', 'Item')} equipped to {slot} slot!"
+                f"✓ {item.get('name', 'Item')} equipped to {display_slot} slot!"
             )
             
             # Refresh UI
@@ -2431,6 +2441,11 @@ class TimerTab(QtWidgets.QWidget):
                             level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
                             game_state.xp_changed.emit(total_xp, level)
                         game_state.force_save()
+                    
+                    # Refresh entitidex tab after bond attempt
+                    main_win = self.window()
+                    if hasattr(main_win, 'entitidex_tab'):
+                        main_win.entitidex_tab.refresh()
                         
                     return result
 
@@ -2456,6 +2471,11 @@ class TimerTab(QtWidgets.QWidget):
                     game_state = get_game_state()
                     if game_state:
                         game_state.force_save()
+                    
+                    # Refresh entitidex tab to show updated saved encounters button
+                    main_win = self.window()
+                    if hasattr(main_win, 'entitidex_tab'):
+                        main_win.entitidex_tab._update_saved_button_count()
                     
                     return result
 
@@ -2496,6 +2516,11 @@ class TimerTab(QtWidgets.QWidget):
                                     level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
                                     gs.xp_changed.emit(total_xp, level)
                                 gs.force_save()
+                            
+                            # Refresh entitidex tab after Chad's gift
+                            main_win = self.window()
+                            if hasattr(main_win, 'entitidex_tab'):
+                                main_win.entitidex_tab.refresh()
                         
                         chad_interaction_data = {
                             "has_chad_normal": has_chad_normal and not has_chad_exceptional,
@@ -2596,16 +2621,21 @@ class TimerTab(QtWidgets.QWidget):
             
                 # wrapper callback for the bonding logic
                 def bond_callback_wrapper() -> dict:
-                    return attempt_entitidex_bond(
+                    result = attempt_entitidex_bond(
                         self.blocker.adhd_buster,
                         entity.id,
                         is_exceptional=encounter_is_exceptional
                     )
+                    # Refresh entitidex tab after bond attempt
+                    main_win = self.window()
+                    if hasattr(main_win, 'entitidex_tab'):
+                        main_win.entitidex_tab.refresh()
+                    return result
                 
                 # wrapper callback for saving encounter
                 def save_callback_wrapper(entity_id: str, coin_cost: int = 0) -> dict:
                     try:
-                        return save_encounter_for_later(
+                        result = save_encounter_for_later(
                             self.blocker.adhd_buster, 
                             entity.id,
                             is_exceptional=encounter_is_exceptional,
@@ -2616,6 +2646,11 @@ class TimerTab(QtWidgets.QWidget):
                             was_perfect_session=is_perfect,
                             coin_cost=coin_cost,
                         )
+                        # Refresh entitidex tab after saving encounter
+                        main_win = self.window()
+                        if hasattr(main_win, 'entitidex_tab'):
+                            main_win.entitidex_tab._update_saved_button_count()
+                        return result
                     except Exception as e:
                         logger.error(f"Failed to save encounter: {e}")
                         return {"success": False, "message": str(e)}
@@ -5438,15 +5473,46 @@ class SettingsTab(QtWidgets.QWidget):
                 um = UserManager(APP_DIR)
                 um.clear_last_user()
                 
-                # Restart app
-                import sys
+                # Record app close time
+                self.blocker.record_shutdown_time("user_switch")
+                
+                # Restart app using a detached process
                 import subprocess
+                import os
                 
-                # Use subprocess to start a new instance
-                subprocess.Popen([sys.executable] + sys.argv)
+                # Get the executable path
+                if getattr(sys, 'frozen', False):
+                    # Running as PyInstaller bundle - use the exe directly
+                    exe_path = sys.executable
+                    
+                    # Use a batch script to delay restart, avoiding temp directory cleanup issues
+                    # The delay allows the current process to fully exit before the new one starts
+                    import tempfile
+                    batch_content = f'''@echo off
+ping 127.0.0.1 -n 2 > nul
+start "" "{exe_path}"
+del "%~f0"
+'''
+                    # Create temp batch file
+                    with tempfile.NamedTemporaryFile(mode='w', suffix='.bat', delete=False) as f:
+                        f.write(batch_content)
+                        batch_path = f.name
+                    
+                    # Run the batch file detached (it will delay and restart the app)
+                    DETACHED_PROCESS = 0x00000008
+                    CREATE_NO_WINDOW = 0x08000000
+                    subprocess.Popen(
+                        ['cmd', '/c', batch_path],
+                        creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW,
+                        close_fds=True,
+                    )
+                else:
+                    # Development mode
+                    subprocess.Popen([sys.executable] + sys.argv)
                 
-                # Exit current instance
-                sys.exit(0)
+                # Exit gracefully using Qt's quit to allow proper cleanup
+                self._force_quit = True
+                QtWidgets.QApplication.instance().quit()
             except Exception as e:
                 show_error(self, "Error", f"Could not switch user: {e}")
 
@@ -6929,23 +6995,29 @@ class WeightTab(QtWidgets.QWidget):
         self._refresh_display()
     
     def _process_rewards(self, rewards: dict) -> None:
-        """Process and show weight loss rewards."""
+        """Process and show weight loss rewards with lottery animation."""
         items_earned = []
         new_milestone_ids = []
         
         # Collect all earned items - Daily/Weekly/Monthly (use defensive copies)
         # Items will be added to inventory via game_state at the end
+        primary_source = None  # Track the primary reward source for lottery display
         if rewards.get("daily_reward"):
             item = rewards["daily_reward"]
             items_earned.append(("Daily", item))
+            primary_source = "Daily Weigh-In"
         
         if rewards.get("weekly_reward"):
             item = rewards["weekly_reward"]
             items_earned.append(("Weekly Bonus", item))
+            if not primary_source:
+                primary_source = "Weekly Progress"
         
         if rewards.get("monthly_reward"):
             item = rewards["monthly_reward"]
             items_earned.append(("Monthly Bonus", item))
+            if not primary_source:
+                primary_source = "Monthly Progress"
         
         # Streak reward
         if rewards.get("streak_reward"):
@@ -6953,18 +7025,24 @@ class WeightTab(QtWidgets.QWidget):
             item = streak_data["item"]
             items_earned.append((f"🔥 {streak_data['streak_days']}-Day Streak", item))
             new_milestone_ids.append(streak_data["milestone_id"])
+            if not primary_source:
+                primary_source = f"🔥 {streak_data['streak_days']}-Day Streak"
         
         # Milestone rewards
         for milestone in rewards.get("new_milestones", []):
             item = milestone["item"]
             items_earned.append((f"🏆 {milestone['name']}", item))
             new_milestone_ids.append(milestone["milestone_id"])
+            if not primary_source:
+                primary_source = f"🏆 {milestone['name']}"
         
         # Maintenance reward (only if no daily reward to avoid double-rewarding)
         if rewards.get("maintenance_reward") and not rewards.get("daily_reward"):
             maint_data = rewards["maintenance_reward"]
             item = maint_data["item"]
             items_earned.append(("⚖️ Maintenance", item))
+            if not primary_source:
+                primary_source = "⚖️ Weight Maintenance"
         
         # Save new milestones
         if new_milestone_ids:
@@ -7001,8 +7079,31 @@ class WeightTab(QtWidgets.QWidget):
                 logger.error("GameStateManager not available - cannot award weight rewards")
                 return
             
+            # Show lottery animation for the primary item (most exciting)
+            # Pick the highest rarity item as the primary
+            rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+            primary_item = max(just_items, key=lambda x: rarity_order.index(x.get("rarity", "Common")))
+            extra_items = [i for i in just_items if i is not primary_item]
+            
+            # Show lottery animation
+            from lottery_animation import WeightLotteryDialog
+            lottery_dialog = WeightLotteryDialog(
+                item=primary_item,
+                reward_source=primary_source or "Weight Tracking",
+                extra_items=extra_items,
+                parent=self.window()
+            )
+            lottery_dialog.exec()
+            
+            # Capture equipped state before award
+            equipped_before = dict(self.blocker.adhd_buster.get("equipped", {}))
+            
             # Use batch award - handles inventory, auto-equip, save, and signals
-            game_state.award_items_batch(just_items, coins=0, auto_equip=True, source="weight_tracking")
+            award_result = game_state.award_items_batch(just_items, coins=0, auto_equip=True, source="weight_tracking")
+            
+            # Get the slots that were actually auto-equipped
+            equipped_after = game_state.adhd_buster.get("equipped", {})
+            auto_equipped_slots = [item.get("slot") for item in award_result.get("equipped", []) if item.get("slot")]
             
             # Build reward message with rarity colors
             rarity_colors = {
@@ -7043,8 +7144,7 @@ class WeightTab(QtWidgets.QWidget):
             for source, item in items_earned:
                 extra_msgs.append(f"{source}: {item.get('name', 'Unknown')}")
             
-            # Show ItemRewardDialog with comparison
-            equipped = self.blocker.adhd_buster.get("equipped", {})
+            # Show ItemRewardDialog with comparison and proper auto-equip tracking
             from styled_dialog import ItemRewardDialog
             dialog = ItemRewardDialog(
                 parent=self,
@@ -7052,7 +7152,10 @@ class WeightTab(QtWidgets.QWidget):
                 header_emoji="⚖️",
                 source_label="Weight Tracking Rewards",
                 items_earned=just_items,
-                equipped=equipped,
+                equipped=equipped_before,  # What was equipped before for comparison
+                equipped_after=equipped_after,  # Current equipped state
+                auto_equipped_slots=auto_equipped_slots,  # Slots that were actually auto-equipped
+                game_state=game_state,  # For click-to-equip
                 extra_messages=extra_msgs[:3]  # Limit to 3 messages
             )
             dialog.exec()
@@ -8300,7 +8403,11 @@ class ActivityTab(QtWidgets.QWidget):
                 return
             
             # Use batch award - handles inventory, auto-equip, coins, save, and signals
-            game_state.award_items_batch(just_items, coins=coins_earned, auto_equip=True, source="activity_tracking")
+            award_result = game_state.award_items_batch(just_items, coins=coins_earned, auto_equip=True, source="activity_tracking")
+            
+            # Get the slots that were actually auto-equipped
+            equipped_after = game_state.adhd_buster.get("equipped", {})
+            auto_equipped_slots = [item.get("slot") for item in award_result.get("equipped", []) if item.get("slot")]
             
             # Build extra messages
             extra_msgs = []
@@ -8309,7 +8416,7 @@ class ActivityTab(QtWidgets.QWidget):
             if rewards.get("current_streak", 0) > 0:
                 extra_msgs.append(f"Streak: {rewards['current_streak']} days 🔥")
             
-            # Use new ItemRewardDialog with comparison
+            # Use new ItemRewardDialog with comparison and proper auto-equip tracking
             from styled_dialog import ItemRewardDialog
             dialog = ItemRewardDialog(
                 parent=self,
@@ -8317,7 +8424,10 @@ class ActivityTab(QtWidgets.QWidget):
                 header_emoji="🏆",
                 source_label="Great workout!",
                 items_earned=just_items,
-                equipped=equipped_before,  # Compare against what was equipped before
+                equipped=equipped_before,  # What was equipped before for comparison
+                equipped_after=equipped_after,  # Current equipped state
+                auto_equipped_slots=auto_equipped_slots,  # Slots that were actually auto-equipped
+                game_state=game_state,  # For click-to-equip
                 coins_earned=coins_earned,
                 extra_messages=extra_msgs
             )
@@ -8466,7 +8576,9 @@ class ActivityTab(QtWidgets.QWidget):
         if not self.blocker.activity_reminder_enabled:
             return
         
-        today = datetime.now().strftime("%Y-%m-%d")
+        from app_utils import get_activity_date
+        # Use activity date (5 AM cutoff) for daily tracking
+        today = get_activity_date()
         if self.blocker.activity_last_reminder_date == today:
             return
         
@@ -9306,11 +9418,17 @@ class SleepTab(QtWidgets.QWidget):
             logger.error("GameStateManager not available - cannot award sleep now bonus")
             return
         
+        # Capture equipped state before award
+        equipped_before = dict(self.blocker.adhd_buster.get("equipped", {}))
+        
         # Use batch award - handles inventory, auto-equip, save, and signals
-        game_state.award_items_batch([item], coins=0, auto_equip=True, source="sleep_now_bonus")
+        award_result = game_state.award_items_batch([item], coins=0, auto_equip=True, source="sleep_now_bonus")
+        
+        # Get the slots that were actually auto-equipped
+        equipped_after = game_state.adhd_buster.get("equipped", {})
+        auto_equipped_slots = [i.get("slot") for i in award_result.get("equipped", []) if i.get("slot")]
         
         # Show reward with ItemRewardDialog for comparison
-        equipped = self.blocker.adhd_buster.get("equipped", {})
         from styled_dialog import ItemRewardDialog
         dialog = ItemRewardDialog(
             parent=self,
@@ -9318,7 +9436,10 @@ class SleepTab(QtWidgets.QWidget):
             header_emoji="🛏️",
             source_label=f"Nighty-Night Bonus at {current_time}",
             items_earned=[item],
-            equipped=equipped,
+            equipped=equipped_before,  # What was equipped before for comparison
+            equipped_after=equipped_after,  # Current equipped state
+            auto_equipped_slots=auto_equipped_slots,  # Slots that were actually auto-equipped
+            game_state=game_state,  # For click-to-equip
             extra_messages=["Now turn off that screen and get some rest! 😴"]
         )
         dialog.exec()
@@ -9455,6 +9576,8 @@ class SleepTab(QtWidgets.QWidget):
                     items_earned.append(screenoff_bonus_item)
             
             # Award all items via GameState
+            auto_equipped_slots = []
+            equipped_after = {}
             if items_earned:
                 main_window = self.window()
                 game_state = getattr(main_window, 'game_state', None)
@@ -9462,7 +9585,10 @@ class SleepTab(QtWidgets.QWidget):
                     logger.error("GameStateManager not available - cannot award sleep rewards")
                 else:
                     # Use batch award - handles inventory, auto-equip, save, and signals
-                    game_state.award_items_batch(items_earned, coins=0, auto_equip=True, source="sleep_tracking")
+                    award_result = game_state.award_items_batch(items_earned, coins=0, auto_equip=True, source="sleep_tracking")
+                    # Get the slots that were actually auto-equipped
+                    equipped_after = game_state.adhd_buster.get("equipped", {})
+                    auto_equipped_slots = [i.get("slot") for i in award_result.get("equipped", []) if i.get("slot")]
             
             # Sync hero data
             if GAMIFICATION_AVAILABLE:
@@ -9489,13 +9615,20 @@ class SleepTab(QtWidgets.QWidget):
         
         # Show feedback using ItemRewardDialog if items were earned
         if items_earned:
+            # Get game state for equip functionality
+            main_window = self.window()
+            game_state = getattr(main_window, 'game_state', None)
+            
             from styled_dialog import ItemRewardDialog
             dialog = ItemRewardDialog(
                 parent=self,
                 title="😴 Sleep Logged!",
                 source_label=base_msg.replace("\n", "<br>"),
                 items_earned=items_earned,
-                equipped=equipped_before
+                equipped=equipped_before,  # What was equipped before for comparison
+                equipped_after=equipped_after,  # Current equipped state
+                auto_equipped_slots=auto_equipped_slots,  # Slots that were actually auto-equipped
+                game_state=game_state  # For click-to-equip
             )
             dialog.exec()
         else:
@@ -14260,6 +14393,7 @@ class HydrationTab(QtWidgets.QWidget):
     def _log_water(self) -> None:
         """Log a glass of water with animated lottery for reward."""
         from datetime import datetime
+        from app_utils import get_activity_date
         
         # Initialize water entries if needed
         if not hasattr(self.blocker, 'water_entries'):
@@ -14280,7 +14414,8 @@ class HydrationTab(QtWidgets.QWidget):
             hydration_perks_active = check.get("perk_bonus_applied", False)
         
         now = datetime.now()
-        today = now.strftime("%Y-%m-%d")
+        # Use activity date (5 AM cutoff) for daily tracking
+        today = get_activity_date(now)
         
         # Count today's glasses (before this one)
         glasses_today = sum(
@@ -14331,13 +14466,19 @@ class HydrationTab(QtWidgets.QWidget):
                 main_window = self.window()
                 game_state = getattr(main_window, 'game_state', None)
                 if game_state:
-                    equipped = self.blocker.adhd_buster.get("equipped", {})
-                    game_state.award_items_batch([item], coins=0, auto_equip=True, source="hydration_tracking")
+                    # Capture equipped state before award
+                    equipped_before = dict(self.blocker.adhd_buster.get("equipped", {}))
+                    
+                    award_result = game_state.award_items_batch([item], coins=0, auto_equip=True, source="hydration_tracking")
+                    
+                    # Get the slots that were actually auto-equipped
+                    equipped_after = game_state.adhd_buster.get("equipped", {})
+                    auto_equipped_slots = [i.get("slot") for i in award_result.get("equipped", []) if i.get("slot")]
                     
                     if GAMIFICATION_AVAILABLE:
                         sync_hero_data(self.blocker.adhd_buster)
                     
-                    # Show ItemRewardDialog with comparison
+                    # Show ItemRewardDialog with comparison and proper auto-equip tracking
                     from styled_dialog import ItemRewardDialog
                     dialog = ItemRewardDialog(
                         parent=self,
@@ -14345,7 +14486,10 @@ class HydrationTab(QtWidgets.QWidget):
                         header_emoji="💧",
                         source_label=f"Glass #{glass_number} Lottery Win!",
                         items_earned=[item],
-                        equipped=equipped
+                        equipped=equipped_before,
+                        equipped_after=equipped_after,
+                        auto_equipped_slots=auto_equipped_slots,
+                        game_state=game_state
                     )
                     dialog.exec()
             
@@ -14362,8 +14506,15 @@ class HydrationTab(QtWidgets.QWidget):
                         main_window = self.window()
                         game_state = getattr(main_window, 'game_state', None)
                         if game_state:
-                            equipped = self.blocker.adhd_buster.get("equipped", {})
-                            game_state.award_items_batch([streak_item], coins=0, auto_equip=True, source="hydration_streak")
+                            # Capture equipped state before award
+                            equipped_before = dict(self.blocker.adhd_buster.get("equipped", {}))
+                            
+                            award_result = game_state.award_items_batch([streak_item], coins=0, auto_equip=True, source="hydration_streak")
+                            
+                            # Get the slots that were actually auto-equipped
+                            equipped_after = game_state.adhd_buster.get("equipped", {})
+                            auto_equipped_slots = [i.get("slot") for i in award_result.get("equipped", []) if i.get("slot")]
+                            
                             # Show ItemRewardDialog with comparison
                             from styled_dialog import ItemRewardDialog
                             dialog = ItemRewardDialog(
@@ -14372,7 +14523,10 @@ class HydrationTab(QtWidgets.QWidget):
                                 header_emoji="💧",
                                 source_label=f"🔥 {streak_days + 1}-day Hydration Streak!",
                                 items_earned=[streak_item],
-                                equipped=equipped
+                                equipped=equipped_before,
+                                equipped_after=equipped_after,
+                                auto_equipped_slots=auto_equipped_slots,
+                                game_state=game_state
                             )
                             dialog.exec()
             
@@ -14439,8 +14593,10 @@ class HydrationTab(QtWidgets.QWidget):
         """Refresh stats and history display."""
         from datetime import datetime
         from gamification import get_hydration_daily_cap
+        from app_utils import get_activity_date
         
-        today = datetime.now().strftime("%Y-%m-%d")
+        # Use activity date (5 AM cutoff) for daily tracking
+        today = get_activity_date()
         
         if not hasattr(self.blocker, 'water_entries'):
             self.blocker.water_entries = []
@@ -14696,13 +14852,15 @@ class PowerAnalysisDialog(StyledDialog):
                  entity_power_info: dict = None,
                  lucky_bonuses: dict = None,
                  potential_sets: list = None,
-                 style_discovered: bool = False):
+                 style_discovered: bool = False,
+                 story_id: str = None):
         self.breakdown = breakdown
         self.equipped = equipped
         self.entity_power_info = entity_power_info or {}
         self.lucky_bonuses = lucky_bonuses or {}
         self.potential_sets = potential_sets or []
         self.style_discovered = style_discovered
+        self._story_id = story_id  # For themed slot names
         super().__init__(parent, "⚔️ Power Analysis", "📊", 750, 850, closable=True)
         self.setMinimumSize(700, 600)
 
@@ -14860,6 +15018,12 @@ class PowerAnalysisDialog(StyledDialog):
         equipped = self.equipped
         slots = ["Helmet", "Chestplate", "Gauntlets", "Boots", "Shield", "Weapon", "Cloak", "Amulet"]
         
+        # Get themed slot display name function
+        try:
+            from gamification import get_slot_display_name
+        except ImportError:
+            get_slot_display_name = lambda s, _: s
+        
         # Create compact grid for equipment
         grid = QtWidgets.QGridLayout()
         grid.setSpacing(4)
@@ -14886,8 +15050,9 @@ class PowerAnalysisDialog(StyledDialog):
             else:
                 total_equipped += 1
             
-            # Slot name
-            slot_lbl = QtWidgets.QLabel(slot)
+            # Slot name - use themed display name
+            display_slot = get_slot_display_name(slot, self._story_id)
+            slot_lbl = QtWidgets.QLabel(display_slot)
             slot_lbl.setStyleSheet("color: #b0b0b0; font-size: 11px; padding: 3px;")
             grid.addWidget(slot_lbl, row, 0)
             
@@ -15070,6 +15235,13 @@ class PowerAnalysisDialog(StyledDialog):
         style_data = style_info.get("style", {})
         empty_slot = style_info.get("empty_slot", "Unknown")
         
+        # Theme the empty slot display name
+        try:
+            from gamification import get_slot_display_name
+            display_empty_slot = get_slot_display_name(empty_slot, self._story_id)
+        except ImportError:
+            display_empty_slot = empty_slot
+        
         layout.addWidget(self._create_section_header(f"Style Bonus (+{style_bonus} Power)", "👑"))
         
         card = QtWidgets.QWidget()
@@ -15095,8 +15267,8 @@ class PowerAnalysisDialog(StyledDialog):
         desc.setAlignment(QtCore.Qt.AlignCenter)
         card_layout.addWidget(desc)
         
-        # Bonus details
-        bonus_text = QtWidgets.QLabel(f"+{style_bonus} Power • 7 Legendary items • {empty_slot} slot empty")
+        # Bonus details - use themed slot name
+        bonus_text = QtWidgets.QLabel(f"+{style_bonus} Power • 7 Legendary items • {display_empty_slot} slot empty")
         bonus_text.setStyleSheet("font-size: 12px; color: #4CAF50; font-weight: bold; background: transparent;")
         bonus_text.setAlignment(QtCore.Qt.AlignCenter)
         card_layout.addWidget(bonus_text)
@@ -16236,6 +16408,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 lucky_bonuses=lucky_bonuses,
                 potential_sets=potential_sets,
                 style_discovered=style_discovered,
+                story_id=get_selected_story(self.blocker.adhd_buster) if get_selected_story else None,
             )
             dlg.exec()
         except Exception as exc:  # Defensive: surface errors to the user
@@ -17614,6 +17787,9 @@ class SellItemsDialog(StyledDialog):
         except Exception:
             sell_perks = None
 
+        # Get story ID for themed slot names
+        story_id = get_selected_story(self.blocker.adhd_buster) if get_selected_story else None
+        
         checkboxes = []
         for item in sellable_items:
             cb = QtWidgets.QCheckBox()
@@ -17621,10 +17797,11 @@ class SellItemsDialog(StyledDialog):
             name = item.get("name", "Unknown")
             power = item.get("power", 10)
             slot = item.get("slot", "Unknown")
+            display_slot = get_slot_display_name(slot, story_id) if get_slot_display_name and slot != "Unknown" else slot
             rarity = item.get("rarity", "Common")
             coin_value = self._calculate_coin_value(item, sell_perks)
             
-            cb.setText(f"{name} [{rarity} {slot}] +{power} Power → {coin_value} coins")
+            cb.setText(f"{name} [{rarity} {display_slot}] +{power} Power → {coin_value} coins")
             cb.setStyleSheet(f"color: {rarity_color}; font-weight: bold;")
             cb.item_data = item
             checkboxes.append(cb)
@@ -18979,7 +19156,8 @@ class PrioritiesDialog(StyledDialog):
                 source_label="Priority Completion Reward",
                 items_earned=items_earned,
                 equipped=equipped,
-                coins_earned=coins_earned
+                coins_earned=coins_earned,
+                game_state=game_state  # For themed slot names
             )
             dialog.exec()
         
@@ -19898,7 +20076,9 @@ class DailyTimelineWidget(QtWidgets.QFrame):
     def _update_focus_ring(self, *args):
         """Update focus ring from signal."""
         try:
-            today = datetime.now().strftime("%Y-%m-%d")
+            from app_utils import get_activity_date
+            # Use activity date (5 AM cutoff) for daily tracking
+            today = get_activity_date()
             daily_stats = self.blocker.stats.get("daily_stats", {}).get(today, {})
             focus_sec = daily_stats.get("focus_time", 0)
             weekly_goal_hours = float(self.blocker.stats.get("weekly_goal_hours", 10))
@@ -19910,9 +20090,10 @@ class DailyTimelineWidget(QtWidgets.QFrame):
     def _update_water_ring(self, *args):
         """Update water ring from signal."""
         try:
-            today_date = datetime.now().strftime("%Y-%m-%d")
+            from app_utils import get_activity_date
+            activity_date = get_activity_date()
             water_entries = getattr(self.blocker, 'water_entries', [])
-            today_water = sum(1 for e in water_entries if e.get('date') == today_date)
+            today_water = sum(1 for e in water_entries if e.get('date') == activity_date)
             daily_cap = 8
             if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
                 try:
@@ -21455,7 +21636,9 @@ class DevTab(QtWidgets.QWidget):
         """Reset water logging cooldown by clearing today's last entry time."""
         try:
             from datetime import datetime
-            today = datetime.now().strftime("%Y-%m-%d")
+            from app_utils import get_activity_date
+            # Use activity date (5 AM cutoff) for daily tracking
+            today = get_activity_date()
             
             # Find all entries for today and set their times to 00:00
             if hasattr(self.blocker, 'water_entries') and self.blocker.water_entries:
@@ -22602,6 +22785,12 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         self.blocker = BlockerCore(username=username)
         
+        # Record app startup time for tracking
+        self.blocker.record_startup_time()
+        
+        # Flag to prevent duplicate shutdown recording
+        self._shutdown_recorded = False
+        
         # Browser monitor for Light Mode (notifications instead of blocking)
         self.browser_monitor = None
         
@@ -23227,7 +23416,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 source_label="Daily Login Reward",
                 items_earned=[item],
                 equipped=equipped,
-                extra_messages=[f"Tier boost: {current_tier} → {boosted_tier}"]
+                extra_messages=[f"Tier boost: {current_tier} → {boosted_tier}"],
+                game_state=getattr(self, 'game_state', None)  # For themed slot names
             )
             dialog.exec()
 
@@ -23274,9 +23464,16 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         # Try to load icon from file first
         icon_name = "tray_blocking.png" if blocking else "tray_ready.png"
-        script_dir = Path(__file__).parent
         
-        # Check various locations for icon files
+        # Use get_resource_path which handles both dev and frozen (PyInstaller) modes
+        from app_utils import get_resource_path
+        resource_icon = get_resource_path("icons", icon_name)
+        if resource_icon.exists():
+            self.tray_icon.setIcon(QtGui.QIcon(str(resource_icon)))
+            return
+        
+        # Fallback: check script directory locations
+        script_dir = Path(__file__).parent
         icon_paths = [
             script_dir / "icons" / icon_name,
             script_dir / icon_name,
@@ -23504,12 +23701,16 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             # Older PySide6 or direct int
             key = int(key_combo)
         
-        mod_mask = int(
-            QtCore.Qt.KeyboardModifier.ShiftModifier
-            | QtCore.Qt.KeyboardModifier.ControlModifier
-            | QtCore.Qt.KeyboardModifier.AltModifier
-            | QtCore.Qt.KeyboardModifier.MetaModifier
-        )
+        # Get modifier values - use .value for PySide6 enum compatibility
+        def get_mod_value(mod):
+            return mod.value if hasattr(mod, 'value') else int(mod)
+        
+        shift_mod = get_mod_value(QtCore.Qt.KeyboardModifier.ShiftModifier)
+        ctrl_mod = get_mod_value(QtCore.Qt.KeyboardModifier.ControlModifier)
+        alt_mod = get_mod_value(QtCore.Qt.KeyboardModifier.AltModifier)
+        meta_mod = get_mod_value(QtCore.Qt.KeyboardModifier.MetaModifier)
+        
+        mod_mask = shift_mod | ctrl_mod | alt_mod | meta_mod
         mods = key & mod_mask
         if mods == 0:
             return None
@@ -23519,13 +23720,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             return None
 
         mod_flags = 0
-        if mods & int(QtCore.Qt.KeyboardModifier.AltModifier):
+        if mods & alt_mod:
             mod_flags |= 0x0001  # MOD_ALT
-        if mods & int(QtCore.Qt.KeyboardModifier.ControlModifier):
+        if mods & ctrl_mod:
             mod_flags |= 0x0002  # MOD_CONTROL
-        if mods & int(QtCore.Qt.KeyboardModifier.ShiftModifier):
+        if mods & shift_mod:
             mod_flags |= 0x0004  # MOD_SHIFT
-        if mods & int(QtCore.Qt.KeyboardModifier.MetaModifier):
+        if mods & meta_mod:
             mod_flags |= 0x0008  # MOD_WIN
 
         return mod_flags, vk
@@ -23550,14 +23751,48 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     def nativeEvent(self, eventType, message):
         if platform.system() == "Windows":
             msg = wintypes.MSG.from_address(int(message))
+            # Handle global hotkey
             if msg.message == 0x0312 and msg.wParam == self._hotkey_id:
                 self._toggle_window_visibility()
                 return True, 0
+            # WM_QUERYENDSESSION (0x0011) - Windows is shutting down or user is logging off
+            if msg.message == 0x0011:
+                self._on_system_shutdown()
+                return True, 1  # Return True to allow shutdown to proceed
+            # WM_ENDSESSION (0x0016) - Session is definitely ending
+            if msg.message == 0x0016 and msg.wParam:
+                self._on_system_shutdown()
+                return True, 0
         return super().nativeEvent(eventType, message)
+
+    def _on_system_shutdown(self) -> None:
+        """Handle system shutdown/logoff - save shutdown time."""
+        if hasattr(self, '_shutdown_recorded') and self._shutdown_recorded:
+            return  # Already recorded
+        self._shutdown_recorded = True
+        try:
+            self.blocker.record_shutdown_time("shutdown")
+        except Exception:
+            pass  # Don't block shutdown on error
 
     def _set_app_icon(self) -> None:
         """Set the application window icon from the icons folder."""
-        # Try to find app.ico in various locations
+        # Use get_resource_path which handles both dev and frozen (PyInstaller) modes
+        from app_utils import get_resource_path
+        
+        # Try ICO first (best for Windows)
+        resource_ico = get_resource_path("icons", "app.ico")
+        if resource_ico.exists():
+            self.setWindowIcon(QtGui.QIcon(str(resource_ico)))
+            return
+        
+        # Try PNG fallback
+        resource_png = get_resource_path("icons", "app.png")
+        if resource_png.exists():
+            self.setWindowIcon(QtGui.QIcon(str(resource_png)))
+            return
+        
+        # Fallback: check script directory locations
         script_dir = Path(__file__).parent
         icon_paths = [
             script_dir / "icons" / "app.ico",
@@ -23726,6 +23961,14 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self._hide_to_tray()
             return
 
+        # Record app close time (if not already recorded by system shutdown)
+        if not getattr(self, '_shutdown_recorded', False):
+            self._shutdown_recorded = True
+            try:
+                self.blocker.record_shutdown_time("app_close")
+            except Exception:
+                pass  # Don't block close on error
+
         self._unregister_hotkey()
 
         # Stop tray icon and update timer
@@ -23787,13 +24030,15 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         if item:
             # Get equipped item for comparison
             equipped_item = None
+            story_id = None
             if GAMIFICATION_AVAILABLE:
                 try:
-                    from gamification import get_equipped_item
+                    from gamification import get_equipped_item, get_selected_story
                     equipped_item = get_equipped_item(self.blocker.adhd_buster, item.get("slot", "Unknown"))
+                    story_id = get_selected_story(self.blocker.adhd_buster)
                 except ImportError:
                     pass
-            dialog = EnhancedItemDropDialog(item, equipped_item, parent=self)
+            dialog = EnhancedItemDropDialog(item, equipped_item, parent=self, story_id=story_id)
             dialog.exec()
             
             # Refresh inventory UI if it exists

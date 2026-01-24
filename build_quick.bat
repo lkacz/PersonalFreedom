@@ -18,7 +18,7 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [1/2] Building Main GUI (PySide6/Qt)...
+echo Building Main GUI (PySide6/Qt)...
 pyinstaller --noconfirm --onefile --windowed --uac-admin ^
     --name "PersonalLiberty" ^
     --version-file="version_info.txt" ^
@@ -35,26 +35,12 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo [2/2] Building System Tray version...
-pyinstaller --noconfirm --onefile --windowed --uac-admin ^
-    --name "PersonalLibertyTray" ^
-    --version-file="version_info.txt" ^
-    tray_blocker.py
-
-if %errorlevel% neq 0 (
-    echo [ERROR] Failed to build tray app!
-    pause
-    exit /b 1
-)
-
-echo.
 echo =============================================
 echo   Build Complete!
 echo =============================================
 echo.
-echo Output files:
+echo Output file:
 echo   dist\PersonalLiberty.exe
-echo   dist\PersonalLibertyTray.exe
 echo.
 echo Now run: build_installer.bat
 echo.

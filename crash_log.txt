@@ -1,13 +1,12 @@
 Traceback (most recent call last):
-  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 22639, in main
+  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 24411, in main
     window = FocusBlockerWindow(username=selected_user)
              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 21139, in __init__
-    self.timer_tab = TimerTab(self.blocker, self)
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 1171, in __init__
-    self._connect_signals()
-  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 1478, in _connect_signals
-    self.notify_checkbox.stateChanged.connect(self._save_notify_preference)
-    ^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'TimerTab' object has no attribute 'notify_checkbox'
+  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 22877, in __init__
+    self._update_hotkey_registration()
+  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 23561, in _update_hotkey_registration
+    parsed = self._parse_hotkey_sequence(seq_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 23608, in _parse_hotkey_sequence
+    int(QtCore.Qt.KeyboardModifier.ShiftModifier)
+TypeError: int() argument must be a string, a bytes-like object or a real number, not 'KeyboardModifier'

@@ -24,7 +24,6 @@ python -m PyInstaller build.bat
 ```
 This will create:
 - `dist/PersonalLiberty.exe` (with AI features)
-- `dist/PersonalLibertyTray.exe` (system tray version)
 
 **Size increase expected:** +500KB due to AI module
 

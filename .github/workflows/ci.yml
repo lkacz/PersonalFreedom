@@ -71,7 +71,6 @@ jobs:
       - name: Build executables
         run: |
           pyinstaller PersonalLiberty.spec --noconfirm
-          pyinstaller PersonalLibertyTray.spec --noconfirm
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

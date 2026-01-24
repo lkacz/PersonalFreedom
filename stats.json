@@ -1,0 +1,20 @@
+{
+  "total_focus_time": 0,
+  "sessions_completed": 0,
+  "sessions_cancelled": 0,
+  "daily_stats": {},
+  "streak_days": 0,
+  "last_session_date": null,
+  "best_streak": 0,
+  "shutdown_times": [
+    {
+      "timestamp": "2026-01-24T13:35:54.351854",
+      "type": "test"
+    }
+  ],
+  "startup_times": [
+    {
+      "timestamp": "2026-01-24T13:35:54.348855"
+    }
+  ]
+}
