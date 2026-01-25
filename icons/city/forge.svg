@@ -1,20 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Forge - A blacksmith's workshop with blazing furnace and anvil -->
   <defs>
-    <linearGradient id="fireGrad" x1="0%" y1="100%" x2="0%" y2="0%">
-      <stop offset="0%" style="stop-color:#FF4500"/>
-      <stop offset="50%" style="stop-color:#FFA500"/>
-      <stop offset="100%" style="stop-color:#FFD700"/>
+    <linearGradient id="brickWall" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8D6E63"/>
+      <stop offset="30%" style="stop-color:#795548"/>
+      <stop offset="70%" style="stop-color:#6D4C41"/>
+      <stop offset="100%" style="stop-color:#5D4037"/>
+    </linearGradient>
+    <linearGradient id="darkBrick" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#5D4037"/>
+      <stop offset="100%" style="stop-color:#3E2723"/>
+    </linearGradient>
+    <linearGradient id="anvilMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#616161"/>
+      <stop offset="30%" style="stop-color:#424242"/>
+      <stop offset="70%" style="stop-color:#303030"/>
+      <stop offset="100%" style="stop-color:#212121"/>
+    </linearGradient>
+    <linearGradient id="flameCore" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF6D00"/>
+      <stop offset="30%" style="stop-color:#FF9100"/>
+      <stop offset="60%" style="stop-color:#FFAB00"/>
+      <stop offset="100%" style="stop-color:#FFD600"/>
+    </linearGradient>
+    <linearGradient id="flameOuter" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#BF360C"/>
+      <stop offset="50%" style="stop-color:#E65100"/>
+      <stop offset="100%" style="stop-color:#FF6D00"/>
+    </linearGradient>
+    <radialGradient id="forgeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FF6D00" stop-opacity="0.6"/>
+      <stop offset="60%" style="stop-color:#FF6D00" stop-opacity="0.2"/>
+      <stop offset="100%" style="stop-color:#FF6D00" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="chimneyStone" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4E342E"/>
+      <stop offset="50%" style="stop-color:#3E2723"/>
+      <stop offset="100%" style="stop-color:#4E342E"/>
     </linearGradient>
   </defs>
+  
   <!-- Chimney -->
-  <rect x="24" y="4" width="16" height="20" fill="#4A4A5A" stroke="#666" stroke-width="2"/>
-  <!-- Building -->
-  <rect x="12" y="24" width="40" height="32" fill="#5A5A6A" stroke="#888" stroke-width="2"/>
-  <!-- Fire glow -->
-  <ellipse cx="32" cy="44" rx="12" ry="8" fill="url(#fireGrad)" opacity="0.8"/>
+  <rect x="38" y="4" width="14" height="26" fill="url(#chimneyStone)"/>
+  <rect x="36" y="2" width="18" height="4" fill="#5D4037"/>
+  <rect x="40" y="6" width="10" height="22" fill="#2D1D0E"/>
+  
+  <!-- Smoke puffs -->
+  <ellipse cx="45" cy="0" rx="4" ry="3" fill="#9E9E9E" opacity="0.4"/>
+  <ellipse cx="48" cy="4" rx="3" ry="2.5" fill="#BDBDBD" opacity="0.3"/>
+  <ellipse cx="42" cy="3" rx="2.5" ry="2" fill="#9E9E9E" opacity="0.35"/>
+  
+  <!-- Main building -->
+  <rect x="6" y="24" width="52" height="36" fill="url(#brickWall)"/>
+  
+  <!-- Roof -->
+  <polygon points="4,24 32,10 60,24" fill="url(#darkBrick)"/>
+  <line x1="32" y1="10" x2="32" y2="24" stroke="#3E2723" stroke-width="1"/>
+  
+  <!-- Brick pattern -->
+  <g stroke="#5D4037" stroke-width="0.5" opacity="0.6">
+    <line x1="6" y1="32" x2="58" y2="32"/>
+    <line x1="6" y1="40" x2="58" y2="40"/>
+    <line x1="6" y1="48" x2="58" y2="48"/>
+    <line x1="16" y1="24" x2="16" y2="32"/>
+    <line x1="26" y1="24" x2="26" y2="32"/>
+    <line x1="48" y1="24" x2="48" y2="32"/>
+    <line x1="11" y1="32" x2="11" y2="40"/>
+    <line x1="21" y1="32" x2="21" y2="40"/>
+    <line x1="31" y1="32" x2="31" y2="40"/>
+    <line x1="41" y1="32" x2="41" y2="40"/>
+    <line x1="51" y1="32" x2="51" y2="40"/>
+  </g>
+  
+  <!-- Forge opening (dark interior) -->
+  <rect x="10" y="36" width="22" height="20" fill="#1A1A1A" rx="2"/>
+  <rect x="8" y="34" width="26" height="4" fill="url(#darkBrick)"/>
+  
+  <!-- Fire glow background -->
+  <ellipse cx="21" cy="50" rx="10" ry="8" fill="url(#forgeGlow)"/>
+  
+  <!-- Flames -->
+  <ellipse cx="16" cy="52" rx="3" ry="5" fill="url(#flameOuter)"/>
+  <ellipse cx="21" cy="50" rx="4" ry="7" fill="url(#flameCore)"/>
+  <ellipse cx="26" cy="52" rx="3" ry="5" fill="url(#flameOuter)"/>
+  <ellipse cx="18" cy="48" rx="2" ry="4" fill="url(#flameCore)"/>
+  <ellipse cx="24" cy="49" rx="2" ry="4" fill="url(#flameCore)"/>
+  
+  <!-- Flame bright tips -->
+  <ellipse cx="21" cy="46" rx="1.5" ry="3" fill="#FFEB3B"/>
+  <ellipse cx="18" cy="45" rx="1" ry="2" fill="#FFF9C4"/>
+  <ellipse cx="24" cy="46" rx="1" ry="2" fill="#FFF9C4"/>
+  
   <!-- Anvil -->
-  <rect x="26" y="40" width="12" height="8" fill="#333" stroke="#555"/>
-  <!-- Smoke -->
-  <circle cx="32" cy="2" r="4" fill="#888" opacity="0.5"/>
-  <circle cx="38" cy="6" r="3" fill="#888" opacity="0.3"/>
+  <rect x="40" y="50" width="14" height="4" fill="url(#anvilMetal)" rx="1"/>
+  <rect x="42" y="54" width="10" height="6" fill="url(#anvilMetal)"/>
+  <rect x="44" y="48" width="6" height="3" fill="#757575"/>
+  
+  <!-- Anvil horn -->
+  <polygon points="40,50 36,52 40,54" fill="url(#anvilMetal)"/>
+  
+  <!-- Anvil highlight -->
+  <line x1="41" y1="51" x2="53" y2="51" stroke="#9E9E9E" stroke-width="0.5"/>
+  
+  <!-- Hammer on anvil -->
+  <rect x="44" y="44" width="3" height="8" fill="#8D6E63" rx="0.5"/>
+  <rect x="42" y="42" width="7" height="3" fill="#546E7A" rx="0.5"/>
+  <line x1="43" y1="43" x2="48" y2="43" stroke="#78909C" stroke-width="0.5"/>
+  
+  <!-- Tongs -->
+  <path d="M36 44 L34 48 Q34 52, 36 54" stroke="#424242" stroke-width="2" fill="none"/>
+  <path d="M37 44 L35 48 Q35 52, 37 54" stroke="#616161" stroke-width="1.5" fill="none"/>
+  
+  <!-- Bellows -->
+  <ellipse cx="54" cy="44" rx="4" ry="6" fill="#8D6E63"/>
+  <ellipse cx="54" cy="44" rx="3" ry="5" fill="#6D4C41"/>
+  <line x1="50" y1="44" x2="36" y2="44" stroke="#5D4037" stroke-width="1.5"/>
+  
+  <!-- Window with glow -->
+  <rect x="42" y="28" width="8" height="8" fill="#FF8A65" rx="1"/>
+  <rect x="43" y="29" width="6" height="6" fill="#FFAB91" rx="0.5"/>
+  <line x1="46" y1="29" x2="46" y2="35" stroke="#5D4037" stroke-width="0.8"/>
+  <line x1="43" y1="32" x2="49" y2="32" stroke="#5D4037" stroke-width="0.8"/>
+  
+  <!-- Tool rack on wall -->
+  <rect x="8" y="26" width="16" height="2" fill="#5D4037"/>
+  <line x1="11" y1="28" x2="11" y2="34" stroke="#757575" stroke-width="1.5"/>
+  <line x1="16" y1="28" x2="16" y2="33" stroke="#757575" stroke-width="1"/>
+  <line x1="21" y1="28" x2="21" y2="35" stroke="#757575" stroke-width="1.5"/>
+  
+  <!-- Sparks from forge -->
+  <circle cx="18" cy="40" r="0.8" fill="#FFEB3B"/>
+  <circle cx="24" cy="38" r="0.6" fill="#FF9800"/>
+  <circle cx="14" cy="42" r="0.5" fill="#FFC107"/>
+  <circle cx="28" cy="41" r="0.7" fill="#FFEB3B"/>
 </svg>

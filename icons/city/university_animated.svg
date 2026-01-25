@@ -1,57 +1,162 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- University with floating book pages -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- University with floating book pages - High Quality Version -->
+  <defs>
+    <linearGradient id="marbleWall" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#E8EAF6"/>
+      <stop offset="30%" style="stop-color:#F5F5F5"/>
+      <stop offset="70%" style="stop-color:#F5F5F5"/>
+      <stop offset="100%" style="stop-color:#CFD8DC"/>
+    </linearGradient>
+    <linearGradient id="marbleColumn" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ECEFF1"/>
+      <stop offset="20%" style="stop-color:#FAFAFA"/>
+      <stop offset="50%" style="stop-color:#FFFFFF"/>
+      <stop offset="80%" style="stop-color:#FAFAFA"/>
+      <stop offset="100%" style="stop-color:#CFD8DC"/>
+    </linearGradient>
+    <linearGradient id="domeBlue" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#3949AB"/>
+      <stop offset="50%" style="stop-color:#5C6BC0"/>
+      <stop offset="100%" style="stop-color:#7986CB"/>
+    </linearGradient>
+    <linearGradient id="goldDecor" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD54F"/>
+      <stop offset="50%" style="stop-color:#FFC107"/>
+      <stop offset="100%" style="stop-color:#FF8F00"/>
+    </linearGradient>
+    <radialGradient id="knowledgeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFF9C4" stop-opacity="0.6"/>
+      <stop offset="100%" style="stop-color:#FFF9C4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
   
   <!-- Main building -->
-  <rect x="10" y="28" width="44" height="28" fill="#E8EAF6"/>
-  <polygon points="10,28 32,12 54,28" fill="#C5CAE9"/>
+  <rect x="8" y="26" width="48" height="34" fill="url(#marbleWall)"/>
+  <polygon points="8,26 8,60 4,58 4,28" fill="#BDBDBD"/>
   
-  <!-- Columns -->
-  <rect x="14" y="32" width="4" height="24" fill="#FAFAFA"/>
-  <rect x="24" y="32" width="4" height="24" fill="#FAFAFA"/>
-  <rect x="36" y="32" width="4" height="24" fill="#FAFAFA"/>
-  <rect x="46" y="32" width="4" height="24" fill="#FAFAFA"/>
+  <!-- Triangular pediment -->
+  <polygon points="4,26 60,26 32,10" fill="#C5CAE9"/>
+  <polygon points="4,26 32,10 8,26" fill="#9FA8DA"/>
   
-  <!-- Pediment details -->
-  <polygon points="20,28 32,18 44,28" fill="#9FA8DA"/>
+  <!-- Pediment frieze detail -->
+  <polygon points="18,26 46,26 32,16" fill="#B39DDB"/>
+  <line x1="24" y1="24" x2="40" y2="24" stroke="#9575CD" stroke-width="0.5"/>
+  <circle cx="32" cy="22" r="2" fill="#7E57C2"/>
   
-  <!-- Door -->
-  <rect x="28" y="40" width="8" height="16" fill="#3949AB"/>
+  <!-- Decorative trim -->
+  <rect x="6" y="24" width="52" height="3" fill="url(#goldDecor)"/>
+  <rect x="6" y="24" width="52" height="1" fill="#FFE082"/>
   
-  <!-- Dome -->
-  <ellipse cx="32" cy="12" rx="6" ry="4" fill="#7986CB"/>
-  <rect x="30" y="8" width="4" height="4" fill="#5C6BC0"/>
-  
-  <!-- Floating book pages animation -->
-  <g fill="#FFFFFF" stroke="#BDBDBD" stroke-width="0.5">
-    <rect x="8" y="20" width="6" height="4" rx="0.5">
-      <animate attributeName="y" values="20;14;20" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="x" values="8;12;8" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/>
-      <animateTransform attributeName="transform" type="rotate" values="0 11 22;15 14 16;30 14 16" dur="3s" repeatCount="indefinite"/>
-    </rect>
+  <!-- Four fluted columns -->
+  <g>
+    <!-- Column 1 -->
+    <rect x="12" y="30" width="6" height="26" fill="url(#marbleColumn)"/>
+    <line x1="13" y1="30" x2="13" y2="56" stroke="#E0E0E0" stroke-width="0.3"/>
+    <line x1="15" y1="30" x2="15" y2="56" stroke="#E0E0E0" stroke-width="0.3"/>
+    <line x1="17" y1="30" x2="17" y2="56" stroke="#E0E0E0" stroke-width="0.3"/>
+    <rect x="11" y="28" width="8" height="3" fill="#ECEFF1"/>
+    <rect x="11" y="55" width="8" height="3" fill="#ECEFF1"/>
     
-    <rect x="50" y="18" width="6" height="4" rx="0.5">
-      <animate attributeName="y" values="18;10;18" dur="3.5s" repeatCount="indefinite" begin="1s"/>
-      <animate attributeName="x" values="50;46;50" dur="3.5s" repeatCount="indefinite" begin="1s"/>
-      <animate attributeName="opacity" values="0;1;0" dur="3.5s" repeatCount="indefinite" begin="1s"/>
-      <animateTransform attributeName="transform" type="rotate" values="0 53 20;-20 49 12;-40 49 12" dur="3.5s" repeatCount="indefinite" begin="1s"/>
-    </rect>
+    <!-- Column 2 -->
+    <rect x="24" y="30" width="6" height="26" fill="url(#marbleColumn)"/>
+    <line x1="25" y1="30" x2="25" y2="56" stroke="#E0E0E0" stroke-width="0.3"/>
+    <line x1="27" y1="30" x2="27" y2="56" stroke="#E0E0E0" stroke-width="0.3"/>
+    <line x1="29" y1="30" x2="29" y2="56" stroke="#E0E0E0" stroke-width="0.3"/>
+    <rect x="23" y="28" width="8" height="3" fill="#ECEFF1"/>
+    <rect x="23" y="55" width="8" height="3" fill="#ECEFF1"/>
     
-    <rect x="30" y="6" width="5" height="3" rx="0.5">
-      <animate attributeName="y" values="6;0;6" dur="4s" repeatCount="indefinite" begin="0.5s"/>
-      <animate attributeName="opacity" values="0;0.8;0" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+    <!-- Column 3 -->
+    <rect x="34" y="30" width="6" height="26" fill="url(#marbleColumn)"/>
+    <line x1="35" y1="30" x2="35" y2="56" stroke="#E0E0E0" stroke-width="0.3"/>
+    <line x1="37" y1="30" x2="37" y2="56" stroke="#E0E0E0" stroke-width="0.3"/>
+    <line x1="39" y1="30" x2="39" y2="56" stroke="#E0E0E0" stroke-width="0.3"/>
+    <rect x="33" y="28" width="8" height="3" fill="#ECEFF1"/>
+    <rect x="33" y="55" width="8" height="3" fill="#ECEFF1"/>
+    
+    <!-- Column 4 -->
+    <rect x="46" y="30" width="6" height="26" fill="url(#marbleColumn)"/>
+    <line x1="47" y1="30" x2="47" y2="56" stroke="#E0E0E0" stroke-width="0.3"/>
+    <line x1="49" y1="30" x2="49" y2="56" stroke="#E0E0E0" stroke-width="0.3"/>
+    <line x1="51" y1="30" x2="51" y2="56" stroke="#E0E0E0" stroke-width="0.3"/>
+    <rect x="45" y="28" width="8" height="3" fill="#ECEFF1"/>
+    <rect x="45" y="55" width="8" height="3" fill="#ECEFF1"/>
+  </g>
+  
+  <!-- Central dome -->
+  <ellipse cx="32" cy="10" rx="8" ry="5" fill="url(#domeBlue)"/>
+  <ellipse cx="32" cy="10" rx="6" ry="3" fill="#7986CB"/>
+  
+  <!-- Cupola -->
+  <rect x="30" y="4" width="4" height="6" fill="#5C6BC0"/>
+  <polygon points="30,4 34,4 32,0" fill="url(#goldDecor)"/>
+  <circle cx="32" cy="0" r="1.5" fill="#FFD54F"/>
+  
+  <!-- Foundation steps -->
+  <rect x="6" y="56" width="52" height="2" fill="#E0E0E0"/>
+  <rect x="4" y="58" width="56" height="2" fill="#BDBDBD"/>
+  <rect x="2" y="60" width="60" height="4" fill="#9E9E9E"/>
+  
+  <!-- Animated floating books/pages -->
+  <g>
+    <!-- Book 1 -->
+    <g>
+      <animate attributeName="opacity" values="0;1;1;0" dur="4s" repeatCount="indefinite"/>
+      <rect x="6" y="18" width="8" height="6" fill="#1565C0" rx="0.5">
+        <animate attributeName="y" values="18;8;18" dur="4s" repeatCount="indefinite"/>
+        <animate attributeName="x" values="6;10;6" dur="4s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="7" y="19" width="6" height="4" fill="#FAFAFA">
+        <animate attributeName="y" values="19;9;19" dur="4s" repeatCount="indefinite"/>
+        <animate attributeName="x" values="7;11;7" dur="4s" repeatCount="indefinite"/>
+      </rect>
+      <line x1="8" y1="20" x2="12" y2="20" stroke="#BDBDBD" stroke-width="0.3">
+        <animate attributeName="y1" values="20;10;20" dur="4s" repeatCount="indefinite"/>
+        <animate attributeName="y2" values="20;10;20" dur="4s" repeatCount="indefinite"/>
+      </line>
+    </g>
+    
+    <!-- Book 2 -->
+    <g>
+      <animate attributeName="opacity" values="0;1;1;0" dur="4.5s" repeatCount="indefinite" begin="1.5s"/>
+      <rect x="50" y="16" width="8" height="6" fill="#C62828" rx="0.5">
+        <animate attributeName="y" values="16;6;16" dur="4.5s" repeatCount="indefinite" begin="1.5s"/>
+        <animate attributeName="x" values="50;46;50" dur="4.5s" repeatCount="indefinite" begin="1.5s"/>
+      </rect>
+      <rect x="51" y="17" width="6" height="4" fill="#FAFAFA">
+        <animate attributeName="y" values="17;7;17" dur="4.5s" repeatCount="indefinite" begin="1.5s"/>
+        <animate attributeName="x" values="51;47;51" dur="4.5s" repeatCount="indefinite" begin="1.5s"/>
+      </rect>
+    </g>
+    
+    <!-- Paper/page -->
+    <rect x="26" y="4" width="5" height="4" rx="0.5" fill="#FAFAFA" stroke="#BDBDBD" stroke-width="0.3">
+      <animate attributeName="y" values="4;-4;4" dur="5s" repeatCount="indefinite" begin="0.5s"/>
+      <animate attributeName="opacity" values="0;0.9;0" dur="5s" repeatCount="indefinite" begin="0.5s"/>
+      <animateTransform attributeName="transform" type="rotate" values="0 28 6;-15 28 0;0 28 6" dur="5s" repeatCount="indefinite" begin="0.5s"/>
     </rect>
   </g>
   
-  <!-- Graduation cap on dome -->
+  <!-- Knowledge glow around dome -->
+  <circle cx="32" cy="8" r="12" fill="url(#knowledgeGlow)">
+    <animate attributeName="r" values="12;15;12" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.7;0.4" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Animated graduation cap on dome -->
   <g>
-    <polygon points="32,6 38,9 32,12 26,9" fill="#1A237E"/>
-    <rect x="31" y="4" width="2" height="3" fill="#FFD700"/>
-    <line x1="36" y1="9" x2="40" y2="14" stroke="#FFD700" stroke-width="1">
-      <animate attributeName="y2" values="14;16;14" dur="1s" repeatCount="indefinite"/>
+    <polygon points="32,2 40,6 32,10 24,6" fill="#1A237E"/>
+    <rect x="31" y="0" width="2" height="3" fill="url(#goldDecor)"/>
+    <line x1="38" y1="6" x2="44" y2="12" stroke="url(#goldDecor)" stroke-width="1.5">
+      <animate attributeName="y2" values="12;16;12" dur="1.2s" repeatCount="indefinite"/>
     </line>
-    <circle cx="40" cy="15" r="1.5" fill="#FFD700">
-      <animate attributeName="cy" values="15;17;15" dur="1s" repeatCount="indefinite"/>
+    <circle cx="44" cy="13" r="2" fill="url(#goldDecor)">
+      <animate attributeName="cy" values="13;17;13" dur="1.2s" repeatCount="indefinite"/>
     </circle>
   </g>
+  
+  <!-- Decorative urns -->
+  <ellipse cx="8" cy="56" rx="3" ry="1" fill="#9E9E9E"/>
+  <ellipse cx="8" cy="52" rx="2" ry="4" fill="#BDBDBD"/>
+  <ellipse cx="56" cy="56" rx="3" ry="1" fill="#9E9E9E"/>
+  <ellipse cx="56" cy="52" rx="2" ry="4" fill="#BDBDBD"/>
 </svg>

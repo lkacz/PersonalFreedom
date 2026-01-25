@@ -1,31 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Wonder - A magnificent grand castle with towers and magical aura -->
   <defs>
-    <linearGradient id="wonderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#9C27B0"/>
-      <stop offset="50%" style="stop-color:#E040FB"/>
-      <stop offset="100%" style="stop-color:#7B1FA2"/>
+    <linearGradient id="wonderWall" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ECEFF1"/>
+      <stop offset="30%" style="stop-color:#FAFAFA"/>
+      <stop offset="70%" style="stop-color:#FAFAFA"/>
+      <stop offset="100%" style="stop-color:#CFD8DC"/>
     </linearGradient>
-    <linearGradient id="goldWonder" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#FFD700"/>
-      <stop offset="100%" style="stop-color:#FFA000"/>
+    <linearGradient id="wonderRoof" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#1565C0"/>
+      <stop offset="50%" style="stop-color:#1976D2"/>
+      <stop offset="100%" style="stop-color:#42A5F5"/>
+    </linearGradient>
+    <linearGradient id="towerRoof" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#7B1FA2"/>
+      <stop offset="50%" style="stop-color:#9C27B0"/>
+      <stop offset="100%" style="stop-color:#BA68C8"/>
+    </linearGradient>
+    <linearGradient id="goldTrim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD54F"/>
+      <stop offset="50%" style="stop-color:#FFC107"/>
+      <stop offset="100%" style="stop-color:#FF8F00"/>
+    </linearGradient>
+    <radialGradient id="magicGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#E1BEE7" stop-opacity="0.8"/>
+      <stop offset="60%" style="stop-color:#CE93D8" stop-opacity="0.3"/>
+      <stop offset="100%" style="stop-color:#CE93D8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="starburstGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="30%" style="stop-color:#FFF9C4"/>
+      <stop offset="100%" style="stop-color:#FFF9C4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E3F2FD"/>
+      <stop offset="100%" style="stop-color:#BBDEFB"/>
     </linearGradient>
   </defs>
-  <!-- Central tower -->
-  <rect x="24" y="16" width="16" height="40" fill="url(#wonderGrad)" stroke="#4A148C" stroke-width="2"/>
-  <!-- Spire -->
-  <polygon points="32,4 26,16 38,16" fill="url(#goldWonder)"/>
-  <!-- Side towers -->
-  <rect x="8" y="28" width="12" height="28" fill="url(#wonderGrad)" stroke="#4A148C"/>
-  <polygon points="14,18 8,28 20,28" fill="url(#goldWonder)"/>
-  <rect x="44" y="28" width="12" height="28" fill="url(#wonderGrad)" stroke="#4A148C"/>
-  <polygon points="50,18 44,28 56,28" fill="url(#goldWonder)"/>
-  <!-- Magic glow -->
-  <ellipse cx="32" cy="30" rx="6" ry="6" fill="#E1BEE7" opacity="0.6"/>
-  <!-- Windows -->
-  <circle cx="32" cy="26" r="3" fill="#CE93D8"/>
-  <circle cx="32" cy="38" r="3" fill="#CE93D8"/>
-  <!-- Stars/sparkles -->
-  <circle cx="18" cy="14" r="2" fill="#FFD700"/>
-  <circle cx="46" cy="14" r="2" fill="#FFD700"/>
-  <circle cx="32" cy="8" r="1.5" fill="#FFFFFF"/>
+  
+  <!-- Sky background -->
+  <rect x="0" y="0" width="64" height="64" fill="url(#skyGradient)"/>
+  
+  <!-- Magical aura behind castle -->
+  <circle cx="32" cy="40" r="28" fill="url(#magicGlow)"/>
+  
+  <!-- Ground -->
+  <ellipse cx="32" cy="60" rx="30" ry="6" fill="#81C784"/>
+  <ellipse cx="32" cy="60" rx="26" ry="4" fill="#66BB6A"/>
+  
+  <!-- Main castle body -->
+  <rect x="18" y="32" width="28" height="28" fill="url(#wonderWall)"/>
+  
+  <!-- Main castle shadow face -->
+  <polygon points="18,32 18,60 14,58 14,34" fill="#B0BEC5"/>
+  
+  <!-- Castle stone texture -->
+  <line x1="18" y1="38" x2="46" y2="38" stroke="#CFD8DC" stroke-width="0.5"/>
+  <line x1="18" y1="44" x2="46" y2="44" stroke="#CFD8DC" stroke-width="0.5"/>
+  <line x1="18" y1="50" x2="46" y2="50" stroke="#CFD8DC" stroke-width="0.5"/>
+  
+  <!-- Grand entrance -->
+  <path d="M28 60 L28 46 Q32 42, 36 46 L36 60" fill="#5D4037"/>
+  <rect x="28" y="46" width="8" height="14" fill="none" stroke="#8D6E63" stroke-width="1"/>
+  <circle cx="34" cy="53" r="1" fill="url(#goldTrim)"/>
+  
+  <!-- Arched windows -->
+  <rect x="20" y="36" width="4" height="6" fill="#263238"/>
+  <path d="M20 36 Q22 34, 24 36" fill="#263238"/>
+  <rect x="40" y="36" width="4" height="6" fill="#263238"/>
+  <path d="M40 36 Q42 34, 44 36" fill="#263238"/>
+  
+  <!-- Left tower -->
+  <rect x="8" y="26" width="12" height="34" fill="url(#wonderWall)"/>
+  <polygon points="8,26 8,60 4,58 4,28" fill="#B0BEC5"/>
+  <polygon points="6,26 22,26 14,12" fill="url(#towerRoof)"/>
+  <polygon points="6,26 14,12 8,26" fill="#6A1B9A"/>
+  
+  <!-- Left tower flag -->
+  <line x1="14" y1="12" x2="14" y2="4" stroke="#5D4037" stroke-width="1"/>
+  <polygon points="14,4 14,8 20,6" fill="#E53935"/>
+  
+  <!-- Left tower windows -->
+  <rect x="11" y="34" width="4" height="5" fill="#263238"/>
+  <rect x="11" y="44" width="4" height="5" fill="#263238"/>
+  
+  <!-- Right tower -->
+  <rect x="44" y="26" width="12" height="34" fill="url(#wonderWall)"/>
+  <polygon points="42,26 58,26 50,12" fill="url(#towerRoof)"/>
+  <polygon points="42,26 50,12 44,26" fill="#6A1B9A"/>
+  
+  <!-- Right tower flag -->
+  <line x1="50" y1="12" x2="50" y2="4" stroke="#5D4037" stroke-width="1"/>
+  <polygon points="50,4 50,8 56,6" fill="#1976D2"/>
+  
+  <!-- Right tower windows -->
+  <rect x="49" y="34" width="4" height="5" fill="#263238"/>
+  <rect x="49" y="44" width="4" height="5" fill="#263238"/>
+  
+  <!-- Center tower (tallest) -->
+  <rect x="26" y="18" width="12" height="14" fill="url(#wonderWall)"/>
+  <polygon points="24,18 40,18 32,4" fill="url(#wonderRoof)"/>
+  <polygon points="24,18 32,4 26,18" fill="#0D47A1"/>
+  
+  <!-- Center tower spire -->
+  <line x1="32" y1="4" x2="32" y2="0" stroke="url(#goldTrim)" stroke-width="2"/>
+  <circle cx="32" cy="0" r="2" fill="url(#goldTrim)"/>
+  <circle cx="32" cy="0" r="2" fill="url(#starburstGlow)"/>
+  
+  <!-- Center tower window (rose window) -->
+  <circle cx="32" cy="24" r="4" fill="#263238"/>
+  <circle cx="32" cy="24" r="4" fill="none" stroke="url(#goldTrim)" stroke-width="0.5"/>
+  <line x1="32" y1="20" x2="32" y2="28" stroke="#455A64" stroke-width="0.5"/>
+  <line x1="28" y1="24" x2="36" y2="24" stroke="#455A64" stroke-width="0.5"/>
+  <circle cx="32" cy="24" r="2" fill="#4A148C" opacity="0.5"/>
+  
+  <!-- Golden trim decorations -->
+  <rect x="18" y="30" width="28" height="2" fill="url(#goldTrim)"/>
+  <rect x="8" y="24" width="12" height="2" fill="url(#goldTrim)"/>
+  <rect x="44" y="24" width="12" height="2" fill="url(#goldTrim)"/>
+  <rect x="26" y="16" width="12" height="2" fill="url(#goldTrim)"/>
+  
+  <!-- Battlements -->
+  <rect x="18" y="30" width="3" height="4" fill="url(#wonderWall)"/>
+  <rect x="24" y="30" width="3" height="4" fill="url(#wonderWall)"/>
+  <rect x="37" y="30" width="3" height="4" fill="url(#wonderWall)"/>
+  <rect x="43" y="30" width="3" height="4" fill="url(#wonderWall)"/>
+  
+  <!-- Sparkles around the wonder -->
+  <circle cx="6" cy="20" r="1.5" fill="url(#starburstGlow)"/>
+  <circle cx="58" cy="18" r="1.2" fill="url(#starburstGlow)"/>
+  <circle cx="10" cy="8" r="1" fill="#FFF9C4"/>
+  <circle cx="54" cy="8" r="0.8" fill="#FFF9C4"/>
+  <circle cx="4" cy="38" r="0.8" fill="#FFF9C4"/>
+  <circle cx="60" cy="36" r="1" fill="#FFF9C4"/>
+  
+  <!-- Magical particles -->
+  <polygon points="24,14 25,16 27,16 25.5,17.5 26,20 24,18.5 22,20 22.5,17.5 21,16 23,16" fill="#FFD54F"/>
+  <polygon points="40,16 40.5,17.5 42,17.5 41,18.5 41.5,20 40,19 38.5,20 39,18.5 38,17.5 39.5,17.5" fill="#FFC107"/>
+  
+  <!-- Clouds -->
+  <ellipse cx="8" cy="14" rx="6" ry="3" fill="#FFFFFF" opacity="0.7"/>
+  <ellipse cx="56" cy="10" rx="5" ry="2.5" fill="#FFFFFF" opacity="0.7"/>
+  
+  <!-- Garden bushes -->
+  <circle cx="10" cy="58" r="3" fill="#4CAF50"/>
+  <circle cx="54" cy="58" r="3" fill="#4CAF50"/>
+  <circle cx="12" cy="56" r="2" fill="#66BB6A"/>
+  <circle cx="52" cy="56" r="2" fill="#66BB6A"/>
 </svg>

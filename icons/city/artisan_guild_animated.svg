@@ -1,6 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Artisan Guild with painting/crafting animation -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Artisan Guild with painting/crafting animation - High Quality Version -->
   <defs>
+    <linearGradient id="guildWall" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#A1887F"/>
+      <stop offset="30%" style="stop-color:#BCAAA4"/>
+      <stop offset="70%" style="stop-color:#BCAAA4"/>
+      <stop offset="100%" style="stop-color:#8D6E63"/>
+    </linearGradient>
+    <linearGradient id="paletteWood" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D7CCC8"/>
+      <stop offset="50%" style="stop-color:#BCAAA4"/>
+      <stop offset="100%" style="stop-color:#A1887F"/>
+    </linearGradient>
+    <radialGradient id="creativityGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD54F" stop-opacity="0.6"/>
+      <stop offset="100%" style="stop-color:#FFD54F" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="awningStripes" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#E53935"/>
+      <stop offset="16%" style="stop-color:#E53935"/>
+      <stop offset="17%" style="stop-color:#FFEB3B"/>
+      <stop offset="33%" style="stop-color:#FFEB3B"/>
+      <stop offset="34%" style="stop-color:#43A047"/>
+      <stop offset="50%" style="stop-color:#43A047"/>
+      <stop offset="51%" style="stop-color:#1E88E5"/>
+      <stop offset="67%" style="stop-color:#1E88E5"/>
+      <stop offset="68%" style="stop-color:#8E24AA"/>
+      <stop offset="84%" style="stop-color:#8E24AA"/>
+      <stop offset="85%" style="stop-color:#E53935"/>
+      <stop offset="100%" style="stop-color:#E53935"/>
+    </linearGradient>
     <linearGradient id="rainbowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#FF6B6B"/>
       <stop offset="25%" style="stop-color:#FFE66D"/>
@@ -11,49 +40,104 @@
     </linearGradient>
   </defs>
   
-  <!-- Building -->
-  <rect x="8" y="24" width="48" height="32" fill="#8D6E63"/>
-  <polygon points="8,24 32,8 56,24" fill="#A1887F"/>
+  <!-- Main building -->
+  <rect x="6" y="26" width="52" height="34" fill="url(#guildWall)"/>
+  <polygon points="6,26 6,60 2,58 2,28" fill="#795548"/>
   
-  <!-- Decorative trim -->
-  <rect x="8" y="22" width="48" height="4" fill="#6D4C41"/>
+  <!-- Roof -->
+  <polygon points="4,26 60,26 32,10" fill="#8D6E63"/>
+  <polygon points="4,26 32,10 6,26" fill="#6D4C41"/>
   
-  <!-- Windows with colorful curtains -->
-  <rect x="14" y="32" width="10" height="12" fill="#E3F2FD"/>
-  <rect x="14" y="32" width="5" height="12" fill="#FFCDD2" opacity="0.7"/>
+  <!-- Colorful awning -->
+  <polygon points="4,28 60,28 58,34 6,34" fill="url(#awningStripes)"/>
+  <polygon points="4,28 6,34 6,28" fill="#C62828"/>
   
-  <rect x="40" y="32" width="10" height="12" fill="#E3F2FD"/>
-  <rect x="45" y="32" width="5" height="12" fill="#C8E6C9" opacity="0.7"/>
+  <!-- Awning scallops -->
+  <path d="M6 34 Q10 38, 14 34 Q18 38, 22 34 Q26 38, 30 34 Q34 38, 38 34 Q42 38, 46 34 Q50 38, 54 34 Q58 38, 58 34" fill="none" stroke="url(#awningStripes)" stroke-width="2"/>
   
-  <!-- Door -->
-  <rect x="26" y="36" width="12" height="20" fill="#5D4037"/>
-  <circle cx="35" cy="48" r="1.5" fill="#FFD700"/>
+  <!-- Left window with colorful curtains -->
+  <rect x="10" y="38" width="14" height="16" fill="#263238"/>
+  <rect x="10" y="38" width="14" height="16" stroke="#5D4037" stroke-width="1" fill="none"/>
+  <rect x="11" y="39" width="6" height="14" fill="#FFCDD2" opacity="0.8"/>
+  <rect x="17" y="39" width="6" height="14" fill="#C8E6C9" opacity="0.8"/>
+  <line x1="17" y1="38" x2="17" y2="54" stroke="#5D4037" stroke-width="0.5"/>
   
-  <!-- Palette sign with animated colors -->
-  <ellipse cx="32" cy="18" rx="8" ry="6" fill="#F5F5F5" stroke="#795548" stroke-width="1"/>
-  <circle cx="28" cy="16" r="2" fill="#FF6B6B">
-    <animate attributeName="fill" values="#FF6B6B;#FFE66D;#4ECDC4;#A78BFA;#FF6B6B" dur="4s" repeatCount="indefinite"/>
+  <!-- Right window with colorful curtains -->
+  <rect x="40" y="38" width="14" height="16" fill="#263238"/>
+  <rect x="40" y="38" width="14" height="16" stroke="#5D4037" stroke-width="1" fill="none"/>
+  <rect x="41" y="39" width="6" height="14" fill="#BBDEFB" opacity="0.8"/>
+  <rect x="47" y="39" width="6" height="14" fill="#E1BEE7" opacity="0.8"/>
+  <line x1="47" y1="38" x2="47" y2="54" stroke="#5D4037" stroke-width="0.5"/>
+  
+  <!-- Arched door -->
+  <rect x="26" y="42" width="12" height="18" fill="#5D4037"/>
+  <path d="M26 42 Q32 34, 38 42" fill="#5D4037"/>
+  <rect x="26" y="42" width="12" height="18" stroke="#4E342E" stroke-width="1" fill="none"/>
+  <path d="M26 42 Q32 34, 38 42" stroke="#4E342E" stroke-width="1" fill="none"/>
+  <circle cx="35" cy="52" r="1.5" fill="#FFC107"/>
+  <circle cx="35" cy="52" r="0.5" fill="#FF8F00"/>
+  
+  <!-- Hanging palette sign with animated colors -->
+  <line x1="32" y1="10" x2="32" y2="16" stroke="#5D4037" stroke-width="1"/>
+  <ellipse cx="32" cy="20" rx="10" ry="7" fill="url(#paletteWood)" stroke="#6D4C41" stroke-width="1"/>
+  <ellipse cx="36" cy="22" rx="2" ry="1.5" fill="#4E342E"/>
+  
+  <!-- Animated paint blobs on palette -->
+  <circle cx="26" cy="18" r="2.5" fill="#E53935">
+    <animate attributeName="fill" values="#E53935;#FFEB3B;#4ECDC4;#8E24AA;#E53935" dur="4s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="33" cy="15" r="2" fill="#4ECDC4">
-    <animate attributeName="fill" values="#4ECDC4;#A78BFA;#FF6B6B;#FFE66D;#4ECDC4" dur="4s" repeatCount="indefinite"/>
+  <circle cx="31" cy="16" r="2" fill="#1E88E5">
+    <animate attributeName="fill" values="#1E88E5;#E53935;#FFEB3B;#43A047;#1E88E5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
   </circle>
-  <circle cx="36" cy="18" r="2" fill="#FFE66D">
-    <animate attributeName="fill" values="#FFE66D;#FF6B6B;#A78BFA;#4ECDC4;#FFE66D" dur="4s" repeatCount="indefinite"/>
+  <circle cx="36" cy="17" r="2" fill="#FFEB3B">
+    <animate attributeName="fill" values="#FFEB3B;#43A047;#8E24AA;#E53935;#FFEB3B" dur="4s" repeatCount="indefinite" begin="1s"/>
+  </circle>
+  <circle cx="29" cy="22" r="1.5" fill="#43A047">
+    <animate attributeName="fill" values="#43A047;#8E24AA;#E53935;#1E88E5;#43A047" dur="4s" repeatCount="indefinite" begin="1.5s"/>
+  </circle>
+  <circle cx="34" cy="22" r="1.5" fill="#8E24AA">
+    <animate attributeName="fill" values="#8E24AA;#1E88E5;#43A047;#FFEB3B;#8E24AA" dur="4s" repeatCount="indefinite" begin="2s"/>
   </circle>
   
-  <!-- Paintbrush with stroke animation -->
+  <!-- Animated paintbrush -->
   <g>
-    <animateTransform attributeName="transform" type="rotate" values="0 50 30;10 50 30;0 50 30;-10 50 30;0 50 30" dur="2s" repeatCount="indefinite"/>
-    <rect x="48" y="22" width="2" height="14" fill="#795548"/>
-    <polygon points="47,22 51,22 49,16" fill="#E0E0E0"/>
-    <polygon points="47.5,18 50.5,18 49,14" fill="url(#rainbowGrad)"/>
+    <animateTransform attributeName="transform" type="rotate" values="0 52 26;15 52 26;0 52 26;-15 52 26;0 52 26" dur="2s" repeatCount="indefinite"/>
+    <rect x="50" y="16" width="3" height="16" fill="#8D6E63" rx="1"/>
+    <polygon points="49,16 54,16 51.5,8" fill="#D7CCC8"/>
+    <polygon points="49.5,12 53.5,12 51.5,6" fill="url(#rainbowGrad)"/>
   </g>
   
-  <!-- Floating sparkles -->
-  <circle cx="20" cy="28" r="1" fill="#FFD700">
-    <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+  <!-- Flower boxes under windows -->
+  <rect x="10" y="54" width="14" height="3" fill="#5D4037"/>
+  <circle cx="12" cy="53" r="2" fill="#F48FB1"/>
+  <circle cx="16" cy="52" r="2.5" fill="#EF5350"/>
+  <circle cx="20" cy="53" r="2" fill="#FFB74D"/>
+  <circle cx="13" cy="51" r="1.5" fill="#FFEB3B"/>
+  <circle cx="19" cy="51" r="1.5" fill="#CE93D8"/>
+  
+  <rect x="40" y="54" width="14" height="3" fill="#5D4037"/>
+  <circle cx="42" cy="53" r="2" fill="#81C784"/>
+  <circle cx="46" cy="52" r="2.5" fill="#64B5F6"/>
+  <circle cx="50" cy="53" r="2" fill="#BA68C8"/>
+  <circle cx="44" cy="51" r="1.5" fill="#4FC3F7"/>
+  <circle cx="52" cy="51" r="1.5" fill="#F48FB1"/>
+  
+  <!-- Creativity sparkles with animation -->
+  <circle cx="18" cy="30" r="8" fill="url(#creativityGlow)">
+    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="44" cy="26" r="1" fill="#FFD700">
+  <circle cx="46" cy="28" r="8" fill="url(#creativityGlow)">
+    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite" begin="1s"/>
+  </circle>
+  
+  <!-- Floating sparkles -->
+  <polygon points="14,26 15,28 17,28 15.5,29.5 16,32 14,30.5 12,32 12.5,29.5 11,28 13,28" fill="#FFD54F">
+    <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+  </polygon>
+  <polygon points="50,24 51,26 53,26 51.5,27.5 52,30 50,28.5 48,30 48.5,27.5 47,26 49,26" fill="#FFD54F">
     <animate attributeName="opacity" values="0;1;0" dur="2.3s" repeatCount="indefinite" begin="0.7s"/>
+  </polygon>
+  <circle cx="32" cy="6" r="1.5" fill="#FFEB3B">
+    <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite" begin="0.3s"/>
   </circle>
 </svg>
