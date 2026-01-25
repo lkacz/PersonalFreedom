@@ -16767,9 +16767,9 @@ class ADHDBusterTab(QtWidgets.QWidget):
         # Lucky Merge (below inventory)
         merge_group = QtWidgets.QGroupBox("🎲 Lucky Merge")
         merge_layout = QtWidgets.QHBoxLayout(merge_group)
-        warn_lbl = QtWidgets.QLabel("⚠️ 25% base success (items lost on fail!) • Cost: 50🪙")
-        warn_lbl.setStyleSheet("color: #d32f2f; font-size: 10px;")
-        merge_layout.addWidget(warn_lbl)
+        self.merge_warn_lbl = QtWidgets.QLabel("⚠️ 25% base success (items lost on fail!) • Cost: 50🪙")
+        self.merge_warn_lbl.setStyleSheet("color: #d32f2f; font-size: 10px;")
+        merge_layout.addWidget(self.merge_warn_lbl)
         self.merge_btn = QtWidgets.QPushButton("🎲 Merge Selected (0)")
         self.merge_btn.setEnabled(False)
         self.merge_btn.setToolTip("Combine items for a chance at a higher rarity item (costs 50 coins)")
@@ -17876,6 +17876,37 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 self.merge_btn.setEnabled(False)
                 self.merge_rate_lbl.setText(f"⚠️ {reason}")
             else:
+                # Calculate the discounted merge cost to check affordability
+                from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount, apply_coin_flat_reduction, get_entity_merge_perk_contributors
+                current_coins = self.blocker.adhd_buster.get("coins", 0)
+                discount_pct = calculate_merge_discount(items)
+                
+                # Get entity flat coin reduction
+                entity_perks = get_entity_merge_perk_contributors(self.blocker.adhd_buster)
+                entity_coin_flat = entity_perks.get("total_coin_discount", 0)
+                
+                # Calculate actual cost after discounts
+                base_cost = COIN_COSTS.get("merge_base", 50)
+                discounted_cost = apply_coin_flat_reduction(
+                    apply_coin_discount(base_cost, discount_pct),
+                    entity_coin_flat
+                )
+                
+                # Update cost warning label to show discounted price
+                if discounted_cost < base_cost:
+                    discount_info = f" (Base: {base_cost}🪙)"
+                    self.merge_warn_lbl.setText(f"⚠️ 25% base success (items lost on fail!) • Cost: {discounted_cost}🪙{discount_info}")
+                    self.merge_warn_lbl.setStyleSheet("color: #4caf50; font-size: 10px;")  # Green for discount
+                else:
+                    self.merge_warn_lbl.setText(f"⚠️ 25% base success (items lost on fail!) • Cost: {discounted_cost}🪙")
+                    self.merge_warn_lbl.setStyleSheet("color: #d32f2f; font-size: 10px;")  # Red for regular
+                
+                # Check if player can afford the merge
+                if current_coins < discounted_cost:
+                    self.merge_btn.setEnabled(False)
+                    self.merge_rate_lbl.setText(f"⚠️ Need {discounted_cost} coins (you have {current_coins})")
+                    return
+                
                 self.merge_btn.setEnabled(True)
                 
                 # Calculate merge luck from items being merged (not equipped gear)
@@ -17917,6 +17948,9 @@ class ADHDBusterTab(QtWidgets.QWidget):
         else:
             self.merge_btn.setEnabled(False)
             self.merge_rate_lbl.setText("Select 2+ items to merge")
+            # Reset cost label to base cost when no items selected
+            self.merge_warn_lbl.setText("⚠️ 25% base success (items lost on fail!) • Cost: 50🪙")
+            self.merge_warn_lbl.setStyleSheet("color: #d32f2f; font-size: 10px;")
 
     def _do_merge(self) -> None:
         if len(self.merge_selected) < 2:
