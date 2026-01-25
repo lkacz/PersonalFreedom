@@ -6071,7 +6071,9 @@ class SettingsTab(QtWidgets.QWidget):
                 from user_manager import UserManager
                 
                 um = UserManager(APP_DIR)
-                um.clear_last_user()
+                if not um.clear_last_user():
+                    show_error(self, "Error", "Could not clear user session.\nPlease try again or restart the application manually.")
+                    return
                 
                 # Save config before switching to ensure all changes are persisted
                 self.blocker.save_config()
@@ -6081,7 +6083,6 @@ class SettingsTab(QtWidgets.QWidget):
                 
                 # Restart app using a detached process
                 import subprocess
-                import os
                 
                 # Get the executable path
                 if getattr(sys, 'frozen', False):
@@ -6090,22 +6091,25 @@ class SettingsTab(QtWidgets.QWidget):
                     
                     # Use a batch script to delay restart, avoiding temp directory cleanup issues
                     # The delay allows the current process to fully exit before the new one starts
-                    import tempfile
+                    # Put batch file in APP_DIR to avoid temp cleanup issues
+                    batch_path = APP_DIR / "_restart.bat"
                     batch_content = f'''@echo off
 ping 127.0.0.1 -n 2 > nul
 start "" "{exe_path}"
 del "%~f0"
 '''
-                    # Create temp batch file
-                    with tempfile.NamedTemporaryFile(mode='w', suffix='.bat', delete=False) as f:
-                        f.write(batch_content)
-                        batch_path = f.name
+                    try:
+                        with open(batch_path, 'w', encoding='utf-8') as f:
+                            f.write(batch_content)
+                    except OSError as e:
+                        show_error(self, "Error", f"Could not create restart script: {e}")
+                        return
                     
                     # Run the batch file detached (it will delay and restart the app)
                     DETACHED_PROCESS = 0x00000008
                     CREATE_NO_WINDOW = 0x08000000
                     subprocess.Popen(
-                        ['cmd', '/c', batch_path],
+                        ['cmd', '/c', str(batch_path)],
                         creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW,
                         close_fds=True,
                     )
@@ -6114,7 +6118,11 @@ del "%~f0"
                     subprocess.Popen([sys.executable] + sys.argv)
                 
                 # Exit gracefully using Qt's quit to allow proper cleanup
-                self._force_quit = True
+                # Set _force_quit on main window so closeEvent doesn't minimize to tray
+                main_window = self.window()
+                if main_window:
+                    main_window._force_quit = True
+                    main_window._shutdown_recorded = True
                 QtWidgets.QApplication.instance().quit()
             except Exception as e:
                 show_error(self, "Error", f"Could not switch user: {e}")
@@ -19781,46 +19789,32 @@ class PrioritiesDialog(StyledDialog):
         if self.priority_list_layout is None:
             return
 
-        self._sync_ui_into_priorities()
-
-        # Clean up widgets
-        while self.priority_list_layout.count():
-            item = self.priority_list_layout.takeAt(0)
-            widget = item.widget()
-            if widget is not None:
-                widget.deleteLater()
-
-        self.title_edits = []
-        self.day_checks = []
-        self.planned_spins = []
-        self.strategic_checks = []
-
-        for i in range(len(self.priorities)):
-            self._create_priority_row(i)
+        # Ensure only one strategic priority is marked
+        strategic_seen = False
         for priority in self.priorities:
             if priority.get("strategic") and not strategic_seen:
                 strategic_seen = True
             else:
                 priority["strategic"] = False
 
-        if self.strategic_group is not None:
-            self.strategic_group.deleteLater()
-        self.strategic_group = QtWidgets.QButtonGroup(self)
-        self.strategic_group.setExclusive(True)
-
+        # Clean up existing widgets
         while self.priority_list_layout.count():
             item = self.priority_list_layout.takeAt(0)
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
 
+        # Reset widget tracking lists
         self.title_edits = []
         self.day_checks = []
         self.planned_spins = []
+        self.strategic_checks = []
 
+        # Ensure at least one priority exists
         if not self.priorities:
             self.priorities.append(self._empty_priority())
 
+        # Create row widgets for each priority
         for idx in range(len(self.priorities)):
             self._create_priority_row(idx)
 
@@ -24159,7 +24153,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 from user_manager import UserManager
                 
                 um = UserManager(APP_DIR)
-                um.clear_last_user()
+                if not um.clear_last_user():
+                    show_error(self, "Error", "Could not clear user session.\nPlease try again or restart the application manually.")
+                    return
                 
                 # Save config before switching to ensure all changes are persisted
                 self.blocker.save_config()
@@ -24176,22 +24172,26 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                     exe_path = sys.executable
                     
                     # Use a batch script to delay restart
-                    import tempfile
+                    # Put batch file in APP_DIR to avoid temp cleanup issues
+                    from core_logic import APP_DIR
+                    batch_path = APP_DIR / "_restart.bat"
                     batch_content = f'''@echo off
 ping 127.0.0.1 -n 2 > nul
 start "" "{exe_path}"
 del "%~f0"
 '''
-                    # Create temp batch file
-                    with tempfile.NamedTemporaryFile(mode='w', suffix='.bat', delete=False) as f:
-                        f.write(batch_content)
-                        batch_path = f.name
+                    try:
+                        with open(batch_path, 'w', encoding='utf-8') as f:
+                            f.write(batch_content)
+                    except OSError as e:
+                        show_error(self, "Error", f"Could not create restart script: {e}")
+                        return
                     
                     # Run the batch file detached
                     DETACHED_PROCESS = 0x00000008
                     CREATE_NO_WINDOW = 0x08000000
                     subprocess.Popen(
-                        ['cmd', '/c', batch_path],
+                        ['cmd', '/c', str(batch_path)],
                         creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW,
                         close_fds=True,
                     )
@@ -24200,6 +24200,8 @@ del "%~f0"
                     subprocess.Popen([sys.executable] + sys.argv)
                 
                 # Exit gracefully using Qt's quit
+                # Set both flags so closeEvent properly exits instead of minimizing to tray
+                self._force_quit = True
                 self._shutdown_recorded = True
                 QtWidgets.QApplication.instance().quit()
             except Exception as e:
@@ -25005,8 +25007,10 @@ del "%~f0"
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """Handle window close - minimize to tray if enabled, else prompt/close."""
+        force_quit = getattr(self, '_force_quit', False)
+        
         # If minimize_to_tray is enabled and tray is available, hide to tray instead of closing
-        if self.minimize_to_tray and self.tray_icon and not getattr(self, '_force_quit', False):
+        if self.minimize_to_tray and self.tray_icon and not force_quit:
             event.ignore()
             self._hide_to_tray()
             return
@@ -25028,6 +25032,15 @@ del "%~f0"
             self.tray_update_timer.stop()
         if hasattr(self, '_health_reminder_timer') and self._health_reminder_timer:
             self._health_reminder_timer.stop()
+
+        # Skip session checks if force_quit is set (e.g., user switch already confirmed)
+        if force_quit:
+            # Force stop any running session without prompts
+            if self.timer_tab.timer_running:
+                self.timer_tab._force_stop_session()
+            event.accept()
+            QtWidgets.QApplication.instance().quit()
+            return
 
         if self.timer_tab.timer_running:
             # For Hardcore mode, require solving the challenge to exit
