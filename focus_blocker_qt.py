@@ -559,6 +559,10 @@ get_hydration_stats = None
 HYDRATION_MIN_INTERVAL_HOURS = 2
 HYDRATION_MAX_DAILY_GLASSES = 5
 
+# City Building System (optional feature)
+CITY_AVAILABLE = False
+CityTab = None
+
 
 def load_heavy_modules():
     """Load heavy modules at startup."""
@@ -566,6 +570,7 @@ def load_heavy_modules():
     global GOALS_PATH, STATS_PATH, BYPASS_LOGGER_AVAILABLE
     global ProductivityAnalyzer, GamificationEngine, FocusGoals
     global GAMIFICATION_AVAILABLE, RARITY_POWER, ITEM_THEMES, get_item_themes
+    global CITY_AVAILABLE, CityTab
     global get_diary_power_tier, calculate_character_power, get_power_breakdown
     global calculate_rarity_bonuses, calculate_merge_success_rate, get_merge_result_rarity
     global perform_lucky_merge, is_merge_worthwhile, generate_diary_entry
