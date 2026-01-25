@@ -138,15 +138,15 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
     "library": {
         "id": "library",
         "name": "📚 Library",
-        "description": "Ancient tomes grant wisdom and experience bonuses.",
+        "description": "Ancient tomes reveal knowledge. Bonus XP from all activities.",
         "tier": 3,
         "requirements": {
             "water": 20,
             "materials": 30,
             "activity": 10,
-            "focus": 40,  # Heavy focus requirement
+            "focus": 50,  # Heavy focus requirement
         },
-        "completion_reward": {"coins": 100, "xp": 500},
+        "completion_reward": {"coins": 200, "xp": 500},
         "effect": {
             "type": "xp_bonus",
             "bonus_percent": 5,  # +5% XP from all sources
@@ -161,22 +161,22 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
     "market": {
         "id": "market",
         "name": "🏪 Market",
-        "description": "Bustling trade hub reduces costs across the kingdom.",
+        "description": "Bustling trade means better prices. Reduces coin costs.",
         "tier": 3,
         "requirements": {
-            "water": 25,
-            "materials": 25,
-            "activity": 25,
-            "focus": 25,  # Balanced requirements
+            "water": 30,
+            "materials": 40,
+            "activity": 20,
+            "focus": 25,
         },
-        "completion_reward": {"coins": 200, "xp": 350},
+        "completion_reward": {"coins": 300, "xp": 350},
         "effect": {
             "type": "coin_discount",
             "discount_percent": 5,  # -5% coin costs
         },
         "max_level": 5,
         "level_scaling": {
-            "discount_percent": 2,  # +2% per level (L5 = -13% costs)
+            "discount_percent": 3,  # +3% per level (L5 = -17% costs)
         },
         "visual": "market",
     },
@@ -187,22 +187,22 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
     "royal_mint": {
         "id": "royal_mint",
         "name": "🏛️ Royal Mint",
-        "description": "The kingdom's treasury. Generates substantial passive income.",
+        "description": "The economic heart of your city. Massive passive income.",
         "tier": 4,
         "requirements": {
-            "water": 50,
-            "materials": 80,
-            "activity": 30,
-            "focus": 40,
+            "water": 60,
+            "materials": 100,
+            "activity": 40,
+            "focus": 60,
         },
-        "completion_reward": {"coins": 500, "xp": 750},
+        "completion_reward": {"coins": 1000, "xp": 750},
         "effect": {
             "type": "passive_income",
-            "coins_per_hour": 5,  # +5 coins/hour = 120 coins/day
+            "coins_per_hour": 5,  # +5 coins/hour = 120/day
         },
-        "max_level": 5,
+        "max_level": 10,
         "level_scaling": {
-            "coins_per_hour": 3,  # +3/hour per level (L5 = 17 coins/hour = 408/day)
+            "coins_per_hour": 2,  # +2/hour per level (L10 = 23 coins/hour = 552/day)
         },
         "visual": "royal_mint",
     },
@@ -210,13 +210,13 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
     "observatory": {
         "id": "observatory",
         "name": "🔭 Observatory",
-        "description": "Star gazers predict entity movements, increasing encounter rates.",
+        "description": "Stars reveal secrets. Increases entity encounter rate.",
         "tier": 4,
         "requirements": {
             "water": 40,
             "materials": 60,
             "activity": 20,
-            "focus": 80,  # Heavy focus requirement
+            "focus": 100,  # Heavy focus requirement
         },
         "completion_reward": {"coins": 500, "xp": 1000},
         "effect": {
