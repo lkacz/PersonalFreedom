@@ -56,6 +56,40 @@ try:
 except ImportError as e:
     _logger.warning(f"City module not available: {e}")
     CITY_AVAILABLE = False
+    
+    # Fallback definitions when city module not available
+    from enum import Enum
+    class CellStatus(str, Enum):
+        EMPTY = "empty"
+        PLACED = "placed"
+        BUILDING = "building"
+        COMPLETE = "complete"
+    
+    CITY_BUILDINGS = {}
+    GRID_ROWS = 5
+    GRID_COLS = 5
+    RESOURCE_TYPES = ["water", "materials", "activity", "focus"]
+    
+    # Stub functions that do nothing
+    def get_city_data(adhd_buster): return {"grid": [[None]*5 for _ in range(5)], "resources": {}}
+    def get_city_bonuses(adhd_buster): return {}
+    def add_city_resource(adhd_buster, res, amt): return 0
+    def get_resources(adhd_buster): return {}
+    def can_place_building(adhd_buster, bid): return (False, "City system not available")
+    def place_building(adhd_buster, r, c, bid): return False
+    def remove_building(adhd_buster, r, c): return None
+    def invest_resources(adhd_buster, r, c, inv): return {}
+    def collect_city_income(adhd_buster): return {}
+    def get_pending_income(adhd_buster): return {}
+    def get_max_building_slots(level): return 0
+    def get_available_slots(adhd_buster): return 0
+    def get_next_slot_unlock(adhd_buster): return {}
+    def get_placed_buildings(adhd_buster): return []
+    def get_construction_progress(adhd_buster, r, c): return {}
+    def can_upgrade(adhd_buster, r, c): return (False, "City system not available")
+    def start_upgrade(adhd_buster, r, c): return False
+    def get_all_synergy_bonuses(adhd_buster): return {}
+    def get_synergy_display_info(adhd_buster): return []
 
 
 # ============================================================================
@@ -64,12 +98,12 @@ except ImportError as e:
 
 CITY_ICONS_PATH = get_app_dir() / "icons" / "city"
 
-# Cell status colors
+# Cell status colors (CellStatus is always defined via import or fallback)
 STATUS_COLORS = {
-    CellStatus.EMPTY.value if CITY_AVAILABLE else "empty": "#2A2A3A",      # Dark empty
-    CellStatus.PLACED.value if CITY_AVAILABLE else "placed": "#3A3A5A",    # Slightly lit (just placed)
-    CellStatus.BUILDING.value if CITY_AVAILABLE else "building": "#4A4A6A", # Under construction
-    CellStatus.COMPLETE.value if CITY_AVAILABLE else "complete": "#1A4A2A", # Green complete
+    CellStatus.EMPTY.value: "#2A2A3A",      # Dark empty
+    CellStatus.PLACED.value: "#3A3A5A",     # Slightly lit (just placed)
+    CellStatus.BUILDING.value: "#4A4A6A",   # Under construction
+    CellStatus.COMPLETE.value: "#1A4A2A",   # Green complete
 }
 
 # Resource icons (emoji fallback)
@@ -188,7 +222,9 @@ class CityCell(QtWidgets.QFrame):
         
         # Set building icon
         if building_def:
-            icon_char = building_def.get("visual", {}).get("icon", "🏛️")
+            # Icon emoji is at the start of name field (e.g. "⛏️ Goldmine")
+            name = building_def.get("name", "🏛️")
+            icon_char = name.split()[0] if name else "🏛️"
             self.icon_label.setText(icon_char)
             self.icon_label.setStyleSheet("font-size: 28px; background: transparent;")
             
@@ -235,6 +271,9 @@ class CityCell(QtWidgets.QFrame):
             """)
         else:
             self.progress_bar.hide()
+        
+        # Update tooltip
+        self.setToolTip(self.get_tooltip_text())
     
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         if event.button() == QtCore.Qt.LeftButton:
@@ -514,8 +553,9 @@ class BuildingPickerDialog(StyledDialog):
         layout = QtWidgets.QHBoxLayout(card)
         layout.setSpacing(12)
         
-        # Icon
-        icon = building.get("visual", {}).get("icon", "🏛️")
+        # Icon (extract emoji from start of name)
+        name = building.get("name", "🏛️")
+        icon = name.split()[0] if name else "🏛️"
         icon_label = QtWidgets.QLabel(icon)
         icon_label.setStyleSheet("font-size: 32px;")
         icon_label.setFixedWidth(50)
@@ -570,6 +610,9 @@ class BuildingPickerDialog(StyledDialog):
         self.place_btn.setEnabled(True)
         
         # Update visual selection (highlight selected card)
+        # Cache placed buildings to avoid repeated calls
+        placed_buildings = get_placed_buildings(self.adhd_buster)
+        
         for child in self.findChildren(QtWidgets.QFrame):
             if child.property("building_id") == building_id:
                 child.setStyleSheet("""
@@ -582,14 +625,16 @@ class BuildingPickerDialog(StyledDialog):
                 """)
             elif child.property("building_id"):
                 # Reset others
-                can, _ = can_place_building(self.adhd_buster, child.property("building_id"))
-                placed = child.property("building_id") in get_placed_buildings(self.adhd_buster)
-                if placed:
+                bid = child.property("building_id")
+                is_placed = bid in placed_buildings
+                if is_placed:
                     child.setStyleSheet("QFrame { background: #2A2A3A; border: 1px solid #555; border-radius: 8px; padding: 8px; }")
-                elif can:
-                    child.setStyleSheet("QFrame { background: #1A3A2A; border: 1px solid #4CAF50; border-radius: 8px; padding: 8px; }")
                 else:
-                    child.setStyleSheet("QFrame { background: #2A2A3A; border: 1px solid #444; border-radius: 8px; padding: 8px; }")
+                    can, _ = can_place_building(self.adhd_buster, bid)
+                    if can:
+                        child.setStyleSheet("QFrame { background: #1A3A2A; border: 1px solid #4CAF50; border-radius: 8px; padding: 8px; }")
+                    else:
+                        child.setStyleSheet("QFrame { background: #2A2A3A; border: 1px solid #444; border-radius: 8px; padding: 8px; }")
     
     def _on_place(self):
         """Handle place button click."""
@@ -618,9 +663,22 @@ class ConstructionDialog(StyledDialog):
         self.investment = {res: 0 for res in RESOURCE_TYPES}
         
         city = get_city_data(adhd_buster)
-        cell_state = city["grid"][row][col]
-        self.building_id = cell_state["building_id"]
-        self.building = CITY_BUILDINGS.get(self.building_id, {})
+        grid = city.get("grid", [])
+        
+        # Bounds check for grid access
+        if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+            _logger.warning(f"Invalid grid cell: ({row}, {col})")
+            self.building_id = ""
+            self.building = {}
+        else:
+            cell_state = grid[row][col]
+            if cell_state is None:
+                _logger.warning(f"Empty cell at ({row}, {col})")
+                self.building_id = ""
+                self.building = {}
+            else:
+                self.building_id = cell_state.get("building_id", "")
+                self.building = CITY_BUILDINGS.get(self.building_id, {})
         
         super().__init__(
             parent=parent,
@@ -632,10 +690,27 @@ class ConstructionDialog(StyledDialog):
     
     def _build_content(self, content_layout: QtWidgets.QVBoxLayout):
         """Build the construction investment UI."""
+        # Guard against empty building
+        if not self.building_id or not self.building:
+            error_label = QtWidgets.QLabel("⚠️ Building data not found")
+            error_label.setStyleSheet("color: #F44336; font-size: 14px;")
+            content_layout.addWidget(error_label)
+            close_btn = QtWidgets.QPushButton("Close")
+            close_btn.clicked.connect(self.accept)
+            content_layout.addWidget(close_btn)
+            return
+        
         from city import get_level_requirements
         
         city = get_city_data(self.adhd_buster)
-        cell = city["grid"][self.row][self.col]
+        grid = city.get("grid", [])
+        
+        # Safe grid access with defaults
+        if self.row < len(grid) and self.col < len(grid[self.row]) and grid[self.row][self.col]:
+            cell = grid[self.row][self.col]
+        else:
+            cell = {"level": 1, "construction_progress": {}}
+        
         level = cell.get("level", 1)
         progress = cell.get("construction_progress", {})
         
@@ -832,21 +907,39 @@ class BuildingDetailsDialog(StyledDialog):
         self.col = col
         
         city = get_city_data(adhd_buster)
-        cell_state = city["grid"][row][col]
-        self.building_id = cell_state["building_id"]
-        self.building = CITY_BUILDINGS.get(self.building_id, {})
-        self.cell_state = cell_state
+        grid = city.get("grid", [])
+        
+        # Bounds check for grid access
+        if row < len(grid) and col < len(grid[row]) and grid[row][col] is not None:
+            self.cell_state = grid[row][col]
+            self.building_id = self.cell_state.get("building_id", "")
+            self.building = CITY_BUILDINGS.get(self.building_id, {})
+        else:
+            _logger.warning(f"Invalid or empty cell at ({row}, {col})")
+            self.cell_state = {"level": 1, "status": ""}
+            self.building_id = ""
+            self.building = {}
         
         super().__init__(
             parent=parent,
             title=self.building.get("name", "Building"),
-            header_icon=self.building.get("visual", {}).get("icon", "🏛️"),
+            header_icon=self.building.get("name", "🏛️").split()[0] if self.building.get("name") else "🏛️",
             min_width=400,
             max_width=500,
         )
     
     def _build_content(self, content_layout: QtWidgets.QVBoxLayout):
         """Build the building details UI."""
+        # Guard against empty building
+        if not self.building_id or not self.building:
+            error_label = QtWidgets.QLabel("⚠️ Building data not found")
+            error_label.setStyleSheet("color: #F44336; font-size: 14px;")
+            content_layout.addWidget(error_label)
+            close_btn = QtWidgets.QPushButton("Close")
+            close_btn.clicked.connect(self.accept)
+            content_layout.addWidget(close_btn)
+            return
+        
         level = self.cell_state.get("level", 1)
         max_level = self.building.get("max_level", 5)
         
@@ -992,6 +1085,12 @@ class BuildingDetailsDialog(StyledDialog):
                 f"Upgrading {self.building.get('name')}!\n\nInvest resources to complete."
             )
             self.accept()
+        else:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Upgrade Failed",
+                f"Could not start upgrade for {self.building.get('name')}.\n\nPlease try again."
+            )
     
     def _demolish(self):
         """Demolish the building."""
@@ -1005,7 +1104,10 @@ class BuildingDetailsDialog(StyledDialog):
         )
         
         if reply == QtWidgets.QMessageBox.Yes:
-            remove_building(self.adhd_buster, self.row, self.col)
+            removed = remove_building(self.adhd_buster, self.row, self.col)
+            if removed:
+                # Parent will handle save via _on_cell_clicked
+                pass
             self.accept()
 
 
@@ -1118,54 +1220,73 @@ class CityTab(QtWidgets.QWidget):
             self.info_panel.setText("City system not available")
             return
         
-        city = get_city_data(self.adhd_buster)
-        
-        # Update grid
-        self.city_grid.update_grid(city)
-        
-        # Update resources
-        resources = get_resources(self.adhd_buster)
-        self.resource_bar.update_resources(resources)
-        
-        # Update slots display
-        placed = len(get_placed_buildings(self.adhd_buster))
-        from gamification import get_level_from_xp
-        level = get_level_from_xp(self.adhd_buster.get("total_xp", 0))[0]
-        max_slots = get_max_building_slots(level)
-        self.slots_label.setText(f"🏠 {placed}/{max_slots} Buildings")
-        
-        # Update pending income
-        pending = get_pending_income(self.adhd_buster)
-        if pending.get("coins", 0) > 0:
-            self.info_panel.setText(
-                f"⏰ Pending income: {pending['coins']} coins ({pending['hours_elapsed']:.1f}h)"
-            )
-        else:
-            self.info_panel.setText("Click an empty cell to place a building")
+        try:
+            city = get_city_data(self.adhd_buster)
+            
+            # Update grid
+            self.city_grid.update_grid(city)
+            
+            # Update resources
+            resources = get_resources(self.adhd_buster)
+            self.resource_bar.update_resources(resources)
+            
+            # Update slots display
+            placed = len(get_placed_buildings(self.adhd_buster))
+            from gamification import get_level_from_xp
+            level = get_level_from_xp(self.adhd_buster.get("total_xp", 0))[0]
+            max_slots = get_max_building_slots(level)
+            self.slots_label.setText(f"🏠 {placed}/{max_slots} Buildings")
+            
+            # Update pending income
+            pending = get_pending_income(self.adhd_buster)
+            if pending.get("coins", 0) > 0:
+                self.info_panel.setText(
+                    f"⏰ Pending income: {pending['coins']} coins ({pending['hours_elapsed']:.1f}h)"
+                )
+            else:
+                self.info_panel.setText("Click an empty cell to place a building")
+        except Exception as e:
+            _logger.exception("Error refreshing city display")
+            self.info_panel.setText(f"⚠️ Display error: {e}")
     
     def _on_cell_clicked(self, row: int, col: int):
         """Handle cell click."""
         if not CITY_AVAILABLE:
             return
         
-        city = get_city_data(self.adhd_buster)
-        cell = city["grid"][row][col]
+        try:
+            city = get_city_data(self.adhd_buster)
+            grid = city.get("grid", [])
+            
+            # Bounds check
+            if row >= len(grid) or col >= (len(grid[row]) if row < len(grid) else 0):
+                _logger.warning(f"Cell click out of bounds: ({row}, {col})")
+                return
+            
+            cell = grid[row][col]
+        except Exception as e:
+            _logger.exception(f"Error accessing grid at ({row}, {col})")
+            return
         
-        if cell is None:
-            # Empty cell - show building picker
-            dialog = BuildingPickerDialog(self.adhd_buster, self)
-            dialog.building_selected.connect(lambda bid: self._place_building(row, col, bid))
-            dialog.exec()
-        else:
-            status = cell.get("status", "")
-            if status == CellStatus.COMPLETE.value:
-                # Show building details
-                dialog = BuildingDetailsDialog(self.adhd_buster, row, col, self)
+        try:
+            if cell is None:
+                # Empty cell - show building picker
+                dialog = BuildingPickerDialog(self.adhd_buster, self)
+                dialog.building_selected.connect(lambda bid: self._place_building(row, col, bid))
                 dialog.exec()
             else:
-                # Under construction - show construction dialog
-                dialog = ConstructionDialog(self.adhd_buster, row, col, self)
-                dialog.exec()
+                status = cell.get("status", "")
+                if status == CellStatus.COMPLETE.value:
+                    # Show building details
+                    dialog = BuildingDetailsDialog(self.adhd_buster, row, col, self)
+                    dialog.exec()
+                else:
+                    # Under construction - show construction dialog
+                    dialog = ConstructionDialog(self.adhd_buster, row, col, self)
+                    dialog.exec()
+        except Exception as e:
+            _logger.exception(f"Error handling cell click at ({row}, {col})")
+            self.info_panel.setText(f"⚠️ Error: {e}")
         
         self._refresh_city()
         self.request_save.emit()
@@ -1185,13 +1306,17 @@ class CityTab(QtWidgets.QWidget):
         if not CITY_AVAILABLE:
             return
         
-        result = collect_city_income(self.adhd_buster)
-        coins = result.get("coins", 0)
-        
-        if coins > 0:
-            self.info_panel.setText(f"💰 Collected {coins} coins!")
-        else:
-            self.info_panel.setText("No income to collect yet")
+        try:
+            result = collect_city_income(self.adhd_buster)
+            coins = result.get("coins", 0)
+            
+            if coins > 0:
+                self.info_panel.setText(f"💰 Collected {coins} coins!")
+            else:
+                self.info_panel.setText("No income to collect yet")
+        except Exception as e:
+            _logger.exception("Error collecting city income")
+            self.info_panel.setText(f"⚠️ Collection error: {e}")
         
         self._refresh_city()
         self.request_save.emit()
