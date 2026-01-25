@@ -7991,12 +7991,12 @@ UNDERDOG_DECISIONS = {
             "A": {
                 "label": "⚖️ Total Justice",
                 "short": "ruthless",
-                "description": "Destroy his career completely. He earned it.",
+                "description": "Expose everything. End his career. Make him pay for every person he hurt.",
             },
             "B": {
                 "label": "🕊️ Graceful Victory",
                 "short": "mercy",
-                "description": "Win, but leave him standing. Be better.",
+                "description": "Report the facts, but don't pile on. Let him resign quietly with some dignity.",
             },
         },
     },

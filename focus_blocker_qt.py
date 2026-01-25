@@ -2695,6 +2695,7 @@ class TimerTab(QtWidgets.QWidget):
             parent=self.window()
         )
         lottery_dialog.exec()
+        lottery_dialog.deleteLater()  # Ensure dialog is cleaned up
 
         # Ensure item has all required fields
         if "obtained_at" not in item:
@@ -2763,9 +2764,10 @@ class TimerTab(QtWidgets.QWidget):
             }
             # Use fullscreen mode for multi-level gains
             fullscreen = (new_level - old_level) > 1
-            dialog = EnhancedLevelUpDialog(old_level, new_level, stats, fullscreen, self.window())
-            dialog.view_stats.connect(self._show_stats_dialog)
-            dialog.exec()
+            levelup_dialog = EnhancedLevelUpDialog(old_level, new_level, stats, fullscreen, self.window())
+            levelup_dialog.view_stats.connect(self._show_stats_dialog)
+            levelup_dialog.exec()
+            levelup_dialog.deleteLater()  # Ensure dialog is cleaned up
 
         # Show unified item reward dialog with comparison
         # Use equipped_item_before which was captured before the item was auto-equipped
@@ -2785,7 +2787,7 @@ class TimerTab(QtWidgets.QWidget):
         except Exception as e:
             logger.debug(f"Could not get entity luck perk contributors: {e}")
         
-        dialog = ItemRewardDialog(
+        reward_dialog = ItemRewardDialog(
             parent=self.window(),
             source_label=f"Focus Session: {session_minutes} min" + (f" • {streak} day streak 🔥" if streak > 0 else ""),
             items_earned=[item],
@@ -2796,7 +2798,8 @@ class TimerTab(QtWidgets.QWidget):
             streak_days=streak,
             entity_perk_contributors=entity_perk_contributors,
         )
-        dialog.exec()
+        reward_dialog.exec()
+        reward_dialog.deleteLater()  # Ensure dialog is cleaned up
         
         # Note: UI updates are now handled automatically via GameState signals
         # The game_state.end_batch() above triggers power_changed, coins_changed,
@@ -2808,7 +2811,9 @@ class TimerTab(QtWidgets.QWidget):
 
         # Show diary entry reveal
         if diary_entry:
-            DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes, self.window()).exec()
+            diary_dialog = DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes, self.window())
+            diary_dialog.exec()
+            diary_dialog.deleteLater()  # Ensure dialog is cleaned up
 
     def _get_notify_mode(self) -> str:
         """Get the current notification mode from dropdown."""
@@ -3491,44 +3496,48 @@ class TimerTab(QtWidgets.QWidget):
             for p in self.blocker.priorities
         )
         if has_priorities:
-            PriorityTimeLogDialog(self.blocker, session_minutes, self.window()).exec()
+            priority_dialog = PriorityTimeLogDialog(self.blocker, session_minutes, self.window())
+            priority_dialog.exec()
+            priority_dialog.deleteLater()  # Ensure dialog is cleaned up
 
     def _show_log_past_session_dialog(self) -> None:
         """Show dialog to log a past focus session retroactively."""
         dialog = LogPastSessionDialog(self.blocker, parent=self.window())
-        if dialog.exec() == QtWidgets.QDialog.Accepted:
-            session_minutes = dialog.get_session_minutes()
-            if session_minutes > 0:
-                # Update stats for the past session
-                self.blocker.update_stats(session_minutes * 60, completed=True)
-                self.blocker.save_stats()
-                
-                # Notify GameState of focus time change
-                try:
-                    from game_state import get_game_state
-                    game_state = get_game_state()
-                    if game_state:
-                        game_state.notify_focus_time_changed()
-                except Exception:
-                    pass
-                
-                # Give rewards (same as a normal session)
-                self._give_session_rewards(session_minutes)
-                
-                # Show priority time log dialog
-                self._show_priority_time_log(session_minutes)
-                
-                # Emit session complete signal
-                self.session_complete.emit(session_minutes * 60)
-                
-                self.status_label.setText(f"✅ Logged {session_minutes} min session")
-                self.status_label.setStyleSheet("""
-                    font-size: 16px;
-                    font-weight: bold;
-                    color: #00b894;
-                    background: transparent;
-                    padding: 5px;
-                """)
+        result = dialog.exec()
+        session_minutes = dialog.get_session_minutes() if result == QtWidgets.QDialog.Accepted else 0
+        dialog.deleteLater()  # Ensure dialog is cleaned up
+        
+        if result == QtWidgets.QDialog.Accepted and session_minutes > 0:
+            # Update stats for the past session
+            self.blocker.update_stats(session_minutes * 60, completed=True)
+            self.blocker.save_stats()
+            
+            # Notify GameState of focus time change
+            try:
+                from game_state import get_game_state
+                game_state = get_game_state()
+                if game_state:
+                    game_state.notify_focus_time_changed()
+            except Exception:
+                pass
+            
+            # Give rewards (same as a normal session)
+            self._give_session_rewards(session_minutes)
+            
+            # Show priority time log dialog
+            self._show_priority_time_log(session_minutes)
+            
+            # Emit session complete signal
+            self.session_complete.emit(session_minutes * 60)
+            
+            self.status_label.setText(f"✅ Logged {session_minutes} min session")
+            self.status_label.setStyleSheet("""
+                font-size: 16px;
+                font-weight: bold;
+                color: #00b894;
+                background: transparent;
+                padding: 5px;
+            """)
 
     def _handle_pomodoro_complete(self, elapsed: int) -> None:
         """Handle Pomodoro work/break cycle transitions."""
@@ -22540,6 +22549,155 @@ class DevTab(QtWidgets.QWidget):
         # Initial population of entity list
         QtCore.QTimer.singleShot(100, self._refresh_entity_lock_list)
 
+        # ================================================================
+        # CITY SYSTEM CONTROLS
+        # ================================================================
+        city_group = QtWidgets.QGroupBox("🏰 City System Controls")
+        city_layout = QtWidgets.QVBoxLayout(city_group)
+        
+        # Resources Section
+        resources_label = QtWidgets.QLabel("📦 Resources")
+        resources_label.setStyleSheet("font-weight: bold; color: #FFD700; font-size: 12px;")
+        city_layout.addWidget(resources_label)
+        
+        # Resource add buttons
+        resource_btn_layout = QtWidgets.QHBoxLayout()
+        resource_info = [
+            ("💧 Water", "water", "#2196f3"),
+            ("🧱 Materials", "materials", "#795548"),
+            ("🏃 Activity", "activity", "#4caf50"),
+            ("🎯 Focus", "focus", "#9c27b0"),
+        ]
+        for label, res_type, color in resource_info:
+            btn = QtWidgets.QPushButton(f"{label} +50")
+            btn.setStyleSheet(f"background-color: {color}; color: white; font-weight: bold; padding: 6px;")
+            btn.clicked.connect(lambda checked, r=res_type: self._add_city_resource(r, 50))
+            resource_btn_layout.addWidget(btn)
+        city_layout.addLayout(resource_btn_layout)
+        
+        # Resource +200 buttons
+        resource_big_btn_layout = QtWidgets.QHBoxLayout()
+        for label, res_type, color in resource_info:
+            btn = QtWidgets.QPushButton(f"+200")
+            btn.setStyleSheet(f"background-color: {color}; color: white; font-weight: bold; padding: 4px;")
+            btn.clicked.connect(lambda checked, r=res_type: self._add_city_resource(r, 200))
+            resource_big_btn_layout.addWidget(btn)
+        city_layout.addLayout(resource_big_btn_layout)
+        
+        # Current resources display
+        self.city_resources_label = QtWidgets.QLabel("Loading...")
+        self.city_resources_label.setStyleSheet("color: #888; padding: 5px;")
+        city_layout.addWidget(self.city_resources_label)
+        
+        # Building selector
+        building_label = QtWidgets.QLabel("🏗️ Building Controls")
+        building_label.setStyleSheet("font-weight: bold; color: #FFD700; font-size: 12px; margin-top: 10px;")
+        city_layout.addWidget(building_label)
+        
+        building_select_layout = QtWidgets.QHBoxLayout()
+        building_select_layout.addWidget(QtWidgets.QLabel("Building:"))
+        self.city_building_combo = NoScrollComboBox()
+        self.city_building_combo.setMinimumWidth(200)
+        building_select_layout.addWidget(self.city_building_combo)
+        building_select_layout.addStretch()
+        city_layout.addLayout(building_select_layout)
+        
+        # Cell position selector
+        cell_select_layout = QtWidgets.QHBoxLayout()
+        cell_select_layout.addWidget(QtWidgets.QLabel("Row:"))
+        self.city_row_spin = QtWidgets.QSpinBox()
+        self.city_row_spin.setRange(0, 4)
+        self.city_row_spin.setValue(0)
+        cell_select_layout.addWidget(self.city_row_spin)
+        cell_select_layout.addWidget(QtWidgets.QLabel("Col:"))
+        self.city_col_spin = QtWidgets.QSpinBox()
+        self.city_col_spin.setRange(0, 4)
+        self.city_col_spin.setValue(0)
+        cell_select_layout.addWidget(self.city_col_spin)
+        cell_select_layout.addStretch()
+        city_layout.addLayout(cell_select_layout)
+        
+        # Level selector
+        level_select_layout = QtWidgets.QHBoxLayout()
+        level_select_layout.addWidget(QtWidgets.QLabel("Level:"))
+        self.city_level_spin = QtWidgets.QSpinBox()
+        self.city_level_spin.setRange(1, 10)
+        self.city_level_spin.setValue(1)
+        level_select_layout.addWidget(self.city_level_spin)
+        level_select_layout.addStretch()
+        city_layout.addLayout(level_select_layout)
+        
+        # Building action buttons
+        building_action_layout = QtWidgets.QHBoxLayout()
+        
+        place_btn = QtWidgets.QPushButton("📍 Place Building")
+        place_btn.setStyleSheet("background-color: #4caf50; color: white; font-weight: bold; padding: 8px;")
+        place_btn.clicked.connect(self._city_place_building)
+        building_action_layout.addWidget(place_btn)
+        
+        complete_btn = QtWidgets.QPushButton("✅ Complete Building")
+        complete_btn.setStyleSheet("background-color: #2196f3; color: white; font-weight: bold; padding: 8px;")
+        complete_btn.clicked.connect(self._city_complete_building)
+        building_action_layout.addWidget(complete_btn)
+        
+        remove_btn = QtWidgets.QPushButton("🗑️ Remove Building")
+        remove_btn.setStyleSheet("background-color: #f44336; color: white; font-weight: bold; padding: 8px;")
+        remove_btn.clicked.connect(self._city_remove_building)
+        building_action_layout.addWidget(remove_btn)
+        
+        city_layout.addLayout(building_action_layout)
+        
+        # Quick actions row
+        quick_city_layout = QtWidgets.QHBoxLayout()
+        
+        place_all_btn = QtWidgets.QPushButton("🏘️ Place All Buildings")
+        place_all_btn.setStyleSheet("background-color: #ff9800; color: white; font-weight: bold; padding: 8px;")
+        place_all_btn.clicked.connect(self._city_place_all_buildings)
+        quick_city_layout.addWidget(place_all_btn)
+        
+        complete_all_btn = QtWidgets.QPushButton("🎯 Complete All")
+        complete_all_btn.setStyleSheet("background-color: #9c27b0; color: white; font-weight: bold; padding: 8px;")
+        complete_all_btn.clicked.connect(self._city_complete_all_buildings)
+        quick_city_layout.addWidget(complete_all_btn)
+        
+        max_all_btn = QtWidgets.QPushButton("⬆️ Max All Levels")
+        max_all_btn.setStyleSheet("background-color: #FFD700; color: black; font-weight: bold; padding: 8px;")
+        max_all_btn.clicked.connect(self._city_max_all_buildings)
+        quick_city_layout.addWidget(max_all_btn)
+        
+        city_layout.addLayout(quick_city_layout)
+        
+        # Reset/Clear row
+        reset_city_layout = QtWidgets.QHBoxLayout()
+        
+        clear_city_btn = QtWidgets.QPushButton("💥 Clear All Buildings")
+        clear_city_btn.setStyleSheet("background-color: #b71c1c; color: white; font-weight: bold; padding: 8px;")
+        clear_city_btn.clicked.connect(self._city_clear_all)
+        reset_city_layout.addWidget(clear_city_btn)
+        
+        reset_resources_btn = QtWidgets.QPushButton("🔄 Reset Resources to 0")
+        reset_resources_btn.setStyleSheet("background-color: #455a64; color: white; font-weight: bold; padding: 8px;")
+        reset_resources_btn.clicked.connect(self._city_reset_resources)
+        reset_city_layout.addWidget(reset_resources_btn)
+        
+        give_resources_btn = QtWidgets.QPushButton("💰 +500 All Resources")
+        give_resources_btn.setStyleSheet("background-color: #00bcd4; color: white; font-weight: bold; padding: 8px;")
+        give_resources_btn.clicked.connect(self._city_give_all_resources)
+        reset_city_layout.addWidget(give_resources_btn)
+        
+        city_layout.addLayout(reset_city_layout)
+        
+        # Current grid display
+        self.city_grid_label = QtWidgets.QLabel("Loading...")
+        self.city_grid_label.setStyleSheet("color: #888; padding: 5px; font-family: monospace;")
+        self.city_grid_label.setWordWrap(True)
+        city_layout.addWidget(self.city_grid_label)
+        
+        layout.addWidget(city_group)
+        
+        # Initialize city UI
+        QtCore.QTimer.singleShot(150, self._refresh_city_display)
+
         # Status display
         self.status_label = QtWidgets.QLabel("")
         self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
@@ -23544,6 +23702,383 @@ class DevTab(QtWidgets.QWidget):
             
         except Exception as e:
             self.status_label.setText(f"❌ Error applying changes: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    # ========================================================================
+    # CITY SYSTEM DEV CONTROLS
+    # ========================================================================
+
+    def _refresh_city_display(self) -> None:
+        """Refresh the city display (resources and grid)."""
+        try:
+            from city.city_manager import get_city_data, get_resources, get_placed_buildings
+            from city.city_buildings import CITY_BUILDINGS, get_all_building_ids
+            
+            # Populate building combo if empty
+            if self.city_building_combo.count() == 0:
+                for bid in get_all_building_ids():
+                    bdef = CITY_BUILDINGS.get(bid, {})
+                    name = bdef.get("name", bid)
+                    tier = bdef.get("tier", 1)
+                    self.city_building_combo.addItem(f"T{tier}: {name}", bid)
+            
+            # Update resources display
+            resources = get_resources(self.blocker.adhd_buster)
+            res_text = "  |  ".join([
+                f"💧 {resources.get('water', 0)}",
+                f"🧱 {resources.get('materials', 0)}",
+                f"🏃 {resources.get('activity', 0)}",
+                f"🎯 {resources.get('focus', 0)}",
+            ])
+            self.city_resources_label.setText(f"Current: {res_text}")
+            self.city_resources_label.setStyleSheet("color: #4caf50; padding: 5px;")
+            
+            # Update grid display
+            city = get_city_data(self.blocker.adhd_buster)
+            grid = city.get("grid", [])
+            
+            grid_lines = []
+            for row_idx, row in enumerate(grid):
+                row_parts = []
+                for col_idx, cell in enumerate(row):
+                    if cell is None:
+                        row_parts.append("[ ]")
+                    else:
+                        bid = cell.get("building_id", "?")[:3].upper()
+                        status = cell.get("status", "?")
+                        level = cell.get("level", 1)
+                        s_icon = {"placed": "📍", "building": "🔨", "complete": "✅"}.get(status, "?")
+                        row_parts.append(f"[{bid}{level}{s_icon}]")
+                grid_lines.append(" ".join(row_parts))
+            
+            self.city_grid_label.setText("Grid (5×5):\n" + "\n".join(grid_lines))
+            
+        except Exception as e:
+            self.city_resources_label.setText(f"❌ Error: {e}")
+
+    def _add_city_resource(self, resource_type: str, amount: int) -> None:
+        """Add city resources."""
+        try:
+            from city.city_manager import add_city_resource
+            
+            new_total = add_city_resource(self.blocker.adhd_buster, resource_type, amount)
+            self.blocker.save_config()
+            self._refresh_city_display()
+            
+            emoji = {"water": "💧", "materials": "🧱", "activity": "🏃", "focus": "🎯"}.get(resource_type, "📦")
+            self.status_label.setText(f"✅ Added {amount} {emoji} {resource_type}! New total: {new_total}")
+            self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+            
+            # Refresh city tab if available
+            main_win = self.window()
+            if hasattr(main_win, 'city_tab'):
+                main_win.city_tab.refresh()
+            
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _city_place_building(self) -> None:
+        """Place a building at the selected cell."""
+        try:
+            from city.city_manager import place_building, get_city_data
+            from city.city_state import CellStatus
+            
+            building_id = self.city_building_combo.currentData()
+            row = self.city_row_spin.value()
+            col = self.city_col_spin.value()
+            
+            if not building_id:
+                self.status_label.setText("❌ No building selected")
+                return
+            
+            success = place_building(self.blocker.adhd_buster, row, col, building_id)
+            
+            if success:
+                self.blocker.save_config()
+                self._refresh_city_display()
+                self.status_label.setText(f"✅ Placed {building_id} at ({row}, {col})")
+                self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+                
+                # Refresh city tab
+                main_win = self.window()
+                if hasattr(main_win, 'city_tab'):
+                    main_win.city_tab.refresh()
+            else:
+                self.status_label.setText(f"❌ Could not place {building_id} at ({row}, {col})")
+                self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+                
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _city_complete_building(self) -> None:
+        """Complete the building at the selected cell (mark as complete, set level)."""
+        try:
+            from city.city_manager import get_city_data
+            from city.city_state import CellStatus
+            from city.city_buildings import CITY_BUILDINGS
+            from datetime import datetime
+            
+            row = self.city_row_spin.value()
+            col = self.city_col_spin.value()
+            level = self.city_level_spin.value()
+            
+            city = get_city_data(self.blocker.adhd_buster)
+            grid = city.get("grid", [])
+            
+            if grid[row][col] is None:
+                self.status_label.setText(f"❌ No building at ({row}, {col})")
+                self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+                return
+            
+            cell = grid[row][col]
+            building_id = cell.get("building_id")
+            building_def = CITY_BUILDINGS.get(building_id, {})
+            max_level = building_def.get("max_level", 1)
+            
+            # Clamp level to max
+            actual_level = min(level, max_level)
+            
+            # Set complete status
+            cell["status"] = CellStatus.COMPLETE.value
+            cell["level"] = actual_level
+            cell["completed_at"] = datetime.now().isoformat()
+            
+            # Fill construction progress to match requirements
+            from city.city_manager import get_level_requirements
+            reqs = get_level_requirements(building_def, actual_level)
+            cell["construction_progress"] = reqs.copy()
+            
+            self.blocker.save_config()
+            self._refresh_city_display()
+            
+            self.status_label.setText(f"✅ Completed {building_id} L{actual_level} at ({row}, {col})")
+            self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+            
+            # Refresh city tab
+            main_win = self.window()
+            if hasattr(main_win, 'city_tab'):
+                main_win.city_tab.refresh()
+                
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _city_remove_building(self) -> None:
+        """Remove the building at the selected cell."""
+        try:
+            from city.city_manager import remove_building
+            
+            row = self.city_row_spin.value()
+            col = self.city_col_spin.value()
+            
+            removed = remove_building(self.blocker.adhd_buster, row, col, refund=False)
+            
+            if removed:
+                self.blocker.save_config()
+                self._refresh_city_display()
+                self.status_label.setText(f"✅ Removed {removed} from ({row}, {col})")
+                self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
+                
+                # Refresh city tab
+                main_win = self.window()
+                if hasattr(main_win, 'city_tab'):
+                    main_win.city_tab.refresh()
+            else:
+                self.status_label.setText(f"❌ No building at ({row}, {col})")
+                self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+                
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _city_place_all_buildings(self) -> None:
+        """Place all 10 buildings in the grid."""
+        try:
+            from city.city_manager import get_city_data, place_building
+            from city.city_buildings import get_all_building_ids
+            
+            building_ids = get_all_building_ids()
+            city = get_city_data(self.blocker.adhd_buster)
+            grid = city.get("grid", [])
+            
+            placed = 0
+            positions = [(r, c) for r in range(5) for c in range(5)]
+            pos_idx = 0
+            
+            for bid in building_ids:
+                # Find an empty cell
+                while pos_idx < len(positions):
+                    r, c = positions[pos_idx]
+                    pos_idx += 1
+                    if grid[r][c] is None:
+                        if place_building(self.blocker.adhd_buster, r, c, bid):
+                            placed += 1
+                        break
+            
+            self.blocker.save_config()
+            self._refresh_city_display()
+            self.status_label.setText(f"✅ Placed {placed} buildings!")
+            self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+            
+            # Refresh city tab
+            main_win = self.window()
+            if hasattr(main_win, 'city_tab'):
+                main_win.city_tab.refresh()
+                
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _city_complete_all_buildings(self) -> None:
+        """Complete all placed buildings at level 1."""
+        try:
+            from city.city_manager import get_city_data
+            from city.city_state import CellStatus
+            from city.city_buildings import CITY_BUILDINGS
+            from datetime import datetime
+            
+            city = get_city_data(self.blocker.adhd_buster)
+            grid = city.get("grid", [])
+            
+            completed = 0
+            for row in grid:
+                for cell in row:
+                    if cell is not None and cell.get("status") != CellStatus.COMPLETE.value:
+                        cell["status"] = CellStatus.COMPLETE.value
+                        cell["completed_at"] = datetime.now().isoformat()
+                        completed += 1
+            
+            self.blocker.save_config()
+            self._refresh_city_display()
+            self.status_label.setText(f"✅ Completed {completed} buildings!")
+            self.status_label.setStyleSheet("color: #9c27b0; padding: 10px;")
+            
+            # Refresh city tab
+            main_win = self.window()
+            if hasattr(main_win, 'city_tab'):
+                main_win.city_tab.refresh()
+                
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _city_max_all_buildings(self) -> None:
+        """Set all placed buildings to their max level."""
+        try:
+            from city.city_manager import get_city_data, get_level_requirements
+            from city.city_state import CellStatus
+            from city.city_buildings import CITY_BUILDINGS
+            from datetime import datetime
+            
+            city = get_city_data(self.blocker.adhd_buster)
+            grid = city.get("grid", [])
+            
+            maxed = 0
+            for row in grid:
+                for cell in row:
+                    if cell is not None:
+                        bid = cell.get("building_id")
+                        bdef = CITY_BUILDINGS.get(bid, {})
+                        max_level = bdef.get("max_level", 1)
+                        
+                        cell["status"] = CellStatus.COMPLETE.value
+                        cell["level"] = max_level
+                        cell["completed_at"] = datetime.now().isoformat()
+                        
+                        # Fill construction progress
+                        reqs = get_level_requirements(bdef, max_level)
+                        cell["construction_progress"] = reqs.copy()
+                        maxed += 1
+            
+            self.blocker.save_config()
+            self._refresh_city_display()
+            self.status_label.setText(f"✅ Maxed {maxed} buildings to max level!")
+            self.status_label.setStyleSheet("color: #FFD700; padding: 10px;")
+            
+            # Refresh city tab
+            main_win = self.window()
+            if hasattr(main_win, 'city_tab'):
+                main_win.city_tab.refresh()
+                
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _city_clear_all(self) -> None:
+        """Remove all buildings from the city grid."""
+        try:
+            from city.city_manager import get_city_data
+            from city.city_state import create_empty_grid
+            
+            city = get_city_data(self.blocker.adhd_buster)
+            city["grid"] = create_empty_grid()
+            
+            self.blocker.save_config()
+            self._refresh_city_display()
+            self.status_label.setText("💥 Cleared all buildings from city!")
+            self.status_label.setStyleSheet("color: #b71c1c; padding: 10px;")
+            
+            # Refresh city tab
+            main_win = self.window()
+            if hasattr(main_win, 'city_tab'):
+                main_win.city_tab.refresh()
+                
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _city_reset_resources(self) -> None:
+        """Reset all city resources to 0."""
+        try:
+            from city.city_manager import get_city_data
+            
+            city = get_city_data(self.blocker.adhd_buster)
+            city["resources"] = {
+                "water": 0,
+                "materials": 0,
+                "activity": 0,
+                "focus": 0,
+            }
+            
+            self.blocker.save_config()
+            self._refresh_city_display()
+            self.status_label.setText("🔄 Reset all city resources to 0!")
+            self.status_label.setStyleSheet("color: #455a64; padding: 10px;")
+            
+            # Refresh city tab
+            main_win = self.window()
+            if hasattr(main_win, 'city_tab'):
+                main_win.city_tab.refresh()
+                
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _city_give_all_resources(self) -> None:
+        """Give 500 of each resource."""
+        try:
+            from city.city_manager import get_city_data
+            
+            city = get_city_data(self.blocker.adhd_buster)
+            resources = city.get("resources", {})
+            
+            for r in ["water", "materials", "activity", "focus"]:
+                resources[r] = resources.get(r, 0) + 500
+            
+            self.blocker.save_config()
+            self._refresh_city_display()
+            self.status_label.setText("💰 Added +500 to all resources!")
+            self.status_label.setStyleSheet("color: #00bcd4; padding: 10px;")
+            
+            # Refresh city tab
+            main_win = self.window()
+            if hasattr(main_win, 'city_tab'):
+                main_win.city_tab.refresh()
+                
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
 
