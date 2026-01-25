@@ -52,6 +52,7 @@ try:
         start_upgrade,
         get_all_synergy_bonuses,
         get_synergy_display_info,
+        calculate_building_synergy_bonus,
     )
 except ImportError as e:
     _logger.warning(f"City module not available: {e}")
@@ -89,7 +90,8 @@ except ImportError as e:
     def can_upgrade(adhd_buster, r, c): return (False, "City system not available")
     def start_upgrade(adhd_buster, r, c): return False
     def get_all_synergy_bonuses(adhd_buster): return {}
-    def get_synergy_display_info(adhd_buster): return []
+    def get_synergy_display_info(building_id, adhd_buster): return {}
+    def calculate_building_synergy_bonus(building_id, adhd_buster): return {"bonus_type": None, "bonus_percent": 0.0, "contributors": [], "capped": False}
 
 
 # ============================================================================
@@ -972,18 +974,38 @@ class BuildingDetailsDialog(StyledDialog):
         
         effect = self.building.get("effect", {})
         effect_type = effect.get("type", "")
-        base_value = effect.get("value", 0)
-        scaling = self.building.get("level_scaling", 0.5)
+        level_scaling = self.building.get("level_scaling", {})
+        
+        # Get the actual effect value based on effect type
+        # Effects use specific keys like "coins_per_hour", "bonus_percent", "power_percent"
+        effect_key_map = {
+            "passive_income": ("coins_per_hour", "coins_per_hour"),
+            "merge_success_bonus": ("bonus_percent", "bonus_percent"),
+            "rarity_bias_bonus": ("bonus_percent", "bonus_percent"),
+            "entity_catch_bonus": ("bonus_percent", "bonus_percent"),
+            "entity_encounter_bonus": ("bonus_percent", "bonus_percent"),
+            "power_bonus": ("power_percent", "power_percent"),
+            "xp_bonus": ("bonus_percent", "bonus_percent"),
+            "coin_discount": ("discount_percent", "discount_percent"),
+        }
+        
+        effect_key, scaling_key = effect_key_map.get(effect_type, ("value", "value"))
+        base_value = effect.get(effect_key, 0)
+        scaling = level_scaling.get(scaling_key, 0)
         current_value = base_value + (level - 1) * scaling
         
-        effect_text = f"• {effect_type.replace('_', ' ').title()}: +{current_value:.1f}"
+        # Format effect text with appropriate units
+        if effect_type == "passive_income":
+            effect_text = f"• Coins/Hour: +{current_value:.1f}"
+        else:
+            effect_text = f"• {effect_type.replace('_', ' ').title()}: +{current_value:.0f}%"
         effect_label = QtWidgets.QLabel(effect_text)
         effect_label.setStyleSheet("color: #CCC;")
         effects_layout.addWidget(effect_label)
         
-        # Synergy bonus
-        synergies = get_all_synergy_bonuses(self.adhd_buster)
-        synergy_bonus = synergies.get(self.building_id, 0)
+        # Synergy bonus - use calculate_building_synergy_bonus for building-specific bonus
+        synergy_result = calculate_building_synergy_bonus(self.building_id, self.adhd_buster)
+        synergy_bonus = synergy_result.get("bonus_percent", 0)
         if synergy_bonus > 0:
             synergy_text = f"• Entity Synergy: +{synergy_bonus*100:.0f}%"
             synergy_label = QtWidgets.QLabel(synergy_text)
