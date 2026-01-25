@@ -1,14 +1,8 @@
 Traceback (most recent call last):
-  File "focus_blocker_qt.py", line 25500, in main
+  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 26204, in main
     window = FocusBlockerWindow(username=selected_user)
              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "focus_blocker_qt.py", line 23789, in __init__
-    self.adhd_tab = ADHDBusterTab(self.blocker, self)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "focus_blocker_qt.py", line 16106, in __init__
-    self._build_ui()
-  File "focus_blocker_qt.py", line 16710, in _build_ui
-    self._refresh_inventory()
-  File "focus_blocker_qt.py", line 17478, in _refresh_inventory
-    from game_state import get_max_inventory_size
-ImportError: cannot import name 'get_max_inventory_size' from 'game_state' (C:\Users\lkacz\AppData\Local\Temp\_MEI777922\game_state.py)
+  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 24470, in __init__
+    self.city_tab.request_save.connect(self._save_adhd_data)
+                                       ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'FocusBlockerWindow' object has no attribute '_save_adhd_data'
