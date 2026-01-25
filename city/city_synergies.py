@@ -11,6 +11,8 @@ import logging
 from typing import Dict, Set, List, Optional
 from dataclasses import dataclass
 
+from .city_state import CellStatus
+
 _logger = logging.getLogger(__name__)
 
 
@@ -287,7 +289,7 @@ def get_all_synergy_bonuses(adhd_buster: dict) -> Dict[str, float]:
         for cell in row:
             if cell is None:
                 continue
-            if cell.get("status") != "complete":
+            if cell.get("status") != CellStatus.COMPLETE.value:
                 continue
             
             building_id = cell.get("building_id")
