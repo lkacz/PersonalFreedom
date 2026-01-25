@@ -90,6 +90,7 @@ class EntitidexManager:
         hero_power: int = 0,
         luck_bonus: float = 0.0,
         active_perks: Optional[Dict] = None,
+        city_catch_bonus: float = 0.0,
     ):
         """
         Initialize the Entitidex manager.
@@ -100,12 +101,14 @@ class EntitidexManager:
             hero_power: Hero's current total power
             luck_bonus: Any luck bonus from equipped items
             active_perks: Dictionary of active entity perks (from entity_perks.py)
+            city_catch_bonus: Bonus from city buildings (University) - percentage
         """
         self.progress = progress or EntitidexProgress()
         self.story_id = story_id
         self.hero_power = hero_power
         self.luck_bonus = luck_bonus
         self.active_perks = active_perks or {}
+        self.city_catch_bonus = city_catch_bonus
         
         # Current encounter state
         self._current_encounter: Optional[Entity] = None
@@ -213,6 +216,7 @@ class EntitidexManager:
             entity_power=entity.power,
             failed_attempts=failed_attempts,
             luck_bonus=total_luck_bonus,
+            city_bonus=self.city_catch_bonus,
         )
         
         perk_bonus = capture_perk > 0 or encounter_perk > 0
@@ -269,6 +273,7 @@ class EntitidexManager:
             entity_power=entity.power,
             failed_attempts=failed_attempts,
             luck_bonus=total_luck_bonus,
+            city_bonus=self.city_catch_bonus,
         )
         
         return EncounterResult(
@@ -434,6 +439,7 @@ class EntitidexManager:
             entity_power=entity.power,
             failed_attempts=failed_attempts,
             luck_bonus=self.luck_bonus,
+            city_bonus=self.city_catch_bonus,
         )
         
         return {

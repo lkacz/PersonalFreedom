@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Construction overlay - scaffolding with animated worker -->
+  
+  <!-- Semi-transparent background -->
+  <rect x="0" y="0" width="64" height="64" fill="#000000" opacity="0.3"/>
+  
+  <!-- Scaffolding frame -->
+  <g stroke="#795548" stroke-width="2" fill="none">
+    <!-- Vertical poles -->
+    <line x1="10" y1="8" x2="10" y2="56"/>
+    <line x1="54" y1="8" x2="54" y2="56"/>
+    <line x1="32" y1="16" x2="32" y2="56"/>
+    
+    <!-- Horizontal platforms -->
+    <line x1="8" y1="20" x2="56" y2="20"/>
+    <line x1="8" y1="36" x2="56" y2="36"/>
+    <line x1="8" y1="52" x2="56" y2="52"/>
+    
+    <!-- Cross braces -->
+    <line x1="10" y1="20" x2="32" y2="36" stroke-dasharray="4,2"/>
+    <line x1="32" y1="20" x2="54" y2="36" stroke-dasharray="4,2"/>
+  </g>
+  
+  <!-- Wooden planks -->
+  <g fill="#A1887F">
+    <rect x="8" y="18" width="48" height="3" rx="0.5"/>
+    <rect x="8" y="34" width="48" height="3" rx="0.5"/>
+    <rect x="8" y="50" width="48" height="3" rx="0.5"/>
+  </g>
+  
+  <!-- Animated worker -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;4,0;0,0;-4,0;0,0" dur="2s" repeatCount="indefinite"/>
+    
+    <!-- Hard hat -->
+    <ellipse cx="24" cy="26" rx="5" ry="3" fill="#FFC107"/>
+    <rect x="19" y="26" width="10" height="2" fill="#FFA000"/>
+    
+    <!-- Head -->
+    <circle cx="24" cy="30" r="3" fill="#FFCC80"/>
+    
+    <!-- Body -->
+    <rect x="22" y="33" width="4" height="6" fill="#FF5722"/>
+    
+    <!-- Arms - hammering animation -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 26 35;-30 26 35;0 26 35" dur="0.5s" repeatCount="indefinite"/>
+      <line x1="26" y1="35" x2="32" y2="32" stroke="#FFCC80" stroke-width="2" stroke-linecap="round"/>
+      <!-- Hammer -->
+      <rect x="30" y="29" width="4" height="3" fill="#616161"/>
+    </g>
+  </g>
+  
+  <!-- Construction progress bar background -->
+  <rect x="12" y="6" width="40" height="6" rx="3" fill="#424242"/>
+  
+  <!-- Animated progress fill (placeholder - actual value set by code) -->
+  <rect x="12" y="6" width="20" height="6" rx="3" fill="#4CAF50">
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="1s" repeatCount="indefinite"/>
+  </rect>
+  
+  <!-- Construction icon -->
+  <g fill="#FF9800">
+    <polygon points="32,44 28,56 36,56" opacity="0.9"/>
+    <rect x="30" y="42" width="4" height="4"/>
+    <text x="32" y="54" text-anchor="middle" font-size="8" fill="#FFF" font-weight="bold">!</text>
+  </g>
+</svg>

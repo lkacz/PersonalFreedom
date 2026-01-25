@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Wonder of the World with grand celebration effects -->
+  <defs>
+    <linearGradient id="wonderGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="50%" style="stop-color:#FFA000"/>
+      <stop offset="100%" style="stop-color:#FFD700"/>
+    </linearGradient>
+    <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#FFD700;stop-opacity:0"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Glowing aura -->
+  <circle cx="32" cy="32" r="30" fill="url(#glowGrad)">
+    <animate attributeName="r" values="28;32;28" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;0.8;0.5" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Castle base -->
+  <rect x="12" y="32" width="40" height="24" fill="#B0BEC5"/>
+  
+  <!-- Main tower -->
+  <rect x="24" y="16" width="16" height="40" fill="#CFD8DC"/>
+  <polygon points="24,16 32,6 40,16" fill="url(#wonderGold)"/>
+  
+  <!-- Side towers -->
+  <rect x="12" y="24" width="10" height="32" fill="#ECEFF1"/>
+  <polygon points="12,24 17,14 22,24" fill="url(#wonderGold)"/>
+  
+  <rect x="42" y="24" width="10" height="32" fill="#ECEFF1"/>
+  <polygon points="42,24 47,14 52,24" fill="url(#wonderGold)"/>
+  
+  <!-- Windows -->
+  <rect x="28" y="22" width="8" height="10" fill="#1A237E"/>
+  <rect x="28" y="36" width="8" height="10" fill="#1A237E"/>
+  
+  <rect x="14" y="30" width="6" height="8" fill="#1A237E"/>
+  <rect x="44" y="30" width="6" height="8" fill="#1A237E"/>
+  
+  <!-- Grand door -->
+  <rect x="26" y="46" width="12" height="10" rx="6" fill="#5D4037"/>
+  
+  <!-- Flags on towers -->
+  <g>
+    <line x1="32" y1="6" x2="32" y2="2" stroke="#795548" stroke-width="1"/>
+    <polygon points="32,2 40,5 32,8" fill="#E53935">
+      <animate attributeName="points" values="32,2 40,5 32,8;32,2 38,5 32,8;32,2 40,5 32,8" dur="1s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+  <g>
+    <line x1="17" y1="14" x2="17" y2="10" stroke="#795548" stroke-width="1"/>
+    <polygon points="17,10 23,12 17,14" fill="#2196F3">
+      <animate attributeName="points" values="17,10 23,12 17,14;17,10 21,12 17,14;17,10 23,12 17,14" dur="1.2s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+  <g>
+    <line x1="47" y1="14" x2="47" y2="10" stroke="#795548" stroke-width="1"/>
+    <polygon points="47,10 53,12 47,14" fill="#4CAF50">
+      <animate attributeName="points" values="47,10 53,12 47,14;47,10 51,12 47,14;47,10 53,12 47,14" dur="0.9s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+  
+  <!-- Firework bursts -->
+  <g>
+    <circle cx="8" cy="12" r="0" fill="#FF4081">
+      <animate attributeName="r" values="0;4;0" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="56" cy="10" r="0" fill="#FFEB3B">
+      <animate attributeName="r" values="0;3;0" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+      <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+    </circle>
+    <circle cx="10" cy="28" r="0" fill="#4FC3F7">
+      <animate attributeName="r" values="0;3;0" dur="1.8s" repeatCount="indefinite" begin="1s"/>
+      <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite" begin="1s"/>
+    </circle>
+    <circle cx="54" cy="26" r="0" fill="#AED581">
+      <animate attributeName="r" values="0;3.5;0" dur="2.2s" repeatCount="indefinite" begin="1.5s"/>
+      <animate attributeName="opacity" values="0;1;0" dur="2.2s" repeatCount="indefinite" begin="1.5s"/>
+    </circle>
+  </g>
+  
+  <!-- Sparkles -->
+  <g fill="#FFFFFF">
+    <polygon points="20,8 21,10 23,10 21.5,11.5 22,14 20,12.5 18,14 18.5,11.5 17,10 19,10">
+      <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/>
+    </polygon>
+    <polygon points="44,6 45,8 47,8 45.5,9.5 46,12 44,10.5 42,12 42.5,9.5 41,8 43,8">
+      <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite" begin="0.7s"/>
+    </polygon>
+  </g>
+</svg>

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Forge with flickering flames -->
+  <defs>
+    <linearGradient id="fireGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF6B00"/>
+      <stop offset="50%" style="stop-color:#FF9500"/>
+      <stop offset="100%" style="stop-color:#FFD700"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Building base -->
+  <rect x="8" y="28" width="48" height="28" fill="#5D4037"/>
+  <rect x="4" y="24" width="56" height="6" fill="#4E342E"/>
+  
+  <!-- Chimney -->
+  <rect x="44" y="8" width="10" height="20" fill="#3E2723"/>
+  <rect x="42" y="6" width="14" height="4" fill="#4E342E"/>
+  
+  <!-- Smoke from chimney -->
+  <g fill="#9E9E9E" opacity="0.6">
+    <circle cx="49" cy="4" r="3">
+      <animate attributeName="cy" values="4;-8" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="51" cy="6" r="2.5">
+      <animate attributeName="cy" values="6;-6" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+      <animate attributeName="opacity" values="0.5;0" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+    </circle>
+  </g>
+  
+  <!-- Forge opening with animated flames -->
+  <rect x="16" y="36" width="20" height="16" fill="#1A1A1A"/>
+  <rect x="14" y="34" width="24" height="4" fill="#3E2723"/>
+  
+  <!-- Animated flames -->
+  <g fill="url(#fireGrad)">
+    <ellipse cx="22" cy="48" rx="3" ry="6">
+      <animate attributeName="ry" values="6;8;5;7;6" dur="0.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.8;1" dur="0.3s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="26" cy="46" rx="3" ry="8">
+      <animate attributeName="ry" values="8;6;9;7;8" dur="0.35s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;1;0.9" dur="0.25s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="30" cy="48" rx="3" ry="6">
+      <animate attributeName="ry" values="5;7;6;8;5" dur="0.45s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.85;1" dur="0.35s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+  
+  <!-- Anvil -->
+  <rect x="42" y="44" width="12" height="4" fill="#424242"/>
+  <rect x="44" y="48" width="8" height="8" fill="#616161"/>
+  
+  <!-- Hammer with motion -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 48 42;-20 48 42;0 48 42" dur="0.8s" repeatCount="indefinite"/>
+    <rect x="46" y="32" width="4" height="12" fill="#795548"/>
+    <rect x="44" y="30" width="8" height="4" fill="#607D8B"/>
+  </g>
+</svg>

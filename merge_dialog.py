@@ -746,10 +746,19 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Combine items merge luck with entity perk merge luck
         self.total_merge_luck = self.items_merge_luck + self.total_entity_merge_luck
         
+        # Get city bonus for merge success (Forge building)
+        self.city_merge_bonus = 0
+        try:
+            from gamification import get_all_perk_bonuses
+            all_bonuses = get_all_perk_bonuses(self.adhd_buster)
+            self.city_merge_bonus = all_bonuses.get("merge_success", 0)
+        except Exception:
+            pass
+        
         if GAMIFICATION_AVAILABLE:
-            # Pass combined merge luck (items + entity perks)
+            # Pass combined merge luck (items + entity perks) + city bonus
             self.base_success_rate = calculate_merge_success_rate(
-                items, items_merge_luck=self.total_merge_luck
+                items, items_merge_luck=self.total_merge_luck, city_bonus=self.city_merge_bonus
             )
             self.success_rate = self.base_success_rate
             self.result_rarity = get_merge_result_rarity(items)
@@ -1590,8 +1599,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Include: items merge luck + entity perk merge luck + boost bonus
         total_items_merge_luck = self.items_merge_luck + self.total_entity_merge_luck + boost_bonus
         
-        # Calculate the success threshold
-        success_rate = calculate_merge_success_rate(self.items, items_merge_luck=total_items_merge_luck)
+        # Calculate the success threshold (includes city bonus)
+        success_rate = calculate_merge_success_rate(self.items, items_merge_luck=total_items_merge_luck, city_bonus=self.city_merge_bonus)
         
         # Roll for success
         success_roll = random.random()

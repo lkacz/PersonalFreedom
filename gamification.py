@@ -1042,6 +1042,80 @@ def get_entity_perk_bonuses(adhd_buster: dict) -> dict:
     return result
 
 
+def get_all_perk_bonuses(adhd_buster: dict) -> dict:
+    """
+    Get combined bonuses from BOTH entity perks AND city buildings.
+    
+    This is the single source of truth for all gameplay modifiers.
+    Callers should use this instead of querying entity/city separately.
+    
+    Args:
+        adhd_buster: The main data dict
+        
+    Returns:
+        dict: Combined bonuses (entity + city stacked):
+            - coin_discount: int (% cost reduction)
+            - merge_luck: int (% merge luck bonus)
+            - merge_success: int (% merge success bonus)
+            - all_luck: int (% universal luck bonus)
+            - rarity_bias: int (% rarity upgrade chance)
+            - entity_catch_bonus: int (% catch rate bonus)
+            - entity_encounter_bonus: int (% encounter rate bonus)
+            - power_bonus: int (% hero power bonus)
+            - xp_bonus: int (% XP bonus)
+            - coins_per_hour: float (passive city income rate)
+    """
+    result = {
+        "coin_discount": 0,
+        "merge_luck": 0,
+        "merge_success": 0,
+        "all_luck": 0,
+        "rarity_bias": 0,
+        "entity_catch_bonus": 0,
+        "entity_encounter_bonus": 0,
+        "power_bonus": 0,
+        "xp_bonus": 0,
+        "coins_per_hour": 0,
+    }
+    
+    # Get entity perks
+    try:
+        from entitidex.entity_perks import calculate_active_perks, PerkType
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        
+        result["coin_discount"] += int(perks.get(PerkType.COIN_DISCOUNT, 0))
+        result["merge_luck"] += int(perks.get(PerkType.MERGE_LUCK, 0))
+        result["merge_success"] += int(perks.get(PerkType.MERGE_SUCCESS, 0))
+        result["all_luck"] += int(perks.get(PerkType.ALL_LUCK, 0))
+        result["rarity_bias"] += int(perks.get(PerkType.RARITY_BIAS, 0))
+        result["xp_bonus"] += int(perks.get(PerkType.XP_BONUS, 0))
+        
+    except Exception:
+        pass  # Entity perks module not available
+    
+    # Get city bonuses
+    try:
+        from city import get_city_bonuses
+        
+        city_bonuses = get_city_bonuses(adhd_buster)
+        
+        result["coin_discount"] += int(city_bonuses.get("coin_discount", 0))
+        result["merge_success"] += int(city_bonuses.get("merge_success_bonus", 0))
+        result["rarity_bias"] += int(city_bonuses.get("rarity_bias_bonus", 0))
+        result["entity_catch_bonus"] += int(city_bonuses.get("entity_catch_bonus", 0))
+        result["entity_encounter_bonus"] += int(city_bonuses.get("entity_encounter_bonus", 0))
+        result["power_bonus"] += int(city_bonuses.get("power_bonus", 0))
+        result["xp_bonus"] += int(city_bonuses.get("xp_bonus", 0))
+        result["coins_per_hour"] = float(city_bonuses.get("coins_per_hour", 0))
+        
+    except Exception:
+        pass  # City module not available
+    
+    return result
+
+
 def get_entity_merge_perk_contributors(adhd_buster: dict) -> dict:
     """
     Get merge-related entity perk bonuses with detailed contributor info.
@@ -2449,13 +2523,14 @@ RARITY_UPGRADE = {
 RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
 
 
-def calculate_merge_success_rate(items: list, items_merge_luck: int = 0) -> float:
+def calculate_merge_success_rate(items: list, items_merge_luck: int = 0, city_bonus: int = 0) -> float:
     """
     Calculate the success rate for a lucky merge.
     
     Args:
         items: List of items to merge
         items_merge_luck: Total merge_luck% from items being merged (sacrificed for the merge)
+        city_bonus: Total merge_success_bonus from city buildings (Forge) - default 0 for backward compat
     
     Returns:
         Merge success rate as float (0.0 to MERGE_MAX_SUCCESS_RATE)
@@ -2473,6 +2548,10 @@ def calculate_merge_success_rate(items: list, items_merge_luck: int = 0) -> floa
     if items_merge_luck > 0:
         items_bonus = items_merge_luck / 100.0
         rate += items_bonus
+    
+    # City building bonus (Forge) - adds to success rate
+    if city_bonus > 0:
+        rate += city_bonus / 100.0
     
     return min(rate, MERGE_MAX_SUCCESS_RATE)
 
@@ -4571,7 +4650,9 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         streak_bonus = bonuses.get("streak_tier_bonus", 0)
         
         # ✨ ENTITY PERK BONUS: Apply rarity_bias and drop_luck from collected entities
+        # ✨ CITY BONUS: Apply rarity_bias from city buildings (Artisan Guild)
         entity_rarity_bonus = 0.0
+        city_rarity_bonus = 0.0
         if adhd_buster:
             luck_perks = get_entity_luck_perks(adhd_buster)
             # Rarity bias shifts weights toward higher rarities
@@ -4585,9 +4666,18 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
             drop_luck = luck_perks.get("drop_luck", 0)
             if drop_luck > 0:
                 entity_rarity_bonus += drop_luck / 20.0  # 20% = +1 tier shift
+            
+            # City building bonus (Artisan Guild)
+            try:
+                all_bonuses = get_all_perk_bonuses(adhd_buster)
+                city_rarity = all_bonuses.get("rarity_bias", 0)
+                if city_rarity > 0:
+                    city_rarity_bonus = city_rarity / 10.0  # Same scale as entity perks
+            except Exception:
+                pass
         
-        # Adjust center tier with streak bonus and entity rarity bonus
-        effective_center = center_tier + streak_bonus + entity_rarity_bonus
+        # Adjust center tier with streak bonus and entity rarity bonus + city bonus
+        effective_center = center_tier + streak_bonus + entity_rarity_bonus + city_rarity_bonus
         
         if effective_center >= 0:
             # Moving window: [5%, 20%, 50%, 20%, 5%] centered on effective_center
@@ -15658,11 +15748,20 @@ def get_entitidex_manager(adhd_buster: dict) -> "EntitidexManager":
     except Exception as e:
         print(f"[Entity Perks] Could not load perks: {e}")
     
+    # Get city catch bonus (from University building)
+    city_catch_bonus = 0.0
+    try:
+        perks = get_all_perk_bonuses(adhd_buster)
+        city_catch_bonus = perks.get("entity_catch_bonus", 0.0)
+    except Exception:
+        pass
+    
     return EntitidexManager(
         progress=progress,
         story_id=active_story,
         hero_power=hero_power,
-        active_perks=active_perks
+        active_perks=active_perks,
+        city_catch_bonus=city_catch_bonus,
     )
 
 
@@ -15790,7 +15889,19 @@ def attempt_entitidex_bond(
     if force_success:
         # Directly record a successful catch without probability roll
         from entitidex.catch_mechanics import get_final_probability
-        probability = get_final_probability(manager.hero_power, entity.power, failed_before)
+        
+        # Get city bonus for catch probability
+        city_catch_bonus = 0.0
+        try:
+            perks = get_all_perk_bonuses(adhd_buster)
+            city_catch_bonus = perks.get("entity_catch_bonus", 0.0)
+        except Exception:
+            pass
+            
+        probability = get_final_probability(
+            manager.hero_power, entity.power, failed_before,
+            city_bonus=city_catch_bonus
+        )
         
         # Generate exceptional colors if needed
         exceptional_colors = None

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Library with page turning effect -->
+  
+  <!-- Building -->
+  <rect x="8" y="24" width="48" height="32" fill="#8D6E63"/>
+  <polygon points="8,24 32,10 56,24" fill="#A1887F"/>
+  
+  <!-- Roof detail -->
+  <rect x="8" y="22" width="48" height="4" fill="#6D4C41"/>
+  
+  <!-- Windows -->
+  <rect x="12" y="30" width="8" height="10" fill="#FFF8E1"/>
+  <rect x="44" y="30" width="8" height="10" fill="#FFF8E1"/>
+  
+  <!-- Door -->
+  <rect x="26" y="34" width="12" height="22" fill="#5D4037"/>
+  <circle cx="35" cy="46" r="1.5" fill="#FFD700"/>
+  
+  <!-- Book symbol on door -->
+  <rect x="29" y="38" width="6" height="8" fill="#3E2723"/>
+  <line x1="32" y1="38" x2="32" y2="46" stroke="#5D4037" stroke-width="0.5"/>
+  
+  <!-- Bookshelf visible through windows -->
+  <g fill="#795548">
+    <rect x="13" y="32" width="6" height="2"/>
+    <rect x="13" y="35" width="6" height="2"/>
+    <rect x="45" y="32" width="6" height="2"/>
+    <rect x="45" y="35" width="6" height="2"/>
+  </g>
+  
+  <!-- Animated floating open book -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,-2;0,0" dur="2s" repeatCount="indefinite"/>
+    
+    <!-- Book base -->
+    <rect x="24" y="14" width="16" height="10" fill="#FAFAFA" rx="1"/>
+    <line x1="32" y1="14" x2="32" y2="24" stroke="#E0E0E0" stroke-width="1"/>
+    
+    <!-- Animated page turning -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 32 19;-30 32 19;0 32 19" dur="1.5s" repeatCount="indefinite"/>
+      <rect x="25" y="15" width="7" height="8" fill="#FFF" stroke="#DDD" stroke-width="0.5" rx="0.5"/>
+      <line x1="26" y1="17" x2="31" y2="17" stroke="#BDBDBD" stroke-width="0.5"/>
+      <line x1="26" y1="19" x2="31" y2="19" stroke="#BDBDBD" stroke-width="0.5"/>
+      <line x1="26" y1="21" x2="30" y2="21" stroke="#BDBDBD" stroke-width="0.5"/>
+    </g>
+  </g>
+  
+  <!-- Small floating books/pages -->
+  <rect x="14" y="18" width="4" height="3" fill="#E3F2FD" rx="0.5">
+    <animate attributeName="y" values="18;14;18" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>
+  </rect>
+  
+  <rect x="46" y="16" width="4" height="3" fill="#FCE4EC" rx="0.5">
+    <animate attributeName="y" values="16;12;16" dur="3.5s" repeatCount="indefinite" begin="1s"/>
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="3.5s" repeatCount="indefinite" begin="1s"/>
+  </rect>
+  
+  <!-- Lamp glow -->
+  <circle cx="32" cy="18" r="12" fill="#FFEB3B" opacity="0.15">
+    <animate attributeName="opacity" values="0.1;0.2;0.1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+</svg>
