@@ -24,6 +24,26 @@ from app_utils import get_app_dir
 from styled_dialog import StyledDialog, add_tab_help_button
 from gamification import get_level_from_xp
 
+# Import city sounds with graceful fallback
+try:
+    from city_sounds import (
+        play_building_complete,
+        play_building_placed,
+        play_construction_progress,
+        play_income_collected,
+        play_upgrade_started,
+        play_demolish,
+    )
+    CITY_SOUNDS_AVAILABLE = True
+except ImportError:
+    CITY_SOUNDS_AVAILABLE = False
+    def play_building_complete(bid): pass
+    def play_building_placed(bid=None): pass
+    def play_construction_progress(): pass
+    def play_income_collected(): pass
+    def play_upgrade_started(bid=None): pass
+    def play_demolish(): pass
+
 _logger = logging.getLogger(__name__)
 
 # Try to import city module
@@ -885,6 +905,8 @@ class ConstructionDialog(StyledDialog):
         result = invest_resources(self.adhd_buster, self.row, self.col, self.investment)
         
         if result.get("completed"):
+            # Play building-specific completion melody
+            play_building_complete(self.building_id)
             QtWidgets.QMessageBox.information(
                 self, 
                 "Construction Complete!",
@@ -892,15 +914,12 @@ class ConstructionDialog(StyledDialog):
             )
             self.accept()
         elif result.get("success"):
-            # Refresh dialog
+            # Play progress sound for successful investment
+            play_construction_progress()
             self.accept()
-            # Could re-open dialog with updated values
         else:
-            QtWidgets.QMessageBox.warning(
-                self,
-                "Investment Failed",
-                result.get("error", "Unknown error")
-            )
+            # No sound for errors - just reject dialog
+            self.reject()
 
 
 # ============================================================================
@@ -1113,6 +1132,8 @@ class BuildingDetailsDialog(StyledDialog):
         """Start the upgrade process."""
         success = start_upgrade(self.adhd_buster, self.row, self.col)
         if success:
+            # Play ascending anticipation sound
+            play_upgrade_started(self.building_id)
             QtWidgets.QMessageBox.information(
                 self,
                 "Upgrade Started",
@@ -1120,11 +1141,8 @@ class BuildingDetailsDialog(StyledDialog):
             )
             self.accept()
         else:
-            QtWidgets.QMessageBox.warning(
-                self,
-                "Upgrade Failed",
-                f"Could not start upgrade for {self.building.get('name')}.\n\nPlease try again."
-            )
+            # Silent failure - just close dialog
+            self.reject()
     
     def _demolish(self):
         """Demolish the building."""
@@ -1153,8 +1171,8 @@ class BuildingDetailsDialog(StyledDialog):
         if reply == QtWidgets.QMessageBox.Yes:
             removed = remove_building(self.adhd_buster, self.row, self.col)
             if removed:
-                # Parent will handle save via _on_cell_clicked
-                pass
+                # Play gentle demolish sound
+                play_demolish()
             self.accept()
 
 
@@ -1347,6 +1365,8 @@ class CityTab(QtWidgets.QWidget):
         """Place a building on the grid."""
         success = place_building(self.adhd_buster, row, col, building_id)
         if success:
+            # Play placement confirmation sound
+            play_building_placed(building_id)
             building = CITY_BUILDINGS.get(building_id, {})
             name = building.get("name", building_id)
             self.info_panel.setText(f"✅ Placed {name} - invest resources to build!")
@@ -1363,6 +1383,8 @@ class CityTab(QtWidgets.QWidget):
             coins = result.get("coins", 0)
             
             if coins > 0:
+                # Play satisfying coin collection sound
+                play_income_collected()
                 self.info_panel.setText(f"💰 Collected {coins} coins!")
             else:
                 self.info_panel.setText("No income to collect yet")
