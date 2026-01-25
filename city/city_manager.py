@@ -625,7 +625,15 @@ def start_upgrade(adhd_buster: dict, row: int, col: int) -> bool:
         return False
     
     city = get_city_data(adhd_buster)
-    cell = city["grid"][row][col]
+    grid = city.get("grid", [])
+    
+    # Safe grid access - handle malformed data
+    if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+        return False
+    
+    cell = grid[row][col]
+    if cell is None:
+        return False
     
     # Increment target level, reset progress, change status
     cell["level"] = cell.get("level", 1) + 1
