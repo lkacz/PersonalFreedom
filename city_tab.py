@@ -11,6 +11,7 @@ Features:
 """
 
 import logging
+import time
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Callable, Dict, Any
@@ -21,6 +22,7 @@ from PySide6.QtSvg import QSvgRenderer
 
 from app_utils import get_app_dir
 from styled_dialog import StyledDialog, add_tab_help_button
+from gamification import get_level_from_xp
 
 _logger = logging.getLogger(__name__)
 
@@ -1275,7 +1277,6 @@ class CityTab(QtWidgets.QWidget):
             
             # Update slots display
             placed = len(get_placed_buildings(self.adhd_buster))
-            from gamification import get_level_from_xp
             level = get_level_from_xp(self.adhd_buster.get("total_xp", 0))[0]
             max_slots = get_max_building_slots(level)
             self.slots_label.setText(f"🏠 {placed}/{max_slots} Buildings")
@@ -1398,7 +1399,6 @@ class CityTab(QtWidgets.QWidget):
         """Refresh when tab becomes visible (with throttling)."""
         super().showEvent(event)
         # Throttle refreshes to avoid excessive updates
-        import time
         current_time = time.time()
         if current_time - self._last_refresh_time > 0.5:  # Max once per 500ms
             self._refresh_city()
