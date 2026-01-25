@@ -1,17 +1,14 @@
 Traceback (most recent call last):
-  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 25296, in main
+  File "focus_blocker_qt.py", line 25500, in main
     window = FocusBlockerWindow(username=selected_user)
              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 23577, in __init__
-    self.timer_tab = TimerTab(self.blocker, self)
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 1552, in __init__
+  File "focus_blocker_qt.py", line 23789, in __init__
+    self.adhd_tab = ADHDBusterTab(self.blocker, self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "focus_blocker_qt.py", line 16106, in __init__
     self._build_ui()
-  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 1640, in _build_ui
-    self._set_action_btn_start_style()
-  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 2202, in _set_action_btn_start_style
-    self._update_motivation_message()
-  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 2044, in _update_motivation_message
-    duration = self.duration_slider.value()
-               ^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'TimerTab' object has no attribute 'duration_slider'
+  File "focus_blocker_qt.py", line 16710, in _build_ui
+    self._refresh_inventory()
+  File "focus_blocker_qt.py", line 17478, in _refresh_inventory
+    from game_state import get_max_inventory_size
+ImportError: cannot import name 'get_max_inventory_size' from 'game_state' (C:\Users\lkacz\AppData\Local\Temp\_MEI777922\game_state.py)
