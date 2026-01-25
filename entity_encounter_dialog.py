@@ -294,6 +294,27 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         
         self.prob_value = QtWidgets.QLabel(f"{prob_percent}%")
         self.prob_value.setAlignment(QtCore.Qt.AlignCenter)
+        
+        # Calculate probability breakdown for tooltip
+        power_diff = self.hero_power - self.entity.power
+        base_chance = 30  # Assumed base
+        power_factor = min(50, max(-30, power_diff // 10))  # Power contribution
+        rarity_penalty = {"Common": 0, "Uncommon": -5, "Rare": -10, "Epic": -15, "Legendary": -20}.get(self.entity.rarity, 0)
+        exceptional_bonus = 10 if self.is_exceptional else 0
+        
+        breakdown_parts = [
+            f"Base chance: {base_chance}%",
+            f"Power difference ({power_diff:+d}): {power_factor:+d}%",
+            f"Rarity ({self.entity.rarity}): {rarity_penalty:+d}%",
+        ]
+        if exceptional_bonus:
+            breakdown_parts.append(f"Exceptional bonus: +{exceptional_bonus}%")
+        breakdown_parts.append(f"\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500")
+        breakdown_parts.append(f"Final: {prob_percent}%")
+        
+        prob_tooltip = "\n".join(breakdown_parts)
+        self.prob_value.setToolTip(f"🎲 Probability Breakdown:\n{prob_tooltip}")
+        
         self.prob_value.setStyleSheet(f"""
             QLabel {{
                 font-size: 32px;

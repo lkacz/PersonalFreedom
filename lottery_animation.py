@@ -1564,6 +1564,16 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         
         self.stage1_title = QtWidgets.QLabel(f"🎰 Stage 1: Lucky Roll ({self.win_chance*100:.0f}% chance)")
         self.stage1_title.setStyleSheet("color: #aaa; font-size: 12px; font-weight: bold;")
+        # Add tooltip explaining win chance
+        win_pct = self.win_chance * 100
+        self.stage1_title.setToolTip(
+            f"🎲 Win Chance: {win_pct:.0f}%\n"
+            f"──────────────\n"
+            f"Base: 15%\n"
+            f"Hours logged ({self.logged_hours:.1f}h): +{min(84, int(self.logged_hours * 10))}%\n"
+            f"Max: 99%\n\n"
+            f"Log more hours for better odds!"
+        )
         stage1_layout.addWidget(self.stage1_title)
         
         self.stage1_slider = LotterySliderWidget(self.win_chance * 100)
@@ -1591,6 +1601,22 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         
         self.stage2_title = QtWidgets.QLabel("✨ Stage 2: Rarity Roll")
         self.stage2_title.setStyleSheet("color: #666; font-size: 12px; font-weight: bold;")
+        # Add tooltip explaining rarity distribution (inverted for priorities!)
+        total_weight = sum(self.RARITY_WEIGHTS.values())
+        rarity_breakdown = "\n".join([
+            f"{r}: {self.RARITY_WEIGHTS[r]}% ({self.RARITY_WEIGHTS[r]*100//total_weight}% actual)"
+            for r in ["Legendary", "Epic", "Rare", "Uncommon", "Common"]
+        ])
+        self.stage2_title.setToolTip(
+            f"🎲 Rarity Distribution (Priority Rewards):\n"
+            f"──────────────────────\n"
+            f"Legendary: {self.RARITY_WEIGHTS['Legendary']}%\n"
+            f"Epic: {self.RARITY_WEIGHTS['Epic']}%\n"
+            f"Rare: {self.RARITY_WEIGHTS['Rare']}%\n"
+            f"Uncommon: {self.RARITY_WEIGHTS['Uncommon']}%\n"
+            f"Common: {self.RARITY_WEIGHTS['Common']}%\n\n"
+            f"⭐ Priority rewards favor high tiers!"
+        )
         stage2_layout.addWidget(self.stage2_title)
         
         self.stage2_slider = MultiTierLotterySlider(self.RARITY_WEIGHTS)
@@ -3170,6 +3196,14 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         success_info.setFont(QtGui.QFont("Arial", 10))
         success_info.setAlignment(QtCore.Qt.AlignCenter)
         success_info.setStyleSheet("color: #888;")
+        # Add tooltip explaining success rate calculation
+        success_info.setToolTip(
+            f"💧 Water Lottery Success Rate\n"
+            f"──────────────────\n"
+            f"Glass #{self.glass_number}: {self.success_rate*100:.0f}%\n\n"
+            f"Higher glasses = better odds!\n"
+            f"Glass 1: ~50% | Glass 8: ~85%"
+        )
         layout.addWidget(success_info)
         
         # Stage 1: Tier Roll
@@ -3179,6 +3213,17 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         
         self.stage1_title = QtWidgets.QLabel(f"✨ Stage 1: What Tier? (Glass #{self.glass_number})")
         self.stage1_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
+        # Add tooltip explaining tier distribution
+        center_tier = min(self.glass_number - 1, 4)
+        tier_names = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+        self.stage1_title.setToolTip(
+            f"🎲 Tier Distribution for Glass #{self.glass_number}\n"
+            f"──────────────────────\n"
+            f"Center tier: {tier_names[center_tier]}\n"
+            f"Distribution: [5%, 15%, 60%, 15%, 5%]\n"
+            f"centered on {tier_names[center_tier]}\n\n"
+            f"Drink more glasses for higher tiers!"
+        )
         stage1_layout.addWidget(self.stage1_title)
         
         self.tier_slider = WaterTierSliderWidget(self.glass_number)

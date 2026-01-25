@@ -15,6 +15,17 @@ The City system is a **passive income generator** where users invest resources e
 
 ### 1.1 Resource System
 
+**Resource Categories:**
+
+There are now TWO distinct types of resources in the city system:
+
+| Category | Resources | Behavior |
+|----------|-----------|----------|
+| **STOCKPILE** | Water 💧, Materials 🧱 | Accumulate in city reserves. Spent upfront to START construction. |
+| **EFFORT** | Activity 🏃, Focus 🎯 | Do NOT accumulate. Flow directly to the active construction. |
+
+**Resource Details:**
+
 | Resource | Emoji | Earned By | Generation Rate |
 |----------|-------|-----------|-----------------|
 | **WATER** | 💧 | Drinking water (hydration log) | +1 per glass logged |
@@ -22,11 +33,68 @@ The City system is a **passive income generator** where users invest resources e
 | **ACTIVITY** | 🏃 | Physical activity log | +1 per activity logged, duration bonus |
 | **FOCUS** | 🎯 | Focus sessions | +1 per 30 min focused |
 
-**Materials Generation (Weight):**
-- Losing weight (goal: lose): +2 MATERIALS
-- Gaining weight (goal: gain): +2 MATERIALS  
-- Staying in norm (goal: maintain): +1 MATERIALS
-- Off-target: +0 MATERIALS
+**Materials Generation (Weight Logging):**
+
+All weight goals reward the same amount when achieved - this ensures fairness regardless of your health journey:
+
+| Your Goal | Achievement Criteria | Reward |
+|-----------|---------------------|--------|
+| 📉 **Lose weight** (overweight) | Log weight lower than previous | +2 MATERIALS |
+| 📈 **Gain weight** (underweight) | Log weight higher than previous | +2 MATERIALS |
+| ⚖️ **Maintain weight** (healthy BMI) | Stay within BMI 18.5-25.0 | +2 MATERIALS |
+| ❌ Off-target | Weight logged but not meeting goal | +0 MATERIALS |
+
+**Key Points:**
+- You must **log your weight daily** in the Body tab to earn materials
+- The system automatically detects your goal based on your BMI and settings
+- All three positive outcomes reward equally (+2 materials each)
+- **Maintain goal only works if you're in the healthy BMI range (18.5-25)**
+- Consistency is key: daily logging = daily materials!
+
+### 1.1.1 Construction Flow (Two-Phase Model)
+
+**Phase 1: Initiate Construction (Upfront Payment)**
+- User selects a PLACED building
+- User pays STOCKPILE resources (Water + Materials) upfront
+- If sufficient resources: Building enters BUILDING status
+- Building becomes the "active construction"
+- **Only ONE building can be under active construction at a time**
+
+**Phase 2: Complete Construction (Effort Over Time)**
+- User earns Activity and Focus through daily habits
+- EFFORT resources automatically flow to the active construction
+- No manual investment needed - just keep up healthy habits!
+- When effort requirements are met: Building auto-completes
+- Building enters COMPLETE status, clears active construction slot
+
+**Why This Design:**
+- **Stockpile (Water/Materials)**: Represents planning and preparation
+- **Effort (Activity/Focus)**: Represents ongoing commitment and work
+- **Single Active Build**: Focuses player attention, prevents spreading thin
+- **Auto-Flow**: Rewards consistent healthy behavior, reduces micro-management
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CONSTRUCTION FLOW                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  1. PLACED (Blueprint selected)                             │
+│     ↓                                                       │
+│     └─ User clicks "Start Construction"                     │
+│        └─ Pays Water + Materials (stockpile)                │
+│                                                             │
+│  2. BUILDING (Active construction - only 1 at a time)       │
+│     ↓                                                       │
+│     └─ User earns Activity + Focus (effort)                 │
+│        └─ Automatically contributes to building             │
+│                                                             │
+│  3. COMPLETE (Generating bonuses)                           │
+│     ↓                                                       │
+│     └─ Coins + effects active                               │
+│        └─ Can now start another construction                │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ### 1.2 Building System
 
@@ -67,12 +135,15 @@ Buildings have:
 
 Cell States:
   [Empty]   = No building assigned (can place any building type)
-  [Placed]  = Building placed, awaiting first resource investment
-  L2 75%    = Under construction (BUILDING status), level 2 target, 75% complete
+  [Placed]  = Building placed, awaiting upfront payment (Water + Materials)
+  L2 75%    = Under active construction, level 2 target, 75% effort complete
   L5 ✓      = Completed at level 5, generating bonuses
 
-Note: Building TYPES are never locked. Only building SLOTS are level-gated.
-A player at Level 10 has 4 slots but can build ANY of the 10 building types.
+Construction Notes:
+- PLACED → BUILDING: User pays Water + Materials upfront
+- BUILDING → COMPLETE: Activity + Focus auto-flow until requirements met
+- Only ONE building can be in BUILDING status at a time (active construction)
+- Player XP level determines available slots, not building types
 ```
 
 **Key Grid Concepts:**

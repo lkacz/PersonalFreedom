@@ -35,6 +35,8 @@ from .city_state import (
 # Constants
 from .city_constants import (
     RESOURCE_TYPES,
+    STOCKPILE_RESOURCES,
+    EFFORT_RESOURCES,
     RESOURCE_EMOJI,
     MAX_OFFLINE_HOURS,
     BUILDING_SLOT_UNLOCKS,
@@ -59,6 +61,10 @@ from .city_manager import (
     remove_building,
     move_building,
     invest_resources,
+    get_active_construction,
+    get_active_construction_info,
+    can_initiate_construction,
+    initiate_construction,
     collect_city_income,
     get_pending_income,
     get_max_building_slots,
@@ -99,6 +105,8 @@ __all__ = [
     
     # Constants
     "RESOURCE_TYPES",
+    "STOCKPILE_RESOURCES",
+    "EFFORT_RESOURCES",
     "RESOURCE_EMOJI",
     "MAX_OFFLINE_HOURS",
     "BUILDING_SLOT_UNLOCKS",
@@ -123,6 +131,10 @@ __all__ = [
     "remove_building",
     "move_building",
     "invest_resources",
+    "get_active_construction",
+    "get_active_construction_info",
+    "can_initiate_construction",
+    "initiate_construction",
     "collect_city_income",
     "get_pending_income",
     "get_max_building_slots",

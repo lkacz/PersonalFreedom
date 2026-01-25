@@ -7613,15 +7613,16 @@ class WeightTab(QtWidgets.QWidget):
         
         self.blocker.save_config()
         
-        # Award city MATERIALS resource based on goal progress (per design doc):
-        # - Losing weight (goal: lose): +2 MATERIALS
-        # - Gaining weight (goal: gain): +2 MATERIALS
-        # - Staying in norm (goal: maintain): +1 MATERIALS
+        # Award city MATERIALS resource based on goal progress:
+        # - Losing weight (overweight goal): +2 MATERIALS when weight decreases
+        # - Gaining weight (underweight goal): +2 MATERIALS when weight increases
+        # - Maintaining weight (normal BMI): +2 MATERIALS when staying in healthy range
         # - Off-target: +0 MATERIALS
+        # All goals reward equally to ensure fairness regardless of health journey!
+        materials_to_add = 0
         if CITY_AVAILABLE:
             try:
-                from city import add_city_resource
-                materials_to_add = 0
+                from city import add_city_resource, get_active_construction_info
                 
                 if self.blocker.weight_goal and len(self.blocker.weight_entries) >= 2:
                     # Get previous weight (second to last entry after adding current)
@@ -7631,22 +7632,39 @@ class WeightTab(QtWidgets.QWidget):
                         weight_change = weight_kg - prev_weight
                         goal_weight = self.blocker.weight_goal
                         
-                        # Determine if user is moving toward goal
+                        # Determine user's goal based on comparing goal to previous weight
                         is_losing_goal = goal_weight < prev_weight
                         is_gaining_goal = goal_weight > prev_weight
-                        is_maintain_goal = abs(goal_weight - prev_weight) < 1.0  # Within 1kg
                         
-                        # Check progress toward goal
+                        # For maintaining, check if user is within healthy BMI range (18.5-25)
+                        is_in_healthy_bmi = False
+                        height_m = self.blocker.weight_height / 100.0 if self.blocker.weight_height else 0
+                        if height_m > 0:
+                            current_bmi = weight_kg / (height_m ** 2)
+                            is_in_healthy_bmi = 18.5 <= current_bmi <= 25.0
+                        
+                        is_maintain_goal = abs(goal_weight - prev_weight) < 1.0  # Within 1kg of goal
+                        
+                        # Check progress toward goal - ALL reward +2 equally
                         if is_losing_goal and weight_change < 0:
-                            materials_to_add = 2  # Losing weight when goal is to lose
+                            materials_to_add = 2  # Losing weight when overweight
                         elif is_gaining_goal and weight_change > 0:
-                            materials_to_add = 2  # Gaining weight when goal is to gain
-                        elif is_maintain_goal and abs(weight_change) < 0.5:
-                            materials_to_add = 1  # Maintaining when goal is to maintain
-                        # else: off-target, 0 materials
+                            materials_to_add = 2  # Gaining weight when underweight
+                        elif is_maintain_goal and is_in_healthy_bmi and abs(weight_change) < 0.5:
+                            materials_to_add = 2  # Maintaining weight AND within healthy BMI (18.5-25)
+                        # else: off-target or not in healthy BMI range, 0 materials
                 
                 if materials_to_add > 0:
                     add_city_resource(self.blocker.adhd_buster, "materials", materials_to_add)
+                    
+                    # Show city stockpile toast (materials are always stockpiled, never flow to buildings)
+                    try:
+                        from city import get_resources
+                        resources = get_resources(self.blocker.adhd_buster)
+                        total_materials = resources.get("materials", 0)
+                        show_perk_toast(f"🏗️ +{materials_to_add} Materials stockpiled ({total_materials} total)", "🧱", self)
+                    except Exception:
+                        pass
             except Exception:
                 pass
         
@@ -8983,15 +9001,29 @@ class ActivityTab(QtWidgets.QWidget):
         
         self.blocker.save_config()
         
-        # Award city activity resource (per design doc):
-        # Base: 1 per activity logged, Duration bonus: +1 per 30 min
+        # Award city activity resource based on EFFECTIVE minutes (duration × intensity)
+        # This rewards more intense and longer activities proportionally
+        # Formula: Base +1 per activity, plus +1 per 20 effective minutes
+        city_activity_earned = 0
         if CITY_AVAILABLE:
             try:
-                from city import add_city_resource
+                from city import add_city_resource, get_active_construction_info
+                
+                # Calculate effective minutes (factors in both duration and intensity)
+                effective_mins = 0
+                if rewards and rewards.get("effective_minutes"):
+                    effective_mins = rewards["effective_minutes"]
+                else:
+                    # Fallback: just use raw duration if rewards not available
+                    effective_mins = duration
+                
+                # Base: +1 for logging any activity
+                # Bonus: +1 per 20 effective minutes (rewards intensity!)
                 base_amount = 1
-                duration_bonus = duration // 30  # +1 per 30 min
-                activity_resources = base_amount + duration_bonus
-                add_city_resource(self.blocker.adhd_buster, "activity", activity_resources)
+                effective_bonus = int(effective_mins // 20)
+                city_activity_earned = base_amount + effective_bonus
+                
+                add_city_resource(self.blocker.adhd_buster, "activity", city_activity_earned)
             except Exception:
                 pass
         
@@ -9012,7 +9044,7 @@ class ActivityTab(QtWidgets.QWidget):
         
         # Process rewards
         if rewards and GAMIFICATION_AVAILABLE:
-            self._process_rewards(rewards, coins_earned=coins_earned)
+            self._process_rewards(rewards, coins_earned=coins_earned, city_activity_earned=city_activity_earned)
         
         # Update main timeline widget if parent window has it
         if self.parent() and hasattr(self.parent(), 'timeline_widget'):
@@ -9025,7 +9057,7 @@ class ActivityTab(QtWidgets.QWidget):
         self.note_input.clear()
         self._refresh_display()
     
-    def _process_rewards(self, rewards: dict, coins_earned: int = 0) -> None:
+    def _process_rewards(self, rewards: dict, coins_earned: int = 0, city_activity_earned: int = 0) -> None:
         """Process and show activity rewards."""
         items_earned = []
         new_milestone_ids = []
@@ -9099,6 +9131,20 @@ class ActivityTab(QtWidgets.QWidget):
                 extra_msgs.append(f"Effective minutes: {rewards['effective_minutes']:.0f}")
             if rewards.get("current_streak", 0) > 0:
                 extra_msgs.append(f"Streak: {rewards['current_streak']} days 🔥")
+            
+            # Show city building contribution (effort resources flow to active construction only)
+            if city_activity_earned > 0:
+                try:
+                    from city import get_active_construction_info
+                    active_build = get_active_construction_info(self.blocker.adhd_buster)
+                    if active_build:
+                        building_name = active_build.get("building_name", "Building")
+                        progress_pct = active_build.get("effort_progress_percent", 0)
+                        extra_msgs.append(f"🏗️ +{city_activity_earned} Activity → {building_name} ({progress_pct:.0f}%)")
+                    else:
+                        extra_msgs.append(f"⚠️ No building under construction (Activity not applied)")
+                except Exception:
+                    extra_msgs.append(f"🏗️ +{city_activity_earned} Activity")
             
             # Get entity perk contributors for luck/rarity bonuses
             entity_perk_contributors = []
@@ -15244,8 +15290,13 @@ class HydrationTab(QtWidgets.QWidget):
             # Award city water resource
             if CITY_AVAILABLE:
                 try:
-                    from city import add_city_resource
+                    from city import add_city_resource, get_resources
                     add_city_resource(self.blocker.adhd_buster, "water", 1)
+                    
+                    # Show city stockpile toast (water is always stockpiled, never flows to buildings)
+                    resources = get_resources(self.blocker.adhd_buster)
+                    total_water = resources.get("water", 0)
+                    show_perk_toast(f"🏗️ +1 Water stockpiled ({total_water} total)", "💧", self)
                 except Exception:
                     pass
         else:
@@ -16513,14 +16564,30 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 
             current = equipped.get(slot)
             if current:
+                current_id = current.get("item_id")
+                current_ts = current.get("obtained_at")
+                current_slot = current.get("slot")
                 for i in range(1, combo.count()):
-                    if combo.itemData(i) and combo.itemData(i).get("name") == current.get("name"):
+                    item_data = combo.itemData(i)
+                    if not item_data:
+                        continue
+                    # Match by item_id first, then by timestamp+slot
+                    item_id = item_data.get("item_id")
+                    if current_id and item_id and current_id == item_id:
                         combo.setCurrentIndex(i)
                         # Apply color to the combo box text for selected item
                         curr_rarity = current.get("rarity", "Common")
                         curr_color = rarity_colors.get(curr_rarity, "#9e9e9e")
                         combo.setStyleSheet(f"QComboBox {{ color: {curr_color}; font-weight: bold; }}")
                         break
+                    elif not current_id and not item_id:
+                        # Fallback: match by timestamp + slot
+                        if item_data.get("obtained_at") == current_ts and item_data.get("slot") == current_slot:
+                            combo.setCurrentIndex(i)
+                            curr_rarity = current.get("rarity", "Common")
+                            curr_color = rarity_colors.get(curr_rarity, "#9e9e9e")
+                            combo.setStyleSheet(f"QComboBox {{ color: {curr_color}; font-weight: bold; }}")
+                            break
             combo.currentIndexChanged.connect(lambda idx, s=slot, c=combo: self._on_equip_change(s, c))
             self.slot_combos[slot] = combo
             # Use themed slot display name - power info shown in separate label
@@ -17387,12 +17454,25 @@ class ADHDBusterTab(QtWidgets.QWidget):
             current = equipped.get(slot)
             if current:
                 found = False
+                current_id = current.get("item_id")
+                current_ts = current.get("obtained_at")
+                current_slot = current.get("slot")
                 for i in range(1, combo.count()):
                     item_data = combo.itemData(i)
-                    if item_data and item_data.get("obtained_at") == current.get("obtained_at"):
+                    if not item_data:
+                        continue
+                    # Match by item_id first, then by timestamp+slot
+                    item_id = item_data.get("item_id")
+                    if current_id and item_id and current_id == item_id:
                         combo.setCurrentIndex(i)
                         found = True
                         break
+                    elif not current_id and not item_id:
+                        # Fallback: match by timestamp + slot
+                        if item_data.get("obtained_at") == current_ts and item_data.get("slot") == current_slot:
+                            combo.setCurrentIndex(i)
+                            found = True
+                            break
                 if not found:
                     # Item no longer in inventory (merged/deleted) - auto-unequip it
                     equipped[slot] = None
@@ -17464,12 +17544,25 @@ class ADHDBusterTab(QtWidgets.QWidget):
         current = equipped.get(slot)
         if current:
             found = False
+            current_id = current.get("item_id")
+            current_ts = current.get("obtained_at")
+            current_slot = current.get("slot")
             for i in range(1, combo.count()):
                 item_data = combo.itemData(i)
-                if item_data and item_data.get("obtained_at") == current.get("obtained_at"):
+                if not item_data:
+                    continue
+                # Match by item_id first, then by timestamp+slot
+                item_id = item_data.get("item_id")
+                if current_id and item_id and current_id == item_id:
                     combo.setCurrentIndex(i)
                     found = True
                     break
+                elif not current_id and not item_id:
+                    # Fallback: match by timestamp + slot
+                    if item_data.get("obtained_at") == current_ts and item_data.get("slot") == current_slot:
+                        combo.setCurrentIndex(i)
+                        found = True
+                        break
             if not found:
                 # Item no longer in inventory (merged/deleted) - auto-unequip it
                 equipped[slot] = None
@@ -17490,12 +17583,15 @@ class ADHDBusterTab(QtWidgets.QWidget):
     def _is_item_equipped(self, item: dict, equipped: dict) -> bool:
         """Check if an item is currently equipped using multiple methods.
         
-        Uses timestamp matching as primary check, falls back to name+slot+rarity
-        matching for items without timestamps (legacy data).
+        Priority:
+        1. item_id match (most reliable, unique per item)
+        2. obtained_at timestamp match (for items without item_id)
+        3. name+slot+rarity match (legacy fallback, only if both lack timestamps)
         """
         if not item or not equipped:
             return False
         
+        item_id = item.get("item_id")
         item_ts = item.get("obtained_at")
         item_name = item.get("name", "")
         item_slot = item.get("slot", "")
@@ -17505,13 +17601,28 @@ class ADHDBusterTab(QtWidgets.QWidget):
             if not eq_item:
                 continue
             
-            # Primary check: timestamp match
-            eq_ts = eq_item.get("obtained_at")
-            if item_ts and eq_ts and item_ts == eq_ts:
-                return True
+            # Primary check: item_id match (unique identifier)
+            eq_id = eq_item.get("item_id")
+            if item_id and eq_id:
+                if item_id == eq_id:
+                    return True
+                # Both have IDs but don't match = different items
+                continue
             
-            # Fallback for items without timestamps: match by name, slot, and rarity
-            if (not item_ts or not eq_ts):
+            # Secondary check: timestamp match (both must have timestamps)
+            eq_ts = eq_item.get("obtained_at")
+            if item_ts and eq_ts:
+                if item_ts == eq_ts:
+                    # Timestamp match - but check slot to avoid false positives from batch generation
+                    # Two items with same timestamp but different slots are different items
+                    if eq_item.get("slot") == item_slot:
+                        return True
+                # If timestamps exist but don't match (or slots differ), continue checking
+                continue
+            
+            # Fallback ONLY if BOTH items lack timestamps AND item_ids (legacy data):
+            # Match by name, slot, and rarity
+            if not item_ts and not eq_ts and not item_id and not eq_id:
                 if (eq_item.get("name") == item_name and 
                     eq_item.get("slot") == item_slot and
                     eq_item.get("rarity") == item_rarity):
@@ -18109,7 +18220,17 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 self.blocker.save_config()
             
             # Remove the salvaged item from the items to be deleted
-            items = [i for i in items if i.get("obtained_at") != salvaged_item.get("obtained_at")]
+            # Use item_id for matching, fallback to timestamp+slot
+            salvage_id = salvaged_item.get("item_id")
+            salvage_ts = salvaged_item.get("obtained_at")
+            salvage_slot = salvaged_item.get("slot")
+            items = [
+                i for i in items 
+                if not (
+                    (salvage_id and i.get("item_id") == salvage_id) or
+                    (not salvage_id and i.get("obtained_at") == salvage_ts and i.get("slot") == salvage_slot)
+                )
+            ]
         
         # Use GameState manager to perform the merge atomically
         if self._game_state:
@@ -18584,13 +18705,24 @@ class SellItemsDialog(StyledDialog):
             show_info(self, "Sell Items", "No items to sell!")
             return
 
-        # Get equipped item timestamps
-        equipped_ts = {item.get("obtained_at") for item in equipped.values() if item}
+        # Get equipped item identifiers (item_id preferred, fallback to timestamp+slot tuple)
+        equipped_ids = set()
+        for eq in equipped.values():
+            if eq:
+                if eq.get("item_id"):
+                    equipped_ids.add(("id", eq.get("item_id")))
+                else:
+                    equipped_ids.add(("ts_slot", eq.get("obtained_at"), eq.get("slot")))
 
         # Find items of this rarity that are not equipped
+        def is_equipped(item):
+            if item.get("item_id"):
+                return ("id", item.get("item_id")) in equipped_ids
+            return ("ts_slot", item.get("obtained_at"), item.get("slot")) in equipped_ids
+        
         to_sell = [
             item for item in inventory
-            if item.get("rarity") == rarity and item.get("obtained_at") not in equipped_ts
+            if item.get("rarity") == rarity and not is_equipped(item)
         ]
 
         if not to_sell:
@@ -18638,11 +18770,22 @@ class SellItemsDialog(StyledDialog):
             show_info(self, "Sell Items", "No items to sell!")
             return
 
-        # Get equipped item timestamps
-        equipped_ts = {item.get("obtained_at") for item in equipped.values() if item}
+        # Get equipped item identifiers (item_id preferred, fallback to timestamp+slot tuple)
+        equipped_ids = set()
+        for eq in equipped.values():
+            if eq:
+                if eq.get("item_id"):
+                    equipped_ids.add(("id", eq.get("item_id")))
+                else:
+                    equipped_ids.add(("ts_slot", eq.get("obtained_at"), eq.get("slot")))
 
         # Filter out equipped items
-        sellable_items = [item for item in inventory if item.get("obtained_at") not in equipped_ts]
+        def is_equipped(item):
+            if item.get("item_id"):
+                return ("id", item.get("item_id")) in equipped_ids
+            return ("ts_slot", item.get("obtained_at"), item.get("slot")) in equipped_ids
+        
+        sellable_items = [item for item in inventory if not is_equipped(item)]
 
         if not sellable_items:
             show_info(self, "Sell Items", "No sellable items (all are equipped)!")
@@ -18696,15 +18839,38 @@ class SellItemsDialog(StyledDialog):
         scroll.setWidget(scroll_widget)
         layout.addWidget(scroll)
 
-        # Coin preview
+        # Coin preview with breakdown tooltip
         coin_preview = QtWidgets.QLabel("Selected: 0 items → 0 coins")
         coin_preview.setStyleSheet("font-weight: bold; color: #ff9800; font-size: 12px;")
         layout.addWidget(coin_preview)
+        
+        # Get current coin balance for running total
+        current_coins = self.blocker.adhd_buster.get("coins", 0)
 
         def update_preview():
             selected = [cb for cb in checkboxes if cb.isChecked()]
             total_coins = sum(self._calculate_coin_value(cb.item_data, sell_perks) for cb in selected)
-            coin_preview.setText(f"Selected: {len(selected)} items → {total_coins} coins")
+            coin_preview.setText(f"Selected: {len(selected)} items → +{total_coins} 🪙")
+            
+            # Build breakdown tooltip
+            if selected:
+                # Group by rarity for summary
+                rarity_counts = {}
+                for cb in selected:
+                    rarity = cb.item_data.get("rarity", "Common")
+                    rarity_counts[rarity] = rarity_counts.get(rarity, 0) + 1
+                
+                breakdown = ["💰 Sell Breakdown:", "─" * 20]
+                for rarity in ["Legendary", "Epic", "Rare", "Uncommon", "Common"]:
+                    if rarity in rarity_counts:
+                        breakdown.append(f"{rarity}: {rarity_counts[rarity]} items")
+                breakdown.append("─" * 20)
+                breakdown.append(f"Total: +{total_coins} coins")
+                breakdown.append(f"After sale: {current_coins + total_coins} 🪙")
+                
+                coin_preview.setToolTip("\n".join(breakdown))
+            else:
+                coin_preview.setToolTip("Select items to see breakdown")
 
         for cb in checkboxes:
             cb.stateChanged.connect(update_preview)

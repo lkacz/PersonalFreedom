@@ -4724,6 +4724,10 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     # Roll for lucky options
     lucky_options = roll_lucky_options(rarity)
     
+    # Generate unique ID for this item (prevents timestamp collision issues)
+    import uuid
+    unique_id = str(uuid.uuid4())
+    
     item_data = {
         "name": name,
         "rarity": rarity,
@@ -4732,7 +4736,8 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         "color": ITEM_RARITIES[rarity]["color"],
         "power": RARITY_POWER[rarity],
         "story_theme": theme_id,  # Track which theme generated this item
-        "obtained_at": datetime.now().isoformat()
+        "obtained_at": datetime.now().isoformat(),
+        "item_id": unique_id  # Unique identifier for each item
     }
     
     # Add lucky options if any were rolled
@@ -4912,8 +4917,17 @@ def find_potential_set_bonuses(inventory: list, equipped: dict) -> list:
             if theme not in theme_items:
                 theme_items[theme] = []
             # Track if item is equipped or in inventory
+            # BUG FIX: Use item_id first, then obtained_at+slot to avoid false positives from batch generation
+            item_id = item.get("item_id")
+            item_ts = item.get("obtained_at")
+            item_slot = item.get("slot")
             is_equipped = any(
-                eq and eq.get("name") == item.get("name") and eq.get("obtained_at") == item.get("obtained_at")
+                eq and (
+                    # Primary: match by item_id if both have it
+                    (item_id and eq.get("item_id") and item_id == eq.get("item_id")) or
+                    # Secondary: match by timestamp + slot (both must match)
+                    (not item_id and not eq.get("item_id") and item_ts and eq.get("obtained_at") == item_ts and eq.get("slot") == item_slot)
+                )
                 for eq in equipped.values()
             )
             theme_items[theme].append({
@@ -4981,16 +4995,23 @@ def optimize_equipped_gear(adhd_buster: dict, mode: str = "power", target_opt: s
     current_equipped = adhd_buster.get("equipped", {})
     
     # Get all available items (inventory + currently equipped)
-    # Use a set of (name, obtained_at) tuples to avoid duplicates
+    # Use item_id for deduplication, falling back to (name, obtained_at, slot)
     # BUG FIX #37: Deep copy to prevent mutation
     all_items = [copy.deepcopy(item) for item in inventory if item]
-    seen_items = {
-        (item.get("name"), item.get("obtained_at")) 
-        for item in all_items
-    }
+    seen_items = set()
+    for item in all_items:
+        # Use item_id if available, else (name, obtained_at, slot)
+        if item.get("item_id"):
+            seen_items.add(("id", item.get("item_id")))
+        else:
+            seen_items.add(("key", item.get("name"), item.get("obtained_at"), item.get("slot")))
+    
     for slot, item in current_equipped.items():
         if item:
-            item_key = (item.get("name"), item.get("obtained_at"))
+            if item.get("item_id"):
+                item_key = ("id", item.get("item_id"))
+            else:
+                item_key = ("key", item.get("name"), item.get("obtained_at"), item.get("slot"))
             if item_key not in seen_items:
                 all_items.append(copy.deepcopy(item))  # BUG FIX #37: Deep copy
                 seen_items.add(item_key)

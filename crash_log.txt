@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 26204, in main
-    window = FocusBlockerWindow(username=selected_user)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 24470, in __init__
-    self.city_tab.request_save.connect(self._save_adhd_data)
-                                       ^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'FocusBlockerWindow' object has no attribute '_save_adhd_data'

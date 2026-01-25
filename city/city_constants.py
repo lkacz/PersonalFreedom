@@ -10,7 +10,17 @@ from typing import List
 # RESOURCE SYSTEM
 # ============================================================================
 
+# All resource types used in construction
 RESOURCE_TYPES: List[str] = ["water", "materials", "activity", "focus"]
+
+# STOCKPILE RESOURCES: Can be accumulated and spent later
+# Water = hydration, Materials = weight management
+STOCKPILE_RESOURCES: List[str] = ["water", "materials"]
+
+# EFFORT RESOURCES: Cannot be accumulated - flow directly to active construction
+# Activity = physical activity, Focus = focus sessions
+# These represent REAL-TIME EFFORT the user puts into building
+EFFORT_RESOURCES: List[str] = ["activity", "focus"]
 
 RESOURCE_EMOJI = {
     "water": "💧",
