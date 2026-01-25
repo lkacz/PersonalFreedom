@@ -504,7 +504,11 @@ def invest_resources(
         if cell.get("status") == CellStatus.PLACED.value:
             cell["status"] = CellStatus.BUILDING.value
         
-        building_def = CITY_BUILDINGS.get(cell["building_id"], {})
+        building_id = cell.get("building_id")
+        if not building_id:
+            return {"success": False, "error": "Cell has no building"}
+        
+        building_def = CITY_BUILDINGS.get(building_id, {})
         level = cell.get("level", 1)
         requirements = get_level_requirements(building_def, level)
         progress = cell.get("construction_progress", {})
@@ -547,7 +551,7 @@ def invest_resources(
                 try:
                     game_state._emit(
                         game_state.city_building_completed,
-                        cell["building_id"]
+                        building_id
                     )
                 except Exception:
                     pass
@@ -557,7 +561,7 @@ def invest_resources(
                 try:
                     game_state._emit(
                         game_state.city_building_progress,
-                        cell["building_id"]
+                        building_id
                     )
                 except Exception:
                     pass
@@ -621,7 +625,11 @@ def can_upgrade(adhd_buster: dict, row: int, col: int) -> Tuple[bool, str]:
     if cell.get("status") != CellStatus.COMPLETE.value:
         return False, "Not complete"
     
-    building_def = CITY_BUILDINGS.get(cell["building_id"], {})
+    building_id = cell.get("building_id")
+    if not building_id:
+        return False, "Cell has no building"
+    
+    building_def = CITY_BUILDINGS.get(building_id, {})
     max_level = building_def.get("max_level", 1)
     current_level = cell.get("level", 1)
     
