@@ -175,10 +175,27 @@ class UserManager:
             pass
         return None
 
-    def clear_last_user(self):
-        """Clear the last user setting."""
-        if self.last_user_file.exists():
+    def clear_last_user(self) -> bool:
+        """Clear the last user setting.
+        
+        Returns:
+            True if cleared successfully or file didn't exist, False on error.
+        """
+        if not self.last_user_file.exists():
+            return True
+        
+        try:
+            self.last_user_file.unlink()
+            return True
+        except PermissionError:
+            # Try to clear file content instead of deleting
             try:
-                self.last_user_file.unlink()
+                with open(self.last_user_file, 'w', encoding='utf-8') as f:
+                    f.write("")  # Empty the file
+                return True
             except Exception:
                 pass
+        except Exception:
+            pass
+        
+        return False
