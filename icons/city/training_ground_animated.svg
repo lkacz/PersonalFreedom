@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Training Ground with exercising figure -->
+  
+  <!-- Ground/Arena -->
+  <ellipse cx="32" cy="52" rx="28" ry="8" fill="#8D6E63"/>
+  <ellipse cx="32" cy="52" rx="24" ry="6" fill="#A1887F"/>
+  
+  <!-- Fence posts -->
+  <rect x="6" y="36" width="3" height="20" fill="#5D4037"/>
+  <rect x="55" y="36" width="3" height="20" fill="#5D4037"/>
+  <rect x="4" y="34" width="7" height="4" fill="#4E342E"/>
+  <rect x="53" y="34" width="7" height="4" fill="#4E342E"/>
+  
+  <!-- Fence rope -->
+  <line x1="9" y1="40" x2="55" y2="40" stroke="#795548" stroke-width="2"/>
+  <line x1="9" y1="46" x2="55" y2="46" stroke="#795548" stroke-width="2"/>
+  
+  <!-- Training dummy -->
+  <rect x="44" y="32" width="2" height="18" fill="#795548"/>
+  <circle cx="45" cy="28" r="5" fill="#FFCC80"/>
+  <ellipse cx="45" cy="38" rx="4" ry="6" fill="#E57373"/>
+  
+  <!-- Weight rack -->
+  <rect x="12" y="44" width="12" height="2" fill="#424242"/>
+  <rect x="14" y="38" width="2" height="8" fill="#616161"/>
+  <rect x="20" y="38" width="2" height="8" fill="#616161"/>
+  
+  <!-- Weights -->
+  <circle cx="14" cy="38" r="3" fill="#37474F"/>
+  <circle cx="22" cy="38" r="3" fill="#37474F"/>
+  
+  <!-- Animated exercising figure -->
+  <g>
+    <!-- Body -->
+    <circle cx="32" cy="28" r="4" fill="#FFCC80"/>
+    <rect x="30" y="32" width="4" height="10" fill="#2196F3"/>
+    
+    <!-- Arms doing jumping jacks -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 32 34;-45 32 34;0 32 34" dur="0.6s" repeatCount="indefinite"/>
+      <line x1="30" y1="34" x2="22" y2="30" stroke="#FFCC80" stroke-width="2" stroke-linecap="round"/>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 32 34;45 32 34;0 32 34" dur="0.6s" repeatCount="indefinite"/>
+      <line x1="34" y1="34" x2="42" y2="30" stroke="#FFCC80" stroke-width="2" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Legs -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 32 42;-15 32 42;0 32 42" dur="0.6s" repeatCount="indefinite"/>
+      <line x1="31" y1="42" x2="28" y2="52" stroke="#1565C0" stroke-width="3" stroke-linecap="round"/>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 32 42;15 32 42;0 32 42" dur="0.6s" repeatCount="indefinite"/>
+      <line x1="33" y1="42" x2="36" y2="52" stroke="#1565C0" stroke-width="3" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Bounce effect -->
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,-3;0,0" dur="0.6s" repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Sweat drops -->
+  <circle cx="38" cy="26" r="1" fill="#81D4FA">
+    <animate attributeName="cy" values="26;32" dur="0.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0" dur="0.8s" repeatCount="indefinite"/>
+  </circle>
+</svg>

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Royal Mint with coin shimmer -->
+  <defs>
+    <linearGradient id="goldShimmer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700">
+        <animate attributeName="offset" values="0;0.5;0" dur="2s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" style="stop-color:#FFF8DC">
+        <animate attributeName="offset" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#FFD700">
+        <animate attributeName="offset" values="1;1.5;1" dur="2s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+  </defs>
+  
+  <!-- Grand building -->
+  <rect x="6" y="26" width="52" height="30" fill="#ECEFF1"/>
+  <polygon points="6,26 32,10 58,26" fill="#CFD8DC"/>
+  
+  <!-- Columns -->
+  <rect x="10" y="30" width="5" height="26" fill="#FAFAFA"/>
+  <rect x="22" y="30" width="5" height="26" fill="#FAFAFA"/>
+  <rect x="37" y="30" width="5" height="26" fill="#FAFAFA"/>
+  <rect x="49" y="30" width="5" height="26" fill="#FAFAFA"/>
+  
+  <!-- Pediment -->
+  <polygon points="16,26 32,16 48,26" fill="#B0BEC5"/>
+  
+  <!-- Crown/crest on top -->
+  <polygon points="32,10 28,16 36,16" fill="#FFD700"/>
+  <circle cx="32" cy="10" r="3" fill="#FFD700"/>
+  
+  <!-- Grand door -->
+  <rect x="26" y="36" width="12" height="20" fill="#37474F"/>
+  <circle cx="30" cy="48" r="1" fill="#FFD700"/>
+  <circle cx="34" cy="48" r="1" fill="#FFD700"/>
+  
+  <!-- Coin symbol on door -->
+  <circle cx="32" cy="42" r="4" fill="url(#goldShimmer)" stroke="#B8860B" stroke-width="1"/>
+  <text x="32" y="44" text-anchor="middle" font-size="5" fill="#B8860B" font-weight="bold">$</text>
+  
+  <!-- Animated falling coins -->
+  <g fill="url(#goldShimmer)">
+    <circle cx="14" cy="20" r="2">
+      <animate attributeName="cy" values="20;56" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="50" cy="18" r="2">
+      <animate attributeName="cy" values="18;56" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+      <animate attributeName="opacity" values="1;0" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+    </circle>
+    <circle cx="32" cy="6" r="2.5">
+      <animate attributeName="cy" values="6;56" dur="2s" repeatCount="indefinite" begin="1s"/>
+      <animate attributeName="opacity" values="1;0" dur="2s" repeatCount="indefinite" begin="1s"/>
+    </circle>
+  </g>
+  
+  <!-- Sparkle effects -->
+  <g fill="#FFFFFF">
+    <circle cx="20" cy="22" r="1">
+      <animate attributeName="opacity" values="0;1;0" dur="1.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="44" cy="24" r="1">
+      <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite" begin="0.3s"/>
+    </circle>
+    <circle cx="32" cy="14" r="1.2">
+      <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0.6s"/>
+    </circle>
+  </g>
+</svg>

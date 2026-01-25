@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Locked overlay - for slots that require higher player level -->
+  
+  <!-- Semi-transparent dark overlay -->
+  <rect x="0" y="0" width="64" height="64" fill="#1A1A1A" opacity="0.7"/>
+  
+  <!-- Lock body -->
+  <rect x="20" y="28" width="24" height="20" rx="3" fill="#607D8B"/>
+  <rect x="22" y="30" width="20" height="16" rx="2" fill="#455A64"/>
+  
+  <!-- Lock shackle -->
+  <path d="M24 28 L24 20 C24 14 32 10 40 14 C40 14 40 20 40 28" 
+        fill="none" stroke="#78909C" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Keyhole -->
+  <circle cx="32" cy="36" r="3" fill="#263238"/>
+  <rect x="30" y="36" width="4" height="6" fill="#263238"/>
+  
+  <!-- Lock shine -->
+  <ellipse cx="26" cy="34" rx="2" ry="3" fill="#90A4AE" opacity="0.5"/>
+  
+  <!-- Level requirement text background -->
+  <rect x="8" y="50" width="48" height="12" rx="2" fill="#37474F"/>
+  
+  <!-- Placeholder text (actual level set by code) -->
+  <text x="32" y="59" text-anchor="middle" font-size="8" fill="#B0BEC5" font-family="sans-serif">
+    Level ??
+  </text>
+  
+  <!-- Subtle chain decoration -->
+  <g stroke="#546E7A" stroke-width="1.5" fill="none" opacity="0.5">
+    <ellipse cx="12" cy="32" rx="3" ry="4"/>
+    <ellipse cx="12" cy="40" rx="3" ry="4"/>
+    <ellipse cx="52" cy="32" rx="3" ry="4"/>
+    <ellipse cx="52" cy="40" rx="3" ry="4"/>
+  </g>
+</svg>

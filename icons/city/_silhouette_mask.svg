@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Silhouette mask template for showing locked/unknown buildings -->
+  
+  <!-- Base silhouette shape (generic building) -->
+  <defs>
+    <mask id="buildingMask">
+      <rect x="0" y="0" width="64" height="64" fill="white"/>
+    </mask>
+  </defs>
+  
+  <!-- Dark silhouette background -->
+  <rect x="0" y="0" width="64" height="64" fill="#263238"/>
+  
+  <!-- Generic building silhouette -->
+  <g fill="#37474F">
+    <!-- Main building body -->
+    <rect x="12" y="28" width="40" height="28"/>
+    
+    <!-- Roof -->
+    <polygon points="12,28 32,12 52,28"/>
+    
+    <!-- Windows (darker) -->
+    <rect x="18" y="34" width="8" height="8" fill="#1A1A1A"/>
+    <rect x="38" y="34" width="8" height="8" fill="#1A1A1A"/>
+    
+    <!-- Door -->
+    <rect x="27" y="40" width="10" height="16" fill="#1A1A1A"/>
+  </g>
+  
+  <!-- Question mark overlay -->
+  <g fill="#546E7A">
+    <circle cx="32" cy="24" r="10"/>
+    <text x="32" y="28" text-anchor="middle" font-size="14" fill="#ECEFF1" font-weight="bold">?</text>
+  </g>
+  
+  <!-- Subtle scan lines effect for "unknown" feel -->
+  <g stroke="#455A64" stroke-width="0.5" opacity="0.3">
+    <line x1="0" y1="8" x2="64" y2="8"/>
+    <line x1="0" y1="16" x2="64" y2="16"/>
+    <line x1="0" y1="24" x2="64" y2="24"/>
+    <line x1="0" y1="32" x2="64" y2="32"/>
+    <line x1="0" y1="40" x2="64" y2="40"/>
+    <line x1="0" y1="48" x2="64" y2="48"/>
+    <line x1="0" y1="56" x2="64" y2="56"/>
+  </g>
+</svg>

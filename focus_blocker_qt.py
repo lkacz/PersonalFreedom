@@ -17879,7 +17879,16 @@ class ADHDBusterTab(QtWidgets.QWidget):
                         if isinstance(lucky_opts, dict):
                             items_merge_luck += lucky_opts.get("merge_luck", 0)
                 
-                rate = calculate_merge_success_rate(items, items_merge_luck=items_merge_luck)
+                # Get city bonus for merge success (Forge building)
+                city_merge_bonus = 0
+                try:
+                    from gamification import get_all_perk_bonuses
+                    all_bonuses = get_all_perk_bonuses(self.blocker.adhd_buster)
+                    city_merge_bonus = all_bonuses.get("merge_success", 0)
+                except Exception:
+                    pass
+                
+                rate = calculate_merge_success_rate(items, items_merge_luck=items_merge_luck, city_bonus=city_merge_bonus)
                 result_rarity = get_merge_result_rarity(items)
                 all_legendary = all(i.get("rarity") == "Legendary" for i in items)
                 if all_legendary:

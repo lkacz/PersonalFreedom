@@ -143,7 +143,8 @@ def get_final_probability(
     hero_power: int,
     entity_power: int,
     failed_attempts: int = 0,
-    luck_bonus: float = 0.0
+    luck_bonus: float = 0.0,
+    city_bonus: float = 0.0
 ) -> float:
     """
     Calculate the final catch probability with all modifiers applied.
@@ -153,6 +154,7 @@ def get_final_probability(
         entity_power: Entity's power level
         failed_attempts: Previous failed attempts on this entity
         luck_bonus: Bonus from luck items/effects
+        city_bonus: Bonus from city buildings (University) - 0.0 to 0.15
         
     Returns:
         Final probability between 0.01 and 0.99
@@ -164,7 +166,12 @@ def get_final_probability(
     with_pity = apply_pity_bonus(base_prob, failed_attempts)
     
     # Step 3: Apply luck modifier
-    final = apply_luck_modifier(with_pity, luck_bonus)
+    with_luck = apply_luck_modifier(with_pity, luck_bonus)
+    
+    # Step 4: Apply city bonus (University building)
+    # city_bonus is a percentage (e.g., 10 = 10%), convert to decimal
+    city_modifier = city_bonus / 100.0 if city_bonus > 0 else 0.0
+    final = min(CATCH_CONFIG["probability_max"], with_luck + city_modifier)
     
     return final
 
