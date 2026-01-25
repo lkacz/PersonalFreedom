@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <radialGradient id="starGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="100%" style="stop-color:#87CEEB"/>
+    </radialGradient>
+  </defs>
+  <!-- Dome/observatory -->
+  <ellipse cx="32" cy="32" rx="24" ry="20" fill="#4A5568" stroke="#2D3748" stroke-width="2"/>
+  <!-- Dome opening -->
+  <path d="M 20 24 Q 32 8 44 24" fill="#1A202C" stroke="#2D3748"/>
+  <!-- Telescope -->
+  <line x1="32" y1="28" x2="48" y2="12" stroke="#718096" stroke-width="4"/>
+  <ellipse cx="50" cy="10" rx="4" ry="3" fill="#4A5568" stroke="#2D3748"/>
+  <!-- Base building -->
+  <rect x="16" y="48" width="32" height="12" fill="#4A5568" stroke="#2D3748" stroke-width="2"/>
+  <!-- Stars -->
+  <circle cx="8" cy="10" r="2" fill="url(#starGrad)"/>
+  <circle cx="56" cy="8" r="2" fill="url(#starGrad)"/>
+  <circle cx="52" cy="24" r="1.5" fill="url(#starGrad)"/>
+  <circle cx="12" cy="20" r="1.5" fill="url(#starGrad)"/>
+  <!-- Moon -->
+  <circle cx="14" cy="6" r="4" fill="#F6E05E"/>
+</svg>
