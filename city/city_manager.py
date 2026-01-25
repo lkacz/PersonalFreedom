@@ -272,6 +272,11 @@ def place_building(
         _logger.warning(f"Invalid cell coordinates: ({row}, {col})")
         return False
     
+    # Safe grid access - handle malformed data
+    if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+        _logger.warning(f"Grid data corrupted at ({row}, {col})")
+        return False
+    
     # Check cell is empty
     if grid[row][col] is not None:
         _logger.warning(f"Cell ({row}, {col}) is not empty")
@@ -305,6 +310,10 @@ def remove_building(
     grid = city.get("grid", [])
     
     if row < 0 or row >= GRID_ROWS or col < 0 or col >= GRID_COLS:
+        return None
+    
+    # Safe grid access - handle malformed data
+    if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
         return None
     
     cell = grid[row][col]
@@ -401,6 +410,10 @@ def get_construction_progress(adhd_buster: dict, row: int, col: int) -> dict:
     if row < 0 or row >= GRID_ROWS or col < 0 or col >= GRID_COLS:
         return {}
     
+    # Safe grid access - handle malformed data
+    if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+        return {}
+    
     cell = grid[row][col]
     if cell is None:
         return {}
@@ -457,6 +470,10 @@ def invest_resources(
     
     if row < 0 or row >= GRID_ROWS or col < 0 or col >= GRID_COLS:
         return {"success": False, "error": "Invalid coordinates"}
+    
+    # Safe grid access - handle malformed data
+    if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+        return {"success": False, "error": "Grid data corrupted"}
     
     cell = grid[row][col]
     if cell is None:
@@ -579,6 +596,10 @@ def can_upgrade(adhd_buster: dict, row: int, col: int) -> Tuple[bool, str]:
     
     if row < 0 or row >= GRID_ROWS or col < 0 or col >= GRID_COLS:
         return False, "Invalid coordinates"
+    
+    # Safe grid access - handle malformed data
+    if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+        return False, "Grid data corrupted"
     
     cell = grid[row][col]
     if cell is None:
