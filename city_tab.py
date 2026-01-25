@@ -680,7 +680,10 @@ class ConstructionDialog(StyledDialog):
         grid = city.get("grid", [])
         
         # Bounds check for grid access
-        if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+        def is_valid_cell(r, c):
+            return 0 <= r < len(grid) and 0 <= c < len(grid[r])
+        
+        if not is_valid_cell(row, col):
             _logger.warning(f"Invalid grid cell: ({row}, {col})")
             self.building_id = ""
             self.building = {}

@@ -32,6 +32,19 @@ from .city_buildings import CITY_BUILDINGS
 _logger = logging.getLogger(__name__)
 
 
+def _is_valid_grid_cell(grid: list, row: int, col: int) -> bool:
+    """
+    Check if grid[row][col] is safely accessible.
+    
+    Returns True if the cell exists, False if grid is malformed or coords are out of bounds.
+    """
+    if row < 0 or row >= len(grid):
+        return False
+    if col < 0 or col >= len(grid[row]):
+        return False
+    return True
+
+
 # ============================================================================
 # STATE ACCESS
 # ============================================================================
@@ -273,7 +286,7 @@ def place_building(
         return False
     
     # Safe grid access - handle malformed data
-    if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+    if not _is_valid_grid_cell(grid, row, col):
         _logger.warning(f"Grid data corrupted at ({row}, {col})")
         return False
     
@@ -313,7 +326,7 @@ def remove_building(
         return None
     
     # Safe grid access - handle malformed data
-    if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+    if not _is_valid_grid_cell(grid, row, col):
         return None
     
     cell = grid[row][col]
@@ -411,7 +424,7 @@ def get_construction_progress(adhd_buster: dict, row: int, col: int) -> dict:
         return {}
     
     # Safe grid access - handle malformed data
-    if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+    if not _is_valid_grid_cell(grid, row, col):
         return {}
     
     cell = grid[row][col]
@@ -472,7 +485,7 @@ def invest_resources(
         return {"success": False, "error": "Invalid coordinates"}
     
     # Safe grid access - handle malformed data
-    if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+    if not _is_valid_grid_cell(grid, row, col):
         return {"success": False, "error": "Grid data corrupted"}
     
     cell = grid[row][col]
@@ -598,7 +611,7 @@ def can_upgrade(adhd_buster: dict, row: int, col: int) -> Tuple[bool, str]:
         return False, "Invalid coordinates"
     
     # Safe grid access - handle malformed data
-    if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+    if not _is_valid_grid_cell(grid, row, col):
         return False, "Grid data corrupted"
     
     cell = grid[row][col]
@@ -628,7 +641,7 @@ def start_upgrade(adhd_buster: dict, row: int, col: int) -> bool:
     grid = city.get("grid", [])
     
     # Safe grid access - handle malformed data
-    if row >= len(grid) or col >= len(grid[row]) if row < len(grid) else True:
+    if not _is_valid_grid_cell(grid, row, col):
         return False
     
     cell = grid[row][col]
