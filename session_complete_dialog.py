@@ -215,6 +215,24 @@ class SessionCompleteDialog(StyledDialog):
             streak_label.setStyleSheet("color: #f44336; font-weight: bold; font-size: 13px;")
             rewards_layout.addWidget(streak_label)
         
+        # Entity Perks Applied (show which entity bonuses contributed)
+        entity_perks = self.rewards.get("entity_perks_applied", [])
+        if entity_perks:
+            perks_label = QtWidgets.QLabel("🐾 Entity Perks Active:")
+            perks_label.setStyleSheet("color: #7FDBFF; font-weight: bold; font-size: 11px; margin-top: 6px;")
+            rewards_layout.addWidget(perks_label)
+            
+            for perk in entity_perks[:3]:  # Show max 3 perks to avoid clutter
+                perk_text = perk.get("description", "Entity Bonus")
+                perk_item = QtWidgets.QLabel(f"  • {perk_text}")
+                perk_item.setStyleSheet("color: #888; font-size: 10px;")
+                rewards_layout.addWidget(perk_item)
+            
+            if len(entity_perks) > 3:
+                more_label = QtWidgets.QLabel(f"  ...and {len(entity_perks) - 3} more bonuses")
+                more_label.setStyleSheet("color: #666; font-size: 9px; font-style: italic;")
+                rewards_layout.addWidget(more_label)
+        
         # If no rewards, show motivational message
         if not any([self.rewards.get("xp"), self.rewards.get("coins"), 
                    self.rewards.get("items"), self.rewards.get("streak_maintained")]):

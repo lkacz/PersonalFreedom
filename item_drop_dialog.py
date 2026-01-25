@@ -249,7 +249,8 @@ class EnhancedItemDropDialog(StyledDialog):
     
     def __init__(self, item: dict, equipped_item: Optional[dict] = None,
                  session_minutes: int = 0, streak_days: int = 0, coins_earned: int = 0,
-                 parent: Optional[QtWidgets.QWidget] = None, story_id: Optional[str] = None):
+                 parent: Optional[QtWidgets.QWidget] = None, story_id: Optional[str] = None,
+                 entity_perk_contributors: Optional[list] = None):
         # Handle None item gracefully
         self.item = item if item is not None else {}
         self.equipped_item = equipped_item
@@ -257,6 +258,7 @@ class EnhancedItemDropDialog(StyledDialog):
         self.streak_days = streak_days
         self.coins_earned = coins_earned
         self._story_id = story_id  # Store for themed slot names
+        self._entity_perk_contributors = entity_perk_contributors or []  # Entity perks that helped
         
         # Validate and set defaults
         self.item.setdefault("name", "Unknown Item")
@@ -343,6 +345,10 @@ class EnhancedItemDropDialog(StyledDialog):
         # Comparison with equipped
         comparison = ItemComparisonWidget(self.item, self.equipped_item)
         layout.addWidget(comparison)
+        
+        # Entity perk bonus section - show when entities helped boost rarity
+        if self._entity_perk_contributors:
+            self._add_entity_perk_section(layout)
         
         # Coins earned
         if self.coins_earned > 0:
@@ -484,6 +490,106 @@ class EnhancedItemDropDialog(StyledDialog):
         """)
         
         return visual
+    
+    def _add_entity_perk_section(self, layout: QtWidgets.QVBoxLayout):
+        """Add section showing entity perks that helped with this drop."""
+        try:
+            if not self._entity_perk_contributors:
+                return
+            
+            # Calculate total bonus
+            total_rarity = sum(c.get("value", 0) for c in self._entity_perk_contributors 
+                              if c.get("perk_type") == "rarity_bias")
+            total_drop = sum(c.get("value", 0) for c in self._entity_perk_contributors 
+                            if c.get("perk_type") == "drop_luck")
+            
+            if total_rarity <= 0 and total_drop <= 0:
+                return
+            
+            # Create section container
+            section = QtWidgets.QFrame()
+            section.setStyleSheet("""
+                QFrame {
+                    background-color: rgba(59, 130, 246, 0.1);
+                    border: 1px solid #3b82f6;
+                    border-radius: 6px;
+                    padding: 4px;
+                    margin: 4px 0;
+                }
+            """)
+            section_layout = QtWidgets.QVBoxLayout(section)
+            section_layout.setContentsMargins(8, 6, 8, 6)
+            section_layout.setSpacing(4)
+            
+            # Header
+            bonus_parts = []
+            if total_rarity > 0:
+                bonus_parts.append(f"+{total_rarity}% rare finds")
+            if total_drop > 0:
+                bonus_parts.append(f"+{total_drop}% drop luck")
+            header_text = "🐾 Entity Patrons: " + ", ".join(bonus_parts)
+            
+            header = QtWidgets.QLabel(header_text)
+            header.setStyleSheet("color: #7986cb; font-weight: bold; font-size: 10px; background: transparent;")
+            header.setAlignment(QtCore.Qt.AlignCenter)
+            section_layout.addWidget(header)
+            
+            # Entity mini-cards in horizontal layout
+            cards_container = QtWidgets.QWidget()
+            cards_container.setStyleSheet("background: transparent;")
+            cards_layout = QtWidgets.QHBoxLayout(cards_container)
+            cards_layout.setContentsMargins(0, 0, 0, 0)
+            cards_layout.setSpacing(6)
+            cards_layout.addStretch()
+            
+            for entity_data in self._entity_perk_contributors[:4]:  # Limit to 4 for space
+                card = QtWidgets.QFrame()
+                is_exceptional = entity_data.get("is_exceptional", False)
+                card.setStyleSheet("""
+                    QFrame {
+                        background-color: #2a2a2a;
+                        border: 1px solid #444;
+                        border-radius: 4px;
+                    }
+                """)
+                
+                card_layout = QtWidgets.QHBoxLayout(card)
+                card_layout.setContentsMargins(4, 2, 4, 2)
+                card_layout.setSpacing(3)
+                
+                # Entity name and bonus
+                name = entity_data.get("name", "Unknown")
+                value = entity_data.get("value", 0)
+                perk_type = entity_data.get("perk_type", "")
+                icon = "🎲" if perk_type == "rarity_bias" else "🍀"
+                display_name = name[:10] + "..." if len(name) > 10 else name
+                
+                if is_exceptional:
+                    style = "color: #ffd700; font-weight: bold; font-size: 9px; background: transparent;"
+                    prefix = "⭐"
+                else:
+                    style = "color: #ccc; font-size: 9px; background: transparent;"
+                    prefix = ""
+                
+                text_lbl = QtWidgets.QLabel(f"{prefix}{display_name} {icon}+{value}%")
+                text_lbl.setStyleSheet(style)
+                text_lbl.setToolTip(entity_data.get("description", f"{name}: +{value}%"))
+                card_layout.addWidget(text_lbl)
+                
+                cards_layout.addWidget(card)
+            
+            if len(self._entity_perk_contributors) > 4:
+                more_lbl = QtWidgets.QLabel(f"+{len(self._entity_perk_contributors) - 4} more")
+                more_lbl.setStyleSheet("color: #888; font-size: 9px; background: transparent;")
+                cards_layout.addWidget(more_lbl)
+            
+            cards_layout.addStretch()
+            section_layout.addWidget(cards_container)
+            
+            layout.addWidget(section)
+            
+        except Exception as e:
+            print(f"[ItemDropDialog] Error adding entity perk section: {e}")
     
     def _start_celebration(self):
         """Start celebration animation."""

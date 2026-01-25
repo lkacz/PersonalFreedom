@@ -1586,6 +1586,83 @@ def get_entity_luck_perks(adhd_buster: dict) -> dict:
     return result
 
 
+def get_entity_luck_perk_contributors(adhd_buster: dict, perk_filter: str = None) -> dict:
+    """
+    Get luck-related entity perk bonuses with detailed contributor info.
+    
+    Args:
+        adhd_buster: The main data dict containing entitidex progress
+        perk_filter: Optional filter for specific perk type ("rarity_bias", "drop_luck", etc.)
+        
+    Returns:
+        Dict with totals and list of contributor dicts with entity details
+    """
+    result = {
+        "total_rarity_bias": 0,
+        "total_drop_luck": 0,
+        "contributors": [],
+    }
+    
+    try:
+        from entitidex.entity_perks import ENTITY_PERKS, PerkType
+        from entitidex.entity_pools import get_entity_by_id
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        collected = entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set()))
+        exceptional = entitidex_data.get("exceptional_entities", {})
+        
+        if not collected:
+            return result
+        
+        luck_perk_types = {
+            PerkType.RARITY_BIAS: "rarity_bias",
+            PerkType.DROP_LUCK: "drop_luck",
+        }
+        
+        for entity_id in collected:
+            perk = ENTITY_PERKS.get(entity_id)
+            if perk and perk.perk_type in luck_perk_types:
+                perk_type_name = luck_perk_types[perk.perk_type]
+                
+                # Apply filter if specified
+                if perk_filter and perk_type_name != perk_filter:
+                    continue
+                
+                is_exceptional = entity_id in exceptional
+                value = perk.exceptional_value if is_exceptional else perk.normal_value
+                
+                entity = get_entity_by_id(entity_id)
+                entity_name = entity.name if entity else entity_id
+                
+                if is_exceptional and perk.exceptional_description:
+                    description = perk.exceptional_description.format(value=int(value))
+                else:
+                    description = perk.description.format(value=int(value))
+                
+                result["contributors"].append({
+                    "entity_id": entity_id,
+                    "name": entity_name,
+                    "perk_type": perk_type_name,
+                    "value": int(value),
+                    "icon": perk.icon,
+                    "is_exceptional": is_exceptional,
+                    "description": description,
+                })
+                
+                if perk_type_name == "rarity_bias":
+                    result["total_rarity_bias"] += int(value)
+                elif perk_type_name == "drop_luck":
+                    result["total_drop_luck"] += int(value)
+        
+        result["contributors"].sort(key=lambda x: x["value"], reverse=True)
+        
+    except Exception as e:
+        print(f"[Entity Perks] Error getting luck perk contributors: {e}")
+        
+    return result
+
+
 def get_entity_qol_perks(adhd_buster: dict) -> dict:
     """
     Get quality-of-life entity perk bonuses.

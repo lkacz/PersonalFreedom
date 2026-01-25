@@ -225,3 +225,81 @@ def get_perk_description(entity_id: str, is_exceptional: bool = False) -> str:
         description = perk.description.format(value=value)
     
     return f"{perk.icon} {description}"
+
+
+# =============================================================================
+# PERK EXPLANATIONS - Detailed descriptions of how each perk works
+# =============================================================================
+
+PERK_EXPLANATIONS: Dict[PerkType, str] = {
+    # Hero Stats
+    PerkType.POWER_FLAT: "Permanently adds to your Hero Power, increasing your overall strength in all game mechanics.",
+    
+    # Economics
+    PerkType.COIN_FLAT: "Grants bonus coins each time you complete a focus session or qualifying action.",
+    PerkType.COIN_PERCENT: "Increases all coin earnings by a percentage - applies to session rewards, salvage, and bonuses.",
+    PerkType.COIN_DISCOUNT: "Reduces coin costs on various actions like store purchases and refreshes.",
+    PerkType.STORE_DISCOUNT: "Specifically reduces the cost of refreshing the store to get new items.",
+    PerkType.SALVAGE_BONUS: "Grants extra coins when salvaging unwanted items from your inventory.",
+    
+    # Progression
+    PerkType.XP_PERCENT: "Increases all XP gains by a percentage - applies to focus sessions, story, and other activities.",
+    PerkType.XP_SESSION: "Specifically boosts XP earned from completing focus sessions.",
+    PerkType.XP_LONG_SESSION: "Bonus XP kicks in only for focus sessions longer than 1 hour - rewards deep work!",
+    PerkType.XP_NIGHT: "Extra XP during night hours (8PM-6AM) - perfect for night owls.",
+    PerkType.XP_MORNING: "Extra XP during morning hours (6AM-12PM) - rewards early risers.",
+    PerkType.XP_STORY: "Increases XP earned from completing story chapters.",
+    
+    # Luck & RNG
+    PerkType.MERGE_LUCK: "Improves your success chance when merging items - less failures!",
+    PerkType.MERGE_SUCCESS: "Increases the base merge success rate calculation.",
+    PerkType.DROP_LUCK: "Increases the chance of receiving item drops from various activities.",
+    PerkType.ALL_LUCK: "Universal luck bonus that applies to ALL luck-based mechanics.",
+    PerkType.STREAK_SAVE: "When you would lose your streak, this gives a chance to save it instead.",
+    
+    # Encounters
+    PerkType.ENCOUNTER_CHANCE: "Increases how often you encounter new entities during focus sessions.",
+    PerkType.CAPTURE_BONUS: "When you encounter an entity, this improves your chance to successfully capture it.",
+    PerkType.RARITY_BIAS: "Shifts the rarity distribution - higher rarities become more likely.",
+    PerkType.PITY_BONUS: "Accelerates pity system progress - guarantees come sooner.",
+    
+    # Quality of Life
+    PerkType.HYDRATION_COOLDOWN: "Reduces the cooldown between water reminders - get hydrated faster!",
+    PerkType.HYDRATION_CAP: "Increases maximum daily water glasses you can log for rewards.",
+    PerkType.INVENTORY_SLOTS: "Permanently adds inventory slots - carry more gear!",
+    PerkType.EYE_REST_CAP: "Increases how many eye rest sessions you can claim per day.",
+    PerkType.PERFECT_SESSION: "Bonus rewards for completing sessions without distractions (no bypasses).",
+    
+    # Eye & Breath Tab
+    PerkType.EYE_TIER_BONUS: "Upgrades the tier of rewards from Eye routine - better loot!",
+    PerkType.EYE_REROLL_CHANCE: "Chance to automatically re-roll if an Eye routine fails.",
+    
+    # Sleep Tab
+    PerkType.SLEEP_TIER_BONUS: "Upgrades the tier of rewards from Go to Sleep Now - better items!",
+    
+    # Weight Tab
+    PerkType.WEIGHT_LEGENDARY: "Increases chance of Legendary items when logging weight.",
+    
+    # Gear Optimization
+    PerkType.OPTIMIZE_GEAR_DISCOUNT: "Reduces the coin cost of the Optimize Gear feature.",
+    
+    # Sell Items
+    PerkType.SELL_RARITY_BONUS: "Increases sell value for Epic and Legendary items.",
+    
+    # Gamble / Push Your Luck
+    PerkType.GAMBLE_LUCK: "Improves success chance when using 'Push Your Luck' in item merging.",
+    PerkType.GAMBLE_SAFETY: "When Push Your Luck FAILS, this gives a chance to keep your item instead of losing it!",
+}
+
+
+def get_perk_explanation(entity_id: str) -> str:
+    """Get detailed explanation of how a perk works.
+    
+    Returns a human-readable explanation of the perk mechanic,
+    helping users understand when and how the perk is applied.
+    """
+    perk = ENTITY_PERKS.get(entity_id)
+    if not perk:
+        return ""
+    
+    return PERK_EXPLANATIONS.get(perk.perk_type, "This perk provides passive bonuses.")

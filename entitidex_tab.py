@@ -38,7 +38,7 @@ from entitidex import (
     play_celebration_sound,
     preload_celebration_sounds,
 )
-from entitidex.entity_perks import calculate_active_perks, ENTITY_PERKS, PerkType, get_perk_description
+from entitidex.entity_perks import calculate_active_perks, ENTITY_PERKS, PerkType, get_perk_description, get_perk_explanation
 from styled_dialog import add_tab_help_button
 from app_utils import get_app_dir
 
@@ -1152,10 +1152,13 @@ class EntityCard(QtWidgets.QFrame):
             perk_html = ""
             if perk:
                 perk_desc = get_perk_description(self.entity.id, self.is_exceptional)
-                perk_html = f'<br><hr style="border-color: #444;"><span style="color: #7FDBFF;">✨ PERK: {perk_desc}</span>'
+                perk_explain = get_perk_explanation(self.entity.id)
+                perk_html = f'''<br><hr style="border-color: #444;">
+<span style="color: #7FDBFF;">✨ PERK: {perk_desc}</span><br>
+<span style="color: #888; font-size: 11px;">ℹ️ {perk_explain}</span>'''
             
             tooltip = f'''
-<div style="padding: 8px; max-width: 300px;">
+<div style="padding: 8px; max-width: 320px;">
 <b style="color: {rarity_color}; font-size: 14px;">{variant} {name}</b><br>
 <span style="color: {rarity_color};">⚔️ Power: {self.entity.power} | {rarity}</span>
 <hr style="border-color: #444;">

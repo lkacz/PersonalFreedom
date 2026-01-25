@@ -2767,6 +2767,15 @@ class TimerTab(QtWidgets.QWidget):
         if equipped_item_before:
             equipped_before[item.get("slot", "Unknown")] = equipped_item_before
         
+        # Get entity perk contributors for luck/rarity bonuses
+        entity_perk_contributors = []
+        try:
+            from gamification import get_entity_luck_perk_contributors
+            luck_perks = get_entity_luck_perk_contributors(self.blocker.adhd_buster)
+            entity_perk_contributors = luck_perks.get("contributors", [])
+        except Exception as e:
+            logger.debug(f"Could not get entity luck perk contributors: {e}")
+        
         dialog = ItemRewardDialog(
             parent=self.window(),
             source_label=f"Focus Session: {session_minutes} min" + (f" • {streak} day streak 🔥" if streak > 0 else ""),
@@ -2776,6 +2785,7 @@ class TimerTab(QtWidgets.QWidget):
             game_state=get_game_state(),
             session_minutes=session_minutes,
             streak_days=streak,
+            entity_perk_contributors=entity_perk_contributors,
         )
         dialog.exec()
         
@@ -3379,7 +3389,8 @@ class TimerTab(QtWidgets.QWidget):
             "coins": 0,
             "items": [],
             "streak_maintained": False,
-            "current_streak": 0
+            "current_streak": 0,
+            "entity_perks_applied": [],  # Track which entity perks were applied
         }
         
         if not GAMIFICATION_AVAILABLE:
@@ -3403,6 +3414,17 @@ class TimerTab(QtWidgets.QWidget):
             adhd_buster=self.blocker.adhd_buster
         )
         rewards["xp"] = xp_info["total_xp"]
+        
+        # Track XP entity perks from xp_info if available
+        entity_xp_breakdown = xp_info.get("entity_xp_breakdown", [])
+        if entity_xp_breakdown:
+            for bonus_desc in entity_xp_breakdown:
+                # bonus_desc is a string like "+5% Focus XP"
+                rewards["entity_perks_applied"].append({
+                    "type": "xp",
+                    "description": f"{bonus_desc} (Entity Perk)",
+                    "value": 0,  # Value already included in total
+                })
         
         # Calculate coins
         session_hours = session_minutes / 60.0
@@ -3428,8 +3450,19 @@ class TimerTab(QtWidgets.QWidget):
             coin_perks = get_entity_coin_perks(self.blocker.adhd_buster, source="session")
             if coin_perks["coin_flat"] > 0:
                 coins_earned += coin_perks["coin_flat"]
+                rewards["entity_perks_applied"].append({
+                    "type": "coins",
+                    "description": f"+{coin_perks['coin_flat']} Coins (Entity Perk)",
+                    "value": coin_perks["coin_flat"],
+                })
             if coin_perks["coin_percent"] > 0:
-                coins_earned += int(coins_earned * (coin_perks["coin_percent"] / 100.0))
+                percent_bonus = int(coins_earned * (coin_perks["coin_percent"] / 100.0))
+                coins_earned += percent_bonus
+                rewards["entity_perks_applied"].append({
+                    "type": "coins",
+                    "description": f"+{coin_perks['coin_percent']}% Coins (Entity Perk)",
+                    "value": percent_bonus,
+                })
         except Exception:
             pass
         
@@ -7705,6 +7738,15 @@ class WeightTab(QtWidgets.QWidget):
             for source, item in items_earned:
                 extra_msgs.append(f"{source}: {item.get('name', 'Unknown')}")
             
+            # Get entity perk contributors for luck/rarity bonuses
+            entity_perk_contributors = []
+            try:
+                from gamification import get_entity_luck_perk_contributors
+                luck_perks = get_entity_luck_perk_contributors(self.blocker.adhd_buster)
+                entity_perk_contributors = luck_perks.get("contributors", [])
+            except Exception:
+                pass
+            
             # Show ItemRewardDialog with comparison and proper auto-equip tracking
             from styled_dialog import ItemRewardDialog
             dialog = ItemRewardDialog(
@@ -7717,7 +7759,8 @@ class WeightTab(QtWidgets.QWidget):
                 equipped_after=equipped_after,  # Current equipped state
                 auto_equipped_slots=auto_equipped_slots,  # Slots that were actually auto-equipped
                 game_state=game_state,  # For click-to-equip
-                extra_messages=extra_msgs[:3]  # Limit to 3 messages
+                extra_messages=extra_msgs[:3],  # Limit to 3 messages
+                entity_perk_contributors=entity_perk_contributors,  # Entity perks that helped
             )
             dialog.exec()
             
@@ -8977,6 +9020,15 @@ class ActivityTab(QtWidgets.QWidget):
             if rewards.get("current_streak", 0) > 0:
                 extra_msgs.append(f"Streak: {rewards['current_streak']} days 🔥")
             
+            # Get entity perk contributors for luck/rarity bonuses
+            entity_perk_contributors = []
+            try:
+                from gamification import get_entity_luck_perk_contributors
+                luck_perks = get_entity_luck_perk_contributors(self.blocker.adhd_buster)
+                entity_perk_contributors = luck_perks.get("contributors", [])
+            except Exception:
+                pass
+            
             # Use new ItemRewardDialog with comparison and proper auto-equip tracking
             from styled_dialog import ItemRewardDialog
             dialog = ItemRewardDialog(
@@ -8990,7 +9042,8 @@ class ActivityTab(QtWidgets.QWidget):
                 auto_equipped_slots=auto_equipped_slots,  # Slots that were actually auto-equipped
                 game_state=game_state,  # For click-to-equip
                 coins_earned=coins_earned,
-                extra_messages=extra_msgs
+                extra_messages=extra_msgs,
+                entity_perk_contributors=entity_perk_contributors,  # Entity perks that helped
             )
             dialog.exec()
             
@@ -16532,6 +16585,14 @@ class ADHDBusterTab(QtWidgets.QWidget):
         stats_layout.addStretch()
         inv_main_layout.addLayout(stats_layout)
         
+        # Entity perk bonus slots display - shows which entities contribute +slots
+        self.inv_entity_perk_container = QtWidgets.QWidget()
+        self.inv_entity_perk_container.setVisible(False)
+        self.inv_entity_perk_layout = QtWidgets.QHBoxLayout(self.inv_entity_perk_container)
+        self.inv_entity_perk_layout.setContentsMargins(0, 2, 0, 2)
+        self.inv_entity_perk_layout.setSpacing(4)
+        inv_main_layout.addWidget(self.inv_entity_perk_container)
+        
         sort_bar = QtWidgets.QHBoxLayout()
         self.sort_combo = NoScrollComboBox()
         self.sort_combo.addItem("Sort: newest", "newest")
@@ -17413,7 +17474,16 @@ class ADHDBusterTab(QtWidgets.QWidget):
         lucky_items_count = sum(1 for item in inventory if item.get("lucky_options", {}))
         total_items = len(inventory)
         if hasattr(self, 'inv_stats_label'):
-            stats_text = f"Total: {total_items} items"
+            # Get max capacity including entity perk bonuses
+            from game_state import get_max_inventory_size
+            max_capacity = get_max_inventory_size(getattr(self.blocker, 'adhd_buster', {}))
+            base_capacity = 500  # Default max without perks
+            bonus_slots = max_capacity - base_capacity
+            
+            if bonus_slots > 0:
+                stats_text = f"📦 {total_items}/{max_capacity} (base 500 + 🐾 {bonus_slots} entity bonus)"
+            else:
+                stats_text = f"📦 {total_items}/{max_capacity} capacity"
             if lucky_items_count > 0:
                 stats_text += f" | ✨ Lucky: {lucky_items_count} ({lucky_items_count*100//total_items if total_items > 0 else 0}%)"
             self.inv_stats_label.setText(stats_text)
@@ -17522,6 +17592,127 @@ class ADHDBusterTab(QtWidgets.QWidget):
         
         # Update merge button text to reflect cleared selection
         self._update_merge_selection()
+        
+        # Update entity perk display for bonus inventory slots
+        self._update_inventory_entity_perks()
+
+    def _update_inventory_entity_perks(self) -> None:
+        """Update the entity perk display showing bonus inventory slots from entities."""
+        try:
+            if not hasattr(self, 'inv_entity_perk_container'):
+                return
+                
+            adhd_data = getattr(self.blocker, 'adhd_buster', {})
+            if not adhd_data:
+                self.inv_entity_perk_container.setVisible(False)
+                return
+            
+            from gamification import get_entity_qol_perk_contributors
+            qol_perks = get_entity_qol_perk_contributors(adhd_data)
+            total_slots = qol_perks.get("total_inventory_slots", 0)
+            contributors = [c for c in qol_perks.get("contributors", []) 
+                          if c.get("perk_type") == "inventory"]
+            
+            # Hide if no bonus slots
+            if total_slots <= 0 or not contributors:
+                self.inv_entity_perk_container.setVisible(False)
+                return
+            
+            # Clear existing content
+            while self.inv_entity_perk_layout.count():
+                child = self.inv_entity_perk_layout.takeAt(0)
+                if child.widget():
+                    child.widget().deleteLater()
+            
+            # Try to import entity icon resolver
+            try:
+                from entitidex_tab import _resolve_entity_svg_path
+                from entitidex.entity_pools import get_entity_by_id as get_entity
+                from PySide6.QtSvg import QSvgRenderer
+                has_svg_support = True
+            except ImportError:
+                has_svg_support = False
+            
+            # Add perk icon and summary label
+            summary_lbl = QtWidgets.QLabel(f"📦 +{total_slots} slots from:")
+            summary_lbl.setStyleSheet("color: #7986cb; font-size: 10px; font-weight: bold;")
+            summary_lbl.setToolTip(f"Entity perks provide +{total_slots} bonus inventory slots")
+            self.inv_entity_perk_layout.addWidget(summary_lbl)
+            
+            # Create mini entity cards
+            for entity_data in contributors:
+                card = QtWidgets.QFrame()
+                is_exceptional = entity_data.get("is_exceptional", False)
+                
+                card.setStyleSheet("""
+                    QFrame {
+                        background-color: #2a2a2a;
+                        border: 1px solid #444;
+                        border-radius: 4px;
+                        padding: 2px;
+                    }
+                    QFrame:hover {
+                        border-color: #7986cb;
+                    }
+                """)
+                
+                card_layout = QtWidgets.QHBoxLayout(card)
+                card_layout.setContentsMargins(4, 2, 4, 2)
+                card_layout.setSpacing(4)
+                
+                # Try to load entity SVG icon (24x24 mini)
+                entity_id = entity_data.get("entity_id", "")
+                icon_loaded = False
+                
+                if has_svg_support and entity_id:
+                    try:
+                        entity_obj = get_entity(entity_id)
+                        if entity_obj:
+                            svg_path = _resolve_entity_svg_path(entity_obj, is_exceptional)
+                            if svg_path:
+                                renderer = QSvgRenderer(svg_path)
+                                if renderer.isValid():
+                                    icon_size = 24
+                                    pixmap = QtGui.QPixmap(icon_size, icon_size)
+                                    pixmap.fill(QtCore.Qt.transparent)
+                                    painter = QtGui.QPainter(pixmap)
+                                    renderer.render(painter)
+                                    painter.end()
+                                    
+                                    icon_lbl = QtWidgets.QLabel()
+                                    icon_lbl.setPixmap(pixmap)
+                                    icon_lbl.setFixedSize(icon_size, icon_size)
+                                    card_layout.addWidget(icon_lbl)
+                                    icon_loaded = True
+                    except Exception:
+                        pass
+                
+                # Entity name and bonus
+                name = entity_data.get("name", "Unknown")
+                value = entity_data.get("value", 0)
+                display_name = name[:12] + "..." if len(name) > 12 else name
+                
+                if is_exceptional:
+                    name_style = "color: #ffd700; font-weight: bold; font-size: 9px;"
+                    prefix = "⭐ " if not icon_loaded else ""
+                else:
+                    name_style = "color: #ccc; font-size: 9px;"
+                    prefix = ""
+                
+                text_lbl = QtWidgets.QLabel(f"{prefix}{display_name} (+{value})")
+                text_lbl.setStyleSheet(name_style)
+                text_lbl.setToolTip(f"{name}\n{entity_data.get('description', '')}")
+                card_layout.addWidget(text_lbl)
+                
+                self.inv_entity_perk_layout.addWidget(card)
+            
+            self.inv_entity_perk_layout.addStretch()
+            self.inv_entity_perk_container.setVisible(True)
+            
+        except Exception as e:
+            print(f"[Gear Tab] Error updating inventory entity perks: {e}")
+            if hasattr(self, 'inv_entity_perk_container'):
+                self.inv_entity_perk_container.setVisible(False)
 
     def refresh_gear_combos(self) -> None:
         """Refresh gear dropdown combos to reflect new inventory items.
