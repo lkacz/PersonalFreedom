@@ -1559,394 +1559,605 @@ class TimerTab(QtWidgets.QWidget):
         self.qt_timer.timeout.connect(self._on_tick)
 
     def _build_ui(self) -> None:
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(6)
-        layout.setContentsMargins(10, 8, 10, 8)
-
-        # Help button (moves to bottom after read)
-        add_tab_help_button(layout, "timer", self)
-
-        # TOP ROW: Timer display + Start/Stop button in same row
-        top_row = QtWidgets.QHBoxLayout()
-        top_row.setSpacing(10)
+        # Main layout for this widget - just holds the scroll area
+        outer_layout = QtWidgets.QVBoxLayout(self)
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+        outer_layout.setSpacing(0)
         
-        # Compact timer display
-        timer_card = QtWidgets.QFrame()
-        timer_card.setStyleSheet("""
+        # Scroll area for the content
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignLeft)
+        scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
+        
+        # Content widget - expands horizontally but NOT vertically
+        content = QtWidgets.QWidget()
+        content.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
+        
+        layout = QtWidgets.QVBoxLayout(content)
+        layout.setSpacing(12)
+        layout.setContentsMargins(16, 12, 16, 12)
+        layout.setAlignment(QtCore.Qt.AlignTop)
+
+        # === HERO SECTION: Timer Display + Action Button ===
+        hero_card = QtWidgets.QFrame()
+        hero_card.setStyleSheet("""
             QFrame {
-                background: rgba(45, 52, 54, 0.5);
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2a2a3d, stop:1 #1a1a2e);
                 border: 1px solid #5f27cd;
-                border-radius: 8px;
-                padding: 4px;
+                border-radius: 12px;
             }
         """)
-        timer_layout = QtWidgets.QVBoxLayout(timer_card)
-        timer_layout.setContentsMargins(10, 4, 10, 4)
+        hero_layout = QtWidgets.QVBoxLayout(hero_card)
+        hero_layout.setContentsMargins(20, 16, 20, 16)
+        hero_layout.setSpacing(12)
         
+        # Timer display - large and prominent
         self.timer_label = QtWidgets.QLabel("00:00:00")
         self.timer_label.setAlignment(QtCore.Qt.AlignCenter)
         self.timer_label.setStyleSheet("""
-            font: 700 28px 'Consolas';
+            font: 700 52px 'Consolas', 'Courier New', monospace;
             color: #a29bfe;
             background: transparent;
+            letter-spacing: 6px;
+            padding: 8px 0;
         """)
-        timer_layout.addWidget(self.timer_label)
-        top_row.addWidget(timer_card, stretch=1)
+        hero_layout.addWidget(self.timer_label)
         
-        # Dynamic Start/Stop button (single button that changes state)
-        self.action_btn = QtWidgets.QPushButton("▶ Start")
-        self.action_btn.setMinimumHeight(48)
-        self.action_btn.setMinimumWidth(120)
+        # Motivational message (changes contextually)
+        self.motivation_label = QtWidgets.QLabel("Ready to focus? Set your duration and press Start!")
+        self.motivation_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.motivation_label.setWordWrap(True)
+        self.motivation_label.setStyleSheet("""
+            color: #888;
+            font-size: 11px;
+            font-style: italic;
+            padding: 0 20px;
+        """)
+        hero_layout.addWidget(self.motivation_label)
+        
+        # Session progress bar (hidden when not running)
+        self.session_progress = QtWidgets.QProgressBar()
+        self.session_progress.setMaximum(100)
+        self.session_progress.setValue(0)
+        self.session_progress.setTextVisible(False)
+        self.session_progress.setFixedHeight(6)
+        self.session_progress.setStyleSheet("""
+            QProgressBar {
+                border: none;
+                border-radius: 3px;
+                background: #333;
+            }
+            QProgressBar::chunk {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #6c5ce7, stop:0.5 #a29bfe, stop:1 #6c5ce7);
+                border-radius: 3px;
+            }
+        """)
+        self.session_progress.setVisible(False)
+        hero_layout.addWidget(self.session_progress)
+        
+        # Session status label (shows during session)
+        self.session_status = QtWidgets.QLabel("")
+        self.session_status.setAlignment(QtCore.Qt.AlignCenter)
+        self.session_status.setStyleSheet("color: #888; font-size: 11px;")
+        self.session_status.setVisible(False)
+        hero_layout.addWidget(self.session_status)
+        
+        # Action button row
+        action_row = QtWidgets.QHBoxLayout()
+        action_row.setSpacing(12)
+        
+        # Dynamic Start/Stop button
+        self.action_btn = QtWidgets.QPushButton("▶  Start Focus Session")
+        self.action_btn.setMinimumHeight(52)
+        self.action_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self._set_action_btn_start_style()
-        top_row.addWidget(self.action_btn)
+        action_row.addWidget(self.action_btn)
         
-        layout.addLayout(top_row)
+        hero_layout.addLayout(action_row)
+        hero_card.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
+        layout.addWidget(hero_card)
 
-        # Mode selection
-        mode_box = QtWidgets.QGroupBox("Mode")
-        mode_box.setStyleSheet("""
-            QGroupBox {
-                font-size: 13px;
-                font-weight: bold;
-                color: #74b9ff;
-                border: 1px solid #2d3436;
-                border-radius: 8px;
-                margin-top: 8px;
-                padding-top: 8px;
-                background: rgba(45, 52, 54, 0.5);
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                left: 8px;
-                top: 0px;
-            }
-        """)
-        mode_layout = QtWidgets.QHBoxLayout(mode_box)
-        mode_layout.setContentsMargins(8, 4, 8, 6)
-        mode_layout.setSpacing(8)
-        self.mode_buttons: Dict[str, QtWidgets.QRadioButton] = {}
-        modes = [
-            ("Normal", BlockMode.NORMAL, "Can stop session anytime"),
-            ("Strict 🔐", BlockMode.STRICT, "Requires password to stop"),
-            ("Hardcore �", BlockMode.HARDCORE, "Solve math problems to stop - no easy escape!"),
-            ("Pomodoro 🍅", BlockMode.POMODORO, "25 min work / 5 min break cycles"),
-        ]
-        for text, value, tooltip in modes:
-            btn = QtWidgets.QRadioButton(text)
-            btn.setProperty("mode_value", value)
-            btn.setToolTip(tooltip)
-            mode_layout.addWidget(btn)
-            self.mode_buttons[value] = btn
-        self.mode_buttons[BlockMode.NORMAL].setChecked(True)
-        layout.addWidget(mode_box)
+        # === QUICK STATS ROW ===
+        stats_row = QtWidgets.QHBoxLayout()
+        stats_row.setSpacing(10)
+        
+        def create_mini_stat(icon: str, label: str, value: str, color: str, bg_color: str = "#2a2a2a") -> tuple:
+            """Create a compact stat widget (non-interactive)."""
+            frame = QtWidgets.QFrame()
+            frame.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents, False)  # Keep mouse events but no visual feedback
+            frame.setFocusPolicy(QtCore.Qt.NoFocus)
+            frame.setStyleSheet(f"""
+                QFrame {{
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #333, stop:1 {bg_color});
+                    border: 1px solid #3d3d3d;
+                    border-radius: 10px;
+                }}
+            """)
+            stat_layout = QtWidgets.QVBoxLayout(frame)
+            stat_layout.setContentsMargins(12, 10, 12, 10)
+            stat_layout.setSpacing(4)
+            
+            header = QtWidgets.QLabel(f"{icon} {label}")
+            header.setStyleSheet("color: #999; font-size: 11px; font-weight: 500;")
+            header.setAlignment(QtCore.Qt.AlignCenter)
+            stat_layout.addWidget(header)
+            
+            value_lbl = QtWidgets.QLabel(value)
+            value_lbl.setStyleSheet(f"color: {color}; font-size: 18px; font-weight: bold;")
+            value_lbl.setAlignment(QtCore.Qt.AlignCenter)
+            stat_layout.addWidget(value_lbl)
+            
+            return frame, value_lbl
+        
+        stat1, self.today_focus_lbl = create_mini_stat("📊", "Today", "0m", "#74b9ff", "#1a2a3a")
+        stat2, self.streak_display_lbl = create_mini_stat("🔥", "Streak", "0 days", "#ff9800", "#2a2010")
+        stat3, self.sessions_today_lbl = create_mini_stat("✅", "Sessions", "0", "#4caf50", "#1a2a1a")
+        
+        # Prevent stat cards from expanding vertically
+        for stat_frame in [stat1, stat2, stat3]:
+            stat_frame.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
+        
+        stats_row.addWidget(stat1)
+        stats_row.addWidget(stat2)
+        stats_row.addWidget(stat3)
+        layout.addLayout(stats_row)
 
-        # Duration slider with time display
-        duration_box = QtWidgets.QGroupBox("⏱ Duration")
-        duration_box.setStyleSheet("""
-            QGroupBox {
-                font-size: 13px;
-                font-weight: bold;
-                color: #74b9ff;
-                border: 1px solid #2d3436;
-                border-radius: 8px;
-                margin-top: 8px;
-                padding-top: 8px;
-                background: rgba(45, 52, 54, 0.5);
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                left: 8px;
-                top: 0px;
-            }
-            QLabel {
-                color: #b2bec3;
-                font-size: 13px;
-            }
-            QSlider::groove:horizontal {
-                border: 1px solid #2d3436;
-                height: 8px;
-                background: #1a1a1a;
-                border-radius: 4px;
-            }
-            QSlider::handle:horizontal {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #74b9ff, stop:1 #0984e3);
-                border: 2px solid #0984e3;
-                width: 20px;
-                margin: -6px 0;
+        # === SETTINGS CARD ===
+        settings_card = QtWidgets.QFrame()
+        settings_card.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
+        settings_card.setStyleSheet("""
+            QFrame {
+                background: #2a2a2a;
+                border: 1px solid #3d3d3d;
                 border-radius: 10px;
             }
-            QSlider::handle:horizontal:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #a29bfe, stop:1 #6c5ce7);
-                border: 2px solid #a29bfe;
-            }
-            QSlider::sub-page:horizontal {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #0984e3, stop:1 #74b9ff);
-                border-radius: 4px;
-            }
         """)
-        duration_layout = QtWidgets.QVBoxLayout(duration_box)
-        duration_layout.setContentsMargins(8, 4, 8, 6)
-        duration_layout.setSpacing(2)
+        settings_layout = QtWidgets.QVBoxLayout(settings_card)
+        settings_layout.setContentsMargins(14, 12, 14, 12)
+        settings_layout.setSpacing(10)
+
+        # Duration row with slider
+        duration_section = QtWidgets.QHBoxLayout()
+        duration_section.setSpacing(12)
         
-        # Time display label
-        self.duration_display = QtWidgets.QLabel("25 minutes")
-        self.duration_display.setAlignment(QtCore.Qt.AlignCenter)
+        duration_label = QtWidgets.QLabel("⏱ Duration")
+        duration_label.setStyleSheet("font-weight: 600; color: #74b9ff; font-size: 12px;")
+        duration_section.addWidget(duration_label)
+        
+        self.duration_display = QtWidgets.QLabel("25 min")
         self.duration_display.setStyleSheet("""
-            font-size: 16px;
-            font-weight: bold;
-            color: #74b9ff;
-            padding: 2px;
+            font-weight: bold; 
+            color: #fff; 
+            background: #5f27cd;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 12px;
         """)
-        duration_layout.addWidget(self.duration_display)
+        self.duration_display.setAlignment(QtCore.Qt.AlignCenter)
+        self.duration_display.setMinimumWidth(70)
+        duration_section.addWidget(self.duration_display)
         
-        # Slider (5 min to 4 hours in 5-min increments = 5 to 240, step 5)
         self.duration_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.duration_slider.setMinimum(5)
         self.duration_slider.setMaximum(240)
         self.duration_slider.setSingleStep(5)
         self.duration_slider.setPageStep(15)
         self.duration_slider.setValue(25)
+        self.duration_slider.setMinimumHeight(28)
         self.duration_slider.valueChanged.connect(self._on_duration_changed)
-        duration_layout.addWidget(self.duration_slider)
-        
-        # Min/Max labels
-        range_layout = QtWidgets.QHBoxLayout()
-        min_label = QtWidgets.QLabel("5 min")
-        min_label.setStyleSheet("font-size: 11px; color: #636e72;")
-        max_label = QtWidgets.QLabel("4 hours")
-        max_label.setStyleSheet("font-size: 11px; color: #636e72;")
-        range_layout.addWidget(min_label)
-        range_layout.addStretch()
-        range_layout.addWidget(max_label)
-        duration_layout.addLayout(range_layout)
-        
-        layout.addWidget(duration_box)
-
-        # Presets with modern gradient buttons
-        preset_box = QtWidgets.QGroupBox("⚡ Presets")
-        preset_box.setStyleSheet("""
-            QGroupBox {
-                font-size: 13px;
-                font-weight: bold;
-                color: #ffeaa7;
-                border: 1px solid #2d3436;
-                border-radius: 8px;
-                margin-top: 8px;
-                padding-top: 8px;
-                background: rgba(45, 52, 54, 0.5);
+        self.duration_slider.setStyleSheet("""
+            QSlider::groove:horizontal {
+                border: none;
+                height: 10px;
+                background: #3a3a3a;
+                border-radius: 5px;
             }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                left: 8px;
-                top: 0px;
+            QSlider::handle:horizontal {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #a29bfe, stop:1 #6c5ce7);
+                border: 2px solid #5f27cd;
+                width: 22px;
+                margin: -7px 0;
+                border-radius: 11px;
+            }
+            QSlider::handle:horizontal:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #c8c4ff, stop:1 #a29bfe);
+                border: 2px solid #a29bfe;
+            }
+            QSlider::sub-page:horizontal {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #5f27cd, stop:1 #6c5ce7);
+                border-radius: 5px;
             }
         """)
-        preset_layout = QtWidgets.QHBoxLayout(preset_box)
-        preset_layout.setContentsMargins(8, 4, 8, 6)
-        preset_layout.setSpacing(6)
-        presets = [("25m", 25), ("45m", 45), ("1h", 60), ("2h", 120), ("4h", 240)]
-        for label, minutes in presets:
+        duration_section.addWidget(self.duration_slider, 1)
+        settings_layout.addLayout(duration_section)
+
+        # Quick preset buttons
+        preset_row = QtWidgets.QHBoxLayout()
+        preset_row.setSpacing(4)
+        
+        preset_label = QtWidgets.QLabel("⚡")
+        preset_label.setStyleSheet("color: #888; font-size: 12px;")
+        preset_row.addWidget(preset_label)
+        
+        # Tier-colored presets matching reward rarity
+        presets = [
+            ("10m", 10, "#4caf50", "#388e3c"),    # Common green
+            ("30m", 30, "#4caf50", "#388e3c"),    # Common green  
+            ("1h", 60, "#2196f3", "#1976d2"),     # Uncommon blue
+            ("1.5h", 90, "#9c27b0", "#7b1fa2"),   # Rare purple
+            ("2h", 120, "#ff9800", "#f57c00"),    # Epic orange
+            ("3h", 180, "#ff5722", "#e64a19"),    # Epic+ deep orange
+            ("4h", 240, "#ffd700", "#ffc107"),    # Legendary gold
+        ]
+        for label, minutes, color, hover_color in presets:
             btn = QtWidgets.QPushButton(label)
-            btn.setStyleSheet("""
-                QPushButton {
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #fdcb6e, stop:1 #e17055);
-                    color: white;
+            btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            btn.setToolTip(f"{label} session - higher tier rewards!" if minutes >= 60 else f"{label} quick focus")
+            btn.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+            btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: #3a3a3a;
+                    color: {color};
                     font-size: 11px;
-                    font-weight: bold;
+                    font-weight: 700;
                     border-radius: 6px;
-                    border: 1px solid #d63031;
-                    padding: 4px 10px;
-                }
-                QPushButton:hover {
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #ffeaa7, stop:1 #fab1a0);
-                }
-                QPushButton:pressed {
-                    background: #d63031;
-                }
+                    border: 2px solid #4a4a4a;
+                    padding: 6px 4px;
+                }}
+                QPushButton:hover {{
+                    background: {color};
+                    border-color: {color};
+                    color: white;
+                }}
+                QPushButton:pressed {{
+                    background: {hover_color};
+                }}
             """)
             btn.clicked.connect(lambda _=False, m=minutes: self._set_preset(m))
-            preset_layout.addWidget(btn)
-        layout.addWidget(preset_box)
+            preset_row.addWidget(btn)
+        settings_layout.addLayout(preset_row)
 
-        # Notification settings with modern styling
-        notify_box = QtWidgets.QGroupBox("🔔 Notification")
-        notify_box.setStyleSheet("""
-            QGroupBox {
-                font-size: 13px;
-                font-weight: bold;
-                color: #00b894;
-                border: 1px solid #2d3436;
-                border-radius: 8px;
-                margin-top: 8px;
-                padding-top: 8px;
-                background: rgba(45, 52, 54, 0.5);
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                left: 8px;
-                top: 0px;
-            }
-            QRadioButton {
-                color: #dfe6e9;
-                font-size: 12px;
-                spacing: 4px;
-                padding: 2px;
-            }
-            QRadioButton::indicator {
-                width: 18px;
-                height: 18px;
-                border-radius: 9px;
-                border: 2px solid #00b894;
-                background: #1a1a1a;
-            }
-            QRadioButton::indicator:checked {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #55efc4, stop:1 #00b894);
-                border: 2px solid #55efc4;
-            }
-        """)
-        notify_layout = QtWidgets.QHBoxLayout(notify_box)
-        notify_layout.setContentsMargins(8, 4, 8, 6)
-        notify_layout.setSpacing(8)
+        # Divider
+        divider = QtWidgets.QFrame()
+        divider.setFixedHeight(1)
+        divider.setStyleSheet("background: #3d3d3d;")
+        settings_layout.addWidget(divider)
+
+        # Mode & Alert dropdowns row (side by side)
+        dropdowns_row = QtWidgets.QHBoxLayout()
+        dropdowns_row.setSpacing(16)
         
-        self.notify_buttons: dict[str, QtWidgets.QRadioButton] = {}
+        dropdown_style = """
+            QComboBox {
+                background: #2a2a2a;
+                color: #fff;
+                border: 1px solid #444;
+                border-radius: 6px;
+                padding: 6px 12px;
+                font-size: 12px;
+                min-width: 130px;
+            }
+            QComboBox:hover {
+                border: 1px solid #6c5ce7;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 20px;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 6px solid #888;
+                margin-right: 8px;
+            }
+            QComboBox QAbstractItemView {
+                background: #2a2a2a;
+                color: #fff;
+                selection-background-color: #6c5ce7;
+                border: 1px solid #444;
+                border-radius: 4px;
+            }
+        """
+        
+        # Mode dropdown
+        mode_label = QtWidgets.QLabel("🎮 Mode")
+        mode_label.setStyleSheet("font-weight: 600; color: #74b9ff; font-size: 12px;")
+        dropdowns_row.addWidget(mode_label)
+        
+        self.mode_combo = QtWidgets.QComboBox()
+        self.mode_combo.setStyleSheet(dropdown_style)
+        self.mode_combo.setFocusPolicy(QtCore.Qt.StrongFocus)  # Require click to focus
+        self.mode_combo.wheelEvent = lambda e: e.ignore()  # Disable scroll wheel
+        self._mode_values = []  # Store mode values for lookup
+        modes = [
+            ("Normal", BlockMode.NORMAL, "Can stop session anytime"),
+            ("Strict 🔐", BlockMode.STRICT, "Requires password to stop"),
+            ("Hardcore 💀", BlockMode.HARDCORE, "Solve math problems to stop"),
+            ("Pomodoro 🍅", BlockMode.POMODORO, "25 min work / 5 min break"),
+        ]
+        for text, value, tooltip in modes:
+            self.mode_combo.addItem(text)
+            self._mode_values.append(value)
+        self.mode_combo.setToolTip("Select focus session mode")
+        dropdowns_row.addWidget(self.mode_combo)
+        
+        dropdowns_row.addSpacing(12)
+        
+        # Alert dropdown
+        notify_label = QtWidgets.QLabel("🔔 Alert")
+        notify_label.setStyleSheet("font-weight: 600; color: #00b894; font-size: 12px;")
+        dropdowns_row.addWidget(notify_label)
+        
+        self.notify_combo = QtWidgets.QComboBox()
+        self.notify_combo.setStyleSheet(dropdown_style.replace("#6c5ce7", "#00b894"))
+        self.notify_combo.setFocusPolicy(QtCore.Qt.StrongFocus)  # Require click to focus
+        self.notify_combo.wheelEvent = lambda e: e.ignore()  # Disable scroll wheel
+        self._notify_values = []  # Store notify keys for lookup
         notify_options = [
             ("none", "None", "No notification when session ends"),
-            ("dialog", "Dialog Only", "Show a completion dialog"),
-            ("sound", "Sound Only", "Play a notification chime"),
+            ("dialog", "Dialog", "Show a completion dialog"),
+            ("sound", "Sound", "Play a notification chime"),
             ("both", "Both", "Show dialog and play sound"),
         ]
         for key, text, tooltip in notify_options:
-            btn = QtWidgets.QRadioButton(text)
-            btn.setToolTip(tooltip)
-            btn.setProperty("notify_value", key)
-            notify_layout.addWidget(btn)
-            self.notify_buttons[key] = btn
+            self.notify_combo.addItem(text)
+            self._notify_values.append(key)
+        self.notify_combo.setToolTip("Select notification type when session ends")
+        self.notify_combo.setCurrentIndex(3)  # Default to "Both"
+        dropdowns_row.addWidget(self.notify_combo)
         
-        # Default to "both" for best UX
-        saved_notify = getattr(self.blocker, 'notify_mode', 'both')
-        if saved_notify in self.notify_buttons:
-            self.notify_buttons[saved_notify].setChecked(True)
-        else:
-            self.notify_buttons["both"].setChecked(True)
-        
-        layout.addWidget(notify_box)
+        dropdowns_row.addStretch()
+        settings_layout.addLayout(dropdowns_row)
+        layout.addWidget(settings_card)
 
-        # Status label with modern card design
-        status_card = QtWidgets.QFrame()
-        status_card.setStyleSheet("""
+        # Hidden status label (used by code but not shown to user)
+        self.status_label = QtWidgets.QLabel()
+        self.status_label.setVisible(False)
+
+        # === REWARDS INFO (Collapsible) ===
+        rewards_card = QtWidgets.QFrame()
+        rewards_card.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Maximum)
+        rewards_card.setStyleSheet("""
             QFrame {
-                background: rgba(45, 52, 54, 0.5);
-                border: 1px solid #00b894;
+                background: #252525;
+                border: 1px solid #3d3d3d;
                 border-radius: 8px;
-                padding: 6px;
             }
         """)
-        status_layout = QtWidgets.QVBoxLayout(status_card)
-        status_layout.setContentsMargins(0, 0, 0, 0)
+        rewards_layout = QtWidgets.QVBoxLayout(rewards_card)
+        rewards_layout.setContentsMargins(12, 8, 12, 8)
+        rewards_layout.setSpacing(6)
         
-        self.status_label = QtWidgets.QLabel("✨ Ready to focus")
-        self.status_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.status_label.setStyleSheet("""
-            font-size: 14px;
-            font-weight: bold;
-            color: #00b894;
-            background: transparent;
-            padding: 2px;
-        """)
-        status_layout.addWidget(self.status_label)
-        layout.addWidget(status_card)
+        # Rewards header with toggle
+        rewards_header = QtWidgets.QHBoxLayout()
+        rewards_title = QtWidgets.QLabel("🎁 Rewards Guide")
+        rewards_title.setStyleSheet("color: #ffeaa7; font-weight: 600; font-size: 11px;")
+        rewards_header.addWidget(rewards_title)
+        rewards_header.addStretch()
         
-        # Rewards info section with modern gradient styling
-        rewards_group = QtWidgets.QGroupBox("🎁 Rewards")
-        rewards_group.setStyleSheet("""
-            QGroupBox {
-                font-size: 13px;
-                font-weight: bold;
-                color: #a5b4fc;
-                border: 1px solid #2d3436;
-                border-radius: 8px;
-                margin-top: 8px;
-                padding-top: 8px;
-                background: rgba(45, 52, 54, 0.5);
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                left: 8px;
-                top: 0px;
-            }
-        """)
-        rewards_layout = QtWidgets.QVBoxLayout(rewards_group)
-        rewards_layout.setContentsMargins(8, 4, 8, 6)
-        rewards_layout.setSpacing(2)
-        rewards_info = QtWidgets.QLabel(
-            "<b style='color:#ffeaa7;'>How it works:</b> <span style='color:#dfe6e9;'>Complete a focus session to earn 1 random item. Longer sessions shift the rarity distribution higher.</span><br>"
-            "<table style='font-size:10px; color:#b2bec3; margin-top:5px;'>"
-            "<tr style='color:#ffeaa7;'><th>Session</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
-            "<tr><td>&lt;30min</td><td>50%</td><td>30%</td><td>15%</td><td>4%</td><td>1%</td></tr>"
-            "<tr><td>30min</td><td><b style='color:#4caf50;'>80%</b></td><td>15%</td><td>5%</td><td>-</td><td>-</td></tr>"
-            "<tr><td>1hr</td><td>20%</td><td><b style='color:#4caf50;'>60%</b></td><td>15%</td><td>5%</td><td>-</td></tr>"
-            "<tr><td>2hr</td><td>5%</td><td>15%</td><td><b style='color:#2196f3;'>60%</b></td><td>15%</td><td>5%</td></tr>"
-            "<tr><td>3hr</td><td>-</td><td>5%</td><td>15%</td><td><b style='color:#9c27b0;'>60%</b></td><td>20%</td></tr>"
-            "<tr><td>4hr+</td><td>-</td><td>-</td><td>5%</td><td>15%</td><td><b style='color:#ff9800;'>80%</b></td></tr>"
-            "</table>"
-            "<br><b style='color:#74b9ff;'>Streak bonus:</b> <span style='color:#dfe6e9;'>+1 tier per 7-day streak</span> | <b style='color:#fdcb6e;'>XP:</b> <span style='color:#dfe6e9;'>25 base + 2/min + streak bonus</span>"
-        )
-        rewards_info.setWordWrap(True)
-        rewards_info.setStyleSheet("color: #dfe6e9; font-size: 10px; background: transparent; padding: 2px;")
-        rewards_layout.addWidget(rewards_info)
-        layout.addWidget(rewards_group)
-
-        # Log Past Session button (for retroactive logging)
-        self.log_past_btn = QtWidgets.QPushButton("📝 Log Past Session")
-        self.log_past_btn.setToolTip("Forgot to start the timer? Log a focus session you already completed.")
-        self.log_past_btn.setStyleSheet("""
+        self.rewards_toggle_btn = QtWidgets.QPushButton("▼")
+        self.rewards_toggle_btn.setFixedSize(24, 24)
+        self.rewards_toggle_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.rewards_toggle_btn.setStyleSheet("""
             QPushButton {
-                background: rgba(99, 110, 114, 0.6);
-                color: #dfe6e9;
-                font-size: 11px;
-                font-weight: bold;
-                border-radius: 6px;
-                border: 1px solid #74b9ff;
-                padding: 4px 10px;
+                background: transparent;
+                color: #888;
+                border: none;
+                font-size: 10px;
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #74b9ff, stop:1 #0984e3);
-                color: white;
+                color: #ffeaa7;
             }
-            QPushButton:pressed {
-                background: #0984e3;
+        """)
+        self.rewards_toggle_btn.clicked.connect(self._toggle_rewards_info)
+        rewards_header.addWidget(self.rewards_toggle_btn)
+        rewards_layout.addLayout(rewards_header)
+        
+        # Collapsible content
+        self.rewards_content = QtWidgets.QWidget()
+        rewards_content_layout = QtWidgets.QVBoxLayout(self.rewards_content)
+        rewards_content_layout.setContentsMargins(0, 4, 0, 0)
+        rewards_content_layout.setSpacing(4)
+        
+        rewards_info = QtWidgets.QLabel(
+            "<span style='color:#b2bec3; font-size:10px;'>Complete focus sessions to earn gear. Longer = better rarity!</span>"
+        )
+        rewards_content_layout.addWidget(rewards_info)
+        
+        rewards_table = QtWidgets.QLabel(
+            "<table style='font-size:10px; color:#777;'>"
+            "<tr style='color:#ffeaa7;'><th style='padding:2px 6px;'>Duration</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr>"
+            "<tr><td>&lt;30m</td><td>50%</td><td>30%</td><td>15%</td><td>4%</td><td>1%</td></tr>"
+            "<tr><td>30m</td><td style='color:#4caf50;'>80%</td><td>15%</td><td>5%</td><td>-</td><td>-</td></tr>"
+            "<tr><td>1h</td><td>20%</td><td style='color:#4caf50;'>60%</td><td>15%</td><td>5%</td><td>-</td></tr>"
+            "<tr><td>2h</td><td>5%</td><td>15%</td><td style='color:#2196f3;'>60%</td><td>15%</td><td>5%</td></tr>"
+            "<tr><td>3h</td><td>-</td><td>5%</td><td>15%</td><td style='color:#9c27b0;'>60%</td><td>20%</td></tr>"
+            "<tr><td>4h+</td><td>-</td><td>-</td><td>5%</td><td>15%</td><td style='color:#ff9800;'>80%</td></tr>"
+            "</table>"
+        )
+        rewards_table.setStyleSheet("background: transparent;")
+        rewards_content_layout.addWidget(rewards_table)
+        
+        rewards_bonus = QtWidgets.QLabel("<span style='color:#74b9ff;'>Streak:</span> +1 tier/7d | <span style='color:#fdcb6e;'>XP:</span> 25 + 2/min")
+        rewards_bonus.setStyleSheet("font-size: 10px; color: #666; background: transparent;")
+        rewards_content_layout.addWidget(rewards_bonus)
+        
+        self.rewards_content.setVisible(False)  # Collapsed by default
+        rewards_layout.addWidget(self.rewards_content)
+        layout.addWidget(rewards_card)
+
+        # === BOTTOM ROW: Log Past Session + Help ===
+        bottom_row = QtWidgets.QHBoxLayout()
+        bottom_row.setSpacing(10)
+        
+        self.log_past_btn = QtWidgets.QPushButton("📝 Log Past Session")
+        self.log_past_btn.setToolTip("Forgot to start the timer? Log a focus session you already completed.")
+        self.log_past_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.log_past_btn.setStyleSheet("""
+            QPushButton {
+                background: #333;
+                color: #aaa;
+                font-size: 11px;
+                font-weight: 500;
+                border-radius: 6px;
+                border: 1px solid #444;
+                padding: 8px 16px;
+            }
+            QPushButton:hover {
+                background: #3d3d3d;
+                color: #fff;
+                border-color: #555;
             }
         """)
         self.log_past_btn.clicked.connect(self._show_log_past_session_dialog)
-        layout.addWidget(self.log_past_btn)
+        bottom_row.addWidget(self.log_past_btn)
+        
+        bottom_row.addStretch()
+        
+        # Help button
+        add_tab_help_button(bottom_row, "timer", self)
+        
+        layout.addLayout(bottom_row)
+        
+        # Add stretch at bottom to absorb extra space
+        layout.addStretch(1)
+        
+        # Set content widget into scroll area
+        scroll.setWidget(content)
+        outer_layout.addWidget(scroll)
+        
+        # Initialize quick stats
+        self._refresh_quick_stats()
+    
+    def _toggle_rewards_info(self) -> None:
+        """Toggle rewards info visibility."""
+        is_visible = self.rewards_content.isVisible()
+        self.rewards_content.setVisible(not is_visible)
+        self.rewards_toggle_btn.setText("▲" if not is_visible else "▼")
+    
+    def _update_motivation_message(self) -> None:
+        """Update the motivational message based on current context."""
+        if not hasattr(self, 'motivation_label'):
+            return
+        
+        import random
+        from datetime import datetime
+        
+        # Safety check - slider might not exist yet during __init__
+        if not hasattr(self, 'duration_slider'):
+            return
+            
+        duration = self.duration_slider.value()
+        hour = datetime.now().hour
+        streak = self.blocker.stats.get("current_streak", 0)
+        
+        # Context-aware messages
+        if self.timer_running:
+            messages = [
+                "You're doing great! Stay focused! 💪",
+                "Deep work in progress... 🧠",
+                "Every minute counts. Keep going! ⏰",
+                "You've got this! 🔥",
+            ]
+        elif hour < 9:
+            messages = [
+                "Early bird gets the worm! Great time to focus. 🌅",
+                "Morning focus sessions are the most productive! ☀️",
+                "Start your day with a win! 🏆",
+            ]
+        elif hour >= 22:
+            messages = [
+                "Late night focus? Remember to rest well! 🌙",
+                "A quick session before bed? You're dedicated! ⭐",
+            ]
+        elif streak >= 7:
+            messages = [
+                f"🔥 {streak} day streak! You're on fire!",
+                f"Amazing! {streak} days strong! Keep it going! 💪",
+            ]
+        elif duration >= 120:
+            messages = [
+                f"Deep work mode: {duration//60}h session for epic rewards! 🎯",
+                f"Going for the long haul? Legendary rewards await! ✨",
+            ]
+        elif duration >= 60:
+            messages = [
+                f"1 hour of focus = rare gear and major XP! 💎",
+                f"Great choice! Hour-long sessions boost productivity! 📈",
+            ]
+        else:
+            messages = [
+                "Ready to focus? Set your duration and press Start!",
+                "Short bursts can be powerful. Let's go! ⚡",
+                "Every focus session makes you stronger! 💪",
+                "Longer sessions = better rewards! Try 1h+ for rare gear! 🎁",
+            ]
+        
+        self.motivation_label.setText(random.choice(messages))
+    
+    def _refresh_quick_stats(self) -> None:
+        """Refresh the quick stats display."""
+        try:
+            from app_utils import get_activity_date
+            from datetime import datetime
+            
+            today = get_activity_date(datetime.now())
+            
+            # Today's focus time
+            today_minutes = 0
+            sessions_today = 0
+            for session in self.blocker.stats.get("sessions", []):
+                if session.get("date") == today:
+                    today_minutes += session.get("minutes", 0)
+                    sessions_today += 1
+            
+            hours = today_minutes // 60
+            mins = today_minutes % 60
+            if hours > 0:
+                self.today_focus_lbl.setText(f"{hours}h {mins}m")
+            else:
+                self.today_focus_lbl.setText(f"{mins}m")
+            
+            self.sessions_today_lbl.setText(str(sessions_today))
+            
+            # Current streak
+            streak = self.blocker.stats.get("current_streak", 0)
+            self.streak_display_lbl.setText(f"{streak} day{'s' if streak != 1 else ''}")
+            
+        except Exception:
+            self.today_focus_lbl.setText("0m")
+            self.sessions_today_lbl.setText("0")
+            self.streak_display_lbl.setText("0 days")
+    
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        """Refresh quick stats when the tab becomes visible."""
+        super().showEvent(event)
+        self._refresh_quick_stats()
+        self._update_motivation_message()
 
     def _connect_signals(self) -> None:
         self.action_btn.clicked.connect(self._toggle_session)
         # Save settings when they change
-        for btn in self.mode_buttons.values():
-            btn.toggled.connect(self._save_timer_settings)
+        self.mode_combo.currentIndexChanged.connect(self._save_timer_settings)
         self.duration_slider.valueChanged.connect(self._save_timer_settings)
-        for btn in self.notify_buttons.values():
-            btn.toggled.connect(self._save_timer_settings)
+        self.duration_slider.valueChanged.connect(self._update_motivation_message)
+        self.notify_combo.currentIndexChanged.connect(self._save_timer_settings)
 
     def _load_last_session_settings(self) -> None:
         """Load the last session settings from config."""
         # Load mode
         saved_mode = getattr(self.blocker, 'last_session_mode', BlockMode.NORMAL)
-        if saved_mode in self.mode_buttons:
-            self.mode_buttons[saved_mode].setChecked(True)
+        if saved_mode in self._mode_values:
+            self.mode_combo.setCurrentIndex(self._mode_values.index(saved_mode))
         
         # Load duration (default 25 minutes)
         saved_duration = getattr(self.blocker, 'last_session_duration', 25)
@@ -1954,8 +2165,8 @@ class TimerTab(QtWidgets.QWidget):
         
         # Load notify mode (default "both")
         saved_notify = getattr(self.blocker, 'last_notify_mode', 'both')
-        if saved_notify in self.notify_buttons:
-            self.notify_buttons[saved_notify].setChecked(True)
+        if saved_notify in self._notify_values:
+            self.notify_combo.setCurrentIndex(self._notify_values.index(saved_notify))
 
     def _save_timer_settings(self) -> None:
         """Save current timer settings to config."""
@@ -1972,52 +2183,68 @@ class TimerTab(QtWidgets.QWidget):
         self.blocker.save_config()
 
     def _set_action_btn_start_style(self) -> None:
-        """Set the action button to Start style (green)."""
-        self.action_btn.setText("▶ Start")
+        """Set the action button to Start style (green, modern)."""
+        self.action_btn.setText("▶  Start Focus Session")
+        self.action_btn.setToolTip("Click to start your focus session. Sites will be blocked until complete.")
         self.action_btn.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #00b894, stop:1 #00a884);
+                    stop:0 #00d2a0, stop:1 #00b894);
                 color: white;
                 font-size: 16px;
                 font-weight: bold;
                 border-radius: 12px;
-                border: 2px solid #00cec9;
-                padding: 10px;
+                border: none;
+                padding: 14px 28px;
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #55efc4, stop:1 #00b894);
-                border: 2px solid #55efc4;
+                    stop:0 #55efc4, stop:1 #00d2a0);
             }
             QPushButton:pressed {
                 background: #00a884;
             }
         """)
+        # Hide progress elements when not running
+        if hasattr(self, 'session_progress'):
+            self.session_progress.setVisible(False)
+        if hasattr(self, 'session_status'):
+            self.session_status.setVisible(False)
+        # Update motivation message
+        if hasattr(self, 'motivation_label'):
+            self._update_motivation_message()
 
     def _set_action_btn_stop_style(self) -> None:
-        """Set the action button to Stop style (red)."""
-        self.action_btn.setText("⬛ Stop")
+        """Set the action button to Stop style (red, modern)."""
+        self.action_btn.setText("⏹  Stop Session")
+        self.action_btn.setToolTip("Click to stop the current session early.")
         self.action_btn.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #d63031, stop:1 #c0392b);
+                    stop:0 #ff6b6b, stop:1 #d63031);
                 color: white;
                 font-size: 16px;
                 font-weight: bold;
                 border-radius: 12px;
-                border: 2px solid #e74c3c;
-                padding: 10px;
+                border: none;
+                padding: 14px 28px;
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #ff7675, stop:1 #d63031);
-                border: 2px solid #ff7675;
+                    stop:0 #ff8787, stop:1 #ff6b6b);
             }
             QPushButton:pressed {
                 background: #c0392b;
             }
         """)
+        # Show progress elements when running
+        if hasattr(self, 'session_progress'):
+            self.session_progress.setVisible(True)
+        if hasattr(self, 'session_status'):
+            self.session_status.setVisible(True)
+        # Update motivation message for running state
+        if hasattr(self, 'motivation_label'):
+            self._update_motivation_message()
 
     def _toggle_session(self) -> None:
         """Toggle between starting and stopping a session."""
@@ -2041,20 +2268,20 @@ class TimerTab(QtWidgets.QWidget):
             hours = value // 60
             mins = value % 60
             if mins == 0:
-                self.duration_display.setText(f"{hours} hour{'s' if hours > 1 else ''}")
+                self.duration_display.setText(f"{hours}h")
             else:
                 self.duration_display.setText(f"{hours}h {mins}m")
         else:
-            self.duration_display.setText(f"{value} minutes")
+            self.duration_display.setText(f"{value} min")
 
     def _set_preset(self, minutes: int) -> None:
         """Set the duration slider to a preset value."""
         self.duration_slider.setValue(minutes)
 
     def _current_mode(self) -> str:
-        for value, btn in self.mode_buttons.items():
-            if btn.isChecked():
-                return value
+        idx = self.mode_combo.currentIndex()
+        if 0 <= idx < len(self._mode_values):
+            return self._mode_values[idx]
         return BlockMode.NORMAL
 
     def _format_time(self, seconds: int) -> str:
@@ -2227,6 +2454,9 @@ class TimerTab(QtWidgets.QWidget):
             session_minutes = elapsed // 60
             if session_minutes >= 10:  # Minimum 10 minutes for bypass encounter
                 self._check_entitidex_encounter_bypass(session_minutes)
+        
+        # Refresh quick stats
+        self._refresh_quick_stats()
 
     def _on_tick(self) -> None:
         if not self.timer_running:
@@ -2234,12 +2464,49 @@ class TimerTab(QtWidgets.QWidget):
         self.remaining_seconds -= 1
         self.timer_label.setText(self._format_time(max(self.remaining_seconds, 0)))
         self.timer_tick.emit(max(self.remaining_seconds, 0))
+        
+        # Update session progress bar and status
+        self._update_session_progress()
 
         # Priority check-in during sessions
         self._check_priority_checkin()
 
         if self.remaining_seconds <= 0:
             self._handle_session_complete()
+    
+    def _update_session_progress(self) -> None:
+        """Update the session progress bar and status text."""
+        if not self.session_start or not hasattr(self, 'session_progress'):
+            return
+        
+        try:
+            total_seconds = self.duration_slider.value() * 60
+            elapsed = total_seconds - self.remaining_seconds
+            
+            if total_seconds > 0:
+                progress_pct = min(100, int((elapsed / total_seconds) * 100))
+                self.session_progress.setValue(progress_pct)
+                
+                # Update status text
+                elapsed_mins = elapsed // 60
+                total_mins = total_seconds // 60
+                
+                # Mode-specific status
+                mode = self._current_mode()
+                mode_emoji = {
+                    BlockMode.NORMAL: "🎯",
+                    BlockMode.STRICT: "🔐",
+                    BlockMode.HARDCORE: "💀",
+                    BlockMode.POMODORO: "🍅",
+                }.get(mode, "🎯")
+                
+                if hasattr(self, 'session_status'):
+                    if mode == BlockMode.POMODORO and self.pomodoro_is_break:
+                        self.session_status.setText(f"☕ Break Time • {elapsed_mins}m / {total_mins}m")
+                    else:
+                        self.session_status.setText(f"{mode_emoji} Focusing • {elapsed_mins}m / {total_mins}m • {progress_pct}%")
+        except Exception:
+            pass
 
     def _check_priority_checkin(self) -> None:
         """Check if it's time to show a priority check-in dialog."""
@@ -2525,10 +2792,10 @@ class TimerTab(QtWidgets.QWidget):
             DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes, self.window()).exec()
 
     def _get_notify_mode(self) -> str:
-        """Get the current notification mode from radio buttons."""
-        for key, btn in self.notify_buttons.items():
-            if btn.isChecked():
-                return key
+        """Get the current notification mode from dropdown."""
+        idx = self.notify_combo.currentIndex()
+        if 0 <= idx < len(self._notify_values):
+            return self._notify_values[idx]
         return "both"  # Default
 
     def _play_notification_sound(self) -> None:
@@ -3075,6 +3342,9 @@ class TimerTab(QtWidgets.QWidget):
                 dialog.view_priorities.connect(main_window.show_priorities_dialog)
             
             dialog.exec()
+        
+        # Refresh quick stats
+        self._refresh_quick_stats()
         
         # Process rewards after dialog shown
         if session_minutes > 0:
