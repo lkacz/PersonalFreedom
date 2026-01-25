@@ -614,6 +614,15 @@ def load_heavy_modules():
     from entitidex_tab import EntitidexTab as _EntitidexTab
     EntitidexTab = _EntitidexTab
     
+    # City Building System (optional feature)
+    try:
+        from city_tab import CityTab as _CityTab, CITY_AVAILABLE as _CITY_AVAILABLE
+        CityTab = _CityTab
+        CITY_AVAILABLE = _CITY_AVAILABLE
+    except ImportError:
+        CityTab = None
+        CITY_AVAILABLE = False
+    
     from core_logic import (
         BlockerCore as _BlockerCore,
         BlockMode as _BlockMode,
@@ -8915,6 +8924,15 @@ class ActivityTab(QtWidgets.QWidget):
         
         self.blocker.save_config()
         
+        # Award city activity resource (1 per 10 minutes of activity)
+        if CITY_AVAILABLE and duration >= 10:
+            try:
+                from city import add_city_resource
+                activity_resources = duration // 10
+                add_city_resource(self.blocker.adhd_buster, "activity", activity_resources)
+            except Exception:
+                pass
+        
         # Award coins for activity (5-20 coins based on effective minutes)
         coins_earned = 0
         if GAMIFICATION_AVAILABLE and is_gamification_enabled(self.blocker.adhd_buster):
@@ -15160,6 +15178,14 @@ class HydrationTab(QtWidgets.QWidget):
                     perk_parts.append(f"+{cap - HYDRATION_MAX_DAILY_GLASSES} daily glasses")
                 if perk_parts:
                     show_perk_toast(f"Hydration Perks: {', '.join(perk_parts)}", "💧", self)
+            
+            # Award city water resource
+            if CITY_AVAILABLE:
+                try:
+                    from city import add_city_resource
+                    add_city_resource(self.blocker.adhd_buster, "water", 1)
+                except Exception:
+                    pass
         else:
             # Fallback without gamification
             entry = {
@@ -23821,6 +23847,12 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.entitidex_tab = EntitidexTab(self.blocker, self)
             self.tabs.addTab(self.entitidex_tab, "📖 Entitidex")
 
+        # 8.5 City Building tab (gamified city builder)
+        if CITY_AVAILABLE:
+            self.city_tab = CityTab(self.blocker.adhd_buster, self)
+            self.city_tab.request_save.connect(self._save_adhd_data)
+            self.tabs.addTab(self.city_tab, "🏰 City")
+
         # 9. Productivity/Stats tab
         self.stats_tab = StatsTab(self.blocker, self)
         self.tabs.addTab(self.stats_tab, "📊 Productivity")
@@ -25040,6 +25072,10 @@ del "%~f0"
         if GAMIFICATION_AVAILABLE:
             self._update_coin_display()
         
+        # Award city resources for focus session
+        if CITY_AVAILABLE and hasattr(self.blocker, 'adhd_buster'):
+            self._award_city_resources_for_session(elapsed_seconds)
+        
         # Refresh the stats tab to show updated focus time
         if hasattr(self, 'stats_tab'):
             self.stats_tab.refresh()
@@ -25059,6 +25095,10 @@ del "%~f0"
         if GAMIFICATION_AVAILABLE and hasattr(self, 'adhd_tab'):
             self.adhd_tab.set_session_active(False)
             self.adhd_tab.refresh_all()
+        
+        # Refresh City tab after session
+        if CITY_AVAILABLE and hasattr(self, 'city_tab'):
+            self.city_tab._refresh_city()
 
     def _on_session_started(self) -> None:
         """Handle session start - disable non-essential tabs to minimize distraction."""
@@ -25069,6 +25109,38 @@ del "%~f0"
         # Start browser monitor in Light Mode
         if self.blocker.enforcement_mode == EnforcementMode.LIGHT:
             self._start_browser_monitor()
+
+    def _award_city_resources_for_session(self, elapsed_seconds: int) -> None:
+        """
+        Award city resources based on completed focus session.
+        
+        Resource earning formula:
+        - 🎯 Focus: 1 per 10 minutes of focus time
+        - 🧱 Materials: 1 per 15 minutes (general productivity)
+        """
+        if not CITY_AVAILABLE:
+            return
+        
+        try:
+            from city import add_city_resource
+            
+            minutes = elapsed_seconds // 60
+            
+            # Focus: 1 per 10 minutes
+            focus_earned = minutes // 10
+            if focus_earned > 0:
+                add_city_resource(self.blocker.adhd_buster, "focus", focus_earned)
+            
+            # Materials: 1 per 15 minutes
+            materials_earned = minutes // 15
+            if materials_earned > 0:
+                add_city_resource(self.blocker.adhd_buster, "materials", materials_earned)
+            
+            # Save data
+            self._save_adhd_data()
+            
+        except Exception as e:
+            _logger.warning(f"Failed to award city resources: {e}")
 
     def _add_dev_tab(self) -> None:
         """Add the Developer tools tab (hidden by default)."""

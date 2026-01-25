@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="wonderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9C27B0"/>
+      <stop offset="50%" style="stop-color:#E040FB"/>
+      <stop offset="100%" style="stop-color:#7B1FA2"/>
+    </linearGradient>
+    <linearGradient id="goldWonder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700"/>
+      <stop offset="100%" style="stop-color:#FFA000"/>
+    </linearGradient>
+  </defs>
+  <!-- Central tower -->
+  <rect x="24" y="16" width="16" height="40" fill="url(#wonderGrad)" stroke="#4A148C" stroke-width="2"/>
+  <!-- Spire -->
+  <polygon points="32,4 26,16 38,16" fill="url(#goldWonder)"/>
+  <!-- Side towers -->
+  <rect x="8" y="28" width="12" height="28" fill="url(#wonderGrad)" stroke="#4A148C"/>
+  <polygon points="14,18 8,28 20,28" fill="url(#goldWonder)"/>
+  <rect x="44" y="28" width="12" height="28" fill="url(#wonderGrad)" stroke="#4A148C"/>
+  <polygon points="50,18 44,28 56,28" fill="url(#goldWonder)"/>
+  <!-- Magic glow -->
+  <ellipse cx="32" cy="30" rx="6" ry="6" fill="#E1BEE7" opacity="0.6"/>
+  <!-- Windows -->
+  <circle cx="32" cy="26" r="3" fill="#CE93D8"/>
+  <circle cx="32" cy="38" r="3" fill="#CE93D8"/>
+  <!-- Stars/sparkles -->
+  <circle cx="18" cy="14" r="2" fill="#FFD700"/>
+  <circle cx="46" cy="14" r="2" fill="#FFD700"/>
+  <circle cx="32" cy="8" r="1.5" fill="#FFFFFF"/>
+</svg>
