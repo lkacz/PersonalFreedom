@@ -13,6 +13,8 @@ from typing import Dict, List, Tuple, Optional, Any
 
 from .city_constants import (
     RESOURCE_TYPES,
+    STOCKPILE_RESOURCES,
+    EFFORT_RESOURCES,
     MAX_OFFLINE_HOURS,
     BUILDING_SLOT_UNLOCKS,
     GRID_ROWS,
@@ -154,6 +156,86 @@ def get_next_slot_unlock(adhd_buster: dict) -> dict:
 # RESOURCE MANAGEMENT
 # ============================================================================
 
+def get_active_construction(adhd_buster: dict) -> Optional[Tuple[int, int]]:
+    """
+    Get the coordinates of the currently active construction.
+    
+    Only ONE building can be under active construction at a time.
+    Activity and Focus resources flow directly to this building.
+    
+    Returns:
+        (row, col) tuple if there's active construction, None otherwise
+    """
+    city = get_city_data(adhd_buster)
+    active = city.get("active_construction")
+    
+    if active is None:
+        return None
+    
+    # Handle both tuple and list formats (JSON serialization converts tuples to lists)
+    if isinstance(active, (list, tuple)) and len(active) == 2:
+        row, col = active
+        # Verify the building is still in BUILDING status
+        grid = city.get("grid", [])
+        if _is_valid_grid_cell(grid, row, col):
+            cell = grid[row][col]
+            if cell and cell.get("status") == CellStatus.BUILDING.value:
+                return (row, col)
+    
+    # Active construction is invalid or completed - clear it
+    city["active_construction"] = None
+    return None
+
+
+def get_active_construction_info(adhd_buster: dict) -> Optional[dict]:
+    """
+    Get detailed info about the active construction for UI display.
+    
+    Returns:
+        {
+            "row": int,
+            "col": int,
+            "building_id": str,
+            "building_name": str,
+            "level": int,
+            "progress": {resource: invested},
+            "requirements": {resource: needed},
+            "effort_progress_percent": float,  # Activity+Focus progress only
+        }
+        or None if no active construction
+    """
+    coords = get_active_construction(adhd_buster)
+    if coords is None:
+        return None
+    
+    row, col = coords
+    city = get_city_data(adhd_buster)
+    grid = city.get("grid", [])
+    cell = grid[row][col]
+    
+    building_id = cell.get("building_id")
+    building_def = CITY_BUILDINGS.get(building_id, {})
+    level = cell.get("level", 1)
+    requirements = get_level_requirements(building_def, level)
+    progress = cell.get("construction_progress", {})
+    
+    # Calculate effort progress (activity + focus only)
+    effort_required = sum(requirements.get(r, 0) for r in EFFORT_RESOURCES)
+    effort_invested = sum(progress.get(r, 0) for r in EFFORT_RESOURCES)
+    effort_percent = (effort_invested / effort_required * 100) if effort_required > 0 else 100
+    
+    return {
+        "row": row,
+        "col": col,
+        "building_id": building_id,
+        "building_name": building_def.get("name", building_id),
+        "level": level,
+        "progress": progress.copy(),
+        "requirements": requirements,
+        "effort_progress_percent": min(100.0, effort_percent),
+    }
+
+
 def add_city_resource(
     adhd_buster: dict,
     resource_type: str,
@@ -161,9 +243,16 @@ def add_city_resource(
     game_state=None
 ) -> int:
     """
-    Add resources to city inventory.
+    Add resources to city inventory OR directly to active construction.
     
-    Called by activity hooks (water, weight, activity, focus tabs).
+    STOCKPILE RESOURCES (water, materials):
+        - Accumulate in city inventory
+        - User spends them manually to initiate construction
+    
+    EFFORT RESOURCES (activity, focus):
+        - Flow DIRECTLY to active construction (if any)
+        - Do NOT accumulate - represent real-time effort
+        - If no active construction, the effort is lost (with warning)
     
     Args:
         adhd_buster: Player data dict
@@ -172,15 +261,20 @@ def add_city_resource(
         game_state: Optional GameStateManager for signal emission
     
     Returns:
-        New total for that resource
+        New total for that resource (or amount invested if effort resource)
     """
     if resource_type not in RESOURCE_TYPES:
         _logger.warning(f"Invalid resource type: {resource_type}")
         return 0
     
     city = get_city_data(adhd_buster)
-    resources = city.get("resources", {})
     
+    # EFFORT RESOURCES: Route directly to active construction
+    if resource_type in EFFORT_RESOURCES:
+        return _add_effort_to_construction(adhd_buster, resource_type, amount, game_state)
+    
+    # STOCKPILE RESOURCES: Accumulate in inventory
+    resources = city.get("resources", {})
     old_value = resources.get(resource_type, 0)
     new_value = old_value + amount
     resources[resource_type] = new_value
@@ -198,6 +292,103 @@ def add_city_resource(
             _logger.debug(f"Failed to emit city_resource_earned: {e}")
     
     return new_value
+
+
+def _add_effort_to_construction(
+    adhd_buster: dict,
+    resource_type: str,
+    amount: int,
+    game_state=None
+) -> int:
+    """
+    Add effort resource (activity/focus) directly to active construction.
+    
+    Returns amount actually invested (0 if no active construction or not needed).
+    """
+    coords = get_active_construction(adhd_buster)
+    
+    if coords is None:
+        # No active construction - effort is "wasted" but that's by design
+        # The user should initiate a building first
+        _logger.debug(f"No active construction to receive {resource_type} - effort not applied")
+        return 0
+    
+    row, col = coords
+    city = get_city_data(adhd_buster)
+    grid = city.get("grid", [])
+    cell = grid[row][col]
+    
+    building_id = cell.get("building_id")
+    building_def = CITY_BUILDINGS.get(building_id, {})
+    level = cell.get("level", 1)
+    requirements = get_level_requirements(building_def, level)
+    progress = cell.get("construction_progress", {})
+    
+    # Calculate how much we need and can invest
+    needed = requirements.get(resource_type, 0)
+    invested = progress.get(resource_type, 0)
+    remaining = max(0, needed - invested)
+    to_invest = min(amount, remaining)
+    
+    if to_invest <= 0:
+        return 0
+    
+    # Apply the effort
+    progress[resource_type] = invested + to_invest
+    cell["construction_progress"] = progress
+    
+    # Emit progress signal
+    if game_state and hasattr(game_state, 'city_building_progress'):
+        try:
+            game_state._emit(game_state.city_building_progress, building_id)
+        except Exception:
+            pass
+    
+    # Check if construction is now complete (all resources met)
+    completed = all(
+        progress.get(r, 0) >= requirements.get(r, 0)
+        for r in RESOURCE_TYPES
+    )
+    
+    if completed:
+        _complete_construction(adhd_buster, row, col, game_state)
+    
+    return to_invest
+
+
+def _complete_construction(
+    adhd_buster: dict,
+    row: int,
+    col: int,
+    game_state=None
+) -> None:
+    """Mark a building as complete and award rewards."""
+    city = get_city_data(adhd_buster)
+    grid = city.get("grid", [])
+    cell = grid[row][col]
+    
+    cell["status"] = CellStatus.COMPLETE.value
+    cell["completed_at"] = datetime.now().isoformat()
+    
+    # Clear active construction
+    city["active_construction"] = None
+    
+    building_id = cell.get("building_id")
+    building_def = CITY_BUILDINGS.get(building_id, {})
+    
+    # Award completion reward
+    reward = building_def.get("completion_reward", {})
+    if reward:
+        _award_completion_reward(adhd_buster, reward, game_state)
+    
+    # Emit building completed signal
+    if game_state and hasattr(game_state, 'city_building_completed'):
+        try:
+            game_state._emit(game_state.city_building_completed, building_id)
+        except Exception:
+            pass
+    
+    _logger.info(f"Building {building_id} at ({row}, {col}) completed!")
 
 
 def get_resources(adhd_buster: dict) -> Dict[str, int]:
@@ -459,128 +650,173 @@ def invest_resources(
     game_state=None
 ) -> dict:
     """
-    Invest resources into a building's construction.
+    DEPRECATED: Use initiate_construction() for new construction flow.
     
-    Automatically transitions PLACED → BUILDING on first investment.
+    This function is kept for backward compatibility but now only handles
+    STOCKPILE resources (water, materials) for initiating construction.
+    EFFORT resources (activity, focus) flow automatically via add_city_resource().
     
-    Args:
-        adhd_buster: Player data
-        row, col: Grid coordinates
-        resources_to_invest: {resource_type: amount} to invest
-        game_state: Optional for batch mode and signals
+    For the new flow:
+    1. User calls initiate_construction() with water+materials payment
+    2. Activity+focus flow automatically to active_construction
+    """
+    # Filter to only stockpile resources
+    stockpile_only = {
+        r: v for r, v in resources_to_invest.items()
+        if r in STOCKPILE_RESOURCES
+    }
     
-    Returns:
-        {
-            "success": bool,
-            "invested": {resource: amount_actually_invested},
-            "remaining_needs": {resource: still_needed},
-            "completed": bool,
-            "error": str (if failed),
-        }
+    if not stockpile_only:
+        return {"success": False, "error": "Use initiate_construction() for new flow"}
+    
+    # Delegate to initiate_construction if this is a PLACED building
+    city = get_city_data(adhd_buster)
+    grid = city.get("grid", [])
+    
+    if not _is_valid_grid_cell(grid, row, col):
+        return {"success": False, "error": "Invalid cell"}
+    
+    cell = grid[row][col]
+    if cell and cell.get("status") == CellStatus.PLACED.value:
+        return initiate_construction(adhd_buster, row, col, game_state)
+    
+    return {"success": False, "error": "Building already initiated or complete"}
+
+
+def can_initiate_construction(adhd_buster: dict, row: int, col: int) -> Tuple[bool, str]:
+    """
+    Check if a PLACED building can be initiated (construction started).
+    
+    Requirements:
+    1. Building must be in PLACED status
+    2. No other building is currently under active construction
+    3. Player has sufficient water + materials
+    
+    Returns (can_initiate, reason).
     """
     city = get_city_data(adhd_buster)
     grid = city.get("grid", [])
     
     if row < 0 or row >= GRID_ROWS or col < 0 or col >= GRID_COLS:
-        return {"success": False, "error": "Invalid coordinates"}
+        return False, "Invalid coordinates"
     
-    # Safe grid access - handle malformed data
     if not _is_valid_grid_cell(grid, row, col):
-        return {"success": False, "error": "Grid data corrupted"}
+        return False, "Grid data corrupted"
     
     cell = grid[row][col]
     if cell is None:
-        return {"success": False, "error": "No building at this location"}
+        return False, "No building at this location"
     
-    if cell.get("status") == CellStatus.COMPLETE.value:
-        return {"success": False, "error": "Already complete"}
+    if cell.get("status") != CellStatus.PLACED.value:
+        if cell.get("status") == CellStatus.BUILDING.value:
+            return False, "Already under construction"
+        elif cell.get("status") == CellStatus.COMPLETE.value:
+            return False, "Already complete"
+        return False, f"Invalid status: {cell.get('status')}"
     
-    # Use batch mode if game_state provided (single save at end)
-    if game_state and hasattr(game_state, 'begin_batch'):
-        game_state.begin_batch()
+    # Check if another building is already under construction
+    active = get_active_construction(adhd_buster)
+    if active is not None:
+        active_row, active_col = active
+        active_cell = grid[active_row][active_col]
+        active_name = CITY_BUILDINGS.get(active_cell.get("building_id"), {}).get("name", "Unknown")
+        return False, f"Already building: {active_name}"
     
-    try:
-        # Auto-transition PLACED → BUILDING on first investment
-        if cell.get("status") == CellStatus.PLACED.value:
-            cell["status"] = CellStatus.BUILDING.value
-        
-        building_id = cell.get("building_id")
-        if not building_id:
-            return {"success": False, "error": "Cell has no building"}
-        
-        building_def = CITY_BUILDINGS.get(building_id, {})
-        level = cell.get("level", 1)
-        requirements = get_level_requirements(building_def, level)
-        progress = cell.get("construction_progress", {})
-        available = city.get("resources", {})
-        
-        invested = {}
-        
-        for resource, amount in resources_to_invest.items():
-            if resource not in RESOURCE_TYPES:
-                continue
-            
-            needed = requirements.get(resource, 0) - progress.get(resource, 0)
-            have = available.get(resource, 0)
-            to_invest = min(amount, needed, have)
-            
-            if to_invest > 0:
-                available[resource] = have - to_invest
-                progress[resource] = progress.get(resource, 0) + to_invest
-                invested[resource] = to_invest
-        
-        cell["construction_progress"] = progress
-        
-        # Check if level is now complete
-        completed = all(
-            progress.get(r, 0) >= requirements.get(r, 0)
-            for r in RESOURCE_TYPES
-        )
-        
-        if completed:
-            cell["status"] = CellStatus.COMPLETE.value
-            cell["completed_at"] = datetime.now().isoformat()
-            
-            # Award completion reward
-            reward = building_def.get("completion_reward", {})
-            if reward:
-                _award_completion_reward(adhd_buster, reward, game_state)
-            
-            # Emit building completed signal
-            if game_state and hasattr(game_state, 'city_building_completed'):
-                try:
-                    game_state._emit(
-                        game_state.city_building_completed,
-                        building_id
-                    )
-                except Exception:
-                    pass
-        else:
-            # Emit progress signal
-            if game_state and hasattr(game_state, 'city_building_progress'):
-                try:
-                    game_state._emit(
-                        game_state.city_building_progress,
-                        building_id
-                    )
-                except Exception:
-                    pass
-        
-        remaining = {
-            r: max(0, requirements.get(r, 0) - progress.get(r, 0))
-            for r in RESOURCE_TYPES
+    # Check if player has sufficient stockpile resources
+    building_id = cell.get("building_id")
+    building_def = CITY_BUILDINGS.get(building_id, {})
+    level = cell.get("level", 1)
+    requirements = get_level_requirements(building_def, level)
+    resources = city.get("resources", {})
+    
+    for res_type in STOCKPILE_RESOURCES:
+        needed = requirements.get(res_type, 0)
+        have = resources.get(res_type, 0)
+        if have < needed:
+            return False, f"Need {needed} {res_type}, have {have}"
+    
+    return True, "Ready to initiate"
+
+
+def initiate_construction(
+    adhd_buster: dict,
+    row: int,
+    col: int,
+    game_state=None
+) -> dict:
+    """
+    Initiate construction on a PLACED building.
+    
+    This is the NEW construction flow:
+    1. Consumes water + materials from inventory (upfront payment)
+    2. Transitions building from PLACED → BUILDING
+    3. Sets this building as active_construction
+    4. From now on, all activity + focus earned flows to this building
+    
+    Args:
+        adhd_buster: Player data
+        row, col: Grid coordinates of PLACED building
+        game_state: Optional for signals
+    
+    Returns:
+        {
+            "success": bool,
+            "error": str (if failed),
+            "building_id": str,
+            "building_name": str,
+            "effort_required": {"activity": int, "focus": int},
         }
-        
-        return {
-            "success": True,
-            "invested": invested,
-            "remaining_needs": remaining,
-            "completed": completed,
-        }
+    """
+    can, reason = can_initiate_construction(adhd_buster, row, col)
+    if not can:
+        return {"success": False, "error": reason}
     
-    finally:
-        if game_state and hasattr(game_state, 'end_batch'):
-            game_state.end_batch()
+    city = get_city_data(adhd_buster)
+    grid = city.get("grid", [])
+    cell = grid[row][col]
+    
+    building_id = cell.get("building_id")
+    building_def = CITY_BUILDINGS.get(building_id, {})
+    level = cell.get("level", 1)
+    requirements = get_level_requirements(building_def, level)
+    resources = city.get("resources", {})
+    progress = cell.get("construction_progress", {})
+    
+    # Consume stockpile resources (water + materials)
+    for res_type in STOCKPILE_RESOURCES:
+        needed = requirements.get(res_type, 0)
+        resources[res_type] = resources.get(res_type, 0) - needed
+        progress[res_type] = needed  # Mark as fully invested
+    
+    cell["construction_progress"] = progress
+    
+    # Transition to BUILDING status
+    cell["status"] = CellStatus.BUILDING.value
+    
+    # Set as active construction
+    city["active_construction"] = [row, col]  # List for JSON serialization
+    
+    _logger.info(f"Initiated construction of {building_id} at ({row}, {col})")
+    
+    # Emit construction started signal
+    if game_state and hasattr(game_state, 'city_building_progress'):
+        try:
+            game_state._emit(game_state.city_building_progress, building_id)
+        except Exception:
+            pass
+    
+    # Calculate remaining effort needed
+    effort_required = {
+        res_type: requirements.get(res_type, 0)
+        for res_type in EFFORT_RESOURCES
+    }
+    
+    return {
+        "success": True,
+        "building_id": building_id,
+        "building_name": building_def.get("name", building_id),
+        "effort_required": effort_required,
+    }
 
 
 def _award_completion_reward(

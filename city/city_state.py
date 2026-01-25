@@ -15,10 +15,17 @@ class CellStatus(str, Enum):
     Explicit cell states - never infer from other fields.
     
     Using str, Enum for JSON serialization compatibility.
+    
+    Construction Flow:
+    1. PLACED - Building selected, awaiting material payment to initiate
+    2. BUILDING - Construction initiated (materials paid), receiving effort resources
+    3. COMPLETE - Fully built, generating bonuses
+    
+    Only ONE building can be in BUILDING status at a time (active construction).
     """
     EMPTY = "empty"       # No building (cell is None in grid)
-    PLACED = "placed"     # Building selected but construction not started
-    BUILDING = "building" # Under active construction (progress > 0)
+    PLACED = "placed"     # Building selected but construction not initiated (needs water+materials)
+    BUILDING = "building" # Under active construction (receiving activity+focus)
     COMPLETE = "complete" # Fully built, generating bonuses
 
 
@@ -59,7 +66,8 @@ class CityData(TypedDict, total=False):
     Stored in adhd_buster["city"].
     """
     grid: List[List[Optional[CellState]]]  # 5×5 grid, None for empty cells
-    resources: ResourceAmounts              # Current resource amounts
+    resources: ResourceAmounts              # Current resource amounts (only water+materials accumulate)
+    active_construction: Optional[tuple]    # (row, col) of building currently under construction, or None
     total_coins_generated: int              # Lifetime coins from city
     total_xp_generated: int                 # Lifetime XP from city
     last_collection_time: str               # ISO timestamp of last income collection
@@ -83,9 +91,11 @@ def create_default_city_data() -> CityData:
         "resources": {
             "water": 0,
             "materials": 0,
-            "activity": 0,
-            "focus": 0,
+            # Note: activity and focus are NOT stored here - they flow directly to active construction
+            "activity": 0,  # Legacy field, kept at 0
+            "focus": 0,     # Legacy field, kept at 0
         },
+        "active_construction": None,  # (row, col) of building receiving effort resources
         "total_coins_generated": 0,
         "total_xp_generated": 0,
         "last_collection_time": datetime.now().isoformat(),

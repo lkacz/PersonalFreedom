@@ -984,16 +984,24 @@ class ItemRewardDialog(StyledDialog):
         elif self._equipped:
             currently_equipped = self._equipped.get(slot)
         
-        # Check if this specific item is now equipped (by comparing names/power)
+        # Check if this specific item is now equipped
+        # Use item_id for reliable comparison, fall back to name+power
         is_this_item_equipped = False
         if was_auto_equipped:
             is_this_item_equipped = True
         elif currently_equipped:
             # Check if current equipped matches this item
-            is_this_item_equipped = (
-                currently_equipped.get("name") == name and 
-                currently_equipped.get("power") == power
-            )
+            # The item dict should have been passed with item_id if available
+            item_id = item.get("item_id") if item else None
+            eq_id = currently_equipped.get("item_id")
+            if item_id and eq_id:
+                is_this_item_equipped = (item_id == eq_id)
+            else:
+                # Fallback to name + power comparison
+                is_this_item_equipped = (
+                    currently_equipped.get("name") == name and 
+                    currently_equipped.get("power") == power
+                )
         
         if is_this_item_equipped:
             # This item is now equipped
@@ -1268,22 +1276,42 @@ class OptimizeGearDialog(StyledDialog):
     
     def _build_content(self, layout):
         """Build the optimization strategy selection UI."""
-        # Coin balance display at top
+        # Coin balance display at top with remaining calculation
         coin_layout = QtWidgets.QHBoxLayout()
         coin_layout.addStretch()
         coin_layout.addWidget(QtWidgets.QLabel("🪙"))
         coin_label = QtWidgets.QLabel(f"<b style='color: #ffd700;'>{self.current_coins:,}</b>")
         coin_layout.addWidget(coin_label)
+        
+        # Calculate remaining and add tooltip
+        remaining_after = self.current_coins - self.optimize_cost
+        can_afford = remaining_after >= 0
+        
+        cost_breakdown = [
+            "💰 Cost Breakdown:",
+            "─" * 18,
+            f"Optimization cost: {self.optimize_cost} 🪙",
+        ]
+        if self.has_entity_perk:
+            cost_breakdown.append(f"Entity perk: {self.perk_description}")
+        cost_breakdown.extend([
+            "─" * 18,
+            f"Current balance: {self.current_coins} 🪙",
+            f"After optimize: {remaining_after} 🪙"
+        ])
+        coin_label.setToolTip("\n".join(cost_breakdown))
+        
         layout.addLayout(coin_layout)
         
-        # Cost info (with entity perk if applicable)
+        # Cost info (with entity perk if applicable) - color-coded by affordability
         if self.has_entity_perk:
             if self.optimize_cost == 0:
                 cost_text = f"<span style='color: #00ff88;'>{self.perk_description}</span>"
             else:
                 cost_text = f"<span style='color: #ffd700;'>{self.perk_description}</span>"
         else:
-            cost_text = f"<span style='color: #aaa;'>Cost: {self.optimize_cost} coins</span>"
+            cost_color = "#4caf50" if can_afford else "#f44336"
+            cost_text = f"<span style='color: {cost_color};'>Cost: {self.optimize_cost} coins → {remaining_after} remaining</span>"
         
         cost_label = QtWidgets.QLabel(cost_text)
         cost_label.setAlignment(QtCore.Qt.AlignCenter)

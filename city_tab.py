@@ -20,6 +20,16 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtSvg import QSvgRenderer
 
+# Try to import QWebEngineView for animated SVG support
+try:
+    from PySide6.QtWebEngineWidgets import QWebEngineView
+    from PySide6.QtWebEngineCore import QWebEngineSettings
+    HAS_WEBENGINE = True
+except ImportError:
+    HAS_WEBENGINE = False
+    QWebEngineView = None
+    QWebEngineSettings = None
+
 from app_utils import get_app_dir
 from styled_dialog import StyledDialog, add_tab_help_button
 from gamification import get_level_from_xp
@@ -55,6 +65,8 @@ try:
         GRID_ROWS,
         GRID_COLS,
         RESOURCE_TYPES,
+        STOCKPILE_RESOURCES,
+        EFFORT_RESOURCES,
         DEMOLISH_REFUND_PERCENT,
         get_city_data,
         get_city_bonuses,
@@ -64,6 +76,10 @@ try:
         place_building,
         remove_building,
         invest_resources,
+        get_active_construction,
+        get_active_construction_info,
+        can_initiate_construction,
+        initiate_construction,
         collect_city_income,
         get_pending_income,
         get_max_building_slots,
@@ -94,10 +110,12 @@ except ImportError as e:
     GRID_ROWS = 5
     GRID_COLS = 5
     RESOURCE_TYPES = ["water", "materials", "activity", "focus"]
+    STOCKPILE_RESOURCES = ["water", "materials"]
+    EFFORT_RESOURCES = ["activity", "focus"]
     DEMOLISH_REFUND_PERCENT = 50
     
     # Stub functions that do nothing
-    def get_city_data(adhd_buster): return {"grid": [[None]*5 for _ in range(5)], "resources": {}}
+    def get_city_data(adhd_buster): return {"grid": [[None]*5 for _ in range(5)], "resources": {}, "active_construction": None}
     def get_city_bonuses(adhd_buster): return {}
     def add_city_resource(adhd_buster, res, amt): return 0
     def get_resources(adhd_buster): return {}
@@ -105,6 +123,10 @@ except ImportError as e:
     def place_building(adhd_buster, r, c, bid): return False
     def remove_building(adhd_buster, r, c): return None
     def invest_resources(adhd_buster, r, c, inv): return {}
+    def get_active_construction(adhd_buster): return None
+    def get_active_construction_info(adhd_buster): return None
+    def can_initiate_construction(adhd_buster, r, c): return (False, "City system not available")
+    def initiate_construction(adhd_buster, r, c, gs=None): return {"success": False, "error": "Not available"}
     def collect_city_income(adhd_buster): return {}
     def get_pending_income(adhd_buster): return {}
     def get_max_building_slots(level): return 0
@@ -125,6 +147,199 @@ except ImportError as e:
 # ============================================================================
 
 CITY_ICONS_PATH = get_app_dir() / "icons" / "city"
+
+# SVG cache for performance
+_svg_pixmap_cache: Dict[str, QtGui.QPixmap] = {}
+
+
+def _get_svg_pixmap(svg_path: Path, size: int = 48) -> Optional[QtGui.QPixmap]:
+    """Load SVG as pixmap with caching."""
+    cache_key = f"{svg_path}_{size}"
+    if cache_key in _svg_pixmap_cache:
+        return _svg_pixmap_cache[cache_key]
+    
+    if not svg_path.exists():
+        return None
+    
+    try:
+        renderer = QSvgRenderer(str(svg_path))
+        if not renderer.isValid():
+            return None
+        
+        pixmap = QtGui.QPixmap(size, size)
+        pixmap.fill(QtCore.Qt.transparent)
+        painter = QtGui.QPainter(pixmap)
+        renderer.render(painter)
+        painter.end()
+        
+        _svg_pixmap_cache[cache_key] = pixmap
+        return pixmap
+    except Exception as e:
+        _logger.debug(f"Failed to load SVG {svg_path}: {e}")
+        return None
+
+
+def _get_construction_composite_pixmap(building_id: str, size: int = 48) -> Optional[QtGui.QPixmap]:
+    """
+    Create a composite pixmap with building SVG (faded) + construction overlay.
+    
+    Per CITY_SYSTEM_DESIGN.md:
+    - Show the actual building so user knows what's being built
+    - Overlay construction scaffolding on top
+    - Slight fade on building to indicate "not operational yet"
+    """
+    cache_key = f"construction_{building_id}_{size}"
+    if cache_key in _svg_pixmap_cache:
+        return _svg_pixmap_cache[cache_key]
+    
+    # Load base building SVG
+    building_path = CITY_ICONS_PATH / f"{building_id}.svg"
+    building_pixmap = _get_svg_pixmap(building_path, size)
+    
+    # Load construction overlay
+    construction_path = CITY_ICONS_PATH / "_construction.svg"
+    construction_pixmap = _get_svg_pixmap(construction_path, size)
+    
+    if not building_pixmap:
+        # No building SVG, just use construction overlay
+        return construction_pixmap
+    
+    # Create composite
+    composite = QtGui.QPixmap(size, size)
+    composite.fill(QtCore.Qt.transparent)
+    
+    painter = QtGui.QPainter(composite)
+    painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+    
+    # Draw building at reduced opacity (60%)
+    painter.setOpacity(0.6)
+    painter.drawPixmap(0, 0, building_pixmap)
+    
+    # Draw construction overlay at full opacity
+    if construction_pixmap:
+        painter.setOpacity(1.0)
+        painter.drawPixmap(0, 0, construction_pixmap)
+    
+    painter.end()
+    
+    _svg_pixmap_cache[cache_key] = composite
+    return composite
+
+
+# SVG content cache for animated widgets (avoids redundant file I/O)
+_svg_content_cache: Dict[str, str] = {}
+
+
+class AnimatedBuildingWidget(QtWidgets.QWidget):
+    """
+    Widget that displays animated SVG using QWebEngineView.
+    
+    Used for completed buildings to show their SMIL/CSS animations
+    (flickering flames, rotating domes, sparkling effects).
+    
+    Falls back to static QSvgWidget if WebEngine is not available.
+    
+    OPTIMIZATION per CITY_SYSTEM_DESIGN.md:
+    - Uses cached SVG content to avoid redundant file I/O
+    - Disables unnecessary WebEngine features
+    - Minimal DOM with single SVG element
+    """
+    __slots__ = ('svg_path', 'web_view', 'svg_widget', '_size')
+    
+    def __init__(self, svg_path: str, size: int = 80, parent=None):
+        super().__init__(parent)
+        self.svg_path = svg_path
+        self._size = size
+        self.web_view = None
+        self.svg_widget = None
+        self.setFixedSize(size, size)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        
+        if HAS_WEBENGINE:
+            # Use WebEngine for full SVG animation support
+            self.web_view = QWebEngineView(self)
+            self.web_view.setFixedSize(size, size)
+            
+            # Configure for transparent background
+            self.web_view.page().setBackgroundColor(QtCore.Qt.transparent)
+            self.web_view.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+            
+            # Apply performance optimizations
+            settings = self.web_view.settings()
+            settings.setAttribute(QWebEngineSettings.ShowScrollBars, False)
+            settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)  # For CSS animations
+            settings.setAttribute(QWebEngineSettings.LocalStorageEnabled, False)
+            settings.setAttribute(QWebEngineSettings.PluginsEnabled, False)
+            settings.setAttribute(QWebEngineSettings.FullScreenSupportEnabled, False)
+            settings.setAttribute(QWebEngineSettings.ScreenCaptureEnabled, False)
+            settings.setAttribute(QWebEngineSettings.WebGLEnabled, False)
+            
+            self._load_svg()
+            layout.addWidget(self.web_view)
+        else:
+            # Fallback to static QSvgWidget
+            self.svg_widget = QSvgWidget(svg_path, self)
+            self.svg_widget.setFixedSize(size, size)
+            self.svg_widget.setStyleSheet("background: transparent;")
+            layout.addWidget(self.svg_widget)
+    
+    @staticmethod
+    def _get_cached_svg_content(svg_path: str) -> str:
+        """Get cached SVG file content to avoid redundant file I/O."""
+        if svg_path in _svg_content_cache:
+            return _svg_content_cache[svg_path]
+        
+        try:
+            with open(svg_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except Exception:
+            _logger.debug(f"Error loading SVG {svg_path}")
+            content = '<svg></svg>'
+        
+        _svg_content_cache[svg_path] = content
+        return content
+    
+    def _load_svg(self):
+        """Load the SVG file into WebEngine with proper styling."""
+        if not self.web_view:
+            return
+        
+        svg_content = self._get_cached_svg_content(self.svg_path)
+        size = self._size
+        
+        # Wrap SVG in minimal HTML with transparent background
+        html = f'''<!DOCTYPE html>
+<html>
+<head>
+<style>
+    * {{ margin: 0; padding: 0; }}
+    html, body {{ 
+        width: {size}px; 
+        height: {size}px; 
+        overflow: hidden;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }}
+    svg {{
+        width: {size}px;
+        height: {size}px;
+        display: block;
+    }}
+</style>
+</head>
+<body>
+{svg_content}
+</body>
+</html>'''
+        
+        self.web_view.setHtml(html)
+
 
 # Cell status colors (CellStatus is always defined via import or fallback)
 STATUS_COLORS = {
@@ -162,6 +377,7 @@ class CityCell(QtWidgets.QFrame):
     - Empty state (clickable to place)
     - Building icon with construction progress
     - Complete building with level indicator
+    - Synergy indicator for buildings with active entity synergies
     """
     
     clicked = QtCore.Signal(int, int)  # row, col
@@ -172,9 +388,11 @@ class CityCell(QtWidgets.QFrame):
         self.col = col
         self._cell_state = None
         self._building_def = None
+        self._animated_widget = None  # For completed buildings with animations
+        self._has_synergy = False  # Track if building has active synergy
         
-        self.setMinimumSize(64, 64)
-        self.setMaximumSize(80, 80)
+        self.setMinimumSize(96, 96)
+        self.setMaximumSize(110, 110)
         self.setCursor(QtCore.Qt.PointingHandCursor)
         
         self._setup_ui()
@@ -183,14 +401,54 @@ class CityCell(QtWidgets.QFrame):
     def _setup_ui(self):
         """Set up the cell's internal UI."""
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(4, 4, 4, 4)
-        layout.setSpacing(2)
+        layout.setContentsMargins(2, 2, 2, 2)
+        layout.setSpacing(1)
         
-        # Building icon (SVG or emoji)
+        # Container for icon and level badge overlay
+        self.icon_container = QtWidgets.QWidget()
+        self.icon_container.setStyleSheet("background: transparent;")
+        icon_layout = QtWidgets.QVBoxLayout(self.icon_container)
+        icon_layout.setContentsMargins(0, 0, 0, 0)
+        icon_layout.setSpacing(0)
+        
+        # Building icon (SVG pixmap display) - larger for better visuals
         self.icon_label = QtWidgets.QLabel()
         self.icon_label.setAlignment(QtCore.Qt.AlignCenter)
         self.icon_label.setStyleSheet("background: transparent;")
-        layout.addWidget(self.icon_label, 1)
+        self.icon_label.setMinimumSize(80, 80)
+        icon_layout.addWidget(self.icon_label, alignment=QtCore.Qt.AlignCenter)
+        
+        layout.addWidget(self.icon_container, 1)
+        
+        # Level badge (overlaid on icon) - positioned in resizeEvent
+        self.level_badge = QtWidgets.QLabel(self)
+        self.level_badge.setAlignment(QtCore.Qt.AlignCenter)
+        self.level_badge.setStyleSheet("""
+            QLabel {
+                background: rgba(0, 0, 0, 0.7);
+                color: #FFD700;
+                font-size: 10px;
+                font-weight: bold;
+                border-radius: 6px;
+                padding: 1px 4px;
+            }
+        """)
+        
+        # Synergy indicator (shown when building has active entity synergy)
+        self.synergy_badge = QtWidgets.QLabel(self)
+        self.synergy_badge.setAlignment(QtCore.Qt.AlignCenter)
+        self.synergy_badge.setText("✨")
+        self.synergy_badge.setStyleSheet("""
+            QLabel {
+                background: rgba(186, 104, 200, 0.8);
+                color: white;
+                font-size: 10px;
+                border-radius: 6px;
+                padding: 1px 3px;
+            }
+        """)
+        self.synergy_badge.hide()
+        self.level_badge.hide()
         
         # Progress/level bar at bottom
         self.progress_bar = QtWidgets.QProgressBar()
@@ -200,42 +458,131 @@ class CityCell(QtWidgets.QFrame):
         layout.addWidget(self.progress_bar)
     
     def _apply_empty_style(self):
-        """Style for empty cell."""
-        self.setStyleSheet(f"""
-            CityCell {{
-                background: {STATUS_COLORS.get('empty', '#2A2A3A')};
-                border: 1px dashed #555;
-                border-radius: 8px;
-            }}
-            CityCell:hover {{
-                background: #3A3A5A;
-                border: 1px solid #777;
-            }}
+        """Style for empty cell - available building plot with visible plot marker."""
+        # Clean up any existing animated widget
+        if self._animated_widget:
+            self._animated_widget.setParent(None)
+            self._animated_widget.deleteLater()
+            self._animated_widget = None
+        
+        # Show the static icon label
+        self.icon_label.show()
+        
+        self.setStyleSheet("""
+            CityCell {
+                background: qradialgradient(
+                    cx: 0.5, cy: 0.5, radius: 0.7,
+                    stop: 0 rgba(60, 80, 60, 0.4),
+                    stop: 0.6 rgba(50, 70, 50, 0.3),
+                    stop: 1 rgba(40, 60, 40, 0.2)
+                );
+                border: 2px dashed rgba(120, 150, 120, 0.6);
+                border-radius: 12px;
+            }
+            CityCell:hover {
+                background: qradialgradient(
+                    cx: 0.5, cy: 0.5, radius: 0.7,
+                    stop: 0 rgba(80, 120, 80, 0.5),
+                    stop: 0.6 rgba(70, 100, 70, 0.4),
+                    stop: 1 rgba(60, 90, 60, 0.3)
+                );
+                border: 2px solid rgba(150, 200, 150, 0.8);
+            }
         """)
-        self.icon_label.setText("➕")
-        self.icon_label.setStyleSheet("font-size: 20px; color: #555;")
+        # Use empty/plus icon or fallback to emoji - larger for visibility
+        empty_svg = CITY_ICONS_PATH / "_locked.svg"
+        pixmap = _get_svg_pixmap(empty_svg, 48)
+        if pixmap:
+            self.icon_label.setPixmap(pixmap)
+        else:
+            self.icon_label.setText("➕")
+            self.icon_label.setStyleSheet("font-size: 32px; color: rgba(120, 160, 120, 0.7); background: transparent;")
         self.progress_bar.hide()
+        self.level_badge.hide()
     
     def _apply_building_style(self, status: str):
-        """Style for cell with building."""
-        bg_color = STATUS_COLORS.get(status, "#2A2A3A")
-        border_color = "#FFD700" if status == CellStatus.COMPLETE.value else "#888"
-        
-        self.setStyleSheet(f"""
-            CityCell {{
-                background: {bg_color};
-                border: 2px solid {border_color};
-                border-radius: 8px;
-            }}
-            CityCell:hover {{
-                border: 2px solid #FFF;
-            }}
-        """)
+        """Style for cell with building - minimal styling to let SVG shine."""
+        if status == CellStatus.COMPLETE.value:
+            # Completed building - subtle golden glow, no border
+            self.setStyleSheet("""
+                CityCell {
+                    background: qradialgradient(
+                        cx: 0.5, cy: 0.5, radius: 0.9,
+                        stop: 0 rgba(255, 215, 0, 0.15),
+                        stop: 0.5 rgba(255, 215, 0, 0.08),
+                        stop: 1 transparent
+                    );
+                    border: none;
+                    border-radius: 12px;
+                }
+                CityCell:hover {
+                    background: qradialgradient(
+                        cx: 0.5, cy: 0.5, radius: 0.9,
+                        stop: 0 rgba(255, 235, 59, 0.25),
+                        stop: 0.5 rgba(255, 235, 59, 0.12),
+                        stop: 1 transparent
+                    );
+                }
+            """)
+        elif status == CellStatus.BUILDING.value:
+            # Under construction - subtle orange glow, no border
+            self.setStyleSheet("""
+                CityCell {
+                    background: qradialgradient(
+                        cx: 0.5, cy: 0.5, radius: 0.9,
+                        stop: 0 rgba(255, 167, 38, 0.2),
+                        stop: 0.5 rgba(255, 167, 38, 0.1),
+                        stop: 1 transparent
+                    );
+                    border: none;
+                    border-radius: 12px;
+                }
+                CityCell:hover {
+                    background: qradialgradient(
+                        cx: 0.5, cy: 0.5, radius: 0.9,
+                        stop: 0 rgba(255, 183, 77, 0.3),
+                        stop: 0.5 rgba(255, 183, 77, 0.15),
+                        stop: 1 transparent
+                    );
+                }
+            """)
+        else:
+            # Placed but not started - subtle foundation glow
+            self.setStyleSheet("""
+                CityCell {
+                    background: qradialgradient(
+                        cx: 0.5, cy: 0.5, radius: 0.9,
+                        stop: 0 rgba(120, 144, 156, 0.2),
+                        stop: 0.5 rgba(120, 144, 156, 0.1),
+                        stop: 1 transparent
+                    );
+                    border: none;
+                    border-radius: 12px;
+                }
+                CityCell:hover {
+                    background: qradialgradient(
+                        cx: 0.5, cy: 0.5, radius: 0.9,
+                        stop: 0 rgba(144, 164, 174, 0.3),
+                        stop: 0.5 rgba(144, 164, 174, 0.15),
+                        stop: 1 transparent
+                    );
+                }
+            """)
     
-    def set_cell_state(self, cell_state: Optional[Dict], building_def: Optional[Dict] = None):
+    def set_cell_state(self, cell_state: Optional[Dict], building_def: Optional[Dict] = None, adhd_buster: Optional[Dict] = None):
         """Update cell to reflect current state."""
         self._cell_state = cell_state
         self._building_def = building_def
+        self._adhd_buster = adhd_buster  # Store for synergy calculation
+        
+        # Clean up any existing animated widget
+        if self._animated_widget:
+            self._animated_widget.setParent(None)
+            self._animated_widget.deleteLater()
+            self._animated_widget = None
+        
+        # Show icon_label by default (will be hidden if using animated widget)
+        self.icon_label.show()
         
         if cell_state is None:
             self._apply_empty_style()
@@ -248,18 +595,68 @@ class CityCell(QtWidgets.QFrame):
         # Apply status-based style
         self._apply_building_style(status)
         
-        # Set building icon
-        if building_def:
-            # Icon emoji is at the start of name field (e.g. "⛏️ Goldmine")
-            name = building_def.get("name", "🏛️")
-            icon_char = name.split()[0] if name else "🏛️"
-            self.icon_label.setText(icon_char)
-            self.icon_label.setStyleSheet("font-size: 28px; background: transparent;")
-            
-            # Show level badge if complete
-            if status == CellStatus.COMPLETE.value and level > 1:
-                self.icon_label.setText(f"{icon_char}\n★{level}")
-                self.icon_label.setStyleSheet("font-size: 18px; color: #FFD700; background: transparent;")
+        # Handle building display based on status
+        if building_id:
+            if status == CellStatus.COMPLETE.value:
+                # Completed: use ANIMATED SVG widget for full animation support
+                svg_path = CITY_ICONS_PATH / f"{building_id}_animated.svg"
+                if not svg_path.exists():
+                    svg_path = CITY_ICONS_PATH / f"{building_id}.svg"
+                
+                if svg_path.exists():
+                    # Hide static label, use animated widget
+                    self.icon_label.hide()
+                    self._animated_widget = AnimatedBuildingWidget(str(svg_path), 80, self.icon_container)
+                    self.icon_container.layout().addWidget(self._animated_widget, alignment=QtCore.Qt.AlignCenter)
+                else:
+                    # Fallback to emoji
+                    self._set_emoji_icon(building_def)
+                
+            elif status == CellStatus.BUILDING.value:
+                # Under construction: composite of building + scaffolding overlay (static)
+                pixmap = _get_construction_composite_pixmap(building_id, 80)
+                if pixmap:
+                    self.icon_label.setPixmap(pixmap)
+                    self.icon_label.setStyleSheet("background: transparent;")
+                else:
+                    self._set_emoji_icon(building_def)
+                
+            else:
+                # Placed or other: static building SVG
+                svg_path = CITY_ICONS_PATH / f"{building_id}.svg"
+                pixmap = _get_svg_pixmap(svg_path, 80)
+                if pixmap:
+                    self.icon_label.setPixmap(pixmap)
+                    self.icon_label.setStyleSheet("background: transparent;")
+                else:
+                    self._set_emoji_icon(building_def)
+        else:
+            self._set_emoji_icon(building_def)
+        
+        # Show level badge for completed buildings with level > 1
+        if status == CellStatus.COMPLETE.value and level > 1:
+            self.level_badge.setText(f"★{level}")
+            self.level_badge.show()
+            self.level_badge.adjustSize()  # Ensure proper size before positioning
+        else:
+            self.level_badge.hide()
+        
+        # Check for synergy bonus and show indicator
+        self._has_synergy = False
+        if building_id and status == CellStatus.COMPLETE.value and CITY_AVAILABLE:
+            synergy_result = calculate_building_synergy_bonus(building_id, self._adhd_buster or {})
+            if synergy_result.get("bonus_percent", 0) > 0:
+                self._has_synergy = True
+                bonus_pct = synergy_result["bonus_percent"] * 100
+                self.synergy_badge.setToolTip(f"Entity Synergy: +{bonus_pct:.0f}%")
+                self.synergy_badge.show()
+            else:
+                self.synergy_badge.hide()
+        else:
+            self.synergy_badge.hide()
+        
+        # Trigger repositioning of badges
+        self._position_badges()
         
         # Show progress bar for under-construction buildings
         if status == CellStatus.BUILDING.value:
@@ -302,6 +699,38 @@ class CityCell(QtWidgets.QFrame):
         # Update tooltip
         self.setToolTip(self.get_tooltip_text())
     
+    def _set_emoji_icon(self, building_def: Optional[Dict]):
+        """Set emoji fallback icon when SVG not available."""
+        if building_def:
+            name = building_def.get("name", "🏛️")
+            icon_char = name.split()[0] if name else "🏛️"
+            self.icon_label.setText(icon_char)
+            self.icon_label.setStyleSheet("font-size: 48px; background: transparent;")
+        else:
+            self.icon_label.setText("🏛️")
+            self.icon_label.setStyleSheet("font-size: 48px; background: transparent;")
+    
+    def _position_badges(self):
+        """Position level and synergy badges at correct locations."""
+        # Position level badge at bottom-right
+        if self.level_badge.isVisible():
+            self.level_badge.adjustSize()
+            x = self.width() - self.level_badge.width() - 4
+            y = self.height() - self.level_badge.height() - 12  # Above progress bar
+            self.level_badge.move(x, y)
+        
+        # Position synergy badge at top-right
+        if self.synergy_badge.isVisible():
+            self.synergy_badge.adjustSize()
+            x = self.width() - self.synergy_badge.width() - 4
+            y = 4
+            self.synergy_badge.move(x, y)
+    
+    def resizeEvent(self, event: QtGui.QResizeEvent):
+        """Reposition badges when cell is resized."""
+        super().resizeEvent(event)
+        self._position_badges()
+    
     def mousePressEvent(self, event: QtGui.QMouseEvent):
         if event.button() == QtCore.Qt.LeftButton:
             self.clicked.emit(self.row, self.col)
@@ -334,21 +763,47 @@ class CityCell(QtWidgets.QFrame):
 # CITY GRID WIDGET
 # ============================================================================
 
-class CityGrid(QtWidgets.QWidget):
-    """The 5x5 grid of city cells."""
+class CityGrid(QtWidgets.QFrame):
+    """The 5x5 grid of city cells with terrain background."""
     
     cell_clicked = QtCore.Signal(int, int)  # row, col
     
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
         self.cells: list[list[CityCell]] = []
+        self._adhd_buster: Optional[Dict] = None  # Stored for synergy calculations
+        self._apply_terrain_style()
         self._setup_ui()
+    
+    def _apply_terrain_style(self):
+        """Apply impressive terrain/land background with natural landscape feel."""
+        self.setStyleSheet("""
+            CityGrid {
+                background: qradialgradient(
+                    cx: 0.5, cy: 0.4, radius: 1.0,
+                    stop: 0 #4A7A4A,
+                    stop: 0.2 #3D6B3D,
+                    stop: 0.4 #2F5C2F,
+                    stop: 0.6 #285528,
+                    stop: 0.8 #1F471F,
+                    stop: 1.0 #183A18
+                );
+                border: 4px solid qlineargradient(
+                    x1: 0, y1: 0, x2: 1, y2: 1,
+                    stop: 0 #6B8B6B,
+                    stop: 0.3 #5A7A5A,
+                    stop: 0.7 #4A6A4A,
+                    stop: 1.0 #3A5A3A
+                );
+                border-radius: 16px;
+            }
+        """)
     
     def _setup_ui(self):
         """Create the grid of cells."""
         layout = QtWidgets.QGridLayout(self)
-        layout.setSpacing(6)
-        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(8)
+        layout.setContentsMargins(15, 15, 15, 15)
         
         rows = GRID_ROWS if CITY_AVAILABLE else 5
         cols = GRID_COLS if CITY_AVAILABLE else 5
@@ -365,11 +820,12 @@ class CityGrid(QtWidgets.QWidget):
     def _on_cell_clicked(self, row: int, col: int):
         self.cell_clicked.emit(row, col)
     
-    def update_grid(self, city_data: Dict):
+    def update_grid(self, city_data: Dict, adhd_buster: Optional[Dict] = None):
         """Update all cells from city data."""
         if not CITY_AVAILABLE:
             return
         
+        self._adhd_buster = adhd_buster
         grid = city_data.get("grid", [])
         
         for row, row_cells in enumerate(self.cells):
@@ -379,7 +835,7 @@ class CityGrid(QtWidgets.QWidget):
                     building_def = None
                     if cell_state and cell_state.get("building_id"):
                         building_def = CITY_BUILDINGS.get(cell_state["building_id"])
-                    cell.set_cell_state(cell_state, building_def)
+                    cell.set_cell_state(cell_state, building_def, adhd_buster)
                 else:
                     cell.set_cell_state(None)
 
@@ -580,12 +1036,22 @@ class BuildingPickerDialog(StyledDialog):
         layout = QtWidgets.QHBoxLayout(card)
         layout.setSpacing(12)
         
-        # Icon (extract emoji from start of name)
-        name = building.get("name", "🏛️")
-        icon = name.split()[0] if name else "🏛️"
-        icon_label = QtWidgets.QLabel(icon)
-        icon_label.setStyleSheet("font-size: 32px;")
-        icon_label.setFixedWidth(50)
+        # Icon (SVG with emoji fallback)
+        icon_label = QtWidgets.QLabel()
+        icon_label.setFixedSize(48, 48)
+        icon_label.setAlignment(QtCore.Qt.AlignCenter)
+        
+        svg_path = CITY_ICONS_PATH / f"{building_id}.svg"
+        pixmap = _get_svg_pixmap(svg_path, 40)
+        if pixmap:
+            icon_label.setPixmap(pixmap)
+            icon_label.setStyleSheet("background: transparent;")
+        else:
+            # Fallback to emoji
+            name = building.get("name", "🏛️")
+            icon = name.split()[0] if name else "🏛️"
+            icon_label.setText(icon)
+            icon_label.setStyleSheet("font-size: 32px; background: transparent;")
         layout.addWidget(icon_label)
         
         # Info column
@@ -636,11 +1102,15 @@ class BuildingPickerDialog(StyledDialog):
         self.selected_building_id = building_id
         self.place_btn.setEnabled(True)
         
-        # Update visual selection (highlight selected card)
-        # Cache placed buildings and placeable status to avoid repeated calls
+        # Pre-compute placed buildings and placeable status once
         placed_buildings = set(get_placed_buildings(self.adhd_buster))
-        placeable_cache = {}
+        placeable_cache = {
+            bid: can_place_building(self.adhd_buster, bid)[0]
+            for bid in CITY_BUILDINGS.keys()
+            if bid not in placed_buildings
+        }
         
+        # Update visual selection (highlight selected card)
         for child in self.findChildren(QtWidgets.QFrame):
             bid = child.property("building_id")
             if not bid:
@@ -655,20 +1125,12 @@ class BuildingPickerDialog(StyledDialog):
                         padding: 8px;
                     }
                 """)
+            elif bid in placed_buildings:
+                child.setStyleSheet("QFrame { background: #2A2A3A; border: 1px solid #555; border-radius: 8px; padding: 8px; }")
+            elif placeable_cache.get(bid, False):
+                child.setStyleSheet("QFrame { background: #1A3A2A; border: 1px solid #4CAF50; border-radius: 8px; padding: 8px; }")
             else:
-                # Reset others - use cached placeable status
-                is_placed = bid in placed_buildings
-                if is_placed:
-                    child.setStyleSheet("QFrame { background: #2A2A3A; border: 1px solid #555; border-radius: 8px; padding: 8px; }")
-                else:
-                    # Cache the can_place result to avoid repeated calls
-                    if bid not in placeable_cache:
-                        can, _ = can_place_building(self.adhd_buster, bid)
-                        placeable_cache[bid] = can
-                    if placeable_cache[bid]:
-                        child.setStyleSheet("QFrame { background: #1A3A2A; border: 1px solid #4CAF50; border-radius: 8px; padding: 8px; }")
-                    else:
-                        child.setStyleSheet("QFrame { background: #2A2A3A; border: 1px solid #444; border-radius: 8px; padding: 8px; }")
+                child.setStyleSheet("QFrame { background: #2A2A3A; border: 1px solid #444; border-radius: 8px; padding: 8px; }")
     
     def _on_place(self):
         """Handle place button click."""
@@ -678,11 +1140,19 @@ class BuildingPickerDialog(StyledDialog):
 
 
 # ============================================================================
-# CONSTRUCTION DIALOG
+# INITIATE CONSTRUCTION DIALOG (For PLACED buildings - pay materials upfront)
 # ============================================================================
 
-class ConstructionDialog(StyledDialog):
-    """Dialog to invest resources into a building under construction."""
+class InitiateConstructionDialog(StyledDialog):
+    """
+    Dialog to initiate construction on a PLACED building.
+    
+    NEW FLOW:
+    1. User pays Water + Materials upfront to START construction
+    2. Building becomes "under construction" (active_construction)
+    3. Activity + Focus earned from activities flow automatically to it
+    4. When effort requirements are met, building completes
+    """
     
     def __init__(
         self, 
@@ -694,7 +1164,6 @@ class ConstructionDialog(StyledDialog):
         self.adhd_buster = adhd_buster
         self.row = row
         self.col = col
-        self.investment = {res: 0 for res in RESOURCE_TYPES}
         
         city = get_city_data(adhd_buster)
         grid = city.get("grid", [])
@@ -707,26 +1176,29 @@ class ConstructionDialog(StyledDialog):
             _logger.warning(f"Invalid grid cell: ({row}, {col})")
             self.building_id = ""
             self.building = {}
+            self.cell = {}
         else:
             cell_state = grid[row][col]
             if cell_state is None:
                 _logger.warning(f"Empty cell at ({row}, {col})")
                 self.building_id = ""
                 self.building = {}
+                self.cell = {}
             else:
                 self.building_id = cell_state.get("building_id", "")
                 self.building = CITY_BUILDINGS.get(self.building_id, {})
+                self.cell = cell_state
         
         super().__init__(
             parent=parent,
             title=f"Build {self.building.get('name', 'Building')}",
-            header_icon="🔨",
-            min_width=400,
-            max_width=500,
+            header_icon="🏗️",
+            min_width=420,
+            max_width=520,
         )
     
     def _build_content(self, content_layout: QtWidgets.QVBoxLayout):
-        """Build the construction investment UI."""
+        """Build the initiate construction UI."""
         # Guard against empty building
         if not self.building_id or not self.building:
             error_label = QtWidgets.QLabel("⚠️ Building data not found")
@@ -737,21 +1209,23 @@ class ConstructionDialog(StyledDialog):
             content_layout.addWidget(close_btn)
             return
         
-        city = get_city_data(self.adhd_buster)
-        grid = city.get("grid", [])
+        # Building icon header with SVG
+        icon_container = QtWidgets.QWidget()
+        icon_layout = QtWidgets.QHBoxLayout(icon_container)
+        icon_layout.setContentsMargins(0, 0, 0, 10)
         
-        # Safe grid access with defaults
-        if self.row < len(grid) and self.col < len(grid[self.row]) and grid[self.row][self.col]:
-            cell = grid[self.row][self.col]
+        svg_path = CITY_ICONS_PATH / f"{self.building_id}.svg"
+        pixmap = _get_svg_pixmap(svg_path, 64)
+        icon_label = QtWidgets.QLabel()
+        if pixmap:
+            icon_label.setPixmap(pixmap)
         else:
-            cell = {"level": 1, "construction_progress": {}}
-        
-        level = cell.get("level", 1)
-        progress = cell.get("construction_progress", {})
-        
-        # Get requirements
-        reqs = get_level_requirements(self.building, level)
-        resources = get_resources(self.adhd_buster)
+            name = self.building.get("name", "🏛️")
+            icon_label.setText(name.split()[0] if name else "🏛️")
+            icon_label.setStyleSheet("font-size: 48px;")
+        icon_label.setAlignment(QtCore.Qt.AlignCenter)
+        icon_layout.addWidget(icon_label, alignment=QtCore.Qt.AlignCenter)
+        content_layout.addWidget(icon_container)
         
         # Description
         desc = QtWidgets.QLabel(self.building.get("description", ""))
@@ -759,167 +1233,390 @@ class ConstructionDialog(StyledDialog):
         desc.setStyleSheet("color: #AAA; margin-bottom: 15px;")
         content_layout.addWidget(desc)
         
-        # Progress overview
-        total_needed = sum(reqs.values())
-        total_invested = sum(progress.values())
-        percent = int((total_invested / max(total_needed, 1)) * 100)
+        level = self.cell.get("level", 1)
+        reqs = get_level_requirements(self.building, level)
+        resources = get_resources(self.adhd_buster)
         
-        progress_label = QtWidgets.QLabel(f"Progress: {percent}%")
-        progress_label.setStyleSheet("color: #FFD700; font-size: 16px; font-weight: bold;")
-        content_layout.addWidget(progress_label)
+        # Check if can initiate
+        can_init, reason = can_initiate_construction(self.adhd_buster, self.row, self.col)
         
-        progress_bar = QtWidgets.QProgressBar()
-        progress_bar.setValue(percent)
-        progress_bar.setMaximumHeight(12)
-        progress_bar.setStyleSheet("""
-            QProgressBar {
-                background: #333;
-                border-radius: 6px;
-                text-align: center;
-            }
-            QProgressBar::chunk {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #4CAF50, stop:1 #66BB6A);
-                border-radius: 6px;
+        # Materials required (upfront payment)
+        materials_frame = QtWidgets.QFrame()
+        materials_frame.setStyleSheet("""
+            QFrame {
+                background: #1A2A3A;
+                border: 1px solid #2196F3;
+                border-radius: 8px;
+                padding: 10px;
             }
         """)
-        content_layout.addWidget(progress_bar)
+        materials_layout = QtWidgets.QVBoxLayout(materials_frame)
         
+        materials_title = QtWidgets.QLabel("💰 Step 1: Pay Materials Upfront")
+        materials_title.setStyleSheet("color: #2196F3; font-weight: bold; font-size: 13px;")
+        materials_layout.addWidget(materials_title)
+        
+        materials_hint = QtWidgets.QLabel(
+            "These resources are spent immediately to start building:"
+        )
+        materials_hint.setStyleSheet("color: #888; font-size: 10px; margin-bottom: 5px;")
+        materials_layout.addWidget(materials_hint)
+        
+        for res_type in STOCKPILE_RESOURCES:
+            needed = reqs.get(res_type, 0)
+            have = resources.get(res_type, 0)
+            icon = RESOURCE_ICONS.get(res_type, "📦")
+            color = RESOURCE_COLORS.get(res_type, "#CCC")
+            
+            # Add how-to-earn hint
+            if res_type == "water":
+                source = "(log hydration)"
+            elif res_type == "materials":
+                source = "(log weight daily)"
+            else:
+                source = ""
+            
+            status_color = "#4CAF50" if have >= needed else "#F44336"
+            row_label = QtWidgets.QLabel(f"{icon} {res_type.title()}: {have}/{needed} {source}")
+            row_label.setStyleSheet(f"color: {status_color}; font-size: 12px;")
+            materials_layout.addWidget(row_label)
+        
+        # Add detailed materials earning explanation
+        materials_info = QtWidgets.QLabel(
+            "🧱 <b>How to earn Materials:</b> Log your weight in Body tab!\n"
+            "• Overweight → Log lower weight = +2 🧱\n"
+            "• Underweight → Log higher weight = +2 🧱\n"
+            "• Healthy BMI (18.5-25) → Stay stable = +2 🧱"
+        )
+        materials_info.setStyleSheet("color: #A1887F; font-size: 10px; margin-top: 8px;")
+        materials_info.setWordWrap(True)
+        materials_layout.addWidget(materials_info)
+        
+        content_layout.addWidget(materials_frame)
+        content_layout.addSpacing(10)
+        
+        # Effort required (will be contributed over time)
+        effort_frame = QtWidgets.QFrame()
+        effort_frame.setStyleSheet("""
+            QFrame {
+                background: #2A1A3A;
+                border: 1px solid #BA68C8;
+                border-radius: 8px;
+                padding: 10px;
+            }
+        """)
+        effort_layout = QtWidgets.QVBoxLayout(effort_frame)
+        
+        effort_title = QtWidgets.QLabel("⚡ Effort Required (Earned Over Time)")
+        effort_title.setStyleSheet("color: #BA68C8; font-weight: bold; font-size: 13px;")
+        effort_layout.addWidget(effort_title)
+        
+        effort_desc = QtWidgets.QLabel(
+            "After starting, your daily habits will\n"
+            "automatically contribute to this building:"
+        )
+        effort_desc.setStyleSheet("color: #999; font-size: 11px; font-style: italic;")
+        effort_layout.addWidget(effort_desc)
+        
+        for res_type in EFFORT_RESOURCES:
+            needed = reqs.get(res_type, 0)
+            icon = RESOURCE_ICONS.get(res_type, "📦")
+            # Add how-to-earn hint
+            if res_type == "activity":
+                hint = "(log activities - intensity matters!)"
+            elif res_type == "focus":
+                hint = "(complete focus sessions)"
+            else:
+                hint = ""
+            row_label = QtWidgets.QLabel(f"{icon} {res_type.title()}: {needed} needed {hint}")
+            row_label.setStyleSheet("color: #CCC; font-size: 12px;")
+            effort_layout.addWidget(row_label)
+        
+        content_layout.addWidget(effort_frame)
         content_layout.addSpacing(15)
         
-        # Resource investment sliders
-        self.sliders = {}
-        for resource_type in RESOURCE_TYPES:
-            needed = reqs.get(resource_type, 0)
-            invested = progress.get(resource_type, 0)
-            remaining = max(0, needed - invested)
-            available = resources.get(resource_type, 0)
-            max_invest = min(remaining, available)
-            
-            if needed == 0 and invested == 0:
-                continue  # Skip resources not needed
-            
-            row_widget = QtWidgets.QWidget()
-            row_layout = QtWidgets.QHBoxLayout(row_widget)
-            row_layout.setContentsMargins(0, 0, 0, 0)
-            
-            # Resource icon and label
-            icon = RESOURCE_ICONS.get(resource_type, "📦")
-            color = RESOURCE_COLORS.get(resource_type, "#CCC")
-            label = QtWidgets.QLabel(f"{icon} {resource_type.title()}")
-            label.setStyleSheet(f"color: {color}; font-weight: bold; min-width: 100px;")
-            row_layout.addWidget(label)
-            
-            # Progress: invested/needed
-            status = QtWidgets.QLabel(f"{invested}/{needed}")
-            status.setStyleSheet("color: #888; min-width: 50px;")
-            row_layout.addWidget(status)
-            
-            # Slider
-            slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
-            slider.setMinimum(0)
-            slider.setMaximum(max_invest)
-            slider.setValue(0)
-            slider.setEnabled(max_invest > 0)
-            row_layout.addWidget(slider, 1)
-            
-            # Value display
-            value_label = QtWidgets.QLabel("0")
-            value_label.setStyleSheet("color: #4CAF50; font-weight: bold; min-width: 30px;")
-            row_layout.addWidget(value_label)
-            
-            self.sliders[resource_type] = (slider, value_label)
-            
-            # Connect slider
-            slider.valueChanged.connect(
-                lambda v, rt=resource_type, vl=value_label: self._on_slider_changed(rt, v, vl)
-            )
-            
-            content_layout.addWidget(row_widget)
-        
-        content_layout.addSpacing(15)
-        
-        # Quick invest buttons
+        # Action buttons
         btn_layout = QtWidgets.QHBoxLayout()
         
-        invest_all_btn = QtWidgets.QPushButton("Invest All Available")
-        invest_all_btn.clicked.connect(self._invest_all)
-        invest_all_btn.setStyleSheet("""
-            QPushButton {
-                background: #4CAF50;
-                color: white;
-                padding: 8px 15px;
-                border-radius: 6px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background: #66BB6A;
-            }
-        """)
-        btn_layout.addWidget(invest_all_btn)
+        if can_init:
+            start_btn = QtWidgets.QPushButton("🔨 Start Construction")
+            start_btn.clicked.connect(self._start_construction)
+            start_btn.setStyleSheet("""
+                QPushButton {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #4CAF50, stop:1 #388E3C);
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+                QPushButton:hover {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #66BB6A, stop:1 #4CAF50);
+                }
+            """)
+            btn_layout.addWidget(start_btn)
+        else:
+            # Show why can't initiate
+            reason_label = QtWidgets.QLabel(f"⚠️ {reason}")
+            reason_label.setStyleSheet("color: #FF9800; font-size: 12px;")
+            content_layout.addWidget(reason_label)
         
-        confirm_btn = QtWidgets.QPushButton("Invest Selected")
-        confirm_btn.clicked.connect(self._confirm_investment)
-        confirm_btn.setStyleSheet("""
-            QPushButton {
-                background: #2196F3;
-                color: white;
-                padding: 8px 15px;
-                border-radius: 6px;
-            }
-            QPushButton:hover {
-                background: #42A5F5;
-            }
-        """)
-        btn_layout.addWidget(confirm_btn)
-        
-        cancel_btn = QtWidgets.QPushButton("Close")
-        cancel_btn.clicked.connect(self.accept)
+        cancel_btn = QtWidgets.QPushButton("Cancel")
+        cancel_btn.clicked.connect(self.reject)
         cancel_btn.setStyleSheet("""
             QPushButton {
                 background: #555;
                 color: white;
-                padding: 8px 15px;
-                border-radius: 6px;
+                padding: 10px 20px;
+                border-radius: 8px;
+            }
+            QPushButton:hover {
+                background: #666;
             }
         """)
         btn_layout.addWidget(cancel_btn)
         
         content_layout.addLayout(btn_layout)
     
-    def _on_slider_changed(self, resource_type: str, value: int, label: QtWidgets.QLabel):
-        self.investment[resource_type] = value
-        label.setText(str(value))
-    
-    def _invest_all(self):
-        """Set all sliders to max."""
-        for resource_type, (slider, label) in self.sliders.items():
-            max_val = slider.maximum()
-            slider.setValue(max_val)
-    
-    def _confirm_investment(self):
-        """Invest the selected resources."""
-        if all(v == 0 for v in self.investment.values()):
-            return
+    def _start_construction(self):
+        """Initiate construction - pay materials and start building."""
+        result = initiate_construction(self.adhd_buster, self.row, self.col)
         
-        result = invest_resources(self.adhd_buster, self.row, self.col, self.investment)
-        
-        if result.get("completed"):
-            # Play building-specific completion melody
-            play_building_complete(self.building_id)
+        if result.get("success"):
+            play_building_placed(self.building_id)
+            
+            effort_req = result.get("effort_required", {})
+            activity_needed = effort_req.get("activity", 0)
+            focus_needed = effort_req.get("focus", 0)
+            
             QtWidgets.QMessageBox.information(
-                self, 
-                "Construction Complete!",
-                f"🎉 {self.building.get('name', 'Building')} is now complete!\n\nIt will now generate bonuses."
+                self,
+                "Construction Started! 🏗️",
+                f"<h3>🔨 {result.get('building_name')} is now under construction!</h3>"
+                f"<p><b>What happens next?</b></p>"
+                f"<p>Your effort from healthy habits will automatically<br>"
+                f"contribute to completing this building:</p>"
+                f"<table>"
+                f"<tr><td>🏃 <b>Activity needed:</b></td><td>{activity_needed}</td></tr>"
+                f"<tr><td>🎯 <b>Focus needed:</b></td><td>{focus_needed}</td></tr>"
+                f"</table>"
+                f"<hr>"
+                f"<p><b>How to earn effort:</b></p>"
+                f"<ul>"
+                f"<li>🏃 Log physical activities (longer + intense = more!)</li>"
+                f"<li>🎯 Complete focus sessions (30 min = +1 Focus)</li>"
+                f"</ul>"
+                f"<p><i>Keep up the good habits and your building will<br>"
+                f"complete automatically! 💪</i></p>"
             )
             self.accept()
-        elif result.get("success"):
-            # Play progress sound for successful investment
-            play_construction_progress()
-            self.accept()
         else:
-            # No sound for errors - just reject dialog
-            self.reject()
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Cannot Start",
+                f"Could not start construction:\n{result.get('error', 'Unknown error')}"
+            )
+
+
+# ============================================================================
+# CONSTRUCTION PROGRESS DIALOG (For BUILDING status - show effort progress)
+# ============================================================================
+
+class ConstructionProgressDialog(StyledDialog):
+    """
+    Dialog showing progress of a building under active construction.
+    
+    Activity and Focus flow automatically - this just shows progress.
+    """
+    
+    def __init__(
+        self, 
+        adhd_buster: dict, 
+        row: int, 
+        col: int, 
+        parent: Optional[QtWidgets.QWidget] = None
+    ):
+        self.adhd_buster = adhd_buster
+        self.row = row
+        self.col = col
+        
+        city = get_city_data(adhd_buster)
+        grid = city.get("grid", [])
+        
+        if 0 <= row < len(grid) and 0 <= col < len(grid[row]) and grid[row][col]:
+            self.cell = grid[row][col]
+            self.building_id = self.cell.get("building_id", "")
+            self.building = CITY_BUILDINGS.get(self.building_id, {})
+        else:
+            self.cell = {}
+            self.building_id = ""
+            self.building = {}
+        
+        super().__init__(
+            parent=parent,
+            title=f"Building: {self.building.get('name', 'Unknown')}",
+            header_icon="🔨",
+            min_width=400,
+            max_width=500,
+        )
+    
+    def _build_content(self, content_layout: QtWidgets.QVBoxLayout):
+        """Build the progress display UI."""
+        if not self.building_id or not self.building:
+            error_label = QtWidgets.QLabel("⚠️ Building data not found")
+            error_label.setStyleSheet("color: #F44336; font-size: 14px;")
+            content_layout.addWidget(error_label)
+            close_btn = QtWidgets.QPushButton("Close")
+            close_btn.clicked.connect(self.accept)
+            content_layout.addWidget(close_btn)
+            return
+        
+        # Building icon
+        icon_container = QtWidgets.QWidget()
+        icon_layout = QtWidgets.QHBoxLayout(icon_container)
+        icon_layout.setContentsMargins(0, 0, 0, 10)
+        
+        svg_path = CITY_ICONS_PATH / f"{self.building_id}.svg"
+        pixmap = _get_svg_pixmap(svg_path, 64)
+        icon_label = QtWidgets.QLabel()
+        if pixmap:
+            icon_label.setPixmap(pixmap)
+        else:
+            name = self.building.get("name", "🏛️")
+            icon_label.setText(name.split()[0] if name else "🏛️")
+            icon_label.setStyleSheet("font-size: 48px;")
+        icon_label.setAlignment(QtCore.Qt.AlignCenter)
+        icon_layout.addWidget(icon_label, alignment=QtCore.Qt.AlignCenter)
+        content_layout.addWidget(icon_container)
+        
+        # Status indicator
+        status_label = QtWidgets.QLabel("🔨 Under Construction")
+        status_label.setStyleSheet("color: #FF9800; font-size: 16px; font-weight: bold;")
+        status_label.setAlignment(QtCore.Qt.AlignCenter)
+        content_layout.addWidget(status_label)
+        
+        content_layout.addSpacing(15)
+        
+        level = self.cell.get("level", 1)
+        progress = self.cell.get("construction_progress", {})
+        reqs = get_level_requirements(self.building, level)
+        
+        # Effort progress
+        effort_frame = QtWidgets.QFrame()
+        effort_frame.setStyleSheet("""
+            QFrame {
+                background: #2A2A3A;
+                border: 1px solid #555;
+                border-radius: 8px;
+                padding: 12px;
+            }
+        """)
+        effort_layout = QtWidgets.QVBoxLayout(effort_frame)
+        
+        effort_title = QtWidgets.QLabel("⚡ Effort Progress")
+        effort_title.setStyleSheet("color: #FFD700; font-weight: bold; font-size: 14px;")
+        effort_layout.addWidget(effort_title)
+        
+        total_effort_needed = sum(reqs.get(r, 0) for r in EFFORT_RESOURCES)
+        total_effort_done = sum(progress.get(r, 0) for r in EFFORT_RESOURCES)
+        effort_percent = int((total_effort_done / max(total_effort_needed, 1)) * 100)
+        
+        effort_bar = QtWidgets.QProgressBar()
+        effort_bar.setValue(effort_percent)
+        effort_bar.setMaximumHeight(16)
+        effort_bar.setStyleSheet("""
+            QProgressBar {
+                background: #333;
+                border-radius: 8px;
+                text-align: center;
+                color: white;
+                font-weight: bold;
+            }
+            QProgressBar::chunk {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #BA68C8, stop:1 #9C27B0);
+                border-radius: 8px;
+            }
+        """)
+        effort_layout.addWidget(effort_bar)
+        
+        for res_type in EFFORT_RESOURCES:
+            needed = reqs.get(res_type, 0)
+            done = progress.get(res_type, 0)
+            icon = RESOURCE_ICONS.get(res_type, "📦")
+            color = RESOURCE_COLORS.get(res_type, "#CCC")
+            
+            # Add how-to-earn action hint
+            if res_type == "activity":
+                action = "→ Log activities (intensity matters!)"
+            elif res_type == "focus":
+                action = "→ Complete focus sessions"
+            else:
+                action = ""
+            
+            row_label = QtWidgets.QLabel(f"{icon} {res_type.title()}: {done}/{needed}  {action}")
+            row_label.setStyleSheet(f"color: {color}; font-size: 12px;")
+            effort_layout.addWidget(row_label)
+        
+        content_layout.addWidget(effort_frame)
+        content_layout.addSpacing(10)
+        
+        # Detailed how-to hints
+        hint_frame = QtWidgets.QFrame()
+        hint_frame.setStyleSheet("""
+            QFrame {
+                background: #1A2A2A;
+                border: 1px solid #4CAF50;
+                border-radius: 6px;
+                padding: 8px;
+            }
+        """)
+        hint_layout = QtWidgets.QVBoxLayout(hint_frame)
+        hint_layout.setSpacing(4)
+        
+        hint_title = QtWidgets.QLabel("💡 How to Contribute Effort:")
+        hint_title.setStyleSheet("color: #4CAF50; font-weight: bold; font-size: 12px;")
+        hint_layout.addWidget(hint_title)
+        
+        activity_hint = QtWidgets.QLabel(
+            "🏃 <b>Activity</b>: Go to Activities tab → Log any physical activity\n"
+            "    💪 Longer + more intense = more Activity points!"
+        )
+        activity_hint.setStyleSheet("color: #CCC; font-size: 11px;")
+        hint_layout.addWidget(activity_hint)
+        
+        focus_hint = QtWidgets.QLabel(
+            "🎯 <b>Focus</b>: Go to Focus tab → Start a focus session\n"
+            "    (each 30-minute block earns +1 Focus)"
+        )
+        focus_hint.setStyleSheet("color: #CCC; font-size: 11px;")
+        hint_layout.addWidget(focus_hint)
+        
+        content_layout.addWidget(hint_frame)
+        
+        content_layout.addSpacing(15)
+        
+        # Close button
+        close_btn = QtWidgets.QPushButton("Close")
+        close_btn.clicked.connect(self.accept)
+        close_btn.setStyleSheet("""
+            QPushButton {
+                background: #555;
+                color: white;
+                padding: 10px 30px;
+                border-radius: 8px;
+            }
+            QPushButton:hover {
+                background: #666;
+            }
+        """)
+        content_layout.addWidget(close_btn, alignment=QtCore.Qt.AlignCenter)
+
+
+# Keep legacy name for backward compatibility
+ConstructionDialog = InitiateConstructionDialog
 
 
 # ============================================================================
@@ -973,6 +1670,27 @@ class BuildingDetailsDialog(StyledDialog):
             close_btn.clicked.connect(self.accept)
             content_layout.addWidget(close_btn)
             return
+        
+        # Building icon header with SVG (use animated for completed buildings)
+        icon_container = QtWidgets.QWidget()
+        icon_layout = QtWidgets.QHBoxLayout(icon_container)
+        icon_layout.setContentsMargins(0, 0, 0, 10)
+        
+        # Try animated SVG first for completed buildings
+        svg_path = CITY_ICONS_PATH / f"{self.building_id}_animated.svg"
+        if not svg_path.exists():
+            svg_path = CITY_ICONS_PATH / f"{self.building_id}.svg"
+        pixmap = _get_svg_pixmap(svg_path, 64)
+        icon_label = QtWidgets.QLabel()
+        if pixmap:
+            icon_label.setPixmap(pixmap)
+        else:
+            name = self.building.get("name", "🏛️")
+            icon_label.setText(name.split()[0] if name else "🏛️")
+            icon_label.setStyleSheet("font-size: 48px;")
+        icon_label.setAlignment(QtCore.Qt.AlignCenter)
+        icon_layout.addWidget(icon_label, alignment=QtCore.Qt.AlignCenter)
+        content_layout.addWidget(icon_container)
         
         level = self.cell_state.get("level", 1)
         max_level = self.building.get("max_level", 5)
@@ -1186,10 +1904,18 @@ class CityTab(QtWidgets.QWidget):
     # Signal to request data save
     request_save = QtCore.Signal()
     
+    # Auto-refresh interval for pending income display (30 seconds)
+    INCOME_REFRESH_INTERVAL_MS = 30000
+    
     def __init__(self, adhd_buster: dict, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
         self.adhd_buster = adhd_buster
         self._last_refresh_time = 0  # For throttling refreshes
+        
+        # Timer for auto-refreshing pending income display
+        self._income_timer = QtCore.QTimer(self)
+        self._income_timer.timeout.connect(self._update_pending_income_display)
+        
         self._setup_ui()
         self._refresh_city()
     
@@ -1255,6 +1981,64 @@ class CityTab(QtWidgets.QWidget):
         self.resource_bar = ResourceBar()
         layout.addWidget(self.resource_bar)
         
+        # Active construction indicator (hidden when no active build)
+        self.construction_indicator = QtWidgets.QFrame()
+        self.construction_indicator.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #2A1A3A, stop:0.5 #3A2A4A, stop:1 #2A1A3A);
+                border: 2px solid #BA68C8;
+                border-radius: 8px;
+                padding: 8px;
+            }
+        """)
+        indicator_layout = QtWidgets.QHBoxLayout(self.construction_indicator)
+        indicator_layout.setContentsMargins(12, 8, 12, 8)
+        
+        self.construction_icon = QtWidgets.QLabel("🔨")
+        self.construction_icon.setStyleSheet("font-size: 24px;")
+        indicator_layout.addWidget(self.construction_icon)
+        
+        construction_info = QtWidgets.QVBoxLayout()
+        construction_info.setSpacing(2)
+        
+        self.construction_name = QtWidgets.QLabel("Building...")
+        self.construction_name.setStyleSheet("color: #FFD700; font-weight: bold; font-size: 13px;")
+        construction_info.addWidget(self.construction_name)
+        
+        self.construction_progress = QtWidgets.QProgressBar()
+        self.construction_progress.setMaximumHeight(10)
+        self.construction_progress.setStyleSheet("""
+            QProgressBar {
+                background: #222;
+                border-radius: 5px;
+                text-align: center;
+                color: white;
+                font-size: 9px;
+            }
+            QProgressBar::chunk {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #BA68C8, stop:1 #9C27B0);
+                border-radius: 5px;
+            }
+        """)
+        construction_info.addWidget(self.construction_progress)
+        
+        self.construction_status = QtWidgets.QLabel("Effort: 0/100")
+        self.construction_status.setStyleSheet("color: #AAA; font-size: 11px;")
+        construction_info.addWidget(self.construction_status)
+        
+        indicator_layout.addLayout(construction_info, 1)
+        
+        # Add hint about how to contribute
+        hint_label = QtWidgets.QLabel("Log activities\n& focus sessions!")
+        hint_label.setStyleSheet("color: #888; font-size: 10px; font-style: italic;")
+        hint_label.setAlignment(QtCore.Qt.AlignCenter)
+        indicator_layout.addWidget(hint_label)
+        
+        self.construction_indicator.hide()  # Hidden until active construction exists
+        layout.addWidget(self.construction_indicator)
+        
         # City grid in center
         grid_container = QtWidgets.QWidget()
         grid_container.setStyleSheet("""
@@ -1289,10 +2073,10 @@ class CityTab(QtWidgets.QWidget):
         try:
             city = get_city_data(self.adhd_buster)
             
-            # Update grid
-            self.city_grid.update_grid(city)
+            # Update grid (pass adhd_buster for synergy calculations)
+            self.city_grid.update_grid(city, self.adhd_buster)
             
-            # Update resources
+            # Update resources (only stockpile resources accumulate now)
             resources = get_resources(self.adhd_buster)
             self.resource_bar.update_resources(resources)
             
@@ -1302,6 +2086,9 @@ class CityTab(QtWidgets.QWidget):
             max_slots = get_max_building_slots(level)
             self.slots_label.setText(f"🏠 {placed}/{max_slots} Buildings")
             
+            # Update active construction indicator
+            self._update_construction_indicator()
+            
             # Update pending income
             pending = get_pending_income(self.adhd_buster)
             if pending.get("coins", 0) > 0:
@@ -1309,7 +2096,52 @@ class CityTab(QtWidgets.QWidget):
                     f"⏰ Pending income: {pending['coins']} coins ({pending['hours_elapsed']:.1f}h)"
                 )
             else:
-                self.info_panel.setText("Click an empty cell to place a building")
+                active = get_active_construction(self.adhd_buster)
+                if active:
+                    self.info_panel.setText("🔨 Building in progress - keep up the activities!")
+                else:
+                    self.info_panel.setText("Click an empty cell to place a building")
+        except Exception as e:
+            _logger.exception("Error refreshing city display")
+            self.info_panel.setText(f"⚠️ Display error: {e}")
+    
+    def _update_construction_indicator(self):
+        """Update the active construction indicator bar."""
+        try:
+            info = get_active_construction_info(self.adhd_buster)
+            
+            if info is None:
+                self.construction_indicator.hide()
+                return
+            
+            self.construction_indicator.show()
+            
+            building_name = info.get("building_name", "Building")
+            progress = info.get("progress", {})
+            requirements = info.get("effort_requirements", {})
+            
+            self.construction_name.setText(f"🔨 {building_name}")
+            
+            # Calculate overall effort progress
+            total_needed = sum(requirements.get(r, 0) for r in EFFORT_RESOURCES)
+            total_done = sum(progress.get(r, 0) for r in EFFORT_RESOURCES)
+            percent = int((total_done / max(total_needed, 1)) * 100)
+            
+            self.construction_progress.setValue(percent)
+            
+            # Status text
+            activity_done = progress.get("activity", 0)
+            activity_needed = requirements.get("activity", 0)
+            focus_done = progress.get("focus", 0)
+            focus_needed = requirements.get("focus", 0)
+            
+            self.construction_status.setText(
+                f"🏃 {activity_done}/{activity_needed}  •  🎯 {focus_done}/{focus_needed}"
+            )
+            
+        except Exception as e:
+            _logger.exception("Error updating construction indicator")
+            self.construction_indicator.hide()
         except Exception as e:
             _logger.exception("Error refreshing city display")
             self.info_panel.setText(f"⚠️ Display error: {e}")
@@ -1349,9 +2181,19 @@ class CityTab(QtWidgets.QWidget):
                     dialog = BuildingDetailsDialog(self.adhd_buster, row, col, self)
                     dialog.exec()
                     dialog.deleteLater()  # Ensure cleanup
+                elif status == CellStatus.PLACED.value:
+                    # Placed but not started - show initiate construction dialog
+                    dialog = InitiateConstructionDialog(self.adhd_buster, row, col, self)
+                    dialog.exec()
+                    dialog.deleteLater()  # Ensure cleanup
+                elif status == CellStatus.BUILDING.value:
+                    # Under active construction - show progress dialog
+                    dialog = ConstructionProgressDialog(self.adhd_buster, row, col, self)
+                    dialog.exec()
+                    dialog.deleteLater()  # Ensure cleanup
                 else:
-                    # Under construction - show construction dialog
-                    dialog = ConstructionDialog(self.adhd_buster, row, col, self)
+                    # Unknown status - fallback to construction dialog
+                    dialog = InitiateConstructionDialog(self.adhd_buster, row, col, self)
                     dialog.exec()
                     dialog.deleteLater()  # Ensure cleanup
         except Exception as e:
@@ -1401,23 +2243,51 @@ class CityTab(QtWidgets.QWidget):
             self,
             "City Builder Help",
             "<h3>🏰 City Building System</h3>"
-            "<p><b>How to Build:</b></p>"
+            
+            "<p><b>📋 How Construction Works:</b></p>"
             "<ol>"
-            "<li>Click an empty cell to place a building</li>"
-            "<li>Invest resources (💧🧱⚡🎯) to construct</li>"
-            "<li>Complete buildings provide passive bonuses</li>"
+            "<li><b>Place</b> - Click an empty cell to choose a building</li>"
+            "<li><b>Start</b> - Pay 💧 Water + 🧱 Materials upfront to begin</li>"
+            "<li><b>Build</b> - Earn 🏃 Activity + 🎯 Focus through your habits</li>"
+            "<li><b>Complete</b> - Building finishes when effort requirements are met!</li>"
             "</ol>"
-            "<p><b>Earning Resources:</b></p>"
+            
+            "<hr>"
+            "<p><b>💰 Stockpile Resources</b> (Accumulate for Future Use):</p>"
             "<ul>"
-            "<li>💧 Water: Stay hydrated, take breaks</li>"
-            "<li>🧱 Materials: Complete tasks, earn XP</li>"
-            "<li>⚡ Activity: Physical activity, walks</li>"
-            "<li>🎯 Focus: Deep work sessions</li>"
+            "<li>💧 <b>Water</b>: Log glasses in Hydration tab → accumulates in reserve</li>"
+            "<li>🧱 <b>Materials</b>: Log weight in Body tab → accumulates in reserve</li>"
             "</ul>"
-            "<p><b>Building Slots:</b><br>"
-            "Unlock more slots by leveling up!</p>"
-            "<p><b>Synergies:</b><br>"
-            "Matching entities with buildings provides bonus multipliers.</p>"
+            "<p><i>These resources are paid UPFRONT when you start a new building.</i></p>"
+            
+            "<p><b>🧱 How to Earn Materials (Weight Logging):</b></p>"
+            "<table border='1' cellpadding='4' style='border-collapse: collapse;'>"
+            "<tr style='background:#2A2A3A;'>"
+            "<td><b>Your Goal</b></td><td><b>Achievement</b></td><td><b>Reward</b></td></tr>"
+            "<tr><td>📉 Lose weight</td><td>Log weight lower than before</td><td>+2 🧱</td></tr>"
+            "<tr><td>📈 Gain weight</td><td>Log weight higher than before</td><td>+2 🧱</td></tr>"
+            "<tr><td>⚖️ Maintain</td><td>Stay within healthy BMI (18.5-25)</td><td>+2 🧱</td></tr>"
+            "</table>"
+            "<p><i>All goals reward equally - just stay on track!</i></p>"
+            
+            "<p><b>⚡ Effort Resources</b> (Flow Directly to Building):</p>"
+            "<ul>"
+            "<li>🏃 <b>Activity</b>: Log physical activities → goes to active construction</li>"
+            "<li>🎯 <b>Focus</b>: Complete focus sessions → goes to active construction</li>"
+            "</ul>"
+            
+            "<p><i>⚠️ Important: Activity and Focus only count when you have<br>"
+            "a building under construction! Start a building first.</i></p>"
+            
+            "<hr>"
+            "<p><b>🔨 One Building at a Time:</b><br>"
+            "Only one building can be under active construction.<br>"
+            "Complete it to start the next one!</p>"
+            
+            "<p><b>🏠 Building Slots:</b> Unlock more slots by leveling up!</p>"
+            
+            "<p><b>✨ Synergies:</b> Collected entities matching a building theme<br>"
+            "provide bonus multipliers to that building's output.</p>"
         )
     
     def showEvent(self, event: QtGui.QShowEvent):
@@ -1428,3 +2298,26 @@ class CityTab(QtWidgets.QWidget):
         if current_time - self._last_refresh_time > 0.5:  # Max once per 500ms
             self._refresh_city()
             self._last_refresh_time = current_time
+        
+        # Start income auto-refresh timer when tab is visible
+        if not self._income_timer.isActive():
+            self._income_timer.start(self.INCOME_REFRESH_INTERVAL_MS)
+    
+    def hideEvent(self, event: QtGui.QHideEvent):
+        """Stop auto-refresh when tab is hidden to save resources."""
+        super().hideEvent(event)
+        self._income_timer.stop()
+    
+    def _update_pending_income_display(self):
+        """Update only the pending income display (lightweight refresh)."""
+        if not CITY_AVAILABLE:
+            return
+        
+        try:
+            pending = get_pending_income(self.adhd_buster)
+            if pending.get("coins", 0) > 0:
+                self.info_panel.setText(
+                    f"⏰ Pending income: {pending['coins']} coins ({pending['hours_elapsed']:.1f}h)"
+                )
+        except Exception:
+            pass  # Silent fail for background updates

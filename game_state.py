@@ -289,13 +289,18 @@ class GameStateManager(QtCore.QObject):
         """Match an item by ID or fallback identifiers.
         
         Handles items that may not have an 'id' field by falling back to
-        matching by 'obtained_at' timestamp or name+slot+rarity combination.
+        matching by 'item_id' (UUID), 'obtained_at' timestamp, or name+slot+rarity combination.
         """
         # Guard: require valid item_id
         if not item_id:
             return False
         
-        # Primary: match by id (ensure non-empty)
+        # Primary: match by item_id (UUID) - most reliable
+        item_uuid = item.get("item_id")
+        if item_uuid and item_uuid == item_id:
+            return True
+        
+        # Secondary: match by 'id' field (ensure non-empty)
         item_actual_id = item.get("id")
         if item_actual_id and item_actual_id == item_id:
             return True
@@ -331,6 +336,12 @@ class GameStateManager(QtCore.QObject):
         inventory = self.adhd_buster.setdefault("inventory", [])
         # Deep copy to prevent external code from retaining references that could mutate inventory
         item_copy = deep_copy_item(item)
+        
+        # Ensure item has a unique item_id (for reliable identification)
+        if not item_copy.get("item_id"):
+            import uuid
+            item_copy["item_id"] = str(uuid.uuid4())
+        
         inventory.append(item_copy)
         
         # Track total collected
@@ -391,6 +402,12 @@ class GameStateManager(QtCore.QObject):
         
         # Deep copy to prevent external code from retaining references that could mutate equipped gear
         item_copy = deep_copy_item(item)
+        
+        # Ensure item has a unique item_id (for reliable identification)
+        if not item_copy.get("item_id"):
+            import uuid
+            item_copy["item_id"] = str(uuid.uuid4())
+        
         equipped[slot] = item_copy
         self._save_config()
         
@@ -498,7 +515,7 @@ class GameStateManager(QtCore.QObject):
     def bulk_remove_items(self, items: List[dict]) -> int:
         """Remove multiple items from inventory. Returns number removed.
         
-        Matches items by obtained_at or name+slot+rarity.
+        Matches items by item_id, obtained_at+slot, or name+slot+rarity.
         """
         if not items:
             return 0
@@ -507,26 +524,40 @@ class GameStateManager(QtCore.QObject):
         try:
             inventory = self.adhd_buster.get("inventory", [])
             
-            # Build removal set using multiple identifiers
+            # Build removal set using multiple identifiers (priority: item_id > timestamp+slot > key)
             items_to_remove = set()
             for i in items:
-                if i.get("obtained_at"):
-                    items_to_remove.add(("ts", i.get("obtained_at")))
-                items_to_remove.add(("key", (i.get("name"), i.get("slot"), i.get("rarity"))))
+                # Use item_id if available (most reliable)
+                if i.get("item_id"):
+                    items_to_remove.add(("id", i.get("item_id")))
+                # Use timestamp+slot as secondary identifier
+                elif i.get("obtained_at"):
+                    items_to_remove.add(("ts_slot", (i.get("obtained_at"), i.get("slot"))))
+                # Fallback for legacy items
+                else:
+                    items_to_remove.add(("key", (i.get("name"), i.get("slot"), i.get("rarity"))))
             
             removed_keys = set()
             new_inventory = []
             removed_count = 0
             
             for item in inventory:
+                item_id = item.get("item_id")
                 item_ts = item.get("obtained_at")
+                item_slot = item.get("slot")
                 item_key = (item.get("name"), item.get("slot"), item.get("rarity"))
                 
                 should_remove = False
-                if item_ts and ("ts", item_ts) in items_to_remove and ("ts", item_ts) not in removed_keys:
+                # Check by item_id first
+                if item_id and ("id", item_id) in items_to_remove and ("id", item_id) not in removed_keys:
                     should_remove = True
-                    removed_keys.add(("ts", item_ts))
-                elif not item_ts and ("key", item_key) in items_to_remove:
+                    removed_keys.add(("id", item_id))
+                # Check by timestamp+slot
+                elif item_ts and ("ts_slot", (item_ts, item_slot)) in items_to_remove and ("ts_slot", (item_ts, item_slot)) not in removed_keys:
+                    should_remove = True
+                    removed_keys.add(("ts_slot", (item_ts, item_slot)))
+                # Fallback for items without timestamp or id
+                elif not item_ts and not item_id and ("key", item_key) in items_to_remove:
                     remove_identifier = ("key_instance", item_key)
                     if remove_identifier not in removed_keys:
                         should_remove = True
@@ -657,6 +688,10 @@ class GameStateManager(QtCore.QObject):
         
         # Deep copy result item to ensure isolation
         result_copy = deep_copy_item(result_item)
+        # Ensure item has a unique item_id (for reliable identification)
+        if not result_copy.get("item_id"):
+            import uuid
+            result_copy["item_id"] = str(uuid.uuid4())
         new_inventory.append(result_copy)
         self.adhd_buster["inventory"] = new_inventory
         self._save_config()
@@ -692,29 +727,41 @@ class GameStateManager(QtCore.QObject):
         try:
             inventory = self.adhd_buster.get("inventory", [])
             
-            # Build removal set using multiple identifiers
+            # Build removal set using multiple identifiers (priority: item_id > timestamp > key)
             items_to_remove = set()
             for i in items:
-                # Use timestamp if available
-                if i.get("obtained_at"):
-                    items_to_remove.add(("ts", i.get("obtained_at")))
+                # Use item_id if available (most reliable)
+                if i.get("item_id"):
+                    items_to_remove.add(("id", i.get("item_id")))
+                # Use timestamp+slot as secondary identifier
+                elif i.get("obtained_at"):
+                    items_to_remove.add(("ts_slot", (i.get("obtained_at"), i.get("slot"))))
                 # Also add name+slot+rarity as fallback identifier
-                items_to_remove.add(("key", (i.get("name"), i.get("slot"), i.get("rarity"))))
+                else:
+                    items_to_remove.add(("key", (i.get("name"), i.get("slot"), i.get("rarity"))))
             
             # Track which items have been removed (to handle duplicates correctly)
             removed_keys = set()
             new_inventory = []
             for item in inventory:
+                item_id = item.get("item_id")
                 item_ts = item.get("obtained_at")
+                item_slot = item.get("slot")
                 item_key = (item.get("name"), item.get("slot"), item.get("rarity"))
                 
                 # Check if this item should be removed
                 should_remove = False
-                if item_ts and ("ts", item_ts) in items_to_remove and ("ts", item_ts) not in removed_keys:
+                
+                # Check by item_id first
+                if item_id and ("id", item_id) in items_to_remove and ("id", item_id) not in removed_keys:
                     should_remove = True
-                    removed_keys.add(("ts", item_ts))
-                elif not item_ts and ("key", item_key) in items_to_remove:
-                    # For items without timestamp, remove only one instance
+                    removed_keys.add(("id", item_id))
+                # Check by timestamp+slot
+                elif item_ts and ("ts_slot", (item_ts, item_slot)) in items_to_remove and ("ts_slot", (item_ts, item_slot)) not in removed_keys:
+                    should_remove = True
+                    removed_keys.add(("ts_slot", (item_ts, item_slot)))
+                # Fallback for items without timestamp or id
+                elif not item_ts and not item_id and ("key", item_key) in items_to_remove:
                     remove_identifier = ("key_instance", item_key)
                     if remove_identifier not in removed_keys:
                         should_remove = True
@@ -726,6 +773,10 @@ class GameStateManager(QtCore.QObject):
             # Add result item if merge succeeded
             if success and result_item:
                 result_copy = deep_copy_item(result_item)
+                # Ensure item has a unique item_id (for reliable identification)
+                if not result_copy.get("item_id"):
+                    import uuid
+                    result_copy["item_id"] = str(uuid.uuid4())
                 new_inventory.append(result_copy)
                 self._emit(self.items_merged, result_copy)
             
@@ -1034,6 +1085,11 @@ class GameStateManager(QtCore.QObject):
                 
                 # Deep copy to prevent mutation leaking
                 item_copy = deep_copy_item(item)
+                
+                # Ensure item has a unique item_id (for reliable identification)
+                if not item_copy.get("item_id"):
+                    import uuid
+                    item_copy["item_id"] = str(uuid.uuid4())
                 
                 # Always add to inventory first
                 inventory.append(item_copy)
