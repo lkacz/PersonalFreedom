@@ -33,6 +33,7 @@ try:
         GRID_ROWS,
         GRID_COLS,
         RESOURCE_TYPES,
+        DEMOLISH_REFUND_PERCENT,
         get_city_data,
         get_city_bonuses,
         add_city_resource,
@@ -53,6 +54,7 @@ try:
         get_all_synergy_bonuses,
         get_synergy_display_info,
         calculate_building_synergy_bonus,
+        get_level_requirements,
     )
 except ImportError as e:
     _logger.warning(f"City module not available: {e}")
@@ -70,6 +72,7 @@ except ImportError as e:
     GRID_ROWS = 5
     GRID_COLS = 5
     RESOURCE_TYPES = ["water", "materials", "activity", "focus"]
+    DEMOLISH_REFUND_PERCENT = 50
     
     # Stub functions that do nothing
     def get_city_data(adhd_buster): return {"grid": [[None]*5 for _ in range(5)], "resources": {}}
@@ -92,6 +95,7 @@ except ImportError as e:
     def get_all_synergy_bonuses(adhd_buster): return {}
     def get_synergy_display_info(building_id, adhd_buster): return {}
     def calculate_building_synergy_bonus(building_id, adhd_buster): return {"bonus_type": None, "bonus_percent": 0.0, "contributors": [], "capped": False}
+    def get_level_requirements(building_def, level): return {}
 
 
 # ============================================================================
@@ -241,7 +245,6 @@ class CityCell(QtWidgets.QFrame):
             progress = cell_state.get("construction_progress", {})
             # Calculate completion percentage
             if building_def and CITY_AVAILABLE:
-                from city import get_level_requirements
                 reqs = get_level_requirements(building_def, level)
                 total_needed = sum(reqs.values())
                 total_invested = sum(progress.values())
@@ -612,11 +615,16 @@ class BuildingPickerDialog(StyledDialog):
         self.place_btn.setEnabled(True)
         
         # Update visual selection (highlight selected card)
-        # Cache placed buildings to avoid repeated calls
-        placed_buildings = get_placed_buildings(self.adhd_buster)
+        # Cache placed buildings and placeable status to avoid repeated calls
+        placed_buildings = set(get_placed_buildings(self.adhd_buster))
+        placeable_cache = {}
         
         for child in self.findChildren(QtWidgets.QFrame):
-            if child.property("building_id") == building_id:
+            bid = child.property("building_id")
+            if not bid:
+                continue
+            
+            if bid == building_id:
                 child.setStyleSheet("""
                     QFrame {
                         background: #2A4A3A;
@@ -625,15 +633,17 @@ class BuildingPickerDialog(StyledDialog):
                         padding: 8px;
                     }
                 """)
-            elif child.property("building_id"):
-                # Reset others
-                bid = child.property("building_id")
+            else:
+                # Reset others - use cached placeable status
                 is_placed = bid in placed_buildings
                 if is_placed:
                     child.setStyleSheet("QFrame { background: #2A2A3A; border: 1px solid #555; border-radius: 8px; padding: 8px; }")
                 else:
-                    can, _ = can_place_building(self.adhd_buster, bid)
-                    if can:
+                    # Cache the can_place result to avoid repeated calls
+                    if bid not in placeable_cache:
+                        can, _ = can_place_building(self.adhd_buster, bid)
+                        placeable_cache[bid] = can
+                    if placeable_cache[bid]:
                         child.setStyleSheet("QFrame { background: #1A3A2A; border: 1px solid #4CAF50; border-radius: 8px; padding: 8px; }")
                     else:
                         child.setStyleSheet("QFrame { background: #2A2A3A; border: 1px solid #444; border-radius: 8px; padding: 8px; }")
@@ -701,8 +711,6 @@ class ConstructionDialog(StyledDialog):
             close_btn.clicked.connect(self.accept)
             content_layout.addWidget(close_btn)
             return
-        
-        from city import get_level_requirements
         
         city = get_city_data(self.adhd_buster)
         grid = city.get("grid", [])
@@ -1019,7 +1027,6 @@ class BuildingDetailsDialog(StyledDialog):
         can_up, up_reason = can_upgrade(self.adhd_buster, self.row, self.col)
         
         if level < max_level:
-            from city import get_level_requirements
             next_reqs = get_level_requirements(self.building, level + 1)
             
             upgrade_frame = QtWidgets.QFrame()
@@ -1116,11 +1123,24 @@ class BuildingDetailsDialog(StyledDialog):
     
     def _demolish(self):
         """Demolish the building."""
+        # Calculate refund preview before confirming
+        progress = self.cell_state.get("construction_progress", {})
+        refund_preview = []
+        for res_type in RESOURCE_TYPES:
+            invested = progress.get(res_type, 0)
+            refund_amt = int(invested * DEMOLISH_REFUND_PERCENT / 100)
+            if refund_amt > 0:
+                icon = RESOURCE_ICONS.get(res_type, "📦")
+                refund_preview.append(f"{icon}{refund_amt}")
+        
+        refund_text = "  ".join(refund_preview) if refund_preview else "None"
+        
         reply = QtWidgets.QMessageBox.question(
             self,
             "Confirm Demolish",
             f"Are you sure you want to demolish {self.building.get('name')}?\n\n"
-            "You will lose the building but free up a slot.",
+            f"Resource refund ({DEMOLISH_REFUND_PERCENT}%): {refund_text}\n\n"
+            "You will free up a building slot.",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
             QtWidgets.QMessageBox.No
         )
@@ -1146,6 +1166,7 @@ class CityTab(QtWidgets.QWidget):
     def __init__(self, adhd_buster: dict, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
         self.adhd_buster = adhd_buster
+        self._last_refresh_time = 0  # For throttling refreshes
         self._setup_ui()
         self._refresh_city()
     
@@ -1294,18 +1315,23 @@ class CityTab(QtWidgets.QWidget):
             if cell is None:
                 # Empty cell - show building picker
                 dialog = BuildingPickerDialog(self.adhd_buster, self)
-                dialog.building_selected.connect(lambda bid: self._place_building(row, col, bid))
+                # Capture row/col by value to prevent closure issues
+                r, c = row, col
+                dialog.building_selected.connect(lambda bid, r=r, c=c: self._place_building(r, c, bid))
                 dialog.exec()
+                dialog.deleteLater()  # Ensure cleanup
             else:
                 status = cell.get("status", "")
                 if status == CellStatus.COMPLETE.value:
                     # Show building details
                     dialog = BuildingDetailsDialog(self.adhd_buster, row, col, self)
                     dialog.exec()
+                    dialog.deleteLater()  # Ensure cleanup
                 else:
                     # Under construction - show construction dialog
                     dialog = ConstructionDialog(self.adhd_buster, row, col, self)
                     dialog.exec()
+                    dialog.deleteLater()  # Ensure cleanup
         except Exception as e:
             _logger.exception(f"Error handling cell click at ({row}, {col})")
             self.info_panel.setText(f"⚠️ Error: {e}")
@@ -1369,6 +1395,11 @@ class CityTab(QtWidgets.QWidget):
         )
     
     def showEvent(self, event: QtGui.QShowEvent):
-        """Refresh when tab becomes visible."""
+        """Refresh when tab becomes visible (with throttling)."""
         super().showEvent(event)
-        self._refresh_city()
+        # Throttle refreshes to avoid excessive updates
+        import time
+        current_time = time.time()
+        if current_time - self._last_refresh_time > 0.5:  # Max once per 500ms
+            self._refresh_city()
+            self._last_refresh_time = current_time
