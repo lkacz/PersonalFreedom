@@ -24467,7 +24467,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # 8.5 City Building tab (gamified city builder)
         if CITY_AVAILABLE:
             self.city_tab = CityTab(self.blocker.adhd_buster, self)
-            self.city_tab.request_save.connect(self._save_adhd_data)
+            self.city_tab.request_save.connect(self.blocker.save_config)
             self.tabs.addTab(self.city_tab, "🏰 City")
 
         # 9. Productivity/Stats tab
@@ -25769,7 +25769,7 @@ del "%~f0"
                 add_city_resource(self.blocker.adhd_buster, "focus", focus_earned)
             
             # Save data
-            self._save_adhd_data()
+            self.blocker.save_config()
             
         except Exception as e:
             _logger.warning(f"Failed to award city resources: {e}")
