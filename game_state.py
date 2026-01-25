@@ -1115,6 +1115,24 @@ def init_game_state(blocker) -> GameStateManager:
     return _game_state
 
 
+def get_max_inventory_size(adhd_buster: dict = None) -> int:
+    """Module-level wrapper to get max inventory size including entity perk bonuses.
+    
+    Args:
+        adhd_buster: The ADHD buster dict containing entity data. If None, uses base size.
+        
+    Returns:
+        Maximum inventory capacity (base 500 + entity perk bonuses).
+    """
+    try:
+        from gamification import get_entity_qol_perks
+        qol_perks = get_entity_qol_perks(adhd_buster or {})
+        bonus_slots = qol_perks.get("inventory_slots", 0)
+        return GameStateManager.MAX_INVENTORY_SIZE + bonus_slots
+    except Exception:
+        return GameStateManager.MAX_INVENTORY_SIZE
+
+
 def reset_game_state() -> None:
     """Reset the global game state (for testing)."""
     global _game_state
