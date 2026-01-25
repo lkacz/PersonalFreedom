@@ -23777,7 +23777,7 @@ class DevTab(QtWidgets.QWidget):
             # Refresh city tab if available
             main_win = self.window()
             if hasattr(main_win, 'city_tab'):
-                main_win.city_tab.refresh()
+                main_win.city_tab._refresh_city()
             
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
@@ -23808,7 +23808,7 @@ class DevTab(QtWidgets.QWidget):
                 # Refresh city tab
                 main_win = self.window()
                 if hasattr(main_win, 'city_tab'):
-                    main_win.city_tab.refresh()
+                    main_win.city_tab._refresh_city()
             else:
                 self.status_label.setText(f"❌ Could not place {building_id} at ({row}, {col})")
                 self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
@@ -23864,7 +23864,7 @@ class DevTab(QtWidgets.QWidget):
             # Refresh city tab
             main_win = self.window()
             if hasattr(main_win, 'city_tab'):
-                main_win.city_tab.refresh()
+                main_win.city_tab._refresh_city()
                 
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
@@ -23889,7 +23889,7 @@ class DevTab(QtWidgets.QWidget):
                 # Refresh city tab
                 main_win = self.window()
                 if hasattr(main_win, 'city_tab'):
-                    main_win.city_tab.refresh()
+                    main_win.city_tab._refresh_city()
             else:
                 self.status_label.setText(f"❌ No building at ({row}, {col})")
                 self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
@@ -23930,7 +23930,7 @@ class DevTab(QtWidgets.QWidget):
             # Refresh city tab
             main_win = self.window()
             if hasattr(main_win, 'city_tab'):
-                main_win.city_tab.refresh()
+                main_win.city_tab._refresh_city()
                 
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
@@ -23963,7 +23963,7 @@ class DevTab(QtWidgets.QWidget):
             # Refresh city tab
             main_win = self.window()
             if hasattr(main_win, 'city_tab'):
-                main_win.city_tab.refresh()
+                main_win.city_tab._refresh_city()
                 
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
@@ -24005,7 +24005,7 @@ class DevTab(QtWidgets.QWidget):
             # Refresh city tab
             main_win = self.window()
             if hasattr(main_win, 'city_tab'):
-                main_win.city_tab.refresh()
+                main_win.city_tab._refresh_city()
                 
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
@@ -24028,7 +24028,7 @@ class DevTab(QtWidgets.QWidget):
             # Refresh city tab
             main_win = self.window()
             if hasattr(main_win, 'city_tab'):
-                main_win.city_tab.refresh()
+                main_win.city_tab._refresh_city()
                 
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
@@ -24055,7 +24055,7 @@ class DevTab(QtWidgets.QWidget):
             # Refresh city tab
             main_win = self.window()
             if hasattr(main_win, 'city_tab'):
-                main_win.city_tab.refresh()
+                main_win.city_tab._refresh_city()
                 
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
@@ -24080,7 +24080,7 @@ class DevTab(QtWidgets.QWidget):
             # Refresh city tab
             main_win = self.window()
             if hasattr(main_win, 'city_tab'):
-                main_win.city_tab.refresh()
+                main_win.city_tab._refresh_city()
                 
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
