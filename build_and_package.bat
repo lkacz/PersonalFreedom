@@ -26,21 +26,10 @@ if %errorlevel% neq 0 (
     pip install pyinstaller
 )
 
-:: Light build - exclude heavy AI libraries
-set "HIDDEN_IMPORTS=--hidden-import=productivity_ai --hidden-import=numpy"
-set "EXCLUDES=--exclude-module=torch --exclude-module=transformers --exclude-module=sentence_transformers"
-set "EXCLUDES=%EXCLUDES% --exclude-module=huggingface_hub --exclude-module=tokenizers"
-set "EXCLUDES=%EXCLUDES% --exclude-module=torchaudio --exclude-module=torchvision --exclude-module=cupy --exclude-module=triton"
-
 echo.
 echo [Step 1/3] Building executable...
-pyinstaller --onefile --windowed --name "PersonalLiberty" ^
-    --icon=icons\app.ico ^
-    --add-data "productivity_ai.py;." ^
-    --add-data "gamification.py;." ^
-    %HIDDEN_IMPORTS% ^
-    %EXCLUDES% ^
-    focus_blocker_qt.py
+:: Use the spec file which includes all modules, assets, voices, and proper excludes
+pyinstaller --noconfirm PersonalLiberty.spec
 
 if %errorlevel% neq 0 (
     echo [ERROR] Build failed!
