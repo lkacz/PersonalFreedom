@@ -64,6 +64,9 @@ Source: "setup_autostart.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "setup_no_uac.bat"; DestDir: "{app}"; Flags: ignoreversion
 ; Cleanup script for uninstall
 Source: "cleanup_hosts.ps1"; DestDir: "{app}"; Flags: ignoreversion
+; Voice models for offline TTS (Eye & Breath guidance)
+Source: "voices\*.onnx"; DestDir: "{app}\voices"; Flags: ignoreversion
+Source: "voices\*.json"; DestDir: "{app}\voices"; Flags: ignoreversion
 
 [Icons]
 ; Start menu and desktop shortcuts - these are updated in code to use scheduled task for admin mode
