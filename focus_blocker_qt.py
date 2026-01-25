@@ -7591,6 +7591,43 @@ class WeightTab(QtWidgets.QWidget):
         
         self.blocker.save_config()
         
+        # Award city MATERIALS resource based on goal progress (per design doc):
+        # - Losing weight (goal: lose): +2 MATERIALS
+        # - Gaining weight (goal: gain): +2 MATERIALS
+        # - Staying in norm (goal: maintain): +1 MATERIALS
+        # - Off-target: +0 MATERIALS
+        if CITY_AVAILABLE:
+            try:
+                from city import add_city_resource
+                materials_to_add = 0
+                
+                if self.blocker.weight_goal and len(self.blocker.weight_entries) >= 2:
+                    # Get previous weight (second to last entry after adding current)
+                    sorted_entries = sorted(self.blocker.weight_entries, key=lambda x: x.get("date", ""))
+                    if len(sorted_entries) >= 2:
+                        prev_weight = sorted_entries[-2].get("weight", 0)
+                        weight_change = weight_kg - prev_weight
+                        goal_weight = self.blocker.weight_goal
+                        
+                        # Determine if user is moving toward goal
+                        is_losing_goal = goal_weight < prev_weight
+                        is_gaining_goal = goal_weight > prev_weight
+                        is_maintain_goal = abs(goal_weight - prev_weight) < 1.0  # Within 1kg
+                        
+                        # Check progress toward goal
+                        if is_losing_goal and weight_change < 0:
+                            materials_to_add = 2  # Losing weight when goal is to lose
+                        elif is_gaining_goal and weight_change > 0:
+                            materials_to_add = 2  # Gaining weight when goal is to gain
+                        elif is_maintain_goal and abs(weight_change) < 0.5:
+                            materials_to_add = 1  # Maintaining when goal is to maintain
+                        # else: off-target, 0 materials
+                
+                if materials_to_add > 0:
+                    add_city_resource(self.blocker.adhd_buster, "materials", materials_to_add)
+            except Exception:
+                pass
+        
         # Process rewards
         if rewards and GAMIFICATION_AVAILABLE:
             self._process_rewards(rewards)
@@ -8924,11 +8961,14 @@ class ActivityTab(QtWidgets.QWidget):
         
         self.blocker.save_config()
         
-        # Award city activity resource (1 per 10 minutes of activity)
-        if CITY_AVAILABLE and duration >= 10:
+        # Award city activity resource (per design doc):
+        # Base: 1 per activity logged, Duration bonus: +1 per 30 min
+        if CITY_AVAILABLE:
             try:
                 from city import add_city_resource
-                activity_resources = duration // 10
+                base_amount = 1
+                duration_bonus = duration // 30  # +1 per 30 min
+                activity_resources = base_amount + duration_bonus
                 add_city_resource(self.blocker.adhd_buster, "activity", activity_resources)
             except Exception:
                 pass
@@ -25114,9 +25154,10 @@ del "%~f0"
         """
         Award city resources based on completed focus session.
         
-        Resource earning formula:
-        - 🎯 Focus: 1 per 10 minutes of focus time
-        - 🧱 Materials: 1 per 15 minutes (general productivity)
+        Resource earning formula (per design doc):
+        - 🎯 Focus: 1 per 30 minutes of focus time
+        
+        Note: Materials come from weight management only, not focus sessions.
         """
         if not CITY_AVAILABLE:
             return
@@ -25126,15 +25167,10 @@ del "%~f0"
             
             minutes = elapsed_seconds // 60
             
-            # Focus: 1 per 10 minutes
-            focus_earned = minutes // 10
+            # Focus: 1 per 30 minutes (as per design doc)
+            focus_earned = minutes // 30
             if focus_earned > 0:
                 add_city_resource(self.blocker.adhd_buster, "focus", focus_earned)
-            
-            # Materials: 1 per 15 minutes
-            materials_earned = minutes // 15
-            if materials_earned > 0:
-                add_city_resource(self.blocker.adhd_buster, "materials", materials_earned)
             
             # Save data
             self._save_adhd_data()
