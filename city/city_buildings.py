@@ -33,10 +33,10 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
             "base_coins": 3,  # Base coins per qualifying activity
             "coins_per_effective_30min": 2,  # +2 coins per 30 effective minutes
         },
-        "max_level": 5,
+        "max_level": 3,
         "level_scaling": {
-            "base_coins": 1,  # +1 base per level (L5 = 7 base coins)
-            "coins_per_effective_30min": 1,  # +1 per level (L5 = 6 per 30min)
+            "base_coins": 2,  # +2 base per level (L3 = 7 base coins)
+            "coins_per_effective_30min": 2,  # +2 per level (L3 = 6 per 30min)
         },
         "visual": "goldmine",
     },
@@ -62,7 +62,7 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         },
         "max_level": 3,
         "level_scaling": {
-            "bonus_percent": 5,  # +5% per level (L3 = +15% total)
+            "bonus_percent": 4,  # +4% per level (L3 = +13% total)
         },
         "visual": "forge",
     },
@@ -83,9 +83,9 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
             "type": "rarity_bias_bonus",
             "bonus_percent": 3,  # +3% chance for higher rarity items
         },
-        "max_level": 5,
+        "max_level": 3,
         "level_scaling": {
-            "bonus_percent": 2,  # +2% per level (L5 = +11% total rarity bias)
+            "bonus_percent": 3,  # +3% per level (L3 = +9% total rarity bias)
         },
         "visual": "artisan_guild",
     },
@@ -104,11 +104,11 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "completion_reward": {"coins": 50, "xp": 300},
         "effect": {
             "type": "entity_catch_bonus",
-            "bonus_percent": 2,  # +2% entity catch probability
+            "bonus_percent": 3,  # +3% entity catch probability
         },
-        "max_level": 5,
+        "max_level": 3,
         "level_scaling": {
-            "bonus_percent": 2,  # +2% per level (L5 = +10% total catch bonus)
+            "bonus_percent": 3,  # +3% per level (L3 = +9% total catch bonus)
         },
         "visual": "university",
     },
@@ -132,9 +132,9 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
             "type": "power_bonus",
             "power_percent": 3,  # +3% hero power
         },
-        "max_level": 5,
+        "max_level": 3,
         "level_scaling": {
-            "power_percent": 2,  # +2% per level (L5 = +11% total power)
+            "power_percent": 3,  # +3% per level (L3 = +9% total power)
         },
         "visual": "training_ground",
     },
@@ -155,9 +155,9 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
             "type": "xp_bonus",
             "bonus_percent": 5,  # +5% XP from all sources
         },
-        "max_level": 5,
+        "max_level": 3,
         "level_scaling": {
-            "bonus_percent": 3,  # +3% per level (L5 = +17% total XP bonus)
+            "bonus_percent": 5,  # +5% per level (L3 = +15% total XP bonus)
         },
         "visual": "library",
     },
@@ -178,9 +178,9 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
             "type": "coin_discount",
             "discount_percent": 5,  # -5% coin costs
         },
-        "max_level": 5,
+        "max_level": 3,
         "level_scaling": {
-            "discount_percent": 3,  # +3% per level (L5 = -17% costs)
+            "discount_percent": 5,  # +5% per level (L3 = -15% costs)
         },
         "visual": "market",
     },
@@ -206,10 +206,10 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
             "base_coins": 5,  # Base coins per session
             "coins_per_30min": 3,  # +3 coins per 30 minutes of focus
         },
-        "max_level": 10,
+        "max_level": 3,
         "level_scaling": {
-            "base_coins": 2,  # +2 base per level (L10 = 23 base coins)
-            "coins_per_30min": 1,  # +1 per level (L10 = 12 per 30min)
+            "base_coins": 5,  # +5 base per level (L3 = 15 base coins)
+            "coins_per_30min": 3,  # +3 per level (L3 = 9 per 30min)
         },
         "visual": "royal_mint",
     },
