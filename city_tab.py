@@ -3458,7 +3458,7 @@ class CityTab(QtWidgets.QWidget):
             
             building_name = info.get("building_name", "Building")
             progress = info.get("progress", {})
-            requirements = info.get("effort_requirements", {})
+            requirements = info.get("requirements", {})
             
             self.construction_name.setText(f"🔨 {building_name}")
             
