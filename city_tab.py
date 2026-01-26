@@ -3336,6 +3336,26 @@ class CityTab(QtWidgets.QWidget):
         self.info_panel.setStyleSheet("color: #888; font-size: 12px;")
         self.info_panel.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(self.info_panel)
+        
+        # Timer for resetting warning style
+        self._warning_reset_timer = QtCore.QTimer(self)
+        self._warning_reset_timer.setSingleShot(True)
+        self._warning_reset_timer.timeout.connect(self._reset_info_style)
+    
+    def _show_warning(self, message: str):
+        """Show a warning message with visual emphasis."""
+        self.info_panel.setText(message)
+        self.info_panel.setStyleSheet(
+            "color: #FFB74D; font-size: 13px; font-weight: bold; "
+            "background: rgba(255, 183, 77, 0.15); padding: 6px 12px; "
+            "border-radius: 4px;"
+        )
+        # Reset after 4 seconds
+        self._warning_reset_timer.start(4000)
+    
+    def _reset_info_style(self):
+        """Reset info panel to normal style."""
+        self.info_panel.setStyleSheet("color: #888; font-size: 12px;")
     
     def _refresh_city(self):
         """Refresh all city displays from data."""
@@ -3540,9 +3560,9 @@ class CityTab(QtWidgets.QWidget):
                 next_info = get_next_slot_unlock(self.adhd_buster)
                 next_level = next_info.get("next_unlock_level")
                 if next_level:
-                    self.info_panel.setText(f"🔒 Slot locked - Reach level {next_level} to unlock!")
+                    self._show_warning(f"🔒 Slot locked - Reach level {next_level} to unlock!")
                 else:
-                    self.info_panel.setText("🔒 Slot locked - Keep leveling up!")
+                    self._show_warning("🔒 Slot locked - Keep leveling up!")
                 return
                 
         except Exception as e:
@@ -3562,7 +3582,7 @@ class CityTab(QtWidgets.QWidget):
                     active_building_id = active_cell.get("building_id", "") if active_cell else ""
                     active_building = CITY_BUILDINGS.get(active_building_id, {})
                     active_name = active_building.get("name", "a building")
-                    self.info_panel.setText(f"🚧 Finish building {active_name} first! (Click it to see progress)")
+                    self._show_warning(f"🚧 Finish or cancel {active_name} first! (Click it to see progress)")
                     return
                 
                 # No active construction - show building picker (with row/col for direct placement)
@@ -3590,7 +3610,7 @@ class CityTab(QtWidgets.QWidget):
                         active_building_id = active_cell.get("building_id", "") if active_cell else ""
                         active_building = CITY_BUILDINGS.get(active_building_id, {})
                         active_name = active_building.get("name", "another building")
-                        self.info_panel.setText(f"🚧 Finish building {active_name} first!")
+                        self._show_warning(f"🚧 Finish or cancel {active_name} first!")
                         return
                     dialog = InitiateConstructionDialog(self.adhd_buster, row, col, self)
                     dialog.exec()
