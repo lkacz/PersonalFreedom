@@ -1,68 +1,225 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Construction overlay - scaffolding with animated worker -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Construction overlay - scaffolding with animated workers - 128x128 Enhanced -->
+  
+  <defs>
+    <!-- Metal pole gradient -->
+    <linearGradient id="poleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#5D4037"/>
+      <stop offset="30%" style="stop-color:#8D6E63"/>
+      <stop offset="50%" style="stop-color:#A1887F"/>
+      <stop offset="70%" style="stop-color:#8D6E63"/>
+      <stop offset="100%" style="stop-color:#5D4037"/>
+    </linearGradient>
+    
+    <!-- Wood plank gradient -->
+    <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#8D6E63"/>
+      <stop offset="20%" style="stop-color:#A1887F"/>
+      <stop offset="50%" style="stop-color:#BCAAA4"/>
+      <stop offset="80%" style="stop-color:#A1887F"/>
+      <stop offset="100%" style="stop-color:#8D6E63"/>
+    </linearGradient>
+    
+    <!-- Hard hat gradient -->
+    <radialGradient id="hatGrad" cx="40%" cy="30%" r="60%">
+      <stop offset="0%" style="stop-color:#FFEB3B"/>
+      <stop offset="60%" style="stop-color:#FFC107"/>
+      <stop offset="100%" style="stop-color:#FF8F00"/>
+    </radialGradient>
+    
+    <!-- Progress bar gradient -->
+    <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#66BB6A"/>
+      <stop offset="50%" style="stop-color:#4CAF50"/>
+      <stop offset="100%" style="stop-color:#43A047"/>
+    </linearGradient>
+    
+    <!-- Warning triangle gradient -->
+    <linearGradient id="warningGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFB300"/>
+      <stop offset="100%" style="stop-color:#FF6F00"/>
+    </linearGradient>
+    
+    <!-- Caution stripe pattern -->
+    <pattern id="cautionStripes" patternUnits="userSpaceOnUse" width="16" height="16" patternTransform="rotate(45)">
+      <rect width="8" height="16" fill="#FFC107"/>
+      <rect x="8" width="8" height="16" fill="#212121"/>
+    </pattern>
+    
+    <!-- Drop shadow -->
+    <filter id="constructShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
   
   <!-- Semi-transparent background -->
-  <rect x="0" y="0" width="64" height="64" fill="#000000" opacity="0.3"/>
+  <rect x="0" y="0" width="128" height="128" fill="#000000" opacity="0.35"/>
   
-  <!-- Scaffolding frame -->
-  <g stroke="#795548" stroke-width="2" fill="none">
-    <!-- Vertical poles -->
-    <line x1="10" y1="8" x2="10" y2="56"/>
-    <line x1="54" y1="8" x2="54" y2="56"/>
-    <line x1="32" y1="16" x2="32" y2="56"/>
+  <!-- Caution tape at top and bottom -->
+  <rect x="0" y="0" width="128" height="8" fill="url(#cautionStripes)" opacity="0.8"/>
+  <rect x="0" y="120" width="128" height="8" fill="url(#cautionStripes)" opacity="0.8"/>
+  
+  <!-- Scaffolding frame - enhanced metallic -->
+  <g filter="url(#constructShadow)">
+    <!-- Vertical poles with gradient -->
+    <rect x="16" y="16" width="6" height="96" fill="url(#poleGrad)" rx="1"/>
+    <rect x="106" y="16" width="6" height="96" fill="url(#poleGrad)" rx="1"/>
+    <rect x="61" y="32" width="6" height="80" fill="url(#poleGrad)" rx="1"/>
     
-    <!-- Horizontal platforms -->
-    <line x1="8" y1="20" x2="56" y2="20"/>
-    <line x1="8" y1="36" x2="56" y2="36"/>
-    <line x1="8" y1="52" x2="56" y2="52"/>
-    
-    <!-- Cross braces -->
-    <line x1="10" y1="20" x2="32" y2="36" stroke-dasharray="4,2"/>
-    <line x1="32" y1="20" x2="54" y2="36" stroke-dasharray="4,2"/>
+    <!-- Pole caps -->
+    <rect x="14" y="14" width="10" height="4" fill="#795548" rx="1"/>
+    <rect x="104" y="14" width="10" height="4" fill="#795548" rx="1"/>
+    <rect x="59" y="30" width="10" height="4" fill="#795548" rx="1"/>
   </g>
   
-  <!-- Wooden planks -->
-  <g fill="#A1887F">
-    <rect x="8" y="18" width="48" height="3" rx="0.5"/>
-    <rect x="8" y="34" width="48" height="3" rx="0.5"/>
-    <rect x="8" y="50" width="48" height="3" rx="0.5"/>
+  <!-- Horizontal support rails -->
+  <g stroke="#6D4C41" stroke-width="3" fill="none">
+    <line x1="16" y1="40" x2="112" y2="40"/>
+    <line x1="16" y1="72" x2="112" y2="72"/>
+    <line x1="16" y1="104" x2="112" y2="104"/>
   </g>
   
-  <!-- Animated worker -->
+  <!-- Cross braces - dashed for industrial look -->
+  <g stroke="#8D6E63" stroke-width="2" fill="none" stroke-dasharray="8,4">
+    <line x1="20" y1="40" x2="64" y2="72"/>
+    <line x1="64" y1="40" x2="108" y2="72"/>
+    <line x1="20" y1="72" x2="64" y2="104"/>
+    <line x1="64" y1="72" x2="108" y2="104"/>
+  </g>
+  
+  <!-- Wooden planks with texture -->
   <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0;4,0;0,0;-4,0;0,0" dur="2s" repeatCount="indefinite"/>
+    <!-- Top platform -->
+    <rect x="14" y="36" width="100" height="6" fill="url(#woodGrad)" rx="1"/>
+    <line x1="40" y1="36" x2="40" y2="42" stroke="#6D4C41" stroke-width="0.5"/>
+    <line x1="64" y1="36" x2="64" y2="42" stroke="#6D4C41" stroke-width="0.5"/>
+    <line x1="88" y1="36" x2="88" y2="42" stroke="#6D4C41" stroke-width="0.5"/>
+    
+    <!-- Middle platform -->
+    <rect x="14" y="68" width="100" height="6" fill="url(#woodGrad)" rx="1"/>
+    <line x1="40" y1="68" x2="40" y2="74" stroke="#6D4C41" stroke-width="0.5"/>
+    <line x1="64" y1="68" x2="64" y2="74" stroke="#6D4C41" stroke-width="0.5"/>
+    <line x1="88" y1="68" x2="88" y2="74" stroke="#6D4C41" stroke-width="0.5"/>
+    
+    <!-- Bottom platform -->
+    <rect x="14" y="100" width="100" height="6" fill="url(#woodGrad)" rx="1"/>
+    <line x1="40" y1="100" x2="40" y2="106" stroke="#6D4C41" stroke-width="0.5"/>
+    <line x1="64" y1="100" x2="64" y2="106" stroke="#6D4C41" stroke-width="0.5"/>
+    <line x1="88" y1="100" x2="88" y2="106" stroke="#6D4C41" stroke-width="0.5"/>
+  </g>
+  
+  <!-- Animated worker 1 - hammering -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;6,0;0,0;-6,0;0,0" dur="2s" repeatCount="indefinite"/>
     
     <!-- Hard hat -->
-    <ellipse cx="24" cy="26" rx="5" ry="3" fill="#FFC107"/>
-    <rect x="19" y="26" width="10" height="2" fill="#FFA000"/>
+    <ellipse cx="44" cy="50" rx="10" ry="5" fill="url(#hatGrad)"/>
+    <rect x="34" y="50" width="20" height="4" fill="#FFA000" rx="1"/>
     
     <!-- Head -->
-    <circle cx="24" cy="30" r="3" fill="#FFCC80"/>
+    <circle cx="44" cy="58" r="6" fill="#FFCC80"/>
+    <!-- Face features -->
+    <circle cx="42" cy="57" r="1" fill="#5D4037"/>
+    <circle cx="46" cy="57" r="1" fill="#5D4037"/>
+    <path d="M42,60 Q44,62 46,60" stroke="#8D6E63" stroke-width="1" fill="none"/>
     
-    <!-- Body -->
-    <rect x="22" y="33" width="4" height="6" fill="#FF5722"/>
+    <!-- Body - safety vest -->
+    <rect x="38" y="64" width="12" height="14" fill="#FF5722" rx="2"/>
+    <line x1="40" y1="64" x2="40" y2="78" stroke="#FFEB3B" stroke-width="2"/>
+    <line x1="48" y1="64" x2="48" y2="78" stroke="#FFEB3B" stroke-width="2"/>
+    
+    <!-- Legs -->
+    <rect x="39" y="78" width="4" height="10" fill="#3E2723"/>
+    <rect x="45" y="78" width="4" height="10" fill="#3E2723"/>
     
     <!-- Arms - hammering animation -->
     <g>
-      <animateTransform attributeName="transform" type="rotate" values="0 26 35;-30 26 35;0 26 35" dur="0.5s" repeatCount="indefinite"/>
-      <line x1="26" y1="35" x2="32" y2="32" stroke="#FFCC80" stroke-width="2" stroke-linecap="round"/>
-      <!-- Hammer -->
-      <rect x="30" y="29" width="4" height="3" fill="#616161"/>
+      <animateTransform attributeName="transform" type="rotate" values="0 50 68;-40 50 68;0 50 68" dur="0.6s" repeatCount="indefinite"/>
+      <line x1="50" y1="68" x2="66" y2="60" stroke="#FFCC80" stroke-width="4" stroke-linecap="round"/>
+      <!-- Hammer head -->
+      <rect x="62" y="54" width="10" height="8" fill="#616161" rx="1"/>
+      <rect x="64" y="56" width="6" height="4" fill="#9E9E9E"/>
+      <!-- Hammer handle -->
+      <rect x="60" y="60" width="4" height="10" fill="#8D6E63"/>
     </g>
   </g>
   
-  <!-- Construction progress bar background -->
-  <rect x="12" y="6" width="40" height="6" rx="3" fill="#424242"/>
+  <!-- Animated worker 2 - on middle platform -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;-4,0;0,0;4,0;0,0" dur="2.5s" repeatCount="indefinite"/>
+    
+    <!-- Hard hat -->
+    <ellipse cx="88" cy="82" rx="8" ry="4" fill="url(#hatGrad)"/>
+    <rect x="80" y="82" width="16" height="3" fill="#FFA000" rx="1"/>
+    
+    <!-- Head -->
+    <circle cx="88" cy="89" r="5" fill="#D7CCC8"/>
+    
+    <!-- Body - safety vest -->
+    <rect x="83" y="94" width="10" height="12" fill="#FF5722" rx="1"/>
+    <line x1="85" y1="94" x2="85" y2="106" stroke="#FFEB3B" stroke-width="1.5"/>
+    <line x1="91" y1="94" x2="91" y2="106" stroke="#FFEB3B" stroke-width="1.5"/>
+    
+    <!-- Holding clipboard -->
+    <rect x="94" y="96" width="8" height="10" fill="#EFEBE9" rx="1"/>
+    <line x1="96" y1="99" x2="100" y2="99" stroke="#9E9E9E" stroke-width="0.5"/>
+    <line x1="96" y1="101" x2="100" y2="101" stroke="#9E9E9E" stroke-width="0.5"/>
+    <line x1="96" y1="103" x2="99" y2="103" stroke="#9E9E9E" stroke-width="0.5"/>
+  </g>
   
-  <!-- Animated progress fill (placeholder - actual value set by code) -->
-  <rect x="12" y="6" width="20" height="6" rx="3" fill="#4CAF50">
-    <animate attributeName="opacity" values="0.8;1;0.8" dur="1s" repeatCount="indefinite"/>
+  <!-- Tools on platform -->
+  <g>
+    <!-- Toolbox -->
+    <rect x="26" y="95" width="14" height="8" fill="#D32F2F" rx="1"/>
+    <rect x="26" y="95" width="14" height="2" fill="#B71C1C"/>
+    <rect x="31" y="94" width="4" height="2" fill="#9E9E9E"/>
+    
+    <!-- Wrench -->
+    <rect x="72" y="66" width="2" height="12" fill="#9E9E9E" transform="rotate(30, 73, 72)"/>
+    <circle cx="73" cy="66" r="3" fill="none" stroke="#9E9E9E" stroke-width="2"/>
+  </g>
+  
+  <!-- Construction progress bar -->
+  <rect x="24" y="14" width="80" height="12" rx="6" fill="#424242" stroke="#616161" stroke-width="1"/>
+  <rect x="26" y="16" width="38" height="8" rx="4" fill="url(#progressGrad)">
+    <animate attributeName="opacity" values="0.85;1;0.85" dur="1.2s" repeatCount="indefinite"/>
   </rect>
+  <!-- Progress text -->
+  <text x="64" y="23" text-anchor="middle" font-size="8" fill="#FFFFFF" font-family="sans-serif" font-weight="bold">48%</text>
   
-  <!-- Construction icon -->
-  <g fill="#FF9800">
-    <polygon points="32,44 28,56 36,56" opacity="0.9"/>
-    <rect x="30" y="42" width="4" height="4"/>
-    <text x="32" y="54" text-anchor="middle" font-size="8" fill="#FFF" font-weight="bold">!</text>
+  <!-- Animated construction warning sign -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,-2;0,0" dur="0.8s" repeatCount="indefinite"/>
+    
+    <!-- Triangle base -->
+    <polygon points="64,82 52,106 76,106" fill="url(#warningGrad)" stroke="#212121" stroke-width="2"/>
+    <polygon points="64,86 56,102 72,102" fill="#212121" opacity="0.2"/>
+    
+    <!-- Exclamation mark -->
+    <rect x="62" y="88" width="4" height="10" fill="#212121" rx="1"/>
+    <circle cx="64" cy="102" r="2.5" fill="#212121"/>
+  </g>
+  
+  <!-- Dust particles animation -->
+  <g fill="#A1887F" opacity="0.6">
+    <circle cx="50" cy="92" r="1.5">
+      <animate attributeName="cy" values="92;86;92" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.2;0.6" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="58" cy="88" r="1">
+      <animate attributeName="cy" values="88;82;88" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.1;0.5" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="54" cy="95" r="0.8">
+      <animate attributeName="cy" values="95;90;95" dur="1.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.1;0.4" dur="1.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Nails scattered -->
+  <g fill="#9E9E9E">
+    <rect x="30" y="65" width="1" height="4" transform="rotate(20, 30, 67)"/>
+    <rect x="94" y="38" width="1" height="4" transform="rotate(-15, 94, 40)"/>
+    <rect x="36" y="99" width="1" height="3" transform="rotate(45, 36, 100)"/>
   </g>
 </svg>

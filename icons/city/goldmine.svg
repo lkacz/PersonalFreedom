@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <!-- Goldmine - A weathered mountain mine entrance with golden treasures -->
   <defs>
     <linearGradient id="mountainRock" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -37,75 +37,111 @@
       <stop offset="0%" style="stop-color:#FFD700" stop-opacity="0.4"/>
       <stop offset="100%" style="stop-color:#FFD700" stop-opacity="0"/>
     </radialGradient>
+    <filter id="goldGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
+    </filter>
   </defs>
   
+  <!-- Background sky hint -->
+  <rect x="0" y="0" width="128" height="50" fill="#87CEEB" opacity="0.3"/>
+  
   <!-- Distant mountain peak -->
-  <polygon points="48,18 58,48 38,48" fill="#4D3D2E" opacity="0.6"/>
+  <polygon points="96,36 116,96 76,96" fill="#4D3D2E" opacity="0.6"/>
+  <polygon points="16,46 36,96 0,96" fill="#5D4D3E" opacity="0.4"/>
   
   <!-- Main mountain body -->
-  <polygon points="32,6 60,56 4,56" fill="url(#mountainRock)"/>
+  <polygon points="64,12 120,112 8,112" fill="url(#mountainRock)"/>
   
   <!-- Mountain shadow face -->
-  <polygon points="32,6 4,56 24,56 32,28" fill="url(#mountainShadow)"/>
+  <polygon points="64,12 8,112 48,112 64,56" fill="url(#mountainShadow)"/>
   
-  <!-- Rock texture lines -->
-  <path d="M18 42 L22 38 L26 44" stroke="#3D2D1E" stroke-width="0.8" fill="none" opacity="0.6"/>
-  <path d="M42 40 L46 36 L50 42" stroke="#5D4D3E" stroke-width="0.8" fill="none" opacity="0.5"/>
-  <path d="M28 22 L32 18 L36 24" stroke="#4D3D2E" stroke-width="0.8" fill="none" opacity="0.5"/>
+  <!-- Rock texture lines - more detailed -->
+  <path d="M36 84 L44 76 L52 88" stroke="#3D2D1E" stroke-width="1.5" fill="none" opacity="0.6"/>
+  <path d="M84 80 L92 72 L100 84" stroke="#5D4D3E" stroke-width="1.5" fill="none" opacity="0.5"/>
+  <path d="M56 44 L64 36 L72 48" stroke="#4D3D2E" stroke-width="1.5" fill="none" opacity="0.5"/>
+  <path d="M28 68 L32 64 L36 70" stroke="#3D2D1E" stroke-width="1" fill="none" opacity="0.4"/>
+  <path d="M76 56 L80 52 L84 58" stroke="#4D3D2E" stroke-width="1" fill="none" opacity="0.4"/>
+  <path d="M48 62 L52 58 L56 64" stroke="#3D2D1E" stroke-width="1" fill="none" opacity="0.5"/>
   
-  <!-- Snow cap -->
-  <polygon points="32,6 28,14 32,12 36,14" fill="#ECEFF1" opacity="0.8"/>
+  <!-- Snow cap - more detailed -->
+  <polygon points="64,12 56,28 64,24 72,28" fill="#ECEFF1" opacity="0.9"/>
+  <polygon points="64,12 60,20 64,18 68,20" fill="#FFFFFF" opacity="0.7"/>
   
   <!-- Mine entrance (cave opening) -->
-  <path d="M20 56 L20 38 Q20 32, 26 32 L38 32 Q44 32, 44 38 L44 56 Z" fill="url(#caveDepth)"/>
+  <path d="M40 112 L40 76 Q40 64, 52 64 L76 64 Q88 64, 88 76 L88 112 Z" fill="url(#caveDepth)"/>
   
   <!-- Mine entrance frame (wooden support beams) -->
-  <rect x="18" y="30" width="4" height="26" fill="url(#woodBeam)" rx="1"/>
-  <rect x="42" y="30" width="4" height="26" fill="url(#woodBeam)" rx="1"/>
-  <rect x="18" y="28" width="28" height="5" fill="url(#woodBeam)" rx="1"/>
+  <rect x="36" y="60" width="8" height="52" fill="url(#woodBeam)" rx="2"/>
+  <rect x="84" y="60" width="8" height="52" fill="url(#woodBeam)" rx="2"/>
+  <rect x="36" y="56" width="56" height="10" fill="url(#woodBeam)" rx="2"/>
   
   <!-- Beam wood grain details -->
-  <line x1="19" y1="34" x2="21" y2="34" stroke="#5D4037" stroke-width="0.5"/>
-  <line x1="19" y1="42" x2="21" y2="42" stroke="#5D4037" stroke-width="0.5"/>
-  <line x1="43" y1="38" x2="45" y2="38" stroke="#5D4037" stroke-width="0.5"/>
-  <line x1="43" y1="46" x2="45" y2="46" stroke="#5D4037" stroke-width="0.5"/>
+  <line x1="38" y1="68" x2="42" y2="68" stroke="#5D4037" stroke-width="1"/>
+  <line x1="38" y1="84" x2="42" y2="84" stroke="#5D4037" stroke-width="1"/>
+  <line x1="38" y1="100" x2="42" y2="100" stroke="#5D4037" stroke-width="1"/>
+  <line x1="86" y1="76" x2="90" y2="76" stroke="#5D4037" stroke-width="1"/>
+  <line x1="86" y1="92" x2="90" y2="92" stroke="#5D4037" stroke-width="1"/>
+  <line x1="40" y1="60" x2="88" y2="60" stroke="#4E342E" stroke-width="1"/>
+  
+  <!-- Support beam nails -->
+  <circle cx="39" cy="62" r="1.5" fill="#424242"/>
+  <circle cx="89" cy="62" r="1.5" fill="#424242"/>
   
   <!-- Gold glow from inside -->
-  <ellipse cx="32" cy="48" rx="10" ry="8" fill="url(#goldGlow)"/>
+  <ellipse cx="64" cy="96" rx="20" ry="16" fill="url(#goldGlow)" filter="url(#goldGlowFilter)"/>
   
   <!-- Gold nugget pile at entrance -->
-  <ellipse cx="32" cy="54" rx="8" ry="3" fill="#5D4037"/>
-  <circle cx="28" cy="52" r="4" fill="url(#goldNugget)"/>
-  <circle cx="35" cy="51" r="3.5" fill="url(#goldNugget)"/>
-  <circle cx="32" cy="54" r="3" fill="url(#goldNugget)"/>
-  <circle cx="26" cy="55" r="2.5" fill="url(#goldNugget)"/>
-  <circle cx="38" cy="54" r="2.8" fill="url(#goldNugget)"/>
+  <ellipse cx="64" cy="108" rx="16" ry="6" fill="#5D4037"/>
+  <circle cx="56" cy="104" r="8" fill="url(#goldNugget)"/>
+  <circle cx="70" cy="102" r="7" fill="url(#goldNugget)"/>
+  <circle cx="64" cy="108" r="6" fill="url(#goldNugget)"/>
+  <circle cx="52" cy="110" r="5" fill="url(#goldNugget)"/>
+  <circle cx="76" cy="108" r="5.6" fill="url(#goldNugget)"/>
+  <circle cx="60" cy="106" r="4" fill="url(#goldNugget)"/>
+  <circle cx="68" cy="106" r="3.5" fill="url(#goldNugget)"/>
   
   <!-- Gold nugget highlights -->
-  <circle cx="27" cy="51" r="1" fill="url(#goldShine)" opacity="0.8"/>
-  <circle cx="34" cy="50" r="0.8" fill="url(#goldShine)" opacity="0.8"/>
-  <circle cx="31" cy="53" r="0.6" fill="url(#goldShine)" opacity="0.8"/>
+  <circle cx="54" cy="102" r="2" fill="url(#goldShine)" opacity="0.8"/>
+  <circle cx="68" cy="100" r="1.6" fill="url(#goldShine)" opacity="0.8"/>
+  <circle cx="62" cy="106" r="1.2" fill="url(#goldShine)" opacity="0.8"/>
+  <circle cx="74" cy="106" r="1.4" fill="url(#goldShine)" opacity="0.8"/>
   
   <!-- Scattered gold on mountain -->
-  <circle cx="14" cy="48" r="2.5" fill="url(#goldNugget)"/>
-  <circle cx="50" cy="46" r="2" fill="url(#goldNugget)"/>
-  <circle cx="24" cy="26" r="1.8" fill="url(#goldNugget)"/>
+  <circle cx="28" cy="96" r="5" fill="url(#goldNugget)"/>
+  <circle cx="100" cy="92" r="4" fill="url(#goldNugget)"/>
+  <circle cx="48" cy="52" r="3.6" fill="url(#goldNugget)"/>
+  <circle cx="80" cy="68" r="3" fill="url(#goldNugget)"/>
+  <circle cx="26" cy="96" r="1.5" fill="url(#goldShine)" opacity="0.7"/>
+  <circle cx="98" cy="90" r="1.2" fill="url(#goldShine)" opacity="0.7"/>
   
   <!-- Pickaxe leaning against entrance -->
-  <line x1="48" y1="36" x2="52" y2="52" stroke="#8D6E63" stroke-width="2" stroke-linecap="round"/>
-  <path d="M46 34 L50 32 L52 38 L48 36 Z" fill="#78909C"/>
-  <path d="M50 32 L52 30" stroke="#90A4AE" stroke-width="1"/>
+  <line x1="96" y1="72" x2="104" y2="104" stroke="#8D6E63" stroke-width="4" stroke-linecap="round"/>
+  <path d="M92 68 L100 64 L104 76 L96 72 Z" fill="#78909C"/>
+  <path d="M100 64 L104 60" stroke="#90A4AE" stroke-width="2"/>
+  <ellipse cx="98" cy="70" rx="2" ry="1" fill="#B0BEC5" opacity="0.6"/>
   
   <!-- Minecart rail tracks -->
-  <line x1="22" y1="55" x2="8" y2="55" stroke="#5D4037" stroke-width="1.5"/>
-  <line x1="22" y1="57" x2="8" y2="57" stroke="#5D4037" stroke-width="1.5"/>
-  <line x1="12" y1="54" x2="12" y2="58" stroke="#3E2723" stroke-width="1"/>
-  <line x1="16" y1="54" x2="16" y2="58" stroke="#3E2723" stroke-width="1"/>
+  <line x1="44" y1="110" x2="16" y2="110" stroke="#5D4037" stroke-width="3"/>
+  <line x1="44" y1="114" x2="16" y2="114" stroke="#5D4037" stroke-width="3"/>
+  <line x1="24" y1="108" x2="24" y2="116" stroke="#3E2723" stroke-width="2"/>
+  <line x1="32" y1="108" x2="32" y2="116" stroke="#3E2723" stroke-width="2"/>
+  <line x1="40" y1="108" x2="40" y2="116" stroke="#3E2723" stroke-width="2"/>
+  
+  <!-- Minecart -->
+  <path d="M12 108 L8 100 L20 100 L16 108 Z" fill="#5D4037"/>
+  <circle cx="10" cy="110" r="2" fill="#3E2723"/>
+  <circle cx="18" cy="110" r="2" fill="#3E2723"/>
+  <circle cx="14" cy="102" r="3" fill="url(#goldNugget)"/>
   
   <!-- Lantern by entrance -->
-  <rect x="47" y="40" width="3" height="4" fill="#FFE082"/>
-  <rect x="46.5" y="39" width="4" height="1.5" fill="#5D4037"/>
-  <rect x="46.5" y="44" width="4" height="1" fill="#5D4037"/>
-  <line x1="48.5" y1="38" x2="48.5" y2="39" stroke="#3E2723" stroke-width="0.8"/>
-  <ellipse cx="48.5" cy="42" rx="1" ry="1.5" fill="#FFEB3B" opacity="0.6"/>
+  <rect x="94" y="80" width="6" height="8" fill="#FFE082"/>
+  <rect x="93" y="78" width="8" height="3" fill="#5D4037"/>
+  <rect x="93" y="88" width="8" height="2" fill="#5D4037"/>
+  <line x1="97" y1="76" x2="97" y2="78" stroke="#3E2723" stroke-width="1.5"/>
+  <ellipse cx="97" cy="84" rx="2" ry="3" fill="#FFEB3B" opacity="0.6"/>
+  <circle cx="97" cy="84" r="5" fill="#FFEB3B" opacity="0.15"/>
+  
+  <!-- Birds in sky -->
+  <path d="M20 20 Q22 18 24 20 Q26 18 28 20" stroke="#37474F" stroke-width="1" fill="none" opacity="0.6"/>
+  <path d="M100 24 Q102 22 104 24" stroke="#37474F" stroke-width="1" fill="none" opacity="0.5"/>
 </svg>

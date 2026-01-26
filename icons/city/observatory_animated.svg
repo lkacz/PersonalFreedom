@@ -1,197 +1,367 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Observatory with rotating dome and twinkling stars - High Quality Version -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Observatory with rotating dome and twinkling stars - 128x128 Enhanced Animated Version -->
   <defs>
     <linearGradient id="nightSky" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#0D1321"/>
-      <stop offset="40%" style="stop-color:#1A237E"/>
-      <stop offset="80%" style="stop-color:#283593"/>
-      <stop offset="100%" style="stop-color:#3F51B5"/>
+      <stop offset="25%" style="stop-color:#1A237E"/>
+      <stop offset="50%" style="stop-color:#283593"/>
+      <stop offset="75%" style="stop-color:#3F51B5"/>
+      <stop offset="100%" style="stop-color:#5C6BC0"/>
     </linearGradient>
     <linearGradient id="towerWall" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#37474F"/>
-      <stop offset="30%" style="stop-color:#546E7A"/>
-      <stop offset="70%" style="stop-color:#546E7A"/>
+      <stop offset="20%" style="stop-color:#455A64"/>
+      <stop offset="50%" style="stop-color:#546E7A"/>
+      <stop offset="80%" style="stop-color:#455A64"/>
       <stop offset="100%" style="stop-color:#37474F"/>
     </linearGradient>
     <linearGradient id="domeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#78909C"/>
-      <stop offset="30%" style="stop-color:#607D8B"/>
-      <stop offset="70%" style="stop-color:#546E7A"/>
+      <stop offset="0%" style="stop-color:#90A4AE"/>
+      <stop offset="25%" style="stop-color:#78909C"/>
+      <stop offset="50%" style="stop-color:#607D8B"/>
+      <stop offset="75%" style="stop-color:#546E7A"/>
       <stop offset="100%" style="stop-color:#455A64"/>
     </linearGradient>
     <linearGradient id="telescopeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#455A64"/>
+      <stop offset="30%" style="stop-color:#546E7A"/>
       <stop offset="50%" style="stop-color:#607D8B"/>
+      <stop offset="70%" style="stop-color:#546E7A"/>
       <stop offset="100%" style="stop-color:#37474F"/>
     </linearGradient>
-    <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+    <linearGradient id="brassRing" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF8F00"/>
+      <stop offset="30%" style="stop-color:#FFB300"/>
+      <stop offset="50%" style="stop-color:#FFD54F"/>
+      <stop offset="70%" style="stop-color:#FFC107"/>
+      <stop offset="100%" style="stop-color:#FF8F00"/>
+    </linearGradient>
+    <radialGradient id="moonGlow" cx="40%" cy="40%" r="60%">
       <stop offset="0%" style="stop-color:#FFFDE7"/>
-      <stop offset="60%" style="stop-color:#FFF9C4"/>
-      <stop offset="100%" style="stop-color:#FFF59D"/>
+      <stop offset="40%" style="stop-color:#FFF9C4"/>
+      <stop offset="80%" style="stop-color:#FFF59D"/>
+      <stop offset="100%" style="stop-color:#FFEE58"/>
     </radialGradient>
     <radialGradient id="lensGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#4FC3F7"/>
+      <stop offset="0%" style="stop-color:#B3E5FC"/>
+      <stop offset="40%" style="stop-color:#4FC3F7"/>
+      <stop offset="70%" style="stop-color:#03A9F4"/>
       <stop offset="100%" style="stop-color:#0288D1"/>
     </radialGradient>
     <radialGradient id="windowLight" cx="50%" cy="50%" r="50%">
       <stop offset="0%" style="stop-color:#FFFDE7"/>
-      <stop offset="100%" style="stop-color:#FFCC80"/>
+      <stop offset="60%" style="stop-color:#FFCC80"/>
+      <stop offset="100%" style="stop-color:#FF8F00"/>
     </radialGradient>
     <radialGradient id="starGlow" cx="50%" cy="50%" r="50%">
       <stop offset="0%" style="stop-color:#FFFFFF"/>
-      <stop offset="100%" style="stop-color:#E3F2FD"/>
+      <stop offset="50%" style="stop-color:#E3F2FD"/>
+      <stop offset="100%" style="stop-color:#BBDEFB" stop-opacity="0"/>
     </radialGradient>
+    <radialGradient id="nebulaGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#E040FB" stop-opacity="0.3"/>
+      <stop offset="50%" style="stop-color:#7C4DFF" stop-opacity="0.15"/>
+      <stop offset="100%" style="stop-color:#651FFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="starBlur" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glowFilter" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
   </defs>
   
-  <!-- Night sky background -->
-  <rect x="0" y="0" width="64" height="40" fill="url(#nightSky)"/>
+  <!-- Transparent background - sky provided by landscape -->
+  <ellipse cx="105" cy="45" rx="16" ry="10" fill="#E91E63" opacity="0.06">
+    <animate attributeName="opacity" values="0.06;0.1;0.06" dur="6s" repeatCount="indefinite"/>
+  </ellipse>
   
   <!-- Distant mountains silhouette -->
-  <polygon points="0,40 12,28 24,35 36,25 48,32 60,26 64,40" fill="#1A237E" opacity="0.5"/>
+  <polygon points="0,80 24,56 48,70 72,50 96,64 120,52 128,70 128,80" fill="#1A237E" opacity="0.5"/>
+  <polygon points="0,85 30,65 50,75 70,58 90,70 110,60 128,75 128,85" fill="#0D1321" opacity="0.6"/>
   
   <!-- Constellation - Orion hint -->
-  <g fill="#E3F2FD" opacity="0.6">
-    <circle cx="6" cy="12" r="0.5"/>
-    <circle cx="10" cy="14" r="0.5"/>
-    <circle cx="8" cy="18" r="0.5"/>
-    <line x1="6" y1="12" x2="10" y2="14" stroke="#E3F2FD" stroke-width="0.2" opacity="0.3"/>
-    <line x1="10" y1="14" x2="8" y2="18" stroke="#E3F2FD" stroke-width="0.2" opacity="0.3"/>
+  <g fill="#E3F2FD" opacity="0.7">
+    <circle cx="12" cy="24" r="1"/>
+    <circle cx="20" cy="28" r="1"/>
+    <circle cx="16" cy="36" r="1"/>
+    <circle cx="10" cy="40" r="0.8"/>
+    <circle cx="22" cy="40" r="0.8"/>
+    <line x1="12" y1="24" x2="20" y2="28" stroke="#E3F2FD" stroke-width="0.4" opacity="0.4"/>
+    <line x1="20" y1="28" x2="16" y2="36" stroke="#E3F2FD" stroke-width="0.4" opacity="0.4"/>
+    <line x1="16" y1="36" x2="10" y2="40" stroke="#E3F2FD" stroke-width="0.4" opacity="0.4"/>
+    <line x1="16" y1="36" x2="22" y2="40" stroke="#E3F2FD" stroke-width="0.4" opacity="0.4"/>
   </g>
   
-  <!-- Twinkling stars -->
-  <g fill="url(#starGlow)">
-    <circle cx="8" cy="6" r="1.2">
+  <!-- Big Dipper constellation -->
+  <g fill="#E3F2FD" opacity="0.6">
+    <circle cx="100" cy="18" r="0.8"/>
+    <circle cx="106" cy="16" r="0.8"/>
+    <circle cx="112" cy="18" r="0.8"/>
+    <circle cx="116" cy="22" r="0.8"/>
+    <circle cx="118" cy="28" r="0.8"/>
+    <circle cx="114" cy="32" r="0.8"/>
+    <circle cx="108" cy="30" r="0.8"/>
+    <line x1="100" y1="18" x2="106" y2="16" stroke="#E3F2FD" stroke-width="0.3" opacity="0.3"/>
+    <line x1="106" y1="16" x2="112" y2="18" stroke="#E3F2FD" stroke-width="0.3" opacity="0.3"/>
+    <line x1="112" y1="18" x2="116" y2="22" stroke="#E3F2FD" stroke-width="0.3" opacity="0.3"/>
+    <line x1="116" y1="22" x2="118" y2="28" stroke="#E3F2FD" stroke-width="0.3" opacity="0.3"/>
+    <line x1="118" y1="28" x2="114" y2="32" stroke="#E3F2FD" stroke-width="0.3" opacity="0.3"/>
+    <line x1="114" y1="32" x2="108" y2="30" stroke="#E3F2FD" stroke-width="0.3" opacity="0.3"/>
+    <line x1="108" y1="30" x2="116" y2="22" stroke="#E3F2FD" stroke-width="0.3" opacity="0.3"/>
+  </g>
+  
+  <!-- Twinkling stars with various animations -->
+  <g fill="url(#starGlow)" filter="url(#starBlur)">
+    <circle cx="16" cy="12" r="2.4">
       <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="2.4;3;2.4" dur="1.5s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="20" cy="4" r="0.8">
+    <circle cx="40" cy="8" r="1.6">
       <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="35" cy="7" r="1.5">
+    <circle cx="70" cy="14" r="3">
       <animate attributeName="opacity" values="0.5;1;0.5" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="r" values="1.5;1.8;1.5" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="3;3.6;3" dur="1.8s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="15" cy="14" r="0.7">
+    <circle cx="30" cy="28" r="1.4">
       <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2.2s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="58" cy="8" r="1">
+    <circle cx="116" cy="16" r="2">
       <animate attributeName="opacity" values="0.4;1;0.4" dur="1.3s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="5" cy="22" r="0.6">
+    <circle cx="10" cy="44" r="1.2">
       <animate attributeName="opacity" values="1;0.5;1" dur="1.7s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="28" cy="10" r="0.9">
+    <circle cx="56" cy="20" r="1.8">
       <animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="48" cy="16" r="0.8">
+    <circle cx="96" cy="32" r="1.6">
       <animate attributeName="opacity" values="0.7;0.3;0.7" dur="1.9s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="124" cy="40" r="1.4">
+      <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2.1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="48" cy="42" r="1.2">
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="82" cy="8" r="2.2">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="2.3s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="2.2;2.8;2.2" dur="2.3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="6" cy="60" r="1">
+      <animate attributeName="opacity" values="0.7;0.2;0.7" dur="1.4s" repeatCount="indefinite"/>
     </circle>
   </g>
   
-  <!-- Moon with craters -->
-  <circle cx="54" cy="10" r="6" fill="url(#moonGlow)"/>
-  <circle cx="52" cy="9" r="1" fill="#FFF9C4" opacity="0.5"/>
-  <circle cx="55" cy="12" r="0.8" fill="#FFF9C4" opacity="0.4"/>
-  <circle cx="56" cy="8" r="0.5" fill="#FFF9C4" opacity="0.3"/>
-  <circle cx="56" cy="10" r="6" fill="#0D1321" opacity="0.15"/>
+  <!-- Additional dim stars -->
+  <g fill="#FFFFFF" opacity="0.5">
+    <circle cx="22" cy="18" r="0.6"/>
+    <circle cx="52" cy="6" r="0.5"/>
+    <circle cx="88" cy="22" r="0.6"/>
+    <circle cx="4" cy="32" r="0.5"/>
+    <circle cx="78" cy="38" r="0.5"/>
+    <circle cx="36" cy="48" r="0.6"/>
+    <circle cx="62" cy="4" r="0.5"/>
+    <circle cx="94" cy="44" r="0.5"/>
+    <circle cx="120" cy="28" r="0.6"/>
+  </g>
   
-  <!-- Moon glow -->
-  <circle cx="54" cy="10" r="8" fill="#FFF9C4" opacity="0.15">
-    <animate attributeName="r" values="8;10;8" dur="4s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.15;0.25;0.15" dur="4s" repeatCount="indefinite"/>
+  <!-- Moon with craters and glow animation -->
+  <circle cx="108" cy="20" r="14" fill="url(#moonGlow)" filter="url(#glowFilter)"/>
+  <circle cx="104" cy="18" r="2" fill="#FFF9C4" opacity="0.5"/>
+  <circle cx="110" cy="24" r="1.6" fill="#FFF9C4" opacity="0.4"/>
+  <circle cx="112" cy="16" r="1" fill="#FFF9C4" opacity="0.3"/>
+  <circle cx="106" cy="22" r="0.8" fill="#FFECB3" opacity="0.4"/>
+  <circle cx="114" cy="20" r="1.2" fill="#FFF9C4" opacity="0.35"/>
+  <!-- Moon shadow -->
+  <circle cx="112" cy="22" r="12" fill="#0D1321" opacity="0.12"/>
+  <!-- Moon glow aura animation -->
+  <circle cx="108" cy="20" r="18" fill="#FFF9C4" opacity="0.12">
+    <animate attributeName="r" values="18;22;18" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.12;0.2;0.12" dur="4s" repeatCount="indefinite"/>
   </circle>
   
   <!-- Ground -->
-  <rect x="0" y="54" width="64" height="10" fill="#2E7D32"/>
-  <rect x="0" y="56" width="64" height="8" fill="#1B5E20"/>
+  <rect x="0" y="108" width="128" height="20" fill="#2E7D32"/>
+  <rect x="0" y="112" width="128" height="16" fill="#1B5E20"/>
   
-  <!-- Tower base -->
-  <rect x="16" y="36" width="32" height="24" fill="url(#towerWall)"/>
-  <polygon points="16,36 16,60 12,58 12,38" fill="#37474F"/>
+  <!-- Ground texture -->
+  <ellipse cx="64" cy="118" rx="60" ry="6" fill="#388E3C" opacity="0.3"/>
+  
+  <!-- Tower base with enhanced detail -->
+  <rect x="32" y="72" width="64" height="48" fill="url(#towerWall)" filter="url(#dropShadow)"/>
+  <polygon points="32,72 32,120 24,116 24,76" fill="#37474F"/>
   
   <!-- Tower texture lines -->
-  <line x1="26" y1="36" x2="26" y2="60" stroke="#455A64" stroke-width="0.5"/>
-  <line x1="38" y1="36" x2="38" y2="60" stroke="#455A64" stroke-width="0.5"/>
+  <g stroke="#455A64" stroke-width="1" opacity="0.6">
+    <line x1="52" y1="72" x2="52" y2="120"/>
+    <line x1="76" y1="72" x2="76" y2="120"/>
+    <line x1="32" y1="88" x2="96" y2="88"/>
+    <line x1="32" y1="104" x2="96" y2="104"/>
+  </g>
   
-  <!-- Decorative band -->
-  <rect x="14" y="34" width="36" height="4" fill="#607D8B"/>
-  <rect x="14" y="34" width="36" height="1" fill="#78909C"/>
+  <!-- Decorative band at top -->
+  <rect x="28" y="68" width="72" height="8" fill="#607D8B"/>
+  <rect x="28" y="68" width="72" height="2" fill="#78909C"/>
+  <rect x="28" y="74" width="72" height="1" fill="#455A64"/>
   
-  <!-- Arched windows with light -->
-  <path d="M20,42 L20,50 Q23,53 26,50 L26,42 Q23,39 20,42" fill="#37474F" stroke="#455A64"/>
-  <ellipse cx="23" cy="46" rx="2.5" ry="4" fill="url(#windowLight)">
-    <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
+  <!-- Arched windows with animated light -->
+  <path d="M40,84 L40,100 Q46,106 52,100 L52,84 Q46,78 40,84" fill="#37474F" stroke="#455A64" stroke-width="1"/>
+  <ellipse cx="46" cy="92" rx="5" ry="8" fill="url(#windowLight)">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
   </ellipse>
   
-  <path d="M38,42 L38,50 Q41,53 44,50 L44,42 Q41,39 38,42" fill="#37474F" stroke="#455A64"/>
-  <ellipse cx="41" cy="46" rx="2.5" ry="4" fill="url(#windowLight)">
-    <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite" begin="1.5s"/>
+  <path d="M76,84 L76,100 Q82,106 88,100 L88,84 Q82,78 76,84" fill="#37474F" stroke="#455A64" stroke-width="1"/>
+  <ellipse cx="82" cy="92" rx="5" ry="8" fill="url(#windowLight)">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite" begin="1.5s"/>
   </ellipse>
   
   <!-- Door -->
-  <rect x="28" y="48" width="8" height="12" fill="#263238"/>
-  <rect x="28" y="48" width="8" height="12" fill="none" stroke="#37474F" stroke-width="0.5"/>
-  <circle cx="34" cy="54" r="1" fill="#607D8B"/>
+  <rect x="56" y="96" width="16" height="24" fill="#263238" rx="1"/>
+  <rect x="56" y="96" width="16" height="24" fill="none" stroke="#37474F" stroke-width="1" rx="1"/>
+  <line x1="64" y1="96" x2="64" y2="120" stroke="#455A64" stroke-width="0.5"/>
+  <circle cx="68" cy="108" r="2" fill="#607D8B"/>
+  <circle cx="68" cy="108" r="1.2" fill="#78909C"/>
+  <!-- Door panels -->
+  <rect x="58" y="100" width="5" height="8" fill="none" stroke="#455A64" stroke-width="0.5" rx="0.5"/>
+  <rect x="65" y="100" width="5" height="8" fill="none" stroke="#455A64" stroke-width="0.5" rx="0.5"/>
   
-  <!-- Rotating dome -->
+  <!-- Rotating dome structure -->
   <g>
-    <ellipse cx="32" cy="34" rx="20" ry="14" fill="url(#domeGrad)"/>
+    <ellipse cx="64" cy="68" rx="40" ry="28" fill="url(#domeGrad)"/>
     
-    <!-- Dome panels -->
-    <path d="M14,34 Q18,22 32,20 Q46,22 50,34" fill="none" stroke="#78909C" stroke-width="0.5"/>
-    <line x1="32" y1="20" x2="32" y2="34" stroke="#78909C" stroke-width="0.5"/>
-    <line x1="22" y1="22" x2="22" y2="34" stroke="#78909C" stroke-width="0.3"/>
-    <line x1="42" y1="22" x2="42" y2="34" stroke="#78909C" stroke-width="0.3"/>
+    <!-- Dome panels/ribs -->
+    <path d="M28,68 Q36,44 64,40 Q92,44 100,68" fill="none" stroke="#78909C" stroke-width="1"/>
+    <path d="M36,68 Q44,48 64,40 Q84,48 92,68" fill="none" stroke="#607D8B" stroke-width="0.5"/>
+    <line x1="64" y1="40" x2="64" y2="68" stroke="#78909C" stroke-width="1"/>
+    <line x1="44" y1="44" x2="44" y2="68" stroke="#78909C" stroke-width="0.6"/>
+    <line x1="84" y1="44" x2="84" y2="68" stroke="#78909C" stroke-width="0.6"/>
+    <line x1="36" y1="50" x2="36" y2="68" stroke="#607D8B" stroke-width="0.4"/>
+    <line x1="92" y1="50" x2="92" y2="68" stroke="#607D8B" stroke-width="0.4"/>
+    
+    <!-- Horizontal dome bands -->
+    <ellipse cx="64" cy="52" rx="32" ry="8" fill="none" stroke="#607D8B" stroke-width="0.5"/>
+    <ellipse cx="64" cy="60" rx="36" ry="6" fill="none" stroke="#546E7A" stroke-width="0.4"/>
     
     <!-- Dome opening/slit that rotates -->
     <g>
-      <animateTransform attributeName="transform" type="rotate" values="0 32 34;360 32 34" dur="30s" repeatCount="indefinite"/>
-      <rect x="30" y="20" width="4" height="16" fill="#1A237E"/>
-      <rect x="30" y="20" width="4" height="16" fill="none" stroke="#37474F" stroke-width="0.5"/>
+      <animateTransform attributeName="transform" type="rotate" values="0 64 68;360 64 68" dur="45s" repeatCount="indefinite"/>
+      <rect x="60" y="40" width="8" height="32" fill="#1A237E"/>
+      <rect x="60" y="40" width="8" height="32" fill="none" stroke="#37474F" stroke-width="1"/>
+      <!-- Slit edge detail -->
+      <line x1="60" y1="40" x2="60" y2="72" stroke="#455A64" stroke-width="0.5"/>
+      <line x1="68" y1="40" x2="68" y2="72" stroke="#455A64" stroke-width="0.5"/>
     </g>
     
     <!-- Dome highlight -->
-    <ellipse cx="26" cy="26" rx="8" ry="5" fill="#90A4AE" opacity="0.4"/>
+    <ellipse cx="52" cy="52" rx="16" ry="10" fill="#90A4AE" opacity="0.4"/>
+    <ellipse cx="48" cy="48" rx="8" ry="5" fill="#B0BEC5" opacity="0.3"/>
   </g>
   
-  <!-- Telescope extending from dome -->
+  <!-- Dome top finial -->
+  <circle cx="64" cy="40" r="4" fill="#78909C"/>
+  <circle cx="64" cy="40" r="2.5" fill="#90A4AE"/>
+  <ellipse cx="62.5" cy="38.5" rx="1" ry="0.8" fill="#B0BEC5"/>
+  
+  <!-- Telescope extending from dome with swing animation -->
   <g>
-    <animateTransform attributeName="transform" type="rotate" values="-25 32 32;15 32 32;-25 32 32" dur="10s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="rotate" values="-30 64 64;20 64 64;-30 64 64" dur="12s" repeatCount="indefinite"/>
     
     <!-- Telescope body -->
-    <rect x="29" y="6" width="6" height="26" fill="url(#telescopeGrad)" rx="1"/>
-    <rect x="28" y="28" width="8" height="4" fill="#607D8B" rx="1"/>
+    <rect x="58" y="12" width="12" height="52" fill="url(#telescopeGrad)" rx="2"/>
+    <rect x="56" y="56" width="16" height="8" fill="#607D8B" rx="2"/>
     
     <!-- Telescope rings -->
-    <rect x="28" y="12" width="8" height="2" fill="#78909C"/>
-    <rect x="28" y="20" width="8" height="2" fill="#78909C"/>
+    <rect x="56" y="24" width="16" height="4" fill="url(#brassRing)" rx="1"/>
+    <rect x="56" y="40" width="16" height="4" fill="url(#brassRing)" rx="1"/>
+    <rect x="57" y="32" width="14" height="2" fill="#78909C"/>
+    <rect x="57" y="48" width="14" height="2" fill="#78909C"/>
     
     <!-- Lens housing -->
-    <ellipse cx="32" cy="6" rx="4" ry="2.5" fill="#455A64"/>
-    <ellipse cx="32" cy="6" rx="3" ry="2" fill="url(#lensGlow)"/>
+    <ellipse cx="64" cy="12" rx="8" ry="5" fill="#455A64"/>
+    <ellipse cx="64" cy="12" rx="6" ry="4" fill="url(#lensGlow)"/>
+    <ellipse cx="64" cy="12" rx="4" ry="3" fill="#B3E5FC"/>
     
     <!-- Lens glint animation -->
-    <ellipse cx="32" cy="6" rx="2" ry="1.5" fill="#B3E5FC" opacity="0.6">
+    <ellipse cx="64" cy="12" rx="3" ry="2.5" fill="#E1F5FE" opacity="0.7">
       <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2s" repeatCount="indefinite"/>
     </ellipse>
+    <ellipse cx="62" cy="10" rx="1.5" ry="1" fill="#FFFFFF" opacity="0.8"/>
+    
+    <!-- Focus knobs -->
+    <circle cx="54" cy="36" r="3" fill="#546E7A"/>
+    <circle cx="54" cy="36" r="2" fill="#607D8B"/>
+    <circle cx="74" cy="36" r="3" fill="#546E7A"/>
+    <circle cx="74" cy="36" r="2" fill="#607D8B"/>
     
     <!-- Light beam from telescope -->
-    <polygon points="32,6 20,-10 44,-10" fill="#4FC3F7" opacity="0.1">
-      <animate attributeName="opacity" values="0.05;0.15;0.05" dur="3s" repeatCount="indefinite"/>
+    <polygon points="64,12 40,-20 88,-20" fill="#4FC3F7" opacity="0.08">
+      <animate attributeName="opacity" values="0.04;0.12;0.04" dur="3s" repeatCount="indefinite"/>
     </polygon>
   </g>
   
-  <!-- Shooting star animation -->
+  <!-- Multiple shooting star animations -->
   <g>
-    <line x1="5" y1="5" x2="10" y2="10" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round">
-      <animate attributeName="x1" values="5;25" dur="2s" repeatCount="indefinite" begin="5s"/>
-      <animate attributeName="y1" values="5;15" dur="2s" repeatCount="indefinite" begin="5s"/>
-      <animate attributeName="x2" values="10;30" dur="2s" repeatCount="indefinite" begin="5s"/>
-      <animate attributeName="y2" values="10;20" dur="2s" repeatCount="indefinite" begin="5s"/>
-      <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="5s"/>
+    <line x1="10" y1="10" x2="18" y2="18" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round">
+      <animate attributeName="x1" values="10;50" dur="1.5s" repeatCount="indefinite" begin="3s"/>
+      <animate attributeName="y1" values="10;30" dur="1.5s" repeatCount="indefinite" begin="3s"/>
+      <animate attributeName="x2" values="18;58" dur="1.5s" repeatCount="indefinite" begin="3s"/>
+      <animate attributeName="y2" values="18;38" dur="1.5s" repeatCount="indefinite" begin="3s"/>
+      <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite" begin="3s"/>
+    </line>
+    <circle cx="10" cy="10" r="2" fill="#FFFFFF">
+      <animate attributeName="cx" values="10;50" dur="1.5s" repeatCount="indefinite" begin="3s"/>
+      <animate attributeName="cy" values="10;30" dur="1.5s" repeatCount="indefinite" begin="3s"/>
+      <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite" begin="3s"/>
+    </circle>
+  </g>
+  
+  <!-- Second shooting star -->
+  <g>
+    <line x1="90" y1="5" x2="96" y2="11" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round">
+      <animate attributeName="x1" values="90;110" dur="1.2s" repeatCount="indefinite" begin="8s"/>
+      <animate attributeName="y1" values="5;20" dur="1.2s" repeatCount="indefinite" begin="8s"/>
+      <animate attributeName="x2" values="96;116" dur="1.2s" repeatCount="indefinite" begin="8s"/>
+      <animate attributeName="y2" values="11;26" dur="1.2s" repeatCount="indefinite" begin="8s"/>
+      <animate attributeName="opacity" values="0;0.8;0" dur="1.2s" repeatCount="indefinite" begin="8s"/>
     </line>
   </g>
   
-  <!-- Grass tufts -->
-  <path d="M5,60 Q6,56 7,60 Q8,55 9,60" stroke="#4CAF50" fill="none" stroke-width="0.5"/>
-  <path d="M55,60 Q56,57 57,60 Q58,56 59,60" stroke="#4CAF50" fill="none" stroke-width="0.5"/>
+  <!-- Grass tufts with gentle sway -->
+  <g>
+    <path d="M10,120 Q12,112 14,120 Q16,110 18,120" stroke="#4CAF50" fill="none" stroke-width="1">
+      <animate attributeName="d" values="M10,120 Q12,112 14,120 Q16,110 18,120;M10,120 Q13,112 14,120 Q17,110 18,120;M10,120 Q12,112 14,120 Q16,110 18,120" dur="3s" repeatCount="indefinite"/>
+    </path>
+    <path d="M110,120 Q112,114 114,120 Q116,112 118,120" stroke="#4CAF50" fill="none" stroke-width="1">
+      <animate attributeName="d" values="M110,120 Q112,114 114,120 Q116,112 118,120;M110,120 Q113,114 114,120 Q117,112 118,120;M110,120 Q112,114 114,120 Q116,112 118,120" dur="2.5s" repeatCount="indefinite"/>
+    </path>
+    <path d="M22,122 Q24,116 26,122 Q28,114 30,122" stroke="#388E3C" fill="none" stroke-width="0.8"/>
+    <path d="M98,122 Q100,117 102,122 Q104,115 106,122" stroke="#388E3C" fill="none" stroke-width="0.8"/>
+  </g>
+  
+  <!-- Small bushes -->
+  <ellipse cx="15" cy="118" rx="8" ry="4" fill="#2E7D32"/>
+  <ellipse cx="113" cy="118" rx="6" ry="3" fill="#2E7D32"/>
+  
+  <!-- Fireflies near grass -->
+  <circle cx="20" cy="105" r="1" fill="#FFEB3B">
+    <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="105;100;105" dur="4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="108" cy="102" r="0.8" fill="#FFEB3B">
+    <animate attributeName="opacity" values="0;0.8;0" dur="1.8s" repeatCount="indefinite" begin="1s"/>
+    <animate attributeName="cy" values="102;98;102" dur="3.5s" repeatCount="indefinite" begin="1s"/>
+  </circle>
 </svg>

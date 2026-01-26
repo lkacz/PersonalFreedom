@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Goldmine with sparkling gold animation - High Quality Version -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Goldmine with sparkling gold animation - High Quality 128x128 Version -->
   <defs>
     <linearGradient id="mountainRock" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#8D6E63"/>
@@ -31,85 +31,113 @@
       <stop offset="0%" style="stop-color:#FFD54F" stop-opacity="0.6"/>
       <stop offset="100%" style="stop-color:#FFD54F" stop-opacity="0"/>
     </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+    </filter>
   </defs>
   
+  <!-- Background sky -->
+  <rect x="0" y="0" width="128" height="50" fill="#87CEEB" opacity="0.3"/>
+  
   <!-- Mountain base -->
-  <polygon points="32,6 60,58 4,58" fill="url(#mountainRock)"/>
-  <polygon points="32,6 32,58 4,58" fill="#5D4037"/>
+  <polygon points="64,12 120,116 8,116" fill="url(#mountainRock)"/>
+  <polygon points="64,12 64,116 8,116" fill="#5D4037"/>
   
   <!-- Snow cap -->
-  <polygon points="32,6 38,16 26,16" fill="#ECEFF1"/>
-  <polygon points="28,14 36,14 40,22 24,22" fill="#CFD8DC" opacity="0.6"/>
+  <polygon points="64,12 76,32 52,32" fill="#ECEFF1"/>
+  <polygon points="56,28 72,28 80,44 48,44" fill="#CFD8DC" opacity="0.6"/>
   
   <!-- Rock texture lines -->
-  <line x1="20" y1="30" x2="28" y2="26" stroke="#4E342E" stroke-width="0.5" opacity="0.5"/>
-  <line x1="36" y1="28" x2="46" y2="34" stroke="#4E342E" stroke-width="0.5" opacity="0.5"/>
-  <line x1="14" y1="44" x2="24" y2="40" stroke="#4E342E" stroke-width="0.5" opacity="0.5"/>
+  <line x1="40" y1="60" x2="56" y2="52" stroke="#4E342E" stroke-width="1" opacity="0.5"/>
+  <line x1="72" y1="56" x2="92" y2="68" stroke="#4E342E" stroke-width="1" opacity="0.5"/>
+  <line x1="28" y1="88" x2="48" y2="80" stroke="#4E342E" stroke-width="1" opacity="0.5"/>
+  <line x1="76" y1="80" x2="96" y2="88" stroke="#4E342E" stroke-width="1" opacity="0.4"/>
+  <line x1="32" y1="72" x2="40" y2="68" stroke="#4E342E" stroke-width="0.8" opacity="0.4"/>
   
   <!-- Mine entrance cave -->
-  <ellipse cx="32" cy="50" rx="12" ry="10" fill="url(#caveDepth)"/>
+  <ellipse cx="64" cy="100" rx="24" ry="20" fill="url(#caveDepth)"/>
   
   <!-- Wooden support beams -->
-  <rect x="19" y="38" width="4" height="22" fill="url(#woodBeam)" rx="1"/>
-  <rect x="41" y="38" width="4" height="22" fill="url(#woodBeam)" rx="1"/>
-  <rect x="17" y="36" width="30" height="4" fill="#5D4037" rx="1"/>
-  <line x1="17" y1="37" x2="47" y2="37" stroke="#8D6E63" stroke-width="0.5"/>
+  <rect x="38" y="76" width="8" height="44" fill="url(#woodBeam)" rx="2"/>
+  <rect x="82" y="76" width="8" height="44" fill="url(#woodBeam)" rx="2"/>
+  <rect x="34" y="72" width="60" height="8" fill="#5D4037" rx="2"/>
+  <line x1="34" y1="74" x2="94" y2="74" stroke="#8D6E63" stroke-width="1"/>
+  
+  <!-- Support beam nails -->
+  <circle cx="40" cy="76" r="1.5" fill="#424242"/>
+  <circle cx="88" cy="76" r="1.5" fill="#424242"/>
   
   <!-- Animated gold pile with glow -->
-  <circle cx="32" cy="56" r="10" fill="url(#goldGlow)">
-    <animate attributeName="r" values="10;12;10" dur="2s" repeatCount="indefinite"/>
+  <circle cx="64" cy="112" r="20" fill="url(#goldGlow)" filter="url(#glow)">
+    <animate attributeName="r" values="20;24;20" dur="2s" repeatCount="indefinite"/>
   </circle>
   
   <!-- Gold nuggets with sparkle animation -->
-  <ellipse cx="32" cy="56" rx="10" ry="4" fill="url(#goldNugget)">
+  <ellipse cx="64" cy="112" rx="20" ry="8" fill="url(#goldNugget)">
     <animate attributeName="opacity" values="1;0.85;1" dur="1.5s" repeatCount="indefinite"/>
   </ellipse>
-  <ellipse cx="28" cy="54" rx="4" ry="3" fill="url(#goldShine)">
+  <ellipse cx="56" cy="108" rx="8" ry="6" fill="url(#goldShine)">
     <animate attributeName="opacity" values="0.9;1;0.9" dur="1.2s" repeatCount="indefinite"/>
   </ellipse>
-  <ellipse cx="36" cy="53" rx="3" ry="2.5" fill="url(#goldShine)">
+  <ellipse cx="72" cy="106" rx="6" ry="5" fill="url(#goldShine)">
     <animate attributeName="opacity" values="0.8;1;0.8" dur="1.8s" repeatCount="indefinite"/>
   </ellipse>
-  <circle cx="32" cy="52" r="2" fill="#FFE082">
+  <circle cx="64" cy="104" r="4" fill="#FFE082">
     <animate attributeName="opacity" values="0.7;1;0.7" dur="1.3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="52" cy="110" r="5" fill="url(#goldNugget)">
+    <animate attributeName="opacity" values="0.85;1;0.85" dur="1.4s" repeatCount="indefinite" begin="0.2s"/>
+  </circle>
+  <circle cx="76" cy="110" r="4.5" fill="url(#goldNugget)">
+    <animate attributeName="opacity" values="0.9;1;0.9" dur="1.6s" repeatCount="indefinite" begin="0.4s"/>
   </circle>
   
   <!-- Rail tracks -->
-  <rect x="26" y="58" width="12" height="2" fill="#424242"/>
-  <rect x="27" y="57" width="2" height="1" fill="#616161"/>
-  <rect x="31" y="57" width="2" height="1" fill="#616161"/>
-  <rect x="35" y="57" width="2" height="1" fill="#616161"/>
+  <rect x="52" y="116" width="24" height="4" fill="#424242"/>
+  <rect x="54" y="114" width="4" height="2" fill="#616161"/>
+  <rect x="62" y="114" width="4" height="2" fill="#616161"/>
+  <rect x="70" y="114" width="4" height="2" fill="#616161"/>
   
-  <!-- Minecart -->
-  <polygon points="48,50 56,50 58,56 46,56" fill="#5D4037"/>
-  <polygon points="48,50 56,50 54,54 50,54" fill="#6D4C41"/>
-  <circle cx="49" cy="57" r="2" fill="#424242"/>
-  <circle cx="55" cy="57" r="2" fill="#424242"/>
-  <ellipse cx="52" cy="48" rx="3" ry="2" fill="url(#goldNugget)"/>
+  <!-- Minecart with animation -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;2,0;0,0" dur="0.5s" repeatCount="indefinite"/>
+    <polygon points="96,100 112,100 116,112 92,112" fill="#5D4037"/>
+    <polygon points="96,100 112,100 108,108 100,108" fill="#6D4C41"/>
+    <circle cx="98" cy="114" r="4" fill="#424242"/>
+    <circle cx="110" cy="114" r="4" fill="#424242"/>
+    <ellipse cx="104" cy="96" rx="6" ry="4" fill="url(#goldNugget)"/>
+  </g>
   
   <!-- Pickaxe -->
-  <line x1="10" y1="24" x2="18" y2="36" stroke="#6D4C41" stroke-width="2.5" stroke-linecap="round"/>
-  <polygon points="8,22 12,18 18,24 14,28" fill="#78909C"/>
-  <polygon points="8,22 12,18 10,20" fill="#90A4AE"/>
+  <line x1="20" y1="48" x2="36" y2="72" stroke="#6D4C41" stroke-width="5" stroke-linecap="round"/>
+  <polygon points="16,44 24,36 36,48 28,56" fill="#78909C"/>
+  <polygon points="16,44 24,36 20,40" fill="#90A4AE"/>
   
-  <!-- Lantern -->
-  <rect x="22" y="42" width="3" height="4" fill="#FF8F00"/>
-  <rect x="21.5" y="41" width="4" height="1.5" fill="#5D4037"/>
-  <line x1="23.5" y1="41" x2="23.5" y2="39" stroke="#5D4037" stroke-width="0.5"/>
-  <circle cx="23.5" cy="44" r="3" fill="url(#goldGlow)">
+  <!-- Lantern with animated glow -->
+  <rect x="44" y="84" width="6" height="8" fill="#FF8F00"/>
+  <rect x="43" y="82" width="8" height="3" fill="#5D4037"/>
+  <line x1="47" y1="82" x2="47" y2="78" stroke="#5D4037" stroke-width="1"/>
+  <circle cx="47" cy="88" r="6" fill="url(#goldGlow)">
     <animate attributeName="opacity" values="0.6;1;0.6" dur="1s" repeatCount="indefinite"/>
   </circle>
   
-  <!-- Sparkle stars -->
+  <!-- Sparkle stars - larger and more visible -->
   <g fill="#FFFFFF">
-    <polygon points="30,48 31,50 33,50 31.5,51.5 32,54 30,52.5 28,54 28.5,51.5 27,50 29,50">
+    <polygon points="60,96 62,100 66,100 63,103 64,108 60,105 56,108 57,103 54,100 58,100">
       <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
     </polygon>
-    <polygon points="38,50 39,52 41,52 39.5,53.5 40,56 38,54.5 36,56 36.5,53.5 35,52 37,52">
+    <polygon points="76,100 78,104 82,104 79,107 80,112 76,109 72,112 73,107 70,104 74,104">
       <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
     </polygon>
-    <polygon points="26,52 26.5,53 28,53 27,54 27.5,55.5 26,54.5 24.5,55.5 25,54 24,53 25.5,53">
+    <polygon points="52,104 53,106 56,106 54,108 55,111 52,109 49,111 50,108 48,106 51,106">
       <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite" begin="1s"/>
     </polygon>
+    <polygon points="68,94 69,96 71,96 69.5,97.5 70,100 68,98.5 66,100 66.5,97.5 65,96 67,96">
+      <animate attributeName="opacity" values="0;1;0" dur="2.2s" repeatCount="indefinite" begin="0.8s"/>
+    </polygon>
   </g>
+  
+  <!-- Flying birds -->
+  <path d="M100,28 Q102,26 104,28 Q106,26 108,28" stroke="#37474F" stroke-width="1" fill="none" opacity="0.6"/>
+  <path d="M20,20 Q22,18 24,20" stroke="#37474F" stroke-width="1" fill="none" opacity="0.5"/>
 </svg>

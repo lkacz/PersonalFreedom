@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- Forge with flickering flames - High Quality Version -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Forge with flickering flames - High Quality 128x128 Version -->
   <defs>
     <linearGradient id="brickWall" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#8D6E63"/>
@@ -33,124 +33,137 @@
       <stop offset="50%" style="stop-color:#607D8B"/>
       <stop offset="100%" style="stop-color:#455A64"/>
     </linearGradient>
+    <filter id="fireGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4"/>
+    </filter>
   </defs>
   
   <!-- Main building -->
-  <rect x="6" y="26" width="52" height="34" fill="url(#brickWall)"/>
-  <polygon points="6,26 6,60 2,58 2,28" fill="#5D4037"/>
+  <rect x="12" y="52" width="104" height="68" fill="url(#brickWall)"/>
+  <polygon points="12,52 12,120 4,116 4,56" fill="#5D4037"/>
   
   <!-- Brick pattern -->
-  <g stroke="#6D4C41" stroke-width="0.5" opacity="0.7">
-    <line x1="6" y1="32" x2="58" y2="32"/>
-    <line x1="6" y1="38" x2="58" y2="38"/>
-    <line x1="6" y1="44" x2="58" y2="44"/>
-    <line x1="6" y1="50" x2="58" y2="50"/>
-    <line x1="16" y1="26" x2="16" y2="32"/><line x1="26" y1="26" x2="26" y2="32"/>
-    <line x1="36" y1="26" x2="36" y2="32"/><line x1="46" y1="26" x2="46" y2="32"/>
-    <line x1="11" y1="32" x2="11" y2="38"/><line x1="21" y1="32" x2="21" y2="38"/>
-    <line x1="31" y1="32" x2="31" y2="38"/><line x1="41" y1="32" x2="41" y2="38"/>
+  <g stroke="#6D4C41" stroke-width="1" opacity="0.7">
+    <line x1="12" y1="64" x2="116" y2="64"/>
+    <line x1="12" y1="76" x2="116" y2="76"/>
+    <line x1="12" y1="88" x2="116" y2="88"/>
+    <line x1="12" y1="100" x2="116" y2="100"/>
+    <line x1="32" y1="52" x2="32" y2="64"/><line x1="52" y1="52" x2="52" y2="64"/>
+    <line x1="72" y1="52" x2="72" y2="64"/><line x1="92" y1="52" x2="92" y2="64"/>
+    <line x1="22" y1="64" x2="22" y2="76"/><line x1="42" y1="64" x2="42" y2="76"/>
+    <line x1="62" y1="64" x2="62" y2="76"/><line x1="82" y1="64" x2="82" y2="76"/>
+    <line x1="32" y1="76" x2="32" y2="88"/><line x1="52" y1="76" x2="52" y2="88"/>
+    <line x1="72" y1="76" x2="72" y2="88"/><line x1="92" y1="76" x2="92" y2="88"/>
   </g>
   
   <!-- Roof -->
-  <polygon points="4,26 60,26 56,18 8,18" fill="#5D4037"/>
-  <polygon points="4,26 8,18 8,26" fill="#4E342E"/>
+  <polygon points="8,52 120,52 112,36 16,36" fill="#5D4037"/>
+  <polygon points="8,52 16,36 16,52" fill="#4E342E"/>
   
   <!-- Chimney -->
-  <rect x="46" y="6" width="10" height="16" fill="#4E342E"/>
-  <rect x="44" y="4" width="14" height="4" fill="#3E2723"/>
-  <rect x="44" y="4" width="14" height="1" fill="#5D4037"/>
+  <rect x="92" y="12" width="20" height="32" fill="#4E342E"/>
+  <rect x="88" y="8" width="28" height="8" fill="#3E2723"/>
+  <rect x="88" y="8" width="28" height="2" fill="#5D4037"/>
   
   <!-- Animated smoke -->
   <g fill="#9E9E9E">
-    <ellipse cx="51" cy="2" rx="4" ry="2">
-      <animate attributeName="cy" values="2;-12" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="rx" values="4;6" dur="3s" repeatCount="indefinite"/>
+    <ellipse cx="102" cy="4" rx="8" ry="4">
+      <animate attributeName="cy" values="4;-24" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="rx" values="8;12" dur="3s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.5;0" dur="3s" repeatCount="indefinite"/>
     </ellipse>
-    <ellipse cx="49" cy="4" rx="3" ry="1.5">
-      <animate attributeName="cy" values="4;-10" dur="2.5s" repeatCount="indefinite" begin="0.8s"/>
-      <animate attributeName="rx" values="3;5" dur="2.5s" repeatCount="indefinite" begin="0.8s"/>
+    <ellipse cx="98" cy="8" rx="6" ry="3">
+      <animate attributeName="cy" values="8;-20" dur="2.5s" repeatCount="indefinite" begin="0.8s"/>
+      <animate attributeName="rx" values="6;10" dur="2.5s" repeatCount="indefinite" begin="0.8s"/>
       <animate attributeName="opacity" values="0.4;0" dur="2.5s" repeatCount="indefinite" begin="0.8s"/>
     </ellipse>
-    <ellipse cx="53" cy="3" rx="2.5" ry="1.2">
-      <animate attributeName="cy" values="3;-8" dur="2.8s" repeatCount="indefinite" begin="1.5s"/>
+    <ellipse cx="106" cy="6" rx="5" ry="2.4">
+      <animate attributeName="cy" values="6;-16" dur="2.8s" repeatCount="indefinite" begin="1.5s"/>
       <animate attributeName="opacity" values="0.45;0" dur="2.8s" repeatCount="indefinite" begin="1.5s"/>
     </ellipse>
   </g>
   
   <!-- Forge opening with animated glow -->
-  <rect x="12" y="34" width="22" height="20" fill="#1A1A1A" rx="2"/>
-  <rect x="10" y="32" width="26" height="4" fill="#3E2723"/>
+  <rect x="24" y="68" width="44" height="40" fill="#1A1A1A" rx="4"/>
+  <rect x="20" y="64" width="52" height="8" fill="#3E2723"/>
   
   <!-- Animated forge glow -->
-  <ellipse cx="23" cy="48" rx="14" ry="10" fill="url(#forgeGlow)">
+  <ellipse cx="46" cy="96" rx="28" ry="20" fill="url(#forgeGlow)" filter="url(#fireGlow)">
     <animate attributeName="opacity" values="0.5;0.8;0.5" dur="0.5s" repeatCount="indefinite"/>
   </ellipse>
   
   <!-- Layered animated flames -->
   <g>
     <!-- Outer flames -->
-    <ellipse cx="16" cy="50" rx="3" ry="8" fill="url(#flameOuter)">
-      <animate attributeName="ry" values="8;10;7;9;8" dur="0.4s" repeatCount="indefinite"/>
+    <ellipse cx="32" cy="100" rx="6" ry="16" fill="url(#flameOuter)">
+      <animate attributeName="ry" values="16;20;14;18;16" dur="0.4s" repeatCount="indefinite"/>
     </ellipse>
-    <ellipse cx="23" cy="48" rx="4" ry="12" fill="url(#flameOuter)">
-      <animate attributeName="ry" values="12;10;14;11;12" dur="0.35s" repeatCount="indefinite"/>
+    <ellipse cx="46" cy="96" rx="8" ry="24" fill="url(#flameOuter)">
+      <animate attributeName="ry" values="24;20;28;22;24" dur="0.35s" repeatCount="indefinite"/>
     </ellipse>
-    <ellipse cx="30" cy="50" rx="3" ry="8" fill="url(#flameOuter)">
-      <animate attributeName="ry" values="7;9;8;10;7" dur="0.45s" repeatCount="indefinite"/>
+    <ellipse cx="60" cy="100" rx="6" ry="16" fill="url(#flameOuter)">
+      <animate attributeName="ry" values="14;18;16;20;14" dur="0.45s" repeatCount="indefinite"/>
     </ellipse>
     <!-- Inner flames (brighter) -->
-    <ellipse cx="18" cy="52" rx="2" ry="5" fill="url(#flameCore)">
-      <animate attributeName="ry" values="5;7;4;6;5" dur="0.3s" repeatCount="indefinite"/>
+    <ellipse cx="36" cy="104" rx="4" ry="10" fill="url(#flameCore)">
+      <animate attributeName="ry" values="10;14;8;12;10" dur="0.3s" repeatCount="indefinite"/>
     </ellipse>
-    <ellipse cx="23" cy="50" rx="3" ry="8" fill="url(#flameCore)">
-      <animate attributeName="ry" values="8;6;9;7;8" dur="0.25s" repeatCount="indefinite"/>
+    <ellipse cx="46" cy="100" rx="6" ry="16" fill="url(#flameCore)">
+      <animate attributeName="ry" values="16;12;18;14;16" dur="0.25s" repeatCount="indefinite"/>
     </ellipse>
-    <ellipse cx="28" cy="52" rx="2" ry="5" fill="url(#flameCore)">
-      <animate attributeName="ry" values="4;6;5;7;4" dur="0.35s" repeatCount="indefinite"/>
+    <ellipse cx="56" cy="104" rx="4" ry="10" fill="url(#flameCore)">
+      <animate attributeName="ry" values="8;12;10;14;8" dur="0.35s" repeatCount="indefinite"/>
     </ellipse>
   </g>
   
   <!-- Anvil -->
-  <polygon points="40,52 56,52 58,46 54,46 54,42 42,42 42,46 38,46" fill="url(#anvilMetal)"/>
-  <polygon points="54,42 56,42 56,46 54,46" fill="#757575"/>
-  <line x1="42" y1="44" x2="54" y2="44" stroke="#757575" stroke-width="0.5"/>
-  <polygon points="56,52 58,46 56,46" fill="#757575"/>
+  <polygon points="80,104 112,104 116,92 108,92 108,84 84,84 84,92 76,92" fill="url(#anvilMetal)"/>
+  <polygon points="108,84 112,84 112,92 108,92" fill="#757575"/>
+  <line x1="84" y1="88" x2="108" y2="88" stroke="#757575" stroke-width="1"/>
+  <polygon points="112,104 116,92 112,92" fill="#757575"/>
   
   <!-- Animated hammer -->
   <g>
-    <animateTransform attributeName="transform" type="rotate" values="0 52 38;-25 52 38;0 52 38" dur="0.6s" repeatCount="indefinite"/>
-    <rect x="50" y="28" width="4" height="14" fill="#6D4C41" rx="1"/>
-    <rect x="48" y="24" width="8" height="6" fill="url(#hammerSteel)" rx="1"/>
-    <line x1="48" y1="27" x2="56" y2="27" stroke="#90A4AE" stroke-width="0.5"/>
+    <animateTransform attributeName="transform" type="rotate" values="0 104 76;-25 104 76;0 104 76" dur="0.6s" repeatCount="indefinite"/>
+    <rect x="100" y="56" width="8" height="28" fill="#6D4C41" rx="2"/>
+    <rect x="96" y="48" width="16" height="12" fill="url(#hammerSteel)" rx="2"/>
+    <line x1="96" y1="54" x2="112" y2="54" stroke="#90A4AE" stroke-width="1"/>
   </g>
   
   <!-- Sparks -->
   <g fill="#FFEB3B">
-    <circle cx="48" cy="40" r="1">
-      <animate attributeName="cy" values="40;35" dur="0.5s" repeatCount="indefinite"/>
+    <circle cx="96" cy="80" r="2">
+      <animate attributeName="cy" values="80;70" dur="0.5s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="1;0" dur="0.5s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="52" cy="42" r="0.8">
-      <animate attributeName="cy" values="42;36" dur="0.4s" repeatCount="indefinite" begin="0.2s"/>
-      <animate attributeName="cx" values="52;56" dur="0.4s" repeatCount="indefinite" begin="0.2s"/>
+    <circle cx="104" cy="84" r="1.6">
+      <animate attributeName="cy" values="84;72" dur="0.4s" repeatCount="indefinite" begin="0.2s"/>
+      <animate attributeName="cx" values="104;112" dur="0.4s" repeatCount="indefinite" begin="0.2s"/>
       <animate attributeName="opacity" values="1;0" dur="0.4s" repeatCount="indefinite" begin="0.2s"/>
     </circle>
-    <circle cx="50" cy="41" r="0.6">
-      <animate attributeName="cy" values="41;34" dur="0.45s" repeatCount="indefinite" begin="0.1s"/>
-      <animate attributeName="cx" values="50;46" dur="0.45s" repeatCount="indefinite" begin="0.1s"/>
+    <circle cx="100" cy="82" r="1.2">
+      <animate attributeName="cy" values="82;68" dur="0.45s" repeatCount="indefinite" begin="0.1s"/>
+      <animate attributeName="cx" values="100;92" dur="0.45s" repeatCount="indefinite" begin="0.1s"/>
       <animate attributeName="opacity" values="1;0" dur="0.45s" repeatCount="indefinite" begin="0.1s"/>
+    </circle>
+    <circle cx="98" cy="78" r="1">
+      <animate attributeName="cy" values="78;66" dur="0.5s" repeatCount="indefinite" begin="0.3s"/>
+      <animate attributeName="cx" values="98;102" dur="0.5s" repeatCount="indefinite" begin="0.3s"/>
+      <animate attributeName="opacity" values="1;0" dur="0.5s" repeatCount="indefinite" begin="0.3s"/>
     </circle>
   </g>
   
   <!-- Bellows -->
-  <ellipse cx="8" cy="50" rx="5" ry="6" fill="#795548">
-    <animate attributeName="rx" values="5;4;5" dur="1s" repeatCount="indefinite"/>
+  <ellipse cx="16" cy="100" rx="10" ry="12" fill="#795548">
+    <animate attributeName="rx" values="10;8;10" dur="1s" repeatCount="indefinite"/>
   </ellipse>
-  <rect x="8" y="46" width="6" height="2" fill="#5D4037"/>
+  <rect x="16" y="92" width="12" height="4" fill="#5D4037"/>
   
   <!-- Tool rack -->
-  <rect x="36" y="26" width="2" height="8" fill="#5D4037"/>
-  <line x1="35" y1="28" x2="40" y2="28" stroke="#757575" stroke-width="1"/>
-  <line x1="35" y1="31" x2="40" y2="31" stroke="#607D8B" stroke-width="1"/>
+  <rect x="72" y="52" width="4" height="16" fill="#5D4037"/>
+  <line x1="70" y1="56" x2="80" y2="56" stroke="#757575" stroke-width="2"/>
+  <line x1="70" y1="62" x2="80" y2="62" stroke="#607D8B" stroke-width="2"/>
+  
+  <!-- Ground shadow -->
+  <ellipse cx="64" cy="122" rx="50" ry="4" fill="#3E2723" opacity="0.3"/>
 </svg>

@@ -1,46 +1,204 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Silhouette mask template for showing locked/unknown buildings -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Silhouette mask template for showing locked/unknown buildings - 128x128 Enhanced -->
   
-  <!-- Base silhouette shape (generic building) -->
   <defs>
+    <!-- Building mask -->
     <mask id="buildingMask">
-      <rect x="0" y="0" width="64" height="64" fill="white"/>
+      <rect x="0" y="0" width="128" height="128" fill="white"/>
     </mask>
+    
+    <!-- Mystery gradient background -->
+    <radialGradient id="mysteryBg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" style="stop-color:#37474F"/>
+      <stop offset="50%" style="stop-color:#2C3E50"/>
+      <stop offset="100%" style="stop-color:#1A1A1A"/>
+    </radialGradient>
+    
+    <!-- Silhouette gradient -->
+    <linearGradient id="silhouetteGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#455A64"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    
+    <!-- Question mark glow -->
+    <radialGradient id="questionGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#78909C"/>
+      <stop offset="70%" style="stop-color:#546E7A"/>
+      <stop offset="100%" style="stop-color:#455A64"/>
+    </radialGradient>
+    
+    <!-- Scan line pattern -->
+    <pattern id="scanLines" patternUnits="userSpaceOnUse" width="4" height="4">
+      <line x1="0" y1="0" x2="4" y2="0" stroke="#546E7A" stroke-width="0.5" opacity="0.15"/>
+      <line x1="0" y1="2" x2="4" y2="2" stroke="#37474F" stroke-width="0.5" opacity="0.1"/>
+    </pattern>
+    
+    <!-- Static noise pattern -->
+    <filter id="noiseFilter" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" result="noise"/>
+      <feColorMatrix type="saturate" values="0" in="noise" result="monoNoise"/>
+      <feBlend in="SourceGraphic" in2="monoNoise" mode="overlay"/>
+    </filter>
+    
+    <!-- Glow filter -->
+    <filter id="glowQuestion" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Pulsing animation keyframes -->
+    <animate id="pulseAnim" attributeName="opacity" values="0.5;0.8;0.5" dur="2s" repeatCount="indefinite"/>
   </defs>
   
-  <!-- Dark silhouette background -->
-  <rect x="0" y="0" width="64" height="64" fill="#263238"/>
+  <!-- Dark mystery background -->
+  <rect x="0" y="0" width="128" height="128" fill="url(#mysteryBg)"/>
   
-  <!-- Generic building silhouette -->
-  <g fill="#37474F">
+  <!-- Subtle vignette corners -->
+  <rect x="0" y="0" width="128" height="128" fill="none" stroke="#0D1321" stroke-width="24" opacity="0.4"/>
+  
+  <!-- Generic building silhouette - more detailed -->
+  <g fill="url(#silhouetteGrad)">
     <!-- Main building body -->
-    <rect x="12" y="28" width="40" height="28"/>
+    <rect x="24" y="56" width="80" height="56"/>
     
-    <!-- Roof -->
-    <polygon points="12,28 32,12 52,28"/>
+    <!-- Left wing -->
+    <rect x="16" y="72" width="16" height="40"/>
     
-    <!-- Windows (darker) -->
-    <rect x="18" y="34" width="8" height="8" fill="#1A1A1A"/>
-    <rect x="38" y="34" width="8" height="8" fill="#1A1A1A"/>
+    <!-- Right wing -->
+    <rect x="96" y="72" width="16" height="40"/>
     
-    <!-- Door -->
-    <rect x="27" y="40" width="10" height="16" fill="#1A1A1A"/>
+    <!-- Main roof -->
+    <polygon points="24,56 64,24 104,56"/>
+    
+    <!-- Roof detail - chimney -->
+    <rect x="84" y="32" width="12" height="20"/>
+    
+    <!-- Dormer window on roof -->
+    <polygon points="50,48 64,36 78,48"/>
+    <rect x="54" y="48" width="20" height="8"/>
+    
+    <!-- Left wing roof -->
+    <polygon points="16,72 24,64 32,72"/>
+    
+    <!-- Right wing roof -->
+    <polygon points="96,72 104,64 112,72"/>
   </g>
   
-  <!-- Question mark overlay -->
-  <g fill="#546E7A">
-    <circle cx="32" cy="24" r="10"/>
-    <text x="32" y="28" text-anchor="middle" font-size="14" fill="#ECEFF1" font-weight="bold">?</text>
+  <!-- Windows (darker - mysterious) -->
+  <g fill="#1A1A1A">
+    <!-- Main floor windows -->
+    <rect x="32" y="64" width="14" height="18"/>
+    <rect x="82" y="64" width="14" height="18"/>
+    
+    <!-- Upper windows -->
+    <rect x="32" y="86" width="14" height="12"/>
+    <rect x="57" y="86" width="14" height="12"/>
+    <rect x="82" y="86" width="14" height="12"/>
+    
+    <!-- Dormer window -->
+    <rect x="58" y="50" width="12" height="6"/>
+    
+    <!-- Side wing windows -->
+    <rect x="20" y="80" width="8" height="10"/>
+    <rect x="100" y="80" width="8" height="10"/>
   </g>
   
-  <!-- Subtle scan lines effect for "unknown" feel -->
-  <g stroke="#455A64" stroke-width="0.5" opacity="0.3">
-    <line x1="0" y1="8" x2="64" y2="8"/>
-    <line x1="0" y1="16" x2="64" y2="16"/>
-    <line x1="0" y1="24" x2="64" y2="24"/>
-    <line x1="0" y1="32" x2="64" y2="32"/>
-    <line x1="0" y1="40" x2="64" y2="40"/>
-    <line x1="0" y1="48" x2="64" y2="48"/>
-    <line x1="0" y1="56" x2="64" y2="56"/>
+  <!-- Door silhouette -->
+  <rect x="54" y="88" width="20" height="24" fill="#0D1321"/>
+  <rect x="54" y="88" width="20" height="4" fill="#1A1A1A"/>
+  
+  <!-- Mysterious question mark circle with glow -->
+  <g filter="url(#glowQuestion)">
+    <circle cx="64" cy="44" r="22" fill="url(#questionGlow)" opacity="0.9">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="64" cy="44" r="18" fill="#455A64"/>
+    <circle cx="64" cy="44" r="14" fill="#37474F"/>
   </g>
+  
+  <!-- Question mark with animation -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,-2;0,0" dur="1.5s" repeatCount="indefinite"/>
+    <text x="64" y="52" text-anchor="middle" font-size="28" fill="#ECEFF1" font-weight="bold" font-family="sans-serif">?</text>
+  </g>
+  
+  <!-- Orbiting mystery particles -->
+  <g>
+    <circle cx="64" cy="44" r="2" fill="#78909C">
+      <animateMotion dur="4s" repeatCount="indefinite" path="M0,0 A28,28 0 1,1 0,0.1"/>
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="64" cy="44" r="1.5" fill="#90A4AE">
+      <animateMotion dur="4s" repeatCount="indefinite" begin="1.33s" path="M0,0 A28,28 0 1,1 0,0.1"/>
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite" begin="0.66s"/>
+    </circle>
+    <circle cx="64" cy="44" r="1" fill="#B0BEC5">
+      <animateMotion dur="4s" repeatCount="indefinite" begin="2.66s" path="M0,0 A28,28 0 1,1 0,0.1"/>
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite" begin="1.33s"/>
+    </circle>
+  </g>
+  
+  <!-- Scan lines overlay for CRT/mystery effect -->
+  <g stroke="#455A64" stroke-width="1" opacity="0.2">
+    <line x1="0" y1="8" x2="128" y2="8"/>
+    <line x1="0" y1="16" x2="128" y2="16"/>
+    <line x1="0" y1="24" x2="128" y2="24"/>
+    <line x1="0" y1="32" x2="128" y2="32"/>
+    <line x1="0" y1="40" x2="128" y2="40"/>
+    <line x1="0" y1="48" x2="128" y2="48"/>
+    <line x1="0" y1="56" x2="128" y2="56"/>
+    <line x1="0" y1="64" x2="128" y2="64"/>
+    <line x1="0" y1="72" x2="128" y2="72"/>
+    <line x1="0" y1="80" x2="128" y2="80"/>
+    <line x1="0" y1="88" x2="128" y2="88"/>
+    <line x1="0" y1="96" x2="128" y2="96"/>
+    <line x1="0" y1="104" x2="128" y2="104"/>
+    <line x1="0" y1="112" x2="128" y2="112"/>
+    <line x1="0" y1="120" x2="128" y2="120"/>
+  </g>
+  
+  <!-- Additional fine scan lines -->
+  <g stroke="#546E7A" stroke-width="0.5" opacity="0.1">
+    <line x1="0" y1="4" x2="128" y2="4"/>
+    <line x1="0" y1="12" x2="128" y2="12"/>
+    <line x1="0" y1="20" x2="128" y2="20"/>
+    <line x1="0" y1="28" x2="128" y2="28"/>
+    <line x1="0" y1="36" x2="128" y2="36"/>
+    <line x1="0" y1="44" x2="128" y2="44"/>
+    <line x1="0" y1="52" x2="128" y2="52"/>
+    <line x1="0" y1="60" x2="128" y2="60"/>
+    <line x1="0" y1="68" x2="128" y2="68"/>
+    <line x1="0" y1="76" x2="128" y2="76"/>
+    <line x1="0" y1="84" x2="128" y2="84"/>
+    <line x1="0" y1="92" x2="128" y2="92"/>
+    <line x1="0" y1="100" x2="128" y2="100"/>
+    <line x1="0" y1="108" x2="128" y2="108"/>
+    <line x1="0" y1="116" x2="128" y2="116"/>
+    <line x1="0" y1="124" x2="128" y2="124"/>
+  </g>
+  
+  <!-- Flickering static effect corners -->
+  <g opacity="0.15">
+    <rect x="0" y="0" width="20" height="20" fill="#546E7A">
+      <animate attributeName="opacity" values="0.1;0.2;0.05;0.15;0.1" dur="0.3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="108" y="0" width="20" height="20" fill="#546E7A">
+      <animate attributeName="opacity" values="0.15;0.05;0.2;0.1;0.15" dur="0.25s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="0" y="108" width="20" height="20" fill="#546E7A">
+      <animate attributeName="opacity" values="0.05;0.15;0.1;0.2;0.05" dur="0.35s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="108" y="108" width="20" height="20" fill="#546E7A">
+      <animate attributeName="opacity" values="0.2;0.1;0.15;0.05;0.2" dur="0.28s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- Mystery text at bottom -->
+  <rect x="24" y="114" width="80" height="10" rx="2" fill="#263238" opacity="0.8"/>
+  <text x="64" y="122" text-anchor="middle" font-size="8" fill="#78909C" font-family="sans-serif">
+    UNKNOWN
+  </text>
 </svg>

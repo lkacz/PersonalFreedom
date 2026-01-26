@@ -1,37 +1,167 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Locked overlay - for slots that require higher player level -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Locked overlay - for slots that require higher player level - 128x128 Enhanced -->
   
-  <!-- Semi-transparent dark overlay -->
-  <rect x="0" y="0" width="64" height="64" fill="#1A1A1A" opacity="0.7"/>
+  <defs>
+    <!-- Lock body gradient -->
+    <linearGradient id="lockBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#78909C"/>
+      <stop offset="50%" style="stop-color:#607D8B"/>
+      <stop offset="100%" style="stop-color:#455A64"/>
+    </linearGradient>
+    
+    <!-- Lock face gradient -->
+    <linearGradient id="lockFaceGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#546E7A"/>
+      <stop offset="100%" style="stop-color:#37474F"/>
+    </linearGradient>
+    
+    <!-- Shackle gradient -->
+    <linearGradient id="shackleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#607D8B"/>
+      <stop offset="30%" style="stop-color:#90A4AE"/>
+      <stop offset="50%" style="stop-color:#B0BEC5"/>
+      <stop offset="70%" style="stop-color:#90A4AE"/>
+      <stop offset="100%" style="stop-color:#607D8B"/>
+    </linearGradient>
+    
+    <!-- Keyhole glow -->
+    <radialGradient id="keyholeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#1A1A1A"/>
+      <stop offset="70%" style="stop-color:#263238"/>
+      <stop offset="100%" style="stop-color:#37474F"/>
+    </radialGradient>
+    
+    <!-- Level badge gradient -->
+    <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#455A64"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    
+    <!-- Drop shadow filter -->
+    <filter id="lockShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    
+    <!-- Inner shadow for keyhole -->
+    <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur"/>
+      <feOffset in="blur" dx="1" dy="1"/>
+      <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.6 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
   
-  <!-- Lock body -->
-  <rect x="20" y="28" width="24" height="20" rx="3" fill="#607D8B"/>
-  <rect x="22" y="30" width="20" height="16" rx="2" fill="#455A64"/>
+  <!-- Semi-transparent dark overlay with vignette effect -->
+  <rect x="0" y="0" width="128" height="128" fill="#1A1A1A" opacity="0.75"/>
+  <rect x="0" y="0" width="128" height="128" fill="url(#keyholeGlow)" opacity="0.3"/>
   
-  <!-- Lock shackle -->
-  <path d="M24 28 L24 20 C24 14 32 10 40 14 C40 14 40 20 40 28" 
-        fill="none" stroke="#78909C" stroke-width="4" stroke-linecap="round"/>
+  <!-- Decorative corner brackets -->
+  <g stroke="#546E7A" stroke-width="3" fill="none" opacity="0.4">
+    <!-- Top left -->
+    <path d="M8,24 L8,8 L24,8"/>
+    <!-- Top right -->
+    <path d="M104,8 L120,8 L120,24"/>
+    <!-- Bottom left -->
+    <path d="M8,104 L8,120 L24,120"/>
+    <!-- Bottom right -->
+    <path d="M104,120 L120,120 L120,104"/>
+  </g>
   
-  <!-- Keyhole -->
-  <circle cx="32" cy="36" r="3" fill="#263238"/>
-  <rect x="30" y="36" width="4" height="6" fill="#263238"/>
+  <!-- Lock shadow base -->
+  <ellipse cx="64" cy="98" rx="28" ry="6" fill="#000000" opacity="0.3"/>
   
-  <!-- Lock shine -->
-  <ellipse cx="26" cy="34" rx="2" ry="3" fill="#90A4AE" opacity="0.5"/>
+  <!-- Lock body - 3D effect -->
+  <g filter="url(#lockShadow)">
+    <!-- Back layer -->
+    <rect x="38" y="54" width="52" height="44" rx="6" fill="#37474F"/>
+    <!-- Main body -->
+    <rect x="40" y="56" width="48" height="40" rx="6" fill="url(#lockBodyGrad)"/>
+    <!-- Front face -->
+    <rect x="44" y="60" width="40" height="32" rx="4" fill="url(#lockFaceGrad)"/>
+  </g>
   
-  <!-- Level requirement text background -->
-  <rect x="8" y="50" width="48" height="12" rx="2" fill="#37474F"/>
+  <!-- Lock body edge highlights -->
+  <line x1="42" y1="58" x2="42" y2="94" stroke="#90A4AE" stroke-width="1" opacity="0.5"/>
+  <line x1="86" y1="58" x2="86" y2="94" stroke="#37474F" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Decorative rivets -->
+  <circle cx="48" cy="64" r="2" fill="#78909C"/>
+  <circle cx="48" cy="64" r="1" fill="#90A4AE"/>
+  <circle cx="80" cy="64" r="2" fill="#78909C"/>
+  <circle cx="80" cy="64" r="1" fill="#90A4AE"/>
+  <circle cx="48" cy="88" r="2" fill="#78909C"/>
+  <circle cx="48" cy="88" r="1" fill="#90A4AE"/>
+  <circle cx="80" cy="88" r="2" fill="#78909C"/>
+  <circle cx="80" cy="88" r="1" fill="#90A4AE"/>
+  
+  <!-- Lock shackle - 3D metallic -->
+  <path d="M48 56 L48 36 C48 22 64 16 80 24 L80 56" 
+        fill="none" stroke="#546E7A" stroke-width="12" stroke-linecap="round"/>
+  <path d="M48 56 L48 36 C48 22 64 16 80 24 L80 56" 
+        fill="none" stroke="url(#shackleGrad)" stroke-width="8" stroke-linecap="round"/>
+  <!-- Shackle highlight -->
+  <path d="M52 54 L52 38 C52 26 64 22 76 28" 
+        fill="none" stroke="#B0BEC5" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  
+  <!-- Keyhole with depth -->
+  <g filter="url(#innerShadow)">
+    <circle cx="64" cy="72" r="7" fill="#1A1A1A"/>
+    <rect x="60" y="72" width="8" height="14" fill="#1A1A1A"/>
+  </g>
+  <!-- Keyhole inner ring -->
+  <circle cx="64" cy="72" r="5" fill="none" stroke="#37474F" stroke-width="1"/>
+  <!-- Keyhole glint -->
+  <ellipse cx="62" cy="70" rx="1.5" ry="1" fill="#455A64" opacity="0.6"/>
+  
+  <!-- Lock shine/reflection -->
+  <ellipse cx="52" cy="68" rx="4" ry="6" fill="#90A4AE" opacity="0.4"/>
+  <ellipse cx="50" cy="66" rx="2" ry="3" fill="#B0BEC5" opacity="0.3"/>
+  
+  <!-- Chain decoration - left side -->
+  <g stroke="#546E7A" stroke-width="3" fill="none" opacity="0.6">
+    <ellipse cx="20" cy="56" rx="6" ry="8"/>
+    <ellipse cx="20" cy="72" rx="6" ry="8"/>
+    <ellipse cx="20" cy="88" rx="6" ry="8"/>
+  </g>
+  <g stroke="#78909C" stroke-width="1" fill="none" opacity="0.4">
+    <ellipse cx="20" cy="56" rx="4" ry="6"/>
+    <ellipse cx="20" cy="72" rx="4" ry="6"/>
+    <ellipse cx="20" cy="88" rx="4" ry="6"/>
+  </g>
+  
+  <!-- Chain decoration - right side -->
+  <g stroke="#546E7A" stroke-width="3" fill="none" opacity="0.6">
+    <ellipse cx="108" cy="56" rx="6" ry="8"/>
+    <ellipse cx="108" cy="72" rx="6" ry="8"/>
+    <ellipse cx="108" cy="88" rx="6" ry="8"/>
+  </g>
+  <g stroke="#78909C" stroke-width="1" fill="none" opacity="0.4">
+    <ellipse cx="108" cy="56" rx="4" ry="6"/>
+    <ellipse cx="108" cy="72" rx="4" ry="6"/>
+    <ellipse cx="108" cy="88" rx="4" ry="6"/>
+  </g>
+  
+  <!-- Level requirement badge -->
+  <rect x="16" y="100" width="96" height="24" rx="4" fill="url(#badgeGrad)" stroke="#546E7A" stroke-width="1"/>
+  <rect x="18" y="102" width="92" height="20" rx="3" fill="none" stroke="#607D8B" stroke-width="0.5" opacity="0.5"/>
+  
+  <!-- Badge decorative elements -->
+  <circle cx="28" cy="112" r="3" fill="#607D8B"/>
+  <circle cx="28" cy="112" r="1.5" fill="#78909C"/>
+  <circle cx="100" cy="112" r="3" fill="#607D8B"/>
+  <circle cx="100" cy="112" r="1.5" fill="#78909C"/>
   
   <!-- Placeholder text (actual level set by code) -->
-  <text x="32" y="59" text-anchor="middle" font-size="8" fill="#B0BEC5" font-family="sans-serif">
+  <text x="64" y="117" text-anchor="middle" font-size="14" fill="#B0BEC5" font-family="sans-serif" font-weight="bold">
     Level ??
   </text>
   
-  <!-- Subtle chain decoration -->
-  <g stroke="#546E7A" stroke-width="1.5" fill="none" opacity="0.5">
-    <ellipse cx="12" cy="32" rx="3" ry="4"/>
-    <ellipse cx="12" cy="40" rx="3" ry="4"/>
-    <ellipse cx="52" cy="32" rx="3" ry="4"/>
-    <ellipse cx="52" cy="40" rx="3" ry="4"/>
-  </g>
+  <!-- Subtle animated lock pulse -->
+  <rect x="40" y="56" width="48" height="40" rx="6" fill="none" stroke="#78909C" stroke-width="2" opacity="0.3">
+    <animate attributeName="opacity" values="0.1;0.4;0.1" dur="2s" repeatCount="indefinite"/>
+  </rect>
 </svg>

@@ -59,9 +59,10 @@ BUILDING_SLOT_UNLOCKS = {
 # GRID CONFIGURATION
 # ============================================================================
 
-GRID_ROWS = 5
-GRID_COLS = 5
-TOTAL_CELLS = GRID_ROWS * GRID_COLS  # 25 cells
+# Simple horizontal layout: 1 row x 10 columns = 10 building slots
+GRID_ROWS = 1
+GRID_COLS = 10
+TOTAL_CELLS = GRID_ROWS * GRID_COLS  # 10 cells
 
 # ============================================================================
 # UPGRADE SCALING
