@@ -219,6 +219,7 @@ class TestBuildingSlots:
         assert get_max_building_slots(5) == 3
     
     def test_get_max_building_slots_level_10(self):
+        # Level 10: between Lv9→4 and Lv13→5, so still 4 slots
         assert get_max_building_slots(10) == 4
     
     def test_get_max_building_slots_level_40(self):
@@ -232,20 +233,20 @@ class TestBuildingSlots:
     def test_get_available_slots_empty_city(self, mock_level, fresh_adhd_buster):
         mock_level.return_value = (10, 0, 100, 0)  # Level 10
         slots = get_available_slots(fresh_adhd_buster)
-        assert slots == 4  # Level 10 = 4 slots, 0 used
+        assert slots == 4  # Level 10 = 4 slots (Lv9→4, Lv13→5), 0 used
     
     @patch('gamification.get_level_from_xp')
     def test_get_available_slots_with_buildings(self, mock_level, adhd_buster_with_buildings):
         mock_level.return_value = (15, 0, 100, 0)  # Level 15
         slots = get_available_slots(adhd_buster_with_buildings)
-        assert slots == 3  # Level 15 = 5 slots, 2 used = 3 available
+        assert slots == 3  # Level 15 = 5 slots (Lv13→5, Lv18→6), 2 used = 3 available
     
     @patch('gamification.get_level_from_xp')
     def test_get_next_slot_unlock(self, mock_level, fresh_adhd_buster):
         mock_level.return_value = (7, 0, 100, 0)  # Level 7
         info = get_next_slot_unlock(fresh_adhd_buster)
-        assert info["current_slots"] == 3  # Level 7 = 3 slots
-        assert info["next_unlock_level"] == 10
+        assert info["current_slots"] == 3  # Level 7 = 3 slots (Lv6→3)
+        assert info["next_unlock_level"] == 9  # Next unlock is Level 9
         assert info["slots_after"] == 4
 
 

@@ -4,7 +4,7 @@ City Building System - UI Tab
 Visual interface for the city builder mini-game.
 
 Features:
-- 5x5 grid of clickable cells
+- 1x10 horizontal grid of clickable cells (slots unlock by level)
 - Building placement and construction progress
 - Resource display and collection
 - Synergy bonus visualization
@@ -553,14 +553,55 @@ class CityCell(QtWidgets.QFrame):
                 border: 2px solid rgba(150, 200, 150, 0.8);
             }
         """)
-        # Use empty/plus icon or fallback to emoji - native 128px scale
-        empty_svg = CITY_ICONS_PATH / "_locked.svg"
+        # Use empty/plus icon for available plots - native 128px scale
+        empty_svg = CITY_ICONS_PATH / "_empty.svg"
         pixmap = _get_svg_pixmap(empty_svg, 128)
         if pixmap:
             self.icon_label.setPixmap(pixmap)
         else:
             self.icon_label.setText("➕")
             self.icon_label.setStyleSheet("font-size: 32px; color: rgba(120, 160, 120, 0.7); background: transparent;")
+        self.progress_bar.hide()
+        self.level_badge.hide()
+    
+    def _apply_locked_style(self):
+        """Style for locked cell - requires higher player level to unlock."""
+        # Hide WebEngineView if it exists
+        if self._web_view:
+            self._web_view.hide()
+        
+        # Show static icon label
+        self.icon_label.show()
+        
+        self.setStyleSheet("""
+            CityCell {
+                background: qradialgradient(
+                    cx: 0.5, cy: 0.5, radius: 0.7,
+                    stop: 0 rgba(50, 50, 60, 0.4),
+                    stop: 0.6 rgba(40, 40, 50, 0.3),
+                    stop: 1 rgba(30, 30, 40, 0.2)
+                );
+                border: 2px solid rgba(100, 100, 120, 0.4);
+                border-radius: 12px;
+            }
+            CityCell:hover {
+                background: qradialgradient(
+                    cx: 0.5, cy: 0.5, radius: 0.7,
+                    stop: 0 rgba(60, 60, 70, 0.5),
+                    stop: 0.6 rgba(50, 50, 60, 0.4),
+                    stop: 1 rgba(40, 40, 50, 0.3)
+                );
+                border: 2px solid rgba(120, 120, 140, 0.6);
+            }
+        """)
+        # Use locked icon - shows padlock - native 128px scale
+        locked_svg = CITY_ICONS_PATH / "_locked.svg"
+        pixmap = _get_svg_pixmap(locked_svg, 128)
+        if pixmap:
+            self.icon_label.setPixmap(pixmap)
+        else:
+            self.icon_label.setText("🔒")
+            self.icon_label.setStyleSheet("font-size: 32px; color: rgba(100, 100, 120, 0.7); background: transparent;")
         self.progress_bar.hide()
         self.level_badge.hide()
     
@@ -633,28 +674,43 @@ class CityCell(QtWidgets.QFrame):
                 }
             """)
     
-    def set_cell_state(self, cell_state: Optional[Dict], building_def: Optional[Dict] = None, adhd_buster: Optional[Dict] = None):
-        """Update cell to reflect current state."""
+    def set_cell_state(self, cell_state: Optional[Dict], building_def: Optional[Dict] = None, adhd_buster: Optional[Dict] = None, locked: bool = False):
+        """Update cell to reflect current state.
+        
+        Args:
+            cell_state: Current cell state dict or None if empty
+            building_def: Building definition from CITY_BUILDINGS
+            adhd_buster: Player data for synergy calculations
+            locked: True if slot is locked (requires higher level)
+        """
         # Check if the essential state has changed (building_id and status)
         # to avoid recreating expensive WebEngine widgets on every refresh
         old_building_id = self._cell_state.get("building_id") if self._cell_state else None
         old_status = self._cell_state.get("status") if self._cell_state else None
+        old_locked = getattr(self, '_is_locked', None)
         
         new_building_id = cell_state.get("building_id") if cell_state else None
         new_status = cell_state.get("status") if cell_state else None
         
         # Track if we need to recreate the display
-        state_changed = (old_building_id != new_building_id or old_status != new_status)
+        state_changed = (old_building_id != new_building_id or old_status != new_status or old_locked != locked)
         
         self._cell_state = cell_state
         self._building_def = building_def
         self._adhd_buster = adhd_buster  # Store for synergy calculation
+        self._is_locked = locked  # Track locked state
         
         # Default: show static label, hide webview
         if state_changed:
             self.icon_label.show()
             if self._web_view:
                 self._web_view.hide()
+        
+        # Handle locked slots first
+        if locked:
+            if state_changed:
+                self._apply_locked_style()
+            return
         
         if cell_state is None:
             if state_changed:
@@ -672,27 +728,56 @@ class CityCell(QtWidgets.QFrame):
             
             # Handle building display based on status
             if building_id:
-                # Use animated SVGs for ALL building states (placed, building, complete)
-                svg_path = CITY_ICONS_PATH / f"{building_id}_animated.svg"
-                if not svg_path.exists():
-                    svg_path = CITY_ICONS_PATH / f"{building_id}.svg"
-                
-                if svg_path.exists() and HAS_WEBENGINE:
-                    # Hide static label
-                    self.icon_label.hide()
-                    # Load animated SVG into direct WebEngineView
-                    self._show_animated_svg(str(svg_path))
-                elif svg_path.exists():
-                    # Fallback to static pixmap if no WebEngine
-                    pixmap = _get_svg_pixmap(svg_path, 128)
-                    if pixmap:
-                        self.icon_label.setPixmap(pixmap)
-                        self.icon_label.setStyleSheet("background: transparent;")
+                if status == CellStatus.BUILDING.value:
+                    # Under construction: show animated building with animated construction overlay
+                    svg_path = CITY_ICONS_PATH / f"{building_id}_animated.svg"
+                    if not svg_path.exists():
+                        svg_path = CITY_ICONS_PATH / f"{building_id}.svg"
+                    construction_path = CITY_ICONS_PATH / "_construction.svg"
+                    
+                    if svg_path.exists() and construction_path.exists() and HAS_WEBENGINE:
+                        # Hide static label
+                        self.icon_label.hide()
+                        # Load building with construction overlay, both animated
+                        self._show_construction_animated_svg(str(svg_path), str(construction_path))
+                    elif svg_path.exists():
+                        # Fallback to static composite if no WebEngine
+                        if self._web_view:
+                            self._web_view.hide()
+                        self.icon_label.show()
+                        pixmap = _get_construction_composite_pixmap(building_id, 128)
+                        if pixmap:
+                            self.icon_label.setPixmap(pixmap)
+                            self.icon_label.setStyleSheet("background: transparent;")
+                        else:
+                            self._set_emoji_icon(building_def)
                     else:
                         self._set_emoji_icon(building_def)
                 else:
-                    # Fallback to emoji
-                    self._set_emoji_icon(building_def)
+                    # COMPLETE or PLACED: use animated SVG via WebEngineView
+                    svg_path = CITY_ICONS_PATH / f"{building_id}_animated.svg"
+                    if not svg_path.exists():
+                        svg_path = CITY_ICONS_PATH / f"{building_id}.svg"
+                    
+                    if svg_path.exists() and HAS_WEBENGINE:
+                        # Hide static label
+                        self.icon_label.hide()
+                        # Load animated SVG into direct WebEngineView
+                        self._show_animated_svg(str(svg_path))
+                    elif svg_path.exists():
+                        # Fallback to static pixmap if no WebEngine
+                        if self._web_view:
+                            self._web_view.hide()
+                        self.icon_label.show()
+                        pixmap = _get_svg_pixmap(svg_path, 128)
+                        if pixmap:
+                            self.icon_label.setPixmap(pixmap)
+                            self.icon_label.setStyleSheet("background: transparent;")
+                        else:
+                            self._set_emoji_icon(building_def)
+                    else:
+                        # Fallback to emoji
+                        self._set_emoji_icon(building_def)
             else:
                 self._set_emoji_icon(building_def)
         
@@ -842,6 +927,86 @@ class CityCell(QtWidgets.QFrame):
         base_url = QtCore.QUrl.fromLocalFile(str(Path(svg_path).parent) + '/')
         self._web_view.setHtml(html, base_url)
     
+    def _show_construction_animated_svg(self, building_svg_path: str, construction_svg_path: str):
+        """Show animated building SVG with animated construction overlay on top.
+        
+        Both SVGs are rendered with SMIL animations via WebEngineView.
+        """
+        # Track combined path for caching
+        combined_path = f"{building_svg_path}+construction"
+        
+        # Skip if same combination already loaded
+        if self._current_svg_path == combined_path:
+            if self._web_view:
+                self._web_view.show()
+            return
+        
+        self._current_svg_path = combined_path
+        
+        # Create WebEngineView if it doesn't exist
+        if not self._web_view:
+            self._web_view = QWebEngineView()
+            self._web_view.setFixedSize(128, 128)
+            
+            settings = self._web_view.settings()
+            settings.setAttribute(QWebEngineSettings.ShowScrollBars, False)
+            settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)
+            
+            self.layout().insertWidget(0, self._web_view, 0, QtCore.Qt.AlignCenter)
+        
+        self._web_view.show()
+        
+        # Load both SVG contents
+        building_svg = self._get_cached_svg_content(building_svg_path)
+        construction_svg = self._get_cached_svg_content(construction_svg_path)
+        
+        # Create HTML with layered SVGs - building at bottom, construction on top
+        html = f'''<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+    * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+    html, body {{ 
+        width: 128px; 
+        height: 128px; 
+        overflow: hidden;
+        background: #2A2A2A;
+        position: relative;
+    }}
+    .svg-layer {{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 128px;
+        height: 128px;
+    }}
+    .svg-layer svg {{
+        width: 128px;
+        height: 128px;
+        display: block;
+    }}
+    .building-layer {{
+        z-index: 1;
+    }}
+    .construction-layer {{
+        z-index: 2;
+    }}
+</style>
+</head>
+<body>
+<div class="svg-layer building-layer">
+{building_svg}
+</div>
+<div class="svg-layer construction-layer">
+{construction_svg}
+</div>
+</body>
+</html>'''
+        
+        base_url = QtCore.QUrl.fromLocalFile(str(Path(building_svg_path).parent) + '/')
+        self._web_view.setHtml(html, base_url)
+
     @staticmethod
     def _get_cached_svg_content(svg_path: str) -> str:
         """Get cached SVG file content."""
@@ -959,16 +1124,34 @@ class CityGrid(QtWidgets.QFrame):
         self._adhd_buster = adhd_buster
         grid = city_data.get("grid", [])
         
+        # Calculate max slots based on player level
+        from gamification import get_level_from_xp
+        player_level = get_level_from_xp(adhd_buster.get("total_xp", 0))[0] if adhd_buster else 1
+        max_slots = get_max_building_slots(player_level)
+        
+        # Track slot index (0-based) across the grid
+        slot_index = 0
+        
         for row, row_cells in enumerate(self.cells):
             for col, cell in enumerate(row_cells):
-                if row < len(grid) and col < len(grid[row]):
-                    cell_state = grid[row][col]
-                    building_def = None
-                    if cell_state and cell_state.get("building_id"):
-                        building_def = CITY_BUILDINGS.get(cell_state["building_id"])
-                    cell.set_cell_state(cell_state, building_def, adhd_buster)
+                # Determine if this slot is locked (beyond player's unlocked slots)
+                is_locked = slot_index >= max_slots
+                
+                # Hide locked cells completely (only show unlocked slots)
+                if is_locked:
+                    cell.hide()
                 else:
-                    cell.set_cell_state(None)
+                    cell.show()
+                    if row < len(grid) and col < len(grid[row]):
+                        cell_state = grid[row][col]
+                        building_def = None
+                        if cell_state and cell_state.get("building_id"):
+                            building_def = CITY_BUILDINGS.get(cell_state["building_id"])
+                        cell.set_cell_state(cell_state, building_def, adhd_buster, locked=False)
+                    else:
+                        cell.set_cell_state(None, locked=False)
+                
+                slot_index += 1
 
 
 # ============================================================================
@@ -1494,7 +1677,7 @@ class InitiateConstructionDialog(StyledDialog):
             reason_label.setStyleSheet("color: #FF9800; font-size: 12px;")
             content_layout.addWidget(reason_label)
         
-        cancel_btn = QtWidgets.QPushButton("Cancel")
+        cancel_btn = QtWidgets.QPushButton("Close")
         cancel_btn.clicked.connect(self.reject)
         cancel_btn.setStyleSheet("""
             QPushButton {
@@ -1509,7 +1692,44 @@ class InitiateConstructionDialog(StyledDialog):
         """)
         btn_layout.addWidget(cancel_btn)
         
+        # Remove plot button (no resources invested yet, so no refund needed)
+        remove_btn = QtWidgets.QPushButton("🗑️ Remove")
+        remove_btn.clicked.connect(self._remove_plot)
+        remove_btn.setStyleSheet("""
+            QPushButton {
+                background: #8B0000;
+                color: white;
+                padding: 10px 15px;
+                border-radius: 8px;
+            }
+            QPushButton:hover {
+                background: #A52A2A;
+            }
+        """)
+        remove_btn.setToolTip("Remove this building from the plot (no resources to refund)")
+        btn_layout.addWidget(remove_btn)
+        
         content_layout.addLayout(btn_layout)
+    
+    def _remove_plot(self):
+        """Remove the placed building before construction starts."""
+        building_name = self.building.get("name", "this building")
+        
+        reply = QtWidgets.QMessageBox.question(
+            self,
+            "Remove Building?",
+            f"Remove {building_name} from this plot?\n\n"
+            "(No resources have been invested yet, so nothing to refund.)",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.No
+        )
+        
+        if reply == QtWidgets.QMessageBox.Yes:
+            removed = remove_building(self.adhd_buster, self.row, self.col, refund=False)
+            if removed:
+                self.accept()
+            else:
+                QtWidgets.QMessageBox.warning(self, "Error", "Could not remove building.")
     
     def _start_construction(self):
         """Initiate construction - pay materials and start building."""
@@ -1729,6 +1949,26 @@ class ConstructionProgressDialog(StyledDialog):
         
         content_layout.addSpacing(15)
         
+        # Button row
+        button_layout = QtWidgets.QHBoxLayout()
+        button_layout.setSpacing(10)
+        
+        # Cancel Construction button (with confirmation)
+        cancel_btn = QtWidgets.QPushButton("🗑️ Cancel Construction")
+        cancel_btn.clicked.connect(self._confirm_cancel)
+        cancel_btn.setStyleSheet("""
+            QPushButton {
+                background: #8B0000;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 8px;
+            }
+            QPushButton:hover {
+                background: #A52A2A;
+            }
+        """)
+        button_layout.addWidget(cancel_btn)
+        
         # Close button
         close_btn = QtWidgets.QPushButton("Close")
         close_btn.clicked.connect(self.accept)
@@ -1743,7 +1983,74 @@ class ConstructionProgressDialog(StyledDialog):
                 background: #666;
             }
         """)
-        content_layout.addWidget(close_btn, alignment=QtCore.Qt.AlignCenter)
+        button_layout.addWidget(close_btn)
+        
+        content_layout.addLayout(button_layout)
+    
+    def _confirm_cancel(self):
+        """Show confirmation dialog before canceling construction."""
+        # Calculate refund amount
+        progress = self.cell.get("construction_progress", {})
+        total_invested = sum(progress.get(r, 0) for r in EFFORT_RESOURCES)
+        refund_percent = DEMOLISH_REFUND_PERCENT
+        refund_estimate = int(total_invested * refund_percent / 100)
+        
+        building_name = self.building.get("name", "this building")
+        
+        msg = QtWidgets.QMessageBox(self)
+        msg.setWindowTitle("Cancel Construction?")
+        msg.setIcon(QtWidgets.QMessageBox.Warning)
+        msg.setText(f"Cancel construction of {building_name}?")
+        msg.setInformativeText(
+            f"You will recover {refund_percent}% of invested resources (~{refund_estimate} effort points).\n\n"
+            "The building plot will become free for a new building."
+        )
+        msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        msg.setDefaultButton(QtWidgets.QMessageBox.No)
+        
+        # Style the message box
+        msg.setStyleSheet("""
+            QMessageBox {
+                background: #2A2A3A;
+                color: white;
+            }
+            QMessageBox QLabel {
+                color: white;
+            }
+            QPushButton {
+                background: #555;
+                color: white;
+                padding: 8px 20px;
+                border-radius: 6px;
+                min-width: 80px;
+            }
+            QPushButton:hover {
+                background: #666;
+            }
+        """)
+        
+        if msg.exec() == QtWidgets.QMessageBox.Yes:
+            self._cancel_construction()
+    
+    def _cancel_construction(self):
+        """Cancel the construction and refund resources."""
+        try:
+            # Remove the building with refund
+            removed = remove_building(self.adhd_buster, self.row, self.col, refund=True)
+            if removed:
+                building_name = self.building.get("name", "Building")
+                _logger.info(f"Canceled construction of {building_name} at ({self.row}, {self.col})")
+                # Close the dialog
+                self.accept()
+            else:
+                QtWidgets.QMessageBox.warning(
+                    self, "Error", "Could not cancel construction."
+                )
+        except Exception as e:
+            _logger.exception(f"Error canceling construction: {e}")
+            QtWidgets.QMessageBox.warning(
+                self, "Error", f"Failed to cancel: {e}"
+            )
 
 
 # Keep legacy name for backward compatibility
@@ -1887,11 +2194,50 @@ class BuildingDetailsDialog(StyledDialog):
         # Synergy bonus - use calculate_building_synergy_bonus for building-specific bonus
         synergy_result = calculate_building_synergy_bonus(self.building_id, self.adhd_buster)
         synergy_bonus = synergy_result.get("bonus_percent", 0)
-        if synergy_bonus > 0:
-            synergy_text = f"• Entity Synergy: +{synergy_bonus*100:.0f}%"
-            synergy_label = QtWidgets.QLabel(synergy_text)
-            synergy_label.setStyleSheet("color: #BA68C8;")
-            effects_layout.addWidget(synergy_label)
+        contributors = synergy_result.get("contributors", [])
+        
+        if synergy_bonus > 0 or contributors:
+            # Add synergy section header
+            synergy_header = QtWidgets.QLabel("🔗 Entity Synergies:")
+            synergy_header.setStyleSheet("color: #BA68C8; font-weight: bold; margin-top: 8px;")
+            effects_layout.addWidget(synergy_header)
+            
+            if synergy_bonus > 0:
+                synergy_text = f"   Total: +{synergy_bonus*100:.0f}%"
+                if synergy_result.get("capped", False):
+                    synergy_text += " (max)"
+                synergy_label = QtWidgets.QLabel(synergy_text)
+                synergy_label.setStyleSheet("color: #BA68C8;")
+                effects_layout.addWidget(synergy_label)
+                
+                # Show contributing entities (up to 5)
+                for contrib in contributors[:5]:
+                    entity_id = contrib.get("entity_id", "")
+                    is_exceptional = contrib.get("is_exceptional", False)
+                    bonus = contrib.get("bonus", 0)
+                    
+                    # Get entity name
+                    try:
+                        from entitidex.entity_pools import get_entity_by_id
+                        entity = get_entity_by_id(entity_id)
+                        name = entity.name if entity else entity_id
+                    except Exception:
+                        name = entity_id
+                    
+                    star = "⭐ " if is_exceptional else ""
+                    entity_text = f"     {star}{name}: +{bonus*100:.0f}%"
+                    entity_label = QtWidgets.QLabel(entity_text)
+                    entity_label.setStyleSheet("color: #9575CD; font-size: 11px;")
+                    effects_layout.addWidget(entity_label)
+                
+                if len(contributors) > 5:
+                    more_label = QtWidgets.QLabel(f"     ... and {len(contributors) - 5} more")
+                    more_label.setStyleSheet("color: #7E57C2; font-size: 11px;")
+                    effects_layout.addWidget(more_label)
+            else:
+                no_synergy = QtWidgets.QLabel("   No matching entities yet")
+                no_synergy.setStyleSheet("color: #666; font-style: italic;")
+                effects_layout.addWidget(no_synergy)
         
         content_layout.addWidget(effects_frame)
         content_layout.addSpacing(15)
@@ -2231,11 +2577,18 @@ class CityTab(QtWidgets.QWidget):
             resources = get_resources(self.adhd_buster)
             self.resource_bar.update_resources(resources)
             
-            # Update slots display
+            # Update slots display with next unlock info
             placed = len(get_placed_buildings(self.adhd_buster))
             level = get_level_from_xp(self.adhd_buster.get("total_xp", 0))[0]
             max_slots = get_max_building_slots(level)
-            self.slots_label.setText(f"🏠 {placed}/{max_slots} Buildings")
+            
+            # Show next unlock if not at max
+            next_info = get_next_slot_unlock(self.adhd_buster)
+            next_level = next_info.get("next_unlock_level")
+            if next_level and max_slots < 10:
+                self.slots_label.setText(f"🏠 {placed}/{max_slots} Buildings (Next slot: Lv.{next_level})")
+            else:
+                self.slots_label.setText(f"🏠 {placed}/{max_slots} Buildings")
             
             # Update active construction indicator
             self._update_construction_indicator()
@@ -2250,8 +2603,12 @@ class CityTab(QtWidgets.QWidget):
                 active = get_active_construction(self.adhd_buster)
                 if active:
                     self.info_panel.setText("🔨 Building in progress - keep up the activities!")
+                elif max_slots == 0:
+                    self.info_panel.setText("🔒 Reach Level 2 to unlock your first building slot!")
+                elif placed < max_slots:
+                    self.info_panel.setText("Click an empty plot to place a building")
                 else:
-                    self.info_panel.setText("Click an empty cell to place a building")
+                    self.info_panel.setText("All building slots are in use!")
         except Exception as e:
             _logger.exception("Error refreshing city display")
             self.info_panel.setText(f"⚠️ Display error: {e}")
@@ -2326,13 +2683,44 @@ class CityTab(QtWidgets.QWidget):
                 return
             
             cell = grid[row][col]
+            
+            # Check if this slot is locked based on player level
+            from gamification import get_level_from_xp
+            player_level = get_level_from_xp(self.adhd_buster.get("total_xp", 0))[0]
+            max_slots = get_max_building_slots(player_level)
+            slot_index = row * GRID_COLS + col  # Calculate slot index
+            
+            if slot_index >= max_slots:
+                # Slot is locked - find next unlock level
+                next_info = get_next_slot_unlock(self.adhd_buster)
+                next_level = next_info.get("next_unlock_level")
+                if next_level:
+                    self.info_panel.setText(f"🔒 Slot locked - Reach level {next_level} to unlock!")
+                else:
+                    self.info_panel.setText("🔒 Slot locked - Keep leveling up!")
+                return
+                
         except Exception as e:
             _logger.exception(f"Error accessing grid at ({row}, {col})")
             return
         
         try:
             if cell is None:
-                # Empty cell - show building picker
+                # Empty cell - check if there's active construction first
+                active_construction = get_active_construction(self.adhd_buster)
+                if active_construction is not None:
+                    active_row, active_col = active_construction
+                    # Get building name for better message
+                    active_city = get_city_data(self.adhd_buster)
+                    active_grid = active_city.get("grid", [])
+                    active_cell = active_grid[active_row][active_col] if active_row < len(active_grid) and active_col < len(active_grid[active_row]) else None
+                    active_building_id = active_cell.get("building_id", "") if active_cell else ""
+                    active_building = CITY_BUILDINGS.get(active_building_id, {})
+                    active_name = active_building.get("name", "a building")
+                    self.info_panel.setText(f"🚧 Finish building {active_name} first! (Click it to see progress)")
+                    return
+                
+                # No active construction - show building picker
                 dialog = BuildingPickerDialog(self.adhd_buster, self)
                 # Capture row/col by value to prevent closure issues
                 r, c = row, col
@@ -2347,7 +2735,18 @@ class CityTab(QtWidgets.QWidget):
                     dialog.exec()
                     dialog.deleteLater()  # Ensure cleanup
                 elif status == CellStatus.PLACED.value:
-                    # Placed but not started - show initiate construction dialog
+                    # Placed but not started - check if there's other active construction
+                    active_construction = get_active_construction(self.adhd_buster)
+                    if active_construction is not None and active_construction != (row, col):
+                        active_row, active_col = active_construction
+                        active_city = get_city_data(self.adhd_buster)
+                        active_grid = active_city.get("grid", [])
+                        active_cell = active_grid[active_row][active_col] if active_row < len(active_grid) and active_col < len(active_grid[active_row]) else None
+                        active_building_id = active_cell.get("building_id", "") if active_cell else ""
+                        active_building = CITY_BUILDINGS.get(active_building_id, {})
+                        active_name = active_building.get("name", "another building")
+                        self.info_panel.setText(f"🚧 Finish building {active_name} first!")
+                        return
                     dialog = InitiateConstructionDialog(self.adhd_buster, row, col, self)
                     dialog.exec()
                     dialog.deleteLater()  # Ensure cleanup

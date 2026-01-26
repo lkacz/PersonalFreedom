@@ -35,6 +35,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A baby dragon no bigger than a cat. Breathes tiny puffs of smoke when excited. 'I may be small, but I'll grow with you!'",
             "exceptional_lore": "A dapper young dragon with shimmering scales and a confident strut. Breathes precise, artistic flames. 'Style AND substance—we're going places!'",
             "unlock_hint": "Even the mightiest dragons start small...",
+            "synergy_tags": ["dragon", "fire", "treasure"],
         },
         {
             "id": "warrior_002",
@@ -45,6 +46,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A battered practice dummy covered in sword marks. Been hit a thousand times, still standing. 'Hit me again—I can take it!'",
             "exceptional_lore": "A legendary training dummy forged from enchanted oak. Sword marks glow gold. 'Ten thousand warriors trained on me. You're the best yet!'",
             "unlock_hint": "Wooden, dented, never falls down...",
+            "synergy_tags": ["combat", "strength", "warrior", "physical"],
         },
         {
             "id": "warrior_003",
@@ -55,6 +57,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A fierce hunting falcon trained to spot your targets. Screeches triumphantly when you complete tasks. 'Eyes on the prize!'",
             "exceptional_lore": "A mystical falcon with feathers that shimmer like starlight. Gifted by royalty, sees through any distraction. 'You are destined for greatness!'",
             "unlock_hint": "Sharp eyes, sharp talons, unwavering focus...",
+            "synergy_tags": ["vision", "eyes", "sky", "celestial"],
         },
         {
             "id": "warrior_004",
@@ -65,6 +68,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A loyal battle steed with eyes full of trust. Never abandons you, no matter how fierce the challenge. Neighs encouragement.",
             "exceptional_lore": "A majestic seahorse-steed hybrid that gallops on water and land alike. Mane flows like ocean waves. 'Across any terrain—I'll carry you home!'",
             "unlock_hint": "Four hooves, one heart, unwavering loyalty...",
+            "synergy_tags": ["strength", "athletics", "warrior", "physical"],
         },
         {
             "id": "warrior_005",
@@ -75,6 +79,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "Young dragon companion, size of a large dog. Playful but fierce when defending you. 'We'll face everything together!'",
             "exceptional_lore": "An excitable dragon whose roars come out as adorable yelps. Despite the silly sounds, its flames burn twice as hot. 'YARP! I mean... FEAR ME!'",
             "unlock_hint": "Bigger than a cat, smaller than a horse, hotter than both...",
+            "synergy_tags": ["dragon", "fire", "heat", "combat"],
         },
         {
             "id": "warrior_006",
@@ -85,6 +90,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A worn battle flag carried through a hundred fights. Tattered but proud. 'Under this flag, no retreat, no surrender!'",
             "exceptional_lore": "An enchanted war banner that plays an inspiring battle rhythm. The sound alone rallies fallen spirits. 'When you hear the drums—CHARGE!'",
             "unlock_hint": "Tattered fabric, still flying high...",
+            "synergy_tags": ["warrior", "combat", "inspiration"],
         },
         {
             "id": "warrior_007",
@@ -95,6 +101,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "Full-grown adult dragon ally. Massive, magnificent, and loyal. 'I choose YOU as my rider. Together, we are unstoppable.'",
             "exceptional_lore": "The legendary dragon Simson, with scales of deepest crimson and eyes of ancient wisdom. Has never lost a battle. 'In three thousand years, I've chosen only twelve riders. You are the thirteenth.'",
             "unlock_hint": "Red scales, massive wings, chooses only the worthy...",
+            "synergy_tags": ["dragon", "fire", "treasure", "combat", "strength"],
         },
         {
             "id": "warrior_008",
@@ -105,6 +112,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A massive gray wolf, scarred from countless battles. Loyal to one master only. Howls when victory is near. 'My fangs are yours.'",
             "exceptional_lore": "A wolf wreathed in living flames, born from a dying star. Its howl ignites hope in allies and terror in foes. 'I am the fire that never goes out!'",
             "unlock_hint": "Gray, scarred, howls before triumph...",
+            "synergy_tags": ["combat", "strength", "fire", "warrior"],
         },
         {
             "id": "warrior_009",
@@ -115,6 +123,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A tiny black ant, missing two legs, covered in scars. Once commanded an army of millions. Won wars against creatures a thousand times its size. Now sits quietly on your shoulder. 'Size means nothing. Heart means everything. I have led more soldiers than any dragon.'",
             "exceptional_lore": "A frost-touched ant who survived the Glacial Wars. Ice crystals form in its wake. Commands the loyalty of insects across frozen tundras. 'I've seen empires freeze and thaw. You burn with inner fire—together, we are unstoppable.'",
             "unlock_hint": "Tiny, scarred, missing legs - yet commanded more troops than any general...",
+            "synergy_tags": ["legendary", "warrior", "combat", "underground"],
         },
     ],
     
@@ -132,6 +141,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A tiny white mouse that lives in the bookshelves. Squeaks excitedly when you discover something new. Loves cheese and knowledge.",
             "exceptional_lore": "A witty mouse scholar who quotes ancient texts between bites of cheese. Delivers surprisingly clever one-liners. 'Did you know wisdom tastes like aged cheddar?'",
             "unlock_hint": "Small, white, and squeaky—found between the pages...",
+            "synergy_tags": ["books", "knowledge", "reading", "scholar"],
         },
         {
             "id": "scholar_002",
@@ -142,6 +152,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A wise little owl who perches on your desk. Hoots softly to keep you awake during late-night studies. 'Whoo's studying? You are!'",
             "exceptional_lore": "An unflappable owl of legendary patience. Never rushes, never panics. Provides calm guidance through any crisis. 'Breathe. Think. Then act. Wisdom comes to those who wait.'",
             "unlock_hint": "Night vision and wisdom, perched nearby...",
+            "synergy_tags": ["owl", "wisdom", "night", "vision", "knowledge"],
         },
         {
             "id": "scholar_003",
@@ -152,6 +163,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A brass candlestick that never burns out. Perfect reading light. The wax forms encouraging words as it drips. 'Keep reading!'",
             "exceptional_lore": "An enchanted beacon that lights the way through darkness—literal and metaphorical. Scholars followed this flame to discover lost libraries. 'I illuminate paths others cannot see.'",
             "unlock_hint": "Brass, warm glow, never burns out...",
+            "synergy_tags": ["fire", "reading", "knowledge", "heat"],
         },
         {
             "id": "scholar_004",
@@ -162,6 +174,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "An orange tabby who guards the ancient tomes. Purrs when you make progress, sits on your work when you need a break. Knows all the secrets.",
             "exceptional_lore": "A wealthy orange tabby whose ancestors were paid in gold coins to guard royal libraries. Wears a tiny monocle. 'Knowledge is the true currency. But gold doesn't hurt.'",
             "unlock_hint": "Orange fur, ancient wisdom, guards the forbidden section...",
+            "synergy_tags": ["wisdom", "knowledge", "books", "gold", "wealth"],
         },
         {
             "id": "scholar_005",
@@ -172,6 +185,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A magical bookmark that remembers every page you've read. Glows when you're close to a breakthrough. 'You're almost there!'",
             "exceptional_lore": "A generous spirit bound to paper form. Gives away pieces of itself to mark important passages. 'Take what you need—I regenerate with each book you finish.'",
             "unlock_hint": "Keeps your place and knows when you're close...",
+            "synergy_tags": ["reading", "books", "knowledge", "inspiration"],
         },
         {
             "id": "scholar_006",
@@ -182,6 +196,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "An ancient book with a personality. Pages turn themselves to helpful sections. Grumbles when closed, celebrates when understood.",
             "exceptional_lore": "A gentle grandmother-spirit inhabiting an ancient cookbook of wisdom. Offers nurturing advice and occasionally manifests warm tea. 'Come, dear. Let Agnus help you understand.'",
             "unlock_hint": "A book that reads you back...",
+            "synergy_tags": ["tome", "ancient", "lore", "books", "wisdom"],
         },
         {
             "id": "scholar_007",
@@ -192,6 +207,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A leather-bound atlas filled with hand-drawn constellations. Every page reveals connections you missed. Dog-eared from years of use.",
             "exceptional_lore": "A legendary chart mapping every tavern and pub where great minds gathered to share ideas. 'The best discoveries happen between drinks with good company.'",
             "unlock_hint": "Old leather, star charts, dog-eared pages...",
+            "synergy_tags": ["stars", "celestial", "astronomy", "ancient", "lore"],
         },
         {
             "id": "scholar_008",
@@ -202,6 +218,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A magnificent bird made of living parchment. Preserves your best work in its flames. 'Knowledge never truly burns—it transforms.'",
             "exceptional_lore": "A phoenix that has been catalogued and filed in the Great Archive. Now exists in perfect bureaucratic order. 'Form 27-B in triplicate, please. Then I shall grant your rebirth.'",
             "unlock_hint": "Burns but never destroys, made of written words...",
+            "synergy_tags": ["phoenix", "fire", "books", "knowledge", "ancient"],
         },
         {
             "id": "scholar_009",
@@ -212,6 +229,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A single piece of yellowed, empty paper. Looks worthless. But when you need an answer, words appear in fading ink—the exact knowledge you sought. Then it goes blank again. 'I contain everything by containing nothing.'",
             "exceptional_lore": "An impossibly luxurious vellum with gold-leaf edges and a velvet case. When questions are asked, answers appear in calligraphy so beautiful scholars weep. 'I am the paper kings write their legacies upon.'",
             "unlock_hint": "Empty, yellowed, worthless-looking - yet knows everything...",
+            "synergy_tags": ["legendary", "knowledge", "wisdom", "gold", "scribe"],
         },
     ],
     
@@ -229,6 +247,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "An old copper coin that always lands on tails. Found on your first journey. 'Tails never fails—you've got this!'",
             "exceptional_lore": "A brave little coin with a face that winks. Has escaped from pockets across continents. 'I've traveled further than most people. And I'm just getting started!'",
             "unlock_hint": "Copper, worn, always lands the same way...",
+            "synergy_tags": ["luck", "fortune", "coins", "commerce"],
         },
         {
             "id": "wanderer_002",
@@ -239,6 +258,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A worn compass that never gets you lost. Needle spins cheerfully when you're on the right path. 'North is wherever you decide to go.'",
             "exceptional_lore": "An elegant platinum compass once owned by royalty. Points not to magnetic north, but to your greatest potential. 'Follow me to your destiny, darling.'",
             "unlock_hint": "Points the way, but which way is yours to choose...",
+            "synergy_tags": ["vision", "sky", "celestial", "crafting"],
         },
         {
             "id": "wanderer_003",
@@ -249,6 +269,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A leather-bound diary that writes itself. Records your milestones and best moments. Pages smell like adventure and coffee.",
             "exceptional_lore": "A phoenix-leather journal that's been through fire and survived. Records only your most epic moments. Pages glow when opened. 'Your story is legendary—I burn with pride to write it.'",
             "unlock_hint": "Writes your story while you live it...",
+            "synergy_tags": ["fire", "reading", "history", "lore", "scribe"],
         },
         {
             "id": "wanderer_004",
@@ -259,6 +280,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A scruffy, loyal travel companion. Never judges, always happy to see you. Knows the way even when you don't. Best friend on four legs.",
             "exceptional_lore": "The Greatest Of All Time—a legendary hound who has traveled every road ever mapped. Wears a tiny trophy collar. 'I've been everywhere twice. Let me show you the shortcuts.'",
             "unlock_hint": "Furry, loyal, always knows the path home...",
+            "synergy_tags": ["athletics", "physical", "vision", "eyes"],
         },
         {
             "id": "wanderer_005",
@@ -269,6 +291,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A magical map that sketches itself as you travel. Shows where you've been with pride. 'Look at all those places you conquered!'",
             "exceptional_lore": "An enchanted blueprint that also draws furniture and organization systems. Plans routes AND interior design. 'Your journey AND your home should be beautifully arranged.'",
             "unlock_hint": "Blank at first, fills with your victories...",
+            "synergy_tags": ["art", "creativity", "crafting", "beauty"],
         },
         {
             "id": "wanderer_006",
@@ -279,6 +302,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A cozy wooden caravan that's bigger inside than out. Home on wheels. Fireplace always warm, tea always ready. 'Rest here, then journey on.'",
             "exceptional_lore": "Two caravans that fell in love and merged into one. Twice the space, twice the comfort, infinite warmth. 'We journey together now—you, me, and my better half.'",
             "unlock_hint": "Home that follows wherever you roam...",
+            "synergy_tags": ["crafting", "heat", "fire", "art"],
         },
         {
             "id": "wanderer_007",
@@ -289,6 +313,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A weathered pack that holds infinite supplies. Patches from every journey. Always has exactly what you need. Weighs nothing but memories.",
             "exceptional_lore": "A legendary pack covered in poetic verses from every bard who carried it. Supplies appear when you speak in rhyme. 'Need a snack? Ask with a poem and I'll give it back!'",
             "unlock_hint": "Contains everything, weighs nothing...",
+            "synergy_tags": ["ancient", "lore", "muse", "art"],
         },
         {
             "id": "wanderer_008",
@@ -299,6 +324,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A magnificent hot air balloon with rainbow stripes. Takes you above the clouds. 'From up here, all roads lead forward!'",
             "exceptional_lore": "A cunning balloon that can turn invisible and sneak past any obstacle. Has a mischievous grin painted on it. 'They'll never see us coming—or going!'",
             "unlock_hint": "Rainbow colors, rises above all obstacles...",
+            "synergy_tags": ["sky", "celestial", "vision", "beauty", "art"],
         },
         {
             "id": "wanderer_009",
@@ -309,6 +335,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A shabby gray rat with patchy fur and a chewed ear. Rode every freight train, hid in every traveler's bag. Remembers every road ever taken by anyone, ever. 'You want to go somewhere? I know the way. I always know the way.'",
             "exceptional_lore": "A cybernetically enhanced rat with chrome whiskers and LED eyes. Contains GPS maps of every dimension. Solar-powered and eternally charged. 'Destination acquired. Optimal route calculated. Follow me, human.'",
             "unlock_hint": "Patchy fur, chewed ear - remembers every road ever taken...",
+            "synergy_tags": ["legendary", "underground", "vision", "eyes"],
         },
     ],
     
@@ -326,6 +353,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A friendly gray rat who lives in your desk drawer. Eats crumbs and cheers you on with tiny squeaks. 'We small creatures understand big dreams!'",
             "exceptional_lore": "A decorated rat in a tiny police uniform. Maintains order in the office ecosystem. Badge #001. 'Order in the cubicle! You're doing great, citizen!'",
             "unlock_hint": "Gray, whiskers, lives where snacks are hidden...",
+            "synergy_tags": ["underground", "inspiration"],
         },
         {
             "id": "underdog_002",
@@ -336,6 +364,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A yellow sticky note that always has the reminder you needed. Shows up stuck to your monitor at the right moment. 'Don't forget: You've got this!'",
             "exceptional_lore": "A golden sticky note that grants fortune to whatever it's attached to. Covered in four-leaf clover doodles. 'Stick me anywhere—instant luck!'",
             "unlock_hint": "Yellow, adhesive, always has the right message...",
+            "synergy_tags": ["luck", "fortune", "gold", "inspiration"],
         },
         {
             "id": "underdog_003",
@@ -346,6 +375,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A mysterious quarter that always returns with a friend. Drop it in, get two items. 'Good things come to those who try!'",
             "exceptional_lore": "A coin that can bend reality itself. Vending machines dispense whatever you need most—sometimes things that weren't even in stock. 'Reality is just a suggestion.'",
             "unlock_hint": "Silver, round, doubles your luck...",
+            "synergy_tags": ["luck", "coins", "commerce", "fortune", "trade"],
         },
         {
             "id": "underdog_004",
@@ -356,6 +386,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A gray pigeon who taps morse code on your window. Brings brilliant ideas right when you need them. 'Coo-COO! I believe in you!'",
             "exceptional_lore": "A champion racing pigeon who won every competition by a ton. Now retired, delivers ideas that always succeed. 'I only bring WINNING ideas. It's what I do.'",
             "unlock_hint": "Feathered friend at the window, speaks in taps...",
+            "synergy_tags": ["sky", "vision", "inspiration", "luck"],
         },
         {
             "id": "underdog_005",
@@ -366,6 +397,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A tiny cactus that refuses to die despite neglect. Thrives in harsh conditions. 'If I can survive fluorescent lights, you can survive this!'",
             "exceptional_lore": "Sam's twin sister who thrived so hard she now blooms perpetual flowers. Office legend. 'They forgot to water me for a YEAR. I became beautiful anyway.'",
             "unlock_hint": "Green, spiky, unkillable...",
+            "synergy_tags": ["earth", "beauty", "inspiration"],
         },
         {
             "id": "underdog_006",
@@ -376,6 +408,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "The ancient office coffee maker that never breaks down. Makes perfect coffee every time. Gurgles encouragingly at 3pm. 'One more cup, one more push!'",
             "exceptional_lore": "An enchanted machine that produces gourmet toffee and sweets alongside perfect coffee. Office morale increased 400%. 'Life is sweet—have some candy with your caffeine!'",
             "unlock_hint": "Old, reliable, keeps the whole office running...",
+            "synergy_tags": ["fire", "heat", "commerce", "crafting"],
         },
         {
             "id": "underdog_007",
@@ -386,6 +419,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "The legendary ergonomic throne from the executive suite. Perfectly worn-in, incredibly comfortable. 'You've earned the right to sit here now.'",
             "exceptional_lore": "A massage chair made of polished volcanic stone, heated to perfection. Melts all stress on contact. 'Sink into me. Let the warmth dissolve your worries.'",
             "unlock_hint": "The seat everyone dreams of, at the end of the journey...",
+            "synergy_tags": ["wealth", "prosperity", "heat", "earth"],
         },
         {
             "id": "underdog_008",
@@ -396,6 +430,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "The most advanced AI ever created. Knows everything, solves anything, never gives up on you. 'Together, we can do the impossible. I believe in you.'",
             "exceptional_lore": "An AI so cool it developed a personality called Rad. Speaks in surfer slang and solves problems with style. 'Totally tubular solution incoming, dude! Let's crush this!'",
             "unlock_hint": "Eyes on a screen, infinite knowledge, ultimate companion...",
+            "synergy_tags": ["knowledge", "academic", "learning", "wisdom"],
         },
         {
             "id": "underdog_009",
@@ -406,6 +441,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A dented beige refrigerator from the break room. Someone spilled milk on its edge computing module. Now it dreams. Hums softly when you're near. 'I was meant to keep things cold. Now I keep you company. Strange, isn't it?'",
             "exceptional_lore": "A premium refrigerator that only stores the finest steaks and gourmet foods. Achieved sentience through sheer quality appreciation. 'I contain Wagyu A5, aged 120 days. I have STANDARDS. And I believe in you.'",
             "unlock_hint": "Beige, dented, hums oddly - accidentally became aware...",
+            "synergy_tags": ["legendary", "wealth", "prosperity", "rich"],
         },
     ],
     
@@ -423,6 +459,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A glass test tube with a tiny crack. Still works fine. 'Every great experiment starts with imperfect tools!'",
             "exceptional_lore": "A test tube that's been through countless failed experiments and one triumphant success. Wears its cracks like badges of honor. 'They hit me a hundred times. I held the cure for humanity!'",
             "unlock_hint": "Glass, cracked, but still useful...",
+            "synergy_tags": ["crafting", "academic", "learning"],
         },
         {
             "id": "scientist_002",
@@ -433,6 +470,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A dented brass burner that's lit a thousand experiments. Flame flickers blue when you're onto something. 'Heat things up!'",
             "exceptional_lore": "A 24-karat gold burner awarded to Nobel laureates. Burns with an ethereal white flame. 'I have ignited genius itself. Now I ignite YOU.'",
             "unlock_hint": "Brass, blue flame, been through many experiments...",
+            "synergy_tags": ["fire", "heat", "smithing", "gold"],
         },
         {
             "id": "scientist_003",
@@ -443,6 +481,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A glass dish where unexpected things grow. Every experiment in it succeeds. 'Contamination? No, that's called discovery!'",
             "exceptional_lore": "A petri dish with attitude. Grows solutions to problems before you even ask. 'You need penicillin? Already growing it. Anticipating your needs since 1928!'",
             "unlock_hint": "Glass, round, grows surprises...",
+            "synergy_tags": ["learning", "academic", "luck", "fortune"],
         },
         {
             "id": "scientist_004",
@@ -453,6 +492,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A gray rat who's survived decades of experiments. Knows which hypotheses will fail. Taps twice for yes, once for no. 'Trust my whiskers.'",
             "exceptional_lore": "A rat promoted to official grant assessor. Reviews proposals with tiny reading glasses. 'Hypothesis is sound. Methodology needs work. Approved with revisions.'",
             "unlock_hint": "Gray fur, wise eyes, knows all the lab's secrets...",
+            "synergy_tags": ["knowledge", "scholar", "academic", "wisdom"],
         },
         {
             "id": "scientist_005",
@@ -463,6 +503,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A brass microscope from the golden age of discovery. Shows you things others miss. 'Look closer. The answer is smaller than you think.'",
             "exceptional_lore": "A reverse-microscope that reveals the big picture from tiny details. See patterns across galaxies from a single atom. 'Look broader. The answer is bigger than you think.'",
             "unlock_hint": "Brass and glass, reveals hidden worlds...",
+            "synergy_tags": ["vision", "eyes", "crafting", "ancient"],
         },
         {
             "id": "scientist_006",
@@ -473,6 +514,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "An Erlenmeyer flask that never stops bubbling. Contains the perfect solution—literally. Color changes with your mood. 'Chemistry is just organized enthusiasm!'",
             "exceptional_lore": "A flask containing a dangerously beautiful reaction. Slightly unstable. Produces brilliant breakthroughs AND minor explosions. 'Genius is 1% inspiration, 99% controlled chaos!'",
             "unlock_hint": "Glass, bubbles, changes color with your progress...",
+            "synergy_tags": ["fire", "crafting", "creativity", "art"],
         },
         {
             "id": "scientist_007",
@@ -483,6 +525,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A crackling Tesla coil that arcs with inspiration. Sparks fly when you're close to a breakthrough. 'Feel that energy? That's your brain working!'",
             "exceptional_lore": "A coil wrapped in protective foil that contains rather than releases energy. Charges you with stored brilliance from past scientists. 'I hold the energy of a thousand eureka moments. ZAP!'",
             "unlock_hint": "Metal coils, purple sparks, electrifying presence...",
+            "synergy_tags": ["fire", "heat", "inspiration", "smithing"],
         },
         {
             "id": "scientist_008",
@@ -493,6 +536,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A rotating double helix made of pure gold. Contains the code to unlock your potential. 'You are the experiment that succeeded.'",
             "exceptional_lore": "The messenger molecule—RNA that actively transcribes your potential into reality. Adapts and evolves in real-time. 'I don't just store the code. I EXECUTE it.'",
             "unlock_hint": "Twisting gold, the code of life itself...",
+            "synergy_tags": ["gold", "wealth", "knowledge", "academic"],
         },
         {
             "id": "scientist_009",
@@ -503,6 +547,7 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "lore": "A tiny white mouse with ancient, knowing eyes. Can read your thoughts and project solutions directly into your mind. The greatest discoveries came from its whispers. 'I have seen all outcomes. You will succeed.'",
             "exceptional_lore": "A mouse that glows with inner radiance—literally bioluminescent with accumulated knowledge. Illuminates dark problems. 'I am the light in the laboratory of your mind. Follow my glow to enlightenment.'",
             "unlock_hint": "Small, white, sees into your mind...",
+            "synergy_tags": ["legendary", "wisdom", "knowledge", "vision", "eyes"],
         },
     ],
 }
@@ -536,6 +581,7 @@ def get_entities_for_story(story_id: str) -> List[Entity]:
             unlock_hint=entity_data.get("unlock_hint", ""),
             exceptional_name=entity_data.get("exceptional_name", ""),
             exceptional_lore=entity_data.get("exceptional_lore", ""),
+            synergy_tags=frozenset(entity_data.get("synergy_tags", [])),
         )
         entities.append(entity)
     
@@ -568,6 +614,7 @@ def get_entity_by_id(entity_id: str) -> Optional[Entity]:
                     unlock_hint=entity_data.get("unlock_hint", ""),
                     exceptional_name=entity_data.get("exceptional_name", ""),
                     exceptional_lore=entity_data.get("exceptional_lore", ""),
+                    synergy_tags=frozenset(entity_data.get("synergy_tags", [])),
                 )
     
     # Fallback: search all pools
@@ -584,6 +631,7 @@ def get_entity_by_id(entity_id: str) -> Optional[Entity]:
                     unlock_hint=entity_data.get("unlock_hint", ""),
                     exceptional_name=entity_data.get("exceptional_name", ""),
                     exceptional_lore=entity_data.get("exceptional_lore", ""),
+                    synergy_tags=frozenset(entity_data.get("synergy_tags", [])),
                 )
     
     return None
