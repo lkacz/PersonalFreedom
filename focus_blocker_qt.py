@@ -1263,6 +1263,143 @@ class EnforcementModeDialog(StyledDialog):
         return self._selected_mode
 
 
+class UserProfileDialog(StyledDialog):
+    """
+    Dialog for collecting user profile (birth date and gender).
+    
+    Shown on first run to collect age and sex for personalized health norms:
+    - BMI: Age/sex-specific thresholds (CDC percentiles for 7-19, WHO for adults)
+    - Sleep: Age-specific duration targets (AASM/NSF guidelines)
+    """
+
+    def __init__(self, blocker: 'BlockerCore', parent: Optional[QtWidgets.QWidget] = None,
+                 is_first_run: bool = False) -> None:
+        self.blocker = blocker
+        self.is_first_run = is_first_run
+        
+        title = "Your Profile" if not is_first_run else "About You"
+        
+        super().__init__(
+            parent=parent,
+            title=title,
+            header_icon="👤",
+            min_width=420,
+            max_width=500,
+        )
+
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
+        # Introduction
+        if self.is_first_run:
+            intro_text = (
+                "To personalize your health targets, please share a few details.\n\n"
+                "This helps us use age and sex-specific guidelines for:\n"
+                "• BMI classification (CDC charts for youth, WHO for adults)\n"
+                "• Sleep duration targets (AASM/NSF recommendations)\n\n"
+                "Your data stays on your device and is never shared."
+            )
+        else:
+            intro_text = (
+                "Update your profile for personalized health targets.\n"
+                "This affects BMI classification and sleep duration goals."
+            )
+        
+        intro = QtWidgets.QLabel(intro_text)
+        intro.setWordWrap(True)
+        intro.setStyleSheet("color: #E0E0E0; line-height: 1.4; margin-bottom: 10px;")
+        layout.addWidget(intro)
+        
+        # Profile form
+        form_group = QtWidgets.QGroupBox("📋 Profile Information")
+        form_layout = QtWidgets.QFormLayout(form_group)
+        form_layout.setSpacing(12)
+        
+        # Birth Year
+        self.birth_year_input = NoScrollSpinBox()
+        self.birth_year_input.setRange(1920, QtCore.QDate.currentDate().year())
+        self.birth_year_input.setValue(self.blocker.user_birth_year or 1990)
+        self.birth_year_input.setFixedWidth(100)
+        self.birth_year_input.valueChanged.connect(self._update_age_display)
+        form_layout.addRow("Birth Year:", self.birth_year_input)
+        
+        # Birth Month
+        self.birth_month_combo = NoScrollComboBox()
+        months = ["January", "February", "March", "April", "May", "June",
+                  "July", "August", "September", "October", "November", "December"]
+        for i, m in enumerate(months, 1):
+            self.birth_month_combo.addItem(m, i)
+        if self.blocker.user_birth_month:
+            idx = self.birth_month_combo.findData(self.blocker.user_birth_month)
+            if idx >= 0:
+                self.birth_month_combo.setCurrentIndex(idx)
+        self.birth_month_combo.currentIndexChanged.connect(self._update_age_display)
+        form_layout.addRow("Birth Month:", self.birth_month_combo)
+        
+        # Calculated Age display
+        self.age_display = QtWidgets.QLabel("")
+        self.age_display.setStyleSheet("color: #4caf50; font-weight: bold;")
+        form_layout.addRow("Your Age:", self.age_display)
+        
+        # Gender
+        self.gender_combo = NoScrollComboBox()
+        self.gender_combo.addItem("Male", "M")
+        self.gender_combo.addItem("Female", "F")
+        if self.blocker.user_gender:
+            idx = self.gender_combo.findData(self.blocker.user_gender)
+            if idx >= 0:
+                self.gender_combo.setCurrentIndex(idx)
+        form_layout.addRow("Gender:", self.gender_combo)
+        
+        layout.addWidget(form_group)
+        
+        # Update age display
+        self._update_age_display()
+        
+        # Info about what this affects
+        layout.addSpacing(10)
+        info_label = QtWidgets.QLabel(
+            "ℹ️ <b>Why this matters:</b><br>"
+            "• Children/teens (7-19): BMI uses CDC growth percentiles<br>"
+            "• Adults (20+): BMI uses WHO standard thresholds<br>"
+            "• Sleep targets vary by age (e.g., teens need 8-10h, adults 7-9h)"
+        )
+        info_label.setTextFormat(QtCore.Qt.RichText)
+        info_label.setWordWrap(True)
+        info_label.setStyleSheet("color: #888888; font-size: 11px;")
+        layout.addWidget(info_label)
+        
+        layout.addSpacing(15)
+        
+        # Buttons
+        btn_text = "Continue" if self.is_first_run else "Save"
+        self.add_button_row(layout, [
+            ("Skip" if self.is_first_run else "Cancel", "default", self.reject),
+            (btn_text, "primary", self._save_and_accept),
+        ])
+
+    def _update_age_display(self) -> None:
+        """Update the calculated age label."""
+        try:
+            from gamification import calculate_age_from_birth
+            age = calculate_age_from_birth(
+                self.birth_year_input.value(),
+                self.birth_month_combo.currentData()
+            )
+            if age is not None:
+                self.age_display.setText(f"{age} years old")
+            else:
+                self.age_display.setText("--")
+        except (ImportError, Exception):
+            self.age_display.setText("--")
+
+    def _save_and_accept(self) -> None:
+        """Save the profile and accept the dialog."""
+        self.blocker.user_birth_year = self.birth_year_input.value()
+        self.blocker.user_birth_month = self.birth_month_combo.currentData()
+        self.blocker.user_gender = self.gender_combo.currentData()
+        self.blocker.save_config()
+        self.accept()
+
+
 class OnboardingModeDialog(StyledDialog):
     """Prompt the user to pick how they want to play on startup."""
 
@@ -7345,16 +7482,40 @@ class WeightTab(QtWidgets.QWidget):
         self.height_input.setFixedWidth(80)
         height_row.addWidget(self.height_input)
         
-        set_height_btn = QtWidgets.QPushButton("Set")
-        set_height_btn.setFixedWidth(40)
-        set_height_btn.clicked.connect(self._set_height)
-        height_row.addWidget(set_height_btn)
+        self.set_height_btn = QtWidgets.QPushButton("Set")
+        self.set_height_btn.setFixedWidth(40)
+        self.set_height_btn.clicked.connect(self._set_height)
+        height_row.addWidget(self.set_height_btn)
         
         self.bmi_label = QtWidgets.QLabel("")
         self.bmi_label.setStyleSheet("font-size: 11px; margin-left: 10px;")
         height_row.addWidget(self.bmi_label)
+        
+        # Height hint label (shows locked status for adults)
+        self.height_hint_label = QtWidgets.QLabel("")
+        self.height_hint_label.setStyleSheet("font-size: 10px; color: #888;")
+        height_row.addWidget(self.height_hint_label)
+        
         height_row.addStretch()
         input_layout.addRow("Height:", height_row)
+        
+        # Birth date and gender for age/sex-specific BMI norms (display + edit)
+        profile_row = QtWidgets.QHBoxLayout()
+        
+        # Profile display label
+        self.profile_display_label = QtWidgets.QLabel("")
+        self.profile_display_label.setStyleSheet("font-size: 11px; color: #aaa;")
+        profile_row.addWidget(self.profile_display_label)
+        
+        # Edit profile button
+        edit_profile_btn = QtWidgets.QPushButton("✏️ Edit")
+        edit_profile_btn.setFixedWidth(60)
+        edit_profile_btn.setToolTip("Edit birth date and gender for personalized health norms")
+        edit_profile_btn.clicked.connect(self._edit_user_profile)
+        profile_row.addWidget(edit_profile_btn)
+        
+        profile_row.addStretch()
+        input_layout.addRow("Profile:", profile_row)
         
         # Log button
         log_btn = QtWidgets.QPushButton("📊 Log Weight")
@@ -8005,6 +8166,9 @@ class WeightTab(QtWidgets.QWidget):
         if self.blocker.weight_height:
             self.height_input.setValue(self.blocker.weight_height)
         
+        # User profile display
+        self._update_profile_display()
+        
         # Reminder
         self.reminder_enabled.setChecked(self.blocker.weight_reminder_enabled)
         if self.blocker.weight_reminder_time:
@@ -8013,17 +8177,111 @@ class WeightTab(QtWidgets.QWidget):
                 self.reminder_time.setTime(QtCore.QTime(h, m))
             except (ValueError, AttributeError):
                 pass
+        
+        # Update height UI based on age (locked for adults)
+        self._update_height_ui_state()
+    
+    def _update_height_ui_state(self) -> None:
+        """Update height input state based on user age.
+        
+        Children/teens (<18): Height is adjustable (they're still growing)
+        Adults (18+): Height is locked after first entry (adults don't grow)
+        """
+        age = self._get_user_age()
+        height_set = self.blocker.weight_height is not None and self.blocker.weight_height > 0
+        
+        if age is not None and age >= 18 and height_set:
+            # Adult with height already set - lock it
+            self.height_input.setEnabled(False)
+            self.set_height_btn.setEnabled(False)
+            self.height_hint_label.setText("(locked - adults don't grow)")
+            self.height_hint_label.setToolTip(
+                "Height is locked for adults (18+) since it doesn't change.\n"
+                "If you made a mistake, you can reset it in Settings."
+            )
+        elif age is not None and age < 18:
+            # Child/teen - keep editable with reminder to update
+            self.height_input.setEnabled(True)
+            self.set_height_btn.setEnabled(True)
+            self.height_hint_label.setText("(update as you grow!)")
+            self.height_hint_label.setToolTip(
+                "Growing children and teens should update their height regularly\n"
+                "for accurate BMI calculations."
+            )
+        else:
+            # No age set or no height yet - keep editable
+            self.height_input.setEnabled(True)
+            self.set_height_btn.setEnabled(True)
+            self.height_hint_label.setText("")
     
     def _set_height(self) -> None:
         """Set the height for BMI calculation."""
+        age = self._get_user_age()
         height = self.height_input.value()
+        
+        # For adults, warn if changing from a previously set height
+        if age is not None and age >= 18 and self.blocker.weight_height:
+            reply = show_question(
+                self, "Confirm Height Change",
+                f"You already have a height recorded ({self.blocker.weight_height} cm).\n\n"
+                "Since you're an adult (18+), height typically doesn't change.\n"
+                "Are you sure you want to update it?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+            if reply != QtWidgets.QMessageBox.Yes:
+                return
+        
         self.blocker.weight_height = height
         self.blocker.save_config()
         self._update_bmi_display()
-        show_info(self, "Height Set", f"Height set to {height} cm")
+        self._update_height_ui_state()
+        
+        if age is not None and age < 18:
+            show_info(self, "Height Updated", 
+                     f"Height set to {height} cm.\n\nRemember to update it as you grow!")
+        else:
+            show_info(self, "Height Set", f"Height set to {height} cm")
+    
+    def _edit_user_profile(self) -> None:
+        """Open the user profile dialog to edit birth date and gender."""
+        dialog = UserProfileDialog(self.blocker, self, is_first_run=False)
+        if dialog.exec() == QtWidgets.QDialog.Accepted:
+            self._update_profile_display()
+            self._update_bmi_display()
+            self._update_height_ui_state()  # Age may have changed
+    
+    def _update_profile_display(self) -> None:
+        """Update the profile display label with current profile info."""
+        age = self._get_user_age()
+        gender = self.blocker.user_gender or "?"
+        
+        if age is not None:
+            self.profile_display_label.setText(f"Age: {age}, Sex: {gender}")
+        elif self.blocker.user_birth_year:
+            self.profile_display_label.setText(f"Born: {self.blocker.user_birth_year}, Sex: {gender}")
+        else:
+            self.profile_display_label.setText("Not set (using adult defaults)")
+    
+    def _get_user_age(self) -> int:
+        """Calculate user's current age from stored birth date."""
+        if not self.blocker.user_birth_year:
+            return None
+        try:
+            from gamification import calculate_age_from_birth
+            return calculate_age_from_birth(
+                self.blocker.user_birth_year,
+                self.blocker.user_birth_month or 1
+            )
+        except ImportError:
+            from datetime import datetime
+            today = datetime.now()
+            age = today.year - self.blocker.user_birth_year
+            if self.blocker.user_birth_month and today.month < self.blocker.user_birth_month:
+                age -= 1
+            return max(0, age)
     
     def _update_bmi_display(self) -> None:
-        """Update the BMI label with current BMI."""
+        """Update the BMI label with current BMI, using age/sex-specific norms."""
         if not self.blocker.weight_height or not self.blocker.weight_entries:
             self.bmi_label.setText("")
             return
@@ -8039,8 +8297,16 @@ class WeightTab(QtWidgets.QWidget):
         if calculate_bmi:
             bmi = calculate_bmi(latest_weight, self.blocker.weight_height)
             if bmi and get_bmi_classification:
-                classification, color = get_bmi_classification(bmi)
-                self.bmi_label.setText(f"<b style='color:{color}'>BMI: {bmi:.1f} ({classification})</b>")
+                # Get age/sex for age-specific classification
+                age = self._get_user_age()
+                sex = self.blocker.user_gender
+                classification, color = get_bmi_classification(bmi, age, sex)
+                
+                # Add age context for pediatric classifications
+                if age is not None and 7 <= age <= 19:
+                    self.bmi_label.setText(f"<b style='color:{color}'>BMI: {bmi:.1f} ({classification})</b> <span style='font-size:9px;'>age {age}</span>")
+                else:
+                    self.bmi_label.setText(f"<b style='color:{color}'>BMI: {bmi:.1f} ({classification})</b>")
             else:
                 self.bmi_label.setText("")
         else:
@@ -9005,9 +9271,10 @@ class ActivityTab(QtWidgets.QWidget):
         # This rewards more intense and longer activities proportionally
         # Formula: Base +1 per activity, plus +1 per 20 effective minutes
         city_activity_earned = 0
+        city_goldmine_coins = 0
         if CITY_AVAILABLE:
             try:
-                from city import add_city_resource, get_active_construction_info
+                from city import add_city_resource, get_active_construction_info, award_exercise_income
                 
                 # Calculate effective minutes (factors in both duration and intensity)
                 effective_mins = 0
@@ -9024,10 +9291,25 @@ class ActivityTab(QtWidgets.QWidget):
                 city_activity_earned = base_amount + effective_bonus
                 
                 add_city_resource(self.blocker.adhd_buster, "activity", city_activity_earned)
-            except Exception:
-                pass
+                
+                # Award Goldmine income for exercise (moderate+ intensity)
+                goldmine_result = award_exercise_income(
+                    self.blocker.adhd_buster,
+                    duration,
+                    intensity_id,
+                    effective_mins,
+                    None  # No game_state signal needed
+                )
+                city_goldmine_coins = goldmine_result.get("coins", 0)
+                
+                if city_goldmine_coins > 0:
+                    _logger.info(f"Exercise awarded {city_goldmine_coins} Goldmine coins")
+                    
+            except Exception as e:
+                _logger.debug(f"City resource/income error: {e}")
         
         # Award coins for activity (5-20 coins based on effective minutes)
+        # This is the base activity coin reward, Goldmine coins are additive
         coins_earned = 0
         if GAMIFICATION_AVAILABLE and is_gamification_enabled(self.blocker.adhd_buster):
             if rewards and rewards.get("effective_minutes"):
@@ -9042,7 +9324,7 @@ class ActivityTab(QtWidgets.QWidget):
                 
                 # Coins will be awarded in _process_rewards via game_state
         
-        # Process rewards
+        # Process rewards (Goldmine coins already awarded directly to adhd_buster)
         if rewards and GAMIFICATION_AVAILABLE:
             self._process_rewards(rewards, coins_earned=coins_earned, city_activity_earned=city_activity_earned)
         
@@ -9508,6 +9790,7 @@ class SleepTab(QtWidgets.QWidget):
         self.blocker = blocker
         self._reminder_timer = None
         self._build_ui()
+        self._load_user_profile()  # Load saved profile for age-specific norms
         self._refresh_display()
         self._setup_reminder()
         self.destroyed.connect(self._cleanup_timer)
@@ -9538,6 +9821,30 @@ class SleepTab(QtWidgets.QWidget):
         header_layout.addWidget(header)
         header_layout.addStretch()
         layout.addLayout(header_layout)
+        
+        # User Profile display for age-specific sleep norms
+        profile_row = QtWidgets.QHBoxLayout()
+        profile_row.addWidget(QtWidgets.QLabel("👤 Profile:"))
+        
+        # Profile display label
+        self.sleep_profile_display = QtWidgets.QLabel("")
+        self.sleep_profile_display.setStyleSheet("color: #aaa; font-size: 11px;")
+        profile_row.addWidget(self.sleep_profile_display)
+        
+        # Sleep targets info
+        self.sleep_targets_label = QtWidgets.QLabel("")
+        self.sleep_targets_label.setStyleSheet("color: #4caf50; font-weight: bold; font-size: 11px;")
+        profile_row.addWidget(self.sleep_targets_label)
+        
+        # Edit profile button
+        edit_profile_btn = QtWidgets.QPushButton("✏️ Edit")
+        edit_profile_btn.setFixedWidth(60)
+        edit_profile_btn.setToolTip("Edit birth date and gender for personalized sleep targets")
+        edit_profile_btn.clicked.connect(self._edit_user_profile)
+        profile_row.addWidget(edit_profile_btn)
+        
+        profile_row.addStretch()
+        layout.addLayout(profile_row)
         
         # Main content split
         content_layout = QtWidgets.QHBoxLayout()
@@ -9876,15 +10183,29 @@ class SleepTab(QtWidgets.QWidget):
         
         hours = duration_mins // 60
         mins = duration_mins % 60
+        total_hours = hours + mins / 60
         
-        # Color based on duration
-        if 7 <= hours + mins/60 <= 9:
+        # Get age-specific targets
+        age = self._get_user_age()
+        min_target, max_target = 7, 9  # Default adult targets
+        try:
+            from gamification import get_sleep_targets_for_age
+            if age is not None:
+                targets = get_sleep_targets_for_age(age)
+                if targets:
+                    min_target = targets["min_hours"]
+                    max_target = targets["max_hours"]
+        except (ImportError, Exception):
+            pass
+        
+        # Color based on duration relative to age-specific targets
+        if min_target <= total_hours <= max_target:
             color = "#4caf50"  # Green - optimal
             emoji = "🌟"
-        elif 6 <= hours + mins/60 < 7:
+        elif min_target - 1 <= total_hours < min_target:
             color = "#ff9800"  # Orange - slightly low
             emoji = "⚠️"
-        elif hours + mins/60 > 9:
+        elif total_hours > max_target:
             color = "#2196f3"  # Blue - long
             emoji = "💤"
         else:
@@ -9903,6 +10224,60 @@ class SleepTab(QtWidgets.QWidget):
             self.wake_edit.setTime(QtCore.QTime(int(h), int(m)))
         except (ValueError, AttributeError):
             pass  # Invalid preset format, ignore
+    
+    def _edit_user_profile(self) -> None:
+        """Open the user profile dialog to edit birth date and gender."""
+        dialog = UserProfileDialog(self.blocker, self, is_first_run=False)
+        if dialog.exec() == QtWidgets.QDialog.Accepted:
+            self._update_profile_display()
+            self._update_sleep_duration()  # Refresh color coding
+    
+    def _update_profile_display(self) -> None:
+        """Update the profile display with current values."""
+        age = self._get_user_age()
+        gender = self.blocker.user_gender or "?"
+        
+        if age is not None:
+            self.sleep_profile_display.setText(f"Age: {age}, Sex: {gender}")
+            self._update_sleep_targets_display(age)
+        elif self.blocker.user_birth_year:
+            self.sleep_profile_display.setText(f"Born: {self.blocker.user_birth_year}")
+            self.sleep_targets_label.setText("Target: 7-9h (adult default)")
+        else:
+            self.sleep_profile_display.setText("Not set")
+            self.sleep_targets_label.setText("Target: 7-9h (adult default)")
+    
+    def _get_user_age(self) -> Optional[int]:
+        """Calculate user's current age from saved birth date."""
+        if not self.blocker.user_birth_year or not self.blocker.user_birth_month:
+            return None
+        try:
+            from gamification import calculate_age_from_birth
+            return calculate_age_from_birth(
+                self.blocker.user_birth_year,
+                self.blocker.user_birth_month
+            )
+        except (ImportError, Exception):
+            return None
+    
+    def _update_sleep_targets_display(self, age: int) -> None:
+        """Update the sleep targets label based on age."""
+        try:
+            from gamification import get_sleep_targets_for_age
+            targets = get_sleep_targets_for_age(age)
+            if targets:
+                min_h = targets["min_hours"]
+                opt_h = targets["optimal_hours"]
+                max_h = targets["max_hours"]
+                self.sleep_targets_label.setText(
+                    f"Target: {min_h}-{max_h}h (optimal: {opt_h}h)"
+                )
+        except (ImportError, Exception):
+            pass
+    
+    def _load_user_profile(self) -> None:
+        """Load and display user profile."""
+        self._update_profile_display()
     
     def _on_chronotype_change(self) -> None:
         """Handle chronotype selection change."""
@@ -10228,6 +10603,7 @@ class SleepTab(QtWidgets.QWidget):
         reward_info = None
         if check_all_sleep_rewards and GAMIFICATION_AVAILABLE and is_gamification_enabled(self.blocker.adhd_buster):
             active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+            user_age = self._get_user_age()  # Get age for age-specific scoring
             reward_info = check_all_sleep_rewards(
                 entries_for_reward,
                 sleep_hours,
@@ -10239,6 +10615,7 @@ class SleepTab(QtWidgets.QWidget):
                 self.blocker.sleep_milestones,
                 self.blocker.sleep_chronotype,
                 story_id=active_story,
+                age=user_age,
             )
         
         # Create new entry
@@ -24758,6 +25135,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         adhd_buster["enforcement_mode_configured"] = True
         self.blocker.save_config()
         
+        # Show user profile dialog for age/sex-specific health norms
+        self._show_user_profile_first_run()
+        
         # Update Settings tab if it exists
         if hasattr(self, 'settings_tab'):
             if hasattr(self.settings_tab, 'enforce_full_radio'):
@@ -24765,6 +25145,16 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                     self.settings_tab.enforce_light_radio.setChecked(True)
                 else:
                     self.settings_tab.enforce_full_radio.setChecked(True)
+    
+    def _show_user_profile_first_run(self) -> None:
+        """Show the user profile dialog on first run to collect age and sex."""
+        # Skip if profile already set
+        if self.blocker.user_birth_year and self.blocker.user_gender:
+            return
+        
+        dialog = UserProfileDialog(self.blocker, self, is_first_run=True)
+        dialog.exec()
+        # User can skip, which is fine - tabs will use default adult norms
 
     def _show_onboarding_prompt(self) -> None:
         """Ask the user how they want to play this session."""
@@ -25919,13 +26309,15 @@ del "%~f0"
         Resource earning formula (per design doc):
         - 🎯 Focus: 1 per 30 minutes of focus time
         
+        Also awards Royal Mint income (coins for focus sessions).
+        
         Note: Materials come from weight management only, not focus sessions.
         """
         if not CITY_AVAILABLE:
             return
         
         try:
-            from city import add_city_resource
+            from city import add_city_resource, award_focus_session_income
             
             minutes = elapsed_seconds // 60
             
@@ -25933,6 +26325,28 @@ del "%~f0"
             focus_earned = minutes // 30
             if focus_earned > 0:
                 add_city_resource(self.blocker.adhd_buster, "focus", focus_earned)
+            
+            # Award Royal Mint income for focus session
+            game_state = getattr(self, 'game_state', None)
+            income_result = award_focus_session_income(
+                self.blocker.adhd_buster,
+                minutes,
+                game_state
+            )
+            
+            # Show notification if coins were earned
+            if income_result.get("coins", 0) > 0:
+                coins = income_result["coins"]
+                # Build breakdown message
+                breakdown_parts = []
+                for item in income_result.get("breakdown", []):
+                    breakdown_parts.append(f"{item['building']}: +{item['total_coins']} coins")
+                breakdown_msg = ", ".join(breakdown_parts) if breakdown_parts else ""
+                
+                _logger.info(f"Focus session awarded {coins} city coins: {breakdown_msg}")
+                
+                # Update coin display
+                self._update_coin_display()
             
             # Save data
             self.blocker.save_config()

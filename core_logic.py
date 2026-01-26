@@ -249,6 +249,11 @@ class BlockerCore:
         self.weight_reminder_time = "08:00"  # Reminder time HH:MM
         self.weight_last_reminder_date = None  # Last reminder shown
         
+        # User profile for age/sex-specific norms
+        self.user_birth_year = None  # Year of birth (e.g., 2010)
+        self.user_birth_month = None  # Month of birth (1-12)
+        self.user_gender = None  # "M" or "F"
+        
         # Activity tracking
         self.activity_entries = []  # List of {"date": "YYYY-MM-DD", "duration": int, "activity_type": str, "intensity": str, "note": str}
         self.activity_milestones = []  # List of achieved milestone IDs
@@ -385,6 +390,13 @@ class BlockerCore:
                     self.weight_reminder_enabled = config.get('weight_reminder_enabled', False)
                     self.weight_reminder_time = config.get('weight_reminder_time', '08:00')
                     self.weight_last_reminder_date = config.get('weight_last_reminder_date', None)
+                    # User profile for age/sex-specific norms
+                    birth_year = config.get('user_birth_year', None)
+                    self.user_birth_year = birth_year if isinstance(birth_year, int) and 1900 <= birth_year <= 2100 else None
+                    birth_month = config.get('user_birth_month', None)
+                    self.user_birth_month = birth_month if isinstance(birth_month, int) and 1 <= birth_month <= 12 else None
+                    gender = config.get('user_gender', None)
+                    self.user_gender = gender if gender in ("M", "F") else None
                     # Activity tracking - validate entries on load
                     raw_activity = config.get('activity_entries', [])
                     self.activity_entries = [
@@ -485,6 +497,9 @@ class BlockerCore:
                 'weight_reminder_enabled': self.weight_reminder_enabled,
                 'weight_reminder_time': self.weight_reminder_time,
                 'weight_last_reminder_date': self.weight_last_reminder_date,
+                'user_birth_year': self.user_birth_year,
+                'user_birth_month': self.user_birth_month,
+                'user_gender': self.user_gender,
                 'activity_entries': self.activity_entries,
                 'activity_milestones': self.activity_milestones,
                 'activity_reminder_enabled': self.activity_reminder_enabled,

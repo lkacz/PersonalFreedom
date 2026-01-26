@@ -11096,6 +11096,243 @@ def sync_hero_data(adhd_buster: dict) -> None:
 # WEIGHT TRACKING GAMIFICATION
 # =============================================================================
 
+# =============================================================================
+# AGE AND SEX-SPECIFIC NORMS (CDC/NIH/WHO Guidelines)
+# =============================================================================
+
+# CDC BMI-for-age percentiles for ages 7-19 (by sex)
+# Format: age -> {sex: (P5, P50, P85, P95)}
+# P5 = underweight cutoff, P85 = overweight cutoff, P95 = obese cutoff
+BMI_PERCENTILES_BY_AGE = {
+    7:  {"M": (13.7, 15.5, 17.4, 19.2), "F": (13.4, 15.5, 17.6, 19.7)},
+    8:  {"M": (13.8, 15.8, 18.0, 20.1), "F": (13.5, 15.8, 18.3, 20.7)},
+    9:  {"M": (14.0, 16.2, 18.6, 21.1), "F": (13.7, 16.3, 19.1, 21.8)},
+    10: {"M": (14.2, 16.6, 19.4, 22.2), "F": (14.0, 16.9, 20.0, 23.0)},
+    11: {"M": (14.6, 17.2, 20.2, 23.2), "F": (14.4, 17.5, 20.9, 24.1)},
+    12: {"M": (15.0, 17.8, 21.0, 24.2), "F": (14.8, 18.1, 21.7, 25.3)},
+    13: {"M": (15.5, 18.5, 21.9, 25.2), "F": (15.3, 18.7, 22.6, 26.3)},
+    14: {"M": (16.0, 19.2, 22.7, 26.0), "F": (15.8, 19.4, 23.3, 27.0)},
+    15: {"M": (16.6, 20.0, 23.6, 26.9), "F": (16.3, 20.0, 24.0, 28.0)},
+    16: {"M": (17.2, 20.6, 24.3, 27.6), "F": (16.8, 20.5, 24.7, 28.8)},
+    17: {"M": (17.7, 21.2, 24.9, 28.3), "F": (17.2, 20.9, 25.2, 29.6)},
+    18: {"M": (18.2, 21.9, 25.7, 29.0), "F": (17.6, 21.3, 25.7, 30.3)},
+    19: {"M": (18.7, 22.5, 26.4, 29.7), "F": (17.8, 21.6, 26.1, 31.0)},
+}
+
+# Sleep duration recommendations by age group (same for M/F per AASM/NSF)
+# Format: (min_age, max_age, min_hours, optimal_low, optimal_high, max_hours)
+SLEEP_DURATION_BY_AGE = [
+    (7, 12, 9.0, 9.0, 12.0, 14.0),    # Children 7-12: 9-12 hours (AASM 2016)
+    (13, 18, 8.0, 8.0, 10.0, 12.0),   # Teens 13-18: 8-10 hours (AASM 2016)
+    (19, 64, 7.0, 7.5, 9.0, 10.0),    # Adults 19-64: 7-9 hours (NSF 2015)
+    (65, 150, 7.0, 7.0, 8.0, 9.0),    # Seniors 65+: 7-8 hours (NSF 2015)
+]
+
+
+def calculate_age_from_birth(birth_year: int, birth_month: int = 1) -> int:
+    """
+    Calculate age in years from birth year and month.
+    
+    Args:
+        birth_year: Year of birth (e.g., 2010)
+        birth_month: Month of birth (1-12, defaults to January)
+    
+    Returns:
+        Age in complete years
+    """
+    if not birth_year or birth_year < 1900 or birth_year > 2100:
+        return None
+    
+    today = datetime.now()
+    birth_month = max(1, min(12, birth_month or 1))
+    
+    age = today.year - birth_year
+    # Adjust if birthday hasn't occurred yet this year
+    if today.month < birth_month:
+        age -= 1
+    elif today.month == birth_month and today.day < 15:  # Approximate mid-month
+        age -= 1
+    
+    return max(0, age)
+
+
+def get_bmi_thresholds_for_age(age: int, sex: str = "M") -> tuple:
+    """
+    Get BMI thresholds (underweight, overweight, obese) for a specific age and sex.
+    
+    For ages 7-19, uses CDC BMI-for-age percentiles.
+    For ages 20+, uses standard adult WHO thresholds.
+    
+    Args:
+        age: Age in years
+        sex: "M" for male, "F" for female (case-insensitive)
+    
+    Returns:
+        Tuple of (underweight_threshold, overweight_threshold, obese_threshold)
+    """
+    if age is None or age < 7:
+        # For very young children or unknown age, use adult thresholds as fallback
+        return (18.5, 25.0, 30.0)
+    
+    sex = (sex or "M").upper()[0] if sex else "M"
+    if sex not in ("M", "F"):
+        sex = "M"
+    
+    if age >= 20:
+        # Adults 20+: standard WHO thresholds (same for M/F)
+        return (18.5, 25.0, 30.0)
+    
+    # Children/teens 7-19: use CDC percentiles
+    if age in BMI_PERCENTILES_BY_AGE:
+        p5, p50, p85, p95 = BMI_PERCENTILES_BY_AGE[age][sex]
+        return (p5, p85, p95)
+    
+    # Fallback for edge cases
+    return (18.5, 25.0, 30.0)
+
+
+def get_bmi_classification_for_age(bmi: float, age: int = None, sex: str = "M") -> tuple:
+    """
+    Get BMI classification considering age and sex.
+    
+    For ages 7-19, uses CDC BMI-for-age percentile categories:
+    - Underweight: < P5
+    - Healthy weight: P5 to < P85
+    - Overweight: P85 to < P95
+    - Obese: >= P95
+    
+    For ages 20+, uses standard WHO categories.
+    
+    Args:
+        bmi: Calculated BMI value
+        age: Age in years (None = use adult thresholds)
+        sex: "M" or "F"
+    
+    Returns:
+        Tuple of (classification_name, color_hex)
+    """
+    if bmi is None:
+        return ("Unknown", "#888888")
+    
+    underweight, overweight, obese = get_bmi_thresholds_for_age(age, sex)
+    
+    if age is not None and 7 <= age <= 19:
+        # Pediatric categories (CDC percentile-based)
+        if bmi < underweight:
+            return ("Underweight (<P5)", "#ffaa64")
+        elif bmi < overweight:
+            return ("Healthy Weight", "#00ff88")
+        elif bmi < obese:
+            return ("Overweight (P85-P95)", "#ffff64")
+        else:
+            return ("Obese (≥P95)", "#ff6464")
+    else:
+        # Adult categories (WHO standard)
+        if bmi < 16.0:
+            return ("Severely Underweight", "#ff6464")
+        elif bmi < 17.0:
+            return ("Moderately Underweight", "#ffaa64")
+        elif bmi < 18.5:
+            return ("Mildly Underweight", "#ffff64")
+        elif bmi < 25.0:
+            return ("Normal", "#00ff88")
+        elif bmi < 30.0:
+            return ("Overweight", "#ffff64")
+        elif bmi < 35.0:
+            return ("Obese Class I", "#ffaa64")
+        elif bmi < 40.0:
+            return ("Obese Class II", "#ff6464")
+        else:
+            return ("Obese Class III", "#ff3232")
+
+
+def get_sleep_targets_for_age(age: int) -> dict:
+    """
+    Get sleep duration targets based on age.
+    
+    Uses AASM (children/teens) and NSF (adults) consensus guidelines.
+    Same recommendations for male and female.
+    
+    Args:
+        age: Age in years (None = use adult defaults)
+    
+    Returns:
+        Dict with minimum, optimal_low, optimal_high, maximum hours
+    """
+    if age is None:
+        age = 30  # Default to adult
+    
+    for min_age, max_age, min_h, opt_low, opt_high, max_h in SLEEP_DURATION_BY_AGE:
+        if min_age <= age <= max_age:
+            return {
+                "minimum": min_h,
+                "optimal_low": opt_low,
+                "optimal_high": opt_high,
+                "maximum": max_h,
+            }
+    
+    # Fallback for very young or very old (use adult defaults)
+    return {
+        "minimum": 7.0,
+        "optimal_low": 7.5,
+        "optimal_high": 9.0,
+        "maximum": 10.0,
+    }
+
+
+def get_sleep_recommendation_text(age: int) -> str:
+    """
+    Get human-readable sleep recommendation for an age.
+    
+    Args:
+        age: Age in years
+    
+    Returns:
+        String with recommendation (e.g., "9-12 hours for ages 7-12")
+    """
+    if age is None:
+        return "7-9 hours for adults"
+    
+    if 7 <= age <= 12:
+        return "9-12 hours for ages 7-12 (AASM)"
+    elif 13 <= age <= 18:
+        return "8-10 hours for teens 13-18 (AASM)"
+    elif 19 <= age <= 64:
+        return "7-9 hours for adults 19-64 (NSF)"
+    elif age >= 65:
+        return "7-8 hours for seniors 65+ (NSF)"
+    else:
+        return "consult pediatrician for age < 7"
+
+
+def get_ideal_weight_range_for_age(height_cm: float, age: int = None, sex: str = "M") -> tuple:
+    """
+    Calculate ideal weight range based on height, age, and sex.
+    
+    For children/teens (7-19), uses age/sex-specific BMI percentile thresholds.
+    For adults (20+), uses standard 18.5-25 BMI range.
+    
+    Args:
+        height_cm: Height in centimeters
+        age: Age in years (None = adult)
+        sex: "M" or "F"
+    
+    Returns:
+        Tuple of (min_weight_kg, max_weight_kg)
+    """
+    if not height_cm or height_cm <= 0:
+        return (None, None)
+    
+    height_m = height_cm / 100
+    
+    underweight, overweight, _ = get_bmi_thresholds_for_age(age, sex)
+    
+    min_weight = underweight * (height_m ** 2)
+    max_weight = overweight * (height_m ** 2)
+    
+    return (min_weight, max_weight)
+
+
 # Weight loss thresholds for daily rewards (in grams)
 WEIGHT_DAILY_THRESHOLDS = {
     0: "Common",       # Same weight = Common item
@@ -11116,25 +11353,30 @@ WEIGHT_MODE_LOSS = "loss"           # Overweight: reward weight loss
 WEIGHT_MODE_GAIN = "gain"           # Underweight: reward weight gain
 WEIGHT_MODE_MAINTAIN = "maintain"   # Normal weight: reward maintaining
 
-# BMI thresholds for automatic mode detection
+# BMI thresholds for automatic mode detection (adults, legacy)
 BMI_UNDERWEIGHT_THRESHOLD = 18.5
 BMI_OVERWEIGHT_THRESHOLD = 25.0
 
 
 def determine_weight_mode(current_weight: float, height_cm: float = None, 
-                          goal_weight: float = None) -> str:
+                          goal_weight: float = None, age: int = None,
+                          sex: str = None) -> str:
     """
     Determine weight tracking mode based on BMI and goal.
     
+    Uses age/sex-specific BMI thresholds for children/teens (7-19).
+    
     Priority:
     1. If goal is set: compare current to goal
-    2. If height available: use BMI classification
+    2. If height available: use BMI classification (age-adjusted if provided)
     3. Default: loss mode (legacy behavior)
     
     Args:
         current_weight: Current weight in kg
         height_cm: Height in cm (optional)
         goal_weight: Target weight in kg (optional)
+        age: Age in years (optional, for age-specific BMI thresholds)
+        sex: "M" or "F" (optional, for sex-specific BMI thresholds)
     
     Returns:
         Weight mode: 'loss', 'gain', or 'maintain'
@@ -11152,14 +11394,17 @@ def determine_weight_mode(current_weight: float, height_cm: float = None,
         else:  # Within 2kg of goal - maintenance mode
             return WEIGHT_MODE_MAINTAIN
     
-    # If height available, use BMI
+    # If height available, use BMI with age-specific thresholds
     if height_cm and height_cm > 0:
         height_m = height_cm / 100
         bmi = current_weight / (height_m ** 2)
         
-        if bmi < BMI_UNDERWEIGHT_THRESHOLD:
+        # Get age/sex-specific thresholds
+        underweight_thresh, overweight_thresh, _ = get_bmi_thresholds_for_age(age, sex)
+        
+        if bmi < underweight_thresh:
             return WEIGHT_MODE_GAIN
-        elif bmi > BMI_OVERWEIGHT_THRESHOLD:
+        elif bmi > overweight_thresh:
             return WEIGHT_MODE_LOSS
         else:
             return WEIGHT_MODE_MAINTAIN
@@ -12178,12 +12423,17 @@ def calculate_bmi(weight_kg: float, height_cm: float) -> Optional[float]:
     return weight_kg / (height_m ** 2)
 
 
-def get_bmi_classification(bmi: float) -> tuple:
+def get_bmi_classification(bmi: float, age: int = None, sex: str = None) -> tuple:
     """
     Get BMI classification and color.
     
+    For ages 7-19, uses age/sex-specific CDC BMI-for-age percentiles.
+    For ages 20+ or unspecified, uses standard WHO adult classifications.
+    
     Args:
         bmi: BMI value
+        age: Age in years (optional, for pediatric classification)
+        sex: "M" or "F" (optional, for pediatric classification)
     
     Returns:
         Tuple of (classification_name, color_hex)
@@ -12191,6 +12441,11 @@ def get_bmi_classification(bmi: float) -> tuple:
     if bmi is None:
         return ("Unknown", "#888888")
     
+    # Use age-specific classification if age provided and in pediatric range
+    if age is not None and 7 <= age <= 19:
+        return get_bmi_classification_for_age(bmi, age, sex)
+    
+    # Adult classification (WHO standard)
     for min_bmi, max_bmi, name, color in BMI_CLASSIFICATIONS:
         if min_bmi <= bmi < max_bmi:
             return (name, color)
@@ -12198,12 +12453,17 @@ def get_bmi_classification(bmi: float) -> tuple:
     return ("Unknown", "#888888")
 
 
-def get_ideal_weight_range(height_cm: float) -> tuple:
+def get_ideal_weight_range(height_cm: float, age: int = None, sex: str = None) -> tuple:
     """
-    Calculate ideal weight range for normal BMI (18.5-25).
+    Calculate ideal weight range based on height and optionally age/sex.
+    
+    For ages 7-19, uses age/sex-specific BMI percentile thresholds.
+    For ages 20+ or unspecified, uses standard 18.5-25 BMI range.
     
     Args:
         height_cm: Height in centimeters
+        age: Age in years (optional, for pediatric thresholds)
+        sex: "M" or "F" (optional, for pediatric thresholds)
     
     Returns:
         Tuple of (min_weight_kg, max_weight_kg)
@@ -12211,6 +12471,11 @@ def get_ideal_weight_range(height_cm: float) -> tuple:
     if not height_cm or height_cm <= 0:
         return (None, None)
     
+    # Use age-specific function if age provided
+    if age is not None:
+        return get_ideal_weight_range_for_age(height_cm, age, sex)
+    
+    # Adult range (standard)
     height_m = height_cm / 100
     min_weight = 18.5 * (height_m ** 2)
     max_weight = 25.0 * (height_m ** 2)
@@ -13356,44 +13621,59 @@ def calculate_bedtime_score(bedtime: str, chronotype_id: str) -> tuple:
     return (score, msg)
 
 
-def calculate_duration_score(sleep_hours: float) -> tuple:
+def calculate_duration_score(sleep_hours: float, age: int = None) -> tuple:
     """
-    Calculate duration score based on recommended sleep.
+    Calculate duration score based on age-appropriate recommended sleep.
+    
+    Uses AASM guidelines for children/teens, NSF for adults.
     
     Args:
         sleep_hours: Total sleep duration in hours
+        age: Age in years (optional, for age-specific targets)
     
     Returns:
         Tuple of (score 0-100, message)
     """
-    min_hours = SLEEP_DURATION_TARGETS["minimum"]
-    opt_low = SLEEP_DURATION_TARGETS["optimal_low"]
-    opt_high = SLEEP_DURATION_TARGETS["optimal_high"]
-    max_hours = SLEEP_DURATION_TARGETS["maximum"]
+    # Get age-appropriate targets
+    targets = get_sleep_targets_for_age(age)
+    min_hours = targets["minimum"]
+    opt_low = targets["optimal_low"]
+    opt_high = targets["optimal_high"]
+    max_hours = targets["maximum"]
+    
+    # Generate age-appropriate recommendation text
+    if age is not None and 7 <= age <= 12:
+        rec_text = "9-12h"
+    elif age is not None and 13 <= age <= 18:
+        rec_text = "8-10h"
+    elif age is not None and age >= 65:
+        rec_text = "7-8h"
+    else:
+        rec_text = "7-9h"
     
     if opt_low <= sleep_hours <= opt_high:
-        return (100, f"🌟 Perfect! {sleep_hours:.1f}h is optimal")
+        return (100, f"🌟 Perfect! {sleep_hours:.1f}h is optimal ({rec_text} recommended)")
     
     if sleep_hours < min_hours:
         # Sleep deprived - significant penalty
         deficit = min_hours - sleep_hours
         score = max(0, 100 - int(deficit * 20))  # -20 per hour deficit
-        return (score, f"😴 Sleep deprived! {sleep_hours:.1f}h (need 7+)")
+        return (score, f"😴 Sleep deprived! {sleep_hours:.1f}h (need {min_hours}+)")
     
     if min_hours <= sleep_hours < opt_low:
         # Slightly under optimal
-        return (85, f"👍 Good ({sleep_hours:.1f}h), aim for 7.5+")
+        return (85, f"👍 Good ({sleep_hours:.1f}h), aim for {opt_low}+")
     
     if opt_high < sleep_hours <= max_hours:
         # Slightly over optimal (not necessarily bad)
         return (90, f"💤 Long sleep ({sleep_hours:.1f}h) - typically fine")
     
-    # Very long sleep (>10h) - might indicate health issues
+    # Very long sleep - might indicate health issues
     return (70, f"⚠️ Very long sleep ({sleep_hours:.1f}h) - consult doctor if frequent")
 
 
 def calculate_sleep_score(sleep_hours: float, bedtime: str, quality_id: str,
-                          disruptions: list, chronotype_id: str) -> dict:
+                          disruptions: list, chronotype_id: str, age: int = None) -> dict:
     """
     Calculate comprehensive sleep score.
     
@@ -13403,14 +13683,15 @@ def calculate_sleep_score(sleep_hours: float, bedtime: str, quality_id: str,
         quality_id: Quality rating ID
         disruptions: List of disruption tag IDs
         chronotype_id: User's chronotype
+        age: Age in years (optional, for age-specific duration scoring)
     
     Returns:
         Dict with score breakdown and total
     """
     weights = SLEEP_SCORE_COMPONENTS
     
-    # Duration score (40%)
-    dur_score, dur_msg = calculate_duration_score(sleep_hours)
+    # Duration score (40%) - age-adjusted
+    dur_score, dur_msg = calculate_duration_score(sleep_hours, age)
     
     # Bedtime score (25%)
     bed_score, bed_msg = calculate_bedtime_score(bedtime, chronotype_id)
@@ -14035,7 +14316,7 @@ def get_sleep_reward_rarity(score: int) -> Optional[str]:
 
 def check_sleep_entry_reward(sleep_hours: float, bedtime: str, quality_id: str,
                               disruptions: list, chronotype_id: str,
-                              story_id: str = None) -> dict:
+                              story_id: str = None, age: int = None) -> dict:
     """
     Check what reward a sleep entry earns.
     
@@ -14046,6 +14327,7 @@ def check_sleep_entry_reward(sleep_hours: float, bedtime: str, quality_id: str,
         disruptions: List of disruption tag IDs
         chronotype_id: User's chronotype
         story_id: Story theme for item generation
+        age: Age in years (optional, for age-specific duration scoring)
     
     Returns:
         Dict with reward info
@@ -14065,7 +14347,7 @@ def check_sleep_entry_reward(sleep_hours: float, bedtime: str, quality_id: str,
         return result
     
     score_info = calculate_sleep_score(
-        sleep_hours, bedtime, quality_id, disruptions, chronotype_id
+        sleep_hours, bedtime, quality_id, disruptions, chronotype_id, age
     )
     result["score"] = score_info["total_score"]
     result["score_breakdown"] = score_info
@@ -14321,7 +14603,7 @@ def check_all_sleep_rewards(sleep_entries: list, sleep_hours: float, bedtime: st
                              wake_time: str, quality_id: str, disruptions: list,
                              current_date: str, achieved_milestones: list,
                              chronotype_id: str = "moderate",
-                             story_id: str = None) -> dict:
+                             story_id: str = None, age: int = None) -> dict:
     """
     Comprehensive check for all sleep-related rewards.
     
@@ -14336,13 +14618,14 @@ def check_all_sleep_rewards(sleep_entries: list, sleep_hours: float, bedtime: st
         achieved_milestones: Already achieved milestone IDs
         chronotype_id: User's chronotype
         story_id: Story theme
+        age: Age in years (optional, for age-specific duration scoring)
     
     Returns:
         Dict with all reward information
     """
     # Get base reward for this sleep entry
     base_rewards = check_sleep_entry_reward(
-        sleep_hours, bedtime, quality_id, disruptions, chronotype_id, story_id
+        sleep_hours, bedtime, quality_id, disruptions, chronotype_id, story_id, age
     )
     
     # Create temp entries list including new entry for streak/milestone checks

@@ -872,33 +872,158 @@ def can_upgrade(adhd_buster: dict, row: int, col: int) -> Tuple[bool, str]:
     if current_level >= max_level:
         return False, f"Max level ({max_level}) reached"
     
+    # Check if another building is already under construction
+    active = get_active_construction(adhd_buster)
+    if active is not None:
+        active_row, active_col = active
+        active_cell = grid[active_row][active_col]
+        active_name = CITY_BUILDINGS.get(active_cell.get("building_id"), {}).get("name", "Unknown")
+        return False, f"Already building: {active_name}"
+    
     return True, f"Can upgrade to L{current_level + 1}"
 
 
-def start_upgrade(adhd_buster: dict, row: int, col: int) -> bool:
-    """Start upgrading a completed building to the next level."""
-    can, _ = can_upgrade(adhd_buster, row, col)
+def can_initiate_upgrade(adhd_buster: dict, row: int, col: int) -> Tuple[bool, str]:
+    """
+    Check if a completed building can be upgraded with current resources.
+    
+    Requirements:
+    1. Building must be COMPLETE
+    2. Not at max level
+    3. No other building under construction
+    4. Sufficient stockpile resources (water + materials) for next level
+    
+    Returns (can_initiate, reason).
+    """
+    can, reason = can_upgrade(adhd_buster, row, col)
     if not can:
-        return False
+        return can, reason
     
     city = get_city_data(adhd_buster)
     grid = city.get("grid", [])
-    
-    # Safe grid access - handle malformed data
-    if not _is_valid_grid_cell(grid, row, col):
-        return False
-    
     cell = grid[row][col]
-    if cell is None:
-        return False
     
-    # Increment target level, reset progress, change status
-    cell["level"] = cell.get("level", 1) + 1
+    building_id = cell.get("building_id")
+    building_def = CITY_BUILDINGS.get(building_id, {})
+    current_level = cell.get("level", 1)
+    next_level = current_level + 1
+    
+    # Calculate requirements for NEXT level
+    requirements = get_level_requirements(building_def, next_level)
+    resources = city.get("resources", {})
+    
+    # Check stockpile resources (water + materials)
+    for res_type in STOCKPILE_RESOURCES:
+        needed = requirements.get(res_type, 0)
+        have = resources.get(res_type, 0)
+        if have < needed:
+            return False, f"Need {needed} {res_type}, have {have}"
+    
+    return True, f"Ready to upgrade to L{next_level}"
+
+
+def initiate_upgrade(
+    adhd_buster: dict,
+    row: int,
+    col: int,
+    game_state=None
+) -> dict:
+    """
+    Initiate upgrade on a COMPLETE building.
+    
+    Two-phase upgrade flow (same as construction):
+    1. Consumes water + materials from inventory (upfront payment)
+    2. Increments target level, transitions building COMPLETE → BUILDING
+    3. Sets this building as active_construction
+    4. From now on, all activity + focus earned flows to this building
+    
+    Args:
+        adhd_buster: Player data
+        row, col: Grid coordinates of COMPLETE building
+        game_state: Optional for signals
+    
+    Returns:
+        {
+            "success": bool,
+            "error": str (if failed),
+            "building_id": str,
+            "building_name": str,
+            "new_level": int,
+            "effort_required": {"activity": int, "focus": int},
+        }
+    """
+    can, reason = can_initiate_upgrade(adhd_buster, row, col)
+    if not can:
+        return {"success": False, "error": reason}
+    
+    city = get_city_data(adhd_buster)
+    grid = city.get("grid", [])
+    cell = grid[row][col]
+    
+    building_id = cell.get("building_id")
+    building_def = CITY_BUILDINGS.get(building_id, {})
+    current_level = cell.get("level", 1)
+    next_level = current_level + 1
+    
+    # Calculate requirements for next level
+    requirements = get_level_requirements(building_def, next_level)
+    resources = city.get("resources", {})
+    
+    # Initialize construction progress
+    progress = {}
+    
+    # Consume stockpile resources (water + materials)
+    for res_type in STOCKPILE_RESOURCES:
+        needed = requirements.get(res_type, 0)
+        resources[res_type] = resources.get(res_type, 0) - needed
+        progress[res_type] = needed  # Mark as fully invested
+    
+    # Initialize effort resource progress to 0
+    for res_type in EFFORT_RESOURCES:
+        progress[res_type] = 0
+    
+    # Increment level and transition to BUILDING status
+    cell["level"] = next_level
     cell["status"] = CellStatus.BUILDING.value
-    cell["construction_progress"] = {r: 0 for r in RESOURCE_TYPES}
+    cell["construction_progress"] = progress
     cell["completed_at"] = None
     
-    return True
+    # Set as active construction
+    city["active_construction"] = [row, col]
+    
+    _logger.info(f"Initiated upgrade of {building_id} to L{next_level} at ({row}, {col})")
+    
+    # Emit construction started signal
+    if game_state and hasattr(game_state, 'city_building_progress'):
+        try:
+            game_state._emit(game_state.city_building_progress, building_id)
+        except Exception:
+            pass
+    
+    # Calculate remaining effort needed
+    effort_required = {
+        res_type: requirements.get(res_type, 0)
+        for res_type in EFFORT_RESOURCES
+    }
+    
+    return {
+        "success": True,
+        "building_id": building_id,
+        "building_name": building_def.get("name", building_id),
+        "new_level": next_level,
+        "effort_required": effort_required,
+    }
+
+
+def start_upgrade(adhd_buster: dict, row: int, col: int) -> bool:
+    """
+    DEPRECATED: Use initiate_upgrade() for the proper two-phase flow.
+    
+    This function is kept for backward compatibility but now delegates
+    to initiate_upgrade().
+    """
+    result = initiate_upgrade(adhd_buster, row, col)
+    return result.get("success", False)
 
 
 # ============================================================================
@@ -998,6 +1123,227 @@ def collect_city_income(adhd_buster: dict, game_state=None) -> dict:
     }
 
 
+# Intensity levels that qualify for Goldmine income (moderate and above)
+QUALIFYING_INTENSITIES = {"moderate", "vigorous", "intense"}
+
+
+def award_focus_session_income(
+    adhd_buster: dict,
+    session_minutes: int,
+    game_state=None
+) -> dict:
+    """
+    Award income from Royal Mint and Wonder when a focus session is completed.
+    
+    Args:
+        adhd_buster: Player data
+        session_minutes: Duration of the completed focus session in minutes
+        game_state: Optional game state for signal emission
+    
+    Returns:
+        {
+            "coins": int,
+            "breakdown": [{building, base_coins, time_bonus, total_coins}],
+        }
+    """
+    city = get_city_data(adhd_buster)
+    grid = city.get("grid", [])
+    
+    total_coins = 0
+    breakdown = []
+    
+    # Scan grid for completed buildings that trigger on focus sessions
+    for row in grid:
+        for cell in row:
+            if cell is None:
+                continue
+            if cell.get("status") != CellStatus.COMPLETE.value:
+                continue
+            
+            building_id = cell.get("building_id")
+            building_def = CITY_BUILDINGS.get(building_id, {})
+            effect = building_def.get("effect", {})
+            level = cell.get("level", 1)
+            scaling = building_def.get("level_scaling", {})
+            
+            coins_earned = 0
+            base_coins = 0
+            time_bonus = 0
+            
+            # Royal Mint: activity_triggered_income with trigger=focus_session
+            if (effect.get("type") == "activity_triggered_income" and 
+                effect.get("trigger") == "focus_session"):
+                
+                base_coins = effect.get("base_coins", 0)
+                base_coins += (level - 1) * scaling.get("base_coins", 0)
+                
+                coins_per_30min = effect.get("coins_per_30min", 0)
+                coins_per_30min += (level - 1) * scaling.get("coins_per_30min", 0)
+                
+                time_bonus = int((session_minutes / 30) * coins_per_30min)
+                coins_earned = base_coins + time_bonus
+                
+            # Wonder: multi effect with focus_session_coins bonus
+            elif effect.get("type") == "multi":
+                bonus_coins = effect.get("bonuses", {}).get("focus_session_coins", 0)
+                if bonus_coins > 0:
+                    base_coins = bonus_coins
+                    time_bonus = int((session_minutes / 30) * (bonus_coins // 2))
+                    coins_earned = base_coins + time_bonus
+            
+            if coins_earned > 0:
+                total_coins += coins_earned
+                breakdown.append({
+                    "building": building_def.get("name", "Unknown"),
+                    "building_id": building_id,
+                    "base_coins": base_coins,
+                    "time_bonus": time_bonus,
+                    "total_coins": coins_earned,
+                })
+    
+    # Award coins to player
+    if total_coins > 0:
+        adhd_buster["coins"] = adhd_buster.get("coins", 0) + total_coins
+        
+        # Track in city stats
+        city["total_coins_generated"] = city.get("total_coins_generated", 0) + total_coins
+        city["focus_sessions_rewarded"] = city.get("focus_sessions_rewarded", 0) + 1
+        
+        if game_state and hasattr(game_state, 'city_income_collected'):
+            try:
+                game_state._emit(
+                    game_state.city_income_collected,
+                    {"coins": total_coins, "source": "focus_session"}
+                )
+            except Exception:
+                pass
+    
+    return {
+        "coins": total_coins,
+        "breakdown": breakdown,
+    }
+
+
+def award_exercise_income(
+    adhd_buster: dict,
+    duration_minutes: int,
+    intensity_id: str,
+    effective_minutes: float = None,
+    game_state=None
+) -> dict:
+    """
+    Award income from Goldmine and Wonder when exercise is logged.
+    
+    Only awards coins if intensity is moderate or higher.
+    
+    Args:
+        adhd_buster: Player data
+        duration_minutes: Raw duration of the activity
+        intensity_id: Intensity level (light, moderate, vigorous, intense)
+        effective_minutes: Optional pre-calculated effective minutes
+        game_state: Optional game state for signal emission
+    
+    Returns:
+        {
+            "coins": int,
+            "breakdown": [{building, base_coins, effective_bonus, total_coins}],
+            "qualified": bool,  # True if intensity was moderate+
+        }
+    """
+    # Check if intensity qualifies
+    if intensity_id not in QUALIFYING_INTENSITIES:
+        return {
+            "coins": 0,
+            "breakdown": [],
+            "qualified": False,
+        }
+    
+    city = get_city_data(adhd_buster)
+    grid = city.get("grid", [])
+    
+    # Use effective minutes if provided, otherwise use raw duration
+    eff_mins = effective_minutes if effective_minutes is not None else duration_minutes
+    
+    total_coins = 0
+    breakdown = []
+    
+    # Scan grid for completed buildings that trigger on exercise
+    for row in grid:
+        for cell in row:
+            if cell is None:
+                continue
+            if cell.get("status") != CellStatus.COMPLETE.value:
+                continue
+            
+            building_id = cell.get("building_id")
+            building_def = CITY_BUILDINGS.get(building_id, {})
+            effect = building_def.get("effect", {})
+            level = cell.get("level", 1)
+            scaling = building_def.get("level_scaling", {})
+            
+            coins_earned = 0
+            base_coins = 0
+            effective_bonus = 0
+            
+            # Goldmine: activity_triggered_income with trigger=exercise
+            if (effect.get("type") == "activity_triggered_income" and 
+                effect.get("trigger") == "exercise"):
+                
+                # Check minimum intensity requirement
+                min_intensity = effect.get("min_intensity", "moderate")
+                # All qualifying intensities meet moderate requirement
+                
+                base_coins = effect.get("base_coins", 0)
+                base_coins += (level - 1) * scaling.get("base_coins", 0)
+                
+                coins_per_30min = effect.get("coins_per_effective_30min", 0)
+                coins_per_30min += (level - 1) * scaling.get("coins_per_effective_30min", 0)
+                
+                effective_bonus = int((eff_mins / 30) * coins_per_30min)
+                coins_earned = base_coins + effective_bonus
+                
+            # Wonder: multi effect with exercise_coins bonus
+            elif effect.get("type") == "multi":
+                bonus_coins = effect.get("bonuses", {}).get("exercise_coins", 0)
+                if bonus_coins > 0:
+                    base_coins = bonus_coins
+                    effective_bonus = int((eff_mins / 30) * (bonus_coins // 2))
+                    coins_earned = base_coins + effective_bonus
+            
+            if coins_earned > 0:
+                total_coins += coins_earned
+                breakdown.append({
+                    "building": building_def.get("name", "Unknown"),
+                    "building_id": building_id,
+                    "base_coins": base_coins,
+                    "effective_bonus": effective_bonus,
+                    "total_coins": coins_earned,
+                })
+    
+    # Award coins to player
+    if total_coins > 0:
+        adhd_buster["coins"] = adhd_buster.get("coins", 0) + total_coins
+        
+        # Track in city stats
+        city["total_coins_generated"] = city.get("total_coins_generated", 0) + total_coins
+        city["exercises_rewarded"] = city.get("exercises_rewarded", 0) + 1
+        
+        if game_state and hasattr(game_state, 'city_income_collected'):
+            try:
+                game_state._emit(
+                    game_state.city_income_collected,
+                    {"coins": total_coins, "source": "exercise"}
+                )
+            except Exception:
+                pass
+    
+    return {
+        "coins": total_coins,
+        "breakdown": breakdown,
+        "qualified": True,
+    }
+
+
 def get_pending_income(adhd_buster: dict) -> dict:
     """
     Preview pending income WITHOUT collecting (read-only).
@@ -1064,7 +1410,9 @@ def get_city_bonuses(adhd_buster: dict) -> dict:
     
     Returns:
         dict: {
-            "coins_per_hour": int,
+            "coins_per_hour": int,  # Legacy, may be 0 if no passive_income buildings
+            "focus_session_coins": int,  # Coins per focus session (Royal Mint)
+            "exercise_coins": int,  # Coins per qualifying exercise (Goldmine)
             "merge_success_bonus": int,
             "rarity_bias_bonus": int,
             "entity_catch_bonus": int,
@@ -1076,6 +1424,8 @@ def get_city_bonuses(adhd_buster: dict) -> dict:
     """
     bonuses = {
         "coins_per_hour": 0,
+        "focus_session_coins": 0,
+        "exercise_coins": 0,
         "merge_success_bonus": 0,
         "rarity_bias_bonus": 0,
         "entity_catch_bonus": 0,
@@ -1111,6 +1461,18 @@ def get_city_bonuses(adhd_buster: dict) -> dict:
                 base = effect.get("coins_per_hour", 0)
                 per_level = scaling.get("coins_per_hour", 0)
                 bonuses["coins_per_hour"] += base + (level - 1) * per_level
+            
+            elif effect_type == "activity_triggered_income":
+                # Calculate the base coins for display purposes
+                trigger = effect.get("trigger")
+                if trigger == "focus_session":
+                    base = effect.get("base_coins", 0)
+                    per_level = scaling.get("base_coins", 0)
+                    bonuses["focus_session_coins"] += base + (level - 1) * per_level
+                elif trigger == "exercise":
+                    base = effect.get("base_coins", 0)
+                    per_level = scaling.get("base_coins", 0)
+                    bonuses["exercise_coins"] += base + (level - 1) * per_level
                 
             elif effect_type == "merge_success_bonus":
                 base = effect.get("bonus_percent", 0)
