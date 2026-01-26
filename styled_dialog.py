@@ -865,14 +865,24 @@ class ItemRewardDialog(StyledDialog):
             msg_lbl.setStyleSheet("font-weight: bold; color: #888888; font-size: 12px;")
             layout.addWidget(msg_lbl)
         
-        # Extra messages
+        # Extra messages (including city construction feedback)
         if self._extra_messages:
             layout.addSpacing(5)
             for msg in self._extra_messages:
                 msg_lbl = QtWidgets.QLabel(msg)
                 msg_lbl.setWordWrap(True)
                 msg_lbl.setAlignment(QtCore.Qt.AlignCenter)
-                msg_lbl.setStyleSheet("color: #B0B0B0; font-size: 11px;")
+                
+                # Highlight city construction messages more prominently
+                if "🏗️" in msg or "🎉" in msg:
+                    # Active construction or completion - bright and prominent
+                    msg_lbl.setStyleSheet("color: #7fdbff; font-size: 12px; font-weight: bold;")
+                elif "⚠️" in msg:
+                    # Warning (no construction) - muted orange
+                    msg_lbl.setStyleSheet("color: #ffaa44; font-size: 11px;")
+                else:
+                    # Default styling
+                    msg_lbl.setStyleSheet("color: #B0B0B0; font-size: 11px;")
                 layout.addWidget(msg_lbl)
         
         layout.addSpacing(10)
@@ -1184,13 +1194,20 @@ class ItemRewardDialog(StyledDialog):
             section_layout.setContentsMargins(8, 6, 8, 6)
             section_layout.setSpacing(4)
             
+            # Check if there are city bonuses
+            has_city = any(c.get("is_city", False) for c in self._entity_perk_contributors)
+            
             # Header
             bonus_parts = []
             if total_rarity > 0:
                 bonus_parts.append(f"+{total_rarity}% rare finds")
             if total_drop > 0:
                 bonus_parts.append(f"+{total_drop}% drop luck")
-            header_text = "🐾 Entity Patrons: " + ", ".join(bonus_parts)
+            
+            if has_city:
+                header_text = "🐾 Patrons & City: " + ", ".join(bonus_parts)
+            else:
+                header_text = "🐾 Entity Patrons: " + ", ".join(bonus_parts)
             
             header = QtWidgets.QLabel(header_text)
             header.setStyleSheet("color: #7986cb; font-weight: bold; font-size: 11px; background: transparent;")
@@ -1224,10 +1241,15 @@ class ItemRewardDialog(StyledDialog):
                 name = entity_data.get("name", "Unknown")
                 value = entity_data.get("value", 0)
                 perk_type = entity_data.get("perk_type", "")
+                is_city = entity_data.get("is_city", False)
                 icon = "🎲" if perk_type == "rarity_bias" else "🍀"
                 display_name = name[:10] + "..." if len(name) > 10 else name
                 
-                if is_exceptional:
+                if is_city:
+                    # City building - use different style
+                    style = "color: #7fdbff; font-weight: bold; font-size: 10px; background: transparent;"
+                    prefix = "🏛️ "
+                elif is_exceptional:
                     style = "color: #ffd700; font-weight: bold; font-size: 10px; background: transparent;"
                     prefix = "⭐"
                 else:
@@ -1747,6 +1769,49 @@ or you're about to break something.<br><br>
 
 <b>Pro tip:</b> Using these defeats the purpose of the gamification system. 
 But we're not your mom. Do what you want. 🔓"""
+    },
+    "city": {
+        "title": "🏰 City Tab",
+        "icon": "🏰",
+        "content": """<b>What it does:</b><br>
+Build your personal city where healthy habits fuel real progress!
+Your daily activities literally construct buildings. 
+Yes, we gamified hydration. You're welcome.<br><br>
+
+<b>🚀 Quick Start:</b><br>
+1. Earn resources through your habits:<br>
+&nbsp;&nbsp;• 💧 Log water in Hydration tab (your kidneys approve)<br>
+&nbsp;&nbsp;• 🧱 Log weight in Body tab (the scale is not the enemy)<br>
+2. Click an empty slot to place a building<br>
+3. Keep up your healthy routine!<br>
+&nbsp;&nbsp;• 🏃 Activities power construction<br>
+&nbsp;&nbsp;• 🎯 Focus sessions complete buildings<br>
+4. Enjoy bonuses from completed buildings!<br>
+&nbsp;&nbsp;(Your city works for you now. Well deserved.)<br><br>
+
+<b>💰 Resource Types:</b><br>
+<b>Stockpile</b> (paid upfront - like a deposit, but fun):<br>
+&nbsp;&nbsp;• 💧 <b>Water</b>: Log hydration<br>
+&nbsp;&nbsp;• 🧱 <b>Materials</b>: Log weight (hitting goals)<br><br>
+<b>Effort</b> (flows automatically - no micromanaging needed):<br>
+&nbsp;&nbsp;• 🏃 <b>Activity</b>: Log physical activities<br>
+&nbsp;&nbsp;• 🎯 <b>Focus</b>: Complete focus sessions (1 per 30 min)<br><br>
+
+<b>✨ Building Bonuses:</b><br>
+• Goldmine: Earn coins when you exercise (more effort = more gold)<br>
+• Royal Mint: Earn coins from focus sessions (time is money, literally)<br>
+• Power, XP, and merge success bonuses<br>
+• Entity encounter and catch rate boosts<br>
+• Upgrade buildings for stronger effects!<br>
+&nbsp;&nbsp;(More levels = more bragging rights)<br><br>
+
+<b>🔗 Synergies:</b><br>
+Collected entities matching a building's theme boost its output!<br>
+Normal: +5% | Exceptional ⭐: +10% | Max: +50%<br>
+(The entities are surprisingly helpful. Don't ask why.)<br><br>
+
+<b>Pro tip:</b> Only one building can be under construction at a time.
+The tiny construction workers have strong union rules. 🏗️"""
     },
 }
 

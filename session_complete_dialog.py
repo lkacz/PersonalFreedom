@@ -191,9 +191,14 @@ class SessionCompleteDialog(StyledDialog):
         rewards_layout.setSpacing(6)
         rewards_layout.setContentsMargins(12, 12, 12, 12)
         
-        # XP
+        # XP with city bonus breakdown
         if self.rewards.get("xp", 0) > 0:
-            xp_label = QtWidgets.QLabel(f"✨ +{self.rewards['xp']} XP")
+            city_xp_bonus = self.rewards.get("city_xp_bonus", 0)
+            if city_xp_bonus > 0:
+                base_xp = self.rewards['xp'] - city_xp_bonus
+                xp_label = QtWidgets.QLabel(f"✨ +{self.rewards['xp']} XP ({base_xp} + 📚 Library {city_xp_bonus})")
+            else:
+                xp_label = QtWidgets.QLabel(f"✨ +{self.rewards['xp']} XP")
             xp_label.setStyleSheet("color: #9c27b0; font-weight: bold; font-size: 13px;")
             rewards_layout.addWidget(xp_label)
         
@@ -214,6 +219,30 @@ class SessionCompleteDialog(StyledDialog):
             streak_label = QtWidgets.QLabel(f"🔥 Streak: {self.rewards.get('current_streak', 1)} days")
             streak_label.setStyleSheet("color: #f44336; font-weight: bold; font-size: 13px;")
             rewards_layout.addWidget(streak_label)
+        
+        # City construction contribution preview
+        city_construction = self.rewards.get("city_construction")
+        if city_construction:
+            building_name = city_construction.get("building_name", "Building")
+            focus_earned = city_construction.get("focus_earned", 0)
+            current_progress = city_construction.get("current_progress", 0)
+            mins_needed = city_construction.get("mins_needed", 0)
+            
+            if focus_earned > 0:
+                construction_label = QtWidgets.QLabel(
+                    f"🏗️ +{focus_earned} Focus → {building_name} ({current_progress:.0f}%)"
+                )
+                construction_label.setStyleSheet("color: #7FDBFF; font-weight: bold; font-size: 13px;")
+            elif mins_needed > 0:
+                construction_label = QtWidgets.QLabel(
+                    f"🏗️ {mins_needed} more min → +1 Focus for {building_name}"
+                )
+                construction_label.setStyleSheet("color: #888888; font-size: 12px;")
+            else:
+                construction_label = None
+            
+            if construction_label:
+                rewards_layout.addWidget(construction_label)
         
         # Entity Perks Applied (show which entity bonuses contributed)
         entity_perks = self.rewards.get("entity_perks_applied", [])

@@ -528,6 +528,141 @@ def place_building(
     return True
 
 
+def place_and_start_building(
+    adhd_buster: dict,
+    row: int,
+    col: int,
+    building_id: str,
+    game_state=None
+) -> dict:
+    """
+    Place a building AND immediately start construction in one step.
+    
+    This combines place_building() + initiate_construction() for a streamlined flow:
+    1. Validates building can be placed
+    2. Checks no other building is under construction
+    3. Checks player has sufficient stockpile resources (water + materials)
+    4. Places building AND starts construction
+    5. Sets this as active_construction
+    
+    Args:
+        adhd_buster: Player data
+        row, col: Grid coordinates
+        building_id: ID of building to construct
+        game_state: Optional for signals
+    
+    Returns:
+        {
+            "success": bool,
+            "error": str (if failed),
+            "building_id": str,
+            "building_name": str,
+            "effort_required": {"activity": int, "focus": int},
+            "missing_resources": {"water": int, "materials": int} (if resources insufficient),
+        }
+    """
+    # Check if building can be placed (type valid, not already built, slots available)
+    can_place, place_reason = can_place_building(adhd_buster, building_id)
+    if not can_place:
+        return {"success": False, "error": place_reason}
+    
+    # Check if another building is already under construction
+    active = get_active_construction(adhd_buster)
+    if active is not None:
+        city = get_city_data(adhd_buster)
+        grid = city.get("grid", [])
+        active_row, active_col = active
+        if _is_valid_grid_cell(grid, active_row, active_col):
+            active_cell = grid[active_row][active_col]
+            if active_cell:
+                active_name = CITY_BUILDINGS.get(active_cell.get("building_id"), {}).get("name", "Unknown")
+                return {"success": False, "error": f"Already building: {active_name}. Complete it first!"}
+        return {"success": False, "error": "Another building is under construction"}
+    
+    # Get building definition and requirements
+    building_def = CITY_BUILDINGS.get(building_id)
+    if not building_def:
+        return {"success": False, "error": "Unknown building type"}
+    
+    requirements = get_level_requirements(building_def, 1)  # Level 1 for new building
+    
+    # Check if player has sufficient stockpile resources
+    city = get_city_data(adhd_buster)
+    resources = city.get("resources", {})
+    missing = {}
+    for res_type in STOCKPILE_RESOURCES:
+        needed = requirements.get(res_type, 0)
+        have = resources.get(res_type, 0)
+        if have < needed:
+            missing[res_type] = needed - have
+    
+    if missing:
+        return {
+            "success": False, 
+            "error": "Insufficient resources",
+            "missing_resources": missing,
+        }
+    
+    grid = city.get("grid", [])
+    
+    # Validate coordinates
+    if row < 0 or row >= GRID_ROWS or col < 0 or col >= GRID_COLS:
+        return {"success": False, "error": "Invalid grid coordinates"}
+    
+    if not _is_valid_grid_cell(grid, row, col):
+        return {"success": False, "error": "Grid data corrupted"}
+    
+    # Check cell is empty
+    if grid[row][col] is not None:
+        return {"success": False, "error": "Plot is not empty"}
+    
+    # Create new cell state directly in BUILDING status (skip PLACED)
+    from datetime import datetime
+    cell = {
+        "building_id": building_id,
+        "status": CellStatus.BUILDING.value,  # Start as BUILDING, not PLACED
+        "level": 1,
+        "construction_progress": {},
+        "placed_at": datetime.now().isoformat(),
+        "completed_at": None,
+    }
+    
+    # Consume and record stockpile resources
+    progress = cell["construction_progress"]
+    for res_type in STOCKPILE_RESOURCES:
+        needed = requirements.get(res_type, 0)
+        resources[res_type] = resources.get(res_type, 0) - needed
+        progress[res_type] = needed  # Mark as fully invested
+    
+    # Place the building
+    grid[row][col] = cell
+    
+    # Set as active construction
+    city["active_construction"] = [row, col]
+    
+    _logger.info(f"Placed and started construction of {building_id} at ({row}, {col})")
+    
+    # Emit construction started signal
+    if game_state and hasattr(game_state, 'city_building_progress'):
+        try:
+            game_state._emit(game_state.city_building_progress, building_id)
+        except Exception:
+            pass
+    
+    # Calculate remaining effort needed
+    effort_required = {
+        res_type: requirements.get(res_type, 0)
+        for res_type in EFFORT_RESOURCES
+    }
+    
+    return {
+        "success": True,
+        "building_id": building_id,
+        "building_name": building_def.get("name", building_id),
+        "effort_required": effort_required,
+    }
+
+
 def remove_building(
     adhd_buster: dict,
     row: int,

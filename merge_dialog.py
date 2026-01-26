@@ -720,24 +720,35 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.entity_perk_contributors = self.entity_perks.get("contributors", [])
         
         # Import discount helpers from gamification
-        from gamification import apply_coin_discount, apply_coin_flat_reduction
+        from gamification import apply_coin_discount, apply_coin_flat_reduction, get_city_bonuses
         
         # Entity coin_discount is a FLAT coin reduction (e.g., -2 coins from Vending Machine perk)
         # Item coin_discount is a PERCENTAGE discount
         self.entity_coin_flat = self.entity_coin_discount  # Renamed for clarity - this is FLAT coins
         self.item_coin_discount_pct = coin_discount  # This is percentage
         
+        # 🏙️ CITY BONUS: Market coin discount (percentage)
+        self.city_coin_discount = 0
+        try:
+            city_bonuses = get_city_bonuses(self.adhd_buster)
+            self.city_coin_discount = city_bonuses.get("coin_discount", 0)
+        except Exception:
+            pass
+        
+        # Combine item + city percentage discounts (cap at 90%)
+        total_pct_discount = min(coin_discount + self.city_coin_discount, 90)
+        
         # Store total coin discount for UI (percentage only, flat is separate)
-        self.total_coin_discount = coin_discount  # Just the percentage part
+        self.total_coin_discount = total_pct_discount  # Combined percentage part
         
         # Apply percentage discount first, then flat reduction
-        # Step 1: Apply item percentage discount
+        # Step 1: Apply combined percentage discount (item + city)
         # Step 2: Apply entity flat coin reduction
-        self.merge_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_base", 50), coin_discount), self.entity_coin_flat)
-        self.boost_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_boost", 50), coin_discount), self.entity_coin_flat)
-        self.tier_upgrade_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_tier_upgrade", 50), coin_discount), self.entity_coin_flat)
-        self.retry_bump_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_retry_bump", 50), coin_discount), self.entity_coin_flat)
-        self.claim_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_claim", 100), coin_discount), self.entity_coin_flat)  # Claim item on near-miss
+        self.merge_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_base", 50), total_pct_discount), self.entity_coin_flat)
+        self.boost_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_boost", 50), total_pct_discount), self.entity_coin_flat)
+        self.tier_upgrade_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_tier_upgrade", 50), total_pct_discount), self.entity_coin_flat)
+        self.retry_bump_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_retry_bump", 50), total_pct_discount), self.entity_coin_flat)
+        self.claim_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_claim", 100), total_pct_discount), self.entity_coin_flat)  # Claim item on near-miss
         self.boost_bonus = MERGE_BOOST_BONUS  # +25% success rate
         
         self.retry_cost_accumulated = 0
@@ -964,10 +975,12 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         if self.total_coin_discount > 0:
             # Build discount breakdown text
             discount_parts = []
-            if self.coin_discount > 0:
-                discount_parts.append(f"Items: {self.coin_discount}%")
+            if self.item_coin_discount_pct > 0:
+                discount_parts.append(f"Items: {self.item_coin_discount_pct}%")
+            if self.city_coin_discount > 0:
+                discount_parts.append(f"🏪 Market: {self.city_coin_discount}%")
             if self.entity_coin_discount > 0:
-                discount_parts.append(f"✨ Entities: {self.entity_coin_discount}%")
+                discount_parts.append(f"✨ Entities: -{self.entity_coin_discount}🪙")
             discount_breakdown = " + ".join(discount_parts)
             
             cost_text = (f"Combining {len(self.items)} items • Cost: "
@@ -2510,9 +2523,10 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         can_afford_claim = remaining_coins >= self.claim_cost
 
         # Salvage option - save one random item (discounted with both percentage and flat)
+        # Use total_coin_discount which includes city Market bonus
         from gamification import apply_coin_discount, apply_coin_flat_reduction
         salvage_cost = apply_coin_flat_reduction(
-            apply_coin_discount(COIN_COSTS.get("merge_salvage", 50), self.item_coin_discount_pct),
+            apply_coin_discount(COIN_COSTS.get("merge_salvage", 50), self.total_coin_discount),
             self.entity_coin_flat
         )
         can_afford_salvage = remaining_coins >= salvage_cost

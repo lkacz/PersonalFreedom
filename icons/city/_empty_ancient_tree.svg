@@ -1,0 +1,26 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="sky7" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#1e2d3a"/><stop offset="100%" style="stop-color:#2a3d4a"/></linearGradient>
+    <linearGradient id="grass7" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#4a7a4a"/><stop offset="100%" style="stop-color:#3a5a3a"/></linearGradient>
+  </defs>
+  <rect width="128" height="128" fill="url(#sky7)"/>
+  <path d="M-10,75 Q30,60 64,68 Q98,76 138,65 L138,85 L-10,85 Z" fill="#2a4a3a" opacity="0.5"/>
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass7)"/>
+  <g stroke="#5a8a5a" stroke-width="1.5" fill="none">
+    <path d="M90,96 Q95,86 103,84"><animate attributeName="d" values="M90,96 Q95,86 103,84;M90,96 Q97,84 107,82;M90,96 Q95,86 103,84" dur="2s" repeatCount="indefinite"/></path>
+  </g>
+  <g transform-origin="45 85"><animateTransform attributeName="transform" type="rotate" values="-0.3;0.3;-0.3" dur="5s" repeatCount="indefinite"/>
+    <path d="M40,95 Q38,75 42,60 L48,60 Q52,75 50,95 Z" fill="#4a3a2a"/>
+    <path d="M42,65 Q30,55 25,50" stroke="#4a3a2a" stroke-width="3" fill="none"/>
+    <path d="M48,62 Q60,50 68,48" stroke="#4a3a2a" stroke-width="3" fill="none"/>
+    <ellipse cx="45" cy="45" rx="28" ry="20" fill="#2d5a3d"/>
+    <ellipse cx="30" cy="50" rx="15" ry="12" fill="#3d6a4d"/>
+    <ellipse cx="60" cy="48" rx="14" ry="11" fill="#3d6a4d"/>
+    <ellipse cx="45" cy="38" rx="18" ry="12" fill="#4d7a5d"/>
+  </g>
+  <ellipse cx="65" cy="55" rx="2" ry="1" fill="#6a9a5a" opacity="0.8"><animate attributeName="cy" values="55;95;55" dur="6s" repeatCount="indefinite"/><animate attributeName="cx" values="65;80;65" dur="6s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="rotate" values="0;360;0" dur="6s" repeatCount="indefinite"/></ellipse>
+  <g opacity="0.35"><animate attributeName="opacity" values="0.25;0.45;0.25" dur="2.5s" repeatCount="indefinite"/>
+    <rect x="76" y="55" width="6" height="18" rx="2" fill="#4CAF50"/>
+    <rect x="70" y="61" width="18" height="6" rx="2" fill="#4CAF50"/>
+  </g>
+</svg>

@@ -1,0 +1,23 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="sky2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#1e2d3a"/><stop offset="100%" style="stop-color:#2a3d4a"/></linearGradient>
+    <linearGradient id="grass2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#4a7a4a"/><stop offset="100%" style="stop-color:#3a5a3a"/></linearGradient>
+    <linearGradient id="rock2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#6a6a7a"/><stop offset="100%" style="stop-color:#4a4a5a"/></linearGradient>
+  </defs>
+  <rect width="128" height="128" fill="url(#sky2)"/>
+  <path d="M-10,75 Q30,60 64,68 Q98,76 138,65 L138,85 L-10,85 Z" fill="#2a4a3a" opacity="0.5"/>
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass2)"/>
+  <g stroke="#5a8a5a" stroke-width="1.5" fill="none">
+    <path d="M10,100 Q15,90 23,88"><animate attributeName="d" values="M10,100 Q15,90 23,88;M10,100 Q17,88 27,86;M10,100 Q15,90 23,88" dur="2s" repeatCount="indefinite"/></path>
+    <path d="M100,96 Q105,86 113,84"><animate attributeName="d" values="M100,96 Q105,86 113,84;M100,96 Q107,84 117,82;M100,96 Q105,86 113,84" dur="1.8s" repeatCount="indefinite"/></path>
+  </g>
+  <polygon points="50,92 55,65 65,60 75,68 78,92" fill="url(#rock2)"/>
+  <polygon points="55,65 60,62 65,60" fill="#7a7a8a"/>
+  <polygon points="40,95 45,78 55,82 52,95" fill="#5a5a6a"/>
+  <ellipse cx="85" cy="90" rx="5" ry="3" fill="#5a5a6a"/>
+  <ellipse cx="30" cy="93" rx="4" ry="2.5" fill="#4a4a5a"/>
+  <g opacity="0.35"><animate attributeName="opacity" values="0.25;0.45;0.25" dur="2.5s" repeatCount="indefinite"/>
+    <rect x="61" y="42" width="6" height="18" rx="2" fill="#4CAF50"/>
+    <rect x="55" y="48" width="18" height="6" rx="2" fill="#4CAF50"/>
+  </g>
+</svg>

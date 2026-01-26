@@ -59,6 +59,7 @@ def calculate_encounter_chance(
     was_perfect_session: bool = False,
     streak_days: int = 0,
     active_perks: Optional[dict] = None,
+    city_encounter_bonus: float = 0.0,
 ) -> Tuple[float, float]:
     """
     Calculate the chance of encountering an entity after a focus session.
@@ -69,6 +70,7 @@ def calculate_encounter_chance(
         was_perfect_session: True if no bypass was attempted
         streak_days: Number of consecutive days with completed sessions
         active_perks: Dict with entity perk bonuses (encounter_chance, etc.)
+        city_encounter_bonus: Bonus from city Observatory building (percentage, e.g., 5 = +5%)
         
     Returns:
         Tuple of (final_chance, perk_bonus) - probability between 0.0 and max_chance
@@ -96,6 +98,12 @@ def calculate_encounter_chance(
         perk_bonus = encounter_bonus / 100.0  # Convert to probability
         chance += perk_bonus
     
+    # 🏙️ CITY BONUS: Observatory building encounter bonus
+    if city_encounter_bonus > 0:
+        city_bonus_prob = city_encounter_bonus / 100.0  # Convert percentage to probability
+        chance += city_bonus_prob
+        perk_bonus += city_bonus_prob  # Include in reported perk bonus
+    
     # Cap at maximum
     return min(chance, ENCOUNTER_CONFIG["max_chance"]), perk_bonus
 
@@ -107,6 +115,7 @@ def roll_encounter_chance(
     streak_days: int = 0,
     active_perks: Optional[dict] = None,
     was_bypass_used: bool = False,
+    city_encounter_bonus: float = 0.0,
 ) -> Tuple[bool, float, float]:
     """
     Roll to determine if an encounter occurs.
@@ -129,6 +138,7 @@ def roll_encounter_chance(
         was_perfect_session=was_perfect_session,
         streak_days=streak_days,
         active_perks=active_perks,
+        city_encounter_bonus=city_encounter_bonus,
     )
     
     # Apply bypass penalty - reduced chance but not zero
@@ -149,6 +159,7 @@ def should_trigger_encounter(
     streak_days: int = 0,
     was_bypass_used: bool = False,
     active_perks: Optional[dict] = None,
+    city_encounter_bonus: float = 0.0,
 ) -> bool:
     """
     Determine if an entity encounter should trigger.
@@ -161,6 +172,7 @@ def should_trigger_encounter(
         was_bypass_used: True if session ended early via bypass
             (reduces encounter chance but doesn't eliminate it)
         active_perks: Dict with entity perk bonuses
+        city_encounter_bonus: Bonus from city Observatory building (percentage)
         
     Returns:
         True if an encounter should occur
@@ -172,6 +184,7 @@ def should_trigger_encounter(
         streak_days=streak_days,
         active_perks=active_perks,
         was_bypass_used=was_bypass_used,
+        city_encounter_bonus=city_encounter_bonus,
     )
     
     # Log perk contribution if any
