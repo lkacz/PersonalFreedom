@@ -1654,11 +1654,33 @@ class LogPastSessionDialog(StyledDialog):
             rarity = "Common"
             rarity_color = "#78909c"
         
+        # Check for city building contribution
+        city_line = ""
+        try:
+            if CITY_AVAILABLE:
+                from city import get_active_construction_info
+                active = get_active_construction_info(self.blocker.adhd_buster)
+                if active:
+                    focus_earned = total_minutes // 30
+                    building_name = active.get("building_name", "Building")
+                    if focus_earned > 0:
+                        city_line = f"<br>• <b style='color:#9b59b6;'>🏗️ City:</b> +{focus_earned} Focus → {building_name}"
+                    else:
+                        # Show how many more minutes needed
+                        mins_needed = 30 - (total_minutes % 30)
+                        city_line = f"<br>• <b style='color:#888;'>🏗️ City:</b> {mins_needed} more min for +1 Focus → {building_name}"
+                elif total_minutes >= 30:
+                    # No construction but would earn Focus
+                    city_line = f"<br>• <b style='color:#888;'>🏗️ City:</b> No construction active (start a build in City tab!)"
+        except Exception:
+            pass
+        
         self.preview_label.setText(
             f"<b style='color:#00b894;'>📊 Rewards Preview:</b><br>"
             f"• <b style='color:#ffd700;'>XP:</b> ~{total_xp}<br>"
             f"• <b style='color:#f1c40f;'>Coins:</b> ~{coins}<br>"
             f"• <b style='color:{rarity_color};'>Item:</b> 1x {rarity} gear (guaranteed)"
+            f"{city_line}"
         )
     
     def _on_log(self) -> None:
@@ -2956,12 +2978,32 @@ class TimerTab(QtWidgets.QWidget):
         except Exception as e:
             logger.debug(f"Could not get entity luck perk contributors: {e}")
         
+        # 🏙️ Add city bonus contributors for rarity (Artisan Guild)
+        try:
+            from gamification import get_city_bonuses
+            city_bonuses = get_city_bonuses(self.blocker.adhd_buster)
+            rarity_bonus = city_bonuses.get("rarity_bias_bonus", 0)
+            if rarity_bonus > 0:
+                entity_perk_contributors.append({
+                    "entity_id": "city_artisan_guild",
+                    "name": "Artisan Guild",
+                    "perk_type": "rarity_bias",
+                    "value": int(rarity_bonus),
+                    "icon": "🏛️",
+                    "is_exceptional": False,
+                    "description": f"+{int(rarity_bonus)}% Rarity (City Building)",
+                    "is_city": True,  # Mark as city building for different display
+                })
+        except Exception as e:
+            logger.debug(f"Could not get city rarity bonus: {e}")
+        
         # Build extra messages for display
         extra_msgs = []
         
         # Add city construction progress feedback from the stored contribution info
         main_window = self.window()
         last_contribution = getattr(main_window, '_last_city_contribution', None)
+        building_completed_info = None  # Track if building completed for celebration dialog
         if last_contribution:
             building_name = last_contribution.get("building_name")
             amount = last_contribution.get("amount", 0)
@@ -2969,6 +3011,8 @@ class TimerTab(QtWidgets.QWidget):
             progress = last_contribution.get("progress_percent", 0)
             completed = last_contribution.get("completed", False)
             wasted = last_contribution.get("wasted", False)
+            short_session = last_contribution.get("short_session", False)
+            mins_needed = last_contribution.get("mins_needed", 0)
             
             resource_emoji = "🎯" if resource == "focus" else "💪"
             
@@ -2976,7 +3020,14 @@ class TimerTab(QtWidgets.QWidget):
                 extra_msgs.append(f"⚠️ +{amount} {resource.title()} earned but no building under construction")
             elif completed:
                 extra_msgs.append(f"🎉 +{amount} {resource.title()} → {building_name} COMPLETE!")
-            elif building_name:
+                # Save info for celebration dialog
+                building_completed_info = {
+                    "building_id": last_contribution.get("building_id", ""),
+                    "level": last_contribution.get("level", 1),
+                }
+            elif short_session and mins_needed > 0:
+                extra_msgs.append(f"🏗️ {mins_needed} more min → +1 Focus for {building_name}")
+            elif building_name and amount > 0:
                 extra_msgs.append(f"🏗️ +{amount} {resource.title()} → {building_name} ({progress:.0f}%)")
             
             # Clear the contribution info after showing
@@ -2997,6 +3048,29 @@ class TimerTab(QtWidgets.QWidget):
         reward_dialog.exec()
         reward_dialog.deleteLater()  # Ensure dialog is cleaned up
         
+        # 🎉 Show building complete celebration if construction just finished
+        if building_completed_info:
+            try:
+                from city_tab import show_building_complete_dialog
+                building_id = building_completed_info.get("building_id", "")
+                level = building_completed_info.get("level", 1)
+                # If level > 1, this was an upgrade, not initial construction
+                is_upgrade = level > 1
+                show_building_complete_dialog(building_id, level, is_upgrade, parent=self.window())
+                # Refresh city tab to show completed building (remove construction overlay)
+                main_window = self.window()
+                if hasattr(main_window, 'city_tab') and hasattr(main_window.city_tab, '_refresh_city'):
+                    main_window.city_tab._refresh_city()
+            except Exception as e:
+                logger.debug(f"Could not show building complete dialog: {e}")
+        
+        # Refresh city tab if construction progress was tracked
+        last_contribution = getattr(self.window(), '_last_city_contribution', None)
+        if last_contribution is None:  # Was set and consumed, city might have changed
+            main_window = self.window()
+            if hasattr(main_window, 'city_tab') and hasattr(main_window.city_tab, '_refresh_city'):
+                main_window.city_tab._refresh_city()
+
         # Note: UI updates are now handled automatically via GameState signals
         # The game_state.end_batch() above triggers power_changed, coins_changed,
         # and inventory_changed signals which update the UI reactively.
@@ -3125,15 +3199,19 @@ class TimerTab(QtWidgets.QWidget):
             if not encounter["triggered"] or not encounter["entity"]:
                 return
             
-            # Show perk toast if entity perks helped with encounter
+            # Show perk toast if entity perks or city buildings helped with encounter
             if encounter.get("perk_bonus_applied"):
                 perk_parts = []
                 if encounter.get("encounter_perk_bonus", 0) > 0:
-                    perk_parts.append(f"+{int(encounter['encounter_perk_bonus'])}% encounter")
+                    perk_parts.append(f"+{int(encounter['encounter_perk_bonus'])}% encounter (Perks)")
+                if encounter.get("city_encounter_bonus", 0) > 0:
+                    perk_parts.append(f"+{int(encounter['city_encounter_bonus'])}% encounter (🔭 Observatory)")
                 if encounter.get("capture_perk_bonus", 0) > 0:
-                    perk_parts.append(f"+{int(encounter['capture_perk_bonus'])}% capture")
+                    perk_parts.append(f"+{int(encounter['capture_perk_bonus'])}% capture (Perks)")
+                if encounter.get("city_catch_bonus", 0) > 0:
+                    perk_parts.append(f"+{int(encounter['city_catch_bonus'])}% capture (🎓 University)")
                 if perk_parts:
-                    show_perk_toast(f"Entity Perks: {', '.join(perk_parts)}", "🌟", self)
+                    show_perk_toast(f"Bonuses: {', '.join(perk_parts)}", "🌟", self)
             
             # Show encounter dialog using new merge-style flow
             entity = encounter["entity"]
@@ -3601,6 +3679,7 @@ class TimerTab(QtWidgets.QWidget):
             "streak_maintained": False,
             "current_streak": 0,
             "entity_perks_applied": [],  # Track which entity perks were applied
+            "city_construction": None,  # Preview of construction contribution
         }
         
         if not GAMIFICATION_AVAILABLE:
@@ -3623,7 +3702,21 @@ class TimerTab(QtWidgets.QWidget):
             session_minutes, streak, lucky_xp_bonus=xp_bonus_pct,
             adhd_buster=self.blocker.adhd_buster
         )
-        rewards["xp"] = xp_info["total_xp"]
+        base_xp_total = xp_info["total_xp"]
+        
+        # 🏙️ CITY BONUS: Library XP bonus (preview what award_xp will apply)
+        city_xp_bonus = 0
+        try:
+            from gamification import get_city_bonuses
+            city_bonuses = get_city_bonuses(self.blocker.adhd_buster)
+            xp_bonus_pct_city = city_bonuses.get("xp_bonus", 0)
+            if xp_bonus_pct_city > 0 and base_xp_total > 0:
+                city_xp_bonus = int(base_xp_total * xp_bonus_pct_city / 100.0)
+        except Exception:
+            pass
+        
+        rewards["xp"] = base_xp_total + city_xp_bonus
+        rewards["city_xp_bonus"] = city_xp_bonus  # Track for display
         
         # Track XP entity perks from xp_info if available
         entity_xp_breakdown = xp_info.get("entity_xp_breakdown", [])
@@ -3682,6 +3775,34 @@ class TimerTab(QtWidgets.QWidget):
         # Don't generate preview - the lottery will generate the real item
         rewards["items"] = [{"teaser": True}]  # Just a flag that item is coming
         
+        # 🏙️ Preview city construction contribution (actual award happens later)
+        if CITY_AVAILABLE:
+            try:
+                from city import get_active_construction_info
+                active = get_active_construction_info(self.blocker.adhd_buster)
+                if active:
+                    focus_earned = session_minutes // 30
+                    building_name = active.get("building_name", "Building")
+                    current_progress = active.get("effort_progress_percent", 0)
+                    
+                    if focus_earned > 0:
+                        rewards["city_construction"] = {
+                            "building_name": building_name,
+                            "focus_earned": focus_earned,
+                            "current_progress": current_progress,
+                        }
+                    else:
+                        # Show how many more minutes needed for Focus
+                        mins_needed = 30 - (session_minutes % 30)
+                        rewards["city_construction"] = {
+                            "building_name": building_name,
+                            "focus_earned": 0,
+                            "current_progress": current_progress,
+                            "mins_needed": mins_needed,
+                        }
+            except Exception:
+                pass
+        
         return rewards
 
     def _show_priority_time_log(self, session_minutes: int) -> None:
@@ -3717,14 +3838,20 @@ class TimerTab(QtWidgets.QWidget):
             except Exception:
                 pass
             
+            # Award city resources BEFORE rewards dialog (so contribution shows in dialog)
+            main_window = self.window()
+            if CITY_AVAILABLE and hasattr(main_window, '_award_city_resources_for_session'):
+                main_window._award_city_resources_for_session(session_minutes * 60)
+            
             # Give rewards (same as a normal session)
             self._give_session_rewards(session_minutes)
             
             # Show priority time log dialog
             self._show_priority_time_log(session_minutes)
             
-            # Emit session complete signal
-            self.session_complete.emit(session_minutes * 60)
+            # Refresh City tab to show construction progress
+            if CITY_AVAILABLE and hasattr(main_window, 'city_tab'):
+                main_window.city_tab._refresh_city()
             
             self.status_label.setText(f"✅ Logged {session_minutes} min session")
             self.status_label.setStyleSheet("""
@@ -9353,10 +9480,14 @@ class ActivityTab(QtWidgets.QWidget):
                 # Track construction progress for feedback to user
                 if invested > 0 and active_before:
                     building_name = active_before.get("building_name", "Building")
+                    building_id = active_before.get("building_id", "")
+                    level = active_before.get("level", 1)
                     progress_after = get_active_construction_info(self.blocker.adhd_buster)
                     new_progress = progress_after.get("effort_progress_percent", 0) if progress_after else 100
                     city_construction_progress = {
                         "building_name": building_name,
+                        "building_id": building_id,
+                        "level": level,
                         "invested": invested,
                         "progress_percent": new_progress,
                         "completed": progress_after is None  # Construction completed!
@@ -9369,6 +9500,8 @@ class ActivityTab(QtWidgets.QWidget):
                     if requirements.get("activity", 0) == 0:
                         city_construction_progress = {
                             "building_name": building_name,
+                            "building_id": active_before.get("building_id", ""),
+                            "level": active_before.get("level", 1),
                             "invested": 0,
                             "progress_percent": active_before.get("effort_progress_percent", 0),
                             "completed": False,
@@ -9542,6 +9675,21 @@ class ActivityTab(QtWidgets.QWidget):
             )
             dialog.exec()
             
+            # 🎉 Show building complete celebration if construction just finished
+            if city_construction_progress and city_construction_progress.get("completed"):
+                try:
+                    from city_tab import show_building_complete_dialog
+                    building_id = city_construction_progress.get("building_id", "")
+                    level = city_construction_progress.get("level", 1)
+                    # If level > 1, this was an upgrade, not initial construction
+                    is_upgrade = level > 1
+                    show_building_complete_dialog(building_id, level, is_upgrade, parent=self.window())
+                    # Refresh city tab to show completed building (remove construction overlay)
+                    if hasattr(main_window, 'city_tab') and hasattr(main_window.city_tab, '_refresh_city'):
+                        main_window.city_tab._refresh_city()
+                except Exception as e:
+                    _logger.debug(f"Could not show building complete dialog: {e}")
+            
             # Update coin display
             main_window = self.window()
             if hasattr(main_window, '_update_coin_display'):
@@ -9555,6 +9703,10 @@ class ActivityTab(QtWidgets.QWidget):
             main_window = self.window()
             if hasattr(main_window, 'refresh_adhd_tab'):
                 main_window.refresh_adhd_tab()
+            
+            # Refresh city tab if construction progress changed
+            if city_construction_progress and hasattr(main_window, 'city_tab'):
+                main_window.city_tab._refresh_city()
         elif rewards.get("messages"):
             show_info(
                 self, "Activity Logged",
@@ -16159,6 +16311,7 @@ class PowerAnalysisDialog(StyledDialog):
         set_bonus = breakdown.get("set_bonus", 0)
         style_bonus = breakdown.get("style_bonus", 0) if self.style_discovered else 0
         entity_bonus = breakdown.get("entity_bonus", 0)
+        city_power_bonus = breakdown.get("city_power_bonus", 0)
         style_info = breakdown.get("style_info")
         
         # Calculate max potential (8 legendary slots = 2000 base)
@@ -16188,6 +16341,8 @@ class PowerAnalysisDialog(StyledDialog):
             formula_parts.append(f"<span style='color:#FFD700;'>👑 {style_name}: +{style_bonus}</span>")
         if entity_bonus > 0:
             formula_parts.append(f"<span style='color:#ce93d8;'>🐾 Patrons: +{entity_bonus}</span>")
+        if city_power_bonus > 0:
+            formula_parts.append(f"<span style='color:#ff7043;'>🏋️ Training Ground: +{city_power_bonus}</span>")
         
         formula = QtWidgets.QLabel(" + ".join(formula_parts))
         formula.setTextFormat(QtCore.Qt.RichText)
@@ -18466,9 +18621,20 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 self.merge_rate_lbl.setText(f"⚠️ {reason}")
             else:
                 # Calculate the discounted merge cost to check affordability
-                from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount, apply_coin_flat_reduction, get_entity_merge_perk_contributors
+                from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount, apply_coin_flat_reduction, get_entity_merge_perk_contributors, get_city_bonuses
                 current_coins = self.blocker.adhd_buster.get("coins", 0)
                 discount_pct = calculate_merge_discount(items)
+                
+                # Get city coin discount (Market building)
+                city_coin_discount = 0
+                try:
+                    city_bonuses = get_city_bonuses(self.blocker.adhd_buster)
+                    city_coin_discount = city_bonuses.get("coin_discount", 0)
+                except Exception:
+                    pass
+                
+                # Combine item + city discounts (cap at 90%)
+                total_discount_pct = min(discount_pct + city_coin_discount, 90)
                 
                 # Get entity flat coin reduction
                 entity_perks = get_entity_merge_perk_contributors(self.blocker.adhd_buster)
@@ -18477,7 +18643,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 # Calculate actual cost after discounts
                 base_cost = COIN_COSTS.get("merge_base", 50)
                 discounted_cost = apply_coin_flat_reduction(
-                    apply_coin_discount(base_cost, discount_pct),
+                    apply_coin_discount(base_cost, total_discount_pct),
                     entity_coin_flat
                 )
                 
@@ -18560,16 +18726,27 @@ class ADHDBusterTab(QtWidgets.QWidget):
             return
 
         # Check if player has enough coins for the discounted base merge cost
-        from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount, apply_coin_flat_reduction, get_entity_merge_perk_contributors
+        from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount, apply_coin_flat_reduction, get_entity_merge_perk_contributors, get_city_bonuses
         current_coins = self.blocker.adhd_buster.get("coins", 0)
         temp_discount = calculate_merge_discount([inventory[idx] for idx in valid_indices])
+        
+        # Get city coin discount (Market building)
+        city_coin_discount = 0
+        try:
+            city_bonuses = get_city_bonuses(self.blocker.adhd_buster)
+            city_coin_discount = city_bonuses.get("coin_discount", 0)
+        except Exception:
+            pass
+        
+        # Combine item + city discounts (cap at 90%)
+        total_temp_discount = min(temp_discount + city_coin_discount, 90)
         
         # Get entity flat coin reduction
         entity_perks = get_entity_merge_perk_contributors(self.blocker.adhd_buster)
         entity_coin_flat = entity_perks.get("total_coin_discount", 0)
         
         temp_base_cost = apply_coin_flat_reduction(
-            apply_coin_discount(COIN_COSTS.get("merge_base", 50), temp_discount),
+            apply_coin_discount(COIN_COSTS.get("merge_base", 50), total_temp_discount),
             entity_coin_flat
         )
         if current_coins < temp_base_cost:
@@ -18610,27 +18787,38 @@ class ADHDBusterTab(QtWidgets.QWidget):
             return
         
         # Calculate total cost (base + optional boost + tier upgrade) using centralized costs
-        from gamification import COIN_COSTS, apply_coin_discount, apply_coin_flat_reduction
+        from gamification import COIN_COSTS, apply_coin_discount, apply_coin_flat_reduction, get_city_bonuses
         boost_enabled = getattr(dialog, 'boost_enabled', False)
         tier_upgrade_enabled = getattr(dialog, 'tier_upgrade_enabled', False)
         
         # Calculate discount from ITEMS BEING MERGED (not equipped)
         discount_pct = calculate_merge_discount(items)
         
+        # Get city coin discount (Market building)
+        city_coin_discount = 0
+        try:
+            city_bonuses = get_city_bonuses(self.blocker.adhd_buster)
+            city_coin_discount = city_bonuses.get("coin_discount", 0)
+        except Exception:
+            pass
+        
+        # Combine item + city discounts (cap at 90%)
+        total_discount_pct = min(discount_pct + city_coin_discount, 90)
+        
         # Get entity flat coin reduction from dialog
         entity_coin_flat = getattr(dialog, 'entity_coin_flat', 0)
         
         # Calculate costs: percentage discount first, then flat reduction
-        base_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_base", 50), discount_pct), entity_coin_flat)
-        boost_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_boost", 50), discount_pct), entity_coin_flat) if boost_enabled else 0
-        tier_upgrade_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_tier_upgrade", 50), discount_pct), entity_coin_flat) if tier_upgrade_enabled else 0
+        base_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_base", 50), total_discount_pct), entity_coin_flat)
+        boost_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_boost", 50), total_discount_pct), entity_coin_flat) if boost_enabled else 0
+        tier_upgrade_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_tier_upgrade", 50), total_discount_pct), entity_coin_flat) if tier_upgrade_enabled else 0
         # Add retry costs if any
         retry_cost = getattr(dialog, 'retry_cost_accumulated', 0)
         
         # Add claim cost if item was claimed via near-miss recovery (discounted)
         claim_cost = 0
         if result.get("claimed_with_coins"):
-            claim_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_claim", 100), discount_pct), entity_coin_flat)
+            claim_cost = apply_coin_flat_reduction(apply_coin_discount(COIN_COSTS.get("merge_claim", 100), total_discount_pct), entity_coin_flat)
             
         total_cost = base_cost + boost_cost + tier_upgrade_cost + retry_cost + claim_cost
         
@@ -26417,15 +26605,17 @@ del "%~f0"
             
             # Focus: 1 per 30 minutes (as per design doc)
             focus_earned = minutes // 30
+            active_before = get_active_construction_info(self.blocker.adhd_buster)
+            
             if focus_earned > 0:
                 # Check for active construction before adding
-                active_before = get_active_construction_info(self.blocker.adhd_buster)
-                
                 invested = add_city_resource(self.blocker.adhd_buster, "focus", focus_earned)
                 
                 # Store contribution info for reward dialog display
                 if invested > 0 and active_before:
                     building_name = active_before.get("building_name", "Building")
+                    building_id = active_before.get("building_id", "")
+                    level = active_before.get("level", 1)
                     progress_after = get_active_construction_info(self.blocker.adhd_buster)
                     
                     # Check if construction completed (no more active construction)
@@ -26435,6 +26625,8 @@ del "%~f0"
                             "resource": "focus",
                             "amount": invested,
                             "building_name": building_name,
+                            "building_id": building_id,
+                            "level": level,
                             "progress_percent": 100.0,
                             "completed": True
                         }
@@ -26445,6 +26637,8 @@ del "%~f0"
                             "resource": "focus",
                             "amount": invested,
                             "building_name": building_name,
+                            "building_id": building_id,
+                            "level": level,
                             "progress_percent": new_progress,
                             "completed": False
                         }
@@ -26461,6 +26655,21 @@ del "%~f0"
                             "wasted": True
                         }
                         _logger.debug(f"Focus earned ({focus_earned}) but no active construction to apply it to")
+            else:
+                # Session too short to earn Focus - show informative message
+                if active_before and minutes > 0:
+                    mins_needed = 30 - (minutes % 30)
+                    building_name = active_before.get("building_name", "Building")
+                    self._last_city_contribution = {
+                        "resource": "focus",
+                        "amount": 0,
+                        "building_name": building_name,
+                        "progress_percent": active_before.get("effort_progress_percent", 0),
+                        "completed": False,
+                        "short_session": True,
+                        "mins_needed": mins_needed
+                    }
+                    _logger.debug(f"Session too short for focus ({minutes} min, need {mins_needed} more)")
             
             # Award Royal Mint income for focus session
             game_state = getattr(self, 'game_state', None)

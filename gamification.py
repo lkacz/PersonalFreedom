@@ -4840,7 +4840,19 @@ def calculate_character_power(adhd_buster: dict, include_set_bonus: bool = True,
         perks = calculate_active_perks(entitidex_data)
         perk_power = int(perks.get(PerkType.POWER_FLAT, 0))
 
-    return gear_power + perk_power
+    base_total = gear_power + perk_power
+    
+    # 🏙️ CITY BONUS: Training Ground power bonus (percentage)
+    city_power_bonus = 0
+    try:
+        city_bonuses = get_city_bonuses(adhd_buster)
+        power_bonus_pct = city_bonuses.get("power_bonus", 0)
+        if power_bonus_pct > 0:
+            city_power_bonus = int(base_total * power_bonus_pct / 100.0)
+    except Exception:
+        pass
+
+    return base_total + city_power_bonus
 
 
 def get_power_breakdown(adhd_buster: dict, include_neighbor_effects: bool = True) -> dict:
@@ -4873,14 +4885,26 @@ def get_power_breakdown(adhd_buster: dict, include_neighbor_effects: bool = True
         perks = calculate_active_perks(entitidex_data)
         entity_bonus = int(perks.get(PerkType.POWER_FLAT, 0))
     
+    # 🏙️ CITY BONUS: Training Ground power bonus (percentage)
+    base_total = breakdown["total_power"] + entity_bonus
+    city_power_bonus = 0
+    try:
+        city_bonuses = get_city_bonuses(adhd_buster)
+        power_bonus_pct = city_bonuses.get("power_bonus", 0)
+        if power_bonus_pct > 0:
+            city_power_bonus = int(base_total * power_bonus_pct / 100.0)
+    except Exception:
+        pass
+    
     return {
         "base_power": breakdown["base_power"],
         "set_bonus": breakdown["set_bonus"],
         "style_bonus": breakdown.get("style_bonus", 0),
         "style_info": breakdown.get("style_info"),
         "entity_bonus": entity_bonus,
+        "city_power_bonus": city_power_bonus,
         "neighbor_adjustment": 0,  # Always 0 - neighbor system removed
-        "total_power": breakdown["total_power"] + entity_bonus,
+        "total_power": base_total + city_power_bonus,
         "power_by_slot": breakdown.get("power_by_slot", {}),
         "neighbor_effects": {},  # Always empty - neighbor system removed
         "active_sets": set_info.get("active_sets", [])
@@ -14961,6 +14985,18 @@ def award_xp(adhd_buster: dict, xp_amount: int, source: str = "unknown") -> dict
     if not isinstance(xp_amount, int) or xp_amount < 0:
         xp_amount = max(0, int(xp_amount)) if xp_amount else 0
     
+    # 🏙️ CITY BONUS: Library XP bonus (percentage)
+    city_xp_bonus = 0
+    base_xp = xp_amount
+    try:
+        city_bonuses = get_city_bonuses(adhd_buster)
+        xp_bonus_pct = city_bonuses.get("xp_bonus", 0)
+        if xp_bonus_pct > 0 and xp_amount > 0:
+            city_xp_bonus = int(xp_amount * xp_bonus_pct / 100.0)
+            xp_amount = xp_amount + city_xp_bonus
+    except Exception:
+        pass
+    
     old_xp = adhd_buster.get("total_xp", 0)
     # Ensure old_xp is valid
     if not isinstance(old_xp, (int, float)) or old_xp < 0:
@@ -14991,6 +15027,8 @@ def award_xp(adhd_buster: dict, xp_amount: int, source: str = "unknown") -> dict
     
     result = {
         "xp_earned": xp_amount,
+        "base_xp": base_xp,
+        "city_xp_bonus": city_xp_bonus,
         "total_xp": new_xp,
         "level": new_level,
         "xp_in_level": xp_in_level,
@@ -16054,9 +16092,11 @@ def get_entitidex_manager(adhd_buster: dict) -> "EntitidexManager":
     
     # Get city catch bonus (from University building)
     city_catch_bonus = 0.0
+    city_encounter_bonus = 0.0
     try:
         perks = get_all_perk_bonuses(adhd_buster)
         city_catch_bonus = perks.get("entity_catch_bonus", 0.0)
+        city_encounter_bonus = perks.get("entity_encounter_bonus", 0.0)
     except Exception:
         pass
     
@@ -16066,6 +16106,7 @@ def get_entitidex_manager(adhd_buster: dict) -> "EntitidexManager":
         hero_power=hero_power,
         active_perks=active_perks,
         city_catch_bonus=city_catch_bonus,
+        city_encounter_bonus=city_encounter_bonus,
     )
 
 
@@ -16134,6 +16175,8 @@ def check_entitidex_encounter(adhd_buster: dict, session_minutes: int,
         "perk_bonus_applied": encounter_result.perk_bonus_applied,
         "encounter_perk_bonus": encounter_result.encounter_perk_bonus,
         "capture_perk_bonus": encounter_result.capture_perk_bonus,
+        "city_encounter_bonus": encounter_result.city_encounter_bonus,  # Observatory bonus
+        "city_catch_bonus": encounter_result.city_catch_bonus,  # University bonus
     }
 
 

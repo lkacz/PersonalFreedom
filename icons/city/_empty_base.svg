@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e2d3a"/>
+      <stop offset="100%" style="stop-color:#2a3d4a"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a7a4a"/>
+      <stop offset="100%" style="stop-color:#3a5a3a"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Distant hills - seamless edges -->
+  <path d="M-10,75 Q30,60 64,68 Q98,76 138,65 L138,85 L-10,85 Z" fill="#2a4a3a" opacity="0.5"/>
+  
+  <!-- Main ground - extends past edges for seamless tiling -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+  
+  <!-- Grass texture lines -->
+  <g stroke="#3a6a3a" stroke-width="1" fill="none" opacity="0.4">
+    <path d="M10,95 Q12,88 10,82"/>
+    <path d="M30,92 Q32,85 30,78"/>
+    <path d="M50,94 Q52,87 50,80"/>
+    <path d="M70,93 Q72,86 70,79"/>
+    <path d="M90,95 Q92,88 90,81"/>
+    <path d="M110,92 Q112,85 110,78"/>
+  </g>
+  
+  <!-- Wind-swept grass animation -->
+  <g stroke="#5a8a5a" stroke-width="1.5" fill="none">
+    <path d="M15,98 Q20,88 28,86">
+      <animate attributeName="d" values="M15,98 Q20,88 28,86;M15,98 Q22,86 32,84;M15,98 Q20,88 28,86" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <path d="M45,96 Q50,86 58,84">
+      <animate attributeName="d" values="M45,96 Q50,86 58,84;M45,96 Q52,84 62,82;M45,96 Q50,86 58,84" dur="1.8s" repeatCount="indefinite" begin="0.2s"/>
+    </path>
+    <path d="M75,97 Q80,87 88,85">
+      <animate attributeName="d" values="M75,97 Q80,87 88,85;M75,97 Q82,85 92,83;M75,97 Q80,87 88,85" dur="2.2s" repeatCount="indefinite" begin="0.4s"/>
+    </path>
+    <path d="M105,95 Q110,85 118,83">
+      <animate attributeName="d" values="M105,95 Q110,85 118,83;M105,95 Q112,83 122,81;M105,95 Q110,85 118,83" dur="1.9s" repeatCount="indefinite" begin="0.1s"/>
+    </path>
+  </g>
+  
+  <!-- Build hint -->
+  <g opacity="0.35">
+    <animate attributeName="opacity" values="0.25;0.45;0.25" dur="2.5s" repeatCount="indefinite"/>
+    <rect x="61" y="55" width="6" height="18" rx="2" fill="#4CAF50"/>
+    <rect x="55" y="61" width="18" height="6" rx="2" fill="#4CAF50"/>
+  </g>
+</svg>

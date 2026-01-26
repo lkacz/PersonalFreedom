@@ -111,6 +111,12 @@ class GameStateManager(QtCore.QObject):
     entity_collected = QtCore.Signal(str)  # Entity ID collected
     entities_changed = QtCore.Signal()  # Any entitidex change
     
+    # City signals
+    city_resource_earned = QtCore.Signal(str, int, int)  # (resource_type, amount, new_total)
+    city_building_progress = QtCore.Signal(str)  # building_id with progress update
+    city_building_completed = QtCore.Signal(str)  # building_id that completed
+    city_changed = QtCore.Signal()  # Any city state change
+    
     # General refresh (fallback for complex multi-changes)
     full_refresh_required = QtCore.Signal()
     

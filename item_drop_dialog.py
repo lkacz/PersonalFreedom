@@ -521,13 +521,20 @@ class EnhancedItemDropDialog(StyledDialog):
             section_layout.setContentsMargins(8, 6, 8, 6)
             section_layout.setSpacing(4)
             
+            # Check if there are city bonuses
+            has_city = any(c.get("is_city", False) for c in self._entity_perk_contributors)
+            
             # Header
             bonus_parts = []
             if total_rarity > 0:
                 bonus_parts.append(f"+{total_rarity}% rare finds")
             if total_drop > 0:
                 bonus_parts.append(f"+{total_drop}% drop luck")
-            header_text = "🐾 Entity Patrons: " + ", ".join(bonus_parts)
+            
+            if has_city:
+                header_text = "🐾 Patrons & City: " + ", ".join(bonus_parts)
+            else:
+                header_text = "🐾 Entity Patrons: " + ", ".join(bonus_parts)
             
             header = QtWidgets.QLabel(header_text)
             header.setStyleSheet("color: #7986cb; font-weight: bold; font-size: 10px; background: transparent;")
@@ -561,10 +568,15 @@ class EnhancedItemDropDialog(StyledDialog):
                 name = entity_data.get("name", "Unknown")
                 value = entity_data.get("value", 0)
                 perk_type = entity_data.get("perk_type", "")
+                is_city = entity_data.get("is_city", False)
                 icon = "🎲" if perk_type == "rarity_bias" else "🍀"
                 display_name = name[:10] + "..." if len(name) > 10 else name
                 
-                if is_exceptional:
+                if is_city:
+                    # City building - use different style
+                    style = "color: #7fdbff; font-weight: bold; font-size: 9px; background: transparent;"
+                    prefix = "🏛️ "
+                elif is_exceptional:
                     style = "color: #ffd700; font-weight: bold; font-size: 9px; background: transparent;"
                     prefix = "⭐"
                 else:

@@ -46,6 +46,8 @@ class EncounterResult:
     perk_bonus_applied: bool = False  # True if entity perks contributed to encounter/capture
     encounter_perk_bonus: float = 0.0  # Encounter chance bonus from perks (percentage)
     capture_perk_bonus: float = 0.0  # Capture probability bonus from perks (percentage)
+    city_encounter_bonus: float = 0.0  # Encounter chance bonus from Observatory (percentage)
+    city_catch_bonus: float = 0.0  # Capture bonus from University (percentage)
 
 
 @dataclass
@@ -91,6 +93,7 @@ class EntitidexManager:
         luck_bonus: float = 0.0,
         active_perks: Optional[Dict] = None,
         city_catch_bonus: float = 0.0,
+        city_encounter_bonus: float = 0.0,
     ):
         """
         Initialize the Entitidex manager.
@@ -102,6 +105,7 @@ class EntitidexManager:
             luck_bonus: Any luck bonus from equipped items
             active_perks: Dictionary of active entity perks (from entity_perks.py)
             city_catch_bonus: Bonus from city buildings (University) - percentage
+            city_encounter_bonus: Bonus from city buildings (Observatory) - percentage
         """
         self.progress = progress or EntitidexProgress()
         self.story_id = story_id
@@ -109,6 +113,7 @@ class EntitidexManager:
         self.luck_bonus = luck_bonus
         self.active_perks = active_perks or {}
         self.city_catch_bonus = city_catch_bonus
+        self.city_encounter_bonus = city_encounter_bonus
         
         # Current encounter state
         self._current_encounter: Optional[Entity] = None
@@ -169,6 +174,7 @@ class EntitidexManager:
             streak_days=streak_days,
             was_bypass_used=was_bypass_used,
             active_perks=self.active_perks,
+            city_encounter_bonus=self.city_encounter_bonus,
         )
         
         if not should_trigger:
@@ -220,6 +226,7 @@ class EntitidexManager:
         )
         
         perk_bonus = capture_perk > 0 or encounter_perk > 0
+        city_bonus_applied = self.city_encounter_bonus > 0 or self.city_catch_bonus > 0
         
         return EncounterResult(
             occurred=True,
@@ -231,9 +238,11 @@ class EntitidexManager:
             catch_probability=probability,
             probability_display=format_probability_display(probability),
             probability_description=get_probability_description(probability),
-            perk_bonus_applied=perk_bonus,
+            perk_bonus_applied=perk_bonus or city_bonus_applied,
             encounter_perk_bonus=encounter_perk,
             capture_perk_bonus=capture_perk,
+            city_encounter_bonus=self.city_encounter_bonus,
+            city_catch_bonus=self.city_catch_bonus,
         )
     
     def force_encounter(self, entity_id: str) -> Optional[EncounterResult]:
