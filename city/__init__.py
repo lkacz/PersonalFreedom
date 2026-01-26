@@ -67,6 +67,8 @@ from .city_manager import (
     initiate_construction,
     collect_city_income,
     get_pending_income,
+    award_focus_session_income,
+    award_exercise_income,
     get_max_building_slots,
     get_available_slots,
     get_next_slot_unlock,
@@ -74,6 +76,8 @@ from .city_manager import (
     get_level_requirements,
     get_construction_progress,
     can_upgrade,
+    can_initiate_upgrade,
+    initiate_upgrade,
     start_upgrade,
 )
 
@@ -137,6 +141,8 @@ __all__ = [
     "initiate_construction",
     "collect_city_income",
     "get_pending_income",
+    "award_focus_session_income",
+    "award_exercise_income",
     "get_max_building_slots",
     "get_available_slots",
     "get_next_slot_unlock",
@@ -144,6 +150,8 @@ __all__ = [
     "get_level_requirements",
     "get_construction_progress",
     "can_upgrade",
+    "can_initiate_upgrade",
+    "initiate_upgrade",
     "start_upgrade",
     
     # Synergy system

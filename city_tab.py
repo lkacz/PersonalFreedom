@@ -82,12 +82,16 @@ try:
         initiate_construction,
         collect_city_income,
         get_pending_income,
+        award_focus_session_income,
+        award_exercise_income,
         get_max_building_slots,
         get_available_slots,
         get_next_slot_unlock,
         get_placed_buildings,
         get_construction_progress,
         can_upgrade,
+        can_initiate_upgrade,
+        initiate_upgrade,
         start_upgrade,
         get_all_synergy_bonuses,
         get_synergy_display_info,
@@ -129,12 +133,16 @@ except ImportError as e:
     def initiate_construction(adhd_buster, r, c, gs=None): return {"success": False, "error": "Not available"}
     def collect_city_income(adhd_buster): return {}
     def get_pending_income(adhd_buster): return {}
+    def award_focus_session_income(adhd_buster, minutes, gs=None): return {"coins": 0, "breakdown": []}
+    def award_exercise_income(adhd_buster, duration, intensity, eff_mins=None, gs=None): return {"coins": 0, "breakdown": [], "qualified": False}
     def get_max_building_slots(level): return 0
     def get_available_slots(adhd_buster): return 0
     def get_next_slot_unlock(adhd_buster): return {}
     def get_placed_buildings(adhd_buster): return []
     def get_construction_progress(adhd_buster, r, c): return {}
     def can_upgrade(adhd_buster, r, c): return (False, "City system not available")
+    def can_initiate_upgrade(adhd_buster, r, c): return (False, "City system not available")
+    def initiate_upgrade(adhd_buster, r, c, gs=None): return {"success": False, "error": "Not available"}
     def start_upgrade(adhd_buster, r, c): return False
     def get_all_synergy_bonuses(adhd_buster): return {}
     def get_synergy_display_info(building_id, adhd_buster): return {}

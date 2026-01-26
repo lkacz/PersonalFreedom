@@ -17,7 +17,7 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
     "goldmine": {
         "id": "goldmine",
         "name": "⛏️ Goldmine",
-        "description": "Strike gold! Generates passive income over time.",
+        "description": "Strike gold! Generates coins when you exercise (moderate+ intensity).",
         "tier": 1,
         "requirements": {
             "water": 3,
@@ -27,12 +27,16 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         },
         "completion_reward": {"coins": 50, "xp": 25},
         "effect": {
-            "type": "passive_income",
-            "coins_per_hour": 1,  # +1 coin/hour = 24 coins/day
+            "type": "activity_triggered_income",
+            "trigger": "exercise",  # Triggers on activity log with moderate+ intensity
+            "min_intensity": "moderate",  # Requires moderate, vigorous, or intense
+            "base_coins": 3,  # Base coins per qualifying activity
+            "coins_per_effective_30min": 2,  # +2 coins per 30 effective minutes
         },
         "max_level": 5,
         "level_scaling": {
-            "coins_per_hour": 0.5,  # +0.5/hour per level (L5 = 3 coins/hour = 72/day)
+            "base_coins": 1,  # +1 base per level (L5 = 7 base coins)
+            "coins_per_effective_30min": 1,  # +1 per level (L5 = 6 per 30min)
         },
         "visual": "goldmine",
     },
@@ -187,7 +191,7 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
     "royal_mint": {
         "id": "royal_mint",
         "name": "🏛️ Royal Mint",
-        "description": "The economic heart of your city. Massive passive income.",
+        "description": "The economic heart of your city. Generates coins when you complete focus sessions.",
         "tier": 4,
         "requirements": {
             "water": 60,
@@ -197,12 +201,15 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         },
         "completion_reward": {"coins": 1000, "xp": 750},
         "effect": {
-            "type": "passive_income",
-            "coins_per_hour": 5,  # +5 coins/hour = 120/day
+            "type": "activity_triggered_income",
+            "trigger": "focus_session",  # Triggers on focus session completion
+            "base_coins": 5,  # Base coins per session
+            "coins_per_30min": 3,  # +3 coins per 30 minutes of focus
         },
         "max_level": 10,
         "level_scaling": {
-            "coins_per_hour": 2,  # +2/hour per level (L10 = 23 coins/hour = 552/day)
+            "base_coins": 2,  # +2 base per level (L10 = 23 base coins)
+            "coins_per_30min": 1,  # +1 per level (L10 = 12 per 30min)
         },
         "visual": "royal_mint",
     },
@@ -248,7 +255,8 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "effect": {
             "type": "multi",
             "bonuses": {
-                "coins_per_hour": 10,       # Passive income
+                "focus_session_coins": 5,   # Coins on focus session completion
+                "exercise_coins": 5,        # Coins on exercise
                 "merge_success_bonus": 5,   # +5% merge
                 "rarity_bias_bonus": 5,     # +5% rarity
                 "entity_catch_bonus": 5,    # +5% catch
