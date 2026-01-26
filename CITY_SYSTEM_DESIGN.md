@@ -99,7 +99,7 @@ All weight goals reward the same amount when achieved - this ensures fairness re
 ### 1.2 Building System
 
 Buildings have:
-- **Grid Placement**: Each building occupies one cell in a 5×5 grid (25 slots)
+- **Grid Placement**: Each building occupies one cell in a 1×10 horizontal grid (10 slots)
 - **Independence**: All buildings are independently constructable (no prerequisites)
 - **Construction Requirements**: Resources needed to complete
 - **Construction Progress**: Tracked per-resource, visually shown as building emerges
@@ -109,89 +109,81 @@ Buildings have:
 ### 1.3 Grid Layout
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                       YOUR CITY (5×5 Grid)                  │
-├───────────┬───────────┬───────────┬───────────┬─────────────┤
-│  (0,0)    │  (1,0)    │  (2,0)    │  (3,0)    │  (4,0)      │
-│  ⛏️ Mine  │  🔥 Forge │  🎨 Guild │  🎓 Univ  │  [Empty]    │
-│  L5 ✓     │  L2 75%   │  [Placed] │  [Placed] │             │
-├───────────┼───────────┼───────────┼───────────┼─────────────┤
-│  (0,1)    │  (1,1)    │  (2,1)    │  (3,1)    │  (4,1)      │
-│  [Empty]  │  [Empty]  │  [Empty]  │  [Empty]  │  [Empty]    │
-│           │           │           │           │             │
-├───────────┼───────────┼───────────┼───────────┼─────────────┤
-│  (0,2)    │  (1,2)    │  (2,2)    │  (3,2)    │  (4,2)      │
-│  [Empty]  │  [Empty]  │  [Empty]  │  [Empty]  │  [Empty]    │
-│           │           │           │           │             │
-├───────────┼───────────┼───────────┼───────────┼─────────────┤
-│  (0,3)    │  (1,3)    │  (2,3)    │  (3,3)    │  (4,3)      │
-│  [Empty]  │  [Empty]  │  [Empty]  │  [Empty]  │  [Empty]    │
-│           │           │           │           │             │
-├───────────┼───────────┼───────────┼───────────┼─────────────┤
-│  (0,4)    │  (1,4)    │  (2,4)    │  (3,4)    │  (4,4)      │
-│  [Empty]  │  [Empty]  │  [Empty]  │  [Empty]  │  [Empty]    │
-│           │           │           │           │             │
-└───────────┴───────────┴───────────┴───────────┴─────────────┘
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                          YOUR CITY (1×10 Horizontal Grid)                                       │
+├───────────┬───────────┬───────────┬───────────┬───────────┬───────────┬───────────┬───────────┬───────────┬─────┤
+│   Slot 1  │   Slot 2  │   Slot 3  │   Slot 4  │   Slot 5  │   Slot 6  │   Slot 7  │   Slot 8  │   Slot 9  │ 10  │
+│  ⛏️ Mine  │  🔥 Forge │  🎨 Guild │  [Empty]  │  [Locked] │  [Locked] │  [Locked] │  [Locked] │  [Locked] │ 🔒  │
+│  L3 ✓     │  L1 75%   │  [Placed] │           │   Lv 9    │   Lv 13   │   Lv 18   │   Lv 24   │   Lv 31   │ 39  │
+└───────────┴───────────┴───────────┴───────────┴───────────┴───────────┴───────────┴───────────┴───────────┴─────┘
 
 Cell States:
-  [Empty]   = No building assigned (can place any building type)
+  [Empty]   = Unlocked slot, no building (can place any building type)
+  [Locked]  = Slot not yet unlocked (shows required level)
   [Placed]  = Building placed, awaiting upfront payment (Water + Materials)
-  L2 75%    = Under active construction, level 2 target, 75% effort complete
-  L5 ✓      = Completed at level 5, generating bonuses
+  L1 75%    = Under active construction, level 1 target, 75% effort complete
+  L3 ✓      = Completed at level 3, generating bonuses
 
 Construction Notes:
 - PLACED → BUILDING: User pays Water + Materials upfront
 - BUILDING → COMPLETE: Activity + Focus auto-flow until requirements met
 - Only ONE building can be in BUILDING status at a time (active construction)
 - Player XP level determines available slots, not building types
+- Locked slots are HIDDEN in the UI until unlocked by leveling up
 ```
 
 **Key Grid Concepts:**
-- **10 unique buildings** can be placed in **25 available slots**
-- **Building slots unlock with XP level** (see Section 1.4)
+- **10 unique buildings** can be placed in **10 building slots** (1:1 ratio when fully unlocked)
+- **Building slots unlock progressively with XP level** (see Section 1.4)
+- **Locked slots are hidden** until the player reaches the required level
 - **Each building can only be built once** (no duplicates)
 - **Player chooses WHERE to place** - purely cosmetic, no adjacency bonuses
-- **Any unlocked building type** can be built in any available slot
+- **Any building type** can be built in any unlocked slot
 - **Entity synergies** boost building effectiveness (see Section 1.5)
 
 ### 1.4 Level-Gated Building Slots
 
 **Philosophy:** XP level determines HOW MANY buildings you can have, not WHICH types.
-This gives players a clear reason to increase XP beyond just leveling up.
+This gives players a clear reason to level up - each milestone unlocks a new building slot.
 
 | Player Level | Building Slots | Unlocked At | Notes |
 |--------------|----------------|-------------|-------|
-| 1-4 | 2 | Start | Goldmine + Forge available immediately |
-| 5-9 | 3 | Level 5 | +1 slot for early engagement |
-| 10-14 | 4 | Level 10 | Core gameplay loop established |
-| 15-19 | 5 | Level 15 | Half buildings available |
-| 20-24 | 6 | Level 20 | Milestone reward |
-| 25-29 | 7 | Level 25 | |
-| 30-34 | 8 | Level 30 | |
-| 35-39 | 9 | Level 35 | |
-| 40+ | 10 | Level 40 | All 10 buildings available |
+| 1 | 0 | - | City unlocked but no slots yet (motivation to level up!) |
+| 2 | 1 | Level 2 | First slot - player chooses their first building |
+| 4 | 2 | Level 4 | Second slot unlocked |
+| 6 | 3 | Level 6 | Third slot unlocked |
+| 9 | 4 | Level 9 | Fourth slot unlocked |
+| 13 | 5 | Level 13 | Fifth slot (halfway to max!) |
+| 18 | 6 | Level 18 | Sixth slot unlocked |
+| 24 | 7 | Level 24 | Seventh slot unlocked |
+| 31 | 8 | Level 31 | Eighth slot unlocked |
+| 39 | 9 | Level 39 | Ninth slot unlocked |
+| 40 | 10 | Level 40 | ALL 10 SLOTS UNLOCKED! Full city available |
 
 **Design Rationale:**
-- **Starter buildings (Goldmine + Forge)**: Available at Level 1 to teach the system
-- **Goldmine**: Passive income → immediate gratification
-- **Forge**: Merge bonus → teaches that buildings affect gameplay
-- **Gradual unlock**: Every 5 levels = +1 slot → steady progression incentive
-- **No type restrictions**: Players choose WHICH buildings based on strategy, not arbitrary gates
+- **Level 1 = 0 slots**: City tab is visible but locked slots create anticipation
+- **Level 2 = First slot**: Quick early reward for engagement
+- **Accelerating gaps**: Early unlocks are fast (2→4→6), later ones are spaced (31→39→40)
+- **No type restrictions**: Players choose WHICH buildings based on strategy
+- **Level 40 milestone**: All 10 buildings at max level = fully built city
 
 ```python
-# In city/city_manager.py
+# In city/city_constants.py
 
 # Slot unlock progression (level → max_buildings)
+# User starts with 0 lots, first unlocks at level 2
 BUILDING_SLOT_UNLOCKS = {
-    1: 2,    # Levels 1-4: 2 slots (starter)
-    5: 3,    # Levels 5-9: 3 slots
-    10: 4,   # Levels 10-14: 4 slots
-    15: 5,   # Levels 15-19: 5 slots
-    20: 6,   # Levels 20-24: 6 slots
-    25: 7,   # Levels 25-29: 7 slots
-    30: 8,   # Levels 30-34: 8 slots
-    35: 9,   # Levels 35-39: 9 slots
-    40: 10,  # Level 40+: All 10 buildings
+    1: 0,    # Level 1: No lots available (starter)
+    2: 1,    # Level 2: 1st lot unlocked
+    4: 2,    # Level 4: 2nd lot unlocked
+    6: 3,    # Level 6: 3rd lot unlocked
+    9: 4,    # Level 9: 4th lot unlocked
+    13: 5,   # Level 13: 5th lot unlocked
+    18: 6,   # Level 18: 6th lot unlocked
+    24: 7,   # Level 24: 7th lot unlocked
+    31: 8,   # Level 31: 8th lot unlocked
+    39: 9,   # Level 39: 9th lot unlocked
+    40: 10,  # Level 40: All 10 lots unlocked
 }
 
 def get_max_building_slots(player_level: int) -> int:
@@ -200,7 +192,7 @@ def get_max_building_slots(player_level: int) -> int:
     
     Returns number of buildings the player can have placed.
     """
-    max_slots = 2  # Default for level 1
+    max_slots = 0  # Default for level 1
     for level_threshold, slots in sorted(BUILDING_SLOT_UNLOCKS.items()):
         if player_level >= level_threshold:
             max_slots = slots
@@ -258,8 +250,11 @@ def get_next_slot_unlock(adhd_buster: dict) -> dict:
 **UI Display:**
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  🏙️ Your City                        🏠 4/6 Buildings      │
-│                                       Next slot at Level 20 │
+│  🏙️ Your City                        🏠 3/4 Buildings      │
+│                                       Next slot at Level 9  │
+│                                                             │
+│  ℹ️ Only unlocked slots are shown in the grid.              │
+│     Locked slots appear as you level up!                    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -393,15 +388,15 @@ def get_entity_synergy_tags(entity_id: str) -> Set[str]:
     """
     Get synergy tags for an entity.
     
-    This should query entity metadata. For now, returns tags from entity definition.
-    Future: Add 'synergy_tags' field to entity definitions.
+    Reads the synergy_tags field from the Entity object.
+    Falls back to keyword matching from name/lore for backward compatibility.
     """
     try:
         from entitidex.entity_pools import get_entity_by_id
         entity = get_entity_by_id(entity_id)
         if entity:
-            # Future: entity.synergy_tags or derive from name/description
-            return getattr(entity, 'synergy_tags', set())
+            # Uses entity.synergy_tags (FrozenSet[str])
+            return set(entity.synergy_tags)
     except Exception:
         pass
     return set()
@@ -496,10 +491,12 @@ def get_all_synergy_bonuses(adhd_buster: dict) -> Dict[str, float]:
     return synergy_bonuses
 ```
 
-**Entity Tag Integration (Future-Ready):**
+**Entity Tag Integration (IMPLEMENTED):**
+
+The Entity class now has a `synergy_tags` field (FrozenSet[str]) that defines which buildings the entity boosts:
 
 ```python
-# In entitidex/entity_definitions.py - Add synergy_tags to Entity class
+# In entitidex/entity.py
 
 @dataclass
 class Entity:
@@ -507,39 +504,30 @@ class Entity:
     name: str
     power: int
     rarity: str
-    description: str
-    # ... existing fields ...
+    lore: str
+    theme_set: str
+    # ... other fields ...
     
-    # NEW: Synergy tags for city building bonuses
-    synergy_tags: Set[str] = field(default_factory=set)
+    # City building synergy tags (e.g., {"fire", "crafting"} boosts Forge)
+    synergy_tags: FrozenSet[str] = field(default_factory=frozenset)
 
-# Example entity definitions with synergy tags:
-ENTITIES = {
-    "wise_owl": Entity(
-        id="wise_owl",
-        name="Wise Owl",
-        power=150,
-        rarity="Rare",
-        description="An ancient owl with knowledge of the stars.",
-        synergy_tags={"owl", "wisdom", "night", "vision", "stars"},  # Boosts University + Observatory
-    ),
-    "phoenix": Entity(
-        id="phoenix",
-        name="Phoenix",
-        power=300,
-        rarity="Epic",
-        description="A legendary bird of fire and rebirth.",
-        synergy_tags={"fire", "legendary"},  # Boosts Forge + Wonder
-    ),
-    "scholarly_ghost": Entity(
-        id="scholarly_ghost",
-        name="Scholarly Ghost",
-        power=100,
-        rarity="Uncommon",
-        description="The spirit of an ancient scholar.",
-        synergy_tags={"books", "knowledge", "scholar", "academic"},  # Boosts University + Library
-    ),
-}
+# Example entity definitions with synergy tags (from entity_pools.py):
+{
+    "id": "warrior_001",
+    "name": "Hatchling Drake",
+    "power": 10,
+    "rarity": "common",
+    "lore": "A baby dragon...",
+    "synergy_tags": ["dragon", "fire", "treasure"],  # Boosts Goldmine + Forge
+},
+{
+    "id": "scholar_002", 
+    "name": "Study Owl Athena",
+    "power": 50,
+    "rarity": "common",
+    "lore": "A wise little owl...",
+    "synergy_tags": ["owl", "wisdom", "night", "vision", "knowledge"],  # Boosts University + Library + Observatory
+},
 ```
 
 **UI Display for Synergies:**
@@ -566,32 +554,32 @@ ENTITIES = {
 # In adhd_buster dict (persisted in config.json)
 "city": {
     "resources": {
-        "water": 45,      # Accumulated WATER
-        "materials": 23,  # Accumulated MATERIALS
-        "activity": 31,   # Accumulated ACTIVITY
-        "focus": 67,      # Accumulated FOCUS
+        "water": 45,      # Accumulated WATER (stockpile)
+        "materials": 23,  # Accumulated MATERIALS (stockpile)
+        # NOTE: activity and focus are NOT accumulated - they flow directly to construction
     },
     
-    # 5x5 Grid - THE SINGLE SOURCE OF TRUTH for all building state
-    # Use list comprehension to avoid reference bugs: [[None for _ in range(5)] for _ in range(5)]
+    # 1x10 Grid - THE SINGLE SOURCE OF TRUTH for all building state
+    # Simple horizontal layout: 1 row x 10 columns = 10 building slots
+    # Use list comprehension to avoid reference bugs: [[None for _ in range(10)] for _ in range(1)]
     "grid": [
-        # Row 0
+        # Row 0 (the only row - horizontal layout)
         [
-            {"building_id": "goldmine", "status": "complete", "level": 5, "construction_progress": {...}},
-            {"building_id": "forge", "status": "building", "level": 2, "construction_progress": {"water": 8, "materials": 15, ...}},
+            {"building_id": "goldmine", "status": "complete", "level": 3, "construction_progress": {...}},
+            {"building_id": "forge", "status": "building", "level": 1, "construction_progress": {"water": 8, "materials": 15, ...}},
             {"building_id": "artisan_guild", "status": "placed", "level": 1, "construction_progress": {}},
-            None,  # Empty cell
+            None,  # Empty unlocked slot
+            None,  # Slot 5-10: Locked until player reaches required level (hidden in UI)
+            None,
+            None,
+            None,
+            None,
             None,
         ],
-        # Row 1 - Use comprehension, NOT [None]*5 (creates reference bugs)
-        [None, None, None, None, None],
-        # Row 2
-        [None, None, None, None, None],
-        # Row 3
-        [None, None, None, None, None],
-        # Row 4
-        [None, None, None, None, None],
     ],
+    
+    # Track which building is currently under construction (only 1 at a time)
+    "active_construction": [0, 1],  # [row, col] or null if none
     
     # NOTE: placed_buildings is DERIVED from grid scan, not stored separately
     # Use get_placed_buildings(grid) helper to compute on demand
@@ -2439,17 +2427,18 @@ class CityCell(QtWidgets.QFrame):
             self._building_widget.restart_animations()
 ```
 
-### 6A.5 CityGrid Widget (5×5 Container)
+### 6A.5 CityGrid Widget (1×10 Container)
 
 ```python
 class CityGrid(QtWidgets.QWidget):
     """
-    5×5 grid container for city cells.
+    1×10 horizontal grid container for city cells.
     
     Manages:
-    - Grid layout of CityCell widgets
+    - Grid layout of CityCell widgets (single row, 10 columns)
     - Cell click handling
     - Batch animation pause/resume
+    - Hides locked slots (only shows unlocked slots based on player level)
     """
     
     cell_selected = QtCore.Signal(int, int, object)  # row, col, cell_state
@@ -2522,10 +2511,10 @@ When a cell is clicked, the selection panel at the bottom shows detailed info:
 ```python
 class CityTab(QtWidgets.QWidget):
     """
-    City building tab with 5×5 grid and animation lifecycle management.
+    City building tab with 1×10 horizontal grid and animation lifecycle management.
     
     Features:
-    - 5×5 interactive grid of CityCell widgets
+    - 1×10 horizontal grid of CityCell widgets (locked slots are hidden)
     - Selection panel for cell details
     - Building picker dialog for empty cells
     - Resource bar at top
@@ -3859,7 +3848,7 @@ Assuming average user behavior per day:
 
 The City system adds:
 
-1. **5×5 Grid Layout**: Visual city with 25 placeable slots
+1. **1×10 Horizontal Grid Layout**: Visual city with 10 building slots (unlocked progressively by level)
 2. **10 Independent Buildings**: No prerequisites, build any building if you have resources
 3. **Gameplay Modifiers**: Buildings affect merge, catch, rarity, XP, power
 4. **Passive Income**: Goldmine + Royal Mint for coin generation
@@ -3869,7 +3858,7 @@ The City system adds:
 8. **Performance Optimized**: GPU-accelerated, 60 FPS target, near-zero CPU when hidden
 
 The system is designed to be:
-- **Spatial** (5×5 grid with player-chosen placement)
+- **Progressive** (1×10 grid with slots unlocking at specific levels: 2, 4, 6, 9, 13, 18, 24, 31, 39, 40)
 - **Independent** (no building prerequisites - freedom of choice)
 - **Balanced** (months to complete, amplifies but doesn't replace active play)
 - **Engaging** (visual construction progress, upgrade paths)
@@ -3882,11 +3871,12 @@ The system is designed to be:
 
 | Aspect | Decision |
 |--------|----------|
-| **Grid Size** | 5×5 = 25 cells (10 buildings + 15 expansion slots) |
+| **Grid Size** | 1×10 = 10 cells (matches 10 unique buildings) |
+| **Slot Unlocking** | Progressive: Lv2, Lv4, Lv6, Lv9, Lv13, Lv18, Lv24, Lv31, Lv39, Lv40 |
 | **Independence** | No prerequisites - player chooses build order |
 | **Placement** | Player picks cell location (cosmetic only) |
 | **Uniqueness** | Each building can only be placed once |
-| **Expansion** | 15 empty slots for future building updates |
+| **Hidden Slots** | Locked slots are hidden in UI (appear as you level up) |
 
 ### Building Philosophy
 

@@ -65,7 +65,7 @@ class CityData(TypedDict, total=False):
     
     Stored in adhd_buster["city"].
     """
-    grid: List[List[Optional[CellState]]]  # 5×5 grid, None for empty cells
+    grid: List[List[Optional[CellState]]]  # 1×10 horizontal grid, None for empty/locked cells
     resources: ResourceAmounts              # Current resource amounts (only water+materials accumulate)
     active_construction: Optional[tuple]    # (row, col) of building currently under construction, or None
     total_coins_generated: int              # Lifetime coins from city
@@ -75,9 +75,9 @@ class CityData(TypedDict, total=False):
 
 def create_empty_grid() -> List[List[None]]:
     """
-    Create an empty 5×5 grid.
+    Create an empty 1×10 horizontal grid.
     
-    IMPORTANT: Use list comprehension, NOT [[None]*5]*5
+    IMPORTANT: Use list comprehension, NOT [[None]*10]*1
     The latter creates reference bugs where all rows point to same list.
     """
     from .city_constants import GRID_ROWS, GRID_COLS

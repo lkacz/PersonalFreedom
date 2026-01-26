@@ -123,20 +123,29 @@ def get_entity_synergy_tags(entity_id: str) -> Set[str]:
     """
     Get synergy tags for an entity.
     
-    Attempts to get tags from entity metadata.
-    Falls back to deriving from entity name/description.
+    First checks for explicit synergy_tags on the Entity object.
+    Falls back to deriving from entity name/lore for backward compatibility.
     
-    Future: Add 'synergy_tags' field to entity definitions.
+    Args:
+        entity_id: The entity's unique identifier (e.g., "warrior_003")
+        
+    Returns:
+        Set of synergy tag strings for this entity.
     """
     try:
         from entitidex.entity_pools import get_entity_by_id
         entity = get_entity_by_id(entity_id)
         if entity:
-            # Check for explicit synergy_tags
+            # Check for explicit synergy_tags (primary source)
             if hasattr(entity, 'synergy_tags') and entity.synergy_tags:
-                return set(entity.synergy_tags)
+                tags = set(entity.synergy_tags)
+                # Also add legendary tag for legendary entities
+                rarity = getattr(entity, 'rarity', '').lower()
+                if rarity == 'legendary':
+                    tags.add('legendary')
+                return tags
             
-            # Derive from entity properties
+            # Fallback: Derive from entity properties
             tags = set()
             
             # Check rarity for legendary
@@ -144,10 +153,10 @@ def get_entity_synergy_tags(entity_id: str) -> Set[str]:
             if rarity in ('legendary', 'mythic'):
                 tags.add('legendary')
             
-            # Derive from entity name (simple keyword matching)
+            # Derive from entity name and lore (simple keyword matching)
             name = getattr(entity, 'name', '').lower()
-            description = getattr(entity, 'description', '').lower()
-            full_text = f"{name} {description}"
+            lore = getattr(entity, 'lore', '').lower()
+            full_text = f"{name} {lore}"
             
             # Keyword matching for common themes
             keyword_to_tags = {

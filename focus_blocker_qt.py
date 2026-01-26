@@ -2894,6 +2894,33 @@ class TimerTab(QtWidgets.QWidget):
         if leveled_up:
             old_level = xp_result.get("old_level", 1)
             new_level = xp_result.get("new_level", 1)
+            
+            # Check for building slot unlocks
+            unlocks = []
+            try:
+                from city import get_slot_unlock_at_level, CITY_AVAILABLE
+                if CITY_AVAILABLE:
+                    slot_info = get_slot_unlock_at_level(new_level, old_level)
+                    if slot_info.get("unlocked"):
+                        if slot_info.get("is_first_slot"):
+                            # First slot - give detailed explanation
+                            unlocks.append("🏗️ CITY BUILDING UNLOCKED!")
+                            unlocks.append("Build structures in the City tab to earn passive coins & bonuses!")
+                            unlocks.append("Complete focus sessions & exercise to power construction.")
+                        elif slot_info.get("all_slots_unlocked"):
+                            unlocks.append("🏙️ ALL 10 BUILDING SLOTS UNLOCKED!")
+                            unlocks.append("Your city is now at maximum capacity!")
+                        else:
+                            slot_num = slot_info.get("slot_number", 0)
+                            if slot_info.get("slots_unlocked_count", 1) > 1:
+                                unlocks.append(f"🏗️ {slot_info['slots_unlocked_count']} NEW BUILDING SLOTS!")
+                                unlocks.append(f"You now have {slot_num} city plots available!")
+                            else:
+                                unlocks.append(f"🏗️ BUILDING SLOT #{slot_num} UNLOCKED!")
+                            unlocks.append("Visit the City tab to expand your empire!")
+            except Exception as e:
+                logger.debug(f"Could not check city slot unlocks: {e}")
+            
             stats = {
                 "total_power": self.blocker.adhd_buster.get("total_power", 0),
                 "total_xp": self.blocker.adhd_buster.get("total_xp", 0),
@@ -2901,7 +2928,7 @@ class TimerTab(QtWidgets.QWidget):
                 "productivity_score": self.blocker.adhd_buster.get("productivity_score", 0),
                 "total_focus_minutes": self.blocker.adhd_buster.get("total_focus_time", 0) // 60,
                 "items_collected": len(self.blocker.adhd_buster.get("inventory", [])),
-                "unlocks": [],  # Could add level-specific unlocks
+                "unlocks": unlocks,
                 "rewards": None  # Could add level-up rewards
             }
             # Use fullscreen mode for multi-level gains
@@ -2929,6 +2956,32 @@ class TimerTab(QtWidgets.QWidget):
         except Exception as e:
             logger.debug(f"Could not get entity luck perk contributors: {e}")
         
+        # Build extra messages for display
+        extra_msgs = []
+        
+        # Add city construction progress feedback from the stored contribution info
+        main_window = self.window()
+        last_contribution = getattr(main_window, '_last_city_contribution', None)
+        if last_contribution:
+            building_name = last_contribution.get("building_name")
+            amount = last_contribution.get("amount", 0)
+            resource = last_contribution.get("resource", "focus")
+            progress = last_contribution.get("progress_percent", 0)
+            completed = last_contribution.get("completed", False)
+            wasted = last_contribution.get("wasted", False)
+            
+            resource_emoji = "🎯" if resource == "focus" else "💪"
+            
+            if wasted:
+                extra_msgs.append(f"⚠️ +{amount} {resource.title()} earned but no building under construction")
+            elif completed:
+                extra_msgs.append(f"🎉 +{amount} {resource.title()} → {building_name} COMPLETE!")
+            elif building_name:
+                extra_msgs.append(f"🏗️ +{amount} {resource.title()} → {building_name} ({progress:.0f}%)")
+            
+            # Clear the contribution info after showing
+            main_window._last_city_contribution = None
+        
         reward_dialog = ItemRewardDialog(
             parent=self.window(),
             source_label=f"Focus Session: {session_minutes} min" + (f" • {streak} day streak 🔥" if streak > 0 else ""),
@@ -2939,6 +2992,7 @@ class TimerTab(QtWidgets.QWidget):
             session_minutes=session_minutes,
             streak_days=streak,
             entity_perk_contributors=entity_perk_contributors,
+            extra_messages=extra_msgs,
         )
         reward_dialog.exec()
         reward_dialog.deleteLater()  # Ensure dialog is cleaned up
@@ -9272,6 +9326,7 @@ class ActivityTab(QtWidgets.QWidget):
         # Formula: Base +1 per activity, plus +1 per 20 effective minutes
         city_activity_earned = 0
         city_goldmine_coins = 0
+        city_construction_progress = None  # Track construction progress for feedback
         if CITY_AVAILABLE:
             try:
                 from city import add_city_resource, get_active_construction_info, award_exercise_income
@@ -9290,7 +9345,35 @@ class ActivityTab(QtWidgets.QWidget):
                 effective_bonus = int(effective_mins // 20)
                 city_activity_earned = base_amount + effective_bonus
                 
-                add_city_resource(self.blocker.adhd_buster, "activity", city_activity_earned)
+                # Check for active construction before adding
+                active_before = get_active_construction_info(self.blocker.adhd_buster)
+                
+                invested = add_city_resource(self.blocker.adhd_buster, "activity", city_activity_earned)
+                
+                # Track construction progress for feedback to user
+                if invested > 0 and active_before:
+                    building_name = active_before.get("building_name", "Building")
+                    progress_after = get_active_construction_info(self.blocker.adhd_buster)
+                    new_progress = progress_after.get("effort_progress_percent", 0) if progress_after else 100
+                    city_construction_progress = {
+                        "building_name": building_name,
+                        "invested": invested,
+                        "progress_percent": new_progress,
+                        "completed": progress_after is None  # Construction completed!
+                    }
+                    _logger.info(f"Activity contributed {invested} activity to {building_name} ({new_progress:.0f}% complete)")
+                elif active_before and invested == 0:
+                    # Building doesn't need activity (requirement is 0)
+                    building_name = active_before.get("building_name", "Building")
+                    requirements = active_before.get("requirements", {})
+                    if requirements.get("activity", 0) == 0:
+                        city_construction_progress = {
+                            "building_name": building_name,
+                            "invested": 0,
+                            "progress_percent": active_before.get("effort_progress_percent", 0),
+                            "completed": False,
+                            "not_needed": True
+                        }
                 
                 # Award Goldmine income for exercise (moderate+ intensity)
                 goldmine_result = award_exercise_income(
@@ -9414,19 +9497,23 @@ class ActivityTab(QtWidgets.QWidget):
             if rewards.get("current_streak", 0) > 0:
                 extra_msgs.append(f"Streak: {rewards['current_streak']} days 🔥")
             
-            # Show city building contribution (effort resources flow to active construction only)
-            if city_activity_earned > 0:
-                try:
-                    from city import get_active_construction_info
-                    active_build = get_active_construction_info(self.blocker.adhd_buster)
-                    if active_build:
-                        building_name = active_build.get("building_name", "Building")
-                        progress_pct = active_build.get("effort_progress_percent", 0)
-                        extra_msgs.append(f"🏗️ +{city_activity_earned} Activity → {building_name} ({progress_pct:.0f}%)")
-                    else:
-                        extra_msgs.append(f"⚠️ No building under construction (Activity not applied)")
-                except Exception:
-                    extra_msgs.append(f"🏗️ +{city_activity_earned} Activity")
+            # Show city building contribution using stored progress info
+            if city_construction_progress:
+                building_name = city_construction_progress.get("building_name", "Building")
+                invested = city_construction_progress.get("invested", 0)
+                progress_pct = city_construction_progress.get("progress_percent", 0)
+                completed = city_construction_progress.get("completed", False)
+                not_needed = city_construction_progress.get("not_needed", False)
+                
+                if completed:
+                    extra_msgs.append(f"🎉 +{invested} Activity → {building_name} COMPLETE!")
+                elif not_needed:
+                    extra_msgs.append(f"ℹ️ {building_name} doesn't need Activity (use Focus)")
+                else:
+                    extra_msgs.append(f"🏗️ +{invested} Activity → {building_name} ({progress_pct:.0f}%)")
+            elif city_activity_earned > 0:
+                # No active construction, show warning
+                extra_msgs.append(f"⚠️ +{city_activity_earned} Activity earned but no building under construction")
             
             # Get entity perk contributors for luck/rarity bonuses
             entity_perk_contributors = []
@@ -24870,6 +24957,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Browser monitor for Light Mode (notifications instead of blocking)
         self.browser_monitor = None
         
+        # Track last city construction contribution for reward dialog display
+        self._last_city_contribution = None
+        
         # Initialize centralized game state manager for reactive UI updates (required)
         self.game_state = None
         if GAMIFICATION_AVAILABLE:
@@ -26312,19 +26402,65 @@ del "%~f0"
         Also awards Royal Mint income (coins for focus sessions).
         
         Note: Materials come from weight management only, not focus sessions.
+        
+        Sets self._last_city_contribution with info for display in reward dialog.
         """
+        self._last_city_contribution = None  # Reset for this session
+        
         if not CITY_AVAILABLE:
             return
         
         try:
-            from city import add_city_resource, award_focus_session_income
+            from city import add_city_resource, award_focus_session_income, get_active_construction_info
             
             minutes = elapsed_seconds // 60
             
             # Focus: 1 per 30 minutes (as per design doc)
             focus_earned = minutes // 30
             if focus_earned > 0:
-                add_city_resource(self.blocker.adhd_buster, "focus", focus_earned)
+                # Check for active construction before adding
+                active_before = get_active_construction_info(self.blocker.adhd_buster)
+                
+                invested = add_city_resource(self.blocker.adhd_buster, "focus", focus_earned)
+                
+                # Store contribution info for reward dialog display
+                if invested > 0 and active_before:
+                    building_name = active_before.get("building_name", "Building")
+                    progress_after = get_active_construction_info(self.blocker.adhd_buster)
+                    
+                    # Check if construction completed (no more active construction)
+                    if progress_after is None:
+                        # Construction completed!
+                        self._last_city_contribution = {
+                            "resource": "focus",
+                            "amount": invested,
+                            "building_name": building_name,
+                            "progress_percent": 100.0,
+                            "completed": True
+                        }
+                        _logger.info(f"Focus session completed construction of {building_name}!")
+                    else:
+                        new_progress = progress_after.get("effort_progress_percent", 0)
+                        self._last_city_contribution = {
+                            "resource": "focus",
+                            "amount": invested,
+                            "building_name": building_name,
+                            "progress_percent": new_progress,
+                            "completed": False
+                        }
+                        _logger.info(f"Focus session contributed {invested} focus to {building_name} ({new_progress:.0f}% complete)")
+                elif focus_earned > 0:
+                    if not active_before:
+                        # No active construction
+                        self._last_city_contribution = {
+                            "resource": "focus",
+                            "amount": focus_earned,
+                            "building_name": None,
+                            "progress_percent": 0,
+                            "completed": False,
+                            "wasted": True
+                        }
+                        _logger.debug(f"Focus earned ({focus_earned}) but no active construction to apply it to")
             
             # Award Royal Mint income for focus session
             game_state = getattr(self, 'game_state', None)

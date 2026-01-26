@@ -92,7 +92,7 @@ def get_max_building_slots(player_level: int) -> int:
     Returns number of buildings the player can have placed.
     Building TYPES are never restricted - only slot COUNT.
     """
-    max_slots = 2  # Default for level 1
+    max_slots = 0  # Default for level 1 (no lots until level 2)
     for level_threshold, slots in sorted(BUILDING_SLOT_UNLOCKS.items()):
         if player_level >= level_threshold:
             max_slots = slots
@@ -149,6 +149,41 @@ def get_next_slot_unlock(adhd_buster: dict) -> dict:
         "current_level": player_level,
         "next_unlock_level": next_level,  # None if maxed
         "slots_after": next_slots,
+    }
+
+
+def get_slot_unlock_at_level(new_level: int, old_level: int = None) -> dict:
+    """
+    Check if a level unlocks a new building slot.
+    
+    Args:
+        new_level: The level just reached
+        old_level: The previous level (optional, if None checks if new_level is an unlock level)
+    
+    Returns: {
+        "unlocked": bool,  # True if this level unlocks a new slot
+        "slot_number": int or None,  # Which slot number (1-10) was unlocked
+        "total_slots": int,  # Total slots available at new_level
+        "is_first_slot": bool,  # True if this is the first building slot
+        "all_slots_unlocked": bool,  # True if all 10 slots are now unlocked
+    }
+    """
+    new_slots = get_max_building_slots(new_level)
+    old_slots = get_max_building_slots(old_level) if old_level else 0
+    
+    # Check if we unlocked at least one new slot
+    unlocked = new_slots > old_slots
+    
+    # If multiple levels were skipped, report the slots unlocked
+    slots_unlocked = new_slots - old_slots if unlocked else 0
+    
+    return {
+        "unlocked": unlocked,
+        "slot_number": new_slots if unlocked else None,
+        "slots_unlocked_count": slots_unlocked,
+        "total_slots": new_slots,
+        "is_first_slot": new_slots == 1 and old_slots == 0,
+        "all_slots_unlocked": new_slots >= 10,
     }
 
 

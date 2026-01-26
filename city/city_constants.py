@@ -43,16 +43,19 @@ MAX_OFFLINE_HOURS = 24
 
 # Slot unlock progression: level threshold → max buildings allowed
 # Players can build ANY building type, but limited by slot count
+# User starts with 0 lots, first unlocks at level 2
 BUILDING_SLOT_UNLOCKS = {
-    1: 2,    # Levels 1-4: 2 slots (starter)
-    5: 3,    # Levels 5-9: 3 slots
-    10: 4,   # Levels 10-14: 4 slots
-    15: 5,   # Levels 15-19: 5 slots
-    20: 6,   # Levels 20-24: 6 slots
-    25: 7,   # Levels 25-29: 7 slots
-    30: 8,   # Levels 30-34: 8 slots
-    35: 9,   # Levels 35-39: 9 slots
-    40: 10,  # Level 40+: All 10 buildings
+    1: 0,    # Level 1: No lots available (starter)
+    2: 1,    # Level 2: 1st lot unlocked
+    4: 2,    # Level 4: 2nd lot unlocked
+    6: 3,    # Level 6: 3rd lot unlocked
+    9: 4,    # Level 9: 4th lot unlocked
+    13: 5,   # Level 13: 5th lot unlocked
+    18: 6,   # Level 18: 6th lot unlocked
+    24: 7,   # Level 24: 7th lot unlocked
+    31: 8,   # Level 31: 8th lot unlocked
+    39: 9,   # Level 39: 9th lot unlocked
+    40: 10,  # Level 40: All 10 lots unlocked
 }
 
 # ============================================================================

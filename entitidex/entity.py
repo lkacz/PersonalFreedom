@@ -7,7 +7,7 @@ for recording successful captures.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Set, FrozenSet
 
 
 @dataclass
@@ -28,6 +28,9 @@ class Entity:
     collection_tier: int = 1    # Which "page" of collection (for scaling)
     exceptional_name: str = ""  # Playful name variant for exceptional cards
     exceptional_lore: str = ""  # Unique lore for exceptional variant
+    
+    # City building synergy tags (e.g., {"fire", "crafting"} boosts Forge)
+    synergy_tags: FrozenSet[str] = field(default_factory=frozenset)
     
     @property
     def rarity_emoji(self) -> str:
@@ -68,6 +71,7 @@ class Entity:
             "collection_tier": self.collection_tier,
             "exceptional_name": self.exceptional_name,
             "exceptional_lore": self.exceptional_lore,
+            "synergy_tags": list(self.synergy_tags),
         }
     
     @classmethod
@@ -86,6 +90,7 @@ class Entity:
             collection_tier=data.get("collection_tier", 1),
             exceptional_name=data.get("exceptional_name", ""),
             exceptional_lore=data.get("exceptional_lore", ""),
+            synergy_tags=frozenset(data.get("synergy_tags", [])),
         )
 
 
