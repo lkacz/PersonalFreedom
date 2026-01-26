@@ -2476,7 +2476,7 @@ class BuildingCompleteDialog(StyledDialog):
         layout.addWidget(effect_frame)
         
         # Level indicator with max level info
-        max_level = self.building_def.get("max_level", 5)
+        max_level = self.building_def.get("max_level", 3)
         if self.level < max_level:
             level_text = f"Level {self.level}/{max_level} - Keep upgrading for stronger bonuses!"
             level_style = "color: #FFB74D; font-style: italic; margin: 10px;"
@@ -2684,7 +2684,7 @@ class BuildingDetailsDialog(StyledDialog):
         content_layout.addWidget(icon_container)
         
         level = self.cell_state.get("level", 1)
-        max_level = self.building.get("max_level", 5)
+        max_level = self.building.get("max_level", 3)
         
         # Level display
         level_label = QtWidgets.QLabel(f"Level {level}/{max_level}")

@@ -108,7 +108,7 @@ def adhd_buster_with_buildings():
     city["grid"][0][0] = {
         "building_id": "goldmine",
         "status": CellStatus.COMPLETE.value,
-        "level": 3,
+        "level": 2,
         "construction_progress": {"water": 3, "materials": 5, "activity": 0, "focus": 2},
         "placed_at": datetime.now().isoformat(),
         "completed_at": datetime.now().isoformat(),
@@ -435,8 +435,8 @@ class TestUpgrades:
     
     def test_can_upgrade_max_level(self, adhd_buster_with_buildings):
         city = get_city_data(adhd_buster_with_buildings)
-        # Set goldmine to max level (5)
-        city["grid"][0][0]["level"] = 5
+        # Set goldmine to max level (3)
+        city["grid"][0][0]["level"] = 3
         
         can, reason = can_upgrade(adhd_buster_with_buildings, 0, 0)
         assert can is False
@@ -460,7 +460,7 @@ class TestUpgrades:
         
         can, reason = can_initiate_upgrade(adhd_buster_with_buildings, 0, 0)
         assert can is True
-        assert "L4" in reason
+        assert "L3" in reason
     
     def test_initiate_upgrade_consumes_stockpile(self, adhd_buster_with_buildings):
         """initiate_upgrade should consume water and materials."""
