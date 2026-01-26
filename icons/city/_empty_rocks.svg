@@ -1,23 +1,59 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <defs>
-    <linearGradient id="sky2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#1e2d3a"/><stop offset="100%" style="stop-color:#2a3d4a"/></linearGradient>
-    <linearGradient id="grass2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#4a7a4a"/><stop offset="100%" style="stop-color:#3a5a3a"/></linearGradient>
-    <linearGradient id="rock2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#6a6a7a"/><stop offset="100%" style="stop-color:#4a4a5a"/></linearGradient>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="100%" style="stop-color:#87ceeb"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
   </defs>
-  <rect width="128" height="128" fill="url(#sky2)"/>
-  <path d="M-10,75 Q30,60 64,68 Q98,76 138,65 L138,85 L-10,85 Z" fill="#2a4a3a" opacity="0.5"/>
-  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass2)"/>
-  <g stroke="#5a8a5a" stroke-width="1.5" fill="none">
-    <path d="M10,100 Q15,90 23,88"><animate attributeName="d" values="M10,100 Q15,90 23,88;M10,100 Q17,88 27,86;M10,100 Q15,90 23,88" dur="2s" repeatCount="indefinite"/></path>
-    <path d="M100,96 Q105,86 113,84"><animate attributeName="d" values="M100,96 Q105,86 113,84;M100,96 Q107,84 117,82;M100,96 Q105,86 113,84" dur="1.8s" repeatCount="indefinite"/></path>
+  
+  <!-- Beautiful blue sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Distant hills -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  
+  <!-- Main ground -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+  
+  <!-- Rock formation -->
+  <g>
+    <polygon points="50,92 45,75 55,65 68,70 72,85 65,92" fill="#78909c"/>
+    <polygon points="55,65 62,58 70,62 68,70" fill="#90a4ae"/>
+    <polygon points="68,70 72,85 80,88 78,72 70,62" fill="#607d8b"/>
+    <!-- Highlight -->
+    <polygon points="56,68 60,62 65,65 62,72" fill="#b0bec5" opacity="0.5"/>
   </g>
-  <polygon points="50,92 55,65 65,60 75,68 78,92" fill="url(#rock2)"/>
-  <polygon points="55,65 60,62 65,60" fill="#7a7a8a"/>
-  <polygon points="40,95 45,78 55,82 52,95" fill="#5a5a6a"/>
-  <ellipse cx="85" cy="90" rx="5" ry="3" fill="#5a5a6a"/>
-  <ellipse cx="30" cy="93" rx="4" ry="2.5" fill="#4a4a5a"/>
-  <g opacity="0.35"><animate attributeName="opacity" values="0.25;0.45;0.25" dur="2.5s" repeatCount="indefinite"/>
-    <rect x="61" y="42" width="6" height="18" rx="2" fill="#4CAF50"/>
-    <rect x="55" y="48" width="18" height="6" rx="2" fill="#4CAF50"/>
+  
+  <!-- Small pebbles -->
+  <ellipse cx="38" cy="95" rx="4" ry="2" fill="#78909c"/>
+  <ellipse cx="85" cy="93" rx="3" ry="1.5" fill="#90a4ae"/>
+  
+  <!-- Grass texture -->
+  <g stroke="#689f38" stroke-width="1" fill="none" opacity="0.5">
+    <path d="M15,95 Q17,88 15,82"/>
+    <path d="M25,93 Q27,86 25,80"/>
+    <path d="M95,94 Q97,87 95,81"/>
+    <path d="M110,92 Q112,85 110,78"/>
+  </g>
+  
+  <!-- Gentle grass sway -->
+  <g stroke="#8bc34a" stroke-width="1.5" fill="none">
+    <path d="M18,98 Q23,88 30,86">
+      <animate attributeName="d" values="M18,98 Q23,88 30,86;M18,98 Q25,86 34,84;M18,98 Q23,88 30,86" dur="3s" repeatCount="indefinite"/>
+    </path>
+    <path d="M100,96 Q105,86 112,84">
+      <animate attributeName="d" values="M100,96 Q105,86 112,84;M100,96 Q107,84 116,82;M100,96 Q105,86 112,84" dur="2.8s" repeatCount="indefinite" begin="0.4s"/>
+    </path>
+  </g>
+  
+  <!-- Build hint -->
+  <g opacity="0.4">
+    <animate attributeName="opacity" values="0.3;0.5;0.3" dur="2.5s" repeatCount="indefinite"/>
+    <line x1="54" y1="54" x2="74" y2="54" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+    <line x1="64" y1="44" x2="64" y2="64" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
   </g>
 </svg>

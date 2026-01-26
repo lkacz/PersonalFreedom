@@ -1,26 +1,63 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
   <defs>
-    <linearGradient id="sky7" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#1e2d3a"/><stop offset="100%" style="stop-color:#2a3d4a"/></linearGradient>
-    <linearGradient id="grass7" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:#4a7a4a"/><stop offset="100%" style="stop-color:#3a5a3a"/></linearGradient>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="100%" style="stop-color:#87ceeb"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
   </defs>
-  <rect width="128" height="128" fill="url(#sky7)"/>
-  <path d="M-10,75 Q30,60 64,68 Q98,76 138,65 L138,85 L-10,85 Z" fill="#2a4a3a" opacity="0.5"/>
-  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass7)"/>
-  <g stroke="#5a8a5a" stroke-width="1.5" fill="none">
-    <path d="M90,96 Q95,86 103,84"><animate attributeName="d" values="M90,96 Q95,86 103,84;M90,96 Q97,84 107,82;M90,96 Q95,86 103,84" dur="2s" repeatCount="indefinite"/></path>
+  
+  <!-- Beautiful blue sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Distant hills -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  
+  <!-- Main ground -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+  
+  <!-- Large oak tree -->
+  <g>
+    <!-- Trunk -->
+    <path d="M58,92 L55,60 Q54,55 56,50 L60,50 Q64,48 68,50 L72,50 Q74,55 73,60 L70,92 Z" fill="#5d4037"/>
+    <!-- Trunk texture -->
+    <path d="M60,90 L59,70 M66,90 L67,65" stroke="#4e342e" stroke-width="1" fill="none"/>
+    
+    <!-- Foliage layers -->
+    <ellipse cx="64" cy="38" rx="32" ry="22" fill="#2e7d32">
+      <animate attributeName="rx" values="32;33;32" dur="4s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="55" cy="32" rx="18" ry="14" fill="#388e3c"/>
+    <ellipse cx="75" cy="35" rx="16" ry="12" fill="#388e3c"/>
+    <ellipse cx="64" cy="28" rx="14" ry="10" fill="#43a047"/>
+    
+    <!-- Highlight spots -->
+    <circle cx="50" cy="30" r="4" fill="#66bb6a" opacity="0.6"/>
+    <circle cx="72" cy="26" r="3" fill="#81c784" opacity="0.5"/>
   </g>
-  <g transform-origin="45 85"><animateTransform attributeName="transform" type="rotate" values="-0.3;0.3;-0.3" dur="5s" repeatCount="indefinite"/>
-    <path d="M40,95 Q38,75 42,60 L48,60 Q52,75 50,95 Z" fill="#4a3a2a"/>
-    <path d="M42,65 Q30,55 25,50" stroke="#4a3a2a" stroke-width="3" fill="none"/>
-    <path d="M48,62 Q60,50 68,48" stroke="#4a3a2a" stroke-width="3" fill="none"/>
-    <ellipse cx="45" cy="45" rx="28" ry="20" fill="#2d5a3d"/>
-    <ellipse cx="30" cy="50" rx="15" ry="12" fill="#3d6a4d"/>
-    <ellipse cx="60" cy="48" rx="14" ry="11" fill="#3d6a4d"/>
-    <ellipse cx="45" cy="38" rx="18" ry="12" fill="#4d7a5d"/>
+  
+  <!-- Falling leaf animation -->
+  <g>
+    <path d="M80,45 Q82,46 81,48 Q80,50 78,49 Q76,48 77,46 Q78,44 80,45" fill="#ff8a65">
+      <animateTransform attributeName="transform" type="translate" values="0,0; 5,20; -3,40; 8,60" dur="6s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="rotate" values="0; 45; -30; 90" dur="6s" repeatCount="indefinite" additive="sum"/>
+    </path>
   </g>
-  <ellipse cx="65" cy="55" rx="2" ry="1" fill="#6a9a5a" opacity="0.8"><animate attributeName="cy" values="55;95;55" dur="6s" repeatCount="indefinite"/><animate attributeName="cx" values="65;80;65" dur="6s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="rotate" values="0;360;0" dur="6s" repeatCount="indefinite"/></ellipse>
-  <g opacity="0.35"><animate attributeName="opacity" values="0.25;0.45;0.25" dur="2.5s" repeatCount="indefinite"/>
-    <rect x="76" y="55" width="6" height="18" rx="2" fill="#4CAF50"/>
-    <rect x="70" y="61" width="18" height="6" rx="2" fill="#4CAF50"/>
+  
+  <!-- Grass texture -->
+  <g stroke="#689f38" stroke-width="1" fill="none" opacity="0.5">
+    <path d="M15,95 Q17,88 15,82"/>
+    <path d="M100,93 Q102,86 100,80"/>
+    <path d="M115,94 Q117,87 115,81"/>
+  </g>
+  
+  <!-- Build hint -->
+  <g opacity="0.4">
+    <animate attributeName="opacity" values="0.3;0.5;0.3" dur="2.5s" repeatCount="indefinite"/>
+    <line x1="54" y1="64" x2="74" y2="64" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+    <line x1="64" y1="54" x2="64" y2="74" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
   </g>
 </svg>
