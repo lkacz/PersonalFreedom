@@ -75,12 +75,25 @@
     <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-opacity="0.2"/>
     </filter>
+      <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="100%" style="stop-color:#87ceeb"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
   </defs>
+  <!-- Background: Blue sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
   
-  <!-- Sky background -->
-  <rect x="0" y="0" width="128" height="96" fill="url(#skyGradient)"/>
+  <!-- Distant hills -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
   
-  <!-- Animated clouds -->
+  <!-- Main ground - green grass -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+
+<!-- Animated clouds -->
   <ellipse cx="20" cy="16" rx="12" ry="6" fill="#FFFFFF" opacity="0.8">
     <animate attributeName="cx" values="20;35;20" dur="20s" repeatCount="indefinite"/>
   </ellipse>
