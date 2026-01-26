@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Goldmine Level 2 Animated - Industrial mine with conveyor animation -->
+  <defs>
+    <linearGradient id="mountainRock" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6D5D4E"/>
+      <stop offset="30%" style="stop-color:#5D4D3E"/>
+      <stop offset="70%" style="stop-color:#4D3D2E"/>
+      <stop offset="100%" style="stop-color:#3D2D1E"/>
+    </linearGradient>
+    <linearGradient id="mountainShadow" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#5D4D3E"/>
+      <stop offset="100%" style="stop-color:#2D1D0E"/>
+    </linearGradient>
+    <linearGradient id="goldNugget" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFE57F"/>
+      <stop offset="25%" style="stop-color:#FFD700"/>
+      <stop offset="50%" style="stop-color:#FFC107"/>
+      <stop offset="75%" style="stop-color:#FF8F00"/>
+      <stop offset="100%" style="stop-color:#E65100"/>
+    </linearGradient>
+    <linearGradient id="goldShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="50%" style="stop-color:#FFE57F"/>
+      <stop offset="100%" style="stop-color:#FFD700"/>
+    </linearGradient>
+    <linearGradient id="metalBeam" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#607D8B"/>
+      <stop offset="50%" style="stop-color:#78909C"/>
+      <stop offset="100%" style="stop-color:#546E7A"/>
+    </linearGradient>
+    <radialGradient id="caveDepth" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" style="stop-color:#1A1A1A"/>
+      <stop offset="100%" style="stop-color:#000000"/>
+    </radialGradient>
+    <radialGradient id="goldGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD700" stop-opacity="0.5"/>
+      <stop offset="100%" style="stop-color:#FFD700" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="conveyor" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#424242"/>
+      <stop offset="50%" style="stop-color:#616161"/>
+      <stop offset="100%" style="stop-color:#424242"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="100%" style="stop-color:#87ceeb"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
+    </filter>
+  </defs>
+  
+  <!-- Background: Blue sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Distant hills -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  
+  <!-- Main ground - green grass -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+
+  <!-- Distant mountain peak -->
+  <polygon points="96,36 116,96 76,96" fill="#4D3D2E" opacity="0.6"/>
+  <polygon points="16,46 36,96 0,96" fill="#5D4D3E" opacity="0.4"/>
+  
+  <!-- Main mountain body -->
+  <polygon points="64,12 120,112 8,112" fill="url(#mountainRock)"/>
+  <polygon points="64,12 8,112 48,112 64,56" fill="url(#mountainShadow)"/>
+  
+  <!-- Snow cap -->
+  <polygon points="64,12 56,28 64,24 72,28" fill="#ECEFF1" opacity="0.9"/>
+  
+  <!-- Mine entrance (larger, reinforced) -->
+  <path d="M36 112 L36 72 Q36 58, 52 58 L76 58 Q92 58, 92 72 L92 112 Z" fill="url(#caveDepth)"/>
+  
+  <!-- Steel frame entrance -->
+  <rect x="30" y="54" width="10" height="58" fill="url(#metalBeam)" rx="1"/>
+  <rect x="88" y="54" width="10" height="58" fill="url(#metalBeam)" rx="1"/>
+  <rect x="30" y="50" width="68" height="8" fill="url(#metalBeam)" rx="1"/>
+  
+  <!-- Industrial rivets -->
+  <circle cx="33" cy="60" r="1.5" fill="#37474F"/>
+  <circle cx="95" cy="60" r="1.5" fill="#37474F"/>
+  <circle cx="33" cy="80" r="1.5" fill="#37474F"/>
+  <circle cx="95" cy="80" r="1.5" fill="#37474F"/>
+  <circle cx="33" cy="100" r="1.5" fill="#37474F"/>
+  <circle cx="95" cy="100" r="1.5" fill="#37474F"/>
+  
+  <!-- Gold glow from inside (animated) -->
+  <ellipse cx="64" cy="92" rx="24" ry="20" fill="url(#goldGlow)" filter="url(#glow)">
+    <animate attributeName="rx" values="24;28;24" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Conveyor belt system -->
+  <rect x="44" y="108" width="50" height="6" fill="url(#conveyor)" rx="2"/>
+  <rect x="94" y="104" width="8" height="10" fill="#455A64" rx="1"/>
+  <circle cx="98" cy="109" r="3" fill="#37474F">
+    <animateTransform attributeName="transform" type="rotate" from="0 98 109" to="360 98 109" dur="0.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Animated gold bars on conveyor -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;-44,0;0,0" dur="4s" repeatCount="indefinite"/>
+    <rect x="50" y="105" width="8" height="4" fill="#FFD700" rx="1"/>
+    <rect x="62" y="105" width="8" height="4" fill="#FFD700" rx="1"/>
+    <rect x="74" y="105" width="8" height="4" fill="#FFD700" rx="1"/>
+    <rect x="86" y="105" width="8" height="4" fill="#FFD700" rx="1"/>
+    <rect x="98" y="105" width="8" height="4" fill="#FFD700" rx="1"/>
+    <rect x="110" y="105" width="8" height="4" fill="#FFD700" rx="1"/>
+  </g>
+  
+  <!-- Large gold pile (animated glow) -->
+  <ellipse cx="24" cy="108" rx="18" ry="8" fill="#5D4037"/>
+  <circle cx="16" cy="104" r="9" fill="url(#goldNugget)">
+    <animate attributeName="opacity" values="0.9;1;0.9" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="28" cy="100" r="8" fill="url(#goldNugget)">
+    <animate attributeName="opacity" values="0.85;1;0.85" dur="1.8s" repeatCount="indefinite" begin="0.3s"/>
+  </circle>
+  <circle cx="22" cy="106" r="7" fill="url(#goldNugget)"/>
+  <circle cx="10" cy="108" r="6" fill="url(#goldNugget)"/>
+  <circle cx="34" cy="106" r="6" fill="url(#goldNugget)"/>
+  
+  <!-- Gold highlights with sparkle -->
+  <circle cx="14" cy="102" r="2.5" fill="url(#goldShine)">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="1.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="26" cy="98" r="2" fill="url(#goldShine)">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="1.4s" repeatCount="indefinite" begin="0.2s"/>
+  </circle>
+  
+  <!-- Mining tower structure -->
+  <rect x="104" y="52" width="4" height="48" fill="#455A64"/>
+  <rect x="116" y="52" width="4" height="48" fill="#455A64"/>
+  <rect x="104" y="48" width="16" height="6" fill="#607D8B"/>
+  <line x1="104" y1="60" x2="120" y2="70" stroke="#546E7A" stroke-width="2"/>
+  <line x1="120" y1="60" x2="104" y2="70" stroke="#546E7A" stroke-width="2"/>
+  <line x1="104" y1="80" x2="120" y2="90" stroke="#546E7A" stroke-width="2"/>
+  <line x1="120" y1="80" x2="104" y2="90" stroke="#546E7A" stroke-width="2"/>
+  
+  <!-- Animated wheel at top of tower -->
+  <circle cx="112" cy="48" r="6" fill="#37474F"/>
+  <g>
+    <animateTransform attributeName="transform" type="rotate" from="0 112 48" to="360 112 48" dur="2s" repeatCount="indefinite"/>
+    <circle cx="112" cy="48" r="4" fill="#455A64"/>
+    <line x1="108" y1="48" x2="116" y2="48" stroke="#263238" stroke-width="1"/>
+    <line x1="112" y1="44" x2="112" y2="52" stroke="#263238" stroke-width="1"/>
+  </g>
+  
+  <!-- Cable from tower -->
+  <line x1="112" y1="54" x2="64" y2="70" stroke="#212121" stroke-width="1.5"/>
+  
+  <!-- Electric lights at entrance (animated) -->
+  <rect x="34" y="62" width="4" height="6" fill="#FFF59D"/>
+  <rect x="90" y="62" width="4" height="6" fill="#FFF59D"/>
+  <circle cx="36" cy="65" r="5" fill="#FFEB3B">
+    <animate attributeName="opacity" values="0.2;0.4;0.2" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="92" cy="65" r="5" fill="#FFEB3B">
+    <animate attributeName="opacity" values="0.2;0.4;0.2" dur="1s" repeatCount="indefinite" begin="0.5s"/>
+  </circle>
+  
+  <!-- Scattered gold on mountain -->
+  <circle cx="100" cy="88" r="5" fill="url(#goldNugget)"/>
+  <circle cx="48" cy="48" r="4" fill="url(#goldNugget)"/>
+  <circle cx="80" cy="64" r="4" fill="url(#goldNugget)"/>
+  
+  <!-- Animated steam/smoke from processing -->
+  <g opacity="0.5">
+    <ellipse cx="100" cy="44" rx="6" ry="4" fill="#ECEFF1">
+      <animate attributeName="cy" values="44;38;32" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.3;0" dur="3s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="104" cy="40" rx="4" ry="3" fill="#ECEFF1">
+      <animate attributeName="cy" values="40;34;28" dur="3s" repeatCount="indefinite" begin="1s"/>
+      <animate attributeName="opacity" values="0.4;0.2;0" dur="3s" repeatCount="indefinite" begin="1s"/>
+    </ellipse>
+  </g>
+  
+  <!-- Sparkle stars -->
+  <g fill="#FFFFFF">
+    <polygon points="20,102 21,104 24,104 22,106 23,109 20,107 17,109 18,106 16,104 19,104">
+      <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+    </polygon>
+    <polygon points="30,96 31,98 33,98 31.5,99.5 32,102 30,100 28,102 28.5,99.5 27,98 29,98">
+      <animate attributeName="opacity" values="0;1;0" dur="2.2s" repeatCount="indefinite" begin="0.5s"/>
+    </polygon>
+  </g>
+  
+  <!-- Birds -->
+  <path d="M20 20 Q22 18 24 20 Q26 18 28 20" stroke="#37474F" stroke-width="1" fill="none" opacity="0.6"/>
+</svg>

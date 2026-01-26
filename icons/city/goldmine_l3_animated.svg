@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Goldmine Level 3 Animated - Futuristic high-tech with laser and hologram animations -->
+  <defs>
+    <linearGradient id="mountainRock" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6D5D4E"/>
+      <stop offset="30%" style="stop-color:#5D4D3E"/>
+      <stop offset="70%" style="stop-color:#4D3D2E"/>
+      <stop offset="100%" style="stop-color:#3D2D1E"/>
+    </linearGradient>
+    <linearGradient id="mountainShadow" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#5D4D3E"/>
+      <stop offset="100%" style="stop-color:#2D1D0E"/>
+    </linearGradient>
+    <linearGradient id="goldNugget" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFE57F"/>
+      <stop offset="25%" style="stop-color:#FFD700"/>
+      <stop offset="50%" style="stop-color:#FFC107"/>
+      <stop offset="75%" style="stop-color:#FF8F00"/>
+      <stop offset="100%" style="stop-color:#E65100"/>
+    </linearGradient>
+    <linearGradient id="techPanel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#263238"/>
+      <stop offset="50%" style="stop-color:#37474F"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    <radialGradient id="caveDepth" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" style="stop-color:#1A1A1A"/>
+      <stop offset="100%" style="stop-color:#000000"/>
+    </radialGradient>
+    <radialGradient id="goldGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD700" stop-opacity="0.6"/>
+      <stop offset="100%" style="stop-color:#FFD700" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="laserGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.8"/>
+      <stop offset="100%" style="stop-color:#00E5FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="100%" style="stop-color:#87ceeb"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background: Blue sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Distant hills -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  
+  <!-- Main ground -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+
+  <!-- Distant mountain peak -->
+  <polygon points="96,36 116,96 76,96" fill="#4D3D2E" opacity="0.6"/>
+  <polygon points="16,46 36,96 0,96" fill="#5D4D3E" opacity="0.4"/>
+  
+  <!-- Main mountain body -->
+  <polygon points="64,12 120,112 8,112" fill="url(#mountainRock)"/>
+  <polygon points="64,12 8,112 48,112 64,56" fill="url(#mountainShadow)"/>
+  
+  <!-- Snow cap with animated tech antenna -->
+  <polygon points="64,12 56,28 64,24 72,28" fill="#ECEFF1" opacity="0.9"/>
+  <line x1="64" y1="6" x2="64" y2="14" stroke="#455A64" stroke-width="2"/>
+  <circle cx="64" cy="4" r="2" fill="#00E5FF" filter="url(#glow)">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- High-tech entrance -->
+  <path d="M32 112 L32 68 Q32 52, 52 52 L76 52 Q96 52, 96 68 L96 112 Z" fill="url(#caveDepth)"/>
+  
+  <!-- Tech frame entrance -->
+  <rect x="26" y="48" width="8" height="64" fill="url(#techPanel)" rx="1"/>
+  <rect x="94" y="48" width="8" height="64" fill="url(#techPanel)" rx="1"/>
+  <rect x="26" y="44" width="76" height="8" fill="url(#techPanel)" rx="1"/>
+  
+  <!-- Animated cyan LED strips -->
+  <rect x="27" y="52" width="2" height="56" fill="#00E5FF">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="99" y="52" width="2" height="56" fill="#00E5FF">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite" begin="0.75s"/>
+  </rect>
+  <rect x="30" y="45" width="68" height="2" fill="#00E5FF">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="1.2s" repeatCount="indefinite"/>
+  </rect>
+  
+  <!-- Animated force field effect -->
+  <rect x="36" y="56" width="56" height="52" fill="#00E5FF" opacity="0.05"/>
+  <line x1="36" y1="70" x2="92" y2="70" stroke="#00E5FF" stroke-width="0.5">
+    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2s" repeatCount="indefinite"/>
+  </line>
+  <line x1="36" y1="84" x2="92" y2="84" stroke="#00E5FF" stroke-width="0.5">
+    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2s" repeatCount="indefinite" begin="0.7s"/>
+  </line>
+  <line x1="36" y1="98" x2="92" y2="98" stroke="#00E5FF" stroke-width="0.5">
+    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2s" repeatCount="indefinite" begin="1.4s"/>
+  </line>
+  
+  <!-- Animated gold glow from inside -->
+  <ellipse cx="64" cy="90" rx="28" ry="24" fill="url(#goldGlow)">
+    <animate attributeName="rx" values="28;32;28" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="2.5s" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Animated holographic gold display -->
+  <rect x="44" y="72" width="40" height="24" fill="#00E5FF" rx="2">
+    <animate attributeName="opacity" values="0.15;0.25;0.15" dur="1.5s" repeatCount="indefinite"/>
+  </rect>
+  <text x="64" y="88" font-family="Arial" font-size="8" fill="#00E5FF" text-anchor="middle">
+    AU 99.99%
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
+  </text>
+  
+  <!-- Gold vault stack -->
+  <ellipse cx="18" cy="108" rx="16" ry="6" fill="#3E2723"/>
+  <rect x="6" y="100" width="10" height="5" fill="#FFD700" rx="1"/>
+  <rect x="17" y="100" width="10" height="5" fill="#FFD700" rx="1"/>
+  <rect x="10" y="94" width="10" height="5" fill="#FFD700" rx="1"/>
+  <rect x="21" y="94" width="10" height="5" fill="#FFD700" rx="1"/>
+  <rect x="14" y="88" width="10" height="5" fill="#FFD700" rx="1"/>
+  <!-- Animated gold bar highlights -->
+  <rect x="7" y="101" width="4" height="2" fill="#FFF59D">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.3s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="18" y="101" width="4" height="2" fill="#FFF59D">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.3s" repeatCount="indefinite" begin="0.3s"/>
+  </rect>
+  
+  <!-- High-tech mining tower -->
+  <rect x="104" y="44" width="6" height="56" fill="url(#techPanel)"/>
+  <rect x="118" y="44" width="6" height="56" fill="url(#techPanel)"/>
+  <rect x="104" y="36" width="20" height="10" fill="url(#techPanel)"/>
+  
+  <!-- Tower LED strips (animated) -->
+  <rect x="105" y="48" width="1" height="48" fill="#00E5FF">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="1.2s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="122" y="48" width="1" height="48" fill="#00E5FF">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="1.2s" repeatCount="indefinite" begin="0.6s"/>
+  </rect>
+  
+  <!-- Animated satellite dish -->
+  <ellipse cx="114" cy="32" rx="10" ry="4" fill="#455A64"/>
+  <rect x="112" y="32" width="4" height="6" fill="#37474F"/>
+  <circle cx="114" cy="32" r="2" fill="#00E5FF">
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Animated laser mining beam -->
+  <line x1="114" y1="44" x2="72" y2="68" stroke="#00E5FF" stroke-width="3">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="0.5s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-width" values="2;4;2" dur="0.5s" repeatCount="indefinite"/>
+  </line>
+  <ellipse cx="72" cy="68" rx="6" ry="4" fill="url(#laserGlow)">
+    <animate attributeName="rx" values="6;10;6" dur="0.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="0.5s" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Animated drone -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;4,-2;0,0;-4,2;0,0" dur="3s" repeatCount="indefinite"/>
+    <ellipse cx="40" cy="36" rx="8" ry="3" fill="#37474F"/>
+    <rect x="36" y="34" width="8" height="2" fill="#455A64"/>
+    <circle cx="34" cy="38" r="2" fill="#00E5FF">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="0.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="46" cy="38" r="2" fill="#00E5FF">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="0.8s" repeatCount="indefinite" begin="0.4s"/>
+    </circle>
+  </g>
+  
+  <!-- Animated teleporter pad -->
+  <ellipse cx="106" cy="106" rx="10" ry="4" fill="#263238"/>
+  <ellipse cx="106" cy="106" rx="8" ry="3" fill="#00E5FF">
+    <animate attributeName="opacity" values="0.2;0.4;0.2" dur="1.5s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="106" cy="106" rx="4" ry="1.5" fill="#00E5FF">
+    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+  </ellipse>
+  
+  <!-- Scattered gold -->
+  <circle cx="84" cy="88" r="4" fill="url(#goldNugget)"/>
+  <circle cx="48" cy="44" r="4" fill="url(#goldNugget)"/>
+  <circle cx="80" cy="56" r="3" fill="url(#goldNugget)"/>
+  
+  <!-- Animated tech particles -->
+  <g fill="#00E5FF">
+    <circle cx="60" cy="24" r="1">
+      <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="24;18;24" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="76" cy="32" r="1">
+      <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+      <animate attributeName="cy" values="32;26;32" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+    </circle>
+    <circle cx="52" cy="38" r="1">
+      <animate attributeName="opacity" values="0;1;0" dur="2.2s" repeatCount="indefinite" begin="1s"/>
+      <animate attributeName="cy" values="38;32;38" dur="2.2s" repeatCount="indefinite" begin="1s"/>
+    </circle>
+    <circle cx="90" cy="44" r="1">
+      <animate attributeName="opacity" values="0;1;0" dur="2.8s" repeatCount="indefinite" begin="1.5s"/>
+      <animate attributeName="cy" values="44;38;44" dur="2.8s" repeatCount="indefinite" begin="1.5s"/>
+    </circle>
+  </g>
+</svg>

@@ -162,6 +162,41 @@ CITY_ICONS_PATH = get_app_dir() / "icons" / "city"
 _svg_pixmap_cache: Dict[str, QtGui.QPixmap] = {}
 
 
+def _get_building_svg_path(building_id: str, level: int = 1, animated: bool = True) -> Path:
+    """
+    Get the SVG path for a building at a specific level.
+    
+    Naming convention:
+    - Level 1: {building_id}.svg / {building_id}_animated.svg (original)
+    - Level 2: {building_id}_l2.svg / {building_id}_l2_animated.svg
+    - Level 3: {building_id}_l3.svg / {building_id}_l3_animated.svg
+    
+    Falls back to lower levels if the specific level SVG doesn't exist.
+    """
+    # Build list of paths to try, from highest to lowest
+    paths_to_try = []
+    
+    for try_level in range(level, 0, -1):
+        if try_level == 1:
+            suffix = "_animated.svg" if animated else ".svg"
+            paths_to_try.append(CITY_ICONS_PATH / f"{building_id}{suffix}")
+        else:
+            suffix = f"_l{try_level}_animated.svg" if animated else f"_l{try_level}.svg"
+            paths_to_try.append(CITY_ICONS_PATH / f"{building_id}{suffix}")
+    
+    # Return first existing path, or the level 1 path as fallback
+    for path in paths_to_try:
+        if path.exists():
+            return path
+    
+    # Final fallback: base animated or static
+    if animated:
+        base_path = CITY_ICONS_PATH / f"{building_id}_animated.svg"
+        if base_path.exists():
+            return base_path
+    return CITY_ICONS_PATH / f"{building_id}.svg"
+
+
 def _get_svg_pixmap(svg_path: Path, size: int = 48) -> Optional[QtGui.QPixmap]:
     """Load SVG as pixmap with caching."""
     cache_key = f"{svg_path}_{size}"
@@ -189,7 +224,7 @@ def _get_svg_pixmap(svg_path: Path, size: int = 48) -> Optional[QtGui.QPixmap]:
         return None
 
 
-def _get_construction_composite_pixmap(building_id: str, size: int = 128) -> Optional[QtGui.QPixmap]:
+def _get_construction_composite_pixmap(building_id: str, size: int = 128, level: int = 1) -> Optional[QtGui.QPixmap]:
     """
     Create a composite pixmap with building SVG (faded) + construction overlay.
     
@@ -197,13 +232,15 @@ def _get_construction_composite_pixmap(building_id: str, size: int = 128) -> Opt
     - Show the actual building so user knows what's being built
     - Overlay construction scaffolding on top
     - Slight fade on building to indicate "not operational yet"
+    
+    Uses level-based SVGs to show the building being upgraded to.
     """
-    cache_key = f"construction_{building_id}_{size}"
+    cache_key = f"construction_{building_id}_l{level}_{size}"
     if cache_key in _svg_pixmap_cache:
         return _svg_pixmap_cache[cache_key]
     
-    # Load base building SVG
-    building_path = CITY_ICONS_PATH / f"{building_id}.svg"
+    # Load base building SVG for the target level
+    building_path = _get_building_svg_path(building_id, level, animated=False)
     building_pixmap = _get_svg_pixmap(building_path, size)
     
     # Load construction overlay
@@ -708,17 +745,20 @@ class CityCell(QtWidgets.QFrame):
             adhd_buster: Player data for synergy calculations
             locked: True if slot is locked (requires higher level)
         """
-        # Check if the essential state has changed (building_id and status)
+        # Check if the essential state has changed (building_id, status, level)
         # to avoid recreating expensive WebEngine widgets on every refresh
         old_building_id = self._cell_state.get("building_id") if self._cell_state else None
         old_status = self._cell_state.get("status") if self._cell_state else None
+        old_level = self._cell_state.get("level", 1) if self._cell_state else 1
         old_locked = getattr(self, '_is_locked', None)
         
         new_building_id = cell_state.get("building_id") if cell_state else None
         new_status = cell_state.get("status") if cell_state else None
+        new_level = cell_state.get("level", 1) if cell_state else 1
         
-        # Track if we need to recreate the display
-        state_changed = (old_building_id != new_building_id or old_status != new_status or old_locked != locked)
+        # Track if we need to recreate the display (including level changes for upgraded buildings)
+        state_changed = (old_building_id != new_building_id or old_status != new_status or 
+                         old_level != new_level or old_locked != locked)
         
         self._cell_state = cell_state
         self._building_def = building_def
@@ -757,9 +797,8 @@ class CityCell(QtWidgets.QFrame):
             if building_id:
                 if status == CellStatus.BUILDING.value:
                     # Under construction: show animated building with animated construction overlay
-                    svg_path = CITY_ICONS_PATH / f"{building_id}_animated.svg"
-                    if not svg_path.exists():
-                        svg_path = CITY_ICONS_PATH / f"{building_id}.svg"
+                    # Use level-based SVG for the building being constructed
+                    svg_path = _get_building_svg_path(building_id, level, animated=True)
                     construction_path = CITY_ICONS_PATH / "_construction.svg"
                     
                     if svg_path.exists() and construction_path.exists() and HAS_WEBENGINE:
@@ -772,7 +811,7 @@ class CityCell(QtWidgets.QFrame):
                         if self._web_view:
                             self._web_view.hide()
                         self.icon_label.show()
-                        pixmap = _get_construction_composite_pixmap(building_id, 128)
+                        pixmap = _get_construction_composite_pixmap(building_id, 128, level)
                         if pixmap:
                             self.icon_label.setPixmap(pixmap)
                             self.icon_label.setStyleSheet("background: transparent;")
@@ -781,10 +820,8 @@ class CityCell(QtWidgets.QFrame):
                     else:
                         self._set_emoji_icon(building_def)
                 else:
-                    # COMPLETE or PLACED: use animated SVG via WebEngineView
-                    svg_path = CITY_ICONS_PATH / f"{building_id}_animated.svg"
-                    if not svg_path.exists():
-                        svg_path = CITY_ICONS_PATH / f"{building_id}.svg"
+                    # COMPLETE or PLACED: use level-based animated SVG via WebEngineView
+                    svg_path = _get_building_svg_path(building_id, level, animated=True)
                     
                     if svg_path.exists() and HAS_WEBENGINE:
                         # Hide static label
