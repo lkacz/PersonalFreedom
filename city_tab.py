@@ -23,12 +23,13 @@ from PySide6.QtSvg import QSvgRenderer
 # Try to import QWebEngineView for animated SVG support
 try:
     from PySide6.QtWebEngineWidgets import QWebEngineView
-    from PySide6.QtWebEngineCore import QWebEngineSettings
+    from PySide6.QtWebEngineCore import QWebEngineSettings, QWebEnginePage
     HAS_WEBENGINE = True
 except ImportError:
     HAS_WEBENGINE = False
     QWebEngineView = None
     QWebEngineSettings = None
+    QWebEnginePage = None
 
 from app_utils import get_app_dir
 from styled_dialog import StyledDialog, add_tab_help_button
@@ -187,7 +188,7 @@ def _get_svg_pixmap(svg_path: Path, size: int = 48) -> Optional[QtGui.QPixmap]:
         return None
 
 
-def _get_construction_composite_pixmap(building_id: str, size: int = 48) -> Optional[QtGui.QPixmap]:
+def _get_construction_composite_pixmap(building_id: str, size: int = 128) -> Optional[QtGui.QPixmap]:
     """
     Create a composite pixmap with building SVG (faded) + construction overlay.
     
@@ -242,26 +243,27 @@ class AnimatedBuildingWidget(QtWidgets.QWidget):
     """
     Widget that displays animated SVG using QWebEngineView.
     
-    Used for completed buildings to show their SMIL/CSS animations
-    (flickering flames, rotating domes, sparkling effects).
+    Key feature: Deferred loading and explicit page lifecycle management.
+    
+    When embedded in containers that may hide/show the widget (like QStackedWidget),
+    Qt WebEngine maps widget visibility to the Page Visibility API (Document.hidden).
+    This can cause SMIL animations to freeze if the page thinks it's hidden.
+    
+    Solution: 
+    - Don't call setHtml() until the widget is actually visible
+    - Explicitly manage page visibility and lifecycle state
     
     Falls back to static QSvgWidget if WebEngine is not available.
-    
-    OPTIMIZATION per CITY_SYSTEM_DESIGN.md:
-    - Uses cached SVG content to avoid redundant file I/O
-    - Disables unnecessary WebEngine features
-    - Minimal DOM with single SVG element
     """
-    __slots__ = ('svg_path', 'web_view', 'svg_widget', '_size')
+    __slots__ = ('svg_path', 'web_view', 'svg_widget', '_loaded')
     
-    def __init__(self, svg_path: str, size: int = 80, parent=None):
+    def __init__(self, svg_path: str, parent=None):
         super().__init__(parent)
         self.svg_path = svg_path
-        self._size = size
-        self.web_view = None
-        self.svg_widget = None
-        self.setFixedSize(size, size)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.web_view: Optional[QWebEngineView] = None
+        self.svg_widget: Optional[QSvgWidget] = None
+        self._loaded = False  # Track if HTML has been loaded
+        self.setFixedSize(128, 128)
         
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -270,30 +272,76 @@ class AnimatedBuildingWidget(QtWidgets.QWidget):
         if HAS_WEBENGINE:
             # Use WebEngine for full SVG animation support
             self.web_view = QWebEngineView(self)
-            self.web_view.setFixedSize(size, size)
+            self.web_view.setFixedSize(128, 128)
             
             # Configure for transparent background
             self.web_view.page().setBackgroundColor(QtCore.Qt.transparent)
             self.web_view.setAttribute(QtCore.Qt.WA_TranslucentBackground)
             
-            # Apply performance optimizations
+            # Disable scrollbars and interactions
             settings = self.web_view.settings()
             settings.setAttribute(QWebEngineSettings.ShowScrollBars, False)
-            settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)  # For CSS animations
-            settings.setAttribute(QWebEngineSettings.LocalStorageEnabled, False)
-            settings.setAttribute(QWebEngineSettings.PluginsEnabled, False)
-            settings.setAttribute(QWebEngineSettings.FullScreenSupportEnabled, False)
-            settings.setAttribute(QWebEngineSettings.ScreenCaptureEnabled, False)
-            settings.setAttribute(QWebEngineSettings.WebGLEnabled, False)
+            settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)  # For CSS/SMIL animations
             
-            self._load_svg()
+            # NOTE: Do NOT call _load_svg() here - defer until widget is visible
+            # This prevents Document.hidden from being true when SVG loads
+            
             layout.addWidget(self.web_view)
         else:
             # Fallback to static QSvgWidget
             self.svg_widget = QSvgWidget(svg_path, self)
-            self.svg_widget.setFixedSize(size, size)
+            self.svg_widget.setFixedSize(128, 128)
             self.svg_widget.setStyleSheet("background: transparent;")
             layout.addWidget(self.svg_widget)
+    
+    def showEvent(self, event):
+        """Load SVG when widget becomes visible for the first time."""
+        super().showEvent(event)
+        # Defer load one tick to ensure geometry/visibility is fully settled
+        QtCore.QTimer.singleShot(0, self.ensure_loaded)
+    
+    def ensure_loaded(self):
+        """Load HTML exactly once, only when widget is actually visible."""
+        if not self.web_view or self._loaded:
+            return
+        self._loaded = True
+        
+        svg_content = self._get_cached_svg_content(self.svg_path)
+        
+        # Wrap SVG in HTML with transparent background and scaled display
+        html = f'''<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+    * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+    html, body {{ 
+        width: 128px; 
+        height: 128px; 
+        overflow: hidden;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }}
+    svg {{
+        width: 128px;
+        height: 128px;
+        display: block;
+    }}
+</style>
+</head>
+<body>
+{svg_content}
+</body>
+</html>'''
+        
+        # Load with file:// base URL to allow relative references
+        base_url = QtCore.QUrl.fromLocalFile(str(Path(self.svg_path).parent) + '/')
+        self.web_view.setHtml(html, base_url)
+        
+        # Ensure page is Active after loading
+        self.set_active(True)
     
     @staticmethod
     def _get_cached_svg_content(svg_path: str) -> str:
@@ -311,42 +359,51 @@ class AnimatedBuildingWidget(QtWidgets.QWidget):
         _svg_content_cache[svg_path] = content
         return content
     
-    def _load_svg(self):
-        """Load the SVG file into WebEngine with proper styling."""
-        if not self.web_view:
+    def set_active(self, active: bool):
+        """Explicitly sync WebEngine page visibility and lifecycle with widget visibility.
+        
+        Qt WebEngine maps widget visibility to the Page Visibility API (Document.hidden).
+        When Document.hidden is true, Chromium throttles/pauses animations.
+        
+        This method forces the correct state:
+        - Active: page.setVisible(True), lifecycle=Active → animations run
+        - Inactive: page.setVisible(False), lifecycle=Frozen → save CPU
+        """
+        if not self.web_view or not HAS_WEBENGINE:
             return
         
-        svg_content = self._get_cached_svg_content(self.svg_path)
-        size = self._size
+        page = self.web_view.page()
         
-        # Wrap SVG in minimal HTML with transparent background
-        html = f'''<!DOCTYPE html>
-<html>
-<head>
-<style>
-    * {{ margin: 0; padding: 0; }}
-    html, body {{ 
-        width: {size}px; 
-        height: {size}px; 
-        overflow: hidden;
-        background: transparent;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }}
-    svg {{
-        width: {size}px;
-        height: {size}px;
-        display: block;
-    }}
-</style>
-</head>
-<body>
-{svg_content}
-</body>
-</html>'''
+        # Set page visibility (affects Document.hidden)
+        page.setVisible(active)
         
-        self.web_view.setHtml(html)
+        # Set lifecycle state (Active for visible, Frozen for hidden)
+        if QWebEnginePage is not None:
+            try:
+                if active:
+                    page.setLifecycleState(QWebEnginePage.LifecycleState.Active)
+                else:
+                    page.setLifecycleState(QWebEnginePage.LifecycleState.Frozen)
+            except Exception:
+                pass  # Lifecycle API may not be available in all Qt versions
+    
+    def stop_animations(self) -> None:
+        """Pause WebEngine animations without destroying content."""
+        if self.web_view:
+            self.set_active(False)
+            self.web_view.page().runJavaScript(
+                "document.querySelectorAll('*').forEach(el => el.style.animationPlayState = 'paused');"
+                "document.querySelectorAll('animate, animateTransform, animateMotion').forEach(el => el.endElement ? el.endElement() : null);"
+            )
+    
+    def restart_animations(self) -> None:
+        """Resume WebEngine animations."""
+        if self.web_view:
+            self.set_active(True)
+            self.web_view.page().runJavaScript(
+                "document.querySelectorAll('*').forEach(el => el.style.animationPlayState = '');"
+                "document.querySelectorAll('animate, animateTransform, animateMotion').forEach(el => el.beginElement ? el.beginElement() : null);"
+            )
 
 
 # Cell status colors (CellStatus is always defined via import or fallback)
@@ -384,8 +441,11 @@ class CityCell(QtWidgets.QFrame):
     Shows:
     - Empty state (clickable to place)
     - Building icon with construction progress
-    - Complete building with level indicator
+    - Complete building with level indicator (ANIMATED via direct QWebEngineView)
     - Synergy indicator for buildings with active entity synergies
+    
+    Key insight: QWebEngineView is embedded DIRECTLY without wrapper widgets.
+    This matches preview_city_animated.py which works perfectly.
     """
     
     clicked = QtCore.Signal(int, int)  # row, col
@@ -396,37 +456,35 @@ class CityCell(QtWidgets.QFrame):
         self.col = col
         self._cell_state = None
         self._building_def = None
-        self._animated_widget = None  # For completed buildings with animations
+        self._web_view = None  # Direct QWebEngineView for animated buildings
+        self._current_svg_path = None  # Track which SVG is loaded
+        self._pending_svg_path = None  # SVG to load when visible
         self._has_synergy = False  # Track if building has active synergy
         
-        self.setMinimumSize(96, 96)
-        self.setMaximumSize(110, 110)
+        # Fixed size like entitidex EntityCard (128 SVG + padding)
+        self.setFixedSize(140, 140)
         self.setCursor(QtCore.Qt.PointingHandCursor)
         
         self._setup_ui()
         self._apply_empty_style()
     
     def _setup_ui(self):
-        """Set up the cell's internal UI."""
+        """Set up the cell's internal UI.
+        
+        Uses DIRECT QWebEngineView embedding without wrapper widgets.
+        This matches the working preview_city_animated.py approach.
+        """
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(2, 2, 2, 2)
-        layout.setSpacing(1)
+        layout.setContentsMargins(6, 6, 6, 6)
+        layout.setSpacing(2)
         
-        # Container for icon and level badge overlay
-        self.icon_container = QtWidgets.QWidget()
-        self.icon_container.setStyleSheet("background: transparent;")
-        icon_layout = QtWidgets.QVBoxLayout(self.icon_container)
-        icon_layout.setContentsMargins(0, 0, 0, 0)
-        icon_layout.setSpacing(0)
-        
-        # Building icon (SVG pixmap display) - larger for better visuals
+        # Static icon label (for empty, placed, building states)
+        # Hidden when WebEngineView is shown for animated buildings
         self.icon_label = QtWidgets.QLabel()
         self.icon_label.setAlignment(QtCore.Qt.AlignCenter)
         self.icon_label.setStyleSheet("background: transparent;")
-        self.icon_label.setMinimumSize(80, 80)
-        icon_layout.addWidget(self.icon_label, alignment=QtCore.Qt.AlignCenter)
-        
-        layout.addWidget(self.icon_container, 1)
+        self.icon_label.setFixedSize(128, 128)
+        layout.addWidget(self.icon_label, 0, QtCore.Qt.AlignCenter)
         
         # Level badge (overlaid on icon) - positioned in resizeEvent
         self.level_badge = QtWidgets.QLabel(self)
@@ -467,13 +525,11 @@ class CityCell(QtWidgets.QFrame):
     
     def _apply_empty_style(self):
         """Style for empty cell - available building plot with visible plot marker."""
-        # Clean up any existing animated widget
-        if self._animated_widget:
-            self._animated_widget.setParent(None)
-            self._animated_widget.deleteLater()
-            self._animated_widget = None
+        # Hide WebEngineView if it exists (don't destroy - expensive to recreate)
+        if self._web_view:
+            self._web_view.hide()
         
-        # Show the static icon label
+        # Show static icon label
         self.icon_label.show()
         
         self.setStyleSheet("""
@@ -497,9 +553,9 @@ class CityCell(QtWidgets.QFrame):
                 border: 2px solid rgba(150, 200, 150, 0.8);
             }
         """)
-        # Use empty/plus icon or fallback to emoji - larger for visibility
+        # Use empty/plus icon or fallback to emoji - native 128px scale
         empty_svg = CITY_ICONS_PATH / "_locked.svg"
-        pixmap = _get_svg_pixmap(empty_svg, 48)
+        pixmap = _get_svg_pixmap(empty_svg, 128)
         if pixmap:
             self.icon_label.setPixmap(pixmap)
         else:
@@ -579,67 +635,66 @@ class CityCell(QtWidgets.QFrame):
     
     def set_cell_state(self, cell_state: Optional[Dict], building_def: Optional[Dict] = None, adhd_buster: Optional[Dict] = None):
         """Update cell to reflect current state."""
+        # Check if the essential state has changed (building_id and status)
+        # to avoid recreating expensive WebEngine widgets on every refresh
+        old_building_id = self._cell_state.get("building_id") if self._cell_state else None
+        old_status = self._cell_state.get("status") if self._cell_state else None
+        
+        new_building_id = cell_state.get("building_id") if cell_state else None
+        new_status = cell_state.get("status") if cell_state else None
+        
+        # Track if we need to recreate the display
+        state_changed = (old_building_id != new_building_id or old_status != new_status)
+        
         self._cell_state = cell_state
         self._building_def = building_def
         self._adhd_buster = adhd_buster  # Store for synergy calculation
         
-        # Clean up any existing animated widget
-        if self._animated_widget:
-            self._animated_widget.setParent(None)
-            self._animated_widget.deleteLater()
-            self._animated_widget = None
-        
-        # Show icon_label by default (will be hidden if using animated widget)
-        self.icon_label.show()
+        # Default: show static label, hide webview
+        if state_changed:
+            self.icon_label.show()
+            if self._web_view:
+                self._web_view.hide()
         
         if cell_state is None:
-            self._apply_empty_style()
+            if state_changed:
+                self._apply_empty_style()
             return
         
         status = cell_state.get("status", "")
         building_id = cell_state.get("building_id", "")
         level = cell_state.get("level", 1)
         
-        # Apply status-based style
-        self._apply_building_style(status)
-        
-        # Handle building display based on status
-        if building_id:
-            if status == CellStatus.COMPLETE.value:
-                # Completed: use ANIMATED SVG widget for full animation support
+        # Only rebuild display if state changed
+        if state_changed:
+            # Apply status-based style
+            self._apply_building_style(status)
+            
+            # Handle building display based on status
+            if building_id:
+                # Use animated SVGs for ALL building states (placed, building, complete)
                 svg_path = CITY_ICONS_PATH / f"{building_id}_animated.svg"
                 if not svg_path.exists():
                     svg_path = CITY_ICONS_PATH / f"{building_id}.svg"
                 
-                if svg_path.exists():
-                    # Hide static label, use animated widget
+                if svg_path.exists() and HAS_WEBENGINE:
+                    # Hide static label
                     self.icon_label.hide()
-                    self._animated_widget = AnimatedBuildingWidget(str(svg_path), 80, self.icon_container)
-                    self.icon_container.layout().addWidget(self._animated_widget, alignment=QtCore.Qt.AlignCenter)
+                    # Load animated SVG into direct WebEngineView
+                    self._show_animated_svg(str(svg_path))
+                elif svg_path.exists():
+                    # Fallback to static pixmap if no WebEngine
+                    pixmap = _get_svg_pixmap(svg_path, 128)
+                    if pixmap:
+                        self.icon_label.setPixmap(pixmap)
+                        self.icon_label.setStyleSheet("background: transparent;")
+                    else:
+                        self._set_emoji_icon(building_def)
                 else:
                     # Fallback to emoji
                     self._set_emoji_icon(building_def)
-                
-            elif status == CellStatus.BUILDING.value:
-                # Under construction: composite of building + scaffolding overlay (static)
-                pixmap = _get_construction_composite_pixmap(building_id, 80)
-                if pixmap:
-                    self.icon_label.setPixmap(pixmap)
-                    self.icon_label.setStyleSheet("background: transparent;")
-                else:
-                    self._set_emoji_icon(building_def)
-                
             else:
-                # Placed or other: static building SVG
-                svg_path = CITY_ICONS_PATH / f"{building_id}.svg"
-                pixmap = _get_svg_pixmap(svg_path, 80)
-                if pixmap:
-                    self.icon_label.setPixmap(pixmap)
-                    self.icon_label.setStyleSheet("background: transparent;")
-                else:
-                    self._set_emoji_icon(building_def)
-        else:
-            self._set_emoji_icon(building_def)
+                self._set_emoji_icon(building_def)
         
         # Show level badge for completed buildings with level > 1
         if status == CellStatus.COMPLETE.value and level > 1:
@@ -718,6 +773,90 @@ class CityCell(QtWidgets.QFrame):
             self.icon_label.setText("🏛️")
             self.icon_label.setStyleSheet("font-size: 48px; background: transparent;")
     
+    def _show_animated_svg(self, svg_path: str):
+        """Show animated SVG using direct QWebEngineView.
+        
+        This method is called when tab is visible (from _refresh_city via showEvent).
+        Load immediately since visibility is guaranteed.
+        """
+        # Skip if same SVG already loaded
+        if self._current_svg_path == svg_path:
+            if self._web_view:
+                self._web_view.show()
+            return
+        
+        self._current_svg_path = svg_path
+        
+        # Create WebEngineView if it doesn't exist
+        if not self._web_view:
+            self._web_view = QWebEngineView()  # No parent - will be added to layout
+            self._web_view.setFixedSize(128, 128)
+            
+            # DON'T set transparent background - it breaks animations
+            # Just use dark background to match theme
+            # self._web_view.page().setBackgroundColor(QtCore.Qt.transparent)
+            # self._web_view.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+            
+            # Disable scrollbars
+            settings = self._web_view.settings()
+            settings.setAttribute(QWebEngineSettings.ShowScrollBars, False)
+            settings.setAttribute(QWebEngineSettings.JavascriptEnabled, True)
+            
+            # Add to layout at same position as icon_label
+            self.layout().insertWidget(0, self._web_view, 0, QtCore.Qt.AlignCenter)
+        
+        self._web_view.show()
+        
+        # Load SVG content immediately
+        svg_content = self._get_cached_svg_content(svg_path)
+        
+        # Use dark background to match theme (not transparent)
+        html = f'''<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+    * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+    html, body {{ 
+        width: 128px; 
+        height: 128px; 
+        overflow: hidden;
+        background: #2A2A2A;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }}
+    svg {{
+        width: 128px;
+        height: 128px;
+        display: block;
+    }}
+</style>
+</head>
+<body>
+{svg_content}
+</body>
+</html>'''
+        
+        # Load with file:// base URL to allow relative references (required for SMIL)
+        base_url = QtCore.QUrl.fromLocalFile(str(Path(svg_path).parent) + '/')
+        self._web_view.setHtml(html, base_url)
+    
+    @staticmethod
+    def _get_cached_svg_content(svg_path: str) -> str:
+        """Get cached SVG file content."""
+        if svg_path in _svg_content_cache:
+            return _svg_content_cache[svg_path]
+        
+        try:
+            with open(svg_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except Exception:
+            content = '<svg></svg>'
+        
+        _svg_content_cache[svg_path] = content
+        return content
+    
     def _position_badges(self):
         """Position level and synergy badges at correct locations."""
         # Position level badge at bottom-right
@@ -772,7 +911,7 @@ class CityCell(QtWidgets.QFrame):
 # ============================================================================
 
 class CityGrid(QtWidgets.QFrame):
-    """The 5x5 grid of city cells with terrain background."""
+    """Simple horizontal row of 10 city building slots."""
     
     cell_clicked = QtCore.Signal(int, int)  # row, col
     
@@ -780,50 +919,34 @@ class CityGrid(QtWidgets.QFrame):
         super().__init__(parent)
         self.cells: list[list[CityCell]] = []
         self._adhd_buster: Optional[Dict] = None  # Stored for synergy calculations
-        self._apply_terrain_style()
+        self._apply_simple_style()
         self._setup_ui()
     
-    def _apply_terrain_style(self):
-        """Apply impressive terrain/land background with natural landscape feel."""
+    def _apply_simple_style(self):
+        """Apply minimal transparent background."""
         self.setStyleSheet("""
             CityGrid {
-                background: qradialgradient(
-                    cx: 0.5, cy: 0.4, radius: 1.0,
-                    stop: 0 #4A7A4A,
-                    stop: 0.2 #3D6B3D,
-                    stop: 0.4 #2F5C2F,
-                    stop: 0.6 #285528,
-                    stop: 0.8 #1F471F,
-                    stop: 1.0 #183A18
-                );
-                border: 4px solid qlineargradient(
-                    x1: 0, y1: 0, x2: 1, y2: 1,
-                    stop: 0 #6B8B6B,
-                    stop: 0.3 #5A7A5A,
-                    stop: 0.7 #4A6A4A,
-                    stop: 1.0 #3A5A3A
-                );
-                border-radius: 16px;
+                background: transparent;
+                border: none;
             }
         """)
     
     def _setup_ui(self):
-        """Create the grid of cells."""
-        layout = QtWidgets.QGridLayout(self)
-        layout.setSpacing(8)
-        layout.setContentsMargins(15, 15, 15, 15)
+        """Create the horizontal row of cells."""
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.setSpacing(10)
+        layout.setContentsMargins(10, 10, 10, 10)
         
-        rows = GRID_ROWS if CITY_AVAILABLE else 5
-        cols = GRID_COLS if CITY_AVAILABLE else 5
+        cols = GRID_COLS if CITY_AVAILABLE else 10
         
-        for row in range(rows):
-            row_cells = []
-            for col in range(cols):
-                cell = CityCell(row, col)
-                cell.clicked.connect(self._on_cell_clicked)
-                layout.addWidget(cell, row, col)
-                row_cells.append(cell)
-            self.cells.append(row_cells)
+        # Single row of cells
+        row_cells = []
+        for col in range(cols):
+            cell = CityCell(0, col)  # All in row 0
+            cell.clicked.connect(self._on_cell_clicked)
+            layout.addWidget(cell)
+            row_cells.append(cell)
+        self.cells.append(row_cells)
     
     def _on_cell_clicked(self, row: int, col: int):
         self.cell_clicked.emit(row, col)
@@ -1919,13 +2042,35 @@ class CityTab(QtWidgets.QWidget):
         super().__init__(parent)
         self.adhd_buster = adhd_buster
         self._last_refresh_time = 0  # For throttling refreshes
+        self._first_show = True  # Track first showEvent
         
         # Timer for auto-refreshing pending income display
         self._income_timer = QtCore.QTimer(self)
         self._income_timer.timeout.connect(self._update_pending_income_display)
         
         self._setup_ui()
-        self._refresh_city()
+        # Don't call _refresh_city() here - defer to showEvent
+        # This prevents WebEngineViews from loading while tab is hidden
+    
+    def showEvent(self, event):
+        """Handle tab becoming visible - load/reload WebEngineViews."""
+        super().showEvent(event)
+        if self._first_show:
+            # First time visible - do initial refresh (deferred to ensure visibility)
+            self._first_show = False
+            # Use longer delay and also trigger animation load after grid is ready
+            QtCore.QTimer.singleShot(100, self._refresh_city)
+            QtCore.QTimer.singleShot(500, self._force_reload_all_svgs)
+    
+    def _force_reload_all_svgs(self):
+        """Force reload all SVGs in the grid after a delay."""
+        if hasattr(self, 'city_grid') and hasattr(self.city_grid, 'cells'):
+            for cell in self.city_grid.cells:
+                if hasattr(cell, '_current_svg_path') and cell._current_svg_path:
+                    # Force reload by clearing current path
+                    svg_path = cell._current_svg_path
+                    cell._current_svg_path = None
+                    cell._show_animated_svg(svg_path)
     
     def _setup_ui(self):
         """Set up the main tab UI."""
@@ -1989,7 +2134,21 @@ class CityTab(QtWidgets.QWidget):
         self.resource_bar = ResourceBar()
         layout.addWidget(self.resource_bar)
         
-        # Active construction indicator (hidden when no active build)
+        # City grid - simple horizontal row of slots (at top, centered)
+        grid_container = QtWidgets.QWidget()
+        grid_container.setStyleSheet("background: transparent;")
+        grid_layout = QtWidgets.QHBoxLayout(grid_container)
+        grid_layout.setContentsMargins(0, 10, 0, 10)
+        grid_layout.addStretch()
+        
+        self.city_grid = CityGrid()
+        self.city_grid.cell_clicked.connect(self._on_cell_clicked)
+        grid_layout.addWidget(self.city_grid)
+        
+        grid_layout.addStretch()
+        layout.addWidget(grid_container)
+        
+        # Active construction indicator (below buildings, hidden when no active build)
         self.construction_indicator = QtWidgets.QFrame()
         self.construction_indicator.setStyleSheet("""
             QFrame {
@@ -2047,24 +2206,8 @@ class CityTab(QtWidgets.QWidget):
         self.construction_indicator.hide()  # Hidden until active construction exists
         layout.addWidget(self.construction_indicator)
         
-        # City grid in center
-        grid_container = QtWidgets.QWidget()
-        grid_container.setStyleSheet("""
-            QWidget {
-                background: #0D0D1A;
-                border: 2px solid #333;
-                border-radius: 12px;
-            }
-        """)
-        grid_layout = QtWidgets.QHBoxLayout(grid_container)
-        grid_layout.addStretch()
-        
-        self.city_grid = CityGrid()
-        self.city_grid.cell_clicked.connect(self._on_cell_clicked)
-        grid_layout.addWidget(self.city_grid)
-        
-        grid_layout.addStretch()
-        layout.addWidget(grid_container, 1)
+        # Spacer to push everything up
+        layout.addStretch(1)
         
         # Bottom info panel
         self.info_panel = QtWidgets.QLabel()
@@ -2112,6 +2255,20 @@ class CityTab(QtWidgets.QWidget):
         except Exception as e:
             _logger.exception("Error refreshing city display")
             self.info_panel.setText(f"⚠️ Display error: {e}")
+    
+    def _activate_animations(self):
+        """Activate animations on all cells when tab becomes visible.
+        
+        This is called when the tab is re-shown after being hidden.
+        WebEngineViews need their content reloaded when becoming visible.
+        """
+        try:
+            if hasattr(self, 'city_grid') and hasattr(self.city_grid, 'cells'):
+                for cell in self.city_grid.cells:
+                    if hasattr(cell, '_load_pending_svg'):
+                        cell._load_pending_svg()
+        except Exception as e:
+            _logger.debug(f"Error activating animations: {e}")
     
     def _update_construction_indicator(self):
         """Update the active construction indicator bar."""

@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 26784, in main
+    window = FocusBlockerWindow(username=selected_user)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "F:\_DEV\PersonalFreedom\focus_blocker_qt.py", line 25012, in __init__
+    self.city_tab = CityTab(self.blocker.adhd_buster, self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "F:\_DEV\PersonalFreedom\city_tab.py", line 2344, in __init__
+    self._setup_ui()
+  File "F:\_DEV\PersonalFreedom\city_tab.py", line 2484, in _setup_ui
+    self.city_grid = CityGrid()
+                     ^^^^^^^^^^
+  File "F:\_DEV\PersonalFreedom\city_tab.py", line 989, in __init__
+    settings.setAttribute(QWebEngineSettings.ContextMenuEnabled, False)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: type object 'PySide6.QtWebEngineCore.QWebEngineSettings' has no attribute 'ContextMenuEnabled'
