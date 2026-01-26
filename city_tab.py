@@ -547,16 +547,20 @@ class CityCell(QtWidgets.QFrame):
         with subtle animations. The landscape is deterministically selected based on
         cell position so it stays consistent across refreshes.
         """
-        # Minimal border styling - let the animated SVG be the focus
+        # Minimal styling - let the animated SVG be the focus, subtle hover highlight
         self.setStyleSheet("""
             CityCell {
                 background: transparent;
-                border: 2px dashed rgba(120, 150, 120, 0.4);
+                border: none;
                 border-radius: 12px;
             }
             CityCell:hover {
-                border: 2px solid rgba(150, 200, 150, 0.8);
-                background: rgba(80, 120, 80, 0.1);
+                background: qradialgradient(
+                    cx: 0.5, cy: 0.5, radius: 0.9,
+                    stop: 0 rgba(150, 200, 150, 0.25),
+                    stop: 0.6 rgba(120, 180, 120, 0.12),
+                    stop: 1 transparent
+                );
             }
         """)
         
@@ -603,17 +607,16 @@ class CityCell(QtWidgets.QFrame):
                     stop: 0.6 rgba(40, 40, 50, 0.3),
                     stop: 1 rgba(30, 30, 40, 0.2)
                 );
-                border: 2px solid rgba(100, 100, 120, 0.4);
+                border: none;
                 border-radius: 12px;
             }
             CityCell:hover {
                 background: qradialgradient(
                     cx: 0.5, cy: 0.5, radius: 0.7,
-                    stop: 0 rgba(60, 60, 70, 0.5),
-                    stop: 0.6 rgba(50, 50, 60, 0.4),
-                    stop: 1 rgba(40, 40, 50, 0.3)
+                    stop: 0 rgba(70, 70, 90, 0.5),
+                    stop: 0.6 rgba(60, 60, 80, 0.4),
+                    stop: 1 rgba(50, 50, 70, 0.3)
                 );
-                border: 2px solid rgba(120, 120, 140, 0.6);
             }
         """)
         # Use locked icon - shows padlock - native 128px scale
@@ -3577,14 +3580,24 @@ class CityTab(QtWidgets.QWidget):
         
         try:
             if cell is None:
-                # Empty cell - check if there's active construction first
+                # Empty cell - check if there's any active construction first
+                # Check both the active_construction field AND scan for BUILDING status cells
                 active_construction = get_active_construction(self.adhd_buster)
+                
+                # Also scan grid directly for any BUILDING status cells (fallback check)
+                if active_construction is None:
+                    for r_idx, row_cells in enumerate(grid):
+                        for c_idx, grid_cell in enumerate(row_cells):
+                            if grid_cell and grid_cell.get("status") == CellStatus.BUILDING.value:
+                                active_construction = (r_idx, c_idx)
+                                break
+                        if active_construction:
+                            break
+                
                 if active_construction is not None:
                     active_row, active_col = active_construction
                     # Get building name for better message
-                    active_city = get_city_data(self.adhd_buster)
-                    active_grid = active_city.get("grid", [])
-                    active_cell = active_grid[active_row][active_col] if active_row < len(active_grid) and active_col < len(active_grid[active_row]) else None
+                    active_cell = grid[active_row][active_col] if active_row < len(grid) and active_col < len(grid[active_row]) else None
                     active_building_id = active_cell.get("building_id", "") if active_cell else ""
                     active_building = CITY_BUILDINGS.get(active_building_id, {})
                     active_name = active_building.get("name", "a building")
