@@ -1138,8 +1138,8 @@ class CityGrid(QtWidgets.QFrame):
     def _setup_ui(self):
         """Create the horizontal row of cells."""
         layout = QtWidgets.QHBoxLayout(self)
-        layout.setSpacing(10)
-        layout.setContentsMargins(10, 10, 10, 10)
+        layout.setSpacing(4)
+        layout.setContentsMargins(6, 6, 6, 6)
         
         cols = GRID_COLS if CITY_AVAILABLE else 10
         
@@ -1378,7 +1378,13 @@ class BuildingPickerDialog(StyledDialog):
         
         placed = set(get_placed_buildings(self.adhd_buster))
         
-        for building_id, building in CITY_BUILDINGS.items():
+        # Sort buildings: available first, then built at the end
+        sorted_buildings = sorted(
+            CITY_BUILDINGS.items(),
+            key=lambda x: (x[0] in placed, x[1].get("name", ""))
+        )
+        
+        for building_id, building in sorted_buildings:
             is_placed = building_id in placed
             
             # Check if we can build (type valid, not already built, have resources)
@@ -3582,7 +3588,7 @@ class CityTab(QtWidgets.QWidget):
                     active_building_id = active_cell.get("building_id", "") if active_cell else ""
                     active_building = CITY_BUILDINGS.get(active_building_id, {})
                     active_name = active_building.get("name", "a building")
-                    self._show_warning(f"🚧 Finish or cancel {active_name} first! (Click it to see progress)")
+                    self._show_warning(f"🚧 Construction in progress! Complete or cancel {active_name} to build here.")
                     return
                 
                 # No active construction - show building picker (with row/col for direct placement)
