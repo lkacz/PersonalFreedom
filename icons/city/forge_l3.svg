@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Forge Level 3 - Futuristic plasma forge with robotic arms and holograms -->
+  <defs>
+    <linearGradient id="techWall" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#263238"/>
+      <stop offset="50%" style="stop-color:#37474F"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    <linearGradient id="plasmaCore" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#7C4DFF"/>
+      <stop offset="50%" style="stop-color:#E040FB"/>
+      <stop offset="100%" style="stop-color:#EA80FC"/>
+    </linearGradient>
+    <radialGradient id="plasmaGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#E040FB" stop-opacity="0.8"/>
+      <stop offset="100%" style="stop-color:#7C4DFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cyanGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.6"/>
+      <stop offset="100%" style="stop-color:#00E5FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="robotArm" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#78909C"/>
+      <stop offset="50%" style="stop-color:#546E7A"/>
+      <stop offset="100%" style="stop-color:#455A64"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="100%" style="stop-color:#87ceeb"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background: Blue sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Distant hills -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  
+  <!-- Main ground -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+
+  <!-- Main futuristic building -->
+  <rect x="8" y="40" width="112" height="80" fill="url(#techWall)" rx="4"/>
+  
+  <!-- Angular futuristic roof -->
+  <polygon points="4,40 64,12 124,40" fill="#1A1A1A"/>
+  <polygon points="64,12 124,40 120,40 64,16 8,40 4,40" fill="#263238"/>
+  
+  <!-- Roof antenna -->
+  <line x1="64" y1="4" x2="64" y2="14" stroke="#455A64" stroke-width="2"/>
+  <circle cx="64" cy="2" r="3" fill="#00E5FF" filter="url(#glow)"/>
+  
+  <!-- LED strip accents -->
+  <rect x="8" y="40" width="112" height="2" fill="#00E5FF" opacity="0.8"/>
+  <rect x="8" y="60" width="2" height="58" fill="#00E5FF" opacity="0.6"/>
+  <rect x="118" y="60" width="2" height="58" fill="#00E5FF" opacity="0.6"/>
+  
+  <!-- Plasma forge chamber -->
+  <rect x="14" y="52" width="48" height="56" fill="#1A1A1A" rx="2"/>
+  <rect x="10" y="48" width="56" height="6" fill="#263238"/>
+  
+  <!-- Plasma containment ring -->
+  <ellipse cx="38" cy="84" rx="18" ry="16" fill="none" stroke="#7C4DFF" stroke-width="2"/>
+  <ellipse cx="38" cy="84" rx="14" ry="12" fill="none" stroke="#E040FB" stroke-width="1"/>
+  
+  <!-- Plasma core -->
+  <ellipse cx="38" cy="84" rx="10" ry="8" fill="url(#plasmaGlow)"/>
+  <ellipse cx="38" cy="84" rx="6" ry="5" fill="url(#plasmaCore)"/>
+  <ellipse cx="38" cy="82" rx="3" ry="2" fill="#FFFFFF" opacity="0.8"/>
+  
+  <!-- Floating hot metal in plasma -->
+  <rect x="34" y="80" width="8" height="6" fill="#FFAB00" rx="1"/>
+  
+  <!-- Control hologram panel -->
+  <rect x="62" y="48" width="20" height="28" fill="#00E5FF" opacity="0.15" rx="1"/>
+  <rect x="64" y="52" width="16" height="2" fill="#00E5FF" opacity="0.6"/>
+  <rect x="64" y="56" width="12" height="2" fill="#00E5FF" opacity="0.5"/>
+  <rect x="64" y="60" width="14" height="2" fill="#00E5FF" opacity="0.4"/>
+  <circle cx="72" cy="70" r="3" fill="#4CAF50" opacity="0.8"/>
+  
+  <!-- Robotic arm base -->
+  <rect x="86" y="44" width="20" height="8" fill="url(#robotArm)" rx="1"/>
+  <circle cx="96" cy="48" r="4" fill="#455A64"/>
+  
+  <!-- Robotic arm segments -->
+  <rect x="92" y="50" width="8" height="24" fill="url(#robotArm)" rx="2"/>
+  <circle cx="96" cy="52" r="3" fill="#37474F"/>
+  <circle cx="96" cy="74" r="4" fill="#455A64"/>
+  <rect x="88" y="72" width="16" height="6" fill="url(#robotArm)" rx="2"/>
+  
+  <!-- Robotic claw -->
+  <polygon points="88,78 84,88 92,88" fill="#78909C"/>
+  <polygon points="104,78 108,88 100,88" fill="#78909C"/>
+  
+  <!-- Nano-forge anvil platform -->
+  <rect x="68" y="96" width="44" height="6" fill="#37474F" rx="1"/>
+  <rect x="72" y="102" width="36" height="12" fill="#263238" rx="1"/>
+  
+  <!-- Levitating work surface -->
+  <ellipse cx="90" cy="94" rx="16" ry="3" fill="#00E5FF" opacity="0.3"/>
+  <rect x="78" y="90" width="24" height="4" fill="#455A64" rx="1"/>
+  
+  <!-- Finished futuristic items -->
+  <polygon points="80,86 84,90 76,90" fill="#7C4DFF"/>
+  <rect x="86" y="86" width="8" height="4" fill="#00E5FF" rx="1"/>
+  <circle cx="100" cy="88" r="3" fill="#E040FB"/>
+  
+  <!-- Energy conduits -->
+  <line x1="62" y1="84" x2="68" y2="84" stroke="#7C4DFF" stroke-width="2"/>
+  <line x1="68" y1="84" x2="68" y2="94" stroke="#7C4DFF" stroke-width="2"/>
+  
+  <!-- Holographic blueprint display -->
+  <rect x="14" y="20" width="24" height="16" fill="#00E5FF" opacity="0.2" rx="1"/>
+  <polygon points="18,24 18,32 28,28" fill="#00E5FF" opacity="0.4"/>
+  <line x1="30" y1="24" x2="36" y2="24" stroke="#00E5FF" stroke-width="1" opacity="0.6"/>
+  <line x1="30" y1="28" x2="34" y2="28" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
+  <line x1="30" y1="32" x2="35" y2="32" stroke="#00E5FF" stroke-width="1" opacity="0.4"/>
+  
+  <!-- Tech particles -->
+  <g fill="#00E5FF" opacity="0.7">
+    <circle cx="50" cy="72" r="1"/>
+    <circle cx="26" cy="92" r="1"/>
+    <circle cx="44" cy="68" r="1"/>
+  </g>
+  
+  <!-- Plasma particles -->
+  <g fill="#E040FB" opacity="0.6">
+    <circle cx="34" cy="76" r="1"/>
+    <circle cx="42" cy="88" r="1"/>
+    <circle cx="30" cy="84" r="1"/>
+  </g>
+  
+  <!-- Window with plasma glow -->
+  <rect x="102" y="52" width="14" height="20" fill="#1A1A1A" rx="1"/>
+  <rect x="104" y="54" width="10" height="16" fill="#7C4DFF" opacity="0.3"/>
+</svg>

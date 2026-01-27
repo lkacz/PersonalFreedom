@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Artisan Guild Level 2 - Industrial Design Studio with machinery -->
+  <defs>
+    <linearGradient id="brickWall" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8D6E63"/>
+      <stop offset="50%" style="stop-color:#795548"/>
+      <stop offset="100%" style="stop-color:#6D4C41"/>
+    </linearGradient>
+    <linearGradient id="metalFrame" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#78909C"/>
+      <stop offset="50%" style="stop-color:#546E7A"/>
+      <stop offset="100%" style="stop-color:#455A64"/>
+    </linearGradient>
+    <linearGradient id="glassWindow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E3F2FD"/>
+      <stop offset="50%" style="stop-color:#BBDEFB"/>
+      <stop offset="100%" style="stop-color:#90CAF9"/>
+    </linearGradient>
+    <linearGradient id="redPaint" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EF5350"/>
+      <stop offset="100%" style="stop-color:#C62828"/>
+    </linearGradient>
+    <linearGradient id="bluePaint" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#42A5F5"/>
+      <stop offset="100%" style="stop-color:#1565C0"/>
+    </linearGradient>
+    <linearGradient id="yellowPaint" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFEE58"/>
+      <stop offset="100%" style="stop-color:#F9A825"/>
+    </linearGradient>
+    <linearGradient id="greenPaint" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#66BB6A"/>
+      <stop offset="100%" style="stop-color:#2E7D32"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="100%" style="stop-color:#87ceeb"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="3" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background: Blue sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Distant hills -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  
+  <!-- Main ground -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+
+  <!-- Industrial roof with saw-tooth skylights -->
+  <polygon points="4,42 64,14 124,42" fill="#455A64"/>
+  <polygon points="4,42 24,42 24,28 4,42" fill="url(#glassWindow)"/>
+  <polygon points="44,42 64,42 64,22 44,42" fill="url(#glassWindow)"/>
+  <polygon points="84,42 104,42 104,28 84,42" fill="url(#glassWindow)"/>
+  
+  <!-- Main building - brick with metal frame -->
+  <rect x="8" y="42" width="112" height="78" fill="url(#brickWall)" filter="url(#dropShadow)"/>
+  
+  <!-- Metal frame structure -->
+  <g fill="url(#metalFrame)">
+    <rect x="8" y="42" width="4" height="78"/>
+    <rect x="116" y="42" width="4" height="78"/>
+    <rect x="8" y="42" width="112" height="3"/>
+    <rect x="60" y="42" width="8" height="78"/>
+  </g>
+  
+  <!-- Brick pattern -->
+  <g stroke="#5D4037" stroke-width="0.5" fill="none" opacity="0.4">
+    <line x1="14" y1="52" x2="56" y2="52"/>
+    <line x1="14" y1="62" x2="56" y2="62"/>
+    <line x1="14" y1="72" x2="56" y2="72"/>
+    <line x1="14" y1="82" x2="56" y2="82"/>
+    <line x1="72" y1="52" x2="114" y2="52"/>
+    <line x1="72" y1="62" x2="114" y2="62"/>
+    <line x1="72" y1="72" x2="114" y2="72"/>
+    <line x1="72" y1="82" x2="114" y2="82"/>
+  </g>
+  
+  <!-- Large industrial windows -->
+  <rect x="14" y="50" width="38" height="36" fill="url(#glassWindow)" rx="2"/>
+  <line x1="33" y1="50" x2="33" y2="86" stroke="#455A64" stroke-width="2"/>
+  <line x1="14" y1="68" x2="52" y2="68" stroke="#455A64" stroke-width="2"/>
+  <rect x="14" y="50" width="38" height="36" fill="none" stroke="#546E7A" stroke-width="2" rx="2"/>
+  
+  <rect x="76" y="50" width="38" height="36" fill="url(#glassWindow)" rx="2"/>
+  <line x1="95" y1="50" x2="95" y2="86" stroke="#455A64" stroke-width="2"/>
+  <line x1="76" y1="68" x2="114" y2="68" stroke="#455A64" stroke-width="2"/>
+  <rect x="76" y="50" width="38" height="36" fill="none" stroke="#546E7A" stroke-width="2" rx="2"/>
+  
+  <!-- Painting machine / printing press -->
+  <rect x="16" y="92" width="36" height="24" fill="#37474F" rx="2"/>
+  <rect x="20" y="96" width="10" height="16" fill="#263238"/>
+  <rect x="34" y="96" width="14" height="16" fill="url(#glassWindow)"/>
+  
+  <!-- Rollers -->
+  <ellipse cx="25" cy="108" rx="4" ry="2" fill="#78909C"/>
+  <ellipse cx="25" cy="102" rx="4" ry="2" fill="#78909C"/>
+  
+  <!-- Colored ink containers -->
+  <rect x="54" y="96" width="6" height="10" fill="url(#redPaint)" rx="1"/>
+  <rect x="62" y="96" width="6" height="10" fill="url(#yellowPaint)" rx="1"/>
+  <rect x="54" y="108" width="6" height="10" fill="url(#bluePaint)" rx="1"/>
+  <rect x="62" y="108" width="6" height="10" fill="url(#greenPaint)" rx="1"/>
+  
+  <!-- Electric lathe / CNC machine -->
+  <rect x="76" y="92" width="36" height="24" fill="#455A64" rx="2"/>
+  <rect x="80" y="96" width="8" height="8" fill="#37474F"/>
+  <ellipse cx="84" cy="100" rx="3" ry="3" fill="#263238"/>
+  <rect x="92" y="94" width="16" height="6" fill="#546E7A"/>
+  <polygon points="98,94 102,88 106,94" fill="#78909C"/>
+  <rect x="96" y="104" width="12" height="10" fill="#37474F"/>
+  <circle cx="102" cy="109" r="4" fill="#263238"/>
+  
+  <!-- Control panel -->
+  <rect x="80" y="106" width="12" height="10" fill="#263238"/>
+  <circle cx="83" cy="110" r="2" fill="#4CAF50"/>
+  <circle cx="89" cy="110" r="2" fill="#FF5722"/>
+  
+  <!-- Finished products display -->
+  <g>
+    <!-- Sculptures/pottery -->
+    <ellipse cx="18" cy="88" rx="4" ry="3" fill="#BCAAA4"/>
+    <rect x="26" y="86" width="6" height="6" fill="#42A5F5"/>
+    <polygon points="38,82 42,88 34,88" fill="#FFEB3B"/>
+    <circle cx="48" cy="86" r="4" fill="#AB47BC"/>
+  </g>
+  
+  <!-- Chimney / ventilation -->
+  <rect x="96" y="6" width="12" height="20" fill="#455A64"/>
+  <rect x="94" y="4" width="16" height="4" fill="#546E7A"/>
+  
+  <!-- Guild sign with colorful palette -->
+  <rect x="52" y="20" width="24" height="18" fill="#5D4037" rx="2"/>
+  <ellipse cx="60" cy="28" rx="5" ry="4" fill="#D7CCC8"/>
+  <circle cx="58" cy="26" r="2" fill="#EF5350"/>
+  <circle cx="62" cy="26" r="2" fill="#42A5F5"/>
+  <circle cx="60" cy="30" r="2" fill="#FFEE58"/>
+  <rect x="66" y="24" width="8" height="2" fill="#795548"/>
+  <circle cx="72" cy="30" r="3" fill="#78909C"/>
+  
+  <!-- Metal rivets on frame -->
+  <g fill="#37474F">
+    <circle cx="10" cy="50" r="1.5"/>
+    <circle cx="10" cy="70" r="1.5"/>
+    <circle cx="10" cy="90" r="1.5"/>
+    <circle cx="10" cy="110" r="1.5"/>
+    <circle cx="118" cy="50" r="1.5"/>
+    <circle cx="118" cy="70" r="1.5"/>
+    <circle cx="118" cy="90" r="1.5"/>
+    <circle cx="118" cy="110" r="1.5"/>
+  </g>
+  
+  <!-- Warning stripes near machines -->
+  <g fill="#FFC107">
+    <rect x="16" y="116" width="6" height="4"/>
+    <rect x="28" y="116" width="6" height="4"/>
+  </g>
+  <g fill="#212121">
+    <rect x="22" y="116" width="6" height="4"/>
+    <rect x="34" y="116" width="6" height="4"/>
+  </g>
+</svg>
