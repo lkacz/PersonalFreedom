@@ -1,30 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- Forge Level 3 Animated - Futuristic Plasma Forge with Master Engineer -->
+  <!-- Forge Level 3 - ANTIMATTER MOLECULAR FORGE with Hazmat Engineer -->
   <defs>
-    <linearGradient id="techWall" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#263238"/>
-      <stop offset="50%" style="stop-color:#37474F"/>
-      <stop offset="100%" style="stop-color:#263238"/>
-    </linearGradient>
-    <linearGradient id="plasmaCore" x1="0%" y1="100%" x2="0%" y2="0%">
-      <stop offset="0%" style="stop-color:#7C4DFF"/>
-      <stop offset="50%" style="stop-color:#E040FB"/>
-      <stop offset="100%" style="stop-color:#EA80FC"/>
-    </linearGradient>
-    <radialGradient id="plasmaGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#E040FB" stop-opacity="0.8"/>
-      <stop offset="100%" style="stop-color:#7C4DFF" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="cyanGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.6"/>
-      <stop offset="100%" style="stop-color:#00E5FF" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="robotArm" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#78909C"/>
-      <stop offset="50%" style="stop-color:#546E7A"/>
-      <stop offset="100%" style="stop-color:#455A64"/>
-    </linearGradient>
     <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#4da6ff"/>
       <stop offset="100%" style="stop-color:#87ceeb"/>
@@ -33,9 +10,33 @@
       <stop offset="0%" style="stop-color:#7cb342"/>
       <stop offset="100%" style="stop-color:#558b2f"/>
     </linearGradient>
-    <linearGradient id="engineerSuit" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#ECEFF1"/>
-      <stop offset="100%" style="stop-color:#B0BEC5"/>
+    <linearGradient id="bunkerWall" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#546E7A"/>
+      <stop offset="50%" style="stop-color:#455A64"/>
+      <stop offset="100%" style="stop-color:#37474F"/>
+    </linearGradient>
+    <radialGradient id="antimatterCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="20%" style="stop-color:#76FF03"/>
+      <stop offset="60%" style="stop-color:#00E676"/>
+      <stop offset="100%" style="stop-color:#1B5E20" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="warningGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFEB3B"/>
+      <stop offset="100%" style="stop-color:#FF6F00" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="moleculeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#69F0AE"/>
+      <stop offset="100%" style="stop-color:#00C853" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="hazmatSuit" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFCA28"/>
+      <stop offset="100%" style="stop-color:#FF8F00"/>
+    </linearGradient>
+    <linearGradient id="visorReflect" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.9"/>
+      <stop offset="50%" style="stop-color:#18FFFF" stop-opacity="0.7"/>
+      <stop offset="100%" style="stop-color:#00B8D4" stop-opacity="0.9"/>
     </linearGradient>
     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -44,7 +45,7 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-    <filter id="strongGlow" x="-100%" y="-100%" width="300%" height="300%">
+    <filter id="intenseGlow" x="-100%" y="-100%" width="300%" height="300%">
       <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
@@ -57,13 +58,13 @@
   <!-- Background: Blue sky -->
   <rect width="128" height="128" fill="url(#sky)"/>
   
-  <!-- Subtle cloud wisps -->
-  <g fill="white" opacity="0.25">
-    <ellipse cx="25" cy="20" rx="18" ry="5">
-      <animate attributeName="cx" values="25;35;25" dur="30s" repeatCount="indefinite"/>
+  <!-- Clouds -->
+  <g fill="white" opacity="0.3">
+    <ellipse cx="20" cy="18" rx="14" ry="5">
+      <animate attributeName="cx" values="20;30;20" dur="25s" repeatCount="indefinite"/>
     </ellipse>
-    <ellipse cx="100" cy="30" rx="14" ry="4">
-      <animate attributeName="cx" values="100;110;100" dur="35s" repeatCount="indefinite"/>
+    <ellipse cx="95" cy="25" rx="12" ry="4">
+      <animate attributeName="cx" values="95;105;95" dur="30s" repeatCount="indefinite"/>
     </ellipse>
   </g>
   
@@ -73,280 +74,330 @@
   <!-- Main ground -->
   <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
 
-  <!-- Main futuristic building -->
-  <rect x="8" y="40" width="112" height="80" fill="url(#techWall)" rx="4"/>
+  <!-- Heavy reinforced bunker structure -->
+  <rect x="6" y="38" width="116" height="82" fill="url(#bunkerWall)" rx="3"/>
   
-  <!-- Angular futuristic roof -->
-  <polygon points="4,40 64,12 124,40" fill="#1A1A1A"/>
-  <polygon points="64,12 124,40 120,40 64,16 8,40 4,40" fill="#263238"/>
+  <!-- Blast-proof dome roof -->
+  <path d="M6,38 Q64,6 122,38" fill="#37474F"/>
+  <path d="M10,38 Q64,12 118,38" fill="#455A64"/>
   
-  <!-- Roof antenna with pulsing signal -->
-  <line x1="64" y1="4" x2="64" y2="14" stroke="#455A64" stroke-width="2"/>
-  <circle cx="64" cy="2" r="3" fill="#00E5FF" filter="url(#glow)">
-    <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
-  </circle>
-  <!-- Signal rings -->
-  <circle cx="64" cy="2" r="6" fill="none" stroke="#00E5FF" stroke-width="0.5">
-    <animate attributeName="r" values="6;14;6" dur="2s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
-  </circle>
+  <!-- Hazard warning stripes on building -->
+  <rect x="6" y="38" width="116" height="4" fill="#FFCA28"/>
+  <g fill="#1A1A1A">
+    <rect x="10" y="38" width="8" height="4"/>
+    <rect x="26" y="38" width="8" height="4"/>
+    <rect x="42" y="38" width="8" height="4"/>
+    <rect x="58" y="38" width="8" height="4"/>
+    <rect x="74" y="38" width="8" height="4"/>
+    <rect x="90" y="38" width="8" height="4"/>
+    <rect x="106" y="38" width="8" height="4"/>
+  </g>
   
-  <!-- LED strip accents -->
-  <rect x="8" y="40" width="112" height="2" fill="#00E5FF" opacity="0.8">
-    <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
-  </rect>
-  <rect x="8" y="58" width="2" height="60" fill="#00E5FF" opacity="0.6">
-    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2.5s" repeatCount="indefinite"/>
-  </rect>
-  <rect x="118" y="58" width="2" height="60" fill="#00E5FF" opacity="0.6">
-    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2.5s" repeatCount="indefinite"/>
-  </rect>
+  <!-- Radiation warning sign on roof -->
+  <g transform="translate(54, 18)">
+    <circle cx="10" cy="10" r="10" fill="#FFCA28"/>
+    <path d="M10,10 L10,2 A8,8 0 0,1 16.9,14 Z" fill="#1A1A1A"/>
+    <path d="M10,10 L16.9,14 A8,8 0 0,1 3.1,14 Z" fill="#1A1A1A"/>
+    <path d="M10,10 L3.1,14 A8,8 0 0,1 10,2 Z" fill="#1A1A1A"/>
+    <circle cx="10" cy="10" r="3" fill="#FFCA28"/>
+    <animate attributeName="opacity" values="1;0.7;1" dur="1s" repeatCount="indefinite"/>
+  </g>
   
-  <!-- Plasma forge chamber -->
-  <rect x="12" y="50" width="44" height="52" fill="#1A1A1A" rx="2"/>
-  <rect x="10" y="46" width="48" height="6" fill="#263238"/>
+  <!-- ========== ANTIMATTER CONTAINMENT CHAMBER - Left Side ========== -->
+  <rect x="10" y="48" width="44" height="56" fill="#1A1A1A" rx="2"/>
   
-  <!-- Hexagonal containment frame -->
-  <polygon points="34,52 52,58 52,90 34,96 16,90 16,58" fill="none" stroke="#7C4DFF" stroke-width="2" opacity="0.7">
-    <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2s" repeatCount="indefinite"/>
-  </polygon>
+  <!-- Reinforced containment ring -->
+  <ellipse cx="32" cy="76" rx="18" ry="16" fill="none" stroke="#546E7A" stroke-width="4"/>
+  <ellipse cx="32" cy="76" rx="14" ry="12" fill="none" stroke="#37474F" stroke-width="2"/>
   
-  <!-- Plasma containment rings - rotating -->
-  <ellipse cx="34" cy="76" rx="16" ry="14" fill="none" stroke="#7C4DFF" stroke-width="2">
-    <animate attributeName="stroke-dasharray" values="0 100;50 50;0 100" dur="3s" repeatCount="indefinite"/>
+  <!-- Magnetic containment coils - rotating -->
+  <ellipse cx="32" cy="76" rx="16" ry="14" fill="none" stroke="#00E676" stroke-width="2" stroke-dasharray="10 10">
+    <animateTransform attributeName="transform" type="rotate" values="0 32 76;360 32 76" dur="3s" repeatCount="indefinite"/>
   </ellipse>
-  <ellipse cx="34" cy="76" rx="12" ry="10" fill="none" stroke="#E040FB" stroke-width="1.5">
-    <animate attributeName="stroke-dasharray" values="0 75;37.5 37.5;0 75" dur="2s" repeatCount="indefinite"/>
+  <ellipse cx="32" cy="76" rx="12" ry="10" fill="none" stroke="#76FF03" stroke-width="1.5" stroke-dasharray="8 8">
+    <animateTransform attributeName="transform" type="rotate" values="360 32 76;0 32 76" dur="2s" repeatCount="indefinite"/>
   </ellipse>
   
-  <!-- Plasma core - THE "AHA!" pulsing heart -->
-  <ellipse cx="34" cy="76" rx="10" ry="8" fill="url(#plasmaGlow)" filter="url(#strongGlow)">
-    <animate attributeName="rx" values="8;12;8" dur="1.2s" repeatCount="indefinite"/>
-    <animate attributeName="ry" values="6;10;6" dur="1.2s" repeatCount="indefinite"/>
+  <!-- THE ANTIMATTER CORE - Intense pulsating energy -->
+  <ellipse cx="32" cy="76" rx="8" ry="7" fill="url(#antimatterCore)" filter="url(#intenseGlow)">
+    <animate attributeName="rx" values="6;10;6" dur="0.8s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="5;9;5" dur="0.8s" repeatCount="indefinite"/>
   </ellipse>
-  <ellipse cx="34" cy="76" rx="6" ry="5" fill="url(#plasmaCore)">
-    <animate attributeName="opacity" values="0.8;1;0.8" dur="0.6s" repeatCount="indefinite"/>
-  </ellipse>
-  <ellipse cx="34" cy="74" rx="3" ry="2" fill="#FFFFFF" opacity="0.9"/>
-  
-  <!-- Raw material floating in - levitating metal bar -->
-  <rect x="30" y="72" width="8" height="6" fill="#90A4AE" rx="1">
-    <animate attributeName="y" values="72;70;72" dur="2s" repeatCount="indefinite"/>
-  </rect>
-  <!-- Material heating glow -->
-  <rect x="30" y="72" width="8" height="6" fill="#FFAB00" opacity="0" rx="1">
-    <animate attributeName="opacity" values="0;0.6;0" dur="4s" repeatCount="indefinite"/>
-  </rect>
-  
-  <!-- Plasma energy particles orbiting -->
-  <g fill="#E040FB">
-    <circle cx="24" cy="68" r="1.5">
-      <animate attributeName="cx" values="24;44;24" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="68;84;68" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="44" cy="84" r="1">
-      <animate attributeName="cx" values="44;24;44" dur="2.2s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="84;68;84" dur="2.2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.5;1;0.5" dur="2.2s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="34" cy="64" r="1.2">
-      <animate attributeName="cy" values="64;88;64" dur="2.5s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2.5s" repeatCount="indefinite"/>
-    </circle>
-  </g>
-  <g fill="#00E5FF">
-    <circle cx="26" cy="80" r="1">
-      <animate attributeName="cx" values="26;42;26" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="80;72;80" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.6;1;0.6" dur="1.8s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="40" cy="70" r="0.8">
-      <animate attributeName="cx" values="40;28;40" dur="2.3s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="70;82;70" dur="2.3s" repeatCount="indefinite"/>
-    </circle>
-  </g>
-  
-  <!-- MASTER ENGINEER at holographic control station -->
-  <g transform="translate(64, 52)">
-    <!-- Sophisticated engineer figure - seated at controls -->
-    <ellipse cx="0" cy="0" rx="4" ry="5" fill="#FFCCBC"/> <!-- Head -->
-    
-    <!-- Lab coat / high-tech suit -->
-    <rect x="-6" y="4" width="12" height="16" fill="url(#engineerSuit)" rx="2"/>
-    
-    <!-- Tech visor/glasses -->
-    <rect x="-5" y="-1" width="10" height="2" fill="#00E5FF" opacity="0.8" rx="1">
-      <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
-    </rect>
-    
-    <!-- Hair -->
-    <ellipse cx="0" cy="-4" rx="4" ry="2" fill="#5D4037"/>
-    
-    <!-- Arm operating holographic controls - animated gestures -->
-    <g>
-      <animateTransform attributeName="transform" type="rotate" values="0 6 8;10 6 8;0 6 8;-5 6 8;0 6 8" dur="4s" repeatCount="indefinite"/>
-      <rect x="4" y="6" width="12" height="3" fill="#FFCCBC" rx="1"/>
-      <!-- Hand -->
-      <circle cx="16" cy="8" r="2" fill="#FFCCBC"/>
-    </g>
-    
-    <!-- Other arm resting on console -->
-    <rect x="-16" y="10" width="12" height="3" fill="#FFCCBC" rx="1"/>
-    
-    <!-- Legs/Chair -->
-    <rect x="-5" y="18" width="10" height="6" fill="#37474F" rx="1"/>
-    
-    <!-- Face detail - focused expression -->
-    <circle cx="-1" cy="0" r="0.6" fill="#3E2723"/>
-    <circle cx="2" cy="0" r="0.6" fill="#3E2723"/>
-  </g>
-  
-  <!-- Holographic control interface - responds to engineer's gestures -->
-  <rect x="80" y="44" width="28" height="24" fill="#00E5FF" opacity="0.12" rx="2">
-    <animate attributeName="opacity" values="0.1;0.2;0.1" dur="3s" repeatCount="indefinite"/>
-  </rect>
-  
-  <!-- Hologram data displays - "AHA!" living data -->
-  <g>
-    <!-- Plasma status bar -->
-    <rect x="82" y="48" width="24" height="3" fill="#1A1A1A" rx="1"/>
-    <rect x="83" y="49" width="16" height="1" fill="#E040FB">
-      <animate attributeName="width" values="16;22;16" dur="3s" repeatCount="indefinite"/>
-    </rect>
-    
-    <!-- Temperature readout -->
-    <text x="83" y="58" font-family="monospace" font-size="4" fill="#00E5FF">
-      <animate attributeName="fill" values="#00E5FF;#18FFFF;#00E5FF" dur="1s" repeatCount="indefinite"/>
-      8500°K
-    </text>
-    
-    <!-- Rotating 3D blueprint hologram -->
-    <polygon points="94,62 98,66 94,70 90,66" fill="none" stroke="#00E5FF" stroke-width="0.5">
-      <animateTransform attributeName="transform" type="rotate" values="0 94 66;360 94 66" dur="4s" repeatCount="indefinite"/>
-    </polygon>
-    
-    <!-- Status indicator -->
-    <circle cx="102" cy="50" r="2" fill="#4CAF50">
-      <animate attributeName="fill" values="#4CAF50;#8BC34A;#4CAF50" dur="1s" repeatCount="indefinite"/>
-    </circle>
-  </g>
-  
-  <!-- Robotic arm base -->
-  <rect x="92" y="70" width="18" height="8" fill="url(#robotArm)" rx="1"/>
-  <circle cx="101" cy="74" r="4" fill="#455A64"/>
-  
-  <!-- Robotic arm - picking up finished product animation -->
-  <g>
-    <animateTransform attributeName="transform" type="rotate" values="0 101 74;-20 101 74;0 101 74" dur="4s" repeatCount="indefinite"/>
-    <rect x="97" y="78" width="8" height="20" fill="url(#robotArm)" rx="2"/>
-    <circle cx="101" cy="78" r="3" fill="#37474F"/>
-    <circle cx="101" cy="78" r="1.5" fill="#00E5FF">
-      <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="101" cy="98" r="4" fill="#455A64"/>
-    
-    <!-- Precision claw with item -->
-    <g>
-      <animateTransform attributeName="transform" type="translate" values="0,0;-2,4;0,0" dur="4s" repeatCount="indefinite"/>
-      <rect x="93" y="98" width="16" height="5" fill="url(#robotArm)" rx="1"/>
-      
-      <!-- Claw fingers - animated gripping -->
-      <line x1="94" y1="103" x2="92" y2="112" stroke="#78909C" stroke-width="2">
-        <animate attributeName="x2" values="92;94;92" dur="4s" repeatCount="indefinite"/>
-      </line>
-      <line x1="108" y1="103" x2="110" y2="112" stroke="#78909C" stroke-width="2">
-        <animate attributeName="x2" values="110;108;110" dur="4s" repeatCount="indefinite"/>
-      </line>
-      
-      <!-- Finished item being held - glowing perfect cube -->
-      <rect x="96" y="106" width="10" height="8" fill="#7C4DFF" rx="1" filter="url(#glow)">
-        <animate attributeName="opacity" values="0.8;1;0.8" dur="1s" repeatCount="indefinite"/>
-      </rect>
-      <rect x="98" y="108" width="4" height="3" fill="#E040FB" opacity="0.6"/>
-    </g>
-  </g>
-  
-  <!-- Nano-forge output platform -->
-  <rect x="60" y="100" width="40" height="6" fill="#37474F" rx="1"/>
-  <rect x="64" y="106" width="32" height="12" fill="#263238" rx="1"/>
-  
-  <!-- Levitating work surface with energy field -->
-  <ellipse cx="80" cy="98" rx="14" ry="3" fill="#00E5FF" opacity="0.25">
-    <animate attributeName="opacity" values="0.15;0.35;0.15" dur="2s" repeatCount="indefinite"/>
-    <animate attributeName="ry" values="2;4;2" dur="2s" repeatCount="indefinite"/>
+  <!-- White-hot center -->
+  <ellipse cx="32" cy="76" rx="3" ry="2.5" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0.9;1;0.9" dur="0.3s" repeatCount="indefinite"/>
   </ellipse>
   
-  <!-- Materialization zone - items appearing! "AHA!" -->
-  <g>
-    <!-- Item spawning with teleport effect -->
-    <rect x="72" y="92" width="8" height="6" fill="#00E5FF" rx="1">
-      <animate attributeName="opacity" values="0;0;0.8;0.8" dur="5s" repeatCount="indefinite"/>
-    </rect>
-    <!-- Spawn particle ring -->
-    <ellipse cx="76" cy="95" rx="6" ry="3" fill="#00E5FF" opacity="0">
-      <animate attributeName="opacity" values="0;0;0.6;0" dur="5s" repeatCount="indefinite"/>
-      <animate attributeName="rx" values="2;2;8;8" dur="5s" repeatCount="indefinite"/>
-    </ellipse>
+  <!-- Particle streams being sucked into core -->
+  <g fill="#76FF03">
+    <circle cx="16" cy="66" r="1.5">
+      <animate attributeName="cx" values="16;24;32" dur="1s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="66;70;76" dur="1s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="1.5;1;0" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="48" cy="68" r="1.2">
+      <animate attributeName="cx" values="48;40;32" dur="1.2s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="68;72;76" dur="1.2s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="1.2;0.6;0" dur="1.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="32" cy="56" r="1">
+      <animate attributeName="cy" values="56;66;76" dur="0.9s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="1;0.5;0" dur="0.9s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="20" cy="88" r="1.3">
+      <animate attributeName="cx" values="20;26;32" dur="1.1s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="88;82;76" dur="1.1s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="1.3;0.7;0" dur="1.1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="44" cy="86" r="1">
+      <animate attributeName="cx" values="44;38;32" dur="1s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="86;81;76" dur="1s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="1;0.5;0" dur="1s" repeatCount="indefinite"/>
+    </circle>
   </g>
   
-  <!-- Already completed products - glowing tech items -->
-  <polygon points="66,96 70,92 74,96" fill="#E040FB" filter="url(#glow)">
-    <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
-  </polygon>
-  <circle cx="88" cy="94" r="3" fill="#00E5FF">
-    <animate attributeName="r" values="3;3.5;3" dur="1.2s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Energy conduits connecting systems -->
-  <line x1="56" y1="76" x2="60" y2="76" stroke="#7C4DFF" stroke-width="2">
-    <animate attributeName="stroke" values="#7C4DFF;#E040FB;#7C4DFF" dur="1s" repeatCount="indefinite"/>
-  </line>
-  <line x1="60" y1="76" x2="60" y2="98" stroke="#7C4DFF" stroke-width="2">
-    <animate attributeName="stroke" values="#E040FB;#7C4DFF;#E040FB" dur="1s" repeatCount="indefinite"/>
-  </line>
-  <line x1="60" y1="98" x2="72" y2="98" stroke="#7C4DFF" stroke-width="2">
-    <animate attributeName="stroke" values="#7C4DFF;#E040FB;#7C4DFF" dur="1s" repeatCount="indefinite"/>
-  </line>
-  
-  <!-- Holographic assistant drone floating nearby -->
-  <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0;3,-2;0,0;-2,1;0,0" dur="5s" repeatCount="indefinite"/>
-    <ellipse cx="52" cy="48" rx="5" ry="3" fill="#37474F"/>
-    <circle cx="52" cy="48" r="2" fill="#00E5FF" filter="url(#glow)">
-      <animate attributeName="r" values="1.5;2.5;1.5" dur="1s" repeatCount="indefinite"/>
-    </circle>
-    <!-- Scanning beam to engineer -->
-    <line x1="52" y1="50" x2="60" y2="54" stroke="#00E5FF" stroke-width="0.5" opacity="0">
-      <animate attributeName="opacity" values="0;0.5;0" dur="3s" repeatCount="indefinite"/>
+  <!-- Energy burst from core - random flares -->
+  <g fill="#FFFFFF" opacity="0.8">
+    <line x1="32" y1="76" x2="22" y2="66" stroke="#76FF03" stroke-width="1">
+      <animate attributeName="opacity" values="0;1;0" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <line x1="32" y1="76" x2="42" y2="68" stroke="#00E676" stroke-width="1">
+      <animate attributeName="opacity" values="0;1;0" dur="0.7s" repeatCount="indefinite" begin="0.2s"/>
+    </line>
+    <line x1="32" y1="76" x2="38" y2="86" stroke="#76FF03" stroke-width="1">
+      <animate attributeName="opacity" values="0;1;0" dur="0.6s" repeatCount="indefinite" begin="0.4s"/>
     </line>
   </g>
   
-  <!-- Ambient tech particles -->
-  <g fill="#00E5FF" opacity="0.6">
-    <circle cx="20" cy="56" r="1">
-      <animate attributeName="cy" values="56;52;56" dur="2s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="48" cy="44" r="0.8">
-      <animate attributeName="cy" values="44;40;44" dur="2.5s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="112" cy="68" r="1">
-      <animate attributeName="cy" values="68;64;68" dur="1.8s" repeatCount="indefinite"/>
-    </circle>
+  <!-- Containment status lights - blinking warning -->
+  <circle cx="14" cy="52" r="2" fill="#00E676">
+    <animate attributeName="fill" values="#00E676;#76FF03;#00E676" dur="0.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="50" cy="52" r="2" fill="#FFEB3B">
+    <animate attributeName="opacity" values="1;0.3;1" dur="0.3s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- ========== MOLECULAR ASSEMBLY CHAMBER - Right Side ========== -->
+  <rect x="58" y="48" width="60" height="56" fill="#263238" rx="2"/>
+  
+  <!-- Assembly grid floor -->
+  <g stroke="#37474F" stroke-width="0.5">
+    <line x1="62" y1="100" x2="62" y2="52"/>
+    <line x1="72" y1="100" x2="72" y2="52"/>
+    <line x1="82" y1="100" x2="82" y2="52"/>
+    <line x1="92" y1="100" x2="92" y2="52"/>
+    <line x1="102" y1="100" x2="102" y2="52"/>
+    <line x1="112" y1="100" x2="112" y2="52"/>
+    <line x1="58" y1="60" x2="118" y2="60"/>
+    <line x1="58" y1="72" x2="118" y2="72"/>
+    <line x1="58" y1="84" x2="118" y2="84"/>
+    <line x1="58" y1="96" x2="118" y2="96"/>
   </g>
-  <g fill="#E040FB" opacity="0.5">
-    <circle cx="16" cy="72" r="0.8">
-      <animate attributeName="cy" values="72;68;72" dur="2.2s" repeatCount="indefinite"/>
+  
+  <!-- MOLECULAR ASSEMBLY - Atoms forming into object -->
+  <g transform="translate(88, 78)">
+    <!-- Central forming object - sword blade emerging -->
+    <rect x="-2" y="-12" width="4" height="24" fill="#90A4AE" rx="1">
+      <animate attributeName="height" values="0;24;24" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="y" values="0;-12;-12" dur="4s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Blade edge glow -->
+    <rect x="-3" y="-12" width="6" height="24" fill="#69F0AE" opacity="0">
+      <animate attributeName="opacity" values="0;0;0.5;0" dur="4s" repeatCount="indefinite"/>
+    </rect>
+    
+    <!-- Atoms flying in and assembling -->
+    <g fill="#00E676" filter="url(#glow)">
+      <circle cx="-20" cy="-20" r="2">
+        <animate attributeName="cx" values="-20;-8;0" dur="1s" repeatCount="indefinite"/>
+        <animate attributeName="cy" values="-20;-10;0" dur="1s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="2;1.5;0" dur="1s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="20" cy="-16" r="1.8">
+        <animate attributeName="cx" values="20;8;0" dur="1.2s" repeatCount="indefinite"/>
+        <animate attributeName="cy" values="-16;-8;-4" dur="1.2s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="1.8;1;0" dur="1.2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="-18" cy="16" r="1.6">
+        <animate attributeName="cx" values="-18;-6;0" dur="0.9s" repeatCount="indefinite"/>
+        <animate attributeName="cy" values="16;8;4" dur="0.9s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="1.6;0.8;0" dur="0.9s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="22" cy="12" r="2">
+        <animate attributeName="cx" values="22;10;0" dur="1.1s" repeatCount="indefinite"/>
+        <animate attributeName="cy" values="12;6;0" dur="1.1s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="2;1;0" dur="1.1s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="0" cy="-24" r="1.5">
+        <animate attributeName="cy" values="-24;-16;-8" dur="0.8s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="1.5;0.8;0" dur="0.8s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="0" cy="24" r="1.7">
+        <animate attributeName="cy" values="24;16;8" dur="1s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="1.7;0.9;0" dur="1s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+    
+    <!-- Molecular bonds forming - connecting lines -->
+    <g stroke="#76FF03" stroke-width="0.5" opacity="0.6">
+      <line x1="-12" y1="-8" x2="0" y2="0">
+        <animate attributeName="opacity" values="0;0.8;0" dur="1s" repeatCount="indefinite"/>
+      </line>
+      <line x1="12" y1="-6" x2="0" y2="-2">
+        <animate attributeName="opacity" values="0;0.8;0" dur="1.2s" repeatCount="indefinite"/>
+      </line>
+      <line x1="-10" y1="8" x2="0" y2="2">
+        <animate attributeName="opacity" values="0;0.8;0" dur="0.9s" repeatCount="indefinite"/>
+      </line>
+    </g>
+  </g>
+  
+  <!-- Completed items on output tray -->
+  <rect x="60" y="102" width="20" height="16" fill="#37474F" rx="1"/>
+  <polygon points="66,100 70,94 74,100" fill="#B0BEC5" filter="url(#glow)">
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+  </polygon>
+  <rect x="64" y="104" width="12" height="3" fill="#78909C" rx="0.5"/>
+  
+  <!-- Energy conduit connecting chambers -->
+  <rect x="54" y="70" width="4" height="12" fill="#00E676" opacity="0.6">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="0.5s" repeatCount="indefinite"/>
+  </rect>
+  <!-- Energy flow particles -->
+  <circle cx="56" cy="70" r="1.5" fill="#76FF03">
+    <animate attributeName="cy" values="82;76;70" dur="0.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- ========== HAZMAT ENGINEER at control station ========== -->
+  <g transform="translate(100, 68)">
+    <!-- Full hazmat containment suit - BRIGHT YELLOW -->
+    <!-- Suit body -->
+    <rect x="-8" y="4" width="16" height="22" fill="url(#hazmatSuit)" rx="4"/>
+    <!-- Black belt/equipment strip -->
+    <rect x="-8" y="16" width="16" height="3" fill="#1A1A1A"/>
+    <!-- Radiation badge -->
+    <circle cx="0" cy="8" r="3" fill="#FFEB3B" stroke="#1A1A1A" stroke-width="0.5">
+      <animate attributeName="fill" values="#FFEB3B;#FF6F00;#FFEB3B" dur="2s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="116" cy="88" r="1">
-      <animate attributeName="cy" values="88;84;88" dur="2s" repeatCount="indefinite"/>
+    
+    <!-- Helmet with reflective visor -->
+    <ellipse cx="0" cy="-2" rx="8" ry="9" fill="#FFCA28"/>
+    <!-- Visor - large curved reflective surface -->
+    <ellipse cx="0" cy="0" rx="6" ry="5" fill="url(#visorReflect)">
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
+    </ellipse>
+    <!-- Visor reflection highlight -->
+    <ellipse cx="-2" cy="-2" rx="2" ry="1" fill="#FFFFFF" opacity="0.4"/>
+    <!-- Eyes visible through visor -->
+    <circle cx="-2" cy="0" r="1" fill="#1A1A1A"/>
+    <circle cx="2" cy="0" r="1" fill="#1A1A1A"/>
+    
+    <!-- Air tube from helmet -->
+    <path d="M-8,-2 Q-14,-2 -14,6 Q-14,14 -8,14" fill="none" stroke="#455A64" stroke-width="3"/>
+    <circle cx="-14" cy="6" r="3" fill="#546E7A"/>
+    
+    <!-- Left arm operating holographic controls - animated -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 -8 10;-15 -8 10;0 -8 10;10 -8 10;0 -8 10" dur="3s" repeatCount="indefinite"/>
+      <rect x="-24" y="8" width="18" height="5" fill="url(#hazmatSuit)" rx="2"/>
+      <!-- Thick protective glove -->
+      <ellipse cx="-26" cy="10" rx="4" ry="3" fill="#FF8F00"/>
+      <!-- Finger pointing -->
+      <rect x="-32" y="8" width="6" height="3" fill="#FF8F00" rx="1"/>
+    </g>
+    
+    <!-- Right arm at side with clipboard -->
+    <rect x="6" y="10" width="14" height="4" fill="url(#hazmatSuit)" rx="2"/>
+    <ellipse cx="20" cy="12" rx="3" ry="2.5" fill="#FF8F00"/>
+    <!-- Clipboard -->
+    <rect x="18" y="14" width="8" height="10" fill="#37474F" rx="1"/>
+    <rect x="19" y="15" width="6" height="1" fill="#00E676"/>
+    <rect x="19" y="17" width="5" height="1" fill="#00E676"/>
+    <rect x="19" y="19" width="6" height="1" fill="#FFEB3B"/>
+    
+    <!-- Legs -->
+    <rect x="-6" y="24" width="5" height="8" fill="#FF8F00" rx="1"/>
+    <rect x="1" y="24" width="5" height="8" fill="#FF8F00" rx="1"/>
+    <!-- Heavy boots -->
+    <rect x="-7" y="30" width="7" height="4" fill="#37474F" rx="1"/>
+    <rect x="0" y="30" width="7" height="4" fill="#37474F" rx="1"/>
+  </g>
+  
+  <!-- Holographic control panel in front of engineer -->
+  <rect x="62" y="52" width="24" height="16" fill="#00E676" opacity="0.1" rx="2">
+    <animate attributeName="opacity" values="0.08;0.15;0.08" dur="2s" repeatCount="indefinite"/>
+  </rect>
+  
+  <!-- Control panel data -->
+  <g>
+    <!-- Antimatter level bar -->
+    <rect x="64" y="54" width="20" height="3" fill="#1A1A1A" rx="1"/>
+    <rect x="65" y="55" width="12" height="1" fill="#76FF03">
+      <animate attributeName="width" values="12;16;12" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Label -->
+    <text x="64" y="62" font-family="monospace" font-size="3" fill="#00E676">AM LEVEL</text>
+    
+    <!-- Temperature gauge -->
+    <text x="64" y="67" font-family="monospace" font-size="3" fill="#FFEB3B">
+      <animate attributeName="fill" values="#FFEB3B;#FF6F00;#FFEB3B" dur="1s" repeatCount="indefinite"/>
+      TEMP: 10^9 K
+    </text>
+  </g>
+  
+  <!-- Warning lights on ceiling -->
+  <g>
+    <circle cx="24" cy="44" r="3" fill="#FF5722">
+      <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="104" cy="44" r="3" fill="#FF5722">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="0.8s" repeatCount="indefinite"/>
     </circle>
   </g>
   
-  <!-- Window with plasma reflection -->
-  <rect x="12" y="100" width="10" height="14" fill="#1A1A1A" rx="1"/>
-  <rect x="13" y="101" width="8" height="12" fill="#7C4DFF" opacity="0.3">
-    <animate attributeName="opacity" values="0.2;0.4;0.2" dur="1.2s" repeatCount="indefinite"/>
-  </rect>
+  <!-- Coolant pipes along walls -->
+  <rect x="6" y="106" width="52" height="4" fill="#0097A7"/>
+  <rect x="70" y="106" width="48" height="4" fill="#0097A7"/>
+  <!-- Frost effect on pipes -->
+  <g fill="#B2EBF2" opacity="0.5">
+    <circle cx="14" cy="108" r="2"/>
+    <circle cx="28" cy="107" r="1.5"/>
+    <circle cx="42" cy="108" r="2"/>
+    <circle cx="82" cy="108" r="1.5"/>
+    <circle cx="98" cy="107" r="2"/>
+    <circle cx="110" cy="108" r="1.5"/>
+  </g>
+  
+  <!-- Steam/vapor venting from pipes -->
+  <g fill="#B2EBF2">
+    <ellipse cx="14" cy="104" rx="3" ry="2" opacity="0.4">
+      <animate attributeName="cy" values="104;98;92" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.1;0" dur="2s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="42" cy="104" rx="2" ry="1.5" opacity="0.3">
+      <animate attributeName="cy" values="104;96;88" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.1;0" dur="2.5s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+  
+  <!-- Geiger counter readings floating - ambient radiation -->
+  <g fill="#76FF03" opacity="0.6">
+    <circle cx="18" cy="58" r="0.8">
+      <animate attributeName="cy" values="58;54;50" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.2;0" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="46" cy="62" r="0.6">
+      <animate attributeName="cy" values="62;56;50" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.2;0" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Ventilation grille on roof -->
+  <rect x="38" y="30" width="16" height="6" fill="#1A1A1A" rx="1"/>
+  <g stroke="#455A64" stroke-width="0.5">
+    <line x1="40" y1="30" x2="40" y2="36"/>
+    <line x1="44" y1="30" x2="44" y2="36"/>
+    <line x1="48" y1="30" x2="48" y2="36"/>
+    <line x1="52" y1="30" x2="52" y2="36"/>
+  </g>
 </svg>
