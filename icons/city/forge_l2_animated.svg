@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- Forge Level 2 (Animated) - Industrial workshop with animations -->
+  <!-- Forge Level 2 Animated - Industrial Steelworks with Master Craftsmen -->
   <defs>
     <linearGradient id="metalWall" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#607D8B"/>
@@ -25,6 +25,10 @@
       <stop offset="0%" style="stop-color:#7cb342"/>
       <stop offset="100%" style="stop-color:#558b2f"/>
     </linearGradient>
+    <linearGradient id="workerUniform" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#455A64"/>
+      <stop offset="100%" style="stop-color:#37474F"/>
+    </linearGradient>
     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
       <feMerge>
@@ -32,10 +36,23 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+    <filter id="fireGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
   </defs>
   
   <!-- Background: Blue sky -->
   <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Subtle cloud wisps -->
+  <g fill="white" opacity="0.25">
+    <ellipse cx="25" cy="20" rx="18" ry="5">
+      <animate attributeName="cx" values="25;35;25" dur="30s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="95" cy="28" rx="15" ry="4">
+      <animate attributeName="cx" values="95;105;95" dur="35s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
   
   <!-- Distant hills -->
   <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
@@ -50,21 +67,45 @@
   <polygon points="6,38 64,10 122,38" fill="#455A64"/>
   <polygon points="64,10 122,38 118,38 64,14 10,38 6,38" fill="#546E7A"/>
   
-  <!-- Roof vents -->
-  <rect x="40" y="20" width="16" height="6" fill="#37474F"/>
-  <rect x="72" y="20" width="16" height="6" fill="#37474F"/>
+  <!-- Main smokestack -->
+  <rect x="100" y="4" width="12" height="20" fill="#37474F"/>
+  <rect x="98" y="2" width="16" height="4" fill="#455A64"/>
   
-  <!-- Smoke from vents - animated -->
-  <g fill="#9E9E9E" opacity="0.6">
-    <ellipse cx="48" cy="16" rx="4" ry="2">
-      <animate attributeName="cy" values="16;8;16" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.6;0.2;0.6" dur="3s" repeatCount="indefinite"/>
+  <!-- Industrial smoke - thick billowing clouds -->
+  <g fill="#78909C">
+    <ellipse cx="106" cy="0" rx="10" ry="6">
+      <animate attributeName="cy" values="0;-25" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="rx" values="10;18" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="ry" values="6;10" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;0" dur="4s" repeatCount="indefinite"/>
     </ellipse>
-    <ellipse cx="80" cy="14" rx="5" ry="3">
-      <animate attributeName="cy" values="14;4;14" dur="4s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.7;0.1;0.7" dur="4s" repeatCount="indefinite"/>
+    <ellipse cx="104" cy="2" rx="8" ry="4">
+      <animate attributeName="cy" values="2;-22" dur="3.5s" repeatCount="indefinite" begin="1s"/>
+      <animate attributeName="rx" values="8;14" dur="3.5s" repeatCount="indefinite" begin="1s"/>
+      <animate attributeName="opacity" values="0.6;0" dur="3.5s" repeatCount="indefinite" begin="1s"/>
+    </ellipse>
+    <ellipse cx="108" cy="1" rx="6" ry="3">
+      <animate attributeName="cy" values="1;-20" dur="3s" repeatCount="indefinite" begin="2s"/>
+      <animate attributeName="rx" values="6;12" dur="3s" repeatCount="indefinite" begin="2s"/>
+      <animate attributeName="opacity" values="0.5;0" dur="3s" repeatCount="indefinite" begin="2s"/>
     </ellipse>
   </g>
+  
+  <!-- Secondary vent smoke -->
+  <g fill="#9E9E9E" opacity="0.5">
+    <ellipse cx="48" cy="16" rx="5" ry="3">
+      <animate attributeName="cy" values="16;6" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0" dur="3s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="80" cy="14" rx="4" ry="2">
+      <animate attributeName="cy" values="14;4" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+      <animate attributeName="opacity" values="0.4;0" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+    </ellipse>
+  </g>
+  
+  <!-- Roof vents -->
+  <rect x="42" y="18" width="14" height="6" fill="#37474F"/>
+  <rect x="74" y="18" width="14" height="6" fill="#37474F"/>
   
   <!-- Metal rivets -->
   <g fill="#455A64">
@@ -78,109 +119,217 @@
     <circle cx="112" cy="92" r="2"/>
   </g>
   
+  <!-- Warning stripes -->
+  <g fill="#FFC107">
+    <polygon points="10,38 18,38 18,44 10,44"/>
+    <polygon points="26,38 34,38 34,44 26,44"/>
+    <polygon points="94,38 102,38 102,44 94,44"/>
+    <polygon points="110,38 118,38 118,44 110,44"/>
+  </g>
+  <g fill="#212121">
+    <polygon points="18,38 26,38 26,44 18,44"/>
+    <polygon points="102,38 110,38 110,44 102,44"/>
+  </g>
+  
   <!-- Electric furnace housing -->
-  <rect x="16" y="48" width="46" height="52" fill="#37474F" rx="2"/>
-  <rect x="18" y="50" width="42" height="48" fill="#263238" rx="1"/>
+  <rect x="16" y="46" width="44" height="54" fill="#37474F" rx="2"/>
+  <rect x="18" y="48" width="40" height="50" fill="#263238" rx="1"/>
   
-  <!-- Furnace opening with heating glow - animated -->
-  <rect x="22" y="56" width="34" height="36" fill="#1A1A1A"/>
-  <rect x="24" y="58" width="30" height="32" fill="url(#furnaceGlow)">
-    <animate attributeName="opacity" values="0.8;1;0.8" dur="1.5s" repeatCount="indefinite"/>
-  </rect>
+  <!-- Furnace opening with animated flames -->
+  <rect x="22" y="54" width="32" height="38" fill="#1A1A1A"/>
   
-  <!-- Heat glow overlay -->
-  <ellipse cx="39" cy="74" rx="18" ry="14" fill="url(#heatGlow)" filter="url(#glow)">
-    <animate attributeName="rx" values="16;20;16" dur="2s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.5;0.8;0.5" dur="2s" repeatCount="indefinite"/>
-  </ellipse>
-  
-  <!-- Heating elements -->
-  <g stroke="#FF5722" stroke-width="2" fill="none">
-    <path d="M28,64 Q32,62 36,64 Q40,66 44,64 Q48,62 52,64">
-      <animate attributeName="stroke" values="#FF5722;#FFAB00;#FF5722" dur="1s" repeatCount="indefinite"/>
-    </path>
-    <path d="M28,72 Q32,70 36,72 Q40,74 44,72 Q48,70 52,72">
-      <animate attributeName="stroke" values="#FFAB00;#FF5722;#FFAB00" dur="1s" repeatCount="indefinite"/>
-    </path>
-    <path d="M28,80 Q32,78 36,80 Q40,82 44,80 Q48,78 52,80">
-      <animate attributeName="stroke" values="#FF5722;#FFAB00;#FF5722" dur="1s" repeatCount="indefinite"/>
-    </path>
+  <!-- Multi-layer industrial flames - "AHA!" dancing fire like L1 -->
+  <g>
+    <!-- Heat glow -->
+    <ellipse cx="38" cy="80" rx="20" ry="16" fill="url(#heatGlow)" filter="url(#fireGlow)">
+      <animate attributeName="opacity" values="0.5;0.8;0.5" dur="0.5s" repeatCount="indefinite"/>
+    </ellipse>
+    
+    <!-- Outer flames -->
+    <ellipse cx="28" cy="86" rx="5" ry="14" fill="url(#furnaceGlow)">
+      <animate attributeName="ry" values="14;18;12;16;14" dur="0.4s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="38" cy="82" rx="7" ry="20" fill="url(#furnaceGlow)">
+      <animate attributeName="ry" values="20;16;22;18;20" dur="0.35s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="48" cy="86" rx="5" ry="14" fill="url(#furnaceGlow)">
+      <animate attributeName="ry" values="12;16;14;18;12" dur="0.45s" repeatCount="indefinite"/>
+    </ellipse>
+    
+    <!-- Inner bright flames -->
+    <ellipse cx="32" cy="88" rx="3" ry="10" fill="#FFD54F">
+      <animate attributeName="ry" values="10;14;8;12;10" dur="0.3s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="38" cy="84" rx="5" ry="14" fill="#FFECB3">
+      <animate attributeName="ry" values="14;10;16;12;14" dur="0.25s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="44" cy="88" rx="3" ry="10" fill="#FFD54F">
+      <animate attributeName="ry" values="8;12;10;14;8" dur="0.35s" repeatCount="indefinite"/>
+    </ellipse>
   </g>
   
   <!-- Temperature gauge -->
-  <rect x="20" y="94" width="38" height="8" fill="#1A1A1A" rx="2"/>
-  <rect x="22" y="96" width="28" height="4" fill="#FF3D00">
-    <animate attributeName="width" values="28;34;28" dur="3s" repeatCount="indefinite"/>
+  <rect x="20" y="96" width="36" height="6" fill="#1A1A1A" rx="2"/>
+  <rect x="22" y="98" width="24" height="2" fill="#FF3D00">
+    <animate attributeName="width" values="24;30;24" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="fill" values="#FF3D00;#FFAB00;#FF3D00" dur="3s" repeatCount="indefinite"/>
   </rect>
-  <text x="55" y="100" font-size="4" fill="#FFF">°C</text>
+  
+  <!-- WORKER 1: Furnace Operator - sophisticated silhouette with tongs -->
+  <g>
+    <!-- Worker body leaning to inspect furnace -->
+    <ellipse cx="58" cy="68" rx="4" ry="5" fill="#5D4037"/> <!-- Head -->
+    <rect x="52" y="72" width="12" height="16" fill="url(#workerUniform)" rx="2"/> <!-- Body -->
+    <rect x="50" y="86" width="5" height="14" fill="#37474F"/> <!-- Left leg -->
+    <rect x="59" y="86" width="5" height="14" fill="#37474F"/> <!-- Right leg -->
+    
+    <!-- Hard hat -->
+    <ellipse cx="58" cy="66" rx="5" ry="2" fill="#FFC107"/>
+    <rect x="53" y="65" width="10" height="4" fill="#FFC107" rx="1"/>
+    
+    <!-- Arm holding long tongs - animated reaching into furnace -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 55 76;-10 55 76;0 55 76" dur="3s" repeatCount="indefinite"/>
+      <rect x="40" y="74" width="18" height="3" fill="#5D4037" rx="1"/> <!-- Arm -->
+      <!-- Industrial tongs -->
+      <line x1="26" y1="76" x2="42" y2="76" stroke="#546E7A" stroke-width="2"/>
+      <line x1="24" y1="74" x2="28" y2="80" stroke="#546E7A" stroke-width="2"/>
+      <line x1="24" y1="78" x2="28" y2="72" stroke="#546E7A" stroke-width="2"/>
+      <!-- Hot metal in tongs - glowing -->
+      <rect x="22" y="74" width="4" height="4" fill="#FFAB00" rx="1" filter="url(#glow)">
+        <animate attributeName="fill" values="#FFAB00;#FF6D00;#FFAB00" dur="1s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+    
+    <!-- Face detail - looking at work -->
+    <circle cx="60" cy="68" r="1" fill="#3E2723"/> <!-- Eye -->
+  </g>
   
   <!-- Power hammer system -->
-  <rect x="74" y="42" width="26" height="12" fill="#455A64"/>
-  <rect x="84" y="36" width="6" height="8" fill="#546E7A"/>
+  <rect x="74" y="42" width="24" height="10" fill="#455A64"/>
+  <rect x="82" y="36" width="8" height="8" fill="#546E7A"/>
   
-  <!-- Hammer arm - animated up/down -->
+  <!-- Power hammer arm - animated pounding -->
   <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="0.8s" repeatCount="indefinite"/>
-    <rect x="82" y="54" width="10" height="20" fill="#37474F"/>
-    <rect x="80" y="72" width="14" height="10" fill="#455A64"/>
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,-10;0,0" dur="0.6s" repeatCount="indefinite"/>
+    <rect x="82" y="52" width="8" height="18" fill="#37474F"/>
+    <rect x="78" y="68" width="16" height="10" fill="#455A64"/>
+    <!-- Hammer face -->
+    <rect x="80" y="76" width="12" height="4" fill="#78909C"/>
   </g>
   
   <!-- Industrial anvil -->
-  <rect x="66" y="96" width="40" height="6" fill="#37474F"/>
-  <rect x="70" y="102" width="32" height="14" fill="#546E7A"/>
-  <rect x="82" y="116" width="8" height="4" fill="#455A64"/>
+  <rect x="68" y="92" width="36" height="6" fill="#37474F"/>
+  <rect x="72" y="98" width="28" height="16" fill="#546E7A"/>
+  <rect x="82" y="114" width="8" height="6" fill="#455A64"/>
   
-  <!-- Hot metal on anvil - with glow animation -->
-  <rect x="80" y="92" width="12" height="4" fill="#FFAB00" rx="1" filter="url(#glow)">
-    <animate attributeName="fill" values="#FFAB00;#FF6D00;#FFAB00" dur="2s" repeatCount="indefinite"/>
+  <!-- Hot metal on anvil being shaped - glowing piece -->
+  <rect x="80" y="88" width="14" height="4" fill="#FFAB00" rx="1" filter="url(#glow)">
+    <animate attributeName="fill" values="#FFAB00;#FF6D00;#FFAB00" dur="0.6s" repeatCount="indefinite"/>
+    <animate attributeName="width" values="14;12;14" dur="0.6s" repeatCount="indefinite"/>
   </rect>
   
-  <!-- Sparks from hammering - animated -->
-  <g fill="#FFAB00">
-    <circle cx="78" cy="88" r="1">
-      <animate attributeName="cy" values="88;80;88" dur="0.4s" repeatCount="indefinite"/>
-      <animate attributeName="cx" values="78;72;78" dur="0.4s" repeatCount="indefinite"/>
+  <!-- Dramatic spark shower from hammer impact - THE "AHA!" -->
+  <g fill="#FFEB3B">
+    <circle cx="86" cy="86" r="2">
+      <animate attributeName="cy" values="86;70;86" dur="0.3s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="86;78;86" dur="0.3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0;1" dur="0.3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="88" cy="84" r="1.5">
+      <animate attributeName="cy" values="84;66;84" dur="0.35s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="88;98;88" dur="0.35s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0;1" dur="0.35s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="84" cy="82" r="1.8">
+      <animate attributeName="cy" values="82;60;82" dur="0.4s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="1;0;1" dur="0.4s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="94" cy="86" r="1">
-      <animate attributeName="cy" values="86;76;86" dur="0.5s" repeatCount="indefinite"/>
-      <animate attributeName="cx" values="94;100;94" dur="0.5s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0;1;0" dur="0.5s" repeatCount="indefinite"/>
+    <circle cx="90" cy="80" r="1.2">
+      <animate attributeName="cy" values="80;62;80" dur="0.25s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="90;102;90" dur="0.25s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0;1" dur="0.25s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="86" cy="84" r="1.5">
-      <animate attributeName="cy" values="84;70;84" dur="0.6s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="1;0;1" dur="0.6s" repeatCount="indefinite"/>
+    <circle cx="82" cy="84" r="1">
+      <animate attributeName="cy" values="84;68;84" dur="0.32s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="82;70;82" dur="0.32s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0;1" dur="0.32s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <!-- Orange sparks too -->
+  <g fill="#FF9100">
+    <circle cx="87" cy="78" r="1.5">
+      <animate attributeName="cy" values="78;58;78" dur="0.38s" repeatCount="indefinite" begin="0.1s"/>
+      <animate attributeName="cx" values="87;95;87" dur="0.38s" repeatCount="indefinite" begin="0.1s"/>
+      <animate attributeName="opacity" values="1;0;1" dur="0.38s" repeatCount="indefinite" begin="0.1s"/>
+    </circle>
+    <circle cx="85" cy="80" r="1">
+      <animate attributeName="cy" values="80;64;80" dur="0.28s" repeatCount="indefinite" begin="0.15s"/>
+      <animate attributeName="cx" values="85;75;85" dur="0.28s" repeatCount="indefinite" begin="0.15s"/>
+      <animate attributeName="opacity" values="1;0;1" dur="0.28s" repeatCount="indefinite" begin="0.15s"/>
     </circle>
   </g>
   
-  <!-- Warning stripes -->
-  <g fill="#FFC107">
-    <polygon points="10,38 18,38 18,45 10,45"/>
-    <polygon points="26,38 34,38 34,45 26,45"/>
-    <polygon points="94,38 102,38 102,45 94,45"/>
-    <polygon points="110,38 118,38 118,45 110,45"/>
-  </g>
-  <g fill="#212121">
-    <polygon points="18,38 26,38 26,45 18,45"/>
-    <polygon points="102,38 110,38 110,45 102,45"/>
+  <!-- WORKER 2: Power Hammer Operator - at control lever -->
+  <g transform="translate(104, 56)">
+    <!-- Worker standing at controls -->
+    <ellipse cx="0" cy="0" rx="3" ry="4" fill="#5D4037"/> <!-- Head -->
+    <rect x="-4" y="3" width="8" height="12" fill="url(#workerUniform)" rx="1"/> <!-- Body -->
+    <rect x="-5" y="14" width="4" height="10" fill="#37474F"/> <!-- Left leg -->
+    <rect x="1" y="14" width="4" height="10" fill="#37474F"/> <!-- Right leg -->
+    
+    <!-- Safety helmet -->
+    <ellipse cx="0" cy="-2" rx="4" ry="1.5" fill="#FF5722"/>
+    <rect x="-4" y="-3" width="8" height="3" fill="#FF5722" rx="1"/>
+    
+    <!-- Arm on lever - animated pulling -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 -4 6;-20 -4 6;0 -4 6" dur="0.6s" repeatCount="indefinite"/>
+      <rect x="-12" y="4" width="10" height="3" fill="#5D4037" rx="1"/>
+    </g>
+    
+    <!-- Face looking at anvil -->
+    <circle cx="-1" cy="0" r="0.8" fill="#3E2723"/>
   </g>
   
-  <!-- Window with furnace glow reflection - animated -->
-  <rect x="68" y="48" width="16" height="20" fill="#1A1A1A" rx="1"/>
-  <rect x="70" y="50" width="12" height="16" fill="#FF6D00" opacity="0.4">
-    <animate attributeName="opacity" values="0.3;0.5;0.3" dur="2s" repeatCount="indefinite"/>
+  <!-- Control lever -->
+  <rect x="92" y="54" width="4" height="16" fill="#37474F"/>
+  <circle cx="94" cy="54" r="3" fill="#D32F2F"/>
+  
+  <!-- Water quench bucket - with steam! -->
+  <ellipse cx="68" cy="114" rx="6" ry="3" fill="#37474F"/>
+  <ellipse cx="68" cy="112" rx="5" ry="2" fill="#1976D2" opacity="0.8"/>
+  <!-- Steam rising from bucket -->
+  <g fill="white" opacity="0.5">
+    <ellipse cx="68" cy="108" rx="3" ry="2">
+      <animate attributeName="cy" values="108;100;108" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="66" cy="106" rx="2" ry="1.5">
+      <animate attributeName="cy" values="106;98;106" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+      <animate attributeName="opacity" values="0.4;0;0.4" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+    </ellipse>
+  </g>
+  
+  <!-- Finished products on shelf -->
+  <rect x="14" y="108" width="20" height="4" fill="#455A64"/>
+  <polygon points="16,104 20,108 12,108" fill="#78909C"/> <!-- Blade -->
+  <rect x="22" y="104" width="10" height="4" fill="#90A4AE" rx="1"/> <!-- Bar -->
+  
+  <!-- Window with furnace glow reflection -->
+  <rect x="64" y="46" width="12" height="16" fill="#1A1A1A" rx="1"/>
+  <rect x="65" y="47" width="10" height="14" fill="#FF6D00" opacity="0.4">
+    <animate attributeName="opacity" values="0.3;0.5;0.3" dur="0.5s" repeatCount="indefinite"/>
   </rect>
   
-  <!-- Control panel -->
-  <rect x="92" y="52" width="18" height="24" fill="#37474F" rx="1"/>
-  <circle cx="96" cy="58" r="2" fill="#4CAF50">
-    <animate attributeName="fill" values="#4CAF50;#8BC34A;#4CAF50" dur="1.5s" repeatCount="indefinite"/>
+  <!-- Control panel with blinking lights -->
+  <rect x="96" y="72" width="16" height="18" fill="#37474F" rx="1"/>
+  <circle cx="100" cy="78" r="2" fill="#4CAF50">
+    <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="104" cy="58" r="2" fill="#FF5722"/>
-  <rect x="94" y="64" width="14" height="6" fill="#1A1A1A"/>
-  <text x="96" y="69" font-size="4" fill="#4CAF50">ON</text>
-  
-  <!-- Finished products -->
-  <polygon points="14,116 18,108 22,116" fill="#78909C"/>
-  <rect x="26" y="110" width="10" height="6" fill="#90A4AE"/>
+  <circle cx="108" cy="78" r="2" fill="#4CAF50">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="1.2s" repeatCount="indefinite"/>
+  </circle>
+  <rect x="98" y="82" width="12" height="4" fill="#1A1A1A"/>
+  <text x="100" y="86" font-size="3" fill="#4CAF50">PWR</text>
 </svg>
