@@ -1,40 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- Artisan Guild Level 3 (Animated) - Futuristic Nano-Fabrication Studio with Master Designer -->
+  <!-- Artisan Guild Level 3 - NEURAL DREAM FORGE - Brain-Computer Art Creation -->
   <defs>
-    <linearGradient id="techWall" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#263238"/>
-      <stop offset="50%" style="stop-color:#37474F"/>
-      <stop offset="100%" style="stop-color:#263238"/>
-    </linearGradient>
-    <linearGradient id="holoPanel" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.3"/>
-      <stop offset="100%" style="stop-color:#00BCD4" stop-opacity="0.1"/>
-    </linearGradient>
-    <radialGradient id="fabricatorGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#E040FB" stop-opacity="0.8"/>
-      <stop offset="100%" style="stop-color:#7C4DFF" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="holoBeam" cx="50%" cy="0%" r="100%">
-      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.8"/>
-      <stop offset="100%" style="stop-color:#00E5FF" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="magenta" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#E040FB"/>
-      <stop offset="100%" style="stop-color:#AA00FF"/>
-    </linearGradient>
-    <linearGradient id="cyan" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#18FFFF"/>
-      <stop offset="100%" style="stop-color:#00BCD4"/>
-    </linearGradient>
-    <linearGradient id="lime" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#B2FF59"/>
-      <stop offset="100%" style="stop-color:#76FF03"/>
-    </linearGradient>
-    <linearGradient id="amber" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#FFD740"/>
-      <stop offset="100%" style="stop-color:#FFC400"/>
-    </linearGradient>
     <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#4da6ff"/>
       <stop offset="100%" style="stop-color:#87ceeb"/>
@@ -43,6 +10,39 @@
       <stop offset="0%" style="stop-color:#7cb342"/>
       <stop offset="100%" style="stop-color:#558b2f"/>
     </linearGradient>
+    <linearGradient id="bioWall" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1A237E"/>
+      <stop offset="50%" style="stop-color:#283593"/>
+      <stop offset="100%" style="stop-color:#1A237E"/>
+    </linearGradient>
+    <radialGradient id="dreamCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="30%" style="stop-color:#EA80FC"/>
+      <stop offset="70%" style="stop-color:#7C4DFF"/>
+      <stop offset="100%" style="stop-color:#311B92" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="neuralGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#B388FF"/>
+      <stop offset="100%" style="stop-color:#651FFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rainbowFlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF6B6B">
+        <animate attributeName="stop-color" values="#FF6B6B;#4ECDC4;#A78BFA;#FFE66D;#FF6B6B" dur="4s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="33%" style="stop-color:#4ECDC4">
+        <animate attributeName="stop-color" values="#4ECDC4;#A78BFA;#FFE66D;#FF6B6B;#4ECDC4" dur="4s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="66%" style="stop-color:#A78BFA">
+        <animate attributeName="stop-color" values="#A78BFA;#FFE66D;#FF6B6B;#4ECDC4;#A78BFA" dur="4s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#FFE66D">
+        <animate attributeName="stop-color" values="#FFE66D;#FF6B6B;#4ECDC4;#A78BFA;#FFE66D" dur="4s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+    <linearGradient id="artistRobe" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A148C"/>
+      <stop offset="100%" style="stop-color:#311B92"/>
+    </linearGradient>
     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
       <feMerge>
@@ -50,9 +50,10 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
-    <filter id="strongGlow" x="-100%" y="-100%" width="300%" height="300%">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+    <filter id="dreamGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
       <feMerge>
+        <feMergeNode in="coloredBlur"/>
         <feMergeNode in="coloredBlur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
@@ -62,287 +63,261 @@
   <!-- Background: Blue sky -->
   <rect width="128" height="128" fill="url(#sky)"/>
   
+  <!-- Clouds -->
+  <g fill="white" opacity="0.3">
+    <ellipse cx="22" cy="20" rx="15" ry="5">
+      <animate attributeName="cx" values="22;32;22" dur="28s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="98" cy="26" rx="12" ry="4">
+      <animate attributeName="cx" values="98;108;98" dur="32s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+  
   <!-- Distant hills -->
   <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
   
   <!-- Main ground -->
   <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
 
-  <!-- Main futuristic building -->
-  <rect x="6" y="36" width="116" height="84" fill="url(#techWall)" rx="4"/>
+  <!-- Bio-organic crystalline building structure -->
+  <path d="M6,42 L6,120 L122,120 L122,42 Q100,36 64,42 Q28,36 6,42" fill="url(#bioWall)"/>
   
-  <!-- Curved futuristic roof -->
-  <path d="M2,36 Q64,4 126,36" fill="#1A1A1A" stroke="#263238" stroke-width="2"/>
-  
-  <!-- Roof antenna array with pulsing -->
-  <line x1="64" y1="2" x2="64" y2="18" stroke="#455A64" stroke-width="2"/>
-  <circle cx="64" cy="0" r="3" fill="#E040FB" filter="url(#glow)">
-    <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
-  </circle>
-  <!-- Signal rings emanating -->
-  <circle cx="64" cy="0" r="6" fill="none" stroke="#E040FB" stroke-width="0.5" opacity="0">
-    <animate attributeName="r" values="4;12;20" dur="2s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.6;0.2;0" dur="2s" repeatCount="indefinite"/>
-  </circle>
-  <line x1="44" y1="8" x2="44" y2="22" stroke="#455A64" stroke-width="1"/>
-  <circle cx="44" cy="6" r="2" fill="#00E5FF">
-    <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
-  </circle>
-  <line x1="84" y1="8" x2="84" y2="22" stroke="#455A64" stroke-width="1"/>
-  <circle cx="84" cy="6" r="2" fill="#00E5FF">
-    <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- LED strip accents - animated -->
-  <rect x="6" y="36" width="116" height="2" fill="#00E5FF" opacity="0.8">
-    <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
-  </rect>
-  <rect x="6" y="70" width="116" height="1" fill="#E040FB" opacity="0.5">
-    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2.5s" repeatCount="indefinite"/>
-  </rect>
-  
-  <!-- ========== MASTER DESIGNER at holographic workstation ========== -->
-  <g transform="translate(70, 40)">
-    <!-- Holographic display screen -->
-    <rect x="0" y="6" width="44" height="24" fill="url(#holoPanel)" rx="2">
-      <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
-    </rect>
-    
-    <!-- Animated holographic 3D model rotating -->
-    <g>
-      <animateTransform attributeName="transform" type="rotate" values="0 22 18;360 22 18" dur="6s" repeatCount="indefinite"/>
-      <polygon points="22,10 30,18 22,26 14,18" fill="#E040FB" opacity="0.7"/>
-      <polygon points="22,12 28,18 22,24 16,18" fill="#00E5FF" opacity="0.5"/>
-    </g>
-    
-    <!-- Floating data points around model -->
-    <circle cx="10" cy="12" r="1" fill="#B2FF59">
-      <animate attributeName="cy" values="12;16;12" dur="1.5s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="34" cy="14" r="1" fill="#FFD740">
-      <animate attributeName="cy" values="14;10;14" dur="1.8s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="22" cy="8" r="1" fill="#E040FB">
-      <animate attributeName="r" values="1;1.5;1" dur="1s" repeatCount="indefinite"/>
-    </circle>
-    
-    <!-- DESIGNER - sophisticated with tech visor -->
-    <!-- Body - designer coat -->
-    <rect x="46" y="6" width="12" height="18" fill="#37474F" rx="2"/>
-    <!-- Lab coat collar -->
-    <polygon points="46,6 52,10 58,6" fill="#455A64"/>
-    <!-- Head -->
-    <circle cx="52" cy="0" r="6" fill="#FFCC80"/>
-    <!-- Stylish hair -->
-    <path d="M46,-4 Q52,-8 58,-4 L58,0 L46,0 Z" fill="#4A148C"/>
-    <!-- Tech visor/AR glasses - glowing -->
-    <rect x="47" y="-3" width="10" height="3" fill="#263238" rx="1"/>
-    <rect x="48" y="-2" width="3" height="1.5" fill="#00E5FF" opacity="0.8">
-      <animate attributeName="opacity" values="0.6;1;0.6" dur="0.8s" repeatCount="indefinite"/>
-    </rect>
-    <rect x="53" y="-2" width="3" height="1.5" fill="#00E5FF" opacity="0.8">
-      <animate attributeName="opacity" values="1;0.6;1" dur="0.8s" repeatCount="indefinite"/>
-    </rect>
-    <!-- Focused expression - mouth -->
-    <ellipse cx="52" cy="3" rx="1.5" ry="0.5" fill="#8D6E63"/>
-    
-    <!-- Left arm gesturing at hologram - animated -->
-    <g>
-      <animateTransform attributeName="transform" type="rotate" values="0 46 12;-20 46 12;0 46 12" dur="2s" repeatCount="indefinite"/>
-      <rect x="36" y="10" width="12" height="3" fill="#FFCC80" rx="1"/>
-      <!-- Hand with pointing finger -->
-      <circle cx="36" cy="11.5" r="2.5" fill="#FFCC80"/>
-      <rect x="32" y="10" width="5" height="1.5" fill="#FFCC80" rx="0.5"/>
-    </g>
-    
-    <!-- Right arm on control surface -->
-    <rect x="56" y="14" width="10" height="3" fill="#FFCC80" rx="1"/>
-    <circle cx="66" cy="15.5" r="2.5" fill="#FFCC80"/>
-    
-    <!-- Holographic stylus in hand - glowing tip -->
-    <rect x="62" y="12" width="2" height="8" fill="#546E7A"/>
-    <circle cx="63" cy="10" r="2" fill="#E040FB" filter="url(#glow)">
-      <animate attributeName="r" values="1.5;2.5;1.5" dur="0.5s" repeatCount="indefinite"/>
-    </circle>
-    
-    <!-- Design beam from stylus to hologram -->
-    <line x1="63" y1="10" x2="22" y2="18" stroke="#E040FB" stroke-width="0.5" opacity="0.4">
-      <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite"/>
-    </line>
-  </g>
-  
-  <!-- Nano-fabricator chamber -->
-  <rect x="12" y="72" width="48" height="44" fill="#1A1A1A" rx="3"/>
-  <rect x="14" y="74" width="44" height="40" fill="#0D0D0D" rx="2"/>
-  
-  <!-- Fabricator containment ring - animated rotation -->
-  <ellipse cx="36" cy="94" rx="18" ry="14" fill="none" stroke="#E040FB" stroke-width="2">
-    <animate attributeName="stroke-dasharray" values="0 120;60 60;0 120" dur="3s" repeatCount="indefinite"/>
-  </ellipse>
-  <ellipse cx="36" cy="94" rx="14" ry="10" fill="url(#fabricatorGlow)" filter="url(#strongGlow)">
-    <animate attributeName="rx" values="12;16;12" dur="2s" repeatCount="indefinite"/>
-    <animate attributeName="ry" values="8;12;8" dur="2s" repeatCount="indefinite"/>
-  </ellipse>
-  
-  <!-- Materializing object - spectacular build animation -->
-  <g>
-    <animateTransform attributeName="transform" type="scale" values="0.8;1.2;0.8" dur="2.5s" repeatCount="indefinite"/>
-    <animateTransform attributeName="transform" type="rotate" values="0 36 94;15 36 94;0 36 94;-15 36 94;0 36 94" dur="4s" repeatCount="indefinite" additive="sum"/>
-    <polygon points="32,86 40,86 44,94 40,102 32,102 28,94" fill="#18FFFF" opacity="0.8"/>
-    <polygon points="34,88 38,88 41,94 38,100 34,100 31,94" fill="#E040FB" opacity="0.6"/>
-  </g>
-  
-  <!-- Spawn ring effect when item materializes -->
-  <ellipse cx="36" cy="102" rx="10" ry="3" fill="none" stroke="#00E5FF" stroke-width="1" opacity="0">
-    <animate attributeName="ry" values="3;8;12" dur="2s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.8;0.3;0" dur="2s" repeatCount="indefinite"/>
-  </ellipse>
-  
-  <!-- Nano particles swirling and converging -->
-  <g fill="#E040FB">
-    <circle cx="24" cy="84" r="1.2">
-      <animate attributeName="cx" values="24;32;36" dur="1.5s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="84;88;94" dur="1.5s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="1;0.5;0" dur="1.5s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="48" cy="86" r="1">
-      <animate attributeName="cx" values="48;42;36" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="86;90;94" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.8;0.4;0" dur="1.8s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="36" cy="78" r="1.2">
-      <animate attributeName="cy" values="78;86;94" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="1;0.5;0" dur="2s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="28" cy="102" r="0.8">
-      <animate attributeName="cx" values="28;32;36" dur="1.2s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="102;98;94" dur="1.2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.7;0.3;0" dur="1.2s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="44" cy="104" r="1">
-      <animate attributeName="cx" values="44;40;36" dur="1.4s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="104;99;94" dur="1.4s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.9;0.4;0" dur="1.4s" repeatCount="indefinite"/>
-    </circle>
-  </g>
-  <g fill="#00E5FF">
-    <circle cx="20" cy="94" r="1">
-      <animate attributeName="cx" values="20;28;36" dur="1.6s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="1;0.3;0" dur="1.6s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="52" cy="94" r="1">
-      <animate attributeName="cx" values="52;44;36" dur="1.3s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="1;0.4;0" dur="1.3s" repeatCount="indefinite"/>
-    </circle>
-  </g>
-  
-  <!-- Nano material cartridges with level indicators -->
-  <rect x="64" y="76" width="8" height="18" fill="url(#magenta)" rx="2"/>
-  <rect x="74" y="76" width="8" height="18" fill="url(#cyan)" rx="2"/>
-  <rect x="84" y="76" width="8" height="18" fill="url(#lime)" rx="2"/>
-  <rect x="94" y="76" width="8" height="18" fill="url(#amber)" rx="2"/>
-  
-  <!-- Animated level indicators showing consumption -->
-  <rect x="66" y="78" width="4" height="14" fill="#1A1A1A" opacity="0.5">
-    <animate attributeName="height" values="14;8;14" dur="5s" repeatCount="indefinite"/>
-  </rect>
-  <rect x="76" y="78" width="4" height="12" fill="#1A1A1A" opacity="0.5">
-    <animate attributeName="height" values="12;4;12" dur="6s" repeatCount="indefinite"/>
-  </rect>
-  <rect x="86" y="78" width="4" height="10" fill="#1A1A1A" opacity="0.5">
-    <animate attributeName="height" values="10;6;10" dur="4s" repeatCount="indefinite"/>
-  </rect>
-  <rect x="96" y="78" width="4" height="11" fill="#1A1A1A" opacity="0.5">
-    <animate attributeName="height" values="11;7;11" dur="5.5s" repeatCount="indefinite"/>
-  </rect>
-  
-  <!-- Robotic sculpting arm with actual movement -->
-  <rect x="64" y="98" width="42" height="6" fill="#455A64" rx="1"/>
-  <circle cx="68" cy="101" r="4" fill="#37474F"/>
-  <circle cx="68" cy="101" r="2" fill="#00E5FF">
-    <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Animated arm that actually grabs and moves -->
-  <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0;-8,0;0,0" dur="4s" repeatCount="indefinite"/>
-    <rect x="76" y="99" width="18" height="4" fill="#546E7A"/>
-    <!-- Arm joint -->
-    <circle cx="86" cy="101" r="2" fill="#37474F"/>
-    <!-- End effector / gripper -->
-    <g transform="translate(94, 101)">
-      <!-- Gripper base -->
-      <circle cx="0" cy="0" r="4" fill="#455A64"/>
-      <!-- Gripper fingers - animated open/close -->
-      <rect x="-2" y="-6" width="1.5" height="5" fill="#78909C">
-        <animateTransform attributeName="transform" type="rotate" values="0 -1.25 -1;-15 -1.25 -1;0 -1.25 -1" dur="4s" repeatCount="indefinite"/>
-      </rect>
-      <rect x="0.5" y="-6" width="1.5" height="5" fill="#78909C">
-        <animateTransform attributeName="transform" type="rotate" values="0 1.25 -1;15 1.25 -1;0 1.25 -1" dur="4s" repeatCount="indefinite"/>
-      </rect>
-      <!-- Laser beam from tip -->
-      <circle cx="0" cy="-6" r="2" fill="#E040FB" filter="url(#glow)">
-        <animate attributeName="r" values="1;2.5;1" dur="0.5s" repeatCount="indefinite"/>
-      </circle>
-    </g>
-  </g>
-  
-  <!-- Holographic control interface below arm -->
-  <rect x="64" y="108" width="44" height="10" fill="#00E5FF" opacity="0.15" rx="2"/>
-  <g fill="#00E5FF" opacity="0.8">
-    <rect x="66" y="110" width="8" height="2" rx="1">
-      <animate attributeName="width" values="8;12;8" dur="2s" repeatCount="indefinite"/>
-    </rect>
-    <rect x="66" y="114" width="12" height="2" rx="1">
-      <animate attributeName="width" values="12;6;12" dur="2.5s" repeatCount="indefinite"/>
-    </rect>
-  </g>
-  <circle cx="82" cy="113" r="2" fill="#4CAF50">
-    <animate attributeName="fill" values="#4CAF50;#8BC34A;#4CAF50" dur="1s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="88" cy="113" r="2" fill="#E040FB">
-    <animate attributeName="r" values="2;2.5;2" dur="1.2s" repeatCount="indefinite"/>
-  </circle>
-  <!-- Status text -->
-  <text x="94" y="114" fill="#00E5FF" font-size="4" font-family="monospace" opacity="0.8">OK</text>
-  
-  <!-- Finished nano-crafted items floating with glow -->
-  <g filter="url(#glow)">
-    <circle cx="16" cy="118" r="4" fill="#E040FB">
-      <animate attributeName="cy" values="118;116;118" dur="2s" repeatCount="indefinite"/>
-    </circle>
-    <polygon points="28,114 32,118 28,122 24,118" fill="#00E5FF">
-      <animateTransform attributeName="transform" type="rotate" values="0 28 118;360 28 118" dur="4s" repeatCount="indefinite"/>
-      <animate attributeName="points" values="28,114 32,118 28,122 24,118;28,113 33,118 28,123 23,118;28,114 32,118 28,122 24,118" dur="2s" repeatCount="indefinite"/>
-    </polygon>
-    <rect x="38" y="113" width="8" height="10" fill="#B2FF59" rx="2">
-      <animate attributeName="y" values="113;111;113" dur="1.5s" repeatCount="indefinite"/>
-    </rect>
-    <polygon points="54,111 60,118 54,125 48,118" fill="#FFD740">
-      <animateTransform attributeName="transform" type="rotate" values="0 54 118;-360 54 118" dur="5s" repeatCount="indefinite"/>
-    </polygon>
-  </g>
-  
-  <!-- Energy conduits on walls - animated flow -->
-  <line x1="6" y1="50" x2="6" y2="100" stroke="#7C4DFF" stroke-width="2" opacity="0.6">
-    <animate attributeName="stroke-dasharray" values="0 50;25 25;50 0;25 25;0 50" dur="3s" repeatCount="indefinite"/>
-  </line>
-  <line x1="122" y1="50" x2="122" y2="100" stroke="#7C4DFF" stroke-width="2" opacity="0.6">
-    <animate attributeName="stroke-dasharray" values="50 0;25 25;0 50;25 25;50 0" dur="3s" repeatCount="indefinite"/>
-  </line>
-  
-  <!-- Guild holographic sign - animated -->
-  <rect x="44" y="24" width="40" height="12" fill="#00E5FF" opacity="0.15" rx="2">
-    <animate attributeName="opacity" values="0.1;0.25;0.1" dur="3s" repeatCount="indefinite"/>
-  </rect>
-  <ellipse cx="52" cy="30" rx="4" ry="3" fill="#18FFFF" opacity="0.7">
-    <animate attributeName="rx" values="3;5;3" dur="2s" repeatCount="indefinite"/>
-  </ellipse>
-  <circle cx="64" cy="29" r="3" fill="#E040FB" opacity="0.6">
-    <animate attributeName="r" values="2;4;2" dur="2.5s" repeatCount="indefinite"/>
-  </circle>
-  <polygon points="76,26 80,30 76,34" fill="#B2FF59" opacity="0.7">
-    <animateTransform attributeName="transform" type="rotate" values="0 78 30;360 78 30" dur="3s" repeatCount="indefinite"/>
+  <!-- Organic crystal spires on roof -->
+  <polygon points="24,42 28,18 32,42" fill="#7C4DFF" opacity="0.8">
+    <animate attributeName="opacity" values="0.6;0.9;0.6" dur="3s" repeatCount="indefinite"/>
   </polygon>
+  <polygon points="60,42 64,8 68,42" fill="#B388FF" opacity="0.9">
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="2.5s" repeatCount="indefinite"/>
+  </polygon>
+  <polygon points="96,42 100,18 104,42" fill="#7C4DFF" opacity="0.8">
+    <animate attributeName="opacity" values="0.7;0.95;0.7" dur="3.2s" repeatCount="indefinite"/>
+  </polygon>
+  
+  <!-- Neural energy flowing up spires -->
+  <circle cx="28" cy="36" r="1.5" fill="#EA80FC">
+    <animate attributeName="cy" values="42;26;18" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0.5;0" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="64" cy="38" r="2" fill="#B388FF">
+    <animate attributeName="cy" values="42;24;8" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0.4;0" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="100" cy="36" r="1.5" fill="#EA80FC">
+    <animate attributeName="cy" values="42;28;18" dur="1.6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.8;0.4;0" dur="1.6s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Living membrane windows -->
+  <ellipse cx="20" cy="60" rx="8" ry="10" fill="#311B92">
+    <animate attributeName="ry" values="10;11;10" dur="4s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="20" cy="60" rx="6" ry="8" fill="url(#neuralGlow)" opacity="0.6">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <ellipse cx="108" cy="60" rx="8" ry="10" fill="#311B92">
+    <animate attributeName="ry" values="10;11;10" dur="4.5s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="108" cy="60" rx="6" ry="8" fill="url(#neuralGlow)" opacity="0.6">
+    <animate attributeName="opacity" values="0.6;0.9;0.6" dur="2.2s" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- ========== DREAM PROJECTION CHAMBER - Center ========== -->
+  <ellipse cx="64" cy="80" rx="28" ry="22" fill="#0D0D0D"/>
+  
+  <!-- Organic containment ring - breathing animation -->
+  <ellipse cx="64" cy="80" rx="26" ry="20" fill="none" stroke="#7C4DFF" stroke-width="3">
+    <animate attributeName="rx" values="24;28;24" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="18;22;18" dur="3s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="64" cy="80" rx="22" ry="16" fill="none" stroke="#B388FF" stroke-width="2" opacity="0.7">
+    <animate attributeName="rx" values="20;24;20" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="14;18;14" dur="2.5s" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- THE DREAM CORE - Swirling imagination vortex -->
+  <ellipse cx="64" cy="80" rx="16" ry="12" fill="url(#dreamCore)" filter="url(#dreamGlow)">
+    <animate attributeName="rx" values="14;18;14" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="10;14;10" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Living artwork materializing in the core -->
+  <g filter="url(#glow)">
+    <!-- Morphing shape - the "dreamed" art -->
+    <path d="M64,72 Q72,76 68,84 Q64,92 60,84 Q56,76 64,72" fill="url(#rainbowFlow)" opacity="0.9">
+      <animate attributeName="d" 
+        values="M64,72 Q72,76 68,84 Q64,92 60,84 Q56,76 64,72;
+                M64,70 Q76,78 66,86 Q62,94 58,82 Q54,74 64,70;
+                M64,74 Q70,74 70,82 Q66,90 62,86 Q58,78 64,74;
+                M64,72 Q72,76 68,84 Q64,92 60,84 Q56,76 64,72" 
+        dur="4s" repeatCount="indefinite"/>
+    </path>
+    <!-- Inner glow pulse -->
+    <circle cx="64" cy="80" r="4" fill="#FFFFFF" opacity="0.8">
+      <animate attributeName="r" values="3;6;3" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Dream particles spiraling outward -->
+  <g fill="#EA80FC">
+    <circle cx="64" cy="80" r="1.5">
+      <animate attributeName="cx" values="64;50;40" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="80;72;68" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="64" cy="80" r="1.2">
+      <animate attributeName="cx" values="64;78;88" dur="2.2s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="80;74;70" dur="2.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;0" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="64" cy="80" r="1">
+      <animate attributeName="cx" values="64;52;44" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="80;88;94" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="64" cy="80" r="1.3">
+      <animate attributeName="cx" values="64;76;84" dur="2.4s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="80;86;92" dur="2.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.9;0" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- ========== NEURAL ARTIST with Brain-Computer Interface ========== -->
+  <g transform="translate(64, 50)">
+    <!-- Meditation platform - floating -->
+    <ellipse cx="0" cy="18" rx="14" ry="4" fill="#311B92">
+      <animate attributeName="cy" values="18;16;18" dur="3s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="0" cy="16" rx="12" ry="3" fill="#7C4DFF" opacity="0.4">
+      <animate attributeName="cy" values="16;14;16" dur="3s" repeatCount="indefinite"/>
+    </ellipse>
+    
+    <!-- Artist body - flowing robes in meditation pose -->
+    <path d="M-8,6 Q-10,14 -8,18 L8,18 Q10,14 8,6 Z" fill="url(#artistRobe)">
+      <animate attributeName="d" values="M-8,6 Q-10,14 -8,18 L8,18 Q10,14 8,6 Z;M-8,6 Q-11,14 -9,18 L9,18 Q11,14 8,6 Z;M-8,6 Q-10,14 -8,18 L8,18 Q10,14 8,6 Z" dur="4s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Head -->
+    <circle cx="0" cy="0" r="6" fill="#FFCC80"/>
+    
+    <!-- Serene closed eyes - meditating -->
+    <path d="M-3,-1 Q-2,-2 -1,-1" fill="none" stroke="#5D4037" stroke-width="0.8"/>
+    <path d="M1,-1 Q2,-2 3,-1" fill="none" stroke="#5D4037" stroke-width="0.8"/>
+    
+    <!-- Peaceful smile -->
+    <path d="M-2,2 Q0,4 2,2" fill="none" stroke="#8D6E63" stroke-width="0.6"/>
+    
+    <!-- Flowing hair -->
+    <path d="M-6,-2 Q-8,-6 -4,-8 Q0,-10 4,-8 Q8,-6 6,-2" fill="#4A148C"/>
+    
+    <!-- ========== NEURAL LINK HEADSET - The Key Feature ========== -->
+    <!-- Main headband -->
+    <ellipse cx="0" cy="-4" rx="7" ry="3" fill="none" stroke="#B388FF" stroke-width="2">
+      <animate attributeName="stroke" values="#B388FF;#EA80FC;#B388FF" dur="1s" repeatCount="indefinite"/>
+    </ellipse>
+    
+    <!-- Neural nodes on headband - glowing -->
+    <circle cx="-6" cy="-3" r="2" fill="#7C4DFF" filter="url(#glow)">
+      <animate attributeName="fill" values="#7C4DFF;#EA80FC;#7C4DFF" dur="0.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="-6" r="2.5" fill="#B388FF" filter="url(#glow)">
+      <animate attributeName="fill" values="#B388FF;#FFFFFF;#B388FF" dur="0.6s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="2;3;2" dur="0.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="6" cy="-3" r="2" fill="#7C4DFF" filter="url(#glow)">
+      <animate attributeName="fill" values="#7C4DFF;#EA80FC;#7C4DFF" dur="0.8s" repeatCount="indefinite" begin="0.2s"/>
+    </circle>
+    
+    <!-- Neural energy streams from headset to dream core -->
+    <line x1="-6" y1="-1" x2="-20" y2="26" stroke="#B388FF" stroke-width="1.5" opacity="0.6">
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1s" repeatCount="indefinite"/>
+    </line>
+    <line x1="0" y1="0" x2="0" y2="30" stroke="#EA80FC" stroke-width="2" opacity="0.7">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="0.8s" repeatCount="indefinite"/>
+    </line>
+    <line x1="6" y1="-1" x2="20" y2="26" stroke="#B388FF" stroke-width="1.5" opacity="0.6">
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+    </line>
+    
+    <!-- Energy pulses traveling down the streams -->
+    <circle cx="-12" cy="12" r="1.5" fill="#FFFFFF">
+      <animate attributeName="cx" values="-6;-13;-20" dur="0.8s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="-1;12;26" dur="0.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.5;0" dur="0.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="15" r="2" fill="#FFFFFF">
+      <animate attributeName="cy" values="0;15;30" dur="0.6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.6;0" dur="0.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="12" cy="12" r="1.5" fill="#FFFFFF">
+      <animate attributeName="cx" values="6;13;20" dur="0.8s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="-1;12;26" dur="0.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.5;0" dur="0.8s" repeatCount="indefinite" begin="0.2s"/>
+    </circle>
+    
+    <!-- Arms in meditation pose -->
+    <path d="M-8,8 Q-14,12 -12,18" fill="none" stroke="#FFCC80" stroke-width="3" stroke-linecap="round"/>
+    <path d="M8,8 Q14,12 12,18" fill="none" stroke="#FFCC80" stroke-width="3" stroke-linecap="round"/>
+    <!-- Hands together -->
+    <ellipse cx="-10" cy="18" rx="2" ry="2.5" fill="#FFCC80"/>
+    <ellipse cx="10" cy="18" rx="2" ry="2.5" fill="#FFCC80"/>
+  </g>
+  
+  <!-- Completed masterpieces floating - living art -->
+  <g filter="url(#glow)">
+    <!-- Left sculpture -->
+    <ellipse cx="18" cy="100" rx="6" ry="8" fill="url(#rainbowFlow)">
+      <animate attributeName="ry" values="8;10;8" dur="3s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="18" cy="98" rx="3" ry="4" fill="#FFFFFF" opacity="0.5"/>
+    
+    <!-- Right abstract form -->
+    <polygon points="108,94 116,100 112,110 104,110 100,100" fill="url(#rainbowFlow)">
+      <animateTransform attributeName="transform" type="rotate" values="0 108 102;10 108 102;0 108 102;-10 108 102;0 108 102" dur="5s" repeatCount="indefinite"/>
+    </polygon>
+    
+    <!-- Bottom floating orbs -->
+    <circle cx="38" cy="112" r="5" fill="#EA80FC">
+      <animate attributeName="cy" values="112;108;112" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="5;6;5" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="90" cy="114" r="4" fill="#7C4DFF">
+      <animate attributeName="cy" values="114;110;114" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Ambient dream particles throughout -->
+  <g fill="#B388FF" opacity="0.6">
+    <circle cx="12" cy="86" r="1">
+      <animate attributeName="cy" values="86;80;74" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.2;0" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="116" cy="82" r="0.8">
+      <animate attributeName="cy" values="82;76;70" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.2;0" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="42" cy="48" r="1.2">
+      <animate attributeName="cy" values="48;42;36" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;0.3;0" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="86" cy="52" r="1">
+      <animate attributeName="cy" values="52;46;40" dur="2.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.2;0" dur="2.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Bio-luminescent floor channels -->
+  <rect x="10" y="116" width="108" height="3" fill="#311B92"/>
+  <rect x="12" y="117" width="104" height="1" fill="#7C4DFF" opacity="0.5">
+    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite"/>
+  </rect>
+  
+  <!-- Energy veins on walls -->
+  <path d="M6,50 Q10,70 6,90" fill="none" stroke="#7C4DFF" stroke-width="1.5" opacity="0.4">
+    <animate attributeName="stroke-dasharray" values="0 100;50 50;100 0" dur="3s" repeatCount="indefinite"/>
+  </path>
+  <path d="M122,50 Q118,70 122,90" fill="none" stroke="#7C4DFF" stroke-width="1.5" opacity="0.4">
+    <animate attributeName="stroke-dasharray" values="100 0;50 50;0 100" dur="3s" repeatCount="indefinite"/>
+  </path>
 </svg>
