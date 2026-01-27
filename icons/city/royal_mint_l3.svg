@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Royal Mint Level 3 - Futuristic Quantum Currency Generator -->
+  <defs>
+    <linearGradient id="techWall" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1A1A2E"/>
+      <stop offset="50%" style="stop-color:#16213E"/>
+      <stop offset="100%" style="stop-color:#1A1A2E"/>
+    </linearGradient>
+    <linearGradient id="techFrame" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#37474F"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="100%" style="stop-color:#87ceeb"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
+    <radialGradient id="goldEnergy" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD54F" stop-opacity="0.8"/>
+      <stop offset="100%" style="stop-color:#FF8F00" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cryptoCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#00E5FF"/>
+      <stop offset="100%" style="stop-color:#00E5FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="quantumCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#E040FB"/>
+      <stop offset="100%" style="stop-color:#7C4DFF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background: Blue sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Distant hills -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  
+  <!-- Main ground -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+  
+  <!-- Holographic platform -->
+  <ellipse cx="64" cy="100" rx="52" ry="18" fill="#263238"/>
+  <ellipse cx="64" cy="100" rx="48" ry="16" fill="none" stroke="#FFD54F" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Main building - angular futuristic design -->
+  <polygon points="20,88 20,44 44,32 84,32 108,44 108,88" fill="url(#techWall)" stroke="#FFD54F" stroke-width="1"/>
+  
+  <!-- Energy lines on building -->
+  <g stroke="#FFD54F" stroke-width="0.5" opacity="0.4">
+    <line x1="24" y1="80" x2="104" y2="80"/>
+    <line x1="24" y1="68" x2="104" y2="68"/>
+    <line x1="28" y1="56" x2="100" y2="56"/>
+    <line x1="36" y1="44" x2="92" y2="44"/>
+  </g>
+  
+  <!-- Central quantum dome -->
+  <ellipse cx="64" cy="42" rx="20" ry="10" fill="url(#techFrame)"/>
+  <ellipse cx="64" cy="42" rx="16" ry="8" fill="none" stroke="#00E5FF" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Quantum currency core -->
+  <circle cx="64" cy="36" r="8" fill="url(#quantumCore)" filter="url(#glow)"/>
+  <circle cx="64" cy="36" r="4" fill="#E040FB"/>
+  <text x="61" y="39" font-size="6" fill="#FFFFFF">₿</text>
+  
+  <!-- Holographic ledger displays - left -->
+  <rect x="26" y="58" width="14" height="18" fill="#1A1A2E" rx="1"/>
+  <g fill="#FFD54F" opacity="0.6">
+    <rect x="28" y="60" width="10" height="2"/>
+    <rect x="28" y="64" width="8" height="2"/>
+    <rect x="28" y="68" width="10" height="2"/>
+    <rect x="28" y="72" width="6" height="2"/>
+  </g>
+  
+  <!-- Holographic ledger displays - right -->
+  <rect x="88" y="58" width="14" height="18" fill="#1A1A2E" rx="1"/>
+  <g fill="#00E5FF" opacity="0.6">
+    <rect x="90" y="60" width="10" height="2"/>
+    <rect x="90" y="64" width="8" height="2"/>
+    <rect x="90" y="68" width="10" height="2"/>
+    <rect x="90" y="72" width="6" height="2"/>
+  </g>
+  
+  <!-- Crypto mining towers -->
+  <rect x="12" y="64" width="6" height="28" fill="url(#techFrame)"/>
+  <circle cx="15" cy="62" r="3" fill="#00E5FF" filter="url(#glow)"/>
+  <line x1="15" y1="66" x2="15" y2="90" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
+  
+  <rect x="110" y="64" width="6" height="28" fill="url(#techFrame)"/>
+  <circle cx="113" cy="62" r="3" fill="#00E5FF" filter="url(#glow)"/>
+  <line x1="113" y1="66" x2="113" y2="90" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Quantum vault entrance -->
+  <ellipse cx="64" cy="82" rx="12" ry="6" fill="#16213E"/>
+  <ellipse cx="64" cy="82" rx="10" ry="5" fill="#FFD54F" opacity="0.2"/>
+  <ellipse cx="64" cy="82" rx="6" ry="3" fill="#FFD54F" opacity="0.4"/>
+  
+  <!-- Floating currency symbols -->
+  <g fill="#FFD54F" opacity="0.6">
+    <text x="48" y="55" font-size="6">$</text>
+    <text x="72" y="55" font-size="6">€</text>
+  </g>
+  <g fill="#00E5FF" opacity="0.6">
+    <text x="36" y="48" font-size="5">¥</text>
+    <text x="86" y="48" font-size="5">£</text>
+  </g>
+  
+  <!-- Holographic gold bars -->
+  <g transform="translate(50, 70)" fill="#FFD54F" opacity="0.4">
+    <rect x="0" y="0" width="8" height="4" rx="0.5"/>
+    <rect x="10" y="0" width="8" height="4" rx="0.5"/>
+    <rect x="20" y="0" width="8" height="4" rx="0.5"/>
+  </g>
+  
+  <!-- Energy pylons -->
+  <rect x="32" y="80" width="4" height="12" fill="url(#techFrame)"/>
+  <circle cx="34" cy="78" r="2" fill="#E040FB" filter="url(#glow)"/>
+  
+  <rect x="92" y="80" width="4" height="12" fill="url(#techFrame)"/>
+  <circle cx="94" cy="78" r="2" fill="#E040FB" filter="url(#glow)"/>
+  
+  <!-- Holographic visitors/traders -->
+  <g opacity="0.5">
+    <ellipse cx="44" cy="98" rx="3" ry="4" fill="#00E5FF"/>
+    <circle cx="44" cy="93" r="2" fill="#00E5FF"/>
+  </g>
+  <g opacity="0.5">
+    <ellipse cx="84" cy="98" rx="3" ry="4" fill="#FFD54F"/>
+    <circle cx="84" cy="93" r="2" fill="#FFD54F"/>
+  </g>
+  
+  <!-- Antenna array -->
+  <line x1="64" y1="28" x2="64" y2="16" stroke="#455A64" stroke-width="2"/>
+  <circle cx="64" cy="14" r="3" fill="#FFD54F" filter="url(#glow)"/>
+  <line x1="54" y1="28" x2="50" y2="20" stroke="#455A64" stroke-width="1"/>
+  <circle cx="48" cy="18" r="2" fill="#00E5FF"/>
+  <line x1="74" y1="28" x2="78" y2="20" stroke="#455A64" stroke-width="1"/>
+  <circle cx="80" cy="18" r="2" fill="#00E5FF"/>
+  
+  <!-- Ground energy lines -->
+  <line x1="20" y1="98" x2="48" y2="98" stroke="#FFD54F" stroke-width="0.5" opacity="0.4"/>
+  <line x1="80" y1="98" x2="108" y2="98" stroke="#FFD54F" stroke-width="0.5" opacity="0.4"/>
+  
+  <!-- LED trim -->
+  <ellipse cx="64" cy="100" rx="52" ry="18" fill="none" stroke="#E040FB" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Ambient particles -->
+  <circle cx="42" cy="38" r="1" fill="#FFD54F" opacity="0.6"/>
+  <circle cx="86" cy="40" r="1" fill="#00E5FF" opacity="0.6"/>
+  <circle cx="64" cy="22" r="1" fill="#E040FB" opacity="0.6"/>
+</svg>

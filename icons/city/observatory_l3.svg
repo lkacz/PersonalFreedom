@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Observatory Level 3 - Deep Space Network Hub -->
+  <defs>
+    <radialGradient id="cosmos" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" style="stop-color:#0D0D2B"/>
+      <stop offset="60%" style="stop-color:#1A1A3E"/>
+      <stop offset="100%" style="stop-color:#0A0A20"/>
+    </radialGradient>
+    <linearGradient id="futureDome" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#00838F"/>
+      <stop offset="50%" style="stop-color:#00ACC1"/>
+      <stop offset="100%" style="stop-color:#00E5FF"/>
+    </linearGradient>
+    <linearGradient id="portalRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E040FB"/>
+      <stop offset="50%" style="stop-color:#7C4DFF"/>
+      <stop offset="100%" style="stop-color:#00E5FF"/>
+    </linearGradient>
+    <radialGradient id="wormhole" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#00E5FF"/>
+      <stop offset="40%" style="stop-color:#7C4DFF"/>
+      <stop offset="80%" style="stop-color:#E040FB"/>
+      <stop offset="100%" style="stop-color:#0D0D2B"/>
+    </radialGradient>
+    <radialGradient id="quantum" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="40%" style="stop-color:#00E5FF"/>
+      <stop offset="100%" style="stop-color:#006064"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="starGlow">
+      <feGaussianBlur stdDeviation="1"/>
+    </filter>
+  </defs>
+  
+  <!-- Deep space background -->
+  <rect width="128" height="128" fill="url(#cosmos)"/>
+  
+  <!-- Distant stars -->
+  <g fill="#FFFFFF" opacity="0.8">
+    <circle cx="15" cy="20" r="0.5"/>
+    <circle cx="105" cy="12" r="0.6"/>
+    <circle cx="35" cy="8" r="0.4"/>
+    <circle cx="88" cy="25" r="0.5"/>
+    <circle cx="12" cy="45" r="0.4"/>
+    <circle cx="118" cy="38" r="0.5"/>
+    <circle cx="55" cy="15" r="0.5"/>
+    <circle cx="75" cy="10" r="0.4"/>
+  </g>
+  <g fill="#00E5FF" opacity="0.5" filter="url(#starGlow)">
+    <circle cx="25" cy="35" r="1"/>
+    <circle cx="95" cy="45" r="1"/>
+    <circle cx="8" cy="65" r="0.8"/>
+  </g>
+  
+  <!-- Distant nebula glow -->
+  <ellipse cx="95" cy="30" rx="20" ry="12" fill="#E040FB" opacity="0.1" filter="url(#glow)"/>
+  <ellipse cx="20" cy="55" rx="15" ry="10" fill="#7C4DFF" opacity="0.1" filter="url(#glow)"/>
+  
+  <!-- Ground platform - hovering crystal base -->
+  <ellipse cx="64" cy="108" rx="50" ry="12" fill="#1A1A3E" opacity="0.8"/>
+  <ellipse cx="64" cy="106" rx="45" ry="10" fill="#2A2A4E"/>
+  
+  <!-- Energy pillars supporting platform -->
+  <rect x="20" y="100" width="4" height="20" fill="url(#portalRing)" opacity="0.6"/>
+  <rect x="104" y="100" width="4" height="20" fill="url(#portalRing)" opacity="0.6"/>
+  <rect x="60" y="100" width="8" height="24" fill="url(#portalRing)" opacity="0.4"/>
+  
+  <!-- Main structure - angular futuristic design -->
+  <polygon points="64,25 92,55 92,95 36,95 36,55" fill="#1A2744"/>
+  <polygon points="64,28 88,55 88,92 40,92 40,55" fill="#263855"/>
+  
+  <!-- Holographic viewport windows -->
+  <rect x="44" y="60" width="14" height="18" fill="#00838F" opacity="0.8"/>
+  <rect x="45" y="61" width="12" height="16" fill="#00E5FF" opacity="0.3"/>
+  <rect x="70" y="60" width="14" height="18" fill="#00838F" opacity="0.8"/>
+  <rect x="71" y="61" width="12" height="16" fill="#00E5FF" opacity="0.3"/>
+  
+  <!-- Central wormhole detection array -->
+  <ellipse cx="64" cy="45" rx="20" ry="10" fill="url(#futureDome)" opacity="0.9"/>
+  <ellipse cx="64" cy="43" rx="16" ry="8" fill="url(#wormhole)"/>
+  
+  <!-- Orbital ring 1 -->
+  <ellipse cx="64" cy="45" rx="26" ry="6" fill="none" stroke="url(#portalRing)" stroke-width="2" opacity="0.7"/>
+  
+  <!-- Orbital ring 2 - tilted -->
+  <ellipse cx="64" cy="45" rx="30" ry="4" fill="none" stroke="#E040FB" stroke-width="1.5" opacity="0.5" transform="rotate(15, 64, 45)"/>
+  
+  <!-- Orbital ring 3 - tilted opposite -->
+  <ellipse cx="64" cy="45" rx="34" ry="3" fill="none" stroke="#00E5FF" stroke-width="1" opacity="0.4" transform="rotate(-15, 64, 45)"/>
+  
+  <!-- Quantum sensor nodes on rings -->
+  <circle cx="38" cy="45" r="3" fill="#E040FB" filter="url(#glow)"/>
+  <circle cx="90" cy="45" r="3" fill="#00E5FF" filter="url(#glow)"/>
+  <circle cx="64" cy="39" r="2" fill="#FFFFFF" filter="url(#glow)"/>
+  
+  <!-- Central holographic star map projector -->
+  <rect x="56" y="65" width="16" height="26" fill="#0D0D2B"/>
+  <ellipse cx="64" cy="70" rx="6" ry="4" fill="url(#quantum)"/>
+  
+  <!-- Holographic star map projection above -->
+  <g filter="url(#glow)" opacity="0.7">
+    <circle cx="58" cy="32" r="1.5" fill="#00E5FF"/>
+    <circle cx="68" cy="28" r="1" fill="#E040FB"/>
+    <circle cx="72" cy="35" r="1.2" fill="#7C4DFF"/>
+    <circle cx="54" cy="38" r="0.8" fill="#FFFFFF"/>
+    <line x1="58" y1="32" x2="68" y2="28" stroke="#00E5FF" stroke-width="0.5" opacity="0.5"/>
+    <line x1="68" y1="28" x2="72" y2="35" stroke="#7C4DFF" stroke-width="0.5" opacity="0.5"/>
+    <line x1="58" y1="32" x2="54" y2="38" stroke="#E040FB" stroke-width="0.5" opacity="0.5"/>
+  </g>
+  
+  <!-- Side quantum sensors -->
+  <g transform="translate(14, 55)">
+    <polygon points="10,0 20,15 0,15" fill="#263855"/>
+    <circle cx="10" cy="10" r="4" fill="#00838F"/>
+    <circle cx="10" cy="10" r="2" fill="#00E5FF" filter="url(#glow)"/>
+  </g>
+  <g transform="translate(94, 55)">
+    <polygon points="10,0 20,15 0,15" fill="#263855"/>
+    <circle cx="10" cy="10" r="4" fill="#00838F"/>
+    <circle cx="10" cy="10" r="2" fill="#E040FB" filter="url(#glow)"/>
+  </g>
+  
+  <!-- Energy beam to space -->
+  <line x1="64" y1="25" x2="64" y2="0" stroke="#00E5FF" stroke-width="2" opacity="0.4"/>
+  <line x1="64" y1="25" x2="64" y2="0" stroke="#FFFFFF" stroke-width="1" opacity="0.3"/>
+  
+  <!-- Data streams from side sensors -->
+  <path d="M24,65 Q34,50 54,38" stroke="#E040FB" stroke-width="1" fill="none" opacity="0.4"/>
+  <path d="M104,65 Q94,50 74,38" stroke="#00E5FF" stroke-width="1" fill="none" opacity="0.4"/>
+  
+  <!-- Floating drone probes -->
+  <g transform="translate(20, 75)">
+    <ellipse cx="0" cy="0" rx="4" ry="2" fill="#455A64"/>
+    <circle cx="0" cy="0" r="1.5" fill="#00E5FF" filter="url(#glow)"/>
+  </g>
+  <g transform="translate(108, 70)">
+    <ellipse cx="0" cy="0" rx="4" ry="2" fill="#455A64"/>
+    <circle cx="0" cy="0" r="1.5" fill="#E040FB" filter="url(#glow)"/>
+  </g>
+  
+  <!-- Status indicators on building -->
+  <circle cx="46" cy="85" r="2" fill="#00E5FF"/>
+  <circle cx="52" cy="85" r="2" fill="#4CAF50"/>
+  <circle cx="76" cy="85" r="2" fill="#E040FB"/>
+  <circle cx="82" cy="85" r="2" fill="#4CAF50"/>
+  
+  <!-- Energy conduits on ground -->
+  <line x1="22" y1="106" x2="40" y2="95" stroke="#00E5FF" stroke-width="1.5" opacity="0.5"/>
+  <line x1="106" y1="106" x2="88" y2="95" stroke="#E040FB" stroke-width="1.5" opacity="0.5"/>
+</svg>

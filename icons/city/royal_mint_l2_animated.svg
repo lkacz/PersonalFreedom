@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Royal Mint Level 2 (Animated) - Modern Central Bank -->
+  <defs>
+    <linearGradient id="bankWall" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ECEFF1"/>
+      <stop offset="50%" style="stop-color:#CFD8DC"/>
+      <stop offset="100%" style="stop-color:#B0BEC5"/>
+    </linearGradient>
+    <linearGradient id="steelFrame" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#78909C"/>
+      <stop offset="50%" style="stop-color:#90A4AE"/>
+      <stop offset="100%" style="stop-color:#607D8B"/>
+    </linearGradient>
+    <linearGradient id="bankRoof" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#546E7A"/>
+      <stop offset="100%" style="stop-color:#37474F"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="100%" style="stop-color:#87ceeb"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
+    <linearGradient id="vault" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#455A64"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    <radialGradient id="goldGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD54F" stop-opacity="0.6"/>
+      <stop offset="100%" style="stop-color:#FFD54F" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background: Blue sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Distant hills -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  
+  <!-- Main ground -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+  
+  <!-- Concrete plaza -->
+  <rect x="12" y="90" width="104" height="16" fill="#ECEFF1"/>
+  
+  <!-- Main building -->
+  <rect x="16" y="40" width="96" height="52" fill="url(#bankWall)" stroke="url(#steelFrame)" stroke-width="2"/>
+  
+  <!-- Decorative marble columns -->
+  <rect x="20" y="44" width="6" height="44" fill="url(#steelFrame)" rx="1"/>
+  <rect x="102" y="44" width="6" height="44" fill="url(#steelFrame)" rx="1"/>
+  
+  <!-- Glass windows with animated reflection -->
+  <rect x="30" y="48" width="18" height="20" fill="#B0BEC5"/>
+  <rect x="32" y="50" width="14" height="16" fill="#E3F2FD"/>
+  <polygon points="32,50 38,50 32,58" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0.2;0.5;0.2" dur="3s" repeatCount="indefinite"/>
+  </polygon>
+  
+  <rect x="80" y="48" width="18" height="20" fill="#B0BEC5"/>
+  <rect x="82" y="50" width="14" height="16" fill="#E3F2FD"/>
+  <polygon points="82,50 88,50 82,58" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0.5;0.2;0.5" dur="3s" repeatCount="indefinite"/>
+  </polygon>
+  
+  <!-- Classical roof with modern twist -->
+  <polygon points="10,40 64,20 118,40" fill="url(#bankRoof)"/>
+  <polygon points="16,40 64,24 112,40" fill="#607D8B"/>
+  
+  <!-- Animated roof clock/emblem -->
+  <circle cx="64" cy="32" r="6" fill="#37474F"/>
+  <circle cx="64" cy="32" r="5" fill="#FFD54F">
+    <animate attributeName="r" values="4.5;5.5;4.5" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <text x="62" y="35" font-size="6" fill="#37474F">$</text>
+  
+  <!-- Animated vault door (center) -->
+  <rect x="50" y="72" width="28" height="18" fill="url(#vault)" rx="2"/>
+  <circle cx="64" cy="80" r="6" fill="#78909C"/>
+  <circle cx="64" cy="80" r="4" fill="#455A64">
+    <animateTransform attributeName="transform" type="rotate" values="0 64 80;360 64 80" dur="8s" repeatCount="indefinite"/>
+  </circle>
+  <g fill="#FFD54F">
+    <circle cx="64" cy="80" r="2">
+      <animate attributeName="r" values="1.5;2.5;1.5" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    <rect x="62" y="76" width="4" height="2"/>
+    <rect x="62" y="82" width="4" height="2"/>
+    <rect x="60" y="79" width="2" height="2"/>
+    <rect x="66" y="79" width="2" height="2"/>
+  </g>
+  
+  <!-- Animated digital display boards with changing numbers -->
+  <rect x="32" y="72" width="14" height="8" fill="#1A1A1A"/>
+  <rect x="33" y="73" width="12" height="6" fill="#4CAF50">
+    <animate attributeName="opacity" values="0.8;1;0.8" dur="1.5s" repeatCount="indefinite"/>
+  </rect>
+  <text x="35" y="78" font-size="4" fill="#1A1A1A">$$$</text>
+  
+  <rect x="82" y="72" width="14" height="8" fill="#1A1A1A"/>
+  <rect x="83" y="73" width="12" height="6">
+    <animate attributeName="fill" values="#FF5722;#4CAF50;#2196F3;#FF5722" dur="4s" repeatCount="indefinite"/>
+  </rect>
+  <text x="84" y="78" font-size="3" fill="#1A1A1A">RATE</text>
+  
+  <!-- Animated security cameras with blinking light -->
+  <rect x="24" y="46" width="4" height="3" fill="#263238"/>
+  <circle cx="26" cy="50" r="1.5" fill="#F44336">
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  <rect x="100" y="46" width="4" height="3" fill="#263238"/>
+  <circle cx="102" cy="50" r="1.5" fill="#F44336">
+    <animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Animated ATM machines with screen glow -->
+  <rect x="16" y="78" width="10" height="12" fill="#455A64" rx="1"/>
+  <rect x="17" y="80" width="8" height="6" fill="#81D4FA">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="17" y="87" width="8" height="2" fill="#66BB6A">
+    <animate attributeName="fill" values="#66BB6A;#FFEB3B;#66BB6A" dur="3s" repeatCount="indefinite"/>
+  </rect>
+  
+  <rect x="102" y="78" width="10" height="12" fill="#455A64" rx="1"/>
+  <rect x="103" y="80" width="8" height="6" fill="#81D4FA">
+    <animate attributeName="opacity" values="1;0.7;1" dur="2s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="103" y="87" width="8" height="2" fill="#66BB6A">
+    <animate attributeName="fill" values="#FFEB3B;#66BB6A;#FFEB3B" dur="3s" repeatCount="indefinite"/>
+  </rect>
+  
+  <!-- Animated flagpoles with waving flags -->
+  <line x1="26" y1="20" x2="26" y2="8" stroke="#455A64" stroke-width="1.5"/>
+  <rect x="26" y="8" width="10" height="6" fill="#FFD54F">
+    <animateTransform attributeName="transform" type="skewX" values="0;3;0;-3;0" dur="2s" repeatCount="indefinite"/>
+  </rect>
+  <text x="28" y="13" font-size="4" fill="#37474F">$</text>
+  
+  <line x1="102" y1="20" x2="102" y2="8" stroke="#455A64" stroke-width="1.5"/>
+  <rect x="92" y="8" width="10" height="6" fill="#FFD54F">
+    <animateTransform attributeName="transform" type="skewX" values="0;-3;0;3;0" dur="2.5s" repeatCount="indefinite"/>
+  </rect>
+  <text x="95" y="13" font-size="4" fill="#37474F">$</text>
+  
+  <!-- Security barriers with blinking lights -->
+  <rect x="38" y="94" width="2" height="8" fill="#78909C"/>
+  <circle cx="39" cy="94" r="1" fill="#F44336">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="0.8s" repeatCount="indefinite"/>
+  </circle>
+  <rect x="88" y="94" width="2" height="8" fill="#78909C"/>
+  <circle cx="89" cy="94" r="1" fill="#F44336">
+    <animate attributeName="opacity" values="1;0.5;1" dur="0.8s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Animated money delivery truck driving in -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-30,0;0,0" dur="8s" repeatCount="indefinite"/>
+    <rect x="18" y="98" width="16" height="10" rx="2" fill="#37474F"/>
+    <rect x="26" y="98" width="8" height="6" fill="#90A4AE"/>
+    <text x="20" y="105" font-size="4" fill="#FFD54F">$</text>
+    <circle cx="22" cy="108" r="2" fill="#263238">
+      <animateTransform attributeName="transform" type="rotate" values="0 22 108;360 22 108" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="30" cy="108" r="2" fill="#263238">
+      <animateTransform attributeName="transform" type="rotate" values="0 30 108;360 30 108" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Animated LED accent lines -->
+  <line x1="16" y1="42" x2="112" y2="42" stroke="#FFD54F" stroke-width="1">
+    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite"/>
+  </line>
+  <line x1="16" y1="88" x2="112" y2="88" stroke="#FFD54F" stroke-width="1">
+    <animate attributeName="opacity" values="0.7;0.3;0.7" dur="2s" repeatCount="indefinite"/>
+  </line>
+  
+  <!-- Guard booth with activity -->
+  <rect x="92" y="96" width="10" height="10" fill="#455A64"/>
+  <rect x="93" y="97" width="8" height="6" fill="#E1F5FE"/>
+  <!-- Guard head moving -->
+  <circle cx="97" cy="100" r="1.5" fill="#FFCC80">
+    <animate attributeName="cx" values="97;98;97" dur="3s" repeatCount="indefinite"/>
+  </circle>
+</svg>
