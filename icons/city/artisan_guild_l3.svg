@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Artisan Guild Level 3 - Futuristic Nano-Fabrication Studio -->
+  <defs>
+    <linearGradient id="techWall" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#263238"/>
+      <stop offset="50%" style="stop-color:#37474F"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    <linearGradient id="holoPanel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.3"/>
+      <stop offset="100%" style="stop-color:#00BCD4" stop-opacity="0.1"/>
+    </linearGradient>
+    <radialGradient id="fabricatorGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#E040FB" stop-opacity="0.8"/>
+      <stop offset="100%" style="stop-color:#7C4DFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cyanGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.6"/>
+      <stop offset="100%" style="stop-color:#00E5FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="magenta" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E040FB"/>
+      <stop offset="100%" style="stop-color:#AA00FF"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#18FFFF"/>
+      <stop offset="100%" style="stop-color:#00BCD4"/>
+    </linearGradient>
+    <linearGradient id="lime" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#B2FF59"/>
+      <stop offset="100%" style="stop-color:#76FF03"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD740"/>
+      <stop offset="100%" style="stop-color:#FFC400"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="100%" style="stop-color:#87ceeb"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background: Blue sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Distant hills -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  
+  <!-- Main ground -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+
+  <!-- Main futuristic building -->
+  <rect x="6" y="36" width="116" height="84" fill="url(#techWall)" rx="4"/>
+  
+  <!-- Curved futuristic roof -->
+  <path d="M2,36 Q64,4 126,36" fill="#1A1A1A" stroke="#263238" stroke-width="2"/>
+  
+  <!-- Roof antenna array -->
+  <line x1="64" y1="2" x2="64" y2="18" stroke="#455A64" stroke-width="2"/>
+  <circle cx="64" cy="0" r="3" fill="#E040FB" filter="url(#glow)"/>
+  <line x1="44" y1="8" x2="44" y2="22" stroke="#455A64" stroke-width="1"/>
+  <circle cx="44" cy="6" r="2" fill="#00E5FF"/>
+  <line x1="84" y1="8" x2="84" y2="22" stroke="#455A64" stroke-width="1"/>
+  <circle cx="84" cy="6" r="2" fill="#00E5FF"/>
+  
+  <!-- LED strip accents -->
+  <rect x="6" y="36" width="116" height="2" fill="#00E5FF" opacity="0.8"/>
+  <rect x="6" y="70" width="116" height="1" fill="#E040FB" opacity="0.5"/>
+  
+  <!-- Holographic display windows -->
+  <rect x="12" y="42" width="46" height="24" fill="url(#holoPanel)" rx="2"/>
+  <rect x="70" y="42" width="46" height="24" fill="url(#holoPanel)" rx="2"/>
+  
+  <!-- 3D holographic artwork in windows -->
+  <polygon points="24,48 32,56 24,64 16,56" fill="#E040FB" opacity="0.6"/>
+  <circle cx="42" cy="54" r="6" fill="#00E5FF" opacity="0.5"/>
+  <rect x="80" y="48" width="12" height="14" fill="#B2FF59" opacity="0.4" rx="1"/>
+  <polygon points="100,52 108,60 100,66 92,60" fill="#FFD740" opacity="0.5"/>
+  
+  <!-- Nano-fabricator chamber -->
+  <rect x="14" y="72" width="44" height="44" fill="#1A1A1A" rx="3"/>
+  <rect x="16" y="74" width="40" height="40" fill="#0D0D0D" rx="2"/>
+  
+  <!-- Fabricator containment ring -->
+  <ellipse cx="36" cy="94" rx="16" ry="14" fill="none" stroke="#E040FB" stroke-width="2"/>
+  <ellipse cx="36" cy="94" rx="12" ry="10" fill="url(#fabricatorGlow)"/>
+  
+  <!-- Materializing object -->
+  <polygon points="32,88 40,88 44,98 36,104 28,98" fill="#18FFFF" opacity="0.8"/>
+  
+  <!-- Nano material cartridges -->
+  <rect x="62" y="76" width="8" height="16" fill="url(#magenta)" rx="2"/>
+  <rect x="72" y="76" width="8" height="16" fill="url(#cyan)" rx="2"/>
+  <rect x="82" y="76" width="8" height="16" fill="url(#lime)" rx="2"/>
+  <rect x="92" y="76" width="8" height="16" fill="url(#amber)" rx="2"/>
+  
+  <!-- Robotic sculpting arm -->
+  <rect x="70" y="96" width="42" height="8" fill="#455A64" rx="1"/>
+  <circle cx="74" cy="100" r="4" fill="#37474F"/>
+  <rect x="80" y="98" width="20" height="4" fill="#546E7A"/>
+  <circle cx="108" cy="100" r="5" fill="#37474F"/>
+  
+  <!-- Precision laser tip -->
+  <polygon points="108,94 114,100 108,106" fill="#78909C"/>
+  <circle cx="114" cy="100" r="2" fill="#E040FB"/>
+  
+  <!-- Holographic control interface -->
+  <rect x="70" y="108" width="44" height="8" fill="#00E5FF" opacity="0.2" rx="1"/>
+  <circle cx="78" cy="112" r="2" fill="#4CAF50"/>
+  <circle cx="86" cy="112" r="2" fill="#00E5FF"/>
+  <circle cx="94" cy="112" r="2" fill="#E040FB"/>
+  <rect x="100" y="110" width="10" height="4" fill="#00E5FF" opacity="0.4"/>
+  
+  <!-- Finished nano-crafted items -->
+  <circle cx="18" cy="118" r="4" fill="#E040FB" filter="url(#glow)"/>
+  <polygon points="28,114 32,118 28,122 24,118" fill="#00E5FF"/>
+  <rect x="36" y="114" width="6" height="8" fill="#B2FF59" rx="1"/>
+  <polygon points="48,112 54,118 48,124 42,118" fill="#FFD740"/>
+  
+  <!-- Energy conduits on walls -->
+  <line x1="6" y1="50" x2="6" y2="100" stroke="#7C4DFF" stroke-width="2" opacity="0.6"/>
+  <line x1="122" y1="50" x2="122" y2="100" stroke="#7C4DFF" stroke-width="2" opacity="0.6"/>
+  
+  <!-- Tech particles -->
+  <g fill="#00E5FF" opacity="0.7">
+    <circle cx="26" cy="82" r="1"/>
+    <circle cx="46" cy="86" r="1"/>
+    <circle cx="34" cy="102" r="1"/>
+  </g>
+  
+  <!-- Guild holographic sign -->
+  <rect x="48" y="24" width="32" height="10" fill="#00E5FF" opacity="0.2" rx="2"/>
+  <ellipse cx="56" cy="29" rx="4" ry="3" fill="#18FFFF" opacity="0.6"/>
+  <circle cx="68" cy="28" r="3" fill="#E040FB" opacity="0.5"/>
+  <polygon points="76,26 80,29 76,32" fill="#B2FF59" opacity="0.6"/>
+</svg>
