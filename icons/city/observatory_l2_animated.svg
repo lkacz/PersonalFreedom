@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Observatory Level 2 Animated - Modern Space Research Center -->
+  <defs>
+    <linearGradient id="modernWall" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ECEFF1"/>
+      <stop offset="50%" style="stop-color:#CFD8DC"/>
+      <stop offset="100%" style="stop-color:#B0BEC5"/>
+    </linearGradient>
+    <linearGradient id="steelDome" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#455A64"/>
+      <stop offset="50%" style="stop-color:#607D8B"/>
+      <stop offset="100%" style="stop-color:#78909C"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="100%" style="stop-color:#87ceeb"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
+    <linearGradient id="dish" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ECEFF1"/>
+      <stop offset="100%" style="stop-color:#90A4AE"/>
+    </linearGradient>
+    <radialGradient id="screenGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#4FC3F7"/>
+      <stop offset="100%" style="stop-color:#0288D1"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- Background: Blue sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Moving clouds -->
+  <g opacity="0.7">
+    <ellipse cx="30" cy="25" rx="20" ry="8" fill="#FFFFFF">
+      <animate attributeName="cx" values="-20;148" dur="35s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="100" cy="40" rx="15" ry="6" fill="#FFFFFF">
+      <animate attributeName="cx" values="148;-15" dur="40s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+  
+  <!-- Distant hills -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  
+  <!-- Main ground -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+  
+  <!-- Concrete pad -->
+  <ellipse cx="64" cy="102" rx="48" ry="16" fill="#CFD8DC"/>
+  
+  <!-- Main building - modern cylindrical base -->
+  <rect x="38" y="52" width="52" height="42" fill="url(#modernWall)" rx="2"/>
+  
+  <!-- Modern windows with animated screens -->
+  <rect x="42" y="58" width="12" height="14" fill="#263238"/>
+  <rect x="43" y="59" width="10" height="12" fill="#4FC3F7" opacity="0.6">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+  </rect>
+  
+  <rect x="74" y="58" width="12" height="14" fill="#263238"/>
+  <rect x="75" y="59" width="10" height="12" fill="#4FC3F7" opacity="0.6">
+    <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2s" repeatCount="indefinite"/>
+  </rect>
+  
+  <!-- Center entrance with automatic door -->
+  <rect x="56" y="76" width="16" height="18" fill="#455A64"/>
+  <rect x="58" y="78" width="12" height="14" fill="#90A4AE"/>
+  <rect x="58" y="78" width="5" height="14" fill="#78909C">
+    <animate attributeName="width" values="5;0;0;5" dur="4s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="65" y="78" width="5" height="14" fill="#78909C">
+    <animate attributeName="x" values="65;70;70;65" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="width" values="5;0;0;5" dur="4s" repeatCount="indefinite"/>
+  </rect>
+  
+  <!-- Observatory dome with opening slit -->
+  <ellipse cx="64" cy="52" rx="28" ry="14" fill="url(#steelDome)"/>
+  <path d="M62,38 L66,38 L66,52 L62,52 Z" fill="#1A1A1A"/>
+  
+  <!-- Main telescope through slit - rotating slowly -->
+  <g transform-origin="64 52">
+    <animateTransform attributeName="transform" type="rotate" values="-5;5;-5" dur="10s" repeatCount="indefinite"/>
+    <rect x="60" y="32" width="8" height="24" fill="#78909C" rx="2"/>
+    <ellipse cx="64" cy="30" rx="5" ry="3" fill="#455A64"/>
+    <ellipse cx="64" cy="30" rx="3" ry="2" fill="#4FC3F7">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+  
+  <!-- Large radio dish - left (rotating) -->
+  <g transform="translate(8, 50)">
+    <g transform-origin="16 8">
+      <animateTransform attributeName="transform" type="rotate" values="0;20;0;-10;0" dur="8s" repeatCount="indefinite"/>
+      <ellipse cx="16" cy="8" rx="14" ry="8" fill="url(#dish)"/>
+      <line x1="16" y1="8" x2="16" y2="0" stroke="#90A4AE" stroke-width="2"/>
+      <circle cx="16" cy="-2" r="2" fill="#F44336">
+        <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+    <line x1="16" y1="16" x2="16" y2="38" stroke="#607D8B" stroke-width="3"/>
+    <rect x="14" y="36" width="4" height="6" fill="#455A64"/>
+  </g>
+  
+  <!-- Large radio dish - right (rotating opposite) -->
+  <g transform="translate(96, 50)">
+    <g transform-origin="16 8">
+      <animateTransform attributeName="transform" type="rotate" values="0;-15;0;25;0" dur="10s" repeatCount="indefinite"/>
+      <ellipse cx="16" cy="8" rx="14" ry="8" fill="url(#dish)"/>
+      <line x1="16" y1="8" x2="16" y2="0" stroke="#90A4AE" stroke-width="2"/>
+      <circle cx="16" cy="-2" r="2" fill="#4CAF50">
+        <animate attributeName="opacity" values="1;0.3;1" dur="1.2s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+    <line x1="16" y1="16" x2="16" y2="38" stroke="#607D8B" stroke-width="3"/>
+    <rect x="14" y="36" width="4" height="6" fill="#455A64"/>
+  </g>
+  
+  <!-- Satellite tracking screens on building - animated data -->
+  <rect x="44" y="80" width="8" height="6" fill="#1A1A1A"/>
+  <rect x="45" y="81" width="6" height="4" fill="url(#screenGlow)">
+    <animate attributeName="fill-opacity" values="0.6;1;0.6" dur="1s" repeatCount="indefinite"/>
+  </rect>
+  
+  <rect x="76" y="80" width="8" height="6" fill="#1A1A1A"/>
+  <rect x="77" y="81" width="6" height="4" fill="url(#screenGlow)">
+    <animate attributeName="fill-opacity" values="1;0.6;1" dur="1s" repeatCount="indefinite"/>
+  </rect>
+  
+  <!-- Control tower on top -->
+  <rect x="56" y="24" width="16" height="10" fill="#455A64"/>
+  <rect x="58" y="26" width="12" height="6" fill="#1A1A1A"/>
+  <g fill="#4FC3F7" opacity="0.7">
+    <rect x="59" y="27" width="4" height="4">
+      <animate attributeName="fill" values="#4FC3F7;#81D4FA;#4FC3F7" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="65" y="27" width="4" height="4">
+      <animate attributeName="fill" values="#81D4FA;#4FC3F7;#81D4FA" dur="2s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- Antenna array on top - blinking lights -->
+  <line x1="64" y1="20" x2="64" y2="12" stroke="#607D8B" stroke-width="2"/>
+  <circle cx="64" cy="10" r="3" fill="#F44336">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  <line x1="56" y1="22" x2="52" y2="16" stroke="#607D8B" stroke-width="1"/>
+  <circle cx="50" cy="14" r="2" fill="#4CAF50">
+    <animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <line x1="72" y1="22" x2="76" y2="16" stroke="#607D8B" stroke-width="1"/>
+  <circle cx="78" cy="14" r="2" fill="#2196F3">
+    <animate attributeName="opacity" values="1;0.2;1" dur="0.7s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Solar panels on ground -->
+  <rect x="16" y="96" width="20" height="10" fill="#1565C0" rx="1"/>
+  <g stroke="#0D47A1" stroke-width="0.5">
+    <line x1="21" y1="96" x2="21" y2="106"/>
+    <line x1="26" y1="96" x2="26" y2="106"/>
+    <line x1="31" y1="96" x2="31" y2="106"/>
+    <line x1="16" y1="101" x2="36" y2="101"/>
+  </g>
+  
+  <rect x="92" y="96" width="20" height="10" fill="#1565C0" rx="1"/>
+  <g stroke="#0D47A1" stroke-width="0.5">
+    <line x1="97" y1="96" x2="97" y2="106"/>
+    <line x1="102" y1="96" x2="102" y2="106"/>
+    <line x1="107" y1="96" x2="107" y2="106"/>
+    <line x1="92" y1="101" x2="112" y2="101"/>
+  </g>
+  
+  <!-- Animated data transmission beam from dish -->
+  <line x1="24" y1="52" x2="15" y2="20" stroke="#4FC3F7" stroke-width="1.5" opacity="0" stroke-dasharray="2,4">
+    <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite"/>
+  </line>
+  <line x1="112" y1="52" x2="120" y2="25" stroke="#4FC3F7" stroke-width="1.5" opacity="0" stroke-dasharray="2,4">
+    <animate attributeName="opacity" values="0;0.8;0" dur="2.5s" repeatCount="indefinite" begin="1s"/>
+  </line>
+  
+  <!-- LED accent strips - animated glow -->
+  <line x1="38" y1="54" x2="90" y2="54" stroke="#4FC3F7" stroke-width="1">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+  </line>
+  <line x1="38" y1="92" x2="90" y2="92" stroke="#4FC3F7" stroke-width="1">
+    <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2s" repeatCount="indefinite"/>
+  </line>
+  
+  <!-- Satellite flying overhead -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-30,0;150,0" dur="15s" repeatCount="indefinite"/>
+    <rect x="0" y="15" width="8" height="4" fill="#CFD8DC"/>
+    <rect x="-5" y="16" width="5" height="2" fill="#1565C0"/>
+    <rect x="8" y="16" width="5" height="2" fill="#1565C0"/>
+    <circle cx="4" cy="17" r="1" fill="#F44336">
+      <animate attributeName="opacity" values="1;0.3;1" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Person walking to entrance -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-20,0;50,0;50,0;50,0" dur="8s" repeatCount="indefinite"/>
+    <ellipse cx="22" cy="100" rx="3" ry="5" fill="#37474F"/>
+    <circle cx="22" cy="93" r="3" fill="#FFCCBC"/>
+  </g>
+</svg>
