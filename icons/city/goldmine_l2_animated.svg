@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- Goldmine Level 2 Animated - Industrial mine with conveyor animation -->
+  <!-- Goldmine Level 2 Animated - Industrial Age Mining Operation -->
   <defs>
     <linearGradient id="mountainRock" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#6D5D4E"/>
@@ -34,8 +34,13 @@
       <stop offset="100%" style="stop-color:#000000"/>
     </radialGradient>
     <radialGradient id="goldGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#FFD700" stop-opacity="0.5"/>
+      <stop offset="0%" style="stop-color:#FFD700" stop-opacity="0.6"/>
       <stop offset="100%" style="stop-color:#FFD700" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="furnaceGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FF5722" stop-opacity="0.9"/>
+      <stop offset="50%" style="stop-color:#FF9800" stop-opacity="0.5"/>
+      <stop offset="100%" style="stop-color:#FF9800" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="conveyor" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#424242"/>
@@ -83,7 +88,7 @@
   <rect x="88" y="54" width="10" height="58" fill="url(#metalBeam)" rx="1"/>
   <rect x="30" y="50" width="68" height="8" fill="url(#metalBeam)" rx="1"/>
   
-  <!-- Industrial rivets -->
+  <!-- Industrial rivets with shine animation -->
   <circle cx="33" cy="60" r="1.5" fill="#37474F"/>
   <circle cx="95" cy="60" r="1.5" fill="#37474F"/>
   <circle cx="33" cy="80" r="1.5" fill="#37474F"/>
@@ -94,105 +99,191 @@
   <!-- Gold glow from inside (animated) -->
   <ellipse cx="64" cy="92" rx="24" ry="20" fill="url(#goldGlow)" filter="url(#glow)">
     <animate attributeName="rx" values="24;28;24" dur="2s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
   </ellipse>
   
-  <!-- Conveyor belt system -->
+  <!-- Conveyor belt system with moving track lines -->
   <rect x="44" y="108" width="50" height="6" fill="url(#conveyor)" rx="2"/>
+  <!-- Animated belt treads -->
+  <g stroke="#333" stroke-width="1.5">
+    <line x1="48" y1="109" x2="48" y2="113">
+      <animate attributeName="x1" values="48;92;48" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="48;92;48" dur="2s" repeatCount="indefinite"/>
+    </line>
+    <line x1="58" y1="109" x2="58" y2="113">
+      <animate attributeName="x1" values="58;102;58" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="58;102;58" dur="2s" repeatCount="indefinite"/>
+    </line>
+    <line x1="68" y1="109" x2="68" y2="113">
+      <animate attributeName="x1" values="68;112;68" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="68;112;68" dur="2s" repeatCount="indefinite"/>
+    </line>
+  </g>
   <rect x="94" y="104" width="8" height="10" fill="#455A64" rx="1"/>
-  <circle cx="98" cy="109" r="3" fill="#37474F">
-    <animateTransform attributeName="transform" type="rotate" from="0 98 109" to="360 98 109" dur="0.5s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Animated gold bars on conveyor -->
+  <circle cx="98" cy="109" r="4" fill="#37474F"/>
   <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0;-44,0;0,0" dur="4s" repeatCount="indefinite"/>
-    <rect x="50" y="105" width="8" height="4" fill="#FFD700" rx="1"/>
-    <rect x="62" y="105" width="8" height="4" fill="#FFD700" rx="1"/>
-    <rect x="74" y="105" width="8" height="4" fill="#FFD700" rx="1"/>
-    <rect x="86" y="105" width="8" height="4" fill="#FFD700" rx="1"/>
-    <rect x="98" y="105" width="8" height="4" fill="#FFD700" rx="1"/>
-    <rect x="110" y="105" width="8" height="4" fill="#FFD700" rx="1"/>
+    <animateTransform attributeName="transform" type="rotate" from="0 98 109" to="360 98 109" dur="0.8s" repeatCount="indefinite"/>
+    <line x1="94" y1="109" x2="102" y2="109" stroke="#546E7A" stroke-width="2"/>
+    <line x1="98" y1="105" x2="98" y2="113" stroke="#546E7A" stroke-width="2"/>
   </g>
   
+  <!-- Gold bars on conveyor - sliding with satisfying loop -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;-50,0" dur="3s" repeatCount="indefinite"/>
+    <rect x="50" y="104" width="10" height="5" fill="url(#goldNugget)" rx="1">
+      <animate attributeName="opacity" values="1;1;0" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="50" y="104.5" width="4" height="2" fill="url(#goldShine)"/>
+    <rect x="70" y="104" width="10" height="5" fill="url(#goldNugget)" rx="1"/>
+    <rect x="70" y="104.5" width="4" height="2" fill="url(#goldShine)"/>
+    <rect x="90" y="104" width="10" height="5" fill="url(#goldNugget)" rx="1"/>
+    <rect x="90" y="104.5" width="4" height="2" fill="url(#goldShine)"/>
+    <rect x="110" y="104" width="10" height="5" fill="url(#goldNugget)" rx="1"/>
+    <rect x="110" y="104.5" width="4" height="2" fill="url(#goldShine)"/>
+  </g>
+  
+  <!-- Gold dropping into pile animation -->
+  <rect x="2" y="88" width="8" height="4" fill="url(#goldNugget)" rx="1">
+    <animate attributeName="y" values="88;102;102" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;1;0" dur="3s" repeatCount="indefinite"/>
+  </rect>
+  
   <!-- Large gold pile (animated glow) -->
-  <ellipse cx="24" cy="108" rx="18" ry="8" fill="#5D4037"/>
-  <circle cx="16" cy="104" r="9" fill="url(#goldNugget)">
+  <ellipse cx="18" cy="110" rx="16" ry="6" fill="#5D4037"/>
+  <circle cx="12" cy="104" r="8" fill="url(#goldNugget)">
     <animate attributeName="opacity" values="0.9;1;0.9" dur="1.5s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="28" cy="100" r="8" fill="url(#goldNugget)">
+  <circle cx="24" cy="102" r="7" fill="url(#goldNugget)">
     <animate attributeName="opacity" values="0.85;1;0.85" dur="1.8s" repeatCount="indefinite" begin="0.3s"/>
   </circle>
-  <circle cx="22" cy="106" r="7" fill="url(#goldNugget)"/>
-  <circle cx="10" cy="108" r="6" fill="url(#goldNugget)"/>
-  <circle cx="34" cy="106" r="6" fill="url(#goldNugget)"/>
+  <circle cx="18" cy="106" r="6" fill="url(#goldNugget)"/>
+  <circle cx="8" cy="108" r="5" fill="url(#goldNugget)"/>
+  <circle cx="30" cy="106" r="5" fill="url(#goldNugget)"/>
+  <!-- Pile grows animation -->
+  <circle cx="18" cy="98" r="0" fill="url(#goldNugget)">
+    <animate attributeName="r" values="0;5;5" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;1" dur="3s" repeatCount="indefinite"/>
+  </circle>
   
   <!-- Gold highlights with sparkle -->
-  <circle cx="14" cy="102" r="2.5" fill="url(#goldShine)">
+  <circle cx="10" cy="102" r="2.5" fill="url(#goldShine)">
     <animate attributeName="opacity" values="0.5;1;0.5" dur="1.2s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="26" cy="98" r="2" fill="url(#goldShine)">
+  <circle cx="22" cy="100" r="2" fill="url(#goldShine)">
     <animate attributeName="opacity" values="0.6;1;0.6" dur="1.4s" repeatCount="indefinite" begin="0.2s"/>
   </circle>
   
   <!-- Mining tower structure -->
-  <rect x="104" y="52" width="4" height="48" fill="#455A64"/>
-  <rect x="116" y="52" width="4" height="48" fill="#455A64"/>
-  <rect x="104" y="48" width="16" height="6" fill="#607D8B"/>
-  <line x1="104" y1="60" x2="120" y2="70" stroke="#546E7A" stroke-width="2"/>
-  <line x1="120" y1="60" x2="104" y2="70" stroke="#546E7A" stroke-width="2"/>
-  <line x1="104" y1="80" x2="120" y2="90" stroke="#546E7A" stroke-width="2"/>
-  <line x1="120" y1="80" x2="104" y2="90" stroke="#546E7A" stroke-width="2"/>
+  <rect x="104" y="48" width="5" height="52" fill="#455A64"/>
+  <rect x="119" y="48" width="5" height="52" fill="#455A64"/>
+  <rect x="104" y="44" width="20" height="6" fill="#607D8B"/>
+  <!-- Cross-bracing -->
+  <line x1="104" y1="56" x2="124" y2="72" stroke="#546E7A" stroke-width="2"/>
+  <line x1="124" y1="56" x2="104" y2="72" stroke="#546E7A" stroke-width="2"/>
+  <line x1="104" y1="76" x2="124" y2="92" stroke="#546E7A" stroke-width="2"/>
+  <line x1="124" y1="76" x2="104" y2="92" stroke="#546E7A" stroke-width="2"/>
   
-  <!-- Animated wheel at top of tower -->
-  <circle cx="112" cy="48" r="6" fill="#37474F"/>
+  <!-- Animated wheel at top of tower - better detail -->
+  <circle cx="114" cy="44" r="8" fill="#37474F"/>
   <g>
-    <animateTransform attributeName="transform" type="rotate" from="0 112 48" to="360 112 48" dur="2s" repeatCount="indefinite"/>
-    <circle cx="112" cy="48" r="4" fill="#455A64"/>
-    <line x1="108" y1="48" x2="116" y2="48" stroke="#263238" stroke-width="1"/>
-    <line x1="112" y1="44" x2="112" y2="52" stroke="#263238" stroke-width="1"/>
+    <animateTransform attributeName="transform" type="rotate" from="0 114 44" to="360 114 44" dur="1.5s" repeatCount="indefinite"/>
+    <circle cx="114" cy="44" r="6" fill="#455A64"/>
+    <line x1="108" y1="44" x2="120" y2="44" stroke="#263238" stroke-width="1.5"/>
+    <line x1="114" y1="38" x2="114" y2="50" stroke="#263238" stroke-width="1.5"/>
+    <line x1="110" y1="40" x2="118" y2="48" stroke="#263238" stroke-width="1"/>
+    <line x1="118" y1="40" x2="110" y2="48" stroke="#263238" stroke-width="1"/>
   </g>
   
-  <!-- Cable from tower -->
-  <line x1="112" y1="54" x2="64" y2="70" stroke="#212121" stroke-width="1.5"/>
+  <!-- Cable with animated ore bucket -->
+  <line x1="114" y1="52" x2="64" y2="72" stroke="#212121" stroke-width="2"/>
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;-30,12;0,0" dur="4s" repeatCount="indefinite"/>
+    <polygon points="88,62 96,62 98,70 86,70" fill="#5D4037"/>
+    <ellipse cx="92" cy="60" rx="5" ry="3" fill="url(#goldNugget)"/>
+    <circle cx="90" cy="60" r="1.5" fill="url(#goldShine)">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="1s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Smelter building with furnace glow -->
+  <rect x="0" y="78" width="20" height="22" fill="#424242"/>
+  <rect x="2" y="80" width="16" height="10" fill="#212121"/>
+  <ellipse cx="10" cy="85" rx="6" ry="4" fill="url(#furnaceGlow)">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="0.8s" repeatCount="indefinite"/>
+  </ellipse>
+  <!-- Chimney with animated smoke -->
+  <rect x="4" y="66" width="6" height="14" fill="#37474F"/>
+  <g opacity="0.6">
+    <ellipse cx="7" cy="62" rx="5" ry="3" fill="#9E9E9E">
+      <animate attributeName="cy" values="62;52;42" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="rx" values="5;8;12" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.3;0" dur="3s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="7" cy="58" rx="4" ry="2.5" fill="#BDBDBD">
+      <animate attributeName="cy" values="58;48;38" dur="3s" repeatCount="indefinite" begin="1s"/>
+      <animate attributeName="rx" values="4;7;10" dur="3s" repeatCount="indefinite" begin="1s"/>
+      <animate attributeName="opacity" values="0.5;0.25;0" dur="3s" repeatCount="indefinite" begin="1s"/>
+    </ellipse>
+    <ellipse cx="7" cy="54" rx="3" ry="2" fill="#E0E0E0">
+      <animate attributeName="cy" values="54;44;34" dur="3s" repeatCount="indefinite" begin="2s"/>
+      <animate attributeName="rx" values="3;6;9" dur="3s" repeatCount="indefinite" begin="2s"/>
+      <animate attributeName="opacity" values="0.4;0.2;0" dur="3s" repeatCount="indefinite" begin="2s"/>
+    </ellipse>
+  </g>
   
   <!-- Electric lights at entrance (animated) -->
   <rect x="34" y="62" width="4" height="6" fill="#FFF59D"/>
   <rect x="90" y="62" width="4" height="6" fill="#FFF59D"/>
-  <circle cx="36" cy="65" r="5" fill="#FFEB3B">
-    <animate attributeName="opacity" values="0.2;0.4;0.2" dur="1s" repeatCount="indefinite"/>
+  <circle cx="36" cy="65" r="6" fill="#FFEB3B">
+    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="0.8s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="92" cy="65" r="5" fill="#FFEB3B">
-    <animate attributeName="opacity" values="0.2;0.4;0.2" dur="1s" repeatCount="indefinite" begin="0.5s"/>
+  <circle cx="92" cy="65" r="6" fill="#FFEB3B">
+    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="0.8s" repeatCount="indefinite" begin="0.4s"/>
   </circle>
   
-  <!-- Scattered gold on mountain -->
-  <circle cx="100" cy="88" r="5" fill="url(#goldNugget)"/>
-  <circle cx="48" cy="48" r="4" fill="url(#goldNugget)"/>
-  <circle cx="80" cy="64" r="4" fill="url(#goldNugget)"/>
+  <!-- Scattered gold veins on mountain with pulse -->
+  <circle cx="100" cy="84" r="4" fill="url(#goldNugget)">
+    <animate attributeName="r" values="4;5;4" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="48" cy="46" r="3" fill="url(#goldNugget)">
+    <animate attributeName="r" values="3;4;3" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+  </circle>
+  <circle cx="76" cy="62" r="4" fill="url(#goldNugget)">
+    <animate attributeName="r" values="4;5;4" dur="2.2s" repeatCount="indefinite" begin="1s"/>
+  </circle>
   
-  <!-- Animated steam/smoke from processing -->
-  <g opacity="0.5">
-    <ellipse cx="100" cy="44" rx="6" ry="4" fill="#ECEFF1">
-      <animate attributeName="cy" values="44;38;32" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.5;0.3;0" dur="3s" repeatCount="indefinite"/>
-    </ellipse>
-    <ellipse cx="104" cy="40" rx="4" ry="3" fill="#ECEFF1">
-      <animate attributeName="cy" values="40;34;28" dur="3s" repeatCount="indefinite" begin="1s"/>
-      <animate attributeName="opacity" values="0.4;0.2;0" dur="3s" repeatCount="indefinite" begin="1s"/>
-    </ellipse>
-  </g>
-  
-  <!-- Sparkle stars -->
+  <!-- Sparkle stars - larger and more visible like L1 -->
   <g fill="#FFFFFF">
-    <polygon points="20,102 21,104 24,104 22,106 23,109 20,107 17,109 18,106 16,104 19,104">
+    <polygon points="14,100 15.5,103 19,103 16.5,105.5 17.5,109 14,107 10.5,109 11.5,105.5 9,103 12.5,103">
       <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
     </polygon>
-    <polygon points="30,96 31,98 33,98 31.5,99.5 32,102 30,100 28,102 28.5,99.5 27,98 29,98">
+    <polygon points="26,96 27.5,99 31,99 28.5,101.5 29.5,105 26,103 22.5,105 23.5,101.5 21,99 24.5,99">
       <animate attributeName="opacity" values="0;1;0" dur="2.2s" repeatCount="indefinite" begin="0.5s"/>
+    </polygon>
+    <polygon points="8,106 9,108 11,108 9.5,109.5 10,112 8,110 6,112 6.5,109.5 5,108 7,108">
+      <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite" begin="1s"/>
+    </polygon>
+    <polygon points="20,92 21,94 23,94 21.5,95.5 22,98 20,96 18,98 18.5,95.5 17,94 19,94">
+      <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="1.5s"/>
     </polygon>
   </g>
   
-  <!-- Birds -->
-  <path d="M20 20 Q22 18 24 20 Q26 18 28 20" stroke="#37474F" stroke-width="1" fill="none" opacity="0.6"/>
+  <!-- Worker silhouette pushing cart -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-20,0;40,0;40,0;-20,0" dur="6s" repeatCount="indefinite"/>
+    <ellipse cx="60" cy="98" rx="4" ry="6" fill="#37474F"/>
+    <circle cx="60" cy="90" r="3" fill="#5D4037"/>
+    <!-- Mini cart -->
+    <polygon points="66,94 74,94 76,100 64,100" fill="#455A64"/>
+    <circle cx="68" cy="102" r="2" fill="#37474F"/>
+    <circle cx="74" cy="102" r="2" fill="#37474F"/>
+  </g>
+  
+  <!-- Birds for life -->
+  <path d="M20 20 Q22 18 24 20 Q26 18 28 20" stroke="#37474F" stroke-width="1" fill="none" opacity="0.6">
+    <animateTransform attributeName="transform" type="translate" values="0,0;60,10" dur="8s" repeatCount="indefinite"/>
+  </path>
+  <path d="M80 28 Q82 26 84 28 Q86 26 88 28" stroke="#37474F" stroke-width="1" fill="none" opacity="0.5">
+    <animateTransform attributeName="transform" type="translate" values="0,0;-50,5" dur="10s" repeatCount="indefinite"/>
+  </path>
 </svg>
