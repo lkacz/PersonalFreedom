@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- University Level 3 - Futuristic AI Academy with holograms -->
+  <defs>
+    <linearGradient id="techWall" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#263238"/>
+      <stop offset="50%" style="stop-color:#37474F"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    <linearGradient id="holoGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.4"/>
+      <stop offset="50%" style="stop-color:#00BCD4" stop-opacity="0.2"/>
+      <stop offset="100%" style="stop-color:#00E5FF" stop-opacity="0.4"/>
+    </linearGradient>
+    <radialGradient id="aiCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#E040FB" stop-opacity="0.8"/>
+      <stop offset="100%" style="stop-color:#7C4DFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="quantumDome" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#7C4DFF"/>
+      <stop offset="50%" style="stop-color:#9575CD"/>
+      <stop offset="100%" style="stop-color:#B39DDB"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="100%" style="stop-color:#87ceeb"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background: Blue sky -->
+  <rect width="128" height="128" fill="url(#sky)"/>
+  
+  <!-- Distant hills -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  
+  <!-- Main ground -->
+  <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
+  
+  <!-- Hovering pathway (anti-grav) -->
+  <ellipse cx="64" cy="118" rx="20" ry="4" fill="#00E5FF" opacity="0.3"/>
+  <rect x="52" y="114" width="24" height="6" fill="#37474F" rx="2"/>
+  
+  <!-- Left floating wing -->
+  <rect x="2" y="50" width="28" height="60" fill="url(#techWall)" filter="url(#dropShadow)" rx="4"/>
+  <rect x="4" y="54" width="24" height="52" fill="url(#holoGlass)"/>
+  <line x1="16" y1="54" x2="16" y2="106" stroke="#00E5FF" stroke-width="1" opacity="0.6"/>
+  <ellipse cx="16" cy="46" rx="10" ry="3" fill="#00E5FF" opacity="0.2"/>
+  
+  <!-- Right floating wing -->
+  <rect x="98" y="50" width="28" height="60" fill="url(#techWall)" filter="url(#dropShadow)" rx="4"/>
+  <rect x="100" y="54" width="24" height="52" fill="url(#holoGlass)"/>
+  <line x1="112" y1="54" x2="112" y2="106" stroke="#00E5FF" stroke-width="1" opacity="0.6"/>
+  <ellipse cx="112" cy="46" rx="10" ry="3" fill="#00E5FF" opacity="0.2"/>
+  
+  <!-- Main central building -->
+  <rect x="26" y="36" width="76" height="84" fill="url(#techWall)" filter="url(#dropShadow)" rx="4"/>
+  
+  <!-- Holographic facade -->
+  <rect x="30" y="42" width="68" height="36" fill="url(#holoGlass)"/>
+  <line x1="46" y1="42" x2="46" y2="78" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
+  <line x1="64" y1="42" x2="64" y2="78" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
+  <line x1="82" y1="42" x2="82" y2="78" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
+  <line x1="30" y1="54" x2="98" y2="54" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
+  <line x1="30" y1="66" x2="98" y2="66" stroke="#00E5FF" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Quantum dome -->
+  <ellipse cx="64" cy="24" rx="28" ry="18" fill="url(#quantumDome)"/>
+  <ellipse cx="64" cy="24" rx="22" ry="12" fill="#B39DDB" opacity="0.5"/>
+  
+  <!-- Central AI core spire -->
+  <rect x="60" y="2" width="8" height="16" fill="#455A64"/>
+  <polygon points="64,0 68,6 60,6" fill="#7C4DFF"/>
+  <circle cx="64" cy="10" r="3" fill="#E040FB" filter="url(#glow)"/>
+  
+  <!-- Neural network pattern on dome -->
+  <line x1="48" y1="20" x2="64" y2="28" stroke="#E040FB" stroke-width="0.5" opacity="0.6"/>
+  <line x1="64" y1="28" x2="80" y2="20" stroke="#E040FB" stroke-width="0.5" opacity="0.6"/>
+  <line x1="52" y1="28" x2="76" y2="28" stroke="#E040FB" stroke-width="0.5" opacity="0.6"/>
+  <circle cx="48" cy="20" r="2" fill="#E040FB" opacity="0.6"/>
+  <circle cx="80" cy="20" r="2" fill="#E040FB" opacity="0.6"/>
+  <circle cx="64" cy="28" r="2" fill="#E040FB" opacity="0.6"/>
+  
+  <!-- AI learning hologram display -->
+  <rect x="38" y="48" width="12" height="20" fill="#E040FB" opacity="0.3"/>
+  <polygon points="42,52 48,58 42,64 36,58" fill="#00E5FF" opacity="0.5"/>
+  
+  <rect x="78" y="48" width="12" height="20" fill="#00E5FF" opacity="0.3"/>
+  <circle cx="84" cy="58" r="6" fill="#E040FB" opacity="0.4"/>
+  
+  <!-- Entrance portal -->
+  <rect x="46" y="82" width="36" height="38" fill="#1A1A1A" rx="3"/>
+  <rect x="48" y="84" width="32" height="34" fill="url(#holoGlass)"/>
+  <ellipse cx="64" cy="100" rx="14" ry="16" fill="url(#aiCore)"/>
+  
+  <!-- Holographic students/data streams visible -->
+  <rect x="52" y="90" width="4" height="16" fill="#00E5FF" opacity="0.4"/>
+  <rect x="62" y="88" width="4" height="18" fill="#E040FB" opacity="0.4"/>
+  <rect x="72" y="92" width="4" height="14" fill="#00E5FF" opacity="0.4"/>
+  
+  <!-- Floating research pods -->
+  <ellipse cx="10" cy="38" rx="8" ry="6" fill="#455A64"/>
+  <ellipse cx="10" cy="38" rx="6" ry="4" fill="url(#holoGlass)"/>
+  <circle cx="10" cy="38" r="2" fill="#E040FB"/>
+  
+  <ellipse cx="118" cy="38" rx="8" ry="6" fill="#455A64"/>
+  <ellipse cx="118" cy="38" rx="6" ry="4" fill="url(#holoGlass)"/>
+  <circle cx="118" cy="38" r="2" fill="#E040FB"/>
+  
+  <!-- LED strips -->
+  <rect x="26" y="36" width="76" height="2" fill="#00E5FF" opacity="0.8"/>
+  <rect x="26" y="78" width="76" height="1" fill="#E040FB" opacity="0.5"/>
+  
+  <!-- Side towers with antennas -->
+  <rect x="6" y="24" width="8" height="20" fill="url(#techWall)"/>
+  <rect x="8" y="28" width="4" height="12" fill="url(#holoGlass)"/>
+  <line x1="10" y1="18" x2="10" y2="26" stroke="#455A64" stroke-width="2"/>
+  <circle cx="10" cy="16" r="2" fill="#00E5FF"/>
+  
+  <rect x="114" y="24" width="8" height="20" fill="url(#techWall)"/>
+  <rect x="116" y="28" width="4" height="12" fill="url(#holoGlass)"/>
+  <line x1="118" y1="18" x2="118" y2="26" stroke="#455A64" stroke-width="2"/>
+  <circle cx="118" cy="16" r="2" fill="#00E5FF"/>
+  
+  <!-- Holographic sign -->
+  <rect x="40" y="30" width="48" height="8" fill="#00E5FF" opacity="0.2" rx="2"/>
+  <text x="64" y="36" font-size="5" fill="#00E5FF" text-anchor="middle" opacity="0.8">AI ACADEMY</text>
+  
+  <!-- Energy particles -->
+  <g fill="#E040FB" opacity="0.6">
+    <circle cx="36" cy="56" r="1"/>
+    <circle cx="92" cy="52" r="1"/>
+    <circle cx="56" cy="70" r="1"/>
+    <circle cx="72" cy="74" r="1"/>
+  </g>
+</svg>
