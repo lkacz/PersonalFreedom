@@ -11146,7 +11146,9 @@ BMI_PERCENTILES_BY_AGE = {
 # Sleep duration recommendations by age group (same for M/F per AASM/NSF)
 # Format: (min_age, max_age, min_hours, optimal_low, optimal_high, max_hours)
 SLEEP_DURATION_BY_AGE = [
-    (7, 12, 9.0, 9.0, 12.0, 14.0),    # Children 7-12: 9-12 hours (AASM 2016)
+    (0, 2, 11.0, 12.0, 14.0, 16.0),   # Infants/Toddlers 0-2: 11-14+ hours (AASM 2016)
+    (3, 5, 10.0, 10.0, 13.0, 14.0),   # Preschoolers 3-5: 10-13 hours (AASM 2016)
+    (6, 12, 9.0, 9.0, 12.0, 13.0),    # Children 6-12: 9-12 hours (AASM 2016)
     (13, 18, 8.0, 8.0, 10.0, 12.0),   # Teens 13-18: 8-10 hours (AASM 2016)
     (19, 64, 7.0, 7.5, 9.0, 10.0),    # Adults 19-64: 7-9 hours (NSF 2015)
     (65, 150, 7.0, 7.0, 8.0, 9.0),    # Seniors 65+: 7-8 hours (NSF 2015)
@@ -11293,6 +11295,10 @@ def get_sleep_targets_for_age(age: int) -> dict:
                 "optimal_low": opt_low,
                 "optimal_high": opt_high,
                 "maximum": max_h,
+                # Aliases for UI compatibility
+                "min_hours": min_h,
+                "optimal_hours": opt_high,
+                "max_hours": max_h,
             }
     
     # Fallback for very young or very old (use adult defaults)
@@ -11301,6 +11307,10 @@ def get_sleep_targets_for_age(age: int) -> dict:
         "optimal_low": 7.5,
         "optimal_high": 9.0,
         "maximum": 10.0,
+        # Aliases for UI compatibility
+        "min_hours": 7.0,
+        "optimal_hours": 9.0,
+        "max_hours": 10.0,
     }
 
 

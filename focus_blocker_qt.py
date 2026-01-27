@@ -3075,6 +3075,14 @@ class TimerTab(QtWidgets.QWidget):
         # The game_state.end_batch() above triggers power_changed, coins_changed,
         # and inventory_changed signals which update the UI reactively.
 
+        # === Auto-backup on significant session ===
+        # Create periodic backup after every 5+ minute session (captures item/XP gains)
+        if session_minutes >= 5:
+            try:
+                self.blocker.save_config(create_backup=True)
+            except Exception as e:
+                logger.debug(f"Auto-backup after session failed: {e}")
+
         # === Entitidex Encounter Check ===
         # After item rewards, check for entity encounter based on session
         self._check_entitidex_encounter(session_minutes)
@@ -6137,6 +6145,17 @@ class SettingsTab(QtWidgets.QWidget):
         backup_btn_layout.addWidget(restore_backup_btn)
         backup_btn_layout.addStretch()
         backup_layout.addLayout(backup_btn_layout)
+        
+        # Export data (GDPR-compliant full export as ZIP)
+        export_layout = QtWidgets.QHBoxLayout()
+        export_btn = QtWidgets.QPushButton("📦 Export All Data (ZIP)")
+        export_btn.setToolTip("Export all your data to a ZIP file for backup or data portability")
+        export_btn.clicked.connect(self._export_all_data)
+        export_layout.addWidget(export_btn)
+        export_layout.addWidget(QtWidgets.QLabel("Complete data export for backup/GDPR"))
+        export_layout.addStretch()
+        backup_layout.addLayout(export_layout)
+        
         inner.addWidget(backup_group)
 
         # Emergency cleanup
@@ -6383,7 +6402,7 @@ class SettingsTab(QtWidgets.QWidget):
             self.pwd_status.setStyleSheet("color: gray;")
 
     def _switch_user(self) -> None:
-        """Clear last user setting and restart app."""
+        """Switch to a different user profile without restarting the app."""
         # Check if a session is running - require stop first
         main_window = self.window()
         if hasattr(main_window, 'timer_tab') and main_window.timer_tab.timer_running:
@@ -6396,66 +6415,32 @@ class SettingsTab(QtWidgets.QWidget):
             return
         
         if show_question(self, "Switch User", 
-                        "Are you sure you want to switch profiles?\nThe application will restart.") == QtWidgets.QMessageBox.Yes:
-            # Clear stored user
+                        "Are you sure you want to switch profiles?") == QtWidgets.QMessageBox.Yes:
             try:
                 from core_logic import APP_DIR
                 from user_manager import UserManager
+                from user_selection_dialog import UserSelectionDialog
                 
-                um = UserManager(APP_DIR)
-                if not um.clear_last_user():
-                    show_error(self, "Error", "Could not clear user session.\nPlease try again or restart the application manually.")
-                    return
-                
-                # Save config before switching to ensure all changes are persisted
+                # Save current user's config first
                 self.blocker.save_config()
                 
-                # Record app close time
-                self.blocker.record_shutdown_time("user_switch")
+                # Show user selection dialog
+                um = UserManager(APP_DIR)
+                selection_dialog = UserSelectionDialog(um, parent=main_window)
                 
-                # Restart app using a detached process
-                import subprocess
-                
-                # Get the executable path
-                if getattr(sys, 'frozen', False):
-                    # Running as PyInstaller bundle - use the exe directly
-                    exe_path = sys.executable
-                    
-                    # Use a batch script to delay restart, avoiding temp directory cleanup issues
-                    # The delay allows the current process to fully exit before the new one starts
-                    # Put batch file in APP_DIR to avoid temp cleanup issues
-                    batch_path = APP_DIR / "_restart.bat"
-                    batch_content = f'''@echo off
-ping 127.0.0.1 -n 2 > nul
-start "" "{exe_path}"
-del "%~f0"
-'''
-                    try:
-                        with open(batch_path, 'w', encoding='utf-8') as f:
-                            f.write(batch_content)
-                    except OSError as e:
-                        show_error(self, "Error", f"Could not create restart script: {e}")
-                        return
-                    
-                    # Run the batch file detached (it will delay and restart the app)
-                    DETACHED_PROCESS = 0x00000008
-                    CREATE_NO_WINDOW = 0x08000000
-                    subprocess.Popen(
-                        ['cmd', '/c', str(batch_path)],
-                        creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW,
-                        close_fds=True,
-                    )
-                else:
-                    # Development mode
-                    subprocess.Popen([sys.executable] + sys.argv)
-                
-                # Exit gracefully using Qt's quit to allow proper cleanup
-                # Set _force_quit on main window so closeEvent doesn't minimize to tray
-                main_window = self.window()
-                if main_window:
-                    main_window._force_quit = True
-                    main_window._shutdown_recorded = True
-                QtWidgets.QApplication.instance().quit()
+                if selection_dialog.exec() == QtWidgets.QDialog.Accepted:
+                    new_user = selection_dialog.selected_user
+                    if new_user and new_user != main_window.username:
+                        # Save new user as last user
+                        um.save_last_user(new_user)
+                        
+                        # Reload the main window with new user
+                        main_window._reload_user(new_user)
+                        
+                        show_info(self, "Profile Switched", f"Switched to profile: {new_user}")
+                    elif new_user == main_window.username:
+                        show_info(self, "Same Profile", "You selected the same profile.")
+                        
             except Exception as e:
                 show_error(self, "Error", f"Could not switch user: {e}")
 
@@ -6588,6 +6573,46 @@ del "%~f0"
             show_info(self, "Restored", "Backup restored successfully!")
         except Exception as e:
             show_error(self, "Restore Failed", str(e))
+
+    def _export_all_data(self) -> None:
+        """Export all user data to a ZIP file."""
+        from datetime import datetime
+        
+        # Generate default filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        username = self.blocker.username or "Default"
+        default_name = f"PersonalLiberty_{username}_{timestamp}.zip"
+        
+        path, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self, 
+            "Export All Data", 
+            default_name, 
+            "ZIP Files (*.zip)"
+        )
+        if not path:
+            return
+        
+        # Show progress cursor
+        self.setCursor(QtCore.Qt.WaitCursor)
+        try:
+            result = self.blocker.export_all_data(path)
+            
+            if result["success"]:
+                file_count = len(result["files"])
+                file_list = result["files"][:5]  # Show first 5
+                file_display = "\n• ".join(file_list)
+                more_msg = f"\n• ... and {file_count - 5} more" if file_count > 5 else ""
+                
+                show_info(
+                    self, 
+                    "Export Complete", 
+                    f"✅ {result['message']}\n\n"
+                    f"Exported files:\n• {file_display}{more_msg}"
+                )
+            else:
+                show_error(self, "Export Failed", result["message"])
+        finally:
+            self.setCursor(QtCore.Qt.ArrowCursor)
 
     def _emergency_cleanup(self) -> None:
         """Emergency cleanup with enhanced confirmation dialog."""
@@ -7955,56 +7980,57 @@ class WeightTab(QtWidgets.QWidget):
         
         self.blocker.save_config()
         
-        # Award city MATERIALS resource based on goal progress:
-        # - Losing weight (overweight goal): +2 MATERIALS when weight decreases
-        # - Gaining weight (underweight goal): +2 MATERIALS when weight increases
-        # - Maintaining weight (normal BMI): +2 MATERIALS when staying in healthy range
-        # - Off-target: +0 MATERIALS
-        # All goals reward equally to ensure fairness regardless of health journey!
+        # Award city MATERIALS resource for weight logging:
+        # - +1 Materials just for logging weight (daily)
+        # - +1 Bonus if body weight is within healthy BMI (18.5-25)
+        # - +1 Bonus if weight is trending correctly:
+        #   * Above norm (BMI > 25): bonus if weight decreased
+        #   * Below norm (BMI < 18.5): bonus if weight increased
+        #   * In norm: already got the "in norm" bonus above
         materials_to_add = 0
         if CITY_AVAILABLE:
             try:
-                from city import add_city_resource, get_active_construction_info
+                from city import add_city_resource, get_resources
                 
-                if self.blocker.weight_goal and len(self.blocker.weight_entries) >= 2:
-                    # Get previous weight (second to last entry after adding current)
-                    sorted_entries = sorted(self.blocker.weight_entries, key=lambda x: x.get("date", ""))
-                    if len(sorted_entries) >= 2:
-                        prev_weight = sorted_entries[-2].get("weight", 0)
-                        weight_change = weight_kg - prev_weight
-                        goal_weight = self.blocker.weight_goal
-                        
-                        # Determine user's goal based on comparing goal to previous weight
-                        is_losing_goal = goal_weight < prev_weight
-                        is_gaining_goal = goal_weight > prev_weight
-                        
-                        # For maintaining, check if user is within healthy BMI range (18.5-25)
-                        is_in_healthy_bmi = False
-                        height_m = self.blocker.weight_height / 100.0 if self.blocker.weight_height else 0
-                        if height_m > 0:
-                            current_bmi = weight_kg / (height_m ** 2)
-                            is_in_healthy_bmi = 18.5 <= current_bmi <= 25.0
-                        
-                        is_maintain_goal = abs(goal_weight - prev_weight) < 1.0  # Within 1kg of goal
-                        
-                        # Check progress toward goal - ALL reward +2 equally
-                        if is_losing_goal and weight_change < 0:
-                            materials_to_add = 2  # Losing weight when overweight
-                        elif is_gaining_goal and weight_change > 0:
-                            materials_to_add = 2  # Gaining weight when underweight
-                        elif is_maintain_goal and is_in_healthy_bmi and abs(weight_change) < 0.5:
-                            materials_to_add = 2  # Maintaining weight AND within healthy BMI (18.5-25)
-                        # else: off-target or not in healthy BMI range, 0 materials
+                # +1 for logging weight today (always)
+                materials_to_add = 1
+                materials_breakdown = ["+1 log"]
+                
+                # Calculate BMI if we have height
+                current_bmi = None
+                height_m = self.blocker.weight_height / 100.0 if self.blocker.weight_height else 0
+                if height_m > 0:
+                    current_bmi = weight_kg / (height_m ** 2)
+                    
+                    # +1 bonus if in healthy BMI range (18.5-25)
+                    if 18.5 <= current_bmi <= 25.0:
+                        materials_to_add += 1
+                        materials_breakdown.append("+1 in norm")
+                    else:
+                        # Check if weight is trending correctly (need previous entry)
+                        sorted_entries = sorted(self.blocker.weight_entries, key=lambda x: x.get("date", ""))
+                        if len(sorted_entries) >= 2:
+                            prev_weight = sorted_entries[-2].get("weight", 0)
+                            weight_change = weight_kg - prev_weight
+                            
+                            if current_bmi > 25.0 and weight_change < 0:
+                                # Above norm and losing weight - good!
+                                materials_to_add += 1
+                                materials_breakdown.append("+1 losing")
+                            elif current_bmi < 18.5 and weight_change > 0:
+                                # Below norm and gaining weight - good!
+                                materials_to_add += 1
+                                materials_breakdown.append("+1 gaining")
                 
                 if materials_to_add > 0:
                     add_city_resource(self.blocker.adhd_buster, "materials", materials_to_add)
                     
-                    # Show city stockpile toast (materials are always stockpiled, never flow to buildings)
+                    # Show city stockpile toast
                     try:
-                        from city import get_resources
                         resources = get_resources(self.blocker.adhd_buster)
                         total_materials = resources.get("materials", 0)
-                        show_perk_toast(f"🏗️ +{materials_to_add} Materials stockpiled ({total_materials} total)", "🧱", self)
+                        breakdown_str = " ".join(materials_breakdown)
+                        show_perk_toast(f"🧱 +{materials_to_add} Materials ({breakdown_str}) → {total_materials} total", "🏗️", self)
                     except Exception:
                         pass
             except Exception:
@@ -9418,6 +9444,15 @@ class ActivityTab(QtWidgets.QWidget):
         if rarity and effective_mins >= 8:
             from lottery_animation import MergeTwoStageLotteryDialog
             
+            # Get entity perk contributors for display during lottery
+            entity_perk_contributors = []
+            try:
+                from gamification import get_entity_luck_perk_contributors
+                luck_perks = get_entity_luck_perk_contributors(self.blocker.adhd_buster)
+                entity_perk_contributors = luck_perks.get("contributors", [])
+            except Exception:
+                pass
+            
             # Use lottery animation for activity rewards (guaranteed success)
             lottery = MergeTwoStageLotteryDialog(
                 success_roll=-1,  # Auto-generate (any roll succeeds with 100% threshold)
@@ -9425,7 +9460,8 @@ class ActivityTab(QtWidgets.QWidget):
                 tier_upgrade_enabled=False,
                 base_rarity=rarity,
                 title="🏃 Activity Reward!",  # Custom title instead of "Lucky Merge"
-                parent=self
+                parent=self,
+                entity_perk_contributors=entity_perk_contributors
             )
             lottery.exec()
             # Lottery animation shows the rarity but doesn't change the reward
@@ -9492,7 +9528,7 @@ class ActivityTab(QtWidgets.QWidget):
                         "progress_percent": new_progress,
                         "completed": progress_after is None  # Construction completed!
                     }
-                    _logger.info(f"Activity contributed {invested} activity to {building_name} ({new_progress:.0f}% complete)")
+                    logger.info(f"Activity contributed {invested} activity to {building_name} ({new_progress:.0f}% complete)")
                 elif active_before and invested == 0:
                     # Building doesn't need activity (requirement is 0)
                     building_name = active_before.get("building_name", "Building")
@@ -9519,10 +9555,10 @@ class ActivityTab(QtWidgets.QWidget):
                 city_goldmine_coins = goldmine_result.get("coins", 0)
                 
                 if city_goldmine_coins > 0:
-                    _logger.info(f"Exercise awarded {city_goldmine_coins} Goldmine coins")
+                    logger.info(f"Exercise awarded {city_goldmine_coins} Goldmine coins")
                     
             except Exception as e:
-                _logger.debug(f"City resource/income error: {e}")
+                logger.debug(f"City resource/income error: {e}")
         
         # Award coins for activity (5-20 coins based on effective minutes)
         # This is the base activity coin reward, Goldmine coins are additive
@@ -9542,7 +9578,7 @@ class ActivityTab(QtWidgets.QWidget):
         
         # Process rewards (Goldmine coins already awarded directly to adhd_buster)
         if rewards and GAMIFICATION_AVAILABLE:
-            self._process_rewards(rewards, coins_earned=coins_earned, city_activity_earned=city_activity_earned)
+            self._process_rewards(rewards, coins_earned=coins_earned, city_activity_earned=city_activity_earned, city_construction_progress=city_construction_progress)
         
         # Update main timeline widget if parent window has it
         if self.parent() and hasattr(self.parent(), 'timeline_widget'):
@@ -9555,7 +9591,7 @@ class ActivityTab(QtWidgets.QWidget):
         self.note_input.clear()
         self._refresh_display()
     
-    def _process_rewards(self, rewards: dict, coins_earned: int = 0, city_activity_earned: int = 0) -> None:
+    def _process_rewards(self, rewards: dict, coins_earned: int = 0, city_activity_earned: int = 0, city_construction_progress: dict = None) -> None:
         """Process and show activity rewards."""
         items_earned = []
         new_milestone_ids = []
@@ -9644,9 +9680,7 @@ class ActivityTab(QtWidgets.QWidget):
                     extra_msgs.append(f"ℹ️ {building_name} doesn't need Activity (use Focus)")
                 else:
                     extra_msgs.append(f"🏗️ +{invested} Activity → {building_name} ({progress_pct:.0f}%)")
-            elif city_activity_earned > 0:
-                # No active construction, show warning
-                extra_msgs.append(f"⚠️ +{city_activity_earned} Activity earned but no building under construction")
+            # Note: Don't show warning when no construction - it's not actionable info
             
             # Get entity perk contributors for luck/rarity bonuses
             entity_perk_contributors = []
@@ -9688,7 +9722,7 @@ class ActivityTab(QtWidgets.QWidget):
                     if hasattr(main_window, 'city_tab') and hasattr(main_window.city_tab, '_refresh_city'):
                         main_window.city_tab._refresh_city()
                 except Exception as e:
-                    _logger.debug(f"Could not show building complete dialog: {e}")
+                    logger.debug(f"Could not show building complete dialog: {e}")
             
             # Update coin display
             main_window = self.window()
@@ -25123,6 +25157,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     
     def __init__(self, username: Optional[str] = None) -> None:
         super().__init__()
+        self.username = username  # Store for user switching
         self.setWindowTitle(f"Personal Liberty v{APP_VERSION}")
         if username and username != "Default":
             self.setWindowTitle(f"Personal Liberty v{APP_VERSION} - {username}")
@@ -25542,7 +25577,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             show_info(self, "Blocks Retained", "The blocks have been kept.\n\nUse 'Emergency Cleanup' in Settings tab when you want to remove them.")
 
     def _switch_user(self) -> None:
-        """Open user selection dialog to switch profiles."""
+        """Open user selection dialog to switch profiles without restarting."""
         # Check if a session is running - require stop first
         if hasattr(self, 'timer_tab') and self.timer_tab.timer_running:
             show_warning(
@@ -25554,66 +25589,152 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             return
         
         if show_question(self, "Switch User", 
-                        "Are you sure you want to switch profiles?\nThe application will restart.") == QtWidgets.QMessageBox.Yes:
-            # Clear stored user
+                        "Are you sure you want to switch profiles?") == QtWidgets.QMessageBox.Yes:
             try:
                 from core_logic import APP_DIR
                 from user_manager import UserManager
+                from user_selection_dialog import UserSelectionDialog
                 
-                um = UserManager(APP_DIR)
-                if not um.clear_last_user():
-                    show_error(self, "Error", "Could not clear user session.\nPlease try again or restart the application manually.")
-                    return
-                
-                # Save config before switching to ensure all changes are persisted
+                # Save current user's config first
                 self.blocker.save_config()
                 
-                # Record app close time
-                self.blocker.record_shutdown_time("user_switch")
+                # Show user selection dialog
+                um = UserManager(APP_DIR)
+                selection_dialog = UserSelectionDialog(um, parent=self)
                 
-                # Restart app using a detached process
-                import subprocess
-                
-                # Get the executable path
-                if getattr(sys, 'frozen', False):
-                    # Running as PyInstaller bundle - use the exe directly
-                    exe_path = sys.executable
-                    
-                    # Use a batch script to delay restart
-                    # Put batch file in APP_DIR to avoid temp cleanup issues
-                    from core_logic import APP_DIR
-                    batch_path = APP_DIR / "_restart.bat"
-                    batch_content = f'''@echo off
-ping 127.0.0.1 -n 2 > nul
-start "" "{exe_path}"
-del "%~f0"
-'''
-                    try:
-                        with open(batch_path, 'w', encoding='utf-8') as f:
-                            f.write(batch_content)
-                    except OSError as e:
-                        show_error(self, "Error", f"Could not create restart script: {e}")
-                        return
-                    
-                    # Run the batch file detached
-                    DETACHED_PROCESS = 0x00000008
-                    CREATE_NO_WINDOW = 0x08000000
-                    subprocess.Popen(
-                        ['cmd', '/c', str(batch_path)],
-                        creationflags=DETACHED_PROCESS | CREATE_NO_WINDOW,
-                        close_fds=True,
-                    )
-                else:
-                    # Development mode
-                    subprocess.Popen([sys.executable] + sys.argv)
-                
-                # Exit gracefully using Qt's quit
-                # Set both flags so closeEvent properly exits instead of minimizing to tray
-                self._force_quit = True
-                self._shutdown_recorded = True
-                QtWidgets.QApplication.instance().quit()
+                if selection_dialog.exec() == QtWidgets.QDialog.Accepted:
+                    new_user = selection_dialog.selected_user
+                    if new_user and new_user != self.username:
+                        # Save new user as last user
+                        um.save_last_user(new_user)
+                        
+                        # Reload the main window with new user
+                        self._reload_user(new_user)
+                        
+                        show_info(self, "Profile Switched", f"Switched to profile: {new_user}")
+                    elif new_user == self.username:
+                        show_info(self, "Same Profile", "You selected the same profile.")
+                        
             except Exception as e:
                 show_error(self, "Error", f"Could not switch user: {e}")
+    
+    def _reload_user(self, new_username: str) -> None:
+        """Reload the application state with a new user profile without restarting."""
+        try:
+            # Update username
+            self.username = new_username
+            
+            # Update window title
+            if new_username and new_username != "Default":
+                self.setWindowTitle(f"Personal Liberty v{APP_VERSION} - {new_username}")
+            else:
+                self.setWindowTitle(f"Personal Liberty v{APP_VERSION}")
+            
+            # Update user button
+            if hasattr(self, 'user_btn'):
+                self.user_btn.setText(f"👤 {new_username}")
+            
+            # Create new blocker with new user's data
+            old_blocker = self.blocker
+            self.blocker = BlockerCore(username=new_username)
+            
+            # Record startup time for new user
+            self.blocker.record_startup_time()
+            
+            # Re-initialize game state manager with new user's data
+            if GAMIFICATION_AVAILABLE and hasattr(self, 'game_state') and self.game_state:
+                # Disconnect old signals
+                try:
+                    self.game_state.power_changed.disconnect()
+                    self.game_state.coins_changed.disconnect()
+                    self.game_state.xp_changed.disconnect()
+                    self.game_state.inventory_changed.disconnect()
+                    self.game_state.full_refresh_required.disconnect()
+                except Exception:
+                    pass
+                
+                # Create new game state
+                self.game_state = init_game_state(self.blocker)
+                # Reconnect signals
+                self.game_state.power_changed.connect(self._on_power_changed)
+                self.game_state.coins_changed.connect(self._on_coins_changed)
+                self.game_state.xp_changed.connect(self._on_xp_changed)
+                self.game_state.inventory_changed.connect(self._on_inventory_changed)
+                self.game_state.full_refresh_required.connect(self._on_full_refresh_required)
+            
+            # Update all tabs with new blocker reference
+            if hasattr(self, 'timer_tab'):
+                self.timer_tab.blocker = self.blocker
+                self.timer_tab._refresh_quick_stats()
+            
+            if hasattr(self, 'stats_tab'):
+                self.stats_tab.blocker = self.blocker
+                self.stats_tab._refresh_stats()
+            
+            if hasattr(self, 'sites_tab'):
+                self.sites_tab.blocker = self.blocker
+                self.sites_tab._update_lists()
+            
+            if hasattr(self, 'settings_tab'):
+                self.settings_tab.blocker = self.blocker
+                self.settings_tab._load_settings()
+            
+            if hasattr(self, 'game_tab'):
+                self.game_tab.blocker = self.blocker
+                if hasattr(self.game_tab, '_full_refresh'):
+                    self.game_tab._full_refresh()
+            
+            if hasattr(self, 'eye_tab'):
+                self.eye_tab.blocker = self.blocker
+                if hasattr(self.eye_tab, '_refresh_display'):
+                    self.eye_tab._refresh_display()
+            
+            if hasattr(self, 'weight_tab'):
+                self.weight_tab.blocker = self.blocker
+                if hasattr(self.weight_tab, '_refresh_display'):
+                    self.weight_tab._refresh_display()
+            
+            if hasattr(self, 'sleep_tab'):
+                self.sleep_tab.blocker = self.blocker
+                if hasattr(self.sleep_tab, '_refresh_display'):
+                    self.sleep_tab._refresh_display()
+            
+            if hasattr(self, 'entitidex_tab'):
+                self.entitidex_tab.blocker = self.blocker
+                if hasattr(self.entitidex_tab, '_rebuild_grid'):
+                    self.entitidex_tab._rebuild_grid()
+            
+            if hasattr(self, 'city_tab'):
+                self.city_tab.blocker = self.blocker
+                if hasattr(self.city_tab, '_refresh_city'):
+                    self.city_tab._refresh_city()
+            
+            # Update quick bar elements
+            if GAMIFICATION_AVAILABLE:
+                if hasattr(self, 'buster_btn'):
+                    power = calculate_character_power(self.blocker.adhd_buster)
+                    self.buster_btn.setText(f"🦸 HERO  ⚔ {power}")
+                    self.buster_btn.setVisible(is_gamification_enabled(self.blocker.adhd_buster))
+                
+                if hasattr(self, 'coin_label'):
+                    coins = self.blocker.adhd_buster.get("coins", 0)
+                    self.coin_label.setText(f"💰 {coins:,} Coins")
+                    self.coin_label.setVisible(is_gamification_enabled(self.blocker.adhd_buster))
+            
+            # Update admin label
+            self._update_admin_label()
+            
+            # Update tray icon tooltip
+            if hasattr(self, 'tray_icon'):
+                self.tray_icon.setToolTip(f"Personal Liberty - {new_username}")
+                
+            logger.info(f"Successfully switched to user profile: {new_username}")
+            
+        except Exception as e:
+            logger.error(f"Error reloading user: {e}")
+            import traceback
+            traceback.print_exc()
+            show_error(self, "Error", f"Failed to reload user profile: {e}\n\nPlease restart the application.")
 
     def _update_admin_label(self) -> None:
         if hasattr(self, "admin_label"):
@@ -26630,7 +26751,7 @@ del "%~f0"
                             "progress_percent": 100.0,
                             "completed": True
                         }
-                        _logger.info(f"Focus session completed construction of {building_name}!")
+                        logger.info(f"Focus session completed construction of {building_name}!")
                     else:
                         new_progress = progress_after.get("effort_progress_percent", 0)
                         self._last_city_contribution = {
@@ -26642,7 +26763,7 @@ del "%~f0"
                             "progress_percent": new_progress,
                             "completed": False
                         }
-                        _logger.info(f"Focus session contributed {invested} focus to {building_name} ({new_progress:.0f}% complete)")
+                        logger.info(f"Focus session contributed {invested} focus to {building_name} ({new_progress:.0f}% complete)")
                 elif focus_earned > 0:
                     if not active_before:
                         # No active construction
@@ -26654,7 +26775,7 @@ del "%~f0"
                             "completed": False,
                             "wasted": True
                         }
-                        _logger.debug(f"Focus earned ({focus_earned}) but no active construction to apply it to")
+                        logger.debug(f"Focus earned ({focus_earned}) but no active construction to apply it to")
             else:
                 # Session too short to earn Focus - show informative message
                 if active_before and minutes > 0:
@@ -26669,7 +26790,7 @@ del "%~f0"
                         "short_session": True,
                         "mins_needed": mins_needed
                     }
-                    _logger.debug(f"Session too short for focus ({minutes} min, need {mins_needed} more)")
+                    logger.debug(f"Session too short for focus ({minutes} min, need {mins_needed} more)")
             
             # Award Royal Mint income for focus session
             game_state = getattr(self, 'game_state', None)
@@ -26688,7 +26809,7 @@ del "%~f0"
                     breakdown_parts.append(f"{item['building']}: +{item['total_coins']} coins")
                 breakdown_msg = ", ".join(breakdown_parts) if breakdown_parts else ""
                 
-                _logger.info(f"Focus session awarded {coins} city coins: {breakdown_msg}")
+                logger.info(f"Focus session awarded {coins} city coins: {breakdown_msg}")
                 
                 # Update coin display
                 self._update_coin_display()
@@ -26697,7 +26818,7 @@ del "%~f0"
             self.blocker.save_config()
             
         except Exception as e:
-            _logger.warning(f"Failed to award city resources: {e}")
+            logger.warning(f"Failed to award city resources: {e}")
 
     def _add_dev_tab(self) -> None:
         """Add the Developer tools tab (hidden by default)."""
