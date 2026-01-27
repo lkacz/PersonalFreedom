@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- Artisan Guild Level 2 (Animated) - Industrial Design Studio -->
+  <!-- Artisan Guild Level 2 (Animated) - Industrial Design Studio with Master Craftspeople -->
   <defs>
     <linearGradient id="brickWall" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#8D6E63"/>
@@ -41,6 +41,15 @@
       <stop offset="0%" style="stop-color:#7cb342"/>
       <stop offset="100%" style="stop-color:#558b2f"/>
     </linearGradient>
+    <radialGradient id="sparkGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFEB3B"/>
+      <stop offset="50%" style="stop-color:#FF9800"/>
+      <stop offset="100%" style="stop-color:#FF5722" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="weldGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#00E5FF"/>
+      <stop offset="100%" style="stop-color:#0097A7" stop-opacity="0"/>
+    </radialGradient>
     <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="2" dy="3" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
     </filter>
@@ -83,23 +92,49 @@
   <line x1="76" y1="68" x2="114" y2="68" stroke="#455A64" stroke-width="2"/>
   <rect x="76" y="50" width="38" height="36" fill="none" stroke="#546E7A" stroke-width="2" rx="2"/>
   
-  <!-- Printing press with animated rollers -->
-  <rect x="16" y="92" width="36" height="24" fill="#37474F" rx="2"/>
-  <rect x="20" y="96" width="10" height="16" fill="#263238"/>
-  <rect x="34" y="96" width="14" height="16" fill="url(#glassWindow)"/>
-  
-  <!-- Animated rollers -->
-  <ellipse cx="25" cy="108" rx="4" ry="2" fill="#78909C">
-    <animate attributeName="ry" values="2;2.5;2" dur="0.5s" repeatCount="indefinite"/>
-  </ellipse>
-  <ellipse cx="25" cy="102" rx="4" ry="2" fill="#78909C">
-    <animate attributeName="ry" values="2;2.5;2" dur="0.5s" repeatCount="indefinite"/>
-  </ellipse>
-  
-  <!-- Animated paper feed -->
-  <rect x="28" y="100" width="8" height="12" fill="#FAFAFA">
-    <animate attributeName="x" values="28;34;28" dur="2s" repeatCount="indefinite"/>
-  </rect>
+  <!-- ========== MASTER PRINTMAKER at printing press ========== -->
+  <g transform="translate(16, 88)">
+    <!-- Printing press machine -->
+    <rect x="0" y="10" width="36" height="20" fill="#37474F" rx="2"/>
+    <rect x="4" y="14" width="10" height="12" fill="#263238"/>
+    <rect x="18" y="14" width="14" height="12" fill="url(#glassWindow)"/>
+    
+    <!-- Animated rollers -->
+    <ellipse cx="9" cy="20" rx="4" ry="2" fill="#78909C">
+      <animateTransform attributeName="transform" type="rotate" values="0 9 20;360 9 20" dur="1s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="9" cy="14" rx="4" ry="2" fill="#78909C">
+      <animateTransform attributeName="transform" type="rotate" values="0 9 14;360 9 14" dur="1s" repeatCount="indefinite"/>
+    </ellipse>
+    
+    <!-- Paper feeding through with colors -->
+    <rect x="12" y="14" width="8" height="12" fill="#FAFAFA">
+      <animate attributeName="fill" values="#FAFAFA;#FFCDD2;#C8E6C9;#BBDEFB;#FAFAFA" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    
+    <!-- PRINTMAKER - wearing apron -->
+    <!-- Body with work apron -->
+    <rect x="38" y="4" width="10" height="14" fill="#1565C0" rx="2"/>
+    <rect x="39" y="8" width="8" height="10" fill="#795548"/>
+    <!-- Head -->
+    <circle cx="43" cy="0" r="5" fill="#FFCC80"/>
+    <!-- Hair/cap -->
+    <path d="M38,-3 Q43,-6 48,-3 L48,0 L38,0 Z" fill="#5D4037"/>
+    <!-- Eyes -->
+    <circle cx="41" cy="-1" r="1" fill="#263238"/>
+    <circle cx="45" cy="-1" r="1" fill="#263238"/>
+    <!-- Smile -->
+    <path d="M41,2 Q43,4 45,2" fill="none" stroke="#5D4037" stroke-width="0.5"/>
+    
+    <!-- Arm reaching to feed paper - animated -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 38 8;-15 38 8;0 38 8" dur="2s" repeatCount="indefinite"/>
+      <rect x="30" y="6" width="10" height="3" fill="#FFCC80" rx="1"/>
+      <!-- Hand holding paper -->
+      <circle cx="30" cy="7.5" r="2" fill="#FFCC80"/>
+      <rect x="26" y="4" width="6" height="8" fill="#FAFAFA" opacity="0.9"/>
+    </g>
+  </g>
   
   <!-- Colored ink containers with drip animation -->
   <rect x="54" y="96" width="6" height="10" fill="url(#redPaint)" rx="1"/>
@@ -108,88 +143,136 @@
   <rect x="62" y="108" width="6" height="10" fill="url(#greenPaint)" rx="1"/>
   
   <!-- Ink drips animated -->
-  <circle cx="57" cy="108" r="1" fill="#EF5350">
-    <animate attributeName="cy" values="106;118;106" dur="3s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="1;0;1" dur="3s" repeatCount="indefinite"/>
+  <circle cx="57" cy="108" r="1.5" fill="#EF5350">
+    <animate attributeName="cy" values="106;116;106" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="65" cy="106" r="1" fill="#FFEE58">
-    <animate attributeName="cy" values="106;118;106" dur="4s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite"/>
+  <circle cx="65" cy="106" r="1.5" fill="#FFEE58">
+    <animate attributeName="cy" values="106;116;106" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+    <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+  </circle>
+  <circle cx="57" cy="118" r="1" fill="#42A5F5">
+    <animate attributeName="cy" values="118;126;118" dur="3s" repeatCount="indefinite" begin="1s"/>
+    <animate attributeName="opacity" values="1;0;1" dur="3s" repeatCount="indefinite" begin="1s"/>
   </circle>
   
-  <!-- CNC machine with animated spindle -->
-  <rect x="76" y="92" width="36" height="24" fill="#455A64" rx="2"/>
-  <rect x="80" y="96" width="8" height="8" fill="#37474F"/>
-  
-  <!-- Animated spinning chuck -->
-  <ellipse cx="84" cy="100" rx="3" ry="3" fill="#263238">
-    <animateTransform attributeName="transform" type="rotate" values="0 84 100;360 84 100" dur="1s" repeatCount="indefinite"/>
-  </ellipse>
-  
-  <rect x="92" y="94" width="16" height="6" fill="#546E7A"/>
-  
-  <!-- Animated cutting tool -->
-  <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0;-4,0;0,0" dur="2s" repeatCount="indefinite"/>
-    <polygon points="98,94 102,88 106,94" fill="#78909C"/>
+  <!-- ========== MASTER MACHINIST at CNC machine ========== -->
+  <g transform="translate(76, 88)">
+    <!-- CNC machine base -->
+    <rect x="0" y="12" width="36" height="18" fill="#455A64" rx="2"/>
+    <rect x="4" y="16" width="8" height="8" fill="#37474F"/>
+    
+    <!-- Animated spinning chuck with work piece -->
+    <ellipse cx="8" cy="20" rx="4" ry="4" fill="#263238">
+      <animateTransform attributeName="transform" type="rotate" values="0 8 20;360 8 20" dur="0.8s" repeatCount="indefinite"/>
+    </ellipse>
+    <!-- Work piece being shaped -->
+    <rect x="6" y="18" width="4" height="4" fill="#B0BEC5">
+      <animateTransform attributeName="transform" type="rotate" values="0 8 20;360 8 20" dur="0.8s" repeatCount="indefinite"/>
+    </rect>
+    
+    <!-- Cutting tool with sparks -->
+    <rect x="14" y="14" width="12" height="4" fill="#546E7A"/>
+    <polygon points="14,14 14,20 10,17" fill="#78909C">
+      <animate attributeName="points" values="14,14 14,20 10,17;14,14 14,20 8,17;14,14 14,20 10,17" dur="1.5s" repeatCount="indefinite"/>
+    </polygon>
+    
+    <!-- Flying sparks from machining -->
+    <circle cx="10" cy="16" r="1.5" fill="url(#sparkGlow)">
+      <animate attributeName="cx" values="10;4;-2" dur="0.4s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="16;12;8" dur="0.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.5;0" dur="0.4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="10" cy="18" r="1" fill="#FFAB00">
+      <animate attributeName="cx" values="10;2;-4" dur="0.5s" repeatCount="indefinite" begin="0.1s"/>
+      <animate attributeName="cy" values="18;22;24" dur="0.5s" repeatCount="indefinite" begin="0.1s"/>
+      <animate attributeName="opacity" values="1;0.3;0" dur="0.5s" repeatCount="indefinite" begin="0.1s"/>
+    </circle>
+    <circle cx="10" cy="20" r="0.8" fill="#FF6D00">
+      <animate attributeName="cx" values="10;6;2" dur="0.35s" repeatCount="indefinite" begin="0.2s"/>
+      <animate attributeName="cy" values="20;14;10" dur="0.35s" repeatCount="indefinite" begin="0.2s"/>
+      <animate attributeName="opacity" values="1;0.5;0" dur="0.35s" repeatCount="indefinite" begin="0.2s"/>
+    </circle>
+    <circle cx="11" cy="17" r="0.6" fill="#FFAB00">
+      <animate attributeName="cx" values="11;16;20" dur="0.3s" repeatCount="indefinite" begin="0.15s"/>
+      <animate attributeName="cy" values="17;12;8" dur="0.3s" repeatCount="indefinite" begin="0.15s"/>
+      <animate attributeName="opacity" values="0.8;0.3;0" dur="0.3s" repeatCount="indefinite" begin="0.15s"/>
+    </circle>
+    
+    <!-- Control panel with blinking lights -->
+    <rect x="24" y="16" width="10" height="8" fill="#263238" rx="1"/>
+    <circle cx="27" cy="20" r="2" fill="#4CAF50">
+      <animate attributeName="fill" values="#4CAF50;#8BC34A;#4CAF50" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="31" cy="20" r="2" fill="#FF5722">
+      <animate attributeName="opacity" values="1;0.3;1" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- MACHINIST - wearing safety goggles -->
+    <!-- Body with work shirt -->
+    <rect x="38" y="2" width="10" height="14" fill="#455A64" rx="2"/>
+    <!-- Head -->
+    <circle cx="43" cy="-2" r="5" fill="#D7CCC8"/>
+    <!-- Safety goggles - important! -->
+    <rect x="39" y="-4" width="8" height="3" fill="#263238" rx="1"/>
+    <circle cx="41" cy="-3" r="1.5" fill="#90CAF9" opacity="0.6"/>
+    <circle cx="45" cy="-3" r="1.5" fill="#90CAF9" opacity="0.6"/>
+    <!-- Hair -->
+    <path d="M38,-5 Q43,-8 48,-5" fill="#5D4037" stroke="#5D4037" stroke-width="1"/>
+    
+    <!-- Arm operating control lever - animated -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 38 6;10 38 6;0 38 6" dur="1.5s" repeatCount="indefinite"/>
+      <rect x="28" y="4" width="12" height="3" fill="#D7CCC8" rx="1"/>
+      <!-- Hand on lever -->
+      <circle cx="28" cy="5.5" r="2" fill="#D7CCC8"/>
+      <!-- Control lever -->
+      <rect x="24" y="2" width="3" height="10" fill="#78909C" rx="1"/>
+    </g>
   </g>
   
-  <rect x="96" y="104" width="12" height="10" fill="#37474F"/>
-  
-  <!-- Animated turning wheel -->
-  <circle cx="102" cy="109" r="4" fill="#263238">
-    <animateTransform attributeName="transform" type="rotate" values="0 102 109;360 102 109" dur="2s" repeatCount="indefinite"/>
-  </circle>
-  <line x1="102" y1="105" x2="102" y2="113" stroke="#455A64" stroke-width="1">
-    <animateTransform attributeName="transform" type="rotate" values="0 102 109;360 102 109" dur="2s" repeatCount="indefinite"/>
-  </line>
-  
-  <!-- Control panel with blinking lights -->
-  <rect x="80" y="106" width="12" height="10" fill="#263238"/>
-  <circle cx="83" cy="110" r="2" fill="#4CAF50">
-    <animate attributeName="fill" values="#4CAF50;#8BC34A;#4CAF50" dur="1s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="89" cy="110" r="2" fill="#FF5722">
-    <animate attributeName="opacity" values="1;0.5;1" dur="0.5s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Sparks from machining -->
-  <g fill="#FFAB00">
-    <circle cx="92" cy="92" r="1">
-      <animate attributeName="cy" values="92;86;92" dur="0.3s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="1;0;1" dur="0.3s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="96" cy="90" r="0.8">
-      <animate attributeName="cy" values="90;82;90" dur="0.4s" repeatCount="indefinite"/>
-      <animate attributeName="cx" values="96;100;96" dur="0.4s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0;1;0" dur="0.4s" repeatCount="indefinite"/>
-    </circle>
-  </g>
+  <!-- Finished products on display shelf -->
+  <rect x="12" y="114" width="40" height="4" fill="#5D4037"/>
+  <circle cx="18" cy="112" r="3" fill="#EF5350"/>
+  <rect x="26" y="108" width="5" height="6" fill="#42A5F5" rx="1"/>
+  <polygon points="38,106 42,112 34,112" fill="#66BB6A"/>
+  <circle cx="46" cy="111" r="3" fill="#FFEE58"/>
   
   <!-- Animated smoke from chimney -->
   <rect x="96" y="6" width="12" height="20" fill="#455A64"/>
   <rect x="94" y="4" width="16" height="4" fill="#546E7A"/>
-  <g fill="#9E9E9E" opacity="0.5">
-    <ellipse cx="102" cy="2" rx="4" ry="2">
-      <animate attributeName="cy" values="2;-8;2" dur="4s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.5;0.1;0.5" dur="4s" repeatCount="indefinite"/>
+  <g fill="#9E9E9E">
+    <ellipse cx="102" cy="2" rx="5" ry="3" opacity="0.4">
+      <animate attributeName="cy" values="2;-10;2" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="rx" values="5;8;5" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.1;0.4" dur="3s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="100" cy="0" rx="4" ry="2" opacity="0.3">
+      <animate attributeName="cy" values="0;-12;0" dur="4s" repeatCount="indefinite" begin="1s"/>
+      <animate attributeName="rx" values="4;7;4" dur="4s" repeatCount="indefinite" begin="1s"/>
+      <animate attributeName="opacity" values="0.3;0.05;0.3" dur="4s" repeatCount="indefinite" begin="1s"/>
+    </ellipse>
+    <ellipse cx="104" cy="1" rx="3" ry="2" opacity="0.35">
+      <animate attributeName="cy" values="1;-8;1" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
+      <animate attributeName="opacity" values="0.35;0.1;0.35" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
     </ellipse>
   </g>
   
   <!-- Guild sign with colorful palette -->
   <rect x="52" y="20" width="24" height="18" fill="#5D4037" rx="2"/>
-  <ellipse cx="60" cy="28" rx="5" ry="4" fill="#D7CCC8"/>
-  <circle cx="58" cy="26" r="2" fill="#EF5350">
-    <animate attributeName="fill" values="#EF5350;#F44336;#EF5350" dur="2s" repeatCount="indefinite"/>
+  <ellipse cx="60" cy="28" rx="6" ry="5" fill="#D7CCC8"/>
+  <circle cx="57" cy="25" r="2.5" fill="#EF5350">
+    <animate attributeName="fill" values="#EF5350;#FFEE58;#42A5F5;#EF5350" dur="3s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="62" cy="26" r="2" fill="#42A5F5">
-    <animate attributeName="fill" values="#42A5F5;#2196F3;#42A5F5" dur="2.5s" repeatCount="indefinite"/>
+  <circle cx="63" cy="25" r="2.5" fill="#42A5F5">
+    <animate attributeName="fill" values="#42A5F5;#66BB6A;#EF5350;#42A5F5" dur="3s" repeatCount="indefinite" begin="0.5s"/>
   </circle>
-  <circle cx="60" cy="30" r="2" fill="#FFEE58">
-    <animate attributeName="fill" values="#FFEE58;#FFEB3B;#FFEE58" dur="3s" repeatCount="indefinite"/>
+  <circle cx="60" cy="31" r="2.5" fill="#FFEE58">
+    <animate attributeName="fill" values="#FFEE58;#42A5F5;#66BB6A;#FFEE58" dur="3s" repeatCount="indefinite" begin="1s"/>
   </circle>
-  <rect x="66" y="24" width="8" height="2" fill="#795548"/>
-  <circle cx="72" cy="30" r="3" fill="#78909C"/>
+  <!-- Paintbrush -->
+  <rect x="68" y="24" width="2" height="10" fill="#8D6E63"/>
+  <polygon points="68,24 70,24 69,20" fill="#E0E0E0"/>
   
   <!-- Metal rivets -->
   <g fill="#37474F">

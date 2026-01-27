@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- Artisan Guild Level 3 (Animated) - Futuristic Nano-Fabrication Studio -->
+  <!-- Artisan Guild Level 3 (Animated) - Futuristic Nano-Fabrication Studio with Master Designer -->
   <defs>
     <linearGradient id="techWall" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#263238"/>
@@ -14,6 +14,10 @@
     <radialGradient id="fabricatorGlow" cx="50%" cy="50%" r="50%">
       <stop offset="0%" style="stop-color:#E040FB" stop-opacity="0.8"/>
       <stop offset="100%" style="stop-color:#7C4DFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="holoBeam" cx="50%" cy="0%" r="100%">
+      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.8"/>
+      <stop offset="100%" style="stop-color:#00E5FF" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="magenta" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#E040FB"/>
@@ -76,6 +80,11 @@
     <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
     <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
   </circle>
+  <!-- Signal rings emanating -->
+  <circle cx="64" cy="0" r="6" fill="none" stroke="#E040FB" stroke-width="0.5" opacity="0">
+    <animate attributeName="r" values="4;12;20" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0.2;0" dur="2s" repeatCount="indefinite"/>
+  </circle>
   <line x1="44" y1="8" x2="44" y2="22" stroke="#455A64" stroke-width="1"/>
   <circle cx="44" cy="6" r="2" fill="#00E5FF">
     <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
@@ -93,159 +102,247 @@
     <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2.5s" repeatCount="indefinite"/>
   </rect>
   
-  <!-- Holographic display windows with animated content -->
-  <rect x="12" y="42" width="46" height="24" fill="url(#holoPanel)" rx="2">
-    <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
-  </rect>
-  <rect x="70" y="42" width="46" height="24" fill="url(#holoPanel)" rx="2">
-    <animate attributeName="opacity" values="1;0.8;1" dur="3s" repeatCount="indefinite"/>
-  </rect>
-  
-  <!-- Animated holographic artwork -->
-  <polygon points="24,48 32,56 24,64 16,56" fill="#E040FB" opacity="0.6">
-    <animateTransform attributeName="transform" type="rotate" values="0 24 56;360 24 56" dur="8s" repeatCount="indefinite"/>
-  </polygon>
-  <circle cx="42" cy="54" r="6" fill="#00E5FF" opacity="0.5">
-    <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite"/>
-  </circle>
-  <rect x="80" y="48" width="12" height="14" fill="#B2FF59" opacity="0.4" rx="1">
-    <animate attributeName="height" values="14;16;14" dur="2.5s" repeatCount="indefinite"/>
-  </rect>
-  <polygon points="100,52 108,60 100,66 92,60" fill="#FFD740" opacity="0.5">
-    <animateTransform attributeName="transform" type="rotate" values="0 100 59;-360 100 59" dur="10s" repeatCount="indefinite"/>
-  </polygon>
+  <!-- ========== MASTER DESIGNER at holographic workstation ========== -->
+  <g transform="translate(70, 40)">
+    <!-- Holographic display screen -->
+    <rect x="0" y="6" width="44" height="24" fill="url(#holoPanel)" rx="2">
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    
+    <!-- Animated holographic 3D model rotating -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 22 18;360 22 18" dur="6s" repeatCount="indefinite"/>
+      <polygon points="22,10 30,18 22,26 14,18" fill="#E040FB" opacity="0.7"/>
+      <polygon points="22,12 28,18 22,24 16,18" fill="#00E5FF" opacity="0.5"/>
+    </g>
+    
+    <!-- Floating data points around model -->
+    <circle cx="10" cy="12" r="1" fill="#B2FF59">
+      <animate attributeName="cy" values="12;16;12" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="34" cy="14" r="1" fill="#FFD740">
+      <animate attributeName="cy" values="14;10;14" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="22" cy="8" r="1" fill="#E040FB">
+      <animate attributeName="r" values="1;1.5;1" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- DESIGNER - sophisticated with tech visor -->
+    <!-- Body - designer coat -->
+    <rect x="46" y="6" width="12" height="18" fill="#37474F" rx="2"/>
+    <!-- Lab coat collar -->
+    <polygon points="46,6 52,10 58,6" fill="#455A64"/>
+    <!-- Head -->
+    <circle cx="52" cy="0" r="6" fill="#FFCC80"/>
+    <!-- Stylish hair -->
+    <path d="M46,-4 Q52,-8 58,-4 L58,0 L46,0 Z" fill="#4A148C"/>
+    <!-- Tech visor/AR glasses - glowing -->
+    <rect x="47" y="-3" width="10" height="3" fill="#263238" rx="1"/>
+    <rect x="48" y="-2" width="3" height="1.5" fill="#00E5FF" opacity="0.8">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="0.8s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="53" y="-2" width="3" height="1.5" fill="#00E5FF" opacity="0.8">
+      <animate attributeName="opacity" values="1;0.6;1" dur="0.8s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Focused expression - mouth -->
+    <ellipse cx="52" cy="3" rx="1.5" ry="0.5" fill="#8D6E63"/>
+    
+    <!-- Left arm gesturing at hologram - animated -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="0 46 12;-20 46 12;0 46 12" dur="2s" repeatCount="indefinite"/>
+      <rect x="36" y="10" width="12" height="3" fill="#FFCC80" rx="1"/>
+      <!-- Hand with pointing finger -->
+      <circle cx="36" cy="11.5" r="2.5" fill="#FFCC80"/>
+      <rect x="32" y="10" width="5" height="1.5" fill="#FFCC80" rx="0.5"/>
+    </g>
+    
+    <!-- Right arm on control surface -->
+    <rect x="56" y="14" width="10" height="3" fill="#FFCC80" rx="1"/>
+    <circle cx="66" cy="15.5" r="2.5" fill="#FFCC80"/>
+    
+    <!-- Holographic stylus in hand - glowing tip -->
+    <rect x="62" y="12" width="2" height="8" fill="#546E7A"/>
+    <circle cx="63" cy="10" r="2" fill="#E040FB" filter="url(#glow)">
+      <animate attributeName="r" values="1.5;2.5;1.5" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Design beam from stylus to hologram -->
+    <line x1="63" y1="10" x2="22" y2="18" stroke="#E040FB" stroke-width="0.5" opacity="0.4">
+      <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite"/>
+    </line>
+  </g>
   
   <!-- Nano-fabricator chamber -->
-  <rect x="14" y="72" width="44" height="44" fill="#1A1A1A" rx="3"/>
-  <rect x="16" y="74" width="40" height="40" fill="#0D0D0D" rx="2"/>
+  <rect x="12" y="72" width="48" height="44" fill="#1A1A1A" rx="3"/>
+  <rect x="14" y="74" width="44" height="40" fill="#0D0D0D" rx="2"/>
   
   <!-- Fabricator containment ring - animated rotation -->
-  <ellipse cx="36" cy="94" rx="16" ry="14" fill="none" stroke="#E040FB" stroke-width="2">
-    <animate attributeName="stroke-dasharray" values="0 100;50 50;0 100" dur="3s" repeatCount="indefinite"/>
+  <ellipse cx="36" cy="94" rx="18" ry="14" fill="none" stroke="#E040FB" stroke-width="2">
+    <animate attributeName="stroke-dasharray" values="0 120;60 60;0 120" dur="3s" repeatCount="indefinite"/>
   </ellipse>
-  <ellipse cx="36" cy="94" rx="12" ry="10" fill="url(#fabricatorGlow)" filter="url(#strongGlow)">
-    <animate attributeName="rx" values="10;14;10" dur="2s" repeatCount="indefinite"/>
+  <ellipse cx="36" cy="94" rx="14" ry="10" fill="url(#fabricatorGlow)" filter="url(#strongGlow)">
+    <animate attributeName="rx" values="12;16;12" dur="2s" repeatCount="indefinite"/>
     <animate attributeName="ry" values="8;12;8" dur="2s" repeatCount="indefinite"/>
   </ellipse>
   
-  <!-- Materializing object - build animation -->
-  <polygon points="32,88 40,88 44,98 36,104 28,98" fill="#18FFFF" opacity="0.8">
-    <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
-    <animateTransform attributeName="transform" type="scale" values="0.9;1.1;0.9" dur="2s" repeatCount="indefinite"/>
-  </polygon>
+  <!-- Materializing object - spectacular build animation -->
+  <g>
+    <animateTransform attributeName="transform" type="scale" values="0.8;1.2;0.8" dur="2.5s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="rotate" values="0 36 94;15 36 94;0 36 94;-15 36 94;0 36 94" dur="4s" repeatCount="indefinite" additive="sum"/>
+    <polygon points="32,86 40,86 44,94 40,102 32,102 28,94" fill="#18FFFF" opacity="0.8"/>
+    <polygon points="34,88 38,88 41,94 38,100 34,100 31,94" fill="#E040FB" opacity="0.6"/>
+  </g>
   
-  <!-- Nano particles being fabricated -->
+  <!-- Spawn ring effect when item materializes -->
+  <ellipse cx="36" cy="102" rx="10" ry="3" fill="none" stroke="#00E5FF" stroke-width="1" opacity="0">
+    <animate attributeName="ry" values="3;8;12" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.8;0.3;0" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Nano particles swirling and converging -->
   <g fill="#E040FB">
-    <circle cx="30" cy="86" r="1">
-      <animate attributeName="cy" values="86;94;86" dur="1.5s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>
+    <circle cx="24" cy="84" r="1.2">
+      <animate attributeName="cx" values="24;32;36" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="84;88;94" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.5;0" dur="1.5s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="42" cy="88" r="1">
-      <animate attributeName="cy" values="88;96;88" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.5;1;0.5" dur="1.8s" repeatCount="indefinite"/>
+    <circle cx="48" cy="86" r="1">
+      <animate attributeName="cx" values="48;42;36" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="86;90;94" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0.4;0" dur="1.8s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="36" cy="84" r="1">
-      <animate attributeName="cy" values="84;100;84" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.8;0.2;0.8" dur="2s" repeatCount="indefinite"/>
+    <circle cx="36" cy="78" r="1.2">
+      <animate attributeName="cy" values="78;86;94" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.5;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="28" cy="102" r="0.8">
+      <animate attributeName="cx" values="28;32;36" dur="1.2s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="102;98;94" dur="1.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;0.3;0" dur="1.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="44" cy="104" r="1">
+      <animate attributeName="cx" values="44;40;36" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="104;99;94" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;0.4;0" dur="1.4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <g fill="#00E5FF">
+    <circle cx="20" cy="94" r="1">
+      <animate attributeName="cx" values="20;28;36" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.3;0" dur="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="52" cy="94" r="1">
+      <animate attributeName="cx" values="52;44;36" dur="1.3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.4;0" dur="1.3s" repeatCount="indefinite"/>
     </circle>
   </g>
   
   <!-- Nano material cartridges with level indicators -->
-  <rect x="62" y="76" width="8" height="16" fill="url(#magenta)" rx="2"/>
-  <rect x="72" y="76" width="8" height="16" fill="url(#cyan)" rx="2"/>
-  <rect x="82" y="76" width="8" height="16" fill="url(#lime)" rx="2"/>
-  <rect x="92" y="76" width="8" height="16" fill="url(#amber)" rx="2"/>
+  <rect x="64" y="76" width="8" height="18" fill="url(#magenta)" rx="2"/>
+  <rect x="74" y="76" width="8" height="18" fill="url(#cyan)" rx="2"/>
+  <rect x="84" y="76" width="8" height="18" fill="url(#lime)" rx="2"/>
+  <rect x="94" y="76" width="8" height="18" fill="url(#amber)" rx="2"/>
   
-  <!-- Animated level indicators -->
-  <rect x="64" y="78" width="4" height="12" fill="#1A1A1A" opacity="0.5">
-    <animate attributeName="height" values="12;8;12" dur="5s" repeatCount="indefinite"/>
+  <!-- Animated level indicators showing consumption -->
+  <rect x="66" y="78" width="4" height="14" fill="#1A1A1A" opacity="0.5">
+    <animate attributeName="height" values="14;8;14" dur="5s" repeatCount="indefinite"/>
   </rect>
-  <rect x="74" y="78" width="4" height="10" fill="#1A1A1A" opacity="0.5">
-    <animate attributeName="height" values="10;6;10" dur="6s" repeatCount="indefinite"/>
+  <rect x="76" y="78" width="4" height="12" fill="#1A1A1A" opacity="0.5">
+    <animate attributeName="height" values="12;4;12" dur="6s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="86" y="78" width="4" height="10" fill="#1A1A1A" opacity="0.5">
+    <animate attributeName="height" values="10;6;10" dur="4s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="96" y="78" width="4" height="11" fill="#1A1A1A" opacity="0.5">
+    <animate attributeName="height" values="11;7;11" dur="5.5s" repeatCount="indefinite"/>
   </rect>
   
-  <!-- Robotic sculpting arm - animated movement -->
-  <rect x="70" y="96" width="42" height="8" fill="#455A64" rx="1"/>
-  <circle cx="74" cy="100" r="4" fill="#37474F"/>
-  
-  <!-- Animated arm extension -->
-  <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0;-6,0;0,0" dur="3s" repeatCount="indefinite"/>
-    <rect x="80" y="98" width="20" height="4" fill="#546E7A"/>
-    <circle cx="108" cy="100" r="5" fill="#37474F"/>
-    <polygon points="108,94 114,100 108,106" fill="#78909C"/>
-    <!-- Laser beam from tip -->
-    <circle cx="114" cy="100" r="2" fill="#E040FB" filter="url(#glow)">
-      <animate attributeName="r" values="1;3;1" dur="0.5s" repeatCount="indefinite"/>
-    </circle>
-  </g>
-  
-  <!-- Arm joint indicator -->
-  <circle cx="74" cy="100" r="2" fill="#00E5FF">
+  <!-- Robotic sculpting arm with actual movement -->
+  <rect x="64" y="98" width="42" height="6" fill="#455A64" rx="1"/>
+  <circle cx="68" cy="101" r="4" fill="#37474F"/>
+  <circle cx="68" cy="101" r="2" fill="#00E5FF">
     <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
   </circle>
   
-  <!-- Holographic control interface - animated data -->
-  <rect x="70" y="108" width="44" height="8" fill="#00E5FF" opacity="0.2" rx="1"/>
-  <circle cx="78" cy="112" r="2" fill="#4CAF50">
+  <!-- Animated arm that actually grabs and moves -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0,0;-8,0;0,0" dur="4s" repeatCount="indefinite"/>
+    <rect x="76" y="99" width="18" height="4" fill="#546E7A"/>
+    <!-- Arm joint -->
+    <circle cx="86" cy="101" r="2" fill="#37474F"/>
+    <!-- End effector / gripper -->
+    <g transform="translate(94, 101)">
+      <!-- Gripper base -->
+      <circle cx="0" cy="0" r="4" fill="#455A64"/>
+      <!-- Gripper fingers - animated open/close -->
+      <rect x="-2" y="-6" width="1.5" height="5" fill="#78909C">
+        <animateTransform attributeName="transform" type="rotate" values="0 -1.25 -1;-15 -1.25 -1;0 -1.25 -1" dur="4s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="0.5" y="-6" width="1.5" height="5" fill="#78909C">
+        <animateTransform attributeName="transform" type="rotate" values="0 1.25 -1;15 1.25 -1;0 1.25 -1" dur="4s" repeatCount="indefinite"/>
+      </rect>
+      <!-- Laser beam from tip -->
+      <circle cx="0" cy="-6" r="2" fill="#E040FB" filter="url(#glow)">
+        <animate attributeName="r" values="1;2.5;1" dur="0.5s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+  </g>
+  
+  <!-- Holographic control interface below arm -->
+  <rect x="64" y="108" width="44" height="10" fill="#00E5FF" opacity="0.15" rx="2"/>
+  <g fill="#00E5FF" opacity="0.8">
+    <rect x="66" y="110" width="8" height="2" rx="1">
+      <animate attributeName="width" values="8;12;8" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="66" y="114" width="12" height="2" rx="1">
+      <animate attributeName="width" values="12;6;12" dur="2.5s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <circle cx="82" cy="113" r="2" fill="#4CAF50">
     <animate attributeName="fill" values="#4CAF50;#8BC34A;#4CAF50" dur="1s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="86" cy="112" r="2" fill="#00E5FF">
-    <animate attributeName="opacity" values="0.6;1;0.6" dur="0.8s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="94" cy="112" r="2" fill="#E040FB">
+  <circle cx="88" cy="113" r="2" fill="#E040FB">
     <animate attributeName="r" values="2;2.5;2" dur="1.2s" repeatCount="indefinite"/>
   </circle>
-  <rect x="100" y="110" width="10" height="4" fill="#00E5FF" opacity="0.4">
-    <animate attributeName="width" values="10;8;10" dur="2s" repeatCount="indefinite"/>
-  </rect>
+  <!-- Status text -->
+  <text x="94" y="114" fill="#00E5FF" font-size="4" font-family="monospace" opacity="0.8">OK</text>
   
-  <!-- Finished nano-crafted items with glow -->
-  <circle cx="18" cy="118" r="4" fill="#E040FB" filter="url(#glow)">
-    <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
-  </circle>
-  <polygon points="28,114 32,118 28,122 24,118" fill="#00E5FF">
-    <animateTransform attributeName="transform" type="rotate" values="0 28 118;360 28 118" dur="4s" repeatCount="indefinite"/>
-  </polygon>
-  <rect x="36" y="114" width="6" height="8" fill="#B2FF59" rx="1">
-    <animate attributeName="opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite"/>
-  </rect>
-  <polygon points="48,112 54,118 48,124 42,118" fill="#FFD740">
-    <animateTransform attributeName="transform" type="rotate" values="0 48 118;-360 48 118" dur="5s" repeatCount="indefinite"/>
-  </polygon>
+  <!-- Finished nano-crafted items floating with glow -->
+  <g filter="url(#glow)">
+    <circle cx="16" cy="118" r="4" fill="#E040FB">
+      <animate attributeName="cy" values="118;116;118" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <polygon points="28,114 32,118 28,122 24,118" fill="#00E5FF">
+      <animateTransform attributeName="transform" type="rotate" values="0 28 118;360 28 118" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="points" values="28,114 32,118 28,122 24,118;28,113 33,118 28,123 23,118;28,114 32,118 28,122 24,118" dur="2s" repeatCount="indefinite"/>
+    </polygon>
+    <rect x="38" y="113" width="8" height="10" fill="#B2FF59" rx="2">
+      <animate attributeName="y" values="113;111;113" dur="1.5s" repeatCount="indefinite"/>
+    </rect>
+    <polygon points="54,111 60,118 54,125 48,118" fill="#FFD740">
+      <animateTransform attributeName="transform" type="rotate" values="0 54 118;-360 54 118" dur="5s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
   
   <!-- Energy conduits on walls - animated flow -->
   <line x1="6" y1="50" x2="6" y2="100" stroke="#7C4DFF" stroke-width="2" opacity="0.6">
-    <animate attributeName="stroke-dasharray" values="0 50;25 25;0 50" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-dasharray" values="0 50;25 25;50 0;25 25;0 50" dur="3s" repeatCount="indefinite"/>
   </line>
   <line x1="122" y1="50" x2="122" y2="100" stroke="#7C4DFF" stroke-width="2" opacity="0.6">
-    <animate attributeName="stroke-dasharray" values="0 50;25 25;0 50" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-dasharray" values="50 0;25 25;0 50;25 25;50 0" dur="3s" repeatCount="indefinite"/>
   </line>
   
-  <!-- Floating tech particles -->
-  <g fill="#00E5FF" opacity="0.7">
-    <circle cx="26" cy="82" r="1">
-      <animate attributeName="cy" values="82;78;82" dur="2s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="46" cy="86" r="1">
-      <animate attributeName="cy" values="86;80;86" dur="2.5s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="34" cy="102" r="1">
-      <animate attributeName="cx" values="34;38;34" dur="1.8s" repeatCount="indefinite"/>
-    </circle>
-  </g>
-  
   <!-- Guild holographic sign - animated -->
-  <rect x="48" y="24" width="32" height="10" fill="#00E5FF" opacity="0.2" rx="2">
-    <animate attributeName="opacity" values="0.15;0.3;0.15" dur="3s" repeatCount="indefinite"/>
+  <rect x="44" y="24" width="40" height="12" fill="#00E5FF" opacity="0.15" rx="2">
+    <animate attributeName="opacity" values="0.1;0.25;0.1" dur="3s" repeatCount="indefinite"/>
   </rect>
-  <ellipse cx="56" cy="29" rx="4" ry="3" fill="#18FFFF" opacity="0.6">
+  <ellipse cx="52" cy="30" rx="4" ry="3" fill="#18FFFF" opacity="0.7">
     <animate attributeName="rx" values="3;5;3" dur="2s" repeatCount="indefinite"/>
   </ellipse>
-  <circle cx="68" cy="28" r="3" fill="#E040FB" opacity="0.5">
+  <circle cx="64" cy="29" r="3" fill="#E040FB" opacity="0.6">
     <animate attributeName="r" values="2;4;2" dur="2.5s" repeatCount="indefinite"/>
   </circle>
-  <polygon points="76,26 80,29 76,32" fill="#B2FF59" opacity="0.6">
-    <animateTransform attributeName="transform" type="rotate" values="0 78 29;360 78 29" dur="3s" repeatCount="indefinite"/>
+  <polygon points="76,26 80,30 76,34" fill="#B2FF59" opacity="0.7">
+    <animateTransform attributeName="transform" type="rotate" values="0 78 30;360 78 30" dur="3s" repeatCount="indefinite"/>
   </polygon>
 </svg>
