@@ -327,7 +327,7 @@ class LotteryRollDialog(QtWidgets.QDialog):
     - Ping-pong bouncing animation (slider bounces off walls 4-6 times)
     - Quadratic friction deceleration for realistic slowdown
     - Customizable title and styling
-    - Auto-closes after showing result
+    - Continue button for user to close when ready
     
     Usage:
         dialog = LotteryRollDialog(
@@ -486,6 +486,26 @@ class LotteryRollDialog(QtWidgets.QDialog):
         sound_row.addWidget(self.sound_toggle)
         container_layout.addLayout(sound_row)
         
+        # Continue button (hidden until animation complete)
+        self.continue_btn = QtWidgets.QPushButton("Continue")
+        self.continue_btn.setStyleSheet("""
+            QPushButton {
+                background: #4caf50;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 24px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: #66bb6a;
+            }
+        """)
+        self.continue_btn.clicked.connect(self.accept)
+        self.continue_btn.hide()
+        container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
+        
         layout.addWidget(container)
     
     def _start_animation(self):
@@ -595,9 +615,9 @@ class LotteryRollDialog(QtWidgets.QDialog):
         # Play lottery result sound
         _play_lottery_result_sound(self.is_success)
         
-        # Emit signal and auto-close
+        # Emit signal and show continue button for user to close when ready
         self.finished_signal.emit(self.is_success)
-        QtCore.QTimer.singleShot(1200, self.accept)
+        self.continue_btn.show()
     
     def closeEvent(self, event):
         """Clean up timer on close and save geometry."""
@@ -958,6 +978,26 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         sound_row.addWidget(self.sound_toggle)
         container_layout.addLayout(sound_row)
         
+        # Continue button (hidden until animation complete)
+        self.continue_btn = QtWidgets.QPushButton("Continue")
+        self.continue_btn.setStyleSheet("""
+            QPushButton {
+                background: #4caf50;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 24px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: #66bb6a;
+            }
+        """)
+        self.continue_btn.clicked.connect(self._finish)
+        self.continue_btn.hide()
+        container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
+        
         layout.addWidget(container)
     
     def _start_stage_1(self):
@@ -1073,8 +1113,8 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         # Play sound effect
         _play_lottery_result_sound(won)
         
-        # Auto close after delay
-        QtCore.QTimer.singleShot(2500, self._finish)
+        # Show continue button for user to close when ready
+        self.continue_btn.show()
     
     def _animate_tier_stage(self, slider: EyeProtectionTierSliderWidget, 
                             result_label: QtWidgets.QLabel,
@@ -1648,6 +1688,26 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         sound_row.addWidget(self.sound_toggle)
         container_layout.addLayout(sound_row)
         
+        # Continue button (hidden until animation complete)
+        self.continue_btn = QtWidgets.QPushButton("Continue")
+        self.continue_btn.setStyleSheet("""
+            QPushButton {
+                background: #4caf50;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 24px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: #66bb6a;
+            }
+        """)
+        self.continue_btn.clicked.connect(self._finish)
+        self.continue_btn.hide()
+        container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
+        
         layout.addWidget(container)
     
     def _start_stage_1(self):
@@ -1703,8 +1763,8 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
             # Play lose sound
             _play_lottery_result_sound(False)
             
-            # Auto close
-            QtCore.QTimer.singleShot(2500, self._finish)
+            # Show continue button for user to close when ready
+            self.continue_btn.show()
     
     def _start_stage_2(self):
         """Start the rarity roll animation."""
@@ -1774,8 +1834,8 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         # Play win sound
         _play_lottery_result_sound(True)
         
-        # Auto close
-        QtCore.QTimer.singleShot(3000, self._finish)
+        # Show continue button for user to close when ready
+        self.continue_btn.show()
     
     def _animate_stage(self, slider, result_label, target_roll, on_complete, is_rarity=False):
         """Animate a single lottery stage."""
@@ -2369,7 +2429,8 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
                  tier_upgrade_enabled: bool = False,
                  base_rarity: str = "Common",
                  title: str = "",
-                 parent: Optional[QtWidgets.QWidget] = None):
+                 parent: Optional[QtWidgets.QWidget] = None,
+                 entity_perk_contributors: list = None):
         """
         Args:
             success_roll: The actual success roll (0.0-1.0). If <= 0, generates random roll.
@@ -2378,6 +2439,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             base_rarity: The RESULT rarity (center of distribution)
             title: Custom title for the dialog (empty = default "Lucky Merge")
             parent: Parent widget
+            entity_perk_contributors: List of entity perks that boosted rarity/luck
         """
         super().__init__(parent)
         # Generate random roll if not provided (negative means "generate one")
@@ -2388,6 +2450,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.tier_upgrade_enabled = tier_upgrade_enabled
         self.result_rarity = base_rarity  # This is the CENTER of distribution
         self.custom_title = title  # Store custom title
+        self._entity_perk_contributors = entity_perk_contributors or []
         
         # Calculate tier weights using moving window
         self.tier_weights = self._calculate_tier_weights()
@@ -2480,6 +2543,12 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         header.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {'#ff9800' if self.tier_upgrade_enabled else '#9ca3af'};")
         container_layout.addWidget(header)
         
+        # Entity Perk Bonuses section (if any)
+        if self._entity_perk_contributors:
+            perk_widget = self._create_entity_perk_display()
+            if perk_widget:
+                container_layout.addWidget(perk_widget)
+        
         # Stage 1: Tier Roll
         self.stage1_frame = QtWidgets.QFrame()
         self.stage1_frame.setStyleSheet("""
@@ -2556,6 +2625,26 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         sound_row.addWidget(self.sound_toggle)
         container_layout.addLayout(sound_row)
         
+        # Continue button (hidden until animation complete)
+        self.continue_btn = QtWidgets.QPushButton("Continue")
+        self.continue_btn.setStyleSheet("""
+            QPushButton {
+                background: #4caf50;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 24px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: #66bb6a;
+            }
+        """)
+        self.continue_btn.clicked.connect(self._finish)
+        self.continue_btn.hide()
+        container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
+        
         layout.addWidget(container)
     
     def _create_distribution_legend(self) -> QtWidgets.QWidget:
@@ -2586,6 +2675,89 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             layout.addWidget(boost_label)
         
         return widget
+    
+    def _create_entity_perk_display(self) -> Optional[QtWidgets.QWidget]:
+        """Create compact display of entity perks affecting this lottery."""
+        if not self._entity_perk_contributors:
+            return None
+        
+        # Calculate total bonuses
+        total_rarity = sum(c.get("value", 0) for c in self._entity_perk_contributors 
+                          if c.get("perk_type") == "rarity_bias")
+        total_luck = sum(c.get("value", 0) for c in self._entity_perk_contributors 
+                        if c.get("perk_type") == "drop_luck")
+        
+        if total_rarity <= 0 and total_luck <= 0:
+            return None
+        
+        # Create frame
+        frame = QtWidgets.QFrame()
+        frame.setStyleSheet("""
+            QFrame {
+                background: rgba(121, 134, 203, 0.15);
+                border: 1px solid #7986cb;
+                border-radius: 6px;
+            }
+        """)
+        frame_layout = QtWidgets.QVBoxLayout(frame)
+        frame_layout.setContentsMargins(8, 4, 8, 4)
+        frame_layout.setSpacing(2)
+        
+        # Header with totals
+        bonus_parts = []
+        if total_rarity > 0:
+            bonus_parts.append(f"+{total_rarity}% rarity")
+        if total_luck > 0:
+            bonus_parts.append(f"+{total_luck}% luck")
+        
+        header = QtWidgets.QLabel(f"🐾 Entity Patrons: {', '.join(bonus_parts)}")
+        header.setAlignment(QtCore.Qt.AlignCenter)
+        header.setStyleSheet("color: #a5b4fc; font-size: 10px; font-weight: bold;")
+        frame_layout.addWidget(header)
+        
+        # Compact entity list (horizontal, scrollable if needed)
+        entities_widget = QtWidgets.QWidget()
+        entities_layout = QtWidgets.QHBoxLayout(entities_widget)
+        entities_layout.setContentsMargins(0, 0, 0, 0)
+        entities_layout.setSpacing(4)
+        entities_layout.addStretch()
+        
+        # Show first 5 entities compactly
+        for entity_data in self._entity_perk_contributors[:5]:
+            name = entity_data.get("name", "Unknown")
+            value = entity_data.get("value", 0)
+            perk_type = entity_data.get("perk_type", "")
+            is_exceptional = entity_data.get("is_exceptional", False)
+            is_city = entity_data.get("is_city", False)
+            
+            icon = "🎲" if perk_type == "rarity_bias" else "🍀"
+            display_name = name[:8] + ".." if len(name) > 8 else name
+            
+            if is_city:
+                style = "color: #7fdbff; font-size: 9px;"
+                prefix = "🏛️"
+            elif is_exceptional:
+                style = "color: #ffd700; font-size: 9px;"
+                prefix = "⭐"
+            else:
+                style = "color: #bbb; font-size: 9px;"
+                prefix = ""
+            
+            lbl = QtWidgets.QLabel(f"{prefix}{display_name} {icon}+{value}%")
+            lbl.setStyleSheet(style)
+            entities_layout.addWidget(lbl)
+        
+        # Show "+X more" if there are more
+        if len(self._entity_perk_contributors) > 5:
+            more_count = len(self._entity_perk_contributors) - 5
+            more_lbl = QtWidgets.QLabel(f"+{more_count}")
+            more_lbl.setStyleSheet("color: #666; font-size: 9px;")
+            entities_layout.addWidget(more_lbl)
+        
+        entities_layout.addStretch()
+        frame_layout.addWidget(entities_widget)
+        
+        return frame
     
     def _start_stage_1(self):
         """Start tier roll animation."""
@@ -2623,7 +2795,8 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             self.stage2_frame.hide()
             self.final_result.setText(f"You got {self.rolled_tier}!")
             self.final_result.setStyleSheet(f"color: {color}; font-size: 14px;")
-            QtCore.QTimer.singleShot(1500, self._finish)
+            _play_lottery_result_sound(True)  # Play win sound
+            self.continue_btn.show()  # Show continue button for user to close when ready
             return
         
         # Enable stage 2
@@ -2677,7 +2850,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             
             self.final_result.setStyleSheet(f"color: {color}; font-size: 14px;")
             _play_lottery_result_sound(True)  # Play win sound
-            QtCore.QTimer.singleShot(2500, self._finish)
+            self.continue_btn.show()  # Show continue button for user to close when ready
         else:
             self.stage2_result.setText("💔 FAILED 💔")
             self.stage2_result.setStyleSheet("color: #f44336; font-size: 14px; font-weight: bold;")
@@ -2686,7 +2859,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             self.final_result.setText(f"You almost had {self.rolled_tier}... All items were destroyed.")
             self.final_result.setStyleSheet("color: #f44336; font-size: 14px;")
             _play_lottery_result_sound(False)  # Play lose sound
-            QtCore.QTimer.singleShot(2000, self._finish)
+            self.continue_btn.show()  # Show continue button for user to close when ready
     
     def _animate_tier_stage(self, slider, result_label, target_roll, on_complete):
         """Animate tier roll with bounce effect."""
@@ -3272,6 +3445,26 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         sound_row.addWidget(self.sound_toggle)
         layout.addLayout(sound_row)
         
+        # Continue button (hidden until animation complete)
+        self.continue_btn = QtWidgets.QPushButton("Continue")
+        self.continue_btn.setStyleSheet("""
+            QPushButton {
+                background: #4caf50;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 24px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: #66bb6a;
+            }
+        """)
+        self.continue_btn.clicked.connect(self._finish)
+        self.continue_btn.hide()
+        layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
+        
         layout.addStretch()
     
     def _start_stage_1(self):
@@ -3493,8 +3686,8 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         # Play lottery result sound
         _play_lottery_result_sound(self.won)
         
-        # Auto-close after delay
-        QtCore.QTimer.singleShot(2500, self._finish)
+        # Show continue button for user to close when ready
+        self.continue_btn.show()
     
     def _finish(self):
         """Emit result and close."""
@@ -3841,6 +4034,26 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         sound_row.addWidget(self.sound_toggle)
         container_layout.addLayout(sound_row)
         
+        # Continue button (hidden until animation complete)
+        self.continue_btn = QtWidgets.QPushButton("Continue")
+        self.continue_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4caf50;
+                color: white;
+                border: none;
+                padding: 10px 30px;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
+        self.continue_btn.clicked.connect(self._finish)
+        self.continue_btn.hide()
+        container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
+        
         layout.addWidget(container)
     
     def _start_animation(self):
@@ -3966,8 +4179,8 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         # Play win sound (FocusTimer always wins an item)
         _play_lottery_result_sound(True)
         
-        # Auto-close after delay
-        QtCore.QTimer.singleShot(3000, self._finish)
+        # Show continue button for user to close when ready
+        self.continue_btn.show()
     
     def _finish(self):
         """Emit result and close."""
@@ -4107,6 +4320,26 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         self.sound_toggle.toggled.connect(set_lottery_sound_enabled)
         sound_row.addWidget(self.sound_toggle)
         layout.addLayout(sound_row)
+        
+        # Continue button (hidden until animation complete)
+        self.continue_btn = QtWidgets.QPushButton("Continue")
+        self.continue_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4caf50;
+                color: white;
+                border: none;
+                padding: 10px 30px;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
+        self.continue_btn.clicked.connect(self._finish)
+        self.continue_btn.hide()
+        layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
     
     def _start_animation(self):
         """Start the tier roll animation using bounce path."""
@@ -4206,8 +4439,8 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         # Play win sound (activity always awards an item)
         _play_lottery_result_sound(True)
         
-        # Auto-close after delay
-        QtCore.QTimer.singleShot(3000, self._finish)
+        # Show continue button for user to close when ready
+        self.continue_btn.show()
     
     def _finish(self):
         """Emit result and close."""
@@ -4426,6 +4659,26 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         self.sound_toggle.toggled.connect(set_lottery_sound_enabled)
         sound_row.addWidget(self.sound_toggle)
         layout.addLayout(sound_row)
+        
+        # Continue button (hidden until animation finishes)
+        self.continue_btn = QtWidgets.QPushButton("Continue")
+        self.continue_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4caf50;
+                color: white;
+                border: none;
+                padding: 10px 30px;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+        """)
+        self.continue_btn.clicked.connect(self._finish)
+        self.continue_btn.hide()
+        layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
     
     def _start_animation(self):
         """Start the tier roll animation using bounce path."""
@@ -4524,8 +4777,8 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         # Play win sound (weight always awards an item)
         _play_lottery_result_sound(True)
         
-        # Auto-close after delay
-        QtCore.QTimer.singleShot(3000, self._finish)
+        # Show continue button for user to close when ready
+        self.continue_btn.show()
     
     def _finish(self):
         """Emit result and close."""

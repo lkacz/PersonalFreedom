@@ -79,6 +79,76 @@ STATS_PATH = APP_DIR / "stats.json"
 GOALS_PATH = APP_DIR / "goals.json"
 SESSION_STATE_PATH = APP_DIR / ".session_state.json"  # Crash recovery file
 
+# Schema version for config migrations
+# Increment when config structure changes in a breaking way
+CONFIG_SCHEMA_VERSION = 1
+
+# Auto-backup settings
+MAX_AUTO_BACKUPS = 5  # Keep this many periodic backups
+
+
+def ensure_backup_dir(user_dir: Optional[Path] = None) -> Path:
+    """Ensure backup directory exists and return its path."""
+    base = user_dir if user_dir else APP_DIR
+    backup_dir = base / "backups"
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    return backup_dir
+
+
+def create_auto_backup(config_path: Path, backup_dir: Path, prefix: str = "auto") -> Optional[Path]:
+    """
+    Create an automatic backup of the config file.
+    
+    Returns the path to the backup file, or None if backup failed.
+    Automatically removes old backups to keep only MAX_AUTO_BACKUPS.
+    """
+    if not config_path.exists():
+        return None
+    
+    try:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_path = backup_dir / f"{prefix}_config_{timestamp}.json"
+        shutil.copy2(config_path, backup_path)
+        
+        # Cleanup old backups - keep only MAX_AUTO_BACKUPS
+        backups = sorted(
+            backup_dir.glob(f"{prefix}_config_*.json"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True
+        )
+        for old_backup in backups[MAX_AUTO_BACKUPS:]:
+            try:
+                old_backup.unlink()
+            except OSError:
+                pass
+        
+        logger.info(f"Created auto-backup: {backup_path.name}")
+        return backup_path
+    except (IOError, OSError) as e:
+        logger.warning(f"Failed to create auto-backup: {e}")
+        return None
+
+
+def get_available_backups(backup_dir: Path) -> list:
+    """Get list of available backups sorted by date (newest first)."""
+    backups = []
+    try:
+        for backup_file in backup_dir.glob("*_config_*.json"):
+            try:
+                stat = backup_file.stat()
+                backups.append({
+                    "path": backup_file,
+                    "name": backup_file.name,
+                    "date": datetime.fromtimestamp(stat.st_mtime),
+                    "size": stat.st_size,
+                })
+            except OSError:
+                continue
+        backups.sort(key=lambda x: x["date"], reverse=True)
+    except OSError:
+        pass
+    return backups
+
 
 def atomic_write_json(filepath: Path, data: dict) -> None:
     """
@@ -465,11 +535,26 @@ class BlockerCore:
             self.categories_enabled = {cat: True for cat in SITE_CATEGORIES}
             self.save_config()
 
-    def save_config(self) -> None:
-        """Save configuration to file atomically (crash-safe)"""
+    def save_config(self, create_backup: bool = False) -> None:
+        """Save configuration to file atomically (crash-safe)
+        
+        Args:
+            create_backup: If True, create an auto-backup before saving.
+                          Use for significant events like level-ups or session completion.
+        """
         try:
             self.config_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Create auto-backup if requested (e.g., on significant changes)
+            if create_backup:
+                backup_dir = ensure_backup_dir(self.user_dir)
+                create_auto_backup(self.config_path, backup_dir)
+            
             config = {
+                # Schema metadata for future migrations
+                '_schema_version': CONFIG_SCHEMA_VERSION,
+                '_last_modified': datetime.now().isoformat(),
+                # Settings
                 'blacklist': self.blacklist,
                 'whitelist': self.whitelist,
                 'categories_enabled': self.categories_enabled,
@@ -541,6 +626,118 @@ class BlockerCore:
             atomic_write_json(self.stats_path, self.stats)
         except (IOError, OSError):
             pass
+
+    def export_all_data(self, export_path: Path) -> dict:
+        """
+        Export all user data to a ZIP file for backup or GDPR compliance.
+        
+        Args:
+            export_path: Path to write the ZIP file
+            
+        Returns:
+            dict with 'success' (bool), 'message' (str), and 'files' (list of exported filenames)
+        """
+        import zipfile
+        
+        try:
+            export_path = Path(export_path)
+            exported_files = []
+            
+            with zipfile.ZipFile(export_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+                # Add metadata
+                metadata = {
+                    "export_date": datetime.now().isoformat(),
+                    "app_version": "PersonalLiberty",
+                    "schema_version": CONFIG_SCHEMA_VERSION,
+                    "username": self.username or "Default",
+                }
+                zf.writestr("_export_metadata.json", json.dumps(metadata, indent=2))
+                exported_files.append("_export_metadata.json")
+                
+                # Export config (remove password hash for privacy)
+                if self.config_path.exists():
+                    try:
+                        with open(self.config_path, 'r', encoding='utf-8') as f:
+                            config_data = json.load(f)
+                        config_data.pop('password_hash', None)
+                        zf.writestr("config.json", json.dumps(config_data, indent=2))
+                        exported_files.append("config.json")
+                    except Exception:
+                        pass
+                
+                # Export stats
+                if self.stats_path.exists():
+                    zf.write(self.stats_path, "stats.json")
+                    exported_files.append("stats.json")
+                
+                # Export goals if exists
+                if self.goals_path.exists():
+                    zf.write(self.goals_path, "goals.json")
+                    exported_files.append("goals.json")
+                
+                # Export backups folder if exists
+                backup_dir = ensure_backup_dir(self.user_dir)
+                if backup_dir.exists():
+                    for backup_file in backup_dir.glob("*.json"):
+                        arcname = f"backups/{backup_file.name}"
+                        zf.write(backup_file, arcname)
+                        exported_files.append(arcname)
+                
+                # Create human-readable summary
+                summary = self._create_export_summary()
+                zf.writestr("_summary.txt", summary)
+                exported_files.append("_summary.txt")
+            
+            return {
+                "success": True,
+                "message": f"Exported {len(exported_files)} files to {export_path.name}",
+                "files": exported_files,
+            }
+            
+        except Exception as e:
+            logger.error(f"Export failed: {e}")
+            return {
+                "success": False,
+                "message": str(e),
+                "files": [],
+            }
+
+    def _create_export_summary(self) -> str:
+        """Create a human-readable summary of exported data."""
+        lines = [
+            "=" * 60,
+            "PERSONAL LIBERTY - DATA EXPORT SUMMARY",
+            "=" * 60,
+            f"Export Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            f"User Profile: {self.username or 'Default'}",
+            "",
+            "STATISTICS",
+            "-" * 40,
+            f"Total Focus Time: {self.stats.get('total_focus_time', 0) // 60} minutes",
+            f"Sessions Completed: {self.stats.get('sessions_completed', 0)}",
+            f"Best Streak: {self.stats.get('best_streak', 0)} days",
+            f"Current Streak: {self.stats.get('streak_days', 0)} days",
+            "",
+            "HEALTH TRACKING",
+            "-" * 40,
+            f"Weight Entries: {len(self.weight_entries)}",
+            f"Sleep Entries: {len(self.sleep_entries)}",
+            f"Activity Entries: {len(self.activity_entries)}",
+            f"Water Entries: {len(self.water_entries)}",
+            "",
+            "GAME DATA",
+            "-" * 40,
+            f"Coins: {self.adhd_buster.get('coins', 0)}",
+            f"Total XP: {self.adhd_buster.get('total_xp', 0)}",
+            f"Inventory Items: {len(self.adhd_buster.get('inventory', []))}",
+            f"Entities Collected: {len(self.adhd_buster.get('entitidex', {}))}",
+            "",
+            "=" * 60,
+            "This export contains all your Personal Liberty data.",
+            "Keep this file safe for backup or data portability.",
+            "=" * 60,
+        ]
+        return "\n".join(lines)
 
     def record_shutdown_time(self, event_type: str = "shutdown") -> None:
         """Record the current time as a shutdown event.

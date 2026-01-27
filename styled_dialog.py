@@ -1214,15 +1214,8 @@ class ItemRewardDialog(StyledDialog):
             header.setAlignment(QtCore.Qt.AlignCenter)
             section_layout.addWidget(header)
             
-            # Entity mini-cards in horizontal layout
-            cards_container = QtWidgets.QWidget()
-            cards_container.setStyleSheet("background: transparent;")
-            cards_layout = QtWidgets.QHBoxLayout(cards_container)
-            cards_layout.setContentsMargins(0, 0, 0, 0)
-            cards_layout.setSpacing(6)
-            cards_layout.addStretch()
-            
-            for entity_data in self._entity_perk_contributors[:4]:  # Limit to 4 for space
+            # Helper function to create an entity card
+            def create_entity_card(entity_data: dict) -> QtWidgets.QFrame:
                 card = QtWidgets.QFrame()
                 is_exceptional = entity_data.get("is_exceptional", False)
                 card.setStyleSheet("""
@@ -1261,15 +1254,87 @@ class ItemRewardDialog(StyledDialog):
                 text_lbl.setToolTip(entity_data.get("description", f"{name}: +{value}%"))
                 card_layout.addWidget(text_lbl)
                 
+                return card
+            
+            # Entity mini-cards in horizontal layout (first 4)
+            cards_container = QtWidgets.QWidget()
+            cards_container.setStyleSheet("background: transparent;")
+            cards_layout = QtWidgets.QHBoxLayout(cards_container)
+            cards_layout.setContentsMargins(0, 0, 0, 0)
+            cards_layout.setSpacing(6)
+            cards_layout.addStretch()
+            
+            for entity_data in self._entity_perk_contributors[:4]:
+                card = create_entity_card(entity_data)
                 cards_layout.addWidget(card)
             
-            if len(self._entity_perk_contributors) > 4:
-                more_lbl = QtWidgets.QLabel(f"+{len(self._entity_perk_contributors) - 4} more")
-                more_lbl.setStyleSheet("color: #888; font-size: 10px; background: transparent;")
-                cards_layout.addWidget(more_lbl)
+            # If more than 4 contributors, add expandable section
+            has_more = len(self._entity_perk_contributors) > 4
+            expanded_container = None
+            toggle_btn = None
+            
+            if has_more:
+                # Create toggle button
+                remaining_count = len(self._entity_perk_contributors) - 4
+                toggle_btn = QtWidgets.QPushButton(f"▶ +{remaining_count} more")
+                toggle_btn.setStyleSheet("""
+                    QPushButton {
+                        color: #7986cb;
+                        background: transparent;
+                        border: 1px solid #7986cb;
+                        border-radius: 4px;
+                        font-size: 10px;
+                        padding: 2px 6px;
+                    }
+                    QPushButton:hover {
+                        background: rgba(121, 134, 203, 0.2);
+                    }
+                """)
+                toggle_btn.setCursor(QtCore.Qt.PointingHandCursor)
+                cards_layout.addWidget(toggle_btn)
+                
+                # Create expanded container (initially hidden)
+                expanded_container = QtWidgets.QWidget()
+                expanded_container.setStyleSheet("background: transparent;")
+                expanded_container.setVisible(False)
+                expanded_layout = QtWidgets.QVBoxLayout(expanded_container)
+                expanded_layout.setContentsMargins(0, 4, 0, 0)
+                expanded_layout.setSpacing(4)
+                
+                # Add remaining entities in rows of 4
+                remaining_entities = self._entity_perk_contributors[4:]
+                for i in range(0, len(remaining_entities), 4):
+                    row_widget = QtWidgets.QWidget()
+                    row_widget.setStyleSheet("background: transparent;")
+                    row_layout = QtWidgets.QHBoxLayout(row_widget)
+                    row_layout.setContentsMargins(0, 0, 0, 0)
+                    row_layout.setSpacing(6)
+                    row_layout.addStretch()
+                    
+                    for entity_data in remaining_entities[i:i+4]:
+                        card = create_entity_card(entity_data)
+                        row_layout.addWidget(card)
+                    
+                    row_layout.addStretch()
+                    expanded_layout.addWidget(row_widget)
+                
+                # Toggle function
+                def toggle_expanded():
+                    is_visible = expanded_container.isVisible()
+                    expanded_container.setVisible(not is_visible)
+                    if is_visible:
+                        toggle_btn.setText(f"▶ +{remaining_count} more")
+                    else:
+                        toggle_btn.setText(f"▼ Hide {remaining_count}")
+                
+                toggle_btn.clicked.connect(toggle_expanded)
             
             cards_layout.addStretch()
             section_layout.addWidget(cards_container)
+            
+            # Add expanded container after main row
+            if expanded_container:
+                section_layout.addWidget(expanded_container)
             
             layout.addWidget(section)
             
