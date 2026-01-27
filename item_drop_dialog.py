@@ -607,8 +607,16 @@ class EnhancedItemDropDialog(StyledDialog):
         """Start celebration animation."""
         rarity = self.item.get("rarity", "Common")
         
-        # Play win sound for Epic and Legendary using lottery sound system
-        if rarity in ["Epic", "Legendary"]:
+        # Play special sounds for Epic and Legendary items
+        if rarity == "Legendary":
+            # Legendary items get the truly epic fanfare!
+            try:
+                from lottery_sounds import play_legendary_sound
+                play_legendary_sound()
+            except Exception:
+                pass
+        elif rarity == "Epic":
+            # Epic items get the standard win sound
             try:
                 from lottery_sounds import play_win_sound
                 play_win_sound()

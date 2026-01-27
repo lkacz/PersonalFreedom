@@ -2980,7 +2980,7 @@ class TimerTab(QtWidgets.QWidget):
         
         # 🏙️ Add city bonus contributors for rarity (Artisan Guild)
         try:
-            from gamification import get_city_bonuses
+            from city import get_city_bonuses
             city_bonuses = get_city_bonuses(self.blocker.adhd_buster)
             rarity_bonus = city_bonuses.get("rarity_bias_bonus", 0)
             if rarity_bonus > 0:
@@ -3715,7 +3715,7 @@ class TimerTab(QtWidgets.QWidget):
         # 🏙️ CITY BONUS: Library XP bonus (preview what award_xp will apply)
         city_xp_bonus = 0
         try:
-            from gamification import get_city_bonuses
+            from city import get_city_bonuses
             city_bonuses = get_city_bonuses(self.blocker.adhd_buster)
             xp_bonus_pct_city = city_bonuses.get("xp_bonus", 0)
             if xp_bonus_pct_city > 0 and base_xp_total > 0:
@@ -18655,7 +18655,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 self.merge_rate_lbl.setText(f"⚠️ {reason}")
             else:
                 # Calculate the discounted merge cost to check affordability
-                from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount, apply_coin_flat_reduction, get_entity_merge_perk_contributors, get_city_bonuses
+                from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount, apply_coin_flat_reduction, get_entity_merge_perk_contributors
+                from city import get_city_bonuses
                 current_coins = self.blocker.adhd_buster.get("coins", 0)
                 discount_pct = calculate_merge_discount(items)
                 
@@ -18760,7 +18761,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
             return
 
         # Check if player has enough coins for the discounted base merge cost
-        from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount, apply_coin_flat_reduction, get_entity_merge_perk_contributors, get_city_bonuses
+        from gamification import COIN_COSTS, calculate_merge_discount, apply_coin_discount, apply_coin_flat_reduction, get_entity_merge_perk_contributors
+        from city import get_city_bonuses
         current_coins = self.blocker.adhd_buster.get("coins", 0)
         temp_discount = calculate_merge_discount([inventory[idx] for idx in valid_indices])
         
@@ -18821,7 +18823,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
             return
         
         # Calculate total cost (base + optional boost + tier upgrade) using centralized costs
-        from gamification import COIN_COSTS, apply_coin_discount, apply_coin_flat_reduction, get_city_bonuses
+        from gamification import COIN_COSTS, apply_coin_discount, apply_coin_flat_reduction
+        from city import get_city_bonuses
         boost_enabled = getattr(dialog, 'boost_enabled', False)
         tier_upgrade_enabled = getattr(dialog, 'tier_upgrade_enabled', False)
         
