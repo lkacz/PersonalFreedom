@@ -32,6 +32,7 @@ if TYPE_CHECKING:
 __all__ = [
     "play_win_sound",
     "play_lose_sound",
+    "play_legendary_sound",
     "play_lottery_result",
     "is_sound_available",
     "get_win_count",
@@ -82,28 +83,44 @@ class WaveformType(str, Enum):
 NOTES: Dict[str, float] = {
     # Octave 3 (for lose sounds - lower, softer)
     "E3": 164.81,
+    "F#3": 185.00,
     "G3": 196.00,
+    "G#3": 207.65,
     "A3": 220.00,
+    "Bb3": 233.08,
     "B3": 246.94,
     # Octave 4
     "C4": 261.63,
+    "C#4": 277.18,
     "D4": 293.66,
+    "Eb4": 311.13,
     "E4": 329.63,
     "F4": 349.23,
+    "F#4": 369.99,
     "G4": 392.00,
+    "G#4": 415.30,
     "A4": 440.00,
+    "Bb4": 466.16,
     "B4": 493.88,
     # Octave 5 (for win sounds - brighter)
     "C5": 523.25,
+    "C#5": 554.37,
     "D5": 587.33,
+    "Eb5": 622.25,
     "E5": 659.25,
     "F5": 698.46,
+    "F#5": 739.99,
     "G5": 783.99,
+    "G#5": 830.61,
     "A5": 880.00,
+    "Bb5": 932.33,
     "B5": 987.77,
     # Octave 6 (accent)
     "C6": 1046.50,
+    "D6": 1174.66,
+    "Eb6": 1244.51,
     "E6": 1318.51,
+    "F#6": 1479.98,
     "G6": 1567.98,
 }
 
@@ -183,6 +200,8 @@ class Envelope:
     RELEASE_FADE = 90
     RELEASE_ECHO = 100
     RELEASE_AMBIENT = 120
+    RELEASE_ETHEREAL = 200
+    RELEASE_LEGENDARY = 350
 
 
 # ============================================================================
@@ -478,6 +497,56 @@ WIN_MELODIES: List[MelodyDefinition] = [
 
 
 # ============================================================================
+# LEGENDARY MELODY - Dramatic minor-key synth fanfare
+# ============================================================================
+# 80s arena rock inspired - serious, dramatic, triumphant in a minor key.
+# Uses the "rich" waveform for that classic synth brass sound.
+# F# minor key for that epic, serious victory feel.
+
+# Extended durations for dramatic pacing
+BUILD = 280        # Building tension
+DRAMATIC = 350     # Dramatic emphasis  
+EPIC = 450         # Epic sustained notes
+CLIMAX = 600       # Climactic moments
+FINALE = 1200      # Final resolution - extended for proper fade
+
+LEGENDARY_MELODY: MelodyDefinition = MelodyDefinition(
+    name="legendary_fanfare",
+    description="Dramatic minor-key synth fanfare - serious victory",
+    elements=(
+        # Opening power fifth - dramatic announcement (F#m)
+        ChordSpec((
+            ToneSpec("F#4", BUILD, Volume.MEDIUM_LOW, WaveformType.RICH.value, Envelope.ATTACK_SLOW, Envelope.RELEASE_SOFT),
+            ToneSpec("C#5", BUILD, Volume.SOFT, WaveformType.RICH.value, Envelope.ATTACK_SLOW, Envelope.RELEASE_SOFT),
+        )),
+        # Rising synth line - building intensity
+        ToneSpec("F#4", DRAMATIC, Volume.MEDIUM_LOW, WaveformType.RICH.value, Envelope.ATTACK_NORMAL, Envelope.RELEASE_GENTLE),
+        ToneSpec("A4", DRAMATIC, Volume.MEDIUM_LOW, WaveformType.RICH.value, Envelope.ATTACK_NORMAL, Envelope.RELEASE_GENTLE),
+        ToneSpec("B4", DRAMATIC, Volume.MEDIUM, WaveformType.RICH.value, Envelope.ATTACK_NORMAL, Envelope.RELEASE_GENTLE),
+        # The dramatic climb
+        ToneSpec("C#5", EPIC, Volume.MEDIUM, WaveformType.RICH.value, Envelope.ATTACK_SOFT, Envelope.RELEASE_SMOOTH),
+        ToneSpec("D5", BUILD, Volume.MEDIUM, WaveformType.RICH.value, Envelope.ATTACK_QUICK, Envelope.RELEASE_SHORT),
+        # Climax - the victory note with power
+        ToneSpec("E5", CLIMAX, Volume.MEDIUM, WaveformType.RICH.value, Envelope.ATTACK_SLOW, Envelope.RELEASE_SUSTAINED),
+        # Descending resolution - serious, confident
+        ToneSpec("D5", BUILD, Volume.SOFT, WaveformType.RICH.value, Envelope.ATTACK_SOFT, Envelope.RELEASE_GENTLE),
+        ToneSpec("C#5", BUILD, Volume.SOFT, WaveformType.RICH.value, Envelope.ATTACK_SOFT, Envelope.RELEASE_GENTLE),
+        # Final chord - F# minor, delicate and ethereal fade-out
+        ChordSpec((
+            ToneSpec("F#3", FINALE, Volume.QUIET, WaveformType.SINE.value, Envelope.ATTACK_GRADUAL, Envelope.RELEASE_LEGENDARY),
+            ToneSpec("C#4", FINALE, Volume.WHISPER, WaveformType.SINE.value, Envelope.ATTACK_GRADUAL, Envelope.RELEASE_LEGENDARY),
+            ToneSpec("F#4", FINALE, Volume.SOFT, WaveformType.SINE.value, Envelope.ATTACK_SWELL, Envelope.RELEASE_LEGENDARY),
+            ToneSpec("A4", FINALE, Volume.QUIET, WaveformType.SINE.value, Envelope.ATTACK_SWELL, Envelope.RELEASE_LEGENDARY),
+            ToneSpec("G#4", FINALE, Volume.WHISPER, WaveformType.SINE.value, Envelope.ATTACK_GRADUAL, Envelope.RELEASE_ETHEREAL),
+        )),
+    ),
+)
+
+# Cache for legendary sound
+_legendary_sound_cache: Optional[QByteArray] = None
+
+
+# ============================================================================
 # LOSE MELODIES - Gentle disappointment, descending, consoling
 # ============================================================================
 
@@ -681,11 +750,13 @@ def preload_lottery_sounds() -> int:
     Sounds are generated lazily by default, so this is optional.
 
     Returns:
-        Number of sounds preloaded (win + lose).
+        Number of sounds preloaded (win + lose + legendary).
 
     Raises:
         RuntimeError: If audio system is not available.
     """
+    global _legendary_sound_cache
+    
     if not AUDIO_AVAILABLE:
         _logger.warning("Cannot preload sounds: audio system not available")
         return 0
@@ -706,6 +777,14 @@ def preload_lottery_sounds() -> int:
                 count += 1
         except (RuntimeError, OSError) as e:
             _logger.warning(f"Failed to preload lose sound {idx}: {e}")
+
+    # Preload the legendary fanfare
+    try:
+        if _legendary_sound_cache is None:
+            _legendary_sound_cache = LEGENDARY_MELODY.compose()
+            count += 1
+    except (RuntimeError, OSError) as e:
+        _logger.warning(f"Failed to preload legendary sound: {e}")
 
     _logger.info(f"Preloaded {count} lottery sounds")
     return count
@@ -758,6 +837,48 @@ def play_win_sound() -> bool:
     except Exception as e:
         # Catch-all for unexpected errors - sound is non-critical
         _logger.exception("Unexpected error in win sound playback")
+        return False
+
+
+def play_legendary_sound() -> bool:
+    """
+    Play the epic legendary item fanfare.
+
+    A truly special, majestic melody reserved only for legendary drops.
+    Longer and more dramatic than regular win sounds (~800-1000ms).
+    Features a dramatic herald opening, rising tension, and triumphant
+    resolution with shimmering harmonics.
+
+    Note:
+        This function is NOT thread-safe. Call only from the main/Qt thread.
+        The underlying audio manager uses Qt objects which require
+        single-threaded access from the Qt event loop.
+
+    Returns:
+        True if sound was played successfully, False otherwise.
+        Never raises exceptions - sound playback is non-critical.
+    """
+    global _legendary_sound_cache
+
+    if not AUDIO_AVAILABLE:
+        _logger.debug("Audio system not available for legendary sound")
+        return False
+
+    try:
+        # Use cached audio data if available, otherwise generate and cache
+        if _legendary_sound_cache is None:
+            _legendary_sound_cache = LEGENDARY_MELODY.compose()
+
+        manager = CelebrationAudioManager.get_instance()  # type: ignore[union-attr]
+        return manager.play_buffer(_legendary_sound_cache)  # type: ignore[arg-type]
+
+    except (RuntimeError, OSError, AttributeError) as e:
+        # These can occur from audio device issues
+        _logger.warning(f"Failed to play legendary sound: {e}")
+        return False
+    except Exception as e:
+        # Catch-all for unexpected errors - sound is non-critical
+        _logger.exception("Unexpected error in legendary sound playback")
         return False
 
 
