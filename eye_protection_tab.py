@@ -186,27 +186,32 @@ class GuidanceManager(QtCore.QObject):
         Returns:
             True if voice was loaded successfully
         """
-        if name not in self.AVAILABLE_VOICES:
+        try:
+            # Guard against empty or invalid names (can happen from combo box signals)
+            if not name or name not in self.AVAILABLE_VOICES:
+                return False
+            
+            # Check if model exists (use helper for PyInstaller compatibility)
+            app_dir = get_app_dir()
+            voice_config = self.AVAILABLE_VOICES[name]
+            model_path = app_dir / voice_config["file"]
+            if not model_path.exists():
+                print(f"[GuidanceManager] Voice model not found: {model_path}")
+                return False
+            
+            # Load the new voice
+            self._current_voice_name = name
+            if save:
+                EyeGuidanceSettings.set_voice_name(name)
+            
+            # Re-initialize with new voice
+            self.piper_voice = None
+            self._init_piper()
+            
+            return self.piper_voice is not None
+        except Exception as e:
+            print(f"[GuidanceManager] Error setting voice '{name}': {e}")
             return False
-        
-        # Check if model exists (use helper for PyInstaller compatibility)
-        app_dir = get_app_dir()
-        voice_config = self.AVAILABLE_VOICES[name]
-        model_path = app_dir / voice_config["file"]
-        if not model_path.exists():
-            print(f"[GuidanceManager] Voice model not found: {model_path}")
-            return False
-        
-        # Load the new voice
-        self._current_voice_name = name
-        if save:
-            EyeGuidanceSettings.set_voice_name(name)
-        
-        # Re-initialize with new voice
-        self.piper_voice = None
-        self._init_piper()
-        
-        return self.piper_voice is not None
     
     @QtCore.Slot(bytes)
     def _play_tts_audio(self, pcm_44100: bytes):
@@ -464,12 +469,16 @@ class EyeProtectionTab(QtWidgets.QWidget):
 
         # Voice Selection (Hidden by default unless Voice mode active)
         self.voice_combo = NoScrollComboBox()
+        
+        # Block signals during initialization to prevent spurious set_voice calls
+        self.voice_combo.blockSignals(True)
         self.voice_combo.addItems(self.guidance.get_voice_names())
         
         # Set current selection
         current_voice = EyeGuidanceSettings.get_voice_name()
-        if current_voice:
+        if current_voice and current_voice in self.guidance.AVAILABLE_VOICES:
             self.voice_combo.setCurrentText(current_voice)
+        self.voice_combo.blockSignals(False)
             
         self.voice_combo.currentTextChanged.connect(self.guidance.set_voice)
         self.voice_combo.setStyleSheet("""
