@@ -3197,11 +3197,15 @@ class TimerTab(QtWidgets.QWidget):
             # Check if this was a perfect session (no distraction attempts)
             is_perfect = self._is_perfect_session()
             
+            # Get streak for encounter bonus (+2% per consecutive day)
+            streak_days = self.blocker.stats.get("streak_days", 0)
+            
             # Check for encounter
             encounter = check_entitidex_encounter(
                 self.blocker.adhd_buster,
                 session_minutes,
-                perfect_session=is_perfect
+                perfect_session=is_perfect,
+                streak_days=streak_days
             )
             
             if not encounter["triggered"] or not encounter["entity"]:
@@ -3410,12 +3414,16 @@ class TimerTab(QtWidgets.QWidget):
             # Bypass sessions are never "perfect" 
             is_perfect = False
             
+            # Get streak for encounter bonus (+2% per consecutive day)
+            streak_days = self.blocker.stats.get("streak_days", 0)
+            
             # Check for encounter with bypass penalty applied
             encounter = check_entitidex_encounter(
                 self.blocker.adhd_buster,
                 session_minutes,
                 perfect_session=is_perfect,
                 was_bypass_used=True,  # Apply bypass penalty
+                streak_days=streak_days,
             )
             
             if not encounter["triggered"] or not encounter["entity"]:
@@ -3852,6 +3860,7 @@ class TimerTab(QtWidgets.QWidget):
                 main_window._award_city_resources_for_session(session_minutes * 60)
             
             # Give rewards (same as a normal session)
+            # Note: _give_session_rewards already includes entitidex encounter check
             self._give_session_rewards(session_minutes)
             
             # Show priority time log dialog
@@ -3912,6 +3921,7 @@ class TimerTab(QtWidgets.QWidget):
             self.blocker.unblock_sites(force=True)
 
             # Give rewards for completing work session
+            # Note: _give_session_rewards already includes entitidex encounter check
             if session_minutes > 0:
                 self._give_session_rewards(session_minutes)
 
