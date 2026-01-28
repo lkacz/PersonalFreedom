@@ -25803,11 +25803,14 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             
             if hasattr(self, 'entitidex_tab'):
                 self.entitidex_tab.blocker = self.blocker
-                if hasattr(self.entitidex_tab, '_rebuild_grid'):
-                    self.entitidex_tab._rebuild_grid()
+                # Reload progress from new blocker's adhd_buster
+                if hasattr(self.entitidex_tab, 'refresh'):
+                    self.entitidex_tab.refresh()
             
             if hasattr(self, 'city_tab'):
                 self.city_tab.blocker = self.blocker
+                # CRITICAL: CityTab caches adhd_buster - must update it!
+                self.city_tab.adhd_buster = self.blocker.adhd_buster
                 if hasattr(self.city_tab, '_refresh_city'):
                     self.city_tab._refresh_city()
             
