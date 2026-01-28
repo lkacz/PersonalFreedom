@@ -25709,12 +25709,36 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             
             if hasattr(self, 'settings_tab'):
                 self.settings_tab.blocker = self.blocker
-                self.settings_tab._load_settings()
+                # SettingsTab doesn't have a load method, update relevant UI
+                if hasattr(self.settings_tab, '_update_pwd_status'):
+                    self.settings_tab._update_pwd_status()
+                if hasattr(self.settings_tab, '_update_enforcement_status'):
+                    self.settings_tab._update_enforcement_status()
             
-            if hasattr(self, 'game_tab'):
-                self.game_tab.blocker = self.blocker
-                if hasattr(self.game_tab, '_full_refresh'):
-                    self.game_tab._full_refresh()
+            if hasattr(self, 'categories_tab'):
+                self.categories_tab.blocker = self.blocker
+                if hasattr(self.categories_tab, 'refresh'):
+                    self.categories_tab.refresh()
+            
+            if hasattr(self, 'adhd_tab'):
+                self.adhd_tab.blocker = self.blocker
+                if hasattr(self.adhd_tab, 'refresh_all'):
+                    self.adhd_tab.refresh_all()
+            
+            if hasattr(self, 'story_tab'):
+                self.story_tab.blocker = self.blocker
+                if hasattr(self.story_tab, '_refresh_all'):
+                    self.story_tab._refresh_all()
+            
+            if hasattr(self, 'hydration_tab'):
+                self.hydration_tab.blocker = self.blocker
+                if hasattr(self.hydration_tab, '_refresh_display'):
+                    self.hydration_tab._refresh_display()
+            
+            if hasattr(self, 'activity_tab'):
+                self.activity_tab.blocker = self.blocker
+                if hasattr(self.activity_tab, '_refresh_display'):
+                    self.activity_tab._refresh_display()
             
             if hasattr(self, 'eye_tab'):
                 self.eye_tab.blocker = self.blocker
