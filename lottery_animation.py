@@ -428,8 +428,8 @@ class LotteryRollDialog(QtWidgets.QDialog):
         """Build the slider animation UI."""
         self.setWindowTitle(self.title_text)
         self.setModal(True)
-        self.setMinimumSize(400, 160)
-        load_dialog_geometry(self, "LotteryRollDialog", QtCore.QSize(500, 200))
+        self.setMinimumSize(400, 260)
+        load_dialog_geometry(self, "LotteryRollDialog", QtCore.QSize(500, 280))
         self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
         
         layout = QtWidgets.QVBoxLayout(self)

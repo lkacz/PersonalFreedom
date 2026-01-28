@@ -18,15 +18,15 @@ from .progress_tracker import EntitidexProgress
 
 ENCOUNTER_CONFIG = {
     # Base encounter chance after completing a focus session
-    "base_chance": 0.40,  # 40%
+    "base_chance": 0.55,  # 55% - increased from 40% for better engagement
     
     # Bonuses that increase encounter chance
-    "bonus_per_15min": 0.05,      # +5% per 15 min beyond minimum
-    "bonus_perfect_session": 0.10,  # +10% for no bypass attempts
-    "bonus_per_streak_day": 0.02,   # +2% per consecutive day
+    "bonus_per_15min": 0.08,      # +8% per 15 min beyond minimum (was 5%)
+    "bonus_perfect_session": 0.12,  # +12% for no bypass attempts (was 10%)
+    "bonus_per_streak_day": 0.03,   # +3% per consecutive day (was 2%)
     
     # Maximum encounter chance (cap)
-    "max_chance": 0.85,  # 85% maximum
+    "max_chance": 0.92,  # 92% maximum (was 85%)
     
     # Entity selection weights
     "weight_power_near": 100,      # Entity within 200 power of hero
@@ -44,8 +44,8 @@ ENCOUNTER_CONFIG = {
     "exceptional_chance": 0.20,
     
     # Bypass penalty - reduced chance when session ended early via bypass
-    # 0.25 = 25% of normal chance (75% penalty)
-    "bypass_penalty_multiplier": 0.25,
+    # 0.40 = 40% of normal chance (60% penalty) - was 25%, now more forgiving
+    "bypass_penalty_multiplier": 0.40,
 }
 
 
@@ -186,6 +186,10 @@ def should_trigger_encounter(
         was_bypass_used=was_bypass_used,
         city_encounter_bonus=city_encounter_bonus,
     )
+    
+    # Always log encounter check for debugging
+    result_str = "✅ ENCOUNTER!" if occurred else "❌ No encounter"
+    print(f"[Entitidex] {result_str} | Chance: {chance*100:.1f}% | Session: {session_minutes}min | Perfect: {was_perfect_session} | Streak: {streak_days} | Bypass: {was_bypass_used}")
     
     # Log perk contribution if any
     if perk_bonus > 0 and occurred:

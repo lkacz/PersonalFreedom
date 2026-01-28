@@ -720,7 +720,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.entity_perk_contributors = self.entity_perks.get("contributors", [])
         
         # Import discount helpers from gamification
-        from gamification import apply_coin_discount, apply_coin_flat_reduction, get_city_bonuses
+        from gamification import apply_coin_discount, apply_coin_flat_reduction
+        from city import get_city_bonuses
         
         # Entity coin_discount is a FLAT coin reduction (e.g., -2 coins from Vending Machine perk)
         # Item coin_discount is a PERCENTAGE discount
@@ -2806,18 +2807,107 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             # Mark in merge_result that we salvaged one item
             self.merge_result["salvaged_item"] = saved_item
             self.merge_result["salvage_cost"] = salvage_cost
-            # Show confirmation
+            # Show styled confirmation dialog
             item_name = saved_item.get("name", "Unknown")
             item_rarity = saved_item.get("rarity", "Common")
-            msg = QtWidgets.QMessageBox(self)
-            msg.setWindowTitle("🎁 Item Salvaged!")
-            msg.setText(
-                f"<b style='color: #4caf50;'>{item_name}</b> ({item_rarity}) has been saved!<br><br>"
-                f"It will be returned to your inventory."
-            )
-            msg.setIcon(QtWidgets.QMessageBox.NoIcon)
-            msg.setOption(QtWidgets.QMessageBox.DontUseNativeDialog, True)
-            msg.exec_()
+            rarity_color = ITEM_RARITIES.get(item_rarity, {}).get("color", "#9e9e9e")
+            item_power = saved_item.get("power", 0)
+            item_slot = saved_item.get("slot", "Unknown")
+            
+            # Create styled dialog
+            salvage_dialog = QtWidgets.QDialog(self)
+            salvage_dialog.setWindowTitle("🎁 Item Salvaged!")
+            salvage_dialog.setModal(True)
+            salvage_dialog.setMinimumWidth(400)
+            salvage_dialog.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
+            salvage_dialog.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+            
+            # Outer layout
+            outer_layout = QtWidgets.QVBoxLayout(salvage_dialog)
+            outer_layout.setContentsMargins(0, 0, 0, 0)
+            
+            # Main frame with styled border
+            main_frame = QtWidgets.QFrame()
+            main_frame.setObjectName("salvageFrame")
+            main_frame.setStyleSheet("""
+                QFrame#salvageFrame {
+                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                        stop:0 #1A2E1A, stop:1 #0D1A0D);
+                    border: 2px solid #4caf50;
+                    border-radius: 16px;
+                }
+                QLabel { color: #E0E0E0; background: transparent; }
+            """)
+            outer_layout.addWidget(main_frame)
+            
+            layout = QtWidgets.QVBoxLayout(main_frame)
+            layout.setSpacing(16)
+            layout.setContentsMargins(24, 20, 24, 20)
+            
+            # Title with icon
+            title = QtWidgets.QLabel("🛡️ Item Salvaged! 🛡️")
+            title.setAlignment(QtCore.Qt.AlignCenter)
+            title.setStyleSheet("font-size: 20px; font-weight: bold; color: #4caf50;")
+            layout.addWidget(title)
+            
+            # Item card
+            item_card = QtWidgets.QFrame()
+            item_card.setStyleSheet(f"""
+                QFrame {{
+                    background-color: rgba(76, 175, 80, 0.1);
+                    border: 1px solid {rarity_color};
+                    border-radius: 8px;
+                    padding: 12px;
+                }}
+            """)
+            item_layout = QtWidgets.QVBoxLayout(item_card)
+            item_layout.setSpacing(6)
+            
+            # Item name
+            name_label = QtWidgets.QLabel(f"<b style='font-size: 16px;'>{item_name}</b>")
+            name_label.setAlignment(QtCore.Qt.AlignCenter)
+            name_label.setStyleSheet(f"color: {rarity_color};")
+            item_layout.addWidget(name_label)
+            
+            # Item details
+            details_label = QtWidgets.QLabel(f"<span style='color: {rarity_color};'>{item_rarity}</span> • ⚔ {item_power} Power • 📦 {item_slot}")
+            details_label.setAlignment(QtCore.Qt.AlignCenter)
+            details_label.setStyleSheet("font-size: 12px; color: #aaa;")
+            item_layout.addWidget(details_label)
+            
+            layout.addWidget(item_card)
+            
+            # Message
+            message = QtWidgets.QLabel("✨ This item has been returned to your inventory!")
+            message.setAlignment(QtCore.Qt.AlignCenter)
+            message.setStyleSheet("font-size: 13px; color: #8bc34a; font-style: italic;")
+            message.setWordWrap(True)
+            layout.addWidget(message)
+            
+            # Cost reminder
+            cost_label = QtWidgets.QLabel(f"💰 Salvage cost: {salvage_cost} coins")
+            cost_label.setAlignment(QtCore.Qt.AlignCenter)
+            cost_label.setStyleSheet("font-size: 11px; color: #888;")
+            layout.addWidget(cost_label)
+            
+            # OK button
+            ok_btn = QtWidgets.QPushButton("✓ Continue")
+            ok_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: #4caf50;
+                    color: white;
+                    padding: 10px 32px;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: bold;
+                }
+                QPushButton:hover { background-color: #66bb6a; }
+            """)
+            ok_btn.clicked.connect(salvage_dialog.accept)
+            layout.addWidget(ok_btn, alignment=QtCore.Qt.AlignCenter)
+            
+            salvage_dialog.exec()
             return
         
         # Handle claim action
