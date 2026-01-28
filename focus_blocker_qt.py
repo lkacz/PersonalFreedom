@@ -25682,7 +25682,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             
             if hasattr(self, 'stats_tab'):
                 self.stats_tab.blocker = self.blocker
-                self.stats_tab._refresh_stats()
+                self.stats_tab.refresh()
             
             if hasattr(self, 'sites_tab'):
                 self.sites_tab.blocker = self.blocker
