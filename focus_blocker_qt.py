@@ -8152,6 +8152,7 @@ class WeightTab(QtWidgets.QWidget):
                 parent=self.window()
             )
             lottery_dialog.exec()
+            lottery_dialog.deleteLater()
             
             # Capture equipped state before award
             equipped_before = dict(self.blocker.adhd_buster.get("equipped", {}))
@@ -11021,6 +11022,23 @@ class SleepTab(QtWidgets.QWidget):
             main_window = self.window()
             game_state = getattr(main_window, 'game_state', None)
             
+            # Show lottery animation for the primary item (most exciting)
+            # Pick the highest rarity item as the primary
+            rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+            primary_item = max(items_earned, key=lambda x: rarity_order.index(x.get("rarity", "Common")))
+            extra_items = [i for i in items_earned if i is not primary_item]
+            
+            # Show lottery animation first
+            from lottery_animation import SleepLotteryDialog
+            lottery_dialog = SleepLotteryDialog(
+                item=primary_item,
+                reward_source="Sleep Logged!",
+                extra_items=extra_items,
+                parent=self.window()
+            )
+            lottery_dialog.exec()
+            lottery_dialog.deleteLater()
+            
             from styled_dialog import ItemRewardDialog
             dialog = ItemRewardDialog(
                 parent=self,
@@ -11033,6 +11051,7 @@ class SleepTab(QtWidgets.QWidget):
                 game_state=game_state  # For click-to-equip
             )
             dialog.exec()
+            dialog.deleteLater()
         else:
             # No items earned - use basic styled info dialog
             from styled_dialog import styled_info
@@ -25686,7 +25705,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             
             if hasattr(self, 'sites_tab'):
                 self.sites_tab.blocker = self.blocker
-                self.sites_tab._update_lists()
+                self.sites_tab._refresh_lists()
             
             if hasattr(self, 'settings_tab'):
                 self.settings_tab.blocker = self.blocker
