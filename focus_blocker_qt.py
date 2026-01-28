@@ -25850,7 +25850,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             # Update tray icon tooltip
             if hasattr(self, 'tray_icon'):
                 self.tray_icon.setToolTip(f"Personal Liberty - {new_username}")
-                
+            
+            # Restart browser monitor with new user's blacklist
+            # BrowserMonitor holds a list of blocked sites passed at creation.
+            # We must restart it to pick up the new user's settings.
+            self._stop_browser_monitor()
+            self._start_browser_monitor()
+            
             logger.info(f"Successfully switched to user profile: {new_username}")
             
         except Exception as e:
