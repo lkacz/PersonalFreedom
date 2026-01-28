@@ -133,6 +133,16 @@ class UserManager:
         # Simple cleanup, remove special chars
         keep = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_ "
         cleaned = "".join(c for c in username if c in keep).strip()
+        
+        # Check for Windows reserved filenames
+        reserved_names = {
+            "CON", "PRN", "AUX", "NUL",
+            "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+        }
+        if cleaned.upper() in reserved_names:
+            return f"User_{cleaned}"  # Valid fallback for reserved names
+            
         # Limit length to prevent filesystem issues
         return cleaned[:50] if cleaned else ""
 
@@ -148,15 +158,30 @@ class UserManager:
         return self.users_dir / clean_name
 
     def save_last_user(self, username: str):
-        """Save the last used username."""
+        """Save the last used username atomically."""
         try:
             clean_name = self._sanitize_username(username)
             if not clean_name:
                 return
-            with open(self.last_user_file, 'w', encoding='utf-8') as f:
+            
+            # Atomic write pattern: write to temp file then rename
+            temp_file = self.last_user_file.with_suffix('.tmp')
+            with open(temp_file, 'w', encoding='utf-8') as f:
                 f.write(clean_name)
+                f.flush()
+                os.fsync(f.fileno())  # Ensure written to disk
+            
+            # Atomic replace
+            os.replace(temp_file, self.last_user_file)
+            
         except Exception as e:
             print(f"Failed to save last user: {e}")
+            # Attempt cleanup
+            try:
+                if 'temp_file' in locals() and temp_file.exists():
+                    temp_file.unlink()
+            except Exception:
+                pass
 
     def get_last_user(self) -> Optional[str]:
         """Get the last used username if it exists and is valid."""
