@@ -1,8 +1,13 @@
 import os
 import shutil
 import json
+import logging
 from pathlib import Path
 from typing import List, Optional
+
+# Industry standard: Use logging module for better observability
+_logger = logging.getLogger(__name__)
+
 
 
 class UserManager:
@@ -109,7 +114,7 @@ class UserManager:
         files_found = any((self.base_dir / f).exists() for f in self.user_files)
         if files_found:
             # Migration needed
-            print("Migrating single user data to 'Default' user profile...")
+            _logger.info("Migrating single user data to 'Default' user profile...")  # Industry standard: Log important state changes
             default_user_path = self.users_dir / "Default"
             default_user_path.mkdir(parents=True, exist_ok=True)
             
@@ -120,7 +125,7 @@ class UserManager:
                     try:
                         shutil.move(str(src), str(dst))
                     except Exception as e:
-                        print(f"Error moving {filename}: {e}")
+                        _logger.error(f"Error moving {filename}: {e}")  # Industry standard: Log errors properly
         else:
             # New install? Create Default user anyway so people can start
             # self.create_user("Default")
@@ -175,7 +180,7 @@ class UserManager:
             os.replace(temp_file, self.last_user_file)
             
         except Exception as e:
-            print(f"Failed to save last user: {e}")
+            _logger.error(f"Failed to save last user: {e}")  # Industry standard: Use logging
             # Attempt cleanup
             try:
                 if 'temp_file' in locals() and temp_file.exists():

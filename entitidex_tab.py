@@ -3151,6 +3151,14 @@ class EntitidexTab(QtWidgets.QWidget):
         self._save_progress()
         self._refresh_all_tabs()
     
+    def reload_data(self):
+        """Reload progress data from blocker and refresh display.
+        
+        Call this when user profile changes or data is externally modified.
+        """
+        self._load_progress()
+        self.refresh()
+
     def refresh(self):
         """Public method to refresh the display."""
         self._load_progress()

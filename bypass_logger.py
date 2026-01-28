@@ -156,8 +156,16 @@ class BypassAttemptHandler(BaseHTTPRequestHandler):
 class BypassLogger:
     """Logs and tracks bypass attempts during focus sessions."""
     
-    def __init__(self):
+    def __init__(self, log_path: Path = None):
+        """Initialize the bypass logger.
+        
+        Args:
+            log_path: Optional path for storing bypass attempts. 
+                      If None, uses the default app-level path.
+                      For per-user isolation, pass user_dir / 'bypass_attempts.json'.
+        """
         self._lock = threading.Lock()  # Thread safety for shared state
+        self._log_path = log_path if log_path else BYPASS_LOG_PATH
         self.attempts = self._load_attempts()
         self.server = None
         self.server_thread = None
@@ -174,9 +182,9 @@ class BypassLogger:
             "session_history": []
         }
         loaded = {}
-        if BYPASS_LOG_PATH.exists():
+        if self._log_path.exists():
             try:
-                with open(BYPASS_LOG_PATH, 'r', encoding='utf-8') as f:
+                with open(self._log_path, 'r', encoding='utf-8') as f:
                     loaded = json.load(f)
             except (json.JSONDecodeError, IOError):
                 loaded = {}
@@ -209,17 +217,17 @@ class BypassLogger:
                 data_to_save = copy.deepcopy(self.attempts)
             
             # Write to temp file first, then atomically rename
-            temp_path = BYPASS_LOG_PATH.with_suffix('.tmp')
+            temp_path = self._log_path.with_suffix('.tmp')
             with open(temp_path, 'w', encoding='utf-8') as f:
                 json.dump(data_to_save, f, indent=2)
             
             # Atomic rename (os.replace is atomic on same filesystem)
-            os.replace(temp_path, BYPASS_LOG_PATH)
+            os.replace(temp_path, self._log_path)
         except (IOError, OSError) as e:
             logger.warning(f"Could not save bypass attempts: {e}")
             # Clean up temp file if it exists
             try:
-                temp_path = BYPASS_LOG_PATH.with_suffix('.tmp')
+                temp_path = self._log_path.with_suffix('.tmp')
                 if temp_path.exists():
                     temp_path.unlink()
             except (IOError, OSError):
@@ -446,3 +454,22 @@ def get_bypass_logger() -> BypassLogger:
             if _bypass_logger_instance is None:
                 _bypass_logger_instance = BypassLogger()
     return _bypass_logger_instance
+
+
+def create_bypass_logger_for_user(user_dir: Path) -> BypassLogger:
+    """Create a bypass logger for a specific user directory.
+    
+    This creates a user-isolated bypass logger that stores attempts
+    in the user's profile directory for privacy.
+    
+    Args:
+        user_dir: The user's profile directory path.
+        
+    Returns:
+        A new BypassLogger instance with user-specific storage.
+    """
+    if user_dir:
+        log_path = user_dir / "bypass_attempts.json"
+    else:
+        log_path = BYPASS_LOG_PATH
+    return BypassLogger(log_path=log_path)

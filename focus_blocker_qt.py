@@ -23,6 +23,7 @@ except ImportError:
 GameStateManager = None
 init_game_state = None
 get_game_state = None
+reset_game_state = None
 EyeProtectionTab = None
 EntitidexTab = None
 
@@ -600,7 +601,7 @@ def load_heavy_modules():
     global get_hydration_streak_bonus_rarity, check_water_entry_reward, get_hydration_stats
     global HYDRATION_MIN_INTERVAL_HOURS, HYDRATION_MAX_DAILY_GLASSES
     # Deferred UI component imports
-    global GameStateManager, init_game_state, get_game_state
+    global GameStateManager, init_game_state, get_game_state, reset_game_state
     global EyeProtectionTab, EntitidexTab
     
     # Import deferred UI components first
@@ -608,10 +609,12 @@ def load_heavy_modules():
         GameStateManager as _GameStateManager,
         init_game_state as _init_game_state,
         get_game_state as _get_game_state,
+        reset_game_state as _reset_game_state,
     )
     GameStateManager = _GameStateManager
     init_game_state = _init_game_state
     get_game_state = _get_game_state
+    reset_game_state = _reset_game_state
     
     from eye_protection_tab import EyeProtectionTab as _EyeProtectionTab
     EyeProtectionTab = _EyeProtectionTab
@@ -6424,6 +6427,17 @@ class SettingsTab(QtWidgets.QWidget):
             )
             return
         
+        # Check if GameState has pending batch operations
+        if hasattr(main_window, 'game_state') and main_window.game_state:
+            if getattr(main_window.game_state, '_batch_depth', 0) > 0:
+                show_warning(
+                    self,
+                    "Operation in Progress",
+                    "A game operation is currently in progress.\n\n"
+                    "Please wait for it to complete before switching profiles."
+                )
+                return
+        
         if show_question(self, "Switch User", 
                         "Are you sure you want to switch profiles?") == QtWidgets.QMessageBox.Yes:
             try:
@@ -6433,6 +6447,8 @@ class SettingsTab(QtWidgets.QWidget):
                 
                 # Save current user's config first
                 self.blocker.save_config()
+                # Ensure stats are saved to prevent data loss during switch
+                self.blocker.save_stats()
                 
                 # Show user selection dialog
                 um = UserManager(APP_DIR)
@@ -11260,6 +11276,16 @@ class AITab(QtWidgets.QWidget):
         self.gamification = GamificationEngine(blocker.stats_path) if GamificationEngine else None
         self.focus_goals = FocusGoals(blocker.goals_path, blocker.stats_path) if FocusGoals else None
         self._build_ui()
+
+    def reload_components(self, blocker: BlockerCore) -> None:
+        """Reload AI components with new blocker paths (used when switching users)."""
+        self.blocker = blocker
+        self.analyzer = ProductivityAnalyzer(blocker.stats_path) if ProductivityAnalyzer else None
+        self.gamification = GamificationEngine(blocker.stats_path) if GamificationEngine else None
+        self.focus_goals = FocusGoals(blocker.goals_path, blocker.stats_path) if FocusGoals else None
+        # Clear cached insights
+        if hasattr(self, 'insights_text'):
+            self.insights_text.clear()
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
@@ -25632,6 +25658,17 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             )
             return
         
+        # Check if GameState has pending batch operations
+        if hasattr(self, 'game_state') and self.game_state:
+            if getattr(self.game_state, '_batch_depth', 0) > 0:
+                show_warning(
+                    self,
+                    "Operation in Progress",
+                    "A game operation is currently in progress.\n\n"
+                    "Please wait for it to complete before switching profiles."
+                )
+                return
+        
         if show_question(self, "Switch User", 
                         "Are you sure you want to switch profiles?") == QtWidgets.QMessageBox.Yes:
             try:
@@ -25641,6 +25678,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 
                 # Save current user's config first
                 self.blocker.save_config()
+                # Ensure stats are saved to prevent data loss during switch
+                self.blocker.save_stats()
                 
                 # Show user selection dialog
                 um = UserManager(APP_DIR)
@@ -25663,7 +25702,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 show_error(self, "Error", f"Could not switch user: {e}")
     
     def _reload_user(self, new_username: str) -> None:
-        """Reload the application state with a new user profile without restarting."""
+        """Reload the application state with a new user profile without restarting.
+        
+        DEVELOPER NOTE:
+        If you add a new tab/component to the app, you MUST update this method
+        to ensure the new component receives the new 'blocker' and 'game_state'
+        instances. Otherwise, it will continue using the old user's data!
+        """
         try:
             # Update username
             self.username = new_username
@@ -25682,6 +25727,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             old_blocker = self.blocker
             self.blocker = BlockerCore(username=new_username)
             
+            # Reset session-specific flags for new user
+            self._shutdown_recorded = False
+            self._last_city_contribution = None
+            
             # Record startup time for new user
             self.blocker.record_startup_time()
             
@@ -25696,6 +25745,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                     self.game_state.full_refresh_required.disconnect()
                 except Exception:
                     pass
+                
+                # Reset global singleton to prevent stale references in other components
+                if reset_game_state:
+                    reset_game_state()
                 
                 # Create new game state
                 self.game_state = init_game_state(self.blocker)
@@ -25804,7 +25857,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if hasattr(self, 'entitidex_tab'):
                 self.entitidex_tab.blocker = self.blocker
                 # Reload progress from new blocker's adhd_buster
-                if hasattr(self.entitidex_tab, 'refresh'):
+                if hasattr(self.entitidex_tab, 'reload_data'):
+                    self.entitidex_tab.reload_data()
+                elif hasattr(self.entitidex_tab, 'refresh'):
                     self.entitidex_tab.refresh()
             
             if hasattr(self, 'city_tab'):
@@ -25821,7 +25876,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             
             if hasattr(self, 'ai_tab'):
                 self.ai_tab.blocker = self.blocker
-                # AI tab usually doesn't need refresh on user switch
+                # Reload AI components with new paths
+                if hasattr(self.ai_tab, 'reload_components'):
+                    self.ai_tab.reload_components(self.blocker)
             
             # Update timeline widget - CRITICAL: reconnect game state signals
             if hasattr(self, 'timeline_widget'):
@@ -25831,6 +25888,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                     self.timeline_widget.reconnect_game_state()
                 elif hasattr(self.timeline_widget, 'update_data'):
                     self.timeline_widget.update_data()
+            
+            # Update DevTab if it exists (hidden developer tools)
+            if hasattr(self, 'dev_tab') and self.dev_tab:
+                self.dev_tab.blocker = self.blocker
             
             # Update quick bar elements
             if GAMIFICATION_AVAILABLE:

@@ -3,10 +3,15 @@
 Frameless, dark-themed dialog for selecting user profiles.
 """
 
+import logging
 from PySide6 import QtWidgets, QtCore, QtGui
 from user_manager import UserManager
 from styled_dialog import StyledDialog, StyledMessageBox, StyledInputDialog
 from typing import Optional
+
+# Industry standard: Logger for audit trails
+_logger = logging.getLogger(__name__)
+
 
 
 class UserSelectionDialog(StyledDialog):
@@ -93,6 +98,7 @@ class UserSelectionDialog(StyledDialog):
                 return
 
             if self.user_manager.create_user(name):
+                _logger.info(f"Created new user profile: {name}")  # Industry standard: Audit log
                 self.refresh_user_list()
                 # Select the new user
                 items = self.user_list.findItems(clean_name, QtCore.Qt.MatchFlag.MatchExactly)
@@ -122,14 +128,17 @@ class UserSelectionDialog(StyledDialog):
         
         if result == "Delete":
             if self.user_manager.delete_user(username):
+                _logger.info(f"Deleted user profile: {username}")  # Industry standard: Audit log
                 self.refresh_user_list()
             else:
+                _logger.error(f"Failed to delete user profile: {username}")
                 StyledMessageBox.warning(self, "Error", "Could not delete user.")
 
     def accept_selection(self):
         current_item = self.user_list.currentItem()
         if current_item:
             self.selected_user = current_item.text()
+            _logger.info(f"User selected profile: {self.selected_user}")
             self.accept()
         elif self.user_list.count() == 0:
             StyledMessageBox.warning(

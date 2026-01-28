@@ -43,12 +43,13 @@ LOCAL_AI_AVAILABLE = False
 
 # Import bypass logger
 try:
-    from bypass_logger import get_bypass_logger, BypassLogger
+    from bypass_logger import get_bypass_logger, BypassLogger, create_bypass_logger_for_user
     BYPASS_LOGGER_AVAILABLE = True
 except ImportError:
     BYPASS_LOGGER_AVAILABLE = False
     get_bypass_logger = None  # type: ignore[assignment]
     BypassLogger = None  # type: ignore[assignment]
+    create_bypass_logger_for_user = None  # type: ignore[assignment]
     logger.info("Bypass logger not available")
 
 # Import gamification hero management (optional)
@@ -357,10 +358,15 @@ class BlockerCore:
         # Statistics
         self.stats = self._default_stats()
         
-        # Bypass logger
+        # Bypass logger - use per-user storage for privacy
         self.bypass_logger = None
-        if BYPASS_LOGGER_AVAILABLE and get_bypass_logger:
-            self.bypass_logger = get_bypass_logger()
+        if BYPASS_LOGGER_AVAILABLE:
+            if self.user_dir and create_bypass_logger_for_user:
+                # User-specific bypass logger for privacy isolation
+                self.bypass_logger = create_bypass_logger_for_user(self.user_dir)
+            elif get_bypass_logger:
+                # Fallback to global singleton
+                self.bypass_logger = get_bypass_logger()
 
         self.load_config()
         self.load_stats()
