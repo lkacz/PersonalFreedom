@@ -6181,8 +6181,8 @@ class SettingsTab(QtWidgets.QWidget):
         inner.addWidget(cleanup_group)
 
         # Voice Settings
-        voice_group = QtWidgets.QGroupBox("🎙️ Voice Settings")
-        voice_layout = QtWidgets.QVBoxLayout(voice_group)
+        self.voice_group = QtWidgets.QGroupBox("🎙️ Voice Settings")
+        voice_layout = QtWidgets.QVBoxLayout(self.voice_group)
         voice_layout.addWidget(QtWidgets.QLabel("Select a voice for TTS (Eye Routine, Celebration quotes)."))
         
         voice_combo_layout = QtWidgets.QHBoxLayout()
@@ -6199,7 +6199,7 @@ class SettingsTab(QtWidgets.QWidget):
         test_voice_btn.clicked.connect(self._test_voice)
         voice_layout.addWidget(test_voice_btn)
         
-        inner.addWidget(voice_group)
+        inner.addWidget(self.voice_group)
         
         # Populate voice combo after UI is built
         self._populate_voice_combo()
@@ -6945,6 +6945,12 @@ class SettingsTab(QtWidgets.QWidget):
             guidance = GuidanceManager.get_instance()
             voices = guidance.get_voice_names()
             self.voice_combo.clear()
+            
+            # If no voices available (Piper not working), hide the group
+            if not voices:
+                self.voice_group.hide()
+                return
+
             self.voice_combo.addItems(voices)
             # Set current selection
             current = guidance.get_current_voice()

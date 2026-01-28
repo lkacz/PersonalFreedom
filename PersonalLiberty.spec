@@ -1,11 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
+# Collect Piper TTS data (espeak-ng-data is critical for phonemization)
+piper_datas = collect_data_files('piper')
+piper_binaries = collect_dynamic_libs('piper')
 
 a = Analysis(
     ['focus_blocker_qt.py'],
     pathex=[],
-    binaries=[],
-    datas=[
+    binaries=piper_binaries,
+    datas=piper_datas + [
         # Core Python modules
         ('productivity_ai.py', '.'),
         ('gamification.py', '.'),
