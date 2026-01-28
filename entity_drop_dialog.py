@@ -984,6 +984,7 @@ def show_entity_encounter(entity, join_probability: float,
     # 1. Show encounter dialog with SVG (pass is_exceptional for display)
     dialog = EntityEncounterDialog(entity, join_probability, parent, is_exceptional, chad_interaction_data, bookmark_data, flavor_text)
     result_code = dialog.exec()
+    dialog.deleteLater()  # Ensure dialog is cleaned up to prevent ghost boxes
     
     # Handle "Save for Later" choice
     if dialog.saved_for_later and save_callback:
@@ -1093,6 +1094,7 @@ def show_entity_encounter(entity, join_probability: float,
         layout.addWidget(ok_btn, alignment=QtCore.Qt.AlignCenter)
         
         gift_dialog.exec_()
+        gift_dialog.deleteLater()  # Ensure dialog is cleaned up
         return
         
     # 2. Perform the ACTUAL logic - is_exceptional is already baked into the callback
@@ -1138,6 +1140,7 @@ def show_entity_encounter(entity, join_probability: float,
     )
     
     anim_dialog.exec()
+    anim_dialog.deleteLater()  # Ensure dialog is cleaned up
     
     # 5. Show special exceptional celebration dialog
     if success and result_is_exceptional:
@@ -1215,6 +1218,7 @@ def _show_exceptional_surprise(parent: QtWidgets.QWidget):
     QtCore.QTimer.singleShot(1500, dialog.accept)
     
     dialog.exec()
+    dialog.deleteLater()  # Ensure dialog is cleaned up
 
 
 def _show_exceptional_celebration(entity, exceptional_colors: dict, parent: QtWidgets.QWidget):
@@ -1339,6 +1343,7 @@ def _show_exceptional_celebration(entity, exceptional_colors: dict, parent: QtWi
     """)
     
     dialog.exec()
+    dialog.deleteLater()  # Ensure dialog is cleaned up
 
 
 def _show_microscope_tip(entity, is_exceptional: bool, parent: QtWidgets.QWidget) -> None:
@@ -1421,6 +1426,7 @@ def _show_microscope_tip(entity, is_exceptional: bool, parent: QtWidgets.QWidget
     """)
     
     dialog.exec()
+    dialog.deleteLater()  # Ensure dialog is cleaned up
 
 
 def _show_microscope_coin_bonus(entity, is_exceptional: bool, 
@@ -1540,4 +1546,5 @@ def _show_microscope_coin_bonus(entity, is_exceptional: bool,
     """)
     
     dialog.exec()
+    dialog.deleteLater()  # Ensure dialog is cleaned up
     return coin_bonus
