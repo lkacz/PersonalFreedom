@@ -4509,15 +4509,24 @@ class ActivityTierSliderWidget(QtWidgets.QWidget):
                 int(zone_width), bar_height,
                 color
             )
-            # Zone label (only if wide enough)
-            if zone_width > 35:
+            # Zone label with tier name and percentage (matches FocusTimerTierSliderWidget)
+            if zone_width > 45:
+                painter.setPen(_PaintCache.COLOR_WHITE)
+                painter.setFont(_PaintCache.FONT_LABEL_SMALL)
+                label = f"{tier[:3]}:{weight:.0f}%"
+                painter.drawText(
+                    int(cumulative_x), bar_y,
+                    int(zone_width), bar_height,
+                    QtCore.Qt.AlignCenter, label
+                )
+            elif zone_width > 30:
                 painter.setPen(_PaintCache.COLOR_WHITE)
                 painter.setFont(_PaintCache.FONT_LABEL_SMALL)
                 painter.drawText(
                     int(cumulative_x), bar_y,
                     int(zone_width), bar_height,
                     QtCore.Qt.AlignCenter,
-                    tier[0]  # First letter
+                    tier[:3]  # First 3 letters
                 )
             cumulative_x += zone_width
         
@@ -4790,6 +4799,261 @@ class WeightLotteryDialog(QtWidgets.QDialog):
     def closeEvent(self, event):
         """Clean up timers and save geometry."""
         save_dialog_geometry(self, "WeightLotteryDialog")
+        if hasattr(self, '_anim_timer'):
+            self._anim_timer.stop()
+        super().closeEvent(event)
+
+
+class SleepLotteryDialog(QtWidgets.QDialog):
+    """Single-stage rarity lottery for sleep tracking rewards.
+    
+    Shows dramatic animation revealing the rarity tier for a pre-generated item.
+    Similar to WeightLotteryDialog but with sleep-themed styling.
+    """
+    
+    finished_signal = QtCore.Signal(str, object)  # (rarity, item)
+    
+    TIERS = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    TIER_COLORS = {
+        "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
+        "Epic": "#9c27b0", "Legendary": "#ff9800"
+    }
+    BASE_WINDOW = [5, 15, 60, 15, 5]
+    
+    def __init__(self, item: dict, reward_source: str = "Sleep Tracking",
+                 extra_items: list = None, parent: Optional[QtWidgets.QWidget] = None):
+        """
+        Args:
+            item: The primary item that was already generated (with 'rarity' key)
+            reward_source: Display string for the reward source (e.g., "Sleep Logged")
+            extra_items: Additional items to show after animation (won't be animated)
+            parent: Parent widget
+        """
+        super().__init__(parent)
+        self.item = item
+        self.reward_source = reward_source
+        self.extra_items = extra_items or []
+        self.rolled_tier = item.get("rarity", "Common")
+        
+        # Calculate tier weights based on rarity tier (higher tier = better weights shown)
+        self.tier_weights = self._calculate_tier_weights()
+        
+        # Pre-roll the position (0-100) for animation target
+        self.tier_roll = self._get_position_for_tier(self.rolled_tier)
+        
+        self._setup_ui()
+        QtCore.QTimer.singleShot(300, self._start_animation)
+    
+    def _calculate_tier_weights(self) -> list:
+        """Calculate tier weights based on the rolled rarity."""
+        # Center the window on the rolled tier
+        tier_index = self.TIERS.index(self.rolled_tier) if self.rolled_tier in self.TIERS else 0
+        
+        weights = [0, 0, 0, 0, 0]
+        
+        for offset, pct in zip([-2, -1, 0, 1, 2], self.BASE_WINDOW):
+            target_tier = tier_index + offset
+            clamped_tier = max(0, min(4, target_tier))
+            weights[clamped_tier] += pct
+        
+        return weights
+    
+    def _get_position_for_tier(self, tier: str) -> float:
+        """Get a random position within the zone for the given tier."""
+        cumulative = 0.0
+        for t, weight in zip(self.TIERS, self.tier_weights):
+            zone_size = weight
+            if t == tier:
+                # Random position within this zone
+                return cumulative + random.random() * zone_size
+            cumulative += zone_size
+        return 50.0  # Fallback
+    
+    def _setup_ui(self):
+        """Build the sleep lottery UI."""
+        self.setWindowTitle("🌙 Sleep Reward!")
+        self.setModal(True)
+        self.setMinimumSize(440, 280)
+        load_dialog_geometry(self, "SleepLotteryDialog", QtCore.QSize(500, 320))
+        self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
+        
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
+        
+        # Header
+        header = QtWidgets.QLabel(f"🌙 {self.reward_source}")
+        header.setFont(QtGui.QFont("Arial", 16, QtGui.QFont.Bold))
+        header.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(header)
+        
+        # Tier slider widget (reuse ActivityTierSliderWidget)
+        self.tier_slider = ActivityTierSliderWidget(self.tier_weights)
+        self.tier_slider.setMinimumHeight(60)
+        layout.addWidget(self.tier_slider)
+        
+        # Result label
+        self.result_label = QtWidgets.QLabel("Rolling...")
+        self.result_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.result_label.setStyleSheet("font-size: 14px; color: #888;")
+        layout.addWidget(self.result_label)
+        
+        # Final result (hidden initially)
+        self.final_result = QtWidgets.QLabel("")
+        self.final_result.setAlignment(QtCore.Qt.AlignCenter)
+        self.final_result.setStyleSheet("font-size: 16px; font-weight: bold; color: #4caf50;")
+        self.final_result.hide()
+        layout.addWidget(self.final_result)
+        
+        # Extra items label (hidden initially)
+        self.extra_label = QtWidgets.QLabel("")
+        self.extra_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.extra_label.setStyleSheet("font-size: 12px; color: #888;")
+        self.extra_label.hide()
+        layout.addWidget(self.extra_label)
+        
+        # Sound toggle
+        sound_row = QtWidgets.QHBoxLayout()
+        sound_row.addStretch()
+        self.sound_toggle = QtWidgets.QCheckBox("🔊 Sound")
+        self.sound_toggle.setChecked(get_lottery_sound_enabled())
+        self.sound_toggle.setStyleSheet("color: #666; font-size: 11px;")
+        self.sound_toggle.toggled.connect(set_lottery_sound_enabled)
+        sound_row.addWidget(self.sound_toggle)
+        layout.addLayout(sound_row)
+        
+        # Continue button (hidden until animation finishes)
+        self.continue_btn = QtWidgets.QPushButton("Continue")
+        self.continue_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #5c6bc0;
+                color: white;
+                border: none;
+                padding: 10px 30px;
+                font-size: 14px;
+                font-weight: bold;
+                border-radius: 5px;
+            }
+            QPushButton:hover {
+                background-color: #7986cb;
+            }
+        """)
+        self.continue_btn.clicked.connect(self._finish)
+        self.continue_btn.hide()
+        layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
+    
+    def _start_animation(self):
+        """Start the tier roll animation using bounce path."""
+        # Build bounce path (same logic as other lottery dialogs)
+        self._path_points = [50.0]  # Start at center
+        
+        # 5 full bar sweeps with decreasing amplitude
+        for bounce in range(5):
+            amplitude = 1.0 - (bounce * 0.18)
+            self._path_points.append(100 * amplitude)
+            self._path_points.append(0)
+        
+        # Final approach to target
+        self._path_points.append(self.tier_roll)
+        
+        # Calculate segment distances
+        self._segments = []
+        self._total_dist = 0.0
+        
+        for i in range(len(self._path_points) - 1):
+            start, end = self._path_points[i], self._path_points[i+1]
+            dist = abs(end - start)
+            if dist > 0.001:
+                self._segments.append({
+                    "start": start, "end": end, "dist": dist,
+                    "cum_start": self._total_dist,
+                    "cum_end": self._total_dist + dist
+                })
+                self._total_dist += dist
+        
+        self._elapsed = 0.0
+        self._duration = 4.0
+        
+        # Style state tracking for performance
+        self._last_tier = None
+        
+        self._anim_timer = QtCore.QTimer(self)
+        self._anim_timer.timeout.connect(self._anim_tick)
+        self._anim_timer.start(16)  # 60 FPS for smooth performance
+    
+    def _anim_tick(self):
+        """Animation tick."""
+        # Cached tier colors for performance
+        TIER_COLORS = {
+            "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
+            "Epic": "#9c27b0", "Legendary": "#ff9800"
+        }
+        
+        self._elapsed += 0.016  # Match timer interval
+        t = min(1.0, self._elapsed / self._duration)
+        eased = 1.0 - (1.0 - t) ** 4  # EaseOutQuart
+        
+        current_travel = eased * self._total_dist
+        pos = self.tier_roll
+        
+        for seg in self._segments:
+            if seg["cum_start"] <= current_travel <= seg["cum_end"]:
+                local = (current_travel - seg["cum_start"]) / seg["dist"]
+                pos = seg["start"] + (seg["end"] - seg["start"]) * local
+                break
+        
+        pos = max(0, min(100, pos))
+        self.tier_slider.set_position(pos)
+        
+        # Show current tier during animation - only update style if tier changed
+        tier = self.tier_slider.get_tier_at_position(pos)
+        if tier != self._last_tier:
+            self._last_tier = tier
+            color = TIER_COLORS.get(tier, "#fff")
+            self.result_label.setStyleSheet(f"color: {color}; font-size: 14px;")
+        self.result_label.setText(f"🎲 {pos:.1f}% → {tier}")
+        
+        if t >= 1.0:
+            self._anim_timer.stop()
+            self.tier_slider.set_position(self.tier_roll)
+            self._finish_animation()
+    
+    def _finish_animation(self):
+        """Show final result."""
+        color = self.TIER_COLORS.get(self.rolled_tier, "#aaa")
+        self.result_label.setText(f"✨ Rolled: {self.rolled_tier}!")
+        self.result_label.setStyleSheet(f"color: {color}; font-size: 14px; font-weight: bold;")
+        
+        # Show item name
+        item_name = self.item.get("name", "Unknown Item")
+        self.final_result.setText(f"🎁 {item_name}")
+        self.final_result.setStyleSheet(f"color: {color}; font-size: 14px; font-weight: bold;")
+        self.final_result.show()
+        
+        # Show extra items if any
+        if self.extra_items:
+            extra_count = len(self.extra_items)
+            self.extra_label.setText(f"+{extra_count} more item{'s' if extra_count > 1 else ''}!")
+            self.extra_label.show()
+        
+        # Play win sound (sleep always awards an item)
+        _play_lottery_result_sound(True)
+        
+        # Show continue button for user to close when ready
+        self.continue_btn.show()
+    
+    def _finish(self):
+        """Emit result and close."""
+        self.finished_signal.emit(self.rolled_tier, self.item)
+        self.accept()
+    
+    def get_results(self) -> tuple:
+        """Get the results."""
+        return (self.rolled_tier, self.item)
+    
+    def closeEvent(self, event):
+        """Clean up timers and save geometry."""
+        save_dialog_geometry(self, "SleepLotteryDialog")
         if hasattr(self, '_anim_timer'):
             self._anim_timer.stop()
         super().closeEvent(event)
