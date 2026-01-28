@@ -21876,6 +21876,9 @@ class DailyTimelineWidget(QtWidgets.QFrame):
             from game_state import get_game_state
             game_state = get_game_state()
             if game_state:
+                # Store reference for later disconnect
+                self._game_state = game_state
+                
                 # Hero updates
                 game_state.equipment_changed.connect(self._update_mini_hero)
                 game_state.power_changed.connect(self._update_mini_hero)
@@ -21907,6 +21910,33 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         except Exception:
             pass  # Fall back to timer-based updates
     
+    def _disconnect_game_state_signals(self):
+        """Disconnect from old game state signals (for user switching)."""
+        try:
+            if hasattr(self, '_game_state') and self._game_state:
+                gs = self._game_state
+                gs.equipment_changed.disconnect(self._update_mini_hero)
+                gs.power_changed.disconnect(self._update_mini_hero)
+                gs.story_changed.disconnect(self._update_mini_hero)
+                gs.xp_changed.disconnect(self._update_xp_ring)
+                gs.power_changed.disconnect(self._update_chapter_ring)
+                gs.story_changed.disconnect(self._update_chapter_ring)
+                gs.water_changed.disconnect(self._update_water_ring)
+                gs.focus_time_changed.disconnect(self._update_focus_ring)
+                gs.session_reward_earned.disconnect(self._update_focus_ring)
+                gs.entities_changed.disconnect(self._update_entities_ring)
+                gs.eye_routine_changed.disconnect(self._update_eye_ring)
+                gs.full_refresh_required.disconnect(self.update_data)
+                self._game_state = None
+        except Exception:
+            pass
+    
+    def reconnect_game_state(self):
+        """Reconnect to new game state after user switch."""
+        self._disconnect_game_state_signals()
+        self._connect_game_state_signals()
+        self.update_data()
+
     def _update_mini_hero(self, *args):
         """Update the mini hero widget with current data."""
         print("[DEBUG] _update_mini_hero called")
@@ -22053,26 +22083,8 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         """Stop timer and disconnect signals when widget is destroyed."""
         if hasattr(self, 'timer') and self.timer:
             self.timer.stop()
-        # Qt automatically disconnects signals when receiver is destroyed,
-        # but explicit disconnect helps prevent any edge cases during shutdown
-        try:
-            from game_state import get_game_state
-            game_state = get_game_state()
-            if game_state:
-                game_state.equipment_changed.disconnect(self._update_mini_hero)
-                game_state.power_changed.disconnect(self._update_mini_hero)
-                game_state.story_changed.disconnect(self._update_mini_hero)
-                game_state.xp_changed.disconnect(self._update_xp_ring)
-                game_state.power_changed.disconnect(self._update_chapter_ring)
-                game_state.story_changed.disconnect(self._update_chapter_ring)
-                game_state.water_changed.disconnect(self._update_water_ring)
-                game_state.focus_time_changed.disconnect(self._update_focus_ring)
-                game_state.session_reward_earned.disconnect(self._update_focus_ring)
-                game_state.entities_changed.disconnect(self._update_entities_ring)
-                game_state.eye_routine_changed.disconnect(self._update_eye_ring)
-                game_state.full_refresh_required.disconnect(self.update_data)
-        except Exception:
-            pass  # Ignore disconnect errors during shutdown
+        # Disconnect from stored game state reference
+        self._disconnect_game_state_signals()
 
     def _init_ui(self):
         layout = QtWidgets.QHBoxLayout(self)
@@ -25722,11 +25734,45 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             
             if hasattr(self, 'adhd_tab'):
                 self.adhd_tab.blocker = self.blocker
+                # CRITICAL: Update game state reference - the old one is stale
+                if hasattr(self.adhd_tab, '_game_state') and self.game_state:
+                    # Disconnect old signals
+                    try:
+                        old_gs = self.adhd_tab._game_state
+                        if old_gs:
+                            old_gs.power_changed.disconnect(self.adhd_tab._on_power_changed)
+                            old_gs.equipment_changed.disconnect(self.adhd_tab._on_equipment_changed)
+                            old_gs.set_bonus_changed.disconnect(self.adhd_tab._on_set_bonus_changed)
+                            old_gs.story_changed.disconnect(self.adhd_tab._on_story_changed)
+                    except Exception:
+                        pass
+                    # Update reference to new game state
+                    self.adhd_tab._game_state = self.game_state
+                    # Reconnect signals
+                    self.game_state.power_changed.connect(self.adhd_tab._on_power_changed)
+                    self.game_state.equipment_changed.connect(self.adhd_tab._on_equipment_changed)
+                    self.game_state.set_bonus_changed.connect(self.adhd_tab._on_set_bonus_changed)
+                    self.game_state.story_changed.connect(self.adhd_tab._on_story_changed)
                 if hasattr(self.adhd_tab, 'refresh_all'):
                     self.adhd_tab.refresh_all()
             
             if hasattr(self, 'story_tab'):
                 self.story_tab.blocker = self.blocker
+                # CRITICAL: Update game state reference - the old one is stale
+                if hasattr(self.story_tab, '_game_state') and self.game_state:
+                    # Disconnect old signals
+                    try:
+                        old_gs = self.story_tab._game_state
+                        if old_gs:
+                            old_gs.story_changed.disconnect(self.story_tab._on_story_changed)
+                            old_gs.power_changed.disconnect(self.story_tab._on_power_changed)
+                    except Exception:
+                        pass
+                    # Update reference to new game state
+                    self.story_tab._game_state = self.game_state
+                    # Reconnect signals
+                    self.game_state.story_changed.connect(self.story_tab._on_story_changed)
+                    self.game_state.power_changed.connect(self.story_tab._on_power_changed)
                 if hasattr(self.story_tab, '_refresh_all'):
                     self.story_tab._refresh_all()
             
@@ -25764,6 +25810,24 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 self.city_tab.blocker = self.blocker
                 if hasattr(self.city_tab, '_refresh_city'):
                     self.city_tab._refresh_city()
+            
+            if hasattr(self, 'schedule_tab'):
+                self.schedule_tab.blocker = self.blocker
+                if hasattr(self.schedule_tab, '_refresh_table'):
+                    self.schedule_tab._refresh_table()
+            
+            if hasattr(self, 'ai_tab'):
+                self.ai_tab.blocker = self.blocker
+                # AI tab usually doesn't need refresh on user switch
+            
+            # Update timeline widget - CRITICAL: reconnect game state signals
+            if hasattr(self, 'timeline_widget'):
+                self.timeline_widget.blocker = self.blocker
+                # Disconnect from old game state and reconnect to new
+                if hasattr(self.timeline_widget, 'reconnect_game_state'):
+                    self.timeline_widget.reconnect_game_state()
+                elif hasattr(self.timeline_widget, 'update_data'):
+                    self.timeline_widget.update_data()
             
             # Update quick bar elements
             if GAMIFICATION_AVAILABLE:
