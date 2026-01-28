@@ -19,12 +19,17 @@ from styled_dialog import styled_info, styled_warning, add_tab_help_button
 from app_utils import get_app_dir
 
 # Try to import piper for offline TTS
+# Note: Import success doesn't guarantee runtime availability (espeak-ng dependencies)
+# We'll verify actual functionality in GuidanceManager._init_piper()
 try:
     from piper import PiperVoice
-    PIPER_AVAILABLE = True
+    PIPER_IMPORT_OK = True
 except ImportError:
-    PIPER_AVAILABLE = False
+    PIPER_IMPORT_OK = False
     PiperVoice = None
+
+# This flag gets set to True only after we successfully load and test a voice
+PIPER_WORKING = False
 
 
 # No-Scroll Widgets - Prevents accidental value changes via scroll wheel
@@ -119,8 +124,11 @@ class GuidanceManager(QtCore.QObject):
     
     def _init_piper(self):
         """Initialize Piper voice for offline TTS."""
-        if not PIPER_AVAILABLE:
-            print("[GuidanceManager] Piper not available, voice mode disabled")
+        global PIPER_WORKING
+        
+        if not PIPER_IMPORT_OK:
+            print("[GuidanceManager] Piper not available (import failed), voice mode disabled")
+            PIPER_WORKING = False
             return
             
         try:
@@ -143,17 +151,23 @@ class GuidanceManager(QtCore.QObject):
                     voice_config = self.AVAILABLE_VOICES[self.DEFAULT_VOICE]
                     model_path = app_dir / voice_config["file"]
                     if not model_path.exists():
+                        PIPER_WORKING = False
                         return
                 else:
+                    PIPER_WORKING = False
                     return
             
             self.piper_voice = PiperVoice.load(str(model_path))
             self._voice_sample_rate = voice_config["sample_rate"]
             print(f"[GuidanceManager] Piper voice loaded: {model_path.name}")
+            PIPER_WORKING = True
             
         except Exception as e:
             print(f"[GuidanceManager] Failed to load Piper voice: {e}")
+            import traceback
+            traceback.print_exc()
             self.piper_voice = None
+            PIPER_WORKING = False
     
     @classmethod
     def get_instance(cls):
@@ -162,7 +176,11 @@ class GuidanceManager(QtCore.QObject):
         return cls._instance
 
     def get_voice_names(self):
-        """Return available voice names."""
+        """Return available voice names (only if Piper is working)."""
+        # If Piper isn't working, return empty list to prevent showing Voice mode
+        if not PIPER_WORKING:
+            return []
+        
         # Return voices that have their model files present (use helper for PyInstaller compatibility)
         app_dir = get_app_dir()
         available = []
@@ -187,6 +205,11 @@ class GuidanceManager(QtCore.QObject):
             True if voice was loaded successfully
         """
         try:
+            # If Piper isn't working, don't even try
+            if not PIPER_WORKING:
+                print("[GuidanceManager] Piper not working, cannot set voice")
+                return False
+            
             # Guard against empty or invalid names (can happen from combo box signals)
             if not name or name not in self.AVAILABLE_VOICES:
                 return False
@@ -222,7 +245,7 @@ class GuidanceManager(QtCore.QObject):
     
     def say(self, text: str):
         """Speak text using Piper TTS (non-blocking)."""
-        if not self.piper_voice:
+        if not PIPER_WORKING or not self.piper_voice:
             print("[GuidanceManager] No piper voice available")
             return
         
@@ -266,6 +289,11 @@ class GuidanceManager(QtCore.QObject):
         threading.Thread(target=_synthesize_worker, daemon=True).start()
     
     def set_mode(self, mode):
+        # If trying to set Voice mode but Piper isn't working, fall back to Sound
+        if mode == EyeGuidanceSettings.MODE_VOICE and not PIPER_WORKING:
+            print("[GuidanceManager] Piper not available, falling back to Sound mode")
+            mode = EyeGuidanceSettings.MODE_SOUND
+        
         self.mode = mode
         EyeGuidanceSettings.set_mode(mode)
         
@@ -441,12 +469,25 @@ class EyeProtectionTab(QtWidgets.QWidget):
         guidance_label.setStyleSheet("color: #b0bec5; font-weight: bold; margin-left: 10px;")
         
         self.guidance_combo = NoScrollComboBox()
-        self.guidance_combo.addItems([
-            EyeGuidanceSettings.MODE_SILENT, 
-            EyeGuidanceSettings.MODE_SOUND, 
-            EyeGuidanceSettings.MODE_VOICE
-        ])
-        self.guidance_combo.setCurrentText(self.guidance.mode)
+        # Only show Voice mode if Piper is actually working
+        if PIPER_WORKING:
+            self.guidance_combo.addItems([
+                EyeGuidanceSettings.MODE_SILENT, 
+                EyeGuidanceSettings.MODE_SOUND, 
+                EyeGuidanceSettings.MODE_VOICE
+            ])
+        else:
+            # Piper not available - only Silent and Sound modes
+            self.guidance_combo.addItems([
+                EyeGuidanceSettings.MODE_SILENT, 
+                EyeGuidanceSettings.MODE_SOUND
+            ])
+        # If saved mode was Voice but Piper isn't available, fall back to Sound
+        saved_mode = self.guidance.mode
+        if saved_mode == EyeGuidanceSettings.MODE_VOICE and not PIPER_WORKING:
+            saved_mode = EyeGuidanceSettings.MODE_SOUND
+            self.guidance.set_mode(saved_mode)
+        self.guidance_combo.setCurrentText(saved_mode)
         self.guidance_combo.currentTextChanged.connect(self.guidance.set_mode)
         self.guidance_combo.setStyleSheet("""
             QComboBox {
