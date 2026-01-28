@@ -3841,8 +3841,18 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
                 color
             )
             
-            # Zone label with percentage
-            if zone_width > 30:
+            # Zone label with tier name and percentage
+            if zone_width > 45:
+                painter.setOpacity(1.0)
+                painter.setPen(_PaintCache.COLOR_WHITE)
+                painter.setFont(_PaintCache.FONT_LABEL_MEDIUM)
+                label = f"{tier[:3]}:{width:.0f}%"
+                painter.drawText(
+                    int(cumulative_x), bar_y,
+                    int(zone_width), bar_height,
+                    QtCore.Qt.AlignCenter, label
+                )
+            elif zone_width > 30:
                 painter.setOpacity(1.0)
                 painter.setPen(_PaintCache.COLOR_WHITE)
                 painter.setFont(_PaintCache.FONT_LABEL_MEDIUM)
@@ -3987,19 +3997,7 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         self.tier_slider.setFixedHeight(70)
         lottery_layout.addWidget(self.tier_slider)
         
-        # Distribution legend
-        dist_layout = QtWidgets.QHBoxLayout()
-        colors = {"Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3", 
-                  "Epic": "#9c27b0", "Legendary": "#ff9800"}
-        for i, (tier, width) in enumerate(zip(self.tier_slider.TIERS, self.tier_slider.zone_widths)):
-            if width > 0:
-                color = colors.get(tier, "#888")
-                label = QtWidgets.QLabel(f"<b style='color:{color};'>{tier[:3]}</b>:{width:.0f}%")
-                label.setStyleSheet("font-size: 10px; color: #aaa;")
-                dist_layout.addWidget(label)
-        dist_layout.addStretch()
-        lottery_layout.addLayout(dist_layout)
-        
+        # Result label (percentages shown in bar zones)
         self.lottery_result = QtWidgets.QLabel("🎲 Rolling...")
         self.lottery_result.setAlignment(QtCore.Qt.AlignCenter)
         self.lottery_result.setStyleSheet("color: #aaa; font-size: 14px;")
