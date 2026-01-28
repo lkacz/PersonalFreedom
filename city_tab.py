@@ -2066,7 +2066,14 @@ class InitiateConstructionDialog(StyledDialog):
     
     def _start_construction(self):
         """Initiate construction - pay materials and start building."""
-        result = initiate_construction(self.adhd_buster, self.row, self.col)
+        # Get game state for signal propagation
+        try:
+            from game_state import get_game_state
+            gs = get_game_state()
+        except ImportError:
+            gs = None
+
+        result = initiate_construction(self.adhd_buster, self.row, self.col, gs)
         
         if result.get("success"):
             play_building_placed(self.building_id)

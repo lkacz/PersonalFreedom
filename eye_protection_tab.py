@@ -799,6 +799,21 @@ class EyeProtectionTab(QtWidgets.QWidget):
         # Initial update
         self._update_cooldown_display()
 
+    def _refresh_display(self):
+        """Refresh logic called when switching users."""
+        # Update reminder settings from new blocker
+        if hasattr(self, 'reminder_checkbox'):
+            self.reminder_checkbox.setChecked(getattr(self.blocker, 'eye_reminder_enabled', False))
+        
+        if hasattr(self, 'reminder_interval'):
+            self.reminder_interval.setValue(getattr(self.blocker, 'eye_reminder_interval', 60))
+            
+        # Refresh all dynamic sections
+        self.update_stats_display()
+        self._update_cooldown_display()
+        self._refresh_owl_tips()
+        self._update_entity_perk_display()
+
     def _update_voice_combo_visibility(self, mode):
         """Show voice combo box only when Voice mode is selected."""
         if mode == EyeGuidanceSettings.MODE_VOICE:
