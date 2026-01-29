@@ -21,7 +21,8 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "tier": 1,
         "requirements": {
             "water": 3,
-            "materials": 5,
+            "materials": 2,
+            "scrap": 3,
             "activity": 0,
             "focus": 2,
         },
@@ -47,22 +48,27 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
     "forge": {
         "id": "forge",
         "name": "🔥 Forge",
-        "description": "Master smiths improve your merge outcomes.",
+        "description": "Master smiths improve your merge outcomes and salvage technique.",
         "tier": 2,
         "requirements": {
             "water": 10,
-            "materials": 20,
+            "materials": 6,
+            "scrap": 14,
             "activity": 10,
             "focus": 10,
         },
         "completion_reward": {"coins": 100, "xp": 150},
         "effect": {
-            "type": "merge_success_bonus",
-            "bonus_percent": 5,  # +5% merge success rate
+            "type": "multi",
+            "bonuses": {
+                "merge_success_bonus": 5,  # +5% merge success rate
+                "scrap_chance_bonus": 2,   # +2% scrap chance from merges
+            },
         },
         "max_level": 3,
         "level_scaling": {
-            "bonus_percent": 4,  # +4% per level (L3 = +13% total)
+            "merge_success_bonus": 4,  # +4% per level (L3 = +13% total)
+            "scrap_chance_bonus": 1.5, # +1.5% per level (L3 = +5% total)
         },
         "visual": "forge",
     },
@@ -74,7 +80,8 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "tier": 2,
         "requirements": {
             "water": 15,
-            "materials": 15,
+            "materials": 5,
+            "scrap": 10,
             "activity": 5,
             "focus": 15,
         },
@@ -97,7 +104,8 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "tier": 2,
         "requirements": {
             "water": 15,
-            "materials": 10,
+            "materials": 3,
+            "scrap": 7,
             "activity": 5,
             "focus": 25,  # Knowledge requires focus
         },
@@ -123,7 +131,8 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "tier": 3,
         "requirements": {
             "water": 25,
-            "materials": 20,
+            "materials": 6,
+            "scrap": 14,
             "activity": 40,  # Heavy activity requirement
             "focus": 15,
         },
@@ -146,7 +155,8 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "tier": 3,
         "requirements": {
             "water": 20,
-            "materials": 30,
+            "materials": 9,
+            "scrap": 21,
             "activity": 10,
             "focus": 50,  # Heavy focus requirement
         },
@@ -169,7 +179,8 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "tier": 3,
         "requirements": {
             "water": 30,
-            "materials": 40,
+            "materials": 12,
+            "scrap": 28,
             "activity": 20,
             "focus": 25,
         },
@@ -195,7 +206,8 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "tier": 4,
         "requirements": {
             "water": 60,
-            "materials": 100,
+            "materials": 30,
+            "scrap": 70,
             "activity": 40,
             "focus": 60,
         },
@@ -221,7 +233,8 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "tier": 4,
         "requirements": {
             "water": 40,
-            "materials": 60,
+            "materials": 18,
+            "scrap": 42,
             "activity": 20,
             "focus": 100,  # Heavy focus requirement
         },
@@ -247,7 +260,8 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "tier": 5,
         "requirements": {
             "water": 150,
-            "materials": 200,
+            "materials": 60,
+            "scrap": 140,
             "activity": 100,
             "focus": 200,
         },

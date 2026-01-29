@@ -504,6 +504,34 @@ class GameStateManager(QtCore.QObject):
         self._emit(self.materials_changed, new_total)
         return new_total
     
+    def add_scrap(self, amount: int) -> int:
+        """Add scrap (merge leftovers) to city resources. Returns new total.
+        
+        Scrap is earned during merges based on the number of items:
+        - < 10 items: base 10% chance (+ bonuses) per merge for +1 scrap
+        - >= 10 items: guaranteed +1 scrap  
+        - Each item above 10: 10% chance (+ bonuses) for +1 additional scrap
+        
+        Scrap is used as a city construction resource (stockpile).
+        
+        Args:
+            amount: Scrap to add (must be non-negative)
+        """
+        if amount <= 0:
+            return 0
+        
+        try:
+            from city import add_city_resource, get_resources
+            new_total = add_city_resource(self.adhd_buster, "scrap", amount, game_state=self)
+            return new_total
+        except ImportError:
+            # City module not available, store in adhd_buster directly
+            current = self.adhd_buster.get("scrap", 0)
+            new_total = min(current + amount, 999_999)
+            self.adhd_buster["scrap"] = new_total
+            self._save_config()
+            return new_total
+    
     def add_luck_bonus(self, amount: int) -> int:
         """Add luck bonus and return new total.
         

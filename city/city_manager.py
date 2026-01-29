@@ -1597,6 +1597,7 @@ def get_city_bonuses(adhd_buster: dict) -> dict:
         "focus_session_coins": 0,
         "exercise_coins": 0,
         "merge_success_bonus": 0,
+        "scrap_chance_bonus": 0,  # Bonus chance for scrap from merges (Forge)
         "rarity_bias_bonus": 0,
         "entity_catch_bonus": 0,
         "entity_encounter_bonus": 0,
@@ -1680,10 +1681,11 @@ def get_city_bonuses(adhd_buster: dict) -> dict:
                 bonuses["coin_discount"] += base + (level - 1) * per_level
             
             elif effect_type == "multi":
-                # Wonder - adds multiple bonuses
-                for bonus_key, value in effect.get("bonuses", {}).items():
+                # Multi-effect buildings (Forge, Wonder) - adds multiple bonuses with level scaling
+                for bonus_key, base_value in effect.get("bonuses", {}).items():
                     if bonus_key in bonuses:
-                        bonuses[bonus_key] += value
+                        per_level = scaling.get(bonus_key, 0)
+                        bonuses[bonus_key] += base_value + (level - 1) * per_level
     
     # Apply entity synergy bonuses on top of building bonuses
     try:
