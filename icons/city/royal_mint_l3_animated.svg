@@ -4,12 +4,15 @@
   <defs>
     <linearGradient id="techWall" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#1A1A2E"/>
-      <stop offset="50%" style="stop-color:#16213E"/>
+      <stop offset="30%" style="stop-color:#16213E"/>
+      <stop offset="70%" style="stop-color:#0F3460"/>
       <stop offset="100%" style="stop-color:#1A1A2E"/>
     </linearGradient>
     <linearGradient id="techFrame" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#37474F"/>
-      <stop offset="100%" style="stop-color:#263238"/>
+      <stop offset="0%" style="stop-color:#455A64"/>
+      <stop offset="30%" style="stop-color:#37474F"/>
+      <stop offset="70%" style="stop-color:#263238"/>
+      <stop offset="100%" style="stop-color:#1A1A2E"/>
     </linearGradient>
     <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#4da6ff"/>
@@ -17,19 +20,73 @@
     </linearGradient>
     <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="50%" style="stop-color:#689f38"/>
       <stop offset="100%" style="stop-color:#558b2f"/>
     </linearGradient>
+    <linearGradient id="hills" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9ccc65"/>
+      <stop offset="100%" style="stop-color:#8bc34a"/>
+    </linearGradient>
+    <!-- Quantum currency gradients -->
+    <linearGradient id="goldCoinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFEB3B"/>
+      <stop offset="30%" style="stop-color:#FFC107"/>
+      <stop offset="70%" style="stop-color:#FFB300"/>
+      <stop offset="100%" style="stop-color:#FF8F00"/>
+    </linearGradient>
+    <linearGradient id="cryptoCoinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00E5FF"/>
+      <stop offset="30%" style="stop-color:#00BCD4"/>
+      <stop offset="70%" style="stop-color:#0097A7"/>
+      <stop offset="100%" style="stop-color:#006064"/>
+    </linearGradient>
+    <linearGradient id="quantumCoinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E040FB"/>
+      <stop offset="30%" style="stop-color:#D500F9"/>
+      <stop offset="70%" style="stop-color:#AA00FF"/>
+      <stop offset="100%" style="stop-color:#7C4DFF"/>
+    </linearGradient>
+    <linearGradient id="goldShimmer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700">
+        <animate attributeName="offset" values="0;0.5;0" dur="2s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" style="stop-color:#FFFACD">
+        <animate attributeName="offset" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#FFD700"/>
+    </linearGradient>
+    <linearGradient id="cryptoShimmer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00E5FF">
+        <animate attributeName="offset" values="0;0.5;0" dur="1.5s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" style="stop-color:#B2EBF2">
+        <animate attributeName="offset" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#00E5FF"/>
+    </linearGradient>
+    <linearGradient id="platform" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#37474F"/>
+      <stop offset="50%" style="stop-color:#263238"/>
+      <stop offset="100%" style="stop-color:#1A1A2E"/>
+    </linearGradient>
     <radialGradient id="goldEnergy" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#FFD54F" stop-opacity="0.8"/>
+      <stop offset="0%" style="stop-color:#FFD54F" stop-opacity="0.9"/>
+      <stop offset="50%" style="stop-color:#FFC107" stop-opacity="0.5"/>
       <stop offset="100%" style="stop-color:#FF8F00" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="cryptoCore" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#00E5FF"/>
+      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.9"/>
+      <stop offset="50%" style="stop-color:#00BCD4" stop-opacity="0.5"/>
       <stop offset="100%" style="stop-color:#00E5FF" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="quantumCore" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#E040FB"/>
+      <stop offset="0%" style="stop-color:#E040FB" stop-opacity="0.9"/>
+      <stop offset="50%" style="stop-color:#AA00FF" stop-opacity="0.5"/>
       <stop offset="100%" style="stop-color:#7C4DFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="coinShine" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#FFFFFF" stop-opacity="0.6"/>
+      <stop offset="100%" style="stop-color:#FFFFFF" stop-opacity="0"/>
     </radialGradient>
     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -50,210 +107,522 @@
   <!-- Background: Blue sky -->
   <rect width="128" height="128" fill="url(#sky)"/>
   
-  <!-- Distant hills -->
-  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  <!-- Distant hills with gradient -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="url(#hills)" opacity="0.7"/>
   
   <!-- Main ground -->
   <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
   
-  <!-- Animated holographic platform -->
-  <ellipse cx="64" cy="100" rx="52" ry="18" fill="#263238"/>
+  <!-- Animated holographic platform with gradient -->
+  <ellipse cx="64" cy="100" rx="52" ry="18" fill="url(#platform)"/>
+  <ellipse cx="64" cy="100" rx="50" ry="17" fill="#1A1A2E"/>
+  <!-- Platform rings -->
   <ellipse cx="64" cy="100" rx="48" ry="16" fill="none" stroke="#FFD54F" stroke-width="1">
-    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="64" cy="100" rx="44" ry="14" fill="none" stroke="#00E5FF" stroke-width="0.5">
+    <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
   </ellipse>
   
   <!-- Main building - angular futuristic design -->
-  <polygon points="20,88 20,44 44,32 84,32 108,44 108,88" fill="url(#techWall)" stroke="#FFD54F" stroke-width="1"/>
+  <polygon points="20,88 20,44 44,32 84,32 108,44 108,88" fill="url(#techWall)" stroke="url(#goldShimmer)" stroke-width="1.5"/>
+  <!-- Building inner panels -->
+  <polygon points="24,84 24,48 44,36 84,36 104,48 104,84" fill="none" stroke="#0F3460" stroke-width="0.5"/>
   
   <!-- Animated energy lines on building -->
-  <g stroke="#FFD54F" stroke-width="0.5">
+  <g stroke="url(#goldShimmer)" stroke-width="0.75">
     <line x1="24" y1="80" x2="104" y2="80">
-      <animate attributeName="stroke-dasharray" values="0 100;50 50;0 100" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dasharray" values="0 100;60 40;0 100" dur="3s" repeatCount="indefinite"/>
     </line>
     <line x1="24" y1="68" x2="104" y2="68">
-      <animate attributeName="stroke-dasharray" values="50 50;0 100;50 50" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dasharray" values="60 40;0 100;60 40" dur="3s" repeatCount="indefinite"/>
     </line>
     <line x1="28" y1="56" x2="100" y2="56">
-      <animate attributeName="stroke-dasharray" values="25 75;75 25;25 75" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dasharray" values="30 70;80 20;30 70" dur="3s" repeatCount="indefinite"/>
     </line>
     <line x1="36" y1="44" x2="92" y2="44">
-      <animate attributeName="stroke-dasharray" values="75 25;25 75;75 25" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dasharray" values="80 20;30 70;80 20" dur="3s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  <!-- Cyan accent lines -->
+  <g stroke="url(#cryptoShimmer)" stroke-width="0.5">
+    <line x1="26" y1="74" x2="102" y2="74">
+      <animate attributeName="stroke-dasharray" values="20 80;70 30;20 80" dur="2.5s" repeatCount="indefinite"/>
+    </line>
+    <line x1="30" y1="62" x2="98" y2="62">
+      <animate attributeName="stroke-dasharray" values="70 30;20 80;70 30" dur="2.5s" repeatCount="indefinite"/>
     </line>
   </g>
   
   <!-- Central quantum dome -->
   <ellipse cx="64" cy="42" rx="20" ry="10" fill="url(#techFrame)"/>
-  <ellipse cx="64" cy="42" rx="16" ry="8" fill="none" stroke="#00E5FF" stroke-width="1">
+  <ellipse cx="64" cy="42" rx="18" ry="9" fill="#16213E"/>
+  <ellipse cx="64" cy="42" rx="16" ry="8" fill="none" stroke="url(#cryptoShimmer)" stroke-width="1">
     <animate attributeName="stroke-dasharray" values="0 100;50 50;0 100" dur="4s" repeatCount="indefinite"/>
   </ellipse>
+  <ellipse cx="64" cy="42" rx="12" ry="6" fill="none" stroke="#E040FB" stroke-width="0.5">
+    <animate attributeName="stroke-dasharray" values="50 50;0 100;50 50" dur="4s" repeatCount="indefinite"/>
+  </ellipse>
   
-  <!-- Animated quantum currency core -->
-  <circle cx="64" cy="36" r="8" fill="url(#quantumCore)" filter="url(#strongGlow)">
-    <animate attributeName="r" values="6;10;6" dur="2s" repeatCount="indefinite"/>
+  <!-- Animated quantum currency core with layered glow -->
+  <circle cx="64" cy="36" r="12" fill="url(#quantumCore)" filter="url(#strongGlow)">
+    <animate attributeName="r" values="10;14;10" dur="2s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="64" cy="36" r="4" fill="#E040FB">
-    <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
+  <circle cx="64" cy="36" r="8" fill="url(#cryptoCore)">
+    <animate attributeName="r" values="6;9;6" dur="2s" repeatCount="indefinite"/>
   </circle>
-  <text x="61" y="39" font-size="6" fill="#FFFFFF">₿
+  <circle cx="64" cy="36" r="5" fill="url(#quantumCoinGrad)">
+    <animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="64" cy="36" r="5" fill="url(#coinShine)"/>
+  <!-- Bitcoin symbol rotating -->
+  <text x="61" y="39" font-size="6" fill="#FFFFFF" font-weight="bold">₿
     <animateTransform attributeName="transform" type="rotate" values="0 64 36;360 64 36" dur="8s" repeatCount="indefinite"/>
   </text>
   
   <!-- Animated holographic ledger displays - left with scrolling data -->
-  <rect x="26" y="58" width="14" height="18" fill="#1A1A2E" rx="1"/>
-  <g fill="#FFD54F">
-    <rect x="28" y="60" width="10" height="2">
-      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.5s" repeatCount="indefinite"/>
+  <rect x="26" y="58" width="14" height="18" fill="#0F3460" rx="1"/>
+  <rect x="26" y="58" width="14" height="2" fill="#16213E"/>
+  <g fill="url(#goldShimmer)">
+    <rect x="28" y="61" width="10" height="2">
+      <animate attributeName="opacity" values="0.4;0.9;0.4" dur="1.5s" repeatCount="indefinite"/>
     </rect>
-    <rect x="28" y="64" width="8" height="2">
-      <animate attributeName="opacity" values="0.8;0.4;0.8" dur="1.5s" repeatCount="indefinite"/>
+    <rect x="28" y="65" width="8" height="2">
+      <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1.5s" repeatCount="indefinite"/>
     </rect>
-    <rect x="28" y="68" width="10" height="2">
+    <rect x="28" y="69" width="10" height="2">
       <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
     </rect>
-    <rect x="28" y="72" width="6" height="2">
+    <rect x="28" y="73" width="6" height="2">
       <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
     </rect>
   </g>
   
   <!-- Animated holographic ledger displays - right -->
-  <rect x="88" y="58" width="14" height="18" fill="#1A1A2E" rx="1"/>
-  <g fill="#00E5FF">
-    <rect x="90" y="60" width="10" height="2">
-      <animate attributeName="opacity" values="0.8;0.4;0.8" dur="1.5s" repeatCount="indefinite"/>
+  <rect x="88" y="58" width="14" height="18" fill="#0F3460" rx="1"/>
+  <rect x="88" y="58" width="14" height="2" fill="#16213E"/>
+  <g fill="url(#cryptoShimmer)">
+    <rect x="90" y="61" width="10" height="2">
+      <animate attributeName="opacity" values="0.9;0.4;0.9" dur="1.5s" repeatCount="indefinite"/>
     </rect>
-    <rect x="90" y="64" width="8" height="2">
-      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="1.5s" repeatCount="indefinite"/>
+    <rect x="90" y="65" width="8" height="2">
+      <animate attributeName="opacity" values="0.4;0.9;0.4" dur="1.5s" repeatCount="indefinite"/>
     </rect>
-    <rect x="90" y="68" width="10" height="2">
+    <rect x="90" y="69" width="10" height="2">
       <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
     </rect>
-    <rect x="90" y="72" width="6" height="2">
+    <rect x="90" y="73" width="6" height="2">
       <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
     </rect>
   </g>
   
-  <!-- Animated crypto mining towers -->
+  <!-- Animated crypto mining towers with enhanced gradients -->
   <rect x="12" y="64" width="6" height="28" fill="url(#techFrame)"/>
-  <circle cx="15" cy="62" r="3" fill="#00E5FF" filter="url(#glow)">
-    <animate attributeName="r" values="2;4;2" dur="1s" repeatCount="indefinite"/>
+  <rect x="12" y="64" width="6" height="3" fill="#455A64"/>
+  <circle cx="15" cy="62" r="4" fill="url(#cryptoCore)" filter="url(#glow)">
+    <animate attributeName="r" values="3;5;3" dur="1s" repeatCount="indefinite"/>
   </circle>
-  <line x1="15" y1="66" x2="15" y2="90" stroke="#00E5FF" stroke-width="1">
+  <circle cx="15" cy="62" r="2" fill="url(#cryptoCoinGrad)"/>
+  <line x1="15" y1="67" x2="15" y2="90" stroke="url(#cryptoShimmer)" stroke-width="1.5">
     <animate attributeName="stroke-dasharray" values="0 30;15 15;0 30" dur="1.5s" repeatCount="indefinite"/>
   </line>
   
   <rect x="110" y="64" width="6" height="28" fill="url(#techFrame)"/>
-  <circle cx="113" cy="62" r="3" fill="#00E5FF" filter="url(#glow)">
-    <animate attributeName="r" values="4;2;4" dur="1s" repeatCount="indefinite"/>
+  <rect x="110" y="64" width="6" height="3" fill="#455A64"/>
+  <circle cx="113" cy="62" r="4" fill="url(#cryptoCore)" filter="url(#glow)">
+    <animate attributeName="r" values="5;3;5" dur="1s" repeatCount="indefinite"/>
   </circle>
-  <line x1="113" y1="66" x2="113" y2="90" stroke="#00E5FF" stroke-width="1">
+  <circle cx="113" cy="62" r="2" fill="url(#cryptoCoinGrad)"/>
+  <line x1="113" y1="67" x2="113" y2="90" stroke="url(#cryptoShimmer)" stroke-width="1.5">
     <animate attributeName="stroke-dasharray" values="15 15;0 30;15 15" dur="1.5s" repeatCount="indefinite"/>
   </line>
   
-  <!-- Animated quantum vault entrance -->
-  <ellipse cx="64" cy="82" rx="12" ry="6" fill="#16213E"/>
-  <ellipse cx="64" cy="82" rx="10" ry="5" fill="#FFD54F">
-    <animate attributeName="opacity" values="0.1;0.3;0.1" dur="2s" repeatCount="indefinite"/>
+  <!-- Animated quantum vault entrance with layered glow -->
+  <ellipse cx="64" cy="82" rx="14" ry="7" fill="url(#goldEnergy)">
+    <animate attributeName="rx" values="14;16;14" dur="2s" repeatCount="indefinite"/>
   </ellipse>
-  <ellipse cx="64" cy="82" rx="6" ry="3" fill="#FFD54F">
-    <animate attributeName="opacity" values="0.2;0.5;0.2" dur="2s" repeatCount="indefinite"/>
+  <ellipse cx="64" cy="82" rx="12" ry="6" fill="#0F3460"/>
+  <ellipse cx="64" cy="82" rx="10" ry="5" fill="url(#goldShimmer)">
+    <animate attributeName="opacity" values="0.15;0.4;0.15" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="64" cy="82" rx="6" ry="3" fill="url(#goldShimmer)">
+    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="64" cy="82" rx="3" ry="1.5" fill="#FFD54F">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
   </ellipse>
   
-  <!-- Animated floating currency symbols -->
-  <g fill="#FFD54F">
-    <text x="48" y="55" font-size="6">$
-      <animate attributeName="y" values="55;52;55" dur="2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+  <!-- Animated floating currency symbols with gradient fills -->
+  <g fill="url(#goldCoinGrad)">
+    <text x="48" y="55" font-size="7" font-weight="bold">$
+      <animate attributeName="y" values="55;51;55" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
     </text>
-    <text x="72" y="55" font-size="6">€
-      <animate attributeName="y" values="55;53;55" dur="2.5s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2.5s" repeatCount="indefinite"/>
-    </text>
-  </g>
-  <g fill="#00E5FF">
-    <text x="36" y="48" font-size="5">¥
-      <animate attributeName="y" values="48;45;48" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>
-    </text>
-    <text x="86" y="48" font-size="5">£
-      <animate attributeName="y" values="48;46;48" dur="2.8s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="1;0.5;1" dur="2.8s" repeatCount="indefinite"/>
+    <text x="72" y="55" font-size="7" font-weight="bold">€
+      <animate attributeName="y" values="55;52;55" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.5;1" dur="2.5s" repeatCount="indefinite"/>
     </text>
   </g>
-  
-  <!-- Animated holographic gold bars materializing -->
-  <g transform="translate(50, 70)" fill="#FFD54F">
-    <rect x="0" y="0" width="8" height="4" rx="0.5">
-      <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite"/>
-    </rect>
-    <rect x="10" y="0" width="8" height="4" rx="0.5">
-      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" begin="0.3s" repeatCount="indefinite"/>
-    </rect>
-    <rect x="20" y="0" width="8" height="4" rx="0.5">
-      <animate attributeName="opacity" values="0.6;0.3;0.6" dur="2s" begin="0.6s" repeatCount="indefinite"/>
-    </rect>
+  <g fill="url(#cryptoCoinGrad)">
+    <text x="36" y="48" font-size="6" font-weight="bold">¥
+      <animate attributeName="y" values="48;44;48" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+    </text>
+    <text x="86" y="48" font-size="6" font-weight="bold">£
+      <animate attributeName="y" values="48;45;48" dur="2.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.6;1" dur="2.8s" repeatCount="indefinite"/>
+    </text>
   </g>
   
-  <!-- Animated energy pylons -->
+  <!-- Animated holographic gold bars materializing with glow -->
+  <g transform="translate(50, 70)">
+    <!-- Gold bar 1 -->
+    <rect x="0" y="0" width="8" height="4" rx="0.5" fill="url(#goldCoinGrad)">
+      <animate attributeName="opacity" values="0.2;0.8;0.2" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="0" y="0" width="8" height="4" rx="0.5" fill="url(#coinShine)"/>
+    <!-- Gold bar 2 -->
+    <rect x="10" y="0" width="8" height="4" rx="0.5" fill="url(#goldCoinGrad)">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" begin="0.3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="10" y="0" width="8" height="4" rx="0.5" fill="url(#coinShine)"/>
+    <!-- Gold bar 3 -->
+    <rect x="20" y="0" width="8" height="4" rx="0.5" fill="url(#goldCoinGrad)">
+      <animate attributeName="opacity" values="0.7;0.3;0.7" dur="2s" begin="0.6s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="20" y="0" width="8" height="4" rx="0.5" fill="url(#coinShine)"/>
+  </g>
+  
+  <!-- Animated energy pylons with gradient -->
   <rect x="32" y="80" width="4" height="12" fill="url(#techFrame)"/>
-  <circle cx="34" cy="78" r="2" fill="#E040FB" filter="url(#glow)">
-    <animate attributeName="r" values="1.5;2.5;1.5" dur="0.8s" repeatCount="indefinite"/>
+  <rect x="32" y="80" width="4" height="2" fill="#455A64"/>
+  <circle cx="34" cy="78" r="3" fill="url(#quantumCore)" filter="url(#glow)">
+    <animate attributeName="r" values="2;3.5;2" dur="0.8s" repeatCount="indefinite"/>
   </circle>
+  <circle cx="34" cy="78" r="1.5" fill="url(#quantumCoinGrad)"/>
   
   <rect x="92" y="80" width="4" height="12" fill="url(#techFrame)"/>
-  <circle cx="94" cy="78" r="2" fill="#E040FB" filter="url(#glow)">
-    <animate attributeName="r" values="2.5;1.5;2.5" dur="0.8s" repeatCount="indefinite"/>
+  <rect x="92" y="80" width="4" height="2" fill="#455A64"/>
+  <circle cx="94" cy="78" r="3" fill="url(#quantumCore)" filter="url(#glow)">
+    <animate attributeName="r" values="3.5;2;3.5" dur="0.8s" repeatCount="indefinite"/>
   </circle>
+  <circle cx="94" cy="78" r="1.5" fill="url(#quantumCoinGrad)"/>
   
-  <!-- Animated holographic visitors/traders -->
+  <!-- Animated holographic visitors/traders - Complex with continuous movement -->
+  
+  <!-- VISITOR A: Cyan trader walking left-to-right (continuous loop with 2 instances) -->
+  <!-- Instance A1 -->
   <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0;3,0;0,0" dur="3s" repeatCount="indefinite"/>
-    <ellipse cx="44" cy="98" rx="3" ry="4" fill="#00E5FF" opacity="0.5"/>
-    <circle cx="44" cy="93" r="2" fill="#00E5FF" opacity="0.6"/>
+    <animateTransform attributeName="transform" type="translate" values="-40,0;90,0" dur="12s" repeatCount="indefinite"/>
+    <!-- Body with holographic flicker -->
+    <ellipse cx="30" cy="97" rx="3.5" ry="6" fill="url(#cryptoShimmer)" opacity="0.7">
+      <animate attributeName="opacity" values="0.6;0.8;0.5;0.7;0.6" dur="0.8s" repeatCount="indefinite"/>
+    </ellipse>
+    <!-- Head with scan lines -->
+    <circle cx="30" cy="90" r="3" fill="url(#cryptoCoinGrad)" opacity="0.8"/>
+    <line x1="27" y1="89" x2="33" y2="89" stroke="#B2EBF2" stroke-width="0.3" opacity="0.5">
+      <animate attributeName="y1" values="88;92;88" dur="0.3s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="88;92;88" dur="0.3s" repeatCount="indefinite"/>
+    </line>
+    <!-- Arms swinging -->
+    <line x1="27" y1="94" x2="24" y2="98" stroke="#00E5FF" stroke-width="1" opacity="0.6">
+      <animate attributeName="x2" values="24;26;24" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <line x1="33" y1="94" x2="36" y2="98" stroke="#00E5FF" stroke-width="1" opacity="0.6">
+      <animate attributeName="x2" values="36;34;36" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <!-- Walking legs with alternating motion -->
+    <line x1="28" y1="103" x2="26" y2="108" stroke="#00BCD4" stroke-width="1.2" opacity="0.6">
+      <animate attributeName="x2" values="26;30;26" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <line x1="32" y1="103" x2="34" y2="108" stroke="#00BCD4" stroke-width="1.2" opacity="0.6">
+      <animate attributeName="x2" values="34;30;34" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <!-- Holographic briefcase -->
+    <rect x="35" y="96" width="4" height="3" rx="0.5" fill="#00E5FF" opacity="0.5">
+      <animate attributeName="opacity" values="0.4;0.7;0.4" dur="1s" repeatCount="indefinite"/>
+    </rect>
   </g>
+  <!-- Instance A2 (offset by half cycle for seamless) -->
   <g>
-    <animateTransform attributeName="transform" type="translate" values="0,0;-3,0;0,0" dur="3s" repeatCount="indefinite"/>
-    <ellipse cx="84" cy="98" rx="3" ry="4" fill="#FFD54F" opacity="0.5"/>
-    <circle cx="84" cy="93" r="2" fill="#FFD54F" opacity="0.6"/>
+    <animateTransform attributeName="transform" type="translate" values="25,0;155,0" dur="12s" repeatCount="indefinite"/>
+    <ellipse cx="30" cy="97" rx="3.5" ry="6" fill="url(#cryptoShimmer)" opacity="0.7">
+      <animate attributeName="opacity" values="0.6;0.8;0.5;0.7;0.6" dur="0.8s" repeatCount="indefinite"/>
+    </ellipse>
+    <circle cx="30" cy="90" r="3" fill="url(#cryptoCoinGrad)" opacity="0.8"/>
+    <line x1="27" y1="89" x2="33" y2="89" stroke="#B2EBF2" stroke-width="0.3" opacity="0.5">
+      <animate attributeName="y1" values="88;92;88" dur="0.3s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="88;92;88" dur="0.3s" repeatCount="indefinite"/>
+    </line>
+    <line x1="27" y1="94" x2="24" y2="98" stroke="#00E5FF" stroke-width="1" opacity="0.6">
+      <animate attributeName="x2" values="24;26;24" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <line x1="33" y1="94" x2="36" y2="98" stroke="#00E5FF" stroke-width="1" opacity="0.6">
+      <animate attributeName="x2" values="36;34;36" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <line x1="28" y1="103" x2="26" y2="108" stroke="#00BCD4" stroke-width="1.2" opacity="0.6">
+      <animate attributeName="x2" values="26;30;26" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <line x1="32" y1="103" x2="34" y2="108" stroke="#00BCD4" stroke-width="1.2" opacity="0.6">
+      <animate attributeName="x2" values="34;30;34" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <rect x="35" y="96" width="4" height="3" rx="0.5" fill="#00E5FF" opacity="0.5">
+      <animate attributeName="opacity" values="0.4;0.7;0.4" dur="1s" repeatCount="indefinite"/>
+    </rect>
   </g>
   
-  <!-- Animated antenna array -->
-  <line x1="64" y1="28" x2="64" y2="16" stroke="#455A64" stroke-width="2"/>
-  <circle cx="64" cy="14" r="3" fill="#FFD54F" filter="url(#glow)">
-    <animate attributeName="r" values="2;4;2" dur="1s" repeatCount="indefinite"/>
-  </circle>
-  <line x1="54" y1="28" x2="50" y2="20" stroke="#455A64" stroke-width="1"/>
-  <circle cx="48" cy="18" r="2" fill="#00E5FF">
-    <animate attributeName="r" values="1.5;2.5;1.5" dur="1.2s" repeatCount="indefinite"/>
-  </circle>
-  <line x1="74" y1="28" x2="78" y2="20" stroke="#455A64" stroke-width="1"/>
-  <circle cx="80" cy="18" r="2" fill="#00E5FF">
-    <animate attributeName="r" values="2.5;1.5;2.5" dur="1.2s" repeatCount="indefinite"/>
-  </circle>
+  <!-- VISITOR B: Gold investor walking right-to-left (opposite direction, different speed) -->
+  <!-- Instance B1 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="50,0;-80,0" dur="14s" repeatCount="indefinite"/>
+    <!-- Taller body - investor type -->
+    <ellipse cx="98" cy="96" rx="3" ry="7" fill="url(#goldShimmer)" opacity="0.65">
+      <animate attributeName="opacity" values="0.5;0.75;0.6;0.5" dur="1.2s" repeatCount="indefinite"/>
+    </ellipse>
+    <!-- Head -->
+    <circle cx="98" cy="88" r="3.5" fill="url(#goldCoinGrad)" opacity="0.75"/>
+    <!-- Glitch effect on head -->
+    <rect x="95" y="87" width="6" height="1" fill="#FFFACD" opacity="0.3">
+      <animate attributeName="y" values="86;90;86" dur="0.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.5;0" dur="0.2s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Arms - one holding tablet -->
+    <line x1="95" y1="92" x2="92" y2="97" stroke="#FFD54F" stroke-width="1" opacity="0.6">
+      <animate attributeName="x2" values="92;94;92" dur="0.6s" repeatCount="indefinite"/>
+    </line>
+    <line x1="101" y1="92" x2="104" y2="95" stroke="#FFD54F" stroke-width="1" opacity="0.6"/>
+    <!-- Holographic tablet -->
+    <rect x="103" y="93" width="5" height="4" rx="0.5" fill="#FFD54F" opacity="0.4">
+      <animate attributeName="fill" values="#FFD54F;#FFEB3B;#FFC107;#FFD54F" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Walking legs (slower gait) -->
+    <line x1="96" y1="103" x2="98" y2="108" stroke="#FFC107" stroke-width="1.2" opacity="0.55">
+      <animate attributeName="x2" values="98;94;98" dur="0.6s" repeatCount="indefinite"/>
+    </line>
+    <line x1="100" y1="103" x2="98" y2="108" stroke="#FFC107" stroke-width="1.2" opacity="0.55">
+      <animate attributeName="x2" values="98;102;98" dur="0.6s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  <!-- Instance B2 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-15,0;-145,0" dur="14s" repeatCount="indefinite"/>
+    <ellipse cx="98" cy="96" rx="3" ry="7" fill="url(#goldShimmer)" opacity="0.65">
+      <animate attributeName="opacity" values="0.5;0.75;0.6;0.5" dur="1.2s" repeatCount="indefinite"/>
+    </ellipse>
+    <circle cx="98" cy="88" r="3.5" fill="url(#goldCoinGrad)" opacity="0.75"/>
+    <rect x="95" y="87" width="6" height="1" fill="#FFFACD" opacity="0.3">
+      <animate attributeName="y" values="86;90;86" dur="0.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.5;0" dur="0.2s" repeatCount="indefinite"/>
+    </rect>
+    <line x1="95" y1="92" x2="92" y2="97" stroke="#FFD54F" stroke-width="1" opacity="0.6">
+      <animate attributeName="x2" values="92;94;92" dur="0.6s" repeatCount="indefinite"/>
+    </line>
+    <line x1="101" y1="92" x2="104" y2="95" stroke="#FFD54F" stroke-width="1" opacity="0.6"/>
+    <rect x="103" y="93" width="5" height="4" rx="0.5" fill="#FFD54F" opacity="0.4">
+      <animate attributeName="fill" values="#FFD54F;#FFEB3B;#FFC107;#FFD54F" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <line x1="96" y1="103" x2="98" y2="108" stroke="#FFC107" stroke-width="1.2" opacity="0.55">
+      <animate attributeName="x2" values="98;94;98" dur="0.6s" repeatCount="indefinite"/>
+    </line>
+    <line x1="100" y1="103" x2="98" y2="108" stroke="#FFC107" stroke-width="1.2" opacity="0.55">
+      <animate attributeName="x2" values="98;102;98" dur="0.6s" repeatCount="indefinite"/>
+    </line>
+  </g>
   
-  <!-- Animated ground energy lines -->
-  <line x1="20" y1="98" x2="48" y2="98" stroke="#FFD54F" stroke-width="0.5">
+  <!-- VISITOR C: Purple quantum scientist - walks to center and stops, then walks back -->
+  <!-- Instance C1 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-30,0;15,0;15,0;-30,0" dur="10s" keyTimes="0;0.4;0.6;1" repeatCount="indefinite"/>
+    <!-- Shorter, rounder body -->
+    <ellipse cx="50" cy="97" rx="4" ry="5" fill="url(#quantumCoinGrad)" opacity="0.6">
+      <animate attributeName="opacity" values="0.5;0.7;0.5" dur="0.5s" repeatCount="indefinite"/>
+    </ellipse>
+    <!-- Head with data visor -->
+    <circle cx="50" cy="91" r="2.5" fill="#E040FB" opacity="0.7"/>
+    <rect x="47" y="90" width="6" height="1.5" rx="0.5" fill="#B2EBF2" opacity="0.6">
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="0.3s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Arms gesturing -->
+    <line x1="46" y1="94" x2="43" y2="92" stroke="#E040FB" stroke-width="0.8" opacity="0.5">
+      <animate attributeName="x2" values="43;45;43" dur="0.8s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="92;94;92" dur="0.8s" repeatCount="indefinite"/>
+    </line>
+    <line x1="54" y1="94" x2="57" y2="92" stroke="#E040FB" stroke-width="0.8" opacity="0.5">
+      <animate attributeName="x2" values="57;55;57" dur="0.8s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="92;94;92" dur="0.8s" repeatCount="indefinite"/>
+    </line>
+    <!-- Walking legs -->
+    <line x1="48" y1="102" x2="46" y2="106" stroke="#AA00FF" stroke-width="1" opacity="0.5">
+      <animate attributeName="x2" values="46;50;46" dur="0.45s" repeatCount="indefinite"/>
+    </line>
+    <line x1="52" y1="102" x2="54" y2="106" stroke="#AA00FF" stroke-width="1" opacity="0.5">
+      <animate attributeName="x2" values="54;50;54" dur="0.45s" repeatCount="indefinite"/>
+    </line>
+    <!-- Floating holographic clipboard -->
+    <rect x="42" y="88" width="3" height="4" rx="0.3" fill="#7C4DFF" opacity="0.4">
+      <animate attributeName="y" values="88;86;88" dur="1.5s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <!-- Instance C2 (different timing) -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="15,0;60,0;60,0;15,0" dur="10s" keyTimes="0;0.4;0.6;1" repeatCount="indefinite"/>
+    <ellipse cx="50" cy="97" rx="4" ry="5" fill="url(#quantumCoinGrad)" opacity="0.6">
+      <animate attributeName="opacity" values="0.5;0.7;0.5" dur="0.5s" repeatCount="indefinite"/>
+    </ellipse>
+    <circle cx="50" cy="91" r="2.5" fill="#E040FB" opacity="0.7"/>
+    <rect x="47" y="90" width="6" height="1.5" rx="0.5" fill="#B2EBF2" opacity="0.6">
+      <animate attributeName="opacity" values="0.4;0.8;0.4" dur="0.3s" repeatCount="indefinite"/>
+    </rect>
+    <line x1="46" y1="94" x2="43" y2="92" stroke="#E040FB" stroke-width="0.8" opacity="0.5">
+      <animate attributeName="x2" values="43;45;43" dur="0.8s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="92;94;92" dur="0.8s" repeatCount="indefinite"/>
+    </line>
+    <line x1="54" y1="94" x2="57" y2="92" stroke="#E040FB" stroke-width="0.8" opacity="0.5">
+      <animate attributeName="x2" values="57;55;57" dur="0.8s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="92;94;92" dur="0.8s" repeatCount="indefinite"/>
+    </line>
+    <line x1="48" y1="102" x2="46" y2="106" stroke="#AA00FF" stroke-width="1" opacity="0.5">
+      <animate attributeName="x2" values="46;50;46" dur="0.45s" repeatCount="indefinite"/>
+    </line>
+    <line x1="52" y1="102" x2="54" y2="106" stroke="#AA00FF" stroke-width="1" opacity="0.5">
+      <animate attributeName="x2" values="54;50;54" dur="0.45s" repeatCount="indefinite"/>
+    </line>
+    <rect x="42" y="88" width="3" height="4" rx="0.3" fill="#7C4DFF" opacity="0.4">
+      <animate attributeName="y" values="88;86;88" dur="1.5s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- VISITOR D: Small fast-moving delivery bot (not human, but adds variety) -->
+  <!-- Instance D1 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-20,0;120,0" dur="8s" repeatCount="indefinite"/>
+    <rect x="64" y="102" width="6" height="4" rx="1" fill="#00E5FF" opacity="0.6">
+      <animate attributeName="opacity" values="0.5;0.8;0.5" dur="0.3s" repeatCount="indefinite"/>
+    </rect>
+    <circle cx="65" cy="106" r="1" fill="#263238"/>
+    <circle cx="69" cy="106" r="1" fill="#263238"/>
+    <!-- Antenna -->
+    <line x1="67" y1="102" x2="67" y2="99" stroke="#00E5FF" stroke-width="0.5"/>
+    <circle cx="67" cy="98" r="1" fill="#00E5FF">
+      <animate attributeName="r" values="0.8;1.2;0.8" dur="0.4s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Cargo light -->
+    <rect x="65" y="103" width="4" height="2" fill="#FFD54F" opacity="0.5">
+      <animate attributeName="opacity" values="0.3;0.7;0.3" dur="0.5s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <!-- Instance D2 -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="50,0;190,0" dur="8s" repeatCount="indefinite"/>
+    <rect x="64" y="102" width="6" height="4" rx="1" fill="#00E5FF" opacity="0.6">
+      <animate attributeName="opacity" values="0.5;0.8;0.5" dur="0.3s" repeatCount="indefinite"/>
+    </rect>
+    <circle cx="65" cy="106" r="1" fill="#263238"/>
+    <circle cx="69" cy="106" r="1" fill="#263238"/>
+    <line x1="67" y1="102" x2="67" y2="99" stroke="#00E5FF" stroke-width="0.5"/>
+    <circle cx="67" cy="98" r="1" fill="#00E5FF">
+      <animate attributeName="r" values="0.8;1.2;0.8" dur="0.4s" repeatCount="indefinite"/>
+    </circle>
+    <rect x="65" y="103" width="4" height="2" fill="#FFD54F" opacity="0.5">
+      <animate attributeName="opacity" values="0.3;0.7;0.3" dur="0.5s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- Animated antenna array with enhanced glow -->
+  <line x1="64" y1="28" x2="64" y2="14" stroke="#455A64" stroke-width="2"/>
+  <circle cx="64" cy="12" r="4" fill="url(#goldEnergy)" filter="url(#strongGlow)">
+    <animate attributeName="r" values="3;5;3" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="64" cy="12" r="2" fill="url(#goldCoinGrad)"/>
+  
+  <!-- Left antenna -->
+  <line x1="54" y1="28" x2="48" y2="18" stroke="#455A64" stroke-width="1.5"/>
+  <circle cx="46" cy="16" r="3" fill="url(#cryptoCore)" filter="url(#glow)">
+    <animate attributeName="r" values="2;3.5;2" dur="1.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="46" cy="16" r="1.5" fill="url(#cryptoCoinGrad)"/>
+  
+  <!-- Right antenna -->
+  <line x1="74" y1="28" x2="80" y2="18" stroke="#455A64" stroke-width="1.5"/>
+  <circle cx="82" cy="16" r="3" fill="url(#cryptoCore)" filter="url(#glow)">
+    <animate attributeName="r" values="3.5;2;3.5" dur="1.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="82" cy="16" r="1.5" fill="url(#cryptoCoinGrad)"/>
+  
+  <!-- Animated ground energy lines with shimmer -->
+  <line x1="20" y1="98" x2="48" y2="98" stroke="url(#goldShimmer)" stroke-width="0.75">
     <animate attributeName="stroke-dasharray" values="0 40;20 20;0 40" dur="2s" repeatCount="indefinite"/>
   </line>
-  <line x1="80" y1="98" x2="108" y2="98" stroke="#FFD54F" stroke-width="0.5">
+  <line x1="80" y1="98" x2="108" y2="98" stroke="url(#goldShimmer)" stroke-width="0.75">
     <animate attributeName="stroke-dasharray" values="20 20;0 40;20 20" dur="2s" repeatCount="indefinite"/>
   </line>
   
-  <!-- Animated LED trim -->
-  <ellipse cx="64" cy="100" rx="52" ry="18" fill="none" stroke="#E040FB" stroke-width="1">
+  <!-- Animated LED trim with multiple colors -->
+  <ellipse cx="64" cy="100" rx="52" ry="18" fill="none" stroke="#E040FB" stroke-width="1.5">
     <animate attributeName="stroke-dasharray" values="0 350;175 175;0 350" dur="6s" repeatCount="indefinite"/>
   </ellipse>
+  <ellipse cx="64" cy="100" rx="52" ry="18" fill="none" stroke="#00E5FF" stroke-width="0.5">
+    <animate attributeName="stroke-dasharray" values="175 175;0 350;175 175" dur="6s" repeatCount="indefinite"/>
+  </ellipse>
   
-  <!-- Animated ambient particles -->
-  <circle cx="42" cy="38" r="1" fill="#FFD54F">
-    <animate attributeName="cy" values="38;34;38" dur="2s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+  <!-- Falling crypto coins (like L1) -->
+  <g fill="url(#goldShimmer)">
+    <circle cx="28" cy="26" r="3">
+      <animate attributeName="cy" values="26;106" dur="2.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="100" cy="20" r="3">
+      <animate attributeName="cy" values="20;106" dur="2.5s" repeatCount="indefinite" begin="0.8s"/>
+      <animate attributeName="opacity" values="1;0" dur="2.5s" repeatCount="indefinite" begin="0.8s"/>
+    </circle>
+  </g>
+  <g fill="url(#cryptoShimmer)">
+    <circle cx="20" cy="30" r="2.5">
+      <animate attributeName="cy" values="30;106" dur="2.8s" repeatCount="indefinite" begin="0.4s"/>
+      <animate attributeName="opacity" values="1;0" dur="2.8s" repeatCount="indefinite" begin="0.4s"/>
+    </circle>
+    <circle cx="108" cy="24" r="2.5">
+      <animate attributeName="cy" values="24;106" dur="2.4s" repeatCount="indefinite" begin="1.2s"/>
+      <animate attributeName="opacity" values="1;0" dur="2.4s" repeatCount="indefinite" begin="1.2s"/>
+    </circle>
+  </g>
+  
+  <!-- Sparkle effects (like L1) -->
+  <polygon points="26,52 27,55 30,55 28,57 29,60 26,58 23,60 24,57 22,55 25,55" fill="#00E5FF">
+    <animate attributeName="opacity" values="0;1;0" dur="1.6s" repeatCount="indefinite"/>
+  </polygon>
+  <polygon points="102,50 103,52 105,52 104,53.5 104.5,56 102,54 99.5,56 100,53.5 99,52 101,52" fill="#E040FB">
+    <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+  </polygon>
+  <polygon points="64,26 65,28 67,28 66,29.5 66.5,32 64,30 61.5,32 62,29.5 61,28 63,28" fill="#FFD54F">
+    <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="1s"/>
+  </polygon>
+  <polygon points="40,60 41,62 43,62 42,63.5 42.5,66 40,64 37.5,66 38,63.5 37,62 39,62" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;0.8;0" dur="1.5s" repeatCount="indefinite" begin="0.8s"/>
+  </polygon>
+  <polygon points="88,58 89,60 91,60 90,61.5 90.5,64 88,62 85.5,64 86,61.5 85,60 87,60" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;0.8;0" dur="1.7s" repeatCount="indefinite" begin="0.3s"/>
+  </polygon>
+  
+  <!-- Animated ambient particles with colors -->
+  <circle cx="42" cy="38" r="1.5" fill="url(#goldCoinGrad)">
+    <animate attributeName="cy" values="38;33;38" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="86" cy="40" r="1" fill="#00E5FF">
-    <animate attributeName="cy" values="40;36;40" dur="2.5s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2.5s" repeatCount="indefinite"/>
+  <circle cx="86" cy="40" r="1.5" fill="url(#cryptoCoinGrad)">
+    <animate attributeName="cy" values="40;35;40" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0.5;1" dur="2.5s" repeatCount="indefinite"/>
   </circle>
-  <circle cx="64" cy="22" r="1" fill="#E040FB">
-    <animate attributeName="cx" values="64;68;64" dur="3s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>
+  <circle cx="64" cy="20" r="1.5" fill="url(#quantumCoinGrad)">
+    <animate attributeName="cx" values="64;70;64" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="50" cy="46" r="1" fill="#E040FB">
+    <animate attributeName="cy" values="46;42;46" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="78" cy="44" r="1" fill="#00E5FF">
+    <animate attributeName="cy" values="44;40;44" dur="2.2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.9;0.4;0.9" dur="2.2s" repeatCount="indefinite"/>
   </circle>
 </svg>

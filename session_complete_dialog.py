@@ -202,9 +202,14 @@ class SessionCompleteDialog(StyledDialog):
             xp_label.setStyleSheet("color: #9c27b0; font-weight: bold; font-size: 13px;")
             rewards_layout.addWidget(xp_label)
         
-        # Coins
+        # Coins with Royal Mint breakdown
         if self.rewards.get("coins", 0) > 0:
-            coins_label = QtWidgets.QLabel(f"🪙 +{self.rewards['coins']} Coins")
+            city_mint_coins = self.rewards.get("city_mint_coins", 0)
+            if city_mint_coins > 0:
+                base_coins = self.rewards['coins'] - city_mint_coins
+                coins_label = QtWidgets.QLabel(f"🪙 +{self.rewards['coins']} Coins ({base_coins} + 🏛️ Royal Mint {city_mint_coins})")
+            else:
+                coins_label = QtWidgets.QLabel(f"🪙 +{self.rewards['coins']} Coins")
             coins_label.setStyleSheet("color: #ff9800; font-weight: bold; font-size: 13px;")
             rewards_layout.addWidget(coins_label)
         

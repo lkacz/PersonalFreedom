@@ -17,7 +17,7 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
     "goldmine": {
         "id": "goldmine",
         "name": "⛏️ Goldmine",
-        "description": "Strike gold! Generates coins when you exercise (moderate+ intensity).",
+        "description": "Strike gold! Mining requires real effort - only moderate or higher intensity physical activities will unearth coins.",
         "tier": 1,
         "requirements": {
             "water": 3,
@@ -213,7 +213,7 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         },
         "completion_reward": {"coins": 1000, "xp": 750},
         "effect": {
-            "type": "activity_triggered_income",
+            "type": "focus_session_income",
             "trigger": "focus_session",  # Triggers on focus session completion
             "base_coins": 5,  # Base coins per session
             "coins_per_30min": 3,  # +3 coins per 30 minutes of focus

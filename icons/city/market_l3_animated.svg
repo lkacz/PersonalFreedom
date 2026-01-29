@@ -41,19 +41,72 @@
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+    <!-- Additional gradients for depth -->
+    <linearGradient id="hills" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9CCC65"/>
+      <stop offset="100%" style="stop-color:#7CB342"/>
+    </linearGradient>
+    <linearGradient id="platform" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#37474F"/>
+      <stop offset="50%" style="stop-color:#263238"/>
+      <stop offset="100%" style="stop-color:#1A1A2E"/>
+    </linearGradient>
+    <linearGradient id="pylon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#455A64"/>
+      <stop offset="50%" style="stop-color:#37474F"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    <radialGradient id="holoCyan" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#80DEEA"/>
+      <stop offset="50%" style="stop-color:#00E5FF"/>
+      <stop offset="100%" style="stop-color:#00B8D4" stop-opacity="0.6"/>
+    </radialGradient>
+    <radialGradient id="holoMagenta" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#EA80FC"/>
+      <stop offset="50%" style="stop-color:#E040FB"/>
+      <stop offset="100%" style="stop-color:#AA00FF" stop-opacity="0.6"/>
+    </radialGradient>
+    <radialGradient id="holoPurple" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#B388FF"/>
+      <stop offset="50%" style="stop-color:#7C4DFF"/>
+      <stop offset="100%" style="stop-color:#651FFF" stop-opacity="0.6"/>
+    </radialGradient>
+    <linearGradient id="droneBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#607D8B"/>
+      <stop offset="50%" style="stop-color:#455A64"/>
+      <stop offset="100%" style="stop-color:#37474F"/>
+    </linearGradient>
+    <linearGradient id="portalGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.8"/>
+      <stop offset="100%" style="stop-color:#00838F" stop-opacity="0.2"/>
+    </linearGradient>
+    <linearGradient id="priceTagCyan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4DD0E1"/>
+      <stop offset="100%" style="stop-color:#00ACC1"/>
+    </linearGradient>
+    <linearGradient id="priceTagMagenta" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#CE93D8"/>
+      <stop offset="100%" style="stop-color:#AB47BC"/>
+    </linearGradient>
+    <linearGradient id="adSign" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#263238"/>
+      <stop offset="100%" style="stop-color:#1A1A2E"/>
+    </linearGradient>
   </defs>
   
   <!-- Background: Blue sky -->
   <rect width="128" height="128" fill="url(#sky)"/>
   
   <!-- Distant hills -->
-  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="url(#hills)" opacity="0.6"/>
   
   <!-- Main ground -->
   <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
   
-  <!-- Animated holographic platform -->
-  <ellipse cx="64" cy="102" rx="54" ry="18" fill="#263238"/>
+  <!-- Animated holographic platform with gradient -->
+  <ellipse cx="64" cy="102" rx="54" ry="18" fill="url(#platform)"/>
+  <!-- Inner glow ring -->
+  <ellipse cx="64" cy="102" rx="52" ry="17" fill="none" stroke="#37474F" stroke-width="1" opacity="0.5"/>
   <ellipse cx="64" cy="102" rx="50" ry="16" fill="none" stroke="#00E5FF" stroke-width="1">
     <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite"/>
   </ellipse>
@@ -80,10 +133,35 @@
     <animate attributeName="stroke-dasharray" values="0 150;75 75;0 150" dur="4s" repeatCount="indefinite"/>
   </ellipse>
   
+  <!-- Floating energy rings around dome -->
+  <ellipse cx="64" cy="44" rx="28" ry="6" fill="none" stroke="#00E5FF" stroke-width="0.5" opacity="0.5">
+    <animate attributeName="ry" values="6;8;6" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="3s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="64" cy="44" rx="32" ry="4" fill="none" stroke="#7C4DFF" stroke-width="0.5" opacity="0.3">
+    <animate attributeName="ry" values="4;6;4" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.4;0.2" dur="4s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="rotate" values="0 64 44;360 64 44" dur="20s" repeatCount="indefinite"/>
+  </ellipse>
+  
   <!-- Animated top spire with energy -->
   <line x1="64" y1="32" x2="64" y2="18" stroke="#455A64" stroke-width="2"/>
   <circle cx="64" cy="16" r="4" fill="url(#energyCore)" filter="url(#strongGlow)">
     <animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <!-- Energy beam shooting upward -->
+  <line x1="64" y1="14" x2="64" y2="4" stroke="#E040FB" stroke-width="1" opacity="0.6">
+    <animate attributeName="opacity" values="0.2;0.8;0.2" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="y2" values="6;2;6" dur="2s" repeatCount="indefinite"/>
+  </line>
+  <!-- Orbiting energy particles around spire -->
+  <circle cx="64" cy="16" r="1" fill="#00E5FF">
+    <animateTransform attributeName="transform" type="rotate" values="0 64 16;360 64 16" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="cx" values="58;58" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="64" cy="16" r="0.8" fill="#E040FB">
+    <animateTransform attributeName="transform" type="rotate" values="180 64 16;540 64 16" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="cx" values="70;70" dur="2.5s" repeatCount="indefinite"/>
   </circle>
   
   <!-- Animated holographic product displays - floating with rotation -->
@@ -120,15 +198,22 @@
     </ellipse>
   </g>
   
-  <!-- Animated delivery drones - flying -->
+  <!-- Animated delivery drones - flying with gradients -->
   <g>
     <animateTransform attributeName="transform" type="translate" values="0,0;10,5;0,0;-10,-5;0,0" dur="4s" repeatCount="indefinite"/>
     <g transform="translate(18, 28)">
-      <ellipse cx="8" cy="6" rx="8" ry="3" fill="#455A64"/>
-      <rect x="4" y="4" width="8" height="4" fill="#37474F" rx="1"/>
-      <line x1="2" y1="4" x2="0" y2="2" stroke="#78909C" stroke-width="1"/>
-      <line x1="14" y1="4" x2="16" y2="2" stroke="#78909C" stroke-width="1"/>
-      <circle cx="8" cy="6" r="2" fill="#00E5FF">
+      <ellipse cx="8" cy="6" rx="8" ry="3" fill="url(#droneBody)"/>
+      <rect x="4" y="4" width="8" height="4" fill="url(#techFrame)" rx="1"/>
+      <!-- Rotor blur effect -->
+      <ellipse cx="2" cy="3" rx="3" ry="1" fill="#90A4AE" opacity="0.4">
+        <animate attributeName="opacity" values="0.3;0.6;0.3" dur="0.1s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="14" cy="3" rx="3" ry="1" fill="#90A4AE" opacity="0.4">
+        <animate attributeName="opacity" values="0.5;0.3;0.5" dur="0.1s" repeatCount="indefinite"/>
+      </ellipse>
+      <line x1="2" y1="4" x2="0" y2="2" stroke="#90A4AE" stroke-width="1"/>
+      <line x1="14" y1="4" x2="16" y2="2" stroke="#90A4AE" stroke-width="1"/>
+      <circle cx="8" cy="6" r="2" fill="url(#holoCyan)" filter="url(#glow)">
         <animate attributeName="r" values="1.5;2.5;1.5" dur="0.5s" repeatCount="indefinite"/>
       </circle>
     </g>
@@ -137,11 +222,18 @@
   <g>
     <animateTransform attributeName="transform" type="translate" values="0,0;-8,3;0,0;8,-3;0,0" dur="5s" repeatCount="indefinite"/>
     <g transform="translate(100, 34)">
-      <ellipse cx="8" cy="6" rx="8" ry="3" fill="#455A64"/>
-      <rect x="4" y="4" width="8" height="4" fill="#37474F" rx="1"/>
-      <line x1="2" y1="4" x2="0" y2="2" stroke="#78909C" stroke-width="1"/>
-      <line x1="14" y1="4" x2="16" y2="2" stroke="#78909C" stroke-width="1"/>
-      <circle cx="8" cy="6" r="2" fill="#E040FB">
+      <ellipse cx="8" cy="6" rx="8" ry="3" fill="url(#droneBody)"/>
+      <rect x="4" y="4" width="8" height="4" fill="url(#techFrame)" rx="1"/>
+      <!-- Rotor blur effect -->
+      <ellipse cx="2" cy="3" rx="3" ry="1" fill="#90A4AE" opacity="0.4">
+        <animate attributeName="opacity" values="0.4;0.6;0.4" dur="0.1s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="14" cy="3" rx="3" ry="1" fill="#90A4AE" opacity="0.4">
+        <animate attributeName="opacity" values="0.6;0.4;0.6" dur="0.1s" repeatCount="indefinite"/>
+      </ellipse>
+      <line x1="2" y1="4" x2="0" y2="2" stroke="#90A4AE" stroke-width="1"/>
+      <line x1="14" y1="4" x2="16" y2="2" stroke="#90A4AE" stroke-width="1"/>
+      <circle cx="8" cy="6" r="2" fill="url(#holoMagenta)" filter="url(#glow)">
         <animate attributeName="r" values="2.5;1.5;2.5" dur="0.5s" repeatCount="indefinite"/>
       </circle>
     </g>
@@ -155,51 +247,158 @@
   <ellipse cx="64" cy="86" rx="8" ry="4" fill="#00E5FF">
     <animate attributeName="opacity" values="0.2;0.5;0.2" dur="2s" repeatCount="indefinite"/>
   </ellipse>
+  <!-- Portal scan lines -->
+  <line x1="52" y1="86" x2="76" y2="86" stroke="#00E5FF" stroke-width="0.5" opacity="0.5">
+    <animate attributeName="y1" values="80;92;80" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="y2" values="80;92;80" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <!-- Teleport particles at entrance -->
+  <circle cx="60" cy="86" r="1" fill="#00E5FF">
+    <animate attributeName="cy" values="90;82;90" dur="1s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="68" cy="86" r="1" fill="#00E5FF">
+    <animate attributeName="cy" values="90;82;90" dur="1s" repeatCount="indefinite" begin="0.5s"/>
+    <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0.5s"/>
+  </circle>
   
-  <!-- Animated energy pylons -->
-  <rect x="10" y="70" width="4" height="22" fill="url(#techFrame)"/>
-  <circle cx="12" cy="68" r="3" fill="#E040FB" filter="url(#glow)">
+  <!-- Animated energy pylons with gradients -->
+  <rect x="10" y="70" width="4" height="22" fill="url(#pylon)" rx="0.5"/>
+  <!-- Pylon top light -->
+  <ellipse cx="12" cy="70" rx="2" ry="0.5" fill="#546E7A"/>
+  <circle cx="12" cy="68" r="3" fill="url(#holoMagenta)" filter="url(#glow)">
     <animate attributeName="r" values="2;4;2" dur="1s" repeatCount="indefinite"/>
   </circle>
   <line x1="12" y1="72" x2="12" y2="90" stroke="#E040FB" stroke-width="1">
     <animate attributeName="stroke-dasharray" values="0 20;10 10;0 20" dur="1.5s" repeatCount="indefinite"/>
   </line>
+  <!-- Energy field between pylons -->
+  <line x1="12" y1="68" x2="64" y2="68" stroke="#E040FB" stroke-width="0.3" opacity="0.2">
+    <animate attributeName="opacity" values="0.1;0.3;0.1" dur="2s" repeatCount="indefinite"/>
+  </line>
   
-  <rect x="114" y="70" width="4" height="22" fill="url(#techFrame)"/>
-  <circle cx="116" cy="68" r="3" fill="#E040FB" filter="url(#glow)">
+  <rect x="114" y="70" width="4" height="22" fill="url(#pylon)" rx="0.5"/>
+  <ellipse cx="116" cy="70" rx="2" ry="0.5" fill="#546E7A"/>
+  <circle cx="116" cy="68" r="3" fill="url(#holoMagenta)" filter="url(#glow)">
     <animate attributeName="r" values="4;2;4" dur="1s" repeatCount="indefinite"/>
   </circle>
   <line x1="116" y1="72" x2="116" y2="90" stroke="#E040FB" stroke-width="1">
     <animate attributeName="stroke-dasharray" values="10 10;0 20;10 10" dur="1.5s" repeatCount="indefinite"/>
   </line>
+  <line x1="64" y1="68" x2="116" y2="68" stroke="#E040FB" stroke-width="0.3" opacity="0.2">
+    <animate attributeName="opacity" values="0.2;0.1;0.2" dur="2s" repeatCount="indefinite"/>
+  </line>
   
-  <!-- Animated holographic price tags floating -->
-  <rect x="28" y="74" width="10" height="6" fill="#00E5FF" rx="1">
-    <animate attributeName="opacity" values="0.2;0.5;0.2" dur="1.5s" repeatCount="indefinite"/>
-    <animate attributeName="y" values="74;72;74" dur="2s" repeatCount="indefinite"/>
-  </rect>
-  <text x="29" y="79" font-size="4" fill="#00E5FF">$99
-    <animate attributeName="y" values="79;77;79" dur="2s" repeatCount="indefinite"/>
-  </text>
-  
-  <rect x="90" y="74" width="10" height="6" fill="#E040FB" rx="1">
-    <animate attributeName="opacity" values="0.5;0.2;0.5" dur="1.5s" repeatCount="indefinite"/>
-    <animate attributeName="y" values="74;73;74" dur="2.5s" repeatCount="indefinite"/>
-  </rect>
-  <text x="91" y="79" font-size="4" fill="#E040FB">$49
-    <animate attributeName="y" values="79;78;79" dur="2.5s" repeatCount="indefinite"/>
-  </text>
-  
-  <!-- Animated virtual shoppers (holographic) - moving -->
-  <g opacity="0.6">
-    <animateTransform attributeName="transform" type="translate" values="0,0;5,0;0,0" dur="4s" repeatCount="indefinite"/>
-    <ellipse cx="40" cy="100" rx="3" ry="5" fill="#00E5FF"/>
-    <circle cx="40" cy="94" r="2" fill="#00E5FF"/>
+  <!-- Animated holographic price tags floating with gradients -->
+  <g>
+    <animate attributeName="transform" type="translate" values="0,0;0,-2;0,0" dur="2s" repeatCount="indefinite"/>
+    <rect x="28" y="74" width="10" height="6" fill="url(#priceTagCyan)" rx="1">
+      <animate attributeName="opacity" values="0.4;0.7;0.4" dur="1.5s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="29" y="75" width="8" height="4" fill="#FFFFFF" opacity="0.1" rx="0.5"/>
+    <text x="30" y="79" font-size="3.5" fill="#FFFFFF" font-weight="bold">$99</text>
   </g>
-  <g opacity="0.6">
-    <animateTransform attributeName="transform" type="translate" values="0,0;-5,0;0,0" dur="4s" repeatCount="indefinite"/>
-    <ellipse cx="88" cy="100" rx="3" ry="5" fill="#E040FB"/>
-    <circle cx="88" cy="94" r="2" fill="#E040FB"/>
+  
+  <g>
+    <animate attributeName="transform" type="translate" values="0,0;0,-1.5;0,0" dur="2.5s" repeatCount="indefinite"/>
+    <rect x="90" y="74" width="10" height="6" fill="url(#priceTagMagenta)" rx="1">
+      <animate attributeName="opacity" values="0.6;0.4;0.6" dur="1.5s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="91" y="75" width="8" height="4" fill="#FFFFFF" opacity="0.1" rx="0.5"/>
+    <text x="92" y="79" font-size="3.5" fill="#FFFFFF" font-weight="bold">$49</text>
+  </g>
+  
+  <!-- Animated virtual shoppers (holographic) - continuous walking -->
+  <!-- Shopper 1: Cyan hologram walking right -->
+  <g opacity="0.7">
+    <animateTransform attributeName="transform" type="translate" values="-30,0;60,0" dur="10s" repeatCount="indefinite"/>
+    <!-- Body with scanline effect -->
+    <ellipse cx="40" cy="100" rx="3" ry="5" fill="url(#holoCyan)">
+      <animate attributeName="opacity" values="0.6;0.9;0.6" dur="0.5s" repeatCount="indefinite"/>
+    </ellipse>
+    <!-- Head -->
+    <circle cx="40" cy="94" r="2" fill="url(#holoCyan)">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Holographic glitch lines -->
+    <line x1="37" y1="97" x2="43" y2="97" stroke="#80DEEA" stroke-width="0.5" opacity="0.5">
+      <animate attributeName="opacity" values="0;0.8;0" dur="0.3s" repeatCount="indefinite"/>
+    </line>
+    <!-- Walking legs -->
+    <line x1="39" y1="104" x2="38" y2="108" stroke="#00E5FF" stroke-width="1">
+      <animate attributeName="x2" values="38;40;38" dur="0.4s" repeatCount="indefinite"/>
+    </line>
+    <line x1="41" y1="104" x2="42" y2="108" stroke="#00E5FF" stroke-width="1">
+      <animate attributeName="x2" values="42;40;42" dur="0.4s" repeatCount="indefinite"/>
+    </line>
+    <!-- Floating shopping hologram -->
+    <rect x="43" y="97" width="3" height="4" fill="#00E5FF" rx="0.5" opacity="0.6">
+      <animate attributeName="y" values="97;96;97" dur="0.3s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <!-- Second instance for seamless loop -->
+  <g opacity="0.7">
+    <animateTransform attributeName="transform" type="translate" values="-120,0;-30,0" dur="10s" repeatCount="indefinite"/>
+    <ellipse cx="40" cy="100" rx="3" ry="5" fill="url(#holoCyan)">
+      <animate attributeName="opacity" values="0.6;0.9;0.6" dur="0.5s" repeatCount="indefinite"/>
+    </ellipse>
+    <circle cx="40" cy="94" r="2" fill="url(#holoCyan)">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <line x1="37" y1="97" x2="43" y2="97" stroke="#80DEEA" stroke-width="0.5" opacity="0.5">
+      <animate attributeName="opacity" values="0;0.8;0" dur="0.3s" repeatCount="indefinite"/>
+    </line>
+    <line x1="39" y1="104" x2="38" y2="108" stroke="#00E5FF" stroke-width="1">
+      <animate attributeName="x2" values="38;40;38" dur="0.4s" repeatCount="indefinite"/>
+    </line>
+    <line x1="41" y1="104" x2="42" y2="108" stroke="#00E5FF" stroke-width="1">
+      <animate attributeName="x2" values="42;40;42" dur="0.4s" repeatCount="indefinite"/>
+    </line>
+    <rect x="43" y="97" width="3" height="4" fill="#00E5FF" rx="0.5" opacity="0.6">
+      <animate attributeName="y" values="97;96;97" dur="0.3s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- Shopper 2: Magenta hologram walking left -->
+  <g opacity="0.7">
+    <animateTransform attributeName="transform" type="translate" values="50,0;-50,0" dur="12s" repeatCount="indefinite"/>
+    <ellipse cx="88" cy="100" rx="3" ry="5" fill="url(#holoMagenta)">
+      <animate attributeName="opacity" values="0.7;0.5;0.7" dur="0.6s" repeatCount="indefinite"/>
+    </ellipse>
+    <circle cx="88" cy="94" r="2" fill="url(#holoMagenta)">
+      <animate attributeName="opacity" values="0.8;0.6;0.8" dur="0.6s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Holographic glitch lines -->
+    <line x1="85" y1="99" x2="91" y2="99" stroke="#EA80FC" stroke-width="0.5" opacity="0.5">
+      <animate attributeName="opacity" values="0.6;0;0.6" dur="0.4s" repeatCount="indefinite"/>
+    </line>
+    <!-- Walking legs -->
+    <line x1="87" y1="104" x2="88" y2="108" stroke="#E040FB" stroke-width="1">
+      <animate attributeName="x2" values="88;86;88" dur="0.35s" repeatCount="indefinite"/>
+    </line>
+    <line x1="89" y1="104" x2="88" y2="108" stroke="#E040FB" stroke-width="1">
+      <animate attributeName="x2" values="88;90;88" dur="0.35s" repeatCount="indefinite"/>
+    </line>
+  </g>
+  <!-- Second instance for seamless loop -->
+  <g opacity="0.7">
+    <animateTransform attributeName="transform" type="translate" values="150,0;50,0" dur="12s" repeatCount="indefinite"/>
+    <ellipse cx="88" cy="100" rx="3" ry="5" fill="url(#holoMagenta)">
+      <animate attributeName="opacity" values="0.7;0.5;0.7" dur="0.6s" repeatCount="indefinite"/>
+    </ellipse>
+    <circle cx="88" cy="94" r="2" fill="url(#holoMagenta)">
+      <animate attributeName="opacity" values="0.8;0.6;0.8" dur="0.6s" repeatCount="indefinite"/>
+    </circle>
+    <line x1="85" y1="99" x2="91" y2="99" stroke="#EA80FC" stroke-width="0.5" opacity="0.5">
+      <animate attributeName="opacity" values="0.6;0;0.6" dur="0.4s" repeatCount="indefinite"/>
+    </line>
+    <line x1="87" y1="104" x2="88" y2="108" stroke="#E040FB" stroke-width="1">
+      <animate attributeName="x2" values="88;86;88" dur="0.35s" repeatCount="indefinite"/>
+    </line>
+    <line x1="89" y1="104" x2="88" y2="108" stroke="#E040FB" stroke-width="1">
+      <animate attributeName="x2" values="88;90;88" dur="0.35s" repeatCount="indefinite"/>
+    </line>
   </g>
   
   <!-- Animated ground energy lines -->
@@ -236,4 +435,70 @@
     <animate attributeName="cx" values="92;88;92" dur="3s" repeatCount="indefinite"/>
     <animate attributeName="opacity" values="1;0.5;1" dur="3s" repeatCount="indefinite"/>
   </circle>
+  
+  <!-- Rising data stream particles -->
+  <g opacity="0.6">
+    <circle cx="30" cy="80" r="0.8" fill="#00E5FF">
+      <animate attributeName="cy" values="80;50;20" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0.4;0" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="98" cy="75" r="0.8" fill="#E040FB">
+      <animate attributeName="cy" values="75;45;15" dur="5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0.4;0" dur="5s" repeatCount="indefinite"/>
+    </circle>
+    <rect x="44" y="70" width="1" height="3" fill="#7C4DFF">
+      <animate attributeName="cy" values="70;40;10" dur="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.3;0" dur="3.5s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="84" y="72" width="1" height="2" fill="#00E5FF">
+      <animate attributeName="cy" values="72;42;12" dur="4.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.3;0" dur="4.5s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- Holographic advertisement signs floating with gradient -->
+  <g>
+    <rect x="20" y="60" width="12" height="8" fill="url(#adSign)" rx="1" opacity="0.9"/>
+    <!-- Screen glow -->
+    <rect x="21" y="61" width="10" height="6" fill="url(#holoCyan)" opacity="0.3">
+      <animate attributeName="opacity" values="0.2;0.5;0.2" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Scan line effect -->
+    <line x1="21" y1="62" x2="31" y2="62" stroke="#FFFFFF" stroke-width="0.3" opacity="0.3">
+      <animate attributeName="y1" values="61;67;61" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="61;67;61" dur="1.5s" repeatCount="indefinite"/>
+    </line>
+    <text x="22" y="66" font-size="4" fill="#FFFFFF" font-weight="bold">SALE
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="1s" repeatCount="indefinite"/>
+    </text>
+    <animate attributeName="transform" type="translate" values="0,0;0,-2;0,0" dur="3s" repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Second advertisement on other side -->
+  <g>
+    <rect x="96" y="58" width="12" height="8" fill="url(#adSign)" rx="1" opacity="0.9"/>
+    <rect x="97" y="59" width="10" height="6" fill="url(#holoMagenta)" opacity="0.3">
+      <animate attributeName="opacity" values="0.3;0.5;0.3" dur="2.5s" repeatCount="indefinite"/>
+    </rect>
+    <line x1="97" y1="60" x2="107" y2="60" stroke="#FFFFFF" stroke-width="0.3" opacity="0.3">
+      <animate attributeName="y1" values="59;65;59" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="59;65;59" dur="1.8s" repeatCount="indefinite"/>
+    </line>
+    <text x="99" y="64" font-size="3" fill="#FFFFFF" font-weight="bold">NEW!
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="0.8s" repeatCount="indefinite"/>
+    </text>
+    <animate attributeName="transform" type="translate" values="0,0;0,-1.5;0,0" dur="3.5s" repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Scanning grid overlay effect on building -->
+  <path d="M20,80 L108,80" stroke="#00E5FF" stroke-width="0.3" opacity="0.2">
+    <animate attributeName="transform" type="translate" values="0,0;0,-40;0,0" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0.3;0" dur="4s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Pulsing ground energy field -->
+  <ellipse cx="64" cy="102" rx="48" ry="14" fill="none" stroke="#00E5FF" stroke-width="0.5" opacity="0.2">
+    <animate attributeName="rx" values="48;52;48" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.1;0.3;0.1" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
 </svg>

@@ -28,6 +28,74 @@
       <stop offset="0%" style="stop-color:#4FC3F7"/>
       <stop offset="100%" style="stop-color:#0288D1"/>
     </radialGradient>
+    <!-- Additional gradients for depth -->
+    <linearGradient id="hills" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9CCC65"/>
+      <stop offset="100%" style="stop-color:#7CB342"/>
+    </linearGradient>
+    <linearGradient id="concretePad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ECEFF1"/>
+      <stop offset="50%" style="stop-color:#CFD8DC"/>
+      <stop offset="100%" style="stop-color:#B0BEC5"/>
+    </linearGradient>
+    <linearGradient id="solarPanel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1976D2"/>
+      <stop offset="50%" style="stop-color:#1565C0"/>
+      <stop offset="100%" style="stop-color:#0D47A1"/>
+    </linearGradient>
+    <linearGradient id="controlTower" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#546E7A"/>
+      <stop offset="100%" style="stop-color:#37474F"/>
+    </linearGradient>
+    <linearGradient id="dishPole" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#546E7A"/>
+      <stop offset="50%" style="stop-color:#78909C"/>
+      <stop offset="100%" style="stop-color:#546E7A"/>
+    </linearGradient>
+    <linearGradient id="dishBase" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#546E7A"/>
+      <stop offset="100%" style="stop-color:#37474F"/>
+    </linearGradient>
+    <linearGradient id="person1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#455A64"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    <linearGradient id="skinTone" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFCCBC"/>
+      <stop offset="100%" style="stop-color:#FFAB91"/>
+    </linearGradient>
+    <linearGradient id="satellite" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ECEFF1"/>
+      <stop offset="100%" style="stop-color:#B0BEC5"/>
+    </linearGradient>
+    <linearGradient id="entrance" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#546E7A"/>
+      <stop offset="100%" style="stop-color:#37474F"/>
+    </linearGradient>
+    <radialGradient id="telescopeLens" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#81D4FA"/>
+      <stop offset="50%" style="stop-color:#4FC3F7"/>
+      <stop offset="100%" style="stop-color:#0288D1"/>
+    </radialGradient>
+    <radialGradient id="redLight" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FF5252"/>
+      <stop offset="100%" style="stop-color:#D32F2F"/>
+    </radialGradient>
+    <radialGradient id="greenLight" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#69F0AE"/>
+      <stop offset="100%" style="stop-color:#00C853"/>
+    </radialGradient>
+    <radialGradient id="blueLight" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#64B5F6"/>
+      <stop offset="100%" style="stop-color:#1976D2"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
   
   <!-- Background: Blue sky -->
@@ -44,13 +112,15 @@
   </g>
   
   <!-- Distant hills -->
-  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="url(#hills)" opacity="0.6"/>
   
   <!-- Main ground -->
   <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
   
-  <!-- Concrete pad -->
-  <ellipse cx="64" cy="102" rx="48" ry="16" fill="#CFD8DC"/>
+  <!-- Concrete pad with gradient -->
+  <ellipse cx="64" cy="102" rx="48" ry="16" fill="url(#concretePad)"/>
+  <!-- Pad edge highlight -->
+  <ellipse cx="64" cy="102" rx="46" ry="14" fill="none" stroke="#ECEFF1" stroke-width="0.5" opacity="0.5"/>
   
   <!-- Main building - modern cylindrical base -->
   <rect x="38" y="52" width="52" height="42" fill="url(#modernWall)" rx="2"/>
@@ -67,7 +137,7 @@
   </rect>
   
   <!-- Center entrance with automatic door -->
-  <rect x="56" y="76" width="16" height="18" fill="#455A64"/>
+  <rect x="56" y="76" width="16" height="18" fill="url(#entrance)"/>
   <rect x="58" y="78" width="12" height="14" fill="#90A4AE"/>
   <rect x="58" y="78" width="5" height="14" fill="#78909C">
     <animate attributeName="width" values="5;0;0;5" dur="4s" repeatCount="indefinite"/>
@@ -91,32 +161,38 @@
     </ellipse>
   </g>
   
-  <!-- Large radio dish - left (rotating) -->
+  <!-- Large radio dish - left (rotating) with gradients -->
   <g transform="translate(8, 50)">
     <g transform-origin="16 8">
       <animateTransform attributeName="transform" type="rotate" values="0;20;0;-10;0" dur="8s" repeatCount="indefinite"/>
       <ellipse cx="16" cy="8" rx="14" ry="8" fill="url(#dish)"/>
+      <!-- Dish inner rings -->
+      <ellipse cx="16" cy="8" rx="10" ry="5" fill="none" stroke="#B0BEC5" stroke-width="0.5" opacity="0.5"/>
+      <ellipse cx="16" cy="8" rx="6" ry="3" fill="none" stroke="#B0BEC5" stroke-width="0.5" opacity="0.5"/>
       <line x1="16" y1="8" x2="16" y2="0" stroke="#90A4AE" stroke-width="2"/>
-      <circle cx="16" cy="-2" r="2" fill="#F44336">
+      <circle cx="16" cy="-2" r="2" fill="url(#redLight)" filter="url(#glow)">
         <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite"/>
       </circle>
     </g>
-    <line x1="16" y1="16" x2="16" y2="38" stroke="#607D8B" stroke-width="3"/>
-    <rect x="14" y="36" width="4" height="6" fill="#455A64"/>
+    <line x1="16" y1="16" x2="16" y2="38" stroke="url(#dishPole)" stroke-width="3"/>
+    <rect x="14" y="36" width="4" height="6" fill="url(#dishBase)" rx="0.5"/>
   </g>
   
-  <!-- Large radio dish - right (rotating opposite) -->
+  <!-- Large radio dish - right (rotating opposite) with gradients -->
   <g transform="translate(96, 50)">
     <g transform-origin="16 8">
       <animateTransform attributeName="transform" type="rotate" values="0;-15;0;25;0" dur="10s" repeatCount="indefinite"/>
       <ellipse cx="16" cy="8" rx="14" ry="8" fill="url(#dish)"/>
+      <!-- Dish inner rings -->
+      <ellipse cx="16" cy="8" rx="10" ry="5" fill="none" stroke="#B0BEC5" stroke-width="0.5" opacity="0.5"/>
+      <ellipse cx="16" cy="8" rx="6" ry="3" fill="none" stroke="#B0BEC5" stroke-width="0.5" opacity="0.5"/>
       <line x1="16" y1="8" x2="16" y2="0" stroke="#90A4AE" stroke-width="2"/>
-      <circle cx="16" cy="-2" r="2" fill="#4CAF50">
+      <circle cx="16" cy="-2" r="2" fill="url(#greenLight)" filter="url(#glow)">
         <animate attributeName="opacity" values="1;0.3;1" dur="1.2s" repeatCount="indefinite"/>
       </circle>
     </g>
-    <line x1="16" y1="16" x2="16" y2="38" stroke="#607D8B" stroke-width="3"/>
-    <rect x="14" y="36" width="4" height="6" fill="#455A64"/>
+    <line x1="16" y1="16" x2="16" y2="38" stroke="url(#dishPole)" stroke-width="3"/>
+    <rect x="14" y="36" width="4" height="6" fill="url(#dishBase)" rx="0.5"/>
   </g>
   
   <!-- Satellite tracking screens on building - animated data -->
@@ -130,8 +206,10 @@
     <animate attributeName="fill-opacity" values="1;0.6;1" dur="1s" repeatCount="indefinite"/>
   </rect>
   
-  <!-- Control tower on top -->
-  <rect x="56" y="24" width="16" height="10" fill="#455A64"/>
+  <!-- Control tower on top with gradient -->
+  <rect x="56" y="24" width="16" height="10" fill="url(#controlTower)" rx="1"/>
+  <!-- Tower top edge -->
+  <rect x="56" y="24" width="16" height="2" fill="#607D8B" rx="1"/>
   <rect x="58" y="26" width="12" height="6" fill="#1A1A1A"/>
   <g fill="#4FC3F7" opacity="0.7">
     <rect x="59" y="27" width="4" height="4">
@@ -142,22 +220,24 @@
     </rect>
   </g>
   
-  <!-- Antenna array on top - blinking lights -->
-  <line x1="64" y1="20" x2="64" y2="12" stroke="#607D8B" stroke-width="2"/>
-  <circle cx="64" cy="10" r="3" fill="#F44336">
+  <!-- Antenna array on top - blinking lights with gradients -->
+  <line x1="64" y1="20" x2="64" y2="12" stroke="url(#dishPole)" stroke-width="2"/>
+  <circle cx="64" cy="10" r="3" fill="url(#redLight)" filter="url(#glow)">
     <animate attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite"/>
   </circle>
   <line x1="56" y1="22" x2="52" y2="16" stroke="#607D8B" stroke-width="1"/>
-  <circle cx="50" cy="14" r="2" fill="#4CAF50">
+  <circle cx="50" cy="14" r="2" fill="url(#greenLight)" filter="url(#glow)">
     <animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" repeatCount="indefinite"/>
   </circle>
   <line x1="72" y1="22" x2="76" y2="16" stroke="#607D8B" stroke-width="1"/>
-  <circle cx="78" cy="14" r="2" fill="#2196F3">
+  <circle cx="78" cy="14" r="2" fill="url(#blueLight)" filter="url(#glow)">
     <animate attributeName="opacity" values="1;0.2;1" dur="0.7s" repeatCount="indefinite"/>
   </circle>
   
-  <!-- Solar panels on ground -->
-  <rect x="16" y="96" width="20" height="10" fill="#1565C0" rx="1"/>
+  <!-- Solar panels on ground with gradients -->
+  <rect x="16" y="96" width="20" height="10" fill="url(#solarPanel)" rx="1"/>
+  <!-- Panel shine -->
+  <rect x="17" y="97" width="18" height="2" fill="#42A5F5" opacity="0.3"/>
   <g stroke="#0D47A1" stroke-width="0.5">
     <line x1="21" y1="96" x2="21" y2="106"/>
     <line x1="26" y1="96" x2="26" y2="106"/>
@@ -165,7 +245,9 @@
     <line x1="16" y1="101" x2="36" y2="101"/>
   </g>
   
-  <rect x="92" y="96" width="20" height="10" fill="#1565C0" rx="1"/>
+  <rect x="92" y="96" width="20" height="10" fill="url(#solarPanel)" rx="1"/>
+  <!-- Panel shine -->
+  <rect x="93" y="97" width="18" height="2" fill="#42A5F5" opacity="0.3"/>
   <g stroke="#0D47A1" stroke-width="0.5">
     <line x1="97" y1="96" x2="97" y2="106"/>
     <line x1="102" y1="96" x2="102" y2="106"/>
@@ -189,21 +271,66 @@
     <animate attributeName="opacity" values="0.8;0.4;0.8" dur="2s" repeatCount="indefinite"/>
   </line>
   
-  <!-- Satellite flying overhead -->
+  <!-- Satellite flying overhead with gradient - continuous loop -->
   <g>
     <animateTransform attributeName="transform" type="translate" values="-30,0;150,0" dur="15s" repeatCount="indefinite"/>
-    <rect x="0" y="15" width="8" height="4" fill="#CFD8DC"/>
-    <rect x="-5" y="16" width="5" height="2" fill="#1565C0"/>
-    <rect x="8" y="16" width="5" height="2" fill="#1565C0"/>
-    <circle cx="4" cy="17" r="1" fill="#F44336">
+    <rect x="0" y="15" width="8" height="4" fill="url(#satellite)" rx="1"/>
+    <!-- Solar panels -->
+    <rect x="-5" y="16" width="5" height="2" fill="url(#solarPanel)"/>
+    <rect x="8" y="16" width="5" height="2" fill="url(#solarPanel)"/>
+    <!-- Body detail -->
+    <rect x="1" y="16" width="6" height="2" fill="#90A4AE" opacity="0.5"/>
+    <circle cx="4" cy="17" r="1" fill="url(#redLight)" filter="url(#glow)">
+      <animate attributeName="opacity" values="1;0.3;1" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <!-- Second satellite for seamless loop -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-210,0;-30,0" dur="15s" repeatCount="indefinite"/>
+    <rect x="0" y="15" width="8" height="4" fill="url(#satellite)" rx="1"/>
+    <rect x="-5" y="16" width="5" height="2" fill="url(#solarPanel)"/>
+    <rect x="8" y="16" width="5" height="2" fill="url(#solarPanel)"/>
+    <rect x="1" y="16" width="6" height="2" fill="#90A4AE" opacity="0.5"/>
+    <circle cx="4" cy="17" r="1" fill="url(#redLight)" filter="url(#glow)">
       <animate attributeName="opacity" values="1;0.3;1" dur="0.5s" repeatCount="indefinite"/>
     </circle>
   </g>
   
-  <!-- Person walking to entrance -->
+  <!-- Person walking to entrance - continuous loop -->
   <g>
-    <animateTransform attributeName="transform" type="translate" values="-20,0;50,0;50,0;50,0" dur="8s" repeatCount="indefinite"/>
-    <ellipse cx="22" cy="100" rx="3" ry="5" fill="#37474F"/>
-    <circle cx="22" cy="93" r="3" fill="#FFCCBC"/>
+    <animateTransform attributeName="transform" type="translate" values="-30,0;80,0" dur="12s" repeatCount="indefinite"/>
+    <!-- Body with gradient -->
+    <ellipse cx="22" cy="100" rx="3" ry="5" fill="url(#person1)"/>
+    <!-- Head -->
+    <circle cx="22" cy="93" r="3" fill="url(#skinTone)"/>
+    <!-- Hair -->
+    <ellipse cx="22" cy="91" rx="3.2" ry="1.8" fill="#5D4037"/>
+    <!-- Walking legs -->
+    <line x1="21" y1="104" x2="20" y2="108" stroke="#37474F" stroke-width="1.5">
+      <animate attributeName="x2" values="20;22;20" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <line x1="23" y1="104" x2="24" y2="108" stroke="#37474F" stroke-width="1.5">
+      <animate attributeName="x2" values="24;22;24" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <!-- Clipboard/tablet -->
+    <rect x="25" y="97" width="2" height="3" fill="#ECEFF1" rx="0.3">
+      <animate attributeName="y" values="97;96.5;97" dur="0.5s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <!-- Second person for seamless loop -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-140,0;-30,0" dur="12s" repeatCount="indefinite"/>
+    <ellipse cx="22" cy="100" rx="3" ry="5" fill="url(#person1)"/>
+    <circle cx="22" cy="93" r="3" fill="url(#skinTone)"/>
+    <ellipse cx="22" cy="91" rx="3.2" ry="1.8" fill="#5D4037"/>
+    <line x1="21" y1="104" x2="20" y2="108" stroke="#37474F" stroke-width="1.5">
+      <animate attributeName="x2" values="20;22;20" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <line x1="23" y1="104" x2="24" y2="108" stroke="#37474F" stroke-width="1.5">
+      <animate attributeName="x2" values="24;22;24" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <rect x="25" y="97" width="2" height="3" fill="#ECEFF1" rx="0.3">
+      <animate attributeName="y" values="97;96.5;97" dur="0.5s" repeatCount="indefinite"/>
+    </rect>
   </g>
 </svg>
