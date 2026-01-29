@@ -4,16 +4,20 @@
   <defs>
     <linearGradient id="bankWall" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#ECEFF1"/>
-      <stop offset="50%" style="stop-color:#CFD8DC"/>
+      <stop offset="30%" style="stop-color:#E0E5E8"/>
+      <stop offset="70%" style="stop-color:#CFD8DC"/>
       <stop offset="100%" style="stop-color:#B0BEC5"/>
     </linearGradient>
     <linearGradient id="steelFrame" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#78909C"/>
-      <stop offset="50%" style="stop-color:#90A4AE"/>
-      <stop offset="100%" style="stop-color:#607D8B"/>
+      <stop offset="0%" style="stop-color:#90A4AE"/>
+      <stop offset="30%" style="stop-color:#78909C"/>
+      <stop offset="70%" style="stop-color:#607D8B"/>
+      <stop offset="100%" style="stop-color:#546E7A"/>
     </linearGradient>
     <linearGradient id="bankRoof" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#546E7A"/>
+      <stop offset="0%" style="stop-color:#78909C"/>
+      <stop offset="30%" style="stop-color:#607D8B"/>
+      <stop offset="70%" style="stop-color:#546E7A"/>
       <stop offset="100%" style="stop-color:#37474F"/>
     </linearGradient>
     <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -22,18 +26,71 @@
     </linearGradient>
     <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#7cb342"/>
+      <stop offset="50%" style="stop-color:#689f38"/>
       <stop offset="100%" style="stop-color:#558b2f"/>
     </linearGradient>
+    <linearGradient id="hills" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9ccc65"/>
+      <stop offset="100%" style="stop-color:#8bc34a"/>
+    </linearGradient>
     <linearGradient id="vault" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#546E7A"/>
+      <stop offset="30%" style="stop-color:#455A64"/>
+      <stop offset="100%" style="stop-color:#263238"/>
+    </linearGradient>
+    <linearGradient id="plaza" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5F5F5"/>
+      <stop offset="50%" style="stop-color:#ECEFF1"/>
+      <stop offset="100%" style="stop-color:#CFD8DC"/>
+    </linearGradient>
+    <!-- Gold coin gradients matching L1 -->
+    <linearGradient id="goldCoinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFEB3B"/>
+      <stop offset="30%" style="stop-color:#FFC107"/>
+      <stop offset="70%" style="stop-color:#FFB300"/>
+      <stop offset="100%" style="stop-color:#FF8F00"/>
+    </linearGradient>
+    <linearGradient id="silverCoinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FAFAFA"/>
+      <stop offset="30%" style="stop-color:#E0E0E0"/>
+      <stop offset="70%" style="stop-color:#BDBDBD"/>
+      <stop offset="100%" style="stop-color:#9E9E9E"/>
+    </linearGradient>
+    <linearGradient id="goldShimmer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700">
+        <animate attributeName="offset" values="0;0.5;0" dur="2s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" style="stop-color:#FFF8DC">
+        <animate attributeName="offset" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" style="stop-color:#FFD700"/>
+    </linearGradient>
+    <!-- Glass window gradient -->
+    <linearGradient id="windowGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E3F2FD"/>
+      <stop offset="50%" style="stop-color:#BBDEFB"/>
+      <stop offset="100%" style="stop-color:#90CAF9"/>
+    </linearGradient>
+    <!-- Truck gradient -->
+    <linearGradient id="truckBody" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#455A64"/>
+      <stop offset="50%" style="stop-color:#37474F"/>
       <stop offset="100%" style="stop-color:#263238"/>
     </linearGradient>
     <radialGradient id="goldGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#FFD54F" stop-opacity="0.6"/>
+      <stop offset="0%" style="stop-color:#FFD54F" stop-opacity="0.7"/>
       <stop offset="100%" style="stop-color:#FFD54F" stop-opacity="0"/>
     </radialGradient>
+    <radialGradient id="treasureGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFD54F" stop-opacity="0.6"/>
+      <stop offset="100%" style="stop-color:#FFC107" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="coinShine" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" style="stop-color:#FFFFFF" stop-opacity="0.6"/>
+      <stop offset="100%" style="stop-color:#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="1" result="coloredBlur"/>
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
         <feMergeNode in="SourceGraphic"/>
@@ -44,61 +101,91 @@
   <!-- Background: Blue sky -->
   <rect width="128" height="128" fill="url(#sky)"/>
   
-  <!-- Distant hills -->
-  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  <!-- Distant hills with gradient -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="url(#hills)" opacity="0.7"/>
   
   <!-- Main ground -->
   <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
   
-  <!-- Concrete plaza -->
-  <rect x="12" y="90" width="104" height="16" fill="#ECEFF1"/>
+  <!-- Concrete plaza with gradient -->
+  <rect x="12" y="90" width="104" height="16" fill="url(#plaza)"/>
+  <rect x="12" y="90" width="104" height="2" fill="#FAFAFA"/>
+  
+  <!-- Building shadow -->
+  <ellipse cx="64" cy="106" rx="50" ry="4" fill="rgba(0,0,0,0.15)">
+    <animate attributeName="rx" values="50;52;50" dur="3s" repeatCount="indefinite"/>
+  </ellipse>
   
   <!-- Main building -->
   <rect x="16" y="40" width="96" height="52" fill="url(#bankWall)" stroke="url(#steelFrame)" stroke-width="2"/>
   
-  <!-- Decorative marble columns -->
+  <!-- Wall detail lines -->
+  <line x1="16" y1="60" x2="112" y2="60" stroke="#B0BEC5" stroke-width="0.5"/>
+  <line x1="16" y1="75" x2="112" y2="75" stroke="#B0BEC5" stroke-width="0.5"/>
+  
+  <!-- Decorative marble columns with caps -->
   <rect x="20" y="44" width="6" height="44" fill="url(#steelFrame)" rx="1"/>
+  <ellipse cx="23" cy="44" rx="4" ry="2" fill="#90A4AE"/>
+  <rect x="20" y="84" width="6" height="3" fill="#78909C"/>
+  
   <rect x="102" y="44" width="6" height="44" fill="url(#steelFrame)" rx="1"/>
+  <ellipse cx="105" cy="44" rx="4" ry="2" fill="#90A4AE"/>
+  <rect x="102" y="84" width="6" height="3" fill="#78909C"/>
   
-  <!-- Glass windows with animated reflection -->
+  <!-- Glass windows with animated reflection - LEFT -->
   <rect x="30" y="48" width="18" height="20" fill="#B0BEC5"/>
-  <rect x="32" y="50" width="14" height="16" fill="#E3F2FD"/>
-  <polygon points="32,50 38,50 32,58" fill="#FFFFFF">
-    <animate attributeName="opacity" values="0.2;0.5;0.2" dur="3s" repeatCount="indefinite"/>
+  <rect x="32" y="50" width="14" height="16" fill="url(#windowGlass)"/>
+  <polygon points="32,50 40,50 32,60" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="3s" repeatCount="indefinite"/>
   </polygon>
+  <line x1="39" y1="50" x2="39" y2="66" stroke="#90CAF9" stroke-width="0.5"/>
   
+  <!-- Glass windows with animated reflection - RIGHT -->
   <rect x="80" y="48" width="18" height="20" fill="#B0BEC5"/>
-  <rect x="82" y="50" width="14" height="16" fill="#E3F2FD"/>
-  <polygon points="82,50 88,50 82,58" fill="#FFFFFF">
-    <animate attributeName="opacity" values="0.5;0.2;0.5" dur="3s" repeatCount="indefinite"/>
+  <rect x="82" y="50" width="14" height="16" fill="url(#windowGlass)"/>
+  <polygon points="82,50 90,50 82,60" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0.6;0.2;0.6" dur="3s" repeatCount="indefinite"/>
   </polygon>
+  <line x1="89" y1="50" x2="89" y2="66" stroke="#90CAF9" stroke-width="0.5"/>
   
   <!-- Classical roof with modern twist -->
   <polygon points="10,40 64,20 118,40" fill="url(#bankRoof)"/>
   <polygon points="16,40 64,24 112,40" fill="#607D8B"/>
+  <!-- Roof edge highlight -->
+  <line x1="10" y1="40" x2="64" y2="20" stroke="#90A4AE" stroke-width="1"/>
+  <line x1="64" y1="20" x2="118" y2="40" stroke="#455A64" stroke-width="1"/>
   
-  <!-- Animated roof clock/emblem -->
+  <!-- Animated roof clock/emblem with glow -->
+  <circle cx="64" cy="32" r="8" fill="url(#goldGlow)">
+    <animate attributeName="r" values="8;10;8" dur="2s" repeatCount="indefinite"/>
+  </circle>
   <circle cx="64" cy="32" r="6" fill="#37474F"/>
-  <circle cx="64" cy="32" r="5" fill="#FFD54F">
+  <circle cx="64" cy="32" r="5" fill="url(#goldShimmer)">
     <animate attributeName="r" values="4.5;5.5;4.5" dur="2s" repeatCount="indefinite"/>
   </circle>
-  <text x="62" y="35" font-size="6" fill="#37474F">$</text>
+  <circle cx="64" cy="32" r="5" fill="url(#coinShine)"/>
+  <text x="62" y="35" font-size="6" fill="#FF6F00" font-weight="bold">$</text>
   
-  <!-- Animated vault door (center) -->
+  <!-- Animated vault door (center) with enhanced detail -->
   <rect x="50" y="72" width="28" height="18" fill="url(#vault)" rx="2"/>
+  <rect x="50" y="72" width="28" height="3" fill="#607D8B"/>
+  <!-- Vault frame -->
+  <rect x="48" y="70" width="32" height="22" fill="none" stroke="#78909C" stroke-width="1.5"/>
+  <!-- Vault dial -->
   <circle cx="64" cy="80" r="6" fill="#78909C"/>
-  <circle cx="64" cy="80" r="4" fill="#455A64">
+  <circle cx="64" cy="80" r="5" fill="#455A64"/>
+  <g>
     <animateTransform attributeName="transform" type="rotate" values="0 64 80;360 64 80" dur="8s" repeatCount="indefinite"/>
-  </circle>
-  <g fill="#FFD54F">
-    <circle cx="64" cy="80" r="2">
-      <animate attributeName="r" values="1.5;2.5;1.5" dur="1s" repeatCount="indefinite"/>
-    </circle>
-    <rect x="62" y="76" width="4" height="2"/>
-    <rect x="62" y="82" width="4" height="2"/>
-    <rect x="60" y="79" width="2" height="2"/>
-    <rect x="66" y="79" width="2" height="2"/>
+    <line x1="64" y1="75" x2="64" y2="85" stroke="#90A4AE" stroke-width="1"/>
+    <line x1="59" y1="80" x2="69" y2="80" stroke="#90A4AE" stroke-width="1"/>
   </g>
+  <!-- Vault center glow -->
+  <circle cx="64" cy="80" r="2.5" fill="url(#goldShimmer)" filter="url(#glow)">
+    <animate attributeName="r" values="2;3;2" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <!-- Handle -->
+  <circle cx="68" cy="80" r="2" fill="#607D8B"/>
+  <circle cx="68" cy="80" r="1" fill="#455A64"/>
   
   <!-- Animated digital display boards with changing numbers -->
   <rect x="32" y="72" width="14" height="8" fill="#1A1A1A"/>
@@ -163,33 +250,105 @@
     <animate attributeName="opacity" values="1;0.5;1" dur="0.8s" repeatCount="indefinite"/>
   </circle>
   
-  <!-- Animated money delivery truck driving in -->
+  <!-- Animated money delivery truck with dual-instance seamless loop -->
+  <!-- Truck instance 1 -->
   <g>
-    <animateTransform attributeName="transform" type="translate" values="-30,0;0,0" dur="8s" repeatCount="indefinite"/>
-    <rect x="18" y="98" width="16" height="10" rx="2" fill="#37474F"/>
-    <rect x="26" y="98" width="8" height="6" fill="#90A4AE"/>
-    <text x="20" y="105" font-size="4" fill="#FFD54F">$</text>
-    <circle cx="22" cy="108" r="2" fill="#263238">
-      <animateTransform attributeName="transform" type="rotate" values="0 22 108;360 22 108" dur="0.5s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="translate" values="-50,0;80,0" dur="10s" repeatCount="indefinite"/>
+    <rect x="18" y="98" width="18" height="10" rx="2" fill="url(#truckBody)"/>
+    <rect x="28" y="98" width="8" height="7" rx="1" fill="#78909C"/>
+    <polygon points="36,98 38,98 38,105 36,105" fill="#455A64"/>
+    <text x="21" y="105" font-size="5" fill="url(#goldCoinGrad)" font-weight="bold">$</text>
+    <!-- Wheels with rotation -->
+    <circle cx="22" cy="108" r="2.5" fill="#1A1A1A"/>
+    <circle cx="22" cy="108" r="1.5" fill="#37474F">
+      <animateTransform attributeName="transform" type="rotate" values="0 22 108;360 22 108" dur="0.4s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="30" cy="108" r="2" fill="#263238">
-      <animateTransform attributeName="transform" type="rotate" values="0 30 108;360 30 108" dur="0.5s" repeatCount="indefinite"/>
+    <circle cx="32" cy="108" r="2.5" fill="#1A1A1A"/>
+    <circle cx="32" cy="108" r="1.5" fill="#37474F">
+      <animateTransform attributeName="transform" type="rotate" values="0 32 108;360 32 108" dur="0.4s" repeatCount="indefinite"/>
     </circle>
+    <!-- Headlight -->
+    <rect x="36" y="101" width="2" height="2" fill="#FFEB3B"/>
+  </g>
+  <!-- Truck instance 2 (offset by half cycle) -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="15,0;145,0" dur="10s" repeatCount="indefinite"/>
+    <rect x="18" y="98" width="18" height="10" rx="2" fill="url(#truckBody)"/>
+    <rect x="28" y="98" width="8" height="7" rx="1" fill="#78909C"/>
+    <polygon points="36,98 38,98 38,105 36,105" fill="#455A64"/>
+    <text x="21" y="105" font-size="5" fill="url(#goldCoinGrad)" font-weight="bold">$</text>
+    <circle cx="22" cy="108" r="2.5" fill="#1A1A1A"/>
+    <circle cx="22" cy="108" r="1.5" fill="#37474F">
+      <animateTransform attributeName="transform" type="rotate" values="0 22 108;360 22 108" dur="0.4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="32" cy="108" r="2.5" fill="#1A1A1A"/>
+    <circle cx="32" cy="108" r="1.5" fill="#37474F">
+      <animateTransform attributeName="transform" type="rotate" values="0 32 108;360 32 108" dur="0.4s" repeatCount="indefinite"/>
+    </circle>
+    <rect x="36" y="101" width="2" height="2" fill="#FFEB3B"/>
   </g>
   
   <!-- Animated LED accent lines -->
   <line x1="16" y1="42" x2="112" y2="42" stroke="#FFD54F" stroke-width="1">
-    <animate attributeName="opacity" values="0.3;0.7;0.3" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite"/>
   </line>
   <line x1="16" y1="88" x2="112" y2="88" stroke="#FFD54F" stroke-width="1">
-    <animate attributeName="opacity" values="0.7;0.3;0.7" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.8;0.3;0.8" dur="2s" repeatCount="indefinite"/>
   </line>
   
   <!-- Guard booth with activity -->
   <rect x="92" y="96" width="10" height="10" fill="#455A64"/>
-  <rect x="93" y="97" width="8" height="6" fill="#E1F5FE"/>
+  <rect x="92" y="96" width="10" height="2" fill="#546E7A"/>
+  <rect x="93" y="97" width="8" height="6" fill="#E1F5FE">
+    <animate attributeName="fill" values="#E1F5FE;#BBDEFB;#E1F5FE" dur="2s" repeatCount="indefinite"/>
+  </rect>
   <!-- Guard head moving -->
   <circle cx="97" cy="100" r="1.5" fill="#FFCC80">
     <animate attributeName="cx" values="97;98;97" dur="3s" repeatCount="indefinite"/>
   </circle>
+  
+  <!-- Coin piles in front of building (like L1) -->
+  <circle cx="64" cy="118" r="12" fill="url(#treasureGlow)">
+    <animate attributeName="r" values="12;15;12" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Gold coins pile -->
+  <circle cx="60" cy="118" r="4" fill="url(#goldCoinGrad)"/>
+  <circle cx="60" cy="118" r="4" fill="url(#coinShine)"/>
+  <circle cx="66" cy="116" r="3.5" fill="url(#goldCoinGrad)"/>
+  <circle cx="54" cy="116" r="3" fill="url(#goldCoinGrad)"/>
+  <circle cx="70" cy="118" r="3" fill="url(#silverCoinGrad)"/>
+  <circle cx="64" cy="114" r="2.5" fill="url(#goldCoinGrad)"/>
+  <circle cx="58" cy="112" r="2" fill="url(#goldCoinGrad)"/>
+  
+  <!-- Falling coins animation (like L1) -->
+  <g fill="url(#goldShimmer)">
+    <circle cx="24" cy="30" r="3">
+      <animate attributeName="cy" values="30;112" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="104" cy="26" r="3">
+      <animate attributeName="cy" values="26;112" dur="2.3s" repeatCount="indefinite" begin="0.6s"/>
+      <animate attributeName="opacity" values="1;0" dur="2.3s" repeatCount="indefinite" begin="0.6s"/>
+    </circle>
+    <circle cx="50" cy="22" r="2.5">
+      <animate attributeName="cy" values="22;112" dur="2.6s" repeatCount="indefinite" begin="1.2s"/>
+      <animate attributeName="opacity" values="1;0" dur="2.6s" repeatCount="indefinite" begin="1.2s"/>
+    </circle>
+    <circle cx="78" cy="18" r="2.5">
+      <animate attributeName="cy" values="18;112" dur="2.8s" repeatCount="indefinite" begin="0.8s"/>
+      <animate attributeName="opacity" values="1;0" dur="2.8s" repeatCount="indefinite" begin="0.8s"/>
+    </circle>
+  </g>
+  
+  <!-- Sparkle effects (like L1) -->
+  <polygon points="42,62 43,65 46,65 44,67 45,70 42,68 39,70 40,67 38,65 41,65" fill="#FFEB3B">
+    <animate attributeName="opacity" values="0;1;0" dur="1.8s" repeatCount="indefinite"/>
+  </polygon>
+  <polygon points="86,58 87,60 89,60 88,61.5 88.5,64 86,62 83.5,64 84,61.5 83,60 85,60" fill="#FFF59D">
+    <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+  </polygon>
+  <polygon points="64,68 65,70 67,70 66,71.5 66.5,74 64,72 61.5,74 62,71.5 61,70 63,70" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0;0.8;0" dur="2s" repeatCount="indefinite" begin="1s"/>
+  </polygon>
 </svg>

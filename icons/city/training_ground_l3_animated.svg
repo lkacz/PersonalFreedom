@@ -3,30 +3,81 @@
   <!-- Training Ground Level 3 (Animated) - Futuristic VR Combat Simulator -->
   <defs>
     <linearGradient id="holoFloor" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1A1A1A"/>
+      <stop offset="0%" style="stop-color:#0D0D0D"/>
+      <stop offset="25%" style="stop-color:#1A1A2E"/>
       <stop offset="50%" style="stop-color:#263238"/>
-      <stop offset="100%" style="stop-color:#1A1A1A"/>
+      <stop offset="75%" style="stop-color:#1A1A2E"/>
+      <stop offset="100%" style="stop-color:#0D0D0D"/>
     </linearGradient>
     <linearGradient id="techWall" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#263238"/>
-      <stop offset="50%" style="stop-color:#37474F"/>
+      <stop offset="0%" style="stop-color:#1A237E"/>
+      <stop offset="30%" style="stop-color:#283593"/>
+      <stop offset="70%" style="stop-color:#37474F"/>
       <stop offset="100%" style="stop-color:#263238"/>
     </linearGradient>
+    <linearGradient id="pylonCore" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00BCD4"/>
+      <stop offset="50%" style="stop-color:#00838F"/>
+      <stop offset="100%" style="stop-color:#006064"/>
+    </linearGradient>
+    <linearGradient id="hills" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7CB342"/>
+      <stop offset="50%" style="stop-color:#689F38"/>
+      <stop offset="100%" style="stop-color:#558B2F"/>
+    </linearGradient>
     <radialGradient id="holoField" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.3"/>
+      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.4"/>
+      <stop offset="50%" style="stop-color:#00B8D4" stop-opacity="0.2"/>
       <stop offset="100%" style="stop-color:#00E5FF" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="energyCore" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" style="stop-color:#E040FB" stop-opacity="0.8"/>
+      <stop offset="0%" style="stop-color:#FFFFFF" stop-opacity="1"/>
+      <stop offset="20%" style="stop-color:#E040FB" stop-opacity="0.9"/>
+      <stop offset="60%" style="stop-color:#7C4DFF" stop-opacity="0.5"/>
       <stop offset="100%" style="stop-color:#7C4DFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cyanGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#00E5FF" stop-opacity="0.9"/>
+      <stop offset="50%" style="stop-color:#00B8D4" stop-opacity="0.5"/>
+      <stop offset="100%" style="stop-color:#00E5FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="magentaGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#E040FB" stop-opacity="0.9"/>
+      <stop offset="50%" style="stop-color:#AA00FF" stop-opacity="0.5"/>
+      <stop offset="100%" style="stop-color:#E040FB" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="clashGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFFFFF" stop-opacity="1"/>
+      <stop offset="30%" style="stop-color:#FFEB3B" stop-opacity="0.8"/>
+      <stop offset="70%" style="stop-color:#FFC107" stop-opacity="0.4"/>
+      <stop offset="100%" style="stop-color:#FF9800" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#4da6ff"/>
+      <stop offset="50%" style="stop-color:#6bb9ff"/>
       <stop offset="100%" style="stop-color:#87ceeb"/>
     </linearGradient>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFEB3B" stop-opacity="0.9"/>
+      <stop offset="40%" style="stop-color:#FFC107" stop-opacity="0.4"/>
+      <stop offset="100%" style="stop-color:#FF9800" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cloudWhite" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="60%" style="stop-color:#ECEFF1" stop-opacity="0.8"/>
+      <stop offset="100%" style="stop-color:#CFD8DC" stop-opacity="0.4"/>
+    </radialGradient>
     <linearGradient id="grass" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#7cb342"/>
       <stop offset="100%" style="stop-color:#558b2f"/>
+    </linearGradient>
+    <linearGradient id="holoSkin" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#80DEEA"/>
+      <stop offset="100%" style="stop-color:#26C6DA"/>
+    </linearGradient>
+    <linearGradient id="magentaSkin" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F48FB1"/>
+      <stop offset="100%" style="stop-color:#EC407A"/>
     </linearGradient>
     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -36,201 +87,728 @@
       </feMerge>
     </filter>
     <filter id="strongGlow" x="-100%" y="-100%" width="300%" height="300%">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+    <filter id="scanLine" x="0" y="0" width="100%" height="100%">
+      <feFlood flood-color="#00E5FF" flood-opacity="0.15"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+    </filter>
   </defs>
   
-  <!-- Background: Blue sky -->
+  <!-- Background: Bright daytime sky matching L2 -->
   <rect width="128" height="128" fill="url(#sky)"/>
   
-  <!-- Distant hills -->
-  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="#8bc34a" opacity="0.6"/>
+  <!-- Clouds with depth -->
+  <g>
+    <ellipse cx="25" cy="22" rx="12" ry="5" fill="url(#cloudWhite)">
+      <animate attributeName="cx" values="25;28;25" dur="20s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="20" cy="20" rx="8" ry="4" fill="url(#cloudWhite)"/>
+    <ellipse cx="32" cy="21" rx="7" ry="3.5" fill="url(#cloudWhite)"/>
+    <ellipse cx="26" cy="19" rx="5" ry="2.5" fill="#FFFFFF" opacity="0.9"/>
+  </g>
+  <g>
+    <ellipse cx="70" cy="15" rx="10" ry="4" fill="url(#cloudWhite)" opacity="0.8">
+      <animate attributeName="cx" values="70;74;70" dur="25s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="65" cy="14" rx="6" ry="3" fill="url(#cloudWhite)" opacity="0.7"/>
+    <ellipse cx="76" cy="14" rx="5" ry="2.5" fill="url(#cloudWhite)" opacity="0.75"/>
+  </g>
+  
+  <!-- Distant hills with gradient -->
+  <path d="M-10,78 Q30,65 64,72 Q98,79 138,68 L138,88 L-10,88 Z" fill="url(#hills)" opacity="0.6"/>
   
   <!-- Main ground -->
   <path d="M-10,128 L-10,88 Q30,82 64,85 Q98,88 138,82 L138,128 Z" fill="url(#grass)"/>
   
-  <!-- Holographic arena platform - pulsing -->
+  <!-- ========== PERSPECTIVE LAYER: FAR BACKGROUND (Y ~12-56) ========== -->
+  
+  <!-- Enhanced antenna array - multi-element with signal waves (Y ~11-18) -->
+  <!-- Main antenna mast -->
+  <rect x="63" y="14" width="2" height="8" fill="#546E7A"/>
+  <rect x="63" y="14" width="2" height="1" fill="#78909C"/>
+  <!-- Cross beam -->
+  <rect x="58" y="16" width="12" height="1.5" fill="#455A64"/>
+  <rect x="58" y="16" width="12" height="0.5" fill="#546E7A"/>
+  <!-- Main antenna orb -->
+  <circle cx="64" cy="12" r="3.5" fill="url(#magentaGlow)" filter="url(#strongGlow)">
+    <animate attributeName="r" values="2.5;4;2.5" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="64" cy="12" r="2" fill="#FFFFFF">
+    <animate attributeName="opacity" values="0.7;1;0.7" dur="0.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="64" cy="12" r="1" fill="#E040FB"/>
+  <!-- Signal waves emanating -->
+  <circle cx="64" cy="12" r="5" fill="none" stroke="#E040FB" stroke-width="0.5" opacity="0.4">
+    <animate attributeName="r" values="5;10;5" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0;0.4" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="64" cy="12" r="7" fill="none" stroke="#00E5FF" stroke-width="0.3" opacity="0.3">
+    <animate attributeName="r" values="7;14;7" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0;0.3" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <!-- Side antennas -->
+  <line x1="60" y1="17" x2="57" y2="12" stroke="#455A64" stroke-width="1"/>
+  <circle cx="57" cy="11" r="2" fill="#00E5FF" filter="url(#glow)">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="0.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="57" cy="11" r="1" fill="#FFFFFF" opacity="0.8"/>
+  <line x1="68" y1="17" x2="71" y2="12" stroke="#455A64" stroke-width="1"/>
+  <circle cx="71" cy="11" r="2" fill="#00E5FF" filter="url(#glow)">
+    <animate attributeName="opacity" values="1;0.5;1" dur="0.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="71" cy="11" r="1" fill="#FFFFFF" opacity="0.8"/>
+  <!-- Data stream indicators -->
+  <g fill="#00E5FF" opacity="0.4">
+    <rect x="60" y="18" width="0.5" height="1">
+      <animate attributeName="height" values="1;2;1" dur="0.3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="62" y="18" width="0.5" height="1.5">
+      <animate attributeName="height" values="1.5;0.5;1.5" dur="0.25s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="65.5" y="18" width="0.5" height="1">
+      <animate attributeName="height" values="1;2;1" dur="0.35s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="67.5" y="18" width="0.5" height="1.5">
+      <animate attributeName="height" values="1.5;0.5;1.5" dur="0.28s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- Enhanced control tower with extreme detail (Y ~20-34) -->
+  <rect x="50" y="20" width="28" height="14" fill="url(#techWall)" rx="3"/>
+  <rect x="50" y="20" width="28" height="3" fill="#455A64" rx="2"/>
+  <rect x="50" y="20" width="28" height="1" fill="#546E7A"/>
+  <!-- Control room label -->
+  <text x="64" y="22" font-size="1.8" fill="#00E5FF" text-anchor="middle" opacity="0.7">CONTROL</text>
+  <rect x="54" y="24" width="20" height="8" fill="#0A0A14" rx="1"/>
+  <!-- Monitor bezels -->
+  <rect x="54" y="24" width="20" height="0.5" fill="#263238"/>
+  <rect x="54" y="31.5" width="20" height="0.5" fill="#1A1A1A"/>
+  <!-- Monitor displays -->
+  <g fill="#00E5FF" opacity="0.8">
+    <rect x="56" y="26" width="5" height="2" rx="0.5">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="0.8s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="63" y="26" width="5" height="2" rx="0.5">
+      <animate attributeName="opacity" values="1;0.5;1" dur="0.8s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="70" y="26" width="3" height="2" rx="0.5">
+      <animate attributeName="opacity" values="0.7;0.9;0.7" dur="0.6s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Waveform display -->
+    <rect x="56" y="29" width="2" height="2">
+      <animate attributeName="height" values="2;3;2" dur="0.2s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="59" y="29" width="2" height="3">
+      <animate attributeName="height" values="3;1;3" dur="0.25s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="62" y="29" width="2" height="2">
+      <animate attributeName="height" values="2;4;2" dur="0.3s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="65" y="29" width="2" height="3">
+      <animate attributeName="height" values="3;2;3" dur="0.22s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="68" y="29" width="2" height="2">
+      <animate attributeName="height" values="2;3;2" dur="0.28s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="71" y="29" width="2" height="2">
+      <animate attributeName="height" values="2;4;2" dur="0.18s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  <!-- Keyboard panel -->
+  <rect x="52" y="32" width="24" height="2" fill="#263238" rx="0.5"/>
+  <g fill="#455A64">
+    <rect x="53" y="32.3" width="1.5" height="1.4" rx="0.2"/>
+    <rect x="55" y="32.3" width="1.5" height="1.4" rx="0.2"/>
+    <rect x="57" y="32.3" width="1.5" height="1.4" rx="0.2"/>
+    <rect x="59" y="32.3" width="1.5" height="1.4" rx="0.2"/>
+    <rect x="61" y="32.3" width="4" height="1.4" rx="0.2"/>
+    <rect x="66" y="32.3" width="1.5" height="1.4" rx="0.2"/>
+    <rect x="68" y="32.3" width="1.5" height="1.4" rx="0.2"/>
+    <rect x="70" y="32.3" width="1.5" height="1.4" rx="0.2"/>
+    <rect x="72" y="32.3" width="1.5" height="1.4" rx="0.2"/>
+  </g>
+  <!-- Status indicators -->
+  <circle cx="53" cy="23" r="1" fill="#4CAF50">
+    <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
+  </circle>
+  <text x="53" y="21" font-size="1" fill="#4CAF50" text-anchor="middle">ON</text>
+  <circle cx="75" cy="23" r="1" fill="#F44336">
+    <animate attributeName="opacity" values="1;0.5;1" dur="1.2s" repeatCount="indefinite"/>
+  </circle>
+  <text x="75" y="21" font-size="1" fill="#F44336" text-anchor="middle">REC</text>
+  <!-- Speaker grilles -->
+  <g fill="#0A0A0A" opacity="0.5">
+    <rect x="51" y="26" width="0.5" height="5"/>
+    <rect x="52" y="26" width="0.5" height="5"/>
+    <rect x="75.5" y="26" width="0.5" height="5"/>
+    <rect x="76.5" y="26" width="0.5" height="5"/>
+  </g>
+  
+  <!-- Enhanced floating stats display - Player 1 with extreme detail (Y ~34-56) -->
+  <g>
+    <rect x="30" y="34" width="30" height="22" fill="#00E5FF" opacity="0.15" rx="2">
+      <animate attributeName="opacity" values="0.1;0.2;0.1" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="30" y="34" width="30" height="3" fill="#00E5FF" opacity="0.3" rx="1"/>
+    <text x="32" y="37" font-size="2" fill="#FFFFFF" opacity="0.9">P1 STATS</text>
+    <!-- Connection indicator -->
+    <circle cx="57" cy="36" r="1" fill="#4CAF50">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Health bar with percentage -->
+    <rect x="32" y="40" width="26" height="3" fill="#1A1A1A" rx="1"/>
+    <rect x="32" y="40" width="22" height="3" fill="#4CAF50" rx="1">
+      <animate attributeName="width" values="22;18;22" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <text x="33" y="42" font-size="1.8" fill="#FFFFFF" font-weight="bold">HP</text>
+    <text x="56" y="42" font-size="1.5" fill="#FFFFFF" text-anchor="end">85%</text>
+    <!-- Power bar with percentage -->
+    <rect x="32" y="45" width="26" height="3" fill="#1A1A1A" rx="1"/>
+    <rect x="32" y="45" width="20" height="3" fill="#2196F3" rx="1">
+      <animate attributeName="width" values="20;24;20" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <text x="33" y="47" font-size="1.8" fill="#FFFFFF" font-weight="bold">PWR</text>
+    <text x="56" y="47" font-size="1.5" fill="#FFFFFF" text-anchor="end">77%</text>
+    <!-- Speed stat -->
+    <rect x="32" y="50" width="26" height="2" fill="#1A1A1A" rx="0.5"/>
+    <rect x="32" y="50" width="18" height="2" fill="#FFC107" rx="0.5"/>
+    <text x="33" y="51.5" font-size="1.5" fill="#000000">SPD</text>
+    <!-- Combo counter -->
+    <text x="57" y="54" font-size="3.5" fill="#FFEB3B" text-anchor="end" font-weight="bold">
+      x5
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="0.5s" repeatCount="indefinite"/>
+    </text>
+    <text x="45" y="54" font-size="1.5" fill="#FFFFFF" opacity="0.6">COMBO</text>
+  </g>
+  
+  <!-- Enhanced floating stats display - Player 2 with extreme detail (Y ~34-56) -->
+  <g>
+    <rect x="68" y="34" width="30" height="22" fill="#E040FB" opacity="0.15" rx="2">
+      <animate attributeName="opacity" values="0.2;0.1;0.2" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="68" y="34" width="30" height="3" fill="#E040FB" opacity="0.3" rx="1"/>
+    <text x="70" y="37" font-size="2" fill="#FFFFFF" opacity="0.9">P2 STATS</text>
+    <!-- Connection indicator -->
+    <circle cx="95" cy="36" r="1" fill="#4CAF50">
+      <animate attributeName="opacity" values="1;0.5;1" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Health bar with percentage -->
+    <rect x="70" y="40" width="26" height="3" fill="#1A1A1A" rx="1"/>
+    <rect x="70" y="40" width="24" height="3" fill="#4CAF50" rx="1">
+      <animate attributeName="width" values="24;20;24" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <text x="71" y="42" font-size="1.8" fill="#FFFFFF" font-weight="bold">HP</text>
+    <text x="94" y="42" font-size="1.5" fill="#FFFFFF" text-anchor="end">92%</text>
+    <!-- Defense bar with percentage -->
+    <rect x="70" y="45" width="26" height="3" fill="#1A1A1A" rx="1"/>
+    <rect x="70" y="45" width="23" height="3" fill="#9C27B0" rx="1">
+      <animate attributeName="width" values="23;19;23" dur="2s" repeatCount="indefinite"/>
+    </rect>
+    <text x="71" y="47" font-size="1.8" fill="#FFFFFF" font-weight="bold">DEF</text>
+    <text x="94" y="47" font-size="1.5" fill="#FFFFFF" text-anchor="end">88%</text>
+    <!-- Stamina stat -->
+    <rect x="70" y="50" width="26" height="2" fill="#1A1A1A" rx="0.5"/>
+    <rect x="70" y="50" width="21" height="2" fill="#00BCD4" rx="0.5"/>
+    <text x="71" y="51.5" font-size="1.5" fill="#FFFFFF">STA</text>
+    <!-- Block indicator -->
+    <rect x="78" y="52.5" width="18" height="4" fill="#00E5FF" opacity="0.3" rx="1">
+      <animate attributeName="opacity" values="0.2;0.5;0.2" dur="0.3s" repeatCount="indefinite"/>
+    </rect>
+    <text x="87" y="55.5" font-size="2.5" fill="#00E5FF" text-anchor="middle" font-weight="bold">
+      BLOCK
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="0.3s" repeatCount="indefinite"/>
+    </text>
+  </g>
+  
+  <!-- ========== PERSPECTIVE LAYER: MID-GROUND (Platform and Pylons) ========== -->
+  
+  <!-- Holographic arena platform - multi-layer pulsing with hexagonal cells -->
+  <ellipse cx="64" cy="100" rx="60" ry="24" fill="#0A0A0A"/>
   <ellipse cx="64" cy="100" rx="58" ry="22" fill="url(#holoFloor)"/>
-  <ellipse cx="64" cy="100" rx="54" ry="20" fill="none" stroke="#00E5FF" stroke-width="1" opacity="0.6">
-    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+  <!-- Outer ring with glow -->
+  <ellipse cx="64" cy="100" rx="58" ry="22" fill="none" stroke="#7C4DFF" stroke-width="2" opacity="0.3">
+    <animate attributeName="opacity" values="0.2;0.5;0.2" dur="3s" repeatCount="indefinite"/>
   </ellipse>
+  <ellipse cx="64" cy="100" rx="56" ry="21" fill="none" stroke="#00E5FF" stroke-width="1.5" opacity="0.6">
+    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="64" cy="100" rx="52" ry="19" fill="none" stroke="#00E5FF" stroke-width="0.5" opacity="0.4"/>
+  <!-- Additional concentric rings -->
+  <ellipse cx="64" cy="100" rx="44" ry="15" fill="none" stroke="#7C4DFF" stroke-width="0.3" opacity="0.3"/>
+  <ellipse cx="64" cy="100" rx="36" ry="12" fill="none" stroke="#E040FB" stroke-width="0.3" opacity="0.25"/>
+  <ellipse cx="64" cy="100" rx="28" ry="9" fill="none" stroke="#00E5FF" stroke-width="0.3" opacity="0.2"/>
+  <!-- Hexagonal cell pattern -->
+  <g stroke="#00E5FF" stroke-width="0.3" fill="none" opacity="0.2">
+    <path d="M30,100 L35,96 L45,96 L50,100 L45,104 L35,104 Z"><animate attributeName="opacity" values="0.1;0.3;0.1" dur="2s" repeatCount="indefinite"/></path>
+    <path d="M50,100 L55,96 L65,96 L70,100 L65,104 L55,104 Z"><animate attributeName="opacity" values="0.2;0.4;0.2" dur="2.5s" repeatCount="indefinite"/></path>
+    <path d="M70,100 L75,96 L85,96 L90,100 L85,104 L75,104 Z"><animate attributeName="opacity" values="0.15;0.35;0.15" dur="2.2s" repeatCount="indefinite"/></path>
+    <path d="M40,92 L45,88 L55,88 L60,92 L55,96 L45,96 Z" opacity="0.15"/>
+    <path d="M60,92 L65,88 L75,88 L80,92 L75,96 L65,96 Z" opacity="0.15"/>
+    <path d="M40,108 L45,104 L55,104 L60,108 L55,112 L45,112 Z" opacity="0.15"/>
+    <path d="M60,108 L65,104 L75,104 L80,108 L75,112 L65,112 Z" opacity="0.15"/>
+  </g>
+  <!-- Data readouts at edge -->
+  <text x="18" y="102" font-size="1.5" fill="#00E5FF" opacity="0.5">01:42</text>
+  <text x="104" y="102" font-size="1.5" fill="#E040FB" opacity="0.5">LIVE</text>
+  <!-- Inner holographic field -->
   <ellipse cx="64" cy="100" rx="48" ry="18" fill="url(#holoField)">
     <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>
   </ellipse>
   
-  <!-- Animated grid lines on floor -->
+  <!-- Animated grid lines on floor - hexagonal pattern -->
   <g stroke="#00E5FF" stroke-width="0.5" opacity="0.3">
     <line x1="20" y1="100" x2="108" y2="100">
       <animate attributeName="opacity" values="0.2;0.5;0.2" dur="2s" repeatCount="indefinite"/>
     </line>
-    <line x1="64" y1="80" x2="64" y2="120">
+    <line x1="64" y1="78" x2="64" y2="122">
       <animate attributeName="opacity" values="0.5;0.2;0.5" dur="2s" repeatCount="indefinite"/>
     </line>
-    <line x1="30" y1="88" x2="98" y2="112">
+    <line x1="30" y1="86" x2="98" y2="114">
       <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2.5s" repeatCount="indefinite"/>
     </line>
-    <line x1="30" y1="112" x2="98" y2="88">
+    <line x1="30" y1="114" x2="98" y2="86">
       <animate attributeName="opacity" values="0.6;0.3;0.6" dur="2.5s" repeatCount="indefinite"/>
     </line>
+    <!-- Additional hex lines -->
+    <line x1="40" y1="82" x2="88" y2="118">
+      <animate attributeName="opacity" values="0.2;0.4;0.2" dur="2.2s" repeatCount="indefinite"/>
+    </line>
+    <line x1="40" y1="118" x2="88" y2="82">
+      <animate attributeName="opacity" values="0.4;0.2;0.4" dur="2.2s" repeatCount="indefinite"/>
+    </line>
   </g>
+  <!-- Scanning beam -->
+  <line x1="10" y1="100" x2="118" y2="100" stroke="#00E5FF" stroke-width="1" opacity="0.2">
+    <animate attributeName="y1" values="80;120;80" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="y2" values="80;120;80" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.1;0.4;0.1" dur="4s" repeatCount="indefinite"/>
+  </line>
   
-  <!-- Energy pylons - left - pulsing -->
-  <rect x="8" y="50" width="6" height="46" fill="url(#techWall)" rx="1"/>
-  <rect x="6" y="46" width="10" height="6" fill="#37474F"/>
-  <circle cx="11" cy="52" r="3" fill="#00E5FF" filter="url(#glow)">
-    <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+  <!-- Energy pylons - left - multi-layer with circuit details -->
+  <rect x="6" y="48" width="10" height="50" fill="url(#techWall)" rx="2"/>
+  <rect x="7" y="50" width="8" height="46" fill="#1A237E" opacity="0.5"/>
+  <!-- Circuit board pattern -->
+  <g stroke="#00E5FF" stroke-width="0.3" fill="none" opacity="0.3">
+    <path d="M8,54 L8,58 L12,58 L12,62 L8,62"/>
+    <path d="M14,56 L14,60 L10,60"/>
+    <path d="M8,66 L12,66 L12,72 L8,72 L8,76"/>
+    <path d="M10,78 L10,84 L14,84"/>
+    <path d="M8,88 L12,88 L12,92"/>
+  </g>
+  <!-- Capacitor bulges -->
+  <ellipse cx="11" cy="60" rx="2" ry="1" fill="#00838F" opacity="0.5"/>
+  <ellipse cx="11" cy="70" rx="2" ry="1" fill="#00838F" opacity="0.5"/>
+  <ellipse cx="11" cy="80" rx="2" ry="1" fill="#00838F" opacity="0.5"/>
+  <!-- Pylon frame -->
+  <rect x="6" y="48" width="10" height="4" fill="#455A64"/>
+  <rect x="6" y="48" width="10" height="1" fill="#546E7A"/>
+  <rect x="6" y="94" width="10" height="4" fill="#455A64"/>
+  <rect x="6" y="97" width="10" height="1" fill="#37474F"/>
+  <!-- Warning stripe -->
+  <g fill="#FFC107" opacity="0.6">
+    <rect x="7" y="95" width="2" height="2"/>
+    <rect x="11" y="95" width="2" height="2"/>
+  </g>
+  <!-- Energy core -->
+  <rect x="8" y="54" width="6" height="38" fill="url(#pylonCore)" opacity="0.6"/>
+  <circle cx="11" cy="52" r="4" fill="url(#cyanGlow)" filter="url(#strongGlow)">
+    <animate attributeName="r" values="3;5;3" dur="1.5s" repeatCount="indefinite"/>
   </circle>
-  <line x1="11" y1="58" x2="11" y2="92" stroke="#00E5FF" stroke-width="1" opacity="0.5">
+  <!-- Multiple energy rings -->
+  <circle cx="11" cy="52" r="6" fill="none" stroke="#00E5FF" stroke-width="0.5" opacity="0.4">
+    <animate attributeName="r" values="6;8;6" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.1;0.4" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="11" cy="52" r="9" fill="none" stroke="#00E5FF" stroke-width="0.3" opacity="0.2">
+    <animate attributeName="r" values="9;12;9" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.05;0.2" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <!-- Vertical energy stream -->
+  <line x1="11" y1="58" x2="11" y2="92" stroke="#00E5FF" stroke-width="2" opacity="0.6">
     <animate attributeName="stroke-dasharray" values="0 40;20 20;0 40" dur="2s" repeatCount="indefinite"/>
   </line>
+  <line x1="11" y1="58" x2="11" y2="92" stroke="#FFFFFF" stroke-width="0.5" opacity="0.4">
+    <animate attributeName="stroke-dasharray" values="5 35;15 25;5 35" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <!-- Power indicator -->
+  <text x="11" y="46" font-size="1.5" fill="#00E5FF" text-anchor="middle" opacity="0.6">PWR</text>
   
-  <!-- Energy pylons - right - pulsing -->
-  <rect x="114" y="50" width="6" height="46" fill="url(#techWall)" rx="1"/>
-  <rect x="112" y="46" width="10" height="6" fill="#37474F"/>
-  <circle cx="117" cy="52" r="3" fill="#00E5FF" filter="url(#glow)">
-    <animate attributeName="r" values="4;2;4" dur="1.5s" repeatCount="indefinite"/>
+  <!-- Energy pylons - right - multi-layer with circuit details -->
+  <rect x="112" y="48" width="10" height="50" fill="url(#techWall)" rx="2"/>
+  <rect x="113" y="50" width="8" height="46" fill="#1A237E" opacity="0.5"/>
+  <!-- Circuit board pattern -->
+  <g stroke="#00E5FF" stroke-width="0.3" fill="none" opacity="0.3">
+    <path d="M114,54 L114,58 L118,58 L118,62 L114,62"/>
+    <path d="M120,56 L120,60 L116,60"/>
+    <path d="M114,66 L118,66 L118,72 L114,72 L114,76"/>
+    <path d="M116,78 L116,84 L120,84"/>
+    <path d="M114,88 L118,88 L118,92"/>
+  </g>
+  <!-- Capacitor bulges -->
+  <ellipse cx="117" cy="60" rx="2" ry="1" fill="#00838F" opacity="0.5"/>
+  <ellipse cx="117" cy="70" rx="2" ry="1" fill="#00838F" opacity="0.5"/>
+  <ellipse cx="117" cy="80" rx="2" ry="1" fill="#00838F" opacity="0.5"/>
+  <rect x="112" y="48" width="10" height="4" fill="#455A64"/>
+  <rect x="112" y="48" width="10" height="1" fill="#546E7A"/>
+  <rect x="112" y="94" width="10" height="4" fill="#455A64"/>
+  <rect x="112" y="97" width="10" height="1" fill="#37474F"/>
+  <!-- Warning stripe -->
+  <g fill="#FFC107" opacity="0.6">
+    <rect x="113" y="95" width="2" height="2"/>
+    <rect x="117" y="95" width="2" height="2"/>
+  </g>
+  <rect x="114" y="54" width="6" height="38" fill="url(#pylonCore)" opacity="0.6"/>
+  <circle cx="117" cy="52" r="4" fill="url(#cyanGlow)" filter="url(#strongGlow)">
+    <animate attributeName="r" values="5;3;5" dur="1.5s" repeatCount="indefinite"/>
   </circle>
-  <line x1="117" y1="58" x2="117" y2="92" stroke="#00E5FF" stroke-width="1" opacity="0.5">
+  <circle cx="117" cy="52" r="6" fill="none" stroke="#00E5FF" stroke-width="0.5" opacity="0.4">
+    <animate attributeName="r" values="8;6;8" dur="1.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.1;0.4;0.1" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="117" cy="52" r="9" fill="none" stroke="#00E5FF" stroke-width="0.3" opacity="0.2">
+    <animate attributeName="r" values="12;9;12" dur="1.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.05;0.2;0.05" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <line x1="117" y1="58" x2="117" y2="92" stroke="#00E5FF" stroke-width="2" opacity="0.6">
     <animate attributeName="stroke-dasharray" values="20 20;0 40;20 20" dur="2s" repeatCount="indefinite"/>
   </line>
+  <line x1="117" y1="58" x2="117" y2="92" stroke="#FFFFFF" stroke-width="0.5" opacity="0.4">
+    <animate attributeName="stroke-dasharray" values="15 25;5 35;15 25" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <text x="117" y="46" font-size="1.5" fill="#00E5FF" text-anchor="middle" opacity="0.6">PWR</text>
   
-  <!-- Central hologram projector - rotating energy -->
-  <ellipse cx="64" cy="100" rx="12" ry="6" fill="#37474F"/>
-  <circle cx="64" cy="100" r="4" fill="url(#energyCore)" filter="url(#strongGlow)">
-    <animate attributeName="r" values="3;5;3" dur="1s" repeatCount="indefinite"/>
+  <!-- Central hologram projector - multi-layer rotating energy -->
+  <ellipse cx="64" cy="102" rx="14" ry="7" fill="#1A1A2E"/>
+  <ellipse cx="64" cy="101" rx="13" ry="6" fill="#263238"/>
+  <ellipse cx="64" cy="100" rx="12" ry="5" fill="#37474F"/>
+  <!-- Inner rings -->
+  <ellipse cx="64" cy="100" rx="10" ry="4" fill="none" stroke="#7C4DFF" stroke-width="0.5" opacity="0.5">
+    <animate attributeName="stroke-dasharray" values="0 40;20 20;0 40" dur="3s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="64" cy="100" rx="8" ry="3" fill="none" stroke="#E040FB" stroke-width="0.5" opacity="0.6">
+    <animate attributeName="stroke-dasharray" values="20 20;0 40;20 20" dur="3s" repeatCount="indefinite"/>
+  </ellipse>
+  <!-- Energy core with layered glow -->
+  <circle cx="64" cy="100" r="6" fill="url(#energyCore)" filter="url(#strongGlow)">
+    <animate attributeName="r" values="5;7;5" dur="1s" repeatCount="indefinite"/>
   </circle>
+  <circle cx="64" cy="100" r="3" fill="#FFFFFF" opacity="0.8">
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="0.5s" repeatCount="indefinite"/>
+  </circle>
+  <!-- Rising energy beam -->
+  <line x1="64" y1="100" x2="64" y2="60" stroke="#E040FB" stroke-width="2" opacity="0.4">
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite"/>
+  </line>
+  <line x1="64" y1="100" x2="64" y2="60" stroke="#FFFFFF" stroke-width="0.5" opacity="0.3">
+    <animate attributeName="stroke-dasharray" values="5 35;15 25;5 35" dur="1s" repeatCount="indefinite"/>
+  </line>
   
-  <!-- VR combat simulator pods - left with active display -->
-  <rect x="16" y="68" width="20" height="24" fill="url(#techWall)" rx="3"/>
-  <rect x="18" y="72" width="16" height="16" fill="#1A1A1A" rx="2"/>
-  <ellipse cx="26" cy="80" rx="6" ry="7" fill="#00E5FF" opacity="0.2">
+  <!-- VR combat simulator pods - left with extreme detail -->
+  <rect x="14" y="66" width="24" height="28" fill="url(#techWall)" rx="4"/>
+  <rect x="14" y="66" width="24" height="4" fill="#455A64" rx="2"/>
+  <rect x="14" y="66" width="24" height="1" fill="#546E7A"/>
+  <!-- Pod title -->
+  <text x="26" y="68.5" font-size="2" fill="#00E5FF" text-anchor="middle" opacity="0.8">POD A</text>
+  <!-- Button panel -->
+  <g>
+    <circle cx="17" cy="69" r="1" fill="#4CAF50">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="20" cy="69" r="1" fill="#FFC107"/>
+    <circle cx="23" cy="69" r="1" fill="#F44336">
+      <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <!-- Status bar -->
+  <rect x="26" y="68" width="10" height="2" fill="#00E5FF" opacity="0.6"/>
+  <rect x="26" y="68" width="6" height="2" fill="#4CAF50" opacity="0.4">
+    <animate attributeName="width" values="6;10;6" dur="3s" repeatCount="indefinite"/>
+  </rect>
+  <!-- Screen with bezel -->
+  <rect x="16" y="72" width="20" height="18" fill="#0A0A14" rx="2"/>
+  <rect x="16" y="72" width="20" height="1" fill="#1A1A2E"/>
+  <rect x="16" y="89" width="20" height="1" fill="#0D0D0D"/>
+  <!-- Pod screen glow -->
+  <rect x="17" y="73" width="18" height="16" fill="#00E5FF" opacity="0.1" rx="1">
+    <animate attributeName="opacity" values="0.05;0.15;0.05" dur="2s" repeatCount="indefinite"/>
+  </rect>
+  <!-- Screen reflection -->
+  <path d="M17,73 L35,73 L35,77 L17,80 Z" fill="#FFFFFF" opacity="0.05"/>
+  <!-- Cable routing -->
+  <path d="M14,80 Q10,80 10,85 L10,92" stroke="#37474F" stroke-width="1.5" fill="none"/>
+  <path d="M14,85 Q8,85 8,90 L8,96" stroke="#455A64" stroke-width="1" fill="none"/>
+  <!-- Holographic avatar in pod -->
+  <ellipse cx="26" cy="82" rx="7" ry="8" fill="url(#cyanGlow)" opacity="0.2">
     <animate attributeName="opacity" values="0.1;0.3;0.1" dur="2s" repeatCount="indefinite"/>
   </ellipse>
-  <!-- Animated holographic fighter in pod -->
   <g>
     <animateTransform attributeName="transform" type="translate" values="0,0;0,-2;0,0;0,2;0,0" dur="1s" repeatCount="indefinite"/>
-    <ellipse cx="26" cy="82" rx="3" ry="5" fill="#E040FB" opacity="0.6"/>
-    <circle cx="26" cy="76" r="2" fill="#E040FB" opacity="0.8"/>
+    <!-- Body with scan lines -->
+    <ellipse cx="26" cy="83" rx="3.5" ry="6" fill="url(#holoSkin)" opacity="0.7"/>
+    <!-- Muscle wireframe overlay -->
+    <path d="M24,79 L24,87 M26,78 L26,88 M28,79 L28,87" stroke="#00E5FF" stroke-width="0.2" opacity="0.3"/>
+    <rect x="23" y="78" width="6" height="1" fill="#00E5FF" opacity="0.3">
+      <animate attributeName="y" values="78;88;78" dur="0.8s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Head -->
+    <circle cx="26" cy="75" r="2.5" fill="url(#holoSkin)" opacity="0.8"/>
+    <!-- VR helmet -->
+    <rect x="24" y="74" width="4" height="2" fill="#263238" rx="0.5"/>
+    <rect x="24.5" y="74.5" width="3" height="1" fill="#00E5FF" opacity="0.5"/>
+    <!-- Arms in fighting stance -->
+    <line x1="23" y1="80" x2="20" y2="78" stroke="url(#holoSkin)" stroke-width="1.5" opacity="0.7"/>
+    <line x1="29" y1="80" x2="32" y2="78" stroke="url(#holoSkin)" stroke-width="1.5" opacity="0.7"/>
+  </g>
+  <!-- Pod vent slots -->
+  <g fill="#0A0A0A" opacity="0.5">
+    <rect x="16" y="91" width="3" height="0.5"/>
+    <rect x="20" y="91" width="3" height="0.5"/>
+    <rect x="24" y="91" width="3" height="0.5"/>
+    <rect x="28" y="91" width="3" height="0.5"/>
   </g>
   
-  <!-- VR combat simulator pods - right with active display -->
-  <rect x="92" y="68" width="20" height="24" fill="url(#techWall)" rx="3"/>
-  <rect x="94" y="72" width="16" height="16" fill="#1A1A1A" rx="2"/>
-  <ellipse cx="102" cy="80" rx="6" ry="7" fill="#00E5FF" opacity="0.2">
+  <!-- VR combat simulator pods - right with extreme detail -->
+  <rect x="90" y="66" width="24" height="28" fill="url(#techWall)" rx="4"/>
+  <rect x="90" y="66" width="24" height="4" fill="#455A64" rx="2"/>
+  <rect x="90" y="66" width="24" height="1" fill="#546E7A"/>
+  <!-- Pod title -->
+  <text x="102" y="68.5" font-size="2" fill="#E040FB" text-anchor="middle" opacity="0.8">POD B</text>
+  <!-- Button panel -->
+  <g>
+    <circle cx="93" cy="69" r="1" fill="#4CAF50">
+      <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="96" cy="69" r="1" fill="#FFC107"/>
+    <circle cx="99" cy="69" r="1" fill="#F44336">
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <!-- Status bar -->
+  <rect x="102" y="68" width="10" height="2" fill="#E040FB" opacity="0.6"/>
+  <rect x="102" y="68" width="8" height="2" fill="#4CAF50" opacity="0.4">
+    <animate attributeName="width" values="8;10;8" dur="3s" repeatCount="indefinite"/>
+  </rect>
+  <!-- Screen with bezel -->
+  <rect x="92" y="72" width="20" height="18" fill="#0A0A14" rx="2"/>
+  <rect x="92" y="72" width="20" height="1" fill="#1A1A2E"/>
+  <rect x="92" y="89" width="20" height="1" fill="#0D0D0D"/>
+  <rect x="93" y="73" width="18" height="16" fill="#E040FB" opacity="0.1" rx="1">
+    <animate attributeName="opacity" values="0.15;0.05;0.15" dur="2s" repeatCount="indefinite"/>
+  </rect>
+  <!-- Screen reflection -->
+  <path d="M93,73 L111,73 L111,77 L93,80 Z" fill="#FFFFFF" opacity="0.05"/>
+  <!-- Cable routing -->
+  <path d="M114,80 Q118,80 118,85 L118,92" stroke="#37474F" stroke-width="1.5" fill="none"/>
+  <path d="M114,85 Q120,85 120,90 L120,96" stroke="#455A64" stroke-width="1" fill="none"/>
+  <ellipse cx="102" cy="82" rx="7" ry="8" fill="url(#magentaGlow)" opacity="0.2">
     <animate attributeName="opacity" values="0.3;0.1;0.3" dur="2s" repeatCount="indefinite"/>
   </ellipse>
-  <!-- Animated holographic fighter in pod -->
   <g>
     <animateTransform attributeName="transform" type="translate" values="0,0;0,2;0,0;0,-2;0,0" dur="1s" repeatCount="indefinite"/>
-    <ellipse cx="102" cy="82" rx="3" ry="5" fill="#00E5FF" opacity="0.6"/>
-    <circle cx="102" cy="76" r="2" fill="#00E5FF" opacity="0.8"/>
+    <ellipse cx="102" cy="83" rx="3.5" ry="6" fill="url(#magentaSkin)" opacity="0.7"/>
+    <!-- Muscle wireframe overlay -->
+    <path d="M100,79 L100,87 M102,78 L102,88 M104,79 L104,87" stroke="#E040FB" stroke-width="0.2" opacity="0.3"/>
+    <rect x="99" y="78" width="6" height="1" fill="#E040FB" opacity="0.3">
+      <animate attributeName="y" values="88;78;88" dur="0.8s" repeatCount="indefinite"/>
+    </rect>
+    <circle cx="102" cy="75" r="2.5" fill="url(#magentaSkin)" opacity="0.8"/>
+    <!-- VR helmet -->
+    <rect x="100" y="74" width="4" height="2" fill="#263238" rx="0.5"/>
+    <rect x="100.5" y="74.5" width="3" height="1" fill="#E040FB" opacity="0.5"/>
+    <line x1="99" y1="80" x2="96" y2="78" stroke="url(#magentaSkin)" stroke-width="1.5" opacity="0.7"/>
+    <line x1="105" y1="80" x2="108" y2="78" stroke="url(#magentaSkin)" stroke-width="1.5" opacity="0.7"/>
+  </g>
+  <!-- Pod vent slots -->
+  <g fill="#0A0A0A" opacity="0.5">
+    <rect x="92" y="91" width="3" height="0.5"/>
+    <rect x="96" y="91" width="3" height="0.5"/>
+    <rect x="100" y="91" width="3" height="0.5"/>
+    <rect x="104" y="91" width="3" height="0.5"/>
   </g>
   
-  <!-- Floating holographic combat ring - rotating -->
+  <!-- Floating holographic combat ring - multi-layer rotating -->
+  <ellipse cx="64" cy="72" rx="26" ry="14" fill="none" stroke="#7C4DFF" stroke-width="1.5" opacity="0.3">
+    <animate attributeName="stroke-dasharray" values="0 200;100 100;0 200" dur="6s" repeatCount="indefinite"/>
+  </ellipse>
   <ellipse cx="64" cy="72" rx="24" ry="12" fill="none" stroke="#E040FB" stroke-width="1" opacity="0.6">
-    <animate attributeName="stroke-dasharray" values="0 160;80 80;0 160" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="stroke-dasharray" values="50 150;100 100;50 150" dur="4s" repeatCount="indefinite"/>
   </ellipse>
-  <ellipse cx="64" cy="72" rx="20" ry="10" fill="none" stroke="#7C4DFF" stroke-width="0.5" opacity="0.4">
-    <animate attributeName="stroke-dasharray" values="80 80;0 160;80 80" dur="4s" repeatCount="indefinite"/>
+  <ellipse cx="64" cy="72" rx="22" ry="10" fill="none" stroke="#00E5FF" stroke-width="0.5" opacity="0.4">
+    <animate attributeName="stroke-dasharray" values="100 100;50 150;100 100" dur="4s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="64" cy="72" rx="20" ry="8" fill="none" stroke="#FFFFFF" stroke-width="0.3" opacity="0.2">
+    <animate attributeName="opacity" values="0.1;0.3;0.1" dur="2s" repeatCount="indefinite"/>
   </ellipse>
   
-  <!-- Animated holographic combatants -->
-  <g opacity="0.8">
-    <!-- Fighter 1 - attacking -->
-    <g>
-      <animateTransform attributeName="transform" type="translate" values="0,0;4,0;0,0" dur="0.5s" repeatCount="indefinite"/>
-      <ellipse cx="52" cy="74" rx="4" ry="6" fill="#00E5FF"/>
-      <circle cx="52" cy="67" r="3" fill="#00E5FF"/>
-      <line x1="48" y1="72" x2="56" y2="70" stroke="#00E5FF" stroke-width="1"/>
-    </g>
-    
-    <!-- Fighter 2 - defending -->
-    <g>
-      <animateTransform attributeName="transform" type="translate" values="0,0;-4,0;0,0" dur="0.5s" repeatCount="indefinite"/>
-      <ellipse cx="76" cy="74" rx="4" ry="6" fill="#E040FB"/>
-      <circle cx="76" cy="67" r="3" fill="#E040FB"/>
-      <line x1="72" y1="70" x2="80" y2="72" stroke="#E040FB" stroke-width="1"/>
-    </g>
+  <!-- ========== COMPLEX HOLOGRAPHIC COMBATANTS WITH SEAMLESS LOOPS ========== -->
+  
+  <!-- FIGHTER A (Cyan): Aggressive striker with punch-kick combo -->
+  <!-- Instance 1 -->
+  <g opacity="0.85">
+    <animateTransform attributeName="transform" type="translate" 
+      values="0,0; 6,0; 10,0; 6,0; 0,0; -4,0; 0,0" 
+      keyTimes="0; 0.2; 0.4; 0.6; 0.8; 0.9; 1"
+      dur="2s" repeatCount="indefinite"/>
+    <!-- Body with hologram flicker -->
+    <ellipse cx="48" cy="74" rx="4" ry="6" fill="url(#holoSkin)">
+      <animate attributeName="opacity" values="0.9;0.7;0.9" dur="0.1s" repeatCount="indefinite"/>
+    </ellipse>
+    <!-- Scan line effect on body -->
+    <rect x="44" y="70" width="8" height="1" fill="#FFFFFF" opacity="0.3">
+      <animate attributeName="y" values="70;80;70" dur="0.5s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Head with visor -->
+    <circle cx="48" cy="66" r="3" fill="url(#holoSkin)"/>
+    <rect x="45" y="65" width="6" height="1.5" fill="#00E5FF" rx="0.5">
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="0.3s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Front arm - punching -->
+    <line x1="51" y1="72" x2="58" y2="70" stroke="url(#holoSkin)" stroke-width="2" stroke-linecap="round">
+      <animate attributeName="x2" values="58;64;58" dur="0.4s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="70;68;70" dur="0.4s" repeatCount="indefinite"/>
+    </line>
+    <!-- Fist glow -->
+    <circle cx="58" cy="70" r="2" fill="url(#cyanGlow)" opacity="0.5">
+      <animate attributeName="cx" values="58;64;58" dur="0.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.7;0.3" dur="0.4s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Back arm - guard position -->
+    <line x1="45" y1="72" x2="42" y2="68" stroke="url(#holoSkin)" stroke-width="2" stroke-linecap="round"/>
+    <!-- Front leg - kicking -->
+    <line x1="49" y1="79" x2="54" y2="82" stroke="url(#holoSkin)" stroke-width="2.5" stroke-linecap="round">
+      <animate attributeName="x2" values="54;58;54" dur="0.5s" repeatCount="indefinite"/>
+    </line>
+    <!-- Back leg - planted -->
+    <line x1="47" y1="79" x2="44" y2="84" stroke="url(#holoSkin)" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Data readout above -->
+    <text x="48" y="61" font-size="2" fill="#00E5FF" text-anchor="middle" opacity="0.7">PLAYER 1</text>
   </g>
   
-  <!-- Animated energy clash between fighters -->
-  <circle cx="64" cy="70" r="4" fill="#FFEB3B" opacity="0.5" filter="url(#glow)">
-    <animate attributeName="r" values="2;6;2" dur="0.5s" repeatCount="indefinite"/>
-    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="0.5s" repeatCount="indefinite"/>
-  </circle>
-  
-  <!-- Animated floating stats display -->
-  <rect x="32" y="36" width="28" height="16" fill="#00E5FF" opacity="0.2" rx="2">
-    <animate attributeName="opacity" values="0.15;0.3;0.15" dur="2s" repeatCount="indefinite"/>
-  </rect>
-  <text x="36" y="44" font-size="4" fill="#00E5FF">PWR: 85</text>
-  <text x="36" y="50" font-size="4" fill="#00E5FF">DEF: 72</text>
-  
-  <rect x="68" y="36" width="28" height="16" fill="#E040FB" opacity="0.2" rx="2">
-    <animate attributeName="opacity" values="0.3;0.15;0.3" dur="2s" repeatCount="indefinite"/>
-  </rect>
-  <text x="72" y="44" font-size="4" fill="#E040FB">PWR: 78</text>
-  <text x="72" y="50" font-size="4" fill="#E040FB">DEF: 89</text>
-  
-  <!-- Control tower -->
-  <rect x="52" y="22" width="24" height="12" fill="url(#techWall)" rx="2"/>
-  <rect x="56" y="24" width="16" height="8" fill="#1A1A1A"/>
-  <g fill="#00E5FF" opacity="0.8">
-    <rect x="58" y="26" width="4" height="2">
-      <animate attributeName="opacity" values="0.5;1;0.5" dur="0.8s" repeatCount="indefinite"/>
+  <!-- FIGHTER B (Magenta): Defensive counter-striker -->
+  <!-- Instance 1 -->
+  <g opacity="0.85">
+    <animateTransform attributeName="transform" type="translate" 
+      values="0,0; -6,0; -10,0; -6,0; 0,0; 4,0; 0,0" 
+      keyTimes="0; 0.2; 0.4; 0.6; 0.8; 0.9; 1"
+      dur="2s" repeatCount="indefinite"/>
+    <ellipse cx="80" cy="74" rx="4" ry="6" fill="url(#magentaSkin)">
+      <animate attributeName="opacity" values="0.8;0.95;0.8" dur="0.15s" repeatCount="indefinite"/>
+    </ellipse>
+    <!-- Glitch effect -->
+    <rect x="76" y="72" width="8" height="2" fill="#E040FB" opacity="0.2">
+      <animate attributeName="x" values="76;78;76" dur="0.08s" repeatCount="indefinite"/>
     </rect>
-    <rect x="64" y="26" width="4" height="2">
-      <animate attributeName="opacity" values="1;0.5;1" dur="0.8s" repeatCount="indefinite"/>
+    <circle cx="80" cy="66" r="3" fill="url(#magentaSkin)"/>
+    <rect x="77" y="65" width="6" height="1.5" fill="#E040FB" rx="0.5">
+      <animate attributeName="opacity" values="1;0.7;1" dur="0.3s" repeatCount="indefinite"/>
     </rect>
-    <rect x="58" y="28" width="6" height="2">
-      <animate attributeName="width" values="6;4;6" dur="1.5s" repeatCount="indefinite"/>
-    </rect>
-    <rect x="66" y="28" width="4" height="2">
-      <animate attributeName="width" values="4;6;4" dur="1.5s" repeatCount="indefinite"/>
-    </rect>
+    <!-- Front arm - blocking -->
+    <line x1="77" y1="72" x2="72" y2="68" stroke="url(#magentaSkin)" stroke-width="2" stroke-linecap="round">
+      <animate attributeName="y2" values="68;66;68" dur="0.3s" repeatCount="indefinite"/>
+    </line>
+    <!-- Shield glow on arm -->
+    <ellipse cx="72" cy="68" rx="3" ry="2" fill="url(#magentaGlow)" opacity="0.4">
+      <animate attributeName="opacity" values="0.2;0.6;0.2" dur="0.3s" repeatCount="indefinite"/>
+    </ellipse>
+    <!-- Counter arm - ready to strike -->
+    <line x1="83" y1="72" x2="86" y2="74" stroke="url(#magentaSkin)" stroke-width="2" stroke-linecap="round">
+      <animate attributeName="x2" values="86;88;86" dur="0.6s" repeatCount="indefinite"/>
+    </line>
+    <!-- Legs in stance -->
+    <line x1="79" y1="79" x2="76" y2="84" stroke="url(#magentaSkin)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="81" y1="79" x2="84" y2="84" stroke="url(#magentaSkin)" stroke-width="2.5" stroke-linecap="round">
+      <animate attributeName="x2" values="84;82;84" dur="0.4s" repeatCount="indefinite"/>
+    </line>
+    <text x="80" y="61" font-size="2" fill="#E040FB" text-anchor="middle" opacity="0.7">PLAYER 2</text>
   </g>
   
-  <!-- Antenna array - pulsing -->
-  <line x1="64" y1="18" x2="64" y2="24" stroke="#455A64" stroke-width="2"/>
-  <circle cx="64" cy="16" r="2" fill="#E040FB" filter="url(#glow)">
-    <animate attributeName="r" values="1.5;3;1.5" dur="1s" repeatCount="indefinite"/>
+  <!-- Enhanced animated energy clash between fighters -->
+  <circle cx="64" cy="70" r="6" fill="url(#clashGlow)" opacity="0.4" filter="url(#strongGlow)">
+    <animate attributeName="r" values="4;8;4" dur="0.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.7;0.2" dur="0.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="64" cy="70" r="3" fill="#FFFFFF" opacity="0.6">
+    <animate attributeName="r" values="2;4;2" dur="0.25s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.9;0.4" dur="0.25s" repeatCount="indefinite"/>
+  </circle>
+  <!-- Spark particles from clash -->
+  <circle cx="62" cy="68" r="0.8" fill="#FFEB3B">
+    <animate attributeName="cx" values="62;58;62" dur="0.3s" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="68;64;68" dur="0.3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="66" cy="68" r="0.8" fill="#FFEB3B">
+    <animate attributeName="cx" values="66;70;66" dur="0.3s" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="68;64;68" dur="0.3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="64" cy="72" r="0.6" fill="#FFC107">
+    <animate attributeName="cy" values="72;76;72" dur="0.4s" repeatCount="indefinite"/>
   </circle>
   
-  <!-- Animated energy beams connecting pylons -->
-  <line x1="14" y1="52" x2="52" y2="72" stroke="#00E5FF" stroke-width="0.5" opacity="0.3">
+  <!-- Enhanced energy beams connecting pylons to ring -->
+  <line x1="14" y1="52" x2="42" y2="72" stroke="#00E5FF" stroke-width="1" opacity="0.4">
     <animate attributeName="stroke-dasharray" values="0 80;40 40;0 80" dur="2s" repeatCount="indefinite"/>
   </line>
-  <line x1="114" y1="52" x2="76" y2="72" stroke="#00E5FF" stroke-width="0.5" opacity="0.3">
+  <line x1="14" y1="52" x2="42" y2="72" stroke="#FFFFFF" stroke-width="0.3" opacity="0.2">
+    <animate attributeName="stroke-dasharray" values="10 70;30 50;10 70" dur="1.5s" repeatCount="indefinite"/>
+  </line>
+  <line x1="114" y1="52" x2="86" y2="72" stroke="#00E5FF" stroke-width="1" opacity="0.4">
     <animate attributeName="stroke-dasharray" values="40 40;0 80;40 40" dur="2s" repeatCount="indefinite"/>
   </line>
+  <line x1="114" y1="52" x2="86" y2="72" stroke="#FFFFFF" stroke-width="0.3" opacity="0.2">
+    <animate attributeName="stroke-dasharray" values="30 50;10 70;30 50" dur="1.5s" repeatCount="indefinite"/>
+  </line>
   
-  <!-- LED trim on arena - rotating -->
+  <!-- LED trim on arena - multi-layer rotating -->
+  <ellipse cx="64" cy="100" rx="60" ry="24" fill="none" stroke="#7C4DFF" stroke-width="1.5" opacity="0.2">
+    <animate attributeName="stroke-dasharray" values="0 250;125 125;0 250" dur="8s" repeatCount="indefinite"/>
+  </ellipse>
   <ellipse cx="64" cy="100" rx="58" ry="22" fill="none" stroke="#E040FB" stroke-width="1" opacity="0.4">
     <animate attributeName="stroke-dasharray" values="0 200;100 100;0 200" dur="6s" repeatCount="indefinite"/>
   </ellipse>
   
-  <!-- Floating tech particles - animated -->
-  <g fill="#00E5FF" opacity="0.6">
-    <circle cx="40" cy="86" r="1">
-      <animate attributeName="cy" values="86;82;86" dur="2s" repeatCount="indefinite"/>
+  <!-- Enhanced floating tech particles - animated -->
+  <g fill="#00E5FF" opacity="0.7">
+    <circle cx="38" cy="86" r="1.2">
+      <animate attributeName="cy" values="86;80;86" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.5;0.9;0.5" dur="2s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="88" cy="88" r="1">
-      <animate attributeName="cy" values="88;84;88" dur="2.5s" repeatCount="indefinite"/>
+    <circle cx="90" cy="88" r="1.2">
+      <animate attributeName="cy" values="88;82;88" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;0.5;0.9" dur="2.5s" repeatCount="indefinite"/>
     </circle>
     <circle cx="64" cy="84" r="1">
-      <animate attributeName="cx" values="64;68;64" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="cx" values="64;70;64" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="46" cy="92" r="0.8">
+      <animate attributeName="cy" values="92;88;92" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="82" cy="92" r="0.8">
+      <animate attributeName="cy" values="92;88;92" dur="1.7s" repeatCount="indefinite"/>
     </circle>
   </g>
-  <g fill="#E040FB" opacity="0.6">
-    <circle cx="56" cy="78" r="1">
-      <animate attributeName="cx" values="56;60;56" dur="1.5s" repeatCount="indefinite"/>
+  <g fill="#E040FB" opacity="0.7">
+    <circle cx="54" cy="78" r="1.2">
+      <animate attributeName="cx" values="54;60;54" dur="1.5s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="72" cy="78" r="1">
-      <animate attributeName="cx" values="72;68;72" dur="1.5s" repeatCount="indefinite"/>
+    <circle cx="74" cy="78" r="1.2">
+      <animate attributeName="cx" values="74;68;74" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="64" cy="90" r="1">
+      <animate attributeName="cy" values="90;86;90" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
     </circle>
   </g>
+  
+  <!-- Holographic floor reflections -->
+  <ellipse cx="48" cy="96" rx="4" ry="1.5" fill="#00E5FF" opacity="0.15">
+    <animate attributeName="opacity" values="0.1;0.2;0.1" dur="1s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="80" cy="96" rx="4" ry="1.5" fill="#E040FB" opacity="0.15">
+    <animate attributeName="opacity" values="0.2;0.1;0.2" dur="1s" repeatCount="indefinite"/>
+  </ellipse>
 </svg>

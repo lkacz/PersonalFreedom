@@ -2727,9 +2727,11 @@ class TimerTab(QtWidgets.QWidget):
 
         dialog = PriorityCheckinDialog(self.blocker, today_priorities, session_minutes, self.window())
         dialog.exec()
+        dialog_result = dialog.result  # Capture result before cleanup
+        dialog.deleteLater()  # Ensure dialog is cleaned up
 
         # Handle on-task confirmation with rewards
-        if dialog.result and GAMIFICATION_AVAILABLE:
+        if dialog_result and GAMIFICATION_AVAILABLE:
             self._give_session_rewards(session_minutes)
 
     def _is_perfect_session(self) -> bool:
@@ -3789,6 +3791,51 @@ class TimerTab(QtWidgets.QWidget):
             pass
         
         rewards["coins"] = coins_earned
+        
+        # 🏛️ Preview Royal Mint income (coins from focus sessions)
+        rewards["city_mint_coins"] = 0
+        if CITY_AVAILABLE:
+            try:
+                from city import get_city_bonuses
+                from city.city_buildings import CITY_BUILDINGS
+                
+                # Check if Royal Mint is built
+                city_data = self.blocker.adhd_buster.get("city", {})
+                grid = city_data.get("grid", [])
+                
+                for row in grid:
+                    for cell in row:
+                        if cell and cell.get("complete", False):
+                            building_id = cell.get("building_id")
+                            building_def = CITY_BUILDINGS.get(building_id, {})
+                            effect = building_def.get("effect", {})
+                            
+                            if effect.get("type") == "focus_session_income":
+                                level = cell.get("level", 1)
+                                scaling = building_def.get("level_scaling", {})
+                                
+                                base_coins = effect.get("base_coins", 0)
+                                base_coins += (level - 1) * scaling.get("base_coins", 0)
+                                
+                                coins_per_30min = effect.get("coins_per_30min", 0)
+                                coins_per_30min += (level - 1) * scaling.get("coins_per_30min", 0)
+                                
+                                time_bonus = int((session_minutes / 30) * coins_per_30min)
+                                mint_coins = base_coins + time_bonus
+                                
+                                rewards["city_mint_coins"] += mint_coins
+                                rewards["coins"] += mint_coins
+                                
+                            # Wonder building multi-effect with focus_session_coins
+                            elif effect.get("type") == "multi":
+                                bonus_coins = effect.get("bonuses", {}).get("focus_session_coins", 0)
+                                if bonus_coins > 0:
+                                    time_bonus = int((session_minutes / 30) * (bonus_coins // 2))
+                                    wonder_coins = bonus_coins + time_bonus
+                                    rewards["city_mint_coins"] += wonder_coins
+                                    rewards["coins"] += wonder_coins
+            except Exception:
+                pass
         
         # Mark that an item will be earned (actual item revealed via lottery animation)
         # Don't generate preview - the lottery will generate the real item
@@ -9521,7 +9568,7 @@ class ActivityTab(QtWidgets.QWidget):
                 entity_perk_contributors=entity_perk_contributors
             )
             lottery.exec()
-            # Lottery animation shows the rarity but doesn't change the reward
+            lottery.deleteLater()  # Ensure dialog is cleaned up
         
         # Create entry
         new_entry = {
@@ -9633,9 +9680,9 @@ class ActivityTab(QtWidgets.QWidget):
                 
                 # Coins will be awarded in _process_rewards via game_state
         
-        # Process rewards (Goldmine coins already awarded directly to adhd_buster)
+        # Process rewards (Goldmine coins already awarded directly to adhd_buster, pass for display)
         if rewards and GAMIFICATION_AVAILABLE:
-            self._process_rewards(rewards, coins_earned=coins_earned, city_activity_earned=city_activity_earned, city_construction_progress=city_construction_progress)
+            self._process_rewards(rewards, coins_earned=coins_earned, city_activity_earned=city_activity_earned, city_construction_progress=city_construction_progress, city_goldmine_coins=city_goldmine_coins)
         
         # Update main timeline widget if parent window has it
         if self.parent() and hasattr(self.parent(), 'timeline_widget'):
@@ -9648,7 +9695,7 @@ class ActivityTab(QtWidgets.QWidget):
         self.note_input.clear()
         self._refresh_display()
     
-    def _process_rewards(self, rewards: dict, coins_earned: int = 0, city_activity_earned: int = 0, city_construction_progress: dict = None) -> None:
+    def _process_rewards(self, rewards: dict, coins_earned: int = 0, city_activity_earned: int = 0, city_construction_progress: dict = None, city_goldmine_coins: int = 0) -> None:
         """Process and show activity rewards."""
         items_earned = []
         new_milestone_ids = []
@@ -9739,6 +9786,10 @@ class ActivityTab(QtWidgets.QWidget):
                     extra_msgs.append(f"🏗️ +{invested} Activity → {building_name} ({progress_pct:.0f}%)")
             # Note: Don't show warning when no construction - it's not actionable info
             
+            # Show Goldmine coins if earned (from moderate+ intensity exercise)
+            if city_goldmine_coins > 0:
+                extra_msgs.append(f"⛏️ +{city_goldmine_coins} Goldmine Coins (moderate+ exercise)")
+            
             # Get entity perk contributors for luck/rarity bonuses
             entity_perk_contributors = []
             try:
@@ -9765,6 +9816,7 @@ class ActivityTab(QtWidgets.QWidget):
                 entity_perk_contributors=entity_perk_contributors,  # Entity perks that helped
             )
             dialog.exec()
+            dialog.deleteLater()  # Ensure dialog is cleaned up
             
             # 🎉 Show building complete celebration if construction just finished
             if city_construction_progress and city_construction_progress.get("completed"):
@@ -19932,70 +19984,7 @@ class DiaryDialog(StyledDialog):
         self.accept()
 
 
-class LevelUpCelebrationDialog(QtWidgets.QDialog):
-    """Exciting celebration dialog shown when the player levels up."""
-
-    def __init__(self, level_info: dict, parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
-        self.level_info = level_info
-        self.new_level = level_info.get("level", 1)
-        self.levels_gained = level_info.get("levels_gained", 1)
-        self.new_title = level_info.get("new_title", "")
-        self.title_changed = level_info.get("title_changed", False)
-        self.xp_earned = level_info.get("xp_earned", 0)
-        self.setWindowTitle("⬆️ LEVEL UP!")
-        self.setFixedSize(450, 380)
-        self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
-        self._animation_step = 0
-        self._particles = []
-        self._build_ui()
-        self._start_celebration()
-        # Dialog now stays open until the user dismisses it
-
-    def _build_ui(self) -> None:
-        # Gradient background based on level milestone
-        if self.new_level >= 50:
-            bg = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ffd700, stop:1 #ff8c00)"
-            accent = "#ffd700"
-        elif self.new_level >= 30:
-            bg = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #9c27b0, stop:1 #e91e63)"
-            accent = "#e040fb"
-        elif self.new_level >= 20:
-            bg = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #2196f3, stop:1 #00bcd4)"
-            accent = "#03a9f4"
-        elif self.new_level >= 10:
-            bg = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #4caf50, stop:1 #8bc34a)"
-            accent = "#66bb6a"
-        else:
-            bg = "qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #3f51b5, stop:1 #7986cb)"
-            accent = "#7c4dff"
-        
-        self.setStyleSheet(f"background: {bg};")
-        
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(30, 25, 30, 25)
-        layout.setSpacing(15)
-        
-        # Big celebratory header
-        if self.levels_gained > 1:
-            header_text = f"🎉 MULTI LEVEL UP! 🎉"
-        else:
-            header_text = "🎉 LEVEL UP! 🎉"
-        self.header_lbl = QtWidgets.QLabel(header_text)
-        self.header_lbl.setAlignment(QtCore.Qt.AlignCenter)
-        self.header_lbl.setStyleSheet(
-            f"font-size: 28px; font-weight: bold; color: white; "
-            f"text-shadow: 2px 2px 4px rgba(0,0,0,0.5);"
-        )
-        layout.addWidget(self.header_lbl)
-        
-        # Level number with animated feel
-        level_text = f"Level {self.new_level}"
-        if self.levels_gained > 1:
-            old_level = self.new_level - self.levels_gained
-            level_text = f"Level {old_level} → {self.new_level}"
-        self.level_lbl = QtWidgets.QLabel(level_text)
-        self.level_lbl.setAlignment(QtCore.Qt.AlignCenter)
+# Legacy LevelUpCelebrationDialog removed to prevent confusion with EnhancedLevelUpDialog
         self.level_lbl.setStyleSheet(
             "font-size: 48px; font-weight: bold; color: white; "
             "text-shadow: 3px 3px 6px rgba(0,0,0,0.4);"
@@ -20119,207 +20108,9 @@ class LevelUpCelebrationDialog(QtWidgets.QDialog):
         super().closeEvent(event)
 
 
-class ItemDropDialog(QtWidgets.QDialog):
-    """Dialog shown when an item drops after confirming on-task."""
-
-    def __init__(self, blocker: BlockerCore, item: dict, session_minutes: int = 0,
-                 streak_days: int = 0, parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
-        self.blocker = blocker
-        self.item = item
-        self.session_minutes = session_minutes
-        self.streak_days = streak_days
-        self.coin_earnings_label: Optional[QtWidgets.QLabel] = None
-        self.setWindowTitle("🎁 Item Drop!")
-        self.setFixedSize(400, 280)
-        self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
-        self._build_ui()
-        # Dialog stays visible until the user clicks to close it
-
-    def _build_ui(self) -> None:
-        # Validate item has required fields
-        if not isinstance(self.item, dict):
-            self.item = {"name": "Unknown Item", "rarity": "Common", "color": "#999", "slot": "Unknown"}
-        
-        # Ensure required fields with defaults
-        self.item.setdefault("name", "Unknown Item")
-        self.item.setdefault("rarity", "Common")
-        self.item.setdefault("color", "#999")
-        self.item.setdefault("slot", "Unknown")
-        
-        bg_colors = {"Common": "#f5f5f5", "Uncommon": "#e8f5e9", "Rare": "#e3f2fd", "Epic": "#f3e5f5", "Legendary": "#fff3e0"}
-        bg = bg_colors.get(self.item.get("rarity", "Common"), "#f5f5f5")
-        self.setStyleSheet(f"background-color: {bg};")
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(20, 15, 20, 15)
-
-        if self.item.get("lucky_upgrade"):
-            header_text = "🍀 LUCKY UPGRADE! 🍀"
-        elif self.item.get("rarity") == "Legendary":
-            header_text = "⭐ LEGENDARY DROP! ⭐"
-        elif self.item.get("rarity") == "Epic":
-            header_text = "💎 EPIC DROP! 💎"
-        else:
-            header_text = "✨ LOOT DROP! ✨"
-        header_lbl = QtWidgets.QLabel(header_text)
-        header_lbl.setAlignment(QtCore.Qt.AlignCenter)
-        header_lbl.setStyleSheet("font-size: 14px; font-weight: bold; color: #333;")
-        layout.addWidget(header_lbl)
-
-        # Visual card representing the item
-        art_pixmap = self._create_item_pixmap()
-        if art_pixmap:
-            art_lbl = QtWidgets.QLabel()
-            art_lbl.setAlignment(QtCore.Qt.AlignCenter)
-            art_lbl.setPixmap(art_pixmap)
-            layout.addWidget(art_lbl)
-
-        found_lbl = QtWidgets.QLabel("Your ADHD Buster found:")
-        found_lbl.setStyleSheet("color: #333;")
-        layout.addWidget(found_lbl)
-        name_lbl = QtWidgets.QLabel(self.item.get("name", "Unknown Item"))
-        name_lbl.setStyleSheet(f"color: {self.item.get('color', '#999')}; font-size: 12px; font-weight: bold;")
-        name_lbl.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(name_lbl)
-        power = self.item.get("power", RARITY_POWER.get(self.item.get("rarity", "Common"), 10))
-        # Get themed slot display name
-        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
-        slot_display = get_slot_display_name(self.item.get('slot', 'Unknown'), active_story) if get_slot_display_name else self.item.get('slot', 'Unknown')
-        info_lbl = QtWidgets.QLabel(f"[{self.item.get('rarity', 'Common')} {slot_display}] +{power} Power")
-        info_lbl.setStyleSheet(f"color: {self.item.get('color', '#999')};")
-        info_lbl.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(info_lbl)
-        
-        # Display lucky options if item has them
-        lucky_options = self.item.get("lucky_options", {})
-        if lucky_options and format_lucky_options:
-            try:
-                lucky_text = format_lucky_options(lucky_options)
-                if lucky_text:
-                    lucky_lbl = QtWidgets.QLabel(f"✨ {lucky_text}")
-                    lucky_lbl.setStyleSheet("color: #8b5cf6; font-weight: bold; font-size: 11px;")
-                    lucky_lbl.setAlignment(QtCore.Qt.AlignCenter)
-                    layout.addWidget(lucky_lbl)
-            except Exception:
-                pass  # Silently skip if formatting fails
-
-        if GAMIFICATION_AVAILABLE:
-            bonuses = calculate_rarity_bonuses(self.session_minutes, self.streak_days)
-            if bonuses["total_bonus"] > 0:
-                bonus_parts = []
-                if bonuses["session_bonus"] > 0:
-                    bonus_parts.append(f"⏱️{self.session_minutes}min")
-                if bonuses["streak_bonus"] > 0:
-                    bonus_parts.append(f"🔥{self.streak_days}day streak")
-                bonus_txt = " + ".join(bonus_parts) + f" = +{bonuses['total_bonus']}% luck!"
-                bonus_lbl = QtWidgets.QLabel(bonus_txt)
-                bonus_lbl.setStyleSheet("color: #e65100;")
-                bonus_lbl.setAlignment(QtCore.Qt.AlignCenter)
-                layout.addWidget(bonus_lbl)
-
-        messages = {"Common": ["Every item counts! 💪", "Building your arsenal!"],
-                    "Uncommon": ["Nice find! 🌟", "Your focus is paying off!"],
-                    "Rare": ["Rare drop! You're on fire! 🔥", "Sweet loot! ⚡"],
-                    "Epic": ["EPIC! Your dedication shows! 💜", "Champion tier! 👑"],
-                    "Legendary": ["LEGENDARY! You are unstoppable! ⭐", "GODLIKE FOCUS! 🏆"]}
-        msg = random.choice(messages.get(self.item.get("rarity", "Common"), messages["Common"]))
-        msg_lbl = QtWidgets.QLabel(msg)
-        msg_lbl.setStyleSheet("font-weight: bold; color: #555;")
-        msg_lbl.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(msg_lbl)
-        
-        # Placeholder for coin earnings (will be set later if available)
-        self.coin_earnings_label = QtWidgets.QLabel("")
-        self.coin_earnings_label.setStyleSheet("font-weight: bold; color: #f59e0b; font-size: 11px;")
-        self.coin_earnings_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.coin_earnings_label.setVisible(False)
-        layout.addWidget(self.coin_earnings_label)
-        
-        adventure_lbl = QtWidgets.QLabel("📖 Your adventure awaits...")
-        adventure_lbl.setStyleSheet("color: #555;")
-        layout.addWidget(adventure_lbl)
-        dismiss_lbl = QtWidgets.QLabel("(Click anywhere to dismiss)")
-        dismiss_lbl.setStyleSheet("color: #777; font-size: 10px;")
-        layout.addWidget(dismiss_lbl)
-    
-    def set_coin_earnings(self, coins: int, bonus_text: str = "") -> None:
-        """Set the coin earnings message to display."""
-        if self.coin_earnings_label and coins > 0:
-            text = f"💰 +{coins} Coins earned!{bonus_text}"
-            self.coin_earnings_label.setText(text)
-            self.coin_earnings_label.setVisible(True)
-
-    def mousePressEvent(self, event) -> None:
-        self.accept()
-
-    def _create_item_pixmap(self, size: int = 180) -> Optional[QtGui.QPixmap]:
-        """Render a stylized pixmap for the awarded item."""
-        try:
-            color_hex = self.item.get("color", "#9e9e9e")
-            base_color = QtGui.QColor(color_hex)
-            if not base_color.isValid():
-                base_color = QtGui.QColor("#9e9e9e")
-
-            pixmap = QtGui.QPixmap(size, size)
-            pixmap.fill(QtCore.Qt.transparent)
-            painter = QtGui.QPainter(pixmap)
-            painter.setRenderHint(QtGui.QPainter.Antialiasing)
-
-            gradient = QtGui.QLinearGradient(0, 0, 0, size)
-            gradient.setColorAt(0.0, base_color.lighter(135))
-            gradient.setColorAt(1.0, base_color.darker(125))
-            painter.setBrush(QtGui.QBrush(gradient))
-            painter.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0, 110), 6))
-
-            rect = QtCore.QRectF(8, 8, size - 16, size - 16)
-            painter.drawRoundedRect(rect, 26, 26)
-
-            # Determine story emoji for flair
-            story_theme = self.item.get("story_theme")
-            emoji = "🎁"
-            if STORY_GEAR_THEMES and story_theme in STORY_GEAR_THEMES:
-                theme_name = STORY_GEAR_THEMES[story_theme].get("theme_name", "").strip()
-                if theme_name:
-                    emoji = theme_name.split(" ", 1)[0]
-
-            painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff")))
-            painter.setFont(QtGui.QFont("Segoe UI Emoji", int(size * 0.38)))
-            painter.drawText(rect, QtCore.Qt.AlignCenter, emoji)
-
-            # Draw rarity stars
-            rarity = self.item.get("rarity", "Common")
-            stars = {
-                "Common": 1,
-                "Uncommon": 2,
-                "Rare": 3,
-                "Epic": 4,
-                "Legendary": 5,
-            }.get(rarity, 1)
-            star_rect = QtCore.QRectF(rect.left(), rect.top() + 12, rect.width(), 26)
-            painter.setFont(QtGui.QFont("Segoe UI", 12))
-            painter.setPen(QtGui.QPen(QtGui.QColor(255, 255, 255, 220)))
-            painter.drawText(star_rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop, "★" * stars)
-
-            # Slot ribbon at bottom
-            slot_name = self.item.get("slot", "")
-            if get_slot_display_name and story_theme:
-                try:
-                    slot_name = get_slot_display_name(slot_name, story_theme) or slot_name
-                except Exception:
-                    pass
-            slot_text = slot_name.upper()
-            ribbon_rect = QtCore.QRectF(rect.left() + 12, rect.bottom() - 48, rect.width() - 24, 34)
-            painter.setBrush(QtGui.QColor(0, 0, 0, 140))
-            painter.setPen(QtCore.Qt.NoPen)
-            painter.drawRoundedRect(ribbon_rect, 12, 12)
-            painter.setFont(QtGui.QFont("Segoe UI", 12, QtGui.QFont.Bold))
-            painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff")))
-            painter.drawText(ribbon_rect, QtCore.Qt.AlignCenter, slot_text)
-
-            painter.end()
-            return pixmap
-        except Exception:
-            return None
+# NOTE: The old ItemDropDialog class with light backgrounds (Common: #f5f5f5, Uncommon: #e8f5e9)
+# has been removed. Use ItemRewardDialog from styled_dialog.py or EnhancedItemDropDialog 
+# from item_drop_dialog.py instead. These use the consistent dark theme.
 
 
 class DiaryEntryRevealDialog(StyledDialog):
@@ -21222,7 +21013,7 @@ class WaterRingWidget(QtWidgets.QWidget):
         self.percentage = min(current / goal, 1.0)
         self.current = current
         self.goal = goal
-        self.update()
+        self.repaint()  # Force immediate repaint
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -21294,7 +21085,7 @@ class ChapterRingWidget(QtWidgets.QWidget):
         self.unlocked = unlocked_chapters
         self.total = total_chapters
         self.is_complete = is_complete
-        self.update()
+        self.repaint()  # Force immediate repaint
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -21388,7 +21179,7 @@ class EyeRingWidget(QtWidgets.QWidget):
                 self.ring_color = color
         
         self.subtext = category_text
-        self.update()
+        self.repaint()  # Force immediate repaint
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -21466,7 +21257,8 @@ class XPRingWidget(QtWidgets.QWidget):
         except Exception:
             self.subtext = "Novice"
         
-        self.update()
+        # Force repaint to show new values
+        self.repaint()
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -21541,7 +21333,7 @@ class FocusRingWidget(QtWidgets.QWidget):
         else:
             self.text = f"{mins}m"
             
-        self.update()
+        self.repaint()  # Force immediate repaint
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -21625,7 +21417,7 @@ class EntitiesRingWidget(QtWidgets.QWidget):
         self.total_possible = max(1, total_possible)
         total_bonded = normal_count + exceptional_count
         self.percentage = min(total_bonded / self.total_possible, 1.0)
-        self.update()
+        self.repaint()  # Force immediate repaint
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -21989,9 +21781,32 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         # Connect to GameState signals for efficient updates
         self._connect_game_state_signals()
         
-        # Initial update - delayed to avoid blocking window creation
-        QtCore.QTimer.singleShot(1000, self.update_data)
-        QtCore.QTimer.singleShot(1000, self._update_mini_hero)
+        # CRITICAL: Immediately populate data from blocker (sync call)
+        # This ensures rings show correct values even if window starts hidden
+        self._do_immediate_data_load()
+        
+        # Also schedule a delayed update as backup (in case data wasn't fully ready)
+        QtCore.QTimer.singleShot(500, self.update_data)
+        QtCore.QTimer.singleShot(1500, self.update_data)  # Second backup
+    
+    def _do_immediate_data_load(self):
+        """Load data immediately during init - synchronous, no visibility check."""
+        try:
+            # Water
+            self._update_water_ring()
+            # Focus
+            self._update_focus_ring()
+            # Chapter
+            self._update_chapter_ring()
+            # XP
+            self._update_xp_ring()
+            # Entities
+            self._update_entities_ring()
+            # Eye
+            self._update_eye_ring()
+        except Exception as e:
+            logger.error(f"[Timeline] _do_immediate_data_load error: {e}")
+    
     
     def _connect_game_state_signals(self):
         """Connect to GameState signals for instant ring updates."""
@@ -22062,7 +21877,6 @@ class DailyTimelineWidget(QtWidgets.QFrame):
 
     def _update_mini_hero(self, *args):
         """Update the mini hero widget with current data."""
-        print("[DEBUG] _update_mini_hero called")
         try:
             if hasattr(self, 'mini_hero') and hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
                 equipped = self.blocker.adhd_buster.get("equipped", {})
@@ -22071,12 +21885,9 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                     power = calculate_character_power(self.blocker.adhd_buster)
                 else:
                     power = sum(item.get("power", 0) for item in equipped.values() if item)
-                print(f"[DEBUG] Calling set_hero_data with power={power}, theme={active_story}")
                 self.mini_hero.set_hero_data(equipped, power, active_story)
-            else:
-                print(f"[DEBUG] Skipping - mini_hero={hasattr(self, 'mini_hero')}, adhd_buster={hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster is not None}")
         except Exception as e:
-            print(f"[DEBUG] _update_mini_hero error: {e}")
+            logger.debug(f"[Timeline] _update_mini_hero error: {e}")
     
     def _update_focus_ring(self, *args):
         """Update focus ring from signal."""
@@ -22089,8 +21900,8 @@ class DailyTimelineWidget(QtWidgets.QFrame):
             weekly_goal_hours = float(self.blocker.stats.get("weekly_goal_hours", 10))
             goal_sec = int((weekly_goal_hours / 7) * 3600)
             self.focus_ring.set_progress(focus_sec, goal_sec)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[Timeline] _update_focus_ring error: {e}")
     
     def _update_water_ring(self, *args):
         """Update water ring from signal."""
@@ -22107,8 +21918,8 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                 except Exception:
                     pass
             self.water_ring.set_progress(today_water, daily_cap)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[Timeline] _update_water_ring error: {e}")
     
     def _update_chapter_ring(self, *args):
         """Update chapter ring from signal."""
@@ -22134,8 +21945,8 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                     chapter_progress = 100.0
                     is_complete = True
                 self.chapter_ring.set_progress(unlocked, chapter_progress, total, is_complete)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[Timeline] _update_chapter_ring error: {e}")
     
     def _update_xp_ring(self, *args):
         """Update XP ring from signal."""
@@ -22146,8 +21957,8 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                     level, xp_in_level, xp_needed, progress = get_level_from_xp(total_xp)
                     self.xp_ring.set_progress(level, xp_in_level, xp_needed, total_xp)
                     self.xp_ring.setVisible(True)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[Timeline] _update_xp_ring error: {e}")
     
     def _update_entities_ring(self, *args):
         """Update entities ring from signal."""
@@ -22162,8 +21973,8 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                 total_possible = 45
                 self.entities_ring.set_progress(normal_count, exceptional_count, total_possible)
                 self.entities_ring.setVisible(True)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[Timeline] _update_entities_ring error: {e}")
     
     def _update_eye_ring(self, *args):
         """Update eye ring from signal or timer."""
@@ -22193,8 +22004,8 @@ class DailyTimelineWidget(QtWidgets.QFrame):
             
             self.eye_ring.set_progress(current_count, daily_cap)
             self.eye_ring.setVisible(True)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"[Timeline] _update_eye_ring error: {e}")
     
     def _update_timeline_events(self):
         """Update just the timeline events (called on timer)."""
@@ -22276,14 +22087,35 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         self.timeline = ChronoStreamWidget()
         layout.addWidget(self.timeline, stretch=1)
 
+    def showEvent(self, event):
+        """Refresh data when widget becomes visible."""
+        super().showEvent(event)
+        # Force update when shown to ensure no stale data from startup/minimized state
+        QtCore.QTimer.singleShot(0, self.update_data)
+
     def update_data(self):
         """Update all timeline data. Called on initial load and full refresh.
         
         Individual rings are updated via GameState signals for efficiency.
         This method is for initial load and full refresh fallback.
         """
-        if not self.isVisible():
+        # Debug logging to trace when updates happen
+        logger.debug("[Timeline] update_data called")
+        
+        # Verify blocker data is loaded
+        if not hasattr(self, 'blocker') or not self.blocker:
+            logger.warning("[Timeline] update_data called but blocker not available")
             return
+        
+        # Log data state for debugging
+        adhd_buster = getattr(self.blocker, 'adhd_buster', None)
+        if adhd_buster:
+            logger.debug(f"[Timeline] adhd_buster keys: {list(adhd_buster.keys())}")
+            logger.debug(f"[Timeline] total_xp={adhd_buster.get('total_xp', 0)}, coins={adhd_buster.get('coins', 0)}")
+            entitidex = adhd_buster.get('entitidex', {})
+            logger.debug(f"[Timeline] entitidex collected_entity_ids count: {len(entitidex.get('collected_entity_ids', []))}")
+        else:
+            logger.warning("[Timeline] adhd_buster is None or missing")
         
         # Update all rings (initial load / fallback)
         self._update_mini_hero()

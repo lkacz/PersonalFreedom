@@ -1340,9 +1340,8 @@ def award_focus_session_income(
             base_coins = 0
             time_bonus = 0
             
-            # Royal Mint: activity_triggered_income with trigger=focus_session
-            if (effect.get("type") == "activity_triggered_income" and 
-                effect.get("trigger") == "focus_session"):
+            # Royal Mint: focus_session_income type
+            if effect.get("type") == "focus_session_income":
                 
                 base_coins = effect.get("base_coins", 0)
                 base_coins += (level - 1) * scaling.get("base_coins", 0)
@@ -1636,14 +1635,16 @@ def get_city_bonuses(adhd_buster: dict) -> dict:
             elif effect_type == "activity_triggered_income":
                 # Calculate the base coins for display purposes
                 trigger = effect.get("trigger")
-                if trigger == "focus_session":
-                    base = effect.get("base_coins", 0)
-                    per_level = scaling.get("base_coins", 0)
-                    bonuses["focus_session_coins"] += base + (level - 1) * per_level
-                elif trigger == "exercise":
+                if trigger == "exercise":
                     base = effect.get("base_coins", 0)
                     per_level = scaling.get("base_coins", 0)
                     bonuses["exercise_coins"] += base + (level - 1) * per_level
+                    
+            elif effect_type == "focus_session_income":
+                # Focus session triggered income (Royal Mint)
+                base = effect.get("base_coins", 0)
+                per_level = scaling.get("base_coins", 0)
+                bonuses["focus_session_coins"] += base + (level - 1) * per_level
                 
             elif effect_type == "merge_success_bonus":
                 base = effect.get("bonus_percent", 0)

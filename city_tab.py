@@ -2802,12 +2802,35 @@ class BuildingDetailsDialog(StyledDialog):
             "power_bonus": ("power_percent", "power_percent"),
             "xp_bonus": ("bonus_percent", "bonus_percent"),
             "coin_discount": ("discount_percent", "discount_percent"),
+            "activity_triggered_income": ("base_coins", "base_coins"),  # Exercise-triggered coins
+            "focus_session_income": ("base_coins", "base_coins"),  # Focus session coins
         }
         
         effect_key, scaling_key = effect_key_map.get(effect_type, ("value", "value"))
         base_value = effect.get(effect_key, 0)
         scaling = level_scaling.get(scaling_key, 0)
         current_value = base_value + (level - 1) * scaling
+        
+        # For activity_triggered_income, also calculate per-30min bonus
+        per_30min_value = 0
+        if effect_type == "activity_triggered_income":
+            per_30_base = effect.get("coins_per_effective_30min", 0)
+            per_30_scaling = level_scaling.get("coins_per_effective_30min", 0)
+            per_30min_value = per_30_base + (level - 1) * per_30_scaling
+        
+        # For focus_session_income, calculate per-30min bonus
+        if effect_type == "focus_session_income":
+            per_30_base = effect.get("coins_per_30min", 0)
+            per_30_scaling = level_scaling.get("coins_per_30min", 0)
+            per_30min_value = per_30_base + (level - 1) * per_30_scaling
+        
+        # For multi-type buildings (Forge, Wonder), extract individual bonuses
+        multi_bonuses = {}
+        if effect_type == "multi":
+            bonuses = effect.get("bonuses", {})
+            for bonus_key, bonus_val in bonuses.items():
+                bonus_scaling = level_scaling.get(bonus_key, 0)
+                multi_bonuses[bonus_key] = bonus_val + (level - 1) * bonus_scaling
         
         # Format effect text with appropriate units
         # Effect type tooltips - clear explanation + subtle wit
@@ -2820,12 +2843,37 @@ class BuildingDetailsDialog(StyledDialog):
             "power_bonus": f"⚔️ Power Bonus: +{current_value:.0f}%\n\nMultiplies your total Power stat.\nPower is calculated from all equipped gear.\n\n(Your equipment is literally glowing with approval.)",
             "xp_bonus": f"📈 XP Bonus: +{current_value:.0f}%\n\nEarn more experience points from all sources.\nLevel up faster and unlock rewards sooner!\n\n(Experience comes to those who wait. Or to those with this building.)",
             "coin_discount": f"💵 Coin Discount: {current_value:.0f}% off\n\nReduces the cost of all purchases.\nSave coins on shop items and upgrades.\n\n(The shopkeepers are NOT happy about this building.)",
-            "focus_session_income": f"🎯 Focus Session Income: +{current_value:.1f} coins/session\n\nEarn bonus coins for each focus session completed.\nLonger sessions earn proportionally more.\n\n(Time literally becomes money. Philosophers hate this one trick.)",
-            "activity_triggered_income": f"🏃 Activity Triggered Income: +{current_value:.1f} coins/activity\n\nEarn bonus coins when you log activities.\nEvery activity logged = extra income.\n\n(The building gets excited when you do things. Don't ask why.)",
+            "focus_session_income": f"🎯 Focus Session Income\n\n• {current_value:.0f} coins per focus session\n• +{per_30min_value:.0f} coins per 30 minutes\n\nEarn bonus coins when you complete focus sessions.\nLonger sessions = more coins!\n\n(Time literally becomes money. Philosophers hate this one trick.)",
+            "activity_triggered_income": f"🏃 Activity Triggered Income\n\n• {current_value:.0f} coins per moderate+ exercise\n• +{per_30min_value:.0f} coins per 30 effective minutes\n\nEarn bonus coins when you log activities.\nHigher intensity and longer duration = more coins!\n\n(The building gets excited when you do things. Don't ask why.)",
+            "multi": "🏰 Multiple Bonuses Active!\n\nThis building provides several different bonuses.\nSee the list below for details.\n\n(The architects really outdid themselves on this one.)",
         }
         
         if effect_type == "passive_income":
             effect_text = f"• Coins/Hour: +{current_value:.1f}"
+        elif effect_type == "activity_triggered_income":
+            effect_text = f"• Activity Triggered Income: +{current_value:.0f} base, +{per_30min_value:.0f}/30min"
+        elif effect_type == "focus_session_income":
+            effect_text = f"• Focus Session Income: +{current_value:.0f} base, +{per_30min_value:.0f}/30min"
+        elif effect_type == "multi":
+            # Build multi-line display for multi-bonus buildings
+            bonus_lines = []
+            if multi_bonuses.get("merge_success_bonus", 0) > 0:
+                bonus_lines.append(f"• Merge Success: +{multi_bonuses['merge_success_bonus']:.0f}%")
+            if multi_bonuses.get("scrap_chance_bonus", 0) > 0:
+                bonus_lines.append(f"• Scrap Chance: +{multi_bonuses['scrap_chance_bonus']:.1f}%")
+            if multi_bonuses.get("rarity_bias_bonus", 0) > 0:
+                bonus_lines.append(f"• Rarity Bias: +{multi_bonuses['rarity_bias_bonus']:.0f}%")
+            if multi_bonuses.get("entity_catch_bonus", 0) > 0:
+                bonus_lines.append(f"• Entity Catch: +{multi_bonuses['entity_catch_bonus']:.0f}%")
+            if multi_bonuses.get("xp_bonus", 0) > 0:
+                bonus_lines.append(f"• XP Bonus: +{multi_bonuses['xp_bonus']:.0f}%")
+            if multi_bonuses.get("power_bonus", 0) > 0:
+                bonus_lines.append(f"• Power Bonus: +{multi_bonuses['power_bonus']:.0f}%")
+            if multi_bonuses.get("focus_session_coins", 0) > 0:
+                bonus_lines.append(f"• Focus Session: +{multi_bonuses['focus_session_coins']:.0f} coins")
+            if multi_bonuses.get("exercise_coins", 0) > 0:
+                bonus_lines.append(f"• Exercise: +{multi_bonuses['exercise_coins']:.0f} coins")
+            effect_text = "\n".join(bonus_lines) if bonus_lines else "• Multiple bonuses active"
         else:
             effect_text = f"• {effect_type.replace('_', ' ').title()}: +{current_value:.0f}%"
         effect_label = QtWidgets.QLabel(effect_text)
