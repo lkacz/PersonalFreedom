@@ -92,6 +92,7 @@ class GameStateManager(QtCore.QObject):
     # Currency signals
     coins_changed = QtCore.Signal(int)  # New coin total
     xp_changed = QtCore.Signal(int, int)  # (new_xp, new_level)
+    materials_changed = QtCore.Signal(int)  # New materials total (crafting/merge leftovers)
     
     # Hero signals
     hero_changed = QtCore.Signal()  # Hero selection changed
@@ -162,6 +163,11 @@ class GameStateManager(QtCore.QObject):
     def coins(self) -> int:
         """Get current coin count."""
         return self.adhd_buster.get("coins", 0)
+    
+    @property
+    def materials(self) -> int:
+        """Get current materials count (merge leftovers/crafting)."""
+        return self.adhd_buster.get("materials", 0)
     
     # === Batch Operations ===
     
@@ -473,6 +479,29 @@ class GameStateManager(QtCore.QObject):
         self._save_config()
         
         self._emit(self.coins_changed, new_total)
+        return new_total
+    
+    def add_materials(self, amount: int) -> int:
+        """Add materials (merge leftovers) and emit signal. Returns new total.
+        
+        Materials are earned during merges based on the number of items:
+        - < 10 items: 10% chance per merge for +1 material
+        - >= 10 items: guaranteed +1 material
+        - Each item above 10: 10% chance for +1 additional material
+        
+        Args:
+            amount: Materials to add (must be non-negative)
+        """
+        if amount <= 0:
+            return self.adhd_buster.get("materials", 0)
+        
+        current = self.adhd_buster.get("materials", 0)
+        # Cap materials to reasonable maximum (999,999)
+        new_total = min(current + amount, 999_999)
+        self.adhd_buster["materials"] = new_total
+        self._save_config()
+        
+        self._emit(self.materials_changed, new_total)
         return new_total
     
     def add_luck_bonus(self, amount: int) -> int:
