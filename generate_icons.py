@@ -7,15 +7,21 @@ Creates:
 - tray_ready.png/ico - System tray icon (ready/idle state)
 - tray_blocking.png/ico - System tray icon (active blocking state)
 
-Design: Modern shield icon with "liberty torch" or "focused mind" motif
-- Clean, bold silhouette that reads well at all sizes
-- Premium gradients and lighting effects
-- Distinctive enough to be recognized instantly
+Design: Dynamic exercising figure doing jumping jacks
+- Inspired by the training_ground_animated.svg design
+- Energetic pose representing productivity and personal freedom
+- 5 concentric rings with rarity color gradients
+- Industry-standard antialiasing via supersampling
+- Premium gradients and modern color palette
 """
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageChops
 import math
 from pathlib import Path
+
+
+# Supersampling factor for antialiasing (render at 4x, downsample)
+SUPERSAMPLE = 4
 
 
 def hex_to_rgb(hex_color: str) -> tuple:
@@ -39,297 +45,349 @@ def lerp_color(color1: str, color2: str, t: float) -> str:
     return rgb_to_hex((r, g, b))
 
 
+def lerp_rgb(c1: tuple, c2: tuple, t: float) -> tuple:
+    """Linearly interpolate between two RGB tuples."""
+    return (
+        int(c1[0] + (c2[0] - c1[0]) * t),
+        int(c1[1] + (c2[1] - c1[1]) * t),
+        int(c1[2] + (c2[2] - c1[2]) * t),
+    )
+
+
+def lighten(rgb: tuple, amount: float = 0.3) -> tuple:
+    """Lighten a color by blending with white."""
+    return lerp_rgb(rgb, (255, 255, 255), amount)
+
+
+def darken(rgb: tuple, amount: float = 0.3) -> tuple:
+    """Darken a color by blending with black."""
+    return lerp_rgb(rgb, (0, 0, 0), amount)
+
+
+def draw_thick_line(draw, x1, y1, x2, y2, width, color):
+    """Draw a thick line with rounded ends using a series of ellipses."""
+    # Draw circles at start, middle, and end for smooth thick line
+    steps = max(8, int(((x2-x1)**2 + (y2-y1)**2)**0.5 / (width * 0.25)))
+    for i in range(steps + 1):
+        t = i / steps
+        x = x1 + (x2 - x1) * t
+        y = y1 + (y2 - y1) * t
+        draw.ellipse([x - width/2, y - width/2, x + width/2, y + width/2], fill=color)
+
+
 def create_focus_icon(size: int, blocking: bool = False, for_tray: bool = False) -> Image.Image:
     """
-    Create a modern, distinctive app icon.
+    Create a modern, industry-standard app icon with an exercising figure.
     
-    Design: Shield shape with an upward-pointing stylized "flame" or "focus beam"
-    representing liberation, focus, and protection from distractions.
-    
-    The design uses:
-    - Bold shield silhouette (protection/blocking)
-    - Central upward element (growth/freedom/focus)
-    - Modern gradient with rim lighting
-    - Clean geometry that scales well
+    Features:
+    - 4x supersampling for smooth antialiasing
+    - Gradient rings with highlight/shadow for 3D depth
+    - Dynamic jumping jacks figure
+    - 5 concentric rings: Legendary (orange) outside → Common (grey) inside
     """
-    # Create RGBA image
-    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    # Render at higher resolution for antialiasing
+    render_size = size * SUPERSAMPLE
+    img = Image.new('RGBA', (render_size, render_size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     
-    center = size // 2
+    center = render_size // 2
     
-    # Color palettes - STRONG gradient for premium look
-    if blocking:
-        # Active blocking - Electric blue/cyan with strong gradient
-        bg_gradient_top = '#38BDF8'     # Bright sky blue (lighter top)
-        bg_gradient_bottom = '#0C4A6E'  # Very deep navy (darker bottom)
-        inner_glow = '#38BDF8'          # Bright cyan
-        symbol_color = '#FFFFFF'         # Pure white
-        symbol_glow = '#7DD3FC'          # Light cyan
-        rim_light = '#BAE6FD'            # Very light blue
-    else:
-        # Ready/idle - Emerald green with strong gradient
-        bg_gradient_top = '#34D399'      # Bright emerald (lighter top)
-        bg_gradient_bottom = '#064E3B'   # Very deep green (darker bottom)
-        inner_glow = '#34D399'           # Bright green
-        symbol_color = '#FFFFFF'          # Pure white
-        symbol_glow = '#6EE7B7'           # Light green
-        rim_light = '#A7F3D0'             # Very light green
-    
-    padding = max(1, size // 16)
-    
-    # Shield dimensions
-    shield_width = size - padding * 2
-    shield_height = size - padding * 2
-    shield_top = padding
-    shield_left = padding
-    
-    # === Draw Shield Shape ===
-    # Modern rounded shield: rectangle top, pointed bottom
-    
-    # Create shield path points
-    corner_radius = max(2, size // 8)
-    point_y = shield_top + shield_height  # Bottom point
-    shoulder_y = shield_top + shield_height * 0.55  # Where sides start curving to point
-    
-    # Build shield as a polygon with curves simulated
-    shield_img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    shield_draw = ImageDraw.Draw(shield_img)
-    
-    # Draw gradient background for shield - use eased curve for more dramatic effect
-    steps = max(24, size // 2)  # More steps for smoother gradient
-    for i in range(steps):
-        t = i / steps
-        # Apply ease-in curve for more dramatic gradient (darker bottom emphasis)
-        t_curved = t * t * (3 - 2 * t)  # Smoothstep for nicer transition
-        y1 = shield_top + shield_height * t
-        y2 = shield_top + shield_height * (t + 1/steps)
-        color = lerp_color(bg_gradient_top, bg_gradient_bottom, t_curved)
-        
-        # Calculate width at this y level (shield narrows toward bottom)
-        if y1 < shoulder_y:
-            # Upper rectangular portion
-            width_factor = 1.0
-        else:
-            # Lower triangular portion
-            progress = (y1 - shoulder_y) / (point_y - shoulder_y)
-            width_factor = 1.0 - progress * 0.95  # Narrows to a point
-        
-        half_width = (shield_width / 2) * width_factor
-        x_left = center - half_width
-        x_right = center + half_width
-        
-        shield_draw.rectangle([x_left, y1, x_right, y2], fill=color)
-    
-    # Create proper shield mask with rounded top corners and pointed bottom
-    mask = Image.new('L', (size, size), 0)
-    mask_draw = ImageDraw.Draw(mask)
-    
-    # Draw shield shape as polygon
-    # Top left corner arc, top edge, top right corner arc, right edge, point, left edge
-    points = []
-    
-    # Top-left rounded corner
-    for angle in range(180, 271, 10):
-        x = shield_left + corner_radius + corner_radius * math.cos(math.radians(angle))
-        y = shield_top + corner_radius + corner_radius * math.sin(math.radians(angle))
-        points.append((x, y))
-    
-    # Top-right rounded corner
-    for angle in range(270, 361, 10):
-        x = shield_left + shield_width - corner_radius + corner_radius * math.cos(math.radians(angle))
-        y = shield_top + corner_radius + corner_radius * math.sin(math.radians(angle))
-        points.append((x, y))
-    
-    # Right edge down to shoulder
-    points.append((shield_left + shield_width, shoulder_y))
-    
-    # Right edge curves to bottom point
-    points.append((center, point_y))
-    
-    # Left edge from point up to shoulder
-    points.append((shield_left, shoulder_y))
-    
-    # Close back to start
-    points.append((shield_left, shield_top + corner_radius))
-    
-    mask_draw.polygon(points, fill=255)
-    
-    # Apply mask to shield
-    shield_img.putalpha(mask)
-    img = Image.alpha_composite(img, shield_img)
-    draw = ImageDraw.Draw(img)
-    
-    # === Add rim lighting (edge highlight) ===
-    if size >= 32:
-        rim_img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-        rim_draw = ImageDraw.Draw(rim_img)
-        rim_r, rim_g, rim_b = hex_to_rgb(rim_light)
-        
-        # Draw slightly smaller shield outline for rim light effect
-        rim_draw.polygon(points, outline=(rim_r, rim_g, rim_b, 100), width=max(1, size // 32))
-        
-        # Only keep top portion of rim (light from above)
-        for y in range(size // 2, size):
-            for x in range(size):
-                pixel = rim_img.getpixel((x, y))
-                if pixel[3] > 0:
-                    # Fade out rim light toward bottom
-                    fade = 1.0 - (y - size // 2) / (size // 2)
-                    rim_img.putpixel((x, y), (pixel[0], pixel[1], pixel[2], int(pixel[3] * fade)))
-        
-        img = Image.alpha_composite(img, rim_img)
-        draw = ImageDraw.Draw(img)
-    
-    # === Draw central symbol: Stylized Sword (RPG gamification) ===
-    # A bold upward-pointing sword that extends ABOVE the shield for dramatic effect
-    
-    symbol_center_y = center + size * 0.08  # Lower center to make room for blade extending up
-    sword_height = shield_height * 0.85  # Much larger sword
-    sword_width = shield_width * 0.38   # Wider sword
-    
-    sym_r, sym_g, sym_b = hex_to_rgb(symbol_color)
-    glow_r, glow_g, glow_b = hex_to_rgb(symbol_glow)
-    
-    # Sword dimensions - larger and more prominent
-    blade_width = sword_width * 0.25
-    blade_length = sword_height * 0.60
-    guard_width = sword_width * 1.1
-    guard_height = sword_height * 0.07
-    grip_width = sword_width * 0.20
-    grip_length = sword_height * 0.20
-    pommel_radius = sword_width * 0.14
-    
-    # Position blade to extend ABOVE the shield
-    blade_top = padding - size * 0.12  # Extends above shield!
-    guard_y = symbol_center_y + sword_height * 0.05
-    grip_bottom = guard_y + grip_length
-    
-    # Glow behind sword - extends above shield for dramatic effect
-    if size >= 32:
-        glow_img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-        glow_draw = ImageDraw.Draw(glow_img)
-        
-        # Draw larger, softer sword shape for glow - extends above!
-        glow_scale = 1.6
-        glow_blade_w = blade_width * glow_scale
-        glow_blade_points = [
-            (center, blade_top - size * 0.04),  # Tip extends further
-            (center + glow_blade_w * 1.2, guard_y),
-            (center - glow_blade_w * 1.2, guard_y),
-        ]
-        glow_draw.polygon(glow_blade_points, fill=(glow_r, glow_g, glow_b, 70))
-        
-        glow_img = glow_img.filter(ImageFilter.GaussianBlur(radius=max(3, size // 16)))
-        # Don't mask the glow - let it extend above shield
-        img = Image.alpha_composite(img, glow_img)
-        draw = ImageDraw.Draw(img)
-    
-    # === Draw the sword ===
-    # Sword is drawn AFTER shield so it appears on top and can extend beyond
-    
-    # 1. Blade - pointed triangle (extends above shield)
-    blade_points = [
-        (center, blade_top),  # Tip point - extends above shield!
-        (center + blade_width, guard_y - guard_height * 0.5),  # Right edge
-        (center - blade_width, guard_y - guard_height * 0.5),  # Left edge
+    # Exact rarity colors from the app - REVERSED ORDER (Legendary outside)
+    # Each tuple: (base_color, lighter_shade, darker_shade)
+    RARITY_RINGS = [
+        ("#ff9800", "#ffb74d", "#e65100"),  # Legendary (orange) - outermost
+        ("#9c27b0", "#ba68c8", "#6a1b9a"),  # Epic (purple)
+        ("#2196f3", "#64b5f6", "#1565c0"),  # Rare (blue)
+        ("#4caf50", "#81c784", "#2e7d32"),  # Uncommon (green)
+        ("#9e9e9e", "#bdbdbd", "#616161"),  # Common (grey) - innermost/center
     ]
-    draw.polygon(blade_points, fill=symbol_color)
     
-    # 2. Blade edge highlights for metallic look
-    if size >= 32:
-        # Left edge highlight
-        edge_highlight = [(center - blade_width * 0.7, guard_y - guard_height),
-                          (center - blade_width * 0.15, blade_top + (guard_y - blade_top) * 0.1)]
-        draw.line(edge_highlight, fill=(255, 255, 255, 180), width=max(1, size // 48))
+    # Figure colors
+    figure_color = '#FFFFFF'
+    figure_outline = '#333333'  # Dark outline for contrast
+    headband_color = '#F44336'
+    
+    # No padding - circles reach to the edge
+    max_radius = render_size // 2
+    
+    # Gap between rings for visual separation
+    ring_gap = max(2, render_size // 40)
+    
+    # === Draw 5 concentric gradient rings with radial line patterns ===
+    num_rings = len(RARITY_RINGS)
+    total_gap_space = ring_gap * (num_rings - 1)
+    ring_width = (max_radius - total_gap_space) / num_rings
+    
+    # First, draw the base solid rings with gaps
+    for ring_idx, (base, light, dark) in enumerate(RARITY_RINGS):
+        outer_r = max_radius - (ring_idx * (ring_width + ring_gap))
+        inner_r = outer_r - ring_width
+        base_rgb = hex_to_rgb(base)
         
-        # Right edge (darker for contrast)
-        edge_shadow = [(center + blade_width * 0.5, guard_y - guard_height),
-                       (center + blade_width * 0.1, blade_top + (guard_y - blade_top) * 0.15)]
-        inner_r, inner_g, inner_b = hex_to_rgb(inner_glow)
-        draw.line(edge_shadow, fill=(inner_r, inner_g, inner_b, 100), width=max(1, size // 64))
+        x1 = center - outer_r
+        y1 = center - outer_r
+        x2 = center + outer_r
+        y2 = center + outer_r
+        
+        if x2 > x1 and y2 > y1:
+            draw.ellipse([x1, y1, x2, y2], fill=base_rgb)
+        
+        # Cut out inner circle to create ring (except for innermost)
+        if ring_idx < num_rings - 1 and inner_r > 0:
+            # Draw transparent circle for gap
+            gap_outer = inner_r
+            gap_inner = inner_r - ring_gap
+            if gap_inner > 0:
+                draw.ellipse([center - gap_outer, center - gap_outer,
+                              center + gap_outer, center + gap_outer], fill=(0, 0, 0, 0))
     
-    # 3. Blade center line (fuller) for detail on larger icons
-    if size >= 48:
-        fuller_width = max(1, blade_width * 0.25)
-        inner_r, inner_g, inner_b = hex_to_rgb(inner_glow)
-        # Draw a thin line down the blade center
-        draw.line(
-            [(center, blade_top + (guard_y - blade_top) * 0.12), 
-             (center, guard_y - guard_height * 1.5)],
-            fill=(inner_r, inner_g, inner_b, 60),
-            width=max(1, int(fuller_width))
+    # Redraw inner rings on top (since we cut holes)
+    for ring_idx in range(1, num_rings):
+        base, light, dark = RARITY_RINGS[ring_idx]
+        outer_r = max_radius - (ring_idx * (ring_width + ring_gap))
+        base_rgb = hex_to_rgb(base)
+        
+        if outer_r > 0:
+            draw.ellipse([center - outer_r, center - outer_r,
+                          center + outer_r, center + outer_r], fill=base_rgb)
+    
+    # Add radial line patterns for character
+    num_rays = 24
+    for ring_idx, (base, light, dark) in enumerate(RARITY_RINGS):
+        outer_r = max_radius - (ring_idx * (ring_width + ring_gap))
+        inner_r = outer_r - ring_width
+        
+        if inner_r < 0:
+            inner_r = 0
+        
+        light_rgb = hex_to_rgb(light)
+        dark_rgb = hex_to_rgb(dark)
+        
+        # Draw alternating light and dark radial segments
+        for ray in range(num_rays):
+            angle1 = (ray / num_rays) * 2 * math.pi
+            angle2 = ((ray + 0.5) / num_rays) * 2 * math.pi
+            
+            if ray % 2 == 0:
+                ray_color = (*light_rgb, 50)
+            else:
+                ray_color = (*dark_rgb, 35)
+            
+            ray_img = Image.new('RGBA', (render_size, render_size), (0, 0, 0, 0))
+            ray_draw = ImageDraw.Draw(ray_img)
+            
+            points = [
+                (center, center),
+                (center + outer_r * math.cos(angle1), center + outer_r * math.sin(angle1)),
+                (center + outer_r * math.cos(angle2), center + outer_r * math.sin(angle2)),
+            ]
+            ray_draw.polygon(points, fill=ray_color)
+            
+            ring_mask = Image.new('L', (render_size, render_size), 0)
+            ring_mask_draw = ImageDraw.Draw(ring_mask)
+            ring_mask_draw.ellipse([center - outer_r, center - outer_r, 
+                                    center + outer_r, center + outer_r], fill=255)
+            if inner_r > 0:
+                ring_mask_draw.ellipse([center - inner_r, center - inner_r,
+                                        center + inner_r, center + inner_r], fill=0)
+            
+            ray_img.putalpha(ImageChops.multiply(ray_img.split()[3], ring_mask))
+            img = Image.alpha_composite(img, ray_img)
+        
+        draw = ImageDraw.Draw(img)
+    
+    # Add subtle edge highlights on each ring boundary
+    for ring_idx in range(num_rings):
+        ring_r = max_radius - (ring_idx * (ring_width + ring_gap))
+        if ring_r > 5:
+            # Outer edge highlight (white)
+            draw.arc([center - ring_r, center - ring_r, center + ring_r, center + ring_r],
+                     start=200, end=340, fill=(255, 255, 255, 50), 
+                     width=max(1, render_size // 80))
+            # Inner edge shadow
+            draw.arc([center - ring_r, center - ring_r, center + ring_r, center + ring_r],
+                     start=20, end=160, fill=(0, 0, 0, 30),
+                     width=max(1, render_size // 80))
+    
+    # === Add highlight arc at top for gloss effect ===
+    if render_size >= 64:
+        highlight_img = Image.new('RGBA', (render_size, render_size), (0, 0, 0, 0))
+        highlight_draw = ImageDraw.Draw(highlight_img)
+        
+        # Draw a white arc at the top
+        arc_width = max(2, render_size // 20)
+        arc_padding = arc_width + ring_gap
+        highlight_draw.arc(
+            [arc_padding, arc_padding, render_size - arc_padding, render_size - arc_padding],
+            start=200, end=340,
+            fill=(255, 255, 255, 80),
+            width=arc_width
         )
+        
+        # Blur slightly for softness
+        highlight_img = highlight_img.filter(ImageFilter.GaussianBlur(radius=render_size // 64))
+        img = Image.alpha_composite(img, highlight_img)
+        draw = ImageDraw.Draw(img)
     
-    # 4. Cross-guard (horizontal bar) - slightly curved ends
-    guard_points = [
-        (center - guard_width * 0.5, guard_y - guard_height * 0.5),
-        (center + guard_width * 0.5, guard_y - guard_height * 0.5),
-        (center + guard_width * 0.5, guard_y + guard_height * 0.5),
-        (center - guard_width * 0.5, guard_y + guard_height * 0.5),
-    ]
-    draw.polygon(guard_points, fill=symbol_color)
+    # === Draw the exercising figure (jumping jacks pose) ===
+    fig_r, fig_g, fig_b = hex_to_rgb(figure_color)
+    outline_r, outline_g, outline_b = hex_to_rgb(figure_outline)
+    head_r, head_g, head_b = hex_to_rgb(headband_color)
     
-    # Guard end caps (small circles for style)
-    if size >= 24:
-        cap_size = max(2, guard_height * 1.0)
-        # Left cap
-        draw.ellipse([
-            center - guard_width * 0.5 - cap_size * 0.5, guard_y - cap_size * 0.5,
-            center - guard_width * 0.5 + cap_size * 0.5, guard_y + cap_size * 0.5
-        ], fill=symbol_color)
-        # Right cap
-        draw.ellipse([
-            center + guard_width * 0.5 - cap_size * 0.5, guard_y - cap_size * 0.5,
-            center + guard_width * 0.5 + cap_size * 0.5, guard_y + cap_size * 0.5
-        ], fill=symbol_color)
+    # Scale relative to render size
+    scale = render_size / 100
     
-    # 5. Grip/Handle
-    grip_points = [
-        (center - grip_width, guard_y + guard_height * 0.3),
-        (center + grip_width, guard_y + guard_height * 0.3),
-        (center + grip_width, grip_bottom),
-        (center - grip_width, grip_bottom),
-    ]
-    draw.polygon(grip_points, fill=symbol_color)
+    # Outline thickness
+    outline_width = max(2, int(2.5 * scale))
     
-    # Grip wrap lines for detail on larger icons
-    if size >= 64:
-        wrap_color = hex_to_rgb(symbol_glow)
-        num_wraps = 3
-        for i in range(num_wraps):
-            wrap_y = guard_y + guard_height * 0.5 + (grip_length - guard_height * 0.2) * (i + 0.5) / num_wraps
-            draw.line(
-                [(center - grip_width * 0.8, wrap_y), (center + grip_width * 0.8, wrap_y)],
-                fill=(wrap_color[0], wrap_color[1], wrap_color[2], 50),
-                width=max(1, size // 64)
-            )
+    # Figure center position
+    fig_cx = center
+    fig_cy = center + render_size * 0.10
     
-    # 6. Pommel (bottom sphere)
-    pommel_y = grip_bottom + pommel_radius * 0.5
+    # Calculate all figure positions first
+    head_radius = max(4, int(10 * scale))
+    head_y = fig_cy - int(30 * scale)
+    
+    torso_width = max(4, int(16 * scale))
+    torso_height = max(6, int(22 * scale))
+    torso_top = head_y + head_radius + int(2 * scale)
+    torso_bottom = torso_top + torso_height
+    
+    arm_width = max(3, int(6 * scale))
+    arm_length = int(24 * scale)
+    shoulder_y = torso_top + int(5 * scale)
+    arm_angle = math.radians(50)
+    left_hand_x = fig_cx - int(arm_length * math.sin(arm_angle))
+    left_hand_y = shoulder_y - int(arm_length * math.cos(arm_angle))
+    right_hand_x = fig_cx + int(arm_length * math.sin(arm_angle))
+    right_hand_y = shoulder_y - int(arm_length * math.cos(arm_angle))
+    hand_radius = max(2, int(4 * scale))
+    
+    leg_width = max(3, int(7 * scale))
+    leg_length = int(26 * scale)
+    hip_y = torso_bottom - int(2 * scale)
+    leg_angle = math.radians(25)
+    left_foot_x = fig_cx - int(leg_length * math.sin(leg_angle))
+    left_foot_y = hip_y + int(leg_length * math.cos(leg_angle))
+    right_foot_x = fig_cx + int(leg_length * math.sin(leg_angle))
+    right_foot_y = hip_y + int(leg_length * math.cos(leg_angle))
+    foot_w = max(3, int(7 * scale))
+    foot_h = max(2, int(4 * scale))
+    
+    band_height = max(2, int(4 * scale))
+    band_y = head_y - int(2 * scale)
+    tail_len = int(8 * scale)
+    
+    # === DRAW OUTLINE FIRST (slightly larger, dark color) ===
+    outline_color = figure_outline
+    ol = outline_width  # Outline offset
+    
+    # Head outline
     draw.ellipse([
-        center - pommel_radius, pommel_y - pommel_radius,
-        center + pommel_radius, pommel_y + pommel_radius
-    ], fill=symbol_color)
+        fig_cx - head_radius - ol, head_y - head_radius - ol,
+        fig_cx + head_radius + ol, head_y + head_radius + ol
+    ], fill=outline_color)
     
-    # === Add subtle drop shadow for depth ===
-    if size >= 48 and not for_tray:
-        # Create shadow version
-        final_img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-        
-        shadow_offset = max(1, size // 48)
-        shadow_img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-        shadow_draw = ImageDraw.Draw(shadow_img)
-        shadow_draw.polygon(points, fill=(0, 0, 0, 30))
-        shadow_img = shadow_img.filter(ImageFilter.GaussianBlur(radius=max(1, size // 32)))
-        
-        # Offset shadow
-        shadow_offset_img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-        shadow_offset_img.paste(shadow_img, (shadow_offset, shadow_offset))
-        
-        final_img = Image.alpha_composite(final_img, shadow_offset_img)
-        final_img = Image.alpha_composite(final_img, img)
-        img = final_img
+    # Torso outline
+    draw.rounded_rectangle([
+        fig_cx - torso_width // 2 - ol, torso_top - ol,
+        fig_cx + torso_width // 2 + ol, torso_bottom + ol
+    ], radius=max(2, int(4 * scale)), fill=outline_color)
+    
+    # Arms outline
+    draw_thick_line(draw, fig_cx - int(7 * scale), shoulder_y, 
+                    left_hand_x, left_hand_y, arm_width + ol * 2, outline_color)
+    draw_thick_line(draw, fig_cx + int(7 * scale), shoulder_y,
+                    right_hand_x, right_hand_y, arm_width + ol * 2, outline_color)
+    
+    # Hands outline
+    draw.ellipse([
+        left_hand_x - hand_radius - ol, left_hand_y - hand_radius - ol,
+        left_hand_x + hand_radius + ol, left_hand_y + hand_radius + ol
+    ], fill=outline_color)
+    draw.ellipse([
+        right_hand_x - hand_radius - ol, right_hand_y - hand_radius - ol,
+        right_hand_x + hand_radius + ol, right_hand_y + hand_radius + ol
+    ], fill=outline_color)
+    
+    # Legs outline
+    draw_thick_line(draw, fig_cx - int(5 * scale), hip_y,
+                    left_foot_x, left_foot_y, leg_width + ol * 2, outline_color)
+    draw_thick_line(draw, fig_cx + int(5 * scale), hip_y,
+                    right_foot_x, right_foot_y, leg_width + ol * 2, outline_color)
+    
+    # Feet outline
+    draw.ellipse([
+        left_foot_x - foot_w - ol, left_foot_y - foot_h - ol,
+        left_foot_x + foot_w + ol, left_foot_y + foot_h + ol
+    ], fill=outline_color)
+    draw.ellipse([
+        right_foot_x - foot_w - ol, right_foot_y - foot_h - ol,
+        right_foot_x + foot_w + ol, right_foot_y + foot_h + ol
+    ], fill=outline_color)
+    
+    # === DRAW FIGURE ON TOP (white) ===
+    # Head
+    draw.ellipse([
+        fig_cx - head_radius, head_y - head_radius,
+        fig_cx + head_radius, head_y + head_radius
+    ], fill=figure_color)
+    
+    # Headband
+    draw.rectangle([
+        fig_cx - head_radius, band_y,
+        fig_cx + head_radius, band_y + band_height
+    ], fill=(head_r, head_g, head_b, 255))
+    # Headband tail
+    draw.polygon([
+        (fig_cx + head_radius, band_y),
+        (fig_cx + head_radius + tail_len, band_y + band_height // 2),
+        (fig_cx + head_radius, band_y + band_height)
+    ], fill=(head_r, head_g, head_b, 255))
+    
+    # Torso
+    draw.rounded_rectangle([
+        fig_cx - torso_width // 2, torso_top,
+        fig_cx + torso_width // 2, torso_bottom
+    ], radius=max(2, int(4 * scale)), fill=figure_color)
+    
+    # Arms
+    draw_thick_line(draw, fig_cx - int(7 * scale), shoulder_y, 
+                    left_hand_x, left_hand_y, arm_width, figure_color)
+    draw_thick_line(draw, fig_cx + int(7 * scale), shoulder_y,
+                    right_hand_x, right_hand_y, arm_width, figure_color)
+    
+    # Hands
+    draw.ellipse([
+        left_hand_x - hand_radius, left_hand_y - hand_radius,
+        left_hand_x + hand_radius, left_hand_y + hand_radius
+    ], fill=figure_color)
+    draw.ellipse([
+        right_hand_x - hand_radius, right_hand_y - hand_radius,
+        right_hand_x + hand_radius, right_hand_y + hand_radius
+    ], fill=figure_color)
+    
+    # Legs
+    draw_thick_line(draw, fig_cx - int(5 * scale), hip_y,
+                    left_foot_x, left_foot_y, leg_width, figure_color)
+    draw_thick_line(draw, fig_cx + int(5 * scale), hip_y,
+                    right_foot_x, right_foot_y, leg_width, figure_color)
+    
+    # Feet
+    draw.ellipse([
+        left_foot_x - foot_w, left_foot_y - foot_h,
+        left_foot_x + foot_w, left_foot_y + foot_h
+    ], fill=figure_color)
+    draw.ellipse([
+        right_foot_x - foot_w, right_foot_y - foot_h,
+        right_foot_x + foot_w, right_foot_y + foot_h
+    ], fill=figure_color)
+    
+    # === Add subtle drop shadow behind figure for depth ===
+    # (Already have antialiasing from supersampling)
+    
+    # === Downsample to target size with high-quality antialiasing ===
+    img = img.resize((size, size), Image.Resampling.LANCZOS)
     
     return img
 
