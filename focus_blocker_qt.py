@@ -8278,9 +8278,12 @@ class WeightTab(QtWidgets.QWidget):
             self._refresh_display()
     
     def _refresh_display(self) -> None:
-        """Refresh all display elements."""
+        """Refresh all display elements (called when switching users)."""
         # Update max date to today (in case app stayed open past midnight)
         self.date_edit.setMaximumDate(QtCore.QDate.currentDate())
+        
+        # Reload user-specific settings (including weight prefill)
+        self._load_settings()
         
         unit = self.blocker.weight_unit
         entries = self.blocker.weight_entries
@@ -8393,7 +8396,29 @@ class WeightTab(QtWidgets.QWidget):
             self.weight_input.setRange(44, 1100)
             self.weight_input.setSuffix(" lbs")
             self.goal_input.setRange(2.2, 1100)
+        else:
+            self.weight_input.setRange(20, 500)
+            self.weight_input.setSuffix(" kg")
+            self.goal_input.setRange(1, 500)
         self.unit_combo.setCurrentText(self.blocker.weight_unit)
+        
+        # Prefill weight input with user's last weight entry
+        entries = self.blocker.weight_entries
+        if entries:
+            # Sort by date to get most recent entry
+            sorted_entries = sorted(entries, key=lambda x: x.get("date", ""), reverse=True)
+            last_weight_kg = sorted_entries[0].get("weight", 70.0)
+            # Convert to display unit
+            if self.blocker.weight_unit == "lbs":
+                self.weight_input.setValue(last_weight_kg * 2.20462)
+            else:
+                self.weight_input.setValue(last_weight_kg)
+        else:
+            # No entries - use a reasonable default
+            if self.blocker.weight_unit == "lbs":
+                self.weight_input.setValue(154.0)  # ~70kg
+            else:
+                self.weight_input.setValue(70.0)
         
         # Goal
         if self.blocker.weight_goal:
@@ -8715,22 +8740,21 @@ class WeightTab(QtWidgets.QWidget):
     
     def _show_reminder_notification(self) -> None:
         """Show the weight reminder notification."""
-        # Try system tray notification if available
+        # Try system tray notification if available and visible
         parent_window = self.window()
-        if hasattr(parent_window, 'tray_icon') and parent_window.tray_icon:
+        notification_shown = False
+        if hasattr(parent_window, 'tray_icon') and parent_window.tray_icon and parent_window.tray_icon.isVisible():
             parent_window.tray_icon.showMessage(
                 "⚖️ Weight Reminder",
                 "Don't forget to log your weight today!",
                 QtWidgets.QSystemTrayIcon.MessageIcon.Information,
                 5000
             )
-        else:
-            # Fallback to message box (only if window is visible)
-            if self.isVisible():
-                show_info(
-                    self, "⚖️ Weight Reminder",
-                    "Don't forget to log your weight today!"
-                )
+            notification_shown = True
+        
+        # Fallback: show in-app toast (non-blocking, works even if window minimized)
+        if not notification_shown:
+            show_perk_toast("⚖️ Don't forget to log your weight today!", "⚖️", self)
     
     def _update_weight_entity_perk_display(self) -> None:
         """Update the entity perk display using mini-cards like ADHD Buster patrons."""
@@ -9924,12 +9948,21 @@ class ActivityTab(QtWidgets.QWidget):
                 self.blocker.activity_last_reminder_date = today
                 self.blocker.save_config()
                 
-                show_info(
-                    self, "🏃 Activity Reminder",
-                    "Time to get moving!\n\n"
-                    "Even a 10-minute walk earns rewards for your hero.\n"
-                    "Log your activity to keep your streak going!"
-                )
+                # Try system tray notification if available and visible
+                parent_window = self.window()
+                notification_shown = False
+                if hasattr(parent_window, 'tray_icon') and parent_window.tray_icon and parent_window.tray_icon.isVisible():
+                    parent_window.tray_icon.showMessage(
+                        "🏃 Activity Reminder",
+                        "Time to get moving! Even a 10-minute walk earns rewards.",
+                        QtWidgets.QSystemTrayIcon.MessageIcon.Information,
+                        5000
+                    )
+                    notification_shown = True
+                
+                # Fallback: show in-app toast (non-blocking)
+                if not notification_shown:
+                    show_perk_toast("🏃 Time to get moving! Log your activity for rewards.", "🏃", self)
     
     def _update_reminder_setting(self) -> None:
         """Update reminder settings."""
@@ -11088,7 +11121,44 @@ class SleepTab(QtWidgets.QWidget):
         self._refresh_display()
     
     def _refresh_display(self) -> None:
-        """Refresh stats and history display."""
+        """Refresh stats, history display, and user-specific prefill values (called when switching users)."""
+        # Update profile display with current user's data
+        self._update_profile_display()
+        
+        # Prefill bedtime/wake time from user's last sleep entry
+        entries = self.blocker.sleep_entries
+        if entries:
+            # Sort by date to get most recent entry
+            sorted_entries = sorted(entries, key=lambda x: x.get("date", ""), reverse=True)
+            last_entry = sorted_entries[0]
+            
+            # Prefill bedtime
+            bedtime_str = last_entry.get("bedtime", "23:00")
+            try:
+                if bedtime_str:
+                    h, m = map(int, bedtime_str.split(":"))
+                    self.bedtime_edit.setTime(QtCore.QTime(h, m))
+            except (ValueError, AttributeError):
+                pass
+            
+            # Prefill wake time (estimate from bedtime + duration if no wake_time stored)
+            waketime_str = last_entry.get("wake_time", None)
+            if waketime_str:
+                try:
+                    h, m = map(int, waketime_str.split(":"))
+                    self.wake_edit.setTime(QtCore.QTime(h, m))
+                except (ValueError, AttributeError):
+                    pass
+            else:
+                # Estimate from duration
+                sleep_hours = last_entry.get("sleep_hours", 8.0)
+                bedtime = self.bedtime_edit.time()
+                wake_mins = (bedtime.hour() * 60 + bedtime.minute() + int(sleep_hours * 60)) % (24 * 60)
+                self.wake_edit.setTime(QtCore.QTime(wake_mins // 60, wake_mins % 60))
+            
+            # Update duration display
+            self._update_sleep_duration()
+        
         # Update stats
         if get_sleep_stats:
             stats = get_sleep_stats(self.blocker.sleep_entries)
@@ -11252,16 +11322,21 @@ class SleepTab(QtWidgets.QWidget):
             else:
                 bedtime_rec = "before midnight"
             
-            show_info(
-                self, "🌙 Bedtime Reminder",
-                f"Time to start winding down!\n\n"
-                f"Your optimal bedtime: {bedtime_rec}\n\n"
-                "Tips for better sleep:\n"
-                "• Dim the lights\n"
-                "• Put away screens\n"
-                "• Relax and prepare for rest\n\n"
-                "Good sleep = rewards for your hero! 😴"
-            )
+            # Try system tray notification if available and visible
+            parent_window = self.window()
+            notification_shown = False
+            if hasattr(parent_window, 'tray_icon') and parent_window.tray_icon and parent_window.tray_icon.isVisible():
+                parent_window.tray_icon.showMessage(
+                    "🌙 Bedtime Reminder",
+                    f"Time to wind down! Optimal bedtime: {bedtime_rec}",
+                    QtWidgets.QSystemTrayIcon.MessageIcon.Information,
+                    5000
+                )
+                notification_shown = True
+            
+            # Fallback: show in-app toast (non-blocking)
+            if not notification_shown:
+                show_perk_toast(f"🌙 Time to wind down! Optimal bedtime: {bedtime_rec}", "🌙", self)
     
     def _update_reminder_setting(self) -> None:
         """Update reminder settings."""
@@ -15839,8 +15914,19 @@ class HydrationTab(QtWidgets.QWidget):
     
     def _update_reminder_setting(self) -> None:
         """Save reminder settings when changed."""
-        self.blocker.water_reminder_enabled = self.reminder_checkbox.isChecked()
+        from datetime import datetime
+        
+        was_enabled = getattr(self.blocker, 'water_reminder_enabled', False)
+        now_enabled = self.reminder_checkbox.isChecked()
+        
+        self.blocker.water_reminder_enabled = now_enabled
         self.blocker.water_reminder_interval = self.reminder_interval.value()
+        
+        # If user just enabled reminders, set the last reminder time to now
+        # so the first reminder fires after the full interval (not immediately)
+        if now_enabled and not was_enabled:
+            self.blocker.water_last_reminder_time = datetime.now().isoformat()
+        
         self.blocker.save_config()
     
     def _log_water(self) -> None:
@@ -18988,6 +19074,11 @@ class ADHDBusterTab(QtWidgets.QWidget):
             # Sync changes to active hero
             if GAMIFICATION_AVAILABLE:
                 sync_hero_data(self.blocker.adhd_buster)
+            
+            # Award materials (leftovers from merging)
+            materials_earned = result.get("materials_earned", 0)
+            if materials_earned > 0:
+                self._game_state.add_materials(materials_earned)
         else:
             show_warning(self, "Error", "Game State Manager not initialized. Cannot merge.")
             return
@@ -25972,13 +26063,20 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if should_remind:
                 self.blocker.eye_last_reminder_time = now.isoformat()
                 self.blocker.save_config()
-                if self.tray_icon:
+                # Try system tray notification first
+                notification_shown = False
+                if self.tray_icon and self.tray_icon.isVisible():
                     self.tray_icon.showMessage(
                         "👁️ Eye & Breath Reminder",
                         "Time for an eye routine! Rest your eyes with blinks and far gazing.",
                         QtWidgets.QSystemTrayIcon.Information,
                         5000
                     )
+                    notification_shown = True
+                
+                # Fallback: show in-app toast if tray notification may have failed
+                if not notification_shown:
+                    show_perk_toast("👁️ Time for an eye routine! Rest your eyes.", "👁️", self)
         
         # Check Water/Hydration reminder
         if getattr(self.blocker, 'water_reminder_enabled', False):
@@ -26000,13 +26098,20 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if should_remind:
                 self.blocker.water_last_reminder_time = now.isoformat()
                 self.blocker.save_config()
-                if self.tray_icon:
+                # Try system tray notification first
+                notification_shown = False
+                if self.tray_icon and self.tray_icon.isVisible():
                     self.tray_icon.showMessage(
                         "💧 Hydration Reminder",
                         "Time to drink some water! Stay hydrated for better focus.",
                         QtWidgets.QSystemTrayIcon.Information,
                         5000
                     )
+                    notification_shown = True
+                
+                # Fallback: show in-app toast if tray notification may have failed
+                if not notification_shown:
+                    show_perk_toast("💧 Time to drink some water! Stay hydrated.", "💧", self)
     
     def _update_coin_display(self) -> None:
         """Update the coin counter in the toolbar."""

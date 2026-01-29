@@ -56,6 +56,69 @@ MergeRollAnimationDialog = LotteryRollDialog
 MergeSliderWidget = LotterySliderWidget
 
 
+def calculate_merge_materials(item_count: int, do_roll: bool = False) -> tuple:
+    """
+    Calculate materials (leftovers) from a merge based on item count.
+    
+    Rules:
+    - < 10 items: 10% chance of +1 material
+    - >= 10 items: guaranteed +1 material
+    - Each item above 10: 10% chance of +1 additional material
+    
+    Args:
+        item_count: Number of items being merged
+        do_roll: If True, perform random rolls for actual materials
+                 If False, return expected value and description
+    
+    Returns:
+        Tuple of (materials_count, description_string)
+        - For do_roll=False: (expected_value, description)
+        - For do_roll=True: (actual_materials, result_description)
+    """
+    if item_count <= 0:
+        return (0, "")
+    
+    if do_roll:
+        # Actual roll for materials
+        materials = 0
+        
+        if item_count >= 10:
+            # Guaranteed +1 material
+            materials += 1
+            # Each item above 10 has 10% chance for +1
+            extra_items = item_count - 10
+            for _ in range(extra_items):
+                if random.random() < 0.10:
+                    materials += 1
+        else:
+            # < 10 items: 10% chance for +1
+            if random.random() < 0.10:
+                materials += 1
+        
+        if materials > 0:
+            desc = f"+{materials} 🧱"
+        else:
+            desc = ""
+        return (materials, desc)
+    else:
+        # Calculate expected value for display
+        if item_count >= 10:
+            # Guaranteed +1 plus expected from extras
+            extra_items = item_count - 10
+            expected = 1.0 + (extra_items * 0.10)
+            
+            if extra_items > 0:
+                desc = f"🧱 Guaranteed +1, +10% per extra ({extra_items} extra items)"
+            else:
+                desc = "🧱 Guaranteed +1 material"
+        else:
+            # 10% chance
+            expected = 0.10
+            desc = "🧱 10% chance for +1 material"
+        
+        return (expected, desc)
+
+
 def create_entity_perk_mini_cards(contributors: list, perk_labels: dict = None) -> QtWidgets.QWidget:
     """
     Create a horizontal layout of mini-cards showing entity perk contributors.
@@ -1597,6 +1660,26 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Spacer
         layout.addStretch()
         
+        # Materials info (leftovers from merging)
+        materials_expected, materials_desc = calculate_merge_materials(len(self.items), do_roll=False)
+        materials_info = QtWidgets.QLabel()
+        materials_info.setToolTip(materials_desc)
+        if materials_expected >= 1.0:
+            # Guaranteed at least 1
+            if materials_expected > 1.0:
+                materials_info.setText(f"🧱 +{materials_expected:.1f} expected")
+            else:
+                materials_info.setText("🧱 +1 guaranteed")
+            materials_info.setStyleSheet("font-size: 12px; color: #c9a0dc; font-weight: bold;")
+        else:
+            # Just a chance
+            materials_info.setText(f"🧱 {int(materials_expected * 100)}% chance")
+            materials_info.setStyleSheet("font-size: 12px; color: #888;")
+        layout.addWidget(materials_info)
+        
+        # Small spacer before merge button
+        layout.addSpacing(16)
+        
         # Merge button
         merge_btn = QtWidgets.QPushButton("⚡ Merge Items")
         if self.success_rate >= 0.7:
@@ -1669,6 +1752,9 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         # Use the dialog's authoritative is_success result
         is_success, rolled_rarity = animation_dialog.get_results()
         
+        # Calculate materials earned (leftovers from merging)
+        materials_earned, materials_desc = calculate_merge_materials(len(self.items), do_roll=True)
+        
         # Now build the merge result using the rolled rarity
         if is_success:
             # Use the rolled rarity directly from animation
@@ -1700,7 +1786,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
                 "tier_jump": tier_jump,
                 "result_item": result_item,
                 "base_rarity": RARITY_ORDER[lowest_idx],
-                "final_rarity": final_rarity
+                "final_rarity": final_rarity,
+                "materials_earned": materials_earned
             }
             
             # Apply tier upgrade if enabled
@@ -1721,7 +1808,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
                 "roll": success_roll,
                 "needed": success_rate,
                 "tier_jump": 0,
-                "result_item": None
+                "result_item": None,
+                "materials_earned": materials_earned
             }
         
         # Show result after animation
@@ -2464,6 +2552,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         roll_raw = self.merge_result.get("roll", 0) if self.merge_result else 0
         needed_raw = self.merge_result.get("needed", 0) if self.merge_result else 0
         tier_upgraded = self.merge_result.get("tier_upgraded", False) if self.merge_result else False
+        materials_earned = self.merge_result.get("materials_earned", 0) if self.merge_result else 0
         
         # Build extra messages with roll info
         extra_msgs = []
@@ -2480,6 +2569,10 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         
         if tier_upgraded:
             extra_msgs.append("⬆️ Tier Upgraded! (+50 🪙)")
+        
+        # Show materials earned if any
+        if materials_earned > 0:
+            extra_msgs.append(f"🧱 +{materials_earned} material{'s' if materials_earned > 1 else ''} (leftovers)")
         
         # Get currently equipped items for comparison
         equipped = self.adhd_buster.get("equipped", {})
@@ -2560,6 +2653,16 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         )
         roll_info.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(roll_info)
+        
+        # Materials earned (even on failure, you get leftovers)
+        materials_earned = self.merge_result.get("materials_earned", 0) if self.merge_result else 0
+        if materials_earned > 0:
+            materials_info = QtWidgets.QLabel(
+                f"<p style='color: #c9a0dc; font-size: 13px;'>"
+                f"🧱 <b>+{materials_earned} material{'s' if materials_earned > 1 else ''}</b> (salvaged leftovers)</p>"
+            )
+            materials_info.setAlignment(QtCore.Qt.AlignCenter)
+            layout.addWidget(materials_info)
         
         # Running cost total (transparency improvement)
         cost_parts = [f"Base: {self.merge_cost}"]

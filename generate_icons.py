@@ -20,8 +20,9 @@ import math
 from pathlib import Path
 
 
-# Supersampling factor for antialiasing (render at 4x, downsample)
-SUPERSAMPLE = 4
+# Supersampling factor for antialiasing (render at 8x, downsample for crisp edges)
+# Increased from 4 to 8 for sharper icons on high-DPI displays
+SUPERSAMPLE = 8
 
 
 def hex_to_rgb(hex_color: str) -> tuple:
@@ -393,9 +394,10 @@ def create_focus_icon(size: int, blocking: bool = False, for_tray: bool = False)
 
 
 def create_app_icon() -> list:
-    """Create main app icon with all required sizes."""
-    # Standard Windows ICO sizes
-    sizes = [16, 24, 32, 48, 64, 128, 256]
+    """Create main app icon with all required sizes for high-DPI displays."""
+    # Standard Windows ICO sizes + high-DPI sizes (512 for 4K displays)
+    # Windows uses the largest available size and scales down
+    sizes = [16, 24, 32, 48, 64, 128, 256, 512]
     images = []
     
     for size in sizes:
@@ -409,7 +411,8 @@ def create_app_icon() -> list:
 
 def create_tray_icons():
     """Create system tray icons for ready and blocking states."""
-    size = 64  # Good size for tray icons
+    # Larger size for high-DPI displays (Windows scales down as needed)
+    size = 128  # Doubled from 64 for crisp display on high-DPI
     
     ready_icon = create_focus_icon(size, blocking=False, for_tray=True)
     blocking_icon = create_focus_icon(size, blocking=True, for_tray=True)
@@ -459,8 +462,8 @@ def save_icons(output_dir: Path):
     ready_ico = output_dir / "tray_ready.ico"
     blocking_ico = output_dir / "tray_blocking.ico"
     
-    # Create multiple sizes for tray ICO
-    tray_sizes = [16, 24, 32, 48, 64]
+    # Create multiple sizes for tray ICO (including high-DPI sizes)
+    tray_sizes = [16, 24, 32, 48, 64, 128, 256]
     ready_images = [create_focus_icon(s, blocking=False, for_tray=True) for s in tray_sizes]
     blocking_images = [create_focus_icon(s, blocking=True, for_tray=True) for s in tray_sizes]
     

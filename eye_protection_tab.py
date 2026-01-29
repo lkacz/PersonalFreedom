@@ -873,8 +873,19 @@ class EyeProtectionTab(QtWidgets.QWidget):
     
     def _update_reminder_setting(self):
         """Save reminder settings when changed."""
-        self.blocker.eye_reminder_enabled = self.reminder_checkbox.isChecked()
+        from datetime import datetime
+        
+        was_enabled = getattr(self.blocker, 'eye_reminder_enabled', False)
+        now_enabled = self.reminder_checkbox.isChecked()
+        
+        self.blocker.eye_reminder_enabled = now_enabled
         self.blocker.eye_reminder_interval = self.reminder_interval.value()
+        
+        # If user just enabled reminders, set the last reminder time to now
+        # so the first reminder fires after the full interval (not immediately)
+        if now_enabled and not was_enabled:
+            self.blocker.eye_last_reminder_time = datetime.now().isoformat()
+        
         self.blocker.save_config()
 
     def _update_entity_perk_display(self):
