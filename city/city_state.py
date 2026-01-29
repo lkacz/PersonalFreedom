@@ -55,6 +55,7 @@ class ResourceAmounts(TypedDict):
     """Type definition for resource amounts."""
     water: int
     materials: int
+    scrap: int
     activity: int
     focus: int
 
@@ -66,7 +67,7 @@ class CityData(TypedDict, total=False):
     Stored in adhd_buster["city"].
     """
     grid: List[List[Optional[CellState]]]  # 1×10 horizontal grid, None for empty/locked cells
-    resources: ResourceAmounts              # Current resource amounts (only water+materials accumulate)
+    resources: ResourceAmounts              # Current resource amounts (water+materials+scrap accumulate)
     active_construction: Optional[tuple]    # (row, col) of building currently under construction, or None
     total_coins_generated: int              # Lifetime coins from city
     total_xp_generated: int                 # Lifetime XP from city
@@ -91,6 +92,7 @@ def create_default_city_data() -> CityData:
         "resources": {
             "water": 0,
             "materials": 0,
+            "scrap": 0,  # From merging items
             # Note: activity and focus are NOT stored here - they flow directly to active construction
             "activity": 0,  # Legacy field, kept at 0
             "focus": 0,     # Legacy field, kept at 0

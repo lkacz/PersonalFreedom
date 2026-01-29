@@ -19075,10 +19075,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
             if GAMIFICATION_AVAILABLE:
                 sync_hero_data(self.blocker.adhd_buster)
             
-            # Award materials (leftovers from merging)
-            materials_earned = result.get("materials_earned", 0)
-            if materials_earned > 0:
-                self._game_state.add_materials(materials_earned)
+            # Award scrap (leftovers from merging)
+            scrap_earned = result.get("scrap_earned", 0)
+            if scrap_earned > 0:
+                self._game_state.add_scrap(scrap_earned)
         else:
             show_warning(self, "Error", "Game State Manager not initialized. Cannot merge.")
             return

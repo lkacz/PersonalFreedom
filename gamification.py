@@ -1076,6 +1076,7 @@ def get_all_perk_bonuses(adhd_buster: dict) -> dict:
         "power_bonus": 0,
         "xp_bonus": 0,
         "coins_per_hour": 0,
+        "scrap_chance": 0,  # Bonus chance for scrap from merges
     }
     
     # Get entity perks
@@ -1091,6 +1092,7 @@ def get_all_perk_bonuses(adhd_buster: dict) -> dict:
         result["all_luck"] += int(perks.get(PerkType.ALL_LUCK, 0))
         result["rarity_bias"] += int(perks.get(PerkType.RARITY_BIAS, 0))
         result["xp_bonus"] += int(perks.get(PerkType.XP_BONUS, 0))
+        result["scrap_chance"] += perks.get(PerkType.SCRAP_CHANCE, 0)
         
     except Exception:
         pass  # Entity perks module not available
@@ -1109,6 +1111,7 @@ def get_all_perk_bonuses(adhd_buster: dict) -> dict:
         result["power_bonus"] += int(city_bonuses.get("power_bonus", 0))
         result["xp_bonus"] += int(city_bonuses.get("xp_bonus", 0))
         result["coins_per_hour"] = float(city_bonuses.get("coins_per_hour", 0))
+        result["scrap_chance"] += float(city_bonuses.get("scrap_chance_bonus", 0))
         
     except Exception:
         pass  # City module not available
@@ -1164,38 +1167,41 @@ def get_entity_merge_perk_contributors(adhd_buster: dict) -> dict:
         }
         
         for entity_id in collected:
-            perk = ENTITY_PERKS.get(entity_id)
-            if perk and perk.perk_type in merge_perk_types:
-                is_exceptional = entity_id in exceptional
-                value = perk.exceptional_value if is_exceptional else perk.normal_value
-                
-                # Get entity details
-                entity = get_entity_by_id(entity_id)
-                entity_name = entity.name if entity else entity_id
-                
-                # Get description
-                if is_exceptional and perk.exceptional_description:
-                    description = perk.exceptional_description.format(value=int(value))
-                else:
-                    description = perk.description.format(value=int(value))
-                
-                perk_type_name = merge_perk_types[perk.perk_type]
-                
-                result["contributors"].append({
-                    "entity_id": entity_id,
-                    "name": entity_name,
-                    "perk_type": perk_type_name,
-                    "value": int(value),
-                    "icon": perk.icon,
-                    "is_exceptional": is_exceptional,
-                    "description": description,
-                })
-                
-                # Update totals
-                if perk_type_name in ("merge_luck", "merge_success", "all_luck"):
-                    result["total_merge_luck"] += int(value)
-                elif perk_type_name == "coin_discount":
-                    result["total_coin_discount"] += int(value)
+            perks = ENTITY_PERKS.get(entity_id)
+            if not perks:
+                continue
+            for perk in perks:
+                if perk.perk_type in merge_perk_types:
+                    is_exceptional = entity_id in exceptional
+                    value = perk.exceptional_value if is_exceptional else perk.normal_value
+                    
+                    # Get entity details
+                    entity = get_entity_by_id(entity_id)
+                    entity_name = entity.name if entity else entity_id
+                    
+                    # Get description
+                    if is_exceptional and perk.exceptional_description:
+                        description = perk.exceptional_description.format(value=int(value))
+                    else:
+                        description = perk.description.format(value=int(value))
+                    
+                    perk_type_name = merge_perk_types[perk.perk_type]
+                    
+                    result["contributors"].append({
+                        "entity_id": entity_id,
+                        "name": entity_name,
+                        "perk_type": perk_type_name,
+                        "value": int(value),
+                        "icon": perk.icon,
+                        "is_exceptional": is_exceptional,
+                        "description": description,
+                    })
+                    
+                    # Update totals
+                    if perk_type_name in ("merge_luck", "merge_success", "all_luck"):
+                        result["total_merge_luck"] += int(value)
+                    elif perk_type_name == "coin_discount":
+                        result["total_coin_discount"] += int(value)
         
         # Sort by value descending
         result["contributors"].sort(key=lambda x: x["value"], reverse=True)
@@ -1243,35 +1249,38 @@ def get_entity_hydration_perk_contributors(adhd_buster: dict) -> dict:
         }
         
         for entity_id in collected:
-            perk = ENTITY_PERKS.get(entity_id)
-            if perk and perk.perk_type in hydration_perk_types:
-                is_exceptional = entity_id in exceptional
-                value = perk.exceptional_value if is_exceptional else perk.normal_value
-                
-                entity = get_entity_by_id(entity_id)
-                entity_name = entity.name if entity else entity_id
-                
-                if is_exceptional and perk.exceptional_description:
-                    description = perk.exceptional_description.format(value=int(value))
-                else:
-                    description = perk.description.format(value=int(value))
-                
-                perk_type_name = hydration_perk_types[perk.perk_type]
-                
-                result["contributors"].append({
-                    "entity_id": entity_id,
-                    "name": entity_name,
-                    "perk_type": perk_type_name,
-                    "value": int(value),
-                    "icon": perk.icon,
-                    "is_exceptional": is_exceptional,
-                    "description": description,
-                })
-                
-                if perk_type_name == "cooldown":
-                    result["total_cooldown_reduction"] += int(value)
-                else:
-                    result["total_cap_bonus"] += int(value)
+            perks = ENTITY_PERKS.get(entity_id)
+            if not perks:
+                continue
+            for perk in perks:
+                if perk.perk_type in hydration_perk_types:
+                    is_exceptional = entity_id in exceptional
+                    value = perk.exceptional_value if is_exceptional else perk.normal_value
+                    
+                    entity = get_entity_by_id(entity_id)
+                    entity_name = entity.name if entity else entity_id
+                    
+                    if is_exceptional and perk.exceptional_description:
+                        description = perk.exceptional_description.format(value=int(value))
+                    else:
+                        description = perk.description.format(value=int(value))
+                    
+                    perk_type_name = hydration_perk_types[perk.perk_type]
+                    
+                    result["contributors"].append({
+                        "entity_id": entity_id,
+                        "name": entity_name,
+                        "perk_type": perk_type_name,
+                        "value": int(value),
+                        "icon": perk.icon,
+                        "is_exceptional": is_exceptional,
+                        "description": description,
+                    })
+                    
+                    if perk_type_name == "cooldown":
+                        result["total_cooldown_reduction"] += int(value)
+                    else:
+                        result["total_cap_bonus"] += int(value)
         
         result["contributors"].sort(key=lambda x: x["value"], reverse=True)
         
@@ -1322,37 +1331,40 @@ def get_entity_qol_perk_contributors(adhd_buster: dict) -> dict:
         }
         
         for entity_id in collected:
-            perk = ENTITY_PERKS.get(entity_id)
-            if perk and perk.perk_type in qol_perk_types:
-                is_exceptional = entity_id in exceptional
-                value = perk.exceptional_value if is_exceptional else perk.normal_value
-                
-                entity = get_entity_by_id(entity_id)
-                entity_name = entity.name if entity else entity_id
-                
-                if is_exceptional and perk.exceptional_description:
-                    description = perk.exceptional_description.format(value=int(value))
-                else:
-                    description = perk.description.format(value=int(value))
-                
-                perk_type_name = qol_perk_types[perk.perk_type]
-                
-                result["contributors"].append({
-                    "entity_id": entity_id,
-                    "name": entity_name,
-                    "perk_type": perk_type_name,
-                    "value": int(value),
-                    "icon": perk.icon,
-                    "is_exceptional": is_exceptional,
-                    "description": description,
-                })
-                
-                if perk_type_name == "inventory":
-                    result["total_inventory_slots"] += int(value)
-                elif perk_type_name == "eye_rest":
-                    result["total_eye_rest_cap"] += int(value)
-                else:
-                    result["total_perfect_session"] += int(value)
+            perks = ENTITY_PERKS.get(entity_id)
+            if not perks:
+                continue
+            for perk in perks:
+                if perk.perk_type in qol_perk_types:
+                    is_exceptional = entity_id in exceptional
+                    value = perk.exceptional_value if is_exceptional else perk.normal_value
+                    
+                    entity = get_entity_by_id(entity_id)
+                    entity_name = entity.name if entity else entity_id
+                    
+                    if is_exceptional and perk.exceptional_description:
+                        description = perk.exceptional_description.format(value=int(value))
+                    else:
+                        description = perk.description.format(value=int(value))
+                    
+                    perk_type_name = qol_perk_types[perk.perk_type]
+                    
+                    result["contributors"].append({
+                        "entity_id": entity_id,
+                        "name": entity_name,
+                        "perk_type": perk_type_name,
+                        "value": int(value),
+                        "icon": perk.icon,
+                        "is_exceptional": is_exceptional,
+                        "description": description,
+                    })
+                    
+                    if perk_type_name == "inventory":
+                        result["total_inventory_slots"] += int(value)
+                    elif perk_type_name == "eye_rest":
+                        result["total_eye_rest_cap"] += int(value)
+                    else:
+                        result["total_perfect_session"] += int(value)
         
         result["contributors"].sort(key=lambda x: x["value"], reverse=True)
         
@@ -1496,34 +1508,37 @@ def get_entity_xp_perk_contributors(adhd_buster: dict) -> dict:
         }
         
         for entity_id in collected:
-            perk = ENTITY_PERKS.get(entity_id)
-            if perk and perk.perk_type in xp_perk_types:
-                is_exceptional = entity_id in exceptional
-                value = perk.exceptional_value if is_exceptional else perk.normal_value
-                
-                # Get entity details
-                entity = get_entity_by_id(entity_id)
-                entity_name = entity.name if entity else entity_id
-                
-                # Get description
-                if is_exceptional and perk.exceptional_description:
-                    description = perk.exceptional_description.format(value=int(value))
-                else:
-                    description = perk.description.format(value=int(value))
-                
-                perk_type_name = xp_perk_types[perk.perk_type]
-                
-                result["contributors"].append({
-                    "entity_id": entity_id,
-                    "name": entity_name,
-                    "perk_type": perk_type_name,
-                    "value": int(value),
-                    "icon": perk.icon,
-                    "is_exceptional": is_exceptional,
-                    "description": description,
-                })
-                
-                result["total_xp_bonus"] += int(value)
+            perks = ENTITY_PERKS.get(entity_id)
+            if not perks:
+                continue
+            for perk in perks:
+                if perk.perk_type in xp_perk_types:
+                    is_exceptional = entity_id in exceptional
+                    value = perk.exceptional_value if is_exceptional else perk.normal_value
+                    
+                    # Get entity details
+                    entity = get_entity_by_id(entity_id)
+                    entity_name = entity.name if entity else entity_id
+                    
+                    # Get description
+                    if is_exceptional and perk.exceptional_description:
+                        description = perk.exceptional_description.format(value=int(value))
+                    else:
+                        description = perk.description.format(value=int(value))
+                    
+                    perk_type_name = xp_perk_types[perk.perk_type]
+                    
+                    result["contributors"].append({
+                        "entity_id": entity_id,
+                        "name": entity_name,
+                        "perk_type": perk_type_name,
+                        "value": int(value),
+                        "icon": perk.icon,
+                        "is_exceptional": is_exceptional,
+                        "description": description,
+                    })
+                    
+                    result["total_xp_bonus"] += int(value)
         
         # Sort by value descending
         result["contributors"].sort(key=lambda x: x["value"], reverse=True)
@@ -1695,39 +1710,42 @@ def get_entity_luck_perk_contributors(adhd_buster: dict, perk_filter: str = None
         }
         
         for entity_id in collected:
-            perk = ENTITY_PERKS.get(entity_id)
-            if perk and perk.perk_type in luck_perk_types:
-                perk_type_name = luck_perk_types[perk.perk_type]
-                
-                # Apply filter if specified
-                if perk_filter and perk_type_name != perk_filter:
-                    continue
-                
-                is_exceptional = entity_id in exceptional
-                value = perk.exceptional_value if is_exceptional else perk.normal_value
-                
-                entity = get_entity_by_id(entity_id)
-                entity_name = entity.name if entity else entity_id
-                
-                if is_exceptional and perk.exceptional_description:
-                    description = perk.exceptional_description.format(value=int(value))
-                else:
-                    description = perk.description.format(value=int(value))
-                
-                result["contributors"].append({
-                    "entity_id": entity_id,
-                    "name": entity_name,
-                    "perk_type": perk_type_name,
-                    "value": int(value),
-                    "icon": perk.icon,
-                    "is_exceptional": is_exceptional,
-                    "description": description,
-                })
-                
-                if perk_type_name == "rarity_bias":
-                    result["total_rarity_bias"] += int(value)
-                elif perk_type_name == "drop_luck":
-                    result["total_drop_luck"] += int(value)
+            perks = ENTITY_PERKS.get(entity_id)
+            if not perks:
+                continue
+            for perk in perks:
+                if perk.perk_type in luck_perk_types:
+                    perk_type_name = luck_perk_types[perk.perk_type]
+                    
+                    # Apply filter if specified
+                    if perk_filter and perk_type_name != perk_filter:
+                        continue
+                    
+                    is_exceptional = entity_id in exceptional
+                    value = perk.exceptional_value if is_exceptional else perk.normal_value
+                    
+                    entity = get_entity_by_id(entity_id)
+                    entity_name = entity.name if entity else entity_id
+                    
+                    if is_exceptional and perk.exceptional_description:
+                        description = perk.exceptional_description.format(value=int(value))
+                    else:
+                        description = perk.description.format(value=int(value))
+                    
+                    result["contributors"].append({
+                        "entity_id": entity_id,
+                        "name": entity_name,
+                        "perk_type": perk_type_name,
+                        "value": int(value),
+                        "icon": perk.icon,
+                        "is_exceptional": is_exceptional,
+                        "description": description,
+                    })
+                    
+                    if perk_type_name == "rarity_bias":
+                        result["total_rarity_bias"] += int(value)
+                    elif perk_type_name == "drop_luck":
+                        result["total_drop_luck"] += int(value)
         
         result["contributors"].sort(key=lambda x: x["value"], reverse=True)
         
@@ -2157,30 +2175,33 @@ def get_entity_power_perks(adhd_buster: dict) -> dict:
             
         # Find all collected entities that provide POWER_FLAT perk
         for entity_id in collected:
-            perk = ENTITY_PERKS.get(entity_id)
-            if perk and perk.perk_type == PerkType.POWER_FLAT:
-                is_exceptional = entity_id in exceptional
-                value = perk.exceptional_value if is_exceptional else perk.normal_value
-                
-                # Get entity details for display
-                entity = get_entity_by_id(entity_id)
-                entity_name = entity.name if entity else entity_id
-                
-                # Get description
-                if is_exceptional and perk.exceptional_description:
-                    description = perk.exceptional_description.format(value=int(value))
-                else:
-                    description = perk.description.format(value=int(value))
-                
-                result["contributors"].append({
-                    "entity_id": entity_id,
-                    "name": entity_name,
-                    "power": int(value),
-                    "icon": perk.icon,
-                    "is_exceptional": is_exceptional,
-                    "description": description,
-                })
-                result["total_power"] += int(value)
+            perks = ENTITY_PERKS.get(entity_id)
+            if not perks:
+                continue
+            for perk in perks:
+                if perk.perk_type == PerkType.POWER_FLAT:
+                    is_exceptional = entity_id in exceptional
+                    value = perk.exceptional_value if is_exceptional else perk.normal_value
+                    
+                    # Get entity details for display
+                    entity = get_entity_by_id(entity_id)
+                    entity_name = entity.name if entity else entity_id
+                    
+                    # Get description
+                    if is_exceptional and perk.exceptional_description:
+                        description = perk.exceptional_description.format(value=int(value))
+                    else:
+                        description = perk.description.format(value=int(value))
+                    
+                    result["contributors"].append({
+                        "entity_id": entity_id,
+                        "name": entity_name,
+                        "power": int(value),
+                        "icon": perk.icon,
+                        "is_exceptional": is_exceptional,
+                        "description": description,
+                    })
+                    result["total_power"] += int(value)
         
         # Sort by power value descending
         result["contributors"].sort(key=lambda x: x["power"], reverse=True)

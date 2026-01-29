@@ -115,8 +115,8 @@ except ImportError as e:
     CITY_BUILDINGS = {}
     GRID_ROWS = 5
     GRID_COLS = 5
-    RESOURCE_TYPES = ["water", "materials", "activity", "focus"]
-    STOCKPILE_RESOURCES = ["water", "materials"]
+    RESOURCE_TYPES = ["water", "materials", "scrap", "activity", "focus"]
+    STOCKPILE_RESOURCES = ["water", "materials", "scrap"]
     EFFORT_RESOURCES = ["activity", "focus"]
     DEMOLISH_REFUND_PERCENT = 50
     
@@ -456,6 +456,7 @@ STATUS_COLORS = {
 RESOURCE_ICONS = {
     "water": "💧",
     "materials": "🧱",
+    "scrap": "🔩",
     "activity": "⚡",
     "focus": "🎯",
 }
@@ -464,6 +465,7 @@ RESOURCE_ICONS = {
 RESOURCE_COLORS = {
     "water": "#4FC3F7",
     "materials": "#A1887F",
+    "scrap": "#78909C",  # Blue-grey for scrap/metal
     "activity": "#FFD54F",
     "focus": "#BA68C8",
 }
@@ -1254,6 +1256,13 @@ class ResourceBar(QtWidgets.QFrame):
             "Hitting weight goals = more materials!<br><br>"
             "<b>Used for:</b> Starting construction on new buildings<br><br>"
             "<i>Every weigh-in is a building block!</i>"
+        ),
+        "scrap": (
+            "<b>🔩 Scrap</b><br><br>"
+            "Earned from merging items in the Inventory tab.<br>"
+            "More items merged = more scrap!<br><br>"
+            "<b>Used for:</b> Starting construction on new buildings<br><br>"
+            "<i>One hero's junk is another city's treasure!</i>"
         ),
         "activity": (
             "<b>🏃 Activity Points</b><br><br>"

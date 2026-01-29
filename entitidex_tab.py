@@ -1040,12 +1040,16 @@ class EntityCard(QtWidgets.QFrame):
         
         # Perk label - show brief perk info for collected entities
         if self.is_collected:
-            perk = ENTITY_PERKS.get(self.entity.id)
-            if perk:
-                # Brief perk text: icon + short description
+            perks = ENTITY_PERKS.get(self.entity.id)
+            if perks:
+                # Brief perk text: show first perk's icon + short description
+                perk = perks[0]  # Primary perk for display
                 value = perk.exceptional_value if self.is_exceptional else perk.normal_value
                 # Format compact perk text (e.g., "+5% XP" or "+2 Power")
                 perk_brief = self._format_brief_perk(perk, value)
+                # Add indicator if entity has multiple perks
+                if len(perks) > 1:
+                    perk_brief += f" (+{len(perks)-1})"
                 perk_label = QtWidgets.QLabel(perk_brief)
                 perk_label.setAlignment(QtCore.Qt.AlignCenter)
                 perk_label.setFont(QtGui.QFont("Segoe UI", 8))
@@ -1117,6 +1121,8 @@ class EntityCard(QtWidgets.QFrame):
             return f"{perk.icon} +{int(value)}% Perfect"
         elif ptype == PerkType.STREAK_SAVE:
             return f"{perk.icon} +{int(value)}% Streak"
+        elif ptype == PerkType.SCRAP_CHANCE:
+            return f"{perk.icon} +{int(value)}% Scrap"
         else:
             # Fallback: use description template
             return f"{perk.icon} +{int(value)}"
@@ -1148,9 +1154,9 @@ class EntityCard(QtWidgets.QFrame):
             lore_wrapped = '<br>'.join(lore_lines)
             
             # Get perk info for tooltip
-            perk = ENTITY_PERKS.get(self.entity.id)
+            perks = ENTITY_PERKS.get(self.entity.id)
             perk_html = ""
-            if perk:
+            if perks:
                 perk_desc = get_perk_description(self.entity.id, self.is_exceptional)
                 perk_explain = get_perk_explanation(self.entity.id)
                 perk_html = f'''<br><hr style="border-color: #444;">
@@ -2669,13 +2675,14 @@ class EntitidexTab(QtWidgets.QWidget):
         exceptional = self.progress.exceptional_entities or {}
         
         for entity_id in collected:
-            perk = ENTITY_PERKS.get(entity_id)
-            if perk:
+            perks = ENTITY_PERKS.get(entity_id)
+            if perks:
                 is_exc = entity_id in exceptional
-                value = perk.exceptional_value if is_exc else perk.normal_value
-                if perk.perk_type not in perk_contributors:
-                    perk_contributors[perk.perk_type] = []
-                perk_contributors[perk.perk_type].append((entity_id, value, is_exc))
+                for perk in perks:
+                    value = perk.exceptional_value if is_exc else perk.normal_value
+                    if perk.perk_type not in perk_contributors:
+                        perk_contributors[perk.perk_type] = []
+                    perk_contributors[perk.perk_type].append((entity_id, value, is_exc))
 
         # Create dialog
         dialog = QtWidgets.QDialog(self)

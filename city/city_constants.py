@@ -11,11 +11,11 @@ from typing import List
 # ============================================================================
 
 # All resource types used in construction
-RESOURCE_TYPES: List[str] = ["water", "materials", "activity", "focus"]
+RESOURCE_TYPES: List[str] = ["water", "materials", "scrap", "activity", "focus"]
 
 # STOCKPILE RESOURCES: Can be accumulated and spent later
-# Water = hydration, Materials = weight management
-STOCKPILE_RESOURCES: List[str] = ["water", "materials"]
+# Water = hydration, Materials = weight management, Scrap = merging leftovers
+STOCKPILE_RESOURCES: List[str] = ["water", "materials", "scrap"]
 
 # EFFORT RESOURCES: Cannot be accumulated - flow directly to active construction
 # Activity = physical activity, Focus = focus sessions
@@ -25,6 +25,7 @@ EFFORT_RESOURCES: List[str] = ["activity", "focus"]
 RESOURCE_EMOJI = {
     "water": "💧",
     "materials": "🧱",
+    "scrap": "🔩",
     "activity": "🏃",
     "focus": "🎯",
 }
