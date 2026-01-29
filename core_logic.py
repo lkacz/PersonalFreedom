@@ -517,6 +517,11 @@ class BlockerCore:
                     eye_interval = config.get('eye_reminder_interval', 60)
                     self.eye_reminder_interval = eye_interval if isinstance(eye_interval, (int, float)) and eye_interval > 0 else 60
                     self.eye_last_reminder_time = config.get('eye_last_reminder_time', None)
+                    self.eye_reminder_notification_type = config.get('eye_reminder_notification_type', 'Toast')
+                    self.eye_reminder_message_index = config.get('eye_reminder_message_index', 0)
+                    # Hydration reminder notification type
+                    self.water_reminder_notification_type = config.get('water_reminder_notification_type', 'Toast')
+                    self.water_reminder_message_index = config.get('water_reminder_message_index', 0)
                     # Developer mode (hidden by default, enabled by tapping version 7 times)
                     self.dev_mode_enabled = config.get('dev_mode_enabled', False)
                     # Initialize/migrate hero management structure
@@ -610,6 +615,10 @@ class BlockerCore:
                 'eye_reminder_enabled': self.eye_reminder_enabled,
                 'eye_reminder_interval': self.eye_reminder_interval,
                 'eye_last_reminder_time': self.eye_last_reminder_time,
+                'eye_reminder_notification_type': getattr(self, 'eye_reminder_notification_type', 'Toast'),
+                'eye_reminder_message_index': getattr(self, 'eye_reminder_message_index', 0),
+                'water_reminder_notification_type': getattr(self, 'water_reminder_notification_type', 'Toast'),
+                'water_reminder_message_index': getattr(self, 'water_reminder_message_index', 0),
                 'dev_mode_enabled': self.dev_mode_enabled,
             }
             atomic_write_json(self.config_path, config)

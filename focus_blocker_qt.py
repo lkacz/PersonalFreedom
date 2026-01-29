@@ -304,11 +304,12 @@ class PerkToast(QtWidgets.QWidget):
         super().__init__(parent)
         self.setWindowFlags(
             QtCore.Qt.WindowType.FramelessWindowHint |
-            QtCore.Qt.WindowType.Tool |
-            QtCore.Qt.WindowType.WindowStaysOnTopHint
+            QtCore.Qt.WindowType.WindowStaysOnTopHint |
+            QtCore.Qt.WindowType.BypassWindowManagerHint
         )
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(QtCore.Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        self.setAttribute(QtCore.Qt.WidgetAttribute.WA_DeleteOnClose)
         
         # Create layout
         layout = QtWidgets.QHBoxLayout(self)
@@ -381,6 +382,7 @@ class PerkToast(QtWidgets.QWidget):
         PerkToast._active_toasts.append(self)
         
         self.show()
+        self.raise_()  # Ensure toast is on top
         self.fade_in.start()
         self.dismiss_timer.start()
         
@@ -15960,7 +15962,18 @@ class HydrationTab(QtWidgets.QWidget):
         self.reminder_interval.valueChanged.connect(self._update_reminder_setting)
         reminder_layout.addWidget(self.reminder_interval)
         
-        reminder_layout.addWidget(QtWidgets.QLabel("(via toast notification)"))
+        reminder_layout.addWidget(QtWidgets.QLabel("via:"))
+        self.reminder_type_combo = NoScrollComboBox()
+        self.reminder_type_combo.addItems(["Toast", "Voice", "Sound", "Sound + Voice"])
+        # Load saved notification type
+        saved_type = getattr(self.blocker, 'water_reminder_notification_type', 'Toast')
+        idx = self.reminder_type_combo.findText(saved_type)
+        if idx >= 0:
+            self.reminder_type_combo.setCurrentIndex(idx)
+        self.reminder_type_combo.currentTextChanged.connect(self._update_reminder_setting)
+        self.reminder_type_combo.setMinimumWidth(110)
+        reminder_layout.addWidget(self.reminder_type_combo)
+        
         reminder_layout.addStretch()
         layout.addLayout(reminder_layout)
     
@@ -15973,6 +15986,10 @@ class HydrationTab(QtWidgets.QWidget):
         
         self.blocker.water_reminder_enabled = now_enabled
         self.blocker.water_reminder_interval = self.reminder_interval.value()
+        
+        # Save notification type preference
+        if hasattr(self, 'reminder_type_combo'):
+            self.blocker.water_reminder_notification_type = self.reminder_type_combo.currentText()
         
         # If user just enabled reminders, set the last reminder time to now
         # so the first reminder fires after the full interval (not immediately)
@@ -21982,15 +21999,30 @@ class DailyTimelineWidget(QtWidgets.QFrame):
             from app_utils import get_activity_date
             from eye_protection_tab import BASE_EYE_REST_CAP
             
-            # Get current daily count
+            # Get current daily count using 5 AM cutoff (same logic as eye_protection_tab)
             eye_stats = self.blocker.stats.get("eye_protection", {})
-            today = get_activity_date()
             
-            # Reset count if it's a new day
-            if eye_stats.get("last_date") != today:
-                current_count = 0
-            else:
-                current_count = eye_stats.get("daily_count", 0)
+            # Parse the saved datetime
+            last_date_str = eye_stats.get("last_date", "")
+            current_count = 0
+            
+            if last_date_str:
+                try:
+                    from datetime import datetime, timedelta
+                    last_dt = datetime.fromisoformat(last_date_str)
+                    now = datetime.now()
+                    
+                    # Calculate 5 AM cutoff for today (or yesterday if before 5 AM)
+                    if now.hour < 5:
+                        current_day_start = now.replace(hour=5, minute=0, second=0, microsecond=0) - timedelta(days=1)
+                    else:
+                        current_day_start = now.replace(hour=5, minute=0, second=0, microsecond=0)
+                    
+                    # If last routine was within current "activity day", show the count
+                    if last_dt >= current_day_start:
+                        current_count = eye_stats.get("daily_count", 0)
+                except (ValueError, TypeError):
+                    current_count = 0
             
             # Calculate daily cap (base + entity perk bonus)
             daily_cap = BASE_EYE_REST_CAP
@@ -25895,20 +25927,11 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if should_remind:
                 self.blocker.eye_last_reminder_time = now.isoformat()
                 self.blocker.save_config()
-                # Try system tray notification first
-                notification_shown = False
-                if self.tray_icon and self.tray_icon.isVisible():
-                    self.tray_icon.showMessage(
-                        "👁️ Eye & Breath Reminder",
-                        "Time for an eye routine! Rest your eyes with blinks and far gazing.",
-                        QtWidgets.QSystemTrayIcon.Information,
-                        5000
-                    )
-                    notification_shown = True
-                
-                # Fallback: show in-app toast if tray notification may have failed
-                if not notification_shown:
-                    show_perk_toast("👁️ Time for an eye routine! Rest your eyes.", "👁️", self)
+                self._show_health_reminder(
+                    "eye",
+                    "👁️ Eye & Breath Reminder",
+                    "Time for an eye routine! Rest your eyes with blinks and far gazing."
+                )
         
         # Check Water/Hydration reminder
         if getattr(self.blocker, 'water_reminder_enabled', False):
@@ -25930,20 +25953,175 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if should_remind:
                 self.blocker.water_last_reminder_time = now.isoformat()
                 self.blocker.save_config()
-                # Try system tray notification first
-                notification_shown = False
-                if self.tray_icon and self.tray_icon.isVisible():
-                    self.tray_icon.showMessage(
-                        "💧 Hydration Reminder",
-                        "Time to drink some water! Stay hydrated for better focus.",
-                        QtWidgets.QSystemTrayIcon.Information,
-                        5000
-                    )
-                    notification_shown = True
-                
-                # Fallback: show in-app toast if tray notification may have failed
-                if not notification_shown:
-                    show_perk_toast("💧 Time to drink some water! Stay hydrated.", "💧", self)
+                self._show_health_reminder(
+                    "water",
+                    "💧 Hydration Reminder",
+                    "Time to drink some water! Stay hydrated for better focus."
+                )
+    
+    def _show_health_reminder(self, reminder_type: str, title: str, message: str) -> None:
+        """Show a health reminder using the user's preferred notification method.
+        
+        Args:
+            reminder_type: 'eye' or 'water' to look up the right setting
+            title: The notification title
+            message: The notification message
+        """
+        # 50 eye reminder variants (always start with Eyes/Look/Vision)
+        EYE_MESSAGES = [
+            "Eyes need rest. Blink like a champion.",
+            "Look away now. Your screen isn't going anywhere.",
+            "Eyes! Stop staring. Do the 20-20-20 thing.",
+            "Vision break time. Blink like you mean it.",
+            "Eyes are requesting a break. Give them one.",
+            "Look at something far away. Like your dreams.",
+            "Eyes demand justice. Justice is blinking.",
+            "Vision checkpoint. Blink and gaze far.",
+            "Eyes tired? Obviously. Look away.",
+            "Look outside. Remember the real world?",
+            "Eyes: the original notification system. Listen to them.",
+            "Vision maintenance required. Blink rapidly.",
+            "Eyes are not invincible. Treat them better.",
+            "Look at the ceiling. It misses you.",
+            "Eyes need attention. That's what this is.",
+            "Vision break. Pretend you're meditating.",
+            "Eyes! Far gazing. Now. Not negotiable.",
+            "Look away. Your future self will appreciate it.",
+            "Eyes are delicate. Unlike your deadlines.",
+            "Vision timeout. Your corneas will thank you.",
+            "Eyes need moisture. Blink generously.",
+            "Look at nature. Or a plant. Something green.",
+            "Eyes need TLC. The L stands for Look Away.",
+            "Vision rest. Because clear sight is convenient.",
+            "Eyes deserve better. Apologize with blinking.",
+            "Look far. Your retinas are asking nicely.",
+            "Eyes: closing them counts as a break too.",
+            "Vision protection time. Future you says thanks.",
+            "Eyes need variety. Give them something new to see.",
+            "Look away before they unionize.",
+            "Eyes have limits. You've found them. Blink.",
+            "Vision break. Your eyes will love you for it.",
+            "Eyes need care. Just like everything else.",
+            "Look elsewhere. The pixels will survive.",
+            "Eyes need refresh. Moisten them with blinking.",
+            "Vision break. It's self-care but lazier.",
+            "Eyes are requesting downtime. Listen to them.",
+            "Look out the window. Touch grass with your eyes.",
+            "Eyes need downtime. Give it to them.",
+            "Vision maintenance. Like oil changes but for eyeballs.",
+            "Eyes! Blink! Now! This is urgent!",
+            "Look at something 20 feet away. Doctor's orders.",
+            "Eyes are not designed for this. Help them out.",
+            "Vision break time. Because LASIK is expensive.",
+            "Eyes: the unsung heroes. Give them a rest.",
+            "Look away. Your boss can wait 20 seconds.",
+            "Eyes need recovery mode. Activate it.",
+            "Vision timeout. Future sight depends on it.",
+            "Eyes have feelings too. Nice feelings. Blink.",
+            "Look far away. Pretend it's a mini vacation."
+        ]
+        
+        # 50 water reminder variants (always start with Water/Drink/Hydrate)
+        WATER_MESSAGES = [
+            "Water time. Hydrate like a boss.",
+            "Drink something. Your cells are waiting.",
+            "Hydrate now. Your kidneys will appreciate it.",
+            "Water break. Because hydration is essential.",
+            "Drink up. Your body deserves it.",
+            "Hydration checkpoint. Sip and prosper.",
+            "Water! Drink it. Science recommends it.",
+            "Drink water. Coffee doesn't count. Nice try.",
+            "Hydrate for peak performance.",
+            "Water time. Your brain will thank you.",
+            "Drink something wet. Preferably water.",
+            "Hydration alert. Time to refresh.",
+            "Water break. Because hydration matters.",
+            "Drink water. Your skin will love you.",
+            "Hydrate immediately. This is important.",
+            "Water time. Your organs need refreshment.",
+            "Drink up. Hydration improves everything.",
+            "Hydration required. Time to refuel.",
+            "Water! Your body chemistry needs balance.",
+            "Drink something. Your concentration needs it.",
+            "Hydrate now. Future you will feel great.",
+            "Water time. Because hydration is smart.",
+            "Drink water. Your metabolism will speed up.",
+            "Hydration break. Your cells need moisture.",
+            "Water! Drinking it keeps you sharp.",
+            "Drink up. Your blood flows better hydrated.",
+            "Hydrate for optimal function.",
+            "Water time. Refresh your internal systems.",
+            "Drink something. Water is ideal.",
+            "Hydration checkpoint. Your body is asking.",
+            "Water break. Because humans need water. Fact.",
+            "Drink now. Your energy will improve.",
+            "Hydrate immediately. Your clarity needs it.",
+            "Water time. Your body needs maintenance.",
+            "Drink up. Hydration improves mood.",
+            "Hydration required. Your body is ready.",
+            "Water! Because biological systems need care.",
+            "Drink something. Your body will celebrate.",
+            "Hydrate now. Your focus will sharpen.",
+            "Water time. Your cognitive function needs it.",
+            "Drink water. Your organs work better hydrated.",
+            "Hydration break. Because it feels refreshing.",
+            "Water! Eight glasses a day is smart.",
+            "Drink up. Your body is mostly water. Top it off.",
+            "Hydrate for better health. Simple as that.",
+            "Water time. Your electrolytes need balance.",
+            "Drink something. Your system needs support.",
+            "Hydration alert. Time to refresh and recharge.",
+            "Water! Because your body loves being hydrated.",
+            "Drink now. Your health depends on it."
+        ]
+        
+        # Get user's notification preference
+        if reminder_type == "eye":
+            pref = getattr(self.blocker, 'eye_reminder_notification_type', 'Toast')
+            emoji = "👁️"
+            msg_index = getattr(self.blocker, 'eye_reminder_message_index', 0)
+            voice_msg = EYE_MESSAGES[msg_index % 50]
+            # Increment and save for next time
+            self.blocker.eye_reminder_message_index = (msg_index + 1) % 50
+            self.blocker.save_config()
+        else:  # water
+            pref = getattr(self.blocker, 'water_reminder_notification_type', 'Toast')
+            emoji = "💧"
+            msg_index = getattr(self.blocker, 'water_reminder_message_index', 0)
+            voice_msg = WATER_MESSAGES[msg_index % 50]
+            # Increment and save for next time
+            self.blocker.water_reminder_message_index = (msg_index + 1) % 50
+            self.blocker.save_config()
+        
+        # Normalize pref (in case of old data or corruption)
+        pref = pref if pref in ("Toast", "Voice", "Sound", "Sound + Voice") else "Toast"
+        
+        # Show toast if selected
+        if pref == "Toast":
+            show_perk_toast(message, emoji, self)
+        
+        # Play sound if selected
+        if pref in ("Sound", "Sound + Voice"):
+            try:
+                from entitidex.celebration_audio import CelebrationAudioManager
+                audio = CelebrationAudioManager.get_instance()
+                # Use the default celebration sound as notification chime
+                audio.play("default")
+            except Exception:
+                pass  # Sound playback optional
+        
+        # Speak with TTS if selected
+        if pref in ("Voice", "Sound + Voice"):
+            try:
+                from eye_protection_tab import GuidanceManager, PIPER_WORKING
+                if PIPER_WORKING:
+                    guidance = GuidanceManager.get_instance()
+                    guidance.say(voice_msg)
+            except Exception:
+                pass  # Voice playback optional, fallback to toast
+                if pref == "Voice":
+                    # Voice was the only selected method but failed, show toast as fallback
+                    show_perk_toast(message, emoji, self)
     
     def _update_coin_display(self) -> None:
         """Update the coin counter in the toolbar."""

@@ -801,7 +801,18 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.reminder_interval.valueChanged.connect(self._update_reminder_setting)
         reminder_layout.addWidget(self.reminder_interval)
         
-        reminder_layout.addWidget(QtWidgets.QLabel("(via toast notification)"))
+        reminder_layout.addWidget(QtWidgets.QLabel("via:"))
+        self.reminder_type_combo = NoScrollComboBox()
+        self.reminder_type_combo.addItems(["Toast", "Voice", "Sound", "Sound + Voice"])
+        # Load saved notification type
+        saved_type = getattr(self.blocker, 'eye_reminder_notification_type', 'Toast')
+        idx = self.reminder_type_combo.findText(saved_type)
+        if idx >= 0:
+            self.reminder_type_combo.setCurrentIndex(idx)
+        self.reminder_type_combo.currentTextChanged.connect(self._update_reminder_setting)
+        self.reminder_type_combo.setMinimumWidth(110)
+        reminder_layout.addWidget(self.reminder_type_combo)
+        
         reminder_layout.addStretch()
         layout.addWidget(reminder_frame)
 
@@ -857,6 +868,13 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         if hasattr(self, 'reminder_interval'):
             self.reminder_interval.setValue(getattr(self.blocker, 'eye_reminder_interval', 60))
+        
+        # Restore notification type preference
+        if hasattr(self, 'reminder_type_combo'):
+            saved_type = getattr(self.blocker, 'eye_reminder_notification_type', 'Toast')
+            idx = self.reminder_type_combo.findText(saved_type)
+            if idx >= 0:
+                self.reminder_type_combo.setCurrentIndex(idx)
             
         # Refresh all dynamic sections
         self.update_stats_display()
@@ -880,6 +898,10 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         self.blocker.eye_reminder_enabled = now_enabled
         self.blocker.eye_reminder_interval = self.reminder_interval.value()
+        
+        # Save notification type preference
+        if hasattr(self, 'reminder_type_combo'):
+            self.blocker.eye_reminder_notification_type = self.reminder_type_combo.currentText()
         
         # If user just enabled reminders, set the last reminder time to now
         # so the first reminder fires after the full interval (not immediately)
