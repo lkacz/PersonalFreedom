@@ -2453,6 +2453,67 @@ class BuildingCompleteDialog(StyledDialog):
         
         title = "🎉 Upgrade Complete!" if is_upgrade else "🎉 Building Complete!"
         super().__init__(parent, title=title, min_width=400, max_width=500)
+        
+        # Start celebration effects
+        QtCore.QTimer.singleShot(200, self._start_celebration)
+    
+    def _start_celebration(self):
+        """Start celebration animations and sound."""
+        # Victory sound
+        try:
+            from lottery_sounds import play_win_sound
+            play_win_sound()
+        except ImportError:
+            pass
+        except Exception as e:
+            _logger.warning(f"Failed to play celebration sound: {e}")
+            
+        # Header animation
+        self._animation_step = 0
+        self._animation_timer = QtCore.QTimer(self)
+        self._animation_timer.timeout.connect(self._animate_header)
+        self._animation_timer.start(180)
+        
+    def _animate_header(self):
+        """Animate the celebration header."""
+        if not hasattr(self, 'header_label'):
+            return
+
+        self._animation_step += 1
+        
+        # Stop after 40 steps
+        if self._animation_step >= 40:
+            self._animation_timer.stop()
+            return
+        
+        # Emoji rotation
+        emojis = ["✨", "🏗️", "🔨", "🎉", "🌆", "🏙️", "🏛️", "🏢"]
+        emoji = emojis[self._animation_step % len(emojis)]
+        
+        name = self.building_def.get("name", "Building")
+        if self.is_upgrade:
+            text = f"{emoji} {name} is now Level {self.level}! {emoji}"
+        else:
+            text = f"{emoji} {name} Complete! {emoji}"
+            
+        self.header_label.setText(text)
+        
+        # Color pulse
+        colors = ["#FFD700", "#FFC107", "#FFB74D", "#FFA000"]
+        color = colors[self._animation_step % len(colors)]
+        
+        self.header_label.setStyleSheet(f"""
+            font-size: 20px;
+            font-weight: bold;
+            color: {color};
+            margin: 10px;
+        """)
+
+    def closeEvent(self, event):
+        """Clean up animations."""
+        if hasattr(self, '_animation_timer'):
+            self._animation_timer.stop()
+        super().closeEvent(event)
     
     def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
         """Build the celebration content."""
@@ -2467,15 +2528,15 @@ class BuildingCompleteDialog(StyledDialog):
         else:
             header_text = f"✨ {name} Complete! ✨"
         
-        header = QtWidgets.QLabel(header_text)
-        header.setAlignment(QtCore.Qt.AlignCenter)
-        header.setStyleSheet("""
+        self.header_label = QtWidgets.QLabel(header_text)
+        self.header_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.header_label.setStyleSheet("""
             font-size: 20px;
             font-weight: bold;
             color: #FFD700;
             margin: 10px;
         """)
-        layout.addWidget(header)
+        layout.addWidget(self.header_label)
         
         # Building icon
         icon_container = QtWidgets.QWidget()
