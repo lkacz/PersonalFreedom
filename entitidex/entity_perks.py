@@ -70,6 +70,10 @@ class PerkType(Enum):
     
     # City Resources (Scrap from merging)
     SCRAP_CHANCE = "scrap_chance"            # +X% scrap chance per merge roll
+    
+    # Saved Encounter Recalculation
+    RECALC_PAID = "recalc_paid"              # Enables paid probability recalculation
+    RECALC_RISKY = "recalc_risky"            # Enables free but risky recalculation (80% success)
 
 
 @dataclass
@@ -102,7 +106,11 @@ ENTITY_PERKS: Dict[str, List[EntityPerk]] = {
     "warrior_006": [EntityPerk("warrior_006", PerkType.XP_SESSION, 2, 4, "Battle Standard: +{value}% Focus XP", "🚩", "War Banner: +{value}% Focus XP")],
     "warrior_007": [EntityPerk("warrior_007", PerkType.POWER_FLAT, 5, 10, "Crimson Power: +{value} Hero Power", "🐲", "Blood Dragon Fury: +{value} Hero Power")],
     "warrior_008": [EntityPerk("warrior_008", PerkType.CAPTURE_BONUS, 5, 8, "Pack Hunter: +{value}% Capture Chance", "🐺", "Alpha Predator: +{value}% Capture Chance")],
-    "warrior_009": [EntityPerk("warrior_009", PerkType.POWER_FLAT, 10, 15, "General's Command: +{value} Hero Power", "🐜", "Swarm Emperor: +{value} Hero Power")],
+    "warrior_009": [
+        EntityPerk("warrior_009", PerkType.POWER_FLAT, 10, 15, "General's Command: +{value} Hero Power", "🐜", "Swarm Emperor: +{value} Hero Power"),
+        EntityPerk("warrior_009", PerkType.RECALC_PAID, 1, 0, "Strategic Assessment: Recalculate probability", "🎯", ""),
+        EntityPerk("warrior_009", PerkType.RECALC_RISKY, 0, 1, "", "❄️", "Glacial Intuition: Free risky recalculate"),
+    ],
 
     # -------------------------------------------------------------------------
     # SCHOLAR (Knowledge & XP)
@@ -112,7 +120,10 @@ ENTITY_PERKS: Dict[str, List[EntityPerk]] = {
     "scholar_003": [EntityPerk("scholar_003", PerkType.XP_MORNING, 2, 4, "Early Bird: +{value}% XP (6AM-12PM)", "🕯️", "Dawn's First Light: +{value}% XP (6AM-12PM)")],
     "scholar_004": [EntityPerk("scholar_004", PerkType.DROP_LUCK, 1, 2, "Library Luck: +{value}% Item Drops", "🐱", "Sphinx's Fortune: +{value}% Item Drops")],
     "scholar_005": [EntityPerk("scholar_005", PerkType.MERGE_LUCK, 1, 2, "Smart Merger: +{value}% Merge Luck", "🔖", "Arcane Fusion: +{value}% Merge Luck")],
-    "scholar_006": [EntityPerk("scholar_006", PerkType.XP_SESSION, 2, 4, "Ancient Wisdom: +{value}% Focus XP", "📖", "Forbidden Knowledge: +{value}% Focus XP")],
+    "scholar_006": [
+        EntityPerk("scholar_006", PerkType.XP_SESSION, 2, 4, "Ancient Wisdom: +{value}% Focus XP", "📖", "Forbidden Knowledge: +{value}% Focus XP"),
+        EntityPerk("scholar_006", PerkType.RECALC_PAID, 1, 1, "Page Turner: Recalculate probability", "📚", "Forbidden Formula: Recalculate probability"),
+    ],
     "scholar_007": [EntityPerk("scholar_007", PerkType.RARITY_BIAS, 1, 2, "Star Chart: +{value}% Rare Finds", "🗺️", "Celestial Atlas: +{value}% Rare Finds")],
     "scholar_008": [
         EntityPerk("scholar_008", PerkType.XP_STORY, 5, 8, "Phoenix Rebirth: +{value}% Story XP", "🐦", "Eternal Flame: +{value}% Story XP"),
@@ -123,7 +134,11 @@ ENTITY_PERKS: Dict[str, List[EntityPerk]] = {
     # -------------------------------------------------------------------------
     # WANDERER (Travel & Coins)
     # -------------------------------------------------------------------------
-    "wanderer_001": [EntityPerk("wanderer_001", PerkType.COIN_FLAT, 1, 2, "Lucky Copper: +{value} Coin per session", "🪙", "Golden Fortune: +{value} Coins per session")],
+    "wanderer_001": [
+        EntityPerk("wanderer_001", PerkType.COIN_FLAT, 1, 2, "Lucky Copper: +{value} Coin per session", "🪙", "Golden Fortune: +{value} Coins per session"),
+        EntityPerk("wanderer_001", PerkType.RECALC_PAID, 1, 0, "Fortune's Flip: Recalculate probability", "🍀", ""),
+        EntityPerk("wanderer_001", PerkType.RECALC_RISKY, 0, 1, "", "✨", "Lucky Break: Free risky recalculate"),
+    ],
     "wanderer_002": [EntityPerk("wanderer_002", PerkType.STREAK_SAVE, 1, 2, "True North: +{value}% Streak Save Chance", "🧭", "Fate's Compass: +{value}% Streak Save Chance")],
     "wanderer_003": [EntityPerk("wanderer_003", PerkType.COIN_FLAT, 2, 4, "Travel Log: +{value} Coins on Streak", "📓", "Treasure Chronicle: +{value} Coins on Streak")],
     "wanderer_004": [EntityPerk("wanderer_004", PerkType.HYDRATION_COOLDOWN, 5, 10, "Thirsty Dog: -{value}min Water Cooldown", "🐕", "Oasis Hound: -{value}min Water Cooldown")],
@@ -134,6 +149,7 @@ ENTITY_PERKS: Dict[str, List[EntityPerk]] = {
     "wanderer_009": [
         EntityPerk("wanderer_009", PerkType.COIN_PERCENT, 5, 8, "Hobo Wisdom: +{value}% All Coin Gains", "🐀", "Rat King's Treasure: +{value}% All Coin Gains"),
         EntityPerk("wanderer_009", PerkType.SCRAP_CHANCE, 1, 2, "Scavenger's Eye: +{value}% Scrap Chance", "♻️", "Master Salvager: +{value}% Scrap Chance"),
+        EntityPerk("wanderer_009", PerkType.RECALC_RISKY, 1, 1, "Route Optimization: Free risky recalculate", "🗺️", "GPS Override: Free risky recalculate"),
     ],
 
     # -------------------------------------------------------------------------
@@ -147,10 +163,21 @@ ENTITY_PERKS: Dict[str, List[EntityPerk]] = {
     "underdog_003": [EntityPerk("underdog_003", PerkType.COIN_DISCOUNT, 1, 2, "Vending Value: -{value} Coin Cost", "🎰", "Jackpot Machine: -{value} Coin Cost")],
     "underdog_004": [EntityPerk("underdog_004", PerkType.SALVAGE_BONUS, 1, 2, "Winston's Find: +{value} Coins on Salvage", "🐦", "Golden Beak: +{value} Coins on Salvage")],
     "underdog_005": [EntityPerk("underdog_005", PerkType.EYE_TIER_BONUS, 1, 0, "Dry Eye: +{value} Eye Tier", "🌵", "Desert Eye: 50% Reroll")],
-    "underdog_006": [EntityPerk("underdog_006", PerkType.STORE_DISCOUNT, 1, 2, "Free Refill: -{value} Store Refresh Cost", "☕", "Endless Brew: -{value} Store Refresh Cost")],
+    "underdog_006": [
+        EntityPerk("underdog_006", PerkType.STORE_DISCOUNT, 1, 2, "Free Refill: -{value} Store Refresh Cost", "☕", "Endless Brew: -{value} Store Refresh Cost"),
+        EntityPerk("underdog_006", PerkType.RECALC_PAID, 1, 1, "Caffeinated Clarity: Recalculate probability", "☕", "Sugar Rush Math: Recalculate probability"),
+    ],
     "underdog_007": [EntityPerk("underdog_007", PerkType.ALL_LUCK, 3, 5, "Executive Luck: +{value}% All Luck", "🪑", "CEO's Fortune: +{value}% All Luck")],
-    "underdog_008": [EntityPerk("underdog_008", PerkType.CAPTURE_BONUS, 2, 4, "Chad's Algorithm: +{value}% Capture Probability", "🤖", "Sigma Protocol: +{value}% Capture Probability")],
-    "underdog_009": [EntityPerk("underdog_009", PerkType.HYDRATION_CAP, 1, 1, "Cool Storage: +{value} Daily Glass Cap", "🧊", "Frost Vault: +{value} Daily Glass Cap")],
+    "underdog_008": [
+        EntityPerk("underdog_008", PerkType.CAPTURE_BONUS, 2, 4, "Chad's Algorithm: +{value}% Capture Probability", "🤖", "Sigma Protocol: +{value}% Capture Probability"),
+        EntityPerk("underdog_008", PerkType.RECALC_PAID, 1, 0, "AI Consultation: Recalculate probability", "💰", ""),
+        EntityPerk("underdog_008", PerkType.RECALC_RISKY, 0, 1, "", "🌟", "Transcendent Analysis: Free risky recalculate"),
+    ],
+    "underdog_009": [
+        EntityPerk("underdog_009", PerkType.HYDRATION_CAP, 1, 1, "Cool Storage: +{value} Daily Glass Cap", "🧊", "Frost Vault: +{value} Daily Glass Cap"),
+        EntityPerk("underdog_009", PerkType.RECALC_PAID, 1, 0, "Cool Calculations: Recalculate probability", "🧊", ""),
+        EntityPerk("underdog_009", PerkType.RECALC_RISKY, 0, 1, "", "🥩", "Wagyu Wisdom: Free risky recalculate"),
+    ],
 
     # -------------------------------------------------------------------------
     # SCIENTIST (Research & Discovery)
@@ -244,6 +271,10 @@ def get_perk_description(entity_id: str, is_exceptional: bool = False) -> str:
     for perk in perks:
         value = perk.exceptional_value if is_exceptional else perk.normal_value
         
+        # Skip perks with zero value (entity doesn't have this perk for this variant)
+        if value == 0:
+            continue
+        
         # Use exceptional description if available and this is an exceptional entity
         if is_exceptional and perk.exceptional_description:
             description = perk.exceptional_description.format(value=value)
@@ -320,6 +351,10 @@ PERK_EXPLANATIONS: Dict[PerkType, str] = {
     
     # Scrap / Salvage
     PerkType.SCRAP_CHANCE: "Increases the chance of receiving bonus scrap when merging items - useful for city construction!",
+    
+    # Saved Encounter Recalculation
+    PerkType.RECALC_PAID: "Allows paying coins to recalculate the catch probability of saved encounters using your current hero power. Great if you've gotten stronger since saving!",
+    PerkType.RECALC_RISKY: "Free probability recalculation with 80% success rate. If successful, uses your current power. If it fails, the original odds remain unchanged.",
 }
 
 

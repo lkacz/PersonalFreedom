@@ -3006,7 +3006,8 @@ class EntitidexTab(QtWidgets.QWidget):
         
         # Entity icon (small)
         icon_label = QtWidgets.QLabel()
-        icon_path = self._get_entity_icon_path(entity.id, is_exceptional)
+        # Use robust resolution that handles snake_case filenames
+        icon_path = _resolve_entity_svg_path(entity, is_exceptional)
         if icon_path and os.path.exists(icon_path):
             pixmap = QtGui.QPixmap(icon_path)
             if not pixmap.isNull():
@@ -3028,22 +3029,43 @@ class EntitidexTab(QtWidgets.QWidget):
         
         # Rarity and chance
         chance_pct = int(saved_probability * 100)
-        details = QtWidgets.QLabel(f"⭐ {entity.rarity.capitalize()} | 🎲 {chance_pct}% chance")
+        
+        # Check if we can improve this chance
+        recalc_info = ""
+        potential_prob = item.get("potential_probability", 0)
+        potential_pct = int(potential_prob * 100)
+        
+        has_paid = item.get("has_paid_recalculate", False)
+        cost = item.get("recalculate_cost", 100)
+        
+        # Only show improvement hints if significant
+        if has_paid and potential_pct > chance_pct + 5:
+            recalc_info = f"<br><span style='color: #4CAF50;'>💡 Chad can boost this to <b>{potential_pct}%</b> for {cost}🪙!</span>"
+        elif not has_paid and potential_pct > chance_pct + 5:
+            recalc_info = f"<br><span style='color: #888;'>🔒 (<b>{potential_pct}%</b> possible with AGI Assistant Chad)</span>"
+            
+        details = QtWidgets.QLabel(f"⭐ {entity.rarity.capitalize()} | 🎲 {chance_pct}% chance{recalc_info}")
         details.setStyleSheet("color: #aaa; font-size: 11px;")
+        details.setOpenExternalLinks(False)  # Allow rich text
         info_layout.addWidget(details)
         
         card_layout.addLayout(info_layout, 1)
         
+        # Action Buttons Layout
+        actions_layout = QtWidgets.QVBoxLayout()
+        actions_layout.setSpacing(4)
+        actions_layout.setContentsMargins(0, 0, 0, 0)
+        
         # Open button
         open_btn = QtWidgets.QPushButton("🎲 Open")
-        open_btn.setToolTip("Attempt to bond with this entity now!")
+        open_btn.setToolTip("Attempt to bond with this entity now using saved probability!")
         open_btn.setStyleSheet("""
             QPushButton {
                 background: #4CAF50;
                 color: white;
                 border: none;
                 border-radius: 6px;
-                padding: 8px 16px;
+                padding: 6px 12px;
                 font-size: 12px;
                 font-weight: bold;
             }
@@ -3056,28 +3078,58 @@ class EntitidexTab(QtWidgets.QWidget):
         def on_open():
             parent_dialog.accept()  # Close the list dialog
             self._open_saved_encounter_flow(idx)
-        
+            
         open_btn.clicked.connect(on_open)
-        card_layout.addWidget(open_btn)
+        actions_layout.addWidget(open_btn)
+        
+        # Recalculate button (if applicable)
+        if has_paid and potential_pct > chance_pct:
+            recalc_btn = QtWidgets.QPushButton("⚡ Boost")
+            recalc_btn.setToolTip(
+                f"🤖 Chad's Optimization Service\n\n"
+                f"Pays {cost} coins to recalculate odds using your CURRENT power.\n"
+                f"Old Chance: {chance_pct}%\n"
+                f"New Chance: {potential_pct}%\n"
+                f"Cost: {cost} coins"
+            )
+            recalc_btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: #252540;
+                    color: #FFD700;
+                    border: 1px solid #FFD700;
+                    border-radius: 6px;
+                    padding: 4px 10px;
+                    font-size: 11px;
+                }}
+                QPushButton:hover {{ background: #2a2a45; }}
+            """)
+            
+            def on_recalc():
+                # Confirm recalculation
+                confirm = QtWidgets.QMessageBox.question(
+                    parent_dialog, "🤖 Chad's Optimization",
+                    f"Pay <b>{cost} coins</b> to boost bonding chance?\n\n"
+                    f"📈 <b>{chance_pct}%</b> ➔ <b>{potential_pct}%</b>\n\n"
+                    f"<i>(Based on your increased power level)</i>",
+                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+                )
+                
+                if confirm == QtWidgets.QMessageBox.Yes:
+                    parent_dialog.accept()
+                    self._open_saved_encounter_flow(idx, recalculate=True)
+            
+            recalc_btn.clicked.connect(on_recalc)
+            actions_layout.addWidget(recalc_btn)
+            
+        card_layout.addLayout(actions_layout)
         
         return card
     
-    def _get_entity_icon_path(self, entity_id: str, is_exceptional: bool = False) -> str:
-        """Get the path to an entity's icon."""
-        if is_exceptional:
-            path = EXCEPTIONAL_ICONS_PATH / f"{entity_id}.svg"
-            if path.exists():
-                return str(path)
-        # Fall back to normal icon
-        path = ENTITY_ICONS_PATH / f"{entity_id}.svg"
-        if path.exists():
-            return str(path)
-        return ""
-    
-    def _open_saved_encounter_flow(self, index: int):
+    def _open_saved_encounter_flow(self, index: int, recalculate: bool = False):
         """Open a saved encounter and show the entity encounter dialog."""
         from gamification import (
-            open_saved_encounter, 
+            open_saved_encounter,
+            open_saved_encounter_with_recalculate, 
             attempt_entitidex_bond,
             get_saved_encounters,
         )
@@ -3099,9 +3151,17 @@ class EntitidexTab(QtWidgets.QWidget):
         is_exceptional = enc_data.get("is_exceptional", False)
         saved_probability = enc_data.get("catch_probability", 0.5)
         
+        # If recalculating, update the displayed probability to current potential
+        if recalculate:
+            potential_prob = item.get("potential_probability", saved_probability)
+            saved_probability = potential_prob
+        
         # Create a bond callback that opens the saved encounter
         def bond_callback(entity_id: str) -> dict:
-            result = open_saved_encounter(self.blocker.adhd_buster, index)
+            if recalculate:
+                result = open_saved_encounter_with_recalculate(self.blocker.adhd_buster, index, recalculate=True)
+            else:
+                result = open_saved_encounter(self.blocker.adhd_buster, index)
             
             # Persist to disk (critical: encounter was consumed, must save)
             self.blocker.save_config()

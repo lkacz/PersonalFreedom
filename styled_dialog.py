@@ -1741,7 +1741,7 @@ Beer is definitely not water.
 We're onto you. 🚰"""
     },
     "eye": {
-        "title": "🌬️ Eye & Breath Tab",
+        "title": "👁️ Eyes Tab",
         "icon": "👁",
         "content": """<b>What it does:</b><br>
 Guided eye exercises AND breathing routines. 

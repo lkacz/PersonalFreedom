@@ -11145,10 +11145,18 @@ def sync_hero_data(adhd_buster: dict) -> None:
 # AGE AND SEX-SPECIFIC NORMS (CDC/NIH/WHO Guidelines)
 # =============================================================================
 
-# CDC BMI-for-age percentiles for ages 7-19 (by sex)
+# CDC BMI-for-age percentiles for ages 2-19 (by sex)
 # Format: age -> {sex: (P5, P50, P85, P95)}
 # P5 = underweight cutoff, P85 = overweight cutoff, P95 = obese cutoff
+# Data sources: CDC Growth Charts (2000), WHO Child Growth Standards
 BMI_PERCENTILES_BY_AGE = {
+    # Ages 2-6: WHO Child Growth Standards / CDC Extended
+    2:  {"M": (14.8, 16.5, 18.0, 18.9), "F": (14.4, 16.1, 17.8, 18.7)},
+    3:  {"M": (14.0, 15.8, 17.4, 18.3), "F": (13.7, 15.5, 17.2, 18.2)},
+    4:  {"M": (13.5, 15.4, 17.0, 17.9), "F": (13.3, 15.2, 17.0, 18.0)},
+    5:  {"M": (13.3, 15.2, 16.9, 18.0), "F": (13.1, 15.0, 17.0, 18.3)},
+    6:  {"M": (13.3, 15.3, 17.2, 18.5), "F": (13.0, 15.1, 17.3, 18.8)},
+    # Ages 7-19: CDC BMI-for-age percentiles
     7:  {"M": (13.7, 15.5, 17.4, 19.2), "F": (13.4, 15.5, 17.6, 19.7)},
     8:  {"M": (13.8, 15.8, 18.0, 20.1), "F": (13.5, 15.8, 18.3, 20.7)},
     9:  {"M": (14.0, 16.2, 18.6, 21.1), "F": (13.7, 16.3, 19.1, 21.8)},
@@ -11207,7 +11215,7 @@ def get_bmi_thresholds_for_age(age: int, sex: str = "M") -> tuple:
     """
     Get BMI thresholds (underweight, overweight, obese) for a specific age and sex.
     
-    For ages 7-19, uses CDC BMI-for-age percentiles.
+    For ages 2-19, uses CDC BMI-for-age percentiles.
     For ages 20+, uses standard adult WHO thresholds.
     
     Args:
@@ -11217,7 +11225,7 @@ def get_bmi_thresholds_for_age(age: int, sex: str = "M") -> tuple:
     Returns:
         Tuple of (underweight_threshold, overweight_threshold, obese_threshold)
     """
-    if age is None or age < 7:
+    if age is None or age < 2:
         # For very young children or unknown age, use adult thresholds as fallback
         return (18.5, 25.0, 30.0)
     
@@ -11229,7 +11237,7 @@ def get_bmi_thresholds_for_age(age: int, sex: str = "M") -> tuple:
         # Adults 20+: standard WHO thresholds (same for M/F)
         return (18.5, 25.0, 30.0)
     
-    # Children/teens 7-19: use CDC percentiles
+    # Children/teens 2-19: use CDC percentiles
     if age in BMI_PERCENTILES_BY_AGE:
         p5, p50, p85, p95 = BMI_PERCENTILES_BY_AGE[age][sex]
         return (p5, p85, p95)
@@ -11242,7 +11250,7 @@ def get_bmi_classification_for_age(bmi: float, age: int = None, sex: str = "M") 
     """
     Get BMI classification considering age and sex.
     
-    For ages 7-19, uses CDC BMI-for-age percentile categories:
+    For ages 2-19, uses CDC BMI-for-age percentile categories:
     - Underweight: < P5
     - Healthy weight: P5 to < P85
     - Overweight: P85 to < P95
@@ -11263,7 +11271,7 @@ def get_bmi_classification_for_age(bmi: float, age: int = None, sex: str = "M") 
     
     underweight, overweight, obese = get_bmi_thresholds_for_age(age, sex)
     
-    if age is not None and 7 <= age <= 19:
+    if age is not None and 2 <= age <= 19:
         # Pediatric categories (CDC percentile-based)
         if bmi < underweight:
             return ("Underweight (<P5)", "#ffaa64")
@@ -12482,7 +12490,7 @@ def get_bmi_classification(bmi: float, age: int = None, sex: str = None) -> tupl
     """
     Get BMI classification and color.
     
-    For ages 7-19, uses age/sex-specific CDC BMI-for-age percentiles.
+    For ages 2-19, uses age/sex-specific CDC BMI-for-age percentiles.
     For ages 20+ or unspecified, uses standard WHO adult classifications.
     
     Args:
@@ -12497,7 +12505,7 @@ def get_bmi_classification(bmi: float, age: int = None, sex: str = None) -> tupl
         return ("Unknown", "#888888")
     
     # Use age-specific classification if age provided and in pediatric range
-    if age is not None and 7 <= age <= 19:
+    if age is not None and 2 <= age <= 19:
         return get_bmi_classification_for_age(bmi, age, sex)
     
     # Adult classification (WHO standard)
@@ -12709,16 +12717,22 @@ def predict_goal_date(weight_entries: list, goal_weight: float,
     }
 
 
-def get_historical_comparisons(weight_entries: list, current_date: str = None) -> dict:
+def get_historical_comparisons(weight_entries: list, current_date: str = None, 
+                                current_context: str = None) -> dict:
     """
     Get weight comparisons vs historical dates.
+    
+    When a context is provided, prioritizes comparing to entries with the same
+    context (e.g., morning vs morning, evening vs evening). Falls back to any
+    entry if no same-context entry exists for a period.
     
     Args:
         weight_entries: List of weight entries
         current_date: Reference date (defaults to today)
+        current_context: Context/note tag to prioritize (e.g., "morning", "evening")
     
     Returns:
-        Dict with comparisons
+        Dict with comparisons, including context info
     """
     from datetime import datetime, timedelta
     
@@ -12742,13 +12756,23 @@ def get_historical_comparisons(weight_entries: list, current_date: str = None) -
     if not sorted_entries:
         return {}
     
-    # Find current weight - use entry for current_date if available, else latest
+    # Find current weight - prefer same context entry for current_date if available
     current_weight = None
     current_date_str = today.strftime("%Y-%m-%d")
-    for entry in sorted_entries:
-        if entry["date"] == current_date_str:
-            current_weight = entry["weight"]
-            break
+    
+    # First try to find same-context entry for today
+    if current_context:
+        for entry in sorted_entries:
+            if entry["date"] == current_date_str and entry.get("note", "") == current_context:
+                current_weight = entry["weight"]
+                break
+    
+    # Fall back to any today entry, then latest
+    if current_weight is None:
+        for entry in sorted_entries:
+            if entry["date"] == current_date_str:
+                current_weight = entry["weight"]
+                break
     if current_weight is None:
         current_weight = sorted_entries[0]["weight"]
     
@@ -12765,29 +12789,55 @@ def get_historical_comparisons(weight_entries: list, current_date: str = None) -
     for key, days, label in periods:
         target_date = today - timedelta(days=days)
         
-        # Find closest entry to target date
+        # Find closest entry to target date, preferring same context
         closest_entry = None
+        closest_same_context = None
         min_diff = float('inf')
+        min_diff_same = float('inf')
         
         for entry in sorted_entries:
             try:
                 entry_date = datetime.strptime(entry["date"], "%Y-%m-%d")
                 diff = abs((entry_date - target_date).days)
-                if diff < min_diff and diff <= 7:  # Within a week of target
-                    min_diff = diff
-                    closest_entry = entry
+                if diff <= 7:  # Within a week of target
+                    # Track closest overall
+                    if diff < min_diff:
+                        min_diff = diff
+                        closest_entry = entry
+                    
+                    # Track closest with same context
+                    if current_context and entry.get("note", "") == current_context:
+                        if diff < min_diff_same:
+                            min_diff_same = diff
+                            closest_same_context = entry
             except ValueError:
                 continue
         
-        if closest_entry:
-            change = current_weight - closest_entry["weight"]
-            entry_weight = closest_entry.get("weight") or 0
+        # Prefer same-context entry if available
+        best_entry = closest_same_context if closest_same_context else closest_entry
+        
+        if best_entry:
+            change = current_weight - best_entry["weight"]
+            entry_weight = best_entry.get("weight") or 0
+            entry_context = best_entry.get("note", "")
+            
+            # Add context indicator to label if comparing different contexts
+            context_match = (current_context == entry_context) if current_context else True
+            display_label = label
+            if current_context and not context_match and entry_context:
+                # Format the entry context for display
+                display_label = f"{label} ({format_entry_note(entry_context)})"
+            elif current_context and context_match and entry_context:
+                display_label = f"{label} (same context)"
+            
             comparisons[key] = {
-                "label": label,
-                "date": closest_entry["date"],
-                "weight": closest_entry["weight"],
+                "label": display_label,
+                "date": best_entry["date"],
+                "weight": best_entry["weight"],
                 "change": change,
                 "change_pct": (change / entry_weight) * 100 if entry_weight else 0,
+                "context": entry_context,
+                "context_match": context_match,
             }
     
     return comparisons
@@ -16766,10 +16816,16 @@ def get_saved_encounters(adhd_buster: dict) -> list:
     has_risky = has_risky_recalculate_perk(adhd_buster)
     perk_status = get_recalculate_perks_status(adhd_buster)
     
+    # Calculate current power once
+    current_power = calculate_character_power(adhd_buster)
+    
     result = []
     for idx, enc in enumerate(saved):
         entity = get_entity_by_id(enc.entity_id)
         if entity:
+            from entitidex import calculate_join_probability
+            potential_prob = calculate_join_probability(current_power, entity.power)
+            
             result.append({
                 "saved_encounter": enc.to_dict(),
                 "entity": entity,
@@ -16781,6 +16837,7 @@ def get_saved_encounters(adhd_buster: dict) -> list:
                 "has_risky_recalculate": has_risky,
                 "recalculate_cost": RECALCULATE_COST_BY_RARITY.get(entity.rarity.lower(), 100),
                 "perk_providers": perk_status,
+                "potential_probability": potential_prob,
             })
     
     return result
@@ -17056,68 +17113,368 @@ RISKY_RECALC_SUCCESS_RATE = 0.80  # 80% chance the recalc roll succeeds
 
 def has_paid_recalculate_perk(adhd_buster: dict) -> bool:
     """
-    Check if user has unlocked the Paid Recalculate perk.
+    Check if user has unlocked any Paid Recalculate perk.
     
-    Requires: AGI Assistant Chad (normal variant) collected.
+    Entities that provide this:
+    - AGI Assistant Chad (underdog_008) - normal variant
+    - Sentient Tome Magnus/Agnus (scholar_006) - both variants
+    - Break Room Coffee Maker (underdog_006) - both variants
+    - Break Room Fridge (underdog_009) - normal variant
+    - Lucky Coin (wanderer_001) - normal variant
+    - Old War Ant General (warrior_009) - normal variant
     
     Returns:
-        True if Chad (normal) is in collection
+        True if any entity with RECALC_PAID perk (value > 0) is collected
     """
-    manager = get_entitidex_manager(adhd_buster)
-    return manager.progress.is_collected(CHAD_ENTITY_ID)
+    try:
+        from entitidex.entity_perks import ENTITY_PERKS, PerkType, calculate_active_perks
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        
+        # Check if user has any paid recalculate perk value
+        return perks.get(PerkType.RECALC_PAID, 0) > 0
+    except Exception:
+        # Fallback to legacy check if perk system fails
+        manager = get_entitidex_manager(adhd_buster)
+        return manager.progress.is_collected(CHAD_ENTITY_ID)
 
 
 def has_risky_recalculate_perk(adhd_buster: dict) -> bool:
     """
-    Check if user has unlocked the Risky Free Recalculate perk.
+    Check if user has unlocked any Risky Free Recalculate perk.
     
-    Requires: AGI Assistant Rad (exceptional variant) collected.
+    Entities that provide this:
+    - AGI Assistant Rad (underdog_008) - exceptional variant
+    - Hobo Rat / Robo Rat (wanderer_009) - both variants
+    - Steak Room Fridge (underdog_009) - exceptional variant
+    - Plucky Coin (wanderer_001) - exceptional variant
+    - Cold War Ant General (warrior_009) - exceptional variant
     
     Returns:
-        True if Chad exceptional variant is in collection
+        True if any entity with RECALC_RISKY perk (value > 0) is collected
     """
-    manager = get_entitidex_manager(adhd_buster)
-    return manager.progress.is_exceptional(CHAD_ENTITY_ID)
+    try:
+        from entitidex.entity_perks import ENTITY_PERKS, PerkType, calculate_active_perks
+        
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        
+        # Check if user has any risky recalculate perk value
+        return perks.get(PerkType.RECALC_RISKY, 0) > 0
+    except Exception:
+        # Fallback to legacy check if perk system fails
+        manager = get_entitidex_manager(adhd_buster)
+        return manager.progress.is_exceptional(CHAD_ENTITY_ID)
 
 
 def get_recalculate_perk_providers() -> list:
     """
-    Get info about entities that provide recalculate perks for mini-card display.
+    Get info about ALL entities that provide recalculate perks for mini-card display.
     
     Returns:
         List of dicts with entity info for UI mini-cards including tooltips
     """
     from entitidex import get_entity_by_id
+    from entitidex.entity_perks import ENTITY_PERKS, PerkType
     
-    entity = get_entity_by_id(CHAD_ENTITY_ID)
+    providers = []
+    
+    # Find all entities with RECALC_PAID or RECALC_RISKY perks
+    for entity_id, perks in ENTITY_PERKS.items():
+        entity = get_entity_by_id(entity_id)
+        if not entity:
+            continue
+        
+        for perk in perks:
+            if perk.perk_type == PerkType.RECALC_PAID and perk.normal_value > 0:
+                # Normal variant provides paid recalculate
+                providers.append({
+                    "entity_id": entity_id,
+                    "name": entity.name,
+                    "is_exceptional": False,
+                    "perk_type": "paid_recalculate",
+                    "perk_description": "💰 Paid Recalculate",
+                    "perk_detail": _get_recalc_quote(entity_id, False),
+                    "icon": _get_recalc_icon(entity_id, False),
+                    "tooltip": _build_recalc_tooltip(entity_id, False),
+                })
+            
+            if perk.perk_type == PerkType.RECALC_PAID and perk.exceptional_value > 0:
+                # Exceptional variant provides paid recalculate
+                providers.append({
+                    "entity_id": entity_id,
+                    "name": entity.exceptional_name or entity.name,
+                    "is_exceptional": True,
+                    "perk_type": "paid_recalculate",
+                    "perk_description": "💰 Paid Recalculate",
+                    "perk_detail": _get_recalc_quote(entity_id, True),
+                    "icon": _get_recalc_icon(entity_id, True),
+                    "tooltip": _build_recalc_tooltip(entity_id, True),
+                })
+            
+            if perk.perk_type == PerkType.RECALC_RISKY and perk.normal_value > 0:
+                # Normal variant provides risky recalculate
+                providers.append({
+                    "entity_id": entity_id,
+                    "name": entity.name,
+                    "is_exceptional": False,
+                    "perk_type": "risky_recalculate",
+                    "perk_description": "🎲 Free Risky Recalculate",
+                    "perk_detail": _get_recalc_quote(entity_id, False, risky=True),
+                    "icon": _get_recalc_icon(entity_id, False),
+                    "tooltip": _build_recalc_tooltip(entity_id, False, risky=True),
+                })
+            
+            if perk.perk_type == PerkType.RECALC_RISKY and perk.exceptional_value > 0:
+                # Exceptional variant provides risky recalculate
+                providers.append({
+                    "entity_id": entity_id,
+                    "name": entity.exceptional_name or entity.name,
+                    "is_exceptional": True,
+                    "perk_type": "risky_recalculate",
+                    "perk_description": "🎲 Free Risky Recalculate",
+                    "perk_detail": _get_recalc_quote(entity_id, True, risky=True),
+                    "icon": _get_recalc_icon(entity_id, True),
+                    "tooltip": _build_recalc_tooltip(entity_id, True, risky=True),
+                })
+    
+    return providers
+
+
+# =============================================================================
+# ENTITY-SPECIFIC RECALCULATE NARRATIVES
+# =============================================================================
+# Each entity that provides recalculate has unique thematic quotes and tooltips
+
+RECALC_ENTITY_NARRATIVES = {
+    # AGI Assistant Chad / Rad
+    "underdog_008": {
+        "icon_normal": "🤖",
+        "icon_exceptional": "🌟",
+        "quote_paid": "\"I'm a professional. Pay me.\" - Chad",
+        "quote_risky": "\"Reality is... flexible.\" - Rad",
+        "tooltip_paid": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🤖\n\n"
+            "Chad says:\n\"My algorithms never lie. Well, rarely.\"\n\n"
+            "💡 Great if you've gotten stronger since!"
+        ),
+        "tooltip_risky": (
+            "🎲 FREE TRANSCENDENT RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} ✨\n\n"
+            "Rad transmits:\n\"Dude, I transcend probability. Totally.\"\n\n"
+            "🌌 80% MANIFESTATION: Probability realigns!\n"
+            "⚠️ 20% DIMENSIONAL VARIANCE: Original odds persist"
+        ),
+    },
+    
+    # Sentient Tome Magnus / Agnus
+    "scholar_006": {
+        "icon_normal": "📖",
+        "icon_exceptional": "📚",
+        "quote_paid": "\"The ancient formulas reveal the truth...\" - Magnus",
+        "quote_risky": "\"My pages contain forbidden knowledge.\" - Agnus",
+        "tooltip_paid": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 📖\n\n"
+            "The tome flips to a page you've never seen:\n"
+            "\"Your current strength, recalculated through\n"
+            "  formulas older than civilization itself.\"\n\n"
+            "💡 The Tome's wisdom doesn't come free!"
+        ),
+        "tooltip_risky": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 📚\n\n"
+            "Agnus hums warmly:\n\"Let grandmother recalculate\n"
+            "  your odds, dear. Have some tea.\"\n\n"
+            "💡 Ancient wisdom has its price!"
+        ),
+    },
+    
+    # Break Room Coffee Maker / Toffee Maker
+    "underdog_006": {
+        "icon_normal": "☕",
+        "icon_exceptional": "🍬",
+        "quote_paid": "\"Caffeinated clarity, coming right up!\" - Coffee Maker",
+        "quote_risky": "\"Sugar makes the math sweeter!\" - Toffee Maker",
+        "tooltip_paid": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} ☕\n\n"
+            "*gurgles encouragingly*\n\"One cup of clarity, coming up!\n"
+            "  Caffeine helps me think clearer.\"\n\n"
+            "💡 Better odds after your coffee break!"
+        ),
+        "tooltip_risky": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🍬\n\n"
+            "*dispenses toffee*\n\"Sugar rush = math rush!\n"
+            "  Let's sweeten those odds.\"\n\n"
+            "💡 Candy-coated calculations!"
+        ),
+    },
+    
+    # Break Room Fridge / Steak Room Fridge
+    "underdog_009": {
+        "icon_normal": "🧊",
+        "icon_exceptional": "🥩",
+        "quote_paid": "\"Cool calculations... processed.\" - Fridge",
+        "quote_risky": "\"Premium analysis. Wagyu-grade.\" - Steak Fridge",
+        "tooltip_paid": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🧊\n\n"
+            "*hums softly*\n\"I was meant to keep things cold.\n"
+            "  Now I calculate probability. Strange.\"\n\n"
+            "💡 Cool, calm, calculated odds!"
+        ),
+        "tooltip_risky": (
+            "🎲 FREE RISKY RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🥩\n\n"
+            "*glows with premium confidence*\n"
+            "\"Wagyu A5 analysis. No charge.\n"
+            "  But premium cuts have... variance.\"\n\n"
+            "🌌 80% SUCCESS: Gourmet recalculation!\n"
+            "⚠️ 20% FAILURE: Odds remain marinated"
+        ),
+    },
+    
+    # Lucky Coin / Plucky Coin
+    "wanderer_001": {
+        "icon_normal": "🪙",
+        "icon_exceptional": "✨",
+        "quote_paid": "\"Tails never fails - flip for new odds!\" - Lucky Coin",
+        "quote_risky": "\"Fortune favors the bold!\" - Plucky Coin",
+        "tooltip_paid": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🪙\n\n"
+            "*lands on tails*\n\"Flip me again and your luck\n"
+            "  might just change. For a price.\"\n\n"
+            "💡 A coin well spent on fortune!"
+        ),
+        "tooltip_risky": (
+            "🎲 FREE RISKY RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} ✨\n\n"
+            "*winks at you*\n\"I've escaped countless pockets.\n"
+            "  Let's escape these bad odds too!\"\n\n"
+            "🌌 80% LUCK: Fortune smiles!\n"
+            "⚠️ 20% OOPS: The coin rolls away"
+        ),
+    },
+    
+    # Old War Ant General / Cold War Ant General
+    "warrior_009": {
+        "icon_normal": "🐜",
+        "icon_exceptional": "❄️",
+        "quote_paid": "\"Strategic reassessment. I've seen all odds.\" - General",
+        "quote_risky": "\"In the frozen wastes, I learned patience.\" - Cold General",
+        "tooltip_paid": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🐜\n\n"
+            "*taps twice*\n\"I commanded armies against dragons.\n"
+            "  Recalculating odds? Child's play.\"\n\n"
+            "💡 The General always finds a way!"
+        ),
+        "tooltip_risky": (
+            "🎲 FREE RISKY RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} ❄️\n\n"
+            "*frost crystals form*\n\"I survived the Glacial Wars.\n"
+            "  Sometimes victory requires... risk.\"\n\n"
+            "🌌 80% STRATEGIC: Odds improve!\n"
+            "⚠️ 20% TACTICAL RETREAT: Status quo"
+        ),
+    },
+    
+    # Hobo Rat / Robo Rat
+    "wanderer_009": {
+        "icon_normal": "🐀",
+        "icon_exceptional": "🤖",
+        "quote_paid": "\"I know all the shortcuts, friend.\" - Hobo Rat",
+        "quote_risky": "\"Optimal route calculated. Trust me.\" - Robo Rat",
+        "tooltip_paid": (
+            "🎲 FREE RISKY RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🐀\n\n"
+            "*scratches ear thoughtfully*\n\"I've ridden every train.\n"
+            "  Sometimes the shortcut... derails.\"\n\n"
+            "🌌 80% SHORTCUT: Better odds!\n"
+            "⚠️ 20% WRONG TURN: Same odds"
+        ),
+        "tooltip_risky": (
+            "🎲 FREE RISKY RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🤖\n\n"
+            "*LED eyes flash*\n\"RECALCULATING...\n"
+            "  GPS signal: 80% certainty.\"\n\n"
+            "🌌 80% OPTIMIZED: Route improved!\n"
+            "⚠️ 20% SIGNAL LOST: Original route"
+        ),
+    },
+}
+
+
+def _get_recalc_icon(entity_id: str, is_exceptional: bool) -> str:
+    """Get the icon for a recalculate perk provider."""
+    narratives = RECALC_ENTITY_NARRATIVES.get(entity_id, {})
+    if is_exceptional:
+        return narratives.get("icon_exceptional", "✨")
+    return narratives.get("icon_normal", "🔮")
+
+
+def _get_recalc_quote(entity_id: str, is_exceptional: bool, risky: bool = False) -> str:
+    """Get a short quote for the entity's recalculate perk."""
+    narratives = RECALC_ENTITY_NARRATIVES.get(entity_id, {})
+    if risky:
+        return narratives.get("quote_risky", f"\"Free recalculation awaits!\" ({RISKY_RECALC_SUCCESS_RATE*100:.0f}%)")
+    return narratives.get("quote_paid", "\"Let me recalculate those odds.\"")
+
+
+def _build_recalc_tooltip(entity_id: str, is_exceptional: bool, risky: bool = False) -> str:
+    """Build a tooltip for an entity's recalculate perk."""
+    from entitidex import get_entity_by_id
+    
+    entity = get_entity_by_id(entity_id)
     if not entity:
-        return []
+        return ""
     
-    return [
-        {
-            "entity_id": CHAD_ENTITY_ID,
-            "name": entity.name,  # "AGI Assistant Chad"
-            "exceptional_name": entity.exceptional_name,  # "AGI Assistant Rad"
-            "is_exceptional": False,
-            "perk_type": "paid_recalculate",
-            "perk_description": "💰 Paid Recalculate",
-            "perk_detail": "\"Hire me as your consultant!\" - Chad",
-            "icon": "🤖",
-            # Tooltip uses rotating narratives
-            "tooltip": _build_chad_tooltip(entity.name),
-        },
-        {
-            "entity_id": CHAD_ENTITY_ID,
-            "name": entity.exceptional_name,  # "AGI Assistant Rad"
-            "is_exceptional": True,
-            "perk_type": "risky_recalculate", 
-            "perk_description": "🎲 Transcendent Recalculate",
-            "perk_detail": f"\"Beyond your probability plane.\" - Rad ({RISKY_RECALC_SUCCESS_RATE*100:.0f}%)",
-            "icon": "🌟",
-            # Tooltip uses rotating narratives
-            "tooltip": _build_rad_tooltip(entity.exceptional_name),
-        },
-    ]
+    name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
+    narratives = RECALC_ENTITY_NARRATIVES.get(entity_id, {})
+    
+    if risky:
+        template = narratives.get("tooltip_risky", narratives.get("tooltip_paid", ""))
+    else:
+        template = narratives.get("tooltip_paid", "")
+    
+    if not template:
+        # Fallback generic tooltip
+        if risky:
+            return (
+                f"🎲 FREE RISKY RECALCULATE\n"
+                f"━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"Granted by: {name}\n\n"
+                f"🌌 {RISKY_RECALC_SUCCESS_RATE*100:.0f}% SUCCESS: Better odds!\n"
+                f"⚠️ {(1-RISKY_RECALC_SUCCESS_RATE)*100:.0f}% FAILURE: Original odds remain"
+            )
+        else:
+            return (
+                f"💰 PAID RECALCULATE\n"
+                f"━━━━━━━━━━━━━━━━━━━━━\n"
+                f"Granted by: {name}\n\n"
+                f"💡 Recalculate probability using current power!"
+            )
+    
+    return template.format(name=name)
 
 
 def get_recalculate_perks_status(adhd_buster: dict) -> dict:
@@ -17125,56 +17482,105 @@ def get_recalculate_perks_status(adhd_buster: dict) -> dict:
     Get the status of recalculate perks for UI display.
     
     Returns:
-        dict with perk availability and entity info for mini-cards
+        dict with perk availability, list of all providers (unlocked ones),
+        and first provider info for backward compatibility
     """
     from entitidex import get_entity_by_id
+    from entitidex.entity_perks import ENTITY_PERKS, PerkType
     
     has_paid = has_paid_recalculate_perk(adhd_buster)
     has_risky = has_risky_recalculate_perk(adhd_buster)
     
-    entity = get_entity_by_id(CHAD_ENTITY_ID)
+    manager = get_entitidex_manager(adhd_buster)
     
     result = {
         "has_paid_recalculate": has_paid,
         "has_risky_recalculate": has_risky,
-        "paid_recalculate_provider": None,
-        "risky_recalculate_provider": None,
+        "paid_recalculate_provider": None,  # First unlocked paid provider (backward compat)
+        "risky_recalculate_provider": None,  # First unlocked risky provider (backward compat)
+        "paid_providers": [],  # All unlocked paid providers
+        "risky_providers": [],  # All unlocked risky providers
         "risky_success_rate": RISKY_RECALC_SUCCESS_RATE,
         "risky_success_percent": f"{RISKY_RECALC_SUCCESS_RATE * 100:.0f}%",
     }
     
-    if entity:
-        # Tooltip for Paid Recalculate (uses rotating narratives)
-        paid_tooltip = _build_chad_tooltip(entity.name)
-        if not has_paid:
-            paid_tooltip += f"\n\n🔒 Chad says: \"Find me first, buddy.\""
+    # Find all providers with their unlock status
+    for entity_id, perks in ENTITY_PERKS.items():
+        entity = get_entity_by_id(entity_id)
+        if not entity:
+            continue
         
-        # Tooltip for Risky Recalculate (uses rotating narratives)
-        risky_tooltip = _build_rad_tooltip(entity.exceptional_name)
-        if not has_risky:
-            risky_tooltip += f"\n\n🔒 Rad transmits: \"Locate my exceptional form to access higher dimensions.\""
+        is_collected = manager.progress.is_collected(entity_id)
+        is_exceptional = manager.progress.is_exceptional(entity_id)
         
-        # Info for Paid Recalculate mini-card
-        result["paid_recalculate_provider"] = {
-            "entity_id": CHAD_ENTITY_ID,
-            "name": entity.name,
-            "is_exceptional": False,
-            "is_unlocked": has_paid,
-            "perk_label": "💰 Paid Recalculate",
-            "description": "\"I'm a professional. Pay me.\" - Chad",
-            "tooltip": paid_tooltip,
-        }
-        
-        # Info for Risky Recalculate mini-card
-        result["risky_recalculate_provider"] = {
-            "entity_id": CHAD_ENTITY_ID,
-            "name": entity.exceptional_name,
-            "is_exceptional": True,
-            "is_unlocked": has_risky,
-            "perk_label": "🎲 Transcendent Recalculate",
-            "description": f"\"Reality is... flexible.\" ({RISKY_RECALC_SUCCESS_RATE * 100:.0f}%)",
-            "tooltip": risky_tooltip,
-        }
+        for perk in perks:
+            # Check paid recalculate perks
+            if perk.perk_type == PerkType.RECALC_PAID:
+                # Normal variant
+                if perk.normal_value > 0 and is_collected:
+                    provider = {
+                        "entity_id": entity_id,
+                        "name": entity.name,
+                        "is_exceptional": False,
+                        "is_unlocked": True,
+                        "perk_label": "💰 Paid Recalculate",
+                        "description": _get_recalc_quote(entity_id, False),
+                        "tooltip": _build_recalc_tooltip(entity_id, False),
+                        "icon": _get_recalc_icon(entity_id, False),
+                    }
+                    result["paid_providers"].append(provider)
+                    if result["paid_recalculate_provider"] is None:
+                        result["paid_recalculate_provider"] = provider
+                
+                # Exceptional variant
+                if perk.exceptional_value > 0 and is_exceptional:
+                    provider = {
+                        "entity_id": entity_id,
+                        "name": entity.exceptional_name or entity.name,
+                        "is_exceptional": True,
+                        "is_unlocked": True,
+                        "perk_label": "💰 Paid Recalculate",
+                        "description": _get_recalc_quote(entity_id, True),
+                        "tooltip": _build_recalc_tooltip(entity_id, True),
+                        "icon": _get_recalc_icon(entity_id, True),
+                    }
+                    result["paid_providers"].append(provider)
+                    if result["paid_recalculate_provider"] is None:
+                        result["paid_recalculate_provider"] = provider
+            
+            # Check risky recalculate perks
+            if perk.perk_type == PerkType.RECALC_RISKY:
+                # Normal variant
+                if perk.normal_value > 0 and is_collected:
+                    provider = {
+                        "entity_id": entity_id,
+                        "name": entity.name,
+                        "is_exceptional": False,
+                        "is_unlocked": True,
+                        "perk_label": "🎲 Free Risky Recalculate",
+                        "description": _get_recalc_quote(entity_id, False, risky=True),
+                        "tooltip": _build_recalc_tooltip(entity_id, False, risky=True),
+                        "icon": _get_recalc_icon(entity_id, False),
+                    }
+                    result["risky_providers"].append(provider)
+                    if result["risky_recalculate_provider"] is None:
+                        result["risky_recalculate_provider"] = provider
+                
+                # Exceptional variant
+                if perk.exceptional_value > 0 and is_exceptional:
+                    provider = {
+                        "entity_id": entity_id,
+                        "name": entity.exceptional_name or entity.name,
+                        "is_exceptional": True,
+                        "is_unlocked": True,
+                        "perk_label": "🎲 Free Risky Recalculate",
+                        "description": _get_recalc_quote(entity_id, True, risky=True),
+                        "tooltip": _build_recalc_tooltip(entity_id, True, risky=True),
+                        "icon": _get_recalc_icon(entity_id, True),
+                    }
+                    result["risky_providers"].append(provider)
+                    if result["risky_recalculate_provider"] is None:
+                        result["risky_recalculate_provider"] = provider
     
     return result
 
