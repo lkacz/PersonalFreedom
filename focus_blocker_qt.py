@@ -26887,7 +26887,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         Returns:
             QIcon with countdown badge overlay
         """
-        size = 64
+        # Create a large icon for the taskbar (Windows taskbar uses large icons)
+        size = 128
         
         # Start with base icon
         pixmap = QtGui.QPixmap(size, size)
@@ -26899,13 +26900,15 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
         
         if self._base_window_icon:
+            # Request a large size from the base icon to ensure quality
             base_pixmap = self._base_window_icon.pixmap(size, size)
             painter.drawPixmap(0, 0, base_pixmap)
         
         # Draw countdown badge in bottom-right corner
-        badge_size = 28
-        badge_x = size - badge_size - 2
-        badge_y = size - badge_size - 2
+        # Scale badge relative to icon size (approx 45% of size)
+        badge_size = int(size * 0.45)
+        badge_x = size - badge_size - 4
+        badge_y = size - badge_size - 4
         
         # Orange gradient border (legendary)
         border_gradient = QtGui.QLinearGradient(
@@ -26917,7 +26920,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         
         painter.setBrush(border_gradient)
         painter.setPen(QtCore.Qt.NoPen)
-        painter.drawEllipse(badge_x - 2, badge_y - 2, badge_size + 4, badge_size + 4)
+        painter.drawEllipse(badge_x - 4, badge_y - 4, badge_size + 8, badge_size + 8)
         
         # Blue gradient background (rare)
         bg_gradient = QtGui.QLinearGradient(
@@ -26933,13 +26936,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Draw white text
         painter.setPen(QtGui.QColor("#FFFFFF"))
         
-        # Adaptive font size
+        # Adaptive font size (larger for the 128px icon)
         if minutes >= 100:
-            font_size = 11
+            font_size = int(badge_size * 0.44)  # 3 digits
         elif minutes >= 10:
-            font_size = 14
+            font_size = int(badge_size * 0.52)  # 2 digits
         else:
-            font_size = 16
+            font_size = int(badge_size * 0.60)  # 1 digit
         
         font = QtGui.QFont("Arial", font_size, QtGui.QFont.Bold)
         painter.setFont(font)

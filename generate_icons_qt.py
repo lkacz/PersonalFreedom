@@ -165,6 +165,45 @@ def main():
     blocking_pixmap = create_person_icon(128, blocking=True)
     blocking_pixmap.save(str(output_dir / "tray_blocking.png"))
     print(f"  ✓ {output_dir / 'tray_blocking.png'}")
+
+    # Generate ICO files by resizing the high-quality 128px PNGs
+    print("\n  Generating ICO files by resizing 128px PNGs...")
+    try:
+        from PIL import Image
+        
+        # Load the 128px ready icon
+        ready_img = Image.open(str(output_dir / "tray_ready.png"))
+        
+        # Generate app.ico with multiple sizes (resized from 128px)
+        app_sizes = [16, 24, 32, 48, 64, 128]
+        app_images = [ready_img.resize((s, s), Image.Resampling.LANCZOS) for s in app_sizes]
+        
+        ico_path = output_dir / "app.ico"
+        app_images[0].save(
+            str(ico_path),
+            format='ICO',
+            sizes=[(s, s) for s in app_sizes],
+            append_images=app_images[1:]
+        )
+        print(f"  ✓ {ico_path} (sizes: {app_sizes})")
+        
+        # Generate tray ICO files
+        for name in ["tray_ready", "tray_blocking"]:
+            png_path = output_dir / f"{name}.png"
+            img = Image.open(str(png_path))
+            ico_path = output_dir / f"{name}.ico"
+            tray_sizes = [16, 24, 32, 48, 64, 128]
+            tray_images = [img.resize((s, s), Image.Resampling.LANCZOS) for s in tray_sizes]
+            tray_images[0].save(
+                str(ico_path),
+                format='ICO',
+                sizes=[(s, s) for s in tray_sizes],
+                append_images=tray_images[1:]
+            )
+            print(f"  ✓ {ico_path}")
+
+    except ImportError:
+        print("  ⚠ PIL not available, skipping ICO generation")
     
     print("\nDone! Icons generated with Qt rendering (same quality as timer icons)")
 
