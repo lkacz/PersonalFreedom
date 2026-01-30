@@ -25722,6 +25722,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         # System Tray setup
         self.tray_icon = None
+        self._last_tray_minutes: Optional[int] = None  # Track displayed minutes to avoid unnecessary updates
+        self._base_tray_pixmap: Optional[QtGui.QPixmap] = None  # Cache base icon for overlay
         self.minimize_to_tray = self.blocker.minimize_to_tray  # Load from config
         self._hotkey_id = 1
         self._hotkey_registered = False
@@ -26678,11 +26680,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.tray_icon.show()
         self.tray_update_timer.start()
 
-    def _update_tray_icon(self, blocking: bool = False) -> None:
-        """Update the tray icon image."""
-        if not self.tray_icon:
-            return
-
+    def _get_base_tray_pixmap(self, blocking: bool = False) -> QtGui.QPixmap:
+        """Get the base tray icon pixmap (loaded from file or generated)."""
         # Try to load icon from file first
         icon_name = "tray_blocking.png" if blocking else "tray_ready.png"
         
@@ -26690,8 +26689,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         from app_utils import get_resource_path
         resource_icon = get_resource_path("icons", icon_name)
         if resource_icon.exists():
-            self.tray_icon.setIcon(QtGui.QIcon(str(resource_icon)))
-            return
+            return QtGui.QIcon(str(resource_icon)).pixmap(64, 64)
         
         # Fallback: check script directory locations
         script_dir = Path(__file__).parent
@@ -26703,8 +26701,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         
         for icon_path in icon_paths:
             if icon_path.exists():
-                self.tray_icon.setIcon(QtGui.QIcon(str(icon_path)))
-                return
+                return QtGui.QIcon(str(icon_path)).pixmap(64, 64)
         
         # Fallback: generate icon dynamically if files not found
         size = 64
@@ -26746,11 +26743,124 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             painter.drawRect(29, 44, 6, 10)
 
         painter.end()
+        return pixmap
 
+    def _update_tray_icon(self, blocking: bool = False) -> None:
+        """Update the tray icon image."""
+        if not self.tray_icon:
+            return
+            
+        pixmap = self._get_base_tray_pixmap(blocking)
         self.tray_icon.setIcon(QtGui.QIcon(pixmap))
 
+    def _create_tray_icon_with_minutes(self, minutes: int, blocking: bool = True) -> QtGui.QIcon:
+        """Create a tray icon with remaining minutes (Legendary style with Rare blue gradient).
+        
+        Args:
+            minutes: Minutes remaining to display (0-999)
+            blocking: Whether blocking is active (determines icon color)
+            
+        Returns:
+            QIcon with minutes overlay
+        """
+        # Create a blank transparent pixmap
+        size = 64
+        pixmap = QtGui.QPixmap(size, size)
+        pixmap.fill(QtCore.Qt.transparent)
+
+        painter = QtGui.QPainter(pixmap)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.TextAntialiasing)
+
+        border_width = 4
+        outer_margin = 2
+        inner_margin = outer_margin + border_width
+        
+        # Draw Legendary Orange Gradient Border (bottom to top) - STRONG CONTRAST
+        orange_gradient = QtGui.QLinearGradient(0, size, 0, 0)  # bottom to top
+        orange_gradient.setColorAt(0, QtGui.QColor("#E65100"))  # Dark orange at bottom
+        orange_gradient.setColorAt(1, QtGui.QColor("#FFE0B2"))  # Very light orange at top
+        
+        painter.setBrush(orange_gradient)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawEllipse(outer_margin, outer_margin, size - 2*outer_margin, size - 2*outer_margin)
+        
+        # Draw Rare Blue Gradient Background (top to bottom) - STRONG CONTRAST
+        blue_gradient = QtGui.QLinearGradient(0, 0, 0, size)  # top to bottom
+        blue_gradient.setColorAt(0, QtGui.QColor("#90CAF9"))  # Very light blue at top
+        blue_gradient.setColorAt(1, QtGui.QColor("#0D47A1"))  # Very dark blue at bottom
+        
+        painter.setBrush(blue_gradient)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawEllipse(inner_margin, inner_margin, size - 2*inner_margin, size - 2*inner_margin)
+
+        # Draw Number
+        painter.setPen(QtGui.QColor("white"))
+        
+        # Scaling logic for font size
+        text = str(minutes)
+        if len(text) >= 3:
+            font_size = 20
+        elif len(text) == 2:
+            font_size = 26
+        else:
+            font_size = 32
+        
+        font = QtGui.QFont("Arial", font_size, QtGui.QFont.Bold)
+        painter.setFont(font)
+        
+        rect = QtCore.QRect(0, 0, size, size)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, text)
+
+        painter.end()
+
+        return QtGui.QIcon(pixmap)
+        painter.setFont(font)
+        
+        rect = QtCore.QRect(badge_x, badge_y, badge_size, badge_size)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, text)
+
+        painter.end()
+
+        return QtGui.QIcon(pixmap)
+        if minutes >= 100:
+            font_size = 18
+        elif minutes >= 10:
+            font_size = 24
+        else:
+            font_size = 28
+        
+        font = QtGui.QFont("Arial", font_size, QtGui.QFont.Bold)
+        painter.setFont(font)
+        
+        # Draw the number centered
+        text = str(minutes)
+        rect = QtCore.QRect(0, 0, size, size)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, text)
+
+        painter.end()
+
+        return QtGui.QIcon(pixmap)
+
+    def _update_tray_icon_with_time(self, minutes: int) -> None:
+        """Update tray icon with minutes remaining, only if changed.
+        
+        Args:
+            minutes: Minutes remaining to display
+        """
+        if not self.tray_icon:
+            return
+            
+        # Only update if minutes changed (minimize system impact)
+        if self._last_tray_minutes == minutes:
+            return
+            
+        self._last_tray_minutes = minutes
+        icon = self._create_tray_icon_with_minutes(minutes, blocking=True)
+        self.tray_icon.setIcon(icon)
+
     def _update_tray_status(self) -> None:
-        """Update tray icon status text."""
+        """Update tray icon status text and minutes display."""
         if not self.tray_icon:
             return
 
@@ -26761,9 +26871,18 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             s = remaining % 60
             self.tray_status_action.setText(f"🔒 Blocking - {h:02d}:{m:02d}:{s:02d}")
             self.tray_icon.setToolTip(f"Personal Liberty - Blocking ({h:02d}:{m:02d}:{s:02d})")
+            
+            # Update icon with remaining minutes (total minutes, not just the m component)
+            total_minutes = (remaining + 59) // 60  # Round up to nearest minute
+            self._update_tray_icon_with_time(total_minutes)
         else:
             self.tray_status_action.setText("Ready")
             self.tray_icon.setToolTip("Personal Liberty - Ready")
+            
+            # Reset to normal icon when not blocking
+            if self._last_tray_minutes is not None:
+                self._last_tray_minutes = None
+                self._update_tray_icon(blocking=False)
 
     def _on_tray_activated(self, reason: QtWidgets.QSystemTrayIcon.ActivationReason) -> None:
         """Handle tray icon activation (double-click to restore)."""
