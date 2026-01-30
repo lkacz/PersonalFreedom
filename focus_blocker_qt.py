@@ -1733,6 +1733,9 @@ class TimerTab(QtWidgets.QWidget):
         # Track if session is on a strategic priority for 2.5x coin multiplier
         self.session_is_strategic: bool = False
         self.session_priority_title: Optional[str] = None
+        self._is_starting_with_priority: bool = False  # Flag to skip priority dialog when already set
+        self.session_total_seconds: int = 0  # Total session duration for progress calculation
+        self.preset_buttons: List[QtWidgets.QPushButton] = []  # Store preset buttons for disabling
 
         self._build_ui()
         self._connect_signals()
@@ -2008,6 +2011,7 @@ class TimerTab(QtWidgets.QWidget):
             """)
             btn.clicked.connect(lambda _=False, m=minutes: self._set_preset(m))
             preset_row.addWidget(btn)
+            self.preset_buttons.append(btn)  # Store for disabling during session
         settings_layout.addLayout(preset_row)
 
         # Divider
@@ -2395,6 +2399,8 @@ class TimerTab(QtWidgets.QWidget):
             self.session_progress.setVisible(False)
         if hasattr(self, 'session_status'):
             self.session_status.setVisible(False)
+        # Enable session controls when not running
+        self._set_session_controls_enabled(True)
         # Update motivation message
         if hasattr(self, 'motivation_label'):
             self._update_motivation_message()
@@ -2427,9 +2433,42 @@ class TimerTab(QtWidgets.QWidget):
             self.session_progress.setVisible(True)
         if hasattr(self, 'session_status'):
             self.session_status.setVisible(True)
+        # Disable session controls when running (prevent changing duration/mode)
+        self._set_session_controls_enabled(False)
         # Update motivation message for running state
         if hasattr(self, 'motivation_label'):
             self._update_motivation_message()
+
+    def _set_session_controls_enabled(self, enabled: bool) -> None:
+        """Enable or disable session configuration controls.
+        
+        When a session is running, duration, mode, and preset controls should
+        be disabled to prevent confusion with progress calculation.
+        """
+        # Duration slider
+        if hasattr(self, 'duration_slider'):
+            self.duration_slider.setEnabled(enabled)
+        
+        # Duration display label
+        if hasattr(self, 'duration_display'):
+            self.duration_display.setStyleSheet(
+                "background: #3d3d5c; color: #a29bfe; font-weight: bold; "
+                "border-radius: 6px; padding: 4px 12px;" if enabled else
+                "background: #2d2d3c; color: #666; font-weight: bold; "
+                "border-radius: 6px; padding: 4px 12px;"
+            )
+        
+        # Mode combo
+        if hasattr(self, 'mode_combo'):
+            self.mode_combo.setEnabled(enabled)
+        
+        # Alert/Notify combo
+        if hasattr(self, 'notify_combo'):
+            self.notify_combo.setEnabled(enabled)
+        
+        # Preset buttons
+        for btn in getattr(self, 'preset_buttons', []):
+            btn.setEnabled(enabled)
 
     def _toggle_session(self) -> None:
         """Toggle between starting and stopping a session."""
@@ -2490,6 +2529,33 @@ class TimerTab(QtWidgets.QWidget):
         # Guard against starting while already running
         if self.timer_running:
             return
+        
+        # Check if we should ask about priorities first (only if not already set by priority dialog)
+        if not hasattr(self, '_preserve_strategic_flag'):
+            # Check if user wants to be asked about priorities
+            if (self.blocker.ask_priority_on_session_start and 
+                self.blocker.priorities and
+                not self._is_starting_with_priority):
+                # Check if there are priorities for today
+                today = datetime.now().strftime("%A")
+                has_today_priorities = any(
+                    p.get("title", "").strip() and (not p.get("days") or today in p.get("days", []))
+                    for p in self.blocker.priorities
+                )
+                if has_today_priorities:
+                    dialog = PrioritySessionStartDialog(self.blocker, self)
+                    result = dialog.exec()
+                    if result != QtWidgets.QDialog.Accepted:
+                        return  # User cancelled
+                    
+                    # If user selected a priority, set it up
+                    if dialog.selected_priority:
+                        self.session_priority_title = dialog.selected_priority
+                        self.session_is_strategic = dialog.is_strategic
+                        self._preserve_strategic_flag = True
+        
+        # Reset the flag for next time
+        self._is_starting_with_priority = False
         
         # Set immediately to prevent race condition from double-clicks
         self.timer_running = True
@@ -2569,6 +2635,7 @@ class TimerTab(QtWidgets.QWidget):
             return
 
         self.remaining_seconds = total_seconds
+        self.session_total_seconds = total_seconds  # Store for accurate progress calculation
         self.session_start = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch()
         self.timer_label.setText(self._format_time(self.remaining_seconds))
         self._set_action_btn_stop_style()
@@ -2665,7 +2732,8 @@ class TimerTab(QtWidgets.QWidget):
             return
         
         try:
-            total_seconds = self.duration_slider.value() * 60
+            # Use the stored session total, not the slider value
+            total_seconds = self.session_total_seconds if self.session_total_seconds > 0 else self.remaining_seconds
             elapsed = total_seconds - self.remaining_seconds
             
             if total_seconds > 0:
@@ -2737,6 +2805,7 @@ class TimerTab(QtWidgets.QWidget):
         dialog = PriorityCheckinDialog(self.blocker, today_priorities, session_minutes, self.window())
         dialog.exec()
         dialog_result = dialog.result  # Capture result before cleanup
+        dialog.hide()  # Explicitly hide before deletion
         dialog.deleteLater()  # Ensure dialog is cleaned up
 
         # Handle on-task confirmation with rewards
@@ -2873,6 +2942,7 @@ class TimerTab(QtWidgets.QWidget):
             parent=self.window()
         )
         lottery_dialog.exec()
+        lottery_dialog.hide()  # Explicitly hide before deletion to prevent ghost boxes
         lottery_dialog.deleteLater()  # Ensure dialog is cleaned up
 
         # Ensure item has all required fields
@@ -2972,6 +3042,7 @@ class TimerTab(QtWidgets.QWidget):
             levelup_dialog = EnhancedLevelUpDialog(old_level, new_level, stats, fullscreen, self.window())
             levelup_dialog.view_stats.connect(self._show_stats_dialog)
             levelup_dialog.exec()
+            levelup_dialog.hide()  # Explicitly hide before deletion to prevent ghost boxes
             levelup_dialog.deleteLater()  # Ensure dialog is cleaned up
 
         # Show unified item reward dialog with comparison
@@ -3060,6 +3131,7 @@ class TimerTab(QtWidgets.QWidget):
             extra_messages=extra_msgs,
         )
         reward_dialog.exec()
+        reward_dialog.hide()  # Explicitly hide before deletion to prevent ghost boxes
         reward_dialog.deleteLater()  # Ensure dialog is cleaned up
         
         # 🎉 Show building complete celebration if construction just finished
@@ -3105,6 +3177,7 @@ class TimerTab(QtWidgets.QWidget):
         if diary_entry:
             diary_dialog = DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes, self.window())
             diary_dialog.exec()
+            diary_dialog.hide()  # Explicitly hide before deletion to prevent ghost boxes
             diary_dialog.deleteLater()  # Ensure dialog is cleaned up
 
     def _get_notify_mode(self) -> str:
@@ -3890,6 +3963,7 @@ class TimerTab(QtWidgets.QWidget):
         if has_priorities:
             priority_dialog = PriorityTimeLogDialog(self.blocker, session_minutes, self.window())
             priority_dialog.exec()
+            priority_dialog.hide()  # Explicitly hide before deletion
             priority_dialog.deleteLater()  # Ensure dialog is cleaned up
 
     def _show_log_past_session_dialog(self) -> None:
@@ -3897,6 +3971,7 @@ class TimerTab(QtWidgets.QWidget):
         dialog = LogPastSessionDialog(self.blocker, parent=self.window())
         result = dialog.exec()
         session_minutes = dialog.get_session_minutes() if result == QtWidgets.QDialog.Accepted else 0
+        dialog.hide()  # Explicitly hide before deletion
         dialog.deleteLater()  # Ensure dialog is cleaned up
         
         if result == QtWidgets.QDialog.Accepted and session_minutes > 0:
@@ -4015,6 +4090,7 @@ class TimerTab(QtWidgets.QWidget):
             return
 
         self.remaining_seconds = total_seconds
+        self.session_total_seconds = total_seconds  # Store for progress calculation
         self.timer_running = True
         self.session_start = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch()
         self.pomodoro_is_break = False
@@ -4033,6 +4109,7 @@ class TimerTab(QtWidgets.QWidget):
         total_seconds = break_minutes * 60
 
         self.remaining_seconds = total_seconds
+        self.session_total_seconds = total_seconds  # Store for progress calculation
         self.timer_running = True
         self.session_start = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch()
         self.pomodoro_is_break = True
@@ -6576,6 +6653,7 @@ class SettingsTab(QtWidgets.QWidget):
                     "schedules": self.blocker.schedules,
                     "priorities": self.blocker.priorities,
                     "show_priorities_on_startup": self.blocker.show_priorities_on_startup,
+                    "ask_priority_on_session_start": self.blocker.ask_priority_on_session_start,
                     "priority_checkin_enabled": self.blocker.priority_checkin_enabled,
                     "priority_checkin_interval": self.blocker.priority_checkin_interval,
                     "adhd_buster": self.blocker.adhd_buster,
@@ -6618,6 +6696,7 @@ class SettingsTab(QtWidgets.QWidget):
             self.blocker.schedules = config.get("schedules", self.blocker.schedules)
             self.blocker.priorities = config.get("priorities", self.blocker.priorities)
             self.blocker.show_priorities_on_startup = config.get("show_priorities_on_startup", self.blocker.show_priorities_on_startup)
+            self.blocker.ask_priority_on_session_start = config.get("ask_priority_on_session_start", self.blocker.ask_priority_on_session_start)
             self.blocker.priority_checkin_enabled = config.get("priority_checkin_enabled", self.blocker.priority_checkin_enabled)
             self.blocker.priority_checkin_interval = config.get("priority_checkin_interval", self.blocker.priority_checkin_interval)
             self.blocker.adhd_buster = config.get("adhd_buster", self.blocker.adhd_buster)
@@ -7097,15 +7176,26 @@ class WeightChartWidget(QtWidgets.QWidget):
     - 7-day moving average trend line (for 7+ entries)
     - Weekly binning with min/max bands (for 30+ entries)
     - Trend direction indicator
+    - Context-colored data points (morning, evening, etc.)
     """
     
     # Mode thresholds
     WEEKLY_BIN_THRESHOLD = 30  # Switch to weekly binning after this many entries
     MOVING_AVG_WINDOW = 7     # 7-day moving average
     
+    # Context colors for different logging occasions
+    CONTEXT_COLORS = {
+        "morning": "#FFD700",     # Gold - morning
+        "evening": "#9370DB",     # Purple - evening
+        "post_workout": "#00CED1", # Cyan - post-workout
+        "fasted": "#98FB98",      # Pale green - fasted
+        "post_meal": "#FFA07A",   # Light salmon - post-meal
+        "": "#6496ff",            # Default blue - no context
+    }
+    
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
-        self.weight_data = []  # List of (date_str, weight) tuples
+        self.weight_data = []  # List of (date_str, weight, context) tuples
         self.goal_weight = None
         self.unit = "kg"
         self.setMinimumHeight(250)
@@ -7113,8 +7203,8 @@ class WeightChartWidget(QtWidgets.QWidget):
     
     def set_data(self, entries: list, goal: float = None, unit: str = "kg") -> None:
         """Set the weight data to display."""
-        # Sort by date and filter valid entries
-        valid_entries = [(e["date"], e["weight"]) for e in entries 
+        # Sort by date and filter valid entries, include context
+        valid_entries = [(e["date"], e["weight"], e.get("note", "")) for e in entries 
                         if e.get("date") and e.get("weight")]
         self.weight_data = sorted(valid_entries, key=lambda x: x[0])
         self.goal_weight = goal
@@ -7150,7 +7240,7 @@ class WeightChartWidget(QtWidgets.QWidget):
             
             # Find weights in this week
             week_weights = []
-            for date_str, weight in self.weight_data:
+            for date_str, weight, context in self.weight_data:
                 d = self._parse_date(date_str)
                 if d and current_week_start <= d <= week_end:
                     week_weights.append(weight)
@@ -7177,7 +7267,7 @@ class WeightChartWidget(QtWidgets.QWidget):
         
         ma_data = []
         
-        for i, (date_str, weight) in enumerate(self.weight_data):
+        for i, (date_str, weight, context) in enumerate(self.weight_data):
             current_date = self._parse_date(date_str)
             if not current_date:
                 continue
@@ -7186,7 +7276,7 @@ class WeightChartWidget(QtWidgets.QWidget):
             window_start = current_date - timedelta(days=self.MOVING_AVG_WINDOW - 1)
             window_weights = []
             
-            for d_str, w in self.weight_data:
+            for d_str, w, ctx in self.weight_data:
                 d = self._parse_date(d_str)
                 if d and window_start <= d <= current_date:
                     window_weights.append(w)
@@ -7215,7 +7305,7 @@ class WeightChartWidget(QtWidgets.QWidget):
         weights = []
         first_date = self._parse_date(self.weight_data[0][0])
         
-        for date_str, weight in self.weight_data:
+        for date_str, weight, context in self.weight_data:
             d = self._parse_date(date_str)
             if d and first_date:
                 days = (d - first_date).days
@@ -7309,7 +7399,7 @@ class WeightChartWidget(QtWidgets.QWidget):
         total_days = max(1, (last_date - first_date).days)
         
         # Calculate weight range
-        weights = [w for _, w in self.weight_data]
+        weights = [w for _, w, ctx in self.weight_data]
         min_weight = min(weights)
         max_weight = max(weights)
         
@@ -7439,11 +7529,11 @@ class WeightChartWidget(QtWidgets.QWidget):
         
         else:
             # ===== DAILY MODE =====
-            # Build points list with date info
+            # Build points list with date info and context
             points = []
             prev_date = None
             
-            for date_str, weight in self.weight_data:
+            for date_str, weight, context in self.weight_data:
                 current_date = self._parse_date(date_str)
                 if not current_date:
                     continue
@@ -7460,6 +7550,7 @@ class WeightChartWidget(QtWidgets.QWidget):
                     "date": current_date,
                     "date_str": date_str,
                     "weight": weight,
+                    "context": context,
                     "x": x,
                     "y": y,
                     "gap_before": gap_days,
@@ -7517,19 +7608,30 @@ class WeightChartWidget(QtWidgets.QWidget):
                     painter.setFont(QtGui.QFont("Segoe UI", 8))
                     painter.drawText(chart_rect.right() - 80, chart_rect.top() + 15, "7-day avg")
             
-            # Draw data points
+            # Draw data points with context coloring
+            # First, collect unique contexts for legend
+            unique_contexts = set(p.get("context", "") for p in points)
+            has_multiple_contexts = len(unique_contexts) > 1 or (len(unique_contexts) == 1 and "" not in unique_contexts)
+            
             for i, p in enumerate(points):
-                # Determine point color based on trend
+                # Determine point color based on context
+                context = p.get("context", "")
+                base_color = QtGui.QColor(self.CONTEXT_COLORS.get(context, self.CONTEXT_COLORS[""]))
+                
+                # Adjust brightness based on trend (darker for gain, brighter for loss)
                 if i > 0:
                     prev_weight = points[i - 1]["weight"]
                     if p["weight"] < prev_weight:
-                        color = QtGui.QColor("#00ff88")  # Green - lost weight
+                        # Weight loss - make border green
+                        border_color = QtGui.QColor("#00ff88")
                     elif p["weight"] > prev_weight:
-                        color = QtGui.QColor("#ff6464")  # Red - gained weight
+                        # Weight gain - make border red
+                        border_color = QtGui.QColor("#ff6464")
                     else:
-                        color = QtGui.QColor("#ffff64")  # Yellow - same
+                        # Same - white border
+                        border_color = QtGui.QColor("#ffffff")
                 else:
-                    color = QtGui.QColor("#6496ff")  # Blue - first point
+                    border_color = QtGui.QColor("#ffffff")
                 
                 # Hollow point for gap interpolation indicator
                 if p["gap_before"] > 2:
@@ -7537,10 +7639,34 @@ class WeightChartWidget(QtWidgets.QWidget):
                     painter.setPen(QtGui.QPen(QtGui.QColor("#888888"), 1))
                     painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
                 else:
-                    painter.setBrush(color)
-                    painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1))
+                    painter.setBrush(base_color)
+                    painter.setPen(QtGui.QPen(border_color, 2))
                 
                 painter.drawEllipse(QtCore.QPointF(p["x"], p["y"]), 5, 5)
+            
+            # Draw context legend if multiple contexts exist
+            if has_multiple_contexts:
+                legend_y = chart_rect.bottom() + 30
+                legend_x = chart_rect.left()
+                painter.setFont(QtGui.QFont("Segoe UI", 7))
+                
+                for ctx in sorted(unique_contexts):
+                    color = QtGui.QColor(self.CONTEXT_COLORS.get(ctx, self.CONTEXT_COLORS[""]))
+                    painter.setBrush(color)
+                    painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1))
+                    painter.drawEllipse(QtCore.QPointF(legend_x + 5, legend_y), 4, 4)
+                    
+                    # Get display name for context
+                    if ctx and format_entry_note:
+                        ctx_label = format_entry_note(ctx)
+                    elif ctx:
+                        ctx_label = ctx.replace("_", " ").title()
+                    else:
+                        ctx_label = "No context"
+                    
+                    painter.setPen(QtGui.QColor("#aaaaaa"))
+                    painter.drawText(int(legend_x) + 12, int(legend_y) + 4, ctx_label)
+                    legend_x += 70
         
         # Draw date labels (smart distribution)
         painter.setPen(QtGui.QColor("#888888"))
@@ -7740,6 +7866,7 @@ class WeightTab(QtWidgets.QWidget):
             for tag_id, tag_display, tooltip in WEIGHT_ENTRY_TAGS:
                 self.note_combo.addItem(tag_display, tag_id)
         self.note_combo.setFixedWidth(150)
+        self.note_combo.currentIndexChanged.connect(self._on_context_changed)
         note_row.addWidget(self.note_combo)
         note_row.addStretch()
         input_layout.addRow("Context:", note_row)
@@ -7960,6 +8087,10 @@ class WeightTab(QtWidgets.QWidget):
             self.blocker.save_config()
             self._refresh_display()
     
+    def _on_context_changed(self, index: int) -> None:
+        """Handle context selection change - update comparisons to show same-context data."""
+        self._update_comparisons()
+    
     def _on_unit_changed(self, unit: str) -> None:
         """Handle unit change."""
         self.weight_input.setSuffix(f" {unit}")
@@ -7998,25 +8129,36 @@ class WeightTab(QtWidgets.QWidget):
         weight = self.weight_input.value()
         date_str = self.date_edit.date().toString("yyyy-MM-dd")
         unit = self.unit_combo.currentText()
+        note = self.note_combo.currentData() or ""
         
         # Convert to kg for storage if needed
         weight_kg = weight / 2.20462 if unit == "lbs" else weight
         
-        # Check if entry already exists for this date
+        # Check if entry already exists for this date AND context
+        # Multiple entries per day are allowed if they have different contexts
         existing_idx = None
         for i, entry in enumerate(self.blocker.weight_entries):
-            if entry.get("date") == date_str:
+            if entry.get("date") == date_str and entry.get("note", "") == note:
                 existing_idx = i
                 break
         
-        # For reward calculation, we need entries WITHOUT the current date
+        # For reward calculation, we need entries WITHOUT the current date+context combination
         # This ensures updating an entry compares against historical data only
-        entries_for_reward = [e for e in self.blocker.weight_entries if e.get("date") != date_str]
+        entries_for_reward = [e for e in self.blocker.weight_entries 
+                              if not (e.get("date") == date_str and e.get("note", "") == note)]
+        
+        # Check if reward was already given today for THIS context
+        # We award once per day per context (so morning/evening each get rewards)
+        today_same_context_exists = any(
+            e.get("date") == date_str and e.get("note", "") == note 
+            for e in self.blocker.weight_entries
+        )
         
         # Check for rewards before adding entry (use comprehensive function if available)
         # Skip if gamification mode is disabled (same as focus sessions)
+        # Skip if we already have a same-context entry today (already rewarded)
         rewards = None
-        if GAMIFICATION_AVAILABLE and check_all_weight_rewards and is_gamification_enabled(self.blocker.adhd_buster):
+        if not today_same_context_exists and GAMIFICATION_AVAILABLE and check_all_weight_rewards and is_gamification_enabled(self.blocker.adhd_buster):
             story_id = self.blocker.adhd_buster.get("active_story", "warrior")
             rewards = check_all_weight_rewards(
                 entries_for_reward, 
@@ -8028,7 +8170,7 @@ class WeightTab(QtWidgets.QWidget):
                 self.blocker.adhd_buster,
                 height_cm=self.blocker.weight_height  # Pass height for BMI-based mode
             )
-        elif GAMIFICATION_AVAILABLE and check_weight_entry_rewards and is_gamification_enabled(self.blocker.adhd_buster):
+        elif not today_same_context_exists and GAMIFICATION_AVAILABLE and check_weight_entry_rewards and is_gamification_enabled(self.blocker.adhd_buster):
             # Fallback to basic rewards
             story_id = self.blocker.adhd_buster.get("active_story", "warrior")
             rewards = check_weight_entry_rewards(
@@ -8042,17 +8184,15 @@ class WeightTab(QtWidgets.QWidget):
             )
         
         # Update or add entry
-        # Get note from combo
-        note = self.note_combo.currentData() or ""
-        
         new_entry = {"date": date_str, "weight": weight_kg}
         if note:
             new_entry["note"] = note
         
         if existing_idx is not None:
+            context_str = format_entry_note(note) if format_entry_note and note else "(no context)"
             reply = show_question(
                 self, "Update Entry",
-                f"An entry for {date_str} already exists.\nUpdate it to {weight:.1f} {unit}?",
+                f"An entry for {date_str} with context {context_str} already exists.\nUpdate it to {weight:.1f} {unit}?",
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
             )
             if reply != QtWidgets.QMessageBox.Yes:
@@ -8230,6 +8370,7 @@ class WeightTab(QtWidgets.QWidget):
                 parent=self.window()
             )
             lottery_dialog.exec()
+            lottery_dialog.hide()  # Explicitly hide before deletion
             lottery_dialog.deleteLater()
             
             # Capture equipped state before award
@@ -8309,7 +8450,10 @@ class WeightTab(QtWidgets.QWidget):
             
             # Show diary entry reveal (same as focus sessions)
             if diary_entry:
-                DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes=0, parent=self.window()).exec()
+                diary_dlg = DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes=0, parent=self.window())
+                diary_dlg.exec()
+                diary_dlg.hide()  # Explicitly hide before deletion
+                diary_dlg.deleteLater()
             
             # UI updates are handled via GameState signals
         elif rewards.get("messages"):
@@ -8624,7 +8768,7 @@ class WeightTab(QtWidgets.QWidget):
                 classification, color = get_bmi_classification(bmi, age, sex)
                 
                 # Add age context for pediatric classifications
-                if age is not None and 7 <= age <= 19:
+                if age is not None and 2 <= age <= 19:
                     self.bmi_label.setText(f"<b style='color:{color}'>BMI: {bmi:.1f} ({classification})</b> <span style='font-size:9px;'>age {age}</span>")
                 else:
                     self.bmi_label.setText(f"<b style='color:{color}'>BMI: {bmi:.1f} ({classification})</b>")
@@ -8679,7 +8823,12 @@ class WeightTab(QtWidgets.QWidget):
             return
         
         if get_historical_comparisons:
-            comparisons = get_historical_comparisons(self.blocker.weight_entries)
+            # Get current context selection for context-aware comparison
+            current_context = self.note_combo.currentData() or ""
+            comparisons = get_historical_comparisons(
+                self.blocker.weight_entries, 
+                current_context=current_context if current_context else None
+            )
             if comparisons:
                 parts = []
                 unit = self.blocker.weight_unit
@@ -9577,6 +9726,7 @@ class ActivityTab(QtWidgets.QWidget):
                 entity_perk_contributors=entity_perk_contributors
             )
             lottery.exec()
+            lottery.hide()  # Explicitly hide before deletion
             lottery.deleteLater()  # Ensure dialog is cleaned up
         
         # Create entry
@@ -9825,6 +9975,7 @@ class ActivityTab(QtWidgets.QWidget):
                 entity_perk_contributors=entity_perk_contributors,  # Entity perks that helped
             )
             dialog.exec()
+            dialog.hide()  # Explicitly hide before deletion
             dialog.deleteLater()  # Ensure dialog is cleaned up
             
             # 🎉 Show building complete celebration if construction just finished
@@ -9849,7 +10000,10 @@ class ActivityTab(QtWidgets.QWidget):
             
             # Show diary entry reveal
             if diary_entry:
-                DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes=0, parent=self.window()).exec()
+                diary_dlg = DiaryEntryRevealDialog(self.blocker, diary_entry, session_minutes=0, parent=self.window())
+                diary_dlg.exec()
+                diary_dlg.hide()  # Explicitly hide before deletion
+                diary_dlg.deleteLater()
             
             # Refresh ADHD Buster tab
             main_window = self.window()
@@ -11153,6 +11307,7 @@ class SleepTab(QtWidgets.QWidget):
                 parent=self.window()
             )
             lottery_dialog.exec()
+            lottery_dialog.hide()  # Explicitly hide before deletion
             lottery_dialog.deleteLater()
             
             from styled_dialog import ItemRewardDialog
@@ -11167,6 +11322,7 @@ class SleepTab(QtWidgets.QWidget):
                 game_state=game_state  # For click-to-equip
             )
             dialog.exec()
+            dialog.hide()  # Explicitly hide before deletion
             dialog.deleteLater()
         else:
             # No items earned - use basic styled info dialog
@@ -19197,7 +19353,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
             print(f"Error loading inventory state: {e}")
 
     def _open_diary(self) -> None:
-        DiaryDialog(self.blocker, self).exec()
+        dialog = DiaryDialog(self.blocker, self)
+        dialog.exec()
+        dialog.hide()  # Explicitly hide before deletion
+        dialog.deleteLater()
     
     def _go_to_story_tab(self) -> None:
         """Navigate to the Story tab."""
@@ -20419,6 +20578,168 @@ class PriorityCheckinDialog(StyledDialog):
         self.accept()
 
 
+class PrioritySessionStartDialog(StyledDialog):
+    """Dialog to ask user which priority to work on when starting a session."""
+
+    def __init__(self, blocker: BlockerCore, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        self.blocker = blocker
+        self.selected_priority: Optional[str] = None
+        self.is_strategic: bool = False
+        
+        super().__init__(
+            parent=parent,
+            title="Focus on a Priority?",
+            header_icon="🎯",
+            min_width=450,
+            max_width=550,
+        )
+        self.resize(500, 400)
+
+    def _build_content(self, layout: QtWidgets.QVBoxLayout) -> None:
+        # Get today's priorities
+        today = datetime.now().strftime("%A")
+        today_priorities = []
+        for p in self.blocker.priorities:
+            title = p.get("title", "").strip()
+            days = p.get("days", [])
+            if title and (not days or today in days):
+                today_priorities.append({
+                    "title": title,
+                    "strategic": p.get("strategic", False),
+                    "logged_hours": p.get("logged_hours", 0)
+                })
+        
+        if today_priorities:
+            desc = QtWidgets.QLabel("Select a priority to work on during this session:")
+            desc.setStyleSheet("color: #E0E0E0; font-size: 13px;")
+            desc.setWordWrap(True)
+            layout.addWidget(desc)
+            
+            # Scroll area for priorities
+            scroll = QtWidgets.QScrollArea()
+            scroll.setWidgetResizable(True)
+            scroll.setMaximumHeight(220)
+            scroll.setStyleSheet("""
+                QScrollArea { background: transparent; border: none; }
+                QScrollArea > QWidget > QWidget { background: transparent; }
+            """)
+            
+            container = QtWidgets.QWidget()
+            container_layout = QtWidgets.QVBoxLayout(container)
+            container_layout.setSpacing(8)
+            container_layout.setContentsMargins(0, 0, 10, 0)
+            
+            self.priority_buttons = []
+            for i, p in enumerate(today_priorities):
+                btn = QtWidgets.QPushButton()
+                strategic_badge = " 💰" if p["strategic"] else ""
+                hours_info = f" ({p['logged_hours']:.1f}h logged)" if p["logged_hours"] > 0 else ""
+                btn.setText(f"🎯 {p['title']}{strategic_badge}{hours_info}")
+                btn.setStyleSheet("""
+                    QPushButton {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #2A2A4A, stop:1 #1A1A3A);
+                        color: #FFD700;
+                        border: 1px solid #444466;
+                        border-radius: 8px;
+                        padding: 12px 16px;
+                        text-align: left;
+                        font-size: 13px;
+                    }
+                    QPushButton:hover {
+                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                            stop:0 #3A3A5A, stop:1 #2A2A4A);
+                        border-color: #FFD700;
+                    }
+                """)
+                btn.clicked.connect(lambda checked, idx=i: self._select_priority(idx))
+                container_layout.addWidget(btn)
+                self.priority_buttons.append((btn, p))
+            
+            container_layout.addStretch()
+            scroll.setWidget(container)
+            layout.addWidget(scroll)
+            
+            # Strategic bonus info
+            has_strategic = any(p["strategic"] for p in today_priorities)
+            if has_strategic:
+                strategic_info = QtWidgets.QLabel("💰 Strategic priorities earn 2.5x coins!")
+                strategic_info.setStyleSheet("color: #FFD700; font-size: 11px;")
+                strategic_info.setAlignment(QtCore.Qt.AlignCenter)
+                layout.addWidget(strategic_info)
+        else:
+            no_priorities = QtWidgets.QLabel(
+                "📝 No priorities set for today.\n\n"
+                "You can still start a session, or go to\n"
+                "My Priorities to add tasks for today."
+            )
+            no_priorities.setStyleSheet("color: #E0E0E0; font-size: 13px;")
+            no_priorities.setAlignment(QtCore.Qt.AlignCenter)
+            no_priorities.setWordWrap(True)
+            layout.addWidget(no_priorities)
+            layout.addStretch()
+        
+        # Divider
+        line = QtWidgets.QFrame()
+        line.setFrameShape(QtWidgets.QFrame.HLine)
+        line.setStyleSheet("background: #333344;")
+        layout.addWidget(line)
+        
+        # Buttons
+        btn_layout = QtWidgets.QHBoxLayout()
+        
+        skip_btn = QtWidgets.QPushButton("Skip - Start Without Priority")
+        skip_btn.setStyleSheet("""
+            QPushButton {
+                background: transparent;
+                color: #888888;
+                border: 1px solid #444444;
+                border-radius: 8px;
+                padding: 10px 16px;
+            }
+            QPushButton:hover {
+                color: #AAAAAA;
+                border-color: #666666;
+            }
+        """)
+        skip_btn.clicked.connect(self._skip)
+        btn_layout.addWidget(skip_btn)
+        
+        btn_layout.addStretch()
+        
+        cancel_btn = QtWidgets.QPushButton("Cancel")
+        cancel_btn.clicked.connect(self.reject)
+        btn_layout.addWidget(cancel_btn)
+        
+        layout.addLayout(btn_layout)
+        
+        # Don't ask again checkbox
+        self.dont_ask_check = QtWidgets.QCheckBox("Don't ask me again (can re-enable in Priorities)")
+        self.dont_ask_check.setStyleSheet("color: #888888; font-size: 11px;")
+        layout.addWidget(self.dont_ask_check)
+
+    def _select_priority(self, index: int) -> None:
+        """Select a priority and close dialog."""
+        btn, priority = self.priority_buttons[index]
+        self.selected_priority = priority["title"]
+        self.is_strategic = priority["strategic"]
+        self._save_dont_ask()
+        self.accept()
+
+    def _skip(self) -> None:
+        """Skip priority selection but proceed with session."""
+        self.selected_priority = None
+        self.is_strategic = False
+        self._save_dont_ask()
+        self.accept()
+
+    def _save_dont_ask(self) -> None:
+        """Save the don't ask again preference."""
+        if self.dont_ask_check.isChecked():
+            self.blocker.ask_priority_on_session_start = False
+            self.blocker.save_config()
+
+
 class PrioritiesDialog(StyledDialog):
     """Dialog for managing daily priorities with day-of-week reminders."""
 
@@ -20526,6 +20847,12 @@ class PrioritiesDialog(StyledDialog):
         self.startup_check.toggled.connect(self._toggle_startup)
         settings_layout.addWidget(self.startup_check)
         
+        # Ask on session start toggle
+        self.ask_on_start_check = QtWidgets.QCheckBox("Ask which priority to work on when starting a session")
+        self.ask_on_start_check.setChecked(self.blocker.ask_priority_on_session_start)
+        self.ask_on_start_check.toggled.connect(self._toggle_ask_on_start)
+        settings_layout.addWidget(self.ask_on_start_check)
+        
         # Check-in settings
         checkin_layout = QtWidgets.QHBoxLayout()
         self.checkin_enabled = QtWidgets.QCheckBox("Ask if I'm working on priorities every")
@@ -20556,29 +20883,14 @@ class PrioritiesDialog(StyledDialog):
         title_edit.setPlaceholderText("Enter priority title...")
         title_row.addWidget(title_edit)
 
-        # Strategic Priority Checkbox (Locked for existing items)
-        is_existing = priority.get("_existing", False)
-        # Check if any OTHER priority is ALREADY strategic and locked (existing)
-        # We look at the data source self.priorities because widgets might not be built yet
-        locked_strategic_exists = any(p.get("strategic", False) and p.get("_existing", False) for p in self.priorities)
-
+        # Strategic Priority Checkbox
         strategic_chk = QtWidgets.QCheckBox("Strategic (+50% XP)")
         is_strategic = priority.get("strategic", False)
         strategic_chk.setChecked(is_strategic)
 
-        # Locking Logic:
-        # 1. If priority is existing, strategic status is immutable -> Disabled
-        # 2. If priority is new, but there is already a locked strategic priority -> Disabled
-        if is_existing:
-            strategic_chk.setEnabled(False)
-            strategic_chk.setToolTip("Strategic status cannot be changed for existing priorities.")
-        elif locked_strategic_exists:
-            strategic_chk.setEnabled(False)
-            strategic_chk.setToolTip("A strategic priority is already active and cannot be superseded.")
-        else:
-            strategic_chk.setEnabled(True)
-            strategic_chk.setToolTip("Sessions focused on this priority grant +50% XP.")
-            strategic_chk.toggled.connect(lambda checked, idx=index: self._on_strategic_toggled(idx, checked))
+        # Strategic checkbox is always enabled - user can change which priority is strategic
+        strategic_chk.setToolTip("Sessions focused on this priority grant +50% XP. Only one priority can be strategic at a time.")
+        strategic_chk.toggled.connect(lambda checked, idx=index: self._on_strategic_toggled(idx, checked))
 
         title_row.addWidget(strategic_chk)
         self.strategic_checks.append(strategic_chk)
@@ -20755,6 +21067,10 @@ class PrioritiesDialog(StyledDialog):
         self.blocker.show_priorities_on_startup = checked
         self.blocker.save_config()
 
+    def _toggle_ask_on_start(self, checked: bool) -> None:
+        self.blocker.ask_priority_on_session_start = checked
+        self.blocker.save_config()
+
     def _toggle_checkin(self, checked: bool) -> None:
         self.blocker.priority_checkin_enabled = checked
         self.blocker.save_config()
@@ -20855,8 +21171,12 @@ class PrioritiesDialog(StyledDialog):
             )
             dialog.exec()
         
-        # Clear the completed priority
-        self.priorities[index] = self._empty_priority()
+        # Remove the completed priority from the list
+        if len(self.priorities) <= 1:
+            # Keep at least one slot, just clear it
+            self.priorities[0] = self._empty_priority()
+        else:
+            self.priorities.pop(index)
         
         # Save and refresh
         self.blocker.priorities = copy.deepcopy(self.priorities)
@@ -21187,7 +21507,7 @@ class EyeRingWidget(QtWidgets.QWidget):
         self.ring_color = "#00bcd4"  # Cyan for eye theme
         self.setMinimumSize(60, 60)
         self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
-        self.setToolTip("Eye & Breath Routines\nClick to open Eye Protection tab")
+        self.setToolTip("Eyes Routine\nClick to open Eyes tab")
 
     def set_progress(self, current: int, daily_cap: int):
         """Set eye routine progress."""
@@ -25335,7 +25655,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         # 4. Eye Protection tab
         self.eye_tab = EyeProtectionTab(self.blocker)
-        self.tabs.addTab(self.eye_tab, "🌬️ Eye & Breath")
+        self.tabs.addTab(self.eye_tab, "👁️ Eyes")
         # Connect signal to show item drop dialog if item won
         self.eye_tab.routine_completed.connect(self._on_eye_routine_completed)
 
@@ -25938,7 +26258,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 self.blocker.save_config()
                 self._show_health_reminder(
                     "eye",
-                    "👁️ Eye & Breath Reminder",
+                    "👁️ Eyes Reminder",
                     "Time for an eye routine! Rest your eyes with blinks and far gazing."
                 )
         
@@ -26755,6 +27075,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.timer_tab.session_priority_title = priority_title
         self.timer_tab.session_is_strategic = is_strategic
         self.timer_tab._preserve_strategic_flag = True  # Prevent reset in _start_session
+        self.timer_tab._is_starting_with_priority = True  # Skip priority selection dialog
         
         strategic_msg = "\n\n💰 This is a STRATEGIC priority!\nYou'll earn 2.5x Coins (25/hour instead of 10/hour)" if is_strategic else ""
         

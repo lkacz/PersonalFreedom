@@ -15,6 +15,7 @@ from PySide6.QtSvgWidgets import QSvgWidget
 # Import entitidex components
 from entitidex import Entity
 from app_utils import get_app_dir
+from styled_dialog import styled_info
 
 
 class EntityEncounterDialog(QtWidgets.QDialog):
@@ -386,6 +387,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
                 background: #555555;
             }
         """)
+        self.skip_btn.setToolTip("Save this encounter for later when you are stronger.\nYou can relaunch it from the Entitidex.")
         self.skip_btn.clicked.connect(self._on_skip)
         button_layout.addWidget(self.skip_btn)
         
@@ -514,6 +516,13 @@ class EntityEncounterDialog(QtWidgets.QDialog):
     
     def _on_skip(self) -> None:
         """Handle skip button click."""
+        # Inform user about saving
+        styled_info(
+            self,
+            "Encounter Saved",
+            "This encounter has been saved for later!\n\n"
+            "You can relaunch it from the 'Saved Encounters' button in the Entitidex tab when you are stronger."
+        )
         self.encounter_skipped.emit()
         self.reject()
 

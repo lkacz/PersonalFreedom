@@ -433,36 +433,24 @@ class EyeProtectionTab(QtWidgets.QWidget):
 
         add_tab_help_button(layout, "eye", self)
         
-        # Header row: Title + Cooldown Status
+        # Header row: Title + Guidance Settings (compact)
         header_row = QtWidgets.QHBoxLayout()
         header_row.setSpacing(10)
         
-        title = QtWidgets.QLabel("👁️ Eye & Breath Relief")
+        title = QtWidgets.QLabel("👁️ Eyes")
         title.setStyleSheet("""
             font-size: 18px;
             font-weight: bold;
-            color: #ffffff;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                stop:0 #66bb6a, stop:1 #43a047);
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 2px solid #4caf50;
+            color: #81c784;
+            background: transparent;
+            padding: 5px 0px;
         """)
-        header_row.addWidget(title, 1)
+        header_row.addWidget(title)
+        header_row.addStretch(1)
         
-        # Cooldown status in header
-        self.cooldown_status_label = QtWidgets.QLabel("✅ Ready!")
-        self.cooldown_status_label.setStyleSheet("""
-            font-size: 14px;
-            font-weight: bold;
-            color: #4caf50;
-            background: #2d3436;
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 2px solid #4caf50;
-        """)
-        self.cooldown_status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        header_row.addWidget(self.cooldown_status_label)
+        # Hidden cooldown status label (kept for compatibility but not shown in header)
+        self.cooldown_status_label = QtWidgets.QLabel("")
+        self.cooldown_status_label.hide()  # No longer shown separately
         
         # Guidance Settings (New)
         guidance_label = QtWidgets.QLabel("Speaker:")
@@ -692,7 +680,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         instructions_hint.setWordWrap(True)
         layout.addWidget(instructions_hint)
 
-        # Combined action row: Status | Visual Cue | Start Button
+        # Unified Action Row: Status on left, Main clickable center, empty right
         action_row = QtWidgets.QFrame()
         action_row.setStyleSheet("""
             QFrame {
@@ -707,63 +695,38 @@ class EyeProtectionTab(QtWidgets.QWidget):
         action_layout.setContentsMargins(10, 8, 10, 8)
         action_layout.setSpacing(15)
         
-        # Status label (shows instructions or current step during routine)
-        self.status_label = QtWidgets.QLabel("📋 Ready")
+        # Status label (left side - shows step info during routine)
+        self.status_label = QtWidgets.QLabel("")
         self.status_label.setStyleSheet("""
             font-size: 12px;
             font-weight: bold;
             color: #90caf9;
-            background: transparent;
+            background: #1a2a4a;
+            border: 1px solid #2196f3;
+            border-radius: 6px;
+            padding: 8px 12px;
         """)
         self.status_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.status_label.setMinimumWidth(80)
+        self.status_label.setMinimumWidth(180)
+        self.status_label.setMaximumWidth(200)
         action_layout.addWidget(self.status_label)
         
-        # Visual Cue (center, takes most space)
-        self.cue_label = QtWidgets.QLabel("START WHEN READY")
-        self.cue_label.setStyleSheet("""
-            font-size: 24px;
-            font-weight: bold;
-            color: #64b5f6;
-            background: transparent;
-            padding: 10px;
-        """)
-        self.cue_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.cue_label.setMinimumHeight(60)
-        action_layout.addWidget(self.cue_label, 1)
+        # Main Action Area (center) - clickable button that shows different states
+        # States: START (ready), instructions (running), Wait X min (cooldown)
+        self.main_action_btn = QtWidgets.QPushButton("👁️ START (1 min)")
+        self.main_action_btn.setMinimumHeight(60)
+        self.main_action_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+        self._set_main_action_ready_style()
+        self.main_action_btn.clicked.connect(self._on_main_action_click)
+        action_layout.addWidget(self.main_action_btn, 1)
         
-        # Start Button (right side)
-        self.start_btn = QtWidgets.QPushButton("👁️ Start (1 min)")
-        self.start_btn.setMinimumHeight(50)
-        self.start_btn.setMinimumWidth(130)
-        self.start_btn.setStyleSheet("""
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #66bb6a, stop:1 #43a047);
-                color: white;
-                font-size: 14px;
-                font-weight: bold;
-                border-radius: 8px;
-                border: 2px solid #4caf50;
-                padding: 8px;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #81c784, stop:1 #66bb6a);
-                border: 2px solid #66bb6a;
-            }
-            QPushButton:pressed {
-                background: #388e3c;
-                border: 2px solid #2e7d32;
-            }
-            QPushButton:disabled {
-                background: #555555;
-                border: 2px solid #444444;
-                color: #888888;
-            }
-        """)
-        self.start_btn.clicked.connect(self.start_routine)
-        action_layout.addWidget(self.start_btn)
+        # Visual Cue label (hidden, used during routine for breathing cues)
+        self.cue_label = QtWidgets.QLabel("")
+        self.cue_label.hide()  # Now integrated into main_action_btn
+        
+        # Hidden start button for compatibility (actual logic moved to main_action_btn)
+        self.start_btn = QtWidgets.QPushButton()
+        self.start_btn.hide()
         
         layout.addWidget(action_row)
 
@@ -888,6 +851,97 @@ class EyeProtectionTab(QtWidgets.QWidget):
             self.voice_combo.show()
         else:
             self.voice_combo.hide()
+    
+    def _set_main_action_ready_style(self):
+        """Style the main action button for ready/start state."""
+        self.main_action_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #66bb6a, stop:1 #43a047);
+                color: white;
+                font-size: 24px;
+                font-weight: bold;
+                border-radius: 8px;
+                border: 2px solid #4caf50;
+                padding: 15px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #81c784, stop:1 #66bb6a);
+                border: 2px solid #66bb6a;
+            }
+            QPushButton:pressed {
+                background: #388e3c;
+                border: 2px solid #2e7d32;
+            }
+        """)
+    
+    def _set_main_action_cooldown_style(self):
+        """Style the main action button for cooldown/waiting state."""
+        self.main_action_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #5d4037, stop:1 #3e2723);
+                color: #ff9800;
+                font-size: 18px;
+                font-weight: bold;
+                border-radius: 8px;
+                border: 2px solid #ff9800;
+                padding: 15px;
+            }
+            QPushButton:disabled {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #5d4037, stop:1 #3e2723);
+                color: #ff9800;
+                border: 2px solid #ff9800;
+            }
+        """)
+    
+    def _set_main_action_limit_style(self):
+        """Style the main action button for daily limit reached state."""
+        self.main_action_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2e7d32, stop:1 #1b5e20);
+                color: #a5d6a7;
+                font-size: 18px;
+                font-weight: bold;
+                border-radius: 8px;
+                border: 2px solid #4caf50;
+                padding: 15px;
+            }
+            QPushButton:disabled {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #2e7d32, stop:1 #1b5e20);
+                color: #a5d6a7;
+                border: 2px solid #4caf50;
+            }
+        """)
+    
+    def _set_main_action_running_style(self):
+        """Style the main action button for running/active routine state."""
+        self.main_action_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1e3c72, stop:1 #2a5298);
+                color: #64b5f6;
+                font-size: 24px;
+                font-weight: bold;
+                border-radius: 8px;
+                border: 2px solid #2196f3;
+                padding: 15px;
+            }
+            QPushButton:disabled {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1e3c72, stop:1 #2a5298);
+                color: #64b5f6;
+                border: 2px solid #2196f3;
+            }
+        """)
+    
+    def _on_main_action_click(self):
+        """Handle click on main action button - delegates to start_routine."""
+        self.start_routine()
     
     def _update_reminder_setting(self):
         """Save reminder settings when changed."""
@@ -1162,7 +1216,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
             print(f"[Eye Tab] Error acknowledging owl tip: {e}")
 
     def _update_cooldown_display(self):
-        """Update cooldown status display like hydration tracker."""
+        """Update main action button to reflect current cooldown state."""
         stats = self.blocker.stats.get("eye_protection", {})
         last_date_str = stats.get("last_date", "")
         count = self.get_daily_count()
@@ -1170,9 +1224,10 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         # Check daily limit (can be increased by entity perks)
         if count >= daily_cap:
-            self.cooldown_status_label.setText(f"🎯 Daily limit reached! ({daily_cap}/{daily_cap})")
-            self.cooldown_status_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #4caf50; padding: 10px;")
-            self.start_btn.setEnabled(False)
+            self._set_main_action_limit_style()
+            self.main_action_btn.setText(f"🎯 Daily limit reached! ({daily_cap}/{daily_cap})")
+            self.main_action_btn.setEnabled(False)
+            self.status_label.setText(f"Done for today!")
             return
         
         # Check 20-minute cooldown
@@ -1184,17 +1239,19 @@ class EyeProtectionTab(QtWidgets.QWidget):
                 if elapsed < timedelta(minutes=20):
                     remaining = math.ceil(20 - elapsed.total_seconds() / 60)
                     next_time = (last_dt + timedelta(minutes=20)).strftime("%H:%M")
-                    self.cooldown_status_label.setText(f"⏳ Wait {remaining} min (next at {next_time})")
-                    self.cooldown_status_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #ff9800; padding: 10px;")
-                    self.start_btn.setEnabled(False)
+                    self._set_main_action_cooldown_style()
+                    self.main_action_btn.setText(f"⏳ Wait {remaining} min (next at {next_time})")
+                    self.main_action_btn.setEnabled(False)
+                    self.status_label.setText(f"{count}/{daily_cap} today")
                     return
             except (ValueError, TypeError):
                 pass  # Corrupted date, allow routine
         
         # Ready to start
-        self.cooldown_status_label.setText("✅ Ready to start!")
-        self.cooldown_status_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #4caf50; padding: 10px;")
-        self.start_btn.setEnabled(True)
+        self._set_main_action_ready_style()
+        self.main_action_btn.setText("👁️ START (1 min)")
+        self.main_action_btn.setEnabled(True)
+        self.status_label.setText(f"{count}/{daily_cap} today")
     
     def get_daily_count(self):
         """Get number of routines performed today (reset at 5 AM)."""
@@ -1328,7 +1385,8 @@ class EyeProtectionTab(QtWidgets.QWidget):
                     return
 
         self.is_running = True
-        self.start_btn.setEnabled(False)
+        self.main_action_btn.setEnabled(False)
+        self._set_main_action_running_style()
         self.step_phase = "blinking"
         self.blink_count = 0
         self.blink_state = "ready"
@@ -1338,7 +1396,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         
         # Start Step A logic
         self.status_label.setText("Step A: 5 Gentle Blinks")
-        self.cue_label.setText("Get Ready...")
+        self.main_action_btn.setText("👁️ Get Ready...")
         
         # Short delay before first blink using QTimer
         QtCore.QTimer.singleShot(2000, self.start_blink_cycle)
@@ -1355,7 +1413,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.blink_count += 1
         self.blink_state = "close"
         
-        self.cue_label.setText("CLOSE eyes")
+        self.main_action_btn.setText("😴 CLOSE eyes")
         # Reuse status area for progress, but users have eyes closed mostly
         # self.status_label.setText(f"Blink {self.blink_count}/5") 
         self.guidance.play_blink_close()
@@ -1369,7 +1427,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         if not self.is_running:
             return
         self.blink_state = "hold"
-        self.cue_label.setText("HOLD...")
+        self.main_action_btn.setText("😐 HOLD...")
         self.guidance.play_blink_hold()
         # Hold duration ~0.5s -> Then Open (Silence)
         QtCore.QTimer.singleShot(500, self.do_blink_open)
@@ -1379,7 +1437,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         if not self.is_running:
             return
         self.blink_state = "open"
-        self.cue_label.setText("OPEN eyes")
+        self.main_action_btn.setText("👀 OPEN eyes")
         self.guidance.play_blink_open() # Is silent
         # Open duration ~1.5s -> Next cycle
         QtCore.QTimer.singleShot(1500, self.start_blink_cycle)
@@ -1391,7 +1449,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.step_phase = "gazing"
         self.gaze_seconds_left = 20
         self.status_label.setText("Step B: Far Gaze + Breathing\n(Blink normally!)")
-        self.cue_label.setText("Look away (20ft/6m)")
+        self.main_action_btn.setText("👁️ Look away (20ft/6m)")
         self.guidance.play_gaze_start()
         
         # Delay first tick to allow "Look far away" voice cue to complete
@@ -1420,19 +1478,19 @@ class EyeProtectionTab(QtWidgets.QWidget):
                 if t > 16:  # Inhale 1
                     if t == 20:
                         self.guidance.play_inhale()
-                    self.cue_label.setText(f"Look away + INHALE... {t-16}")
+                    self.main_action_btn.setText(f"🌬️ INHALE... {t-16}")
                 elif t > 10:  # Exhale 1
                     if t == 16:
                         self.guidance.play_exhale()
-                    self.cue_label.setText(f"Look away + EXHALE... {t-10}")
+                    self.main_action_btn.setText(f"💨 EXHALE... {t-10}")
                 elif t > 6:  # Inhale 2
                     if t == 10:
                         self.guidance.play_inhale()
-                    self.cue_label.setText(f"Look away + INHALE... {t-6}")
+                    self.main_action_btn.setText(f"🌬️ INHALE... {t-6}")
                 elif t > 0:  # Exhale 2
                     if t == 6:
                         self.guidance.play_exhale()
-                    self.cue_label.setText(f"Look away + EXHALE... {t}")
+                    self.main_action_btn.setText(f"💨 EXHALE... {t}")
                 
                 self.gaze_seconds_left -= 1
                 
@@ -1447,8 +1505,8 @@ class EyeProtectionTab(QtWidgets.QWidget):
 
     def complete_routine(self):
         self.is_running = False
-        self.start_btn.setEnabled(True)
-        self.cue_label.setText("COMPLETE!")
+        self.main_action_btn.setEnabled(True)
+        self.main_action_btn.setText("✅ COMPLETE!")
         self.guidance.play_complete()
         
         # Update stats
@@ -1514,7 +1572,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
             success_threshold=success_rate,
             tier_upgrade_enabled=False,
             base_rarity=base_rarity,
-            title="👁️‍🗨️ Eye & Breath Reward 👁️‍🗨️",
+            title="👁️‍🗨️ Eyes Routine Reward 👁️‍🗨️",
             parent=self
         )
         lottery.exec()

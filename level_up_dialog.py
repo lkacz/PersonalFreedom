@@ -6,6 +6,7 @@ Full-screen celebration with stat showcase and unlocks.
 
 from typing import Optional, Dict, Any
 from PySide6 import QtWidgets, QtCore, QtGui
+from styled_dialog import StyledDialog
 
 
 class StatShowcaseWidget(QtWidgets.QWidget):
@@ -181,16 +182,15 @@ class StatShowcaseWidget(QtWidgets.QWidget):
         return widget
 
 
-class EnhancedLevelUpDialog(QtWidgets.QDialog):
+class EnhancedLevelUpDialog(StyledDialog):
     """
     Enhanced level-up dialog with full celebration experience.
     
     Features:
-    - Full-screen celebration mode (optional)
+    - Consistent StyledDialog design with gold accents
     - Animated stat showcase
     - Level progression visual
     - Unlocks and rewards
-    - Confetti animation
     - Victory sound effects
     - Quick actions
     """
@@ -200,13 +200,18 @@ class EnhancedLevelUpDialog(QtWidgets.QDialog):
     
     def __init__(self, old_level: int, new_level: int, stats: Dict[str, Any],
                  fullscreen: bool = False, parent: Optional[QtWidgets.QWidget] = None):
-        super().__init__(parent)
         self.old_level = old_level
         self.new_level = new_level
         self.stats = stats
         self.fullscreen_mode = fullscreen
         
-        self.setWindowTitle("🎊 LEVEL UP! 🎊")
+        # Initialize StyledDialog with celebration header
+        super().__init__(
+            title="LEVEL UP!",
+            header_icon="🎊",
+            closable=not fullscreen,
+            parent=parent
+        )
         
         if fullscreen:
             self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
@@ -215,41 +220,34 @@ class EnhancedLevelUpDialog(QtWidgets.QDialog):
             # Constrain height to fit most screens (leave room for taskbar)
             self.setMinimumSize(550, 500)
             self.setMaximumHeight(700)  # Max height to fit on 768px screens
-            self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint)
         
-        self._build_ui()
         QtCore.QTimer.singleShot(200, self._start_celebration)
     
-    def _build_ui(self):
-        """Build the complete dialog UI."""
-        main_layout = QtWidgets.QVBoxLayout(self)
-        main_layout.setSpacing(10)
-        main_layout.setContentsMargins(16, 16, 16, 16)
-        
+    def _build_content(self, layout: QtWidgets.QVBoxLayout):
+        """Build the dialog content using StyledDialog pattern."""
         # Create scroll area for content in windowed mode
         if not self.fullscreen_mode:
             scroll = QtWidgets.QScrollArea()
             scroll.setWidgetResizable(True)
             scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
-            scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
             
             scroll_content = QtWidgets.QWidget()
             content_layout = QtWidgets.QVBoxLayout(scroll_content)
             content_layout.setSpacing(15)
-            content_layout.setContentsMargins(16, 16, 16, 16)
+            content_layout.setContentsMargins(0, 0, 0, 0)
         else:
-            content_layout = main_layout
+            content_layout = layout
             content_layout.setAlignment(QtCore.Qt.AlignCenter)
         
-        # Celebration header
+        # Celebration header (animated)
         self.header_label = QtWidgets.QLabel("🎊 LEVEL UP! 🎊")
         self.header_label.setAlignment(QtCore.Qt.AlignCenter)
-        # Smaller header for windowed mode
+        # Smaller header for windowed mode, gold color to match theme
         header_size = "48px" if self.fullscreen_mode else "32px"
         self.header_label.setStyleSheet(f"""
             font-size: {header_size};
             font-weight: bold;
-            color: #4caf50;
+            color: {self.BORDER_COLOR};
             padding: 15px;
             background: transparent;
         """)
@@ -299,7 +297,7 @@ class EnhancedLevelUpDialog(QtWidgets.QDialog):
         msg_label.setStyleSheet(f"""
             font-size: {msg_size};
             font-weight: bold;
-            color: #555;
+            color: {self.MUTED_TEXT};
             padding: 8px;
             background: transparent;
         """)
@@ -308,89 +306,20 @@ class EnhancedLevelUpDialog(QtWidgets.QDialog):
         # Finalize scroll area in windowed mode
         if not self.fullscreen_mode:
             scroll.setWidget(scroll_content)
-            main_layout.addWidget(scroll)
+            layout.addWidget(scroll)
         
-        # Action buttons (outside scroll area)
-        button_layout = QtWidgets.QHBoxLayout()
-        button_layout.setSpacing(12)
+        # Action buttons using StyledDialog button row
+        buttons = [
+            ("📊 View Stats", "default", self._on_view_stats),
+        ]
         
-        # View full stats
-        stats_btn = QtWidgets.QPushButton("📊 View Stats")
-        stats_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #2196f3;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                padding: 14px 24px;
-                font-weight: bold;
-                font-size: 13px;
-            }
-            QPushButton:hover {
-                background-color: #1976d2;
-            }
-        """)
-        stats_btn.clicked.connect(self._on_view_stats)
-        button_layout.addWidget(stats_btn)
-        
-        # Claim rewards (if any)
+        # Claim rewards button if rewards exist
         if self.stats.get("rewards"):
-            rewards_btn = QtWidgets.QPushButton("🎁 Claim Rewards")
-            rewards_btn.setStyleSheet("""
-                QPushButton {
-                    background-color: #ff9800;
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    padding: 14px 24px;
-                    font-weight: bold;
-                    font-size: 13px;
-                }
-                QPushButton:hover {
-                    background-color: #f57c00;
-                }
-            """)
-            rewards_btn.clicked.connect(self._on_claim_rewards)
-            button_layout.addWidget(rewards_btn)
+            buttons.append(("🎁 Claim Rewards", "primary", self._on_claim_rewards))
         
-        # Continue
-        continue_btn = QtWidgets.QPushButton("✓ Continue")
-        continue_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #4caf50;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                padding: 14px 24px;
-                font-weight: bold;
-                font-size: 13px;
-            }
-            QPushButton:hover {
-                background-color: #388e3c;
-            }
-        """)
-        continue_btn.clicked.connect(self.accept)
-        button_layout.addWidget(continue_btn)
+        buttons.append(("✓ Continue", "primary", self.accept))
         
-        main_layout.addLayout(button_layout)
-        
-        # Dialog style
-        if self.fullscreen_mode:
-            self.setStyleSheet("""
-                QDialog {
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                                 stop:0 #e8f5e9, stop:1 #c8e6c9);
-                }
-            """)
-        else:
-            self.setStyleSheet("""
-                QDialog {
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                                 stop:0 #e8f5e9, stop:1 #c8e6c9);
-                    border: 2px solid #66bb6a;
-                    border-radius: 12px;
-                }
-            """)
+        self.add_button_row(layout, buttons, centered=True)
     
     def _start_celebration(self):
         """Start celebration animations and effects."""
@@ -422,14 +351,16 @@ class EnhancedLevelUpDialog(QtWidgets.QDialog):
         
         self.header_label.setText(f"{emoji} LEVEL UP! {emoji}")
         
-        # Color pulse
-        colors = ["#4caf50", "#66bb6a", "#81c784", "#66bb6a"]
+        # Color pulse with gold theme
+        colors = [self.BORDER_COLOR, "#FFEB3B", "#FFC107", "#FFEB3B"]
         color = colors[self._animation_step % len(colors)]
+        header_size = "48px" if self.fullscreen_mode else "32px"
         self.header_label.setStyleSheet(f"""
-            font-size: 48px;
+            font-size: {header_size};
             font-weight: bold;
             color: {color};
-            padding: 20px;
+            padding: 15px;
+            background: transparent;
         """)
     
     def _on_view_stats(self):

@@ -902,6 +902,7 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
                 border-radius: 8px;
             }
         """)
+        self.stage1_frame.setMinimumHeight(120)  # Prevent collapse
         stage1_layout = QtWidgets.QVBoxLayout(self.stage1_frame)
         stage1_layout.setContentsMargins(12, 8, 12, 8)
         
@@ -943,6 +944,7 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
                 border-radius: 8px;
             }
         """)
+        self.stage2_frame.setMinimumHeight(100)  # Prevent collapse
         stage2_layout = QtWidgets.QVBoxLayout(self.stage2_frame)
         stage2_layout.setContentsMargins(12, 8, 12, 8)
         
@@ -965,8 +967,12 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         # Final result area
         self.final_result = QtWidgets.QLabel("")
         self.final_result.setAlignment(QtCore.Qt.AlignCenter)
+        self.final_result.setMinimumHeight(40)  # Reserve space
         self.final_result.setStyleSheet("color: #fff; font-size: 16px; font-weight: bold;")
         container_layout.addWidget(self.final_result)
+        
+        # Stretch to absorb space changes
+        container_layout.addStretch(1)
         
         # Sound toggle
         sound_row = QtWidgets.QHBoxLayout()
@@ -1599,6 +1605,7 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
                 border-radius: 8px;
             }
         """)
+        self.stage1_frame.setMinimumHeight(100)  # Prevent collapse
         stage1_layout = QtWidgets.QVBoxLayout(self.stage1_frame)
         stage1_layout.setContentsMargins(12, 8, 12, 8)
         
@@ -1636,6 +1643,7 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
                 border-radius: 8px;
             }
         """)
+        self.stage2_frame.setMinimumHeight(110)  # Prevent collapse
         stage2_layout = QtWidgets.QVBoxLayout(self.stage2_frame)
         stage2_layout.setContentsMargins(12, 8, 12, 8)
         
@@ -1675,8 +1683,12 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         self.final_result = QtWidgets.QLabel("")
         self.final_result.setAlignment(QtCore.Qt.AlignCenter)
         self.final_result.setWordWrap(True)
+        self.final_result.setMinimumHeight(40)  # Reserve space for result text
         self.final_result.setStyleSheet("color: #fff; font-size: 14px;")
         container_layout.addWidget(self.final_result)
+        
+        # Stretch to absorb any extra space
+        container_layout.addStretch(1)
         
         # Sound toggle
         sound_row = QtWidgets.QHBoxLayout()
@@ -2554,6 +2566,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.stage1_frame.setStyleSheet("""
             QFrame { background: #252540; border: 2px solid #444; border-radius: 8px; }
         """)
+        self.stage1_frame.setMinimumHeight(120)  # Prevent collapse
         stage1_layout = QtWidgets.QVBoxLayout(self.stage1_frame)
         stage1_layout.setContentsMargins(12, 8, 12, 8)
         
@@ -2585,6 +2598,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.stage2_frame.setStyleSheet("""
             QFrame { background: #252540; border: 2px solid #333; border-radius: 8px; }
         """)
+        self.stage2_frame.setMinimumHeight(100)  # Prevent collapse
         stage2_layout = QtWidgets.QVBoxLayout(self.stage2_frame)
         stage2_layout.setContentsMargins(12, 8, 12, 8)
         
@@ -2612,8 +2626,12 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.final_result = QtWidgets.QLabel("")
         self.final_result.setAlignment(QtCore.Qt.AlignCenter)
         self.final_result.setWordWrap(True)
+        self.final_result.setMinimumHeight(40)  # Reserve space for result text
         self.final_result.setStyleSheet("color: #fff; font-size: 16px;")
         container_layout.addWidget(self.final_result)
+        
+        # Stretch to absorb any extra space
+        container_layout.addStretch(1)
         
         # Sound toggle
         sound_row = QtWidgets.QHBoxLayout()
@@ -3382,6 +3400,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         # Stage 1: Tier Roll
         self.stage1_frame = QtWidgets.QFrame()
         self.stage1_frame.setFrameStyle(QtWidgets.QFrame.StyledPanel)
+        self.stage1_frame.setMinimumHeight(100)  # Prevent collapse
         stage1_layout = QtWidgets.QVBoxLayout(self.stage1_frame)
         
         self.stage1_title = QtWidgets.QLabel(f"✨ Stage 1: What Tier? (Glass #{self.glass_number})")
@@ -3411,6 +3430,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         # Stage 2: Win/Lose Roll (initially dimmed)
         self.stage2_frame = QtWidgets.QFrame()
         self.stage2_frame.setFrameStyle(QtWidgets.QFrame.StyledPanel)
+        self.stage2_frame.setMinimumHeight(100)  # Prevent collapse
         self.stage2_frame.setEnabled(False)
         self.stage2_frame.setStyleSheet("QFrame { opacity: 0.4; }")
         stage2_layout = QtWidgets.QVBoxLayout(self.stage2_frame)
@@ -3432,8 +3452,12 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.final_result = QtWidgets.QLabel("")
         self.final_result.setFont(QtGui.QFont("Arial", 14, QtGui.QFont.Bold))
         self.final_result.setAlignment(QtCore.Qt.AlignCenter)
+        self.final_result.setMinimumHeight(40)  # Reserve space
         self.final_result.hide()
         layout.addWidget(self.final_result)
+        
+        # Stretch to absorb space changes
+        layout.addStretch(1)
         
         # Sound toggle
         sound_row = QtWidgets.QHBoxLayout()
@@ -3464,8 +3488,6 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.continue_btn.clicked.connect(self._finish)
         self.continue_btn.hide()
         layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
-        
-        layout.addStretch()
     
     def _start_stage_1(self):
         """Start tier roll animation using bounce path (same as merge dialog)."""
@@ -4010,6 +4032,7 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         self.item_frame.setStyleSheet("""
             QFrame { background: #252540; border: 2px solid #333; border-radius: 8px; }
         """)
+        self.item_frame.setMinimumHeight(60)  # Reserve space
         self.item_frame.hide()
         item_layout = QtWidgets.QVBoxLayout(self.item_frame)
         item_layout.setContentsMargins(12, 10, 12, 10)
@@ -4021,6 +4044,9 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         item_layout.addWidget(self.item_label)
         
         container_layout.addWidget(self.item_frame)
+        
+        # Stretch to absorb space changes
+        container_layout.addStretch(1)
         
         # Sound toggle
         sound_row = QtWidgets.QHBoxLayout()
@@ -4306,8 +4332,12 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         self.final_result = QtWidgets.QLabel("")
         self.final_result.setAlignment(QtCore.Qt.AlignCenter)
         self.final_result.setStyleSheet("font-size: 16px; font-weight: bold; color: #4caf50;")
+        self.final_result.setMinimumHeight(40)  # Reserve space
         self.final_result.hide()
         layout.addWidget(self.final_result)
+        
+        # Stretch to absorb space changes
+        layout.addStretch(1)
         
         # Sound toggle
         sound_row = QtWidgets.QHBoxLayout()
@@ -4739,6 +4769,9 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         
         container_layout.addWidget(self.item_frame)
         
+        # Stretch to absorb space changes
+        container_layout.addStretch(1)
+        
         # Sound toggle
         sound_row = QtWidgets.QHBoxLayout()
         sound_row.addStretch()
@@ -5031,6 +5064,7 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         self.item_frame.setStyleSheet("""
             QFrame { background: #252540; border: 2px solid #333; border-radius: 8px; }
         """)
+        self.item_frame.setMinimumHeight(60)  # Reserve space
         self.item_frame.hide()
         item_layout = QtWidgets.QVBoxLayout(self.item_frame)
         item_layout.setContentsMargins(12, 10, 12, 10)
@@ -5049,6 +5083,9 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         item_layout.addWidget(self.extra_label)
         
         container_layout.addWidget(self.item_frame)
+        
+        # Stretch to absorb space changes
+        container_layout.addStretch(1)
         
         # Sound toggle
         sound_row = QtWidgets.QHBoxLayout()

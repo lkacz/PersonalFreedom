@@ -2721,6 +2721,7 @@ def show_building_complete_dialog(
         parent=parent
     )
     dialog.exec()
+    dialog.hide()  # Explicitly hide before deletion
     dialog.deleteLater()
 
 
@@ -3772,6 +3773,7 @@ class CityTab(QtWidgets.QWidget):
                     self.info_panel.setText(f"🔨 Started building {name}! Complete activities to power construction.")
                 dialog.construction_started.connect(on_construction_started)
                 dialog.exec()
+                dialog.hide()  # Explicitly hide before deletion
                 dialog.deleteLater()  # Ensure cleanup
             else:
                 status = cell.get("status", "")
@@ -3779,6 +3781,7 @@ class CityTab(QtWidgets.QWidget):
                     # Show building details
                     dialog = BuildingDetailsDialog(self.adhd_buster, row, col, self)
                     dialog.exec()
+                    dialog.hide()  # Explicitly hide before deletion
                     dialog.deleteLater()  # Ensure cleanup
                 elif status == CellStatus.PLACED.value:
                     # Placed but not started - check if there's other active construction
@@ -3795,16 +3798,19 @@ class CityTab(QtWidgets.QWidget):
                         return
                     dialog = InitiateConstructionDialog(self.adhd_buster, row, col, self)
                     dialog.exec()
+                    dialog.hide()  # Explicitly hide before deletion
                     dialog.deleteLater()  # Ensure cleanup
                 elif status == CellStatus.BUILDING.value:
                     # Under active construction - show progress dialog
                     dialog = ConstructionProgressDialog(self.adhd_buster, row, col, self)
                     dialog.exec()
+                    dialog.hide()  # Explicitly hide before deletion
                     dialog.deleteLater()  # Ensure cleanup
                 else:
                     # Unknown status - fallback to construction dialog
                     dialog = InitiateConstructionDialog(self.adhd_buster, row, col, self)
                     dialog.exec()
+                    dialog.hide()  # Explicitly hide before deletion
                     dialog.deleteLater()  # Ensure cleanup
         except Exception as e:
             _logger.exception(f"Error handling cell click at ({row}, {col})")

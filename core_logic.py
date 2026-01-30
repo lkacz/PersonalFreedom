@@ -291,6 +291,7 @@ class BlockerCore:
         # Priorities (My Priorities feature)
         self.priorities = []
         self.show_priorities_on_startup = False
+        self.ask_priority_on_session_start = True  # Ask which priority to work on when starting
         self.priority_checkin_enabled = False
         self.priority_checkin_interval = 30  # minutes
         
@@ -413,6 +414,7 @@ class BlockerCore:
                     self.schedules = config.get('schedules', [])
                     self.priorities = config.get('priorities', [])
                     self.show_priorities_on_startup = config.get('show_priorities_on_startup', False)
+                    self.ask_priority_on_session_start = config.get('ask_priority_on_session_start', True)
                     self.priority_checkin_enabled = config.get('priority_checkin_enabled', False)
                     checkin_interval = config.get('priority_checkin_interval', 30)
                     self.priority_checkin_interval = checkin_interval if isinstance(checkin_interval, (int, float)) and checkin_interval > 0 else 30
@@ -576,6 +578,7 @@ class BlockerCore:
                 'schedules': self.schedules,
                 'priorities': self.priorities,
                 'show_priorities_on_startup': self.show_priorities_on_startup,
+                'ask_priority_on_session_start': self.ask_priority_on_session_start,
                 'priority_checkin_enabled': self.priority_checkin_enabled,
                 'priority_checkin_interval': self.priority_checkin_interval,
                 'minimize_to_tray': self.minimize_to_tray,
