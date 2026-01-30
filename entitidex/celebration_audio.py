@@ -339,11 +339,16 @@ _THEME_COMPOSERS = {
 class CelebrationAudioManager(QObject):
     """
     Singleton manager using QtMultimedia for low-latency synthesis.
+    
+    Properly releases audio device after playback to prevent interference
+    with other Windows applications.
     """
     _instance = None
     
     # Minimum time between plays to prevent audio thread exhaustion (ms)
     MIN_PLAY_INTERVAL_MS = 150
+    # Time to wait after playback finishes before releasing device (ms)
+    RELEASE_DELAY_MS = 500
     
     def __init__(self):
         super().__init__()
@@ -355,32 +360,103 @@ class CelebrationAudioManager(QObject):
         self._sink: Optional[QAudioSink] = None
         self._current_buffer: Optional[QBuffer] = None
         self._last_play_time: int = 0  # Track last play time
-        self._init_audio()
+        self._audio_format: Optional[QAudioFormat] = None
+        self._audio_device: Optional[QAudioDevice] = None
+        self._release_timer: Optional[object] = None  # Timer for delayed release
+        self._prepare_audio_format()
         
-    def _init_audio(self):
-        """Initialize Qt Audio Sink."""
+    def _prepare_audio_format(self):
+        """Prepare audio format without opening the device."""
         try:
-            device = QMediaDevices.defaultAudioOutput()
-            if not device:
+            self._audio_device = QMediaDevices.defaultAudioOutput()
+            if not self._audio_device:
                 _logger.warning("No default audio output device found.")
                 return
 
             fmt = QAudioFormat()
             fmt.setSampleRate(Synthesizer.SAMPLE_RATE)
-            fmt.setChannelCount(1) # Mono
+            fmt.setChannelCount(1)  # Mono
             fmt.setSampleFormat(QAudioFormat.SampleFormat.Int16)
             
-            if not device.isFormatSupported(fmt):
+            if not self._audio_device.isFormatSupported(fmt):
                 # Try to fall back to a standard format if the exact one isn't supported
-                fmt = device.preferredFormat()
-                
-            self._sink = QAudioSink(device, fmt)
-            self._sink.setVolume(0.4)  # Lower volume for comfortable listening
-            _logger.info(f"Audio Sink initialized: {fmt.sampleRate()}Hz")
+                fmt = self._audio_device.preferredFormat()
+            
+            self._audio_format = fmt
+            _logger.info(f"Audio format prepared: {fmt.sampleRate()}Hz (device not opened yet)")
             
         except Exception as e:
-            _logger.error(f"Failed to init audio sink: {e}")
+            _logger.error(f"Failed to prepare audio format: {e}")
+            self._audio_device = None
+            self._audio_format = None
+    
+    def _ensure_sink_ready(self) -> bool:
+        """Create audio sink on-demand for playback."""
+        if self._sink is not None:
+            return True
+        
+        if not self._audio_device or not self._audio_format:
+            return False
+        
+        try:
+            self._sink = QAudioSink(self._audio_device, self._audio_format)
+            self._sink.setVolume(0.4)  # Lower volume for comfortable listening
+            # Connect to state changes to detect playback completion
+            self._sink.stateChanged.connect(self._on_state_changed)
+            _logger.debug("Audio sink created for playback")
+            return True
+        except Exception as e:
+            _logger.error(f"Failed to create audio sink: {e}")
             self._sink = None
+            return False
+    
+    def _on_state_changed(self, state) -> None:
+        """Handle audio sink state changes to release device when done."""
+        from PySide6.QtMultimedia import QAudio
+        
+        if state == QAudio.State.IdleState:
+            # Playback finished - schedule device release
+            self._schedule_release()
+        elif state == QAudio.State.StoppedState:
+            # Explicitly stopped - also schedule release
+            self._schedule_release()
+    
+    def _schedule_release(self) -> None:
+        """Schedule audio device release after a short delay."""
+        # Cancel any existing release timer
+        if self._release_timer is not None:
+            try:
+                self._release_timer.stop()
+            except Exception:
+                pass
+        
+        # Create a timer to release device after delay
+        from PySide6.QtCore import QTimer
+        self._release_timer = QTimer(self)
+        self._release_timer.setSingleShot(True)
+        self._release_timer.timeout.connect(self._release_device)
+        self._release_timer.start(self.RELEASE_DELAY_MS)
+    
+    def _release_device(self) -> None:
+        """Release the audio device to prevent interference with other apps."""
+        if self._sink is not None:
+            try:
+                self._sink.stop()
+                self._sink.deleteLater()
+            except Exception as e:
+                _logger.debug(f"Error releasing audio sink: {e}")
+            self._sink = None
+        
+        if self._current_buffer is not None:
+            try:
+                self._current_buffer.close()
+                self._current_buffer.deleteLater()
+            except Exception:
+                pass
+            self._current_buffer = None
+        
+        self._release_timer = None
+        _logger.debug("Audio device released")
 
     @classmethod
     def get_instance(cls):
@@ -400,8 +476,16 @@ class CelebrationAudioManager(QObject):
 
     def play_buffer(self, data: QByteArray) -> bool:
         """Play a raw audio buffer with rate limiting to prevent thread exhaustion."""
-        if not self._sink or data.isEmpty():
+        if data.isEmpty():
             return False
+        
+        # Cancel any pending release since we're about to play
+        if self._release_timer is not None:
+            try:
+                self._release_timer.stop()
+                self._release_timer = None
+            except Exception:
+                pass
 
         # Rate limit to prevent Windows MMCSS thread exhaustion
         import time
@@ -410,27 +494,36 @@ class CelebrationAudioManager(QObject):
             # Too soon, skip this play request
             return False
         self._last_play_time = current_time
+        
+        # Ensure audio sink is ready (creates on-demand)
+        if not self._ensure_sink_ready():
+            return False
 
         # 1. Stop current playback strictly
         self._sink.stop()
         
-        # 2. Keep the QByteArray alive as instance attribute (prevents use-after-free)
+        # 2. Clean up previous buffer
+        if self._current_buffer is not None:
+            try:
+                self._current_buffer.close()
+                self._current_buffer.deleteLater()
+            except Exception:
+                pass
+        
+        # 3. Keep the QByteArray alive as instance attribute (prevents use-after-free)
         self._current_data = QByteArray(data)  # Make a copy we own
         
-        # 3. Create QBuffer that owns its data via setData()
+        # 4. Create QBuffer that owns its data via setData()
         self._current_buffer = QBuffer(self)
         self._current_buffer.setData(self._current_data)  # QBuffer now owns the bytes
         self._current_buffer.open(QIODevice.OpenModeFlag.ReadOnly)
         
-        # 4. Start playback
+        # 5. Start playback
         self._sink.start(self._current_buffer)
         return True
 
     def play(self, theme_id: str = "default") -> bool:
         """Play the synthesized sound for the theme."""
-        if not self._sink:
-            return False
-            
         # Get or generate data
         if theme_id not in self._cache:
              composer = _THEME_COMPOSERS.get(theme_id, _compose_default)
@@ -443,8 +536,10 @@ class CelebrationAudioManager(QObject):
         return self.play_buffer(data)
 
     def stop(self):
+        """Stop current playback and release device."""
         if self._sink:
             self._sink.stop()
+        self._release_device()
 
 
 # Public API
