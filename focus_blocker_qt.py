@@ -874,6 +874,13 @@ def load_heavy_modules():
 # Single instance mutex name
 MUTEX_NAME = "PersonalLiberty_SingleInstance_Mutex"
 
+# Lock file path for additional single-instance protection
+def _get_lock_file_path() -> Path:
+    """Get the path to the lock file for single-instance checking."""
+    # Use temp directory for lock file (accessible across sessions)
+    import tempfile
+    return Path(tempfile.gettempdir()) / "PersonalLiberty.lock"
+
 
 class HardcoreChallengeDialog(StyledDialog):
     """
@@ -27327,30 +27334,50 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.story_tab._refresh_all()
 
 
-def check_single_instance():
+def check_single_instance(retry_count: int = 3, retry_delay_ms: int = 500):
     """Check if another instance is already running using a Windows mutex.
-    Returns the mutex handle if this is the first instance, None otherwise.
+    
+    Uses retry logic to handle race conditions during Windows startup where
+    another instance may be starting simultaneously.
+    
+    Args:
+        retry_count: Number of times to retry acquiring the mutex
+        retry_delay_ms: Delay between retries in milliseconds
+    
+    Returns:
+        The mutex handle if this is the first instance, None otherwise.
     """
     if platform.system() != "Windows":
         return True  # No mutex on non-Windows
     
-    try:
-        import ctypes
-        # Try to create a named mutex
-        mutex = ctypes.windll.kernel32.CreateMutexW(None, True, MUTEX_NAME)
-        last_error = ctypes.windll.kernel32.GetLastError()
-        
-        # ERROR_ALREADY_EXISTS = 183
-        if last_error == 183:
-            # Another instance is running
-            ctypes.windll.kernel32.CloseHandle(mutex)
-            return None
-        
-        # This is the first instance, return the mutex handle
-        return mutex
-    except Exception:
-        # If we can't create a mutex, allow running anyway
-        return True
+    import ctypes
+    import time
+    
+    for attempt in range(retry_count):
+        try:
+            # Try to create a named mutex
+            mutex = ctypes.windll.kernel32.CreateMutexW(None, True, MUTEX_NAME)
+            last_error = ctypes.windll.kernel32.GetLastError()
+            
+            # ERROR_ALREADY_EXISTS = 183
+            if last_error == 183:
+                # Another instance is running
+                ctypes.windll.kernel32.CloseHandle(mutex)
+                
+                # On first attempts, wait and retry (handles startup race condition)
+                if attempt < retry_count - 1:
+                    time.sleep(retry_delay_ms / 1000.0)
+                    continue
+                    
+                return None
+            
+            # This is the first instance, return the mutex handle
+            return mutex
+        except Exception:
+            # If we can't create a mutex, allow running anyway
+            return True
+    
+    return None
 
 
 def find_and_activate_existing_window():
@@ -27433,7 +27460,94 @@ def kill_existing_instances():
         return False
 
 
+def _check_and_create_lock_file() -> bool:
+    """
+    Check and create a lock file for additional single-instance protection.
+    
+    This provides a secondary mechanism alongside the mutex, especially useful
+    during Windows startup when the mutex may not be immediately visible.
+    
+    Returns:
+        True if we acquired the lock (first instance), False if another instance holds it.
+    """
+    import time
+    
+    lock_path = _get_lock_file_path()
+    
+    try:
+        # Check if lock file exists and is recent (within last 30 seconds indicates active app)
+        if lock_path.exists():
+            try:
+                # Read the PID from lock file
+                content = lock_path.read_text().strip()
+                if content:
+                    parts = content.split(":")
+                    if len(parts) >= 2:
+                        locked_pid = int(parts[0])
+                        lock_time = float(parts[1])
+                        
+                        # Check if the process is still running
+                        if platform.system() == "Windows":
+                            import ctypes
+                            kernel32 = ctypes.windll.kernel32
+                            SYNCHRONIZE = 0x00100000
+                            handle = kernel32.OpenProcess(SYNCHRONIZE, False, locked_pid)
+                            if handle:
+                                kernel32.CloseHandle(handle)
+                                # Process exists - check if lock is recent (within 60 seconds)
+                                if time.time() - lock_time < 60:
+                                    return False  # Another instance is running
+                                # Lock is stale, take over
+            except (ValueError, OSError):
+                pass  # Invalid lock file, take over
+        
+        # Create/update lock file with our PID
+        lock_path.write_text(f"{os.getpid()}:{time.time()}")
+        return True
+        
+    except Exception:
+        # On any error, allow running
+        return True
+
+
+def _update_lock_file():
+    """Update the lock file timestamp to indicate we're still running."""
+    import time
+    try:
+        lock_path = _get_lock_file_path()
+        lock_path.write_text(f"{os.getpid()}:{time.time()}")
+    except Exception:
+        pass
+
+
+def _remove_lock_file():
+    """Remove the lock file on exit."""
+    try:
+        lock_path = _get_lock_file_path()
+        if lock_path.exists():
+            content = lock_path.read_text().strip()
+            # Only remove if it's our lock
+            if content.startswith(f"{os.getpid()}:"):
+                lock_path.unlink()
+    except Exception:
+        pass
+
+
 def main() -> None:
+    # Handle startup delay for system boot (prevents race conditions)
+    # Check for --startup-delay argument
+    startup_delay = 0
+    for arg in sys.argv:
+        if arg.startswith("--startup-delay="):
+            try:
+                startup_delay = int(arg.split("=")[1])
+            except ValueError:
+                pass
+    
+    if startup_delay > 0:
+        import time
+        time.sleep(startup_delay)
+    
     # Set application attributes before creating QApplication
     QtWidgets.QApplication.setHighDpiScaleFactorRoundingPolicy(
         QtCore.Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
@@ -27445,24 +27559,38 @@ def main() -> None:
     app.setOrganizationName("PersonalLiberty")
     app.setApplicationVersion(APP_VERSION)
     
-    # Check for single instance first (before heavy imports for faster response)
+    # Check lock file first (faster, works better during startup)
+    if not _check_and_create_lock_file():
+        # Lock file indicates another instance - verify with mutex
+        pass  # Continue to mutex check
+    
+    # Check for single instance using mutex (with retry for race conditions)
     mutex_handle = check_single_instance()
     if mutex_handle is None:
-        # Another instance is running. Try to silently activate it first.
-        if find_and_activate_existing_window():
-            sys.exit(0)
-            
-        # If we couldn't find the window (ghost process?), ask user
+        # Another instance is running - ask user what to do
         result = styled_question(
             None,
             "Already Running",
-            "Personal Liberty is already running but the window could not be found.\n(It might be a background process)\n\nWhat would you like to do?",
-            ["Kill & Restart", "Cancel"]
+            "Personal Liberty is already running.\n\nWhat would you like to do?",
+            ["Switch to Running App", "Kill & Restart", "Cancel"]
         )
         
-        if result == "Kill & Restart":
+        if result == "Switch to Running App":
+            # Try to activate existing window
+            if find_and_activate_existing_window():
+                sys.exit(0)
+            else:
+                show_warning(
+                    None, "Not Found",
+                    "Could not find the running window.\n\n"
+                    "The app may be minimized to system tray.\n"
+                    "Check your system tray icons."
+                )
+                sys.exit(0)
+        elif result == "Kill & Restart":
             # Kill existing instances and continue
             kill_existing_instances()
+            _remove_lock_file()  # Remove stale lock file
             # Try to acquire mutex again
             mutex_handle = check_single_instance()
             if mutex_handle is None:
@@ -27586,7 +27714,15 @@ def main() -> None:
             except ImportError:
                 pass  # Startup sounds module not available
     
+    # Set up periodic lock file update (every 30 seconds) to indicate we're running
+    lock_update_timer = QtCore.QTimer()
+    lock_update_timer.timeout.connect(_update_lock_file)
+    lock_update_timer.start(30000)  # 30 seconds
+    
     exit_code = app.exec()
+    
+    # Clean up lock file on exit
+    _remove_lock_file()
     
     # Release the mutex on exit
     if mutex_handle and mutex_handle is not True:

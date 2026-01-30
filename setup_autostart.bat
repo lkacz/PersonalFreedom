@@ -54,6 +54,7 @@ echo   ^</RegistrationInfo^>
 echo   ^<Triggers^>
 echo     ^<LogonTrigger^>
 echo       ^<Enabled^>true^</Enabled^>
+echo       ^<Delay^>PT10S^</Delay^>
 echo     ^</LogonTrigger^>
 echo   ^</Triggers^>
 echo   ^<Principals^>
@@ -71,6 +72,7 @@ echo   ^</Settings^>
 echo   ^<Actions Context="Author"^>
 echo     ^<Exec^>
 echo       ^<Command^>%EXE_PATH%^</Command^>
+echo       ^<Arguments^>--minimized --startup-delay=5^</Arguments^>
 echo       ^<WorkingDirectory^>%SCRIPT_DIR%dist^</WorkingDirectory^>
 echo     ^</Exec^>
 echo   ^</Actions^>
