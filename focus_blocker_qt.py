@@ -25723,7 +25723,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # System Tray setup
         self.tray_icon = None
         self._last_tray_minutes: Optional[int] = None  # Track displayed minutes to avoid unnecessary updates
+        self._last_taskbar_minutes: Optional[int] = None  # Track taskbar icon minutes
         self._base_tray_pixmap: Optional[QtGui.QPixmap] = None  # Cache base icon for overlay
+        self._base_window_icon: Optional[QtGui.QIcon] = None  # Cache base window icon
         self.minimize_to_tray = self.blocker.minimize_to_tray  # Load from config
         self._hotkey_id = 1
         self._hotkey_registered = False
@@ -25737,6 +25739,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             )
         
         self._setup_system_tray()
+        self._setup_window_icon()
         self._update_hotkey_registration()
         
         # Health reminder notification timer (checks every minute)
@@ -26859,6 +26862,116 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         icon = self._create_tray_icon_with_minutes(minutes, blocking=True)
         self.tray_icon.setIcon(icon)
 
+    def _setup_window_icon(self) -> None:
+        """Setup window/taskbar icon with base icon."""
+        from app_utils import get_resource_path
+        
+        # Load base window icon
+        icon_path = get_resource_path("icons", "app.ico")
+        if icon_path.exists():
+            self._base_window_icon = QtGui.QIcon(str(icon_path))
+            self.setWindowIcon(self._base_window_icon)
+        else:
+            # Fallback to PNG
+            png_path = get_resource_path("icons", "tray_ready.png")
+            if png_path.exists():
+                self._base_window_icon = QtGui.QIcon(str(png_path))
+                self.setWindowIcon(self._base_window_icon)
+
+    def _create_taskbar_icon_with_minutes(self, minutes: int) -> QtGui.QIcon:
+        """Create taskbar icon with countdown overlay badge.
+        
+        Args:
+            minutes: Minutes remaining to display
+            
+        Returns:
+            QIcon with countdown badge overlay
+        """
+        size = 64
+        
+        # Start with base icon
+        pixmap = QtGui.QPixmap(size, size)
+        pixmap.fill(QtCore.Qt.transparent)
+        
+        # Draw base icon (scaled to fit)
+        painter = QtGui.QPainter(pixmap)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+        
+        if self._base_window_icon:
+            base_pixmap = self._base_window_icon.pixmap(size, size)
+            painter.drawPixmap(0, 0, base_pixmap)
+        
+        # Draw countdown badge in bottom-right corner
+        badge_size = 28
+        badge_x = size - badge_size - 2
+        badge_y = size - badge_size - 2
+        
+        # Orange gradient border (legendary)
+        border_gradient = QtGui.QLinearGradient(
+            badge_x, badge_y + badge_size,  # Start at bottom
+            badge_x, badge_y  # End at top
+        )
+        border_gradient.setColorAt(0, QtGui.QColor("#E65100"))  # Dark orange at bottom
+        border_gradient.setColorAt(1, QtGui.QColor("#FFE0B2"))  # Light orange at top
+        
+        painter.setBrush(border_gradient)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.drawEllipse(badge_x - 2, badge_y - 2, badge_size + 4, badge_size + 4)
+        
+        # Blue gradient background (rare)
+        bg_gradient = QtGui.QLinearGradient(
+            badge_x, badge_y,  # Start at top
+            badge_x, badge_y + badge_size  # End at bottom
+        )
+        bg_gradient.setColorAt(0, QtGui.QColor("#90CAF9"))  # Light blue at top
+        bg_gradient.setColorAt(1, QtGui.QColor("#0D47A1"))  # Dark blue at bottom
+        
+        painter.setBrush(bg_gradient)
+        painter.drawEllipse(badge_x, badge_y, badge_size, badge_size)
+        
+        # Draw white text
+        painter.setPen(QtGui.QColor("#FFFFFF"))
+        
+        # Adaptive font size
+        if minutes >= 100:
+            font_size = 11
+        elif minutes >= 10:
+            font_size = 14
+        else:
+            font_size = 16
+        
+        font = QtGui.QFont("Arial", font_size, QtGui.QFont.Bold)
+        painter.setFont(font)
+        
+        text = str(minutes)
+        rect = QtCore.QRect(badge_x, badge_y, badge_size, badge_size)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, text)
+        
+        painter.end()
+        
+        return QtGui.QIcon(pixmap)
+
+    def _update_taskbar_icon_with_time(self, minutes: int) -> None:
+        """Update taskbar/window icon with countdown badge.
+        
+        Args:
+            minutes: Minutes remaining to display
+        """
+        # Only update if minutes changed
+        if self._last_taskbar_minutes == minutes:
+            return
+            
+        self._last_taskbar_minutes = minutes
+        icon = self._create_taskbar_icon_with_minutes(minutes)
+        self.setWindowIcon(icon)
+
+    def _restore_taskbar_icon(self) -> None:
+        """Restore original taskbar icon (without countdown)."""
+        self._last_taskbar_minutes = None
+        if self._base_window_icon:
+            self.setWindowIcon(self._base_window_icon)
+
     def _update_tray_status(self) -> None:
         """Update tray icon status text and minutes display."""
         if not self.tray_icon:
@@ -26875,6 +26988,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             # Update icon with remaining minutes (total minutes, not just the m component)
             total_minutes = (remaining + 59) // 60  # Round up to nearest minute
             self._update_tray_icon_with_time(total_minutes)
+            self._update_taskbar_icon_with_time(total_minutes)
         else:
             self.tray_status_action.setText("Ready")
             self.tray_icon.setToolTip("Personal Liberty - Ready")
@@ -26883,6 +26997,9 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if self._last_tray_minutes is not None:
                 self._last_tray_minutes = None
                 self._update_tray_icon(blocking=False)
+            
+            # Restore taskbar icon
+            self._restore_taskbar_icon()
 
     def _on_tray_activated(self, reason: QtWidgets.QSystemTrayIcon.ActivationReason) -> None:
         """Handle tray icon activation (double-click to restore)."""
