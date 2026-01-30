@@ -20609,10 +20609,11 @@ class PrioritiesDialog(StyledDialog):
         planned_spin.setRange(0, 100)
         planned_spin.setValue(priority.get("planned_hours", 0))
         planned_layout.addWidget(planned_spin)
-
+        self.planned_spins.append(planned_spin)
+        
         logged = priority.get("logged_hours", 0)
         planned = priority.get("planned_hours", 0)
-
+        
         if planned > 0:
             p_bar = QtWidgets.QProgressBar()
             p_bar.setMaximum(100)
@@ -20621,8 +20622,9 @@ class PrioritiesDialog(StyledDialog):
             p_bar.setFormat(f"{logged:.1f}/{planned:.1f} hrs ({pct}%)")
             p_bar.setFixedWidth(160)
             planned_layout.addWidget(p_bar)
-            if idx < len(self.strategic_checks):
-                priority["strategic"] = self.strategic_checks[idx].isChecked()
+            
+        g_layout.addLayout(planned_layout)
+        self.priority_list_layout.addWidget(group)
 
     def _on_strategic_toggled(self, index: int, checked: bool) -> None:
         """Handle strategic status changes with exclusivity."""
