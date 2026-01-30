@@ -27448,27 +27448,19 @@ def main() -> None:
     # Check for single instance first (before heavy imports for faster response)
     mutex_handle = check_single_instance()
     if mutex_handle is None:
-        # Another instance is running - ask user what to do
+        # Another instance is running. Try to silently activate it first.
+        if find_and_activate_existing_window():
+            sys.exit(0)
+            
+        # If we couldn't find the window (ghost process?), ask user
         result = styled_question(
             None,
             "Already Running",
-            "Personal Liberty is already running.\n\nWhat would you like to do?",
-            ["Switch to Running App", "Kill & Restart", "Cancel"]
+            "Personal Liberty is already running but the window could not be found.\n(It might be a background process)\n\nWhat would you like to do?",
+            ["Kill & Restart", "Cancel"]
         )
         
-        if result == "Switch to Running App":
-            # Try to activate existing window
-            if find_and_activate_existing_window():
-                sys.exit(0)
-            else:
-                show_warning(
-                    None, "Not Found",
-                    "Could not find the running window.\n\n"
-                    "The app may be minimized to system tray.\n"
-                    "Check your system tray icons."
-                )
-                sys.exit(0)
-        elif result == "Kill & Restart":
+        if result == "Kill & Restart":
             # Kill existing instances and continue
             kill_existing_instances()
             # Try to acquire mutex again
