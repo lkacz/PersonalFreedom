@@ -410,7 +410,7 @@ class TestEncounterSystem:
         from entitidex.encounter_system import roll_encounter_chance
         
         # Get normal chance
-        _, normal_chance, _ = roll_encounter_chance(
+        _, normal_chance, _, _ = roll_encounter_chance(
             session_minutes=60,
             was_perfect_session=True,
             streak_days=10,
@@ -418,7 +418,7 @@ class TestEncounterSystem:
         )
         
         # Get bypass chance
-        _, bypass_chance, _ = roll_encounter_chance(
+        _, bypass_chance, _, _ = roll_encounter_chance(
             session_minutes=60,
             was_perfect_session=True,
             streak_days=10,

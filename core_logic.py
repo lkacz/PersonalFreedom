@@ -301,6 +301,7 @@ class BlockerCore:
         self.toggle_hotkey = ""  # Global hotkey for show/hide window
         self.startup_sound_enabled = True  # Play sound when app starts minimized
         self.lottery_sound_enabled = True  # Play win/lose sounds after lottery animations
+        self.show_countdown_in_icon = True  # Show countdown timer in taskbar/tray icon
         
         # Enforcement mode: "full" (hosts file) or "light" (monitor + notifications only)
         self.enforcement_mode = EnforcementMode.FULL
@@ -422,6 +423,7 @@ class BlockerCore:
                     self.toggle_hotkey = config.get('toggle_hotkey', "")
                     self.startup_sound_enabled = config.get('startup_sound_enabled', True)
                     self.lottery_sound_enabled = config.get('lottery_sound_enabled', True)
+                    self.show_countdown_in_icon = config.get('show_countdown_in_icon', True)
                     # Load enforcement mode (full = hosts file, light = notifications only)
                     enforcement = config.get('enforcement_mode', EnforcementMode.FULL)
                     self.enforcement_mode = enforcement if enforcement in (EnforcementMode.FULL, EnforcementMode.LIGHT) else EnforcementMode.FULL
@@ -585,6 +587,7 @@ class BlockerCore:
                 'toggle_hotkey': self.toggle_hotkey,
                 'startup_sound_enabled': self.startup_sound_enabled,
                 'lottery_sound_enabled': self.lottery_sound_enabled,
+                'show_countdown_in_icon': self.show_countdown_in_icon,
                 'enforcement_mode': self.enforcement_mode,
                 'system_permissions': self.system_permissions,
                 'adhd_buster': self.adhd_buster,

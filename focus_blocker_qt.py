@@ -1626,28 +1626,46 @@ class LogPastSessionDialog(StyledDialog):
             self.log_btn.setEnabled(False)
             return
         
+        # Anti-exploitation thresholds
+        MIN_SESSION_FOR_ANY_REWARD = 5
+        MIN_SESSION_FOR_FULL_REWARD = 20
+        
+        if total_minutes < MIN_SESSION_FOR_ANY_REWARD:
+            self.preview_label.setText(
+                "<b style='color:#e74c3c;'>⚠️ Session too short!</b><br>"
+                "Sessions under 5 minutes give no rewards.<br>"
+                "Try at least 20 minutes for full rewards!"
+            )
+            self.log_btn.setEnabled(False)
+            return
+        
         self.log_btn.setEnabled(True)
         
         # Calculate approximate rewards
         streak = self.blocker.stats.get("streak_days", 0)
         
-        # XP calculation (simplified)
+        # Check for short session penalties
+        is_short_session = total_minutes < MIN_SESSION_FOR_FULL_REWARD
+        multiplier = 0.5 if is_short_session else 1.0
+        
+        # XP calculation (simplified, with penalty)
         base_xp = 25
         time_xp = total_minutes * 2
         streak_xp = streak * 5
-        total_xp = base_xp + time_xp + streak_xp
+        total_xp = int((base_xp + time_xp + streak_xp) * multiplier)
         
-        # Coins calculation (simplified)
+        # Coins calculation (simplified, with penalty)
         session_hours = total_minutes / 60.0
-        coins = int(session_hours * 10)
-        if streak >= 30:
-            coins += 100
-        elif streak >= 14:
-            coins += 50
-        elif streak >= 7:
-            coins += 25
-        elif streak >= 3:
-            coins += 10
+        coins = int(session_hours * 10 * multiplier)
+        if not is_short_session:  # Streak bonus only for full sessions
+            if streak >= 30:
+                coins += 100
+            elif streak >= 14:
+                coins += 50
+            elif streak >= 7:
+                coins += 25
+            elif streak >= 3:
+                coins += 10
         
         # Rarity tier based on duration
         if total_minutes >= 240:
@@ -1665,6 +1683,12 @@ class LogPastSessionDialog(StyledDialog):
         else:
             rarity = "Common"
             rarity_color = "#78909c"
+        
+        # Item drop info (25% chance for short sessions)
+        if is_short_session:
+            item_line = f"• <b style='color:{rarity_color};'>Item:</b> 25% chance for {rarity} gear"
+        else:
+            item_line = f"• <b style='color:{rarity_color};'>Item:</b> 1x {rarity} gear (guaranteed)"
         
         # Check for city building contribution
         city_line = ""
@@ -1687,12 +1711,18 @@ class LogPastSessionDialog(StyledDialog):
         except Exception:
             pass
         
+        # Short session warning
+        warning_line = ""
+        if is_short_session:
+            warning_line = f"<br><br><b style='color:#e67e22;'>⚡ Short session penalty:</b> 50% XP/Coins, 25% item chance<br>Try 20+ min for full rewards!"
+        
         self.preview_label.setText(
             f"<b style='color:#00b894;'>📊 Rewards Preview:</b><br>"
             f"• <b style='color:#ffd700;'>XP:</b> ~{total_xp}<br>"
             f"• <b style='color:#f1c40f;'>Coins:</b> ~{coins}<br>"
-            f"• <b style='color:{rarity_color};'>Item:</b> 1x {rarity} gear (guaranteed)"
+            f"{item_line}"
             f"{city_line}"
+            f"{warning_line}"
         )
     
     def _on_log(self) -> None:
@@ -2831,22 +2861,58 @@ class TimerTab(QtWidgets.QWidget):
             return False  # Error getting stats, assume not perfect
 
     def _give_session_rewards(self, session_minutes: int) -> None:
-        """Give item drop, XP, and diary entry rewards with lottery animation."""
+        """Give item drop, XP, and diary entry rewards with lottery animation.
+        
+        Short session penalties (anti-exploitation):
+        - < 5 min: No rewards at all
+        - 5-19 min: Reduced rewards (25% item drop chance, 50% coins/XP)
+        - 20+ min: Full rewards with normal scaling
+        """
         if not GAMIFICATION_AVAILABLE:
             return
         # Skip if gamification mode is disabled
         if not is_gamification_enabled(self.blocker.adhd_buster):
             return
+        
+        # === ANTI-EXPLOITATION: Minimum session thresholds ===
+        MIN_SESSION_FOR_ANY_REWARD = 5      # < 5 min = nothing
+        MIN_SESSION_FOR_FULL_REWARD = 20    # < 20 min = reduced rewards
+        
+        if session_minutes < MIN_SESSION_FOR_ANY_REWARD:
+            # Too short - no rewards
+            logger.info(f"Session too short ({session_minutes} min) - no rewards")
+            return
+        
+        # === CITY RESOURCES ===
+        # Award city Focus resource (1 per 30 min) - uses its own threshold
+        # This is separate from coins/XP since city has 30-min minimum built-in
+        main_window = self.window()
+        if CITY_AVAILABLE and hasattr(main_window, '_award_city_resources_for_session'):
+            main_window._award_city_resources_for_session(session_minutes * 60)
+        
+        # Calculate reward multiplier for short sessions
+        is_short_session = session_minutes < MIN_SESSION_FOR_FULL_REWARD
+        short_session_multiplier = 0.5 if is_short_session else 1.0
 
         streak = self.blocker.stats.get("streak_days", 0)
         
         # Get active story for themed item generation
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         
-        # Calculate coin earnings
+        # Calculate coin earnings (reduced for short sessions)
         session_hours = session_minutes / 60.0
         base_coins_per_hour = 10
-        coins_earned = int(session_hours * base_coins_per_hour)
+        coins_earned = int(session_hours * base_coins_per_hour * short_session_multiplier)
+        
+        # 🚀 DEEP WORK BONUS: Apply multiplier for longer sessions
+        deep_work_multiplier = 1.0
+        try:
+            from gamification import get_deep_work_multiplier
+            deep_work_multiplier = get_deep_work_multiplier(session_minutes)
+            if deep_work_multiplier > 1.0:
+                coins_earned = int(coins_earned * deep_work_multiplier)
+        except ImportError:
+            pass
         
         # Apply strategic priority bonus (+150% = 2.5x multiplier)
         if self.session_is_strategic:
@@ -2915,39 +2981,59 @@ class TimerTab(QtWidgets.QWidget):
             xp_bonus_pct += perfect_session_bonus_pct
         # Cap at 200% to prevent overflow
         xp_bonus_pct = min(xp_bonus_pct, 200)
+        
+        # Calculate XP (reduced for short sessions)
         xp_info = calculate_session_xp(
             session_minutes, streak, lucky_xp_bonus=xp_bonus_pct,
             adhd_buster=self.blocker.adhd_buster
         )
+        # Apply short session penalty to XP
+        if is_short_session:
+            xp_info["total_xp"] = int(xp_info["total_xp"] * short_session_multiplier)
 
-        # Generate item (100% guaranteed drop) with entity rarity perks
-        item = generate_item(session_minutes=session_minutes, streak_days=streak,
-                              story_id=active_story, adhd_buster=self.blocker.adhd_buster)
+        # === ITEM DROP LOGIC (with short session penalty) ===
+        # Short sessions (< 20 min): Only 25% chance for item drop
+        # Normal sessions (>= 20 min): 100% guaranteed drop
+        item = None
+        should_drop_item = True
+        
+        if is_short_session:
+            import random
+            item_drop_chance = 0.25  # 25% chance for short sessions
+            should_drop_item = random.random() < item_drop_chance
+            if not should_drop_item:
+                logger.info(f"Short session ({session_minutes} min) - no item drop (25% chance failed)")
+        
+        if should_drop_item:
+            # Generate item with entity rarity perks
+            item = generate_item(session_minutes=session_minutes, streak_days=streak,
+                                  story_id=active_story, adhd_buster=self.blocker.adhd_buster)
 
         # Get currently equipped item BEFORE awarding the new one (for comparison dialog)
         equipped_item_before = None
-        if GAMIFICATION_AVAILABLE:
+        if GAMIFICATION_AVAILABLE and item:
             try:
                 from gamification import get_equipped_item
                 equipped_item_before = get_equipped_item(self.blocker.adhd_buster, item.get("slot", "Unknown"))
             except ImportError:
                 pass
 
-        # Show lottery animation for tier reveal (item is always awarded)
-        from lottery_animation import FocusTimerLotteryDialog
-        lottery_dialog = FocusTimerLotteryDialog(
-            session_minutes=session_minutes,
-            streak_days=streak,
-            item=item,
-            parent=self.window()
-        )
-        lottery_dialog.exec()
-        lottery_dialog.hide()  # Explicitly hide before deletion to prevent ghost boxes
-        lottery_dialog.deleteLater()  # Ensure dialog is cleaned up
+        # Show lottery animation for tier reveal (only if item dropped)
+        if item:
+            from lottery_animation import FocusTimerLotteryDialog
+            lottery_dialog = FocusTimerLotteryDialog(
+                session_minutes=session_minutes,
+                streak_days=streak,
+                item=item,
+                parent=self.window()
+            )
+            lottery_dialog.exec()
+            lottery_dialog.hide()  # Explicitly hide before deletion to prevent ghost boxes
+            lottery_dialog.deleteLater()  # Ensure dialog is cleaned up
 
-        # Ensure item has all required fields
-        if "obtained_at" not in item:
-            item["obtained_at"] = datetime.now().isoformat()
+            # Ensure item has all required fields
+            if "obtained_at" not in item:
+                item["obtained_at"] = datetime.now().isoformat()
         
         # === Use GameState Manager for Atomic Updates ===
         # This ensures all UI components are notified of changes automatically
@@ -2961,8 +3047,12 @@ class TimerTab(QtWidgets.QWidget):
         # This properly deep-copies items and uses the state manager throughout
         game_state.begin_batch()
         try:
-            # Award item with auto-equip to empty slots
-            game_state.award_items_batch([item], coins=coins_earned, auto_equip=True, source="session_completion")
+            # Award item with auto-equip to empty slots (only if item dropped)
+            if item:
+                game_state.award_items_batch([item], coins=coins_earned, auto_equip=True, source="session_completion")
+            else:
+                # No item drop - just award coins
+                game_state.add_coins(coins_earned, source="session_completion")
             
             # Award XP via state manager
             xp_result_tuple = game_state.add_xp(xp_info["total_xp"])
@@ -3045,117 +3135,125 @@ class TimerTab(QtWidgets.QWidget):
             levelup_dialog.hide()  # Explicitly hide before deletion to prevent ghost boxes
             levelup_dialog.deleteLater()  # Ensure dialog is cleaned up
 
-        # Show unified item reward dialog with comparison
+        # Show unified item reward dialog with comparison (only if item dropped)
         # Use equipped_item_before which was captured before the item was auto-equipped
-        from styled_dialog import ItemRewardDialog
-        
-        # Build equipped dict for comparison
-        equipped_before = {}
-        if equipped_item_before:
-            equipped_before[item.get("slot", "Unknown")] = equipped_item_before
-        
-        # Get entity perk contributors for luck/rarity bonuses
-        entity_perk_contributors = []
-        try:
-            from gamification import get_entity_luck_perk_contributors
-            luck_perks = get_entity_luck_perk_contributors(self.blocker.adhd_buster)
-            entity_perk_contributors = luck_perks.get("contributors", [])
-        except Exception as e:
-            logger.debug(f"Could not get entity luck perk contributors: {e}")
-        
-        # 🏙️ Add city bonus contributors for rarity (Artisan Guild)
-        try:
-            from city import get_city_bonuses
-            city_bonuses = get_city_bonuses(self.blocker.adhd_buster)
-            rarity_bonus = city_bonuses.get("rarity_bias_bonus", 0)
-            if rarity_bonus > 0:
-                entity_perk_contributors.append({
-                    "entity_id": "city_artisan_guild",
-                    "name": "Artisan Guild",
-                    "perk_type": "rarity_bias",
-                    "value": int(rarity_bonus),
-                    "icon": "🏛️",
-                    "is_exceptional": False,
-                    "description": f"+{int(rarity_bonus)}% Rarity (City Building)",
-                    "is_city": True,  # Mark as city building for different display
-                })
-        except Exception as e:
-            logger.debug(f"Could not get city rarity bonus: {e}")
-        
-        # Build extra messages for display
-        extra_msgs = []
-        
-        # Add city construction progress feedback from the stored contribution info
-        main_window = self.window()
-        last_contribution = getattr(main_window, '_last_city_contribution', None)
-        building_completed_info = None  # Track if building completed for celebration dialog
-        if last_contribution:
-            building_name = last_contribution.get("building_name")
-            amount = last_contribution.get("amount", 0)
-            resource = last_contribution.get("resource", "focus")
-            progress = last_contribution.get("progress_percent", 0)
-            completed = last_contribution.get("completed", False)
-            wasted = last_contribution.get("wasted", False)
-            short_session = last_contribution.get("short_session", False)
-            mins_needed = last_contribution.get("mins_needed", 0)
+        if item:
+            from styled_dialog import ItemRewardDialog
             
-            resource_emoji = "🎯" if resource == "focus" else "💪"
+            # Build equipped dict for comparison
+            equipped_before = {}
+            if equipped_item_before:
+                equipped_before[item.get("slot", "Unknown")] = equipped_item_before
             
-            if wasted:
-                extra_msgs.append(f"⚠️ +{amount} {resource.title()} earned but no building under construction")
-            elif completed:
-                extra_msgs.append(f"🎉 +{amount} {resource.title()} → {building_name} COMPLETE!")
-                # Save info for celebration dialog
-                building_completed_info = {
-                    "building_id": last_contribution.get("building_id", ""),
-                    "level": last_contribution.get("level", 1),
-                }
-            elif short_session and mins_needed > 0:
-                extra_msgs.append(f"🏗️ {mins_needed} more min → +1 Focus for {building_name}")
-            elif building_name and amount > 0:
-                extra_msgs.append(f"🏗️ +{amount} {resource.title()} → {building_name} ({progress:.0f}%)")
-            
-            # Clear the contribution info after showing
-            main_window._last_city_contribution = None
-        
-        reward_dialog = ItemRewardDialog(
-            parent=self.window(),
-            source_label=f"Focus Session: {session_minutes} min" + (f" • {streak} day streak 🔥" if streak > 0 else ""),
-            items_earned=[item],
-            equipped=equipped_before,
-            coins_earned=coins_earned,
-            game_state=get_game_state(),
-            session_minutes=session_minutes,
-            streak_days=streak,
-            entity_perk_contributors=entity_perk_contributors,
-            extra_messages=extra_msgs,
-        )
-        reward_dialog.exec()
-        reward_dialog.hide()  # Explicitly hide before deletion to prevent ghost boxes
-        reward_dialog.deleteLater()  # Ensure dialog is cleaned up
-        
-        # 🎉 Show building complete celebration if construction just finished
-        if building_completed_info:
+            # Get entity perk contributors for luck/rarity bonuses
+            entity_perk_contributors = []
             try:
-                from city_tab import show_building_complete_dialog
-                building_id = building_completed_info.get("building_id", "")
-                level = building_completed_info.get("level", 1)
-                # If level > 1, this was an upgrade, not initial construction
-                is_upgrade = level > 1
-                show_building_complete_dialog(building_id, level, is_upgrade, parent=self.window())
-                # Refresh city tab to show completed building (remove construction overlay)
+                from gamification import get_entity_luck_perk_contributors
+                luck_perks = get_entity_luck_perk_contributors(self.blocker.adhd_buster)
+                entity_perk_contributors = luck_perks.get("contributors", [])
+            except Exception as e:
+                logger.debug(f"Could not get entity luck perk contributors: {e}")
+            
+            # 🏙️ Add city bonus contributors for rarity (Artisan Guild)
+            try:
+                from city import get_city_bonuses
+                city_bonuses = get_city_bonuses(self.blocker.adhd_buster)
+                rarity_bonus = city_bonuses.get("rarity_bias_bonus", 0)
+                if rarity_bonus > 0:
+                    entity_perk_contributors.append({
+                        "entity_id": "city_artisan_guild",
+                        "name": "Artisan Guild",
+                        "perk_type": "rarity_bias",
+                        "value": int(rarity_bonus),
+                        "icon": "🏛️",
+                        "is_exceptional": False,
+                        "description": f"+{int(rarity_bonus)}% Rarity (City Building)",
+                        "is_city": True,  # Mark as city building for different display
+                    })
+            except Exception as e:
+                logger.debug(f"Could not get city rarity bonus: {e}")
+        
+            # Build extra messages for display
+            extra_msgs = []
+            
+            # Add short session notice
+            if is_short_session:
+                extra_msgs.append(f"⚡ Quick session ({session_minutes} min) - reduced rewards")
+            
+            # Add city construction progress feedback from the stored contribution info
+            main_window = self.window()
+            last_contribution = getattr(main_window, '_last_city_contribution', None)
+            building_completed_info = None  # Track if building completed for celebration dialog
+            if last_contribution:
+                building_name = last_contribution.get("building_name")
+                amount = last_contribution.get("amount", 0)
+                resource = last_contribution.get("resource", "focus")
+                progress = last_contribution.get("progress_percent", 0)
+                completed = last_contribution.get("completed", False)
+                wasted = last_contribution.get("wasted", False)
+                short_session_city = last_contribution.get("short_session", False)
+                mins_needed = last_contribution.get("mins_needed", 0)
+                
+                resource_emoji = "🎯" if resource == "focus" else "💪"
+                
+                if wasted:
+                    extra_msgs.append(f"⚠️ +{amount} {resource.title()} earned but no building under construction")
+                elif completed:
+                    extra_msgs.append(f"🎉 +{amount} {resource.title()} → {building_name} COMPLETE!")
+                    # Save info for celebration dialog
+                    building_completed_info = {
+                        "building_id": last_contribution.get("building_id", ""),
+                        "level": last_contribution.get("level", 1),
+                    }
+                elif short_session_city and mins_needed > 0:
+                    extra_msgs.append(f"🏗️ {mins_needed} more min → +1 Focus for {building_name}")
+                elif building_name and amount > 0:
+                    extra_msgs.append(f"🏗️ +{amount} {resource.title()} → {building_name} ({progress:.0f}%)")
+                
+                # Clear the contribution info after showing
+                main_window._last_city_contribution = None
+            
+            reward_dialog = ItemRewardDialog(
+                parent=self.window(),
+                source_label=f"Focus Session: {session_minutes} min" + (f" • {streak} day streak 🔥" if streak > 0 else ""),
+                items_earned=[item],
+                equipped=equipped_before,
+                coins_earned=coins_earned,
+                game_state=get_game_state(),
+                session_minutes=session_minutes,
+                streak_days=streak,
+                entity_perk_contributors=entity_perk_contributors,
+                extra_messages=extra_msgs,
+            )
+            reward_dialog.exec()
+            reward_dialog.hide()  # Explicitly hide before deletion to prevent ghost boxes
+            reward_dialog.deleteLater()  # Ensure dialog is cleaned up
+            
+            # 🎉 Show building complete celebration if construction just finished
+            if building_completed_info:
+                try:
+                    from city_tab import show_building_complete_dialog
+                    building_id = building_completed_info.get("building_id", "")
+                    level = building_completed_info.get("level", 1)
+                    # If level > 1, this was an upgrade, not initial construction
+                    is_upgrade = level > 1
+                    show_building_complete_dialog(building_id, level, is_upgrade, parent=self.window())
+                    # Refresh city tab to show completed building (remove construction overlay)
+                    main_window = self.window()
+                    if hasattr(main_window, 'city_tab') and hasattr(main_window.city_tab, '_refresh_city'):
+                        main_window.city_tab._refresh_city()
+                except Exception as e:
+                    logger.debug(f"Could not show building complete dialog: {e}")
+            
+            # Refresh city tab if construction progress was tracked
+            last_contribution = getattr(self.window(), '_last_city_contribution', None)
+            if last_contribution is None:  # Was set and consumed, city might have changed
                 main_window = self.window()
                 if hasattr(main_window, 'city_tab') and hasattr(main_window.city_tab, '_refresh_city'):
                     main_window.city_tab._refresh_city()
-            except Exception as e:
-                logger.debug(f"Could not show building complete dialog: {e}")
-        
-        # Refresh city tab if construction progress was tracked
-        last_contribution = getattr(self.window(), '_last_city_contribution', None)
-        if last_contribution is None:  # Was set and consumed, city might have changed
-            main_window = self.window()
-            if hasattr(main_window, 'city_tab') and hasattr(main_window.city_tab, '_refresh_city'):
-                main_window.city_tab._refresh_city()
+        else:
+            # No item dropped (short session) - just show a simple notification
+            logger.info(f"Short session completed: {session_minutes} min - {coins_earned} coins, {xp_info['total_xp']} XP (no item)")
 
         # Note: UI updates are now handled automatically via GameState signals
         # The game_state.end_batch() above triggers power_changed, coins_changed,
@@ -3988,19 +4086,15 @@ class TimerTab(QtWidgets.QWidget):
             except Exception:
                 pass
             
-            # Award city resources BEFORE rewards dialog (so contribution shows in dialog)
-            main_window = self.window()
-            if CITY_AVAILABLE and hasattr(main_window, '_award_city_resources_for_session'):
-                main_window._award_city_resources_for_session(session_minutes * 60)
-            
-            # Give rewards (same as a normal session)
-            # Note: _give_session_rewards already includes entitidex encounter check
+            # Give rewards (includes city resources, XP, coins, items, encounters)
+            # City resources are awarded inside _give_session_rewards now
             self._give_session_rewards(session_minutes)
             
             # Show priority time log dialog
             self._show_priority_time_log(session_minutes)
             
             # Refresh City tab to show construction progress
+            main_window = self.window()
             if CITY_AVAILABLE and hasattr(main_window, 'city_tab'):
                 main_window.city_tab._refresh_city()
             
@@ -6455,6 +6549,16 @@ class SettingsTab(QtWidgets.QWidget):
             sound_row.addStretch()
             tray_layout.addLayout(sound_row)
             
+            # Countdown in icon setting
+            tray_layout.addSpacing(10)
+            self.countdown_icon_check = QtWidgets.QCheckBox("⏱️ Show countdown timer in taskbar/tray icon")
+            self.countdown_icon_check.setChecked(self.blocker.show_countdown_in_icon)
+            self.countdown_icon_check.toggled.connect(self._toggle_countdown_in_icon)
+            tray_layout.addWidget(self.countdown_icon_check)
+            tray_layout.addWidget(QtWidgets.QLabel(
+                "When enabled, the remaining minutes are displayed on the icon during focus sessions."
+            ))
+            
             inner.addWidget(tray_group)
 
         # About
@@ -6965,6 +7069,20 @@ class SettingsTab(QtWidgets.QWidget):
         """Toggle startup sound setting and save to config."""
         self.blocker.startup_sound_enabled = checked
         self.blocker.save_config()
+
+    def _toggle_countdown_in_icon(self, checked: bool) -> None:
+        """Toggle countdown in icon setting and save to config."""
+        self.blocker.show_countdown_in_icon = checked
+        self.blocker.save_config()
+        
+        # If disabling during an active session, restore the normal icon immediately
+        main_window = self.window()
+        if not checked and hasattr(main_window, '_restore_taskbar_icon'):
+            main_window._restore_taskbar_icon()
+            if hasattr(main_window, '_last_tray_minutes'):
+                main_window._last_tray_minutes = None
+                if hasattr(main_window, '_update_tray_icon'):
+                    main_window._update_tray_icon(blocking=main_window.timer_tab.timer_running)
 
     def _test_startup_sound(self) -> None:
         """Play a test startup sound."""
@@ -27006,10 +27124,17 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.tray_status_action.setText(f"🔒 Blocking - {h:02d}:{m:02d}:{s:02d}")
             self.tray_icon.setToolTip(f"Personal Liberty - Blocking ({h:02d}:{m:02d}:{s:02d})")
             
-            # Update icon with remaining minutes (total minutes, not just the m component)
-            total_minutes = (remaining + 59) // 60  # Round up to nearest minute
-            self._update_tray_icon_with_time(total_minutes)
-            self._update_taskbar_icon_with_time(total_minutes)
+            # Update icon with remaining minutes (only if setting is enabled)
+            if self.blocker.show_countdown_in_icon:
+                total_minutes = (remaining + 59) // 60  # Round up to nearest minute
+                self._update_tray_icon_with_time(total_minutes)
+                self._update_taskbar_icon_with_time(total_minutes)
+            else:
+                # Just show blocking icon without countdown
+                if self._last_tray_minutes is not None:
+                    self._last_tray_minutes = None
+                    self._update_tray_icon(blocking=True)
+                    self._restore_taskbar_icon()
         else:
             self.tray_status_action.setText("Ready")
             self.tray_icon.setToolTip("Personal Liberty - Ready")
@@ -27546,7 +27671,12 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 self._update_coin_display()
 
     def _on_session_complete(self, elapsed_seconds: int) -> None:
-        """Handle session completion - refresh stats and related UI."""
+        """Handle session completion - refresh stats and related UI.
+        
+        Note: This is called via session_complete signal. City resources are
+        NOT awarded here to prevent double-awarding (they're awarded directly
+        before _give_session_rewards in the session completion flow).
+        """
         # Stop browser monitor if running (Light Mode)
         self._stop_browser_monitor()
         
@@ -27561,9 +27691,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         if GAMIFICATION_AVAILABLE:
             self._update_coin_display()
         
-        # Award city resources for focus session
-        if CITY_AVAILABLE and hasattr(self.blocker, 'adhd_buster'):
-            self._award_city_resources_for_session(elapsed_seconds)
+        # NOTE: City resources are now awarded directly in _give_session_rewards
+        # and _log_past_session, NOT here, to prevent duplicate awards.
         
         # Refresh the stats tab to show updated focus time
         if hasattr(self, 'stats_tab'):

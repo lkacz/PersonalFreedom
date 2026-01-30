@@ -17,16 +17,24 @@ from .progress_tracker import EntitidexProgress
 # =============================================================================
 
 ENCOUNTER_CONFIG = {
-    # Base encounter chance after completing a focus session
-    "base_chance": 0.55,  # 55% - increased from 40% for better engagement
+    # Duration-based encounter chance scaling (prevents short session exploitation)
+    # Scales linearly: 5 min = 5%, 60 min = 55%
+    "min_session_minutes": 5,      # Minimum session for any encounter chance
+    "min_chance": 0.05,            # 5% at 5 minutes
+    "base_session_minutes": 60,    # Session length where base_chance applies
+    "base_chance": 0.55,           # 55% at 60 minutes
     
-    # Bonuses that increase encounter chance
-    "bonus_per_15min": 0.08,      # +8% per 15 min beyond minimum (was 5%)
-    "bonus_perfect_session": 0.12,  # +12% for no bypass attempts (was 10%)
-    "bonus_per_streak_day": 0.03,   # +3% per consecutive day (was 2%)
+    # Bonuses that increase encounter chance (only apply after base_session_minutes)
+    "bonus_per_15min": 0.06,      # +6% per 15 min beyond 60 min
+    "bonus_perfect_session": 0.10,  # +10% for no bypass attempts
+    "bonus_per_streak_day": 0.02,   # +2% per consecutive day (capped at 30 days)
     
     # Maximum encounter chance (cap)
-    "max_chance": 0.92,  # 92% maximum (was 85%)
+    "max_chance": 0.92,  # 92% maximum
+    
+    # Daily encounter diminishing returns (prevents session splitting)
+    # Each encounter reduces chance for next encounter that day
+    "daily_encounter_decay": [1.0, 0.5, 0.25, 0.1],  # 1st=100%, 2nd=50%, 3rd=25%, 4th+=10%
     
     # Entity selection weights
     "weight_power_near": 100,      # Entity within 200 power of hero
@@ -53,6 +61,53 @@ ENCOUNTER_CONFIG = {
 # ENCOUNTER CHANCE
 # =============================================================================
 
+def get_daily_encounter_multiplier(adhd_buster: dict = None) -> tuple:
+    """
+    Get the encounter chance multiplier based on how many encounters today.
+    
+    Implements diminishing returns for multiple encounters per day:
+    - 1st encounter: 100% chance
+    - 2nd encounter: 50% chance  
+    - 3rd encounter: 25% chance
+    - 4th+ encounter: 10% chance
+    
+    This discourages splitting sessions to farm encounters.
+    
+    Returns:
+        Tuple of (multiplier: float, encounters_today: int)
+    """
+    from datetime import datetime
+    
+    encounters_today = 0
+    if adhd_buster:
+        today = datetime.now().strftime("%Y-%m-%d")
+        encounter_log = adhd_buster.get("daily_encounter_log", {})
+        encounters_today = encounter_log.get(today, 0)
+    
+    decay_values = ENCOUNTER_CONFIG["daily_encounter_decay"]
+    if encounters_today < len(decay_values):
+        multiplier = decay_values[encounters_today]
+    else:
+        multiplier = decay_values[-1]  # Use last value for excess encounters
+    
+    return multiplier, encounters_today
+
+
+def record_daily_encounter(adhd_buster: dict) -> None:
+    """Record that an encounter occurred today for diminishing returns tracking."""
+    from datetime import datetime
+    
+    if not adhd_buster:
+        return
+    
+    today = datetime.now().strftime("%Y-%m-%d")
+    if "daily_encounter_log" not in adhd_buster:
+        adhd_buster["daily_encounter_log"] = {}
+    
+    # Clean old dates (keep only today)
+    adhd_buster["daily_encounter_log"] = {today: adhd_buster["daily_encounter_log"].get(today, 0) + 1}
+
+
 def calculate_encounter_chance(
     session_minutes: int,
     minimum_session_minutes: int = 25,
@@ -60,52 +115,90 @@ def calculate_encounter_chance(
     streak_days: int = 0,
     active_perks: Optional[dict] = None,
     city_encounter_bonus: float = 0.0,
-) -> Tuple[float, float]:
+    adhd_buster: dict = None,
+) -> Tuple[float, float, float]:
     """
     Calculate the chance of encountering an entity after a focus session.
     
+    Uses duration-based scaling to prevent short session exploitation:
+    - 5 min = 5% base chance
+    - 60 min = 55% base chance  
+    - Linear interpolation between these points
+    - Bonuses (streak, perfect, perks) only apply after reaching 60 min
+    
+    Also applies daily diminishing returns for multiple encounters.
+    
     Args:
         session_minutes: Duration of the completed session
-        minimum_session_minutes: The minimum required session length
+        minimum_session_minutes: The minimum required session length (legacy, now uses config)
         was_perfect_session: True if no bypass was attempted
         streak_days: Number of consecutive days with completed sessions
         active_perks: Dict with entity perk bonuses (encounter_chance, etc.)
         city_encounter_bonus: Bonus from city Observatory building (percentage, e.g., 5 = +5%)
+        adhd_buster: Hero data for daily encounter tracking
         
     Returns:
-        Tuple of (final_chance, perk_bonus) - probability between 0.0 and max_chance
+        Tuple of (final_chance, perk_bonus, daily_multiplier) - probability between 0.0 and max_chance
     """
-    chance = ENCOUNTER_CONFIG["base_chance"]
+    min_mins = ENCOUNTER_CONFIG["min_session_minutes"]
+    min_chance = ENCOUNTER_CONFIG["min_chance"]
+    base_mins = ENCOUNTER_CONFIG["base_session_minutes"]
+    base_chance = ENCOUNTER_CONFIG["base_chance"]
     
-    # Bonus for longer sessions
-    extra_minutes = max(0, session_minutes - minimum_session_minutes)
-    extra_15min_blocks = extra_minutes // 15
-    chance += extra_15min_blocks * ENCOUNTER_CONFIG["bonus_per_15min"]
+    # No encounter chance for sessions shorter than minimum
+    if session_minutes < min_mins:
+        return 0.0, 0.0, 1.0
     
-    # Bonus for perfect session
-    if was_perfect_session:
-        chance += ENCOUNTER_CONFIG["bonus_perfect_session"]
+    # Calculate duration-scaled base chance (linear interpolation from 5min→60min)
+    if session_minutes >= base_mins:
+        # At or beyond 60 min: use full base chance + bonuses for extra time
+        chance = base_chance
+        extra_minutes = session_minutes - base_mins
+        extra_15min_blocks = extra_minutes // 15
+        chance += extra_15min_blocks * ENCOUNTER_CONFIG["bonus_per_15min"]
+    else:
+        # Between 5 min and 60 min: linear interpolation
+        # 5 min = 5%, 60 min = 55%
+        progress = (session_minutes - min_mins) / (base_mins - min_mins)
+        chance = min_chance + progress * (base_chance - min_chance)
     
-    # Bonus for streak
-    chance += streak_days * ENCOUNTER_CONFIG["bonus_per_streak_day"]
+    # Bonuses only apply for sessions >= 60 min (to prevent exploitation)
+    if session_minutes >= base_mins:
+        # Bonus for perfect session
+        if was_perfect_session:
+            chance += ENCOUNTER_CONFIG["bonus_perfect_session"]
+        
+        # Bonus for streak (capped at 30 days)
+        capped_streak = min(streak_days, 30)
+        chance += capped_streak * ENCOUNTER_CONFIG["bonus_per_streak_day"]
     
     # ✨ ENTITY PERK BONUS: Encounter chance from collected entities
+    # Perks apply at 50% effectiveness for sessions < 60 min
     perk_bonus = 0.0
     if active_perks:
         # Get encounter_chance perk (stored as percentage, e.g., 2 = +2%)
         from .entity_perks import PerkType
         encounter_bonus = active_perks.get(PerkType.ENCOUNTER_CHANCE, 0)
         perk_bonus = encounter_bonus / 100.0  # Convert to probability
+        if session_minutes < base_mins:
+            perk_bonus *= 0.5  # Half effectiveness for short sessions
         chance += perk_bonus
     
     # 🏙️ CITY BONUS: Observatory building encounter bonus
+    # City bonus also at 50% effectiveness for sessions < 60 min
     if city_encounter_bonus > 0:
         city_bonus_prob = city_encounter_bonus / 100.0  # Convert percentage to probability
+        if session_minutes < base_mins:
+            city_bonus_prob *= 0.5  # Half effectiveness for short sessions
         chance += city_bonus_prob
         perk_bonus += city_bonus_prob  # Include in reported perk bonus
     
+    # Apply daily encounter diminishing returns
+    daily_mult, encounters_today = get_daily_encounter_multiplier(adhd_buster)
+    chance = chance * daily_mult
+    
     # Cap at maximum
-    return min(chance, ENCOUNTER_CONFIG["max_chance"]), perk_bonus
+    return min(chance, ENCOUNTER_CONFIG["max_chance"]), perk_bonus, daily_mult
 
 
 def roll_encounter_chance(
@@ -116,7 +209,8 @@ def roll_encounter_chance(
     active_perks: Optional[dict] = None,
     was_bypass_used: bool = False,
     city_encounter_bonus: float = 0.0,
-) -> Tuple[bool, float, float]:
+    adhd_buster: dict = None,
+) -> Tuple[bool, float, float, float]:
     """
     Roll to determine if an encounter occurs.
     
@@ -128,17 +222,20 @@ def roll_encounter_chance(
         active_perks: Dict with entity perk bonuses
         was_bypass_used: True if session was ended early via bypass
             (reduces chance but doesn't eliminate it)
+        city_encounter_bonus: Bonus from city Observatory building (percentage)
+        adhd_buster: Hero data for daily encounter tracking
         
     Returns:
-        Tuple of (encounter_occurred: bool, chance: float, perk_bonus: float)
+        Tuple of (encounter_occurred: bool, chance: float, perk_bonus: float, daily_mult: float)
     """
-    chance, perk_bonus = calculate_encounter_chance(
+    chance, perk_bonus, daily_mult = calculate_encounter_chance(
         session_minutes=session_minutes,
         minimum_session_minutes=minimum_session_minutes,
         was_perfect_session=was_perfect_session,
         streak_days=streak_days,
         active_perks=active_perks,
         city_encounter_bonus=city_encounter_bonus,
+        adhd_buster=adhd_buster,
     )
     
     # Apply bypass penalty - reduced chance but not zero
@@ -149,7 +246,13 @@ def roll_encounter_chance(
         chance = chance * penalty
     
     roll = random.random()
-    return roll < chance, chance, perk_bonus
+    encounter_occurred = roll < chance
+    
+    # Record encounter in daily log for diminishing returns
+    if encounter_occurred and adhd_buster:
+        record_daily_encounter(adhd_buster)
+    
+    return encounter_occurred, chance, perk_bonus, daily_mult
 
 
 def should_trigger_encounter(
@@ -160,6 +263,7 @@ def should_trigger_encounter(
     was_bypass_used: bool = False,
     active_perks: Optional[dict] = None,
     city_encounter_bonus: float = 0.0,
+    adhd_buster: dict = None,
 ) -> bool:
     """
     Determine if an entity encounter should trigger.
@@ -173,11 +277,12 @@ def should_trigger_encounter(
             (reduces encounter chance but doesn't eliminate it)
         active_perks: Dict with entity perk bonuses
         city_encounter_bonus: Bonus from city Observatory building (percentage)
+        adhd_buster: Hero data for daily encounter tracking
         
     Returns:
         True if an encounter should occur
     """
-    occurred, chance, perk_bonus = roll_encounter_chance(
+    occurred, chance, perk_bonus, daily_mult = roll_encounter_chance(
         session_minutes=session_minutes,
         minimum_session_minutes=minimum_session_minutes,
         was_perfect_session=was_perfect_session,
@@ -185,11 +290,13 @@ def should_trigger_encounter(
         active_perks=active_perks,
         was_bypass_used=was_bypass_used,
         city_encounter_bonus=city_encounter_bonus,
+        adhd_buster=adhd_buster,
     )
     
     # Always log encounter check for debugging
     result_str = "✅ ENCOUNTER!" if occurred else "❌ No encounter"
-    print(f"[Entitidex] {result_str} | Chance: {chance*100:.1f}% | Session: {session_minutes}min | Perfect: {was_perfect_session} | Streak: {streak_days} | Bypass: {was_bypass_used}")
+    daily_info = f"Daily mult: {daily_mult*100:.0f}%" if daily_mult < 1.0 else ""
+    print(f"[Entitidex] {result_str} | Chance: {chance*100:.1f}% | Session: {session_minutes}min | Perfect: {was_perfect_session} | Streak: {streak_days} | Bypass: {was_bypass_used} {daily_info}")
     
     # Log perk contribution if any
     if perk_bonus > 0 and occurred:
