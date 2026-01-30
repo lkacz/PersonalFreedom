@@ -1,94 +1,16 @@
 # -*- mode: python ; coding: utf-8 -*-
-from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
-# Collect Piper TTS data (espeak-ng-data is critical for phonemization)
-piper_datas = collect_data_files('piper')
-piper_binaries = collect_dynamic_libs('piper')
 
 a = Analysis(
     ['focus_blocker_qt.py'],
     pathex=[],
-    binaries=piper_binaries,
-    datas=piper_datas + [
-        # Core Python modules
-        ('productivity_ai.py', '.'),
-        ('gamification.py', '.'),
-        ('game_state.py', '.'),
-        ('core_logic.py', '.'),
-        ('browser_monitor.py', '.'),
-        ('lottery_animation.py', '.'),
-        ('lottery_sounds.py', '.'),
-        ('startup_sounds.py', '.'),
-        ('bypass_logger.py', '.'),
-        ('weight_control_tips.py', '.'),
-        ('app_utils.py', '.'),
-        # Dialog modules
-        ('item_drop_dialog.py', '.'),
-        ('level_up_dialog.py', '.'),
-        ('styled_dialog.py', '.'),
-        ('merge_dialog.py', '.'),
-        ('session_complete_dialog.py', '.'),
-        ('entity_drop_dialog.py', '.'),
-        ('entity_encounter_dialog.py', '.'),
-        ('emergency_cleanup_dialog.py', '.'),
-        # Tab modules
-        ('eye_protection_tab.py', '.'),
-        ('entitidex_tab.py', '.'),
-        ('eye_protection_tips.py', '.'),
-        ('productivity_tips.py', '.'),
-        # Entitidex package
-        ('entitidex', 'entitidex'),
-        # Icons and assets
-        ('icons', 'icons'),
-        # Voice models for Piper TTS (optional, offline speech synthesis)
-        ('voices', 'voices'),
-    ],
-    hiddenimports=[
-        'productivity_ai', 
-        'numpy',
-        'gamification',
-        'game_state',
-        'core_logic',
-        'browser_monitor',
-        'lottery_animation',
-        'lottery_sounds',
-        'startup_sounds',
-        'bypass_logger',
-        'weight_control_tips',
-        'app_utils',
-        'item_drop_dialog',
-        'level_up_dialog',
-        'styled_dialog',
-        'merge_dialog',
-        'session_complete_dialog',
-        'entity_drop_dialog',
-        'entity_encounter_dialog',
-        'emergency_cleanup_dialog',
-        'eye_protection_tab',
-        'entitidex_tab',
-        'eye_protection_tips',
-        'productivity_tips',
-        'entitidex',
-        'entitidex.celebration_audio',
-        'entitidex.encounter_system',
-        'entitidex.entitidex_manager',
-        'entitidex.entity',
-        'entitidex.entity_perks',
-        'entitidex.entity_pools',
-        'entitidex.catch_mechanics',
-        'entitidex.progress_tracker',
-        'entitidex.theme_completion',
-        # PySide6 multimedia for audio synthesis
-        'PySide6.QtMultimedia',
-        # Piper TTS dependencies (optional - gracefully degrades if not available)
-        'piper',
-        'piper.voice',
-        'onnxruntime',
-    ],
+    binaries=[],
+    datas=[('icons', 'icons'), ('entitidex', 'entitidex'), ('city', 'city'), ('voices', 'voices')],
+    hiddenimports=['PySide6.QtCore', 'PySide6.QtWidgets', 'PySide6.QtGui', 'gamification', 'productivity_ai', 'city', 'entitidex'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['torch', 'transformers', 'sentence_transformers', 'huggingface_hub', 'tokenizers', 'torchaudio', 'torchvision', 'cupy', 'triton'],
+    excludes=[],
     noarchive=False,
     optimize=0,
 )
@@ -104,7 +26,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
@@ -114,5 +36,4 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=['icons\\app.ico'],
-    version='version_info.txt',
 )
