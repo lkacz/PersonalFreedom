@@ -94,6 +94,7 @@ class EntitidexManager:
         active_perks: Optional[Dict] = None,
         city_catch_bonus: float = 0.0,
         city_encounter_bonus: float = 0.0,
+        adhd_buster: dict = None,
     ):
         """
         Initialize the Entitidex manager.
@@ -106,6 +107,7 @@ class EntitidexManager:
             active_perks: Dictionary of active entity perks (from entity_perks.py)
             city_catch_bonus: Bonus from city buildings (University) - percentage
             city_encounter_bonus: Bonus from city buildings (Observatory) - percentage
+            adhd_buster: Hero data dict for daily encounter tracking (diminishing returns)
         """
         self.progress = progress or EntitidexProgress()
         self.story_id = story_id
@@ -114,6 +116,7 @@ class EntitidexManager:
         self.active_perks = active_perks or {}
         self.city_catch_bonus = city_catch_bonus
         self.city_encounter_bonus = city_encounter_bonus
+        self.adhd_buster = adhd_buster  # For daily encounter tracking
         
         # Current encounter state
         self._current_encounter: Optional[Entity] = None
@@ -175,6 +178,7 @@ class EntitidexManager:
             was_bypass_used=was_bypass_used,
             active_perks=self.active_perks,
             city_encounter_bonus=self.city_encounter_bonus,
+            adhd_buster=self.adhd_buster,
         )
         
         if not should_trigger:

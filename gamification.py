@@ -14956,7 +14956,7 @@ def get_level_title(level: int) -> tuple:
 
 # XP rewards for various activities
 XP_REWARDS = {
-    "focus_session": 50,        # Base XP per focus session
+    "focus_session": 25,        # Base XP per focus session (reduced from 50 to discourage splitting)
     "focus_per_minute": 2,      # Bonus XP per minute focused
     "weight_log": 20,           # XP for logging weight
     "sleep_log": 25,            # XP for logging sleep
@@ -14971,12 +14971,50 @@ XP_REWARDS = {
     "legendary_item": 100,      # Bonus for Legendary items
 }
 
+# Deep Work Bonus Multipliers - rewards longer uninterrupted focus
+# These multiply ALL XP/Coins earned from a session
+DEEP_WORK_BONUSES = {
+    # (min_minutes, max_minutes): multiplier
+    (0, 30): 1.0,       # No bonus for short sessions
+    (30, 60): 1.1,      # +10% for 30-60 min
+    (60, 90): 1.25,     # +25% for 1-1.5 hr
+    (90, 120): 1.5,     # +50% for 1.5-2 hr
+    (120, 180): 1.75,   # +75% for 2-3 hr
+    (180, 999): 2.0,    # +100% (2x) for 3+ hr marathon sessions
+}
+
+
+def get_deep_work_multiplier(session_minutes: int) -> tuple:
+    """
+    Get the deep work bonus multiplier for a session duration.
+    
+    Longer sessions get progressively better rewards to discourage
+    splitting sessions into multiple shorter ones.
+    
+    Returns:
+        Tuple of (multiplier: float, description: str)
+    """
+    for (min_mins, max_mins), mult in DEEP_WORK_BONUSES.items():
+        if min_mins <= session_minutes < max_mins:
+            if mult > 1.0:
+                bonus_pct = int((mult - 1.0) * 100)
+                return mult, f"+{bonus_pct}% Deep Work"
+            return mult, ""
+    return 1.0, ""
+
 
 def calculate_session_xp(duration_minutes: int, streak_days: int = 0, 
                          multiplier: float = 1.0, lucky_xp_bonus: int = 0,
                          adhd_buster: dict = None) -> dict:
     """
     Calculate XP earned from a focus session.
+    
+    Includes Deep Work Bonus for longer sessions:
+    - 30-60 min: +10% XP
+    - 60-90 min: +25% XP
+    - 90-120 min: +50% XP
+    - 120-180 min: +75% XP
+    - 180+ min: +100% XP (2x)
     
     Args:
         duration_minutes: Session duration in minutes
@@ -14999,8 +15037,15 @@ def calculate_session_xp(duration_minutes: int, streak_days: int = 0,
     
     subtotal = base_xp + duration_xp + streak_bonus
     
-    # Apply multiplier first (strategic priority bonus)
+    # Apply strategic priority multiplier
     subtotal = int(subtotal * multiplier)
+    
+    # Apply Deep Work Bonus (rewards longer sessions)
+    deep_work_mult, deep_work_desc = get_deep_work_multiplier(duration_minutes)
+    deep_work_bonus = 0
+    if deep_work_mult > 1.0:
+        deep_work_bonus = int(subtotal * (deep_work_mult - 1.0))
+        subtotal = subtotal + deep_work_bonus
     
     # Apply lucky XP bonus from gear (additive after multiplier)
     if lucky_xp_bonus > 0:
@@ -15037,6 +15082,8 @@ def calculate_session_xp(duration_minutes: int, streak_days: int = 0,
     breakdown_parts = [f"Base: {base_xp}", f"Duration: {duration_xp}", f"Streak: {streak_bonus}"]
     if multiplier != 1.0:
         breakdown_parts.append(f"Multiplier: {multiplier}x")
+    if deep_work_bonus > 0:
+        breakdown_parts.append(f"Deep Work: +{deep_work_bonus}")
     if lucky_xp_bonus > 0:
         breakdown_parts.append(f"Lucky Bonus: +{lucky_xp_bonus}% ({lucky_bonus_xp} XP)")
     if entity_xp_bonus > 0:
@@ -15047,6 +15094,9 @@ def calculate_session_xp(duration_minutes: int, streak_days: int = 0,
         "duration_xp": duration_xp,
         "streak_bonus": streak_bonus,
         "multiplier": multiplier,
+        "deep_work_bonus": deep_work_bonus,
+        "deep_work_multiplier": deep_work_mult,
+        "deep_work_description": deep_work_desc,
         "lucky_xp_bonus": lucky_xp_bonus,
         "lucky_bonus_xp": lucky_bonus_xp,
         "entity_xp_bonus": entity_xp_bonus,
@@ -16188,6 +16238,7 @@ def get_entitidex_manager(adhd_buster: dict) -> "EntitidexManager":
         active_perks=active_perks,
         city_catch_bonus=city_catch_bonus,
         city_encounter_bonus=city_encounter_bonus,
+        adhd_buster=adhd_buster,  # For daily encounter diminishing returns
     )
 
 
