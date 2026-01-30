@@ -26887,9 +26887,25 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         Returns:
             QIcon with countdown badge overlay
         """
-        # Create a large icon for the taskbar (Windows taskbar uses large icons)
-        size = 128
+        # Create icon with multiple sizes for Windows taskbar compatibility
+        icon = QtGui.QIcon()
         
+        for size in [16, 24, 32, 48, 64, 128, 256]:
+            pixmap = self._create_countdown_pixmap(size, minutes)
+            icon.addPixmap(pixmap)
+        
+        return icon
+
+    def _create_countdown_pixmap(self, size: int, minutes: int) -> QtGui.QPixmap:
+        """Create a pixmap with countdown badge at specified size.
+        
+        Args:
+            size: Pixmap size in pixels
+            minutes: Minutes remaining to display
+            
+        Returns:
+            QPixmap with countdown badge overlay
+        """
         # Start with base icon
         pixmap = QtGui.QPixmap(size, size)
         pixmap.fill(QtCore.Qt.transparent)
@@ -26900,15 +26916,16 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
         
         if self._base_window_icon:
-            # Request a large size from the base icon to ensure quality
+            # Request the icon at this size
             base_pixmap = self._base_window_icon.pixmap(size, size)
             painter.drawPixmap(0, 0, base_pixmap)
         
         # Draw countdown badge in bottom-right corner
-        # Scale badge relative to icon size (approx 45% of size)
-        badge_size = int(size * 0.45)
-        badge_x = size - badge_size - 4
-        badge_y = size - badge_size - 4
+        # Scale badge relative to icon size (approx 50% of size for visibility)
+        badge_size = max(12, int(size * 0.50))
+        badge_x = size - badge_size - max(1, size // 32)
+        badge_y = size - badge_size - max(1, size // 32)
+        border_width = max(2, size // 32)
         
         # Orange gradient border (legendary)
         border_gradient = QtGui.QLinearGradient(
@@ -26920,7 +26937,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         
         painter.setBrush(border_gradient)
         painter.setPen(QtCore.Qt.NoPen)
-        painter.drawEllipse(badge_x - 4, badge_y - 4, badge_size + 8, badge_size + 8)
+        painter.drawEllipse(badge_x - border_width, badge_y - border_width, 
+                           badge_size + border_width * 2, badge_size + border_width * 2)
         
         # Blue gradient background (rare)
         bg_gradient = QtGui.QLinearGradient(
@@ -26936,13 +26954,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Draw white text
         painter.setPen(QtGui.QColor("#FFFFFF"))
         
-        # Adaptive font size (larger for the 128px icon)
+        # Adaptive font size based on badge size and digit count
         if minutes >= 100:
-            font_size = int(badge_size * 0.44)  # 3 digits
+            font_size = max(6, int(badge_size * 0.42))  # 3 digits
         elif minutes >= 10:
-            font_size = int(badge_size * 0.52)  # 2 digits
+            font_size = max(7, int(badge_size * 0.50))  # 2 digits
         else:
-            font_size = int(badge_size * 0.60)  # 1 digit
+            font_size = max(8, int(badge_size * 0.58))  # 1 digit
         
         font = QtGui.QFont("Arial", font_size, QtGui.QFont.Bold)
         painter.setFont(font)
@@ -26953,7 +26971,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         
         painter.end()
         
-        return QtGui.QIcon(pixmap)
+        return pixmap
 
     def _update_taskbar_icon_with_time(self, minutes: int) -> None:
         """Update taskbar/window icon with countdown badge.
