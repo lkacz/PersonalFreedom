@@ -7795,9 +7795,8 @@ class WeightTab(QtWidgets.QWidget):
         self.rodent_icon_label.setFixedSize(40, 40)
         self.rodent_icon_label.setStyleSheet("""
             QLabel {
-                background: #333;
-                border: 1px solid #444;
-                border-radius: 4px;
+                background: transparent;
+                border: none;
             }
         """)
         rodent_tips_layout.addWidget(self.rodent_icon_label)
@@ -9246,23 +9245,13 @@ class WeightTab(QtWidgets.QWidget):
                             painter.end()
                             self.rodent_icon_label.setPixmap(pixmap)
                             
-                            # Update icon border based on translator status
-                            if self.has_translator:
-                                self.rodent_icon_label.setStyleSheet("""
-                                    QLabel {
-                                        background: #333;
-                                        border: 2px solid #66bb6a;
-                                        border-radius: 6px;
-                                    }
-                                """)
-                            else:
-                                self.rodent_icon_label.setStyleSheet("""
-                                    QLabel {
-                                        background: #333;
-                                        border: 1px solid #8b7355;
-                                        border-radius: 6px;
-                                    }
-                                """)
+                            # Update icon style (subtle, no border)
+                            self.rodent_icon_label.setStyleSheet("""
+                                QLabel {
+                                    background: transparent;
+                                    border: none;
+                                }
+                            """)
         except Exception:
             # Fallback - just show text
             self.rodent_icon_label.setText("🐭")
@@ -10556,11 +10545,9 @@ class SleepTab(QtWidgets.QWidget):
         self.sleep_entity_perk_card = QtWidgets.QFrame()
         self.sleep_entity_perk_card.setStyleSheet("""
             QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #2e3f4a, stop:1 #1a262f);
-                border: 2px solid #5c6bc0;
+                background-color: rgba(255, 255, 255, 0.04);
+                border: 1px solid rgba(92, 107, 192, 0.3);
                 border-radius: 8px;
-                padding: 6px;
             }
         """)
         entity_perk_layout = QtWidgets.QHBoxLayout(self.sleep_entity_perk_card)
@@ -10971,21 +10958,17 @@ class SleepTab(QtWidgets.QWidget):
             if is_exceptional:
                 self.sleep_entity_perk_card.setStyleSheet("""
                     QFrame {
-                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 #3d2e4a, stop:1 #261a2f);
-                        border: 2px solid #ba68c8;
+                        background-color: rgba(255, 255, 255, 0.04);
+                        border: 1px solid rgba(186, 104, 200, 0.3);
                         border-radius: 8px;
-                        padding: 6px;
                     }
                 """)
             else:
                 self.sleep_entity_perk_card.setStyleSheet("""
                     QFrame {
-                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 #2e3f4a, stop:1 #1a262f);
-                        border: 2px solid #5c6bc0;
+                        background-color: rgba(255, 255, 255, 0.04);
+                        border: 1px solid rgba(92, 107, 192, 0.3);
                         border-radius: 8px;
-                        padding: 6px;
                     }
                 """)
             
