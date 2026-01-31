@@ -748,11 +748,25 @@ class CityCell(QtWidgets.QFrame):
             locked: True if slot is locked (requires higher level)
         """
         # Check if the essential state has changed (building_id, status, level)
-        # to avoid recreating expensive WebEngine widgets on every refresh
-        old_building_id = self._cell_state.get("building_id") if self._cell_state else None
-        old_status = self._cell_state.get("status") if self._cell_state else None
-        old_level = self._cell_state.get("level", 1) if self._cell_state else 1
-        old_locked = getattr(self, '_is_locked', None)
+        # to avoid recreating expensive WebEngine widgets on every refresh.
+        # CRITICAL: We must compare against explicitly stored *previous values*, not just
+        # self._cell_state, because the cell_state dictionary involved is often MUTATED in-place
+        # by the city logic (e.g. status changing from PLACED -> BUILDING). 
+        # If we compared self._cell_state vs cell_state when they are the same modified object,
+        # we would fail to detect the change!
+        
+        if not hasattr(self, '_rendered_state'):
+            self._rendered_state = {
+                'building_id': object(), # Sentinel to force first render
+                'status': object(),
+                'level': -1,
+                'locked': None
+            }
+            
+        old_building_id = self._rendered_state['building_id']
+        old_status = self._rendered_state['status']
+        old_level = self._rendered_state['level']
+        old_locked = self._rendered_state['locked']
         
         new_building_id = cell_state.get("building_id") if cell_state else None
         new_status = cell_state.get("status") if cell_state else None
@@ -761,6 +775,12 @@ class CityCell(QtWidgets.QFrame):
         # Track if we need to recreate the display (including level changes for upgraded buildings)
         state_changed = (old_building_id != new_building_id or old_status != new_status or 
                          old_level != new_level or old_locked != locked)
+        
+        # Update our tracking of what defines the current visual state
+        self._rendered_state['building_id'] = new_building_id
+        self._rendered_state['status'] = new_status
+        self._rendered_state['level'] = new_level
+        self._rendered_state['locked'] = locked
         
         self._cell_state = cell_state
         self._building_def = building_def
