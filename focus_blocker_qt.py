@@ -9037,21 +9037,21 @@ class WeightTab(QtWidgets.QWidget):
             patrons_container = QtWidgets.QWidget()
             patrons_layout = QtWidgets.QHBoxLayout(patrons_container)
             patrons_layout.setContentsMargins(5, 5, 5, 5)
-            patrons_layout.setSpacing(8)
+            patrons_layout.setSpacing(6)
             
             for entity_data in contributors:
                 # Create a mini card for each entity
                 card = QtWidgets.QFrame()
                 is_exceptional = entity_data.get("is_exceptional", False)
                 
-                # Style cards - match Entity Patrons miniature style
+                # Style cards - match Hydration tab compact style (same bg for both)
                 if is_exceptional:
                     card.setStyleSheet("""
                         QFrame {
                             background-color: #2a2a2a;
                             border: 1px solid #555;
-                            border-radius: 6px;
-                            padding: 4px;
+                            border-radius: 5px;
+                            padding: 2px;
                         }
                         QFrame:hover {
                             border-color: #666;
@@ -9063,18 +9063,18 @@ class WeightTab(QtWidgets.QWidget):
                         QFrame {
                             background-color: #2a2a2a;
                             border: 1px solid #444;
-                            border-radius: 6px;
-                            padding: 4px;
+                            border-radius: 5px;
+                            padding: 2px;
                         }
                         QFrame:hover {
-                            border-color: #7986cb;
+                            border-color: #555;
                             background-color: #333;
                         }
                     """)
                 
                 card_layout = QtWidgets.QVBoxLayout(card)
-                card_layout.setContentsMargins(8, 6, 8, 6)
-                card_layout.setSpacing(4)
+                card_layout.setContentsMargins(6, 4, 6, 4)
+                card_layout.setSpacing(2)
                 
                 # Try to load entity SVG icon
                 entity_id = entity_data.get("entity_id", "")
@@ -9088,8 +9088,8 @@ class WeightTab(QtWidgets.QWidget):
                             if svg_path:
                                 renderer = QSvgRenderer(svg_path)
                                 if renderer.isValid():
-                                    # Create pixmap from SVG (40x40 size for mini cards)
-                                    icon_size = 40
+                                    # Create pixmap from SVG (32x32 compact size)
+                                    icon_size = 32
                                     pixmap = QtGui.QPixmap(icon_size, icon_size)
                                     pixmap.fill(QtCore.Qt.transparent)
                                     painter = QtGui.QPainter(pixmap)
@@ -9107,17 +9107,14 @@ class WeightTab(QtWidgets.QWidget):
                 
                 # Entity name with exceptional styling
                 name = entity_data.get("name", "Unknown")
-                # Truncate long names
-                if len(name) > 18:
-                    display_name = name[:15] + "..."
-                else:
-                    display_name = name
+                # Truncate long names (compact)
+                display_name = name[:12] + "..." if len(name) > 15 else name
                 
                 if is_exceptional:
-                    name_style = "color: #ffd700; font-weight: bold; font-size: 10px;"
+                    name_style = "color: #ffd700; font-weight: bold; font-size: 9px;"
                     prefix = "⭐ " if not icon_loaded else ""
                 else:
-                    name_style = "color: #ccc; font-size: 10px;"
+                    name_style = "color: #bbb; font-size: 9px;"
                     prefix = ""
                 
                 name_lbl = QtWidgets.QLabel(f"{prefix}{display_name}")
@@ -9127,10 +9124,10 @@ class WeightTab(QtWidgets.QWidget):
                 name_lbl.setWordWrap(True)
                 card_layout.addWidget(name_lbl)
                 
-                # Bonus value
+                # Bonus value (compact)
                 bonus_val = entity_data.get("bonus", 0)
-                bonus_lbl = QtWidgets.QLabel(f"<b>+{bonus_val}%</b> 🎲")
-                bonus_lbl.setStyleSheet("color: #7986cb; font-size: 12px;")
+                bonus_lbl = QtWidgets.QLabel(f"+{bonus_val}% 🎲")
+                bonus_lbl.setStyleSheet("color: #7986cb; font-size: 10px; font-weight: bold;")
                 bonus_lbl.setAlignment(QtCore.Qt.AlignCenter)
                 card_layout.addWidget(bonus_lbl)
                 
@@ -10249,44 +10246,44 @@ class ActivityTab(QtWidgets.QWidget):
             patrons_container = QtWidgets.QWidget()
             patrons_layout = QtWidgets.QHBoxLayout(patrons_container)
             patrons_layout.setContentsMargins(5, 5, 5, 5)
-            patrons_layout.setSpacing(8)
+            patrons_layout.setSpacing(6)
             
             for entity_data in contributors:
                 # Create a mini card for each entity
                 card = QtWidgets.QFrame()
                 is_exceptional = entity_data.get("is_exceptional", False)
                 
-                # Style cards - exceptional gets slightly lighter border
+                # Style cards - match Hydration tab compact style (same bg for both)
                 if is_exceptional:
                     card.setStyleSheet("""
                         QFrame {
-                            background-color: rgba(255, 215, 0, 0.08);
-                            border: 1px solid rgba(255, 215, 0, 0.15);
-                            border-radius: 6px;
-                            padding: 4px;
+                            background-color: #2a2a2a;
+                            border: 1px solid #555;
+                            border-radius: 5px;
+                            padding: 2px;
                         }
                         QFrame:hover {
-                            background-color: rgba(255, 215, 0, 0.15);
-                            border: 1px solid rgba(255, 215, 0, 0.3);
+                            border-color: #666;
+                            background-color: #333;
                         }
                     """)
                 else:
                     card.setStyleSheet("""
                         QFrame {
-                            background-color: rgba(255, 255, 255, 0.04);
-                            border: 1px solid rgba(255, 255, 255, 0.06);
-                            border-radius: 6px;
-                            padding: 4px;
+                            background-color: #2a2a2a;
+                            border: 1px solid #444;
+                            border-radius: 5px;
+                            padding: 2px;
                         }
                         QFrame:hover {
-                            background-color: rgba(255, 255, 255, 0.08);
-                            border: 1px solid rgba(255, 255, 255, 0.15);
+                            border-color: #555;
+                            background-color: #333;
                         }
                     """)
                 
                 card_layout = QtWidgets.QVBoxLayout(card)
-                card_layout.setContentsMargins(8, 6, 8, 6)
-                card_layout.setSpacing(4)
+                card_layout.setContentsMargins(6, 4, 6, 4)
+                card_layout.setSpacing(2)
                 
                 # Try to load entity SVG icon
                 entity_id = entity_data.get("entity_id", "")
@@ -10300,8 +10297,8 @@ class ActivityTab(QtWidgets.QWidget):
                             if svg_path:
                                 renderer = QSvgRenderer(svg_path)
                                 if renderer.isValid():
-                                    # Create pixmap from SVG (40x40 size for mini cards)
-                                    icon_size = 40
+                                    # Create pixmap from SVG (32x32 compact size)
+                                    icon_size = 32
                                     pixmap = QtGui.QPixmap(icon_size, icon_size)
                                     pixmap.fill(QtCore.Qt.transparent)
                                     painter = QtGui.QPainter(pixmap)
@@ -10319,17 +10316,14 @@ class ActivityTab(QtWidgets.QWidget):
                 
                 # Entity name with exceptional styling
                 name = entity_data.get("name", "Unknown")
-                # Truncate long names
-                if len(name) > 18:
-                    display_name = name[:15] + "..."
-                else:
-                    display_name = name
+                # Truncate long names (compact)
+                display_name = name[:12] + "..." if len(name) > 15 else name
                 
                 if is_exceptional:
-                    name_style = "color: #ffd700; font-weight: bold; font-size: 10px;"
+                    name_style = "color: #ffd700; font-weight: bold; font-size: 9px;"
                     prefix = "⭐ " if not icon_loaded else ""
                 else:
-                    name_style = "color: #ccc; font-size: 10px;"
+                    name_style = "color: #bbb; font-size: 9px;"
                     prefix = ""
                 
                 name_lbl = QtWidgets.QLabel(f"{prefix}{display_name}")
@@ -10339,10 +10333,10 @@ class ActivityTab(QtWidgets.QWidget):
                 name_lbl.setWordWrap(True)
                 card_layout.addWidget(name_lbl)
                 
-                # Bonus value
+                # Bonus value (compact)
                 bonus_val = entity_data.get("value", 0)
-                bonus_lbl = QtWidgets.QLabel(f"<b>+{bonus_val}%</b> ⚡")
-                bonus_lbl.setStyleSheet("color: #4caf50; font-size: 12px;")
+                bonus_lbl = QtWidgets.QLabel(f"+{bonus_val}% ⚡")
+                bonus_lbl.setStyleSheet("color: #4caf50; font-size: 10px; font-weight: bold;")
                 bonus_lbl.setAlignment(QtCore.Qt.AlignCenter)
                 card_layout.addWidget(bonus_lbl)
                 
@@ -18102,21 +18096,21 @@ class ADHDBusterTab(QtWidgets.QWidget):
             patrons_container = QtWidgets.QWidget()
             patrons_layout = QtWidgets.QHBoxLayout(patrons_container)
             patrons_layout.setContentsMargins(5, 5, 5, 5)
-            patrons_layout.setSpacing(8)
+            patrons_layout.setSpacing(6)
             
             for entity_data in contributors:
                 # Create a mini card for each entity
                 card = QtWidgets.QFrame()
                 is_exceptional = entity_data.get("is_exceptional", False)
                 
-                # Style cards - exceptional gets slightly lighter border
+                # Style cards - match Hydration tab compact style (same bg for both)
                 if is_exceptional:
                     card.setStyleSheet("""
                         QFrame {
                             background-color: #2a2a2a;
                             border: 1px solid #555;
-                            border-radius: 6px;
-                            padding: 4px;
+                            border-radius: 5px;
+                            padding: 2px;
                         }
                         QFrame:hover {
                             border-color: #666;
@@ -18128,18 +18122,18 @@ class ADHDBusterTab(QtWidgets.QWidget):
                         QFrame {
                             background-color: #2a2a2a;
                             border: 1px solid #444;
-                            border-radius: 6px;
-                            padding: 4px;
+                            border-radius: 5px;
+                            padding: 2px;
                         }
                         QFrame:hover {
-                            border-color: #e65100;
+                            border-color: #555;
                             background-color: #333;
                         }
                     """)
                 
                 card_layout = QtWidgets.QVBoxLayout(card)
-                card_layout.setContentsMargins(8, 6, 8, 6)
-                card_layout.setSpacing(4)
+                card_layout.setContentsMargins(6, 4, 6, 4)
+                card_layout.setSpacing(2)
                 
                 # Try to load entity SVG icon
                 entity_id = entity_data.get("entity_id", "")
@@ -18153,8 +18147,8 @@ class ADHDBusterTab(QtWidgets.QWidget):
                             if svg_path:
                                 renderer = QSvgRenderer(svg_path)
                                 if renderer.isValid():
-                                    # Create pixmap from SVG (40x40 size for mini cards)
-                                    icon_size = 40
+                                    # Create pixmap from SVG (32x32 compact size)
+                                    icon_size = 32
                                     pixmap = QtGui.QPixmap(icon_size, icon_size)
                                     pixmap.fill(QtCore.Qt.transparent)
                                     painter = QtGui.QPainter(pixmap)
@@ -18172,17 +18166,14 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 
                 # Entity name with exceptional styling
                 name = entity_data.get("name", "Unknown")
-                # Truncate long names
-                if len(name) > 18:
-                    display_name = name[:15] + "..."
-                else:
-                    display_name = name
+                # Truncate long names (compact)
+                display_name = name[:12] + "..." if len(name) > 15 else name
                 
                 if is_exceptional:
-                    name_style = "color: #ffd700; font-weight: bold; font-size: 10px;"
+                    name_style = "color: #ffd700; font-weight: bold; font-size: 9px;"
                     prefix = "⭐ " if not icon_loaded else ""
                 else:
-                    name_style = "color: #ccc; font-size: 10px;"
+                    name_style = "color: #bbb; font-size: 9px;"
                     prefix = ""
                 
                 name_lbl = QtWidgets.QLabel(f"{prefix}{display_name}")
@@ -18192,10 +18183,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 name_lbl.setWordWrap(True)
                 card_layout.addWidget(name_lbl)
                 
-                # Power value
+                # Power value (compact)
                 power_val = entity_data.get("power", 0)
-                power_lbl = QtWidgets.QLabel(f"<b>+{power_val}</b> ⚔")
-                power_lbl.setStyleSheet("color: #e65100; font-size: 12px;")
+                power_lbl = QtWidgets.QLabel(f"+{power_val} ⚔")
+                power_lbl.setStyleSheet("color: #e65100; font-size: 10px; font-weight: bold;")
                 power_lbl.setAlignment(QtCore.Qt.AlignCenter)
                 card_layout.addWidget(power_lbl)
                 
