@@ -9044,7 +9044,7 @@ class WeightTab(QtWidgets.QWidget):
                 card = QtWidgets.QFrame()
                 is_exceptional = entity_data.get("is_exceptional", False)
                 
-                # Style cards - match Hydration tab compact style (same bg for both)
+                # Style cards - clean style with no internal borders
                 if is_exceptional:
                     card.setStyleSheet("""
                         QFrame {
@@ -9056,6 +9056,10 @@ class WeightTab(QtWidgets.QWidget):
                         QFrame:hover {
                             border-color: #666;
                             background-color: #333;
+                        }
+                        QLabel {
+                            background: transparent;
+                            border: none;
                         }
                     """)
                 else:
@@ -9069,6 +9073,10 @@ class WeightTab(QtWidgets.QWidget):
                         QFrame:hover {
                             border-color: #555;
                             background-color: #333;
+                        }
+                        QLabel {
+                            background: transparent;
+                            border: none;
                         }
                     """)
                 
@@ -10253,7 +10261,7 @@ class ActivityTab(QtWidgets.QWidget):
                 card = QtWidgets.QFrame()
                 is_exceptional = entity_data.get("is_exceptional", False)
                 
-                # Style cards - match Hydration tab compact style (same bg for both)
+                # Style cards - clean style with no internal borders
                 if is_exceptional:
                     card.setStyleSheet("""
                         QFrame {
@@ -10265,6 +10273,10 @@ class ActivityTab(QtWidgets.QWidget):
                         QFrame:hover {
                             border-color: #666;
                             background-color: #333;
+                        }
+                        QLabel {
+                            background: transparent;
+                            border: none;
                         }
                     """)
                 else:
@@ -10278,6 +10290,10 @@ class ActivityTab(QtWidgets.QWidget):
                         QFrame:hover {
                             border-color: #555;
                             background-color: #333;
+                        }
+                        QLabel {
+                            background: transparent;
+                            border: none;
                         }
                     """)
                 
@@ -18103,7 +18119,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 card = QtWidgets.QFrame()
                 is_exceptional = entity_data.get("is_exceptional", False)
                 
-                # Style cards - match Hydration tab compact style (same bg for both)
+                # Style cards - clean style with no internal borders
                 if is_exceptional:
                     card.setStyleSheet("""
                         QFrame {
@@ -18115,6 +18131,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
                         QFrame:hover {
                             border-color: #666;
                             background-color: #333;
+                        }
+                        QLabel {
+                            background: transparent;
+                            border: none;
                         }
                     """)
                 else:
@@ -18128,6 +18148,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
                         QFrame:hover {
                             border-color: #555;
                             background-color: #333;
+                        }
+                        QLabel {
+                            background: transparent;
+                            border: none;
                         }
                     """)
                 
