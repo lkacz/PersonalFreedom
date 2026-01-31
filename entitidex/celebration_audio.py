@@ -17,7 +17,7 @@ import math
 import struct
 from typing import Dict, List, Optional, Tuple
 
-from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QObject
+from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QObject, QSettings
 from PySide6.QtMultimedia import QAudioDevice, QAudioFormat, QAudioSink, QMediaDevices
 
 _logger = logging.getLogger(__name__)
@@ -363,7 +363,27 @@ class CelebrationAudioManager(QObject):
         self._audio_format: Optional[QAudioFormat] = None
         self._audio_device: Optional[QAudioDevice] = None
         self._release_timer: Optional[object] = None  # Timer for delayed release
+        
+        # Load volumes
+        s = QSettings("PersonalFreedom", "Audio")
+        self._sound_volume = float(s.value("SoundVolume", 0.5))
+        self._voice_volume = float(s.value("VoiceVolume", 0.8))
+        
         self._prepare_audio_format()
+
+    def set_sound_volume(self, vol: float):
+        """Set sound effects volume (0.0 to 1.0)."""
+        self._sound_volume = max(0.0, min(1.0, vol))
+        QSettings("PersonalFreedom", "Audio").setValue("SoundVolume", self._sound_volume)
+        # Verify persistence
+        QSettings("PersonalFreedom", "Audio").sync()
+
+    def set_voice_volume(self, vol: float):
+        """Set voice volume (0.0 to 1.0)."""
+        self._voice_volume = max(0.0, min(1.0, vol))
+        QSettings("PersonalFreedom", "Audio").setValue("VoiceVolume", self._voice_volume)
+        # Verify persistence
+        QSettings("PersonalFreedom", "Audio").sync()
         
     def _prepare_audio_format(self):
         """Prepare audio format without opening the device."""
@@ -400,7 +420,7 @@ class CelebrationAudioManager(QObject):
         
         try:
             self._sink = QAudioSink(self._audio_device, self._audio_format)
-            self._sink.setVolume(0.4)  # Lower volume for comfortable listening
+            # Volume will be set per-play in play_buffer
             # Connect to state changes to detect playback completion
             self._sink.stateChanged.connect(self._on_state_changed)
             _logger.debug("Audio sink created for playback")
@@ -474,7 +494,7 @@ class CelebrationAudioManager(QObject):
             except Exception as e:
                 _logger.error(f"Failed to render {theme_id}: {e}")
 
-    def play_buffer(self, data: QByteArray) -> bool:
+    def play_buffer(self, data: QByteArray, is_voice: bool = False) -> bool:
         """Play a raw audio buffer with rate limiting to prevent thread exhaustion."""
         if data.isEmpty():
             return False
@@ -490,6 +510,7 @@ class CelebrationAudioManager(QObject):
         # Rate limit to prevent Windows MMCSS thread exhaustion
         import time
         current_time = int(time.time() * 1000)
+        # Allows faster repeats for voice snippets if needed, but safety first
         if current_time - self._last_play_time < self.MIN_PLAY_INTERVAL_MS:
             # Too soon, skip this play request
             return False
@@ -498,6 +519,10 @@ class CelebrationAudioManager(QObject):
         # Ensure audio sink is ready (creates on-demand)
         if not self._ensure_sink_ready():
             return False
+
+        # Apply correct volume
+        target_vol = self._voice_volume if is_voice else self._sound_volume
+        self._sink.setVolume(target_vol)
 
         # 1. Stop current playback strictly
         self._sink.stop()
@@ -533,7 +558,7 @@ class CelebrationAudioManager(QObject):
         if not data:
             return False
             
-        return self.play_buffer(data)
+        return self.play_buffer(data, is_voice=False)
 
     def stop(self):
         """Stop current playback and release device."""

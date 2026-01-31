@@ -255,9 +255,10 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "exceptional_name": "Class Compass",
             "power": 50,
             "rarity": "common",
-            "lore": "A worn compass that never gets you lost. Needle spins cheerfully when you're on the right path. 'North is wherever you decide to go.'",
-            "exceptional_lore": "An elegant platinum compass once owned by royalty. Points not to magnetic north, but to your greatest potential. 'Follow me to your destiny, darling.'",
+            "lore": "A worn compass that never gets you lost. Needle spins cheerfully when you're on the right path. Sometimes guides you back when you stray for a day. 'North is wherever you decide to go.'",
+            "exceptional_lore": "An elegant platinum compass once owned by royalty. Points not to magnetic north, but to your greatest potential. Has an uncanny ability to protect your progress. 'Follow me to your destiny, darling.'",
             "unlock_hint": "Points the way, but which way is yours to choose...",
+            "perk_hint": "May save your streak if you miss a single day (+1% normal, +2% exceptional)",
             "synergy_tags": ["vision", "sky", "celestial", "crafting"],
         },
         {

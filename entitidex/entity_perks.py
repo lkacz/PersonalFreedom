@@ -116,7 +116,7 @@ ENTITY_PERKS: Dict[str, List[EntityPerk]] = {
     # SCHOLAR (Knowledge & XP)
     # -------------------------------------------------------------------------
     "scholar_001": [EntityPerk("scholar_001", PerkType.XP_SESSION, 1, 2, "Mouse Curiosity: +{value}% Focus XP", "🐭", "Genius Whiskers: +{value}% Focus XP")],
-    "scholar_002": [EntityPerk("scholar_002", PerkType.XP_NIGHT, 2, 4, "Night Owl: +{value}% XP (8PM-6AM)", "🦉", "Moonlit Sage: +{value}% XP (8PM-6AM)")],
+    "scholar_002": [EntityPerk("scholar_002", PerkType.XP_NIGHT, 2, 0, "Night Owl: +{value}% XP (8PM-6AM)", "🦉", "Moonlit Wisdom: +1 Sleep Tier")],
     "scholar_003": [EntityPerk("scholar_003", PerkType.XP_MORNING, 2, 4, "Early Bird: +{value}% XP (6AM-12PM)", "🕯️", "Dawn's First Light: +{value}% XP (6AM-12PM)")],
     "scholar_004": [EntityPerk("scholar_004", PerkType.DROP_LUCK, 1, 2, "Library Luck: +{value}% Item Drops", "🐱", "Sphinx's Fortune: +{value}% Item Drops")],
     "scholar_005": [EntityPerk("scholar_005", PerkType.MERGE_LUCK, 1, 2, "Smart Merger: +{value}% Merge Luck", "🔖", "Arcane Fusion: +{value}% Merge Luck")],
@@ -204,6 +204,9 @@ def calculate_active_perks(progress_data: Optional[dict]) -> Dict[PerkType, floa
     """
     Calculate total bonuses from all collected entities.
     
+    When you collect BOTH normal AND exceptional variants of an entity,
+    you get BOTH bonuses (they stack).
+    
     Args:
         progress_data: Dict or Object containing 'collected_entity_ids' (set/list) 
                        and 'exceptional_entities' (dict/set).
@@ -234,24 +237,34 @@ def calculate_active_perks(progress_data: Optional[dict]) -> Dict[PerkType, floa
         collected = set()
     if exceptional is None:
         exceptional = {}
-        
-    for entity_id in collected:
+    
+    # Build set of exceptional entity IDs for quick lookup
+    exceptional_ids = set()
+    if isinstance(exceptional, set):
+        exceptional_ids = exceptional
+    elif isinstance(exceptional, dict):
+        exceptional_ids = set(exceptional.keys())
+    
+    # Collect all unique entity IDs from both normal and exceptional collections
+    all_entity_ids = set(collected) | exceptional_ids
+    
+    for entity_id in all_entity_ids:
         perks = ENTITY_PERKS.get(entity_id)
         if perks:
-            # Check if exceptional
-            is_exceptional = False
-            if isinstance(exceptional, set):
-                is_exceptional = entity_id in exceptional
-            elif isinstance(exceptional, dict):
-                is_exceptional = entity_id in exceptional
+            has_normal = entity_id in collected
+            has_exceptional = entity_id in exceptional_ids
             
             # Process all perks for this entity
             for perk in perks:
-                value = perk.exceptional_value if is_exceptional else perk.normal_value
+                # Add normal value if collected normally
+                if has_normal:
+                    current = totals.get(perk.perk_type, 0.0)
+                    totals[perk.perk_type] = current + perk.normal_value
                 
-                # Add to totals
-                current = totals.get(perk.perk_type, 0.0)
-                totals[perk.perk_type] = current + value
+                # Add exceptional value if collected as exceptional (stacks!)
+                if has_exceptional:
+                    current = totals.get(perk.perk_type, 0.0)
+                    totals[perk.perk_type] = current + perk.exceptional_value
             
     return totals
 

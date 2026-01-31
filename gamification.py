@@ -1124,6 +1124,8 @@ def get_entity_merge_perk_contributors(adhd_buster: dict) -> dict:
     Get merge-related entity perk bonuses with detailed contributor info.
     Used to display which entities contribute to merge bonuses.
     
+    When you have BOTH normal AND exceptional variants, you get BOTH bonuses.
+    
     Args:
         adhd_buster: The main data dict containing entitidex progress
         
@@ -1151,11 +1153,15 @@ def get_entity_merge_perk_contributors(adhd_buster: dict) -> dict:
         from entitidex.entity_pools import get_entity_by_id
         
         entitidex_data = adhd_buster.get("entitidex", {})
-        collected = entitidex_data.get("collected_entity_ids", 
-                    entitidex_data.get("collected", set()))
+        collected = set(entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set())))
         exceptional = entitidex_data.get("exceptional_entities", {})
+        exceptional_ids = set(exceptional.keys()) if isinstance(exceptional, dict) else set(exceptional)
         
-        if not collected:
+        # Get all unique entity IDs from both collections
+        all_entity_ids = collected | exceptional_ids
+        
+        if not all_entity_ids:
             return result
         
         # Perk types relevant to merge
@@ -1166,42 +1172,56 @@ def get_entity_merge_perk_contributors(adhd_buster: dict) -> dict:
             PerkType.COIN_DISCOUNT: "coin_discount",
         }
         
-        for entity_id in collected:
+        for entity_id in all_entity_ids:
             perks = ENTITY_PERKS.get(entity_id)
             if not perks:
                 continue
             for perk in perks:
                 if perk.perk_type in merge_perk_types:
-                    is_exceptional = entity_id in exceptional
-                    value = perk.exceptional_value if is_exceptional else perk.normal_value
+                    has_normal = entity_id in collected
+                    has_exceptional = entity_id in exceptional_ids
+                    perk_type_name = merge_perk_types[perk.perk_type]
                     
                     # Get entity details
                     entity = get_entity_by_id(entity_id)
                     entity_name = entity.name if entity else entity_id
                     
-                    # Get description
-                    if is_exceptional and perk.exceptional_description:
-                        description = perk.exceptional_description.format(value=int(value))
-                    else:
-                        description = perk.description.format(value=int(value))
+                    # Add normal variant contribution
+                    if has_normal:
+                        description = perk.description.format(value=int(perk.normal_value))
+                        result["contributors"].append({
+                            "entity_id": entity_id,
+                            "name": entity_name,
+                            "perk_type": perk_type_name,
+                            "value": int(perk.normal_value),
+                            "icon": perk.icon,
+                            "is_exceptional": False,
+                            "description": description,
+                        })
+                        if perk_type_name in ("merge_luck", "merge_success", "all_luck"):
+                            result["total_merge_luck"] += int(perk.normal_value)
+                        elif perk_type_name == "coin_discount":
+                            result["total_coin_discount"] += int(perk.normal_value)
                     
-                    perk_type_name = merge_perk_types[perk.perk_type]
-                    
-                    result["contributors"].append({
-                        "entity_id": entity_id,
-                        "name": entity_name,
-                        "perk_type": perk_type_name,
-                        "value": int(value),
-                        "icon": perk.icon,
-                        "is_exceptional": is_exceptional,
-                        "description": description,
-                    })
-                    
-                    # Update totals
-                    if perk_type_name in ("merge_luck", "merge_success", "all_luck"):
-                        result["total_merge_luck"] += int(value)
-                    elif perk_type_name == "coin_discount":
-                        result["total_coin_discount"] += int(value)
+                    # Add exceptional variant contribution (stacks!)
+                    if has_exceptional:
+                        if perk.exceptional_description:
+                            description = perk.exceptional_description.format(value=int(perk.exceptional_value))
+                        else:
+                            description = perk.description.format(value=int(perk.exceptional_value))
+                        result["contributors"].append({
+                            "entity_id": entity_id,
+                            "name": entity_name,
+                            "perk_type": perk_type_name,
+                            "value": int(perk.exceptional_value),
+                            "icon": perk.icon,
+                            "is_exceptional": True,
+                            "description": description,
+                        })
+                        if perk_type_name in ("merge_luck", "merge_success", "all_luck"):
+                            result["total_merge_luck"] += int(perk.exceptional_value)
+                        elif perk_type_name == "coin_discount":
+                            result["total_coin_discount"] += int(perk.exceptional_value)
         
         # Sort by value descending
         result["contributors"].sort(key=lambda x: x["value"], reverse=True)
@@ -1215,6 +1235,8 @@ def get_entity_merge_perk_contributors(adhd_buster: dict) -> dict:
 def get_entity_hydration_perk_contributors(adhd_buster: dict) -> dict:
     """
     Get hydration-related entity perk bonuses with detailed contributor info.
+    
+    When you have BOTH normal AND exceptional variants, you get BOTH bonuses.
     
     Args:
         adhd_buster: The main data dict containing entitidex progress
@@ -1236,11 +1258,15 @@ def get_entity_hydration_perk_contributors(adhd_buster: dict) -> dict:
         from entitidex.entity_pools import get_entity_by_id
         
         entitidex_data = adhd_buster.get("entitidex", {})
-        collected = entitidex_data.get("collected_entity_ids", 
-                    entitidex_data.get("collected", set()))
+        collected = set(entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set())))
         exceptional = entitidex_data.get("exceptional_entities", {})
+        exceptional_ids = set(exceptional.keys()) if isinstance(exceptional, dict) else set(exceptional)
         
-        if not collected:
+        # Get all unique entity IDs from both collections
+        all_entity_ids = collected | exceptional_ids
+        
+        if not all_entity_ids:
             return result
         
         hydration_perk_types = {
@@ -1248,39 +1274,55 @@ def get_entity_hydration_perk_contributors(adhd_buster: dict) -> dict:
             PerkType.HYDRATION_CAP: "cap",
         }
         
-        for entity_id in collected:
+        for entity_id in all_entity_ids:
             perks = ENTITY_PERKS.get(entity_id)
             if not perks:
                 continue
             for perk in perks:
                 if perk.perk_type in hydration_perk_types:
-                    is_exceptional = entity_id in exceptional
-                    value = perk.exceptional_value if is_exceptional else perk.normal_value
+                    has_normal = entity_id in collected
+                    has_exceptional = entity_id in exceptional_ids
+                    perk_type_name = hydration_perk_types[perk.perk_type]
                     
                     entity = get_entity_by_id(entity_id)
                     entity_name = entity.name if entity else entity_id
                     
-                    if is_exceptional and perk.exceptional_description:
-                        description = perk.exceptional_description.format(value=int(value))
-                    else:
-                        description = perk.description.format(value=int(value))
+                    # Add normal variant contribution
+                    if has_normal:
+                        description = perk.description.format(value=int(perk.normal_value))
+                        result["contributors"].append({
+                            "entity_id": entity_id,
+                            "name": entity_name,
+                            "perk_type": perk_type_name,
+                            "value": int(perk.normal_value),
+                            "icon": perk.icon,
+                            "is_exceptional": False,
+                            "description": description,
+                        })
+                        if perk_type_name == "cooldown":
+                            result["total_cooldown_reduction"] += int(perk.normal_value)
+                        else:
+                            result["total_cap_bonus"] += int(perk.normal_value)
                     
-                    perk_type_name = hydration_perk_types[perk.perk_type]
-                    
-                    result["contributors"].append({
-                        "entity_id": entity_id,
-                        "name": entity_name,
-                        "perk_type": perk_type_name,
-                        "value": int(value),
-                        "icon": perk.icon,
-                        "is_exceptional": is_exceptional,
-                        "description": description,
-                    })
-                    
-                    if perk_type_name == "cooldown":
-                        result["total_cooldown_reduction"] += int(value)
-                    else:
-                        result["total_cap_bonus"] += int(value)
+                    # Add exceptional variant contribution (stacks!)
+                    if has_exceptional:
+                        if perk.exceptional_description:
+                            description = perk.exceptional_description.format(value=int(perk.exceptional_value))
+                        else:
+                            description = perk.description.format(value=int(perk.exceptional_value))
+                        result["contributors"].append({
+                            "entity_id": entity_id,
+                            "name": entity_name,
+                            "perk_type": perk_type_name,
+                            "value": int(perk.exceptional_value),
+                            "icon": perk.icon,
+                            "is_exceptional": True,
+                            "description": description,
+                        })
+                        if perk_type_name == "cooldown":
+                            result["total_cooldown_reduction"] += int(perk.exceptional_value)
+                        else:
+                            result["total_cap_bonus"] += int(perk.exceptional_value)
         
         result["contributors"].sort(key=lambda x: x["value"], reverse=True)
         
@@ -1294,6 +1336,8 @@ def get_entity_qol_perk_contributors(adhd_buster: dict) -> dict:
     """
     Get quality-of-life entity perk bonuses with detailed contributor info.
     Includes inventory slots, eye rest cap, and perfect session bonuses.
+    
+    When you have BOTH normal AND exceptional variants, you get BOTH bonuses.
     
     Args:
         adhd_buster: The main data dict containing entitidex progress
@@ -1317,11 +1361,15 @@ def get_entity_qol_perk_contributors(adhd_buster: dict) -> dict:
         from entitidex.entity_pools import get_entity_by_id
         
         entitidex_data = adhd_buster.get("entitidex", {})
-        collected = entitidex_data.get("collected_entity_ids", 
-                    entitidex_data.get("collected", set()))
+        collected = set(entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set())))
         exceptional = entitidex_data.get("exceptional_entities", {})
+        exceptional_ids = set(exceptional.keys()) if isinstance(exceptional, dict) else set(exceptional)
         
-        if not collected:
+        # Get all unique entity IDs from both collections
+        all_entity_ids = collected | exceptional_ids
+        
+        if not all_entity_ids:
             return result
         
         qol_perk_types = {
@@ -1330,41 +1378,59 @@ def get_entity_qol_perk_contributors(adhd_buster: dict) -> dict:
             PerkType.PERFECT_SESSION: "perfect_session",
         }
         
-        for entity_id in collected:
+        for entity_id in all_entity_ids:
             perks = ENTITY_PERKS.get(entity_id)
             if not perks:
                 continue
             for perk in perks:
                 if perk.perk_type in qol_perk_types:
-                    is_exceptional = entity_id in exceptional
-                    value = perk.exceptional_value if is_exceptional else perk.normal_value
+                    has_normal = entity_id in collected
+                    has_exceptional = entity_id in exceptional_ids
+                    perk_type_name = qol_perk_types[perk.perk_type]
                     
                     entity = get_entity_by_id(entity_id)
                     entity_name = entity.name if entity else entity_id
                     
-                    if is_exceptional and perk.exceptional_description:
-                        description = perk.exceptional_description.format(value=int(value))
-                    else:
-                        description = perk.description.format(value=int(value))
+                    # Add normal variant contribution
+                    if has_normal:
+                        description = perk.description.format(value=int(perk.normal_value))
+                        result["contributors"].append({
+                            "entity_id": entity_id,
+                            "name": entity_name,
+                            "perk_type": perk_type_name,
+                            "value": int(perk.normal_value),
+                            "icon": perk.icon,
+                            "is_exceptional": False,
+                            "description": description,
+                        })
+                        if perk_type_name == "inventory":
+                            result["total_inventory_slots"] += int(perk.normal_value)
+                        elif perk_type_name == "eye_rest":
+                            result["total_eye_rest_cap"] += int(perk.normal_value)
+                        else:
+                            result["total_perfect_session"] += int(perk.normal_value)
                     
-                    perk_type_name = qol_perk_types[perk.perk_type]
-                    
-                    result["contributors"].append({
-                        "entity_id": entity_id,
-                        "name": entity_name,
-                        "perk_type": perk_type_name,
-                        "value": int(value),
-                        "icon": perk.icon,
-                        "is_exceptional": is_exceptional,
-                        "description": description,
-                    })
-                    
-                    if perk_type_name == "inventory":
-                        result["total_inventory_slots"] += int(value)
-                    elif perk_type_name == "eye_rest":
-                        result["total_eye_rest_cap"] += int(value)
-                    else:
-                        result["total_perfect_session"] += int(value)
+                    # Add exceptional variant contribution (stacks!)
+                    if has_exceptional:
+                        if perk.exceptional_description:
+                            description = perk.exceptional_description.format(value=int(perk.exceptional_value))
+                        else:
+                            description = perk.description.format(value=int(perk.exceptional_value))
+                        result["contributors"].append({
+                            "entity_id": entity_id,
+                            "name": entity_name,
+                            "perk_type": perk_type_name,
+                            "value": int(perk.exceptional_value),
+                            "icon": perk.icon,
+                            "is_exceptional": True,
+                            "description": description,
+                        })
+                        if perk_type_name == "inventory":
+                            result["total_inventory_slots"] += int(perk.exceptional_value)
+                        elif perk_type_name == "eye_rest":
+                            result["total_eye_rest_cap"] += int(perk.exceptional_value)
+                        else:
+                            result["total_perfect_session"] += int(perk.exceptional_value)
         
         result["contributors"].sort(key=lambda x: x["value"], reverse=True)
         
@@ -1465,6 +1531,8 @@ def get_entity_xp_perk_contributors(adhd_buster: dict) -> dict:
     Get XP-related entity perk bonuses with detailed contributor info.
     Used to display which entities contribute to XP bonuses in Activity tab.
     
+    When you have BOTH normal AND exceptional variants, you get BOTH bonuses.
+    
     Args:
         adhd_buster: The main data dict containing entitidex progress
         
@@ -1490,11 +1558,15 @@ def get_entity_xp_perk_contributors(adhd_buster: dict) -> dict:
         from entitidex.entity_pools import get_entity_by_id
         
         entitidex_data = adhd_buster.get("entitidex", {})
-        collected = entitidex_data.get("collected_entity_ids", 
-                    entitidex_data.get("collected", set()))
+        collected = set(entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set())))
         exceptional = entitidex_data.get("exceptional_entities", {})
+        exceptional_ids = set(exceptional.keys()) if isinstance(exceptional, dict) else set(exceptional)
         
-        if not collected:
+        # Get all unique entity IDs from both collections
+        all_entity_ids = collected | exceptional_ids
+        
+        if not all_entity_ids:
             return result
         
         # Perk types relevant to XP
@@ -1507,38 +1579,50 @@ def get_entity_xp_perk_contributors(adhd_buster: dict) -> dict:
             PerkType.XP_STORY: "xp_story",
         }
         
-        for entity_id in collected:
+        for entity_id in all_entity_ids:
             perks = ENTITY_PERKS.get(entity_id)
             if not perks:
                 continue
             for perk in perks:
                 if perk.perk_type in xp_perk_types:
-                    is_exceptional = entity_id in exceptional
-                    value = perk.exceptional_value if is_exceptional else perk.normal_value
+                    has_normal = entity_id in collected
+                    has_exceptional = entity_id in exceptional_ids
+                    perk_type_name = xp_perk_types[perk.perk_type]
                     
                     # Get entity details
                     entity = get_entity_by_id(entity_id)
                     entity_name = entity.name if entity else entity_id
                     
-                    # Get description
-                    if is_exceptional and perk.exceptional_description:
-                        description = perk.exceptional_description.format(value=int(value))
-                    else:
-                        description = perk.description.format(value=int(value))
+                    # Add normal variant contribution
+                    if has_normal:
+                        description = perk.description.format(value=int(perk.normal_value))
+                        result["contributors"].append({
+                            "entity_id": entity_id,
+                            "name": entity_name,
+                            "perk_type": perk_type_name,
+                            "value": int(perk.normal_value),
+                            "icon": perk.icon,
+                            "is_exceptional": False,
+                            "description": description,
+                        })
+                        result["total_xp_bonus"] += int(perk.normal_value)
                     
-                    perk_type_name = xp_perk_types[perk.perk_type]
-                    
-                    result["contributors"].append({
-                        "entity_id": entity_id,
-                        "name": entity_name,
-                        "perk_type": perk_type_name,
-                        "value": int(value),
-                        "icon": perk.icon,
-                        "is_exceptional": is_exceptional,
-                        "description": description,
-                    })
-                    
-                    result["total_xp_bonus"] += int(value)
+                    # Add exceptional variant contribution (stacks!)
+                    if has_exceptional:
+                        if perk.exceptional_description:
+                            description = perk.exceptional_description.format(value=int(perk.exceptional_value))
+                        else:
+                            description = perk.description.format(value=int(perk.exceptional_value))
+                        result["contributors"].append({
+                            "entity_id": entity_id,
+                            "name": entity_name,
+                            "perk_type": perk_type_name,
+                            "value": int(perk.exceptional_value),
+                            "icon": perk.icon,
+                            "is_exceptional": True,
+                            "description": description,
+                        })
+                        result["total_xp_bonus"] += int(perk.exceptional_value)
         
         # Sort by value descending
         result["contributors"].sort(key=lambda x: x["value"], reverse=True)
@@ -1679,6 +1763,8 @@ def get_entity_luck_perk_contributors(adhd_buster: dict, perk_filter: str = None
     """
     Get luck-related entity perk bonuses with detailed contributor info.
     
+    When you have BOTH normal AND exceptional variants, you get BOTH bonuses.
+    
     Args:
         adhd_buster: The main data dict containing entitidex progress
         perk_filter: Optional filter for specific perk type ("rarity_bias", "drop_luck", etc.)
@@ -1697,11 +1783,15 @@ def get_entity_luck_perk_contributors(adhd_buster: dict, perk_filter: str = None
         from entitidex.entity_pools import get_entity_by_id
         
         entitidex_data = adhd_buster.get("entitidex", {})
-        collected = entitidex_data.get("collected_entity_ids", 
-                    entitidex_data.get("collected", set()))
+        collected = set(entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set())))
         exceptional = entitidex_data.get("exceptional_entities", {})
+        exceptional_ids = set(exceptional.keys()) if isinstance(exceptional, dict) else set(exceptional)
         
-        if not collected:
+        # Get all unique entity IDs from both collections
+        all_entity_ids = collected | exceptional_ids
+        
+        if not all_entity_ids:
             return result
         
         luck_perk_types = {
@@ -1709,7 +1799,7 @@ def get_entity_luck_perk_contributors(adhd_buster: dict, perk_filter: str = None
             PerkType.DROP_LUCK: "drop_luck",
         }
         
-        for entity_id in collected:
+        for entity_id in all_entity_ids:
             perks = ENTITY_PERKS.get(entity_id)
             if not perks:
                 continue
@@ -1721,31 +1811,48 @@ def get_entity_luck_perk_contributors(adhd_buster: dict, perk_filter: str = None
                     if perk_filter and perk_type_name != perk_filter:
                         continue
                     
-                    is_exceptional = entity_id in exceptional
-                    value = perk.exceptional_value if is_exceptional else perk.normal_value
+                    has_normal = entity_id in collected
+                    has_exceptional = entity_id in exceptional_ids
                     
                     entity = get_entity_by_id(entity_id)
                     entity_name = entity.name if entity else entity_id
                     
-                    if is_exceptional and perk.exceptional_description:
-                        description = perk.exceptional_description.format(value=int(value))
-                    else:
-                        description = perk.description.format(value=int(value))
+                    # Add normal variant contribution
+                    if has_normal:
+                        description = perk.description.format(value=int(perk.normal_value))
+                        result["contributors"].append({
+                            "entity_id": entity_id,
+                            "name": entity_name,
+                            "perk_type": perk_type_name,
+                            "value": int(perk.normal_value),
+                            "icon": perk.icon,
+                            "is_exceptional": False,
+                            "description": description,
+                        })
+                        if perk_type_name == "rarity_bias":
+                            result["total_rarity_bias"] += int(perk.normal_value)
+                        elif perk_type_name == "drop_luck":
+                            result["total_drop_luck"] += int(perk.normal_value)
                     
-                    result["contributors"].append({
-                        "entity_id": entity_id,
-                        "name": entity_name,
-                        "perk_type": perk_type_name,
-                        "value": int(value),
-                        "icon": perk.icon,
-                        "is_exceptional": is_exceptional,
-                        "description": description,
-                    })
-                    
-                    if perk_type_name == "rarity_bias":
-                        result["total_rarity_bias"] += int(value)
-                    elif perk_type_name == "drop_luck":
-                        result["total_drop_luck"] += int(value)
+                    # Add exceptional variant contribution (stacks!)
+                    if has_exceptional:
+                        if perk.exceptional_description:
+                            description = perk.exceptional_description.format(value=int(perk.exceptional_value))
+                        else:
+                            description = perk.description.format(value=int(perk.exceptional_value))
+                        result["contributors"].append({
+                            "entity_id": entity_id,
+                            "name": entity_name,
+                            "perk_type": perk_type_name,
+                            "value": int(perk.exceptional_value),
+                            "icon": perk.icon,
+                            "is_exceptional": True,
+                            "description": description,
+                        })
+                        if perk_type_name == "rarity_bias":
+                            result["total_rarity_bias"] += int(perk.exceptional_value)
+                        elif perk_type_name == "drop_luck":
+                            result["total_drop_luck"] += int(perk.exceptional_value)
         
         result["contributors"].sort(key=lambda x: x["value"], reverse=True)
         
@@ -1791,6 +1898,10 @@ def get_entity_eye_perks(adhd_buster: dict) -> dict:
     """
     Get Eye & Breath tab entity perk bonuses.
     
+    When you have BOTH normal AND exceptional, you get BOTH bonuses (they stack).
+    - Normal (Sam): +1 Eye Tier bonus
+    - Exceptional (Pam): 50% Reroll chance
+    
     Args:
         adhd_buster: The main data dict containing entitidex progress
         
@@ -1801,6 +1912,7 @@ def get_entity_eye_perks(adhd_buster: dict) -> dict:
             entity_id (str): ID of the entity providing the perk (empty if none)
             entity_name (str): Display name of the entity
             is_exceptional (bool): Whether the entity is exceptional
+            has_both (bool): Whether both variants are collected
     """
     result = {
         "eye_tier_bonus": 0,
@@ -1808,6 +1920,7 @@ def get_entity_eye_perks(adhd_buster: dict) -> dict:
         "entity_id": "",
         "entity_name": "",
         "is_exceptional": False,
+        "has_both": False,
     }
     
     try:
@@ -1816,31 +1929,33 @@ def get_entity_eye_perks(adhd_buster: dict) -> dict:
         entitidex_data = adhd_buster.get("entitidex", {})
         
         # Find the entity providing this perk (underdog_005)
-        collected = entitidex_data.get("collected_entity_ids", [])
-        if isinstance(collected, set):
-            collected = list(collected)
+        collected = set(entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set())))
         # Check both formats: exceptional_entity_ids (list) and exceptional_entities (dict)
         exceptional_ids = entitidex_data.get("exceptional_entity_ids", [])
         if isinstance(exceptional_ids, set):
             exceptional_ids = list(exceptional_ids)
         exceptional_dict = entitidex_data.get("exceptional_entities", {})
+        exceptional_set = set(exceptional_ids) | set(exceptional_dict.keys())
         
-        # Check if underdog_005 (Desk Succulent Sam/Pam) is collected
-        if "underdog_005" in collected:
+        has_normal = "underdog_005" in collected
+        has_exceptional = "underdog_005" in exceptional_set
+        
+        # Check if underdog_005 (Desk Succulent Sam/Pam) is collected in either form
+        if has_normal or has_exceptional:
             result["entity_id"] = "underdog_005"
-            is_exceptional = "underdog_005" in exceptional_ids or "underdog_005" in exceptional_dict
-            result["is_exceptional"] = is_exceptional
+            result["is_exceptional"] = has_exceptional
+            result["has_both"] = has_normal and has_exceptional
             
-            if is_exceptional:
-                # Pam (exceptional): 50% Reroll only
-                result["entity_name"] = "Desk Succulent Pam"
-                result["eye_reroll_chance"] = 50
-                result["eye_tier_bonus"] = 0
-            else:
-                # Sam (normal): +1 Eye Tier only
+            # Add normal bonus if collected
+            if has_normal:
                 result["entity_name"] = "Desk Succulent Sam"
                 result["eye_tier_bonus"] = 1
-                result["eye_reroll_chance"] = 0
+            
+            # Add exceptional bonus if collected (stacks!)
+            if has_exceptional:
+                result["entity_name"] = "Desk Succulent Pam" if not has_normal else "Sam & Pam"
+                result["eye_reroll_chance"] = 50
         
     except Exception as e:
         print(f"[Entity Perks] Error getting eye perks: {e}")
@@ -1852,18 +1967,22 @@ def get_entity_sleep_perks(adhd_buster: dict) -> dict:
     """
     Get Sleep tab entity perk bonuses (Study Owl Athena).
     
-    The owl provides +1 tier bonus to "Go to Sleep Now" rewards as a secondary perk.
-    Its primary perk (XP_NIGHT) remains unchanged - this is an additional benefit.
+    Only the EXCEPTIONAL variant provides Sleep Tier bonus.
+    Normal variant provides Night XP bonus (handled in ENTITY_PERKS).
+    - Normal: +2% Night XP (via ENTITY_PERKS)
+    - Exceptional: +1 Sleep Tier (via this function)
+    - Both: +2% Night XP + 1 Sleep Tier
     
     Args:
         adhd_buster: The main data dict containing entitidex progress
         
     Returns:
         Dict with keys: 
-            sleep_tier_bonus (int): Tier bonus for sleep rewards (1 normal, 2 exceptional)
+            sleep_tier_bonus (int): Tier bonus for sleep rewards
             entity_id (str): ID of the entity providing the perk (empty if none)
             entity_name (str): Display name of the entity
-            is_exceptional (bool): Whether the entity is exceptional
+            is_exceptional (bool): Whether the exceptional is collected
+            has_both (bool): Whether both variants are collected
             description (str): Perk description for display
     """
     result = {
@@ -1871,6 +1990,7 @@ def get_entity_sleep_perks(adhd_buster: dict) -> dict:
         "entity_id": "",
         "entity_name": "",
         "is_exceptional": False,
+        "has_both": False,
         "description": "",
     }
     
@@ -1878,31 +1998,26 @@ def get_entity_sleep_perks(adhd_buster: dict) -> dict:
         entitidex_data = adhd_buster.get("entitidex", {})
         
         # Find the entity providing this perk (scholar_002 = Study Owl Athena)
-        collected = entitidex_data.get("collected_entity_ids", [])
-        if isinstance(collected, set):
-            collected = list(collected)
+        collected = set(entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set())))
         # Check both formats: exceptional_entity_ids (list) and exceptional_entities (dict)
         exceptional_ids = entitidex_data.get("exceptional_entity_ids", [])
         if isinstance(exceptional_ids, set):
             exceptional_ids = list(exceptional_ids)
         exceptional_dict = entitidex_data.get("exceptional_entities", {})
+        exceptional_set = set(exceptional_ids) | set(exceptional_dict.keys())
         
-        # Check if scholar_002 (Study Owl Athena) is collected
-        if "scholar_002" in collected:
+        has_normal = "scholar_002" in collected
+        has_exceptional = "scholar_002" in exceptional_set
+        
+        # Only exceptional provides Sleep Tier bonus
+        if has_exceptional:
             result["entity_id"] = "scholar_002"
-            is_exceptional = "scholar_002" in exceptional_ids or "scholar_002" in exceptional_dict
-            result["is_exceptional"] = is_exceptional
-            
-            if is_exceptional:
-                # Exceptional: +2 Sleep Tier
-                result["entity_name"] = "Steady Owl Athena"
-                result["sleep_tier_bonus"] = 2
-                result["description"] = "Moonlit Slumber: +2 Sleep Reward Tier"
-            else:
-                # Normal: +1 Sleep Tier
-                result["entity_name"] = "Study Owl Athena"
-                result["sleep_tier_bonus"] = 1
-                result["description"] = "Night Owl's Gift: +1 Sleep Reward Tier"
+            result["is_exceptional"] = True
+            result["has_both"] = has_normal
+            result["entity_name"] = "Steady Owl Athena"
+            result["sleep_tier_bonus"] = 1
+            result["description"] = "Moonlit Wisdom: +1 Sleep Reward Tier"
         
     except Exception as e:
         print(f"[Entity Perks] Error getting sleep perks: {e}")
@@ -1924,8 +2039,10 @@ def get_entity_weight_perks(adhd_buster: dict) -> dict:
     """
     Get Weight tab entity perk bonuses (rat/mouse entities).
     
-    Each collected rat/mouse entity provides +1% Legendary chance when logging weight.
-    Exceptional variants provide +2% instead.
+    Each collected rat/mouse entity provides:
+    - Normal variant: +1% Legendary chance
+    - Exceptional variant: +2% Legendary chance
+    - BOTH variants: +3% (stacks!)
     
     Rat/Mouse entities:
     - scholar_001: Library Mouse Pip/Quip
@@ -1939,7 +2056,7 @@ def get_entity_weight_perks(adhd_buster: dict) -> dict:
         
     Returns:
         Dict with keys: 
-            legendary_bonus (int): Total % bonus to Legendary chance (0-10)
+            legendary_bonus (int): Total % bonus to Legendary chance
             contributors (list): List of contributing entities with details
             description (str): Combined perk description for display
     """
@@ -1952,31 +2069,42 @@ def get_entity_weight_perks(adhd_buster: dict) -> dict:
     try:
         entitidex_data = adhd_buster.get("entitidex", {})
         
-        collected = entitidex_data.get("collected_entity_ids", [])
-        if isinstance(collected, set):
-            collected = list(collected)
+        collected = set(entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set())))
         # Check both formats: exceptional_entity_ids (list) and exceptional_entities (dict)
         exceptional_ids = entitidex_data.get("exceptional_entity_ids", [])
         if isinstance(exceptional_ids, set):
             exceptional_ids = list(exceptional_ids)
         exceptional_dict = entitidex_data.get("exceptional_entities", {})
+        exceptional_set = set(exceptional_ids) | set(exceptional_dict.keys())
         
         total_bonus = 0
         contributors = []
         
         for entity_id, info in WEIGHT_RAT_ENTITIES.items():
-            if entity_id in collected:
-                is_exceptional = entity_id in exceptional_ids or entity_id in exceptional_dict
-                bonus = 2 if is_exceptional else 1
-                name = info["exceptional_name"] if is_exceptional else info["normal_name"]
-                
-                total_bonus += bonus
+            has_normal = entity_id in collected
+            has_exceptional = entity_id in exceptional_set
+            
+            # Add normal variant contribution
+            if has_normal:
+                total_bonus += 1
                 contributors.append({
                     "entity_id": entity_id,
-                    "name": name,
-                    "bonus": bonus,
+                    "name": info["normal_name"],
+                    "bonus": 1,
                     "icon": info["icon"],
-                    "is_exceptional": is_exceptional,
+                    "is_exceptional": False,
+                })
+            
+            # Add exceptional variant contribution (stacks!)
+            if has_exceptional:
+                total_bonus += 2
+                contributors.append({
+                    "entity_id": entity_id,
+                    "name": info["exceptional_name"],
+                    "bonus": 2,
+                    "icon": info["icon"],
+                    "is_exceptional": True,
                 })
         
         result["legendary_bonus"] = total_bonus
@@ -2001,8 +2129,9 @@ def get_entity_optimize_gear_cost(adhd_buster: dict) -> dict:
     Get Optimize Gear cost based on Hobo Rat / Robo Rat entity.
     
     The Hobo Rat (wanderer_009) provides a special secondary perk:
-    - Normal (Hobo Rat): Optimize Gear costs 1 coin (telepathic gear tips)
+    - Normal (Hobo Rat): Optimize Gear costs 1 coin
     - Exceptional (Robo Rat): Optimize Gear is FREE (0 coins)
+    - BOTH: Uses best value (0 coins)
     
     Args:
         adhd_buster: The main data dict containing entitidex progress
@@ -2012,7 +2141,8 @@ def get_entity_optimize_gear_cost(adhd_buster: dict) -> dict:
             cost (int): Actual cost for Optimize Gear (0, 1, or default 10)
             entity_id (str): ID of the entity providing the perk (empty if none)
             entity_name (str): Display name of the entity
-            is_exceptional (bool): Whether the entity is exceptional
+            is_exceptional (bool): Whether the exceptional is collected
+            has_both (bool): Whether both variants are collected
             description (str): Perk description for display
             has_perk (bool): Whether the perk is active
     """
@@ -2024,6 +2154,7 @@ def get_entity_optimize_gear_cost(adhd_buster: dict) -> dict:
         "entity_id": "",
         "entity_name": "",
         "is_exceptional": False,
+        "has_both": False,
         "description": "",
         "has_perk": False,
     }
@@ -2031,27 +2162,30 @@ def get_entity_optimize_gear_cost(adhd_buster: dict) -> dict:
     try:
         entitidex_data = adhd_buster.get("entitidex", {})
         
-        collected = entitidex_data.get("collected_entity_ids", [])
-        if isinstance(collected, set):
-            collected = list(collected)
+        collected = set(entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set())))
         
         # Check both formats: exceptional_entity_ids (list) and exceptional_entities (dict)
         exceptional_ids = entitidex_data.get("exceptional_entity_ids", [])
         if isinstance(exceptional_ids, set):
             exceptional_ids = list(exceptional_ids)
         exceptional_dict = entitidex_data.get("exceptional_entities", {})
+        exceptional_set = set(exceptional_ids) | set(exceptional_dict.keys())
         
-        # Check if wanderer_009 (Hobo Rat / Robo Rat) is collected
-        if "wanderer_009" in collected:
+        has_normal = "wanderer_009" in collected
+        has_exceptional = "wanderer_009" in exceptional_set
+        
+        # Check if wanderer_009 (Hobo Rat / Robo Rat) is collected in either form
+        if has_normal or has_exceptional:
             result["entity_id"] = "wanderer_009"
             result["has_perk"] = True
-            # Check both formats for exceptional status
-            is_exceptional = "wanderer_009" in exceptional_ids or "wanderer_009" in exceptional_dict
-            result["is_exceptional"] = is_exceptional
+            result["is_exceptional"] = has_exceptional
+            result["has_both"] = has_normal and has_exceptional
             
-            if is_exceptional:
+            # Use the best (lowest) cost available
+            if has_exceptional:
                 # Exceptional Robo Rat: FREE optimization
-                result["entity_name"] = "Robo Rat"
+                result["entity_name"] = "Robo Rat" if not has_normal else "Rat Squad"
                 result["cost"] = 0
                 result["description"] = "🤖 Robo Rat: Optimize Gear is FREE!"
             else:
@@ -2070,9 +2204,10 @@ def get_entity_sell_perks(adhd_buster: dict) -> dict:
     """
     Get sell item bonuses from Corner Office Chair / Stoner Office Chair (underdog_007).
     
-    The Corner Office Chair provides sell bonuses:
+    When you have BOTH variants, bonuses stack:
     - Normal (Corner Office Chair): +25% value when selling Epic items
-    - Exceptional (Stoner Office Chair): +25% value when selling Epic AND Legendary items
+    - Exceptional (Stoner Office Chair): +25% value when selling Legendary items
+    - BOTH: +50% Epic, +25% Legendary (stacks!)
     
     Args:
         adhd_buster: The main data dict containing entitidex progress
@@ -2082,9 +2217,10 @@ def get_entity_sell_perks(adhd_buster: dict) -> dict:
             has_perk (bool): Whether the perk is active
             entity_id (str): ID of the entity providing the perk
             entity_name (str): Display name of the entity
-            is_exceptional (bool): Whether the entity is exceptional
-            epic_bonus (float): Multiplier for Epic items (1.25 or 1.0)
-            legendary_bonus (float): Multiplier for Legendary items (1.25 or 1.0)
+            is_exceptional (bool): Whether the exceptional is collected
+            has_both (bool): Whether both variants are collected
+            epic_bonus (float): Multiplier for Epic items
+            legendary_bonus (float): Multiplier for Legendary items
             description (str): Perk description for display
             icon_path (str): Path to entity SVG icon
     """
@@ -2093,6 +2229,7 @@ def get_entity_sell_perks(adhd_buster: dict) -> dict:
         "entity_id": "",
         "entity_name": "",
         "is_exceptional": False,
+        "has_both": False,
         "epic_bonus": 1.0,
         "legendary_bonus": 1.0,
         "description": "",
@@ -2102,34 +2239,42 @@ def get_entity_sell_perks(adhd_buster: dict) -> dict:
     try:
         entitidex_data = adhd_buster.get("entitidex", {})
         
-        collected = entitidex_data.get("collected_entity_ids", [])
-        if isinstance(collected, set):
-            collected = list(collected)
+        collected = set(entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set())))
         # Check both formats: exceptional_entity_ids (list) and exceptional_entities (dict)
         exceptional_ids = entitidex_data.get("exceptional_entity_ids", [])
         if isinstance(exceptional_ids, set):
             exceptional_ids = list(exceptional_ids)
         exceptional_dict = entitidex_data.get("exceptional_entities", {})
+        exceptional_set = set(exceptional_ids) | set(exceptional_dict.keys())
         
-        # Check if underdog_007 (Corner Office Chair) is collected
-        if "underdog_007" in collected:
+        has_normal = "underdog_007" in collected
+        has_exceptional = "underdog_007" in exceptional_set
+        
+        # Check if underdog_007 (Corner Office Chair) is collected in either form
+        if has_normal or has_exceptional:
             result["entity_id"] = "underdog_007"
             result["has_perk"] = True
-            is_exceptional = "underdog_007" in exceptional_ids or "underdog_007" in exceptional_dict
-            result["is_exceptional"] = is_exceptional
-            result["epic_bonus"] = 1.25  # Always +25% for Epic
+            result["is_exceptional"] = has_exceptional
+            result["has_both"] = has_normal and has_exceptional
             
-            if is_exceptional:
-                # Exceptional Stoner Office Chair: +25% for Legendary too
-                result["entity_name"] = "Stoner Office Chair"
-                result["legendary_bonus"] = 1.25
-                result["description"] = "🪑 Stoner Office Chair: +25% coins for Epic & Legendary!"
-                result["icon_path"] = "icons/entities/exceptional/underdog_007_corner_office_chair_exceptional.svg"
-            else:
-                # Normal Corner Office Chair: +25% for Epic only
+            descriptions = []
+            
+            # Add normal bonus if collected
+            if has_normal:
                 result["entity_name"] = "Corner Office Chair"
-                result["description"] = "🪑 Corner Office Chair: +25% coins for Epic items!"
+                result["epic_bonus"] = 1.25  # +25% for Epic
+                descriptions.append("+25% Epic")
                 result["icon_path"] = "icons/entities/underdog_007_corner_office_chair.svg"
+            
+            # Add exceptional bonus if collected (stacks!)
+            if has_exceptional:
+                result["entity_name"] = "Stoner Office Chair" if not has_normal else "Chair Duo"
+                result["legendary_bonus"] = 1.25  # +25% for Legendary
+                descriptions.append("+25% Legendary")
+                result["icon_path"] = "icons/entities/exceptional/underdog_007_corner_office_chair_exceptional.svg"
+            
+            result["description"] = f"🪑 {result['entity_name']}: {', '.join(descriptions)}"
         
     except Exception as e:
         print(f"[Entity Perks] Error getting sell perks: {e}")
@@ -2140,6 +2285,8 @@ def get_entity_sell_perks(adhd_buster: dict) -> dict:
 def get_entity_power_perks(adhd_buster: dict) -> dict:
     """
     Get hero power bonuses from collected entities with contributor details.
+    
+    When you have BOTH normal AND exceptional variants, you get BOTH bonuses.
     
     Args:
         adhd_buster: The main data dict containing entitidex progress
@@ -2166,42 +2313,59 @@ def get_entity_power_perks(adhd_buster: dict) -> dict:
         
         entitidex_data = adhd_buster.get("entitidex", {})
         # Support both old "collected" and new "collected_entity_ids" keys
-        collected = entitidex_data.get("collected_entity_ids", 
-                    entitidex_data.get("collected", set()))
+        collected = set(entitidex_data.get("collected_entity_ids", 
+                    entitidex_data.get("collected", set())))
         exceptional = entitidex_data.get("exceptional_entities", {})
+        exceptional_ids = set(exceptional.keys()) if isinstance(exceptional, dict) else set(exceptional)
         
-        if not collected:
+        # Get all unique entity IDs from both collections
+        all_entity_ids = collected | exceptional_ids
+        
+        if not all_entity_ids:
             return result
             
         # Find all collected entities that provide POWER_FLAT perk
-        for entity_id in collected:
+        for entity_id in all_entity_ids:
             perks = ENTITY_PERKS.get(entity_id)
             if not perks:
                 continue
             for perk in perks:
                 if perk.perk_type == PerkType.POWER_FLAT:
-                    is_exceptional = entity_id in exceptional
-                    value = perk.exceptional_value if is_exceptional else perk.normal_value
+                    has_normal = entity_id in collected
+                    has_exceptional = entity_id in exceptional_ids
                     
                     # Get entity details for display
                     entity = get_entity_by_id(entity_id)
                     entity_name = entity.name if entity else entity_id
                     
-                    # Get description
-                    if is_exceptional and perk.exceptional_description:
-                        description = perk.exceptional_description.format(value=int(value))
-                    else:
-                        description = perk.description.format(value=int(value))
+                    # Add normal variant contribution
+                    if has_normal:
+                        description = perk.description.format(value=int(perk.normal_value))
+                        result["contributors"].append({
+                            "entity_id": entity_id,
+                            "name": entity_name,
+                            "power": int(perk.normal_value),
+                            "icon": perk.icon,
+                            "is_exceptional": False,
+                            "description": description,
+                        })
+                        result["total_power"] += int(perk.normal_value)
                     
-                    result["contributors"].append({
-                        "entity_id": entity_id,
-                        "name": entity_name,
-                        "power": int(value),
-                        "icon": perk.icon,
-                        "is_exceptional": is_exceptional,
-                        "description": description,
-                    })
-                    result["total_power"] += int(value)
+                    # Add exceptional variant contribution (stacks!)
+                    if has_exceptional:
+                        if perk.exceptional_description:
+                            description = perk.exceptional_description.format(value=int(perk.exceptional_value))
+                        else:
+                            description = perk.description.format(value=int(perk.exceptional_value))
+                        result["contributors"].append({
+                            "entity_id": entity_id,
+                            "name": entity_name,
+                            "power": int(perk.exceptional_value),
+                            "icon": perk.icon,
+                            "is_exceptional": True,
+                            "description": description,
+                        })
+                        result["total_power"] += int(perk.exceptional_value)
         
         # Sort by power value descending
         result["contributors"].sort(key=lambda x: x["power"], reverse=True)

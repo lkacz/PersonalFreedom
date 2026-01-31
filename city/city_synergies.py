@@ -204,6 +204,8 @@ def calculate_building_synergy_bonus(
     """
     Calculate synergy bonus for a building from collected entities.
     
+    When you have BOTH normal AND exceptional variants, you get BOTH bonuses.
+    
     Returns:
         {
             "bonus_type": str or None,
@@ -234,27 +236,43 @@ def calculate_building_synergy_bonus(
     # Get exceptional entities
     exceptional = entitidex_data.get("exceptional_entities", {})
     if isinstance(exceptional, list):
-        exceptional = set(exceptional)
+        exceptional_ids = set(exceptional)
     elif isinstance(exceptional, dict):
-        exceptional = set(exceptional.keys())
+        exceptional_ids = set(exceptional.keys())
+    else:
+        exceptional_ids = set()
+    
+    # Get all unique entity IDs from both collections
+    all_entity_ids = collected | exceptional_ids
     
     total_bonus = 0.0
     contributors = []
     
-    for entity_id in collected:
+    for entity_id in all_entity_ids:
         entity_tags = get_entity_synergy_tags(entity_id)
         
         # Check for tag overlap
         if entity_tags & synergy.entity_tags:
-            is_exceptional = entity_id in exceptional
-            bonus = synergy.exceptional_bonus if is_exceptional else synergy.normal_bonus
-            total_bonus += bonus
+            has_normal = entity_id in collected
+            has_exceptional = entity_id in exceptional_ids
             
-            contributors.append({
-                "entity_id": entity_id,
-                "is_exceptional": is_exceptional,
-                "bonus": bonus,
-            })
+            # Add normal variant contribution
+            if has_normal:
+                total_bonus += synergy.normal_bonus
+                contributors.append({
+                    "entity_id": entity_id,
+                    "is_exceptional": False,
+                    "bonus": synergy.normal_bonus,
+                })
+            
+            # Add exceptional variant contribution (stacks!)
+            if has_exceptional:
+                total_bonus += synergy.exceptional_bonus
+                contributors.append({
+                    "entity_id": entity_id,
+                    "is_exceptional": True,
+                    "bonus": synergy.exceptional_bonus,
+                })
     
     # Apply cap
     capped = total_bonus > synergy.max_bonus

@@ -55,10 +55,12 @@ except ImportError:
 # Import gamification hero management (optional)
 try:
     from gamification import ensure_hero_structure as _ensure_hero_structure
+    from gamification import get_entity_luck_perks as _get_entity_luck_perks
     HERO_MANAGEMENT_AVAILABLE = True
 except ImportError:
     HERO_MANAGEMENT_AVAILABLE = False
     _ensure_hero_structure = None  # type: ignore[assignment]
+    _get_entity_luck_perks = None  # type: ignore[assignment]
 
 # Windows hosts file path
 system_root = os.environ.get('SystemRoot', r'C:\Windows')
@@ -945,11 +947,28 @@ class BlockerCore:
             try:
                 last_date = datetime.strptime(self.stats["last_session_date"], "%Y-%m-%d")
                 today_date = datetime.strptime(today, "%Y-%m-%d")
+                days_gap = (today_date - last_date).days
 
-                if (today_date - last_date).days == 1:
+                if days_gap == 1:
                     self.stats["streak_days"] = self.stats.get("streak_days", 0) + 1
-                elif (today_date - last_date).days > 1:
-                    self.stats["streak_days"] = 1
+                elif days_gap > 1:
+                    # ✨ ENTITY PERK: Check for streak_save perk (chance to save streak)
+                    streak_saved = False
+                    if days_gap == 2 and _get_entity_luck_perks and hasattr(self, 'adhd_buster'):
+                        luck_perks = _get_entity_luck_perks(self.adhd_buster)
+                        streak_save_chance = luck_perks.get("streak_save", 0)
+                        if streak_save_chance > 0:
+                            import random
+                            if random.randint(1, 100) <= streak_save_chance:
+                                streak_saved = True
+                                self.stats["streak_days"] = self.stats.get("streak_days", 0) + 1
+                                self.adhd_buster["entity_streak_saves"] = self.adhd_buster.get("entity_streak_saves", 0) + 1
+                                self.stats["entity_streak_saved"] = True  # Flag for UI to show message
+                                logger.info(f"[Entity Perks] ✨ Streak saved by Brass Compass! ({streak_save_chance}% chance)")
+                    
+                    if not streak_saved:
+                        self.stats["streak_days"] = 1
+                        self.stats["entity_streak_saved"] = False
             except ValueError:
                 self.stats["streak_days"] = 1
         else:
