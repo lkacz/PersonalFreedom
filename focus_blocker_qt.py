@@ -23782,6 +23782,7 @@ class DevTab(QtWidgets.QWidget):
         resource_info = [
             ("💧 Water", "water", "#2196f3"),
             ("🧱 Materials", "materials", "#795548"),
+            ("🔩 Scrap", "scrap", "#607d8b"),
             ("🏃 Activity", "activity", "#4caf50"),
             ("🎯 Focus", "focus", "#9c27b0"),
         ]
@@ -24982,7 +24983,7 @@ class DevTab(QtWidgets.QWidget):
             self.blocker.save_config()
             self._refresh_city_display()
             
-            emoji = {"water": "💧", "materials": "🧱", "activity": "🏃", "focus": "🎯"}.get(resource_type, "📦")
+            emoji = {"water": "💧", "materials": "🧱", "scrap": "🔩", "activity": "🏃", "focus": "🎯"}.get(resource_type, "📦")
             self.status_label.setText(f"✅ Added {amount} {emoji} {resource_type}! New total: {new_total}")
             self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
             
