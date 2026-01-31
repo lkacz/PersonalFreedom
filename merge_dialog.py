@@ -164,7 +164,7 @@ def create_entity_perk_mini_cards(contributors: list, perk_labels: dict = None) 
         card = QtWidgets.QFrame()
         is_exceptional = entity_data.get("is_exceptional", False)
         
-        # Style cards
+        # Style cards - clean style with no internal borders
         if is_exceptional:
             card.setStyleSheet("""
                 QFrame {
@@ -176,6 +176,10 @@ def create_entity_perk_mini_cards(contributors: list, perk_labels: dict = None) 
                 QFrame:hover {
                     border-color: #666;
                     background-color: #333;
+                }
+                QLabel {
+                    background: transparent;
+                    border: none;
                 }
             """)
         else:
@@ -189,6 +193,10 @@ def create_entity_perk_mini_cards(contributors: list, perk_labels: dict = None) 
                 QFrame:hover {
                     border-color: #555;
                     background-color: #333;
+                }
+                QLabel {
+                    background: transparent;
+                    border: none;
                 }
             """)
         
