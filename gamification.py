@@ -14290,21 +14290,23 @@ def is_consecutive_day(date1: str, date2: str) -> bool:
         return False
 
 
-def get_screen_off_bonus_rarity(screen_off_time: str) -> Optional[str]:
+def get_screen_off_bonus_rarity(screen_off_time: str, deterministic: bool = True) -> Optional[str]:
     """
     Get bonus reward rarity based on when user turned off their screen.
     
-    Uses the same moving window [5%, 20%, 50%, 20%, 5%] pattern.
     Earlier screen-off times give better rewards:
-    - 21:00-21:30: 100% Legendary (perfect digital hygiene!)
-    - 21:30-22:30: Legendary-centered (75% Legendary)
-    - 22:30-23:30: Epic-centered
-    - 23:30-00:30: Rare-centered
-    - 00:30-01:00: Uncommon-centered
+    - 21:00-21:30: Legendary (Guaranteed)
+    - 21:30-22:30: Legendary (75% chance if deterministic=False)
+    - 22:30-23:30: Epic (50% chance if deterministic=False)
+    - 23:30-00:30: Rare (50% chance if deterministic=False)
+    - 00:30-01:00: Uncommon (50% chance if deterministic=False)
     - 01:00+: No bonus (too late)
     
     Args:
         screen_off_time: Time in HH:MM format when screen was turned off
+        deterministic: If True, returns the most likely rarity for the time slot. 
+                      If False, uses a weighted random roll. 
+                      Default is True to ensure UI preview matches reward.
     
     Returns:
         Rarity string or None if too late for bonus
@@ -14327,12 +14329,15 @@ def get_screen_off_bonus_rarity(screen_off_time: str) -> Optional[str]:
         return None
     
     # Thresholds in minutes
-    # < 22:00 = No bonus (user preference)
-    # 22:00 - 22:30 = 100% Legendary
-    # 22:30 - 23:30 = Legendary-centered
-    # 23:30 - 00:30 = Epic-centered
+    # < 21:00 = No bonus (user preference)
+    # 21:00 - 21:30 = 100% Legendary
+    # 21:30 - 22:30 = Legendary-centered
+    # 22:30 - 23:30 = Epic-centered
+    # 23:30 - 00:30 = Rare-centered
     # 00:30 - 01:00 = Uncommon-centered
     # 01:00+ = No bonus
+    
+    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     
     if total_minutes < 21 * 60:  # Before 21:00
         return None
@@ -14349,6 +14354,10 @@ def get_screen_off_bonus_rarity(screen_off_time: str) -> Optional[str]:
     else:  # 01:00 or later
         return None  # Too late for bonus
     
+    if deterministic:
+        # Return the centered tier directly
+        return rarities[center_tier]
+    
     # Moving window: [5%, 20%, 50%, 20%, 5%] centered on center_tier
     window = [5, 20, 50, 20, 5]
     weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
@@ -14358,7 +14367,6 @@ def get_screen_off_bonus_rarity(screen_off_time: str) -> Optional[str]:
         clamped_tier = max(0, min(4, target_tier))
         weights[clamped_tier] += pct
     
-    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     return random.choices(rarities, weights=weights)[0]
 
 

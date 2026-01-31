@@ -44,6 +44,7 @@ class StyledDialog(QtWidgets.QDialog):
     BG_GRADIENT_TOP = "#1A1A2E"
     BG_GRADIENT_BOTTOM = "#0D0D1A"
     TEXT_COLOR = "#E0E0E0"
+    MUTED_TEXT = "#888888"  # Muted/secondary text
     BUTTON_GRADIENT_TOP = "#4A4A6A"
     BUTTON_GRADIENT_BOTTOM = "#2A2A4A"
     
