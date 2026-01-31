@@ -3029,22 +3029,23 @@ class BuildingDetailsDialog(StyledDialog):
                 no_synergy.setStyleSheet("color: #666; font-style: italic;")
                 effects_layout.addWidget(no_synergy)
         
-        # Show final calculated bonus (base + entity synergy)
+        # Show final calculated bonus (base + entity synergy) - ADDITIVE
         if synergy_bonus > 0:
-            final_value = current_value * (1 + synergy_bonus)
+            synergy_percent = int(synergy_bonus * 100)  # Convert 0.05 to 5
+            final_value = current_value + synergy_percent
             if effect_type == "passive_income":
-                final_text = f"📊 Final Bonus: {current_value:.1f}% + {current_value * synergy_bonus:.1f}% (entity) = {final_value:.1f}%"
+                final_text = f"📊 Final Bonus: {current_value:.1f}% + {synergy_percent}% (entity) = {final_value:.1f}%"
             else:
-                final_text = f"📊 Final Bonus: {current_value:.0f}% + {current_value * synergy_bonus:.0f}% (entity) = {final_value:.0f}%"
+                final_text = f"📊 Final Bonus: {current_value:.0f}% + {synergy_percent}% (entity) = {final_value:.0f}%"
             final_label = QtWidgets.QLabel(final_text)
             final_label.setStyleSheet("color: #4CAF50; font-weight: bold; margin-top: 6px;")
             final_label.setWordWrap(True)
             final_label.setToolTip(
                 f"Your total effective bonus from this building:\n\n"
                 f"• Base building bonus: {current_value:.0f}%\n"
-                f"• Entity synergy multiplier: +{synergy_bonus*100:.0f}%\n"
+                f"• Entity synergy bonus: +{synergy_percent}%\n"
                 f"• Combined effect: {final_value:.0f}%\n\n"
-                f"(Math is beautiful when it's on your side.)"
+                f"(Additive bonuses stack better!)"
             )
             effects_layout.addWidget(final_label)
         
