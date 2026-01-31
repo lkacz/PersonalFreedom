@@ -92,7 +92,14 @@ class TestGameStateManager:
         item = {"id": "helm1", "name": "Test Helmet", "slot": "Helmet", "rarity": "Rare"}
         game_state.equip_item("Helmet", item)
         
-        assert mock_blocker.adhd_buster["equipped"]["Helmet"] == item
+        equipped = mock_blocker.adhd_buster["equipped"]["Helmet"]
+        # Check the original fields are preserved
+        assert equipped["id"] == item["id"]
+        assert equipped["name"] == item["name"]
+        assert equipped["slot"] == item["slot"]
+        assert equipped["rarity"] == item["rarity"]
+        # equip_item now adds an item_id for unique identification
+        assert "item_id" in equipped
         mock_blocker.save_config.assert_called()
     
     def test_batch_operations(self, game_state, mock_blocker):

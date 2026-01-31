@@ -15029,7 +15029,8 @@ def calculate_session_xp(duration_minutes: int, streak_days: int = 0,
         )
         
         if xp_perks["total_bonus_percent"] > 0:
-            entity_xp_bonus = int(subtotal_after_gear * (xp_perks["total_bonus_percent"] / 100.0))
+            # Apply to subtotal (not compounded with lucky bonus) for ADDITIVE stacking
+            entity_xp_bonus = int(subtotal * (xp_perks["total_bonus_percent"] / 100.0))
             entity_xp_breakdown = xp_perks["bonus_breakdown"]
     
     total = subtotal_after_gear + entity_xp_bonus

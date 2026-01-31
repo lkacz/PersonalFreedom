@@ -1688,17 +1688,18 @@ def get_city_bonuses(adhd_buster: dict) -> dict:
                         per_level = scaling.get(bonus_key, 0)
                         bonuses[bonus_key] += base_value + (level - 1) * per_level
     
-    # Apply entity synergy bonuses on top of building bonuses
+    # Apply entity synergy bonuses on top of building bonuses (ADDITIVE, not multiplicative)
     try:
         from .city_synergies import get_all_synergy_bonuses
         synergy_bonuses = get_all_synergy_bonuses(adhd_buster)
         
-        # synergy_value is 0.0-0.5 (representing 0%-50% bonus multiplier)
+        # synergy_value is 0.0-0.5 (representing 0%-50% bonus as decimal)
         # bonuses[key] is the base percentage (e.g., 10 means 10%)
-        # Result: 10 * (1 + 0.25) = 12 → 12% total bonus
+        # ADDITIVE: 10% base + 25% synergy = 35% total
+        # (Old multiplicative: 10 * 1.25 = 12.5% was wrong - % of % gives negligible benefit)
         for key, synergy_value in synergy_bonuses.items():
             if key in bonuses and synergy_value > 0:
-                bonuses[key] = int(bonuses[key] * (1 + synergy_value))
+                bonuses[key] = bonuses[key] + int(synergy_value * 100)
     except ImportError:
         # Synergy module not yet created
         pass

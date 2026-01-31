@@ -733,13 +733,13 @@ class TestStoryDecisions(unittest.TestCase):
         self.assertTrue(result)
         self.assertEqual(adhd_buster["story_decisions"]["warrior_mirror"], "A")
         
-        # Invalid choice
+        # Invalid choice - returns dict with success=False
         result = make_story_decision(adhd_buster, 2, "C")
-        self.assertFalse(result)
+        self.assertFalse(result.get("success", True))
         
-        # Chapter without decision
+        # Chapter without decision - returns dict with success=False
         result = make_story_decision(adhd_buster, 1, "A")
-        self.assertFalse(result)
+        self.assertFalse(result.get("success", True))
     
     def test_get_decision_path(self) -> None:
         """Test getting the decision path string."""

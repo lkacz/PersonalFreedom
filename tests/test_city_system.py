@@ -83,6 +83,7 @@ def adhd_buster_with_city():
     city["resources"] = {
         "water": 50,
         "materials": 100,
+        "scrap": 50,
         "activity": 30,
         "focus": 40,
     }
@@ -100,6 +101,7 @@ def adhd_buster_with_buildings():
     city["resources"] = {
         "water": 200,
         "materials": 300,
+        "scrap": 200,
         "activity": 150,
         "focus": 200,
     }
@@ -138,15 +140,17 @@ class TestModuleAvailability:
         assert CITY_AVAILABLE is True
     
     def test_resource_types_defined(self):
-        assert len(RESOURCE_TYPES) == 4
+        assert len(RESOURCE_TYPES) == 5
         assert "water" in RESOURCE_TYPES
         assert "materials" in RESOURCE_TYPES
+        assert "scrap" in RESOURCE_TYPES
         assert "activity" in RESOURCE_TYPES
         assert "focus" in RESOURCE_TYPES
     
     def test_building_slot_unlocks_defined(self):
         assert len(BUILDING_SLOT_UNLOCKS) > 0
-        assert BUILDING_SLOT_UNLOCKS[1] == 2  # Level 1 = 2 slots
+        assert BUILDING_SLOT_UNLOCKS[1] == 0  # Level 1 = 0 slots (starter)
+        assert BUILDING_SLOT_UNLOCKS[2] == 1  # Level 2 = 1st slot
         assert BUILDING_SLOT_UNLOCKS[40] == 10  # Level 40 = 10 slots
     
     def test_all_buildings_defined(self):
@@ -174,10 +178,11 @@ class TestStateManagement:
         assert all(cell is None for row in grid for cell in row)
     
     def test_create_empty_grid_no_reference_bug(self):
-        """Ensure rows are independent (not references to same list)."""
+        """Ensure cells are independent (not references to same list)."""
         grid = create_empty_grid()
+        # With 1-row grid, test that cells within the row are independent
         grid[0][0] = "test"
-        assert grid[1][0] is None  # Other rows unaffected
+        assert grid[0][1] is None  # Other cells unaffected
     
     def test_create_default_city_data(self):
         city = create_default_city_data()
@@ -213,11 +218,10 @@ class TestBuildingSlots:
     """Test level-gated building slot system."""
     
     def test_get_max_building_slots_level_1(self):
-        assert get_max_building_slots(1) == 2
-    
+        assert get_max_building_slots(1) == 0  # No slots at level 1
+
     def test_get_max_building_slots_level_5(self):
-        assert get_max_building_slots(5) == 3
-    
+        assert get_max_building_slots(5) == 2  # Level 4 unlocks 2nd slot
     def test_get_max_building_slots_level_10(self):
         # Level 10: between Lv9→4 and Lv13→5, so still 4 slots
         assert get_max_building_slots(10) == 4
@@ -356,51 +360,52 @@ class TestConstruction:
         building = CITY_BUILDINGS["goldmine"]
         reqs = get_level_requirements(building, 1)
         assert reqs["water"] == 3
-        assert reqs["materials"] == 5
-    
+        assert reqs["materials"] == 2
+        assert reqs["scrap"] == 3
+
     def test_get_level_requirements_level_2(self):
         """Level 2 should cost 20% more."""
         building = CITY_BUILDINGS["goldmine"]
         reqs = get_level_requirements(building, 2)
         # 3 * 1.2 = 3.6 → 3
         assert reqs["water"] == 3
-        # 5 * 1.2 = 6
-        assert reqs["materials"] == 6
+        # 2 * 1.2 = 2.4 → 2
+        assert reqs["materials"] == 2
     
     @patch('gamification.get_level_from_xp')
     def test_invest_resources_transitions_to_building(self, mock_level, adhd_buster_with_city):
         mock_level.return_value = (10, 0, 100, 0)
         
-        # Place a building (starts in PLACED status)
-        place_building(adhd_buster_with_city, 2, 2, "goldmine")
+        # Place a building (starts in PLACED status) - use row 0, column 2
+        place_building(adhd_buster_with_city, 0, 2, "goldmine")
         
         city = get_city_data(adhd_buster_with_city)
-        assert city["grid"][2][2]["status"] == CellStatus.PLACED.value
+        assert city["grid"][0][2]["status"] == CellStatus.PLACED.value
         
         # Invest resources
         result = invest_resources(
-            adhd_buster_with_city, 2, 2,
+            adhd_buster_with_city, 0, 2,
             {"water": 1, "materials": 1}
         )
         
         assert result["success"] is True
-        assert city["grid"][2][2]["status"] == CellStatus.BUILDING.value
+        assert city["grid"][0][2]["status"] == CellStatus.BUILDING.value
     
     @patch('gamification.get_level_from_xp')
     def test_invest_resources_completes_building(self, mock_level, adhd_buster_with_city):
         mock_level.return_value = (10, 0, 100, 0)
         
-        place_building(adhd_buster_with_city, 2, 2, "goldmine")
-        
+        place_building(adhd_buster_with_city, 0, 2, "goldmine")
+
         # New flow: use initiate_construction which starts construction with stockpile resources
         from city import initiate_construction
-        result = initiate_construction(adhd_buster_with_city, 2, 2)
-        
+        result = initiate_construction(adhd_buster_with_city, 0, 2)
+
         assert result["success"] is True
-        
+
         city = get_city_data(adhd_buster_with_city)
         # Building is now in BUILDING state, waiting for effort resources
-        assert city["grid"][2][2]["status"] == CellStatus.BUILDING.value
+        assert city["grid"][0][2]["status"] == CellStatus.BUILDING.value
     
     def test_invest_resources_empty_cell(self, fresh_adhd_buster):
         get_city_data(fresh_adhd_buster)
@@ -426,7 +431,7 @@ class TestUpgrades:
     def test_can_upgrade_complete_building(self, adhd_buster_with_buildings):
         can, reason = can_upgrade(adhd_buster_with_buildings, 0, 0)
         assert can is True
-        assert "L4" in reason  # Goldmine is L3, can go to L4
+        assert "L3" in reason  # Goldmine is L2, can go to L3 (max is 3)
     
     def test_can_upgrade_incomplete_building(self, adhd_buster_with_buildings):
         can, reason = can_upgrade(adhd_buster_with_buildings, 0, 1)
@@ -446,7 +451,7 @@ class TestUpgrades:
         """Upgrade requires stockpile resources for next level."""
         # Clear all resources
         city = get_city_data(adhd_buster_with_buildings)
-        city["resources"] = {"water": 0, "materials": 0, "activity": 0, "focus": 0}
+        city["resources"] = {"water": 0, "materials": 0, "scrap": 0, "activity": 0, "focus": 0}
         
         can, reason = can_initiate_upgrade(adhd_buster_with_buildings, 0, 0)
         assert can is False
@@ -455,22 +460,23 @@ class TestUpgrades:
     def test_can_initiate_upgrade_with_resources(self, adhd_buster_with_buildings):
         """With sufficient resources, can initiate upgrade."""
         city = get_city_data(adhd_buster_with_buildings)
-        # Add plenty of resources
-        city["resources"] = {"water": 100, "materials": 100, "activity": 50, "focus": 50}
+        # Add plenty of resources (including scrap)
+        city["resources"] = {"water": 100, "materials": 100, "scrap": 100, "activity": 50, "focus": 50}
         
         can, reason = can_initiate_upgrade(adhd_buster_with_buildings, 0, 0)
         assert can is True
+        # Goldmine at L2 can upgrade to L3
         assert "L3" in reason
     
     def test_initiate_upgrade_consumes_stockpile(self, adhd_buster_with_buildings):
         """initiate_upgrade should consume water and materials."""
         city = get_city_data(adhd_buster_with_buildings)
-        city["resources"] = {"water": 100, "materials": 100, "activity": 50, "focus": 50}
+        city["resources"] = {"water": 100, "materials": 100, "scrap": 100, "activity": 50, "focus": 50}
         
         result = initiate_upgrade(adhd_buster_with_buildings, 0, 0)
         
         assert result["success"] is True
-        assert result["new_level"] == 4
+        assert result["new_level"] == 3  # L2 -> L3
         assert "effort_required" in result
         
         # Stockpile resources should be consumed
@@ -485,12 +491,12 @@ class TestUpgrades:
     def test_start_upgrade(self, adhd_buster_with_buildings):
         """Legacy start_upgrade delegates to initiate_upgrade."""
         city = get_city_data(adhd_buster_with_buildings)
-        city["resources"] = {"water": 100, "materials": 100, "activity": 50, "focus": 50}
+        city["resources"] = {"water": 100, "materials": 100, "scrap": 100, "activity": 50, "focus": 50}
         
         success = start_upgrade(adhd_buster_with_buildings, 0, 0)
         assert success is True
         
-        assert city["grid"][0][0]["level"] == 4
+        assert city["grid"][0][0]["level"] == 3  # L2 -> L3
         assert city["grid"][0][0]["status"] == CellStatus.BUILDING.value
 
 
@@ -700,9 +706,10 @@ class TestIntegration:
         """Test complete flow: resources → place → build → complete → collect."""
         mock_level.return_value = (10, 0, 100, 0)
         
-        # Add resources
+        # Add resources (including scrap which goldmine requires)
         add_city_resource(fresh_adhd_buster, "water", 10)
         add_city_resource(fresh_adhd_buster, "materials", 20)
+        add_city_resource(fresh_adhd_buster, "scrap", 10)
         add_city_resource(fresh_adhd_buster, "activity", 10)
         add_city_resource(fresh_adhd_buster, "focus", 10)
         
