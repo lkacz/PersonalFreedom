@@ -7781,11 +7781,9 @@ class WeightTab(QtWidgets.QWidget):
         self.rodent_tips_section = QtWidgets.QFrame()
         self.rodent_tips_section.setStyleSheet("""
             QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #3a3a2a, stop:1 #252518);
-                border: 2px solid #8b7355;
+                background-color: rgba(255, 255, 255, 0.04);
+                border: 1px solid rgba(139, 115, 85, 0.3);
                 border-radius: 8px;
-                padding: 6px;
             }
         """)
         rodent_tips_layout = QtWidgets.QHBoxLayout(self.rodent_tips_section)
@@ -7862,6 +7860,12 @@ class WeightTab(QtWidgets.QWidget):
         
         layout.addWidget(self.rodent_tips_section)
         self.rodent_tips_section.hide()  # Hidden until we check if any rodent is collected
+        
+        # Entity Perk Section (Rodent Squad) - shows when rat/mouse entities are collected
+        # Positioned after tips section, before Log Weight dialog
+        self.weight_entity_section = CollapsibleSection("🐀 Rodent Squad", "weight_entity_section", parent=self)
+        self.weight_entity_section.setVisible(False)
+        layout.addWidget(self.weight_entity_section)
         
         # Top section: Input and stats side by side
         top_layout = QtWidgets.QHBoxLayout()
@@ -8103,12 +8107,6 @@ class WeightTab(QtWidgets.QWidget):
         rewards_info.setStyleSheet("color: #888888; font-size: 10px;")
         rewards_layout.addWidget(rewards_info)
         layout.addWidget(rewards_group)
-        
-        # Entity Perk Section (Rodent Squad) - shows when rat/mouse entities are collected
-        # Uses same mini-card pattern as ADHD Buster patrons
-        self.weight_entity_section = CollapsibleSection("🐀 Rodent Squad", "weight_entity_section", parent=self)
-        self.weight_entity_section.setVisible(False)
-        layout.addWidget(self.weight_entity_section)
         
         # Initialize settings from saved values
         self._load_settings()
@@ -9051,27 +9049,27 @@ class WeightTab(QtWidgets.QWidget):
                 if is_exceptional:
                     card.setStyleSheet("""
                         QFrame {
-                            background-color: #2a2a2a;
-                            border: 1px solid #555;
+                            background-color: rgba(255, 215, 0, 0.08);
+                            border: 1px solid rgba(255, 215, 0, 0.15);
                             border-radius: 6px;
                             padding: 4px;
                         }
                         QFrame:hover {
-                            border-color: #666;
-                            background-color: #333;
+                            background-color: rgba(255, 215, 0, 0.15);
+                            border: 1px solid rgba(255, 215, 0, 0.3);
                         }
                     """)
                 else:
                     card.setStyleSheet("""
                         QFrame {
-                            background-color: #2a2a2a;
-                            border: 1px solid #444;
+                            background-color: rgba(255, 255, 255, 0.04);
+                            border: 1px solid rgba(255, 255, 255, 0.06);
                             border-radius: 6px;
                             padding: 4px;
                         }
                         QFrame:hover {
-                            border-color: #7986cb;
-                            background-color: #333;
+                            background-color: rgba(255, 255, 255, 0.08);
+                            border: 1px solid rgba(255, 255, 255, 0.15);
                         }
                     """)
                 
@@ -9214,11 +9212,9 @@ class WeightTab(QtWidgets.QWidget):
             self.rodent_section_title.setStyleSheet("color: #81c784; font-size: 11px; font-weight: bold;")
             self.rodent_tips_section.setStyleSheet("""
                 QFrame {
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #2a3a2a, stop:1 #182518);
-                    border: 2px solid #66bb6a;
+                    background-color: rgba(255, 255, 255, 0.04);
+                    border: 1px solid rgba(102, 187, 106, 0.3);
                     border-radius: 8px;
-                    padding: 6px;
                 }
             """)
         else:
@@ -9226,11 +9222,9 @@ class WeightTab(QtWidgets.QWidget):
             self.rodent_section_title.setStyleSheet("color: #c4a35a; font-size: 11px; font-weight: bold;")
             self.rodent_tips_section.setStyleSheet("""
                 QFrame {
-                    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #3a3a2a, stop:1 #252518);
-                    border: 2px solid #8b7355;
+                    background-color: rgba(255, 255, 255, 0.04);
+                    border: 1px solid rgba(139, 115, 85, 0.3);
                     border-radius: 8px;
-                    padding: 6px;
                 }
             """)
         
@@ -9512,6 +9506,15 @@ class ActivityTab(QtWidgets.QWidget):
         header_layout.addStretch()
         layout.addLayout(header_layout)
         
+        # Entity XP Perk Section - shows entities that boost XP
+        # Moved to top for better visibility (friendly name: XP Physical Activists)
+        self.activity_entity_section = CollapsibleSection("⚡ XP Physical Activists", "activity_entity_section", parent=self)
+        self.activity_entity_section.setVisible(False)
+        layout.addWidget(self.activity_entity_section)
+        
+        # Update entity perk display
+        self._update_activity_entity_perk_display()
+        
         # Main content split
         content_layout = QtWidgets.QHBoxLayout()
         
@@ -9651,14 +9654,6 @@ class ActivityTab(QtWidgets.QWidget):
         reminder_layout.addWidget(self.reminder_time)
         reminder_layout.addStretch()
         layout.addLayout(reminder_layout)
-        
-        # Entity XP Perk Section - shows entities that boost XP
-        self.activity_entity_section = CollapsibleSection("⚡ XP Boosters", "activity_entity_section", parent=self)
-        self.activity_entity_section.setVisible(False)
-        layout.addWidget(self.activity_entity_section)
-        
-        # Update entity perk display
-        self._update_activity_entity_perk_display()
         
         # Rewards info section
         rewards_group = QtWidgets.QGroupBox("🎁 Rewards Info")
@@ -10247,7 +10242,7 @@ class ActivityTab(QtWidgets.QWidget):
             
             # Show section with appropriate title
             self.activity_entity_section.setVisible(True)
-            self.activity_entity_section.set_title(f"⚡ XP Boosters (+{total_xp_bonus}% XP)")
+            self.activity_entity_section.set_title(f"⚡ XP Physical Activists (+{total_xp_bonus}% XP)")
             
             # Clear previous content
             self.activity_entity_section.clear_content()
@@ -10276,27 +10271,27 @@ class ActivityTab(QtWidgets.QWidget):
                 if is_exceptional:
                     card.setStyleSheet("""
                         QFrame {
-                            background-color: #2a2a2a;
-                            border: 1px solid #555;
+                            background-color: rgba(255, 215, 0, 0.08);
+                            border: 1px solid rgba(255, 215, 0, 0.15);
                             border-radius: 6px;
                             padding: 4px;
                         }
                         QFrame:hover {
-                            border-color: #666;
-                            background-color: #333;
+                            background-color: rgba(255, 215, 0, 0.15);
+                            border: 1px solid rgba(255, 215, 0, 0.3);
                         }
                     """)
                 else:
                     card.setStyleSheet("""
                         QFrame {
-                            background-color: #2a2a2a;
-                            border: 1px solid #444;
+                            background-color: rgba(255, 255, 255, 0.04);
+                            border: 1px solid rgba(255, 255, 255, 0.06);
                             border-radius: 6px;
                             padding: 4px;
                         }
                         QFrame:hover {
-                            border-color: #4caf50;
-                            background-color: #333;
+                            background-color: rgba(255, 255, 255, 0.08);
+                            border: 1px solid rgba(255, 255, 255, 0.15);
                         }
                     """)
                 
@@ -12039,7 +12034,10 @@ class CharacterCanvas(QtWidgets.QWidget):
         self.equipped = equipped
         self.power = power
         self.story_theme = story_theme  # warrior, scholar, wanderer, underdog
-        self.setFixedSize(width, height)
+        # Set minimum size but allow expansion (for splitter resizing)
+        self.setMinimumSize(120, 145)  # Minimum readable size
+        # Use size policy that maintains aspect ratio when resizing
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         if GAMIFICATION_AVAILABLE:
             self.tier = get_diary_power_tier(power)
         else:
@@ -12049,6 +12047,29 @@ class CharacterCanvas(QtWidgets.QWidget):
         rng = random.Random(power)
         self._particles = [(rng.randint(-50, 50), rng.randint(-60, 60), rng.randint(2, 5)) 
                            for _ in range(15)]
+
+    def hasHeightForWidth(self) -> bool:
+        """Enable aspect ratio preservation."""
+        return True
+
+    def heightForWidth(self, width: int) -> int:
+        """Maintain canonical aspect ratio (180:220 = 0.818:1)."""
+        return int(width * self.BASE_H / self.BASE_W)
+
+    def sizeHint(self) -> QtCore.QSize:
+        """Return preferred size based on canonical dimensions."""
+        return QtCore.QSize(self.BASE_W, self.BASE_H)
+
+    def resizeEvent(self, event) -> None:
+        """Maintain aspect ratio on resize."""
+        super().resizeEvent(event)
+        # Force aspect ratio by adjusting height based on width
+        new_width = event.size().width()
+        ideal_height = self.heightForWidth(new_width)
+        if event.size().height() != ideal_height:
+            # Only adjust if significantly different to avoid infinite loops
+            if abs(event.size().height() - ideal_height) > 5:
+                self.setFixedHeight(ideal_height)
 
     def paintEvent(self, event) -> None:
         """Dispatch to theme-specific drawing method."""
@@ -12857,15 +12878,9 @@ class CharacterCanvas(QtWidgets.QWidget):
         label_rect = QtCore.QRect(0, h - 28, w, 25)
         painter.fillRect(label_rect, QtGui.QColor(0, 0, 0, 100))
         
-        # Power text with glow for high tiers
+        # Power text color based on tier (no glow loop - causes double-text artifacts)
         if self.tier in ["legendary", "godlike"]:
             painter.setPen(QtGui.QColor("#ffd700"))
-            # Glow effect
-            painter.setOpacity(0.5)
-            for offset in [(-1, -1), (1, -1), (-1, 1), (1, 1)]:
-                painter.drawText(label_rect.translated(offset[0], offset[1]), 
-                               QtCore.Qt.AlignCenter, f"⚔ {self.power}")
-            painter.setOpacity(1.0)
         elif self.tier in ["epic"]:
             painter.setPen(QtGui.QColor("#e040fb"))
         elif self.tier in ["heroic"]:
@@ -12873,10 +12888,9 @@ class CharacterCanvas(QtWidgets.QWidget):
         else:
             painter.setPen(QtGui.QColor("#fff"))
         
-        # Only draw final text for non-glowing tiers (glow loop already drew it)
-        if self.tier not in ["legendary", "godlike"]:
-            painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-            painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"⚔ {self.power}")
+        # Draw single clean power text
+        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"⚔ {self.power}")
 
     def _draw_scholar_character(self, painter: QtGui.QPainter) -> None:
         """Draw the academic/scholar themed character."""
@@ -13452,13 +13466,9 @@ class CharacterCanvas(QtWidgets.QWidget):
         label_rect = QtCore.QRect(0, h - 28, w, 25)
         painter.fillRect(label_rect, QtGui.QColor(0, 0, 0, 100))
         
+        # Power text color based on tier (no glow loop - causes double-text artifacts)
         if self.tier in ["legendary", "godlike"]:
             painter.setPen(QtGui.QColor("#ffd700"))
-            painter.setOpacity(0.5)
-            for offset in [(-1, -1), (1, -1), (-1, 1), (1, 1)]:
-                painter.drawText(label_rect.translated(offset[0], offset[1]), 
-                               QtCore.Qt.AlignCenter, f"📚 {self.power}")
-            painter.setOpacity(1.0)
         elif self.tier in ["epic"]:
             painter.setPen(QtGui.QColor("#e040fb"))
         elif self.tier in ["heroic"]:
@@ -13466,10 +13476,9 @@ class CharacterCanvas(QtWidgets.QWidget):
         else:
             painter.setPen(QtGui.QColor("#fff"))
         
-        # Only draw final text for non-glowing tiers (glow loop already drew it)
-        if self.tier not in ["legendary", "godlike"]:
-            painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-            painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"📚 {self.power}")
+        # Draw single clean power text
+        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"📚 {self.power}")
 
     def _draw_wanderer_character(self, painter: QtGui.QPainter) -> None:
         """Draw the mystical/dreamweaver themed character."""
@@ -14120,13 +14129,9 @@ class CharacterCanvas(QtWidgets.QWidget):
         label_rect = QtCore.QRect(0, h - 28, w, 25)
         painter.fillRect(label_rect, QtGui.QColor(0, 0, 0, 120))
         
+        # Power text color based on tier (no glow loop - causes double-text artifacts)
         if self.tier in ["legendary", "godlike"]:
             painter.setPen(QtGui.QColor("#e0d0ff"))
-            painter.setOpacity(0.5)
-            for offset in [(-1, -1), (1, -1), (-1, 1), (1, 1)]:
-                painter.drawText(label_rect.translated(offset[0], offset[1]), 
-                               QtCore.Qt.AlignCenter, f"🌙 {self.power}")
-            painter.setOpacity(1.0)
         elif self.tier in ["epic"]:
             painter.setPen(QtGui.QColor("#c0a0ff"))
         elif self.tier in ["heroic"]:
@@ -14134,10 +14139,9 @@ class CharacterCanvas(QtWidgets.QWidget):
         else:
             painter.setPen(QtGui.QColor("#d0d0ff"))
         
-        # Only draw final text for non-glowing tiers (glow loop already drew it)
-        if self.tier not in ["legendary", "godlike"]:
-            painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-            painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🌙 {self.power}")
+        # Draw single clean power text
+        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🌙 {self.power}")
 
     def _draw_underdog_character(self, painter: QtGui.QPainter) -> None:
         """Draw the modern office/corporate themed character."""
@@ -14744,13 +14748,9 @@ class CharacterCanvas(QtWidgets.QWidget):
         label_rect = QtCore.QRect(0, h - 28, w, 25)
         painter.fillRect(label_rect, QtGui.QColor(0, 0, 0, 120))
         
+        # Power text color based on tier (no glow loop - causes double-text artifacts)
         if self.tier in ["legendary", "godlike"]:
             painter.setPen(QtGui.QColor("#ffd700"))
-            painter.setOpacity(0.5)
-            for offset in [(-1, -1), (1, -1), (-1, 1), (1, 1)]:
-                painter.drawText(label_rect.translated(offset[0], offset[1]), 
-                               QtCore.Qt.AlignCenter, f"🏢 {self.power}")
-            painter.setOpacity(1.0)
         elif self.tier in ["epic"]:
             painter.setPen(QtGui.QColor("#00bcd4"))
         elif self.tier in ["heroic"]:
@@ -14758,10 +14758,9 @@ class CharacterCanvas(QtWidgets.QWidget):
         else:
             painter.setPen(QtGui.QColor("#b2bec3"))
         
-        # Only draw final text for non-glowing tiers (glow loop already drew it)
-        if self.tier not in ["legendary", "godlike"]:
-            painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-            painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🏢 {self.power}")
+        # Draw single clean power text
+        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🏢 {self.power}")
 
     def _draw_scientist_character(self, painter: QtGui.QPainter) -> None:
         """Draw the modern research scientist character."""
@@ -15955,13 +15954,9 @@ class CharacterCanvas(QtWidgets.QWidget):
         label_rect = QtCore.QRect(0, h - 28, w, 25)
         painter.fillRect(label_rect, QtGui.QColor(0, 0, 0, 130))
         
+        # Power text color based on tier (no glow loop - causes double-text artifacts)
         if self.tier in ["legendary", "godlike"]:
-            painter.setPen(QtGui.QColor("#ffd700"))
-            painter.setOpacity(0.5)
-            for offset in [(-1, -1), (1, -1), (-1, 1), (1, 1)]:
-                painter.drawText(label_rect.translated(offset[0], offset[1]), 
-                               QtCore.Qt.AlignCenter, f"🔬 {self.power}")
-            painter.setOpacity(1.0)
+            painter.setPen(QtGui.QColor("#00e5ff"))
         elif self.tier in ["epic"]:
             painter.setPen(QtGui.QColor("#42a5f5"))
         elif self.tier in ["heroic"]:
@@ -15969,10 +15964,9 @@ class CharacterCanvas(QtWidgets.QWidget):
         else:
             painter.setPen(QtGui.QColor("#90caf9"))
         
-        # Only draw final text for non-glowing tiers (glow loop already drew it)
-        if self.tier not in ["legendary", "godlike"]:
-            painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
-            painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🔬 {self.power}")
+        # Draw single clean power text
+        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Bold))
+        painter.drawText(label_rect, QtCore.Qt.AlignCenter, f"🔬 {self.power}")
 
 
 class HydrationTab(QtWidgets.QWidget):
@@ -17552,13 +17546,13 @@ class ADHDBusterTab(QtWidgets.QWidget):
             
         self.inner_layout.addLayout(header)
 
-        # Character canvas and equipment side by side - MOVED TO TOP for visibility
-        char_equip = QtWidgets.QHBoxLayout()
+        # Character canvas and equipment side by side - use horizontal splitter for resizing
+        self.char_equip_splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        self.char_equip_splitter.setChildrenCollapsible(False)
         equipped = self.blocker.adhd_buster.get("equipped", {})
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         self.char_canvas = CharacterCanvas(equipped, power_info["total_power"], parent=self, story_theme=active_story)
-        char_equip.addWidget(self.char_canvas)
-        self.char_equip_layout = char_equip  # Store reference for refresh
+        self.char_equip_splitter.addWidget(self.char_canvas)
 
         equip_group = QtWidgets.QGroupBox("⚔ Equipped Gear (change with dropdown)")
         equip_layout = QtWidgets.QFormLayout(equip_group)
@@ -17669,8 +17663,29 @@ class ADHDBusterTab(QtWidgets.QWidget):
             self.slot_labels[slot] = slot_label
             equip_layout.addRow(slot_label, combo)
         
-        char_equip.addWidget(equip_group)
-        self.inner_layout.addLayout(char_equip)
+        self.char_equip_splitter.addWidget(equip_group)
+        
+        # Style the splitter handle for visibility
+        self.char_equip_splitter.setHandleWidth(6)
+        self.char_equip_splitter.setStyleSheet("""
+            QSplitter::handle:horizontal {
+                background-color: #444;
+                border: 1px solid #555;
+                width: 6px;
+                margin: 2px 0;
+            }
+            QSplitter::handle:horizontal:hover {
+                background-color: #666;
+            }
+        """)
+        
+        # Restore saved splitter position or use default
+        self._load_hero_splitter_state()
+        
+        # Save splitter position when user adjusts it
+        self.char_equip_splitter.splitterMoved.connect(self._save_hero_splitter_state)
+        
+        self.inner_layout.addWidget(self.char_equip_splitter)
 
         # Active set bonuses (collapsible section)
         self.sets_section = CollapsibleSection(
@@ -19392,6 +19407,31 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 self.inv_table.horizontalHeader().restoreState(header_state)
         except Exception as e:
             print(f"Error loading inventory state: {e}")
+
+    def _save_hero_splitter_state(self) -> None:
+        """Save hero/equipment splitter position."""
+        try:
+            if hasattr(self, 'char_equip_splitter'):
+                settings = QtCore.QSettings("PersonalFreedom", "FocusBlocker")
+                settings.setValue("hero_splitter_state", self.char_equip_splitter.saveState())
+                settings.setValue("hero_splitter_sizes", self.char_equip_splitter.sizes())
+        except Exception as e:
+            print(f"Error saving hero splitter state: {e}")
+
+    def _load_hero_splitter_state(self) -> None:
+        """Load hero/equipment splitter position."""
+        try:
+            settings = QtCore.QSettings("PersonalFreedom", "FocusBlocker")
+            splitter_state = settings.value("hero_splitter_state")
+            if splitter_state:
+                self.char_equip_splitter.restoreState(splitter_state)
+            else:
+                # Default: give hero ~40% and equipment ~60%
+                self.char_equip_splitter.setSizes([180, 270])
+        except Exception as e:
+            print(f"Error loading hero splitter state: {e}")
+            # Fallback to default sizes
+            self.char_equip_splitter.setSizes([180, 270])
 
     def _open_diary(self) -> None:
         dialog = DiaryDialog(self.blocker, self)
