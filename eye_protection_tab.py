@@ -241,7 +241,7 @@ class GuidanceManager(QtCore.QObject):
         """Play TTS audio on the GUI thread (called via queued signal)."""
         from PySide6.QtCore import QByteArray
         qa = QByteArray(pcm_44100)
-        self.audio.play_buffer(qa)
+        self.audio.play_buffer(qa, is_voice=True)
     
     def say(self, text: str):
         """Speak text using Piper TTS (non-blocking)."""
@@ -425,6 +425,25 @@ class EyeProtectionTab(QtWidgets.QWidget):
         if hasattr(self, 'timer') and self.timer.isActive():
             self.timer.stop()
         self.is_running = False
+    
+    def hideEvent(self, event):
+        """Handle tab switch away - cancel routine if running to prevent freezes."""
+        super().hideEvent(event)
+        if self.is_running:
+            self._cancel_routine_silently()
+    
+    def _cancel_routine_silently(self):
+        """Cancel the running routine without showing dialogs (used on tab switch)."""
+        if hasattr(self, 'timer') and self.timer.isActive():
+            self.timer.stop()
+        self.is_running = False
+        self.step_phase = "idle"
+        self.blink_count = 0
+        self.blink_state = "open"
+        self.gaze_seconds_left = 20
+        # Reset UI when visible again
+        if hasattr(self, 'main_action_btn'):
+            self._update_cooldown_display()
 
     def init_ui(self):
         layout = QtWidgets.QVBoxLayout(self)
@@ -1423,8 +1442,8 @@ class EyeProtectionTab(QtWidgets.QWidget):
         QtCore.QTimer.singleShot(1500, self.do_blink_hold)
         
     def do_blink_hold(self):
-        # Guard: Don't run if routine stopped
-        if not self.is_running:
+        # Guard: Don't run if routine stopped or tab switched away
+        if not self.is_running or not self.isVisible():
             return
         self.blink_state = "hold"
         self.main_action_btn.setText("😐 HOLD...")
@@ -1433,8 +1452,8 @@ class EyeProtectionTab(QtWidgets.QWidget):
         QtCore.QTimer.singleShot(500, self.do_blink_open)
         
     def do_blink_open(self):
-        # Guard: Don't run if routine stopped
-        if not self.is_running:
+        # Guard: Don't run if routine stopped or tab switched away
+        if not self.is_running or not self.isVisible():
             return
         self.blink_state = "open"
         self.main_action_btn.setText("👀 OPEN eyes")
@@ -1443,8 +1462,8 @@ class EyeProtectionTab(QtWidgets.QWidget):
         QtCore.QTimer.singleShot(1500, self.start_blink_cycle)
 
     def start_gaze_phase(self):
-        # Guard: Don't run if routine stopped
-        if not self.is_running:
+        # Guard: Don't run if routine stopped or tab switched away
+        if not self.is_running or not self.isVisible():
             return
         self.step_phase = "gazing"
         self.gaze_seconds_left = 20
@@ -1458,13 +1477,17 @@ class EyeProtectionTab(QtWidgets.QWidget):
 
     def _start_breathing_timer(self):
         """Start the breathing timer after initial gaze cue completes."""
-        # Guard: Don't run if routine was stopped during the delay
-        if not self.is_running or self.step_phase != "gazing":
+        # Guard: Don't run if routine was stopped during the delay or tab switched
+        if not self.is_running or self.step_phase != "gazing" or not self.isVisible():
             return
         self.timer.start(1000)  # One tick per second
         self.on_timer_tick()  # Execute first tick immediately
 
     def on_timer_tick(self):
+        # Guard: Stop timer if routine was cancelled or tab switched
+        if not self.is_running or not self.isVisible():
+            self.timer.stop()
+            return
         try:
             if self.step_phase == "gazing":
                 # 20s total duration

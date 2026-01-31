@@ -3794,6 +3794,11 @@ class TimerTab(QtWidgets.QWidget):
         streak = self.blocker.stats.get("streak_days", 0)
         rewards["current_streak"] = streak
         rewards["streak_maintained"] = streak > 0
+        rewards["entity_streak_saved"] = self.blocker.stats.get("entity_streak_saved", False)
+        
+        # Clear the flag after reading it (one-time notification)
+        if rewards["entity_streak_saved"]:
+            self.blocker.stats["entity_streak_saved"] = False
         
         # Calculate XP
         equipped = self.blocker.adhd_buster.get("equipped", {})
@@ -6224,6 +6229,34 @@ class SettingsTab(QtWidgets.QWidget):
         user_layout.addWidget(switch_user_btn)
         inner.addWidget(user_group)
 
+        # Audio Settings
+        audio_group = QtWidgets.QGroupBox("🔊 Audio Settings")
+        audio_layout = QtWidgets.QFormLayout(audio_group)
+
+        # Get audio manager instance
+        from entitidex.celebration_audio import CelebrationAudioManager
+        audio_manager = CelebrationAudioManager.get_instance()
+
+        # Sound Volume Slider
+        self.sound_slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
+        self.sound_slider.setRange(0, 100)
+        current_sound_vol = int(audio_manager._sound_volume * 100)
+        self.sound_slider.setValue(current_sound_vol)
+        self.sound_slider.valueChanged.connect(self._on_sound_volume_changed)
+        
+        # Add label to show percentage? Maybe later. For now just slider.
+        audio_layout.addRow("Sound Effects:", self.sound_slider)
+
+        # Voice Volume Slider
+        self.voice_slider = QtWidgets.QSlider(QtCore.Qt.Orientation.Horizontal)
+        self.voice_slider.setRange(0, 100)
+        current_voice_vol = int(audio_manager._voice_volume * 100)
+        self.voice_slider.setValue(current_voice_vol)
+        self.voice_slider.valueChanged.connect(self._on_voice_volume_changed)
+        audio_layout.addRow("Voice/TTS:", self.voice_slider)
+
+        inner.addWidget(audio_group)
+
         # Password protection
         pwd_group = QtWidgets.QGroupBox("🔐 Password Protection")
         pwd_layout = QtWidgets.QVBoxLayout(pwd_group)
@@ -6546,6 +6579,14 @@ class SettingsTab(QtWidgets.QWidget):
         else:
             self.pwd_status.setText("No password set")
             self.pwd_status.setStyleSheet("color: gray;")
+
+    def _on_sound_volume_changed(self, value: int) -> None:
+        from entitidex.celebration_audio import CelebrationAudioManager
+        CelebrationAudioManager.get_instance().set_sound_volume(value / 100.0)
+
+    def _on_voice_volume_changed(self, value: int) -> None:
+        from entitidex.celebration_audio import CelebrationAudioManager
+        CelebrationAudioManager.get_instance().set_voice_volume(value / 100.0)
 
     def _switch_user(self) -> None:
         """Switch to a different user profile without restarting the app."""
@@ -22311,12 +22352,14 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         try:
             if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
                 entitidex_data = self.blocker.adhd_buster.get("entitidex", {})
-                collected = entitidex_data.get("collected_entity_ids", [])
+                collected = set(entitidex_data.get("collected_entity_ids", []))
                 exceptional_entities = entitidex_data.get("exceptional_entities", {})
-                total_collected = len(collected)
-                exceptional_count = len(exceptional_entities)
-                normal_count = total_collected - exceptional_count
-                total_possible = 45
+                exceptional_ids = set(exceptional_entities.keys()) if isinstance(exceptional_entities, dict) else set(exceptional_entities)
+                
+                # Count normal and exceptional correctly (they're independent)
+                normal_count = len(collected)
+                exceptional_count = len(exceptional_ids)
+                total_possible = 45  # Total entities per theme (9 entities * 5 themes)
                 self.entities_ring.set_progress(normal_count, exceptional_count, total_possible)
                 self.entities_ring.setVisible(True)
         except Exception as e:

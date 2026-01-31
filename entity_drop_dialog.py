@@ -14,6 +14,7 @@ from lottery_animation import LotteryRollDialog
 import random
 from typing import Callable, Optional, Dict, Any
 from app_utils import get_app_dir
+from styled_dialog import styled_info, styled_warning, styled_error
 
 # Path constants for entity SVGs (use helper for PyInstaller compatibility)
 ENTITY_ICONS_PATH = get_app_dir() / "icons" / "entities"
@@ -858,7 +859,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
             # Give the coins
             try:
                 add_coins_callback(coin_amount)
-                QtWidgets.QMessageBox.information(
+                styled_info(
                     self, "💰 Funds Transferred",
                     f"<b>+{coin_amount} coins added!</b><br><br>"
                     f"<i>Chad winks: \"The blockchain has no witnesses.\"</i>"
@@ -872,7 +873,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
                 self._show_chad_gift_surprise(give_entity_callback)
             else:
                 # Just skip normally
-                QtWidgets.QMessageBox.information(
+                styled_info(
                     self, "🤖 Chad Shrugs",
                     "<i>\"Suit yourself, organic. More coins for my secret projects.\"</i>"
                 )
@@ -1014,34 +1015,34 @@ def show_entity_encounter(entity, join_probability: float,
             result = save_callback(entity.id, save_cost)
             if result.get("success"):
                 display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
-                cost_msg = f"\n💰 Cost: {save_cost} coins" if save_cost > 0 else ""
-                QtWidgets.QMessageBox.information(
+                cost_msg = f"<br>💰 Cost: {save_cost} coins" if save_cost > 0 else ""
+                styled_info(
                     parent, "📦 Saved!",
-                    f"{'✨ Exceptional ' if is_exceptional else ''}{display_name} saved for later!\n\n"
-                    f"Open anytime from your Entitidex collection.\n"
+                    f"{'✨ Exceptional ' if is_exceptional else ''}{display_name} saved for later!<br><br>"
+                    f"Open anytime from your Entitidex collection.<br>"
                     f"Your {int(join_probability * 100)}% bonding chance is preserved.{cost_msg}"
                 )
             else:
                 # Check if this is a slot limit issue that could be solved with Finn
                 needs_bookmark = result.get("needs_bookmark", False)
                 if needs_bookmark:
-                    QtWidgets.QMessageBox.warning(
+                    styled_warning(
                         parent, "📦 Save Slots Full!",
-                        "You've reached the maximum of 3 save slots!\n\n"
-                        "💡 TIP: Bond with 'Living Bookmark Finn' in the\n"
-                        "📚 Scholar theme to unlock more save slots!\n\n"
-                        "• Normal Finn: 5 free slots + paid expansion\n"
-                        "• Exceptional Finn: 20 free slots + cheap expansion\n\n"
-                        "🦊 Finn is a magical bookmark who helps you\n"
+                        "You've reached the maximum of 3 save slots!<br><br>"
+                        "💡 TIP: Bond with 'Living Bookmark Finn' in the<br>"
+                        "📚 Scholar theme to unlock more save slots!<br><br>"
+                        "• Normal Finn: 5 free slots + paid expansion<br>"
+                        "• Exceptional Finn: 20 free slots + cheap expansion<br><br>"
+                        "🦊 Finn is a magical bookmark who helps you<br>"
                         "remember more encounters for later!"
                     )
                 else:
-                    QtWidgets.QMessageBox.warning(
+                    styled_warning(
                         parent, "Save Failed",
                         result.get("message", "Could not save encounter.")
                     )
         except Exception as e:
-            QtWidgets.QMessageBox.warning(parent, "Error", f"Could not save: {e}")
+            styled_warning(parent, "Error", f"Could not save: {e}")
         return
     
     if not dialog.accepted_bond:
@@ -1126,7 +1127,7 @@ def show_entity_encounter(entity, join_probability: float,
         result_is_exceptional = result.get("is_exceptional", is_exceptional)
         exceptional_colors = result.get("exceptional_colors", None)
     except Exception as e:
-        QtWidgets.QMessageBox.critical(parent, "Error", f"Bonding error: {str(e)}")
+        styled_error(parent, "Error", f"Bonding error: {str(e)}")
         return
 
     # 3. Calculate visualization roll to match the result
@@ -1172,9 +1173,9 @@ def show_entity_encounter(entity, join_probability: float,
     elif not success and result.get("consecutive_fails", 0) > 0:
         fails = result["consecutive_fails"]
         if fails % 3 == 0:  # Only annoy user occasionally
-             QtWidgets.QMessageBox.information(
+             styled_info(
                  parent, "Bond Failed", 
-                 f"Don't worry! Pity bonus is building up.\nConsecutive fails: {fails}"
+                 f"Don't worry! Pity bonus is building up.<br>Consecutive fails: {fails}"
              )
     
     # 6. Special handling for Vintage Microscope (scientist_005) - show tip and coin bonus

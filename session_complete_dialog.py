@@ -219,11 +219,21 @@ class SessionCompleteDialog(StyledDialog):
             item_label.setStyleSheet("color: #FFD700; font-weight: bold; font-size: 13px; font-style: italic;")
             rewards_layout.addWidget(item_label)
         
-        # Streak
+        # Streak (with entity perk save notification)
         if self.rewards.get("streak_maintained"):
-            streak_label = QtWidgets.QLabel(f"🔥 Streak: {self.rewards.get('current_streak', 1)} days")
-            streak_label.setStyleSheet("color: #f44336; font-weight: bold; font-size: 13px;")
-            rewards_layout.addWidget(streak_label)
+            streak_count = self.rewards.get('current_streak', 1)
+            if self.rewards.get("entity_streak_saved"):
+                # Streak was saved by Compass Rose perk!
+                streak_label = QtWidgets.QLabel(f"🔥 Streak SAVED: {streak_count} days")
+                streak_label.setStyleSheet("color: #f44336; font-weight: bold; font-size: 13px;")
+                rewards_layout.addWidget(streak_label)
+                save_note = QtWidgets.QLabel("  ✨ Brass Compass protected your streak!")
+                save_note.setStyleSheet("color: #7FDBFF; font-size: 11px; font-style: italic;")
+                rewards_layout.addWidget(save_note)
+            else:
+                streak_label = QtWidgets.QLabel(f"🔥 Streak: {streak_count} days")
+                streak_label.setStyleSheet("color: #f44336; font-weight: bold; font-size: 13px;")
+                rewards_layout.addWidget(streak_label)
         
         # City construction contribution preview
         city_construction = self.rewards.get("city_construction")

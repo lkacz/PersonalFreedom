@@ -39,7 +39,7 @@ from entitidex import (
     preload_celebration_sounds,
 )
 from entitidex.entity_perks import calculate_active_perks, ENTITY_PERKS, PerkType, get_perk_description, get_perk_explanation
-from styled_dialog import add_tab_help_button
+from styled_dialog import add_tab_help_button, styled_info, styled_warning, styled_question
 from app_utils import get_app_dir
 
 
@@ -2483,17 +2483,22 @@ class EntitidexTab(QtWidgets.QWidget):
         entities_sorted = sorted(entities, key=lambda e: e.power)
         
         # Calculate progress - count normal and exceptional separately
+        # You can collect each variant independently!
         collected_normal = 0
         collected_exceptional = 0
         encountered_count = 0
         
         for entity in entities_sorted:
+            # Check normal collection
             if self.progress.is_collected(entity.id):
                 collected_normal += 1
-                if self.progress.is_exceptional(entity.id):
-                    collected_exceptional += 1
-            elif self.progress.is_encountered(entity.id):
-                encountered_count += 1
+            # Check exceptional collection (independent of normal!)
+            if self.progress.is_exceptional(entity.id):
+                collected_exceptional += 1
+            # Encountered but not collected either way
+            if not self.progress.is_collected(entity.id) and not self.progress.is_exceptional(entity.id):
+                if self.progress.is_encountered(entity.id):
+                    encountered_count += 1
         
         total_entities = len(entities_sorted)
         total_slots = total_entities * 2  # Normal + Exceptional for each
@@ -2664,25 +2669,38 @@ class EntitidexTab(QtWidgets.QWidget):
         active_perks = calculate_active_perks(self.progress)
         
         if not active_perks:
-            QtWidgets.QMessageBox.information(self, "No Active Perks", 
-                "Collect entities to unlock passive perks!\n\n"
+            styled_info(self, "No Active Perks", 
+                "Collect entities to unlock passive perks!<br><br>"
                 "Each collected entity grants a bonus to power, coins, XP, or luck.")
             return
 
         # Build contributor mapping: perk_type -> list of (entity_id, value, is_exceptional)
+        # When you have BOTH normal AND exceptional, they both contribute
         perk_contributors: dict = {}
         collected = self.progress.collected_entity_ids or set()
         exceptional = self.progress.exceptional_entities or {}
+        exceptional_ids = set(exceptional.keys()) if isinstance(exceptional, dict) else set(exceptional)
         
-        for entity_id in collected:
+        # Get all unique entity IDs from both collections
+        all_entity_ids = collected | exceptional_ids
+        
+        for entity_id in all_entity_ids:
             perks = ENTITY_PERKS.get(entity_id)
             if perks:
-                is_exc = entity_id in exceptional
+                has_normal = entity_id in collected
+                has_exceptional = entity_id in exceptional_ids
+                
                 for perk in perks:
-                    value = perk.exceptional_value if is_exc else perk.normal_value
                     if perk.perk_type not in perk_contributors:
                         perk_contributors[perk.perk_type] = []
-                    perk_contributors[perk.perk_type].append((entity_id, value, is_exc))
+                    
+                    # Add normal variant contribution
+                    if has_normal:
+                        perk_contributors[perk.perk_type].append((entity_id, perk.normal_value, False))
+                    
+                    # Add exceptional variant contribution (stacks!)
+                    if has_exceptional:
+                        perk_contributors[perk.perk_type].append((entity_id, perk.exceptional_value, True))
 
         # Create dialog
         dialog = QtWidgets.QDialog(self)
@@ -2891,18 +2909,18 @@ class EntitidexTab(QtWidgets.QWidget):
         from gamification import get_saved_encounters, open_saved_encounter
         
         if not hasattr(self.blocker, 'adhd_buster'):
-            QtWidgets.QMessageBox.warning(self, "Error", "Could not access saved encounters.")
+            styled_warning(self, "Error", "Could not access saved encounters.")
             return
         
         saved_list = get_saved_encounters(self.blocker.adhd_buster)
         
         if not saved_list:
-            QtWidgets.QMessageBox.information(
+            styled_info(
                 self, "📦 No Saved Encounters",
-                "You don't have any saved encounters yet!\n\n"
-                "When you encounter an entity during a focus session,\n"
-                "you can choose 'Save' to keep it for later.\n\n"
-                "Saved encounters preserve your bonding chance\n"
+                "You don't have any saved encounters yet!<br><br>"
+                "When you encounter an entity during a focus session,<br>"
+                "you can choose 'Save' to keep it for later.<br><br>"
+                "Saved encounters preserve your bonding chance<br>"
                 "so you can open them when you're ready!"
             )
             return
@@ -3106,15 +3124,15 @@ class EntitidexTab(QtWidgets.QWidget):
             
             def on_recalc():
                 # Confirm recalculation
-                confirm = QtWidgets.QMessageBox.question(
+                confirm = styled_question(
                     parent_dialog, "🤖 Chad's Optimization",
-                    f"Pay <b>{cost} coins</b> to boost bonding chance?\n\n"
-                    f"📈 <b>{chance_pct}%</b> ➔ <b>{potential_pct}%</b>\n\n"
+                    f"Pay <b>{cost} coins</b> to boost bonding chance?<br><br>"
+                    f"📈 <b>{chance_pct}%</b> ➔ <b>{potential_pct}%</b><br><br>"
                     f"<i>(Based on your increased power level)</i>",
-                    QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+                    ["Yes", "No"]
                 )
                 
-                if confirm == QtWidgets.QMessageBox.Yes:
+                if confirm == "Yes":
                     parent_dialog.accept()
                     self._open_saved_encounter_flow(idx, recalculate=True)
             
@@ -3142,7 +3160,7 @@ class EntitidexTab(QtWidgets.QWidget):
         # Get the saved encounter info first
         saved_list = get_saved_encounters(self.blocker.adhd_buster)
         if index >= len(saved_list):
-            QtWidgets.QMessageBox.warning(self, "Error", "Saved encounter not found.")
+            styled_warning(self, "Error", "Saved encounter not found.")
             return
         
         item = saved_list[index]

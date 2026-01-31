@@ -32,7 +32,7 @@ except ImportError:
     QWebEnginePage = None
 
 from app_utils import get_app_dir
-from styled_dialog import StyledDialog, add_tab_help_button
+from styled_dialog import StyledDialog, add_tab_help_button, styled_info, styled_warning, styled_question
 from gamification import get_level_from_xp
 
 # Import city sounds with graceful fallback
@@ -2077,21 +2077,20 @@ class InitiateConstructionDialog(StyledDialog):
         """Remove the placed building before construction starts."""
         building_name = self.building.get("name", "this building")
         
-        reply = QtWidgets.QMessageBox.question(
+        reply = styled_question(
             self,
             "Remove Building?",
-            f"Remove {building_name} from this plot?\n\n"
+            f"Remove {building_name} from this plot?<br><br>"
             "(No resources have been invested yet, so nothing to refund.)",
-            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-            QtWidgets.QMessageBox.No
+            ["Yes", "No"]
         )
         
-        if reply == QtWidgets.QMessageBox.Yes:
+        if reply == "Yes":
             removed = remove_building(self.adhd_buster, self.row, self.col, refund=False)
             if removed:
                 self.accept()
             else:
-                QtWidgets.QMessageBox.warning(self, "Error", "Could not remove building.")
+                styled_warning(self, "Error", "Could not remove building.")
     
     def _start_construction(self):
         """Initiate construction - pay materials and start building."""
@@ -2111,7 +2110,7 @@ class InitiateConstructionDialog(StyledDialog):
             activity_needed = effort_req.get("activity", 0)
             focus_needed = effort_req.get("focus", 0)
             
-            QtWidgets.QMessageBox.information(
+            styled_info(
                 self,
                 "Construction Started! 🏗️",
                 f"<h3>🔨 {result.get('building_name')} is now under construction!</h3>"
@@ -2133,10 +2132,10 @@ class InitiateConstructionDialog(StyledDialog):
             )
             self.accept()
         else:
-            QtWidgets.QMessageBox.warning(
+            styled_warning(
                 self,
                 "Cannot Start",
-                f"Could not start construction:\n{result.get('error', 'Unknown error')}"
+                f"Could not start construction:<br>{result.get('error', 'Unknown error')}"
             )
 
 
@@ -2437,12 +2436,12 @@ class ConstructionProgressDialog(StyledDialog):
                 # Close the dialog
                 self.accept()
             else:
-                QtWidgets.QMessageBox.warning(
+                styled_warning(
                     self, "Error", "Could not cancel construction."
                 )
         except Exception as e:
             _logger.exception(f"Error canceling construction: {e}")
-            QtWidgets.QMessageBox.warning(
+            styled_warning(
                 self, "Error", f"Failed to cancel: {e}"
             )
 
@@ -3228,12 +3227,12 @@ class BuildingDetailsDialog(StyledDialog):
         if success:
             # Play ascending anticipation sound
             play_upgrade_started(self.building_id)
-            QtWidgets.QMessageBox.information(
+            styled_info(
                 self,
                 "Upgrade Started",
-                f"Upgrading {self.building.get('name')}!\n\n"
-                f"Invest effort to complete:\n"
-                f"🏃 Activity - Log workouts\n"
+                f"Upgrading {self.building.get('name')}!<br><br>"
+                f"Invest effort to complete:<br>"
+                f"🏃 Activity - Log workouts<br>"
                 f"🎯 Focus - Complete focus sessions"
             )
             self.accept()
@@ -3255,17 +3254,16 @@ class BuildingDetailsDialog(StyledDialog):
         
         refund_text = "  ".join(refund_preview) if refund_preview else "None"
         
-        reply = QtWidgets.QMessageBox.question(
+        reply = styled_question(
             self,
             "Confirm Demolish",
-            f"Are you sure you want to demolish {self.building.get('name')}?\n\n"
-            f"Resource refund ({DEMOLISH_REFUND_PERCENT}%): {refund_text}\n\n"
+            f"Are you sure you want to demolish {self.building.get('name')}?<br><br>"
+            f"Resource refund ({DEMOLISH_REFUND_PERCENT}%): {refund_text}<br><br>"
             "You will free up a building slot.",
-            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-            QtWidgets.QMessageBox.No
+            ["Yes", "No"]
         )
         
-        if reply == QtWidgets.QMessageBox.Yes:
+        if reply == "Yes":
             removed = remove_building(self.adhd_buster, self.row, self.col)
             if removed:
                 # Play gentle demolish sound
