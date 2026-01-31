@@ -1592,7 +1592,7 @@ class LogPastSessionDialog(StyledDialog):
         layout.addWidget(honesty_label)
         
         # Buttons using the base class helper
-        self.add_button_row(
+        button_widgets = self.add_button_row(
             layout,
             [
                 ("Cancel", "default", self.reject),
@@ -1601,11 +1601,13 @@ class LogPastSessionDialog(StyledDialog):
         )
         
         # Store reference to log button for enabling/disabling
-        # Find the primary button we just created
-        for child in self.findChildren(QtWidgets.QPushButton):
-            if child.text() == "✅ Log Session":
-                self.log_btn = child
-                break
+        self.log_btn = button_widgets.get("✅ Log Session")
+        if not self.log_btn:
+            # Fallback: Find the primary button we just created
+            for child in self.findChildren(QtWidgets.QPushButton):
+                if child.text() == "✅ Log Session":
+                    self.log_btn = child
+                    break
         
         # Initial preview update
         self._update_preview()
@@ -2906,9 +2908,10 @@ class TimerTab(QtWidgets.QWidget):
         
         # 🚀 DEEP WORK BONUS: Apply multiplier for longer sessions
         deep_work_multiplier = 1.0
+        deep_work_description = ""
         try:
             from gamification import get_deep_work_multiplier
-            deep_work_multiplier = get_deep_work_multiplier(session_minutes)
+            deep_work_multiplier, deep_work_description = get_deep_work_multiplier(session_minutes)
             if deep_work_multiplier > 1.0:
                 coins_earned = int(coins_earned * deep_work_multiplier)
         except ImportError:
@@ -3094,7 +3097,7 @@ class TimerTab(QtWidgets.QWidget):
             # Check for building slot unlocks
             unlocks = []
             try:
-                from city import get_slot_unlock_at_level, CITY_AVAILABLE
+                from city import get_slot_unlock_at_level
                 if CITY_AVAILABLE:
                     slot_info = get_slot_unlock_at_level(new_level, old_level)
                     if slot_info.get("unlocked"):
@@ -4066,11 +4069,15 @@ class TimerTab(QtWidgets.QWidget):
 
     def _show_log_past_session_dialog(self) -> None:
         """Show dialog to log a past focus session retroactively."""
-        dialog = LogPastSessionDialog(self.blocker, parent=self.window())
-        result = dialog.exec()
-        session_minutes = dialog.get_session_minutes() if result == QtWidgets.QDialog.Accepted else 0
-        dialog.hide()  # Explicitly hide before deletion
-        dialog.deleteLater()  # Ensure dialog is cleaned up
+        try:
+            dialog = LogPastSessionDialog(self.blocker, parent=self.window())
+            result = dialog.exec()
+            session_minutes = dialog.get_session_minutes() if result == QtWidgets.QDialog.Accepted else 0
+            dialog.hide()  # Explicitly hide before deletion
+            dialog.deleteLater()  # Ensure dialog is cleaned up
+        except Exception as e:
+            logger.error(f"Error creating/showing LogPastSessionDialog: {e}", exc_info=True)
+            return
         
         if result == QtWidgets.QDialog.Accepted and session_minutes > 0:
             # Update stats for the past session
@@ -26701,11 +26708,14 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         should_reward = False
         reward_reason = ""
         
+        is_welcome_gift = False
+        
         if not first_launch:
             # First time ever - always reward
             should_reward = True
             reward_reason = "🎁 Welcome Gift!"
             self.blocker.adhd_buster["first_launch_complete"] = True
+            is_welcome_gift = True
         else:
             # Subsequent launches - 10% daily chance
             import random
@@ -26726,8 +26736,23 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             # Get active story for themed item generation
             active_story = self.blocker.adhd_buster.get("active_story", "warrior")
             
-            # Generate boosted item with correct story theme
-            item = generate_daily_reward_item(self.blocker.adhd_buster, story_id=active_story)
+            # Generate item
+            if is_welcome_gift:
+                # Welcome Gift: Fixed at Uncommon rarity to ensure good progression start
+                # (Prevents "too lucky" starts that spoil early progression feel)
+                # Using generate_item directly instead of generate_daily_reward_item
+                item = generate_item(rarity="Uncommon", story_id=active_story)
+            else:
+                # Daily Drop: Boosted tier (Current + 1)
+                # Cap daily rewards at "Rare" to prevent easy farming of endgame gear
+                current_tier = get_current_tier(self.blocker.adhd_buster)
+                boosted_tier = get_boosted_rarity(current_tier)
+                
+                # Rarity cap logic (Common < Uncommon < Rare < Epic < Legendary)
+                if boosted_tier in ["Epic", "Legendary"]:
+                    boosted_tier = "Rare"
+                    
+                item = generate_item(rarity=boosted_tier, story_id=active_story)
             
             # Ensure item has all required fields
             if "obtained_at" not in item:

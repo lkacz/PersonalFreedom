@@ -654,9 +654,12 @@ class TestScreenOffBonusRarity(unittest.TestCase):
         self.get_rarity = get_screen_off_bonus_rarity
     
     def test_too_early_returns_none(self) -> None:
-        """Test that before 22:00 gives no bonus (suggestion hidden)."""
-        self.assertIsNone(self.get_rarity("21:59"))
-        self.assertIsNone(self.get_rarity("21:00"))
+        """Test that before 21:00 gives no bonus (suggestion hidden)."""
+        # 21:00 is now valid start time
+        self.assertIsNotNone(self.get_rarity("21:00"))
+        self.assertIsNotNone(self.get_rarity("21:59"))
+        # Before 21:00 should be None
+        self.assertIsNone(self.get_rarity("20:59"))
         self.assertIsNone(self.get_rarity("19:00"))
 
     def test_2200_window_legendary(self) -> None:

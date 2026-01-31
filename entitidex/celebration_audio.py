@@ -401,8 +401,9 @@ class CelebrationAudioManager(QObject):
         try:
             self._sink = QAudioSink(self._audio_device, self._audio_format)
             self._sink.setVolume(0.4)  # Lower volume for comfortable listening
-            # Connect to state changes to detect playback completion
-            self._sink.stateChanged.connect(self._on_state_changed)
+            # Note: stateChanged signal has compatibility issues with PySide6
+            # We skip the connection to avoid TypeError with QAudio::State
+            # Instead, we'll use a timer-based approach to release the device
             _logger.debug("Audio sink created for playback")
             return True
         except Exception as e:
@@ -411,15 +412,22 @@ class CelebrationAudioManager(QObject):
             return False
     
     def _on_state_changed(self, state) -> None:
-        """Handle audio sink state changes to release device when done."""
-        from PySide6.QtMultimedia import QAudio
+        """Handle audio sink state changes to release device when done.
         
-        if state == QAudio.State.IdleState:
-            # Playback finished - schedule device release
-            self._schedule_release()
-        elif state == QAudio.State.StoppedState:
-            # Explicitly stopped - also schedule release
-            self._schedule_release()
+        Note: This method is kept for compatibility but the signal connection
+        is disabled due to PySide6 QAudio::State conversion issues.
+        """
+        try:
+            from PySide6.QtMultimedia import QAudio
+            
+            if state == QAudio.State.IdleState:
+                # Playback finished - schedule device release
+                self._schedule_release()
+            elif state == QAudio.State.StoppedState:
+                # Explicitly stopped - also schedule release
+                self._schedule_release()
+        except Exception as e:
+            _logger.debug(f"State changed handler error: {e}")
     
     def _schedule_release(self) -> None:
         """Schedule audio device release after a short delay."""
