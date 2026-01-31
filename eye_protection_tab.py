@@ -610,9 +610,8 @@ class EyeProtectionTab(QtWidgets.QWidget):
         self.owl_icon_label.setFixedSize(40, 40)
         self.owl_icon_label.setStyleSheet("""
             QLabel {
-                background: #333;
-                border: 1px solid #444;
-                border-radius: 4px;
+                background: transparent;
+                border: none;
             }
         """)
         owl_tips_layout.addWidget(self.owl_icon_label)
@@ -1022,21 +1021,17 @@ class EyeProtectionTab(QtWidgets.QWidget):
             if is_exceptional:
                 self.entity_perk_card.setStyleSheet("""
                     QFrame {
-                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 #3d2e4a, stop:1 #261a2f);
-                        border: 2px solid #ba68c8;
-                        border-radius: 10px;
-                        padding: 8px;
+                        background-color: rgba(255, 255, 255, 0.04);
+                        border: 1px solid rgba(186, 104, 200, 0.3);
+                        border-radius: 8px;
                     }
                 """)
             else:
                 self.entity_perk_card.setStyleSheet("""
                     QFrame {
-                        background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 #2e4a3f, stop:1 #1a2f26);
-                        border: 2px solid #66bb6a;
-                        border-radius: 10px;
-                        padding: 8px;
+                        background-color: rgba(255, 255, 255, 0.04);
+                        border: 1px solid rgba(102, 187, 106, 0.3);
+                        border-radius: 8px;
                     }
                 """)
             
@@ -1146,17 +1141,15 @@ class EyeProtectionTab(QtWidgets.QWidget):
                         if is_exceptional:
                             self.owl_icon_label.setStyleSheet("""
                                 QLabel {
-                                    background: #333;
-                                    border: 2px solid #ffd700;
-                                    border-radius: 6px;
+                                    background: transparent;
+                                    border: none;
                                 }
                             """)
                         else:
                             self.owl_icon_label.setStyleSheet("""
                                 QLabel {
-                                    background: #333;
-                                    border: 1px solid #444;
-                                    border-radius: 6px;
+                                    background: transparent;
+                                    border: none;
                                 }
                             """)
         except Exception:

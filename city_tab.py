@@ -905,11 +905,12 @@ class CityCell(QtWidgets.QFrame):
                 self.progress_bar.setValue(percent)
                 self.progress_bar.setStyleSheet("""
                     QProgressBar {
-                        background: #333;
+                        background: rgba(255, 255, 255, 0.08);
+                        border: none;
                         border-radius: 3px;
                     }
                     QProgressBar::chunk {
-                        background: #4CAF50;
+                        background: rgba(76, 175, 80, 0.7);
                         border-radius: 3px;
                     }
                 """)
@@ -919,11 +920,12 @@ class CityCell(QtWidgets.QFrame):
             self.progress_bar.setValue(0)
             self.progress_bar.setStyleSheet("""
                 QProgressBar {
-                    background: #333;
+                    background: rgba(255, 255, 255, 0.08);
+                    border: none;
                     border-radius: 3px;
                 }
                 QProgressBar::chunk {
-                    background: #888;
+                    background: rgba(136, 136, 136, 0.7);
                     border-radius: 3px;
                 }
             """)
