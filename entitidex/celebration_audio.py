@@ -17,8 +17,8 @@ import math
 import struct
 from typing import Dict, List, Optional, Tuple
 
-from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QObject, QSettings
-from PySide6.QtMultimedia import QAudioDevice, QAudioFormat, QAudioSink, QMediaDevices
+from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QObject, QSettings, Slot
+from PySide6.QtMultimedia import QAudio, QAudioDevice, QAudioFormat, QAudioSink, QMediaDevices
 
 _logger = logging.getLogger(__name__)
 
@@ -430,10 +430,9 @@ class CelebrationAudioManager(QObject):
             self._sink = None
             return False
     
-    def _on_state_changed(self, state) -> None:
+    @Slot(QAudio.State)
+    def _on_state_changed(self, state: QAudio.State) -> None:
         """Handle audio sink state changes to release device when done."""
-        from PySide6.QtMultimedia import QAudio
-        
         if state == QAudio.State.IdleState:
             # Playback finished - schedule device release
             self._schedule_release()
