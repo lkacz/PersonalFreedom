@@ -9044,31 +9044,31 @@ class WeightTab(QtWidgets.QWidget):
                 card = QtWidgets.QFrame()
                 is_exceptional = entity_data.get("is_exceptional", False)
                 
-                # Style cards - exceptional gets slightly lighter border
+                # Style cards - match Entity Patrons miniature style
                 if is_exceptional:
                     card.setStyleSheet("""
                         QFrame {
-                            background-color: rgba(255, 215, 0, 0.08);
-                            border: 1px solid rgba(255, 215, 0, 0.15);
+                            background-color: #2a2a2a;
+                            border: 1px solid #555;
                             border-radius: 6px;
                             padding: 4px;
                         }
                         QFrame:hover {
-                            background-color: rgba(255, 215, 0, 0.15);
-                            border: 1px solid rgba(255, 215, 0, 0.3);
+                            border-color: #666;
+                            background-color: #333;
                         }
                     """)
                 else:
                     card.setStyleSheet("""
                         QFrame {
-                            background-color: rgba(255, 255, 255, 0.04);
-                            border: 1px solid rgba(255, 255, 255, 0.06);
+                            background-color: #2a2a2a;
+                            border: 1px solid #444;
                             border-radius: 6px;
                             padding: 4px;
                         }
                         QFrame:hover {
-                            background-color: rgba(255, 255, 255, 0.08);
-                            border: 1px solid rgba(255, 255, 255, 0.15);
+                            border-color: #7986cb;
+                            background-color: #333;
                         }
                     """)
                 
