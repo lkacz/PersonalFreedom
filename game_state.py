@@ -108,6 +108,11 @@ class GameStateManager(QtCore.QObject):
     # Eye protection signals
     eye_routine_changed = QtCore.Signal(int)  # Today's eye routine count
     
+    # Health tracking signals (for timeline integration)
+    sleep_entry_changed = QtCore.Signal()  # Sleep entry added/modified
+    activity_entry_changed = QtCore.Signal()  # Activity entry added/modified
+    weight_entry_changed = QtCore.Signal()  # Weight entry added/modified
+    
     # Entitidex signals
     entity_collected = QtCore.Signal(str)  # Entity ID collected
     entities_changed = QtCore.Signal()  # Any entitidex change
@@ -938,6 +943,30 @@ class GameStateManager(QtCore.QObject):
         self._log_change("eye_routine_changed", str(count))
         self._emit(self.eye_routine_changed, count)
     
+    def notify_sleep_entry_changed(self) -> None:
+        """Notify that a sleep entry was added or modified.
+        
+        Used to trigger timeline refresh for sleep lane visualization.
+        """
+        self._log_change("sleep_entry_changed", "")
+        self._emit(self.sleep_entry_changed)
+    
+    def notify_activity_entry_changed(self) -> None:
+        """Notify that an activity entry was added or modified.
+        
+        Used to trigger timeline refresh for activity lane visualization.
+        """
+        self._log_change("activity_entry_changed", "")
+        self._emit(self.activity_entry_changed)
+    
+    def notify_weight_entry_changed(self) -> None:
+        """Notify that a weight entry was added or modified.
+        
+        Used to trigger timeline refresh for weight lane visualization.
+        """
+        self._log_change("weight_entry_changed", "")
+        self._emit(self.weight_entry_changed)
+
     def notify_focus_time_changed(self, seconds: int = None) -> None:
         """Notify that today's focus time changed."""
         if seconds is None:
