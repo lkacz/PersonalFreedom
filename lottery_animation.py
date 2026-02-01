@@ -433,20 +433,27 @@ class LotteryRollDialog(QtWidgets.QDialog):
         self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
         
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(4, 4, 4, 4)  # Small margin for shadow
         
         # Main container
         container = QtWidgets.QWidget()
         container.setStyleSheet("""
             QWidget {
                 background: #1a1a2e;
-                border: 2px solid #4a4a6a;
+                border: none;
                 border-radius: 12px;
             }
         """)
+        # Apply drop shadow to container for depth without borders
+        shadow = QtWidgets.QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 120))
+        shadow.setOffset(0, 4)
+        container.setGraphicsEffect(shadow)
+        
         container_layout = QtWidgets.QVBoxLayout(container)
         container_layout.setSpacing(12)
-        container_layout.setContentsMargins(20, 16, 20, 16)
+        container_layout.setContentsMargins(22, 18, 22, 18)
 
         # Title
         title = QtWidgets.QLabel(self.title_text)
@@ -870,20 +877,27 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
         
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(4, 4, 4, 4)  # Small margin for shadow
         
         # Main container
         container = QtWidgets.QWidget()
         container.setStyleSheet("""
             QWidget {
                 background: #1a1a2e;
-                border: 2px solid #4a4a6a;
+                border: none;
                 border-radius: 12px;
             }
         """)
+        # Apply drop shadow to container for depth without borders
+        shadow = QtWidgets.QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 120))
+        shadow.setOffset(0, 4)
+        container.setGraphicsEffect(shadow)
+        
         container_layout = QtWidgets.QVBoxLayout(container)
         container_layout.setSpacing(12)
-        container_layout.setContentsMargins(24, 16, 24, 16)
+        container_layout.setContentsMargins(24, 18, 24, 18)
 
         # Main title
         self.main_title = QtWidgets.QLabel("🎰 Eye Protection Lottery 🎰")
@@ -898,13 +912,19 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         self.stage1_frame.setStyleSheet("""
             QFrame {
                 background: #252540;
-                border: 2px solid #444;
+                border: none;
                 border-radius: 8px;
             }
         """)
+        # Add subtle shadow for card effect
+        shadow1 = QtWidgets.QGraphicsDropShadowEffect()
+        shadow1.setBlurRadius(10)
+        shadow1.setColor(QtGui.QColor(0, 0, 0, 80))
+        shadow1.setOffset(0, 2)
+        self.stage1_frame.setGraphicsEffect(shadow1)
         self.stage1_frame.setMinimumHeight(120)  # Prevent collapse
         stage1_layout = QtWidgets.QVBoxLayout(self.stage1_frame)
-        stage1_layout.setContentsMargins(12, 8, 12, 8)
+        stage1_layout.setContentsMargins(14, 10, 14, 10)
         
         self.stage1_title = QtWidgets.QLabel("✨ Stage 1: Rolling for Tier...")
         self.stage1_title.setStyleSheet("color: #aaa; font-size: 12px; font-weight: bold;")
@@ -940,13 +960,19 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         self.stage2_frame.setStyleSheet("""
             QFrame {
                 background: #252540;
-                border: 2px solid #333;
+                border: none;
                 border-radius: 8px;
             }
         """)
+        # Add subtle shadow for card effect
+        shadow2 = QtWidgets.QGraphicsDropShadowEffect()
+        shadow2.setBlurRadius(10)
+        shadow2.setColor(QtGui.QColor(0, 0, 0, 80))
+        shadow2.setOffset(0, 2)
+        self.stage2_frame.setGraphicsEffect(shadow2)
         self.stage2_frame.setMinimumHeight(100)  # Prevent collapse
         stage2_layout = QtWidgets.QVBoxLayout(self.stage2_frame)
-        stage2_layout.setContentsMargins(12, 8, 12, 8)
+        stage2_layout.setContentsMargins(14, 10, 14, 10)
         
         self.stage2_title = QtWidgets.QLabel(f"🎲 Stage 2: Claim Roll ({self.drop_chance*100:.0f}% chance)")
         self.stage2_title.setStyleSheet("color: #666; font-size: 12px; font-weight: bold;")
@@ -1569,20 +1595,27 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
         
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(4, 4, 4, 4)  # Small margin for shadow
         
         # Main container
         container = QtWidgets.QWidget()
         container.setStyleSheet("""
             QWidget {
                 background: #1a1a2e;
-                border: 2px solid #4a4a6a;
+                border: none;
                 border-radius: 12px;
             }
         """)
+        # Apply drop shadow to container for depth without borders
+        shadow = QtWidgets.QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 120))
+        shadow.setOffset(0, 4)
+        container.setGraphicsEffect(shadow)
+        
         container_layout = QtWidgets.QVBoxLayout(container)
         container_layout.setSpacing(12)
-        container_layout.setContentsMargins(24, 16, 24, 16)
+        container_layout.setContentsMargins(24, 18, 24, 18)
 
         # Header
         header = QtWidgets.QLabel("🎁 Priority Complete! Rolling for Lucky Gift... 🎁")
@@ -1601,13 +1634,19 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         self.stage1_frame.setStyleSheet("""
             QFrame {
                 background: #252540;
-                border: 2px solid #444;
+                border: none;
                 border-radius: 8px;
             }
         """)
+        # Add subtle shadow for card effect
+        shadow1 = QtWidgets.QGraphicsDropShadowEffect()
+        shadow1.setBlurRadius(10)
+        shadow1.setColor(QtGui.QColor(0, 0, 0, 80))
+        shadow1.setOffset(0, 2)
+        self.stage1_frame.setGraphicsEffect(shadow1)
         self.stage1_frame.setMinimumHeight(100)  # Prevent collapse
         stage1_layout = QtWidgets.QVBoxLayout(self.stage1_frame)
-        stage1_layout.setContentsMargins(12, 8, 12, 8)
+        stage1_layout.setContentsMargins(14, 10, 14, 10)
         
         self.stage1_title = QtWidgets.QLabel(f"🎰 Stage 1: Lucky Roll ({self.win_chance*100:.0f}% chance)")
         self.stage1_title.setStyleSheet("color: #aaa; font-size: 12px; font-weight: bold;")
@@ -1639,13 +1678,19 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         self.stage2_frame.setStyleSheet("""
             QFrame {
                 background: #252540;
-                border: 2px solid #333;
+                border: none;
                 border-radius: 8px;
             }
         """)
+        # Add subtle shadow for card effect
+        shadow2 = QtWidgets.QGraphicsDropShadowEffect()
+        shadow2.setBlurRadius(10)
+        shadow2.setColor(QtGui.QColor(0, 0, 0, 80))
+        shadow2.setOffset(0, 2)
+        self.stage2_frame.setGraphicsEffect(shadow2)
         self.stage2_frame.setMinimumHeight(110)  # Prevent collapse
         stage2_layout = QtWidgets.QVBoxLayout(self.stage2_frame)
-        stage2_layout.setContentsMargins(12, 8, 12, 8)
+        stage2_layout.setContentsMargins(14, 10, 14, 10)
         
         self.stage2_title = QtWidgets.QLabel("✨ Stage 2: Rarity Roll")
         self.stage2_title.setStyleSheet("color: #666; font-size: 12px; font-weight: bold;")
@@ -2529,19 +2574,26 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
         
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(4, 4, 4, 4)  # Small margin for shadow
         
         container = QtWidgets.QWidget()
         container.setStyleSheet("""
             QWidget {
                 background: #1a1a2e;
-                border: 2px solid #4a4a6a;
+                border: none;
                 border-radius: 12px;
             }
         """)
+        # Apply drop shadow to container for depth without borders
+        shadow = QtWidgets.QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 120))
+        shadow.setOffset(0, 4)
+        container.setGraphicsEffect(shadow)
+        
         container_layout = QtWidgets.QVBoxLayout(container)
-        container_layout.setSpacing(10)
-        container_layout.setContentsMargins(24, 16, 24, 16)
+        container_layout.setSpacing(12)
+        container_layout.setContentsMargins(24, 18, 24, 18)
 
         # Header - use custom title if provided
         if self.custom_title:
@@ -2564,11 +2616,17 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         # Stage 1: Tier Roll
         self.stage1_frame = QtWidgets.QFrame()
         self.stage1_frame.setStyleSheet("""
-            QFrame { background: #252540; border: 2px solid #444; border-radius: 8px; }
+            QFrame { background: #252540; border: none; border-radius: 8px; }
         """)
+        # Add subtle shadow for card effect
+        shadow1 = QtWidgets.QGraphicsDropShadowEffect()
+        shadow1.setBlurRadius(10)
+        shadow1.setColor(QtGui.QColor(0, 0, 0, 80))
+        shadow1.setOffset(0, 2)
+        self.stage1_frame.setGraphicsEffect(shadow1)
         self.stage1_frame.setMinimumHeight(120)  # Prevent collapse
         stage1_layout = QtWidgets.QVBoxLayout(self.stage1_frame)
-        stage1_layout.setContentsMargins(12, 8, 12, 8)
+        stage1_layout.setContentsMargins(14, 12, 14, 12)
         
         self.stage1_title = QtWidgets.QLabel("✨ Stage 1: Rolling for Rarity...")
         self.stage1_title.setStyleSheet("color: #aaa; font-size: 12px; font-weight: bold;")
@@ -2596,11 +2654,17 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         # Stage 2: Success/Fail
         self.stage2_frame = QtWidgets.QFrame()
         self.stage2_frame.setStyleSheet("""
-            QFrame { background: #252540; border: 2px solid #333; border-radius: 8px; }
+            QFrame { background: #252540; border: none; border-radius: 8px; }
         """)
+        # Add subtle shadow for card effect
+        shadow2 = QtWidgets.QGraphicsDropShadowEffect()
+        shadow2.setBlurRadius(10)
+        shadow2.setColor(QtGui.QColor(0, 0, 0, 80))
+        shadow2.setOffset(0, 2)
+        self.stage2_frame.setGraphicsEffect(shadow2)
         self.stage2_frame.setMinimumHeight(100)  # Prevent collapse
         stage2_layout = QtWidgets.QVBoxLayout(self.stage2_frame)
-        stage2_layout.setContentsMargins(12, 8, 12, 8)
+        stage2_layout.setContentsMargins(14, 12, 14, 12)
         
         self.stage2_title = QtWidgets.QLabel(f"🎲 Stage 2: Will you get it? ({self.success_threshold*100:.0f}% chance)")
         self.stage2_title.setStyleSheet("color: #666; font-size: 12px; font-weight: bold;")
@@ -3373,14 +3437,33 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
         
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(15)
-        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setContentsMargins(4, 4, 4, 4)  # Small margin for shadow
+        
+        # Main container
+        container = QtWidgets.QWidget()
+        container.setStyleSheet("""
+            QWidget {
+                background: #1a1a2e;
+                border: none;
+                border-radius: 12px;
+            }
+        """)
+        # Apply drop shadow to container for depth without borders
+        shadow = QtWidgets.QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 120))
+        shadow.setOffset(0, 4)
+        container.setGraphicsEffect(shadow)
+        
+        container_layout = QtWidgets.QVBoxLayout(container)
+        container_layout.setSpacing(12)
+        container_layout.setContentsMargins(24, 18, 24, 18)
         
         # Header
         header = QtWidgets.QLabel(f"💧 Glass #{self.glass_number} Lottery")
         header.setFont(QtGui.QFont("Arial", 16, QtGui.QFont.Bold))
         header.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(header)
+        container_layout.addWidget(header)
         
         # Success rate info
         success_info = QtWidgets.QLabel(f"🎲 Success rate: {self.success_rate*100:.0f}%")
@@ -3395,13 +3478,22 @@ class WaterLotteryDialog(QtWidgets.QDialog):
             f"Higher glasses = better odds!\n"
             f"Glass 1: ~50% | Glass 8: ~85%"
         )
-        layout.addWidget(success_info)
+        container_layout.addWidget(success_info)
         
         # Stage 1: Tier Roll
         self.stage1_frame = QtWidgets.QFrame()
-        self.stage1_frame.setFrameStyle(QtWidgets.QFrame.StyledPanel)
+        self.stage1_frame.setStyleSheet("""
+            QFrame { background: #252540; border: none; border-radius: 8px; }
+        """)
+        # Add subtle shadow for card effect
+        shadow1 = QtWidgets.QGraphicsDropShadowEffect()
+        shadow1.setBlurRadius(10)
+        shadow1.setColor(QtGui.QColor(0, 0, 0, 80))
+        shadow1.setOffset(0, 2)
+        self.stage1_frame.setGraphicsEffect(shadow1)
         self.stage1_frame.setMinimumHeight(100)  # Prevent collapse
         stage1_layout = QtWidgets.QVBoxLayout(self.stage1_frame)
+        stage1_layout.setContentsMargins(14, 10, 14, 10)
         
         self.stage1_title = QtWidgets.QLabel(f"✨ Stage 1: What Tier? (Glass #{self.glass_number})")
         self.stage1_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
@@ -3425,15 +3517,23 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.stage1_result.setFont(QtGui.QFont("Arial", 10))
         stage1_layout.addWidget(self.stage1_result)
         
-        layout.addWidget(self.stage1_frame)
+        container_layout.addWidget(self.stage1_frame)
         
         # Stage 2: Win/Lose Roll (initially dimmed)
         self.stage2_frame = QtWidgets.QFrame()
-        self.stage2_frame.setFrameStyle(QtWidgets.QFrame.StyledPanel)
+        self.stage2_frame.setStyleSheet("""
+            QFrame { background: #252540; border: none; border-radius: 8px; }
+        """)
+        # Add subtle shadow for card effect
+        shadow2 = QtWidgets.QGraphicsDropShadowEffect()
+        shadow2.setBlurRadius(10)
+        shadow2.setColor(QtGui.QColor(0, 0, 0, 80))
+        shadow2.setOffset(0, 2)
+        self.stage2_frame.setGraphicsEffect(shadow2)
         self.stage2_frame.setMinimumHeight(100)  # Prevent collapse
         self.stage2_frame.setEnabled(False)
-        self.stage2_frame.setStyleSheet("QFrame { opacity: 0.4; }")
         stage2_layout = QtWidgets.QVBoxLayout(self.stage2_frame)
+        stage2_layout.setContentsMargins(14, 10, 14, 10)
         
         self.stage2_title = QtWidgets.QLabel(f"🎲 Stage 2: Win or Lose? ({self.success_rate*100:.0f}% chance)")
         self.stage2_title.setFont(QtGui.QFont("Arial", 12, QtGui.QFont.Bold))
@@ -3446,7 +3546,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.stage2_result.setFont(QtGui.QFont("Arial", 10))
         stage2_layout.addWidget(self.stage2_result)
         
-        layout.addWidget(self.stage2_frame)
+        container_layout.addWidget(self.stage2_frame)
         
         # Final result area
         self.final_result = QtWidgets.QLabel("")
@@ -3454,10 +3554,10 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.final_result.setAlignment(QtCore.Qt.AlignCenter)
         self.final_result.setMinimumHeight(40)  # Reserve space
         self.final_result.hide()
-        layout.addWidget(self.final_result)
+        container_layout.addWidget(self.final_result)
         
         # Stretch to absorb space changes
-        layout.addStretch(1)
+        container_layout.addStretch(1)
         
         # Sound toggle
         sound_row = QtWidgets.QHBoxLayout()
@@ -3467,7 +3567,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.sound_toggle.setStyleSheet("color: #666; font-size: 11px;")
         self.sound_toggle.toggled.connect(set_lottery_sound_enabled)
         sound_row.addWidget(self.sound_toggle)
-        layout.addLayout(sound_row)
+        container_layout.addLayout(sound_row)
         
         # Continue button (hidden until animation complete)
         self.continue_btn = QtWidgets.QPushButton("Continue")
@@ -3487,12 +3587,15 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         """)
         self.continue_btn.clicked.connect(self._finish)
         self.continue_btn.hide()
-        layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
+        container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
+        
+        layout.addWidget(container)
     
     def _start_stage_1(self):
         """Start tier roll animation using bounce path (same as merge dialog)."""
         self.current_stage = 1
-        self.stage1_frame.setStyleSheet("QFrame { border: 2px solid #ff9800; }")
+        # Highlight active stage with brighter background
+        self.stage1_frame.setStyleSheet("QFrame { background: #303050; border: none; border-radius: 8px; }")
         
         # Generate bounce path (same as merge dialog)
         self._stage1_path_points = [50.0]
@@ -3577,7 +3680,8 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.stage1_result.setText(f"<b style='color:{color};'>🎯 {self.rolled_tier.upper()}!</b>")
         self.stage1_result.setTextFormat(QtCore.Qt.RichText)
         
-        self.stage1_frame.setStyleSheet("QFrame { border: 2px solid #4caf50; }")
+        # Mark stage1 as complete with success background
+        self.stage1_frame.setStyleSheet("QFrame { background: #2a3a2a; border: none; border-radius: 8px; }")
         
         # Update stage 2 title
         self.stage2_title.setText(f"🎲 Stage 2: Claim your {self.rolled_tier}! ({self.success_rate*100:.0f}% chance)")
@@ -3589,7 +3693,8 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         """Start win/lose roll animation using bounce path (same as merge dialog)."""
         self.current_stage = 2
         self.stage2_frame.setEnabled(True)
-        self.stage2_frame.setStyleSheet("QFrame { border: 2px solid #ff9800; }")
+        # Highlight active stage with brighter background
+        self.stage2_frame.setStyleSheet("QFrame { background: #303050; border: none; border-radius: 8px; }")
         
         # Generate bounce path (same as merge dialog)
         self._stage2_path_points = [50.0]
@@ -3673,7 +3778,8 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         
         if self.won:
             self.stage2_result.setText(f"<b style='color:#4caf50;'>✅ WIN! ({win_roll_pct:.1f}% < {success_pct:.0f}%)</b>")
-            self.stage2_frame.setStyleSheet("QFrame { border: 2px solid #4caf50; }")
+            # Mark stage2 as success with green-tinted background
+            self.stage2_frame.setStyleSheet("QFrame { background: #2a3a2a; border: none; border-radius: 8px; }")
             
             tier_colors = {
                 "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
@@ -3691,7 +3797,8 @@ class WaterLotteryDialog(QtWidgets.QDialog):
             self.final_result.setStyleSheet(f"color: {color};")
         else:
             self.stage2_result.setText(f"<b style='color:#f44336;'>❌ LOSE ({win_roll_pct:.1f}% ≥ {success_pct:.0f}%)</b>")
-            self.stage2_frame.setStyleSheet("QFrame { border: 2px solid #f44336; }")
+            # Mark stage2 as failed with red-tinted background
+            self.stage2_frame.setStyleSheet("QFrame { background: #3a2a2a; border: none; border-radius: 8px; }")
             
             # Show decreasing success rate message
             if self.glass_number < 5:
@@ -3975,19 +4082,26 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
         
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(4, 4, 4, 4)  # Small margin for shadow
         
         container = QtWidgets.QWidget()
         container.setStyleSheet("""
             QWidget {
                 background: #1a1a2e;
-                border: 2px solid #4a4a6a;
+                border: none;
                 border-radius: 12px;
             }
         """)
+        # Apply drop shadow to container for depth without borders
+        shadow = QtWidgets.QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 120))
+        shadow.setOffset(0, 4)
+        container.setGraphicsEffect(shadow)
+        
         container_layout = QtWidgets.QVBoxLayout(container)
         container_layout.setSpacing(12)
-        container_layout.setContentsMargins(24, 16, 24, 16)
+        container_layout.setContentsMargins(24, 18, 24, 18)
 
         # Header
         header = QtWidgets.QLabel("🎁 Session Reward! 🎁")
@@ -4005,10 +4119,17 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         # Tier lottery frame
         lottery_frame = QtWidgets.QFrame()
         lottery_frame.setStyleSheet("""
-            QFrame { background: #252540; border: 2px solid #ff9800; border-radius: 8px; }
+            QFrame { background: #252540; border: none; border-radius: 8px; }
         """)
+        # Add subtle shadow for card effect
+        lottery_shadow = QtWidgets.QGraphicsDropShadowEffect()
+        lottery_shadow.setBlurRadius(10)
+        lottery_shadow.setColor(QtGui.QColor(0, 0, 0, 80))
+        lottery_shadow.setOffset(0, 2)
+        lottery_frame.setGraphicsEffect(lottery_shadow)
+        
         lottery_layout = QtWidgets.QVBoxLayout(lottery_frame)
-        lottery_layout.setContentsMargins(12, 10, 12, 10)
+        lottery_layout.setContentsMargins(14, 12, 14, 12)
         
         lottery_title = QtWidgets.QLabel("✨ Rolling for Item Tier...")
         lottery_title.setStyleSheet("color: #ff9800; font-size: 14px; font-weight: bold;")
@@ -4030,12 +4151,12 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         # Item reveal area (hidden until animation complete)
         self.item_frame = QtWidgets.QFrame()
         self.item_frame.setStyleSheet("""
-            QFrame { background: #252540; border: 2px solid #333; border-radius: 8px; }
+            QFrame { background: #252540; border: none; border-radius: 8px; }
         """)
         self.item_frame.setMinimumHeight(60)  # Reserve space
         self.item_frame.hide()
         item_layout = QtWidgets.QVBoxLayout(self.item_frame)
-        item_layout.setContentsMargins(12, 10, 12, 10)
+        item_layout.setContentsMargins(14, 12, 14, 12)
         
         self.item_label = QtWidgets.QLabel("")
         self.item_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -4308,25 +4429,61 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
         
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setSpacing(15)
-        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setContentsMargins(4, 4, 4, 4)  # Small margin for shadow
+        
+        # Main container
+        container = QtWidgets.QWidget()
+        container.setStyleSheet("""
+            QWidget {
+                background: #1a1a2e;
+                border: none;
+                border-radius: 12px;
+            }
+        """)
+        # Apply drop shadow to container for depth without borders
+        shadow = QtWidgets.QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 120))
+        shadow.setOffset(0, 4)
+        container.setGraphicsEffect(shadow)
+        
+        container_layout = QtWidgets.QVBoxLayout(container)
+        container_layout.setSpacing(12)
+        container_layout.setContentsMargins(24, 18, 24, 18)
         
         # Header
         header = QtWidgets.QLabel(f"🏃 Activity Reward - {self.effective_minutes:.0f} eff. min")
         header.setFont(QtGui.QFont("Arial", 16, QtGui.QFont.Bold))
         header.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(header)
+        container_layout.addWidget(header)
+        
+        # Tier lottery frame
+        lottery_frame = QtWidgets.QFrame()
+        lottery_frame.setStyleSheet("""
+            QFrame { background: #252540; border: none; border-radius: 8px; }
+        """)
+        # Add subtle shadow for card effect
+        lottery_shadow = QtWidgets.QGraphicsDropShadowEffect()
+        lottery_shadow.setBlurRadius(10)
+        lottery_shadow.setColor(QtGui.QColor(0, 0, 0, 80))
+        lottery_shadow.setOffset(0, 2)
+        lottery_frame.setGraphicsEffect(lottery_shadow)
+        
+        lottery_layout = QtWidgets.QVBoxLayout(lottery_frame)
+        lottery_layout.setContentsMargins(14, 12, 14, 12)
         
         # Tier slider widget
         self.tier_slider = ActivityTierSliderWidget(self.tier_weights)
         self.tier_slider.setMinimumHeight(60)
-        layout.addWidget(self.tier_slider)
+        lottery_layout.addWidget(self.tier_slider)
         
         # Result label
         self.result_label = QtWidgets.QLabel("Rolling...")
         self.result_label.setAlignment(QtCore.Qt.AlignCenter)
         self.result_label.setStyleSheet("font-size: 14px; color: #888;")
-        layout.addWidget(self.result_label)
+        lottery_layout.addWidget(self.result_label)
+        
+        container_layout.addWidget(lottery_frame)
         
         # Final result (hidden initially)
         self.final_result = QtWidgets.QLabel("")
@@ -4334,10 +4491,10 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         self.final_result.setStyleSheet("font-size: 16px; font-weight: bold; color: #4caf50;")
         self.final_result.setMinimumHeight(40)  # Reserve space
         self.final_result.hide()
-        layout.addWidget(self.final_result)
+        container_layout.addWidget(self.final_result)
         
         # Stretch to absorb space changes
-        layout.addStretch(1)
+        container_layout.addStretch(1)
         
         # Sound toggle
         sound_row = QtWidgets.QHBoxLayout()
@@ -4347,7 +4504,7 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         self.sound_toggle.setStyleSheet("color: #666; font-size: 11px;")
         self.sound_toggle.toggled.connect(set_lottery_sound_enabled)
         sound_row.addWidget(self.sound_toggle)
-        layout.addLayout(sound_row)
+        container_layout.addLayout(sound_row)
         
         # Continue button (hidden until animation complete)
         self.continue_btn = QtWidgets.QPushButton("Continue")
@@ -4367,7 +4524,9 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         """)
         self.continue_btn.clicked.connect(self._finish)
         self.continue_btn.hide()
-        layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
+        container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
+        
+        layout.addWidget(container)
     
     def _start_animation(self):
         """Start the tier roll animation using bounce path."""
@@ -4693,20 +4852,27 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
         
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(4, 4, 4, 4)  # Small margin for shadow
         
         # Main container with border
         container = QtWidgets.QWidget()
         container.setStyleSheet("""
             QWidget {
                 background: #1a1a2e;
-                border: 2px solid #4a4a6a;
+                border: none;
                 border-radius: 12px;
             }
         """)
+        # Apply drop shadow to container for depth without borders
+        shadow = QtWidgets.QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 120))
+        shadow.setOffset(0, 4)
+        container.setGraphicsEffect(shadow)
+        
         container_layout = QtWidgets.QVBoxLayout(container)
         container_layout.setSpacing(12)
-        container_layout.setContentsMargins(24, 16, 24, 16)
+        container_layout.setContentsMargins(24, 18, 24, 18)
         
         # Header
         header = QtWidgets.QLabel("⚖️ Weight Reward! ⚖️")
@@ -4723,10 +4889,17 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         # Tier lottery frame
         lottery_frame = QtWidgets.QFrame()
         lottery_frame.setStyleSheet("""
-            QFrame { background: #252540; border: 2px solid #ff9800; border-radius: 8px; }
+            QFrame { background: #252540; border: none; border-radius: 8px; }
         """)
+        # Add subtle shadow for card effect
+        lottery_shadow = QtWidgets.QGraphicsDropShadowEffect()
+        lottery_shadow.setBlurRadius(10)
+        lottery_shadow.setColor(QtGui.QColor(0, 0, 0, 80))
+        lottery_shadow.setOffset(0, 2)
+        lottery_frame.setGraphicsEffect(lottery_shadow)
+        
         lottery_layout = QtWidgets.QVBoxLayout(lottery_frame)
-        lottery_layout.setContentsMargins(12, 10, 12, 10)
+        lottery_layout.setContentsMargins(14, 12, 14, 12)
         
         lottery_title = QtWidgets.QLabel("✨ Rolling for Item Tier...")
         lottery_title.setStyleSheet("color: #ff9800; font-size: 14px; font-weight: bold;")
@@ -4748,11 +4921,11 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         # Item reveal area (hidden until animation complete)
         self.item_frame = QtWidgets.QFrame()
         self.item_frame.setStyleSheet("""
-            QFrame { background: #252540; border: 2px solid #333; border-radius: 8px; }
+            QFrame { background: #252540; border: none; border-radius: 8px; }
         """)
         self.item_frame.hide()
         item_layout = QtWidgets.QVBoxLayout(self.item_frame)
-        item_layout.setContentsMargins(12, 10, 12, 10)
+        item_layout.setContentsMargins(14, 12, 14, 12)
         
         self.item_label = QtWidgets.QLabel("")
         self.item_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -5007,20 +5180,27 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         self.setWindowFlags(QtCore.Qt.Dialog | QtCore.Qt.FramelessWindowHint)
         
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(4, 4, 4, 4)  # Small margin for shadow
         
-        # Main container with border (sleep-themed indigo border)
+        # Main container (sleep-themed indigo)
         container = QtWidgets.QWidget()
         container.setStyleSheet("""
             QWidget {
                 background: #1a1a2e;
-                border: 2px solid #5c6bc0;
+                border: none;
                 border-radius: 12px;
             }
         """)
+        # Apply drop shadow to container for depth without borders
+        shadow = QtWidgets.QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(20)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 120))
+        shadow.setOffset(0, 4)
+        container.setGraphicsEffect(shadow)
+        
         container_layout = QtWidgets.QVBoxLayout(container)
         container_layout.setSpacing(12)
-        container_layout.setContentsMargins(24, 16, 24, 16)
+        container_layout.setContentsMargins(24, 18, 24, 18)
         
         # Header
         header = QtWidgets.QLabel("🌙 Sleep Reward! 🌙")
@@ -5034,13 +5214,20 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         info.setStyleSheet("color: #aaa; font-size: 12px;")
         container_layout.addWidget(info)
         
-        # Tier lottery frame (sleep-themed indigo border)
+        # Tier lottery frame (sleep-themed indigo)
         lottery_frame = QtWidgets.QFrame()
         lottery_frame.setStyleSheet("""
-            QFrame { background: #252540; border: 2px solid #7986cb; border-radius: 8px; }
+            QFrame { background: #252540; border: none; border-radius: 8px; }
         """)
+        # Add subtle shadow for card effect
+        lottery_shadow = QtWidgets.QGraphicsDropShadowEffect()
+        lottery_shadow.setBlurRadius(10)
+        lottery_shadow.setColor(QtGui.QColor(0, 0, 0, 80))
+        lottery_shadow.setOffset(0, 2)
+        lottery_frame.setGraphicsEffect(lottery_shadow)
+        
         lottery_layout = QtWidgets.QVBoxLayout(lottery_frame)
-        lottery_layout.setContentsMargins(12, 10, 12, 10)
+        lottery_layout.setContentsMargins(14, 12, 14, 12)
         
         lottery_title = QtWidgets.QLabel("✨ Rolling for Item Tier...")
         lottery_title.setStyleSheet("color: #7986cb; font-size: 14px; font-weight: bold;")
@@ -5062,12 +5249,12 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         # Item reveal area (hidden until animation complete)
         self.item_frame = QtWidgets.QFrame()
         self.item_frame.setStyleSheet("""
-            QFrame { background: #252540; border: 2px solid #333; border-radius: 8px; }
+            QFrame { background: #252540; border: none; border-radius: 8px; }
         """)
         self.item_frame.setMinimumHeight(60)  # Reserve space
         self.item_frame.hide()
         item_layout = QtWidgets.QVBoxLayout(self.item_frame)
-        item_layout.setContentsMargins(12, 10, 12, 10)
+        item_layout.setContentsMargins(14, 12, 14, 12)
         
         self.item_label = QtWidgets.QLabel("")
         self.item_label.setAlignment(QtCore.Qt.AlignCenter)
