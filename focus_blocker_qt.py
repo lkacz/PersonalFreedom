@@ -11195,7 +11195,11 @@ class WeightTab(QtWidgets.QWidget):
             )
         
         # Update or add entry
-        new_entry = {"date": date_str, "weight": weight_kg}
+        new_entry = {
+            "date": date_str,
+            "time": datetime.now().strftime("%H:%M"),  # Add time for timeline visualization
+            "weight": weight_kg
+        }
         if note:
             new_entry["note"] = note
         
@@ -11218,6 +11222,15 @@ class WeightTab(QtWidgets.QWidget):
                 self.blocker.weight_entries = self.blocker.weight_entries[-365:]
         
         self.blocker.save_config()
+        
+        # Emit signal for timeline updates via GameState
+        try:
+            main_window = self.window()
+            game_state = getattr(main_window, 'game_state', None)
+            if game_state:
+                game_state.notify_weight_entry_changed()
+        except Exception:
+            pass
         
         # Award city MATERIALS resource for weight logging:
         # - +1 Materials just for logging weight (daily)
@@ -13803,6 +13816,7 @@ class ActivityTab(QtWidgets.QWidget):
         # Create entry
         new_entry = {
             "date": date_str,
+            "time": datetime.now().strftime("%H:%M"),  # Add time for timeline visualization
             "duration": duration,
             "activity_type": activity_id,
             "intensity": intensity_id,
@@ -13817,6 +13831,15 @@ class ActivityTab(QtWidgets.QWidget):
         self.blocker.activity_entries.sort(key=lambda x: x.get("date", ""), reverse=True)
         
         self.blocker.save_config()
+        
+        # Emit signal for timeline updates via GameState
+        try:
+            main_window = self.window()
+            game_state = getattr(main_window, 'game_state', None)
+            if game_state:
+                game_state.notify_activity_entry_changed()
+        except Exception:
+            pass
         
         # Award city activity resource based on EFFECTIVE minutes (duration × intensity)
         # This rewards more intense and longer activities proportionally
@@ -14413,6 +14436,825 @@ class ActivityTab(QtWidgets.QWidget):
         except Exception as e:
             print(f"[Activity Tab] Error updating entity perk display: {e}")
             self.activity_entity_section.setVisible(False)
+
+
+class SleepScheduleChartWidget(QtWidgets.QWidget):
+    """Custom widget showing sleep schedule as colored blocks on a clock-time Y-axis.
+    
+    Features:
+    - Y-axis: Clock time (e.g., 21:00 to 12:00 next day)
+    - X-axis: Days
+    - Colored blocks showing bedtime to wake time
+    - Quality-based color coding
+    - User-adjustable time range (persistent)
+    - Interactive tooltips with sleep details
+    - Handles midnight wraparound properly
+    
+    Industry Standards Applied:
+    - Type hints throughout
+    - Defensive programming with validation
+    - Consistent coordinate system
+    - Accessibility support
+    """
+    
+    # Display constants
+    MIN_HEIGHT: int = 300
+    MIN_WIDTH: int = 450
+    MARGIN_LEFT: int = 60
+    MARGIN_RIGHT: int = 25
+    MARGIN_TOP: int = 50
+    MARGIN_BOTTOM: int = 35
+    BAR_WIDTH: float = 0.7  # Fraction of available space
+    
+    # Default time range (can be adjusted by user)
+    DEFAULT_TIME_RANGE_START: int = 21 * 60  # 21:00 in minutes
+    DEFAULT_TIME_RANGE_END: int = 12 * 60    # 12:00 in minutes (next day)
+    
+    # Quality colors
+    QUALITY_COLORS: Dict[str, str] = {
+        "excellent": "#4CAF50",  # Green
+        "good": "#8BC34A",       # Light green
+        "fair": "#FFC107",       # Amber
+        "poor": "#FF9800",       # Orange
+        "terrible": "#F44336",   # Red
+        "unknown": "#6496ff",    # Default blue
+    }
+    
+    # Theme colors
+    COLORS = {
+        "background": "#1a1a2e",
+        "border": "#4a4a6a",
+        "grid": "#333355",
+        "text": "#888888",
+        "text_light": "#aaaaaa",
+        "sleep_block": "#9c27b0",        # Purple for sleep
+        "healthy_band": (76, 175, 80, 40),    # Green with alpha
+        "midnight_line": "#ff5722",
+    }
+    
+    # Signal for time range changes
+    timeRangeChanged = QtCore.Signal(int, int)  # start_mins, end_mins
+    
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        
+        # Data storage
+        self._sleep_data: List[Dict] = []
+        
+        # Time range settings (in minutes since midnight)
+        self._time_range_start: int = self.DEFAULT_TIME_RANGE_START  # 21:00
+        self._time_range_end: int = self.DEFAULT_TIME_RANGE_END      # 12:00 next day
+        
+        # Y-axis orientation: True = bedtime at top (early time at top), False = bedtime at bottom
+        self._bedtime_on_top: bool = True
+        
+        # Interaction state
+        self._hover_bar_date: Optional[str] = None
+        self._zoom_level: float = 1.0
+        self._pan_offset_x: float = 0.0
+        self._is_panning: bool = False
+        self._last_mouse_pos: Optional[QtCore.QPoint] = None
+        
+        # Display settings
+        self.setMinimumHeight(self.MIN_HEIGHT)
+        self.setMinimumWidth(self.MIN_WIDTH)
+        self.setMouseTracking(True)
+        
+        # Accessibility
+        self.setAccessibleName("Sleep Schedule Chart")
+        self.setAccessibleDescription("Visual chart showing sleep schedule with bedtime and wake time")
+    
+    # =========================================================================
+    # Public API
+    # =========================================================================
+    
+    def set_data(self, entries: List[Dict]) -> None:
+        """Set the sleep data to display.
+        
+        Args:
+            entries: List of sleep entry dicts with keys:
+                     date, bedtime, wake_time, sleep_hours, quality, score
+        """
+        if entries is None:
+            entries = []
+        
+        # Validate and filter entries with valid bedtime/wake_time
+        valid_entries: List[Dict] = []
+        for e in entries:
+            if not isinstance(e, dict):
+                continue
+            
+            date_str = e.get("date")
+            bedtime = e.get("bedtime", "")
+            wake_time = e.get("wake_time", "")
+            
+            # Validate required fields
+            if not date_str or not isinstance(date_str, str):
+                continue
+            if not bedtime or not wake_time:
+                continue
+            
+            # Parse times
+            bed_mins = self._parse_time_to_mins(bedtime)
+            wake_mins = self._parse_time_to_mins(wake_time)
+            
+            if bed_mins is None or wake_mins is None:
+                continue
+            
+            valid_entry = {
+                "date": date_str,
+                "bedtime": bedtime,
+                "wake_time": wake_time,
+                "bed_mins": bed_mins,
+                "wake_mins": wake_mins,
+                "sleep_hours": e.get("sleep_hours", 0),
+                "quality": e.get("quality", "unknown"),
+                "score": e.get("score", 0),
+                "note": e.get("note", ""),
+            }
+            valid_entries.append(valid_entry)
+        
+        # Sort by date
+        valid_entries.sort(key=lambda x: x["date"])
+        
+        self._sleep_data = valid_entries
+        self._hover_bar_date = None
+        self.update()
+    
+    def set_time_range(self, start_mins: int, end_mins: int) -> None:
+        """Set the visible time range.
+        
+        Args:
+            start_mins: Start time in minutes since midnight (e.g., 21*60 = 21:00)
+            end_mins: End time in minutes since midnight (e.g., 12*60 = 12:00)
+                      If end < start, it wraps to next day
+        """
+        self._time_range_start = max(0, min(24 * 60 - 1, start_mins))
+        self._time_range_end = max(0, min(24 * 60 - 1, end_mins))
+        self.timeRangeChanged.emit(self._time_range_start, self._time_range_end)
+        self.update()
+    
+    def get_time_range(self) -> Tuple[int, int]:
+        """Get the current time range.
+        
+        Returns:
+            (start_mins, end_mins)
+        """
+        return (self._time_range_start, self._time_range_end)
+    
+    def reset_view(self) -> None:
+        """Reset zoom and pan to default view."""
+        self._zoom_level = 1.0
+        self._pan_offset_x = 0.0
+        self.update()
+    
+    def set_bedtime_on_top(self, on_top: bool) -> None:
+        """Set whether bedtime appears at top or bottom of Y-axis.
+        
+        Args:
+            on_top: If True, earlier times (bedtime) at top. If False, at bottom.
+        """
+        if self._bedtime_on_top != on_top:
+            self._bedtime_on_top = on_top
+            self.update()
+    
+    def is_bedtime_on_top(self) -> bool:
+        """Return whether bedtime is displayed at top of chart."""
+        return self._bedtime_on_top
+    
+    # =========================================================================
+    # Time parsing helpers
+    # =========================================================================
+    
+    @staticmethod
+    def _parse_time_to_mins(time_str: str) -> Optional[int]:
+        """Parse time string (HH:MM) to minutes since midnight."""
+        if not time_str or not isinstance(time_str, str):
+            return None
+        try:
+            parts = time_str.split(":")
+            if len(parts) >= 2:
+                return int(parts[0]) * 60 + int(parts[1])
+        except (ValueError, TypeError):
+            pass
+        return None
+    
+    @staticmethod
+    def _mins_to_time_str(mins: int) -> str:
+        """Convert minutes since midnight to HH:MM string."""
+        mins = mins % (24 * 60)
+        h = mins // 60
+        m = mins % 60
+        return f"{h:02d}:{m:02d}"
+    
+    @staticmethod
+    @functools.lru_cache(maxsize=512)
+    def _parse_date_cached(date_str: str) -> Optional[datetime]:
+        """Parse date string with caching."""
+        if not date_str or not isinstance(date_str, str):
+            return None
+        try:
+            return datetime.strptime(date_str, "%Y-%m-%d")
+        except (ValueError, TypeError):
+            return None
+    
+    def _parse_date(self, date_str: str) -> Optional[datetime]:
+        """Parse date string to datetime."""
+        return self._parse_date_cached(date_str)
+    
+    def _get_time_span_minutes(self) -> int:
+        """Get the total time span in minutes, handling midnight wraparound."""
+        if self._time_range_end > self._time_range_start:
+            # Same day (e.g., 06:00 to 18:00)
+            return self._time_range_end - self._time_range_start
+        else:
+            # Wraps around midnight (e.g., 21:00 to 12:00)
+            return (24 * 60 - self._time_range_start) + self._time_range_end
+    
+    def _normalize_time_in_range(self, time_mins: int) -> float:
+        """Convert time to a normalized position in the visible range (0.0 to 1.0).
+        
+        Handles midnight wraparound properly.
+        """
+        span = self._get_time_span_minutes()
+        if span <= 0:
+            return 0.5
+        
+        if self._time_range_end > self._time_range_start:
+            # Same day
+            offset = time_mins - self._time_range_start
+        else:
+            # Wraps around midnight
+            if time_mins >= self._time_range_start:
+                offset = time_mins - self._time_range_start
+            else:
+                offset = (24 * 60 - self._time_range_start) + time_mins
+        
+        return max(0.0, min(1.0, offset / span))
+    
+    # =========================================================================
+    # Coordinate helpers
+    # =========================================================================
+    
+    def _get_chart_rect(self) -> QtCore.QRect:
+        """Get the main chart drawing area."""
+        rect = self.rect()
+        return QtCore.QRect(
+            self.MARGIN_LEFT,
+            self.MARGIN_TOP,
+            rect.width() - self.MARGIN_LEFT - self.MARGIN_RIGHT,
+            rect.height() - self.MARGIN_TOP - self.MARGIN_BOTTOM
+        )
+    
+    def _get_date_range(self) -> Tuple[Optional[datetime], Optional[datetime], int]:
+        """Get the date range for display."""
+        if not self._sleep_data:
+            return (None, None, 1)
+        
+        first_date = self._parse_date(self._sleep_data[0]["date"])
+        last_date = self._parse_date(self._sleep_data[-1]["date"])
+        
+        if not first_date or not last_date:
+            return (None, None, 1)
+        
+        total_days = max(1, (last_date - first_date).days + 1)
+        return (first_date, last_date, total_days)
+    
+    def _date_to_x(self, date: Union[str, datetime],
+                   chart_rect: QtCore.QRect,
+                   first_date: datetime,
+                   total_days: int) -> float:
+        """Convert date to X coordinate."""
+        if isinstance(date, str):
+            date = self._parse_date(date)
+        
+        if not date:
+            return float(chart_rect.left())
+        
+        days_from_start = (date - first_date).days
+        base_x = chart_rect.left() + (chart_rect.width() * (days_from_start + 0.5) / total_days)
+        zoomed_x = chart_rect.left() + (base_x - chart_rect.left()) * self._zoom_level + self._pan_offset_x
+        
+        return zoomed_x
+    
+    def _time_to_y(self, time_mins: int, chart_rect: QtCore.QRect) -> float:
+        """Convert time in minutes to Y coordinate.
+        
+        Respects _bedtime_on_top setting:
+        - If bedtime_on_top: Y=0 is earliest time (bedtime), Y=height is latest (wake)
+        - If not bedtime_on_top: Y=0 is latest time (wake), Y=height is earliest (bedtime)
+        """
+        normalized = self._normalize_time_in_range(time_mins)
+        
+        if self._bedtime_on_top:
+            # Bedtime at top: normalized 0 -> top, normalized 1 -> bottom
+            return chart_rect.top() + chart_rect.height() * normalized
+        else:
+            # Bedtime at bottom: normalized 0 -> bottom, normalized 1 -> top
+            return chart_rect.bottom() - chart_rect.height() * normalized
+    
+    # =========================================================================
+    # Hit testing
+    # =========================================================================
+    
+    def _find_bar_at_position(self, pos: QtCore.QPoint) -> Optional[str]:
+        """Find date of bar at position, or None."""
+        if not self._sleep_data:
+            return None
+        
+        chart_rect = self._get_chart_rect()
+        first_date, last_date, total_days = self._get_date_range()
+        
+        if not first_date or not last_date:
+            return None
+        
+        bar_width = (chart_rect.width() / total_days) * self.BAR_WIDTH * self._zoom_level
+        bar_width = max(4.0, min(bar_width, 60.0))
+        
+        for entry in self._sleep_data:
+            x = self._date_to_x(entry["date"], chart_rect, first_date, total_days)
+            
+            # Check if click is within bar's x-range
+            if abs(pos.x() - x) <= bar_width / 2:
+                return entry["date"]
+        
+        return None
+    
+    # =========================================================================
+    # Event handlers
+    # =========================================================================
+    
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        """Handle mouse movement."""
+        try:
+            pos = event.position().toPoint() if hasattr(event, 'position') else event.pos()
+            
+            if self._is_panning and self._last_mouse_pos:
+                delta = pos.x() - self._last_mouse_pos.x()
+                self._pan_offset_x += delta
+                self._last_mouse_pos = pos
+                self.update()
+            else:
+                new_hover = self._find_bar_at_position(pos)
+                if new_hover != self._hover_bar_date:
+                    self._hover_bar_date = new_hover
+                    self.update()
+                    
+                    if new_hover:
+                        tooltip = self._build_tooltip(new_hover)
+                        self.setToolTip(tooltip)
+                    else:
+                        self.setToolTip("")
+        except Exception:
+            pass
+        
+        super().mouseMoveEvent(event)
+    
+    def _build_tooltip(self, date_str: str) -> str:
+        """Build rich tooltip for sleep entry."""
+        try:
+            entry = next((e for e in self._sleep_data if e["date"] == date_str), None)
+            if not entry:
+                return ""
+            
+            bedtime = entry.get("bedtime", "?")
+            wake = entry.get("wake_time", "?")
+            hours = entry.get("sleep_hours", 0)
+            quality = entry.get("quality", "unknown")
+            score = entry.get("score", 0)
+            
+            return (
+                f"📅 {date_str}\n"
+                f"🛏️ Bedtime: {bedtime}\n"
+                f"⏰ Wake: {wake}\n"
+                f"💤 Duration: {hours:.1f}h\n"
+                f"⭐ Quality: {quality.title()}\n"
+                f"📊 Score: {score}/100"
+            )
+        except Exception:
+            return ""
+    
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        """Handle mouse press for panning."""
+        try:
+            if event.button() == QtCore.Qt.MouseButton.LeftButton:
+                self._is_panning = True
+                pos = event.position().toPoint() if hasattr(event, 'position') else event.pos()
+                self._last_mouse_pos = pos
+                self.setCursor(QtCore.Qt.CursorShape.ClosedHandCursor)
+        except Exception:
+            pass
+        super().mousePressEvent(event)
+    
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+        """Handle mouse release."""
+        try:
+            if event.button() == QtCore.Qt.MouseButton.LeftButton:
+                self._is_panning = False
+                self._last_mouse_pos = None
+                self.setCursor(QtCore.Qt.CursorShape.ArrowCursor)
+        except Exception:
+            pass
+        super().mouseReleaseEvent(event)
+    
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        """Handle mouse wheel for zooming."""
+        try:
+            delta = event.angleDelta().y()
+            
+            if delta > 0:
+                self._zoom_level = min(5.0, self._zoom_level * 1.1)
+            elif delta < 0:
+                self._zoom_level = max(1.0, self._zoom_level / 1.1)
+                if self._zoom_level <= 1.0:
+                    self._pan_offset_x = 0.0
+            
+            self.update()
+            event.accept()
+        except Exception:
+            pass
+    
+    def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:
+        """Reset view on double-click."""
+        try:
+            self.reset_view()
+        except Exception:
+            pass
+        super().mouseDoubleClickEvent(event)
+    
+    def leaveEvent(self, event: QtCore.QEvent) -> None:
+        """Handle mouse leaving."""
+        try:
+            if self._hover_bar_date:
+                self._hover_bar_date = None
+                self.update()
+        except Exception:
+            pass
+        super().leaveEvent(event)
+    
+    # =========================================================================
+    # Painting
+    # =========================================================================
+    
+    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
+        """Paint the sleep schedule chart."""
+        painter = QtGui.QPainter(self)
+        
+        try:
+            painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+            painter.setRenderHint(QtGui.QPainter.RenderHint.TextAntialiasing)
+            
+            rect = self.rect()
+            chart_rect = self._get_chart_rect()
+            
+            # Background
+            painter.fillRect(rect, QtGui.QColor(self.COLORS["background"]))
+            
+            # Border
+            painter.setPen(QtGui.QPen(QtGui.QColor(self.COLORS["border"]), 1))
+            painter.drawRect(chart_rect)
+            
+            # Check minimum data
+            if len(self._sleep_data) < 1:
+                self._draw_empty_state(painter, chart_rect)
+                return
+            
+            # Get ranges
+            first_date, last_date, total_days = self._get_date_range()
+            
+            if not first_date or not last_date:
+                self._draw_empty_state(painter, chart_rect)
+                return
+            
+            # Draw chart elements
+            self._draw_header(painter, chart_rect)
+            self._draw_time_grid(painter, chart_rect)
+            self._draw_midnight_line(painter, chart_rect)
+            self._draw_sleep_blocks(painter, chart_rect, first_date, total_days)
+            self._draw_date_labels(painter, chart_rect, first_date, last_date, total_days)
+            
+            # Zoom indicator
+            if self._zoom_level > 1.0:
+                self._draw_zoom_indicator(painter, chart_rect)
+
+        except Exception as e:
+            import logging
+            logging.warning(f"SleepScheduleChartWidget.paintEvent error: {e}")
+        finally:
+            painter.end()
+    
+    def _draw_empty_state(self, painter: QtGui.QPainter, chart_rect: QtCore.QRect) -> None:
+        """Draw placeholder for insufficient data."""
+        painter.setPen(QtGui.QColor(self.COLORS["text"]))
+        painter.setFont(QtGui.QFont("Segoe UI", 12))
+        painter.drawText(
+            chart_rect,
+            QtCore.Qt.AlignmentFlag.AlignCenter,
+            "Log sleep with bedtime/wake time\nto see your schedule chart"
+        )
+    
+    def _draw_header(self, painter: QtGui.QPainter, chart_rect: QtCore.QRect) -> None:
+        """Draw header with title and time range info."""
+        painter.setFont(QtGui.QFont("Segoe UI", 11, QtGui.QFont.Weight.Bold))
+        painter.setPen(QtGui.QColor("#a5b4fc"))
+        painter.drawText(self.MARGIN_LEFT, 20, "🛏️ Sleep Schedule")
+        
+        # Time range info
+        painter.setFont(QtGui.QFont("Segoe UI", 9))
+        painter.setPen(QtGui.QColor(self.COLORS["text"]))
+        start_str = self._mins_to_time_str(self._time_range_start)
+        end_str = self._mins_to_time_str(self._time_range_end)
+        range_text = f"Time range: {start_str} → {end_str}"
+        text_width = painter.fontMetrics().horizontalAdvance(range_text)
+        painter.drawText(chart_rect.right() - text_width, 20, range_text)
+        
+        # Average bedtime/wake time
+        if self._sleep_data:
+            avg_bed = sum(e["bed_mins"] for e in self._sleep_data) / len(self._sleep_data)
+            avg_wake = sum(e["wake_mins"] for e in self._sleep_data) / len(self._sleep_data)
+            avg_text = f"Avg: {self._mins_to_time_str(int(avg_bed))} → {self._mins_to_time_str(int(avg_wake))}"
+            painter.setPen(QtGui.QColor("#9c27b0"))
+            painter.drawText(self.MARGIN_LEFT + 140, 20, avg_text)
+    
+    def _draw_time_grid(self, painter: QtGui.QPainter, chart_rect: QtCore.QRect) -> None:
+        """Draw time grid lines and labels on Y-axis."""
+        painter.setFont(QtGui.QFont("Segoe UI", 9))
+        
+        # Draw horizontal lines every hour
+        span = self._get_time_span_minutes()
+        hours_in_span = span // 60
+        
+        # Determine step based on span
+        if hours_in_span <= 8:
+            step_mins = 60  # Every hour
+        elif hours_in_span <= 16:
+            step_mins = 120  # Every 2 hours
+        else:
+            step_mins = 180  # Every 3 hours
+        
+        current_mins = self._time_range_start
+        end_mins = self._time_range_end
+        
+        # Handle wraparound
+        if end_mins < self._time_range_start:
+            end_mins += 24 * 60
+        
+        while current_mins <= end_mins:
+            actual_mins = current_mins % (24 * 60)
+            y = self._time_to_y(actual_mins, chart_rect)
+            
+            if chart_rect.top() <= y <= chart_rect.bottom():
+                # Grid line
+                painter.setPen(QtGui.QPen(QtGui.QColor(self.COLORS["grid"]), 1, QtCore.Qt.PenStyle.DashLine))
+                painter.drawLine(chart_rect.left(), int(y), chart_rect.right(), int(y))
+                
+                # Time label
+                time_str = self._mins_to_time_str(actual_mins)
+                painter.setPen(QtGui.QColor(self.COLORS["text"]))
+                painter.drawText(5, int(y) + 4, time_str)
+            
+            current_mins += step_mins
+    
+    def _draw_midnight_line(self, painter: QtGui.QPainter, chart_rect: QtCore.QRect) -> None:
+        """Draw a special line at midnight if visible."""
+        midnight_mins = 0
+        
+        # Check if midnight is in our visible range
+        if self._time_range_end < self._time_range_start:
+            # Wraps around midnight - midnight is visible
+            y = self._time_to_y(midnight_mins, chart_rect)
+            
+            if chart_rect.top() <= y <= chart_rect.bottom():
+                painter.setPen(QtGui.QPen(QtGui.QColor(self.COLORS["midnight_line"]), 2, QtCore.Qt.PenStyle.DotLine))
+                painter.drawLine(chart_rect.left(), int(y), chart_rect.right(), int(y))
+                
+                # Label
+                painter.setPen(QtGui.QColor(self.COLORS["midnight_line"]))
+                painter.setFont(QtGui.QFont("Segoe UI", 8))
+                painter.drawText(chart_rect.right() - 60, int(y) - 3, "Midnight")
+    
+    def _draw_sleep_blocks(self, painter: QtGui.QPainter, chart_rect: QtCore.QRect,
+                           first_date: datetime, total_days: int) -> None:
+        """Draw sleep blocks for each day, merging consecutive days for continuous pattern."""
+        if not self._sleep_data:
+            return
+        
+        # Full width per day (no gaps between consecutive days)
+        day_width = chart_rect.width() / total_days * self._zoom_level
+        
+        # Build a date set for quick lookup of consecutive days
+        date_set = {e["date"] for e in self._sleep_data}
+        
+        for i, entry in enumerate(self._sleep_data):
+            date_str = entry["date"]
+            entry_date = self._parse_date(date_str)
+            if not entry_date:
+                continue
+            
+            is_hovered = (date_str == self._hover_bar_date)
+            
+            # Check if next day exists in data (for continuous drawing)
+            next_date = entry_date + timedelta(days=1)
+            next_date_str = next_date.strftime("%Y-%m-%d")
+            has_next_day = next_date_str in date_set
+            
+            # Check if prev day exists
+            prev_date = entry_date - timedelta(days=1)
+            prev_date_str = prev_date.strftime("%Y-%m-%d")
+            has_prev_day = prev_date_str in date_set
+            
+            # Get X position (centered on day)
+            x_center = self._date_to_x(date_str, chart_rect, first_date, total_days)
+            
+            # Calculate block edges
+            # If consecutive, blocks touch edge-to-edge
+            x_left = x_center - day_width / 2
+            x_right = x_center + day_width / 2
+            block_width = x_right - x_left
+            
+            # Get Y coordinates for bedtime and wake time
+            bed_mins = entry["bed_mins"]
+            wake_mins = entry["wake_mins"]
+            
+            y_bed = self._time_to_y(bed_mins, chart_rect)
+            y_wake = self._time_to_y(wake_mins, chart_rect)
+            
+            # Determine y_top and y_bottom
+            y_top = min(y_bed, y_wake)
+            y_bottom = max(y_bed, y_wake)
+            
+            # Clamp to chart bounds
+            y_top = max(chart_rect.top(), y_top)
+            y_bottom = min(chart_rect.bottom(), y_bottom)
+            
+            # Choose color based on quality/score
+            score = entry.get("score", 50)
+            quality = entry.get("quality", "unknown")
+            
+            if score >= 80:
+                color = QtGui.QColor(self.QUALITY_COLORS["excellent"])
+            elif score >= 65:
+                color = QtGui.QColor(self.QUALITY_COLORS["good"])
+            elif score >= 50:
+                color = QtGui.QColor(self.QUALITY_COLORS["fair"])
+            elif score >= 30:
+                color = QtGui.QColor(self.QUALITY_COLORS["poor"])
+            else:
+                color = QtGui.QColor(self.QUALITY_COLORS.get(quality, self.QUALITY_COLORS["unknown"]))
+            
+            if is_hovered:
+                color = color.lighter(130)
+            
+            # Draw the sleep block
+            block_height = abs(y_bottom - y_top)
+            
+            # Use gradient for depth
+            gradient = QtGui.QLinearGradient(x_left, y_top, x_left, y_bottom)
+            gradient.setColorAt(0, color)
+            gradient.setColorAt(0.5, color.lighter(110))
+            gradient.setColorAt(1, color)
+            
+            painter.setBrush(gradient)
+            
+            # Determine corner rounding based on consecutive days
+            # Left corners rounded if no prev day, right corners rounded if no next day
+            if has_prev_day and has_next_day:
+                # Middle of a streak - no rounding
+                painter.setPen(QtCore.Qt.PenStyle.NoPen)
+                painter.drawRect(QtCore.QRectF(x_left, y_top, block_width, block_height))
+            elif has_prev_day:
+                # End of streak - round right side only
+                painter.setPen(QtCore.Qt.PenStyle.NoPen)
+                path = QtGui.QPainterPath()
+                path.moveTo(x_left, y_top)
+                path.lineTo(x_right - 4, y_top)
+                path.arcTo(x_right - 8, y_top, 8, 8, 90, -90)
+                path.lineTo(x_right, y_bottom - 4)
+                path.arcTo(x_right - 8, y_bottom - 8, 8, 8, 0, -90)
+                path.lineTo(x_left, y_bottom)
+                path.closeSubpath()
+                painter.drawPath(path)
+            elif has_next_day:
+                # Start of streak - round left side only
+                painter.setPen(QtCore.Qt.PenStyle.NoPen)
+                path = QtGui.QPainterPath()
+                path.moveTo(x_right, y_top)
+                path.lineTo(x_left + 4, y_top)
+                path.arcTo(x_left, y_top, 8, 8, 90, 90)
+                path.lineTo(x_left, y_bottom - 4)
+                path.arcTo(x_left, y_bottom - 8, 8, 8, 180, 90)
+                path.lineTo(x_right, y_bottom)
+                path.closeSubpath()
+                painter.drawPath(path)
+            else:
+                # Standalone day - round all corners
+                painter.setPen(QtGui.QPen(color.darker(120), 1))
+                painter.drawRoundedRect(QtCore.QRectF(x_left, y_top, block_width, block_height), 4, 4)
+            
+            # Draw subtle border between consecutive days
+            if has_prev_day or has_next_day:
+                painter.setPen(QtGui.QPen(color.darker(130), 1))
+                painter.drawLine(QtCore.QPointF(x_left, y_top), QtCore.QPointF(x_left, y_bottom))
+                painter.drawLine(QtCore.QPointF(x_right, y_top), QtCore.QPointF(x_right, y_bottom))
+            
+            # Draw bedtime marker
+            painter.setBrush(QtGui.QColor("#3f51b5"))  # Indigo
+            painter.setPen(QtCore.Qt.PenStyle.NoPen)
+            painter.drawEllipse(QtCore.QPointF(x_center, y_bed), 4, 4)
+            
+            # Draw wake time marker
+            painter.setBrush(QtGui.QColor("#ff9800"))  # Orange
+            painter.drawEllipse(QtCore.QPointF(x_center, y_wake), 4, 4)
+            
+            # Hover highlight
+            if is_hovered:
+                painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 2))
+                painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
+                highlight_rect = QtCore.QRectF(x_left - 1, y_top - 1, block_width + 2, block_height + 2)
+                painter.drawRoundedRect(highlight_rect, 5, 5)
+            
+            # Draw sleep duration text if space allows
+            if block_width >= 25 and block_height >= 25:
+                painter.setPen(QtGui.QColor("#ffffff"))
+                painter.setFont(QtGui.QFont("Segoe UI", 7, QtGui.QFont.Weight.Bold))
+                hours = entry.get("sleep_hours", 0)
+                text_rect = QtCore.QRectF(x_left, y_top + block_height / 2 - 8, block_width, 16)
+                painter.drawText(text_rect, QtCore.Qt.AlignmentFlag.AlignCenter, f"{hours:.1f}h")
+    
+    def _draw_date_labels(self, painter: QtGui.QPainter, chart_rect: QtCore.QRect,
+                          first_date: datetime, last_date: datetime, total_days: int) -> None:
+        """Draw date labels along X-axis."""
+        painter.setPen(QtGui.QColor(self.COLORS["text"]))
+        painter.setFont(QtGui.QFont("Segoe UI", 8))
+        
+        # Determine label step
+        if total_days <= 7:
+            step = 1
+        elif total_days <= 30:
+            step = 7
+        else:
+            step = 14
+        
+        current_date = first_date
+        while current_date <= last_date:
+            x = self._date_to_x(current_date, chart_rect, first_date, total_days)
+            
+            if chart_rect.left() <= x <= chart_rect.right():
+                date_label = current_date.strftime("%m/%d")
+                painter.drawText(int(x) - 15, chart_rect.bottom() + 15, date_label)
+            
+            current_date += timedelta(days=step)
+        
+        # Draw legend
+        self._draw_legend(painter, chart_rect)
+    
+    def _draw_legend(self, painter: QtGui.QPainter, chart_rect: QtCore.QRect) -> None:
+        """Draw legend for markers."""
+        legend_y = chart_rect.bottom() + 28
+        legend_x = chart_rect.left()
+        
+        painter.setFont(QtGui.QFont("Segoe UI", 7))
+        
+        # Bedtime marker
+        painter.setBrush(QtGui.QColor("#3f51b5"))
+        painter.setPen(QtCore.Qt.PenStyle.NoPen)
+        painter.drawEllipse(QtCore.QPointF(legend_x + 5, legend_y), 3, 3)
+        painter.setPen(QtGui.QColor(self.COLORS["text_light"]))
+        painter.drawText(int(legend_x) + 12, int(legend_y) + 4, "Bedtime")
+        
+        legend_x += 60
+        
+        # Wake marker
+        painter.setBrush(QtGui.QColor("#ff9800"))
+        painter.setPen(QtCore.Qt.PenStyle.NoPen)
+        painter.drawEllipse(QtCore.QPointF(legend_x + 5, legend_y), 3, 3)
+        painter.setPen(QtGui.QColor(self.COLORS["text_light"]))
+        painter.drawText(int(legend_x) + 12, int(legend_y) + 4, "Wake")
+        
+        # Score colors
+        legend_x += 50
+        score_items = [
+            ("80+", self.QUALITY_COLORS["excellent"]),
+            ("65+", self.QUALITY_COLORS["good"]),
+            ("50+", self.QUALITY_COLORS["fair"]),
+            ("<50", self.QUALITY_COLORS["poor"]),
+        ]
+        
+        for label, color in score_items:
+            painter.setBrush(QtGui.QColor(color))
+            painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1))
+            painter.drawRoundedRect(QtCore.QRectF(legend_x, legend_y - 4, 12, 8), 2, 2)
+            
+            painter.setPen(QtGui.QColor(self.COLORS["text_light"]))
+            painter.drawText(int(legend_x) + 15, int(legend_y) + 4, label)
+            legend_x += 40
+    
+    def _draw_zoom_indicator(self, painter: QtGui.QPainter, chart_rect: QtCore.QRect) -> None:
+        """Draw zoom level indicator."""
+        painter.setPen(QtGui.QColor(self.COLORS["text"]))
+        painter.setFont(QtGui.QFont("Segoe UI", 8))
+        zoom_text = f"🔍 {self._zoom_level:.1f}x"
+        painter.drawText(chart_rect.right() - 50, chart_rect.top() + 15, zoom_text)
 
 
 class SleepChartWidget(QtWidgets.QWidget):
@@ -15822,13 +16664,86 @@ class SleepTab(QtWidgets.QWidget):
         left_layout.addStretch()
         content_layout.addWidget(left_panel)
         
-        # Right: Stats, recommendations, and history
-        right_panel = QtWidgets.QGroupBox("Stats & Recommendations")
+        # Right: Charts, Stats, and recommendations
+        right_panel = QtWidgets.QGroupBox("Charts & Stats")
         right_layout = QtWidgets.QVBoxLayout(right_panel)
+        
+        # =====================================================================
+        # 1. SLEEP SCHEDULE CHART (clock-time view) - FIRST
+        # =====================================================================
+        schedule_group = QtWidgets.QGroupBox("🛏️ Sleep Schedule Chart")
+        schedule_layout = QtWidgets.QVBoxLayout(schedule_group)
+        schedule_layout.setContentsMargins(6, 6, 6, 6)
+        
+        # Time range and orientation controls
+        range_layout = QtWidgets.QHBoxLayout()
+        range_layout.addWidget(QtWidgets.QLabel("Range:"))
+        
+        self.schedule_start_combo = QtWidgets.QComboBox()
+        for h in range(18, 24):  # 18:00 to 23:00
+            self.schedule_start_combo.addItem(f"{h:02d}:00", h * 60)
+        self.schedule_start_combo.currentIndexChanged.connect(self._update_schedule_time_range)
+        range_layout.addWidget(self.schedule_start_combo)
+        
+        range_layout.addWidget(QtWidgets.QLabel("to"))
+        
+        self.schedule_end_combo = QtWidgets.QComboBox()
+        for h in range(5, 15):  # 05:00 to 14:00
+            self.schedule_end_combo.addItem(f"{h:02d}:00", h * 60)
+        self.schedule_end_combo.currentIndexChanged.connect(self._update_schedule_time_range)
+        range_layout.addWidget(self.schedule_end_combo)
+        
+        range_layout.addWidget(QtWidgets.QLabel("  Y-axis:"))
+        
+        self.yaxis_orientation_combo = QtWidgets.QComboBox()
+        self.yaxis_orientation_combo.addItem("🌙 Bedtime Top", True)
+        self.yaxis_orientation_combo.addItem("☀️ Wake Top", False)
+        self.yaxis_orientation_combo.currentIndexChanged.connect(self._update_yaxis_orientation)
+        range_layout.addWidget(self.yaxis_orientation_combo)
+        
+        range_layout.addStretch()
+        
+        reset_btn = QtWidgets.QPushButton("↺")
+        reset_btn.setToolTip("Reset view")
+        reset_btn.setFixedWidth(30)
+        reset_btn.clicked.connect(self._reset_schedule_view)
+        range_layout.addWidget(reset_btn)
+        
+        schedule_layout.addLayout(range_layout)
+        
+        # Schedule chart widget
+        self.sleep_schedule_chart = SleepScheduleChartWidget()
+        self.sleep_schedule_chart.setMinimumHeight(280)
+        schedule_layout.addWidget(self.sleep_schedule_chart)
+        
+        right_layout.addWidget(schedule_group)
+        
+        # Load saved time range and orientation
+        self._load_schedule_time_range()
+        
+        # =====================================================================
+        # 2. SLEEP PROGRESS CHART (duration over time) - SECOND
+        # =====================================================================
+        progress_group = QtWidgets.QGroupBox("📊 Sleep Progress Chart")
+        progress_layout = QtWidgets.QVBoxLayout(progress_group)
+        progress_layout.setContentsMargins(6, 6, 6, 6)
+        
+        self.sleep_chart = SleepChartWidget()
+        self.sleep_chart.setMinimumHeight(200)
+        progress_layout.addWidget(self.sleep_chart)
+        
+        right_layout.addWidget(progress_group)
+        
+        # =====================================================================
+        # 3. STATS & RECOMMENDATIONS - THIRD (at bottom)
+        # =====================================================================
+        stats_group = QtWidgets.QGroupBox("📈 Stats & Recommendations")
+        stats_layout = QtWidgets.QVBoxLayout(stats_group)
+        stats_layout.setContentsMargins(6, 6, 6, 6)
         
         # Chronotype selector
         chrono_layout = QtWidgets.QHBoxLayout()
-        chrono_layout.addWidget(QtWidgets.QLabel("Your chronotype:"))
+        chrono_layout.addWidget(QtWidgets.QLabel("Chronotype:"))
         self.chronotype_combo = NoScrollComboBox()
         for chrono_id, name, emoji, _, _, desc in SLEEP_CHRONOTYPES:
             self.chronotype_combo.addItem(f"{emoji} {name}", chrono_id)
@@ -15842,30 +16757,32 @@ class SleepTab(QtWidgets.QWidget):
                 break
         self.chronotype_combo.currentIndexChanged.connect(self._on_chronotype_change)
         chrono_layout.addWidget(self.chronotype_combo)
-        right_layout.addLayout(chrono_layout)
+        chrono_layout.addStretch()
+        stats_layout.addLayout(chrono_layout)
         
-        # Recommendations display
-        self.recommendations_label = QtWidgets.QLabel()
-        self.recommendations_label.setWordWrap(True)
-        self.recommendations_label.setStyleSheet("background-color: #1e1e2e; padding: 10px; border-radius: 5px;")
-        right_layout.addWidget(self.recommendations_label)
-        self._update_recommendations()
+        # Stats and recommendations in a horizontal layout
+        stats_rec_layout = QtWidgets.QHBoxLayout()
         
         # Stats display
         self.stats_label = QtWidgets.QLabel()
         self.stats_label.setWordWrap(True)
-        self.stats_label.setStyleSheet("background-color: #1e1e2e; padding: 10px; border-radius: 5px;")
-        right_layout.addWidget(self.stats_label)
+        self.stats_label.setStyleSheet("background-color: #1e1e2e; padding: 8px; border-radius: 5px; font-size: 10px;")
+        stats_rec_layout.addWidget(self.stats_label, 1)
         
-        # Progress Chart
-        chart_label = QtWidgets.QLabel("📊 Sleep Progress Chart:")
-        chart_label.setStyleSheet("font-weight: bold; margin-top: 8px;")
-        right_layout.addWidget(chart_label)
+        # Recommendations display
+        self.recommendations_label = QtWidgets.QLabel()
+        self.recommendations_label.setWordWrap(True)
+        self.recommendations_label.setStyleSheet("background-color: #1e1e2e; padding: 8px; border-radius: 5px; font-size: 10px;")
+        stats_rec_layout.addWidget(self.recommendations_label, 1)
         
-        self.sleep_chart = SleepChartWidget()
-        self.sleep_chart.setMinimumHeight(280)
-        right_layout.addWidget(self.sleep_chart)
+        stats_layout.addLayout(stats_rec_layout)
+        self._update_recommendations()
         
+        right_layout.addWidget(stats_group)
+        
+        # =====================================================================
+        # 4. HISTORY LIST
+        # =====================================================================
         # History list
         history_label = QtWidgets.QLabel("📋 Recent Sleep History:")
         history_label.setStyleSheet("font-weight: bold;")
@@ -16481,7 +17398,16 @@ class SleepTab(QtWidgets.QWidget):
         
         self.blocker.save_config()
         
-        # Update main timeline widget if parent window has it
+        # Emit signal for timeline updates via GameState
+        try:
+            main_window = self.window()
+            game_state = getattr(main_window, 'game_state', None)
+            if game_state:
+                game_state.notify_sleep_entry_changed()
+        except Exception:
+            pass
+        
+        # Legacy: Update main timeline widget if parent window has it
         if self.parent() and hasattr(self.parent(), 'timeline_widget'):
             try:
                 self.parent().timeline_widget.update_data()
@@ -16612,6 +17538,9 @@ class SleepTab(QtWidgets.QWidget):
         user_age = self._get_user_age()
         chronotype = self.blocker.sleep_chronotype if hasattr(self.blocker, 'sleep_chronotype') else "moderate"
         self.sleep_chart.set_data(self.blocker.sleep_entries, user_age, chronotype)
+        
+        # Update schedule chart
+        self.sleep_schedule_chart.set_data(self.blocker.sleep_entries)
         
         # Update history
         self.history_list.clear()
@@ -16778,6 +17707,130 @@ class SleepTab(QtWidgets.QWidget):
         self.blocker.sleep_reminder_time = self.reminder_time.time().toString("HH:mm")
         self.blocker.save_config()
         self._setup_reminder()
+    
+    # =========================================================================
+    # Sleep Schedule Chart helpers
+    # =========================================================================
+    
+    def _load_schedule_time_range(self) -> None:
+        """Load saved time range settings from blocker config."""
+        try:
+            # Get saved time range from adhd_buster config
+            adhd_buster = getattr(self.blocker, 'adhd_buster', {}) or {}
+            saved_start = adhd_buster.get("sleep_schedule_start", 21 * 60)  # Default 21:00
+            saved_end = adhd_buster.get("sleep_schedule_end", 12 * 60)      # Default 12:00
+            saved_bedtime_on_top = adhd_buster.get("sleep_schedule_bedtime_on_top", True)  # Default: bedtime on top
+            
+            # Set combo boxes to saved values
+            start_idx = self._find_combo_index_for_time(self.schedule_start_combo, saved_start)
+            end_idx = self._find_combo_index_for_time(self.schedule_end_combo, saved_end)
+            
+            if start_idx >= 0:
+                self.schedule_start_combo.setCurrentIndex(start_idx)
+            if end_idx >= 0:
+                self.schedule_end_combo.setCurrentIndex(end_idx)
+            
+            # Set Y-axis orientation
+            orientation_idx = 0 if saved_bedtime_on_top else 1
+            self.yaxis_orientation_combo.setCurrentIndex(orientation_idx)
+            
+            # Update chart with saved range and orientation
+            self.sleep_schedule_chart.set_time_range(saved_start, saved_end)
+            self.sleep_schedule_chart.set_bedtime_on_top(saved_bedtime_on_top)
+        except Exception as e:
+            print(f"[Sleep] Error loading schedule time range: {e}")
+    
+    def _find_combo_index_for_time(self, combo: QtWidgets.QComboBox, time_mins: int) -> int:
+        """Find the combo box index for a given time in minutes."""
+        for i in range(combo.count()):
+            if combo.itemData(i) == time_mins:
+                return i
+        return 0  # Default to first item
+    
+    def _update_schedule_time_range(self) -> None:
+        """Update schedule chart time range from combo boxes and save."""
+        try:
+            start_mins = self.schedule_start_combo.currentData()
+            end_mins = self.schedule_end_combo.currentData()
+            
+            if start_mins is None or end_mins is None:
+                return
+            
+            # Update chart
+            self.sleep_schedule_chart.set_time_range(start_mins, end_mins)
+            
+            # Save to config
+            if not hasattr(self.blocker, 'adhd_buster') or self.blocker.adhd_buster is None:
+                self.blocker.adhd_buster = {}
+            
+            self.blocker.adhd_buster["sleep_schedule_start"] = start_mins
+            self.blocker.adhd_buster["sleep_schedule_end"] = end_mins
+            self.blocker.save_config()
+        except Exception as e:
+            print(f"[Sleep] Error updating schedule time range: {e}")
+    
+    def _update_yaxis_orientation(self) -> None:
+        """Update Y-axis orientation (bedtime top vs bottom) and save."""
+        try:
+            bedtime_on_top = self.yaxis_orientation_combo.currentData()
+            
+            if bedtime_on_top is None:
+                return
+            
+            # Update chart
+            self.sleep_schedule_chart.set_bedtime_on_top(bedtime_on_top)
+            
+            # Save to config
+            if not hasattr(self.blocker, 'adhd_buster') or self.blocker.adhd_buster is None:
+                self.blocker.adhd_buster = {}
+            
+            self.blocker.adhd_buster["sleep_schedule_bedtime_on_top"] = bedtime_on_top
+            self.blocker.save_config()
+        except Exception as e:
+            print(f"[Sleep] Error updating Y-axis orientation: {e}")
+    
+    def _reset_schedule_view(self) -> None:
+        """Reset schedule chart to default view and time range."""
+        try:
+            # Reset to default time range (21:00 to 12:00) and orientation
+            default_start = 21 * 60
+            default_end = 12 * 60
+            default_bedtime_on_top = True
+            
+            # Find indices for default times
+            start_idx = self._find_combo_index_for_time(self.schedule_start_combo, default_start)
+            end_idx = self._find_combo_index_for_time(self.schedule_end_combo, default_end)
+            
+            # Block signals to prevent double update
+            self.schedule_start_combo.blockSignals(True)
+            self.schedule_end_combo.blockSignals(True)
+            self.yaxis_orientation_combo.blockSignals(True)
+            
+            if start_idx >= 0:
+                self.schedule_start_combo.setCurrentIndex(start_idx)
+            if end_idx >= 0:
+                self.schedule_end_combo.setCurrentIndex(end_idx)
+            self.yaxis_orientation_combo.setCurrentIndex(0)  # Bedtime on top
+            
+            self.schedule_start_combo.blockSignals(False)
+            self.schedule_end_combo.blockSignals(False)
+            self.yaxis_orientation_combo.blockSignals(False)
+            
+            # Update chart
+            self.sleep_schedule_chart.set_time_range(default_start, default_end)
+            self.sleep_schedule_chart.set_bedtime_on_top(default_bedtime_on_top)
+            self.sleep_schedule_chart.reset_view()
+            
+            # Save to config
+            if not hasattr(self.blocker, 'adhd_buster') or self.blocker.adhd_buster is None:
+                self.blocker.adhd_buster = {}
+            
+            self.blocker.adhd_buster["sleep_schedule_start"] = default_start
+            self.blocker.adhd_buster["sleep_schedule_end"] = default_end
+            self.blocker.adhd_buster["sleep_schedule_bedtime_on_top"] = default_bedtime_on_top
+            self.blocker.save_config()
+        except Exception as e:
+            print(f"[Sleep] Error resetting schedule view: {e}")
 
 
 class AITab(QtWidgets.QWidget):
@@ -22583,6 +23636,16 @@ class HydrationTab(QtWidgets.QWidget):
             if len(self.blocker.water_entries) > 2000:
                 self.blocker.water_entries = self.blocker.water_entries[-2000:]
             self.blocker.save_config()
+            
+            # Emit signal for timeline updates
+            try:
+                from game_state import get_game_state
+                game_state = get_game_state()
+                if game_state and hasattr(game_state, 'notify_water_changed'):
+                    game_state.notify_water_changed(glass_number)
+            except Exception:
+                pass
+            
             show_info(self, "Water Logged! 💧", f"💧 Glass #{glass_number} logged!")
         
         self._refresh_display()
@@ -28263,16 +29326,41 @@ class MiniHeroWidget(QtWidgets.QWidget):
 
 
 class ChronoStreamWidget(QtWidgets.QWidget):
-    """Timeline visualization for 24h events."""
+    """Enhanced 24-hour timeline visualization showing multiple activity streams.
+    
+    Features:
+    - Multiple horizontal lanes for different activity types
+    - Color-coded events: Sleep, Focus, Water, Eyes, Activity, Weight
+    - Real-time "NOW" indicator
+    - Hover tooltips with detailed information
+    - Visual intensity based on quality/duration
+    """
+    
+    # Lane configuration: (lane_id, color, label, emoji)
+    LANES = [
+        ("sleep", "#3949ab", "Sleep", "😴"),       # Indigo - top lane
+        ("focus", "#4caf50", "Focus", "🎯"),       # Green
+        ("eye", "#ff9800", "Eyes", "👁️"),         # Orange
+        ("water", "#4fc3f7", "Water", "💧"),       # Cyan
+        ("activity", "#e91e63", "Activity", "🏃"), # Pink
+        ("weight", "#9c27b0", "Weight", "⚖️"),     # Purple - bottom
+    ]
+    
+    # Lane height (pixels per lane)
+    LANE_HEIGHT = 12
+    LANE_GAP = 2
+    
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.events = []  # List of dicts with 'start', 'end', 'color', 'label'
-        self.setMinimumHeight(60)
+        self.events = []  # List of dicts with 'start', 'end', 'color', 'label', 'lane'
+        self._hover_event = None
+        self.setMinimumHeight(90)
+        self.setMouseTracking(True)
         
         # Update current time indicator periodically
         self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.update) # Just repaint
-        self.timer.start(60000) # Every minute
+        self.timer.timeout.connect(self.update)
+        self.timer.start(30000)  # Every 30 seconds
         self.destroyed.connect(self._cleanup_timer)
     
     def _cleanup_timer(self):
@@ -28281,112 +29369,245 @@ class ChronoStreamWidget(QtWidgets.QWidget):
             self.timer.stop()
 
     def set_events(self, events):
-        self.events = events
+        """Set events to display. Each event should have:
+        - start: float (0-24 hours)
+        - end: float (0-24 hours)
+        - color: QColor
+        - label: str
+        - lane: str (sleep, focus, water, eye, activity, weight)
+        - Optional: intensity (0-1), tooltip
+        """
+        self.events = events or []
         self.update()
+
+    def _get_lane_y(self, lane_id: str, header_height: int) -> int:
+        """Get Y position for a lane."""
+        for i, (lid, _, _, _) in enumerate(self.LANES):
+            if lid == lane_id:
+                return header_height + i * (self.LANE_HEIGHT + self.LANE_GAP)
+        return header_height
+    
+    def _find_event_at(self, pos: QtCore.QPoint) -> Optional[Dict]:
+        """Find event at mouse position."""
+        width = self.width()
+        if width < 10:
+            return None
+        
+        for evt in self.events:
+            lane_id = evt.get('lane', 'focus')
+            start = max(0.0, min(24.0, evt.get('start', 0)))
+            end = max(0.0, min(24.0, evt.get('end', 0)))
+            
+            if abs(end - start) < 0.01:
+                continue
+            
+            # Calculate x bounds
+            x_start = int((start / 24.0) * width)
+            x_end = int((end / 24.0) * width)
+            
+            # Calculate y bounds
+            header_h = 18
+            lane_y = self._get_lane_y(lane_id, header_h)
+            
+            # Check if position is within this event
+            if x_start <= pos.x() <= x_end and lane_y <= pos.y() <= lane_y + self.LANE_HEIGHT:
+                return evt
+        
+        return None
+
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        """Handle mouse movement for tooltips."""
+        try:
+            pos = event.position().toPoint() if hasattr(event, 'position') else event.pos()
+            evt = self._find_event_at(pos)
+            
+            if evt != self._hover_event:
+                self._hover_event = evt
+                if evt:
+                    tooltip = evt.get('tooltip', evt.get('label', ''))
+                    self.setToolTip(tooltip)
+                else:
+                    self.setToolTip("")
+                self.update()
+        except Exception:
+            pass
+        super().mouseMoveEvent(event)
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.RenderHint.TextAntialiasing)
         
         rect = self.rect()
         width = rect.width()
         height = rect.height()
         
-        # Guard against zero/invalid dimensions
         if width < 10 or height < 10:
             return
         
         # Colors
         bg_color = QtGui.QColor("#16213e")
-        line_color = QtGui.QColor("#4a4a6a")
-        text_color = QtGui.QColor("#8888aa")
+        grid_color = QtGui.QColor("#2a2a4a")
+        text_color = QtGui.QColor("#6688aa")
         
         # Background
         painter.fillRect(rect, bg_color)
         
-        # Geometry
-        # Top half: Visualization blocks
-        # Bottom half: Ruler
-        ruler_y = int(height * 0.7)
-        block_y = int(height * 0.2)
-        block_h = int(height * 0.4)
+        # Layout
+        header_height = 18
+        ruler_height = 20
+        lanes_height = len(self.LANES) * (self.LANE_HEIGHT + self.LANE_GAP)
         
-        # Draw Ruler Line
-        pen = QtGui.QPen(line_color)
-        painter.setPen(pen)
-        painter.drawLine(0, ruler_y, width, ruler_y)
+        # Draw lane backgrounds and labels
+        painter.setFont(QtGui.QFont("Segoe UI", 7))
+        for i, (lane_id, color, label, emoji) in enumerate(self.LANES):
+            lane_y = header_height + i * (self.LANE_HEIGHT + self.LANE_GAP)
+            
+            # Subtle lane background
+            lane_bg = QtGui.QColor(color)
+            lane_bg.setAlpha(15)
+            painter.fillRect(0, lane_y, width, self.LANE_HEIGHT, lane_bg)
+            
+            # Lane separator line
+            painter.setPen(QtGui.QPen(grid_color, 1))
+            painter.drawLine(0, lane_y + self.LANE_HEIGHT, width, lane_y + self.LANE_HEIGHT)
         
-        # Draw Hour Markers
-        painter.setFont(QtGui.QFont("Segoe UI", 8))
-        for h in range(0, 25, 4): # 0, 4, 8, 12...
+        # Draw vertical hour grid lines
+        painter.setPen(QtGui.QPen(grid_color, 1, QtCore.Qt.PenStyle.DotLine))
+        for h in range(0, 25, 3):
             x = int((h / 24.0) * width)
-            
-            # Tick
-            painter.drawLine(x, ruler_y, x, ruler_y + 5)
-            
-            # Label
-            # Adjust x for text centering
-            label = f"{h:02}"
-            text_rect = QtCore.QRect(x - 15, ruler_y + 8, 30, 20)
-            painter.setPen(text_color)
-            painter.drawText(text_rect, QtCore.Qt.AlignmentFlag.AlignCenter, label)
-            painter.setPen(line_color) # Reset for next line
-
-        # Draw Events
+            painter.drawLine(x, header_height, x, header_height + lanes_height)
+        
+        # Draw events on lanes
         for evt in self.events:
-            start = evt.get('start', 0)
-            end = evt.get('end', 0)
-            color = evt.get('color', QtGui.QColor("#4caf50"))
+            self._draw_event(painter, evt, width, header_height)
+        
+        # Draw ruler at top
+        self._draw_ruler(painter, width, header_height, text_color)
+        
+        # Draw current time indicator
+        self._draw_now_indicator(painter, width, height, header_height, lanes_height)
+        
+        # Draw summary stats on right side
+        self._draw_summary(painter, width, header_height)
+
+    def _draw_event(self, painter: QtGui.QPainter, evt: Dict, width: int, header_height: int):
+        """Draw a single event block."""
+        lane_id = evt.get('lane', 'focus')
+        start = max(0.0, min(24.0, evt.get('start', 0)))
+        end = max(0.0, min(24.0, evt.get('end', 0)))
+        color = evt.get('color', QtGui.QColor("#4caf50"))
+        intensity = evt.get('intensity', 1.0)
+        
+        if abs(end - start) < 0.01:
+            return
+        
+        # Handle wrapping
+        blocks = []
+        if end < start:
+            blocks.append((start, 24.0))
+            blocks.append((0.0, end))
+        else:
+            blocks.append((start, end))
+        
+        lane_y = self._get_lane_y(lane_id, header_height)
+        is_hovered = (evt == self._hover_event)
+        
+        for s, e in blocks:
+            x = int((s / 24.0) * width)
+            w = max(2, int(((e - s) / 24.0) * width))
             
-            # Validate and clamp values to 0-24 range
-            start = max(0.0, min(24.0, start))
-            end = max(0.0, min(24.0, end))
+            # Adjust color based on intensity
+            draw_color = QtGui.QColor(color)
+            if intensity < 1.0:
+                draw_color.setAlpha(int(100 + 155 * intensity))
             
-            # Skip if start == end (zero duration)
-            if abs(end - start) < 0.01:
-                continue
+            if is_hovered:
+                draw_color = draw_color.lighter(130)
             
-            # Normalize to 0-24
-            # Handle wrapping
-            blocks = []
-            if end < start:
-                blocks.append((start, 24.0))
-                blocks.append((0.0, end))
-            else:
-                blocks.append((start, end))
-                
-            painter.setBrush(QtGui.QBrush(color))
+            # Draw block with gradient
+            gradient = QtGui.QLinearGradient(x, lane_y, x, lane_y + self.LANE_HEIGHT)
+            gradient.setColorAt(0, draw_color.lighter(110))
+            gradient.setColorAt(0.5, draw_color)
+            gradient.setColorAt(1, draw_color.darker(110))
+            
+            painter.setBrush(gradient)
             painter.setPen(QtCore.Qt.PenStyle.NoPen)
             
-            for s, e in blocks:
-                # Calculate coords
-                x = (s / 24.0) * width
-                w = ((e - s) / 24.0) * width
-                
-                block_rect = QtCore.QRectF(x, block_y, w, block_h)
-                painter.drawRoundedRect(block_rect, 4, 4)
+            block_rect = QtCore.QRectF(x, lane_y, w, self.LANE_HEIGHT)
+            painter.drawRoundedRect(block_rect, 2, 2)
+            
+            # Hover highlight
+            if is_hovered:
+                painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1))
+                painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
+                painter.drawRoundedRect(block_rect.adjusted(-1, -1, 1, 1), 3, 3)
 
-        # Draw Current Time Indicator
+    def _draw_ruler(self, painter: QtGui.QPainter, width: int, header_height: int, text_color: QtGui.QColor):
+        """Draw hour ruler at top."""
+        painter.setFont(QtGui.QFont("Segoe UI", 8))
+        painter.setPen(text_color)
+        
+        # Draw hour labels
+        for h in range(0, 25, 4):
+            x = int((h / 24.0) * width)
+            label = f"{h:02d}"
+            
+            # Center the label
+            fm = painter.fontMetrics()
+            label_width = fm.horizontalAdvance(label)
+            painter.drawText(x - label_width // 2, 12, label)
+
+    def _draw_now_indicator(self, painter: QtGui.QPainter, width: int, height: int, 
+                            header_height: int, lanes_height: int):
+        """Draw current time indicator."""
         now = datetime.now()
         curr_h = now.hour + now.minute / 60.0
         cx = int((curr_h / 24.0) * width)
         
+        # Vertical line through all lanes
         pen_curr = QtGui.QPen(QtGui.QColor("#ff5252"), 2)
         painter.setPen(pen_curr)
-        painter.drawLine(cx, 0, cx, height)
+        painter.drawLine(cx, 0, cx, header_height + lanes_height + 5)
         
-        # Draw "Now" bubble
-        bubble_rect = QtCore.QRectF(cx - 16, 5, 32, 16)
+        # "NOW" bubble at top
+        bubble_rect = QtCore.QRectF(cx - 16, 1, 32, 13)
         painter.setBrush(QtGui.QBrush(QtGui.QColor("#ff5252")))
         painter.setPen(QtCore.Qt.PenStyle.NoPen)
-        painter.drawRoundedRect(bubble_rect, 8, 8)
+        painter.drawRoundedRect(bubble_rect, 6, 6)
         
         painter.setPen(QtGui.QColor("#ffffff"))
         font = painter.font()
-        font.setPixelSize(9)
+        font.setPixelSize(8)
         font.setBold(True)
         painter.setFont(font)
         painter.drawText(bubble_rect, QtCore.Qt.AlignmentFlag.AlignCenter, "NOW")
+
+    def _draw_summary(self, painter: QtGui.QPainter, width: int, header_height: int):
+        """Draw summary stats on right side margin."""
+        # Count events by lane
+        lane_counts = {}
+        lane_durations = {}
+        
+        for evt in self.events:
+            lane = evt.get('lane', 'focus')
+            start = evt.get('start', 0)
+            end = evt.get('end', 0)
+            duration = end - start if end > start else (24 - start + end)
+            
+            lane_counts[lane] = lane_counts.get(lane, 0) + 1
+            lane_durations[lane] = lane_durations.get(lane, 0) + duration
+        
+        # Draw mini legend on right edge
+        painter.setFont(QtGui.QFont("Segoe UI", 6))
+        legend_x = width - 35
+        
+        for i, (lane_id, color, label, emoji) in enumerate(self.LANES):
+            lane_y = header_height + i * (self.LANE_HEIGHT + self.LANE_GAP)
+            
+            # Draw emoji
+            painter.setPen(QtGui.QColor("#888888"))
+            painter.drawText(legend_x, lane_y + self.LANE_HEIGHT - 2, emoji)
 
 
 class DailyTimelineWidget(QtWidgets.QFrame):
@@ -28452,7 +29673,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
     
     
     def _connect_game_state_signals(self):
-        """Connect to GameState signals for instant ring updates."""
+        """Connect to GameState signals for instant ring and timeline updates."""
         try:
             from game_state import get_game_state
             game_state = get_game_state()
@@ -28472,22 +29693,32 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                 game_state.power_changed.connect(self._update_chapter_ring)
                 game_state.story_changed.connect(self._update_chapter_ring)
                 
-                # Water ring updates
+                # Water ring updates (ring + timeline)
                 game_state.water_changed.connect(self._update_water_ring)
+                game_state.water_changed.connect(self._refresh_timeline_events)
                 
-                # Focus ring updates
+                # Focus ring updates (ring + timeline)
                 game_state.focus_time_changed.connect(self._update_focus_ring)
                 game_state.session_reward_earned.connect(self._update_focus_ring)
+                game_state.focus_time_changed.connect(self._refresh_timeline_events)
                 
                 # Entities ring updates (only entities_changed to avoid double updates
                 # since notify_entity_collected emits both entity_collected and entities_changed)
                 game_state.entities_changed.connect(self._update_entities_ring)
                 
-                # Eye ring updates
+                # Eye ring updates (ring + timeline)
                 game_state.eye_routine_changed.connect(self._update_eye_ring)
+                game_state.eye_routine_changed.connect(self._refresh_timeline_events)
+                
+                # Health tracking signals (timeline lane updates)
+                game_state.sleep_entry_changed.connect(self._refresh_timeline_events)
+                game_state.activity_entry_changed.connect(self._refresh_timeline_events)
+                game_state.weight_entry_changed.connect(self._refresh_timeline_events)
                 
                 # Full refresh fallback
                 game_state.full_refresh_required.connect(self.update_data)
+        except Exception:
+            pass  # Fall back to timer-based updates
         except Exception:
             pass  # Fall back to timer-based updates
     
@@ -28496,6 +29727,7 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         try:
             if hasattr(self, '_game_state') and self._game_state:
                 gs = self._game_state
+                # Ring updates
                 gs.equipment_changed.disconnect(self._update_mini_hero)
                 gs.power_changed.disconnect(self._update_mini_hero)
                 gs.story_changed.disconnect(self._update_mini_hero)
@@ -28508,6 +29740,15 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                 gs.entities_changed.disconnect(self._update_entities_ring)
                 gs.eye_routine_changed.disconnect(self._update_eye_ring)
                 gs.full_refresh_required.disconnect(self.update_data)
+                
+                # Timeline updates
+                gs.water_changed.disconnect(self._refresh_timeline_events)
+                gs.focus_time_changed.disconnect(self._refresh_timeline_events)
+                gs.eye_routine_changed.disconnect(self._refresh_timeline_events)
+                gs.sleep_entry_changed.disconnect(self._refresh_timeline_events)
+                gs.activity_entry_changed.disconnect(self._refresh_timeline_events)
+                gs.weight_entry_changed.disconnect(self._refresh_timeline_events)
+                
                 self._game_state = None
         except Exception:
             pass
@@ -28788,130 +30029,306 @@ class DailyTimelineWidget(QtWidgets.QFrame):
         self._refresh_timeline_events()
     
     def _refresh_timeline_events(self):
-        """Refresh the timeline events (sleep, water, focus sessions)."""
+        """Refresh the timeline events for all activity types.
+        
+        Collects data from: Sleep, Focus, Water, Eyes, Activity, Weight
+        and displays them in separate lanes on the enhanced ChronoStreamWidget.
+        """
         events = []
         
         today_date = datetime.now().date()
         yesterday_date = today_date - timedelta(days=1)
         today_str = today_date.strftime("%Y-%m-%d")
         yesterday_str = yesterday_date.strftime("%Y-%m-%d")
-
-        # Add sleep events
+        
+        # =====================================================================
+        # 1. SLEEP EVENTS (lane: sleep)
+        # =====================================================================
         try:
             sleep_entries = getattr(self.blocker, 'sleep_entries', [])
             for entry in sleep_entries:
                 entry_date = entry.get('date')
                 bedtime_str = entry.get('bedtime')
                 waketime_str = entry.get('wake_time')
+                quality = entry.get('quality', 'unknown')
+                score = entry.get('score', 50)
+                hours = entry.get('sleep_hours', 0)
                 
-                if not (bedtime_str and waketime_str): 
+                if not (bedtime_str and waketime_str):
                     continue
-                    
-                # Convert times to floats
+                
                 try:
                     bh, bm = map(int, bedtime_str.split(':'))
                     wh, wm = map(int, waketime_str.split(':'))
                     
-                    # Validate time ranges
                     if not (0 <= bh <= 23 and 0 <= bm <= 59 and 0 <= wh <= 23 and 0 <= wm <= 59):
                         continue
                     
-                    b_float = bh + bm/60.0
-                    w_float = wh + wm/60.0
+                    b_float = bh + bm / 60.0
+                    w_float = wh + wm / 60.0
                 except (ValueError, AttributeError, TypeError):
                     continue
-
+                
+                # Calculate intensity based on score
+                intensity = min(1.0, score / 100.0) if score > 0 else 0.5
+                
+                # Build tooltip
+                tooltip = f"😴 Sleep ({entry_date})\n"
+                tooltip += f"🛏️ {bedtime_str} → ☀️ {waketime_str}\n"
+                tooltip += f"⏱️ Duration: {hours:.1f}h\n"
+                tooltip += f"⭐ Quality: {quality.title()}\n"
+                tooltip += f"📊 Score: {score}/100"
+                
                 if entry_date == yesterday_str:
-                    # Sleep started yesterday. Ends today?
                     if w_float < b_float:
-                        # Ends today (standard sleep)
                         events.append({
                             'start': 0.0,
                             'end': w_float,
-                            'color': QtGui.QColor("#3949ab"), # Indigo
-                            'label': 'Sleep'
+                            'color': QtGui.QColor("#3949ab"),
+                            'label': 'Sleep',
+                            'lane': 'sleep',
+                            'intensity': intensity,
+                            'tooltip': tooltip
                         })
                 
                 elif entry_date == today_str:
-                    # Sleep starts today
                     if w_float < b_float:
-                        # Wraps to tomorrow
                         events.append({
                             'start': b_float,
                             'end': 24.0,
                             'color': QtGui.QColor("#3949ab"),
-                            'label': 'Sleep'
+                            'label': 'Sleep',
+                            'lane': 'sleep',
+                            'intensity': intensity,
+                            'tooltip': tooltip
                         })
                     else:
-                        # Nap
                         events.append({
                             'start': b_float,
                             'end': w_float,
-                            'color': QtGui.QColor("#3949ab"),
-                            'label': 'Nap'
+                            'color': QtGui.QColor("#5c6bc0"),
+                            'label': 'Nap',
+                            'lane': 'sleep',
+                            'intensity': intensity * 0.7,
+                            'tooltip': tooltip.replace("Sleep", "Nap")
                         })
         except Exception as e:
-            pass 
-
-        # Add water events (mark moments when water was logged)
+            logger.debug(f"[Timeline] Sleep events error: {e}")
+        
+        # =====================================================================
+        # 2. FOCUS EVENTS (lane: focus)
+        # =====================================================================
+        try:
+            # Active focus session
+            if hasattr(self.blocker, 'session_start') and self.blocker.session_start:
+                session_start_ts = self.blocker.session_start
+                now_ts = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch()
+                session_start_dt = datetime.fromtimestamp(session_start_ts)
+                now_dt = datetime.fromtimestamp(now_ts)
+                
+                if session_start_dt.date() == today_date:
+                    start_hour = session_start_dt.hour + session_start_dt.minute / 60.0
+                    end_hour = now_dt.hour + now_dt.minute / 60.0
+                    duration_mins = (now_ts - session_start_ts) / 60
+                    
+                    tooltip = f"🎯 Active Focus Session\n"
+                    tooltip += f"Started: {session_start_dt.strftime('%H:%M')}\n"
+                    tooltip += f"Duration: {int(duration_mins)}m"
+                    
+                    if end_hour >= start_hour:
+                        events.append({
+                            'start': start_hour,
+                            'end': end_hour,
+                            'color': QtGui.QColor("#66bb6a"),  # Lighter green for active
+                            'label': 'Focus (Active)',
+                            'lane': 'focus',
+                            'intensity': 1.0,
+                            'tooltip': tooltip
+                        })
+            
+            # Historical focus from daily stats (approximation - show as morning/afternoon blocks)
+            from app_utils import get_activity_date
+            activity_date = get_activity_date()
+            daily_stats = self.blocker.stats.get("daily_stats", {}).get(activity_date, {})
+            focus_sec = daily_stats.get("focus_time", 0)
+            
+            if focus_sec > 60:  # More than 1 minute logged
+                focus_mins = focus_sec / 60
+                # Estimate focus distribution (simplified)
+                tooltip = f"🎯 Today's Focus\n⏱️ Total: {focus_mins:.0f} minutes"
+                # This is just shown as context - the active session is the main indicator
+        except Exception as e:
+            logger.debug(f"[Timeline] Focus events error: {e}")
+        
+        # =====================================================================
+        # 3. WATER EVENTS (lane: water)
+        # =====================================================================
         try:
             water_entries = getattr(self.blocker, 'water_entries', [])
+            water_today_count = 0
+            
             for entry in water_entries:
                 entry_date = entry.get('date')
                 entry_time = entry.get('time')
                 
                 if entry_date == today_str and entry_time:
+                    water_today_count += 1
                     try:
-                        # Parse time
                         h, m = map(int, entry_time.split(':'))
                         if 0 <= h <= 23 and 0 <= m <= 59:
-                            time_float = h + m/60.0
-                            # Show as a 5-minute block
+                            time_float = h + m / 60.0
+                            
+                            tooltip = f"💧 Water #{water_today_count}\n⏰ {entry_time}"
+                            
                             events.append({
                                 'start': time_float,
-                                'end': min(time_float + 5/60.0, 24.0),
-                                'color': QtGui.QColor("#4fc3f7"), # Cyan
-                                'label': '💧 Water'
+                                'end': min(time_float + 10 / 60.0, 24.0),  # 10 min block
+                                'color': QtGui.QColor("#4fc3f7"),
+                                'label': f'Water #{water_today_count}',
+                                'lane': 'water',
+                                'intensity': 1.0,
+                                'tooltip': tooltip
                             })
                     except (ValueError, AttributeError, TypeError):
                         continue
-        except Exception:
-            pass
-
-        # Add active focus session (if currently running)
+        except Exception as e:
+            logger.debug(f"[Timeline] Water events error: {e}")
+        
+        # =====================================================================
+        # 4. EYE REST EVENTS (lane: eye)
+        # =====================================================================
         try:
-            if hasattr(self.blocker, 'session_start') and self.blocker.session_start:
-                session_start_ts = self.blocker.session_start
-                now_ts = QtCore.QDateTime.currentDateTime().toSecsSinceEpoch()
-                
-                # Convert to datetime objects
-                session_start_dt = datetime.fromtimestamp(session_start_ts)
-                now_dt = datetime.fromtimestamp(now_ts)
-                
-                # Check if session started today
-                if session_start_dt.date() == today_date:
-                    start_hour = session_start_dt.hour + session_start_dt.minute / 60.0
-                    end_hour = now_dt.hour + now_dt.minute / 60.0
+            eye_stats = self.blocker.stats.get("eye_protection", {})
+            last_date_str = eye_stats.get("last_date", "")
+            
+            if last_date_str:
+                try:
+                    last_dt = datetime.fromisoformat(last_date_str)
+                    now = datetime.now()
                     
-                    # Handle sessions that cross midnight
-                    if end_hour < start_hour:
-                        # Session continues past midnight - show until end of day
-                        events.append({
-                            'start': start_hour,
-                            'end': 24.0,
-                            'color': QtGui.QColor("#4caf50"), # Green for active session
-                            'label': '🎯 Focus Session (Active)'
-                        })
+                    # Check if within current activity day (5 AM cutoff)
+                    if now.hour < 5:
+                        current_day_start = now.replace(hour=5, minute=0, second=0, microsecond=0) - timedelta(days=1)
                     else:
+                        current_day_start = now.replace(hour=5, minute=0, second=0, microsecond=0)
+                    
+                    if last_dt >= current_day_start:
+                        # Show last eye rest as a marker
+                        rest_hour = last_dt.hour + last_dt.minute / 60.0
+                        daily_count = eye_stats.get("daily_count", 1)
+                        
+                        tooltip = f"👁️ Eye Rest #{daily_count}\n⏰ {last_dt.strftime('%H:%M')}\n💆 Routine completed"
+                        
                         events.append({
-                            'start': start_hour,
-                            'end': end_hour,
-                            'color': QtGui.QColor("#4caf50"), # Green for active session
-                            'label': '🎯 Focus Session (Active)'
+                            'start': max(0, rest_hour - 3 / 60.0),  # 3 min before
+                            'end': rest_hour,
+                            'color': QtGui.QColor("#ff9800"),
+                            'label': f'Eye Rest #{daily_count}',
+                            'lane': 'eye',
+                            'intensity': 1.0,
+                            'tooltip': tooltip
                         })
-        except Exception:
-            pass
-
+                except (ValueError, TypeError):
+                    pass
+        except Exception as e:
+            logger.debug(f"[Timeline] Eye events error: {e}")
+        
+        # =====================================================================
+        # 5. ACTIVITY EVENTS (lane: activity)
+        # =====================================================================
+        try:
+            activity_entries = getattr(self.blocker, 'activity_entries', [])
+            
+            for entry in activity_entries:
+                entry_date = entry.get('date')
+                
+                if entry_date == today_str:
+                    activity_type = entry.get('activity_type', 'exercise')
+                    duration = entry.get('duration', 30)
+                    intensity_level = entry.get('intensity', 'moderate')
+                    calories = entry.get('calories', 0)
+                    
+                    # Calculate intensity value
+                    intensity_map = {'light': 0.5, 'moderate': 0.75, 'intense': 1.0, 'vigorous': 1.0}
+                    intensity_val = intensity_map.get(intensity_level, 0.75)
+                    
+                    # Activity types
+                    activity_emojis = {
+                        'walking': '🚶',
+                        'running': '🏃',
+                        'cycling': '🚴',
+                        'swimming': '🏊',
+                        'strength': '💪',
+                        'yoga': '🧘',
+                        'sports': '⚽',
+                        'exercise': '🏋️',
+                    }
+                    emoji = activity_emojis.get(activity_type, '🏃')
+                    
+                    # Estimate time (assume morning/afternoon based on entry time or default to 12:00)
+                    entry_time_str = entry.get('time', '12:00')
+                    try:
+                        eh, em = map(int, entry_time_str.split(':'))
+                        start_hour = eh + em / 60.0
+                    except:
+                        start_hour = 12.0  # Default noon
+                    
+                    end_hour = min(start_hour + duration / 60.0, 24.0)
+                    
+                    tooltip = f"{emoji} {activity_type.title()}\n"
+                    tooltip += f"⏱️ Duration: {duration} min\n"
+                    tooltip += f"💪 Intensity: {intensity_level.title()}\n"
+                    if calories > 0:
+                        tooltip += f"🔥 Calories: {calories}"
+                    
+                    events.append({
+                        'start': start_hour,
+                        'end': end_hour,
+                        'color': QtGui.QColor("#e91e63"),
+                        'label': f'{emoji} {activity_type.title()}',
+                        'lane': 'activity',
+                        'intensity': intensity_val,
+                        'tooltip': tooltip
+                    })
+        except Exception as e:
+            logger.debug(f"[Timeline] Activity events error: {e}")
+        
+        # =====================================================================
+        # 6. WEIGHT EVENTS (lane: weight)
+        # =====================================================================
+        try:
+            weight_entries = getattr(self.blocker, 'weight_entries', [])
+            
+            for entry in weight_entries:
+                entry_date = entry.get('date')
+                
+                if entry_date == today_str:
+                    weight = entry.get('weight', 0)
+                    unit = getattr(self.blocker, 'weight_unit', 'kg')
+                    entry_time_str = entry.get('time', '08:00')
+                    
+                    try:
+                        wh, wm = map(int, entry_time_str.split(':'))
+                        log_hour = wh + wm / 60.0
+                    except:
+                        log_hour = 8.0  # Default morning
+                    
+                    tooltip = f"⚖️ Weight Log\n"
+                    tooltip += f"📊 {weight} {unit}\n"
+                    tooltip += f"⏰ Logged at {entry_time_str}"
+                    
+                    events.append({
+                        'start': log_hour,
+                        'end': min(log_hour + 15 / 60.0, 24.0),  # 15 min marker
+                        'color': QtGui.QColor("#9c27b0"),
+                        'label': f'⚖️ {weight} {unit}',
+                        'lane': 'weight',
+                        'intensity': 1.0,
+                        'tooltip': tooltip
+                    })
+        except Exception as e:
+            logger.debug(f"[Timeline] Weight events error: {e}")
+        
         self.timeline.set_events(events)
 
 
