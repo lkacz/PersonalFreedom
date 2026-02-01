@@ -16,6 +16,7 @@ class UserManager:
         self.users_dir = self.base_dir / "users"
         self.users_config_path = self.base_dir / "users.json"
         self.last_user_file = self.base_dir / ".last_user"
+        self.previous_user_file = self.base_dir / ".previous_user"
         
         # Files that should be moved to user directory during migration
         self.user_files = [
@@ -229,3 +230,41 @@ class UserManager:
             pass
         
         return False
+
+    def save_previous_user(self, username: str):
+        """Save the previous user (for quick switching back)."""
+        try:
+            clean_name = self._sanitize_username(username)
+            if not clean_name:
+                return
+            
+            # Atomic write pattern
+            temp_file = self.previous_user_file.with_suffix('.tmp')
+            with open(temp_file, 'w', encoding='utf-8') as f:
+                f.write(clean_name)
+                f.flush()
+                os.fsync(f.fileno())
+            
+            os.replace(temp_file, self.previous_user_file)
+            
+        except Exception as e:
+            _logger.error(f"Failed to save previous user: {e}")
+            try:
+                if 'temp_file' in locals() and temp_file.exists():
+                    temp_file.unlink()
+            except Exception:
+                pass
+
+    def get_previous_user(self) -> Optional[str]:
+        """Get the previous user if it exists and is valid."""
+        if not self.previous_user_file.exists():
+            return None
+
+        try:
+            with open(self.previous_user_file, 'r', encoding='utf-8') as f:
+                username = f.read().strip()
+                if username and self.user_exists(username):
+                    return username
+        except Exception:
+            pass
+        return None

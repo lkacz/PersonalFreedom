@@ -29329,32 +29329,38 @@ class ChronoStreamWidget(QtWidgets.QWidget):
     """Enhanced 24-hour timeline visualization showing multiple activity streams.
     
     Features:
-    - Multiple horizontal lanes for different activity types
-    - Color-coded events: Sleep, Focus, Water, Eyes, Activity, Weight
+    - 3 horizontal lanes for duration events: Sleep, Focus, Activity
+    - Point events row showing Water, Eyes, Weight as icons
     - Real-time "NOW" indicator
     - Hover tooltips with detailed information
     - Visual intensity based on quality/duration
     """
     
-    # Lane configuration: (lane_id, color, label, emoji)
-    LANES = [
+    # Duration lanes: events that span time (lane_id, color, label, emoji)
+    DURATION_LANES = [
         ("sleep", "#3949ab", "Sleep", "😴"),       # Indigo - top lane
         ("focus", "#4caf50", "Focus", "🎯"),       # Green
-        ("eye", "#ff9800", "Eyes", "👁️"),         # Orange
-        ("water", "#4fc3f7", "Water", "💧"),       # Cyan
         ("activity", "#e91e63", "Activity", "🏃"), # Pink
-        ("weight", "#9c27b0", "Weight", "⚖️"),     # Purple - bottom
+    ]
+    
+    # Point events: single-moment markers shown as icons (lane_id, color, emoji)
+    POINT_EVENTS = [
+        ("water", "#4fc3f7", "💧"),    # Cyan water drop
+        ("eye", "#ff9800", "👁"),      # Orange eye
+        ("weight", "#9c27b0", "⚖"),   # Purple scale
     ]
     
     # Lane height (pixels per lane)
-    LANE_HEIGHT = 12
+    LANE_HEIGHT = 16
     LANE_GAP = 2
+    POINT_ROW_HEIGHT = 18  # Height for point events row
     
     def __init__(self, parent=None):
         super().__init__(parent)
         self.events = []  # List of dicts with 'start', 'end', 'color', 'label', 'lane'
         self._hover_event = None
-        self.setMinimumHeight(90)
+        # 3 duration lanes + 1 point row + header + padding
+        self.setMinimumHeight(85)
         self.setMouseTracking(True)
         
         # Update current time indicator periodically
@@ -29381,11 +29387,20 @@ class ChronoStreamWidget(QtWidgets.QWidget):
         self.update()
 
     def _get_lane_y(self, lane_id: str, header_height: int) -> int:
-        """Get Y position for a lane."""
-        for i, (lid, _, _, _) in enumerate(self.LANES):
+        """Get Y position for a duration lane."""
+        for i, (lid, _, _, _) in enumerate(self.DURATION_LANES):
             if lid == lane_id:
                 return header_height + i * (self.LANE_HEIGHT + self.LANE_GAP)
         return header_height
+    
+    def _get_point_row_y(self, header_height: int) -> int:
+        """Get Y position for the point events row (below duration lanes)."""
+        lanes_height = len(self.DURATION_LANES) * (self.LANE_HEIGHT + self.LANE_GAP)
+        return header_height + lanes_height
+    
+    def _is_point_event(self, lane_id: str) -> bool:
+        """Check if lane_id is a point event type."""
+        return lane_id in ('water', 'eye', 'weight')
     
     def _find_event_at(self, pos: QtCore.QPoint) -> Optional[Dict]:
         """Find event at mouse position."""
@@ -29393,25 +29408,33 @@ class ChronoStreamWidget(QtWidgets.QWidget):
         if width < 10:
             return None
         
+        header_h = 18
+        
         for evt in self.events:
             lane_id = evt.get('lane', 'focus')
             start = max(0.0, min(24.0, evt.get('start', 0)))
-            end = max(0.0, min(24.0, evt.get('end', 0)))
             
-            if abs(end - start) < 0.01:
-                continue
-            
-            # Calculate x bounds
-            x_start = int((start / 24.0) * width)
-            x_end = int((end / 24.0) * width)
-            
-            # Calculate y bounds
-            header_h = 18
-            lane_y = self._get_lane_y(lane_id, header_h)
-            
-            # Check if position is within this event
-            if x_start <= pos.x() <= x_end and lane_y <= pos.y() <= lane_y + self.LANE_HEIGHT:
-                return evt
+            if self._is_point_event(lane_id):
+                # Point events: check icon hit area (16x16 centered on time)
+                x_center = int((start / 24.0) * width)
+                point_y = self._get_point_row_y(header_h)
+                icon_size = 14
+                
+                if (x_center - icon_size // 2 <= pos.x() <= x_center + icon_size // 2 and
+                    point_y <= pos.y() <= point_y + self.POINT_ROW_HEIGHT):
+                    return evt
+            else:
+                # Duration events: check block bounds
+                end = max(0.0, min(24.0, evt.get('end', 0)))
+                if abs(end - start) < 0.01:
+                    continue
+                
+                x_start = int((start / 24.0) * width)
+                x_end = int((end / 24.0) * width)
+                lane_y = self._get_lane_y(lane_id, header_h)
+                
+                if x_start <= pos.x() <= x_end and lane_y <= pos.y() <= lane_y + self.LANE_HEIGHT:
+                    return evt
         
         return None
 
@@ -29455,12 +29478,13 @@ class ChronoStreamWidget(QtWidgets.QWidget):
         
         # Layout
         header_height = 18
-        ruler_height = 20
-        lanes_height = len(self.LANES) * (self.LANE_HEIGHT + self.LANE_GAP)
+        duration_lanes_height = len(self.DURATION_LANES) * (self.LANE_HEIGHT + self.LANE_GAP)
+        point_row_y = header_height + duration_lanes_height
+        total_content_height = duration_lanes_height + self.POINT_ROW_HEIGHT
         
-        # Draw lane backgrounds and labels
+        # Draw duration lane backgrounds
         painter.setFont(QtGui.QFont("Segoe UI", 7))
-        for i, (lane_id, color, label, emoji) in enumerate(self.LANES):
+        for i, (lane_id, color, label, emoji) in enumerate(self.DURATION_LANES):
             lane_y = header_height + i * (self.LANE_HEIGHT + self.LANE_GAP)
             
             # Subtle lane background
@@ -29472,21 +29496,31 @@ class ChronoStreamWidget(QtWidgets.QWidget):
             painter.setPen(QtGui.QPen(grid_color, 1))
             painter.drawLine(0, lane_y + self.LANE_HEIGHT, width, lane_y + self.LANE_HEIGHT)
         
+        # Draw point events row background (subtle)
+        point_bg = QtGui.QColor("#1e2d4a")
+        painter.fillRect(0, point_row_y, width, self.POINT_ROW_HEIGHT, point_bg)
+        painter.setPen(QtGui.QPen(grid_color, 1))
+        painter.drawLine(0, point_row_y + self.POINT_ROW_HEIGHT, width, point_row_y + self.POINT_ROW_HEIGHT)
+        
         # Draw vertical hour grid lines
         painter.setPen(QtGui.QPen(grid_color, 1, QtCore.Qt.PenStyle.DotLine))
         for h in range(0, 25, 3):
             x = int((h / 24.0) * width)
-            painter.drawLine(x, header_height, x, header_height + lanes_height)
+            painter.drawLine(x, header_height, x, header_height + total_content_height)
         
-        # Draw events on lanes
+        # Draw duration events on lanes
         for evt in self.events:
-            self._draw_event(painter, evt, width, header_height)
+            if not self._is_point_event(evt.get('lane', 'focus')):
+                self._draw_event(painter, evt, width, header_height)
+        
+        # Draw point events as icons
+        self._draw_point_events(painter, width, header_height)
         
         # Draw ruler at top
         self._draw_ruler(painter, width, header_height, text_color)
         
         # Draw current time indicator
-        self._draw_now_indicator(painter, width, height, header_height, lanes_height)
+        self._draw_now_indicator(painter, width, height, header_height, total_content_height)
         
         # Draw summary stats on right side
         self._draw_summary(painter, width, header_height)
@@ -29542,6 +29576,66 @@ class ChronoStreamWidget(QtWidgets.QWidget):
                 painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1))
                 painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
                 painter.drawRoundedRect(block_rect.adjusted(-1, -1, 1, 1), 3, 3)
+    
+    def _draw_point_events(self, painter: QtGui.QPainter, width: int, header_height: int):
+        """Draw point events (Water, Eye, Weight) as icons on the point row."""
+        point_y = self._get_point_row_y(header_height)
+        icon_size = 12
+        
+        # Get emoji lookup for point events
+        emoji_map = {pe[0]: pe[2] for pe in self.POINT_EVENTS}
+        color_map = {pe[0]: pe[1] for pe in self.POINT_EVENTS}
+        
+        # Collect point events and sort by time to handle overlap
+        point_events = [evt for evt in self.events if self._is_point_event(evt.get('lane', ''))]
+        point_events.sort(key=lambda e: e.get('start', 0))
+        
+        # Track positions to avoid overlap
+        last_x = -20
+        offset_y = 0
+        
+        for evt in point_events:
+            lane_id = evt.get('lane', '')
+            start = max(0.0, min(24.0, evt.get('start', 0)))
+            emoji = emoji_map.get(lane_id, '•')
+            color = QtGui.QColor(color_map.get(lane_id, '#888888'))
+            
+            x_center = int((start / 24.0) * width)
+            
+            # Stagger if too close to previous icon
+            if x_center - last_x < 14:
+                offset_y = (offset_y + 1) % 2  # Alternate between 0 and 1
+            else:
+                offset_y = 0
+            
+            icon_y = point_y + 2 + offset_y * 8
+            is_hovered = (evt == self._hover_event)
+            
+            # Draw small colored circle background
+            if is_hovered:
+                bg_color = color.lighter(130)
+                bg_color.setAlpha(200)
+            else:
+                bg_color = color
+                bg_color.setAlpha(150)
+            
+            painter.setBrush(QtGui.QBrush(bg_color))
+            painter.setPen(QtCore.Qt.PenStyle.NoPen)
+            painter.drawEllipse(x_center - icon_size // 2, icon_y, icon_size, icon_size)
+            
+            # Draw emoji
+            painter.setFont(QtGui.QFont("Segoe UI Emoji", 7))
+            painter.setPen(QtGui.QColor("#ffffff"))
+            text_rect = QtCore.QRectF(x_center - icon_size // 2 - 1, icon_y - 1, icon_size + 2, icon_size + 2)
+            painter.drawText(text_rect, QtCore.Qt.AlignmentFlag.AlignCenter, emoji)
+            
+            # Hover ring
+            if is_hovered:
+                painter.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1))
+                painter.setBrush(QtCore.Qt.BrushStyle.NoBrush)
+                painter.drawEllipse(x_center - icon_size // 2 - 2, icon_y - 2, icon_size + 4, icon_size + 4)
+            
+            last_x = x_center
 
     def _draw_ruler(self, painter: QtGui.QPainter, width: int, header_height: int, text_color: QtGui.QColor):
         """Draw hour ruler at top."""
@@ -29584,30 +29678,20 @@ class ChronoStreamWidget(QtWidgets.QWidget):
         painter.drawText(bubble_rect, QtCore.Qt.AlignmentFlag.AlignCenter, "NOW")
 
     def _draw_summary(self, painter: QtGui.QPainter, width: int, header_height: int):
-        """Draw summary stats on right side margin."""
-        # Count events by lane
-        lane_counts = {}
-        lane_durations = {}
-        
-        for evt in self.events:
-            lane = evt.get('lane', 'focus')
-            start = evt.get('start', 0)
-            end = evt.get('end', 0)
-            duration = end - start if end > start else (24 - start + end)
-            
-            lane_counts[lane] = lane_counts.get(lane, 0) + 1
-            lane_durations[lane] = lane_durations.get(lane, 0) + duration
-        
-        # Draw mini legend on right edge
+        """Draw summary labels on right side margin for duration lanes."""
         painter.setFont(QtGui.QFont("Segoe UI", 6))
-        legend_x = width - 35
+        legend_x = width - 20
         
-        for i, (lane_id, color, label, emoji) in enumerate(self.LANES):
+        # Draw duration lane emojis
+        for i, (lane_id, color, label, emoji) in enumerate(self.DURATION_LANES):
             lane_y = header_height + i * (self.LANE_HEIGHT + self.LANE_GAP)
-            
-            # Draw emoji
             painter.setPen(QtGui.QColor("#888888"))
             painter.drawText(legend_x, lane_y + self.LANE_HEIGHT - 2, emoji)
+        
+        # Draw point events row label
+        point_y = self._get_point_row_y(header_height)
+        painter.setPen(QtGui.QColor("#666666"))
+        painter.drawText(legend_x - 5, point_y + self.POINT_ROW_HEIGHT - 4, "⬇")
 
 
 class DailyTimelineWidget(QtWidgets.QFrame):
@@ -33325,10 +33409,43 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         quick_bar.addStretch()
         
-        # Username button - click to switch users
+        # Previous user button (for quick switch back)
+        self.prev_user_btn = QtWidgets.QPushButton()
+        self.prev_user_btn.setStyleSheet("""
+            QPushButton {
+                font-weight: bold; 
+                padding: 4px 8px; 
+                background-color: #2d3748;
+                border: 1px solid #4a5568;
+                border-radius: 4px;
+                color: #a0aec0;
+            }
+            QPushButton:hover {
+                background-color: #4a5568;
+                color: #e2e8f0;
+            }
+        """)
+        self.prev_user_btn.clicked.connect(self._quick_switch_to_previous)
+        self.prev_user_btn.setVisible(False)  # Hidden until we have a previous user
+        quick_bar.addWidget(self.prev_user_btn)
+        self._update_previous_user_btn()
+        
+        # Current username button - click to switch users
         current_user = self.blocker.user_dir.name if hasattr(self.blocker, 'user_dir') else "Default"
         self.user_btn = QtWidgets.QPushButton(f"👤 {current_user}")
-        self.user_btn.setStyleSheet("font-weight: bold; padding: 6px 12px;")
+        self.user_btn.setStyleSheet("""
+            QPushButton {
+                font-weight: bold; 
+                padding: 6px 12px;
+                background-color: #38a169;
+                border: 1px solid #48bb78;
+                border-radius: 4px;
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #48bb78;
+            }
+        """)
         self.user_btn.setToolTip("Click to switch user profiles")
         self.user_btn.clicked.connect(self._switch_user)
         quick_bar.addWidget(self.user_btn)
@@ -33700,11 +33817,17 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 if selection_dialog.exec() == QtWidgets.QDialog.Accepted:
                     new_user = selection_dialog.selected_user
                     if new_user and new_user != self.username:
+                        # Save current user as previous user (for quick switch back)
+                        um.save_previous_user(self.username)
+                        
                         # Save new user as last user
                         um.save_last_user(new_user)
                         
                         # Reload the main window with new user
                         self._reload_user(new_user)
+                        
+                        # Update the previous user button
+                        self._update_previous_user_btn()
                         
                         show_info(self, "Profile Switched", f"Switched to profile: {new_user}")
                     elif new_user == self.username:
@@ -33713,6 +33836,76 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             except Exception as e:
                 show_error(self, "Error", f"Could not switch user: {e}")
     
+    def _update_previous_user_btn(self) -> None:
+        """Update the previous user button visibility and text."""
+        try:
+            from core_logic import APP_DIR
+            from user_manager import UserManager
+            
+            um = UserManager(APP_DIR)
+            prev_user = um.get_previous_user()
+            
+            if prev_user and prev_user != self.username and hasattr(self, 'prev_user_btn'):
+                self.prev_user_btn.setText(f"← {prev_user}")
+                self.prev_user_btn.setToolTip(f"Quick switch to {prev_user}")
+                self.prev_user_btn.setVisible(True)
+            elif hasattr(self, 'prev_user_btn'):
+                self.prev_user_btn.setVisible(False)
+        except Exception:
+            if hasattr(self, 'prev_user_btn'):
+                self.prev_user_btn.setVisible(False)
+    
+    def _quick_switch_to_previous(self) -> None:
+        """Quickly switch to the previous user without confirmation dialog."""
+        # Check if a session is running - require stop first
+        if hasattr(self, 'timer_tab') and self.timer_tab.timer_running:
+            show_warning(
+                self, 
+                "Session Active",
+                "A focus session is currently running.\n\n"
+                "Please stop the session before switching profiles."
+            )
+            return
+        
+        # Check if GameState has pending batch operations
+        if hasattr(self, 'game_state') and self.game_state:
+            if getattr(self.game_state, '_batch_depth', 0) > 0:
+                show_warning(
+                    self,
+                    "Operation in Progress",
+                    "A game operation is currently in progress.\n\n"
+                    "Please wait for it to complete before switching profiles."
+                )
+                return
+        
+        try:
+            from core_logic import APP_DIR
+            from user_manager import UserManager
+            
+            um = UserManager(APP_DIR)
+            prev_user = um.get_previous_user()
+            
+            if prev_user and prev_user != self.username:
+                # Save current user's config first
+                self.blocker.save_config()
+                self.blocker.save_stats()
+                
+                # Save current user as previous (swap)
+                current = self.username
+                um.save_previous_user(current)
+                
+                # Save new user as last user
+                um.save_last_user(prev_user)
+                
+                # Reload the main window with previous user
+                self._reload_user(prev_user)
+                
+                # Update the previous user button (now shows the user we just came from)
+                self._update_previous_user_btn()
+                
+        except Exception as e:
+            show_error(self, "Error", f"Could not switch user: {e}")
+
     def _reload_user(self, new_username: str) -> None:
         """Reload the application state with a new user profile without restarting.
         
@@ -35259,7 +35452,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             
             # Refresh inventory UI if it exists
             if hasattr(self, 'adhd_tab'):
-                self.adhd_tab.refresh_inventory()
+                self.adhd_tab._refresh_inventory()
                 self._update_coin_display()
 
     def _on_session_complete(self, elapsed_seconds: int) -> None:
