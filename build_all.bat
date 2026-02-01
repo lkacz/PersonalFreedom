@@ -1,6 +1,7 @@
 @echo off
 :: Master build script - Creates both standalone package AND installer
 :: Run this to build everything from scratch
+:: Fully automated - no user input required
 
 echo.
 echo =============================================
@@ -13,7 +14,6 @@ echo   2. Windows Installer (PersonalLiberty_Setup.exe)
 echo.
 echo Both include FULLY BUNDLED AI - no dependencies needed!
 echo.
-pause
 
 :: Step 1: Build executables with bundled AI
 echo.
@@ -24,7 +24,6 @@ echo.
 call build.bat
 if %errorlevel% neq 0 (
     echo [ERROR] Executable build failed!
-    pause
     exit /b 1
 )
 
@@ -37,7 +36,6 @@ echo.
 call build_installer.bat
 if %errorlevel% neq 0 (
     echo [ERROR] Installer build failed!
-    pause
     exit /b 1
 )
 
@@ -81,4 +79,3 @@ echo   - Upload installer_output\PersonalLiberty_Setup_v2.1.exe
 echo.
 echo Ready to distribute! 🚀
 echo.
-pause
