@@ -1,6 +1,6 @@
 """Version information for Personal Liberty."""
 
-__version__ = "6.0.31"
+__version__ = "6.0.32"
 __version_info__ = tuple(int(x) for x in __version__.split("."))
 
 # Release information
