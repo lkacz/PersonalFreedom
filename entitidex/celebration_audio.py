@@ -346,9 +346,12 @@ class CelebrationAudioManager(QObject):
     _instance = None
     
     # Minimum time between plays to prevent audio thread exhaustion (ms)
-    MIN_PLAY_INTERVAL_MS = 150
+    # Windows MMCSS can only handle ~8-10 audio threads per process
+    # Higher value = fewer thread creations = more stable audio
+    MIN_PLAY_INTERVAL_MS = 300
     # Time to wait after playback finishes before releasing device (ms)
-    RELEASE_DELAY_MS = 500
+    # Longer delay = more stable audio (keeps sink warm for consecutive sounds)
+    RELEASE_DELAY_MS = 5000  # 5 seconds
     
     def __init__(self):
         super().__init__()
@@ -432,35 +435,30 @@ class CelebrationAudioManager(QObject):
     
     @Slot(QAudio.State)
     def _on_state_changed(self, state: QAudio.State) -> None:
-        """Handle audio sink state changes to release device when done."""
-        if state == QAudio.State.IdleState:
-            # Playback finished - schedule device release
-            self._schedule_release()
-        elif state == QAudio.State.StoppedState:
-            # Explicitly stopped - also schedule release
-            self._schedule_release()
+        """Handle audio sink state changes."""
+        # Log state changes for debugging but don't release device automatically
+        # The sink stays alive until app shutdown for fastest response time
+        _logger.debug(f"Audio sink state changed to: {state}")
     
     def _schedule_release(self) -> None:
-        """Schedule audio device release after a short delay."""
-        # Cancel any existing release timer
-        if self._release_timer is not None:
-            try:
-                self._release_timer.stop()
-            except Exception:
-                pass
+        """Schedule audio device release after a short delay.
         
-        # Create a timer to release device after delay
-        from PySide6.QtCore import QTimer
-        self._release_timer = QTimer(self)
-        self._release_timer.setSingleShot(True)
-        self._release_timer.timeout.connect(self._release_device)
-        self._release_timer.start(self.RELEASE_DELAY_MS)
+        Note: Currently disabled - we keep the sink alive for faster response.
+        """
+        pass  # Disabled - keep sink alive
     
     def _release_device(self) -> None:
         """Release the audio device to prevent interference with other apps."""
         if self._sink is not None:
             try:
-                self._sink.stop()
+                # Disconnect signal first to prevent recursive state changes
+                try:
+                    self._sink.stateChanged.disconnect(self._on_state_changed)
+                except Exception:
+                    pass
+                # Only stop if still in active state (not already idle/stopped)
+                if self._sink.state() == QAudio.State.ActiveState:
+                    self._sink.stop()
                 self._sink.deleteLater()
             except Exception as e:
                 _logger.debug(f"Error releasing audio sink: {e}")
@@ -469,7 +467,6 @@ class CelebrationAudioManager(QObject):
         if self._current_buffer is not None:
             try:
                 self._current_buffer.close()
-                self._current_buffer.deleteLater()
             except Exception:
                 pass
             self._current_buffer = None
@@ -494,7 +491,12 @@ class CelebrationAudioManager(QObject):
                 _logger.error(f"Failed to render {theme_id}: {e}")
 
     def play_buffer(self, data: QByteArray, is_voice: bool = False) -> bool:
-        """Play a raw audio buffer with rate limiting to prevent thread exhaustion."""
+        """Play a raw audio buffer with rate limiting to prevent thread exhaustion.
+        
+        Args:
+            data: Raw PCM audio data
+            is_voice: If True, bypasses rate limiting (voice has synthesis delay built-in)
+        """
         if data.isEmpty():
             return False
         
@@ -506,12 +508,13 @@ class CelebrationAudioManager(QObject):
             except Exception:
                 pass
 
-        # Rate limit to prevent Windows MMCSS thread exhaustion
+        # Rate limit sound effects (not voice) to prevent Windows MMCSS thread exhaustion
+        # Voice playback bypasses this since TTS synthesis already provides delay
         import time
         current_time = int(time.time() * 1000)
-        # Allows faster repeats for voice snippets if needed, but safety first
-        if current_time - self._last_play_time < self.MIN_PLAY_INTERVAL_MS:
-            # Too soon, skip this play request
+        if not is_voice and (current_time - self._last_play_time < self.MIN_PLAY_INTERVAL_MS):
+            # Too soon for sound effects, skip this play request
+            _logger.debug(f"Rate limited sound play, delta={current_time - self._last_play_time}ms")
             return False
         self._last_play_time = current_time
         
@@ -523,26 +526,35 @@ class CelebrationAudioManager(QObject):
         target_vol = self._voice_volume if is_voice else self._sound_volume
         self._sink.setVolume(target_vol)
 
-        # 1. Stop current playback strictly
+        # 1. Always stop current playback before starting new audio
+        # QAudioSink requires stop() before a new start() call
         self._sink.stop()
         
-        # 2. Clean up previous buffer
+        # 2. Reset sink to StoppedState completely before changing buffer
+        # This ensures the FFmpeg backend stops reading the old buffer
+        while self._sink.state() == QAudio.State.ActiveState:
+            from PySide6.QtCore import QCoreApplication
+            QCoreApplication.processEvents()
+        
+        # 3. Clean up previous buffer now that sink is fully stopped
         if self._current_buffer is not None:
             try:
                 self._current_buffer.close()
-                self._current_buffer.deleteLater()
             except Exception:
                 pass
+            self._current_buffer = None
         
-        # 3. Keep the QByteArray alive as instance attribute (prevents use-after-free)
+        # 4. Keep the QByteArray alive as instance attribute (prevents use-after-free)
         self._current_data = QByteArray(data)  # Make a copy we own
         
-        # 4. Create QBuffer that owns its data via setData()
-        self._current_buffer = QBuffer(self)
-        self._current_buffer.setData(self._current_data)  # QBuffer now owns the bytes
-        self._current_buffer.open(QIODevice.OpenModeFlag.ReadOnly)
+        # 5. Create QBuffer and open it for reading
+        self._current_buffer = QBuffer()
+        self._current_buffer.setData(self._current_data)
+        if not self._current_buffer.open(QIODevice.OpenModeFlag.ReadOnly):
+            _logger.error("Failed to open audio buffer for reading")
+            return False
         
-        # 5. Start playback
+        # 6. Start playback
         self._sink.start(self._current_buffer)
         return True
 
