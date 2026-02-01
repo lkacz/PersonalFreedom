@@ -530,13 +530,26 @@ class CelebrationAudioManager(QObject):
         # QAudioSink requires stop() before a new start() call
         self._sink.stop()
         
-        # 2. Reset sink to StoppedState completely before changing buffer
-        # This ensures the FFmpeg backend stops reading the old buffer
-        while self._sink.state() == QAudio.State.ActiveState:
-            from PySide6.QtCore import QCoreApplication
+        # 2. Wait for sink to reach StoppedState completely
+        # The FFmpeg/Windows backend may still be reading from the old buffer
+        # even after stop() returns, so we need to wait and allow time for cleanup
+        max_wait_iterations = 50  # Max 500ms wait
+        wait_count = 0
+        while self._sink.state() not in (QAudio.State.StoppedState, QAudio.State.IdleState):
+            from PySide6.QtCore import QCoreApplication, QThread
             QCoreApplication.processEvents()
+            QThread.msleep(10)  # Small delay to prevent CPU spinning
+            wait_count += 1
+            if wait_count >= max_wait_iterations:
+                _logger.warning("Audio sink stop timeout - forcing buffer cleanup")
+                break
         
-        # 3. Clean up previous buffer now that sink is fully stopped
+        # 3. Additional settle time for the audio backend thread to fully stop reading
+        # This prevents "device not open" errors from the pull thread
+        from PySide6.QtCore import QThread
+        QThread.msleep(20)  # Allow backend thread to settle
+        
+        # 4. Clean up previous buffer now that sink is fully stopped
         if self._current_buffer is not None:
             try:
                 self._current_buffer.close()
@@ -544,17 +557,17 @@ class CelebrationAudioManager(QObject):
                 pass
             self._current_buffer = None
         
-        # 4. Keep the QByteArray alive as instance attribute (prevents use-after-free)
+        # 5. Keep the QByteArray alive as instance attribute (prevents use-after-free)
         self._current_data = QByteArray(data)  # Make a copy we own
         
-        # 5. Create QBuffer and open it for reading
+        # 6. Create QBuffer and open it for reading
         self._current_buffer = QBuffer()
         self._current_buffer.setData(self._current_data)
         if not self._current_buffer.open(QIODevice.OpenModeFlag.ReadOnly):
             _logger.error("Failed to open audio buffer for reading")
             return False
         
-        # 6. Start playback
+        # 7. Start playback
         self._sink.start(self._current_buffer)
         return True
 

@@ -865,6 +865,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         
         if GAMIFICATION_AVAILABLE:
             # Pass combined merge luck (items + entity perks) + city bonus
+            # Note: calculate_merge_success_rate already caps at MERGE_MAX_SUCCESS_RATE (90%)
             self.base_success_rate = calculate_merge_success_rate(
                 items, items_merge_luck=self.total_merge_luck, city_bonus=self.city_merge_bonus
             )
@@ -911,9 +912,10 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self._drag_pos = None
         
-        # Size constraints
-        self.setMinimumSize(680, 500)
-        self.setMaximumHeight(900)
+        # Size constraints - fixed width to prevent resize when boost checkbox changes content
+        self.setFixedWidth(680)
+        self.setMinimumHeight(500)
+        self.setMaximumHeight(1200)  # Allow taller dialog to show full content
         
         # Load saved geometry
         from lottery_animation import load_dialog_geometry
@@ -1023,11 +1025,11 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         frame_layout.addWidget(self._header_frame)
         
         # Scroll area for content
-        scroll_area = QtWidgets.QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        scroll_area.setStyleSheet("""
+        self._scroll_area = QtWidgets.QScrollArea()
+        self._scroll_area.setWidgetResizable(True)
+        self._scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self._scroll_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self._scroll_area.setStyleSheet("""
             QScrollArea {
                 border: none;
                 background: transparent;
@@ -1091,15 +1093,16 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         items_section = self._create_items_section()
         main_layout.addWidget(items_section)
         
-        # Success rate widget (full width)
-        self.success_widget = SuccessRateWidget(self.success_rate, self.breakdown)
-        main_layout.addWidget(self.success_widget)
-        
         # Entity Perk Contributors section (if any entities contribute to merge bonuses)
+        # Placed right after items section for logical grouping
         if self.entity_perk_contributors:
             entity_section = self._create_entity_perks_section()
             if entity_section:
                 main_layout.addWidget(entity_section)
+        
+        # Success rate widget (full width)
+        self.success_widget = SuccessRateWidget(self.success_rate, self.breakdown)
+        main_layout.addWidget(self.success_widget)
         
         # Boost section (optional +25% for 50 coins)
         boost_section = self._create_boost_section()
@@ -1113,10 +1116,16 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.rarity_dist_widget.setStyleSheet("""
             QWidget {
                 background-color: #252540;
-                border: 2px solid #555;
+                border: none;
                 border-radius: 8px;
             }
         """)
+        # Apply subtle shadow for depth
+        rarity_shadow = QtWidgets.QGraphicsDropShadowEffect()
+        rarity_shadow.setBlurRadius(10)
+        rarity_shadow.setColor(QtGui.QColor(0, 0, 0, 80))
+        rarity_shadow.setOffset(0, 2)
+        self.rarity_dist_widget.setGraphicsEffect(rarity_shadow)
         main_layout.addWidget(self.rarity_dist_widget)
         
         # Tier upgrade section (optional +1 tier for 50 coins)
@@ -1134,8 +1143,8 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         main_layout.addWidget(button_box)
         
         # Add content widget to scroll area
-        scroll_area.setWidget(content_widget)
-        frame_layout.addWidget(scroll_area, 1)  # Stretch to fill
+        self._scroll_area.setWidget(content_widget)
+        frame_layout.addWidget(self._scroll_area, 1)  # Stretch to fill
         
         # Set dialog style for transparent background
         self.setStyleSheet("""
@@ -1157,6 +1166,46 @@ class LuckyMergeDialog(QtWidgets.QDialog):
                 opacity: 0.9;
             }
         """)
+        
+        # Auto-size dialog to fit content (up to screen height)
+        QtCore.QTimer.singleShot(0, self._auto_size_to_content)
+    
+    def _auto_size_to_content(self):
+        """Resize dialog to show all content initially (limited by screen height)."""
+        # Get screen geometry
+        screen = QtWidgets.QApplication.primaryScreen()
+        if screen:
+            screen_rect = screen.availableGeometry()
+            max_height = screen_rect.height() - 80  # Leave some margin
+        else:
+            max_height = 1000
+        
+        # Force layout to calculate proper sizes
+        self.layout().activate()
+        QtWidgets.QApplication.processEvents()
+        
+        # Calculate actual content height from scroll area's content widget
+        content_height = 0
+        if hasattr(self, '_scroll_area') and self._scroll_area.widget():
+            content_widget = self._scroll_area.widget()
+            content_widget.layout().activate()
+            content_height = content_widget.sizeHint().height()
+        
+        # Add header height + margins + frame padding
+        header_height = 0
+        if hasattr(self, '_header_frame'):
+            header_height = self._header_frame.sizeHint().height()
+        
+        # Total height: content + header + margins (20 top/bottom content + 15 frame margin each side)
+        ideal_height = content_height + header_height + 50
+        
+        # Clamp to screen limits
+        final_height = min(ideal_height, max_height, self.maximumHeight())
+        final_height = max(final_height, self.minimumHeight())
+        
+        # Resize keeping width
+        current_size = self.size()
+        self.resize(current_size.width(), final_height)
     
     # ========================================================================
     # Dragging & Geometry Persistence
@@ -1317,7 +1366,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         return warning
     
     def _create_entity_perks_section(self) -> Optional[QtWidgets.QWidget]:
-        """Create the entity perks mini-cards section showing which entities contribute."""
+        """Create the entity perks mini-cards section as a collapsible area."""
         if not self.entity_perk_contributors:
             return None
         
@@ -1330,16 +1379,51 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         if not luck_contributors and not coin_contributors:
             return None
         
+        # Count total patrons
+        total_patrons = len(luck_contributors) + len(coin_contributors)
+        
         section = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout(section)
-        layout.setContentsMargins(8, 8, 8, 8)
-        layout.setSpacing(8)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        
+        # Collapsible header button (expanded by default for entity patrons)
+        self._entity_patrons_collapsed = False
+        self._entity_patrons_toggle_btn = QtWidgets.QPushButton(f"▼ ✨ Entity Patrons ({total_patrons})")
+        self._entity_patrons_toggle_btn.setCheckable(True)
+        self._entity_patrons_toggle_btn.setChecked(True)  # Expanded by default
+        self._entity_patrons_toggle_btn.setCursor(QtCore.Qt.PointingHandCursor)
+        self._entity_patrons_toggle_btn.setStyleSheet("""
+            QPushButton {
+                background: rgba(255,255,255,0.05);
+                border: none;
+                border-radius: 4px;
+                padding: 8px 10px;
+                text-align: left;
+                font-weight: bold;
+                font-size: 13px;
+                color: #ccc;
+            }
+            QPushButton:hover {
+                background: rgba(255,255,255,0.1);
+            }
+            QPushButton:checked {
+                color: #fff;
+            }
+        """)
+        layout.addWidget(self._entity_patrons_toggle_btn)
+        
+        # Content container (shown by default)
+        self._entity_patrons_content = QtWidgets.QWidget()
+        content_layout = QtWidgets.QVBoxLayout(self._entity_patrons_content)
+        content_layout.setContentsMargins(10, 8, 10, 8)
+        content_layout.setSpacing(8)
         
         # Section for merge luck boosters
         if luck_contributors:
             luck_title = QtWidgets.QLabel("✨ Entity Patrons Boosting Merge")
             luck_title.setStyleSheet("color: #888; font-size: 10px; font-weight: bold;")
-            layout.addWidget(luck_title)
+            content_layout.addWidget(luck_title)
             
             # Create mini-cards for luck boosters
             luck_labels = {
@@ -1349,13 +1433,13 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             }
             luck_cards = create_entity_perk_mini_cards(luck_contributors, luck_labels)
             if luck_cards:
-                layout.addWidget(luck_cards)
+                content_layout.addWidget(luck_cards)
         
         # Section for coin discount entities
         if coin_contributors:
             coin_title = QtWidgets.QLabel("💰 Entity Patrons Reducing Cost")
             coin_title.setStyleSheet("color: #888; font-size: 10px; font-weight: bold;")
-            layout.addWidget(coin_title)
+            content_layout.addWidget(coin_title)
             
             # Create mini-cards for coin discount entities
             coin_labels = {
@@ -1363,18 +1447,25 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             }
             coin_cards = create_entity_perk_mini_cards(coin_contributors, coin_labels)
             if coin_cards:
-                layout.addWidget(coin_cards)
+                content_layout.addWidget(coin_cards)
         
-        # Style the section
-        section.setStyleSheet("""
-            QWidget {
-                background-color: #1a1a2a;
-                border: 1px solid #333;
-                border-radius: 6px;
-            }
-        """)
+        self._entity_patrons_content.setVisible(True)  # Expanded by default
+        layout.addWidget(self._entity_patrons_content)
+        
+        # Store count for toggle text
+        self._entity_patrons_count = total_patrons
+        
+        # Connect toggle
+        self._entity_patrons_toggle_btn.clicked.connect(self._toggle_entity_patrons_section)
         
         return section
+    
+    def _toggle_entity_patrons_section(self):
+        """Toggle the entity patrons section visibility."""
+        self._entity_patrons_collapsed = not self._entity_patrons_toggle_btn.isChecked()
+        self._entity_patrons_content.setVisible(not self._entity_patrons_collapsed)
+        arrow = "▼" if not self._entity_patrons_collapsed else "▶"
+        self._entity_patrons_toggle_btn.setText(f"{arrow} ✨ Entity Patrons ({self._entity_patrons_count})")
     
     def _create_boost_section(self) -> QtWidgets.QWidget:
         """Create the boost option section."""
@@ -1420,6 +1511,28 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.total_cost_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #fff;")
         boost_layout.addWidget(self.total_cost_label)
         
+        # Check if boost would provide reduced benefit (base rate > 65%)
+        # If so, show a warning that full +25% won't apply due to 90% cap
+        self.boost_warning_label = None
+        if self.base_success_rate > 0.65:
+            potential_boost = 0.25
+            actual_boost = 0.90 - self.base_success_rate
+            lost_boost = potential_boost - actual_boost
+            if lost_boost > 0.001:  # More than 0.1% lost
+                self.boost_warning_label = QtWidgets.QLabel(
+                    f"⚠️ Only +{actual_boost*100:.0f}% effective (90% safety cap)"
+                )
+                self.boost_warning_label.setStyleSheet(
+                    "font-size: 10px; color: #ff9800; font-style: italic;"
+                )
+                self.boost_warning_label.setToolTip(
+                    f"Merging facility safety regulations limit success rate to 90% max.\n"
+                    f"Your base rate of {self.base_success_rate*100:.0f}% + boost would be "
+                    f"{(self.base_success_rate + 0.25)*100:.0f}%, so you only gain +{actual_boost*100:.0f}%."
+                )
+                self.boost_warning_label.hide()  # Hidden until boost is checked
+                boost_layout.addWidget(self.boost_warning_label)
+        
         # Check if player can afford boost
         can_afford_boost = self.player_coins >= (self.merge_cost + self.boost_cost)
         if not can_afford_boost:
@@ -1427,13 +1540,20 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             self.boost_checkbox.setToolTip(f"Need {self.merge_cost + self.boost_cost} coins (you have {self.player_coins})")
             self.boost_cost_label.setStyleSheet("font-size: 13px; color: #666;")
         
+        # Use shadow instead of border for cleaner look
         boost_frame.setStyleSheet("""
             QWidget {
                 background-color: #1a3a5c;
-                border: 2px solid #2196f3;
+                border: none;
                 border-radius: 8px;
             }
         """)
+        # Apply drop shadow effect
+        shadow = QtWidgets.QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(12)
+        shadow.setColor(QtGui.QColor(33, 150, 243, 100))  # Blue glow
+        shadow.setOffset(0, 2)
+        boost_frame.setGraphicsEffect(shadow)
         
         return boost_frame
     
@@ -1441,11 +1561,15 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         """Handle boost checkbox toggle."""
         self.boost_enabled = checked
         
-        # Update success rate
+        # Update success rate (cap at 90% - always some risk!)
         if checked:
-            self.success_rate = min(self.base_success_rate + 0.25, 1.0)  # Cap at 100%
+            self.success_rate = min(self.base_success_rate + 0.25, 0.90)  # Cap at 90%
         else:
             self.success_rate = self.base_success_rate
+        
+        # Show/hide boost warning if it exists
+        if hasattr(self, 'boost_warning_label') and self.boost_warning_label:
+            self.boost_warning_label.setVisible(checked)
         
         # Update total cost label
         self._update_total_cost()
