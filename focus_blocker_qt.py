@@ -4681,10 +4681,13 @@ class TimerTab(QtWidgets.QWidget):
                 from gamification import save_encounter_for_later
             
                 # wrapper callback for the bonding logic
-                def bond_callback_wrapper() -> dict:
+                def bond_callback_wrapper(entity_id: str = None) -> dict:
+                    # Use provided entity_id if available, otherwise fall back to closure entity.id
+                    target_id = entity_id if entity_id else entity.id
+                    
                     result = attempt_entitidex_bond(
                         self.blocker.adhd_buster,
-                        entity.id,
+                        target_id,
                         is_exceptional=encounter_is_exceptional
                     )
                     # Refresh entitidex tab after bond attempt
@@ -11612,6 +11615,12 @@ class WeightTab(QtWidgets.QWidget):
         
         # Update historical comparisons
         self._update_comparisons()
+        
+        # Update entity perk display (Rodent Squad)
+        self._update_weight_entity_perk_display()
+        
+        # Refresh rodent tips (Rodent Squad)
+        self._refresh_rodent_tips()
     
     def _load_settings(self) -> None:
         """Load saved settings into UI controls."""
@@ -14222,6 +14231,9 @@ class ActivityTab(QtWidgets.QWidget):
             self.entries_table.setCellWidget(i, 4, del_btn)
         
         self.entries_table.resizeColumnsToContents()
+        
+        # Refresh entity perks display (important for user switching)
+        self._update_activity_entity_perk_display()
     
     def _setup_reminder(self) -> None:
         """Setup daily reminder timer."""
@@ -17572,6 +17584,9 @@ class SleepTab(QtWidgets.QWidget):
             item = QtWidgets.QListWidgetItem(text)
             item.setData(QtCore.Qt.UserRole, entry)
             self.history_list.addItem(item)
+        
+        # Refresh entity perks display (important for user switching)
+        self._update_sleep_entity_perk_display()
     
     def _show_context_menu(self, pos: QtCore.QPoint) -> None:
         """Show context menu for history items."""
@@ -23781,6 +23796,10 @@ class HydrationTab(QtWidgets.QWidget):
                 self.parent().timeline_widget.update_data()
             except Exception:
                 pass
+        
+        # Update entity perks display (Entity Patrons section)
+        # Critical for user switching - must refresh to show new user's entities
+        self._refresh_entity_perks_display()
     
     def _refresh_entity_perks_display(self) -> None:
         """Refresh the entity perks display showing which entities boost hydration."""
@@ -30662,9 +30681,10 @@ class StoryTab(QtWidgets.QWidget):
                 )
                 self.story_progress_lbl.setStyleSheet("color: #ff9800; font-weight: bold;")
             else:
+                chapters_read = len(progress.get('chapters_read', []))
                 self.story_progress_lbl.setText(
-                    f"📖 Chapters Unlocked: {len(progress['unlocked_chapters'])}/{progress['total_chapters']}  |  "
-                    f"⚔ Power: {progress['power']}  |  "
+                    f"📚 Read: {chapters_read}/{progress['total_chapters']}  |  "
+                    f"🔓 Unlocked: {len(progress['unlocked_chapters'])}/{progress['total_chapters']}  |  "
                     f"⚡ Decisions: {progress['decisions_made']}/3"
                 )
                 self.story_progress_lbl.setStyleSheet("")
@@ -30675,6 +30695,18 @@ class StoryTab(QtWidgets.QWidget):
                     "💡 Read Chapter 1 to try this story, then unlock to continue the adventure!"
                 )
                 self.story_next_lbl.setStyleSheet("color: #2196f3;")
+            elif progress.get('next_readable_chapter'):
+                next_ch = progress['next_readable_chapter']
+                # Find chapter title
+                next_title = f"Chapter {next_ch}"
+                for ch in progress['chapters']:
+                    if ch['number'] == next_ch:
+                        next_title = ch['title']
+                        break
+                self.story_next_lbl.setText(
+                    f"📖 Next: {next_title}"
+                )
+                self.story_next_lbl.setStyleSheet("color: #4caf50;")
             elif progress['next_threshold']:
                 self.story_next_lbl.setText(
                     f"🔒 Next chapter unlocks at {progress['next_threshold']} power "
@@ -30682,8 +30714,13 @@ class StoryTab(QtWidgets.QWidget):
                 )
                 self.story_next_lbl.setStyleSheet("color: #666;")
             else:
-                self.story_next_lbl.setText("✨ You have unlocked the entire story!")
-                self.story_next_lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
+                chapters_read = len(progress.get('chapters_read', []))
+                if chapters_read >= progress['total_chapters']:
+                    self.story_next_lbl.setText("✨ You have completed the story!")
+                    self.story_next_lbl.setStyleSheet("color: #f1c40f; font-weight: bold;")
+                else:
+                    self.story_next_lbl.setText("✨ You have unlocked the entire story!")
+                    self.story_next_lbl.setStyleSheet("color: #4caf50; font-weight: bold;")
         
         # Update progress bar
         if hasattr(self, 'chapter_progress_bar'):
@@ -30700,7 +30737,7 @@ class StoryTab(QtWidgets.QWidget):
                 self.chapter_progress_bar.setFormat("Complete!")
     
     def _refresh_story_chapter_list(self) -> None:
-        """Refresh the story chapter dropdown to reflect decisions made."""
+        """Refresh the story chapter dropdown to reflect reading progress and decisions."""
         if not GAMIFICATION_AVAILABLE or not hasattr(self, 'chapter_combo'):
             return
         
@@ -30709,19 +30746,44 @@ class StoryTab(QtWidgets.QWidget):
         
         self.chapter_combo.clear()
         for ch in progress["chapters"]:
-            emoji = "✅" if ch["unlocked"] else "🔒"
+            # Determine status emoji
+            if not ch["unlocked"]:
+                emoji = "🔒"  # Power locked
+            elif not ch["can_read"]:
+                emoji = "⏳"  # Waiting (unlocked but can't read yet)
+            elif ch["is_read"]:
+                emoji = "✅"  # Read
+            else:
+                emoji = "📖"  # Can read now
+            
+            # Decision marker
             decision_marker = ""
             if ch.get("has_decision"):
                 if ch.get("decision_made"):
                     decision_marker = " ✓"  # Decision already made
-                elif ch.get("unlocked"):
-                    decision_marker = " ⚡"  # Pending decision
-                # If locked, don't show decision marker
+                elif ch.get("decision_pending"):
+                    decision_marker = " ⚡"  # Pending decision (read but not decided)
+                elif ch.get("is_read"):
+                    decision_marker = " ⚡"  # Read but decision pending
             
             self.chapter_combo.addItem(
                 f"{emoji} {ch['title']}{decision_marker}",
                 ch["number"]
             )
+            
+            # Set tooltip with status info
+            tooltip = ch["title"]
+            if not ch["unlocked"]:
+                tooltip += f"\n🔒 {ch['read_blocked_reason']}"
+            elif not ch["can_read"]:
+                tooltip += f"\n⏳ {ch['read_blocked_reason']}"
+            elif not ch["is_read"]:
+                tooltip += "\n📖 Ready to read!"
+            else:
+                tooltip += "\n✅ Already read"
+                if ch.get("decision_pending"):
+                    tooltip += "\n⚡ Decision pending!"
+            self.chapter_combo.setItemData(self.chapter_combo.count() - 1, tooltip, QtCore.Qt.ToolTipRole)
     
     def _refresh_story_combo(self) -> None:
         """Refresh story combo to show updated lock status."""
@@ -30940,12 +31002,30 @@ class StoryTab(QtWidgets.QWidget):
         
         from gamification import (
             get_story_progress, get_selected_story, AVAILABLE_STORIES, 
-            get_story_data, get_chapter_content, COIN_COSTS
+            get_story_data, get_chapter_content, COIN_COSTS, mark_chapter_read
         )
         
         progress = get_story_progress(self.blocker.adhd_buster)
         story_id = get_selected_story(self.blocker.adhd_buster)
         story_info = AVAILABLE_STORIES.get(story_id, {})
+        
+        # Find the chapter info from progress
+        chapter_info = None
+        for ch in progress["chapters"]:
+            if ch["number"] == chapter_num:
+                chapter_info = ch
+                break
+        
+        # Check sequential reading requirement FIRST
+        if chapter_info and not chapter_info.get("can_read"):
+            reason = chapter_info.get("read_blocked_reason", "Cannot read this chapter yet")
+            show_warning(
+                self, "📚 Read in Order",
+                f"You need to read chapters in sequence.\n\n"
+                f"⏳ {reason}\n\n"
+                f"Stories are meant to be experienced in order so decisions from earlier chapters can affect later events."
+            )
+            return
         
         # Check if story is unlocked (Chapter 1 is always free)
         unlocked_stories = self.blocker.adhd_buster.get("unlocked_stories", ["underdog"])
@@ -31126,6 +31206,14 @@ class StoryTab(QtWidgets.QWidget):
         layout.addWidget(close_btn, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
         
         dialog.exec()
+        
+        # Mark chapter as read after dialog closes
+        # Only mark as read if chapter was successfully opened (content was displayed)
+        if chapter_data.get("unlocked"):
+            if mark_chapter_read(self.blocker.adhd_buster, chapter_num):
+                self.blocker.save_config()
+                self._refresh_story_chapter_list()
+                self._update_story_progress_labels()
     
     def _show_decision_ui(self, dialog: QtWidgets.QDialog, chapter_num: int, container_layout: QtWidgets.QVBoxLayout) -> None:
         """Show the decision UI in the chapter dialog."""

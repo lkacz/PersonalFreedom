@@ -91,6 +91,58 @@ class _PaintCache:
 
 
 # ============================================================================
+# Continue Button Styles (reserves space in layout, avoids squeeze on reveal)
+# ============================================================================
+
+# Hidden style: transparent but occupies space (MUST match visible size exactly)
+CONTINUE_BTN_STYLE_HIDDEN = """
+    QPushButton {
+        background: transparent;
+        color: transparent;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 30px;
+        font-size: 14px;
+        font-weight: bold;
+        min-width: 100px;
+        min-height: 36px;
+    }
+"""
+
+# Visible style: green button (MUST match hidden size exactly)
+CONTINUE_BTN_STYLE_VISIBLE = """
+    QPushButton {
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 30px;
+        font-size: 14px;
+        font-weight: bold;
+        min-width: 100px;
+        min-height: 36px;
+    }
+    QPushButton:hover {
+        background: #66bb6a;
+    }
+"""
+
+
+def _setup_continue_btn(btn: QtWidgets.QPushButton) -> None:
+    """Set up a continue button as hidden but space-reserving."""
+    btn.setStyleSheet(CONTINUE_BTN_STYLE_HIDDEN)
+    btn.setEnabled(False)
+    # Force size policy to be fixed so layout doesn't shift
+    btn.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+
+
+def _reveal_continue_btn(btn: QtWidgets.QPushButton) -> None:
+    """Reveal a continue button with full styling."""
+    btn.setStyleSheet(CONTINUE_BTN_STYLE_VISIBLE)
+    btn.setEnabled(True)
+
+
+# ============================================================================
 # Dialog Geometry Persistence Helpers
 # ============================================================================
 
@@ -493,24 +545,21 @@ class LotteryRollDialog(QtWidgets.QDialog):
         sound_row.addWidget(self.sound_toggle)
         container_layout.addLayout(sound_row)
         
-        # Continue button (hidden until animation complete)
+        # Continue button (invisible until animation complete, but reserves space)
         self.continue_btn = QtWidgets.QPushButton("Continue")
         self.continue_btn.setStyleSheet("""
             QPushButton {
-                background: #4caf50;
-                color: white;
+                background: transparent;
+                color: transparent;
                 border: none;
                 border-radius: 6px;
                 padding: 8px 24px;
                 font-size: 14px;
                 font-weight: bold;
             }
-            QPushButton:hover {
-                background: #66bb6a;
-            }
         """)
         self.continue_btn.clicked.connect(self.accept)
-        self.continue_btn.hide()
+        self.continue_btn.setEnabled(False)  # Disabled until animation complete
         container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
         
         layout.addWidget(container)
@@ -624,7 +673,7 @@ class LotteryRollDialog(QtWidgets.QDialog):
         
         # Emit signal and show continue button for user to close when ready
         self.finished_signal.emit(self.is_success)
-        self.continue_btn.show()
+        _reveal_continue_btn(self.continue_btn)
     
     def closeEvent(self, event):
         """Clean up timer on close and save geometry."""
@@ -993,6 +1042,7 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         # Final result area
         self.final_result = QtWidgets.QLabel("")
         self.final_result.setAlignment(QtCore.Qt.AlignCenter)
+        self.final_result.setWordWrap(True)
         self.final_result.setMinimumHeight(40)  # Reserve space
         self.final_result.setStyleSheet("color: #fff; font-size: 16px; font-weight: bold;")
         container_layout.addWidget(self.final_result)
@@ -1010,24 +1060,10 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         sound_row.addWidget(self.sound_toggle)
         container_layout.addLayout(sound_row)
         
-        # Continue button (hidden until animation complete)
+        # Continue button (invisible until animation complete, reserves space)
         self.continue_btn = QtWidgets.QPushButton("Continue")
-        self.continue_btn.setStyleSheet("""
-            QPushButton {
-                background: #4caf50;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 24px;
-                font-size: 14px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background: #66bb6a;
-            }
-        """)
+        _setup_continue_btn(self.continue_btn)
         self.continue_btn.clicked.connect(self._finish)
-        self.continue_btn.hide()
         container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
         
         layout.addWidget(container)
@@ -1037,8 +1073,8 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         self.current_stage = 1
         self.stage1_frame.setStyleSheet("""
             QFrame {
-                background: #252540;
-                border: 2px solid #6366f1;
+                background: #2a2a50;
+                border: none;
                 border-radius: 8px;
             }
         """)
@@ -1080,8 +1116,8 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         # Enable and start stage 2
         self.stage2_frame.setStyleSheet("""
             QFrame {
-                background: #252540;
-                border: 2px solid #6366f1;
+                background: #2a2a50;
+                border: none;
                 border-radius: 8px;
             }
         """)
@@ -1146,7 +1182,7 @@ class TwoStageLotteryDialog(QtWidgets.QDialog):
         _play_lottery_result_sound(won)
         
         # Show continue button for user to close when ready
-        self.continue_btn.show()
+        _reveal_continue_btn(self.continue_btn)
     
     def _animate_tier_stage(self, slider: EyeProtectionTierSliderWidget, 
                             result_label: QtWidgets.QLabel,
@@ -1745,24 +1781,10 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         sound_row.addWidget(self.sound_toggle)
         container_layout.addLayout(sound_row)
         
-        # Continue button (hidden until animation complete)
+        # Continue button (invisible until animation complete, reserves space)
         self.continue_btn = QtWidgets.QPushButton("Continue")
-        self.continue_btn.setStyleSheet("""
-            QPushButton {
-                background: #4caf50;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 24px;
-                font-size: 14px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background: #66bb6a;
-            }
-        """)
+        _setup_continue_btn(self.continue_btn)
         self.continue_btn.clicked.connect(self._finish)
-        self.continue_btn.hide()
         container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
         
         layout.addWidget(container)
@@ -1772,8 +1794,8 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         self.current_stage = 1
         self.stage1_frame.setStyleSheet("""
             QFrame {
-                background: #252540;
-                border: 2px solid #6366f1;
+                background: #2a2a50;
+                border: none;
                 border-radius: 8px;
             }
         """)
@@ -1797,8 +1819,8 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
             # Enable and start stage 2
             self.stage2_frame.setStyleSheet("""
                 QFrame {
-                    background: #252540;
-                    border: 2px solid #6366f1;
+                    background: #2a2a50;
+                    border: none;
                     border-radius: 8px;
                 }
             """)
@@ -1821,7 +1843,7 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
             _play_lottery_result_sound(False)
             
             # Show continue button for user to close when ready
-            self.continue_btn.show()
+            _reveal_continue_btn(self.continue_btn)
     
     def _start_stage_2(self):
         """Start the rarity roll animation."""
@@ -1892,7 +1914,7 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         _play_lottery_result_sound(True)
         
         # Show continue button for user to close when ready
-        self.continue_btn.show()
+        _reveal_continue_btn(self.continue_btn)
     
     def _animate_stage(self, slider, result_label, target_roll, on_complete, is_rarity=False):
         """Animate a single lottery stage."""
@@ -2707,24 +2729,10 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         sound_row.addWidget(self.sound_toggle)
         container_layout.addLayout(sound_row)
         
-        # Continue button (hidden until animation complete)
+        # Continue button (invisible until animation complete, reserves space)
         self.continue_btn = QtWidgets.QPushButton("Continue")
-        self.continue_btn.setStyleSheet("""
-            QPushButton {
-                background: #4caf50;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 24px;
-                font-size: 14px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background: #66bb6a;
-            }
-        """)
+        _setup_continue_btn(self.continue_btn)
         self.continue_btn.clicked.connect(self._finish)
-        self.continue_btn.hide()
         container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
         
         layout.addWidget(container)
@@ -2845,7 +2853,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         """Start tier roll animation."""
         self.current_stage = 1
         self.stage1_frame.setStyleSheet("""
-            QFrame { background: #252540; border: 2px solid #6366f1; border-radius: 8px; }
+            QFrame { background: #2a2a50; border: none; border-radius: 8px; }
         """)
         self.stage1_title.setStyleSheet("color: #a5b4fc; font-size: 12px; font-weight: bold;")
         self.stage1_result.setText("Rolling...")
@@ -2878,12 +2886,12 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             self.final_result.setText(f"You got {self.rolled_tier}!")
             self.final_result.setStyleSheet(f"color: {color}; font-size: 14px;")
             _play_lottery_result_sound(True)  # Play win sound
-            self.continue_btn.show()  # Show continue button for user to close when ready
+            _reveal_continue_btn(self.continue_btn)  # Show continue button for user to close when ready
             return
         
         # Enable stage 2
         self.stage2_frame.setStyleSheet("""
-            QFrame { background: #252540; border: 2px solid #6366f1; border-radius: 8px; }
+            QFrame { background: #2a2a50; border: none; border-radius: 8px; }
         """)
         self.stage2_title.setStyleSheet("color: #a5b4fc; font-size: 12px; font-weight: bold;")
         self.stage2_title.setText(f"🎲 Stage 2: Will you get the {self.rolled_tier}? ({self.success_threshold*100:.0f}% chance)")
@@ -2932,7 +2940,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             
             self.final_result.setStyleSheet(f"color: {color}; font-size: 14px;")
             _play_lottery_result_sound(True)  # Play win sound
-            self.continue_btn.show()  # Show continue button for user to close when ready
+            _reveal_continue_btn(self.continue_btn)  # Show continue button for user to close when ready
         else:
             self.stage2_result.setText("💔 FAILED 💔")
             self.stage2_result.setStyleSheet("color: #f44336; font-size: 14px; font-weight: bold;")
@@ -2941,7 +2949,7 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
             self.final_result.setText(f"You almost had {self.rolled_tier}... All items were destroyed.")
             self.final_result.setStyleSheet("color: #f44336; font-size: 14px;")
             _play_lottery_result_sound(False)  # Play lose sound
-            self.continue_btn.show()  # Show continue button for user to close when ready
+            _reveal_continue_btn(self.continue_btn)  # Show continue button for user to close when ready
     
     def _animate_tier_stage(self, slider, result_label, target_roll, on_complete):
         """Animate tier roll with bounce effect."""
@@ -3552,6 +3560,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.final_result = QtWidgets.QLabel("")
         self.final_result.setFont(QtGui.QFont("Arial", 14, QtGui.QFont.Bold))
         self.final_result.setAlignment(QtCore.Qt.AlignCenter)
+        self.final_result.setWordWrap(True)
         self.final_result.setMinimumHeight(40)  # Reserve space
         self.final_result.hide()
         container_layout.addWidget(self.final_result)
@@ -3569,24 +3578,10 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         sound_row.addWidget(self.sound_toggle)
         container_layout.addLayout(sound_row)
         
-        # Continue button (hidden until animation complete)
+        # Continue button (invisible until animation complete, reserves space)
         self.continue_btn = QtWidgets.QPushButton("Continue")
-        self.continue_btn.setStyleSheet("""
-            QPushButton {
-                background: #4caf50;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 8px 24px;
-                font-size: 14px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background: #66bb6a;
-            }
-        """)
+        _setup_continue_btn(self.continue_btn)
         self.continue_btn.clicked.connect(self._finish)
-        self.continue_btn.hide()
         container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
         
         layout.addWidget(container)
@@ -3595,7 +3590,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         """Start tier roll animation using bounce path (same as merge dialog)."""
         self.current_stage = 1
         # Highlight active stage with brighter background
-        self.stage1_frame.setStyleSheet("QFrame { background: #303050; border: none; border-radius: 8px; }")
+        self.stage1_frame.setStyleSheet("QFrame { background: #2a2a50; border: none; border-radius: 8px; }")
         
         # Generate bounce path (same as merge dialog)
         self._stage1_path_points = [50.0]
@@ -3694,7 +3689,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.current_stage = 2
         self.stage2_frame.setEnabled(True)
         # Highlight active stage with brighter background
-        self.stage2_frame.setStyleSheet("QFrame { background: #303050; border: none; border-radius: 8px; }")
+        self.stage2_frame.setStyleSheet("QFrame { background: #2a2a50; border: none; border-radius: 8px; }")
         
         # Generate bounce path (same as merge dialog)
         self._stage2_path_points = [50.0]
@@ -3816,7 +3811,7 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         _play_lottery_result_sound(self.won)
         
         # Show continue button for user to close when ready
-        self.continue_btn.show()
+        _reveal_continue_btn(self.continue_btn)
     
     def _finish(self):
         """Emit result and close."""
@@ -4181,22 +4176,8 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         
         # Continue button (hidden until animation complete)
         self.continue_btn = QtWidgets.QPushButton("Continue")
-        self.continue_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #4caf50;
-                color: white;
-                border: none;
-                padding: 10px 30px;
-                font-size: 14px;
-                font-weight: bold;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-        """)
+        _setup_continue_btn(self.continue_btn)
         self.continue_btn.clicked.connect(self._finish)
-        self.continue_btn.hide()
         container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
         
         layout.addWidget(container)
@@ -4325,7 +4306,7 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         _play_lottery_result_sound(True)
         
         # Show continue button for user to close when ready
-        self.continue_btn.show()
+        _reveal_continue_btn(self.continue_btn)
     
     def _finish(self):
         """Emit result and close."""
@@ -4488,6 +4469,7 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         # Final result (hidden initially)
         self.final_result = QtWidgets.QLabel("")
         self.final_result.setAlignment(QtCore.Qt.AlignCenter)
+        self.final_result.setWordWrap(True)
         self.final_result.setStyleSheet("font-size: 16px; font-weight: bold; color: #4caf50;")
         self.final_result.setMinimumHeight(40)  # Reserve space
         self.final_result.hide()
@@ -4508,22 +4490,8 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         
         # Continue button (hidden until animation complete)
         self.continue_btn = QtWidgets.QPushButton("Continue")
-        self.continue_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #4caf50;
-                color: white;
-                border: none;
-                padding: 10px 30px;
-                font-size: 14px;
-                font-weight: bold;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-        """)
+        _setup_continue_btn(self.continue_btn)
         self.continue_btn.clicked.connect(self._finish)
-        self.continue_btn.hide()
         container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
         
         layout.addWidget(container)
@@ -4631,7 +4599,7 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         _play_lottery_result_sound(True)
         
         # Show continue button for user to close when ready
-        self.continue_btn.show()
+        _reveal_continue_btn(self.continue_btn)
     
     def _finish(self):
         """Emit result and close."""
@@ -4957,22 +4925,8 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         
         # Continue button (hidden until animation complete)
         self.continue_btn = QtWidgets.QPushButton("Continue")
-        self.continue_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #4caf50;
-                color: white;
-                border: none;
-                padding: 10px 30px;
-                font-size: 14px;
-                font-weight: bold;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-        """)
+        _setup_continue_btn(self.continue_btn)
         self.continue_btn.clicked.connect(self._finish)
-        self.continue_btn.hide()
         container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
         
         layout.addWidget(container)
@@ -5097,7 +5051,7 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         _play_lottery_result_sound(True)
         
         # Show continue button
-        self.continue_btn.show()
+        _reveal_continue_btn(self.continue_btn)
     
     def _finish(self):
         """Emit result and close."""
@@ -5286,22 +5240,8 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         
         # Continue button (hidden until animation complete, sleep-themed indigo)
         self.continue_btn = QtWidgets.QPushButton("Continue")
-        self.continue_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #5c6bc0;
-                color: white;
-                border: none;
-                padding: 10px 30px;
-                font-size: 14px;
-                font-weight: bold;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #7986cb;
-            }
-        """)
+        _setup_continue_btn(self.continue_btn)
         self.continue_btn.clicked.connect(self._finish)
-        self.continue_btn.hide()
         container_layout.addWidget(self.continue_btn, alignment=QtCore.Qt.AlignCenter)
         
         layout.addWidget(container)
@@ -5426,7 +5366,7 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         _play_lottery_result_sound(True)
         
         # Show continue button
-        self.continue_btn.show()
+        _reveal_continue_btn(self.continue_btn)
     
     def _finish(self):
         """Emit result and close."""
