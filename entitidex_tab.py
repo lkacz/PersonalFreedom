@@ -2154,12 +2154,17 @@ class EntitidexTab(QtWidgets.QWidget):
         try:
             if hasattr(self.blocker, 'adhd_buster'):
                 entitidex_data = self.blocker.adhd_buster.get("entitidex", {})
-                if entitidex_data:
-                    # Use from_dict() to load ALL fields including failed_catches, 
-                    # captures, stats, etc. for pity system and statistics
-                    self.progress = EntitidexProgress.from_dict(entitidex_data)
+                # ALWAYS reset progress from data - even if empty dict
+                # This prevents data leak between users when switching profiles
+                # (empty dict means new user with no entities, not "keep old data")
+                self.progress = EntitidexProgress.from_dict(entitidex_data) if entitidex_data else EntitidexProgress()
+            else:
+                # No adhd_buster - start with fresh progress
+                self.progress = EntitidexProgress()
         except Exception:
             _logger.exception("Error loading entitidex progress")
+            # On error, reset to empty to prevent data corruption
+            self.progress = EntitidexProgress()
     
     def _save_progress(self):
         """Save entitidex progress to blocker config."""

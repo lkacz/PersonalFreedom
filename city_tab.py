@@ -3454,7 +3454,7 @@ class CityTab(QtWidgets.QWidget):
             QFrame {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #2A1A3A, stop:0.5 #3A2A4A, stop:1 #2A1A3A);
-                border: 2px solid #BA68C8;
+                border: none;
                 border-radius: 8px;
                 padding: 8px;
             }

@@ -17,7 +17,7 @@ import math
 import struct
 from typing import Dict, List, Optional, Tuple
 
-from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QObject, QSettings, Slot
+from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QObject, QSettings, Slot, QThread
 from PySide6.QtMultimedia import QAudio, QAudioDevice, QAudioFormat, QAudioSink, QMediaDevices
 
 _logger = logging.getLogger(__name__)
@@ -467,6 +467,7 @@ class CelebrationAudioManager(QObject):
         if self._current_buffer is not None:
             try:
                 self._current_buffer.close()
+                self._current_buffer.deleteLater()
             except Exception:
                 pass
             self._current_buffer = None
@@ -520,54 +521,41 @@ class CelebrationAudioManager(QObject):
         
         # Ensure audio sink is ready (creates on-demand)
         if not self._ensure_sink_ready():
-            return False
+             return False
 
-        # Apply correct volume
+        # Apply volume before playing
         target_vol = self._voice_volume if is_voice else self._sound_volume
         self._sink.setVolume(target_vol)
 
-        # 1. Always stop current playback before starting new audio
-        # QAudioSink requires stop() before a new start() call
+        # 1. Stop current playback and wait for sink to fully stop
         self._sink.stop()
         
-        # 2. Wait for sink to reach StoppedState completely
-        # The FFmpeg/Windows backend may still be reading from the old buffer
-        # even after stop() returns, so we need to wait and allow time for cleanup
-        max_wait_iterations = 50  # Max 500ms wait
-        wait_count = 0
-        while self._sink.state() not in (QAudio.State.StoppedState, QAudio.State.IdleState):
-            from PySide6.QtCore import QCoreApplication, QThread
-            QCoreApplication.processEvents()
-            QThread.msleep(10)  # Small delay to prevent CPU spinning
-            wait_count += 1
-            if wait_count >= max_wait_iterations:
-                _logger.warning("Audio sink stop timeout - forcing buffer cleanup")
+        # 2. Wait for the sink to reach StoppedState before touching the buffer
+        # The Windows audio backend thread reads asynchronously
+        for _ in range(20):  # Max 200ms wait
+            if self._sink.state() in (QAudio.State.StoppedState, QAudio.State.IdleState):
                 break
-        
-        # 3. Additional settle time for the audio backend thread to fully stop reading
-        # This prevents "device not open" errors from the pull thread
-        from PySide6.QtCore import QThread
-        QThread.msleep(20)  # Allow backend thread to settle
-        
-        # 4. Clean up previous buffer now that sink is fully stopped
-        if self._current_buffer is not None:
+            QThread.msleep(10)
+
+        # 3. Now safe to close old buffer - audio backend has stopped reading
+        old_buffer = self._current_buffer
+        self._current_buffer = None
+        if old_buffer is not None:
             try:
-                self._current_buffer.close()
+                old_buffer.close()
+                old_buffer.deleteLater()
             except Exception:
                 pass
-            self._current_buffer = None
-        
-        # 5. Keep the QByteArray alive as instance attribute (prevents use-after-free)
+
+        # 4. Keep the QByteArray alive as instance attribute (prevents use-after-free)
         self._current_data = QByteArray(data)  # Make a copy we own
-        
-        # 6. Create QBuffer and open it for reading
-        self._current_buffer = QBuffer()
+
+        # 5. Create QBuffer with parent=self for Qt memory management
+        self._current_buffer = QBuffer(self)
         self._current_buffer.setData(self._current_data)
-        if not self._current_buffer.open(QIODevice.OpenModeFlag.ReadOnly):
-            _logger.error("Failed to open audio buffer for reading")
-            return False
-        
-        # 7. Start playback
+        self._current_buffer.open(QIODevice.OpenModeFlag.ReadOnly)
+
+        # 6. Start playback
         self._sink.start(self._current_buffer)
         return True
 

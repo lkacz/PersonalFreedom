@@ -10483,7 +10483,7 @@ def get_story_progress(adhd_buster: dict) -> dict:
     
     Returns:
         dict with 'current_chapter', 'unlocked_chapters', 'chapters', 'next_threshold', 
-        'power', 'decisions', 'selected_story', 'story_info'
+        'power', 'decisions', 'selected_story', 'story_info', 'chapters_read', 'next_readable_chapter'
     """
     story_decisions, story_chapters = get_story_data(adhd_buster)
     story_id = get_selected_story(adhd_buster)
@@ -10510,14 +10510,16 @@ def get_story_progress(adhd_buster: dict) -> dict:
             next_threshold = threshold
             break
     
-    # Get stored decisions
+    # Get stored decisions and chapters read
     decisions = adhd_buster.get("story_decisions", {})
+    chapters_read = adhd_buster.get("chapters_read", [])
     
-    # Build chapter details
+    # Build chapter details with read status and readability
     chapters = []
     for i, chapter in enumerate(story_chapters):
         chapter_num = i + 1
         is_unlocked = chapter_num in unlocked
+        is_read = chapter_num in chapters_read
         has_decision = chapter.get("has_decision", False)
         decision_made = False
         if has_decision:
@@ -10525,19 +10527,56 @@ def get_story_progress(adhd_buster: dict) -> dict:
             if decision_info:
                 decision_made = decision_info["id"] in decisions
         
+        # Check if chapter can be read (sequential logic)
+        can_read = False
+        read_blocked_reason = ""
+        if is_unlocked:
+            if chapter_num == 1:
+                can_read = True
+            elif (chapter_num - 1) in chapters_read:
+                # Previous chapter was read
+                prev_chapter_data = story_chapters[chapter_num - 2]
+                if prev_chapter_data.get("has_decision"):
+                    # Previous chapter has a decision - check if made
+                    prev_decision_info = story_decisions.get(chapter_num - 1)
+                    if prev_decision_info and prev_decision_info["id"] in decisions:
+                        can_read = True
+                    else:
+                        read_blocked_reason = f"Complete Chapter {chapter_num - 1}'s decision first"
+                else:
+                    can_read = True
+            else:
+                read_blocked_reason = f"Read Chapter {chapter_num - 1} first"
+        else:
+            threshold_needed = STORY_THRESHOLDS[chapter_num - 1]
+            read_blocked_reason = f"Requires {threshold_needed} power"
+        
         chapters.append({
             "number": chapter_num,
             "title": chapter["title"],
             "unlocked": is_unlocked,
+            "is_read": is_read,
+            "can_read": can_read,
+            "read_blocked_reason": read_blocked_reason,
             "has_decision": has_decision,
             "decision_made": decision_made,
+            "decision_pending": has_decision and not decision_made and is_read,
         })
+    
+    # Find next readable chapter
+    next_readable = None
+    for ch in chapters:
+        if not ch["is_read"] and ch["can_read"]:
+            next_readable = ch["number"]
+            break
     
     return {
         "power": current_power,
         "current_chapter": current_chapter,
         "unlocked_chapters": unlocked,
         "chapters": chapters,
+        "chapters_read": chapters_read,
+        "next_readable_chapter": next_readable,
         "total_chapters": len(story_chapters),
         "next_threshold": next_threshold,
         "prev_threshold": STORY_THRESHOLDS[current_chapter - 1] if current_chapter > 0 else 0,
@@ -10631,6 +10670,104 @@ def get_decision_path(adhd_buster: dict) -> str:
             path += decisions[decision_info["id"]]
     
     return path
+
+
+def get_chapters_read(adhd_buster: dict) -> list:
+    """Get the list of chapter numbers that have been read for current story."""
+    return adhd_buster.get("chapters_read", [])
+
+
+def is_chapter_read(adhd_buster: dict, chapter_number: int) -> bool:
+    """Check if a specific chapter has been read."""
+    chapters_read = get_chapters_read(adhd_buster)
+    return chapter_number in chapters_read
+
+
+def can_read_chapter(adhd_buster: dict, chapter_number: int) -> tuple:
+    """
+    Check if a chapter can be read based on sequential reading requirements.
+    
+    Rules:
+    1. Chapter must be unlocked (power requirement met)
+    2. All previous chapters must be read
+    3. If previous chapter had a decision, it must be made
+    
+    Returns:
+        tuple: (can_read: bool, reason: str)
+    """
+    story_decisions, story_chapters = get_story_data(adhd_buster)
+    
+    if chapter_number < 1 or chapter_number > len(story_chapters):
+        return (False, "Invalid chapter number")
+    
+    # Check if chapter is unlocked by power
+    current_power = calculate_character_power(adhd_buster)
+    max_power = adhd_buster.get("max_power_reached", 0)
+    unlock_power = max(current_power, max_power)
+    threshold = STORY_THRESHOLDS[chapter_number - 1]
+    
+    if unlock_power < threshold:
+        return (False, f"Requires {threshold} power (you have {unlock_power})")
+    
+    # Chapter 1 can always be read if unlocked
+    if chapter_number == 1:
+        return (True, "")
+    
+    # Check if previous chapter has been read
+    chapters_read = get_chapters_read(adhd_buster)
+    prev_chapter = chapter_number - 1
+    
+    if prev_chapter not in chapters_read:
+        return (False, f"You must read Chapter {prev_chapter} first")
+    
+    # Check if previous chapter had a decision that needs to be made
+    prev_chapter_data = story_chapters[prev_chapter - 1]
+    if prev_chapter_data.get("has_decision"):
+        decision_info = story_decisions.get(prev_chapter)
+        if decision_info:
+            decisions = adhd_buster.get("story_decisions", {})
+            if decision_info["id"] not in decisions:
+                return (False, f"You must make the decision in Chapter {prev_chapter} first")
+    
+    return (True, "")
+
+
+def mark_chapter_read(adhd_buster: dict, chapter_number: int) -> bool:
+    """
+    Mark a chapter as read. Returns True if successful.
+    
+    Note: This should only be called when the user successfully reads a chapter
+    and makes any required decisions.
+    """
+    if "chapters_read" not in adhd_buster:
+        adhd_buster["chapters_read"] = []
+    
+    if chapter_number not in adhd_buster["chapters_read"]:
+        adhd_buster["chapters_read"].append(chapter_number)
+        adhd_buster["chapters_read"].sort()  # Keep sorted
+        sync_hero_data(adhd_buster)
+        return True
+    
+    return False  # Already read
+
+
+def get_next_readable_chapter(adhd_buster: dict) -> Optional[int]:
+    """
+    Get the next chapter that the user should read.
+    Returns None if all chapters have been read.
+    """
+    story_decisions, story_chapters = get_story_data(adhd_buster)
+    chapters_read = get_chapters_read(adhd_buster)
+    
+    for i in range(1, len(story_chapters) + 1):
+        if i not in chapters_read:
+            can_read, _ = can_read_chapter(adhd_buster, i)
+            if can_read:
+                return i
+            else:
+                return None  # Can't read next one yet
+    
+    return None  # All chapters read
 
 
 def get_chapter_content(chapter_number: int, adhd_buster: dict) -> Optional[dict]:
@@ -10844,6 +10981,7 @@ def _create_empty_hero() -> dict:
         "last_daily_reward_date": "",
         "max_power_reached": 0,  # Highest power ever achieved - chapters stay unlocked
         "entitidex": {},  # Entitidex collection progress (see entitidex package)
+        "chapters_read": [],  # List of chapter numbers that have been read
     }
 
 
@@ -10927,6 +11065,7 @@ def ensure_hero_structure(adhd_buster: dict) -> dict:
         "last_daily_reward_date": "",
         "max_power_reached": 0,
         "entitidex": {},
+        "chapters_read": [],
     }
     for k, v in target_keys.items():
         if k not in adhd_buster:
@@ -10952,6 +11091,7 @@ def _sync_active_hero_to_flat_internal(adhd_buster: dict) -> None:
         adhd_buster["total_collected"] = 0
         adhd_buster["last_daily_reward_date"] = ""
         adhd_buster["max_power_reached"] = 0
+        adhd_buster["chapters_read"] = []
     elif mode == STORY_MODE_HERO_ONLY:
         hero = adhd_buster.get("free_hero", _create_empty_hero())
         adhd_buster["inventory"] = hero.get("inventory", [])
@@ -10962,6 +11102,7 @@ def _sync_active_hero_to_flat_internal(adhd_buster: dict) -> None:
         adhd_buster["total_collected"] = hero.get("total_collected", 0)
         adhd_buster["last_daily_reward_date"] = hero.get("last_daily_reward_date", "")
         adhd_buster["max_power_reached"] = hero.get("max_power_reached", 0)
+        adhd_buster["chapters_read"] = hero.get("chapters_read", [])
     else:
         # Story mode - get the hero for the active story
         story_id = adhd_buster.get("active_story", "warrior")
@@ -10976,6 +11117,7 @@ def _sync_active_hero_to_flat_internal(adhd_buster: dict) -> None:
         adhd_buster["total_collected"] = hero.get("total_collected", 0)
         adhd_buster["last_daily_reward_date"] = hero.get("last_daily_reward_date", "")
         adhd_buster["max_power_reached"] = hero.get("max_power_reached", 0)
+        adhd_buster["chapters_read"] = hero.get("chapters_read", [])
     
     # Also sync selected_story for backward compatibility
     if mode == STORY_MODE_ACTIVE:
@@ -11098,6 +11240,7 @@ def _sync_flat_to_active_hero(adhd_buster: dict) -> None:
     hero["total_collected"] = adhd_buster.get("total_collected", 0)
     hero["last_daily_reward_date"] = adhd_buster.get("last_daily_reward_date", "")
     hero["max_power_reached"] = adhd_buster.get("max_power_reached", 0)
+    hero["chapters_read"] = adhd_buster.get("chapters_read", [])
 
 
 def switch_story(adhd_buster: dict, story_id: str) -> bool:
@@ -11823,6 +11966,34 @@ def get_daily_weight_reward_rarity(weight_loss_grams: float, legendary_bonus: in
     return random.choices(rarities, weights=weights)[0]
 
 
+# Rarity order for comparison (higher index = better)
+RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+
+
+def _better_rarity(rarity_a: str, rarity_b: str) -> str:
+    """
+    Return the better (higher tier) of two rarities.
+    
+    Args:
+        rarity_a: First rarity string
+        rarity_b: Second rarity string
+    
+    Returns:
+        The better rarity of the two
+    """
+    if not rarity_a:
+        return rarity_b or "Common"
+    if not rarity_b:
+        return rarity_a
+    
+    try:
+        idx_a = RARITY_ORDER.index(rarity_a)
+        idx_b = RARITY_ORDER.index(rarity_b)
+        return rarity_a if idx_a >= idx_b else rarity_b
+    except ValueError:
+        return rarity_a or rarity_b or "Common"
+
+
 def check_weight_entry_rewards(weight_entries: list, new_weight: float, 
                                 current_date: str, story_id: str = None,
                                 adhd_buster: dict = None, height_cm: float = None,
@@ -11882,8 +12053,28 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
         legendary_bonus = weight_perks.get("legendary_bonus", 0)
         result["entity_bonus"] = legendary_bonus
     
+    # Calculate BMI status for bonus rewards
+    is_in_healthy_range = False
+    is_progressing_toward_healthy = False
+    bmi_status = None
+    
+    if height_cm and height_cm > 0:
+        height_m = height_cm / 100
+        current_bmi = new_weight / (height_m ** 2)
+        bmi_status = current_bmi
+        
+        # Check if in healthy BMI range (18.5-25 for adults)
+        # For age-specific, we'd need age/sex but this is a reasonable default
+        is_in_healthy_range = 18.5 <= current_bmi <= 25.0
+    
     # Check for previous entry (daily comparison)
     prev_entry = get_previous_weight_entry(weight_entries, current_date)
+    
+    # =========================================================================
+    # ALWAYS REWARD FOR LOGGING - Base reward even without previous entry
+    # Better rewards for healthy behavior (in range, progressing correctly)
+    # =========================================================================
+    
     if prev_entry:
         prev_weight = prev_entry["weight"]
         # Raw change: positive = lost weight, negative = gained weight
@@ -11896,85 +12087,137 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
             progress_verb_good = "gained"
             progress_verb_bad = "lost"
             emoji_good = "💪"
+            # Progressing toward healthy if gaining weight
+            is_progressing_toward_healthy = raw_change < 0  # Gained weight
         elif weight_mode == WEIGHT_MODE_MAINTAIN:
             # For maintenance: staying same is best, small changes ok
             daily_progress = abs(raw_change)  # Use absolute for maintain mode
             progress_verb_good = "maintained"
             progress_verb_bad = "changed"
             emoji_good = "⚖️"
+            # Progressing if stable (within 500g)
+            is_progressing_toward_healthy = abs(raw_change) <= 500
         else:  # WEIGHT_MODE_LOSS (default)
             daily_progress = raw_change
             progress_verb_good = "lost"
             progress_verb_bad = "gained"
             emoji_good = "🎉"
+            # Progressing toward healthy if losing weight
+            is_progressing_toward_healthy = raw_change > 0  # Lost weight
         
         result["daily_change_grams"] = daily_progress
         result["daily_loss_grams"] = raw_change  # Legacy compatibility
         
+        # Determine reward rarity based on behavior:
+        # - ALWAYS get at least Common for logging
+        # - Best: Progressing toward healthy (active improvement takes effort!)
+        # - Good: Already in healthy range (maintenance is good)
+        # - Base: Just logging (neither improving nor in range)
+        
+        if is_progressing_toward_healthy:
+            # Best case: Actively improving toward healthy range - this takes effort!
+            base_rarity = "Rare"
+            bonus_msg = "📈 Great Progress!"
+        elif is_in_healthy_range:
+            # Good: Already in healthy BMI range - maintaining is valuable
+            base_rarity = "Uncommon"
+            bonus_msg = "💚 Healthy Range!"
+        else:
+            # Base reward just for logging
+            base_rarity = "Common"
+            bonus_msg = "📝 Logged!"
+        
         # LOSS mode: reward weight loss
         if weight_mode == WEIGHT_MODE_LOSS:
             if raw_change > 0:
-                rarity = get_daily_weight_reward_rarity(raw_change, legendary_bonus)
-                if rarity:
-                    result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-                    bonus_note = f" (+{legendary_bonus}% 🐀)" if legendary_bonus > 0 else ""
-                    result["messages"].append(
-                        f"🎉 Daily Progress: Lost {raw_change:.0f}g! Earned a {rarity} item!{bonus_note}"
-                    )
-            elif raw_change == 0:
-                rarity = get_daily_weight_reward_rarity(0, legendary_bonus) or "Common"
+                # Progress reward - use the higher of calculated or base rarity
+                progress_rarity = get_daily_weight_reward_rarity(raw_change, legendary_bonus)
+                rarity = _better_rarity(progress_rarity, base_rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-                result["messages"].append(f"💪 Maintained weight! Earned a {rarity} item.")
+                bonus_note = f" (+{legendary_bonus}% 🐀)" if legendary_bonus > 0 else ""
+                result["messages"].append(
+                    f"🎉 Daily Progress: Lost {raw_change:.0f}g! {bonus_msg} Earned a {rarity} item!{bonus_note}"
+                )
+            elif raw_change == 0:
+                rarity = _better_rarity(base_rarity, "Common")
+                result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+                result["messages"].append(f"💪 Maintained weight! {bonus_msg} Earned a {rarity} item.")
             else:
-                result["messages"].append(f"📈 Weight up {abs(raw_change):.0f}g - keep going!")
+                # Going wrong direction - still reward for logging, but base tier
+                rarity = base_rarity
+                result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+                result["messages"].append(f"📈 Weight up {abs(raw_change):.0f}g - keep tracking! Earned a {rarity} item.")
         
         # GAIN mode: reward weight gain (for underweight users)
         elif weight_mode == WEIGHT_MODE_GAIN:
             weight_gain = -raw_change  # Make positive for gain
             if weight_gain > 0:
-                # Use same rarity distribution, but for gain instead of loss
-                rarity = get_daily_weight_reward_rarity(weight_gain, legendary_bonus)
-                if rarity:
-                    result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-                    bonus_note = f" (+{legendary_bonus}% 🐀)" if legendary_bonus > 0 else ""
-                    result["messages"].append(
-                        f"💪 Healthy Gain: +{weight_gain:.0f}g! Earned a {rarity} item!{bonus_note}"
-                    )
-            elif weight_gain == 0:
-                rarity = get_daily_weight_reward_rarity(0, legendary_bonus) or "Common"
+                # Progress reward - use the higher of calculated or base rarity
+                progress_rarity = get_daily_weight_reward_rarity(weight_gain, legendary_bonus)
+                rarity = _better_rarity(progress_rarity, base_rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-                result["messages"].append(f"⚖️ Stable weight - Earned a {rarity} item.")
+                bonus_note = f" (+{legendary_bonus}% 🐀)" if legendary_bonus > 0 else ""
+                result["messages"].append(
+                    f"💪 Healthy Gain: +{weight_gain:.0f}g! {bonus_msg} Earned a {rarity} item!{bonus_note}"
+                )
+            elif weight_gain == 0:
+                rarity = _better_rarity(base_rarity, "Common")
+                result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+                result["messages"].append(f"⚖️ Stable weight - {bonus_msg} Earned a {rarity} item.")
             else:
-                result["messages"].append(f"📉 Weight down {abs(weight_gain):.0f}g - eat well!")
+                # Going wrong direction - still reward for logging
+                rarity = base_rarity
+                result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+                result["messages"].append(f"📉 Weight down {abs(weight_gain):.0f}g - keep tracking! Earned a {rarity} item.")
         
         # MAINTAIN mode: reward staying within range
         else:  # WEIGHT_MODE_MAINTAIN
             abs_change = abs(raw_change)
             # More reward for staying closer to same weight
             if abs_change <= 100:  # Within 100g is excellent
-                rarity = get_daily_weight_reward_rarity(200, legendary_bonus) or "Rare"
+                rarity = _better_rarity("Rare", base_rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(
-                    f"⚖️ Perfect maintenance! (±{abs_change:.0f}g) Earned a {rarity} item!"
+                    f"⚖️ Perfect maintenance! (±{abs_change:.0f}g) {bonus_msg} Earned a {rarity} item!"
                 )
             elif abs_change <= 200:  # Within 200g is good
-                rarity = get_daily_weight_reward_rarity(100, legendary_bonus) or "Uncommon"
+                rarity = _better_rarity("Uncommon", base_rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(
-                    f"⚖️ Good stability! (±{abs_change:.0f}g) Earned a {rarity} item."
+                    f"⚖️ Good stability! (±{abs_change:.0f}g) {bonus_msg} Earned a {rarity} item."
                 )
             elif abs_change <= 500:  # Within 500g is acceptable
-                rarity = get_daily_weight_reward_rarity(0, legendary_bonus) or "Common"
+                rarity = _better_rarity("Common", base_rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 change_dir = "up" if raw_change < 0 else "down"
                 result["messages"].append(
-                    f"⚖️ Weight {change_dir} {abs_change:.0f}g - Earned a {rarity} item."
+                    f"⚖️ Weight {change_dir} {abs_change:.0f}g - {bonus_msg} Earned a {rarity} item."
                 )
             else:
+                # Large fluctuation - still reward for logging
                 change_dir = "up" if raw_change < 0 else "down"
+                rarity = base_rarity
+                result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(
-                    f"📊 Weight {change_dir} {abs_change:.0f}g - stay balanced!"
+                    f"📊 Weight {change_dir} {abs_change:.0f}g - keep tracking! Earned a {rarity} item."
                 )
+    else:
+        # NO PREVIOUS ENTRY - First time logging or first log in a while
+        # Always reward for starting/resuming the tracking habit!
+        if is_in_healthy_range:
+            rarity = "Uncommon"
+            bonus_msg = "💚 You're in a healthy range!"
+        else:
+            rarity = "Common"
+            if weight_mode == WEIGHT_MODE_LOSS:
+                bonus_msg = "Let's work toward your goal!"
+            elif weight_mode == WEIGHT_MODE_GAIN:
+                bonus_msg = "Let's build healthy mass!"
+            else:
+                bonus_msg = "Great start!"
+        
+        result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
+        result["messages"].append(f"📝 Weight logged! {bonus_msg} Earned a {rarity} item.")
     
     # Calculate date 7 days ago for weekly check
     from datetime import datetime, timedelta
