@@ -3059,13 +3059,37 @@ class EntitidexTab(QtWidgets.QWidget):
         potential_pct = int(potential_prob * 100)
         
         has_paid = item.get("has_paid_recalculate", False)
+        has_risky = item.get("has_risky_recalculate", False)
         cost = item.get("recalculate_cost", 100)
         
-        # Only show improvement hints if significant
-        if has_paid and potential_pct > chance_pct + 5:
-            recalc_info = f"<br><span style='color: #4CAF50;'>💡 Chad can boost this to <b>{potential_pct}%</b> for {cost}🪙!</span>"
-        elif not has_paid and potential_pct > chance_pct + 5:
-            recalc_info = f"<br><span style='color: #888;'>🔒 (<b>{potential_pct}%</b> possible with AGI Assistant Chad)</span>"
+        # Get the actual provider name from perk_providers
+        perk_providers = item.get("perk_providers", {})
+        paid_provider = perk_providers.get("paid_recalculate_provider", {})
+        risky_provider = perk_providers.get("risky_recalculate_provider", {})
+        paid_provider_name = paid_provider.get("name", "recalculate perk") if paid_provider else "recalculate perk"
+        risky_provider_name = risky_provider.get("name", "risky perk") if risky_provider else "risky perk"
+        
+        # Show improvement hints if ANY improvement is possible (>=1%)
+        if potential_pct > chance_pct:
+            improvement = potential_pct - chance_pct
+            if has_paid or has_risky:
+                # Show available recalculation options
+                options = []
+                if has_paid:
+                    options.append(f"💰 <b>{paid_provider_name}</b> → {potential_pct}% for {cost}🪙")
+                if has_risky:
+                    risky_rate = perk_providers.get("risky_success_percent", "60%")
+                    options.append(f"🎲 <b>{risky_provider_name}</b> → {potential_pct}% (free, {risky_rate} success)")
+                recalc_info = f"<br><span style='color: #4CAF50;'>💡 +{improvement}% possible: {' | '.join(options)}</span>"
+            else:
+                # Show locked hint - mention example entities that provide recalculate perks
+                recalc_info = (
+                    f"<br><span style='color: #888;'>🔒 +{improvement}% possible – collect recalculate perks from: "
+                    f"Old War Ant General, Sentient Tome, Lucky Coin, Coffee Maker, Chad, or Fridge</span>"
+                )
+        elif potential_pct == chance_pct and (has_paid or has_risky):
+            # Same probability - no benefit to recalculate
+            recalc_info = f"<br><span style='color: #666;'>✓ Already optimal for current power</span>"
             
         details = QtWidgets.QLabel(f"⭐ {entity.rarity.capitalize()} | 🎲 {chance_pct}% chance{recalc_info}")
         details.setStyleSheet("color: #aaa; font-size: 11px;")
@@ -3109,7 +3133,7 @@ class EntitidexTab(QtWidgets.QWidget):
         if has_paid and potential_pct > chance_pct:
             recalc_btn = QtWidgets.QPushButton("⚡ Boost")
             recalc_btn.setToolTip(
-                f"🤖 Chad's Optimization Service\n\n"
+                f"💰 Paid Recalculate (via {paid_provider_name})\n\n"
                 f"Pays {cost} coins to recalculate odds using your CURRENT power.\n"
                 f"Old Chance: {chance_pct}%\n"
                 f"New Chance: {potential_pct}%\n"
@@ -3130,10 +3154,10 @@ class EntitidexTab(QtWidgets.QWidget):
             def on_recalc():
                 # Confirm recalculation
                 confirm = styled_question(
-                    parent_dialog, "🤖 Chad's Optimization",
+                    parent_dialog, f"💰 Paid Recalculate",
                     f"Pay <b>{cost} coins</b> to boost bonding chance?<br><br>"
                     f"📈 <b>{chance_pct}%</b> ➔ <b>{potential_pct}%</b><br><br>"
-                    f"<i>(Based on your increased power level)</i>",
+                    f"<i>Powered by {paid_provider_name}</i>",
                     ["Yes", "No"]
                 )
                 
@@ -3143,6 +3167,48 @@ class EntitidexTab(QtWidgets.QWidget):
             
             recalc_btn.clicked.connect(on_recalc)
             actions_layout.addWidget(recalc_btn)
+        
+        # Risky Recalculate button (free but with risk)
+        if has_risky and potential_pct > chance_pct:
+            risky_rate = perk_providers.get("risky_success_percent", "60%")
+            risky_btn = QtWidgets.QPushButton("🎲 Risky")
+            risky_btn.setToolTip(
+                f"🎲 Free Risky Recalculate (via {risky_provider_name})\n\n"
+                f"FREE recalculation but with {risky_rate} success rate.\n"
+                f"Success: {chance_pct}% → {potential_pct}%\n"
+                f"Failure: Keep original {chance_pct}%\n"
+                f"Cost: FREE!"
+            )
+            risky_btn.setStyleSheet(f"""
+                QPushButton {{
+                    background: #252540;
+                    color: #9C27B0;
+                    border: 1px solid #9C27B0;
+                    border-radius: 6px;
+                    padding: 4px 10px;
+                    font-size: 11px;
+                }}
+                QPushButton:hover {{ background: #2a2a45; }}
+            """)
+            
+            def on_risky_recalc():
+                # Confirm risky recalculation
+                confirm = styled_question(
+                    parent_dialog, f"🎲 Free Risky Recalculate",
+                    f"Try a FREE risky recalculation?<br><br>"
+                    f"🎯 <b>{risky_rate}</b> chance of success<br>"
+                    f"📈 Success: <b>{chance_pct}%</b> ➔ <b>{potential_pct}%</b><br>"
+                    f"❌ Failure: Keep original <b>{chance_pct}%</b><br><br>"
+                    f"<i>Powered by {risky_provider_name}</i>",
+                    ["Roll the Dice!", "Cancel"]
+                )
+                
+                if confirm == "Roll the Dice!":
+                    parent_dialog.accept()
+                    self._open_saved_encounter_risky_flow(idx)
+            
+            risky_btn.clicked.connect(on_risky_recalc)
+            actions_layout.addWidget(risky_btn)
             
         card_layout.addLayout(actions_layout)
         
@@ -3207,6 +3273,92 @@ class EntitidexTab(QtWidgets.QWidget):
         self._update_saved_button_count()
         self.refresh()
     
+    def _open_saved_encounter_risky_flow(self, index: int):
+        """Open a saved encounter with risky (free) probability recalculation."""
+        import random
+        from gamification import (
+            open_saved_encounter_risky_recalculate,
+            finalize_risky_recalculate,
+            RISKY_RECALC_SUCCESS_RATE,
+        )
+        
+        if not hasattr(self.blocker, 'adhd_buster'):
+            return
+        
+        # Get risky recalculate data (prepares the encounter)
+        prep_result = open_saved_encounter_risky_recalculate(self.blocker.adhd_buster, index)
+        
+        if not prep_result.get("success", False):
+            styled_warning(self, "Risky Recalculate", prep_result.get("message", "Error"))
+            return
+        
+        # Do the risky roll locally
+        risky_success = random.random() < RISKY_RECALC_SUCCESS_RATE
+        new_prob = prep_result.get("new_probability", 0)
+        old_prob = prep_result.get("old_probability", 0)
+        
+        # Show the risky roll result
+        if risky_success:
+            styled_info(
+                self, "🎲 Risky Recalculate SUCCESS!",
+                f"<b>The odds are in your favor!</b><br><br>"
+                f"📈 Probability boosted: <b>{int(old_prob*100)}%</b> ➔ <b>{int(new_prob*100)}%</b><br><br>"
+                f"<i>Now attempting to bond...</i>"
+            )
+        else:
+            styled_info(
+                self, "🎲 Risky Recalculate Failed",
+                f"<b>The dice were not kind...</b><br><br>"
+                f"📊 Using original probability: <b>{int(old_prob*100)}%</b><br><br>"
+                f"<i>Now attempting to bond anyway...</i>"
+            )
+        
+        # Finalize - this does the bond attempt
+        final_result = finalize_risky_recalculate(
+            self.blocker.adhd_buster, 
+            index, 
+            risky_success
+        )
+        
+        # Save config after encounter consumed
+        self.blocker.save_config()
+        
+        if not final_result.get("success", True):  # success here means bond success
+            # Bond failed
+            prob_used = final_result.get("probability", old_prob)
+            entity = final_result.get("entity")
+            entity_name = entity.name if entity else "Entity"
+            styled_info(
+                self, "💨 Bond Failed",
+                f"<b>{entity_name}</b> slipped away...<br><br>"
+                f"🎲 Roll was unlucky at <b>{int(prob_used*100)}%</b> chance<br><br>"
+                f"<i>The pity system will help next time!</i>"
+            )
+        else:
+            # Bond succeeded!
+            entity = final_result.get("entity")
+            is_exceptional = final_result.get("is_exceptional", False)
+            xp_awarded = final_result.get("xp_awarded", 0)
+            entity_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name if entity else "Entity"
+            
+            if is_exceptional:
+                styled_info(
+                    self, "🌟✨ EXCEPTIONAL BOND! ✨🌟",
+                    f"<b>{entity_name}</b> has joined your team!<br><br>"
+                    f"⚡ +{xp_awarded} XP awarded!<br>"
+                    f"🌟 Exceptional variant collected!"
+                )
+            else:
+                styled_info(
+                    self, "🎉 Bond Successful!",
+                    f"<b>{entity_name}</b> has joined your team!<br><br>"
+                    f"⚡ +{xp_awarded} XP awarded!"
+                )
+        
+        # Refresh after dialog closes
+        self._update_saved_button_count()
+        self.refresh()
+
     def _update_saved_button_count(self):
         """Update the saved encounters button count."""
         if not hasattr(self, 'saved_button'):
