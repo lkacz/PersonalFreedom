@@ -29297,14 +29297,8 @@ class MiniHeroWidget(QtWidgets.QWidget):
         finally:
             painter.end()
         
-        # DEBUG: Save the image to verify content
-        debug_path = "F:/_DEV/PersonalFreedom/debug_hero_render.png"
-        saved = image.save(debug_path)
-        print(f"[DEBUG] Hero image saved: {saved}, size: {image.width()}x{image.height()}, isNull: {image.isNull()}")
-        
         # Convert QImage to QPixmap for display
         self._cached_pixmap = QtGui.QPixmap.fromImage(image)
-        print(f"[DEBUG] Cached pixmap isNull: {self._cached_pixmap.isNull()}, size: {self._cached_pixmap.width()}x{self._cached_pixmap.height()}")
         
         # Update tooltip
         tier = "pathetic"

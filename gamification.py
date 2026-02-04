@@ -17286,6 +17286,22 @@ def get_saved_encounter_count(adhd_buster: dict) -> int:
 CHAD_ENTITY_ID = "underdog_008"  # AGI Assistant Chad - unlocks Paid Recalculate
 # Note: Exceptional variant (AGI Assistant Rad) unlocks Risky Free Recalculate
 
+# All entities that provide recalculate perks:
+# PAID RECALCULATE (normal variants unless noted):
+#   - warrior_009: Old War Ant General
+#   - scholar_006: Sentient Tome Magnus (normal) / Agnus (exceptional)
+#   - wanderer_001: Lucky Coin
+#   - underdog_006: Break Room Coffee Maker (normal) / Toffee Maker (exceptional)
+#   - underdog_008: AGI Assistant Chad
+#   - underdog_009: Break Room Fridge
+#
+# RISKY FREE RECALCULATE (exceptional variants unless noted):
+#   - warrior_009: Cold War Ant General (exceptional)
+#   - wanderer_001: Plucky Coin (exceptional)
+#   - wanderer_009: Hobo Rat (normal) / Robo Rat (exceptional)
+#   - underdog_008: AGI Assistant Rad (exceptional)
+#   - underdog_009: Steak Room Fridge (exceptional)
+
 # ============================================================================
 # CHAD & RAD NARRATIVE POOLS - Rotating daily quotes for entertainment
 # ============================================================================
@@ -18147,7 +18163,15 @@ def open_saved_encounter_with_recalculate(
         if not has_paid_recalculate_perk(adhd_buster):
             return {
                 "success": False,
-                "message": "🤖 Collect AGI Assistant Chad to unlock Paid Recalculate!",
+                "message": (
+                    "💰 Collect any of these to unlock Paid Recalculate:\n"
+                    "• Old War Ant General (warrior_009)\n"
+                    "• Sentient Tome Magnus/Agnus (scholar_006)\n"
+                    "• Lucky Coin (wanderer_001)\n"
+                    "• Break Room Coffee/Toffee Maker (underdog_006)\n"
+                    "• AGI Assistant Chad (underdog_008)\n"
+                    "• Break Room Fridge (underdog_009)"
+                ),
                 "requires_entity": CHAD_ENTITY_ID,
                 "requires_exceptional": False,
                 "remaining_saved": manager.progress.get_saved_encounter_count(),
@@ -18287,11 +18311,18 @@ def open_saved_encounter_risky_recalculate(
     from entitidex import get_entity_by_id, calculate_join_probability
     from entitidex.catch_mechanics import apply_pity_bonus
     
-    # Check if user has the perk (Chad exceptional variant = Rad)
+    # Check if user has the perk (any entity with RECALC_RISKY)
     if not has_risky_recalculate_perk(adhd_buster):
         return {
             "success": False,
-            "message": "🌟 Collect AGI Assistant Rad (Exceptional) to unlock Free Risky Recalculate!",
+            "message": (
+                "🎲 Collect any of these to unlock Free Risky Recalculate:\n"
+                "• Cold War Ant General ✨ (warrior_009 exceptional)\n"
+                "• Plucky Coin ✨ (wanderer_001 exceptional)\n"
+                "• Hobo Rat / Robo Rat ✨ (wanderer_009 both)\n"
+                "• AGI Assistant Rad ✨ (underdog_008 exceptional)\n"
+                "• Steak Room Fridge ✨ (underdog_009 exceptional)"
+            ),
             "requires_entity": CHAD_ENTITY_ID,
             "requires_exceptional": True,
         }
