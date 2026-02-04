@@ -1459,6 +1459,20 @@ class EyeProtectionTab(QtWidgets.QWidget):
             self.timer.stop()
         self.is_running = False
     
+    def showEvent(self, event):
+        """Refresh entity-related features when tab becomes visible.
+        
+        This ensures that if entities are collected in Entitidex while viewing
+        another tab, the Owl Tips and entity perk displays will update when returning here.
+        """
+        super().showEvent(event)
+        # Refresh entity perk display and owl tips
+        # These are fast operations that check collection status
+        if hasattr(self, '_update_entity_perk_display'):
+            self._update_entity_perk_display()
+        if hasattr(self, '_refresh_owl_tips'):
+            self._refresh_owl_tips()
+    
     def hideEvent(self, event):
         """Handle tab switch away - cancel routine if running to prevent freezes."""
         super().hideEvent(event)

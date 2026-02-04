@@ -10718,11 +10718,24 @@ class WeightTab(QtWidgets.QWidget):
         super().__init__(parent)
         self.blocker = blocker
         self._reminder_timer = None
+        self._last_entity_refresh = None  # Track last entity refresh to avoid redundant updates
         self._build_ui()
         self._refresh_display()
         self._setup_reminder()
         # Ensure timer is cleaned up when widget is destroyed
         self.destroyed.connect(self._cleanup_timer)
+    
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        """Refresh entity-related features when tab becomes visible.
+        
+        This ensures that if entities are collected in Entitidex while viewing
+        another tab, the Rodent Squad Tips will update when returning here.
+        """
+        super().showEvent(event)
+        # Refresh entity perk display and rodent tips
+        # These are fast operations that check collection status
+        self._update_weight_entity_perk_display()
+        self._refresh_rodent_tips()
     
     def _cleanup_timer(self) -> None:
         """Stop the reminder timer when the widget is destroyed."""
@@ -13532,6 +13545,17 @@ class ActivityTab(QtWidgets.QWidget):
         self._refresh_display()
         self._setup_reminder()
         self.destroyed.connect(self._cleanup_timer)
+    
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        """Refresh entity-related features when tab becomes visible.
+        
+        This ensures that if entities are collected in Entitidex while viewing
+        another tab, the XP Physical Activists display will update when returning here.
+        """
+        super().showEvent(event)
+        # Refresh entity perk display
+        if hasattr(self, '_update_activity_entity_perk_display'):
+            self._update_activity_entity_perk_display()
     
     def _cleanup_timer(self) -> None:
         """Stop the reminder timer when the widget is destroyed."""
@@ -16419,10 +16443,13 @@ class SleepTab(QtWidgets.QWidget):
             self._reminder_timer = None
     
     def showEvent(self, event: QtGui.QShowEvent) -> None:
-        """Update the Nighty-Night bonus preview when the tab is shown."""
+        """Update the Nighty-Night bonus preview and entity perks when the tab is shown."""
         super().showEvent(event)
         # Refresh the time and expected reward tier each time tab is opened
         self._update_sleep_now_preview()
+        # Refresh entity perk display in case entities were collected elsewhere
+        if hasattr(self, '_update_sleep_entity_perk_display'):
+            self._update_sleep_entity_perk_display()
     
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
@@ -23247,6 +23274,17 @@ class HydrationTab(QtWidgets.QWidget):
         self._refresh_timer.start(60000)  # Refresh every minute for countdown
         self._build_ui()
         self._refresh_display()
+    
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        """Refresh entity-related features when tab becomes visible.
+        
+        This ensures that if entities are collected in Entitidex while viewing
+        another tab, the entity perk display will update when returning here.
+        """
+        super().showEvent(event)
+        # Refresh entity perks display
+        if hasattr(self, '_refresh_entity_perks_display'):
+            self._refresh_entity_perks_display()
     
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
