@@ -4870,7 +4870,9 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
             weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
             
             for offset, pct in zip([-2, -1, 0, 1, 2], window):
-                target_tier = int(effective_center + offset)
+                # Use round() instead of int() for proper rounding of fractional tiers
+                # int() truncates toward zero, causing bias toward lower tiers
+                target_tier = round(effective_center + offset)
                 # Clamp to valid range [0, 4] - overflow absorbed at edges
                 clamped_tier = max(0, min(4, target_tier))
                 weights[clamped_tier] += pct
@@ -17163,6 +17165,9 @@ def save_encounter_for_later(
     
     hero_power = calculate_character_power(adhd_buster)
     
+    # Get the active story ID to track which hero had this encounter
+    active_story_id = adhd_buster.get("active_story", "warrior")
+    
     saved = manager.progress.save_encounter_for_later(
         entity_id=entity_id,
         is_exceptional=is_exceptional,
@@ -17173,6 +17178,7 @@ def save_encounter_for_later(
         exceptional_colors=exceptional_colors,
         session_minutes=session_minutes,
         was_perfect_session=was_perfect_session,
+        story_id=active_story_id,
     )
     
     # Entity cannot be saved (already saved or already collected)
@@ -17208,6 +17214,11 @@ def get_saved_encounters(adhd_buster: dict) -> list:
     """
     Get all saved encounters waiting to be opened.
     
+    For fair probability recalculation, this uses the power of the hero
+    that originally had the encounter (not the currently active hero).
+    This prevents exploits where users save encounters with weak heroes
+    and open them with maxed-out heroes from different themes.
+    
     Args:
         adhd_buster: Hero data dictionary
         
@@ -17224,15 +17235,36 @@ def get_saved_encounters(adhd_buster: dict) -> list:
     has_risky = has_risky_recalculate_perk(adhd_buster)
     perk_status = get_recalculate_perks_status(adhd_buster)
     
-    # Calculate current power once
-    current_power = calculate_character_power(adhd_buster)
+    # Get current active story
+    current_story_id = adhd_buster.get("active_story", "warrior")
+    
+    # Story display names for UI
+    story_display_names = {
+        "warrior": "🛡️ Warrior",
+        "scholar": "📚 Scholar", 
+        "wanderer": "🧭 Wanderer",
+        "underdog": "💪 Underdog",
+        "scientist": "🔬 Scientist",
+    }
     
     result = []
     for idx, enc in enumerate(saved):
         entity = get_entity_by_id(enc.entity_id)
         if entity:
             from entitidex import calculate_join_probability
-            potential_prob = calculate_join_probability(current_power, entity.power)
+            
+            # Get the story that originally had this encounter
+            saved_story_id = enc.story_id_at_encounter or current_story_id
+            
+            # Check if there's a story mismatch
+            is_story_mismatch = saved_story_id != current_story_id
+            
+            # Calculate potential probability using the ORIGINAL story's hero power
+            # Always use _calculate_power_for_story for consistency, even if same story
+            # This ensures we're reading from story_heroes directly, not relying on flat sync
+            original_hero_power = _calculate_power_for_story(adhd_buster, saved_story_id)
+            
+            potential_prob = calculate_join_probability(original_hero_power, entity.power)
             
             result.append({
                 "saved_encounter": enc.to_dict(),
@@ -17246,9 +17278,70 @@ def get_saved_encounters(adhd_buster: dict) -> list:
                 "recalculate_cost": RECALCULATE_COST_BY_RARITY.get(entity.rarity.lower(), 100),
                 "perk_providers": perk_status,
                 "potential_probability": potential_prob,
+                # Story matching info
+                "saved_story_id": saved_story_id,
+                "saved_story_name": story_display_names.get(saved_story_id, saved_story_id.title()),
+                "current_story_id": current_story_id,
+                "current_story_name": story_display_names.get(current_story_id, current_story_id.title()),
+                "is_story_mismatch": is_story_mismatch,
+                "original_hero_power": original_hero_power,
             })
     
     return result
+
+
+def _calculate_power_for_story(adhd_buster: dict, story_id: str) -> int:
+    """
+    Calculate power for a specific story's hero.
+    
+    This is used to calculate fair recalculation probabilities for saved
+    encounters - the probability should be based on the hero that originally
+    had the encounter, not just any hero the user switches to.
+    
+    Args:
+        adhd_buster: User's data dictionary
+        story_id: The story ID to calculate power for
+        
+    Returns:
+        Power value for that story's hero
+    """
+    story_heroes = adhd_buster.get("story_heroes", {})
+    hero_data = story_heroes.get(story_id, {})
+    
+    if not hero_data:
+        return 0
+    
+    equipped = hero_data.get("equipped", {})
+    
+    # Calculate gear power using the same function as calculate_character_power
+    # This ensures consistency in power calculation across heroes
+    power_breakdown = calculate_effective_power(
+        equipped,
+        include_set_bonus=True,
+        include_neighbor_effects=False  # System removed anyway
+    )
+    gear_power = power_breakdown["total_power"]
+    
+    # Add Entity Perks (SHARED across all heroes)
+    perk_power = 0
+    if ENTITY_SYSTEM_AVAILABLE:
+        entitidex_data = adhd_buster.get("entitidex", {})
+        perks = calculate_active_perks(entitidex_data)
+        perk_power = int(perks.get(PerkType.POWER_FLAT, 0))
+    
+    base_total = gear_power + perk_power
+    
+    # Add City Bonus (SHARED - percentage boost from Training Ground)
+    city_power_bonus = 0
+    try:
+        city_bonuses = get_city_bonuses(adhd_buster)
+        power_bonus_pct = city_bonuses.get("power_bonus", 0)
+        if power_bonus_pct > 0:
+            city_power_bonus = int(base_total * power_bonus_pct / 100.0)
+    except Exception:
+        pass
+    
+    return base_total + city_power_bonus
 
 
 def open_saved_encounter(adhd_buster: dict, index: int = 0) -> dict:
@@ -18192,9 +18285,15 @@ def open_saved_encounter_with_recalculate(
         recalc_cost = cost
         paid_for_recalc = True
         
-        # Recalculate probability with current power
-        current_hero_power = calculate_character_power(adhd_buster)
-        probability_to_use = calculate_join_probability(current_hero_power, entity.power)
+        # Recalculate probability using the power of the hero that originally encountered this entity
+        # This prevents exploiting by saving with weak hero and recalculating with maxed hero
+        original_story_id = saved.story_id_at_encounter
+        if original_story_id:
+            hero_power_for_calc = _calculate_power_for_story(adhd_buster, original_story_id)
+        else:
+            # Legacy saved encounters without story_id - use current hero
+            hero_power_for_calc = calculate_character_power(adhd_buster)
+        probability_to_use = calculate_join_probability(hero_power_for_calc, entity.power)
         
         # Apply pity bonus
         current_failed = manager.progress.get_failed_attempts(saved.entity_id, saved.is_exceptional)
@@ -18349,9 +18448,15 @@ def open_saved_encounter_risky_recalculate(
             "remaining_saved": manager.progress.get_saved_encounter_count(),
         }
     
-    # Calculate new probability with current power
-    current_hero_power = calculate_character_power(adhd_buster)
-    new_probability = calculate_join_probability(current_hero_power, entity.power)
+    # Calculate new probability with the power of the hero that originally encountered this entity
+    # This prevents exploiting by saving with weak hero and recalculating with maxed hero
+    original_story_id = saved.story_id_at_encounter
+    if original_story_id:
+        hero_power_for_calc = _calculate_power_for_story(adhd_buster, original_story_id)
+    else:
+        # Legacy saved encounters without story_id - use current hero
+        hero_power_for_calc = calculate_character_power(adhd_buster)
+    new_probability = calculate_join_probability(hero_power_for_calc, entity.power)
     
     # Apply pity bonus
     current_failed = manager.progress.get_failed_attempts(saved.entity_id, saved.is_exceptional)
@@ -18423,8 +18528,14 @@ def finalize_risky_recalculate(
     
     # Determine probability to use based on lottery result
     if recalc_succeeded:
-        current_hero_power = calculate_character_power(adhd_buster)
-        probability_to_use = calculate_join_probability(current_hero_power, entity.power)
+        # Use power of the hero that originally encountered this entity
+        original_story_id = saved.story_id_at_encounter
+        if original_story_id:
+            hero_power_for_calc = _calculate_power_for_story(adhd_buster, original_story_id)
+        else:
+            # Legacy saved encounters without story_id - use current hero
+            hero_power_for_calc = calculate_character_power(adhd_buster)
+        probability_to_use = calculate_join_probability(hero_power_for_calc, entity.power)
         
         # Apply pity bonus
         current_failed = manager.progress.get_failed_attempts(saved.entity_id, saved.is_exceptional)

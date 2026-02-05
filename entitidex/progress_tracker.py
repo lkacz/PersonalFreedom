@@ -227,6 +227,7 @@ class EntitidexProgress:
         exceptional_colors: Optional[dict] = None,
         session_minutes: int = 0,
         was_perfect_session: bool = False,
+        story_id: Optional[str] = None,
     ) -> Optional[SavedEncounter]:
         """
         Save an encounter for later instead of attempting bond now.
@@ -247,6 +248,7 @@ class EntitidexProgress:
             exceptional_colors: Colors dict for exceptional variant
             session_minutes: Session duration that triggered this
             was_perfect_session: Whether session was distraction-free
+            story_id: The story/hero theme that had the encounter (for fair recalculation)
             
         Returns:
             The SavedEncounter that was created, or None if entity already saved/collected
@@ -281,6 +283,7 @@ class EntitidexProgress:
             exceptional_colors=exceptional_colors,
             session_minutes=session_minutes,
             was_perfect_session=was_perfect_session,
+            story_id_at_encounter=story_id,
         )
         
         self.saved_encounters.append(saved)

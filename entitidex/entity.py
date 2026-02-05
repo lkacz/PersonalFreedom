@@ -143,6 +143,10 @@ class SavedEncounter:
     the encounter is stored with all its parameters preserved. This allows
     users to stack up encounters during work sessions and "open" them later
     like loot boxes in the Entitidex tab.
+    
+    The story_id_at_encounter field tracks which hero originally had the
+    encounter, ensuring probability recalculation is based on that hero's
+    power growth (not a different, potentially stronger hero).
     """
     
     entity_id: str                              # ID of the encountered entity
@@ -156,6 +160,7 @@ class SavedEncounter:
     exceptional_colors: Optional[dict] = None   # Colors for exceptional variant
     session_minutes: int = 0                    # Session duration that triggered this
     was_perfect_session: bool = False           # Whether session was distraction-free
+    story_id_at_encounter: Optional[str] = None # Story/hero theme when encounter was saved
     
     def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""
@@ -171,6 +176,7 @@ class SavedEncounter:
             "exceptional_colors": self.exceptional_colors,
             "session_minutes": self.session_minutes,
             "was_perfect_session": self.was_perfect_session,
+            "story_id_at_encounter": self.story_id_at_encounter,
         }
     
     @classmethod
@@ -194,4 +200,5 @@ class SavedEncounter:
             exceptional_colors=data.get("exceptional_colors"),
             session_minutes=data.get("session_minutes", 0),
             was_perfect_session=data.get("was_perfect_session", False),
+            story_id_at_encounter=data.get("story_id_at_encounter"),
         )

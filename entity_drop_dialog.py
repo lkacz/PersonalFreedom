@@ -14,7 +14,7 @@ from lottery_animation import LotteryRollDialog
 import random
 from typing import Callable, Optional, Dict, Any
 from app_utils import get_app_dir
-from styled_dialog import styled_info, styled_warning, styled_error
+from styled_dialog import styled_info, styled_warning, styled_error, styled_question
 
 # Path constants for entity SVGs (use helper for PyInstaller compatibility)
 ENTITY_ICONS_PATH = get_app_dir() / "icons" / "entities"
@@ -1026,7 +1026,8 @@ def show_entity_encounter(entity, join_probability: float,
                 # Check if this is a slot limit issue that could be solved with Finn
                 needs_bookmark = result.get("needs_bookmark", False)
                 if needs_bookmark:
-                    styled_warning(
+                    # Ask if user wants to try bonding instead
+                    choice = styled_question(
                         parent, "📦 Save Slots Full!",
                         "You've reached the maximum of 3 save slots!<br><br>"
                         "💡 TIP: Bond with 'Living Bookmark Finn' in the<br>"
@@ -1034,16 +1035,31 @@ def show_entity_encounter(entity, join_probability: float,
                         "• Normal Finn: 5 free slots + paid expansion<br>"
                         "• Exceptional Finn: 20 free slots + cheap expansion<br><br>"
                         "🦊 Finn is a magical bookmark who helps you<br>"
-                        "remember more encounters for later!"
+                        "remember more encounters for later!<br><br>"
+                        "<b>Would you like to try bonding now instead?</b>",
+                        ["🎲 Try Bonding", "Skip"]
                     )
+                    if choice == "🎲 Try Bonding":
+                        # Continue to bonding logic below
+                        dialog.accepted_bond = True
+                    else:
+                        return
                 else:
-                    styled_warning(
+                    # Ask if user wants to try bonding instead
+                    choice = styled_question(
                         parent, "Save Failed",
-                        result.get("message", "Could not save encounter.")
+                        f"{result.get('message', 'Could not save encounter.')}<br><br>"
+                        "<b>Would you like to try bonding now instead?</b>",
+                        ["🎲 Try Bonding", "Skip"]
                     )
+                    if choice == "🎲 Try Bonding":
+                        # Continue to bonding logic below
+                        dialog.accepted_bond = True
+                    else:
+                        return
         except Exception as e:
             styled_warning(parent, "Error", f"Could not save: {e}")
-        return
+            return
     
     if not dialog.accepted_bond:
         return

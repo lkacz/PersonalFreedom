@@ -3050,6 +3050,26 @@ class EntitidexTab(QtWidgets.QWidget):
         name_label.setStyleSheet(f"color: {border_color}; font-size: 12px;")
         info_layout.addWidget(name_label)
         
+        # Check for story mismatch
+        is_story_mismatch = item.get("is_story_mismatch", False)
+        saved_story_name = item.get("saved_story_name", "")
+        current_story_name = item.get("current_story_name", "")
+        
+        # Show story info if there's a mismatch
+        if is_story_mismatch:
+            story_warning = QtWidgets.QLabel(
+                f"<span style='color: #FF9800;'>⚠️ Originally saved by: <b>{saved_story_name}</b> hero</span>"
+            )
+            story_warning.setStyleSheet("font-size: 10px;")
+            story_warning.setToolTip(
+                f"This encounter was saved while playing as {saved_story_name}.\n\n"
+                f"Probability recalculation is based on that hero's power,\n"
+                f"not your currently active {current_story_name} hero.\n\n"
+                f"This prevents exploits where players save encounters\n"
+                f"with weak heroes and catch them with maxed heroes."
+            )
+            info_layout.addWidget(story_warning)
+        
         # Rarity and chance
         chance_pct = int(saved_probability * 100)
         
@@ -3070,26 +3090,28 @@ class EntitidexTab(QtWidgets.QWidget):
         risky_provider_name = risky_provider.get("name", "risky perk") if risky_provider else "risky perk"
         
         # Show improvement hints if ANY improvement is possible (>=1%)
+        # Add note about story-specific calculation if there's a mismatch
+        story_calc_note = f" ({saved_story_name} hero)" if is_story_mismatch else ""
         if potential_pct > chance_pct:
             improvement = potential_pct - chance_pct
             if has_paid or has_risky:
                 # Show available recalculation options
                 options = []
                 if has_paid:
-                    options.append(f"💰 <b>{paid_provider_name}</b> → {potential_pct}% for {cost}🪙")
+                    options.append(f"💰 <b>{paid_provider_name}</b> → {potential_pct}%{story_calc_note} for {cost}🪙")
                 if has_risky:
                     risky_rate = perk_providers.get("risky_success_percent", "60%")
-                    options.append(f"🎲 <b>{risky_provider_name}</b> → {potential_pct}% (free, {risky_rate} success)")
+                    options.append(f"🎲 <b>{risky_provider_name}</b> → {potential_pct}%{story_calc_note} (free, {risky_rate} success)")
                 recalc_info = f"<br><span style='color: #4CAF50;'>💡 +{improvement}% possible: {' | '.join(options)}</span>"
             else:
                 # Show locked hint - mention example entities that provide recalculate perks
                 recalc_info = (
-                    f"<br><span style='color: #888;'>🔒 +{improvement}% possible – collect recalculate perks from: "
+                    f"<br><span style='color: #888;'>🔒 +{improvement}% possible{story_calc_note} – collect recalculate perks from: "
                     f"Old War Ant General, Sentient Tome, Lucky Coin, Coffee Maker, Chad, or Fridge</span>"
                 )
         elif potential_pct == chance_pct and (has_paid or has_risky):
             # Same probability - no benefit to recalculate
-            recalc_info = f"<br><span style='color: #666;'>✓ Already optimal for current power</span>"
+            recalc_info = f"<br><span style='color: #666;'>✓ Already optimal for {saved_story_name if is_story_mismatch else 'current'} power</span>"
             
         details = QtWidgets.QLabel(f"⭐ {entity.rarity.capitalize()} | 🎲 {chance_pct}% chance{recalc_info}")
         details.setStyleSheet("color: #aaa; font-size: 11px;")
@@ -3153,11 +3175,24 @@ class EntitidexTab(QtWidgets.QWidget):
             
             def on_recalc():
                 # Confirm recalculation
-                confirm = styled_question(
-                    parent_dialog, f"💰 Paid Recalculate",
+                # Build message with story mismatch warning if applicable
+                recalc_msg = (
                     f"Pay <b>{cost} coins</b> to boost bonding chance?<br><br>"
                     f"📈 <b>{chance_pct}%</b> ➔ <b>{potential_pct}%</b><br><br>"
-                    f"<i>Powered by {paid_provider_name}</i>",
+                )
+                
+                if is_story_mismatch and saved_story_name:
+                    recalc_msg += (
+                        f"⚠️ <span style='color: #FFA500;'><b>Story Mismatch!</b></span><br>"
+                        f"This entity was encountered as <b>{saved_story_name}</b>.<br>"
+                        f"The recalculated probability is based on that hero's power.<br><br>"
+                    )
+                
+                recalc_msg += f"<i>Powered by {paid_provider_name}</i>"
+                
+                confirm = styled_question(
+                    parent_dialog, f"💰 Paid Recalculate",
+                    recalc_msg,
                     ["Yes", "No"]
                 )
                 
@@ -3193,13 +3228,26 @@ class EntitidexTab(QtWidgets.QWidget):
             
             def on_risky_recalc():
                 # Confirm risky recalculation
-                confirm = styled_question(
-                    parent_dialog, f"🎲 Free Risky Recalculate",
+                # Build message with story mismatch warning if applicable
+                risky_msg = (
                     f"Try a FREE risky recalculation?<br><br>"
                     f"🎯 <b>{risky_rate}</b> chance of success<br>"
                     f"📈 Success: <b>{chance_pct}%</b> ➔ <b>{potential_pct}%</b><br>"
                     f"❌ Failure: Keep original <b>{chance_pct}%</b><br><br>"
-                    f"<i>Powered by {risky_provider_name}</i>",
+                )
+                
+                if is_story_mismatch and saved_story_name:
+                    risky_msg += (
+                        f"<br>⚠️ <span style='color: #FFA500;'><b>Story Mismatch!</b></span><br>"
+                        f"This entity was encountered as <b>{saved_story_name}</b>.<br>"
+                        f"The recalculated probability is based on that hero's power.<br><br>"
+                    )
+                
+                risky_msg += f"<i>Powered by {risky_provider_name}</i>"
+                
+                confirm = styled_question(
+                    parent_dialog, f"🎲 Free Risky Recalculate",
+                    risky_msg,
                     ["Roll the Dice!", "Cancel"]
                 )
                 
@@ -3239,6 +3287,27 @@ class EntitidexTab(QtWidgets.QWidget):
         enc_data = item["saved_encounter"]
         is_exceptional = enc_data.get("is_exceptional", False)
         saved_probability = enc_data.get("catch_probability", 0.5)
+        
+        # Check for story mismatch and warn user
+        is_story_mismatch = item.get("is_story_mismatch", False)
+        saved_story_name = item.get("saved_story_name", "")
+        current_story_name = item.get("current_story_name", "")
+        
+        if is_story_mismatch:
+            # Show warning about story mismatch
+            choice = styled_question(
+                self, "⚠️ Different Hero Warning",
+                f"This encounter was originally saved by your <b>{saved_story_name}</b> hero, "
+                f"but you're currently playing as <b>{current_story_name}</b>.<br><br>"
+                f"<b>Why this matters:</b><br>"
+                f"• Probability recalculation is based on your {saved_story_name} hero's power<br>"
+                f"• This prevents exploiting saves with weak heroes to catch with maxed heroes<br>"
+                f"• The entity belongs to whoever catches it (any hero can use Entitidex perks)<br><br>"
+                f"<b>Would you like to proceed anyway?</b>",
+                ["Proceed", "Cancel"]
+            )
+            if choice != "Proceed":
+                return
         
         # If recalculating, update the displayed probability to current potential
         if recalculate:
