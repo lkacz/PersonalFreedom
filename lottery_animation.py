@@ -3863,40 +3863,53 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
     
     def _calculate_zone_widths(self) -> list:
         """Calculate zone widths based on session duration (matches gamification.py)."""
-        # Session length to center tier mapping
-        # <30min: -1 (base weights), 30min: 0, 1hr: 1, 2hr: 2, 3hr: 3, 4hr+: 4
-        session_hours = self.session_minutes / 60.0
-        
-        if self.session_minutes < 30:
-            center_tier = -1  # No bonus
-        elif session_hours < 1:
-            center_tier = 0  # Common-centered
-        elif session_hours < 2:
-            center_tier = 1  # Uncommon-centered
-        elif session_hours < 3:
-            center_tier = 2  # Rare-centered
-        elif session_hours < 4:
-            center_tier = 3  # Epic-centered
+        # Session length to center tier mapping (must match calculate_rarity_bonuses)
+        # <30min: -1 (base weights), 30min: 0, 1hr: 1, 2hr: 2, 3hr: 3, 4hr+: 4, 5hr+: 5, 6hr+: 6
+        if self.session_minutes >= 360:      # 6hr+ = 100% Legendary
+            center_tier = 6  # Far enough that window gives 100% Legendary
+        elif self.session_minutes >= 300:    # 5hr
+            center_tier = 5
+        elif self.session_minutes >= 240:    # 4hr
+            center_tier = 4
+        elif self.session_minutes >= 180:    # 3hr
+            center_tier = 3
+        elif self.session_minutes >= 120:    # 2hr
+            center_tier = 2
+        elif self.session_minutes >= 60:     # 1hr
+            center_tier = 1
+        elif self.session_minutes >= 30:     # 30min
+            center_tier = 0
         else:
-            center_tier = 4  # Legendary-centered
+            center_tier = -1  # Use base distribution for <30min
         
-        # Streak bonus (each 7 days adds +1 tier)
-        streak_bonus = self.streak_days // 7
+        # Streak bonus (must match calculate_rarity_bonuses)
+        if self.streak_days >= 60:
+            streak_bonus = 2
+        elif self.streak_days >= 30:
+            streak_bonus = 1.5
+        elif self.streak_days >= 14:
+            streak_bonus = 1
+        elif self.streak_days >= 7:
+            streak_bonus = 0.5
+        else:
+            streak_bonus = 0
+        
         effective_center = center_tier + streak_bonus
         
         if center_tier >= 0:
-            # Moving window: [5%, 15%, 60%, 15%, 5%] centered on tier (same as merge/water)
-            window = [5, 15, 60, 15, 5]
+            # Moving window: [5%, 20%, 50%, 20%, 5%] centered on tier (MUST match generate_item)
+            window = [5, 20, 50, 20, 5]
             weights = [0, 0, 0, 0, 0]
             
             for offset, pct in zip([-2, -1, 0, 1, 2], window):
-                target_tier = effective_center + offset
+                # Use round() instead of int() for proper rounding (matches generate_item fix)
+                target_tier = round(effective_center + offset)
                 clamped_tier = max(0, min(4, target_tier))
                 weights[clamped_tier] += pct
             
             return weights
         else:
-            # Base distribution (<30min)
+            # Base distribution (<30min) - must match ITEM_RARITIES weights
             return [50, 30, 15, 4, 1]  # Common-heavy
     
     def set_position(self, pos: float):
