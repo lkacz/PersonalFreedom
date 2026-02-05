@@ -554,6 +554,7 @@ format_sleep_duration = None
 check_sleep_streak = None
 get_sleep_recommendation = None
 get_screen_off_bonus_rarity = None
+get_screen_off_bonus_weights = None
 # Hydration tracking functions
 get_water_reward_rarity = None
 can_log_water = None
@@ -837,6 +838,7 @@ def load_heavy_modules():
             check_sleep_streak as _check_sleep_streak,
             get_sleep_recommendation as _get_sleep_recommendation,
             get_screen_off_bonus_rarity as _get_screen_off_bonus_rarity,
+            get_screen_off_bonus_weights as _get_screen_off_bonus_weights,
         )
         SLEEP_CHRONOTYPES = _SLEEP_CHRONOTYPES
         SLEEP_QUALITY_FACTORS = _SLEEP_QUALITY_FACTORS
@@ -847,6 +849,7 @@ def load_heavy_modules():
         check_sleep_streak = _check_sleep_streak
         get_sleep_recommendation = _get_sleep_recommendation
         get_screen_off_bonus_rarity = _get_screen_off_bonus_rarity
+        get_screen_off_bonus_weights = _get_screen_off_bonus_weights
     except ImportError:
         pass
     
@@ -11396,10 +11399,59 @@ class WeightTab(QtWidgets.QWidget):
                 return
             
             # Show lottery animation for the primary item (most exciting)
-            # Pick the highest rarity item as the primary
+            # Pick the highest rarity item as the primary (retain its source label)
             rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-            primary_item = max(just_items, key=lambda x: rarity_order.index(x.get("rarity", "Common")))
-            extra_items = [i for i in just_items if i is not primary_item]
+            primary_source, primary_item = max(
+                items_earned,
+                key=lambda pair: rarity_order.index(pair[1].get("rarity", "Common"))
+            )
+            extra_items = [item for source, item in items_earned if item is not primary_item]
+            
+            # Build accurate odds for the displayed item
+            def _fixed_weights_for_rarity(rarity: str) -> list:
+                weights = [0, 0, 0, 0, 0]
+                try:
+                    idx = rarity_order.index(rarity)
+                except ValueError:
+                    idx = 0
+                weights[idx] = 100
+                return weights
+            
+            primary_weights = None
+            if rewards.get("daily_reward") is primary_item:
+                primary_weights = rewards.get("daily_reward_weights")
+            if not primary_weights:
+                primary_weights = _fixed_weights_for_rarity(primary_item.get("rarity", "Common"))
+            
+            def _format_weights_line(weights: list) -> str:
+                if not weights:
+                    return ""
+                tiers = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+                parts = [f"{t}: {w:.0f}%" for t, w in zip(tiers, weights) if w > 0]
+                return f"Odds: {', '.join(parts)}" if parts else ""
+            
+            tooltip_lines = []
+            if primary_source:
+                tooltip_lines.append(primary_source)
+            if rewards.get("daily_reward") is primary_item:
+                raw_change = rewards.get("daily_loss_grams")
+                if isinstance(raw_change, (int, float)):
+                    if raw_change > 0:
+                        tooltip_lines.append(f"Daily change: Lost {raw_change:.0f}g")
+                    elif raw_change < 0:
+                        tooltip_lines.append(f"Daily change: Gained {abs(raw_change):.0f}g")
+                    else:
+                        tooltip_lines.append("Daily change: No change")
+                mode = rewards.get("weight_mode")
+                if mode:
+                    tooltip_lines.append(f"Mode: {mode}")
+                entity_bonus = rewards.get("entity_bonus", 0)
+                if entity_bonus:
+                    tooltip_lines.append(f"Rodent bonus: +{entity_bonus}% Legendary")
+            weights_line = _format_weights_line(primary_weights)
+            if weights_line:
+                tooltip_lines.append(weights_line)
+            primary_tooltip = "\n".join(tooltip_lines) if tooltip_lines else None
             
             # Show lottery animation
             from lottery_animation import WeightLotteryDialog
@@ -11407,6 +11459,8 @@ class WeightTab(QtWidgets.QWidget):
                 item=primary_item,
                 reward_source=primary_source or "Weight Tracking",
                 extra_items=extra_items,
+                tier_weights=primary_weights,
+                odds_tooltip=primary_tooltip,
                 parent=self.window()
             )
             lottery_dialog.exec()
@@ -17372,6 +17426,7 @@ class SleepTab(QtWidgets.QWidget):
         # Track screen-off bonus outside the reward block
         screenoff_bonus_item = None
         items_earned = []
+        items_meta = []
         equipped_before = {}  # Capture equipped state before awarding
         
         # Handle rewards
@@ -17387,17 +17442,39 @@ class SleepTab(QtWidgets.QWidget):
             if reward_info.get("reward"):
                 item = reward_info["reward"]
                 items_earned.append(item)
+                score = reward_info.get("score")
+                context = f"Score: {score}/100" if isinstance(score, (int, float)) else None
+                items_meta.append({
+                    "item": item,
+                    "source": "Sleep Logged!",
+                    "weights": reward_info.get("reward_weights"),
+                    "context": context,
+                })
             
             # Streak reward
             if reward_info.get("streak_reward"):
                 streak_item = reward_info["streak_reward"]["item"]
                 items_earned.append(streak_item)
+                streak_days = reward_info["streak_reward"].get("streak_days", 0)
+                items_meta.append({
+                    "item": streak_item,
+                    "source": f"🌙 {streak_days}-Night Streak" if streak_days else "🌙 Sleep Streak",
+                    "weights": None,
+                    "context": "Streak reward",
+                })
                 self.blocker.sleep_milestones.append(reward_info["streak_reward"]["milestone_id"])
             
             # Milestone rewards
             new_milestone_ids = []
             for milestone in reward_info.get("new_milestones", []):
-                items_earned.append(milestone["item"])
+                item = milestone["item"]
+                items_earned.append(item)
+                items_meta.append({
+                    "item": item,
+                    "source": f"🏆 {milestone.get('name', 'Sleep Milestone')}",
+                    "weights": None,
+                    "context": "Milestone reward",
+                })
                 new_milestone_ids.append(milestone["milestone_id"])
             
             if new_milestone_ids:
@@ -17415,6 +17492,15 @@ class SleepTab(QtWidgets.QWidget):
                     if "obtained_at" not in screenoff_bonus_item:
                         screenoff_bonus_item["obtained_at"] = datetime.now().isoformat()
                     items_earned.append(screenoff_bonus_item)
+                    screenoff_weights = None
+                    if get_screen_off_bonus_weights:
+                        screenoff_weights = get_screen_off_bonus_weights(screenoff_time)
+                    items_meta.append({
+                        "item": screenoff_bonus_item,
+                        "source": "🌙 Nighty-Night Bonus",
+                        "weights": screenoff_weights,
+                        "context": f"Screen-off: {screenoff_time}",
+                    })
             
             # Award all items via GameState
             auto_equipped_slots = []
@@ -17472,15 +17558,57 @@ class SleepTab(QtWidgets.QWidget):
             # Show lottery animation for the primary item (most exciting)
             # Pick the highest rarity item as the primary
             rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-            primary_item = max(items_earned, key=lambda x: rarity_order.index(x.get("rarity", "Common")))
+            if items_meta:
+                primary_meta = max(
+                    items_meta,
+                    key=lambda entry: rarity_order.index(entry["item"].get("rarity", "Common"))
+                )
+                primary_item = primary_meta["item"]
+                primary_source = primary_meta.get("source", "Sleep Logged!")
+                primary_weights = primary_meta.get("weights")
+                primary_context = primary_meta.get("context")
+            else:
+                primary_item = max(items_earned, key=lambda x: rarity_order.index(x.get("rarity", "Common")))
+                primary_source = "Sleep Logged!"
+                primary_weights = None
+                primary_context = None
             extra_items = [i for i in items_earned if i is not primary_item]
+            
+            # If no explicit weights, use a fixed 100% weight for the rolled rarity
+            if not primary_weights:
+                weights = [0, 0, 0, 0, 0]
+                try:
+                    idx = rarity_order.index(primary_item.get("rarity", "Common"))
+                except ValueError:
+                    idx = 0
+                weights[idx] = 100
+                primary_weights = weights
+
+            def _format_weights_line(weights: list) -> str:
+                if not weights:
+                    return ""
+                tiers = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+                parts = [f"{t}: {w:.0f}%" for t, w in zip(tiers, weights) if w > 0]
+                return f"Odds: {', '.join(parts)}" if parts else ""
+
+            tooltip_lines = []
+            if primary_source:
+                tooltip_lines.append(primary_source)
+            if primary_context:
+                tooltip_lines.append(primary_context)
+            weights_line = _format_weights_line(primary_weights)
+            if weights_line:
+                tooltip_lines.append(weights_line)
+            primary_tooltip = "\n".join(tooltip_lines) if tooltip_lines else None
             
             # Show lottery animation first
             from lottery_animation import SleepLotteryDialog
             lottery_dialog = SleepLotteryDialog(
                 item=primary_item,
-                reward_source="Sleep Logged!",
+                reward_source=primary_source,
                 extra_items=extra_items,
+                tier_weights=primary_weights,
+                odds_tooltip=primary_tooltip,
                 parent=self.window()
             )
             lottery_dialog.exec()

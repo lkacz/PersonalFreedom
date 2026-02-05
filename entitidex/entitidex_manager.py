@@ -57,6 +57,7 @@ class CatchResult:
     success: bool
     entity: Entity
     probability: float
+    roll: float
     message: str
     was_lucky: bool = False
     capture_record: Optional[EntityCapture] = None
@@ -366,7 +367,7 @@ class EntitidexManager:
                 total_luck_bonus += capture_bonus / 100.0  # Convert to probability bonus
         
         # Attempt the catch
-        success, probability, message = attempt_catch(
+        success, probability, roll, message = attempt_catch(
             hero_power=self.hero_power,
             entity=target,
             failed_attempts=effective_failed_attempts,
@@ -398,6 +399,7 @@ class EntitidexManager:
             success=success,
             entity=target,
             probability=probability,
+            roll=roll,
             message=message,
             was_lucky=was_lucky,
             capture_record=capture_record,

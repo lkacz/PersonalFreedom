@@ -1147,14 +1147,19 @@ def show_entity_encounter(entity, join_probability: float,
         return
 
     # 3. Calculate visualization roll to match the result
-    # If success, we need a roll < probability
-    # If fail, we need a roll >= probability
-    if success:
-        # Generate random success roll (0 to prob)
-        roll = random.uniform(0.0, max(0.01, join_probability - 0.01))
-    else:
-        # Generate random fail roll (prob to 1.0)
-        roll = random.uniform(min(0.99, join_probability + 0.01), 1.0)
+    # Prefer the actual roll used by the bond logic if available.
+    prob_used = result.get("probability", join_probability)
+    roll = result.get("roll")
+    if roll is None:
+        # If success, we need a roll < probability
+        # If fail, we need a roll >= probability
+        eps = 0.0001
+        if success:
+            upper = max(eps, prob_used - eps)
+            roll = random.uniform(0.0, upper)
+        else:
+            lower = min(1.0 - eps, prob_used + eps)
+            roll = random.uniform(lower, 1.0)
     
     # 4. Show the dramatic lottery animation
     # For exceptional entities, use the playful exceptional_name if available
@@ -1169,7 +1174,7 @@ def show_entity_encounter(entity, join_probability: float,
     
     anim_dialog = LotteryRollDialog(
         target_roll=roll,
-        success_threshold=join_probability,
+        success_threshold=prob_used,
         title=f"🎲 Bonding with {display_name if result_is_exceptional else entity.name}...",
         success_text=success_text,
         failure_text="💔 Bond Failed",

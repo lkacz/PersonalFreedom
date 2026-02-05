@@ -17,7 +17,7 @@ import math
 import struct
 from typing import Dict, List, Optional, Tuple
 
-from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QObject, QSettings, Slot, QThread
+from PySide6.QtCore import QBuffer, QByteArray, QIODevice, QObject, QSettings, Slot, QThread, QTimer
 from PySide6.QtMultimedia import QAudio, QAudioDevice, QAudioFormat, QAudioSink, QMediaDevices
 
 _logger = logging.getLogger(__name__)
@@ -362,10 +362,13 @@ class CelebrationAudioManager(QObject):
         self._cache: Dict[str, QByteArray] = {}
         self._sink: Optional[QAudioSink] = None
         self._current_buffer: Optional[QBuffer] = None
+        self._current_data: Optional[QByteArray] = None
         self._last_play_time: int = 0  # Track last play time
         self._audio_format: Optional[QAudioFormat] = None
         self._audio_device: Optional[QAudioDevice] = None
-        self._release_timer: Optional[object] = None  # Timer for delayed release
+        self._release_timer: Optional[QTimer] = None  # Timer for delayed release
+        self._channel_count: int = 1
+        self._play_in_progress = False
         
         # Load volumes
         s = QSettings("PersonalFreedom", "Audio")
@@ -400,18 +403,63 @@ class CelebrationAudioManager(QObject):
             fmt.setSampleRate(Synthesizer.SAMPLE_RATE)
             fmt.setChannelCount(1)  # Mono
             fmt.setSampleFormat(QAudioFormat.SampleFormat.Int16)
-            
-            if not self._audio_device.isFormatSupported(fmt):
-                # Try to fall back to a standard format if the exact one isn't supported
-                fmt = self._audio_device.preferredFormat()
-            
-            self._audio_format = fmt
-            _logger.info(f"Audio format prepared: {fmt.sampleRate()}Hz (device not opened yet)")
+
+            if self._audio_device.isFormatSupported(fmt):
+                self._audio_format = fmt
+                self._channel_count = 1
+                _logger.info(
+                    "Audio format prepared: %sHz, %s ch (device not opened yet)",
+                    fmt.sampleRate(),
+                    fmt.channelCount(),
+                )
+                return
+
+            # Fallback: try stereo at the same sample rate (we can duplicate channels)
+            stereo_fmt = QAudioFormat()
+            stereo_fmt.setSampleRate(Synthesizer.SAMPLE_RATE)
+            stereo_fmt.setChannelCount(2)
+            stereo_fmt.setSampleFormat(QAudioFormat.SampleFormat.Int16)
+
+            if self._audio_device.isFormatSupported(stereo_fmt):
+                self._audio_format = stereo_fmt
+                self._channel_count = 2
+                _logger.info(
+                    "Audio format prepared: %sHz, %s ch (stereo fallback, device not opened yet)",
+                    stereo_fmt.sampleRate(),
+                    stereo_fmt.channelCount(),
+                )
+                return
+
+            _logger.warning(
+                "Audio device does not support 44.1kHz int16 mono/stereo; disabling audio output."
+            )
+            self._audio_device = None
+            self._audio_format = None
             
         except Exception as e:
             _logger.error(f"Failed to prepare audio format: {e}")
             self._audio_device = None
             self._audio_format = None
+
+    def _mono_to_stereo(self, data: QByteArray) -> QByteArray:
+        """Duplicate mono int16 samples to stereo interleaved samples."""
+        import array
+
+        if data.isEmpty():
+            return data
+
+        samples = array.array("h")
+        samples.frombytes(bytes(data))
+        if not samples:
+            return data
+
+        stereo = array.array("h", [0]) * (2 * len(samples))
+        for i, sample in enumerate(samples):
+            idx = 2 * i
+            stereo[idx] = sample
+            stereo[idx + 1] = sample
+
+        return QByteArray(stereo.tobytes())
     
     def _ensure_sink_ready(self) -> bool:
         """Create audio sink on-demand for playback."""
@@ -436,16 +484,22 @@ class CelebrationAudioManager(QObject):
     @Slot(QAudio.State)
     def _on_state_changed(self, state: QAudio.State) -> None:
         """Handle audio sink state changes."""
-        # Log state changes for debugging but don't release device automatically
-        # The sink stays alive until app shutdown for fastest response time
         _logger.debug(f"Audio sink state changed to: {state}")
+        if self._play_in_progress:
+            return
+        if state in (QAudio.State.IdleState, QAudio.State.StoppedState):
+            self._schedule_release()
     
     def _schedule_release(self) -> None:
         """Schedule audio device release after a short delay.
-        
-        Note: Currently disabled - we keep the sink alive for faster response.
         """
-        pass  # Disabled - keep sink alive
+        if self._sink is None:
+            return
+        if self._release_timer is None:
+            self._release_timer = QTimer(self)
+            self._release_timer.setSingleShot(True)
+            self._release_timer.timeout.connect(self._release_device)
+        self._release_timer.start(self.RELEASE_DELAY_MS)
     
     def _release_device(self) -> None:
         """Release the audio device to prevent interference with other apps."""
@@ -471,6 +525,7 @@ class CelebrationAudioManager(QObject):
             except Exception:
                 pass
             self._current_buffer = None
+        self._current_data = None
         
         self._release_timer = None
         _logger.debug("Audio device released")
@@ -501,63 +556,70 @@ class CelebrationAudioManager(QObject):
         if data.isEmpty():
             return False
         
-        # Cancel any pending release since we're about to play
-        if self._release_timer is not None:
-            try:
-                self._release_timer.stop()
-                self._release_timer = None
-            except Exception:
-                pass
+        self._play_in_progress = True
+        try:
+            # Cancel any pending release since we're about to play
+            if self._release_timer is not None:
+                try:
+                    self._release_timer.stop()
+                    self._release_timer = None
+                except Exception:
+                    pass
 
-        # Rate limit sound effects (not voice) to prevent Windows MMCSS thread exhaustion
-        # Voice playback bypasses this since TTS synthesis already provides delay
-        import time
-        current_time = int(time.time() * 1000)
-        if not is_voice and (current_time - self._last_play_time < self.MIN_PLAY_INTERVAL_MS):
-            # Too soon for sound effects, skip this play request
-            _logger.debug(f"Rate limited sound play, delta={current_time - self._last_play_time}ms")
-            return False
-        self._last_play_time = current_time
-        
-        # Ensure audio sink is ready (creates on-demand)
-        if not self._ensure_sink_ready():
-             return False
+            # Rate limit sound effects (not voice) to prevent Windows MMCSS thread exhaustion
+            # Voice playback bypasses this since TTS synthesis already provides delay
+            import time
+            current_time = int(time.time() * 1000)
+            if not is_voice and (current_time - self._last_play_time < self.MIN_PLAY_INTERVAL_MS):
+                # Too soon for sound effects, skip this play request
+                _logger.debug(f"Rate limited sound play, delta={current_time - self._last_play_time}ms")
+                return False
+            self._last_play_time = current_time
+            
+            # Ensure audio sink is ready (creates on-demand)
+            if not self._ensure_sink_ready():
+                return False
 
-        # Apply volume before playing
-        target_vol = self._voice_volume if is_voice else self._sound_volume
-        self._sink.setVolume(target_vol)
+            # Apply volume before playing
+            target_vol = self._voice_volume if is_voice else self._sound_volume
+            self._sink.setVolume(target_vol)
 
-        # 1. Stop current playback and wait for sink to fully stop
-        self._sink.stop()
-        
-        # 2. Wait for the sink to reach StoppedState before touching the buffer
-        # The Windows audio backend thread reads asynchronously
-        for _ in range(20):  # Max 200ms wait
-            if self._sink.state() in (QAudio.State.StoppedState, QAudio.State.IdleState):
-                break
-            QThread.msleep(10)
+            # 1. Stop current playback and wait for sink to fully stop
+            self._sink.stop()
+            
+            # 2. Wait for the sink to reach StoppedState before touching the buffer
+            # The Windows audio backend thread reads asynchronously
+            for _ in range(20):  # Max 200ms wait
+                if self._sink.state() in (QAudio.State.StoppedState, QAudio.State.IdleState):
+                    break
+                QThread.msleep(10)
 
-        # 3. Now safe to close old buffer - audio backend has stopped reading
-        old_buffer = self._current_buffer
-        self._current_buffer = None
-        if old_buffer is not None:
-            try:
-                old_buffer.close()
-                old_buffer.deleteLater()
-            except Exception:
-                pass
+            # 3. Now safe to close old buffer - audio backend has stopped reading
+            old_buffer = self._current_buffer
+            self._current_buffer = None
+            if old_buffer is not None:
+                try:
+                    old_buffer.close()
+                    old_buffer.deleteLater()
+                except Exception:
+                    pass
 
-        # 4. Keep the QByteArray alive as instance attribute (prevents use-after-free)
-        self._current_data = QByteArray(data)  # Make a copy we own
+            # 4. Convert to stereo if needed and keep data alive (prevents use-after-free)
+            play_data = data
+            if self._channel_count == 2:
+                play_data = self._mono_to_stereo(data)
+            self._current_data = QByteArray(play_data)  # Make a copy we own
 
-        # 5. Create QBuffer with parent=self for Qt memory management
-        self._current_buffer = QBuffer(self)
-        self._current_buffer.setData(self._current_data)
-        self._current_buffer.open(QIODevice.OpenModeFlag.ReadOnly)
+            # 5. Create QBuffer with parent=self for Qt memory management
+            self._current_buffer = QBuffer(self)
+            self._current_buffer.setData(self._current_data)
+            self._current_buffer.open(QIODevice.OpenModeFlag.ReadOnly)
 
-        # 6. Start playback
-        self._sink.start(self._current_buffer)
-        return True
+            # 6. Start playback
+            self._sink.start(self._current_buffer)
+            return True
+        finally:
+            self._play_in_progress = False
 
     def play(self, theme_id: str = "default") -> bool:
         """Play the synthesized sound for the theme."""

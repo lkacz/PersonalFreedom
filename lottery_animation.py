@@ -753,12 +753,18 @@ class EyeProtectionTierSliderWidget(QtWidgets.QWidget):
         return "Legendary"
     
     def get_position_for_tier(self, tier: str) -> float:
-        """Get center position for a tier zone."""
+        """Get a random position within a tier zone."""
+        total = sum(self.zone_widths)
+        if total <= 0:
+            return 50.0
         cumulative = 0.0
         for t, width in zip(self.TIERS, self.zone_widths):
+            if width <= 0:
+                continue
+            zone_pct = (width / total) * 100.0
             if t == tier:
-                return cumulative + width / 2
-            cumulative += width
+                return cumulative + random.random() * zone_pct
+            cumulative += zone_pct
         return 95.0
     
     def paintEvent(self, event):
@@ -2128,7 +2134,7 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
         return "Legendary"
     
     def get_position_for_tier(self, tier: str) -> float:
-        """Get position within a tier's zone."""
+        """Get a random position within a tier's zone."""
         if self.total <= 0:
             return 50.0
         cumulative = 0.0
@@ -2137,8 +2143,7 @@ class MergeTierSliderWidget(QtWidgets.QWidget):
                 continue
             zone_pct = (weight / self.total) * 100
             if t == tier:
-                # Return middle of this zone
-                return cumulative + zone_pct / 2
+                return cumulative + random.random() * zone_pct
             cumulative += zone_pct
         return 50.0
     
@@ -3938,12 +3943,17 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
     
     def get_position_for_tier(self, tier: str) -> float:
         """Get a random position within the tier zone."""
+        total = sum(self.zone_widths)
+        if total <= 0:
+            return 50.0
         cumulative = 0.0
         for t, width in zip(self.TIERS, self.zone_widths):
+            if width <= 0:
+                continue
+            zone_pct = (width / total) * 100.0
             if t == tier:
-                # Return center of the zone
-                return cumulative + width / 2
-            cumulative += width
+                return cumulative + random.random() * zone_pct
+            cumulative += zone_pct
         return 95.0
     
     def paintEvent(self, event):
@@ -4667,12 +4677,16 @@ class ActivityTierSliderWidget(QtWidgets.QWidget):
         return "Legendary"
     
     def get_position_for_tier(self, tier: str) -> float:
-        """Get the center position for a tier zone."""
+        """Get a random position within a tier zone."""
+        total = sum(self.tier_weights)
+        if total <= 0:
+            return 50.0
         cumulative = 0.0
         for t, weight in zip(self.TIERS, self.tier_weights):
+            zone_pct = (weight / total) * 100.0
             if t == tier:
-                return cumulative + weight / 2
-            cumulative += weight
+                return cumulative + random.random() * zone_pct
+            cumulative += zone_pct
         return 95.0
     
     def paintEvent(self, event):
@@ -4786,12 +4800,16 @@ class WeightLotteryDialog(QtWidgets.QDialog):
     BASE_WINDOW = [5, 15, 60, 15, 5]
     
     def __init__(self, item: dict, reward_source: str = "Weight Tracking",
-                 extra_items: list = None, parent: Optional[QtWidgets.QWidget] = None):
+                 extra_items: list = None, tier_weights: Optional[list] = None,
+                 odds_tooltip: Optional[str] = None,
+                 parent: Optional[QtWidgets.QWidget] = None):
         """
         Args:
             item: The primary item that was already generated (with 'rarity' key)
             reward_source: Display string for the reward source (e.g., "Daily Weigh-In")
             extra_items: Additional items to show after animation (won't be animated)
+            tier_weights: Optional explicit weights [C, U, R, E, L] for odds display
+            odds_tooltip: Optional tooltip text describing odds/source
             parent: Parent widget
         """
         super().__init__(parent)
@@ -4799,9 +4817,10 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         self.reward_source = reward_source
         self.extra_items = extra_items or []
         self.rolled_tier = item.get("rarity", "Common")
+        self.odds_tooltip = odds_tooltip
         
         # Calculate tier weights based on rarity tier (higher tier = better weights shown)
-        self.tier_weights = self._calculate_tier_weights()
+        self.tier_weights = tier_weights if tier_weights is not None else self._calculate_tier_weights()
         
         self._setup_ui()
         
@@ -4865,6 +4884,8 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         info = QtWidgets.QLabel(f"🏆 {self.reward_source}")
         info.setAlignment(QtCore.Qt.AlignCenter)
         info.setStyleSheet("color: #aaa; font-size: 12px;")
+        if self.odds_tooltip:
+            info.setToolTip(self.odds_tooltip)
         container_layout.addWidget(info)
         
         # Tier lottery frame
@@ -4889,6 +4910,8 @@ class WeightLotteryDialog(QtWidgets.QDialog):
         # Tier slider
         self.tier_slider = ActivityTierSliderWidget(self.tier_weights)
         self.tier_slider.setFixedHeight(70)
+        if self.odds_tooltip:
+            self.tier_slider.setToolTip(self.odds_tooltip)
         lottery_layout.addWidget(self.tier_slider)
         
         # Result label
@@ -5100,12 +5123,16 @@ class SleepLotteryDialog(QtWidgets.QDialog):
     BASE_WINDOW = [5, 15, 60, 15, 5]
     
     def __init__(self, item: dict, reward_source: str = "Sleep Tracking",
-                 extra_items: list = None, parent: Optional[QtWidgets.QWidget] = None):
+                 extra_items: list = None, tier_weights: Optional[list] = None,
+                 odds_tooltip: Optional[str] = None,
+                 parent: Optional[QtWidgets.QWidget] = None):
         """
         Args:
             item: The primary item that was already generated (with 'rarity' key)
             reward_source: Display string for the reward source (e.g., "Sleep Logged")
             extra_items: Additional items to show after animation (won't be animated)
+            tier_weights: Optional explicit weights [C, U, R, E, L] for odds display
+            odds_tooltip: Optional tooltip text describing odds/source
             parent: Parent widget
         """
         super().__init__(parent)
@@ -5113,9 +5140,10 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         self.reward_source = reward_source
         self.extra_items = extra_items or []
         self.rolled_tier = item.get("rarity", "Common")
+        self.odds_tooltip = odds_tooltip
         
         # Calculate tier weights based on rarity tier (higher tier = better weights shown)
-        self.tier_weights = self._calculate_tier_weights()
+        self.tier_weights = tier_weights if tier_weights is not None else self._calculate_tier_weights()
         
         self._setup_ui()
         
@@ -5179,6 +5207,8 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         info = QtWidgets.QLabel(f"💤 {self.reward_source}")
         info.setAlignment(QtCore.Qt.AlignCenter)
         info.setStyleSheet("color: #aaa; font-size: 12px;")
+        if self.odds_tooltip:
+            info.setToolTip(self.odds_tooltip)
         container_layout.addWidget(info)
         
         # Tier lottery frame (sleep-themed indigo)
@@ -5203,6 +5233,8 @@ class SleepLotteryDialog(QtWidgets.QDialog):
         # Tier slider
         self.tier_slider = ActivityTierSliderWidget(self.tier_weights)
         self.tier_slider.setFixedHeight(70)
+        if self.odds_tooltip:
+            self.tier_slider.setToolTip(self.odds_tooltip)
         lottery_layout.addWidget(self.tier_slider)
         
         # Result label
