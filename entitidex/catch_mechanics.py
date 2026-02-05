@@ -185,7 +185,7 @@ def attempt_catch(
     entity: Entity,
     failed_attempts: int = 0,
     luck_bonus: float = 0.0
-) -> Tuple[bool, float, str]:
+) -> Tuple[bool, float, float, str]:
     """
     Attempt to catch (bond with) an entity.
     
@@ -196,7 +196,7 @@ def attempt_catch(
         luck_bonus: Bonus from equipped luck items
         
     Returns:
-        Tuple of (success: bool, probability: float, message: str)
+        Tuple of (success: bool, probability: float, roll: float, message: str)
     """
     # Calculate final probability
     probability = get_final_probability(
@@ -230,7 +230,7 @@ def attempt_catch(
         else:
             message = f"{entity.name} sees potential in you. 'Return when you're stronger.'"
     
-    return success, probability, message
+    return success, probability, roll, message
 
 
 def is_lucky_catch(probability: float) -> bool:

@@ -11921,8 +11921,29 @@ def get_daily_weight_reward_rarity(weight_loss_grams: float, legendary_bonus: in
     Returns:
         Rarity string selected from weighted distribution
     """
+    weights = get_daily_weight_reward_weights(weight_loss_grams, legendary_bonus)
+    if not weights:
+        return None
+    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    return random.choices(rarities, weights=weights)[0]
+
+
+def get_daily_weight_reward_weights(weight_loss_grams: float, legendary_bonus: int = 0) -> Optional[list]:
+    """
+    Get weight reward weights for a given weight loss/gain amount.
+    
+    Mirrors get_daily_weight_reward_rarity without performing the random draw.
+    
+    Args:
+        weight_loss_grams: Weight loss (or gain) in grams, expected >= 0 for progress
+        legendary_bonus: Extra % chance to add to Legendary (from rat/mouse entities)
+    
+    Returns:
+        List of weights [Common, Uncommon, Rare, Epic, Legendary] summing to 100,
+        or None if weight_loss_grams is negative.
+    """
     if weight_loss_grams < 0:
-        return None  # No reward for weight gain
+        return None
     
     # Determine center tier based on weight loss
     # Tiers: 0=Common, 1=Uncommon, 2=Rare, 3=Epic, 4=Legendary
@@ -11964,8 +11985,7 @@ def get_daily_weight_reward_rarity(weight_loss_grams: float, legendary_bonus: in
             weights[i] -= subtract
             remaining -= subtract
     
-    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-    return random.choices(rarities, weights=weights)[0]
+    return weights
 
 
 # Rarity order for comparison (higher index = better)
@@ -11994,6 +12014,40 @@ def _better_rarity(rarity_a: str, rarity_b: str) -> str:
         return rarity_a if idx_a >= idx_b else rarity_b
     except ValueError:
         return rarity_a or rarity_b or "Common"
+
+
+def _weights_for_rarity(rarity: str) -> list:
+    """Return 100% weight for a single rarity."""
+    weights = [0, 0, 0, 0, 0]
+    try:
+        idx = RARITY_ORDER.index(rarity)
+    except ValueError:
+        idx = 0
+    weights[idx] = 100
+    return weights
+
+
+def _apply_minimum_rarity(weights: list, min_rarity: str) -> list:
+    """
+    Fold all probability mass below min_rarity into min_rarity.
+    
+    This matches _better_rarity behavior when comparing a random rarity
+    against a fixed base rarity.
+    """
+    if not weights:
+        return weights
+    try:
+        min_idx = RARITY_ORDER.index(min_rarity)
+    except ValueError:
+        min_idx = 0
+    if min_idx <= 0:
+        return list(weights)
+    new_weights = list(weights)
+    lower_sum = sum(new_weights[:min_idx])
+    for i in range(min_idx):
+        new_weights[i] = 0
+    new_weights[min_idx] += lower_sum
+    return new_weights
 
 
 def check_weight_entry_rewards(weight_entries: list, new_weight: float, 
@@ -12031,6 +12085,7 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
     """
     result = {
         "daily_reward": None,
+        "daily_reward_weights": None,
         "weekly_reward": None,
         "monthly_reward": None,
         "daily_change_grams": 0,
@@ -12135,6 +12190,11 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
                 # Progress reward - use the higher of calculated or base rarity
                 progress_rarity = get_daily_weight_reward_rarity(raw_change, legendary_bonus)
                 rarity = _better_rarity(progress_rarity, base_rarity)
+                progress_weights = get_daily_weight_reward_weights(raw_change, legendary_bonus)
+                if progress_weights:
+                    result["daily_reward_weights"] = _apply_minimum_rarity(progress_weights, base_rarity)
+                else:
+                    result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 bonus_note = f" (+{legendary_bonus}% 🐀)" if legendary_bonus > 0 else ""
                 result["messages"].append(
@@ -12142,11 +12202,13 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
                 )
             elif raw_change == 0:
                 rarity = _better_rarity(base_rarity, "Common")
+                result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(f"💪 Maintained weight! {bonus_msg} Earned a {rarity} item.")
             else:
                 # Going wrong direction - still reward for logging, but base tier
                 rarity = base_rarity
+                result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(f"📈 Weight up {abs(raw_change):.0f}g - keep tracking! Earned a {rarity} item.")
         
@@ -12157,6 +12219,11 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
                 # Progress reward - use the higher of calculated or base rarity
                 progress_rarity = get_daily_weight_reward_rarity(weight_gain, legendary_bonus)
                 rarity = _better_rarity(progress_rarity, base_rarity)
+                progress_weights = get_daily_weight_reward_weights(weight_gain, legendary_bonus)
+                if progress_weights:
+                    result["daily_reward_weights"] = _apply_minimum_rarity(progress_weights, base_rarity)
+                else:
+                    result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 bonus_note = f" (+{legendary_bonus}% 🐀)" if legendary_bonus > 0 else ""
                 result["messages"].append(
@@ -12164,11 +12231,13 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
                 )
             elif weight_gain == 0:
                 rarity = _better_rarity(base_rarity, "Common")
+                result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(f"⚖️ Stable weight - {bonus_msg} Earned a {rarity} item.")
             else:
                 # Going wrong direction - still reward for logging
                 rarity = base_rarity
+                result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(f"📉 Weight down {abs(weight_gain):.0f}g - keep tracking! Earned a {rarity} item.")
         
@@ -12178,18 +12247,21 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
             # More reward for staying closer to same weight
             if abs_change <= 100:  # Within 100g is excellent
                 rarity = _better_rarity("Rare", base_rarity)
+                result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(
                     f"⚖️ Perfect maintenance! (±{abs_change:.0f}g) {bonus_msg} Earned a {rarity} item!"
                 )
             elif abs_change <= 200:  # Within 200g is good
                 rarity = _better_rarity("Uncommon", base_rarity)
+                result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(
                     f"⚖️ Good stability! (±{abs_change:.0f}g) {bonus_msg} Earned a {rarity} item."
                 )
             elif abs_change <= 500:  # Within 500g is acceptable
                 rarity = _better_rarity("Common", base_rarity)
+                result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 change_dir = "up" if raw_change < 0 else "down"
                 result["messages"].append(
@@ -12199,6 +12271,7 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
                 # Large fluctuation - still reward for logging
                 change_dir = "up" if raw_change < 0 else "down"
                 rarity = base_rarity
+                result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(
                     f"📊 Weight {change_dir} {abs_change:.0f}g - keep tracking! Earned a {rarity} item."
@@ -12218,6 +12291,7 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
             else:
                 bonus_msg = "Great start!"
         
+        result["daily_reward_weights"] = _weights_for_rarity(rarity)
         result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
         result["messages"].append(f"📝 Weight logged! {bonus_msg} Earned a {rarity} item.")
     
@@ -14699,6 +14773,53 @@ def is_consecutive_day(date1: str, date2: str) -> bool:
         return False
 
 
+def get_screen_off_bonus_weights(screen_off_time: str) -> Optional[list]:
+    """
+    Get bonus reward weights based on when user turned off their screen.
+    
+    Returns weights (no random draw) so UI can show accurate odds.
+    """
+    try:
+        h, m = screen_off_time.split(":")
+        hour = int(h)
+        minute = int(m)
+        # Validate hour and minute ranges
+        if not (0 <= hour <= 23) or not (0 <= minute <= 59):
+            return None
+        # Convert to minutes past midnight, treating pre-6am as next day
+        if hour < 6:
+            total_minutes = (24 + hour) * 60 + minute  # e.g., 01:00 = 25*60
+        else:
+            total_minutes = hour * 60 + minute
+    except (ValueError, AttributeError):
+        return None
+    
+    if total_minutes < 21 * 60:  # Before 21:00
+        return None
+    elif total_minutes <= 21 * 60 + 30:  # 21:00 to 21:30
+        return [0, 0, 0, 0, 100]
+    elif total_minutes <= 22 * 60 + 30:  # 21:31 to 22:30
+        center_tier = 4  # Legendary-centered
+    elif total_minutes <= 23 * 60 + 30:  # 22:31 to 23:30
+        center_tier = 3  # Epic-centered
+    elif total_minutes <= 24 * 60 + 30:  # 23:31 to 00:30
+        center_tier = 2  # Rare-centered
+    elif total_minutes < 25 * 60:  # 00:31 to 00:59
+        center_tier = 1  # Uncommon-centered
+    else:  # 01:00 or later
+        return None  # Too late for bonus
+    
+    window = [5, 20, 50, 20, 5]
+    weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+    
+    for offset, pct in zip([-2, -1, 0, 1, 2], window):
+        target_tier = center_tier + offset
+        clamped_tier = max(0, min(4, target_tier))
+        weights[clamped_tier] += pct
+    
+    return weights
+
+
 def get_screen_off_bonus_rarity(screen_off_time: str) -> Optional[str]:
     """
     Get bonus reward rarity based on when user turned off their screen.
@@ -14718,55 +14839,9 @@ def get_screen_off_bonus_rarity(screen_off_time: str) -> Optional[str]:
     Returns:
         Rarity string or None if too late for bonus
     """
-    import random
-    
-    try:
-        h, m = screen_off_time.split(":")
-        hour = int(h)
-        minute = int(m)
-        # Validate hour and minute ranges
-        if not (0 <= hour <= 23) or not (0 <= minute <= 59):
-            return None
-        # Convert to minutes past midnight, treating pre-6am as next day
-        if hour < 6:
-            total_minutes = (24 + hour) * 60 + minute  # e.g., 01:00 = 25*60
-        else:
-            total_minutes = hour * 60 + minute
-    except (ValueError, AttributeError):
+    weights = get_screen_off_bonus_weights(screen_off_time)
+    if not weights:
         return None
-    
-    # Thresholds in minutes
-    # < 22:00 = No bonus (user preference)
-    # 22:00 - 22:30 = 100% Legendary
-    # 22:30 - 23:30 = Legendary-centered
-    # 23:30 - 00:30 = Epic-centered
-    # 00:30 - 01:00 = Uncommon-centered
-    # 01:00+ = No bonus
-    
-    if total_minutes < 21 * 60:  # Before 21:00
-        return None
-    elif total_minutes <= 21 * 60 + 30:  # 21:00 to 21:30
-        return "Legendary"
-    elif total_minutes <= 22 * 60 + 30:  # 21:31 to 22:30
-        center_tier = 4  # Legendary-centered
-    elif total_minutes <= 23 * 60 + 30:  # 22:31 to 23:30
-        center_tier = 3  # Epic-centered
-    elif total_minutes <= 24 * 60 + 30:  # 23:31 to 00:30
-        center_tier = 2  # Rare-centered
-    elif total_minutes < 25 * 60:  # 00:31 to 00:59
-        center_tier = 1  # Uncommon-centered
-    else:  # 01:00 or later
-        return None  # Too late for bonus
-    
-    # Moving window: [5%, 20%, 50%, 20%, 5%] centered on center_tier
-    window = [5, 20, 50, 20, 5]
-    weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
-    
-    for offset, pct in zip([-2, -1, 0, 1, 2], window):
-        target_tier = center_tier + offset
-        clamped_tier = max(0, min(4, target_tier))
-        weights[clamped_tier] += pct
-    
     rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     return random.choices(rarities, weights=weights)[0]
 
@@ -14793,6 +14868,19 @@ def get_sleep_reward_rarity(score: int) -> Optional[str]:
     
     Returns:
         Rarity string or None if below threshold
+    """
+    weights = get_sleep_reward_weights(score)
+    if not weights:
+        return None
+    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    return random.choices(rarities, weights=weights)[0]
+
+
+def get_sleep_reward_weights(score: int) -> Optional[list]:
+    """
+    Get sleep reward weights for a given sleep score.
+    
+    Mirrors get_sleep_reward_rarity without performing the random draw.
     """
     if score < 50:
         return None
@@ -14824,8 +14912,7 @@ def get_sleep_reward_rarity(score: int) -> Optional[str]:
         clamped_tier = max(0, min(4, target_tier))
         weights[clamped_tier] += pct
     
-    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-    return random.choices(rarities, weights=weights)[0]
+    return weights
 
 
 def check_sleep_entry_reward(sleep_hours: float, bedtime: str, quality_id: str,
@@ -14851,6 +14938,7 @@ def check_sleep_entry_reward(sleep_hours: float, bedtime: str, quality_id: str,
         "score": 0,
         "score_breakdown": {},
         "rarity": None,
+        "reward_weights": None,
         "messages": [],
     }
     
@@ -14868,6 +14956,7 @@ def check_sleep_entry_reward(sleep_hours: float, bedtime: str, quality_id: str,
     
     rarity = get_sleep_reward_rarity(score_info["total_score"])
     result["rarity"] = rarity
+    result["reward_weights"] = get_sleep_reward_weights(score_info["total_score"])
     
     if rarity:
         result["reward"] = generate_item(rarity=rarity, story_id=story_id)
@@ -16782,6 +16871,7 @@ def attempt_entitidex_bond(
             "success": True,
             "entity": entity,
             "probability": 1.0,
+            "roll": random.random(),
             "pity_bonus": 0.0,
             "consecutive_fails": 0,
             "message": message,
@@ -16800,6 +16890,7 @@ def attempt_entitidex_bond(
             "success": False,
             "entity": entity,
             "probability": 0.0,
+            "roll": None,
             "pity_bonus": 0.0,
             "consecutive_fails": failed_before,
             "message": "Could not attempt bond",
@@ -16861,6 +16952,7 @@ def attempt_entitidex_bond(
         "success": catch_result.success,
         "entity": catch_result.entity,
         "probability": catch_result.probability,
+        "roll": catch_result.roll,
         "pity_bonus": 0.0,  # Could calculate this from failed_before
         "consecutive_fails": failed_after,
         "message": message,
