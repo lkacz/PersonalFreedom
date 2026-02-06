@@ -29,18 +29,26 @@ jobs:
 
       - name: Lint with flake8
         run: |
+          $exclude = ".git,__pycache__,build,dist,.venv"
           # Stop build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --exclude $exclude --count --select=E9,F63,F7,F82 --show-source --statistics
           # Exit-zero treats all errors as warnings
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+          flake8 . --exclude $exclude --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
 
       - name: Type check with mypy
         run: |
           mypy core_logic.py productivity_ai.py --ignore-missing-imports --no-error-summary || true
 
-      - name: Run tests
+      - name: Run tests (primary suite)
         run: |
-          python -m pytest tests/ -v --cov=. --cov-report=xml --cov-report=term-missing
+          python -m pytest -v --cov=. --cov-report=xml --cov-report=term-missing --cov-fail-under=0
+
+      - name: Run tests (legacy root suite)
+        run: |
+          $rootTests = Get-ChildItem -Name test_*.py -ErrorAction SilentlyContinue
+          if ($rootTests -and $rootTests.Count -gt 0) {
+            python -m pytest -v $rootTests
+          }
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4

@@ -224,7 +224,6 @@ def clear_svg_caches() -> None:
     Call this when switching story themes or when memory pressure is detected.
     Industry best practice: Provide explicit cache invalidation for long-running apps.
     """
-    global _svg_renderer_cache, _silhouette_pixmap_cache, _svg_content_cache
     _svg_renderer_cache.clear()
     _silhouette_pixmap_cache.clear()
     _svg_content_cache.clear()
@@ -468,7 +467,6 @@ class AnimatedSvgWidget(QtWidgets.QWidget):
         Industry best practice: Cache file content for frequently accessed
         resources to minimize disk operations. Uses module-level LRU cache.
         """
-        global _svg_content_cache
         cached = _lru_cache_get(_svg_content_cache, svg_path)
         if cached is not None:
             return cached

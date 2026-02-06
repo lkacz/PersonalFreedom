@@ -60,7 +60,7 @@ Repository = "https://github.com/lkacz/PersonalLiberty"
 Issues = "https://github.com/lkacz/PersonalLiberty/issues"
 
 [project.scripts]
-personal-freedom = "focus_blocker:main"
+personal-freedom = "focus_blocker_qt:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -72,7 +72,7 @@ python_functions = ["test_*"]
 addopts = "-v --tb=short"
 
 [tool.mypy]
-python_version = "6.0.28"
+python_version = "3.8"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
@@ -81,7 +81,7 @@ exclude = ["build", "dist", "__pycache__"]
 [tool.ruff]
 line-length = 120
 exclude = [".git", "__pycache__", "build", "dist", ".venv"]
-target-version = "6.0.28"
+target-version = "py38"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]

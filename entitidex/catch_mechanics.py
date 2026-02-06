@@ -6,7 +6,7 @@ for bonding with entities.
 """
 
 import random
-from typing import Tuple, Optional
+from typing import Tuple
 from .entity import Entity
 
 
@@ -184,7 +184,8 @@ def attempt_catch(
     hero_power: int,
     entity: Entity,
     failed_attempts: int = 0,
-    luck_bonus: float = 0.0
+    luck_bonus: float = 0.0,
+    city_bonus: float = 0.0,
 ) -> Tuple[bool, float, float, str]:
     """
     Attempt to catch (bond with) an entity.
@@ -194,6 +195,7 @@ def attempt_catch(
         entity: The Entity object to attempt catching
         failed_attempts: Number of previous failed attempts on this entity
         luck_bonus: Bonus from equipped luck items
+        city_bonus: Bonus from city buildings (University) - percentage
         
     Returns:
         Tuple of (success: bool, probability: float, roll: float, message: str)
@@ -204,6 +206,7 @@ def attempt_catch(
         entity_power=entity.power,
         failed_attempts=failed_attempts,
         luck_bonus=luck_bonus,
+        city_bonus=city_bonus,
     )
     
     # Roll the dice

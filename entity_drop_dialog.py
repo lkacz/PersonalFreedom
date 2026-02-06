@@ -675,8 +675,6 @@ class EntityEncounterDialog(QtWidgets.QDialog):
     
     def _handle_skip_with_chad(self):
         """Handle the skip action, potentially with Chad AGI intervention."""
-        global _chad_joke_index
-        
         has_chad_normal = self.chad_interaction_data.get("has_chad_normal", False)
         has_chad_exceptional = self.chad_interaction_data.get("has_chad_exceptional", False)
         add_coins_callback = self.chad_interaction_data.get("add_coins_callback")

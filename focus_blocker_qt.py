@@ -1,4 +1,5 @@
 import sys
+import os
 import json
 import random
 import platform
@@ -27,6 +28,9 @@ get_game_state = None
 reset_game_state = None
 EyeProtectionTab = None
 EntitidexTab = None
+
+# Fallback that is overwritten when heavy modules load.
+APP_DIR = Path(__file__).resolve().parent
 
 # Hide console window on Windows
 if platform.system() == "Windows":
@@ -27710,89 +27714,9 @@ class DiaryDialog(StyledDialog):
             sync_hero_data(self.blocker.adhd_buster)
         self.blocker.save_config()
         self.accept()
+        return
 
 
-# Legacy LevelUpCelebrationDialog removed to prevent confusion with EnhancedLevelUpDialog
-        self.level_lbl.setStyleSheet(
-            "font-size: 48px; font-weight: bold; color: white; "
-            "text-shadow: 3px 3px 6px rgba(0,0,0,0.4);"
-        )
-        layout.addWidget(self.level_lbl)
-        
-        # Title display
-        if self.new_title:
-            title_prefix = "NEW TITLE: " if self.title_changed else ""
-            self.title_lbl = QtWidgets.QLabel(f"{title_prefix}{self.new_title}")
-            self.title_lbl.setAlignment(QtCore.Qt.AlignCenter)
-            style = "font-size: 20px; font-weight: bold; color: #fff8e1;"
-            if self.title_changed:
-                style += " text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700;"
-            self.title_lbl.setStyleSheet(style)
-            layout.addWidget(self.title_lbl)
-        
-        # XP earned info
-        if self.xp_earned > 0:
-            xp_lbl = QtWidgets.QLabel(f"+{self.xp_earned:,} XP")
-            xp_lbl.setAlignment(QtCore.Qt.AlignCenter)
-            xp_lbl.setStyleSheet("font-size: 18px; color: #e1f5fe;")
-            layout.addWidget(xp_lbl)
-        
-        # Progress to next level
-        progress = self.level_info.get("progress", 0)
-        xp_in = self.level_info.get("xp_in_level", 0)
-        xp_needed = self.level_info.get("xp_needed", 100)
-        
-        progress_frame = QtWidgets.QFrame()
-        progress_frame.setStyleSheet("background: rgba(255,255,255,0.2); border-radius: 10px;")
-        progress_layout = QtWidgets.QVBoxLayout(progress_frame)
-        progress_layout.setContentsMargins(15, 10, 15, 10)
-        
-        next_lbl = QtWidgets.QLabel(f"Progress to Level {self.new_level + 1}")
-        next_lbl.setStyleSheet("color: white; font-size: 12px;")
-        next_lbl.setAlignment(QtCore.Qt.AlignCenter)
-        progress_layout.addWidget(next_lbl)
-        
-        progress_bar = QtWidgets.QProgressBar()
-        progress_bar.setMaximum(100)
-        progress_bar.setValue(int(progress))
-        progress_bar.setTextVisible(False)
-        progress_bar.setFixedHeight(20)
-        progress_bar.setStyleSheet(
-            f"QProgressBar {{ background: rgba(0,0,0,0.3); border-radius: 10px; }}"
-            f"QProgressBar::chunk {{ background: {accent}; border-radius: 10px; }}"
-        )
-        progress_layout.addWidget(progress_bar)
-        
-        xp_text = QtWidgets.QLabel(f"{xp_in:,} / {xp_needed:,} XP")
-        xp_text.setStyleSheet("color: white; font-size: 11px;")
-        xp_text.setAlignment(QtCore.Qt.AlignCenter)
-        progress_layout.addWidget(xp_text)
-        
-        layout.addWidget(progress_frame)
-        
-        # Motivational message
-        messages = [
-            "Your focus powers grow stronger! 💪",
-            "The path to mastery continues! 🌟",
-            "You're becoming unstoppable! 🚀",
-            "Champions are made through dedication! 🏆",
-            "Every level brings new strength! ⚡",
-        ]
-        if self.new_level >= 50:
-            messages = ["LEGENDARY STATUS! You're a focus god! 👑", "The legends speak of your discipline! ⚡"]
-        elif self.new_level >= 30:
-            messages = ["Master level focus achieved! 🔮", "Your willpower is legendary! ✨"]
-        
-        msg_lbl = QtWidgets.QLabel(random.choice(messages))
-        msg_lbl.setAlignment(QtCore.Qt.AlignCenter)
-        msg_lbl.setStyleSheet("font-size: 14px; color: white; font-style: italic;")
-        layout.addWidget(msg_lbl)
-        
-        # Click to dismiss
-        dismiss_lbl = QtWidgets.QLabel("(Click anywhere to continue)")
-        dismiss_lbl.setAlignment(QtCore.Qt.AlignCenter)
-        dismiss_lbl.setStyleSheet("color: rgba(255,255,255,0.7); font-size: 10px;")
-        layout.addWidget(dismiss_lbl)
 
     def _start_celebration(self) -> None:
         """Start the celebration animation."""
@@ -34976,32 +34900,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         painter.end()
 
         return QtGui.QIcon(pixmap)
-        painter.setFont(font)
-        
-        rect = QtCore.QRect(badge_x, badge_y, badge_size, badge_size)
-        painter.drawText(rect, QtCore.Qt.AlignCenter, text)
 
-        painter.end()
 
-        return QtGui.QIcon(pixmap)
-        if minutes >= 100:
-            font_size = 18
-        elif minutes >= 10:
-            font_size = 24
-        else:
-            font_size = 28
-        
-        font = QtGui.QFont("Arial", font_size, QtGui.QFont.Bold)
-        painter.setFont(font)
-        
-        # Draw the number centered
-        text = str(minutes)
-        rect = QtCore.QRect(0, 0, size, size)
-        painter.drawText(rect, QtCore.Qt.AlignCenter, text)
-
-        painter.end()
-
-        return QtGui.QIcon(pixmap)
 
     def _update_tray_icon_with_time(self, minutes: int) -> None:
         """Update tray icon with minutes remaining, only if changed.

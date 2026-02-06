@@ -9,7 +9,10 @@ import random
 import re
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Dict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from entitidex import EntitidexManager
 
 # Entity System Integration
 try:
@@ -43,6 +46,16 @@ def safe_parse_date(date_str: str, fmt: str = "%Y-%m-%d", default: Optional[date
     except (ValueError, TypeError):
         logger.debug(f"Failed to parse date '{date_str}' with format '{fmt}'")
         return default
+
+
+def _safe_get_city_bonuses(adhd_buster: dict) -> dict:
+    """Load city bonuses lazily to avoid hard dependency/circular import issues."""
+    try:
+        from city import get_city_bonuses as _get_city_bonuses
+
+        return _get_city_bonuses(adhd_buster)
+    except Exception:
+        return {}
 
 # ============================================================================
 # COIN ECONOMY SYSTEM - Centralized Money Sink Configuration
@@ -1091,30 +1104,24 @@ def get_all_perk_bonuses(adhd_buster: dict) -> dict:
         result["merge_success"] += int(perks.get(PerkType.MERGE_SUCCESS, 0))
         result["all_luck"] += int(perks.get(PerkType.ALL_LUCK, 0))
         result["rarity_bias"] += int(perks.get(PerkType.RARITY_BIAS, 0))
-        result["xp_bonus"] += int(perks.get(PerkType.XP_BONUS, 0))
+        # Entity perks expose global XP as XP_PERCENT (not XP_BONUS).
+        result["xp_bonus"] += int(perks.get(PerkType.XP_PERCENT, 0))
         result["scrap_chance"] += perks.get(PerkType.SCRAP_CHANCE, 0)
         
     except Exception:
         pass  # Entity perks module not available
     
     # Get city bonuses
-    try:
-        from city import get_city_bonuses
-        
-        city_bonuses = get_city_bonuses(adhd_buster)
-        
-        result["coin_discount"] += int(city_bonuses.get("coin_discount", 0))
-        result["merge_success"] += int(city_bonuses.get("merge_success_bonus", 0))
-        result["rarity_bias"] += int(city_bonuses.get("rarity_bias_bonus", 0))
-        result["entity_catch_bonus"] += int(city_bonuses.get("entity_catch_bonus", 0))
-        result["entity_encounter_bonus"] += int(city_bonuses.get("entity_encounter_bonus", 0))
-        result["power_bonus"] += int(city_bonuses.get("power_bonus", 0))
-        result["xp_bonus"] += int(city_bonuses.get("xp_bonus", 0))
-        result["coins_per_hour"] = float(city_bonuses.get("coins_per_hour", 0))
-        result["scrap_chance"] += float(city_bonuses.get("scrap_chance_bonus", 0))
-        
-    except Exception:
-        pass  # City module not available
+    city_bonuses = _safe_get_city_bonuses(adhd_buster)
+    result["coin_discount"] += int(city_bonuses.get("coin_discount", 0))
+    result["merge_success"] += int(city_bonuses.get("merge_success_bonus", 0))
+    result["rarity_bias"] += int(city_bonuses.get("rarity_bias_bonus", 0))
+    result["entity_catch_bonus"] += int(city_bonuses.get("entity_catch_bonus", 0))
+    result["entity_encounter_bonus"] += int(city_bonuses.get("entity_encounter_bonus", 0))
+    result["power_bonus"] += int(city_bonuses.get("power_bonus", 0))
+    result["xp_bonus"] += int(city_bonuses.get("xp_bonus", 0))
+    result["coins_per_hour"] = float(city_bonuses.get("coins_per_hour", 0))
+    result["scrap_chance"] += float(city_bonuses.get("scrap_chance_bonus", 0))
     
     return result
 
@@ -5031,13 +5038,10 @@ def calculate_character_power(adhd_buster: dict, include_set_bonus: bool = True,
     
     # 🏙️ CITY BONUS: Training Ground power bonus (percentage)
     city_power_bonus = 0
-    try:
-        city_bonuses = get_city_bonuses(adhd_buster)
-        power_bonus_pct = city_bonuses.get("power_bonus", 0)
-        if power_bonus_pct > 0:
-            city_power_bonus = int(base_total * power_bonus_pct / 100.0)
-    except Exception:
-        pass
+    city_bonuses = _safe_get_city_bonuses(adhd_buster)
+    power_bonus_pct = city_bonuses.get("power_bonus", 0)
+    if power_bonus_pct > 0:
+        city_power_bonus = int(base_total * power_bonus_pct / 100.0)
 
     return base_total + city_power_bonus
 
@@ -5075,13 +5079,10 @@ def get_power_breakdown(adhd_buster: dict, include_neighbor_effects: bool = True
     # 🏙️ CITY BONUS: Training Ground power bonus (percentage)
     base_total = breakdown["total_power"] + entity_bonus
     city_power_bonus = 0
-    try:
-        city_bonuses = get_city_bonuses(adhd_buster)
-        power_bonus_pct = city_bonuses.get("power_bonus", 0)
-        if power_bonus_pct > 0:
-            city_power_bonus = int(base_total * power_bonus_pct / 100.0)
-    except Exception:
-        pass
+    city_bonuses = _safe_get_city_bonuses(adhd_buster)
+    power_bonus_pct = city_bonuses.get("power_bonus", 0)
+    if power_bonus_pct > 0:
+        city_power_bonus = int(base_total * power_bonus_pct / 100.0)
     
     return {
         "base_power": breakdown["base_power"],
@@ -13059,6 +13060,10 @@ def predict_goal_date(weight_entries: list, goal_weight: float,
     
     if current_weight is None:
         current_weight = sorted_entries[0]["weight"]
+
+    latest_entry_date = safe_parse_date(sorted_entries[0].get("date", ""), default=datetime.now())
+    if latest_entry_date is None:
+        latest_entry_date = datetime.now()
     
     # Check if already at goal (within 0.1 kg tolerance)
     if abs(current_weight - goal_weight) <= 0.1:
@@ -13109,29 +13114,30 @@ def predict_goal_date(weight_entries: list, goal_weight: float,
             "message": "Log weight for 7+ days to see prediction",
             "days_remaining": None,
             "predicted_date": None,
+            "is_losing": is_losing_goal,
         }
     
-    # Calculate rate of change (linear regression over last 30 days)
-    first_date = safe_parse_date(sorted_entries[-1].get("date", ""), default=datetime.now())
-    
-    dates = []
-    weights = []
-    cutoff = datetime.now() - timedelta(days=30)
-    
+    # Calculate rate of change (linear regression over last 30 logged days)
+    cutoff = latest_entry_date - timedelta(days=30)
+    recent_points = []
     for entry in sorted_entries:
         d = safe_parse_date(entry.get("date", ""))
         if d and d >= cutoff:
-            days = (d - first_date).days
-            dates.append(days)
-            weights.append(entry.get("weight", 0))
-    
-    if len(dates) < 5:
+            recent_points.append((d, entry.get("weight", 0)))
+
+    if len(recent_points) < 5:
         return {
             "status": "insufficient_data",
             "message": "Need more recent data for prediction",
             "days_remaining": None,
             "predicted_date": None,
+            "is_losing": is_losing_goal,
         }
+
+    recent_points.sort(key=lambda x: x[0])
+    first_date = recent_points[0][0]
+    dates = [(point_date - first_date).days for point_date, _ in recent_points]
+    weights = [point_weight for _, point_weight in recent_points]
     
     # Linear regression
     n = len(dates)
@@ -13178,16 +13184,18 @@ def predict_goal_date(weight_entries: list, goal_weight: float,
     # Cap at 2 years for sanity
     if days_to_goal > 730:
         action = "lose" if is_losing_goal else "gain"
+        projection_base = max(datetime.now(), latest_entry_date)
         return {
             "status": "long_term",
             "message": f"At current pace: {days_to_goal // 30} months (try to {action} faster!)",
             "rate_per_week": abs(slope) * 7 * 1000,  # grams per week
             "days_remaining": days_to_goal,
-            "predicted_date": datetime.now() + timedelta(days=days_to_goal),
+            "predicted_date": projection_base + timedelta(days=days_to_goal),
             "is_losing": is_losing_goal,
         }
     
-    predicted_date = datetime.now() + timedelta(days=days_to_goal)
+    projection_base = max(datetime.now(), latest_entry_date)
+    predicted_date = projection_base + timedelta(days=days_to_goal)
     weeks = days_to_goal // 7
     
     return {
@@ -15568,14 +15576,11 @@ def award_xp(adhd_buster: dict, xp_amount: int, source: str = "unknown") -> dict
     # 🏙️ CITY BONUS: Library XP bonus (percentage)
     city_xp_bonus = 0
     base_xp = xp_amount
-    try:
-        city_bonuses = get_city_bonuses(adhd_buster)
-        xp_bonus_pct = city_bonuses.get("xp_bonus", 0)
-        if xp_bonus_pct > 0 and xp_amount > 0:
-            city_xp_bonus = int(xp_amount * xp_bonus_pct / 100.0)
-            xp_amount = xp_amount + city_xp_bonus
-    except Exception:
-        pass
+    city_bonuses = _safe_get_city_bonuses(adhd_buster)
+    xp_bonus_pct = city_bonuses.get("xp_bonus", 0)
+    if xp_bonus_pct > 0 and xp_amount > 0:
+        city_xp_bonus = int(xp_amount * xp_bonus_pct / 100.0)
+        xp_amount = xp_amount + city_xp_bonus
     
     old_xp = adhd_buster.get("total_xp", 0)
     # Ensure old_xp is valid
@@ -15721,15 +15726,12 @@ def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
     """
     Claim daily login reward. Should be called once per day.
     
-    Work day starts at 5:00 AM - anything before 5 AM counts as the previous day.
-    This prevents daily rewards from resetting at midnight for night owls.
-    
     Returns the reward info and any items/XP granted.
     """
     today = get_work_day_date()
     last_login = adhd_buster.get("last_login_date")
     
-    # Check if already claimed today (using work day logic)
+    # Check if already claimed today
     if last_login == today:
         return {"already_claimed": True, "message": "Already claimed today's reward!"}
     
@@ -15741,7 +15743,13 @@ def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
             adhd_buster["login_streak"] = 1
         else:
             days_diff = (today_date - last_date).days
-            
+
+            if days_diff == 0:
+                return {"already_claimed": True, "message": "Already claimed today's reward!"}
+            if days_diff < 0:
+                # Recover from clock skew / bad future dates without locking
+                # the user out of daily rewards.
+                adhd_buster["login_streak"] = 1
             if days_diff == 1:
                 # Consecutive day
                 adhd_buster["login_streak"] = adhd_buster.get("login_streak", 0) + 1
@@ -17425,13 +17433,10 @@ def _calculate_power_for_story(adhd_buster: dict, story_id: str) -> int:
     
     # Add City Bonus (SHARED - percentage boost from Training Ground)
     city_power_bonus = 0
-    try:
-        city_bonuses = get_city_bonuses(adhd_buster)
-        power_bonus_pct = city_bonuses.get("power_bonus", 0)
-        if power_bonus_pct > 0:
-            city_power_bonus = int(base_total * power_bonus_pct / 100.0)
-    except Exception:
-        pass
+    city_bonuses = _safe_get_city_bonuses(adhd_buster)
+    power_bonus_pct = city_bonuses.get("power_bonus", 0)
+    if power_bonus_pct > 0:
+        city_power_bonus = int(base_total * power_bonus_pct / 100.0)
     
     return base_total + city_power_bonus
 

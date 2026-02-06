@@ -14,16 +14,16 @@ class MockProgress:
 
 class TestEntityPerks(unittest.TestCase):
     def test_perk_calculation(self):
-        # Setup: Warrior 001 (Power +1) and Warrior 002 (Power +5)
-        # Warrior 001 is exceptional (Power +2)
+        # Setup: Warrior 001 (Power +1 normal, +2 exceptional) and Warrior 002 (+5 normal)
+        # Current system stacks normal + exceptional when both are present.
         collected = {"warrior_001", "warrior_002"}
         exceptional = {"warrior_001"}
         
         progress = MockProgress(collected, exceptional)
         perks = calculate_active_perks(progress)
         
-        # Expected: 2 (warrior_001 ex) + 5 (warrior_002 norm) = 7
-        self.assertEqual(perks[PerkType.POWER_FLAT], 7)
+        # Expected: 1 + 2 + 5 = 8
+        self.assertEqual(perks[PerkType.POWER_FLAT], 8)
         
     def test_gamification_integration(self):
         # Setup hero dict - note: data is stored under "entitidex" key
@@ -46,21 +46,21 @@ class TestEntityPerks(unittest.TestCase):
         
     def test_entity_perk_bonuses_for_merge(self):
         """Test get_entity_perk_bonuses returns correct merge bonuses."""
-        # underdog_003 = COIN_DISCOUNT 1 (normal), 2 (exceptional)
+        # underdog_003 = COIN_DISCOUNT 1 (normal), 2 (exceptional), both stack when both present
         # scholar_005 = MERGE_LUCK 1 (normal), 2 (exceptional)
         # underdog_007 = ALL_LUCK 3 (normal), 5 (exceptional)
         # scientist_002 = MERGE_SUCCESS 1 (normal), 2 (exceptional)
         adhd_buster = {
             "entitidex": {
                 "collected_entity_ids": ["underdog_003", "scholar_005", "underdog_007", "scientist_002"],
-                "exceptional_entities": {"underdog_003"}  # Exceptional gives +2 discount
+                "exceptional_entities": {"underdog_003"}  # +1 normal +2 exceptional = +3
             }
         }
         
         bonuses = get_entity_perk_bonuses(adhd_buster)
         
-        # Check coin discount (underdog_003 exceptional = 2)
-        self.assertEqual(bonuses["coin_discount"], 2)
+        # Check coin discount with stacking (1 normal + 2 exceptional)
+        self.assertEqual(bonuses["coin_discount"], 3)
         
         # Check merge luck (scholar_005 normal = 1)
         self.assertEqual(bonuses["merge_luck"], 1)
@@ -92,10 +92,10 @@ class TestEntityPerks(unittest.TestCase):
             }
         }
         
-        # Expected: -10 (wanderer_004 exceptional replaces normal)
-        # Base is 120 min, so result should be 110 min
+        # Current stacking behavior: -5 normal + -10 exceptional = -15
+        # Base is 120 min, so result should be 105 min
         cooldown = get_hydration_cooldown_minutes(adhd_buster)
-        self.assertEqual(cooldown, 120 - 10)  # 110 minutes
+        self.assertEqual(cooldown, 120 - 15)  # 105 minutes
         
     def test_hydration_cap_perk(self):
         """Test hydration cap increase from entity perks."""

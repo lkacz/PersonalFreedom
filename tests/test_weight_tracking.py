@@ -135,11 +135,12 @@ class TestDailyWeightRewards:
 class TestCheckWeightEntryRewards:
     """Test the complete reward checking function."""
 
-    def test_first_entry_no_daily_reward(self):
-        """First entry should not give daily reward (no previous)."""
+    def test_first_entry_gives_daily_reward(self):
+        """First entry should still give a logging reward item."""
         entries = []
         result = check_weight_entry_rewards(entries, 80.0, "2026-01-08")
-        assert result["daily_reward"] is None
+        assert result["daily_reward"] is not None
+        assert result["daily_reward"]["rarity"] == "Common"
 
     def test_daily_loss_gives_reward(self):
         """Weight loss should give daily reward."""
@@ -176,12 +177,13 @@ class TestCheckWeightEntryRewards:
         # With moving window, 0g loss is Common-centered but could be other rarities
         assert result["daily_reward"]["rarity"] in ["Common", "Uncommon", "Rare"]
 
-    def test_weight_gain_no_daily_reward(self):
-        """Weight gain should not give daily reward."""
+    def test_weight_gain_still_gives_logging_reward(self):
+        """Weight gain should still give a base logging reward item."""
         entries = [{"date": "2026-01-07", "weight": 80.0}]
         result = check_weight_entry_rewards(entries, 80.5, "2026-01-08")
         
-        assert result["daily_reward"] is None
+        assert result["daily_reward"] is not None
+        assert result["daily_reward"]["rarity"] == "Common"
         assert result["daily_loss_grams"] == -500  # 500g gained
 
 

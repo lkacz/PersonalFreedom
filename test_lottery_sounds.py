@@ -55,7 +55,8 @@ class TestModuleImport:
     def test_public_api_count(self):
         """__all__ should export expected number of items."""
         import lottery_sounds
-        assert len(lottery_sounds.__all__) == 7
+        # Includes dedicated legendary playback helper.
+        assert len(lottery_sounds.__all__) == 8
 
 
 # ============================================================================
@@ -351,7 +352,7 @@ class TestCaching:
         lottery_sounds._clear_sound_cache()
         count = lottery_sounds.preload_lottery_sounds()
         
-        assert count == 40  # 20 win + 20 lose
+        assert count == 41  # 20 win + 20 lose + 1 legendary
         assert len(lottery_sounds._win_sound_cache) == 20
         assert len(lottery_sounds._lose_sound_cache) == 20
 
@@ -366,7 +367,7 @@ class TestCaching:
         count1 = lottery_sounds.preload_lottery_sounds()
         count2 = lottery_sounds.preload_lottery_sounds()
         
-        assert count1 == 40
+        assert count1 == 41
         assert count2 == 0
 
     def test_preload_returns_zero_when_audio_unavailable(self):
