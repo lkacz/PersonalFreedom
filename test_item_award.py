@@ -12,7 +12,7 @@ from gamification import (
     STORY_MODE_ACTIVE
 )
 
-def test_item_award_flow():
+def run_item_award_flow() -> bool:
     """Simulate the Nighty-Night bonus award flow."""
     print("="*60)
     print("Testing Item Award Flow")
@@ -148,6 +148,11 @@ def test_item_award_flow():
     print("="*60)
     return True
 
+
+def test_item_award_flow():
+    """Pytest wrapper for the item award flow script."""
+    assert run_item_award_flow() is True
+
 if __name__ == "__main__":
-    success = test_item_award_flow()
+    success = run_item_award_flow()
     sys.exit(0 if success else 1)

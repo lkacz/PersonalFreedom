@@ -259,7 +259,7 @@ class TestCatchMechanics:
         """attempt_catch should return proper tuple."""
         entity = get_entity_by_id("warrior_001")
         
-        success, prob, message = attempt_catch(
+        success, prob, roll, message = attempt_catch(
             hero_power=100,
             entity=entity,
             failed_attempts=0,
@@ -267,6 +267,7 @@ class TestCatchMechanics:
         
         assert isinstance(success, bool)
         assert 0.0 <= prob <= 1.0
+        assert 0.0 <= roll < 1.0
         assert len(message) > 0
 
 
@@ -350,6 +351,79 @@ class TestEntitidexProgress:
         assert "scholar_001" in restored.collected_entity_ids
         assert restored.encounters["scholar_002"] == 3
         assert restored.failed_catches["scholar_003"] == 2
+
+    def test_progress_from_dict_handles_non_dict_input(self):
+        """Malformed non-dict input should safely return defaults."""
+        restored = EntitidexProgress.from_dict(None)
+
+        assert restored.collected_entity_ids == set()
+        assert restored.encounters == {}
+        assert restored.failed_catches == {}
+        assert restored.captures == []
+
+    def test_progress_from_dict_sanitizes_malformed_data(self):
+        """Malformed nested data should be sanitized instead of crashing."""
+        now_iso = datetime.now().isoformat()
+        data = {
+            "collected_entity_ids": {"warrior_001": True, "warrior_002": False},
+            "encounters": {"warrior_001": "3", "warrior_002": "oops", 99: 2},
+            "failed_catches": "bad",
+            "exceptional_failed_catches": {"warrior_003": "2", "warrior_004": -1},
+            "exceptional_entities": {
+                "warrior_001": {"border": "#111111", "glow": "#222222"},
+                "warrior_002": "invalid",
+            },
+            "captures": [
+                {"entity_id": "warrior_001", "captured_at": "not-a-date"},
+                {"entity_id": "warrior_002", "captured_at": now_iso},
+            ],
+            "saved_encounters": [
+                {"entity_id": "warrior_003", "saved_at": "not-a-date"},
+                {"entity_id": "warrior_004", "saved_at": now_iso},
+            ],
+            "current_tier": "5",
+            "total_catch_attempts": "7",
+            "total_encounters": "9",
+            "lucky_catches": "2",
+            "theme_completions": {"warrior": 123},
+            "celebration_seen": {"warrior": "yes"},
+            "celebration_clicks": {"warrior": "4", "scholar": "x"},
+            "celebration_quote_index": {"warrior": "2", "scholar": -1},
+            "celebration_voice_enabled": "true",
+        }
+
+        restored = EntitidexProgress.from_dict(data)
+
+        assert "warrior_001" in restored.collected_entity_ids
+        assert "warrior_002" not in restored.collected_entity_ids
+
+        assert restored.encounters["warrior_001"] == 3
+        assert restored.encounters["99"] == 2
+        assert "warrior_002" not in restored.encounters
+
+        assert restored.failed_catches == {}
+        assert restored.exceptional_failed_catches == {"warrior_003": 2}
+
+        assert restored.exceptional_entities == {
+            "warrior_001": {"border": "#111111", "glow": "#222222"}
+        }
+
+        assert len(restored.captures) == 1
+        assert restored.captures[0].entity_id == "warrior_002"
+
+        assert len(restored.saved_encounters) == 1
+        assert restored.saved_encounters[0].entity_id == "warrior_004"
+
+        assert restored.current_tier == 5
+        assert restored.total_catch_attempts == 7
+        assert restored.total_encounters == 9
+        assert restored.lucky_catches == 2
+
+        assert restored.theme_completions == {"warrior": "123"}
+        assert restored.celebration_seen == {"warrior": True}
+        assert restored.celebration_clicks == {"warrior": 4}
+        assert restored.celebration_quote_index == {"warrior": 2}
+        assert restored.celebration_voice_enabled is True
     
     def test_get_uncollected_entities(self):
         """Should return only uncollected entities."""
@@ -361,6 +435,15 @@ class TestEntitidexProgress:
         
         assert len(uncollected) == 7
         assert all(e.id not in ["wanderer_001", "wanderer_002"] for e in uncollected)
+
+    def test_statistics_counts_normal_and_exceptional_pity(self):
+        """Pity stats should include both normal and exceptional variant failures."""
+        progress = EntitidexProgress()
+        progress.failed_catches = {"warrior_001": 2}
+        progress.exceptional_failed_catches = {"warrior_002": 1, "warrior_003": 4}
+
+        stats = progress.get_statistics("warrior")
+        assert stats["entities_with_pity"] == 3
 
 
 # =============================================================================
@@ -558,6 +641,44 @@ class TestEntitidexManager:
         assert result is not None
         assert result.success is True
         assert manager.progress.is_collected("warrior_001")
+
+    def test_attempt_catch_applies_city_bonus(self):
+        """City catch bonus should affect actual catch roll outcome."""
+        manager = EntitidexManager(
+            story_id="warrior",
+            hero_power=10,          # Equal to warrior_001 power
+            city_catch_bonus=20.0,  # +20 percentage points
+        )
+        manager.force_encounter("warrior_001")
+
+        # Base chance is 50% at equal power. With +20% city bonus => 70%.
+        with patch("entitidex.catch_mechanics.random.random", return_value=0.60):
+            result = manager.attempt_catch()
+
+        assert result is not None
+        assert result.success is True
+        assert result.probability > 0.69
+
+    def test_encounter_probability_matches_catch_with_pity_perk(self):
+        """Displayed encounter probability should match actual catch probability."""
+        from entitidex.entity_perks import PerkType
+
+        manager = EntitidexManager(
+            story_id="warrior",
+            hero_power=10,
+            active_perks={PerkType.PITY_BONUS: 50},  # 10 fails -> 15 effective
+        )
+        manager.progress.failed_catches["warrior_001"] = 10
+
+        encounter = manager.force_encounter("warrior_001")
+        assert encounter is not None
+
+        with patch("entitidex.catch_mechanics.random.random", return_value=0.80):
+            result = manager.attempt_catch()
+
+        assert result is not None
+        assert abs(encounter.catch_probability - result.probability) < 1e-9
+        assert result.success is True
     
     def test_get_collection_entities(self):
         """Should return all entities with collection status."""

@@ -12,11 +12,14 @@ from gamification import (
     get_level_title,
     calculate_session_xp,
     award_xp,
+    calculate_character_power,
+    get_all_perk_bonuses,
     XP_REWARDS,
     LEVEL_TITLES,
     # Daily Login
     get_daily_login_reward,
     claim_daily_login,
+    get_work_day_date,
     get_active_multiplier,
     DAILY_LOGIN_REWARDS,
     # Mystery Boxes
@@ -173,6 +176,16 @@ class TestXPLevelSystem:
 class TestDailyLoginRewards:
     """Tests for daily login reward system."""
 
+    @staticmethod
+    def _workday_today() -> str:
+        """Return today's date in workday terms (respects 5 AM boundary)."""
+        return get_work_day_date()
+
+    @classmethod
+    def _workday_offset(cls, days: int) -> str:
+        base = datetime.strptime(cls._workday_today(), "%Y-%m-%d")
+        return (base + timedelta(days=days)).strftime("%Y-%m-%d")
+
     def test_get_daily_login_reward_day_1(self):
         """Day 1 reward is correct."""
         reward = get_daily_login_reward(1)
@@ -199,7 +212,7 @@ class TestDailyLoginRewards:
 
     def test_claim_daily_login_already_claimed(self):
         """Cannot claim twice in same day."""
-        today = datetime.now().strftime("%Y-%m-%d")
+        today = self._workday_today()
         adhd_buster = {"last_login_date": today}
         
         result = claim_daily_login(adhd_buster)
@@ -207,7 +220,7 @@ class TestDailyLoginRewards:
 
     def test_claim_daily_login_consecutive(self):
         """Consecutive logins increase streak."""
-        yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        yesterday = self._workday_offset(-1)
         adhd_buster = {"last_login_date": yesterday, "login_streak": 5}
         
         result = claim_daily_login(adhd_buster)
@@ -215,7 +228,7 @@ class TestDailyLoginRewards:
 
     def test_claim_daily_login_streak_broken(self):
         """Missing a day resets streak."""
-        two_days_ago = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
+        two_days_ago = self._workday_offset(-3)
         adhd_buster = {"last_login_date": two_days_ago, "login_streak": 10}
         
         result = claim_daily_login(adhd_buster)
@@ -223,7 +236,7 @@ class TestDailyLoginRewards:
 
     def test_claim_daily_login_streak_freeze(self):
         """Streak freeze prevents reset."""
-        two_days_ago = (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%d")
+        two_days_ago = self._workday_offset(-2)
         adhd_buster = {
             "last_login_date": two_days_ago,
             "login_streak": 10,
@@ -233,6 +246,15 @@ class TestDailyLoginRewards:
         result = claim_daily_login(adhd_buster)
         assert adhd_buster["login_streak"] == 11  # Streak preserved
         assert adhd_buster["streak_freeze_tokens"] == 0  # Token used
+
+    def test_claim_daily_login_future_date_recovers(self):
+        """Future last_login_date should recover instead of locking rewards."""
+        tomorrow = self._workday_offset(1)
+        adhd_buster = {"last_login_date": tomorrow, "login_streak": 12}
+
+        result = claim_daily_login(adhd_buster)
+        assert result["claimed"] is True
+        assert adhd_buster["login_streak"] == 1
 
     def test_get_active_multiplier_none(self):
         """No multiplier returns 1.0."""
@@ -618,6 +640,78 @@ class TestEdgeCases:
         adhd_buster = {"total_xp": 1_999_999_990}
         result = award_xp(adhd_buster, 100, "test")
         assert adhd_buster["total_xp"] <= 2_000_000_000
+
+    def test_award_xp_applies_city_library_bonus(self):
+        """Library city bonus should increase awarded XP."""
+        from city import CellStatus, get_city_data
+
+        adhd_buster = {"total_xp": 0, "coins": 0}
+        city = get_city_data(adhd_buster)
+        city["grid"][0][0] = {
+            "building_id": "library",
+            "status": CellStatus.COMPLETE.value,
+            "level": 1,
+            "construction_progress": {"water": 0, "materials": 0, "activity": 0, "focus": 0},
+            "placed_at": datetime.now().isoformat(),
+            "completed_at": datetime.now().isoformat(),
+        }
+
+        result = award_xp(adhd_buster, 100, "test")
+
+        assert result["city_xp_bonus"] == 5
+        assert result["xp_earned"] == 105
+        assert adhd_buster["total_xp"] == 105
+
+    def test_calculate_character_power_applies_city_training_bonus(self):
+        """Training Ground city bonus should increase character power."""
+        from city import CellStatus, get_city_data
+
+        adhd_buster = {
+            "equipped": {
+                "Helmet": {"rarity": "Common", "power": 100, "theme": "warrior"},
+                "Chestplate": None,
+                "Gauntlets": None,
+                "Boots": None,
+                "Shield": None,
+                "Weapon": None,
+                "Cloak": None,
+                "Amulet": None,
+            },
+            "entitidex": {},
+            "total_xp": 5000,
+        }
+
+        base_power = calculate_character_power(adhd_buster)
+
+        city = get_city_data(adhd_buster)
+        city["grid"][0][0] = {
+            "building_id": "training_ground",
+            "status": CellStatus.COMPLETE.value,
+            "level": 1,
+            "construction_progress": {"water": 0, "materials": 0, "activity": 0, "focus": 0},
+            "placed_at": datetime.now().isoformat(),
+            "completed_at": datetime.now().isoformat(),
+        }
+
+        boosted_power = calculate_character_power(adhd_buster)
+
+        assert boosted_power == base_power + int(base_power * 0.03)
+
+    def test_get_all_perk_bonuses_includes_entity_xp_and_scrap(self):
+        """Entity global XP and scrap perks should flow into combined bonuses."""
+        adhd_buster = {
+            "entitidex": {
+                # scientist_009 => XP_PERCENT +3
+                # underdog_001 => SCRAP_CHANCE +1
+                "collected_entity_ids": ["scientist_009", "underdog_001"],
+                "exceptional_entities": {},
+            }
+        }
+
+        bonuses = get_all_perk_bonuses(adhd_buster)
+
+        assert bonuses["xp_bonus"] == 3
+        assert bonuses["scrap_chance"] == 1.0
 
     def test_calculate_session_xp_negative_duration(self):
         """Negative duration is handled."""

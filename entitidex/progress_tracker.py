@@ -591,7 +591,7 @@ class EntitidexProgress:
             "catch_success_rate": self.get_catch_success_rate(),
             "lucky_catches": self.lucky_catches,
             "current_tier": self.current_tier,
-            "entities_with_pity": len(self.failed_catches),
+            "entities_with_pity": len(self.failed_catches) + len(self.exceptional_failed_catches),
         }
     
     # ==========================================================================
@@ -623,29 +623,113 @@ class EntitidexProgress:
     def from_dict(cls, data: dict) -> "EntitidexProgress":
         """Create progress from dictionary."""
         progress = cls()
-        
-        # Support both old "collected" and new "collected_entity_ids" keys for backwards compatibility
+
+        if not isinstance(data, dict):
+            return progress
+
+        def _as_non_negative_int(value, default=0) -> int:
+            try:
+                parsed = int(value)
+            except (TypeError, ValueError):
+                return default
+            return max(0, parsed)
+
+        def _sanitize_counter(raw) -> Dict[str, int]:
+            if not isinstance(raw, dict):
+                return {}
+            cleaned = {}
+            for key, value in raw.items():
+                try:
+                    count = int(value)
+                except (TypeError, ValueError):
+                    continue
+                if count < 0:
+                    continue
+                cleaned[str(key)] = count
+            return cleaned
+
+        def _sanitize_int_map(raw) -> Dict[str, int]:
+            return _sanitize_counter(raw)
+
+        def _sanitize_bool_map(raw) -> Dict[str, bool]:
+            if not isinstance(raw, dict):
+                return {}
+            return {str(k): bool(v) for k, v in raw.items()}
+
+        def _sanitize_str_map(raw) -> Dict[str, str]:
+            if not isinstance(raw, dict):
+                return {}
+            return {str(k): str(v) for k, v in raw.items()}
+
+        def _sanitize_exceptional_entities(raw) -> Dict[str, dict]:
+            if not isinstance(raw, dict):
+                return {}
+            cleaned = {}
+            for entity_id, colors in raw.items():
+                if not isinstance(colors, dict):
+                    continue
+                border = colors.get("border", "#FFD700")
+                glow = colors.get("glow", "#FFA500")
+                if not isinstance(border, str):
+                    border = "#FFD700"
+                if not isinstance(glow, str):
+                    glow = "#FFA500"
+                cleaned[str(entity_id)] = {"border": border, "glow": glow}
+            return cleaned
+
+        def _parse_capture_records(raw) -> List[EntityCapture]:
+            if not isinstance(raw, list):
+                return []
+            parsed = []
+            for item in raw:
+                if not isinstance(item, dict):
+                    continue
+                try:
+                    parsed.append(EntityCapture.from_dict(item))
+                except Exception:
+                    continue
+            return parsed
+
+        def _parse_saved_encounters(raw) -> List[SavedEncounter]:
+            if not isinstance(raw, list):
+                return []
+            parsed = []
+            for item in raw:
+                if not isinstance(item, dict):
+                    continue
+                try:
+                    parsed.append(SavedEncounter.from_dict(item))
+                except Exception:
+                    continue
+            return parsed
+
+        # Support both old "collected" and new "collected_entity_ids" keys.
         collected_data = data.get("collected_entity_ids", data.get("collected", []))
-        progress.collected_entity_ids = set(collected_data)
-        progress.encounters = data.get("encounters", {}).copy()
-        progress.failed_catches = data.get("failed_catches", {}).copy()
-        progress.exceptional_failed_catches = data.get("exceptional_failed_catches", {}).copy()
-        progress.exceptional_entities = data.get("exceptional_entities", {}).copy()
-        progress.captures = [
-            EntityCapture.from_dict(c) for c in data.get("captures", [])
-        ]
-        progress.current_tier = data.get("current_tier", 1)
-        progress.total_catch_attempts = data.get("total_catch_attempts", 0)
-        progress.total_encounters = data.get("total_encounters", 0)
-        progress.lucky_catches = data.get("lucky_catches", 0)
-        progress.saved_encounters = [
-            SavedEncounter.from_dict(e) for e in data.get("saved_encounters", [])
-        ]
-        progress.theme_completions = data.get("theme_completions", {}).copy()
-        progress.celebration_seen = data.get("celebration_seen", {}).copy()
-        progress.celebration_clicks = data.get("celebration_clicks", {}).copy()
-        progress.celebration_quote_index = data.get("celebration_quote_index", {}).copy()
-        progress.celebration_voice_enabled = data.get("celebration_voice_enabled", True)
+        if isinstance(collected_data, dict):
+            collected_ids = [k for k, is_present in collected_data.items() if bool(is_present)]
+        elif isinstance(collected_data, (list, set, tuple)):
+            collected_ids = [entity_id for entity_id in collected_data if isinstance(entity_id, str)]
+        else:
+            collected_ids = []
+
+        progress.collected_entity_ids = set(collected_ids)
+        progress.encounters = _sanitize_counter(data.get("encounters"))
+        progress.failed_catches = _sanitize_counter(data.get("failed_catches"))
+        progress.exceptional_failed_catches = _sanitize_counter(data.get("exceptional_failed_catches"))
+        progress.exceptional_entities = _sanitize_exceptional_entities(data.get("exceptional_entities"))
+        progress.captures = _parse_capture_records(data.get("captures"))
+        progress.current_tier = max(1, _as_non_negative_int(data.get("current_tier", 1), default=1))
+        progress.total_catch_attempts = _as_non_negative_int(data.get("total_catch_attempts", 0), default=0)
+        progress.total_encounters = _as_non_negative_int(data.get("total_encounters", 0), default=0)
+        progress.lucky_catches = _as_non_negative_int(data.get("lucky_catches", 0), default=0)
+        progress.saved_encounters = _parse_saved_encounters(data.get("saved_encounters"))
+        progress.theme_completions = _sanitize_str_map(data.get("theme_completions"))
+        progress.celebration_seen = _sanitize_bool_map(data.get("celebration_seen"))
+        progress.celebration_clicks = _sanitize_int_map(data.get("celebration_clicks"))
+        progress.celebration_quote_index = _sanitize_int_map(data.get("celebration_quote_index"))
+
+        voice_enabled = data.get("celebration_voice_enabled", True)
+        progress.celebration_voice_enabled = voice_enabled if isinstance(voice_enabled, bool) else True
         
         return progress
     

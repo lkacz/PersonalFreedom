@@ -1,6 +1,6 @@
 """Test item generation to verify special attributes are being rolled correctly."""
 
-from gamification import generate_item, LUCKY_OPTION_CHANCES, LUCK_BOOST_CHANCES
+from gamification import generate_item, LUCKY_OPTION_CHANCES
 
 print('=== Testing Item Generation with Special Attributes ===\n')
 
@@ -20,7 +20,8 @@ for rarity in rarities:
         if item.get('lucky_options'):
             lucky_options_count += 1
     
-    luck_chance = LUCK_BOOST_CHANCES.get(rarity, 0)
+    # luck_boost system was removed; kept for compatibility display only.
+    luck_chance = 0
     lucky_chance = LUCKY_OPTION_CHANCES.get(rarity, {}).get("base_chance", 0)
     
     print(f'  Luck Boost: {luck_boost_count}/10 (expected ~{luck_chance}%)')

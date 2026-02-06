@@ -738,8 +738,10 @@ _lose_sound_cache: Dict[int, object] = {}
 
 def _clear_sound_cache() -> None:
     """Clear the sound cache. Useful for testing or memory management."""
+    global _legendary_sound_cache
     _win_sound_cache.clear()
     _lose_sound_cache.clear()
+    _legendary_sound_cache = None
 
 
 def preload_lottery_sounds() -> int:
