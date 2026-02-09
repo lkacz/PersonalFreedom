@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.40] - 2026-02-09
+
+### Fixed
+- **CRITICAL**: Prevented saved-encounter and reward-state loss on profile switch and app exit by forcing persistence flush before switching users and before quitting.
+- Added immediate persistence for encounter-side state transitions so saved entities survive restart/profile-switch scenarios.
+- Hardened reward flows in Activity/Weight/Sleep paths to avoid partially-applied state when GameState is unavailable.
+
+### Improved
+- Startup responsiveness improved by fully implementing deferred/lazy tab materialization and on-demand tab activation.
+- Autostart launch path now starts immediately at logon (removed intentional task delay and startup sleep argument in installer/autostart scripts).
+- Startup compatibility improved by ignoring legacy `--startup-delay` argument from older scheduled tasks.
+
 ## [6.0.0] - 2026-01-20
 
 ### Added

@@ -4457,6 +4457,15 @@ class TimerTab(QtWidgets.QWidget):
             
             if not encounter["triggered"] or not encounter["entity"]:
                 return
+
+            # Persist encounter-side progress immediately (e.g., "encountered" flags)
+            # so skipping the dialog cannot lose this state on restart/switch.
+            from game_state import get_game_state
+            game_state = get_game_state()
+            if game_state:
+                game_state.force_save()
+            else:
+                self.blocker.save_config()
             
             # Show perk toast if entity perks or city buildings helped with encounter
             if encounter.get("perk_bonus_applied"):
@@ -4505,6 +4514,8 @@ class TimerTab(QtWidgets.QWidget):
                             level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
                             game_state.xp_changed.emit(total_xp, level)
                         game_state.force_save()
+                    else:
+                        self.blocker.save_config()
                     
                     # Refresh entitidex tab after bond attempt
                     main_win = self.window()
@@ -4535,6 +4546,8 @@ class TimerTab(QtWidgets.QWidget):
                     game_state = get_game_state()
                     if game_state:
                         game_state.force_save()
+                    else:
+                        self.blocker.save_config()
                     
                     # Refresh entitidex tab to show updated saved encounters button
                     main_win = self.window()
@@ -4580,6 +4593,8 @@ class TimerTab(QtWidgets.QWidget):
                                     level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
                                     gs.xp_changed.emit(total_xp, level)
                                 gs.force_save()
+                            else:
+                                self.blocker.save_config()
                             
                             # Refresh entitidex tab after Chad's gift
                             main_win = self.window()
@@ -4675,6 +4690,15 @@ class TimerTab(QtWidgets.QWidget):
             
             if not encounter["triggered"] or not encounter["entity"]:
                 return
+
+            # Persist encounter-side progress immediately (e.g., "encountered" flags)
+            # so skipping the dialog cannot lose this state on restart/switch.
+            from game_state import get_game_state
+            game_state = get_game_state()
+            if game_state:
+                game_state.force_save()
+            else:
+                self.blocker.save_config()
             
             # Show a special toast noting the lucky bypass encounter
             show_perk_toast("Lucky! Encounter despite early stop 🎁", "✨", self)
@@ -4697,6 +4721,23 @@ class TimerTab(QtWidgets.QWidget):
                         target_id,
                         is_exceptional=encounter_is_exceptional
                     )
+                    # Persist immediately so bond outcomes survive restart/switch.
+                    from gamification import sync_hero_data
+                    sync_hero_data(self.blocker.adhd_buster)
+
+                    from game_state import get_game_state
+                    game_state = get_game_state()
+                    if game_state:
+                        # Emit XP signal so UI updates (XP already written to adhd_buster)
+                        xp_awarded = result.get('xp_awarded', 0)
+                        if xp_awarded > 0:
+                            total_xp = self.blocker.adhd_buster.get('total_xp', 0)
+                            level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
+                            game_state.xp_changed.emit(total_xp, level)
+                        game_state.force_save()
+                    else:
+                        self.blocker.save_config()
+
                     # Refresh entitidex tab after bond attempt
                     main_win = self.window()
                     if hasattr(main_win, 'entitidex_tab'):
@@ -4717,6 +4758,18 @@ class TimerTab(QtWidgets.QWidget):
                             was_perfect_session=is_perfect,
                             coin_cost=coin_cost,
                         )
+                        # Persist immediately so saved encounters survive app restarts
+                        # and profile switches even if no other save-triggering action occurs.
+                        from gamification import sync_hero_data
+                        sync_hero_data(self.blocker.adhd_buster)
+
+                        from game_state import get_game_state
+                        game_state = get_game_state()
+                        if game_state:
+                            game_state.force_save()
+                        else:
+                            self.blocker.save_config()
+
                         # Refresh entitidex tab after saving encounter
                         main_win = self.window()
                         if hasattr(main_win, 'entitidex_tab'):
@@ -4900,7 +4953,19 @@ class TimerTab(QtWidgets.QWidget):
             
             # Connect quick action signals
             dialog.start_another_session.connect(self._start_session)
-            dialog.view_stats.connect(lambda: self.window().tabs.setCurrentIndex(1))  # Switch to Stats tab
+            def _open_stats_tab() -> None:
+                win = self.window()
+                if not win:
+                    return
+                if hasattr(win, "_activate_tab"):
+                    win._activate_tab("stats_tab")
+                    return
+                if hasattr(win, "stats_tab"):
+                    tab_index = win.tabs.indexOf(win.stats_tab)
+                    if tab_index >= 0:
+                        win.tabs.setCurrentIndex(tab_index)
+
+            dialog.view_stats.connect(_open_stats_tab)
             main_window = self.window()
             if hasattr(main_window, 'show_priorities_dialog'):
                 dialog.view_priorities.connect(main_window.show_priorities_dialog)
@@ -9043,10 +9108,12 @@ class SettingsTab(QtWidgets.QWidget):
                 from user_manager import UserManager
                 from user_selection_dialog import UserSelectionDialog
                 
-                # Save current user's config first
-                self.blocker.save_config()
-                # Ensure stats are saved to prevent data loss during switch
-                self.blocker.save_stats()
+                # Flush all pending state before switching profiles.
+                if hasattr(main_window, "_flush_persistent_state"):
+                    main_window._flush_persistent_state()
+                else:
+                    self.blocker.save_config()
+                    self.blocker.save_stats()
                 
                 # Show user selection dialog
                 um = UserManager(APP_DIR)
@@ -11314,6 +11381,17 @@ class WeightTab(QtWidgets.QWidget):
         # Process rewards
         if rewards and GAMIFICATION_AVAILABLE:
             self._process_rewards(rewards)
+
+        # Persist city/resource mutations that happen after the initial entry save.
+        try:
+            main_window = self.window()
+            game_state = getattr(main_window, 'game_state', None)
+            if game_state:
+                game_state.force_save()
+            else:
+                self.blocker.save_config()
+        except Exception:
+            self.blocker.save_config()
         
         self._refresh_display()
     
@@ -11366,6 +11444,15 @@ class WeightTab(QtWidgets.QWidget):
             items_earned.append(("⚖️ Maintenance", item))
             if not primary_source:
                 primary_source = "⚖️ Weight Maintenance"
+
+        # If rewards will be granted, require GameState before mutating reward state.
+        game_state = None
+        if items_earned:
+            main_window = self.window()
+            game_state = getattr(main_window, 'game_state', None)
+            if not game_state:
+                logger.error("GameStateManager not available - cannot award weight rewards")
+                return
         
         # Save new milestones
         if new_milestone_ids:
@@ -11394,13 +11481,6 @@ class WeightTab(QtWidgets.QWidget):
         if items_earned:
             # Extract just the items for the batch award
             just_items = [item for _, item in items_earned]
-            
-            # Use GameState manager for reactive updates
-            main_window = self.window()
-            game_state = getattr(main_window, 'game_state', None)
-            if not game_state:
-                logger.error("GameStateManager not available - cannot award weight rewards")
-                return
             
             # Show lottery animation for the primary item (most exciting)
             # Pick the highest rarity item as the primary (retain its source label)
@@ -14027,6 +14107,17 @@ class ActivityTab(QtWidgets.QWidget):
         # Process rewards (Goldmine coins already awarded directly to adhd_buster, pass for display)
         if rewards and GAMIFICATION_AVAILABLE:
             self._process_rewards(rewards, coins_earned=coins_earned, city_activity_earned=city_activity_earned, city_construction_progress=city_construction_progress, city_goldmine_coins=city_goldmine_coins)
+
+        # Persist city/resource/coin mutations that happen after the initial entry save.
+        try:
+            main_window = self.window()
+            game_state = getattr(main_window, 'game_state', None)
+            if game_state:
+                game_state.force_save()
+            else:
+                self.blocker.save_config()
+        except Exception:
+            self.blocker.save_config()
         
         # Update main timeline widget if parent window has it
         if self.parent() and hasattr(self.parent(), 'timeline_widget'):
@@ -14061,6 +14152,15 @@ class ActivityTab(QtWidgets.QWidget):
             item = milestone["item"]
             items_earned.append((f"🏆 {milestone['name']}", item))
             new_milestone_ids.append(milestone["milestone_id"])
+
+        # If rewards/coins will be granted, require GameState before mutating reward state.
+        game_state = None
+        if items_earned or coins_earned > 0:
+            main_window = self.window()
+            game_state = getattr(main_window, 'game_state', None)
+            if not game_state:
+                logger.error("GameStateManager not available - cannot award activity rewards")
+                return
         
         # Save new milestones
         if new_milestone_ids:
@@ -14092,13 +14192,6 @@ class ActivityTab(QtWidgets.QWidget):
             
             # Extract just the items for the batch award
             just_items = [item for _, item in items_earned]
-            
-            # Use GameState manager for reactive updates
-            main_window = self.window()
-            game_state = getattr(main_window, 'game_state', None)
-            if not game_state:
-                logger.error("GameStateManager not available - cannot award activity rewards")
-                return
             
             # Use batch award - handles inventory, auto-equip, coins, save, and signals
             award_result = game_state.award_items_batch(just_items, coins=coins_earned, auto_equip=True, source="activity_tracking")
@@ -17295,6 +17388,13 @@ class SleepTab(QtWidgets.QWidget):
         
         if reply != QtWidgets.QMessageBox.Yes:
             return
+
+        # Use GameState manager for reactive updates if available
+        main_window = self.window()
+        game_state = getattr(main_window, 'game_state', None)
+        if not game_state:
+            logger.error("GameStateManager not available - cannot award sleep now bonus")
+            return
         
         # Generate reward
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
@@ -17307,13 +17407,6 @@ class SleepTab(QtWidgets.QWidget):
         
         # Update last claim date
         self.blocker.adhd_buster["last_sleep_now_date"] = today
-        
-        # Use GameState manager for reactive updates if available
-        main_window = self.window()
-        game_state = getattr(main_window, 'game_state', None)
-        if not game_state:
-            logger.error("GameStateManager not available - cannot award sleep now bonus")
-            return
         
         # Capture equipped state before award
         equipped_before = dict(self.blocker.adhd_buster.get("equipped", {}))
@@ -17514,6 +17607,23 @@ class SleepTab(QtWidgets.QWidget):
                 game_state = getattr(main_window, 'game_state', None)
                 if not game_state:
                     logger.error("GameStateManager not available - cannot award sleep rewards")
+                    # Fallback: award directly so milestones/reward state are not persisted without items.
+                    import uuid
+                    inventory = self.blocker.adhd_buster.setdefault("inventory", [])
+                    equipped_store = self.blocker.adhd_buster.setdefault("equipped", {})
+                    for reward_item in items_earned:
+                        reward_copy = reward_item.copy() if isinstance(reward_item, dict) else {"name": "Unknown"}
+                        if not reward_copy.get("item_id"):
+                            reward_copy["item_id"] = str(uuid.uuid4())
+                        inventory.append(reward_copy)
+                        slot = reward_copy.get("slot")
+                        if slot and not equipped_store.get(slot):
+                            equipped_store[slot] = reward_copy.copy()
+                            auto_equipped_slots.append(slot)
+                    self.blocker.adhd_buster["total_collected"] = (
+                        self.blocker.adhd_buster.get("total_collected", 0) + len(items_earned)
+                    )
+                    equipped_after = equipped_store
                 else:
                     # Use batch award - handles inventory, auto-equip, save, and signals
                     award_result = game_state.award_items_batch(items_earned, coins=0, auto_equip=True, source="sleep_tracking")
@@ -23809,6 +23919,17 @@ class HydrationTab(QtWidgets.QWidget):
                     show_perk_toast(f"🏗️ +1 Water stockpiled ({total_water} total)", "💧", self)
                 except Exception:
                     pass
+
+            # Persist post-save city mutations (water stockpile updates).
+            try:
+                main_window = self.window()
+                game_state = getattr(main_window, 'game_state', None)
+                if game_state:
+                    game_state.force_save()
+                else:
+                    self.blocker.save_config()
+            except Exception:
+                self.blocker.save_config()
         else:
             # Fallback without gamification
             entry = {
@@ -26651,6 +26772,11 @@ class ADHDBusterTab(QtWidgets.QWidget):
         if not GAMIFICATION_AVAILABLE:
             show_warning(self, "Feature Unavailable", "Gamification features are not available.")
             return
+        if not self._game_state:
+            # Merge operations require GameState for atomic inventory updates.
+            # Do not spend coins if we cannot complete the merge transaction.
+            show_warning(self, "Error", "Game State Manager not initialized. Cannot merge.")
+            return
         
         # Re-fetch inventory fresh to avoid stale indices
         inventory = self.blocker.adhd_buster.get("inventory", [])
@@ -27067,9 +27193,9 @@ class ADHDBusterTab(QtWidgets.QWidget):
             else:
                 # Fallback: directly update equipped if no game state manager
                 self.blocker.adhd_buster["equipped"] = result["new_equipped"]
-                self.blocker.save_config()
                 if GAMIFICATION_AVAILABLE:
                     sync_hero_data(self.blocker.adhd_buster)
+                self.blocker.save_config()
             
             # Show result message
             if result["power_gain"] > 0:
@@ -32104,12 +32230,18 @@ class DevTab(QtWidgets.QWidget):
                 )
                 self.status_label.setText(f"Result: {'Success' if result.get('success') else 'Failed'}")
                 xp_awarded = result.get('xp_awarded', 0)
-                if xp_awarded > 0:
-                    gs = get_game_state()
-                    if gs:
+                from gamification import sync_hero_data
+                sync_hero_data(self.blocker.adhd_buster)
+
+                gs = get_game_state()
+                if gs:
+                    if xp_awarded > 0:
                         total_xp = self.blocker.adhd_buster.get('total_xp', 0)
                         level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
                         gs.xp_changed.emit(total_xp, level)
+                    gs.force_save()
+                else:
+                    self.blocker.save_config()
                 main_win = self.window()
                 if hasattr(main_win, 'entitidex_tab'):
                     main_win.entitidex_tab.refresh()
@@ -32149,6 +32281,8 @@ class DevTab(QtWidgets.QWidget):
                                 level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
                                 gs.xp_changed.emit(total_xp, level)
                             gs.force_save()
+                        else:
+                            self.blocker.save_config()
                         main_win = self.window()
                         if hasattr(main_win, 'entitidex_tab'):
                             main_win.entitidex_tab.refresh()
@@ -32272,13 +32406,19 @@ class DevTab(QtWidgets.QWidget):
                 self.status_label.setText(f"Result: {'Success' if result.get('success') else 'Failed'}")
                 # Emit XP signal if XP was awarded
                 xp_awarded = result.get('xp_awarded', 0)
-                if xp_awarded > 0:
-                    from game_state import get_game_state
-                    gs = get_game_state()
-                    if gs:
+                from gamification import sync_hero_data
+                sync_hero_data(self.blocker.adhd_buster)
+
+                from game_state import get_game_state
+                gs = get_game_state()
+                if gs:
+                    if xp_awarded > 0:
                         total_xp = self.blocker.adhd_buster.get('total_xp', 0)
                         level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
                         gs.xp_changed.emit(total_xp, level)
+                    gs.force_save()
+                else:
+                    self.blocker.save_config()
                 # Refresh entitidex tab after bond attempt
                 main_win = self.window()
                 if hasattr(main_win, 'entitidex_tab'):
@@ -32374,13 +32514,19 @@ class DevTab(QtWidgets.QWidget):
                 self.status_label.setText(f"Result: {result['success']}")
                 # Emit XP signal if XP was awarded
                 xp_awarded = result.get('xp_awarded', 0)
-                if xp_awarded > 0:
-                    from game_state import get_game_state
-                    gs = get_game_state()
-                    if gs:
+                from gamification import sync_hero_data
+                sync_hero_data(self.blocker.adhd_buster)
+
+                from game_state import get_game_state
+                gs = get_game_state()
+                if gs:
+                    if xp_awarded > 0:
                         total_xp = self.blocker.adhd_buster.get('total_xp', 0)
                         level = self.blocker.adhd_buster.get('hero', {}).get('level', 1)
                         gs.xp_changed.emit(total_xp, level)
+                    gs.force_save()
+                else:
+                    self.blocker.save_config()
                 # Refresh entitidex tab after bond attempt
                 main_win = self.window()
                 if hasattr(main_win, 'entitidex_tab'):
@@ -32479,6 +32625,9 @@ class DevTab(QtWidgets.QWidget):
                 # Emit XP signal if XP was awarded
                 xp_awarded = result.get('xp_awarded', 0)
                 from game_state import get_game_state
+                from gamification import sync_hero_data
+                sync_hero_data(self.blocker.adhd_buster)
+
                 gs = get_game_state()
                 if gs:
                     if xp_awarded > 0:
@@ -32488,6 +32637,9 @@ class DevTab(QtWidgets.QWidget):
                     # Emit entity collected signal for timeline ring
                     if result.get('success'):
                         gs.notify_entity_collected(entity_id)
+                    gs.force_save()
+                else:
+                    self.blocker.save_config()
                 # Refresh entitidex tab after bond attempt
                 main_win = self.window()
                 if hasattr(main_win, 'entitidex_tab'):
@@ -33488,7 +33640,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     # Signal for cross-thread hotkey toggle (like MouseBrain)
     toggle_requested = QtCore.Signal()
     
-    def __init__(self, username: Optional[str] = None) -> None:
+    def __init__(self, username: Optional[str] = None, defer_tabs: bool = False) -> None:
         super().__init__()
         self.username = username  # Store for user switching
         self.setWindowTitle(f"Personal Liberty v{APP_VERSION}")
@@ -33637,6 +33789,15 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
         self.tabs = QtWidgets.QTabWidget()
         self.tabs.setMovable(True)  # Allow drag-and-drop tab reordering
+
+        # Initialize deferred-tab bookkeeping before any tab-change signals can fire.
+        self._defer_tabs_until_visible = defer_tabs
+        self._deferred_tabs_started = False
+        self._deferred_tabs_queue: List[Dict[str, Any]] = []
+        self._deferred_tab_placeholders: Dict[str, QtWidgets.QWidget] = {}
+        self._deferred_tab_titles: Dict[str, str] = {}
+        self.dev_tab = None
+
         self.tabs.currentChanged.connect(self._on_tab_changed)
         main_layout.addWidget(self.tabs)
 
@@ -33648,81 +33809,11 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Connect session signals to refresh stats and manage ADHD tab state
         self.timer_tab.session_complete.connect(self._on_session_complete)
         self.timer_tab.session_started.connect(self._on_session_started)
-
-        # 2. Hero tab (gamification)
-        if GAMIFICATION_AVAILABLE:
-            self.adhd_tab = ADHDBusterTab(self.blocker, self)
-            self.tabs.addTab(self.adhd_tab, "🦸 Hero")
-
-        # 3. Story tab (story mode, chapters, progress)
-        if GAMIFICATION_AVAILABLE:
-            self.story_tab = StoryTab(self.blocker, self)
-            self.tabs.addTab(self.story_tab, "📜 Story")
-
-        # 4. Eye Protection tab
-        self.eye_tab = EyeProtectionTab(self.blocker)
-        self.tabs.addTab(self.eye_tab, "👁️ Eyes")
-        # Connect signal to show item drop dialog if item won
-        self.eye_tab.routine_completed.connect(self._on_eye_routine_completed)
-
-        # 4. Hydration tracking tab
-        self.hydration_tab = HydrationTab(self.blocker, self)
-        self.tabs.addTab(self.hydration_tab, "💧 Water")
-
-        # 5. Activity tracking tab
-        self.activity_tab = ActivityTab(self.blocker, self)
-        self.tabs.addTab(self.activity_tab, "🏃 Activity")
-
-        # 6. Weight tracking tab
-        self.weight_tab = WeightTab(self.blocker, self)
-        self.tabs.addTab(self.weight_tab, "⚖ Weight")
-
-        # 7. Sleep tracking tab
-        self.sleep_tab = SleepTab(self.blocker, self)
-        self.tabs.addTab(self.sleep_tab, "😴 Sleep")
-
-        # 8. Entitidex tab (entity collection)
-        if GAMIFICATION_AVAILABLE:
-            self.entitidex_tab = EntitidexTab(self.blocker, self)
-            self.tabs.addTab(self.entitidex_tab, "📖 Entitidex")
-
-        # 8.5 City Building tab (gamified city builder)
-        if CITY_AVAILABLE:
-            self.city_tab = CityTab(self.blocker.adhd_buster, self)
-            self.city_tab.request_save.connect(self.blocker.save_config)
-            self.tabs.addTab(self.city_tab, "🏰 City")
-
-        # 9. Productivity/Stats tab
-        self.stats_tab = StatsTab(self.blocker, self)
-        self.tabs.addTab(self.stats_tab, "📊 Productivity")
-
-        # 10. Schedule tab
-        self.schedule_tab = ScheduleTab(self.blocker, self)
-        self.tabs.addTab(self.schedule_tab, "📅 Schedule")
-
-        # 11. Categories tab
-        self.categories_tab = CategoriesTab(self.blocker, self)
-        self.tabs.addTab(self.categories_tab, "📁 Categories")
-
-        # 12. Sites tab
-        self.sites_tab = SitesTab(self.blocker, self)
-        self.tabs.addTab(self.sites_tab, "🌐 Sites")
-
-        # 13. AI Insights tab
-        if AI_AVAILABLE:
-            self.ai_tab = AITab(self.blocker, self)
-            self.tabs.addTab(self.ai_tab, "🧠 AI Insights")
-
-        # 14. Settings tab
-        self.settings_tab = SettingsTab(self.blocker, self)
-        self.tabs.addTab(self.settings_tab, "⚙ Settings")
-        # Connect dev mode enabled signal to dynamically add Dev tab
-        self.settings_tab.dev_mode_enabled.connect(self._on_dev_mode_enabled)
-
-        # 15. Developer tools tab (hidden by default, enabled by tapping version 7 times)
-        self.dev_tab = None
-        if GAMIFICATION_AVAILABLE and self.blocker.dev_mode_enabled:
-            self._add_dev_tab()
+        
+        # Defer non-essential tabs to improve startup responsiveness.
+        self._queue_deferred_tabs()
+        if not self._defer_tabs_until_visible:
+            self._start_deferred_tab_loading()
 
         self.statusBar().showMessage(f"Personal Liberty v{APP_VERSION}")
 
@@ -33771,6 +33862,222 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             QtCore.QTimer.singleShot(900, self._show_onboarding_prompt)
             # Pre-load Entitidex tab in background for instant display when user clicks it
             QtCore.QTimer.singleShot(2000, self._preload_entitidex_tab)
+
+    def _build_deferred_tab_specs(self) -> List[Dict[str, str]]:
+        """Build deferred tab metadata in the required tab order."""
+        specs: List[Dict[str, str]] = []
+
+        if GAMIFICATION_AVAILABLE:
+            specs.append({"attr": "adhd_tab", "title": "🦸 Hero"})
+            specs.append({"attr": "story_tab", "title": "📜 Story"})
+
+        specs.append({"attr": "eye_tab", "title": "👁️ Eyes"})
+        specs.append({"attr": "hydration_tab", "title": "💧 Water"})
+        specs.append({"attr": "activity_tab", "title": "🏃 Activity"})
+        specs.append({"attr": "weight_tab", "title": "⚖ Weight"})
+        specs.append({"attr": "sleep_tab", "title": "😴 Sleep"})
+
+        if GAMIFICATION_AVAILABLE:
+            specs.append({"attr": "entitidex_tab", "title": "📖 Entitidex"})
+
+        if CITY_AVAILABLE:
+            specs.append({"attr": "city_tab", "title": "🏰 City"})
+
+        specs.append({"attr": "stats_tab", "title": "📊 Productivity"})
+        specs.append({"attr": "schedule_tab", "title": "📅 Schedule"})
+        specs.append({"attr": "categories_tab", "title": "📁 Categories"})
+        specs.append({"attr": "sites_tab", "title": "🌐 Sites"})
+
+        if AI_AVAILABLE:
+            specs.append({"attr": "ai_tab", "title": "🧠 AI Insights"})
+
+        specs.append({"attr": "settings_tab", "title": "⚙ Settings"})
+
+        if GAMIFICATION_AVAILABLE and self.blocker.dev_mode_enabled:
+            specs.append({"attr": "dev_tab", "title": "🛠️ Dev"})
+
+        return specs
+
+    def _create_deferred_tab_placeholder(self, tab_title: str) -> QtWidgets.QWidget:
+        """Create a lightweight placeholder shown before a tab is materialized."""
+        placeholder = QtWidgets.QWidget(self)
+        layout = QtWidgets.QVBoxLayout(placeholder)
+        layout.addStretch()
+
+        label = QtWidgets.QLabel(f"Loading {tab_title}...")
+        label.setAlignment(QtCore.Qt.AlignCenter)
+        label.setStyleSheet("color: #6b7280; font-size: 13px;")
+        layout.addWidget(label)
+        layout.addStretch()
+
+        return placeholder
+
+    def _queue_deferred_tabs(self) -> None:
+        """Queue and render placeholders for non-essential tabs."""
+        self._deferred_tabs_queue.clear()
+        self._deferred_tab_placeholders.clear()
+        self._deferred_tab_titles.clear()
+
+        for spec in self._build_deferred_tab_specs():
+            attr = spec["attr"]
+            title = spec["title"]
+            self._deferred_tab_titles[attr] = title
+
+            placeholder = self._create_deferred_tab_placeholder(title)
+            self._deferred_tab_placeholders[attr] = placeholder
+            self.tabs.addTab(placeholder, title)
+
+            spec_with_placeholder = dict(spec)
+            spec_with_placeholder["placeholder"] = placeholder
+            self._deferred_tabs_queue.append(spec_with_placeholder)
+
+    def _start_deferred_tab_loading(self) -> None:
+        """Start incremental background loading of deferred tabs."""
+        if self._deferred_tabs_started:
+            return
+
+        self._deferred_tabs_started = True
+        QtCore.QTimer.singleShot(0, self._load_next_deferred_tab)
+
+    def _load_next_deferred_tab(self) -> None:
+        """Load one deferred tab and schedule the next one."""
+        if not self._deferred_tabs_queue:
+            return
+
+        # Keep startup minimal when window should remain hidden until first restore.
+        if self._defer_tabs_until_visible and not self.isVisible():
+            self._deferred_tabs_started = False
+            return
+
+        spec = self._deferred_tabs_queue.pop(0)
+        tab_attr = spec.get("attr")
+        if tab_attr:
+            try:
+                self._instantiate_deferred_tab(tab_attr, source="background")
+            except Exception as e:
+                logger.warning(f"Failed to load deferred tab {tab_attr}: {e}")
+
+        if self._deferred_tabs_queue:
+            QtCore.QTimer.singleShot(50, self._load_next_deferred_tab)
+
+    def _get_deferred_attr_for_widget(self, widget: Optional[QtWidgets.QWidget]) -> Optional[str]:
+        """Resolve deferred tab attribute name from a placeholder widget."""
+        if widget is None:
+            return None
+
+        placeholders = getattr(self, "_deferred_tab_placeholders", {})
+        for attr, placeholder in placeholders.items():
+            if placeholder is widget:
+                return attr
+        return None
+
+    def _instantiate_deferred_tab(self, tab_attr: str, source: str = "background") -> Optional[QtWidgets.QWidget]:
+        """Instantiate a deferred tab and replace its placeholder."""
+        existing_tab = getattr(self, tab_attr, None)
+        if existing_tab is not None:
+            return existing_tab
+
+        tab: Optional[QtWidgets.QWidget] = None
+        if tab_attr == "adhd_tab":
+            if GAMIFICATION_AVAILABLE:
+                tab = ADHDBusterTab(self.blocker, self)
+        elif tab_attr == "story_tab":
+            if GAMIFICATION_AVAILABLE:
+                tab = StoryTab(self.blocker, self)
+        elif tab_attr == "eye_tab":
+            tab = EyeProtectionTab(self.blocker)
+            tab.routine_completed.connect(self._on_eye_routine_completed)
+        elif tab_attr == "hydration_tab":
+            tab = HydrationTab(self.blocker, self)
+        elif tab_attr == "activity_tab":
+            tab = ActivityTab(self.blocker, self)
+        elif tab_attr == "weight_tab":
+            tab = WeightTab(self.blocker, self)
+        elif tab_attr == "sleep_tab":
+            tab = SleepTab(self.blocker, self)
+        elif tab_attr == "entitidex_tab":
+            if GAMIFICATION_AVAILABLE:
+                tab = EntitidexTab(self.blocker, self)
+        elif tab_attr == "city_tab":
+            if CITY_AVAILABLE:
+                tab = CityTab(self.blocker.adhd_buster, self)
+                tab.request_save.connect(self.blocker.save_config)
+        elif tab_attr == "stats_tab":
+            tab = StatsTab(self.blocker, self)
+        elif tab_attr == "schedule_tab":
+            tab = ScheduleTab(self.blocker, self)
+        elif tab_attr == "categories_tab":
+            tab = CategoriesTab(self.blocker, self)
+        elif tab_attr == "sites_tab":
+            tab = SitesTab(self.blocker, self)
+        elif tab_attr == "ai_tab":
+            if AI_AVAILABLE:
+                tab = AITab(self.blocker, self)
+        elif tab_attr == "settings_tab":
+            tab = SettingsTab(self.blocker, self)
+            tab.dev_mode_enabled.connect(self._on_dev_mode_enabled)
+        elif tab_attr == "dev_tab":
+            if GAMIFICATION_AVAILABLE:
+                tab = DevTab(self.blocker, self)
+
+        if tab is None:
+            return None
+
+        setattr(self, tab_attr, tab)
+
+        placeholder = self._deferred_tab_placeholders.pop(tab_attr, None)
+        if placeholder is not None:
+            index = self.tabs.indexOf(placeholder)
+            if index >= 0:
+                was_enabled = self.tabs.isTabEnabled(index)
+                title = self.tabs.tabText(index) or self._deferred_tab_titles.get(tab_attr, "")
+                self.tabs.removeTab(index)
+                self.tabs.insertTab(index, tab, title)
+                self.tabs.setTabEnabled(index, was_enabled)
+        elif self.tabs.indexOf(tab) < 0:
+            self.tabs.addTab(tab, self._deferred_tab_titles.get(tab_attr, tab_attr))
+
+        logger.debug(f"Loaded deferred tab '{tab_attr}' via {source}")
+        return tab
+
+    def _ensure_deferred_tab_loaded(self, tab_attr: str) -> bool:
+        """Ensure a deferred tab exists, materializing it immediately if needed."""
+        existing_tab = getattr(self, tab_attr, None)
+        if existing_tab is not None:
+            return True
+
+        if getattr(self, "_deferred_tabs_queue", None):
+            self._deferred_tabs_queue = [
+                spec for spec in self._deferred_tabs_queue if spec.get("attr") != tab_attr
+            ]
+
+        return self._instantiate_deferred_tab(tab_attr, source="on-demand") is not None
+
+    def _activate_tab(self, tab_attr: str) -> bool:
+        """Materialize (if needed) and switch to a tab."""
+        if not self._ensure_deferred_tab_loaded(tab_attr):
+            return False
+
+        tab = getattr(self, tab_attr, None)
+        if tab is None:
+            return False
+
+        index = self.tabs.indexOf(tab)
+        if index < 0:
+            return False
+
+        self.tabs.setCurrentIndex(index)
+        return True
+
+    def _load_deferred_tab_for_index(self, index: int) -> None:
+        """Materialize the placeholder tab currently selected by index."""
+        if not hasattr(self, "_deferred_tab_placeholders"):
+            return
+
+        widget = self.tabs.widget(index)
+        tab_attr = self._get_deferred_attr_for_widget(widget)
+        if tab_attr:
+            self._ensure_deferred_tab_loaded(tab_attr)
 
     def _preload_entitidex_tab(self) -> None:
         """Pre-load the Entitidex tab UI in background for instant display."""
@@ -33977,10 +34284,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 from user_manager import UserManager
                 from user_selection_dialog import UserSelectionDialog
                 
-                # Save current user's config first
-                self.blocker.save_config()
-                # Ensure stats are saved to prevent data loss during switch
-                self.blocker.save_stats()
+                # Flush all pending state before switching profiles.
+                self._flush_persistent_state()
                 
                 # Show user selection dialog
                 um = UserManager(APP_DIR)
@@ -34058,9 +34363,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             prev_user = um.get_previous_user()
             
             if prev_user and prev_user != self.username:
-                # Save current user's config first
-                self.blocker.save_config()
-                self.blocker.save_stats()
+                # Flush all pending state before switching profiles.
+                self._flush_persistent_state()
                 
                 # Save current user as previous (swap)
                 current = self.username
@@ -34701,15 +35005,24 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             game_state = getattr(self, 'game_state', None)
             if not game_state:
                 logger.error("GameStateManager not available - cannot award daily reward")
-                return
-            
-            # Use batch award - handles inventory, auto-equip, save, and signals
-            game_state.award_items_batch([item], coins=0, auto_equip=False, source="daily_reward")
-            
-            # Sync changes to active hero
-            if GAMIFICATION_AVAILABLE:
-                sync_hero_data(self.blocker.adhd_buster)
+                # Fallback: award directly so reward date isn't consumed without granting the item.
+                import uuid
+                item_copy = item.copy() if isinstance(item, dict) else {"name": "Unknown"}
+                if not item_copy.get("item_id"):
+                    item_copy["item_id"] = str(uuid.uuid4())
+                self.blocker.adhd_buster.setdefault("inventory", []).append(item_copy)
+                self.blocker.adhd_buster["total_collected"] = self.blocker.adhd_buster.get("total_collected", 0) + 1
+                if GAMIFICATION_AVAILABLE:
+                    sync_hero_data(self.blocker.adhd_buster)
                 self.blocker.save_config()
+            else:
+                # Use batch award - handles inventory, auto-equip, save, and signals
+                game_state.award_items_batch([item], coins=0, auto_equip=False, source="daily_reward")
+                
+                # Sync changes to active hero
+                if GAMIFICATION_AVAILABLE:
+                    sync_hero_data(self.blocker.adhd_buster)
+                    self.blocker.save_config()
             
             # Show reward dialog with ItemRewardDialog for comparison
             current_tier = get_current_tier(self.blocker.adhd_buster)
@@ -35090,6 +35403,10 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self.showNormal()  # Ensures window is not minimized
         self.raise_()
         self.activateWindow()
+
+        if self._defer_tabs_until_visible and not self._deferred_tabs_started:
+            self._start_deferred_tab_loading()
+
         # Notify Entitidex tab to resume animations if it's currently visible
         if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
             self.entitidex_tab.on_window_restored()
@@ -35401,18 +35718,22 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
 
     def _open_adhd_buster(self) -> None:
         """Switch to the ADHD Buster tab."""
-        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'adhd_tab'):
+        if not GAMIFICATION_AVAILABLE:
             show_warning(
                 self, "Unavailable",
                 "ADHD Buster features are not available."
             )
             return
-        
-        # Find the index of the ADHD tab and switch to it
-        tab_index = self.tabs.indexOf(self.adhd_tab)
-        if tab_index >= 0:
-            self.tabs.setCurrentIndex(tab_index)
-            # Refresh the tab and set session state
+
+        if not self._activate_tab("adhd_tab"):
+            show_warning(
+                self, "Unavailable",
+                "ADHD Buster tab is still initializing. Please try again."
+            )
+            return
+
+        # Refresh the tab and set session state
+        if hasattr(self, "adhd_tab"):
             self.adhd_tab.set_session_active(self.timer_tab.timer_running)
             self.adhd_tab.refresh_all()
         
@@ -35490,6 +35811,33 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             "<a href='mailto:lkacz1@gmail.com?subject=Personal Liberty Feedback'>lkacz1@gmail.com</a><br><br>"
             "Built with PySide6 (Qt for Python).")
 
+    def _flush_persistent_state(self) -> None:
+        """Best-effort persistence flush before profile switch or app exit."""
+        config_saved = False
+        gs = getattr(self, "game_state", None)
+        if gs and getattr(gs, "_batch_depth", 0) == 0:
+            try:
+                gs.force_save()
+                config_saved = True
+            except Exception as e:
+                logger.debug(f"GameState flush failed, falling back to config save: {e}")
+
+        if not config_saved:
+            try:
+                # Fallback for cases where GameState is unavailable, mid-batch, or failed.
+                self.blocker.save_config()
+            except Exception as e:
+                logger.debug(f"Config flush fallback failed: {e}")
+
+        try:
+            self.blocker.save_stats()
+        except Exception as e:
+            logger.debug(f"Stats flush failed: {e}")
+
+    def _flush_persistent_state_on_exit(self) -> None:
+        """Best-effort persistence flush before app exit."""
+        self._flush_persistent_state()
+
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         """Handle window close - minimize to tray if enabled, else prompt/close."""
         force_quit = getattr(self, '_force_quit', False)
@@ -35523,6 +35871,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             # Force stop any running session without prompts
             if self.timer_tab.timer_running:
                 self.timer_tab._force_stop_session()
+            self._flush_persistent_state_on_exit()
             event.accept()
             QtWidgets.QApplication.instance().quit()
             return
@@ -35542,6 +35891,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                     dialog = HardcoreChallengeDialog(self)
                     if dialog.exec() == QtWidgets.QDialog.Accepted:
                         self.timer_tab._force_stop_session()
+                        self._flush_persistent_state_on_exit()
                         event.accept()
                         QtWidgets.QApplication.instance().quit()
                     else:
@@ -35559,11 +35909,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             )
             if reply == QtWidgets.QMessageBox.Yes:
                 self.timer_tab._force_stop_session()
+                self._flush_persistent_state_on_exit()
                 event.accept()
                 QtWidgets.QApplication.instance().quit()
             else:
                 event.ignore()
         else:
+            self._flush_persistent_state_on_exit()
             event.accept()
             QtWidgets.QApplication.instance().quit()
 
@@ -35780,9 +36132,12 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         """Add the Developer tools tab (hidden by default)."""
         if not GAMIFICATION_AVAILABLE:
             return
-        if self.dev_tab is not None:
+        if "dev_tab" in self._deferred_tab_placeholders or "dev_tab" in self._deferred_tab_titles:
+            if self._ensure_deferred_tab_loaded("dev_tab"):
+                return
+        elif getattr(self, "dev_tab", None) is not None:
             return  # Already added
-        
+
         self.dev_tab = DevTab(self.blocker, self)
         self.tabs.addTab(self.dev_tab, "🛠️ Dev")
 
@@ -35861,6 +36216,12 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         
         for i in range(self.tabs.count()):
             widget = self.tabs.widget(i)
+
+            # Keep placeholders for always-enabled tabs accessible while still deferred.
+            deferred_attr = self._get_deferred_attr_for_widget(widget)
+            if deferred_attr in {"weight_tab", "activity_tab", "sleep_tab", "hydration_tab", "eye_tab"}:
+                continue
+
             # Keep always-enabled tabs accessible during focus sessions
             if widget in always_enabled_tabs:
                 continue
@@ -35895,10 +36256,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     
     def _go_to_water_tab(self) -> None:
         """Navigate to the Water tab."""
-        if hasattr(self, 'hydration_tab'):
-            index = self.tabs.indexOf(self.hydration_tab)
-            if index >= 0:
-                self.tabs.setCurrentIndex(index)
+        self._activate_tab("hydration_tab")
     
     def _go_to_timer_tab(self) -> None:
         """Navigate to the Timer tab."""
@@ -35909,34 +36267,26 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     
     def _go_to_hero_tab(self) -> None:
         """Navigate to the Hero tab."""
-        if GAMIFICATION_AVAILABLE and hasattr(self, 'adhd_tab'):
-            index = self.tabs.indexOf(self.adhd_tab)
-            if index >= 0:
-                self.tabs.setCurrentIndex(index)
+        if GAMIFICATION_AVAILABLE:
+            self._activate_tab("adhd_tab")
 
     def _go_to_story_tab(self) -> None:
         """Navigate to the Story tab."""
-        if GAMIFICATION_AVAILABLE and hasattr(self, 'story_tab'):
-            index = self.tabs.indexOf(self.story_tab)
-            if index >= 0:
-                self.tabs.setCurrentIndex(index)
+        if GAMIFICATION_AVAILABLE:
+            self._activate_tab("story_tab")
 
     def _go_to_entitidex_tab(self) -> None:
         """Navigate to the Entitidex tab."""
-        if GAMIFICATION_AVAILABLE and hasattr(self, 'entitidex_tab'):
-            index = self.tabs.indexOf(self.entitidex_tab)
-            if index >= 0:
-                self.tabs.setCurrentIndex(index)
+        if GAMIFICATION_AVAILABLE:
+            self._activate_tab("entitidex_tab")
 
     def _go_to_eye_tab(self) -> None:
         """Navigate to the Eye & Breath tab."""
-        if hasattr(self, 'eye_tab'):
-            index = self.tabs.indexOf(self.eye_tab)
-            if index >= 0:
-                self.tabs.setCurrentIndex(index)
+        self._activate_tab("eye_tab")
 
     def _on_tab_changed(self, index: int) -> None:
         """Handle tab changes - refresh data for the newly selected tab."""
+        self._load_deferred_tab_for_index(index)
         widget = self.tabs.widget(index)
         
         # === Critical Performance Fix: Pause Entitidex animations when not visible ===
@@ -36170,19 +36520,12 @@ def _remove_lock_file():
 
 
 def main() -> None:
-    # Handle startup delay for system boot (prevents race conditions)
-    # Check for --startup-delay argument
-    startup_delay = 0
+    # Deprecated compatibility flag: ignore any legacy startup delay request
+    # so existing scheduled tasks start immediately.
     for arg in sys.argv:
         if arg.startswith("--startup-delay="):
-            try:
-                startup_delay = int(arg.split("=")[1])
-            except ValueError:
-                pass
-    
-    if startup_delay > 0:
-        import time
-        time.sleep(startup_delay)
+            logger.info("Ignoring deprecated --startup-delay argument")
+            break
     
     # Set application attributes before creating QApplication
     QtWidgets.QApplication.setHighDpiScaleFactorRoundingPolicy(
@@ -36242,6 +36585,8 @@ def main() -> None:
     # Parse command-line arguments
     # --show flag will show the main window instead of starting in tray
     show_window = "--show" in sys.argv
+    start_minimized = "--minimized" in sys.argv
+    defer_tabs_until_visible = start_minimized or not show_window
     
     # Load heavy modules
     try:
@@ -36316,7 +36661,7 @@ def main() -> None:
     
     # Create main window
     try:
-        window = FocusBlockerWindow(username=selected_user)
+        window = FocusBlockerWindow(username=selected_user, defer_tabs=defer_tabs_until_visible)
     except Exception as e:
         import traceback
         logger.error(f"Failed to create main window: {e}")

@@ -1140,7 +1140,7 @@ class GameStateManager(QtCore.QObject):
     
     def force_save(self) -> None:
         """Force save config and emit saved signal."""
-        self._blocker.save_config()
+        self._sync_and_save()
         self._emit(self.config_saved)
         self._log_change("force_save", "config saved")
 

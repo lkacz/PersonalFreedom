@@ -302,7 +302,8 @@ class TestSleepStreak(unittest.TestCase):
         today = datetime.now()
         entries = [
             {"date": today.strftime("%Y-%m-%d"), "sleep_hours": 8.0},
-            {"date": (today - timedelta(days=3)).strftime("%Y-%m-%d"), "sleep_hours": 8.0},
+            # Use a 4-day gap to ensure this is not just a weekend skip (Fri->Mon).
+            {"date": (today - timedelta(days=4)).strftime("%Y-%m-%d"), "sleep_hours": 8.0},
         ]
         streak = check_sleep_streak(entries)
         self.assertEqual(streak, 1)

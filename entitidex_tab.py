@@ -3320,7 +3320,12 @@ class EntitidexTab(QtWidgets.QWidget):
                 result = open_saved_encounter(self.blocker.adhd_buster, index)
             
             # Persist to disk (critical: encounter was consumed, must save)
-            self.blocker.save_config()
+            main_window = self.window()
+            game_state = getattr(main_window, "game_state", None)
+            if game_state:
+                game_state.force_save()
+            else:
+                self.blocker.save_config()
             
             if result.get("success"):
                 self.refresh()  # Refresh the collection
@@ -3388,7 +3393,12 @@ class EntitidexTab(QtWidgets.QWidget):
         )
         
         # Save config after encounter consumed
-        self.blocker.save_config()
+        main_window = self.window()
+        game_state = getattr(main_window, "game_state", None)
+        if game_state:
+            game_state.force_save()
+        else:
+            self.blocker.save_config()
         
         if not final_result.get("success", True):  # success here means bond success
             # Bond failed
