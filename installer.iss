@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6.0 or later: https://jrsoftware.org/isinfo.php
 
 #define MyAppName "Personal Liberty"
-#define MyAppVersion "6.0.39"
+#define MyAppVersion "6.0.40"
 #define MyAppPublisher "Personal Liberty"
 #define MyAppURL "https://github.com/lkacz/PersonalLiberty"
 #define MyAppExeName "PersonalLiberty.exe"
@@ -82,9 +82,8 @@ Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent runascurrentuser shellexec
 ; Create scheduled task with admin privileges for autostart (Full Mode only)
 ; Use PowerShell to properly handle paths with spaces
-; Added: Startup delay of 5 seconds to prevent race conditions during Windows boot
 ; Added: MultipleInstancesPolicy to prevent duplicate starts
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""$action = New-ScheduledTaskAction -Execute '\""""{app}\{#MyAppExeName}\""""' -Argument '--minimized --startup-delay=5'; $trigger = New-ScheduledTaskTrigger -AtLogon; $trigger.Delay = 'PT10S'; $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew; Register-ScheduledTask -TaskName 'PersonalLibertyAutostart' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"""; Tasks: autostart; Flags: runhidden
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -Command ""$action = New-ScheduledTaskAction -Execute '\""""{app}\{#MyAppExeName}\""""' -Argument '--minimized'; $trigger = New-ScheduledTaskTrigger -AtLogon; $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -RunLevel Highest; $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -MultipleInstances IgnoreNew; Register-ScheduledTask -TaskName 'PersonalLibertyAutostart' -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force"""; Tasks: autostart; Flags: runhidden
 
 [Registry]
 ; Note: We use Task Scheduler instead of registry for admin autostart

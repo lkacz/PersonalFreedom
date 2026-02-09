@@ -228,8 +228,8 @@ class TestActivityStreak:
         entries = [
             {"date": today.strftime("%Y-%m-%d"), "duration": 30},
             {"date": (today - timedelta(days=1)).strftime("%Y-%m-%d"), "duration": 30},
-            # Gap on day 2
-            {"date": (today - timedelta(days=3)).strftime("%Y-%m-%d"), "duration": 30},
+            # Use day-4 to create a true break that is not weekend tolerance.
+            {"date": (today - timedelta(days=4)).strftime("%Y-%m-%d"), "duration": 30},
         ]
         assert check_activity_streak(entries) == 2
 

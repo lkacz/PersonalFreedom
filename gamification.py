@@ -17111,11 +17111,13 @@ def get_bookmark_entity_status(adhd_buster: dict) -> dict:
             - has_normal: bool - Has normal Living Bookmark Finn
             - has_exceptional: bool - Has exceptional Giving Bookmark Finn
             - max_free_slots: int - Maximum free save slots
+            - current_saved: int - Current number of saved encounters
             - extra_slot_cost: callable(slot_index) -> int - Cost for extra slots
     """
     manager = get_entitidex_manager(adhd_buster)
     has_normal = manager.progress.is_collected(BOOKMARK_ENTITY_ID)
     has_exceptional = manager.progress.is_exceptional(BOOKMARK_ENTITY_ID)
+    current_saved = manager.progress.get_saved_encounter_count()
     
     # Calculate max free slots and cost function
     if has_exceptional:
@@ -17139,6 +17141,7 @@ def get_bookmark_entity_status(adhd_buster: dict) -> dict:
         "has_normal": has_normal,
         "has_exceptional": has_exceptional,
         "max_free_slots": max_free_slots,
+        "current_saved": current_saved,
         "extra_slot_cost": extra_slot_cost,
         "entity_id": BOOKMARK_ENTITY_ID,
     }
