@@ -297,7 +297,7 @@ class EnhancedLevelUpDialog(StyledDialog):
         msg_label.setStyleSheet(f"""
             font-size: {msg_size};
             font-weight: bold;
-            color: {self.MUTED_TEXT};
+            color: {self.TEXT_COLOR};
             padding: 8px;
             background: transparent;
         """)
