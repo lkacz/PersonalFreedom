@@ -4,6 +4,10 @@ import pytest
 from datetime import datetime, timedelta
 from unittest.mock import patch
 import random
+import json
+import os
+import subprocess
+import sys
 
 from gamification import (
     # XP/Level System
@@ -100,6 +104,24 @@ class TestXPLevelSystem:
         level, xp_in, xp_needed, progress = get_level_from_xp(mid_xp)
         assert level == 5
         assert 40 < progress < 60  # Approximately 50%
+
+    def test_get_level_from_xp_invalid_input_is_safe(self):
+        """Invalid inputs should be treated as zero XP."""
+        for value in (None, "bad", [], {}):
+            level, xp_in, xp_needed, progress = get_level_from_xp(value)
+            assert level == 1
+            assert xp_in == 0
+            assert xp_needed > 0
+            assert progress == 0.0
+
+    def test_get_level_from_xp_level_cap_has_valid_progress_values(self):
+        """At cap, XP progress values should stay finite and non-zero-target."""
+        max_level_xp = get_xp_for_level(999)
+        level, xp_in, xp_needed, progress = get_level_from_xp(max_level_xp + 1_000_000)
+        assert level == 999
+        assert xp_needed > 0
+        assert xp_in == xp_needed
+        assert progress == 100.0
 
     def test_get_level_title_progression(self):
         """Level titles unlock correctly."""
@@ -353,6 +375,24 @@ class TestChallenges:
         challenges_2 = generate_daily_challenges("2024-01-15")
         
         assert [c["template_id"] for c in challenges_1] == [c["template_id"] for c in challenges_2]
+
+    def test_generate_daily_challenges_stable_across_hash_seeds(self):
+        """Challenge generation should not depend on PYTHONHASHSEED."""
+        code = (
+            "import json; "
+            "from gamification import generate_daily_challenges; "
+            "print(json.dumps([c['template_id'] for c in generate_daily_challenges('2024-01-15')]))"
+        )
+
+        env_a = os.environ.copy()
+        env_a["PYTHONHASHSEED"] = "1"
+        out_a = subprocess.check_output([sys.executable, "-c", code], env=env_a, text=True).strip()
+
+        env_b = os.environ.copy()
+        env_b["PYTHONHASHSEED"] = "999"
+        out_b = subprocess.check_output([sys.executable, "-c", code], env=env_b, text=True).strip()
+
+        assert json.loads(out_a) == json.loads(out_b)
 
     def test_generate_daily_challenges_different_days(self):
         """Different dates may generate different challenges."""

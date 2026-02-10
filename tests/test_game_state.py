@@ -168,6 +168,35 @@ class TestGameStateManager:
         mock_blocker.adhd_buster["coins"] = 500
         assert game_state.get_current_coins() == 500
 
+    def test_add_xp_uses_total_xp_for_levelup_detection(self, game_state, mock_blocker):
+        """Level-up detection should use total_xp, even if hero.level is stale."""
+        # total_xp is just below level 2 threshold for the current XP curve.
+        mock_blocker.adhd_buster["total_xp"] = 250
+        # Stale/corrupt hero level should not suppress level-up detection.
+        mock_blocker.adhd_buster["hero"] = {"xp": 999, "level": 99}
+
+        new_xp, new_level, leveled_up = game_state.add_xp(100)
+
+        assert leveled_up is True
+        assert new_level >= 2
+        assert mock_blocker.adhd_buster["hero"]["level"] == new_level
+
+    def test_notify_water_changed_uses_activity_date_and_glass_totals(self, game_state, mock_blocker):
+        """Water signal payload should reflect activity-day glass totals."""
+        mock_blocker.water_entries = [
+            {"date": "2026-01-01", "glasses": 2},
+            {"date": "2026-01-01", "glasses": 3},
+            {"date": "2025-12-31", "glasses": 10},
+        ]
+        captured = []
+        game_state.water_changed.connect(lambda value: captured.append(value))
+
+        with patch("app_utils.get_activity_date", return_value="2026-01-01"):
+            game_state.notify_water_changed()
+
+        assert captured
+        assert captured[-1] == 5
+
 
 class TestGameStateSingleton:
     """Test the singleton pattern for game state."""

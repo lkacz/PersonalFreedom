@@ -1938,20 +1938,9 @@ class LuckyMergeDialog(QtWidgets.QDialog):
                 "result_item": result_item,
                 "base_rarity": RARITY_ORDER[lowest_idx],
                 "final_rarity": final_rarity,
-                "scrap_earned": scrap_earned
+                "scrap_earned": scrap_earned,
+                "tier_upgraded": bool(self.tier_upgrade_enabled),
             }
-            
-            # Apply tier upgrade if enabled
-            if self.tier_upgrade_enabled:
-                current_rarity = result_item.get("rarity", "Common")
-                try:
-                    current_idx = RARITY_ORDER.index(current_rarity)
-                    new_idx = min(current_idx + 1, len(RARITY_ORDER) - 1)
-                    result_item["rarity"] = RARITY_ORDER[new_idx]
-                    result_item["power"] = RARITY_POWER.get(result_item["rarity"], result_item.get("power", 10))
-                    self.merge_result["tier_upgraded"] = True
-                except (ValueError, IndexError):
-                    pass
         else:
             self.merge_result = {
                 "success": False,
@@ -2719,7 +2708,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         extra_msgs.append(f"Roll: {roll_raw*100:.1f}% (needed < {needed_raw*100:.1f}%{breakdown_text})")
         
         if tier_upgraded:
-            extra_msgs.append("⬆️ Tier Upgraded! (+50 🪙)")
+            extra_msgs.append("⬆️ Tier Upgrade enabled (+50 🪙)")
         
         # Show scrap earned if any
         if scrap_earned > 0:
@@ -3168,28 +3157,28 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         if self.near_miss_claimed and can_afford_claim:
             # Deduct coins and generate the item
             self.player_coins -= self.claim_cost
-            # Generate the item that would have been created
-            from gamification import generate_item
-            claimed_item = generate_item(
-                rarity=self.result_rarity,
-                story_id=self.items[0].get("story_theme") if self.items else None
-            )
-            # Apply tier upgrade if it was enabled
+            # Generate at final claim rarity directly so name/rarity/power stay coherent.
+            claim_rarity = self.result_rarity
             if self.tier_upgrade_enabled:
                 try:
-                    current_idx = RARITY_ORDER.index(claimed_item.get("rarity", "Common"))
+                    current_idx = RARITY_ORDER.index(claim_rarity)
                     if current_idx < len(RARITY_ORDER) - 1:
-                        new_rarity = RARITY_ORDER[current_idx + 1]
-                        claimed_item["rarity"] = new_rarity
-                        from gamification import RARITY_POWER
-                        claimed_item["power"] = RARITY_POWER.get(new_rarity, claimed_item.get("power", 10))
+                        claim_rarity = RARITY_ORDER[current_idx + 1]
                 except (ValueError, IndexError):
-                    pass
+                    claim_rarity = self.result_rarity
+
+            from gamification import generate_item
+            claimed_item = generate_item(
+                rarity=claim_rarity,
+                story_id=self.items[0].get("story_theme") if self.items else None
+            )
             
             # Update merge_result to show success
             self.merge_result["success"] = True
             self.merge_result["result_item"] = claimed_item
             self.merge_result["claimed_with_coins"] = True
+            self.merge_result["final_rarity"] = claimed_item.get("rarity", claim_rarity)
+            self.merge_result["tier_upgraded"] = bool(self.tier_upgrade_enabled)
             
             # Show success dialog for the claimed item
             self._show_success_dialog()

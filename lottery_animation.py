@@ -4365,19 +4365,23 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
     BASE_WINDOW = [5, 15, 60, 15, 5]
     
     def __init__(self, effective_minutes: float, pre_rolled_rarity: str,
-                 story_id: str = None, parent: Optional[QtWidgets.QWidget] = None):
+                 story_id: str = None, parent: Optional[QtWidgets.QWidget] = None,
+                 item: Optional[dict] = None):
         """
         Args:
             effective_minutes: Calculated effective minutes for display
             pre_rolled_rarity: The rarity that was already determined (from gamification.py)
             story_id: Story theme for display
             parent: Parent widget
+            item: Optional pre-generated reward item to reveal directly
         """
         super().__init__(parent)
         self.effective_minutes = effective_minutes
-        self.rolled_tier = pre_rolled_rarity
+        self.item = item if isinstance(item, dict) else None
+        self.rolled_tier = (self.item or {}).get("rarity", pre_rolled_rarity or "Common")
+        if self.rolled_tier not in self.TIERS:
+            self.rolled_tier = pre_rolled_rarity if pre_rolled_rarity in self.TIERS else "Common"
         self.story_id = story_id
-        self.item = None  # Item will be generated after showing animation
         
         # Calculate tier distribution for display
         self.tier_weights = self._calculate_tier_weights()
@@ -4605,12 +4609,13 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         self.result_label.setText(f"✨ Rolled: {self.rolled_tier}!")
         self.result_label.setStyleSheet(f"color: {color}; font-size: 14px; font-weight: bold;")
         
-        # Generate item
-        try:
-            from gamification import generate_item
-            self.item = generate_item(rarity=self.rolled_tier, story_id=self.story_id)
-        except (ImportError, Exception):
-            self.item = {"name": f"{self.rolled_tier} Item", "rarity": self.rolled_tier, "power": 10}
+        # Generate fallback item only when one wasn't pre-provided.
+        if not self.item:
+            try:
+                from gamification import generate_item
+                self.item = generate_item(rarity=self.rolled_tier, story_id=self.story_id)
+            except (ImportError, Exception):
+                self.item = {"name": f"{self.rolled_tier} Item", "rarity": self.rolled_tier, "power": 10}
         
         # Show item name
         item_name = self.item.get("name", "Unknown Item")

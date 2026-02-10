@@ -4119,6 +4119,16 @@ class TimerTab(QtWidgets.QWidget):
         
         # Use award_items_batch for atomic rewards (handles add + auto-equip)
         # This properly deep-copies items and uses the state manager throughout
+        old_level = 1
+        try:
+            from gamification import get_level_from_xp
+            old_total_xp = self.blocker.adhd_buster.get("total_xp", 0)
+            old_total_xp = int(old_total_xp) if old_total_xp is not None else 0
+            old_total_xp = max(0, old_total_xp)
+            old_level, _, _, _ = get_level_from_xp(old_total_xp)
+        except Exception:
+            old_level = int(self.blocker.adhd_buster.get("hero", {}).get("level", 1) or 1)
+
         game_state.begin_batch()
         try:
             # Award item with auto-equip to empty slots
@@ -4130,6 +4140,7 @@ class TimerTab(QtWidgets.QWidget):
                 "new_xp": xp_result_tuple[0],
                 "new_level": xp_result_tuple[1],
                 "leveled_up": xp_result_tuple[2],
+                "old_level": old_level,
             }
             leveled_up = xp_result["leveled_up"]
             
@@ -4158,7 +4169,7 @@ class TimerTab(QtWidgets.QWidget):
 
         # Show level-up celebration first (most exciting!)
         if leveled_up:
-            old_level = xp_result.get("old_level", 1)
+            old_level = int(xp_result.get("old_level", 1) or 1)
             new_level = xp_result.get("new_level", 1)
             
             # Check for building slot unlocks
@@ -4852,30 +4863,48 @@ class TimerTab(QtWidgets.QWidget):
     def _show_inventory_dialog(self) -> None:
         """Show inventory management dialog."""
         main_window = self.window()
-        if hasattr(main_window, 'adhd_tab'):
-            # Switch to ADHD Buster tab
-            if hasattr(main_window, 'tabs'):
-                tab_index = main_window.tabs.indexOf(main_window.adhd_tab)
-                if tab_index >= 0:
-                    main_window.tabs.setCurrentIndex(tab_index)
-            
-            # Open inventory section if available
-            if hasattr(main_window.adhd_tab, 'inventory_section'):
-                main_window.adhd_tab.inventory_section.show()
+        if not main_window:
+            return
+
+        # Ensure the Hero tab exists even when deferred/lazy-loaded.
+        if hasattr(main_window, "_activate_tab"):
+            if not main_window._activate_tab("adhd_tab"):
+                return
+        elif hasattr(main_window, "adhd_tab") and hasattr(main_window, "tabs"):
+            tab_index = main_window.tabs.indexOf(main_window.adhd_tab)
+            if tab_index >= 0:
+                main_window.tabs.setCurrentIndex(tab_index)
+            else:
+                return
+        else:
+            return
+
+        # Open inventory section if available
+        if hasattr(main_window, 'adhd_tab') and hasattr(main_window.adhd_tab, 'inventory_section'):
+            main_window.adhd_tab.inventory_section.show()
                 
     def _show_stats_dialog(self) -> None:
         """Show stats/character dialog."""
         main_window = self.window()
-        if hasattr(main_window, 'adhd_tab'):
-            # Switch to ADHD Buster tab
-            if hasattr(main_window, 'tabs'):
-                tab_index = main_window.tabs.indexOf(main_window.adhd_tab)
-                if tab_index >= 0:
-                    main_window.tabs.setCurrentIndex(tab_index)
-            
-            # Open character section if available
-            if hasattr(main_window.adhd_tab, 'character_section'):
-                main_window.adhd_tab.character_section.show()
+        if not main_window:
+            return
+
+        # Ensure the Hero tab exists even when deferred/lazy-loaded.
+        if hasattr(main_window, "_activate_tab"):
+            if not main_window._activate_tab("adhd_tab"):
+                return
+        elif hasattr(main_window, "adhd_tab") and hasattr(main_window, "tabs"):
+            tab_index = main_window.tabs.indexOf(main_window.adhd_tab)
+            if tab_index >= 0:
+                main_window.tabs.setCurrentIndex(tab_index)
+            else:
+                return
+        else:
+            return
+
+        # Open character section if available
+        if hasattr(main_window, 'adhd_tab') and hasattr(main_window.adhd_tab, 'character_section'):
+            main_window.adhd_tab.character_section.show()
 
     def _show_desktop_notification(self, title: str, message: str) -> None:
         """Show a Windows toast notification via system tray."""
@@ -13959,26 +13988,16 @@ class ActivityTab(QtWidgets.QWidget):
         
         # Show lottery animation if we got a reward
         if rarity and effective_mins >= 8:
-            from lottery_animation import MergeTwoStageLotteryDialog
-            
-            # Get entity perk contributors for display during lottery
-            entity_perk_contributors = []
-            try:
-                from gamification import get_entity_luck_perk_contributors
-                luck_perks = get_entity_luck_perk_contributors(self.blocker.adhd_buster)
-                entity_perk_contributors = luck_perks.get("contributors", [])
-            except Exception:
-                pass
-            
-            # Use lottery animation for activity rewards (guaranteed success)
-            lottery = MergeTwoStageLotteryDialog(
-                success_roll=-1,  # Auto-generate (any roll succeeds with 100% threshold)
-                success_threshold=1.0,  # 100% success rate
-                tier_upgrade_enabled=False,
-                base_rarity=rarity,
-                title="🏃 Activity Reward!",  # Custom title instead of "Lucky Merge"
+            from lottery_animation import ActivityLotteryDialog
+
+            # Reveal the exact pre-generated item to keep animation and awarded result aligned.
+            pre_awarded_item = rewards.get("reward") if isinstance(rewards, dict) else None
+            lottery = ActivityLotteryDialog(
+                effective_minutes=effective_mins,
+                pre_rolled_rarity=rarity,
+                story_id=self.blocker.adhd_buster.get("active_story", "warrior"),
                 parent=self,
-                entity_perk_contributors=entity_perk_contributors
+                item=pre_awarded_item,
             )
             lottery.exec()
             lottery.hide()  # Explicitly hide before deletion
@@ -23780,10 +23799,14 @@ class HydrationTab(QtWidgets.QWidget):
         today = get_activity_date(now)
         
         # Count today's glasses (before this one)
-        glasses_today = sum(
-            1 for e in self.blocker.water_entries 
-            if e.get("date") == today
-        )
+        glasses_today = 0
+        for entry in self.blocker.water_entries:
+            if not isinstance(entry, dict) or entry.get("date") != today:
+                continue
+            try:
+                glasses_today += max(0, int(entry.get("glasses", 1)))
+            except (TypeError, ValueError):
+                glasses_today += 1
         glass_number = glasses_today + 1  # This glass
         
         # Show animated lottery dialog
@@ -24001,8 +24024,16 @@ class HydrationTab(QtWidgets.QWidget):
         daily_cap = get_hydration_daily_cap(self.blocker.adhd_buster) if get_hydration_daily_cap else HYDRATION_MAX_DAILY_GLASSES
         
         # Get today's entries
-        today_entries = [e for e in self.blocker.water_entries if e.get("date") == today]
-        glasses_today = len(today_entries)
+        today_entries = [
+            e for e in self.blocker.water_entries
+            if isinstance(e, dict) and e.get("date") == today
+        ]
+        glasses_today = 0
+        for entry in today_entries:
+            try:
+                glasses_today += max(0, int(entry.get("glasses", 1)))
+            except (TypeError, ValueError):
+                glasses_today += 1
         
         # Update progress display (use perk-modified cap)
         cap_label = f"{glasses_today} / {daily_cap} glasses"
@@ -24045,7 +24076,7 @@ class HydrationTab(QtWidgets.QWidget):
         
         # Update stats
         if get_hydration_stats:
-            stats = get_hydration_stats(self.blocker.water_entries)
+            stats = get_hydration_stats(self.blocker.water_entries, daily_goal=daily_cap)
             streak = stats.get("current_streak", 0)
             streak_emoji = "🔥" if streak >= 3 else "📊"
             
@@ -30106,8 +30137,15 @@ class DailyTimelineWidget(QtWidgets.QFrame):
             from app_utils import get_activity_date
             activity_date = get_activity_date()
             water_entries = getattr(self.blocker, 'water_entries', [])
-            today_water = sum(1 for e in water_entries if e.get('date') == activity_date)
-            daily_cap = 8
+            today_water = 0
+            for entry in water_entries:
+                if not isinstance(entry, dict) or entry.get('date') != activity_date:
+                    continue
+                try:
+                    today_water += max(0, int(entry.get("glasses", 1)))
+                except (TypeError, ValueError):
+                    today_water += 1
+            daily_cap = HYDRATION_MAX_DAILY_GLASSES
             if hasattr(self.blocker, 'adhd_buster') and self.blocker.adhd_buster:
                 try:
                     from gamification import get_hydration_daily_cap
@@ -31705,6 +31743,49 @@ class DevTab(QtWidgets.QWidget):
         
         layout.addWidget(xp_group)
 
+        # Level-Up QA Section
+        levelup_group = QtWidgets.QGroupBox("🧪 Level-Up QA")
+        levelup_layout = QtWidgets.QVBoxLayout(levelup_group)
+        levelup_layout.setSpacing(8)
+
+        self.level_diag_label = QtWidgets.QLabel("Checking XP/level integrity...")
+        self.level_diag_label.setWordWrap(True)
+        self.level_diag_label.setStyleSheet(
+            "font-family: Consolas, monospace; font-size: 11px; color: #9e9e9e; padding: 6px;"
+        )
+        levelup_layout.addWidget(self.level_diag_label)
+
+        level_btn_row1 = QtWidgets.QHBoxLayout()
+        check_btn = QtWidgets.QPushButton("🔍 Check XP/Level Integrity")
+        check_btn.setStyleSheet("background-color: #607d8b; color: white; font-weight: bold; padding: 8px;")
+        check_btn.clicked.connect(self._check_xp_level_integrity)
+        level_btn_row1.addWidget(check_btn)
+
+        repair_btn = QtWidgets.QPushButton("🛠 Fix XP/Level Sync")
+        repair_btn.setStyleSheet("background-color: #ff9800; color: black; font-weight: bold; padding: 8px;")
+        repair_btn.clicked.connect(self._repair_xp_level_sync)
+        level_btn_row1.addWidget(repair_btn)
+        levelup_layout.addLayout(level_btn_row1)
+
+        level_btn_row2 = QtWidgets.QHBoxLayout()
+        next_level_btn = QtWidgets.QPushButton("⬆️ XP to Next Level")
+        next_level_btn.setStyleSheet("background-color: #4caf50; color: white; font-weight: bold; padding: 8px;")
+        next_level_btn.clicked.connect(self._grant_xp_to_next_level)
+        level_btn_row2.addWidget(next_level_btn)
+
+        levelup_test_btn = QtWidgets.QPushButton("🎉 Next Level + Dialog")
+        levelup_test_btn.setStyleSheet("background-color: #8e24aa; color: white; font-weight: bold; padding: 8px;")
+        levelup_test_btn.clicked.connect(self._test_level_up_dialog)
+        level_btn_row2.addWidget(levelup_test_btn)
+        levelup_layout.addLayout(level_btn_row2)
+
+        preview_btn = QtWidgets.QPushButton("🎬 Preview Dialog (No XP Change)")
+        preview_btn.setStyleSheet("background-color: #3949ab; color: white; font-weight: bold; padding: 8px;")
+        preview_btn.clicked.connect(self._preview_level_up_dialog)
+        levelup_layout.addWidget(preview_btn)
+
+        layout.addWidget(levelup_group)
+
         # Cooldown Reset Section
         cooldown_group = QtWidgets.QGroupBox("⏱️ Reset Cooldowns")
         cooldown_layout = QtWidgets.QHBoxLayout(cooldown_group)
@@ -32020,6 +32101,7 @@ class DevTab(QtWidgets.QWidget):
         self.status_label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(self.status_label)
 
+        QtCore.QTimer.singleShot(50, self._refresh_level_diag)
         layout.addStretch()
 
     def _generate_item(self, rarity: str) -> None:
@@ -32071,8 +32153,207 @@ class DevTab(QtWidgets.QWidget):
             else:
                 self.status_label.setText(f"✅ Added {amount} XP! Level {new_level}, {new_xp} XP")
             self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+            self._refresh_level_diag()
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _get_level_xp_snapshot(self) -> Optional[Dict[str, Any]]:
+        """Collect current XP/level state and derived values for diagnostics."""
+        try:
+            from gamification import get_level_from_xp, get_xp_for_level
+        except Exception:
+            return None
+
+        hero_data = self.blocker.adhd_buster.get("hero", {})
+        if not isinstance(hero_data, dict):
+            hero_data = {}
+
+        try:
+            total_xp = int(self.blocker.adhd_buster.get("total_xp", 0) or 0)
+        except (TypeError, ValueError):
+            total_xp = 0
+        total_xp = max(0, total_xp)
+
+        try:
+            hero_level = int(hero_data.get("level", 1) or 1)
+        except (TypeError, ValueError):
+            hero_level = 1
+        hero_level = max(1, hero_level)
+
+        try:
+            hero_xp = int(hero_data.get("xp", 0) or 0)
+        except (TypeError, ValueError):
+            hero_xp = 0
+        hero_xp = max(0, hero_xp)
+
+        calc_level, calc_xp_in_level, xp_needed, progress = get_level_from_xp(total_xp)
+        next_level_total = get_xp_for_level(calc_level + 1)
+        xp_to_next = max(0, next_level_total - total_xp)
+        desync = (hero_level != calc_level) or (hero_xp != calc_xp_in_level)
+
+        return {
+            "total_xp": total_xp,
+            "hero_level": hero_level,
+            "hero_xp": hero_xp,
+            "calc_level": calc_level,
+            "calc_xp_in_level": calc_xp_in_level,
+            "xp_needed": xp_needed,
+            "progress": progress,
+            "xp_to_next": xp_to_next,
+            "desync": desync,
+        }
+
+    def _refresh_level_diag(self) -> None:
+        """Refresh the XP/level diagnostics panel in Dev Tools."""
+        if not hasattr(self, "level_diag_label"):
+            return
+
+        snap = self._get_level_xp_snapshot()
+        if not snap:
+            self.level_diag_label.setText("XP diagnostics unavailable (gamification helpers missing).")
+            self.level_diag_label.setStyleSheet(
+                "font-family: Consolas, monospace; font-size: 11px; color: #f44336; padding: 6px;"
+            )
+            return
+
+        status = "DESYNC" if snap["desync"] else "OK"
+        status_color = "#f44336" if snap["desync"] else "#4caf50"
+        self.level_diag_label.setStyleSheet(
+            f"font-family: Consolas, monospace; font-size: 11px; color: {status_color}; padding: 6px;"
+        )
+        self.level_diag_label.setText(
+            "Total XP: {total_xp:,}\n"
+            "Calculated: level {calc_level} | xp_in_level {calc_xp_in_level}/{xp_needed} ({progress:.1f}%)\n"
+            "Hero fields: level {hero_level} | xp {hero_xp}\n"
+            "XP to next level: {xp_to_next}\n"
+            "Integrity: {status}".format(status=status, **snap)
+        )
+
+    def _check_xp_level_integrity(self) -> None:
+        """Run XP/level integrity check and show result."""
+        self._refresh_level_diag()
+        snap = self._get_level_xp_snapshot()
+        if not snap:
+            self.status_label.setText("❌ Could not run XP integrity check")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+            return
+
+        if snap["desync"]:
+            self.status_label.setText(
+                f"⚠️ XP/Level mismatch detected: hero L{snap['hero_level']} vs calculated L{snap['calc_level']}"
+            )
+            self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
+        else:
+            self.status_label.setText(f"✅ XP/Level integrity OK at level {snap['calc_level']}")
+            self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+
+    def _repair_xp_level_sync(self) -> None:
+        """Repair hero level/xp fields from total_xp (source of truth)."""
+        try:
+            snap = self._get_level_xp_snapshot()
+            if not snap:
+                self.status_label.setText("❌ XP repair unavailable (missing gamification helpers)")
+                self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+                return
+
+            hero = self.blocker.adhd_buster.get("hero", {})
+            if not isinstance(hero, dict):
+                hero = {}
+
+            old_level = int(hero.get("level", 1) or 1)
+            hero["level"] = snap["calc_level"]
+            hero["xp"] = snap["calc_xp_in_level"]
+            self.blocker.adhd_buster["hero"] = hero
+            self.blocker.adhd_buster["total_xp"] = snap["total_xp"]
+
+            gs = get_game_state()
+            if gs:
+                gs.xp_changed.emit(snap["calc_xp_in_level"], snap["calc_level"])
+                gs.force_save()
+            else:
+                self.blocker.save_config()
+
+            self._refresh_level_diag()
+            self.status_label.setText(
+                f"🛠 Repaired XP sync: level {old_level} → {snap['calc_level']}, xp_in_level={snap['calc_xp_in_level']}"
+            )
+            self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+        except Exception as e:
+            self.status_label.setText(f"❌ Error repairing XP sync: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _grant_xp_to_next_level(self, show_dialog: bool = False) -> None:
+        """Grant just enough XP to reach the next level."""
+        try:
+            gs = get_game_state()
+            if not gs:
+                self.status_label.setText("❌ Game state not available")
+                self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+                return
+
+            snap = self._get_level_xp_snapshot()
+            if not snap:
+                self.status_label.setText("❌ XP helper functions unavailable")
+                self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+                return
+
+            old_level = snap["calc_level"]
+            xp_amount = max(1, int(snap["xp_to_next"]))
+            new_xp, new_level, leveled_up = gs.add_xp(xp_amount)
+
+            if leveled_up:
+                self.status_label.setText(
+                    f"🎉 Added {xp_amount} XP → level {old_level} → {new_level} (xp_in_level={new_xp})"
+                )
+                self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+                if show_dialog:
+                    self._show_level_up_test_dialog(old_level, new_level, f"+{xp_amount} XP to next")
+            else:
+                self.status_label.setText(
+                    f"⚠️ Added {xp_amount} XP but no level-up occurred (now L{new_level}, xp_in_level={new_xp})"
+                )
+                self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
+
+            self._refresh_level_diag()
+        except Exception as e:
+            self.status_label.setText(f"❌ Error granting XP: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _test_level_up_dialog(self) -> None:
+        """Grant XP to next level and open level-up dialog if level-up occurs."""
+        self._grant_xp_to_next_level(show_dialog=True)
+
+    def _preview_level_up_dialog(self) -> None:
+        """Open a synthetic +1 level dialog without mutating XP."""
+        snap = self._get_level_xp_snapshot()
+        if not snap:
+            self.status_label.setText("❌ Could not preview dialog (XP snapshot unavailable)")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+            return
+        self._show_level_up_test_dialog(snap["calc_level"], snap["calc_level"] + 1, "Preview only (no XP change)")
+
+    def _show_level_up_test_dialog(self, old_level: int, new_level: int, source: str = "Dev Tool") -> None:
+        """Show EnhancedLevelUpDialog for validation/testing."""
+        try:
+            stats = {
+                "total_power": self.blocker.adhd_buster.get("total_power", 0),
+                "total_xp": self.blocker.adhd_buster.get("total_xp", 0),
+                "total_coins": self.blocker.adhd_buster.get("coins", 0),
+                "productivity_score": self.blocker.adhd_buster.get("productivity_score", 0),
+                "total_focus_minutes": self.blocker.adhd_buster.get("total_focus_time", 0) // 60,
+                "items_collected": len(self.blocker.adhd_buster.get("inventory", [])),
+                "unlocks": [f"Dev Tool Trigger: {source}"],
+                "rewards": None,
+            }
+            dialog = EnhancedLevelUpDialog(old_level, new_level, stats, fullscreen=False, parent=self.window())
+            dialog.exec()
+            dialog.hide()
+            dialog.deleteLater()
+            self.status_label.setText(f"✅ Level-up dialog shown (L{old_level} → L{new_level})")
+            self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+        except Exception as e:
+            self.status_label.setText(f"❌ Error opening level-up dialog: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
 
     def _get_coin_data(self) -> Optional[Dict[str, Any]]:

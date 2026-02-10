@@ -682,8 +682,24 @@ class GameStateManager(QtCore.QObject):
         
         hero = self.adhd_buster.get("hero", {})
 
-        # --- Update Total XP (Source of Truth for XP Ring) ---
-        current_total = self.adhd_buster.get("total_xp", 0)
+        # --- Total XP is the source of truth ---
+        current_total_raw = self.adhd_buster.get("total_xp", 0)
+        try:
+            current_total = int(current_total_raw)
+        except (TypeError, ValueError):
+            current_total = 0
+        current_total = max(0, current_total)
+
+        # Compute old level from total_xp, not hero["level"] (hero level can be stale).
+        old_level_from_total = int(hero.get("level", 1) or 1)
+        try:
+            from gamification import get_level_from_xp
+            old_level_from_total, _, _, _ = get_level_from_xp(current_total)
+        except ImportError:
+            pass
+        except Exception:
+            pass
+
         new_total_xp = current_total + amount
         # Cap at 2B to prevent overflow
         new_total_xp = min(new_total_xp, 2_000_000_000)
@@ -695,8 +711,7 @@ class GameStateManager(QtCore.QObject):
             new_level, xp_in_level, xp_needed, progress = get_level_from_xp(new_total_xp)
             # Use calculated values
             new_xp = xp_in_level
-            old_level = hero.get("level", 1)
-            leveled_up = new_level > old_level
+            leveled_up = new_level > old_level_from_total
         except ImportError:
             # Fallback (Legacy Logic)
             current_xp = hero.get("xp", 0)
@@ -922,10 +937,17 @@ class GameStateManager(QtCore.QObject):
         """Notify that water/hydration tracking changed."""
         if count is None:
             # Calculate today's count if not provided
-            from datetime import datetime
-            today = datetime.now().strftime("%Y-%m-%d")
+            from app_utils import get_activity_date
+            today = get_activity_date()
             entries = getattr(self._blocker, 'water_entries', [])
-            count = sum(1 for e in entries if e.get('date') == today)
+            count = 0
+            for entry in entries:
+                if not isinstance(entry, dict) or entry.get('date') != today:
+                    continue
+                try:
+                    count += max(0, int(entry.get("glasses", 1)))
+                except (TypeError, ValueError):
+                    count += 1
         self._log_change("water_changed", str(count))
         self._emit(self.water_changed, count)
     
