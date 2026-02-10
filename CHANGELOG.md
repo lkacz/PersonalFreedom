@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.41] - 2026-02-10
+
+### Fixed
+- Fixed Save Encounter binding crash in Entitidex tab caused by stale label reference (`total_progress_label`).
+- Fixed level-up detection and dialog plumbing so level-up dialogs reliably appear after XP gains (including focus-session rewards).
+- Fixed reward rarity consistency paths (lottery/merge) so displayed rarity and awarded inventory item rarity stay aligned.
+- Fixed hydration calculation inconsistencies: glass totals now respect `glasses` values, activity-day cutoff is used consistently, and streak/target stats no longer overcount across date gaps.
+- Fixed challenge generation determinism by replacing process-random `hash()` seeding with stable SHA-256 based seeds (consistent across app restarts).
+
+### Improved
+- Expanded developer QA tooling for level/XP integrity checks and dialog verification.
+- Added regression coverage for rarity consistency, hydration calculations, challenge seed stability, and XP/level edge cases.
+
 ## [6.0.40] - 2026-02-09
 
 ### Fixed

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "personal-liberty"
-version = "6.0.40"
+version = "6.0.41"
 description = "Gamified Windows application that blocks distracting websites during focus sessions with hero progression"
 readme = "README.md"
 license = {text = "MIT"}
@@ -72,7 +72,7 @@ python_functions = ["test_*"]
 addopts = "-v --tb=short"
 
 [tool.mypy]
-python_version = "6.0.40"
+python_version = "6.0.41"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
@@ -81,7 +81,7 @@ exclude = ["build", "dist", "__pycache__"]
 [tool.ruff]
 line-length = 120
 exclude = [".git", "__pycache__", "build", "dist", ".venv"]
-target-version = "6.0.40"
+target-version = "6.0.41"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I"]

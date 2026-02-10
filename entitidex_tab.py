@@ -1980,6 +1980,10 @@ class EntitidexTab(QtWidgets.QWidget):
         self._placeholder_label.setAlignment(QtCore.Qt.AlignCenter)
         self._placeholder_label.setStyleSheet("color: #666; font-size: 16px;")
         self._placeholder_layout.addWidget(self._placeholder_label)
+
+    def _is_ui_built(self) -> bool:
+        """Return True when the full Entitidex UI widgets are available."""
+        return hasattr(self, "theme_tab_widget") and hasattr(self, "total_progress_label")
     
     def preload(self) -> None:
         """Pre-initialize the tab in background for instant display.
@@ -2012,8 +2016,9 @@ class EntitidexTab(QtWidgets.QWidget):
         if not self._initialized:
             self._initialized = True
             # Remove placeholder label
-            self._placeholder_label.deleteLater()
-            self._placeholder_label = None
+            if self._placeholder_label:
+                self._placeholder_label.deleteLater()
+                self._placeholder_label = None
             # Load data and build real UI (reuses existing layout)
             self._load_progress()
             self._build_ui()
@@ -2593,6 +2598,9 @@ class EntitidexTab(QtWidgets.QWidget):
     
     def _refresh_all_tabs(self):
         """Refresh all theme tabs and update total progress."""
+        if not self._is_ui_built():
+            return
+
         total_normal = 0
         total_exceptional = 0
         total_entities = 0
@@ -3451,6 +3459,9 @@ class EntitidexTab(QtWidgets.QWidget):
     def _on_story_changed(self, story: str):
         """Legacy method - kept for compatibility."""
         self.current_story = story
+        if not self._is_ui_built():
+            return
+
         # Find and select the corresponding tab
         theme_keys = list(THEME_INFO.keys())
         if story in theme_keys:
@@ -3481,5 +3492,6 @@ class EntitidexTab(QtWidgets.QWidget):
     def refresh(self):
         """Public method to refresh the display."""
         self._load_progress()
-        self._refresh_all_tabs()
+        if self._is_ui_built():
+            self._refresh_all_tabs()
         self._update_saved_button_count()

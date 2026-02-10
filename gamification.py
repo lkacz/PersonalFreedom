@@ -7,6 +7,7 @@ Includes: item generation, set bonuses, lucky merge, diary entries.
 
 import random
 import re
+import hashlib
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, TYPE_CHECKING
@@ -12447,7 +12448,6 @@ def get_weight_stats(weight_entries: list, unit: str = "kg") -> dict:
     
     # Calculate trends
     from datetime import datetime, timedelta
-    today = datetime.now().strftime("%Y-%m-%d")
     week_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
     month_ago = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
     
@@ -14592,8 +14592,13 @@ def can_log_water(water_entries: list, current_time: Optional[str] = None,
     cooldown_bonus = cooldown_minutes < (HYDRATION_MIN_INTERVAL_HOURS * 60)
     
     # Count today's glasses and find last glass time
-    today_entries = [e for e in water_entries if e.get("date") == today]
-    glasses_today = len(today_entries)
+    today_entries = [e for e in water_entries if isinstance(e, dict) and e.get("date") == today]
+    glasses_today = 0
+    for entry in today_entries:
+        try:
+            glasses_today += max(0, int(entry.get("glasses", 1)))
+        except (TypeError, ValueError):
+            glasses_today += 1
     
     # Check daily limit (using perk-modified cap)
     if glasses_today >= daily_cap:
@@ -14676,9 +14681,9 @@ def check_water_entry_reward(
     
     # Per-glass reward with escalating rarity
     if new_glass_number <= HYDRATION_MAX_DAILY_GLASSES:
-        glass_rarity = get_water_reward_rarity(new_glass_number)
-        if glass_rarity:
-            glass_item = generate_item(rarity=glass_rarity, story_id=story_id)
+        _, _, rolled_tier = get_water_reward_rarity(new_glass_number)
+        if rolled_tier:
+            glass_item = generate_item(rarity=rolled_tier, story_id=story_id)
             glass_item["source"] = f"hydration_glass_{new_glass_number}"
             result["glass_reward"] = glass_item
             result["items"].append(glass_item)
@@ -14700,12 +14705,13 @@ def check_water_entry_reward(
     return result
 
 
-def get_hydration_stats(water_entries: list) -> dict:
+def get_hydration_stats(water_entries: list, daily_goal: int = HYDRATION_MAX_DAILY_GLASSES) -> dict:
     """
     Calculate hydration statistics from water log entries.
     
     Args:
         water_entries: List of water log entries with date and glasses count
+        daily_goal: Number of glasses needed to count as "on target"
     
     Returns:
         Dict with hydration statistics
@@ -14723,40 +14729,74 @@ def get_hydration_stats(water_entries: list) -> dict:
             "best_streak": 0,
             "today_glasses": 0
         }
-    
-    today = datetime.now().strftime("%Y-%m-%d")
+
+    try:
+        daily_goal = int(daily_goal)
+    except (TypeError, ValueError):
+        daily_goal = HYDRATION_MAX_DAILY_GLASSES
+    daily_goal = max(1, daily_goal)
+
+    from app_utils import get_activity_date
+    today = get_activity_date()
     
     # Group by date
     daily_totals = {}
     for entry in water_entries:
+        if not isinstance(entry, dict):
+            continue
         date = entry.get("date", "")
-        glasses = entry.get("glasses", 1)
-        if date:
-            daily_totals[date] = daily_totals.get(date, 0) + glasses
+        if not date:
+            continue
+        try:
+            glasses = max(0, int(entry.get("glasses", 1)))
+        except (TypeError, ValueError):
+            glasses = 1
+        daily_totals[date] = daily_totals.get(date, 0) + glasses
     
     total_glasses = sum(daily_totals.values())
     total_days = len(daily_totals)
     avg_daily = total_glasses / total_days if total_days > 0 else 0.0
-    days_on_target = sum(1 for g in daily_totals.values() if g >= HYDRATION_MAX_DAILY_GLASSES)
+    days_on_target = sum(1 for g in daily_totals.values() if g >= daily_goal)
     target_rate = (days_on_target / total_days * 100) if total_days > 0 else 0.0
     today_glasses = daily_totals.get(today, 0)
     
-    # Calculate streak
+    # Calculate streaks from goal-met days only.
+    goal_dates = sorted(d for d, g in daily_totals.items() if g >= daily_goal)
+    goal_date_set = set(goal_dates)
+
+    # Current streak: start from today or yesterday only.
     current_streak = 0
+    now = datetime.now().date()
+    anchor = None
+    today_str = now.strftime("%Y-%m-%d")
+    yesterday = now - timedelta(days=1)
+    yesterday_str = yesterday.strftime("%Y-%m-%d")
+    if today_str in goal_date_set:
+        anchor = now
+    elif yesterday_str in goal_date_set:
+        anchor = yesterday
+
+    if anchor:
+        check_day = anchor
+        while check_day.strftime("%Y-%m-%d") in goal_date_set:
+            current_streak += 1
+            check_day -= timedelta(days=1)
+
+    # Best streak: longest consecutive run across all history.
     best_streak = 0
     streak = 0
-    
-    sorted_dates = sorted(daily_totals.keys(), reverse=True)
-    for i, date in enumerate(sorted_dates):
-        if daily_totals[date] >= 8:
+    prev_day = None
+    for date_str in goal_dates:
+        day_dt = safe_parse_date(date_str, "%Y-%m-%d")
+        if not day_dt:
+            continue
+        day = day_dt.date()
+        if prev_day is not None and (day - prev_day).days == 1:
             streak += 1
-            if i == 0 or (i > 0 and is_consecutive_day(sorted_dates[i-1], date)):
-                current_streak = streak
-            best_streak = max(best_streak, streak)
         else:
-            if i == 0:
-                current_streak = 0
-            streak = 0
+            streak = 1
+        best_streak = max(best_streak, streak)
+        prev_day = day
     
     return {
         "total_glasses": total_glasses,
@@ -15417,13 +15457,26 @@ def get_level_from_xp(total_xp: int) -> tuple:
     Returns:
         (level, xp_in_current_level, xp_needed_for_next_level, progress_percent)
     """
+    try:
+        total_xp = int(total_xp)
+    except (TypeError, ValueError):
+        total_xp = 0
+    total_xp = max(0, total_xp)
+
     if total_xp <= 0:
         return (1, 0, get_xp_for_level(2), 0.0)
-    
+
+    max_level = 999
+    max_level_xp = get_xp_for_level(max_level)
+    if total_xp >= max_level_xp:
+        prev_level_xp = get_xp_for_level(max_level - 1)
+        xp_needed = max(1, max_level_xp - prev_level_xp)
+        return (max_level, xp_needed, xp_needed, 100.0)
+
     level = 1
     while get_xp_for_level(level + 1) <= total_xp:
         level += 1
-        if level >= 999:  # Cap at level 999
+        if level >= max_level:  # Cap at level 999
             break
     
     current_level_xp = get_xp_for_level(level)
@@ -16127,8 +16180,10 @@ def generate_daily_challenges(seed_date: str = None) -> list:
     if seed_date is None:
         seed_date = datetime.now().strftime("%Y-%m-%d")
     
-    # Use local Random instance to avoid affecting global state
-    rng = random.Random(hash(seed_date + "daily"))
+    # Use deterministic hash (not built-in hash()) so results are stable across restarts.
+    seed_bytes = f"{seed_date}:daily".encode("utf-8")
+    seed = int(hashlib.sha256(seed_bytes).hexdigest()[:16], 16)
+    rng = random.Random(seed)
     
     daily_templates = [k for k, v in CHALLENGE_TEMPLATES.items() if v["type"] == "daily"]
     
@@ -16178,8 +16233,10 @@ def generate_weekly_challenges(week_start: str = None) -> list:
         monday = today - timedelta(days=today.weekday())
         week_start = monday.strftime("%Y-%m-%d")
     
-    # Use local Random instance to avoid affecting global state
-    rng = random.Random(hash(week_start + "weekly"))
+    # Use deterministic hash (not built-in hash()) so results are stable across restarts.
+    seed_bytes = f"{week_start}:weekly".encode("utf-8")
+    seed = int(hashlib.sha256(seed_bytes).hexdigest()[:16], 16)
+    rng = random.Random(seed)
     
     weekly_templates = [k for k, v in CHALLENGE_TEMPLATES.items() if v["type"] == "weekly"]
     
