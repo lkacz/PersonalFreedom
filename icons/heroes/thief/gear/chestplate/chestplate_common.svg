@@ -14,7 +14,7 @@
         <path d="M0 5 L10 5 M5 0 L5 10" stroke="#212121" stroke-width="0.5" opacity="0.5"/>
     </pattern>
 </defs>
-<g transform="translate(45, 65) scale(0.5)">
+<g transform="translate(36, 54) scale(0.6)">
     <!-- Base Vest Shape (Fitted to Body) -->
     <!-- Shoulders 68-112 at Y=80. Waist 72-108 at Y=135 -->
     <path d="M68 85 L112 85 L108 135 L72 135 Z" fill="url(#vestGrey)" stroke="#212121" stroke-width="1" filter="url(#fabricTexture)"/>
@@ -33,5 +33,6 @@
     <animateTransform attributeName="transform" type="scale" values="1 1; 1.02 0.98; 1 1" dur="4s" repeatCount="indefinite" additive="sum" transform-origin="90 110"/>
 </g>
 </svg>
+
 
 
