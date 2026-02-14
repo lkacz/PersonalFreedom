@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="fp_shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#596c78"/>
+      <stop offset="100%" stop-color="#2b3943"/>
+    </linearGradient>
+    <linearGradient id="fp_palm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7a8a96"/>
+      <stop offset="100%" stop-color="#40515d"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Uncommon: Fingerprint Gloves -->
+  <g id="gauntlets_uncommon">
+    <path d="M56.2 112.0 Q52.8 123.6 57.4 135.8 L67.3 132.7 Q70.0 123.8 66.9 112.0 Z" fill="url(#fp_shell)" stroke="#162028" stroke-width="0.9"/>
+    <rect x="57.0" y="131.1" width="10.6" height="3.2" rx="1.1" fill="#48b34e" opacity="0.9"/>
+    <circle cx="64" cy="138" r="4.9" fill="url(#fp_palm)" stroke="#162028" stroke-width="0.9"/>
+    <path d="M61.2 137.7 Q64.0 134.8 66.8 137.7" fill="none" stroke="#7edf82" stroke-width="0.72"/>
+    <path d="M60.8 139.0 Q64.0 135.4 67.2 139.0" fill="none" stroke="#55c75c" stroke-width="0.66" opacity="0.9"/>
+    <path d="M60.4 140.3 Q64.0 136.2 67.6 140.3" fill="none" stroke="#8deb92" stroke-width="0.62" opacity="0.84"/>
+
+    <path d="M123.8 112.0 Q127.2 123.6 122.6 135.8 L112.7 132.7 Q110.0 123.8 113.1 112.0 Z" fill="url(#fp_shell)" stroke="#162028" stroke-width="0.9"/>
+    <rect x="112.4" y="131.1" width="10.6" height="3.2" rx="1.1" fill="#48b34e" opacity="0.9"/>
+    <circle cx="116" cy="138" r="4.9" fill="url(#fp_palm)" stroke="#162028" stroke-width="0.9"/>
+    <path d="M113.2 137.7 Q116.0 134.8 118.8 137.7" fill="none" stroke="#7edf82" stroke-width="0.72"/>
+    <path d="M112.8 139.0 Q116.0 135.4 119.2 139.0" fill="none" stroke="#55c75c" stroke-width="0.66" opacity="0.9"/>
+    <path d="M112.4 140.3 Q116.0 136.2 119.6 140.3" fill="none" stroke="#8deb92" stroke-width="0.62" opacity="0.84"/>
+  </g>
+</svg>

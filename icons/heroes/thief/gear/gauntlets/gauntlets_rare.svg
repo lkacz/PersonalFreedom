@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="restraint_shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5e7180"/>
+      <stop offset="100%" stop-color="#2f3f4c"/>
+    </linearGradient>
+    <linearGradient id="restraint_palm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8292a0"/>
+      <stop offset="100%" stop-color="#465b6c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rare: Restraint Gloves -->
+  <g id="gauntlets_rare">
+    <path d="M56.2 112.0 Q52.8 123.6 57.4 135.8 L67.3 132.7 Q70.0 123.8 66.9 112.0 Z" fill="url(#restraint_shell)" stroke="#162028" stroke-width="0.9"/>
+    <rect x="57.0" y="131.1" width="10.6" height="3.2" rx="1.1" fill="#2d9bf3" opacity="0.92"/>
+    <circle cx="64" cy="138" r="4.9" fill="url(#restraint_palm)" stroke="#162028" stroke-width="0.9"/>
+    <circle cx="62.0" cy="133.0" r="1.15" fill="none" stroke="#79c3ff" stroke-width="0.8"/>
+    <circle cx="66.0" cy="133.0" r="1.15" fill="none" stroke="#79c3ff" stroke-width="0.8"/>
+    <path d="M63.1 133.0 L64.9 133.0" stroke="#79c3ff" stroke-width="0.72"/>
+    <path d="M60.9 139.7 L67.1 139.7" stroke="#91d0ff" stroke-width="0.68" opacity="0.86"/>
+
+    <path d="M123.8 112.0 Q127.2 123.6 122.6 135.8 L112.7 132.7 Q110.0 123.8 113.1 112.0 Z" fill="url(#restraint_shell)" stroke="#162028" stroke-width="0.9"/>
+    <rect x="112.4" y="131.1" width="10.6" height="3.2" rx="1.1" fill="#2d9bf3" opacity="0.92"/>
+    <circle cx="116" cy="138" r="4.9" fill="url(#restraint_palm)" stroke="#162028" stroke-width="0.9"/>
+    <circle cx="114.0" cy="133.0" r="1.15" fill="none" stroke="#79c3ff" stroke-width="0.8"/>
+    <circle cx="118.0" cy="133.0" r="1.15" fill="none" stroke="#79c3ff" stroke-width="0.8"/>
+    <path d="M115.1 133.0 L116.9 133.0" stroke="#79c3ff" stroke-width="0.72"/>
+    <path d="M112.9 139.7 L119.1 139.7" stroke="#91d0ff" stroke-width="0.68" opacity="0.86"/>
+  </g>
+</svg>
