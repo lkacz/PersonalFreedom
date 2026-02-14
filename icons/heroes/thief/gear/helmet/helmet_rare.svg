@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
 <defs>
-    <!-- Very dark green, almost black -->
+    <!-- Very dark BLUE, almost black -->
     <linearGradient id="hoodieDark" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#1B2E1B"/> 
-        <stop offset="100%" stop-color="#050A05"/>
+        <stop offset="0%" stop-color="#0D1B2A"/> 
+        <stop offset="100%" stop-color="#020408"/>
     </linearGradient>
     
-    <!-- String Texture/Gradient -->
+    <!-- String Texture/Gradient (Blue) -->
     <linearGradient id="stringGrad" x1="0" y1="0" x2="0" y2="1">
-       <stop offset="0%" stop-color="#2E7D32"/>
-       <stop offset="100%" stop-color="#1B5E20"/>
+       <stop offset="0%" stop-color="#1565C0"/>
+       <stop offset="100%" stop-color="#0D47A1"/>
     </linearGradient>
 
-    <radialGradient id="humanIrisGreen" cx="50%" cy="50%" r="50%">
-        <stop offset="60%" stop-color="#66BB6A"/>
-        <stop offset="100%" stop-color="#1B5E20"/>
+    <radialGradient id="humanIrisBlue" cx="50%" cy="50%" r="50%">
+        <stop offset="60%" stop-color="#42A5F5"/>
+        <stop offset="100%" stop-color="#0D47A1"/>
     </radialGradient>
     
     <filter id="stringShadow"><feDropShadow dx="1" dy="1" stdDeviation="1" flood-opacity="0.5"/></filter>
@@ -36,7 +36,7 @@
             <!-- Sclera (Whites) -->
             <path d="M-15 0 Q0 -11 15 0 Q0 11 -15 0 Z" fill="#F5F5F5"/>
             
-            <!-- Iris & Pupil (Green) -->
+            <!-- Iris & Pupil (Blue) -->
             <g>
                 <!-- Saccadic Eye Movement Fixed: keyTimes MUST end at 1 -->
                 <animateTransform attributeName="transform" type="translate" 
@@ -45,7 +45,7 @@
                     keyTimes="0; 0.24; 0.25; 0.44; 0.45; 0.54; 0.55; 0.74; 0.75; 0.84; 0.85; 1"
                     calcMode="linear"/>
                     
-                <circle cx="0" cy="0" r="7" fill="url(#humanIrisGreen)" /> 
+                <circle cx="0" cy="0" r="7" fill="url(#humanIrisBlue)" /> 
                 <circle cx="0" cy="0" r="3" fill="#1A1A1A" /> 
                 <circle cx="2" cy="-2" r="1.5" fill="#FFFFFF" opacity="0.8" />
             </g>
@@ -99,7 +99,7 @@
                     keyTimes="0; 0.24; 0.25; 0.44; 0.45; 0.54; 0.55; 0.74; 0.75; 0.84; 0.85; 1"
                     calcMode="linear"/>
 
-                <circle cx="0" cy="0" r="7" fill="url(#humanIrisGreen)" />
+                <circle cx="0" cy="0" r="7" fill="url(#humanIrisBlue)" />
                 <circle cx="0" cy="0" r="3" fill="#1A1A1A" />
                 <circle cx="2" cy="-2" r="1.5" fill="#FFFFFF" opacity="0.8" />
             </g>
