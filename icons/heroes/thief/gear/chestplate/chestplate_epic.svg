@@ -13,7 +13,7 @@
         <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
 </defs>
-<g transform="translate(45, 65) scale(0.5)">
+<g transform="translate(36, 54) scale(0.6)">
     <!-- Main Suit (Form Fitting) -->
     <path d="M65 80 Q90 75 115 80 L112 140 Q90 145 68 140 Z" fill="url(#stealthVoid)"/>
     
@@ -33,5 +33,6 @@
     </circle>
 </g>
 </svg>
+
 
 

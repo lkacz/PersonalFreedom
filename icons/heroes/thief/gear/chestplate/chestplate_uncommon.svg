@@ -15,7 +15,7 @@
         <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
 </defs>
-<g transform="translate(45, 65) scale(0.5)">
+<g transform="translate(36, 54) scale(0.6)">
     <!-- Main Carrier (Fitted) -->
     <path d="M65 82 L115 82 L110 138 L70 138 Z" fill="url(#tacGreen)" stroke="#1B5E20" stroke-width="1" filter="url(#canvasGrid)"/>
     
@@ -37,5 +37,6 @@
     </circle>
 </g>
 </svg>
+
 
 
