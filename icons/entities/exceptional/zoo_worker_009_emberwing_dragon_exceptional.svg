@@ -68,16 +68,17 @@
       <!-- Tail Spikes -->
       <path d="M-110,60 L-130,50 M-90,100 L-110,100" stroke="#81C784" stroke-width="6" stroke-linecap="round" fill="none"/>
 
-      <!-- Wings (Butterfly/Fairy Dragon Shape - Structural Change) -->
+      <!-- Wings (Butterfly/Fairy Dragon Shape - Structural Change - VERY FAST FLUTTER) -->
       <g stroke="#1B5E20" stroke-width="3" stroke-linejoin="round">
-          <animateTransform attributeName="transform" type="rotate" values="-5 0 -20; 15 0 -20; -5 0 -20" dur="0.5s" repeatCount="indefinite"/> <!-- Faster Flutter -->
           <!-- Left Wing (Double Lobe) -->
           <g>
+            <animateTransform attributeName="transform" type="rotate" values="20 0 0; -10 0 0; 20 0 0" dur="0.12s" repeatCount="indefinite"/>
             <path d="M-50,-10 Q-120,-90 -150,-40 Q-140,-10 -110,10 Q-130,50 -90,40 Z" fill="#66BB6A"/>
             <path d="M-50,-10 Q-120,-90 -150,-40 Q-140,-10 -110,10 Q-130,50 -90,40 Z" fill="url(#shadowOverlay_ex)" opacity="0.3"/>
           </g>
           <!-- Right Wing (Double Lobe) -->
           <g>
+             <animateTransform attributeName="transform" type="rotate" values="-20 0 0; 10 0 0; -20 0 0" dur="0.12s" repeatCount="indefinite"/>
              <path d="M50,-10 Q120,-90 150,-40 Q140,-10 110,10 Q130,50 90,40 Z" fill="#66BB6A"/>
              <path d="M50,-10 Q120,-90 150,-40 Q140,-10 110,10 Q130,50 90,40 Z" fill="url(#shadowOverlay_ex)" opacity="0.3"/>
           </g>
