@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chestplate Upgrade Preview</title>
+    <style>
+        body { background: #333; color: white; display: flex; flex-wrap: wrap; font-family: sans-serif; justify-content: center; }
+        .card { margin: 10px; text-align: center; }
+        .preview { position: relative; width: 180px; height: 220px; border: 1px solid #555; background: #222; margin: 0 auto; overflow: hidden; }
+        .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .base-layer { z-index: 1; opacity: 0.7; }
+        .gear-layer { z-index: 2; }
+        
+        svg { width: 100%; height: 100%; overflow: visible; }
+        .label { margin-top: 5px; font-size: 0.9em; color: #aaa; }
+    </style>
+</head>
+<body>    <div class="card">
+        <div class="preview">
+            <div class="layer base-layer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFD6B2"/>
+      <stop offset="100%" stop-color="#E5BC99"/>
+    </linearGradient>
+    <linearGradient id="suitGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#223046"/>
+      <stop offset="50%" stop-color="#2c3e5a"/>
+      <stop offset="100%" stop-color="#223046"/>
+    </linearGradient>
+    <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="90" cy="195" rx="50" ry="8" fill="url(#shadowGrad)"/>
+
+  <!-- Body Group -->
+  <g id="hero_body">
+    <!-- Legs -->
+    <path d="M70 140 L65 190 L85 190 L88 140 Z" fill="#223046" stroke="#111" stroke-width="1"/>
+    <path d="M110 140 L115 190 L95 190 L92 140 Z" fill="#223046" stroke="#111" stroke-width="1"/>
+    
+    <!-- Torso -->
+    <path d="M65 80 Q60 140 70 150 L110 150 Q120 140 115 80 L90 150 Z" fill="url(#suitGrad)"/> 
+    <path d="M65 80 L115 80 L110 150 L70 150 Z" fill="url(#suitGrad)" stroke="#1a2536" stroke-width="1"/>
+
+    <!-- Chest Armor Base (Underlayer) -->
+    <path d="M70 80 L110 80 L105 120 L75 120 Z" fill="#3D5572" opacity="0.8"/>
+
+    <!-- Neck -->
+    <rect x="82" y="70" width="16" height="15" fill="url(#skinGrad)"/>
+
+    <!-- Head -->
+    <g id="head">
+      <ellipse cx="90" cy="60" rx="14" ry="18" fill="url(#skinGrad)"/>
+      <!-- Eyes -->
+      <g fill="#223046">
+         <!-- Left Eye -->
+         <ellipse cx="85" cy="60" rx="2" ry="1.5">
+           <animate attributeName="ry" values="1.5;0.1;1.5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </ellipse>
+         <!-- Right Eye -->
+         <ellipse cx="95" cy="60" rx="2" ry="1.5">
+           <animate attributeName="ry" values="1.5;0.1;1.5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </ellipse>
+      </g>
+      <!-- Mouth -->
+      <path d="M86 70 Q90 73 94 70" fill="none" stroke="#D1A685" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Hair/Cowl Base -->
+      <path d="M75 50 Q90 35 105 50 L104 65 Q90 60 76 65 Z" fill="#223046"/>
+    </g>
+
+    <!-- Arms (Placed to overlap body slightly) -->
+    <g id="stats_left_arm">
+       <path d="M65 82 Q50 100 55 120 L65 118 Q62 100 70 88 Z" fill="url(#suitGrad)"/>
+       <circle cx="55" cy="122" r="6" fill="#E5BC99"/> 
+    </g>
+    <g id="stats_right_arm">
+       <path d="M115 82 Q130 100 125 120 L115 118 Q118 100 110 88 Z" fill="url(#suitGrad)"/>
+       <circle cx="125" cy="122" r="6" fill="#E5BC99"/> 
+    </g>
+    
+    <!-- Idle Animation: Subtle Vertical Heave (Translate) - Safer for QSvgRenderer than Scale with Transform-Origin -->
+    <animateTransform 
+        attributeName="transform" 
+        type="translate" 
+        values="0 0; 0 -1; 0 0" 
+        dur="3s" 
+        repeatCount="indefinite" 
+        additive="sum" 
+    />
+  </g>
+
+</svg>
+</div>
+            <div class="layer gear-layer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <linearGradient id="vestGrey" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#616161"/>
+        <stop offset="100%" stop-color="#424242"/>
+    </linearGradient>
+    <filter id="fabricTexture">
+        <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" result="noise"/>
+        <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.15 0"/>
+        <feBlend in="SourceGraphic" in2="noise" mode="multiply"/>
+    </filter>
+    <pattern id="stitchPattern" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <path d="M0 5 L10 5 M5 0 L5 10" stroke="#212121" stroke-width="0.5" opacity="0.5"/>
+    </pattern>
+</defs>
+<g transform="translate(49.5, 50) scale(0.45)">
+    <!-- Base Vest Shape (Fitted to Body) -->
+    <!-- Shoulders 68-112 at Y=80. Waist 72-108 at Y=135 -->
+    <path d="M68 85 L112 85 L108 135 L72 135 Z" fill="url(#vestGrey)" stroke="#212121" stroke-width="1" filter="url(#fabricTexture)"/>
+    
+    <!-- Quilt Overlay -->
+    <path d="M68 85 L112 85 L108 135 L72 135 Z" fill="url(#stitchPattern)" opacity="0.6"/>
+    
+    <!-- Heavy Zipper -->
+    <rect x="89" y="85" width="2" height="50" fill="#333"/>
+    <path d="M90 85 L90 135" stroke="#9E9E9E" stroke-width="1" stroke-dasharray="2,1"/>
+    
+    <!-- Collar -->
+    <path d="M68 85 Q75 90 80 92 L100 92 Q105 90 112 85" stroke="#212121" stroke-width="1" fill="none"/>
+    
+     <!-- Breathing Animation -->
+    <animateTransform attributeName="transform" type="scale" values="1 1; 1.02 0.98; 1 1" dur="4s" repeatCount="indefinite" additive="sum" transform-origin="90 110"/>
+</g>
+</svg>
+
+</div>
+        </div>
+        <div class="label">common</div>
+    </div>    <div class="card">
+        <div class="preview">
+            <div class="layer base-layer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFD6B2"/>
+      <stop offset="100%" stop-color="#E5BC99"/>
+    </linearGradient>
+    <linearGradient id="suitGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#223046"/>
+      <stop offset="50%" stop-color="#2c3e5a"/>
+      <stop offset="100%" stop-color="#223046"/>
+    </linearGradient>
+    <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="90" cy="195" rx="50" ry="8" fill="url(#shadowGrad)"/>
+
+  <!-- Body Group -->
+  <g id="hero_body">
+    <!-- Legs -->
+    <path d="M70 140 L65 190 L85 190 L88 140 Z" fill="#223046" stroke="#111" stroke-width="1"/>
+    <path d="M110 140 L115 190 L95 190 L92 140 Z" fill="#223046" stroke="#111" stroke-width="1"/>
+    
+    <!-- Torso -->
+    <path d="M65 80 Q60 140 70 150 L110 150 Q120 140 115 80 L90 150 Z" fill="url(#suitGrad)"/> 
+    <path d="M65 80 L115 80 L110 150 L70 150 Z" fill="url(#suitGrad)" stroke="#1a2536" stroke-width="1"/>
+
+    <!-- Chest Armor Base (Underlayer) -->
+    <path d="M70 80 L110 80 L105 120 L75 120 Z" fill="#3D5572" opacity="0.8"/>
+
+    <!-- Neck -->
+    <rect x="82" y="70" width="16" height="15" fill="url(#skinGrad)"/>
+
+    <!-- Head -->
+    <g id="head">
+      <ellipse cx="90" cy="60" rx="14" ry="18" fill="url(#skinGrad)"/>
+      <!-- Eyes -->
+      <g fill="#223046">
+         <!-- Left Eye -->
+         <ellipse cx="85" cy="60" rx="2" ry="1.5">
+           <animate attributeName="ry" values="1.5;0.1;1.5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </ellipse>
+         <!-- Right Eye -->
+         <ellipse cx="95" cy="60" rx="2" ry="1.5">
+           <animate attributeName="ry" values="1.5;0.1;1.5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </ellipse>
+      </g>
+      <!-- Mouth -->
+      <path d="M86 70 Q90 73 94 70" fill="none" stroke="#D1A685" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Hair/Cowl Base -->
+      <path d="M75 50 Q90 35 105 50 L104 65 Q90 60 76 65 Z" fill="#223046"/>
+    </g>
+
+    <!-- Arms (Placed to overlap body slightly) -->
+    <g id="stats_left_arm">
+       <path d="M65 82 Q50 100 55 120 L65 118 Q62 100 70 88 Z" fill="url(#suitGrad)"/>
+       <circle cx="55" cy="122" r="6" fill="#E5BC99"/> 
+    </g>
+    <g id="stats_right_arm">
+       <path d="M115 82 Q130 100 125 120 L115 118 Q118 100 110 88 Z" fill="url(#suitGrad)"/>
+       <circle cx="125" cy="122" r="6" fill="#E5BC99"/> 
+    </g>
+    
+    <!-- Idle Animation: Subtle Vertical Heave (Translate) - Safer for QSvgRenderer than Scale with Transform-Origin -->
+    <animateTransform 
+        attributeName="transform" 
+        type="translate" 
+        values="0 0; 0 -1; 0 0" 
+        dur="3s" 
+        repeatCount="indefinite" 
+        additive="sum" 
+    />
+  </g>
+
+</svg>
+</div>
+            <div class="layer gear-layer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <linearGradient id="tacGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#558B2F"/>
+        <stop offset="100%" stop-color="#33691E"/>
+    </linearGradient>
+    <filter id="canvasGrid">
+        <feTurbulence type="turbulence" baseFrequency="0.9" numOctaves="2" result="turb"/>
+        <feComposite operator="in" in="turb" in2="SourceGraphic" result="textured"/>
+        <feBlend in="SourceGraphic" in2="textured" mode="multiply" opacity="0.15"/>
+    </filter>
+    <filter id="ledGlow">
+        <feGaussianBlur stdDeviation="1.0" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+</defs>
+<g transform="translate(49.5, 50) scale(0.45)">
+    <!-- Main Carrier (Fitted) -->
+    <path d="M65 82 L115 82 L110 138 L70 138 Z" fill="url(#tacGreen)" stroke="#1B5E20" stroke-width="1" filter="url(#canvasGrid)"/>
+    
+    <!-- Molle Straps -->
+    <g stroke="#2E7D32" stroke-width="1.5">
+        <line x1="68" y1="100" x2="112" y2="100"/>
+        <line x1="69" y1="115" x2="111" y2="115"/>
+    </g>
+    
+    <!-- Pockets -->
+    <rect x="70" y="105" width="15" height="20" rx="2" fill="#33691E" stroke="#1B5E20"/>
+    <rect x="95" y="105" width="15" height="20" rx="2" fill="#33691E" stroke="#1B5E20"/>
+    
+    <!-- Radio/Tech -->
+    <rect x="98" y="85" width="8" height="12" fill="#212121"/>
+    <line x1="102" y1="85" x2="102" y2="75" stroke="#111" stroke-width="1"/>
+    <circle cx="102" cy="88" r="1.5" fill="#00E676" filter="url(#ledGlow)">
+        <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite"/>
+    </circle>
+</g>
+</svg>
+
+</div>
+        </div>
+        <div class="label">uncommon</div>
+    </div>    <div class="card">
+        <div class="preview">
+            <div class="layer base-layer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFD6B2"/>
+      <stop offset="100%" stop-color="#E5BC99"/>
+    </linearGradient>
+    <linearGradient id="suitGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#223046"/>
+      <stop offset="50%" stop-color="#2c3e5a"/>
+      <stop offset="100%" stop-color="#223046"/>
+    </linearGradient>
+    <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="90" cy="195" rx="50" ry="8" fill="url(#shadowGrad)"/>
+
+  <!-- Body Group -->
+  <g id="hero_body">
+    <!-- Legs -->
+    <path d="M70 140 L65 190 L85 190 L88 140 Z" fill="#223046" stroke="#111" stroke-width="1"/>
+    <path d="M110 140 L115 190 L95 190 L92 140 Z" fill="#223046" stroke="#111" stroke-width="1"/>
+    
+    <!-- Torso -->
+    <path d="M65 80 Q60 140 70 150 L110 150 Q120 140 115 80 L90 150 Z" fill="url(#suitGrad)"/> 
+    <path d="M65 80 L115 80 L110 150 L70 150 Z" fill="url(#suitGrad)" stroke="#1a2536" stroke-width="1"/>
+
+    <!-- Chest Armor Base (Underlayer) -->
+    <path d="M70 80 L110 80 L105 120 L75 120 Z" fill="#3D5572" opacity="0.8"/>
+
+    <!-- Neck -->
+    <rect x="82" y="70" width="16" height="15" fill="url(#skinGrad)"/>
+
+    <!-- Head -->
+    <g id="head">
+      <ellipse cx="90" cy="60" rx="14" ry="18" fill="url(#skinGrad)"/>
+      <!-- Eyes -->
+      <g fill="#223046">
+         <!-- Left Eye -->
+         <ellipse cx="85" cy="60" rx="2" ry="1.5">
+           <animate attributeName="ry" values="1.5;0.1;1.5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </ellipse>
+         <!-- Right Eye -->
+         <ellipse cx="95" cy="60" rx="2" ry="1.5">
+           <animate attributeName="ry" values="1.5;0.1;1.5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </ellipse>
+      </g>
+      <!-- Mouth -->
+      <path d="M86 70 Q90 73 94 70" fill="none" stroke="#D1A685" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Hair/Cowl Base -->
+      <path d="M75 50 Q90 35 105 50 L104 65 Q90 60 76 65 Z" fill="#223046"/>
+    </g>
+
+    <!-- Arms (Placed to overlap body slightly) -->
+    <g id="stats_left_arm">
+       <path d="M65 82 Q50 100 55 120 L65 118 Q62 100 70 88 Z" fill="url(#suitGrad)"/>
+       <circle cx="55" cy="122" r="6" fill="#E5BC99"/> 
+    </g>
+    <g id="stats_right_arm">
+       <path d="M115 82 Q130 100 125 120 L115 118 Q118 100 110 88 Z" fill="url(#suitGrad)"/>
+       <circle cx="125" cy="122" r="6" fill="#E5BC99"/> 
+    </g>
+    
+    <!-- Idle Animation: Subtle Vertical Heave (Translate) - Safer for QSvgRenderer than Scale with Transform-Origin -->
+    <animateTransform 
+        attributeName="transform" 
+        type="translate" 
+        values="0 0; 0 -1; 0 0" 
+        dur="3s" 
+        repeatCount="indefinite" 
+        additive="sum" 
+    />
+  </g>
+
+</svg>
+</div>
+            <div class="layer gear-layer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <linearGradient id="metalPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#424242"/>
+        <stop offset="30%" stop-color="#757575"/>
+        <stop offset="50%" stop-color="#9E9E9E"/> 
+        <stop offset="100%" stop-color="#212121"/>
+    </linearGradient>
+    <radialGradient id="rivetGrad" cx="30%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#CFD8DC"/>
+        <stop offset="100%" stop-color="#546E7A"/>
+    </radialGradient>
+    <filter id="scratchMetal">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise"/>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="rivetShadow"><feDropShadow dx="0.5" dy="0.5" stdDeviation="0.5" flood-opacity="0.5"/></filter>
+</defs>
+<g transform="translate(49.5, 50) scale(0.45)">
+    <!-- Base Undersuit -->
+    <path d="M65 80 L115 80 L112 140 L68 140 Z" fill="#263238"/>
+    
+    <!-- Metal Plates (Scratched) -->
+    <g filter="url(#scratchMetal)">
+        <!-- Chest Plate -->
+        <path d="M68 85 L112 85 L110 110 L70 110 Z" fill="url(#metalPlate)" stroke="#212121" stroke-width="0.5"/>
+        <!-- Ab Plate -->
+        <path d="M72 115 L108 115 L106 135 L74 135 Z" fill="url(#metalPlate)" stroke="#212121" stroke-width="0.5"/>
+    </g>
+    
+    <!-- Rivets -->
+    <g fill="url(#rivetGrad)" filter="url(#rivetShadow)">
+        <circle cx="70" cy="88" r="1.5"/>
+        <circle cx="110" cy="88" r="1.5"/>
+        <circle cx="72" cy="108" r="1.5"/>
+        <circle cx="108" cy="108" r="1.5"/>
+        <circle cx="74" cy="118" r="1.5"/>
+        <circle cx="106" cy="118" r="1.5"/>
+        <circle cx="76" cy="132" r="1.5"/>
+        <circle cx="104" cy="132" r="1.5"/>
+    </g>
+    
+    <!-- Blue Accents -->
+    <path d="M88 85 L92 85 L91 110 L89 110 Z" fill="#0277BD" opacity="0.8"/>
+</g>
+</svg>
+
+</div>
+        </div>
+        <div class="label">rare</div>
+    </div>    <div class="card">
+        <div class="preview">
+            <div class="layer base-layer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFD6B2"/>
+      <stop offset="100%" stop-color="#E5BC99"/>
+    </linearGradient>
+    <linearGradient id="suitGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#223046"/>
+      <stop offset="50%" stop-color="#2c3e5a"/>
+      <stop offset="100%" stop-color="#223046"/>
+    </linearGradient>
+    <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="90" cy="195" rx="50" ry="8" fill="url(#shadowGrad)"/>
+
+  <!-- Body Group -->
+  <g id="hero_body">
+    <!-- Legs -->
+    <path d="M70 140 L65 190 L85 190 L88 140 Z" fill="#223046" stroke="#111" stroke-width="1"/>
+    <path d="M110 140 L115 190 L95 190 L92 140 Z" fill="#223046" stroke="#111" stroke-width="1"/>
+    
+    <!-- Torso -->
+    <path d="M65 80 Q60 140 70 150 L110 150 Q120 140 115 80 L90 150 Z" fill="url(#suitGrad)"/> 
+    <path d="M65 80 L115 80 L110 150 L70 150 Z" fill="url(#suitGrad)" stroke="#1a2536" stroke-width="1"/>
+
+    <!-- Chest Armor Base (Underlayer) -->
+    <path d="M70 80 L110 80 L105 120 L75 120 Z" fill="#3D5572" opacity="0.8"/>
+
+    <!-- Neck -->
+    <rect x="82" y="70" width="16" height="15" fill="url(#skinGrad)"/>
+
+    <!-- Head -->
+    <g id="head">
+      <ellipse cx="90" cy="60" rx="14" ry="18" fill="url(#skinGrad)"/>
+      <!-- Eyes -->
+      <g fill="#223046">
+         <!-- Left Eye -->
+         <ellipse cx="85" cy="60" rx="2" ry="1.5">
+           <animate attributeName="ry" values="1.5;0.1;1.5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </ellipse>
+         <!-- Right Eye -->
+         <ellipse cx="95" cy="60" rx="2" ry="1.5">
+           <animate attributeName="ry" values="1.5;0.1;1.5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </ellipse>
+      </g>
+      <!-- Mouth -->
+      <path d="M86 70 Q90 73 94 70" fill="none" stroke="#D1A685" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Hair/Cowl Base -->
+      <path d="M75 50 Q90 35 105 50 L104 65 Q90 60 76 65 Z" fill="#223046"/>
+    </g>
+
+    <!-- Arms (Placed to overlap body slightly) -->
+    <g id="stats_left_arm">
+       <path d="M65 82 Q50 100 55 120 L65 118 Q62 100 70 88 Z" fill="url(#suitGrad)"/>
+       <circle cx="55" cy="122" r="6" fill="#E5BC99"/> 
+    </g>
+    <g id="stats_right_arm">
+       <path d="M115 82 Q130 100 125 120 L115 118 Q118 100 110 88 Z" fill="url(#suitGrad)"/>
+       <circle cx="125" cy="122" r="6" fill="#E5BC99"/> 
+    </g>
+    
+    <!-- Idle Animation: Subtle Vertical Heave (Translate) - Safer for QSvgRenderer than Scale with Transform-Origin -->
+    <animateTransform 
+        attributeName="transform" 
+        type="translate" 
+        values="0 0; 0 -1; 0 0" 
+        dur="3s" 
+        repeatCount="indefinite" 
+        additive="sum" 
+    />
+  </g>
+
+</svg>
+</div>
+            <div class="layer gear-layer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <linearGradient id="stealthVoid" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#311B92"/>
+        <stop offset="100%" stop-color="#1A237E"/>
+    </linearGradient>
+    <pattern id="hexMesh" width="6" height="6" patternUnits="userSpaceOnUse">
+        <path d="M3 0 L6 1.5 L6 4.5 L3 6 L0 4.5 L0 1.5 Z" fill="none" stroke="#7C4DFF" stroke-width="0.3" opacity="0.3"/>
+    </pattern>
+    <filter id="neonBlur">
+        <feGaussianBlur stdDeviation="1" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+</defs>
+<g transform="translate(49.5, 50) scale(0.45)">
+    <!-- Main Suit (Form Fitting) -->
+    <path d="M65 80 Q90 75 115 80 L112 140 Q90 145 68 140 Z" fill="url(#stealthVoid)"/>
+    
+    <!-- Mesh Overlay -->
+    <path d="M65 80 Q90 75 115 80 L112 140 Q90 145 68 140 Z" fill="url(#hexMesh)" opacity="0.5"/>
+    
+    <!-- Armor Plates -->
+    <path d="M72 90 L108 90 L106 110 L74 110 Z" fill="#4A148C" opacity="0.8" stroke="#AA00FF" stroke-width="0.5"/>
+    <path d="M75 115 L105 115 L102 135 L78 135 Z" fill="#4A148C" opacity="0.8" stroke="#AA00FF" stroke-width="0.5"/>
+    
+    <!-- Energy Lines -->
+    <path d="M90 80 L90 140" stroke="#E040FB" stroke-width="1" filter="url(#neonBlur)" opacity="0.8">
+        <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="90" cy="110" r="2.5" fill="#E040FB" filter="url(#neonBlur)">
+         <animate attributeName="r" values="2.5;3.5;2.5" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+</g>
+</svg>
+
+</div>
+        </div>
+        <div class="label">epic</div>
+    </div>    <div class="card">
+        <div class="preview">
+            <div class="layer base-layer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFD6B2"/>
+      <stop offset="100%" stop-color="#E5BC99"/>
+    </linearGradient>
+    <linearGradient id="suitGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#223046"/>
+      <stop offset="50%" stop-color="#2c3e5a"/>
+      <stop offset="100%" stop-color="#223046"/>
+    </linearGradient>
+    <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="90" cy="195" rx="50" ry="8" fill="url(#shadowGrad)"/>
+
+  <!-- Body Group -->
+  <g id="hero_body">
+    <!-- Legs -->
+    <path d="M70 140 L65 190 L85 190 L88 140 Z" fill="#223046" stroke="#111" stroke-width="1"/>
+    <path d="M110 140 L115 190 L95 190 L92 140 Z" fill="#223046" stroke="#111" stroke-width="1"/>
+    
+    <!-- Torso -->
+    <path d="M65 80 Q60 140 70 150 L110 150 Q120 140 115 80 L90 150 Z" fill="url(#suitGrad)"/> 
+    <path d="M65 80 L115 80 L110 150 L70 150 Z" fill="url(#suitGrad)" stroke="#1a2536" stroke-width="1"/>
+
+    <!-- Chest Armor Base (Underlayer) -->
+    <path d="M70 80 L110 80 L105 120 L75 120 Z" fill="#3D5572" opacity="0.8"/>
+
+    <!-- Neck -->
+    <rect x="82" y="70" width="16" height="15" fill="url(#skinGrad)"/>
+
+    <!-- Head -->
+    <g id="head">
+      <ellipse cx="90" cy="60" rx="14" ry="18" fill="url(#skinGrad)"/>
+      <!-- Eyes -->
+      <g fill="#223046">
+         <!-- Left Eye -->
+         <ellipse cx="85" cy="60" rx="2" ry="1.5">
+           <animate attributeName="ry" values="1.5;0.1;1.5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </ellipse>
+         <!-- Right Eye -->
+         <ellipse cx="95" cy="60" rx="2" ry="1.5">
+           <animate attributeName="ry" values="1.5;0.1;1.5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </ellipse>
+      </g>
+      <!-- Mouth -->
+      <path d="M86 70 Q90 73 94 70" fill="none" stroke="#D1A685" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Hair/Cowl Base -->
+      <path d="M75 50 Q90 35 105 50 L104 65 Q90 60 76 65 Z" fill="#223046"/>
+    </g>
+
+    <!-- Arms (Placed to overlap body slightly) -->
+    <g id="stats_left_arm">
+       <path d="M65 82 Q50 100 55 120 L65 118 Q62 100 70 88 Z" fill="url(#suitGrad)"/>
+       <circle cx="55" cy="122" r="6" fill="#E5BC99"/> 
+    </g>
+    <g id="stats_right_arm">
+       <path d="M115 82 Q130 100 125 120 L115 118 Q118 100 110 88 Z" fill="url(#suitGrad)"/>
+       <circle cx="125" cy="122" r="6" fill="#E5BC99"/> 
+    </g>
+    
+    <!-- Idle Animation: Subtle Vertical Heave (Translate) - Safer for QSvgRenderer than Scale with Transform-Origin -->
+    <animateTransform 
+        attributeName="transform" 
+        type="translate" 
+        values="0 0; 0 -1; 0 0" 
+        dur="3s" 
+        repeatCount="indefinite" 
+        additive="sum" 
+    />
+  </g>
+
+</svg>
+</div>
+            <div class="layer gear-layer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <linearGradient id="ceramicPlate" x1="0%" y1="0%" x2="1" y2="1">
+        <stop offset="0%" stop-color="#FF6F00"/>
+        <stop offset="40%" stop-color="#E65100"/>
+        <stop offset="60%" stop-color="#FF8F00"/> 
+        <stop offset="100%" stop-color="#BF360C"/> 
+    </linearGradient>
+    <filter id="heatShimmer">
+        <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" result="turb">
+             <animate attributeName="baseFrequency" values="0.05;0.055;0.05" dur="0.5s" repeatCount="indefinite"/>
+        </feTurbulence>
+        <feDisplacementMap in="SourceGraphic" in2="turb" scale="1"/>
+    </filter>
+</defs>
+<g transform="translate(49.5, 50) scale(0.45)">
+    <!-- Base Rig -->
+    <path d="M62 78 L118 78 L115 145 L65 145 Z" fill="#3E2723" stroke="#D84315" stroke-width="2"/>
+
+    <!-- Reactive Plates (Smaller) -->
+    <g filter="url(#heatShimmer)">
+        <!-- Top Plate -->
+        <rect x="68" y="85" width="44" height="20" rx="2" fill="url(#ceramicPlate)" stroke="#3E2723" stroke-width="1"/>
+        <!-- Mid Plate -->
+        <rect x="70" y="110" width="40" height="15" rx="2" fill="url(#ceramicPlate)" stroke="#3E2723" stroke-width="1"/>
+        <!-- Low Plate -->
+        <rect x="72" y="130" width="36" height="10" rx="2" fill="url(#ceramicPlate)" stroke="#3E2723" stroke-width="1"/>
+    </g>
+    
+    <!-- Warning Stripes -->
+    <path d="M68 85 L75 85 L68 92 Z" fill="#FFD600"/>
+    <path d="M112 85 L105 85 L112 92 Z" fill="#FFD600"/>
+    
+    <!-- Core Heat Glow -->
+    <circle cx="90" cy="117" r="3" fill="#FFAB00" opacity="0.8">
+        <animate attributeName="opacity" values="0.6;1;0.6" dur="0.2s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="3;4;3" dur="0.8s" repeatCount="indefinite"/>
+    </circle>
+</g>
+</svg>
+
+</div>
+        </div>
+        <div class="label">legendary</div>
+    </div>    <div class="card">
+        <div class="preview">
+            <div class="layer base-layer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFD6B2"/>
+      <stop offset="100%" stop-color="#E5BC99"/>
+    </linearGradient>
+    <linearGradient id="suitGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#223046"/>
+      <stop offset="50%" stop-color="#2c3e5a"/>
+      <stop offset="100%" stop-color="#223046"/>
+    </linearGradient>
+    <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="90" cy="195" rx="50" ry="8" fill="url(#shadowGrad)"/>
+
+  <!-- Body Group -->
+  <g id="hero_body">
+    <!-- Legs -->
+    <path d="M70 140 L65 190 L85 190 L88 140 Z" fill="#223046" stroke="#111" stroke-width="1"/>
+    <path d="M110 140 L115 190 L95 190 L92 140 Z" fill="#223046" stroke="#111" stroke-width="1"/>
+    
+    <!-- Torso -->
+    <path d="M65 80 Q60 140 70 150 L110 150 Q120 140 115 80 L90 150 Z" fill="url(#suitGrad)"/> 
+    <path d="M65 80 L115 80 L110 150 L70 150 Z" fill="url(#suitGrad)" stroke="#1a2536" stroke-width="1"/>
+
+    <!-- Chest Armor Base (Underlayer) -->
+    <path d="M70 80 L110 80 L105 120 L75 120 Z" fill="#3D5572" opacity="0.8"/>
+
+    <!-- Neck -->
+    <rect x="82" y="70" width="16" height="15" fill="url(#skinGrad)"/>
+
+    <!-- Head -->
+    <g id="head">
+      <ellipse cx="90" cy="60" rx="14" ry="18" fill="url(#skinGrad)"/>
+      <!-- Eyes -->
+      <g fill="#223046">
+         <!-- Left Eye -->
+         <ellipse cx="85" cy="60" rx="2" ry="1.5">
+           <animate attributeName="ry" values="1.5;0.1;1.5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </ellipse>
+         <!-- Right Eye -->
+         <ellipse cx="95" cy="60" rx="2" ry="1.5">
+           <animate attributeName="ry" values="1.5;0.1;1.5" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </ellipse>
+      </g>
+      <!-- Mouth -->
+      <path d="M86 70 Q90 73 94 70" fill="none" stroke="#D1A685" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Hair/Cowl Base -->
+      <path d="M75 50 Q90 35 105 50 L104 65 Q90 60 76 65 Z" fill="#223046"/>
+    </g>
+
+    <!-- Arms (Placed to overlap body slightly) -->
+    <g id="stats_left_arm">
+       <path d="M65 82 Q50 100 55 120 L65 118 Q62 100 70 88 Z" fill="url(#suitGrad)"/>
+       <circle cx="55" cy="122" r="6" fill="#E5BC99"/> 
+    </g>
+    <g id="stats_right_arm">
+       <path d="M115 82 Q130 100 125 120 L115 118 Q118 100 110 88 Z" fill="url(#suitGrad)"/>
+       <circle cx="125" cy="122" r="6" fill="#E5BC99"/> 
+    </g>
+    
+    <!-- Idle Animation: Subtle Vertical Heave (Translate) - Safer for QSvgRenderer than Scale with Transform-Origin -->
+    <animateTransform 
+        attributeName="transform" 
+        type="translate" 
+        values="0 0; 0 -1; 0 0" 
+        dur="3s" 
+        repeatCount="indefinite" 
+        additive="sum" 
+    />
+  </g>
+
+</svg>
+</div>
+            <div class="layer gear-layer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <linearGradient id="holoField" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#E0F7FA" stop-opacity="0.2"/>
+        <stop offset="50%" stop-color="#00BCD4" stop-opacity="0.4"/>
+        <stop offset="100%" stop-color="#006064" stop-opacity="0.2"/>
+    </linearGradient>
+    <filter id="scanLineFilter">
+        <feFlood flood-color="#00E5FF" flood-opacity="0.1" result="color"/>
+        <feComposite in="color" in2="SourceGraphic" operator="in" result="tint"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="tint"/></feMerge>
+    </filter>
+</defs>
+<g transform="translate(49.5, 50) scale(0.45)">
+    <!-- Physical Frame (Minimal) -->
+    <path d="M68 85 L112 85 L110 140 L70 140 Z" fill="none" stroke="#00BCD4" stroke-width="0.5" opacity="0.5"/>
+    
+    <!-- Holographic Shell -->
+    <path d="M65 80 Q90 75 115 80 L112 145 Q90 150 68 145 Z" fill="url(#holoField)" filter="url(#scanLineFilter)">
+        <animate attributeName="opacity" values="0.7;0.9;0.7" dur="2s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Moving Scanline -->
+    <rect x="60" y="70" width="60" height="1" fill="#18FFFF" opacity="0.5">
+        <animate attributeName="y" values="70;150;70" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    
+    <!-- Data Nodes -->
+    <circle cx="68" cy="85" r="1.5" fill="#00E5FF"/>
+    <circle cx="112" cy="85" r="1.5" fill="#00E5FF"/>
+    <circle cx="70" cy="140" r="1.5" fill="#00E5FF"/>
+    <circle cx="110" cy="140" r="1.5" fill="#00E5FF"/>
+    
+    <!-- Glitch Effect Path -->
+    <path d="M75 110 L105 110" stroke="#84FFFF" stroke-width="0.5" stroke-dasharray="3,1">
+        <animate attributeName="stroke-dashoffset" values="0;100" dur="1s" repeatCount="indefinite"/>
+    </path>
+</g>
+</svg>
+
+</div>
+        </div>
+        <div class="label">celestial</div>
+    </div></body></html>
