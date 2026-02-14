@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <linearGradient id="metalPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#424242"/>
+        <stop offset="30%" stop-color="#757575"/>
+        <stop offset="50%" stop-color="#9E9E9E"/> <!-- Highlight -->
+        <stop offset="100%" stop-color="#212121"/>
+    </linearGradient>
+    <radialGradient id="rivetGrad" cx="30%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="#CFD8DC"/>
+        <stop offset="100%" stop-color="#546E7A"/>
+    </radialGradient>
+    <filter id="scratchMetal">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise"/>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="rivetShadow"><feDropShadow dx="1" dy="1" stdDeviation="0.5" flood-opacity="0.5"/></filter>
+</defs>
+<g transform="translate(0, 5)">
+    <!-- Base Undersuit -->
+    <path d="M40 30 L140 30 L135 160 L45 160 Z" fill="#263238"/>
+    
+    <!-- Metal Plates (Scratched) -->
+    <g filter="url(#scratchMetal)">
+        <!-- Chest Plate -->
+        <path d="M45 40 L135 40 L130 90 L50 90 Z" fill="url(#metalPlate)" stroke="#212121" stroke-width="1"/>
+        <!-- Ab Plate -->
+        <path d="M52 95 L128 95 L125 150 L55 150 Z" fill="url(#metalPlate)" stroke="#212121" stroke-width="1"/>
+    </g>
+    
+    <!-- Rivets (New Gradient) -->
+    <g fill="url(#rivetGrad)" filter="url(#rivetShadow)">
+        <circle cx="50" cy="45" r="3"/>
+        <circle cx="130" cy="45" r="3"/>
+        <circle cx="55" cy="85" r="3"/>
+        <circle cx="125" cy="85" r="3"/>
+        <circle cx="58" cy="100" r="3"/>
+        <circle cx="122" cy="100" r="3"/>
+        <circle cx="60" cy="145" r="3"/>
+        <circle cx="120" cy="145" r="3"/>
+    </g>
+    
+    <!-- Blue Accents -->
+    <path d="M85 40 L95 40 L93 90 L87 90 Z" fill="#0277BD" opacity="0.8"/>
+</g>
+</svg>

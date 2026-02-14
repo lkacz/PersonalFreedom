@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <linearGradient id="holoField" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#E0F7FA" stop-opacity="0.2"/>
+        <stop offset="50%" stop-color="#00BCD4" stop-opacity="0.4"/>
+        <stop offset="100%" stop-color="#006064" stop-opacity="0.2"/>
+    </linearGradient>
+    <filter id="scanLineFilter">
+        <feFlood flood-color="#00E5FF" flood-opacity="0.1" result="color"/>
+        <feComposite in="color" in2="SourceGraphic" operator="in" result="tint"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="tint"/></feMerge>
+    </filter>
+</defs>
+<g transform="translate(0, 5)">
+    <!-- Physical Frame (Minimal) -->
+    <path d="M50 40 L130 40 L125 160 L55 160 Z" fill="none" stroke="#00BCD4" stroke-width="1" opacity="0.5"/>
+    
+    <!-- Holographic Shell -->
+    <path d="M40 30 Q90 20 140 30 L135 170 Q90 180 45 170 Z" fill="url(#holoField)" filter="url(#scanLineFilter)">
+        <animate attributeName="opacity" values="0.7;0.9;0.7" dur="2s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Moving Scanline -->
+    <rect x="30" y="0" width="120" height="2" fill="#18FFFF" opacity="0.5">
+        <animate attributeName="y" values="30;170;30" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    
+    <!-- Data Nodes -->
+    <circle cx="50" cy="50" r="2" fill="#00E5FF"/>
+    <circle cx="130" cy="50" r="2" fill="#00E5FF"/>
+    <circle cx="55" cy="150" r="2" fill="#00E5FF"/>
+    <circle cx="125" cy="150" r="2" fill="#00E5FF"/>
+    
+    <!-- Glitch Effect Path -->
+    <path d="M60 80 L120 80" stroke="#84FFFF" stroke-width="1" stroke-dasharray="5,2">
+        <animate attributeName="stroke-dashoffset" values="0;100" dur="1s" repeatCount="indefinite"/>
+    </path>
+</g>
+</svg>
