@@ -229,7 +229,8 @@ class EntityEncounterDialog(QtWidgets.QDialog):
             "scholar": "📚 Scholar's Study",
             "wanderer": "🧭 Wanderer's Journey",
             "underdog": "💪 Underdog's Rise",
-            "scientist": "🔬 Scientist's Lab"
+            "scientist": "🔬 Scientist's Lab",
+            "robot": "🤖 Robot's Awakening",
         }
         theme_display = theme_names.get(self.entity.theme_set, self.entity.theme_set)
         self.theme_label = QtWidgets.QLabel(theme_display)
@@ -765,15 +766,20 @@ class EntitidexCollectionDialog(QtWidgets.QDialog):
             }
         """)
         
-        # Create tabs for each theme
-        themes = [
-            ("warrior", "🛡️ Warrior"),
-            ("scholar", "📚 Scholar"),
-            ("wanderer", "🧭 Wanderer"),
-            ("underdog", "💪 Underdog")
-        ]
+        # Create tabs for each available entity theme (dynamic, no hardcoded theme count)
+        from entitidex.entity_pools import get_entity_count_by_theme
+        theme_labels = {
+            "warrior": "🛡️ Warrior",
+            "scholar": "📚 Scholar",
+            "wanderer": "🧭 Wanderer",
+            "underdog": "💪 Underdog",
+            "scientist": "🔬 Scientist",
+            "robot": "🤖 Robot",
+        }
+        theme_ids = list(get_entity_count_by_theme().keys())
         
-        for theme_id, theme_name in themes:
+        for theme_id in theme_ids:
+            theme_name = theme_labels.get(theme_id, theme_id.replace("_", " ").title())
             tab = self._create_theme_tab(theme_id)
             tabs.addTab(tab, theme_name)
         
@@ -817,9 +823,11 @@ class EntitidexCollectionDialog(QtWidgets.QDialog):
         layout = QtWidgets.QHBoxLayout(frame)
         
         # Collection progress
+        from entitidex.entity_pools import get_total_entity_count
+        
         progress_pct = self.stats["completion_percentage"]
         caught = self.stats["total_caught"]
-        total = 36  # Total entities in the game
+        total = get_total_entity_count()
         
         progress_label = QtWidgets.QLabel(f"Collection: {caught}/{total} ({progress_pct:.1f}%)")
         progress_label.setStyleSheet("""
