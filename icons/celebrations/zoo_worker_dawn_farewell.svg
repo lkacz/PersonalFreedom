@@ -1,0 +1,76 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Celebration: Zoo Worker Dawn Farewell -->
+  <!-- Theme: Completion of the Zoo Worker Set. The Emberwing Dragon takes flight at sunrise. -->
+  
+  <defs>
+    <!-- Sky Gradient: Night to Dawn -->
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1A237E"/> <!-- Deep Blue -->
+      <stop offset="50%" stop-color="#7B1FA2"/> <!-- Purple -->
+      <stop offset="80%" stop-color="#FF5722"/> <!-- Orange -->
+      <stop offset="100%" stop-color="#FFC107"/> <!-- Gold -->
+    </linearGradient>
+
+    <!-- Sun Glow -->
+    <radialGradient id="sunGrad" cx="50%" cy="100%" r="60%">
+      <stop offset="0%" stop-color="#FFF59D"/>
+      <stop offset="50%" stop-color="#FF9800"/>
+      <stop offset="100%" stop-color="#FF5722" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Sky Background -->
+  <rect width="512" height="512" fill="url(#skyGrad)" rx="20"/>
+
+  <!-- Sun usually rising from bottom -->
+  <circle cx="256" cy="512" r="200" fill="url(#sunGrad)">
+    <animate attributeName="r" values="200;220;200" dur="5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Clouds (Stylized) -->
+  <g fill="#FFF" opacity="0.2">
+      <ellipse cx="100" cy="100" rx="80" ry="20">
+          <animate attributeName="cx" from="-100" to="612" dur="20s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="400" cy="150" rx="100" ry="30">
+          <animate attributeName="cx" from="612" to="-100" dur="25s" repeatCount="indefinite"/>
+      </ellipse>
+  </g>
+
+  <!-- Landscape Silhouette (Zoo Park) -->
+  <path d="M0,512 L0,450 Q100,420 200,450 T400,430 L512,460 L512,512 Z" fill="#263238"/>
+  
+  <!-- Trees -->
+  <path d="M50,450 L30,400 L70,400 Z" fill="#263238"/>
+  <circle cx="50" cy="390" r="25" fill="#263238"/>
+  
+  <path d="M460,460 L440,380 L480,380 Z" fill="#263238"/>
+   <circle cx="460" cy="370" r="30" fill="#263238"/>
+
+  <!-- The Emberwing Dragon (Silhouette) Flying Away -->
+  <g transform="translate(256, 300)">
+      <animateTransform attributeName="transform" type="translate" values="256,300; 256,200" dur="3s" fill="freeze" calcMode="spline" keySplines="0.4 0 0.2 1"/>
+      <animateTransform attributeName="transform" type="scale" values="1; 0.5" dur="3s" fill="freeze" additive="sum"/>
+      
+      <!-- Dragon Shape -->
+      <path d="M0,0 Q-20,20 -40,-10 L-60,-20 Q-20,-40 0,-60 Q20,-40 60,-20 L40,-10 Q20,20 0,0" fill="#BF360C"/>
+      <animateMotion path="M0,0 Q50,-100 100,-200" dur="3s" fill="freeze"/>
+  </g>
+  
+  <!-- Confetti / Magic Sparkles -->
+  <g>
+    <circle cx="256" cy="256" r="2" fill="#FFF">
+        <animate attributeName="cy" values="256; 0" dur="2s" repeatCount="indefinite" begin="0ms"/>
+        <animate attributeName="opacity" values="1;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="200" cy="300" r="3" fill="#FFD700">
+        <animate attributeName="cy" values="300; 50" dur="2.5s" repeatCount="indefinite" begin="500ms"/>
+        <animate attributeName="opacity" values="1;0" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="312" cy="280" r="2" fill="#FF5722">
+        <animate attributeName="cy" values="280; 20" dur="2.2s" repeatCount="indefinite" begin="200ms"/>
+        <animate attributeName="opacity" values="1;0" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+</svg>

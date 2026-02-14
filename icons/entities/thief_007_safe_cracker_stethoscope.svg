@@ -1,0 +1,90 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 007: Safe Cracker Stethoscope (Normal) -->
+  <defs>
+    <!-- Steel Dial Gradient -->
+    <radialGradient id="dialSteel" cx="50%" cy="50%" r="50%">
+      <stop offset="70%" stop-color="#CFD8DC"/>
+      <stop offset="90%" stop-color="#90A4AE"/>
+      <stop offset="100%" stop-color="#607D8B"/>
+    </radialGradient>
+    
+    <!-- Rubber Tube Gradient -->
+    <linearGradient id="tubeBlack" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#212121"/>
+      <stop offset="40%" stop-color="#424242"/>
+      <stop offset="100%" stop-color="#212121"/>
+    </linearGradient>
+
+    <filter id="shadow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <g transform="translate(256, 256)">
+    
+    <!-- Safe Door Background Surface -->
+    <rect x="-150" y="-150" width="300" height="300" rx="10" fill="#455A64" opacity="0.3"/>
+    
+    <!-- Safe Dial Group -->
+    <!-- Spinning Animation -->
+    <g>
+        <animateTransform attributeName="transform" type="rotate"
+            values="0 0 0; 360 0 0; 720 0 0; 700 0 0; 740 0 0; 720 0 0"
+            keyTimes="0; 0.4; 0.7; 0.8; 0.9; 1"
+            dur="4s"
+            repeatCount="indefinite"/>
+        
+        <!-- Dial Body -->
+        <circle cx="0" cy="0" r="80" fill="url(#dialSteel)" stroke="#37474F" stroke-width="4" filter="url(#shadow)"/>
+        
+        <!-- Ticks -->
+        <g stroke="#37474F" stroke-width="2">
+            <line x1="0" y1="-70" x2="0" y2="-80"/>
+            <line x1="0" y1="70" x2="0" y2="80"/>
+            <line x1="70" y1="0" x2="80" y2="0"/>
+            <line x1="-70" y1="0" x2="-80" y2="0"/>
+            <!-- Diagonals -->
+            <line x1="50" y1="-50" x2="56" y2="-56"/>
+            <line x1="-50" y1="-50" x2="-56" y2="-56"/>
+            <line x1="50" y1="50" x2="56" y2="56"/>
+            <line x1="-50" y1="50" x2="-56" y2="56"/>
+        </g>
+        
+        <!-- Knob Handle -->
+        <circle cx="0" cy="0" r="30" fill="#ECEFF1" stroke="#37474F" stroke-width="2"/>
+        <rect x="-5" y="-30" width="10" height="60" fill="#B0BEC5"/>
+    </g>
+
+    <!-- Stethoscope Head (Held against safe) -->
+    <g transform="translate(-100, 80)">
+         <!-- Shadow underneath -->
+         <ellipse cx="0" cy="0" rx="40" ry="30" fill="black" opacity="0.4" filter="url(#shadow)"/>
+         
+         <!-- Metal Head -->
+         <circle cx="0" cy="0" r="35" fill="#90A4AE" stroke="#CFD8DC" stroke-width="4"/>
+         <circle cx="0" cy="0" r="10" fill="#546E7A"/>
+         
+         <!-- Tube Connection -->
+         <path d="M0,0 Q-20,0 -30,50 L-40,150" fill="none" stroke="url(#tubeBlack)" stroke-width="12" stroke-linecap="round">
+             <!-- Vibrate when dial stops (last keyframes of dial anim) -->
+             <animate attributeName="d" 
+                values="M0,0 Q-20,0 -30,50 L-40,150; M0,0 Q-25,0 -35,50 L-45,150; M0,0 Q-20,0 -30,50 L-40,150"
+                dur="0.1s"
+                repeatCount="indefinite"
+                begin="2.8s" end="4s"/> <!-- Vibrates during the 'finding' phase -->
+         </path>
+    </g>
+
+    <!-- Click Sound Waves (Visualized) -->
+    <g transform="translate(0, 0)" opacity="0">
+        <circle cx="0" cy="0" r="90" fill="none" stroke="white" stroke-width="2"/>
+        <animate attributeName="opacity" values="0; 1; 0" dur="4s" keyTimes="0; 0.95; 1" repeatCount="indefinite"/> <!-- Flash at end -->
+        <animate attributeName="r" values="90; 120" dur="4s" keyTimes="0; 0.95; 1" repeatCount="indefinite"/>
+    </g>
+
+  </g>
+</svg>

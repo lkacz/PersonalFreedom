@@ -1,0 +1,122 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Space Pirate 005: Mutiny Complaint Box (Normal) -->
+  <defs>
+    <linearGradient id="bodySteel" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#455A64"/>
+      <stop offset="50%" stop-color="#607D8B"/>
+      <stop offset="100%" stop-color="#455A64"/>
+    </linearGradient>
+    <linearGradient id="hazardStrips" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFEB3B"/>
+      <stop offset="10%" stop-color="#FFEB3B"/>
+      <stop offset="10%" stop-color="#212121"/>
+      <stop offset="20%" stop-color="#212121"/>
+      <stop offset="20%" stop-color="#FFEB3B"/>
+      <stop offset="30%" stop-color="#FFEB3B"/>
+      <stop offset="30%" stop-color="#212121"/>
+      <stop offset="40%" stop-color="#212121"/>
+      <stop offset="40%" stop-color="#FFEB3B"/>
+      <stop offset="50%" stop-color="#FFEB3B"/>
+      <stop offset="50%" stop-color="#212121"/>
+      <stop offset="60%" stop-color="#212121"/>
+      <stop offset="60%" stop-color="#FFEB3B"/>
+      <stop offset="70%" stop-color="#FFEB3B"/>
+      <stop offset="70%" stop-color="#212121"/>
+      <stop offset="80%" stop-color="#212121"/>
+      <stop offset="80%" stop-color="#FFEB3B"/>
+      <stop offset="90%" stop-color="#FFEB3B"/>
+      <stop offset="90%" stop-color="#212121"/>
+      <stop offset="100%" stop-color="#212121"/>
+    </linearGradient>
+    <radialGradient id="slotShadow" cx="50%" cy="0%" r="50%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background Glow -->
+  <circle cx="256" cy="256" r="220" fill="#263238" opacity="0.6"/>
+
+  <!-- Main Group -->
+  <g transform="translate(256, 256)">
+  
+    <!-- The Box Body -->
+    <g>
+      <!-- Shaking Animation Triggered by Paper Entry -->
+      <animateTransform attributeName="transform" type="rotate"
+        values="0; 2; -2; 3; -3; 1; -1; 0"
+        dur="4s"
+        keyTimes="0; 0.3; 0.32; 0.34; 0.36; 0.38; 0.4; 1"
+        repeatCount="indefinite"/>
+
+      <!-- Main Container -->
+      <rect x="-100" y="-120" width="200" height="240" rx="10" fill="url(#bodySteel)" stroke="#263238" stroke-width="4"/>
+      
+      <!-- Hazard Stripes Panel -->
+      <rect x="-90" y="-110" width="180" height="40" fill="url(#hazardStrips)" opacity="0.8"/>
+      <rect x="-90" y="-110" width="180" height="40" stroke="#000" stroke-width="2" fill="none"/>
+      
+      <!-- Text Label "COMPLAINTS" -->
+      <!-- Emulated text with bars -->
+      <path d="M-70,-90 h140" stroke="#000" stroke-width="8" stroke-dasharray="20,10"/>
+
+      <!-- Intake Slot -->
+      <rect x="-60" y="-50" width="120" height="20" rx="5" fill="#121212" stroke="#000" stroke-width="2"/>
+      <rect x="-60" y="-50" width="120" height="10" fill="url(#slotShadow)"/>
+
+      <!-- Lock Mechanism -->
+      <circle cx="0" cy="20" r="30" fill="#D32F2F" stroke="#B71C1C" stroke-width="4"/>
+      <path d="M-10,20 h20 M0,10 v20" stroke="#FFF" stroke-width="6"/> <!-- Cross/Lock symbol -->
+
+      <!-- Shredder Exit at Bottom -->
+      <path d="M-80,100 h160 v20 h-160 z" fill="#121212"/>
+      <path d="M-80,100 v20 M-60,100 v20 M-40,100 v20 M-20,100 v20 M0,100 v20 M20,100 v20 M40,100 v20 M60,100 v20 M80,100 v20" stroke="#455A64" stroke-width="2"/>
+    </g>
+
+    <!-- Paper Animation Sequence -->
+    <!-- 1. Enters Top -->
+    <g transform="translate(0, -180)">
+       <path d="M-20,0 h40 v50 h-40 z" fill="#FFF" stroke="#CFD8DC" stroke-width="1">
+         <animateTransform attributeName="transform" type="translate"
+            values="0,0; 0,140"
+            dur="4s"
+            keyTimes="0; 0.3"
+            repeatCount="indefinite"/>
+         <animate attributeName="opacity"
+            values="1; 1; 0; 0"
+            keyTimes="0; 0.25; 0.3; 1"
+            dur="4s"
+            repeatCount="indefinite"/>
+       </path>
+       <!-- Text lines on paper -->
+       <path d="M-15,10 h30 M-15,20 h30 M-15,30 h20" stroke="#000" stroke-width="2" opacity="0.5">
+          <animateTransform attributeName="transform" type="translate" values="0,0; 0,140" dur="4s" repeatCount="indefinite" keyTimes="0; 0.3"/>
+          <animate attributeName="opacity" values="0.5;0.5;0;0" dur="4s" repeatCount="indefinite" keyTimes="0; 0.25; 0.3; 1"/>
+       </path>
+    </g>
+
+    <!-- 2. Shreds Fall Out Bottom -->
+    <g transform="translate(0, 120)">
+        <g opacity="0">
+            <animate attributeName="opacity" values="0; 0; 1; 0" keyTimes="0; 0.35; 0.4; 0.8" dur="4s" repeatCount="indefinite"/>
+            
+            <!-- Confetti Pieces Falling -->
+            <rect x="-10" y="0" width="5" height="10" fill="#FFF">
+                <animateTransform attributeName="transform" type="translate" values="0,0; -20,60" DUR="4s" keyTimes="0.35; 0.6"/>
+                <animateTransform attributeName="transform" type="rotate" values="0; 360" DUR="4s" keyTimes="0.35; 0.6" additive="sum"/>
+            </rect>
+            <rect x="5" y="0" width="5" height="8" fill="#FFF">
+                <animateTransform attributeName="transform" type="translate" values="0,0; 20,50" DUR="4s" keyTimes="0.35; 0.65"/>
+                <animateTransform attributeName="transform" type="rotate" values="0; -180" DUR="4s" keyTimes="0.35; 0.65" additive="sum"/>
+            </rect>
+            <rect x="-20" y="5" width="4" height="6" fill="#FFF">
+                <animateTransform attributeName="transform" type="translate" values="0,0; -10,70" DUR="4s" keyTimes="0.35; 0.7"/>
+            </rect>
+             <rect x="15" y="2" width="6" height="6" fill="#FFF">
+                <animateTransform attributeName="transform" type="translate" values="0,0; 30,60" DUR="4s" keyTimes="0.35; 0.6"/>
+            </rect>
+        </g>
+    </g>
+
+  </g>
+</svg>

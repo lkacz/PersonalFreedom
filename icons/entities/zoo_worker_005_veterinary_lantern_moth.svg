@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Zoo Worker 005: Veterinary Lantern Moth (Normal) - Enhanced Shading -->
+  
+  <defs>
+    <!-- Deep Fuzzy Body Gradient -->
+    <radialGradient id="fuzzyBody" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#EFEBE9"/> <!-- Highlight -->
+      <stop offset="50%" stop-color="#A1887F"/> <!-- Mid Tone -->
+      <stop offset="100%" stop-color="#5D4037"/> <!-- Shadow -->
+    </radialGradient>
+
+    <!-- Lantern Glass Shell -->
+    <linearGradient id="glassShell" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF59D" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#FBC02D" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#F57F17" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <!-- Lantern Inner Glow -->
+    <radialGradient id="lanternGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF" stop-opacity="1"/> <!-- Filament -->
+      <stop offset="40%" stop-color="#FFEE58" stop-opacity="0.9"/> <!-- Core -->
+      <stop offset="100%" stop-color="#FF6F00" stop-opacity="0"/> <!-- Fade -->
+    </radialGradient>
+
+    <!-- Wing Membrane (Translucent) -->
+    <linearGradient id="wingMembrane" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#DCEDC8"/> <!-- Pale Lime -->
+      <stop offset="100%" stop-color="#8BC34A"/> <!-- Leaf Green -->
+    </linearGradient>
+
+    <!-- Deep Shadow Filter -->
+    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dx="0" dy="6" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.4"/>
+      </feComponentTransfer>
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g transform="translate(256, 256)">
+    
+    <!-- Pulse Animation Group -->
+    <g>
+        <animateTransform attributeName="transform" type="translate" values="0,0; 0,-10; 0,0" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+
+        <!-- Ground Glow (Light cast by the lantern) -->
+        <ellipse cx="0" cy="180" rx="100" ry="30" fill="#FFF59D" opacity="0.4" filter="url(#dropShadow)">
+            <animate attributeName="opacity" values="0.2; 0.5; 0.2" dur="2s" repeatCount="indefinite"/>
+            <animate attributeName="rx" values="90; 110; 90" dur="2s" repeatCount="indefinite"/>
+        </ellipse>
+
+        <!-- WINGS -->
+        <g filter="url(#dropShadow)">
+            <!-- Back Wings (Lower) -->
+            <g transform="translate(0, 20)">
+                <!-- Left Lower -->
+                <path d="M-20,0 Q-100,20 -140,80 Q-60,120 -20,60 Z" fill="url(#wingMembrane)" stroke="#558B2F" stroke-width="2">
+                    <animateTransform attributeName="transform" type="rotate" values="10 0 0; 0 0 0; 10 0 0" dur="0.15s" repeatCount="indefinite"/>
+                </path>
+                <!-- Right Lower -->
+                <path d="M20,0 Q100,20 140,80 Q60,120 20,60 Z" fill="url(#wingMembrane)" stroke="#558B2F" stroke-width="2">
+                    <animateTransform attributeName="transform" type="rotate" values="-10 0 0; 0 0 0; -10 0 0" dur="0.15s" repeatCount="indefinite"/>
+                </path>
+            </g>
+
+            <!-- Upper Wings (Main) -->
+            <g transform="translate(0, -20)">
+                <!-- Left Upper -->
+                <path d="M-20,20 Q-180,-80 -220,0 Q-180,100 -20,60 Z" fill="url(#wingMembrane)" stroke="#33691E" stroke-width="3">
+                    <animateTransform attributeName="transform" type="rotate" values="20 0 20; -5 0 20; 20 0 20" dur="0.15s" repeatCount="indefinite"/>
+                </path>
+                <!-- Veins/Texture -->
+                <path d="M-20,20 Q-100,-20 -180,0" fill="none" stroke="#558B2F" stroke-width="1.5" opacity="0.6">
+                    <animateTransform attributeName="transform" type="rotate" values="20 0 20; -5 0 20; 20 0 20" dur="0.15s" repeatCount="indefinite"/>
+                </path>
+                
+                <!-- Medical Cross Mark on Left Wing - Subtler, Embedded -->
+                <g transform="translate(-120, 10) rotate(-10)">
+                    <animateTransform attributeName="transform" type="rotate" values="20 120 10; -5 120 10; 20 120 10" dur="0.15s" repeatCount="indefinite" additive="sum"/>
+                    <rect x="-15" y="-5" width="30" height="10" fill="#FFF" opacity="0.4"/>
+                    <rect x="-5" y="-15" width="10" height="30" fill="#FFF" opacity="0.4"/>
+                </g>
+
+                <!-- Right Upper -->
+                <path d="M20,20 Q180,-80 220,0 Q180,100 20,60 Z" fill="url(#wingMembrane)" stroke="#33691E" stroke-width="3">
+                    <animateTransform attributeName="transform" type="rotate" values="-20 0 20; 5 0 20; -20 0 20" dur="0.15s" repeatCount="indefinite"/>
+                </path>
+                 <!-- Veins/Texture -->
+                 <path d="M20,20 Q100,-20 180,0" fill="none" stroke="#558B2F" stroke-width="1.5" opacity="0.6">
+                    <animateTransform attributeName="transform" type="rotate" values="-20 0 20; 5 0 20; -20 0 20" dur="0.15s" repeatCount="indefinite"/>
+                 </path>
+
+                 <!-- Medical Cross Mark on Right Wing -->
+                 <g transform="translate(120, 10) rotate(10)">
+                    <animateTransform attributeName="transform" type="rotate" values="-20 -120 10; 5 -120 10; -20 -120 10" dur="0.15s" repeatCount="indefinite" additive="sum"/>
+                    <rect x="-15" y="-5" width="30" height="10" fill="#FFF" opacity="0.4"/>
+                    <rect x="-5" y="-15" width="10" height="30" fill="#FFF" opacity="0.4"/>
+                </g>
+            </g>
+        </g>
+
+        <!-- Body Group -->
+        <g filter="url(#dropShadow)">
+            <!-- Abdomen (The Lantern) - MORE 3D -->
+            <g transform="translate(0, 40)">
+                <!-- Glass/Bulb Shape -->
+                <ellipse cx="0" cy="40" rx="30" ry="50" fill="url(#glassShell)" stroke="#F57F17" stroke-width="2"/>
+                
+                <!-- Inner Shadow for Glass Depth -->
+                <ellipse cx="0" cy="40" rx="25" ry="45" fill="none" stroke="#FFF" stroke-width="2" opacity="0.3"/>
+
+                <!-- The Light Source -->
+                <circle cx="0" cy="50" r="25" fill="url(#lanternGlow)">
+                    <!-- Heartbeat Pulse -->
+                    <animate attributeName="opacity" values="0.6; 1; 0.6; 0.4; 0.6" dur="2s" repeatCount="indefinite"/>
+                    <animate attributeName="r" values="25; 30; 25; 22; 25" dur="2s" repeatCount="indefinite"/>
+                </circle>
+
+                <!-- Specular Highlight on Glass -->
+                <path d="M-15,10 Q-10,30 -15,50" stroke="#FFF" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+
+                <!-- Metal Cage Ribs - Darker, clearer -->
+                <path d="M-20,10 Q-28,40 -20,70" fill="none" stroke="#4E342E" stroke-width="3" opacity="0.8"/>
+                <path d="M20,10 Q28,40 20,70" fill="none" stroke="#4E342E" stroke-width="3" opacity="0.8"/>
+                <path d="M0,10 V80" fill="none" stroke="#4E342E" stroke-width="3" opacity="0.8"/>
+            </g>
+
+            <!-- Thorax (Fuzzy Chest) - 3D Sphere Look -->
+            <circle cx="0" cy="0" r="35" fill="url(#fuzzyBody)"/>
+            
+            <!-- Fur Tufts (Vector Fur instead of filter for cleaner look) -->
+            <g fill="#A1887F">
+                <path d="M-30,0 L-40,-10 L-32,-5 Z"/>
+                <path d="M30,0 L40,-10 L32,-5 Z"/>
+                <path d="M-20,-20 L-25,-30 L-18,-25 Z"/>
+                <path d="M20,-20 L25,-30 L18,-25 Z"/>
+            </g>
+
+            <!-- Scarf/Collar Fur - Lighter -->
+            <path d="M-20,20 Q0,40 20,20" fill="none" stroke="#D7CCC8" stroke-width="10" stroke-linecap="round"/>
+
+            <!-- Head -->
+            <circle cx="0" cy="-40" r="28" fill="url(#fuzzyBody)"/>
+            
+            <!-- Eyes (Compound, Deep Black glossy) -->
+            <ellipse cx="-15" cy="-45" rx="10" ry="14" fill="#000"/>
+            <circle cx="-18" cy="-50" r="4" fill="#FFF" opacity="0.9"/> <!-- Sharp Highlight -->
+            <circle cx="-12" cy="-40" r="2" fill="#FFF" opacity="0.3"/> <!-- Secondary Highlight -->
+            
+            <ellipse cx="15" cy="-45" rx="10" ry="14" fill="#000"/>
+            <circle cx="12" cy="-50" r="4" fill="#FFF" opacity="0.9"/> <!-- Sharp Highlight -->
+            <circle cx="18" cy="-40" r="2" fill="#FFF" opacity="0.3"/> <!-- Secondary Highlight -->
+
+            <!-- Antennae (Feathery - Thicker) -->
+            <g stroke="#4E342E" stroke-width="3" stroke-linecap="round">
+                <!-- Left Antenna -->
+                <path d="M-10,-60 Q-30,-100 -70,-90" fill="none"/>
+                <!-- Feathers -->
+                <path d="M-20,-75 L-35,-65 M-28,-85 L-42,-75 M-38,-92 L-52,-82" stroke-width="2"/>
+
+                <!-- Right Antenna -->
+                <path d="M10,-60 Q30,-100 70,-90" fill="none"/>
+                <!-- Feathers -->
+                <path d="M20,-75 L35,-65 M28,-85 L42,-75 M38,-92 L52,-82" stroke-width="2"/>
+            </g>
+
+            <!-- Legs (Tucked - Darker contrast) -->
+            <path d="M-20,10 Q-35,30 -25,50" stroke="#3E2723" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <path d="M20,10 Q35,30 25,50" stroke="#3E2723" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+        </g>
+    </g>
+  </g>
+</svg>

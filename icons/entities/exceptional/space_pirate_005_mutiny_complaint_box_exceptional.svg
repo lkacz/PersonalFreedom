@@ -1,0 +1,76 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Space Pirate 005: Suggestion Prism (Exceptional) -->
+  <defs>
+    <linearGradient id="prismRainbow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF1744"/>
+      <stop offset="20%" stop-color="#FFEA00"/>
+      <stop offset="40%" stop-color="#00E676"/>
+      <stop offset="60%" stop-color="#2979FF"/>
+      <stop offset="80%" stop-color="#D500F9"/>
+      <stop offset="100%" stop-color="#FF1744"/>
+    </linearGradient>
+    <linearGradient id="crystalGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0F7FA" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#B2EBF2" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#00BCD4" stop-opacity="0.8"/>
+    </linearGradient>
+    <filter id="glowPrism" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Ambience -->
+  <circle cx="256" cy="256" r="240" fill="#1A237E" opacity="0.4"/>
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#2979FF" stroke-width="2" stroke-dasharray="10,20">
+      <animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="20s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Main Levitating Unit -->
+  <g transform="translate(256, 256)">
+  
+    <!-- Input Stream (Top) -->
+    <path d="M0,-200 L0,-100" stroke="#FFF" stroke-width="4" stroke-linecap="round" opacity="0.8">
+        <animate attributeName="stroke-dasharray" values="10,10; 20,20; 10,10" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.8; 0.2; 0.8" dur="1s" repeatCount="indefinite"/>
+        <animate attributeName="d" values="M0,-200 L0,-100; M-10,-200 L0,-100; M10,-200 L0,-100; M0,-200 L0,-100" dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Partcles entering -->
+    <circle cx="0" cy="-150" r="5" fill="#FFF">
+        <animate attributeName="cy" values="-200; -80" dur="1.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0; 1; 0" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- The Prism (Rotating) -->
+    <g>
+        <animateTransform attributeName="transform" type="rotate" values="0; 360" dur="10s" repeatCount="indefinite"/>
+        
+        <!-- Outer Facets -->
+        <path d="M0,-80 L70,40 L-70,40 Z" fill="url(#crystalGlass)" stroke="#FFF" stroke-width="2"/>
+        <path d="M0,40 L0,-80" stroke="#FFF" stroke-width="1" opacity="0.5"/>
+        
+        <!-- Inner Core -->
+        <path d="M0,-40 L35,20 L-35,20 Z" fill="#FFF" opacity="0.5" filter="url(#glowPrism)">
+             <animate attributeName="opacity" values="0.5;0.9;0.5" dur="1s" repeatCount="indefinite"/>
+        </path>
+    </g>
+
+    <!-- Output Spectrum (Bottom) -->
+    <g transform="translate(0, 40)">
+        <!-- Rainbow Beam Fan -->
+        <path d="M0,0 L-60,150 L60,150 Z" fill="url(#prismRainbow)" opacity="0.6" filter="url(#glowPrism)">
+            <animate attributeName="opacity" values="0.6; 0.8; 0.6" dur="0.5s" repeatCount="indefinite"/>
+            <animateTransform attributeName="transform" type="scale" values="1 1; 1.2 1; 1 1" dur="2s" repeatCount="indefinite"/>
+        </path>
+        
+        <!-- Sparkles -->
+        <circle cx="0" cy="80" r="4" fill="#FFF">
+            <animate attributeName="cx" values="-20; 20; -20" dur="1s" repeatCount="indefinite"/>
+            <animate attributeName="cy" values="80; 120; 80" dur="1.2s" repeatCount="indefinite"/>
+            <animate attributeName="r" values="4;0;4" dur="1s" repeatCount="indefinite"/>
+        </circle>
+    </g>
+
+  </g>
+</svg>

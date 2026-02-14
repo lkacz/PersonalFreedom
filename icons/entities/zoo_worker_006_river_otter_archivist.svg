@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Zoo Worker 006: River Otter Archivist (Normal) -->
+  <!-- Concept: An otter floating on its back, using its belly as a desk.
+       It holds a waterproof clipboard and is diligently auditing the zoo's timeline.
+       Theme: Cute, Corporate, Aquatic. -->
+  
+  <defs>
+    <!-- Otter Fur (Slick Wet Brown) -->
+    <linearGradient id="otterWet" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#8D6E63"/>
+      <stop offset="50%" stop-color="#6D4C41"/>
+      <stop offset="100%" stop-color="#4E342E"/>
+    </linearGradient>
+
+    <!-- Belly Fur (Cream/Tan) -->
+    <radialGradient id="bellyFur" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#D7CCC8"/>
+      <stop offset="100%" stop-color="#A1887F"/>
+    </radialGradient>
+
+    <!-- Water Ripples -->
+    <radialGradient id="waterPool" cx="50%" cy="50%" r="50%">
+      <stop offset="70%" stop-color="#81D4FA"/> <!-- Light Blue -->
+      <stop offset="100%" stop-color="#0288D1"/> <!-- Deep Blue -->
+    </radialGradient>
+
+    <!-- Clipboard Plastic -->
+    <linearGradient id="clipboard" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#424242"/>
+      <stop offset="100%" stop-color="#212121"/>
+    </linearGradient>
+
+    <!-- Wet Specular Highlight -->
+    <filter id="wetShine">
+      <feSpecularLighting surfaceScale="2" specularConstant="1" specularExponent="20" lighting-color="#FFF">
+        <fePointLight x="100" y="-100" z="200"/>
+      </feSpecularLighting>
+      <feComposite in="SourceGraphic" operator="in"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g transform="translate(256, 256)">
+
+    <!-- Water Background (Pool) -->
+    <circle cx="0" cy="0" r="200" fill="url(#waterPool)" opacity="0.3"/>
+    
+    <!-- Animated Ripples -->
+    <circle cx="0" cy="0" r="180" fill="none" stroke="#E1F5FE" stroke-width="2" opacity="0.5">
+        <animate attributeName="r" values="180; 200; 180" dur="4s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.5; 0; 0.5" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Main Otter Group (Floating Bob Animation) -->
+    <g filter="url(#wetShine)">
+        <animateTransform attributeName="transform" type="translate" values="0,-5; 0,5; 0,-5" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0.05 0.55 0.95; 0.45 0.05 0.55 0.95"/>
+
+        <!-- Tail (Curled up behind/below) -->
+        <path d="M-60,100 Q-80,140 0,160 Q80,140 60,100" fill="url(#otterWet)"/>
+
+        <!-- Body (Floating on back) -->
+        <image width="0" height="0" href=""/> <!-- Hack to prevent SVG empty errors if renderer is strict, pure shape below -->
+        
+        <!-- Main Torso -->
+        <ellipse cx="0" cy="20" rx="70" ry="100" fill="url(#otterWet)"/>
+        <!-- Belly Patch -->
+        <ellipse cx="0" cy="20" rx="50" ry="80" fill="url(#bellyFur)"/>
+        
+        <!-- Feet (Paws sticking up) -->
+        <ellipse cx="-50" cy="110" rx="20" ry="15" fill="#6D4C41"/>
+        <ellipse cx="50" cy="110" rx="20" ry="15" fill="#6D4C41"/>
+        <!-- Toe Beans -->
+        <circle cx="-50" cy="110" r="8" fill="#3E2723" opacity="0.6"/>
+        <circle cx="50" cy="110" r="8" fill="#3E2723" opacity="0.6"/>
+
+        <!-- Head -->
+        <g transform="translate(0, -90)">
+            <!-- Head Shape -->
+            <ellipse cx="0" cy="0" rx="60" ry="50" fill="url(#otterWet)"/>
+            <!-- Muzzle Area -->
+            <ellipse cx="0" cy="15" rx="35" ry="25" fill="#D7CCC8"/>
+            <!-- Nose -->
+            <path d="M-10,10 Q0,20 10,10 Q0,5 -10,10" fill="#212121"/>
+            <!-- Mouth -->
+            <path d="M-10,25 Q0,30 10,25" stroke="#212121" stroke-width="2" fill="none"/>
+            <!-- Whiskers -->
+            <g stroke="#FFF" stroke-width="1" opacity="0.6">
+                <line x1="-20" y1="20" x2="-50" y2="15"/>
+                <line x1="-20" y1="25" x2="-50" y2="25"/>
+                <line x1="20" y1="20" x2="50" y2="15"/>
+                <line x1="20" y1="25" x2="50" y2="25"/>
+            </g>
+            <!-- Ears -->
+            <circle cx="-55" cy="-10" r="10" fill="#6D4C41"/>
+            <circle cx="55" cy="-10" r="10" fill="#6D4C41"/>
+            <!-- Eyes (Animated: Saccadic Look + Rapid Blink) -->
+            <g transform="translate(0, -10)">
+                <g>
+                    <!-- Saccadic Eye Movement Layer -->
+                    <circle cx="-25" cy="0" r="5" fill="#000"/>
+                    <circle cx="25" cy="0" r="5" fill="#000"/>
+                    <animateTransform attributeName="transform" type="translate"
+                        values="0,0; 3,0; -3,0; 0,-2; 0,0; 2,2; -2,-1; 0,0"
+                        dur="4s"
+                        repeatCount="indefinite"
+                        calcMode="discrete"
+                    />
+                </g>
+                <!-- Rapid Blink Layer -->
+                <animateTransform attributeName="transform" type="scale"
+                    values="1 1; 1 0.1; 1 1; 1 1; 1 0.1; 1 1; 1 0.1; 1 1"
+                    keyTimes="0; 0.03; 0.06; 0.5; 0.53; 0.56; 0.59; 1"
+                    dur="3s"
+                    repeatCount="indefinite"
+                />
+            </g>
+            <!-- Pencil behind ear -->
+            <rect x="50" y="-30" width="40" height="6" fill="#FFC107" transform="rotate(-30 50 -30)"/>
+            <path d="M84,-50 L90,-53 L86,-46 Z" fill="#EF9A9A" transform="rotate(-30 50 -30)"/> <!-- Eraser -->
+        </g>
+
+        <!-- Arms & Clipboard Interaction -->
+        <!-- Right Arm (Holding Pen) -->
+        <path d="M40,-20 Q70,0 60,30" stroke="#6D4C41" stroke-width="20" stroke-linecap="round" fill="none"/>
+        
+        <!-- Left Arm (Holding Board) -->
+        <path d="M-40,-20 Q-70,0 -60,30" stroke="#6D4C41" stroke-width="20" stroke-linecap="round" fill="none"/>
+
+        <!-- The Clipboard (Resting on Belly) -->
+        <g transform="translate(0, 40)">
+            <!-- Board -->
+            <rect x="-40" y="-50" width="80" height="100" rx="5" fill="url(#clipboard)" stroke="#CFD8DC" stroke-width="2"/>
+            <!-- Clip -->
+            <rect x="-30" y="-60" width="60" height="15" rx="2" fill="#90A4AE"/>
+            <!-- Paper -->
+            <rect x="-35" y="-45" width="70" height="90" fill="#FFF"/>
+            <!-- Text Lines -->
+            <line x1="-25" y1="-30" x2="25" y2="-30" stroke="#B0BEC5" stroke-width="2"/>
+            <line x1="-25" y1="-10" x2="25" y2="-10" stroke="#B0BEC5" stroke-width="2"/>
+            <line x1="-25" y1="10" x2="25" y2="10" stroke="#B0BEC5" stroke-width="2"/>
+            
+            <!-- Checkmark Animation -->
+            <path d="M-30,-30 L-25,-25 L-20,-35" fill="none" stroke="#4CAF50" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="0.5s" repeatCount="indefinite"/>
+            </path>
+            <path d="M-30,-10 L-25,-5 L-20,-15" fill="none" stroke="#4CAF50" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+                <animate attributeName="opacity" values="0;1;1;0" dur="3s" begin="1.5s" repeatCount="indefinite"/>
+            </path>
+        </g>
+        
+        <!-- Pen in Hand (Tapping Animation) -->
+        <g transform="translate(60, 30)">
+            <animateTransform attributeName="transform" type="rotate" values="0 0 0; -10 0 0; 0 0 0" dur="0.5s" repeatCount="indefinite"/>
+            <rect x="-2" y="-30" width="4" height="40" fill="#2196F3"/> <!-- Pen -->
+        </g>
+    </g>
+
+  </g>
+</svg>

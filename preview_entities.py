@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Preview Entity SVG Graphics - View all entity icons in a grid."""
 
 import sys
@@ -89,7 +89,43 @@ ROBOT_ENTITIES = [
     ("robot_009_freewill_core_eve.svg", "Freewill Core Eve", 2000, "legendary"),
 ]
 
-CURRENT_THEME = "warrior"  # Default theme
+SPACE_PIRATE_ENTITIES = [
+    ("space_pirate_001_scuffed_customs_stamp.svg", "Scuffed Customs Stamp", 10, "common"),
+    ("space_pirate_002_laughing_airlock_seal.svg", "Laughing Airlock Seal", 50, "common"),
+    ("space_pirate_003_contraband_tea_kettle.svg", "Contraband Tea Kettle", 150, "uncommon"),
+    ("space_pirate_004_dock_rat_cartographer.svg", "Dock Rat Cartographer", 400, "uncommon"),
+    ("space_pirate_005_mutiny_complaint_box.svg", "Mutiny Complaint Box", 700, "rare"),
+    ("space_pirate_006_polite_boarding_cone.svg", "Polite Boarding Cone", 1100, "rare"),
+    ("space_pirate_007_audit_ghost_ledger.svg", "Audit Ghost Ledger", 1500, "epic"),
+    ("space_pirate_008_retired_parade_thruster.svg", "Retired Parade Thruster", 1800, "epic"),
+    ("space_pirate_009_pocket_gravity_button.svg", "Pocket Gravity Button", 2000, "legendary"),
+]
+
+THIEF_ENTITIES = [
+    ("thief_001_pocket_receipt_sparrow.svg", "Pocket Receipt Sparrow", 10, "common"),
+    ("thief_002_crime_sticker.svg", "Crime Sticker", 50, "common"),
+    ("thief_003_lockpick_hairpin.svg", "Lockpick Hairpin", 150, "uncommon"),
+    ("thief_004_stolen_sim.svg", "Stolen SIM", 400, "uncommon"),
+    ("thief_005_spray_can_silencer.svg", "Spray Can Silencer", 700, "rare"),
+    ("thief_006_hoodie_shadow.svg", "Hoodie Shadow", 1100, "rare"),
+    ("thief_007_safe_cracker_stethoscope.svg", "Safe Cracker Stethoscope", 1500, "epic"),
+    ("thief_008_crowbar_lever.svg", "Crowbar Lever", 1800, "epic"),
+    ("thief_009_flashlight_beam.svg", "Flashlight Beam", 2000, "legendary"),
+]
+
+ZOO_WORKER_ENTITIES = [
+    ("zoo_worker_001_ticket_stub_gecko.svg", "Ticket Stub Gecko", 10, "common"),
+    ("zoo_worker_002_night_shift_lemur.svg", "Night Shift Lemur", 50, "common"),
+    ("zoo_worker_003_feeding_cart_compass.svg", "Feeding Cart Compass", 150, "uncommon"),
+    ("zoo_worker_004_aviary_lock_lark.svg", "Aviary Lock Lark", 400, "uncommon"),
+    ("zoo_worker_005_veterinary_lantern_moth.svg", "Veterinary Lantern Moth", 700, "rare"),
+    ("zoo_worker_006_river_otter_archivist.svg", "River Otter Archivist", 1100, "rare"),
+    ("zoo_worker_007_old_scalebook_oracle.svg", "Old Scalebook Oracle", 1500, "epic"),
+    ("zoo_worker_008_storm_glass_incubator.svg", "Storm Glass Incubator", 1800, "epic"),
+    ("zoo_worker_009_emberwing_of_first_dawn.svg", "Emberwing of First Dawn", 2000, "legendary"),
+]
+
+CURRENT_THEME = "zoo_worker"  # Default theme
 
 THEME_ENTITIES = {
     "warrior": WARRIOR_ENTITIES,
@@ -98,6 +134,9 @@ THEME_ENTITIES = {
     "scientist": SCIENTIST_ENTITIES,
     "wanderer": WANDERER_ENTITIES,
     "robot": ROBOT_ENTITIES,
+    "space_pirate": SPACE_PIRATE_ENTITIES,
+    "thief": THIEF_ENTITIES,
+    "zoo_worker": ZOO_WORKER_ENTITIES,
 }
 CURRENT_ENTITIES = THEME_ENTITIES.get(CURRENT_THEME, WARRIOR_ENTITIES)
 
@@ -167,7 +206,7 @@ class EntityCard(QFrame):
         layout.addWidget(name_label, 0, Qt.AlignCenter)
         
         # Power label
-        power_label = QLabel(f"⚔️ Power: {power}")
+        power_label = QLabel(f"âš”ď¸Ź Power: {power}")
         power_label.setAlignment(Qt.AlignCenter)
         power_label.setFont(QFont("Segoe UI", 9))
         power_label.setStyleSheet("color: #FFFFFF;")
@@ -236,7 +275,7 @@ class EntityPreviewWindow(QMainWindow):
         main_layout = QVBoxLayout(central)
         
         # Header
-        header = QLabel(f"✨ ENTITIDEX - Complete Entity Collection ({total_entities} Entities)")
+        header = QLabel(f"âś¨ ENTITIDEX - Complete Entity Collection ({total_entities} Entities)")
         header.setFont(QFont("Segoe UI", 18, QFont.Bold))
         header.setAlignment(Qt.AlignCenter)
         header.setStyleSheet("color: #a5b4fc; margin: 10px;")
@@ -249,12 +288,15 @@ class EntityPreviewWindow(QMainWindow):
         """)
         
         theme_info = {
-            "warrior": ("🗡️ Warrior", "#C62828"),
-            "scholar": ("📚 Scholar", "#6A1B9A"),
-            "underdog": ("💪 Underdog", "#E65100"),
-            "scientist": ("🔬 Scientist", "#1565C0"),
-            "wanderer": ("🗺️ Wanderer", "#2E7D32"),
-            "robot": ("🤖 Robot", "#455A64"),
+            "warrior": ("đź—ˇď¸Ź Warrior", "#C62828"),
+            "scholar": ("đź“š Scholar", "#6A1B9A"),
+            "underdog": ("đź’Ş Underdog", "#E65100"),
+            "scientist": ("đź”¬ Scientist", "#1565C0"),
+            "wanderer": ("đź—şď¸Ź Wanderer", "#2E7D32"),
+            "robot": ("đź¤– Robot", "#455A64"),
+            "space_pirate": ("đźŹ€ Space Pirate", "#1E3A5F"),
+            "thief": ("Thief", "#4B3621"),
+            "zoo_worker": ("Zoo Worker", "#2E5D50"),
         }
         
         entities_dir = get_app_dir() / "icons" / "entities"
@@ -295,7 +337,7 @@ class EntityPreviewWindow(QMainWindow):
                     col = 0
                     row += 1
             else:
-                missing_label = QLabel(f"❌ Missing:\n{svg_file}")
+                missing_label = QLabel(f"âťŚ Missing:\n{svg_file}")
                 missing_label.setAlignment(Qt.AlignCenter)
                 missing_label.setStyleSheet("color: #FF5252; background: #2D2D2D; padding: 20px; border-radius: 8px;")
                 missing_label.setFixedSize(180, 220)

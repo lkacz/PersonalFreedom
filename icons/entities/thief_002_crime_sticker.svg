@@ -1,0 +1,67 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 002: Confession Vending Sticker (Normal) -->
+  <defs>
+    <!-- Dirty Sticker Paper -->
+    <linearGradient id="dirtyPaper" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F5F5F5"/>
+      <stop offset="100%" stop-color="#E0E0E0"/>
+    </linearGradient>
+    <!-- Peel Back (Sticky Side) -->
+    <linearGradient id="stickyBack" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#DDDDDD"/>
+      <stop offset="50%" stop-color="#CCCCCC"/>
+    </linearGradient>
+    <!-- Marker Ink Texture -->
+    <filter id="markerBleed">
+      <feTurbulence type="fractalNoise" baseFrequency="0.1" numOctaves="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" />
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <g transform="translate(256, 256)">
+    <!-- Main Float -->
+    <animateTransform attributeName="transform" type="translate" values="256,256; 256,252; 256,256" dur="5s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 .55 1; 0.45 0 .55 1"/>
+    
+    <!-- Sticker Rotation -->
+    <g transform="rotate(-8)">
+        
+        <!-- Sticker Body (Rounded Rect) -->
+        <rect x="-150" y="-100" width="300" height="200" rx="10" ry="10" fill="url(#dirtyPaper)" stroke="#CCCCCC" stroke-width="1"/>
+        
+        <!-- "HELLO" Banner Area -->
+        <path d="M-150,-100 Q-150,-100 -140,-100 L140,-100 Q150,-100 150,-90 L150,-40 L-150,-40 Z" fill="#FF5252"/>
+        <text x="0" y="-55" font-family="Arial, sans-serif" font-weight="bold" font-size="40" fill="white" text-anchor="middle">HELLO</text>
+        <text x="0" y="-15" font-family="Arial, sans-serif" font-size="20" fill="#FF5252" text-anchor="middle" letter-spacing="2">MY CRIME IS</text>
+
+        <!-- Scrawled "THEFT" -->
+        <g transform="translate(0, 40) rotate(-5)" opacity="0.9">
+            <!-- T -->
+            <path d="M-100,-20 L-40,-25 M-70,-22 L-75,40" stroke="black" stroke-width="12" stroke-linecap="round" filter="url(#markerBleed)"/>
+            <!-- H -->
+            <path d="M-30,-20 L-35,40 M0,-15 L-5,45 M-35,10 L0,5" stroke="black" stroke-width="12" stroke-linecap="round" filter="url(#markerBleed)"/>
+            <!-- E -->
+            <path d="M40,-15 L10,40 M15,-10 L35,-15 M12,12 L30,10 M10,40 L35,35" stroke="black" stroke-width="12" stroke-linecap="round" filter="url(#markerBleed)"/>
+            <!-- F -->
+            <path d="M50,-15 L50,45 M50,-15 L75,-20 M50,10 L70,8" stroke="black" stroke-width="12" stroke-linecap="round" filter="url(#markerBleed)"/>
+            <!-- T -->
+            <path d="M80,-20 L130,-25 M105,-22 L100,40" stroke="black" stroke-width="12" stroke-linecap="round" filter="url(#markerBleed)"/>
+        </g>
+
+        <!-- Peeling Corner (Bottom Right) -->
+        <!-- The paper missing from the main rect -->
+        <path d="M150,100 L100,100 L150,50 Z" fill="#1A1A1A" opacity="0.3"/> <!-- Shadow under peel -->
+        <path d="M150,100 L100,100 L150,50 Z" fill="#333" opacity="0"/> <!-- Mask/Cutout simulation via overlay? No, let's just draw the flap on top -->
+        
+        <!-- The Flap itself -->
+        <path d="M100,100 L150,50 L100,30 L50,80 Z" fill="url(#stickyBack)" stroke="#999" stroke-width="1">
+            <animateTransform attributeName="transform" type="rotate" values="0 100 100; -5 100 100; 0 100 100" dur="3s" repeatCount="indefinite" />
+            <!-- Actually, a simple path morph is better for 'flapping' -->
+            <animate attributeName="d" values="M100,100 L150,50 L100,30 L50,80 Z; M100,100 L150,50 L110,40 L60,90 Z; M100,100 L150,50 L100,30 L50,80 Z" dur="2s" repeatCount="indefinite"/>
+        </path>
+
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Zoo Worker 002: Night Shift Lemur (Normal) -->
+  <defs>
+    <!-- Night Fur Gradient -->
+    <radialGradient id="nightFur" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#455A64"/>
+      <stop offset="100%" stop-color="#263238"/>
+    </radialGradient>
+    
+    <!-- Reflective Safety Strip -->
+    <linearGradient id="safetyStrip" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFD600"/>
+      <stop offset="50%" stop-color="#FFFF8D"/>
+      <stop offset="100%" stop-color="#FFD600"/>
+    </linearGradient>
+
+    <filter id="eyeGlow">
+      <feGaussianBlur stdDeviation="1.5"/>
+      <feComposite in="SourceGraphic" operator="over"/>
+    </filter>
+
+    <!-- Eye Clips for Blinking -->
+    <clipPath id="leftEyeClip">
+        <circle cx="-35" cy="-10" r="28"/>
+    </clipPath>
+    <clipPath id="rightEyeClip">
+        <circle cx="35" cy="-10" r="28"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <g transform="translate(256, 256)">
+    <!-- Head Tilt Animation -->
+    <g>
+        <animateTransform attributeName="transform" type="rotate" values="0 0 100; -5 0 100; 5 0 100; 0 0 100" dur="6s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1; 0.45 0 0.55 1"/>
+
+        <!-- Ears (Moved to back layer) -->
+        <path d="M-70,-50 L-100,-80 L-60,-80 Z" fill="#455A64"/>
+        <path d="M70,-50 L100,-80 L60,-80 Z" fill="#455A64"/>
+
+        <!-- Grouped Tail for swaying animation including stripes -->
+        <g>
+            <animateTransform attributeName="transform" type="rotate" values="0 -60 100; 3 -60 100; 0 -60 100; -2 -60 100; 0 -60 100" dur="5s" repeatCount="indefinite"/>
+            <path d="M-60,100 S-120,50 -120,-50 S-60,-150 0,-180" fill="none" stroke="#37474F" stroke-width="40" stroke-linecap="round"/>
+            <!-- Tail Stripes -->
+            <path d="M-110,-20 L-70,-20 M-115,-60 L-75,-60 M-100,20 L-60,20" stroke="#263238" stroke-width="8" opacity="0.5"/>
+        </g>
+
+        <!-- Body -->
+        <ellipse cx="0" cy="120" rx="70" ry="90" fill="url(#nightFur)"/>
+        <!-- Belly -->
+        <ellipse cx="0" cy="120" rx="35" ry="60" fill="#90A4AE" opacity="0.8"/>
+
+        <!-- Safety Armband / Sash -->
+        <path d="M-40,80 L40,160 L60,150 L-20,70 Z" fill="url(#safetyStrip)"/>
+
+        <!-- Head -->
+        <circle cx="0" cy="0" r="90" fill="url(#nightFur)"/>
+        
+        <!-- Face Mask (Light) -->
+        <path d="M-80,-20 Q0,40 80,-20 Q50,-60 0,-60 Q-50,-60 -80,-20" fill="#ECEFF1"/>
+
+        <!-- Left Eye Assembly -->
+        <circle cx="-35" cy="-10" r="28" fill="#FF6F00" />
+        <g clip-path="url(#leftEyeClip)">
+             <!-- Pupil: Darting Movement -->
+             <circle cx="-35" cy="-10" r="10" fill="black">
+                 <animate attributeName="r" values="10; 12; 10" dur="3s" repeatCount="indefinite"/>
+                 <animate attributeName="cx" values="-35;-35;-40;-35;-30;-35;-35" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+                 <animate attributeName="cy" values="-10;-10;-15;-10;-5;-10;-10" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+             </circle>
+             <circle cx="-45" cy="-20" r="5" fill="white" opacity="0.8"/>
+             
+             <!-- Eyelid (Fixed Start Position) -->
+             <rect x="-70" y="-40" width="70" height="0" fill="#ECEFF1">
+                <animate attributeName="height" values="0; 70; 70; 0; 0" keyTimes="0; 0.05; 0.08; 0.15; 1" dur="7s" repeatCount="indefinite" />
+             </rect>
+        </g>
+        <circle cx="-35" cy="-10" r="28" fill="none" stroke="#3E2723" stroke-width="2"/>
+
+        <!-- Right Eye Assembly -->
+        <circle cx="35" cy="-10" r="28" fill="#FF6F00" />
+        <g clip-path="url(#rightEyeClip)">
+             <!-- Pupil: Darting Movement (Synced with left) -->
+             <circle cx="35" cy="-10" r="10" fill="black">
+                 <animate attributeName="r" values="10; 12; 10" dur="3s" repeatCount="indefinite"/>
+                 <animate attributeName="cx" values="35;35;30;35;40;35;35" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
+                 <animate attributeName="cy" values="-10;-10;-15;-10;-5;-10;-10" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
+             </circle>
+             <circle cx="25" cy="-20" r="5" fill="white" opacity="0.8"/>
+             
+             <!-- Eyelid -->
+             <rect x="0" y="-40" width="70" height="0" fill="#ECEFF1">
+                <animate attributeName="height" values="0; 70; 70; 0; 0" keyTimes="0; 0.05; 0.08; 0.15; 1" dur="7s" repeatCount="indefinite" />
+             </rect>
+        </g>
+        <circle cx="35" cy="-10" r="28" fill="none" stroke="#3E2723" stroke-width="2"/>
+
+        <!-- Nose -->
+        <path d="M-8,30 Q0,35 8,30 L0,40 Z" fill="#3E2723"/>
+
+    </g>
+  </g>
+</svg>

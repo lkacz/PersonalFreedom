@@ -1,16 +1,83 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="  exceptional">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Robot 006 Exceptional: Backup Battery Bruno (Grid-Master) -->
   <defs>
-    <radialGradient id="eg" cx="50%" cy="45%" r="70%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-      <stop offset="45%" stop-color="" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#0B1020" stop-opacity="1"/>
+    <!-- Obsidian Body Gradient -->
+    <linearGradient id="body-obsidian" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#000" />
+      <stop offset="50%" stop-color="#212121" />
+      <stop offset="100%" stop-color="#111" />
+    </linearGradient>
+
+    <!-- Grid Pulse Gradient -->
+    <linearGradient id="grid-pulse" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00bcd4" stop-opacity="0" />
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="100%" stop-color="#00bcd4" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Core Glow -->
+    <radialGradient id="core-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="40%" stop-color="#00e5ff" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#00bcd4" stop-opacity="0" />
     </radialGradient>
+    
+    <!-- Pattern for Circuit Grid -->
+    <pattern id="circuit-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+       <path d="M0,10 L20,10 M10,0 L10,20" stroke="#00e5ff" stroke-width="1" opacity="0.1" />
+    </pattern>
   </defs>
-  <rect x="4" y="4" width="120" height="120" rx="20" fill="url(#eg)" stroke="#FDE68A" stroke-width="4"/>
-  <circle cx="64" cy="64" r="32" fill="#0F172A" stroke="#FDE68A" stroke-width="4"/>
-  <path d="M64 24 L70 40 L88 40 L74 50 L80 66 L64 56 L48 66 L54 50 L40 40 L58 40 Z" fill="#FDE68A" opacity="0.9"/>
-  <rect x="36" y="58" width="56" height="12" rx="6" fill="" opacity="0.35"/>
-  <circle cx="52" cy="64" r="5" fill="#F8FAFC"/>
-  <circle cx="76" cy="64" r="5" fill="#F8FAFC"/>
-  <text x="64" y="109" font-family="Segoe UI, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#FDE68A" font-weight="700"> EX</text>
+
+  <g transform="translate(256, 300)">
+    
+    <!-- Floor Ripples (Power Grid Connection) -->
+    <ellipse cx="0" cy="140" rx="120" ry="30" fill="none" stroke="#00bcd4" stroke-width="2" opacity="0.3">
+       <animate attributeName="rx" values="80; 130; 80" dur="4s" repeatCount="indefinite" />
+       <animate attributeName="ry" values="20; 35; 20" dur="4s" repeatCount="indefinite" />
+       <animate attributeName="opacity" values="0.5; 0; 0.5" dur="4s" repeatCount="indefinite" />
+    </ellipse>
+
+    <!-- Main Chassis Group -->
+    <g>
+       <!-- Stable Levitation -->
+       <animateTransform attributeName="transform" type="translate" values="0,0; 0,-5; 0,0" dur="4s" repeatCount="indefinite" />
+    
+       <!-- Main Housing Block (Crystal Tech) -->
+       <path d="M-80,-90 L80,-90 L90,110 L-90,110 Z" fill="url(#body-obsidian)" stroke="#00e5ff" stroke-width="2" />
+       <path d="M-80,-90 L80,-90 L90,110 L-90,110 Z" fill="url(#circuit-grid)" />
+       
+       <!-- Routing Lines Overlay (Animating) -->
+       <path d="M-80,-40 L-20,-40 L0,0 L20,-40 L80,-40 M-85,60 L85,60" fill="none" stroke="#006064" stroke-width="2" />
+       <path d="M-80,-40 L-20,-40 L0,0 L20,-40 L80,-40" fill="none" stroke="url(#grid-pulse)" stroke-width="3" stroke-linecap="round">
+          <animate attributeName="stroke-dasharray" values="10,200; 200,10" dur="2s" repeatCount="indefinite" />
+          <animate attributeName="stroke-dashoffset" values="200; 0" dur="2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0; 1; 0" dur="2s" repeatCount="indefinite" />
+       </path>
+
+       <!-- Side Conductors -->
+       <g transform="translate(-100, 10)">
+           <rect x="0" y="-60" width="20" height="140" fill="#263238" stroke="#00e5ff" />
+       </g>
+       <g transform="translate(80, 10)">
+           <rect x="0" y="-60" width="20" height="140" fill="#263238" stroke="#00e5ff" />
+       </g>
+
+       <!-- Central Infinity Core (Replaces Bars) -->
+       <circle cx="0" cy="10" r="40" fill="#111" stroke="#333" stroke-width="2" />
+       <circle cx="0" cy="10" r="30" fill="url(#core-glow)" opacity="0.8">
+           <animate attributeName="r" values="25; 35; 25" dur="3s" repeatCount="indefinite" />
+           <animate attributeName="opacity" values="0.6; 0.9; 0.6" dur="3s" repeatCount="indefinite" />
+       </circle>
+       
+       <!-- Head/Face Unit (Integrated) -->
+       <g transform="translate(0, -80)">
+          <!-- Visor -->
+          <path d="M-40,-20 L40,-20 L30,20 L-30,20 Z" fill="#000" stroke="#00e5ff" stroke-width="1" />
+          <circle cx="0" cy="0" r="5" fill="#fff">
+             <animate attributeName="opacity" values="0.8; 1; 0.8" dur="0.5s" repeatCount="indefinite" />
+          </circle>
+          <path d="M-15,0 L15,0" stroke="#00e5ff" stroke-width="1" opacity="0.5" />
+       </g>
+    </g>
+  </g>
 </svg>

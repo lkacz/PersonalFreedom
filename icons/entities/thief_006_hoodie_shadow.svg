@@ -1,0 +1,81 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 006: Hoodie Shadow (Normal) -->
+  <defs>
+    <!-- Hoodie Fabric Gradient -->
+    <linearGradient id="hoodieGrey" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#546E7A"/>
+      <stop offset="100%" stop-color="#37474F"/>
+    </linearGradient>
+    
+    <!-- Deep Shadow Gradient -->
+    <radialGradient id="faceShadow" cx="50%" cy="50%" r="50%">
+      <stop offset="70%" stop-color="#000000"/>
+      <stop offset="100%" stop-color="#263238"/>
+    </radialGradient>
+
+    <filter id="fabricGrain" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise"/>
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.1 0"/>
+      <feComposite in="SourceGraphic" operator="in"/>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <g transform="translate(256, 256)">
+    
+    <!-- Subtle breathing/hover -->
+    <animateTransform attributeName="transform" type="translate" values="256,256; 256,253; 256,256" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 .55 1; 0.45 0 .55 1"/>
+
+    <!-- Hood Shape -->
+    <!-- Shoulders -->
+    <path d="M-120,80 Q-60,50 0,50 Q60,50 120,80 L120,150 H-120 Z" fill="url(#hoodieGrey)"/>
+    
+    <!-- Main Hood Cowl -->
+    <path d="M0,-150 C-100,-150 -130,-50 -130,0 C-130,80 -80,100 -50,110 C-20,120 20,120 50,110 C80,100 130,80 130,0 C130,-50 100,-150 0,-150 Z" fill="url(#hoodieGrey)">
+        <!-- Fabric Ripple -->
+        <animate attributeName="d" 
+        values="M0,-150 C-100,-150 -130,-50 -130,0 C-130,80 -80,100 -50,110 C-20,120 20,120 50,110 C80,100 130,80 130,0 C130,-50 100,-150 0,-150 Z;
+                M0,-150 C-105,-150 -125,-50 -125,0 C-125,80 -80,105 -50,110 C-20,115 20,115 50,110 C80,105 125,80 125,0 C125,-50 105,-150 0,-150 Z;
+                M0,-150 C-100,-150 -130,-50 -130,0 C-130,80 -80,100 -50,110 C-20,120 20,120 50,110 C80,100 130,80 130,0 C130,-50 100,-150 0,-150 Z"
+        dur="5s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Texture Overlay -->
+    <path d="M0,-150 C-100,-150 -130,-50 -130,0 C-130,80 -80,100 -50,110 C-20,120 20,120 50,110 C80,100 130,80 130,0 C130,-50 100,-150 0,-150 Z" fill="black" opacity="0.2" filter="url(#fabricGrain)"/>
+
+    <!-- Face Void -->
+    <ellipse cx="0" cy="10" rx="60" ry="70" fill="url(#faceShadow)"/>
+    
+    <!-- Eyes -->
+    <g transform="translate(0, 10)">
+        <!-- Left Eye -->
+        <path d="M-30,-10 Q-20,-15 -10,-10 Q-20,0 -30,-10 Z" fill="white" opacity="0.9">
+             <animate attributeName="d" values="M-30,-10 Q-20,-15 -10,-10 Q-20,0 -30,-10 Z; M-30,-10 Q-20,-10 -10,-10 Q-20,-10 -30,-10 Z; M-30,-10 Q-20,-15 -10,-10 Q-20,0 -30,-10 Z" dur="0.2s" begin="3s; 8s" fill="freeze"/>
+        </path>
+        
+        <!-- Right Eye -->
+         <path d="M30,-10 Q20,-15 10,-10 Q20,0 30,-10 Z" fill="white" opacity="0.9">
+             <animate attributeName="d" values="M30,-10 Q20,-15 10,-10 Q20,0 30,-10 Z; M30,-10 Q20,-10 10,-10 Q20,-10 30,-10 Z; M30,-10 Q20,-15 10,-10 Q20,0 30,-10 Z" dur="0.2s" begin="3s; 8s" fill="freeze"/>
+         </path>
+    </g>
+
+    <!-- Drawstrings -->
+    <path d="M-40,110 Q-45,130 -40,180" stroke="#CFD8DC" stroke-width="4" fill="none" stroke-linecap="round">
+        <animate attributeName="d" values="M-40,110 Q-45,130 -40,180; M-40,110 Q-35,130 -50,175; M-40,110 Q-45,130 -40,180" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <path d="M40,110 Q45,130 40,180" stroke="#CFD8DC" stroke-width="4" fill="none" stroke-linecap="round">
+        <animate attributeName="d" values="M40,110 Q45,130 40,180; M40,110 Q50,130 30,175; M40,110 Q45,130 40,180" dur="2.5s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Plastic Aglets on strings -->
+    <rect x="-43" y="170" width="6" height="15" fill="#FFF">
+         <animateTransform attributeName="transform" type="translate" values="0,0; -5,0; 0,0" dur="2s" repeatCount="indefinite"/>
+    </rect>
+     <rect x="37" y="170" width="6" height="15" fill="#FFF">
+          <animateTransform attributeName="transform" type="translate" values="0,0; -5,0; 0,0" dur="2.5s" repeatCount="indefinite"/>
+     </rect>
+
+  </g>
+</svg>

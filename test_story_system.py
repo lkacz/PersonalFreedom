@@ -57,11 +57,23 @@ def test_story_unlock_system():
     print(f"  ✓ Story unlock cost is {unlock_cost} coins")
     
     # Verify available stories
-    assert len(AVAILABLE_STORIES) == 6, f"Expected 6 stories, got {len(AVAILABLE_STORIES)}"
-    expected_stories = ["warrior", "scholar", "wanderer", "underdog", "scientist", "robot"]
+    expected_stories = [
+        "warrior",
+        "scholar",
+        "wanderer",
+        "underdog",
+        "scientist",
+        "robot",
+        "space_pirate",
+        "thief",
+        "zoo_worker",
+    ]
+    assert len(AVAILABLE_STORIES) == len(expected_stories), (
+        f"Expected {len(expected_stories)} stories, got {len(AVAILABLE_STORIES)}"
+    )
     for story_id in expected_stories:
         assert story_id in AVAILABLE_STORIES, f"Missing story: {story_id}"
-    print(f"  ✓ All 6 stories available: {list(AVAILABLE_STORIES.keys())}")
+    print(f"  ✓ All {len(expected_stories)} stories available: {list(AVAILABLE_STORIES.keys())}")
     
     # Test default unlocked story (underdog)
     test_adhd = {}
@@ -478,7 +490,7 @@ if __name__ == "__main__":
     print("✅ ALL STORY SYSTEM TESTS PASSED!")
     print("="*50)
     print("\nVerified:")
-    print("  • 6 stories with 7 chapters each")
+    print(f"  • {len(AVAILABLE_STORIES)} stories with 7 chapters each")
     print("  • Story unlock system (100 coins, underdog free)")
     print("  • Per-story hero isolation (inventory, power, decisions)")
     print("  • Power-based chapter unlocking (permanent)")

@@ -1,0 +1,75 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 004: Stolen SIM Card (Normal) -->
+  <defs>
+    <!-- Plastic Gradient -->
+    <linearGradient id="simPlastic" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#EEEEEE"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+    
+    <!-- Gold Contacts -->
+    <linearGradient id="goldContacts" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFD54F"/>
+      <stop offset="50%" stop-color="#FFC107"/>
+      <stop offset="100%" stop-color="#FFB300"/>
+    </linearGradient>
+
+    <filter id="scratch">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise"/>
+       <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.4 0"/>
+      <feComposite in="SourceGraphic" operator="in" />
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <g transform="translate(256, 256)">
+    <!-- Floating Animation -->
+    <animateTransform attributeName="transform" type="translate" values="256,256; 256,260; 256,256" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 .55 1; 0.45 0 .55 1"/>
+    
+    <g transform="rotate(15)">
+        <!-- Shadow -->
+        <path d="M-100,-140 H100 L140,-100 V140 H-140 V-140 Z" fill="black" opacity="0.3" transform="translate(10, 10)"/>
+
+        <!-- SIM Body (Cut Corner bottom right in this orientation, or top right) -->
+        <!-- Standard SIM: Rect with one cut corner. Let's say top right is cut relative to upright. -->
+        <!-- Logic: Width 280, Height 280. Top Right corner cut. -->
+        <path d="M-130,-140 H80 L130,-90 V140 H-130 Z" fill="url(#simPlastic)" stroke="#DDD" stroke-width="2"/>
+        
+        <!-- Gold Contacts Layout -->
+        <g transform="translate(0, 10)">
+            <rect x="-90" y="-80" width="180" height="180" rx="10" fill="none" stroke="none"/>
+            <!-- Central Divider -->
+            <path d="M-90,10 H90" stroke="#E0E0E0" stroke-width="4"/>
+            <path d="M0,-80 V100" stroke="#E0E0E0" stroke-width="4"/>
+            <!-- Chip Pads -->
+            <path d="M-80,-70 H-10 V0 H-80 Z" fill="url(#goldContacts)"/>
+            <path d="M10,-70 H80 V0 H10 Z" fill="url(#goldContacts)"/>
+            <path d="M-80,20 H-10 V90 H-80 Z" fill="url(#goldContacts)"/>
+            <path d="M10,20 H80 V90 H10 Z" fill="url(#goldContacts)"/>
+            <!-- Center Chip -->
+            <circle cx="0" cy="10" r="15" fill="#FFA000"/>
+        </g>
+        
+        <!-- Scratches -->
+        <path d="M-80,-70 H80 V90 H-80 Z" fill="black" opacity="0.1" filter="url(#scratch)"/>
+    </g>
+
+    <!-- No Signal Icon (Blinking Red) -->
+    <g transform="translate(120, -100)">
+        <!-- Signal Bars (Empty) -->
+        <path d="M0,40 L0,-10 L-40,40 Z" fill="#555" opacity="0.5"/> 
+        <!-- Red X -->
+        <g stroke="#FF5252" stroke-width="8" stroke-linecap="round">
+            <line x1="-10" y1="0" x2="10" y2="20">
+                <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+            </line>
+            <line x1="10" y1="0" x2="-10" y2="20">
+                 <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+            </line>
+        </g>
+    </g>
+
+  </g>
+</svg>

@@ -272,6 +272,95 @@ def _compose_robot() -> QByteArray:
     
     return Synthesizer.mix_sequences(seq)
 
+def _compose_space_pirate() -> QByteArray:
+    """Space Pirate: Mischievous heist pulse into triumphant orbital chord."""
+    seq = []
+    
+    # Sneaky docking pulses
+    pulse_notes = [196.00, 233.08, 261.63, 293.66]
+    for note in pulse_notes:
+        seq.append(Synthesizer.generate_tone(note, 70, 0.35, "rich", 5, 12))
+    
+    # Short pause
+    seq.append(QByteArray(b'\x00' * int(Synthesizer.SAMPLE_RATE * 0.05 * 4)))
+    
+    # Upward "escape route found" run
+    run_notes = [293.66, 349.23, 392.00, 440.00, 523.25]
+    for note in run_notes:
+        seq.append(Synthesizer.generate_tone(note, 95, 0.40, "sine", 8, 22))
+    
+    # Final orbital victory chord
+    root = Synthesizer.generate_tone(261.63, 700, 0.45, "sine", 25, 360)   # C4
+    third = Synthesizer.generate_tone(329.63, 700, 0.40, "sine", 25, 360)  # E4
+    fifth = Synthesizer.generate_tone(392.00, 700, 0.35, "sine", 25, 360)  # G4
+    top = Synthesizer.generate_tone(523.25, 700, 0.28, "sine", 25, 360)    # C5
+    chord = Synthesizer.mix_tracks(root, third)
+    chord = Synthesizer.mix_tracks(chord, fifth)
+    chord = Synthesizer.mix_tracks(chord, top)
+    seq.append(chord)
+    
+    return Synthesizer.mix_sequences(seq)
+
+
+def _compose_thief() -> QByteArray:
+    """Thief: Noir pulse, disciplined rise, and resolved civic chord."""
+    seq = []
+
+    # Low caution pulses (alley heartbeat)
+    intro_notes = [164.81, 196.00, 220.00]
+    for note in intro_notes:
+        seq.append(Synthesizer.generate_tone(note, 80, 0.32, "rich", 5, 14))
+
+    # Short pause
+    seq.append(QByteArray(b'\x00' * int(Synthesizer.SAMPLE_RATE * 0.05 * 4)))
+
+    # Upward "redemption climb"
+    climb_notes = [220.00, 261.63, 293.66, 329.63, 392.00]
+    for note in climb_notes:
+        seq.append(Synthesizer.generate_tone(note, 95, 0.40, "sine", 8, 22))
+
+    # Final stable chord (A minor to C major resolution feel)
+    root = Synthesizer.generate_tone(261.63, 700, 0.45, "sine", 25, 360)   # C4
+    third = Synthesizer.generate_tone(329.63, 700, 0.40, "sine", 25, 360)  # E4
+    fifth = Synthesizer.generate_tone(392.00, 700, 0.35, "sine", 25, 360)  # G4
+    top = Synthesizer.generate_tone(523.25, 700, 0.25, "sine", 25, 360)    # C5
+    chord = Synthesizer.mix_tracks(root, third)
+    chord = Synthesizer.mix_tracks(chord, fifth)
+    chord = Synthesizer.mix_tracks(chord, top)
+    seq.append(chord)
+
+    return Synthesizer.mix_sequences(seq)
+
+
+def _compose_zoo_worker() -> QByteArray:
+    """Zoo Worker: Calm patrol pulse into warm dawn-resolution chord."""
+    seq = []
+
+    # Soft patrol pulses
+    intro_notes = [174.61, 220.00, 261.63]
+    for note in intro_notes:
+        seq.append(Synthesizer.generate_tone(note, 85, 0.32, "rich", 6, 16))
+
+    # Brief pause
+    seq.append(QByteArray(b'\x00' * int(Synthesizer.SAMPLE_RATE * 0.05 * 4)))
+
+    # Upward hope run
+    rise_notes = [261.63, 293.66, 349.23, 392.00, 440.00]
+    for note in rise_notes:
+        seq.append(Synthesizer.generate_tone(note, 95, 0.40, "sine", 8, 22))
+
+    # Warm final chord
+    root = Synthesizer.generate_tone(261.63, 720, 0.44, "sine", 25, 370)   # C4
+    third = Synthesizer.generate_tone(329.63, 720, 0.38, "sine", 25, 370)  # E4
+    fifth = Synthesizer.generate_tone(392.00, 720, 0.34, "sine", 25, 370)  # G4
+    top = Synthesizer.generate_tone(523.25, 720, 0.24, "sine", 25, 370)    # C5
+    chord = Synthesizer.mix_tracks(root, third)
+    chord = Synthesizer.mix_tracks(chord, fifth)
+    chord = Synthesizer.mix_tracks(chord, top)
+    seq.append(chord)
+
+    return Synthesizer.mix_sequences(seq)
+
 def _compose_default() -> QByteArray:
     return Synthesizer.generate_tone(440, 200)
 
@@ -353,6 +442,9 @@ _THEME_COMPOSERS = {
     "underdog": _compose_underdog,
     "scientist": _compose_scientist,
     "robot": _compose_robot,
+    "space_pirate": _compose_space_pirate,
+    "thief": _compose_thief,
+    "zoo_worker": _compose_zoo_worker,
     
     "eye_start": _compose_eye_start,
     "eye_complete": _compose_eye_complete,

@@ -1,16 +1,157 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="  exceptional">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Robot 001 Exceptional: Rusted Bolt Scout (Reforged Titanium v2) -->
   <defs>
-    <radialGradient id="eg" cx="50%" cy="45%" r="70%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-      <stop offset="45%" stop-color="" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#0B1020" stop-opacity="1"/>
-    </radialGradient>
+    <!-- High-Tech Glow Filter -->
+    <filter id="neon-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="blur" />
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- Chrome Gradient -->
+    <linearGradient id="chrome-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0e8f0" />
+      <stop offset="45%" stop-color="#a0b0c0" />
+      <stop offset="50%" stop-color="#ffffff" />
+      <stop offset="55%" stop-color="#a0b0c0" />
+      <stop offset="100%" stop-color="#708090" />
+    </linearGradient>
+
+    <!-- Blue "Energy" Gradient -->
+    <linearGradient id="energy-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00ffff" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#0088ff" stop-opacity="0.6" />
+    </linearGradient>
+
+    <!-- Moving Sheen Gradient -->
+    <linearGradient id="moving-sheen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0" />
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+    
+    <!-- Mask for Scanner Beam -->
+    <mask id="scan-mask">
+      <rect x="-100" y="0" width="200" height="200" fill="url(#scan-fade)" />
+    </mask>
+    <linearGradient id="scan-fade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="black" stop-opacity="0" />
+    </linearGradient>
+    
+    <!-- Body Mask for Sheen -->
+    <mask id="body-mask">
+       <rect x="-65" y="-50" width="130" height="140" rx="10" fill="white" />
+    </mask>
   </defs>
-  <rect x="4" y="4" width="120" height="120" rx="20" fill="url(#eg)" stroke="#FDE68A" stroke-width="4"/>
-  <circle cx="64" cy="64" r="32" fill="#0F172A" stroke="#FDE68A" stroke-width="4"/>
-  <path d="M64 24 L70 40 L88 40 L74 50 L80 66 L64 56 L48 66 L54 50 L40 40 L58 40 Z" fill="#FDE68A" opacity="0.9"/>
-  <rect x="36" y="58" width="56" height="12" rx="6" fill="" opacity="0.35"/>
-  <circle cx="52" cy="64" r="5" fill="#F8FAFC"/>
-  <circle cx="76" cy="64" r="5" fill="#F8FAFC"/>
-  <text x="64" y="109" font-family="Segoe UI, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#FDE68A" font-weight="700"> EX</text>
+
+  <g transform="translate(256, 280)">
+    
+    <!-- Stabilized Gravity Shadow -->
+    <ellipse cx="0" cy="170" rx="70" ry="15" fill="#00ffff" opacity="0.2">
+      <animate attributeName="rx" values="70; 75; 70" dur="2s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.2; 0.3; 0.2" dur="2s" repeatCount="indefinite" />
+    </ellipse>
+
+    <!-- Wheel Assembly (Magnetic Suspension) -->
+    <g transform="translate(0, 120)">
+      <!-- Smooth, almost motionless float -->
+      <animateTransform attributeName="transform" type="translate" values="0,0; 0,-2; 0,0" dur="2s" repeatCount="indefinite" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1" calcMode="spline"/>
+
+      <!-- Tire (Composite Material) -->
+      <circle r="55" fill="#111" stroke="#333" stroke-width="2" />
+      <circle r="48" fill="none" stroke="#00ffff" stroke-width="2" stroke-dasharray="2, 8" opacity="0.6">
+        <animateTransform attributeName="transform" type="rotate" values="0 0 0; 360 0 0" dur="10s" repeatCount="indefinite" />
+      </circle>
+
+      <!-- Rim (Chrome) -->
+      <circle r="30" fill="url(#chrome-gradient)" stroke="#555" stroke-width="1" />
+      <!-- Spinny Hubcap -->
+      <circle r="15" fill="#222" />
+      <path d="M-10,0 L10,0 M0,-10 L0,10" stroke="#00ffff" stroke-width="2" opacity="0.8">
+         <animateTransform attributeName="transform" type="rotate" values="0 0 0; -360 0 0" dur="3s" repeatCount="indefinite" />
+      </path>
+    </g>
+
+    <!-- Main Body Chassis (Titanium) -->
+    <g>
+      <!-- Stable Hover Physics -->
+      <animateTransform attributeName="transform" type="translate" values="0,0; 0,3; 0,0" dur="4s" repeatCount="indefinite" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1" calcMode="spline"/>
+
+      <!-- Connector Neck (Reinforced) -->
+      <path d="M-20,80 L-15,120 L15,120 L20,80 Z" fill="#444" stroke="#555" stroke-width="1" />
+      
+      <!-- Torso Box -->
+      <rect x="-65" y="-50" width="130" height="140" rx="10" fill="url(#chrome-gradient)" stroke="#708090" stroke-width="2" />
+      
+      <!-- Tech Detail Lines -->
+      <path d="M-65,0 L-40,0 L-30,20 L30,20 L40,0 L65,0" fill="none" stroke="#555" stroke-width="1" />
+      <rect x="-20" y="35" width="40" height="4" fill="#222" />
+      <rect x="-20" y="35" width="10" height="4" fill="#00ffff">
+        <animate attributeName="x" values="-20; 10" dur="1.5s" repeatCount="indefinite" />
+      </rect>
+
+      <!-- Moving Sheen Animation -->
+      <rect x="-65" y="-50" width="130" height="140" rx="10" fill="url(#moving-sheen)" mask="url(#body-mask)">
+         <animate attributeName="x" values="-200; 200" dur="3s" repeatCount="indefinite" />
+      </rect>
+
+      <!-- Arms (Articulated) -->
+      <g transform="translate(-65, 0)">
+         <path d="M0,0 L-20,30 L-25,60" fill="none" stroke="#a0b0c0" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+         <circle cx="-25" cy="60" r="12" fill="#333" stroke="#00ffff" stroke-width="2" />
+         <!-- Subtle Servo Adjust -->
+         <animateTransform attributeName="transform" type="rotate" values="2 0 0; -2 0 0; 2 0 0" dur="4s" repeatCount="indefinite" />
+      </g>
+      <g transform="translate(65, 0)">
+         <path d="M0,0 L20,30 L25,60" fill="none" stroke="#a0b0c0" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+         <circle cx="25" cy="60" r="12" fill="#333" stroke="#00ffff" stroke-width="2" />
+         <animateTransform attributeName="transform" type="rotate" values="-2 0 0; 2 0 0; -2 0 0" dur="4s" repeatCount="indefinite" />
+      </g>
+
+      <!-- Head Unit (Advanced) -->
+      <g transform="translate(0, -60)">
+        <animateTransform attributeName="transform" type="rotate" values="-2 0 20; 2 0 20; -2 0 20" dur="5s" repeatCount="indefinite" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1" calcMode="spline"/>
+
+        <!-- Head Shape -->
+        <path d="M-60,-70 L60,-70 L50,15 L-50,15 Z" fill="url(#chrome-gradient)" stroke="#708090" stroke-width="2" />
+        
+        <!-- Sensor Array (Antenna replacement) -->
+        <line x1="-35" y1="-70" x2="-35" y2="-90" stroke="#555" stroke-width="4" />
+        <rect x="-45" y="-100" width="20" height="10" rx="2" fill="#222" stroke="#00ffff" stroke-width="1" />
+        <circle cx="-35" cy="-95" r="2" fill="#00ffff">
+           <animate attributeName="opacity" values="1; 0.2; 1" dur="1s" repeatCount="indefinite" />
+        </circle>
+
+        <!-- Visor Panel -->
+        <path d="M-45,-45 L45,-45 L40,-15 L-40,-15 Z" fill="#111" stroke="#333" stroke-width="1" />
+
+        <!-- Dual Optics (Neon) -->
+        <g filter="url(#neon-glow)">
+          <g transform="translate(-20, -30)">
+             <circle r="8" fill="#00ffff" />
+             <circle r="4" fill="#fff" />
+             <!-- Digital Blink -->
+             <animateTransform attributeName="transform" type="scale" values="1,1; 1,0.1; 1,1" dur="4s" repeatCount="indefinite" keyTimes="0; 0.95; 1" />
+          </g>
+          <g transform="translate(20, -30)">
+             <circle r="8" fill="#00ffff" />
+             <circle r="4" fill="#fff" />
+             <!-- Digital Blink Synced -->
+             <animateTransform attributeName="transform" type="scale" values="1,1; 1,0.1; 1,1" dur="4s" repeatCount="indefinite" keyTimes="0; 0.95; 1" />
+          </g>
+        </g>
+        
+        <!-- Holographic Scanner Beam (Fun Effect) -->
+        <path d="M-20,-30 L-60,100 L60,100 L20,-30 Z" fill="url(#scan-fade)" opacity="0">
+           <animate attributeName="opacity" values="0; 0.3; 0" dur="4s" repeatCount="indefinite" keyTimes="0; 0.2; 1" />
+           <animateTransform attributeName="transform" type="scale" values="1,1; 1.2,1" dur="4s" repeatCount="indefinite" />
+        </path>
+
+      </g>
+    </g>
+  </g>
 </svg>

@@ -1,0 +1,50 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="handleGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#37474F" />
+      <stop offset="50%" stop-color="#546E7A" />
+      <stop offset="100%" stop-color="#263238" />
+    </linearGradient>
+    <linearGradient id="brassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D4AF37" />
+      <stop offset="40%" stop-color="#F4D03F" /> <!-- Shine -->
+      <stop offset="100%" stop-color="#8D6E63" /> <!-- Tarnished -->
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="#121820" stroke="#2C3E50" stroke-width="8" opacity="0.9" />
+  <g transform="translate(256, 410)" opacity="0.8">
+     <circle cx="-40" cy="10" r="16" fill="#D84315" opacity="0.6">
+        <animate attributeName="r" values="16;18;16" dur="4s" repeatCount="indefinite" />
+     </circle>
+     <path d="M20,0 Q30,-10 40,5 T60,10" fill="none" stroke="#BF360C" stroke-width="6" stroke-linecap="round" />
+     <circle cx="50" cy="-20" r="6" fill="#E64A19" />
+  </g>
+  <g transform="translate(256, 256)">
+    <animateTransform attributeName="transform" type="translate"
+      values="256,256; 256,290; 256,256" dur="3.6s" repeatCount="indefinite"
+      keyTimes="0; 0.15; 1" calcMode="spline" keySplines="0.1 0.9 0.2 1; 0.4 0 0.2 1" />
+    <rect x="-20" y="-80" width="40" height="120" fill="#263238" />
+    <path d="M-25,-70 L25,-60 L-25,-50 L25,-40 L-25,-30 L25,-20 L-25,-10 L25,0" stroke="#78909C" stroke-width="6" fill="none" stroke-linecap="round" />
+    <g transform="translate(0, 40)">
+      <path d="M-80,0 L80,0 L70,40 L-70,40 Z" fill="url(#brassGrad)" stroke="#5D4037" stroke-width="3" />
+      <rect x="-60" y="10" width="120" height="5" fill="#5D4037" opacity="0.3" rx="2" />
+      <rect x="-60" y="25" width="120" height="5" fill="#5D4037" opacity="0.3" rx="2" />
+      <circle cx="-70" cy="20" r="3" fill="#3E2723" />
+      <circle cx="70" cy="20" r="3" fill="#3E2723" />
+      <rect x="-70" y="40" width="140" height="10" fill="#D84315" />
+      <path d="M-40,50 Q-40,65 -40,70" stroke="#D84315" stroke-width="6" stroke-linecap="round">
+        <animate attributeName="d" values="M-40,50 Q-40,52 -40,55; M-40,50 Q-40,75 -40,85; M-40,50 Q-40,52 -40,55" dur="3.6s" repeatCount="indefinite" />
+      </path>
+    </g>
+    <g transform="translate(0, -100)">
+       <path d="M0,-80 C-60,-80 -70,-30 -70,-10 L-70,0 C-70,20 -50,30 0,30 C50,30 70,20 70,0 L70,-10 C70,-30 60,-80 0,-80 Z" fill="url(#handleGrad)" stroke="#102027" stroke-width="4" />
+       <path d="M-40,-50 Q0,-30 40,-50" fill="none" stroke="#263238" stroke-width="2" opacity="0.3" />
+       <path d="M-50,-20 Q0,0 50,-20" fill="none" stroke="#263238" stroke-width="2" opacity="0.3" />
+       <ellipse cx="30" cy="-30" rx="15" ry="20" fill="#000" opacity="0.2" transform="rotate(20)" />
+    </g>
+    <g opacity="0.6">
+        <path d="M-30,-90 L-20,-85" stroke="#CFD8DC" stroke-width="2" />
+        <path d="M50,10 L60,30" stroke="#FFF" stroke-width="1" />
+    </g>
+  </g>
+</svg>

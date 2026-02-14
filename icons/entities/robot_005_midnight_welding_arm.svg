@@ -1,14 +1,96 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label=" ">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Robot 005: Midnight Welding Arm -->
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color=""/>
-      <stop offset="100%" stop-color="#0B1020"/>
+    <!-- Midnight Navy Gradient -->
+    <linearGradient id="body-navy" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c2833" />
+      <stop offset="50%" stop-color="#212f3d" />
+      <stop offset="100%" stop-color="#0b1013" />
     </linearGradient>
+
+    <!-- Welding Spark Gradient -->
+    <radialGradient id="spark-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="40%" stop-color="#ffff00" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#ff4500" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Heat Haze Filter -->
+    <filter id="arc-glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+      <feMerge>
+        <feMergeNode in="coloredBlur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
   </defs>
-  <rect x="4" y="4" width="120" height="120" rx="20" fill="url(#g)" stroke="" stroke-width="4"/>
-  <circle cx="64" cy="64" r="30" fill="#111827" stroke="" stroke-width="4"/>
-  <rect x="32" y="54" width="64" height="20" rx="10" fill="" opacity="0.22"/>
-  <circle cx="52" cy="64" r="6" fill=""/>
-  <circle cx="76" cy="64" r="6" fill=""/>
-  <text x="64" y="108" font-family="Segoe UI, Arial, sans-serif" font-size="14" text-anchor="middle" fill="" font-weight="700"></text>
+
+  <g transform="translate(256, 300)">
+    
+    <!-- Floor Shadow -->
+    <ellipse cx="0" cy="150" rx="80" ry="20" fill="#000" opacity="0.5">
+       <animate attributeName="opacity" values="0.5; 0.6; 0.5" dur="0.1s" repeatCount="indefinite" /> <!-- Flickers with light -->
+    </ellipse>
+
+    <!-- Base Unit -->
+    <path d="M-60,150 L60,150 L50,110 L-50,110 Z" fill="#17202a" stroke="#000" stroke-width="2" />
+    <rect x="-40" y="80" width="80" height="30" fill="#2c3e50" />
+    <circle cx="0" cy="80" r="30" fill="#34495e" /> <!-- Turret Base -->
+
+    <!-- Articulated Arm Group -->
+    <g>
+       <!-- Lower Arm Pivot -->
+       <animateTransform attributeName="transform" type="rotate" values="-10 0 80; 10 0 80; -10 0 80" dur="3s" repeatCount="indefinite" />
+       
+       <!-- Lower Arm Segment -->
+       <path d="M-20,80 L20,80 L15,0 L-15,0 Z" fill="url(#body-navy)" stroke="#000" stroke-width="2" />
+       <circle cx="0" cy="80" r="10" fill="#566573" />
+       
+       <!-- Elbow Joint -->
+       <circle cx="0" cy="0" r="18" fill="#566573" />
+       
+       <!-- Upper Arm Group -->
+       <g transform="translate(0, 0)">
+          <!-- Forearm Pivot -->
+          <animateTransform attributeName="transform" type="rotate" values="40 0 0; 80 0 0; 40 0 0" dur="3s" repeatCount="indefinite" />
+          
+          <!-- Forearm Segment -->
+          <path d="M-12,0 L12,0 L15,-100 L-15,-100 Z" fill="url(#body-navy)" stroke="#000" stroke-width="2" />
+          
+          <!-- Welding Torch Head -->
+          <g transform="translate(0, -100)">
+              <rect x="-20" y="-40" width="40" height="50" fill="#d35400" /> <!-- Safety Orange Housing -->
+              <path d="M-5,-40 L5,-40 L2,-60 L-2,-60 Z" fill="#999" /> <!-- Nozzle -->
+              
+              <!-- Arc Light Point (The brightness source) -->
+              <circle cx="0" cy="-60" r="15" fill="#fff" opacity="0.8" filter="url(#arc-glow)">
+                  <animate attributeName="opacity" values="0.8; 0.2; 0.9; 0.3; 1" dur="0.15s" repeatCount="indefinite" />
+                  <animate attributeName="r" values="10; 18; 12; 20" dur="0.2s" repeatCount="indefinite" />
+              </circle>
+
+              <!-- Sparks Particle System -->
+              <g transform="translate(0, -60)">
+                  <!-- Spark 1 -->
+                  <circle cx="0" cy="0" r="3" fill="url(#spark-glow)">
+                      <animate attributeName="cx" values="0; 20" dur="0.4s" repeatCount="indefinite" begin="0s"/>
+                      <animate attributeName="cy" values="0; 20" dur="0.4s" repeatCount="indefinite" begin="0s"/>
+                      <animate attributeName="opacity" values="1; 0" dur="0.4s" repeatCount="indefinite" begin="0s"/>
+                  </circle>
+                  <!-- Spark 2 -->
+                  <circle cx="0" cy="0" r="2" fill="url(#spark-glow)">
+                      <animate attributeName="cx" values="0; -15" dur="0.3s" repeatCount="indefinite" begin="0.1s"/>
+                      <animate attributeName="cy" values="0; 25" dur="0.3s" repeatCount="indefinite" begin="0.1s"/>
+                      <animate attributeName="opacity" values="1; 0" dur="0.3s" repeatCount="indefinite" begin="0.1s"/>
+                  </circle>
+                  <!-- Spark 3 -->
+                  <circle cx="0" cy="0" r="4" fill="url(#spark-glow)">
+                      <animate attributeName="cx" values="0; 10" dur="0.5s" repeatCount="indefinite" begin="0.05s"/>
+                      <animate attributeName="cy" values="0; 30" dur="0.5s" repeatCount="indefinite" begin="0.05s"/>
+                      <animate attributeName="opacity" values="1; 0" dur="0.5s" repeatCount="indefinite" begin="0.05s"/>
+                  </circle>
+              </g>
+          </g>
+       </g>
+    </g>
+  </g>
 </svg>

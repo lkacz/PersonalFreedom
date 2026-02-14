@@ -1,0 +1,83 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 002: Confession Vending Sticker (Exceptional) - Holographic Paid -->
+  <defs>
+    <!-- Holographic Foil Gradient -->
+    <linearGradient id="holoFoil" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF9A9E"/>
+      <stop offset="25%" stop-color="#FECFEF"/>
+      <stop offset="50%" stop-color="#A1C4FD"/>
+      <stop offset="75%" stop-color="#C2E9FB"/>
+      <stop offset="100%" stop-color="#E2EBF0"/>
+      <animate attributeName="x1" values="0%; 100%; 0%" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="x2" values="100%; 0%; 100%" dur="3s" repeatCount="indefinite"/>
+    </linearGradient>
+    
+    <!-- Golden Backing -->
+    <linearGradient id="goldBack" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#FDB931"/>
+    </linearGradient>
+    
+    <!-- Gold Text Gradient -->
+    <linearGradient id="goldText" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#BF953F"/>
+      <stop offset="50%" stop-color="#FCF6BA"/>
+      <stop offset="100%" stop-color="#B38728"/>
+    </linearGradient>
+
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <g transform="translate(256, 256)">
+    <animateTransform attributeName="transform" type="translate" values="256,256; 256,250; 256,256" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 .55 1; 0.45 0 .55 1"/>
+    
+    <g transform="rotate(-8)">
+        
+        <!-- Sticker Body -->
+        <rect x="-150" y="-100" width="300" height="200" rx="10" ry="10" fill="url(#holoFoil)" stroke="white" stroke-width="2"/>
+        
+        <!-- Header Banner -->
+        <path d="M-150,-100 Q-150,-100 -140,-100 L140,-100 Q150,-100 150,-90 L150,-40 L-150,-40 Z" fill="#1A1A1A"/>
+        <text x="0" y="-55" font-family="Arial, sans-serif" font-weight="bold" font-size="40" fill="url(#goldText)" text-anchor="middle" filter="url(#glow)">HOLO-TAG</text>
+        <text x="0" y="-15" font-family="Arial, sans-serif" font-size="20" fill="#1A1A1A" text-anchor="middle" letter-spacing="2">STATUS VERIFIED</text>
+
+        <!-- Stamped "PAID" -->
+        <g transform="translate(0, 40) rotate(-5)">
+            <!-- P -->
+            <path d="M-80,-30 L-80,40 M-80,-30 H-50 A 20 20 0 0 1 -50 10 H-80" stroke="url(#goldText)" stroke-width="15" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+            <!-- A -->
+            <path d="M-20,40 L0,-30 L20,40 M-10,10 H10" stroke="url(#goldText)" stroke-width="15" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+            <!-- I -->
+            <path d="M50,-30 L50,40" stroke="url(#goldText)" stroke-width="15" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+            <!-- D -->
+            <path d="M80,-30 L100,-30 A 35 35 0 0 1 100 40 L80,40 Z" stroke="url(#goldText)" stroke-width="15" fill="none" stroke-linecap="round" filter="url(#glow)"/>
+        </g>
+        
+        <!-- Stars/Sparkles -->
+        <g fill="white" filter="url(#glow)">
+            <circle cx="-130" cy="80" r="3">
+                <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+            </circle>
+             <circle cx="120" cy="-20" r="4">
+                <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+            </circle>
+        </g>
+
+        <!-- Peeling Corner (Bottom Right) - Minimal Peel for Exceptional -->
+        <path d="M150,100 L120,100 L150,70 Z" fill="#1A1A1A" opacity="0.5"/>
+        <path d="M120,100 L150,70 L130,50 L80,100 Z" fill="url(#goldBack)" stroke="#B38728" stroke-width="1">
+            <animate attributeName="d" values="M120,100 L150,70 L130,50 L80,100 Z; M120,100 L150,70 L135,55 L85,100 Z; M120,100 L150,70 L130,50 L80,100 Z" dur="3s" repeatCount="indefinite"/>
+        </path>
+
+    </g>
+  </g>
+</svg>

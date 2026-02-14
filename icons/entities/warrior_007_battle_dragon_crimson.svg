@@ -24,20 +24,14 @@
     </linearGradient>
   </defs>
   
-  <!-- Massive wing (spread majestically) -->
-  <path d="M6 8 
-           Q2 16, 4 24 
-           Q2 32, 6 40
-           Q10 36, 14 32
-           Q12 24, 16 20
-           Q14 14, 18 10
-           Q12 8, 6 8 Z" 
+  <!-- Massive wing (spread majestically) - Shifted to attach to body properly -->
+  <path d="M34 36 
+           Q25 16, 20 8 
+           Q10 4, 2 12
+           Q6 24, 12 32
+           Q20 36, 26 38
+           Q30 40, 34 36 Z" 
         fill="url(#crimsonWing)" stroke="#7F0000" stroke-width="0.5"/>
-  
-  <!-- Wing membrane details -->
-  <path d="M6 16 L14 20" stroke="#B71C1C" stroke-width="1"/>
-  <path d="M6 24 L14 26" stroke="#B71C1C" stroke-width="1"/>
-  <path d="M6 32 L14 32" stroke="#B71C1C" stroke-width="1"/>
   
   <!-- Tail (powerful, curling) -->
   <path d="M52 44 Q58 48, 60 44 Q62 38, 58 36 Q62 32, 58 28" 
@@ -117,8 +111,8 @@
   <!-- Back spines -->
   <path d="M26 28 L24 22 L28 28 M32 28 L32 24 L34 28 M38 30 L40 26 L40 30" fill="#D32F2F"/>
   
-  <!-- Right wing (folded behind) -->
-  <path d="M46 24 Q54 20, 56 28 Q54 34, 48 32 Q46 28, 46 24" fill="url(#crimsonWing)" opacity="0.7"/>
+  <!-- Right wing (folded behind) - adjusted -->
+  <path d="M40 36 Q46 26, 52 20 Q58 18, 56 28 Q50 36, 40 36" fill="url(#crimsonWing)" opacity="0.7"/>
   
   <!-- Ground shadow -->
   <ellipse cx="34" cy="62" rx="20" ry="2" fill="#1A1A1A" opacity="0.4"/>

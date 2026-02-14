@@ -1,0 +1,235 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Zoo Worker 006: River Otter Archivist (Exceptional - The Grand Archivist) -->
+  <!-- Concept: An elder otter, very fuzzy and soft, wearing spectacles and a velvet vest.
+       He holds an ancient, physical scroll (concrete/touchable) and looks around wisely.
+       Theme: Cozy, tactile, scholarly, 'Wind in the Willows' sophisticated warmth. -->
+  
+  <defs>
+    <!-- Soft Elder Fur Gradient -->
+    <radialGradient id="elderFur" cx="50%" cy="40%" r="50%">
+      <stop offset="60%" stop-color="#8D6E63"/> <!-- Warm Brown -->
+      <stop offset="90%" stop-color="#6DA5C4"/> <!-- Grey/Blue Hint (Age) -->
+      <stop offset="100%" stop-color="#5D4037"/> <!-- Shadow -->
+    </radialGradient>
+
+    <!-- Cream Belly/Muzzle -->
+    <radialGradient id="creamFur" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF8E1"/>
+      <stop offset="100%" stop-color="#D7CCC8"/>
+    </radialGradient>
+
+    <!-- Velvet Vest Gradient -->
+    <linearGradient id="velvetVest" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#B71C1C"/> <!-- Deep Red -->
+      <stop offset="50%" stop-color="#880E4F"/> <!-- Purple/Burgundy Shadow -->
+      <stop offset="100%" stop-color="#4A0000"/> <!-- Dark -->
+    </linearGradient>
+
+    <!-- Scroll Parchment -->
+    <linearGradient id="scrollPaper" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF3E0"/> <!-- Top Light -->
+      <stop offset="10%" stop-color="#FFE0B2"/> <!-- Roll Shadow -->
+      <stop offset="90%" stop-color="#FFE0B2"/> <!-- Bottom Shadow -->
+      <stop offset="100%" stop-color="#FFCC80"/> <!-- Curl -->
+    </linearGradient>
+
+    <!-- Gold Accents -->
+    <linearGradient id="goldTrim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFECB3"/>
+      <stop offset="50%" stop-color="#FFCA28"/>
+      <stop offset="100%" stop-color="#FF6F00"/>
+    </linearGradient>
+
+    <!-- Soft Drop Shadow -->
+    <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+      <feOffset dx="0" dy="5"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g transform="translate(256, 256)">
+    
+    <!-- Gentle Breathing/Floating Animation -->
+    <g>
+        <animateTransform attributeName="transform" type="translate" values="0,0; 0,-3; 0,0" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+
+        <!-- TAIL (Curled contentedly behind) -->
+        <path d="M-60,110 Q-90,140 -40,160 Q20,170 60,130" fill="url(#elderFur)" stroke="#4E342E" stroke-width="1"/>
+
+        <!-- BODY GROUP -->
+        <g filter="url(#softShadow)">
+            <!-- Main Body (Chunky/Soft) -->
+            <ellipse cx="0" cy="40" rx="85" ry="90" fill="url(#elderFur)"/>
+            
+            <!-- Velvet Vest (Sophisticated) -->
+            <path d="M-60,-20 Q0,-40 60,-20 L75,100 Q40,120 0,110 Q-40,120 -75,100 Z" fill="url(#velvetVest)"/>
+            
+            <!-- Vest Buttons (Gold) -->
+            <circle cx="0" cy="20" r="5" fill="url(#goldTrim)"/>
+            <circle cx="0" cy="50" r="5" fill="url(#goldTrim)"/>
+            <circle cx="0" cy="80" r="5" fill="url(#goldTrim)"/>
+
+            <!-- Vest Pocket Watch Chain -->
+            <path d="M-40,50 Q-20,90 0,50" fill="none" stroke="url(#goldTrim)" stroke-width="2"/>
+
+            <!-- Cream Belly Tuft showing at top of vest -->
+            <path d="M-30,-20 Q0,-10 30,-20 L20,10 Q0,20 -20,10 Z" fill="url(#creamFur)"/>
+        </g>
+
+        <!-- HEAD GROUP -->
+        <g transform="translate(0, -60)">
+             <!-- Head Shape -->
+             <path d="M-65,0 C-65,-45 65,-45 65,0 C65,45 40,65 0,65 C-40,65 -65,45 -65,0" fill="url(#elderFur)"/>
+             <!-- Muzzle and Cheeks (Soft Cream) -->
+             <ellipse cx="0" cy="20" rx="42" ry="32" fill="url(#creamFur)"/>
+             <ellipse cx="-35" cy="10" rx="18" ry="14" fill="url(#creamFur)"/> <!-- Left Cheek Puff -->
+             <ellipse cx="35" cy="10" rx="18" ry="14" fill="url(#creamFur)"/> <!-- Right Cheek Puff -->
+
+             <!-- Ears (Small, twitching) -->
+             <g>
+                <circle cx="-55" cy="-20" r="10" fill="#5D4037"/>
+                <circle cx="-55" cy="-20" r="5" fill="#3E2723"/>
+                <animateTransform attributeName="transform" type="rotate" values="0 -55 -20; 5 -55 -20; 0 -55 -20" dur="3s" repeatCount="indefinite"/>
+             </g>
+             <g>
+                <circle cx="55" cy="-20" r="10" fill="#5D4037"/>
+                <circle cx="55" cy="-20" r="5" fill="#3E2723"/>
+                 <animateTransform attributeName="transform" type="rotate" values="0 55 -20; -5 55 -20; 0 55 -20" dur="4s" repeatCount="indefinite"/>
+             </g>
+
+             <!-- Nose (Button-like, shiny) -->
+             <path d="M-10,15 Q0,10 10,15 Q5,23 0,26 Q-5,23 -10,15" fill="#212121"/>
+             <ellipse cx="-3" cy="17" rx="2" ry="1" fill="#FFF" opacity="0.4"/>
+
+             <!-- Mouth (Smile) -->
+             <path d="M-10,26 Q0,32 10,26" fill="none" stroke="#3E2723" stroke-width="2" stroke-linecap="round"/>
+
+             <!-- Whiskers (Long, White, Sophisticated) -->
+             <g stroke="#FFF" stroke-width="1.5" opacity="0.8">
+                 <path d="M-28,25 Q-55,20 -85,30">
+                    <animate attributeName="d" values="M-28,25 Q-55,20 -85,30; M-28,25 Q-55,25 -85,25; M-28,25 Q-55,20 -85,30" dur="4s" repeatCount="indefinite"/>
+                 </path>
+                 <path d="M-28,30 Q-55,35 -85,40">
+                     <animate attributeName="d" values="M-28,30 Q-55,35 -85,40; M-28,30 Q-55,30 -85,35; M-28,30 Q-55,35 -85,40" dur="4.2s" repeatCount="indefinite"/>
+                 </path>
+                 
+                 <path d="M28,25 Q55,20 85,30">
+                     <animate attributeName="d" values="M28,25 Q55,20 85,30; M28,25 Q55,25 85,25; M28,25 Q55,20 85,30" dur="3.8s" repeatCount="indefinite"/>
+                 </path>
+                 <path d="M28,30 Q55,35 85,40">
+                     <animate attributeName="d" values="M28,30 Q55,35 85,40; M28,30 Q55,30 85,35; M28,30 Q55,35 85,40" dur="4.5s" repeatCount="indefinite"/>
+                 </path>
+             </g>
+
+             <!-- EYES (Complex Animation Group) -->
+             <g>
+                 <!-- Left Eye -->
+                 <circle cx="-25" cy="-5" r="9" fill="#212121"/>
+                 <!-- Right Eye -->
+                 <circle cx="25" cy="-5" r="9" fill="#212121"/>
+                 
+                 <!-- Eyelids (Blinking - Hides the eye and pupil) -->
+                 <g>
+                     <rect x="-35" y="-15" width="20" height="20" fill="#8D6E63">
+                        <animate attributeName="height" values="0; 10; 0; 0" dur="4s" keyTimes="0; 0.05; 0.1; 1" repeatCount="indefinite"/>
+                     </rect>
+                     <rect x="15" y="-15" width="20" height="20" fill="#8D6E63">
+                        <animate attributeName="height" values="0; 10; 0; 0" dur="4s" keyTimes="0; 0.05; 0.1; 1" repeatCount="indefinite"/>
+                     </rect>
+                 </g>
+
+                 <!-- Pupils (Deep Blue/Black Friendly) -->
+                 <!-- Looking around animation -->
+                 <g fill="#4FC3F7">
+                    <circle cx="-25" cy="-5" r="3.5">
+                        <animate attributeName="cx" values="-25; -28; -25; -23; -25" dur="8s" repeatCount="indefinite" keyTimes="0; 0.2; 0.4; 0.6; 1"/>
+                        <animate attributeName="cy" values="-5; -6; -5; -4; -5" dur="8s" repeatCount="indefinite" keyTimes="0; 0.2; 0.4; 0.6; 1"/>
+                    </circle>
+                    <circle cx="25" cy="-5" r="3.5">
+                         <animate attributeName="cx" values="25; 22; 25; 27; 25" dur="8s" repeatCount="indefinite" keyTimes="0; 0.2; 0.4; 0.6; 1"/>
+                         <animate attributeName="cy" values="-5; -6; -5; -4; -5" dur="8s" repeatCount="indefinite" keyTimes="0; 0.2; 0.4; 0.6; 1"/>
+                    </circle>
+                 </g>
+                 
+                 <!-- High Specular Highlight (The "Cute" factor) -->
+                 <circle cx="-22" cy="-8" r="2.5" fill="#FFF" opacity="0.9"/>
+                 <circle cx="28" cy="-8" r="2.5" fill="#FFF" opacity="0.9"/>
+             </g>
+
+             <!-- Spectacles (Gold Wire Rimmed) -->
+             <g stroke="#FFD700" stroke-width="1.5" fill="none" opacity="0.9">
+                 <line x1="-12" y1="-5" x2="12" y2="-5" stroke-width="1.5"/> <!-- Bridge -->
+                 <circle cx="-25" cy="-5" r="13" stroke-width="1.5"/> <!-- Left Lens Frame -->
+                 <circle cx="25" cy="-5" r="13" stroke-width="1.5"/> <!-- Right Lens Frame -->
+                 <!-- Glass Lens Fill -->
+                 <circle cx="-25" cy="-5" r="13" fill="#E1F5FE" fill-opacity="0.2" stroke="none"/>
+                 <circle cx="25" cy="-5" r="13" fill="#E1F5FE" fill-opacity="0.2" stroke="none"/>
+                 <!-- Lens Glare -->
+                 <path d="M-30,-10 L-23,-3" stroke="#FFF" stroke-width="1.5" opacity="0.6"/>
+             </g>
+        </g>
+
+        <!-- HANDS & PROPS GROUP -->
+        <g transform="translate(0, 40)">
+            <!-- Left Hand/Paw Holding Scroll -->
+            <g transform="translate(-40, 10)">
+                <ellipse cx="0" cy="0" rx="14" ry="10" fill="#8D6E63"/>
+                <ellipse cx="0" cy="0" rx="8" ry="6" fill="#D7CCC8" transform="translate(0, -2)"/> <!-- Palm -->
+                <circle cx="-4" cy="-7" r="2.5" fill="#3E2723"/> <!-- Claw -->
+                <circle cx="0" cy="-8" r="2.5" fill="#3E2723"/>
+                <circle cx="4" cy="-7" r="2.5" fill="#3E2723"/>
+            </g>
+
+            <!-- SCROLL (Held by left hand) -->
+            <g transform="translate(-10, 20) rotate(-15)">
+                <!-- Scroll Body -->
+                <rect x="-50" y="-30" width="100" height="60" rx="2" fill="url(#scrollPaper)" filter="url(#softShadow)"/>
+                
+                <!-- Wooden Ends -->
+                <rect x="-60" y="-35" width="10" height="70" rx="2" fill="#5D4037"/>
+                <circle cx="-55" cy="-35" r="3" fill="#FFB74D"/>
+                <circle cx="-55" cy="35" r="3" fill="#FFB74D"/>
+
+                <rect x="50" y="-35" width="10" height="70" rx="2" fill="#5D4037"/>
+                <circle cx="55" cy="-35" r="3" fill="#FFB74D"/>
+                <circle cx="55" cy="35" r="3" fill="#FFB74D"/>
+
+                <!-- Text Lines -->
+                <g stroke="#8D6E63" stroke-width="2" stroke-linecap="round">
+                    <line x1="-40" y1="-15" x2="30" y2="-15"/>
+                    <line x1="-40" y1="0" x2="10" y2="0"/>
+                    <line x1="-40" y1="15" x2="20" y2="15"/>
+                </g>
+                
+                <!-- Wax Seal -->
+                <circle cx="20" cy="20" r="8" fill="#B71C1C" filter="url(#softShadow)"/>
+                <path d="M20,20 L28,35" stroke="#B71C1C" stroke-width="3"/>
+                <path d="M20,20 L12,35" stroke="#B71C1C" stroke-width="3"/>
+
+                <!-- Animated Seal Glow (Subtle magic) -->
+                <circle cx="20" cy="20" r="8" fill="#FF5252" opacity="0">
+                    <animate attributeName="opacity" values="0; 0.4; 0" dur="3s" repeatCount="indefinite"/>
+                </circle>
+            </g>
+
+            <!-- The Right Hand/Paw Gesturing (Moved to be clearly visible over scroll) -->
+            <g transform="translate(50, 0)">
+                <animateTransform attributeName="transform" type="rotate" values="0 50 0; 8 50 0; 0 50 0" dur="2s" repeatCount="indefinite"/>
+                <ellipse cx="0" cy="0" rx="14" ry="10" fill="#8D6E63"/>
+                <ellipse cx="0" cy="0" rx="8" ry="6" fill="#D7CCC8" transform="translate(0, -2)"/>
+                 <circle cx="-4" cy="-7" r="2.5" fill="#3E2723"/>
+                 <circle cx="0" cy="-8" r="2.5" fill="#3E2723"/>
+                 <circle cx="4" cy="-7" r="2.5" fill="#3E2723"/>
+            </g>
+        </g>
+
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,118 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Dark Metallic Cradle Gradient -->
+    <linearGradient id="cradleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#212121"/>
+      <stop offset="30%" stop-color="#424242"/>
+      <stop offset="70%" stop-color="#212121"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+
+    <!-- Vortex Gradient -->
+    <radialGradient id="vortexGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffeb3b" stop-opacity="0.8"/>
+      <stop offset="20%" stop-color="#f50057" stop-opacity="0.6"/>
+      <stop offset="50%" stop-color="#311b92" stop-opacity="0.4"/>
+      <stop offset="90%" stop-color="#000000" stop-opacity="0.9"/>
+    </radialGradient>
+    
+    <!-- Egg Core Gradient -->
+    <radialGradient id="eggGrad" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#00e5ff"/>
+      <stop offset="100%" stop-color="#3d5afe"/>
+    </radialGradient>
+
+    <!-- Glow Filter -->
+    <filter id="coreGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+     <!-- Lightning Filter -->
+    <filter id="lightningGlow">
+       <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+        <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+    </filter>
+
+    <filter id="simpleBlur">
+       <feGaussianBlur in="SourceGraphic" stdDeviation="8" />
+    </filter>
+  </defs>
+
+  <!-- Background: Dark Ritual Surface -->
+  <rect width="512" height="512" fill="#121212" rx="20"/>
+  
+  <!-- Base Stand (Pedestal) -->
+  <ellipse cx="256" cy="460" rx="160" ry="30" fill="#000" opacity="0.6" filter="url(#simpleBlur)"/>
+  <path d="M156,480 L356,480 L336,440 L176,440 Z" fill="url(#cradleGrad)"/>
+
+  <!-- Back Claws -->
+  <path d="M180,440 Q150,300 200,200 L220,210 Q180,300 200,440 Z" fill="url(#cradleGrad)"/>
+  <path d="M332,440 Q362,300 312,200 L292,210 Q332,300 312,440 Z" fill="url(#cradleGrad)"/>
+
+  <!-- The Vortex Orb Contents -->
+  <circle cx="256" cy="256" r="140" fill="url(#vortexGrad)">
+    <animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="20s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Inner Swirls -->
+  <path d="M256,256 m-100,0 a100,100 0 1,0 200,0 a100,100 0 1,0 -200,0" fill="none" stroke="#7e57c2" stroke-width="4" stroke-dasharray="20,40" opacity="0.6">
+     <animateTransform attributeName="transform" type="rotate" from="360 256 256" to="0 256 256" dur="15s" repeatCount="indefinite"/>
+  </path>
+    <path d="M256,256 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0" fill="none" stroke="#00e5ff" stroke-width="3" stroke-dasharray="10,30" opacity="0.5">
+     <animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="8s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- The Thunder Egg -->
+  <ellipse cx="256" cy="256" rx="50" ry="65" fill="url(#eggGrad)" filter="url(#coreGlow)">
+    <animate attributeName="rx" values="50;52;50;53;50" dur="0.5s" repeatCount="indefinite"/>
+    <animate attributeName="ry" values="65;68;65;67;65" dur="0.5s" repeatCount="indefinite"/>
+  </ellipse>
+  
+  <!-- Cracks on Egg -->
+  <path d="M256,210 L266,230 L246,250 L260,270" stroke="#fff" stroke-width="2" fill="none" opacity="0.8">
+      <animate attributeName="opacity" values="0.4;1;0.4" dur="0.2s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Major Lightning Arcs (Striking the Egg) -->
+  <path d="M160,160 L200,200 L256,256" stroke="#e040fb" stroke-width="4" fill="none" opacity="0" filter="url(#lightningGlow)">
+    <animate attributeName="d" values="M160,160 L200,180 L256,256; M160,160 L180,210 L256,256; M160,160 L200,180 L256,256" dur="0.2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0;1;0;0;0.5;0" dur="1.5s" repeatCount="indefinite"/>
+  </path>
+
+    <path d="M352,160 L312,200 L256,256" stroke="#00e5ff" stroke-width="4" fill="none" opacity="0" filter="url(#lightningGlow)">
+    <animate attributeName="d" values="M352,160 L312,180 L256,256; M352,160 L332,210 L256,256; M352,160 L312,180 L256,256" dur="0.2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;1;0;0;0;1;0" dur="2.1s" repeatCount="indefinite"/>
+  </path>
+  
+    <path d="M256,380 L256,330 L256,256" stroke="#b388ff" stroke-width="4" fill="none" opacity="0" filter="url(#lightningGlow)">
+    <animate attributeName="d" values="M256,380 L240,330 L256,256; M256,380 L270,330 L256,256; M256,380 L240,330 L256,256" dur="0.1s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0;0;0;1;0;0" dur="0.8s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Front Claws (Holding the Orb) -->
+  <path d="M230,480 Q200,380 236,360 L256,370 Q240,380 250,480 Z" fill="url(#cradleGrad)" />
+  <path d="M282,480 Q312,380 276,360 L256,370 Q272,380 262,480 Z" fill="url(#cradleGrad)" />
+
+  <!-- Glass Shell Reflection -->
+  <circle cx="256" cy="256" r="140" fill="none" stroke="#fff" stroke-width="2" stroke-opacity="0.3"/>
+  <path d="M166,166 A120,120 0 0 1 346,166" stroke="#fff" stroke-width="5" fill="none" opacity="0.5" stroke-linecap="round"/>
+
+  <!-- Floating Runes (Orbiting) -->
+  <text x="256" y="100" fill="#00e5ff" font-family="serif" font-size="24" opacity="0.8" text-anchor="middle"></text>
+  <g id="orbitGroup">
+      <animateTransform attributeName="transform" type="rotate" from="0 256 256" to="360 256 256" dur="10s" repeatCount="indefinite"/>
+      <circle cx="256" cy="90" r="4" fill="#00e5ff">
+          <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
+      </circle>
+  </g>
+
+</svg>

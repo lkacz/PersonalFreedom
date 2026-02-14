@@ -1,0 +1,225 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Zoo Worker 009: Emberwing Dragon (Deep Jade/Emerald Variant) -->
+  <!-- Variant: Exceptional (Tiny, Darker, More Shaded, Structural Changes) -->
+  <!-- Style: Clean, Concrete, Chibi-esque, Premium Vector -->
+
+  <defs>
+    <!-- Deep Body Gradient (Darker Emerald) -->
+    <linearGradient id="bodyGrad_ex" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#43A047"/> <!-- Mid Green -->
+      <stop offset="60%" stop-color="#1B5E20"/> <!-- Deep Forest -->
+      <stop offset="100%" stop-color="#003300"/> <!-- Near Black Green -->
+    </linearGradient>
+
+    <!-- Belly Gradient (Golden-Green) -->
+    <linearGradient id="bellyGrad_ex" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#DCEDC8"/> <!-- Pale Lime -->
+      <stop offset="100%" stop-color="#9CCC65"/> <!-- Light Olive -->
+    </linearGradient>
+
+    <!-- Horn Gradient (Darker Wood/Bone) -->
+    <linearGradient id="hornGrad_ex" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4E342E"/>
+      <stop offset="100%" stop-color="#212121"/>
+    </linearGradient>
+
+    <!-- Molten Glass Gradient (Mystical Violet/Blue Fire) -->
+    <radialGradient id="glassGrad_ex" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#E1BEE7"/> <!-- Hot Pink/White -->
+      <stop offset="60%" stop-color="#7B1FA2"/> <!-- Purple -->
+      <stop offset="100%" stop-color="#4A148C"/> <!-- Deep Purple -->
+    </radialGradient>
+
+    <!-- Eye Iris (Bright Glowing Gold) -->
+    <radialGradient id="eyeIris_ex" cx="50%" cy="50%" r="50%">
+      <stop offset="30%" stop-color="#FFEB3B"/> <!-- Bright Yellow -->
+      <stop offset="100%" stop-color="#F57F17"/> <!-- Dark Gold -->
+    </radialGradient>
+
+    <!-- Intense Shading Gradients -->
+    <radialGradient id="highlightOverlay_ex" cx="20%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="#FFF" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#FFF" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="shadowOverlay_ex" cx="80%" cy="80%" r="80%">
+      <stop offset="40%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#002200" stop-opacity="0.8"/> <!-- Very Dark Green Shadow -->
+    </radialGradient>
+  </defs>
+
+  <!-- Background: Smaller floor shadow for smaller dragon -->
+  <ellipse cx="256" cy="460" rx="100" ry="20" fill="#000" opacity="0.2">
+      <animate attributeName="rx" values="100;90;100" dur="4s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- DRAGON GROUP (Scaled Down to 0.75 and lowered to sit on floor) -->
+  <!-- RE-DOING GROUPING: Top level Translate to center, Scale for size, then Animation on Child -->
+  <g transform="translate(256, 300) scale(0.75)">
+    <g>
+        <!-- Bobbing Animation -->
+        <animateTransform attributeName="transform" type="translate"
+            values="0, 0; 0, -15; 0, 0"
+            dur="3s" repeatCount="indefinite" calcMode="easeInOut"/>
+
+      <!-- Tail (Curly/Spiked - Structural Change) -->
+      <path d="M-50,100 Q-90,120 -110,60 Q-130,-10 -60,-40" stroke="#003300" stroke-width="30" fill="none" stroke-linecap="round"/>
+      <path d="M-50,100 Q-90,120 -110,60 Q-130,-10 -60,-40" stroke="#1B5E20" stroke-width="20" fill="none" stroke-linecap="round"/>
+      <!-- Tail Spikes -->
+      <path d="M-110,60 L-130,50 M-90,100 L-110,100" stroke="#81C784" stroke-width="6" stroke-linecap="round" fill="none"/>
+
+      <!-- Wings (Butterfly/Fairy Dragon Shape - Structural Change) -->
+      <g stroke="#1B5E20" stroke-width="3" stroke-linejoin="round">
+          <animateTransform attributeName="transform" type="rotate" values="-5 0 -20; 15 0 -20; -5 0 -20" dur="0.5s" repeatCount="indefinite"/> <!-- Faster Flutter -->
+          <!-- Left Wing (Double Lobe) -->
+          <g>
+            <path d="M-50,-10 Q-120,-90 -150,-40 Q-140,-10 -110,10 Q-130,50 -90,40 Z" fill="#66BB6A"/>
+            <path d="M-50,-10 Q-120,-90 -150,-40 Q-140,-10 -110,10 Q-130,50 -90,40 Z" fill="url(#shadowOverlay_ex)" opacity="0.3"/>
+          </g>
+          <!-- Right Wing (Double Lobe) -->
+          <g>
+             <path d="M50,-10 Q120,-90 150,-40 Q140,-10 110,10 Q130,50 90,40 Z" fill="#66BB6A"/>
+             <path d="M50,-10 Q120,-90 150,-40 Q140,-10 110,10 Q130,50 90,40 Z" fill="url(#shadowOverlay_ex)" opacity="0.3"/>
+          </g>
+      </g>
+
+      <!-- Body / Belly (Rounder, stubbier) -->
+      <g>
+         <!-- Main Body Shape: Rounder -->
+         <ellipse cx="0" cy="50" rx="70" ry="90" fill="url(#bodyGrad_ex)"/>
+         <ellipse cx="0" cy="50" rx="70" ry="90" fill="url(#shadowOverlay_ex)"/>
+         <ellipse cx="0" cy="50" rx="70" ry="90" fill="url(#highlightOverlay_ex)"/>
+
+         <!-- Belly Scales -->
+         <path d="M-40,60 Q0,150 40,60 Q40,0 -40,0 Z" fill="url(#bellyGrad_ex)"/>
+         <!-- Belly Shadow -->
+         <path d="M-40,60 Q0,150 40,60 Q40,0 -40,0 Z" fill="url(#shadowOverlay_ex)" opacity="0.3"/>
+      </g>
+
+      <!-- Feet (Very Small) -->
+      <g transform="translate(0, 130)">
+          <!-- Left Foot -->
+          <ellipse cx="-40" cy="0" rx="20" ry="15" fill="#1B5E20"/>
+          <!-- Right Foot -->
+          <ellipse cx="40" cy="0" rx="20" ry="15" fill="#1B5E20"/>
+      </g>
+
+      <!-- HEAD GROUP (Larger relative to body for 'Tiny' look) -->
+      <g transform="translate(0, -60)">
+          <!-- Head Base (Slightly flatter top) -->
+          <rect x="-80" y="-70" width="160" height="110" rx="50" fill="url(#bodyGrad_ex)"/>
+          <rect x="-80" y="-70" width="160" height="110" rx="50" fill="url(#shadowOverlay_ex)"/>
+
+          <!-- Deep Brow Shadow -->
+          <path d="M-80,-20 Q0,0 80,-20 V-70 H-80 Z" fill="#000" opacity="0.1"/>
+
+          <rect x="-80" y="-70" width="160" height="110" rx="50" fill="url(#highlightOverlay_ex)"/>
+
+          <!-- Snout (Darker) -->
+          <ellipse cx="0" cy="15" rx="45" ry="30" fill="#2E7D32" opacity="0.5"/>
+
+          <!-- Nostrils (Breathing Fire) -->
+          <circle cx="-20" cy="15" r="4" fill="#000" opacity="0.6"/>
+          <circle cx="20" cy="15" r="4" fill="#000" opacity="0.6"/>
+
+          <!-- Mystical Puff (Violet/Pink for distinction, Larger Quantity, Faster) -->
+          <g>
+             <!-- Center Puff -->
+             <circle cx="0" cy="25" r="4" fill="#E040FB" opacity="0">
+                <animate attributeName="cy" values="25; -20" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+                <animate attributeName="r" values="4; 20" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+                <animate attributeName="opacity" values="0; 0.9; 0" dur="1.5s" keyTimes="0; 0.2; 1" repeatCount="indefinite" begin="0.5s"/>
+             </circle>
+             <!-- Left Puff -->
+             <circle cx="-15" cy="25" r="3" fill="#AB47BC" opacity="0">
+                <animate attributeName="cy" values="25; -10" dur="1.8s" repeatCount="indefinite" begin="0.8s"/>
+                <animate attributeName="r" values="3; 12" dur="1.8s" repeatCount="indefinite" begin="0.8s"/>
+                <animate attributeName="opacity" values="0; 0.7; 0" dur="1.8s" keyTimes="0; 0.2; 1" repeatCount="indefinite" begin="0.8s"/>
+             </circle>
+             <!-- Right Puff -->
+             <circle cx="15" cy="25" r="3" fill="#AB47BC" opacity="0">
+                <animate attributeName="cy" values="25; -10" dur="1.7s" repeatCount="indefinite" begin="1.0s"/>
+                <animate attributeName="r" values="3; 12" dur="1.7s" repeatCount="indefinite" begin="1.0s"/>
+                <animate attributeName="opacity" values="0; 0.7; 0" dur="1.7s" keyTimes="0; 0.2; 1" repeatCount="indefinite" begin="1.0s"/>
+             </circle>
+          </g>
+
+          <!-- Horns (Spiral/Ram-like) -->
+          <path d="M-40,-60 C-60,-90 -90,-60 -80,-30" stroke="url(#hornGrad_ex)" stroke-width="12" fill="none" stroke-linecap="round"/>
+          <path d="M40,-60 C60,-90 90,-60 80,-30" stroke="url(#hornGrad_ex)" stroke-width="12" fill="none" stroke-linecap="round"/>
+
+          <!-- EYES (Larger, more reflective) -->
+          <g transform="translate(0, -20)">
+              <!-- Left Eye -->
+              <g transform="translate(-40, 0)">
+                  <circle cx="0" cy="0" r="26" fill="#FFF"/> <!-- Bigger eye white -->
+                  <g> <!-- Pupil Group -->
+                      <animateTransform attributeName="transform" type="translate"
+                          values="0 0; 6 4; -6 -2; 2 -6; 0 8; 0 0"
+                          dur="3s" repeatCount="indefinite" calcMode="discrete" keyTimes="0; 0.1; 0.3; 0.5; 0.7; 1"/>
+                      <circle cx="0" cy="0" r="14" fill="url(#eyeIris_ex)"/>
+                      <circle cx="0" cy="0" r="6" fill="#000"/> <!-- Slit/Vertical Pupil -->
+                      <rect x="-2" y="-10" width="4" height="20" rx="2" fill="#000"/> <!-- Cat Eye pupil -->
+                      <circle cx="6" cy="-6" r="5" fill="#FFF" opacity="0.8"/>
+                  </g>
+
+                   <!-- Heavy Eyelid (Replaced with Opacity Blink) -->
+                   <!-- Blink duration ~80ms -->
+                   <animate attributeName="opacity" values="1; 1; 0; 0; 1; 1" keyTimes="0; 0.01; 0.012; 0.032; 0.035; 1" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+              </g>
+
+              <!-- Right Eye -->
+              <g transform="translate(40, 0)">
+                  <circle cx="0" cy="0" r="26" fill="#FFF"/>
+                  <g> <!-- Pupil Group -->
+                      <animateTransform attributeName="transform" type="translate"
+                          values="0 0; 6 4; -6 -2; 2 -6; 0 8; 0 0"
+                          dur="3s" repeatCount="indefinite" calcMode="discrete" keyTimes="0; 0.1; 0.3; 0.5; 0.7; 1"/>
+                      <circle cx="0" cy="0" r="14" fill="url(#eyeIris_ex)"/>
+                      <circle cx="0" cy="0" r="6" fill="#000"/>
+                      <rect x="-2" y="-10" width="4" height="20" rx="2" fill="#000"/>
+                      <circle cx="6" cy="-6" r="5" fill="#FFF" opacity="0.8"/>
+                  </g>
+
+                   <!-- Heavy Eyelid (Replaced with Opacity Blink) -->
+                   <!-- Blink duration ~80ms -->
+                   <animate attributeName="opacity" values="1; 1; 0; 0; 1; 1" keyTimes="0; 0.01; 0.012; 0.032; 0.035; 1" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+              </g>
+          </g>
+      </g>
+
+      <!-- HANDS & BLOWPIPE (Lowered) -->
+      <g transform="translate(0, 70)">
+          <!-- Arms -->
+          <path d="M-50,0 Q-25,25 0,10" fill="none" stroke="#1B5E20" stroke-width="14" stroke-linecap="round"/>
+          <path d="M50,0 Q25,25 0,10" fill="none" stroke="#1B5E20" stroke-width="14" stroke-linecap="round"/>
+
+          <!-- Blowpipe (Shorter) -->
+          <rect x="-5" y="-5" width="10" height="100" fill="#78909C" rx="2">
+              <animateTransform attributeName="transform" type="rotate" values="-2 0 0; 2 0 0; -2 0 0" dur="1s" repeatCount="indefinite"/>
+          </rect>
+
+          <!-- Hands -->
+          <circle cx="-10" cy="10" r="8" fill="#3E2723"/>
+          <circle cx="10" cy="10" r="8" fill="#3E2723"/>
+
+          <!-- MOLTEN GLASS BUBBLE (Violet Swirl) -->
+          <g transform="translate(0, 100)">
+              <animateTransform attributeName="transform" type="translate" values="0,100; 0,105; 0,100" dur="1s" repeatCount="indefinite"/>
+
+              <circle cx="0" cy="0" r="25" fill="url(#glassGrad_ex)"/>
+
+               <!-- Swirl effect inside glass -->
+              <path d="M-10,0 Q0,10 10,0" stroke="#FFF" stroke-width="2" fill="none" opacity="0.5"/>
+
+              <!-- Hot Glow Ring -->
+              <circle cx="0" cy="0" r="25" fill="none" stroke="#E040FB" stroke-width="2" opacity="0.6">
+                  <animate attributeName="r" values="25;30;25" dur="1s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.6;0;0.6" dur="1s" repeatCount="indefinite"/>
+              </circle>
+          </g>
+      </g>
+
+    </g> <!-- End Inner Group -->
+  </g> <!-- End Outer Scale/Translate Group -->
+</svg>

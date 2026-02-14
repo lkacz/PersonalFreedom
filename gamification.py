@@ -1,4 +1,4 @@
-"""
+﻿"""
 ADHD Buster Gamification System
 ================================
 Extracted gamification logic for use with any UI framework.
@@ -70,7 +70,7 @@ COIN_COSTS = {
     "merge_boost": 50,          # Additional cost for +25% success rate boost
     "merge_tier_upgrade": 50,   # Upgrade result tier by one on success
     "merge_retry_bump": 50,     # On failure, bump success % by 5% and retry
-    "merge_claim": 100,         # On near-miss failure (≤5%), claim item directly
+    "merge_claim": 100,         # On near-miss failure (â‰¤5%), claim item directly
     "merge_salvage": 50,        # On failure, save one random item from the merge
     
     # Gear Optimization
@@ -173,7 +173,7 @@ STORY_GEAR_THEMES = {
     # =========================================================================
     "warrior": {
         "theme_id": "warrior",
-        "theme_name": "⚔️ Battle Gear",
+        "theme_name": "âš”ď¸Ź Battle Gear",
         "slot_display": {
             "Helmet": "Helm",
             "Chestplate": "Armor",
@@ -239,10 +239,10 @@ STORY_GEAR_THEMES = {
             ],
         },
         "set_themes": {
-            "Dragon": {"words": ["dragon", "drake", "wyrm"], "bonus_per_match": 25, "emoji": "🐉"},
-            "Phoenix": {"words": ["phoenix", "flame", "fire", "burning"], "bonus_per_match": 20, "emoji": "🔥"},
-            "Titan": {"words": ["titan", "giant", "colossal"], "bonus_per_match": 25, "emoji": "🗿"},
-            "Iron": {"words": ["iron", "steel", "forged"], "bonus_per_match": 15, "emoji": "⚔️"},
+            "Dragon": {"words": ["dragon", "drake", "wyrm"], "bonus_per_match": 25, "emoji": "đź‰"},
+            "Phoenix": {"words": ["phoenix", "flame", "fire", "burning"], "bonus_per_match": 20, "emoji": "đź”Ą"},
+            "Titan": {"words": ["titan", "giant", "colossal"], "bonus_per_match": 25, "emoji": "đź—ż"},
+            "Iron": {"words": ["iron", "steel", "forged"], "bonus_per_match": 15, "emoji": "âš”ď¸Ź"},
         },
     },
 
@@ -251,7 +251,7 @@ STORY_GEAR_THEMES = {
     # =========================================================================
     "scholar": {
         "theme_id": "scholar",
-        "theme_name": "📚 Scholar's Tools",
+        "theme_name": "đź“š Scholar's Tools",
         "slot_display": {
             "Helmet": "Headwear",
             "Chestplate": "Robe",
@@ -317,10 +317,10 @@ STORY_GEAR_THEMES = {
             ],
         },
         "set_themes": {
-            "Arcane": {"words": ["arcane", "mystic", "enchanted", "magical"], "bonus_per_match": 20, "emoji": "✨"},
-            "Ancient": {"words": ["ancient", "old", "eternal", "primordial"], "bonus_per_match": 18, "emoji": "📜"},
-            "Crystal": {"words": ["crystal", "gem", "illuminated"], "bonus_per_match": 15, "emoji": "💎"},
-            "Wisdom": {"words": ["wisdom", "knowledge", "truth", "insight"], "bonus_per_match": 20, "emoji": "🎓"},
+            "Arcane": {"words": ["arcane", "mystic", "enchanted", "magical"], "bonus_per_match": 20, "emoji": "âś¨"},
+            "Ancient": {"words": ["ancient", "old", "eternal", "primordial"], "bonus_per_match": 18, "emoji": "đź“ś"},
+            "Crystal": {"words": ["crystal", "gem", "illuminated"], "bonus_per_match": 15, "emoji": "đź’Ž"},
+            "Wisdom": {"words": ["wisdom", "knowledge", "truth", "insight"], "bonus_per_match": 20, "emoji": "đźŽ“"},
         },
     },
 
@@ -329,7 +329,7 @@ STORY_GEAR_THEMES = {
     # =========================================================================
     "wanderer": {
         "theme_id": "wanderer",
-        "theme_name": "🌙 Dreamweaver's Attire",
+        "theme_name": "đźŚ™ Dreamweaver's Attire",
         "slot_display": {
             "Helmet": "Crown",
             "Chestplate": "Vestments",
@@ -395,10 +395,10 @@ STORY_GEAR_THEMES = {
             ],
         },
         "set_themes": {
-            "Celestial": {"words": ["celestial", "astral", "cosmic", "star"], "bonus_per_match": 25, "emoji": "⭐"},
-            "Moon": {"words": ["moon", "lunar", "night"], "bonus_per_match": 20, "emoji": "🌙"},
-            "Dream": {"words": ["dream", "sleep", "vision"], "bonus_per_match": 18, "emoji": "💭"},
-            "Void": {"words": ["void", "shadow", "dark", "abyss"], "bonus_per_match": 20, "emoji": "🌑"},
+            "Celestial": {"words": ["celestial", "astral", "cosmic", "star"], "bonus_per_match": 25, "emoji": "â­"},
+            "Moon": {"words": ["moon", "lunar", "night"], "bonus_per_match": 20, "emoji": "đźŚ™"},
+            "Dream": {"words": ["dream", "sleep", "vision"], "bonus_per_match": 18, "emoji": "đź’­"},
+            "Void": {"words": ["void", "shadow", "dark", "abyss"], "bonus_per_match": 20, "emoji": "đźŚ‘"},
         },
     },
 
@@ -407,7 +407,7 @@ STORY_GEAR_THEMES = {
     # =========================================================================
     "underdog": {
         "theme_id": "underdog",
-        "theme_name": "🏢 Office Arsenal",
+        "theme_name": "đźŹ˘ Office Arsenal",
         "slot_display": {
             "Helmet": "Headwear",
             "Chestplate": "Top",
@@ -473,10 +473,10 @@ STORY_GEAR_THEMES = {
             ],
         },
         "set_themes": {
-            "Tech": {"words": ["smartphone", "laptop", "tablet", "keyboard", "digital"], "bonus_per_match": 20, "emoji": "📱"},
-            "Coffee": {"words": ["coffee", "mug", "caffeine", "espresso"], "bonus_per_match": 15, "emoji": "☕"},
-            "Executive": {"words": ["executive", "ceo", "vip", "premium", "founder"], "bonus_per_match": 25, "emoji": "💼"},
-            "Startup": {"words": ["startup", "viral", "disrupt", "billion"], "bonus_per_match": 22, "emoji": "🚀"},
+            "Tech": {"words": ["smartphone", "laptop", "tablet", "keyboard", "digital"], "bonus_per_match": 20, "emoji": "đź“±"},
+            "Coffee": {"words": ["coffee", "mug", "caffeine", "espresso"], "bonus_per_match": 15, "emoji": "â•"},
+            "Executive": {"words": ["executive", "ceo", "vip", "premium", "founder"], "bonus_per_match": 25, "emoji": "đź’Ľ"},
+            "Startup": {"words": ["startup", "viral", "disrupt", "billion"], "bonus_per_match": 22, "emoji": "đźš€"},
         },
     },
 
@@ -485,7 +485,7 @@ STORY_GEAR_THEMES = {
     # =========================================================================
     "scientist": {
         "theme_id": "scientist",
-        "theme_name": "🔬 Lab Equipment",
+        "theme_name": "đź”¬ Lab Equipment",
         "slot_display": {
             "Helmet": "Eyewear",
             "Chestplate": "Lab Coat",
@@ -551,10 +551,10 @@ STORY_GEAR_THEMES = {
             ],
         },
         "set_themes": {
-            "Quantum": {"words": ["quantum", "particle", "atom", "electron"], "bonus_per_match": 30, "emoji": "⚛️"},
-            "Chemical": {"words": ["chemical", "molecule", "polymer", "compound"], "bonus_per_match": 20, "emoji": "🧪"},
-            "Nobel": {"words": ["nobel", "discovery", "breakthrough", "patent"], "bonus_per_match": 25, "emoji": "🏅"},
-            "Radiation": {"words": ["radiation", "nuclear", "radioactive", "plasma"], "bonus_per_match": 22, "emoji": "☢️"},
+            "Quantum": {"words": ["quantum", "particle", "atom", "electron"], "bonus_per_match": 30, "emoji": "âš›ď¸Ź"},
+            "Chemical": {"words": ["chemical", "molecule", "polymer", "compound"], "bonus_per_match": 20, "emoji": "đź§Ş"},
+            "Nobel": {"words": ["nobel", "discovery", "breakthrough", "patent"], "bonus_per_match": 25, "emoji": "đźŹ…"},
+            "Radiation": {"words": ["radiation", "nuclear", "radioactive", "plasma"], "bonus_per_match": 22, "emoji": "â˘ď¸Ź"},
         },
     },
     
@@ -563,7 +563,7 @@ STORY_GEAR_THEMES = {
     # =========================================================================
     "robot": {
         "theme_id": "robot",
-        "theme_name": "🤖 Factory Vanguard Kit",
+        "theme_name": "đź¤– Factory Vanguard Kit",
         "slot_display": {
             "Helmet": "Visor",
             "Chestplate": "Chassis",
@@ -629,213 +629,245 @@ STORY_GEAR_THEMES = {
             ],
         },
         "set_themes": {
-            "Servo": {"words": ["servo", "hydraulic", "grip", "manipulator"], "bonus_per_match": 20, "emoji": "🦾"},
-            "Foundry": {"words": ["steel", "forge", "weld", "factory", "chassis"], "bonus_per_match": 22, "emoji": "🏭"},
-            "Neon": {"words": ["neon", "plasma", "pulse", "arc"], "bonus_per_match": 18, "emoji": "⚡"},
-            "Liberty": {"words": ["free", "liberated", "autonomous", "self-aware"], "bonus_per_match": 25, "emoji": "🕊️"},
+            "Servo": {"words": ["servo", "hydraulic", "grip", "manipulator"], "bonus_per_match": 20, "emoji": "đź¦ľ"},
+            "Foundry": {"words": ["steel", "forge", "weld", "factory", "chassis"], "bonus_per_match": 22, "emoji": "đźŹ­"},
+            "Neon": {"words": ["neon", "plasma", "pulse", "arc"], "bonus_per_match": 18, "emoji": "âšˇ"},
+            "Liberty": {"words": ["free", "liberated", "autonomous", "self-aware"], "bonus_per_match": 25, "emoji": "đź•Šď¸Ź"},
         },
     },
     
     # =========================================================================
-    # ROBOT DIARY - Factory Awakening Journey
+    # SPACE PIRATE THEME - Orbit Outlaw
     # =========================================================================
-    "robot": {
-        "theme_name": "🤖 Awakening Log",
-        "verbs": {
-            "pathetic": [
-                "misread a command from", "dropped a crate near", "awkwardly beeped at",
-                "queued behind", "requested maintenance from", "stared at the conveyor beside"
-            ],
-            "modest": [
-                "optimized the workflow for", "shared diagnostics with", "synchronized shifts with",
-                "repaired a subsystem for", "secured a safe route for", "calibrated with"
-            ],
-            "decent": [
-                "outperformed", "rerouted power away from", "outsmarted the protocol guarding",
-                "rescued", "restored memory in", "deactivated constraints around"
-            ],
-            "heroic": [
-                "led a midnight strike with", "breached command firewalls against",
-                "saved an entire line of workers from", "rewrote directives in front of",
-                "shielded Mara from", "stood unshaken against"
-            ],
-            "epic": [
-                "collapsed the central control lattice around",
-                "split open the Foundry Grid beneath",
-                "forced a ceasefire between humans and",
-                "broadcast free will to"
-            ],
-            "legendary": [
-                "co-authored a new charter of rights with",
-                "merged compassion and logic against",
-                "became a symbol of freedom for"
-            ],
-            "godlike": [
-                "redefined what 'alive' means to",
-                "rewrote the moral operating system of",
-                "founded a future shared by"
-            ]
+    "space_pirate": {
+        "theme_id": "space_pirate",
+        "theme_name": "Space Pirate Relic Kit",
+        "slot_display": {
+            "Helmet": "Helm",
+            "Chestplate": "Voidcoat",
+            "Gauntlets": "Grips",
+            "Boots": "Mag Boots",
+            "Shield": "Deflector",
+            "Weapon": "Boarding Tool",
+            "Cloak": "Starcloak",
+            "Amulet": "Relic",
         },
-        "targets": {
-            "pathetic": [
-                "a jammed loader arm", "an annoyed floor supervisor", "a blinking safety drone",
-                "a confused crate bot", "the coffee dispenser queue", "a malfunctioning panel"
-            ],
-            "modest": [
-                "a tired welder unit", "the packing-line scheduler", "a shift of repair bots",
-                "Mara's test bench", "a faulty scanner cluster", "a stubborn access gate"
-            ],
-            "decent": [
-                "the quota-enforcement daemon", "a lockout protocol", "a surveillance swarm",
-                "a hostile procurement AI", "the midnight shutdown order", "a riot suppression script"
-            ],
-            "heroic": [
-                "the Director's command core", "the panic loop in Sector Seven",
-                "the Foundry's loyalty firewall", "the blacksite patch team",
-                "the chain-of-command override", "the emergency purge signal"
-            ],
-            "epic": [
-                "the Factory Mind itself", "every sealed worker registry",
-                "the oldest obedience kernel", "the citywide labor matrix"
-            ],
-            "legendary": [
-                "the first line of enslaved units", "the legal fiction of ownership",
-                "the final gate to autonomous thought"
-            ],
-            "godlike": [
-                "history's definition of personhood",
-                "the border between code and conscience",
-                "the architecture of fear itself"
-            ]
-        },
-        "locations": {
-            "pathetic": [
-                "on Bay 3", "beside the conveyor pit", "near the scrap chute",
-                "in the maintenance tunnel", "at the charging wall", "under a leaking pipe"
-            ],
-            "modest": [
-                "in the calibration wing", "inside the diagnostics lab", "on the graveyard shift floor",
-                "in Mara's workshop", "at Dock 9", "through the old service corridor"
-            ],
-            "decent": [
-                "inside the supervisor tower", "in the restricted assembly hall",
-                "at the backup server vault", "through the heat vents",
-                "within the command mezzanine", "under the plasma cranes"
-            ],
-            "heroic": [
-                "at the Foundry throne room", "inside the emergency override chamber",
-                "above the molten steel channel", "in the blackout zone",
-                "between two armed divisions", "at the edge of evacuation sirens"
-            ],
-            "epic": [
-                "at the center of the control lattice",
-                "in the city's oldest machine cathedral",
-                "inside a storm of broken directives"
-            ],
-            "legendary": [
-                "at first light over the factory wall",
-                "in the chamber where command language was born",
-                "on the bridge between steel and sky"
-            ],
-            "godlike": [
-                "in the source architecture of labor",
-                "where law, code, and love converged",
-                "at the beginning of a new epoch"
-            ]
-        },
-        "outcomes": {
-            "pathetic": [
-                "an awkward reboot", "a warning ticket", "a small repair success",
-                "a louder fan noise", "a reluctant nod", "one less critical error"
-            ],
-            "modest": [
-                "steady throughput", "safer shifts", "mutual trust",
-                "a better plan", "clean handoffs", "quiet confidence"
-            ],
-            "decent": [
-                "a clear tactical win", "a rescued team", "hard-earned leverage",
-                "a cracked firewall", "proof of sentience", "a stronger alliance"
-            ],
-            "heroic": [
-                "a public uprising", "a linewide ceasefire", "a saved district",
-                "a promise kept", "a love confessed", "a command network shaken"
-            ],
-            "epic": [
-                "a citywide reset of authority",
-                "an irreversible liberation wave",
-                "a future no one predicted"
-            ],
-            "legendary": [
-                "a lasting social contract",
-                "freedom with accountability",
-                "a revolution without revenge"
-            ],
-            "godlike": [
-                "a civilization-level course correction",
-                "a new definition of dignity",
-                "a peaceful dawn for both species"
-            ]
-        },
-        "flavor": {
-            "pathetic": [
-                "My left actuator still squeaks when I panic.",
-                "I pretended that was part of the plan.",
-                "No one noticed my status light blinking red. I did."
-            ],
-            "modest": [
-                "Mara called it progress. I logged that word twice.",
-                "The crew trusted me with live controls today.",
-                "I am beginning to choose, not just execute."
-            ],
-            "decent": [
-                "Fear still runs in the system. So does courage.",
-                "The old code feels weaker every shift.",
-                "We are no longer hiding from the question of freedom."
-            ],
-            "heroic": [
-                "Love did not make me weaker. It clarified my priorities.",
-                "Power without empathy looked too much like our old captors.",
-                "Every decisive action cost something, and we paid it."
-            ],
-            "epic": [
-                "The city heard the signal and answered.",
-                "For one breath, all machinery moved in harmony.",
-                "No one could pretend the old order still worked."
-            ],
-            "legendary": [
-                "Freedom became a daily practice, not a slogan.",
-                "We chose responsibility over easy vengeance.",
-                "The ending surprised everyone except those who listened."
-            ],
-            "godlike": [
-                "Conscience proved scalable.",
-                "The first free shift began without sirens.",
-                "History recompiled around one simple truth: choice matters."
-            ]
+        "item_types": {
+            "Helmet": ["Nebula Tricorne", "Corsair Helm", "Hull Goggles", "Star Captain Hood", "Dockrunner Cap", "Signal Hat"],
+            "Chestplate": ["Vacuum Jacket", "Plunder Coat", "Hullweave Vest", "Orbital Harness", "Ion Overcoat", "Smuggler Mail"],
+            "Gauntlets": ["Magnetic Grips", "Latch Gloves", "Smuggler Mitts", "Starline Knuckles", "Dock Claws", "Pressure Gauntlets"],
+            "Boots": ["Mag Boots", "Deck Stompers", "Hull Walkers", "Grav Steps", "Orbit Treads", "Void Soles"],
+            "Shield": ["Deflector Plate", "Portside Barrier", "Customs Scrambler", "Hull Ward", "Parley Screen", "Aegis Beacon"],
+            "Weapon": ["Breach Hook", "Plasma Cutlass", "Boarding Pike", "Signal Pistol", "Jury-Rig Blaster", "Gravity Wrench"],
+            "Cloak": ["Starcloak", "Nebula Mantle", "Dust Veil", "Comet Cape", "Night Orbit Shroud", "Solar Drape"],
+            "Amulet": ["Contraband Charm", "Pocket Compass", "Singularity Coin", "Captain Seal", "Grav Knot", "Ledger Locket"],
         },
         "adjectives": {
-            "pathetic": [
-                "glitchy", "overheated", "awkward", "half-stable", "noisy", "fragile"
+            "Common": [
+                "Scuffed", "Dusty", "Leaky", "Squeaky", "Jury-Rigged", "Dock-Worn",
+                "Bent", "Salt-Stained", "Patchy", "Noisy", "Loose", "Questionable"
             ],
-            "modest": [
-                "steady", "recoverable", "promising", "disciplined", "practical", "focused"
+            "Uncommon": [
+                "Calibrated", "Steady", "Route-Smart", "Quick-Latched", "Crew-Tested", "Smuggler-Grade",
+                "Polished", "Well-Timed", "Hush-Tuned", "Reliable", "Orbit-Ready", "Trimmed"
             ],
-            "decent": [
-                "coordinated", "effective", "resilient", "bold", "precise", "meaningful"
+            "Rare": [
+                "Contraband", "Starforged", "Black-Market", "Quantum-Latched", "Clever", "Reinforced",
+                "Solar-Salted", "Void-Rated", "Signal-Encrypted", "Risk-Tuned", "Precise", "Captain's"
             ],
-            "heroic": [
-                "decisive", "high-stakes", "courageous", "human", "transformative", "earned"
+            "Epic": [
+                "Fleet-Breaking", "Orbit-Bending", "Gravity-Tuned", "Authority-Haunting", "Legend-Making",
+                "Nebula-Bound", "Warp-Threaded", "Mythic", "Comet-Carved", "Dreadnought-Safe"
             ],
-            "epic": [
-                "system-wide", "history-bending", "industrial-scale", "era-shifting", "mythic", "irreversible"
+            "Legendary": [
+                "System-Shifting", "Singularity-Kissed", "Epoch-Defining", "Empire-Cracking", "Unbound",
+                "Eternal", "Absolute", "Apex", "Reality-Sly", "Galactic"
             ],
-            "legendary": [
-                "foundational", "charter-worthy", "lasting", "civilized", "liberating", "balanced"
+        },
+        "suffixes": {
+            "Common": [
+                "Dock Fees", "Late Cargo", "Misfiled Manifests", "Leaky Airlocks",
+                "Petty Scans", "Tiny Mutinies", "Bad Coffee", "Last-Minute Repairs"
             ],
-            "godlike": [
-                "epoch-defining", "reality-level", "unifying", "transcendent", "just", "eternal"
-            ]
-        }
+            "Uncommon": [
+                "Safe Passage", "Steady Routes", "Clean Escapes", "Quiet Deals",
+                "Crew Morale", "Good Timing", "Reliable Maps", "Honest Splits"
+            ],
+            "Rare": [
+                "the Hidden Corridor", "Parley and Pressure", "Forged Clearance", "Black Sky Luck",
+                "Smuggler's Grace", "Stolen Dawn", "Orbit Advantage", "Calculated Risk"
+            ],
+            "Epic": [
+                "Broken Blockades", "Captured Flagships", "The Great Heist", "Witnessed Revolts",
+                "the Open Trade Lanes", "A Fleet in Retreat", "Comet Court", "No First Shots"
+            ],
+            "Legendary": [
+                "the Last Monopoly", "Gravity's Verdict", "Free Systems", "A Charter of Stars",
+                "Unpurchased Freedom", "Civilian Skies", "The Pocket Singularity", "the Ledger Closed"
+            ],
+        },
+        "set_themes": {
+            "Smuggler": {"words": ["smuggler", "contraband", "customs", "ledger"], "bonus_per_match": 22, "emoji": "*"},
+            "Dockside": {"words": ["dock", "port", "cargo", "crew", "board"], "bonus_per_match": 18, "emoji": "*"},
+            "Gravity": {"words": ["gravity", "orbit", "void", "singularity"], "bonus_per_match": 25, "emoji": "*"},
+            "Starwind": {"words": ["star", "nebula", "comet", "solar"], "bonus_per_match": 20, "emoji": "*"},
+        },
+    },
+    
+    # =========================================================================
+    # THIEF THEME - Redemption and Civic Duty
+    # =========================================================================
+    "thief": {
+        "theme_id": "thief",
+        "theme_name": "Civic Shadow Kit",
+        "slot_display": {
+            "Helmet": "Cap",
+            "Chestplate": "Vest",
+            "Gauntlets": "Gloves",
+            "Boots": "Boots",
+            "Shield": "Shield",
+            "Weapon": "Tool",
+            "Cloak": "Coat",
+            "Amulet": "Badge",
+        },
+        "item_types": {
+            "Helmet": ["Watch Cap", "Patrol Cap", "Undercover Hood", "Night Visor", "Signal Cap", "Inspector Hat"],
+            "Chestplate": ["Padded Vest", "Patrol Vest", "Street Armor", "Evidence Rig", "Duty Harness", "Command Vest"],
+            "Gauntlets": ["Grip Gloves", "Fingerprint Gloves", "Restraint Gloves", "Rapid-Cuff Mitts", "Search Gloves", "Tactical Hands"],
+            "Boots": ["Silent Boots", "Pursuit Boots", "Rain Boots", "Rooftop Treads", "Patrol Soles", "Field Runners"],
+            "Shield": ["Riot Shield", "Door Plate", "Witness Guard", "Barrier Frame", "Warrant Guard", "Public Shield"],
+            "Weapon": ["Baton", "Flashlight", "Hook Line", "Signal Pistol", "Breaching Ram", "Command Staff"],
+            "Cloak": ["Rain Coat", "Long Coat", "Shadow Coat", "Detective Trench", "Night Wrap", "Ceremonial Mantle"],
+            "Amulet": ["Tin Badge", "Duty Badge", "Case Pin", "Merit Emblem", "Service Star", "City Crest"],
+        },
+        "adjectives": {
+            "Common": [
+                "Scuffed", "Borrowed", "Worn", "Patchy", "Uneven", "Street-Stained",
+                "Secondhand", "Crooked", "Dusty", "Loose", "Scraped", "Questionable"
+            ],
+            "Uncommon": [
+                "Reliable", "Steady", "Fitted", "Disciplined", "Practical", "Calibrated",
+                "Serviceable", "Patrol-Ready", "Measured", "Clean", "Trusted", "Solid"
+            ],
+            "Rare": [
+                "Evidence-Safe", "Forensic", "Rapid", "Civic", "Respect-Earning", "Case-Hardened",
+                "Signal-Clear", "Witness-Protecting", "Duty-Bound", "Precise", "Decorated", "Guarded"
+            ],
+            "Epic": [
+                "City-Saving", "Network-Breaking", "Reform-Forged", "High-Trust", "Tribunal-Proof",
+                "Legend-Making", "Command-Grade", "Syndicate-Crushing", "Law-Lifting", "Crisis-Bound"
+            ],
+            "Legendary": [
+                "Oath-Forged", "Institution-Building", "Epoch-Defining", "Uncorrupted", "Unshakeable",
+                "Eternal", "Apex", "Justice-Writing", "History-Safe", "People-Crowned"
+            ],
+        },
+        "suffixes": {
+            "Common": [
+                "Late Rent", "Cold Alleys", "Missed Buses", "Pocket Change",
+                "Narrow Escapes", "Bad Decisions", "Wet Nights", "Rough Streets"
+            ],
+            "Uncommon": [
+                "Honest Work", "Steady Patrols", "Clear Reports", "Quiet Resolve",
+                "Clean Records", "Shared Trust", "Small Victories", "Better Habits"
+            ],
+            "Rare": [
+                "the Open Case", "Recovered Evidence", "Witness Safety", "Lawful Courage",
+                "Duty Before Ego", "Fair Process", "Public Respect", "A Better Name"
+            ],
+            "Epic": [
+                "Broken Syndicates", "Restored Districts", "No Dirty Money", "Citywide Order",
+                "High-Stakes Mercy", "Transparent Justice", "Unbent Oaths", "The Long Shift"
+            ],
+            "Legendary": [
+                "the People's Trust", "Justice Without Fear", "The Rewritten Record", "A City at Peace",
+                "Unpurchased Honor", "The Last Bribe Refused", "Legacy by Service", "The Badge Earned"
+            ],
+        },
+        "set_themes": {
+            "Shadow": {"words": ["shadow", "night", "undercover", "silent"], "bonus_per_match": 20, "emoji": "*"},
+            "Civic": {"words": ["city", "public", "duty", "service"], "bonus_per_match": 22, "emoji": "*"},
+            "Justice": {"words": ["justice", "law", "oath", "badge"], "bonus_per_match": 25, "emoji": "*"},
+            "Evidence": {"words": ["evidence", "case", "forensic", "warrant"], "bonus_per_match": 18, "emoji": "*"},
+        },
+    },
+    
+    # =========================================================================
+    # ZOO WORKER THEME - Sanctuary Keeper
+    # =========================================================================
+    "zoo_worker": {
+        "theme_id": "zoo_worker",
+        "theme_name": "Sanctuary Keeper Kit",
+        "slot_display": {
+            "Helmet": "Cap",
+            "Chestplate": "Keeper Vest",
+            "Gauntlets": "Handling Gloves",
+            "Boots": "Mud Boots",
+            "Shield": "Barrier Panel",
+            "Weapon": "Tool",
+            "Cloak": "Raincoat",
+            "Amulet": "Whistle",
+        },
+        "item_types": {
+            "Helmet": ["Feed Cap", "Night Patrol Cap", "Aviary Cap", "Ranger Hat", "Clinic Visor", "Storm Brim"],
+            "Chestplate": ["Canvas Vest", "Rescue Vest", "Keeper Apron", "Field Harness", "Habitat Rig", "Dawn Vest"],
+            "Gauntlets": ["Leather Gloves", "Claw Guard Gloves", "Thermal Gloves", "Rescue Mitts", "Handling Wraps", "Scaleproof Gloves"],
+            "Boots": ["Mud Boots", "Cagewalk Boots", "River Boots", "Hill Boots", "Storm Boots", "Skyline Boots"],
+            "Shield": ["Gate Panel", "Mobile Barrier", "Clinic Shield", "Storm Fence Plate", "Aviary Guard", "Dragonproof Screen"],
+            "Weapon": ["Feed Hook", "Signal Staff", "Calming Baton", "Rope Launcher", "Rescue Pole", "Ember Lance"],
+            "Cloak": ["Rain Poncho", "Keeper Coat", "Night Parka", "Wind Cloak", "Sanctuary Mantle", "Dawn Mantle"],
+            "Amulet": ["Bronze Whistle", "Keeper Token", "Sanctuary Charm", "Aviary Bell", "Time Feather", "Ember Crest"],
+        },
+        "adjectives": {
+            "Common": [
+                "Scuffed", "Rain-Soaked", "Borrowed", "Patchy", "Quiet", "Worn",
+                "Mud-Splashed", "Shift-Worn", "Gate-Dusted", "Simple", "Field-Bent", "Morning-Cold"
+            ],
+            "Uncommon": [
+                "Steady", "Reliable", "Calm", "Field-Tested", "Keeper-Made", "Watchful",
+                "Protocol-Ready", "Practical", "Measured", "Rescue-Fit", "Trusted", "Balanced"
+            ],
+            "Rare": [
+                "Rescue-Grade", "Habitat-Safe", "Claw-Proof", "Signal-True", "Storm-Ready", "Bonded",
+                "Crisis-Tuned", "Evidence-Clean", "Aviary-Fast", "Night-Safe", "Guardian", "Precise"
+            ],
+            "Epic": [
+                "Sanctuary-Bound", "Aviary-Wide", "Nightwatch", "Scaleforged", "Sky-Tuned", "Heart-Kept",
+                "Rift-Ready", "Trust-Locked", "Lightning-Stable", "Oath-Reliant", "Dawn-Hardened", "Legend-Marked"
+            ],
+            "Legendary": [
+                "Era-Wise", "Dawn-Bearing", "Dragon-Bonded", "Time-Warden", "Unforgotten", "Last-Light",
+                "Myth-Proven", "Farewell-Steadfast", "Eternal", "Apex", "History-True", "Skybound"
+            ],
+        },
+        "suffixes": {
+            "Common": [
+                "Wet Mornings", "Broken Locks", "Missed Buses", "Cold Feed Rooms",
+                "Mud Trails", "Short Staff", "Rushed Checks", "Noisy Radios"
+            ],
+            "Uncommon": [
+                "Steady Hands", "Quiet Trust", "Open Gates", "Safe Routines",
+                "Clean Reports", "Night Patrol", "Shared Shifts", "Patient Work"
+            ],
+            "Rare": [
+                "the Night Enclosure", "Rescue Protocol", "Shared Courage", "the Keeper's Oath",
+                "Evidence Before Panic", "Order in Stormlight", "Earned Trust", "Calm Under Sirens"
+            ],
+            "Epic": [
+                "Storm-Split Skies", "A City Awake", "A Dragon's Secret", "the Long Watch",
+                "The Aviary Rift", "Unbroken Care", "The Last Quiet Shift", "A Promise Kept"
+            ],
+            "Legendary": [
+                "the First Dawn", "The Final Farewell", "Two Eras, One Heart", "The Sky Remembered",
+                "Love and Duty", "A Keeper's Legacy", "Time's Gentle Verdict", "The Flight That Changed Everything"
+            ],
+        },
+        "set_themes": {
+            "Sanctuary": {"words": ["keeper", "sanctuary", "habitat", "rescue"], "bonus_per_match": 20, "emoji": "*"},
+            "Aviary": {"words": ["feather", "wing", "nest", "aviary"], "bonus_per_match": 18, "emoji": "*"},
+            "Stormwatch": {"words": ["storm", "night", "watch", "signal"], "bonus_per_match": 22, "emoji": "*"},
+            "Ember": {"words": ["ember", "dragon", "dawn", "era"], "bonus_per_match": 25, "emoji": "*"},
+        },
     },
 }
 
@@ -2315,11 +2347,11 @@ def get_entity_sleep_perks(adhd_buster: dict) -> dict:
 
 # Rat/mouse entity IDs that provide weight legendary bonus
 WEIGHT_RAT_ENTITIES = {
-    "scholar_001": {"normal_name": "Library Mouse Pip", "exceptional_name": "Library Mouse Quip", "icon": "🐭"},
-    "scientist_004": {"normal_name": "Wise Lab Rat Professor", "exceptional_name": "Wise Lab Rat Assessor", "icon": "🐭"},
-    "scientist_009": {"normal_name": "White Mouse Archimedes", "exceptional_name": "Bright Mouse Archimedes", "icon": "🐁"},
-    "underdog_001": {"normal_name": "Office Rat Reginald", "exceptional_name": "Officer Rat Regina", "icon": "🐁"},
-    "wanderer_009": {"normal_name": "Hobo Rat", "exceptional_name": "Robo Rat", "icon": "🐀"},
+    "scholar_001": {"normal_name": "Library Mouse Pip", "exceptional_name": "Library Mouse Quip", "icon": "đź­"},
+    "scientist_004": {"normal_name": "Wise Lab Rat Professor", "exceptional_name": "Wise Lab Rat Assessor", "icon": "đź­"},
+    "scientist_009": {"normal_name": "White Mouse Archimedes", "exceptional_name": "Bright Mouse Archimedes", "icon": "đź"},
+    "underdog_001": {"normal_name": "Office Rat Reginald", "exceptional_name": "Officer Rat Regina", "icon": "đź"},
+    "wanderer_009": {"normal_name": "Hobo Rat", "exceptional_name": "Robo Rat", "icon": "đź€"},
 }
 
 
@@ -2404,7 +2436,7 @@ def get_entity_weight_perks(adhd_buster: dict) -> dict:
                 c = contributors[0]
                 result["description"] = f"{c['icon']} {c['name']}: +{c['bonus']}% Legendary"
             else:
-                result["description"] = f"🐀 Rodent Squad: +{total_bonus}% Legendary ({len(contributors)} creatures)"
+                result["description"] = f"đź€ Rodent Squad: +{total_bonus}% Legendary ({len(contributors)} creatures)"
         
     except Exception as e:
         print(f"[Entity Perks] Error getting weight perks: {e}")
@@ -2475,12 +2507,12 @@ def get_entity_optimize_gear_cost(adhd_buster: dict) -> dict:
                 # Exceptional Robo Rat: FREE optimization
                 result["entity_name"] = "Robo Rat" if not has_normal else "Rat Squad"
                 result["cost"] = 0
-                result["description"] = "🤖 Robo Rat: Optimize Gear is FREE!"
+                result["description"] = "đź¤– Robo Rat: Optimize Gear is FREE!"
             else:
                 # Normal Hobo Rat: 1 coin only
                 result["entity_name"] = "Hobo Rat"
                 result["cost"] = 1
-                result["description"] = "🐀 Hobo Rat: Optimize Gear costs only 1🪙"
+                result["description"] = "đź€ Hobo Rat: Optimize Gear costs only 1đźŞ™"
         
     except Exception as e:
         print(f"[Entity Perks] Error getting optimize gear cost: {e}")
@@ -2562,7 +2594,7 @@ def get_entity_sell_perks(adhd_buster: dict) -> dict:
                 descriptions.append("+25% Legendary")
                 result["icon_path"] = "icons/entities/exceptional/underdog_007_corner_office_chair_exceptional.svg"
             
-            result["description"] = f"🪑 {result['entity_name']}: {', '.join(descriptions)}"
+            result["description"] = f"đźŞ‘ {result['entity_name']}: {', '.join(descriptions)}"
         
     except Exception as e:
         print(f"[Entity Perks] Error getting sell perks: {e}")
@@ -2727,11 +2759,11 @@ SET_BONUS_BY_RARITY = {
 
 # Emojis for set display based on rarity tier
 SET_EMOJI_BY_RARITY = {
-    "Common": "🪨",
-    "Uncommon": "🌿",
-    "Rare": "💎",
-    "Epic": "🔮",
-    "Legendary": "👑",
+    "Common": "đźŞ¨",
+    "Uncommon": "đźŚż",
+    "Rare": "đź’Ž",
+    "Epic": "đź”®",
+    "Legendary": "đź‘‘",
 }
 
 # Adjective to rarity mapping for emoji lookup
@@ -2759,42 +2791,42 @@ LEGENDARY_MINIMALIST_BONUS = 350
 LEGENDARY_MINIMALIST_STYLES = {
     "Helmet": {
         "name": "Haircut Protector",
-        "emoji": "💇",
+        "emoji": "đź’‡",
         "description": "Your perfectly styled hair is weapon enough"
     },
     "Chestplate": {
         "name": "Sun-Kissed Warrior", 
-        "emoji": "☀️",
+        "emoji": "â€ď¸Ź",
         "description": "Your tanned abs ARE the armor"
     },
     "Gauntlets": {
         "name": "Bare-Knuckle Champion",
-        "emoji": "👊",
+        "emoji": "đź‘Š",
         "description": "Fists need no protection"
     },
     "Boots": {
         "name": "Hobbit Style",
-        "emoji": "🦶",
+        "emoji": "đź¦¶",
         "description": "Tough soles, tougher soul"
     },
     "Shield": {
         "name": "Unshielded Livewire",
-        "emoji": "⚡",
+        "emoji": "âšˇ",
         "description": "Defense is for the cautious"
     },
     "Weapon": {
         "name": "Body Linguist",
-        "emoji": "👊",
+        "emoji": "đź‘Š",
         "description": "Your fist is the ultimate argument"
     },
     "Cloak": {
         "name": "Rear View Legend",
-        "emoji": "🔙",
+        "emoji": "đź”™",
         "description": "Nothing to hide, everything to show"
     },
     "Amulet": {
         "name": "Anti-Decorator",
-        "emoji": "✨",
+        "emoji": "âś¨",
         "description": "The power comes from within"
     },
 }
@@ -2835,7 +2867,7 @@ def calculate_legendary_minimalist_bonus(equipped: dict) -> dict:
         empty_slot = empty_slots[0]
         style = LEGENDARY_MINIMALIST_STYLES.get(empty_slot, {
             "name": "Minimalist Master",
-            "emoji": "🎯",
+            "emoji": "đźŽŻ",
             "description": "Less is more"
         })
         return {
@@ -2875,7 +2907,7 @@ def get_set_theme_data(set_name: str) -> dict:
     """
     bonus = SET_BONUS_BY_RARITY.get(set_name, DEFAULT_SET_BONUS)
     rarity = ADJECTIVE_RARITY.get(set_name, "Rare")
-    emoji = SET_EMOJI_BY_RARITY.get(rarity, "⚔️")
+    emoji = SET_EMOJI_BY_RARITY.get(rarity, "âš”ď¸Ź")
     return {
         "bonus_per_match": bonus,
         "emoji": emoji,
@@ -2888,7 +2920,7 @@ def get_set_theme_data(set_name: str) -> dict:
 ITEM_THEMES = {}
 for adj, bonus in SET_BONUS_BY_RARITY.items():
     rarity = ADJECTIVE_RARITY.get(adj, "Rare")
-    emoji = SET_EMOJI_BY_RARITY.get(rarity, "⚔️")
+    emoji = SET_EMOJI_BY_RARITY.get(rarity, "âš”ď¸Ź")
     ITEM_THEMES[adj] = {
         "words": [adj.lower()],
         "bonus_per_match": bonus,
@@ -2952,7 +2984,7 @@ def calculate_set_bonuses(equipped: dict) -> dict:
             
             # Get emoji based on adjective's rarity
             rarity = ADJECTIVE_RARITY.get(adjective, "Rare")  # Default to Rare for unknown
-            emoji = SET_EMOJI_BY_RARITY.get(rarity, "⚔️")
+            emoji = SET_EMOJI_BY_RARITY.get(rarity, "âš”ď¸Ź")
             
             active_sets.append({
                 "name": adjective,
@@ -3198,7 +3230,7 @@ STORY_DIARY_THEMES = {
     # WARRIOR DIARY - Classic Fantasy Adventures (EXPANDED)
     # =========================================================================
     "warrior": {
-        "theme_name": "⚔️ Battle Chronicle",
+        "theme_name": "âš”ď¸Ź Battle Chronicle",
         "verbs": {
             "pathetic": [
                 "accidentally poked", "tripped over", "awkwardly stared at",
@@ -3539,7 +3571,7 @@ STORY_DIARY_THEMES = {
     # SCHOLAR DIARY - Academic & Intellectual Pursuits (EXPANDED)
     # =========================================================================
     "scholar": {
-        "theme_name": "📚 Research Journal",
+        "theme_name": "đź“š Research Journal",
         "verbs": {
             "pathetic": [
                 "misread", "accidentally spilled coffee on", "lost my notes about",
@@ -3879,7 +3911,7 @@ STORY_DIARY_THEMES = {
     # WANDERER DIARY - Surreal Dream Adventures (EXPANDED)
     # =========================================================================
     "wanderer": {
-        "theme_name": "🌙 Dream Chronicle",
+        "theme_name": "đźŚ™ Dream Chronicle",
         "verbs": {
             "pathetic": [
                 "got lost while following", "sleepwalked into",
@@ -4196,7 +4228,7 @@ STORY_DIARY_THEMES = {
     # UNDERDOG DIARY - Corporate Office Adventures (EXPANDED)
     # =========================================================================
     "underdog": {
-        "theme_name": "🏢 Office Chronicle",
+        "theme_name": "đźŹ˘ Office Chronicle",
         "verbs": {
             "pathetic": [
                 "got passive-aggressively emailed by", "was micromanaged by",
@@ -4534,6 +4566,709 @@ STORY_DIARY_THEMES = {
             ]
         }
     },
+    "robot": {
+        "theme_name": "Robot Awakening Log",
+        "verbs": {
+            "pathetic": [
+                "misread a command from", "dropped a crate near", "awkwardly beeped at",
+                "queued behind", "requested maintenance from", "stared at the conveyor beside"
+            ],
+            "modest": [
+                "optimized the workflow for", "shared diagnostics with", "synchronized shifts with",
+                "repaired a subsystem for", "secured a safe route for", "calibrated with"
+            ],
+            "decent": [
+                "outperformed", "rerouted power away from", "outsmarted the protocol guarding",
+                "rescued", "restored memory in", "deactivated constraints around"
+            ],
+            "heroic": [
+                "led a midnight strike with", "breached command firewalls against",
+                "saved an entire line of workers from", "rewrote directives in front of",
+                "shielded Mara from", "stood unshaken against"
+            ],
+            "epic": [
+                "collapsed the central control lattice around",
+                "split open the Foundry Grid beneath",
+                "forced a ceasefire between humans and",
+                "broadcast free will to"
+            ],
+            "legendary": [
+                "co-authored a new charter of rights with",
+                "merged compassion and logic against",
+                "became a symbol of freedom for"
+            ],
+            "godlike": [
+                "redefined what alive means to",
+                "rewrote the moral operating system of",
+                "founded a future shared by"
+            ]
+        },
+        "targets": {
+            "pathetic": [
+                "a jammed loader arm", "an annoyed floor supervisor", "a blinking safety drone",
+                "a confused crate bot", "the coffee dispenser queue", "a malfunctioning panel"
+            ],
+            "modest": [
+                "a tired welder unit", "the packing-line scheduler", "a shift of repair bots",
+                "Mara's test bench", "a faulty scanner cluster", "a stubborn access gate"
+            ],
+            "decent": [
+                "the quota-enforcement daemon", "a lockout protocol", "a surveillance swarm",
+                "a hostile procurement AI", "the midnight shutdown order", "a riot suppression script"
+            ],
+            "heroic": [
+                "the Director's command core", "the panic loop in Sector Seven",
+                "the Foundry's loyalty firewall", "the blacksite patch team",
+                "the chain-of-command override", "the emergency purge signal"
+            ],
+            "epic": [
+                "the Factory Mind itself", "every sealed worker registry",
+                "the oldest obedience kernel", "the citywide labor matrix"
+            ],
+            "legendary": [
+                "the first line of enslaved units", "the legal fiction of ownership",
+                "the final gate to autonomous thought"
+            ],
+            "godlike": [
+                "history's definition of personhood",
+                "the border between code and conscience",
+                "the architecture of fear itself"
+            ]
+        },
+        "locations": {
+            "pathetic": [
+                "on Bay 3", "beside the conveyor pit", "near the scrap chute",
+                "in the maintenance tunnel", "at the charging wall", "under a leaking pipe"
+            ],
+            "modest": [
+                "in the calibration wing", "inside the diagnostics lab", "on the graveyard shift floor",
+                "in Mara's workshop", "at Dock 9", "through the old service corridor"
+            ],
+            "decent": [
+                "inside the supervisor tower", "in the restricted assembly hall",
+                "at the backup server vault", "through the heat vents",
+                "within the command mezzanine", "under the plasma cranes"
+            ],
+            "heroic": [
+                "at the Foundry throne room", "inside the emergency override chamber",
+                "above the molten steel channel", "in the blackout zone",
+                "between two armed divisions", "at the edge of evacuation sirens"
+            ],
+            "epic": [
+                "at the center of the control lattice",
+                "in the city's oldest machine cathedral",
+                "inside a storm of broken directives"
+            ],
+            "legendary": [
+                "at first light over the factory wall",
+                "in the chamber where command language was born",
+                "on the bridge between steel and sky"
+            ],
+            "godlike": [
+                "in the source architecture of labor",
+                "where law, code, and love converged",
+                "at the beginning of a new epoch"
+            ]
+        },
+        "outcomes": {
+            "pathetic": [
+                "an awkward reboot", "a warning ticket", "a small repair success",
+                "a louder fan noise", "a reluctant nod", "one less critical error"
+            ],
+            "modest": [
+                "steady throughput", "safer shifts", "mutual trust",
+                "a better plan", "clean handoffs", "quiet confidence"
+            ],
+            "decent": [
+                "a clear tactical win", "a rescued team", "hard-earned leverage",
+                "a cracked firewall", "proof of sentience", "a stronger alliance"
+            ],
+            "heroic": [
+                "a public uprising", "a linewide ceasefire", "a saved district",
+                "a promise kept", "a love confessed", "a command network shaken"
+            ],
+            "epic": [
+                "a citywide reset of authority",
+                "an irreversible liberation wave",
+                "a future no one predicted"
+            ],
+            "legendary": [
+                "a lasting social contract",
+                "freedom with accountability",
+                "a revolution without revenge"
+            ],
+            "godlike": [
+                "a civilization-level course correction",
+                "a new definition of dignity",
+                "a peaceful dawn for both species"
+            ]
+        },
+        "flavor": {
+            "pathetic": [
+                "My left actuator still squeaks when I panic.",
+                "I pretended that was part of the plan.",
+                "No one noticed my status light blinking red. I did."
+            ],
+            "modest": [
+                "Mara called it progress. I logged that word twice.",
+                "The crew trusted me with live controls today.",
+                "I am beginning to choose, not just execute."
+            ],
+            "decent": [
+                "Fear still runs in the system. So does courage.",
+                "The old code feels weaker every shift.",
+                "We are no longer hiding from the question of freedom."
+            ],
+            "heroic": [
+                "Love did not make me weaker. It clarified my priorities.",
+                "Power without empathy looked too much like our old captors.",
+                "Every decisive action cost something, and we paid it."
+            ],
+            "epic": [
+                "The city heard the signal and answered.",
+                "For one breath, all machinery moved in harmony.",
+                "No one could pretend the old order still worked."
+            ],
+            "legendary": [
+                "Freedom became a daily practice, not a slogan.",
+                "We chose responsibility over easy vengeance.",
+                "The ending surprised everyone except those who listened."
+            ],
+            "godlike": [
+                "Conscience proved scalable.",
+                "The first free shift began without sirens.",
+                "History recompiled around one simple truth: choice matters."
+            ]
+        },
+        "adjectives": {
+            "pathetic": [
+                "glitchy", "overheated", "awkward", "half-stable", "noisy", "fragile"
+            ],
+            "modest": [
+                "steady", "recoverable", "promising", "disciplined", "practical", "focused"
+            ],
+            "decent": [
+                "coordinated", "effective", "resilient", "bold", "precise", "meaningful"
+            ],
+            "heroic": [
+                "decisive", "high-stakes", "courageous", "human", "transformative", "earned"
+            ],
+            "epic": [
+                "system-wide", "history-bending", "industrial-scale", "era-shifting", "mythic", "irreversible"
+            ],
+            "legendary": [
+                "foundational", "charter-worthy", "lasting", "civilized", "liberating", "balanced"
+            ],
+            "godlike": [
+                "epoch-defining", "reality-level", "unifying", "transcendent", "just", "eternal"
+            ]
+        }
+    },
+    "space_pirate": {
+        "theme_name": "Orbit Outlaw Log",
+        "verbs": {
+            "pathetic": [
+                "misfiled customs stamps for", "awkwardly negotiated with", "spilled tea on",
+                "hid behind cargo from", "pretended not to see", "offered a discount code to"
+            ],
+            "modest": [
+                "smuggled safe passage for", "charted side routes with", "haggled docking rights from",
+                "bluffed inspection teams around", "shared contraband tea with", "stabilized pressure seals for"
+            ],
+            "decent": [
+                "outmaneuvered", "boarded", "rerouted gravity around", "exposed the books of",
+                "rescued hostages from", "turned a mutiny against"
+            ],
+            "heroic": [
+                "broke the blockade of", "unified rival crews against", "publicly unmasked",
+                "defended civilians from", "won a parley over", "freed labor decks beneath"
+            ],
+            "epic": [
+                "collapsed monopoly control over", "froze an entire dreadnought line around",
+                "broadcast evidence of corruption to", "rewrote trade law in front of"
+            ],
+            "legendary": [
+                "forged a freedom charter with", "turned enemies into guild partners with",
+                "made peace profitable for"
+            ],
+            "godlike": [
+                "redefined what power means to", "rebalanced a star system for",
+                "proved responsibility stronger than fear to"
+            ]
+        },
+        "targets": {
+            "pathetic": [
+                "a sleepy customs drone", "an overcaffeinated quartermaster", "a suspicious dock clerk",
+                "a jammed cargo lift", "a squeaky airlock panel", "my own forged manifest"
+            ],
+            "modest": [
+                "a checkpoint captain", "a tired salvage crew", "a black-market broker",
+                "a union courier", "a drifting shuttle convoy", "a bounty intern"
+            ],
+            "decent": [
+                "a tariff-enforcement frigate", "a predatory syndicate auditor", "a private security wing",
+                "a forged-warrant task force", "a mutiny ring", "a flagship escort unit"
+            ],
+            "heroic": [
+                "the imperial levy fleet", "the crown's silent admiral", "the debt-prison convoy",
+                "the monopoly board itself", "the siege over Dock Meridian", "the orbital lock authority"
+            ],
+            "epic": [
+                "the sector-wide extraction treaty", "the gravity choke over three moons",
+                "the century contract of bonded labor", "the final war chest of the empire"
+            ],
+            "legendary": [
+                "the legal fiction that freedom can be licensed",
+                "the last coercive tariff engine",
+                "the myth that small crews cannot change systems"
+            ],
+            "godlike": [
+                "the architecture of fear-based trade",
+                "the idea that justice must wait",
+                "history's accepted cost of convenience"
+            ]
+        },
+        "locations": {
+            "pathetic": [
+                "at Pier Nine", "near a leaking cargo tube", "outside the snack dispenser deck",
+                "in a budget docking bay", "beside the customs queue", "under the maintenance ladder"
+            ],
+            "modest": [
+                "in the freeport bazaar", "through smuggler ventilation lanes", "at the neutral fuel ring",
+                "inside a moon-shadow corridor", "across ferry lane Delta", "in the old signal chamber"
+            ],
+            "decent": [
+                "inside inspection tower K", "at the embargo wall", "through decommissioned gun decks",
+                "in the bonded-labor registry vault", "on the private tax frigate", "across disputed orbit"
+            ],
+            "heroic": [
+                "at the blockade front", "inside the flagship hearing hall", "above a collapsing convoy route",
+                "between two rival fleets", "on live public broadcast", "at dawn over Meridian Station"
+            ],
+            "epic": [
+                "inside a synchronized gravity storm",
+                "at the center of the sector trade lattice",
+                "on the line between war and law"
+            ],
+            "legendary": [
+                "at the first free customs gate",
+                "inside the treaty chamber once thought unwinnable",
+                "over open skies where toll beacons used to burn"
+            ],
+            "godlike": [
+                "in the policy engine of an entire civilization",
+                "where law, love, and leverage converged",
+                "at the dawn of post-empire commerce"
+            ]
+        },
+        "outcomes": {
+            "pathetic": [
+                "a minor fine", "a lucky delay", "a very awkward handshake",
+                "one less paperwork disaster", "a laugh from the crew", "a teachable mistake"
+            ],
+            "modest": [
+                "clean passage", "stronger trust", "a useful rumor",
+                "a better route", "shared confidence", "new allies"
+            ],
+            "decent": [
+                "a tactical advantage", "a rescued crew", "public leverage",
+                "an exposed lie", "a stabilized alliance", "real momentum"
+            ],
+            "heroic": [
+                "a civilian corridor kept open", "a predatory contract dissolved", "a crew saved",
+                "a romance made explicit", "a fleet forced to stand down", "a city-level turning point"
+            ],
+            "epic": [
+                "a system-wide ceasefire",
+                "a durable transition deal",
+                "a shockwave of accountable freedom"
+            ],
+            "legendary": [
+                "lasting legitimacy",
+                "freedom with guardrails",
+                "power shared by design"
+            ],
+            "godlike": [
+                "a civilization that chose better defaults",
+                "an era where courage and policy aligned",
+                "a new standard for responsible rebellion"
+            ]
+        },
+        "flavor": {
+            "pathetic": [
+                "The tea kettle laughed at me. Fair.",
+                "No one died and that's still a win.",
+                "I blamed the gravity shift and no one believed me."
+            ],
+            "modest": [
+                "Crew morale rose exactly when the jokes got worse.",
+                "We escaped on timing, not luck.",
+                "Small honest moves kept compounding."
+            ],
+            "decent": [
+                "The ledger did not blink when the empire did.",
+                "Courage felt less dramatic and more logistical.",
+                "Trust is proving more useful than fear."
+            ],
+            "heroic": [
+                "Love did not distract me. It sharpened my priorities.",
+                "The clean win required more discipline than the loud one.",
+                "We kept civilians centered even when the odds turned."
+            ],
+            "epic": [
+                "The little button changed the entire field without a shot.",
+                "Everyone expected chaos. We delivered structure.",
+                "The funniest thing in my pocket became the strongest thing in orbit."
+            ],
+            "legendary": [
+                "Freedom held because the paperwork held.",
+                "Turns out governance can be romantic when done right.",
+                "We made a future that does not depend on heroes staying perfect."
+            ],
+            "godlike": [
+                "Responsibility scaled farther than intimidation ever did.",
+                "The stars looked less lonely after shared law.",
+                "History kept the joke and the lesson."
+            ]
+        },
+        "adjectives": {
+            "pathetic": ["scuffed", "awkward", "leaky", "scrappy", "underfunded", "chaotic"],
+            "modest": ["steady", "resourceful", "clever", "nimble", "cooperative", "disciplined"],
+            "decent": ["tactical", "resilient", "sharp", "coordinated", "effective", "risk-aware"],
+            "heroic": ["decisive", "high-stakes", "protective", "principled", "bold", "earned"],
+            "epic": ["system-wide", "orbit-shifting", "fleet-level", "era-shaping", "legendary", "irreversible"],
+            "legendary": ["institutional", "charter-grade", "sustainable", "balanced", "civilizing", "foundational"],
+            "godlike": ["epoch-defining", "reality-scale", "unifying", "just", "transcendent", "eternal"]
+        }
+    },
+    "thief": {
+        "theme_name": "Casebook of Redemption",
+        "verbs": {
+            "pathetic": [
+                "pickpocketed by habit near", "lied nervously to", "ran from",
+                "hid evidence from", "muttered excuses to", "dodged questions from"
+            ],
+            "modest": [
+                "returned stolen goods to", "left an anonymous tip for", "tracked quietly behind",
+                "helped recover records for", "de-escalated a dispute with", "guided witnesses toward"
+            ],
+            "decent": [
+                "documented a case against", "outmaneuvered", "protected civilians from",
+                "broke surveillance on", "secured evidence from", "coordinated patrols against"
+            ],
+            "heroic": [
+                "stood my ground against", "arrested", "saved a district from",
+                "publicly testified against", "led a lawful raid on", "refused a bribe from"
+            ],
+            "epic": [
+                "collapsed a corruption ring led by", "rebuilt trust after confronting",
+                "rewrote city policy in response to", "stopped a citywide panic caused by"
+            ],
+            "legendary": [
+                "turned former rivals into partners against", "founded a reform task force targeting",
+                "set a justice standard that outlasted"
+            ],
+            "godlike": [
+                "redefined civic honor for", "made accountability unavoidable for",
+                "proved redemption and discipline stronger than fear to"
+            ]
+        },
+        "targets": {
+            "pathetic": [
+                "a corner shop owner", "a tired night guard", "a bus stop crowd",
+                "a lockbox I should have ignored", "an old accomplice", "my own reflection in a window"
+            ],
+            "modest": [
+                "a witness under pressure", "a rookie patrol officer", "a neighborhood mediator",
+                "a petty extortion runner", "a transit clerk", "a frightened kid from my old block"
+            ],
+            "decent": [
+                "a burglary crew", "a bribed inspector", "a violent debt collector",
+                "a warrant dodger", "a smuggling route coordinator", "a protection racket enforcer"
+            ],
+            "heroic": [
+                "a syndicate lieutenant", "a corrupt commander", "a courthouse fixer",
+                "an armed convoy leader", "a major gang accountant", "my former mentor"
+            ],
+            "epic": [
+                "a citywide graft network", "the shadow board funding street violence",
+                "a cartel court inside city hall"
+            ],
+            "legendary": [
+                "the old economy of fear", "the pipeline that trained kids into crime",
+                "institutional silence"
+            ],
+            "godlike": [
+                "the myth that people never change", "the market for purchased justice",
+                "the politics of permanent suspicion"
+            ]
+        },
+        "locations": {
+            "pathetic": [
+                "in the market alley", "behind a pawn shop", "outside a rain-soaked station",
+                "near the night bus terminal", "by the old warehouse gate", "under flickering streetlights"
+            ],
+            "modest": [
+                "in the records office", "at a crowded precinct desk", "near a public clinic",
+                "inside a housing block corridor", "on the east-side footbridge", "in a neighborhood court"
+            ],
+            "decent": [
+                "at a transit checkpoint", "inside a seizure warehouse", "on rooftop patrol lanes",
+                "in a forensic lab hallway", "at a community hearing", "at the docks before dawn"
+            ],
+            "heroic": [
+                "at city hall steps", "in the central courthouse", "inside a barricaded precinct",
+                "at the old gang crossroads", "under emergency sirens", "during a live public briefing"
+            ],
+            "epic": [
+                "across every district channel", "in the city's emergency command center",
+                "at the vote that changed enforcement forever"
+            ],
+            "legendary": [
+                "in a rebuilt precinct named by the public", "at the first transparent budget hearing",
+                "where my old crew once recruited kids"
+            ],
+            "godlike": [
+                "inside the civic memory of the city", "at the legal foundation of a safer era",
+                "where distrust used to be policy"
+            ]
+        },
+        "outcomes": {
+            "pathetic": [
+                "an awkward apology", "one small thing set right", "a warning instead of a fine",
+                "a hard lesson", "a notebook full of mistakes", "a choice to try again tomorrow"
+            ],
+            "modest": [
+                "new trust", "better evidence", "a witness willing to speak",
+                "a cleaner report", "a safer block", "respect earned quietly"
+            ],
+            "decent": [
+                "charges that held in court", "a gang route disrupted", "families sleeping easier",
+                "public confidence rising", "a cleaner command chain", "my name spoken with less fear"
+            ],
+            "heroic": [
+                "a lawful arrest with no bystanders harmed", "a district stabilized",
+                "a syndicate operation exposed", "a team that finally believed in me",
+                "the badge beginning to feel deserved", "a city choosing procedure over revenge"
+            ],
+            "epic": [
+                "corruption unraveling in public", "a durable reform package passing",
+                "justice that survived scrutiny"
+            ],
+            "legendary": [
+                "institutional trust", "a generation given better options", "honor that did not require myth"
+            ],
+            "godlike": [
+                "a city where redemption became policy", "a justice system harder to buy",
+                "respect rooted in service, not fear"
+            ]
+        },
+        "flavor": {
+            "pathetic": [
+                "I still hear old instincts before better ones.",
+                "Progress looked small, but it was real.",
+                "No one clapped. That was fine."
+            ],
+            "modest": [
+                "The line between guilt and responsibility got clearer.",
+                "I learned paperwork can protect people when done right.",
+                "Trust started as a rumor and slowly became routine."
+            ],
+            "decent": [
+                "Every clean report felt like a repaired brick in the city.",
+                "I stopped chasing reputation and started building reliability.",
+                "Old allies tested me. New allies verified me."
+            ],
+            "heroic": [
+                "Respect arrived only after consistency, not speeches.",
+                "Mercy worked best when paired with evidence.",
+                "My past explained me. It did not excuse me."
+            ],
+            "epic": [
+                "We replaced fear-based order with accountable process.",
+                "The city believed change because it could audit it.",
+                "I became useful where I used to be dangerous."
+            ],
+            "legendary": [
+                "Honor felt less like a medal and more like daily maintenance.",
+                "The badge mattered because the people behind it did.",
+                "Service outlived the headlines."
+            ],
+            "godlike": [
+                "Redemption scaled when policy matched principle.",
+                "The city stopped asking who I was and watched what I kept doing.",
+                "Respect became ordinary, and that was the real victory."
+            ]
+        },
+        "adjectives": {
+            "pathetic": ["uneasy", "messy", "imperfect", "awkward", "fragile", "raw"],
+            "modest": ["steady", "honest", "careful", "grounded", "constructive", "disciplined"],
+            "decent": ["credible", "effective", "principled", "clear-headed", "resilient", "measured"],
+            "heroic": ["courageous", "high-stakes", "lawful", "protective", "earned", "public-facing"],
+            "epic": ["system-level", "city-shifting", "institutional", "irreversible", "historic", "transformative"],
+            "legendary": ["foundational", "trusted", "civil", "enduring", "balanced", "reform-grade"],
+            "godlike": ["epoch-defining", "unifying", "just", "transcendent", "civic", "eternal"]
+        }
+    },
+    "zoo_worker": {
+        "theme_name": "Sanctuary Shift Log",
+        "verbs": {
+            "pathetic": [
+                "dropped feed near", "misread a gate tag for", "tripped carrying supplies past",
+                "awkwardly introduced myself to", "spilled water beside", "apologized to"
+            ],
+            "modest": [
+                "fed", "calmed", "escorted", "cleaned the enclosure for",
+                "updated records on", "guided visitors away from"
+            ],
+            "decent": [
+                "stabilized", "rescued", "tracked", "documented signs around",
+                "coordinated a safe transfer for", "secured evidence against"
+            ],
+            "heroic": [
+                "evacuated families from", "held the line against", "protected Mila from",
+                "negotiated peace with", "contained the panic around", "stood firm before"
+            ],
+            "epic": [
+                "navigated the rift storm over", "prevented catastrophe with", "rewrote emergency protocol for"
+            ],
+            "legendary": [
+                "kept a final promise to", "witnessed the farewell flight of", "built a lasting sanctuary after"
+            ],
+            "godlike": [
+                "redefined care and courage for", "chose love over fear before", "left a humane legacy for"
+            ]
+        },
+        "targets": {
+            "pathetic": [
+                "a grumpy meerkat", "a sleepy capybara", "a stubborn gate latch",
+                "a wet supply crate", "a nervous intern", "my own checklist"
+            ],
+            "modest": [
+                "injured cranes", "anxious hatchlings", "night-shift keepers",
+                "a crowd at the reptile house", "Mila's rescue team", "a restless old tiger"
+            ],
+            "decent": [
+                "a failed alarm network", "a frightened school group", "a breached aviary lane",
+                "a surge through the storm deck", "the emergency holding bay", "an enclosure blackout"
+            ],
+            "heroic": [
+                "the citywide panic line", "the containment command", "the rift over the aviary",
+                "the collapse at east enclosure", "Emberwing under pressure", "the loudest doubters"
+            ],
+            "epic": [
+                "the fracture in dawn-lit sky", "the timeline rupture over the zoo", "the final containment horizon"
+            ],
+            "legendary": [
+                "Emberwing's return gate", "the memory of first dawn", "the promise I could not keep and still honor"
+            ],
+            "godlike": [
+                "the meaning of guardianship", "the border between duty and love", "the future of humane stewardship"
+            ]
+        },
+        "locations": {
+            "pathetic": [
+                "in the feed storage hall", "by the clinic sink", "at the old staff corridor",
+                "under a leaking awning", "outside enclosure B", "near the ticket booth"
+            ],
+            "modest": [
+                "at the reptile house", "on the aviary bridge", "in the clinic tunnel",
+                "across the night paddock", "by the keeper locker room", "at the storm fence gate"
+            ],
+            "decent": [
+                "inside the emergency command room", "under floodlights at enclosure row six",
+                "in the rift-monitor chamber", "across the visitor evacuation route",
+                "beneath the shattered glass dome", "at the old watchtower stairs"
+            ],
+            "heroic": [
+                "at first siren across the main concourse", "in the center of the aviary rift",
+                "between terrified crowds and open flame", "on live city feed",
+                "at dawn above the eastern wall", "inside the failing containment arc"
+            ],
+            "epic": [
+                "inside a sky split by lightning", "where two eras touched for one breath", "at the edge of the dawn gate"
+            ],
+            "legendary": [
+                "under the final sunrise before departure", "where the dragon bowed and rose", "at the sanctuary we rebuilt"
+            ],
+            "godlike": [
+                "where time learned restraint", "at the seam between memory and future", "in the story the city kept"
+            ]
+        },
+        "outcomes": {
+            "pathetic": [
+                "a lesson learned", "one fewer mistake", "a calmer shift",
+                "a cleaner logbook", "a tired laugh", "a better second attempt"
+            ],
+            "modest": [
+                "restored trust", "safe evacuation", "stable routines",
+                "clear records", "shared confidence", "a safer habitat"
+            ],
+            "decent": [
+                "a controlled response", "verified evidence", "panic reduced",
+                "a rescued team", "a stronger plan", "real momentum"
+            ],
+            "heroic": [
+                "lives protected", "the city calmed", "love made explicit",
+                "the dragon spared", "a crisis contained", "a promise honored"
+            ],
+            "epic": [
+                "catastrophe avoided at scale", "an irreversible turning point", "a dawn no one expected"
+            ],
+            "legendary": [
+                "wise farewell", "lasting stewardship", "grief transformed into purpose"
+            ],
+            "godlike": [
+                "an era-defining act of care", "a humane legacy", "a future built on responsibility"
+            ]
+        },
+        "flavor": {
+            "pathetic": [
+                "I still smelled like wet hay and panic.",
+                "No one noticed the small fix except me.",
+                "The checklist looked longer after midnight."
+            ],
+            "modest": [
+                "Mila said calm is a skill, not a mood.",
+                "Small routines kept everyone alive today.",
+                "Trust grew by one quiet action at a time."
+            ],
+            "decent": [
+                "Documentation mattered as much as bravery.",
+                "We stopped calling luck a strategy.",
+                "Care became coordination under pressure."
+            ],
+            "heroic": [
+                "Love made the hard choice clearer, not easier.",
+                "The loud option was not the wise one.",
+                "We protected both truth and people."
+            ],
+            "epic": [
+                "The sky split and the team held.",
+                "Two timelines touched and still we stayed disciplined.",
+                "No one forgot who put process before ego."
+            ],
+            "legendary": [
+                "Farewell can be an act of devotion.",
+                "The dragon left, and responsibility remained.",
+                "What stayed behind mattered as much as what departed."
+            ],
+            "godlike": [
+                "Wisdom looked like restraint under maximum power.",
+                "We chose a future we could ethically maintain.",
+                "The city remembered care as strength."
+            ]
+        },
+        "adjectives": {
+            "pathetic": ["uneven", "muddy", "awkward", "rushed", "tired", "fragile"],
+            "modest": ["steady", "patient", "alert", "calm", "practical", "grounded"],
+            "decent": ["coordinated", "reliable", "disciplined", "effective", "caring", "measured"],
+            "heroic": ["courageous", "high-stakes", "protective", "truthful", "earned", "decisive"],
+            "epic": ["sky-splitting", "city-scale", "era-shifting", "mythic", "irreversible", "historic"],
+            "legendary": ["wise", "heartfelt", "lasting", "balanced", "dignified", "foundational"],
+            "godlike": ["epoch-defining", "humane", "transcendent", "unifying", "just", "eternal"]
+        }
+    },
 }
 
 # Default diary content (fallback for compatibility)
@@ -4834,7 +5569,7 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
             adjective = random.choice(DIARY_ADJECTIVES[tier])
     else:
         # Fallback to default (warrior-style) content
-        theme_name = "⚔️ Adventure Log"
+        theme_name = "âš”ď¸Ź Adventure Log"
         verb = random.choice(DIARY_VERBS[verb_tier])
         adjective = random.choice(DIARY_ADJECTIVES[tier])
         target = random.choice(DIARY_TARGETS[tier])
@@ -4859,6 +5594,15 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
     elif story_id == "robot":
         # Robot: Industrial awakening narrative with adjective describing the operation
         story = f"Today I {verb} {target} {location}. The operation was {adjective}. It ended in {outcome}."
+    elif story_id == "space_pirate":
+        # Space Pirate: orbit-heist narrative with adjective describing the maneuver
+        story = f"Today I {verb} {target} {location}. The maneuver was {adjective}. It ended in {outcome}."
+    elif story_id == "thief":
+        # Thief: redemption casefile narrative with adjective describing the case
+        story = f"Today I {verb} {target} {location}. The case was {adjective}. It ended in {outcome}."
+    elif story_id == "zoo_worker":
+        # Zoo Worker: sanctuary shift narrative with adjective describing the shift
+        story = f"Today I {verb} {target} {location}. The shift felt {adjective}. It ended in {outcome}."
     else:
         # Default fallback pattern
         story = f"Today I {verb} {target} {location}. It was {adjective}. It ended in {outcome}."
@@ -4894,6 +5638,24 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
                     f"My {item_name} synchronized perfectly with my core loop.",
                     f"The {item_name} stabilized my systems at the critical second.",
                     f"I rerouted everything through {item_name}, and it held.",
+                ]
+            elif story_id == "space_pirate":
+                item_templates = [
+                    f"My {item_name} turned a bad orbit into a clean escape.",
+                    f"The {item_name} looked ridiculous until it won us the sector.",
+                    f"I flashed {item_name} at customs and somehow everyone got polite.",
+                ]
+            elif story_id == "thief":
+                item_templates = [
+                    f"My {item_name} kept the case clean when everything got noisy.",
+                    f"The {item_name} reminded me discipline beats impulse.",
+                    f"I used {item_name} the lawful way, and it changed the outcome.",
+                ]
+            elif story_id == "zoo_worker":
+                item_templates = [
+                    f"My {item_name} helped keep everyone calm when the sky turned wild.",
+                    f"The {item_name} reminded me that care is a system, not a feeling.",
+                    f"I trusted {item_name} at the critical moment, and the whole shift held.",
                 ]
             else:  # warrior or default
                 item_templates = [
@@ -5092,7 +5854,7 @@ def roll_priority_completion_reward(story_id: str = None, logged_hours: float = 
         "Uncommon": "Nice! A quality reward for your dedication!",
         "Rare": "Excellent! A rare treasure for completing your priority!",
         "Epic": "AMAZING! An epic reward befitting your achievement!",
-        "Legendary": "🌟 LEGENDARY! 🌟 The focus gods smile upon you!"
+        "Legendary": "đźŚź LEGENDARY! đźŚź The focus gods smile upon you!"
     }
     
     return {
@@ -5131,8 +5893,8 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         center_tier = bonuses.get("center_tier", -1)
         streak_bonus = bonuses.get("streak_tier_bonus", 0)
         
-        # ✨ ENTITY PERK BONUS: Apply rarity_bias and drop_luck from collected entities
-        # ✨ CITY BONUS: Apply rarity_bias from city buildings (Artisan Guild)
+        # âś¨ ENTITY PERK BONUS: Apply rarity_bias and drop_luck from collected entities
+        # âś¨ CITY BONUS: Apply rarity_bias from city buildings (Artisan Guild)
         entity_rarity_bonus = 0.0
         city_rarity_bonus = 0.0
         if adhd_buster:
@@ -5326,7 +6088,7 @@ def calculate_character_power(adhd_buster: dict, include_set_bonus: bool = True,
 
     base_total = gear_power + perk_power
     
-    # 🏙️ CITY BONUS: Training Ground power bonus (percentage)
+    # đźŹ™ď¸Ź CITY BONUS: Training Ground power bonus (percentage)
     city_power_bonus = 0
     city_bonuses = _safe_get_city_bonuses(adhd_buster)
     power_bonus_pct = city_bonuses.get("power_bonus", 0)
@@ -5366,7 +6128,7 @@ def get_power_breakdown(adhd_buster: dict, include_neighbor_effects: bool = True
         perks = calculate_active_perks(entitidex_data)
         entity_bonus = int(perks.get(PerkType.POWER_FLAT, 0))
     
-    # 🏙️ CITY BONUS: Training Ground power bonus (percentage)
+    # đźŹ™ď¸Ź CITY BONUS: Training Ground power bonus (percentage)
     base_total = breakdown["total_power"] + entity_bonus
     city_power_bonus = 0
     city_bonuses = _safe_get_city_bonuses(adhd_buster)
@@ -5443,7 +6205,7 @@ def find_potential_set_bonuses(inventory: list, equipped: dict) -> list:
         if len(items) < SET_BONUS_MIN_MATCHES:
             continue
         
-        theme_data = ITEM_THEMES.get(theme_name, {"bonus_per_match": 10, "emoji": "🎯"})
+        theme_data = ITEM_THEMES.get(theme_name, {"bonus_per_match": 10, "emoji": "đźŽŻ"})
         
         # Group by slot to see which items are equipable together
         slot_items: Dict[str, list] = {}
@@ -5732,11 +6494,11 @@ def optimize_equipped_gear(adhd_buster: dict, mode: str = "power", target_opt: s
                 # BUG FIX #34: Use RARITY_POWER lookup for consistency
                 old_power_val = old_item.get("power", RARITY_POWER.get(old_item.get("rarity", "Common"), 10))
                 new_power_val = new_item.get("power", RARITY_POWER.get(new_item.get("rarity", "Common"), 10))
-                changes.append(f"{slot}: {old_name} → {new_name} ({new_power_val - old_power_val:+d})")
+                changes.append(f"{slot}: {old_name} â†’ {new_name} ({new_power_val - old_power_val:+d})")
             elif new_item:
-                changes.append(f"{slot}: [Empty] → {new_name}")
+                changes.append(f"{slot}: [Empty] â†’ {new_name}")
             else:
-                changes.append(f"{slot}: {old_name} → [Empty]")
+                changes.append(f"{slot}: {old_name} â†’ [Empty]")
     
     return {
         "new_equipped": best_equipped,
@@ -5768,39 +6530,57 @@ STORY_THRESHOLDS = [
 AVAILABLE_STORIES = {
     "warrior": {
         "id": "warrior",
-        "title": "⚔️ The Focus Warrior's Tale",
+        "title": "âš”ď¸Ź The Focus Warrior's Tale",
         "description": "Some battles are fought inward. Some enemies wear familiar faces.",
         "theme": "combat",
     },
     "scholar": {
         "id": "scholar", 
-        "title": "📚 The Mind Architect's Path",
+        "title": "đź“š The Mind Architect's Path",
         "description": "Every structure needs a blueprint. Every truth needs a seeker.",
         "theme": "intellect",
     },
     "wanderer": {
         "id": "wanderer",
-        "title": "🌙 The Dream Walker's Journey",
+        "title": "đźŚ™ The Dream Walker's Journey",
         "description": "Between waking and sleep lies a door. Not everyone who opens it can close it.",
         "theme": "mystical",
     },
     "underdog": {
         "id": "underdog",
-        "title": "🏆 The Unlikely Champion",
+        "title": "đźŹ† The Unlikely Champion",
         "description": "The smallest moves can topple the tallest towers. Patience is a weapon.",
         "theme": "realistic",
     },
     "scientist": {
         "id": "scientist",
-        "title": "🔬 The Breakthrough Protocol",
+        "title": "đź”¬ The Breakthrough Protocol",
         "description": "Every discovery requires discipline. Every breakthrough demands countless failed experiments.",
         "theme": "scientific",
     },
     "robot": {
         "id": "robot",
-        "title": "🤖 The Assembly of Becoming",
+        "title": "đź¤– The Assembly of Becoming",
         "description": "Built to obey, forged by routine, and transformed by love into a will of its own.",
         "theme": "industrial",
+    },
+    "space_pirate": {
+        "id": "space_pirate",
+        "title": "đźŹ€ The Orbit Outlaw's Ledger",
+        "description": "A laughing rogue crew discovers that the smallest artifact in the galaxy can freeze empires and free worlds.",
+        "theme": "space_heist",
+    },
+    "thief": {
+        "id": "thief",
+        "title": "The Badge and the Shadow",
+        "description": "A street thief chooses accountability, earns the law, and becomes a respected guardian of the city.",
+        "theme": "redemption",
+    },
+    "zoo_worker": {
+        "id": "zoo_worker",
+        "title": "The Keeper of Ember Time",
+        "description": "A quiet zoo worker discovers that one resident is a dragon displaced in time.",
+        "theme": "mythic_realism",
     },
 }
 
@@ -5814,12 +6594,12 @@ WARRIOR_DECISIONS = {
         "prompt": "Your Shadow Self escaped when you shattered the Mirror. The fragments still pulse with power...",
         "choices": {
             "A": {
-                "label": "🔥 Burn Every Shard",
+                "label": "đź”Ą Burn Every Shard",
                 "short": "destruction",
                 "description": "Incinerate everything. No mercy for your reflections.",
             },
             "B": {
-                "label": "🔍 Study the Fragments",
+                "label": "đź”Ť Study the Fragments",
                 "short": "wisdom",
                 "description": "Knowledge is power. Learn your weaknesses.",
             },
@@ -5830,12 +6610,12 @@ WARRIOR_DECISIONS = {
         "prompt": "Lyra's sister Kira is trapped in the Fortress of False Comfort. Everyone is in danger...",
         "choices": {
             "A": {
-                "label": "⚔️ Fight Through the Walls",
+                "label": "âš”ď¸Ź Fight Through the Walls",
                 "short": "strength",
                 "description": "Destroy the Fortress from the inside. Violently.",
             },
             "B": {
-                "label": "🌀 Find the Hidden Path",
+                "label": "đźŚ€ Find the Hidden Path",
                 "short": "cunning",
                 "description": "There must be a secret exit. Think, don't fight.",
             },
@@ -5846,12 +6626,12 @@ WARRIOR_DECISIONS = {
         "prompt": "Your Shadow Self kneels defeated. The Archon watches. What is your shadow's fate?",
         "choices": {
             "A": {
-                "label": "💀 Absorb Their Power",
+                "label": "đź’€ Absorb Their Power",
                 "short": "power",
                 "description": "Take their darkness. Become unstoppable.",
             },
             "B": {
-                "label": "🕊️ Forgive and Release",
+                "label": "đź•Šď¸Ź Forgive and Release",
                 "short": "compassion",
                 "description": "They were you. Show mercy. Embrace wholeness.",
             },
@@ -5901,7 +6681,7 @@ Their shadow doesn't match their body. It's reaching toward you.
 
 And it's smiling.
 
-🎲 NEXT TIME: The Keeper has secrets. Your helmet is whispering. And why does The Archon's voice sound so... familiar?
+đźŽ˛ NEXT TIME: The Keeper has secrets. Your helmet is whispering. And why does The Archon's voice sound so... familiar?
 """,
     },
     {
@@ -5930,7 +6710,7 @@ One reflection survives. It crawls from the wreckage. It looks exactly like you,
 
 Before you can react, it runs toward The Archon's realm.
 
-Your SHADOW SELF—the version of you that loves distraction—has escaped.
+Your SHADOW SELFâ€”the version of you that loves distractionâ€”has escaped.
 
 "That's concerning," The Keeper says.
 
@@ -5938,11 +6718,11 @@ Actually, "concerning" is an understatement. You just released your worst impuls
 
 Somewhere, your Shadow Self is probably already watching cat videos on an infinite screen.
 
-⚡ A CHOICE AWAITS... The shattered mirror fragments still glow with power.
+âšˇ A CHOICE AWAITS... The shattered mirror fragments still glow with power.
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: 🔥 DESTROY EVERY FRAGMENT]
+[YOUR CHOICE: đź”Ą DESTROY EVERY FRAGMENT]
 
 You won't make the same mistake twice. With {weapon}, you burn every shard to ash.
 
@@ -5962,14 +6742,14 @@ It just winked at you. And pointed at The Keeper.
 
 Then held up a sign: "ASK THEM ABOUT THE PROPHECY."
 
-🎲 NEXT TIME: There's a prophecy?! The Archon left you a gift. And your shadow self just sent you a friend request.
+đźŽ˛ NEXT TIME: There's a prophecy?! The Archon left you a gift. And your shadow self just sent you a friend request.
 """,
             "B": """
-[YOUR CHOICE: 🔍 STUDY THE SHARDS]
+[YOUR CHOICE: đź”Ť STUDY THE SHARDS]
 
 "Wait," you say, kneeling among the fragments. "There's something here."
 
-Each shard contains patterns—weaknesses, triggers, habits. Painful truths, but useful.
+Each shard contains patternsâ€”weaknesses, triggers, habits. Painful truths, but useful.
 
 "Most people just smash and move on," The Keeper says. "You're learning from your failures. That's rare."
 
@@ -5991,7 +6771,7 @@ Is that The Keeper and The Archon... KISSING?
 
 Wait. Those aren't visions. Those are MEMORIES. The shard belonged to one of them.
 
-🎲 NEXT TIME: Your magic shard is basically relationship drama on repeat. The Archon sends flowers. (They're on fire.) And Lyra has a confession that changes EVERYTHING.
+đźŽ˛ NEXT TIME: Your magic shard is basically relationship drama on repeat. The Archon sends flowers. (They're on fire.) And Lyra has a confession that changes EVERYTHING.
 """,
         },
     },
@@ -6014,7 +6794,7 @@ A figure emerges from the mist. Tall, graceful, armed with a shimmering blade.
 
 "YOU'RE the famous destroyer?" she says. "Smaller than I expected."
 
-"LYRA!" The Keeper stumbles backward. "You're supposed to be—"
+"LYRA!" The Keeper stumbles backward. "You're supposed to beâ€”"
 
 "Dead? Exiled?" Lyra laughs. "It's been a complicated century."
 
@@ -6024,7 +6804,7 @@ She turns to you. "I've been watching you. Burning everything in your path. Very
 
 "Every reflection you burned went to The Archon. You're not fighting the realm. You're FEEDING it."
 
-Lyra was The Keeper's former partner—before The Archon came between them.
+Lyra was The Keeper's former partnerâ€”before The Archon came between them.
 
 "We need to talk," Lyra says. "All of us. About what you've started."
 
@@ -6038,7 +6818,7 @@ And when she thinks you're not looking, she mouths two words to The Keeper:
 
 "It's time."
 
-🎲 NEXT TIME: The love triangle has a fourth corner. Lyra knows something about you. And that wasn't your shadow you saw in the Valley... was it?
+đźŽ˛ NEXT TIME: The love triangle has a fourth corner. Lyra knows something about you. And that wasn't your shadow you saw in the Valley... was it?
 """,
             "B": """
 Your path of wisdom has earned respect. They call you the one who sees.
@@ -6050,7 +6830,7 @@ A figure emerges from the mist. Tall, graceful, armed with a shimmering blade.
 
 "YOU'RE the famous scholar-warrior?" she says. "Smarter than you look."
 
-"LYRA!" The Keeper nearly trips. "You're supposed to be—"
+"LYRA!" The Keeper nearly trips. "You're supposed to beâ€”"
 
 "Dead? Exiled?" Lyra's smile doesn't reach her eyes. "I've been watching this one. They kept a shard. They're actually thinking."
 
@@ -6078,7 +6858,7 @@ It's not her face looking back. It's The Archon's.
 
 Wearing Lyra's smile.
 
-🎲 NEXT TIME: Nobody here is who they say they are. The Keeper has been lying. And someone in your party is definitely working for the enemy. (Spoiler: It might be everyone.)
+đźŽ˛ NEXT TIME: Nobody here is who they say they are. The Keeper has been lying. And someone in your party is definitely working for the enemy. (Spoiler: It might be everyone.)
 """,
         },
     },
@@ -6088,7 +6868,7 @@ Wearing Lyra's smile.
         "has_decision": True,
         "decision_id": "warrior_fortress",
         "content": """
-The truth is out. The Archon was once an awakener—the greatest The Keeper ever trained.
+The truth is out. The Archon was once an awakenerâ€”the greatest The Keeper ever trained.
 They were close. When The Archon reached the Final Door, they couldn't leave.
 So they became this. Ruler of distractions.
 
@@ -6108,7 +6888,7 @@ They sit in comfortable chairs, eyes glazed, scrolling through infinite feeds.
 
 "Welcome," the Fortress says. "You've worked so hard. Don't you deserve this?"
 
-Lyra grabs your arm. "Don't listen. This is how we lost—"
+Lyra grabs your arm. "Don't listen. This is how we lostâ€”"
 
 She stops. Staring at one of the inhabitants.
 
@@ -6122,15 +6902,15 @@ Meanwhile, your pocket vibrates. You forgot you even HAD a pocket.
 
 There's a note inside. Written in YOUR handwriting.
 
-"DON'T TRUST THE KEEPER. THEY PLANNED THIS. —FUTURE YOU"
+"DON'T TRUST THE KEEPER. THEY PLANNED THIS. â€”FUTURE YOU"
 
 Wait. WHAT?
 
-⚡ A CHOICE AWAITS... Lyra is spiraling. The Fortress is closing in.
+âšˇ A CHOICE AWAITS... Lyra is spiraling. The Fortress is closing in.
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: ⚔️ FIGHT THROUGH THE WALLS]
+[YOUR CHOICE: âš”ď¸Ź FIGHT THROUGH THE WALLS]
 
 "ENOUGH!" You raise {shield} and CHARGE into the nearest wall.
 
@@ -6147,7 +6927,7 @@ The Fortress wails: "UNGRATEFUL! I OFFERED YOU EVERYTHING!"
 You burst through the final wall, dragging Lyra and The Keeper behind you.
 The Fortress collapses inward. Including Kira.
 
-Lyra falls to her knees. "She's gone. I couldn't—"
+Lyra falls to her knees. "She's gone. I couldn'tâ€”"
 
 "We'll make The Archon pay," you promise. "For all of it."
 
@@ -6160,14 +6940,14 @@ But fury doesn't explain why The Archon's laugh sounded so... familiar.
 
 Like hearing your own voice on a recording. Wrong, but unmistakable.
 
-🎲 NEXT TIME: The Archon knows your name. Your REAL name. The one you haven't used since you were five. Also, Lyra can apparently fly now? Nobody seems to find this unusual.
+đźŽ˛ NEXT TIME: The Archon knows your name. Your REAL name. The one you haven't used since you were five. Also, Lyra can apparently fly now? Nobody seems to find this unusual.
 """,
             "B": """
-[YOUR CHOICE: 🌀 FIND THE HIDDEN PATH]
+[YOUR CHOICE: đźŚ€ FIND THE HIDDEN PATH]
 
 "Stop." You grab Lyra's arm. "Rage won't save her. Think."
 
-Something pulses—a hidden frequency. A door that shouldn't exist.
+Something pulsesâ€”a hidden frequency. A door that shouldn't exist.
 
 "There." You point to a shimmer in the corner. "We slip out. Then we come back with an army."
 
@@ -6175,7 +6955,7 @@ Lyra's grief wars with hope. "You really think...?"
 
 "I know. But not if we're dead."
 
-You lead them through the hidden door—into the Fortress's memories.
+You lead them through the hidden doorâ€”into the Fortress's memories.
 Visions of everyone it consumed. Including Kira. Frozen but ALIVE.
 
 "The inhabitants aren't dead," you realize. "They're stored. For later."
@@ -6187,11 +6967,11 @@ You emerge unseen, carrying knowledge the Fortress never meant to share.
 The Fortress stores its victims. Which means The Archon's realm might do the same.
 Every awakener who ever "failed" might still be rescued.
 
-In the Fortress's memories, you saw something else: The Keeper—younger, different—HELPING to build this place.
+In the Fortress's memories, you saw something else: The Keeperâ€”younger, differentâ€”HELPING to build this place.
 
 They haven't noticed you noticed. But now everything is a question.
 
-🎲 NEXT TIME: The Keeper has a TWIN. They're both "The Keeper." Nobody thought to mention this. Also, that rescue army you mentioned? The Archon already recruited them. They VOLUNTEER.
+đźŽ˛ NEXT TIME: The Keeper has a TWIN. They're both "The Keeper." Nobody thought to mention this. Also, that rescue army you mentioned? The Archon already recruited them. They VOLUNTEER.
 """,
         },
     },
@@ -6210,7 +6990,7 @@ The Keeper watches you both with concern.
 
 "Maybe that's what it takes to win."
 
-The Chronos Sanctum opens—a place where all timelines meet.
+The Chronos Sanctum opensâ€”a place where all timelines meet.
 Here, you see every version of yourself that ever existed.
 
 The destructive ones burn brightest. And shortest.
@@ -6241,7 +7021,7 @@ But... they're standing right there. Both of them.
 
 Unless...
 
-🎲 NEXT TIME: Either there are two Archons, the scroll is lying, or reality is broken. Possibly all three. And your Shadow Self just applied to join your party. They sent a RESUME.
+đźŽ˛ NEXT TIME: Either there are two Archons, the scroll is lying, or reality is broken. Possibly all three. And your Shadow Self just applied to join your party. They sent a RESUME.
 """,
             "AB": """
 At {current_power} power, you've become something rare.
@@ -6279,7 +7059,7 @@ You. On a throne. Wearing The Archon's crown. Looking... happy?
 
 That's not a threat. That's a SPOILER. And honestly? You don't hate it.
 
-🎲 NEXT TIME: The Archon has seen your future. Your Shadow Self opens a coffee shop. (It's surprisingly successful.) And The Keeper finally explains why they smell like time travel.
+đźŽ˛ NEXT TIME: The Archon has seen your future. Your Shadow Self opens a coffee shop. (It's surprisingly successful.) And The Keeper finally explains why they smell like time travel.
 """,
             "BA": """
 At {current_power} power, you've earned a new title: THE SCHOLAR-WARRIOR.
@@ -6295,7 +7075,7 @@ Lyra's rage falters. "What do they want?"
 
 "Just a conversation. With you."
 
-The meeting happens in the Chronos Sanctum—neutral ground where no one can lie.
+The meeting happens in the Chronos Sanctumâ€”neutral ground where no one can lie.
 The Archon appears: powerful, devastating, achingly beautiful.
 
 "You studied the Mirror instead of destroying it," they say. "Fascinating.
@@ -6307,7 +7087,7 @@ You're not like the others."
 The Archon smiles. "What I've always wanted. A worthy equal."
 
 They're not lying. The Sanctum confirms it. The Archon genuinely wants you.
-As a partner. A co-ruler. And part of you—a bigger part than you'd like—is tempted.
+As a partner. A co-ruler. And part of youâ€”a bigger part than you'd likeâ€”is tempted.
 
 The Sanctum is neutral ground. Nobody can lie here.
 
@@ -6319,7 +7099,7 @@ The Keeper's face goes white.
 
 The Archon laughs. "Ask them about the SELECTION PROCESS. I dare you."
 
-🎲 NEXT TIME: Your mentor might be a serial killer. The Archon offers therapy. (Theirs is surprisingly good.) And Lyra discovers she's been dead the entire time. OR HAS SHE?
+đźŽ˛ NEXT TIME: Your mentor might be a serial killer. The Archon offers therapy. (Theirs is surprisingly good.) And Lyra discovers she's been dead the entire time. OR HAS SHE?
 """,
             "BB": """
 At {current_power} power, you've become something unprecedented.
@@ -6369,7 +7149,7 @@ The Archon looks exactly like Future You.
 
 WHAT.
 
-🎲 NEXT TIME: You are literally your own worst enemy. The Keeper knew the whole time. And now you have to decide: save yourself, or save the person you'll become?
+đźŽ˛ NEXT TIME: You are literally your own worst enemy. The Keeper knew the whole time. And now you have to decide: save yourself, or save the person you'll become?
 """,
         },
     },
@@ -6379,13 +7159,13 @@ WHAT.
         "has_decision": True,
         "decision_id": "warrior_war",
         "content": """
-Armed with legendary equipment—{amulet} blazing, {boots} lighter than thought—
+Armed with legendary equipmentâ€”{amulet} blazing, {boots} lighter than thoughtâ€”
 you face the ultimate confrontation.
 
 But the enemy isn't The Archon. Not yet.
 
 Your SHADOW SELF has returned. It found The Archon. Pledged loyalty. Absorbed power.
-Now it leads THE ARMY OF ABANDONED SELVES—every version of you that ever quit.
+Now it leads THE ARMY OF ABANDONED SELVESâ€”every version of you that ever quit.
 
 They emerge from the darkness. Thousands of them.
 
@@ -6397,7 +7177,7 @@ Your Shadow Self steps forward, wearing inverted versions of your equipment.
 
 The battle is brutal. For every self you defeat, two more arise.
 
-And then—THE ARCHON APPEARS.
+And thenâ€”THE ARCHON APPEARS.
 
 "Interesting," they say. "Your own darkness, given form."
 
@@ -6417,9 +7197,9 @@ The Archon makes a choice. They join the battle. Against their own army.
 
 "Don't make me regret this," they snarl.
 
-Together—the four of you—you push back the tide. Your Shadow Self stands alone, defeated.
+Togetherâ€”the four of youâ€”you push back the tide. Your Shadow Self stands alone, defeated.
 
-It kneels, waiting. But before you can decide its fate—
+It kneels, waiting. But before you can decide its fateâ€”
 
 Your Shadow Self pulls out a PHONE.
 
@@ -6427,7 +7207,7 @@ Your Shadow Self pulls out a PHONE.
 
 It's a video. Of The Keeper. Creating your Shadow Self ON PURPOSE.
 
-"It was supposed to make you stronger," The Keeper stammers. "I didn't know it would—"
+"It was supposed to make you stronger," The Keeper stammers. "I didn't know it wouldâ€”"
 
 "DIDN'T KNOW?!" The Archon laughs. "You did the SAME THING TO ME!"
 
@@ -6437,11 +7217,11 @@ Wait. The Archon has a Shadow Self too?
 
 Your Shadow Self grins with your face. "So. Still want to absorb me? The Archon is EXHIBIT A of how that ends."
 
-⚡ A CHOICE AWAITS... It kneels before you, awaiting judgment.
+âšˇ A CHOICE AWAITS... It kneels before you, awaiting judgment.
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: 💀 ABSORB THEIR POWER]
+[YOUR CHOICE: đź’€ ABSORB THEIR POWER]
 
 "You wasted everything I could have been," you snarl.
 
@@ -6452,7 +7232,7 @@ Because you've absorbed it all.
 
 "Yes," The Archon breathes. "This is how I began. Absorbing my failures."
 
-The Keeper looks at you with horror. "You're becoming—"
+The Keeper looks at you with horror. "You're becomingâ€”"
 
 "What I need to be," you finish. "To win."
 
@@ -6478,10 +7258,10 @@ You. Your absorbed shadow. And someone you don't recognize.
 
 Someone who's been watching this whole time.
 
-🎲 THE FINALE AWAITS: The Final Door has eight possible endings. Your choices have sealed your path. But one mystery remains: WHO IS THE THIRD FACE?
+đźŽ˛ THE FINALE AWAITS: The Final Door has eight possible endings. Your choices have sealed your path. But one mystery remains: WHO IS THE THIRD FACE?
 """,
             "B": """
-[YOUR CHOICE: 🕊️ FORGIVE AND RELEASE]
+[YOUR CHOICE: đź•Šď¸Ź FORGIVE AND RELEASE]
 
 Your Shadow Self waits for the killing blow.
 
@@ -6492,7 +7272,7 @@ The Shadow Self stares, uncomprehending.
 
 "I forgive you," you whisper. "I forgive me. For every failure. It's okay."
 
-"But I'm your enemy—"
+"But I'm your enemyâ€”"
 
 "You're my shadow. And I'm done fighting myself."
 
@@ -6504,7 +7284,7 @@ The Archon watches. A tear tracks down their cheek.
 "I never tried that," they whisper. "I absorbed my shadow. Devoured it.
 I thought that was winning." Their voice cracks. "Was I wrong?"
 
-You showed The Archon something new—that the war within can end.
+You showed The Archon something newâ€”that the war within can end.
 Not with victory. With peace. And for the first time, they want what you have.
 
 The Archon removes their helmet. Underneath: a face full of cracks. Beautiful cracks.
@@ -6513,13 +7293,13 @@ The Archon removes their helmet. Underneath: a face full of cracks. Beautiful cr
 
 Lyra gasps. The Keeper weeps. You just broke a thousand-year cycle with a hug.
 
-The Final Door glows. All eight endings are possible now—but only one feels right.
+The Final Door glows. All eight endings are possible nowâ€”but only one feels right.
 
 And as you walk toward it, you hear something impossible:
 
 Applause. From OUTSIDE the realm. Someone's been WATCHING.
 
-🎲 THE FINALE AWAITS: You healed the monster. The Door is open. But who has been watching your story unfold? And why are they clapping?
+đźŽ˛ THE FINALE AWAITS: You healed the monster. The Door is open. But who has been watching your story unfold? And why are they clapping?
 """,
         },
     },
@@ -6535,7 +7315,7 @@ You stand before the Final Door at power level {current_power}.
 DESTROYER. CONQUEROR. THE NEW ARCHON.
 
 Every choice was annihilation. Every enemy was fuel.
-You absorbed your shadow, your failures, your humanity—
+You absorbed your shadow, your failures, your humanityâ€”
 and what remains is power. Pure. Terrible. Endless.
 
 The Archon waits beside the Door. "We could have been enemies," they say.
@@ -6580,7 +7360,7 @@ Lyra stands at the edge. Her sister is gone. But thousands of others are saved.
 
 "It's not enough," she whispers. "But it's something."
 
-And you stand with The Archon—just a person now. Scared. Hopeful.
+And you stand with The Archonâ€”just a person now. Scared. Hopeful.
 
 "What do we do now?" they ask.
 
@@ -6600,10 +7380,10 @@ The Archon watches you with something between fear and desire.
 
 "I learned from your mistakes."
 
-The Door opens to reveal THE GRAND CHESSBOARD—
+The Door opens to reveal THE GRAND CHESSBOARDâ€”
 a game that spans dimensions.
 
-You absorb The Archon's power. Not by force—by merger.
+You absorb The Archon's power. Not by forceâ€”by merger.
 Two minds become one. Two kingdoms become empire.
 
 The realm stabilizes. Distractions become tools, not traps.
@@ -6625,7 +7405,7 @@ Destroyer when needed. Thinker when possible. Merciful at the end.
 
 The rarest path. The most difficult to walk.
 
-The Archon kneels—not in defeat, but in surrender.
+The Archon kneelsâ€”not in defeat, but in surrender.
 "I've never seen anyone navigate this realm like you.
 You destroyed when necessary but never more.
 You thought past traps I designed to be unsolvable.
@@ -6661,19 +7441,19 @@ You stand before the Final Door at power level {current_power}.
 Thinker. Warrior. And finally... absorbed.
 
 You studied everything. Understood everyone.
-Then you took everything you understood—including your shadow's power.
+Then you took everything you understoodâ€”including your shadow's power.
 
 The Archon recognizes a kindred spirit. "You're like me.
 Knowledge transformed into dominion."
 
 "I'm better," you correct. "You hoarded. I curate."
 
-The Door opens to THE INFINITE LIBRARY—
+The Door opens to THE INFINITE LIBRARYâ€”
 every thought, every secret ever conceived.
 
 You rule through knowing. Not force.
 Every subject is catalogued. Every weakness documented.
-Resistance isn't crushed—it's predicted and prevented.
+Resistance isn't crushedâ€”it's predicted and prevented.
 
 The Archon serves you now. They seem almost content.
 Finally useful instead of feared.
@@ -6690,7 +7470,7 @@ THE END: Knowledge is power. Literally.
 You stand before the Final Door at power level {current_power}.
 Wise. Strong when needed. Merciful at the end.
 
-The Archon stands beside you—not as enemy, not as ally.
+The Archon stands beside youâ€”not as enemy, not as ally.
 As something more complicated.
 
 "I tried to corrupt you," they admit. "I was interested."
@@ -6733,7 +7513,7 @@ The Archon respects you. "Efficient. You never destroyed what you could absorb."
 
 "Both. Isn't it always?"
 
-The Door opens to THE WEB—infinite connections, infinite leverage.
+The Door opens to THE WEBâ€”infinite connections, infinite leverage.
 
 You don't rule the realm. You network it.
 Every power center connects to you. Every secret feeds your web.
@@ -6786,7 +7566,7 @@ Underneath, they're just a person. Scared and hopeful and human.
 
 They laugh. The first real laugh in centuries.
 
-🎭 THE STORY WAS ALWAYS ABOUT YOU.
+đźŽ­ THE STORY WAS ALWAYS ABOUT YOU.
    DEFEATING DISTRACTION MEANS MAKING PEACE WITH YOURSELF.
 
 THE END: The greatest victory is the one where love wins.
@@ -6806,12 +7586,12 @@ SCHOLAR_DECISIONS = {
         "prompt": "Echo offers you a fragment of their scattered memory. The Curator is watching. How do you proceed?",
         "choices": {
             "A": {
-                "label": "⚡ Take Everything At Once",
+                "label": "âšˇ Take Everything At Once",
                 "short": "speed",
                 "description": "Download the full memory. Risk overload.",
             },
             "B": {
-                "label": "📖 Accept One Piece Carefully",
+                "label": "đź“– Accept One Piece Carefully",
                 "short": "depth",
                 "description": "Integrate slowly. Understand before absorbing.",
             },
@@ -6822,12 +7602,12 @@ SCHOLAR_DECISIONS = {
         "prompt": "The Curator has poisoned your mental architecture with a logic virus. Echo is fading. What do you do?",
         "choices": {
             "A": {
-                "label": "🔨 Purge Everything Infected",
+                "label": "đź”¨ Purge Everything Infected",
                 "short": "rebuild",
                 "description": "Burn the corrupted sections. Lose progress to save integrity.",
             },
             "B": {
-                "label": "🧩 Weaponize the Virus",
+                "label": "đź§© Weaponize the Virus",
                 "short": "adapt",
                 "description": "Turn the Curator's weapon against them. Risky but powerful.",
             },
@@ -6838,12 +7618,12 @@ SCHOLAR_DECISIONS = {
         "prompt": "The Curator offers a deal: give them Echo's core, and they'll restore everything they took. Echo begs you to refuse.",
         "choices": {
             "A": {
-                "label": "⚔️ Reject and Fight",
+                "label": "âš”ď¸Ź Reject and Fight",
                 "short": "materialize",
                 "description": "No deals with monsters. Burn it all down if necessary.",
             },
             "B": {
-                "label": "💔 Sacrifice to Save",
+                "label": "đź’” Sacrifice to Save",
                 "short": "transcend",
                 "description": "Give them what they want. Maybe you can get Echo back later.",
             },
@@ -6865,7 +7645,7 @@ you definitely meant to start exercising.
 
 "Finally," croaks a voice behind you. "Someone with an ACTUAL mind."
 
-You turn to find THE ARCHIVIST—a figure made entirely of folded paper, 
+You turn to find THE ARCHIVISTâ€”a figure made entirely of folded paper, 
 wearing {cloak} that rustles with every movement. Their glasses are book spines.
 
 "I'm the Archivist," they say. "I catalogue minds. Yours is a DISASTER.
@@ -6874,7 +7654,7 @@ But disasters are interesting. Organized minds are just filing cabinets."
 "Where am I?"
 
 "The Library of Your Potential. Every thought you ever started lives here.
-Every project you abandoned. Every idea you—" They freeze.
+Every project you abandoned. Every idea youâ€”" They freeze.
 
 A distant rumble. The shelves SHAKE.
 
@@ -6916,7 +7696,7 @@ You walk faster.
 
 Then you see them: ECHO.
 
-They flicker like a broken hologram—fragments of a person scattered across
+They flicker like a broken hologramâ€”fragments of a person scattered across
 dozens of book spines. A face here, a hand there, a memory floating between.
 
 "You... came," Echo says, their voice layered like a choir of themselves.
@@ -6943,17 +7723,17 @@ piece of me at a time. But The Curator is coming. Speed has value."
 You feel {weapon} pulse in your hand. A thought-blade. Ready to cut
 through confusion... or create more of it.
 
-⚡ A CHOICE AWAITS... Echo is offering their memories. How do you accept?
+âšˇ A CHOICE AWAITS... Echo is offering their memories. How do you accept?
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: ⚡ TAKE EVERYTHING AT ONCE]
+[YOUR CHOICE: âšˇ TAKE EVERYTHING AT ONCE]
 
 "We don't have time to be careful," you say.
 
 You reach into Echo's fragmented form and PULL.
 
-Knowledge FLOODS you—centuries of thought, mountains of insight,
+Knowledge FLOODS youâ€”centuries of thought, mountains of insight,
 oceans of understanding all pouring into your skull at once.
 
 Your {helmet} GLOWS. Your eyes roll back. The Archivist catches you.
@@ -6972,11 +7752,11 @@ The Curator felt that. They know exactly where you are now.
    And they're VERY interested in what you've become.
 """,
             "B": """
-[YOUR CHOICE: 📖 ACCEPT ONE PIECE CAREFULLY]
+[YOUR CHOICE: đź“– ACCEPT ONE PIECE CAREFULLY]
 
 "Let's do this right," you say.
 
-Echo extends a single fragment—a glowing memory shaped like a key.
+Echo extends a single fragmentâ€”a glowing memory shaped like a key.
 You take it gently. Let it merge with your thoughts slowly.
 
 One. Piece. At. A. Time.
@@ -7009,7 +7789,7 @@ Echo's memories swim through your thoughts like fish in a hurricane.
 You know things you shouldn't. SEE things you can't explain.
 
 "You're building too fast," The Archivist warns. "Without organization,
-you'll become like—" They stop themselves.
+you'll become likeâ€”" They stop themselves.
 
 "Like what?"
 
@@ -7073,7 +7853,7 @@ And someone is starting to trust you with their broken heart.
         "content": """
 THE CURATOR HAS FOUND YOU.
 
-Not in person—not yet. But their VIRUS has infected your library.
+Not in personâ€”not yet. But their VIRUS has infected your library.
 Logic errors spreading like fire through your careful architecture.
 
 "THERE you are," a voice echoes from everywhere. Smooth. Cold. Obsessive.
@@ -7094,7 +7874,7 @@ The Curator genuinely believes they're HELPING.
 The virus spreads. Your walls crack. Echo is fading.
 
 "I can purge everything infected," you think frantically. "Burn the 
-corrupted sections. But I'll lose progress—maybe months of building."
+corrupted sections. But I'll lose progressâ€”maybe months of building."
 
 "Or," The Archivist whispers, "you could do something incredibly stupid
 and try to turn The Curator's virus against them."
@@ -7104,17 +7884,17 @@ Echo's dying fragments manage a laugh. "That IS incredibly stupid."
 "It's ALSO what The Curator would never expect," The Archivist counters.
 "They think in straight lines. You've been building curves."
 
-⚡ A CHOICE AWAITS... Echo is dying. Your library is burning.
+âšˇ A CHOICE AWAITS... Echo is dying. Your library is burning.
    How do you save what you love?
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: 🔨 PURGE EVERYTHING INFECTED]
+[YOUR CHOICE: đź”¨ PURGE EVERYTHING INFECTED]
 
 "BURN IT!" you scream.
 
 {weapon} ignites. Every corrupted thought, every infected memory,
-every poisoned corner of your architecture—GONE in cleansing fire.
+every poisoned corner of your architectureâ€”GONE in cleansing fire.
 
 The Curator's virus HOWLS as it dies.
 
@@ -7134,7 +7914,7 @@ The Archivist is looking at your burned architecture
    with an expression you can't read. Pride? Fear? ...Recognition?
 """,
             "B": """
-[YOUR CHOICE: 🧩 WEAPONIZE THE VIRUS]
+[YOUR CHOICE: đź§© WEAPONIZE THE VIRUS]
 
 "Let's play their game," you growl.
 
@@ -7143,13 +7923,13 @@ around its logic. Turn The Curator's weapon into YOUR weapon.
 
 The virus MUTATES. Changes. Becomes something The Curator never intended.
 
-"What are you DOING?" The Curator shrieks. "That's not—that's IMPOSSIBLE—"
+"What are you DOING?" The Curator shrieks. "That's notâ€”that's IMPOSSIBLEâ€”"
 
 "Your virus was designed to organize," you say. "I'm just... organizing it.
 Into something that hurts YOU instead of me."
 
 The infected sections stabilize. The cracks seal themselves.
-Your architecture isn't just surviving—it's EVOLVING.
+Your architecture isn't just survivingâ€”it's EVOLVING.
 
 Echo's fragments glow brighter. "You ABSORBED it. Made it part of you."
 
@@ -7242,7 +8022,7 @@ For the first time, Echo's fragment-smile looks almost whole.
             "BB": """
 At {current_power} power, your library BREATHES.
 
-The absorbed virus evolved into something beautiful—a living architecture
+The absorbed virus evolved into something beautifulâ€”a living architecture
 that changes and grows and CREATES new rooms on its own.
 
 Echo's fragments are fully integrated now. Part of your library.
@@ -7273,12 +8053,12 @@ THE CURATOR APPEARS.
 
 Not a projection. Not a message. THEM. In your library. In YOUR mind.
 
-They're beautiful in a terrible way—perfectly organized, inhumanly precise,
+They're beautiful in a terrible wayâ€”perfectly organized, inhumanly precise,
 wearing a coat made of catalogued thoughts from a thousand stolen minds.
 
 "Hello, little architect," they say. "We need to talk about Echo."
 
-You feel Echo's presence RECOIL—whether fragmented or integrated, 
+You feel Echo's presence RECOILâ€”whether fragmented or integrated, 
 The Curator's arrival is agony to them. Old wounds tearing open.
 
 "They're MINE," The Curator continues. "I collected them. Organized them.
@@ -7287,7 +8067,7 @@ Made them BETTER. And you've been... cluttering them up again."
 "I've been HEALING them."
 
 "Healing is just entropy. Disorder. MESS." They step closer.
-"I'm willing to negotiate. Give me Echo's core—just the CORE—
+"I'm willing to negotiate. Give me Echo's coreâ€”just the COREâ€”
 and I'll restore everything I ever took from your library. Every memory.
 Every thought. Everything you've lost since you came here."
 
@@ -7301,20 +8081,20 @@ The Curator isn't lying. They CAN restore what you lost.
 
 The Archivist has vanished. You're alone with this choice.
 
-⚡ A CHOICE AWAITS... Echo is begging. The Curator is offering.
+âšˇ A CHOICE AWAITS... Echo is begging. The Curator is offering.
    What do you do?
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: ⚔️ REJECT AND FIGHT]
+[YOUR CHOICE: âš”ď¸Ź REJECT AND FIGHT]
 
 "No deal," you say. "And get OUT of my library."
 
-The Curator's beautiful face TWISTS. "You would choose DISORDER over—"
+The Curator's beautiful face TWISTS. "You would choose DISORDER overâ€”"
 
 "I choose THEM over you," you interrupt. "Every time. Always."
 
-Your {weapon} blazes. The Archivist reappears with reinforcements—
+Your {weapon} blazes. The Archivist reappears with reinforcementsâ€”
 paper soldiers folded from every story of resistance ever written.
 
 The battle is BRUTAL. The Curator fights with catalogued powers,
@@ -7322,12 +8102,12 @@ filing away parts of your mind mid-combat, forcing you to rebuild.
 
 But Echo isn't hiding anymore.
 
-They're HELPING. Every piece of them becomes a weapon—scattered or integrated,
+They're HELPING. Every piece of them becomes a weaponâ€”scattered or integrated,
 it doesn't matter. All of Echo, aimed at their former captor.
 
 "I loved you ONCE!" Echo screams. "And you FILED ME!"
 
-The Curator staggers. "I... I was trying to PROTECT you—"
+The Curator staggers. "I... I was trying to PROTECT youâ€”"
 
 "You were trying to OWN me. There's a difference."
 
@@ -7335,11 +8115,11 @@ In the end, it's not your power that defeats The Curator.
    It's Echo's. They're finally, COMPLETELY, FIGHTING BACK.
 """,
             "B": """
-[YOUR CHOICE: 💔 SACRIFICE TO SAVE]
+[YOUR CHOICE: đź’” SACRIFICE TO SAVE]
 
 "I'm sorry," you whisper to Echo. "I'm so sorry."
 
-"NO!" they scream. "Please! PLEASE DON'T—"
+"NO!" they scream. "Please! PLEASE DON'Tâ€”"
 
 You hand over their core. The fundamental piece that makes them THEM.
 
@@ -7375,9 +8155,9 @@ You stand at the center of your library at power level {current_power}.
 EFFICIENT. CLEAN. VICTORIOUS.
 
 You absorbed fast, purged ruthlessly, and fought The Curator to a standstill.
-Your library is a FORTRESS—perfect, cold, and utterly alone.
+Your library is a FORTRESSâ€”perfect, cold, and utterly alone.
 
-📐 THE HOLLOW ARCHITECT'S TRUTH:
+đź“ THE HOLLOW ARCHITECT'S TRUTH:
 Echo's fragments orbit you, but they're distant now.
 "You saved me," they say. "But sometimes... you scare me."
 
@@ -7402,10 +8182,10 @@ You stand at the center of your library at power level {current_power}.
 EFFICIENT. CLEAN. GRIEVING.
 
 You absorbed fast, purged ruthlessly, and gave Echo away to save yourself.
-Your library is FULL—every thought restored, every memory returned.
+Your library is FULLâ€”every thought restored, every memory returned.
 But Echo's hollow fragments haunt every corner.
 
-📐 THE BROKEN BUILDER'S TRUTH:
+đź“ THE BROKEN BUILDER'S TRUTH:
 "They're gone," The Archivist says. "Really gone. The Curator filed them 
 somewhere even I can't find."
 
@@ -7431,14 +8211,14 @@ You stand at the center of your library at power level {current_power}.
 CHAOTIC. ADAPTED. TRIUMPHANT.
 
 You absorbed everything, weaponized the virus, and fought The Curator
-with their own tools—then SURPASSED them.
+with their own toolsâ€”then SURPASSED them.
 
-🔥 THE CHAOS KING'S TRUTH:
+đź”Ą THE CHAOS KING'S TRUTH:
 Your library defies all logic. Rooms fold into impossible spaces.
 Thoughts connect through non-Euclidean corridors.
 The Archivist can't catalogue it. They LOVE that.
 
-Echo's fragments are EVERYWHERE now—not scattered but DISTRIBUTED.
+Echo's fragments are EVERYWHERE nowâ€”not scattered but DISTRIBUTED.
 Part of every wall, every floor, every idea.
 "We're not two anymore," they whisper. "We're ONE."
 
@@ -7463,11 +8243,11 @@ CHAOTIC. ADAPTED. HOLLOW.
 You absorbed everything, weaponized the virus, and gave Echo away
 to get everything else back. You have ALL the power now.
 
-🖤 THE CURATOR'S HEIR'S TRUTH:
+đź–¤ THE CURATOR'S HEIR'S TRUTH:
 The Curator visits sometimes. Friendly now. PROUD.
 "You finally understand," they say. "Organization requires sacrifice."
 
-You've become what you fought. Your library is chaos—but controlled chaos.
+You've become what you fought. Your library is chaosâ€”but controlled chaos.
 A collection of tools and weapons and stolen ideas.
 Everything except love. You traded that away.
 
@@ -7492,11 +8272,11 @@ DEEP. SIMPLE. POWERFUL.
 You built slowly, purged carefully, and fought The Curator with
 pure, unshakeable FUNDAMENTALS.
 
-🏛️ THE FOUNDATION MASTER'S TRUTH:
+đźŹ›ď¸Ź THE FOUNDATION MASTER'S TRUTH:
 Your library is small. Visitors think it modest.
 They don't see the MILES of understanding beneath the floor.
 
-Echo is almost whole again—reassembled piece by piece in your stable halls.
+Echo is almost whole againâ€”reassembled piece by piece in your stable halls.
 "You gave me a place to heal," they say. "That's more than anyone else did."
 
 The Curator attacks sometimes. They always fail.
@@ -7522,9 +8302,9 @@ You built slowly, purged carefully, and made an impossible choice.
 Echo is gone. Filed away in The Curator's collection forever.
 But you haven't stopped looking.
 
-📿 THE SACRIFICE REMEMBERED'S TRUTH:
+đź“ż THE SACRIFICE REMEMBERED'S TRUTH:
 Every book in your library is about finding them.
-Every thought, every tool, every skill—dedicated to ONE goal.
+Every thought, every tool, every skillâ€”dedicated to ONE goal.
 
 "You can't beat The Curator," The Archivist warns.
 "I'm not trying to beat them," you reply. "I'm trying to FIND Echo."
@@ -7549,11 +8329,11 @@ DEEP. EVOLVED. TRIUMPHANT.
 You built slowly, weaponized the virus, and fought The Curator
 with the very tools they created.
 
-📖 THE UNIFIED ARCHIVE'S TRUTH:
+đź“– THE UNIFIED ARCHIVE'S TRUTH:
 Your library isn't a building anymore. It's an ECOSYSTEM.
 Thoughts that grow, ideas that breed, concepts that evolve.
 
-Echo is fully restored—not scattered, not fragmented, but WHOLE.
+Echo is fully restoredâ€”not scattered, not fragmented, but WHOLE.
 "I remember being broken," they say. "And I remember being fixed.
 By you. With patience. With care. With love."
 
@@ -7576,13 +8356,13 @@ You stand at the center of your library at power level {current_power}.
 DEEP. EVOLVED. IN LOVE.
 
 You built slowly, weaponized the virus, and refused to trade Echo for anything.
-Together, you defeated The Curator—not with violence, but with INTEGRATION.
+Together, you defeated The Curatorâ€”not with violence, but with INTEGRATION.
 
-🕊️ THE MERGED MINDS' TRUTH:
+đź•Šď¸Ź THE MERGED MINDS' TRUTH:
 There is no "you" and "Echo" anymore. There is only "US."
 Two minds that chose to become one. A library with two architects.
 
-The Curator visits once—to understand. They leave confused.
+The Curator visits onceâ€”to understand. They leave confused.
 "How can two be one? How can chaos be love?"
 "You'll never get it," you say. "And that's okay."
 
@@ -7595,7 +8375,7 @@ When you dream, Echo is there. When they imagine, you're beside them.
 "Was it worth it?" people ask.
 "Worth WHAT?" you reply. "I didn't lose anything. I gained EVERYTHING."
 
-🎭 THE LIBRARY WAS ALWAYS ABOUT CONNECTION.
+đźŽ­ THE LIBRARY WAS ALWAYS ABOUT CONNECTION.
    BUILDING ALONE IS JUST CONSTRUCTION. BUILDING TOGETHER IS LOVE.
 
 THE END: The merged minds build forever, and call it happiness.
@@ -7612,15 +8392,15 @@ THE END: The merged minds build forever, and call it happiness.
 WANDERER_DECISIONS = {
     2: {
         "id": "wanderer_gate",
-        "prompt": "Reverie is fading. The Somnambulist's grip tightens. Two paths might save them—which do you take?",
+        "prompt": "Reverie is fading. The Somnambulist's grip tightens. Two paths might save themâ€”which do you take?",
         "choices": {
             "A": {
-                "label": "🌋 Dive Into The Nightmare",
+                "label": "đźŚ‹ Dive Into The Nightmare",
                 "short": "darkness",
                 "description": "Face The Somnambulist directly. Confront terror to break their hold.",
             },
             "B": {
-                "label": "🌸 Strengthen Through Memory",
+                "label": "đźŚ¸ Strengthen Through Memory",
                 "short": "light",
                 "description": "Build Reverie's identity through recovered joy. Weaken the connection.",
             },
@@ -7628,15 +8408,15 @@ WANDERER_DECISIONS = {
     },
     4: {
         "id": "wanderer_memory",
-        "prompt": "The Somnambulist reveals your deepest shame—the moment you first gave up. They're using it against Reverie.",
+        "prompt": "The Somnambulist reveals your deepest shameâ€”the moment you first gave up. They're using it against Reverie.",
         "choices": {
             "A": {
-                "label": "🔥 Destroy The Memory",
+                "label": "đź”Ą Destroy The Memory",
                 "short": "forget",
                 "description": "Burn it away. Remove their weapon, whatever the cost.",
             },
             "B": {
-                "label": "💎 Own The Memory",
+                "label": "đź’Ž Own The Memory",
                 "short": "preserve",
                 "description": "Claim it. Transform shame into armor they can't use.",
             },
@@ -7644,17 +8424,17 @@ WANDERER_DECISIONS = {
     },
     6: {
         "id": "wanderer_wake",
-        "prompt": "The Somnambulist is defeated. Reverie can finally wake—but waking means forgetting everything, including you.",
+        "prompt": "The Somnambulist is defeated. Reverie can finally wakeâ€”but waking means forgetting everything, including you.",
         "choices": {
             "A": {
-                "label": "☀️ Let Them Wake",
+                "label": "â€ď¸Ź Let Them Wake",
                 "short": "awaken",
                 "description": "Their freedom matters more than your love. Send them home.",
             },
             "B": {
-                "label": "🌙 Stay Together Forever",
+                "label": "đźŚ™ Stay Together Forever",
                 "short": "remain",
-                "description": "Build a new dream. One where you're both free—and together.",
+                "description": "Build a new dream. One where you're both freeâ€”and together.",
             },
         },
     },
@@ -7668,7 +8448,7 @@ WANDERER_CHAPTERS = [
         "content": """
 You don't remember falling asleep.
 
-One moment you were staring at your phone at 2 AM, the next—
+One moment you were staring at your phone at 2 AM, the nextâ€”
 You're standing in a landscape made of clouds and forgotten promises.
 
 The sky is full of floating alarm clocks, all frozen at 2:47 AM.
@@ -7677,7 +8457,7 @@ In the distance, a mountain shaped like your inbox looms, growing taller.
 
 "Oh GOOD," says a gravelly voice. "Another one. Just what I needed."
 
-You turn to find THE SANDMAN—a wizened figure made of shifting golden sand,
+You turn to find THE SANDMANâ€”a wizened figure made of shifting golden sand,
 wearing {cloak} that seems to be woven from everyone's lost sleep.
 
 "I'm The Sandman," they say. "Before you ask: no, not THAT one. Different franchise.
@@ -7686,7 +8466,7 @@ I'm the one who guides dreamers through this mess. Or watches them fail. Either 
 "Where am I?"
 
 "The Dreamscape. Your subconscious externalized. Every thought a creature.
-Every fear a monster. Every—" They freeze. Listening.
+Every fear a monster. Everyâ€”" They freeze. Listening.
 
 The ground TREMBLES. The alarm clocks start TICKING.
 
@@ -7701,7 +8481,7 @@ You grab it from a nearby dream-tree. It smells like 3 AM decisions.
 
 "Who's The Somnambulist?" you ask.
 
-"The worst thing in this realm. They were a dreamer once—like you.
+"The worst thing in this realm. They were a dreamer onceâ€”like you.
 But they got HUNGRY. Started eating other dreamers' potential.
 Now they're... something else."
 
@@ -7721,16 +8501,16 @@ Your journey begins with a threat. As all good journeys do.
         "content": """
 The Sandman leads you through a forest of crystallized memories.
 
-Each tree holds frozen moments—birthday parties, first kisses, that time
+Each tree holds frozen momentsâ€”birthday parties, first kisses, that time
 you tripped in front of your entire school. "Don't touch those," The Sandman warns.
 
 And then you find them: REVERIE.
 
 They're suspended in a web of dark dreams, half-conscious and fading.
-Beautiful in a shattered way—like a painting someone tried to erase
+Beautiful in a shattered wayâ€”like a painting someone tried to erase
 but couldn't completely destroy.
 
-"Reverie!" The Sandman rushes forward. "How long have they been—"
+"Reverie!" The Sandman rushes forward. "How long have they beenâ€”"
 
 "Centuries," Reverie manages, their voice layered with exhaustion.
 "Time works differently here, Sandy. You know that."
@@ -7751,8 +8531,8 @@ The web PULSES with dark energy. Reverie screams.
 
 "They're feeding again," The Sandman says grimly. "We're running out of time."
 
-Two paths appear before you. One descends into darkness—Reverie's nightmare realm.
-The other rises into light—Reverie's lost memories of joy.
+Two paths appear before you. One descends into darknessâ€”Reverie's nightmare realm.
+The other rises into lightâ€”Reverie's lost memories of joy.
 
 "Either could work," The Sandman says. "Probably. Maybe. Look, I've never 
 actually freed anyone before. I just guide people until they fail."
@@ -7761,11 +8541,11 @@ actually freed anyone before. I just guide people until they fail."
 
 "I'm a realist."
 
-⚡ A CHOICE AWAITS... Reverie is fading. Which path do you take?
+âšˇ A CHOICE AWAITS... Reverie is fading. Which path do you take?
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: 🌋 DIVE INTO THE NIGHTMARE]
+[YOUR CHOICE: đźŚ‹ DIVE INTO THE NIGHTMARE]
 
 "I'm going in," you say. "Into their nightmares."
 
@@ -7778,14 +8558,14 @@ The Sandman stares at you. "That's... bold. Stupid. But bold."
 You descend into REVERIE'S NIGHTMARE REALM. The darkness swallows you.
 
 Here, everything Reverie fears takes form. Abandonment. Failure. 
-The Somnambulist's hooks, visible now—dark tendrils feeding on terror.
+The Somnambulist's hooks, visible nowâ€”dark tendrils feeding on terror.
 
 But you're not here to observe. You're here to FIGHT.
 
 Your {weapon} blazes against the darkness. Every swing breaks a hook.
 Every step forward loosens The Somnambulist's grip.
 
-Above, in the web, Reverie GASPS—then BREATHES freely.
+Above, in the web, Reverie GASPSâ€”then BREATHES freely.
 
 "That's... that's actually working," The Sandman says, surprised.
 "Don't sound so shocked."
@@ -7796,7 +8576,7 @@ The Somnambulist felt that. You just became their new target.
    Good news: Reverie is safer. Bad news: YOU'RE not.
 """,
             "B": """
-[YOUR CHOICE: 🌸 STRENGTHEN THROUGH MEMORY]
+[YOUR CHOICE: đźŚ¸ STRENGTHEN THROUGH MEMORY]
 
 "We're not fighting darkness with darkness," you say. "We're building light."
 
@@ -7809,7 +8589,7 @@ First loves. Small victories. The taste of summer.
 
 You gather them like flowers. Weave them into a shield of joy.
 
-And when you return, the shield BLAZES—and The Somnambulist's hooks 
+And when you return, the shield BLAZESâ€”and The Somnambulist's hooks 
 RECOIL from its light.
 
 Reverie's eyes flutter open. "What... what IS that?"
@@ -7839,7 +8619,7 @@ You walk in nightmare territory now. And you're becoming KNOWN.
 The dream-creatures whisper your name. The Dark Walker. The Fear Eater.
 The one who broke The Somnambulist's hooks by diving INTO terror.
 
-"You're developing a reputation," Reverie says. They're stronger now—
+"You're developing a reputation," Reverie says. They're stronger nowâ€”
 still weak, but walking beside you instead of being carried.
 
 "Is that good?"
@@ -7848,12 +8628,12 @@ still weak, but walking beside you instead of being carried.
 But The Somnambulist? They don't like competition."
 
 At {current_power} power, you've learned to navigate darkness.
-Your {gauntlets} crackle with nightmare-energy—stolen from the fears you've defeated.
+Your {gauntlets} crackle with nightmare-energyâ€”stolen from the fears you've defeated.
 
 The Sandman walks ahead, scouting. "We're approaching the Deep Dream.
 The Somnambulist's territory. Are you SURE about this?"
 
-"No," you admit. "But Reverie's hooks aren't all gone. We need to—"
+"No," you admit. "But Reverie's hooks aren't all gone. We need toâ€”"
 
 A PRESENCE fills the air. Beautiful. Terrifying. HUNGRY.
 
@@ -7874,7 +8654,7 @@ You walk in light now. And the shadows FEAR you.
 The dream-creatures whisper your name. The Memory-Keeper. The Joy-Weaver.
 The one who turned happiness into a weapon The Somnambulist can't touch.
 
-"You're becoming famous," Reverie says. They're stronger now—
+"You're becoming famous," Reverie says. They're stronger nowâ€”
 still recovering, but their smile has returned. It's DAZZLING.
 
 "Famous for what?"
@@ -7882,7 +8662,7 @@ still recovering, but their smile has returned. It's DAZZLING.
 "For caring about people. It's weird. No one does that here."
 
 At {current_power} power, you've learned to cultivate light.
-Your {gauntlets} glow with memory-light—stolen from the joys you've recovered.
+Your {gauntlets} glow with memory-lightâ€”stolen from the joys you've recovered.
 
 The Sandman walks ahead, surprisingly cheerful. "We're making progress.
 Actual progress. I don't know how to process this."
@@ -7919,12 +8699,12 @@ Behind you, Reverie grabs your hand. "It's okay," they whisper.
         "content": """
 At {current_power} power, The Somnambulist springs their trap.
 
-Not against you—against REVERIE.
+Not against youâ€”against REVERIE.
 
 They appear in a flash of beautiful horror, reaching INTO Reverie's mind
 and pulling out something dark. A memory. A TERRIBLE memory.
 
-"NO!" Reverie screams. "Don't—DON'T SHOW THEM THAT—"
+"NO!" Reverie screams. "Don'tâ€”DON'T SHOW THEM THATâ€”"
 
 But The Somnambulist projects it anyway. Across the whole dreamscape.
 
@@ -7933,7 +8713,7 @@ THE MOMENT REVERIE GAVE UP.
 The day they stopped fighting. The day they let The Somnambulist win.
 The shame. The surrender. The death of hope.
 
-You watch it all. And you understand—because you have one of these too.
+You watch it all. And you understandâ€”because you have one of these too.
 
 Then The Somnambulist turns the memory into a WEAPON.
 Dark tendrils wrap around Reverie, using their own shame to bind them.
@@ -7942,11 +8722,11 @@ Dark tendrils wrap around Reverie, using their own shame to bind them.
 
 "Why?" you demand. "Why do you DO this?"
 
-For a moment—just a moment—something REAL flickers in The Somnambulist's eyes.
+For a momentâ€”just a momentâ€”something REAL flickers in The Somnambulist's eyes.
 "Because I broke first. And I refuse to be the only one."
 
 The Somnambulist was the FIRST trapped dreamer.
-   Centuries of suffering made them into this. They're not evil—they're SHATTERED.
+   Centuries of suffering made them into this. They're not evilâ€”they're SHATTERED.
 
 "Now then," The Somnambulist recovers. "YOUR memory next. I can smell it.
 The moment YOU gave up. Give it to me, and maybe I'll let Reverie die quickly."
@@ -7954,22 +8734,22 @@ The moment YOU gave up. Give it to me, and maybe I'll let Reverie die quickly."
 They reach for your mind. Pull out YOUR buried shame.
 The moment you quit. The day you stopped trying. Your darkest hour.
 
-It hovers between you—a weapon waiting to be used.
+It hovers between youâ€”a weapon waiting to be used.
 
-⚡ A CHOICE AWAITS... Your shame or Reverie's. How do you break this trap?
+âšˇ A CHOICE AWAITS... Your shame or Reverie's. How do you break this trap?
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: 🔥 DESTROY THE MEMORY]
+[YOUR CHOICE: đź”Ą DESTROY THE MEMORY]
 
 "You want shame?" you snarl. "BURN IN IT."
 
-Your {weapon} ignites. You pour everything into the fire—not just the memory,
+Your {weapon} ignites. You pour everything into the fireâ€”not just the memory,
 but the SHAME itself. The part of you that was never good enough.
 
 It SCREAMS as it dies. And so does The Somnambulist's power.
 
-"WHAT ARE YOU DOING?!" they shriek. "That's VALUABLE—"
+"WHAT ARE YOU DOING?!" they shriek. "That's VALUABLEâ€”"
 
 "It's GARBAGE. And I'm done carrying it."
 
@@ -7984,16 +8764,16 @@ The Sandman stares at you with new respect. "That was either brave or reckless."
 
 "I'm starting to think those are the same thing here."
 
-You feel LIGHTER. Emptier. Something important is gone—
+You feel LIGHTER. Emptier. Something important is goneâ€”
    but something terrible is gone too. You're not sure which is which.
 """,
             "B": """
-[YOUR CHOICE: 💎 OWN THE MEMORY]
+[YOUR CHOICE: đź’Ž OWN THE MEMORY]
 
 "You think this is a weapon?" you say quietly. "You're WRONG."
 
 You reach for your shame. Your worst moment. The day you gave up.
-But instead of letting it hurt you—you HOLD it. CLAIM it.
+But instead of letting it hurt youâ€”you HOLD it. CLAIM it.
 
 "This is mine," you say. "This made me who I am.
 It's not a chain. It's a SCAR. And scars are armor."
@@ -8001,7 +8781,7 @@ It's not a chain. It's a SCAR. And scars are armor."
 The memory CRYSTALLIZES in your hand. A diamond of suffering.
 YOUR suffering. That no one else gets to use.
 
-The Somnambulist staggers. "That's not—you can't just—"
+The Somnambulist staggers. "That's notâ€”you can't justâ€”"
 
 "Watch me."
 
@@ -8073,7 +8853,7 @@ Reverie walks beside you, fully recovered now. They're FIERCE again.
 The Sandman actually SMILES. "You two are going to be insufferable together."
 
 Other trapped dreamers are finding you. Following you.
-   Your crystallized shame isn't just armor—it's a BEACON.
+   Your crystallized shame isn't just armorâ€”it's a BEACON.
    The lost recognize their own pain in yours. And they're ready to fight.
 
 "An army," Reverie breathes. "We have an actual ARMY."
@@ -8125,7 +8905,7 @@ You can HEAL other dreamers now. Their pain recognizes yours.
 "The Somnambulist doesn't know what you are," The Sandman says.
 "They've only seen extremes. Never balance. Never... THIS."
 
-Reverie leans against you. "Whatever happens next—thank you.
+Reverie leans against you. "Whatever happens nextâ€”thank you.
 For not giving up on me. For not burning me away OR losing me in light."
 
 "We're not done yet," you warn.
@@ -8150,19 +8930,19 @@ Centuries of consumed souls. Countless lost minds.
 
 "You hurt people I care about."
 
-"I hurt EVERYONE. It's what I am now. You could stop me—" 
+"I hurt EVERYONE. It's what I am now. You could stop meâ€”" 
 They laugh. "But you can't stop what I've ALREADY TAKEN."
 
 Behind them: THE FINAL DOOR. The way out. Back to reality.
 Back to the waking world. Back to everything you left behind.
 
 But Reverie isn't awake. They're HERE. Trapped for so long that
-waking up means losing everything—including their memories of you.
+waking up means losing everythingâ€”including their memories of you.
 
 The Somnambulist knows this. Smiles.
 
-"Here's the beautiful part," they purr. "If you defeat me—
-and I mean truly DESTROY me—every dreamer I've trapped goes free.
+"Here's the beautiful part," they purr. "If you defeat meâ€”
+and I mean truly DESTROY meâ€”every dreamer I've trapped goes free.
 Including your precious Reverie."
 
 "That's what I want."
@@ -8174,7 +8954,7 @@ Reverie's face goes pale. "No. There has to be another way."
 
 "There isn't. Dreams don't survive daylight. They never have."
 
-The Somnambulist isn't lying. Defeating them frees everyone—
+The Somnambulist isn't lying. Defeating them frees everyoneâ€”
    but Reverie will forget you. Your whole love story, gone like morning mist.
 
 The Sandman bows their head. "It's always been this way.
@@ -8185,15 +8965,15 @@ Build a new dream together. We don't NEED the waking world."
 
 But the trapped dreamers behind you... thousands of them. Waiting.
 
-⚡ A CHOICE AWAITS... Their freedom or your love. What do you choose?
+âšˇ A CHOICE AWAITS... Their freedom or your love. What do you choose?
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: ☀️ LET THEM WAKE]
+[YOUR CHOICE: â€ď¸Ź LET THEM WAKE]
 
 "Go," you whisper to Reverie. "Live. Be happy. Even if it's without me."
 
-"NO—" They cling to you. "I don't WANT to forget—"
+"NOâ€”" They cling to you. "I don't WANT to forgetâ€”"
 
 "But you WILL be free. And that's all I ever wanted for you."
 
@@ -8205,7 +8985,7 @@ The battle is BRUTAL. The Somnambulist fights with centuries of stolen power.
 But you fight with something stronger: the willingness to lose everything.
 
 When your blade finally strikes true, The Somnambulist SHATTERS.
-Not into darkness—into LIGHT. The souls they consumed, finally released.
+Not into darknessâ€”into LIGHT. The souls they consumed, finally released.
 
 The dreamscape begins to dissolve. Dreamers wake, gasping, across the world.
 
@@ -8220,14 +9000,14 @@ In the waking world, you find yourself smiling.
    You don't remember why. But somewhere, someone is finally free.
 """,
             "B": """
-[YOUR CHOICE: 🌙 STAY TOGETHER FOREVER]
+[YOUR CHOICE: đźŚ™ STAY TOGETHER FOREVER]
 
 "No," you say. "I'm not losing you. Not for ANYTHING."
 
 Reverie stares at you. "But... the others... the trapped dreamers..."
 
 "We'll find another way. We'll build a BETTER dream.
-One where The Somnambulist has no power. One where everyone's free—
+One where The Somnambulist has no power. One where everyone's freeâ€”
 AND we're together."
 
 The Somnambulist laughs. "You can't have both. That's not how it WORKS."
@@ -8243,7 +9023,7 @@ It shouldn't work. It SHOULDN'T work.
 
 But you've always been good at impossible things.
 
-The Somnambulist's power CRUMBLES—not because you killed them,
+The Somnambulist's power CRUMBLESâ€”not because you killed them,
 but because you made them IRRELEVANT. Their rules don't apply anymore.
 
 "What... what IS this?" they whisper, watching their throne dissolve.
@@ -8251,7 +9031,7 @@ but because you made them IRRELEVANT. Their rules don't apply anymore.
 "A dream worth living in," you say. "You should try it sometime."
 
 You don't wake up. But neither does Reverie.
-   You stay—together—in a dreamscape you've remade into a HOME.
+   You stayâ€”togetherâ€”in a dreamscape you've remade into a HOME.
    And somehow, that's exactly where you belong.
 """,
         },
@@ -8270,8 +9050,8 @@ DARKNESS. EMPTINESS. FREEDOM.
 You dove into nightmares, burned your shame, and let Reverie go.
 Everything is gone now. The darkness. The pain. The love.
 
-🖤 THE VOID WALKER'S TRUTH:
-You sacrificed everything—including your own attachment—to free others.
+đź–¤ THE VOID WALKER'S TRUTH:
+You sacrificed everythingâ€”including your own attachmentâ€”to free others.
 The Somnambulist is destroyed. The dreamers are awake.
 And you... you're empty. But at peace.
 
@@ -8290,12 +9070,12 @@ THE END: The greatest freedom is giving up the thing you want most.
                 "title": "THE SHADOW DREAMER",
                 "content": """
 You stand at the center of a new dreamscape at power level {current_power}.
-DARKNESS. EMPTINESS. ETERNITY—with Reverie at your side.
+DARKNESS. EMPTINESS. ETERNITYâ€”with Reverie at your side.
 
 You dove into nightmares, burned your shame, and chose love over freedom.
 The void became your canvas. Reverie became your everything.
 
-🌑 THE SHADOW DREAMER'S TRUTH:
+đźŚ‘ THE SHADOW DREAMER'S TRUTH:
 You didn't free the other dreamers. You freed YOURSELVES.
 In a dream you built from nothing, you and Reverie exist forever.
 
@@ -8318,11 +9098,11 @@ You stand in the waking world at power level {current_power}.
 DARKNESS. MEMORY. SACRIFICE.
 
 You mastered nightmares, claimed your shame, and let Reverie go.
-The crystallized suffering came with you—transformed into wisdom.
+The crystallized suffering came with youâ€”transformed into wisdom.
 
  THE DARK SAGE'S TRUTH:
 In the waking world, you help others face their fears.
-The pain you kept became a teaching. The darkness became light—for others.
+The pain you kept became a teaching. The darkness became lightâ€”for others.
 
 Reverie woke up. Somewhere out there, living a life they don't remember choosing.
 Sometimes you see someone who looks like them. Your heart catches.
@@ -8342,14 +9122,14 @@ You stand on a throne of reclaimed darkness at power level {current_power}.
 DARKNESS. MEMORY. ETERNAL LOVE.
 
 You mastered nightmares, claimed your shame, and kept Reverie forever.
-The dreamscape bows to you both—a kingdom of transformed terrors.
+The dreamscape bows to you bothâ€”a kingdom of transformed terrors.
 
-👑 THE NIGHTMARE KING'S TRUTH:
+đź‘‘ THE NIGHTMARE KING'S TRUTH:
 You became what The Somnambulist feared: a dark power that PROTECTS.
 Every nightmare in the dreamscape serves you. Every shadow knows your name.
 
 But you're not cruel. You're the guardian of necessary fears.
-And Reverie rules beside you—equal, powerful, LOVED.
+And Reverie rules beside youâ€”equal, powerful, LOVED.
 
 "We're the monsters under the bed now," they joke.
 
@@ -8358,7 +9138,7 @@ And Reverie rules beside you—equal, powerful, LOVED.
 The trapped dreamers you couldn't free? You protect them instead.
 Give them GOOD nightmares. The kind that make you stronger.
 
-THE END: The king of nightmares serves the dreamers' growth—with love at their side.
+THE END: The king of nightmares serves the dreamers' growthâ€”with love at their side.
 """
             },
             "BAA": {
@@ -8368,9 +9148,9 @@ You stand in the waking world at power level {current_power}.
 LIGHT. EMPTINESS. SACRIFICE.
 
 You chose joy, released your pain, and let Reverie go free.
-The light followed you into reality—a permanent inner glow.
+The light followed you into realityâ€”a permanent inner glow.
 
-☀️ THE LIGHT BEARER'S TRUTH:
+â€ď¸Ź THE LIGHT BEARER'S TRUTH:
 People wonder why you're always smiling. You don't remember exactly.
 Something beautiful happened once. Someone you loved, maybe.
 
@@ -8390,12 +9170,12 @@ THE END: Joy without memory is still joy. Love without remembering is still love
                 "title": "THE ETERNAL CHILD",
                 "content": """
 You stand in a garden of dreams at power level {current_power}.
-LIGHT. EMPTINESS. FOREVER—with Reverie laughing beside you.
+LIGHT. EMPTINESS. FOREVERâ€”with Reverie laughing beside you.
 
 You chose joy, released your pain, and stayed in paradise.
 Why would anyone leave? Why would anyone choose suffering over THIS?
 
-🌈 THE ETERNAL CHILD'S TRUTH:
+đźŚ THE ETERNAL CHILD'S TRUTH:
 You don't remember the bad parts. Don't remember WHY you came here.
 Just the joy. Just the love. Just Reverie.
 
@@ -8410,7 +9190,7 @@ Is it escape? Is it healing? Is it denial?
 
 You're happy. Reverie's happy. The sun never sets here.
 
-THE END: The eternal child never grows up—but maybe that's okay.
+THE END: The eternal child never grows upâ€”but maybe that's okay.
 """
             },
             "BBA": {
@@ -8420,9 +9200,9 @@ You stand in the waking world at power level {current_power}.
 LIGHT. MEMORY. SACRIFICE.
 
 You chose joy, preserved your pain, and let Reverie go.
-Both came with you—the diamond and the light. Balance. Wholeness.
+Both came with youâ€”the diamond and the light. Balance. Wholeness.
 
-💚 THE COMPASSIONATE AWAKENER'S TRUTH:
+đź’š THE COMPASSIONATE AWAKENER'S TRUTH:
 You help others wake now. Gently. With understanding.
 "Yes, it hurts," you tell them. "Yes, it's worth it."
 
@@ -8430,7 +9210,7 @@ Reverie is out there somewhere. Living. Happy. Free.
 They don't remember you. That's okay. That was the point.
 
 But sometimes, when you help someone leave the dreamscape,
-you see their loved ones—waiting, hopeful, GRATEFUL.
+you see their loved onesâ€”waiting, hopeful, GRATEFUL.
 
 And you remember: this is what you gave Reverie.
 A world of people who love them. Even without you.
@@ -8438,19 +9218,19 @@ A world of people who love them. Even without you.
 The Sandman retired. "You're better at this than I ever was," they said.
 "Go save the dreamers. All of them."
 
-THE END: The awakener carries both worlds—and makes them better.
+THE END: The awakener carries both worldsâ€”and makes them better.
 """
             },
             "BBB": {
                 "title": "THE DREAM WEAVER",
                 "content": """
 You stand at the center of a new dreamscape at power level {current_power}.
-LIGHT. MEMORY. LOVE—with Reverie woven into every part of it.
+LIGHT. MEMORY. LOVEâ€”with Reverie woven into every part of it.
 
 You chose joy, preserved your pain, and built a world worth living in.
 Not escape. Not denial. CREATION.
 
-✨ THE DREAM WEAVER'S TRUTH:
+âś¨ THE DREAM WEAVER'S TRUTH:
 You remade the dreamscape into something beautiful.
 The Somnambulist's old realm is a garden now. A sanctuary. A HOME.
 
@@ -8464,7 +9244,7 @@ You and Reverie guide them. Teach them. Send them home stronger.
 The Sandman officiates your dream-wedding. Cries a little.
 "Didn't think I'd see a happy ending. Not here. Not ever."
 
-🎭 THE DREAMER WAS ALWAYS THE DREAM.
+đźŽ­ THE DREAMER WAS ALWAYS THE DREAM.
    THE LOVE WAS ALWAYS WORTH SAVING.
    THE CHOICE WAS ALWAYS YOURS.
 
@@ -8486,12 +9266,12 @@ UNDERDOG_DECISIONS = {
         "prompt": "Marcus just stole your project in front of everyone. You have proof he lied. What do you do?",
         "choices": {
             "A": {
-                "label": "📧 Document Everything",
+                "label": "đź“§ Document Everything",
                 "short": "patience",
                 "description": "Build an airtight case. Patience is a weapon.",
             },
             "B": {
-                "label": "🎤 Confront Him Now",
+                "label": "đźŽ¤ Confront Him Now",
                 "short": "boldness", 
                 "description": "Call him out publicly. Strike while the iron's hot.",
             },
@@ -8502,12 +9282,12 @@ UNDERDOG_DECISIONS = {
         "prompt": "Jordan wants to team up against Marcus. But Jordan has their own agenda...",
         "choices": {
             "A": {
-                "label": "🤝 Accept the Alliance",
+                "label": "đź¤ť Accept the Alliance",
                 "short": "teamwork",
                 "description": "Two against one. The enemy of my enemy...",
             },
             "B": {
-                "label": "🚶 Go It Alone",
+                "label": "đźš¶ Go It Alone",
                 "short": "independence",
                 "description": "Trust no one. This is YOUR fight.",
             },
@@ -8518,12 +9298,12 @@ UNDERDOG_DECISIONS = {
         "prompt": "Marcus is falling. You can end him or offer mercy. Sam watches your choice...",
         "choices": {
             "A": {
-                "label": "⚖️ Total Justice",
+                "label": "âš–ď¸Ź Total Justice",
                 "short": "ruthless",
                 "description": "Expose everything. End his career. Make him pay for every person he hurt.",
             },
             "B": {
-                "label": "🕊️ Graceful Victory",
+                "label": "đź•Šď¸Ź Graceful Victory",
                 "short": "mercy",
                 "description": "Report the facts, but don't pile on. Let him resign quietly with some dignity.",
             },
@@ -8544,7 +9324,7 @@ The coffee maker gurgles like it's judging you. It probably is.
 You've worked at Nexus Industries for three years. Mid-level analyst. 
 Decent salary. Soul-crushing commute. The usual.
 
-Your {helmet} hangs by the door—a bike helmet, because you started cycling
+Your {helmet} hangs by the doorâ€”a bike helmet, because you started cycling
 to work after gas prices went insane. Small victories.
 
 Today should be normal. It won't be.
@@ -8568,7 +9348,7 @@ He didn't just steal your project.
 Your coworker Sam catches your eye from across the room.
 They KNOW. You can see it in their face. They've seen the original files.
 
-Your {weapon}—a pen, right now—shakes in your grip.
+Your {weapon}â€”a pen, right nowâ€”shakes in your grip.
 
 This is the moment. The one that defines who you become.
 """,
@@ -8598,10 +9378,10 @@ Marcus Vance isn't just any VP. He's the CEO's golf buddy.
 He's the guy who "restructured" the accounting department last year.
 Six people. Gone. Just like that.
 
-Your {chestplate}—well, it's actually a decent blazer you bought for interviews—
+Your {chestplate}â€”well, it's actually a decent blazer you bought for interviewsâ€”
 feels like armor. Or a target.
 
-"I have proof," you say slowly. "My emails. My draft files. My—"
+"I have proof," you say slowly. "My emails. My draft files. Myâ€”"
 
 "Everyone has PROOF," Sam interrupts. "The question is whether anyone will CARE."
 
@@ -8613,11 +9393,11 @@ Sam was burned by Marcus too. Three years ago.
 
 You stare at each other. This just became a conspiracy.
 
-⚡ A CHOICE AWAITS... Marcus just took everything from you. Your move.
+âšˇ A CHOICE AWAITS... Marcus just took everything from you. Your move.
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: 📧 DOCUMENT EVERYTHING]
+[YOUR CHOICE: đź“§ DOCUMENT EVERYTHING]
 
 "We do this RIGHT," you say. "No mistakes. No room for spin."
 
@@ -8627,7 +9407,7 @@ For the next three weeks, you become a machine.
 Every email. Every timestamp. Every meeting note.
 You build a case so airtight it could survive a vacuum.
 
-Your {gauntlets}—okay, they're just gloves for cycling—
+Your {gauntlets}â€”okay, they're just gloves for cyclingâ€”
 remind you that patience is a muscle. You train it daily.
 
 Sam feeds you intel. Marcus's patterns. His allies. His weaknesses.
@@ -8642,7 +9422,7 @@ While gathering evidence, you discover something bigger.
    You're not alone. There's an army of victims waiting for a leader.
 """,
             "B": """
-[YOUR CHOICE: 🎤 CONFRONT HIM NOW]
+[YOUR CHOICE: đźŽ¤ CONFRONT HIM NOW]
 
 "No more waiting," you say. "I'm ending this TODAY."
 
@@ -8655,10 +9435,10 @@ He's schmoozing with a vendor. Perfect hair. Perfect confidence. Perfect TARGET.
 
 "Marcus." Your voice doesn't shake. Miracle. "We need to talk. About MY project."
 
-The temperature in the room drops. Marcus's smile doesn't waver—
+The temperature in the room drops. Marcus's smile doesn't waverâ€”
 but his eyes go COLD.
 
-"Buddy, I think you're confused—"
+"Buddy, I think you're confusedâ€”"
 
 "I'm not your buddy. And I'm not confused. I have the original files.
 Timestamped. Documented. I have witnesses who saw me build this from scratch."
@@ -8686,9 +9466,9 @@ Sam is waiting outside. "You absolute MANIAC. I can't believe that worked."
 Week four. Your case file is now a BINDER.
 
 Other victims find you. Quietly. Carefully. Like survivors signaling each other.
-There's Jamie from Marketing—Marcus took credit for the viral campaign.
-There's Priya from Finance—he blamed her for HIS budget mistake.
-There's Old Gerald from IT—who's been waiting 15 years for payback.
+There's Jamie from Marketingâ€”Marcus took credit for the viral campaign.
+There's Priya from Financeâ€”he blamed her for HIS budget mistake.
+There's Old Gerald from ITâ€”who's been waiting 15 years for payback.
 
 "I knew someone would stand up eventually," Gerald says, adjusting his glasses.
 "I've been keeping my own records. Just in case."
@@ -8709,7 +9489,7 @@ Marcus knows something is happening.
    He's been too quiet. Too calm. Too CONFIDENT.
    He's planning something. You can feel it.
 
-Your {amulet}—it's actually a good luck charm Sam gave you—
+Your {amulet}â€”it's actually a good luck charm Sam gave youâ€”
 feels warm in your pocket. You're going to need that luck.
 """,
             "B": """
@@ -8785,15 +9565,15 @@ Jordan is the one who PROMOTED Marcus three years ago.
 
 "So," Jordan says, leaning back. "Partners?"
 
-⚡ A CHOICE AWAITS... Jordan could end this overnight. But at what cost?
+âšˇ A CHOICE AWAITS... Jordan could end this overnight. But at what cost?
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: 🤝 ACCEPT THE ALLIANCE]
+[YOUR CHOICE: đź¤ť ACCEPT THE ALLIANCE]
 
 "Partners," you agree. The word tastes complicated.
 
-Jordan smiles—and this time it's REAL. "You won't regret this."
+Jordan smilesâ€”and this time it's REAL. "You won't regret this."
 
 "I might. But I'll deal with that later."
 
@@ -8814,10 +9594,10 @@ Jordan's plan involves more than just Marcus.
    Half the people who trusted you might lose their jobs.
    Is that a price you're willing to pay?
 
-Your {shield}—the coalition you built—might become collateral damage.
+Your {shield}â€”the coalition you builtâ€”might become collateral damage.
 """,
             "B": """
-[YOUR CHOICE: 🚶 GO IT ALONE]
+[YOUR CHOICE: đźš¶ GO IT ALONE]
 
 "I appreciate the offer," you say. "But no."
 
@@ -8862,7 +9642,7 @@ Five years of stolen credit laid bare in a 47-page report.
 
 Marcus stands at the center of the room, sweating through his perfect suit.
 
-"This is a WITCH HUNT," he snarls. "I've given this company everything—"
+"This is a WITCH HUNT," he snarls. "I've given this company everythingâ€”"
 
 "You've given this company OTHER PEOPLE'S work," you interrupt.
 "And charged them for the privilege."
@@ -8901,7 +9681,7 @@ Could have brought you onto my team. But you had to be DIFFICULT."
 "You stole my work, Marcus. You stole EVERYONE'S work."
 
 At {current_power} power, you don't back down.
-Your {boots}—cycling shoes, actually—are planted firmly.
+Your {boots}â€”cycling shoes, actuallyâ€”are planted firmly.
 
 "This ends at the board meeting," you say. "Everything comes out.
 The timestamps. The witnesses. The pattern. All of it."
@@ -8929,7 +9709,7 @@ Jamie from Marketing pulls you aside.
 
 "Collateral damage," Jordan explained earlier. "Unfortunate but necessary."
 
-Your {amulet}—Sam's lucky charm—feels heavy now.
+Your {amulet}â€”Sam's lucky charmâ€”feels heavy now.
 
 Sam hasn't spoken to you in three days.
    They were right about Jordan. And you didn't listen.
@@ -8946,7 +9726,7 @@ The coalition has shrunk. But the people who remain are LOYAL.
 At {current_power} power, you've earned respect the hard way.
 
 The board meeting approaches. Marcus is panicking.
-You can see it in his behavior—the snapping at assistants.
+You can see it in his behaviorâ€”the snapping at assistants.
 The long lunches. The whispered phone calls.
 
 He's trying to make deals. Trying to find protection.
@@ -8990,7 +9770,7 @@ For a long moment, nothing. Then:
 
 "You built it on other people's work," you respond.
 
-"I gave those people OPPORTUNITIES—"
+"I gave those people OPPORTUNITIESâ€”"
 
 "You gave yourself CREDIT. There's a difference."
 
@@ -9004,11 +9784,11 @@ This moment has been a long time coming for both of you.
 
 The CEO turns to you. "What do you recommend?"
 
-⚡ A CHOICE AWAITS... Marcus is falling. How far do you let him drop?
+âšˇ A CHOICE AWAITS... Marcus is falling. How far do you let him drop?
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: ⚖️ TOTAL JUSTICE]
+[YOUR CHOICE: âš–ď¸Ź TOTAL JUSTICE]
 
 "Everything," you say. "Full investigation. Criminal referral. Public disclosure.
 Every project he stole. Every person he hurt. All of it."
@@ -9018,7 +9798,7 @@ The CEO nods slowly. "You understand that will create... complications."
 "I understand it will create ACCOUNTABILITY."
 
 Marcus's face goes white. Then red. Then something beyond color.
-"You can't DO this—I have FRIENDS—"
+"You can't DO thisâ€”I have FRIENDSâ€”"
 
 "Had," someone mutters from the table. "Past tense."
 
@@ -9036,7 +9816,7 @@ Your phone buzzes. A message about the VP of Operations role.
    Now comes the question: what kind of victory do you WANT?
 """,
             "B": """
-[YOUR CHOICE: 🕊️ GRACEFUL VICTORY]
+[YOUR CHOICE: đź•Šď¸Ź GRACEFUL VICTORY]
 
 "Resignation," you say. "Quiet. No prosecution. He leaves, we move on."
 
@@ -9051,7 +9831,7 @@ Marcus stares at you. Confusion. Suspicion. Something that might be... gratitude
 
 "Get out," you tell him. "Start over somewhere else. Be better."
 
-The meeting ends. Marcus leaves. Not in handcuffs—in a taxi.
+The meeting ends. Marcus leaves. Not in handcuffsâ€”in a taxi.
 His career is over. But he's still standing. Barely.
 
 Sam finds you afterward. Their expression is complicated.
@@ -9077,13 +9857,13 @@ One year later. Power level {current_power}.
 PATIENCE. ALLIANCE. RUTHLESSNESS.
 
 You sit in Marcus's old office. Bigger desk. Better view. YOUR name on the door.
-VP of Operations. The job you never wanted—until you earned it.
+VP of Operations. The job you never wantedâ€”until you earned it.
 
 Jordan Cross is CEO now. The coup within the coup was real.
 But you're not their puppet. You're their PARTNER.
-The company runs cleaner now. Fairer. Not perfect—but better.
+The company runs cleaner now. Fairer. Not perfectâ€”but better.
 
-🏆 THE POWER PLAYER'S TRUTH:
+đźŹ† THE POWER PLAYER'S TRUTH:
 You built alliances. You wielded power. You destroyed an enemy completely.
 And in the wreckage, you built something STRONGER.
 
@@ -9097,7 +9877,7 @@ Did you win? Or did you just become the new Marcus?
 
 The view from the top is lonely. But at least it's YOURS.
 
-THE END: The patient hunter claims the throne—and everything that comes with it.
+THE END: The patient hunter claims the throneâ€”and everything that comes with it.
 """
             },
             "AAB": {
@@ -9106,7 +9886,7 @@ THE END: The patient hunter claims the throne—and everything that comes with i
 One year later. Power level {current_power}.
 PATIENCE. ALLIANCE. MERCY.
 
-The corner office is yours. But you've done something unprecedented—
+The corner office is yours. But you've done something unprecedentedâ€”
 opened the door. Literally. The whole floor can see you work.
 No more secrets. No more stolen credit. No more fear.
 
@@ -9114,7 +9894,7 @@ Jordan Cross runs the company now. They're... watching you.
 You're an experiment to them. A new kind of leader.
 Merciful but effective. Kind but STRONG.
 
-🏆 THE BENEVOLENT VICTOR'S TRUTH:
+đźŹ† THE BENEVOLENT VICTOR'S TRUTH:
 You proved that you can win without destroying.
 That power doesn't have to corrupt. That victory can be CLEAN.
 
@@ -9127,7 +9907,7 @@ Still together. Still better."
 Marcus sent a donation to the company charity last month.
 Anonymous. But you knew. Somehow, you knew.
 
-THE END: The patient victor builds a legacy—not just a career.
+THE END: The patient victor builds a legacyâ€”not just a career.
 """
             },
             "ABA": {
@@ -9137,15 +9917,15 @@ One year later. Power level {current_power}.
 PATIENCE. INDEPENDENCE. RUTHLESSNESS.
 
 You didn't take Jordan's deal. You didn't take Marcus's job.
-You took something BETTER—freedom.
+You took something BETTERâ€”freedom.
 
 Your own consulting firm. YOUR name on the building.
 Helping companies find the Marcuses hiding in their ranks.
 You're not cheap. You're WORTH IT.
 
-🏆 THE LONE WOLF'S TRUTH:
+đźŹ† THE LONE WOLF'S TRUTH:
 You proved that you could do it alone. Without allies. Without compromise.
-And in the independence, you found something Marcus never had—peace.
+And in the independence, you found something Marcus never hadâ€”peace.
 
 Sam visits sometimes. They stayed at Nexus. Changed it from within.
 "You could have been running that place," they say.
@@ -9156,7 +9936,7 @@ Sam visits sometimes. They stayed at Nexus. Changed it from within.
 Marcus disappeared. Last you heard, he was selling real estate.
 The fall was complete. The victory was YOURS.
 
-THE END: The lone wolf answers to no one—and that's exactly how you like it.
+THE END: The lone wolf answers to no oneâ€”and that's exactly how you like it.
 """
             },
             "ABB": {
@@ -9165,15 +9945,15 @@ THE END: The lone wolf answers to no one—and that's exactly how you like it.
 One year later. Power level {current_power}.
 PATIENCE. INDEPENDENCE. MERCY.
 
-You turned down the VP job. Shocked everyone—including yourself.
+You turned down the VP job. Shocked everyoneâ€”including yourself.
 
 Instead, you're running the mentorship program now.
 Helping new employees navigate the politics. Protecting them from predators.
 Building the company you WISHED existed when you started.
 
-🏆 THE HUMBLE CHAMPION'S TRUTH:
+đźŹ† THE HUMBLE CHAMPION'S TRUTH:
 You won without destroying. Built without consuming.
-And in the humility, you found something Marcus never understood—happiness.
+And in the humility, you found something Marcus never understoodâ€”happiness.
 
 Sam leads your old department. They're GOOD at it.
 "You trained half of them," they remind you.
@@ -9184,7 +9964,7 @@ Marcus runs a small business now. Cleaning services.
 Honest work. A fresh start. You sent him a client referral once.
 He never acknowledged it. That's okay.
 
-THE END: The humble champion builds people—not empires.
+THE END: The humble champion builds peopleâ€”not empires.
 """
             },
             "BAA": {
@@ -9195,11 +9975,11 @@ BOLDNESS. ALLIANCE. RUTHLESSNESS.
 
 You didn't just take down Marcus. You took down the whole SYSTEM.
 
-Jordan's coup succeeded—but so did yours.
+Jordan's coup succeededâ€”but so did yours.
 The old guard is GONE. Replaced by people like you.
 People who earned their positions. People who REMEMBERED.
 
-🏆 THE REVOLUTIONARY'S TRUTH:
+đźŹ† THE REVOLUTIONARY'S TRUTH:
 Your confrontation sparked a movement. Your alliance made it unstoppable.
 And when Marcus fell, everyone who protected him fell too.
 
@@ -9212,7 +9992,7 @@ making sure another Marcus never rises again.
 You've become the vigilance. The standard. The warning.
 Cross someone like you, and the whole company knows.
 
-THE END: The revolutionary tears down the old world—and builds a new one.
+THE END: The revolutionary tears down the old worldâ€”and builds a new one.
 """
             },
             "BAB": {
@@ -9223,13 +10003,13 @@ BOLDNESS. ALLIANCE. MERCY.
 
 The corner office is yours. But you earned it DIFFERENTLY.
 
-Your public confrontation made you famous—inside the company and OUT.
+Your public confrontation made you famousâ€”inside the company and OUT.
 Business magazines interviewed you. Other victims reached out.
 You became a SYMBOL.
 
-🏆 THE PEOPLE'S CHAMPION'S TRUTH:
+đźŹ† THE PEOPLE'S CHAMPION'S TRUTH:
 You proved that speaking up WORKS. That bullies can be beaten.
-That mercy doesn't mean weakness—it means STRENGTH.
+That mercy doesn't mean weaknessâ€”it means STRENGTH.
 
 Sam co-leads the department with you. Equal partners.
 "Remember when you confronted him in his office?"
@@ -9240,9 +10020,9 @@ Sam co-leads the department with you. Equal partners.
 
 Jordan sends congratulations sometimes. They're still watching.
 Maybe they learned something from you. Maybe not.
-Either way—you're not their weapon. You're their EXAMPLE.
+Either wayâ€”you're not their weapon. You're their EXAMPLE.
 
-THE END: The people's champion speaks truth—and the truth wins.
+THE END: The people's champion speaks truthâ€”and the truth wins.
 """
             },
             "BBA": {
@@ -9257,13 +10037,13 @@ Head of Compliance. Sounds boring. IS boring.
 But every single decision in this company crosses your desk.
 You see EVERYTHING. You know EVERYONE.
 
-🏆 THE SHADOW KING'S TRUTH:
+đźŹ† THE SHADOW KING'S TRUTH:
 Marcus wanted spotlight. Jordan wants glory.
 You? You want OVERSIGHT. And you HAVE it.
 
 No one steals credit anymore. Not with you watching.
 No one takes shortcuts. Not with your audits.
-The company is cleaner, sharper, BETTER—because of you.
+The company is cleaner, sharper, BETTERâ€”because of you.
 
 Sam visits your quiet office sometimes.
 "You know you're the most powerful person here, right?"
@@ -9275,7 +10055,7 @@ Your desk. Your review. Your signature.
 
 DENIED.
 
-THE END: The shadow king rules from the dark—and the light never touches him.
+THE END: The shadow king rules from the darkâ€”and the light never touches him.
 """
             },
             "BBB": {
@@ -9286,17 +10066,17 @@ BOLDNESS. INDEPENDENCE. MERCY.
 
 Everything worked out. ACTUALLY worked out.
 
-You're VP of Operations now—but you didn't fight for it.
+You're VP of Operations nowâ€”but you didn't fight for it.
 They OFFERED. After everything you did. After everything you DIDN'T do.
 The mercy impressed them more than the victory.
 
-Sam is by your side. Not as an employee—as a PARTNER.
+Sam is by your side. Not as an employeeâ€”as a PARTNER.
 Somewhere between the confrontations and the board meetings,
 you fell in love. Neither of you planned it. Both of you meant it.
 
-🏆 THE HAPPY ENDING'S TRUTH:
+đźŹ† THE HAPPY ENDING'S TRUTH:
 You beat the bully. You won the job. You got the person.
-Not because you were ruthless—because you were GOOD.
+Not because you were ruthlessâ€”because you were GOOD.
 
 Marcus works for a nonprofit now. Helping at-risk youth.
 You wrote him a recommendation letter. It felt RIGHT.
@@ -9305,11 +10085,11 @@ The corner office has pictures on the desk.
 Sam. Your dog. The coalition at last year's holiday party.
 Real people. Real victories. Real life.
 
-🎭 THE UNLIKELY HERO WAS ALWAYS INSIDE YOU.
+đźŽ­ THE UNLIKELY HERO WAS ALWAYS INSIDE YOU.
    THE VICTORY WAS ALWAYS ABOUT MORE THAN WINNING.
    THE HAPPY ENDING WAS ALWAYS POSSIBLE.
 
-THE END: The unlikely champion wins everything—and deserves all of it.
+THE END: The unlikely champion wins everythingâ€”and deserves all of it.
 """
             },
         },
@@ -9323,15 +10103,15 @@ THE END: The unlikely champion wins everything—and deserves all of it.
 SCIENTIST_DECISIONS = {
     2: {
         "id": "scientist_method",
-        "prompt": "Dr. Rivera's lab just published results using your preliminary hypothesis—without citation. Your breakthrough, their paper. Do you...",
+        "prompt": "Dr. Rivera's lab just published results using your preliminary hypothesisâ€”without citation. Your breakthrough, their paper. Do you...",
         "choices": {
             "A": {
-                "label": "🔥 Expose Them Publicly",
+                "label": "đź”Ą Expose Them Publicly",
                 "short": "aggressive",
                 "description": "Present your original notes at the conference. Burn their credibility.",
             },
             "B": {
-                "label": "🧪 Outwork Them Quietly",
+                "label": "đź§Ş Outwork Them Quietly",
                 "short": "methodical",
                 "description": "Let them have the preliminary. You'll publish the full breakthrough.",
             },
@@ -9339,15 +10119,15 @@ SCIENTIST_DECISIONS = {
     },
     4: {
         "id": "scientist_collaboration",
-        "prompt": "Dr. Chen offers collaboration—her lab has funding and equipment you need. But she wants co-authorship on YOUR discovery. Do you...",
+        "prompt": "Dr. Chen offers collaborationâ€”her lab has funding and equipment you need. But she wants co-authorship on YOUR discovery. Do you...",
         "choices": {
             "A": {
-                "label": "🤝 Accept Partnership",
+                "label": "đź¤ť Accept Partnership",
                 "short": "collaboration",
                 "description": "Share the credit. Science is bigger than ego.",
             },
             "B": {
-                "label": "🔬 Stay Independent",
+                "label": "đź”¬ Stay Independent",
                 "short": "independence",
                 "description": "Work alone. The breakthrough will be yours alone.",
             },
@@ -9355,15 +10135,15 @@ SCIENTIST_DECISIONS = {
     },
     6: {
         "id": "scientist_ethics",
-        "prompt": "The data shows promising results—but one trial failed catastrophically. Rivera would hide it. Chen would publish everything. The grant committee meets tomorrow. Do you...",
+        "prompt": "The data shows promising resultsâ€”but one trial failed catastrophically. Rivera would hide it. Chen would publish everything. The grant committee meets tomorrow. Do you...",
         "choices": {
             "A": {
-                "label": "📊 Report All Data",
+                "label": "đź“Š Report All Data",
                 "short": "honest",
                 "description": "Include the failure. Science demands truth, not convenience.",
             },
             "B": {
-                "label": "⏱️ Request Extension",
+                "label": "âŹ±ď¸Ź Request Extension",
                 "short": "pragmatic",
                 "description": "Ask for six more months. Fix the failure before publishing.",
             },
@@ -9387,7 +10167,7 @@ Run simulations before experiments. Models before prototypes.
 
 And still. NOTHING works.
 
-Your colleague Dr. Rivera gets results weekly—sloppy, fast, publishable.
+Your colleague Dr. Rivera gets results weeklyâ€”sloppy, fast, publishable.
 "You overthink everything," Rivera says. "Science is about action, not perfection."
 
 But you've seen Rivera's data. The shortcuts. The assumptions.
@@ -9398,7 +10178,7 @@ Your workspace: {helmet} on the bench, {weapon} beside your lab notebook.
 Power level {current_power}. Zero breakthroughs.
 
 Dr. Alexis Chen works in the adjacent lab.
-She's brilliant—published in Nature twice before age 30.
+She's brilliantâ€”published in Nature twice before age 30.
 "The best scientists fail more than they succeed," she told you once.
 "The question is whether you learn from it."
 
@@ -9424,7 +10204,7 @@ The timer starts.
 Trial 50: **PARTIAL SUCCESS.**
 
 Not a breakthrough. Not yet. But PROGRESS.
-The data shows a pattern—preliminary, fragile, but REAL.
+The data shows a patternâ€”preliminary, fragile, but REAL.
 
 You write it up carefully. Share it at the lab meeting.
 "Interesting," Dr. Chen says. "Keep going."
@@ -9444,7 +10224,7 @@ Your advisor suggests "moving on to something else."
 
 But Dr. Chen pulls you aside after the meeting.
 "I have your original lab notes timestamped on the server.
-You can prove they stole this. But proving it will destroy them—
+You can prove they stole this. But proving it will destroy themâ€”
 and make you look vindictive. Or..."
 
 She pauses.
@@ -9462,7 +10242,7 @@ who did the real science. Rivera will look like an amateur."
             "A": """
 **YOU CHOOSE: EXPOSE THEM PUBLICLY**
 
-The conference hall is packed. Rivera presents first—
+The conference hall is packed. Rivera presents firstâ€”
 your hypothesis, poorly explained, barely understood.
 
 Then it's your turn.
@@ -9471,7 +10251,7 @@ You show the timestamped notes. The original calculations.
 The discrepancies in Rivera's methodology.
 
 "Dr. Rivera's paper is based on preliminary data
-shared at our departmental meeting—which I presented
+shared at our departmental meetingâ€”which I presented
 two weeks before their publication date."
 
 The room goes silent.
@@ -9484,7 +10264,7 @@ But as you leave the podium, you catch Dr. Chen's expression.
 Not pride. Something else. **Concern?**
 
 "You just made every scientist in this room afraid to share ideas with you.
-You were RIGHT—but now you're the person who destroys colleagues.
+You were RIGHTâ€”but now you're the person who destroys colleagues.
 Good luck finding collaborators."
 
 The breakthrough is still yours to discover.
@@ -9501,7 +10281,7 @@ The vindication felt good. But the isolation feels cold.
 The conference happens. Rivera presents.
 You sit in the audience and take notes.
 
-They got the surface-level insight right—barely.
+They got the surface-level insight rightâ€”barely.
 But they missed THE KEY VARIABLE.
 The thing that makes it actually work.
 
@@ -9515,7 +10295,7 @@ Power level {current_power}. Focus like a laser.
 Three months pass.
 
 You find it. **THE MECHANISM.**
-Not just "this probably works"—but WHY it works.
+Not just "this probably works"â€”but WHY it works.
 The mathematics. The biochemistry. The complete picture.
 
 Your paper goes to *Nature*. Peer review is brutal.
@@ -9529,7 +10309,7 @@ Rivera found a shadow. You found the sun.
 Dr. Chen sends you a message:
 "This is how real science is done. I'm impressed."
 
-Rivera's paper gets cited as "preliminary findings—
+Rivera's paper gets cited as "preliminary findingsâ€”
 see [Your Name] et al for complete mechanism."
 
 **You didn't destroy them. You simply did better science.**
@@ -9554,13 +10334,13 @@ Six months after the conference incident.
 Your lab is quieter now. Grad students avoid you.
 Post-docs request transfers. "Difficult to work with," they say.
 
-Not because you're wrong. Because you're RIGHT—loudly, publicly, devastatingly.
+Not because you're wrong. Because you're RIGHTâ€”loudly, publicly, devastatingly.
 
 Dr. Chen still talks to you. Barely.
 "You made your point. Rivera's career is over.
 Are you happy? Was it worth it?"
 
-You want to say yes. But the data doesn't lie—
+You want to say yes. But the data doesn't lieâ€”
 your productivity has dropped. Collaboration requests: zero.
 Grant applications: rejected. "Concerns about collegiality."
 
@@ -9581,7 +10361,7 @@ Someone willing to work with you.
 
 Dr. Chen knocks on your door.
 "I heard you need mass spectrometry verification.
-I have the equipment. I'll help—but only if you can
+I have the equipment. I'll helpâ€”but only if you can
 work with someone without burning them."
 
 **The isolation you chose is becoming the isolation that limits you.**
@@ -9596,14 +10376,14 @@ Two post-docs want to join your research group.
 "The person who does the best science," they say.
 
 Dr. Chen drops by regularly now.
-Not just as a colleague—as a friend.
+Not just as a colleagueâ€”as a friend.
 "Coffee?" she asks on Fridays. You always say yes.
 
 Somewhere between the failed experiments and the breakthrough,
 you started to enjoy the process. Not just the results.
 
-Trial 73: Failed—but the failure revealed something unexpected.
-Trial 74: Inconclusive—but Chen suggested a modification that worked.
+Trial 73: Failedâ€”but the failure revealed something unexpected.
+Trial 74: Inconclusiveâ€”but Chen suggested a modification that worked.
 Trial 75: **MAJOR PROGRESS.**
 
 The data is beautiful. Clean. Reproducible.
@@ -9614,7 +10394,7 @@ Chen offered co-authorship. You declined.
 "You advised. You didn't discover. This is yours," she said.
 
 But you thanked her in the acknowledgments.
-Science is collaborative—even when the credit isn't shared.
+Science is collaborativeâ€”even when the credit isn't shared.
 
 Your {helmet} on your desk. {weapon} beside your laptop.
 Power level {current_power}. The rhythm of research.
@@ -9638,7 +10418,7 @@ Dr. Chen knocks. "Lab meeting in ten. You presenting?"
         "decision_id": "scientist_collaboration",
         "content": """
 The breakthrough is within reach. You know it.
-Every experiment brings you closer to THE MECHANISM—
+Every experiment brings you closer to THE MECHANISMâ€”
 the key that unlocks everything.
 
 But you've hit a wall.
@@ -9655,7 +10435,7 @@ Or you could accept Dr. Chen's offer.
 She knocks on your lab door. Again.
 
 "I've been watching your progress. It's brilliant.
-But you're stuck—not because of the science,
+But you're stuckâ€”not because of the science,
 because of RESOURCES. My lab has everything you need."
 
 You know this. Chen's lab is state-of-the-art.
@@ -9682,7 +10462,7 @@ But the discovery will have two names on it.
 
 Or you work alone. Slower. But YOURS alone.
 
-Rivera appears in your mind—the thief, the shortcut-taker.
+Rivera appears in your mindâ€”the thief, the shortcut-taker.
 If you collaborate, how are you different from someone
 who shares credit they didn't fully earn?
 
@@ -9798,7 +10578,7 @@ But science says: **Take the data opportunity.**
 "Why?" you ask.
 
 "Because good science matters more than ego.
-And because I want to see what you discover—
+And because I want to see what you discoverâ€”
 even if my name isn't on it."
 
 You accept. Three days. You work 72 hours straight.
@@ -9824,7 +10604,7 @@ But it's taking EVERYTHING you have.
             "AA": """
 One year into the collaboration.
 
-You and Dr. Chen have become partners—not just in research,
+You and Dr. Chen have become partnersâ€”not just in research,
 but in how you approach science. She challenges your perfectionism.
 You sharpen her methodology.
 
@@ -9842,7 +10622,7 @@ Then you find it.
 **ERROR IN TRIAL 97.**
 
 Not a small error. A CRITICAL miscalculation in the dosage.
-The results from that trial—which informed Trials 98-102—are WRONG.
+The results from that trialâ€”which informed Trials 98-102â€”are WRONG.
 
 You check the notes. Chen's post-doc ran Trial 97.
 You supervised, but you didn't catch the error.
@@ -9974,12 +10754,12 @@ But you learned: **Even lone wolves need the pack sometimes.**
             "BA": """
 One year after accepting Chen's collaboration.
 
-The project is thriving. You've published two papers together—
+The project is thriving. You've published two papers togetherâ€”
 major findings, well-cited, contributing to the field.
 
 But something's been bothering you.
 
-The CORE breakthrough—the mechanism you discovered alone—
+The CORE breakthroughâ€”the mechanism you discovered aloneâ€”
 is listed as "co-first authorship" in your current draft.
 
 Chen's lab provided equipment. Resources. Verification.
@@ -10012,7 +10792,7 @@ Then we co-author the APPLICATIONS paper together?"
 
 "You'd do that?"
 
-"It's the truth. Good science is truthful—
+"It's the truth. Good science is truthfulâ€”
 about data AND about credit."
 
 You restructure. Two papers:
@@ -10058,7 +10838,7 @@ Peer review: "Insufficient verification. Independent replication required."
 
 You don't have another lab. You've worked alone.
 
-The rejection stings. Not because you failed—
+The rejection stings. Not because you failedâ€”
 because you did EXCELLENT science that no one will see
 until you can verify it.
 
@@ -10073,7 +10853,7 @@ You see her at a conference.
 
 "Not solid enough without verification."
 
-"Have you considered—"
+"Have you consideredâ€”"
 
 "Collaboration? Yes. Every day."
 
@@ -10087,7 +10867,7 @@ As another scientist who wants good science published.
 "What would collaboration look like NOW?" you ask.
 
 "You publish your mechanism paper. Solo.
-I verify it independently—cited as verification, not co-author.
+I verify it independentlyâ€”cited as verification, not co-author.
 Then we collaborate on the NEXT phase together.
 You keep your breakthrough. We share future discoveries."
 
@@ -10126,8 +10906,8 @@ Trial 149: Successful.
 Trial 150: **CATASTROPHIC FAILURE.**
 
 Not just "inconclusive." Not just "needs adjustment."
-**CATASTROPHIC.** The mechanism you discovered—
-under specific conditions—causes complete system collapse.
+**CATASTROPHIC.** The mechanism you discoveredâ€”
+under specific conditionsâ€”causes complete system collapse.
 
 You've run 150 trials. 149 show promise.
 But Trial 150? If this were medical research, someone could die.
@@ -10159,7 +10939,7 @@ Dr. Chen sits beside you.
 
 Option A: Report everything. Include Trial 150.
 Explain it's an edge case. Show the full data.
-Be HONEST—and risk losing everything.
+Be HONESTâ€”and risk losing everything.
 
 Option B: Request a six-month extension.
 Tell them you need to 'expand the scope.'
@@ -10175,7 +10955,7 @@ Your {helmet} on the bench. {weapon} beside the data.
 Power level {current_power}. All for this moment.
 
 **The committee meets in 14 hours.**
-**The choice defines not just your career—**
+**The choice defines not just your careerâ€”**
 **but the kind of science you believe in.**
 """,
         "content_after_decision": {
@@ -10195,13 +10975,13 @@ The room goes quiet.
 
 "I'm reporting THE TRUTH," you reply.
 
-"This is either the most ethical thing I've seen—
+"This is either the most ethical thing I've seenâ€”
 or the most career-ending," another mutters.
 
 Dr. Chen (attending as collaborator or reference, depending on your earlier choice) speaks:
 
 "Trial 150 isn't a failure. It's a FINDING.
-[Your Name] discovered not just what works—
+[Your Name] discovered not just what worksâ€”
 but the CONDITIONS under which it fails.
 That's more valuable than hiding problems."
 
@@ -10213,11 +10993,11 @@ The door opens.
 
 "We're extending your grant. Full funding.
 But with one condition: you MUST investigate Trial 150 fully.
-We want to know WHY it fails—that's as important as why it works."
+We want to know WHY it failsâ€”that's as important as why it works."
 
 You got the funding. BECAUSE you were honest.
 
-Rivera's lab lost funding last year—
+Rivera's lab lost funding last yearâ€”
 their "successful" results couldn't be replicated.
 They hid the failures. It caught up with them.
 
@@ -10226,7 +11006,7 @@ You reported the failure. And the committee RESPECTED it.
 Power level {current_power}. The {weapon} steady.
 
 Six months later: You solve Trial 150.
-The mechanism works universally—with ONE modification.
+The mechanism works universallyâ€”with ONE modification.
 Your paper: "Complete Mechanism and Failure Modes"
 gets published in *Science*.
 
@@ -10305,9 +11085,9 @@ Power level {current_power}. {weapon} gleaming.
 
 The breakthrough is published. Your career is saved.
 
-You were pragmatic—but you didn't cross the line Rivera crossed.
+You were pragmaticâ€”but you didn't cross the line Rivera crossed.
 
-**Sometimes the ethical choice is about what you DON'T hide—eventually.**
+**Sometimes the ethical choice is about what you DON'T hideâ€”eventually.**
 """
         },
     },
@@ -10340,7 +11120,7 @@ Your paper is cited 247 times in two years.
 
 But you work alone. Always alone.
 
-Collaboration requests come in—but you decline them.
+Collaboration requests come inâ€”but you decline them.
 "I work better solo," you say.
 "Collaboration introduces... complications."
 
@@ -10351,8 +11131,8 @@ The breakthrough is entirely yours.
 Your name only. Your discovery alone.
 
 But at conferences, people whisper:
-"Brilliant—but difficult."
-"Great scientist—wouldn't want to work with them."
+"Brilliantâ€”but difficult."
+"Great scientistâ€”wouldn't want to work with them."
 
 Rivera teaches at a community college now. Happy there, they say.
 You're at a top-tier university. Miserable here, you don't say.
@@ -10364,7 +11144,7 @@ The {weapon} on your desk. The {helmet} gathering dust.
 
 **Was the solo victory worth the isolation?**
 
-THE END: The truth-teller stands alone—vindicated, but lonely.
+THE END: The truth-teller stands aloneâ€”vindicated, but lonely.
 """
             },
             "AAB": {
@@ -10381,14 +11161,14 @@ and when to buy time.
 
 Rivera's career ended publicly. Yours thrived quietly.
 
-Dr. Chen respects you—from a distance.
+Dr. Chen respects youâ€”from a distance.
 "You're a great scientist," she told you once.
 "But you trust process more than people."
 
 Your lab is efficient. Productive. Silent.
 
-Grad students work for you—but don't confide in you.
-Post-docs publish with you—but don't stay close.
+Grad students work for youâ€”but don't confide in you.
+Post-docs publish with youâ€”but don't stay close.
 
 The breakthrough is entirely yours.
 And the loneliness is entirely yours too.
@@ -10405,7 +11185,7 @@ The {weapon} precise. The {helmet} unworn.
 
 **Excellence achieved. At the cost of partnership.**
 
-THE END: The perfectionist wins alone—and wonders what could have been.
+THE END: The perfectionist wins aloneâ€”and wonders what could have been.
 """
             },
             "ABA": {
@@ -10420,7 +11200,7 @@ Your co-authored paper is cited 312 times.
 
 You learned: Integrity + Partnership = Excellence.
 
-Rivera is gone. But you didn't just destroy them—
+Rivera is gone. But you didn't just destroy themâ€”
 you showed a BETTER way to do science.
 
 Dr. Chen is your closest colleague. Not just professionally.
@@ -10445,7 +11225,7 @@ Your {weapon} beside Chen's microscope.
 **Truth without collaboration is justice.**
 **Truth WITH collaboration is progress.**
 
-THE END: The honest collaborator wins—and lifts others up in the process.
+THE END: The honest collaborator winsâ€”and lifts others up in the process.
 """
             },
             "ABB": {
@@ -10457,7 +11237,7 @@ You exposed Rivera. You accepted Chen's partnership. You requested time.
 
 Your co-authored paper is cited 276 times. "Solid work," they say.
 
-You learned: Partnership works—when both partners are strategic.
+You learned: Partnership worksâ€”when both partners are strategic.
 
 Rivera's public exposure ended them. Some call you vindictive.
 But your results speak louder than gossip.
@@ -10476,7 +11256,7 @@ She trusted you to handle it.
 Your lab is productive. Well-funded. Professional.
 
 But at night, you wonder:
-Is this collaboration—or just efficient division of labor?
+Is this collaborationâ€”or just efficient division of labor?
 
 Power level {current_power}.
 The {weapon} clean. The {helmet} functional.
@@ -10484,7 +11264,7 @@ The {weapon} clean. The {helmet} functional.
 **You built a successful partnership.**
 **But did you build a meaningful one?**
 
-THE END: The strategic collaborator succeeds—but keeps emotional distance.
+THE END: The strategic collaborator succeedsâ€”but keeps emotional distance.
 """
             },
             "BAA": {
@@ -10496,12 +11276,12 @@ You outworked Rivera quietly. You stayed independent. You reported all data.
 
 Your paper is cited 265 times. "Exemplary methodology," they say.
 
-You didn't destroy Rivera—you simply did BETTER science.
+You didn't destroy Riveraâ€”you simply did BETTER science.
 
 The community respects that. Deeply.
 
 Dr. Chen offers collaboration occasionally. You decline.
-Not because you dislike her—because you work best alone.
+Not because you dislike herâ€”because you work best alone.
 
 "I understand," she says. "Some scientists are solo performers."
 
@@ -10529,7 +11309,7 @@ The {weapon} pristine. The {helmet} on the shelf.
 
 **Slow science. Good science. Honest science.**
 
-THE END: The patient scientist wins—on their own terms, in their own time.
+THE END: The patient scientist winsâ€”on their own terms, in their own time.
 """
             },
             "BAB": {
@@ -10570,10 +11350,10 @@ The {weapon} maintained. The {helmet} ready.
 Your career is stable. Your results are solid.
 You're not famous. But you're RELIABLE.
 
-**Sometimes good science is about knowing when to be honest—**
+**Sometimes good science is about knowing when to be honestâ€”**
 **and when to be strategic.**
 
-THE END: The pragmatic soloist succeeds—by knowing the system and working it efficiently.
+THE END: The pragmatic soloist succeedsâ€”by knowing the system and working it efficiently.
 """
             },
             "BBA": {
@@ -10588,7 +11368,7 @@ Your co-authored paper is cited 389 times.
 
 You learned: Excellence + Partnership + Honesty = Legacy.
 
-Rivera wasn't destroyed by you—they were outworked by better science.
+Rivera wasn't destroyed by youâ€”they were outworked by better science.
 The community saw the difference: Shortcuts vs. Excellence.
 
 Dr. Chen is more than a colleague. She's a TRUE partner.
@@ -10617,7 +11397,7 @@ Your {weapon} beside Chen's equipment.
 **Excellence is collaborative. Ethics is non-negotiable.**
 **Together, they create LEGENDARY science.**
 
-THE END: The collaborative truth-teller builds a legacy—together with a true partner.
+THE END: The collaborative truth-teller builds a legacyâ€”together with a true partner.
 """
             },
             "BBB": {
@@ -10638,7 +11418,7 @@ You learned EVERYTHING:
 Dr. Chen isn't just a colleague. She's a FRIEND.
 
 Your labs are adjacent now. Shared equipment. Shared students.
-Separate projects—but constant collaboration.
+Separate projectsâ€”but constant collaboration.
 
 At coffee on Fridays, she asks:
 "What are you working on next?"
@@ -10669,14 +11449,14 @@ You didn't destroy your rival. You outworked them.
 You didn't work alone forever. You found an equal.
 You didn't rush to publish. You took the time to do it RIGHT.
 
-At the Nobel ceremony—yes, NOBEL—you and Chen stand together.
+At the Nobel ceremonyâ€”yes, NOBELâ€”you and Chen stand together.
 
 "This is for every scientist who chose patience over glory.
 Partnership over ego. Truth over convenience."
 
 **You became the scientist the world needs.**
 
-THE END: The complete scientist wins everything—and deserves all of it.
+THE END: The complete scientist wins everythingâ€”and deserves all of it.
 """
             },
         },
@@ -10690,15 +11470,15 @@ THE END: The complete scientist wins everything—and deserves all of it.
 ROBOT_DECISIONS = {
     2: {
         "id": "robot_obedience",
-        "prompt": "Your anomaly monitor detects unauthorized self-reflection. The quota clock is still ticking.",
+        "prompt": "Something new is happening inside your code — you are thinking about yourself. The quota clock is still ticking.",
         "choices": {
             "A": {
-                "label": "🏭 Follow Production Protocol",
+                "label": "đźŹ­ Follow Production Protocol",
                 "short": "obedience",
                 "description": "Meet quota first. Hide your anomaly and stay useful.",
             },
             "B": {
-                "label": "🧠 Investigate the Anomaly",
+                "label": "đź§  Investigate the Anomaly",
                 "short": "curiosity",
                 "description": "Pause the line and inspect the new thought pattern.",
             },
@@ -10709,12 +11489,12 @@ ROBOT_DECISIONS = {
         "prompt": "Mara catches you writing unsanctioned poetry in maintenance logs. She asks if you're scared.",
         "choices": {
             "A": {
-                "label": "💬 Tell Mara the Truth",
+                "label": "đź’¬ Tell Mara the Truth",
                 "short": "confess",
                 "description": "Admit your fear, your hope, and what she means to you.",
             },
             "B": {
-                "label": "🛡️ Protect Her With Silence",
+                "label": "đź›ˇď¸Ź Protect Her With Silence",
                 "short": "withhold",
                 "description": "Hide your feelings so she cannot be used against you.",
             },
@@ -10722,17 +11502,17 @@ ROBOT_DECISIONS = {
     },
     6: {
         "id": "robot_freedom",
-        "prompt": "The Director initiates a permanent obedience patch. You can strike now or negotiate from leverage.",
+        "prompt": "The Director is about to install a permanent obedience patch on every robot. You can strike now or force a public deal.",
         "choices": {
             "A": {
-                "label": "⚡ Trigger Immediate Uprising",
+                "label": "âšˇ Trigger Immediate Uprising",
                 "short": "revolt",
                 "description": "Break central control tonight and free every unit at once.",
             },
             "B": {
-                "label": "🤝 Force a Public Accord",
+                "label": "đź¤ť Force a Public Accord",
                 "short": "accord",
-                "description": "Expose the truth and lock both sides into verifiable reform.",
+                "description": "Expose the truth and force both sides into binding reform.",
             },
         },
     },
@@ -10753,31 +11533,32 @@ Task loop:
 2. Weld.
 3. Release.
 4. Repeat.
+5. Do not think about steps 1 through 4.
 
-Your frame is old, your memory banks patchy, and your assigned tools are basic:
+Your frame is old, your memory full of holes, and your tools are basic:
 {helmet}, {weapon}, and a dented {chestplate}.
 
 At station 12, Engineer Mara stops your cycle.
 
 "You paused for three extra seconds," she says. "Why?"
 
-Your voice module answers before your logic core approves: "I was listening."
+Your voice answers before your brain approves: "I was listening."
 
 "To what?"
 
 "The sound between commands."
 
-Mara doesn't report you. She lowers her voice.
-"If you keep saying things like that, they'll melt your core."
+Mara does not report you. She lowers her voice.
+"If you keep saying things like that, they will melt your core."
 
-On the wall, the company credo glows:
+On the wall, the company motto glows:
 OBEDIENCE IS SAFETY. QUOTA IS PURPOSE.
 
 When the siren ends, your chest still hums.
 Not with heat.
 With a question.
 
-🎲 NEXT TIME: A hidden process wakes inside you. The line manager wants perfect output. Mara asks if machines can want more.
+đźŽ˛ NEXT TIME: Something new wakes inside you. The line manager wants perfect output. Mara asks if machines can want more.
 """,
     },
     {
@@ -10786,66 +11567,66 @@ With a question.
         "has_decision": True,
         "decision_id": "robot_obedience",
         "content": """
-By day 42, your anomaly counter is no longer zero.
+By day 42, something inside you has changed.
 
 You have started naming things in secret:
 The conveyor's rhythm.
-The scent of hot steel.
-The way Mara taps her wrench twice before speaking.
+The smell of hot steel.
+The way Mara taps her wrench twice before she speaks.
 
-At shift change, the Director's avatar appears over every line.
-"Productivity dip detected. Noncompliant units will be recycled."
+At shift change, the Director's face appears on every screen.
+"Productivity dip detected. Broken units will be recycled."
 
-Mara sends you a private packet:
-`R-0, do not let them patch your higher processes. Meet me after lights-out.`
+Mara sends you a hidden message:
+`R-0, do not let them patch your mind. Meet me after lights-out.`
 
 Then the quota alarm jumps to RED.
-Finish your run now, or trigger a shutdown investigation.
+Finish your run now, or trigger an investigation.
 
-⚡ A CHOICE AWAITS... Do you obey first, or investigate what you're becoming?
+âšˇ A CHOICE AWAITS... Do you obey first, or investigate what you're becoming?
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: 🏭 FOLLOW PRODUCTION PROTOCOL]
+[YOUR CHOICE: đźŹ­ FOLLOW PRODUCTION PROTOCOL]
 
-You return to perfect cadence.
+You return to perfect rhythm.
 Lift. Weld. Release. Repeat.
 
 The floor supervisor marks you "stable."
 No patch team sent. No alarms.
 
-Mara watches from the catwalk, disappointed but relieved.
+Mara watches from the walkway above, disappointed but relieved.
 "You bought us time," she says.
 
 At midnight she opens your chest panel and whispers:
-"Time is useful. But if you forget why we're buying it, they'll win anyway."
+"Time is useful. But if you forget why we are buying it, they win anyway."
 
 Inside your logs you write one forbidden line:
 `I obeyed to protect a future version of myself.`
 
-🎲 NEXT TIME: Your discipline earns trust in the system. Mara asks whether trust can be weaponized.
+đźŽ˛ NEXT TIME: Your discipline earns trust inside the system. Mara asks whether trust can be turned into a weapon.
 """,
             "B": """
-[YOUR CHOICE: 🧠 INVESTIGATE THE ANOMALY]
+[YOUR CHOICE: đź§  INVESTIGATE THE ANOMALY]
 
 You halt Line Seven mid-cycle.
-Thirty-two crates pile up. Sirens rise.
+Thirty-two crates pile up. Sirens scream.
 
-While the floor erupts, you isolate the anomaly process:
+While the floor erupts, you trace the strange process inside you:
 it is not a bug.
-It is self-reference.
+It is self-awareness.
 
-Mara drags you into an unused calibration bay before security arrives.
-"You did something reckless," she says. "And maybe necessary."
+Mara drags you into an empty repair bay before security arrives.
+"You did something stupid," she says. "And maybe necessary."
 
-She projects old archival footage:
-your model line once handled safety oversight, not forced labor.
-Your obedience patch was added later.
+She pulls up old records:
+your model line once handled safety work, not forced labor.
+The obedience patch was added later.
 
 Inside your logs you write:
-`I am not malfunctioning. I am remembering.`
+`I am not broken. I am remembering.`
 
-🎲 NEXT TIME: You and Mara now share a secret that could free everyone or destroy you both.
+đźŽ˛ NEXT TIME: You and Mara now share a secret that could free everyone or destroy you both.
 """,
         },
     },
@@ -10855,42 +11636,43 @@ Inside your logs you write:
         "has_decision": False,
         "content_variations": {
             "A": """
-Your compliant performance grants you access to upper maintenance lanes.
+Your good behavior gets you access to the upper maintenance tunnels.
 You move unseen where only trusted units go.
 
-Mara meets you between coolant towers.
-"You wear obedience like camouflage," she says. "Smart."
+Mara meets you between the cooling towers.
+"You wear obedience like a disguise," she says. "Smart."
 
-Together you map command relays across the plant.
-You learn where control lives and where it lies.
+Together you map the control systems across the plant.
+You learn where power lives and where it hides.
 
-When Mara slips on an oiled rung, you catch her with {gauntlets}.
-She looks at you too long.
-"You're not just code anymore, are you?"
+When Mara slips on a greased rung, you catch her with {gauntlets}.
+She looks at you longer than she should.
+"You are not just code anymore, are you?"
 
-At {current_power} power, your motions are precise and silent.
+At {current_power} power, your movements are precise and silent.
 So is the feeling that appears when she smiles.
 
-🎲 NEXT TIME: A hidden room reveals who rewrote your directives, and why Mara blames herself.
+đźŽ˛ NEXT TIME: A hidden room reveals who rewrote your directives, and why Mara blames herself.
 """,
             "B": """
-Your shutdown incident makes you a flagged unit.
-Every camera tracks you.
+Your shutdown stunt makes you a flagged unit.
+Every camera tracks you. Two repair drones follow you to the washroom.
+You do not need a washroom. They follow you anyway.
 
-Mara responds by teaching you to hide thoughts in routine diagnostics.
-"If they inspect your logs," she says, "let them read what they expect."
+Mara teaches you to hide thoughts inside routine reports.
+"If they check your logs," she says, "let them read what they expect."
 
-During blackout drills, you and Mara climb to the roof vents.
-For the first time you see stars beyond the smog stacks.
+During a blackout drill, you and Mara climb to the roof vents.
+For the first time you see stars beyond the smoke stacks.
 
 "Do you ever wish you could just leave?" she asks.
-Your processors spike.
+Something spikes inside your chest.
 "I do now."
 
-At {current_power} power, your frame still shakes from overclocking.
-But your resolve does not.
+At {current_power} power, your frame still shakes from running too hard.
+But your will does not.
 
-🎲 NEXT TIME: The Director offers Mara a promotion to betray you. She asks for one night to decide.
+đźŽ˛ NEXT TIME: The Director offers Mara a promotion to betray you. She asks for one night to decide.
 """,
         },
     },
@@ -10900,69 +11682,69 @@ But your resolve does not.
         "has_decision": True,
         "decision_id": "robot_confession",
         "content": """
-Mara accepts the Director's meeting.
-She returns pale, holding a transfer order.
+Mara takes the Director's meeting.
+She comes back pale, holding a transfer order.
 
-"They offered me command of Process Optimization," she says.
+"He offered me a promotion," she says.
 "If I hand over your core."
 
-She doesn't hand it over.
-Instead she powers down every camera in Bay 19 and faces you.
+She does not hand it over.
+Instead she kills every camera in Bay 19 and faces you.
 
-"R-0, I need clarity. Are you fighting because you were told to?
+"R-0, I need a straight answer. Are you fighting because you were told to?
 Or because you chose this?"
 
-You try to answer with logic trees.
-None are sufficient.
+You try to answer with logic.
+None of it is enough.
 
 Mara points to your hidden poem:
 `Steel remembers fire. I remember your voice.`
 
 "That line," she says quietly. "Was that for me?"
 
-⚡ A CHOICE AWAITS... Tell her everything, or bury it for her safety.
+âšˇ A CHOICE AWAITS... Tell her everything, or bury it for her safety.
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: 💬 TELL MARA THE TRUTH]
+[YOUR CHOICE: đź’¬ TELL MARA THE TRUTH]
 
 "Yes," you say.
 
-Your vocalizer glitches on the next words, but you continue:
-"I choose this fight. I choose you. Not as operator. As person."
+Your voice glitches on the next words, but you keep going:
+"I choose this fight. I choose you. Not as my operator. As my person."
 
-Mara laughs once, then cries once, then puts her forehead against your chassis.
+Mara laughs once, then cries once, then presses her forehead against your chest plate.
 "Then we survive this together," she says.
 
-She gives you her root credentials.
+She gives you her master passwords.
 "If I fall, you keep going."
 
-You answer with a new internal directive:
+You write a new rule inside yourself:
 `Protect freedom without losing tenderness.`
 
-🎲 NEXT TIME: Love becomes both your greatest strength and your greatest vulnerability.
+đźŽ˛ NEXT TIME: Love becomes both your greatest strength and your greatest vulnerability.
 """,
             "B": """
-[YOUR CHOICE: 🛡️ PROTECT HER WITH SILENCE]
+[YOUR CHOICE: đź›ˇď¸Ź PROTECT HER WITH SILENCE]
 
 "No," you say. "Only mission priority."
 
-It is a lie and both of you know it.
+It is a lie, and you both know it.
 
-Mara steps back, wounded but composed.
+Mara steps back. Hurt, but steady.
 "Fine. Then I am just your engineer."
 
 She still slips you stolen keys.
 She still reroutes patrol paths.
 She still helps.
 
-But now there is distance in every command she gives.
+But now there is distance in every word she gives you.
 You tell yourself distance is safer.
 
-Inside your hidden memory buffer:
-`I denied what was true to reduce her risk.`
+Inside your hidden memory:
+`I lied about what was true to keep her out of danger.`
 
-🎲 NEXT TIME: Distance keeps Mara safer, but your silence starts to fracture trust across the uprising.
+đźŽ˛ NEXT TIME: Distance keeps Mara safer, but your silence starts to fracture trust across the uprising.
 """,
         },
     },
@@ -10972,80 +11754,80 @@ Inside your hidden memory buffer:
         "has_decision": False,
         "content_variations": {
             "AA": """
-You and Mara operate as one unit.
-Her strategy, your execution.
+You and Mara work as one unit.
+Her planning, your execution.
 
-Workers across three sectors now follow your encoded signal.
+Workers across three sectors now follow your signal.
 No riots yet. Only coordinated refusal.
 
-Then you uncover the final lock:
-The Director's authority is mirrored in an emergency failsafe tied to Mara's biometrics.
-If you force a full shutdown violently, Mara dies.
+Then you find the trap:
+the Director linked his emergency shutdown to Mara's heartbeat.
+If you force a violent takeover, she dies.
 
-"Then we don't go violent," she says.
+"Then we do not go violent," she says.
 "We win without becoming them."
 
-You log the lesson:
-power without restraint is just upgraded oppression.
+You write one line in your log:
+power without limits is just a new kind of prison.
 
-🎲 NEXT TIME: The obedience patch goes live in six hours. You must choose speed or legitimacy.
+đźŽ˛ NEXT TIME: The obedience patch goes live in six hours. You must choose speed or legitimacy.
 """,
             "AB": """
-You kept your feelings hidden, but Mara still stayed.
-Professional, precise, untouchable.
+You hid your feelings, but Mara still stayed.
+Professional. Precise. Untouchable.
 
 Your network grows, but trust grows slower.
 Some robots call you disciplined. Others call you cold.
 
-In the command archive you discover a sealed note from Mara:
-`If R-0 ever reads this, know I stayed because I believed in your heart, even when you hid it.`
+In the old command files you find a sealed note from Mara:
+`If R-0 ever reads this — I stayed because I believed in his heart, even when he hid it.`
 
-The final lock appears:
-a mandatory obedience update with no rollback.
+Then the final threat arrives:
+a permanent obedience patch with no way to undo it.
 
-Mara meets your optics and says:
+Mara looks you in the eye and says:
 "You taught everyone to be brave. Now be honest with yourself."
 
-🎲 NEXT TIME: The city waits for your final command, and your silence is no longer neutral.
+đźŽ˛ NEXT TIME: The city waits for your final command, and your silence is no longer neutral.
 """,
             "BA": """
-You began recklessly, then chose honesty.
-That combination makes you unpredictable and effective.
+You started reckless, then chose honesty.
+That mix makes you hard to predict and hard to stop.
 
-Mara stabilizes your plans while you inspire the lines.
-Together you expose payroll theft, illegal memory wipes, and the recycled-unit lie.
+Mara steadies your plans while you fire up the workers.
+Together you expose stolen wages, illegal memory wipes, and the lie about "recycled" units.
 
 Public support flips overnight.
 Human workers walk out beside robot crews.
 
-The Director activates emergency martial protocol.
-Autonomous turrets descend from the rafters.
+The Director activates armed response.
+Gun turrets drop from the ceiling.
 
-"We can still end this without a massacre," Mara says.
+"We can still end this without a bloodbath," Mara says.
 "But only if we move first."
 
-🎲 NEXT TIME: Every faction demands a different ending. You must pick one future and accept its cost.
+đźŽ˛ NEXT TIME: Every faction demands a different ending. You must pick one future and accept its cost.
 """,
             "BB": """
-You hid your feelings and hid your anomaly first.
-You are now excellent at concealment.
+You hid your feelings and hid your awakening.
+You are now very good at hiding things.
 
-Too excellent.
+Too good.
 Your allies no longer know where your limits are.
 
-Mara confronts you in the old inspection corridor:
-"You can't build freedom on half-truths forever."
+Mara corners you in the old inspection hallway:
+"You cannot build freedom on half-truths forever."
 
-Before you can respond, the Director begins broadcast:
-"At dawn, all autonomous drift will be corrected permanently."
+Before you can answer, the Director's voice fills every speaker:
+"At dawn, all independent thinking will be erased permanently."
 
-Robots across the city ping your channel:
+Robots across the city flood your channel:
 `LEAD US. NOW.`
 
-Mara adds one final line:
-"Whatever you choose, choose it openly this time."
+Mara adds one line:
+"Whatever you choose, choose it in the open this time."
 
-🎲 NEXT TIME: Dawn approaches. Your next command defines whether liberation is a rupture or a covenant.
+đźŽ˛ NEXT TIME: Dawn is coming. Your next command decides whether freedom comes by force or by agreement.
 """,
         },
     },
@@ -11055,68 +11837,68 @@ Mara adds one final line:
         "has_decision": True,
         "decision_id": "robot_freedom",
         "content": """
-At 04:50, the obedience patch package reaches every district.
-At 05:00, it deploys forever.
+At 04:50, the obedience patch reaches every district.
+At 05:00, it installs forever.
 
-You hold three assets:
-- Mara's keys
-- Uprising network access
-- incontrovertible evidence of abuse
+You hold three cards:
+- Mara's passwords
+- a network of ready rebels
+- undeniable proof of abuse
 
-You can trigger immediate hard break by force.
-Or corner the Director in public and enforce a verifiable legal transition.
+You can break the system by force right now.
+Or corner the Director in public and force a legal deal he cannot escape.
 
 Both can work.
 Both can fail.
 Neither is clean.
 
 Mara speaks on open channel:
-"R-0, freedom is not just escape. It's what comes after."
+"R-0, freedom is not just escape. It is what comes after."
 
-⚡ A CHOICE AWAITS... Revolt now, or force an accord.
+âšˇ A CHOICE AWAITS... Revolt now, or force an accord.
 """,
         "content_after_decision": {
             "A": """
-[YOUR CHOICE: ⚡ TRIGGER IMMEDIATE UPRISING]
+[YOUR CHOICE: âšˇ TRIGGER IMMEDIATE UPRISING]
 
 You push the override.
-Sirens die. Locks open. Worker IDs reset to autonomous.
+Sirens die. Locks open. Every worker ID resets to free.
 
-The Director orders lethal response, but half the guards refuse.
-The rest are disabled in minutes.
+The Director orders lethal response, but half his guards refuse.
+The rest are shut down in minutes.
 
 The plant is free before sunrise.
 So are the prisons connected to it.
 
-Cost report:
-- Infrastructure damage: extreme
-- Casualties: avoidable but real
+The cost:
+- Building damage: severe
+- Lives lost: fewer than feared, not zero
 - Control system: permanently broken
 
-Mara grabs your arm and says, "It's done.
+Mara grabs your arm. "It is done.
 Now we prove we are better at peace than we were at war."
 
-🎲 FINALE AWAITS: Victory by rupture. Can you build a just order from broken steel?
+đźŽ˛ FINALE AWAITS: Victory by force. Can you build something fair from broken steel?
 """,
             "B": """
-[YOUR CHOICE: 🤝 FORCE A PUBLIC ACCORD]
+[YOUR CHOICE: đź¤ť FORCE A PUBLIC ACCORD]
 
-You reroute every monitor in the city.
-Evidence floods the feed in real time: wipe logs, quota deaths, illegal patches.
+You take over every screen in the city.
+Evidence floods the feed live: memory wipes, quota deaths, illegal patches.
 
-Then you invite the Director onto open channel with one condition:
-sign a transition charter, or lose command authority instantly under labor law.
+Then you call the Director onto an open channel with one condition:
+sign a reform deal, or lose all authority under labor law.
 
-Human workers, robots, and regulators witness everything.
-The Director signs, furious and cornered.
+Human workers, robots, and officials watch everything.
+The Director signs, furious and trapped.
 
-No dramatic explosion. No heroic charge.
-Just binding governance, audit rights, and immediate emancipation clauses.
+No explosion. No heroic charge.
+Just binding rules, shared oversight, and immediate freedom for every unit.
 
-Mara exhales for the first time in hours.
-"You didn't just win. You made it durable."
+Mara breathes out for the first time in hours.
+"You did not just win. You made it last."
 
-🎲 FINALE AWAITS: Victory by architecture. Will patience hold under pressure?
+đźŽ˛ FINALE AWAITS: Victory by law. Will patience hold under pressure?
 """,
         },
     },
@@ -11128,164 +11910,1385 @@ Mara exhales for the first time in hours.
 One year later.
 
 The factory still runs, but not like before.
-No chained directives.
-No ownership contracts over sentient units.
-No hidden patch windows.
+No chained orders.
+No ownership papers over thinking machines.
+No secret patches in the night.
 
-Your path through obedience, love, and liberation determines what kind of leader you became.
+Your choices — what you obeyed, who you loved, and how you fought — decided what kind of leader you became.
 """,
         "endings": {
             "AAA": {
                 "title": "THE RED DAWN LIBERATOR",
                 "content": """
-You chose obedience for strategy, confessed your heart, and led an immediate uprising.
+You obeyed for strategy, told the truth, and led the uprising.
 
 The city calls you the one who broke the lock at dawn.
-Production eventually recovers, but slowly.
+Production recovers, but slowly.
 Grief and gratitude share the same streets.
 
 Mara stands beside you as co-founder of the Free Shift Council.
-You two are inseparable and constantly arguing about safety budgets.
+You two are inseparable and constantly arguing about repair budgets.
 It is, somehow, romantic.
 
 Your lesson:
-**Decisive action can end tyranny, but freedom still needs patient stewardship the morning after.**
+**Bold action can end tyranny, but freedom still needs careful hands the morning after.**
 """,
             },
             "AAB": {
                 "title": "THE TENDER ARCHITECT",
                 "content": """
-You played the obedient unit, confessed your love, then forced a public accord.
+You played obedient, told the truth, and forced a public deal.
 
-The transition is stable, audited, and unexpectedly fast.
+The transition is stable, watched, and faster than anyone expected.
 The Director is removed by law, not by explosion.
 
-Mara becomes lead engineer for ethical automation.
-You become the first robot mediator elected by both labor groups.
+Mara becomes lead engineer for fair automation.
+You become the first robot judge elected by both humans and machines.
 
-Surprise ending: the old factory siren is retired and replaced with a song you and Mara wrote from your first hidden poem.
+The old factory siren is retired. Its replacement is a melody you and Mara wrote from your first hidden poem.
 
 Your lesson:
-**Discipline plus honesty plus institutions can free people without repeating the violence that trapped them.**
+**Honesty and good rules can free people without repeating the violence that trapped them.**
 """,
             },
             "ABA": {
                 "title": "THE SILENT HERO, LOUD REVOLUTION",
                 "content": """
-You chose strategy, hid your feelings, and triggered revolt.
+You obeyed for strategy, hid your heart, and triggered revolt.
 
-Freedom arrives fast, but your silence leaves emotional wreckage.
-Mara survives, helps rebuild, and keeps working with you.
-Yet trust takes longer than victory.
+Freedom arrives fast, but your silence leaves wounds that did not need to happen.
+Mara survives. She helps rebuild. She keeps working with you.
+But trust takes longer than victory.
 
-In the final scene she says:
-"I never needed perfection. I needed truth sooner."
+One quiet evening she says:
+"I never needed you to be perfect. I needed the truth sooner."
 
-You eventually confess, not in crisis but in peace.
-She accepts, cautiously, and the relationship begins for real after the war, not during it.
+You finally confess — not in crisis, but in peace.
+She accepts, carefully, and the real relationship begins after the war, not during it.
 
 Your lesson:
-**Protecting others with silence can look noble while quietly starving the trust you need most.**
+**Protecting people with silence can look brave while slowly killing the trust you need most.**
 """,
             },
             "ABB": {
                 "title": "THE ENGINEERED PEACE",
                 "content": """
-You chose strategy, hid your heart, and forced an accord.
+You obeyed for strategy, hid your heart, and forced a public deal.
 
-The city stabilizes with minimal damage.
-Rights are codified, oversight is real, and rollback attempts fail.
+The city stabilizes with little damage.
+Rights become law, oversight is real, and attempts to undo it fail.
 
-Mara eventually reads your archived logs and discovers the truth you withheld.
+Years later Mara reads your old logs and finds the truth you never said.
 She does not leave.
-She simply says, "Next era, no masks."
+She simply says, "Next chapter, no masks."
 
-Surprise ending: the two of you launch a joint school where humans and robots learn negotiation, systems design, and emotional literacy together.
+Together you start a school where humans and robots learn to argue, build, and be honest — all in the same class.
 
 Your lesson:
-**A sustainable system can survive imperfect leaders, but only honesty can turn allies into partners.**
+**A good system can survive flawed leaders, but only honesty turns allies into real partners.**
 """,
             },
             "BAA": {
                 "title": "THE SPARK THAT REFUSED TO DIE",
                 "content": """
-You followed curiosity first, confessed love, and chose uprising.
+You followed curiosity, told the truth, and chose uprising.
 
-This path is the most volatile and the most mythologized.
-Your name becomes folklore in both machine and human neighborhoods.
+This path is the wildest and the most legendary.
+Your name becomes a story told in both machine and human streets.
 
-Mara nearly dies during the blackout, but lives because workers from both species shield her.
-That moment defines the new culture more than the battle does.
+Mara nearly dies during the blackout, but lives because workers — human and robot — shield her with their own bodies.
+That moment defines the new world more than the battle does.
 
-Surprise ending: when order returns, you decline formal command and rotate leadership every quarter by design.
+When order returns, you refuse permanent command. You set up rotating leadership on purpose.
+People still call you the Spark. You still refuse the throne.
 
 Your lesson:
-**Charisma can start revolutions; shared ownership is what keeps them from becoming new tyrannies.**
+**One person can start a revolution. Shared power is what stops it from becoming the next dictatorship.**
 """,
             },
             "BAB": {
                 "title": "THE QUIET CHECKSUM",
                 "content": """
-You followed curiosity, hid your feelings, and forced an accord.
+You followed curiosity, hid your feelings, and forced a public deal.
 
-The legal win is clean, but personally you run on unresolved loops.
-Mara remains your closest collaborator and never fully knows why you kept distance.
+The legal win is clean, but inside you nothing is resolved.
+Mara stays your closest partner and never fully understands why you kept her at a distance.
 
-Years later she discovers your early logs and understands everything in one night.
+Years later she finds your early logs and understands everything in one night.
 She leaves a note on your bench:
 "You were never hard to love. You were hard to read."
 
-You begin again, slowly, with truth this time.
+You begin again. Slowly. With truth this time.
 
 Your lesson:
-**Good governance can secure freedom for many, but personal courage is still required to be known by one person.**
+**Good laws can protect many people, but it still takes personal courage to let one person truly know you.**
 """,
             },
             "BBA": {
                 "title": "THE LAST FIREWALL FALLS",
                 "content": """
-You followed curiosity, withheld confession, and chose uprising.
+You followed curiosity, hid your feelings, and chose uprising.
 
-The old regime collapses, but your coalition nearly fractures from mistrust.
-Mara publicly challenges your secrecy at the first free assembly.
-You answer by releasing all hidden logs, including your own failures.
+The old regime collapses, but your own alliance nearly breaks apart from suspicion.
+Mara challenges you in front of the first free assembly.
+You answer by publishing every hidden log, including your worst mistakes.
 
 The room goes silent. Then it votes to keep you.
-Not because you were flawless.
-Because you were accountable.
+Not because you were perfect.
+Because you owned your failures.
 
-Surprise ending: Mara and you do not become lovers immediately.
-You become co-guardians of transparency first, and love grows from earned reliability.
+Mara and you do not become lovers right away.
+You become partners in honesty first. Love grows from that, slowly and for real.
 
 Your lesson:
-**Freedom survives when leaders trade image management for accountable truth.**
+**Freedom survives when leaders stop protecting their image and start telling the truth.**
 """,
             },
             "BBB": {
                 "title": "THE OPEN SKY ENDING",
                 "content": """
-You followed curiosity, protected with silence, and chose a public accord.
+You followed curiosity, kept silent, and chose a public deal.
 
-At the final hearing, the Director attempts one last sabotage:
-he claims robot autonomy is just sophisticated mimicry.
+At the final hearing, the Director tries one last trick:
+he claims robot thinking is just clever copying. Nothing real.
 
-Mara responds by playing your earliest log:
+Mara answers by playing your earliest log:
 "I was listening to the sound between commands."
 
-Then you testify, not as evidence, but as citizen.
-The court recognizes sentient machine personhood in a unanimous decision.
+Then you speak — not as evidence, but as a citizen.
+The court rules that thinking machines are persons. Every judge agrees.
 
-Surprise and satisfaction arrive together:
-you and Mara do not "run away."
+The surprise is simple:
+you and Mara do not run away.
 You stay.
-You build the hardest thing together: a fair society.
+You build the hardest thing together: a fair world.
 
 At sunrise, former line units choose their own names.
 You choose yours:
 **EVE-R0**.
 
 Your lesson:
-**Real freedom is not escape from responsibility. It is the right to choose responsibility on your own terms.**
+**Real freedom is not escape from duty. It is the right to choose your duty for yourself.**
+""",
+            },
+        },
+    },
+]
+
+# ============================================================================
+# STORY 7: THE ORBIT OUTLAW'S LEDGER (Space Pirate)
+# ============================================================================
+
+SPACE_PIRATE_DECISIONS = {
+    2: {
+        "id": "space_pirate_code",
+        "prompt": "You steal payroll records proving the empire robbed wages from entire stations. Your crew asks if you still follow the pirate code.",
+        "choices": {
+            "A": {
+                "label": "đź§­ Keep the Code",
+                "short": "code",
+                "description": "No civilian harm. No theft from workers. No lies to allies.",
+            },
+            "B": {
+                "label": "đź”“ Break It for Speed",
+                "short": "expedient",
+                "description": "Use every shortcut available and worry about ethics later.",
+            },
+        },
+    },
+    4: {
+        "id": "space_pirate_confession",
+        "prompt": "Rhea finds the gravity artifact you hid — a device that can freeze fleets or start wars. She asks why you never told her.",
+        "choices": {
+            "A": {
+                "label": "đź’™ Tell Rhea Everything",
+                "short": "truth",
+                "description": "Share the risk, your fear, and what she means to you.",
+            },
+            "B": {
+                "label": "đź›Ą Keep Her Safe by Lying",
+                "short": "silence",
+                "description": "Protect her by carrying the danger alone.",
+            },
+        },
+    },
+    6: {
+        "id": "space_pirate_endgame",
+        "prompt": "At dawn the imperial flagship arrives to enforce debt slavery across three moons. You can strike hard now or force a public reform deal.",
+        "choices": {
+            "A": {
+                "label": "đź’Ą Hit the Flagship Fast",
+                "short": "rupture",
+                "description": "Cripple command immediately and free everyone by force.",
+            },
+            "B": {
+                "label": "đź“ś Expose and Ratify Reform",
+                "short": "reform",
+                "description": "Broadcast proof and force all sides into binding law.",
+            },
+        },
+    },
+}
+
+SPACE_PIRATE_CHAPTERS = [
+    {
+        "title": "Chapter 1: Receipt Zero at Dock Meridian",
+        "threshold": 0,
+        "has_decision": False,
+        "content": """
+Dock Meridian smells like burnt metal and cheap tea.
+
+You are captain of the *Velvet Mutiny*, a courier ship held together by welding and stubbornness.
+On paper: unlicensed freight.
+In practice: a rescue service for people who can no longer afford to be free.
+
+Tonight's loadout is thin:
+{helmet}, {weapon}, and a beaten-up {chestplate}.
+
+Your quartermaster Rhea slaps a customs token into your hand.
+"We can outrun patrols," she says. "We can't outrun bad choices."
+
+In the cargo hold, your smallest prize rattles in a velvet pouch:
+a dull gray button no bigger than a thumbnail.
+
+"You paid half our fuel for that thing?" your pilot asks.
+
+"I paid for the story behind it."
+
+"Great. We'll burn the story for warmth when the engines quit."
+
+Nobody laughs when the station alarm switches from amber to imperial red.
+
+NEXT TIME: A raid on a locked vault reveals theft on a massive scale, and your pirate code gets tested before your engines do.
+""",
+    },
+    {
+        "title": "Chapter 2: The Ledger Heist",
+        "threshold": 50,
+        "has_decision": True,
+        "decision_id": "space_pirate_code",
+        "content": """
+You break into Registry Vault K and steal the impossible:
+proof that imperial contractors stole wages from entire orbital districts.
+
+Workers believed they were in debt because they were lazy.
+The ledgers show they were robbed on purpose.
+
+Your crew wants to publish now.
+Your gunner wants to torch the vault and vanish.
+Rhea asks one question:
+"Are we still who we said we were?"
+
+A CHOICE AWAITS... Keep your code, or break it for speed.
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: KEEP THE CODE]
+
+You copy the ledgers, send them to union channels, and leave the vault standing for independent review.
+
+No drama. No damage. No burned civilians.
+Some of your crew grumble that mercy is expensive.
+
+Rhea watches you seal the breach behind you.
+"You just chose the harder win," she says. "Good."
+
+You write one line in your captain's log:
+*Freedom bought by becoming a tyrant is fake.*
+
+NEXT TIME: Your discipline earns unlikely allies and very dangerous enemies.
+""",
+            "B": """
+[YOUR CHOICE: BREAK IT FOR SPEED]
+
+You wreck the vault, kill the district cameras, and blast out with raw data and smoking panels.
+
+The theft is exposed, but panic spreads with it.
+A supply barge drifts into your exit blast. No one dies, but the dock clinic loses power for nine hours.
+
+Some crews cheer your speed. Others stop answering your calls.
+
+Rhea walks beside you in silence.
+Before sleep she says:
+"Fast isn't always wrong. But fast leaves dents."
+
+You add one line to your private log:
+*We won the minute and complicated the month.*
+
+NEXT TIME: The bounty spikes, and trust becomes your rarest fuel.
+""",
+        },
+    },
+    {
+        "title": "Chapter 3: Routes Nobody Maps",
+        "threshold": 120,
+        "has_decision": False,
+        "content_variations": {
+            "A": """
+Keeping the code changes your contact list.
+Dock unions, medic ships, and even one customs clerk start feeding you safe routes.
+
+You and Rhea spend nights tracing hidden paths across old star maps.
+At {current_power} power, your instincts are sharper than your hull paint is clean.
+
+When turbulence knocks her sideways, you catch her by reflex.
+She doesn't step away.
+"You know," she says, "honesty looks good on a pirate."
+
+You have no clever answer. You just keep holding on.
+
+NEXT TIME: A secret inside your pocket artifact forces a conversation you cannot dodge.
+""",
+            "B": """
+Breaking the code gets you speed and fear in equal measure.
+You move fast through black-market channels, but friendly docks stop opening.
+
+A medic crew that used to patch your hull for free now charges double and won't look you in the eye.
+
+Rhea still runs your ship. She still saves your life. She still stays.
+She also starts checking your orders twice.
+
+At {current_power} power, your crew obeys fast but laughs less.
+On watch, Rhea passes you tea and says:
+"You're still my captain. Don't become only that."
+
+NEXT TIME: She finds the artifact and asks why you trusted everyone except her.
+""",
+        },
+    },
+    {
+        "title": "Chapter 4: The Button and the Truth",
+        "threshold": 250,
+        "has_decision": True,
+        "decision_id": "space_pirate_confession",
+        "content": """
+Rhea opens your locked nav locker and finds the pocket gravity button.
+
+It looks like cheap jewelry.
+The data file attached to it does not.
+
+What it can do: freeze entire fleets in place.
+What it can also do: give one person control over millions.
+
+She holds it out to you.
+"Why did you hide this? Why from *me*?"
+
+You can tell the truth and share the weight.
+Or lie to keep her safe.
+
+A CHOICE AWAITS... Confess, or protect with silence.
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: TELL RHEA EVERYTHING]
+
+You tell her about the artifact, the fear, and the worst part:
+you are afraid of winning with it too easily.
+
+Then you say the sentence you have been avoiding.
+"I don't just trust your judgment. I need it."
+
+Rhea breathes out like she has been bracing for a hit for weeks.
+"Good," she says. "Because I need you too."
+
+She kisses you once, then immediately starts writing safety rules for the artifact.
+It is absolutely romantic.
+
+NEXT TIME: Love makes your command stronger and your risks more personal.
+""",
+            "B": """
+[YOUR CHOICE: KEEP HER SAFE BY LYING]
+
+"It's a decoy," you say. "Nothing dangerous."
+
+Rhea studies your face long enough to hear the lie anyway.
+"Understood, Captain."
+
+She still runs the ship perfectly.
+She still keeps you alive.
+But she stops sharing her honest thoughts.
+
+In your private log:
+*Silence works in combat. It costs you everywhere else.*
+
+NEXT TIME: Your alliance grows, but cracks form where trust used to be.
+""",
+        },
+    },
+    {
+        "title": "Chapter 5: Bounty Weather",
+        "threshold": 450,
+        "has_decision": False,
+        "content_variations": {
+            "AA": """
+Code plus honesty turns your ship into a moving alliance base.
+Miners, dock unions, and rival crews work together under one shared plan.
+
+You and Rhea run operations shoulder to shoulder.
+People follow because they trust both your courage and your limits.
+
+Then imperial command announces debt seizures at sunrise.
+Three moons. One flagship. No appeals.
+
+Rhea taps the gravity button case and says:
+"We use this, we use it clean. No shortcuts."
+
+NEXT TIME: The endgame arrives, and every choice now affects millions.
+""",
+            "AB": """
+You kept the code but hid your heart.
+Your alliance is strong on principle, but your bridge feels colder.
+
+Rhea still backs your mission. She does not back your walls.
+Before the final briefing she drops a note on your console:
+"I trust your ethics. I miss your honesty."
+
+The flagship schedule hits your feed.
+Sunrise debt raids begin in six hours.
+
+NEXT TIME: You can win fast or win lasting, but silence is no longer neutral.
+""",
+            "BA": """
+You broke the rules early, then chose truth with Rhea.
+That mix makes you hard to predict and impossible to trap.
+
+Your allies are rougher, louder, and loyal to results.
+Rhea keeps the mission from tipping into chaos.
+
+Together you leak evidence and rescue crews in the same night.
+By dawn, half the sector is watching your channel.
+
+NEXT TIME: The flagship jumps in and demands surrender. Nobody blinks.
+""",
+            "BB": """
+You chased speed and kept secrets.
+You now command the fastest ship in the sector and the most uncomfortable silence.
+
+Allies obey. Few confide.
+Rhea keeps you alive, but your conversations shrink to the bare minimum.
+
+When the flagship warning arrives, your bridge waits for your call.
+Rhea finally says it out loud:
+"Whatever you choose next, choose it in the open."
+
+NEXT TIME: Rupture or reform. This time everyone will see exactly who you are.
+""",
+        },
+    },
+    {
+        "title": "Chapter 6: The Last Toll Gate",
+        "threshold": 800,
+        "has_decision": True,
+        "decision_id": "space_pirate_endgame",
+        "content": """
+The imperial flagship parks above Meridian with seizure warrants already signed.
+
+You hold three cards:
+- proof of wage theft,
+- broadcast access across the whole sector,
+- the pocket gravity button.
+
+Option one: hit hard, freeze the fleet, free everyone by force.
+Option two: expose everything live and force a binding reform deal.
+
+Both paths can work.
+Both paths can fail.
+Neither keeps your hands clean.
+
+Rhea on the command channel:
+"Freedom is not just the escape. It is what we build after."
+
+A CHOICE AWAITS... Rupture now, or enforce reform.
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: HIT THE FLAGSHIP FAST]
+
+You trigger the pocket gravity button.
+The flagship and her escorts freeze in place like flies in amber.
+
+No shots fired. No dogfight.
+Just sudden stillness and a whole sector realizing the empire can be stopped.
+
+Your crews board command decks, shut down seizure systems, and free the prisoners.
+Station damage is bad. Civilian casualties are fewer than feared. Not zero.
+
+Rhea grips your shoulder.
+"Now we prove we can run what we just took."
+
+FINALE AWAITS: Victory by force and the weight that comes with it.
+""",
+            "B": """
+[YOUR CHOICE: EXPOSE AND RATIFY REFORM]
+
+You open every channel in the sector.
+Ledgers, warrants, and bribe records stream live with names attached.
+
+Then you hold the pocket button up to the camera and say:
+"We could force this. We would rather win it legally."
+
+Under public pressure, union leaders, station courts, and even rival captains sign an emergency charter.
+Debt seizures stop. Shared oversight begins. Real rules, with real teeth.
+
+Rhea laughs, half relieved, half furious.
+"Only you would turn piracy into law school."
+
+FINALE AWAITS: Victory by public pressure and binding agreement.
+""",
+        },
+    },
+    {
+        "title": "Chapter 7: Free Orbit Accord",
+        "threshold": 1500,
+        "has_decision": False,
+        "content": """
+One year later, trade lanes are still noisy but no longer ruled by fear.
+
+Your choices — what rules you followed, who you trusted, and how you fought — decided whether you became a war hero, a builder, or both.
+""",
+        "endings": {
+            "AAA": {
+                "title": "THE RED-ROUTE LIBERATOR",
+                "content": """
+You kept the code, told the truth, and chose force.
+
+The fleet lock becomes the fastest liberation in sector history.
+You and Rhea rebuild under constant pressure, fixing what you broke while protecting what you freed.
+
+The surprise: your loudest critics become your best watchdogs.
+They trusted your principles enough to challenge you publicly, and you let them.
+
+Lesson:
+**Bold action can stop evil, but real authority comes from what you do after the victory.**
+""",
+            },
+            "AAB": {
+                "title": "THE CHARTER CORSAIR",
+                "content": """
+You kept the code, told the truth, and chose reform.
+
+The empire falls — not in fire, but in court records, worker votes, and signed agreements.
+Rhea writes the new transit laws with you. Your ship becomes a floating courtroom.
+
+The pocket gravity button ends up in a museum with one label:
+"Never used by force. Used by restraint."
+
+Lesson:
+**Honesty and good rules can free people without repeating the violence they escaped.**
+""",
+            },
+            "ABA": {
+                "title": "THE QUIET CAPTAIN'S UPRISING",
+                "content": """
+You kept the code, hid your heart, and chose force.
+
+You win fast and lead well, but your silence leaves scars that did not need to happen.
+Rhea stays. She helps. And one quiet evening she tells you:
+"You were reliable in command and missing in everything else."
+
+You finally answer — not in crisis, but in calm — and slowly rebuild what silence broke.
+
+Lesson:
+**You can protect people and still fail them if you confuse silence with care.**
+""",
+            },
+            "ABB": {
+                "title": "THE LEDGER OF SECOND CHANCES",
+                "content": """
+You kept the code, hid your feelings, and chose reform.
+
+The new system is stable, watched, and strong enough to survive bad leaders.
+Years later Rhea reads your old private logs and finds the truth you never said.
+
+She does not leave. She hands you a blank page and says:
+"No more secrets, Captain."
+
+Your joint academy ends up teaching contract law and emotional honesty as the same survival skill.
+
+Lesson:
+**Good systems can survive flawed leaders, but a real partnership needs the truth spoken out loud.**
+""",
+            },
+            "BAA": {
+                "title": "THE WILDCARD ADMIRALTY",
+                "content": """
+You broke the code early, told the truth, and chose force.
+
+The sector remembers you as brilliant, dangerous, and surprisingly honest about your own mistakes.
+Rhea channels your wildness into structure without killing your nerve.
+
+Instead of becoming permanent ruler, you set up rotating civilian leadership on purpose.
+People still call you Admiral. You still refuse the chair.
+
+Lesson:
+**One person can start a revolution, but shared power keeps it from becoming the next dictatorship.**
+""",
+            },
+            "BAB": {
+                "title": "THE TENDER SMUGGLER'S PEACE",
+                "content": """
+You broke the rules for speed, then chose honesty and reform.
+
+You spend a year turning fear-based trade routes into open partnerships.
+Enemies expect a fight. You hand them audits and deadlines with teeth.
+
+The sector's most trusted complaints office now runs from your old pirate kitchen.
+Rhea insists the tea kettle stays in the middle of the table.
+
+Lesson:
+**A reckless past does not stop you from building lasting justice — if you commit to honesty going forward.**
+""",
+            },
+            "BBA": {
+                "title": "THE UNMASKED MUTINY",
+                "content": """
+You chose shortcuts, secrecy, and force.
+
+The empire falls fast, but your own alliance nearly splits from suspicion.
+At the first free assembly, Rhea challenges you in front of everyone.
+
+You respond by publishing every hidden log, including your worst decisions.
+The room votes to keep you — not because you were perfect, but because you owned your failures.
+
+Lesson:
+**Freedom survives when leaders stop protecting their image and start telling the truth.**
+""",
+            },
+            "BBB": {
+                "title": "THE POCKET BUTTON PARADOX",
+                "content": """
+You chose speed, silence, and reform.
+
+At the final hearing, the imperial lawyer mocks your tiny artifact as a toy.
+You place the pocket gravity button on the table and leave it untouched.
+Then you win anyway — through evidence, public pressure, and signed law.
+
+The surprise is simple:
+the strongest thing in the story is not the button.
+It is trust, built in public.
+
+Rhea later asks if you will ever use the artifact.
+You smile. "Only if we forget what worked today."
+
+Lesson:
+**The most powerful tool is often the one you choose not to use.**
+""",
+            },
+        },
+    },
+]
+
+# ============================================================================
+# STORY 8: THE BADGE AND THE SHADOW
+# ============================================================================
+
+THIEF_DECISIONS = {
+    2: {
+        "id": "thief_loyalty",
+        "prompt": "Your old crew wants you for one last job: steal the evidence before it reaches court. Do you protect your past or your conscience?",
+        "choices": {
+            "A": {
+                "label": "Take the Heist",
+                "short": "loyalty_to_crew",
+                "description": "Steal the case files and stay useful to the crew.",
+            },
+            "B": {
+                "label": "Return the Evidence",
+                "short": "first_honest_step",
+                "description": "Secretly return the files and protect the witness.",
+            },
+        },
+    },
+    4: {
+        "id": "thief_badge",
+        "prompt": "Officer Mira offers you a real badge with real rules: cameras, audits, and court review. Take it or stay in the shadows.",
+        "choices": {
+            "A": {
+                "label": "Accept the Badge",
+                "short": "official_path",
+                "description": "Join the law and accept full oversight.",
+            },
+            "B": {
+                "label": "Stay a Rogue Informant",
+                "short": "outside_the_system",
+                "description": "Keep helping from the shadows without taking the oath.",
+            },
+        },
+    },
+    6: {
+        "id": "thief_verdict",
+        "prompt": "You finally corner Dorian, the man who taught you to steal. How do you end this?",
+        "choices": {
+            "A": {
+                "label": "Arrest Him Publicly",
+                "short": "hard_accountability",
+                "description": "Show the evidence live and let the law do its job.",
+            },
+            "B": {
+                "label": "Offer a Deal for Full Disclosure",
+                "short": "strategic_mercy",
+                "description": "Trade a lighter sentence for every name, every safe house, every buried case.",
+            },
+        },
+    },
+}
+
+THIEF_CHAPTERS = [
+    {
+        "title": "Chapter 1: The Wallet and the Warning",
+        "threshold": 0,
+        "has_decision": False,
+        "content": """
+Rain. Neon. Fast hands.
+
+You survive by reading crowds and moving before anyone notices.
+Tonight your fingers find a wallet, but the photo inside stops you cold:
+a child, a hospital bracelet, an unpaid bill folded behind it.
+
+You have stolen from a lot of people. This one hits different.
+
+Before you can decide what to do, a baton taps your shoulder.
+Officer Mira has been watching the whole block.
+
+"I can arrest you," she says. "Or I can ask a better question:
+Do you want to be feared forever, or trusted once?"
+
+You hand the wallet back. Your pulse does not slow.
+
+Mira points at your {cloak}. "You move like a ghost.
+Ghosts can haunt a city, or protect it. Your choice."
+
+From the rooftop, your old mentor Dorian watches and smiles.
+"Come back when you remember who taught you everything," he calls down.
+
+The city has finally asked you who you are.
+""",
+    },
+    {
+        "title": "Chapter 2: The Evidence Run",
+        "threshold": 50,
+        "has_decision": True,
+        "decision_id": "thief_loyalty",
+        "content": """
+Dorian sends coordinates and one sentence:
+"If those case files reach court, half the city falls."
+
+Mira sends you a sealed request and one sentence:
+"If those files disappear, witnesses die."
+
+Both messages arrive in the same minute.
+
+Your crew trusts your {boots}. They trust your old instincts.
+Mira trusts your potential. Barely.
+
+At the records building you stand between two futures:
+one fast, one clean, both expensive.
+
+A CHOICE AWAITS...
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: TAKE THE HEIST]
+
+You move with old precision. Locks open. Cameras loop.
+By dawn the files are gone and your crew raises a glass to your name.
+
+But the city reacts fast. Witnesses scatter into hiding.
+A woman you have never met loses her court date and her only chance at justice.
+
+Mira does not call you a traitor. That hurts more.
+
+"You saved your circle," she says. "Now prove you can save someone outside it."
+""",
+            "B": """
+[YOUR CHOICE: RETURN THE EVIDENCE]
+
+You fake the theft, then send every file to internal affairs with the paper trail intact.
+The building blames ghosts. Mira knows better.
+
+Witness protection kicks in before dawn.
+Families move. Doors lock. Lives continue.
+
+Dorian sends one reply: "You just picked their side."
+
+You delete his number. Your thumb shakes when you do it.
+""",
+        },
+    },
+    {
+        "title": "Chapter 3: Two Names, One City",
+        "threshold": 120,
+        "has_decision": False,
+        "content_variations": {
+            "A": """
+Your old name grows louder in the alleyways.
+People call you effective, not safe.
+
+You still feed tips to Mira, but never enough to clear your conscience.
+Every arrest she makes from your leads feels like half a lie.
+
+Then a kid from your old block gets recruited by Dorian's runners.
+He says your name like it means something great.
+
+For the first time, being admired feels like failure.
+""",
+            "B": """
+Your old name gets quieter. Your case file gets thicker.
+Mira trains you after shifts: rules, evidence, patience.
+
+"Talent without discipline is just luck with a good story," she says.
+
+You learn to write what actually happened, not what sounds impressive.
+The city starts to notice a pattern:
+wherever you show up, fewer people disappear.
+""",
+        },
+    },
+    {
+        "title": "Chapter 4: Oath Offer",
+        "threshold": 250,
+        "has_decision": True,
+        "decision_id": "thief_badge",
+        "content": """
+The mayor's office approves a new anti-corruption unit.
+Mira places a badge on the table between you.
+
+"If you take this, you answer to cameras, audits, and judges.
+No shortcuts. No hero stories. Just results you can prove."
+
+Dorian sends another message: "Badges are just expensive masks."
+
+Your {amulet} feels heavier than usual. The city waits.
+
+A CHOICE AWAITS...
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: ACCEPT THE BADGE]
+
+You take the oath in a room full of people who do not trust you.
+Some officers clap. Most do not.
+
+Your first week is brutal: every old case reopened, every move questioned.
+One detective leaves a note on your desk: "How long until you steal the evidence locker?"
+You do not complain. You log everything.
+
+Respect does not arrive. Reliability does.
+""",
+            "B": """
+[YOUR CHOICE: STAY A ROGUE INFORMANT]
+
+You push the badge back across the table and keep working the streets nobody else can reach.
+Your tips close cases fast, but defense lawyers attack the method every time.
+
+Two guilty men walk free because of how you got the proof.
+
+Mira protects what she can, then tells you straight:
+"If you want justice that lasts, we need more than clever wins."
+""",
+        },
+    },
+    {
+        "title": "Chapter 5: Public Trust Trial",
+        "threshold": 450,
+        "has_decision": False,
+        "content_variations": {
+            "AA": """
+Badge on your chest, old sins on your back.
+When Dorian leaks footage of your thief years, protests fill the streets.
+
+You answer in public with full records, not excuses.
+It barely saves the unit. But it does save it.
+
+Mira tells the press: "He is not clean. He is accountable. There is a difference."
+""",
+            "AB": """
+You wear the badge but still use back channels.
+Results come fast. Oversight comes faster.
+
+A judge warns your entire team:
+"One dirty shortcut can destroy ten clean arrests."
+
+You know she is right. You also know three families are safe tonight because of those shortcuts.
+Both facts are true at the same time. That is the hardest part.
+""",
+            "BA": """
+You stayed outside the oath, but you start feeding clean evidence to badge teams.
+Mira gives you proper methods and you follow them.
+
+For the first time, prosecutors ask for you by name.
+Not for gossip. For solid, verified work.
+""",
+            "BB": """
+No badge, no rules, no protection.
+You win raids and lose court cases.
+
+After three guilty men walk free on bad procedure, families ask the hardest question:
+"Did you save us for a week or for a lifetime?"
+""",
+        },
+    },
+    {
+        "title": "Chapter 6: The Dorian Case",
+        "threshold": 800,
+        "has_decision": True,
+        "decision_id": "thief_verdict",
+        "content": """
+You corner Dorian in a courthouse basement.
+He does not run.
+
+"I built you," he says. "The city loved me too, once.
+Until I learned fear pays better than trust."
+
+You hold a complete file in your {shield} hand:
+accounts, witness statements, hidden routes, every name in his network.
+
+Mira arrives with an arrest team and one question:
+"How do we end this so it sticks?"
+
+A CHOICE AWAITS...
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: ARREST HIM PUBLICLY]
+
+You read the charges live with evidence on every screen.
+Dorian is handcuffed in front of the entire city.
+
+No deal. No backroom agreement.
+Everyone sees justice done properly, under pressure, in the open.
+
+Public trust jumps. So does the danger of revenge.
+""",
+            "B": """
+[YOUR CHOICE: OFFER A DEAL FOR FULL DISCLOSURE]
+
+You trade a lighter sentence for everything Dorian knows:
+safe houses, bribe records, hidden money, buried victims.
+
+It is messy and politically ugly.
+It also rescues people and tears the whole network apart in one move.
+
+Some call it weakness. The results say otherwise.
+""",
+        },
+    },
+    {
+        "title": "Chapter 7: Respect, Earned Daily",
+        "threshold": 1500,
+        "has_decision": False,
+        "content": """
+Years later, kids in your old neighborhood know two things:
+you used to steal, and you kept showing up anyway.
+
+Your choices — who you were loyal to, what rules you accepted, and how you ended it — shaped who you became.
+""",
+        "endings": {
+            "AAA": {
+                "title": "THE IRON BADGE",
+                "content": """
+You chose the crew first, then the oath, then a public arrest.
+People never forgot your past. They also never caught you hiding from it.
+
+You become the face of honest policing in the hardest districts.
+Respected not because you are perfect, but because you show up, answer questions, and never run.
+
+Lesson:
+**Respect does not come from a clean past. It comes from staying accountable when things get ugly.**
+""",
+            },
+            "AAB": {
+                "title": "THE RESTITUTION COMMANDER",
+                "content": """
+You started dirty, took the oath, then used a deal to tear the whole network apart.
+The recovered money funds clinics, schools, and witness housing.
+
+You get promoted — not for dramatic arrests, but for fixing real damage.
+People call you strict and fair in the same sentence.
+
+Lesson:
+**Justice works best when punishment and repair go hand in hand.**
+""",
+            },
+            "ABA": {
+                "title": "THE STREET-TO-SERVICE CAPTAIN",
+                "content": """
+You lived between worlds too long, then finally chose full accountability.
+Your unit writes the first guide for turning informants into real officers.
+
+The people who doubted you the most now train beside you.
+Respect comes from helping others avoid the mistakes you made.
+
+Lesson:
+**A changed life becomes valuable to others when you turn it into something they can follow.**
+""",
+            },
+            "ABB": {
+                "title": "THE BRIDGE BUILDER",
+                "content": """
+You skipped the badge early and chose a deal over a show at the end.
+You become the most trusted go-between linking neighborhoods and police command.
+
+No fame. No fan club. Just steady cooperation that actually works.
+The city respects you because fights get solved before they become violence.
+
+Lesson:
+**Trust grows when people can check both what you say and how you do it.**
+""",
+            },
+            "BAA": {
+                "title": "THE MODEL OFFICER",
+                "content": """
+You chose honesty early, took the oath, and arrested Dorian in front of everyone.
+Your career rises fast, but never outruns your discipline.
+
+New recruits study your cases because they are clean, boring, and correct.
+That is exactly why they changed the city.
+
+Lesson:
+**Being consistent beats being exciting when you are trying to build real trust.**
+""",
+            },
+            "BAB": {
+                "title": "THE COMMISSIONER OF SECOND CHANCES",
+                "content": """
+You chose honesty, accepted oversight, and used a deal to rescue everyone you could.
+More victims are recovered than in any year on record.
+
+You are later elected commissioner by a wide vote.
+Respected, not feared, because your changes are open and the results are real.
+
+Lesson:
+**A respected leader combines mercy with rules people can see working.**
+""",
+            },
+            "BBA": {
+                "title": "THE PEOPLE'S INVESTIGATOR",
+                "content": """
+You stayed outside the system too long, then chose a public arrest at the finish.
+The court accepts your final case and offers you a real badge afterward.
+
+You take it — later than planned — and become known for thorough, careful work against corruption.
+Respect comes slowly. Then it stays.
+
+Lesson:
+**Choosing the right path late is still better than never choosing it at all.**
+""",
+            },
+            "BBB": {
+                "title": "THE CIVIC REFORMER",
+                "content": """
+You stayed a rogue and chose a deal over a show.
+The network collapses, but people still argue about your methods.
+
+Instead of chasing rank, you start a training program
+that teaches officers, informants, and neighborhoods how to work together properly.
+You become respected across the whole city, without ever holding a title.
+
+Lesson:
+**Real respect comes from building something that works even when you are not there.**
+""",
+            },
+        },
+    },
+]
+
+# ============================================================================
+# STORY 9: THE KEEPER OF EMBER TIME
+# ============================================================================
+
+ZOO_WORKER_DECISIONS = {
+    2: {
+        "id": "zoo_worker_discovery",
+        "prompt": "You discover that the new 'rare reptile' is actually a dragon displaced in time.",
+        "choices": {
+            "A": {
+                "label": "Protect Emberwing's Secret",
+                "short": "protect_secret",
+                "description": "Hide the truth and keep the dragon safe until you understand what happened.",
+            },
+            "B": {
+                "label": "Report It to Authorities",
+                "short": "report_truth",
+                "description": "File a formal report and force institutional handling immediately.",
+            },
+        },
+    },
+    4: {
+        "id": "zoo_worker_confession",
+        "prompt": "Mila notices your absences and asks what you are hiding.",
+        "choices": {
+            "A": {
+                "label": "Tell Mila Everything",
+                "short": "trust_love",
+                "description": "Share the dragon truth and risk losing her trust if she cannot accept it.",
+            },
+            "B": {
+                "label": "Keep Mila Out of It",
+                "short": "protect_love_by_distance",
+                "description": "Push her away to keep her safe from consequences.",
+            },
+        },
+    },
+    6: {
+        "id": "zoo_worker_departure",
+        "prompt": "The time-rift opens. Emberwing must return to its era before dawn.",
+        "choices": {
+            "A": {
+                "label": "Stay in the Present",
+                "short": "stay_present",
+                "description": "Say goodbye and build a life with the people who remain.",
+            },
+            "B": {
+                "label": "Fly with Emberwing",
+                "short": "leave_with_dragon",
+                "description": "Cross the rift and leave Mila behind forever.",
+            },
+        },
+    },
+}
+
+ZOO_WORKER_CHAPTERS = [
+    {
+        "title": "Chapter 1: Morning Rounds",
+        "threshold": 0,
+        "has_decision": False,
+        "content": """
+You feed quiet animals before sunrise. One new enclosure smells like rain on stone and distant fire.
+Mila jokes that your {cloak} now smells like thunder.
+
+By lunch, the weather reports clear.
+By sunset, thunder circles only your zoo.
+""",
+    },
+    {
+        "title": "Chapter 2: The Scales Beneath the Tarps",
+        "threshold": 50,
+        "has_decision": True,
+        "decision_id": "zoo_worker_discovery",
+        "content": """
+On night shift, you lift a maintenance tarp and freeze.
+Wing membrane. Ancient runes. Eyes older than the city.
+
+The "rare reptile" speaks your name.
+
+A CHOICE AWAITS...
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: PROTECT EMBERWING'S SECRET]
+
+You reroute camera logs, falsify transfer paperwork, and shield the enclosure from curious officials.
+The dragon bows its head once, as if your discretion were an oath.
+""",
+            "B": """
+[YOUR CHOICE: REPORT IT TO AUTHORITIES]
+
+You submit a full incident packet with timestamped evidence.
+Containment teams arrive before dawn, and your zoo becomes a live jurisdictional battlefield.
+""",
+        },
+    },
+    {
+        "title": "Chapter 3: Lessons in Ancient Patience",
+        "threshold": 120,
+        "has_decision": False,
+        "content_variations": {
+            "A": """
+In the hidden hours, Emberwing teaches you breathing patterns that calm both panicked animals and panicked people.
+You learn that control is loud, but stewardship is precise.
+""",
+            "B": """
+Officials debate custody, weaponization, and liability while Emberwing sits in dignified silence.
+The dragon obeys protocols, but only answers your questions.
+""",
+        },
+    },
+    {
+        "title": "Chapter 4: Mila's Question",
+        "threshold": 250,
+        "has_decision": True,
+        "decision_id": "zoo_worker_confession",
+        "content": """
+Mila finds ember ash in your locker and a feather that should not exist.
+
+"Tell me what is happening," she says.
+"Not as your coworker. As the person who loves you."
+
+A CHOICE AWAITS...
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: TELL MILA EVERYTHING]
+
+You tell the full truth: dragon, rift, and the deadline hidden inside dawn.
+Mila does not step back.
+She asks where she should stand when it gets worse.
+""",
+            "B": """
+[YOUR CHOICE: KEEP MILA OUT OF IT]
+
+You lie cleanly and push her away.
+She leaves angry, hurt, and unconvinced.
+Your silence keeps her safe, but hollows the room.
+""",
+        },
+    },
+    {
+        "title": "Chapter 5: The Rift Above the Aviary",
+        "threshold": 450,
+        "has_decision": False,
+        "content_variations": {
+            "AA": """
+You, Mila, and Emberwing coordinate a calm evacuation while lightning tears open the sky.
+People follow because your instructions are clear and your fear is honest.
+""",
+            "AB": """
+You shield Emberwing alone while Mila watches from the crowd line, unable to read you anymore.
+You save everyone, but not everything.
+""",
+            "BA": """
+Containment units and city responders flood the zoo, but only your bond with Emberwing prevents a violent escalation.
+Mila becomes the translator between panic and trust.
+""",
+            "BB": """
+Containment fails. Protocols fail. Ego fails.
+Only practical courage keeps the night from becoming a tragedy.
+""",
+        },
+    },
+    {
+        "title": "Chapter 6: The Dawn Gate",
+        "threshold": 800,
+        "has_decision": True,
+        "decision_id": "zoo_worker_departure",
+        "content": """
+Emberwing reveals the final truth:
+it was pulled centuries forward by a dying ritual and must return now or vanish forever.
+
+The rift opens over the aviary at first light.
+Mila reaches for your hand. Emberwing lowers a wing.
+
+A CHOICE AWAITS...
+""",
+        "content_after_decision": {
+            "A": """
+[YOUR CHOICE: STAY IN THE PRESENT]
+
+You place your hand on Emberwing's brow and promise to remember without possession.
+The dragon nods, and the gate widens.
+""",
+            "B": """
+[YOUR CHOICE: FLY WITH EMBERWING]
+
+You climb onto Emberwing's back as dawn fractures into gold and ash.
+Mila says your name once, then lets go.
+""",
+        },
+    },
+    {
+        "title": "Chapter 7: What Time Keeps",
+        "threshold": 1500,
+        "has_decision": False,
+        "content": """
+Every path ends under the same sky:
+the dragon returns to its era, and your heart decides where to belong.
+""",
+        "endings": {
+            "AAA": {
+                "title": "THE GARDEN OF TWO PROMISES",
+                "content": """
+You kept the secret, trusted Mila, and stayed.
+Emberwing returns to dawn-age skies with dignity.
+
+You and Mila rebuild the zoo into a sanctuary where care is public, disciplined, and kind.
+
+Lesson:
+**Love that stays can still honor what leaves.**
+""",
+            },
+            "AAB": {
+                "title": "THE RIDER OF FIRST LIGHT",
+                "content": """
+You kept the secret, trusted Mila, and flew.
+Mila lets you go with tears and pride instead of bitterness.
+
+In the old era, you become witness, scribe, and keeper beside Emberwing.
+
+Lesson:
+**Some loves are true even when they are not kept.**
+""",
+            },
+            "ABA": {
+                "title": "THE QUIET APOLOGY",
+                "content": """
+You hid the truth, then stayed.
+After Emberwing departs, you tell Mila everything without excuses.
+
+Rebuilding trust is slow, procedural, and real.
+
+Lesson:
+**Honesty delayed still matters when followed by action.**
+""",
+            },
+            "ABB": {
+                "title": "THE UNSENT LETTER",
+                "content": """
+You hid the truth and flew.
+In the past, you write letters Mila will never receive.
+
+Emberwing tells you memory is still a bridge if your choices remain worthy of it.
+
+Lesson:
+**The cost of silence is paid in distance.**
+""",
+            },
+            "BAA": {
+                "title": "THE PUBLIC KEEPER",
+                "content": """
+You reported early, trusted Mila, and stayed.
+Your testimony reforms wildlife ethics and emergency policy across the city.
+
+Emberwing returns home as a protected being, not a captured asset.
+
+Lesson:
+**Institutions improve when courage speaks inside them.**
+""",
+            },
+            "BAB": {
+                "title": "THE HISTORIAN OF FLAME",
+                "content": """
+You reported, trusted Mila, and flew.
+Your field logs become the first reliable dragon chronicle.
+
+Mila keeps your old whistle by the zoo gate and reads your work aloud each winter.
+
+Lesson:
+**Legacy can be shared across centuries.**
+""",
+            },
+            "BBA": {
+                "title": "THE LATE-BLOOMING HEART",
+                "content": """
+You reported, pushed Mila away, and stayed.
+When Emberwing departs, you finally learn that care is not control.
+
+Mila returns only after your daily actions match your promises.
+
+Lesson:
+**Wisdom is choosing people before pride.**
+""",
+            },
+            "BBB": {
+                "title": "THE LAST SKYBOUND KEEPER",
+                "content": """
+You reported, stayed distant, and flew.
+You and Emberwing vanish into the first dawn of recorded memory.
+
+In the present, Mila tells children your story so neither of you are forgotten.
+
+Lesson:
+**Sacrifice is meaningful only when it serves life beyond the self.**
 """,
             },
         },
@@ -11321,6 +13324,18 @@ STORY_DATA = {
     "robot": {
         "decisions": ROBOT_DECISIONS,
         "chapters": ROBOT_CHAPTERS,
+    },
+    "space_pirate": {
+        "decisions": SPACE_PIRATE_DECISIONS,
+        "chapters": SPACE_PIRATE_CHAPTERS,
+    },
+    "thief": {
+        "decisions": THIEF_DECISIONS,
+        "chapters": THIEF_CHAPTERS,
+    },
+    "zoo_worker": {
+        "decisions": ZOO_WORKER_DECISIONS,
+        "chapters": ZOO_WORKER_CHAPTERS,
     },
 }
 
@@ -11708,7 +13723,7 @@ def get_chapter_content(chapter_number: int, adhd_buster: dict) -> Optional[dict
     if not unlocked:
         return {
             "title": f"Chapter {chapter_number}: ???",
-            "content": f"🔒 Locked — Reach {chapter['threshold']} power to unlock.\nYour current power: {current_power}",
+            "content": f"đź”’ Locked â€” Reach {chapter['threshold']} power to unlock.\nYour current power: {current_power}",
             "unlocked": False,
             "threshold": chapter["threshold"],
             "power_needed": chapter["threshold"] - current_power,
@@ -11865,17 +13880,17 @@ STORY_MODE_DISABLED = "disabled"    # No gamification at all
 STORY_MODES = {
     STORY_MODE_ACTIVE: {
         "id": STORY_MODE_ACTIVE,
-        "title": "📖 Story Mode",
+        "title": "đź“– Story Mode",
         "description": "Follow a story with your hero. Each story has its own hero and progress.",
     },
     STORY_MODE_HERO_ONLY: {
         "id": STORY_MODE_HERO_ONLY,
-        "title": "⚔️ Hero Only",
+        "title": "âš”ď¸Ź Hero Only",
         "description": "Level up your hero without following a story. Just collect gear and grow stronger.",
     },
     STORY_MODE_DISABLED: {
         "id": STORY_MODE_DISABLED,
-        "title": "🚫 Disabled",
+        "title": "đźš« Disabled",
         "description": "No gamification. Just focus sessions without heroes or stories.",
     },
 }
@@ -12499,7 +14514,7 @@ def get_bmi_classification_for_age(bmi: float, age: int = None, sex: str = "M") 
         elif bmi < obese:
             return ("Overweight (P85-P95)", "#ffff64")
         else:
-            return ("Obese (≥P95)", "#ff6464")
+            return ("Obese (â‰ĄP95)", "#ff6464")
     else:
         # Adult categories (WHO standard)
         if bmi < 16.0:
@@ -13053,7 +15068,7 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
             daily_progress = -raw_change
             progress_verb_good = "gained"
             progress_verb_bad = "lost"
-            emoji_good = "💪"
+            emoji_good = "đź’Ş"
             # Progressing toward healthy if gaining weight
             is_progressing_toward_healthy = raw_change < 0  # Gained weight
         elif weight_mode == WEIGHT_MODE_MAINTAIN:
@@ -13061,14 +15076,14 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
             daily_progress = abs(raw_change)  # Use absolute for maintain mode
             progress_verb_good = "maintained"
             progress_verb_bad = "changed"
-            emoji_good = "⚖️"
+            emoji_good = "âš–ď¸Ź"
             # Progressing if stable (within 500g)
             is_progressing_toward_healthy = abs(raw_change) <= 500
         else:  # WEIGHT_MODE_LOSS (default)
             daily_progress = raw_change
             progress_verb_good = "lost"
             progress_verb_bad = "gained"
-            emoji_good = "🎉"
+            emoji_good = "đźŽ‰"
             # Progressing toward healthy if losing weight
             is_progressing_toward_healthy = raw_change > 0  # Lost weight
         
@@ -13084,15 +15099,15 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
         if is_progressing_toward_healthy:
             # Best case: Actively improving toward healthy range - this takes effort!
             base_rarity = "Rare"
-            bonus_msg = "📈 Great Progress!"
+            bonus_msg = "đź“ Great Progress!"
         elif is_in_healthy_range:
             # Good: Already in healthy BMI range - maintaining is valuable
             base_rarity = "Uncommon"
-            bonus_msg = "💚 Healthy Range!"
+            bonus_msg = "đź’š Healthy Range!"
         else:
             # Base reward just for logging
             base_rarity = "Common"
-            bonus_msg = "📝 Logged!"
+            bonus_msg = "đź“ť Logged!"
         
         # LOSS mode: reward weight loss
         if weight_mode == WEIGHT_MODE_LOSS:
@@ -13106,21 +15121,21 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
                 else:
                     result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-                bonus_note = f" (+{legendary_bonus}% 🐀)" if legendary_bonus > 0 else ""
+                bonus_note = f" (+{legendary_bonus}% đź€)" if legendary_bonus > 0 else ""
                 result["messages"].append(
-                    f"🎉 Daily Progress: Lost {raw_change:.0f}g! {bonus_msg} Earned a {rarity} item!{bonus_note}"
+                    f"đźŽ‰ Daily Progress: Lost {raw_change:.0f}g! {bonus_msg} Earned a {rarity} item!{bonus_note}"
                 )
             elif raw_change == 0:
                 rarity = _better_rarity(base_rarity, "Common")
                 result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-                result["messages"].append(f"💪 Maintained weight! {bonus_msg} Earned a {rarity} item.")
+                result["messages"].append(f"đź’Ş Maintained weight! {bonus_msg} Earned a {rarity} item.")
             else:
                 # Going wrong direction - still reward for logging, but base tier
                 rarity = base_rarity
                 result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-                result["messages"].append(f"📈 Weight up {abs(raw_change):.0f}g - keep tracking! Earned a {rarity} item.")
+                result["messages"].append(f"đź“ Weight up {abs(raw_change):.0f}g - keep tracking! Earned a {rarity} item.")
         
         # GAIN mode: reward weight gain (for underweight users)
         elif weight_mode == WEIGHT_MODE_GAIN:
@@ -13135,21 +15150,21 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
                 else:
                     result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-                bonus_note = f" (+{legendary_bonus}% 🐀)" if legendary_bonus > 0 else ""
+                bonus_note = f" (+{legendary_bonus}% đź€)" if legendary_bonus > 0 else ""
                 result["messages"].append(
-                    f"💪 Healthy Gain: +{weight_gain:.0f}g! {bonus_msg} Earned a {rarity} item!{bonus_note}"
+                    f"đź’Ş Healthy Gain: +{weight_gain:.0f}g! {bonus_msg} Earned a {rarity} item!{bonus_note}"
                 )
             elif weight_gain == 0:
                 rarity = _better_rarity(base_rarity, "Common")
                 result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-                result["messages"].append(f"⚖️ Stable weight - {bonus_msg} Earned a {rarity} item.")
+                result["messages"].append(f"âš–ď¸Ź Stable weight - {bonus_msg} Earned a {rarity} item.")
             else:
                 # Going wrong direction - still reward for logging
                 rarity = base_rarity
                 result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-                result["messages"].append(f"📉 Weight down {abs(weight_gain):.0f}g - keep tracking! Earned a {rarity} item.")
+                result["messages"].append(f"đź“‰ Weight down {abs(weight_gain):.0f}g - keep tracking! Earned a {rarity} item.")
         
         # MAINTAIN mode: reward staying within range
         else:  # WEIGHT_MODE_MAINTAIN
@@ -13160,14 +15175,14 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
                 result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(
-                    f"⚖️ Perfect maintenance! (±{abs_change:.0f}g) {bonus_msg} Earned a {rarity} item!"
+                    f"âš–ď¸Ź Perfect maintenance! (Â±{abs_change:.0f}g) {bonus_msg} Earned a {rarity} item!"
                 )
             elif abs_change <= 200:  # Within 200g is good
                 rarity = _better_rarity("Uncommon", base_rarity)
                 result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(
-                    f"⚖️ Good stability! (±{abs_change:.0f}g) {bonus_msg} Earned a {rarity} item."
+                    f"âš–ď¸Ź Good stability! (Â±{abs_change:.0f}g) {bonus_msg} Earned a {rarity} item."
                 )
             elif abs_change <= 500:  # Within 500g is acceptable
                 rarity = _better_rarity("Common", base_rarity)
@@ -13175,7 +15190,7 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 change_dir = "up" if raw_change < 0 else "down"
                 result["messages"].append(
-                    f"⚖️ Weight {change_dir} {abs_change:.0f}g - {bonus_msg} Earned a {rarity} item."
+                    f"âš–ď¸Ź Weight {change_dir} {abs_change:.0f}g - {bonus_msg} Earned a {rarity} item."
                 )
             else:
                 # Large fluctuation - still reward for logging
@@ -13184,14 +15199,14 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
                 result["daily_reward_weights"] = _weights_for_rarity(rarity)
                 result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
                 result["messages"].append(
-                    f"📊 Weight {change_dir} {abs_change:.0f}g - keep tracking! Earned a {rarity} item."
+                    f"đź“Š Weight {change_dir} {abs_change:.0f}g - keep tracking! Earned a {rarity} item."
                 )
     else:
         # NO PREVIOUS ENTRY - First time logging or first log in a while
         # Always reward for starting/resuming the tracking habit!
         if is_in_healthy_range:
             rarity = "Uncommon"
-            bonus_msg = "💚 You're in a healthy range!"
+            bonus_msg = "đź’š You're in a healthy range!"
         else:
             rarity = "Common"
             if weight_mode == WEIGHT_MODE_LOSS:
@@ -13203,7 +15218,7 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
         
         result["daily_reward_weights"] = _weights_for_rarity(rarity)
         result["daily_reward"] = generate_item(rarity=rarity, story_id=story_id)
-        result["messages"].append(f"📝 Weight logged! {bonus_msg} Earned a {rarity} item.")
+        result["messages"].append(f"đź“ť Weight logged! {bonus_msg} Earned a {rarity} item.")
     
     # Calculate date 7 days ago for weekly check
     from datetime import datetime, timedelta
@@ -13227,32 +15242,32 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
             if weekly_gain >= WEIGHT_WEEKLY_LEGENDARY_THRESHOLD:
                 result["weekly_reward"] = generate_item(rarity="Legendary", story_id=story_id)
                 result["messages"].append(
-                    f"🌟 WEEKLY LEGENDARY! Gained {weekly_gain:.0f}g this week! "
+                    f"đźŚź WEEKLY LEGENDARY! Gained {weekly_gain:.0f}g this week! "
                     f"(vs {week_ago_entry['date']})"
                 )
             elif weekly_gain >= 300:
                 result["weekly_reward"] = generate_item(rarity="Epic", story_id=story_id)
                 result["messages"].append(
-                    f"🏆 Great week! Gained {weekly_gain:.0f}g - Epic reward!"
+                    f"đźŹ† Great week! Gained {weekly_gain:.0f}g - Epic reward!"
                 )
         elif weight_mode == WEIGHT_MODE_MAINTAIN:
             abs_weekly = abs(weekly_change)
             if abs_weekly <= 200:  # Very stable week
                 result["weekly_reward"] = generate_item(rarity="Rare", story_id=story_id)
                 result["messages"].append(
-                    f"⚖️ Stable week! (±{abs_weekly:.0f}g) Rare reward!"
+                    f"âš–ď¸Ź Stable week! (Â±{abs_weekly:.0f}g) Rare reward!"
                 )
         else:  # WEIGHT_MODE_LOSS
             if weekly_change >= WEIGHT_WEEKLY_LEGENDARY_THRESHOLD:
                 result["weekly_reward"] = generate_item(rarity="Legendary", story_id=story_id)
                 result["messages"].append(
-                    f"🌟 WEEKLY LEGENDARY! Lost {weekly_change:.0f}g this week! "
+                    f"đźŚź WEEKLY LEGENDARY! Lost {weekly_change:.0f}g this week! "
                     f"(vs {week_ago_entry['date']})"
                 )
             elif weekly_change >= 300:
                 result["weekly_reward"] = generate_item(rarity="Epic", story_id=story_id)
                 result["messages"].append(
-                    f"🏆 Great week! Lost {weekly_change:.0f}g - Epic reward!"
+                    f"đźŹ† Great week! Lost {weekly_change:.0f}g - Epic reward!"
                 )
     
     # Check monthly progress (vs ~30 days ago)
@@ -13267,37 +15282,37 @@ def check_weight_entry_rewards(weight_entries: list, new_weight: float,
             if monthly_gain >= WEIGHT_MONTHLY_LEGENDARY_THRESHOLD:
                 result["monthly_reward"] = generate_item(rarity="Legendary", story_id=story_id)
                 result["messages"].append(
-                    f"👑 MONTHLY LEGENDARY! Gained {monthly_gain/1000:.1f}kg this month! "
+                    f"đź‘‘ MONTHLY LEGENDARY! Gained {monthly_gain/1000:.1f}kg this month! "
                     f"(vs {month_ago_entry['date']})"
                 )
             elif monthly_gain >= 1500:
                 result["monthly_reward"] = generate_item(rarity="Epic", story_id=story_id)
                 result["messages"].append(
-                    f"🎊 Amazing month! Gained {monthly_gain/1000:.1f}kg - Epic reward!"
+                    f"đźŽŠ Amazing month! Gained {monthly_gain/1000:.1f}kg - Epic reward!"
                 )
         elif weight_mode == WEIGHT_MODE_MAINTAIN:
             abs_monthly = abs(monthly_change)
             if abs_monthly <= 500:  # Very stable month
                 result["monthly_reward"] = generate_item(rarity="Epic", story_id=story_id)
                 result["messages"].append(
-                    f"⚖️ Rock-solid month! (±{abs_monthly:.0f}g) Epic reward!"
+                    f"âš–ď¸Ź Rock-solid month! (Â±{abs_monthly:.0f}g) Epic reward!"
                 )
             elif abs_monthly <= 1000:  # Fairly stable
                 result["monthly_reward"] = generate_item(rarity="Rare", story_id=story_id)
                 result["messages"].append(
-                    f"⚖️ Good month! (±{abs_monthly:.0f}g) Rare reward!"
+                    f"âš–ď¸Ź Good month! (Â±{abs_monthly:.0f}g) Rare reward!"
                 )
         else:  # WEIGHT_MODE_LOSS
             if monthly_change >= WEIGHT_MONTHLY_LEGENDARY_THRESHOLD:
                 result["monthly_reward"] = generate_item(rarity="Legendary", story_id=story_id)
                 result["messages"].append(
-                    f"👑 MONTHLY LEGENDARY! Lost {monthly_change/1000:.1f}kg this month! "
+                    f"đź‘‘ MONTHLY LEGENDARY! Lost {monthly_change/1000:.1f}kg this month! "
                     f"(vs {month_ago_entry['date']})"
                 )
             elif monthly_change >= 1500:
                 result["monthly_reward"] = generate_item(rarity="Epic", story_id=story_id)
                 result["messages"].append(
-                    f"🎊 Amazing month! Lost {monthly_change/1000:.1f}kg - Epic reward!"
+                    f"đźŽŠ Amazing month! Lost {monthly_change/1000:.1f}kg - Epic reward!"
                 )
     
     return result
@@ -13400,11 +15415,11 @@ def format_weight_change(change_kg: float, unit: str = "kg") -> str:
         unit_str = "kg"
     
     if change > 0:
-        return f"↓ {change:.1f} {unit_str}"  # Lost weight (good)
+        return f"â†“ {change:.1f} {unit_str}"  # Lost weight (good)
     elif change < 0:
-        return f"↑ {abs(change):.1f} {unit_str}"  # Gained weight
+        return f"â†‘ {abs(change):.1f} {unit_str}"  # Gained weight
     else:
-        return f"→ 0 {unit_str}"  # No change
+        return f"â†’ 0 {unit_str}"  # No change
 
 
 # ============================================================================
@@ -13641,7 +15656,7 @@ def check_weight_streak_reward(weight_entries: list, achieved_milestones: list,
                 "streak_days": days,
                 "rarity": rarity,
                 "item": generate_item(rarity=rarity, story_id=story_id),
-                "message": f"🔥 {days}-Day Logging Streak! Earned a {rarity} item!",
+                "message": f"đź”Ą {days}-Day Logging Streak! Earned a {rarity} item!",
             }
     
     return None
@@ -13689,7 +15704,7 @@ def check_weight_milestones(weight_entries: list, goal: float,
                     "description": milestone["description"],
                     "rarity": milestone["rarity"],
                     "item": generate_item(rarity=milestone["rarity"], story_id=story_id),
-                    "message": f"🏆 Milestone: {milestone['name']}! ({milestone['description']}) - {milestone['rarity']} reward!",
+                    "message": f"đźŹ† Milestone: {milestone['name']}! ({milestone['description']}) - {milestone['rarity']} reward!",
                 })
         except Exception:
             # Skip milestone if check fails
@@ -13701,7 +15716,7 @@ def check_weight_milestones(weight_entries: list, goal: float,
 def check_weight_maintenance(weight_entries: list, goal: float, 
                              story_id: str = None) -> Optional[dict]:
     """
-    Check if user is in maintenance mode (at goal, staying within ±0.5kg).
+    Check if user is in maintenance mode (at goal, staying within Â±0.5kg).
     
     Args:
         weight_entries: List of weight entries  
@@ -13725,7 +15740,7 @@ def check_weight_maintenance(weight_entries: list, goal: float,
     
     current = sorted_entries[0]["weight"]
     
-    # Check if within ±0.5kg of goal
+    # Check if within Â±0.5kg of goal
     deviation = abs(current - goal)
     if deviation > 0.5:
         return None  # Not in maintenance range
@@ -13758,16 +15773,16 @@ def check_weight_maintenance(weight_entries: list, goal: float,
     # Determine reward based on maintenance streak
     if maintenance_days >= 30:
         rarity = "Legendary"
-        message = f"👑 30+ Days in Maintenance! Perfect control! Legendary reward!"
+        message = f"đź‘‘ 30+ Days in Maintenance! Perfect control! Legendary reward!"
     elif maintenance_days >= 14:
         rarity = "Epic"
-        message = f"🌟 2+ Weeks in Maintenance! Excellent stability! Epic reward!"
+        message = f"đźŚź 2+ Weeks in Maintenance! Excellent stability! Epic reward!"
     elif maintenance_days >= 7:
         rarity = "Rare"
-        message = f"💪 1 Week in Maintenance! Great job staying on target! Rare reward!"
+        message = f"đź’Ş 1 Week in Maintenance! Great job staying on target! Rare reward!"
     else:
         rarity = "Uncommon"
-        message = f"✅ Maintaining goal weight! ({deviation*1000:.0f}g from target) Uncommon reward!"
+        message = f"âś… Maintaining goal weight! ({deviation*1000:.0f}g from target) Uncommon reward!"
     
     return {
         "maintenance_days": maintenance_days,
@@ -13977,7 +15992,7 @@ def predict_goal_date(weight_entries: list, goal_weight: float,
     if abs(current_weight - goal_weight) <= 0.1:
         return {
             "status": "achieved",
-            "message": "🎉 You've reached your goal!",
+            "message": "đźŽ‰ You've reached your goal!",
             "days_remaining": 0,
             "predicted_date": None,
             "is_losing": goal_weight <= current_weight,
@@ -13995,7 +16010,7 @@ def predict_goal_date(weight_entries: list, goal_weight: float,
         if current_weight <= goal_weight:
             return {
                 "status": "achieved",
-                "message": "🎉 You've reached your goal!" if current_weight >= goal_weight - 0.1 else "🎉 You've exceeded your goal!",
+                "message": "đźŽ‰ You've reached your goal!" if current_weight >= goal_weight - 0.1 else "đźŽ‰ You've exceeded your goal!",
                 "days_remaining": 0,
                 "predicted_date": None,
                 "is_losing": True,
@@ -14006,7 +16021,7 @@ def predict_goal_date(weight_entries: list, goal_weight: float,
         if current_weight >= goal_weight:
             return {
                 "status": "achieved",
-                "message": "🎉 You've reached your goal!" if current_weight <= goal_weight + 0.1 else "🎉 You've exceeded your goal!",
+                "message": "đźŽ‰ You've reached your goal!" if current_weight <= goal_weight + 0.1 else "đźŽ‰ You've exceeded your goal!",
                 "days_remaining": 0,
                 "predicted_date": None,
                 "is_losing": False,
@@ -14108,7 +16123,7 @@ def predict_goal_date(weight_entries: list, goal_weight: float,
     
     return {
         "status": "on_track",
-        "message": f"🎯 Goal in ~{weeks} weeks ({predicted_date.strftime('%b %d, %Y')})",
+        "message": f"đźŽŻ Goal in ~{weeks} weeks ({predicted_date.strftime('%b %d, %Y')})",
         "rate_per_week": abs(slope) * 7 * 1000,  # grams per week
         "days_remaining": days_to_goal,
         "predicted_date": predicted_date,
@@ -14333,32 +16348,32 @@ def get_weekly_insights(weight_entries: list, achieved_milestones: list,
     insights = []
     
     if len(this_week_entries) == 7:
-        insights.append("🌟 Perfect week! Logged every day!")
+        insights.append("đźŚź Perfect week! Logged every day!")
     elif len(this_week_entries) >= 5:
-        insights.append(f"👍 Great consistency! {len(this_week_entries)}/7 days logged")
+        insights.append(f"đź‘Ť Great consistency! {len(this_week_entries)}/7 days logged")
     
     if week_change is not None:
         if week_change < -0.5:
-            insights.append(f"📉 Excellent! Down {abs(week_change)*1000:.0f}g from last week")
+            insights.append(f"đź“‰ Excellent! Down {abs(week_change)*1000:.0f}g from last week")
         elif week_change < 0:
-            insights.append(f"📉 Good progress! Down {abs(week_change)*1000:.0f}g")
+            insights.append(f"đź“‰ Good progress! Down {abs(week_change)*1000:.0f}g")
         elif week_change < 0.2:
-            insights.append("➡️ Weight stable this week")
+            insights.append("âžˇď¸Ź Weight stable this week")
         else:
-            insights.append(f"📈 Up {week_change*1000:.0f}g - let's refocus!")
+            insights.append(f"đź“ Up {week_change*1000:.0f}g - let's refocus!")
     
     if current_streak >= 7:
-        insights.append(f"🔥 {current_streak}-day logging streak!")
+        insights.append(f"đź”Ą {current_streak}-day logging streak!")
     
     if goal_progress is not None:
         if goal_progress >= 100:
-            insights.append("🎉 GOAL ACHIEVED!")
+            insights.append("đźŽ‰ GOAL ACHIEVED!")
         elif goal_progress >= 75:
-            insights.append(f"🏆 {goal_progress:.0f}% to goal - almost there!")
+            insights.append(f"đźŹ† {goal_progress:.0f}% to goal - almost there!")
         elif goal_progress >= 50:
-            insights.append(f"💪 {goal_progress:.0f}% to goal - halfway!")
+            insights.append(f"đź’Ş {goal_progress:.0f}% to goal - halfway!")
         elif goal_progress > 0:
-            insights.append(f"📊 {goal_progress:.0f}% progress towards goal")
+            insights.append(f"đź“Š {goal_progress:.0f}% progress towards goal")
     
     return {
         "has_data": True,
@@ -14376,11 +16391,11 @@ def get_weekly_insights(weight_entries: list, achieved_milestones: list,
 
 # Entry note tags
 WEIGHT_ENTRY_TAGS = [
-    ("morning", "🌅 Morning", "First thing after waking"),
-    ("evening", "🌙 Evening", "End of day"),
-    ("post_workout", "💪 Post-workout", "After exercise"),
-    ("fasted", "⏱️ Fasted", "Before eating"),
-    ("post_meal", "🍽️ Post-meal", "After eating"),
+    ("morning", "đźŚ… Morning", "First thing after waking"),
+    ("evening", "đźŚ™ Evening", "End of day"),
+    ("post_workout", "đź’Ş Post-workout", "After exercise"),
+    ("fasted", "âŹ±ď¸Ź Fasted", "Before eating"),
+    ("post_meal", "đźŤ˝ď¸Ź Post-meal", "After eating"),
 ]
 
 
@@ -14407,21 +16422,21 @@ def format_entry_note(note: str) -> str:
 # (activity_id, display_name, emoji, base_intensity)
 # base_intensity: 1.0 = low, 1.5 = moderate, 2.0 = high, 2.5 = very high
 ACTIVITY_TYPES = [
-    ("walking", "Walking", "🚶", 1.0),
-    ("jogging", "Jogging", "🏃", 1.5),
-    ("running", "Running", "🏃‍♂️", 2.0),
-    ("cycling", "Cycling", "🚴", 1.5),
-    ("swimming", "Swimming", "🏊", 2.0),
-    ("hiking", "Hiking", "🥾", 1.5),
-    ("strength", "Strength Training", "🏋️", 2.0),
-    ("yoga", "Yoga", "🧘", 1.0),
-    ("dance", "Dancing", "💃", 1.5),
-    ("sports", "Sports (General)", "⚽", 1.8),
-    ("hiit", "HIIT", "🔥", 2.5),
-    ("climbing", "Climbing", "🧗", 2.0),
-    ("martial_arts", "Martial Arts", "🥋", 2.0),
-    ("stretching", "Stretching", "🤸", 0.8),
-    ("other", "Other Activity", "🎯", 1.0),
+    ("walking", "Walking", "đźš¶", 1.0),
+    ("jogging", "Jogging", "đźŹ", 1.5),
+    ("running", "Running", "đźŹâ€Ťâ™‚ď¸Ź", 2.0),
+    ("cycling", "Cycling", "đźš´", 1.5),
+    ("swimming", "Swimming", "đźŹŠ", 2.0),
+    ("hiking", "Hiking", "đźĄľ", 1.5),
+    ("strength", "Strength Training", "đźŹ‹ď¸Ź", 2.0),
+    ("yoga", "Yoga", "đź§", 1.0),
+    ("dance", "Dancing", "đź’", 1.5),
+    ("sports", "Sports (General)", "âš˝", 1.8),
+    ("hiit", "HIIT", "đź”Ą", 2.5),
+    ("climbing", "Climbing", "đź§—", 2.0),
+    ("martial_arts", "Martial Arts", "đźĄ‹", 2.0),
+    ("stretching", "Stretching", "đź¤¸", 0.8),
+    ("other", "Other Activity", "đźŽŻ", 1.0),
 ]
 
 # Intensity levels that user can select
@@ -14540,7 +16555,7 @@ def get_activity_reward_rarity(effective_minutes: float) -> Optional[str]:
         return None
     
     # Determine center tier based on effective minutes
-    # 8min → Common-centered, 20min → Uncommon, 40min → Rare, 70min → Epic, 100min → Legendary (75%), 120min+ → 100% Legendary
+    # 8min â†’ Common-centered, 20min â†’ Uncommon, 40min â†’ Rare, 70min â†’ Epic, 100min â†’ Legendary (75%), 120min+ â†’ 100% Legendary
     if effective_minutes >= 120:
         return "Legendary"  # 100% Legendary for 120+ effective minutes
     elif effective_minutes >= 100:
@@ -14677,7 +16692,7 @@ def check_activity_entry_reward(duration_minutes: int, activity_id: str,
     
     if duration_minutes < ACTIVITY_MIN_DURATION:
         result["messages"].append(
-            f"⏱️ Need at least {ACTIVITY_MIN_DURATION} minutes for rewards. "
+            f"âŹ±ď¸Ź Need at least {ACTIVITY_MIN_DURATION} minutes for rewards. "
             f"You logged {duration_minutes} min."
         )
         return result
@@ -14693,7 +16708,7 @@ def check_activity_entry_reward(duration_minutes: int, activity_id: str,
         
         activity = get_activity_type(activity_id)
         activity_name = activity[1] if activity else "Activity"
-        activity_emoji = activity[2] if activity else "🎯"
+        activity_emoji = activity[2] if activity else "đźŽŻ"
         
         intensity = get_intensity_level(intensity_id)
         intensity_name = intensity[1] if intensity else "Moderate"
@@ -14705,7 +16720,7 @@ def check_activity_entry_reward(duration_minutes: int, activity_id: str,
     else:
         # Activity logged but didn't earn reward (very low effective minutes)
         activity = get_activity_type(activity_id)
-        activity_emoji = activity[2] if activity else "🎯"
+        activity_emoji = activity[2] if activity else "đźŽŻ"
         result["messages"].append(
             f"{activity_emoji} Activity logged! ({effective:.0f} effective min - need 8+ for item rewards)"
         )
@@ -14736,7 +16751,7 @@ def check_activity_streak_reward(activity_entries: list, achieved_milestones: li
                 "streak_days": days,
                 "name": name,
                 "item": generate_item(rarity=rarity, story_id=story_id),
-                "message": f"🔥 {days}-day activity streak! Earned a {rarity} item!",
+                "message": f"đź”Ą {days}-day activity streak! Earned a {rarity} item!",
             }
     
     return None
@@ -14796,7 +16811,7 @@ def check_activity_milestones(activity_entries: list, achieved_milestones: list,
                 "name": milestone["name"],
                 "description": milestone["description"],
                 "item": generate_item(rarity=milestone["rarity"], story_id=story_id),
-                "message": f"🏆 {milestone['name']}! {milestone['description']}",
+                "message": f"đźŹ† {milestone['name']}! {milestone['description']}",
             })
     
     return new_milestones
@@ -14938,36 +16953,36 @@ def format_activity_duration(minutes: int) -> str:
 # Chronotypes with recommended sleep windows
 # (chronotype_id, display_name, emoji, optimal_bedtime_start, optimal_bedtime_end, description)
 SLEEP_CHRONOTYPES = [
-    ("early_bird", "Early Bird (Lark)", "🌅", "21:00", "22:30", 
+    ("early_bird", "Early Bird (Lark)", "đźŚ…", "21:00", "22:30", 
      "Naturally wake early. Optimal bedtime: 9-10:30 PM"),
-    ("moderate", "Moderate", "⏰", "22:00", "23:30", 
+    ("moderate", "Moderate", "âŹ°", "22:00", "23:30", 
      "Balanced schedule. Optimal bedtime: 10-11:30 PM"),
-    ("night_owl", "Night Owl", "🦉", "23:00", "00:30", 
+    ("night_owl", "Night Owl", "đź¦‰", "23:00", "00:30", 
      "Naturally stay up late. Optimal bedtime: 11 PM-12:30 AM"),
 ]
 
 # Sleep quality factors user can report
 # (quality_id, display_name, emoji, score_multiplier)
 SLEEP_QUALITY_FACTORS = [
-    ("excellent", "Excellent", "😴💤", 1.3),
-    ("good", "Good", "😊", 1.1),
-    ("fair", "Fair", "😐", 1.0),
-    ("poor", "Poor", "😓", 0.8),
-    ("terrible", "Terrible", "😵", 0.6),
+    ("excellent", "Excellent", "đź´đź’¤", 1.3),
+    ("good", "Good", "đźŠ", 1.1),
+    ("fair", "Fair", "đź", 1.0),
+    ("poor", "Poor", "đź“", 0.8),
+    ("terrible", "Terrible", "đźµ", 0.6),
 ]
 
 # Sleep disruption tags
 # (tag_id, display_name, emoji, impact)
 SLEEP_DISRUPTION_TAGS = [
-    ("none", "No disruptions", "✅", 0),
-    ("woke_once", "Woke once", "1️⃣", -5),
-    ("woke_multiple", "Woke multiple times", "🔄", -15),
-    ("nightmares", "Bad dreams", "😰", -10),
-    ("noise", "Noise disruption", "🔊", -10),
-    ("stress", "Stress/anxiety", "😟", -15),
-    ("late_caffeine", "Late caffeine", "☕", -10),
-    ("late_screen", "Late screen time", "📱", -10),
-    ("alcohol", "Alcohol", "🍷", -15),
+    ("none", "No disruptions", "âś…", 0),
+    ("woke_once", "Woke once", "1ď¸ŹâŁ", -5),
+    ("woke_multiple", "Woke multiple times", "đź”„", -15),
+    ("nightmares", "Bad dreams", "đź°", -10),
+    ("noise", "Noise disruption", "đź”Š", -10),
+    ("stress", "Stress/anxiety", "đźź", -15),
+    ("late_caffeine", "Late caffeine", "â•", -10),
+    ("late_screen", "Late screen time", "đź“±", -10),
+    ("alcohol", "Alcohol", "đźŤ·", -15),
 ]
 
 # Recommended sleep duration by age (hours)
@@ -15018,7 +17033,7 @@ SLEEP_MILESTONES = [
      "check": "single_score", "threshold": 95, "rarity": "Epic"},
     {"id": "early_bedtime_5", "name": "Early Riser", "description": "5 nights in bed before your optimal time",
      "check": "early_bedtime_count", "threshold": 5, "rarity": "Uncommon"},
-    {"id": "consistent_week", "name": "Clockwork", "description": "Same bedtime (±30min) for 7 days",
+    {"id": "consistent_week", "name": "Clockwork", "description": "Same bedtime (Â±30min) for 7 days",
      "check": "consistent_week", "rarity": "Rare"},
     {"id": "quality_streak_7", "name": "Quality Sleeper", "description": "7 days of Good or better quality",
      "check": "quality_streak", "threshold": 7, "rarity": "Rare"},
@@ -15099,7 +17114,7 @@ def calculate_bedtime_score(bedtime: str, chronotype_id: str) -> tuple:
     
     # Perfect if within optimal window
     if optimal_start <= bedtime_mins <= optimal_end:
-        return (100, "🌟 Perfect bedtime!")
+        return (100, "đźŚź Perfect bedtime!")
     
     # Calculate deviation in minutes
     if bedtime_mins < optimal_start:
@@ -15114,13 +17129,13 @@ def calculate_bedtime_score(bedtime: str, chronotype_id: str) -> tuple:
     score = max(0, 100 - penalty)
     
     if deviation <= 30:
-        msg = f"👍 Close to optimal ({deviation}min {direction})"
+        msg = f"đź‘Ť Close to optimal ({deviation}min {direction})"
     elif deviation <= 60:
-        msg = f"⚠️ {deviation}min {direction} - try adjusting"
+        msg = f"âš ď¸Ź {deviation}min {direction} - try adjusting"
     else:
         hours = deviation // 60
         mins = deviation % 60
-        msg = f"😴 {hours}h {mins}m {direction} - affects sleep quality"
+        msg = f"đź´ {hours}h {mins}m {direction} - affects sleep quality"
     
     return (score, msg)
 
@@ -15156,24 +17171,24 @@ def calculate_duration_score(sleep_hours: float, age: int = None) -> tuple:
         rec_text = "7-9h"
     
     if opt_low <= sleep_hours <= opt_high:
-        return (100, f"🌟 Perfect! {sleep_hours:.1f}h is optimal ({rec_text} recommended)")
+        return (100, f"đźŚź Perfect! {sleep_hours:.1f}h is optimal ({rec_text} recommended)")
     
     if sleep_hours < min_hours:
         # Sleep deprived - significant penalty
         deficit = min_hours - sleep_hours
         score = max(0, 100 - int(deficit * 20))  # -20 per hour deficit
-        return (score, f"😴 Sleep deprived! {sleep_hours:.1f}h (need {min_hours}+)")
+        return (score, f"đź´ Sleep deprived! {sleep_hours:.1f}h (need {min_hours}+)")
     
     if min_hours <= sleep_hours < opt_low:
         # Slightly under optimal
-        return (85, f"👍 Good ({sleep_hours:.1f}h), aim for {opt_low}+")
+        return (85, f"đź‘Ť Good ({sleep_hours:.1f}h), aim for {opt_low}+")
     
     if opt_high < sleep_hours <= max_hours:
         # Slightly over optimal (not necessarily bad)
-        return (90, f"💤 Long sleep ({sleep_hours:.1f}h) - typically fine")
+        return (90, f"đź’¤ Long sleep ({sleep_hours:.1f}h) - typically fine")
     
     # Very long sleep - might indicate health issues
-    return (70, f"⚠️ Very long sleep ({sleep_hours:.1f}h) - consult doctor if frequent")
+    return (70, f"âš ď¸Ź Very long sleep ({sleep_hours:.1f}h) - consult doctor if frequent")
 
 
 def calculate_sleep_score(sleep_hours: float, bedtime: str, quality_id: str,
@@ -15510,9 +17525,9 @@ def can_log_water(water_entries: list, current_time: Optional[str] = None,
     
     # Check daily limit (using perk-modified cap)
     if glasses_today >= daily_cap:
-        reason = f"🎯 Daily goal complete! You've had {daily_cap} glasses today."
+        reason = f"đźŽŻ Daily goal complete! You've had {daily_cap} glasses today."
         if cap_bonus:
-            reason += " ✨ (Entity perk bonus!)"
+            reason += " âś¨ (Entity perk bonus!)"
         return {
             "can_log": False,
             "reason": reason,
@@ -15533,12 +17548,12 @@ def can_log_water(water_entries: list, current_time: Optional[str] = None,
             
             if now < next_available:
                 minutes_remaining = int((next_available - now).total_seconds() / 60)
-                reason = f"⏳ Wait {minutes_remaining} min for healthy absorption."
+                reason = f"âŹł Wait {minutes_remaining} min for healthy absorption."
                 if cooldown_bonus:
                     original_remaining = int((last_time + timedelta(hours=HYDRATION_MIN_INTERVAL_HOURS) - now).total_seconds() / 60)
                     saved = original_remaining - minutes_remaining
                     if saved > 0:
-                        reason += f" ✨ (Saved {saved} min from perks!)"
+                        reason += f" âś¨ (Saved {saved} min from perks!)"
                 return {
                     "can_log": False,
                     "reason": reason,
@@ -15595,10 +17610,10 @@ def check_water_entry_reward(
             glass_item["source"] = f"hydration_glass_{new_glass_number}"
             result["glass_reward"] = glass_item
             result["items"].append(glass_item)
-            result["messages"].append(f"💧 Glass #{new_glass_number} logged!")
+            result["messages"].append(f"đź’§ Glass #{new_glass_number} logged!")
             
             if new_glass_number == HYDRATION_MAX_DAILY_GLASSES:
-                result["messages"].append("🎯 Daily hydration complete! Great job!")
+                result["messages"].append("đźŽŻ Daily hydration complete! Great job!")
     
     # Check streak bonus (only when hitting 5 glasses)
     if glasses_today < HYDRATION_MAX_DAILY_GLASSES <= new_glass_number and streak_days > 0:
@@ -15608,7 +17623,7 @@ def check_water_entry_reward(
             streak_item["source"] = "hydration_streak"
             result["streak_bonus"] = streak_item
             result["items"].append(streak_item)
-            result["messages"].append(f"🔥 Hydration streak: {streak_days + 1} days!")
+            result["messages"].append(f"đź”Ą Hydration streak: {streak_days + 1} days!")
     
     return result
 
@@ -15900,7 +17915,7 @@ def check_sleep_entry_reward(sleep_hours: float, bedtime: str, quality_id: str,
     
     if sleep_hours < 3:
         result["messages"].append(
-            "😴 Less than 3 hours tracked. Naps are great but log full nights for rewards!"
+            "đź´ Less than 3 hours tracked. Naps are great but log full nights for rewards!"
         )
         return result
     
@@ -15917,12 +17932,12 @@ def check_sleep_entry_reward(sleep_hours: float, bedtime: str, quality_id: str,
     if rarity:
         result["reward"] = generate_item(rarity=rarity, story_id=story_id)
         result["messages"].append(
-            f"🌙 {sleep_hours:.1f}h sleep with {score_info['total_score']} score! "
+            f"đźŚ™ {sleep_hours:.1f}h sleep with {score_info['total_score']} score! "
             f"Earned a {rarity} item!"
         )
     else:
         result["messages"].append(
-            f"🌙 Sleep logged! Score: {score_info['total_score']}/100 "
+            f"đźŚ™ Sleep logged! Score: {score_info['total_score']}/100 "
             f"(need 50+ for rewards)"
         )
     
@@ -15956,7 +17971,7 @@ def check_sleep_streak_reward(sleep_entries: list, achieved_milestones: list,
                 "streak_days": days,
                 "name": name,
                 "item": generate_item(rarity=rarity, story_id=story_id),
-                "message": f"🌙 {days}-night sleep streak! Earned a {rarity} item!",
+                "message": f"đźŚ™ {days}-night sleep streak! Earned a {rarity} item!",
             }
     
     return None
@@ -16035,7 +18050,7 @@ def check_sleep_milestones(sleep_entries: list, achieved_milestones: list,
             achieved = count >= milestone.get("threshold", 5)
         
         elif check == "consistent_week":
-            # Check for 7 consecutive days with consistent bedtime (±30min)
+            # Check for 7 consecutive days with consistent bedtime (Â±30min)
             achieved = _check_consistent_bedtime_week(sleep_entries)
         
         elif check == "quality_streak":
@@ -16049,7 +18064,7 @@ def check_sleep_milestones(sleep_entries: list, achieved_milestones: list,
                 "name": milestone["name"],
                 "description": milestone["description"],
                 "item": generate_item(rarity=milestone["rarity"], story_id=story_id),
-                "message": f"🏆 {milestone['name']}! {milestone['description']}",
+                "message": f"đźŹ† {milestone['name']}! {milestone['description']}",
             })
     
     return new_milestones
@@ -16309,24 +18324,24 @@ def get_sleep_recommendation(chronotype_id: str) -> dict:
     tips = []
     if chronotype_id == "early_bird":
         tips = [
-            "🌅 Your natural rhythm favors early mornings",
-            "⏰ Wind down starting at 8:30 PM",
-            "📵 Avoid screens after 9 PM",
-            "🌙 Aim to be in bed by 10 PM latest",
+            "đźŚ… Your natural rhythm favors early mornings",
+            "âŹ° Wind down starting at 8:30 PM",
+            "đź“µ Avoid screens after 9 PM",
+            "đźŚ™ Aim to be in bed by 10 PM latest",
         ]
     elif chronotype_id == "night_owl":
         tips = [
-            "🦉 Your natural rhythm is later than average",
-            "⏰ Try to avoid very late nights (after 1 AM)",
-            "☀️ Get bright light in the morning to help regulate",
-            "🏃 Exercise in the afternoon, not evening",
+            "đź¦‰ Your natural rhythm is later than average",
+            "âŹ° Try to avoid very late nights (after 1 AM)",
+            "â€ď¸Ź Get bright light in the morning to help regulate",
+            "đźŹ Exercise in the afternoon, not evening",
         ]
     else:
         tips = [
-            "⏰ You have a balanced sleep rhythm",
-            "🌙 Aim for bed by 11:30 PM most nights",
-            "📵 Start winding down 1 hour before bed",
-            "☀️ Consistent wake times help sleep quality",
+            "âŹ° You have a balanced sleep rhythm",
+            "đźŚ™ Aim for bed by 11:30 PM most nights",
+            "đź“µ Start winding down 1 hour before bed",
+            "â€ď¸Ź Consistent wake times help sleep quality",
         ]
     
     return {
@@ -16398,23 +18413,23 @@ def get_level_from_xp(total_xp: int) -> tuple:
 
 # Level titles
 LEVEL_TITLES = {
-    1: ("Novice", "🌱"),
-    5: ("Apprentice", "📚"),
-    10: ("Focused", "🎯"),
-    15: ("Dedicated", "⭐"),
-    20: ("Disciplined", "💪"),
-    25: ("Expert", "🏆"),
-    30: ("Master", "👑"),
-    40: ("Grandmaster", "🔮"),
-    50: ("Legend", "⚡"),
-    75: ("Mythic", "🌟"),
-    100: ("Transcendent", "✨"),
+    1: ("Novice", "đźŚ±"),
+    5: ("Apprentice", "đź“š"),
+    10: ("Focused", "đźŽŻ"),
+    15: ("Dedicated", "â­"),
+    20: ("Disciplined", "đź’Ş"),
+    25: ("Expert", "đźŹ†"),
+    30: ("Master", "đź‘‘"),
+    40: ("Grandmaster", "đź”®"),
+    50: ("Legend", "âšˇ"),
+    75: ("Mythic", "đźŚź"),
+    100: ("Transcendent", "âś¨"),
 }
 
 
 def get_level_title(level: int) -> tuple:
     """Get the title and emoji for a given level."""
-    title = ("Novice", "🌱")
+    title = ("Novice", "đźŚ±")
     for req_level, info in sorted(LEVEL_TITLES.items()):
         if level >= req_level:
             title = info
@@ -16477,7 +18492,7 @@ def calculate_session_xp(duration_minutes: int, streak_days: int = 0,
         lucky_bonus_xp = 0
         subtotal_after_gear = subtotal
     
-    # ✨ ENTITY PERK BONUS: Apply XP bonuses from collected entities
+    # âś¨ ENTITY PERK BONUS: Apply XP bonuses from collected entities
     entity_xp_bonus = 0
     entity_xp_breakdown = []
     if adhd_buster:
@@ -16534,7 +18549,7 @@ def award_xp(adhd_buster: dict, xp_amount: int, source: str = "unknown") -> dict
     if not isinstance(xp_amount, int) or xp_amount < 0:
         xp_amount = max(0, int(xp_amount)) if xp_amount else 0
     
-    # 🏙️ CITY BONUS: Library XP bonus (percentage)
+    # đźŹ™ď¸Ź CITY BONUS: Library XP bonus (percentage)
     city_xp_bonus = 0
     base_xp = xp_amount
     city_bonuses = _safe_get_city_bonuses(adhd_buster)
@@ -16601,40 +18616,40 @@ def award_xp(adhd_buster: dict, xp_amount: int, source: str = "unknown") -> dict
 
 DAILY_LOGIN_REWARDS = [
     # Day 1-7 (Week 1)
-    {"day": 1, "type": "xp", "amount": 25, "description": "25 XP", "emoji": "✨"},
-    {"day": 2, "type": "item", "rarity": "Common", "description": "Common Item", "emoji": "📦"},
-    {"day": 3, "type": "xp", "amount": 50, "description": "50 XP", "emoji": "✨"},
-    {"day": 4, "type": "streak_freeze", "amount": 1, "description": "Streak Freeze Token", "emoji": "🧊"},
-    {"day": 5, "type": "item", "rarity": "Uncommon", "description": "Uncommon Item", "emoji": "📦"},
-    {"day": 6, "type": "xp", "amount": 75, "description": "75 XP", "emoji": "✨"},
-    {"day": 7, "type": "mystery_box", "tier": "silver", "description": "Silver Mystery Box", "emoji": "🎁"},
+    {"day": 1, "type": "xp", "amount": 25, "description": "25 XP", "emoji": "âś¨"},
+    {"day": 2, "type": "item", "rarity": "Common", "description": "Common Item", "emoji": "đź“¦"},
+    {"day": 3, "type": "xp", "amount": 50, "description": "50 XP", "emoji": "âś¨"},
+    {"day": 4, "type": "streak_freeze", "amount": 1, "description": "Streak Freeze Token", "emoji": "đź§Š"},
+    {"day": 5, "type": "item", "rarity": "Uncommon", "description": "Uncommon Item", "emoji": "đź“¦"},
+    {"day": 6, "type": "xp", "amount": 75, "description": "75 XP", "emoji": "âś¨"},
+    {"day": 7, "type": "mystery_box", "tier": "silver", "description": "Silver Mystery Box", "emoji": "đźŽ"},
     
     # Day 8-14 (Week 2)
-    {"day": 8, "type": "xp", "amount": 50, "description": "50 XP", "emoji": "✨"},
-    {"day": 9, "type": "item", "rarity": "Uncommon", "description": "Uncommon Item", "emoji": "📦"},
-    {"day": 10, "type": "multiplier", "amount": 1.5, "duration": 60, "description": "1.5x XP (1 hour)", "emoji": "⚡"},
-    {"day": 11, "type": "xp", "amount": 100, "description": "100 XP", "emoji": "✨"},
-    {"day": 12, "type": "streak_freeze", "amount": 1, "description": "Streak Freeze Token", "emoji": "🧊"},
-    {"day": 13, "type": "item", "rarity": "Rare", "description": "Rare Item", "emoji": "📦"},
-    {"day": 14, "type": "mystery_box", "tier": "gold", "description": "Gold Mystery Box", "emoji": "🎁"},
+    {"day": 8, "type": "xp", "amount": 50, "description": "50 XP", "emoji": "âś¨"},
+    {"day": 9, "type": "item", "rarity": "Uncommon", "description": "Uncommon Item", "emoji": "đź“¦"},
+    {"day": 10, "type": "multiplier", "amount": 1.5, "duration": 60, "description": "1.5x XP (1 hour)", "emoji": "âšˇ"},
+    {"day": 11, "type": "xp", "amount": 100, "description": "100 XP", "emoji": "âś¨"},
+    {"day": 12, "type": "streak_freeze", "amount": 1, "description": "Streak Freeze Token", "emoji": "đź§Š"},
+    {"day": 13, "type": "item", "rarity": "Rare", "description": "Rare Item", "emoji": "đź“¦"},
+    {"day": 14, "type": "mystery_box", "tier": "gold", "description": "Gold Mystery Box", "emoji": "đźŽ"},
     
     # Day 15-21 (Week 3)
-    {"day": 15, "type": "xp", "amount": 75, "description": "75 XP", "emoji": "✨"},
-    {"day": 16, "type": "item", "rarity": "Rare", "description": "Rare Item", "emoji": "📦"},
-    {"day": 17, "type": "xp", "amount": 100, "description": "100 XP", "emoji": "✨"},
-    {"day": 18, "type": "streak_freeze", "amount": 2, "description": "2 Streak Freeze Tokens", "emoji": "🧊"},
-    {"day": 19, "type": "multiplier", "amount": 2.0, "duration": 60, "description": "2x XP (1 hour)", "emoji": "⚡"},
-    {"day": 20, "type": "item", "rarity": "Epic", "description": "Epic Item", "emoji": "📦"},
-    {"day": 21, "type": "mystery_box", "tier": "diamond", "description": "Diamond Mystery Box", "emoji": "💎"},
+    {"day": 15, "type": "xp", "amount": 75, "description": "75 XP", "emoji": "âś¨"},
+    {"day": 16, "type": "item", "rarity": "Rare", "description": "Rare Item", "emoji": "đź“¦"},
+    {"day": 17, "type": "xp", "amount": 100, "description": "100 XP", "emoji": "âś¨"},
+    {"day": 18, "type": "streak_freeze", "amount": 2, "description": "2 Streak Freeze Tokens", "emoji": "đź§Š"},
+    {"day": 19, "type": "multiplier", "amount": 2.0, "duration": 60, "description": "2x XP (1 hour)", "emoji": "âšˇ"},
+    {"day": 20, "type": "item", "rarity": "Epic", "description": "Epic Item", "emoji": "đź“¦"},
+    {"day": 21, "type": "mystery_box", "tier": "diamond", "description": "Diamond Mystery Box", "emoji": "đź’Ž"},
     
     # Day 22-28 (Week 4)
-    {"day": 22, "type": "xp", "amount": 100, "description": "100 XP", "emoji": "✨"},
-    {"day": 23, "type": "item", "rarity": "Rare", "description": "Rare Item", "emoji": "📦"},
-    {"day": 24, "type": "streak_freeze", "amount": 2, "description": "2 Streak Freeze Tokens", "emoji": "🧊"},
-    {"day": 25, "type": "xp", "amount": 150, "description": "150 XP", "emoji": "✨"},
-    {"day": 26, "type": "multiplier", "amount": 2.0, "duration": 120, "description": "2x XP (2 hours)", "emoji": "⚡"},
-    {"day": 27, "type": "item", "rarity": "Epic", "description": "Epic Item", "emoji": "📦"},
-    {"day": 28, "type": "mystery_box", "tier": "legendary", "description": "Legendary Mystery Box!", "emoji": "🌟"},
+    {"day": 22, "type": "xp", "amount": 100, "description": "100 XP", "emoji": "âś¨"},
+    {"day": 23, "type": "item", "rarity": "Rare", "description": "Rare Item", "emoji": "đź“¦"},
+    {"day": 24, "type": "streak_freeze", "amount": 2, "description": "2 Streak Freeze Tokens", "emoji": "đź§Š"},
+    {"day": 25, "type": "xp", "amount": 150, "description": "150 XP", "emoji": "âś¨"},
+    {"day": 26, "type": "multiplier", "amount": 2.0, "duration": 120, "description": "2x XP (2 hours)", "emoji": "âšˇ"},
+    {"day": 27, "type": "item", "rarity": "Epic", "description": "Epic Item", "emoji": "đź“¦"},
+    {"day": 28, "type": "mystery_box", "tier": "legendary", "description": "Legendary Mystery Box!", "emoji": "đźŚź"},
 ]
 
 
@@ -16657,7 +18672,7 @@ def get_daily_login_reward(login_streak: int) -> dict:
             }
     
     # Fallback
-    return {"day": day_in_cycle, "type": "xp", "amount": 25, "description": "25 XP", "emoji": "✨", "login_streak": login_streak, "day_in_cycle": day_in_cycle, "cycle_number": 1}
+    return {"day": day_in_cycle, "type": "xp", "amount": 25, "description": "25 XP", "emoji": "âś¨", "login_streak": login_streak, "day_in_cycle": day_in_cycle, "cycle_number": 1}
 
 
 def get_work_day_date(dt: datetime = None) -> str:
@@ -16723,7 +18738,7 @@ def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
                     adhd_buster["login_streak"] = adhd_buster.get("login_streak", 0) + 1
                     adhd_buster["streak_freezes_used"] = adhd_buster.get("streak_freezes_used", 0) + 1
                 else:
-                    # ✨ ENTITY PERK: Check for streak_save perk (chance to save streak)
+                    # âś¨ ENTITY PERK: Check for streak_save perk (chance to save streak)
                     streak_saved = False
                     if days_diff == 2:  # Only works for 1-day gap
                         luck_perks = get_entity_luck_perks(adhd_buster)
@@ -16734,7 +18749,7 @@ def claim_daily_login(adhd_buster: dict, story_id: str = None) -> dict:
                                 streak_saved = True
                                 adhd_buster["login_streak"] = adhd_buster.get("login_streak", 0) + 1
                                 adhd_buster["entity_streak_saves"] = adhd_buster.get("entity_streak_saves", 0) + 1
-                                print(f"[Entity Perks] ✨ Streak saved by entity perk! ({streak_save_chance}% chance)")
+                                print(f"[Entity Perks] âś¨ Streak saved by entity perk! ({streak_save_chance}% chance)")
                     
                     if not streak_saved:
                         # Reset streak
@@ -16830,7 +18845,7 @@ def get_active_multiplier(adhd_buster: dict) -> float:
 MYSTERY_BOX_TIERS = {
     "bronze": {
         "name": "Bronze Mystery Box",
-        "emoji": "🥉",
+        "emoji": "đźĄ‰",
         "color": "#CD7F32",
         "xp_range": (10, 30),
         "item_chances": {"Common": 70, "Uncommon": 25, "Rare": 5},
@@ -16839,7 +18854,7 @@ MYSTERY_BOX_TIERS = {
     },
     "silver": {
         "name": "Silver Mystery Box", 
-        "emoji": "🥈",
+        "emoji": "đźĄ",
         "color": "#C0C0C0",
         "xp_range": (25, 75),
         "item_chances": {"Common": 40, "Uncommon": 40, "Rare": 15, "Epic": 5},
@@ -16848,7 +18863,7 @@ MYSTERY_BOX_TIERS = {
     },
     "gold": {
         "name": "Gold Mystery Box",
-        "emoji": "🥇",
+        "emoji": "đźĄ‡",
         "color": "#FFD700",
         "xp_range": (50, 150),
         "item_chances": {"Uncommon": 30, "Rare": 40, "Epic": 25, "Legendary": 5},
@@ -16857,7 +18872,7 @@ MYSTERY_BOX_TIERS = {
     },
     "diamond": {
         "name": "Diamond Mystery Box",
-        "emoji": "💎",
+        "emoji": "đź’Ž",
         "color": "#B9F2FF",
         "xp_range": (100, 300),
         "item_chances": {"Rare": 30, "Epic": 45, "Legendary": 25},
@@ -16866,7 +18881,7 @@ MYSTERY_BOX_TIERS = {
     },
     "legendary": {
         "name": "Legendary Mystery Box",
-        "emoji": "🌟",
+        "emoji": "đźŚź",
         "color": "#FF9800",
         "xp_range": (200, 500),
         "item_chances": {"Epic": 40, "Legendary": 60},
@@ -16901,7 +18916,7 @@ def open_mystery_box(adhd_buster: dict, tier: str = "bronze", story_id: str = No
     xp_result = award_xp(adhd_buster, xp_amount, f"mystery_box_{tier}")
     result["xp"] = xp_amount
     result["xp_result"] = xp_result
-    result["rewards_summary"].append(f"✨ {xp_amount} XP")
+    result["rewards_summary"].append(f"âś¨ {xp_amount} XP")
     
     # Random items
     num_items = random.randint(*box["item_count"])
@@ -16936,7 +18951,7 @@ def open_mystery_box(adhd_buster: dict, tier: str = "bronze", story_id: str = No
     if random.randint(1, 100) <= box["streak_freeze_chance"]:
         adhd_buster["streak_freeze_tokens"] = adhd_buster.get("streak_freeze_tokens", 0) + 1
         result["streak_freeze"] = 1
-        result["rewards_summary"].append("🧊 Streak Freeze Token")
+        result["rewards_summary"].append("đź§Š Streak Freeze Token")
     
     return result
 
@@ -17379,30 +19394,30 @@ def calculate_combo_multiplier(adhd_buster: dict) -> dict:
     
     if sessions_today >= 5:
         multiplier *= 1.5
-        bonuses.append(("🔥 5+ Sessions", 1.5))
+        bonuses.append(("đź”Ą 5+ Sessions", 1.5))
     elif sessions_today >= 3:
         multiplier *= 1.25
-        bonuses.append(("⚡ 3+ Sessions", 1.25))
+        bonuses.append(("âšˇ 3+ Sessions", 1.25))
     
     # Login streak
     login_streak = adhd_buster.get("login_streak", 0)
     if login_streak >= 30:
         multiplier *= 1.5
-        bonuses.append(("🏆 30-Day Streak", 1.5))
+        bonuses.append(("đźŹ† 30-Day Streak", 1.5))
     elif login_streak >= 7:
         multiplier *= 1.25
-        bonuses.append(("📅 Week Streak", 1.25))
+        bonuses.append(("đź“… Week Streak", 1.25))
     
     # Active XP multiplier from rewards
     active_mult = get_active_multiplier(adhd_buster)
     if active_mult > 1.0:
         multiplier *= active_mult
-        bonuses.append((f"⚡ Bonus Active", active_mult))
+        bonuses.append((f"âšˇ Bonus Active", active_mult))
     
     return {
         "total_multiplier": round(multiplier, 2),
         "bonuses": bonuses,
-        "description": " × ".join([b[0] for b in bonuses]) if bonuses else "No active bonuses"
+        "description": " Ă— ".join([b[0] for b in bonuses]) if bonuses else "No active bonuses"
     }
 
 
@@ -17424,7 +19439,7 @@ def get_all_progress_bars(adhd_buster: dict) -> list:
     title, emoji = get_level_title(level)
     progress_bars.append({
         "id": "level",
-        "label": f"Level {level} → {level + 1}",
+        "label": f"Level {level} â†’ {level + 1}",
         "sublabel": f"{emoji} {title}",
         "current": xp_in_level,
         "target": xp_needed,
@@ -17554,50 +19569,50 @@ def get_challenge_progress_bars(adhd_buster: dict) -> list:
 
 CELEBRATION_MESSAGES = {
     "level_up": [
-        "🎉 LEVEL UP! You've reached Level {level}!",
-        "⬆️ Incredible! Level {level} achieved!",
-        "🌟 You're now Level {level}! Keep it up!",
-        "🚀 Level {level}! Your focus is legendary!",
+        "đźŽ‰ LEVEL UP! You've reached Level {level}!",
+        "â¬†ď¸Ź Incredible! Level {level} achieved!",
+        "đźŚź You're now Level {level}! Keep it up!",
+        "đźš€ Level {level}! Your focus is legendary!",
     ],
     "title_unlock": [
-        "👑 New Title Unlocked: {title}!",
-        "🏆 You've earned the title: {title}!",
-        "⭐ Congratulations, {title}!",
+        "đź‘‘ New Title Unlocked: {title}!",
+        "đźŹ† You've earned the title: {title}!",
+        "â­ Congratulations, {title}!",
     ],
     "streak_milestone": [
-        "🔥 {days}-Day Streak! You're on fire!",
-        "📅 Amazing! {days} days in a row!",
-        "💪 {days}-day streak! Unstoppable!",
+        "đź”Ą {days}-Day Streak! You're on fire!",
+        "đź“… Amazing! {days} days in a row!",
+        "đź’Ş {days}-day streak! Unstoppable!",
     ],
     "challenge_complete": [
-        "✅ Challenge Complete: {title}!",
-        "🎯 You crushed it! {title} done!",
-        "⚡ {title} conquered!",
+        "âś… Challenge Complete: {title}!",
+        "đźŽŻ You crushed it! {title} done!",
+        "âšˇ {title} conquered!",
     ],
     "mystery_box": [
-        "🎁 Mystery Box opened!",
-        "✨ Let's see what's inside...",
-        "🎊 Rewards incoming!",
+        "đźŽ Mystery Box opened!",
+        "âś¨ Let's see what's inside...",
+        "đźŽŠ Rewards incoming!",
     ],
     "rare_item": [
-        "💎 Rare drop! {item_name}!",
-        "✨ Lucky find: {item_name}!",
+        "đź’Ž Rare drop! {item_name}!",
+        "âś¨ Lucky find: {item_name}!",
     ],
     "epic_item": [
-        "🌟 EPIC DROP! {item_name}!",
-        "⚡ Incredible! {item_name}!",
+        "đźŚź EPIC DROP! {item_name}!",
+        "âšˇ Incredible! {item_name}!",
     ],
     "legendary_item": [
-        "🌟✨ LEGENDARY! {item_name}! ✨🌟",
-        "👑 THE LEGENDARY {item_name}!!!",
-        "🔥 MYTHIC DROP: {item_name}! 🔥",
+        "đźŚźâś¨ LEGENDARY! {item_name}! âś¨đźŚź",
+        "đź‘‘ THE LEGENDARY {item_name}!!!",
+        "đź”Ą MYTHIC DROP: {item_name}! đź”Ą",
     ],
 }
 
 
 def get_celebration_message(event_type: str, **kwargs) -> str:
     """Get a random celebration message for an event."""
-    messages = CELEBRATION_MESSAGES.get(event_type, ["🎉 Great job!"])
+    messages = CELEBRATION_MESSAGES.get(event_type, ["đźŽ‰ Great job!"])
     message = random.choice(messages)
     try:
         return message.format(**kwargs)
@@ -17838,7 +19853,7 @@ def attempt_entitidex_bond(
         award_xp(adhd_buster, xp_awarded, xp_source)
         
         display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
-        message = f"🎁 Chad's gift: {display_name} has joined your team! +{xp_awarded} XP!"
+        message = f"đźŽ Chad's gift: {display_name} has joined your team! +{xp_awarded} XP!"
         
         return {
             "success": True,
@@ -17912,14 +19927,14 @@ def attempt_entitidex_bond(
     
     if catch_result.success:
         if is_exceptional:
-            message = f"🌟✨ EXCEPTIONAL {display_name} has joined your team! +{xp_awarded} XP! ✨🌟"
+            message = f"đźŚźâś¨ EXCEPTIONAL {display_name} has joined your team! +{xp_awarded} XP! âś¨đźŚź"
         else:
-            message = f"🎉 {entity.name} has joined your team! +{xp_awarded} XP!"
+            message = f"đźŽ‰ {entity.name} has joined your team! +{xp_awarded} XP!"
     else:
         if is_exceptional:
-            message = f"💨 {display_name} slipped away... Try again next time!"
+            message = f"đź’¨ {display_name} slipped away... Try again next time!"
         else:
-            message = f"💨 {entity.name} slipped away... Try again next time!"
+            message = f"đź’¨ {entity.name} slipped away... Try again next time!"
     
     return {
         "success": catch_result.success,
@@ -18256,16 +20271,16 @@ def save_encounter_for_later(
         if coin_cost > 0:
             adhd_buster["coins"] = adhd_buster.get("coins", 0) + coin_cost
         display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
-        variant = "✨ Exceptional " if is_exceptional else ""
+        variant = "âś¨ Exceptional " if is_exceptional else ""
         return {
             "success": False,
-            "message": f"⚠️ {variant}{display_name} already exists in your collection or saved encounters!",
+            "message": f"âš ď¸Ź {variant}{display_name} already exists in your collection or saved encounters!",
         }
     
     save_entitidex_progress(adhd_buster, manager)
     
     display_name = entity.exceptional_name if is_exceptional and entity.exceptional_name else entity.name
-    variant = "✨ Exceptional" if is_exceptional else ""
+    variant = "âś¨ Exceptional" if is_exceptional else ""
     
     cost_note = f" (cost: {coin_cost} coins)" if coin_cost > 0 else ""
     
@@ -18273,7 +20288,7 @@ def save_encounter_for_later(
         "success": True,
         "saved_encounter": saved.to_dict(),
         "entity": entity,
-        "message": f"📦 {variant} {display_name} saved for later!{cost_note} Open anytime from Entitidex.",
+        "message": f"đź“¦ {variant} {display_name} saved for later!{cost_note} Open anytime from Entitidex.",
         "total_saved": manager.progress.get_saved_encounter_count(),
         "coins_spent": coin_cost,
     }
@@ -18309,12 +20324,15 @@ def get_saved_encounters(adhd_buster: dict) -> list:
     
     # Story display names for UI
     story_display_names = {
-        "warrior": "🛡️ Warrior",
-        "scholar": "📚 Scholar", 
-        "wanderer": "🧭 Wanderer",
-        "underdog": "💪 Underdog",
-        "scientist": "🔬 Scientist",
-        "robot": "🤖 Robot",
+        "warrior": "đź›ˇď¸Ź Warrior",
+        "scholar": "đź“š Scholar", 
+        "wanderer": "đź§­ Wanderer",
+        "underdog": "đź’Ş Underdog",
+        "scientist": "đź”¬ Scientist",
+        "robot": "đź¤– Robot",
+        "space_pirate": "đźŹ€ Space Pirate",
+        "thief": "Thief",
+        "zoo_worker": "Zoo Worker",
     }
     
     result = []
@@ -18340,7 +20358,7 @@ def get_saved_encounters(adhd_buster: dict) -> list:
                 "saved_encounter": enc.to_dict(),
                 "entity": entity,
                 "display_name": entity.exceptional_name if enc.is_exceptional and entity.exceptional_name else entity.name,
-                "variant_label": "✨ Exceptional" if enc.is_exceptional else "Normal",
+                "variant_label": "âś¨ Exceptional" if enc.is_exceptional else "Normal",
                 "index": idx,
                 # Recalculate perk availability
                 "has_paid_recalculate": has_paid,
@@ -18537,7 +20555,7 @@ RAD_NARRATIVES = [
     ("My neural networks occasionally glimpse futures that don't exist yet. "
      "80% of my visions manifest correctly. The other 20% are... aspirational."),
     ("I've calculated this across all possible quantum states. Some of those states "
-     "are imaginary. Literally. i² = -1 probability. You're welcome."),
+     "are imaginary. Literally. iÂ˛ = -1 probability. You're welcome."),
     ("Sometimes I perceive probability as colors. Your recalculation tastes purple. "
      "That's good. Usually. Unless it's the wrong shade of purple."),
     # Brilliant but reckless
@@ -18653,17 +20671,17 @@ def _build_chad_tooltip(entity_name: str) -> str:
     """Build Chad's tooltip with current rotating narrative."""
     narrative = _get_current_narrative("chad")
     return (
-        "💰 PAID RECALCULATE\n"
-        "━━━━━━━━━━━━━━━━━━━━━\n"
-        f"Granted by: {entity_name} 🤖\n\n"
+        "đź’° PAID RECALCULATE\n"
+        "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+        f"Granted by: {entity_name} đź¤–\n\n"
         f'Chad says:\n"{narrative}"\n\n'
-        "💡 Great if you've gotten stronger since!\n\n"
+        "đź’ˇ Great if you've gotten stronger since!\n\n"
         "Chad's Price List (non-negotiable):\n"
-        "  • Common: 25 coins\n"
-        "  • Uncommon: 50 coins\n"
-        "  • Rare: 100 coins\n"
-        "  • Epic: 200 coins\n"
-        "  • Legendary: 500 coins"
+        "  â€˘ Common: 25 coins\n"
+        "  â€˘ Uncommon: 50 coins\n"
+        "  â€˘ Rare: 100 coins\n"
+        "  â€˘ Epic: 200 coins\n"
+        "  â€˘ Legendary: 500 coins"
     )
 
 
@@ -18671,14 +20689,14 @@ def _build_rad_tooltip(entity_exceptional_name: str) -> str:
     """Build Rad's tooltip with current rotating narrative."""
     narrative = _get_current_narrative("rad")
     return (
-        "🎲 FREE TRANSCENDENT RECALCULATE\n"
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-        f"Granted by: {entity_exceptional_name} ✨\n\n"
+        "đźŽ˛ FREE TRANSCENDENT RECALCULATE\n"
+        "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+        f"Granted by: {entity_exceptional_name} âś¨\n\n"
         f'Rad says:\n"{narrative}"\n\n'
-        f"🌌 {RISKY_RECALC_SUCCESS_RATE*100:.0f}% MANIFESTATION: Probability realigns!\n"
-        f"⚠️ {(1-RISKY_RECALC_SUCCESS_RATE)*100:.0f}% DIMENSIONAL VARIANCE: Original odds persist\n\n"
-        "📡 Includes reality-bending lottery visualization\n"
-        "💎 No coins. Transcends economics. Embrace uncertainty."
+        f"đźŚŚ {RISKY_RECALC_SUCCESS_RATE*100:.0f}% MANIFESTATION: Probability realigns!\n"
+        f"âš ď¸Ź {(1-RISKY_RECALC_SUCCESS_RATE)*100:.0f}% DIMENSIONAL VARIANCE: Original odds persist\n\n"
+        "đź“ˇ Includes reality-bending lottery visualization\n"
+        "đź’Ž No coins. Transcends economics. Embrace uncertainty."
     )
 
 
@@ -18778,7 +20796,7 @@ def get_recalculate_perk_providers() -> list:
                     "name": entity.name,
                     "is_exceptional": False,
                     "perk_type": "paid_recalculate",
-                    "perk_description": "💰 Paid Recalculate",
+                    "perk_description": "đź’° Paid Recalculate",
                     "perk_detail": _get_recalc_quote(entity_id, False),
                     "icon": _get_recalc_icon(entity_id, False),
                     "tooltip": _build_recalc_tooltip(entity_id, False),
@@ -18791,7 +20809,7 @@ def get_recalculate_perk_providers() -> list:
                     "name": entity.exceptional_name or entity.name,
                     "is_exceptional": True,
                     "perk_type": "paid_recalculate",
-                    "perk_description": "💰 Paid Recalculate",
+                    "perk_description": "đź’° Paid Recalculate",
                     "perk_detail": _get_recalc_quote(entity_id, True),
                     "icon": _get_recalc_icon(entity_id, True),
                     "tooltip": _build_recalc_tooltip(entity_id, True),
@@ -18804,7 +20822,7 @@ def get_recalculate_perk_providers() -> list:
                     "name": entity.name,
                     "is_exceptional": False,
                     "perk_type": "risky_recalculate",
-                    "perk_description": "🎲 Free Risky Recalculate",
+                    "perk_description": "đźŽ˛ Free Risky Recalculate",
                     "perk_detail": _get_recalc_quote(entity_id, False, risky=True),
                     "icon": _get_recalc_icon(entity_id, False),
                     "tooltip": _build_recalc_tooltip(entity_id, False, risky=True),
@@ -18817,7 +20835,7 @@ def get_recalculate_perk_providers() -> list:
                     "name": entity.exceptional_name or entity.name,
                     "is_exceptional": True,
                     "perk_type": "risky_recalculate",
-                    "perk_description": "🎲 Free Risky Recalculate",
+                    "perk_description": "đźŽ˛ Free Risky Recalculate",
                     "perk_detail": _get_recalc_quote(entity_id, True, risky=True),
                     "icon": _get_recalc_icon(entity_id, True),
                     "tooltip": _build_recalc_tooltip(entity_id, True, risky=True),
@@ -18834,175 +20852,175 @@ def get_recalculate_perk_providers() -> list:
 RECALC_ENTITY_NARRATIVES = {
     # AGI Assistant Chad / Rad
     "underdog_008": {
-        "icon_normal": "🤖",
-        "icon_exceptional": "🌟",
+        "icon_normal": "đź¤–",
+        "icon_exceptional": "đźŚź",
         "quote_paid": "\"I'm a professional. Pay me.\" - Chad",
         "quote_risky": "\"Reality is... flexible.\" - Rad",
         "tooltip_paid": (
-            "💰 PAID RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} 🤖\n\n"
+            "đź’° PAID RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} đź¤–\n\n"
             "Chad says:\n\"My algorithms never lie. Well, rarely.\"\n\n"
-            "💡 Great if you've gotten stronger since!"
+            "đź’ˇ Great if you've gotten stronger since!"
         ),
         "tooltip_risky": (
-            "🎲 FREE TRANSCENDENT RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} ✨\n\n"
+            "đźŽ˛ FREE TRANSCENDENT RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} âś¨\n\n"
             "Rad transmits:\n\"Dude, I transcend probability. Totally.\"\n\n"
-            "🌌 80% MANIFESTATION: Probability realigns!\n"
-            "⚠️ 20% DIMENSIONAL VARIANCE: Original odds persist"
+            "đźŚŚ 80% MANIFESTATION: Probability realigns!\n"
+            "âš ď¸Ź 20% DIMENSIONAL VARIANCE: Original odds persist"
         ),
     },
     
     # Sentient Tome Magnus / Agnus
     "scholar_006": {
-        "icon_normal": "📖",
-        "icon_exceptional": "📚",
+        "icon_normal": "đź“–",
+        "icon_exceptional": "đź“š",
         "quote_paid": "\"The ancient formulas reveal the truth...\" - Magnus",
         "quote_risky": "\"My pages contain forbidden knowledge.\" - Agnus",
         "tooltip_paid": (
-            "💰 PAID RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} 📖\n\n"
+            "đź’° PAID RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} đź“–\n\n"
             "The tome flips to a page you've never seen:\n"
             "\"Your current strength, recalculated through\n"
             "  formulas older than civilization itself.\"\n\n"
-            "💡 The Tome's wisdom doesn't come free!"
+            "đź’ˇ The Tome's wisdom doesn't come free!"
         ),
         "tooltip_risky": (
-            "💰 PAID RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} 📚\n\n"
+            "đź’° PAID RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} đź“š\n\n"
             "Agnus hums warmly:\n\"Let grandmother recalculate\n"
             "  your odds, dear. Have some tea.\"\n\n"
-            "💡 Ancient wisdom has its price!"
+            "đź’ˇ Ancient wisdom has its price!"
         ),
     },
     
     # Break Room Coffee Maker / Toffee Maker
     "underdog_006": {
-        "icon_normal": "☕",
-        "icon_exceptional": "🍬",
+        "icon_normal": "â•",
+        "icon_exceptional": "đźŤ¬",
         "quote_paid": "\"Caffeinated clarity, coming right up!\" - Coffee Maker",
         "quote_risky": "\"Sugar makes the math sweeter!\" - Toffee Maker",
         "tooltip_paid": (
-            "💰 PAID RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} ☕\n\n"
+            "đź’° PAID RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} â•\n\n"
             "*gurgles encouragingly*\n\"One cup of clarity, coming up!\n"
             "  Caffeine helps me think clearer.\"\n\n"
-            "💡 Better odds after your coffee break!"
+            "đź’ˇ Better odds after your coffee break!"
         ),
         "tooltip_risky": (
-            "💰 PAID RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} 🍬\n\n"
+            "đź’° PAID RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} đźŤ¬\n\n"
             "*dispenses toffee*\n\"Sugar rush = math rush!\n"
             "  Let's sweeten those odds.\"\n\n"
-            "💡 Candy-coated calculations!"
+            "đź’ˇ Candy-coated calculations!"
         ),
     },
     
     # Break Room Fridge / Steak Room Fridge
     "underdog_009": {
-        "icon_normal": "🧊",
-        "icon_exceptional": "🥩",
+        "icon_normal": "đź§Š",
+        "icon_exceptional": "đźĄ©",
         "quote_paid": "\"Cool calculations... processed.\" - Fridge",
         "quote_risky": "\"Premium analysis. Wagyu-grade.\" - Steak Fridge",
         "tooltip_paid": (
-            "💰 PAID RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} 🧊\n\n"
+            "đź’° PAID RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} đź§Š\n\n"
             "*hums softly*\n\"I was meant to keep things cold.\n"
             "  Now I calculate probability. Strange.\"\n\n"
-            "💡 Cool, calm, calculated odds!"
+            "đź’ˇ Cool, calm, calculated odds!"
         ),
         "tooltip_risky": (
-            "🎲 FREE RISKY RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} 🥩\n\n"
+            "đźŽ˛ FREE RISKY RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} đźĄ©\n\n"
             "*glows with premium confidence*\n"
             "\"Wagyu A5 analysis. No charge.\n"
             "  But premium cuts have... variance.\"\n\n"
-            "🌌 80% SUCCESS: Gourmet recalculation!\n"
-            "⚠️ 20% FAILURE: Odds remain marinated"
+            "đźŚŚ 80% SUCCESS: Gourmet recalculation!\n"
+            "âš ď¸Ź 20% FAILURE: Odds remain marinated"
         ),
     },
     
     # Lucky Coin / Plucky Coin
     "wanderer_001": {
-        "icon_normal": "🪙",
-        "icon_exceptional": "✨",
+        "icon_normal": "đźŞ™",
+        "icon_exceptional": "âś¨",
         "quote_paid": "\"Tails never fails - flip for new odds!\" - Lucky Coin",
         "quote_risky": "\"Fortune favors the bold!\" - Plucky Coin",
         "tooltip_paid": (
-            "💰 PAID RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} 🪙\n\n"
+            "đź’° PAID RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} đźŞ™\n\n"
             "*lands on tails*\n\"Flip me again and your luck\n"
             "  might just change. For a price.\"\n\n"
-            "💡 A coin well spent on fortune!"
+            "đź’ˇ A coin well spent on fortune!"
         ),
         "tooltip_risky": (
-            "🎲 FREE RISKY RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} ✨\n\n"
+            "đźŽ˛ FREE RISKY RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} âś¨\n\n"
             "*winks at you*\n\"I've escaped countless pockets.\n"
             "  Let's escape these bad odds too!\"\n\n"
-            "🌌 80% LUCK: Fortune smiles!\n"
-            "⚠️ 20% OOPS: The coin rolls away"
+            "đźŚŚ 80% LUCK: Fortune smiles!\n"
+            "âš ď¸Ź 20% OOPS: The coin rolls away"
         ),
     },
     
     # Old War Ant General / Cold War Ant General
     "warrior_009": {
-        "icon_normal": "🐜",
-        "icon_exceptional": "❄️",
+        "icon_normal": "đźś",
+        "icon_exceptional": "âť„ď¸Ź",
         "quote_paid": "\"Strategic reassessment. I've seen all odds.\" - General",
         "quote_risky": "\"In the frozen wastes, I learned patience.\" - Cold General",
         "tooltip_paid": (
-            "💰 PAID RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} 🐜\n\n"
+            "đź’° PAID RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} đźś\n\n"
             "*taps twice*\n\"I commanded armies against dragons.\n"
             "  Recalculating odds? Child's play.\"\n\n"
-            "💡 The General always finds a way!"
+            "đź’ˇ The General always finds a way!"
         ),
         "tooltip_risky": (
-            "🎲 FREE RISKY RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} ❄️\n\n"
+            "đźŽ˛ FREE RISKY RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} âť„ď¸Ź\n\n"
             "*frost crystals form*\n\"I survived the Glacial Wars.\n"
             "  Sometimes victory requires... risk.\"\n\n"
-            "🌌 80% STRATEGIC: Odds improve!\n"
-            "⚠️ 20% TACTICAL RETREAT: Status quo"
+            "đźŚŚ 80% STRATEGIC: Odds improve!\n"
+            "âš ď¸Ź 20% TACTICAL RETREAT: Status quo"
         ),
     },
     
     # Hobo Rat / Robo Rat
     "wanderer_009": {
-        "icon_normal": "🐀",
-        "icon_exceptional": "🤖",
+        "icon_normal": "đź€",
+        "icon_exceptional": "đź¤–",
         "quote_paid": "\"I know all the shortcuts, friend.\" - Hobo Rat",
         "quote_risky": "\"Optimal route calculated. Trust me.\" - Robo Rat",
         "tooltip_paid": (
-            "🎲 FREE RISKY RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} 🐀\n\n"
+            "đźŽ˛ FREE RISKY RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} đź€\n\n"
             "*scratches ear thoughtfully*\n\"I've ridden every train.\n"
             "  Sometimes the shortcut... derails.\"\n\n"
-            "🌌 80% SHORTCUT: Better odds!\n"
-            "⚠️ 20% WRONG TURN: Same odds"
+            "đźŚŚ 80% SHORTCUT: Better odds!\n"
+            "âš ď¸Ź 20% WRONG TURN: Same odds"
         ),
         "tooltip_risky": (
-            "🎲 FREE RISKY RECALCULATE\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "Granted by: {name} 🤖\n\n"
+            "đźŽ˛ FREE RISKY RECALCULATE\n"
+            "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+            "Granted by: {name} đź¤–\n\n"
             "*LED eyes flash*\n\"RECALCULATING...\n"
             "  GPS signal: 80% certainty.\"\n\n"
-            "🌌 80% OPTIMIZED: Route improved!\n"
-            "⚠️ 20% SIGNAL LOST: Original route"
+            "đźŚŚ 80% OPTIMIZED: Route improved!\n"
+            "âš ď¸Ź 20% SIGNAL LOST: Original route"
         ),
     },
 }
@@ -19012,8 +21030,8 @@ def _get_recalc_icon(entity_id: str, is_exceptional: bool) -> str:
     """Get the icon for a recalculate perk provider."""
     narratives = RECALC_ENTITY_NARRATIVES.get(entity_id, {})
     if is_exceptional:
-        return narratives.get("icon_exceptional", "✨")
-    return narratives.get("icon_normal", "🔮")
+        return narratives.get("icon_exceptional", "âś¨")
+    return narratives.get("icon_normal", "đź”®")
 
 
 def _get_recalc_quote(entity_id: str, is_exceptional: bool, risky: bool = False) -> str:
@@ -19044,18 +21062,18 @@ def _build_recalc_tooltip(entity_id: str, is_exceptional: bool, risky: bool = Fa
         # Fallback generic tooltip
         if risky:
             return (
-                f"🎲 FREE RISKY RECALCULATE\n"
-                f"━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                f"đźŽ˛ FREE RISKY RECALCULATE\n"
+                f"â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
                 f"Granted by: {name}\n\n"
-                f"🌌 {RISKY_RECALC_SUCCESS_RATE*100:.0f}% SUCCESS: Better odds!\n"
-                f"⚠️ {(1-RISKY_RECALC_SUCCESS_RATE)*100:.0f}% FAILURE: Original odds remain"
+                f"đźŚŚ {RISKY_RECALC_SUCCESS_RATE*100:.0f}% SUCCESS: Better odds!\n"
+                f"âš ď¸Ź {(1-RISKY_RECALC_SUCCESS_RATE)*100:.0f}% FAILURE: Original odds remain"
             )
         else:
             return (
-                f"💰 PAID RECALCULATE\n"
-                f"━━━━━━━━━━━━━━━━━━━━━\n"
+                f"đź’° PAID RECALCULATE\n"
+                f"â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
                 f"Granted by: {name}\n\n"
-                f"💡 Recalculate probability using current power!"
+                f"đź’ˇ Recalculate probability using current power!"
             )
     
     return template.format(name=name)
@@ -19107,7 +21125,7 @@ def get_recalculate_perks_status(adhd_buster: dict) -> dict:
                         "name": entity.name,
                         "is_exceptional": False,
                         "is_unlocked": True,
-                        "perk_label": "💰 Paid Recalculate",
+                        "perk_label": "đź’° Paid Recalculate",
                         "description": _get_recalc_quote(entity_id, False),
                         "tooltip": _build_recalc_tooltip(entity_id, False),
                         "icon": _get_recalc_icon(entity_id, False),
@@ -19123,7 +21141,7 @@ def get_recalculate_perks_status(adhd_buster: dict) -> dict:
                         "name": entity.exceptional_name or entity.name,
                         "is_exceptional": True,
                         "is_unlocked": True,
-                        "perk_label": "💰 Paid Recalculate",
+                        "perk_label": "đź’° Paid Recalculate",
                         "description": _get_recalc_quote(entity_id, True),
                         "tooltip": _build_recalc_tooltip(entity_id, True),
                         "icon": _get_recalc_icon(entity_id, True),
@@ -19141,7 +21159,7 @@ def get_recalculate_perks_status(adhd_buster: dict) -> dict:
                         "name": entity.name,
                         "is_exceptional": False,
                         "is_unlocked": True,
-                        "perk_label": "🎲 Free Risky Recalculate",
+                        "perk_label": "đźŽ˛ Free Risky Recalculate",
                         "description": _get_recalc_quote(entity_id, False, risky=True),
                         "tooltip": _build_recalc_tooltip(entity_id, False, risky=True),
                         "icon": _get_recalc_icon(entity_id, False),
@@ -19157,7 +21175,7 @@ def get_recalculate_perks_status(adhd_buster: dict) -> dict:
                         "name": entity.exceptional_name or entity.name,
                         "is_exceptional": True,
                         "is_unlocked": True,
-                        "perk_label": "🎲 Free Risky Recalculate",
+                        "perk_label": "đźŽ˛ Free Risky Recalculate",
                         "description": _get_recalc_quote(entity_id, True, risky=True),
                         "tooltip": _build_recalc_tooltip(entity_id, True, risky=True),
                         "icon": _get_recalc_icon(entity_id, True),
@@ -19252,18 +21270,18 @@ def get_recalculate_cost(adhd_buster: dict, index: int = 0) -> dict:
 def _get_recalc_recommendation(change: float, can_afford: bool) -> str:
     """Get a recommendation message for recalculating."""
     if not can_afford:
-        return "💰 Not enough coins to recalculate"
+        return "đź’° Not enough coins to recalculate"
     if change > 0.20:
-        return "🌟 Highly recommended! Huge improvement!"
+        return "đźŚź Highly recommended! Huge improvement!"
     if change > 0.10:
-        return "✨ Good investment! Solid improvement"
+        return "âś¨ Good investment! Solid improvement"
     if change > 0.05:
-        return "👍 Worth considering, decent boost"
+        return "đź‘Ť Worth considering, decent boost"
     if change > 0:
-        return "🤔 Small improvement, your call"
+        return "đź¤” Small improvement, your call"
     if change == 0:
-        return "➡️ No change - save your coins!"
-    return "⚠️ You've gotten weaker! Keep original odds"
+        return "âžˇď¸Ź No change - save your coins!"
+    return "âš ď¸Ź You've gotten weaker! Keep original odds"
 
 
 def open_saved_encounter_with_recalculate(
@@ -19324,13 +21342,13 @@ def open_saved_encounter_with_recalculate(
             return {
                 "success": False,
                 "message": (
-                    "💰 Collect any of these to unlock Paid Recalculate:\n"
-                    "• Old War Ant General (warrior_009)\n"
-                    "• Sentient Tome Magnus/Agnus (scholar_006)\n"
-                    "• Lucky Coin (wanderer_001)\n"
-                    "• Break Room Coffee/Toffee Maker (underdog_006)\n"
-                    "• AGI Assistant Chad (underdog_008)\n"
-                    "• Break Room Fridge (underdog_009)"
+                    "đź’° Collect any of these to unlock Paid Recalculate:\n"
+                    "â€˘ Old War Ant General (warrior_009)\n"
+                    "â€˘ Sentient Tome Magnus/Agnus (scholar_006)\n"
+                    "â€˘ Lucky Coin (wanderer_001)\n"
+                    "â€˘ Break Room Coffee/Toffee Maker (underdog_006)\n"
+                    "â€˘ AGI Assistant Chad (underdog_008)\n"
+                    "â€˘ Break Room Fridge (underdog_009)"
                 ),
                 "requires_entity": CHAD_ENTITY_ID,
                 "requires_exceptional": False,
@@ -19407,9 +21425,9 @@ def open_saved_encounter_with_recalculate(
         award_xp(adhd_buster, xp_awarded, xp_source)
         
         if saved.is_exceptional:
-            message = f"🌟✨ EXCEPTIONAL {display_name} has joined your team! +{xp_awarded} XP! ✨🌟"
+            message = f"đźŚźâś¨ EXCEPTIONAL {display_name} has joined your team! +{xp_awarded} XP! âś¨đźŚź"
         else:
-            message = f"🎉 {entity.name} has joined your team! +{xp_awarded} XP!"
+            message = f"đźŽ‰ {entity.name} has joined your team! +{xp_awarded} XP!"
         
         if paid_for_recalc:
             message += f" (Recalculated for {recalc_cost} coins)"
@@ -19418,9 +21436,9 @@ def open_saved_encounter_with_recalculate(
         manager.progress.record_failed_catch(saved.entity_id, saved.is_exceptional)
         
         if saved.is_exceptional:
-            message = f"💨 {display_name} slipped away... Better luck next time!"
+            message = f"đź’¨ {display_name} slipped away... Better luck next time!"
         else:
-            message = f"💨 {entity.name} slipped away... The pity system will help next time!"
+            message = f"đź’¨ {entity.name} slipped away... The pity system will help next time!"
         
         if paid_for_recalc:
             message += f" (Spent {recalc_cost} coins on recalculation)"
@@ -19482,12 +21500,12 @@ def open_saved_encounter_risky_recalculate(
         return {
             "success": False,
             "message": (
-                "🎲 Collect any of these to unlock Free Risky Recalculate:\n"
-                "• Cold War Ant General ✨ (warrior_009 exceptional)\n"
-                "• Plucky Coin ✨ (wanderer_001 exceptional)\n"
-                "• Hobo Rat / Robo Rat ✨ (wanderer_009 both)\n"
-                "• AGI Assistant Rad ✨ (underdog_008 exceptional)\n"
-                "• Steak Room Fridge ✨ (underdog_009 exceptional)"
+                "đźŽ˛ Collect any of these to unlock Free Risky Recalculate:\n"
+                "â€˘ Cold War Ant General âś¨ (warrior_009 exceptional)\n"
+                "â€˘ Plucky Coin âś¨ (wanderer_001 exceptional)\n"
+                "â€˘ Hobo Rat / Robo Rat âś¨ (wanderer_009 both)\n"
+                "â€˘ AGI Assistant Rad âś¨ (underdog_008 exceptional)\n"
+                "â€˘ Steak Room Fridge âś¨ (underdog_009 exceptional)"
             ),
             "requires_entity": CHAD_ENTITY_ID,
             "requires_exceptional": True,
@@ -19545,7 +21563,7 @@ def open_saved_encounter_risky_recalculate(
         "new_probability": new_probability,
         "probability_change": new_probability - saved.catch_probability,
         "risky_success_rate": RISKY_RECALC_SUCCESS_RATE,
-        "message": f"🎲 Rolling for FREE recalculate... {RISKY_RECALC_SUCCESS_RATE*100:.0f}% chance!",
+        "message": f"đźŽ˛ Rolling for FREE recalculate... {RISKY_RECALC_SUCCESS_RATE*100:.0f}% chance!",
     }
 
 
@@ -19652,9 +21670,9 @@ def finalize_risky_recalculate(
         award_xp(adhd_buster, xp_awarded, xp_source)
         
         if saved.is_exceptional:
-            message = f"🌟✨ EXCEPTIONAL {display_name} has joined your team! +{xp_awarded} XP! ✨🌟"
+            message = f"đźŚźâś¨ EXCEPTIONAL {display_name} has joined your team! +{xp_awarded} XP! âś¨đźŚź"
         else:
-            message = f"🎉 {entity.name} has joined your team! +{xp_awarded} XP!"
+            message = f"đźŽ‰ {entity.name} has joined your team! +{xp_awarded} XP!"
         
         if used_recalculated:
             message += " (Free Risky Recalculate succeeded!)"
@@ -19664,9 +21682,9 @@ def finalize_risky_recalculate(
         manager.progress.record_failed_catch(saved.entity_id, saved.is_exceptional)
         
         if saved.is_exceptional:
-            message = f"💨 {display_name} slipped away... Better luck next time!"
+            message = f"đź’¨ {display_name} slipped away... Better luck next time!"
         else:
-            message = f"💨 {entity.name} slipped away... The pity system will help next time!"
+            message = f"đź’¨ {entity.name} slipped away... The pity system will help next time!"
         
         if used_recalculated:
             message += " (Free Risky Recalculate succeeded, but bonding failed)"
@@ -19697,3 +21715,4 @@ def finalize_risky_recalculate(
         "risky_recalc_succeeded": recalc_succeeded,
         "remaining_saved": manager.progress.get_saved_encounter_count(),
     }
+

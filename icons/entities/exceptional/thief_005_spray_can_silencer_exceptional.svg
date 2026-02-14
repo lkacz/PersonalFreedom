@@ -1,0 +1,81 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 005: Spray Can Silencer (Exceptional) - Void Mute Canister -->
+  <defs>
+    <!-- Stealth Metal Gradient -->
+    <linearGradient id="stealthMetal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#263238"/>
+      <stop offset="50%" stop-color="#37474F"/>
+      <stop offset="100%" stop-color="#212121"/>
+    </linearGradient>
+
+    <!-- Glowing Vent Gradient -->
+    <linearGradient id="ventGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00B0FF"/>
+      <stop offset="50%" stop-color="#80D8FF"/>
+      <stop offset="100%" stop-color="#00B0FF"/>
+    </linearGradient>
+
+    <filter id="neonBlur">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <g transform="translate(256, 256)">
+    
+    <!-- Hover -->
+    <animateTransform attributeName="transform" type="translate" values="256,256; 256,250; 256,256" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 .55 1; 0.45 0 .55 1"/>
+
+    <g transform="rotate(-15)">
+        
+        <!-- The Can Body (Stealth) -->
+        <rect x="-100" y="-60" width="240" height="120" rx="15" fill="url(#stealthMetal)" stroke="#1A1A1A" stroke-width="2"/>
+
+        <!-- High Tech Vents -->
+        <g opacity="0.8">
+            <rect x="-60" y="-40" width="160" height="10" rx="5" fill="black"/>
+            <rect x="-60" y="-38" width="160" height="6" rx="3" fill="url(#ventGlow)" filter="url(#neonBlur)">
+                <animate attributeName="opacity" values="0.4; 1; 0.4" dur="2s" repeatCount="indefinite"/>
+            </rect>
+
+            <rect x="-60" y="30" width="160" height="10" rx="5" fill="black"/>
+             <rect x="-60" y="32" width="160" height="6" rx="3" fill="url(#ventGlow)" filter="url(#neonBlur)">
+                <animate attributeName="opacity" values="0.4; 1; 0.4" dur="2s" repeatCount="indefinite" begin="1s"/>
+            </rect>
+        </g>
+        
+        <!-- Label: Digital -->
+        <text x="20" y="10" font-family="monospace" font-weight="bold" font-size="30" fill="#00B0FF" text-anchor="middle" filter="url(#neonBlur)">
+            //MUTE
+            <animate attributeName="opacity" values="1; 0.5; 1" dur="1.5s" repeatCount="indefinite"/>
+        </text>
+
+        <!-- Back End Mount (Tech) -->
+        <path d="M-100,-60 V60 H-120 V-60 Z" fill="#212121"/>
+        <rect x="-115" y="-50" width="10" height="100" fill="#455A64"/>
+
+        <!-- Front End (Intake) -->
+        <path d="M140,-50 V50 L150,40 V-40 Z" fill="#212121"/>
+        
+        <!-- Sound Absorption Animation (Reverse Smoke) -->
+        <g transform="translate(180, 0)">
+            <!-- Sound Waves Moving In -->
+            <path d="M50,-30 Q30,0 50,30" fill="none" stroke="#00B0FF" stroke-width="2" opacity="0">
+                <animate attributeName="d" values="M50,-30 Q30,0 50,30; M-20,-10 Q-30,0 -20,10" dur="1s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0; 1; 0" dur="1s" repeatCount="indefinite"/>
+            </path>
+             <path d="M70,-40 Q40,0 70,40" fill="none" stroke="#00B0FF" stroke-width="2" opacity="0">
+                <animate attributeName="d" values="M70,-40 Q40,0 70,40; M0,-20 Q-10,0 0,20" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+                <animate attributeName="opacity" values="0; 1; 0" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+            </path>
+        </g>
+
+    </g>
+  </g>
+</svg>

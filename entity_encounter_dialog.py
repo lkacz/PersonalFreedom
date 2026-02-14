@@ -1,4 +1,4 @@
-"""
+﻿"""
 Entity Encounter Dialog - Entitidex bonding UI.
 
 This module provides the UI for entity encounters when users complete
@@ -88,7 +88,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
     
     def _setup_ui(self) -> None:
         """Set up the dialog UI."""
-        self.setWindowTitle("✨ Entity Encountered!")
+        self.setWindowTitle("âś¨ Entity Encountered!")
         self.setFixedSize(500, 700)
         # Use standard Dialog flags to prevent OS-level resize anomalies
         self.setWindowFlags(
@@ -108,7 +108,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         layout.setContentsMargins(25, 25, 25, 25)
         
         # Title with animation placeholder
-        self.title_label = QtWidgets.QLabel("✨ A wild entity appears! ✨")
+        self.title_label = QtWidgets.QLabel("âś¨ A wild entity appears! âś¨")
         self.title_label.setAlignment(QtCore.Qt.AlignCenter)
         self.title_label.setStyleSheet("""
             QLabel {
@@ -210,7 +210,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         card_layout.addWidget(self.rarity_container)
         
         # Power display
-        self.power_label = QtWidgets.QLabel(f"⚡ Power: {self.entity.power}")
+        self.power_label = QtWidgets.QLabel(f"âšˇ Power: {self.entity.power}")
         self.power_label.setAlignment(QtCore.Qt.AlignCenter)
         self.power_label.setFixedHeight(28)  # Fixed height
         self.power_label.setStyleSheet("""
@@ -225,12 +225,15 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         
         # Theme badge
         theme_names = {
-            "warrior": "🛡️ Warrior's Path",
-            "scholar": "📚 Scholar's Study",
-            "wanderer": "🧭 Wanderer's Journey",
-            "underdog": "💪 Underdog's Rise",
-            "scientist": "🔬 Scientist's Lab",
-            "robot": "🤖 Robot's Awakening",
+            "warrior": "đź›ˇď¸Ź Warrior's Path",
+            "scholar": "đź“š Scholar's Study",
+            "wanderer": "đź§­ Wanderer's Journey",
+            "underdog": "đź’Ş Underdog's Rise",
+            "scientist": "đź”¬ Scientist's Lab",
+            "robot": "đź¤– Robot's Awakening",
+            "space_pirate": "đźŹ€ Space Pirate's Ledger",
+            "thief": "Thief's Casebook",
+            "zoo_worker": "Zoo Worker's Sanctuary Log",
         }
         theme_display = theme_names.get(self.entity.theme_set, self.entity.theme_set)
         self.theme_label = QtWidgets.QLabel(theme_display)
@@ -315,7 +318,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         breakdown_parts.append(f"Final: {prob_percent}%")
         
         prob_tooltip = "\n".join(breakdown_parts)
-        self.prob_value.setToolTip(f"🎲 Probability Breakdown:\n{prob_tooltip}")
+        self.prob_value.setToolTip(f"đźŽ˛ Probability Breakdown:\n{prob_tooltip}")
         
         self.prob_value.setStyleSheet(f"""
             QLabel {{
@@ -393,7 +396,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         button_layout.addWidget(self.skip_btn)
         
         # Bond button
-        self.bond_btn = QtWidgets.QPushButton("🤝 Attempt Bond!")
+        self.bond_btn = QtWidgets.QPushButton("đź¤ť Attempt Bond!")
         self.bond_btn.setStyleSheet(f"""
             QPushButton {{
                 background: qlineargradient(
@@ -481,7 +484,7 @@ class EntityEncounterDialog(QtWidgets.QDialog):
             display_name = self.entity.exceptional_name
         else:
             display_name = self.entity.name
-        self.title_label.setText(f"✨ {display_name} ✨")
+        self.title_label.setText(f"âś¨ {display_name} âś¨")
         
         self._fade_in(self.name_label)
         self._fade_in(self.svg_container)
@@ -605,7 +608,7 @@ class BondResultDialog(QtWidgets.QDialog):
     def _setup_success_ui(self, layout: QtWidgets.QVBoxLayout) -> None:
         """Set up UI for successful bond."""
         # Big success emoji
-        emoji = QtWidgets.QLabel("🎉")
+        emoji = QtWidgets.QLabel("đźŽ‰")
         emoji.setAlignment(QtCore.Qt.AlignCenter)
         emoji.setStyleSheet("font-size: 64px;")
         layout.addWidget(emoji)
@@ -648,7 +651,7 @@ class BondResultDialog(QtWidgets.QDialog):
     def _setup_failure_ui(self, layout: QtWidgets.QVBoxLayout) -> None:
         """Set up UI for failed bond."""
         # Sad emoji
-        emoji = QtWidgets.QLabel("💨")
+        emoji = QtWidgets.QLabel("đź’¨")
         emoji.setAlignment(QtCore.Qt.AlignCenter)
         emoji.setStyleSheet("font-size: 64px;")
         layout.addWidget(emoji)
@@ -681,11 +684,11 @@ class BondResultDialog(QtWidgets.QDialog):
         if self.consecutive_fails >= 3:
             pity_hint = ""
             if self.consecutive_fails >= 15:
-                pity_hint = "🔥 Maximum pity bonus active! (+50%)"
+                pity_hint = "đź”Ą Maximum pity bonus active! (+50%)"
             elif self.consecutive_fails >= 10:
-                pity_hint = "⬆️ High pity bonus active! (+25%)"
+                pity_hint = "â¬†ď¸Ź High pity bonus active! (+25%)"
             elif self.consecutive_fails >= 5:
-                pity_hint = "📈 Pity bonus building... (+10%)"
+                pity_hint = "đź“ Pity bonus building... (+10%)"
             else:
                 pity_hint = f"Consecutive misses: {self.consecutive_fails}"
             
@@ -728,7 +731,7 @@ class EntitidexCollectionDialog(QtWidgets.QDialog):
     
     def _setup_ui(self) -> None:
         """Set up the collection dialog UI."""
-        self.setWindowTitle("📖 Entitidex Collection")
+        self.setWindowTitle("đź“– Entitidex Collection")
         self.setMinimumSize(700, 500)
         self.setWindowFlags(
             QtCore.Qt.Window |
@@ -769,12 +772,15 @@ class EntitidexCollectionDialog(QtWidgets.QDialog):
         # Create tabs for each available entity theme (dynamic, no hardcoded theme count)
         from entitidex.entity_pools import get_entity_count_by_theme
         theme_labels = {
-            "warrior": "🛡️ Warrior",
-            "scholar": "📚 Scholar",
-            "wanderer": "🧭 Wanderer",
-            "underdog": "💪 Underdog",
-            "scientist": "🔬 Scientist",
-            "robot": "🤖 Robot",
+            "warrior": "đź›ˇď¸Ź Warrior",
+            "scholar": "đź“š Scholar",
+            "wanderer": "đź§­ Wanderer",
+            "underdog": "đź’Ş Underdog",
+            "scientist": "đź”¬ Scientist",
+            "robot": "đź¤– Robot",
+            "space_pirate": "đźŹ€ Space Pirate",
+            "thief": "Thief",
+            "zoo_worker": "Zoo Worker",
         }
         theme_ids = list(get_entity_count_by_theme().keys())
         
@@ -946,7 +952,7 @@ class EntitidexCollectionDialog(QtWidgets.QDialog):
             """)
             layout.addWidget(name)
             
-            power = QtWidgets.QLabel(f"⚡ {entity.power}")
+            power = QtWidgets.QLabel(f"âšˇ {entity.power}")
             power.setAlignment(QtCore.Qt.AlignCenter)
             power.setStyleSheet("""
                 QLabel {
@@ -967,7 +973,7 @@ class EntitidexCollectionDialog(QtWidgets.QDialog):
             layout.addWidget(rarity)
         else:
             # Show placeholder
-            mystery = QtWidgets.QLabel("❓")
+            mystery = QtWidgets.QLabel("âť“")
             mystery.setAlignment(QtCore.Qt.AlignCenter)
             mystery.setStyleSheet("""
                 QLabel {
@@ -989,3 +995,4 @@ class EntitidexCollectionDialog(QtWidgets.QDialog):
         
         frame.setFixedSize(120, 100)
         return frame
+

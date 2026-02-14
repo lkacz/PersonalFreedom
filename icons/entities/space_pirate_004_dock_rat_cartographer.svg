@@ -1,0 +1,154 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Palettes: Steel Gray, Ice Blue, Worn Leather -->
+    <linearGradient id="ratFurGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#90A4AE" />
+      <stop offset="100%" stop-color="#546E7A" />
+    </linearGradient>
+    <linearGradient id="tailGrad" x1="0%" y1="0%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#CFD8DC" />
+      <stop offset="100%" stop-color="#FFAB91" /> <!-- Pinkish tip base -->
+    </linearGradient>
+    <radialGradient id="tailLightGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#40C4FF" stop-opacity="1" />
+      <stop offset="100%" stop-color="#0288D1" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="mapPaperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF9C4" />
+      <stop offset="100%" stop-color="#F9A825" />
+    </linearGradient>
+    
+    <!-- Eye Clip Paths -->
+    <clipPath id="eyeClipLeft">
+        <circle cx="-16" cy="0" r="9" />
+    </clipPath>
+    <clipPath id="eyeClipRight">
+        <circle cx="16" cy="0" r="9" />
+    </clipPath>
+  </defs>
+
+  <!-- Background Context -->
+  <circle cx="256" cy="256" r="240" fill="#1C2128" stroke="#37474F" stroke-width="8" opacity="0.95" />
+
+  <!-- Shadow -->
+  <ellipse cx="256" cy="420" rx="100" ry="20" fill="#000" opacity="0.5" />
+
+  <!-- Main Rat Group - Center anchored -->
+  <g transform="translate(256, 280)">
+    
+    <!-- Long Tail with Marker Light -->
+    <path d="M-40,80 Q-80,80 -100,20 Q-120,-40 -150,-50" fill="none" stroke="#FFA726" stroke-width="6" stroke-linecap="round">
+       <animate attributeName="d" 
+         values="M-40,80 Q-80,80 -100,20 Q-120,-40 -150,-50; M-40,80 Q-70,90 -90,10 Q-130,-30 -140,-60; M-40,80 Q-80,80 -100,20 Q-120,-40 -150,-50" 
+         dur="2.8s" repeatCount="indefinite" />
+    </path>
+    <!-- Tail Light Bulb -->
+    <g>
+       <animateMotion path="M-150,-50 L-150,-50" dur="2.8s" repeatCount="indefinite" /> <!-- Placeholder for tip tracking if needed, using simple transform instead for now -->
+       <circle cx="-150" cy="-50" r="15" fill="#40C4FF" opacity="0.8">
+          <animate attributeName="r" values="15;20;15" dur="1s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0.8;0.4;0.8" dur="0.5s" repeatCount="indefinite" />
+          <animate attributeName="cx" values="-150;-140;-150" dur="2.8s" repeatCount="indefinite" />
+          <animate attributeName="cy" values="-50;-60;-50" dur="2.8s" repeatCount="indefinite" />
+       </circle>
+       <!-- Tracer Line -->
+       <path d="M-150,-50 L-180,-20" stroke="#40C4FF" stroke-width="2" opacity="0.5" stroke-dasharray="5,5" />
+    </g>
+
+    <!-- Body -->
+    <path d="M-60,100 C-80,0 -40,-100 0,-120 C40,-100 80,0 60,100 Z" fill="url(#ratFurGrad)" />
+    
+    <!-- Harness & Map Scraps -->
+    <path d="M-55,20 Q0,40 55,20 L55,40 Q0,60 -55,40 Z" fill="#5D4037" /> <!-- Strap -->
+    <rect x="-40" y="20" width="20" height="25" fill="#8D6E63" rx="2" /> <!-- Buckle/Pouch -->
+    
+    <!-- Rolled Map on back -->
+    <path d="M10,-20 L40,-10 L50,30 L20,20 Z" fill="url(#mapPaperGrad)" stroke="#F57F17" stroke-width="1" transform="rotate(-15)" />
+    <path d="M15,25 L45,15" stroke="#000" stroke-width="1" stroke-dasharray="2,2" opacity="0.5" transform="rotate(-15) translate(4,0)" />
+
+    <!-- Head -->
+    <g transform="translate(0, -110)">
+      <animateTransform attributeName="transform" type="rotate" values="0; 10; 0" dur="2.8s" repeatCount="indefinite" />
+      <animateTransform attributeName="transform" type="translate" values="0,-110; 0,-112; 0,-110" dur="0.2s" repeatCount="indefinite" additive="sum" /> <!-- Twitch -->
+
+      <circle cx="0" cy="0" r="50" fill="url(#ratFurGrad)" />
+      <!-- Ears -->
+      <circle cx="-45" cy="-20" r="25" fill="#78909C" />
+      <circle cx="-45" cy="-20" r="15" fill="#FFAB91" />
+      <circle cx="45" cy="-20" r="25" fill="#78909C" />
+      <circle cx="45" cy="-20" r="15" fill="#FFAB91" />
+      
+      <!-- Snout -->
+      <circle cx="0" cy="10" r="20" fill="#CFD8DC" />
+      <circle cx="0" cy="5" r="5" fill="#000" /> <!-- Nose -->
+      
+      <!-- Whiskers -->
+      <path d="M-10,10 L-60,5 M-10,15 L-60,20 M10,10 L60,5 M10,15 L60,20" stroke="#FFF" stroke-width="2" opacity="0.6" />
+      
+      <!-- Goggles/Eyes Reworked -->
+      <g transform="translate(0, -10)">
+        
+        <!-- Frame Strap Behind -->
+        <path d="M-36,0 Q-15,-12 0,-2 Q15,-12 36,0 Q18,12 0,2 Q-18,12 -36,0" fill="#37474F" stroke="#263238" stroke-width="2" />
+        
+        <!-- Left Eye Assembly -->
+        <g>
+            <!-- Sclera/Lens Background -->
+            <circle cx="-16" cy="0" r="10" fill="#E0F7FA" stroke="#455A64" stroke-width="1" />
+            
+            <!-- Pupil Group -->
+            <g clip-path="url(#eyeClipLeft)">
+                <!-- Iris/Pupil -->
+                <circle cx="-16" cy="0" r="4" fill="#000">
+                    <animate attributeName="cx" values="-16; -19; -13; -16; -16" keyTimes="0; 0.2; 0.4; 0.6; 1" dur="4s" repeatCount="indefinite" />
+                    <animate attributeName="cy" values="0; -2; 2; 0; 0" keyTimes="0; 0.2; 0.4; 0.6; 1" dur="4s" repeatCount="indefinite" />
+                </circle>
+                
+                <!-- Specular Highlight (Standard fixed reflection on lens) -->
+                <circle cx="-18" cy="-3" r="1.5" fill="#FFF" opacity="0.8" />
+                
+                <!-- Eyelid Overlay - Default Open Position (interpolates to Closed) -->
+                <rect x="-30" y="-30" width="30" height="30" fill="#78909C"> <!-- Rat fur color match -->
+                     <!-- Standard Blink: Short close, long pause -->
+                     <animate attributeName="y" 
+                        values="-30; -10; -30; -30" 
+                        keyTimes="0; 0.05; 0.1; 1" 
+                        dur="4s" 
+                        repeatCount="indefinite" />
+                </rect>
+            </g>
+        </g>
+
+        <!-- Right Eye Assembly -->
+        <g>
+            <!-- Sclera/Lens Background -->
+            <circle cx="16" cy="0" r="10" fill="#E0F7FA" stroke="#455A64" stroke-width="1" />
+
+            <g clip-path="url(#eyeClipRight)">
+                <!-- Iris/Pupil -->
+                <circle cx="16" cy="0" r="4" fill="#000">
+                    <animate attributeName="cx" values="16; 13; 19; 16; 16" keyTimes="0; 0.2; 0.4; 0.6; 1" dur="4s" repeatCount="indefinite" />
+                    <animate attributeName="cy" values="0; -2; 2; 0; 0" keyTimes="0; 0.2; 0.4; 0.6; 1" dur="4s" repeatCount="indefinite" />
+                </circle>
+                
+                <!-- Specular Highlight -->
+                <circle cx="14" cy="-3" r="1.5" fill="#FFF" opacity="0.8" />
+                
+                <!-- Eyelid Overlay -->
+                <rect x="0" y="-30" width="35" height="30" fill="#78909C">
+                     <animate attributeName="y" 
+                        values="-30; -10; -30; -30" 
+                        keyTimes="0; 0.05; 0.1; 1" 
+                        dur="4s" 
+                        repeatCount="indefinite" />
+                </rect>
+            </g>
+        </g>
+      </g>
+    </g>
+    
+    <!-- Feet -->
+    <ellipse cx="-40" cy="100" rx="15" ry="10" fill="#FFAB91" />
+    <ellipse cx="40" cy="100" rx="15" ry="10" fill="#FFAB91" />
+  </g>
+</svg>

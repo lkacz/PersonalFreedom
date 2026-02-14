@@ -1,0 +1,73 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 009: Flashlight Beam (Normal) -->
+  <defs>
+    <!-- Flashlight Gradient -->
+    <linearGradient id="magBlack" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#424242"/>
+      <stop offset="50%" stop-color="#212121"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+    
+    <!-- Light Beam Gradient -->
+    <linearGradient id="beamLight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FFF9C4" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#FFF9C4" stop-opacity="0"/>
+    </linearGradient>
+
+    <filter id="beamBlur">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+  </defs>
+
+  <!-- Background Space (Darkness) -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+  <!-- Simulated darkness for contrast (optional, user asked for transparent bg usually, but beam needs darkness to be seen?) -->
+  <!-- I will keep bg transparent but make the beam opaque enough -->
+
+  <g transform="translate(100, 256)">
+    
+    <!-- Scanning Animation Group -->
+    <g>
+        <animateTransform attributeName="transform" type="rotate"
+            values="-15 0 0; 15 0 0; -15 0 0"
+            dur="4s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+        
+        <!-- The Flashlight Body -->
+        <g transform="translate(-80, -20)">
+            <rect x="0" y="0" width="100" height="40" rx="5" fill="url(#magBlack)"/>
+            <!-- Switch -->
+            <rect x="60" y="-5" width="20" height="10" rx="2" fill="#616161"/>
+            <!-- Grip texture -->
+            <line x1="20" y1="0" x2="20" y2="40" stroke="#424242" stroke-width="2"/>
+            <line x1="40" y1="0" x2="40" y2="40" stroke="#424242" stroke-width="2"/>
+        </g>
+        
+        <!-- Bulb Head -->
+        <path d="M20,-25 L40,-35 L40,35 L20,25 Z" fill="#212121"/>
+        <ellipse cx="20" cy="0" rx="5" ry="25" fill="#FFFDE7"/> <!-- Lens -->
+
+        <!-- The Beam Cone -->
+        <path d="M25,0 L400,-100 L400,100 Z" fill="url(#beamLight)" filter="url(#beamBlur)"/>
+
+        <!-- Dust Motes (Moving in beam) -->
+        <g opacity="0.6">
+            <circle cx="100" cy="0" r="2" fill="white">
+                 <animate attributeName="cx" values="100; 300" dur="2s" repeatCount="indefinite"/>
+                 <animate attributeName="opacity" values="0; 1; 0" dur="2s" repeatCount="indefinite"/>
+            </circle>
+             <circle cx="150" cy="20" r="1.5" fill="white">
+                 <animate attributeName="cx" values="150; 350" dur="3s" repeatCount="indefinite"/>
+                 <animate attributeName="opacity" values="0; 1; 0" dur="3s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="200" cy="-20" r="1" fill="white">
+                 <animate attributeName="cx" values="200; 400" dur="2.5s" repeatCount="indefinite"/>
+                 <animate attributeName="opacity" values="0; 1; 0" dur="2.5s" repeatCount="indefinite"/>
+            </circle>
+        </g>
+        
+    </g>
+  </g>
+</svg>

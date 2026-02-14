@@ -1,0 +1,122 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Space Pirate 006: Polite Boarding Cone (Normal) - Enhanced Grading -->
+  <defs>
+    <!-- Palettes: High-Vis Orange, Reflective White, Void Black -->
+    <!-- Cone Body: Radial to suggest 3D roundness -->
+    <linearGradient id="coneBodyRound" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#BF360C"/> <!-- Dark edge -->
+      <stop offset="30%" stop-color="#FF6F00"/> <!-- Mid tone -->
+      <stop offset="50%" stop-color="#FFCA28"/> <!-- Highlight spine -->
+      <stop offset="80%" stop-color="#E65100"/> <!-- Shadow side -->
+      <stop offset="100%" stop-color="#BF360C"/> <!-- Dark edge -->
+    </linearGradient>
+    
+    <linearGradient id="reflectiveStrip" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9E9E9E"/>
+      <stop offset="40%" stop-color="#FFFFFF"/> <!-- Bright reflection -->
+      <stop offset="60%" stop-color="#E0E0E0"/>
+      <stop offset="100%" stop-color="#757575"/>
+    </linearGradient>
+    
+    <radialGradient id="beaconGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFF00" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#FFAB00" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#FF6F00" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="baseMetal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#546E7A"/>
+      <stop offset="50%" stop-color="#263238"/>
+      <stop offset="100%" stop-color="#102027"/>
+    </linearGradient>
+
+    <filter id="thrusterBurn" x="-20%" y="0%" width="140%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    
+    <filter id="shadowCast" x="-50%" y="-50%" width="200%" height="200%">
+       <feGaussianBlur stdDeviation="5"/>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <!-- Ground Shadow Pulse -->
+  <ellipse cx="256" cy="450" rx="100" ry="20" fill="#000" opacity="0.6" filter="url(#shadowCast)">
+    <animate attributeName="rx" values="100; 120; 100" dur="3s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6; 0.3; 0.6" dur="3s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- Floating Main Group -->
+  <g transform="translate(256, 250)">
+    <!-- Bobbing Animation -->
+    <animateTransform attributeName="transform" type="translate"
+      values="256, 250; 256, 230; 256, 250"
+      dur="3s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+
+    <!-- Base Platform (Anti-Grav Ring) -->
+    <path d="M-120,120 Q0,160 120,120 L120,140 Q0,180 -120,140 Z" fill="url(#baseMetal)" stroke="#263238" stroke-width="2"/>
+    <ellipse cx="0" cy="120" rx="120" ry="20" fill="#37474F" stroke="#455A64" stroke-width="1"/>
+    
+    <!-- Thrusters on Base -->
+    <g transform="translate(-100, 130)">
+        <circle cx="0" cy="0" r="12" fill="#455A64" stroke="#263238"/>
+        <path d="M-5,5 L0,30 L5,5" fill="#40C4FF" opacity="0.8" filter="url(#thrusterBurn)">
+            <animate attributeName="d" values="M-5,5 L0,25 L5,5; M-5,5 L0,40 L5,5; M-5,5 L0,25 L5,5" dur="0.2s" repeatCount="indefinite"/>
+        </path>
+    </g>
+    <g transform="translate(100, 130)">
+        <circle cx="0" cy="0" r="12" fill="#455A64" stroke="#263238"/>
+        <path d="M-5,5 L0,30 L5,5" fill="#40C4FF" opacity="0.8" filter="url(#thrusterBurn)">
+            <animate attributeName="d" values="M-5,5 L0,25 L5,5; M-5,5 L0,40 L5,5; M-5,5 L0,25 L5,5" dur="0.25s" repeatCount="indefinite"/>
+        </path>
+    </g>
+
+    <!-- Cone Body -->
+    <!-- Main Cone Hull -->
+    <path d="M0,-150 L100,120 Q0,150 -100,120 Z" fill="url(#coneBodyRound)" stroke="#BF360C" stroke-width="1"/>
+    <!-- Bottom Rim visual definition -->
+    <path d="M-100,120 Q0,150 100,120" fill="none" stroke="#E65100" stroke-width="4" opacity="0.5"/>
+    
+    <!-- Specular Highlight Spine (Plastic Look) -->
+    <path d="M-10,-140 Q-20,0 -40,110" stroke="#FFF" stroke-width="10" fill="none" opacity="0.1" stroke-linecap="round" filter="url(#shadowCast)"/>
+
+    <!-- Reflective Stripes - Curved to match volumetric shape -->
+    <path d="M-30,-60 L30,-60 L42,-20 Q0,0 -42,-20 Z" fill="url(#reflectiveStrip)" opacity="0.9"/>
+    <path d="M-60,30 L60,30 L75,70 Q0,90 -75,70 Z" fill="url(#reflectiveStrip)" opacity="0.9"/>
+
+    <!-- Top Beacon Light Housing -->
+    <rect x="-20" y="-170" width="40" height="25" fill="#263238" rx="4" stroke="#455A64"/>
+    
+    <!-- The Light Bulb Itself -->
+    <circle cx="0" cy="-185" r="22" fill="#FFC107">
+        <animate attributeName="fill" values="#FFC107; #FFFF8D; #FFC107" dur="0.8s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="22; 24; 22" dur="0.8s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Rotating Light Beam -->
+    <g transform="translate(0, -185)">
+       <animateTransform attributeName="transform" type="rotate" values="0; 360" dur="2.5s" repeatCount="indefinite"/>
+       <!-- Cone of light -->
+       <path d="M0,0 L-80,-300 L80,-300 Z" fill="url(#beaconGlow)" opacity="0.4" transform="rotate(70)"/>
+       <path d="M0,0 L-80,-300 L80,-300 Z" fill="url(#beaconGlow)" opacity="0.4" transform="rotate(250)"/>
+    </g>
+    
+    <!-- Holographic Sign: "HALT" with Glow -->
+    <g transform="translate(0, -50)">
+        <rect x="-75" y="-25" width="150" height="50" fill="#000" stroke="#FFAB00" stroke-width="3" opacity="0.6" rx="8">
+             <animate attributeName="stroke-opacity" values="1; 0.5; 1" dur="1s" repeatCount="indefinite"/>
+        </rect>
+        <text x="0" y="10" font-family="monospace" font-weight="bold" font-size="28" fill="#FFD740" text-anchor="middle" letter-spacing="4" filter="url(#shadowCast)">HALT</text>
+        
+        <!-- Scanlines -->
+        <path d="M-70,-20 h140 M-70,-10 h140 M-70,0 h140 M-70,10 h140 M-70,20 h140" stroke="#FFAB00" stroke-width="1" opacity="0.3"/>
+    </g>
+
+  </g>
+</svg>

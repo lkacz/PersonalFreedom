@@ -1,0 +1,94 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 001: Pocket Receipt Sparrow (Exceptional) - Silver Audit Grade -->
+  <defs>
+    <!-- Silver Paper Gradient -->
+    <linearGradient id="paperSilver" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ECEFF1"/>
+      <stop offset="30%" stop-color="#CFD8DC"/>
+      <stop offset="70%" stop-color="#B0BEC5"/> <!-- Metallic sheen -->
+      <stop offset="100%" stop-color="#90A4AE"/>
+    </linearGradient>
+
+    <!-- Audit Blue Glow -->
+    <filter id="auditGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#00E5FF" flood-opacity="0.8" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="coloredBlur"/>
+      <feComposite in="SourceGraphic" in2="coloredBlur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <!-- Main Floating Group -->
+  <g transform="translate(256, 256)">
+    <!-- Confident Stable Hover -->
+    <animateTransform attributeName="transform" type="translate"
+      values="256, 256; 256, 250; 256, 256"
+      dur="4s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+
+    <!-- The Silver Sparrow -->
+    <g transform="rotate(-5)">
+        <!-- Back Wing (Far side) -->
+        <path d="M-20,-20 L-110,-90 L-40,10 Z" fill="#90A4AE" stroke="#00E5FF" stroke-width="1">
+            <animateTransform attributeName="transform" type="rotate" values="0 -20 0; -10 -20 0; 0 -20 0" dur="1s" repeatCount="indefinite"/>
+        </path>
+
+        <!-- Body Main Fold -->
+        <path d="M-70,0 L70,0 L0,55 Z" fill="url(#paperSilver)" stroke="#546E7A" stroke-width="1"/>
+        
+        <!-- Tail Feathers (High-Res Barcode) -->
+        <g transform="translate(-70, 0) rotate(10)">
+            <path d="M0,0 L-50,-25 L-50,25 Z" fill="url(#paperSilver)"/>
+            <!-- Clean Laser Edge -->
+            <path d="M-50,-25 L-50,25" stroke="#00E5FF" stroke-width="2" stroke-dasharray="2,2" filter="url(#auditGlow)">
+                <animate attributeName="opacity" values="0.5; 1; 0.5" dur="1s" repeatCount="indefinite"/>
+            </path>
+        </g>
+
+        <!-- Head / Beak -->
+        <path d="M30,-20 L90,-10 L60,0 Z" fill="url(#paperSilver)" stroke="#546E7A" stroke-width="1"/>
+        
+        <!-- Audit Glyphs on Body (Glowing) -->
+        <g opacity="0.9" fill="#00E5FF">
+            <rect x="-30" y="15" width="40" height="2"/>
+            <rect x="-30" y="22" width="50" height="2"/>
+            <rect x="-30" y="29" width="30" height="2"/>
+            <circle cx="0" cy="40" r="3">
+                <animate attributeName="opacity" values="0; 1; 0" dur="2s" repeatCount="indefinite"/>
+            </circle>
+        </g>
+        
+        <!-- Near Wing (Front side) -->
+        <path d="M0,-20 L-70,-110 L25,10 Z" fill="url(#paperSilver)" stroke="#00E5FF" stroke-width="1">
+             <animateTransform attributeName="transform" type="rotate" values="0 0 0; 15 0 0; 0 0 0" dur="1s" repeatCount="indefinite"/>
+        </path>
+        
+        <!-- Trailing Audit Spark (Wingtip) -->
+        <circle cx="-60" cy="-100" r="2" fill="#00E5FF" filter="url(#auditGlow)">
+             <animate attributeName="opacity" values="0; 1; 0" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+             <animateTransform attributeName="transform" type="translate" values="0,0; -10,10" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+        </circle>
+        
+        <!-- Eye (Glowing) -->
+        <circle cx="65" cy="-8" r="3" fill="#00E5FF" filter="url(#auditGlow)">
+             <animate attributeName="opacity" values="0.7; 1; 0.7" dur="2s" repeatCount="indefinite"/>
+        </circle>
+    </g>
+    
+    <!-- Holographic Verified Stamp -->
+    <g transform="translate(70, 50) rotate(15)">
+        <circle cx="0" cy="0" r="25" fill="none" stroke="#00E5FF" stroke-width="2" filter="url(#auditGlow)">
+             <animate attributeName="r" values="25; 26; 25" dur="3s" repeatCount="indefinite"/>
+        </circle>
+        <path d="M-15,0 L-5,10 L15,-10" fill="none" stroke="#00E5FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#auditGlow)">
+            <animate attributeName="stroke-dasharray" values="0,50; 50,0" dur="1.5s" fill="freeze" repeatCount="indefinite" id="checkAnim"/>
+        </path>
+    </g>
+
+  </g>
+</svg>

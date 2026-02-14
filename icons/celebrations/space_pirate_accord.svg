@@ -1,0 +1,82 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Space Pirate Celebration: The Accord -->
+  <defs>
+    <radialGradient id="accordGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFD700" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#1A237E" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="goldGear" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FFD54F"/>
+        <stop offset="50%" stop-color="#FF8F00"/>
+        <stop offset="100%" stop-color="#FF6F00"/>
+    </linearGradient>
+    <linearGradient id="blueCompass" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#40C4FF"/>
+        <stop offset="100%" stop-color="#0288D1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Glow -->
+  <circle cx="256" cy="256" r="200" fill="url(#accordGlow)">
+      <animate attributeName="r" values="200; 220; 200" dur="4s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Central Emblem Group -->
+  <!-- We wrap the translation in a stable group, and animate rotation on an inner group -->
+  <g transform="translate(256, 256)">
+    <g>
+      <!-- Slow Orbital Sway -->
+      <animateTransform attributeName="transform" type="rotate" values="-5; 5; -5" dur="4.8s" repeatCount="indefinite"/>
+      
+      <!-- The Civic Gear (Outer Ring) -->
+      <path d="M-100,0 L-120,-20 L-100,-40 L-110,-60 L-80,-80 L-60,-110 L-40,-100 L-20,-120 L0,-100 L20,-120 L40,-100 L60,-110 L80,-80 L110,-60 L100,-40 L120,-20 L100,0 L120,20 L100,40 L110,60 L80,80 L60,110 L40,100 L20,120 L0,100 L-20,120 L-40,100 L-60,110 L-80,80 L-110,60 L-100,40 L-120,20 Z" 
+            fill="none" stroke="url(#goldGear)" stroke-width="8"/>
+      <circle cx="0" cy="0" r="90" fill="none" stroke="#FFD54F" stroke-width="2"/>
+      
+      <!-- The Pirate Compass (Inner) -->
+      <path d="M0,-80 L20,-20 L80,0 L20,20 L0,80 L-20,20 L-80,0 L-20,-20 Z" fill="url(#blueCompass)">
+        <animateTransform attributeName="transform" type="scale" values="1; 1.05; 1" dur="3s" repeatCount="indefinite"/>
+      </path>
+      
+      <!-- Handshake / Scroll Symbol (Foreground) -->
+      <!-- A scroll wrapped around the center -->
+      <path d="M-40,20 Q0,40 40,20 Q0,80 -40,20" fill="#ECEFF1"/>
+      <path d="M-40,-20 Q0,0 40,-20" stroke="#37474F" stroke-width="2" fill="none"/>
+    </g>
+  </g>
+
+  <!-- Particles: Paper to Stars -->
+  <g>
+      <!-- Particle 1 -->
+      <g>
+         <rect x="200" y="400" width="15" height="20" fill="#FFF" opacity="0.6" transform="rotate(15)">
+            <animate attributeName="y" values="400; 200" dur="3s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.6; 0" dur="3s" repeatCount="indefinite"/>
+            <animateTransform attributeName="transform" type="rotate" from="15 207 410" to="45 207 210" dur="3s" repeatCount="indefinite"/>
+         </rect>
+         <circle cx="207" cy="200" r="4" fill="#E1F5FE" opacity="0">
+            <animate attributeName="opacity" values="0; 1; 0" dur="3s" repeatCount="indefinite" begin="1.5s"/>
+         </circle>
+      </g>
+      <!-- Particle 2 -->
+      <g>
+         <rect x="300" y="450" width="12" height="18" fill="#FFF" opacity="0.5" transform="rotate(-10)">
+            <animate attributeName="y" values="450; 250" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+            <animate attributeName="opacity" values="0.5; 0" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+         </rect>
+         <circle cx="306" cy="250" r="3" fill="#E1F5FE" opacity="0">
+            <animate attributeName="opacity" values="0; 1; 0" dur="4s" repeatCount="indefinite" begin="2.5s"/>
+         </circle>
+      </g>
+       <!-- Particle 3 -->
+      <g>
+         <rect x="250" y="380" width="10" height="15" fill="#FFF" opacity="0.5" transform="rotate(30)">
+            <animate attributeName="y" values="380; 180" dur="3.5s" repeatCount="indefinite" begin="1s"/>
+            <animate attributeName="opacity" values="0.5; 0" dur="3.5s" repeatCount="indefinite" begin="1s"/>
+         </rect>
+         <circle cx="255" cy="180" r="5" fill="#FFF9C4" opacity="0">
+            <animate attributeName="opacity" values="0; 1; 0" dur="3.5s" repeatCount="indefinite" begin="2.7s"/>
+         </circle>
+      </g>
+  </g>
+</svg>

@@ -414,6 +414,168 @@ THEME_CELEBRATIONS: Dict[str, ThemeCelebration] = {
         reward_xp=1000,
         reward_title="Freewill Pioneer",
     ),
+    
+    # =========================================================================
+    # SPACE PIRATE THEME - Orbit Accord Captain
+    # =========================================================================
+    "space_pirate": ThemeCelebration(
+        theme_id="space_pirate",
+        title="Orbit Accord Captain!",
+        subtitle="All space pirate companions have joined your outlaw coalition.",
+        description=(
+            "You turned rogue logistics into responsible liberation. From a scuffed stamp "
+            "to a pocket gravity relic, every unlikely companion helped you free trade lanes "
+            "without surrendering your ethics."
+        ),
+        svg_filename="space_pirate_accord.svg",
+        background_gradient_start="#08111f",
+        background_gradient_end="#1b2d4a",
+        accent_color="#7dd3fc",
+        particle_color="#fef08a",
+        sound_filename="space_pirate_accord.wav",
+        celebration_quotes=(
+            "Congratulations, Captain. You weaponized paperwork and somehow made it cool.",
+            "Scuffed Customs Stamp says your compliance aura is illegal in seven sectors.",
+            "Laughing Airlock Seal reports hull integrity: solid. Comedic timing: perfect.",
+            "Contraband Tea Kettle has filed for culinary immunity and immediate applause.",
+            "Dock Rat Cartographer mapped a shortcut through your emotional avoidance.",
+            "Mutiny Complaint Box confirms the crew still argues, just with better minutes.",
+            "Polite Boarding Cone asks everyone to panic in an orderly single-file line.",
+            "Audit Ghost Ledger found your old mistakes and marked them as paid in full.",
+            "Retired Parade Thruster demands respect and at least one dramatic entrance.",
+            "Pocket Gravity Button remains tiny and deeply unimpressed by your ego.",
+            "Sector rumor says you won a blockade with a spreadsheet and eye contact.",
+            "Your coalition is now the legal definition of unexpectedly competent piracy.",
+            "A former admiral called your strategy annoyingly ethical. High praise.",
+            "Crew morale increased 22% after you replaced threats with transparency.",
+            "You proved that accountability can still have swagger and a custom jacket.",
+            "The old empire left one note: Please stop winning with documentation.",
+            "Rhea's review of you: brave, stubborn, finally communicative.",
+            "The pocket button museum sign reads: Most dangerous when unused.",
+            "Your ships now carry tea, legal aid, and zero tolerance for exploitation.",
+            "Orbit Accord Captain unlocked: rebellion completed with governance enabled.",
+        ),
+        curiosity_message="Curiosity found the hidden route. Seven gold coins for checking the fine print, Captain!",
+        resignation_message="Even pirates need dock leave. This celebration card has fully discharged its dramatic energy.",
+        persistence_message="You clicked again despite excellent alternatives. One coin for focused stubbornness.",
+        addiction_agreement=(
+            "ORBIT ACCORD NON-REPETITIVE CLICKING PLEDGE: I, the undersigned captain, acknowledge receipt of "
+            "twenty-two gold coins as final compensation for celebration-card overuse. I confirm the crew has "
+            "work to do, the ledger has deadlines, and the pocket gravity button has advised restraint. I hereby "
+            "agree to redirect this momentum into practical acts of freedom, accountability, and better scheduling."
+        ),
+        reward_coins=500,
+        reward_xp=1000,
+        reward_title="Orbit Accord Captain",
+    ),
+
+    # =========================================================================
+    # THIEF THEME - Civic Legend
+    # =========================================================================
+    "thief": ThemeCelebration(
+        theme_id="thief",
+        title="Civic Legend!",
+        subtitle="All thief companions have joined your redemption casebook.",
+        description=(
+            "From alley instinct to public accountability, you built trust the hard way. "
+            "Every unlikely companion helped turn survival skills into lawful impact, and "
+            "your city now remembers you for service instead of fear."
+        ),
+        svg_filename="thief_celebration.svg",
+        background_gradient_start="#111827",
+        background_gradient_end="#3b2f2f",
+        accent_color="#f59e0b",
+        particle_color="#93c5fd",
+        sound_filename="thief_resolve.wav",
+        celebration_quotes=(
+            "Civic Legend unlocked. You turned a rap sheet into a policy manual.",
+            "Pocket Receipt Sparrow has verified your growth with itemized evidence.",
+            "Crime Sticker reports a 47% reduction in nonsense testimony.",
+            "Lockpick Hairpin says your chain-of-custody survived this breach.",
+            "Stolen SIM drew a route labeled: Respect, earned daily.",
+            "Spray Can Silencer muted your old excuses and filed them as closed.",
+            "Hoodie Shadow requests fewer dramatic foot chases and more timing.",
+            "Safe Cracker Stethoscope archived your win from twelve clean reads.",
+            "Crowbar Lever opened the door before panic could.",
+            "Flashlight Beam remains small and deeply unimpressed by ego.",
+            "Neighborhood rumor: your paperwork is now scarier than your sprint speed.",
+            "Former rivals now quote your procedures when they train recruits.",
+            "You proved that accountability is not weakness, it is architecture.",
+            "Someone asked for your secret. You answered: boring consistency.",
+            "Mira's review: still stubborn, finally trustworthy under pressure.",
+            "Dorian's old network collapsed faster than your audit backlog.",
+            "Public trust went up when you stopped trying to look heroic.",
+            "Your city now has fewer myths and better systems. Good trade.",
+            "Legacy achieved: people feel safer even when you are off shift.",
+            "Civic Legend complete: redemption operational, governance online.",
+        ),
+        curiosity_message="Curiosity keeps casework honest. Seven gold coins for checking the details, Civic Legend!",
+        resignation_message="Even heroes of reform need downtime. This celebration card has filed its final report.",
+        persistence_message="You clicked again under full supervision. One coin for lawful stubbornness.",
+        addiction_agreement=(
+            "CIVIC LEGEND CLICKING DE-ESCALATION PACT: I, the undersigned, acknowledge receipt of twenty-two gold coins "
+            "as final compensation for repeated celebration-card interactions. I confirm that the docket is full, the "
+            "resonator is cooling down, and the Flashlight Beam has advised restraint. I agree to redirect this energy toward "
+            "practical service, transparent process, and fewer unnecessary clicks."
+        ),
+        reward_coins=500,
+        reward_xp=1000,
+        reward_title="Civic Legend",
+    ),
+    
+    # =========================================================================
+    # ZOO WORKER THEME - Keeper of Ember Time
+    # =========================================================================
+    "zoo_worker": ThemeCelebration(
+        theme_id="zoo_worker",
+        title="Keeper of Ember Time!",
+        subtitle="All zoo-worker companions have joined your sanctuary record.",
+        description=(
+            "You built a culture of calm under impossible pressure. From tiny logistical allies "
+            "to Emberwing itself, every companion proved that care, discipline, and courage can "
+            "hold even when time breaks open."
+        ),
+        svg_filename="zoo_worker_dawn_farewell.svg",
+        background_gradient_start="#0f2d2a",
+        background_gradient_end="#4a2f1f",
+        accent_color="#f59e0b",
+        particle_color="#93c5fd",
+        sound_filename="zoo_worker_dawn_farewell.wav",
+        celebration_quotes=(
+            "Keeper of Ember Time unlocked. You chose stewardship over spectacle.",
+            "Ticket Stub Gecko confirms every route was logged and every person counted.",
+            "Night Shift Lemur reports hazard prediction up and panic down.",
+            "Feeding Cart Compass says your priorities finally point true north.",
+            "Aviary Lock Lark sings because every latch held under stress.",
+            "Veterinary Lantern Moth found pain early and taught everyone to respond faster.",
+            "River Otter Archivist preserved the chain when memory got unreliable.",
+            "Old Scalebook Oracle opened to a page that already had your name.",
+            "Storm Glass Incubator kept the weather inside the glass, not inside people.",
+            "Emberwing bowed once. In dragon language, that means respect.",
+            "Mila's note in the incident log: brave, steady, finally honest.",
+            "Your protocols now train new keepers before they touch emergency controls.",
+            "You proved compassion scales better than panic.",
+            "The city trusted your team because your records were auditable.",
+            "Small actions, repeated cleanly, became a legendary outcome.",
+            "No one calls it luck anymore. They call it preparation.",
+            "The farewell hurt. The wisdom stayed.",
+            "Your sanctuary did not become perfect. It became responsible.",
+            "History remembers who kept the gates when dawn split open.",
+            "Keeper of Ember Time complete: love honored, duty upheld, legacy alive.",
+        ),
+        curiosity_message="Curiosity saved the shift. Seven gold coins for checking one more detail, Keeper!",
+        resignation_message="Even keepers need rest cycles. This celebration card has completed its final round.",
+        persistence_message="You clicked again with full awareness. One coin for disciplined persistence.",
+        addiction_agreement=(
+            "KEEPER OF EMBER TIME REFLECTION AGREEMENT: I, the undersigned keeper, acknowledge receipt of twenty-two gold "
+            "coins as final compensation for repeated celebration-card interactions. I confirm that the sanctuary has real "
+            "work to do, the logs need review, and Emberwing has recommended practical follow-through. I agree to redirect "
+            "this momentum into patient care, clean process, and choices worthy of tomorrow."
+        ),
+        reward_coins=500,
+        reward_xp=1000,
+        reward_title="Keeper of Ember Time",
+    ),
 }
 
 

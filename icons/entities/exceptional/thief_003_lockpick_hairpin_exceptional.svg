@@ -1,0 +1,73 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 003: Lockpick Hairpin (Exceptional) - Sonic Master Key -->
+  <defs>
+    <!-- High Tech Gradient -->
+    <linearGradient id="sonicSteel" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ECEFF1"/>
+      <stop offset="50%" stop-color="#90A4AE"/>
+      <stop offset="100%" stop-color="#CFD8DC"/>
+    </linearGradient>
+    
+    <!-- Neon Glow -->
+    <filter id="neonBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#00E5FF" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <g transform="translate(256, 256)">
+    
+    <!-- Glowing Keyhole (Target Acquired) -->
+    <path d="M-60,-60 A60,60 0 1,1 60,-60 L80,150 L-80,150 Z" stroke="#00E5FF" stroke-width="2" fill="none" opacity="0.5">
+        <animate attributeName="stroke-opacity" values="0.2; 0.8; 0.2" dur="2s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Unlocking Pulse Waves -->
+    <circle cx="0" cy="-60" r="10" stroke="#00E5FF" fill="none" stroke-width="2" opacity="0">
+        <animate attributeName="r" values="10; 250" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+        <animate attributeName="opacity" values="1; 0" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+        <animate attributeName="stroke-width" values="5; 0" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+    </circle>
+    <circle cx="0" cy="-60" r="10" stroke="#00E5FF" fill="none" stroke-width="2" opacity="0">
+        <animate attributeName="r" values="10; 250" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+        <animate attributeName="opacity" values="1; 0" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+         <animate attributeName="stroke-width" values="5; 0" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
+    </circle>
+
+
+    <!-- The Sonic Pick -->
+    <g transform="translate(0, -60)">
+        <!-- High Frequency Vibration -->
+        <animateTransform attributeName="transform" type="translate"
+            values="-1,0; 1,0; -1,0"
+            dur="0.05s"
+            repeatCount="indefinite"/>
+
+        <!-- Main Shaft -->
+        <path d="M0,0 L200,60" stroke="url(#sonicSteel)" stroke-width="14" stroke-linecap="round" filter="url(#neonBlur)"/>
+        
+        <!-- Tech Handle Details -->
+        <path d="M150,45 L150,55 M160,48 L160,58 M170,51 L170,61" stroke="#00E5FF" stroke-width="3" opacity="0.8"/>
+        
+        <!-- Active Tip (Scanning) -->
+        <circle cx="0" cy="0" r="5" fill="#00E5FF" filter="url(#neonBlur)">
+             <animate attributeName="r" values="4; 8; 4" dur="0.2s" repeatCount="indefinite"/>
+        </circle>
+    </g>
+    
+    <!-- Digital Tension Gauge (Projected HUD) -->
+    <path d="M-100,100 Q0,150 100,100" fill="none" stroke="#00E5FF" stroke-width="2" stroke-dasharray="10,10" opacity="0.5"/>
+    <circle cx="0" cy="125" r="5" fill="#00E5FF">
+         <animate attributeName="cx" values="-50; 50; -50" dur="1s" repeatCount="indefinite"/>
+    </circle>
+
+  </g>
+</svg>

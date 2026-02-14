@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Zoo Worker 007: Old Scalebook Oracle (Exceptional - The Amber Archive) -->
+  <!-- Concept: A book made entirely of polished amber and fossilized bone.
+       The "pages" are transparent slabs. The surprise is the fossilized lizard skeleton on the cover
+       is ALIVE inside the amber, trapped but moving. It taps the glass.
+       Theme: Jurrasic/Ancient, Precious, "Life finds a way". -->
+  
+  <defs>
+    <!-- Deep Amber Gradient (Translucent feel) -->
+    <linearGradient id="amberDeep" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFCA28" stop-opacity="0.9"/> <!-- Light Gold -->
+      <stop offset="50%" stop-color="#FF6F00" stop-opacity="0.8"/> <!-- Deep Orange -->
+      <stop offset="100%" stop-color="#BF360C" stop-opacity="0.9"/> <!-- Red/Brown -->
+    </linearGradient>
+
+    <!-- Inner Glow for the creature -->
+    <radialGradient id="fossilGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF8E1" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#FF6F00" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Bone Gradient -->
+    <linearGradient id="ancientBone" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#EFEBE9"/>
+      <stop offset="100%" stop-color="#A1887F"/>
+    </linearGradient>
+
+    <!-- Glass/Insect Inclusion Highlight -->
+    <filter id="inclusionGlow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="0" result="offsetblur"/>
+      <feFlood flood-color="#FFEB3B"/>
+      <feComposite in2="offsetblur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="amberShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
+      <feOffset dx="0" dy="8"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g transform="translate(256, 256)">
+    
+    <!-- Levitating slowly with heavy weight -->
+    <g>
+        <animateTransform attributeName="transform" type="translate" values="0,0; 0,-10; 0,0" dur="6s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+
+        <!-- BOOK STRUCTURE -->
+        <g transform="rotate(-5)" filter="url(#amberShadow)">
+            <!-- Back Cover (Darker Amber) -->
+            <rect x="-110" y="-135" width="220" height="270" rx="6" fill="#BF360C"/>
+            
+            <!-- Pages (Stacked Bone/Parchment) -->
+            <rect x="-105" y="-130" width="210" height="260" rx="3" fill="#D7CCC8"/>
+            <line x1="-105" y1="-100" x2="105" y2="-100" stroke="#8D6E63" stroke-width="1"/>
+            <line x1="-105" y1="100" x2="105" y2="100" stroke="#8D6E63" stroke-width="1"/>
+
+            <!-- Front Cover (The Amber Slab) -->
+            <rect x="-115" y="-140" width="220" height="270" rx="6" fill="url(#amberDeep)" stroke="#FFB74D" stroke-width="2"/>
+            
+            <!-- Spine (Vertebrae Column) -->
+            <!-- A literal spine bone acting as the book spine -->
+            <path d="M-115,-140 Q-140,0 -115,130 L-130,130 Q-155,0 -130,-140 Z" fill="url(#ancientBone)"/>
+            <g transform="translate(-125, -120)">
+                <circle cy="0" r="5" fill="#5D4037" opacity="0.3"/>
+                <circle cy="40" r="5" fill="#5D4037" opacity="0.3"/>
+                <circle cy="80" r="5" fill="#5D4037" opacity="0.3"/>
+                <circle cy="120" r="5" fill="#5D4037" opacity="0.3"/>
+                <circle cy="160" r="5" fill="#5D4037" opacity="0.3"/>
+                <circle cy="200" r="5" fill="#5D4037" opacity="0.3"/>
+                <circle cy="240" r="5" fill="#5D4037" opacity="0.3"/>
+            </g>
+
+            <!-- THE TRICK: Creating depth inside the amber -->
+            <!-- Inner Shadow/Depth to show thickness -->
+            <rect x="-105" y="-130" width="200" height="250" rx="4" fill="none" stroke="#BF360C" stroke-width="4" opacity="0.4"/>
+
+            <!-- FOSSIL CREEPER (Trapped inside) -->
+            <g transform="translate(0, 0)">
+                <!-- Halo behind fossil -->
+                <ellipse cx="0" cy="0" rx="70" ry="90" fill="url(#fossilGlow)"/>
+
+                <!-- Skeletal Tail -->
+                <path d="M10,80 Q40,110 60,90 Q80,70 60,50" fill="none" stroke="#FFE0B2" stroke-width="6" stroke-linecap="round" stroke-dasharray="8, 4" opacity="0.8"/>
+
+                <!-- Skeletal Ribs -->
+                <path d="M-20,-40 Q-50,-30 -20,-20 M-20,-10 Q-60,0 -20,10 M-20,20 Q-50,30 -20,40" stroke="#FFE0B2" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.7"/>
+                <path d="M20,-40 Q50,-30 20,-20 M20,-10 Q60,0 20,10 M20,20 Q50,30 20,40" stroke="#FFE0B2" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.7"/>
+                
+                <!-- Spine -->
+                <line x1="0" y1="-60" x2="0" y2="60" stroke="#FFF" stroke-width="6" stroke-linecap="round"/>
+
+                <!-- THE HEAD (Animated) -->
+                <g filter="url(#inclusionGlow)">
+                    <animateTransform attributeName="transform" type="rotate" values="0 0 -70; 10 0 -70; -10 0 -70; 0 0 -70" dur="5s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1"/>
+                    
+                    <!-- Skull -->
+                    <path d="M-25,-80 Q0,-100 25,-80 L20,-50 Q0,-40 -20,-50 Z" fill="#FFF3E0"/>
+                    <!-- Eye Socket -->
+                    <circle cx="-12" cy="-70" r="6" fill="#3E2723"/>
+                    <circle cx="12" cy="-70" r="6" fill="#3E2723"/>
+                    
+                    <!-- PINPOINT EYES (The 'Trick' - The fossil is looking at you) -->
+                    <circle cx="-12" cy="-70" r="2" fill="#FF5252">
+                        <animate attributeName="opacity" values="0; 1; 0" dur="4s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="12" cy="-70" r="2" fill="#FF5252">
+                        <animate attributeName="opacity" values="0; 1; 0" dur="4s" repeatCount="indefinite"/>
+                    </circle>
+
+                    <!-- Mandibles (Clicking) -->
+                    <path d="M-15,-50 Q-25,-30 -5,-35" stroke="#FFF3E0" stroke-width="3" fill="none">
+                        <animateTransform attributeName="transform" type="rotate" values="0 -15 -50; 15 -15 -50; 0 -15 -50" dur="0.2s" repeatCount="indefinite" begin="2s"/>
+                    </path>
+                    <path d="M15,-50 Q25,-30 5,-35" stroke="#FFF3E0" stroke-width="3" fill="none">
+                         <animateTransform attributeName="transform" type="rotate" values="0 15 -50; -15 15 -50; 0 15 -50" dur="0.2s" repeatCount="indefinite" begin="2s"/>
+                    </path>
+                </g>
+            </g>
+
+            <!-- Ancient Mosquito (Trapped near the bottom corner) - Nod to source material -->
+            <g transform="translate(60, 90) rotate(120)">
+                <ellipse cx="0" cy="0" rx="3" ry="8" fill="#3E2723"/>
+                <path d="M-2,-2 L-10,-5 M2,-2 L10,-5" stroke="#3E2723" stroke-width="0.5"/>
+                <circle cx="0" cy="0" r="10" fill="none" stroke="#D84315" stroke-width="1" opacity="0.5"/> <!-- Halo -->
+            </g>
+            
+            <!-- Cracks/Veins in the Amber -->
+            <path d="M-115,-140 L-80,-100 M105,130 L70,80" stroke="#FF6F00" stroke-width="1" opacity="0.6"/>
+
+            <!-- High Specular Glare (Glassy Surface) -->
+            <path d="M-110,-130 L-60,-130 L-110,-80 Z" fill="#FFF" opacity="0.3"/>
+            <path d="M50,80 L100,120 L50,120 Z" fill="#FFF" opacity="0.2"/>
+
+        </g>
+    </g>
+  </g>
+</svg>

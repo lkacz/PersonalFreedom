@@ -214,31 +214,125 @@ Create required SVG assets.
 
 Required normal icons:
 
-- `icons/entities/robot_001_rusted_bolt_scout.svg`
-- `icons/entities/robot_002_safety_drone_pico.svg`
-- `icons/entities/robot_003_conveyor_cat_nori.svg`
-- `icons/entities/robot_004_forklift_hound_atlas.svg`
-- `icons/entities/robot_005_midnight_welding_arm.svg`
-- `icons/entities/robot_006_backup_battery_bruno.svg`
-- `icons/entities/robot_007_inspection_drone_iris.svg`
-- `icons/entities/robot_008_foundry_exosuit_aster.svg`
+- [x] `icons/entities/robot_001_rusted_bolt_scout.svg`
+- [x] `icons/entities/robot_002_safety_drone_pico.svg`
+- [x] `icons/entities/robot_003_conveyor_cat_nori.svg`
+- [x] `icons/entities/robot_004_forklift_hound_atlas.svg`
+- [x] `icons/entities/robot_005_midnight_welding_arm.svg`
+  - [x] `icons/entities/robot_006_backup_battery_bruno.svg`
+  - [x] `icons/entities/robot_007_inspection_drone_iris.svg`
+- [x] `icons/entities/robot_008_foundry_exosuit_aster.svg`
 - `icons/entities/robot_009_freewill_core_eve.svg`
 
 Required exceptional icons:
 
-- `icons/entities/exceptional/robot_001_rusted_bolt_scout_exceptional.svg`
-- `icons/entities/exceptional/robot_002_safety_drone_pico_exceptional.svg`
-- `icons/entities/exceptional/robot_003_conveyor_cat_nori_exceptional.svg`
-- `icons/entities/exceptional/robot_004_forklift_hound_atlas_exceptional.svg`
-- `icons/entities/exceptional/robot_005_midnight_welding_arm_exceptional.svg`
-- `icons/entities/exceptional/robot_006_backup_battery_bruno_exceptional.svg`
-- `icons/entities/exceptional/robot_007_inspection_drone_iris_exceptional.svg`
-- `icons/entities/exceptional/robot_008_foundry_exosuit_aster_exceptional.svg`
+- [x] `icons/entities/exceptional/robot_001_rusted_bolt_scout_exceptional.svg`
+- [x] `icons/entities/exceptional/robot_002_safety_drone_pico_exceptional.svg`
+- [x] `icons/entities/exceptional/robot_003_conveyor_cat_nori_exceptional.svg`
+- [x] `icons/entities/exceptional/robot_004_forklift_hound_atlas_exceptional.svg`
+- [x] `icons/entities/exceptional/robot_005_midnight_welding_arm_exceptional.svg`
+  - [x] `icons/entities/exceptional/robot_006_backup_battery_bruno_exceptional.svg`
+  - [x] `icons/entities/exceptional/robot_007_inspection_drone_iris_exceptional.svg`
+- [x] `icons/entities/exceptional/robot_008_foundry_exosuit_aster_exceptional.svg`
 - `icons/entities/exceptional/robot_009_freewill_core_eve_exceptional.svg`
 
 Optional celebration asset:
 
 - `icons/celebrations/robot_liberator.svg`
+
+## Phase 8B: Visual Bible (Entity Art Direction)
+
+Use this as the Robot theme visual bible for entity art.
+
+### Art Progression Rule
+
+Visual progression across the 9 entities must communicate:
+
+1. constrained factory routine,
+2. emerging awareness and cooperation,
+3. ethical power with responsibility,
+4. liberated but grounded leadership.
+
+### Entity Art Direction Matrix
+
+| Entity ID | Name | Story Role | Normal Art Direction | Exceptional Art Direction |
+|---|---|---|---|---|
+| `robot_001` | Rusted Bolt Scout | First spark of awareness | Tiny asymmetrical scout bot, loose wheel, worn metal, one bright lens. Palette: rust + gunmetal + dim cyan. | Cleaner chassis, stabilized wheel, dual optics, confident stance. Palette shifts to steel and brighter cyan. |
+| `robot_002` | Safety Drone Pico | Care before rebellion | Palm-sized hover drone with warning stripe ring and protective posture. Palette: safety yellow + gray shell. | Smoother shell, broader sensor halo, predictive scan visuals, calm guardian tone. |
+| `robot_003` | Conveyor Cat Nori | Agile adaptation | Cat-like rail bot silhouette, magnetic paws, cable tail, low center of gravity. Palette: graphite + orange maintenance accents. | Streamlined chrome trim, stronger motion lines, high-precision “flow” identity. |
+| `robot_004` | Forklift Hound Atlas | Loyal strength | Quadruped load carrier with hydraulic frame and stable cargo geometry. Palette: industrial blue-gray. | Reinforced logistics hero look with balance gyros and rescue harness details. |
+| `robot_005` | Midnight Welding Arm | Repair and emotional bridge | Autonomous welding arm in dark shift ambiance with controlled spark arcs. Palette: deep navy + orange-white sparks. | Premium seam-light trails, ceremonial rebuild motifs, cleaner forged finish. |
+| `robot_006` | Backup Battery Bruno | Resilience for the collective | Heavy battery module, emergency ports, robust form language, visible charge indicators. Palette: matte black + green energy bars. | Adaptive power-routing lines, brighter core glow, “holds the grid” reliability aesthetic. |
+| `robot_007` | Inspection Drone Iris | Truth and oversight | High-altitude scanner drone with dominant aperture eye and audit-line motifs. Palette: cool silver + analytic blue. | Multi-spectrum optics, layered lens petals, radiant forensic scanner identity. |
+  | `robot_008` | Foundry Exosuit Aster | The Walking Kiln | Heavy industrial furnace cylinder with molten core window and piston legs. Palette: Cast Iron + Molten Orange. | The Cosmic Forge: Void-glass vessel containing a living nebula with floating star-shard limbs. |
+| `robot_009` | Freewill Core Eve | Autonomous ethical leadership | Crystalline cognition core in containment cradle with pulse rhythm motifs. Palette: obsidian + teal-white pulse. | “Dawn” core bloom, network filaments, unity-without-uniformity visual symbolism. |
+
+### Global Style Guardrails
+
+1. Prioritize silhouette readability first; details second.
+2. Show real mechanical logic (joints, fasteners, service seams).
+3. Add emotional readability through optics/posture rather than human facial mimicry.
+4. Exceptional variants must read as evolution, not simple recolor.
+5. Keep factory-to-freedom narrative continuity across all 9 designs.
+
+## Phase 8A: Animation Direction Guide
+
+Use this section as the canonical motion brief for Robot theme visuals.
+
+### Motion Narrative
+
+Animation should mirror the story arc:
+
+1. Early entities: constrained, mechanical, imperfect loops.
+2. Mid entities: purposeful, coordinated industrial motion.
+3. Late entities: stable, confident, ethical power.
+4. Legendary finish: autonomy + responsibility, not chaos.
+
+### Technical Standards
+
+1. Preferred delivery: animated SVG (SMIL/CSS transforms) with static fallback.
+2. Loop durations:
+   - common/uncommon: `2.8s` to `4.2s`
+   - rare/epic: `2.4s` to `3.6s`
+   - legendary: `3.2s` to `5.0s` with layered subloops
+3. Keep max concurrently animated parts per icon to `<= 3`.
+4. Avoid strobing/high-frequency flashes (`> 3 Hz`).
+5. Maintain silhouette readability at small sizes (64-96 px).
+6. Exceptional variants must keep base silhouette; add premium motion layer rather than redesigning identity.
+7. Reduced-motion policy: provide static fallback frame and disable non-essential oscillation.
+
+### Hero Animation Direction (CharacterCanvas)
+
+1. Idle body bob: subtle `1-2 px` vertical drift over `3.5s`.
+2. Eye/visor pulse: low-amplitude light pulse every `2.2s`.
+3. Core-reactor pulse:
+   - normal: single pulse cycle `2.6s`
+   - high tiers: dual pulse with secondary halo `3.2s`
+4. Tier aura/particles should intensify by tier, not by speed.
+5. No jittery movement; motion should feel servo-controlled and deliberate.
+
+### Entity Animation Matrix
+
+| Entity ID | Name | Normal Animation | Exceptional Uplift |
+|---|---|---|---|
+| `robot_001` | Rusted Bolt Scout | Slight wheel wobble + scanning eye sweep (`3.8s`) | Wobble stabilizes; dual-eye synchronized sweep + confidence blink |
+| `robot_002` | Safety Drone Pico | Hover bob (`3.2s`) + warning beacon soft pulse | Predictive ring sweep + smoother anti-collision drift |
+| `robot_003` | Conveyor Cat Nori | Tail-cable flick + paw-step micro-loop (`2.8s`) | Rail-glide streak highlight + faster precision cadence |
+| `robot_004` | Forklift Hound Atlas | Hydraulic piston compression cycle (`3.4s`) | Load-balancer gyros rotate subtly + reinforced stance lock |
+| `robot_005` | Midnight Welding Arm | Torch arm pivot + spark burst (`3.0s`) | Cleaner seam-trace arcs + ceremonial weld glow ribbon |
+| `robot_006` | Backup Battery Bruno | Charge bar fill/decay + vent pulse (`3.6s`) | Grid-routing light paths ripple across housing |
+| `robot_007` | Inspection Drone Iris | Aperture iris open/close + scan line pass (`2.8s`) | Multi-spectrum concentric scan rings + lens flare sweep |
+  | `robot_008` | Foundry Exosuit Aster | Molten level wave + Ember release (`4s`) | Nebular galaxy rotation + Constellation limb float |
+| `robot_009` | Freewill Core Eve | Core pulse + containment ring orbit (`4.4s`) | Sunrise bloom cycle + network filament resonance wave |
+
+### Celebration Motion Notes
+
+For `icons/celebrations/robot_liberator.svg`:
+
+1. Layer 1: static emblem silhouette.
+2. Layer 2: slow radial dawn gradient expansion (`4.5s` loop).
+3. Layer 3: sparse particle ascent (factory sparks turning into stars).
+4. End state should feel calm and earned, not explosive.
 
 ## Phase 9: Tests and Documentation
 
