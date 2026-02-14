@@ -18570,7 +18570,7 @@ class CharacterCanvas(QtWidgets.QWidget):
         super().__init__(parent)
         self.equipped = equipped
         self.power = power
-        self.story_theme = story_theme  # warrior, scholar, wanderer, underdog
+        self.story_theme = story_theme  # warrior, scholar, wanderer, underdog, scientist, robot
         # Set minimum size but allow expansion (for splitter resizing)
         self.setMinimumSize(120, 145)  # Minimum readable size
         # Use size policy that maintains aspect ratio when resizing
@@ -18639,7 +18639,7 @@ class CharacterCanvas(QtWidgets.QWidget):
                 self._draw_wanderer_character(painter)
             elif self.story_theme == "underdog":
                 self._draw_underdog_character(painter)
-            elif self.story_theme == "scientist":
+            elif self.story_theme in ("scientist", "robot"):
                 self._draw_scientist_character(painter)
             else:
                 self._draw_warrior_character(painter)
@@ -24905,6 +24905,7 @@ STORY_MAIN_CHARACTER_NAMES = {
     "underdog": "Underdog",
     "scientist": "Scientist",
     "wanderer": "Wanderer",
+    "robot": "Robot",
 }
 
 
@@ -29449,11 +29450,15 @@ class EntitiesRingWidget(QtWidgets.QWidget):
         self.percentage = 0.0
         self.normal_count = 0
         self.exceptional_count = 0
-        self.total_possible = 45  # 9 entities × 5 story pools
+        try:
+            from entitidex.entity_pools import get_total_entity_count
+            self.total_possible = max(1, get_total_entity_count())
+        except Exception:
+            self.total_possible = 1
         self.setMinimumSize(60, 60)
         self.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
 
-    def set_progress(self, normal_count: int, exceptional_count: int, total_possible: int = 45):
+    def set_progress(self, normal_count: int, exceptional_count: int, total_possible: int = 1):
         """Set entities bonded progress.
         
         Args:
@@ -30284,7 +30289,8 @@ class DailyTimelineWidget(QtWidgets.QFrame):
                 # Count normal and exceptional correctly (they're independent)
                 normal_count = len(collected)
                 exceptional_count = len(exceptional_ids)
-                total_possible = 45  # Total entities per theme (9 entities * 5 themes)
+                from entitidex.entity_pools import get_total_entity_count
+                total_possible = max(1, get_total_entity_count())
                 self.entities_ring.set_progress(normal_count, exceptional_count, total_possible)
                 self.entities_ring.setVisible(True)
         except Exception as e:
@@ -31892,7 +31898,7 @@ class DevTab(QtWidgets.QWidget):
         story_layout = QtWidgets.QHBoxLayout()
         story_layout.addWidget(QtWidgets.QLabel("Story:"))
         self.story_combo = NoScrollComboBox()
-        self.story_combo.addItems(["warrior", "scholar", "underdog", "scientist", "wanderer"])
+        self.story_combo.addItems(["warrior", "scholar", "underdog", "scientist", "wanderer", "robot"])
         self.story_combo.currentTextChanged.connect(self._refresh_entity_selector)
         story_layout.addWidget(self.story_combo)
         story_layout.addStretch()
@@ -31971,7 +31977,7 @@ class DevTab(QtWidgets.QWidget):
         lock_story_layout = QtWidgets.QHBoxLayout()
         lock_story_layout.addWidget(QtWidgets.QLabel("Story:"))
         self.lock_story_combo = NoScrollComboBox()
-        self.lock_story_combo.addItems(["warrior", "scholar", "underdog", "scientist", "wanderer"])
+        self.lock_story_combo.addItems(["warrior", "scholar", "underdog", "scientist", "wanderer", "robot"])
         self.lock_story_combo.currentTextChanged.connect(self._refresh_entity_lock_list)
         lock_story_layout.addWidget(self.lock_story_combo)
         lock_story_layout.addStretch()

@@ -2746,7 +2746,7 @@ class EyeProtectionTab(QtWidgets.QWidget):
         if won_item:
             # Generate Item
             adhd_data = getattr(self.blocker, 'adhd_buster', {})
-            story_theme = adhd_data.get('story_active', 'warrior') if adhd_data else 'warrior'
+            story_theme = adhd_data.get('active_story', 'warrior') if adhd_data else 'warrior'
             
             new_item = generate_item(rarity=tier, story_id=story_theme, adhd_buster=adhd_data)
             

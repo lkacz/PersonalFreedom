@@ -74,7 +74,7 @@ class PreviewWindow(QtWidgets.QWidget):
         window_layout.addWidget(title)
 
         # Subtitle
-        subtitle = QtWidgets.QLabel("All 5 story themes: Warrior, Scholar, Wanderer, Underdog & Scientist")
+        subtitle = QtWidgets.QLabel("All 6 story themes: Warrior, Scholar, Wanderer, Underdog, Scientist & Robot")
         subtitle.setStyleSheet("font-size: 14px; color: #aaa;")
         subtitle.setAlignment(QtCore.Qt.AlignCenter)
         window_layout.addWidget(subtitle)
@@ -185,6 +185,22 @@ class PreviewWindow(QtWidgets.QWidget):
             scientist_layout.addLayout(container)
 
         main_layout.addWidget(scientist_group)
+        # Row 6: Robot Power Tiers
+        robot_group = QtWidgets.QGroupBox("Robot Theme - Power Tiers")
+        robot_layout = QtWidgets.QHBoxLayout(robot_group)
+        robot_layout.setSpacing(12)
+
+        for tier_name, power in tiers:
+            container = QtWidgets.QVBoxLayout()
+            canvas = CharacterCanvas({}, power, 100, 140, story_theme="robot")
+            container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
+            label = QtWidgets.QLabel(f"{tier_name}")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            label.setStyleSheet("font-size: 9px;")
+            container.addWidget(label)
+            robot_layout.addLayout(container)
+
+        main_layout.addWidget(robot_group)
 
         # Row 6: Warrior Gear Sets
         warrior_gear_group = QtWidgets.QGroupBox("⚔️ Warrior Equipment Sets")

@@ -77,6 +77,18 @@ WANDERER_ENTITIES = [
     ("wanderer_009_hobo_rat.svg", "Hobo Rat", 2000, "legendary"),
 ]
 
+ROBOT_ENTITIES = [
+    ("robot_001_rusted_bolt_scout.svg", "Rusted Bolt Scout", 10, "common"),
+    ("robot_002_safety_drone_pico.svg", "Safety Drone Pico", 50, "common"),
+    ("robot_003_conveyor_cat_nori.svg", "Conveyor Cat Nori", 150, "uncommon"),
+    ("robot_004_forklift_hound_atlas.svg", "Forklift Hound Atlas", 400, "uncommon"),
+    ("robot_005_midnight_welding_arm.svg", "Midnight Welding Arm", 700, "rare"),
+    ("robot_006_backup_battery_bruno.svg", "Backup Battery Bruno", 1100, "rare"),
+    ("robot_007_inspection_drone_iris.svg", "Inspection Drone Iris", 1500, "epic"),
+    ("robot_008_foundry_exosuit_aster.svg", "Foundry Exosuit Aster", 1800, "epic"),
+    ("robot_009_freewill_core_eve.svg", "Freewill Core Eve", 2000, "legendary"),
+]
+
 CURRENT_THEME = "warrior"  # Default theme
 
 THEME_ENTITIES = {
@@ -85,6 +97,7 @@ THEME_ENTITIES = {
     "underdog": UNDERDOG_ENTITIES,
     "scientist": SCIENTIST_ENTITIES,
     "wanderer": WANDERER_ENTITIES,
+    "robot": ROBOT_ENTITIES,
 }
 CURRENT_ENTITIES = THEME_ENTITIES.get(CURRENT_THEME, WARRIOR_ENTITIES)
 
@@ -175,7 +188,8 @@ class EntityPreviewWindow(QMainWindow):
     
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Entity SVG Preview - All Themes (45 Entities)")
+        total_entities = sum(len(entities) for entities in THEME_ENTITIES.values())
+        self.setWindowTitle(f"Entity SVG Preview - All Themes ({total_entities} Entities)")
         self.setMinimumSize(900, 700)
         
         # Dark theme
@@ -222,7 +236,7 @@ class EntityPreviewWindow(QMainWindow):
         main_layout = QVBoxLayout(central)
         
         # Header
-        header = QLabel("✨ ENTITIDEX - Complete Entity Collection (45 Entities)")
+        header = QLabel(f"✨ ENTITIDEX - Complete Entity Collection ({total_entities} Entities)")
         header.setFont(QFont("Segoe UI", 18, QFont.Bold))
         header.setAlignment(Qt.AlignCenter)
         header.setStyleSheet("color: #a5b4fc; margin: 10px;")
@@ -240,6 +254,7 @@ class EntityPreviewWindow(QMainWindow):
             "underdog": ("💪 Underdog", "#E65100"),
             "scientist": ("🔬 Scientist", "#1565C0"),
             "wanderer": ("🗺️ Wanderer", "#2E7D32"),
+            "robot": ("🤖 Robot", "#455A64"),
         }
         
         entities_dir = get_app_dir() / "icons" / "entities"
@@ -251,7 +266,7 @@ class EntityPreviewWindow(QMainWindow):
         main_layout.addWidget(tabs)
         
         # Footer
-        footer = QLabel("All 45 entity SVGs complete! Each theme has 9 entities with the 'niepozorny' legendary twist.")
+        footer = QLabel(f"All {total_entities} entity SVGs complete across {len(THEME_ENTITIES)} themes.")
         footer.setAlignment(Qt.AlignCenter)
         footer.setStyleSheet("color: #888888; margin: 10px;")
         main_layout.addWidget(footer)
