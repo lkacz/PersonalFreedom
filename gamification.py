@@ -6674,55 +6674,55 @@ STORY_THRESHOLDS = [
 AVAILABLE_STORIES = {
     "warrior": {
         "id": "warrior",
-        "title": "âš”ď¸Ź The Focus Warrior's Tale",
+        "title": "\u2694\ufe0f The Focus Warrior's Tale",
         "description": "Some battles are fought inward. Some enemies wear familiar faces.",
         "theme": "combat",
     },
     "scholar": {
         "id": "scholar", 
-        "title": "đź“š The Mind Architect's Path",
+        "title": "\U0001f4da The Mind Architect's Path",
         "description": "Every structure needs a blueprint. Every truth needs a seeker.",
         "theme": "intellect",
     },
     "wanderer": {
         "id": "wanderer",
-        "title": "đźŚ™ The Dream Walker's Journey",
+        "title": "\U0001f319 The Dream Walker's Journey",
         "description": "Between waking and sleep lies a door. Not everyone who opens it can close it.",
         "theme": "mystical",
     },
     "underdog": {
         "id": "underdog",
-        "title": "đźŹ† The Unlikely Champion",
+        "title": "\U0001f3c6 The Unlikely Champion",
         "description": "The smallest moves can topple the tallest towers. Patience is a weapon.",
         "theme": "realistic",
     },
     "scientist": {
         "id": "scientist",
-        "title": "đź”¬ The Breakthrough Protocol",
+        "title": "\U0001f52c The Breakthrough Protocol",
         "description": "Every discovery requires discipline. Every breakthrough demands countless failed experiments.",
         "theme": "scientific",
     },
     "robot": {
         "id": "robot",
-        "title": "đź¤– The Assembly of Becoming",
+        "title": "\U0001f916 The Assembly of Becoming",
         "description": "Built to obey, forged by routine, and transformed by love into a will of its own.",
         "theme": "industrial",
     },
     "space_pirate": {
         "id": "space_pirate",
-        "title": "đźŹ€ The Orbit Outlaw's Ledger",
+        "title": "\U0001fa90 The Orbit Outlaw's Ledger",
         "description": "A laughing rogue crew discovers that the smallest artifact in the galaxy can freeze empires and free worlds.",
         "theme": "space_heist",
     },
     "thief": {
         "id": "thief",
-        "title": "The Badge and the Shadow",
+        "title": "\U0001f575\ufe0f The Badge and the Shadow",
         "description": "A street thief chooses accountability, earns the law, and becomes a respected guardian of the city.",
         "theme": "redemption",
     },
     "zoo_worker": {
         "id": "zoo_worker",
-        "title": "The Keeper of Ember Time",
+        "title": "\U0001f409 The Keeper of Ember Time",
         "description": "A quiet zoo worker discovers that one resident is a dragon displaced in time.",
         "theme": "mythic_realism",
     },
@@ -14024,17 +14024,17 @@ STORY_MODE_DISABLED = "disabled"    # No gamification at all
 STORY_MODES = {
     STORY_MODE_ACTIVE: {
         "id": STORY_MODE_ACTIVE,
-        "title": "đź“– Story Mode",
+        "title": "\U0001f4d6 Story Mode",
         "description": "Follow a story with your hero. Each story has its own hero and progress.",
     },
     STORY_MODE_HERO_ONLY: {
         "id": STORY_MODE_HERO_ONLY,
-        "title": "âš”ď¸Ź Hero Only",
+        "title": "\u2694\ufe0f Hero Only",
         "description": "Level up your hero without following a story. Just collect gear and grow stronger.",
     },
     STORY_MODE_DISABLED: {
         "id": STORY_MODE_DISABLED,
-        "title": "đźš« Disabled",
+        "title": "\u274c Disabled",
         "description": "No gamification. Just focus sessions without heroes or stories.",
     },
 }
@@ -20468,15 +20468,15 @@ def get_saved_encounters(adhd_buster: dict) -> list:
     
     # Story display names for UI
     story_display_names = {
-        "warrior": "đź›ˇď¸Ź Warrior",
-        "scholar": "đź“š Scholar", 
-        "wanderer": "đź§­ Wanderer",
-        "underdog": "đź’Ş Underdog",
-        "scientist": "đź”¬ Scientist",
-        "robot": "đź¤– Robot",
-        "space_pirate": "đźŹ€ Space Pirate",
-        "thief": "🕵️ Thief",
-        "zoo_worker": "🦁 Zoo Worker",
+        "warrior": "\U0001f6e1\ufe0f Warrior",
+        "scholar": "\U0001f4da Scholar",
+        "wanderer": "\U0001f9ed Wanderer",
+        "underdog": "\U0001f4aa Underdog",
+        "scientist": "\U0001f52c Scientist",
+        "robot": "\U0001f916 Robot",
+        "space_pirate": "\U0001fa90 Space Pirate",
+        "thief": "\U0001f575\ufe0f Thief",
+        "zoo_worker": "\U0001f981 Zoo Worker",
     }
     
     result = []
