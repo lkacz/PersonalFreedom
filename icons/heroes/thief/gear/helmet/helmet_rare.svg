@@ -145,7 +145,7 @@
 
     <!-- State of the Art Hanging Strings -->
     <!-- Modeled with physics curve and weight -->
-    <g transform="translate(0, 0)" filter="url(#stringShadow)">
+    <g transform="translate(0, 5)" filter="url(#stringShadow)">
         <!-- Left String -->
         <g>
             <!-- Heavy cord with sway -->

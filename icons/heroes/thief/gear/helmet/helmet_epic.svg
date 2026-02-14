@@ -129,7 +129,7 @@
     </g>
 
     <!-- Glowing Fast Strings -->
-    <g transform="translate(0, 0)" filter="url(#stringGlow)">
+    <g transform="translate(0, 5)" filter="url(#stringGlow)">
         <!-- Left String -->
         <g>
             <!-- Heavy cord with sway -->

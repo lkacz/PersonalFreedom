@@ -41,7 +41,7 @@
     </g>
 
     <!-- Strings (Epic Geometry but No Glow) -->
-    <g transform="translate(0, 0)">
+    <g transform="translate(0, 5)">
         <!-- Left String -->
         <g>
             <path d="M-40 60 Q-42 90 -38 130" fill="none" stroke="url(#stringGradCommon)" stroke-width="4" stroke-linecap="round">
