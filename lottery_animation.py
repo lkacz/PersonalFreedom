@@ -1446,14 +1446,14 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
         if self.total <= 0:
             return "Common"  # Fallback
         cumulative = 0.0
-        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Celestial"]
         for rarity in rarity_order:
             weight = self.weights.get(rarity, 0)
             zone_pct = (weight / self.total) * 100
             if pos < cumulative + zone_pct:
                 return rarity
             cumulative += zone_pct
-        return "Legendary"  # Edge case
+        return rarity_order[-1]  # Edge case
     
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -1466,7 +1466,7 @@ class MultiTierLotterySlider(QtWidgets.QWidget):
         bar_y = (h - bar_height) // 2 + 5
         
         # Draw rarity zones
-        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Celestial"]
         cumulative_pct = 0.0
         
         if self.total <= 0:
@@ -2257,13 +2257,14 @@ class TierJumpSliderWidget(QtWidgets.QWidget):
     BASE_WEIGHTS = [50, 30, 15, 5]  # Index 0=+1, 1=+2, 2=+3, 3=+4
     
     # Rarity names and colors (matching ITEM_RARITIES in gamification.py)
-    RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Celestial"]
     RARITY_COLORS = {
         "Common": "#9e9e9e",
         "Uncommon": "#4caf50",
         "Rare": "#2196f3",
         "Epic": "#9c27b0",
-        "Legendary": "#ff9800"
+        "Legendary": "#ff9800",
+        "Celestial": "#00e5ff",
     }
     
     def __init__(self, upgrade_shift: int = 0, base_rarity: str = "Common", parent=None):

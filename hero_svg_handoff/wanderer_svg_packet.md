@@ -1,0 +1,495 @@
+# wanderer Hero SVG Packet
+
+## Theme Snapshot
+- story_id: `wanderer`
+- title: The Dream Walker's Journey
+- style intent: Mystic traveler. Flowing cloth, celestial cuts, curved asymmetric accents.
+- hero base direction: Floating or soft-bent stance, long cloth read, moon-star focal ornament.
+- motif keywords: constellations, crescent forms, veil layers, astral rings
+- palette anchors: #25305a, #443a7a, #6f67a8, #87d1e6, #c3b2e6
+
+## Mandatory Output Files
+Generate all files below.
+- `icons/heroes/wanderer/hero_base.svg`
+- `icons/heroes/wanderer/gear/cloak/cloak_common.svg`
+- `icons/heroes/wanderer/gear/cloak/cloak_uncommon.svg`
+- `icons/heroes/wanderer/gear/cloak/cloak_rare.svg`
+- `icons/heroes/wanderer/gear/cloak/cloak_epic.svg`
+- `icons/heroes/wanderer/gear/cloak/cloak_legendary.svg`
+- `icons/heroes/wanderer/gear/cloak/cloak_celestial.svg`
+- `icons/heroes/wanderer/gear/chestplate/chestplate_common.svg`
+- `icons/heroes/wanderer/gear/chestplate/chestplate_uncommon.svg`
+- `icons/heroes/wanderer/gear/chestplate/chestplate_rare.svg`
+- `icons/heroes/wanderer/gear/chestplate/chestplate_epic.svg`
+- `icons/heroes/wanderer/gear/chestplate/chestplate_legendary.svg`
+- `icons/heroes/wanderer/gear/chestplate/chestplate_celestial.svg`
+- `icons/heroes/wanderer/gear/boots/boots_common.svg`
+- `icons/heroes/wanderer/gear/boots/boots_uncommon.svg`
+- `icons/heroes/wanderer/gear/boots/boots_rare.svg`
+- `icons/heroes/wanderer/gear/boots/boots_epic.svg`
+- `icons/heroes/wanderer/gear/boots/boots_legendary.svg`
+- `icons/heroes/wanderer/gear/boots/boots_celestial.svg`
+- `icons/heroes/wanderer/gear/gauntlets/gauntlets_common.svg`
+- `icons/heroes/wanderer/gear/gauntlets/gauntlets_uncommon.svg`
+- `icons/heroes/wanderer/gear/gauntlets/gauntlets_rare.svg`
+- `icons/heroes/wanderer/gear/gauntlets/gauntlets_epic.svg`
+- `icons/heroes/wanderer/gear/gauntlets/gauntlets_legendary.svg`
+- `icons/heroes/wanderer/gear/gauntlets/gauntlets_celestial.svg`
+- `icons/heroes/wanderer/gear/amulet/amulet_common.svg`
+- `icons/heroes/wanderer/gear/amulet/amulet_uncommon.svg`
+- `icons/heroes/wanderer/gear/amulet/amulet_rare.svg`
+- `icons/heroes/wanderer/gear/amulet/amulet_epic.svg`
+- `icons/heroes/wanderer/gear/amulet/amulet_legendary.svg`
+- `icons/heroes/wanderer/gear/amulet/amulet_celestial.svg`
+- `icons/heroes/wanderer/gear/helmet/helmet_common.svg`
+- `icons/heroes/wanderer/gear/helmet/helmet_uncommon.svg`
+- `icons/heroes/wanderer/gear/helmet/helmet_rare.svg`
+- `icons/heroes/wanderer/gear/helmet/helmet_epic.svg`
+- `icons/heroes/wanderer/gear/helmet/helmet_legendary.svg`
+- `icons/heroes/wanderer/gear/helmet/helmet_celestial.svg`
+- `icons/heroes/wanderer/gear/shield/shield_common.svg`
+- `icons/heroes/wanderer/gear/shield/shield_uncommon.svg`
+- `icons/heroes/wanderer/gear/shield/shield_rare.svg`
+- `icons/heroes/wanderer/gear/shield/shield_epic.svg`
+- `icons/heroes/wanderer/gear/shield/shield_legendary.svg`
+- `icons/heroes/wanderer/gear/shield/shield_celestial.svg`
+- `icons/heroes/wanderer/gear/weapon/weapon_common.svg`
+- `icons/heroes/wanderer/gear/weapon/weapon_uncommon.svg`
+- `icons/heroes/wanderer/gear/weapon/weapon_rare.svg`
+- `icons/heroes/wanderer/gear/weapon/weapon_epic.svg`
+- `icons/heroes/wanderer/gear/weapon/weapon_legendary.svg`
+- `icons/heroes/wanderer/gear/weapon/weapon_celestial.svg`
+- `icons/heroes/wanderer/fx/tier_epic.svg`
+- `icons/heroes/wanderer/fx/tier_legendary.svg`
+- `icons/heroes/wanderer/fx/tier_celestial.svg`
+
+## Preferred Item-Type Output Files
+Generate these for full visual variety. If constrained, prioritize Helmet, Chestplate, Weapon, Shield.
+- `icons/heroes/wanderer/gear/helmet/dream_crown_common.svg`
+- `icons/heroes/wanderer/gear/helmet/dream_crown_uncommon.svg`
+- `icons/heroes/wanderer/gear/helmet/dream_crown_rare.svg`
+- `icons/heroes/wanderer/gear/helmet/dream_crown_epic.svg`
+- `icons/heroes/wanderer/gear/helmet/dream_crown_legendary.svg`
+- `icons/heroes/wanderer/gear/helmet/dream_crown_celestial.svg`
+- `icons/heroes/wanderer/gear/helmet/star_circlet_common.svg`
+- `icons/heroes/wanderer/gear/helmet/star_circlet_uncommon.svg`
+- `icons/heroes/wanderer/gear/helmet/star_circlet_rare.svg`
+- `icons/heroes/wanderer/gear/helmet/star_circlet_epic.svg`
+- `icons/heroes/wanderer/gear/helmet/star_circlet_legendary.svg`
+- `icons/heroes/wanderer/gear/helmet/star_circlet_celestial.svg`
+- `icons/heroes/wanderer/gear/helmet/moon_tiara_common.svg`
+- `icons/heroes/wanderer/gear/helmet/moon_tiara_uncommon.svg`
+- `icons/heroes/wanderer/gear/helmet/moon_tiara_rare.svg`
+- `icons/heroes/wanderer/gear/helmet/moon_tiara_epic.svg`
+- `icons/heroes/wanderer/gear/helmet/moon_tiara_legendary.svg`
+- `icons/heroes/wanderer/gear/helmet/moon_tiara_celestial.svg`
+- `icons/heroes/wanderer/gear/helmet/night_hood_common.svg`
+- `icons/heroes/wanderer/gear/helmet/night_hood_uncommon.svg`
+- `icons/heroes/wanderer/gear/helmet/night_hood_rare.svg`
+- `icons/heroes/wanderer/gear/helmet/night_hood_epic.svg`
+- `icons/heroes/wanderer/gear/helmet/night_hood_legendary.svg`
+- `icons/heroes/wanderer/gear/helmet/night_hood_celestial.svg`
+- `icons/heroes/wanderer/gear/helmet/astral_halo_common.svg`
+- `icons/heroes/wanderer/gear/helmet/astral_halo_uncommon.svg`
+- `icons/heroes/wanderer/gear/helmet/astral_halo_rare.svg`
+- `icons/heroes/wanderer/gear/helmet/astral_halo_epic.svg`
+- `icons/heroes/wanderer/gear/helmet/astral_halo_legendary.svg`
+- `icons/heroes/wanderer/gear/helmet/astral_halo_celestial.svg`
+- `icons/heroes/wanderer/gear/helmet/vision_mask_common.svg`
+- `icons/heroes/wanderer/gear/helmet/vision_mask_uncommon.svg`
+- `icons/heroes/wanderer/gear/helmet/vision_mask_rare.svg`
+- `icons/heroes/wanderer/gear/helmet/vision_mask_epic.svg`
+- `icons/heroes/wanderer/gear/helmet/vision_mask_legendary.svg`
+- `icons/heroes/wanderer/gear/helmet/vision_mask_celestial.svg`
+- `icons/heroes/wanderer/gear/helmet/third_eye_common.svg`
+- `icons/heroes/wanderer/gear/helmet/third_eye_uncommon.svg`
+- `icons/heroes/wanderer/gear/helmet/third_eye_rare.svg`
+- `icons/heroes/wanderer/gear/helmet/third_eye_epic.svg`
+- `icons/heroes/wanderer/gear/helmet/third_eye_legendary.svg`
+- `icons/heroes/wanderer/gear/helmet/third_eye_celestial.svg`
+- `icons/heroes/wanderer/gear/chestplate/starweave_robe_common.svg`
+- `icons/heroes/wanderer/gear/chestplate/starweave_robe_uncommon.svg`
+- `icons/heroes/wanderer/gear/chestplate/starweave_robe_rare.svg`
+- `icons/heroes/wanderer/gear/chestplate/starweave_robe_epic.svg`
+- `icons/heroes/wanderer/gear/chestplate/starweave_robe_legendary.svg`
+- `icons/heroes/wanderer/gear/chestplate/starweave_robe_celestial.svg`
+- `icons/heroes/wanderer/gear/chestplate/mooncloth_vest_common.svg`
+- `icons/heroes/wanderer/gear/chestplate/mooncloth_vest_uncommon.svg`
+- `icons/heroes/wanderer/gear/chestplate/mooncloth_vest_rare.svg`
+- `icons/heroes/wanderer/gear/chestplate/mooncloth_vest_epic.svg`
+- `icons/heroes/wanderer/gear/chestplate/mooncloth_vest_legendary.svg`
+- `icons/heroes/wanderer/gear/chestplate/mooncloth_vest_celestial.svg`
+- `icons/heroes/wanderer/gear/chestplate/dream_tunic_common.svg`
+- `icons/heroes/wanderer/gear/chestplate/dream_tunic_uncommon.svg`
+- `icons/heroes/wanderer/gear/chestplate/dream_tunic_rare.svg`
+- `icons/heroes/wanderer/gear/chestplate/dream_tunic_epic.svg`
+- `icons/heroes/wanderer/gear/chestplate/dream_tunic_legendary.svg`
+- `icons/heroes/wanderer/gear/chestplate/dream_tunic_celestial.svg`
+- `icons/heroes/wanderer/gear/chestplate/astral_garb_common.svg`
+- `icons/heroes/wanderer/gear/chestplate/astral_garb_uncommon.svg`
+- `icons/heroes/wanderer/gear/chestplate/astral_garb_rare.svg`
+- `icons/heroes/wanderer/gear/chestplate/astral_garb_epic.svg`
+- `icons/heroes/wanderer/gear/chestplate/astral_garb_legendary.svg`
+- `icons/heroes/wanderer/gear/chestplate/astral_garb_celestial.svg`
+- `icons/heroes/wanderer/gear/chestplate/night_vestments_common.svg`
+- `icons/heroes/wanderer/gear/chestplate/night_vestments_uncommon.svg`
+- `icons/heroes/wanderer/gear/chestplate/night_vestments_rare.svg`
+- `icons/heroes/wanderer/gear/chestplate/night_vestments_epic.svg`
+- `icons/heroes/wanderer/gear/chestplate/night_vestments_legendary.svg`
+- `icons/heroes/wanderer/gear/chestplate/night_vestments_celestial.svg`
+- `icons/heroes/wanderer/gear/chestplate/ether_wrap_common.svg`
+- `icons/heroes/wanderer/gear/chestplate/ether_wrap_uncommon.svg`
+- `icons/heroes/wanderer/gear/chestplate/ether_wrap_rare.svg`
+- `icons/heroes/wanderer/gear/chestplate/ether_wrap_epic.svg`
+- `icons/heroes/wanderer/gear/chestplate/ether_wrap_legendary.svg`
+- `icons/heroes/wanderer/gear/chestplate/ether_wrap_celestial.svg`
+- `icons/heroes/wanderer/gear/gauntlets/dream_catchers_common.svg`
+- `icons/heroes/wanderer/gear/gauntlets/dream_catchers_uncommon.svg`
+- `icons/heroes/wanderer/gear/gauntlets/dream_catchers_rare.svg`
+- `icons/heroes/wanderer/gear/gauntlets/dream_catchers_epic.svg`
+- `icons/heroes/wanderer/gear/gauntlets/dream_catchers_legendary.svg`
+- `icons/heroes/wanderer/gear/gauntlets/dream_catchers_celestial.svg`
+- `icons/heroes/wanderer/gear/gauntlets/star_weavers_common.svg`
+- `icons/heroes/wanderer/gear/gauntlets/star_weavers_uncommon.svg`
+- `icons/heroes/wanderer/gear/gauntlets/star_weavers_rare.svg`
+- `icons/heroes/wanderer/gear/gauntlets/star_weavers_epic.svg`
+- `icons/heroes/wanderer/gear/gauntlets/star_weavers_legendary.svg`
+- `icons/heroes/wanderer/gear/gauntlets/star_weavers_celestial.svg`
+- `icons/heroes/wanderer/gear/gauntlets/moon_hands_common.svg`
+- `icons/heroes/wanderer/gear/gauntlets/moon_hands_uncommon.svg`
+- `icons/heroes/wanderer/gear/gauntlets/moon_hands_rare.svg`
+- `icons/heroes/wanderer/gear/gauntlets/moon_hands_epic.svg`
+- `icons/heroes/wanderer/gear/gauntlets/moon_hands_legendary.svg`
+- `icons/heroes/wanderer/gear/gauntlets/moon_hands_celestial.svg`
+- `icons/heroes/wanderer/gear/gauntlets/astral_grips_common.svg`
+- `icons/heroes/wanderer/gear/gauntlets/astral_grips_uncommon.svg`
+- `icons/heroes/wanderer/gear/gauntlets/astral_grips_rare.svg`
+- `icons/heroes/wanderer/gear/gauntlets/astral_grips_epic.svg`
+- `icons/heroes/wanderer/gear/gauntlets/astral_grips_legendary.svg`
+- `icons/heroes/wanderer/gear/gauntlets/astral_grips_celestial.svg`
+- `icons/heroes/wanderer/gear/gauntlets/night_wraps_common.svg`
+- `icons/heroes/wanderer/gear/gauntlets/night_wraps_uncommon.svg`
+- `icons/heroes/wanderer/gear/gauntlets/night_wraps_rare.svg`
+- `icons/heroes/wanderer/gear/gauntlets/night_wraps_epic.svg`
+- `icons/heroes/wanderer/gear/gauntlets/night_wraps_legendary.svg`
+- `icons/heroes/wanderer/gear/gauntlets/night_wraps_celestial.svg`
+- `icons/heroes/wanderer/gear/gauntlets/void_touch_common.svg`
+- `icons/heroes/wanderer/gear/gauntlets/void_touch_uncommon.svg`
+- `icons/heroes/wanderer/gear/gauntlets/void_touch_rare.svg`
+- `icons/heroes/wanderer/gear/gauntlets/void_touch_epic.svg`
+- `icons/heroes/wanderer/gear/gauntlets/void_touch_legendary.svg`
+- `icons/heroes/wanderer/gear/gauntlets/void_touch_celestial.svg`
+- `icons/heroes/wanderer/gear/boots/cloud_walkers_common.svg`
+- `icons/heroes/wanderer/gear/boots/cloud_walkers_uncommon.svg`
+- `icons/heroes/wanderer/gear/boots/cloud_walkers_rare.svg`
+- `icons/heroes/wanderer/gear/boots/cloud_walkers_epic.svg`
+- `icons/heroes/wanderer/gear/boots/cloud_walkers_legendary.svg`
+- `icons/heroes/wanderer/gear/boots/cloud_walkers_celestial.svg`
+- `icons/heroes/wanderer/gear/boots/star_treads_common.svg`
+- `icons/heroes/wanderer/gear/boots/star_treads_uncommon.svg`
+- `icons/heroes/wanderer/gear/boots/star_treads_rare.svg`
+- `icons/heroes/wanderer/gear/boots/star_treads_epic.svg`
+- `icons/heroes/wanderer/gear/boots/star_treads_legendary.svg`
+- `icons/heroes/wanderer/gear/boots/star_treads_celestial.svg`
+- `icons/heroes/wanderer/gear/boots/moon_steps_common.svg`
+- `icons/heroes/wanderer/gear/boots/moon_steps_uncommon.svg`
+- `icons/heroes/wanderer/gear/boots/moon_steps_rare.svg`
+- `icons/heroes/wanderer/gear/boots/moon_steps_epic.svg`
+- `icons/heroes/wanderer/gear/boots/moon_steps_legendary.svg`
+- `icons/heroes/wanderer/gear/boots/moon_steps_celestial.svg`
+- `icons/heroes/wanderer/gear/boots/dream_slippers_common.svg`
+- `icons/heroes/wanderer/gear/boots/dream_slippers_uncommon.svg`
+- `icons/heroes/wanderer/gear/boots/dream_slippers_rare.svg`
+- `icons/heroes/wanderer/gear/boots/dream_slippers_epic.svg`
+- `icons/heroes/wanderer/gear/boots/dream_slippers_legendary.svg`
+- `icons/heroes/wanderer/gear/boots/dream_slippers_celestial.svg`
+- `icons/heroes/wanderer/gear/boots/astral_drifters_common.svg`
+- `icons/heroes/wanderer/gear/boots/astral_drifters_uncommon.svg`
+- `icons/heroes/wanderer/gear/boots/astral_drifters_rare.svg`
+- `icons/heroes/wanderer/gear/boots/astral_drifters_epic.svg`
+- `icons/heroes/wanderer/gear/boots/astral_drifters_legendary.svg`
+- `icons/heroes/wanderer/gear/boots/astral_drifters_celestial.svg`
+- `icons/heroes/wanderer/gear/boots/night_stalkers_common.svg`
+- `icons/heroes/wanderer/gear/boots/night_stalkers_uncommon.svg`
+- `icons/heroes/wanderer/gear/boots/night_stalkers_rare.svg`
+- `icons/heroes/wanderer/gear/boots/night_stalkers_epic.svg`
+- `icons/heroes/wanderer/gear/boots/night_stalkers_legendary.svg`
+- `icons/heroes/wanderer/gear/boots/night_stalkers_celestial.svg`
+- `icons/heroes/wanderer/gear/shield/dream_ward_common.svg`
+- `icons/heroes/wanderer/gear/shield/dream_ward_uncommon.svg`
+- `icons/heroes/wanderer/gear/shield/dream_ward_rare.svg`
+- `icons/heroes/wanderer/gear/shield/dream_ward_epic.svg`
+- `icons/heroes/wanderer/gear/shield/dream_ward_legendary.svg`
+- `icons/heroes/wanderer/gear/shield/dream_ward_celestial.svg`
+- `icons/heroes/wanderer/gear/shield/star_barrier_common.svg`
+- `icons/heroes/wanderer/gear/shield/star_barrier_uncommon.svg`
+- `icons/heroes/wanderer/gear/shield/star_barrier_rare.svg`
+- `icons/heroes/wanderer/gear/shield/star_barrier_epic.svg`
+- `icons/heroes/wanderer/gear/shield/star_barrier_legendary.svg`
+- `icons/heroes/wanderer/gear/shield/star_barrier_celestial.svg`
+- `icons/heroes/wanderer/gear/shield/moon_shield_common.svg`
+- `icons/heroes/wanderer/gear/shield/moon_shield_uncommon.svg`
+- `icons/heroes/wanderer/gear/shield/moon_shield_rare.svg`
+- `icons/heroes/wanderer/gear/shield/moon_shield_epic.svg`
+- `icons/heroes/wanderer/gear/shield/moon_shield_legendary.svg`
+- `icons/heroes/wanderer/gear/shield/moon_shield_celestial.svg`
+- `icons/heroes/wanderer/gear/shield/astral_aegis_common.svg`
+- `icons/heroes/wanderer/gear/shield/astral_aegis_uncommon.svg`
+- `icons/heroes/wanderer/gear/shield/astral_aegis_rare.svg`
+- `icons/heroes/wanderer/gear/shield/astral_aegis_epic.svg`
+- `icons/heroes/wanderer/gear/shield/astral_aegis_legendary.svg`
+- `icons/heroes/wanderer/gear/shield/astral_aegis_celestial.svg`
+- `icons/heroes/wanderer/gear/shield/night_guard_common.svg`
+- `icons/heroes/wanderer/gear/shield/night_guard_uncommon.svg`
+- `icons/heroes/wanderer/gear/shield/night_guard_rare.svg`
+- `icons/heroes/wanderer/gear/shield/night_guard_epic.svg`
+- `icons/heroes/wanderer/gear/shield/night_guard_legendary.svg`
+- `icons/heroes/wanderer/gear/shield/night_guard_celestial.svg`
+- `icons/heroes/wanderer/gear/shield/void_wall_common.svg`
+- `icons/heroes/wanderer/gear/shield/void_wall_uncommon.svg`
+- `icons/heroes/wanderer/gear/shield/void_wall_rare.svg`
+- `icons/heroes/wanderer/gear/shield/void_wall_epic.svg`
+- `icons/heroes/wanderer/gear/shield/void_wall_legendary.svg`
+- `icons/heroes/wanderer/gear/shield/void_wall_celestial.svg`
+- `icons/heroes/wanderer/gear/shield/reality_anchor_common.svg`
+- `icons/heroes/wanderer/gear/shield/reality_anchor_uncommon.svg`
+- `icons/heroes/wanderer/gear/shield/reality_anchor_rare.svg`
+- `icons/heroes/wanderer/gear/shield/reality_anchor_epic.svg`
+- `icons/heroes/wanderer/gear/shield/reality_anchor_legendary.svg`
+- `icons/heroes/wanderer/gear/shield/reality_anchor_celestial.svg`
+- `icons/heroes/wanderer/gear/weapon/dream_staff_common.svg`
+- `icons/heroes/wanderer/gear/weapon/dream_staff_uncommon.svg`
+- `icons/heroes/wanderer/gear/weapon/dream_staff_rare.svg`
+- `icons/heroes/wanderer/gear/weapon/dream_staff_epic.svg`
+- `icons/heroes/wanderer/gear/weapon/dream_staff_legendary.svg`
+- `icons/heroes/wanderer/gear/weapon/dream_staff_celestial.svg`
+- `icons/heroes/wanderer/gear/weapon/star_wand_common.svg`
+- `icons/heroes/wanderer/gear/weapon/star_wand_uncommon.svg`
+- `icons/heroes/wanderer/gear/weapon/star_wand_rare.svg`
+- `icons/heroes/wanderer/gear/weapon/star_wand_epic.svg`
+- `icons/heroes/wanderer/gear/weapon/star_wand_legendary.svg`
+- `icons/heroes/wanderer/gear/weapon/star_wand_celestial.svg`
+- `icons/heroes/wanderer/gear/weapon/moon_blade_common.svg`
+- `icons/heroes/wanderer/gear/weapon/moon_blade_uncommon.svg`
+- `icons/heroes/wanderer/gear/weapon/moon_blade_rare.svg`
+- `icons/heroes/wanderer/gear/weapon/moon_blade_epic.svg`
+- `icons/heroes/wanderer/gear/weapon/moon_blade_legendary.svg`
+- `icons/heroes/wanderer/gear/weapon/moon_blade_celestial.svg`
+- `icons/heroes/wanderer/gear/weapon/astral_scepter_common.svg`
+- `icons/heroes/wanderer/gear/weapon/astral_scepter_uncommon.svg`
+- `icons/heroes/wanderer/gear/weapon/astral_scepter_rare.svg`
+- `icons/heroes/wanderer/gear/weapon/astral_scepter_epic.svg`
+- `icons/heroes/wanderer/gear/weapon/astral_scepter_legendary.svg`
+- `icons/heroes/wanderer/gear/weapon/astral_scepter_celestial.svg`
+- `icons/heroes/wanderer/gear/weapon/night_scythe_common.svg`
+- `icons/heroes/wanderer/gear/weapon/night_scythe_uncommon.svg`
+- `icons/heroes/wanderer/gear/weapon/night_scythe_rare.svg`
+- `icons/heroes/wanderer/gear/weapon/night_scythe_epic.svg`
+- `icons/heroes/wanderer/gear/weapon/night_scythe_legendary.svg`
+- `icons/heroes/wanderer/gear/weapon/night_scythe_celestial.svg`
+- `icons/heroes/wanderer/gear/weapon/void_orb_common.svg`
+- `icons/heroes/wanderer/gear/weapon/void_orb_uncommon.svg`
+- `icons/heroes/wanderer/gear/weapon/void_orb_rare.svg`
+- `icons/heroes/wanderer/gear/weapon/void_orb_epic.svg`
+- `icons/heroes/wanderer/gear/weapon/void_orb_legendary.svg`
+- `icons/heroes/wanderer/gear/weapon/void_orb_celestial.svg`
+- `icons/heroes/wanderer/gear/weapon/cosmic_key_common.svg`
+- `icons/heroes/wanderer/gear/weapon/cosmic_key_uncommon.svg`
+- `icons/heroes/wanderer/gear/weapon/cosmic_key_rare.svg`
+- `icons/heroes/wanderer/gear/weapon/cosmic_key_epic.svg`
+- `icons/heroes/wanderer/gear/weapon/cosmic_key_legendary.svg`
+- `icons/heroes/wanderer/gear/weapon/cosmic_key_celestial.svg`
+- `icons/heroes/wanderer/gear/cloak/star_mantle_common.svg`
+- `icons/heroes/wanderer/gear/cloak/star_mantle_uncommon.svg`
+- `icons/heroes/wanderer/gear/cloak/star_mantle_rare.svg`
+- `icons/heroes/wanderer/gear/cloak/star_mantle_epic.svg`
+- `icons/heroes/wanderer/gear/cloak/star_mantle_legendary.svg`
+- `icons/heroes/wanderer/gear/cloak/star_mantle_celestial.svg`
+- `icons/heroes/wanderer/gear/cloak/moon_shroud_common.svg`
+- `icons/heroes/wanderer/gear/cloak/moon_shroud_uncommon.svg`
+- `icons/heroes/wanderer/gear/cloak/moon_shroud_rare.svg`
+- `icons/heroes/wanderer/gear/cloak/moon_shroud_epic.svg`
+- `icons/heroes/wanderer/gear/cloak/moon_shroud_legendary.svg`
+- `icons/heroes/wanderer/gear/cloak/moon_shroud_celestial.svg`
+- `icons/heroes/wanderer/gear/cloak/dream_veil_common.svg`
+- `icons/heroes/wanderer/gear/cloak/dream_veil_uncommon.svg`
+- `icons/heroes/wanderer/gear/cloak/dream_veil_rare.svg`
+- `icons/heroes/wanderer/gear/cloak/dream_veil_epic.svg`
+- `icons/heroes/wanderer/gear/cloak/dream_veil_legendary.svg`
+- `icons/heroes/wanderer/gear/cloak/dream_veil_celestial.svg`
+- `icons/heroes/wanderer/gear/cloak/astral_cape_common.svg`
+- `icons/heroes/wanderer/gear/cloak/astral_cape_uncommon.svg`
+- `icons/heroes/wanderer/gear/cloak/astral_cape_rare.svg`
+- `icons/heroes/wanderer/gear/cloak/astral_cape_epic.svg`
+- `icons/heroes/wanderer/gear/cloak/astral_cape_legendary.svg`
+- `icons/heroes/wanderer/gear/cloak/astral_cape_celestial.svg`
+- `icons/heroes/wanderer/gear/cloak/night_cloak_common.svg`
+- `icons/heroes/wanderer/gear/cloak/night_cloak_uncommon.svg`
+- `icons/heroes/wanderer/gear/cloak/night_cloak_rare.svg`
+- `icons/heroes/wanderer/gear/cloak/night_cloak_epic.svg`
+- `icons/heroes/wanderer/gear/cloak/night_cloak_legendary.svg`
+- `icons/heroes/wanderer/gear/cloak/night_cloak_celestial.svg`
+- `icons/heroes/wanderer/gear/cloak/void_curtain_common.svg`
+- `icons/heroes/wanderer/gear/cloak/void_curtain_uncommon.svg`
+- `icons/heroes/wanderer/gear/cloak/void_curtain_rare.svg`
+- `icons/heroes/wanderer/gear/cloak/void_curtain_epic.svg`
+- `icons/heroes/wanderer/gear/cloak/void_curtain_legendary.svg`
+- `icons/heroes/wanderer/gear/cloak/void_curtain_celestial.svg`
+- `icons/heroes/wanderer/gear/cloak/reality_fold_common.svg`
+- `icons/heroes/wanderer/gear/cloak/reality_fold_uncommon.svg`
+- `icons/heroes/wanderer/gear/cloak/reality_fold_rare.svg`
+- `icons/heroes/wanderer/gear/cloak/reality_fold_epic.svg`
+- `icons/heroes/wanderer/gear/cloak/reality_fold_legendary.svg`
+- `icons/heroes/wanderer/gear/cloak/reality_fold_celestial.svg`
+- `icons/heroes/wanderer/gear/amulet/dream_catcher_common.svg`
+- `icons/heroes/wanderer/gear/amulet/dream_catcher_uncommon.svg`
+- `icons/heroes/wanderer/gear/amulet/dream_catcher_rare.svg`
+- `icons/heroes/wanderer/gear/amulet/dream_catcher_epic.svg`
+- `icons/heroes/wanderer/gear/amulet/dream_catcher_legendary.svg`
+- `icons/heroes/wanderer/gear/amulet/dream_catcher_celestial.svg`
+- `icons/heroes/wanderer/gear/amulet/star_pendant_common.svg`
+- `icons/heroes/wanderer/gear/amulet/star_pendant_uncommon.svg`
+- `icons/heroes/wanderer/gear/amulet/star_pendant_rare.svg`
+- `icons/heroes/wanderer/gear/amulet/star_pendant_epic.svg`
+- `icons/heroes/wanderer/gear/amulet/star_pendant_legendary.svg`
+- `icons/heroes/wanderer/gear/amulet/star_pendant_celestial.svg`
+- `icons/heroes/wanderer/gear/amulet/moon_crystal_common.svg`
+- `icons/heroes/wanderer/gear/amulet/moon_crystal_uncommon.svg`
+- `icons/heroes/wanderer/gear/amulet/moon_crystal_rare.svg`
+- `icons/heroes/wanderer/gear/amulet/moon_crystal_epic.svg`
+- `icons/heroes/wanderer/gear/amulet/moon_crystal_legendary.svg`
+- `icons/heroes/wanderer/gear/amulet/moon_crystal_celestial.svg`
+- `icons/heroes/wanderer/gear/amulet/astral_charm_common.svg`
+- `icons/heroes/wanderer/gear/amulet/astral_charm_uncommon.svg`
+- `icons/heroes/wanderer/gear/amulet/astral_charm_rare.svg`
+- `icons/heroes/wanderer/gear/amulet/astral_charm_epic.svg`
+- `icons/heroes/wanderer/gear/amulet/astral_charm_legendary.svg`
+- `icons/heroes/wanderer/gear/amulet/astral_charm_celestial.svg`
+- `icons/heroes/wanderer/gear/amulet/night_stone_common.svg`
+- `icons/heroes/wanderer/gear/amulet/night_stone_uncommon.svg`
+- `icons/heroes/wanderer/gear/amulet/night_stone_rare.svg`
+- `icons/heroes/wanderer/gear/amulet/night_stone_epic.svg`
+- `icons/heroes/wanderer/gear/amulet/night_stone_legendary.svg`
+- `icons/heroes/wanderer/gear/amulet/night_stone_celestial.svg`
+- `icons/heroes/wanderer/gear/amulet/void_gem_common.svg`
+- `icons/heroes/wanderer/gear/amulet/void_gem_uncommon.svg`
+- `icons/heroes/wanderer/gear/amulet/void_gem_rare.svg`
+- `icons/heroes/wanderer/gear/amulet/void_gem_epic.svg`
+- `icons/heroes/wanderer/gear/amulet/void_gem_legendary.svg`
+- `icons/heroes/wanderer/gear/amulet/void_gem_celestial.svg`
+- `icons/heroes/wanderer/gear/amulet/reality_shard_common.svg`
+- `icons/heroes/wanderer/gear/amulet/reality_shard_uncommon.svg`
+- `icons/heroes/wanderer/gear/amulet/reality_shard_rare.svg`
+- `icons/heroes/wanderer/gear/amulet/reality_shard_epic.svg`
+- `icons/heroes/wanderer/gear/amulet/reality_shard_legendary.svg`
+- `icons/heroes/wanderer/gear/amulet/reality_shard_celestial.svg`
+
+## Slot-by-Slot Direction
+### Cloak
+- role: Motion layer. Build depth and emotional tone through shape and edge cuts.
+- animation cue: Low-frequency sway with occasional gust accent.
+- item types to represent: Star Mantle, Moon Shroud, Dream Veil, Astral Cape, Night Cloak, Void Curtain, Reality Fold
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Chestplate
+- role: Main mass-defining body layer. Largest storytelling surface after base hero.
+- animation cue: Core pulse or panel breathing loop (slow, 3-5s).
+- item types to represent: Starweave Robe, Mooncloth Vest, Dream Tunic, Astral Garb, Night Vestments, Ether Wrap
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Boots
+- role: Movement identity. Encode terrain, mobility mode, and weight class.
+- animation cue: Sole glow ripple or dust/spark kick pulse.
+- item types to represent: Cloud Walkers, Star Treads, Moon Steps, Dream Slippers, Astral Drifters, Night Stalkers
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Gauntlets
+- role: Functional hand/tool interface. Show dexterity and role-specific mechanics.
+- animation cue: Knuckle light wave or servo twitch loop (subtle).
+- item types to represent: Dream Catchers, Star Weavers, Moon Hands, Astral Grips, Night Wraps, Void Touch
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Amulet
+- role: Narrative core token. Small but high-contrast and symbolically loaded.
+- animation cue: Heartbeat glow pulse with small orbiting mote.
+- item types to represent: Dream Catcher, Star Pendant, Moon Crystal, Astral Charm, Night Stone, Void Gem, Reality Shard
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Helmet
+- role: Head identity piece. Prioritize profile readability and theme signature crest.
+- animation cue: Visor sweep or indicator blink every 2-4s.
+- item types to represent: Dream Crown, Star Circlet, Moon Tiara, Night Hood, Astral Halo, Vision Mask, Third Eye
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Shield
+- role: Defensive philosophy. Make silhouette distinct from chestplate/weapon.
+- animation cue: Border scan sweep or shield-ripple pulse.
+- item types to represent: Dream Ward, Star Barrier, Moon Shield, Astral Aegis, Night Guard, Void Wall, Reality Anchor
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Weapon
+- role: Primary action silhouette. Highest visual contrast and directional energy.
+- animation cue: Edge glint sweep or energy charge loop.
+- item types to represent: Dream Staff, Star Wand, Moon Blade, Astral Scepter, Night Scythe, Void Orb, Cosmic Key
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+
+## Global Quality Gates
+- Do not use only color swaps across rarities; geometry and silhouette must evolve.
+- Keep readability at 70x90 and 180x220.
+- Keep transparent backgrounds.
+- Ensure first frame is static-compatible (for QSvgRenderer path).
+- Keep layering aligned with hero base center and foot line.
+
+## LLM Generation Prompt
+Use this with your SVG-generation model:
+
+```text
+You are generating production SVG assets for PersonalFreedom hero rendering.
+Theme: wanderer
+Follow file names exactly as listed in this packet.
+Canvas/viewBox: 0 0 180 220. Transparent background.
+For each rarity tier, change silhouette/design complexity, not only colors.
+Respect slot role and animation cues in this packet.
+Output valid standalone SVG files only.
+```

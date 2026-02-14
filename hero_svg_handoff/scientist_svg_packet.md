@@ -1,0 +1,519 @@
+# scientist Hero SVG Packet
+
+## Theme Snapshot
+- story_id: `scientist`
+- title: The Breakthrough Protocol
+- style intent: Modern research defender. Clean lab forms merged with precision tech.
+- hero base direction: Lab-coat identity, precision visor profile, instrument-ready hands.
+- motif keywords: measurement ticks, containment panels, reactor cores, helix hints
+- palette anchors: #dbe5ef, #9fb8cf, #5a7289, #f59e0b, #36c2d9
+
+## Mandatory Output Files
+Generate all files below.
+- `icons/heroes/scientist/hero_base.svg`
+- `icons/heroes/scientist/gear/cloak/cloak_common.svg`
+- `icons/heroes/scientist/gear/cloak/cloak_uncommon.svg`
+- `icons/heroes/scientist/gear/cloak/cloak_rare.svg`
+- `icons/heroes/scientist/gear/cloak/cloak_epic.svg`
+- `icons/heroes/scientist/gear/cloak/cloak_legendary.svg`
+- `icons/heroes/scientist/gear/cloak/cloak_celestial.svg`
+- `icons/heroes/scientist/gear/chestplate/chestplate_common.svg`
+- `icons/heroes/scientist/gear/chestplate/chestplate_uncommon.svg`
+- `icons/heroes/scientist/gear/chestplate/chestplate_rare.svg`
+- `icons/heroes/scientist/gear/chestplate/chestplate_epic.svg`
+- `icons/heroes/scientist/gear/chestplate/chestplate_legendary.svg`
+- `icons/heroes/scientist/gear/chestplate/chestplate_celestial.svg`
+- `icons/heroes/scientist/gear/boots/boots_common.svg`
+- `icons/heroes/scientist/gear/boots/boots_uncommon.svg`
+- `icons/heroes/scientist/gear/boots/boots_rare.svg`
+- `icons/heroes/scientist/gear/boots/boots_epic.svg`
+- `icons/heroes/scientist/gear/boots/boots_legendary.svg`
+- `icons/heroes/scientist/gear/boots/boots_celestial.svg`
+- `icons/heroes/scientist/gear/gauntlets/gauntlets_common.svg`
+- `icons/heroes/scientist/gear/gauntlets/gauntlets_uncommon.svg`
+- `icons/heroes/scientist/gear/gauntlets/gauntlets_rare.svg`
+- `icons/heroes/scientist/gear/gauntlets/gauntlets_epic.svg`
+- `icons/heroes/scientist/gear/gauntlets/gauntlets_legendary.svg`
+- `icons/heroes/scientist/gear/gauntlets/gauntlets_celestial.svg`
+- `icons/heroes/scientist/gear/amulet/amulet_common.svg`
+- `icons/heroes/scientist/gear/amulet/amulet_uncommon.svg`
+- `icons/heroes/scientist/gear/amulet/amulet_rare.svg`
+- `icons/heroes/scientist/gear/amulet/amulet_epic.svg`
+- `icons/heroes/scientist/gear/amulet/amulet_legendary.svg`
+- `icons/heroes/scientist/gear/amulet/amulet_celestial.svg`
+- `icons/heroes/scientist/gear/helmet/helmet_common.svg`
+- `icons/heroes/scientist/gear/helmet/helmet_uncommon.svg`
+- `icons/heroes/scientist/gear/helmet/helmet_rare.svg`
+- `icons/heroes/scientist/gear/helmet/helmet_epic.svg`
+- `icons/heroes/scientist/gear/helmet/helmet_legendary.svg`
+- `icons/heroes/scientist/gear/helmet/helmet_celestial.svg`
+- `icons/heroes/scientist/gear/shield/shield_common.svg`
+- `icons/heroes/scientist/gear/shield/shield_uncommon.svg`
+- `icons/heroes/scientist/gear/shield/shield_rare.svg`
+- `icons/heroes/scientist/gear/shield/shield_epic.svg`
+- `icons/heroes/scientist/gear/shield/shield_legendary.svg`
+- `icons/heroes/scientist/gear/shield/shield_celestial.svg`
+- `icons/heroes/scientist/gear/weapon/weapon_common.svg`
+- `icons/heroes/scientist/gear/weapon/weapon_uncommon.svg`
+- `icons/heroes/scientist/gear/weapon/weapon_rare.svg`
+- `icons/heroes/scientist/gear/weapon/weapon_epic.svg`
+- `icons/heroes/scientist/gear/weapon/weapon_legendary.svg`
+- `icons/heroes/scientist/gear/weapon/weapon_celestial.svg`
+- `icons/heroes/scientist/fx/tier_epic.svg`
+- `icons/heroes/scientist/fx/tier_legendary.svg`
+- `icons/heroes/scientist/fx/tier_celestial.svg`
+
+## Preferred Item-Type Output Files
+Generate these for full visual variety. If constrained, prioritize Helmet, Chestplate, Weapon, Shield.
+- `icons/heroes/scientist/gear/helmet/safety_goggles_common.svg`
+- `icons/heroes/scientist/gear/helmet/safety_goggles_uncommon.svg`
+- `icons/heroes/scientist/gear/helmet/safety_goggles_rare.svg`
+- `icons/heroes/scientist/gear/helmet/safety_goggles_epic.svg`
+- `icons/heroes/scientist/gear/helmet/safety_goggles_legendary.svg`
+- `icons/heroes/scientist/gear/helmet/safety_goggles_celestial.svg`
+- `icons/heroes/scientist/gear/helmet/protective_visor_common.svg`
+- `icons/heroes/scientist/gear/helmet/protective_visor_uncommon.svg`
+- `icons/heroes/scientist/gear/helmet/protective_visor_rare.svg`
+- `icons/heroes/scientist/gear/helmet/protective_visor_epic.svg`
+- `icons/heroes/scientist/gear/helmet/protective_visor_legendary.svg`
+- `icons/heroes/scientist/gear/helmet/protective_visor_celestial.svg`
+- `icons/heroes/scientist/gear/helmet/magnifying_glasses_common.svg`
+- `icons/heroes/scientist/gear/helmet/magnifying_glasses_uncommon.svg`
+- `icons/heroes/scientist/gear/helmet/magnifying_glasses_rare.svg`
+- `icons/heroes/scientist/gear/helmet/magnifying_glasses_epic.svg`
+- `icons/heroes/scientist/gear/helmet/magnifying_glasses_legendary.svg`
+- `icons/heroes/scientist/gear/helmet/magnifying_glasses_celestial.svg`
+- `icons/heroes/scientist/gear/helmet/lab_spectacles_common.svg`
+- `icons/heroes/scientist/gear/helmet/lab_spectacles_uncommon.svg`
+- `icons/heroes/scientist/gear/helmet/lab_spectacles_rare.svg`
+- `icons/heroes/scientist/gear/helmet/lab_spectacles_epic.svg`
+- `icons/heroes/scientist/gear/helmet/lab_spectacles_legendary.svg`
+- `icons/heroes/scientist/gear/helmet/lab_spectacles_celestial.svg`
+- `icons/heroes/scientist/gear/helmet/electron_microscope_viewer_common.svg`
+- `icons/heroes/scientist/gear/helmet/electron_microscope_viewer_uncommon.svg`
+- `icons/heroes/scientist/gear/helmet/electron_microscope_viewer_rare.svg`
+- `icons/heroes/scientist/gear/helmet/electron_microscope_viewer_epic.svg`
+- `icons/heroes/scientist/gear/helmet/electron_microscope_viewer_legendary.svg`
+- `icons/heroes/scientist/gear/helmet/electron_microscope_viewer_celestial.svg`
+- `icons/heroes/scientist/gear/helmet/quantum_lens_common.svg`
+- `icons/heroes/scientist/gear/helmet/quantum_lens_uncommon.svg`
+- `icons/heroes/scientist/gear/helmet/quantum_lens_rare.svg`
+- `icons/heroes/scientist/gear/helmet/quantum_lens_epic.svg`
+- `icons/heroes/scientist/gear/helmet/quantum_lens_legendary.svg`
+- `icons/heroes/scientist/gear/helmet/quantum_lens_celestial.svg`
+- `icons/heroes/scientist/gear/helmet/reality_scanner_common.svg`
+- `icons/heroes/scientist/gear/helmet/reality_scanner_uncommon.svg`
+- `icons/heroes/scientist/gear/helmet/reality_scanner_rare.svg`
+- `icons/heroes/scientist/gear/helmet/reality_scanner_epic.svg`
+- `icons/heroes/scientist/gear/helmet/reality_scanner_legendary.svg`
+- `icons/heroes/scientist/gear/helmet/reality_scanner_celestial.svg`
+- `icons/heroes/scientist/gear/chestplate/lab_coat_common.svg`
+- `icons/heroes/scientist/gear/chestplate/lab_coat_uncommon.svg`
+- `icons/heroes/scientist/gear/chestplate/lab_coat_rare.svg`
+- `icons/heroes/scientist/gear/chestplate/lab_coat_epic.svg`
+- `icons/heroes/scientist/gear/chestplate/lab_coat_legendary.svg`
+- `icons/heroes/scientist/gear/chestplate/lab_coat_celestial.svg`
+- `icons/heroes/scientist/gear/chestplate/chemical_resistant_vest_common.svg`
+- `icons/heroes/scientist/gear/chestplate/chemical_resistant_vest_uncommon.svg`
+- `icons/heroes/scientist/gear/chestplate/chemical_resistant_vest_rare.svg`
+- `icons/heroes/scientist/gear/chestplate/chemical_resistant_vest_epic.svg`
+- `icons/heroes/scientist/gear/chestplate/chemical_resistant_vest_legendary.svg`
+- `icons/heroes/scientist/gear/chestplate/chemical_resistant_vest_celestial.svg`
+- `icons/heroes/scientist/gear/chestplate/radiation_suit_common.svg`
+- `icons/heroes/scientist/gear/chestplate/radiation_suit_uncommon.svg`
+- `icons/heroes/scientist/gear/chestplate/radiation_suit_rare.svg`
+- `icons/heroes/scientist/gear/chestplate/radiation_suit_epic.svg`
+- `icons/heroes/scientist/gear/chestplate/radiation_suit_legendary.svg`
+- `icons/heroes/scientist/gear/chestplate/radiation_suit_celestial.svg`
+- `icons/heroes/scientist/gear/chestplate/research_smock_common.svg`
+- `icons/heroes/scientist/gear/chestplate/research_smock_uncommon.svg`
+- `icons/heroes/scientist/gear/chestplate/research_smock_rare.svg`
+- `icons/heroes/scientist/gear/chestplate/research_smock_epic.svg`
+- `icons/heroes/scientist/gear/chestplate/research_smock_legendary.svg`
+- `icons/heroes/scientist/gear/chestplate/research_smock_celestial.svg`
+- `icons/heroes/scientist/gear/chestplate/polymer_jacket_common.svg`
+- `icons/heroes/scientist/gear/chestplate/polymer_jacket_uncommon.svg`
+- `icons/heroes/scientist/gear/chestplate/polymer_jacket_rare.svg`
+- `icons/heroes/scientist/gear/chestplate/polymer_jacket_epic.svg`
+- `icons/heroes/scientist/gear/chestplate/polymer_jacket_legendary.svg`
+- `icons/heroes/scientist/gear/chestplate/polymer_jacket_celestial.svg`
+- `icons/heroes/scientist/gear/chestplate/quantum_armor_common.svg`
+- `icons/heroes/scientist/gear/chestplate/quantum_armor_uncommon.svg`
+- `icons/heroes/scientist/gear/chestplate/quantum_armor_rare.svg`
+- `icons/heroes/scientist/gear/chestplate/quantum_armor_epic.svg`
+- `icons/heroes/scientist/gear/chestplate/quantum_armor_legendary.svg`
+- `icons/heroes/scientist/gear/chestplate/quantum_armor_celestial.svg`
+- `icons/heroes/scientist/gear/chestplate/field_jacket_common.svg`
+- `icons/heroes/scientist/gear/chestplate/field_jacket_uncommon.svg`
+- `icons/heroes/scientist/gear/chestplate/field_jacket_rare.svg`
+- `icons/heroes/scientist/gear/chestplate/field_jacket_epic.svg`
+- `icons/heroes/scientist/gear/chestplate/field_jacket_legendary.svg`
+- `icons/heroes/scientist/gear/chestplate/field_jacket_celestial.svg`
+- `icons/heroes/scientist/gear/gauntlets/latex_gloves_common.svg`
+- `icons/heroes/scientist/gear/gauntlets/latex_gloves_uncommon.svg`
+- `icons/heroes/scientist/gear/gauntlets/latex_gloves_rare.svg`
+- `icons/heroes/scientist/gear/gauntlets/latex_gloves_epic.svg`
+- `icons/heroes/scientist/gear/gauntlets/latex_gloves_legendary.svg`
+- `icons/heroes/scientist/gear/gauntlets/latex_gloves_celestial.svg`
+- `icons/heroes/scientist/gear/gauntlets/chemical_gloves_common.svg`
+- `icons/heroes/scientist/gear/gauntlets/chemical_gloves_uncommon.svg`
+- `icons/heroes/scientist/gear/gauntlets/chemical_gloves_rare.svg`
+- `icons/heroes/scientist/gear/gauntlets/chemical_gloves_epic.svg`
+- `icons/heroes/scientist/gear/gauntlets/chemical_gloves_legendary.svg`
+- `icons/heroes/scientist/gear/gauntlets/chemical_gloves_celestial.svg`
+- `icons/heroes/scientist/gear/gauntlets/handling_mitts_common.svg`
+- `icons/heroes/scientist/gear/gauntlets/handling_mitts_uncommon.svg`
+- `icons/heroes/scientist/gear/gauntlets/handling_mitts_rare.svg`
+- `icons/heroes/scientist/gear/gauntlets/handling_mitts_epic.svg`
+- `icons/heroes/scientist/gear/gauntlets/handling_mitts_legendary.svg`
+- `icons/heroes/scientist/gear/gauntlets/handling_mitts_celestial.svg`
+- `icons/heroes/scientist/gear/gauntlets/precision_grips_common.svg`
+- `icons/heroes/scientist/gear/gauntlets/precision_grips_uncommon.svg`
+- `icons/heroes/scientist/gear/gauntlets/precision_grips_rare.svg`
+- `icons/heroes/scientist/gear/gauntlets/precision_grips_epic.svg`
+- `icons/heroes/scientist/gear/gauntlets/precision_grips_legendary.svg`
+- `icons/heroes/scientist/gear/gauntlets/precision_grips_celestial.svg`
+- `icons/heroes/scientist/gear/gauntlets/nano_fiber_gloves_common.svg`
+- `icons/heroes/scientist/gear/gauntlets/nano_fiber_gloves_uncommon.svg`
+- `icons/heroes/scientist/gear/gauntlets/nano_fiber_gloves_rare.svg`
+- `icons/heroes/scientist/gear/gauntlets/nano_fiber_gloves_epic.svg`
+- `icons/heroes/scientist/gear/gauntlets/nano_fiber_gloves_legendary.svg`
+- `icons/heroes/scientist/gear/gauntlets/nano_fiber_gloves_celestial.svg`
+- `icons/heroes/scientist/gear/gauntlets/force_field_gauntlets_common.svg`
+- `icons/heroes/scientist/gear/gauntlets/force_field_gauntlets_uncommon.svg`
+- `icons/heroes/scientist/gear/gauntlets/force_field_gauntlets_rare.svg`
+- `icons/heroes/scientist/gear/gauntlets/force_field_gauntlets_epic.svg`
+- `icons/heroes/scientist/gear/gauntlets/force_field_gauntlets_legendary.svg`
+- `icons/heroes/scientist/gear/gauntlets/force_field_gauntlets_celestial.svg`
+- `icons/heroes/scientist/gear/gauntlets/quantum_manipulators_common.svg`
+- `icons/heroes/scientist/gear/gauntlets/quantum_manipulators_uncommon.svg`
+- `icons/heroes/scientist/gear/gauntlets/quantum_manipulators_rare.svg`
+- `icons/heroes/scientist/gear/gauntlets/quantum_manipulators_epic.svg`
+- `icons/heroes/scientist/gear/gauntlets/quantum_manipulators_legendary.svg`
+- `icons/heroes/scientist/gear/gauntlets/quantum_manipulators_celestial.svg`
+- `icons/heroes/scientist/gear/boots/lab_boots_common.svg`
+- `icons/heroes/scientist/gear/boots/lab_boots_uncommon.svg`
+- `icons/heroes/scientist/gear/boots/lab_boots_rare.svg`
+- `icons/heroes/scientist/gear/boots/lab_boots_epic.svg`
+- `icons/heroes/scientist/gear/boots/lab_boots_legendary.svg`
+- `icons/heroes/scientist/gear/boots/lab_boots_celestial.svg`
+- `icons/heroes/scientist/gear/boots/steel_toed_shoes_common.svg`
+- `icons/heroes/scientist/gear/boots/steel_toed_shoes_uncommon.svg`
+- `icons/heroes/scientist/gear/boots/steel_toed_shoes_rare.svg`
+- `icons/heroes/scientist/gear/boots/steel_toed_shoes_epic.svg`
+- `icons/heroes/scientist/gear/boots/steel_toed_shoes_legendary.svg`
+- `icons/heroes/scientist/gear/boots/steel_toed_shoes_celestial.svg`
+- `icons/heroes/scientist/gear/boots/sterile_slippers_common.svg`
+- `icons/heroes/scientist/gear/boots/sterile_slippers_uncommon.svg`
+- `icons/heroes/scientist/gear/boots/sterile_slippers_rare.svg`
+- `icons/heroes/scientist/gear/boots/sterile_slippers_epic.svg`
+- `icons/heroes/scientist/gear/boots/sterile_slippers_legendary.svg`
+- `icons/heroes/scientist/gear/boots/sterile_slippers_celestial.svg`
+- `icons/heroes/scientist/gear/boots/chemical_treads_common.svg`
+- `icons/heroes/scientist/gear/boots/chemical_treads_uncommon.svg`
+- `icons/heroes/scientist/gear/boots/chemical_treads_rare.svg`
+- `icons/heroes/scientist/gear/boots/chemical_treads_epic.svg`
+- `icons/heroes/scientist/gear/boots/chemical_treads_legendary.svg`
+- `icons/heroes/scientist/gear/boots/chemical_treads_celestial.svg`
+- `icons/heroes/scientist/gear/boots/magnetic_boots_common.svg`
+- `icons/heroes/scientist/gear/boots/magnetic_boots_uncommon.svg`
+- `icons/heroes/scientist/gear/boots/magnetic_boots_rare.svg`
+- `icons/heroes/scientist/gear/boots/magnetic_boots_epic.svg`
+- `icons/heroes/scientist/gear/boots/magnetic_boots_legendary.svg`
+- `icons/heroes/scientist/gear/boots/magnetic_boots_celestial.svg`
+- `icons/heroes/scientist/gear/boots/anti_gravity_soles_common.svg`
+- `icons/heroes/scientist/gear/boots/anti_gravity_soles_uncommon.svg`
+- `icons/heroes/scientist/gear/boots/anti_gravity_soles_rare.svg`
+- `icons/heroes/scientist/gear/boots/anti_gravity_soles_epic.svg`
+- `icons/heroes/scientist/gear/boots/anti_gravity_soles_legendary.svg`
+- `icons/heroes/scientist/gear/boots/anti_gravity_soles_celestial.svg`
+- `icons/heroes/scientist/gear/boots/dimension_steppers_common.svg`
+- `icons/heroes/scientist/gear/boots/dimension_steppers_uncommon.svg`
+- `icons/heroes/scientist/gear/boots/dimension_steppers_rare.svg`
+- `icons/heroes/scientist/gear/boots/dimension_steppers_epic.svg`
+- `icons/heroes/scientist/gear/boots/dimension_steppers_legendary.svg`
+- `icons/heroes/scientist/gear/boots/dimension_steppers_celestial.svg`
+- `icons/heroes/scientist/gear/shield/research_notebook_common.svg`
+- `icons/heroes/scientist/gear/shield/research_notebook_uncommon.svg`
+- `icons/heroes/scientist/gear/shield/research_notebook_rare.svg`
+- `icons/heroes/scientist/gear/shield/research_notebook_epic.svg`
+- `icons/heroes/scientist/gear/shield/research_notebook_legendary.svg`
+- `icons/heroes/scientist/gear/shield/research_notebook_celestial.svg`
+- `icons/heroes/scientist/gear/shield/data_tablet_common.svg`
+- `icons/heroes/scientist/gear/shield/data_tablet_uncommon.svg`
+- `icons/heroes/scientist/gear/shield/data_tablet_rare.svg`
+- `icons/heroes/scientist/gear/shield/data_tablet_epic.svg`
+- `icons/heroes/scientist/gear/shield/data_tablet_legendary.svg`
+- `icons/heroes/scientist/gear/shield/data_tablet_celestial.svg`
+- `icons/heroes/scientist/gear/shield/lab_manual_common.svg`
+- `icons/heroes/scientist/gear/shield/lab_manual_uncommon.svg`
+- `icons/heroes/scientist/gear/shield/lab_manual_rare.svg`
+- `icons/heroes/scientist/gear/shield/lab_manual_epic.svg`
+- `icons/heroes/scientist/gear/shield/lab_manual_legendary.svg`
+- `icons/heroes/scientist/gear/shield/lab_manual_celestial.svg`
+- `icons/heroes/scientist/gear/shield/formula_compendium_common.svg`
+- `icons/heroes/scientist/gear/shield/formula_compendium_uncommon.svg`
+- `icons/heroes/scientist/gear/shield/formula_compendium_rare.svg`
+- `icons/heroes/scientist/gear/shield/formula_compendium_epic.svg`
+- `icons/heroes/scientist/gear/shield/formula_compendium_legendary.svg`
+- `icons/heroes/scientist/gear/shield/formula_compendium_celestial.svg`
+- `icons/heroes/scientist/gear/shield/periodic_table_common.svg`
+- `icons/heroes/scientist/gear/shield/periodic_table_uncommon.svg`
+- `icons/heroes/scientist/gear/shield/periodic_table_rare.svg`
+- `icons/heroes/scientist/gear/shield/periodic_table_epic.svg`
+- `icons/heroes/scientist/gear/shield/periodic_table_legendary.svg`
+- `icons/heroes/scientist/gear/shield/periodic_table_celestial.svg`
+- `icons/heroes/scientist/gear/shield/quantum_computer_common.svg`
+- `icons/heroes/scientist/gear/shield/quantum_computer_uncommon.svg`
+- `icons/heroes/scientist/gear/shield/quantum_computer_rare.svg`
+- `icons/heroes/scientist/gear/shield/quantum_computer_epic.svg`
+- `icons/heroes/scientist/gear/shield/quantum_computer_legendary.svg`
+- `icons/heroes/scientist/gear/shield/quantum_computer_celestial.svg`
+- `icons/heroes/scientist/gear/shield/reality_buffer_common.svg`
+- `icons/heroes/scientist/gear/shield/reality_buffer_uncommon.svg`
+- `icons/heroes/scientist/gear/shield/reality_buffer_rare.svg`
+- `icons/heroes/scientist/gear/shield/reality_buffer_epic.svg`
+- `icons/heroes/scientist/gear/shield/reality_buffer_legendary.svg`
+- `icons/heroes/scientist/gear/shield/reality_buffer_celestial.svg`
+- `icons/heroes/scientist/gear/weapon/microscope_common.svg`
+- `icons/heroes/scientist/gear/weapon/microscope_uncommon.svg`
+- `icons/heroes/scientist/gear/weapon/microscope_rare.svg`
+- `icons/heroes/scientist/gear/weapon/microscope_epic.svg`
+- `icons/heroes/scientist/gear/weapon/microscope_legendary.svg`
+- `icons/heroes/scientist/gear/weapon/microscope_celestial.svg`
+- `icons/heroes/scientist/gear/weapon/spectrometer_common.svg`
+- `icons/heroes/scientist/gear/weapon/spectrometer_uncommon.svg`
+- `icons/heroes/scientist/gear/weapon/spectrometer_rare.svg`
+- `icons/heroes/scientist/gear/weapon/spectrometer_epic.svg`
+- `icons/heroes/scientist/gear/weapon/spectrometer_legendary.svg`
+- `icons/heroes/scientist/gear/weapon/spectrometer_celestial.svg`
+- `icons/heroes/scientist/gear/weapon/beaker_set_common.svg`
+- `icons/heroes/scientist/gear/weapon/beaker_set_uncommon.svg`
+- `icons/heroes/scientist/gear/weapon/beaker_set_rare.svg`
+- `icons/heroes/scientist/gear/weapon/beaker_set_epic.svg`
+- `icons/heroes/scientist/gear/weapon/beaker_set_legendary.svg`
+- `icons/heroes/scientist/gear/weapon/beaker_set_celestial.svg`
+- `icons/heroes/scientist/gear/weapon/pipette_common.svg`
+- `icons/heroes/scientist/gear/weapon/pipette_uncommon.svg`
+- `icons/heroes/scientist/gear/weapon/pipette_rare.svg`
+- `icons/heroes/scientist/gear/weapon/pipette_epic.svg`
+- `icons/heroes/scientist/gear/weapon/pipette_legendary.svg`
+- `icons/heroes/scientist/gear/weapon/pipette_celestial.svg`
+- `icons/heroes/scientist/gear/weapon/centrifuge_common.svg`
+- `icons/heroes/scientist/gear/weapon/centrifuge_uncommon.svg`
+- `icons/heroes/scientist/gear/weapon/centrifuge_rare.svg`
+- `icons/heroes/scientist/gear/weapon/centrifuge_epic.svg`
+- `icons/heroes/scientist/gear/weapon/centrifuge_legendary.svg`
+- `icons/heroes/scientist/gear/weapon/centrifuge_celestial.svg`
+- `icons/heroes/scientist/gear/weapon/particle_accelerator_common.svg`
+- `icons/heroes/scientist/gear/weapon/particle_accelerator_uncommon.svg`
+- `icons/heroes/scientist/gear/weapon/particle_accelerator_rare.svg`
+- `icons/heroes/scientist/gear/weapon/particle_accelerator_epic.svg`
+- `icons/heroes/scientist/gear/weapon/particle_accelerator_legendary.svg`
+- `icons/heroes/scientist/gear/weapon/particle_accelerator_celestial.svg`
+- `icons/heroes/scientist/gear/weapon/laser_cutter_common.svg`
+- `icons/heroes/scientist/gear/weapon/laser_cutter_uncommon.svg`
+- `icons/heroes/scientist/gear/weapon/laser_cutter_rare.svg`
+- `icons/heroes/scientist/gear/weapon/laser_cutter_epic.svg`
+- `icons/heroes/scientist/gear/weapon/laser_cutter_legendary.svg`
+- `icons/heroes/scientist/gear/weapon/laser_cutter_celestial.svg`
+- `icons/heroes/scientist/gear/weapon/plasma_torch_common.svg`
+- `icons/heroes/scientist/gear/weapon/plasma_torch_uncommon.svg`
+- `icons/heroes/scientist/gear/weapon/plasma_torch_rare.svg`
+- `icons/heroes/scientist/gear/weapon/plasma_torch_epic.svg`
+- `icons/heroes/scientist/gear/weapon/plasma_torch_legendary.svg`
+- `icons/heroes/scientist/gear/weapon/plasma_torch_celestial.svg`
+- `icons/heroes/scientist/gear/cloak/hazmat_suit_common.svg`
+- `icons/heroes/scientist/gear/cloak/hazmat_suit_uncommon.svg`
+- `icons/heroes/scientist/gear/cloak/hazmat_suit_rare.svg`
+- `icons/heroes/scientist/gear/cloak/hazmat_suit_epic.svg`
+- `icons/heroes/scientist/gear/cloak/hazmat_suit_legendary.svg`
+- `icons/heroes/scientist/gear/cloak/hazmat_suit_celestial.svg`
+- `icons/heroes/scientist/gear/cloak/radiation_shield_common.svg`
+- `icons/heroes/scientist/gear/cloak/radiation_shield_uncommon.svg`
+- `icons/heroes/scientist/gear/cloak/radiation_shield_rare.svg`
+- `icons/heroes/scientist/gear/cloak/radiation_shield_epic.svg`
+- `icons/heroes/scientist/gear/cloak/radiation_shield_legendary.svg`
+- `icons/heroes/scientist/gear/cloak/radiation_shield_celestial.svg`
+- `icons/heroes/scientist/gear/cloak/bio_safety_cape_common.svg`
+- `icons/heroes/scientist/gear/cloak/bio_safety_cape_uncommon.svg`
+- `icons/heroes/scientist/gear/cloak/bio_safety_cape_rare.svg`
+- `icons/heroes/scientist/gear/cloak/bio_safety_cape_epic.svg`
+- `icons/heroes/scientist/gear/cloak/bio_safety_cape_legendary.svg`
+- `icons/heroes/scientist/gear/cloak/bio_safety_cape_celestial.svg`
+- `icons/heroes/scientist/gear/cloak/sterile_drape_common.svg`
+- `icons/heroes/scientist/gear/cloak/sterile_drape_uncommon.svg`
+- `icons/heroes/scientist/gear/cloak/sterile_drape_rare.svg`
+- `icons/heroes/scientist/gear/cloak/sterile_drape_epic.svg`
+- `icons/heroes/scientist/gear/cloak/sterile_drape_legendary.svg`
+- `icons/heroes/scientist/gear/cloak/sterile_drape_celestial.svg`
+- `icons/heroes/scientist/gear/cloak/energy_cloak_common.svg`
+- `icons/heroes/scientist/gear/cloak/energy_cloak_uncommon.svg`
+- `icons/heroes/scientist/gear/cloak/energy_cloak_rare.svg`
+- `icons/heroes/scientist/gear/cloak/energy_cloak_epic.svg`
+- `icons/heroes/scientist/gear/cloak/energy_cloak_legendary.svg`
+- `icons/heroes/scientist/gear/cloak/energy_cloak_celestial.svg`
+- `icons/heroes/scientist/gear/cloak/force_field_common.svg`
+- `icons/heroes/scientist/gear/cloak/force_field_uncommon.svg`
+- `icons/heroes/scientist/gear/cloak/force_field_rare.svg`
+- `icons/heroes/scientist/gear/cloak/force_field_epic.svg`
+- `icons/heroes/scientist/gear/cloak/force_field_legendary.svg`
+- `icons/heroes/scientist/gear/cloak/force_field_celestial.svg`
+- `icons/heroes/scientist/gear/cloak/time_loop_generator_common.svg`
+- `icons/heroes/scientist/gear/cloak/time_loop_generator_uncommon.svg`
+- `icons/heroes/scientist/gear/cloak/time_loop_generator_rare.svg`
+- `icons/heroes/scientist/gear/cloak/time_loop_generator_epic.svg`
+- `icons/heroes/scientist/gear/cloak/time_loop_generator_legendary.svg`
+- `icons/heroes/scientist/gear/cloak/time_loop_generator_celestial.svg`
+- `icons/heroes/scientist/gear/amulet/id_badge_common.svg`
+- `icons/heroes/scientist/gear/amulet/id_badge_uncommon.svg`
+- `icons/heroes/scientist/gear/amulet/id_badge_rare.svg`
+- `icons/heroes/scientist/gear/amulet/id_badge_epic.svg`
+- `icons/heroes/scientist/gear/amulet/id_badge_legendary.svg`
+- `icons/heroes/scientist/gear/amulet/id_badge_celestial.svg`
+- `icons/heroes/scientist/gear/amulet/security_clearance_common.svg`
+- `icons/heroes/scientist/gear/amulet/security_clearance_uncommon.svg`
+- `icons/heroes/scientist/gear/amulet/security_clearance_rare.svg`
+- `icons/heroes/scientist/gear/amulet/security_clearance_epic.svg`
+- `icons/heroes/scientist/gear/amulet/security_clearance_legendary.svg`
+- `icons/heroes/scientist/gear/amulet/security_clearance_celestial.svg`
+- `icons/heroes/scientist/gear/amulet/nobel_medal_common.svg`
+- `icons/heroes/scientist/gear/amulet/nobel_medal_uncommon.svg`
+- `icons/heroes/scientist/gear/amulet/nobel_medal_rare.svg`
+- `icons/heroes/scientist/gear/amulet/nobel_medal_epic.svg`
+- `icons/heroes/scientist/gear/amulet/nobel_medal_legendary.svg`
+- `icons/heroes/scientist/gear/amulet/nobel_medal_celestial.svg`
+- `icons/heroes/scientist/gear/amulet/patent_pendant_common.svg`
+- `icons/heroes/scientist/gear/amulet/patent_pendant_uncommon.svg`
+- `icons/heroes/scientist/gear/amulet/patent_pendant_rare.svg`
+- `icons/heroes/scientist/gear/amulet/patent_pendant_epic.svg`
+- `icons/heroes/scientist/gear/amulet/patent_pendant_legendary.svg`
+- `icons/heroes/scientist/gear/amulet/patent_pendant_celestial.svg`
+- `icons/heroes/scientist/gear/amulet/discovery_charm_common.svg`
+- `icons/heroes/scientist/gear/amulet/discovery_charm_uncommon.svg`
+- `icons/heroes/scientist/gear/amulet/discovery_charm_rare.svg`
+- `icons/heroes/scientist/gear/amulet/discovery_charm_epic.svg`
+- `icons/heroes/scientist/gear/amulet/discovery_charm_legendary.svg`
+- `icons/heroes/scientist/gear/amulet/discovery_charm_celestial.svg`
+- `icons/heroes/scientist/gear/amulet/breakthrough_token_common.svg`
+- `icons/heroes/scientist/gear/amulet/breakthrough_token_uncommon.svg`
+- `icons/heroes/scientist/gear/amulet/breakthrough_token_rare.svg`
+- `icons/heroes/scientist/gear/amulet/breakthrough_token_epic.svg`
+- `icons/heroes/scientist/gear/amulet/breakthrough_token_legendary.svg`
+- `icons/heroes/scientist/gear/amulet/breakthrough_token_celestial.svg`
+- `icons/heroes/scientist/gear/amulet/eureka_gem_common.svg`
+- `icons/heroes/scientist/gear/amulet/eureka_gem_uncommon.svg`
+- `icons/heroes/scientist/gear/amulet/eureka_gem_rare.svg`
+- `icons/heroes/scientist/gear/amulet/eureka_gem_epic.svg`
+- `icons/heroes/scientist/gear/amulet/eureka_gem_legendary.svg`
+- `icons/heroes/scientist/gear/amulet/eureka_gem_celestial.svg`
+
+## Slot-by-Slot Direction
+### Cloak
+- role: Motion layer. Build depth and emotional tone through shape and edge cuts.
+- animation cue: Low-frequency sway with occasional gust accent.
+- item types to represent: Hazmat Suit, Radiation Shield, Bio-Safety Cape, Sterile Drape, Energy Cloak, Force Field, Time-Loop Generator
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Chestplate
+- role: Main mass-defining body layer. Largest storytelling surface after base hero.
+- animation cue: Core pulse or panel breathing loop (slow, 3-5s).
+- item types to represent: Lab Coat, Chemical-Resistant Vest, Radiation Suit, Research Smock, Polymer Jacket, Quantum Armor, Field Jacket
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Boots
+- role: Movement identity. Encode terrain, mobility mode, and weight class.
+- animation cue: Sole glow ripple or dust/spark kick pulse.
+- item types to represent: Lab Boots, Steel-Toed Shoes, Sterile Slippers, Chemical Treads, Magnetic Boots, Anti-Gravity Soles, Dimension Steppers
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Gauntlets
+- role: Functional hand/tool interface. Show dexterity and role-specific mechanics.
+- animation cue: Knuckle light wave or servo twitch loop (subtle).
+- item types to represent: Latex Gloves, Chemical Gloves, Handling Mitts, Precision Grips, Nano-Fiber Gloves, Force-Field Gauntlets, Quantum Manipulators
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Amulet
+- role: Narrative core token. Small but high-contrast and symbolically loaded.
+- animation cue: Heartbeat glow pulse with small orbiting mote.
+- item types to represent: ID Badge, Security Clearance, Nobel Medal, Patent Pendant, Discovery Charm, Breakthrough Token, Eureka Gem
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Helmet
+- role: Head identity piece. Prioritize profile readability and theme signature crest.
+- animation cue: Visor sweep or indicator blink every 2-4s.
+- item types to represent: Safety Goggles, Protective Visor, Magnifying Glasses, Lab Spectacles, Electron Microscope Viewer, Quantum Lens, Reality Scanner
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Shield
+- role: Defensive philosophy. Make silhouette distinct from chestplate/weapon.
+- animation cue: Border scan sweep or shield-ripple pulse.
+- item types to represent: Research Notebook, Data Tablet, Lab Manual, Formula Compendium, Periodic Table, Quantum Computer, Reality Buffer
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Weapon
+- role: Primary action silhouette. Highest visual contrast and directional energy.
+- animation cue: Edge glint sweep or energy charge loop.
+- item types to represent: Microscope, Spectrometer, Beaker Set, Pipette, Centrifuge, Particle Accelerator, Laser Cutter, Plasma Torch
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+
+## Global Quality Gates
+- Do not use only color swaps across rarities; geometry and silhouette must evolve.
+- Keep readability at 70x90 and 180x220.
+- Keep transparent backgrounds.
+- Ensure first frame is static-compatible (for QSvgRenderer path).
+- Keep layering aligned with hero base center and foot line.
+
+## LLM Generation Prompt
+Use this with your SVG-generation model:
+
+```text
+You are generating production SVG assets for PersonalFreedom hero rendering.
+Theme: scientist
+Follow file names exactly as listed in this packet.
+Canvas/viewBox: 0 0 180 220. Transparent background.
+For each rarity tier, change silhouette/design complexity, not only colors.
+Respect slot role and animation cues in this packet.
+Output valid standalone SVG files only.
+```

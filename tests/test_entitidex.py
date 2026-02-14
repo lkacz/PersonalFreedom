@@ -143,6 +143,7 @@ class TestEntity:
         """Test rarity emoji property."""
         assert Entity(id="", name="", power=0, rarity="common", lore="", theme_set="").rarity_emoji == "⚪"
         assert Entity(id="", name="", power=0, rarity="legendary", lore="", theme_set="").rarity_emoji == "🟡"
+        assert Entity(id="", name="", power=0, rarity="celestial", lore="", theme_set="").rarity_emoji == "✨"
     
     def test_slot_number(self):
         """Test slot number extraction from ID."""

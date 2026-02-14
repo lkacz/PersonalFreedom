@@ -34,7 +34,8 @@ class ItemComparisonWidget(QtWidgets.QWidget):
         "Uncommon": "#4caf50", 
         "Rare": "#2196f3",
         "Epic": "#9c27b0",
-        "Legendary": "#ff9800"
+        "Legendary": "#ff9800",
+        "Celestial": "#00e5ff",
     }
     
     def __init__(self, new_item: dict, equipped_item: Optional[dict] = None,
@@ -271,6 +272,9 @@ class EnhancedItemDropDialog(StyledDialog):
         if self.item.get("lucky_upgrade"):
             header_text = "LUCKY UPGRADE!"
             header_icon = "🍀"
+        elif rarity == "Celestial":
+            header_text = "CELESTIAL DROP!"
+            header_icon = "*"
         elif rarity == "Legendary":
             header_text = "LEGENDARY DROP!"
             header_icon = "⭐"
@@ -365,6 +369,10 @@ class EnhancedItemDropDialog(StyledDialog):
             "Epic": ["EPIC! Your dedication shows! 💜", "Champion tier! 👑", "Incredible!"],
             "Legendary": ["LEGENDARY! Unstoppable! ⭐", "GODLIKE FOCUS! 🏆", "You are a legend!"]
         }
+        messages.setdefault(
+            "Celestial",
+            ["CELESTIAL! Reality bends to your discipline!", "Beyond Legendary. Beyond limits.", "A new apex tier unlocked!"],
+        )
         import random
         default_messages = ["Nice find!"]
         msg = random.choice(messages.get(rarity, default_messages))
@@ -474,7 +482,7 @@ class EnhancedItemDropDialog(StyledDialog):
         
         # Use pixmap if available, otherwise show large emoji
         rarity = self.item.get("rarity", "Common")
-        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+        rarity_order = list(ITEM_RARITIES.keys()) if ITEM_RARITIES else ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Celestial"]
         try:
             stars = rarity_order.index(rarity) + 1
         except ValueError:
@@ -607,8 +615,14 @@ class EnhancedItemDropDialog(StyledDialog):
         """Start celebration animation."""
         rarity = self.item.get("rarity", "Common")
         
-        # Play special sounds for Epic and Legendary items
-        if rarity == "Legendary":
+        # Play special sounds for Epic and above.
+        if rarity == "Celestial":
+            try:
+                from lottery_sounds import play_legendary_sound
+                play_legendary_sound()
+            except Exception:
+                pass
+        elif rarity == "Legendary":
             # Legendary items get the truly epic fanfare!
             try:
                 from lottery_sounds import play_legendary_sound

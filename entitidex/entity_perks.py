@@ -84,8 +84,71 @@ class EntityPerk:
     normal_value: float
     exceptional_value: float
     description: str  # Format string expecting {value} placeholder (for normal)
-    icon: str = "âś¨"
+    icon: str = "✨"
     exceptional_description: str = ""  # Optional override for exceptional variant
+
+
+# Fallback icons used when legacy icon literals are mojibake/corrupted.
+PERK_TYPE_FALLBACK_ICONS: Dict[PerkType, str] = {
+    PerkType.POWER_FLAT: "⚔️",
+    PerkType.COIN_FLAT: "🪙",
+    PerkType.COIN_PERCENT: "🪙",
+    PerkType.COIN_DISCOUNT: "🪙",
+    PerkType.STORE_DISCOUNT: "🪙",
+    PerkType.SALVAGE_BONUS: "♻️",
+    PerkType.XP_PERCENT: "📈",
+    PerkType.XP_SESSION: "📈",
+    PerkType.XP_LONG_SESSION: "📈",
+    PerkType.XP_NIGHT: "🌙",
+    PerkType.XP_MORNING: "🌅",
+    PerkType.XP_STORY: "📖",
+    PerkType.MERGE_LUCK: "🍀",
+    PerkType.MERGE_SUCCESS: "🍀",
+    PerkType.DROP_LUCK: "🍀",
+    PerkType.ALL_LUCK: "🍀",
+    PerkType.STREAK_SAVE: "🛡️",
+    PerkType.ENCOUNTER_CHANCE: "✨",
+    PerkType.CAPTURE_BONUS: "🎯",
+    PerkType.RARITY_BIAS: "🌟",
+    PerkType.PITY_BONUS: "💠",
+    PerkType.HYDRATION_COOLDOWN: "💧",
+    PerkType.HYDRATION_CAP: "🥤",
+    PerkType.INVENTORY_SLOTS: "🎒",
+    PerkType.EYE_REST_CAP: "👁️",
+    PerkType.PERFECT_SESSION: "✅",
+    PerkType.EYE_TIER_BONUS: "👁️",
+    PerkType.EYE_REROLL_CHANCE: "🔄",
+    PerkType.SLEEP_TIER_BONUS: "🌙",
+    PerkType.WEIGHT_LEGENDARY: "⚖️",
+    PerkType.OPTIMIZE_GEAR_DISCOUNT: "🤖",
+    PerkType.SELL_RARITY_BONUS: "💎",
+    PerkType.GAMBLE_LUCK: "🎲",
+    PerkType.GAMBLE_SAFETY: "🛡️",
+    PerkType.SCRAP_CHANCE: "♻️",
+    PerkType.RECALC_PAID: "💰",
+    PerkType.RECALC_RISKY: "🎲",
+}
+
+# Typical mojibake markers from UTF-8 text interpreted as Windows code pages.
+_GARBLED_ICON_MARKERS = ("â", "đ", "ď", "ť", "ź", "Ž", "™", "€", "", "", "", "")
+
+
+def _is_garbled_icon(icon: str) -> bool:
+    """Best-effort detection of broken mojibake icon literals."""
+    if not icon:
+        return True
+    if any(marker in icon for marker in _GARBLED_ICON_MARKERS):
+        return True
+    if any(ord(ch) < 32 for ch in icon):
+        return True
+    return False
+
+
+def get_perk_icon(perk: EntityPerk) -> str:
+    """Return a safe display icon for a perk."""
+    if not _is_garbled_icon(perk.icon):
+        return perk.icon
+    return PERK_TYPE_FALLBACK_ICONS.get(perk.perk_type, "✨")
 
 
 # =============================================================================
@@ -370,7 +433,7 @@ def get_perk_description(entity_id: str, is_exceptional: bool = False) -> str:
         else:
             description = perk.description.format(value=value)
         
-        descriptions.append(f"{perk.icon} {description}")
+        descriptions.append(f"{get_perk_icon(perk)} {description}")
     
     return "\n".join(descriptions)
 

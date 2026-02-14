@@ -39,18 +39,28 @@ from entitidex import (
     play_celebration_sound,
     preload_celebration_sounds,
 )
-from entitidex.entity_perks import calculate_active_perks, ENTITY_PERKS, PerkType, get_perk_description, get_perk_explanation
+from entitidex.entity_perks import (
+    calculate_active_perks,
+    ENTITY_PERKS,
+    PerkType,
+    get_perk_description,
+    get_perk_explanation,
+    get_perk_icon,
+)
 from styled_dialog import add_tab_help_button, styled_info, styled_warning, styled_question
 from app_utils import get_app_dir
 
 
 # Rarity colors
+ENTITY_RARITY_ORDER = ["common", "uncommon", "rare", "epic", "legendary", "celestial"]
+
 RARITY_COLORS = {
     "common": "#9E9E9E",
     "uncommon": "#4CAF50",
     "rare": "#2196F3",
     "epic": "#9C27B0",
     "legendary": "#FF9800",
+    "celestial": "#00E5FF",
 }
 
 # Rarity background colors (matching preview_entities.py)
@@ -60,6 +70,7 @@ RARITY_BG = {
     "rare": "#1B2D3D",
     "epic": "#2D1B3D",
     "legendary": "#3D2D1B",
+    "celestial": "#123545",
 }
 
 # Path to entity SVGs (use helper for PyInstaller compatibility)
@@ -1120,49 +1131,50 @@ class EntityCard(QtWidgets.QFrame):
             Brief string like "+5% XP" or "+2 Power"
         """
         ptype = perk.perk_type
+        icon = get_perk_icon(perk)
         
         # Categorize by perk type for compact display
         if ptype == PerkType.POWER_FLAT:
-            return f"{perk.icon} +{int(value)} Power"
+            return f"{icon} +{int(value)} Power"
         elif ptype in (PerkType.XP_PERCENT, PerkType.XP_SESSION, PerkType.XP_LONG_SESSION, 
                        PerkType.XP_NIGHT, PerkType.XP_MORNING, PerkType.XP_STORY):
-            return f"{perk.icon} +{int(value)}% XP"
+            return f"{icon} +{int(value)}% XP"
         elif ptype == PerkType.COIN_FLAT:
-            return f"{perk.icon} +{int(value)} Coins"
+            return f"{icon} +{int(value)} Coins"
         elif ptype == PerkType.COIN_PERCENT:
-            return f"{perk.icon} +{int(value)}% Coins"
+            return f"{icon} +{int(value)}% Coins"
         elif ptype == PerkType.SALVAGE_BONUS:
-            return f"{perk.icon} +{int(value)} Salvage"
+            return f"{icon} +{int(value)} Salvage"
         elif ptype in (PerkType.DROP_LUCK, PerkType.MERGE_LUCK, PerkType.ALL_LUCK, PerkType.MERGE_SUCCESS):
-            return f"{perk.icon} +{int(value)}% Luck"
+            return f"{icon} +{int(value)}% Luck"
         elif ptype == PerkType.RARITY_BIAS:
-            return f"{perk.icon} +{int(value)}% Rarity"
+            return f"{icon} +{int(value)}% Rarity"
         elif ptype in (PerkType.ENCOUNTER_CHANCE, PerkType.CAPTURE_BONUS):
-            return f"{perk.icon} +{int(value)}% Catch"
+            return f"{icon} +{int(value)}% Catch"
         elif ptype == PerkType.PITY_BONUS:
-            return f"{perk.icon} +{int(value)}% Pity"
+            return f"{icon} +{int(value)}% Pity"
         elif ptype == PerkType.HYDRATION_COOLDOWN:
-            return f"{perk.icon} -{int(value)}min Water"
+            return f"{icon} -{int(value)}min Water"
         elif ptype == PerkType.HYDRATION_CAP:
-            return f"{perk.icon} +{int(value)} Glass Cap"
+            return f"{icon} +{int(value)} Glass Cap"
         elif ptype == PerkType.EYE_REST_CAP:
-            return f"{perk.icon} +{int(value)} Eye Rest"
+            return f"{icon} +{int(value)} Eye Rest"
         elif ptype == PerkType.EYE_TIER_BONUS:
             if int(value) > 0:
-                return f"{perk.icon} +{int(value)} Eye Tier"
+                return f"{icon} +{int(value)} Eye Tier"
             else:
-                return f"{perk.icon} 50% Eye Reroll"
+                return f"{icon} 50% Eye Reroll"
         elif ptype == PerkType.INVENTORY_SLOTS:
-            return f"{perk.icon} +{int(value)} Slots"
+            return f"{icon} +{int(value)} Slots"
         elif ptype == PerkType.PERFECT_SESSION:
-            return f"{perk.icon} +{int(value)}% Perfect"
+            return f"{icon} +{int(value)}% Perfect"
         elif ptype == PerkType.STREAK_SAVE:
-            return f"{perk.icon} +{int(value)}% Streak"
+            return f"{icon} +{int(value)}% Streak"
         elif ptype == PerkType.SCRAP_CHANCE:
-            return f"{perk.icon} +{int(value)}% Scrap"
+            return f"{icon} +{int(value)}% Scrap"
         else:
             # Fallback: use description template
-            return f"{perk.icon} +{int(value)}"
+            return f"{icon} +{int(value)}"
     
     def _setup_tooltip(self):
         """Setup rich hover tooltip with entity info."""
@@ -2698,12 +2710,11 @@ class EntitidexTab(QtWidgets.QWidget):
         
         # Create paired cards - Layout: Each entity gets [Normal | Exceptional] pair
         # Sort by rarity for proper grouping
-        rarity_order = {"common": 0, "uncommon": 1, "rare": 2, "epic": 3, "legendary": 4}
-        entities_by_rarity = sorted(entities_sorted, key=lambda e: rarity_order.get(e.rarity.lower(), 0))
-        
-        # Separate legendary from others
-        legendary = [e for e in entities_by_rarity if e.rarity.lower() == "legendary"]
-        others = [e for e in entities_by_rarity if e.rarity.lower() != "legendary"]
+        rarity_order = {rarity: idx for idx, rarity in enumerate(ENTITY_RARITY_ORDER)}
+        entities_by_rarity = sorted(
+            entities_sorted,
+            key=lambda e: rarity_order.get(e.rarity.lower(), 0),
+        )
         
         # Layout grid with paired cards (each pair is wider, so 2 pairs per row)
         # Row 0: Celebration card (if theme complete) + separator
@@ -2713,21 +2724,13 @@ class EntitidexTab(QtWidgets.QWidget):
         # Row N+5-6: Uncommon pairs
         # Row N+7-8: Common pairs
         
-        # Add legendary at top center
-        for entity in legendary:
-            pair_widget = self._create_entity_pair_widget(entity, theme_key)
-            cards_layout.addWidget(pair_widget, current_row, 0, 1, 1, QtCore.Qt.AlignCenter)
-            current_row += 1
-        
-        # Sort remaining by rarity (highest first for display)
-        epic = [e for e in others if e.rarity.lower() == "epic"]
-        rare = [e for e in others if e.rarity.lower() == "rare"]
-        uncommon = [e for e in others if e.rarity.lower() == "uncommon"]
-        common = [e for e in others if e.rarity.lower() == "common"]
-        
-        # Add each rarity group - one entity pair per row, centered
-        for rarity_group in [epic, rare, uncommon, common]:
-            for entity in rarity_group:
+        # Group by rarity and render from highest to lowest.
+        grouped = {rarity: [] for rarity in ENTITY_RARITY_ORDER}
+        for entity in entities_by_rarity:
+            grouped.setdefault(entity.rarity.lower(), []).append(entity)
+
+        for rarity in reversed(ENTITY_RARITY_ORDER):
+            for entity in grouped.get(rarity, []):
                 pair_widget = self._create_entity_pair_widget(entity, theme_key)
                 cards_layout.addWidget(pair_widget, current_row, 0, 1, 1, QtCore.Qt.AlignCenter)
                 current_row += 1

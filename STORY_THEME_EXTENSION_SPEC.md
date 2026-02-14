@@ -47,7 +47,8 @@ Secondary maps (UI labels, tab metadata, debug lists, previews) must be derived 
 | Gear generation | Add full gear theme dictionary and slot naming | `gamification.py` (`STORY_GEAR_THEMES`) |
 | Narrative core | Add decisions, chapters, and story mapping | `gamification.py` (`<STORY>_DECISIONS`, `<STORY>_CHAPTERS`, `STORY_DATA`) |
 | Diary narrative | Add diary theme data and sentence-style routing | `gamification.py` (`STORY_DIARY_THEMES`, diary sentence builder) |
-| Hero visuals | Register character label and render path | `focus_blocker_qt.py` (`CharacterCanvas`, `STORY_MAIN_CHARACTER_NAMES`) |
+| Hero visuals | Register character label and render path (SVG-first + procedural fallback safe) | `focus_blocker_qt.py` (`CharacterCanvas`, `STORY_MAIN_CHARACTER_NAMES`) |
+| Hero SVG pack | Provide base hero SVG, gear slot SVGs, rarity-aware designs, and optional manifest | `icons/heroes/<story_id>/`, `hero_svg_system.py` |
 | Story-state keys | Keep `active_story` as canonical across reward/state flows | `gamification.py`, `game_state.py`, `eye_protection_tab.py` |
 | Story unlock/preview | Ensure lock/unlock, preview Chapter 1 flow, and cost usage stay correct | `gamification.py` (`COIN_COSTS`), `focus_blocker_qt.py` |
 | Entitidex entity pool | Add 9 entities with complete metadata | `entitidex/entity_pools.py` (`ENTITY_POOLS`) |
@@ -83,8 +84,8 @@ Required fields:
 - `theme_name`
 - `slot_display` for all 8 canonical slots
 - `item_types` for all 8 canonical slots (non-empty lists)
-- `adjectives` for `Common`, `Uncommon`, `Rare`, `Epic`, `Legendary`
-- `suffixes` for `Common`, `Uncommon`, `Rare`, `Epic`, `Legendary`
+- `adjectives` for `Common`, `Uncommon`, `Rare`, `Epic`, `Legendary`, `Celestial`
+- `suffixes` for `Common`, `Uncommon`, `Rare`, `Epic`, `Legendary`, `Celestial`
 
 Recommended field:
 
@@ -185,6 +186,53 @@ Audio policy:
 - Either provide a theme composer in `_THEME_COMPOSERS` or explicitly rely on default synthesis.
 - Missing dedicated waveform assets must not break celebration playback.
 
+### 6.3 Hero and Gear SVG Assets
+
+Required root:
+
+- `icons/heroes/<story_id>/`
+
+Required hero base (at least one):
+
+- `hero_base.svg` (preferred)
+- `hero.svg` (fallback supported)
+- `base.svg` (fallback supported)
+
+Required gear slot coverage:
+
+- 8 canonical slots (`helmet`, `chestplate`, `gauntlets`, `boots`, `shield`, `weapon`, `cloak`, `amulet`)
+- For each slot, rarity-aware design files for:
+  - `common`
+  - `uncommon`
+  - `rare`
+  - `epic`
+  - `legendary`
+  - `celestial`
+
+Minimum canonical naming per slot:
+
+- `icons/heroes/<story_id>/gear/<slot>/<slot>_<rarity>.svg`
+
+Preferred item-type naming (for stronger thematic variety):
+
+- `icons/heroes/<story_id>/gear/<slot>/<item_type_slug>_<rarity>.svg`
+
+Optional per-theme manifest:
+
+- `icons/heroes/<story_id>/hero_manifest.json`
+
+Contract requirements:
+
+1. Rarity progression must change silhouette/design, not only color.
+2. Missing/invalid hero SVG assets must not break rendering; procedural fallback must still render.
+3. Hero SVG layer viewBox must align with canonical hero canvas (`180x220`).
+4. Optional tier FX overlays may be provided via manifest pattern (for epic/legendary/celestial polish).
+
+Rarity rollout note:
+
+- The codebase supports `Celestial` as the highest tier, but standard progression/lottery systems remain capped at `Legendary`.
+- `Celestial` must be awarded through a dedicated special-acquisition pipeline (event/scripted logic), not by the default lottery path.
+
 ## 7. Persistence, Migration, and Backward Compatibility
 
 Required:
@@ -240,6 +288,7 @@ Required test assertions:
 5. Totals/stats use dynamic counts, not fixed constants.
 6. Story state uses canonical key path (`active_story`) in reward/state flows.
 7. Custom entity-ID hooks do not regress (gating dialogs/perks/flows still resolve correctly).
+8. Hero SVG resolver does not crash on missing assets and returns fallback-safe result.
 
 Recommended static checks:
 
@@ -262,6 +311,7 @@ Verify:
 7. New theme appears in Entitidex tab and collection dialogs.
 8. Perks from captured entities apply in gameplay systems.
 9. Theme completion celebration triggers correctly for full normal+exceptional completion.
+10. Hero tab and mini-hero render correctly with and without SVG hero assets present.
 
 ## 11. Documentation and Release Hygiene
 
@@ -270,6 +320,7 @@ Must update:
 1. `README.md` if user-facing story counts or story list changed.
 2. Story/Entitidex docs that describe current story set.
 3. `CHANGELOG.md` with the new story/theme addition and migration notes (if any).
+4. `HERO_SVG_SYSTEM_SPEC.md` and `HERO_SVG_VISUAL_BIBLE.md` when hero/gear SVG contract changes.
 
 ## 12. Definition of Done
 

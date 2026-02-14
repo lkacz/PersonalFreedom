@@ -1,0 +1,465 @@
+# space_pirate Hero SVG Packet
+
+## Theme Snapshot
+- story_id: `space_pirate`
+- title: The Orbit Outlaw's Ledger
+- style intent: Orbital rogue captain. Nautical-pirate cues fused with vacuum-era hardware.
+- hero base direction: Captain-forward silhouette, coat-tail or mantle shape, swagger posture.
+- motif keywords: star charts, hull bolts, ion trims, contraband seals
+- palette anchors: #1f2a44, #3e4f74, #6c7aa1, #ff9f43, #79d3f2
+
+## Mandatory Output Files
+Generate all files below.
+- `icons/heroes/space_pirate/hero_base.svg`
+- `icons/heroes/space_pirate/gear/cloak/cloak_common.svg`
+- `icons/heroes/space_pirate/gear/cloak/cloak_uncommon.svg`
+- `icons/heroes/space_pirate/gear/cloak/cloak_rare.svg`
+- `icons/heroes/space_pirate/gear/cloak/cloak_epic.svg`
+- `icons/heroes/space_pirate/gear/cloak/cloak_legendary.svg`
+- `icons/heroes/space_pirate/gear/cloak/cloak_celestial.svg`
+- `icons/heroes/space_pirate/gear/chestplate/chestplate_common.svg`
+- `icons/heroes/space_pirate/gear/chestplate/chestplate_uncommon.svg`
+- `icons/heroes/space_pirate/gear/chestplate/chestplate_rare.svg`
+- `icons/heroes/space_pirate/gear/chestplate/chestplate_epic.svg`
+- `icons/heroes/space_pirate/gear/chestplate/chestplate_legendary.svg`
+- `icons/heroes/space_pirate/gear/chestplate/chestplate_celestial.svg`
+- `icons/heroes/space_pirate/gear/boots/boots_common.svg`
+- `icons/heroes/space_pirate/gear/boots/boots_uncommon.svg`
+- `icons/heroes/space_pirate/gear/boots/boots_rare.svg`
+- `icons/heroes/space_pirate/gear/boots/boots_epic.svg`
+- `icons/heroes/space_pirate/gear/boots/boots_legendary.svg`
+- `icons/heroes/space_pirate/gear/boots/boots_celestial.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/gauntlets_common.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/gauntlets_uncommon.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/gauntlets_rare.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/gauntlets_epic.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/gauntlets_legendary.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/gauntlets_celestial.svg`
+- `icons/heroes/space_pirate/gear/amulet/amulet_common.svg`
+- `icons/heroes/space_pirate/gear/amulet/amulet_uncommon.svg`
+- `icons/heroes/space_pirate/gear/amulet/amulet_rare.svg`
+- `icons/heroes/space_pirate/gear/amulet/amulet_epic.svg`
+- `icons/heroes/space_pirate/gear/amulet/amulet_legendary.svg`
+- `icons/heroes/space_pirate/gear/amulet/amulet_celestial.svg`
+- `icons/heroes/space_pirate/gear/helmet/helmet_common.svg`
+- `icons/heroes/space_pirate/gear/helmet/helmet_uncommon.svg`
+- `icons/heroes/space_pirate/gear/helmet/helmet_rare.svg`
+- `icons/heroes/space_pirate/gear/helmet/helmet_epic.svg`
+- `icons/heroes/space_pirate/gear/helmet/helmet_legendary.svg`
+- `icons/heroes/space_pirate/gear/helmet/helmet_celestial.svg`
+- `icons/heroes/space_pirate/gear/shield/shield_common.svg`
+- `icons/heroes/space_pirate/gear/shield/shield_uncommon.svg`
+- `icons/heroes/space_pirate/gear/shield/shield_rare.svg`
+- `icons/heroes/space_pirate/gear/shield/shield_epic.svg`
+- `icons/heroes/space_pirate/gear/shield/shield_legendary.svg`
+- `icons/heroes/space_pirate/gear/shield/shield_celestial.svg`
+- `icons/heroes/space_pirate/gear/weapon/weapon_common.svg`
+- `icons/heroes/space_pirate/gear/weapon/weapon_uncommon.svg`
+- `icons/heroes/space_pirate/gear/weapon/weapon_rare.svg`
+- `icons/heroes/space_pirate/gear/weapon/weapon_epic.svg`
+- `icons/heroes/space_pirate/gear/weapon/weapon_legendary.svg`
+- `icons/heroes/space_pirate/gear/weapon/weapon_celestial.svg`
+- `icons/heroes/space_pirate/fx/tier_epic.svg`
+- `icons/heroes/space_pirate/fx/tier_legendary.svg`
+- `icons/heroes/space_pirate/fx/tier_celestial.svg`
+
+## Preferred Item-Type Output Files
+Generate these for full visual variety. If constrained, prioritize Helmet, Chestplate, Weapon, Shield.
+- `icons/heroes/space_pirate/gear/helmet/nebula_tricorne_common.svg`
+- `icons/heroes/space_pirate/gear/helmet/nebula_tricorne_uncommon.svg`
+- `icons/heroes/space_pirate/gear/helmet/nebula_tricorne_rare.svg`
+- `icons/heroes/space_pirate/gear/helmet/nebula_tricorne_epic.svg`
+- `icons/heroes/space_pirate/gear/helmet/nebula_tricorne_legendary.svg`
+- `icons/heroes/space_pirate/gear/helmet/nebula_tricorne_celestial.svg`
+- `icons/heroes/space_pirate/gear/helmet/corsair_helm_common.svg`
+- `icons/heroes/space_pirate/gear/helmet/corsair_helm_uncommon.svg`
+- `icons/heroes/space_pirate/gear/helmet/corsair_helm_rare.svg`
+- `icons/heroes/space_pirate/gear/helmet/corsair_helm_epic.svg`
+- `icons/heroes/space_pirate/gear/helmet/corsair_helm_legendary.svg`
+- `icons/heroes/space_pirate/gear/helmet/corsair_helm_celestial.svg`
+- `icons/heroes/space_pirate/gear/helmet/hull_goggles_common.svg`
+- `icons/heroes/space_pirate/gear/helmet/hull_goggles_uncommon.svg`
+- `icons/heroes/space_pirate/gear/helmet/hull_goggles_rare.svg`
+- `icons/heroes/space_pirate/gear/helmet/hull_goggles_epic.svg`
+- `icons/heroes/space_pirate/gear/helmet/hull_goggles_legendary.svg`
+- `icons/heroes/space_pirate/gear/helmet/hull_goggles_celestial.svg`
+- `icons/heroes/space_pirate/gear/helmet/star_captain_hood_common.svg`
+- `icons/heroes/space_pirate/gear/helmet/star_captain_hood_uncommon.svg`
+- `icons/heroes/space_pirate/gear/helmet/star_captain_hood_rare.svg`
+- `icons/heroes/space_pirate/gear/helmet/star_captain_hood_epic.svg`
+- `icons/heroes/space_pirate/gear/helmet/star_captain_hood_legendary.svg`
+- `icons/heroes/space_pirate/gear/helmet/star_captain_hood_celestial.svg`
+- `icons/heroes/space_pirate/gear/helmet/dockrunner_cap_common.svg`
+- `icons/heroes/space_pirate/gear/helmet/dockrunner_cap_uncommon.svg`
+- `icons/heroes/space_pirate/gear/helmet/dockrunner_cap_rare.svg`
+- `icons/heroes/space_pirate/gear/helmet/dockrunner_cap_epic.svg`
+- `icons/heroes/space_pirate/gear/helmet/dockrunner_cap_legendary.svg`
+- `icons/heroes/space_pirate/gear/helmet/dockrunner_cap_celestial.svg`
+- `icons/heroes/space_pirate/gear/helmet/signal_hat_common.svg`
+- `icons/heroes/space_pirate/gear/helmet/signal_hat_uncommon.svg`
+- `icons/heroes/space_pirate/gear/helmet/signal_hat_rare.svg`
+- `icons/heroes/space_pirate/gear/helmet/signal_hat_epic.svg`
+- `icons/heroes/space_pirate/gear/helmet/signal_hat_legendary.svg`
+- `icons/heroes/space_pirate/gear/helmet/signal_hat_celestial.svg`
+- `icons/heroes/space_pirate/gear/chestplate/vacuum_jacket_common.svg`
+- `icons/heroes/space_pirate/gear/chestplate/vacuum_jacket_uncommon.svg`
+- `icons/heroes/space_pirate/gear/chestplate/vacuum_jacket_rare.svg`
+- `icons/heroes/space_pirate/gear/chestplate/vacuum_jacket_epic.svg`
+- `icons/heroes/space_pirate/gear/chestplate/vacuum_jacket_legendary.svg`
+- `icons/heroes/space_pirate/gear/chestplate/vacuum_jacket_celestial.svg`
+- `icons/heroes/space_pirate/gear/chestplate/plunder_coat_common.svg`
+- `icons/heroes/space_pirate/gear/chestplate/plunder_coat_uncommon.svg`
+- `icons/heroes/space_pirate/gear/chestplate/plunder_coat_rare.svg`
+- `icons/heroes/space_pirate/gear/chestplate/plunder_coat_epic.svg`
+- `icons/heroes/space_pirate/gear/chestplate/plunder_coat_legendary.svg`
+- `icons/heroes/space_pirate/gear/chestplate/plunder_coat_celestial.svg`
+- `icons/heroes/space_pirate/gear/chestplate/hullweave_vest_common.svg`
+- `icons/heroes/space_pirate/gear/chestplate/hullweave_vest_uncommon.svg`
+- `icons/heroes/space_pirate/gear/chestplate/hullweave_vest_rare.svg`
+- `icons/heroes/space_pirate/gear/chestplate/hullweave_vest_epic.svg`
+- `icons/heroes/space_pirate/gear/chestplate/hullweave_vest_legendary.svg`
+- `icons/heroes/space_pirate/gear/chestplate/hullweave_vest_celestial.svg`
+- `icons/heroes/space_pirate/gear/chestplate/orbital_harness_common.svg`
+- `icons/heroes/space_pirate/gear/chestplate/orbital_harness_uncommon.svg`
+- `icons/heroes/space_pirate/gear/chestplate/orbital_harness_rare.svg`
+- `icons/heroes/space_pirate/gear/chestplate/orbital_harness_epic.svg`
+- `icons/heroes/space_pirate/gear/chestplate/orbital_harness_legendary.svg`
+- `icons/heroes/space_pirate/gear/chestplate/orbital_harness_celestial.svg`
+- `icons/heroes/space_pirate/gear/chestplate/ion_overcoat_common.svg`
+- `icons/heroes/space_pirate/gear/chestplate/ion_overcoat_uncommon.svg`
+- `icons/heroes/space_pirate/gear/chestplate/ion_overcoat_rare.svg`
+- `icons/heroes/space_pirate/gear/chestplate/ion_overcoat_epic.svg`
+- `icons/heroes/space_pirate/gear/chestplate/ion_overcoat_legendary.svg`
+- `icons/heroes/space_pirate/gear/chestplate/ion_overcoat_celestial.svg`
+- `icons/heroes/space_pirate/gear/chestplate/smuggler_mail_common.svg`
+- `icons/heroes/space_pirate/gear/chestplate/smuggler_mail_uncommon.svg`
+- `icons/heroes/space_pirate/gear/chestplate/smuggler_mail_rare.svg`
+- `icons/heroes/space_pirate/gear/chestplate/smuggler_mail_epic.svg`
+- `icons/heroes/space_pirate/gear/chestplate/smuggler_mail_legendary.svg`
+- `icons/heroes/space_pirate/gear/chestplate/smuggler_mail_celestial.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/magnetic_grips_common.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/magnetic_grips_uncommon.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/magnetic_grips_rare.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/magnetic_grips_epic.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/magnetic_grips_legendary.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/magnetic_grips_celestial.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/latch_gloves_common.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/latch_gloves_uncommon.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/latch_gloves_rare.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/latch_gloves_epic.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/latch_gloves_legendary.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/latch_gloves_celestial.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/smuggler_mitts_common.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/smuggler_mitts_uncommon.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/smuggler_mitts_rare.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/smuggler_mitts_epic.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/smuggler_mitts_legendary.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/smuggler_mitts_celestial.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/starline_knuckles_common.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/starline_knuckles_uncommon.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/starline_knuckles_rare.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/starline_knuckles_epic.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/starline_knuckles_legendary.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/starline_knuckles_celestial.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/dock_claws_common.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/dock_claws_uncommon.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/dock_claws_rare.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/dock_claws_epic.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/dock_claws_legendary.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/dock_claws_celestial.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/pressure_gauntlets_common.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/pressure_gauntlets_uncommon.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/pressure_gauntlets_rare.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/pressure_gauntlets_epic.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/pressure_gauntlets_legendary.svg`
+- `icons/heroes/space_pirate/gear/gauntlets/pressure_gauntlets_celestial.svg`
+- `icons/heroes/space_pirate/gear/boots/mag_boots_common.svg`
+- `icons/heroes/space_pirate/gear/boots/mag_boots_uncommon.svg`
+- `icons/heroes/space_pirate/gear/boots/mag_boots_rare.svg`
+- `icons/heroes/space_pirate/gear/boots/mag_boots_epic.svg`
+- `icons/heroes/space_pirate/gear/boots/mag_boots_legendary.svg`
+- `icons/heroes/space_pirate/gear/boots/mag_boots_celestial.svg`
+- `icons/heroes/space_pirate/gear/boots/deck_stompers_common.svg`
+- `icons/heroes/space_pirate/gear/boots/deck_stompers_uncommon.svg`
+- `icons/heroes/space_pirate/gear/boots/deck_stompers_rare.svg`
+- `icons/heroes/space_pirate/gear/boots/deck_stompers_epic.svg`
+- `icons/heroes/space_pirate/gear/boots/deck_stompers_legendary.svg`
+- `icons/heroes/space_pirate/gear/boots/deck_stompers_celestial.svg`
+- `icons/heroes/space_pirate/gear/boots/hull_walkers_common.svg`
+- `icons/heroes/space_pirate/gear/boots/hull_walkers_uncommon.svg`
+- `icons/heroes/space_pirate/gear/boots/hull_walkers_rare.svg`
+- `icons/heroes/space_pirate/gear/boots/hull_walkers_epic.svg`
+- `icons/heroes/space_pirate/gear/boots/hull_walkers_legendary.svg`
+- `icons/heroes/space_pirate/gear/boots/hull_walkers_celestial.svg`
+- `icons/heroes/space_pirate/gear/boots/grav_steps_common.svg`
+- `icons/heroes/space_pirate/gear/boots/grav_steps_uncommon.svg`
+- `icons/heroes/space_pirate/gear/boots/grav_steps_rare.svg`
+- `icons/heroes/space_pirate/gear/boots/grav_steps_epic.svg`
+- `icons/heroes/space_pirate/gear/boots/grav_steps_legendary.svg`
+- `icons/heroes/space_pirate/gear/boots/grav_steps_celestial.svg`
+- `icons/heroes/space_pirate/gear/boots/orbit_treads_common.svg`
+- `icons/heroes/space_pirate/gear/boots/orbit_treads_uncommon.svg`
+- `icons/heroes/space_pirate/gear/boots/orbit_treads_rare.svg`
+- `icons/heroes/space_pirate/gear/boots/orbit_treads_epic.svg`
+- `icons/heroes/space_pirate/gear/boots/orbit_treads_legendary.svg`
+- `icons/heroes/space_pirate/gear/boots/orbit_treads_celestial.svg`
+- `icons/heroes/space_pirate/gear/boots/void_soles_common.svg`
+- `icons/heroes/space_pirate/gear/boots/void_soles_uncommon.svg`
+- `icons/heroes/space_pirate/gear/boots/void_soles_rare.svg`
+- `icons/heroes/space_pirate/gear/boots/void_soles_epic.svg`
+- `icons/heroes/space_pirate/gear/boots/void_soles_legendary.svg`
+- `icons/heroes/space_pirate/gear/boots/void_soles_celestial.svg`
+- `icons/heroes/space_pirate/gear/shield/deflector_plate_common.svg`
+- `icons/heroes/space_pirate/gear/shield/deflector_plate_uncommon.svg`
+- `icons/heroes/space_pirate/gear/shield/deflector_plate_rare.svg`
+- `icons/heroes/space_pirate/gear/shield/deflector_plate_epic.svg`
+- `icons/heroes/space_pirate/gear/shield/deflector_plate_legendary.svg`
+- `icons/heroes/space_pirate/gear/shield/deflector_plate_celestial.svg`
+- `icons/heroes/space_pirate/gear/shield/portside_barrier_common.svg`
+- `icons/heroes/space_pirate/gear/shield/portside_barrier_uncommon.svg`
+- `icons/heroes/space_pirate/gear/shield/portside_barrier_rare.svg`
+- `icons/heroes/space_pirate/gear/shield/portside_barrier_epic.svg`
+- `icons/heroes/space_pirate/gear/shield/portside_barrier_legendary.svg`
+- `icons/heroes/space_pirate/gear/shield/portside_barrier_celestial.svg`
+- `icons/heroes/space_pirate/gear/shield/customs_scrambler_common.svg`
+- `icons/heroes/space_pirate/gear/shield/customs_scrambler_uncommon.svg`
+- `icons/heroes/space_pirate/gear/shield/customs_scrambler_rare.svg`
+- `icons/heroes/space_pirate/gear/shield/customs_scrambler_epic.svg`
+- `icons/heroes/space_pirate/gear/shield/customs_scrambler_legendary.svg`
+- `icons/heroes/space_pirate/gear/shield/customs_scrambler_celestial.svg`
+- `icons/heroes/space_pirate/gear/shield/hull_ward_common.svg`
+- `icons/heroes/space_pirate/gear/shield/hull_ward_uncommon.svg`
+- `icons/heroes/space_pirate/gear/shield/hull_ward_rare.svg`
+- `icons/heroes/space_pirate/gear/shield/hull_ward_epic.svg`
+- `icons/heroes/space_pirate/gear/shield/hull_ward_legendary.svg`
+- `icons/heroes/space_pirate/gear/shield/hull_ward_celestial.svg`
+- `icons/heroes/space_pirate/gear/shield/parley_screen_common.svg`
+- `icons/heroes/space_pirate/gear/shield/parley_screen_uncommon.svg`
+- `icons/heroes/space_pirate/gear/shield/parley_screen_rare.svg`
+- `icons/heroes/space_pirate/gear/shield/parley_screen_epic.svg`
+- `icons/heroes/space_pirate/gear/shield/parley_screen_legendary.svg`
+- `icons/heroes/space_pirate/gear/shield/parley_screen_celestial.svg`
+- `icons/heroes/space_pirate/gear/shield/aegis_beacon_common.svg`
+- `icons/heroes/space_pirate/gear/shield/aegis_beacon_uncommon.svg`
+- `icons/heroes/space_pirate/gear/shield/aegis_beacon_rare.svg`
+- `icons/heroes/space_pirate/gear/shield/aegis_beacon_epic.svg`
+- `icons/heroes/space_pirate/gear/shield/aegis_beacon_legendary.svg`
+- `icons/heroes/space_pirate/gear/shield/aegis_beacon_celestial.svg`
+- `icons/heroes/space_pirate/gear/weapon/breach_hook_common.svg`
+- `icons/heroes/space_pirate/gear/weapon/breach_hook_uncommon.svg`
+- `icons/heroes/space_pirate/gear/weapon/breach_hook_rare.svg`
+- `icons/heroes/space_pirate/gear/weapon/breach_hook_epic.svg`
+- `icons/heroes/space_pirate/gear/weapon/breach_hook_legendary.svg`
+- `icons/heroes/space_pirate/gear/weapon/breach_hook_celestial.svg`
+- `icons/heroes/space_pirate/gear/weapon/plasma_cutlass_common.svg`
+- `icons/heroes/space_pirate/gear/weapon/plasma_cutlass_uncommon.svg`
+- `icons/heroes/space_pirate/gear/weapon/plasma_cutlass_rare.svg`
+- `icons/heroes/space_pirate/gear/weapon/plasma_cutlass_epic.svg`
+- `icons/heroes/space_pirate/gear/weapon/plasma_cutlass_legendary.svg`
+- `icons/heroes/space_pirate/gear/weapon/plasma_cutlass_celestial.svg`
+- `icons/heroes/space_pirate/gear/weapon/boarding_pike_common.svg`
+- `icons/heroes/space_pirate/gear/weapon/boarding_pike_uncommon.svg`
+- `icons/heroes/space_pirate/gear/weapon/boarding_pike_rare.svg`
+- `icons/heroes/space_pirate/gear/weapon/boarding_pike_epic.svg`
+- `icons/heroes/space_pirate/gear/weapon/boarding_pike_legendary.svg`
+- `icons/heroes/space_pirate/gear/weapon/boarding_pike_celestial.svg`
+- `icons/heroes/space_pirate/gear/weapon/signal_pistol_common.svg`
+- `icons/heroes/space_pirate/gear/weapon/signal_pistol_uncommon.svg`
+- `icons/heroes/space_pirate/gear/weapon/signal_pistol_rare.svg`
+- `icons/heroes/space_pirate/gear/weapon/signal_pistol_epic.svg`
+- `icons/heroes/space_pirate/gear/weapon/signal_pistol_legendary.svg`
+- `icons/heroes/space_pirate/gear/weapon/signal_pistol_celestial.svg`
+- `icons/heroes/space_pirate/gear/weapon/jury_rig_blaster_common.svg`
+- `icons/heroes/space_pirate/gear/weapon/jury_rig_blaster_uncommon.svg`
+- `icons/heroes/space_pirate/gear/weapon/jury_rig_blaster_rare.svg`
+- `icons/heroes/space_pirate/gear/weapon/jury_rig_blaster_epic.svg`
+- `icons/heroes/space_pirate/gear/weapon/jury_rig_blaster_legendary.svg`
+- `icons/heroes/space_pirate/gear/weapon/jury_rig_blaster_celestial.svg`
+- `icons/heroes/space_pirate/gear/weapon/gravity_wrench_common.svg`
+- `icons/heroes/space_pirate/gear/weapon/gravity_wrench_uncommon.svg`
+- `icons/heroes/space_pirate/gear/weapon/gravity_wrench_rare.svg`
+- `icons/heroes/space_pirate/gear/weapon/gravity_wrench_epic.svg`
+- `icons/heroes/space_pirate/gear/weapon/gravity_wrench_legendary.svg`
+- `icons/heroes/space_pirate/gear/weapon/gravity_wrench_celestial.svg`
+- `icons/heroes/space_pirate/gear/cloak/starcloak_common.svg`
+- `icons/heroes/space_pirate/gear/cloak/starcloak_uncommon.svg`
+- `icons/heroes/space_pirate/gear/cloak/starcloak_rare.svg`
+- `icons/heroes/space_pirate/gear/cloak/starcloak_epic.svg`
+- `icons/heroes/space_pirate/gear/cloak/starcloak_legendary.svg`
+- `icons/heroes/space_pirate/gear/cloak/starcloak_celestial.svg`
+- `icons/heroes/space_pirate/gear/cloak/nebula_mantle_common.svg`
+- `icons/heroes/space_pirate/gear/cloak/nebula_mantle_uncommon.svg`
+- `icons/heroes/space_pirate/gear/cloak/nebula_mantle_rare.svg`
+- `icons/heroes/space_pirate/gear/cloak/nebula_mantle_epic.svg`
+- `icons/heroes/space_pirate/gear/cloak/nebula_mantle_legendary.svg`
+- `icons/heroes/space_pirate/gear/cloak/nebula_mantle_celestial.svg`
+- `icons/heroes/space_pirate/gear/cloak/dust_veil_common.svg`
+- `icons/heroes/space_pirate/gear/cloak/dust_veil_uncommon.svg`
+- `icons/heroes/space_pirate/gear/cloak/dust_veil_rare.svg`
+- `icons/heroes/space_pirate/gear/cloak/dust_veil_epic.svg`
+- `icons/heroes/space_pirate/gear/cloak/dust_veil_legendary.svg`
+- `icons/heroes/space_pirate/gear/cloak/dust_veil_celestial.svg`
+- `icons/heroes/space_pirate/gear/cloak/comet_cape_common.svg`
+- `icons/heroes/space_pirate/gear/cloak/comet_cape_uncommon.svg`
+- `icons/heroes/space_pirate/gear/cloak/comet_cape_rare.svg`
+- `icons/heroes/space_pirate/gear/cloak/comet_cape_epic.svg`
+- `icons/heroes/space_pirate/gear/cloak/comet_cape_legendary.svg`
+- `icons/heroes/space_pirate/gear/cloak/comet_cape_celestial.svg`
+- `icons/heroes/space_pirate/gear/cloak/night_orbit_shroud_common.svg`
+- `icons/heroes/space_pirate/gear/cloak/night_orbit_shroud_uncommon.svg`
+- `icons/heroes/space_pirate/gear/cloak/night_orbit_shroud_rare.svg`
+- `icons/heroes/space_pirate/gear/cloak/night_orbit_shroud_epic.svg`
+- `icons/heroes/space_pirate/gear/cloak/night_orbit_shroud_legendary.svg`
+- `icons/heroes/space_pirate/gear/cloak/night_orbit_shroud_celestial.svg`
+- `icons/heroes/space_pirate/gear/cloak/solar_drape_common.svg`
+- `icons/heroes/space_pirate/gear/cloak/solar_drape_uncommon.svg`
+- `icons/heroes/space_pirate/gear/cloak/solar_drape_rare.svg`
+- `icons/heroes/space_pirate/gear/cloak/solar_drape_epic.svg`
+- `icons/heroes/space_pirate/gear/cloak/solar_drape_legendary.svg`
+- `icons/heroes/space_pirate/gear/cloak/solar_drape_celestial.svg`
+- `icons/heroes/space_pirate/gear/amulet/contraband_charm_common.svg`
+- `icons/heroes/space_pirate/gear/amulet/contraband_charm_uncommon.svg`
+- `icons/heroes/space_pirate/gear/amulet/contraband_charm_rare.svg`
+- `icons/heroes/space_pirate/gear/amulet/contraband_charm_epic.svg`
+- `icons/heroes/space_pirate/gear/amulet/contraband_charm_legendary.svg`
+- `icons/heroes/space_pirate/gear/amulet/contraband_charm_celestial.svg`
+- `icons/heroes/space_pirate/gear/amulet/pocket_compass_common.svg`
+- `icons/heroes/space_pirate/gear/amulet/pocket_compass_uncommon.svg`
+- `icons/heroes/space_pirate/gear/amulet/pocket_compass_rare.svg`
+- `icons/heroes/space_pirate/gear/amulet/pocket_compass_epic.svg`
+- `icons/heroes/space_pirate/gear/amulet/pocket_compass_legendary.svg`
+- `icons/heroes/space_pirate/gear/amulet/pocket_compass_celestial.svg`
+- `icons/heroes/space_pirate/gear/amulet/singularity_coin_common.svg`
+- `icons/heroes/space_pirate/gear/amulet/singularity_coin_uncommon.svg`
+- `icons/heroes/space_pirate/gear/amulet/singularity_coin_rare.svg`
+- `icons/heroes/space_pirate/gear/amulet/singularity_coin_epic.svg`
+- `icons/heroes/space_pirate/gear/amulet/singularity_coin_legendary.svg`
+- `icons/heroes/space_pirate/gear/amulet/singularity_coin_celestial.svg`
+- `icons/heroes/space_pirate/gear/amulet/captain_seal_common.svg`
+- `icons/heroes/space_pirate/gear/amulet/captain_seal_uncommon.svg`
+- `icons/heroes/space_pirate/gear/amulet/captain_seal_rare.svg`
+- `icons/heroes/space_pirate/gear/amulet/captain_seal_epic.svg`
+- `icons/heroes/space_pirate/gear/amulet/captain_seal_legendary.svg`
+- `icons/heroes/space_pirate/gear/amulet/captain_seal_celestial.svg`
+- `icons/heroes/space_pirate/gear/amulet/grav_knot_common.svg`
+- `icons/heroes/space_pirate/gear/amulet/grav_knot_uncommon.svg`
+- `icons/heroes/space_pirate/gear/amulet/grav_knot_rare.svg`
+- `icons/heroes/space_pirate/gear/amulet/grav_knot_epic.svg`
+- `icons/heroes/space_pirate/gear/amulet/grav_knot_legendary.svg`
+- `icons/heroes/space_pirate/gear/amulet/grav_knot_celestial.svg`
+- `icons/heroes/space_pirate/gear/amulet/ledger_locket_common.svg`
+- `icons/heroes/space_pirate/gear/amulet/ledger_locket_uncommon.svg`
+- `icons/heroes/space_pirate/gear/amulet/ledger_locket_rare.svg`
+- `icons/heroes/space_pirate/gear/amulet/ledger_locket_epic.svg`
+- `icons/heroes/space_pirate/gear/amulet/ledger_locket_legendary.svg`
+- `icons/heroes/space_pirate/gear/amulet/ledger_locket_celestial.svg`
+
+## Slot-by-Slot Direction
+### Cloak
+- role: Motion layer. Build depth and emotional tone through shape and edge cuts.
+- animation cue: Low-frequency sway with occasional gust accent.
+- item types to represent: Starcloak, Nebula Mantle, Dust Veil, Comet Cape, Night Orbit Shroud, Solar Drape
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Chestplate
+- role: Main mass-defining body layer. Largest storytelling surface after base hero.
+- animation cue: Core pulse or panel breathing loop (slow, 3-5s).
+- item types to represent: Vacuum Jacket, Plunder Coat, Hullweave Vest, Orbital Harness, Ion Overcoat, Smuggler Mail
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Boots
+- role: Movement identity. Encode terrain, mobility mode, and weight class.
+- animation cue: Sole glow ripple or dust/spark kick pulse.
+- item types to represent: Mag Boots, Deck Stompers, Hull Walkers, Grav Steps, Orbit Treads, Void Soles
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Gauntlets
+- role: Functional hand/tool interface. Show dexterity and role-specific mechanics.
+- animation cue: Knuckle light wave or servo twitch loop (subtle).
+- item types to represent: Magnetic Grips, Latch Gloves, Smuggler Mitts, Starline Knuckles, Dock Claws, Pressure Gauntlets
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Amulet
+- role: Narrative core token. Small but high-contrast and symbolically loaded.
+- animation cue: Heartbeat glow pulse with small orbiting mote.
+- item types to represent: Contraband Charm, Pocket Compass, Singularity Coin, Captain Seal, Grav Knot, Ledger Locket
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Helmet
+- role: Head identity piece. Prioritize profile readability and theme signature crest.
+- animation cue: Visor sweep or indicator blink every 2-4s.
+- item types to represent: Nebula Tricorne, Corsair Helm, Hull Goggles, Star Captain Hood, Dockrunner Cap, Signal Hat
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Shield
+- role: Defensive philosophy. Make silhouette distinct from chestplate/weapon.
+- animation cue: Border scan sweep or shield-ripple pulse.
+- item types to represent: Deflector Plate, Portside Barrier, Customs Scrambler, Hull Ward, Parley Screen, Aegis Beacon
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Weapon
+- role: Primary action silhouette. Highest visual contrast and directional energy.
+- animation cue: Edge glint sweep or energy charge loop.
+- item types to represent: Breach Hook, Plasma Cutlass, Boarding Pike, Signal Pistol, Jury-Rig Blaster, Gravity Wrench
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+
+## Global Quality Gates
+- Do not use only color swaps across rarities; geometry and silhouette must evolve.
+- Keep readability at 70x90 and 180x220.
+- Keep transparent backgrounds.
+- Ensure first frame is static-compatible (for QSvgRenderer path).
+- Keep layering aligned with hero base center and foot line.
+
+## LLM Generation Prompt
+Use this with your SVG-generation model:
+
+```text
+You are generating production SVG assets for PersonalFreedom hero rendering.
+Theme: space_pirate
+Follow file names exactly as listed in this packet.
+Canvas/viewBox: 0 0 180 220. Transparent background.
+For each rarity tier, change silhouette/design complexity, not only colors.
+Respect slot role and animation cues in this packet.
+Output valid standalone SVG files only.
+```

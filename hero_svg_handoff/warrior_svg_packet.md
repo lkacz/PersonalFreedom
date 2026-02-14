@@ -1,0 +1,489 @@
+# warrior Hero SVG Packet
+
+## Theme Snapshot
+- story_id: `warrior`
+- title: The Focus Warrior's Tale
+- style intent: Disciplined frontline fighter. Heavy silhouettes, engraved metal, leather utility.
+- hero base direction: Broad-shoulder combat stance, grounded feet, readable helmet/head profile.
+- motif keywords: dragon sigils, battle scars, banner trims, forged rivets
+- palette anchors: #6f7f8f, #3a434d, #8d6e63, #c98a3a, #ffb74d
+
+## Mandatory Output Files
+Generate all files below.
+- `icons/heroes/warrior/hero_base.svg`
+- `icons/heroes/warrior/gear/cloak/cloak_common.svg`
+- `icons/heroes/warrior/gear/cloak/cloak_uncommon.svg`
+- `icons/heroes/warrior/gear/cloak/cloak_rare.svg`
+- `icons/heroes/warrior/gear/cloak/cloak_epic.svg`
+- `icons/heroes/warrior/gear/cloak/cloak_legendary.svg`
+- `icons/heroes/warrior/gear/cloak/cloak_celestial.svg`
+- `icons/heroes/warrior/gear/chestplate/chestplate_common.svg`
+- `icons/heroes/warrior/gear/chestplate/chestplate_uncommon.svg`
+- `icons/heroes/warrior/gear/chestplate/chestplate_rare.svg`
+- `icons/heroes/warrior/gear/chestplate/chestplate_epic.svg`
+- `icons/heroes/warrior/gear/chestplate/chestplate_legendary.svg`
+- `icons/heroes/warrior/gear/chestplate/chestplate_celestial.svg`
+- `icons/heroes/warrior/gear/boots/boots_common.svg`
+- `icons/heroes/warrior/gear/boots/boots_uncommon.svg`
+- `icons/heroes/warrior/gear/boots/boots_rare.svg`
+- `icons/heroes/warrior/gear/boots/boots_epic.svg`
+- `icons/heroes/warrior/gear/boots/boots_legendary.svg`
+- `icons/heroes/warrior/gear/boots/boots_celestial.svg`
+- `icons/heroes/warrior/gear/gauntlets/gauntlets_common.svg`
+- `icons/heroes/warrior/gear/gauntlets/gauntlets_uncommon.svg`
+- `icons/heroes/warrior/gear/gauntlets/gauntlets_rare.svg`
+- `icons/heroes/warrior/gear/gauntlets/gauntlets_epic.svg`
+- `icons/heroes/warrior/gear/gauntlets/gauntlets_legendary.svg`
+- `icons/heroes/warrior/gear/gauntlets/gauntlets_celestial.svg`
+- `icons/heroes/warrior/gear/amulet/amulet_common.svg`
+- `icons/heroes/warrior/gear/amulet/amulet_uncommon.svg`
+- `icons/heroes/warrior/gear/amulet/amulet_rare.svg`
+- `icons/heroes/warrior/gear/amulet/amulet_epic.svg`
+- `icons/heroes/warrior/gear/amulet/amulet_legendary.svg`
+- `icons/heroes/warrior/gear/amulet/amulet_celestial.svg`
+- `icons/heroes/warrior/gear/helmet/helmet_common.svg`
+- `icons/heroes/warrior/gear/helmet/helmet_uncommon.svg`
+- `icons/heroes/warrior/gear/helmet/helmet_rare.svg`
+- `icons/heroes/warrior/gear/helmet/helmet_epic.svg`
+- `icons/heroes/warrior/gear/helmet/helmet_legendary.svg`
+- `icons/heroes/warrior/gear/helmet/helmet_celestial.svg`
+- `icons/heroes/warrior/gear/shield/shield_common.svg`
+- `icons/heroes/warrior/gear/shield/shield_uncommon.svg`
+- `icons/heroes/warrior/gear/shield/shield_rare.svg`
+- `icons/heroes/warrior/gear/shield/shield_epic.svg`
+- `icons/heroes/warrior/gear/shield/shield_legendary.svg`
+- `icons/heroes/warrior/gear/shield/shield_celestial.svg`
+- `icons/heroes/warrior/gear/weapon/weapon_common.svg`
+- `icons/heroes/warrior/gear/weapon/weapon_uncommon.svg`
+- `icons/heroes/warrior/gear/weapon/weapon_rare.svg`
+- `icons/heroes/warrior/gear/weapon/weapon_epic.svg`
+- `icons/heroes/warrior/gear/weapon/weapon_legendary.svg`
+- `icons/heroes/warrior/gear/weapon/weapon_celestial.svg`
+- `icons/heroes/warrior/fx/tier_epic.svg`
+- `icons/heroes/warrior/fx/tier_legendary.svg`
+- `icons/heroes/warrior/fx/tier_celestial.svg`
+
+## Preferred Item-Type Output Files
+Generate these for full visual variety. If constrained, prioritize Helmet, Chestplate, Weapon, Shield.
+- `icons/heroes/warrior/gear/helmet/helmet_common.svg`
+- `icons/heroes/warrior/gear/helmet/helmet_uncommon.svg`
+- `icons/heroes/warrior/gear/helmet/helmet_rare.svg`
+- `icons/heroes/warrior/gear/helmet/helmet_epic.svg`
+- `icons/heroes/warrior/gear/helmet/helmet_legendary.svg`
+- `icons/heroes/warrior/gear/helmet/helmet_celestial.svg`
+- `icons/heroes/warrior/gear/helmet/crown_common.svg`
+- `icons/heroes/warrior/gear/helmet/crown_uncommon.svg`
+- `icons/heroes/warrior/gear/helmet/crown_rare.svg`
+- `icons/heroes/warrior/gear/helmet/crown_epic.svg`
+- `icons/heroes/warrior/gear/helmet/crown_legendary.svg`
+- `icons/heroes/warrior/gear/helmet/crown_celestial.svg`
+- `icons/heroes/warrior/gear/helmet/hood_common.svg`
+- `icons/heroes/warrior/gear/helmet/hood_uncommon.svg`
+- `icons/heroes/warrior/gear/helmet/hood_rare.svg`
+- `icons/heroes/warrior/gear/helmet/hood_epic.svg`
+- `icons/heroes/warrior/gear/helmet/hood_legendary.svg`
+- `icons/heroes/warrior/gear/helmet/hood_celestial.svg`
+- `icons/heroes/warrior/gear/helmet/circlet_common.svg`
+- `icons/heroes/warrior/gear/helmet/circlet_uncommon.svg`
+- `icons/heroes/warrior/gear/helmet/circlet_rare.svg`
+- `icons/heroes/warrior/gear/helmet/circlet_epic.svg`
+- `icons/heroes/warrior/gear/helmet/circlet_legendary.svg`
+- `icons/heroes/warrior/gear/helmet/circlet_celestial.svg`
+- `icons/heroes/warrior/gear/helmet/headband_common.svg`
+- `icons/heroes/warrior/gear/helmet/headband_uncommon.svg`
+- `icons/heroes/warrior/gear/helmet/headband_rare.svg`
+- `icons/heroes/warrior/gear/helmet/headband_epic.svg`
+- `icons/heroes/warrior/gear/helmet/headband_legendary.svg`
+- `icons/heroes/warrior/gear/helmet/headband_celestial.svg`
+- `icons/heroes/warrior/gear/helmet/visor_common.svg`
+- `icons/heroes/warrior/gear/helmet/visor_uncommon.svg`
+- `icons/heroes/warrior/gear/helmet/visor_rare.svg`
+- `icons/heroes/warrior/gear/helmet/visor_epic.svg`
+- `icons/heroes/warrior/gear/helmet/visor_legendary.svg`
+- `icons/heroes/warrior/gear/helmet/visor_celestial.svg`
+- `icons/heroes/warrior/gear/helmet/war_helm_common.svg`
+- `icons/heroes/warrior/gear/helmet/war_helm_uncommon.svg`
+- `icons/heroes/warrior/gear/helmet/war_helm_rare.svg`
+- `icons/heroes/warrior/gear/helmet/war_helm_epic.svg`
+- `icons/heroes/warrior/gear/helmet/war_helm_legendary.svg`
+- `icons/heroes/warrior/gear/helmet/war_helm_celestial.svg`
+- `icons/heroes/warrior/gear/chestplate/chestplate_common.svg`
+- `icons/heroes/warrior/gear/chestplate/chestplate_uncommon.svg`
+- `icons/heroes/warrior/gear/chestplate/chestplate_rare.svg`
+- `icons/heroes/warrior/gear/chestplate/chestplate_epic.svg`
+- `icons/heroes/warrior/gear/chestplate/chestplate_legendary.svg`
+- `icons/heroes/warrior/gear/chestplate/chestplate_celestial.svg`
+- `icons/heroes/warrior/gear/chestplate/armor_common.svg`
+- `icons/heroes/warrior/gear/chestplate/armor_uncommon.svg`
+- `icons/heroes/warrior/gear/chestplate/armor_rare.svg`
+- `icons/heroes/warrior/gear/chestplate/armor_epic.svg`
+- `icons/heroes/warrior/gear/chestplate/armor_legendary.svg`
+- `icons/heroes/warrior/gear/chestplate/armor_celestial.svg`
+- `icons/heroes/warrior/gear/chestplate/tunic_common.svg`
+- `icons/heroes/warrior/gear/chestplate/tunic_uncommon.svg`
+- `icons/heroes/warrior/gear/chestplate/tunic_rare.svg`
+- `icons/heroes/warrior/gear/chestplate/tunic_epic.svg`
+- `icons/heroes/warrior/gear/chestplate/tunic_legendary.svg`
+- `icons/heroes/warrior/gear/chestplate/tunic_celestial.svg`
+- `icons/heroes/warrior/gear/chestplate/mail_common.svg`
+- `icons/heroes/warrior/gear/chestplate/mail_uncommon.svg`
+- `icons/heroes/warrior/gear/chestplate/mail_rare.svg`
+- `icons/heroes/warrior/gear/chestplate/mail_epic.svg`
+- `icons/heroes/warrior/gear/chestplate/mail_legendary.svg`
+- `icons/heroes/warrior/gear/chestplate/mail_celestial.svg`
+- `icons/heroes/warrior/gear/chestplate/breastplate_common.svg`
+- `icons/heroes/warrior/gear/chestplate/breastplate_uncommon.svg`
+- `icons/heroes/warrior/gear/chestplate/breastplate_rare.svg`
+- `icons/heroes/warrior/gear/chestplate/breastplate_epic.svg`
+- `icons/heroes/warrior/gear/chestplate/breastplate_legendary.svg`
+- `icons/heroes/warrior/gear/chestplate/breastplate_celestial.svg`
+- `icons/heroes/warrior/gear/chestplate/cuirass_common.svg`
+- `icons/heroes/warrior/gear/chestplate/cuirass_uncommon.svg`
+- `icons/heroes/warrior/gear/chestplate/cuirass_rare.svg`
+- `icons/heroes/warrior/gear/chestplate/cuirass_epic.svg`
+- `icons/heroes/warrior/gear/chestplate/cuirass_legendary.svg`
+- `icons/heroes/warrior/gear/chestplate/cuirass_celestial.svg`
+- `icons/heroes/warrior/gear/chestplate/hauberk_common.svg`
+- `icons/heroes/warrior/gear/chestplate/hauberk_uncommon.svg`
+- `icons/heroes/warrior/gear/chestplate/hauberk_rare.svg`
+- `icons/heroes/warrior/gear/chestplate/hauberk_epic.svg`
+- `icons/heroes/warrior/gear/chestplate/hauberk_legendary.svg`
+- `icons/heroes/warrior/gear/chestplate/hauberk_celestial.svg`
+- `icons/heroes/warrior/gear/gauntlets/gauntlets_common.svg`
+- `icons/heroes/warrior/gear/gauntlets/gauntlets_uncommon.svg`
+- `icons/heroes/warrior/gear/gauntlets/gauntlets_rare.svg`
+- `icons/heroes/warrior/gear/gauntlets/gauntlets_epic.svg`
+- `icons/heroes/warrior/gear/gauntlets/gauntlets_legendary.svg`
+- `icons/heroes/warrior/gear/gauntlets/gauntlets_celestial.svg`
+- `icons/heroes/warrior/gear/gauntlets/gloves_common.svg`
+- `icons/heroes/warrior/gear/gauntlets/gloves_uncommon.svg`
+- `icons/heroes/warrior/gear/gauntlets/gloves_rare.svg`
+- `icons/heroes/warrior/gear/gauntlets/gloves_epic.svg`
+- `icons/heroes/warrior/gear/gauntlets/gloves_legendary.svg`
+- `icons/heroes/warrior/gear/gauntlets/gloves_celestial.svg`
+- `icons/heroes/warrior/gear/gauntlets/bracers_common.svg`
+- `icons/heroes/warrior/gear/gauntlets/bracers_uncommon.svg`
+- `icons/heroes/warrior/gear/gauntlets/bracers_rare.svg`
+- `icons/heroes/warrior/gear/gauntlets/bracers_epic.svg`
+- `icons/heroes/warrior/gear/gauntlets/bracers_legendary.svg`
+- `icons/heroes/warrior/gear/gauntlets/bracers_celestial.svg`
+- `icons/heroes/warrior/gear/gauntlets/vambraces_common.svg`
+- `icons/heroes/warrior/gear/gauntlets/vambraces_uncommon.svg`
+- `icons/heroes/warrior/gear/gauntlets/vambraces_rare.svg`
+- `icons/heroes/warrior/gear/gauntlets/vambraces_epic.svg`
+- `icons/heroes/warrior/gear/gauntlets/vambraces_legendary.svg`
+- `icons/heroes/warrior/gear/gauntlets/vambraces_celestial.svg`
+- `icons/heroes/warrior/gear/gauntlets/war_grips_common.svg`
+- `icons/heroes/warrior/gear/gauntlets/war_grips_uncommon.svg`
+- `icons/heroes/warrior/gear/gauntlets/war_grips_rare.svg`
+- `icons/heroes/warrior/gear/gauntlets/war_grips_epic.svg`
+- `icons/heroes/warrior/gear/gauntlets/war_grips_legendary.svg`
+- `icons/heroes/warrior/gear/gauntlets/war_grips_celestial.svg`
+- `icons/heroes/warrior/gear/gauntlets/fists_common.svg`
+- `icons/heroes/warrior/gear/gauntlets/fists_uncommon.svg`
+- `icons/heroes/warrior/gear/gauntlets/fists_rare.svg`
+- `icons/heroes/warrior/gear/gauntlets/fists_epic.svg`
+- `icons/heroes/warrior/gear/gauntlets/fists_legendary.svg`
+- `icons/heroes/warrior/gear/gauntlets/fists_celestial.svg`
+- `icons/heroes/warrior/gear/boots/boots_common.svg`
+- `icons/heroes/warrior/gear/boots/boots_uncommon.svg`
+- `icons/heroes/warrior/gear/boots/boots_rare.svg`
+- `icons/heroes/warrior/gear/boots/boots_epic.svg`
+- `icons/heroes/warrior/gear/boots/boots_legendary.svg`
+- `icons/heroes/warrior/gear/boots/boots_celestial.svg`
+- `icons/heroes/warrior/gear/boots/greaves_common.svg`
+- `icons/heroes/warrior/gear/boots/greaves_uncommon.svg`
+- `icons/heroes/warrior/gear/boots/greaves_rare.svg`
+- `icons/heroes/warrior/gear/boots/greaves_epic.svg`
+- `icons/heroes/warrior/gear/boots/greaves_legendary.svg`
+- `icons/heroes/warrior/gear/boots/greaves_celestial.svg`
+- `icons/heroes/warrior/gear/boots/sabatons_common.svg`
+- `icons/heroes/warrior/gear/boots/sabatons_uncommon.svg`
+- `icons/heroes/warrior/gear/boots/sabatons_rare.svg`
+- `icons/heroes/warrior/gear/boots/sabatons_epic.svg`
+- `icons/heroes/warrior/gear/boots/sabatons_legendary.svg`
+- `icons/heroes/warrior/gear/boots/sabatons_celestial.svg`
+- `icons/heroes/warrior/gear/boots/treads_common.svg`
+- `icons/heroes/warrior/gear/boots/treads_uncommon.svg`
+- `icons/heroes/warrior/gear/boots/treads_rare.svg`
+- `icons/heroes/warrior/gear/boots/treads_epic.svg`
+- `icons/heroes/warrior/gear/boots/treads_legendary.svg`
+- `icons/heroes/warrior/gear/boots/treads_celestial.svg`
+- `icons/heroes/warrior/gear/boots/war_boots_common.svg`
+- `icons/heroes/warrior/gear/boots/war_boots_uncommon.svg`
+- `icons/heroes/warrior/gear/boots/war_boots_rare.svg`
+- `icons/heroes/warrior/gear/boots/war_boots_epic.svg`
+- `icons/heroes/warrior/gear/boots/war_boots_legendary.svg`
+- `icons/heroes/warrior/gear/boots/war_boots_celestial.svg`
+- `icons/heroes/warrior/gear/boots/stompers_common.svg`
+- `icons/heroes/warrior/gear/boots/stompers_uncommon.svg`
+- `icons/heroes/warrior/gear/boots/stompers_rare.svg`
+- `icons/heroes/warrior/gear/boots/stompers_epic.svg`
+- `icons/heroes/warrior/gear/boots/stompers_legendary.svg`
+- `icons/heroes/warrior/gear/boots/stompers_celestial.svg`
+- `icons/heroes/warrior/gear/shield/shield_common.svg`
+- `icons/heroes/warrior/gear/shield/shield_uncommon.svg`
+- `icons/heroes/warrior/gear/shield/shield_rare.svg`
+- `icons/heroes/warrior/gear/shield/shield_epic.svg`
+- `icons/heroes/warrior/gear/shield/shield_legendary.svg`
+- `icons/heroes/warrior/gear/shield/shield_celestial.svg`
+- `icons/heroes/warrior/gear/shield/buckler_common.svg`
+- `icons/heroes/warrior/gear/shield/buckler_uncommon.svg`
+- `icons/heroes/warrior/gear/shield/buckler_rare.svg`
+- `icons/heroes/warrior/gear/shield/buckler_epic.svg`
+- `icons/heroes/warrior/gear/shield/buckler_legendary.svg`
+- `icons/heroes/warrior/gear/shield/buckler_celestial.svg`
+- `icons/heroes/warrior/gear/shield/aegis_common.svg`
+- `icons/heroes/warrior/gear/shield/aegis_uncommon.svg`
+- `icons/heroes/warrior/gear/shield/aegis_rare.svg`
+- `icons/heroes/warrior/gear/shield/aegis_epic.svg`
+- `icons/heroes/warrior/gear/shield/aegis_legendary.svg`
+- `icons/heroes/warrior/gear/shield/aegis_celestial.svg`
+- `icons/heroes/warrior/gear/shield/bulwark_common.svg`
+- `icons/heroes/warrior/gear/shield/bulwark_uncommon.svg`
+- `icons/heroes/warrior/gear/shield/bulwark_rare.svg`
+- `icons/heroes/warrior/gear/shield/bulwark_epic.svg`
+- `icons/heroes/warrior/gear/shield/bulwark_legendary.svg`
+- `icons/heroes/warrior/gear/shield/bulwark_celestial.svg`
+- `icons/heroes/warrior/gear/shield/tower_shield_common.svg`
+- `icons/heroes/warrior/gear/shield/tower_shield_uncommon.svg`
+- `icons/heroes/warrior/gear/shield/tower_shield_rare.svg`
+- `icons/heroes/warrior/gear/shield/tower_shield_epic.svg`
+- `icons/heroes/warrior/gear/shield/tower_shield_legendary.svg`
+- `icons/heroes/warrior/gear/shield/tower_shield_celestial.svg`
+- `icons/heroes/warrior/gear/shield/kite_shield_common.svg`
+- `icons/heroes/warrior/gear/shield/kite_shield_uncommon.svg`
+- `icons/heroes/warrior/gear/shield/kite_shield_rare.svg`
+- `icons/heroes/warrior/gear/shield/kite_shield_epic.svg`
+- `icons/heroes/warrior/gear/shield/kite_shield_legendary.svg`
+- `icons/heroes/warrior/gear/shield/kite_shield_celestial.svg`
+- `icons/heroes/warrior/gear/weapon/sword_common.svg`
+- `icons/heroes/warrior/gear/weapon/sword_uncommon.svg`
+- `icons/heroes/warrior/gear/weapon/sword_rare.svg`
+- `icons/heroes/warrior/gear/weapon/sword_epic.svg`
+- `icons/heroes/warrior/gear/weapon/sword_legendary.svg`
+- `icons/heroes/warrior/gear/weapon/sword_celestial.svg`
+- `icons/heroes/warrior/gear/weapon/axe_common.svg`
+- `icons/heroes/warrior/gear/weapon/axe_uncommon.svg`
+- `icons/heroes/warrior/gear/weapon/axe_rare.svg`
+- `icons/heroes/warrior/gear/weapon/axe_epic.svg`
+- `icons/heroes/warrior/gear/weapon/axe_legendary.svg`
+- `icons/heroes/warrior/gear/weapon/axe_celestial.svg`
+- `icons/heroes/warrior/gear/weapon/hammer_common.svg`
+- `icons/heroes/warrior/gear/weapon/hammer_uncommon.svg`
+- `icons/heroes/warrior/gear/weapon/hammer_rare.svg`
+- `icons/heroes/warrior/gear/weapon/hammer_epic.svg`
+- `icons/heroes/warrior/gear/weapon/hammer_legendary.svg`
+- `icons/heroes/warrior/gear/weapon/hammer_celestial.svg`
+- `icons/heroes/warrior/gear/weapon/mace_common.svg`
+- `icons/heroes/warrior/gear/weapon/mace_uncommon.svg`
+- `icons/heroes/warrior/gear/weapon/mace_rare.svg`
+- `icons/heroes/warrior/gear/weapon/mace_epic.svg`
+- `icons/heroes/warrior/gear/weapon/mace_legendary.svg`
+- `icons/heroes/warrior/gear/weapon/mace_celestial.svg`
+- `icons/heroes/warrior/gear/weapon/spear_common.svg`
+- `icons/heroes/warrior/gear/weapon/spear_uncommon.svg`
+- `icons/heroes/warrior/gear/weapon/spear_rare.svg`
+- `icons/heroes/warrior/gear/weapon/spear_epic.svg`
+- `icons/heroes/warrior/gear/weapon/spear_legendary.svg`
+- `icons/heroes/warrior/gear/weapon/spear_celestial.svg`
+- `icons/heroes/warrior/gear/weapon/halberd_common.svg`
+- `icons/heroes/warrior/gear/weapon/halberd_uncommon.svg`
+- `icons/heroes/warrior/gear/weapon/halberd_rare.svg`
+- `icons/heroes/warrior/gear/weapon/halberd_epic.svg`
+- `icons/heroes/warrior/gear/weapon/halberd_legendary.svg`
+- `icons/heroes/warrior/gear/weapon/halberd_celestial.svg`
+- `icons/heroes/warrior/gear/weapon/flail_common.svg`
+- `icons/heroes/warrior/gear/weapon/flail_uncommon.svg`
+- `icons/heroes/warrior/gear/weapon/flail_rare.svg`
+- `icons/heroes/warrior/gear/weapon/flail_epic.svg`
+- `icons/heroes/warrior/gear/weapon/flail_legendary.svg`
+- `icons/heroes/warrior/gear/weapon/flail_celestial.svg`
+- `icons/heroes/warrior/gear/weapon/claymore_common.svg`
+- `icons/heroes/warrior/gear/weapon/claymore_uncommon.svg`
+- `icons/heroes/warrior/gear/weapon/claymore_rare.svg`
+- `icons/heroes/warrior/gear/weapon/claymore_epic.svg`
+- `icons/heroes/warrior/gear/weapon/claymore_legendary.svg`
+- `icons/heroes/warrior/gear/weapon/claymore_celestial.svg`
+- `icons/heroes/warrior/gear/cloak/cloak_common.svg`
+- `icons/heroes/warrior/gear/cloak/cloak_uncommon.svg`
+- `icons/heroes/warrior/gear/cloak/cloak_rare.svg`
+- `icons/heroes/warrior/gear/cloak/cloak_epic.svg`
+- `icons/heroes/warrior/gear/cloak/cloak_legendary.svg`
+- `icons/heroes/warrior/gear/cloak/cloak_celestial.svg`
+- `icons/heroes/warrior/gear/cloak/cape_common.svg`
+- `icons/heroes/warrior/gear/cloak/cape_uncommon.svg`
+- `icons/heroes/warrior/gear/cloak/cape_rare.svg`
+- `icons/heroes/warrior/gear/cloak/cape_epic.svg`
+- `icons/heroes/warrior/gear/cloak/cape_legendary.svg`
+- `icons/heroes/warrior/gear/cloak/cape_celestial.svg`
+- `icons/heroes/warrior/gear/cloak/mantle_common.svg`
+- `icons/heroes/warrior/gear/cloak/mantle_uncommon.svg`
+- `icons/heroes/warrior/gear/cloak/mantle_rare.svg`
+- `icons/heroes/warrior/gear/cloak/mantle_epic.svg`
+- `icons/heroes/warrior/gear/cloak/mantle_legendary.svg`
+- `icons/heroes/warrior/gear/cloak/mantle_celestial.svg`
+- `icons/heroes/warrior/gear/cloak/war_banner_common.svg`
+- `icons/heroes/warrior/gear/cloak/war_banner_uncommon.svg`
+- `icons/heroes/warrior/gear/cloak/war_banner_rare.svg`
+- `icons/heroes/warrior/gear/cloak/war_banner_epic.svg`
+- `icons/heroes/warrior/gear/cloak/war_banner_legendary.svg`
+- `icons/heroes/warrior/gear/cloak/war_banner_celestial.svg`
+- `icons/heroes/warrior/gear/cloak/battle_shroud_common.svg`
+- `icons/heroes/warrior/gear/cloak/battle_shroud_uncommon.svg`
+- `icons/heroes/warrior/gear/cloak/battle_shroud_rare.svg`
+- `icons/heroes/warrior/gear/cloak/battle_shroud_epic.svg`
+- `icons/heroes/warrior/gear/cloak/battle_shroud_legendary.svg`
+- `icons/heroes/warrior/gear/cloak/battle_shroud_celestial.svg`
+- `icons/heroes/warrior/gear/cloak/champion_s_cape_common.svg`
+- `icons/heroes/warrior/gear/cloak/champion_s_cape_uncommon.svg`
+- `icons/heroes/warrior/gear/cloak/champion_s_cape_rare.svg`
+- `icons/heroes/warrior/gear/cloak/champion_s_cape_epic.svg`
+- `icons/heroes/warrior/gear/cloak/champion_s_cape_legendary.svg`
+- `icons/heroes/warrior/gear/cloak/champion_s_cape_celestial.svg`
+- `icons/heroes/warrior/gear/amulet/amulet_common.svg`
+- `icons/heroes/warrior/gear/amulet/amulet_uncommon.svg`
+- `icons/heroes/warrior/gear/amulet/amulet_rare.svg`
+- `icons/heroes/warrior/gear/amulet/amulet_epic.svg`
+- `icons/heroes/warrior/gear/amulet/amulet_legendary.svg`
+- `icons/heroes/warrior/gear/amulet/amulet_celestial.svg`
+- `icons/heroes/warrior/gear/amulet/pendant_common.svg`
+- `icons/heroes/warrior/gear/amulet/pendant_uncommon.svg`
+- `icons/heroes/warrior/gear/amulet/pendant_rare.svg`
+- `icons/heroes/warrior/gear/amulet/pendant_epic.svg`
+- `icons/heroes/warrior/gear/amulet/pendant_legendary.svg`
+- `icons/heroes/warrior/gear/amulet/pendant_celestial.svg`
+- `icons/heroes/warrior/gear/amulet/war_talisman_common.svg`
+- `icons/heroes/warrior/gear/amulet/war_talisman_uncommon.svg`
+- `icons/heroes/warrior/gear/amulet/war_talisman_rare.svg`
+- `icons/heroes/warrior/gear/amulet/war_talisman_epic.svg`
+- `icons/heroes/warrior/gear/amulet/war_talisman_legendary.svg`
+- `icons/heroes/warrior/gear/amulet/war_talisman_celestial.svg`
+- `icons/heroes/warrior/gear/amulet/medal_common.svg`
+- `icons/heroes/warrior/gear/amulet/medal_uncommon.svg`
+- `icons/heroes/warrior/gear/amulet/medal_rare.svg`
+- `icons/heroes/warrior/gear/amulet/medal_epic.svg`
+- `icons/heroes/warrior/gear/amulet/medal_legendary.svg`
+- `icons/heroes/warrior/gear/amulet/medal_celestial.svg`
+- `icons/heroes/warrior/gear/amulet/victory_charm_common.svg`
+- `icons/heroes/warrior/gear/amulet/victory_charm_uncommon.svg`
+- `icons/heroes/warrior/gear/amulet/victory_charm_rare.svg`
+- `icons/heroes/warrior/gear/amulet/victory_charm_epic.svg`
+- `icons/heroes/warrior/gear/amulet/victory_charm_legendary.svg`
+- `icons/heroes/warrior/gear/amulet/victory_charm_celestial.svg`
+- `icons/heroes/warrior/gear/amulet/battle_totem_common.svg`
+- `icons/heroes/warrior/gear/amulet/battle_totem_uncommon.svg`
+- `icons/heroes/warrior/gear/amulet/battle_totem_rare.svg`
+- `icons/heroes/warrior/gear/amulet/battle_totem_epic.svg`
+- `icons/heroes/warrior/gear/amulet/battle_totem_legendary.svg`
+- `icons/heroes/warrior/gear/amulet/battle_totem_celestial.svg`
+
+## Slot-by-Slot Direction
+### Cloak
+- role: Motion layer. Build depth and emotional tone through shape and edge cuts.
+- animation cue: Low-frequency sway with occasional gust accent.
+- item types to represent: Cloak, Cape, Mantle, War-Banner, Battle-Shroud, Champion's Cape
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Chestplate
+- role: Main mass-defining body layer. Largest storytelling surface after base hero.
+- animation cue: Core pulse or panel breathing loop (slow, 3-5s).
+- item types to represent: Chestplate, Armor, Tunic, Mail, Breastplate, Cuirass, Hauberk
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Boots
+- role: Movement identity. Encode terrain, mobility mode, and weight class.
+- animation cue: Sole glow ripple or dust/spark kick pulse.
+- item types to represent: Boots, Greaves, Sabatons, Treads, War-Boots, Stompers
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Gauntlets
+- role: Functional hand/tool interface. Show dexterity and role-specific mechanics.
+- animation cue: Knuckle light wave or servo twitch loop (subtle).
+- item types to represent: Gauntlets, Gloves, Bracers, Vambraces, War-Grips, Fists
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Amulet
+- role: Narrative core token. Small but high-contrast and symbolically loaded.
+- animation cue: Heartbeat glow pulse with small orbiting mote.
+- item types to represent: Amulet, Pendant, War-Talisman, Medal, Victory Charm, Battle-Totem
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Helmet
+- role: Head identity piece. Prioritize profile readability and theme signature crest.
+- animation cue: Visor sweep or indicator blink every 2-4s.
+- item types to represent: Helmet, Crown, Hood, Circlet, Headband, Visor, War-Helm
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Shield
+- role: Defensive philosophy. Make silhouette distinct from chestplate/weapon.
+- animation cue: Border scan sweep or shield-ripple pulse.
+- item types to represent: Shield, Buckler, Aegis, Bulwark, Tower Shield, Kite Shield
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Weapon
+- role: Primary action silhouette. Highest visual contrast and directional energy.
+- animation cue: Edge glint sweep or energy charge loop.
+- item types to represent: Sword, Axe, Hammer, Mace, Spear, Halberd, Flail, Claymore
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+
+## Global Quality Gates
+- Do not use only color swaps across rarities; geometry and silhouette must evolve.
+- Keep readability at 70x90 and 180x220.
+- Keep transparent backgrounds.
+- Ensure first frame is static-compatible (for QSvgRenderer path).
+- Keep layering aligned with hero base center and foot line.
+
+## LLM Generation Prompt
+Use this with your SVG-generation model:
+
+```text
+You are generating production SVG assets for PersonalFreedom hero rendering.
+Theme: warrior
+Follow file names exactly as listed in this packet.
+Canvas/viewBox: 0 0 180 220. Transparent background.
+For each rarity tier, change silhouette/design complexity, not only colors.
+Respect slot role and animation cues in this packet.
+Output valid standalone SVG files only.
+```

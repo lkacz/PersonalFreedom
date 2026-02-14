@@ -1,4 +1,4 @@
-﻿"""
+"""
 ADHD Buster Gamification System
 ================================
 Extracted gamification logic for use with any UI framework.
@@ -132,8 +132,88 @@ ITEM_RARITIES = {
     "Legendary": {"color": "#ff9800", "weight": 1, "adjectives": [
         "Quantum", "Omniscient", "Transcendent", "Reality-bending", "Godslayer",
         "Universe-forged", "Eternal", "Infinity", "Apotheosis", "Mythic", "Supreme"
+    ]},
+    # Highest tier reserved for future content rollout.
+    # Weight is 0 for now so existing drop systems stay stable until explicitly enabled.
+    "Celestial": {"color": "#00e5ff", "weight": 0, "adjectives": [
+        "Singularity-born", "Chronoweave", "Paradox", "Starforged", "Omniversal",
+        "Empyrean", "Aetherbound", "Constellation", "Transfinite", "Harmonic", "Seraphic"
     ]}
 }
+
+# Canonical rarity ordering (lowest -> highest).
+ALL_RARITY_ORDER = list(ITEM_RARITIES.keys())
+
+# Live gameplay cap for how high systems can naturally award/upgrade.
+# Keep at Legendary for now; switch to "Celestial" when acquisition logic is ready.
+MAX_OBTAINABLE_RARITY = "Legendary"
+
+# Standard progression cap (session/merge/tracking lotteries).
+# Celestial is intentionally excluded from this pipeline and must be awarded
+# through dedicated non-lottery logic.
+MAX_STANDARD_REWARD_RARITY = "Legendary"
+
+
+def get_rarity_order(max_rarity: Optional[str] = None) -> list[str]:
+    """
+    Return ordered rarity tiers up to an optional cap.
+
+    Args:
+        max_rarity: Inclusive upper tier cap. If invalid, returns full order.
+    """
+    order = list(ALL_RARITY_ORDER)
+    if not max_rarity:
+        return order
+    try:
+        cap_index = order.index(max_rarity)
+    except ValueError:
+        return order
+    return order[: cap_index + 1]
+
+
+def get_obtainable_rarity_order() -> list[str]:
+    """Return the currently enabled rarity tiers for gameplay rewards/upgrades."""
+    return get_rarity_order(max_rarity=MAX_OBTAINABLE_RARITY)
+
+
+def get_standard_reward_rarity_order() -> list[str]:
+    """
+    Return rarity tiers for standard reward systems.
+
+    This is intentionally capped below Celestial because Celestial acquisition
+    follows a separate special pipeline.
+    """
+    return get_rarity_order(max_rarity=MAX_STANDARD_REWARD_RARITY)
+
+
+def get_rarity_index(rarity: str, order: Optional[list] = None) -> int:
+    """Resolve rarity index safely; unknown values default to lowest tier."""
+    target_order = order or list(ALL_RARITY_ORDER)
+    try:
+        return target_order.index(rarity)
+    except ValueError:
+        return 0
+
+
+def get_next_rarity(rarity: str, max_rarity: Optional[str] = None) -> str:
+    """Get next tier in order, capped at max_rarity (or top tier if not provided)."""
+    order = get_rarity_order(max_rarity=max_rarity)
+    if not order:
+        return "Common"
+    idx = get_rarity_index(rarity, order=order)
+    return order[min(idx + 1, len(order) - 1)]
+
+
+def generate_celestial_item(story_id: str = None, source: str = "celestial_special") -> dict:
+    """
+    Generate a Celestial item via the dedicated special-acquisition path.
+
+    Celestial should not be routed through standard lottery systems.
+    """
+    item = generate_item(rarity="Celestial", story_id=story_id)
+    item["special_rarity_source"] = source
+    item["is_special_rarity_drop"] = True
+    return item
 
 # Item slots and types (DEFAULT/FALLBACK - used when no story theme is active)
 ITEM_SLOTS = {
@@ -395,7 +475,7 @@ STORY_GEAR_THEMES = {
             ],
         },
         "set_themes": {
-            "Celestial": {"words": ["celestial", "astral", "cosmic", "star"], "bonus_per_match": 25, "emoji": "â­"},
+            "Celestial": {"words": ["celestial", "astral", "cosmic", "star"], "bonus_per_match": 25, "emoji": "\u2b50"},
             "Moon": {"words": ["moon", "lunar", "night"], "bonus_per_match": 20, "emoji": "đźŚ™"},
             "Dream": {"words": ["dream", "sleep", "vision"], "bonus_per_match": 18, "emoji": "đź’­"},
             "Void": {"words": ["void", "shadow", "dark", "abyss"], "bonus_per_match": 20, "emoji": "đźŚ‘"},
@@ -978,6 +1058,11 @@ ITEM_SUFFIXES = {
         "Transcended ADHD", "Jaded Insight", "Dimensional Focus", "Reality Control",
         "Time Itself", "Universal Truth", "Cosmic Awareness", "Eternal Vigilance",
         "The Focused One", "Absolute Clarity", "Boundless Potential", "The Hyperfocus"
+    ],
+    "Celestial": [
+        "First Light", "Folded Time", "Absolute Stillness", "The Quiet Singularity",
+        "Perfect Orbit", "Infinite Dawn", "The Seventh Horizon", "Living Constellations",
+        "Unwritten Futures", "The Last Distraction", "Starbound Resolve", "Aether Harmony"
     ]
 }
 
@@ -987,7 +1072,8 @@ RARITY_POWER = {
     "Uncommon": 25,
     "Rare": 50,
     "Epic": 100,
-    "Legendary": 250
+    "Legendary": 250,
+    "Celestial": 500,
 }
 
 # ============================================================================
@@ -1026,6 +1112,7 @@ LUCKY_OPTION_CHANCES = {
     "Rare": {"base_chance": 55, "max_options": 3},       # 55% for 1-3 options
     "Epic": {"base_chance": 75, "max_options": 3},       # 75% for 1-3 options
     "Legendary": {"base_chance": 95, "max_options": 3},  # 95% for 1-3 options (all possible)
+    "Celestial": {"base_chance": 100, "max_options": 3}, # Reserved top tier
 }
 
 
@@ -1091,15 +1178,17 @@ def roll_lucky_options(rarity: str) -> dict:
         except ValueError:
             rarity_idx = 0
         
-        # Rarity bonus: Epic/Legendary get slight boost to higher value odds
+        # Rarity bonus: Epic+ tiers get slight boost to higher value odds
         # This doesn't eliminate rarity of high values, just makes them slightly more likely
-        if rarity_idx >= 4:  # Legendary
+        legendary_idx = get_rarity_index("Legendary", order=list(LUCKY_OPTION_CHANCES.keys()))
+        epic_idx = get_rarity_index("Epic", order=list(LUCKY_OPTION_CHANCES.keys()))
+        if rarity_idx >= legendary_idx:  # Legendary+
             # Reduce weight of lowest values, increase highest
             for i in range(min(2, num_values)):
                 base_weights[i] = max(1, base_weights[i] // 2)
             for i in range(max(0, num_values - 2), num_values):
                 base_weights[i] = base_weights[i] * 2
-        elif rarity_idx >= 3:  # Epic
+        elif rarity_idx >= epic_idx:  # Epic
             # Slight reduction of lowest, slight increase of highest
             if num_values > 0:
                 base_weights[0] = max(1, int(base_weights[0] * 0.7))
@@ -2759,11 +2848,12 @@ SET_BONUS_BY_RARITY = {
 
 # Emojis for set display based on rarity tier
 SET_EMOJI_BY_RARITY = {
-    "Common": "đźŞ¨",
-    "Uncommon": "đźŚż",
-    "Rare": "đź’Ž",
-    "Epic": "đź”®",
-    "Legendary": "đź‘‘",
+    "Common": "\U0001faa8",
+    "Uncommon": "\U0001f33f",
+    "Rare": "\U0001f48e",
+    "Epic": "\U0001f52e",
+    "Legendary": "\U0001f451",
+    "Celestial": "\u2728",
 }
 
 # Adjective to rarity mapping for emoji lookup
@@ -2907,7 +2997,7 @@ def get_set_theme_data(set_name: str) -> dict:
     """
     bonus = SET_BONUS_BY_RARITY.get(set_name, DEFAULT_SET_BONUS)
     rarity = ADJECTIVE_RARITY.get(set_name, "Rare")
-    emoji = SET_EMOJI_BY_RARITY.get(rarity, "âš”ď¸Ź")
+    emoji = SET_EMOJI_BY_RARITY.get(rarity, "\u2694\ufe0f")
     return {
         "bonus_per_match": bonus,
         "emoji": emoji,
@@ -2920,7 +3010,7 @@ def get_set_theme_data(set_name: str) -> dict:
 ITEM_THEMES = {}
 for adj, bonus in SET_BONUS_BY_RARITY.items():
     rarity = ADJECTIVE_RARITY.get(adj, "Rare")
-    emoji = SET_EMOJI_BY_RARITY.get(rarity, "âš”ď¸Ź")
+    emoji = SET_EMOJI_BY_RARITY.get(rarity, "\u2694\ufe0f")
     ITEM_THEMES[adj] = {
         "words": [adj.lower()],
         "bonus_per_match": bonus,
@@ -2984,7 +3074,7 @@ def calculate_set_bonuses(equipped: dict) -> dict:
             
             # Get emoji based on adjective's rarity
             rarity = ADJECTIVE_RARITY.get(adjective, "Rare")  # Default to Rare for unknown
-            emoji = SET_EMOJI_BY_RARITY.get(rarity, "âš”ď¸Ź")
+            emoji = SET_EMOJI_BY_RARITY.get(rarity, "\u2694\ufe0f")
             
             active_sets.append({
                 "name": adjective,
@@ -3018,14 +3108,11 @@ MERGE_MAX_SUCCESS_RATE = 0.90  # Cap at 90% success rate - always some risk!
 
 # Rarity upgrade paths
 RARITY_UPGRADE = {
-    "Common": "Uncommon",
-    "Uncommon": "Rare",
-    "Rare": "Epic",
-    "Epic": "Legendary",
-    "Legendary": "Legendary"  # Can't go higher
+    rarity: get_next_rarity(rarity, max_rarity=MAX_OBTAINABLE_RARITY)
+    for rarity in get_rarity_order()
 }
 
-RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+RARITY_ORDER = get_rarity_order()
 
 
 def calculate_merge_success_rate(items: list, items_merge_luck: int = 0, city_bonus: int = 0) -> float:
@@ -3064,7 +3151,7 @@ def calculate_merge_success_rate(items: list, items_merge_luck: int = 0, city_bo
 def get_merge_result_rarity(items: list) -> str:
     """Determine the rarity of the merged item result.
     
-    Result is the highest rarity among merged items + 1 tier (capped at Legendary).
+    Result is the highest rarity among merged items + 1 tier (capped at current max obtainable tier).
     Common items are ignored when determining base tier - they add merge fuel
     without affecting the result tier. Only non-Common items affect the result.
     """
@@ -3093,8 +3180,11 @@ def get_merge_result_rarity(items: list) -> str:
     highest_idx = max(rarity_indices)
     highest_rarity = RARITY_ORDER[highest_idx]
     
-    # Upgrade by 1 tier (capped at Legendary via RARITY_UPGRADE)
-    return RARITY_UPGRADE.get(highest_rarity, "Legendary")
+    # Upgrade by 1 tier (capped by MAX_OBTAINABLE_RARITY)
+    return RARITY_UPGRADE.get(
+        highest_rarity,
+        get_standard_reward_rarity_order()[-1],
+    )
 
 
 def is_merge_worthwhile(items: list) -> tuple:
@@ -3104,9 +3194,10 @@ def is_merge_worthwhile(items: list) -> tuple:
     if not valid_items or len(valid_items) < 2:
         return False, "Need at least 2 items"
     
-    all_legendary = all(item.get("rarity") == "Legendary" for item in valid_items)
-    if all_legendary:
-        # Allow legendary-only merges as a reroll to a new legendary item/slot.
+    max_obtainable_rarity = get_standard_reward_rarity_order()[-1]
+    all_max_rarity = all(item.get("rarity") == max_obtainable_rarity for item in valid_items)
+    if all_max_rarity:
+        # Allow top-tier-only merges as a reroll to a new top-tier item/slot.
         return True, ""
     
     return True, ""
@@ -3202,8 +3293,9 @@ def perform_lucky_merge(items: list, story_id: str = None, items_merge_luck: int
         tier_jump = get_random_tier_jump()
         result["tier_jump"] = tier_jump
         
-        # Calculate final rarity with tier jump (capped at Legendary)
-        final_idx = min(lowest_idx + tier_jump, len(RARITY_ORDER) - 1)
+        # Calculate final rarity with tier jump (capped at current max obtainable tier)
+        max_obtainable_idx = get_rarity_index(get_standard_reward_rarity_order()[-1], order=RARITY_ORDER)
+        final_idx = min(lowest_idx + tier_jump, max_obtainable_idx)
         final_rarity = RARITY_ORDER[final_idx]
         
         result["result_item"] = generate_item(rarity=final_rarity, story_id=story_id)
@@ -5894,7 +5986,7 @@ def calculate_rarity_bonuses(session_minutes: int = 0, streak_days: int = 0) -> 
 
 
 # Rarity order for tier calculations
-RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+RARITY_ORDER = get_rarity_order()
 
 
 def get_current_tier(adhd_buster: dict) -> str:
@@ -5918,13 +6010,8 @@ def get_current_tier(adhd_buster: dict) -> str:
 
 
 def get_boosted_rarity(current_tier: str) -> str:
-    """Get a rarity one tier higher than current (capped at Legendary)."""
-    try:
-        current_idx = RARITY_ORDER.index(current_tier)
-    except ValueError:
-        current_idx = 0  # Default to Common if invalid tier
-    boosted_idx = min(current_idx + 1, len(RARITY_ORDER) - 1)
-    return RARITY_ORDER[boosted_idx]
+    """Get a rarity one tier higher than current (capped at current obtainable max)."""
+    return get_next_rarity(current_tier, max_rarity=MAX_OBTAINABLE_RARITY)
 
 
 def generate_daily_reward_item(adhd_buster: dict, story_id: str = None) -> dict:
@@ -5998,7 +6085,8 @@ def roll_priority_completion_reward(story_id: str = None, logged_hours: float = 
         "Uncommon": "Nice! A quality reward for your dedication!",
         "Rare": "Excellent! A rare treasure for completing your priority!",
         "Epic": "AMAZING! An epic reward befitting your achievement!",
-        "Legendary": "đźŚź LEGENDARY! đźŚź The focus gods smile upon you!"
+        "Legendary": "đźŚź LEGENDARY! đźŚź The focus gods smile upon you!",
+        "Celestial": "CELESTIAL! The impossible tier has answered your focus!"
     }
     
     return {
@@ -6030,7 +6118,8 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         dict with item properties including story_theme for display
     """
     if rarity is None:
-        rarities = list(ITEM_RARITIES.keys())  # [Common, Uncommon, Rare, Epic, Legendary]
+        # Standard lotteries intentionally exclude Celestial.
+        rarities = get_standard_reward_rarity_order()
         base_weights = [ITEM_RARITIES[r]["weight"] for r in rarities]
         
         bonuses = calculate_rarity_bonuses(session_minutes, streak_days)
@@ -6070,14 +6159,14 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         if effective_center >= 0:
             # Moving window: [5%, 20%, 50%, 20%, 5%] centered on effective_center
             window = [5, 20, 50, 20, 5]  # -2, -1, 0, +1, +2 from center
-            weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+            weights = [0] * len(rarities)
             
             for offset, pct in zip([-2, -1, 0, 1, 2], window):
                 # Use round() instead of int() for proper rounding of fractional tiers
                 # int() truncates toward zero, causing bias toward lower tiers
                 target_tier = round(effective_center + offset)
-                # Clamp to valid range [0, 4] - overflow absorbed at edges
-                clamped_tier = max(0, min(4, target_tier))
+                # Clamp to valid range - overflow absorbed at edges
+                clamped_tier = max(0, min(len(rarities) - 1, target_tier))
                 weights[clamped_tier] += pct
         else:
             # No bonus (<30min) - use base distribution
@@ -6106,8 +6195,11 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     # Generate the item
     slot = random.choice(list(item_types.keys()))
     item_type = random.choice(item_types[slot])
-    adjective = random.choice(adjectives.get(rarity, adjectives.get("Common", ["Unknown"])))
-    suffix = random.choice(suffixes.get(rarity, suffixes.get("Common", ["Mystery"])))
+    fallback_adjectives = ITEM_RARITIES.get(rarity, ITEM_RARITIES["Common"]).get("adjectives", [])
+    adjective_pool = adjectives.get(rarity) or fallback_adjectives or adjectives.get("Common", ["Unknown"])
+    suffix_pool = suffixes.get(rarity) or ITEM_SUFFIXES.get(rarity) or suffixes.get("Common", ["Mystery"])
+    adjective = random.choice(adjective_pool)
+    suffix = random.choice(suffix_pool)
     
     name = f"{adjective} {item_type} of {suffix}"
     
@@ -6169,9 +6261,9 @@ def generate_session_items(session_minutes: int = 0, streak_days: int = 0,
     bonus_chance = bonuses.get("bonus_item_chance", 0)
     
     if bonus_chance > 0 and random.randint(1, 100) <= bonus_chance:
-        # Bonus item is always Legendary
+        # Bonus item is always current top standard-reward tier.
         bonus_item = generate_item(
-            rarity="Legendary",
+            rarity=get_standard_reward_rarity_order()[-1],
             session_minutes=session_minutes,
             streak_days=streak_days,
             story_id=story_id
@@ -14993,7 +15085,7 @@ def get_daily_weight_reward_rarity(weight_loss_grams: float, legendary_bonus: in
     weights = get_daily_weight_reward_weights(weight_loss_grams, legendary_bonus)
     if not weights:
         return None
-    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    rarities = get_standard_reward_rarity_order()
     return random.choices(rarities, weights=weights)[0]
 
 
@@ -15008,16 +15100,16 @@ def get_daily_weight_reward_weights(weight_loss_grams: float, legendary_bonus: i
         legendary_bonus: Extra % chance to add to Legendary (from rat/mouse entities)
     
     Returns:
-        List of weights [Common, Uncommon, Rare, Epic, Legendary] summing to 100,
+        List of weights aligned with `get_standard_reward_rarity_order()` summing to 100,
         or None if weight_loss_grams is negative.
     """
     if weight_loss_grams < 0:
         return None
     
     # Determine center tier based on weight loss
-    # Tiers: 0=Common, 1=Uncommon, 2=Rare, 3=Epic, 4=Legendary
+    # Tiers map to get_standard_reward_rarity_order() indices.
     if weight_loss_grams >= 500:
-        center_tier = 6  # Far enough for 100% Legendary
+        center_tier = 6  # Far enough for 100% top obtainable tier
     elif weight_loss_grams >= 400:
         center_tier = 4  # Legendary-centered distribution
     elif weight_loss_grams >= 300:
@@ -15031,23 +15123,25 @@ def get_daily_weight_reward_weights(weight_loss_grams: float, legendary_bonus: i
     
     # Moving window: [5%, 20%, 50%, 20%, 5%] centered on center_tier
     window = [5, 20, 50, 20, 5]  # -2, -1, 0, +1, +2 from center
-    weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+    rarities = get_standard_reward_rarity_order()
+    weights = [0] * len(rarities)
     
     for offset, pct in zip([-2, -1, 0, 1, 2], window):
         target_tier = center_tier + offset
-        # Clamp to valid range [0, 4] - overflow absorbed at edges
-        clamped_tier = max(0, min(4, target_tier))
+        # Clamp to valid range - overflow absorbed at edges
+        clamped_tier = max(0, min(len(rarities) - 1, target_tier))
         weights[clamped_tier] += pct
     
     # Apply legendary bonus from rat/mouse entities
-    if legendary_bonus > 0 and weights[4] < 100:
-        # Cap bonus so Legendary doesn't exceed 100%
-        actual_bonus = min(legendary_bonus, 100 - weights[4])
-        weights[4] += actual_bonus
+    top_idx = len(weights) - 1
+    if legendary_bonus > 0 and weights[top_idx] < 100:
+        # Cap bonus so top tier doesn't exceed 100%
+        actual_bonus = min(legendary_bonus, 100 - weights[top_idx])
+        weights[top_idx] += actual_bonus
         
-        # Subtract bonus proportionally from lower tiers (Common to Epic)
+        # Subtract bonus proportionally from lower tiers
         remaining = actual_bonus
-        for i in range(3, -1, -1):  # Epic -> Common
+        for i in range(top_idx - 1, -1, -1):  # high -> low
             if remaining <= 0:
                 break
             subtract = min(weights[i], remaining)
@@ -15058,7 +15152,7 @@ def get_daily_weight_reward_weights(weight_loss_grams: float, legendary_bonus: i
 
 
 # Rarity order for comparison (higher index = better)
-RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+RARITY_ORDER = get_rarity_order()
 
 
 def _better_rarity(rarity_a: str, rarity_b: str) -> str:
@@ -15087,7 +15181,7 @@ def _better_rarity(rarity_a: str, rarity_b: str) -> str:
 
 def _weights_for_rarity(rarity: str) -> list:
     """Return 100% weight for a single rarity."""
-    weights = [0, 0, 0, 0, 0]
+    weights = [0] * len(RARITY_ORDER)
     try:
         idx = RARITY_ORDER.index(rarity)
     except ValueError:
@@ -16701,7 +16795,7 @@ def get_activity_reward_rarity(effective_minutes: float) -> Optional[str]:
     # Determine center tier based on effective minutes
     # 8min â†’ Common-centered, 20min â†’ Uncommon, 40min â†’ Rare, 70min â†’ Epic, 100min â†’ Legendary (75%), 120min+ â†’ 100% Legendary
     if effective_minutes >= 120:
-        return "Legendary"  # 100% Legendary for 120+ effective minutes
+        return get_standard_reward_rarity_order()[-1]  # 100% top tier for 120+ effective minutes
     elif effective_minutes >= 100:
         center_tier = 5  # Legendary-centered (75%)
     elif effective_minutes >= 70:
@@ -16713,15 +16807,15 @@ def get_activity_reward_rarity(effective_minutes: float) -> Optional[str]:
     else:  # 8-19 min
         center_tier = 1  # Common-centered
     
-    # Rarity tiers: 1=Common, 2=Uncommon, 3=Rare, 4=Epic, 5=Legendary
-    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    # Rarity tiers map to currently obtainable order.
+    rarities = get_standard_reward_rarity_order()
     
     # Base window distribution: [5%, 15%, 60%, 15%, 5%]
     # Centered on center_tier, so offsets are [-2, -1, 0, +1, +2]
     base_weights = [5, 15, 60, 15, 5]  # percentages for tiers center-2 to center+2
     
-    # Calculate actual weights for each rarity tier (1-5)
-    weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+    # Calculate actual weights for each rarity tier
+    weights = [0] * len(rarities)
     
     for offset, weight in enumerate(base_weights):
         tier = center_tier - 2 + offset  # tier position in 1-5 range
@@ -16730,7 +16824,7 @@ def get_activity_reward_rarity(effective_minutes: float) -> Optional[str]:
             weights[0] += weight
         elif tier > 5:
             # Above Legendary - absorb into Legendary
-            weights[4] += weight
+            weights[-1] += weight
         else:
             # Valid tier - add to that rarity
             weights[tier - 1] += weight
@@ -16743,7 +16837,7 @@ def get_activity_reward_rarity(effective_minutes: float) -> Optional[str]:
         if roll <= cumulative:
             return rarities[i]
     
-    return "Legendary"  # Fallback
+    return rarities[-1]  # Fallback
 
 
 def check_activity_streak(activity_entries: list) -> int:
@@ -17563,7 +17657,7 @@ def get_water_reward_rarity(glass_number: int, success_roll: float = None) -> tu
     if glass_number < 1 or glass_number > HYDRATION_MAX_DAILY_GLASSES:
         return (None, 0.0, None)
     
-    # Glass number maps to tier: 1->0(Common), 2->1(Uncommon), 3->2(Rare), 4->3(Epic), 5->4(Legendary)
+    # Glass number maps to tier index in currently obtainable rarity order.
     center_tier = glass_number - 1
     
     # Success rate decreases: 99%, 80%, 60%, 40%, 20%
@@ -17571,19 +17665,20 @@ def get_water_reward_rarity(glass_number: int, success_roll: float = None) -> tu
     success_rate = success_rates[min(center_tier, len(success_rates) - 1)]
     
     # Tier names
-    tier_names = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    tier_names = get_standard_reward_rarity_order()
+    center_tier = min(center_tier, len(tier_names) - 1)
     base_rarity = tier_names[center_tier]
     
     # Moving window: [5%, 15%, 60%, 15%, 5%] centered on center_tier (same as merge/eye)
     window = [5, 15, 60, 15, 5]
-    weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+    weights = [0] * len(tier_names)
     
     for offset, pct in zip([-2, -1, 0, 1, 2], window):
         target_tier = center_tier + offset
-        clamped_tier = max(0, min(4, target_tier))
+        clamped_tier = max(0, min(len(tier_names) - 1, target_tier))
         weights[clamped_tier] += pct
     
-    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    rarities = tier_names
     
     # Roll success first
     if success_roll is None:
@@ -17912,7 +18007,9 @@ def get_screen_off_bonus_weights(screen_off_time: str) -> Optional[list]:
     if total_minutes < 21 * 60:  # Before 21:00
         return None
     elif total_minutes <= 21 * 60 + 30:  # 21:00 to 21:30
-        return [0, 0, 0, 0, 100]
+        full_top = [0] * len(get_standard_reward_rarity_order())
+        full_top[-1] = 100
+        return full_top
     elif total_minutes <= 22 * 60 + 30:  # 21:31 to 22:30
         center_tier = 4  # Legendary-centered
     elif total_minutes <= 23 * 60 + 30:  # 22:31 to 23:30
@@ -17925,11 +18022,12 @@ def get_screen_off_bonus_weights(screen_off_time: str) -> Optional[list]:
         return None  # Too late for bonus
     
     window = [5, 20, 50, 20, 5]
-    weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+    rarities = get_standard_reward_rarity_order()
+    weights = [0] * len(rarities)
     
     for offset, pct in zip([-2, -1, 0, 1, 2], window):
         target_tier = center_tier + offset
-        clamped_tier = max(0, min(4, target_tier))
+        clamped_tier = max(0, min(len(rarities) - 1, target_tier))
         weights[clamped_tier] += pct
     
     return weights
@@ -17957,7 +18055,7 @@ def get_screen_off_bonus_rarity(screen_off_time: str) -> Optional[str]:
     weights = get_screen_off_bonus_weights(screen_off_time)
     if not weights:
         return None
-    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    rarities = get_standard_reward_rarity_order()
     return random.choices(rarities, weights=weights)[0]
 
 
@@ -17987,7 +18085,7 @@ def get_sleep_reward_rarity(score: int) -> Optional[str]:
     weights = get_sleep_reward_weights(score)
     if not weights:
         return None
-    rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    rarities = get_standard_reward_rarity_order()
     return random.choices(rarities, weights=weights)[0]
 
 
@@ -18001,9 +18099,9 @@ def get_sleep_reward_weights(score: int) -> Optional[list]:
         return None
     
     # Determine center tier based on sleep score
-    # Tiers: 0=Common, 1=Uncommon, 2=Rare, 3=Epic, 4=Legendary
+    # Tiers map to get_standard_reward_rarity_order() indices.
     if score >= 97:
-        center_tier = 6  # Far enough for 100% Legendary
+        center_tier = 6  # Far enough for 100% top obtainable tier
     elif score >= 93:
         center_tier = 5  # 95% Legendary
     elif score >= 90:
@@ -18019,12 +18117,13 @@ def get_sleep_reward_weights(score: int) -> Optional[list]:
     
     # Moving window: [5%, 20%, 50%, 20%, 5%] centered on center_tier
     window = [5, 20, 50, 20, 5]  # -2, -1, 0, +1, +2 from center
-    weights = [0, 0, 0, 0, 0]  # Common, Uncommon, Rare, Epic, Legendary
+    rarities = get_standard_reward_rarity_order()
+    weights = [0] * len(rarities)
     
     for offset, pct in zip([-2, -1, 0, 1, 2], window):
         target_tier = center_tier + offset
-        # Clamp to valid range [0, 4] - overflow absorbed at edges
-        clamped_tier = max(0, min(4, target_tier))
+        # Clamp to valid range - overflow absorbed at edges
+        clamped_tier = max(0, min(len(rarities) - 1, target_tier))
         weights[clamped_tier] += pct
     
     return weights

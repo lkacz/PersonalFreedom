@@ -1,0 +1,465 @@
+# zoo_worker Hero SVG Packet
+
+## Theme Snapshot
+- story_id: `zoo_worker`
+- title: The Keeper of Ember Time
+- style intent: Grounded caretaker with mythic destiny. Field utility plus ancient dragon echoes.
+- hero base direction: Keeper-ready posture, hat/visor readability, warm practical silhouette.
+- motif keywords: feather sigils, sanctuary emblems, storm straps, ember accents
+- palette anchors: #314534, #5f7e5d, #8da18b, #d6a55a, #f0d7a6
+
+## Mandatory Output Files
+Generate all files below.
+- `icons/heroes/zoo_worker/hero_base.svg`
+- `icons/heroes/zoo_worker/gear/cloak/cloak_common.svg`
+- `icons/heroes/zoo_worker/gear/cloak/cloak_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/cloak/cloak_rare.svg`
+- `icons/heroes/zoo_worker/gear/cloak/cloak_epic.svg`
+- `icons/heroes/zoo_worker/gear/cloak/cloak_legendary.svg`
+- `icons/heroes/zoo_worker/gear/cloak/cloak_celestial.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/chestplate_common.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/chestplate_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/chestplate_rare.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/chestplate_epic.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/chestplate_legendary.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/chestplate_celestial.svg`
+- `icons/heroes/zoo_worker/gear/boots/boots_common.svg`
+- `icons/heroes/zoo_worker/gear/boots/boots_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/boots/boots_rare.svg`
+- `icons/heroes/zoo_worker/gear/boots/boots_epic.svg`
+- `icons/heroes/zoo_worker/gear/boots/boots_legendary.svg`
+- `icons/heroes/zoo_worker/gear/boots/boots_celestial.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/gauntlets_common.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/gauntlets_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/gauntlets_rare.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/gauntlets_epic.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/gauntlets_legendary.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/gauntlets_celestial.svg`
+- `icons/heroes/zoo_worker/gear/amulet/amulet_common.svg`
+- `icons/heroes/zoo_worker/gear/amulet/amulet_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/amulet/amulet_rare.svg`
+- `icons/heroes/zoo_worker/gear/amulet/amulet_epic.svg`
+- `icons/heroes/zoo_worker/gear/amulet/amulet_legendary.svg`
+- `icons/heroes/zoo_worker/gear/amulet/amulet_celestial.svg`
+- `icons/heroes/zoo_worker/gear/helmet/helmet_common.svg`
+- `icons/heroes/zoo_worker/gear/helmet/helmet_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/helmet/helmet_rare.svg`
+- `icons/heroes/zoo_worker/gear/helmet/helmet_epic.svg`
+- `icons/heroes/zoo_worker/gear/helmet/helmet_legendary.svg`
+- `icons/heroes/zoo_worker/gear/helmet/helmet_celestial.svg`
+- `icons/heroes/zoo_worker/gear/shield/shield_common.svg`
+- `icons/heroes/zoo_worker/gear/shield/shield_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/shield/shield_rare.svg`
+- `icons/heroes/zoo_worker/gear/shield/shield_epic.svg`
+- `icons/heroes/zoo_worker/gear/shield/shield_legendary.svg`
+- `icons/heroes/zoo_worker/gear/shield/shield_celestial.svg`
+- `icons/heroes/zoo_worker/gear/weapon/weapon_common.svg`
+- `icons/heroes/zoo_worker/gear/weapon/weapon_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/weapon/weapon_rare.svg`
+- `icons/heroes/zoo_worker/gear/weapon/weapon_epic.svg`
+- `icons/heroes/zoo_worker/gear/weapon/weapon_legendary.svg`
+- `icons/heroes/zoo_worker/gear/weapon/weapon_celestial.svg`
+- `icons/heroes/zoo_worker/fx/tier_epic.svg`
+- `icons/heroes/zoo_worker/fx/tier_legendary.svg`
+- `icons/heroes/zoo_worker/fx/tier_celestial.svg`
+
+## Preferred Item-Type Output Files
+Generate these for full visual variety. If constrained, prioritize Helmet, Chestplate, Weapon, Shield.
+- `icons/heroes/zoo_worker/gear/helmet/feed_cap_common.svg`
+- `icons/heroes/zoo_worker/gear/helmet/feed_cap_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/helmet/feed_cap_rare.svg`
+- `icons/heroes/zoo_worker/gear/helmet/feed_cap_epic.svg`
+- `icons/heroes/zoo_worker/gear/helmet/feed_cap_legendary.svg`
+- `icons/heroes/zoo_worker/gear/helmet/feed_cap_celestial.svg`
+- `icons/heroes/zoo_worker/gear/helmet/night_patrol_cap_common.svg`
+- `icons/heroes/zoo_worker/gear/helmet/night_patrol_cap_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/helmet/night_patrol_cap_rare.svg`
+- `icons/heroes/zoo_worker/gear/helmet/night_patrol_cap_epic.svg`
+- `icons/heroes/zoo_worker/gear/helmet/night_patrol_cap_legendary.svg`
+- `icons/heroes/zoo_worker/gear/helmet/night_patrol_cap_celestial.svg`
+- `icons/heroes/zoo_worker/gear/helmet/aviary_cap_common.svg`
+- `icons/heroes/zoo_worker/gear/helmet/aviary_cap_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/helmet/aviary_cap_rare.svg`
+- `icons/heroes/zoo_worker/gear/helmet/aviary_cap_epic.svg`
+- `icons/heroes/zoo_worker/gear/helmet/aviary_cap_legendary.svg`
+- `icons/heroes/zoo_worker/gear/helmet/aviary_cap_celestial.svg`
+- `icons/heroes/zoo_worker/gear/helmet/ranger_hat_common.svg`
+- `icons/heroes/zoo_worker/gear/helmet/ranger_hat_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/helmet/ranger_hat_rare.svg`
+- `icons/heroes/zoo_worker/gear/helmet/ranger_hat_epic.svg`
+- `icons/heroes/zoo_worker/gear/helmet/ranger_hat_legendary.svg`
+- `icons/heroes/zoo_worker/gear/helmet/ranger_hat_celestial.svg`
+- `icons/heroes/zoo_worker/gear/helmet/clinic_visor_common.svg`
+- `icons/heroes/zoo_worker/gear/helmet/clinic_visor_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/helmet/clinic_visor_rare.svg`
+- `icons/heroes/zoo_worker/gear/helmet/clinic_visor_epic.svg`
+- `icons/heroes/zoo_worker/gear/helmet/clinic_visor_legendary.svg`
+- `icons/heroes/zoo_worker/gear/helmet/clinic_visor_celestial.svg`
+- `icons/heroes/zoo_worker/gear/helmet/storm_brim_common.svg`
+- `icons/heroes/zoo_worker/gear/helmet/storm_brim_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/helmet/storm_brim_rare.svg`
+- `icons/heroes/zoo_worker/gear/helmet/storm_brim_epic.svg`
+- `icons/heroes/zoo_worker/gear/helmet/storm_brim_legendary.svg`
+- `icons/heroes/zoo_worker/gear/helmet/storm_brim_celestial.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/canvas_vest_common.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/canvas_vest_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/canvas_vest_rare.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/canvas_vest_epic.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/canvas_vest_legendary.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/canvas_vest_celestial.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/rescue_vest_common.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/rescue_vest_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/rescue_vest_rare.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/rescue_vest_epic.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/rescue_vest_legendary.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/rescue_vest_celestial.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/keeper_apron_common.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/keeper_apron_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/keeper_apron_rare.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/keeper_apron_epic.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/keeper_apron_legendary.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/keeper_apron_celestial.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/field_harness_common.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/field_harness_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/field_harness_rare.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/field_harness_epic.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/field_harness_legendary.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/field_harness_celestial.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/habitat_rig_common.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/habitat_rig_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/habitat_rig_rare.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/habitat_rig_epic.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/habitat_rig_legendary.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/habitat_rig_celestial.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/dawn_vest_common.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/dawn_vest_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/dawn_vest_rare.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/dawn_vest_epic.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/dawn_vest_legendary.svg`
+- `icons/heroes/zoo_worker/gear/chestplate/dawn_vest_celestial.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/leather_gloves_common.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/leather_gloves_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/leather_gloves_rare.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/leather_gloves_epic.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/leather_gloves_legendary.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/leather_gloves_celestial.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/claw_guard_gloves_common.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/claw_guard_gloves_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/claw_guard_gloves_rare.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/claw_guard_gloves_epic.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/claw_guard_gloves_legendary.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/claw_guard_gloves_celestial.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/thermal_gloves_common.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/thermal_gloves_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/thermal_gloves_rare.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/thermal_gloves_epic.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/thermal_gloves_legendary.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/thermal_gloves_celestial.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/rescue_mitts_common.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/rescue_mitts_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/rescue_mitts_rare.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/rescue_mitts_epic.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/rescue_mitts_legendary.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/rescue_mitts_celestial.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/handling_wraps_common.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/handling_wraps_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/handling_wraps_rare.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/handling_wraps_epic.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/handling_wraps_legendary.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/handling_wraps_celestial.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/scaleproof_gloves_common.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/scaleproof_gloves_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/scaleproof_gloves_rare.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/scaleproof_gloves_epic.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/scaleproof_gloves_legendary.svg`
+- `icons/heroes/zoo_worker/gear/gauntlets/scaleproof_gloves_celestial.svg`
+- `icons/heroes/zoo_worker/gear/boots/mud_boots_common.svg`
+- `icons/heroes/zoo_worker/gear/boots/mud_boots_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/boots/mud_boots_rare.svg`
+- `icons/heroes/zoo_worker/gear/boots/mud_boots_epic.svg`
+- `icons/heroes/zoo_worker/gear/boots/mud_boots_legendary.svg`
+- `icons/heroes/zoo_worker/gear/boots/mud_boots_celestial.svg`
+- `icons/heroes/zoo_worker/gear/boots/cagewalk_boots_common.svg`
+- `icons/heroes/zoo_worker/gear/boots/cagewalk_boots_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/boots/cagewalk_boots_rare.svg`
+- `icons/heroes/zoo_worker/gear/boots/cagewalk_boots_epic.svg`
+- `icons/heroes/zoo_worker/gear/boots/cagewalk_boots_legendary.svg`
+- `icons/heroes/zoo_worker/gear/boots/cagewalk_boots_celestial.svg`
+- `icons/heroes/zoo_worker/gear/boots/river_boots_common.svg`
+- `icons/heroes/zoo_worker/gear/boots/river_boots_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/boots/river_boots_rare.svg`
+- `icons/heroes/zoo_worker/gear/boots/river_boots_epic.svg`
+- `icons/heroes/zoo_worker/gear/boots/river_boots_legendary.svg`
+- `icons/heroes/zoo_worker/gear/boots/river_boots_celestial.svg`
+- `icons/heroes/zoo_worker/gear/boots/hill_boots_common.svg`
+- `icons/heroes/zoo_worker/gear/boots/hill_boots_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/boots/hill_boots_rare.svg`
+- `icons/heroes/zoo_worker/gear/boots/hill_boots_epic.svg`
+- `icons/heroes/zoo_worker/gear/boots/hill_boots_legendary.svg`
+- `icons/heroes/zoo_worker/gear/boots/hill_boots_celestial.svg`
+- `icons/heroes/zoo_worker/gear/boots/storm_boots_common.svg`
+- `icons/heroes/zoo_worker/gear/boots/storm_boots_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/boots/storm_boots_rare.svg`
+- `icons/heroes/zoo_worker/gear/boots/storm_boots_epic.svg`
+- `icons/heroes/zoo_worker/gear/boots/storm_boots_legendary.svg`
+- `icons/heroes/zoo_worker/gear/boots/storm_boots_celestial.svg`
+- `icons/heroes/zoo_worker/gear/boots/skyline_boots_common.svg`
+- `icons/heroes/zoo_worker/gear/boots/skyline_boots_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/boots/skyline_boots_rare.svg`
+- `icons/heroes/zoo_worker/gear/boots/skyline_boots_epic.svg`
+- `icons/heroes/zoo_worker/gear/boots/skyline_boots_legendary.svg`
+- `icons/heroes/zoo_worker/gear/boots/skyline_boots_celestial.svg`
+- `icons/heroes/zoo_worker/gear/shield/gate_panel_common.svg`
+- `icons/heroes/zoo_worker/gear/shield/gate_panel_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/shield/gate_panel_rare.svg`
+- `icons/heroes/zoo_worker/gear/shield/gate_panel_epic.svg`
+- `icons/heroes/zoo_worker/gear/shield/gate_panel_legendary.svg`
+- `icons/heroes/zoo_worker/gear/shield/gate_panel_celestial.svg`
+- `icons/heroes/zoo_worker/gear/shield/mobile_barrier_common.svg`
+- `icons/heroes/zoo_worker/gear/shield/mobile_barrier_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/shield/mobile_barrier_rare.svg`
+- `icons/heroes/zoo_worker/gear/shield/mobile_barrier_epic.svg`
+- `icons/heroes/zoo_worker/gear/shield/mobile_barrier_legendary.svg`
+- `icons/heroes/zoo_worker/gear/shield/mobile_barrier_celestial.svg`
+- `icons/heroes/zoo_worker/gear/shield/clinic_shield_common.svg`
+- `icons/heroes/zoo_worker/gear/shield/clinic_shield_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/shield/clinic_shield_rare.svg`
+- `icons/heroes/zoo_worker/gear/shield/clinic_shield_epic.svg`
+- `icons/heroes/zoo_worker/gear/shield/clinic_shield_legendary.svg`
+- `icons/heroes/zoo_worker/gear/shield/clinic_shield_celestial.svg`
+- `icons/heroes/zoo_worker/gear/shield/storm_fence_plate_common.svg`
+- `icons/heroes/zoo_worker/gear/shield/storm_fence_plate_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/shield/storm_fence_plate_rare.svg`
+- `icons/heroes/zoo_worker/gear/shield/storm_fence_plate_epic.svg`
+- `icons/heroes/zoo_worker/gear/shield/storm_fence_plate_legendary.svg`
+- `icons/heroes/zoo_worker/gear/shield/storm_fence_plate_celestial.svg`
+- `icons/heroes/zoo_worker/gear/shield/aviary_guard_common.svg`
+- `icons/heroes/zoo_worker/gear/shield/aviary_guard_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/shield/aviary_guard_rare.svg`
+- `icons/heroes/zoo_worker/gear/shield/aviary_guard_epic.svg`
+- `icons/heroes/zoo_worker/gear/shield/aviary_guard_legendary.svg`
+- `icons/heroes/zoo_worker/gear/shield/aviary_guard_celestial.svg`
+- `icons/heroes/zoo_worker/gear/shield/dragonproof_screen_common.svg`
+- `icons/heroes/zoo_worker/gear/shield/dragonproof_screen_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/shield/dragonproof_screen_rare.svg`
+- `icons/heroes/zoo_worker/gear/shield/dragonproof_screen_epic.svg`
+- `icons/heroes/zoo_worker/gear/shield/dragonproof_screen_legendary.svg`
+- `icons/heroes/zoo_worker/gear/shield/dragonproof_screen_celestial.svg`
+- `icons/heroes/zoo_worker/gear/weapon/feed_hook_common.svg`
+- `icons/heroes/zoo_worker/gear/weapon/feed_hook_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/weapon/feed_hook_rare.svg`
+- `icons/heroes/zoo_worker/gear/weapon/feed_hook_epic.svg`
+- `icons/heroes/zoo_worker/gear/weapon/feed_hook_legendary.svg`
+- `icons/heroes/zoo_worker/gear/weapon/feed_hook_celestial.svg`
+- `icons/heroes/zoo_worker/gear/weapon/signal_staff_common.svg`
+- `icons/heroes/zoo_worker/gear/weapon/signal_staff_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/weapon/signal_staff_rare.svg`
+- `icons/heroes/zoo_worker/gear/weapon/signal_staff_epic.svg`
+- `icons/heroes/zoo_worker/gear/weapon/signal_staff_legendary.svg`
+- `icons/heroes/zoo_worker/gear/weapon/signal_staff_celestial.svg`
+- `icons/heroes/zoo_worker/gear/weapon/calming_baton_common.svg`
+- `icons/heroes/zoo_worker/gear/weapon/calming_baton_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/weapon/calming_baton_rare.svg`
+- `icons/heroes/zoo_worker/gear/weapon/calming_baton_epic.svg`
+- `icons/heroes/zoo_worker/gear/weapon/calming_baton_legendary.svg`
+- `icons/heroes/zoo_worker/gear/weapon/calming_baton_celestial.svg`
+- `icons/heroes/zoo_worker/gear/weapon/rope_launcher_common.svg`
+- `icons/heroes/zoo_worker/gear/weapon/rope_launcher_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/weapon/rope_launcher_rare.svg`
+- `icons/heroes/zoo_worker/gear/weapon/rope_launcher_epic.svg`
+- `icons/heroes/zoo_worker/gear/weapon/rope_launcher_legendary.svg`
+- `icons/heroes/zoo_worker/gear/weapon/rope_launcher_celestial.svg`
+- `icons/heroes/zoo_worker/gear/weapon/rescue_pole_common.svg`
+- `icons/heroes/zoo_worker/gear/weapon/rescue_pole_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/weapon/rescue_pole_rare.svg`
+- `icons/heroes/zoo_worker/gear/weapon/rescue_pole_epic.svg`
+- `icons/heroes/zoo_worker/gear/weapon/rescue_pole_legendary.svg`
+- `icons/heroes/zoo_worker/gear/weapon/rescue_pole_celestial.svg`
+- `icons/heroes/zoo_worker/gear/weapon/ember_lance_common.svg`
+- `icons/heroes/zoo_worker/gear/weapon/ember_lance_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/weapon/ember_lance_rare.svg`
+- `icons/heroes/zoo_worker/gear/weapon/ember_lance_epic.svg`
+- `icons/heroes/zoo_worker/gear/weapon/ember_lance_legendary.svg`
+- `icons/heroes/zoo_worker/gear/weapon/ember_lance_celestial.svg`
+- `icons/heroes/zoo_worker/gear/cloak/rain_poncho_common.svg`
+- `icons/heroes/zoo_worker/gear/cloak/rain_poncho_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/cloak/rain_poncho_rare.svg`
+- `icons/heroes/zoo_worker/gear/cloak/rain_poncho_epic.svg`
+- `icons/heroes/zoo_worker/gear/cloak/rain_poncho_legendary.svg`
+- `icons/heroes/zoo_worker/gear/cloak/rain_poncho_celestial.svg`
+- `icons/heroes/zoo_worker/gear/cloak/keeper_coat_common.svg`
+- `icons/heroes/zoo_worker/gear/cloak/keeper_coat_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/cloak/keeper_coat_rare.svg`
+- `icons/heroes/zoo_worker/gear/cloak/keeper_coat_epic.svg`
+- `icons/heroes/zoo_worker/gear/cloak/keeper_coat_legendary.svg`
+- `icons/heroes/zoo_worker/gear/cloak/keeper_coat_celestial.svg`
+- `icons/heroes/zoo_worker/gear/cloak/night_parka_common.svg`
+- `icons/heroes/zoo_worker/gear/cloak/night_parka_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/cloak/night_parka_rare.svg`
+- `icons/heroes/zoo_worker/gear/cloak/night_parka_epic.svg`
+- `icons/heroes/zoo_worker/gear/cloak/night_parka_legendary.svg`
+- `icons/heroes/zoo_worker/gear/cloak/night_parka_celestial.svg`
+- `icons/heroes/zoo_worker/gear/cloak/wind_cloak_common.svg`
+- `icons/heroes/zoo_worker/gear/cloak/wind_cloak_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/cloak/wind_cloak_rare.svg`
+- `icons/heroes/zoo_worker/gear/cloak/wind_cloak_epic.svg`
+- `icons/heroes/zoo_worker/gear/cloak/wind_cloak_legendary.svg`
+- `icons/heroes/zoo_worker/gear/cloak/wind_cloak_celestial.svg`
+- `icons/heroes/zoo_worker/gear/cloak/sanctuary_mantle_common.svg`
+- `icons/heroes/zoo_worker/gear/cloak/sanctuary_mantle_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/cloak/sanctuary_mantle_rare.svg`
+- `icons/heroes/zoo_worker/gear/cloak/sanctuary_mantle_epic.svg`
+- `icons/heroes/zoo_worker/gear/cloak/sanctuary_mantle_legendary.svg`
+- `icons/heroes/zoo_worker/gear/cloak/sanctuary_mantle_celestial.svg`
+- `icons/heroes/zoo_worker/gear/cloak/dawn_mantle_common.svg`
+- `icons/heroes/zoo_worker/gear/cloak/dawn_mantle_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/cloak/dawn_mantle_rare.svg`
+- `icons/heroes/zoo_worker/gear/cloak/dawn_mantle_epic.svg`
+- `icons/heroes/zoo_worker/gear/cloak/dawn_mantle_legendary.svg`
+- `icons/heroes/zoo_worker/gear/cloak/dawn_mantle_celestial.svg`
+- `icons/heroes/zoo_worker/gear/amulet/bronze_whistle_common.svg`
+- `icons/heroes/zoo_worker/gear/amulet/bronze_whistle_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/amulet/bronze_whistle_rare.svg`
+- `icons/heroes/zoo_worker/gear/amulet/bronze_whistle_epic.svg`
+- `icons/heroes/zoo_worker/gear/amulet/bronze_whistle_legendary.svg`
+- `icons/heroes/zoo_worker/gear/amulet/bronze_whistle_celestial.svg`
+- `icons/heroes/zoo_worker/gear/amulet/keeper_token_common.svg`
+- `icons/heroes/zoo_worker/gear/amulet/keeper_token_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/amulet/keeper_token_rare.svg`
+- `icons/heroes/zoo_worker/gear/amulet/keeper_token_epic.svg`
+- `icons/heroes/zoo_worker/gear/amulet/keeper_token_legendary.svg`
+- `icons/heroes/zoo_worker/gear/amulet/keeper_token_celestial.svg`
+- `icons/heroes/zoo_worker/gear/amulet/sanctuary_charm_common.svg`
+- `icons/heroes/zoo_worker/gear/amulet/sanctuary_charm_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/amulet/sanctuary_charm_rare.svg`
+- `icons/heroes/zoo_worker/gear/amulet/sanctuary_charm_epic.svg`
+- `icons/heroes/zoo_worker/gear/amulet/sanctuary_charm_legendary.svg`
+- `icons/heroes/zoo_worker/gear/amulet/sanctuary_charm_celestial.svg`
+- `icons/heroes/zoo_worker/gear/amulet/aviary_bell_common.svg`
+- `icons/heroes/zoo_worker/gear/amulet/aviary_bell_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/amulet/aviary_bell_rare.svg`
+- `icons/heroes/zoo_worker/gear/amulet/aviary_bell_epic.svg`
+- `icons/heroes/zoo_worker/gear/amulet/aviary_bell_legendary.svg`
+- `icons/heroes/zoo_worker/gear/amulet/aviary_bell_celestial.svg`
+- `icons/heroes/zoo_worker/gear/amulet/time_feather_common.svg`
+- `icons/heroes/zoo_worker/gear/amulet/time_feather_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/amulet/time_feather_rare.svg`
+- `icons/heroes/zoo_worker/gear/amulet/time_feather_epic.svg`
+- `icons/heroes/zoo_worker/gear/amulet/time_feather_legendary.svg`
+- `icons/heroes/zoo_worker/gear/amulet/time_feather_celestial.svg`
+- `icons/heroes/zoo_worker/gear/amulet/ember_crest_common.svg`
+- `icons/heroes/zoo_worker/gear/amulet/ember_crest_uncommon.svg`
+- `icons/heroes/zoo_worker/gear/amulet/ember_crest_rare.svg`
+- `icons/heroes/zoo_worker/gear/amulet/ember_crest_epic.svg`
+- `icons/heroes/zoo_worker/gear/amulet/ember_crest_legendary.svg`
+- `icons/heroes/zoo_worker/gear/amulet/ember_crest_celestial.svg`
+
+## Slot-by-Slot Direction
+### Cloak
+- role: Motion layer. Build depth and emotional tone through shape and edge cuts.
+- animation cue: Low-frequency sway with occasional gust accent.
+- item types to represent: Rain Poncho, Keeper Coat, Night Parka, Wind Cloak, Sanctuary Mantle, Dawn Mantle
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Chestplate
+- role: Main mass-defining body layer. Largest storytelling surface after base hero.
+- animation cue: Core pulse or panel breathing loop (slow, 3-5s).
+- item types to represent: Canvas Vest, Rescue Vest, Keeper Apron, Field Harness, Habitat Rig, Dawn Vest
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Boots
+- role: Movement identity. Encode terrain, mobility mode, and weight class.
+- animation cue: Sole glow ripple or dust/spark kick pulse.
+- item types to represent: Mud Boots, Cagewalk Boots, River Boots, Hill Boots, Storm Boots, Skyline Boots
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Gauntlets
+- role: Functional hand/tool interface. Show dexterity and role-specific mechanics.
+- animation cue: Knuckle light wave or servo twitch loop (subtle).
+- item types to represent: Leather Gloves, Claw Guard Gloves, Thermal Gloves, Rescue Mitts, Handling Wraps, Scaleproof Gloves
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Amulet
+- role: Narrative core token. Small but high-contrast and symbolically loaded.
+- animation cue: Heartbeat glow pulse with small orbiting mote.
+- item types to represent: Bronze Whistle, Keeper Token, Sanctuary Charm, Aviary Bell, Time Feather, Ember Crest
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Helmet
+- role: Head identity piece. Prioritize profile readability and theme signature crest.
+- animation cue: Visor sweep or indicator blink every 2-4s.
+- item types to represent: Feed Cap, Night Patrol Cap, Aviary Cap, Ranger Hat, Clinic Visor, Storm Brim
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Shield
+- role: Defensive philosophy. Make silhouette distinct from chestplate/weapon.
+- animation cue: Border scan sweep or shield-ripple pulse.
+- item types to represent: Gate Panel, Mobile Barrier, Clinic Shield, Storm Fence Plate, Aviary Guard, Dragonproof Screen
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Weapon
+- role: Primary action silhouette. Highest visual contrast and directional energy.
+- animation cue: Edge glint sweep or energy charge loop.
+- item types to represent: Feed Hook, Signal Staff, Calming Baton, Rope Launcher, Rescue Pole, Ember Lance
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+
+## Global Quality Gates
+- Do not use only color swaps across rarities; geometry and silhouette must evolve.
+- Keep readability at 70x90 and 180x220.
+- Keep transparent backgrounds.
+- Ensure first frame is static-compatible (for QSvgRenderer path).
+- Keep layering aligned with hero base center and foot line.
+
+## LLM Generation Prompt
+Use this with your SVG-generation model:
+
+```text
+You are generating production SVG assets for PersonalFreedom hero rendering.
+Theme: zoo_worker
+Follow file names exactly as listed in this packet.
+Canvas/viewBox: 0 0 180 220. Transparent background.
+For each rarity tier, change silhouette/design complexity, not only colors.
+Respect slot role and animation cues in this packet.
+Output valid standalone SVG files only.
+```

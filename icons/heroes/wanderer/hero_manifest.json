@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "theme_id": "wanderer",
+  "canvas": {
+    "width": 180,
+    "height": 220
+  },
+  "base": {
+    "file": "hero_base.svg",
+    "fallback_files": [
+      "hero_base.svg",
+      "hero.svg",
+      "base.svg"
+    ]
+  },
+  "gear": {
+    "slot_order": [
+      "Cloak",
+      "Chestplate",
+      "Boots",
+      "Gauntlets",
+      "Amulet",
+      "Helmet",
+      "Shield",
+      "Weapon"
+    ],
+    "patterns": [
+      "gear/{slot}/{item_type}_{rarity}.svg",
+      "gear/{slot}/{item_name}_{rarity}.svg",
+      "gear/{slot}/{item_type}.svg",
+      "gear/{slot}/{slot}_{rarity}.svg",
+      "gear/{slot}/{rarity}.svg",
+      "gear/{slot}/{slot}.svg"
+    ]
+  },
+  "fx": {
+    "tier_pattern": "fx/tier_{power_tier}.svg"
+  },
+  "animation": {
+    "notes": "Static-compatible first frame required. Motion-ready group structure encouraged."
+  }
+}
