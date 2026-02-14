@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <!-- Common Grey Hood -->
+    <linearGradient id="hoodieCommon" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#546E7A"/>
+        <stop offset="100%" stop-color="#37474F"/>
+    </linearGradient>
+    
+    <!-- Simple Grey Strings (No Glow) -->
+    <linearGradient id="stringGradCommon" x1="0" y1="0" x2="0" y2="1">
+       <stop offset="0%" stop-color="#CFD8DC"/>
+       <stop offset="100%" stop-color="#B0BEC5"/>
+    </linearGradient>
+    
+    <!-- Common Face Shadow -->
+    <radialGradient id="faceShadow" cx="50%" cy="50%" r="50%">
+        <stop offset="70%" stop-color="#000000"/>
+        <stop offset="100%" stop-color="#263238"/>
+    </radialGradient>
+</defs>
+
+<g transform="translate(90, 61) scale(0.22)">
+    <!-- Main Hood Shape (Epic Geometry) -->
+    <path d="M0 -150 C-100 -150 -130 -50 -130 0 C-130 80 -80 100 -50 110 C-20 120 20 120 50 110 C80 100 130 80 130 0 C130 -50 100 -150 0 -150 Z" fill="url(#hoodieCommon)"/>
+    
+    <!-- Face Shadow -->
+    <ellipse cx="0" cy="10" rx="60" ry="70" fill="url(#faceShadow)"/>
+
+    <!-- Eyes: Tiny Lines (Squint/Closed) -->
+    <g transform="translate(0, -5)">
+        <!-- Left Eye Line -->
+        <g transform="translate(-22, 0)">
+            <path d="M-10 0 L10 0" stroke="#90A4AE" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+        </g>
+
+        <!-- Right Eye Line -->
+        <g transform="translate(22, 0)">
+            <path d="M-10 0 L10 0" stroke="#90A4AE" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+        </g>
+    </g>
+
+    <!-- Strings (Epic Geometry but No Glow) -->
+    <g transform="translate(0, 0)">
+        <!-- Left String -->
+        <g>
+            <path d="M-40 60 Q-42 90 -38 130" fill="none" stroke="url(#stringGradCommon)" stroke-width="4" stroke-linecap="round">
+                <animate attributeName="d" 
+                    values="M-40 60 Q-42 90 -38 130; M-40 60 Q-38 90 -40 130; M-40 60 Q-42 90 -38 130" 
+                    dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+            </path>
+            <!-- Plastic Aglet -->
+            <rect x="-41" y="130" width="6" height="15" rx="1" fill="#ECEFF1">
+                <animate attributeName="x" values="-41;-43;-41" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+                <animateTransform attributeName="transform" type="rotate" values="3 -38 130; -3 -38 130; 3 -38 130" dur="3s" repeatCount="indefinite"/>
+            </rect>
+        </g>
+
+        <!-- Right String -->
+        <g>
+            <path d="M40 60 Q38 95 42 135" fill="none" stroke="url(#stringGradCommon)" stroke-width="4" stroke-linecap="round">
+                 <animate attributeName="d" 
+                    values="M40 60 Q38 95 42 135; M40 60 Q42 95 40 135; M40 60 Q38 95 42 135" 
+                    dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+            </path>
+             <!-- Plastic Aglet -->
+            <rect x="39" y="135" width="6" height="15" rx="1" fill="#ECEFF1">
+                 <animate attributeName="x" values="39;37;39" dur="4s" repeatCount="indefinite"/>
+                 <animateTransform attributeName="transform" type="rotate" values="-2 41 135; 2 41 135; -2 41 135" dur="4s" repeatCount="indefinite"/>
+            </rect>
+        </g>
+    </g>
+
+</g>
+</svg>
