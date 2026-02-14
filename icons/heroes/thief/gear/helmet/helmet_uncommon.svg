@@ -38,12 +38,11 @@
             
             <!-- Iris & Pupil (Green) -->
             <g>
-                <!-- Saccadic Eye Movement -->
-                <!-- Uses explicit very short durations for movement and long durations for holds -->
+                <!-- Saccadic Eye Movement Fixed: keyTimes MUST end at 1 -->
                 <animateTransform attributeName="transform" type="translate" 
-                    values="0,0; 0,0; 4,0; 4,0; 4,2; 4,2; -3,0; -3,0; -3,-3; -3,-3; 0,0" 
+                    values="0,0; 0,0; 4,0; 4,0; 4,2; 4,2; -3,0; -3,0; -3,-3; -3,-3; 0,0; 0,0" 
                     dur="8s" repeatCount="indefinite" 
-                    keyTimes="0; 0.24; 0.25; 0.44; 0.45; 0.54; 0.55; 0.74; 0.75; 0.84; 0.85"
+                    keyTimes="0; 0.24; 0.25; 0.44; 0.45; 0.54; 0.55; 0.74; 0.75; 0.84; 0.85; 1"
                     calcMode="linear"/>
                     
                 <circle cx="0" cy="0" r="7" fill="url(#humanIrisGreen)" /> 
@@ -53,9 +52,7 @@
             
             <!-- Eyelids (Black to match face shadow) -->
             <path fill="#000000">
-               <!-- Irregular blink with 100ms hold -->
-               <!-- Dur 10s. 100ms is 0.01 of 10s -->
-               <!-- Sequence: Open -> Closed (fast) -> Hold (100ms) -> Open (fast) -->
+               <!-- Fixed Blink: Ends at keyTime=1 -->
                <animate attributeName="d" 
                     values="M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z; 
                             M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z; 
@@ -65,8 +62,10 @@
                             M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z;
                             M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z; 
                             M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z;
+                            M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z;
+                            
                             M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z"
-                    keyTimes="0; 0.01; 0.02; 0.03;  0.4; 0.41; 0.42; 0.43"
+                    keyTimes="0; 0.01; 0.02; 0.03;  0.4; 0.41; 0.42; 0.43; 1"
                     dur="10s"
                     repeatCount="indefinite"/>
             </path>
@@ -81,8 +80,10 @@
                             M-16 8 Q0 20 16 8 L16 20 L-16 20 Z;
                             M-16 0 Q0 0 16 0 L16 20 L-16 20 Z; 
                             M-16 0 Q0 0 16 0 L16 20 L-16 20 Z;
+                            M-16 8 Q0 20 16 8 L16 20 L-16 20 Z;
+                            
                             M-16 8 Q0 20 16 8 L16 20 L-16 20 Z"
-                    keyTimes="0; 0.01; 0.02; 0.03;  0.4; 0.41; 0.42; 0.43"
+                    keyTimes="0; 0.01; 0.02; 0.03;  0.4; 0.41; 0.42; 0.43; 1"
                     dur="10s"
                     repeatCount="indefinite"/>
             </path>
@@ -93,9 +94,9 @@
             <path d="M-15 0 Q0 -11 15 0 Q0 11 -15 0 Z" fill="#F5F5F5"/>
             <g>
                 <animateTransform attributeName="transform" type="translate" 
-                    values="0,0; 0,0; 4,0; 4,0; 4,2; 4,2; -3,0; -3,0; -3,-3; -3,-3; 0,0" 
+                    values="0,0; 0,0; 4,0; 4,0; 4,2; 4,2; -3,0; -3,0; -3,-3; -3,-3; 0,0; 0,0" 
                     dur="8s" repeatCount="indefinite" 
-                    keyTimes="0; 0.24; 0.25; 0.44; 0.45; 0.54; 0.55; 0.74; 0.75; 0.84; 0.85"
+                    keyTimes="0; 0.24; 0.25; 0.44; 0.45; 0.54; 0.55; 0.74; 0.75; 0.84; 0.85; 1"
                     calcMode="linear"/>
 
                 <circle cx="0" cy="0" r="7" fill="url(#humanIrisGreen)" />
@@ -114,8 +115,10 @@
                             M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z;
                             M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z; 
                             M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z;
+                            M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z;
+                            
                             M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z"
-                    keyTimes="0; 0.01; 0.02; 0.03;  0.4; 0.41; 0.42; 0.43"
+                    keyTimes="0; 0.01; 0.02; 0.03;  0.4; 0.41; 0.42; 0.43; 1"
                     dur="10s"
                     repeatCount="indefinite"/>
             </path>
@@ -130,8 +133,10 @@
                             M-16 8 Q0 20 16 8 L16 20 L-16 20 Z;
                             M-16 0 Q0 0 16 0 L16 20 L-16 20 Z; 
                             M-16 0 Q0 0 16 0 L16 20 L-16 20 Z;
+                            M-16 8 Q0 20 16 8 L16 20 L-16 20 Z;
+                            
                             M-16 8 Q0 20 16 8 L16 20 L-16 20 Z"
-                    keyTimes="0; 0.01; 0.02; 0.03;  0.4; 0.41; 0.42; 0.43"
+                    keyTimes="0; 0.01; 0.02; 0.03;  0.4; 0.41; 0.42; 0.43; 1"
                     dur="10s"
                     repeatCount="indefinite"/>
             </path>
