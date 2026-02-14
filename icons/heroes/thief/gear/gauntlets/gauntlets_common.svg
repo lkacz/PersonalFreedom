@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="grip_shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5a6672"/>
+      <stop offset="100%" stop-color="#2a3741"/>
+    </linearGradient>
+    <linearGradient id="grip_palm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#748391"/>
+      <stop offset="100%" stop-color="#3a4a56"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Common: Grip Gloves -->
+  <g id="gauntlets_common">
+    <!-- Left forearm and hand (fits hero_base forearm + hand anchors) -->
+    <path d="M56.2 112.0 Q52.8 123.6 57.4 135.8 L67.3 132.7 Q70.0 123.8 66.9 112.0 Z" fill="url(#grip_shell)" stroke="#162028" stroke-width="0.9"/>
+    <rect x="57.1" y="131.2" width="10.4" height="3.1" rx="1.1" fill="#9ea9b0" opacity="0.86"/>
+    <circle cx="64" cy="138" r="4.9" fill="url(#grip_palm)" stroke="#162028" stroke-width="0.9"/>
+    <path d="M60.7 138.4 L67.1 138.4" stroke="#b9c0c5" stroke-width="0.72" opacity="0.8"/>
+    <path d="M60.9 140.0 L66.7 140.0" stroke="#92a0aa" stroke-width="0.65" opacity="0.74"/>
+    <circle cx="64" cy="133.0" r="0.9" fill="#b3bcc4" opacity="0.88"/>
+
+    <!-- Right forearm and hand -->
+    <path d="M123.8 112.0 Q127.2 123.6 122.6 135.8 L112.7 132.7 Q110.0 123.8 113.1 112.0 Z" fill="url(#grip_shell)" stroke="#162028" stroke-width="0.9"/>
+    <rect x="112.5" y="131.2" width="10.4" height="3.1" rx="1.1" fill="#9ea9b0" opacity="0.86"/>
+    <circle cx="116" cy="138" r="4.9" fill="url(#grip_palm)" stroke="#162028" stroke-width="0.9"/>
+    <path d="M112.9 138.4 L119.3 138.4" stroke="#b9c0c5" stroke-width="0.72" opacity="0.8"/>
+    <path d="M113.3 140.0 L119.1 140.0" stroke="#92a0aa" stroke-width="0.65" opacity="0.74"/>
+    <circle cx="116" cy="133.0" r="0.9" fill="#b3bcc4" opacity="0.88"/>
+  </g>
+</svg>
