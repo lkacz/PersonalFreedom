@@ -221,7 +221,7 @@
 
             <!-- The Right Hand/Paw Gesturing (Moved to be clearly visible over scroll) -->
             <g transform="translate(50, 0)">
-                <animateTransform attributeName="transform" type="rotate" values="0 50 0; 8 50 0; 0 50 0" dur="2s" repeatCount="indefinite"/>
+                <animateTransform attributeName="transform" type="rotate" values="0 0 0; 8 0 0; 0 0 0" dur="2s" repeatCount="indefinite" additive="sum"/>
                 <ellipse cx="0" cy="0" rx="14" ry="10" fill="#8D6E63"/>
                 <ellipse cx="0" cy="0" rx="8" ry="6" fill="#D7CCC8" transform="translate(0, -2)"/>
                  <circle cx="-4" cy="-7" r="2.5" fill="#3E2723"/>
