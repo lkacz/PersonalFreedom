@@ -24899,6 +24899,22 @@ class LegendaryMinimalistDialog(StyledDialog):
         self.add_button_row(layout, [("Awesome!", "primary", self.accept)])
 
 
+STORY_MAIN_CHARACTER_NAMES = {
+    "warrior": "Warrior",
+    "scholar": "Scholar",
+    "underdog": "Underdog",
+    "scientist": "Scientist",
+    "wanderer": "Wanderer",
+}
+
+
+def get_story_main_character_name(story_id: Optional[str]) -> str:
+    """Return the short main-character label used across hero-facing UI."""
+    if not story_id:
+        return "Hero"
+    return STORY_MAIN_CHARACTER_NAMES.get(story_id, story_id.replace("_", " ").title())
+
+
 class ADHDBusterTab(QtWidgets.QWidget):
     """Tab for viewing and managing the ADHD Buster character and inventory."""
 
@@ -25108,7 +25124,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
 
         # Header with power
         header = QtWidgets.QHBoxLayout()
-        header.addWidget(QtWidgets.QLabel("<b style='font-size:18px;'>🦸 HERO</b>"))
+        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        hero_name = get_story_main_character_name(active_story)
+        self.hero_title_lbl = QtWidgets.QLabel(f"<b style='font-size:18px;'>🦸 {hero_name}</b>")
+        header.addWidget(self.hero_title_lbl)
         header.addStretch()
 
         power = calculate_character_power(self.blocker.adhd_buster) if GAMIFICATION_AVAILABLE else 0
@@ -25165,7 +25184,6 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self.char_equip_splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         self.char_equip_splitter.setChildrenCollapsible(False)
         equipped = self.blocker.adhd_buster.get("equipped", {})
-        active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         self.char_canvas = CharacterCanvas(equipped, power_info["total_power"], parent=self, story_theme=active_story)
         self.char_equip_splitter.addWidget(self.char_canvas)
 
@@ -25361,13 +25379,28 @@ class ADHDBusterTab(QtWidgets.QWidget):
             story_indicator = QtWidgets.QWidget()
             story_indicator_layout = QtWidgets.QHBoxLayout(story_indicator)
             story_indicator_layout.setContentsMargins(10, 8, 10, 8)
-            
+
+            story_indicator_layout.addWidget(QtWidgets.QLabel("Theme:"))
+            self.story_switch_combo = NoScrollComboBox()
+            self.story_switch_combo.setMinimumWidth(180)
+
             current_story = get_selected_story(self.blocker.adhd_buster)
-            story_info = AVAILABLE_STORIES.get(current_story, {})
-            self.story_indicator_lbl = QtWidgets.QLabel(f"📜 Current Story: <b>{story_info.get('title', current_story)}</b>")
+            current_idx = 0
+            for i, (story_id, story_info) in enumerate(AVAILABLE_STORIES.items()):
+                display_name = get_story_main_character_name(story_id)
+                self.story_switch_combo.addItem(display_name, story_id)
+                self.story_switch_combo.setItemData(i, story_info.get("description", ""), QtCore.Qt.ToolTipRole)
+                if story_id == current_story:
+                    current_idx = i
+
+            self.story_switch_combo.setCurrentIndex(current_idx)
+            self.story_switch_combo.currentIndexChanged.connect(self._on_story_switch_change)
+            story_indicator_layout.addWidget(self.story_switch_combo)
+
+            self.story_indicator_lbl = QtWidgets.QLabel()
             self.story_indicator_lbl.setStyleSheet("font-size: 13px;")
             story_indicator_layout.addWidget(self.story_indicator_lbl)
-            
+
             story_indicator_layout.addStretch()
             
             self.go_to_story_btn = QtWidgets.QPushButton("📖 Go to Story Tab")
@@ -25377,6 +25410,7 @@ class ADHDBusterTab(QtWidgets.QWidget):
             story_indicator_layout.addWidget(self.go_to_story_btn)
             
             self.inner_layout.addWidget(story_indicator)
+            self._update_story_indicator()
 
         # Latest Diary Entry - Speech bubble from the character
         diary_bubble_group = QtWidgets.QWidget()
@@ -27063,6 +27097,31 @@ class ADHDBusterTab(QtWidgets.QWidget):
         dialog.exec()
         dialog.hide()  # Explicitly hide before deletion
         dialog.deleteLater()
+
+    def _on_story_switch_change(self, index: int) -> None:
+        """Switch the active story directly from the Hero tab dropdown."""
+        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'story_switch_combo'):
+            return
+
+        story_id = self.story_switch_combo.currentData()
+        if not story_id:
+            return
+
+        from gamification import get_selected_story, select_story
+        current_story = get_selected_story(self.blocker.adhd_buster)
+        if story_id == current_story:
+            return
+
+        if not select_story(self.blocker.adhd_buster, story_id):
+            self._update_story_indicator()
+            return
+
+        self.blocker.save_config()
+
+        if self._game_state:
+            self._game_state.set_story(story_id)
+        else:
+            self.refresh_all()
     
     def _go_to_story_tab(self) -> None:
         """Navigate to the Story tab."""
@@ -27077,13 +27136,31 @@ class ADHDBusterTab(QtWidgets.QWidget):
             parent = parent.parent()
     
     def _update_story_indicator(self) -> None:
-        """Update the story indicator label with current story name."""
-        if not GAMIFICATION_AVAILABLE or not hasattr(self, 'story_indicator_lbl'):
+        """Update Hero-tab story controls and title to match the active theme."""
+        if not GAMIFICATION_AVAILABLE:
             return
+
         from gamification import AVAILABLE_STORIES, get_selected_story
         current_story = get_selected_story(self.blocker.adhd_buster)
         story_info = AVAILABLE_STORIES.get(current_story, {})
-        self.story_indicator_lbl.setText(f"📜 Current Story: <b>{story_info.get('title', current_story)}</b>")
+        hero_name = get_story_main_character_name(current_story)
+
+        if hasattr(self, 'hero_title_lbl'):
+            self.hero_title_lbl.setText(f"<b style='font-size:18px;'>🦸 {hero_name}</b>")
+
+        if hasattr(self, 'story_indicator_lbl'):
+            self.story_indicator_lbl.setText(f"📜 Story: <b>{story_info.get('title', current_story)}</b>")
+
+        if hasattr(self, 'story_switch_combo'):
+            self.story_switch_combo.blockSignals(True)
+            idx = self.story_switch_combo.findData(current_story)
+            if idx >= 0:
+                self.story_switch_combo.setCurrentIndex(idx)
+            self.story_switch_combo.blockSignals(False)
+            story_mode_active = True
+            if get_story_mode is not None:
+                story_mode_active = get_story_mode(self.blocker.adhd_buster) == STORY_MODE_ACTIVE
+            self.story_switch_combo.setEnabled(story_mode_active)
 
     def _optimize_gear(self) -> None:
         """Automatically equip the best gear based on user criteria."""
@@ -33958,6 +34035,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.game_state.coins_changed.connect(self._on_coins_changed)
             self.game_state.xp_changed.connect(self._on_xp_changed)
             self.game_state.inventory_changed.connect(self._on_inventory_changed)
+            self.game_state.story_changed.connect(self._on_story_theme_changed)
             self.game_state.full_refresh_required.connect(self._on_full_refresh_required)
 
         # Make window scrollable with scroll area
@@ -33983,7 +34061,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # ADHD Buster button (only when gamification is available and not disabled)
         if GAMIFICATION_AVAILABLE:
             power = calculate_character_power(self.blocker.adhd_buster)
-            self.buster_btn = QtWidgets.QPushButton(f"🦸 HERO  ⚔ {power}")
+            self.buster_btn = QtWidgets.QPushButton(self._format_buster_button_text(power))
             self.buster_btn.setStyleSheet("font-weight: bold; padding: 6px 12px;")
             self.buster_btn.clicked.connect(self._open_adhd_buster)
             # Hide if gamification is disabled
@@ -34149,7 +34227,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         specs: List[Dict[str, str]] = []
 
         if GAMIFICATION_AVAILABLE:
-            specs.append({"attr": "adhd_tab", "title": "🦸 Hero"})
+            specs.append({"attr": "adhd_tab", "title": self._get_hero_tab_title()})
             specs.append({"attr": "story_tab", "title": "📜 Story"})
 
         specs.append({"attr": "eye_tab", "title": "👁️ Eyes"})
@@ -34468,7 +34546,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.buster_btn.setVisible(enabled)
             if enabled:
                 power = calculate_character_power(self.blocker.adhd_buster)
-                self.buster_btn.setText(f"🦸 HERO  ⚔ {power}")
+                self._refresh_hero_theme_labels(power)
 
         self.blocker.save_config()
         
@@ -34704,6 +34782,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                     self.game_state.coins_changed.disconnect()
                     self.game_state.xp_changed.disconnect()
                     self.game_state.inventory_changed.disconnect()
+                    self.game_state.story_changed.disconnect()
                     self.game_state.full_refresh_required.disconnect()
                 except Exception:
                     pass
@@ -34719,6 +34798,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 self.game_state.coins_changed.connect(self._on_coins_changed)
                 self.game_state.xp_changed.connect(self._on_xp_changed)
                 self.game_state.inventory_changed.connect(self._on_inventory_changed)
+                self.game_state.story_changed.connect(self._on_story_theme_changed)
                 self.game_state.full_refresh_required.connect(self._on_full_refresh_required)
             
             # Update all tabs with new blocker reference
@@ -34859,7 +34939,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             if GAMIFICATION_AVAILABLE:
                 if hasattr(self, 'buster_btn'):
                     power = calculate_character_power(self.blocker.adhd_buster)
-                    self.buster_btn.setText(f"🦸 HERO  ⚔ {power}")
+                    self._refresh_hero_theme_labels(power)
                     self.buster_btn.setVisible(is_gamification_enabled(self.blocker.adhd_buster))
                 
                 if hasattr(self, 'coin_label'):
@@ -35123,6 +35203,64 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 if pref == "Voice":
                     # Voice was the only selected method but failed, show toast as fallback
                     show_perk_toast(message, emoji, self)
+
+    def _get_current_story_for_labels(self) -> str:
+        """Resolve the current story ID for Hero-theme labels."""
+        if not GAMIFICATION_AVAILABLE:
+            return "warrior"
+        if get_selected_story is not None:
+            try:
+                return get_selected_story(self.blocker.adhd_buster)
+            except Exception:
+                pass
+        return self.blocker.adhd_buster.get("active_story", "warrior")
+
+    def _get_hero_tab_title(self, story_id: Optional[str] = None) -> str:
+        """Build the dynamic Hero tab title from the active story."""
+        resolved_story = story_id or self._get_current_story_for_labels()
+        return f"🦸 {get_story_main_character_name(resolved_story)}"
+
+    def _format_buster_button_text(self, power: int, story_id: Optional[str] = None) -> str:
+        """Build the quick-bar Hero button label using the active story character name."""
+        resolved_story = story_id or self._get_current_story_for_labels()
+        return f"🦸 {get_story_main_character_name(resolved_story)}  ⚔ {power}"
+
+    def _refresh_hero_theme_labels(self, power: Optional[int] = None) -> None:
+        """Keep Hero button + Hero tab title synced with the active story."""
+        if not GAMIFICATION_AVAILABLE:
+            return
+
+        story_id = self._get_current_story_for_labels()
+        tab_title = self._get_hero_tab_title(story_id)
+
+        if hasattr(self, "_deferred_tab_titles"):
+            self._deferred_tab_titles["adhd_tab"] = tab_title
+
+        placeholder = None
+        if hasattr(self, "_deferred_tab_placeholders"):
+            placeholder = self._deferred_tab_placeholders.get("adhd_tab")
+        if placeholder is not None and hasattr(self, "tabs"):
+            idx = self.tabs.indexOf(placeholder)
+            if idx >= 0:
+                self.tabs.setTabText(idx, tab_title)
+
+        if hasattr(self, "adhd_tab") and self.adhd_tab is not None and hasattr(self, "tabs"):
+            idx = self.tabs.indexOf(self.adhd_tab)
+            if idx >= 0:
+                self.tabs.setTabText(idx, tab_title)
+
+        if hasattr(self, "buster_btn"):
+            resolved_power = power
+            if resolved_power is None:
+                if calculate_character_power:
+                    resolved_power = calculate_character_power(self.blocker.adhd_buster)
+                else:
+                    resolved_power = 0
+            self.buster_btn.setText(self._format_buster_button_text(int(resolved_power), story_id))
+
+    def _on_story_theme_changed(self, story_id: str) -> None:
+        """Handle story-theme changes and refresh Hero naming."""
+        self._refresh_hero_theme_labels()
     
     def _update_coin_display(self) -> None:
         """Update the coin counter in the toolbar."""
@@ -35135,7 +35273,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
     def _on_power_changed(self, new_power: int) -> None:
         """Handle power change signal - update power display in toolbar."""
         if hasattr(self, 'buster_btn'):
-            self.buster_btn.setText(f"🦸 HERO  ⚔ {new_power}")
+            self._refresh_hero_theme_labels(new_power)
     
     def _on_coins_changed(self, new_coins: int) -> None:
         """Handle coins change signal - update coin display in toolbar."""
@@ -35163,7 +35301,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         self._update_coin_display()
         if hasattr(self, 'buster_btn') and calculate_character_power:
             power = calculate_character_power(self.blocker.adhd_buster)
-            self.buster_btn.setText(f"🦸 HERO  ⚔ {power}")
+            self._refresh_hero_theme_labels(power)
     
     def _show_coin_info(self) -> None:
         """Show information about the coin economy."""
@@ -36024,7 +36162,7 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             self.buster_btn.setVisible(enabled)
             if enabled:
                 power = calculate_character_power(self.blocker.adhd_buster)
-                self.buster_btn.setText(f"🦸 HERO  ⚔ {power}")
+                self._refresh_hero_theme_labels(power)
 
     def refresh_adhd_tab(self) -> None:
         """Refresh ADHD Buster tab if it exists."""
