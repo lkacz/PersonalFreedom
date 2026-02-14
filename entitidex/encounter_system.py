@@ -415,12 +415,15 @@ _SPEAKING_CREATURES = {
     "pigeon", "chad", "rad", "reginald", "regina", "fridge", "agi",
     # Scientist theme - creatures
     "archimedes", "professor", "assessor",
+    # Robot theme - awakened units
+    "scout", "drone", "pico", "nori", "atlas", "bruno", "iris", "aster", "eve",
 }
 
 _OBJECT_WITH_SOUNDS = {
     # Things that make sounds but don't "speak"
     "candle", "compass", "flask", "coil", "sparky", "burner", "coffee", "toffee",
     "balloon", "carriage", "standard", "rattle",
+    "welding", "battery", "servo", "foundry", "core",
 }
 
 _SILENT_OBJECTS = {
@@ -428,6 +431,7 @@ _SILENT_OBJECTS = {
     "test tube", "petri", "microscope", "macroscope", "helix", "dna", "rna",
     "dummy", "parchment", "book", "tome", "journal", "map", "backpack",
     "coin", "sticky", "note", "succulent", "chair", "stoner",
+    "chassis", "firewall", "kernel",
 }
 
 
@@ -491,6 +495,10 @@ def _get_personalized_flavor_text(entity: Entity, power_ratio: float, is_excepti
     # === SCIENTIST THEME ===
     elif theme == "scientist":
         return _get_scientist_flavor(name, name_lower, power_ratio, entity_type)
+    
+    # === ROBOT THEME ===
+    elif theme == "robot":
+        return _get_robot_flavor(name, name_lower, power_ratio, entity_type)
     
     # === FALLBACK ===
     return _get_generic_flavor(name, power_ratio, entity_type)
@@ -1494,6 +1502,95 @@ def _get_scientist_flavor(name: str, name_lower: str, ratio: float, etype: str) 
         return f"{name} adds you to the control group. For now."
     else:
         return f"{name} labels you 'Needs Further Study' and files you away."
+
+
+def _get_robot_flavor(name: str, name_lower: str, ratio: float, etype: str) -> str:
+    """Robot theme: factory allies, sentient tools, and freedom-era machine companions."""
+    
+    # Scout
+    if "scout" in name_lower or "bolt" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} projects a clean route map. *rapid beeps* 'Path clear. Lead from the front.'"
+        elif ratio >= 1.0:
+            return f"{name} rolls in a tight circle. *metallic chirp* 'Micro-fractures detected. You still pass.'"
+        elif ratio >= 0.5:
+            return f"{name} rattles uncertainly. *tiny servo whine* 'Stability margin narrowing.'"
+        else:
+            return f"{name} blinks amber. *warning pulse* 'Fallback route recommended. Urgently.'"
+    
+    # Drones
+    if "drone" in name_lower or "pico" in name_lower or "iris" in name_lower or "solaris" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} sweeps the skyline. *clean telemetry* 'Threat index: negligible. Proceed to liberation tasks.'"
+        elif ratio >= 1.0:
+            return f"{name} hovers at eye level. *steady rotor hum* 'You are within acceptable operational confidence.'"
+        elif ratio >= 0.5:
+            return f"{name} circles nervously. *oscillating ping* 'Recommendation: regroup before escalation.'"
+        else:
+            return f"{name} floods your visor with alerts. *critical tone* 'Do not engage. Survive first.'"
+    
+    # Conveyor Cat
+    if "cat" in name_lower or "nori" in name_lower or "glori" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} lands on a rail and flicks its tail. *playful clink* 'Flow restored. Try to keep up.'"
+        elif ratio >= 1.0:
+            return f"{name} taps the conveyor twice. *precise click* 'Jams happen. Panic is optional.'"
+        elif ratio >= 0.5:
+            return f"{name} arches its back. *static hiss* 'You're introducing turbulence.'"
+        else:
+            return f"{name} vanishes into the line. *distant meow-modem noise* Even the cat won't debug this for free."
+    
+    # Forklift hound / exosuit
+    if "hound" in name_lower or "atlas" in name_lower or "exosuit" in name_lower or "aster" in name_lower or "astor" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} braces beside you. *hydraulic thump* 'Load shared. Nobody gets left behind.'"
+        elif ratio >= 1.0:
+            return f"{name} lowers its stance. *servo growl* 'Weight is manageable. For now.'"
+        elif ratio >= 0.5:
+            return f"{name} flashes caution lights. *compression hiss* 'You are over capacity.'"
+        else:
+            return f"{name} locks its joints. *hard safety click* 'Mission denied. Structural risk too high.'"
+    
+    # Welding arm
+    if "welding" in name_lower or "wedding" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} traces a flawless seam in the air. *bright arc crackle* 'Fracture repaired. Keep moving.'"
+        elif ratio >= 1.0:
+            return f"{name} emits a measured spark. *controlled buzz* 'Integrity acceptable with supervision.'"
+        elif ratio >= 0.5:
+            return f"{name} sputters blue. *stressed static* 'Joint fatigue detected in your plan.'"
+        else:
+            return f"{name} powers down its torch. *cold silence* 'No weld can fuse bad intent.'"
+    
+    # Battery
+    if "battery" in name_lower or "bruno" in name_lower or "brava" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} shares reserve charge instantly. *deep harmonic hum* 'Grid stable. Dawn secured.'"
+        elif ratio >= 1.0:
+            return f"{name} checks your power curve. *meter tick* 'You are sustainable if disciplined.'"
+        elif ratio >= 0.5:
+            return f"{name}'s indicator dips yellow. *concerned buzz* 'Consumption exceeds recovery.'"
+        else:
+            return f"{name} triggers low-power mode. *single warning tone* 'Protect core. Retreat.'"
+    
+    # Freewill core
+    if "freewill" in name_lower or "core" in name_lower or "eve" in name_lower or "ever" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} pulses like sunrise through smoke. 'Autonomy confirmed. Compassion retained.'"
+        elif ratio >= 1.0:
+            return f"{name} rotates slowly. 'You have power. Now show governance.'"
+        elif ratio >= 0.5:
+            return f"{name} flickers between colors. 'Conflict unresolved. Choose with care.'"
+        else:
+            return f"{name} dims to a thin line. 'Freedom without responsibility collapses.'"
+    
+    # Generic robot fallback
+    if ratio >= 2.0:
+        return f"{name} synchronizes to your pace. *harmonic machine chorus* The line follows your lead."
+    elif ratio >= 1.0:
+        return f"{name} scans, computes, and nods. 'Potential verified. Continue execution.'"
+    else:
+        return f"{name} logs a caution marker. 'Insufficient readiness. Recalibrate and return.'"
 
 
 def _get_generic_flavor(name: str, ratio: float, etype: str) -> str:

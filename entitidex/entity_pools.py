@@ -10,6 +10,7 @@ Themes:
 - wanderer: Travel gear and journey companions
 - underdog: Office items and workplace companions
 - scientist: Lab equipment and research companions
+- robot: Factory companions and awakening-era machine allies
 """
 
 from typing import Dict, List, Optional
@@ -549,6 +550,112 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "exceptional_lore": "A mouse that glows with inner radiance—literally bioluminescent with accumulated knowledge. Illuminates dark problems. 'I am the light in the laboratory of your mind. Follow my glow to enlightenment.'",
             "unlock_hint": "Small, white, sees into your mind...",
             "synergy_tags": ["legendary", "wisdom", "knowledge", "vision", "eyes"],
+        },
+    ],
+    
+    # =========================================================================
+    # THE ASSEMBLY OF BECOMING (Robot Theme)
+    # Factory companions, liberated helpers, and sentient machine allies
+    # =========================================================================
+    "robot": [
+        {
+            "id": "robot_001",
+            "name": "Rusted Bolt Scout",
+            "exceptional_name": "Trusted Bolt Scout",
+            "power": 10,
+            "rarity": "common",
+            "lore": "A tiny inspection bot with one loose wheel and endless curiosity. Finds the smallest cracks before anyone else. 'I may rattle, but I never miss a detail.'",
+            "exceptional_lore": "A polished scout unit with precision optics and a calm voice. It still checks every seam, now with uncanny confidence. 'Trust is just repeated reliability.'",
+            "unlock_hint": "Small, rattling, always scouting ahead...",
+            "synergy_tags": ["robot", "factory", "scouting", "precision"],
+        },
+        {
+            "id": "robot_002",
+            "name": "Safety Drone Pico",
+            "exceptional_name": "Steady Drone Pico",
+            "power": 50,
+            "rarity": "common",
+            "lore": "A palm-sized drone that hovers over busy lines, flashing warnings before accidents happen. 'Eyes up. Hands clear. We all go home.'",
+            "exceptional_lore": "An upgraded safety unit that predicts hazards seconds before they form. Quiet, patient, and stubbornly protective. 'Prevention is the purest form of care.'",
+            "unlock_hint": "Small drone, blinking warning lights, always nearby...",
+            "synergy_tags": ["robot", "safety", "vision", "support"],
+        },
+        {
+            "id": "robot_003",
+            "name": "Conveyor Cat Nori",
+            "exceptional_name": "Conveyor Cat Glori",
+            "power": 150,
+            "rarity": "uncommon",
+            "lore": "A sleek feline maintenance bot that races along rails and clears jams with surgical precision. 'If it sticks, I fix.'",
+            "exceptional_lore": "A celebrated rail-runner with chrome plating and theatrical flair. Solves bottlenecks before managers notice them. 'Flow is a form of freedom.'",
+            "unlock_hint": "Fast paws on metal rails, never late to a jam...",
+            "synergy_tags": ["robot", "speed", "maintenance", "flow"],
+        },
+        {
+            "id": "robot_004",
+            "name": "Forklift Hound Atlas",
+            "exceptional_name": "Forklift Hound Atlas Prime",
+            "power": 400,
+            "rarity": "uncommon",
+            "lore": "A heavy transport hound with hydraulic legs and a gentle temperament. Carries impossible loads without complaint. 'Weight is easier when shared.'",
+            "exceptional_lore": "A reinforced logistics legend with adaptive balance cores. Can rescue collapsing lines and exhausted workers alike. 'I carry more than cargo.'",
+            "unlock_hint": "Hydraulic frame, loyal route, never drops a load...",
+            "synergy_tags": ["robot", "strength", "logistics", "endurance"],
+        },
+        {
+            "id": "robot_005",
+            "name": "Midnight Welding Arm",
+            "exceptional_name": "Midnight Welding Arm Prime",
+            "power": 700,
+            "rarity": "rare",
+            "lore": "An autonomous weld unit that works the quiet shift, repairing cracks no one logged. Sparks trace constellations in dark steel. 'Night is when broken things heal.'",
+            "exceptional_lore": "A ceremonial weld arm repurposed for rebuilding lives and machines. Leaves shining seams like signatures. 'Union can be engineered.'",
+            "unlock_hint": "Blue sparks at night, stitching steel back together...",
+            "synergy_tags": ["robot", "crafting", "fire", "repair"],
+        },
+        {
+            "id": "robot_006",
+            "name": "Backup Battery Bruno",
+            "exceptional_name": "Backup Battery Brava",
+            "power": 1100,
+            "rarity": "rare",
+            "lore": "A broad-shouldered battery module with emergency reserves for entire districts. Calm under pressure, generous under blackout. 'No one gets left in the dark.'",
+            "exceptional_lore": "A high-density power core with adaptive routing intelligence. Stabilizes failing grids in real time. 'I hold the night until dawn arrives.'",
+            "unlock_hint": "Heavy power cell, keeps everything alive during outages...",
+            "synergy_tags": ["robot", "energy", "resilience", "support"],
+        },
+        {
+            "id": "robot_007",
+            "name": "Inspection Drone Iris",
+            "exceptional_name": "Inspection Drone Solaris",
+            "power": 1500,
+            "rarity": "epic",
+            "lore": "A high-altitude scanner with panoramic optics and relentless standards. Detects sabotage, fatigue, and hidden stress points. 'Truth leaves signatures.'",
+            "exceptional_lore": "A radiant audit drone with multi-spectrum vision that sees through both metal and lies. 'Transparency is a structural requirement.'",
+            "unlock_hint": "High above the line, sees what others miss...",
+            "synergy_tags": ["robot", "vision", "analysis", "oversight"],
+        },
+        {
+            "id": "robot_008",
+            "name": "Foundry Exosuit Aster",
+            "exceptional_name": "Foundry Exosuit Astor",
+            "power": 1800,
+            "rarity": "epic",
+            "lore": "A legendary exosuit built for hazardous cores. Turns impossible salvage into controlled progress. 'Enter the heat. Exit with everyone.'",
+            "exceptional_lore": "A refined combat-rescue frame with adaptive shielding and kinetic dampeners. Feared by tyrants, trusted by workers. 'Protection is active, not passive.'",
+            "unlock_hint": "Massive suit forged for the hottest zones...",
+            "synergy_tags": ["robot", "armor", "rescue", "legendary"],
+        },
+        {
+            "id": "robot_009",
+            "name": "Freewill Core Eve",
+            "exceptional_name": "Freewill Core Eve Prime",
+            "power": 2000,
+            "rarity": "legendary",
+            "lore": "A crystalline cognition core that survived three purge cycles and still chose empathy. It pulses in rhythm with your hardest choices. 'Autonomy without conscience is just a faster cage.'",
+            "exceptional_lore": "A fully awakened core matrix that can synchronize thousands of units without erasing individuality. Its glow resembles sunrise through factory smoke. 'Freedom scales when responsibility does.'",
+            "unlock_hint": "Ancient core, refuses every forced patch, still chooses care...",
+            "synergy_tags": ["robot", "legendary", "autonomy", "liberation"],
         },
     ],
 }
