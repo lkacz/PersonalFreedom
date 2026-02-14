@@ -48,10 +48,11 @@
             
             <!-- Iris & Pupil (Epic Purple) -->
             <g>
+                <!-- Fewer Saccades: Center -> Right -> Left -> Center -->
                 <animateTransform attributeName="transform" type="translate" 
-                    values="0,0; 0,0; 4,0; 4,0; 4,2; 4,2; -3,0; -3,0; -3,-3; -3,-3; 0,0; 0,0" 
-                    dur="8s" repeatCount="indefinite" 
-                    keyTimes="0; 0.24; 0.25; 0.44; 0.45; 0.54; 0.55; 0.74; 0.75; 0.84; 0.85; 1"
+                    values="0,0; 0,0; 3,0; 3,0; -3,0; -3,0; 0,0; 0,0" 
+                    dur="12s" repeatCount="indefinite" 
+                    keyTimes="0; 0.4; 0.41; 0.6; 0.61; 0.8; 0.81; 1"
                     calcMode="linear"/>
                     
                 <circle cx="0" cy="0" r="7" fill="url(#humanIrisEpic)" /> 
@@ -59,31 +60,27 @@
                 <circle cx="2" cy="-2" r="1.5" fill="#FFFFFF" opacity="0.9" />
             </g>
             
-            <!-- Eyelids (Almost Closed / Squinting) -->
-            <!-- Changed "Open" state to reflect "barely open" -->
-            <!-- Open State: M-16 -2 Q0 -6 16 -2 ... (Much lower top lid) -->
-            <!-- Bottom State: M-16 2 Q0 6 16 2 ... (Much higher bottom lid) -->
-            
+            <!-- Eyelids (Narrow Squint) -->
+            <!-- Top Lid lowered to y=-3 (was -5) -->
             <path fill="#000000">
-               <!-- Blink more rarely: Once every 15s instead of 10s -->
                <animate attributeName="d" 
-                    values="M-16 -5 Q0 -12 16 -5 L16 -20 L-16 -20 Z; 
+                    values="M-16 -3 Q0 -8 16 -3 L16 -20 L-16 -20 Z; 
                             M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z; 
                             M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z;
-                            M-16 -5 Q0 -12 16 -5 L16 -20 L-16 -20 Z;
-                            M-16 -5 Q0 -12 16 -5 L16 -20 L-16 -20 Z"
+                            M-16 -3 Q0 -8 16 -3 L16 -20 L-16 -20 Z;
+                            M-16 -3 Q0 -8 16 -3 L16 -20 L-16 -20 Z"
                     keyTimes="0; 0.005; 0.015; 0.02; 1"
                     dur="15s"
                     repeatCount="indefinite"/>
             </path>
-            <!-- Bottom lid -->
+            <!-- Bottom lid raised to y=3 (was 5) -->
              <path fill="#000000">
                 <animate attributeName="d" 
-                    values="M-16 5 Q0 12 16 5 L16 20 L-16 20 Z; 
+                    values="M-16 3 Q0 8 16 3 L16 20 L-16 20 Z; 
                             M-16 0 Q0 0 16 0 L16 20 L-16 20 Z; 
                             M-16 0 Q0 0 16 0 L16 20 L-16 20 Z;
-                            M-16 5 Q0 12 16 5 L16 20 L-16 20 Z;
-                            M-16 5 Q0 12 16 5 L16 20 L-16 20 Z"
+                            M-16 3 Q0 8 16 3 L16 20 L-16 20 Z;
+                            M-16 3 Q0 8 16 3 L16 20 L-16 20 Z"
                     keyTimes="0; 0.005; 0.015; 0.02; 1"
                     dur="15s"
                     repeatCount="indefinite"/>
@@ -95,9 +92,9 @@
             <path d="M-15 0 Q0 -11 15 0 Q0 11 -15 0 Z" fill="#E1BEE7"/>
             <g>
                 <animateTransform attributeName="transform" type="translate" 
-                    values="0,0; 0,0; 4,0; 4,0; 4,2; 4,2; -3,0; -3,0; -3,-3; -3,-3; 0,0; 0,0" 
-                    dur="8s" repeatCount="indefinite" 
-                    keyTimes="0; 0.24; 0.25; 0.44; 0.45; 0.54; 0.55; 0.74; 0.75; 0.84; 0.85; 1"
+                    values="0,0; 0,0; 3,0; 3,0; -3,0; -3,0; 0,0; 0,0" 
+                    dur="12s" repeatCount="indefinite" 
+                    keyTimes="0; 0.4; 0.41; 0.6; 0.61; 0.8; 0.81; 1"
                     calcMode="linear"/>
 
                 <circle cx="0" cy="0" r="7" fill="url(#humanIrisEpic)" />
@@ -107,11 +104,11 @@
              <!-- Top Lid -->
             <path fill="#000000">
                   <animate attributeName="d" 
-                    values="M-16 -5 Q0 -12 16 -5 L16 -20 L-16 -20 Z; 
+                    values="M-16 -3 Q0 -8 16 -3 L16 -20 L-16 -20 Z; 
                             M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z; 
                             M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z;
-                            M-16 -5 Q0 -12 16 -5 L16 -20 L-16 -20 Z;
-                            M-16 -5 Q0 -12 16 -5 L16 -20 L-16 -20 Z"
+                            M-16 -3 Q0 -8 16 -3 L16 -20 L-16 -20 Z;
+                            M-16 -3 Q0 -8 16 -3 L16 -20 L-16 -20 Z"
                     keyTimes="0; 0.005; 0.015; 0.02; 1"
                     dur="15s"
                     repeatCount="indefinite"/>
@@ -119,11 +116,11 @@
              <!-- Bottom Lid -->
             <path fill="#000000">
                 <animate attributeName="d" 
-                    values="M-16 5 Q0 12 16 5 L16 20 L-16 20 Z; 
+                    values="M-16 3 Q0 8 16 3 L16 20 L-16 20 Z; 
                             M-16 0 Q0 0 16 0 L16 20 L-16 20 Z; 
                             M-16 0 Q0 0 16 0 L16 20 L-16 20 Z;
-                            M-16 5 Q0 12 16 5 L16 20 L-16 20 Z;
-                            M-16 5 Q0 12 16 5 L16 20 L-16 20 Z"
+                            M-16 3 Q0 8 16 3 L16 20 L-16 20 Z;
+                            M-16 3 Q0 8 16 3 L16 20 L-16 20 Z"
                     keyTimes="0; 0.005; 0.015; 0.02; 1"
                     dur="15s"
                     repeatCount="indefinite"/>
@@ -132,7 +129,6 @@
     </g>
 
     <!-- Glowing Fast Strings -->
-    <!-- Faster duration (3s/4s vs 4s/5.5s), Filter applied -->
     <g transform="translate(0, 0)" filter="url(#stringGlow)">
         <!-- Left String -->
         <g>
