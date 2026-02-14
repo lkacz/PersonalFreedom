@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+    <!-- Thief Base: Lean, Athletic, Tactical -->
+    <defs>
+        <!-- Skin: Warm tone with slight shadow gradient -->
+        <linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#FFCCBC"/> <!-- Lighter highlight -->
+            <stop offset="100%" stop-color="#D8A890"/> <!-- Shadowed skin -->
+        </linearGradient>
+
+        <!-- Suit: Dark tactical stealth suit (Navy/Charcoal) -->
+        <linearGradient id="suitGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#37474F"/>
+            <stop offset="40%" stop-color="#263238"/> <!-- Core shadow -->
+            <stop offset="100%" stop-color="#102027"/> <!-- Deep shadow -->
+        </linearGradient>
+
+        <!-- Straps: Leather/Canvas utility webbing -->
+        <linearGradient id="strapGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#3E2723"/>
+            <stop offset="50%" stop-color="#5D4037"/>
+            <stop offset="100%" stop-color="#3E2723"/>
+        </linearGradient>
+
+        <!-- Boots/Gloves: Matte Black Leather -->
+        <linearGradient id="leatherGrad" x1="0.3" y1="0" x2="0.7" y2="1">
+            <stop offset="0%" stop-color="#424242"/>
+            <stop offset="100%" stop-color="#212121"/>
+        </linearGradient>
+
+        <!-- Drop Shadow -->
+        <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
+             <stop offset="0%" stop-color="#000" stop-opacity="0.6"/>
+             <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+        </radialGradient>
+    </defs>
+
+    <!-- Ground Shadow -->
+    <ellipse cx="90" cy="205" rx="55" ry="8" fill="url(#shadowGrad)"/>
+
+    <!-- Main Character Group: Center Pivot for Breathing -->
+    <g id="hero_body" transform="translate(90, 200)">
+        
+        <!-- Breathing Animation: Subtle scale/heave -->
+        <animateTransform attributeName="transform" type="scale"
+            values="1 1; 1.01 0.99; 1 1"
+            dur="4s" repeatCount="indefinite" additive="sum"/>
+
+        <!-- Translate back to coordinate origin relative to feet -->
+        <g transform="translate(-90, -200)">
+            
+            <!-- LEGS: Athletic stance, slight bend -->
+            <!-- Right Leg (Back) -->
+            <path d="M95 140 Q105 160 115 195 L100 195 Q95 160 90 140 Z" fill="url(#suitGrad)" stroke="#102027" stroke-width="1"/>
+            <!-- Left Leg (Front) -->
+            <path d="M85 140 Q75 160 65 195 L80 195 Q85 160 90 140 Z" fill="url(#suitGrad)" stroke="#102027" stroke-width="1"/>
+
+            <!-- BOOTS (Base Layer) -->
+            <!-- Applied as separate boots.svg but visible here as base -->
+            <path d="M63 192 L82 192 L80 205 L62 205 Z" fill="url(#leatherGrad)"/>
+            <path d="M98 192 L117 192 L119 205 L101 205 Z" fill="url(#leatherGrad)"/>
+
+            <!-- TORSO: V-Taper, Fitted Armor Underlayer -->
+            <g id="torso">
+                <!-- Abdomen/Waist -->
+                <path d="M75 120 L105 120 L100 145 L80 145 Z" fill="#263238" />
+                
+                <!-- Chest/Ribcage -->
+                <path d="M65 80 Q62 100 75 120 L105 120 Q118 100 115 80 L90 80 Z" fill="url(#suitGrad)" />
+                
+                <!-- Center Seam / Zipper Line -->
+                <line x1="90" y1="80" x2="90" y2="145" stroke="#102027" stroke-width="0.5" opacity="0.5"/>
+                
+                <!-- Utility Belt (Base) -->
+                <path d="M78 140 L102 140 L102 150 L78 150 Z" fill="url(#strapGrad)" stroke="#221100" stroke-width="0.5"/>
+                <rect x="88" y="140" width="4" height="10" fill="#8D6E63"/> <!-- Buckle -->
+            </g>
+            
+            <!-- SHOULDERS & ARMS -->
+            <!-- Shoulders (Deltoids) -->
+            <circle cx="68" cy="85" r="10" fill="url(#suitGrad)"/>
+            <circle cx="112" cy="85" r="10" fill="url(#suitGrad)"/>
+
+            <!-- Arms (Biceps/Forearms) - Resting at sides -->
+            <!-- Left Arm -->
+            <path d="M60 85 Q55 105 60 125 L70 125 Q75 105 76 85" fill="url(#suitGrad)"/>
+            <circle cx="65" cy="128" r="5" fill="url(#skinGrad)"/> <!-- Hand Base -->
+            
+            <!-- Right Arm -->
+            <path d="M120 85 Q125 105 120 125 L110 125 Q105 105 104 85" fill="url(#suitGrad)"/>
+            <circle cx="115" cy="128" r="5" fill="url(#skinGrad)"/> <!-- Hand Base -->
+
+            <!-- NECK & HEAD -->
+            <!-- Neck -->
+            <path d="M82 80 L82 70 L98 70 L98 80 Z" fill="url(#skinGrad)"/>
+            <!-- Throat shadow -->
+            <path d="M82 80 Q90 85 98 80" fill="#D8A890" opacity="0.5"/>
+
+            <!-- Head Base -->
+            <g id="head_group">
+                <!-- Chin/Jaw -->
+                <path d="M80 60 Q80 75 90 80 Q100 75 100 60 L100 50 L80 50 Z" fill="url(#skinGrad)"/>
+                
+                <!-- Face Details -->
+                <g opacity="0.8">
+                    <!-- Mouth -->
+                    <path d="M87 72 Q90 74 93 72" stroke="#BCAAA4" stroke-width="1" fill="none"/>
+                    <!-- Nose Hint -->
+                    <path d="M90 64 L89 68 L91 68" fill="#D8A890"/>
+                    <!-- Eyes (Closed/Neutral base) -->
+                    <path d="M84 62 L88 62" stroke="#5D4037" stroke-width="1"/>
+                    <path d="M92 62 L96 62" stroke="#5D4037" stroke-width="1"/>
+                </g>
+
+                <!-- Cowl/Bandana Base (Hair substitute) -->
+                <!-- Dark fitted cap/under-hood layer -->
+                <path d="M80 60 L80 50 Q90 40 100 50 L100 60 Q90 55 80 60 Z" fill="#263238"/>
+            </g>
+
+            <!-- TACTICAL DETAILS -->
+            <!-- Chest Straps (Harness) -->
+            <path d="M72 82 L85 100 L95 100 L108 82" stroke="url(#strapGrad)" stroke-width="2" fill="none"/>
+            <circle cx="85" cy="100" r="1.5" fill="#B0BEC5"/> <!-- Rivet -->
+            <circle cx="95" cy="100" r="1.5" fill="#B0BEC5"/> <!-- Rivet -->
+
+        </g>
+    </g>
+</svg>
