@@ -1,43 +1,58 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Zoo Worker 007: Old Scalebook Oracle (Normal) - The Living Ledger -->
-  <!-- Concept: A heavy, worn field guide. The "surprise" is a chameleon camouflaged on the cover.
-       Its tail forms the binding strap, and its eye opens/closes on the cover design.
-       It's a book that watches you back. -->
-
+  <!-- Zoo Worker 007: Old Scalebook Oracle (Refined) -->
   <defs>
-    <!-- Worn Field Leather -->
+    <!-- 1. Worn Field Leather -->
     <linearGradient id="fieldLeather" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#5D4037"/>
-      <stop offset="50%" stop-color="#4E342E"/>
+      <stop offset="0%" stop-color="#4E342E"/>
       <stop offset="100%" stop-color="#3E2723"/>
     </linearGradient>
-
-    <!-- Camouflage Gradient (Matches Leather but shifting) -->
-    <linearGradient id="camoSkin" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6D4C41"/>
-      <stop offset="50%" stop-color="#5D4037"/>
-      <stop offset="100%" stop-color="#4E342E"/>
-    </linearGradient>
-
-    <!-- Paper Edges -->
-    <linearGradient id="paperStack" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#EFEBE9"/>
-      <stop offset="100%" stop-color="#D7CCC8"/>
-    </linearGradient>
     
-    <!-- Rough texture filter for leather -->
     <filter id="leatherRoughness">
-      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise"/>
-      <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.1 0" in="noise" result="coloredNoise"/>
-      <feComposite operator="in" in="coloredNoise" in2="SourceGraphic" result="composite"/>
-      <feBlend mode="multiply" in="composite" in2="SourceGraphic"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="4" result="noise"/>
+      <feDiffuseLighting in="noise" lighting-color="#D7CCC8" surfaceScale="1">
+           <feDistantLight azimuth="45" elevation="30"/>
+      </feDiffuseLighting>
+      <feComposite operator="arithmetic" k1="0" k2="1" k3="1" k4="0" in2="SourceGraphic"/>
+      <feComponentTransfer>
+           <feFuncA type="linear" slope="0.8"/>
+      </feComponentTransfer>
+      <feComposite operator="in" in2="SourceGraphic"/>
+      <feBlend mode="multiply" in2="SourceGraphic"/> 
     </filter>
 
+    <!-- 2. Aged Paper -->
+    <linearGradient id="paperStack" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#EFEBE9"/>
+      <stop offset="10%" stop-color="#D7CCC8"/>
+      <stop offset="50%" stop-color="#EFEBE9"/>
+      <stop offset="100%" stop-color="#D7CCC8"/>
+    </linearGradient>
+
+    <!-- 3. Chameleon Skin -->
+    <linearGradient id="chamBody" x1="0%" y1="0%" x2="100%" y2="50%">
+        <stop offset="0%" stop-color="#DCEDC8"/> <!-- Pale Green -->
+        <stop offset="50%" stop-color="#AED581"/> <!-- Light Green -->
+        <stop offset="100%" stop-color="#558B2F"/> <!-- Dark Green Shadow -->
+    </linearGradient>
+
+    <!-- 4. Stripes -->
+    <linearGradient id="chamStripes" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FFF59D"/>
+        <stop offset="100%" stop-color="#FFB74D"/>
+    </linearGradient>
+
+    <!-- 5. Gold Foil -->
+    <linearGradient id="goldFoil" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FFECB3"/>
+        <stop offset="50%" stop-color="#FFC107"/>
+        <stop offset="100%" stop-color="#FF6F00"/>
+    </linearGradient>
+
     <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
-      <feOffset dx="0" dy="6"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="5"/>
+      <feOffset dx="0" dy="8"/>
       <feComponentTransfer>
-        <feFuncA type="linear" slope="0.4"/>
+        <feFuncA type="linear" slope="0.5"/>
       </feComponentTransfer>
       <feMerge>
         <feMergeNode/>
@@ -52,15 +67,14 @@
     <g>
         <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
 
-        <!-- BOOK BODY (Closed, angled slightly) -->
+        <!-- BOOK BODY -->
         <g transform="rotate(-5)" filter="url(#dropShadow)">
-            <!-- Back Cover Edge -->
+            <!-- Back Cover -->
             <rect x="-110" y="-135" width="220" height="270" rx="4" fill="#3E2723"/>
             
-            <!-- Pages Stack (Thick) -->
+            <!-- Pages -->
             <rect x="-105" y="-130" width="210" height="260" rx="2" fill="url(#paperStack)"/>
-            <!-- Page Lines -->
-            <g stroke="#A1887F" stroke-width="1">
+            <g stroke="#A1887F" stroke-width="1" opacity="0.6">
                 <line x1="-105" y1="-120" x2="105" y2="-120"/>
                 <line x1="-105" y1="-110" x2="105" y2="-110"/>
                 <line x1="-105" y1="-80" x2="105" y2="-80"/>
@@ -68,96 +82,115 @@
             </g>
 
             <!-- Front Cover -->
-            <rect x="-115" y="-140" width="220" height="270" rx="4" fill="url(#fieldLeather)" filter="url(#leatherRoughness)"/>
+            <rect x="-115" y="-140" width="220" height="270" rx="4" fill="url(#fieldLeather)"/>
+            <rect x="-115" y="-140" width="220" height="270" rx="4" fill="#000" opacity="0.2" filter="url(#leatherRoughness)"/>
             
             <!-- Spine -->
             <path d="M-115,-140 Q-135,0 -115,130 L-130,130 Q-150,0 -130,-140 Z" fill="#4E342E"/>
+            <path d="M-125,-140 V130" stroke="#3E2723" stroke-width="1" opacity="0.5"/>
             
-            <!-- Corner Protectors (Brass) -->
-            <path d="M65,-140 L105,-140 L105,-100 Z" fill="#D7CCC8" opacity="0.6"/>
-            <path d="M65,130 L105,130 L105,90 Z" fill="#D7CCC8" opacity="0.6"/>
+            <!-- Corner Protectors -->
+            <path d="M65,-140 L105,-140 L105,-100 Z" fill="#8D6E63" opacity="0.8"/>
+            <path d="M68,-138 L103,-138 L103,-103 Z" fill="url(#goldFoil)" opacity="0.6"/>
+            <circle cx="95" cy="-130" r="2" fill="#3E2723"/>
 
-            <!-- THE SURPRISE: Camouflaged Chameleon on Cover -->
+            <path d="M65,130 L105,130 L105,90 Z" fill="#8D6E63" opacity="0.8"/>
+            <path d="M68,128 L103,128 L103,93 Z" fill="url(#goldFoil)" opacity="0.6"/>
+            <circle cx="95" cy="120" r="2" fill="#3E2723"/>
+
+            <!-- THE SURPRISE: Just the Eye of the Oracle on the Cover -->
             <g transform="translate(0, 0)">
-                <!-- Chameleon Body (Merged with cover texture) -->
-                <path d="M-40,-60 Q0,-90 40,-60 Q80,-30 60,30 Q40,80 -20,60 Q-70,40 -40,-60" fill="url(#camoSkin)" opacity="0.9"/>
-                
-                <!-- Spinal Ridge (Subtle bumps) -->
-                <path d="M-40,-60 Q0,-95 40,-60" fill="none" stroke="#3E2723" stroke-width="2" stroke-dasharray="4,4"/>
-
-                <!-- Head/Crest -->
-                <path d="M-40,-60 Q-60,-90 -20,-100 Q0,-80 -10,-60" fill="url(#camoSkin)"/>
-
-                <!-- The Swiveling Eye (The only clearly living part) -->
-                <g transform="translate(-30, -70)">
-                    <!-- Turret -->
-                    <circle cx="0" cy="0" r="14" fill="#5D4037"/>
-                    <circle cx="0" cy="0" r="14" fill="url(#camoSkin)" opacity="0.8"/>
-                     <!-- Eyelid wrinkles -->
-                    <circle cx="0" cy="0" r="10" stroke="#3E2723" stroke-width="1" fill="none"/>
+                <!-- Eye Turret (Detailed 3D Cone structure) -->
+                <!-- Positioned where the head was (-20, -75) -->
+                <g transform="translate(-20, -75)">
                     
-                    <!-- Pupil (Looking around independently of book) -->
+                    <!-- 1. Base Cone (Widest, darkest green shadow) -->
+                    <!-- Fixed heavy base -->
+                    <circle cx="0" cy="0" r="22" fill="#33691E"/>
+                    <circle cx="0" cy="0" r="21" fill="#AED581"/> 
+                    
+                    <!-- Texture on base -->
+                    <circle cx="0" cy="0" r="21" fill="url(#leatherRoughness)" opacity="0.3"/>
+
+                    <!-- 2. Lower Turret Layer (Moves slightly) -->
                     <g>
-                        <circle cx="0" cy="0" r="4" fill="#000"/>
-                        <circle cx="-1" cy="-1" r="1" fill="#FFF"/>
-                         <animateTransform attributeName="transform" type="translate" values="0,0; 6,0; 0,6; -6,0; 0,0" dur="8s" repeatCount="indefinite" calcMode="discrete"/>
+                        <animateTransform attributeName="transform" type="translate" 
+                            values="0,0; 0,0; 1,-1; 1,-1; -1,1; -1,1; 1.5,0.5; 1.5,0.5; -0.5,-1.5; -0.5,-1.5; 0,0" 
+                            keyTimes="0; 0.15; 0.16; 0.35; 0.36; 0.6; 0.61; 0.75; 0.76; 0.95; 1"
+                            dur="4s" repeatCount="indefinite" calcMode="linear"/>
+                        
+                        <circle cx="0" cy="0" r="18" fill="#7CB342" stroke="#558B2F" stroke-width="0.5"/>
+                         <!-- Scale details -->
+                        <circle cx="0" cy="0" r="16" stroke="#AED581" stroke-width="0.5" stroke-dasharray="2,2" opacity="0.5"/>
+                    </g>
+                    
+                    <!-- 3. Mid Turret Layer (Moves more for parallax) -->
+                    <g>
+                        <animateTransform attributeName="transform" type="translate" 
+                            values="0,0; 0,0; 2,-2; 2,-2; -2,2; -2,2; 3,1; 3,1; -1,-3; -1,-3; 0,0" 
+                            keyTimes="0; 0.15; 0.16; 0.35; 0.36; 0.6; 0.61; 0.75; 0.76; 0.95; 1"
+                            dur="4s" repeatCount="indefinite" calcMode="linear"/>
+                        
+                        <circle cx="0" cy="0" r="14" fill="#8BC34A"/>
+                        <circle cx="0" cy="0" r="14" stroke="#33691E" stroke-width="0.5" opacity="0.3"/>
+                        <circle cx="0" cy="0" r="12" stroke="#DCEDC8" stroke-width="0.5" stroke-dasharray="1,2" opacity="0.6"/>
+                    </g>
+
+                    <!-- 4. Upper Turret Layer (Moves even more) -->
+                    <g>
+                        <animateTransform attributeName="transform" type="translate" 
+                             values="0,0; 0,0; 3,-3; 3,-3; -3,3; -3,3; 4.5,1.5; 4.5,1.5; -1.5,-4.5; -1.5,-4.5; 0,0" 
+                             keyTimes="0; 0.15; 0.16; 0.35; 0.36; 0.6; 0.61; 0.75; 0.76; 0.95; 1"
+                             dur="4s" repeatCount="indefinite" calcMode="linear"/>
+                        
+                        <circle cx="0" cy="0" r="10" fill="#AED581"/>
+                        <circle cx="0" cy="0" r="9" stroke="#33691E" stroke-width="0.5" opacity="0.4"/>
+                    </g>
+
+                    <!-- 5. Eyelid Lip & Pupil (Moves most - Extreme Perspective) -->
+                    <g>
+                        <!-- Parallax Movement: Strongest at the tip -->
+                        <!-- Saccadic motion: Irregular holds, instantaneous snaps (0.01 duration) -->
+                        <animateTransform attributeName="transform" type="translate" 
+                             values="0,0; 0,0; 5,-5; 5,-5; -5,5; -5,5; 7,3; 7,3; -3,-7; -3,-7; 0,0" 
+                             keyTimes="0; 0.15; 0.16; 0.35; 0.36; 0.6; 0.61; 0.75; 0.76; 0.95; 1"
+                             dur="4s" repeatCount="indefinite" calcMode="linear"/>
+
+                        <!-- The Lip -->
+                        <circle cx="0" cy="0" r="6" fill="#DCEDC8"/> 
+                        <circle cx="0" cy="0" r="6" stroke="#558B2F" stroke-width="0.5"/>
+                        
+                        <!-- Inner Shadow to fake depth of hole -->
+                        <circle cx="0" cy="0" r="4.5" fill="#33691E"/>
+
+                        <!-- The Pupil (The "Black Hole") -->
+                        <circle cx="0" cy="0" r="3" fill="#111"/>
+                        <!-- Tiny highlight on black pupil for wetness -->
+                        <circle cx="-1" cy="-1" r="0.8" fill="#FFF" opacity="0.4"/>
                     </g>
                 </g>
-
-                <!-- Tail (Acting as the Binding Strap/Clasp) -->
-                <path d="M60,30 Q80,60 105,50 Q120,40 105,20 L105,20" fill="none" stroke="url(#camoSkin)" stroke-width="12" stroke-linecap="round">
-                    <animate attributeName="d" values="M60,30 Q80,60 105,50 Q120,40 105,20 L105,20; M60,30 Q80,65 105,55 Q125,45 105,15 L105,15; M60,30 Q80,60 105,50 Q120,40 105,20 L105,20" dur="4s" repeatCount="indefinite"/>
-                </path>
-                <!-- Tail Curl End (The Clasp Button) -->
-                <circle cx="105" cy="35" r="8" fill="#5D4037"/>
             </g>
 
-            <!-- Title Plate (Embossed look) -->
-            <rect x="-80" y="80" width="120" height="30" rx="2" fill="#3E2723" opacity="0.8"/>
-            <rect x="-75" y="85" width="110" height="20" rx="1" fill="none" stroke="#8D6E63" stroke-width="1"/>
-            <!-- Pseudo-text -->
-            <line x1="-70" y1="95" x2="30" y2="95" stroke="#8D6E63" stroke-width="2"/>
+            <!-- Title Plate -->
+            <rect x="-80" y="80" width="120" height="30" rx="3" fill="#3E2723"/>
+            <rect x="-80" y="80" width="120" height="30" rx="3" fill="url(#goldFoil)" opacity="0.15"/>
+            <rect x="-77" y="83" width="114" height="24" rx="2" fill="none" stroke="url(#goldFoil)" stroke-width="1"/>
+            <line x1="-70" y1="95" x2="30" y2="95" stroke="url(#goldFoil)" stroke-width="2"/>
+            <line x1="-70" y1="100" x2="10" y2="100" stroke="url(#goldFoil)" stroke-width="2"/>
         </g>
 
-        <!-- Tongue Bookmark (Shooting out occasionally) -->
+        <!-- Tongue -->
         <g transform="translate(10, 0)">
-            <!-- The 'Bookmark' tongue shoots out! -->
-            <path d="M90,-100 L110,-100" stroke="#E57373" stroke-width="6" stroke-linecap="round" opacity="0">
-                <!-- Tongue Animation Loop: shoot, retract, wait -->
-                <animate attributeName="d" values="M90,-100 L100,-100; M90,-100 L160,-120; M90,-100 L100,-100; M90,-100 L100,-100" dur="4s" repeatCount="indefinite" keyTimes="0; 0.1; 0.2; 1" begin="2s"/>
-                <animate attributeName="opacity" values="0; 1; 1; 0; 0" dur="4s" repeatCount="indefinite" keyTimes="0; 0.05; 0.2; 0.25; 1" begin="2s"/>
+            <path d="M90,-100 L110,-100" stroke="#EF5350" stroke-width="5" stroke-linecap="round" opacity="0">
+                <animate attributeName="d" values="M90,-100 L100,-100; M90,-100 L160,-120; M90,-100 L100,-100; M90,-100 L100,-100" dur="5s" repeatCount="indefinite" keyTimes="0; 0.1; 0.2; 1" begin="1s"/>
+                <animate attributeName="opacity" values="0; 1; 1; 0; 0" dur="5s" repeatCount="indefinite" keyTimes="0; 0.05; 0.2; 0.25; 1" begin="1s"/>
             </path>
-             <!-- Bug being caught -->
-             <circle cx="160" cy="-120" r="3" fill="#000" opacity="1">
-                <!-- Bug Animation: Sit, get eaten (disappear), reappear later -->
-                <!-- Cycle matches tongue duration of 4s -->
-                <!-- 0s - 2.2s: Visible (sitting) -->
-                <!-- 2.2s (Tongue hits): Disappears (Eaten) -->
-                <!-- 2.2s - 4s: Invisible (Gone) -->
-                <!-- 4s (Loop): Reappears immediately as new bug -->
-                
-                <!-- Aligning with tongue begin="2s". Tongue hits peak at approx 2.4s (0.1 of 4s = 0.4s into animation). 
-                     Wait, if tongue begin=2s, then animation starts at 2s. 
-                     0.1 * 4s = 0.4s. So tongue hits apex at 2.4s. 
-                     So bug should disappear at 2.4s. -->
-                     
-                <!-- Simplification: Let's run both loops starting at 0, synchronized. -->
-                <!-- Tongue: Stay hidden for 2s, Shoot (0.5s), Hide (1.5s). Total 4s. -->
-                
-                <!-- Explicit opacity check: -->
-                <!-- 0%  (0.0s): Visible (1) -->
-                <!-- 50% (2.0s): Visible (1) - Tongue starts appearing -->
-                <!-- 60% (2.4s): Hidden (0)  - Tongue hits apex, bug eaten -->
-                <!-- 95% (3.8s): Hidden (0) -->
-                <!-- 100%(4.0s): Visible (1) - New bug arrives -->
-                <animate attributeName="opacity" values="1; 1; 0; 0; 1" dur="4s" repeatCount="indefinite" keyTimes="0; 0.6; 0.61; 0.99; 1"/>
-                
-                <!-- Subtle jitter while sitting to look alive -->
+             <circle cx="160" cy="-120" r="3" fill="#212121" opacity="1">
+                <animate attributeName="opacity" values="1; 1; 0; 0; 1" dur="5s" repeatCount="indefinite" keyTimes="0; 0.6; 0.61; 0.99; 1"/>
                 <animate attributeName="cx" values="160; 162; 160; 158; 160" dur="0.2s" repeatCount="indefinite"/>
                 <animate attributeName="cy" values="-120; -118; -120; -121; -120" dur="1.5s" repeatCount="indefinite"/>
             </circle>
         </g>
-
     </g>
   </g>
 </svg>

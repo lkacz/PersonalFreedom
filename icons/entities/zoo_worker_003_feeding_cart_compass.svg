@@ -1,96 +1,173 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <!-- Zoo Worker 003: Feeding Cart Compass (Zoo Themed) -->
-  <!-- Concept: "The Feeder's Guide". Instead of N/S/E/W, it points to diets. -->
+  <!-- Concept: "The Feeder's Guide". Highly detailed, glossy manufacturing. -->
   <defs>
-    <!-- Cart Wheel/Tire Rubber Case -->
-    <radialGradient id="tireCase" cx="50%" cy="50%" r="50%">
-      <stop offset="80%" stop-color="#424242"/>
-      <stop offset="90%" stop-color="#212121"/>
-      <stop offset="100%" stop-color="#000000"/>
+    <!-- 1. Metallic Gradients for Housing & Needle -->
+    <linearGradient id="chromeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0E0E0"/>
+      <stop offset="25%" stop-color="#9E9E9E"/>
+      <stop offset="50%" stop-color="#F5F5F5"/>
+      <stop offset="75%" stop-color="#757575"/>
+      <stop offset="100%" stop-color="#424242"/>
+    </linearGradient>
+
+    <linearGradient id="silverSpoon" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ECEFF1"/>
+      <stop offset="50%" stop-color="#B0BEC5"/>
+      <stop offset="100%" stop-color="#78909C"/>
+    </linearGradient>
+
+    <!-- 2. Zone Gradients (Vibrant & Deep) -->
+    <radialGradient id="meatGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="40%" stop-color="#EF5350"/>
+      <stop offset="100%" stop-color="#B71C1C"/>
+    </radialGradient>
+    <radialGradient id="vegGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="40%" stop-color="#66BB6A"/>
+      <stop offset="100%" stop-color="#1B5E20"/>
+    </radialGradient>
+    <radialGradient id="fishGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="40%" stop-color="#4FC3F7"/>
+      <stop offset="100%" stop-color="#01579B"/>
+    </radialGradient>
+    <radialGradient id="bugGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="40%" stop-color="#FFF176"/>
+      <stop offset="100%" stop-color="#F57F17"/>
     </radialGradient>
 
-    <!-- Zone Backgrounds -->
-    <path id="zoneSlice" d="M0,0 L160,-160 A226,226 0 0 1 160,160 Z" /> <!-- Quarter slice base -->
+    <!-- 3. Glass Dome Reflection -->
+    <linearGradient id="glassGlare" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+      <stop offset="25%" stop-color="#FFFFFF" stop-opacity="0.4"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
 
-    <filter id="mudSplatter">
-       <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3"/>
-       <feColorMatrix type="matrix" values="0.3 0 0 0 0.4  0 0.25 0 0 0.3  0 0 0.1 0 0.2  0 0 0 1 0"/>
-       <feComposite in2="SourceGraphic" operator="in"/>
+    <!-- Cart Wheel/Tire Rubber Case (Enhanced) -->
+    <radialGradient id="tireCase" cx="50%" cy="50%" r="50%">
+      <stop offset="85%" stop-color="#424242"/>
+      <stop offset="92%" stop-color="#212121"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    
+    <filter id="dropShadow" width="150%" height="150%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="4"/>
+        <feOffset dx="2" dy="4" result="offsetblur"/>
+        <feComponentTransfer>
+            <feFuncA type="linear" slope="0.5"/>
+        </feComponentTransfer>
+        <feMerge> 
+            <feMergeNode/>
+            <feMergeNode in="SourceGraphic"/> 
+        </feMerge>
     </filter>
   </defs>
 
-  <!-- Background Shadow -->
-  <circle cx="260" cy="264" r="210" fill="#000" opacity="0.3"/>
+  <!-- Ground Shadow -->
+  <circle cx="264" cy="270" r="215" fill="#000" opacity="0.4" filter="url(#dropShadow)"/>
 
   <g transform="translate(256, 256)">
-    <!-- Animation: Bouncing like it's hanging on a rattling cart -->
+    <!-- Animation: Rattling movement -->
     <g>
-        <animateTransform attributeName="transform" type="translate" values="0,0; 0,2; 0,0; 0,-1; 0,0" dur="0.3s" repeatCount="indefinite"/> 
-        <animateTransform attributeName="transform" type="rotate" values="-2; 2; -2" dur="1s" repeatCount="indefinite" additive="sum"/>
+        <animateTransform attributeName="transform" type="translate" values="0,0; 0,2; 0.5,0.5; -0.5,1; 0,0" dur="0.25s" repeatCount="indefinite"/> 
+        <animateTransform attributeName="transform" type="rotate" values="-1; 1; -1" dur="0.8s" repeatCount="indefinite" additive="sum"/>
 
-        <!-- Lanyard: A frayed rope -->
-        <path d="M0,-210 L0,-300" stroke="#8D6E63" stroke-width="15" stroke-dasharray="5,2"/>
-        <circle cx="0" cy="-210" r="30" fill="none" stroke="#5D4037" stroke-width="10"/>
+        <!-- Lanyard Attachment -->
+        <path d="M0,-210 L0,-280" stroke="#5D4037" stroke-width="18" stroke-linecap="round"/>
+        <path d="M0,-210 L0,-280" stroke="#8D6E63" stroke-width="14" stroke-dasharray="2,4" stroke-linecap="round"/>
+        <!-- Ring -->
+        <circle cx="0" cy="-210" r="32" fill="none" stroke="url(#chromeGrad)" stroke-width="8"/>
 
-        <!-- Case: Looks like a sturdy heavy-duty rubber bumper -->
+        <!-- 1. The Housing Case -->
+        <!-- Rubber Tire Bumper -->
         <circle cx="0" cy="0" r="210" fill="url(#tireCase)" />
-        <circle cx="0" cy="0" r="190" fill="none" stroke="#616161" stroke-width="2" stroke-dasharray="10,10"/> <!-- Tread marks -->
-
-        <!-- Face Background: Beige Plastic/Enamel -->
-        <circle cx="0" cy="0" r="180" fill="#F5F5F5"/>
-
-        <!-- Zones (Diets instead of Directions) -->
-        <g opacity="0.8">
-            <!-- North: Carnivore (Red) -->
-            <path d="M0,0 L-130,-125 A180,180 0 0 1 130,-125 Z" fill="#FFCDD2"/>
-            <text x="0" y="-140" font-family="sans-serif" font-weight="bold" font-size="30" fill="#C62828" text-anchor="middle">MEAT</text>
-            <path d="M-15,-130 L-5,-110 M15,-130 L5,-110" stroke="#C62828" stroke-width="3" opacity="0.5"/> <!-- Teeth marks -->
-
-            <!-- East: Herbivore (Green) -->
-            <path d="M0,0 L130,-125 A180,180 0 0 1 130,125 Z" fill="#C8E6C9"/>
-            <text x="140" y="10" font-family="sans-serif" font-weight="bold" font-size="30" fill="#2E7D32" text-anchor="middle" transform="rotate(90 140 10)">VEG</text>
-            <path d="M100,-20 Q120,0 100,20" fill="none" stroke="#2E7D32" stroke-width="3" opacity="0.5"/>
-
-            <!-- South: Aquatic (Blue) -->
-            <path d="M0,0 L130,125 A180,180 0 0 1 -130,125 Z" fill="#B3E5FC"/>
-            <text x="0" y="150" font-family="sans-serif" font-weight="bold" font-size="30" fill="#0277BD" text-anchor="middle">FISH</text>
-            <path d="M-20,110 Q0,120 20,110" fill="none" stroke="#0277BD" stroke-width="3" opacity="0.5"/>
-            
-            <!-- West: Insect/Small (Yellow) -->
-            <path d="M0,0 L-130,125 A180,180 0 0 1 -130,-125 Z" fill="#FFF9C4"/>
-            <text x="-140" y="10" font-family="sans-serif" font-weight="bold" font-size="30" fill="#F9A825" text-anchor="middle" transform="rotate(-90 -140 10)">BUG</text>
-            <circle cx="-100" cy="0" r="3" fill="#F9A825" opacity="0.5"/>
+        <!-- Traction Patterns -->
+        <circle cx="0" cy="0" r="195" fill="none" stroke="#616161" stroke-width="3" stroke-dasharray="10,8"/>
+        
+        <!-- Chrome Bezel Ring -->
+        <circle cx="0" cy="0" r="185" fill="none" stroke="url(#chromeGrad)" stroke-width="10"/>
+        <!-- Bolts on the Bezel -->
+        <g fill="#37474F">
+            <circle cx="0" cy="-180" r="3"/>
+            <circle cx="180" cy="0" r="3"/>
+            <circle cx="0" cy="180" r="3"/>
+            <circle cx="-180" cy="0" r="3"/>
+            <circle cx="127" cy="-127" r="3"/>
+            <circle cx="127" cy="127" r="3"/>
+            <circle cx="-127" cy="127" r="3"/>
+            <circle cx="-127" cy="-127" r="3"/>
         </g>
 
-        <!-- Divider Lines (Crosshairs) -->
-        <line x1="-180" y1="0" x2="180" y2="0" stroke="#424242" stroke-width="2"/>
-        <line x1="0" y1="-180" x2="0" y2="180" stroke="#424242" stroke-width="2"/>
+        <!-- 2. The Compass Face -->
+        <circle cx="0" cy="0" r="175" fill="#FAFAFA"/> <!-- White enamel base -->
 
-        <!-- Needle: A Metal Spoon Pointer (Classic zoo feeding) -->
+        <!-- The 4 Zones (Diets) -->
         <g>
-            <!-- Needle Animation: Spins wildly then points to Carnivore (N) -->
-            <!-- The 'Hunger Finding' spin -->
+            <!-- North: MEAT (Red) -->
+            <path d="M0,0 L-123,-123 A174,174 0 0 1 123,-123 Z" fill="url(#meatGrad)"/>
+            <path d="M-120,-120 A170,170 0 0 1 120,-120" fill="none" stroke="#B71C1C" stroke-width="2" opacity="0.5"/> <!-- Inner rim definition -->
+            <text x="0" y="-135" font-family="Arial, sans-serif" font-weight="900" font-size="32" fill="#FFFFFF" text-anchor="middle" letter-spacing="2" filter="url(#dropShadow)">MEAT</text>
+
+            <!-- East: VEG (Green) -->
+            <path d="M0,0 L123,-123 A174,174 0 0 1 123,123 Z" fill="url(#vegGrad)"/>
+            <text x="140" y="10" font-family="Arial, sans-serif" font-weight="900" font-size="32" fill="#FFFFFF" text-anchor="middle" transform="rotate(90 140 10)" letter-spacing="2" filter="url(#dropShadow)">VEG</text>
+
+            <!-- South: FISH (Blue) -->
+            <path d="M0,0 L123,123 A174,174 0 0 1 -123,123 Z" fill="url(#fishGrad)"/>
+            <text x="0" y="155" font-family="Arial, sans-serif" font-weight="900" font-size="32" fill="#FFFFFF" text-anchor="middle" letter-spacing="2" filter="url(#dropShadow)">FISH</text>
+            
+            <!-- West: BUG (Yellow) -->
+            <path d="M0,0 L-123,123 A174,174 0 0 1 -123,-123 Z" fill="url(#bugGrad)"/>
+            <text x="-140" y="10" font-family="Arial, sans-serif" font-weight="900" font-size="32" fill="#3E2723" text-anchor="middle" transform="rotate(-90 -140 10)" letter-spacing="2" opacity="0.8">BUG</text>
+        </g>
+        
+        <!-- Tick Marks (Detailed measurements) -->
+        <g stroke="#263238" stroke-width="2">
+             <!-- Cardinals -->
+            <line x1="0" y1="-175" x2="0" y2="-160" stroke-width="4"/>
+            <line x1="175" y1="0" x2="160" y2="0" stroke-width="4"/>
+            <line x1="0" y1="175" x2="0" y2="160" stroke-width="4"/>
+            <line x1="-175" y1="0" x2="-160" y2="0" stroke-width="4"/>
+            <!-- Diagonals -->
+            <line x1="123" y1="-123" x2="113" y2="-113"/>
+            <line x1="123" y1="123" x2="113" y2="113"/>
+            <line x1="-123" y1="123" x2="-113" y2="113"/>
+            <line x1="-123" y1="-123" x2="-113" y2="-113"/>
+        </g>
+
+        <!-- 3. The Needle (Silver Spoon) -->
+        <g filter="url(#dropShadow)">
+            <!-- Needle Animation -->
             <animateTransform attributeName="transform" type="rotate" values="0; 720; 1080; 1440; 1460; 1430; 1440" dur="5s" repeatCount="indefinite" isAdditive="sum"/>
             
-            <g transform="rotate(-90)"> <!-- Default spoon points right, rotate to point UP (North) -->
-                <!-- Handle -->
-                <rect x="-80" y="-5" width="80" height="10" rx="2" fill="#909497"/>
-                <!-- Bowl -->
-                <ellipse cx="20" cy="0" rx="35" ry="25" fill="#B0BEC5"/>
-                <ellipse cx="20" cy="0" rx="25" ry="15" fill="#CFD8DC"/> <!-- Concave light -->
+            <g transform="rotate(-90)"> <!-- Rotated to point North by default -->
+                <!-- Handle (Counterweight) -->
+                <path d="M-80,-6 L0,-3 L0,3 L-80,6 Q-90,0 -80,-6" fill="url(#silverSpoon)" stroke="#546E7A" stroke-width="1"/>
                 
-                <!-- Center Pivot -->
-                <circle cx="0" cy="0" r="8" fill="#546E7A" stroke="#37474F" stroke-width="2"/>
+                <!-- Spoon Bowl (Pointer) -->
+                <ellipse cx="30" cy="0" rx="40" ry="28" fill="url(#silverSpoon)" stroke="#78909C" stroke-width="1"/>
+                <!-- Concave shading (The 'bowl' part) -->
+                <ellipse cx="30" cy="0" rx="30" ry="18" fill="url(#chromeGrad)" opacity="0.6"/>
+                <!-- Highlight in bowl -->
+                <ellipse cx="20" cy="-5" rx="10" ry="6" fill="#FFF" opacity="0.6" transform="rotate(-20 20 -5)"/>
+                
+                <!-- Pivot Pin -->
+                <circle cx="0" cy="0" r="10" fill="url(#chromeGrad)" stroke="#37474F" stroke-width="2"/>
+                <circle cx="0" cy="0" r="4" fill="#37474F"/>
             </g>
         </g>
 
-        <!-- Glass Cover -->
-        <circle cx="0" cy="0" r="180" fill="#FFF" opacity="0.1"/>
-        <path d="M-100,-100 L-50,-120" stroke="#FFF" stroke-width="2" opacity="0.5"/> <!-- Glare -->
-        
-        <!-- Mud Splatter (It's a dirty job) -->
-         <path d="M50,80 Q60,90 70,80 T90,90" stroke="#5D4037" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
-         <circle cx="120" cy="40" r="8" fill="#5D4037" opacity="0.8"/>
+        <!-- 4. Glossy Dome Overlay -->
+        <!-- Main Top Reflection -->
+        <path d="M-150,-50 Q0,-200 150,-50 Q0,-120 -150,-50" fill="url(#glassGlare)"/>
+        <!-- Bottom Rim Reflection -->
+        <path d="M-120,120 Q0,180 120,120" fill="none" stroke="#FFF" stroke-width="4" opacity="0.3"/>
+        <!-- Overall sheen -->
+        <circle cx="0" cy="0" r="175" fill="url(#glassGlare)" opacity="0.2"/>
+
+        <!-- Mud Splatter (Detailed) -->
+         <path d="M50,80 Q65,95 80,85 T110,105 Q100,120 80,110 T50,80" fill="#5D4037" opacity="0.8"/>
+         <circle cx="130" cy="50" r="6" fill="#5D4037" opacity="0.7"/>
+         <circle cx="60" cy="120" r="4" fill="#5D4037" opacity="0.6"/>
 
     </g>
   </g>
