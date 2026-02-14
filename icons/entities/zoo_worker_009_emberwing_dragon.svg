@@ -45,6 +45,12 @@
       <stop offset="50%" stop-color="#000" stop-opacity="0"/>
       <stop offset="100%" stop-color="#3E2723" stop-opacity="0.5"/>
     </radialGradient>
+
+    <!-- Scale Pattern -->
+    <pattern id="scalePattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+        <path d="M0,10 Q10,20 20,10" fill="none" stroke="#BF360C" stroke-width="1.5" opacity="0.3"/>
+        <path d="M10,0 Q20,10 30,0" fill="none" stroke="#BF360C" stroke-width="1.5" opacity="0.3"/>
+    </pattern>
   </defs>
 
   <!-- Background: Workshop floor shadow -->
@@ -86,6 +92,8 @@
       <g>
          <!-- Main Body Shape: Pear-like -->
          <path d="M-75,0 C-85,150 85,150 75,0 C75,-60 -75,-60 -75,0" fill="url(#bodyGrad)"/>
+         <!-- Scales Overlay -->
+         <path d="M-75,0 C-85,150 85,150 75,0 C75,-60 -75,-60 -75,0" fill="url(#scalePattern)" opacity="0.6"/>
          <!-- Body Shading -->
          <path d="M-75,0 C-85,150 85,150 75,0 C75,-60 -75,-60 -75,0" fill="url(#shadowOverlay)"/>
          <path d="M-75,0 C-85,150 85,150 75,0 C75,-60 -75,-60 -75,0" fill="url(#highlightOverlay)"/>
@@ -99,17 +107,37 @@
          <path d="M-45,40 H45 M-48,70 H48 M-45,100 H45" stroke="#FFCC80" stroke-width="2" fill="none" opacity="0.5"/>
       </g>
 
-      <!-- Feet (Simple, Stubby) -->
-      <g transform="translate(0, 140)">
-          <!-- Left Foot -->
-          <ellipse cx="-50" cy="0" rx="30" ry="20" fill="#D84315"/>
-          <ellipse cx="-50" cy="0" rx="30" ry="20" fill="url(#shadowOverlay)" opacity="0.6"/>
-          <!-- Right Foot -->
-          <ellipse cx="50" cy="0" rx="30" ry="20" fill="#D84315"/>
-           <ellipse cx="50" cy="0" rx="30" ry="20" fill="url(#shadowOverlay)" opacity="0.6"/>
-          <!-- Claws -->
-          <path d="M-60,15 L-50,20 L-40,15" stroke="#BF360C" stroke-width="3" fill="none"/>
-          <path d="M60,15 L50,20 L40,15" stroke="#BF360C" stroke-width="3" fill="none"/>
+      <!-- Feet (Redesigned with Scales & Thighs) -->
+      <g transform="translate(0, 130)">
+          <!-- Left Leg Group -->
+          <g transform="translate(-60, 0)">
+              <!-- Thigh -->
+              <ellipse cx="0" cy="-10" rx="40" ry="30" fill="url(#bodyGrad)"/>
+              <ellipse cx="0" cy="-10" rx="40" ry="30" fill="url(#scalePattern)" opacity="0.5"/>
+              <ellipse cx="0" cy="-10" rx="40" ry="30" fill="url(#shadowOverlay)" opacity="0.4"/>
+              
+              <!-- Foot -->
+              <path d="M-20,15 Q-10,25 20,15 L15,0 Q0,-5 -20,0 Z" fill="#D84315"/>
+              <!-- Claws -->
+              <path d="M-20,15 L-25,25 L-15,20" fill="#FFF" stroke="#BF360C" stroke-width="1"/>
+              <path d="M-5,18 L-5,28 L5,20" fill="#FFF" stroke="#BF360C" stroke-width="1"/>
+              <path d="M15,15 L20,25 L10,20" fill="#FFF" stroke="#BF360C" stroke-width="1"/>
+          </g>
+
+          <!-- Right Leg Group -->
+          <g transform="translate(60, 0)">
+              <!-- Thigh -->
+              <ellipse cx="0" cy="-10" rx="40" ry="30" fill="url(#bodyGrad)"/>
+              <ellipse cx="0" cy="-10" rx="40" ry="30" fill="url(#scalePattern)" opacity="0.5"/>
+              <ellipse cx="0" cy="-10" rx="40" ry="30" fill="url(#shadowOverlay)" opacity="0.4"/>
+              
+              <!-- Foot -->
+              <path d="M20,15 Q10,25 -20,15 L-15,0 Q0,-5 20,0 Z" fill="#D84315"/>
+              <!-- Claws -->
+              <path d="M20,15 L25,25 L15,20" fill="#FFF" stroke="#BF360C" stroke-width="1"/>
+              <path d="M5,18 L5,28 L-5,20" fill="#FFF" stroke="#BF360C" stroke-width="1"/>
+              <path d="M-15,15 L-20,25 L-10,20" fill="#FFF" stroke="#BF360C" stroke-width="1"/>
+          </g>
       </g>
 
       <!-- HEAD GROUP -->
