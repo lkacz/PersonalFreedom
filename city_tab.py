@@ -2565,7 +2565,8 @@ class BuildingCompleteDialog(StyledDialog):
         icon_layout.setAlignment(QtCore.Qt.AlignCenter)
         
         icon_label = QtWidgets.QLabel()
-        svg_path = CITY_ICONS_PATH / f"{self.building_id}.svg"
+        # Use level-aware icon selection so upgrade dialogs show the new tier art.
+        svg_path = _get_building_svg_path(self.building_id, self.level, animated=False)
         if svg_path.exists():
             pixmap = _get_svg_pixmap(svg_path, 96)
             if pixmap:
