@@ -6,7 +6,7 @@ A powerful Windows application that blocks distracting websites during focus ses
 
 ### 🎮 Gamification Features
 - 🦸 **ADHD Buster** - Build your hero character by collecting loot during focus sessions
-- 📖 **Story Mode** - Follow narrative adventures (Warrior, Scholar, Wanderer, Underdog)
+- 📖 **Story Mode** - Follow narrative adventures (Warrior, Scholar, Wanderer, Underdog, Scientist, Robot)
 - 🏆 **Achievement System** - Unlock achievements as you build focus habits
 - 🎯 **Daily Challenges** - Stay motivated with rotating daily goals
 - 📈 **Progress Tracking** - Level up your focus game with streaks and stats
@@ -160,11 +160,13 @@ Access the **🦸 ADHD Buster** to build your focus hero:
 - Unlock set bonuses for matching equipment
 
 ### 📖 Story Adventures
-Choose your path with 4 unique stories:
+Choose your path with 6 unique stories:
 - ⚔️ **Warrior** - The classic hero's journey
 - 📚 **Scholar** - Knowledge and wisdom
 - 🗺️ **Wanderer** - Exploration and discovery
 - 🏆 **Underdog** - Rise against the odds
+- 🧪 **Scientist** - Research, persistence, and breakthroughs
+- 🤖 **Robot** - From factory routine to self-aware freedom
 
 ### 🏆 Achievement System
 Unlock achievements as you build focus habits:

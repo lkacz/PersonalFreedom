@@ -707,7 +707,7 @@ Track these metrics to evaluate feature success:
 
 ### Story-Specific Entity Themes
 
-The Entitidex is deeply integrated with the existing story system from `STORY_DEVELOPMENT_GUIDE.md`. Each of the four current stories has its own entity pool:
+The Entitidex is deeply integrated with the existing story system from `STORY_DEVELOPMENT_GUIDE.md`. Each current story theme has its own entity pool:
 
 | Story ID | Story Title | Entity Theme | Narrative Connection |
 |----------|-------------|--------------|---------------------|
@@ -715,6 +715,8 @@ The Entitidex is deeply integrated with the existing story system from `STORY_DE
 | `scholar` | The Infinite Library | Library creatures, enchanted study tools | The living magic of the library that helps researchers |
 | `wanderer` | The Endless Road | Travel gear, journey companions | The tools and friends every wanderer collects |
 | `underdog` | Rise of the Underdog | Office items, workplace companions | Everyday objects that inspire your comeback story |
+| `scientist` | The Breakthrough Protocol | Lab companions and research artifacts | Experimental allies that reward disciplined iteration |
+| `robot` | The Assembly of Becoming | Factory companions and sentient machine allies | Companions that embody autonomy, responsibility, and freedom |
 
 ### Narrative Connections
 
