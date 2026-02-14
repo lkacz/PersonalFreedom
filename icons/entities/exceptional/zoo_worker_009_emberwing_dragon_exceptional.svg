@@ -4,23 +4,23 @@
   <!-- Style: Clean, Concrete, Chibi-esque, Premium Vector -->
 
   <defs>
-    <!-- Deep Body Gradient (Obsidian Black) -->
+    <!-- Deep Body Gradient (Pitch Black Obsidian) -->
     <linearGradient id="bodyGrad_ex" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#424242"/> <!-- Dark Gray Highlight -->
-      <stop offset="60%" stop-color="#212121"/> <!-- Charcoal -->
-      <stop offset="100%" stop-color="#000000"/> <!-- Pure Black -->
+      <stop offset="0%" stop-color="#1C1C1C"/> <!-- Very Dark Gray Highlight -->
+      <stop offset="40%" stop-color="#050505"/> <!-- Almost Black -->
+      <stop offset="100%" stop-color="#000000"/> <!-- Pitch Black -->
     </linearGradient>
 
-    <!-- Belly Gradient (Gunmetal/Silver) -->
+    <!-- Belly Gradient (Dark Polished Steel) -->
     <linearGradient id="bellyGrad_ex" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#9E9E9E"/> <!-- Silver -->
-      <stop offset="100%" stop-color="#616161"/> <!-- Gunmetal -->
+      <stop offset="0%" stop-color="#333333"/> <!-- Dark Steel -->
+      <stop offset="100%" stop-color="#0A0A0A"/> <!-- Charcoal -->
     </linearGradient>
 
     <!-- Horn Gradient (Darker Wood/Bone) -->
     <linearGradient id="hornGrad_ex" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#4E342E"/>
-      <stop offset="100%" stop-color="#212121"/>
+      <stop offset="0%" stop-color="#3E2723"/>
+      <stop offset="100%" stop-color="#000000"/>
     </linearGradient>
 
     <!-- Molten Glass Gradient (Mystical Violet/Blue Fire) -->
@@ -36,21 +36,22 @@
       <stop offset="100%" stop-color="#F57F17"/> <!-- Dark Gold -->
     </radialGradient>
 
-    <!-- Intense Shading Gradients (High Gloss) -->
-    <radialGradient id="highlightOverlay_ex" cx="30%" cy="30%" r="60%">
-      <stop offset="0%" stop-color="#FFF" stop-opacity="0.6"/> <!-- More intense shine -->
+    <!-- Intense Shading Gradients (High Gloss - Sharp Specular) -->
+    <radialGradient id="highlightOverlay_ex" cx="30%" cy="30%" r="45%" fx="30%" fy="30%">
+      <stop offset="0%" stop-color="#FFF" stop-opacity="0.9"/> <!-- Sharp Hotspot -->
+      <stop offset="30%" stop-color="#FFF" stop-opacity="0.1"/> <!-- Rapid Falloff -->
       <stop offset="100%" stop-color="#FFF" stop-opacity="0"/>
     </radialGradient>
 
     <radialGradient id="shadowOverlay_ex" cx="80%" cy="80%" r="80%">
-      <stop offset="40%" stop-color="#000" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#000" stop-opacity="0.9"/> <!-- Deep Black Shadow -->
+      <stop offset="20%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.95"/> <!-- Deepest Black Shadow -->
     </radialGradient>
 
-    <!-- Scale Pattern (Exceptional - Metallic Sheen) -->
+    <!-- Scale Pattern (Subtle Texture) -->
     <pattern id="scalePattern_ex" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
-        <path d="M0,8 Q8,16 16,8" fill="none" stroke="#607D8B" stroke-width="1.5" opacity="0.4"/>
-        <path d="M8,0 Q16,8 24,0" fill="none" stroke="#607D8B" stroke-width="1.5" opacity="0.4"/>
+        <path d="M0,8 Q8,16 16,8" fill="none" stroke="#455A64" stroke-width="1.2" opacity="0.15"/>
+        <path d="M8,0 Q16,8 24,0" fill="none" stroke="#455A64" stroke-width="1.2" opacity="0.15"/>
     </pattern>
   </defs>
 
@@ -70,23 +71,23 @@
 
       <!-- Tail (Curly/Spiked - Structural Change) -->
       <path d="M-50,100 Q-90,120 -110,60 Q-130,-10 -60,-40" stroke="#000000" stroke-width="30" fill="none" stroke-linecap="round"/>
-      <path d="M-50,100 Q-90,120 -110,60 Q-130,-10 -60,-40" stroke="#212121" stroke-width="20" fill="none" stroke-linecap="round"/>
+      <path d="M-50,100 Q-90,120 -110,60 Q-130,-10 -60,-40" stroke="#0A0A0A" stroke-width="20" fill="none" stroke-linecap="round"/>
       <!-- Tail Spikes -->
       <path d="M-110,60 L-130,50 M-90,100 L-110,100" stroke="#757575" stroke-width="6" stroke-linecap="round" fill="none"/>
 
-      <!-- Wings (Butterfly/Fairy Dragon Shape - Structural Change - VERY FAST FLUTTER) -->
-      <g stroke="#212121" stroke-width="3" stroke-linejoin="round">
+      <!-- Wings (Dark Membrane) -->
+      <g stroke="#111111" stroke-width="3" stroke-linejoin="round">
           <!-- Left Wing (Double Lobe) -->
           <g>
             <animateTransform attributeName="transform" type="rotate" values="20 0 0; -10 0 0; 20 0 0" dur="0.12s" repeatCount="indefinite"/>
-            <path d="M-50,-10 Q-120,-90 -150,-40 Q-140,-10 -110,10 Q-130,50 -90,40 Z" fill="#424242"/>
-            <path d="M-50,-10 Q-120,-90 -150,-40 Q-140,-10 -110,10 Q-130,50 -90,40 Z" fill="url(#shadowOverlay_ex)" opacity="0.3"/>
+            <path d="M-50,-10 Q-120,-90 -150,-40 Q-140,-10 -110,10 Q-130,50 -90,40 Z" fill="#1A1A1A"/>
+            <path d="M-50,-10 Q-120,-90 -150,-40 Q-140,-10 -110,10 Q-130,50 -90,40 Z" fill="url(#shadowOverlay_ex)" opacity="0.4"/>
           </g>
           <!-- Right Wing (Double Lobe) -->
           <g>
              <animateTransform attributeName="transform" type="rotate" values="-20 0 0; 10 0 0; -20 0 0" dur="0.12s" repeatCount="indefinite"/>
-             <path d="M50,-10 Q120,-90 150,-40 Q140,-10 110,10 Q130,50 90,40 Z" fill="#424242"/>
-             <path d="M50,-10 Q120,-90 150,-40 Q140,-10 110,10 Q130,50 90,40 Z" fill="url(#shadowOverlay_ex)" opacity="0.3"/>
+             <path d="M50,-10 Q120,-90 150,-40 Q140,-10 110,10 Q130,50 90,40 Z" fill="#1A1A1A"/>
+             <path d="M50,-10 Q120,-90 150,-40 Q140,-10 110,10 Q130,50 90,40 Z" fill="url(#shadowOverlay_ex)" opacity="0.4"/>
           </g>
       </g>
 
@@ -113,11 +114,11 @@
               <ellipse cx="0" cy="-5" rx="30" ry="25" fill="url(#bodyGrad_ex)"/>
               <ellipse cx="0" cy="-5" rx="30" ry="25" fill="url(#scalePattern_ex)" opacity="0.4"/>
               <!-- Foot -->
-              <path d="M-15,10 Q-5,20 15,10 L10,0 Q0,-5 -15,0 Z" fill="#212121"/>
+              <path d="M-15,10 Q-5,20 15,10 L10,0 Q0,-5 -15,0 Z" fill="#0A0A0A"/>
               <!-- Claws -->
-              <path d="M-15,10 L-20,18 L-10,14" fill="#E0E0E0"/>
-              <path d="M-5,12 L-5,20 L5,14" fill="#E0E0E0"/>
-              <path d="M10,10 L15,18 L5,14" fill="#E0E0E0"/>
+              <path d="M-15,10 L-20,18 L-10,14" fill="#757575"/>
+              <path d="M-5,12 L-5,20 L5,14" fill="#757575"/>
+              <path d="M10,10 L15,18 L5,14" fill="#757575"/>
           </g>
           <!-- Right Leg -->
           <g transform="translate(50, 0)">
@@ -125,11 +126,11 @@
               <ellipse cx="0" cy="-5" rx="30" ry="25" fill="url(#bodyGrad_ex)"/>
               <ellipse cx="0" cy="-5" rx="30" ry="25" fill="url(#scalePattern_ex)" opacity="0.4"/>
               <!-- Foot -->
-              <path d="M15,10 Q5,20 -15,10 L-10,0 Q0,-5 15,0 Z" fill="#212121"/>
+              <path d="M15,10 Q5,20 -15,10 L-10,0 Q0,-5 15,0 Z" fill="#0A0A0A"/>
                <!-- Claws -->
-              <path d="M15,10 L20,18 L10,14" fill="#E0E0E0"/>
-              <path d="M5,12 L5,20 L-5,14" fill="#E0E0E0"/>
-              <path d="M-10,10 L-15,18 L-5,14" fill="#E0E0E0"/>
+              <path d="M15,10 L20,18 L10,14" fill="#757575"/>
+              <path d="M5,12 L5,20 L-5,14" fill="#757575"/>
+              <path d="M-10,10 L-15,18 L-5,14" fill="#757575"/>
           </g>
       </g>
 
@@ -138,14 +139,14 @@
          <!-- Left Arm -->
          <path d="M-60,40 Q-50,60 -20,50" stroke="#424242" stroke-width="12" stroke-linecap="round" fill="none"/>
          <g transform="translate(-20, 50)">
-            <circle cx="0" cy="0" r="8" fill="#212121"/>
-            <path d="M-5,0 L5,5 L5,-5 Z" fill="#E0E0E0"/>
+            <circle cx="0" cy="0" r="8" fill="#0A0A0A"/>
+            <path d="M-5,0 L5,5 L5,-5 Z" fill="#757575"/>
          </g>
          <!-- Right Arm -->
          <path d="M60,40 Q50,60 20,50" stroke="#424242" stroke-width="12" stroke-linecap="round" fill="none"/>
          <g transform="translate(20, 50)">
-             <circle cx="0" cy="0" r="8" fill="#212121"/>
-             <path d="M5,0 L-5,5 L-5,-5 Z" fill="#E0E0E0"/>
+             <circle cx="0" cy="0" r="8" fill="#0A0A0A"/>
+             <path d="M5,0 L-5,5 L-5,-5 Z" fill="#757575"/>
          </g>
       </g>
 
@@ -161,7 +162,7 @@
           <rect x="-80" y="-70" width="160" height="110" rx="50" fill="url(#highlightOverlay_ex)"/>
 
           <!-- Snout (Darker) -->
-          <ellipse cx="0" cy="15" rx="45" ry="30" fill="#212121" opacity="0.8"/>
+          <ellipse cx="0" cy="15" rx="45" ry="30" fill="#0A0A0A" opacity="0.8"/>
 
           <!-- Nostrils (Breathing Fire) -->
           <circle cx="-20" cy="15" r="4" fill="#000" opacity="0.6"/>
