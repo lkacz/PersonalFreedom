@@ -4566,6 +4566,141 @@ STORY_DIARY_THEMES = {
             ]
         }
     },
+    "scientist": {
+        "theme_name": "Research Journal",
+        "verbs": {
+            "pathetic": [
+                "miscalibrated", "spilled reagent near", "mislabeled", "restarted the assay for"
+            ],
+            "modest": [
+                "stabilized readings for", "validated", "debugged", "reproduced findings on"
+            ],
+            "decent": [
+                "isolated the failure mode in", "resolved uncertainty in", "optimized", "confirmed the mechanism behind"
+            ],
+            "heroic": [
+                "saved the study from", "defended the protocol against", "reconciled conflicting data on", "proved causality for"
+            ],
+            "epic": [
+                "rewrote the accepted model of", "unified rival theories of", "decoded the structure behind"
+            ],
+            "legendary": [
+                "defined a new field through", "set the gold standard for", "turned skepticism into consensus on"
+            ],
+            "godlike": [
+                "reframed the scientific method around", "changed how civilization measures truth about"
+            ]
+        },
+        "targets": {
+            "pathetic": [
+                "a twitchy centrifuge", "a corrupted spreadsheet", "a flaky sensor array", "a mislabeled sample rack"
+            ],
+            "modest": [
+                "the baseline model", "a replication cohort", "the assay control lane", "the data-cleaning script"
+            ],
+            "decent": [
+                "a disputed biomarker", "a fragile simulation", "a contested interpretation", "the lab bottleneck"
+            ],
+            "heroic": [
+                "the replication crisis", "a hostile peer-review storm", "a catastrophic false-positive cascade"
+            ],
+            "epic": [
+                "a decades-old paradox", "an impossible confidence interval", "a theory split across domains"
+            ],
+            "legendary": [
+                "the canonical model itself", "the assumptions in every textbook", "the frontier of measurable reality"
+            ],
+            "godlike": [
+                "the architecture of discovery itself", "the boundary between evidence and belief"
+            ]
+        },
+        "locations": {
+            "pathetic": [
+                "in the prep room", "by the fume hood", "next to the broken incubator", "in the instrument queue"
+            ],
+            "modest": [
+                "in the microscopy suite", "at the sequencing station", "in the methods meeting", "at the whiteboard wall"
+            ],
+            "decent": [
+                "in the compute hall", "at the cross-validation chamber", "in the translational pipeline"
+            ],
+            "heroic": [
+                "before the ethics tribunal", "in the replication command room", "under full audit conditions"
+            ],
+            "epic": [
+                "at the edge of known methodology", "in the narrow gap between theory and evidence"
+            ],
+            "legendary": [
+                "where paradigms are rewritten", "at the frontier every discipline shares"
+            ],
+            "godlike": [
+                "at the root of the scientific method", "inside the grammar of reality"
+            ]
+        },
+        "outcomes": {
+            "pathetic": [
+                "a cleaner protocol for tomorrow", "one usable datapoint", "an awkward postmortem"
+            ],
+            "modest": [
+                "reproducible progress", "a defensible step forward", "team-wide alignment"
+            ],
+            "decent": [
+                "a publishable result", "a robust mechanism", "a model that finally holds"
+            ],
+            "heroic": [
+                "field-wide credibility restored", "a failing project rescued", "a trusted protocol"
+            ],
+            "epic": [
+                "a new paradigm taking shape", "multiple domains unified by evidence"
+            ],
+            "legendary": [
+                "textbooks quietly rewritten", "future labs adopting our standard"
+            ],
+            "godlike": [
+                "the method itself evolving", "a civilization-level shift in understanding"
+            ]
+        },
+        "flavor": {
+            "pathetic": [
+                "The control forgot it was the control.",
+                "The pipette judged me silently.",
+                "Someone renamed the folder to final_final_v12."
+            ],
+            "modest": [
+                "Replication finally stopped arguing with me.",
+                "For once, the equipment and I cooperated."
+            ],
+            "decent": [
+                "The confidence interval finally respected my sleep schedule.",
+                "The data had the nerve to be consistent."
+            ],
+            "heroic": [
+                "Even the skeptics lowered their eyebrows.",
+                "The result survived contact with reality."
+            ],
+            "epic": [
+                "Three rival labs independently whispered the same conclusion.",
+                "The old model did not survive the afternoon."
+            ],
+            "legendary": [
+                "Future citations were born in that moment.",
+                "The field just gained a new backbone."
+            ],
+            "godlike": [
+                "The boundary of knowable things moved a little.",
+                "Evidence won, loudly and permanently."
+            ]
+        },
+        "adjectives": {
+            "pathetic": ["noisy", "miscalibrated", "inconclusive", "fragile"],
+            "modest": ["repeatable", "promising", "methodical", "stable"],
+            "decent": ["robust", "well-controlled", "publishable", "convincing"],
+            "heroic": ["breakthrough-grade", "definitive", "credible", "transformative"],
+            "epic": ["paradigm-shifting", "foundational", "history-making"],
+            "legendary": ["canon-defining", "legacy-building", "epochal"],
+            "godlike": ["method-redefining", "civilization-level", "universally consequential"]
+        }
+    },
     "robot": {
         "theme_name": "Robot Awakening Log",
         "verbs": {
@@ -5591,6 +5726,9 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
     elif story_id == "underdog":
         # Underdog: Office struggle narrative with adjective describing the situation
         story = f"Today I {verb} {target} {location}. It was {adjective}. It ended in {outcome}."
+    elif story_id == "scientist":
+        # Scientist: research narrative with adjective describing the experiment
+        story = f"Today I {verb} {target} {location}. The experiment was {adjective}. It ended in {outcome}."
     elif story_id == "robot":
         # Robot: Industrial awakening narrative with adjective describing the operation
         story = f"Today I {verb} {target} {location}. The operation was {adjective}. It ended in {outcome}."
@@ -5632,6 +5770,12 @@ def generate_diary_entry(power: int, session_minutes: int = 25, equipped_items: 
                     f"My {item_name} gave me the edge I needed.",
                     f"Couldn't have crushed it without my {item_name}.",
                     f"The {item_name} was clutch in that moment.",
+                ]
+            elif story_id == "scientist":
+                item_templates = [
+                    f"My {item_name} tightened the protocol right when variance spiked.",
+                    f"The {item_name} turned noisy data into something defensible.",
+                    f"I trusted {item_name} as the final control, and it held.",
                 ]
             elif story_id == "robot":
                 item_templates = [
@@ -20331,8 +20475,8 @@ def get_saved_encounters(adhd_buster: dict) -> list:
         "scientist": "đź”¬ Scientist",
         "robot": "đź¤– Robot",
         "space_pirate": "đźŹ€ Space Pirate",
-        "thief": "Thief",
-        "zoo_worker": "Zoo Worker",
+        "thief": "🕵️ Thief",
+        "zoo_worker": "🦁 Zoo Worker",
     }
     
     result = []
@@ -20461,24 +20605,58 @@ def get_saved_encounter_count(adhd_buster: dict) -> int:
 # =============================================================================
 
 # Entity IDs required for recalculation perks
-CHAD_ENTITY_ID = "underdog_008"  # AGI Assistant Chad - unlocks Paid Recalculate
-# Note: Exceptional variant (AGI Assistant Rad) unlocks Risky Free Recalculate
+CHAD_ENTITY_ID = "underdog_008"  # Legacy compatibility marker only.
+# Recalculate unlock providers are discovered dynamically from ENTITY_PERKS.
 
-# All entities that provide recalculate perks:
-# PAID RECALCULATE (normal variants unless noted):
-#   - warrior_009: Old War Ant General
-#   - scholar_006: Sentient Tome Magnus (normal) / Agnus (exceptional)
-#   - wanderer_001: Lucky Coin
-#   - underdog_006: Break Room Coffee Maker (normal) / Toffee Maker (exceptional)
-#   - underdog_008: AGI Assistant Chad
-#   - underdog_009: Break Room Fridge
-#
-# RISKY FREE RECALCULATE (exceptional variants unless noted):
-#   - warrior_009: Cold War Ant General (exceptional)
-#   - wanderer_001: Plucky Coin (exceptional)
-#   - wanderer_009: Hobo Rat (normal) / Robo Rat (exceptional)
-#   - underdog_008: AGI Assistant Rad (exceptional)
-#   - underdog_009: Steak Room Fridge (exceptional)
+
+def get_recalculate_provider_names(risky: bool = False, include_ids: bool = False) -> list:
+    """
+    Get display names for all entities that can unlock recalculation perks.
+
+    This scans ENTITY_PERKS dynamically so newly added story themes
+    auto-appear without hardcoded updates.
+
+    Args:
+        risky: True for RECALC_RISKY providers, False for RECALC_PAID
+        include_ids: Include entity IDs in the returned labels
+
+    Returns:
+        Ordered list of provider labels
+    """
+    from entitidex import get_entity_by_id
+    from entitidex.entity_perks import ENTITY_PERKS, PerkType
+
+    target_perk = PerkType.RECALC_RISKY if risky else PerkType.RECALC_PAID
+    names = []
+    seen = set()
+
+    for entity_id in sorted(ENTITY_PERKS.keys()):
+        entity = get_entity_by_id(entity_id)
+        if not entity:
+            continue
+
+        for perk in ENTITY_PERKS.get(entity_id, []):
+            if perk.perk_type != target_perk:
+                continue
+
+            if perk.normal_value > 0:
+                normal_label = f"{entity.name} ({entity_id})" if include_ids else entity.name
+                if normal_label not in seen:
+                    names.append(normal_label)
+                    seen.add(normal_label)
+
+            if perk.exceptional_value > 0:
+                exceptional_name = entity.exceptional_name or entity.name
+                if include_ids:
+                    exceptional_label = f"{exceptional_name} ✨ ({entity_id} exceptional)"
+                else:
+                    exceptional_label = exceptional_name
+                if exceptional_label not in seen:
+                    names.append(exceptional_label)
+                    seen.add(exceptional_label)
+            break
+
+    return names
 
 # ============================================================================
 # CHAD & RAD NARRATIVE POOLS - Rotating daily quotes for entertainment
@@ -20716,15 +20894,7 @@ RISKY_RECALC_SUCCESS_RATE = 0.80  # 80% chance the recalc roll succeeds
 def has_paid_recalculate_perk(adhd_buster: dict) -> bool:
     """
     Check if user has unlocked any Paid Recalculate perk.
-    
-    Entities that provide this:
-    - AGI Assistant Chad (underdog_008) - normal variant
-    - Sentient Tome Magnus/Agnus (scholar_006) - both variants
-    - Break Room Coffee Maker (underdog_006) - both variants
-    - Break Room Fridge (underdog_009) - normal variant
-    - Lucky Coin (wanderer_001) - normal variant
-    - Old War Ant General (warrior_009) - normal variant
-    
+
     Returns:
         True if any entity with RECALC_PAID perk (value > 0) is collected
     """
@@ -20745,14 +20915,7 @@ def has_paid_recalculate_perk(adhd_buster: dict) -> bool:
 def has_risky_recalculate_perk(adhd_buster: dict) -> bool:
     """
     Check if user has unlocked any Risky Free Recalculate perk.
-    
-    Entities that provide this:
-    - AGI Assistant Rad (underdog_008) - exceptional variant
-    - Hobo Rat / Robo Rat (wanderer_009) - both variants
-    - Steak Room Fridge (underdog_009) - exceptional variant
-    - Plucky Coin (wanderer_001) - exceptional variant
-    - Cold War Ant General (warrior_009) - exceptional variant
-    
+
     Returns:
         True if any entity with RECALC_RISKY perk (value > 0) is collected
     """
@@ -21024,6 +21187,154 @@ RECALC_ENTITY_NARRATIVES = {
         ),
     },
 }
+
+# Theme extension providers (kept in update() to avoid editing the legacy block above)
+RECALC_ENTITY_NARRATIVES.update({
+    # Audit Ghost Ledger / Audit Ghost Ledger Unredacted
+    "space_pirate_007": {
+        "icon_normal": "📓",
+        "icon_exceptional": "🧾",
+        "quote_paid": "\"Numbers remember what empires erase.\" - Ledger",
+        "quote_risky": "\"Unredacted truth has turbulence.\" - Ledger Unredacted",
+        "tooltip_paid": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 📓\n\n"
+            "*pages flicker*\n\"I can reconcile this probability\n"
+            "  against the missing wages log.\"\n\n"
+            "💡 Receipts-based recalculation."
+        ),
+        "tooltip_risky": (
+            "🎲 FREE RISKY RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🧾\n\n"
+            "*unredacted chain unfolds*\n"
+            "\"Truth route found. Stability: 80%.\"\n\n"
+            "🌌 80% PROVEN PATH: Better odds!\n"
+            "⚠️ 20% REDACTION STATIC: Original odds remain"
+        ),
+    },
+    # Pocket Gravity Button / Pocket Gravity Button Omega
+    "space_pirate_009": {
+        "icon_normal": "🧷",
+        "icon_exceptional": "🌠",
+        "quote_paid": "\"Tiny button, massive correction.\" - Gravity Button",
+        "quote_risky": "\"Omega lock engaged. Hold steady.\" - Button Omega",
+        "tooltip_paid": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🧷\n\n"
+            "*subtle pressure wave*\n\"I can pin this outcome\n"
+            "  to a better orbit.\"\n\n"
+            "💡 Small interface, huge leverage."
+        ),
+        "tooltip_risky": (
+            "🎲 FREE RISKY RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🌠\n\n"
+            "*ethical limiter pings*\n"
+            "\"Omega override: 80% stable lane.\"\n\n"
+            "🌌 80% ORBIT LOCK: Better odds!\n"
+            "⚠️ 20% DRIFT: Original odds remain"
+        ),
+    },
+    # Safe Cracker Stethoscope / Harmonic Resonator
+    "thief_007": {
+        "icon_normal": "🩺",
+        "icon_exceptional": "🎛️",
+        "quote_paid": "\"Listen before you strike.\" - Stethoscope",
+        "quote_risky": "\"Harmonics are clean... mostly.\" - Resonator",
+        "tooltip_paid": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🩺\n\n"
+            "*steady tap sequence*\n\"Tumbler state confirmed.\n"
+            "  Recomputing legally.\"\n\n"
+            "💡 Precision unlock, no guesswork."
+        ),
+        "tooltip_risky": (
+            "🎲 FREE RISKY RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🎛️\n\n"
+            "*frequency sweep hums*\n"
+            "\"Signal fit: 80% confidence.\"\n\n"
+            "🌌 80% CLEAN RESONANCE: Better odds!\n"
+            "⚠️ 20% NOISE FLOOR: Original odds remain"
+        ),
+    },
+    # Flashlight Beam / UV Evidence Scanner
+    "thief_009": {
+        "icon_normal": "🔦",
+        "icon_exceptional": "🧪",
+        "quote_paid": "\"Light is the final witness.\" - Flashlight Beam",
+        "quote_risky": "\"UV pass may expose a better path.\" - UV Scanner",
+        "tooltip_paid": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🔦\n\n"
+            "*beam narrows*\n\"Hidden traces found.\n"
+            "  Recompute with evidence.\"\n\n"
+            "💡 Forensic recalculation pass."
+        ),
+        "tooltip_risky": (
+            "🎲 FREE RISKY RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🧪\n\n"
+            "*UV lattice scans*\n"
+            "\"Evidence lock: 80% confidence.\"\n\n"
+            "🌌 80% VERIFIED TRACE: Better odds!\n"
+            "⚠️ 20% OVEREXPOSURE: Original odds remain"
+        ),
+    },
+    # Old Scalebook Oracle / Old Scalebook Oracle Unbound
+    "zoo_worker_007": {
+        "icon_normal": "📘",
+        "icon_exceptional": "📖",
+        "quote_paid": "\"Wisdom is audited memory.\" - Scalebook Oracle",
+        "quote_risky": "\"Unbound pages recalculate fate.\" - Oracle Unbound",
+        "tooltip_paid": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 📘\n\n"
+            "*ash-scented page turns*\n\"History suggests a stronger\n"
+            "  probability branch.\"\n\n"
+            "💡 Ledger-backed recalculation."
+        ),
+        "tooltip_risky": (
+            "🎲 FREE RISKY RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 📖\n\n"
+            "*living annotations glow*\n"
+            "\"Temporal certainty: 80%.\"\n\n"
+            "🌌 80% ORACLE PATH: Better odds!\n"
+            "⚠️ 20% ASH DRIFT: Original odds remain"
+        ),
+    },
+    # Emberwing of First Dawn / Emberwing Eternal Dawn
+    "zoo_worker_009": {
+        "icon_normal": "🐉",
+        "icon_exceptional": "🕰️",
+        "quote_paid": "\"Power should leave with grace.\" - Emberwing",
+        "quote_risky": "\"Timeflight tolerates brave recalculation.\" - Eternal Dawn",
+        "tooltip_paid": (
+            "💰 PAID RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🐉\n\n"
+            "*calm wingbeat*\n\"I have seen this branch before.\n"
+            "  You can do better.\"\n\n"
+            "💡 Ancient witness, measured correction."
+        ),
+        "tooltip_risky": (
+            "🎲 FREE RISKY RECALCULATE\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Granted by: {name} 🕰️\n\n"
+            "*timeline curls briefly*\n"
+            "\"Timeflight window: 80% stable.\"\n\n"
+            "🌌 80% DAWN ARC: Better odds!\n"
+            "⚠️ 20% ECHO LOOP: Original odds remain"
+        ),
+    },
+})
 
 
 def _get_recalc_icon(entity_id: str, is_exceptional: bool) -> str:
@@ -21337,18 +21648,15 @@ def open_saved_encounter_with_recalculate(
     
     # Handle recalculation payment
     if recalculate:
-        # Check if user has the perk (Chad normal variant)
+        # Check if user has any entity with paid recalculation perk.
         if not has_paid_recalculate_perk(adhd_buster):
+            paid_unlocks = get_recalculate_provider_names(risky=False, include_ids=True)
+            unlock_lines = "\n".join(f"• {name}" for name in paid_unlocks) if paid_unlocks else "• Any entity with Paid Recalculate"
             return {
                 "success": False,
                 "message": (
-                    "đź’° Collect any of these to unlock Paid Recalculate:\n"
-                    "â€˘ Old War Ant General (warrior_009)\n"
-                    "â€˘ Sentient Tome Magnus/Agnus (scholar_006)\n"
-                    "â€˘ Lucky Coin (wanderer_001)\n"
-                    "â€˘ Break Room Coffee/Toffee Maker (underdog_006)\n"
-                    "â€˘ AGI Assistant Chad (underdog_008)\n"
-                    "â€˘ Break Room Fridge (underdog_009)"
+                    "💰 Collect any of these to unlock Paid Recalculate:\n"
+                    f"{unlock_lines}"
                 ),
                 "requires_entity": CHAD_ENTITY_ID,
                 "requires_exceptional": False,
@@ -21495,17 +21803,15 @@ def open_saved_encounter_risky_recalculate(
     from entitidex import get_entity_by_id, calculate_join_probability
     from entitidex.catch_mechanics import apply_pity_bonus
     
-    # Check if user has the perk (any entity with RECALC_RISKY)
+    # Check if user has any entity with RECALC_RISKY.
     if not has_risky_recalculate_perk(adhd_buster):
+        risky_unlocks = get_recalculate_provider_names(risky=True, include_ids=True)
+        unlock_lines = "\n".join(f"• {name}" for name in risky_unlocks) if risky_unlocks else "• Any entity with Free Risky Recalculate"
         return {
             "success": False,
             "message": (
-                "đźŽ˛ Collect any of these to unlock Free Risky Recalculate:\n"
-                "â€˘ Cold War Ant General âś¨ (warrior_009 exceptional)\n"
-                "â€˘ Plucky Coin âś¨ (wanderer_001 exceptional)\n"
-                "â€˘ Hobo Rat / Robo Rat âś¨ (wanderer_009 both)\n"
-                "â€˘ AGI Assistant Rad âś¨ (underdog_008 exceptional)\n"
-                "â€˘ Steak Room Fridge âś¨ (underdog_009 exceptional)"
+                "🎲 Collect any of these to unlock Free Risky Recalculate:\n"
+                f"{unlock_lines}"
             ),
             "requires_entity": CHAD_ENTITY_ID,
             "requires_exceptional": True,
@@ -21715,4 +22021,5 @@ def finalize_risky_recalculate(
         "risky_recalc_succeeded": recalc_succeeded,
         "remaining_saved": manager.progress.get_saved_encounter_count(),
     }
+
 

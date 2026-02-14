@@ -3140,7 +3140,7 @@ class EntitidexTab(QtWidgets.QWidget):
     
     def _create_saved_encounter_card(self, item: dict, parent_dialog: QtWidgets.QDialog) -> QtWidgets.QWidget:
         """Create a card widget for a saved encounter."""
-        from gamification import open_saved_encounter
+        from gamification import open_saved_encounter, get_recalculate_provider_names
         from entity_drop_dialog import show_entity_encounter
         
         entity = item["entity"]
@@ -3246,10 +3246,26 @@ class EntitidexTab(QtWidgets.QWidget):
                     options.append(f"🎲 <b>{risky_provider_name}</b> → {potential_pct}%{story_calc_note} (free, {risky_rate} success)")
                 recalc_info = f"<br><span style='color: #4CAF50;'>💡 +{improvement}% possible: {' | '.join(options)}</span>"
             else:
-                # Show locked hint - mention example entities that provide recalculate perks
+                # Show locked hint using dynamically discovered recalculate providers
+                provider_names = []
+                try:
+                    provider_names = get_recalculate_provider_names(risky=False, include_ids=False)
+                    provider_names.extend(get_recalculate_provider_names(risky=True, include_ids=False))
+                    provider_names = list(dict.fromkeys(provider_names))  # stable dedupe
+                except Exception:
+                    provider_names = []
+
+                if provider_names:
+                    preview = ", ".join(provider_names[:6])
+                    remaining = len(provider_names) - 6
+                    if remaining > 0:
+                        preview += f", +{remaining} more"
+                else:
+                    preview = "any entity with recalculation perks"
+
                 recalc_info = (
                     f"<br><span style='color: #888;'>🔒 +{improvement}% possible{story_calc_note} – collect recalculate perks from: "
-                    f"Old War Ant General, Sentient Tome, Lucky Coin, Coffee Maker, Chad, or Fridge</span>"
+                    f"{preview}</span>"
                 )
         elif potential_pct == chance_pct and (has_paid or has_risky):
             # Same probability - no benefit to recalculate
