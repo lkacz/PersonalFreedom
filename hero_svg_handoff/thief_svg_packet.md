@@ -1,0 +1,465 @@
+# thief Hero SVG Packet
+
+## Theme Snapshot
+- story_id: `thief`
+- title: The Badge and the Shadow
+- style intent: Redeemed infiltrator to civic guardian. Covert lines with lawful insignia.
+- hero base direction: Lean pursuit silhouette, coat profile, disciplined tactical stance.
+- motif keywords: badge geometry, evidence lines, signal lights, restraint hardware
+- palette anchors: #223046, #3d5572, #6b7f95, #f87171, #d4dce6
+
+## Mandatory Output Files
+Generate all files below.
+- `icons/heroes/thief/hero_base.svg`
+- `icons/heroes/thief/gear/cloak/cloak_common.svg`
+- `icons/heroes/thief/gear/cloak/cloak_uncommon.svg`
+- `icons/heroes/thief/gear/cloak/cloak_rare.svg`
+- `icons/heroes/thief/gear/cloak/cloak_epic.svg`
+- `icons/heroes/thief/gear/cloak/cloak_legendary.svg`
+- `icons/heroes/thief/gear/cloak/cloak_celestial.svg`
+- `icons/heroes/thief/gear/chestplate/chestplate_common.svg`
+- `icons/heroes/thief/gear/chestplate/chestplate_uncommon.svg`
+- `icons/heroes/thief/gear/chestplate/chestplate_rare.svg`
+- `icons/heroes/thief/gear/chestplate/chestplate_epic.svg`
+- `icons/heroes/thief/gear/chestplate/chestplate_legendary.svg`
+- `icons/heroes/thief/gear/chestplate/chestplate_celestial.svg`
+- `icons/heroes/thief/gear/boots/boots_common.svg`
+- `icons/heroes/thief/gear/boots/boots_uncommon.svg`
+- `icons/heroes/thief/gear/boots/boots_rare.svg`
+- `icons/heroes/thief/gear/boots/boots_epic.svg`
+- `icons/heroes/thief/gear/boots/boots_legendary.svg`
+- `icons/heroes/thief/gear/boots/boots_celestial.svg`
+- `icons/heroes/thief/gear/gauntlets/gauntlets_common.svg`
+- `icons/heroes/thief/gear/gauntlets/gauntlets_uncommon.svg`
+- `icons/heroes/thief/gear/gauntlets/gauntlets_rare.svg`
+- `icons/heroes/thief/gear/gauntlets/gauntlets_epic.svg`
+- `icons/heroes/thief/gear/gauntlets/gauntlets_legendary.svg`
+- `icons/heroes/thief/gear/gauntlets/gauntlets_celestial.svg`
+- `icons/heroes/thief/gear/amulet/amulet_common.svg`
+- `icons/heroes/thief/gear/amulet/amulet_uncommon.svg`
+- `icons/heroes/thief/gear/amulet/amulet_rare.svg`
+- `icons/heroes/thief/gear/amulet/amulet_epic.svg`
+- `icons/heroes/thief/gear/amulet/amulet_legendary.svg`
+- `icons/heroes/thief/gear/amulet/amulet_celestial.svg`
+- `icons/heroes/thief/gear/helmet/helmet_common.svg`
+- `icons/heroes/thief/gear/helmet/helmet_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/helmet_rare.svg`
+- `icons/heroes/thief/gear/helmet/helmet_epic.svg`
+- `icons/heroes/thief/gear/helmet/helmet_legendary.svg`
+- `icons/heroes/thief/gear/helmet/helmet_celestial.svg`
+- `icons/heroes/thief/gear/shield/shield_common.svg`
+- `icons/heroes/thief/gear/shield/shield_uncommon.svg`
+- `icons/heroes/thief/gear/shield/shield_rare.svg`
+- `icons/heroes/thief/gear/shield/shield_epic.svg`
+- `icons/heroes/thief/gear/shield/shield_legendary.svg`
+- `icons/heroes/thief/gear/shield/shield_celestial.svg`
+- `icons/heroes/thief/gear/weapon/weapon_common.svg`
+- `icons/heroes/thief/gear/weapon/weapon_uncommon.svg`
+- `icons/heroes/thief/gear/weapon/weapon_rare.svg`
+- `icons/heroes/thief/gear/weapon/weapon_epic.svg`
+- `icons/heroes/thief/gear/weapon/weapon_legendary.svg`
+- `icons/heroes/thief/gear/weapon/weapon_celestial.svg`
+- `icons/heroes/thief/fx/tier_epic.svg`
+- `icons/heroes/thief/fx/tier_legendary.svg`
+- `icons/heroes/thief/fx/tier_celestial.svg`
+
+## Preferred Item-Type Output Files
+Generate these for full visual variety. If constrained, prioritize Helmet, Chestplate, Weapon, Shield.
+- `icons/heroes/thief/gear/helmet/watch_cap_common.svg`
+- `icons/heroes/thief/gear/helmet/watch_cap_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/watch_cap_rare.svg`
+- `icons/heroes/thief/gear/helmet/watch_cap_epic.svg`
+- `icons/heroes/thief/gear/helmet/watch_cap_legendary.svg`
+- `icons/heroes/thief/gear/helmet/watch_cap_celestial.svg`
+- `icons/heroes/thief/gear/helmet/patrol_cap_common.svg`
+- `icons/heroes/thief/gear/helmet/patrol_cap_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/patrol_cap_rare.svg`
+- `icons/heroes/thief/gear/helmet/patrol_cap_epic.svg`
+- `icons/heroes/thief/gear/helmet/patrol_cap_legendary.svg`
+- `icons/heroes/thief/gear/helmet/patrol_cap_celestial.svg`
+- `icons/heroes/thief/gear/helmet/undercover_hood_common.svg`
+- `icons/heroes/thief/gear/helmet/undercover_hood_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/undercover_hood_rare.svg`
+- `icons/heroes/thief/gear/helmet/undercover_hood_epic.svg`
+- `icons/heroes/thief/gear/helmet/undercover_hood_legendary.svg`
+- `icons/heroes/thief/gear/helmet/undercover_hood_celestial.svg`
+- `icons/heroes/thief/gear/helmet/night_visor_common.svg`
+- `icons/heroes/thief/gear/helmet/night_visor_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/night_visor_rare.svg`
+- `icons/heroes/thief/gear/helmet/night_visor_epic.svg`
+- `icons/heroes/thief/gear/helmet/night_visor_legendary.svg`
+- `icons/heroes/thief/gear/helmet/night_visor_celestial.svg`
+- `icons/heroes/thief/gear/helmet/signal_cap_common.svg`
+- `icons/heroes/thief/gear/helmet/signal_cap_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/signal_cap_rare.svg`
+- `icons/heroes/thief/gear/helmet/signal_cap_epic.svg`
+- `icons/heroes/thief/gear/helmet/signal_cap_legendary.svg`
+- `icons/heroes/thief/gear/helmet/signal_cap_celestial.svg`
+- `icons/heroes/thief/gear/helmet/inspector_hat_common.svg`
+- `icons/heroes/thief/gear/helmet/inspector_hat_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/inspector_hat_rare.svg`
+- `icons/heroes/thief/gear/helmet/inspector_hat_epic.svg`
+- `icons/heroes/thief/gear/helmet/inspector_hat_legendary.svg`
+- `icons/heroes/thief/gear/helmet/inspector_hat_celestial.svg`
+- `icons/heroes/thief/gear/chestplate/padded_vest_common.svg`
+- `icons/heroes/thief/gear/chestplate/padded_vest_uncommon.svg`
+- `icons/heroes/thief/gear/chestplate/padded_vest_rare.svg`
+- `icons/heroes/thief/gear/chestplate/padded_vest_epic.svg`
+- `icons/heroes/thief/gear/chestplate/padded_vest_legendary.svg`
+- `icons/heroes/thief/gear/chestplate/padded_vest_celestial.svg`
+- `icons/heroes/thief/gear/chestplate/patrol_vest_common.svg`
+- `icons/heroes/thief/gear/chestplate/patrol_vest_uncommon.svg`
+- `icons/heroes/thief/gear/chestplate/patrol_vest_rare.svg`
+- `icons/heroes/thief/gear/chestplate/patrol_vest_epic.svg`
+- `icons/heroes/thief/gear/chestplate/patrol_vest_legendary.svg`
+- `icons/heroes/thief/gear/chestplate/patrol_vest_celestial.svg`
+- `icons/heroes/thief/gear/chestplate/street_armor_common.svg`
+- `icons/heroes/thief/gear/chestplate/street_armor_uncommon.svg`
+- `icons/heroes/thief/gear/chestplate/street_armor_rare.svg`
+- `icons/heroes/thief/gear/chestplate/street_armor_epic.svg`
+- `icons/heroes/thief/gear/chestplate/street_armor_legendary.svg`
+- `icons/heroes/thief/gear/chestplate/street_armor_celestial.svg`
+- `icons/heroes/thief/gear/chestplate/evidence_rig_common.svg`
+- `icons/heroes/thief/gear/chestplate/evidence_rig_uncommon.svg`
+- `icons/heroes/thief/gear/chestplate/evidence_rig_rare.svg`
+- `icons/heroes/thief/gear/chestplate/evidence_rig_epic.svg`
+- `icons/heroes/thief/gear/chestplate/evidence_rig_legendary.svg`
+- `icons/heroes/thief/gear/chestplate/evidence_rig_celestial.svg`
+- `icons/heroes/thief/gear/chestplate/duty_harness_common.svg`
+- `icons/heroes/thief/gear/chestplate/duty_harness_uncommon.svg`
+- `icons/heroes/thief/gear/chestplate/duty_harness_rare.svg`
+- `icons/heroes/thief/gear/chestplate/duty_harness_epic.svg`
+- `icons/heroes/thief/gear/chestplate/duty_harness_legendary.svg`
+- `icons/heroes/thief/gear/chestplate/duty_harness_celestial.svg`
+- `icons/heroes/thief/gear/chestplate/command_vest_common.svg`
+- `icons/heroes/thief/gear/chestplate/command_vest_uncommon.svg`
+- `icons/heroes/thief/gear/chestplate/command_vest_rare.svg`
+- `icons/heroes/thief/gear/chestplate/command_vest_epic.svg`
+- `icons/heroes/thief/gear/chestplate/command_vest_legendary.svg`
+- `icons/heroes/thief/gear/chestplate/command_vest_celestial.svg`
+- `icons/heroes/thief/gear/gauntlets/grip_gloves_common.svg`
+- `icons/heroes/thief/gear/gauntlets/grip_gloves_uncommon.svg`
+- `icons/heroes/thief/gear/gauntlets/grip_gloves_rare.svg`
+- `icons/heroes/thief/gear/gauntlets/grip_gloves_epic.svg`
+- `icons/heroes/thief/gear/gauntlets/grip_gloves_legendary.svg`
+- `icons/heroes/thief/gear/gauntlets/grip_gloves_celestial.svg`
+- `icons/heroes/thief/gear/gauntlets/fingerprint_gloves_common.svg`
+- `icons/heroes/thief/gear/gauntlets/fingerprint_gloves_uncommon.svg`
+- `icons/heroes/thief/gear/gauntlets/fingerprint_gloves_rare.svg`
+- `icons/heroes/thief/gear/gauntlets/fingerprint_gloves_epic.svg`
+- `icons/heroes/thief/gear/gauntlets/fingerprint_gloves_legendary.svg`
+- `icons/heroes/thief/gear/gauntlets/fingerprint_gloves_celestial.svg`
+- `icons/heroes/thief/gear/gauntlets/restraint_gloves_common.svg`
+- `icons/heroes/thief/gear/gauntlets/restraint_gloves_uncommon.svg`
+- `icons/heroes/thief/gear/gauntlets/restraint_gloves_rare.svg`
+- `icons/heroes/thief/gear/gauntlets/restraint_gloves_epic.svg`
+- `icons/heroes/thief/gear/gauntlets/restraint_gloves_legendary.svg`
+- `icons/heroes/thief/gear/gauntlets/restraint_gloves_celestial.svg`
+- `icons/heroes/thief/gear/gauntlets/rapid_cuff_mitts_common.svg`
+- `icons/heroes/thief/gear/gauntlets/rapid_cuff_mitts_uncommon.svg`
+- `icons/heroes/thief/gear/gauntlets/rapid_cuff_mitts_rare.svg`
+- `icons/heroes/thief/gear/gauntlets/rapid_cuff_mitts_epic.svg`
+- `icons/heroes/thief/gear/gauntlets/rapid_cuff_mitts_legendary.svg`
+- `icons/heroes/thief/gear/gauntlets/rapid_cuff_mitts_celestial.svg`
+- `icons/heroes/thief/gear/gauntlets/search_gloves_common.svg`
+- `icons/heroes/thief/gear/gauntlets/search_gloves_uncommon.svg`
+- `icons/heroes/thief/gear/gauntlets/search_gloves_rare.svg`
+- `icons/heroes/thief/gear/gauntlets/search_gloves_epic.svg`
+- `icons/heroes/thief/gear/gauntlets/search_gloves_legendary.svg`
+- `icons/heroes/thief/gear/gauntlets/search_gloves_celestial.svg`
+- `icons/heroes/thief/gear/gauntlets/tactical_hands_common.svg`
+- `icons/heroes/thief/gear/gauntlets/tactical_hands_uncommon.svg`
+- `icons/heroes/thief/gear/gauntlets/tactical_hands_rare.svg`
+- `icons/heroes/thief/gear/gauntlets/tactical_hands_epic.svg`
+- `icons/heroes/thief/gear/gauntlets/tactical_hands_legendary.svg`
+- `icons/heroes/thief/gear/gauntlets/tactical_hands_celestial.svg`
+- `icons/heroes/thief/gear/boots/silent_boots_common.svg`
+- `icons/heroes/thief/gear/boots/silent_boots_uncommon.svg`
+- `icons/heroes/thief/gear/boots/silent_boots_rare.svg`
+- `icons/heroes/thief/gear/boots/silent_boots_epic.svg`
+- `icons/heroes/thief/gear/boots/silent_boots_legendary.svg`
+- `icons/heroes/thief/gear/boots/silent_boots_celestial.svg`
+- `icons/heroes/thief/gear/boots/pursuit_boots_common.svg`
+- `icons/heroes/thief/gear/boots/pursuit_boots_uncommon.svg`
+- `icons/heroes/thief/gear/boots/pursuit_boots_rare.svg`
+- `icons/heroes/thief/gear/boots/pursuit_boots_epic.svg`
+- `icons/heroes/thief/gear/boots/pursuit_boots_legendary.svg`
+- `icons/heroes/thief/gear/boots/pursuit_boots_celestial.svg`
+- `icons/heroes/thief/gear/boots/rain_boots_common.svg`
+- `icons/heroes/thief/gear/boots/rain_boots_uncommon.svg`
+- `icons/heroes/thief/gear/boots/rain_boots_rare.svg`
+- `icons/heroes/thief/gear/boots/rain_boots_epic.svg`
+- `icons/heroes/thief/gear/boots/rain_boots_legendary.svg`
+- `icons/heroes/thief/gear/boots/rain_boots_celestial.svg`
+- `icons/heroes/thief/gear/boots/rooftop_treads_common.svg`
+- `icons/heroes/thief/gear/boots/rooftop_treads_uncommon.svg`
+- `icons/heroes/thief/gear/boots/rooftop_treads_rare.svg`
+- `icons/heroes/thief/gear/boots/rooftop_treads_epic.svg`
+- `icons/heroes/thief/gear/boots/rooftop_treads_legendary.svg`
+- `icons/heroes/thief/gear/boots/rooftop_treads_celestial.svg`
+- `icons/heroes/thief/gear/boots/patrol_soles_common.svg`
+- `icons/heroes/thief/gear/boots/patrol_soles_uncommon.svg`
+- `icons/heroes/thief/gear/boots/patrol_soles_rare.svg`
+- `icons/heroes/thief/gear/boots/patrol_soles_epic.svg`
+- `icons/heroes/thief/gear/boots/patrol_soles_legendary.svg`
+- `icons/heroes/thief/gear/boots/patrol_soles_celestial.svg`
+- `icons/heroes/thief/gear/boots/field_runners_common.svg`
+- `icons/heroes/thief/gear/boots/field_runners_uncommon.svg`
+- `icons/heroes/thief/gear/boots/field_runners_rare.svg`
+- `icons/heroes/thief/gear/boots/field_runners_epic.svg`
+- `icons/heroes/thief/gear/boots/field_runners_legendary.svg`
+- `icons/heroes/thief/gear/boots/field_runners_celestial.svg`
+- `icons/heroes/thief/gear/shield/riot_shield_common.svg`
+- `icons/heroes/thief/gear/shield/riot_shield_uncommon.svg`
+- `icons/heroes/thief/gear/shield/riot_shield_rare.svg`
+- `icons/heroes/thief/gear/shield/riot_shield_epic.svg`
+- `icons/heroes/thief/gear/shield/riot_shield_legendary.svg`
+- `icons/heroes/thief/gear/shield/riot_shield_celestial.svg`
+- `icons/heroes/thief/gear/shield/door_plate_common.svg`
+- `icons/heroes/thief/gear/shield/door_plate_uncommon.svg`
+- `icons/heroes/thief/gear/shield/door_plate_rare.svg`
+- `icons/heroes/thief/gear/shield/door_plate_epic.svg`
+- `icons/heroes/thief/gear/shield/door_plate_legendary.svg`
+- `icons/heroes/thief/gear/shield/door_plate_celestial.svg`
+- `icons/heroes/thief/gear/shield/witness_guard_common.svg`
+- `icons/heroes/thief/gear/shield/witness_guard_uncommon.svg`
+- `icons/heroes/thief/gear/shield/witness_guard_rare.svg`
+- `icons/heroes/thief/gear/shield/witness_guard_epic.svg`
+- `icons/heroes/thief/gear/shield/witness_guard_legendary.svg`
+- `icons/heroes/thief/gear/shield/witness_guard_celestial.svg`
+- `icons/heroes/thief/gear/shield/barrier_frame_common.svg`
+- `icons/heroes/thief/gear/shield/barrier_frame_uncommon.svg`
+- `icons/heroes/thief/gear/shield/barrier_frame_rare.svg`
+- `icons/heroes/thief/gear/shield/barrier_frame_epic.svg`
+- `icons/heroes/thief/gear/shield/barrier_frame_legendary.svg`
+- `icons/heroes/thief/gear/shield/barrier_frame_celestial.svg`
+- `icons/heroes/thief/gear/shield/warrant_guard_common.svg`
+- `icons/heroes/thief/gear/shield/warrant_guard_uncommon.svg`
+- `icons/heroes/thief/gear/shield/warrant_guard_rare.svg`
+- `icons/heroes/thief/gear/shield/warrant_guard_epic.svg`
+- `icons/heroes/thief/gear/shield/warrant_guard_legendary.svg`
+- `icons/heroes/thief/gear/shield/warrant_guard_celestial.svg`
+- `icons/heroes/thief/gear/shield/public_shield_common.svg`
+- `icons/heroes/thief/gear/shield/public_shield_uncommon.svg`
+- `icons/heroes/thief/gear/shield/public_shield_rare.svg`
+- `icons/heroes/thief/gear/shield/public_shield_epic.svg`
+- `icons/heroes/thief/gear/shield/public_shield_legendary.svg`
+- `icons/heroes/thief/gear/shield/public_shield_celestial.svg`
+- `icons/heroes/thief/gear/weapon/baton_common.svg`
+- `icons/heroes/thief/gear/weapon/baton_uncommon.svg`
+- `icons/heroes/thief/gear/weapon/baton_rare.svg`
+- `icons/heroes/thief/gear/weapon/baton_epic.svg`
+- `icons/heroes/thief/gear/weapon/baton_legendary.svg`
+- `icons/heroes/thief/gear/weapon/baton_celestial.svg`
+- `icons/heroes/thief/gear/weapon/flashlight_common.svg`
+- `icons/heroes/thief/gear/weapon/flashlight_uncommon.svg`
+- `icons/heroes/thief/gear/weapon/flashlight_rare.svg`
+- `icons/heroes/thief/gear/weapon/flashlight_epic.svg`
+- `icons/heroes/thief/gear/weapon/flashlight_legendary.svg`
+- `icons/heroes/thief/gear/weapon/flashlight_celestial.svg`
+- `icons/heroes/thief/gear/weapon/hook_line_common.svg`
+- `icons/heroes/thief/gear/weapon/hook_line_uncommon.svg`
+- `icons/heroes/thief/gear/weapon/hook_line_rare.svg`
+- `icons/heroes/thief/gear/weapon/hook_line_epic.svg`
+- `icons/heroes/thief/gear/weapon/hook_line_legendary.svg`
+- `icons/heroes/thief/gear/weapon/hook_line_celestial.svg`
+- `icons/heroes/thief/gear/weapon/signal_pistol_common.svg`
+- `icons/heroes/thief/gear/weapon/signal_pistol_uncommon.svg`
+- `icons/heroes/thief/gear/weapon/signal_pistol_rare.svg`
+- `icons/heroes/thief/gear/weapon/signal_pistol_epic.svg`
+- `icons/heroes/thief/gear/weapon/signal_pistol_legendary.svg`
+- `icons/heroes/thief/gear/weapon/signal_pistol_celestial.svg`
+- `icons/heroes/thief/gear/weapon/breaching_ram_common.svg`
+- `icons/heroes/thief/gear/weapon/breaching_ram_uncommon.svg`
+- `icons/heroes/thief/gear/weapon/breaching_ram_rare.svg`
+- `icons/heroes/thief/gear/weapon/breaching_ram_epic.svg`
+- `icons/heroes/thief/gear/weapon/breaching_ram_legendary.svg`
+- `icons/heroes/thief/gear/weapon/breaching_ram_celestial.svg`
+- `icons/heroes/thief/gear/weapon/command_staff_common.svg`
+- `icons/heroes/thief/gear/weapon/command_staff_uncommon.svg`
+- `icons/heroes/thief/gear/weapon/command_staff_rare.svg`
+- `icons/heroes/thief/gear/weapon/command_staff_epic.svg`
+- `icons/heroes/thief/gear/weapon/command_staff_legendary.svg`
+- `icons/heroes/thief/gear/weapon/command_staff_celestial.svg`
+- `icons/heroes/thief/gear/cloak/rain_coat_common.svg`
+- `icons/heroes/thief/gear/cloak/rain_coat_uncommon.svg`
+- `icons/heroes/thief/gear/cloak/rain_coat_rare.svg`
+- `icons/heroes/thief/gear/cloak/rain_coat_epic.svg`
+- `icons/heroes/thief/gear/cloak/rain_coat_legendary.svg`
+- `icons/heroes/thief/gear/cloak/rain_coat_celestial.svg`
+- `icons/heroes/thief/gear/cloak/long_coat_common.svg`
+- `icons/heroes/thief/gear/cloak/long_coat_uncommon.svg`
+- `icons/heroes/thief/gear/cloak/long_coat_rare.svg`
+- `icons/heroes/thief/gear/cloak/long_coat_epic.svg`
+- `icons/heroes/thief/gear/cloak/long_coat_legendary.svg`
+- `icons/heroes/thief/gear/cloak/long_coat_celestial.svg`
+- `icons/heroes/thief/gear/cloak/shadow_coat_common.svg`
+- `icons/heroes/thief/gear/cloak/shadow_coat_uncommon.svg`
+- `icons/heroes/thief/gear/cloak/shadow_coat_rare.svg`
+- `icons/heroes/thief/gear/cloak/shadow_coat_epic.svg`
+- `icons/heroes/thief/gear/cloak/shadow_coat_legendary.svg`
+- `icons/heroes/thief/gear/cloak/shadow_coat_celestial.svg`
+- `icons/heroes/thief/gear/cloak/detective_trench_common.svg`
+- `icons/heroes/thief/gear/cloak/detective_trench_uncommon.svg`
+- `icons/heroes/thief/gear/cloak/detective_trench_rare.svg`
+- `icons/heroes/thief/gear/cloak/detective_trench_epic.svg`
+- `icons/heroes/thief/gear/cloak/detective_trench_legendary.svg`
+- `icons/heroes/thief/gear/cloak/detective_trench_celestial.svg`
+- `icons/heroes/thief/gear/cloak/night_wrap_common.svg`
+- `icons/heroes/thief/gear/cloak/night_wrap_uncommon.svg`
+- `icons/heroes/thief/gear/cloak/night_wrap_rare.svg`
+- `icons/heroes/thief/gear/cloak/night_wrap_epic.svg`
+- `icons/heroes/thief/gear/cloak/night_wrap_legendary.svg`
+- `icons/heroes/thief/gear/cloak/night_wrap_celestial.svg`
+- `icons/heroes/thief/gear/cloak/ceremonial_mantle_common.svg`
+- `icons/heroes/thief/gear/cloak/ceremonial_mantle_uncommon.svg`
+- `icons/heroes/thief/gear/cloak/ceremonial_mantle_rare.svg`
+- `icons/heroes/thief/gear/cloak/ceremonial_mantle_epic.svg`
+- `icons/heroes/thief/gear/cloak/ceremonial_mantle_legendary.svg`
+- `icons/heroes/thief/gear/cloak/ceremonial_mantle_celestial.svg`
+- `icons/heroes/thief/gear/amulet/tin_badge_common.svg`
+- `icons/heroes/thief/gear/amulet/tin_badge_uncommon.svg`
+- `icons/heroes/thief/gear/amulet/tin_badge_rare.svg`
+- `icons/heroes/thief/gear/amulet/tin_badge_epic.svg`
+- `icons/heroes/thief/gear/amulet/tin_badge_legendary.svg`
+- `icons/heroes/thief/gear/amulet/tin_badge_celestial.svg`
+- `icons/heroes/thief/gear/amulet/duty_badge_common.svg`
+- `icons/heroes/thief/gear/amulet/duty_badge_uncommon.svg`
+- `icons/heroes/thief/gear/amulet/duty_badge_rare.svg`
+- `icons/heroes/thief/gear/amulet/duty_badge_epic.svg`
+- `icons/heroes/thief/gear/amulet/duty_badge_legendary.svg`
+- `icons/heroes/thief/gear/amulet/duty_badge_celestial.svg`
+- `icons/heroes/thief/gear/amulet/case_pin_common.svg`
+- `icons/heroes/thief/gear/amulet/case_pin_uncommon.svg`
+- `icons/heroes/thief/gear/amulet/case_pin_rare.svg`
+- `icons/heroes/thief/gear/amulet/case_pin_epic.svg`
+- `icons/heroes/thief/gear/amulet/case_pin_legendary.svg`
+- `icons/heroes/thief/gear/amulet/case_pin_celestial.svg`
+- `icons/heroes/thief/gear/amulet/merit_emblem_common.svg`
+- `icons/heroes/thief/gear/amulet/merit_emblem_uncommon.svg`
+- `icons/heroes/thief/gear/amulet/merit_emblem_rare.svg`
+- `icons/heroes/thief/gear/amulet/merit_emblem_epic.svg`
+- `icons/heroes/thief/gear/amulet/merit_emblem_legendary.svg`
+- `icons/heroes/thief/gear/amulet/merit_emblem_celestial.svg`
+- `icons/heroes/thief/gear/amulet/service_star_common.svg`
+- `icons/heroes/thief/gear/amulet/service_star_uncommon.svg`
+- `icons/heroes/thief/gear/amulet/service_star_rare.svg`
+- `icons/heroes/thief/gear/amulet/service_star_epic.svg`
+- `icons/heroes/thief/gear/amulet/service_star_legendary.svg`
+- `icons/heroes/thief/gear/amulet/service_star_celestial.svg`
+- `icons/heroes/thief/gear/amulet/city_crest_common.svg`
+- `icons/heroes/thief/gear/amulet/city_crest_uncommon.svg`
+- `icons/heroes/thief/gear/amulet/city_crest_rare.svg`
+- `icons/heroes/thief/gear/amulet/city_crest_epic.svg`
+- `icons/heroes/thief/gear/amulet/city_crest_legendary.svg`
+- `icons/heroes/thief/gear/amulet/city_crest_celestial.svg`
+
+## Slot-by-Slot Direction
+### Cloak
+- role: Motion layer. Build depth and emotional tone through shape and edge cuts.
+- animation cue: Low-frequency sway with occasional gust accent.
+- item types to represent: Rain Coat, Long Coat, Shadow Coat, Detective Trench, Night Wrap, Ceremonial Mantle
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Chestplate
+- role: Main mass-defining body layer. Largest storytelling surface after base hero.
+- animation cue: Core pulse or panel breathing loop (slow, 3-5s).
+- item types to represent: Padded Vest, Patrol Vest, Street Armor, Evidence Rig, Duty Harness, Command Vest
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Boots
+- role: Movement identity. Encode terrain, mobility mode, and weight class.
+- animation cue: Sole glow ripple or dust/spark kick pulse.
+- item types to represent: Silent Boots, Pursuit Boots, Rain Boots, Rooftop Treads, Patrol Soles, Field Runners
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Gauntlets
+- role: Functional hand/tool interface. Show dexterity and role-specific mechanics.
+- animation cue: Knuckle light wave or servo twitch loop (subtle).
+- item types to represent: Grip Gloves, Fingerprint Gloves, Restraint Gloves, Rapid-Cuff Mitts, Search Gloves, Tactical Hands
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Amulet
+- role: Narrative core token. Small but high-contrast and symbolically loaded.
+- animation cue: Heartbeat glow pulse with small orbiting mote.
+- item types to represent: Tin Badge, Duty Badge, Case Pin, Merit Emblem, Service Star, City Crest
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Helmet
+- role: Head identity piece. Prioritize profile readability and theme signature crest.
+- animation cue: Visor sweep or indicator blink every 2-4s.
+- item types to represent: Watch Cap, Patrol Cap, Undercover Hood, Night Visor, Signal Cap, Inspector Hat
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Shield
+- role: Defensive philosophy. Make silhouette distinct from chestplate/weapon.
+- animation cue: Border scan sweep or shield-ripple pulse.
+- item types to represent: Riot Shield, Door Plate, Witness Guard, Barrier Frame, Warrant Guard, Public Shield
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Weapon
+- role: Primary action silhouette. Highest visual contrast and directional energy.
+- animation cue: Edge glint sweep or energy charge loop.
+- item types to represent: Baton, Flashlight, Hook Line, Signal Pistol, Breaching Ram, Command Staff
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+
+## Global Quality Gates
+- Do not use only color swaps across rarities; geometry and silhouette must evolve.
+- Keep readability at 70x90 and 180x220.
+- Keep transparent backgrounds.
+- Ensure first frame is static-compatible (for QSvgRenderer path).
+- Keep layering aligned with hero base center and foot line.
+
+## LLM Generation Prompt
+Use this with your SVG-generation model:
+
+```text
+You are generating production SVG assets for PersonalFreedom hero rendering.
+Theme: thief
+Follow file names exactly as listed in this packet.
+Canvas/viewBox: 0 0 180 220. Transparent background.
+For each rarity tier, change silhouette/design complexity, not only colors.
+Respect slot role and animation cues in this packet.
+Output valid standalone SVG files only.
+```

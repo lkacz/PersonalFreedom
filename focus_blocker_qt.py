@@ -15,6 +15,33 @@ from datetime import datetime, timedelta
 # Module logger
 logger = logging.getLogger(__name__)
 
+DEFAULT_ITEM_RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Celestial"]
+
+
+def _get_item_rarity_order(include_unreleased: bool = False) -> List[str]:
+    """
+    Return canonical item rarity order from gamification if available.
+
+    Args:
+        include_unreleased: When False, returns currently obtainable tiers only.
+    """
+    try:
+        if include_unreleased:
+            from gamification import get_rarity_order
+            return list(get_rarity_order())
+        from gamification import get_obtainable_rarity_order
+        return list(get_obtainable_rarity_order())
+    except Exception:
+        return list(DEFAULT_ITEM_RARITY_ORDER if include_unreleased else DEFAULT_ITEM_RARITY_ORDER[:-1])
+
+
+def _get_item_rarity_index(rarity: str, order: Optional[List[str]] = None) -> int:
+    tiers = order or _get_item_rarity_order(include_unreleased=True)
+    try:
+        return tiers.index(rarity)
+    except ValueError:
+        return 0
+
 try:
     from __version__ import __version__ as APP_VERSION
 except ImportError:
@@ -43,6 +70,7 @@ if platform.system() == "Windows":
         pass
 
 from PySide6 import QtCore, QtGui, QtWidgets
+from hero_svg_system import render_hero_svg_character
 
 # pynput for reliable global hotkeys (works even when window hidden)
 try:
@@ -470,7 +498,7 @@ ProductivityAnalyzer = None
 GamificationEngine = None
 FocusGoals = None
 GAMIFICATION_AVAILABLE = False
-RARITY_POWER = {"Common": 10, "Uncommon": 25, "Rare": 50, "Epic": 100, "Legendary": 250}
+RARITY_POWER = {"Common": 10, "Uncommon": 25, "Rare": 50, "Epic": 100, "Legendary": 250, "Celestial": 500}
 ITEM_THEMES = None
 get_item_themes = None
 get_diary_power_tier = None
@@ -11513,20 +11541,17 @@ class WeightTab(QtWidgets.QWidget):
             
             # Show lottery animation for the primary item (most exciting)
             # Pick the highest rarity item as the primary (retain its source label)
-            rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+            rarity_order = _get_item_rarity_order()
             primary_source, primary_item = max(
                 items_earned,
-                key=lambda pair: rarity_order.index(pair[1].get("rarity", "Common"))
+                key=lambda pair: _get_item_rarity_index(pair[1].get("rarity", "Common"), rarity_order)
             )
             extra_items = [item for source, item in items_earned if item is not primary_item]
             
             # Build accurate odds for the displayed item
             def _fixed_weights_for_rarity(rarity: str) -> list:
-                weights = [0, 0, 0, 0, 0]
-                try:
-                    idx = rarity_order.index(rarity)
-                except ValueError:
-                    idx = 0
+                weights = [0] * len(rarity_order)
+                idx = _get_item_rarity_index(rarity, rarity_order)
                 weights[idx] = 100
                 return weights
             
@@ -11539,7 +11564,7 @@ class WeightTab(QtWidgets.QWidget):
             def _format_weights_line(weights: list) -> str:
                 if not weights:
                     return ""
-                tiers = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+                tiers = rarity_order
                 parts = [f"{t}: {w:.0f}%" for t, w in zip(tiers, weights) if w > 0]
                 return f"Odds: {', '.join(parts)}" if parts else ""
             
@@ -17690,18 +17715,21 @@ class SleepTab(QtWidgets.QWidget):
             
             # Show lottery animation for the primary item (most exciting)
             # Pick the highest rarity item as the primary
-            rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+            rarity_order = _get_item_rarity_order()
             if items_meta:
                 primary_meta = max(
                     items_meta,
-                    key=lambda entry: rarity_order.index(entry["item"].get("rarity", "Common"))
+                    key=lambda entry: _get_item_rarity_index(entry["item"].get("rarity", "Common"), rarity_order)
                 )
                 primary_item = primary_meta["item"]
                 primary_source = primary_meta.get("source", "Sleep Logged!")
                 primary_weights = primary_meta.get("weights")
                 primary_context = primary_meta.get("context")
             else:
-                primary_item = max(items_earned, key=lambda x: rarity_order.index(x.get("rarity", "Common")))
+                primary_item = max(
+                    items_earned,
+                    key=lambda x: _get_item_rarity_index(x.get("rarity", "Common"), rarity_order),
+                )
                 primary_source = "Sleep Logged!"
                 primary_weights = None
                 primary_context = None
@@ -17709,18 +17737,15 @@ class SleepTab(QtWidgets.QWidget):
             
             # If no explicit weights, use a fixed 100% weight for the rolled rarity
             if not primary_weights:
-                weights = [0, 0, 0, 0, 0]
-                try:
-                    idx = rarity_order.index(primary_item.get("rarity", "Common"))
-                except ValueError:
-                    idx = 0
+                weights = [0] * len(rarity_order)
+                idx = _get_item_rarity_index(primary_item.get("rarity", "Common"), rarity_order)
                 weights[idx] = 100
                 primary_weights = weights
 
             def _format_weights_line(weights: list) -> str:
                 if not weights:
                     return ""
-                tiers = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+                tiers = rarity_order
                 parts = [f"{t}: {w:.0f}%" for t, w in zip(tiers, weights) if w > 0]
                 return f"Odds: {', '.join(parts)}" if parts else ""
 
@@ -18628,6 +18653,19 @@ class CharacterCanvas(QtWidgets.QWidget):
         """
         painter.save()
         try:
+            # SVG-first rendering path (theme-specific hero + gear layers).
+            # If assets are missing/invalid, fall back to procedural painting.
+            try:
+                if render_hero_svg_character(
+                    painter,
+                    story_theme=self.story_theme,
+                    equipped=self.equipped,
+                    power_tier=self.tier,
+                ):
+                    return
+            except Exception as exc:
+                logger.debug("Hero SVG rendering failed, using fallback painter: %s", exc)
+
             # Reset critical painter state to prevent damage from stale settings
             painter.setOpacity(1.0)
             painter.setCompositionMode(QtGui.QPainter.CompositionMode.CompositionMode_SourceOver)
@@ -27239,13 +27277,15 @@ class ADHDBusterTab(QtWidgets.QWidget):
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
 
         # Basic sorting for initial list (Table widget handles UI sorting)
-        rarity_order = {"Common": 0, "Uncommon": 1, "Rare": 2, "Epic": 3, "Legendary": 4}
+        rarity_tiers = _get_item_rarity_order(include_unreleased=True)
+        rarity_order = {rarity: idx for idx, rarity in enumerate(rarity_tiers)}
         rarity_colors = {
             "Common": "#9e9e9e",
             "Uncommon": "#4caf50",
             "Rare": "#2196f3",
             "Epic": "#9c27b0",
-            "Legendary": "#ff9800"
+            "Legendary": "#ff9800",
+            "Celestial": "#00e5ff",
         }
         sort_key = self.sort_combo.currentData() or "newest"
         indexed = list(enumerate(inventory))
@@ -27666,16 +27706,22 @@ class ADHDBusterTab(QtWidgets.QWidget):
                 
                 rate = calculate_merge_success_rate(items, items_merge_luck=items_merge_luck, city_bonus=city_merge_bonus)
                 result_rarity = get_merge_result_rarity(items)
-                all_legendary = all(i.get("rarity") == "Legendary" for i in items)
-                if all_legendary:
-                    # Legendary-only merges act as a reroll to a new legendary item/slot.
+                max_obtainable_rarity = "Legendary"
+                try:
+                    from gamification import get_obtainable_rarity_order
+                    max_obtainable_rarity = get_obtainable_rarity_order()[-1]
+                except Exception:
+                    pass
+                all_top_tier = all(i.get("rarity") == max_obtainable_rarity for i in items)
+                if all_top_tier:
+                    # Top-tier-only merges act as a reroll to a new top-tier item/slot.
                     if items_merge_luck > 0:
                         self.merge_rate_lbl.setText(
-                            f"Legendary reroll: {rate*100:.0f}% (+{items_merge_luck}% from items) → Legendary item"
+                            f"{max_obtainable_rarity} reroll: {rate*100:.0f}% (+{items_merge_luck}% from items) → {max_obtainable_rarity} item"
                         )
                     else:
                         self.merge_rate_lbl.setText(
-                            f"Legendary reroll: {rate*100:.0f}% → Legendary item"
+                            f"{max_obtainable_rarity} reroll: {rate*100:.0f}% → {max_obtainable_rarity} item"
                         )
                 else:
                     if items_merge_luck > 0:
@@ -28578,7 +28624,7 @@ class SellItemsDialog(StyledDialog):
                     rarity_counts[rarity] = rarity_counts.get(rarity, 0) + 1
                 
                 breakdown = ["💰 Sell Breakdown:", "─" * 20]
-                for rarity in ["Legendary", "Epic", "Rare", "Uncommon", "Common"]:
+                for rarity in reversed(_get_item_rarity_order(include_unreleased=True)):
                     if rarity in rarity_counts:
                         breakdown.append(f"{rarity}: {rarity_counts[rarity]} items")
                 breakdown.append("─" * 20)
@@ -32640,7 +32686,7 @@ class DevTab(QtWidgets.QWidget):
         rarity_layout = QtWidgets.QHBoxLayout()
         rarity_layout.addWidget(QtWidgets.QLabel("Rarity:"))
         self.rarity_combo = NoScrollComboBox()
-        self.rarity_combo.addItems(["Common", "Uncommon", "Rare", "Epic", "Legendary"])
+        self.rarity_combo.addItems(_get_item_rarity_order(include_unreleased=True))
         self.rarity_combo.setCurrentText("Common")
         rarity_layout.addWidget(self.rarity_combo)
         rarity_layout.addStretch()
@@ -32648,10 +32694,17 @@ class DevTab(QtWidgets.QWidget):
         
         # Generate buttons for each rarity
         btn_layout = QtWidgets.QHBoxLayout()
-        for rarity in ["Common", "Uncommon", "Rare", "Epic", "Legendary"]:
+        rarity_colors = {
+            "Common": "#9e9e9e",
+            "Uncommon": "#4caf50",
+            "Rare": "#2196f3",
+            "Epic": "#9c27b0",
+            "Legendary": "#ff9800",
+            "Celestial": "#00e5ff",
+        }
+        for rarity in _get_item_rarity_order(include_unreleased=True):
             btn = QtWidgets.QPushButton(rarity)
-            color = {"Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3", 
-                     "Epic": "#9c27b0", "Legendary": "#ff9800"}[rarity]
+            color = rarity_colors.get(rarity, "#9e9e9e")
             btn.setStyleSheet(f"background-color: {color}; color: white; font-weight: bold; padding: 8px;")
             btn.clicked.connect(lambda checked, r=rarity: self._generate_item(r))
             btn_layout.addWidget(btn)
@@ -33399,12 +33452,17 @@ class DevTab(QtWidgets.QWidget):
             self.entity_combo.clear()
             
             # Sort entities by rarity for easier navigation
-            rarity_order = {"common": 0, "uncommon": 1, "rare": 2, "epic": 3, "legendary": 4}
-            sorted_entities = sorted(entities, key=lambda e: (rarity_order.get(e.rarity.lower(), 5), e.name))
+            rarity_tiers = [tier.lower() for tier in _get_item_rarity_order(include_unreleased=True)]
+            rarity_order = {rarity: idx for idx, rarity in enumerate(rarity_tiers)}
+            sorted_entities = sorted(
+                entities,
+                key=lambda e: (rarity_order.get(e.rarity.lower(), len(rarity_tiers)), e.name),
+            )
             
             for entity in sorted_entities:
                 rarity_icon = {"common": "⚪", "uncommon": "🟢", "rare": "🔵", 
                                "epic": "🟣", "legendary": "🟠"}.get(entity.rarity.lower(), "⚪")
+                rarity_icon = "*" if entity.rarity.lower() == "celestial" else rarity_icon
                 self.entity_combo.addItem(f"{rarity_icon} {entity.name} ({entity.id})", entity.id)
             
         except Exception as e:

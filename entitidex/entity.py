@@ -17,7 +17,7 @@ class Entity:
     id: str                     # Unique identifier (e.g., "warrior_001")
     name: str                   # Display name (e.g., "Hatchling Drake")
     power: int                  # Power level (10-2000)
-    rarity: str                 # "common", "uncommon", "rare", "epic", "legendary"
+    rarity: str                 # "common", "uncommon", "rare", "epic", "legendary", "celestial"
     lore: str                   # Flavor text / personality description
     theme_set: str              # "warrior", "scholar", "wanderer", "underdog", "scientist", "robot", "space_pirate", "thief", "zoo_worker"
     
@@ -41,6 +41,7 @@ class Entity:
             "rare": "🔵",
             "epic": "🟣",
             "legendary": "🟡",
+            "celestial": "✨",
         }.get(self.rarity, "⚪")
     
     @property

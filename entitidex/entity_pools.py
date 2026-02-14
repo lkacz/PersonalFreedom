@@ -1130,4 +1130,10 @@ RARITY_INFO = {
         "power_range": (2000, 2000),
         "slots": [9],
     },
+    "celestial": {
+        "color": "#00E5FF",      # Cyan-white
+        "emoji": "✨",
+        "power_range": (2600, 3200),
+        "slots": [10],
+    },
 }

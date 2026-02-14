@@ -21,6 +21,8 @@ try:
         RARITY_POWER,
         RARITY_ORDER,
         RARITY_UPGRADE,
+        MAX_OBTAINABLE_RARITY,
+        get_next_rarity,
         COIN_COSTS,
         MERGE_BOOST_BONUS,
         get_slot_display_name,
@@ -31,16 +33,36 @@ except ImportError:
     GAMIFICATION_AVAILABLE = False
     COIN_COSTS = {"merge_base": 50, "merge_boost": 50, "merge_tier_upgrade": 50, "merge_retry_bump": 50, "merge_claim": 100, "merge_salvage": 50}
     MERGE_BOOST_BONUS = 0.25
-    RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-    RARITY_UPGRADE = {"Common": "Uncommon", "Uncommon": "Rare", "Rare": "Epic", "Epic": "Legendary", "Legendary": "Legendary"}
+    RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Celestial"]
+    MAX_OBTAINABLE_RARITY = "Legendary"
+    RARITY_UPGRADE = {
+        "Common": "Uncommon",
+        "Uncommon": "Rare",
+        "Rare": "Epic",
+        "Epic": "Legendary",
+        "Legendary": "Legendary",
+        "Celestial": "Celestial",
+    }
     ITEM_RARITIES = {
         "Common": {"color": "#9e9e9e", "power": 10},
         "Uncommon": {"color": "#4caf50", "power": 25},
         "Rare": {"color": "#2196f3", "power": 50},
         "Epic": {"color": "#9c27b0", "power": 100},
-        "Legendary": {"color": "#ff9800", "power": 250}
+        "Legendary": {"color": "#ff9800", "power": 250},
+        "Celestial": {"color": "#00e5ff", "power": 500},
     }
-    RARITY_POWER = {"Common": 10, "Uncommon": 25, "Rare": 50, "Epic": 100, "Legendary": 250}
+    RARITY_POWER = {"Common": 10, "Uncommon": 25, "Rare": 50, "Epic": 100, "Legendary": 250, "Celestial": 500}
+    def get_next_rarity(current_rarity, max_rarity=None):
+        cap = max_rarity or MAX_OBTAINABLE_RARITY
+        try:
+            current_idx = RARITY_ORDER.index(current_rarity)
+        except ValueError:
+            current_idx = 0
+        try:
+            cap_idx = RARITY_ORDER.index(cap)
+        except ValueError:
+            cap_idx = len(RARITY_ORDER) - 1
+        return RARITY_ORDER[min(current_idx + 1, cap_idx)]
     get_slot_display_name = None
     get_selected_story = None
 
@@ -453,7 +475,8 @@ class ItemPreviewWidget(QtWidgets.QWidget):
         layout.addWidget(name_label)
         
         # Rarity stars
-        stars = min(5, max(1, list(ITEM_RARITIES.keys()).index(rarity) + 1))
+        max_stars = max(1, len(ITEM_RARITIES))
+        stars = min(max_stars, max(1, list(ITEM_RARITIES.keys()).index(rarity) + 1))
         stars_label = QtWidgets.QLabel("★" * stars)
         stars_label.setAlignment(QtCore.Qt.AlignCenter)
         stars_label.setStyleSheet(f"color: {color}; font-size: 14px;")
@@ -707,14 +730,17 @@ class ResultPreviewWidget(QtWidgets.QWidget):
             tier_note.setAlignment(QtCore.Qt.AlignCenter)
             tier_note.setStyleSheet("color: #888; font-size: 10px; font-style: italic;")
             layout.addWidget(tier_note)
-        elif getattr(self, "all_legendary", False):
-            reroll_note = QtWidgets.QLabel("Legendary reroll: result stays Legendary, slot/type may change.")
+        elif getattr(self, "all_top_tier", False):
+            reroll_note = QtWidgets.QLabel(
+                f"{MAX_OBTAINABLE_RARITY} reroll: result stays {MAX_OBTAINABLE_RARITY}, slot/type may change."
+            )
             reroll_note.setAlignment(QtCore.Qt.AlignCenter)
             reroll_note.setStyleSheet("color: #888; font-size: 10px; font-style: italic;")
             layout.addWidget(reroll_note)
         
         # Stars
-        stars = min(5, max(1, list(ITEM_RARITIES.keys()).index(self.result_rarity) + 1))
+        max_stars = max(1, len(ITEM_RARITIES))
+        stars = min(max_stars, max(1, list(ITEM_RARITIES.keys()).index(self.result_rarity) + 1))
         stars_label = QtWidgets.QLabel("★" * stars)
         stars_label.setAlignment(QtCore.Qt.AlignCenter)
         stars_label.setStyleSheet(f"color: {color}; font-size: 16px;")
@@ -776,7 +802,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         self.coin_discount = coin_discount  # Discount percentage from merged items (0-90)
         self.adhd_buster = adhd_buster or {}  # For entity perk checks (Tesla Coil, Blank Parchment)
         self.entity_perks = entity_perks or {}  # Entity perk bonuses
-        self.all_legendary = all(i.get("rarity") == "Legendary" for i in items if i)
+        self.all_top_tier = all(i.get("rarity") == MAX_OBTAINABLE_RARITY for i in items if i)
         
         # Extract entity perk bonuses (supports both old and new format)
         # New format from get_entity_merge_perk_contributors:
@@ -1339,10 +1365,10 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         warning_layout.addWidget(icon)
         
         # Warning text
-        if getattr(self, "all_legendary", False):
+        if getattr(self, "all_top_tier", False):
             warning_msg = (
-                "<b>Legendary Reroll:</b> Failure destroys all Legendary items. "
-                "Success creates a new Legendary (slot/type may change)."
+                f"<b>{MAX_OBTAINABLE_RARITY} Reroll:</b> Failure destroys all {MAX_OBTAINABLE_RARITY} items. "
+                f"Success creates a new {MAX_OBTAINABLE_RARITY} (slot/type may change)."
             )
         else:
             warning_msg = (
@@ -1744,10 +1770,10 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         
         layout.addStretch()
         
-        # Can't upgrade if already Legendary
-        if self.result_rarity == "Legendary":
+        # Can't upgrade if already top obtainable tier
+        if self.result_rarity == MAX_OBTAINABLE_RARITY:
             self.tier_upgrade_checkbox.setEnabled(False)
-            self.tier_upgrade_checkbox.setText("Already Legendary!")
+            self.tier_upgrade_checkbox.setText(f"Already {MAX_OBTAINABLE_RARITY}!")
             self.tier_upgrade_checkbox.setStyleSheet("color: #666; font-size: 14px;")
         elif self.player_coins < (self.merge_cost + self.tier_upgrade_cost):
             self.tier_upgrade_checkbox.setEnabled(False)
@@ -2019,15 +2045,15 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         result_item = self.merge_result.get("result_item", {}) if self.merge_result else {}
         rarity = result_item.get("rarity", "Common")
         
-        # Check if Push Your Luck is available (not Legendary)
-        if rarity != "Legendary":
+        # Check if Push Your Luck is available (not at top obtainable tier)
+        if rarity != MAX_OBTAINABLE_RARITY:
             choice = self._show_push_your_luck_dialog(result_item)
             if choice == "reroll":
                 # Player wants to risk it for next tier
                 self._execute_push_your_luck()
                 return  # Don't close dialog yet
         
-        # Show standard success message (either kept item or reached Legendary)
+        # Show standard success message (either kept item or reached top obtainable tier)
         self._show_final_success_message(result_item)
     
     def _show_push_your_luck_dialog(self, current_item: dict) -> str:
@@ -2042,9 +2068,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         display_slot = get_slot_display_name(slot, story_id) if get_slot_display_name and slot != "Unknown Slot" else slot
         
         # Calculate next tier and success chance
-        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-        current_idx = rarity_order.index(rarity) if rarity in rarity_order else 0
-        next_rarity = rarity_order[min(current_idx + 1, len(rarity_order) - 1)]
+        next_rarity = get_next_rarity(rarity, max_rarity=MAX_OBTAINABLE_RARITY)
         
         # Get current success rate and apply penalty multiplier for push your luck
         # Base penalty is 0.80, but Tesla Coil can modify this
@@ -2524,9 +2548,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         
         current_item = self.merge_result.get("result_item", {})
         rarity = current_item.get("rarity", "Common")
-        rarity_order = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
-        current_idx = rarity_order.index(rarity) if rarity in rarity_order else 0
-        next_rarity = rarity_order[min(current_idx + 1, len(rarity_order) - 1)]
+        next_rarity = get_next_rarity(rarity, max_rarity=MAX_OBTAINABLE_RARITY)
         
         if roll < adjusted_rate:
             # SUCCESS! Upgrade to next tier
@@ -2542,7 +2564,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             self.merge_result["result_item"] = new_item
             self.merge_result["success"] = True
             
-            # Show success and offer another re-roll if not Legendary
+            # Show success and offer another re-roll if not at top obtainable tier
             self._show_success_dialog()
         else:
             # FAILURE! But check for Blank Parchment item recovery

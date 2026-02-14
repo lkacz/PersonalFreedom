@@ -474,6 +474,44 @@ class TestDailyRewardSystem(unittest.TestCase):
         self.assertEqual(get_boosted_rarity("Rare"), "Epic")
         self.assertEqual(get_boosted_rarity("Epic"), "Legendary")
         self.assertEqual(get_boosted_rarity("Legendary"), "Legendary")  # Capped
+
+    def test_celestial_is_registered_but_not_obtainable_by_default(self) -> None:
+        """Celestial exists in full order while live acquisition remains capped."""
+        from gamification import (
+            MAX_OBTAINABLE_RARITY,
+            MAX_STANDARD_REWARD_RARITY,
+            get_next_rarity,
+            get_obtainable_rarity_order,
+            get_rarity_order,
+            get_standard_reward_rarity_order,
+        )
+
+        self.assertIn("Celestial", get_rarity_order())
+        self.assertEqual(MAX_OBTAINABLE_RARITY, "Legendary")
+        self.assertEqual(MAX_STANDARD_REWARD_RARITY, "Legendary")
+        self.assertEqual(get_obtainable_rarity_order()[-1], "Legendary")
+        self.assertEqual(get_standard_reward_rarity_order()[-1], "Legendary")
+        self.assertNotIn("Celestial", get_standard_reward_rarity_order())
+        self.assertEqual(get_next_rarity("Legendary", max_rarity=MAX_OBTAINABLE_RARITY), "Legendary")
+        self.assertEqual(get_next_rarity("Legendary"), "Celestial")
+
+    def test_generate_item_supports_forced_celestial_rarity(self) -> None:
+        """Forced generation should support Celestial metadata/power now."""
+        from gamification import generate_item
+
+        item = generate_item(rarity="Celestial")
+        self.assertEqual(item["rarity"], "Celestial")
+        self.assertEqual(item["power"], 500)
+
+    def test_generate_celestial_item_uses_special_route_metadata(self) -> None:
+        """Celestial generation should be explicitly marked as special-source."""
+        from gamification import generate_celestial_item
+
+        item = generate_celestial_item(story_id="robot", source="rift_event")
+        self.assertEqual(item["rarity"], "Celestial")
+        self.assertEqual(item["story_theme"], "robot")
+        self.assertTrue(item.get("is_special_rarity_drop"))
+        self.assertEqual(item.get("special_rarity_source"), "rift_event")
     
     def test_generate_daily_reward_item(self) -> None:
         """Test daily reward generates correct rarity tier."""

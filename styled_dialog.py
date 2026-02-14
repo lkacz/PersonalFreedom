@@ -704,10 +704,11 @@ class ItemRewardDialog(StyledDialog):
         "Uncommon": "#4caf50", 
         "Rare": "#2196f3",
         "Epic": "#9c27b0",
-        "Legendary": "#ff9800"
+        "Legendary": "#ff9800",
+        "Celestial": "#00e5ff",
     }
     
-    RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+    RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Celestial"]
     
     MOTIVATIONAL_MESSAGES = {
         "Common": ["Every item counts! 💪", "Building your arsenal!", "Nice find!"],

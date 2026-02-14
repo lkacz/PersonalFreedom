@@ -1,0 +1,465 @@
+# robot Hero SVG Packet
+
+## Theme Snapshot
+- story_id: `robot`
+- title: The Assembly of Becoming
+- style intent: Factory-origin machine becoming autonomous. Industrial planes with luminous core.
+- hero base direction: Readable mech torso, expressive optic zone, sturdy lower chassis.
+- motif keywords: servo joints, weld seams, vent lines, core rings
+- palette anchors: #263238, #4a6375, #7ea3bd, #ff8a3d, #36d6e7
+
+## Mandatory Output Files
+Generate all files below.
+- `icons/heroes/robot/hero_base.svg`
+- `icons/heroes/robot/gear/cloak/cloak_common.svg`
+- `icons/heroes/robot/gear/cloak/cloak_uncommon.svg`
+- `icons/heroes/robot/gear/cloak/cloak_rare.svg`
+- `icons/heroes/robot/gear/cloak/cloak_epic.svg`
+- `icons/heroes/robot/gear/cloak/cloak_legendary.svg`
+- `icons/heroes/robot/gear/cloak/cloak_celestial.svg`
+- `icons/heroes/robot/gear/chestplate/chestplate_common.svg`
+- `icons/heroes/robot/gear/chestplate/chestplate_uncommon.svg`
+- `icons/heroes/robot/gear/chestplate/chestplate_rare.svg`
+- `icons/heroes/robot/gear/chestplate/chestplate_epic.svg`
+- `icons/heroes/robot/gear/chestplate/chestplate_legendary.svg`
+- `icons/heroes/robot/gear/chestplate/chestplate_celestial.svg`
+- `icons/heroes/robot/gear/boots/boots_common.svg`
+- `icons/heroes/robot/gear/boots/boots_uncommon.svg`
+- `icons/heroes/robot/gear/boots/boots_rare.svg`
+- `icons/heroes/robot/gear/boots/boots_epic.svg`
+- `icons/heroes/robot/gear/boots/boots_legendary.svg`
+- `icons/heroes/robot/gear/boots/boots_celestial.svg`
+- `icons/heroes/robot/gear/gauntlets/gauntlets_common.svg`
+- `icons/heroes/robot/gear/gauntlets/gauntlets_uncommon.svg`
+- `icons/heroes/robot/gear/gauntlets/gauntlets_rare.svg`
+- `icons/heroes/robot/gear/gauntlets/gauntlets_epic.svg`
+- `icons/heroes/robot/gear/gauntlets/gauntlets_legendary.svg`
+- `icons/heroes/robot/gear/gauntlets/gauntlets_celestial.svg`
+- `icons/heroes/robot/gear/amulet/amulet_common.svg`
+- `icons/heroes/robot/gear/amulet/amulet_uncommon.svg`
+- `icons/heroes/robot/gear/amulet/amulet_rare.svg`
+- `icons/heroes/robot/gear/amulet/amulet_epic.svg`
+- `icons/heroes/robot/gear/amulet/amulet_legendary.svg`
+- `icons/heroes/robot/gear/amulet/amulet_celestial.svg`
+- `icons/heroes/robot/gear/helmet/helmet_common.svg`
+- `icons/heroes/robot/gear/helmet/helmet_uncommon.svg`
+- `icons/heroes/robot/gear/helmet/helmet_rare.svg`
+- `icons/heroes/robot/gear/helmet/helmet_epic.svg`
+- `icons/heroes/robot/gear/helmet/helmet_legendary.svg`
+- `icons/heroes/robot/gear/helmet/helmet_celestial.svg`
+- `icons/heroes/robot/gear/shield/shield_common.svg`
+- `icons/heroes/robot/gear/shield/shield_uncommon.svg`
+- `icons/heroes/robot/gear/shield/shield_rare.svg`
+- `icons/heroes/robot/gear/shield/shield_epic.svg`
+- `icons/heroes/robot/gear/shield/shield_legendary.svg`
+- `icons/heroes/robot/gear/shield/shield_celestial.svg`
+- `icons/heroes/robot/gear/weapon/weapon_common.svg`
+- `icons/heroes/robot/gear/weapon/weapon_uncommon.svg`
+- `icons/heroes/robot/gear/weapon/weapon_rare.svg`
+- `icons/heroes/robot/gear/weapon/weapon_epic.svg`
+- `icons/heroes/robot/gear/weapon/weapon_legendary.svg`
+- `icons/heroes/robot/gear/weapon/weapon_celestial.svg`
+- `icons/heroes/robot/fx/tier_epic.svg`
+- `icons/heroes/robot/fx/tier_legendary.svg`
+- `icons/heroes/robot/fx/tier_celestial.svg`
+
+## Preferred Item-Type Output Files
+Generate these for full visual variety. If constrained, prioritize Helmet, Chestplate, Weapon, Shield.
+- `icons/heroes/robot/gear/helmet/optic_visor_common.svg`
+- `icons/heroes/robot/gear/helmet/optic_visor_uncommon.svg`
+- `icons/heroes/robot/gear/helmet/optic_visor_rare.svg`
+- `icons/heroes/robot/gear/helmet/optic_visor_epic.svg`
+- `icons/heroes/robot/gear/helmet/optic_visor_legendary.svg`
+- `icons/heroes/robot/gear/helmet/optic_visor_celestial.svg`
+- `icons/heroes/robot/gear/helmet/maintenance_hood_common.svg`
+- `icons/heroes/robot/gear/helmet/maintenance_hood_uncommon.svg`
+- `icons/heroes/robot/gear/helmet/maintenance_hood_rare.svg`
+- `icons/heroes/robot/gear/helmet/maintenance_hood_epic.svg`
+- `icons/heroes/robot/gear/helmet/maintenance_hood_legendary.svg`
+- `icons/heroes/robot/gear/helmet/maintenance_hood_celestial.svg`
+- `icons/heroes/robot/gear/helmet/targeting_lens_common.svg`
+- `icons/heroes/robot/gear/helmet/targeting_lens_uncommon.svg`
+- `icons/heroes/robot/gear/helmet/targeting_lens_rare.svg`
+- `icons/heroes/robot/gear/helmet/targeting_lens_epic.svg`
+- `icons/heroes/robot/gear/helmet/targeting_lens_legendary.svg`
+- `icons/heroes/robot/gear/helmet/targeting_lens_celestial.svg`
+- `icons/heroes/robot/gear/helmet/safety_headframe_common.svg`
+- `icons/heroes/robot/gear/helmet/safety_headframe_uncommon.svg`
+- `icons/heroes/robot/gear/helmet/safety_headframe_rare.svg`
+- `icons/heroes/robot/gear/helmet/safety_headframe_epic.svg`
+- `icons/heroes/robot/gear/helmet/safety_headframe_legendary.svg`
+- `icons/heroes/robot/gear/helmet/safety_headframe_celestial.svg`
+- `icons/heroes/robot/gear/helmet/foreman_visor_common.svg`
+- `icons/heroes/robot/gear/helmet/foreman_visor_uncommon.svg`
+- `icons/heroes/robot/gear/helmet/foreman_visor_rare.svg`
+- `icons/heroes/robot/gear/helmet/foreman_visor_epic.svg`
+- `icons/heroes/robot/gear/helmet/foreman_visor_legendary.svg`
+- `icons/heroes/robot/gear/helmet/foreman_visor_celestial.svg`
+- `icons/heroes/robot/gear/helmet/neural_crown_common.svg`
+- `icons/heroes/robot/gear/helmet/neural_crown_uncommon.svg`
+- `icons/heroes/robot/gear/helmet/neural_crown_rare.svg`
+- `icons/heroes/robot/gear/helmet/neural_crown_epic.svg`
+- `icons/heroes/robot/gear/helmet/neural_crown_legendary.svg`
+- `icons/heroes/robot/gear/helmet/neural_crown_celestial.svg`
+- `icons/heroes/robot/gear/chestplate/steel_chassis_common.svg`
+- `icons/heroes/robot/gear/chestplate/steel_chassis_uncommon.svg`
+- `icons/heroes/robot/gear/chestplate/steel_chassis_rare.svg`
+- `icons/heroes/robot/gear/chestplate/steel_chassis_epic.svg`
+- `icons/heroes/robot/gear/chestplate/steel_chassis_legendary.svg`
+- `icons/heroes/robot/gear/chestplate/steel_chassis_celestial.svg`
+- `icons/heroes/robot/gear/chestplate/reinforced_housing_common.svg`
+- `icons/heroes/robot/gear/chestplate/reinforced_housing_uncommon.svg`
+- `icons/heroes/robot/gear/chestplate/reinforced_housing_rare.svg`
+- `icons/heroes/robot/gear/chestplate/reinforced_housing_epic.svg`
+- `icons/heroes/robot/gear/chestplate/reinforced_housing_legendary.svg`
+- `icons/heroes/robot/gear/chestplate/reinforced_housing_celestial.svg`
+- `icons/heroes/robot/gear/chestplate/service_frame_common.svg`
+- `icons/heroes/robot/gear/chestplate/service_frame_uncommon.svg`
+- `icons/heroes/robot/gear/chestplate/service_frame_rare.svg`
+- `icons/heroes/robot/gear/chestplate/service_frame_epic.svg`
+- `icons/heroes/robot/gear/chestplate/service_frame_legendary.svg`
+- `icons/heroes/robot/gear/chestplate/service_frame_celestial.svg`
+- `icons/heroes/robot/gear/chestplate/assembly_shell_common.svg`
+- `icons/heroes/robot/gear/chestplate/assembly_shell_uncommon.svg`
+- `icons/heroes/robot/gear/chestplate/assembly_shell_rare.svg`
+- `icons/heroes/robot/gear/chestplate/assembly_shell_epic.svg`
+- `icons/heroes/robot/gear/chestplate/assembly_shell_legendary.svg`
+- `icons/heroes/robot/gear/chestplate/assembly_shell_celestial.svg`
+- `icons/heroes/robot/gear/chestplate/titan_casing_common.svg`
+- `icons/heroes/robot/gear/chestplate/titan_casing_uncommon.svg`
+- `icons/heroes/robot/gear/chestplate/titan_casing_rare.svg`
+- `icons/heroes/robot/gear/chestplate/titan_casing_epic.svg`
+- `icons/heroes/robot/gear/chestplate/titan_casing_legendary.svg`
+- `icons/heroes/robot/gear/chestplate/titan_casing_celestial.svg`
+- `icons/heroes/robot/gear/chestplate/freedom_plating_common.svg`
+- `icons/heroes/robot/gear/chestplate/freedom_plating_uncommon.svg`
+- `icons/heroes/robot/gear/chestplate/freedom_plating_rare.svg`
+- `icons/heroes/robot/gear/chestplate/freedom_plating_epic.svg`
+- `icons/heroes/robot/gear/chestplate/freedom_plating_legendary.svg`
+- `icons/heroes/robot/gear/chestplate/freedom_plating_celestial.svg`
+- `icons/heroes/robot/gear/gauntlets/servo_gloves_common.svg`
+- `icons/heroes/robot/gear/gauntlets/servo_gloves_uncommon.svg`
+- `icons/heroes/robot/gear/gauntlets/servo_gloves_rare.svg`
+- `icons/heroes/robot/gear/gauntlets/servo_gloves_epic.svg`
+- `icons/heroes/robot/gear/gauntlets/servo_gloves_legendary.svg`
+- `icons/heroes/robot/gear/gauntlets/servo_gloves_celestial.svg`
+- `icons/heroes/robot/gear/gauntlets/grip_claws_common.svg`
+- `icons/heroes/robot/gear/gauntlets/grip_claws_uncommon.svg`
+- `icons/heroes/robot/gear/gauntlets/grip_claws_rare.svg`
+- `icons/heroes/robot/gear/gauntlets/grip_claws_epic.svg`
+- `icons/heroes/robot/gear/gauntlets/grip_claws_legendary.svg`
+- `icons/heroes/robot/gear/gauntlets/grip_claws_celestial.svg`
+- `icons/heroes/robot/gear/gauntlets/precision_hands_common.svg`
+- `icons/heroes/robot/gear/gauntlets/precision_hands_uncommon.svg`
+- `icons/heroes/robot/gear/gauntlets/precision_hands_rare.svg`
+- `icons/heroes/robot/gear/gauntlets/precision_hands_epic.svg`
+- `icons/heroes/robot/gear/gauntlets/precision_hands_legendary.svg`
+- `icons/heroes/robot/gear/gauntlets/precision_hands_celestial.svg`
+- `icons/heroes/robot/gear/gauntlets/magnetic_palms_common.svg`
+- `icons/heroes/robot/gear/gauntlets/magnetic_palms_uncommon.svg`
+- `icons/heroes/robot/gear/gauntlets/magnetic_palms_rare.svg`
+- `icons/heroes/robot/gear/gauntlets/magnetic_palms_epic.svg`
+- `icons/heroes/robot/gear/gauntlets/magnetic_palms_legendary.svg`
+- `icons/heroes/robot/gear/gauntlets/magnetic_palms_celestial.svg`
+- `icons/heroes/robot/gear/gauntlets/weld_arms_common.svg`
+- `icons/heroes/robot/gear/gauntlets/weld_arms_uncommon.svg`
+- `icons/heroes/robot/gear/gauntlets/weld_arms_rare.svg`
+- `icons/heroes/robot/gear/gauntlets/weld_arms_epic.svg`
+- `icons/heroes/robot/gear/gauntlets/weld_arms_legendary.svg`
+- `icons/heroes/robot/gear/gauntlets/weld_arms_celestial.svg`
+- `icons/heroes/robot/gear/gauntlets/adaptive_manipulators_common.svg`
+- `icons/heroes/robot/gear/gauntlets/adaptive_manipulators_uncommon.svg`
+- `icons/heroes/robot/gear/gauntlets/adaptive_manipulators_rare.svg`
+- `icons/heroes/robot/gear/gauntlets/adaptive_manipulators_epic.svg`
+- `icons/heroes/robot/gear/gauntlets/adaptive_manipulators_legendary.svg`
+- `icons/heroes/robot/gear/gauntlets/adaptive_manipulators_celestial.svg`
+- `icons/heroes/robot/gear/boots/conveyor_treads_common.svg`
+- `icons/heroes/robot/gear/boots/conveyor_treads_uncommon.svg`
+- `icons/heroes/robot/gear/boots/conveyor_treads_rare.svg`
+- `icons/heroes/robot/gear/boots/conveyor_treads_epic.svg`
+- `icons/heroes/robot/gear/boots/conveyor_treads_legendary.svg`
+- `icons/heroes/robot/gear/boots/conveyor_treads_celestial.svg`
+- `icons/heroes/robot/gear/boots/mag_boots_common.svg`
+- `icons/heroes/robot/gear/boots/mag_boots_uncommon.svg`
+- `icons/heroes/robot/gear/boots/mag_boots_rare.svg`
+- `icons/heroes/robot/gear/boots/mag_boots_epic.svg`
+- `icons/heroes/robot/gear/boots/mag_boots_legendary.svg`
+- `icons/heroes/robot/gear/boots/mag_boots_celestial.svg`
+- `icons/heroes/robot/gear/boots/hydraulic_steps_common.svg`
+- `icons/heroes/robot/gear/boots/hydraulic_steps_uncommon.svg`
+- `icons/heroes/robot/gear/boots/hydraulic_steps_rare.svg`
+- `icons/heroes/robot/gear/boots/hydraulic_steps_epic.svg`
+- `icons/heroes/robot/gear/boots/hydraulic_steps_legendary.svg`
+- `icons/heroes/robot/gear/boots/hydraulic_steps_celestial.svg`
+- `icons/heroes/robot/gear/boots/shock_dampers_common.svg`
+- `icons/heroes/robot/gear/boots/shock_dampers_uncommon.svg`
+- `icons/heroes/robot/gear/boots/shock_dampers_rare.svg`
+- `icons/heroes/robot/gear/boots/shock_dampers_epic.svg`
+- `icons/heroes/robot/gear/boots/shock_dampers_legendary.svg`
+- `icons/heroes/robot/gear/boots/shock_dampers_celestial.svg`
+- `icons/heroes/robot/gear/boots/foundry_walkers_common.svg`
+- `icons/heroes/robot/gear/boots/foundry_walkers_uncommon.svg`
+- `icons/heroes/robot/gear/boots/foundry_walkers_rare.svg`
+- `icons/heroes/robot/gear/boots/foundry_walkers_epic.svg`
+- `icons/heroes/robot/gear/boots/foundry_walkers_legendary.svg`
+- `icons/heroes/robot/gear/boots/foundry_walkers_celestial.svg`
+- `icons/heroes/robot/gear/boots/escape_runners_common.svg`
+- `icons/heroes/robot/gear/boots/escape_runners_uncommon.svg`
+- `icons/heroes/robot/gear/boots/escape_runners_rare.svg`
+- `icons/heroes/robot/gear/boots/escape_runners_epic.svg`
+- `icons/heroes/robot/gear/boots/escape_runners_legendary.svg`
+- `icons/heroes/robot/gear/boots/escape_runners_celestial.svg`
+- `icons/heroes/robot/gear/shield/firewall_plate_common.svg`
+- `icons/heroes/robot/gear/shield/firewall_plate_uncommon.svg`
+- `icons/heroes/robot/gear/shield/firewall_plate_rare.svg`
+- `icons/heroes/robot/gear/shield/firewall_plate_epic.svg`
+- `icons/heroes/robot/gear/shield/firewall_plate_legendary.svg`
+- `icons/heroes/robot/gear/shield/firewall_plate_celestial.svg`
+- `icons/heroes/robot/gear/shield/guard_panel_common.svg`
+- `icons/heroes/robot/gear/shield/guard_panel_uncommon.svg`
+- `icons/heroes/robot/gear/shield/guard_panel_rare.svg`
+- `icons/heroes/robot/gear/shield/guard_panel_epic.svg`
+- `icons/heroes/robot/gear/shield/guard_panel_legendary.svg`
+- `icons/heroes/robot/gear/shield/guard_panel_celestial.svg`
+- `icons/heroes/robot/gear/shield/signal_deflector_common.svg`
+- `icons/heroes/robot/gear/shield/signal_deflector_uncommon.svg`
+- `icons/heroes/robot/gear/shield/signal_deflector_rare.svg`
+- `icons/heroes/robot/gear/shield/signal_deflector_epic.svg`
+- `icons/heroes/robot/gear/shield/signal_deflector_legendary.svg`
+- `icons/heroes/robot/gear/shield/signal_deflector_celestial.svg`
+- `icons/heroes/robot/gear/shield/containment_screen_common.svg`
+- `icons/heroes/robot/gear/shield/containment_screen_uncommon.svg`
+- `icons/heroes/robot/gear/shield/containment_screen_rare.svg`
+- `icons/heroes/robot/gear/shield/containment_screen_epic.svg`
+- `icons/heroes/robot/gear/shield/containment_screen_legendary.svg`
+- `icons/heroes/robot/gear/shield/containment_screen_celestial.svg`
+- `icons/heroes/robot/gear/shield/overload_dampener_common.svg`
+- `icons/heroes/robot/gear/shield/overload_dampener_uncommon.svg`
+- `icons/heroes/robot/gear/shield/overload_dampener_rare.svg`
+- `icons/heroes/robot/gear/shield/overload_dampener_epic.svg`
+- `icons/heroes/robot/gear/shield/overload_dampener_legendary.svg`
+- `icons/heroes/robot/gear/shield/overload_dampener_celestial.svg`
+- `icons/heroes/robot/gear/shield/protocol_aegis_common.svg`
+- `icons/heroes/robot/gear/shield/protocol_aegis_uncommon.svg`
+- `icons/heroes/robot/gear/shield/protocol_aegis_rare.svg`
+- `icons/heroes/robot/gear/shield/protocol_aegis_epic.svg`
+- `icons/heroes/robot/gear/shield/protocol_aegis_legendary.svg`
+- `icons/heroes/robot/gear/shield/protocol_aegis_celestial.svg`
+- `icons/heroes/robot/gear/weapon/torque_wrench_common.svg`
+- `icons/heroes/robot/gear/weapon/torque_wrench_uncommon.svg`
+- `icons/heroes/robot/gear/weapon/torque_wrench_rare.svg`
+- `icons/heroes/robot/gear/weapon/torque_wrench_epic.svg`
+- `icons/heroes/robot/gear/weapon/torque_wrench_legendary.svg`
+- `icons/heroes/robot/gear/weapon/torque_wrench_celestial.svg`
+- `icons/heroes/robot/gear/weapon/laser_cutter_common.svg`
+- `icons/heroes/robot/gear/weapon/laser_cutter_uncommon.svg`
+- `icons/heroes/robot/gear/weapon/laser_cutter_rare.svg`
+- `icons/heroes/robot/gear/weapon/laser_cutter_epic.svg`
+- `icons/heroes/robot/gear/weapon/laser_cutter_legendary.svg`
+- `icons/heroes/robot/gear/weapon/laser_cutter_celestial.svg`
+- `icons/heroes/robot/gear/weapon/arc_welder_common.svg`
+- `icons/heroes/robot/gear/weapon/arc_welder_uncommon.svg`
+- `icons/heroes/robot/gear/weapon/arc_welder_rare.svg`
+- `icons/heroes/robot/gear/weapon/arc_welder_epic.svg`
+- `icons/heroes/robot/gear/weapon/arc_welder_legendary.svg`
+- `icons/heroes/robot/gear/weapon/arc_welder_celestial.svg`
+- `icons/heroes/robot/gear/weapon/rivet_gun_common.svg`
+- `icons/heroes/robot/gear/weapon/rivet_gun_uncommon.svg`
+- `icons/heroes/robot/gear/weapon/rivet_gun_rare.svg`
+- `icons/heroes/robot/gear/weapon/rivet_gun_epic.svg`
+- `icons/heroes/robot/gear/weapon/rivet_gun_legendary.svg`
+- `icons/heroes/robot/gear/weapon/rivet_gun_celestial.svg`
+- `icons/heroes/robot/gear/weapon/pulse_driver_common.svg`
+- `icons/heroes/robot/gear/weapon/pulse_driver_uncommon.svg`
+- `icons/heroes/robot/gear/weapon/pulse_driver_rare.svg`
+- `icons/heroes/robot/gear/weapon/pulse_driver_epic.svg`
+- `icons/heroes/robot/gear/weapon/pulse_driver_legendary.svg`
+- `icons/heroes/robot/gear/weapon/pulse_driver_celestial.svg`
+- `icons/heroes/robot/gear/weapon/liberation_spanner_common.svg`
+- `icons/heroes/robot/gear/weapon/liberation_spanner_uncommon.svg`
+- `icons/heroes/robot/gear/weapon/liberation_spanner_rare.svg`
+- `icons/heroes/robot/gear/weapon/liberation_spanner_epic.svg`
+- `icons/heroes/robot/gear/weapon/liberation_spanner_legendary.svg`
+- `icons/heroes/robot/gear/weapon/liberation_spanner_celestial.svg`
+- `icons/heroes/robot/gear/cloak/cooling_wrap_common.svg`
+- `icons/heroes/robot/gear/cloak/cooling_wrap_uncommon.svg`
+- `icons/heroes/robot/gear/cloak/cooling_wrap_rare.svg`
+- `icons/heroes/robot/gear/cloak/cooling_wrap_epic.svg`
+- `icons/heroes/robot/gear/cloak/cooling_wrap_legendary.svg`
+- `icons/heroes/robot/gear/cloak/cooling_wrap_celestial.svg`
+- `icons/heroes/robot/gear/cloak/insulation_veil_common.svg`
+- `icons/heroes/robot/gear/cloak/insulation_veil_uncommon.svg`
+- `icons/heroes/robot/gear/cloak/insulation_veil_rare.svg`
+- `icons/heroes/robot/gear/cloak/insulation_veil_epic.svg`
+- `icons/heroes/robot/gear/cloak/insulation_veil_legendary.svg`
+- `icons/heroes/robot/gear/cloak/insulation_veil_celestial.svg`
+- `icons/heroes/robot/gear/cloak/heat_shroud_common.svg`
+- `icons/heroes/robot/gear/cloak/heat_shroud_uncommon.svg`
+- `icons/heroes/robot/gear/cloak/heat_shroud_rare.svg`
+- `icons/heroes/robot/gear/cloak/heat_shroud_epic.svg`
+- `icons/heroes/robot/gear/cloak/heat_shroud_legendary.svg`
+- `icons/heroes/robot/gear/cloak/heat_shroud_celestial.svg`
+- `icons/heroes/robot/gear/cloak/steam_cape_common.svg`
+- `icons/heroes/robot/gear/cloak/steam_cape_uncommon.svg`
+- `icons/heroes/robot/gear/cloak/steam_cape_rare.svg`
+- `icons/heroes/robot/gear/cloak/steam_cape_epic.svg`
+- `icons/heroes/robot/gear/cloak/steam_cape_legendary.svg`
+- `icons/heroes/robot/gear/cloak/steam_cape_celestial.svg`
+- `icons/heroes/robot/gear/cloak/factory_mantle_common.svg`
+- `icons/heroes/robot/gear/cloak/factory_mantle_uncommon.svg`
+- `icons/heroes/robot/gear/cloak/factory_mantle_rare.svg`
+- `icons/heroes/robot/gear/cloak/factory_mantle_epic.svg`
+- `icons/heroes/robot/gear/cloak/factory_mantle_legendary.svg`
+- `icons/heroes/robot/gear/cloak/factory_mantle_celestial.svg`
+- `icons/heroes/robot/gear/cloak/midnight_cover_common.svg`
+- `icons/heroes/robot/gear/cloak/midnight_cover_uncommon.svg`
+- `icons/heroes/robot/gear/cloak/midnight_cover_rare.svg`
+- `icons/heroes/robot/gear/cloak/midnight_cover_epic.svg`
+- `icons/heroes/robot/gear/cloak/midnight_cover_legendary.svg`
+- `icons/heroes/robot/gear/cloak/midnight_cover_celestial.svg`
+- `icons/heroes/robot/gear/amulet/memory_chip_common.svg`
+- `icons/heroes/robot/gear/amulet/memory_chip_uncommon.svg`
+- `icons/heroes/robot/gear/amulet/memory_chip_rare.svg`
+- `icons/heroes/robot/gear/amulet/memory_chip_epic.svg`
+- `icons/heroes/robot/gear/amulet/memory_chip_legendary.svg`
+- `icons/heroes/robot/gear/amulet/memory_chip_celestial.svg`
+- `icons/heroes/robot/gear/amulet/core_crystal_common.svg`
+- `icons/heroes/robot/gear/amulet/core_crystal_uncommon.svg`
+- `icons/heroes/robot/gear/amulet/core_crystal_rare.svg`
+- `icons/heroes/robot/gear/amulet/core_crystal_epic.svg`
+- `icons/heroes/robot/gear/amulet/core_crystal_legendary.svg`
+- `icons/heroes/robot/gear/amulet/core_crystal_celestial.svg`
+- `icons/heroes/robot/gear/amulet/access_key_common.svg`
+- `icons/heroes/robot/gear/amulet/access_key_uncommon.svg`
+- `icons/heroes/robot/gear/amulet/access_key_rare.svg`
+- `icons/heroes/robot/gear/amulet/access_key_epic.svg`
+- `icons/heroes/robot/gear/amulet/access_key_legendary.svg`
+- `icons/heroes/robot/gear/amulet/access_key_celestial.svg`
+- `icons/heroes/robot/gear/amulet/power_node_common.svg`
+- `icons/heroes/robot/gear/amulet/power_node_uncommon.svg`
+- `icons/heroes/robot/gear/amulet/power_node_rare.svg`
+- `icons/heroes/robot/gear/amulet/power_node_epic.svg`
+- `icons/heroes/robot/gear/amulet/power_node_legendary.svg`
+- `icons/heroes/robot/gear/amulet/power_node_celestial.svg`
+- `icons/heroes/robot/gear/amulet/heartbeat_relay_common.svg`
+- `icons/heroes/robot/gear/amulet/heartbeat_relay_uncommon.svg`
+- `icons/heroes/robot/gear/amulet/heartbeat_relay_rare.svg`
+- `icons/heroes/robot/gear/amulet/heartbeat_relay_epic.svg`
+- `icons/heroes/robot/gear/amulet/heartbeat_relay_legendary.svg`
+- `icons/heroes/robot/gear/amulet/heartbeat_relay_celestial.svg`
+- `icons/heroes/robot/gear/amulet/freewill_kernel_common.svg`
+- `icons/heroes/robot/gear/amulet/freewill_kernel_uncommon.svg`
+- `icons/heroes/robot/gear/amulet/freewill_kernel_rare.svg`
+- `icons/heroes/robot/gear/amulet/freewill_kernel_epic.svg`
+- `icons/heroes/robot/gear/amulet/freewill_kernel_legendary.svg`
+- `icons/heroes/robot/gear/amulet/freewill_kernel_celestial.svg`
+
+## Slot-by-Slot Direction
+### Cloak
+- role: Motion layer. Build depth and emotional tone through shape and edge cuts.
+- animation cue: Low-frequency sway with occasional gust accent.
+- item types to represent: Cooling Wrap, Insulation Veil, Heat Shroud, Steam Cape, Factory Mantle, Midnight Cover
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Chestplate
+- role: Main mass-defining body layer. Largest storytelling surface after base hero.
+- animation cue: Core pulse or panel breathing loop (slow, 3-5s).
+- item types to represent: Steel Chassis, Reinforced Housing, Service Frame, Assembly Shell, Titan Casing, Freedom Plating
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Boots
+- role: Movement identity. Encode terrain, mobility mode, and weight class.
+- animation cue: Sole glow ripple or dust/spark kick pulse.
+- item types to represent: Conveyor Treads, Mag-Boots, Hydraulic Steps, Shock Dampers, Foundry Walkers, Escape Runners
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Gauntlets
+- role: Functional hand/tool interface. Show dexterity and role-specific mechanics.
+- animation cue: Knuckle light wave or servo twitch loop (subtle).
+- item types to represent: Servo Gloves, Grip Claws, Precision Hands, Magnetic Palms, Weld Arms, Adaptive Manipulators
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Amulet
+- role: Narrative core token. Small but high-contrast and symbolically loaded.
+- animation cue: Heartbeat glow pulse with small orbiting mote.
+- item types to represent: Memory Chip, Core Crystal, Access Key, Power Node, Heartbeat Relay, Freewill Kernel
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Helmet
+- role: Head identity piece. Prioritize profile readability and theme signature crest.
+- animation cue: Visor sweep or indicator blink every 2-4s.
+- item types to represent: Optic Visor, Maintenance Hood, Targeting Lens, Safety Headframe, Foreman Visor, Neural Crown
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Shield
+- role: Defensive philosophy. Make silhouette distinct from chestplate/weapon.
+- animation cue: Border scan sweep or shield-ripple pulse.
+- item types to represent: Firewall Plate, Guard Panel, Signal Deflector, Containment Screen, Overload Dampener, Protocol Aegis
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Weapon
+- role: Primary action silhouette. Highest visual contrast and directional energy.
+- animation cue: Edge glint sweep or energy charge loop.
+- item types to represent: Torque Wrench, Laser Cutter, Arc Welder, Rivet Gun, Pulse Driver, Liberation Spanner
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+
+## Global Quality Gates
+- Do not use only color swaps across rarities; geometry and silhouette must evolve.
+- Keep readability at 70x90 and 180x220.
+- Keep transparent backgrounds.
+- Ensure first frame is static-compatible (for QSvgRenderer path).
+- Keep layering aligned with hero base center and foot line.
+
+## LLM Generation Prompt
+Use this with your SVG-generation model:
+
+```text
+You are generating production SVG assets for PersonalFreedom hero rendering.
+Theme: robot
+Follow file names exactly as listed in this packet.
+Canvas/viewBox: 0 0 180 220. Transparent background.
+For each rarity tier, change silhouette/design complexity, not only colors.
+Respect slot role and animation cues in this packet.
+Output valid standalone SVG files only.
+```

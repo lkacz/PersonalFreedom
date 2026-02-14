@@ -1,0 +1,519 @@
+# underdog Hero SVG Packet
+
+## Theme Snapshot
+- story_id: `underdog`
+- title: The Unlikely Champion
+- style intent: Urban comeback hero. Practical streetwear into tactical civic gear.
+- hero base direction: Compact ready stance, relatable silhouette, clear jacket/hood shape.
+- motif keywords: utility straps, city marks, badge clips, rugged seams
+- palette anchors: #2f3b4a, #4f6a8a, #708ca6, #d97706, #cbd5e1
+
+## Mandatory Output Files
+Generate all files below.
+- `icons/heroes/underdog/hero_base.svg`
+- `icons/heroes/underdog/gear/cloak/cloak_common.svg`
+- `icons/heroes/underdog/gear/cloak/cloak_uncommon.svg`
+- `icons/heroes/underdog/gear/cloak/cloak_rare.svg`
+- `icons/heroes/underdog/gear/cloak/cloak_epic.svg`
+- `icons/heroes/underdog/gear/cloak/cloak_legendary.svg`
+- `icons/heroes/underdog/gear/cloak/cloak_celestial.svg`
+- `icons/heroes/underdog/gear/chestplate/chestplate_common.svg`
+- `icons/heroes/underdog/gear/chestplate/chestplate_uncommon.svg`
+- `icons/heroes/underdog/gear/chestplate/chestplate_rare.svg`
+- `icons/heroes/underdog/gear/chestplate/chestplate_epic.svg`
+- `icons/heroes/underdog/gear/chestplate/chestplate_legendary.svg`
+- `icons/heroes/underdog/gear/chestplate/chestplate_celestial.svg`
+- `icons/heroes/underdog/gear/boots/boots_common.svg`
+- `icons/heroes/underdog/gear/boots/boots_uncommon.svg`
+- `icons/heroes/underdog/gear/boots/boots_rare.svg`
+- `icons/heroes/underdog/gear/boots/boots_epic.svg`
+- `icons/heroes/underdog/gear/boots/boots_legendary.svg`
+- `icons/heroes/underdog/gear/boots/boots_celestial.svg`
+- `icons/heroes/underdog/gear/gauntlets/gauntlets_common.svg`
+- `icons/heroes/underdog/gear/gauntlets/gauntlets_uncommon.svg`
+- `icons/heroes/underdog/gear/gauntlets/gauntlets_rare.svg`
+- `icons/heroes/underdog/gear/gauntlets/gauntlets_epic.svg`
+- `icons/heroes/underdog/gear/gauntlets/gauntlets_legendary.svg`
+- `icons/heroes/underdog/gear/gauntlets/gauntlets_celestial.svg`
+- `icons/heroes/underdog/gear/amulet/amulet_common.svg`
+- `icons/heroes/underdog/gear/amulet/amulet_uncommon.svg`
+- `icons/heroes/underdog/gear/amulet/amulet_rare.svg`
+- `icons/heroes/underdog/gear/amulet/amulet_epic.svg`
+- `icons/heroes/underdog/gear/amulet/amulet_legendary.svg`
+- `icons/heroes/underdog/gear/amulet/amulet_celestial.svg`
+- `icons/heroes/underdog/gear/helmet/helmet_common.svg`
+- `icons/heroes/underdog/gear/helmet/helmet_uncommon.svg`
+- `icons/heroes/underdog/gear/helmet/helmet_rare.svg`
+- `icons/heroes/underdog/gear/helmet/helmet_epic.svg`
+- `icons/heroes/underdog/gear/helmet/helmet_legendary.svg`
+- `icons/heroes/underdog/gear/helmet/helmet_celestial.svg`
+- `icons/heroes/underdog/gear/shield/shield_common.svg`
+- `icons/heroes/underdog/gear/shield/shield_uncommon.svg`
+- `icons/heroes/underdog/gear/shield/shield_rare.svg`
+- `icons/heroes/underdog/gear/shield/shield_epic.svg`
+- `icons/heroes/underdog/gear/shield/shield_legendary.svg`
+- `icons/heroes/underdog/gear/shield/shield_celestial.svg`
+- `icons/heroes/underdog/gear/weapon/weapon_common.svg`
+- `icons/heroes/underdog/gear/weapon/weapon_uncommon.svg`
+- `icons/heroes/underdog/gear/weapon/weapon_rare.svg`
+- `icons/heroes/underdog/gear/weapon/weapon_epic.svg`
+- `icons/heroes/underdog/gear/weapon/weapon_legendary.svg`
+- `icons/heroes/underdog/gear/weapon/weapon_celestial.svg`
+- `icons/heroes/underdog/fx/tier_epic.svg`
+- `icons/heroes/underdog/fx/tier_legendary.svg`
+- `icons/heroes/underdog/fx/tier_celestial.svg`
+
+## Preferred Item-Type Output Files
+Generate these for full visual variety. If constrained, prioritize Helmet, Chestplate, Weapon, Shield.
+- `icons/heroes/underdog/gear/helmet/headphones_common.svg`
+- `icons/heroes/underdog/gear/helmet/headphones_uncommon.svg`
+- `icons/heroes/underdog/gear/helmet/headphones_rare.svg`
+- `icons/heroes/underdog/gear/helmet/headphones_epic.svg`
+- `icons/heroes/underdog/gear/helmet/headphones_legendary.svg`
+- `icons/heroes/underdog/gear/helmet/headphones_celestial.svg`
+- `icons/heroes/underdog/gear/helmet/bluetooth_earbuds_common.svg`
+- `icons/heroes/underdog/gear/helmet/bluetooth_earbuds_uncommon.svg`
+- `icons/heroes/underdog/gear/helmet/bluetooth_earbuds_rare.svg`
+- `icons/heroes/underdog/gear/helmet/bluetooth_earbuds_epic.svg`
+- `icons/heroes/underdog/gear/helmet/bluetooth_earbuds_legendary.svg`
+- `icons/heroes/underdog/gear/helmet/bluetooth_earbuds_celestial.svg`
+- `icons/heroes/underdog/gear/helmet/baseball_cap_common.svg`
+- `icons/heroes/underdog/gear/helmet/baseball_cap_uncommon.svg`
+- `icons/heroes/underdog/gear/helmet/baseball_cap_rare.svg`
+- `icons/heroes/underdog/gear/helmet/baseball_cap_epic.svg`
+- `icons/heroes/underdog/gear/helmet/baseball_cap_legendary.svg`
+- `icons/heroes/underdog/gear/helmet/baseball_cap_celestial.svg`
+- `icons/heroes/underdog/gear/helmet/beanie_common.svg`
+- `icons/heroes/underdog/gear/helmet/beanie_uncommon.svg`
+- `icons/heroes/underdog/gear/helmet/beanie_rare.svg`
+- `icons/heroes/underdog/gear/helmet/beanie_epic.svg`
+- `icons/heroes/underdog/gear/helmet/beanie_legendary.svg`
+- `icons/heroes/underdog/gear/helmet/beanie_celestial.svg`
+- `icons/heroes/underdog/gear/helmet/visor_common.svg`
+- `icons/heroes/underdog/gear/helmet/visor_uncommon.svg`
+- `icons/heroes/underdog/gear/helmet/visor_rare.svg`
+- `icons/heroes/underdog/gear/helmet/visor_epic.svg`
+- `icons/heroes/underdog/gear/helmet/visor_legendary.svg`
+- `icons/heroes/underdog/gear/helmet/visor_celestial.svg`
+- `icons/heroes/underdog/gear/helmet/trucker_hat_common.svg`
+- `icons/heroes/underdog/gear/helmet/trucker_hat_uncommon.svg`
+- `icons/heroes/underdog/gear/helmet/trucker_hat_rare.svg`
+- `icons/heroes/underdog/gear/helmet/trucker_hat_epic.svg`
+- `icons/heroes/underdog/gear/helmet/trucker_hat_legendary.svg`
+- `icons/heroes/underdog/gear/helmet/trucker_hat_celestial.svg`
+- `icons/heroes/underdog/gear/helmet/noise_cancellers_common.svg`
+- `icons/heroes/underdog/gear/helmet/noise_cancellers_uncommon.svg`
+- `icons/heroes/underdog/gear/helmet/noise_cancellers_rare.svg`
+- `icons/heroes/underdog/gear/helmet/noise_cancellers_epic.svg`
+- `icons/heroes/underdog/gear/helmet/noise_cancellers_legendary.svg`
+- `icons/heroes/underdog/gear/helmet/noise_cancellers_celestial.svg`
+- `icons/heroes/underdog/gear/chestplate/hoodie_common.svg`
+- `icons/heroes/underdog/gear/chestplate/hoodie_uncommon.svg`
+- `icons/heroes/underdog/gear/chestplate/hoodie_rare.svg`
+- `icons/heroes/underdog/gear/chestplate/hoodie_epic.svg`
+- `icons/heroes/underdog/gear/chestplate/hoodie_legendary.svg`
+- `icons/heroes/underdog/gear/chestplate/hoodie_celestial.svg`
+- `icons/heroes/underdog/gear/chestplate/blazer_common.svg`
+- `icons/heroes/underdog/gear/chestplate/blazer_uncommon.svg`
+- `icons/heroes/underdog/gear/chestplate/blazer_rare.svg`
+- `icons/heroes/underdog/gear/chestplate/blazer_epic.svg`
+- `icons/heroes/underdog/gear/chestplate/blazer_legendary.svg`
+- `icons/heroes/underdog/gear/chestplate/blazer_celestial.svg`
+- `icons/heroes/underdog/gear/chestplate/sweater_common.svg`
+- `icons/heroes/underdog/gear/chestplate/sweater_uncommon.svg`
+- `icons/heroes/underdog/gear/chestplate/sweater_rare.svg`
+- `icons/heroes/underdog/gear/chestplate/sweater_epic.svg`
+- `icons/heroes/underdog/gear/chestplate/sweater_legendary.svg`
+- `icons/heroes/underdog/gear/chestplate/sweater_celestial.svg`
+- `icons/heroes/underdog/gear/chestplate/polo_shirt_common.svg`
+- `icons/heroes/underdog/gear/chestplate/polo_shirt_uncommon.svg`
+- `icons/heroes/underdog/gear/chestplate/polo_shirt_rare.svg`
+- `icons/heroes/underdog/gear/chestplate/polo_shirt_epic.svg`
+- `icons/heroes/underdog/gear/chestplate/polo_shirt_legendary.svg`
+- `icons/heroes/underdog/gear/chestplate/polo_shirt_celestial.svg`
+- `icons/heroes/underdog/gear/chestplate/t_shirt_common.svg`
+- `icons/heroes/underdog/gear/chestplate/t_shirt_uncommon.svg`
+- `icons/heroes/underdog/gear/chestplate/t_shirt_rare.svg`
+- `icons/heroes/underdog/gear/chestplate/t_shirt_epic.svg`
+- `icons/heroes/underdog/gear/chestplate/t_shirt_legendary.svg`
+- `icons/heroes/underdog/gear/chestplate/t_shirt_celestial.svg`
+- `icons/heroes/underdog/gear/chestplate/button_down_common.svg`
+- `icons/heroes/underdog/gear/chestplate/button_down_uncommon.svg`
+- `icons/heroes/underdog/gear/chestplate/button_down_rare.svg`
+- `icons/heroes/underdog/gear/chestplate/button_down_epic.svg`
+- `icons/heroes/underdog/gear/chestplate/button_down_legendary.svg`
+- `icons/heroes/underdog/gear/chestplate/button_down_celestial.svg`
+- `icons/heroes/underdog/gear/chestplate/cardigan_common.svg`
+- `icons/heroes/underdog/gear/chestplate/cardigan_uncommon.svg`
+- `icons/heroes/underdog/gear/chestplate/cardigan_rare.svg`
+- `icons/heroes/underdog/gear/chestplate/cardigan_epic.svg`
+- `icons/heroes/underdog/gear/chestplate/cardigan_legendary.svg`
+- `icons/heroes/underdog/gear/chestplate/cardigan_celestial.svg`
+- `icons/heroes/underdog/gear/chestplate/vest_common.svg`
+- `icons/heroes/underdog/gear/chestplate/vest_uncommon.svg`
+- `icons/heroes/underdog/gear/chestplate/vest_rare.svg`
+- `icons/heroes/underdog/gear/chestplate/vest_epic.svg`
+- `icons/heroes/underdog/gear/chestplate/vest_legendary.svg`
+- `icons/heroes/underdog/gear/chestplate/vest_celestial.svg`
+- `icons/heroes/underdog/gear/gauntlets/smartwatch_common.svg`
+- `icons/heroes/underdog/gear/gauntlets/smartwatch_uncommon.svg`
+- `icons/heroes/underdog/gear/gauntlets/smartwatch_rare.svg`
+- `icons/heroes/underdog/gear/gauntlets/smartwatch_epic.svg`
+- `icons/heroes/underdog/gear/gauntlets/smartwatch_legendary.svg`
+- `icons/heroes/underdog/gear/gauntlets/smartwatch_celestial.svg`
+- `icons/heroes/underdog/gear/gauntlets/fitness_tracker_common.svg`
+- `icons/heroes/underdog/gear/gauntlets/fitness_tracker_uncommon.svg`
+- `icons/heroes/underdog/gear/gauntlets/fitness_tracker_rare.svg`
+- `icons/heroes/underdog/gear/gauntlets/fitness_tracker_epic.svg`
+- `icons/heroes/underdog/gear/gauntlets/fitness_tracker_legendary.svg`
+- `icons/heroes/underdog/gear/gauntlets/fitness_tracker_celestial.svg`
+- `icons/heroes/underdog/gear/gauntlets/wristband_common.svg`
+- `icons/heroes/underdog/gear/gauntlets/wristband_uncommon.svg`
+- `icons/heroes/underdog/gear/gauntlets/wristband_rare.svg`
+- `icons/heroes/underdog/gear/gauntlets/wristband_epic.svg`
+- `icons/heroes/underdog/gear/gauntlets/wristband_legendary.svg`
+- `icons/heroes/underdog/gear/gauntlets/wristband_celestial.svg`
+- `icons/heroes/underdog/gear/gauntlets/lucky_bracelet_common.svg`
+- `icons/heroes/underdog/gear/gauntlets/lucky_bracelet_uncommon.svg`
+- `icons/heroes/underdog/gear/gauntlets/lucky_bracelet_rare.svg`
+- `icons/heroes/underdog/gear/gauntlets/lucky_bracelet_epic.svg`
+- `icons/heroes/underdog/gear/gauntlets/lucky_bracelet_legendary.svg`
+- `icons/heroes/underdog/gear/gauntlets/lucky_bracelet_celestial.svg`
+- `icons/heroes/underdog/gear/gauntlets/power_gloves_common.svg`
+- `icons/heroes/underdog/gear/gauntlets/power_gloves_uncommon.svg`
+- `icons/heroes/underdog/gear/gauntlets/power_gloves_rare.svg`
+- `icons/heroes/underdog/gear/gauntlets/power_gloves_epic.svg`
+- `icons/heroes/underdog/gear/gauntlets/power_gloves_legendary.svg`
+- `icons/heroes/underdog/gear/gauntlets/power_gloves_celestial.svg`
+- `icons/heroes/underdog/gear/gauntlets/typing_fingers_common.svg`
+- `icons/heroes/underdog/gear/gauntlets/typing_fingers_uncommon.svg`
+- `icons/heroes/underdog/gear/gauntlets/typing_fingers_rare.svg`
+- `icons/heroes/underdog/gear/gauntlets/typing_fingers_epic.svg`
+- `icons/heroes/underdog/gear/gauntlets/typing_fingers_legendary.svg`
+- `icons/heroes/underdog/gear/gauntlets/typing_fingers_celestial.svg`
+- `icons/heroes/underdog/gear/boots/sneakers_common.svg`
+- `icons/heroes/underdog/gear/boots/sneakers_uncommon.svg`
+- `icons/heroes/underdog/gear/boots/sneakers_rare.svg`
+- `icons/heroes/underdog/gear/boots/sneakers_epic.svg`
+- `icons/heroes/underdog/gear/boots/sneakers_legendary.svg`
+- `icons/heroes/underdog/gear/boots/sneakers_celestial.svg`
+- `icons/heroes/underdog/gear/boots/loafers_common.svg`
+- `icons/heroes/underdog/gear/boots/loafers_uncommon.svg`
+- `icons/heroes/underdog/gear/boots/loafers_rare.svg`
+- `icons/heroes/underdog/gear/boots/loafers_epic.svg`
+- `icons/heroes/underdog/gear/boots/loafers_legendary.svg`
+- `icons/heroes/underdog/gear/boots/loafers_celestial.svg`
+- `icons/heroes/underdog/gear/boots/running_shoes_common.svg`
+- `icons/heroes/underdog/gear/boots/running_shoes_uncommon.svg`
+- `icons/heroes/underdog/gear/boots/running_shoes_rare.svg`
+- `icons/heroes/underdog/gear/boots/running_shoes_epic.svg`
+- `icons/heroes/underdog/gear/boots/running_shoes_legendary.svg`
+- `icons/heroes/underdog/gear/boots/running_shoes_celestial.svg`
+- `icons/heroes/underdog/gear/boots/dress_shoes_common.svg`
+- `icons/heroes/underdog/gear/boots/dress_shoes_uncommon.svg`
+- `icons/heroes/underdog/gear/boots/dress_shoes_rare.svg`
+- `icons/heroes/underdog/gear/boots/dress_shoes_epic.svg`
+- `icons/heroes/underdog/gear/boots/dress_shoes_legendary.svg`
+- `icons/heroes/underdog/gear/boots/dress_shoes_celestial.svg`
+- `icons/heroes/underdog/gear/boots/slippers_common.svg`
+- `icons/heroes/underdog/gear/boots/slippers_uncommon.svg`
+- `icons/heroes/underdog/gear/boots/slippers_rare.svg`
+- `icons/heroes/underdog/gear/boots/slippers_epic.svg`
+- `icons/heroes/underdog/gear/boots/slippers_legendary.svg`
+- `icons/heroes/underdog/gear/boots/slippers_celestial.svg`
+- `icons/heroes/underdog/gear/boots/crocs_common.svg`
+- `icons/heroes/underdog/gear/boots/crocs_uncommon.svg`
+- `icons/heroes/underdog/gear/boots/crocs_rare.svg`
+- `icons/heroes/underdog/gear/boots/crocs_epic.svg`
+- `icons/heroes/underdog/gear/boots/crocs_legendary.svg`
+- `icons/heroes/underdog/gear/boots/crocs_celestial.svg`
+- `icons/heroes/underdog/gear/boots/power_boots_common.svg`
+- `icons/heroes/underdog/gear/boots/power_boots_uncommon.svg`
+- `icons/heroes/underdog/gear/boots/power_boots_rare.svg`
+- `icons/heroes/underdog/gear/boots/power_boots_epic.svg`
+- `icons/heroes/underdog/gear/boots/power_boots_legendary.svg`
+- `icons/heroes/underdog/gear/boots/power_boots_celestial.svg`
+- `icons/heroes/underdog/gear/shield/laptop_common.svg`
+- `icons/heroes/underdog/gear/shield/laptop_uncommon.svg`
+- `icons/heroes/underdog/gear/shield/laptop_rare.svg`
+- `icons/heroes/underdog/gear/shield/laptop_epic.svg`
+- `icons/heroes/underdog/gear/shield/laptop_legendary.svg`
+- `icons/heroes/underdog/gear/shield/laptop_celestial.svg`
+- `icons/heroes/underdog/gear/shield/tablet_common.svg`
+- `icons/heroes/underdog/gear/shield/tablet_uncommon.svg`
+- `icons/heroes/underdog/gear/shield/tablet_rare.svg`
+- `icons/heroes/underdog/gear/shield/tablet_epic.svg`
+- `icons/heroes/underdog/gear/shield/tablet_legendary.svg`
+- `icons/heroes/underdog/gear/shield/tablet_celestial.svg`
+- `icons/heroes/underdog/gear/shield/notebook_common.svg`
+- `icons/heroes/underdog/gear/shield/notebook_uncommon.svg`
+- `icons/heroes/underdog/gear/shield/notebook_rare.svg`
+- `icons/heroes/underdog/gear/shield/notebook_epic.svg`
+- `icons/heroes/underdog/gear/shield/notebook_legendary.svg`
+- `icons/heroes/underdog/gear/shield/notebook_celestial.svg`
+- `icons/heroes/underdog/gear/shield/binder_common.svg`
+- `icons/heroes/underdog/gear/shield/binder_uncommon.svg`
+- `icons/heroes/underdog/gear/shield/binder_rare.svg`
+- `icons/heroes/underdog/gear/shield/binder_epic.svg`
+- `icons/heroes/underdog/gear/shield/binder_legendary.svg`
+- `icons/heroes/underdog/gear/shield/binder_celestial.svg`
+- `icons/heroes/underdog/gear/shield/folder_common.svg`
+- `icons/heroes/underdog/gear/shield/folder_uncommon.svg`
+- `icons/heroes/underdog/gear/shield/folder_rare.svg`
+- `icons/heroes/underdog/gear/shield/folder_epic.svg`
+- `icons/heroes/underdog/gear/shield/folder_legendary.svg`
+- `icons/heroes/underdog/gear/shield/folder_celestial.svg`
+- `icons/heroes/underdog/gear/shield/briefcase_common.svg`
+- `icons/heroes/underdog/gear/shield/briefcase_uncommon.svg`
+- `icons/heroes/underdog/gear/shield/briefcase_rare.svg`
+- `icons/heroes/underdog/gear/shield/briefcase_epic.svg`
+- `icons/heroes/underdog/gear/shield/briefcase_legendary.svg`
+- `icons/heroes/underdog/gear/shield/briefcase_celestial.svg`
+- `icons/heroes/underdog/gear/shield/backpack_common.svg`
+- `icons/heroes/underdog/gear/shield/backpack_uncommon.svg`
+- `icons/heroes/underdog/gear/shield/backpack_rare.svg`
+- `icons/heroes/underdog/gear/shield/backpack_epic.svg`
+- `icons/heroes/underdog/gear/shield/backpack_legendary.svg`
+- `icons/heroes/underdog/gear/shield/backpack_celestial.svg`
+- `icons/heroes/underdog/gear/weapon/smartphone_common.svg`
+- `icons/heroes/underdog/gear/weapon/smartphone_uncommon.svg`
+- `icons/heroes/underdog/gear/weapon/smartphone_rare.svg`
+- `icons/heroes/underdog/gear/weapon/smartphone_epic.svg`
+- `icons/heroes/underdog/gear/weapon/smartphone_legendary.svg`
+- `icons/heroes/underdog/gear/weapon/smartphone_celestial.svg`
+- `icons/heroes/underdog/gear/weapon/keyboard_common.svg`
+- `icons/heroes/underdog/gear/weapon/keyboard_uncommon.svg`
+- `icons/heroes/underdog/gear/weapon/keyboard_rare.svg`
+- `icons/heroes/underdog/gear/weapon/keyboard_epic.svg`
+- `icons/heroes/underdog/gear/weapon/keyboard_legendary.svg`
+- `icons/heroes/underdog/gear/weapon/keyboard_celestial.svg`
+- `icons/heroes/underdog/gear/weapon/mouse_common.svg`
+- `icons/heroes/underdog/gear/weapon/mouse_uncommon.svg`
+- `icons/heroes/underdog/gear/weapon/mouse_rare.svg`
+- `icons/heroes/underdog/gear/weapon/mouse_epic.svg`
+- `icons/heroes/underdog/gear/weapon/mouse_legendary.svg`
+- `icons/heroes/underdog/gear/weapon/mouse_celestial.svg`
+- `icons/heroes/underdog/gear/weapon/pen_common.svg`
+- `icons/heroes/underdog/gear/weapon/pen_uncommon.svg`
+- `icons/heroes/underdog/gear/weapon/pen_rare.svg`
+- `icons/heroes/underdog/gear/weapon/pen_epic.svg`
+- `icons/heroes/underdog/gear/weapon/pen_legendary.svg`
+- `icons/heroes/underdog/gear/weapon/pen_celestial.svg`
+- `icons/heroes/underdog/gear/weapon/stapler_common.svg`
+- `icons/heroes/underdog/gear/weapon/stapler_uncommon.svg`
+- `icons/heroes/underdog/gear/weapon/stapler_rare.svg`
+- `icons/heroes/underdog/gear/weapon/stapler_epic.svg`
+- `icons/heroes/underdog/gear/weapon/stapler_legendary.svg`
+- `icons/heroes/underdog/gear/weapon/stapler_celestial.svg`
+- `icons/heroes/underdog/gear/weapon/coffee_mug_common.svg`
+- `icons/heroes/underdog/gear/weapon/coffee_mug_uncommon.svg`
+- `icons/heroes/underdog/gear/weapon/coffee_mug_rare.svg`
+- `icons/heroes/underdog/gear/weapon/coffee_mug_epic.svg`
+- `icons/heroes/underdog/gear/weapon/coffee_mug_legendary.svg`
+- `icons/heroes/underdog/gear/weapon/coffee_mug_celestial.svg`
+- `icons/heroes/underdog/gear/weapon/stress_ball_common.svg`
+- `icons/heroes/underdog/gear/weapon/stress_ball_uncommon.svg`
+- `icons/heroes/underdog/gear/weapon/stress_ball_rare.svg`
+- `icons/heroes/underdog/gear/weapon/stress_ball_epic.svg`
+- `icons/heroes/underdog/gear/weapon/stress_ball_legendary.svg`
+- `icons/heroes/underdog/gear/weapon/stress_ball_celestial.svg`
+- `icons/heroes/underdog/gear/weapon/whiteboard_marker_common.svg`
+- `icons/heroes/underdog/gear/weapon/whiteboard_marker_uncommon.svg`
+- `icons/heroes/underdog/gear/weapon/whiteboard_marker_rare.svg`
+- `icons/heroes/underdog/gear/weapon/whiteboard_marker_epic.svg`
+- `icons/heroes/underdog/gear/weapon/whiteboard_marker_legendary.svg`
+- `icons/heroes/underdog/gear/weapon/whiteboard_marker_celestial.svg`
+- `icons/heroes/underdog/gear/cloak/jacket_common.svg`
+- `icons/heroes/underdog/gear/cloak/jacket_uncommon.svg`
+- `icons/heroes/underdog/gear/cloak/jacket_rare.svg`
+- `icons/heroes/underdog/gear/cloak/jacket_epic.svg`
+- `icons/heroes/underdog/gear/cloak/jacket_legendary.svg`
+- `icons/heroes/underdog/gear/cloak/jacket_celestial.svg`
+- `icons/heroes/underdog/gear/cloak/hoodie_common.svg`
+- `icons/heroes/underdog/gear/cloak/hoodie_uncommon.svg`
+- `icons/heroes/underdog/gear/cloak/hoodie_rare.svg`
+- `icons/heroes/underdog/gear/cloak/hoodie_epic.svg`
+- `icons/heroes/underdog/gear/cloak/hoodie_legendary.svg`
+- `icons/heroes/underdog/gear/cloak/hoodie_celestial.svg`
+- `icons/heroes/underdog/gear/cloak/raincoat_common.svg`
+- `icons/heroes/underdog/gear/cloak/raincoat_uncommon.svg`
+- `icons/heroes/underdog/gear/cloak/raincoat_rare.svg`
+- `icons/heroes/underdog/gear/cloak/raincoat_epic.svg`
+- `icons/heroes/underdog/gear/cloak/raincoat_legendary.svg`
+- `icons/heroes/underdog/gear/cloak/raincoat_celestial.svg`
+- `icons/heroes/underdog/gear/cloak/fleece_common.svg`
+- `icons/heroes/underdog/gear/cloak/fleece_uncommon.svg`
+- `icons/heroes/underdog/gear/cloak/fleece_rare.svg`
+- `icons/heroes/underdog/gear/cloak/fleece_epic.svg`
+- `icons/heroes/underdog/gear/cloak/fleece_legendary.svg`
+- `icons/heroes/underdog/gear/cloak/fleece_celestial.svg`
+- `icons/heroes/underdog/gear/cloak/windbreaker_common.svg`
+- `icons/heroes/underdog/gear/cloak/windbreaker_uncommon.svg`
+- `icons/heroes/underdog/gear/cloak/windbreaker_rare.svg`
+- `icons/heroes/underdog/gear/cloak/windbreaker_epic.svg`
+- `icons/heroes/underdog/gear/cloak/windbreaker_legendary.svg`
+- `icons/heroes/underdog/gear/cloak/windbreaker_celestial.svg`
+- `icons/heroes/underdog/gear/cloak/trench_coat_common.svg`
+- `icons/heroes/underdog/gear/cloak/trench_coat_uncommon.svg`
+- `icons/heroes/underdog/gear/cloak/trench_coat_rare.svg`
+- `icons/heroes/underdog/gear/cloak/trench_coat_epic.svg`
+- `icons/heroes/underdog/gear/cloak/trench_coat_legendary.svg`
+- `icons/heroes/underdog/gear/cloak/trench_coat_celestial.svg`
+- `icons/heroes/underdog/gear/cloak/denim_jacket_common.svg`
+- `icons/heroes/underdog/gear/cloak/denim_jacket_uncommon.svg`
+- `icons/heroes/underdog/gear/cloak/denim_jacket_rare.svg`
+- `icons/heroes/underdog/gear/cloak/denim_jacket_epic.svg`
+- `icons/heroes/underdog/gear/cloak/denim_jacket_legendary.svg`
+- `icons/heroes/underdog/gear/cloak/denim_jacket_celestial.svg`
+- `icons/heroes/underdog/gear/amulet/id_badge_common.svg`
+- `icons/heroes/underdog/gear/amulet/id_badge_uncommon.svg`
+- `icons/heroes/underdog/gear/amulet/id_badge_rare.svg`
+- `icons/heroes/underdog/gear/amulet/id_badge_epic.svg`
+- `icons/heroes/underdog/gear/amulet/id_badge_legendary.svg`
+- `icons/heroes/underdog/gear/amulet/id_badge_celestial.svg`
+- `icons/heroes/underdog/gear/amulet/keycard_common.svg`
+- `icons/heroes/underdog/gear/amulet/keycard_uncommon.svg`
+- `icons/heroes/underdog/gear/amulet/keycard_rare.svg`
+- `icons/heroes/underdog/gear/amulet/keycard_epic.svg`
+- `icons/heroes/underdog/gear/amulet/keycard_legendary.svg`
+- `icons/heroes/underdog/gear/amulet/keycard_celestial.svg`
+- `icons/heroes/underdog/gear/amulet/usb_drive_common.svg`
+- `icons/heroes/underdog/gear/amulet/usb_drive_uncommon.svg`
+- `icons/heroes/underdog/gear/amulet/usb_drive_rare.svg`
+- `icons/heroes/underdog/gear/amulet/usb_drive_epic.svg`
+- `icons/heroes/underdog/gear/amulet/usb_drive_legendary.svg`
+- `icons/heroes/underdog/gear/amulet/usb_drive_celestial.svg`
+- `icons/heroes/underdog/gear/amulet/airtag_common.svg`
+- `icons/heroes/underdog/gear/amulet/airtag_uncommon.svg`
+- `icons/heroes/underdog/gear/amulet/airtag_rare.svg`
+- `icons/heroes/underdog/gear/amulet/airtag_epic.svg`
+- `icons/heroes/underdog/gear/amulet/airtag_legendary.svg`
+- `icons/heroes/underdog/gear/amulet/airtag_celestial.svg`
+- `icons/heroes/underdog/gear/amulet/lucky_coin_common.svg`
+- `icons/heroes/underdog/gear/amulet/lucky_coin_uncommon.svg`
+- `icons/heroes/underdog/gear/amulet/lucky_coin_rare.svg`
+- `icons/heroes/underdog/gear/amulet/lucky_coin_epic.svg`
+- `icons/heroes/underdog/gear/amulet/lucky_coin_legendary.svg`
+- `icons/heroes/underdog/gear/amulet/lucky_coin_celestial.svg`
+- `icons/heroes/underdog/gear/amulet/motivational_pin_common.svg`
+- `icons/heroes/underdog/gear/amulet/motivational_pin_uncommon.svg`
+- `icons/heroes/underdog/gear/amulet/motivational_pin_rare.svg`
+- `icons/heroes/underdog/gear/amulet/motivational_pin_epic.svg`
+- `icons/heroes/underdog/gear/amulet/motivational_pin_legendary.svg`
+- `icons/heroes/underdog/gear/amulet/motivational_pin_celestial.svg`
+- `icons/heroes/underdog/gear/amulet/employee_award_common.svg`
+- `icons/heroes/underdog/gear/amulet/employee_award_uncommon.svg`
+- `icons/heroes/underdog/gear/amulet/employee_award_rare.svg`
+- `icons/heroes/underdog/gear/amulet/employee_award_epic.svg`
+- `icons/heroes/underdog/gear/amulet/employee_award_legendary.svg`
+- `icons/heroes/underdog/gear/amulet/employee_award_celestial.svg`
+
+## Slot-by-Slot Direction
+### Cloak
+- role: Motion layer. Build depth and emotional tone through shape and edge cuts.
+- animation cue: Low-frequency sway with occasional gust accent.
+- item types to represent: Jacket, Hoodie, Raincoat, Fleece, Windbreaker, Trench Coat, Denim Jacket
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Chestplate
+- role: Main mass-defining body layer. Largest storytelling surface after base hero.
+- animation cue: Core pulse or panel breathing loop (slow, 3-5s).
+- item types to represent: Hoodie, Blazer, Sweater, Polo Shirt, T-Shirt, Button-Down, Cardigan, Vest
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Boots
+- role: Movement identity. Encode terrain, mobility mode, and weight class.
+- animation cue: Sole glow ripple or dust/spark kick pulse.
+- item types to represent: Sneakers, Loafers, Running Shoes, Dress Shoes, Slippers, Crocs, Power Boots
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Gauntlets
+- role: Functional hand/tool interface. Show dexterity and role-specific mechanics.
+- animation cue: Knuckle light wave or servo twitch loop (subtle).
+- item types to represent: Smartwatch, Fitness Tracker, Wristband, Lucky Bracelet, Power Gloves, Typing Fingers
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Amulet
+- role: Narrative core token. Small but high-contrast and symbolically loaded.
+- animation cue: Heartbeat glow pulse with small orbiting mote.
+- item types to represent: ID Badge, Keycard, USB Drive, AirTag, Lucky Coin, Motivational Pin, Employee Award
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Helmet
+- role: Head identity piece. Prioritize profile readability and theme signature crest.
+- animation cue: Visor sweep or indicator blink every 2-4s.
+- item types to represent: Headphones, Bluetooth Earbuds, Baseball Cap, Beanie, Visor, Trucker Hat, Noise-Cancellers
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Shield
+- role: Defensive philosophy. Make silhouette distinct from chestplate/weapon.
+- animation cue: Border scan sweep or shield-ripple pulse.
+- item types to represent: Laptop, Tablet, Notebook, Binder, Folder, Briefcase, Backpack
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Weapon
+- role: Primary action silhouette. Highest visual contrast and directional energy.
+- animation cue: Edge glint sweep or energy charge loop.
+- item types to represent: Smartphone, Keyboard, Mouse, Pen, Stapler, Coffee Mug, Stress Ball, Whiteboard Marker
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+
+## Global Quality Gates
+- Do not use only color swaps across rarities; geometry and silhouette must evolve.
+- Keep readability at 70x90 and 180x220.
+- Keep transparent backgrounds.
+- Ensure first frame is static-compatible (for QSvgRenderer path).
+- Keep layering aligned with hero base center and foot line.
+
+## LLM Generation Prompt
+Use this with your SVG-generation model:
+
+```text
+You are generating production SVG assets for PersonalFreedom hero rendering.
+Theme: underdog
+Follow file names exactly as listed in this packet.
+Canvas/viewBox: 0 0 180 220. Transparent background.
+For each rarity tier, change silhouette/design complexity, not only colors.
+Respect slot role and animation cues in this packet.
+Output valid standalone SVG files only.
+```

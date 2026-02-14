@@ -1,0 +1,471 @@
+# scholar Hero SVG Packet
+
+## Theme Snapshot
+- story_id: `scholar`
+- title: The Mind Architect's Path
+- style intent: Academic tactician. Tailored layers, codex-inspired geometry, careful symmetry.
+- hero base direction: Upright posture, robe/coat silhouette, visual focus on head and chest insignia.
+- motif keywords: glyph lines, book clasps, ink channels, seal medallions
+- palette anchors: #1f2d4a, #4f5d7a, #8d6e63, #c7b299, #d9c27a
+
+## Mandatory Output Files
+Generate all files below.
+- `icons/heroes/scholar/hero_base.svg`
+- `icons/heroes/scholar/gear/cloak/cloak_common.svg`
+- `icons/heroes/scholar/gear/cloak/cloak_uncommon.svg`
+- `icons/heroes/scholar/gear/cloak/cloak_rare.svg`
+- `icons/heroes/scholar/gear/cloak/cloak_epic.svg`
+- `icons/heroes/scholar/gear/cloak/cloak_legendary.svg`
+- `icons/heroes/scholar/gear/cloak/cloak_celestial.svg`
+- `icons/heroes/scholar/gear/chestplate/chestplate_common.svg`
+- `icons/heroes/scholar/gear/chestplate/chestplate_uncommon.svg`
+- `icons/heroes/scholar/gear/chestplate/chestplate_rare.svg`
+- `icons/heroes/scholar/gear/chestplate/chestplate_epic.svg`
+- `icons/heroes/scholar/gear/chestplate/chestplate_legendary.svg`
+- `icons/heroes/scholar/gear/chestplate/chestplate_celestial.svg`
+- `icons/heroes/scholar/gear/boots/boots_common.svg`
+- `icons/heroes/scholar/gear/boots/boots_uncommon.svg`
+- `icons/heroes/scholar/gear/boots/boots_rare.svg`
+- `icons/heroes/scholar/gear/boots/boots_epic.svg`
+- `icons/heroes/scholar/gear/boots/boots_legendary.svg`
+- `icons/heroes/scholar/gear/boots/boots_celestial.svg`
+- `icons/heroes/scholar/gear/gauntlets/gauntlets_common.svg`
+- `icons/heroes/scholar/gear/gauntlets/gauntlets_uncommon.svg`
+- `icons/heroes/scholar/gear/gauntlets/gauntlets_rare.svg`
+- `icons/heroes/scholar/gear/gauntlets/gauntlets_epic.svg`
+- `icons/heroes/scholar/gear/gauntlets/gauntlets_legendary.svg`
+- `icons/heroes/scholar/gear/gauntlets/gauntlets_celestial.svg`
+- `icons/heroes/scholar/gear/amulet/amulet_common.svg`
+- `icons/heroes/scholar/gear/amulet/amulet_uncommon.svg`
+- `icons/heroes/scholar/gear/amulet/amulet_rare.svg`
+- `icons/heroes/scholar/gear/amulet/amulet_epic.svg`
+- `icons/heroes/scholar/gear/amulet/amulet_legendary.svg`
+- `icons/heroes/scholar/gear/amulet/amulet_celestial.svg`
+- `icons/heroes/scholar/gear/helmet/helmet_common.svg`
+- `icons/heroes/scholar/gear/helmet/helmet_uncommon.svg`
+- `icons/heroes/scholar/gear/helmet/helmet_rare.svg`
+- `icons/heroes/scholar/gear/helmet/helmet_epic.svg`
+- `icons/heroes/scholar/gear/helmet/helmet_legendary.svg`
+- `icons/heroes/scholar/gear/helmet/helmet_celestial.svg`
+- `icons/heroes/scholar/gear/shield/shield_common.svg`
+- `icons/heroes/scholar/gear/shield/shield_uncommon.svg`
+- `icons/heroes/scholar/gear/shield/shield_rare.svg`
+- `icons/heroes/scholar/gear/shield/shield_epic.svg`
+- `icons/heroes/scholar/gear/shield/shield_legendary.svg`
+- `icons/heroes/scholar/gear/shield/shield_celestial.svg`
+- `icons/heroes/scholar/gear/weapon/weapon_common.svg`
+- `icons/heroes/scholar/gear/weapon/weapon_uncommon.svg`
+- `icons/heroes/scholar/gear/weapon/weapon_rare.svg`
+- `icons/heroes/scholar/gear/weapon/weapon_epic.svg`
+- `icons/heroes/scholar/gear/weapon/weapon_legendary.svg`
+- `icons/heroes/scholar/gear/weapon/weapon_celestial.svg`
+- `icons/heroes/scholar/fx/tier_epic.svg`
+- `icons/heroes/scholar/fx/tier_legendary.svg`
+- `icons/heroes/scholar/fx/tier_celestial.svg`
+
+## Preferred Item-Type Output Files
+Generate these for full visual variety. If constrained, prioritize Helmet, Chestplate, Weapon, Shield.
+- `icons/heroes/scholar/gear/helmet/thinking_cap_common.svg`
+- `icons/heroes/scholar/gear/helmet/thinking_cap_uncommon.svg`
+- `icons/heroes/scholar/gear/helmet/thinking_cap_rare.svg`
+- `icons/heroes/scholar/gear/helmet/thinking_cap_epic.svg`
+- `icons/heroes/scholar/gear/helmet/thinking_cap_legendary.svg`
+- `icons/heroes/scholar/gear/helmet/thinking_cap_celestial.svg`
+- `icons/heroes/scholar/gear/helmet/scholar_s_hat_common.svg`
+- `icons/heroes/scholar/gear/helmet/scholar_s_hat_uncommon.svg`
+- `icons/heroes/scholar/gear/helmet/scholar_s_hat_rare.svg`
+- `icons/heroes/scholar/gear/helmet/scholar_s_hat_epic.svg`
+- `icons/heroes/scholar/gear/helmet/scholar_s_hat_legendary.svg`
+- `icons/heroes/scholar/gear/helmet/scholar_s_hat_celestial.svg`
+- `icons/heroes/scholar/gear/helmet/monocle_common.svg`
+- `icons/heroes/scholar/gear/helmet/monocle_uncommon.svg`
+- `icons/heroes/scholar/gear/helmet/monocle_rare.svg`
+- `icons/heroes/scholar/gear/helmet/monocle_epic.svg`
+- `icons/heroes/scholar/gear/helmet/monocle_legendary.svg`
+- `icons/heroes/scholar/gear/helmet/monocle_celestial.svg`
+- `icons/heroes/scholar/gear/helmet/reading_glasses_common.svg`
+- `icons/heroes/scholar/gear/helmet/reading_glasses_uncommon.svg`
+- `icons/heroes/scholar/gear/helmet/reading_glasses_rare.svg`
+- `icons/heroes/scholar/gear/helmet/reading_glasses_epic.svg`
+- `icons/heroes/scholar/gear/helmet/reading_glasses_legendary.svg`
+- `icons/heroes/scholar/gear/helmet/reading_glasses_celestial.svg`
+- `icons/heroes/scholar/gear/helmet/headband_common.svg`
+- `icons/heroes/scholar/gear/helmet/headband_uncommon.svg`
+- `icons/heroes/scholar/gear/helmet/headband_rare.svg`
+- `icons/heroes/scholar/gear/helmet/headband_epic.svg`
+- `icons/heroes/scholar/gear/helmet/headband_legendary.svg`
+- `icons/heroes/scholar/gear/helmet/headband_celestial.svg`
+- `icons/heroes/scholar/gear/helmet/beret_common.svg`
+- `icons/heroes/scholar/gear/helmet/beret_uncommon.svg`
+- `icons/heroes/scholar/gear/helmet/beret_rare.svg`
+- `icons/heroes/scholar/gear/helmet/beret_epic.svg`
+- `icons/heroes/scholar/gear/helmet/beret_legendary.svg`
+- `icons/heroes/scholar/gear/helmet/beret_celestial.svg`
+- `icons/heroes/scholar/gear/helmet/mortarboard_common.svg`
+- `icons/heroes/scholar/gear/helmet/mortarboard_uncommon.svg`
+- `icons/heroes/scholar/gear/helmet/mortarboard_rare.svg`
+- `icons/heroes/scholar/gear/helmet/mortarboard_epic.svg`
+- `icons/heroes/scholar/gear/helmet/mortarboard_legendary.svg`
+- `icons/heroes/scholar/gear/helmet/mortarboard_celestial.svg`
+- `icons/heroes/scholar/gear/chestplate/robe_common.svg`
+- `icons/heroes/scholar/gear/chestplate/robe_uncommon.svg`
+- `icons/heroes/scholar/gear/chestplate/robe_rare.svg`
+- `icons/heroes/scholar/gear/chestplate/robe_epic.svg`
+- `icons/heroes/scholar/gear/chestplate/robe_legendary.svg`
+- `icons/heroes/scholar/gear/chestplate/robe_celestial.svg`
+- `icons/heroes/scholar/gear/chestplate/academic_gown_common.svg`
+- `icons/heroes/scholar/gear/chestplate/academic_gown_uncommon.svg`
+- `icons/heroes/scholar/gear/chestplate/academic_gown_rare.svg`
+- `icons/heroes/scholar/gear/chestplate/academic_gown_epic.svg`
+- `icons/heroes/scholar/gear/chestplate/academic_gown_legendary.svg`
+- `icons/heroes/scholar/gear/chestplate/academic_gown_celestial.svg`
+- `icons/heroes/scholar/gear/chestplate/lab_coat_common.svg`
+- `icons/heroes/scholar/gear/chestplate/lab_coat_uncommon.svg`
+- `icons/heroes/scholar/gear/chestplate/lab_coat_rare.svg`
+- `icons/heroes/scholar/gear/chestplate/lab_coat_epic.svg`
+- `icons/heroes/scholar/gear/chestplate/lab_coat_legendary.svg`
+- `icons/heroes/scholar/gear/chestplate/lab_coat_celestial.svg`
+- `icons/heroes/scholar/gear/chestplate/vest_common.svg`
+- `icons/heroes/scholar/gear/chestplate/vest_uncommon.svg`
+- `icons/heroes/scholar/gear/chestplate/vest_rare.svg`
+- `icons/heroes/scholar/gear/chestplate/vest_epic.svg`
+- `icons/heroes/scholar/gear/chestplate/vest_legendary.svg`
+- `icons/heroes/scholar/gear/chestplate/vest_celestial.svg`
+- `icons/heroes/scholar/gear/chestplate/cardigan_common.svg`
+- `icons/heroes/scholar/gear/chestplate/cardigan_uncommon.svg`
+- `icons/heroes/scholar/gear/chestplate/cardigan_rare.svg`
+- `icons/heroes/scholar/gear/chestplate/cardigan_epic.svg`
+- `icons/heroes/scholar/gear/chestplate/cardigan_legendary.svg`
+- `icons/heroes/scholar/gear/chestplate/cardigan_celestial.svg`
+- `icons/heroes/scholar/gear/chestplate/blazer_common.svg`
+- `icons/heroes/scholar/gear/chestplate/blazer_uncommon.svg`
+- `icons/heroes/scholar/gear/chestplate/blazer_rare.svg`
+- `icons/heroes/scholar/gear/chestplate/blazer_epic.svg`
+- `icons/heroes/scholar/gear/chestplate/blazer_legendary.svg`
+- `icons/heroes/scholar/gear/chestplate/blazer_celestial.svg`
+- `icons/heroes/scholar/gear/chestplate/tweed_jacket_common.svg`
+- `icons/heroes/scholar/gear/chestplate/tweed_jacket_uncommon.svg`
+- `icons/heroes/scholar/gear/chestplate/tweed_jacket_rare.svg`
+- `icons/heroes/scholar/gear/chestplate/tweed_jacket_epic.svg`
+- `icons/heroes/scholar/gear/chestplate/tweed_jacket_legendary.svg`
+- `icons/heroes/scholar/gear/chestplate/tweed_jacket_celestial.svg`
+- `icons/heroes/scholar/gear/gauntlets/writing_gloves_common.svg`
+- `icons/heroes/scholar/gear/gauntlets/writing_gloves_uncommon.svg`
+- `icons/heroes/scholar/gear/gauntlets/writing_gloves_rare.svg`
+- `icons/heroes/scholar/gear/gauntlets/writing_gloves_epic.svg`
+- `icons/heroes/scholar/gear/gauntlets/writing_gloves_legendary.svg`
+- `icons/heroes/scholar/gear/gauntlets/writing_gloves_celestial.svg`
+- `icons/heroes/scholar/gear/gauntlets/ink_stained_gloves_common.svg`
+- `icons/heroes/scholar/gear/gauntlets/ink_stained_gloves_uncommon.svg`
+- `icons/heroes/scholar/gear/gauntlets/ink_stained_gloves_rare.svg`
+- `icons/heroes/scholar/gear/gauntlets/ink_stained_gloves_epic.svg`
+- `icons/heroes/scholar/gear/gauntlets/ink_stained_gloves_legendary.svg`
+- `icons/heroes/scholar/gear/gauntlets/ink_stained_gloves_celestial.svg`
+- `icons/heroes/scholar/gear/gauntlets/library_mitts_common.svg`
+- `icons/heroes/scholar/gear/gauntlets/library_mitts_uncommon.svg`
+- `icons/heroes/scholar/gear/gauntlets/library_mitts_rare.svg`
+- `icons/heroes/scholar/gear/gauntlets/library_mitts_epic.svg`
+- `icons/heroes/scholar/gear/gauntlets/library_mitts_legendary.svg`
+- `icons/heroes/scholar/gear/gauntlets/library_mitts_celestial.svg`
+- `icons/heroes/scholar/gear/gauntlets/page_turner_common.svg`
+- `icons/heroes/scholar/gear/gauntlets/page_turner_uncommon.svg`
+- `icons/heroes/scholar/gear/gauntlets/page_turner_rare.svg`
+- `icons/heroes/scholar/gear/gauntlets/page_turner_epic.svg`
+- `icons/heroes/scholar/gear/gauntlets/page_turner_legendary.svg`
+- `icons/heroes/scholar/gear/gauntlets/page_turner_celestial.svg`
+- `icons/heroes/scholar/gear/gauntlets/scribe_s_hands_common.svg`
+- `icons/heroes/scholar/gear/gauntlets/scribe_s_hands_uncommon.svg`
+- `icons/heroes/scholar/gear/gauntlets/scribe_s_hands_rare.svg`
+- `icons/heroes/scholar/gear/gauntlets/scribe_s_hands_epic.svg`
+- `icons/heroes/scholar/gear/gauntlets/scribe_s_hands_legendary.svg`
+- `icons/heroes/scholar/gear/gauntlets/scribe_s_hands_celestial.svg`
+- `icons/heroes/scholar/gear/boots/slippers_common.svg`
+- `icons/heroes/scholar/gear/boots/slippers_uncommon.svg`
+- `icons/heroes/scholar/gear/boots/slippers_rare.svg`
+- `icons/heroes/scholar/gear/boots/slippers_epic.svg`
+- `icons/heroes/scholar/gear/boots/slippers_legendary.svg`
+- `icons/heroes/scholar/gear/boots/slippers_celestial.svg`
+- `icons/heroes/scholar/gear/boots/oxford_shoes_common.svg`
+- `icons/heroes/scholar/gear/boots/oxford_shoes_uncommon.svg`
+- `icons/heroes/scholar/gear/boots/oxford_shoes_rare.svg`
+- `icons/heroes/scholar/gear/boots/oxford_shoes_epic.svg`
+- `icons/heroes/scholar/gear/boots/oxford_shoes_legendary.svg`
+- `icons/heroes/scholar/gear/boots/oxford_shoes_celestial.svg`
+- `icons/heroes/scholar/gear/boots/study_loafers_common.svg`
+- `icons/heroes/scholar/gear/boots/study_loafers_uncommon.svg`
+- `icons/heroes/scholar/gear/boots/study_loafers_rare.svg`
+- `icons/heroes/scholar/gear/boots/study_loafers_epic.svg`
+- `icons/heroes/scholar/gear/boots/study_loafers_legendary.svg`
+- `icons/heroes/scholar/gear/boots/study_loafers_celestial.svg`
+- `icons/heroes/scholar/gear/boots/silent_treads_common.svg`
+- `icons/heroes/scholar/gear/boots/silent_treads_uncommon.svg`
+- `icons/heroes/scholar/gear/boots/silent_treads_rare.svg`
+- `icons/heroes/scholar/gear/boots/silent_treads_epic.svg`
+- `icons/heroes/scholar/gear/boots/silent_treads_legendary.svg`
+- `icons/heroes/scholar/gear/boots/silent_treads_celestial.svg`
+- `icons/heroes/scholar/gear/boots/library_shoes_common.svg`
+- `icons/heroes/scholar/gear/boots/library_shoes_uncommon.svg`
+- `icons/heroes/scholar/gear/boots/library_shoes_rare.svg`
+- `icons/heroes/scholar/gear/boots/library_shoes_epic.svg`
+- `icons/heroes/scholar/gear/boots/library_shoes_legendary.svg`
+- `icons/heroes/scholar/gear/boots/library_shoes_celestial.svg`
+- `icons/heroes/scholar/gear/boots/quiet_steps_common.svg`
+- `icons/heroes/scholar/gear/boots/quiet_steps_uncommon.svg`
+- `icons/heroes/scholar/gear/boots/quiet_steps_rare.svg`
+- `icons/heroes/scholar/gear/boots/quiet_steps_epic.svg`
+- `icons/heroes/scholar/gear/boots/quiet_steps_legendary.svg`
+- `icons/heroes/scholar/gear/boots/quiet_steps_celestial.svg`
+- `icons/heroes/scholar/gear/shield/tome_common.svg`
+- `icons/heroes/scholar/gear/shield/tome_uncommon.svg`
+- `icons/heroes/scholar/gear/shield/tome_rare.svg`
+- `icons/heroes/scholar/gear/shield/tome_epic.svg`
+- `icons/heroes/scholar/gear/shield/tome_legendary.svg`
+- `icons/heroes/scholar/gear/shield/tome_celestial.svg`
+- `icons/heroes/scholar/gear/shield/encyclopedia_common.svg`
+- `icons/heroes/scholar/gear/shield/encyclopedia_uncommon.svg`
+- `icons/heroes/scholar/gear/shield/encyclopedia_rare.svg`
+- `icons/heroes/scholar/gear/shield/encyclopedia_epic.svg`
+- `icons/heroes/scholar/gear/shield/encyclopedia_legendary.svg`
+- `icons/heroes/scholar/gear/shield/encyclopedia_celestial.svg`
+- `icons/heroes/scholar/gear/shield/grimoire_common.svg`
+- `icons/heroes/scholar/gear/shield/grimoire_uncommon.svg`
+- `icons/heroes/scholar/gear/shield/grimoire_rare.svg`
+- `icons/heroes/scholar/gear/shield/grimoire_epic.svg`
+- `icons/heroes/scholar/gear/shield/grimoire_legendary.svg`
+- `icons/heroes/scholar/gear/shield/grimoire_celestial.svg`
+- `icons/heroes/scholar/gear/shield/lexicon_common.svg`
+- `icons/heroes/scholar/gear/shield/lexicon_uncommon.svg`
+- `icons/heroes/scholar/gear/shield/lexicon_rare.svg`
+- `icons/heroes/scholar/gear/shield/lexicon_epic.svg`
+- `icons/heroes/scholar/gear/shield/lexicon_legendary.svg`
+- `icons/heroes/scholar/gear/shield/lexicon_celestial.svg`
+- `icons/heroes/scholar/gear/shield/atlas_common.svg`
+- `icons/heroes/scholar/gear/shield/atlas_uncommon.svg`
+- `icons/heroes/scholar/gear/shield/atlas_rare.svg`
+- `icons/heroes/scholar/gear/shield/atlas_epic.svg`
+- `icons/heroes/scholar/gear/shield/atlas_legendary.svg`
+- `icons/heroes/scholar/gear/shield/atlas_celestial.svg`
+- `icons/heroes/scholar/gear/shield/codex_common.svg`
+- `icons/heroes/scholar/gear/shield/codex_uncommon.svg`
+- `icons/heroes/scholar/gear/shield/codex_rare.svg`
+- `icons/heroes/scholar/gear/shield/codex_epic.svg`
+- `icons/heroes/scholar/gear/shield/codex_legendary.svg`
+- `icons/heroes/scholar/gear/shield/codex_celestial.svg`
+- `icons/heroes/scholar/gear/shield/reference_book_common.svg`
+- `icons/heroes/scholar/gear/shield/reference_book_uncommon.svg`
+- `icons/heroes/scholar/gear/shield/reference_book_rare.svg`
+- `icons/heroes/scholar/gear/shield/reference_book_epic.svg`
+- `icons/heroes/scholar/gear/shield/reference_book_legendary.svg`
+- `icons/heroes/scholar/gear/shield/reference_book_celestial.svg`
+- `icons/heroes/scholar/gear/weapon/quill_common.svg`
+- `icons/heroes/scholar/gear/weapon/quill_uncommon.svg`
+- `icons/heroes/scholar/gear/weapon/quill_rare.svg`
+- `icons/heroes/scholar/gear/weapon/quill_epic.svg`
+- `icons/heroes/scholar/gear/weapon/quill_legendary.svg`
+- `icons/heroes/scholar/gear/weapon/quill_celestial.svg`
+- `icons/heroes/scholar/gear/weapon/fountain_pen_common.svg`
+- `icons/heroes/scholar/gear/weapon/fountain_pen_uncommon.svg`
+- `icons/heroes/scholar/gear/weapon/fountain_pen_rare.svg`
+- `icons/heroes/scholar/gear/weapon/fountain_pen_epic.svg`
+- `icons/heroes/scholar/gear/weapon/fountain_pen_legendary.svg`
+- `icons/heroes/scholar/gear/weapon/fountain_pen_celestial.svg`
+- `icons/heroes/scholar/gear/weapon/pointer_common.svg`
+- `icons/heroes/scholar/gear/weapon/pointer_uncommon.svg`
+- `icons/heroes/scholar/gear/weapon/pointer_rare.svg`
+- `icons/heroes/scholar/gear/weapon/pointer_epic.svg`
+- `icons/heroes/scholar/gear/weapon/pointer_legendary.svg`
+- `icons/heroes/scholar/gear/weapon/pointer_celestial.svg`
+- `icons/heroes/scholar/gear/weapon/chalk_common.svg`
+- `icons/heroes/scholar/gear/weapon/chalk_uncommon.svg`
+- `icons/heroes/scholar/gear/weapon/chalk_rare.svg`
+- `icons/heroes/scholar/gear/weapon/chalk_epic.svg`
+- `icons/heroes/scholar/gear/weapon/chalk_legendary.svg`
+- `icons/heroes/scholar/gear/weapon/chalk_celestial.svg`
+- `icons/heroes/scholar/gear/weapon/magnifying_glass_common.svg`
+- `icons/heroes/scholar/gear/weapon/magnifying_glass_uncommon.svg`
+- `icons/heroes/scholar/gear/weapon/magnifying_glass_rare.svg`
+- `icons/heroes/scholar/gear/weapon/magnifying_glass_epic.svg`
+- `icons/heroes/scholar/gear/weapon/magnifying_glass_legendary.svg`
+- `icons/heroes/scholar/gear/weapon/magnifying_glass_celestial.svg`
+- `icons/heroes/scholar/gear/weapon/letter_opener_common.svg`
+- `icons/heroes/scholar/gear/weapon/letter_opener_uncommon.svg`
+- `icons/heroes/scholar/gear/weapon/letter_opener_rare.svg`
+- `icons/heroes/scholar/gear/weapon/letter_opener_epic.svg`
+- `icons/heroes/scholar/gear/weapon/letter_opener_legendary.svg`
+- `icons/heroes/scholar/gear/weapon/letter_opener_celestial.svg`
+- `icons/heroes/scholar/gear/weapon/ruler_common.svg`
+- `icons/heroes/scholar/gear/weapon/ruler_uncommon.svg`
+- `icons/heroes/scholar/gear/weapon/ruler_rare.svg`
+- `icons/heroes/scholar/gear/weapon/ruler_epic.svg`
+- `icons/heroes/scholar/gear/weapon/ruler_legendary.svg`
+- `icons/heroes/scholar/gear/weapon/ruler_celestial.svg`
+- `icons/heroes/scholar/gear/cloak/academic_robe_common.svg`
+- `icons/heroes/scholar/gear/cloak/academic_robe_uncommon.svg`
+- `icons/heroes/scholar/gear/cloak/academic_robe_rare.svg`
+- `icons/heroes/scholar/gear/cloak/academic_robe_epic.svg`
+- `icons/heroes/scholar/gear/cloak/academic_robe_legendary.svg`
+- `icons/heroes/scholar/gear/cloak/academic_robe_celestial.svg`
+- `icons/heroes/scholar/gear/cloak/graduation_cape_common.svg`
+- `icons/heroes/scholar/gear/cloak/graduation_cape_uncommon.svg`
+- `icons/heroes/scholar/gear/cloak/graduation_cape_rare.svg`
+- `icons/heroes/scholar/gear/cloak/graduation_cape_epic.svg`
+- `icons/heroes/scholar/gear/cloak/graduation_cape_legendary.svg`
+- `icons/heroes/scholar/gear/cloak/graduation_cape_celestial.svg`
+- `icons/heroes/scholar/gear/cloak/research_shawl_common.svg`
+- `icons/heroes/scholar/gear/cloak/research_shawl_uncommon.svg`
+- `icons/heroes/scholar/gear/cloak/research_shawl_rare.svg`
+- `icons/heroes/scholar/gear/cloak/research_shawl_epic.svg`
+- `icons/heroes/scholar/gear/cloak/research_shawl_legendary.svg`
+- `icons/heroes/scholar/gear/cloak/research_shawl_celestial.svg`
+- `icons/heroes/scholar/gear/cloak/wisdom_mantle_common.svg`
+- `icons/heroes/scholar/gear/cloak/wisdom_mantle_uncommon.svg`
+- `icons/heroes/scholar/gear/cloak/wisdom_mantle_rare.svg`
+- `icons/heroes/scholar/gear/cloak/wisdom_mantle_epic.svg`
+- `icons/heroes/scholar/gear/cloak/wisdom_mantle_legendary.svg`
+- `icons/heroes/scholar/gear/cloak/wisdom_mantle_celestial.svg`
+- `icons/heroes/scholar/gear/cloak/library_shroud_common.svg`
+- `icons/heroes/scholar/gear/cloak/library_shroud_uncommon.svg`
+- `icons/heroes/scholar/gear/cloak/library_shroud_rare.svg`
+- `icons/heroes/scholar/gear/cloak/library_shroud_epic.svg`
+- `icons/heroes/scholar/gear/cloak/library_shroud_legendary.svg`
+- `icons/heroes/scholar/gear/cloak/library_shroud_celestial.svg`
+- `icons/heroes/scholar/gear/amulet/pocket_watch_common.svg`
+- `icons/heroes/scholar/gear/amulet/pocket_watch_uncommon.svg`
+- `icons/heroes/scholar/gear/amulet/pocket_watch_rare.svg`
+- `icons/heroes/scholar/gear/amulet/pocket_watch_epic.svg`
+- `icons/heroes/scholar/gear/amulet/pocket_watch_legendary.svg`
+- `icons/heroes/scholar/gear/amulet/pocket_watch_celestial.svg`
+- `icons/heroes/scholar/gear/amulet/spectacles_chain_common.svg`
+- `icons/heroes/scholar/gear/amulet/spectacles_chain_uncommon.svg`
+- `icons/heroes/scholar/gear/amulet/spectacles_chain_rare.svg`
+- `icons/heroes/scholar/gear/amulet/spectacles_chain_epic.svg`
+- `icons/heroes/scholar/gear/amulet/spectacles_chain_legendary.svg`
+- `icons/heroes/scholar/gear/amulet/spectacles_chain_celestial.svg`
+- `icons/heroes/scholar/gear/amulet/scholar_s_medal_common.svg`
+- `icons/heroes/scholar/gear/amulet/scholar_s_medal_uncommon.svg`
+- `icons/heroes/scholar/gear/amulet/scholar_s_medal_rare.svg`
+- `icons/heroes/scholar/gear/amulet/scholar_s_medal_epic.svg`
+- `icons/heroes/scholar/gear/amulet/scholar_s_medal_legendary.svg`
+- `icons/heroes/scholar/gear/amulet/scholar_s_medal_celestial.svg`
+- `icons/heroes/scholar/gear/amulet/dean_s_pendant_common.svg`
+- `icons/heroes/scholar/gear/amulet/dean_s_pendant_uncommon.svg`
+- `icons/heroes/scholar/gear/amulet/dean_s_pendant_rare.svg`
+- `icons/heroes/scholar/gear/amulet/dean_s_pendant_epic.svg`
+- `icons/heroes/scholar/gear/amulet/dean_s_pendant_legendary.svg`
+- `icons/heroes/scholar/gear/amulet/dean_s_pendant_celestial.svg`
+- `icons/heroes/scholar/gear/amulet/wisdom_crystal_common.svg`
+- `icons/heroes/scholar/gear/amulet/wisdom_crystal_uncommon.svg`
+- `icons/heroes/scholar/gear/amulet/wisdom_crystal_rare.svg`
+- `icons/heroes/scholar/gear/amulet/wisdom_crystal_epic.svg`
+- `icons/heroes/scholar/gear/amulet/wisdom_crystal_legendary.svg`
+- `icons/heroes/scholar/gear/amulet/wisdom_crystal_celestial.svg`
+
+## Slot-by-Slot Direction
+### Cloak
+- role: Motion layer. Build depth and emotional tone through shape and edge cuts.
+- animation cue: Low-frequency sway with occasional gust accent.
+- item types to represent: Academic Robe, Graduation Cape, Research Shawl, Wisdom Mantle, Library Shroud
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Chestplate
+- role: Main mass-defining body layer. Largest storytelling surface after base hero.
+- animation cue: Core pulse or panel breathing loop (slow, 3-5s).
+- item types to represent: Robe, Academic Gown, Lab Coat, Vest, Cardigan, Blazer, Tweed Jacket
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Boots
+- role: Movement identity. Encode terrain, mobility mode, and weight class.
+- animation cue: Sole glow ripple or dust/spark kick pulse.
+- item types to represent: Slippers, Oxford Shoes, Study Loafers, Silent Treads, Library Shoes, Quiet Steps
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Gauntlets
+- role: Functional hand/tool interface. Show dexterity and role-specific mechanics.
+- animation cue: Knuckle light wave or servo twitch loop (subtle).
+- item types to represent: Writing Gloves, Ink-stained Gloves, Library Mitts, Page-Turner, Scribe's Hands
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Amulet
+- role: Narrative core token. Small but high-contrast and symbolically loaded.
+- animation cue: Heartbeat glow pulse with small orbiting mote.
+- item types to represent: Pocket Watch, Spectacles Chain, Scholar's Medal, Dean's Pendant, Wisdom Crystal
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Helmet
+- role: Head identity piece. Prioritize profile readability and theme signature crest.
+- animation cue: Visor sweep or indicator blink every 2-4s.
+- item types to represent: Thinking Cap, Scholar's Hat, Monocle, Reading Glasses, Headband, Beret, Mortarboard
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Shield
+- role: Defensive philosophy. Make silhouette distinct from chestplate/weapon.
+- animation cue: Border scan sweep or shield-ripple pulse.
+- item types to represent: Tome, Encyclopedia, Grimoire, Lexicon, Atlas, Codex, Reference Book
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+### Weapon
+- role: Primary action silhouette. Highest visual contrast and directional energy.
+- animation cue: Edge glint sweep or energy charge loop.
+- item types to represent: Quill, Fountain Pen, Pointer, Chalk, Magnifying Glass, Letter Opener, Ruler
+- rarity progression:
+  - common: Simple practical geometry, minimal ornament, stable materials.
+  - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).
+  - rare: Introduce silhouette mutation (fins, flare, asymmetry, segmented layer).
+  - epic: Add signature motif + emissive channels; complexity should be clearly higher.
+  - legendary: Transform form language into ceremonial/mythic version with unique outline.
+  - celestial: Break silhouette boundaries with transcendent motifs, layered aura geometry, and unmistakable apex identity.
+
+## Global Quality Gates
+- Do not use only color swaps across rarities; geometry and silhouette must evolve.
+- Keep readability at 70x90 and 180x220.
+- Keep transparent backgrounds.
+- Ensure first frame is static-compatible (for QSvgRenderer path).
+- Keep layering aligned with hero base center and foot line.
+
+## LLM Generation Prompt
+Use this with your SVG-generation model:
+
+```text
+You are generating production SVG assets for PersonalFreedom hero rendering.
+Theme: scholar
+Follow file names exactly as listed in this packet.
+Canvas/viewBox: 0 0 180 220. Transparent background.
+For each rarity tier, change silhouette/design complexity, not only colors.
+Respect slot role and animation cues in this packet.
+Output valid standalone SVG files only.
+```
