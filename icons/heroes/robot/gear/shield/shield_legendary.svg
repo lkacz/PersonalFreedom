@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(20, 10)">
+    <!-- Legendary: Aegis Drone (Little guy) -->
+    <circle cx="145" cy="90" r="10" fill="#fff" stroke="#ff8a3d" stroke-width="2"/>
+    <!-- Wings -->
+    <path d="M135 90 L125 80" stroke="#ff8a3d" stroke-width="2"/>
+    <path d="M155 90 L165 80" stroke="#ff8a3d" stroke-width="2"/>
+    <!-- Shield Projection -->
+    <path d="M100 70 Q160 80 160 150 Q100 140 100 70 Z" fill="#ff8a3d" opacity="0.4"/>
+  </g>
+</svg>

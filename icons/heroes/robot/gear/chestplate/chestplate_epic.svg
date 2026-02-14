@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <!-- Epic Chestplate: Sleek Nanite Weave (Clean, futuristic) -->
+  <path d="M60 72 Q90 65 120 72 L116 128 Q90 135 64 128 Z" fill="#ECEFF1" stroke="#36d6e7" stroke-width="2"/>
+  <path d="M90 70 L90 130" stroke="#CFD8DC" stroke-width="1"/>
+  <path d="M60 90 Q90 100 120 90" stroke="#36d6e7" stroke-width="1" fill="none"/>
+  <circle cx="90" cy="100" r="10" fill="#263238" stroke="#36d6e7" stroke-width="2"/>
+  <circle cx="90" cy="100" r="5" fill="#36d6e7"/>
+</svg>

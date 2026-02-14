@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(0,0)">
+    <!-- Rare: Magnetic Palms (Horseshoe Magnet) -->
+    <path d="M35 130 Q35 160 49 160 Q63 160 63 130" fill="none" stroke="#F44336" stroke-width="6"/>
+    <rect x="32" y="130" width="6" height="10" fill="#E0E0E0"/> <!-- Tips -->
+    <rect x="60" y="130" width="6" height="10" fill="#E0E0E0"/>
+    
+    <path d="M117 130 Q117 160 131 160 Q145 160 145 130" fill="none" stroke="#F44336" stroke-width="6"/>
+    <rect x="114" y="130" width="6" height="10" fill="#E0E0E0"/>
+    <rect x="142" y="130" width="6" height="10" fill="#E0E0E0"/>
+    <!-- Spark -->
+    <path d="M49 145 L52 140 L46 140 Z" fill="#FFEB3B"/>
+    <path d="M131 145 L134 140 L128 140 Z" fill="#FFEB3B"/>
+  </g>
+</svg>

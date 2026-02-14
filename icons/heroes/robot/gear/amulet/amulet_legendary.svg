@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <!-- Legendary: Freewill Kernel (Golden Chip) -->
+  <g transform="translate(82, 85)">
+    <rect x="0" y="0" width="16" height="16" rx="2" fill="#FFC107" stroke="#E65100" stroke-width="1"/>
+    <rect x="4" y="4" width="8" height="8" fill="#000"/>
+    <circle cx="8" cy="8" r="2" fill="#3cd6e7"/>
+  </g>
+</svg>

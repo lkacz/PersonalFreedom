@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(20, 10)">
+    <!-- Epic: Holographic Wall (Digital glitch) -->
+    <rect x="95" y="70" width="60" height="90" fill="none" stroke="#36d6e7" stroke-width="2"/>
+    <path d="M95 70 L155 160" stroke="#36d6e7" stroke-width="1" opacity="0.5"/>
+    <path d="M155 70 L95 160" stroke="#36d6e7" stroke-width="1" opacity="0.5"/>
+    <!-- Smiley Face in center -->
+    <circle cx="125" cy="115" r="15" fill="#36d6e7" opacity="0.2"/>
+    <path d="M118 110 L118 112" stroke="#36d6e7" stroke-width="2"/>
+    <path d="M132 110 L132 112" stroke="#36d6e7" stroke-width="2"/>
+    <path d="M118 120 Q125 125 132 120" stroke="#36d6e7" stroke-width="2" fill="none"/>
+  </g>
+</svg>

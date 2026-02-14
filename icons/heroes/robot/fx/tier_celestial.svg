@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <!-- Robot FX Tier: Celestial - Mathematical Apotheosis -->
+  <defs>
+    <linearGradient id="transcendenceBeam" x1="0%" y1="100%" x2="0%" y2="0%">
+        <stop offset="0%" stop-color="#36d6e7" stop-opacity="0"/>
+        <stop offset="50%" stop-color="#ffffff" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#36d6e7" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="celestialBlur">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+    </filter>
+  </defs>
+
+  <!-- Vertical Ascension Column (Background) -->
+  <rect x="60" y="0" width="60" height="220" fill="url(#transcendenceBeam)"/>
+  
+  <!-- Binary Halo / Code Nimbus -->
+  <circle cx="90" cy="45" r="45" fill="none" stroke="#ffffff" stroke-width="2" opacity="0.7"/>
+  <circle cx="90" cy="45" r="50" fill="none" stroke="#36d6e7" stroke-width="1" stroke-dasharray="1 3" opacity="0.9"/>
+  
+  <!-- Floating Geometric Platonics -->
+  <!-- Left Tetrahedron -->
+  <path d="M30 60 L40 80 L20 80 Z" fill="none" stroke="#ff8a3d" stroke-width="1.5" opacity="0.8"/>
+  <!-- Right Octahedron -->
+  <path d="M150 60 L160 80 L140 80 Z" fill="none" stroke="#ff8a3d" stroke-width="1.5" opacity="0.8"/>
+  
+  <!-- Ground Singularity -->
+  <ellipse cx="90" cy="205" rx="80" ry="5" fill="#ffffff" opacity="0.4" filter="url(#celestialBlur)"/>
+  
+  <!-- Core Singularity Beams -->
+  <path d="M90 100 L20 20" stroke="#ffffff" stroke-width="2" opacity="0.3"/>
+  <path d="M90 100 L160 20" stroke="#ffffff" stroke-width="2" opacity="0.3"/>
+</svg>

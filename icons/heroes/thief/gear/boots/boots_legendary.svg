@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="l_boot_shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4a5d71"/>
+      <stop offset="100%" stop-color="#1f2d3c"/>
+    </linearGradient>
+    <linearGradient id="l_boot_highlight" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#b4c3d1" stop-opacity="0.72"/>
+      <stop offset="100%" stop-color="#b4c3d1" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="l_boot_sole" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#afbfcd"/>
+      <stop offset="100%" stop-color="#6c7f90"/>
+    </linearGradient>
+    <linearGradient id="l_toe_cap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a5651d"/>
+      <stop offset="100%" stop-color="#7a430d"/>
+    </linearGradient>
+    <radialGradient id="l_chip_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd180" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#ff9800" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="l_sweep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#ffd59b" stop-opacity="0.82"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Legendary: fitted template + orange laces + command-grade metal details -->
+  <g id="boots_legendary">
+    <!-- Left -->
+    <path d="M59 193 L82 193 L80 209 L58 209 Z" fill="url(#l_boot_shell)" stroke="#0f171d" stroke-width="0.9"/>
+    <path d="M60 194 L75 194 L74 206 L60 206 Z" fill="url(#l_boot_highlight)" opacity="0.49"/>
+    <path d="M58.8 202.3 L80.8 202.3" stroke="#1a2731" stroke-width="0.7" opacity="0.65"/>
+    <path d="M60.2 194.0 L81.7 194.0" stroke="#758a9c" stroke-width="0.55" opacity="0.66"/>
+    <rect x="60.0" y="205.0" width="18.8" height="2.3" rx="0.8" fill="url(#l_toe_cap)" opacity="0.96"/>
+    <path d="M58 207 L80 207 L79 210 L57 210 Z" fill="url(#l_boot_sole)"/>
+    <path d="M58 208.6 L79.2 208.6" stroke="#c4cfd6" stroke-width="0.5" opacity="0.58"/>
+    <path d="M62.0 196.8 L76.7 196.8 M61.8 199.4 L76.5 199.4 M61.6 202.0 L76.3 202.0" stroke="#ff9800" stroke-width="1.02" stroke-linecap="round">
+      <animate attributeName="opacity" values="0.58;1;0.58" dur="1.7s" repeatCount="indefinite"/>
+    </path>
+    <path d="M61.3 204.6 L77.8 204.6" stroke="#ffb74d" stroke-width="0.85" opacity="0.85"/>
+    <path d="M68.6 198.9 L69.2 200.2 L70.7 200.2 L69.5 201.1 L70.0 202.4 L68.6 201.5 L67.2 202.4 L67.7 201.1 L66.5 200.2 L68.0 200.2 Z" fill="#ffd180" opacity="0.95"/>
+    <circle cx="70.6" cy="198.3" r="2.4" fill="url(#l_chip_glow)" opacity="0.7">
+      <animate attributeName="r" values="2.0;3.2;2.0" dur="2.0s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.95;0.4" dur="2.0s" repeatCount="indefinite"/>
+    </circle>
+    <rect x="63.4" y="193.8" width="11.6" height="8.2" rx="1.4" fill="url(#l_sweep)" opacity="0">
+      <animate attributeName="y" values="193.8;201.0;193.8" dur="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.74;0" dur="2.5s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- Right -->
+    <path d="M88 193 L112 193 L114 209 L88 209 Z" fill="url(#l_boot_shell)" stroke="#0f171d" stroke-width="0.9"/>
+    <path d="M89.0 194 L104.5 194 L105.2 206 L89.0 206 Z" fill="url(#l_boot_highlight)" opacity="0.46"/>
+    <path d="M89.0 202.3 L113.2 202.3" stroke="#1a2731" stroke-width="0.7" opacity="0.65"/>
+    <path d="M89.2 194.0 L112.1 194.0" stroke="#758a9c" stroke-width="0.55" opacity="0.66"/>
+    <rect x="89.0" y="205.0" width="22.0" height="2.3" rx="0.8" fill="url(#l_toe_cap)" opacity="0.96"/>
+    <path d="M88 207 L114 207 L114 210 L88 210 Z" fill="url(#l_boot_sole)"/>
+    <path d="M88.2 208.6 L113.8 208.6" stroke="#c4cfd6" stroke-width="0.5" opacity="0.58"/>
+    <path d="M92.2 196.8 L108.8 196.8 M92.0 199.4 L108.6 199.4 M91.8 202.0 L108.4 202.0" stroke="#ff9800" stroke-width="1.02" stroke-linecap="round">
+      <animate attributeName="opacity" values="0.58;1;0.58" dur="1.95s" repeatCount="indefinite"/>
+    </path>
+    <path d="M92.2 204.6 L110.4 204.6" stroke="#ffb74d" stroke-width="0.85" opacity="0.85"/>
+    <path d="M101.4 198.9 L102.0 200.2 L103.5 200.2 L102.3 201.1 L102.8 202.4 L101.4 201.5 L100.0 202.4 L100.5 201.1 L99.3 200.2 L100.8 200.2 Z" fill="#ffd180" opacity="0.95"/>
+    <circle cx="103.3" cy="198.3" r="2.4" fill="url(#l_chip_glow)" opacity="0.7">
+      <animate attributeName="r" values="2.0;3.2;2.0" dur="2.3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.95;0.4" dur="2.3s" repeatCount="indefinite"/>
+    </circle>
+    <rect x="94.0" y="193.8" width="12.6" height="8.2" rx="1.4" fill="url(#l_sweep)" opacity="0">
+      <animate attributeName="y" values="193.8;201.0;193.8" dur="2.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.74;0" dur="2.8s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+</svg>

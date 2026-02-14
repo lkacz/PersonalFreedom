@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(0,0)">
+    <!-- Celestial: Light Trails -->
+    <path d="M60 180 L60 220" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity="0.5"/>
+    <path d="M60 180 L60 220" stroke="#36d6e7" stroke-width="4" stroke-linecap="round"/>
+    <path d="M120 180 L120 220" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity="0.5"/>
+    <path d="M120 180 L120 220" stroke="#36d6e7" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>

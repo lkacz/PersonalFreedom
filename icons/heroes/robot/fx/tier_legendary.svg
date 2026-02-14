@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <!-- Robot FX Tier: Legendary - Holographic Mastery & Defense Field -->
+  <defs>
+    <radialGradient id="holoGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="70%" stop-color="#36d6e7" stop-opacity="0"/>
+      <stop offset="95%" stop-color="#36d6e7" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#36d6e7" stop-opacity="0.6"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Hex Force Field Background Aura -->
+  <path d="M90 20 L150 55 L150 125 L90 160 L30 125 L30 55 Z" fill="none" stroke="#36d6e7" stroke-width="1" stroke-dasharray="10 5" opacity="0.3"/>
+  <path d="M90 10 L160 50 L160 135 L90 175 L20 135 L20 50 Z" fill="url(#holoGradient)" opacity="0.2"/>
+
+  <!-- Rotating Schematic Rings (Static Representation) -->
+  <ellipse cx="90" cy="195" rx="70" ry="15" fill="none" stroke="#36d6e7" stroke-width="1.5" opacity="0.6"/>
+  <ellipse cx="90" cy="195" rx="60" ry="12" fill="none" stroke="#ff8a3d" stroke-width="1" stroke-dasharray="2 4" opacity="0.8"/>
+
+  <!-- Overhead Status Display -->
+  <path d="M70 20 L110 20 L105 30 L75 30 Z" fill="#36d6e7" opacity="0.2" stroke="#36d6e7" stroke-width="1"/>
+  <rect x="75" y="15" width="30" height="2" fill="#ff8a3d" opacity="0.8"/>
+
+  <!-- Heavy Core Overcharge -->
+  <circle cx="90" cy="100" r="25" fill="none" stroke="#ff8a3d" stroke-width="1" stroke-dasharray="2 2" opacity="0.6"/>
+</svg>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="l_back" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#465c6e"/>
+      <stop offset="100%" stop-color="#202d39"/>
+    </linearGradient>
+    <linearGradient id="l_side" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a4d5c"/>
+      <stop offset="100%" stop-color="#182129"/>
+    </linearGradient>
+    <radialGradient id="l_core_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd180" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#ff9800" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Legendary cloak: fitted drape + orange command trim -->
+  <g id="cloak_legendary">
+    <path d="M70 84 Q90 76 110 84 L121 176 Q90 189 59 176 Z" fill="url(#l_back)" opacity="0.56"/>
+    <path d="M68 84 L82 90 L76 183 L52 176 Z" fill="url(#l_side)" opacity="0.83"/>
+    <path d="M112 84 L98 90 L104 183 L128 176 Z" fill="url(#l_side)" opacity="0.83"/>
+
+    <path d="M68 85 Q90 79 112 85" fill="none" stroke="#ff9800" stroke-width="1.15" opacity="0.93"/>
+    <path d="M74 95 L67 173" fill="none" stroke="#ffb74d" stroke-width="0.9" opacity="0.84"/>
+    <path d="M106 95 L113 173" fill="none" stroke="#ffb74d" stroke-width="0.9" opacity="0.84"/>
+    <path d="M79 101.3 Q90 106.8 101 101.3" fill="none" stroke="#ffcc80" stroke-width="1.0" opacity="0.88"/>
+    <circle cx="90" cy="88.5" r="2.2" fill="#ff9800" opacity="0.95"/>
+    <circle cx="90" cy="88.5" r="5.5" fill="url(#l_core_glow)" opacity="0.55">
+      <animate attributeName="r" values="4.9;6.4;4.9" dur="2.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.35;0.7;0.35" dur="2.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>

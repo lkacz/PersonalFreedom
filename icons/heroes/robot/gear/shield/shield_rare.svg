@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(20, 10)">
+    <!-- Rare: Force Field Emitter (Small device + Hexagon) -->
+    <circle cx="125" cy="115" r="8" fill="#455A64" stroke="#36d6e7" stroke-width="2"/>
+    <path d="M125 75 L160 95 L160 135 L125 155 L90 135 L90 95 Z" fill="#36d6e7" stroke="#36d6e7" stroke-width="1" opacity="0.3"/>
+  </g>
+</svg>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="e_boot_shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#45566c"/>
+      <stop offset="100%" stop-color="#1e2a39"/>
+    </linearGradient>
+    <linearGradient id="e_boot_highlight" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a8b7c8" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#a8b7c8" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="e_boot_sole" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a5b6c5"/>
+      <stop offset="100%" stop-color="#637587"/>
+    </linearGradient>
+    <linearGradient id="e_toe_cap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6a3c8a"/>
+      <stop offset="100%" stop-color="#462961"/>
+    </linearGradient>
+    <filter id="e_lace_glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="0.55"/>
+    </filter>
+    <radialGradient id="e_pulse_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f0c8ff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#9c27b0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="e_sweep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#e6c7f2" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Epic: fitted template + purple laces + subtle energized trim -->
+  <g id="boots_epic">
+    <!-- Left -->
+    <path d="M59 193 L82 193 L80 209 L58 209 Z" fill="url(#e_boot_shell)" stroke="#0f171d" stroke-width="0.9"/>
+    <path d="M60 194 L75 194 L74 206 L60 206 Z" fill="url(#e_boot_highlight)" opacity="0.48"/>
+    <path d="M58.8 202.3 L80.8 202.3" stroke="#1a2731" stroke-width="0.7" opacity="0.65"/>
+    <path d="M60.2 194.0 L81.7 194.0" stroke="#6f8292" stroke-width="0.55" opacity="0.64"/>
+    <rect x="60.0" y="205.0" width="18.8" height="2.3" rx="0.8" fill="url(#e_toe_cap)" opacity="0.95"/>
+    <path d="M58 207 L80 207 L79 210 L57 210 Z" fill="url(#e_boot_sole)"/>
+    <path d="M58 208.6 L79.2 208.6" stroke="#b4c1ca" stroke-width="0.5" opacity="0.55"/>
+    <path d="M62.0 196.8 L76.7 196.8 M61.8 199.4 L76.5 199.4 M61.6 202.0 L76.3 202.0" stroke="#9c27b0" stroke-width="1.0" stroke-linecap="round">
+      <animate attributeName="opacity" values="0.55;1;0.55" dur="1.8s" repeatCount="indefinite"/>
+    </path>
+    <path d="M62.0 196.8 L76.7 196.8 M61.8 199.4 L76.5 199.4 M61.6 202.0 L76.3 202.0" stroke="#d79ae7" stroke-width="0.5" stroke-linecap="round" opacity="0.65" filter="url(#e_lace_glow)"/>
+    <path d="M61.4 204.8 L77.7 204.8" stroke="#ba68c8" stroke-width="0.75" opacity="0.8"/>
+    <circle cx="70.2" cy="201.0" r="1.05" fill="#c37ad7" opacity="0.8">
+      <animate attributeName="r" values="0.8;1.5;0.8" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.35;0.9;0.35" dur="1.6s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="69.8" cy="201.0" r="2.2" fill="url(#e_pulse_glow)" opacity="0.55"/>
+    <rect x="63.4" y="194.0" width="11.8" height="7.8" rx="1.4" fill="url(#e_sweep)" opacity="0">
+      <animate attributeName="y" values="194;201;194" dur="2.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.65;0" dur="2.2s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- Right -->
+    <path d="M88 193 L112 193 L114 209 L88 209 Z" fill="url(#e_boot_shell)" stroke="#0f171d" stroke-width="0.9"/>
+    <path d="M89.0 194 L104.5 194 L105.2 206 L89.0 206 Z" fill="url(#e_boot_highlight)" opacity="0.45"/>
+    <path d="M89.0 202.3 L113.2 202.3" stroke="#1a2731" stroke-width="0.7" opacity="0.65"/>
+    <path d="M89.2 194.0 L112.1 194.0" stroke="#6f8292" stroke-width="0.55" opacity="0.64"/>
+    <rect x="89.0" y="205.0" width="22.0" height="2.3" rx="0.8" fill="url(#e_toe_cap)" opacity="0.95"/>
+    <path d="M88 207 L114 207 L114 210 L88 210 Z" fill="url(#e_boot_sole)"/>
+    <path d="M88.2 208.6 L113.8 208.6" stroke="#b4c1ca" stroke-width="0.5" opacity="0.55"/>
+    <path d="M92.2 196.8 L108.8 196.8 M92.0 199.4 L108.6 199.4 M91.8 202.0 L108.4 202.0" stroke="#9c27b0" stroke-width="1.0" stroke-linecap="round">
+      <animate attributeName="opacity" values="0.55;1;0.55" dur="1.8s" repeatCount="indefinite"/>
+    </path>
+    <path d="M92.2 196.8 L108.8 196.8 M92.0 199.4 L108.6 199.4 M91.8 202.0 L108.4 202.0" stroke="#d79ae7" stroke-width="0.5" stroke-linecap="round" opacity="0.65" filter="url(#e_lace_glow)"/>
+    <path d="M92.2 204.8 L110.4 204.8" stroke="#ba68c8" stroke-width="0.75" opacity="0.8"/>
+    <circle cx="100.8" cy="201.0" r="1.05" fill="#c37ad7" opacity="0.8">
+      <animate attributeName="r" values="0.8;1.5;0.8" dur="1.9s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.35;0.9;0.35" dur="1.9s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="100.5" cy="201.0" r="2.2" fill="url(#e_pulse_glow)" opacity="0.55"/>
+    <rect x="93.8" y="194.0" width="13.0" height="7.8" rx="1.4" fill="url(#e_sweep)" opacity="0">
+      <animate attributeName="y" values="194;201;194" dur="2.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.65;0" dur="2.4s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+</svg>

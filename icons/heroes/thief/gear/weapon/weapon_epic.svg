@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="e_metal_core" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#9aaec0"/>
+      <stop offset="45%" stop-color="#f3f7fb"/>
+      <stop offset="100%" stop-color="#72879a"/>
+    </linearGradient>
+    <linearGradient id="e_grip_dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a2433"/>
+      <stop offset="100%" stop-color="#0a1018"/>
+    </linearGradient>
+    <linearGradient id="e_epic_purple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e1bee7"/>
+      <stop offset="45%" stop-color="#ba68c8"/>
+      <stop offset="100%" stop-color="#9c27b0"/>
+    </linearGradient>
+    <radialGradient id="e_purple_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f3c7ff" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#9c27b0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="e_scan_sweep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#f2d4ff" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="e_soft_glow" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+    <filter id="e_bloom" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="1.15"/>
+    </filter>
+  </defs>
+
+  <!-- Epic tier: tactical baton with arc-loop emitter and violet charge rails -->
+  <!-- Grip anchored to thief right hand around (116,138) -->
+  <g id="weapon_epic" transform="rotate(-28 116 138)">
+    <ellipse cx="116" cy="142" rx="13" ry="4.1" fill="#000000" opacity="0.17"/>
+
+    <!-- Grip -->
+    <rect x="110.4" y="123.8" width="11.2" height="50.8" rx="4.2" fill="url(#e_grip_dark)" stroke="#060b12" stroke-width="1"/>
+    <rect x="109.5" y="131.1" width="13.0" height="4.7" rx="1.8" fill="#2a3850" stroke="#849ab0" stroke-width="0.66"/>
+    <rect x="109.5" y="145.8" width="13.0" height="4.7" rx="1.8" fill="#2a3850" stroke="#849ab0" stroke-width="0.66"/>
+    <rect x="109.5" y="160.5" width="13.0" height="4.7" rx="1.8" fill="#2a3850" stroke="#849ab0" stroke-width="0.66"/>
+
+    <!-- Epic control ring -->
+    <circle cx="116" cy="122.6" r="5.0" fill="#1a2740" stroke="#d6a6ea" stroke-width="0.95"/>
+    <circle cx="116" cy="122.6" r="2.35" fill="#d89dff"/>
+    <circle cx="116" cy="122.6" r="7.8" fill="url(#e_purple_glow)" opacity="0.6" filter="url(#e_soft_glow)">
+      <animate attributeName="r" values="7.0;8.8;7.0" dur="2.1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.45;0.78;0.45" dur="2.1s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Shaft -->
+    <rect x="112.3" y="65.2" width="7.4" height="58.8" rx="2.8" fill="url(#e_metal_core)" stroke="#3f5668" stroke-width="1"/>
+    <path d="M113.8 68.7 L113.8 120.8" stroke="#ffffff" stroke-width="0.84" opacity="0.62"/>
+    <path d="M118.2 68.6 L118.2 120.8" stroke="#6d8396" stroke-width="0.78" opacity="0.62"/>
+
+    <!-- Dual violet charge rails -->
+    <path d="M111.4 66.6 L108.4 77.2 L108.7 112.5 L111.4 123.1" fill="none" stroke="#ba68c8" stroke-width="1.45" opacity="0.82"/>
+    <path d="M120.6 66.6 L123.6 77.2 L123.3 112.5 L120.6 123.1" fill="none" stroke="#ba68c8" stroke-width="1.45" opacity="0.82"/>
+    <path d="M110.9 81.0 L121.1 81.0" stroke="#e8c9f5" stroke-width="0.85" opacity="0.48"/>
+    <path d="M111.0 96.2 L121.0 96.2" stroke="#e8c9f5" stroke-width="0.85" opacity="0.48"/>
+    <path d="M111.0 111.4 L121.0 111.4" stroke="#e8c9f5" stroke-width="0.85" opacity="0.48"/>
+
+    <!-- Emitter head -->
+    <rect x="108.9" y="56.1" width="14.2" height="9.5" rx="2.3" fill="#2b3f56" stroke="#132130" stroke-width="0.95"/>
+    <rect x="110.5" y="50.8" width="11.0" height="6.0" rx="1.8" fill="url(#e_epic_purple)" stroke="#5d2b73" stroke-width="0.72"/>
+
+    <!-- Arc-loop crown (epic silhouette differentiator) -->
+    <path d="M112.0 51.0 Q116.0 43.2 120.0 51.0" fill="none" stroke="#dba7ff" stroke-width="1.5"/>
+    <path d="M112.7 50.6 Q116.0 45.3 119.3 50.6" fill="none" stroke="#f3dbff" stroke-width="0.82" opacity="0.72"/>
+    <circle cx="116" cy="44.8" r="1.4" fill="#f2d8ff"/>
+    <circle cx="116" cy="44.8" r="3.7" fill="url(#e_purple_glow)" opacity="0.62" filter="url(#e_soft_glow)"/>
+
+    <!-- Epic GFX: moving charge, arc flicker, and micro particles -->
+    <g id="epic_gfx">
+      <path d="M112.0 51.0 Q116.0 43.2 120.0 51.0" fill="none" stroke="#e8c9ff" stroke-width="1.0"
+            stroke-dasharray="2.4 2.0" opacity="0.85">
+        <animate attributeName="stroke-dashoffset" values="0;-8" dur="0.7s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.35;0.95;0.35" dur="1.0s" repeatCount="indefinite"/>
+      </path>
+
+      <rect x="112.8" y="68.0" width="6.4" height="16.0" rx="2.0" fill="url(#e_scan_sweep)" opacity="0" filter="url(#e_bloom)">
+        <animate attributeName="y" values="68;106;68" dur="2.2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.78;0" dur="2.2s" repeatCount="indefinite"/>
+      </rect>
+
+      <circle cx="111.8" cy="87.0" r="1.05" fill="#efcfff" opacity="0.0" filter="url(#e_bloom)">
+        <animate attributeName="cy" values="90;83;90" dur="1.6s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.0;0.72;0.0" dur="1.6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="120.2" cy="102.0" r="1.05" fill="#efcfff" opacity="0.0" filter="url(#e_bloom)">
+        <animate attributeName="cy" values="105;98;105" dur="1.9s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.0;0.68;0.0" dur="1.9s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- Pommel and tether -->
+    <rect x="112.0" y="174.4" width="8.0" height="5.2" rx="2.0" fill="#0d1723" stroke="#738aa1" stroke-width="0.82"/>
+    <path d="M116 179.3 C125.4 185.7, 124.5 194.8, 116.5 198.8" fill="none" stroke="#1f3043" stroke-width="1.85" stroke-linecap="round"/>
+    <path d="M116 179.3 C123.8 185.3, 123.5 193.0, 117.0 196.8" fill="none" stroke="#97afc6" stroke-width="0.6" opacity="0.6"/>
+  </g>
+</svg>

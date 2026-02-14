@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="c_back" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3e4b57"/>
+      <stop offset="100%" stop-color="#1f2a33"/>
+    </linearGradient>
+    <linearGradient id="c_side" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#34424f"/>
+      <stop offset="100%" stop-color="#182129"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Common cloak: fitted plain drape with minimal gray trim -->
+  <g id="cloak_common">
+    <path d="M70 84 Q90 76 110 84 L121 176 Q90 189 59 176 Z" fill="url(#c_back)" opacity="0.52"/>
+    <path d="M68 84 L82 90 L76 183 L52 176 Z" fill="url(#c_side)" opacity="0.78"/>
+    <path d="M112 84 L98 90 L104 183 L128 176 Z" fill="url(#c_side)" opacity="0.78"/>
+    <path d="M68 85 Q90 79 112 85" fill="none" stroke="#9e9e9e" stroke-width="1.0" opacity="0.85"/>
+    <path d="M90 86 L90 186" fill="none" stroke="#2b3742" stroke-width="0.8" opacity="0.45"/>
+    <circle cx="90" cy="88.5" r="1.6" fill="#9e9e9e" opacity="0.9"/>
+  </g>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <!-- Legendary: Jet Thruster Wings -->
+  <path d="M130 60 L170 50 L180 120 L140 100 Z" fill="#37474F" stroke="#ff8a3d" stroke-width="2"/>
+  <path d="M50 60 L10 50 L0 120 L40 100 Z" fill="#37474F" stroke="#ff8a3d" stroke-width="2"/>
+  <!-- Exhaust -->
+  <path d="M150 120 L160 140 L170 120" fill="#ff8a3d"/>
+  <path d="M30 120 L20 140 L10 120" fill="#ff8a3d"/>
+</svg>

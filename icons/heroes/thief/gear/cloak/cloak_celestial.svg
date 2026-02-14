@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="x_back" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#476072"/>
+      <stop offset="100%" stop-color="#1f2f3b"/>
+    </linearGradient>
+    <linearGradient id="x_side" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b5262"/>
+      <stop offset="100%" stop-color="#18222a"/>
+    </linearGradient>
+    <radialGradient id="x_aura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#baf8ff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Celestial cloak: fitted drape + cyan astral trim -->
+  <g id="cloak_celestial">
+    <path d="M70 84 Q90 76 110 84 L121 176 Q90 189 59 176 Z" fill="url(#x_back)" opacity="0.57"/>
+    <path d="M68 84 L82 90 L76 183 L52 176 Z" fill="url(#x_side)" opacity="0.84"/>
+    <path d="M112 84 L98 90 L104 183 L128 176 Z" fill="url(#x_side)" opacity="0.84"/>
+
+    <path d="M68 85 Q90 79 112 85" fill="none" stroke="#00e5ff" stroke-width="1.18" opacity="0.94"/>
+    <path d="M74.2 95.2 L67 173.3" fill="none" stroke="#80deea" stroke-width="0.95" opacity="0.85"/>
+    <path d="M105.8 95.2 L113 173.3" fill="none" stroke="#80deea" stroke-width="0.95" opacity="0.85"/>
+    <path d="M78.4 102 Q90 108 101.6 102" fill="none" stroke="#b2ebf2" stroke-width="1.0" opacity="0.9"/>
+    <circle cx="90" cy="88.5" r="2.2" fill="#00e5ff" opacity="0.95"/>
+    <circle cx="90" cy="88.5" r="6.1" fill="url(#x_aura)" opacity="0.55">
+      <animate attributeName="r" values="5.4;7.1;5.4" dur="2.0s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.3;0.72;0.3" dur="2.0s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="90" cy="88.5" r="8.4" fill="none" stroke="#00e5ff" stroke-width="0.8" stroke-dasharray="2.2 2.0" opacity="0.72">
+      <animateTransform attributeName="transform" type="rotate" from="0 90 88.5" to="360 90 88.5" dur="8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>

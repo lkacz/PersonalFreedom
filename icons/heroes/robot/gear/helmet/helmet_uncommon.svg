@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(0, -5)">
+    <!-- Uncommon Helmet: Welder Mask with raised visor (friendly, workmanlike) -->
+    <path d="M65 30 L115 30 L115 65 L90 75 L65 65 Z" fill="#455A64" stroke="#263238" stroke-width="2"/>
+    <rect x="70" y="45" width="40" height="15" fill="#111" stroke="#546E7A" stroke-width="1"/>
+    <!-- Sticker or detail -->
+    <circle cx="105" cy="40" r="3" fill="#FFEE58"/>
+  </g>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(0, -5)">
+    <!-- Rare Helmet: Sensor Array (Cat-ear like Antennae) -->
+    <path d="M68 35 L112 35 L110 65 L70 65 Z" fill="#546E7A" stroke="#263238" stroke-width="2"/>
+    <!-- Ears / Sensors -->
+    <path d="M68 35 L60 20 L75 35" fill="#78909C" stroke="#263238" stroke-width="1.5"/>
+    <path d="M112 35 L120 20 L105 35" fill="#78909C" stroke="#263238" stroke-width="1.5"/>
+    <!-- Cute glowing eyes on forehead -->
+    <circle cx="82" cy="50" r="4" fill="#69F0AE"/>
+    <circle cx="98" cy="50" r="4" fill="#69F0AE"/>
+  </g>
+</svg>

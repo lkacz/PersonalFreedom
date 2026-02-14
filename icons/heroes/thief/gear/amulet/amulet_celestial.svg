@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="c_grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e7fbff"/>
+      <stop offset="100%" stop-color="#00bcd4"/>
+    </linearGradient>
+    <filter id="c_glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="1.05" result="b"/>
+      <feComposite in="SourceGraphic" in2="b" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Celestial: compact geometric seal, still chest-fitted -->
+  <g id="amulet_celestial" transform="translate(90 105)" filter="url(#c_glow)">
+    <circle cx="0" cy="0.2" r="10.2" fill="none" stroke="#00e5ff" stroke-width="1.0" stroke-dasharray="3.2 2.0">
+      <animateTransform attributeName="transform" type="rotate" from="0 0 0.2" to="360 0 0.2" dur="8.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="0.2" r="6.9" fill="none" stroke="#80deea" stroke-width="0.75" stroke-dasharray="8.2 4.4">
+      <animateTransform attributeName="transform" type="rotate" from="360 0 0.2" to="0 0 0.2" dur="6.6s" repeatCount="indefinite"/>
+    </circle>
+    <path d="M0 -8.6 L2.3 -2.7 L8.4 -2.7 L3.4 1.6 L5.1 7.6 L0 4.2 L-5.1 7.6 L-3.4 1.6 L-8.4 -2.7 L-2.3 -2.7 Z"
+          fill="url(#c_grad)" stroke="#e7fbff" stroke-width="0.55" opacity="0.88">
+      <animate attributeName="opacity" values="0.75;1;0.75" dur="2.3s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="0" cy="0.2" r="1.8" fill="#00e5ff">
+      <animate attributeName="r" values="1.6;2.3;1.6" dur="1.9s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <!-- Robot FX Tier: Epic - System Activation & Overclock -->
+  <defs>
+    <filter id="glowBlur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5"/>
+    </filter>
+  </defs>
+
+  <!-- Core Bloom Intensity -->
+  <circle cx="90" cy="100" r="18" fill="none" stroke="#36d6e7" stroke-width="3" opacity="0.6" filter="url(#glowBlur)"/>
+  
+  <!-- Optic Flare -->
+  <line x1="90" y1="42" x2="90" y2="30" stroke="#ff8a3d" stroke-width="2" opacity="0.8" filter="url(#glowBlur)"/>
+  
+  <!-- Vent Emissions (Shoulders/Chest) -->
+  <path d="M60 80 L50 75" stroke="#36d6e7" stroke-width="1" opacity="0.6"/>
+  <path d="M120 80 L130 75" stroke="#36d6e7" stroke-width="1" opacity="0.6"/>
+  
+  <!-- Data Streams (Vertical subtle lines) -->
+  <line x1="160" y1="180" x2="160" y2="140" stroke="#36d6e7" stroke-width="1" stroke-dasharray="4 4" opacity="0.4"/>
+  <line x1="20" y1="180" x2="20" y2="140" stroke="#36d6e7" stroke-width="1" stroke-dasharray="4 4" opacity="0.4"/>
+  
+  <!-- Ground Energy -->
+  <ellipse cx="90" cy="205" rx="30" ry="3" fill="none" stroke="#36d6e7" stroke-width="1" opacity="0.5"/>
+</svg>

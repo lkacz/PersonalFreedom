@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(0,0)">
+    <!-- Epic: Jet Thrusters -->
+    <path d="M50 185 L70 185 L65 200 L55 200 Z" fill="#37474F" stroke="#36d6e7" stroke-width="1.5"/>
+    <path d="M130 185 L110 185 L115 200 L125 200 Z" fill="#37474F" stroke="#36d6e7" stroke-width="1.5"/>
+    <!-- Flames -->
+    <path d="M55 200 L60 215 L65 200" fill="#FF5722" opacity="0.8"/>
+    <path d="M115 200 L120 215 L125 200" fill="#FF5722" opacity="0.8"/>
+  </g>
+</svg>
