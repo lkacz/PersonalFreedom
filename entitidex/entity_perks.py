@@ -197,6 +197,25 @@ ENTITY_PERKS: Dict[str, List[EntityPerk]] = {
     "scientist_007": [EntityPerk("scientist_007", PerkType.GAMBLE_LUCK, 5, 20, "Risk Assessment: +{value}% Gamble Chance", "⚡", "Lightning Luck: +{value}% Gamble Chance")],
     "scientist_008": [EntityPerk("scientist_008", PerkType.RARITY_BIAS, 1, 2, "Golden Standard: +{value}% Legendary Chance", "🧬", "Divine Helix: +{value}% Legendary Chance")],
     "scientist_009": [EntityPerk("scientist_009", PerkType.XP_PERCENT, 3, 5, "Eureka Moment: +{value}% Discovery XP", "🐁", "Genius Awakening: +{value}% Discovery XP")],
+    
+    # -------------------------------------------------------------------------
+    # ROBOT (Industrial Focus & Autonomy)
+    # -------------------------------------------------------------------------
+    "robot_001": [EntityPerk("robot_001", PerkType.DROP_LUCK, 1, 2, "Bolt Scout: +{value}% Item Drops", "🔩", "Trusted Scout: +{value}% Item Drops")],
+    "robot_002": [EntityPerk("robot_002", PerkType.ENCOUNTER_CHANCE, 1, 2, "Safety Sweep: +{value}% Encounter Chance", "🚨", "Predictive Sweep: +{value}% Encounter Chance")],
+    "robot_003": [EntityPerk("robot_003", PerkType.MERGE_SUCCESS, 1, 2, "Flow Stabilizer: +{value}% Merge Success", "🐈", "Throughput Mastery: +{value}% Merge Success")],
+    "robot_004": [EntityPerk("robot_004", PerkType.XP_LONG_SESSION, 5, 8, "Heavy Lift Rhythm: +{value}% XP for sessions > 1h", "🚜", "Atlas Endurance: +{value}% XP for sessions > 1h")],
+    "robot_005": [
+        EntityPerk("robot_005", PerkType.SCRAP_CHANCE, 1, 2, "Night Weld Recovery: +{value}% Scrap Chance", "🛠️", "Golden Seam Recovery: +{value}% Scrap Chance"),
+        EntityPerk("robot_005", PerkType.MERGE_LUCK, 1, 2, "Seam Integrity: +{value}% Merge Luck", "✨", "Perfect Seam: +{value}% Merge Luck"),
+    ],
+    "robot_006": [EntityPerk("robot_006", PerkType.HYDRATION_CAP, 1, 1, "Backup Reserve: +{value} Daily Glass Cap", "🔋", "Grid Reserve: +{value} Daily Glass Cap")],
+    "robot_007": [EntityPerk("robot_007", PerkType.PITY_BONUS, 5, 8, "Audit Precision: +{value}% Pity Progress", "🛰️", "Solar Audit: +{value}% Pity Progress")],
+    "robot_008": [EntityPerk("robot_008", PerkType.CAPTURE_BONUS, 4, 6, "Exosuit Rescue: +{value}% Capture Probability", "🦾", "Aster Vanguard: +{value}% Capture Probability")],
+    "robot_009": [
+        EntityPerk("robot_009", PerkType.XP_PERCENT, 3, 5, "Autonomy Signal: +{value}% Discovery XP", "💠", "Liberation Signal: +{value}% Discovery XP"),
+        EntityPerk("robot_009", PerkType.ALL_LUCK, 2, 4, "Ethical Alignment: +{value}% All Luck", "🕊️", "Civic Alignment: +{value}% All Luck"),
+    ],
 }
 
 

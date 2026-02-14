@@ -125,6 +125,17 @@ EXCEPTIONAL_ENTITY_COLORS = {
     "scientist_007": (255, 200, 0),    # Tesla Coil: Purple → Gold Electric
     "scientist_008": (100, 255, 200),  # Golden DNA Helix: Gold → Aquamarine
     "scientist_009": (200, 150, 255),  # White Mouse: White → Lavender
+    
+    # ROBOT THEME - Industrial steel gets neon liberation colors
+    "robot_001": (0, 220, 255),        # Rusted Bolt Scout: Steel → Electric Cyan
+    "robot_002": (255, 120, 0),        # Safety Drone Pico: Yellow → Signal Orange
+    "robot_003": (180, 80, 255),       # Conveyor Cat Nori: Gray → Violet
+    "robot_004": (0, 255, 140),        # Forklift Hound Atlas: Industrial yellow → Neon green
+    "robot_005": (255, 80, 160),       # Midnight Welding Arm: Blue arc → Hot pink
+    "robot_006": (70, 180, 255),       # Backup Battery Bruno: Deep blue → Sky blue
+    "robot_007": (255, 215, 80),       # Inspection Drone Iris: White shell → Gold
+    "robot_008": (120, 255, 200),      # Foundry Exosuit Aster: Dark steel → Mint
+    "robot_009": (255, 255, 255),      # Freewill Core Eve: Crystal → White glow
 }
 
 
@@ -190,7 +201,7 @@ def _resolve_entity_svg_path(entity: Entity, is_exceptional: bool = False) -> Op
 # QSvgRenderer) must only be called from the main thread. This is standard
 # Qt architecture - all widget/renderer operations are main-thread only.
 # =============================================================================
-_SVG_CACHE_MAX_SIZE = 100  # Max entries per cache (covers all 90 entities + buffer)
+_SVG_CACHE_MAX_SIZE = 130  # Max entries per cache (covers 100+ entities + buffer)
 
 _svg_renderer_cache: OrderedDict[str, QSvgRenderer] = OrderedDict()
 _silhouette_pixmap_cache: OrderedDict[str, QtGui.QPixmap] = OrderedDict()
@@ -1946,6 +1957,7 @@ THEME_INFO = {
     "underdog": ("💪 Underdog", "#E65100"),
     "scientist": ("🔬 Scientist", "#1565C0"),
     "wanderer": ("🗺️ Wanderer", "#2E7D32"),
+    "robot": ("🤖 Robot", "#455A64"),
 }
 
 

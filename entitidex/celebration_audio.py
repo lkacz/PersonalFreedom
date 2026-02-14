@@ -245,6 +245,33 @@ def _compose_scientist() -> QByteArray:
     
     return Synthesizer.mix_sequences(seq)
 
+def _compose_robot() -> QByteArray:
+    """Robot: Mechanical pulse evolving into hopeful major harmony."""
+    seq = []
+    
+    # Boot sequence pulses
+    boot_notes = [220.00, 246.94, 293.66, 329.63]
+    for note in boot_notes:
+        seq.append(Synthesizer.generate_tone(note, 80, 0.35, "rich", 5, 15))
+    
+    # Short pause
+    seq.append(QByteArray(b'\x00' * int(Synthesizer.SAMPLE_RATE * 0.04 * 4)))
+    
+    # Awakening rise
+    rise_notes = [329.63, 392.00, 440.00, 523.25]
+    for note in rise_notes:
+        seq.append(Synthesizer.generate_tone(note, 110, 0.40, "sine", 8, 25))
+    
+    # Final "open sky" chord (A minor to C major feel)
+    root = Synthesizer.generate_tone(261.63, 650, 0.45, "sine", 25, 350)   # C4
+    third = Synthesizer.generate_tone(329.63, 650, 0.40, "sine", 25, 350)  # E4
+    fifth = Synthesizer.generate_tone(392.00, 650, 0.35, "sine", 25, 350)  # G4
+    chord = Synthesizer.mix_tracks(root, third)
+    chord = Synthesizer.mix_tracks(chord, fifth)
+    seq.append(chord)
+    
+    return Synthesizer.mix_sequences(seq)
+
 def _compose_default() -> QByteArray:
     return Synthesizer.generate_tone(440, 200)
 
@@ -325,6 +352,7 @@ _THEME_COMPOSERS = {
     "wanderer": _compose_wanderer,
     "underdog": _compose_underdog,
     "scientist": _compose_scientist,
+    "robot": _compose_robot,
     
     "eye_start": _compose_eye_start,
     "eye_complete": _compose_eye_complete,

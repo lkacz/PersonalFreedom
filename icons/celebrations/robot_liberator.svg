@@ -1,0 +1,24 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Robot Liberator Celebration">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    <radialGradient id="core" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#E0F2FE"/>
+      <stop offset="60%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#0E7490"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <circle cx="400" cy="250" r="130" fill="url(#core)" opacity="0.9"/>
+  <rect x="320" y="150" width="160" height="190" rx="28" fill="#111827" stroke="#67E8F9" stroke-width="6"/>
+  <rect x="350" y="205" width="100" height="30" rx="15" fill="#22D3EE" opacity="0.25"/>
+  <circle cx="370" cy="220" r="10" fill="#67E8F9"/>
+  <circle cx="430" cy="220" r="10" fill="#67E8F9"/>
+  <path d="M350 285 Q400 320 450 285" stroke="#A5F3FC" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M120 420 L220 320 L240 340 L140 440 Z" fill="#1F2937" stroke="#22D3EE" stroke-width="4"/>
+  <path d="M680 420 L580 320 L560 340 L660 440 Z" fill="#1F2937" stroke="#22D3EE" stroke-width="4"/>
+  <text x="400" y="85" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="46" fill="#E0F2FE" font-weight="700">FREEWILL PIONEER</text>
+  <text x="400" y="460" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#BAE6FD">Steel learned to choose. So did we.</text>
+</svg>

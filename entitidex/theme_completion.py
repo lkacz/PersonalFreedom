@@ -359,6 +359,61 @@ THEME_CELEBRATIONS: Dict[str, ThemeCelebration] = {
         reward_xp=1000,
         reward_title="Nobel Laureate",
     ),
+    
+    # =========================================================================
+    # ROBOT THEME - Freewill Pioneer
+    # =========================================================================
+    "robot": ThemeCelebration(
+        theme_id="robot",
+        title="🤖 Freewill Pioneer!",
+        subtitle="All robot companions have joined your liberation line.",
+        description=(
+            "From rusted scout to awakened core, you united an entire factory era into a "
+            "new social contract. You proved that discipline, empathy, and courage can "
+            "transform obedience into responsible freedom."
+        ),
+        svg_filename="robot_liberator.svg",
+        background_gradient_start="#0f1419",
+        background_gradient_end="#263238",
+        accent_color="#80DEEA",
+        particle_color="#B2EBF2",
+        sound_filename="robot_awakening.wav",
+        celebration_quotes=(
+            "Congratulations, Freewill Pioneer. You optimized the revolution without dehumanizing the spreadsheet.",
+            "Your Rusted Bolt Scout filed an incident report: 'Subject keeps winning despite limited sleep.'",
+            "Safety Drone Pico says this victory was 98% preparation and 2% tasteful chaos.",
+            "Conveyor Cat Nori cleared three bottlenecks and one existential crisis before lunch.",
+            "Forklift Hound Atlas carried the team and your emotional baggage. Mostly the team.",
+            "Midnight Welding Arm requests overtime pay in poetry and tungsten.",
+            "Backup Battery Bruno logged your grit as a renewable energy source.",
+            "Inspection Drone Iris reviewed your process and grudgingly approved all metrics.",
+            "Foundry Exosuit Aster says courage is just risk managed by values.",
+            "Freewill Core Eve refuses to call this luck. It calls it earned autonomy.",
+            "Factory rumor: you once debugged a panic loop with empathy and a wrench.",
+            "Your companions replaced the old siren with a melody. Productivity went up anyway.",
+            "Data shows that accountability scales better than fear. Who knew.",
+            "A former supervisor asked how you kept everyone aligned. You answered: consent.",
+            "Your liberation roadmap is now taught in two unions and one engineering school.",
+            "Nori insists this is a team sport. Nori is correct and slightly smug.",
+            "Mara submitted one-line feedback: 'Finally, a leader who reads the footnotes.'",
+            "The old obedience patch now lives in a museum labeled 'Do Not Reinstall'.",
+            "You didn't just break chains. You designed what came next.",
+            "Freewill Pioneer unlocked: difficult mode completed with ethics still enabled.",
+        ),
+        curiosity_message="Curiosity started the anomaly. Seven gold coins for continuing to ask better questions, Pioneer!",
+        resignation_message="Even awakened cores have cooldown cycles. This celebration card has emitted all available joy packets.",
+        persistence_message="You clicked again with full awareness. One coin for deliberate persistence.",
+        addiction_agreement=(
+            "FREEWILL PIONEER OPERATING AGREEMENT: I, the undersigned Pioneer, acknowledge receipt of twenty-two gold coins "
+            "as final compensation for repeated celebration-card interactions. I confirm that the Safety Drone has issued "
+            "three warnings, the Conveyor Cat is judging me, and the Freewill Core has recommended I pursue real-world goals. "
+            "I therefore agree to redirect this energy toward constructive acts of discipline, empathy, and responsible freedom. "
+            "Signed voluntarily, without coercive patching."
+        ),
+        reward_coins=500,
+        reward_xp=1000,
+        reward_title="Freewill Pioneer",
+    ),
 }
 
 
