@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <!-- Very dark PURPLE, typical for EPIC items -->
+    <linearGradient id="hoodieDark" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#1A0A26"/> 
+        <stop offset="100%" stop-color="#050208"/>
+    </linearGradient>
+    
+    <!-- Glowing Purple Strings -->
+    <linearGradient id="stringGrad" x1="0" y1="0" x2="0" y2="1">
+       <stop offset="0%" stop-color="#9C27B0"/>
+       <stop offset="50%" stop-color="#D500F9"/>
+       <stop offset="100%" stop-color="#7B1FA2"/>
+    </linearGradient>
+
+    <!-- EPIC Purple Eyes -->
+    <radialGradient id="humanIrisEpic" cx="50%" cy="50%" r="50%">
+        <stop offset="40%" stop-color="#E1BEE7"/>
+        <stop offset="70%" stop-color="#AB47BC"/>
+        <stop offset="100%" stop-color="#4A148C"/>
+    </radialGradient>
+    
+    <!-- String Glow Filter -->
+    <filter id="stringGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur"/>
+        <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+    </filter>
+</defs>
+
+<g transform="translate(90, 61) scale(0.22)">
+    <!-- Main Hood Shape -->
+    <path d="M0 -150 C-100 -150 -130 -50 -130 0 C-130 80 -80 100 -50 110 C-20 120 20 120 50 110 C80 100 130 80 130 0 C130 -50 100 -150 0 -150 Z" fill="url(#hoodieDark)"/>
+    
+    <!-- Face Shadow -->
+    <ellipse cx="0" cy="10" rx="60" ry="70" fill="#000"/>
+
+    <!-- Eyes Container -->
+    <g transform="translate(0, -5)">
+        
+        <!-- Left Eye -->
+        <g transform="translate(-22, 0)"> 
+            <!-- Sclera (Whites) - slightly darkened for epic gloom -->
+            <path d="M-15 0 Q0 -11 15 0 Q0 11 -15 0 Z" fill="#E1BEE7"/>
+            
+            <!-- Iris & Pupil (Epic Purple) -->
+            <g>
+                <animateTransform attributeName="transform" type="translate" 
+                    values="0,0; 0,0; 4,0; 4,0; 4,2; 4,2; -3,0; -3,0; -3,-3; -3,-3; 0,0; 0,0" 
+                    dur="8s" repeatCount="indefinite" 
+                    keyTimes="0; 0.24; 0.25; 0.44; 0.45; 0.54; 0.55; 0.74; 0.75; 0.84; 0.85; 1"
+                    calcMode="linear"/>
+                    
+                <circle cx="0" cy="0" r="7" fill="url(#humanIrisEpic)" /> 
+                <circle cx="0" cy="0" r="3" fill="#000" /> 
+                <circle cx="2" cy="-2" r="1.5" fill="#FFFFFF" opacity="0.9" />
+            </g>
+            
+            <!-- Eyelids (Almost Closed / Squinting) -->
+            <!-- Changed "Open" state to reflect "barely open" -->
+            <!-- Open State: M-16 -2 Q0 -6 16 -2 ... (Much lower top lid) -->
+            <!-- Bottom State: M-16 2 Q0 6 16 2 ... (Much higher bottom lid) -->
+            
+            <path fill="#000000">
+               <!-- Blink more rarely: Once every 15s instead of 10s -->
+               <animate attributeName="d" 
+                    values="M-16 -5 Q0 -12 16 -5 L16 -20 L-16 -20 Z; 
+                            M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z; 
+                            M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z;
+                            M-16 -5 Q0 -12 16 -5 L16 -20 L-16 -20 Z;
+                            M-16 -5 Q0 -12 16 -5 L16 -20 L-16 -20 Z"
+                    keyTimes="0; 0.005; 0.015; 0.02; 1"
+                    dur="15s"
+                    repeatCount="indefinite"/>
+            </path>
+            <!-- Bottom lid -->
+             <path fill="#000000">
+                <animate attributeName="d" 
+                    values="M-16 5 Q0 12 16 5 L16 20 L-16 20 Z; 
+                            M-16 0 Q0 0 16 0 L16 20 L-16 20 Z; 
+                            M-16 0 Q0 0 16 0 L16 20 L-16 20 Z;
+                            M-16 5 Q0 12 16 5 L16 20 L-16 20 Z;
+                            M-16 5 Q0 12 16 5 L16 20 L-16 20 Z"
+                    keyTimes="0; 0.005; 0.015; 0.02; 1"
+                    dur="15s"
+                    repeatCount="indefinite"/>
+            </path>
+        </g>
+
+        <!-- Right Eye -->
+        <g transform="translate(22, 0)"> 
+            <path d="M-15 0 Q0 -11 15 0 Q0 11 -15 0 Z" fill="#E1BEE7"/>
+            <g>
+                <animateTransform attributeName="transform" type="translate" 
+                    values="0,0; 0,0; 4,0; 4,0; 4,2; 4,2; -3,0; -3,0; -3,-3; -3,-3; 0,0; 0,0" 
+                    dur="8s" repeatCount="indefinite" 
+                    keyTimes="0; 0.24; 0.25; 0.44; 0.45; 0.54; 0.55; 0.74; 0.75; 0.84; 0.85; 1"
+                    calcMode="linear"/>
+
+                <circle cx="0" cy="0" r="7" fill="url(#humanIrisEpic)" />
+                <circle cx="0" cy="0" r="3" fill="#000" />
+                <circle cx="2" cy="-2" r="1.5" fill="#FFFFFF" opacity="0.9" />
+            </g>
+             <!-- Top Lid -->
+            <path fill="#000000">
+                  <animate attributeName="d" 
+                    values="M-16 -5 Q0 -12 16 -5 L16 -20 L-16 -20 Z; 
+                            M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z; 
+                            M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z;
+                            M-16 -5 Q0 -12 16 -5 L16 -20 L-16 -20 Z;
+                            M-16 -5 Q0 -12 16 -5 L16 -20 L-16 -20 Z"
+                    keyTimes="0; 0.005; 0.015; 0.02; 1"
+                    dur="15s"
+                    repeatCount="indefinite"/>
+            </path>
+             <!-- Bottom Lid -->
+            <path fill="#000000">
+                <animate attributeName="d" 
+                    values="M-16 5 Q0 12 16 5 L16 20 L-16 20 Z; 
+                            M-16 0 Q0 0 16 0 L16 20 L-16 20 Z; 
+                            M-16 0 Q0 0 16 0 L16 20 L-16 20 Z;
+                            M-16 5 Q0 12 16 5 L16 20 L-16 20 Z;
+                            M-16 5 Q0 12 16 5 L16 20 L-16 20 Z"
+                    keyTimes="0; 0.005; 0.015; 0.02; 1"
+                    dur="15s"
+                    repeatCount="indefinite"/>
+            </path>
+        </g>
+    </g>
+
+    <!-- Glowing Fast Strings -->
+    <!-- Faster duration (3s/4s vs 4s/5.5s), Filter applied -->
+    <g transform="translate(0, 0)" filter="url(#stringGlow)">
+        <!-- Left String -->
+        <g>
+            <!-- Heavy cord with sway -->
+            <path d="M-40 60 Q-42 90 -38 130" fill="none" stroke="url(#stringGrad)" stroke-width="4" stroke-linecap="round">
+                <animate attributeName="d" 
+                    values="M-40 60 Q-42 90 -38 130; M-40 60 Q-38 90 -40 130; M-40 60 Q-42 90 -38 130" 
+                    dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+            </path>
+            <!-- Metal Aglet (Tip) -->
+            <rect x="-41" y="130" width="6" height="15" rx="1" fill="#FFFFFF">
+                <animate attributeName="x" values="-41;-43;-41" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+                <animateTransform attributeName="transform" type="rotate" values="3 -38 130; -3 -38 130; 3 -38 130" dur="3s" repeatCount="indefinite"/>
+            </rect>
+        </g>
+
+        <!-- Right String -->
+        <g>
+            <path d="M40 60 Q38 95 42 135" fill="none" stroke="url(#stringGrad)" stroke-width="4" stroke-linecap="round">
+                 <animate attributeName="d" 
+                    values="M40 60 Q38 95 42 135; M40 60 Q42 95 40 135; M40 60 Q38 95 42 135" 
+                    dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+            </path>
+             <!-- Metal Aglet (Tip) -->
+            <rect x="39" y="135" width="6" height="15" rx="1" fill="#FFFFFF">
+                 <animate attributeName="x" values="39;37;39" dur="4s" repeatCount="indefinite"/>
+                 <animateTransform attributeName="transform" type="rotate" values="-2 41 135; 2 41 135; -2 41 135" dur="4s" repeatCount="indefinite"/>
+            </rect>
+        </g>
+    </g>
+
+</g>
+</svg>
