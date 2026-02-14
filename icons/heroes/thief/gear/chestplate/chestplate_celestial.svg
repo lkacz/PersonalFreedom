@@ -12,7 +12,7 @@
         <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="tint"/></feMerge>
     </filter>
 </defs>
-<g transform="translate(0, 0)">
+<g transform="translate(49.5, 50) scale(0.45)">
     <!-- Physical Frame (Minimal) -->
     <path d="M68 85 L112 85 L110 140 L70 140 Z" fill="none" stroke="#00BCD4" stroke-width="0.5" opacity="0.5"/>
     
@@ -38,3 +38,4 @@
     </path>
 </g>
 </svg>
+

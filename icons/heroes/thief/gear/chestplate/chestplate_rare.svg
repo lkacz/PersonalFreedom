@@ -17,7 +17,7 @@
     </filter>
     <filter id="rivetShadow"><feDropShadow dx="0.5" dy="0.5" stdDeviation="0.5" flood-opacity="0.5"/></filter>
 </defs>
-<g transform="translate(0, 0)">
+<g transform="translate(49.5, 50) scale(0.45)">
     <!-- Base Undersuit -->
     <path d="M65 80 L115 80 L112 140 L68 140 Z" fill="#263238"/>
     
@@ -45,3 +45,4 @@
     <path d="M88 85 L92 85 L91 110 L89 110 Z" fill="#0277BD" opacity="0.8"/>
 </g>
 </svg>
+
