@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.42] - 2026-02-14
+
+### Added
+- New story theme: `robot` (`🤖 The Assembly of Becoming`) with full branching narrative package (7 chapters, 3 decisions, 8 endings).
+- Full Robot Entitidex expansion:
+  - 9 entities (`robot_001..robot_009`) with lore/exceptional variants.
+  - Perk coverage for all 9 Robot entities.
+  - Robot encounter flavor routing, theme completion celebration, and celebration audio composer.
+  - Required normal/exceptional Robot SVG entity assets and optional celebration art.
+
+### Changed
+- Story/theme integration updated across hero UI and story registries to include `robot`.
+- Entitidex stats and collection displays now use dynamic theme/entity totals in runtime paths (removed hardcoded assumptions).
+- Preview/debug tooling updated to include Robot and dynamic total entity counts.
+
+### Fixed
+- Corrected stale data key usage by standardizing on canonical `active_story` in Eye Protection integration.
+
 ## [6.0.41] - 2026-02-10
 
 ### Fixed

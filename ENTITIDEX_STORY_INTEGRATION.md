@@ -1,7 +1,9 @@
 # Entitidex Story Integration Summary
 
 ## Overview
-The **Entitidex** system has been fully integrated with the existing story system from `STORY_DEVELOPMENT_GUIDE.md`. Each of the four stories now has 9 thematically appropriate collectible entities that represent obstacles from that story's world.
+The **Entitidex** system has been fully integrated with the existing story system from `STORY_DEVELOPMENT_GUIDE.md`. Each active story theme has 9 thematically appropriate collectible entities.
+
+Note: This document contains a legacy narrative breakdown for earlier themes. The canonical source for current extension requirements and story coverage is `STORY_THEME_EXTENSION_SPEC.md`.
 
 ---
 
