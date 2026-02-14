@@ -221,8 +221,9 @@
                       <circle cx="0" cy="0" r="14" fill="url(#eyeIris_ex)"/>
                       <circle cx="0" cy="0" r="6" fill="#000"/> <!-- Slit/Vertical Pupil -->
                       <rect x="-2" y="-10" width="4" height="20" rx="2" fill="#000"/> <!-- Cat Eye pupil -->
-                      <circle cx="6" cy="-6" r="5" fill="#FFF" opacity="0.8"/>
                   </g>
+                  <!-- Stationary Highlight -->
+                  <circle cx="6" cy="-6" r="5" fill="#FFF" opacity="0.9"/>
 
                    <!-- Heavy Eyelid (Replaced with Opacity Blink) -->
                    <!-- Blink duration ~80ms -->
@@ -239,9 +240,10 @@
                       <circle cx="0" cy="0" r="14" fill="url(#eyeIris_ex)"/>
                       <circle cx="0" cy="0" r="6" fill="#000"/>
                       <rect x="-2" y="-10" width="4" height="20" rx="2" fill="#000"/>
-                      <circle cx="6" cy="-6" r="5" fill="#FFF" opacity="0.8"/>
                   </g>
-
+                  <!-- Stationary Highlight -->
+                  <circle cx="6" cy="-6" r="5" fill="#FFF" opacity="0.9"/>
+                  
                    <!-- Heavy Eyelid (Replaced with Opacity Blink) -->
                    <!-- Blink duration ~80ms -->
                    <animate attributeName="opacity" values="1; 1; 0; 0; 1; 1" keyTimes="0; 0.01; 0.012; 0.032; 0.035; 1" dur="4s" repeatCount="indefinite" begin="0.5s"/>
