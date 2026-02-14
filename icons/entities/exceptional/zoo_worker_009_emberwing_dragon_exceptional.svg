@@ -124,23 +124,38 @@
 
           <!-- Mystical Puff (Violet/Pink for distinction, Larger Quantity, Faster) -->
           <g>
-             <!-- Center Puff -->
-             <circle cx="0" cy="25" r="4" fill="#E040FB" opacity="0">
-                <animate attributeName="cy" values="25; -20" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
-                <animate attributeName="r" values="4; 20" dur="1.5s" repeatCount="indefinite" begin="0.5s"/>
-                <animate attributeName="opacity" values="0; 0.9; 0" dur="1.5s" keyTimes="0; 0.2; 1" repeatCount="indefinite" begin="0.5s"/>
+             <!-- Center Massive Puff -->
+             <circle cx="0" cy="30" r="5" fill="#E040FB" opacity="0">
+                <animate attributeName="cy" values="30; -40" dur="1.2s" repeatCount="indefinite" begin="0.2s"/>
+                <animate attributeName="r" values="5; 25" dur="1.2s" repeatCount="indefinite" begin="0.2s"/>
+                <animate attributeName="opacity" values="0; 0.9; 0" dur="1.2s" keyTimes="0; 0.2; 1" repeatCount="indefinite" begin="0.2s"/>
              </circle>
-             <!-- Left Puff -->
-             <circle cx="-15" cy="25" r="3" fill="#AB47BC" opacity="0">
-                <animate attributeName="cy" values="25; -10" dur="1.8s" repeatCount="indefinite" begin="0.8s"/>
-                <animate attributeName="r" values="3; 12" dur="1.8s" repeatCount="indefinite" begin="0.8s"/>
-                <animate attributeName="opacity" values="0; 0.7; 0" dur="1.8s" keyTimes="0; 0.2; 1" repeatCount="indefinite" begin="0.8s"/>
+             <!-- Left Puff Cluster -->
+             <circle cx="-15" cy="25" r="4" fill="#AB47BC" opacity="0">
+                <animate attributeName="cy" values="25; -20" dur="1.4s" repeatCount="indefinite" begin="0.4s"/>
+                <animate attributeName="r" values="4; 15" dur="1.4s" repeatCount="indefinite" begin="0.4s"/>
+                <animate attributeName="opacity" values="0; 0.8; 0" dur="1.4s" keyTimes="0; 0.2; 1" repeatCount="indefinite" begin="0.4s"/>
              </circle>
-             <!-- Right Puff -->
-             <circle cx="15" cy="25" r="3" fill="#AB47BC" opacity="0">
-                <animate attributeName="cy" values="25; -10" dur="1.7s" repeatCount="indefinite" begin="1.0s"/>
-                <animate attributeName="r" values="3; 12" dur="1.7s" repeatCount="indefinite" begin="1.0s"/>
-                <animate attributeName="opacity" values="0; 0.7; 0" dur="1.7s" keyTimes="0; 0.2; 1" repeatCount="indefinite" begin="1.0s"/>
+             <!-- Right Puff Cluster -->
+             <circle cx="15" cy="25" r="4" fill="#AB47BC" opacity="0">
+                <animate attributeName="cy" values="25; -20" dur="1.3s" repeatCount="indefinite" begin="0.5s"/>
+                <animate attributeName="r" values="4; 15" dur="1.3s" repeatCount="indefinite" begin="0.5s"/>
+                <animate attributeName="opacity" values="0; 0.8; 0" dur="1.3s" keyTimes="0; 0.2; 1" repeatCount="indefinite" begin="0.5s"/>
+             </circle>
+             <!-- Background Haze -->
+             <circle cx="0" cy="15" r="10" fill="#7B1FA2" opacity="0">
+                 <animate attributeName="r" values="10; 30" dur="2s" repeatCount="indefinite" begin="0s"/>
+                 <animate attributeName="opacity" values="0; 0.3; 0" dur="2s" repeatCount="indefinite" begin="0s"/>
+                 <animate attributeName="cy" values="15; -10" dur="2s" repeatCount="indefinite" begin="0s"/>
+             </circle>
+             <!-- Fast Sparks -->
+             <circle cx="-10" cy="30" r="2" fill="#FFF" opacity="0">
+                 <animate attributeName="cy" values="30; -30" dur="0.8s" repeatCount="indefinite" begin="0.6s"/>
+                  <animate attributeName="opacity" values="0; 1; 0" dur="0.8s" repeatCount="indefinite" begin="0.6s"/>
+             </circle>
+             <circle cx="10" cy="30" r="2" fill="#FFF" opacity="0">
+                 <animate attributeName="cy" values="30; -30" dur="0.9s" repeatCount="indefinite" begin="0.7s"/>
+                  <animate attributeName="opacity" values="0; 1; 0" dur="0.9s" repeatCount="indefinite" begin="0.7s"/>
              </circle>
           </g>
 
