@@ -11,32 +11,31 @@
         <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" result="turb">
              <animate attributeName="baseFrequency" values="0.05;0.055;0.05" dur="0.5s" repeatCount="indefinite"/>
         </feTurbulence>
-        <!-- Reduced scale to 1.5 for subtler wobble -->
-        <feDisplacementMap in="SourceGraphic" in2="turb" scale="1.5"/>
+        <feDisplacementMap in="SourceGraphic" in2="turb" scale="1"/>
     </filter>
 </defs>
-<g transform="translate(0, 5)">
+<g transform="translate(0, 0)">
     <!-- Base Rig -->
-    <path d="M35 30 L145 30 L140 180 L40 180 Z" fill="#3E2723" stroke="#D84315" stroke-width="3"/>
+    <path d="M62 78 L118 78 L115 145 L65 145 Z" fill="#3E2723" stroke="#D84315" stroke-width="2"/>
 
-    <!-- Reactive Plates -->
+    <!-- Reactive Plates (Smaller) -->
     <g filter="url(#heatShimmer)">
         <!-- Top Plate -->
-        <rect x="45" y="40" width="90" height="40" rx="4" fill="url(#ceramicPlate)" stroke="#3E2723" stroke-width="2"/>
+        <rect x="68" y="85" width="44" height="20" rx="2" fill="url(#ceramicPlate)" stroke="#3E2723" stroke-width="1"/>
         <!-- Mid Plate -->
-        <rect x="50" y="85" width="80" height="35" rx="4" fill="url(#ceramicPlate)" stroke="#3E2723" stroke-width="2"/>
+        <rect x="70" y="110" width="40" height="15" rx="2" fill="url(#ceramicPlate)" stroke="#3E2723" stroke-width="1"/>
         <!-- Low Plate -->
-        <rect x="55" y="125" width="70" height="40" rx="4" fill="url(#ceramicPlate)" stroke="#3E2723" stroke-width="2"/>
+        <rect x="72" y="130" width="36" height="10" rx="2" fill="url(#ceramicPlate)" stroke="#3E2723" stroke-width="1"/>
     </g>
     
     <!-- Warning Stripes -->
-    <path d="M45 40 L55 40 L45 50 Z" fill="#FFD600"/>
-    <path d="M135 40 L125 40 L135 50 Z" fill="#FFD600"/>
+    <path d="M68 85 L75 85 L68 92 Z" fill="#FFD600"/>
+    <path d="M112 85 L105 85 L112 92 Z" fill="#FFD600"/>
     
     <!-- Core Heat Glow -->
-    <circle cx="90" cy="102" r="6" fill="#FFAB00" opacity="0.8">
+    <circle cx="90" cy="117" r="3" fill="#FFAB00" opacity="0.8">
         <animate attributeName="opacity" values="0.6;1;0.6" dur="0.2s" repeatCount="indefinite"/>
-        <animate attributeName="r" values="6;7.5;6" dur="0.8s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="3;4;3" dur="0.8s" repeatCount="indefinite"/>
     </circle>
 </g>
 </svg>
