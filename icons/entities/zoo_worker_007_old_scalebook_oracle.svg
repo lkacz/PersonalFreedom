@@ -123,12 +123,18 @@
         <g transform="translate(10, 0)">
             <!-- The 'Bookmark' tongue shoots out! -->
             <path d="M90,-100 L110,-100" stroke="#E57373" stroke-width="6" stroke-linecap="round" opacity="0">
-                <animate attributeName="d" values="M90,-100 L100,-100; M90,-100 L160,-120; M90,-100 L100,-100" dur="5s" begin="2s" repeatCount="indefinite" keyTimes="0; 0.1; 0.2"/>
-                 <animate attributeName="opacity" values="0; 1; 0" dur="5s" begin="2s" repeatCount="indefinite" keyTimes="0; 0.1; 0.2"/>
+                <!-- Tongue extends and retracts quickly (0.2s * 5 = 1s total action window?? No, keyTimes are relative to dur=5s. So 0.1 = 0.5s. Quick snap.) -->
+                <animate attributeName="d" values="M90,-100 L100,-100; M90,-100 L160,-120; M90,-100 L100,-100; M90,-100 L100,-100" dur="5s" begin="2s" repeatCount="indefinite" keyTimes="0; 0.05; 0.1; 1"/>
+                 <animate attributeName="opacity" values="0; 1; 1; 0; 0" dur="5s" begin="2s" repeatCount="indefinite" keyTimes="0; 0.01; 0.1; 0.11; 1"/>
             </path>
              <!-- Bug being caught -->
              <circle cx="160" cy="-120" r="3" fill="#000" opacity="0">
-                <animate attributeName="opacity" values="0; 1; 0" dur="5s" begin="1.9s" repeatCount="indefinite"/>
+                <!-- Bug appears briefly just before tongue (at 1.9s relative to 0 start, so basically sync with tongue start) -->
+                <!-- We want bug to be visible ONLY when tongue is about to hit it. -->
+                <!-- Current opacity dur=5s with values 0;1;0 is making it visible for 2.5 seconds. -->
+                <!-- Fix: Make it appear at 1.9s, visible for 0.2s, then gone. -->
+                <animate attributeName="opacity" values="0; 0; 1; 0; 0" dur="5s" repeatCount="indefinite" keyTimes="0; 0.38; 0.4; 0.42; 1"/> 
+                <!-- 0.4 * 5s = 2.0s. So visible around 2s mark. -->
                 <animate attributeName="cx" values="150; 160; 155" dur="0.2s" repeatCount="indefinite"/>
             </circle>
         </g>
