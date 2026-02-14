@@ -123,19 +123,38 @@
         <g transform="translate(10, 0)">
             <!-- The 'Bookmark' tongue shoots out! -->
             <path d="M90,-100 L110,-100" stroke="#E57373" stroke-width="6" stroke-linecap="round" opacity="0">
-                <!-- Tongue extends and retracts quickly (0.2s * 5 = 1s total action window?? No, keyTimes are relative to dur=5s. So 0.1 = 0.5s. Quick snap.) -->
-                <animate attributeName="d" values="M90,-100 L100,-100; M90,-100 L160,-120; M90,-100 L100,-100; M90,-100 L100,-100" dur="5s" begin="2s" repeatCount="indefinite" keyTimes="0; 0.05; 0.1; 1"/>
-                 <animate attributeName="opacity" values="0; 1; 1; 0; 0" dur="5s" begin="2s" repeatCount="indefinite" keyTimes="0; 0.01; 0.1; 0.11; 1"/>
+                <!-- Tongue Animation Loop: shoot, retract, wait -->
+                <animate attributeName="d" values="M90,-100 L100,-100; M90,-100 L160,-120; M90,-100 L100,-100; M90,-100 L100,-100" dur="4s" repeatCount="indefinite" keyTimes="0; 0.1; 0.2; 1" begin="2s"/>
+                <animate attributeName="opacity" values="0; 1; 1; 0; 0" dur="4s" repeatCount="indefinite" keyTimes="0; 0.05; 0.2; 0.25; 1" begin="2s"/>
             </path>
              <!-- Bug being caught -->
-             <circle cx="160" cy="-120" r="3" fill="#000" opacity="0">
-                <!-- Bug appears briefly just before tongue (at 1.9s relative to 0 start, so basically sync with tongue start) -->
-                <!-- We want bug to be visible ONLY when tongue is about to hit it. -->
-                <!-- Current opacity dur=5s with values 0;1;0 is making it visible for 2.5 seconds. -->
-                <!-- Fix: Make it appear at 1.9s, visible for 0.2s, then gone. -->
-                <animate attributeName="opacity" values="0; 0; 1; 0; 0" dur="5s" repeatCount="indefinite" keyTimes="0; 0.38; 0.4; 0.42; 1"/> 
-                <!-- 0.4 * 5s = 2.0s. So visible around 2s mark. -->
-                <animate attributeName="cx" values="150; 160; 155" dur="0.2s" repeatCount="indefinite"/>
+             <circle cx="160" cy="-120" r="3" fill="#000" opacity="1">
+                <!-- Bug Animation: Sit, get eaten (disappear), reappear later -->
+                <!-- Cycle matches tongue duration of 4s -->
+                <!-- 0s - 2.2s: Visible (sitting) -->
+                <!-- 2.2s (Tongue hits): Disappears (Eaten) -->
+                <!-- 2.2s - 4s: Invisible (Gone) -->
+                <!-- 4s (Loop): Reappears immediately as new bug -->
+                
+                <!-- Aligning with tongue begin="2s". Tongue hits peak at approx 2.4s (0.1 of 4s = 0.4s into animation). 
+                     Wait, if tongue begin=2s, then animation starts at 2s. 
+                     0.1 * 4s = 0.4s. So tongue hits apex at 2.4s. 
+                     So bug should disappear at 2.4s. -->
+                     
+                <!-- Simplification: Let's run both loops starting at 0, synchronized. -->
+                <!-- Tongue: Stay hidden for 2s, Shoot (0.5s), Hide (1.5s). Total 4s. -->
+                
+                <!-- Explicit opacity check: -->
+                <!-- 0%  (0.0s): Visible (1) -->
+                <!-- 50% (2.0s): Visible (1) - Tongue starts appearing -->
+                <!-- 60% (2.4s): Hidden (0)  - Tongue hits apex, bug eaten -->
+                <!-- 95% (3.8s): Hidden (0) -->
+                <!-- 100%(4.0s): Visible (1) - New bug arrives -->
+                <animate attributeName="opacity" values="1; 1; 0; 0; 1" dur="4s" repeatCount="indefinite" keyTimes="0; 0.6; 0.61; 0.99; 1"/>
+                
+                <!-- Subtle jitter while sitting to look alive -->
+                <animate attributeName="cx" values="160; 162; 160; 158; 160" dur="0.2s" repeatCount="indefinite"/>
+                <animate attributeName="cy" values="-120; -118; -120; -121; -120" dur="1.5s" repeatCount="indefinite"/>
             </circle>
         </g>
 
