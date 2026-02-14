@@ -36,10 +36,10 @@
       <stop offset="100%" stop-color="#F57F17"/> <!-- Dark Gold -->
     </radialGradient>
 
-    <!-- Intense Shading Gradients (High Gloss - Sharp Specular) -->
-    <radialGradient id="highlightOverlay_ex" cx="30%" cy="30%" r="45%" fx="30%" fy="30%">
-      <stop offset="0%" stop-color="#FFF" stop-opacity="0.9"/> <!-- Sharp Hotspot -->
-      <stop offset="30%" stop-color="#FFF" stop-opacity="0.1"/> <!-- Rapid Falloff -->
+    <!-- Intense Shading Gradients (High Gloss - Extreme Specular) -->
+    <radialGradient id="highlightOverlay_ex" cx="30%" cy="30%" r="40%" fx="25%" fy="25%">
+      <stop offset="0%" stop-color="#FFF" stop-opacity="1.0"/> <!-- Pure White Hotspot -->
+      <stop offset="15%" stop-color="#FFF" stop-opacity="0.1"/> <!-- Instant Falloff -->
       <stop offset="100%" stop-color="#FFF" stop-opacity="0"/>
     </radialGradient>
 
@@ -252,8 +252,8 @@
       <!-- HANDS & BLOWPIPE (Lowered) -->
       <g transform="translate(0, 70)">
           <!-- Arms -->
-          <path d="M-50,0 Q-25,25 0,10" fill="none" stroke="#1B5E20" stroke-width="14" stroke-linecap="round"/>
-          <path d="M50,0 Q25,25 0,10" fill="none" stroke="#1B5E20" stroke-width="14" stroke-linecap="round"/>
+          <path d="M-50,0 Q-25,25 0,10" fill="none" stroke="#0A0A0A" stroke-width="14" stroke-linecap="round"/>
+          <path d="M50,0 Q25,25 0,10" fill="none" stroke="#0A0A0A" stroke-width="14" stroke-linecap="round"/>
 
           <!-- Blowpipe (Shorter) -->
           <rect x="-5" y="-5" width="10" height="100" fill="#78909C" rx="2">
@@ -261,8 +261,8 @@
           </rect>
 
           <!-- Hands -->
-          <circle cx="-10" cy="10" r="8" fill="#3E2723"/>
-          <circle cx="10" cy="10" r="8" fill="#3E2723"/>
+          <circle cx="-10" cy="10" r="8" fill="#1A1A1A"/>
+          <circle cx="10" cy="10" r="8" fill="#1A1A1A"/>
 
           <!-- MOLTEN GLASS BUBBLE (Violet Swirl) -->
           <g transform="translate(0, 100)">
