@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <linearGradient id="stealthVoid" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#311B92"/>
+        <stop offset="100%" stop-color="#1A237E"/>
+    </linearGradient>
+    <pattern id="hexMesh" width="10" height="10" patternUnits="userSpaceOnUse">
+        <path d="M5 0 L10 2.5 L10 7.5 L5 10 L0 7.5 L0 2.5 Z" fill="none" stroke="#7C4DFF" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+    <filter id="neonBlur">
+        <feGaussianBlur stdDeviation="1.5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+</defs>
+<g transform="translate(0, 5)">
+    <!-- Main Suit -->
+    <path d="M40 30 Q90 15 140 30 L135 170 Q90 180 45 170 Z" fill="url(#stealthVoid)"/>
+    
+    <!-- Mesh Overlay -->
+    <path d="M40 30 Q90 15 140 30 L135 170 Q90 180 45 170 Z" fill="url(#hexMesh)" opacity="0.5"/>
+    
+    <!-- Armor Plates (Glossy) -->
+    <path d="M55 45 L125 45 L120 90 L60 90 Z" fill="#4A148C" opacity="0.8" stroke="#AA00FF" stroke-width="1"/>
+    <path d="M60 100 L120 100 L115 150 L65 150 Z" fill="#4A148C" opacity="0.8" stroke="#AA00FF" stroke-width="1"/>
+    
+    <!-- Energy Lines -->
+    <path d="M90 30 L90 170" stroke="#E040FB" stroke-width="1.5" filter="url(#neonBlur)" opacity="0.8">
+        <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="stroke-width" values="1;2;1" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="90" cy="95" r="4" fill="#E040FB" filter="url(#neonBlur)">
+         <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite"/>
+    </circle>
+</g>
+</svg>

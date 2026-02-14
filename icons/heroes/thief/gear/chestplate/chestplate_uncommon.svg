@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <linearGradient id="tacGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#558B2F"/>
+        <stop offset="100%" stop-color="#33691E"/>
+    </linearGradient>
+    <filter id="canvasGrid">
+        <feTurbulence type="turbulence" baseFrequency="0.9" numOctaves="2" result="turb"/>
+        <feComposite operator="in" in="turb" in2="SourceGraphic" result="textured"/>
+        <!-- Reduced texture opacity to 0.15 for cleaner look -->
+        <feBlend in="SourceGraphic" in2="textured" mode="multiply" opacity="0.15"/>
+    </filter>
+    <filter id="ledGlow">
+        <feGaussianBlur stdDeviation="1.5" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+</defs>
+<g transform="translate(0, 5)">
+    <!-- Main Carrier -->
+    <path d="M45 35 L135 35 L130 140 L125 170 L55 170 L50 140 Z" fill="url(#tacGreen)" stroke="#1B5E20" stroke-width="1" filter="url(#canvasGrid)"/>
+    
+    <!-- Molle Straps -->
+    <g stroke="#2E7D32" stroke-width="2">
+        <line x1="50" y1="80" x2="130" y2="80"/>
+        <line x1="52" y1="100" x2="128" y2="100"/>
+        <line x1="54" y1="120" x2="126" y2="120"/>
+    </g>
+    
+    <!-- Pockets -->
+    <rect x="55" y="50" width="30" height="35" rx="3" fill="#33691E" stroke="#1B5E20"/>
+    <rect x="95" y="50" width="30" height="35" rx="3" fill="#33691E" stroke="#1B5E20"/>
+    
+    <!-- Radio/Tech -->
+    <rect x="100" y="30" width="12" height="20" fill="#212121"/>
+    <line x1="106" y1="30" x2="106" y2="10" stroke="#111" stroke-width="1"/>
+    <circle cx="106" cy="40" r="2" fill="#00E676" filter="url(#ledGlow)">
+        <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite"/>
+    </circle>
+</g>
+</svg>
