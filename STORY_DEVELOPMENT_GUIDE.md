@@ -4,6 +4,10 @@
 
 *Guide for creating new story content and scaling the narrative system*
 
+> Canonical reference: `STORY_THEME_EXTENSION_SPEC.md`
+>  
+> If this guide conflicts with `STORY_THEME_EXTENSION_SPEC.md`, follow the spec file.
+
 ---
 
 ## Table of Contents
