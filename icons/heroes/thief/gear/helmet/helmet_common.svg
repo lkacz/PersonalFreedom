@@ -31,12 +31,12 @@
     <g transform="translate(0, -5)">
         <!-- Left Eye Line -->
         <g transform="translate(-22, 0)">
-            <path d="M-10 0 L10 0" stroke="#90A4AE" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+            <path d="M-10 0 L10 0" stroke="#212121" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
         </g>
 
         <!-- Right Eye Line -->
         <g transform="translate(22, 0)">
-            <path d="M-10 0 L10 0" stroke="#90A4AE" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+            <path d="M-10 0 L10 0" stroke="#212121" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
         </g>
     </g>
 
