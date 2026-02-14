@@ -1,50 +1,85 @@
 ﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Zoo Worker 002: Night Shift Lemur Marshal (Exceptional v2) -->
+  <!-- Zoo Worker 002: Night Shift Lemur Marshal (Exceptional v2) - Glossy Edition -->
   <defs>
-    <!-- Marshal Fur -->
-    <radialGradient id="marshalFur" cx="50%" cy="50%" r="50%">
-      <stop offset="60%" stop-color="#546E7A"/>
+    <!-- 1. Marshal Fur (Textured Grey) -->
+    <linearGradient id="marshalFurBase" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#78909C"/>
       <stop offset="100%" stop-color="#37474F"/>
-    </radialGradient>
+    </linearGradient>
     
-    <!-- High-Vis Vest -->
-    <linearGradient id="highVis" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#FF6D00"/>
-      <stop offset="50%" stop-color="#FF9100"/>
-      <stop offset="100%" stop-color="#FF6D00"/>
-    </linearGradient>
-
-    <!-- Reflective Silver -->
-    <linearGradient id="silverStrip" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#CFD8DC"/>
-        <stop offset="50%" stop-color="#FFFFFF"/>
-        <stop offset="100%" stop-color="#CFD8DC"/>
-    </linearGradient>
-
-    <!-- Flashlight Beam Gradient -->
-    <linearGradient id="beamGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#FFF59D" stop-opacity="0.6"/>
-        <stop offset="100%" stop-color="#FFF59D" stop-opacity="0"/>
-    </linearGradient>
-
-    <!-- Warning Pulse Gradient -->
-    <radialGradient id="warningPulse" cx="50%" cy="50%" r="50%">
-        <stop offset="80%" stop-color="#FF5722" stop-opacity="0"/>
-        <stop offset="100%" stop-color="#FF5722" stop-opacity="0.3"/>
-    </radialGradient>
-
-    <filter id="marshalGlow">
-      <feGaussianBlur stdDeviation="3"/>
-      <feComposite in="SourceGraphic" operator="over"/>
+    <filter id="furTexture">
+        <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" result="noise"/>
+        <feColorMatrix type="matrix" values="0 0 0 0 0.2  0 0 0 0 0.25  0 0 0 0 0.3  0 0 0 0.4 0" in="noise" result="coloredNoise"/>
+        <feComposite operator="in" in="coloredNoise" in2="SourceGraphic" result="texture"/>
+        <feBlend mode="multiply" in="texture" in2="SourceGraphic"/>
     </filter>
 
-    <!-- Eye Clips -->
-    <clipPath id="leftEyeClipEx"><circle cx="-30" cy="-15" r="26"/></clipPath>
-    <clipPath id="rightEyeClipEx"><circle cx="30" cy="-15" r="26"/></clipPath>
+    <!-- 2. High-Vis Vest (Reflective Gloss) -->
+    <linearGradient id="highVis" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF6D00"/>
+      <stop offset="40%" stop-color="#FF9100"/>
+      <stop offset="60%" stop-color="#FF6D00"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </linearGradient>
+    
+    <!-- 3. Retro-Reflective Silver Strip -->
+    <linearGradient id="silverStrip" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#90A4AE"/>
+        <stop offset="45%" stop-color="#ECEFF1"/> <!-- Bright Reflective Kick -->
+        <stop offset="50%" stop-color="#FFFFFF"/>
+        <stop offset="55%" stop-color="#ECEFF1"/>
+        <stop offset="100%" stop-color="#78909C"/>
+    </linearGradient>
+
+    <!-- 4. Flashlight Beam (Volumetric Dust) -->
+    <linearGradient id="beamGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#FFF9C4" stop-opacity="0.8"/>
+        <stop offset="100%" stop-color="#FFF9C4" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="beamDust">
+        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3"/>
+        <feColorMatrix values="0 0 0 9 -4" /> 
+        <feComposite operator="in" in2="SourceGraphic"/>
+    </filter>
+
+    <!-- 5. Gold Badge (Metallic Emboss) -->
+    <linearGradient id="goldBadge" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FFECB3"/>
+        <stop offset="50%" stop-color="#FFC107"/>
+        <stop offset="100%" stop-color="#FF6F00"/>
+    </linearGradient>
+    <filter id="goldEmboss" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
+        <feOffset dx="1" dy="1" result="offsetblur"/>
+        <feSpecularLighting in="SourceAlpha" surfaceScale="2" specularConstant="1" specularExponent="20" result="specular">
+            <fePointLight x="-50" y="-100" z="200"/>
+        </feSpecularLighting>
+        <feComposite in="specular" in2="SourceAlpha" operator="in" result="specular"/>
+        <feComposite in="SourceGraphic" in2="specular" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+    </filter>
+
+    <!-- 6. Eyes (Amber Glowing) -->
+    <radialGradient id="eyeAmber" cx="50%" cy="50%" r="50%">
+         <stop offset="40%" stop-color="#FFC107"/>
+         <stop offset="80%" stop-color="#FF6F00"/>
+         <stop offset="100%" stop-color="#E65100"/>
+    </radialGradient>
+
+    <!-- 7. Warning Pulse Gradient -->
+    <radialGradient id="warningPulse" cx="50%" cy="50%" r="50%">
+        <stop offset="80%" stop-color="#FF5722" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#FF5722" stop-opacity="0.4"/>
+    </radialGradient>
+
+    <!-- 8. Clip Paths -->
+    <clipPath id="bodyClip">
+         <rect x="-60" y="60" width="120" height="140" rx="30"/>
+    </clipPath>
   </defs>
 
-  <!-- Background Space -->
-  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/>
+  <!-- Background Space (Dark Night) -->
+  <rect x="0" y="0" width="512" height="512" fill="#121212" rx="32" opacity="1"/> 
+  <!-- Starfield hint? -> Maybe too busy. Keep it clean for icon. -->
 
   <!-- Warning Aura (Subtle Pulse) -->
   <circle cx="256" cy="256" r="200" fill="url(#warningPulse)" opacity="0">
@@ -59,14 +94,22 @@
         <animateTransform attributeName="transform" type="translate" values="0,0; 0,-5; 0,0" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
 
         <!-- Ears (Behind Head) -->
-        <path d="M-65,-45 L-95,-75 L-55,-75 Z" fill="#546E7A"/>
-        <path d="M65,-45 L95,-75 L55,-75 Z" fill="#546E7A"/>
+        <path d="M-65,-45 L-95,-75 Q-75,-95 -55,-75 Z" fill="url(#marshalFurBase)" filter="url(#furTexture)"/>
+        <path d="M65,-45 L95,-75 Q75,-95 55,-75 Z" fill="url(#marshalFurBase)" filter="url(#furTexture)"/>
+        <!-- Ear Inner -->
+        <path d="M-65,-45 L-85,-65 Q-75,-75 -60,-65" fill="#455A64" opacity="0.8"/>
+        <path d="M65,-45 L85,-65 Q75,-75 60,-65" fill="#455A64" opacity="0.8"/>
+
 
         <!-- Tail Group (Sway) -->
         <g>
             <animateTransform attributeName="transform" type="rotate" values="0 85 100; 3 85 100; 0 85 100; -2 85 100; 0 85 100" dur="4s" repeatCount="indefinite"/>
-            <path d="M80,100 Q140,0 100,-100" fill="none" stroke="#455A64" stroke-width="35" stroke-linecap="round"/>
-            <path d="M85,50 L115,50 M95,0 L125,0 M100,-50 L130,-50" stroke="#263238" stroke-width="8" opacity="0.6"/>
+            <!-- Outline -->
+            <path d="M80,100 Q140,0 100,-100" fill="none" stroke="#263238" stroke-width="45" stroke-linecap="round"/>
+            <!-- Fur Base -->
+            <path d="M80,100 Q140,0 100,-100" fill="none" stroke="url(#marshalFurBase)" stroke-width="38" stroke-linecap="round" filter="url(#furTexture)"/>
+            <!-- Stripes (Darker Grey) -->
+            <path d="M88,50 L112,50 M96,0 L120,0 M100,-50 L124,-50" stroke="#263238" stroke-width="8" opacity="0.8"/>
         </g>
 
         <!-- Flashlight Beam (Behind Body, projecting out) -->
@@ -74,93 +117,89 @@
         <g transform="translate(-40, 100)">
             <animateTransform attributeName="transform" type="rotate" values="-20; 10; -20" dur="5s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
             <!-- Beam shape -->
-            <path d="M0,0 L-200,50 L-200,-50 Z" fill="url(#beamGradient)" opacity="0.8"/>
+            <path d="M0,0 L-250,60 L-250,-60 Z" fill="url(#beamGradient)" opacity="0.6"/>
+            <!-- Dust Motes -->
+            <rect x="-240" y="-50" width="200" height="100" fill="#FFF" opacity="0.2" filter="url(#beamDust)"/>
         </g>
 
         <!-- Body -->
-        <rect x="-60" y="60" width="120" height="140" rx="30" fill="url(#marshalFur)"/>
+        <rect x="-60" y="60" width="120" height="140" rx="30" fill="url(#marshalFurBase)" filter="url(#furTexture)"/>
         
-        <!-- Safety Vest (Enhanced) -->
-        <path d="M-60,60 H60 V160 H-60 Z" fill="url(#highVis)"/>
-        <rect x="-60" y="100" width="120" height="20" fill="url(#silverStrip)">
-            <animate attributeName="opacity" values="0.8; 1; 0.8" dur="1s" repeatCount="indefinite"/>
-        </rect>
-        <path d="M-60,60 L0,110 L60,60" fill="none" stroke="#37474F" stroke-width="2"/> <!-- Vest V-neck -->
-
+        <!-- Safety Vest (Enhanced with Gloss) -->
+        <g clip-path="url(#bodyClip)">
+             <path d="M-70,60 H70 V160 H-70 Z" fill="url(#highVis)"/>
+             <!-- Vest V-Neck Cutout -->
+             <path d="M-70,60 L0,120 L70,60 L70,50 L0,110 L-70,50 Z" fill="#3E2723" opacity="0.4"/> <!-- Shadow under vest -->
+             
+             <!-- Reflective Strip -->
+             <rect x="-70" y="110" width="140" height="25" fill="url(#silverStrip)">
+                <animate attributeName="opacity" values="0.9; 1; 0.9" dur="1s" repeatCount="indefinite"/>
+             </rect>
+             
+             <!-- Vest Texture/Weave -->
+             <rect x="-60" y="60" width="120" height="140" fill="#000" opacity="0.05" filter="url(#furTexture)"/>
+        </g>
+        
         <!-- Utility Belt / Gear -->
-        <rect x="-60" y="140" width="120" height="15" fill="#37474F"/>
-        <rect x="-50" y="140" width="10" height="15" fill="#546E7A"/> <!-- Pouch -->
-        <rect x="40" y="140" width="10" height="15" fill="#546E7A"/> <!-- Pouch -->
-
-        <!-- Marshal Badge (Enhanced) -->
-        <g transform="translate(-30, 90)">
-            <circle cx="0" cy="0" r="14" fill="#FFD700" stroke="#F57F17" stroke-width="2"/>
-            <path d="M0,-8 L2,6 L-10,-2 H10 L-2,6 Z" fill="#F57F17">
-                <animateTransform attributeName="transform" type="rotate" values="0; 360" dur="20s" repeatCount="indefinite" from="0 0 0" to="360 0 0"/> 
-            </path>
-            <!-- Badge Glint -->
-            <circle cx="-5" cy="-5" r="2" fill="white" opacity="0.8">
-                 <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/>
-            </circle>
-        </g>
-
-        <!-- Holding Hand (For Flashlight context) -->
-        <circle cx="-40" cy="110" r="15" fill="#546E7A"/> <!-- Hand holding light -->
-        <rect x="-45" y="100" width="10" height="20" rx="2" fill="#263238" transform="rotate(80 -40 110)"/> <!-- Flashlight Handle -->
-
-        <!-- Head -->
-        <circle cx="0" cy="0" r="85" fill="url(#marshalFur)"/>
+        <rect x="-65" y="145" width="130" height="20" rx="5" fill="#263238"/> <!-- Belt -->
+        <rect x="-65" y="145" width="130" height="20" rx="5" fill="none" stroke="#455A64" stroke-width="1"/>
+        <rect x="-60" y="145" width="20" height="25" rx="2" fill="#546E7A" stroke="#37474F"/> <!-- Pouch L -->
+        <rect x="40" y="145" width="20" height="25" rx="2" fill="#546E7A" stroke="#37474F"/> <!-- Pouch R -->
         
-        <!-- Earpiece (Tactical Comms) -->
-        <g transform="translate(80, -10)">
-            <rect x="0" y="0" width="10" height="25" rx="3" fill="#263238"/>
-            <path d="M5,25 Q5,40 -20,40" fill="none" stroke="#263238" stroke-width="2"/> <!-- Arc mic -->
-            <circle cx="5" cy="5" r="2" fill="red">
-                <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite"/>
-            </circle>
+        <!-- Buckle -->
+        <rect x="-10" y="145" width="20" height="20" rx="2" fill="#CFD8DC"/>
+
+        <!-- Flashlight Handle (Held in hand, kind of implied) -->
+        <rect x="-55" y="90" width="15" height="40" rx="5" fill="#212121" transform="rotate(10 -47 110)"/>
+
+        <!-- Head Group -->
+        <g transform="translate(0, -20)">
+            <!-- Head Shape -->
+            <ellipse cx="0" cy="0" rx="75" ry="60" fill="url(#marshalFurBase)" filter="url(#furTexture)"/>
+            
+            <!-- Face Mask (Dark Grey) -->
+            <path d="M-75,0 Q-40,20 0,10 Q40,20 75,0 Q40,-30 0,-20 Q-40,-30 -75,0" fill="#263238" filter="url(#furTexture)"/>
+
+            <!-- Snout -->
+            <ellipse cx="0" cy="25" rx="18" ry="14" fill="#263238"/>
+            <path d="M-8,22 Q0,27 8,22" stroke="#455A64" stroke-width="2" fill="none"/>
+            <circle cx="0" cy="20" r="4" fill="#102027"/> <!-- Nose Tip -->
+
+            <!-- Eyes (Glossy Amber) -->
+            <g transform="translate(-30, -10)">
+                <circle r="22" fill="#FFC107"/> <!-- Sclera Base -->
+                <circle r="22" fill="url(#eyeAmber)"/> <!-- Gradient Iris -->
+                <circle r="8" fill="#000"/> <!-- Pupil -->
+                <circle cx="6" cy="-6" r="5" fill="#FFF" opacity="0.9"/> <!-- Big Glint -->
+                <circle cx="-6" cy="6" r="2" fill="#FFF" opacity="0.6"/> <!-- Secondary Glint -->
+                <!-- Eyelid Shadow -->
+                <path d="M-22,-5 Q0,-25 22,-5" fill="none" stroke="#263238" stroke-width="3" opacity="0.5"/>
+            </g>
+            <g transform="translate(30, -10)">
+                <circle r="22" fill="#FFC107"/>
+                <circle r="22" fill="url(#eyeAmber)"/>
+                <circle r="8" fill="#000"/>
+                <circle cx="6" cy="-6" r="5" fill="#FFF" opacity="0.9"/>
+                <circle cx="-6" cy="6" r="2" fill="#FFF" opacity="0.6"/>
+                <!-- Eyelid Shadow -->
+                <path d="M-22,-5 Q0,-25 22,-5" fill="none" stroke="#263238" stroke-width="3" opacity="0.5"/>
+            </g>
         </g>
 
-        <!-- Face Mask -->
-        <path d="M-75,-20 Q0,30 75,-20 Q50,-55 0,-55 Q-50,-55 -75,-20" fill="#ECEFF1"/>
-
-        <!-- Left Eye Assembly (Vigilant Gold) -->
-        <circle cx="-30" cy="-15" r="26" fill="#FFAB00" />
-        <g clip-path="url(#leftEyeClipEx)">
-             <!-- Pupil: Darting Movement (Marshal is more alert) -->
-             <circle cx="-30" cy="-15" r="8" fill="black">
-                 <animate attributeName="cx" values="-30;-30;-38;-30;-22;-30;-30" dur="3s" calcMode="discrete" repeatCount="indefinite"/>
-                 <animate attributeName="cy" values="-15;-15;-19;-15;-11;-15;-15" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
-             </circle>
-
-             <!-- Eyelid (Fixed Top Logic) -->
-             <rect x="-60" y="-45" width="60" height="0" fill="#ECEFF1">
-                <animate attributeName="height" values="0; 70; 70; 0; 0" keyTimes="0; 0.05; 0.08; 0.15; 1" dur="7s" repeatCount="indefinite" />
-             </rect>
+        <!-- Marshal Badge (Super Glossy) -->
+        <g transform="translate(14, 85)" filter="url(#goldEmboss)">
+            <!-- Star Shield -->
+            <path d="M0,-15 L10,-5 L8,10 L-8,10 L-10,-5 Z" fill="url(#goldBadge)"/>
+            <circle cx="0" cy="0" r="5" fill="none" stroke="#BF360C" stroke-width="1" opacity="0.5"/>
+            <!-- Sparkle -->
+            <path d="M0,-8 L2,6 L-10,-2 H10 L-2,6 Z" fill="#FFF" opacity="0.8" style="mix-blend-mode: overlay">
+                <animateTransform attributeName="transform" type="rotate" values="0; 360" dur="8s" repeatCount="indefinite" from="0 0 0" to="360 0 0"/> 
+            </path>
         </g>
-        <circle cx="-30" cy="-15" r="26" fill="none" stroke="#3E2723" stroke-width="2"/>
-
-        <!-- Right Eye Assembly -->
-        <circle cx="30" cy="-15" r="26" fill="#FFAB00" />
-        <g clip-path="url(#rightEyeClipEx)">
-             <!-- Pupil: Darting Movement Match -->
-             <circle cx="30" cy="-15" r="8" fill="black">
-                 <animate attributeName="cx" values="30;30;22;30;38;30;30" dur="3s" calcMode="discrete" repeatCount="indefinite"/>
-                 <animate attributeName="cy" values="-15;-15;-19;-15;-11;-15;-15" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
-             </circle>
-
-             <rect x="0" y="-45" width="60" height="0" fill="#ECEFF1">
-                <animate attributeName="height" values="0; 70; 70; 0; 0" keyTimes="0; 0.05; 0.08; 0.15; 1" dur="7s" repeatCount="indefinite" />
-             </rect>
-        </g>
-        <circle cx="30" cy="-15" r="26" fill="none" stroke="#3E2723" stroke-width="2"/>
-
-        <!-- Cap Group: Shifted UP -->
-        <g transform="translate(0, -12)">
-            <path d="M-85,-20 Q0,-120 85,-20" fill="#37474F"/>
-            <rect x="-90" y="-20" width="180" height="15" rx="5" fill="#263238"/> <!-- Brim base -->
-            <path d="M-60,-20 Q0,-40 60,-20" fill="none" stroke="#CFD8DC" stroke-width="2"/> <!-- Silver piping -->
-        </g>
-
+        
+        <!-- Whistle (Hanging) -->
+        <path d="M-10,70 Q0,80 5,85 L5,95 L-5,95 L-5,85" fill="#CFD8DC" stroke="#90A4AE" stroke-width="1"/>
     </g>
+
   </g>
 </svg>

@@ -1,18 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Zoo Worker 002: Night Shift Lemur (Normal) -->
+  <!-- Zoo Worker 002: Night Shift Lemur (Normal) - Glossy Fur Edition -->
   <defs>
-    <!-- Night Fur Gradient -->
+    <!-- 1. Rich Deep Fur Gradient -->
     <radialGradient id="nightFur" cx="50%" cy="50%" r="50%">
-      <stop offset="60%" stop-color="#455A64"/>
-      <stop offset="100%" stop-color="#263238"/>
+      <stop offset="60%" stop-color="#37474F"/> <!-- Blue-Grey Base -->
+      <stop offset="100%" stop-color="#263238"/> <!-- Darker Edge -->
     </radialGradient>
     
-    <!-- Reflective Safety Strip -->
+    <!-- 2. Fur Texture (Hair strokes) -->
+    <filter id="furTexture">
+        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise"/>
+        <feColorMatrix type="matrix" values="0.3 0 0 0 0.2  0 0.3 0 0 0.2  0 0 0.3 0 0  0 0 0 1 0" in="noise"/>
+        <feComposite operator="in" in2="SourceGraphic" result="textured"/>
+        <feBlend mode="multiply" in="textured" in2="SourceGraphic"/>
+    </filter>
+
+    <!-- 3. High Visibility Reflective Strip (Glossy) -->
     <linearGradient id="safetyStrip" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#FFD600"/>
-      <stop offset="50%" stop-color="#FFFF8D"/>
+      <stop offset="40%" stop-color="#FFFF00"/>
+      <stop offset="50%" stop-color="#FFFFFF"/> <!-- Intense Reflection -->
+      <stop offset="60%" stop-color="#FFFF00"/>
       <stop offset="100%" stop-color="#FFD600"/>
     </linearGradient>
+
+    <!-- 4. Eye Lens Reflection (Lens Flare) -->
+    <radialGradient id="eyeLens" cx="30%" cy="30%" r="60%">
+        <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.8"/>
+        <stop offset="20%" stop-color="#FFFFFF" stop-opacity="0.1"/>
+        <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
 
     <filter id="eyeGlow">
       <feGaussianBlur stdDeviation="1.5"/>
@@ -36,71 +53,108 @@
     <g>
         <animateTransform attributeName="transform" type="rotate" values="0 0 100; -5 0 100; 5 0 100; 0 0 100" dur="6s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1; 0.45 0 0.55 1"/>
 
-        <!-- Ears (Moved to back layer) -->
-        <path d="M-70,-50 L-100,-80 L-60,-80 Z" fill="#455A64"/>
-        <path d="M70,-50 L100,-80 L60,-80 Z" fill="#455A64"/>
+        <!-- Ears (Detailed) -->
+        <path d="M-70,-50 L-100,-80 L-60,-80 Z" fill="#37474F" stroke="#263238" stroke-width="2"/>
+        <path d="M-85,-70 L-75,-60" stroke="#546E7A" stroke-width="1"/> <!-- Ear fold -->
+        
+        <path d="M70,-50 L100,-80 L60,-80 Z" fill="#37474F" stroke="#263238" stroke-width="2"/>
+        <path d="M85,-70 L75,-60" stroke="#546E7A" stroke-width="1"/>
 
         <!-- Grouped Tail for swaying animation including stripes -->
         <g>
             <animateTransform attributeName="transform" type="rotate" values="0 -60 100; 3 -60 100; 0 -60 100; -2 -60 100; 0 -60 100" dur="5s" repeatCount="indefinite"/>
-            <path d="M-60,100 S-120,50 -120,-50 S-60,-150 0,-180" fill="none" stroke="#37474F" stroke-width="40" stroke-linecap="round"/>
-            <!-- Tail Stripes -->
-            <path d="M-110,-20 L-70,-20 M-115,-60 L-75,-60 M-100,20 L-60,20" stroke="#263238" stroke-width="8" opacity="0.5"/>
+            <!-- Tail Base (Fluffy Stroke) -->
+            <path d="M-60,100 S-120,50 -120,-50 S-60,-150 0,-180" fill="none" stroke="#455A64" stroke-width="40" stroke-linecap="round"/>
+            
+            <!-- Tail Stripes (Crisp White/Black) -->
+            <!-- We overlap the stroke with dashed lines for rings or manually defined segments -->
+            <path d="M-110,-20 L-70,-20" stroke="#263238" stroke-width="8" stroke-opacity="0.8"/>
+            <path d="M-115,-60 L-75,-60" stroke="#263238" stroke-width="8" stroke-opacity="0.8"/>
+            <path d="M-100,20 L-60,20" stroke="#263238" stroke-width="8" stroke-opacity="0.8"/>
+            <path d="M-85,60 L-45,60" stroke="#263238" stroke-width="8" stroke-opacity="0.8"/>
+            
+            <!-- Tail Gloss highlights -->
+             <path d="M-60,100 S-120,50 -120,-50 S-60,-150 0,-180" fill="none" stroke="#FFF" stroke-width="2" stroke-opacity="0.1" stroke-dasharray="10,20"/>
         </g>
 
         <!-- Body -->
         <ellipse cx="0" cy="120" rx="70" ry="90" fill="url(#nightFur)"/>
-        <!-- Belly -->
-        <ellipse cx="0" cy="120" rx="35" ry="60" fill="#90A4AE" opacity="0.8"/>
+        <!-- Belly Patch -->
+        <ellipse cx="0" cy="120" rx="35" ry="60" fill="#B0BEC5" opacity="0.9"/>
+        <path d="M-20,90 Q0,150 20,90" fill="none" stroke="#90A4AE" stroke-width="2" opacity="0.5"/> <!-- Fur line -->
 
-        <!-- Safety Armband / Sash -->
+        <!-- Safety Armband / Sash (Reflective Gloss) -->
         <path d="M-40,80 L40,160 L60,150 L-20,70 Z" fill="url(#safetyStrip)"/>
+        <path d="M-40,80 L40,160" stroke="#FFF" stroke-width="1" opacity="0.5"/> <!-- Edge light -->
 
-        <!-- Head -->
+        <!-- Head Base -->
         <circle cx="0" cy="0" r="90" fill="url(#nightFur)"/>
         
-        <!-- Face Mask (Light) -->
-        <path d="M-80,-20 Q0,40 80,-20 Q50,-60 0,-60 Q-50,-60 -80,-20" fill="#ECEFF1"/>
+        <!-- Face Mask (Light Fur) -->
+        <path d="M-80,-20 Q0,40 80,-20 Q50,-60 0,-60 Q-50,-60 -80,-20" fill="#F5F5F5"/>
+        <path d="M-80,-20 Q0,40 80,-20" fill="none" stroke="#B0BEC5" stroke-width="1"/> <!-- Outline shadow -->
 
-        <!-- Left Eye Assembly -->
-        <circle cx="-35" cy="-10" r="28" fill="#FF6F00" />
+        <!-- Left Eye Assembly (Highly Detailed) -->
+        <circle cx="-35" cy="-10" r="28" fill="#FF8F00" stroke="#E65100" stroke-width="2"/> <!-- Orange Iris with Dark Rim -->
         <g clip-path="url(#leftEyeClip)">
+             <!-- Iris Texture -->
+             <circle cx="-35" cy="-10" r="20" stroke="#FF6F00" stroke-width="2" fill="none" opacity="0.5"/>
+             
              <!-- Pupil: Darting Movement -->
              <circle cx="-35" cy="-10" r="10" fill="black">
-                 <animate attributeName="r" values="10; 12; 10" dur="3s" repeatCount="indefinite"/>
+                 <animate attributeName="r" values="10; 11; 10" dur="3s" repeatCount="indefinite"/>
                  <animate attributeName="cx" values="-35;-35;-40;-35;-30;-35;-35" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
                  <animate attributeName="cy" values="-10;-10;-15;-10;-5;-10;-10" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
              </circle>
-             <circle cx="-45" cy="-20" r="5" fill="white" opacity="0.8"/>
+             
+             <!-- Primary Highlight (Gloss) -->
+             <circle cx="-42" cy="-18" r="5" fill="white" opacity="0.9"/>
+             <!-- Secondary Highlight -->
+             <circle cx="-30" cy="-5" r="3" fill="white" opacity="0.3"/>
              
              <!-- Eyelid (Fixed Start Position) -->
-             <rect x="-70" y="-40" width="70" height="0" fill="#ECEFF1">
+             <rect x="-70" y="-40" width="70" height="0" fill="#F5F5F5">
                 <animate attributeName="height" values="0; 70; 70; 0; 0" keyTimes="0; 0.05; 0.08; 0.15; 1" dur="7s" repeatCount="indefinite" />
              </rect>
         </g>
         <circle cx="-35" cy="-10" r="28" fill="none" stroke="#3E2723" stroke-width="2"/>
 
         <!-- Right Eye Assembly -->
-        <circle cx="35" cy="-10" r="28" fill="#FF6F00" />
+        <circle cx="35" cy="-10" r="28" fill="#FF8F00" stroke="#E65100" stroke-width="2"/>
         <g clip-path="url(#rightEyeClip)">
+             <!-- Iris Texture -->
+             <circle cx="35" cy="-10" r="20" stroke="#FF6F00" stroke-width="2" fill="none" opacity="0.5"/>
+
              <!-- Pupil: Darting Movement (Synced with left) -->
              <circle cx="35" cy="-10" r="10" fill="black">
-                 <animate attributeName="r" values="10; 12; 10" dur="3s" repeatCount="indefinite"/>
+                 <animate attributeName="r" values="10; 11; 10" dur="3s" repeatCount="indefinite"/>
                  <animate attributeName="cx" values="35;35;30;35;40;35;35" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
                  <animate attributeName="cy" values="-10;-10;-15;-10;-5;-10;-10" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
              </circle>
-             <circle cx="25" cy="-20" r="5" fill="white" opacity="0.8"/>
+             
+             <!-- Highlights -->
+             <circle cx="28" cy="-18" r="5" fill="white" opacity="0.9"/>
+             <circle cx="40" cy="-5" r="3" fill="white" opacity="0.3"/>
              
              <!-- Eyelid -->
-             <rect x="0" y="-40" width="70" height="0" fill="#ECEFF1">
+             <rect x="0" y="-40" width="70" height="0" fill="#F5F5F5">
                 <animate attributeName="height" values="0; 70; 70; 0; 0" keyTimes="0; 0.05; 0.08; 0.15; 1" dur="7s" repeatCount="indefinite" />
              </rect>
         </g>
         <circle cx="35" cy="-10" r="28" fill="none" stroke="#3E2723" stroke-width="2"/>
 
-        <!-- Nose -->
+        <!-- Nose (Glossy Wet Look) -->
         <path d="M-8,30 Q0,35 8,30 L0,40 Z" fill="#3E2723"/>
+        <path d="M-2,32 Q0,33 2,32" stroke="#6D4C41" stroke-width="1" opacity="0.5"/> <!-- Nostrils -->
+        <circle cx="0" cy="32" r="2" fill="#FFF" opacity="0.4"/> <!-- Wet shine -->
 
+        <!-- Whiskers -->
+        <g stroke="#9E9E9E" stroke-width="0.5" opacity="0.6">
+            <line x1="-10" y1="40" x2="-60" y2="35"/>
+            <line x1="-10" y1="42" x2="-60" y2="45"/>
+            <line x1="10" y1="40" x2="60" y2="35"/>
+            <line x1="10" y1="42" x2="60" y2="45"/>
+        </g>
     </g>
   </g>
 </svg>
