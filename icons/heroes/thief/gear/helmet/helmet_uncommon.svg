@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<defs>
+    <!-- Very dark green, almost black -->
+    <linearGradient id="hoodieDark" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#1B2E1B"/> 
+        <stop offset="100%" stop-color="#050A05"/>
+    </linearGradient>
+    
+    <!-- String Texture/Gradient -->
+    <linearGradient id="stringGrad" x1="0" y1="0" x2="0" y2="1">
+       <stop offset="0%" stop-color="#2E7D32"/>
+       <stop offset="100%" stop-color="#1B5E20"/>
+    </linearGradient>
+
+    <radialGradient id="humanIrisGreen" cx="50%" cy="50%" r="50%">
+        <stop offset="60%" stop-color="#66BB6A"/>
+        <stop offset="100%" stop-color="#1B5E20"/>
+    </radialGradient>
+    
+    <filter id="stringShadow"><feDropShadow dx="1" dy="1" stdDeviation="1" flood-opacity="0.5"/></filter>
+</defs>
+
+<g transform="translate(90, 61) scale(0.22)">
+    <!-- Main Hood Shape -->
+    <path d="M0 -150 C-100 -150 -130 -50 -130 0 C-130 80 -80 100 -50 110 C-20 120 20 120 50 110 C80 100 130 80 130 0 C130 -50 100 -150 0 -150 Z" fill="url(#hoodieDark)"/>
+    
+    <!-- Face Shadow -->
+    <ellipse cx="0" cy="10" rx="60" ry="70" fill="#000"/>
+
+    <!-- Eyes Container -->
+    <g transform="translate(0, -5)">
+        
+        <!-- Left Eye -->
+        <g transform="translate(-22, 0)"> 
+            <!-- Sclera (Whites) -->
+            <path d="M-15 0 Q0 -11 15 0 Q0 11 -15 0 Z" fill="#F5F5F5"/>
+            
+            <!-- Iris & Pupil (Green) -->
+            <g>
+                <!-- Subtle look-around animation -->
+                <animateTransform attributeName="transform" type="translate" 
+                    values="0,0; 4,0; 0,0; -4,0; 0,0" 
+                    dur="12s" repeatCount="indefinite" 
+                    keyTimes="0; 0.1; 0.2; 0.3; 1"
+                    calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1"/>
+                    
+                <circle cx="0" cy="0" r="7" fill="url(#humanIrisGreen)" /> 
+                <circle cx="0" cy="0" r="3" fill="#1A1A1A" /> 
+                <circle cx="2" cy="-2" r="1.5" fill="#FFFFFF" opacity="0.8" />
+            </g>
+            
+            <!-- Eyelids (Black to match face shadow) -->
+            <!-- Using path interpolation for closing -->
+            <path fill="#000000">
+                <animate attributeName="d" 
+                    values="M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z; 
+                            M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z;
+                            M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z"
+                    keyTimes="0; 0.02; 0.04"
+                    dur="7s"
+                    repeatCount="indefinite"
+                    begin="0s"/>
+               <!-- Irregular blink pattern: Second blink at different time -->
+               <animate attributeName="d" 
+                    values="M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z; 
+                            M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z; 
+                            M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z"
+                    keyTimes="0; 0.05; 0.1"
+                    dur="11s"
+                    repeatCount="indefinite"
+                    begin="2s"
+                    additive="replace"/>
+            </path>
+            <!-- Bottom lid slightly moving up -->
+             <path fill="#000000">
+                <animate attributeName="d" 
+                    values="M-16 8 Q0 20 16 8 L16 20 L-16 20 Z; 
+                            M-16 0 Q0 0 16 0 L16 20 L-16 20 Z; 
+                            M-16 8 Q0 20 16 8 L16 20 L-16 20 Z"
+                    keyTimes="0; 0.02; 0.04"
+                    dur="7s"
+                    repeatCount="indefinite"/>
+            </path>
+        </g>
+
+        <!-- Right Eye -->
+        <g transform="translate(22, 0)"> 
+            <path d="M-15 0 Q0 -11 15 0 Q0 11 -15 0 Z" fill="#F5F5F5"/>
+            <g>
+                <animateTransform attributeName="transform" type="translate" 
+                    values="0,0; 4,0; 0,0; -4,0; 0,0" 
+                    dur="12s" repeatCount="indefinite" 
+                    keyTimes="0; 0.1; 0.2; 0.3; 1"
+                    calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1"/>
+                <circle cx="0" cy="0" r="7" fill="url(#humanIrisGreen)" />
+                <circle cx="0" cy="0" r="3" fill="#1A1A1A" />
+                <circle cx="2" cy="-2" r="1.5" fill="#FFFFFF" opacity="0.8" />
+            </g>
+            
+             <!-- Top Lid -->
+            <path fill="#000000">
+                <!-- Using a stacked animation logic is tricky in SVG. 
+                     Instead, let's define a complex keyTimes sequence for one animation to mimic irregularity 
+                     Blinks at: 0s, 3.5s (double), 8s -->
+                <animate attributeName="d" 
+                    values="M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z; 
+                            M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z; 
+                            M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z;
+                            M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z;
+                            M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z; 
+                            M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z;
+                            M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z;
+                            M-16 0 Q0 0 16 0 L16 -20 L-16 -20 Z; 
+                            M-16 -8 Q0 -20 16 -8 L16 -20 L-16 -20 Z"
+                    keyTimes="0; 0.02; 0.04; 0.4; 0.42; 0.44; 0.48; 0.50; 0.52"
+                    dur="10s"
+                    repeatCount="indefinite"/>
+            </path>
+             <!-- Bottom Lid -->
+            <path fill="#000000">
+                <animate attributeName="d" 
+                    values="M-16 8 Q0 20 16 8 L16 20 L-16 20 Z; 
+                            M-16 0 Q0 0 16 0 L16 20 L-16 20 Z; 
+                            M-16 8 Q0 20 16 8 L16 20 L-16 20 Z;
+                            M-16 8 Q0 20 16 8 L16 20 L-16 20 Z;
+                            M-16 0 Q0 0 16 0 L16 20 L-16 20 Z; 
+                            M-16 8 Q0 20 16 8 L16 20 L-16 20 Z;
+                            M-16 8 Q0 20 16 8 L16 20 L-16 20 Z;
+                            M-16 0 Q0 0 16 0 L16 20 L-16 20 Z; 
+                            M-16 8 Q0 20 16 8 L16 20 L-16 20 Z"
+                    keyTimes="0; 0.02; 0.04; 0.4; 0.42; 0.44; 0.48; 0.50; 0.52"
+                    dur="10s"
+                    repeatCount="indefinite"/>
+            </path>
+        </g>
+    </g>
+
+    <!-- State of the Art Hanging Strings -->
+    <!-- Modeled with physics curve and weight -->
+    <g transform="translate(0, 0)" filter="url(#stringShadow)">
+        <!-- Left String -->
+        <g>
+            <!-- Heavy cord with sway -->
+            <path d="M-40 60 Q-42 90 -38 130" fill="none" stroke="url(#stringGrad)" stroke-width="4" stroke-linecap="round">
+                <animate attributeName="d" 
+                    values="M-40 60 Q-42 90 -38 130; M-40 60 Q-38 90 -40 130; M-40 60 Q-42 90 -38 130" 
+                    dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+            </path>
+            <!-- Metal Aglet (Tip) -->
+            <rect x="-41" y="130" width="6" height="15" rx="1" fill="#424242">
+                <animate attributeName="x" values="-41;-43;-41" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+                <animateTransform attributeName="transform" type="rotate" values="3 -38 130; -3 -38 130; 3 -38 130" dur="4s" repeatCount="indefinite"/>
+            </rect>
+        </g>
+
+        <!-- Right String -->
+        <g>
+            <path d="M40 60 Q38 95 42 135" fill="none" stroke="url(#stringGrad)" stroke-width="4" stroke-linecap="round">
+                 <animate attributeName="d" 
+                    values="M40 60 Q38 95 42 135; M40 60 Q42 95 40 135; M40 60 Q38 95 42 135" 
+                    dur="5.5s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+            </path>
+             <!-- Metal Aglet (Tip) -->
+            <rect x="39" y="135" width="6" height="15" rx="1" fill="#424242">
+                 <animate attributeName="x" values="39;37;39" dur="5.5s" repeatCount="indefinite"/>
+                 <animateTransform attributeName="transform" type="rotate" values="-2 41 135; 2 41 135; -2 41 135" dur="5.5s" repeatCount="indefinite"/>
+            </rect>
+        </g>
+    </g>
+
+</g>
+</svg>
