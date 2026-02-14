@@ -865,12 +865,13 @@ class TestMultiStorySystem(unittest.TestCase):
     def test_available_stories_defined(self) -> None:
         """Test that multiple stories are available."""
         from gamification import AVAILABLE_STORIES
-        self.assertEqual(len(AVAILABLE_STORIES), 5)
+        self.assertEqual(len(AVAILABLE_STORIES), 6)
         self.assertIn("warrior", AVAILABLE_STORIES)
         self.assertIn("scholar", AVAILABLE_STORIES)
         self.assertIn("wanderer", AVAILABLE_STORIES)
         self.assertIn("underdog", AVAILABLE_STORIES)
         self.assertIn("scientist", AVAILABLE_STORIES)
+        self.assertIn("robot", AVAILABLE_STORIES)
     
     def test_story_has_required_fields(self) -> None:
         """Test that each story has required fields."""
@@ -915,8 +916,8 @@ class TestMultiStorySystem(unittest.TestCase):
     
     def test_story_data_exists_for_all_stories(self) -> None:
         """Test that each story has decisions and chapters."""
-        from gamification import STORY_DATA
-        for story_id in ["warrior", "scholar", "wanderer", "underdog"]:
+        from gamification import STORY_DATA, AVAILABLE_STORIES
+        for story_id in AVAILABLE_STORIES:
             self.assertIn(story_id, STORY_DATA)
             self.assertIn("decisions", STORY_DATA[story_id])
             self.assertIn("chapters", STORY_DATA[story_id])
@@ -954,6 +955,16 @@ class TestMultiStorySystem(unittest.TestCase):
         chapter = get_chapter_content(1, adhd_buster)
         self.assertIsNotNone(chapter)
         self.assertIn("Commuter Static", chapter["title"])
+    
+    def test_robot_story_content(self) -> None:
+        """Test that robot story has unique content."""
+        from gamification import get_chapter_content, select_story
+        adhd_buster = {"equipped": {}, "inventory": []}
+        select_story(adhd_buster, "robot")
+        
+        chapter = get_chapter_content(1, adhd_buster)
+        self.assertIsNotNone(chapter)
+        self.assertIn("Unit R-0", chapter["title"])
     
     def test_story_progress_includes_story_info(self) -> None:
         """Test that story progress includes selected story info."""

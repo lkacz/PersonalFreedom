@@ -10,8 +10,8 @@ from gamification import (
 
 
 def test_all_stories():
-    """Test all 5 stories have correct structure."""
-    print("Testing all 5 stories...")
+    """Test all available stories have correct structure."""
+    print("Testing all available stories...")
     for story_id in AVAILABLE_STORIES:
         data = STORY_DATA.get(story_id)
         decisions = data["decisions"]
@@ -56,12 +56,12 @@ def test_story_unlock_system():
     assert unlock_cost == 100, f"Expected unlock cost 100, got {unlock_cost}"
     print(f"  ✓ Story unlock cost is {unlock_cost} coins")
     
-    # Verify 5 available stories
-    assert len(AVAILABLE_STORIES) == 5, f"Expected 5 stories, got {len(AVAILABLE_STORIES)}"
-    expected_stories = ["warrior", "scholar", "wanderer", "underdog", "scientist"]
+    # Verify available stories
+    assert len(AVAILABLE_STORIES) == 6, f"Expected 6 stories, got {len(AVAILABLE_STORIES)}"
+    expected_stories = ["warrior", "scholar", "wanderer", "underdog", "scientist", "robot"]
     for story_id in expected_stories:
         assert story_id in AVAILABLE_STORIES, f"Missing story: {story_id}"
-    print(f"  ✓ All 5 stories available: {list(AVAILABLE_STORIES.keys())}")
+    print(f"  ✓ All 6 stories available: {list(AVAILABLE_STORIES.keys())}")
     
     # Test default unlocked story (underdog)
     test_adhd = {}
@@ -478,7 +478,7 @@ if __name__ == "__main__":
     print("✅ ALL STORY SYSTEM TESTS PASSED!")
     print("="*50)
     print("\nVerified:")
-    print("  • 5 stories with 7 chapters each")
+    print("  • 6 stories with 7 chapters each")
     print("  • Story unlock system (100 coins, underdog free)")
     print("  • Per-story hero isolation (inventory, power, decisions)")
     print("  • Power-based chapter unlocking (permanent)")

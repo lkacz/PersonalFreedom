@@ -105,8 +105,8 @@ class TestEntityPools:
         assert entity is None
     
     def test_total_entity_count(self):
-        """Total entity count should be 45 (9 per story × 5 stories)."""
-        assert get_total_entity_count() == 45
+        """Total entity count should match 9 entities per registered story."""
+        assert get_total_entity_count() == len(ENTITY_POOLS) * 9
     
     def test_all_entities_have_lore(self):
         """Every entity should have lore text."""
