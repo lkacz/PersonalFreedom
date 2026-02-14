@@ -14,7 +14,7 @@
         <feDisplacementMap in="SourceGraphic" in2="turb" scale="1"/>
     </filter>
 </defs>
-<g transform="translate(36, 54) scale(0.6)">
+<g transform="translate(36, 43) scale(0.6)">
     <!-- Base Rig -->
     <path d="M62 78 L118 78 L115 145 L65 145 Z" fill="#3E2723" stroke="#D84315" stroke-width="2"/>
 
@@ -39,6 +39,7 @@
     </circle>
 </g>
 </svg>
+
 
 
 
