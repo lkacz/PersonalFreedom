@@ -2,7 +2,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
   <!-- Battle Standard - Worn battle flag, tattered but proud -->
   <defs>
-    <linearGradient id="poleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+    <linearGradient id="poleGradient" x1="0%" y1="0%" x2="100%" y2="0%">        
       <stop offset="0%" style="stop-color:#8D6E63"/>
       <stop offset="50%" style="stop-color:#6D4C41"/>
       <stop offset="100%" style="stop-color:#5D4037"/>
@@ -17,65 +17,39 @@
       <stop offset="100%" style="stop-color:#FFB300"/>
     </linearGradient>
   </defs>
-  
+
   <!-- Pole -->
-  <rect x="14" y="8" width="4" height="52" rx="1" fill="url(#poleGradient)"/>
-  
+  <rect x="14" y="8" width="4" height="52" rx="1" fill="url(#poleGradient)"/>   
+
   <!-- Pole top ornament (spear point) -->
   <path d="M16 8 L12 2 L16 0 L20 2 L16 8" fill="url(#goldTrim)"/>
-  <line x1="16" y1="8" x2="16" y2="4" stroke="#FFB300" stroke-width="1"/>
-  
-  <!-- Flag - tattered edges, weathered but proud - waving in wind -->
-  <path d="M18 10 
-           Q40 8, 54 14 
-           Q56 20, 52 26 
-           Q58 32, 54 38
-           Q48 36, 42 40
-           L18 38
-           Z" 
-        fill="url(#flagRed)">
-    <animate attributeName="d" values="M18 10 Q40 8, 54 14 Q56 20, 52 26 Q58 32, 54 38 Q48 36, 42 40 L18 38 Z;M18 10 Q38 12, 52 16 Q54 22, 50 28 Q56 34, 52 40 Q46 38, 40 42 L18 38 Z;M18 10 Q42 6, 56 12 Q58 18, 54 24 Q60 30, 56 36 Q50 34, 44 38 L18 38 Z;M18 10 Q40 8, 54 14 Q56 20, 52 26 Q58 32, 54 38 Q48 36, 42 40 L18 38 Z" dur="2s" repeatCount="indefinite"/>
-  </path>
-  
-  <!-- Tattered edges (battle worn) -->
-  <path d="M52 26 L56 24 L54 28 L58 26 L54 30" fill="url(#flagRed)"/>
-  <path d="M42 40 L44 44 L40 42 L42 46 L38 42" fill="url(#flagRed)"/>
-  <path d="M54 38 L58 40 L54 42 L56 44" fill="url(#flagRed)"/>
-  
-  <!-- Burn marks and holes -->
-  <ellipse cx="36" cy="24" rx="3" ry="2" fill="#1A1A1A" opacity="0.4"/>
-  <circle cx="46" cy="32" r="2" fill="#1A1A1A" opacity="0.3"/>
-  
-  <!-- Faded gold trim (originally ornate) -->
-  <path d="M18 10 Q40 8, 54 14" stroke="url(#goldTrim)" stroke-width="2" fill="none" opacity="0.6"/>
-  <path d="M18 38 L42 40" stroke="url(#goldTrim)" stroke-width="2" fill="none" opacity="0.5"/>
-  
-  <!-- Emblem - faded lion or sword -->
-  <path d="M30 20 L34 16 L38 20 L36 24 L38 28 L34 26 L30 28 L32 24 Z" 
-        fill="url(#goldTrim)" opacity="0.7"/>
-  <circle cx="34" cy="22" r="2" fill="#8E0000" opacity="0.8"/>
-  
-  <!-- Sword slashes through flag -->
-  <line x1="26" y1="18" x2="32" y2="34" stroke="#1A1A1A" stroke-width="1" opacity="0.3"/>
-  <line x1="44" y1="16" x2="48" y2="28" stroke="#1A1A1A" stroke-width="1" opacity="0.3"/>
-  
-  <!-- Bloodstains (faded, old battles) -->
-  <circle cx="28" cy="30" r="3" fill="#4E0000" opacity="0.3"/>
-  <circle cx="40" cy="22" r="2" fill="#4E0000" opacity="0.2"/>
-  
-  <!-- Faded text/motto (barely visible) -->
-  <text x="26" y="36" font-size="4" fill="url(#goldTrim)" opacity="0.4" font-family="serif">VICTORIA</text>
-  
-  <!-- Decorative tassels (worn) -->
-  <path d="M18 38 L16 44 L14 38" stroke="url(#goldTrim)" stroke-width="1" fill="none" opacity="0.5"/>
-  <line x1="16" y1="44" x2="16" y2="48" stroke="#FFB300" stroke-width="1" opacity="0.4"/>
-  <line x1="14" y1="44" x2="12" y2="48" stroke="#FFB300" stroke-width="1" opacity="0.4"/>
-  <line x1="18" y1="44" x2="20" y2="48" stroke="#FFB300" stroke-width="1" opacity="0.4"/>
-  
-  <!-- Wind effect - flag waving proudly -->
-  <path d="M54 14 Q52 16, 54 18" stroke="#B71C1C" stroke-width="1" fill="none"/>
-  
-  <!-- Base/ground mount -->
-  <ellipse cx="16" cy="60" rx="6" ry="2" fill="#5D4037"/>
-  <ellipse cx="16" cy="59" rx="5" ry="1.5" fill="#6D4C41"/>
+  <line x1="16" y1="8" x2="16" y2="4" stroke="#FFB300" stroke-width="1"/>       
+
+  <!-- Animated Flag Group -->
+  <!-- We define one big path including tatters so the whole cloth moves together -->
+  <g>
+    <path fill="url(#flagRed)" stroke="#8E0000" stroke-width="0.5">
+      <animate attributeName="d" 
+         dur="2s" 
+         repeatCount="indefinite"
+         values="
+           M18 10 Q40 8, 54 14 L52 20 L56 24 L50 30 L54 36 L48 38 Q42 40, 18 38 Z;
+           M18 10 Q38 12, 52 16 L50 22 L54 26 L48 32 L52 38 L46 42 Q40 42, 18 38 Z;
+           M18 10 Q42 6, 56 12 L54 18 L58 22 L52 28 L56 34 L50 38 Q44 38, 18 38 Z;
+           M18 10 Q40 8, 54 14 L52 20 L56 24 L50 30 L54 36 L48 38 Q42 40, 18 38 Z"
+      />
+    </path>
+    
+    <!-- Burn mark (moves with simplified relative motion approximation) -->
+    <!-- It is hard to sync perfectly without complex JS or SMIL matching, 
+         so we use a subtle opacity fade to make it look like light catching the fold 
+         rather than a physical object stuck in space -->
+    <ellipse cx="36" cy="24" rx="4" ry="2" fill="#1A1A1A" opacity="0.2">
+        <animate attributeName="cx" values="36;34;38;36" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="cy" values="24;26;22;24" dur="2s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="16" cy="62" rx="6" ry="1.5" fill="#1A1A1A" opacity="0.4"/>
 </svg>

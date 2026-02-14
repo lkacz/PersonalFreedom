@@ -1,16 +1,98 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="  exceptional">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Robot 007 Exceptional: Inspection Drone Iris (Omni-Eye) -->
   <defs>
-    <radialGradient id="eg" cx="50%" cy="45%" r="70%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-      <stop offset="45%" stop-color="" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#0B1020" stop-opacity="1"/>
+    <!-- Forensic White Shell -->
+    <linearGradient id="body-white" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="50%" stop-color="#eceff1" />
+      <stop offset="100%" stop-color="#cfd8dc" />
+    </linearGradient>
+
+    <!-- Multi-Spectrum Lens -->
+    <radialGradient id="lens-rainbow" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#84ffff" stop-opacity="0.9" /> <!-- Cyan -->
+      <stop offset="50%" stop-color="#b388ff" stop-opacity="0.8" /> <!-- Violet -->
+      <stop offset="100%" stop-color="#ff80ab" stop-opacity="1" /> <!-- Pink -->
     </radialGradient>
+    
+    <!-- Holographic Ring Gradient -->
+    <linearGradient id="holo-ring" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0" />
+      <stop offset="50%" stop-color="#00e5ff" stop-opacity="1" />
+      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0" />
+    </linearGradient>
   </defs>
-  <rect x="4" y="4" width="120" height="120" rx="20" fill="url(#eg)" stroke="#FDE68A" stroke-width="4"/>
-  <circle cx="64" cy="64" r="32" fill="#0F172A" stroke="#FDE68A" stroke-width="4"/>
-  <path d="M64 24 L70 40 L88 40 L74 50 L80 66 L64 56 L48 66 L54 50 L40 40 L58 40 Z" fill="#FDE68A" opacity="0.9"/>
-  <rect x="36" y="58" width="56" height="12" rx="6" fill="" opacity="0.35"/>
-  <circle cx="52" cy="64" r="5" fill="#F8FAFC"/>
-  <circle cx="76" cy="64" r="5" fill="#F8FAFC"/>
-  <text x="64" y="109" font-family="Segoe UI, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#FDE68A" font-weight="700"> EX</text>
+
+  <g transform="translate(256, 256)">
+    
+    <!-- Sophisticated Float (Figure 8) -->
+    <animateTransform attributeName="transform" type="translate" values="0,-5; 5,0; 0,5; -5,0; 0,-5" dur="6s" repeatCount="indefinite" additive="sum" />
+
+    <!-- Advanced Propulsion (Dual Rotors) -->
+    <g transform="translate(-140, -50)">
+       <circle cx="0" cy="0" r="45" fill="none" stroke="#fff" stroke-width="1" opacity="0.3" />
+       <path d="M-40,0 L40,0 M0,-40 L0,40" stroke="#00e5ff" stroke-width="2" opacity="0.5">
+          <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="0.2s" repeatCount="indefinite" />
+       </path>
+    </g>
+    <g transform="translate(140, -20)">
+       <circle cx="0" cy="0" r="35" fill="none" stroke="#fff" stroke-width="1" opacity="0.3" />
+       <path d="M-30,0 L30,0 M0,-30 L0,30" stroke="#00e5ff" stroke-width="2" opacity="0.5">
+          <animateTransform attributeName="transform" type="rotate" from="360 0 0" to="0 0 0" dur="0.2s" repeatCount="indefinite" />
+       </path>
+    </g>
+
+    <!-- Main Chassis (Premium Enclosure) -->
+    <!-- Lower Housing -->
+    <path d="M-130,20 Q0,100 130,10 L130,30 Q0,130 -130,50 Z" fill="#b0bec5" />
+    <!-- Upper Housing -->
+    <ellipse cx="0" cy="10" rx="140" ry="70" fill="url(#body-white)" stroke="#fff" stroke-width="3" />
+
+    <!-- Gold Accent Ring -->
+    <ellipse cx="0" cy="10" rx="120" ry="60" fill="none" stroke="#ffd700" stroke-width="1" opacity="0.6" />
+
+    <!-- Eye Assembly -->
+    <ellipse cx="0" cy="20" rx="80" ry="40" fill="#212121" stroke="#fff" stroke-width="1" />
+    
+    <!-- The Omni-Lens -->
+    <g>
+       <clipPath id="omni-clip">
+          <ellipse cx="0" cy="20" rx="70" ry="35" />
+       </clipPath>
+       
+       <!-- Spectrum Glass -->
+       <ellipse cx="0" cy="20" rx="70" ry="35" fill="url(#lens-rainbow)" clip-path="url(#omni-clip)" />
+       
+       <!-- Layered Iris Petals -->
+       <g clip-path="url(#omni-clip)" opacity="0.6">
+           <!-- Inner Ring CW -->
+           <path d="M-70,20 Q0,-50 70,20 Q0,90 -70,20" fill="none" stroke="#fff" stroke-width="2">
+              <animateTransform attributeName="transform" type="rotate" from="0 0 20" to="360 0 20" dur="8s" repeatCount="indefinite" />
+           </path>
+           <!-- Outer Ring CCW -->
+           <path d="M-60,20 Q0,-40 60,20 Q0,80 -60,20" fill="none" stroke="#00e5ff" stroke-width="2">
+              <animateTransform attributeName="transform" type="rotate" from="360 0 20" to="0 0 20" dur="8s" repeatCount="indefinite" />
+           </path>
+       </g>
+
+       <!-- Scanning Rings (Concentric Pulse) -->
+       <ellipse cx="0" cy="20" rx="10" ry="5" fill="none" stroke="#fff" stroke-width="2" clip-path="url(#omni-clip)">
+          <animate attributeName="rx" values="10; 70; 10" dur="2s" repeatCount="indefinite" />
+          <animate attributeName="ry" values="5; 35; 5" dur="2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="1; 0; 1" dur="2s" repeatCount="indefinite" />
+       </ellipse>
+       
+       <!-- Lens Flare Flash -->
+       <path d="M-100,-80 L100,120" stroke="#fff" stroke-width="15" opacity="0.3" filter="blur(5px)" clip-path="url(#omni-clip)">
+           <animate attributeName="opacity" values="0; 0.5; 0" dur="3s" repeatCount="indefinite" />
+           <animateTransform attributeName="transform" type="translate" values="-50,0; 50,0; -50,0" dur="3s" repeatCount="indefinite" />
+       </path>
+    </g>
+    
+    <!-- Holographic Data Projection -->
+    <path d="M-160,0 L-200,-40" stroke="#00e5ff" stroke-width="1" stroke-dasharray="2,2" opacity="0.5" />
+    <rect x="-240" y="-60" width="40" height="20" fill="#00e5ff" fill-opacity="0.2" stroke="#00e5ff" stroke-width="1" />
+    <text x="-235" y="-45" font-family="monospace" font-size="10" fill="#00e5ff">SCAN</text>
+
+  </g>
 </svg>

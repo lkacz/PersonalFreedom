@@ -1,0 +1,82 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief Theme Celebration: The Loot Explosion -->
+  
+  <defs>
+    <radialGradient id="goldCoin" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFEB3B"/>
+      <stop offset="100%" stop-color="#FBC02D"/>
+    </radialGradient>
+    
+    <linearGradient id="cashStack" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#C8E6C9"/> <!-- Paper green -->
+      <stop offset="10%" stop-color="#4CAF50"/> <!-- Edge -->
+      <stop offset="90%" stop-color="#4CAF50"/>
+      <stop offset="100%" stop-color="#1B5E20"/>
+    </linearGradient>
+    
+    <linearGradient id="gemRub" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FF5252"/>
+        <stop offset="100%" stop-color="#B71C1C"/>
+    </linearGradient>
+
+    <!-- Bag Texture -->
+    <filter id="canvasBag">
+        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" result="noise"/>
+        <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.1 0" in="noise" result="softNoise"/>
+        <feComposite operator="in" in="softNoise" in2="SourceGraphic" result="textured"/>
+        <feBlend mode="multiply" in="textured" in2="SourceGraphic"/>
+    </filter>
+  </defs>
+
+  <!-- Background Flash -->
+  <circle cx="256" cy="256" r="0" fill="#FFF176" opacity="0.5">
+    <animate attributeName="r" values="0; 300; 500" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.5; 0; 0" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+  </circle>
+
+  <g transform="translate(156, 156)">
+    
+    <!-- The Loot Bag -->
+    <g transform-origin="100 200">
+        <!-- Scale Bounce Animation -->
+        <animateTransform attributeName="transform" type="scale" values="1 1; 1.1 0.9; 0.9 1.1; 1.2 0.8; 1 1" dur="2s" repeatCount="indefinite" additive="sum"/>
+        
+        <!-- Bag Shape -->
+        <path d="M50,250 Q20,250 20,150 Q20,50 100,20 Q180,50 180,150 Q180,250 150,250 H50 Z" fill="#D7CCC8" stroke="#5D4037" stroke-width="4" filter="url(#canvasBag)"/>
+        
+        <!-- Bag Tie -->
+        <path d="M70,80 L130,80" stroke="#3E2723" stroke-width="8" stroke-linecap="round"/>
+        
+        <!-- Dollar Sign -->
+        <text x="100" y="180" font-family="serif" font-weight="bold" font-size="80" fill="#3E2723" text-anchor="middle">$</text>
+    </g>
+
+    <!-- Exploding Loot Group -->
+    <g>
+        <!-- Coin 1 -->
+        <circle cx="100" cy="50" r="15" fill="url(#goldCoin)" stroke="#F57F17">
+             <animateTransform attributeName="transform" type="translate" values="0 50; -100 -200; -150 200" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+             <animateTransform attributeName="transform" type="rotate" values="0; 360" dur="0.5s" repeatCount="indefinite" additive="sum"/>
+        </circle>
+        
+        <!-- Coin 2 -->
+        <circle cx="100" cy="50" r="12" fill="url(#goldCoin)" stroke="#F57F17">
+             <animateTransform attributeName="transform" type="translate" values="0 50; 100 -180; 150 220" dur="1.8s" begin="0.6s" repeatCount="indefinite"/>
+        </circle>
+        
+        <!-- Cash Stack -->
+        <rect x="80" y="40" width="40" height="20" fill="url(#cashStack)" stroke="#1B5E20">
+             <animateTransform attributeName="transform" type="translate" values="0 50; -50 -250; -80 150" dur="2.5s" begin="0.4s" repeatCount="indefinite"/>
+             <animateTransform attributeName="transform" type="rotate" values="0; 720" dur="2.5s" repeatCount="indefinite" additive="sum"/>
+        </rect>
+        
+        <!-- Gem -->
+        <path d="M100,50 L110,60 L100,70 L90,60 Z" fill="url(#gemRub)" stroke="white" stroke-width="1">
+             <animateTransform attributeName="transform" type="translate" values="0 50; 0 -300; 20 200" dur="2.2s" begin="0.7s" repeatCount="indefinite"/>
+             <animate attributeName="opacity" values="1; 1; 0" dur="2.2s" begin="0.7s" repeatCount="indefinite"/>
+        </path>
+
+    </g>
+
+  </g>
+</svg>

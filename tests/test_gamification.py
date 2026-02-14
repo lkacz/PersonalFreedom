@@ -865,13 +865,16 @@ class TestMultiStorySystem(unittest.TestCase):
     def test_available_stories_defined(self) -> None:
         """Test that multiple stories are available."""
         from gamification import AVAILABLE_STORIES
-        self.assertEqual(len(AVAILABLE_STORIES), 6)
+        self.assertEqual(len(AVAILABLE_STORIES), 9)
         self.assertIn("warrior", AVAILABLE_STORIES)
         self.assertIn("scholar", AVAILABLE_STORIES)
         self.assertIn("wanderer", AVAILABLE_STORIES)
         self.assertIn("underdog", AVAILABLE_STORIES)
         self.assertIn("scientist", AVAILABLE_STORIES)
         self.assertIn("robot", AVAILABLE_STORIES)
+        self.assertIn("space_pirate", AVAILABLE_STORIES)
+        self.assertIn("thief", AVAILABLE_STORIES)
+        self.assertIn("zoo_worker", AVAILABLE_STORIES)
     
     def test_story_has_required_fields(self) -> None:
         """Test that each story has required fields."""
@@ -965,6 +968,16 @@ class TestMultiStorySystem(unittest.TestCase):
         chapter = get_chapter_content(1, adhd_buster)
         self.assertIsNotNone(chapter)
         self.assertIn("Unit R-0", chapter["title"])
+
+    def test_zoo_worker_story_content(self) -> None:
+        """Test that zoo worker story has unique content."""
+        from gamification import get_chapter_content, select_story
+        adhd_buster = {"equipped": {}, "inventory": []}
+        select_story(adhd_buster, "zoo_worker")
+
+        chapter = get_chapter_content(1, adhd_buster)
+        self.assertIsNotNone(chapter)
+        self.assertIn("Morning Rounds", chapter["title"])
     
     def test_story_progress_includes_story_info(self) -> None:
         """Test that story progress includes selected story info."""
@@ -1147,7 +1160,12 @@ class TestHeroManagement(unittest.TestCase):
     
     def test_get_all_heroes_summary(self) -> None:
         """Test all heroes summary."""
-        from gamification import ensure_hero_structure, get_all_heroes_summary, switch_story
+        from gamification import (
+            AVAILABLE_STORIES,
+            ensure_hero_structure,
+            get_all_heroes_summary,
+            switch_story,
+        )
         
         adhd_buster = {}
         ensure_hero_structure(adhd_buster)
@@ -1166,7 +1184,7 @@ class TestHeroManagement(unittest.TestCase):
         self.assertEqual(summary["story_mode"], "story")
         
         # Should have all stories
-        self.assertEqual(len(summary["story_heroes"]), 5)
+        self.assertEqual(len(summary["story_heroes"]), len(AVAILABLE_STORIES))
         
         # Warrior and scholar should have progress
         warrior = next(h for h in summary["story_heroes"] if h["story_id"] == "warrior")

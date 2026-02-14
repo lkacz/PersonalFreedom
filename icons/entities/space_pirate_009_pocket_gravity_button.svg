@@ -1,0 +1,70 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Space Pirate 009: Pocket Gravity Button (Normal) -->
+  <defs>
+    <radialGradient id="buttonIvory" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF3E0"/>
+      <stop offset="80%" stop-color="#FFE0B2"/>
+      <stop offset="100%" stop-color="#FFCC80"/>
+    </radialGradient>
+    
+    <linearGradient id="mountBrass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#827717"/>
+      <stop offset="50%" stop-color="#AFB42B"/>
+      <stop offset="100%" stop-color="#827717"/>
+    </linearGradient>
+
+    <filter id="subtleWarp" x="-50%" y="-50%" width="200%" height="200%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="1" result="warp">
+         <animate attributeName="baseFrequency" values="0.01; 0.015; 0.01" dur="5s" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="5"/>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <!-- Center Group (Small) -->
+  <g transform="translate(256, 256)">
+    <!-- Heavy Slow Float -->
+    <animateTransform attributeName="transform" type="translate"
+      values="256, 256; 256, 252; 256, 256"
+      dur="6s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+
+    <!-- Subtle Background Gravity Well (Cosmic Glow) -->
+    <circle cx="0" cy="0" r="80" fill="#311B92" opacity="0.2" filter="url(#subtleWarp)">
+        <animate attributeName="r" values="80; 75; 80" dur="4s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.2; 0.1; 0.2" dur="4s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- The Mount (Clunky Case) -->
+    <rect x="-60" y="-60" width="120" height="120" rx="20" fill="url(#mountBrass)" stroke="#3E2723" stroke-width="4"/>
+    <circle cx="-45" cy="-45" r="5" fill="#3E2723"/>
+    <circle cx="45" cy="-45" r="5" fill="#3E2723"/>
+    <circle cx="-45" cy="45" r="5" fill="#3E2723"/>
+    <circle cx="45" cy="45" r="5" fill="#3E2723"/>
+    
+    <!-- Recessed Bed -->
+    <circle cx="0" cy="0" r="45" fill="#212121" stroke="#3E2723" stroke-width="2"/>
+
+    <!-- The Button itself (Tiny) -->
+    <g>
+        <circle cx="0" cy="0" r="30" fill="url(#buttonIvory)" stroke="#FFB74D" stroke-width="1"/>
+        <!-- Holes -->
+        <circle cx="-10" cy="-10" r="4" fill="#3E2723"/>
+        <circle cx="10" cy="-10" r="4" fill="#3E2723"/>
+        <circle cx="-10" cy="10" r="4" fill="#3E2723"/>
+        <circle cx="10" cy="10" r="4" fill="#3E2723"/>
+        <!-- Threads -->
+        <path d="M-10,-10 L10,10 M10,-10 L-10,10" stroke="#5D4037" stroke-width="2"/>
+    </g>
+    
+    <!-- Warning Label (Tiny) -->
+    <rect x="-40" y="70" width="80" height="15" fill="#000" rx="2"/>
+    <text x="0" y="80" fill="#F44336" font-size="8" font-family="monospace" text-anchor="middle">DO NOT PRESS</text>
+
+  </g>
+</svg>

@@ -1,0 +1,87 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 001: Pocket Receipt Sparrow (Normal) -->
+  <defs>
+    <!-- Crinkled Paper Gradient -->
+    <linearGradient id="paperReceipt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="20%" stop-color="#F5F5F5"/> <!-- Fold shadow -->
+      <stop offset="40%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#EEEEEE"/> <!-- Crinkle -->
+      <stop offset="100%" stop-color="#E0E0E0"/>
+    </linearGradient>
+
+    <!-- Faded Ink -->
+    <linearGradient id="fadedInk" x1="0%" y1="0%" x2="0%" y2="100%">
+       <stop offset="0%" stop-color="#424242" stop-opacity="0.8"/>
+       <stop offset="100%" stop-color="#424242" stop-opacity="0.4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Space (Guide) -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <!-- Main Floating Group -->
+  <g transform="translate(256, 256)">
+    <!-- Gentle Hover Bob -->
+    <animateTransform attributeName="transform" type="translate"
+      values="256, 256; 256, 246; 256, 256"
+      dur="3.2s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+    
+    <!-- Shadow beneath -->
+    <ellipse cx="0" cy="120" rx="60" ry="10" fill="#000" opacity="0.3">
+        <animate attributeName="rx" values="60; 50; 60" dur="3.2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.3; 0.2; 0.3" dur="3.2s" repeatCount="indefinite"/>
+    </ellipse>
+
+    <!-- The Origami Sparrow -->
+    <g transform="rotate(-10)">
+        <!-- Back Wing (Far side) -->
+        <path d="M-20,-20 L-100,-80 L-40,10 Z" fill="#E0E0E0" stroke="#9E9E9E" stroke-width="1">
+            <animateTransform attributeName="transform" type="rotate" values="0 -20 0; -15 -20 0; 0 -20 0" dur="0.8s" repeatCount="indefinite"/>
+        </path>
+
+        <!-- Body Main Fold -->
+        <path d="M-60,0 L60,0 L0,50 Z" fill="url(#paperReceipt)" stroke="#BDBDBD" stroke-width="1"/>
+        
+        <!-- Tail Feathers (Receipt End) -->
+        <g transform="translate(-60, 0) rotate(10)">
+            <path d="M0,0 L-50,-20 L-50,20 Z" fill="url(#paperReceipt)"/>
+            <!-- Serrated Edge -->
+            <path d="M-50,-20 L-55,-15 L-50,-10 L-55,-5 L-50,0 L-55,5 L-50,10 L-55,15 L-50,20 Z" fill="#FFFFFF"/>
+            <!-- Barcode Lines -->
+            <path d="M-40,-10 L-40,10 M-35,-10 L-35,10 M-30,-10 L-30,10" stroke="#424242" stroke-width="2" opacity="0.5"/>
+        </g>
+
+        <!-- Head / Beak -->
+        <path d="M30,-20 L80,-10 L60,0 Z" fill="url(#paperReceipt)" stroke="#BDBDBD" stroke-width="1"/>
+        
+        <!-- Receipt Text Lines on Body -->
+        <g opacity="0.6">
+            <rect x="-30" y="15" width="40" height="2" fill="#424242"/>
+            <rect x="-30" y="22" width="50" height="2" fill="#424242"/>
+            <rect x="-30" y="29" width="30" height="2" fill="#424242"/>
+        </g>
+        
+        <!-- Near Wing (Front side) -->
+        <path d="M0,-20 L-60,-100 L20,10 Z" fill="url(#paperReceipt)" stroke="#BDBDBD" stroke-width="1">
+             <animateTransform attributeName="transform" type="rotate" values="0 0 0; 20 0 0; 0 0 0" dur="0.8s" repeatCount="indefinite"/>
+        </path>
+        
+        <!-- Eye (Ink Dot) -->
+        <circle cx="55" cy="-8" r="3" fill="#212121"/>
+    </g>
+    
+    <!-- Red "PAID" Stamp floating nearby -->
+    <g transform="translate(60, 50) rotate(15)">
+        <circle cx="0" cy="0" r="25" fill="none" stroke="#D32F2F" stroke-width="3" opacity="0.7">
+             <animate attributeName="r" values="25; 28; 25" dur="1.6s" repeatCount="indefinite"/>
+             <animate attributeName="opacity" values="0.7; 0.4; 0.7" dur="1.6s" repeatCount="indefinite"/>
+        </circle>
+        <text x="0" y="5" text-anchor="middle" fill="#D32F2F" font-family="sans-serif" font-weight="bold" font-size="14" opacity="0.7">OK</text>
+    </g>
+
+  </g>
+</svg>

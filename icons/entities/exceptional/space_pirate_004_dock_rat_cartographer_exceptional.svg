@@ -1,0 +1,81 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Palettes: Cyber Chrome, Hologram Blue, Void Purple -->
+    <linearGradient id="cyberFur" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0E0E0" />
+      <stop offset="50%" stop-color="#90A4AE" />
+      <stop offset="100%" stop-color="#455A64" />
+    </linearGradient>
+    <linearGradient id="holoBeam" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#7C4DFF" stop-opacity="0" />
+    </linearGradient>
+    <filter id="glowHolo" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Context -->
+  <circle cx="256" cy="256" r="240" fill="#121212" stroke="#00E5FF" stroke-width="2" stroke-opacity="0.3" />
+  
+  <!-- Interface Rings (Floor) -->
+  <g transform="translate(256, 420) scale(1, 0.3)">
+    <circle cx="0" cy="0" r="150" fill="none" stroke="#00E5FF" stroke-width="4" stroke-dasharray="20,10">
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="10s" repeatCount="indefinite" />
+    </circle>
+  </g>
+
+  <!-- Main Cyber-Rat Group -->
+  <g transform="translate(256, 280)">
+  
+    <!-- Tail Projector Arm -->
+    <path d="M-50,80 Q-90,80 -110,20 Q-120,-60 -160,-100" fill="none" stroke="#607D8B" stroke-width="12" stroke-linecap="round" />
+    <circle cx="-160" cy="-100" r="10" fill="#00E5FF">
+       <animate attributeName="opacity" values="1;0.5;1" dur="0.5s" repeatCount="indefinite" />
+    </circle>
+    
+    <!-- Hologram Map Projection -->
+    <path d="M-160,-100 L-100,-250 L-220,-250 Z" fill="url(#holoBeam)" opacity="0.5">
+       <animate attributeName="d" values="M-160,-100 L-100,-250 L-220,-250 Z; M-160,-100 L-80,-240 L-200,-260 Z; M-160,-100 L-100,-250 L-220,-250 Z" dur="2s" repeatCount="indefinite" />
+    </path>
+    <!-- Star Points -->
+    <circle cx="-150" cy="-200" r="3" fill="#FFF">
+        <animate attributeName="cy" values="-200;-190;-200" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="-180" cy="-220" r="2" fill="#FFF" />
+    <path d="M-150,-200 L-180,-220" stroke="#00E5FF" stroke-width="1" opacity="0.8">
+         <animate attributeName="stroke-opacity" values="0.8;0.2;0.8" dur="1s" repeatCount="indefinite" />
+    </path>
+
+    <!-- Body Armored -->
+    <path d="M-60,100 C-80,0 -50,-110 0,-130 C50,-110 80,0 60,100 Z" fill="url(#cyberFur)" stroke="#37474F" stroke-width="2" />
+    <path d="M-30,20 L30,20 L20,80 L-20,80 Z" fill="#263238" opacity="0.8" /> <!-- Chest plate -->
+    <circle cx="0" cy="50" r="5" fill="#00E5FF" filter="url(#glowHolo)" /> <!-- Arc reactor core? -->
+
+    <!-- Head -->
+    <g transform="translate(0, -120)">
+      <animateTransform attributeName="transform" type="rotate" values="0; 5; 0" dur="4s" repeatCount="indefinite" />
+      
+      <circle cx="0" cy="0" r="50" fill="url(#cyberFur)" />
+      
+      <!-- Tech Ears -->
+      <path d="M-45,-20 L-65,-60 L-25,-40 Z" fill="#455A64" stroke="#00E5FF" stroke-width="2" />
+      <path d="M45,-20 L65,-60 L25,-40 Z" fill="#455A64" stroke="#00E5FF" stroke-width="2" />
+      
+      <!-- Visor -->
+      <path d="M-35,-10 L35,-10 L30,15 L-30,15 Z" fill="#121212" stroke="#00E5FF" stroke-width="2" />
+      <rect x="-25" y="-5" width="50" height="10" fill="#00E5FF" opacity="0.3">
+         <animate attributeName="width" values="0;50" dur="0.5s" fill="freeze" />
+      </rect>
+      
+      <!-- Snout -->
+      <circle cx="0" cy="20" r="15" fill="#B0BEC5" />
+      <circle cx="0" cy="15" r="4" fill="#000" />
+    </g>
+    
+    <!-- Feet -->
+    <path d="M-50,100 L-30,100 L-30,110 L-50,110 Z" fill="#455A64" />
+    <path d="M50,100 L30,100 L30,110 L50,110 Z" fill="#455A64" />
+  </g>
+</svg>

@@ -1,14 +1,120 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label=" ">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Robot 008 Redesign: Foundry Exosuit Aster (The Walking Kiln) -->
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color=""/>
-      <stop offset="100%" stop-color="#0B1020"/>
+    <!-- Cast Iron Texture -->
+    <linearGradient id="iron-body" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#212121" />
+      <stop offset="20%" stop-color="#424242" />
+      <stop offset="80%" stop-color="#424242" />
+      <stop offset="100%" stop-color="#212121" />
     </linearGradient>
+
+    <!-- Molten Core -->
+    <linearGradient id="molten-core" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#ff6f00" /> <!-- Dark Orange -->
+      <stop offset="50%" stop-color="#ffca28" /> <!-- Amber -->
+      <stop offset="100%" stop-color="#fff8e1" /> <!-- White Hot -->
+    </linearGradient>
+
+    <!-- Ember Gradient -->
+    <radialGradient id="ember-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff5722" stop-opacity="1" />
+      <stop offset="100%" stop-color="#ff5722" stop-opacity="0" />
+    </radialGradient>
   </defs>
-  <rect x="4" y="4" width="120" height="120" rx="20" fill="url(#g)" stroke="" stroke-width="4"/>
-  <circle cx="64" cy="64" r="30" fill="#111827" stroke="" stroke-width="4"/>
-  <rect x="32" y="54" width="64" height="20" rx="10" fill="" opacity="0.22"/>
-  <circle cx="52" cy="64" r="6" fill=""/>
-  <circle cx="76" cy="64" r="6" fill=""/>
-  <text x="64" y="108" font-family="Segoe UI, Arial, sans-serif" font-size="14" text-anchor="middle" fill="" font-weight="700"></text>
+
+  <g transform="translate(256, 256)">
+    
+    <!-- Bobbing Stance (Heavy Weight) -->
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,3; 0,0" dur="4s" repeatCount="indefinite" additive="sum" />
+
+    <!-- Legs (Heavy Pistons) -->
+    <g transform="translate(-60, 100)">
+       <rect x="-20" y="0" width="40" height="60" rx="5" fill="#37474f" />
+       <rect x="-25" y="50" width="50" height="20" rx="5" fill="#263238" />
+    </g>
+    <g transform="translate(60, 100)">
+       <rect x="-20" y="0" width="40" height="60" rx="5" fill="#37474f" />
+       <rect x="-25" y="50" width="50" height="20" rx="5" fill="#263238" />
+    </g>
+
+    <!-- Main Body: The Furnace Cylinder -->
+    <path d="M-100,-80 L100,-80 L90,120 L-90,120 Z" fill="url(#iron-body)" stroke="#212121" stroke-width="2" />
+    
+    <!-- Top Cap / Dome -->
+    <path d="M-100,-80 Q0,-120 100,-80 Z" fill="#424242" stroke="#212121" stroke-width="2" />
+
+    <!-- Reinforced Bands -->
+    <rect x="-105" y="-40" width="210" height="20" rx="2" fill="#3e2723" stroke="#1b0000" />
+    <rect x="-95" y="80" width="190" height="20" rx="2" fill="#3e2723" stroke="#1b0000" />
+
+    <!-- The Furnace Window (Crucible) -->
+    <g transform="translate(0, 20)">
+       <!-- Frame -->
+       <circle cx="0" cy="0" r="50" fill="#212121" stroke="#5d4037" stroke-width="5" />
+       
+       <!-- Mask for liquid -->
+       <clipPath id="window-mask">
+          <circle cx="0" cy="0" r="45" />
+       </clipPath>
+
+       <!-- Liquid Metal -->
+       <g clip-path="url(#window-mask)">
+          <rect x="-50" y="-50" width="100" height="100" fill="#3e2723" /> <!-- Empty background -->
+          
+          <!-- Wave Animation -->
+          <path d="M-60,10 Q-30,-10 0,10 T60,10 V60 H-60 Z" fill="url(#molten-core)">
+             <animate attributeName="d" values="M-60,10 Q-30,-10 0,10 T60,10 V60 H-60 Z; M-60,15 Q-30,35 0,15 T60,15 V60 H-60 Z; M-60,10 Q-30,-10 0,10 T60,10 V60 H-60 Z" dur="3s" repeatCount="indefinite" />
+          </path>
+          
+          <!-- Heat Shimmer -->
+          <circle cx="0" cy="-10" r="30" fill="url(#ember-glow)" opacity="0.5">
+             <animate attributeName="opacity" values="0.3; 0.6; 0.3" dur="1.5s" repeatCount="indefinite" />
+          </circle>
+       </g>
+       
+       <!-- Window Bars (Grating) -->
+       <path d="M-45,-15 L45,-15 M-45,15 L45,15" stroke="#3e2723" stroke-width="4" />
+    </g>
+
+    <!-- Shoulders / Arms (Riveted Shields) -->
+    <g transform="translate(-110, -30)">
+       <path d="M0,0 L-40,20 L-30,80 L0,60 Z" fill="#546e7a" stroke="#263238" stroke-width="2">
+          <animateTransform attributeName="transform" type="rotate" values="0 0 0; 5 0 0; 0 0 0" dur="4s" repeatCount="indefinite" />
+       </path>
+       <circle cx="-20" cy="20" r="3" fill="#37474f" />
+       <circle cx="-15" cy="50" r="3" fill="#37474f" />
+    </g>
+    <g transform="translate(110, -30)">
+       <path d="M0,0 L40,20 L30,80 L0,60 Z" fill="#546e7a" stroke="#263238" stroke-width="2">
+          <animateTransform attributeName="transform" type="rotate" values="0 0 0; -5 0 0; 0 0 0" dur="4s" repeatCount="indefinite" />
+       </path>
+       <circle cx="20" cy="20" r="3" fill="#37474f" />
+       <circle cx="15" cy="50" r="3" fill="#37474f" />
+    </g>
+
+    <!-- Head / Sensor Array (Integrated into top band) -->
+    <rect x="-30" y="-50" width="60" height="15" rx="5" fill="#111" />
+    <rect x="-20" y="-48" width="10" height="11" fill="#00bcd4"> <!-- Sensor Eye L -->
+        <animate attributeName="opacity" values="0.5; 1; 0.5" dur="0.5s" repeatCount="indefinite" />
+    </rect>
+    <rect x="10" y="-48" width="10" height="11" fill="#00bcd4"> <!-- Sensor Eye R -->
+        <animate attributeName="opacity" values="0.5; 1; 0.5" dur="0.5s" repeatCount="indefinite" delay="0.25s" />
+    </rect>
+
+    <!-- Embers Rising (Particles) -->
+    <circle cx="-40" cy="-90" r="3" fill="#ff5722" opacity="0">
+       <animate attributeName="cy" values="-90; -150" dur="2s" begin="0s" repeatCount="indefinite" />
+       <animate attributeName="opacity" values="1; 0" dur="2s" begin="0s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="20" cy="-90" r="2" fill="#ff5722" opacity="0">
+       <animate attributeName="cy" values="-90; -140" dur="2.5s" begin="1s" repeatCount="indefinite" />
+       <animate attributeName="opacity" values="1; 0" dur="2.5s" begin="1s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="50" cy="-100" r="4" fill="#ffca28" opacity="0">
+       <animate attributeName="cy" values="-100; -160" dur="3s" begin="0.5s" repeatCount="indefinite" />
+       <animate attributeName="opacity" values="1; 0" dur="3s" begin="0.5s" repeatCount="indefinite" />
+    </circle>
+
+  </g>
 </svg>

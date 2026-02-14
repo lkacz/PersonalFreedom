@@ -74,7 +74,7 @@ class PreviewWindow(QtWidgets.QWidget):
         window_layout.addWidget(title)
 
         # Subtitle
-        subtitle = QtWidgets.QLabel("All 6 story themes: Warrior, Scholar, Wanderer, Underdog, Scientist & Robot")
+        subtitle = QtWidgets.QLabel("All 9 story themes: Warrior, Scholar, Wanderer, Underdog, Scientist, Robot, Space Pirate, Thief & Zoo Worker")
         subtitle.setStyleSheet("font-size: 14px; color: #aaa;")
         subtitle.setAlignment(QtCore.Qt.AlignCenter)
         window_layout.addWidget(subtitle)
@@ -201,8 +201,59 @@ class PreviewWindow(QtWidgets.QWidget):
             robot_layout.addLayout(container)
 
         main_layout.addWidget(robot_group)
+        
+        # Row 7: Space Pirate Power Tiers
+        space_pirate_group = QtWidgets.QGroupBox("Space Pirate Theme - Power Tiers")
+        space_pirate_layout = QtWidgets.QHBoxLayout(space_pirate_group)
+        space_pirate_layout.setSpacing(12)
 
-        # Row 6: Warrior Gear Sets
+        for tier_name, power in tiers:
+            container = QtWidgets.QVBoxLayout()
+            canvas = CharacterCanvas({}, power, 100, 140, story_theme="space_pirate")
+            container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
+            label = QtWidgets.QLabel(f"{tier_name}")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            label.setStyleSheet("font-size: 9px;")
+            container.addWidget(label)
+            space_pirate_layout.addLayout(container)
+
+        main_layout.addWidget(space_pirate_group)
+
+        # Row 8: Thief Power Tiers
+        thief_group = QtWidgets.QGroupBox("Thief Theme - Power Tiers")
+        thief_layout = QtWidgets.QHBoxLayout(thief_group)
+        thief_layout.setSpacing(12)
+
+        for tier_name, power in tiers:
+            container = QtWidgets.QVBoxLayout()
+            canvas = CharacterCanvas({}, power, 100, 140, story_theme="thief")
+            container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
+            label = QtWidgets.QLabel(f"{tier_name}")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            label.setStyleSheet("font-size: 9px;")
+            container.addWidget(label)
+            thief_layout.addLayout(container)
+
+        main_layout.addWidget(thief_group)
+
+        # Row 9: Zoo Worker Power Tiers
+        zoo_group = QtWidgets.QGroupBox("Zoo Worker Theme - Power Tiers")
+        zoo_layout = QtWidgets.QHBoxLayout(zoo_group)
+        zoo_layout.setSpacing(12)
+
+        for tier_name, power in tiers:
+            container = QtWidgets.QVBoxLayout()
+            canvas = CharacterCanvas({}, power, 100, 140, story_theme="zoo_worker")
+            container.addWidget(canvas, alignment=QtCore.Qt.AlignCenter)
+            label = QtWidgets.QLabel(f"{tier_name}")
+            label.setAlignment(QtCore.Qt.AlignCenter)
+            label.setStyleSheet("font-size: 9px;")
+            container.addWidget(label)
+            zoo_layout.addLayout(container)
+
+        main_layout.addWidget(zoo_group)
+
+        # Row 9: Warrior Gear Sets
         warrior_gear_group = QtWidgets.QGroupBox("⚔️ Warrior Equipment Sets")
         warrior_gear_layout = QtWidgets.QHBoxLayout(warrior_gear_group)
         warrior_gear_layout.setSpacing(12)

@@ -1,0 +1,94 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Space Pirate 008: Retired Parade Thruster (Exceptional) - Recommissioned Elite -->
+  <defs>
+    <!-- Pristine Chrome -->
+    <linearGradient id="chromeElite" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#37474F"/>
+      <stop offset="10%" stop-color="#90A4AE"/>
+      <stop offset="30%" stop-color="#ECEFF1"/> <!-- Highlight -->
+      <stop offset="50%" stop-color="#B0BEC5"/>
+      <stop offset="70%" stop-color="#CFD8DC"/>
+      <stop offset="90%" stop-color="#78909C"/>
+      <stop offset="100%" stop-color="#37474F"/>
+    </linearGradient>
+
+    <!-- Ion Flame -->
+    <linearGradient id="ionFlame" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00E5FF"/>
+      <stop offset="30%" stop-color="#00B0FF"/>
+      <stop offset="80%" stop-color="#2979FF"/>
+      <stop offset="100%" stop-color="#2979FF" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Energy Glow -->
+    <filter id="engineGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <!-- Floating Thruster Group -->
+  <g transform="translate(256, 180)">
+    <!-- Smooth, Powerful Hover -->
+    <animateTransform attributeName="transform" type="translate"
+      values="256, 180; 256, 170; 256, 180"
+      dur="3s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+
+    <!-- High-Performance Vector Flame -->
+    <g transform="translate(0, 140)">
+       <!-- Main Plume -->
+       <path d="M-30,0 Q0,250 30,0 Z" fill="url(#ionFlame)" opacity="0.8" filter="url(#engineGlow)">
+           <animate attributeName="d" values="M-30,0 Q0,250 30,0 Z; M-28,0 Q0,280 28,0 Z; M-30,0 Q0,250 30,0 Z" dur="0.2s" repeatCount="indefinite"/>
+       </path>
+       <!-- Mach Diamonds -->
+       <ellipse cx="0" cy="50" rx="10" ry="20" fill="#FFF" opacity="0.6">
+           <animate attributeName="ry" values="20; 25; 20" dur="0.2s" repeatCount="indefinite"/>
+       </ellipse>
+        <ellipse cx="0" cy="110" rx="8" ry="15" fill="#FFF" opacity="0.4">
+           <animate attributeName="ry" values="15; 18; 15" dur="0.2s" repeatCount="indefinite" begin="0.1s"/>
+       </ellipse>
+    </g>
+
+    <!-- Main Engine Canister (Upgraded) -->
+    <path d="M-60,-100 L60,-100 L70,140 L-70,140 Z" fill="url(#chromeElite)" stroke="#546E7A" stroke-width="1"/>
+    
+    <!-- Top Cap (Energy Dome) -->
+    <path d="M-60,-100 Q0,-150 60,-100 Z" fill="#304FFE" stroke="#546E7A" stroke-width="1"/>
+    
+    <!-- Power Rings -->
+    <rect x="-62" y="-60" width="124" height="15" fill="#304FFE" opacity="0.9"/>
+    <rect x="-65" y="20" width="130" height="15" fill="#304FFE" opacity="0.9"/>
+    
+    <!-- Running Lights on Rings -->
+    <circle cx="0" cy="-52" r="3" fill="#00E5FF">
+         <animate attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="-40" cy="-52" r="3" fill="#00E5FF">
+         <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="40" cy="-52" r="3" fill="#00E5FF">
+         <animate attributeName="opacity" values="0.2;1;0.2" dur="1s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Nozzle (Precision) -->
+    <path d="M-40,140 L40,140 L50,160 L-50,160 Z" fill="#263238" stroke="#00E5FF" stroke-width="1"/>
+
+    <!-- Stabilization Fins (Active Vectoring) -->
+    <!-- Fixed: Removed wobble animations for stability -->
+    <g transform="translate(-65, 0)">
+        <path d="M0,0 L-60,80 L-60,140 L0,100 Z" fill="#546E7A" stroke="#00E5FF" stroke-width="1" opacity="0.9"/>
+    </g>
+    <g transform="translate(65, 0)">
+        <path d="M0,0 L60,80 L60,140 L0,100 Z" fill="#546E7A" stroke="#00E5FF" stroke-width="1" opacity="0.9"/>
+    </g>
+    
+    <!-- Removed rotating ellipse (Inertial Ring Lock) -->
+
+  </g>
+</svg>

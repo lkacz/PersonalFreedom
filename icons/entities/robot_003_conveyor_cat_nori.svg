@@ -1,14 +1,96 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label=" ">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Robot 003: Conveyor Cat Nori -->
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color=""/>
-      <stop offset="100%" stop-color="#0B1020"/>
+    <!-- Graphite Body Gradient -->
+    <linearGradient id="body-graphite" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4a5d6e" />
+      <stop offset="100%" stop-color="#2f3a44" />
     </linearGradient>
+
+    <!-- Maintenance Orange -->
+    <linearGradient id="maint-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff8c00" />
+      <stop offset="100%" stop-color="#cc5500" />
+    </linearGradient>
+
+    <!-- Eye Glow -->
+    <radialGradient id="sensor-green" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00ff00" stop-opacity="1" />
+      <stop offset="100%" stop-color="#006400" stop-opacity="0" />
+    </radialGradient>
   </defs>
-  <rect x="4" y="4" width="120" height="120" rx="20" fill="url(#g)" stroke="" stroke-width="4"/>
-  <circle cx="64" cy="64" r="30" fill="#111827" stroke="" stroke-width="4"/>
-  <rect x="32" y="54" width="64" height="20" rx="10" fill="" opacity="0.22"/>
-  <circle cx="52" cy="64" r="6" fill=""/>
-  <circle cx="76" cy="64" r="6" fill=""/>
-  <text x="64" y="108" font-family="Segoe UI, Arial, sans-serif" font-size="14" text-anchor="middle" fill="" font-weight="700"></text>
+
+  <g transform="translate(256, 300)">
+    
+    <!-- Shadow -->
+    <ellipse cx="0" cy="100" rx="90" ry="15" fill="#000" opacity="0.4">
+       <animate attributeName="rx" values="90; 85; 90" dur="2.8s" repeatCount="indefinite" />
+       <animate attributeName="opacity" values="0.4; 0.5; 0.4" dur="2.8s" repeatCount="indefinite" />
+    </ellipse>
+
+    <!-- Tail Cable (Segmented for Animation) -->
+    <g transform="translate(70, 20)">
+       <!-- Base Segment -->
+       <path d="M0,0 Q20,-10 40,-5" fill="none" stroke="#222" stroke-width="8" stroke-linecap="round">
+          <animate attributeName="d" values="M0,0 Q20,-10 40,-5; M0,0 Q20,10 40,5; M0,0 Q20,-10 40,-5" dur="2.8s" repeatCount="indefinite" />
+       </path>
+       <!-- Tip Segment (Plug) -->
+       <g>
+          <animateTransform attributeName="transform" type="translate" values="40,-5; 40,5; 40,-5" dur="2.8s" repeatCount="indefinite" />
+          <rect x="-5" y="-5" width="15" height="10" fill="#555" />
+          <rect x="10" y="-3" width="5" height="2" fill="#ffd700" />
+          <rect x="10" y="1" width="5" height="2" fill="#ffd700" />
+       </g>
+    </g>
+
+    <!-- Main Body Group (Crouched Stance) -->
+    <g>
+      <animateTransform attributeName="transform" type="translate" values="0,0; 0,3; 0,0" dur="2.8s" repeatCount="indefinite" />
+
+      <!-- Rear Haunches -->
+      <path d="M20,10 Q60,10 70,60 L30,60 " fill="#3b4854" stroke="#222" stroke-width="2" />
+      <circle cx="50" cy="60" r="15" fill="#222" /> <!-- Rear Wheel/Joint -->
+
+      <!-- Main Torso -->
+      <path d="M-60,20 Q0,-10 60,20 L60,70 L-60,70 Z" fill="url(#body-graphite)" stroke="#222" stroke-width="2" />
+      
+      <!-- Maintenance Stripes -->
+      <path d="M-40,20 L-20,70 L-10,70 L-30,20" fill="url(#maint-orange)" opacity="0.8" />
+      <path d="M-10,20 L10,70 L20,70 L0,20" fill="url(#maint-orange)" opacity="0.8" />
+
+      <!-- Front Leg (Left) -->
+      <path d="M-40,60 L-50,90 L-30,90 L-30,60" fill="#3b4854" />
+      <rect x="-55" y="90" width="30" height="10" rx="2" fill="#222" /> <!-- Mag-Paw -->
+
+      <!-- Front Leg (Right) -->
+      <path d="M20,60 L10,90 L30,90 L30,60" fill="#3b4854" />
+      <rect x="5" y="90" width="30" height="10" rx="2" fill="#222" /> <!-- Mag-Paw -->
+      
+      <!-- Head Unit -->
+      <g transform="translate(-60, 10)">
+         <animateTransform attributeName="transform" type="rotate" values="0 -60 10; 5 -60 10; 0 -60 10" dur="2.8s" repeatCount="indefinite" />
+         
+         <!-- Neck -->
+         <rect x="-10" y="0" width="20" height="20" fill="#222" />
+         
+         <!-- Head Shape -->
+         <path d="M-40,-30 L20,-30 L30,10 L-20,20 L-50,0 Z" fill="url(#body-graphite)" stroke="#222" stroke-width="2" />
+         
+         <!-- Ear Sensors -->
+         <path d="M-30,-30 L-40,-60 L-10,-30" fill="#3b4854" stroke="#222" stroke-width="2" />
+         <path d="M0,-30 L10,-50 L20,-30" fill="#3b4854" stroke="#222" stroke-width="2" />
+
+         <!-- Face/Visor -->
+         <path d="M-40,-10 L10,-10 L15,10 L-20,10 Z" fill="#111" />
+         
+         <!-- Glowing Eyes -->
+         <circle cx="-25" cy="-2" r="5" fill="url(#sensor-green)">
+            <animate attributeName="opacity" values="0.8; 1; 0.8" dur="1s" repeatCount="indefinite" />
+         </circle>
+         <circle cx="-5" cy="-2" r="5" fill="url(#sensor-green)">
+            <animate attributeName="opacity" values="0.8; 1; 0.8" dur="1s" repeatCount="indefinite" />
+         </circle>
+      </g>
+    </g>
+  </g>
 </svg>

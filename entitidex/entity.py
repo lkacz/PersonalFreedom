@@ -19,7 +19,7 @@ class Entity:
     power: int                  # Power level (10-2000)
     rarity: str                 # "common", "uncommon", "rare", "epic", "legendary"
     lore: str                   # Flavor text / personality description
-    theme_set: str              # "warrior", "scholar", "wanderer", "underdog"
+    theme_set: str              # "warrior", "scholar", "wanderer", "underdog", "scientist", "robot", "space_pirate", "thief", "zoo_worker"
     
     # Optional fields with defaults
     icon_path: str = ""         # Path to entity icon

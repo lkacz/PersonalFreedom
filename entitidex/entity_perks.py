@@ -1,4 +1,4 @@
-"""
+﻿"""
 Entity Perk System
 
 Manages persistent bonuses from collected Entitidex entities.
@@ -84,7 +84,7 @@ class EntityPerk:
     normal_value: float
     exceptional_value: float
     description: str  # Format string expecting {value} placeholder (for normal)
-    icon: str = "✨"
+    icon: str = "âś¨"
     exceptional_description: str = ""  # Optional override for exceptional variant
 
 
@@ -98,123 +98,180 @@ ENTITY_PERKS: Dict[str, List[EntityPerk]] = {
     # -------------------------------------------------------------------------
     # WARRIOR (Power & Combat)
     # -------------------------------------------------------------------------
-    "warrior_001": [EntityPerk("warrior_001", PerkType.POWER_FLAT, 1, 2, "Hatchling's Warmth: +{value} Hero Power", "🐉", "Dragon's Blaze: +{value} Hero Power")],
-    "warrior_002": [EntityPerk("warrior_002", PerkType.POWER_FLAT, 5, 10, "Training Resilience: +{value} Hero Power", "🎯", "Master's Precision: +{value} Hero Power")],
-    "warrior_003": [EntityPerk("warrior_003", PerkType.ENCOUNTER_CHANCE, 1, 2, "Falcon Eyes: +{value}% Encounter Chance", "🦅", "Eagle's Vision: +{value}% Encounter Chance")],
-    "warrior_004": [EntityPerk("warrior_004", PerkType.XP_LONG_SESSION, 5, 8, "War Horse Endurance: +{value}% XP for sessions > 1h", "🐎", "Nightmare Stamina: +{value}% XP for sessions > 1h")],
-    "warrior_005": [EntityPerk("warrior_005", PerkType.POWER_FLAT, 3, 6, "Dragon Strength: +{value} Hero Power", "🔥", "Inferno Might: +{value} Hero Power")],
-    "warrior_006": [EntityPerk("warrior_006", PerkType.XP_SESSION, 2, 4, "Battle Standard: +{value}% Focus XP", "🚩", "War Banner: +{value}% Focus XP")],
-    "warrior_007": [EntityPerk("warrior_007", PerkType.POWER_FLAT, 5, 10, "Crimson Power: +{value} Hero Power", "🐲", "Blood Dragon Fury: +{value} Hero Power")],
-    "warrior_008": [EntityPerk("warrior_008", PerkType.CAPTURE_BONUS, 5, 8, "Pack Hunter: +{value}% Capture Chance", "🐺", "Alpha Predator: +{value}% Capture Chance")],
+    "warrior_001": [EntityPerk("warrior_001", PerkType.POWER_FLAT, 1, 2, "Hatchling's Warmth: +{value} Hero Power", "đź‰", "Dragon's Blaze: +{value} Hero Power")],
+    "warrior_002": [EntityPerk("warrior_002", PerkType.POWER_FLAT, 5, 10, "Training Resilience: +{value} Hero Power", "đźŽŻ", "Master's Precision: +{value} Hero Power")],
+    "warrior_003": [EntityPerk("warrior_003", PerkType.ENCOUNTER_CHANCE, 1, 2, "Falcon Eyes: +{value}% Encounter Chance", "đź¦…", "Eagle's Vision: +{value}% Encounter Chance")],
+    "warrior_004": [EntityPerk("warrior_004", PerkType.XP_LONG_SESSION, 5, 8, "War Horse Endurance: +{value}% XP for sessions > 1h", "đźŽ", "Nightmare Stamina: +{value}% XP for sessions > 1h")],
+    "warrior_005": [EntityPerk("warrior_005", PerkType.POWER_FLAT, 3, 6, "Dragon Strength: +{value} Hero Power", "đź”Ą", "Inferno Might: +{value} Hero Power")],
+    "warrior_006": [EntityPerk("warrior_006", PerkType.XP_SESSION, 2, 4, "Battle Standard: +{value}% Focus XP", "đźš©", "War Banner: +{value}% Focus XP")],
+    "warrior_007": [EntityPerk("warrior_007", PerkType.POWER_FLAT, 5, 10, "Crimson Power: +{value} Hero Power", "đź˛", "Blood Dragon Fury: +{value} Hero Power")],
+    "warrior_008": [EntityPerk("warrior_008", PerkType.CAPTURE_BONUS, 5, 8, "Pack Hunter: +{value}% Capture Chance", "đźş", "Alpha Predator: +{value}% Capture Chance")],
     "warrior_009": [
-        EntityPerk("warrior_009", PerkType.POWER_FLAT, 10, 15, "General's Command: +{value} Hero Power", "🐜", "Swarm Emperor: +{value} Hero Power"),
-        EntityPerk("warrior_009", PerkType.RECALC_PAID, 1, 0, "Strategic Assessment: Recalculate probability", "🎯", ""),
-        EntityPerk("warrior_009", PerkType.RECALC_RISKY, 0, 1, "", "❄️", "Glacial Intuition: Free risky recalculate"),
+        EntityPerk("warrior_009", PerkType.POWER_FLAT, 10, 15, "General's Command: +{value} Hero Power", "đźś", "Swarm Emperor: +{value} Hero Power"),
+        EntityPerk("warrior_009", PerkType.RECALC_PAID, 1, 0, "Strategic Assessment: Recalculate probability", "đźŽŻ", ""),
+        EntityPerk("warrior_009", PerkType.RECALC_RISKY, 0, 1, "", "âť„ď¸Ź", "Glacial Intuition: Free risky recalculate"),
     ],
 
     # -------------------------------------------------------------------------
     # SCHOLAR (Knowledge & XP)
     # -------------------------------------------------------------------------
-    "scholar_001": [EntityPerk("scholar_001", PerkType.XP_SESSION, 1, 2, "Mouse Curiosity: +{value}% Focus XP", "🐭", "Genius Whiskers: +{value}% Focus XP")],
-    "scholar_002": [EntityPerk("scholar_002", PerkType.XP_NIGHT, 2, 0, "Night Owl: +{value}% XP (8PM-6AM)", "🦉", "Moonlit Wisdom: +1 Sleep Tier")],
-    "scholar_003": [EntityPerk("scholar_003", PerkType.XP_MORNING, 2, 4, "Early Bird: +{value}% XP (6AM-12PM)", "🕯️", "Dawn's First Light: +{value}% XP (6AM-12PM)")],
-    "scholar_004": [EntityPerk("scholar_004", PerkType.DROP_LUCK, 1, 2, "Library Luck: +{value}% Item Drops", "🐱", "Sphinx's Fortune: +{value}% Item Drops")],
-    "scholar_005": [EntityPerk("scholar_005", PerkType.MERGE_LUCK, 1, 2, "Smart Merger: +{value}% Merge Luck", "🔖", "Arcane Fusion: +{value}% Merge Luck")],
+    "scholar_001": [EntityPerk("scholar_001", PerkType.XP_SESSION, 1, 2, "Mouse Curiosity: +{value}% Focus XP", "đź­", "Genius Whiskers: +{value}% Focus XP")],
+    "scholar_002": [EntityPerk("scholar_002", PerkType.XP_NIGHT, 2, 0, "Night Owl: +{value}% XP (8PM-6AM)", "đź¦‰", "Moonlit Wisdom: +1 Sleep Tier")],
+    "scholar_003": [EntityPerk("scholar_003", PerkType.XP_MORNING, 2, 4, "Early Bird: +{value}% XP (6AM-12PM)", "đź•Żď¸Ź", "Dawn's First Light: +{value}% XP (6AM-12PM)")],
+    "scholar_004": [EntityPerk("scholar_004", PerkType.DROP_LUCK, 1, 2, "Library Luck: +{value}% Item Drops", "đź±", "Sphinx's Fortune: +{value}% Item Drops")],
+    "scholar_005": [EntityPerk("scholar_005", PerkType.MERGE_LUCK, 1, 2, "Smart Merger: +{value}% Merge Luck", "đź”–", "Arcane Fusion: +{value}% Merge Luck")],
     "scholar_006": [
-        EntityPerk("scholar_006", PerkType.XP_SESSION, 2, 4, "Ancient Wisdom: +{value}% Focus XP", "📖", "Forbidden Knowledge: +{value}% Focus XP"),
-        EntityPerk("scholar_006", PerkType.RECALC_PAID, 1, 1, "Page Turner: Recalculate probability", "📚", "Forbidden Formula: Recalculate probability"),
+        EntityPerk("scholar_006", PerkType.XP_SESSION, 2, 4, "Ancient Wisdom: +{value}% Focus XP", "đź“–", "Forbidden Knowledge: +{value}% Focus XP"),
+        EntityPerk("scholar_006", PerkType.RECALC_PAID, 1, 1, "Page Turner: Recalculate probability", "đź“š", "Forbidden Formula: Recalculate probability"),
     ],
-    "scholar_007": [EntityPerk("scholar_007", PerkType.RARITY_BIAS, 1, 2, "Star Chart: +{value}% Rare Finds", "🗺️", "Celestial Atlas: +{value}% Rare Finds")],
+    "scholar_007": [EntityPerk("scholar_007", PerkType.RARITY_BIAS, 1, 2, "Star Chart: +{value}% Rare Finds", "đź—şď¸Ź", "Celestial Atlas: +{value}% Rare Finds")],
     "scholar_008": [
-        EntityPerk("scholar_008", PerkType.XP_STORY, 5, 8, "Phoenix Rebirth: +{value}% Story XP", "🐦", "Eternal Flame: +{value}% Story XP"),
-        EntityPerk("scholar_008", PerkType.SCRAP_CHANCE, 1, 2, "Ash Recovery: +{value}% Scrap Chance", "♻️", "Phoenix Salvage: +{value}% Scrap Chance"),
+        EntityPerk("scholar_008", PerkType.XP_STORY, 5, 8, "Phoenix Rebirth: +{value}% Story XP", "đź¦", "Eternal Flame: +{value}% Story XP"),
+        EntityPerk("scholar_008", PerkType.SCRAP_CHANCE, 1, 2, "Ash Recovery: +{value}% Scrap Chance", "â™»ď¸Ź", "Phoenix Salvage: +{value}% Scrap Chance"),
     ],
-    "scholar_009": [EntityPerk("scholar_009", PerkType.GAMBLE_SAFETY, 10, 20, "Tabula Rasa: {value}% Item Recovery", "📜", "Omniscient Scroll: {value}% Item Recovery")],
+    "scholar_009": [EntityPerk("scholar_009", PerkType.GAMBLE_SAFETY, 10, 20, "Tabula Rasa: {value}% Item Recovery", "đź“ś", "Omniscient Scroll: {value}% Item Recovery")],
 
     # -------------------------------------------------------------------------
     # WANDERER (Travel & Coins)
     # -------------------------------------------------------------------------
     "wanderer_001": [
-        EntityPerk("wanderer_001", PerkType.COIN_FLAT, 1, 2, "Lucky Copper: +{value} Coin per session", "🪙", "Golden Fortune: +{value} Coins per session"),
-        EntityPerk("wanderer_001", PerkType.RECALC_PAID, 1, 0, "Fortune's Flip: Recalculate probability", "🍀", ""),
-        EntityPerk("wanderer_001", PerkType.RECALC_RISKY, 0, 1, "", "✨", "Lucky Break: Free risky recalculate"),
+        EntityPerk("wanderer_001", PerkType.COIN_FLAT, 1, 2, "Lucky Copper: +{value} Coin per session", "đźŞ™", "Golden Fortune: +{value} Coins per session"),
+        EntityPerk("wanderer_001", PerkType.RECALC_PAID, 1, 0, "Fortune's Flip: Recalculate probability", "đźŤ€", ""),
+        EntityPerk("wanderer_001", PerkType.RECALC_RISKY, 0, 1, "", "âś¨", "Lucky Break: Free risky recalculate"),
     ],
-    "wanderer_002": [EntityPerk("wanderer_002", PerkType.STREAK_SAVE, 1, 2, "True North: +{value}% Streak Save Chance", "🧭", "Fate's Compass: +{value}% Streak Save Chance")],
-    "wanderer_003": [EntityPerk("wanderer_003", PerkType.COIN_FLAT, 2, 4, "Travel Log: +{value} Coins on Streak", "📓", "Treasure Chronicle: +{value} Coins on Streak")],
-    "wanderer_004": [EntityPerk("wanderer_004", PerkType.HYDRATION_COOLDOWN, 5, 10, "Thirsty Dog: -{value}min Water Cooldown", "🐕", "Oasis Hound: -{value}min Water Cooldown")],
-    "wanderer_005": [EntityPerk("wanderer_005", PerkType.PERFECT_SESSION, 5, 10, "Mapped Out: +{value}% Perfect Session Bonus", "🗺️", "Master Navigator: +{value}% Perfect Session Bonus")],
-    "wanderer_006": [EntityPerk("wanderer_006", PerkType.HYDRATION_CAP, 1, 1, "Carriage Water: +{value} Daily Glass Cap", "⛺", "Oasis Camp: +{value} Daily Glass Cap")],
-    "wanderer_007": [EntityPerk("wanderer_007", PerkType.INVENTORY_SLOTS, 1, 2, "Pack Mule: +{value} Inventory Slots", "🎒", "Dimensional Satchel: +{value} Inventory Slots")],
-    "wanderer_008": [EntityPerk("wanderer_008", PerkType.COIN_FLAT, 2, 4, "High Flyer: +{value} Coins per session", "🎈", "Sky Voyager: +{value} Coins per session")],
+    "wanderer_002": [EntityPerk("wanderer_002", PerkType.STREAK_SAVE, 1, 2, "True North: +{value}% Streak Save Chance", "đź§­", "Fate's Compass: +{value}% Streak Save Chance")],
+    "wanderer_003": [EntityPerk("wanderer_003", PerkType.COIN_FLAT, 2, 4, "Travel Log: +{value} Coins on Streak", "đź““", "Treasure Chronicle: +{value} Coins on Streak")],
+    "wanderer_004": [EntityPerk("wanderer_004", PerkType.HYDRATION_COOLDOWN, 5, 10, "Thirsty Dog: -{value}min Water Cooldown", "đź•", "Oasis Hound: -{value}min Water Cooldown")],
+    "wanderer_005": [EntityPerk("wanderer_005", PerkType.PERFECT_SESSION, 5, 10, "Mapped Out: +{value}% Perfect Session Bonus", "đź—şď¸Ź", "Master Navigator: +{value}% Perfect Session Bonus")],
+    "wanderer_006": [EntityPerk("wanderer_006", PerkType.HYDRATION_CAP, 1, 1, "Carriage Water: +{value} Daily Glass Cap", "â›ş", "Oasis Camp: +{value} Daily Glass Cap")],
+    "wanderer_007": [EntityPerk("wanderer_007", PerkType.INVENTORY_SLOTS, 1, 2, "Pack Mule: +{value} Inventory Slots", "đźŽ’", "Dimensional Satchel: +{value} Inventory Slots")],
+    "wanderer_008": [EntityPerk("wanderer_008", PerkType.COIN_FLAT, 2, 4, "High Flyer: +{value} Coins per session", "đźŽ", "Sky Voyager: +{value} Coins per session")],
     "wanderer_009": [
-        EntityPerk("wanderer_009", PerkType.COIN_PERCENT, 5, 8, "Hobo Wisdom: +{value}% All Coin Gains", "🐀", "Rat King's Treasure: +{value}% All Coin Gains"),
-        EntityPerk("wanderer_009", PerkType.SCRAP_CHANCE, 1, 2, "Scavenger's Eye: +{value}% Scrap Chance", "♻️", "Master Salvager: +{value}% Scrap Chance"),
-        EntityPerk("wanderer_009", PerkType.RECALC_RISKY, 1, 1, "Route Optimization: Free risky recalculate", "🗺️", "GPS Override: Free risky recalculate"),
+        EntityPerk("wanderer_009", PerkType.COIN_PERCENT, 5, 8, "Hobo Wisdom: +{value}% All Coin Gains", "đź€", "Rat King's Treasure: +{value}% All Coin Gains"),
+        EntityPerk("wanderer_009", PerkType.SCRAP_CHANCE, 1, 2, "Scavenger's Eye: +{value}% Scrap Chance", "â™»ď¸Ź", "Master Salvager: +{value}% Scrap Chance"),
+        EntityPerk("wanderer_009", PerkType.RECALC_RISKY, 1, 1, "Route Optimization: Free risky recalculate", "đź—şď¸Ź", "GPS Override: Free risky recalculate"),
     ],
 
     # -------------------------------------------------------------------------
     # UNDERDOG (Workplace & Luck)
     # -------------------------------------------------------------------------
     "underdog_001": [
-        EntityPerk("underdog_001", PerkType.DROP_LUCK, 1, 2, "Scavenger: +{value}% Item Drops", "🐁", "Master Forager: +{value}% Item Drops"),
-        EntityPerk("underdog_001", PerkType.SCRAP_CHANCE, 1, 2, "Office Scrounger: +{value}% Scrap Chance", "♻️", "Dumpster Diver: +{value}% Scrap Chance"),
+        EntityPerk("underdog_001", PerkType.DROP_LUCK, 1, 2, "Scavenger: +{value}% Item Drops", "đź", "Master Forager: +{value}% Item Drops"),
+        EntityPerk("underdog_001", PerkType.SCRAP_CHANCE, 1, 2, "Office Scrounger: +{value}% Scrap Chance", "â™»ď¸Ź", "Dumpster Diver: +{value}% Scrap Chance"),
     ],
-    "underdog_002": [EntityPerk("underdog_002", PerkType.MERGE_LUCK, 1, 2, "Sticky Luck: +{value}% Merge Luck", "📝", "Blessed Adhesion: +{value}% Merge Luck")],
-    "underdog_003": [EntityPerk("underdog_003", PerkType.COIN_DISCOUNT, 1, 2, "Vending Value: -{value} Coin Cost", "🎰", "Jackpot Machine: -{value} Coin Cost")],
-    "underdog_004": [EntityPerk("underdog_004", PerkType.SALVAGE_BONUS, 1, 2, "Winston's Find: +{value} Coins on Salvage", "🐦", "Golden Beak: +{value} Coins on Salvage")],
-    "underdog_005": [EntityPerk("underdog_005", PerkType.EYE_TIER_BONUS, 1, 0, "Dry Eye: +{value} Eye Tier", "🌵", "Desert Eye: 50% Reroll")],
+    "underdog_002": [EntityPerk("underdog_002", PerkType.MERGE_LUCK, 1, 2, "Sticky Luck: +{value}% Merge Luck", "đź“ť", "Blessed Adhesion: +{value}% Merge Luck")],
+    "underdog_003": [EntityPerk("underdog_003", PerkType.COIN_DISCOUNT, 1, 2, "Vending Value: -{value} Coin Cost", "đźŽ°", "Jackpot Machine: -{value} Coin Cost")],
+    "underdog_004": [EntityPerk("underdog_004", PerkType.SALVAGE_BONUS, 1, 2, "Winston's Find: +{value} Coins on Salvage", "đź¦", "Golden Beak: +{value} Coins on Salvage")],
+    "underdog_005": [EntityPerk("underdog_005", PerkType.EYE_TIER_BONUS, 1, 0, "Dry Eye: +{value} Eye Tier", "đźŚµ", "Desert Eye: 50% Reroll")],
     "underdog_006": [
-        EntityPerk("underdog_006", PerkType.STORE_DISCOUNT, 1, 2, "Free Refill: -{value} Store Refresh Cost", "☕", "Endless Brew: -{value} Store Refresh Cost"),
-        EntityPerk("underdog_006", PerkType.RECALC_PAID, 1, 1, "Caffeinated Clarity: Recalculate probability", "☕", "Sugar Rush Math: Recalculate probability"),
+        EntityPerk("underdog_006", PerkType.STORE_DISCOUNT, 1, 2, "Free Refill: -{value} Store Refresh Cost", "â•", "Endless Brew: -{value} Store Refresh Cost"),
+        EntityPerk("underdog_006", PerkType.RECALC_PAID, 1, 1, "Caffeinated Clarity: Recalculate probability", "â•", "Sugar Rush Math: Recalculate probability"),
     ],
-    "underdog_007": [EntityPerk("underdog_007", PerkType.ALL_LUCK, 3, 5, "Executive Luck: +{value}% All Luck", "🪑", "CEO's Fortune: +{value}% All Luck")],
+    "underdog_007": [EntityPerk("underdog_007", PerkType.ALL_LUCK, 3, 5, "Executive Luck: +{value}% All Luck", "đźŞ‘", "CEO's Fortune: +{value}% All Luck")],
     "underdog_008": [
-        EntityPerk("underdog_008", PerkType.CAPTURE_BONUS, 2, 4, "Chad's Algorithm: +{value}% Capture Probability", "🤖", "Sigma Protocol: +{value}% Capture Probability"),
-        EntityPerk("underdog_008", PerkType.RECALC_PAID, 1, 0, "AI Consultation: Recalculate probability", "💰", ""),
-        EntityPerk("underdog_008", PerkType.RECALC_RISKY, 0, 1, "", "🌟", "Transcendent Analysis: Free risky recalculate"),
+        EntityPerk("underdog_008", PerkType.CAPTURE_BONUS, 2, 4, "Chad's Algorithm: +{value}% Capture Probability", "đź¤–", "Sigma Protocol: +{value}% Capture Probability"),
+        EntityPerk("underdog_008", PerkType.RECALC_PAID, 1, 0, "AI Consultation: Recalculate probability", "đź’°", ""),
+        EntityPerk("underdog_008", PerkType.RECALC_RISKY, 0, 1, "", "đźŚź", "Transcendent Analysis: Free risky recalculate"),
     ],
     "underdog_009": [
-        EntityPerk("underdog_009", PerkType.HYDRATION_CAP, 1, 1, "Cool Storage: +{value} Daily Glass Cap", "🧊", "Frost Vault: +{value} Daily Glass Cap"),
-        EntityPerk("underdog_009", PerkType.RECALC_PAID, 1, 0, "Cool Calculations: Recalculate probability", "🧊", ""),
-        EntityPerk("underdog_009", PerkType.RECALC_RISKY, 0, 1, "", "🥩", "Wagyu Wisdom: Free risky recalculate"),
+        EntityPerk("underdog_009", PerkType.HYDRATION_CAP, 1, 1, "Cool Storage: +{value} Daily Glass Cap", "đź§Š", "Frost Vault: +{value} Daily Glass Cap"),
+        EntityPerk("underdog_009", PerkType.RECALC_PAID, 1, 0, "Cool Calculations: Recalculate probability", "đź§Š", ""),
+        EntityPerk("underdog_009", PerkType.RECALC_RISKY, 0, 1, "", "đźĄ©", "Wagyu Wisdom: Free risky recalculate"),
     ],
 
     # -------------------------------------------------------------------------
     # SCIENTIST (Research & Discovery)
     # -------------------------------------------------------------------------
-    "scientist_001": [EntityPerk("scientist_001", PerkType.RARITY_BIAS, 1, 2, "Experiment: +{value}% Uncommon Chance", "🧪", "Breakthrough Formula: +{value}% Uncommon Chance")],
-    "scientist_002": [EntityPerk("scientist_002", PerkType.MERGE_SUCCESS, 1, 2, "Lab Safety: +{value}% Merge Success", "🔥", "Controlled Combustion: +{value}% Merge Success")],
+    "scientist_001": [EntityPerk("scientist_001", PerkType.RARITY_BIAS, 1, 2, "Experiment: +{value}% Uncommon Chance", "đź§Ş", "Breakthrough Formula: +{value}% Uncommon Chance")],
+    "scientist_002": [EntityPerk("scientist_002", PerkType.MERGE_SUCCESS, 1, 2, "Lab Safety: +{value}% Merge Success", "đź”Ą", "Controlled Combustion: +{value}% Merge Success")],
     "scientist_003": [
-        EntityPerk("scientist_003", PerkType.RARITY_BIAS, 1, 2, "Culture Growth: +{value}% Rare Chance", "🧫", "Perfect Specimen: +{value}% Rare Chance"),
-        EntityPerk("scientist_003", PerkType.SCRAP_CHANCE, 1, 2, "Petri Salvage: +{value}% Scrap Chance", "♻️", "Bio-Recovery: +{value}% Scrap Chance"),
+        EntityPerk("scientist_003", PerkType.RARITY_BIAS, 1, 2, "Culture Growth: +{value}% Rare Chance", "đź§«", "Perfect Specimen: +{value}% Rare Chance"),
+        EntityPerk("scientist_003", PerkType.SCRAP_CHANCE, 1, 2, "Petri Salvage: +{value}% Scrap Chance", "â™»ď¸Ź", "Bio-Recovery: +{value}% Scrap Chance"),
     ],
-    "scientist_004": [EntityPerk("scientist_004", PerkType.PITY_BONUS, 5, 8, "Peer Review: +{value}% Pity Progress", "🐭", "Nobel Recognition: +{value}% Pity Progress")],
+    "scientist_004": [EntityPerk("scientist_004", PerkType.PITY_BONUS, 5, 8, "Peer Review: +{value}% Pity Progress", "đź­", "Nobel Recognition: +{value}% Pity Progress")],
     "scientist_005": [
-        EntityPerk("scientist_005", PerkType.XP_SESSION, 2, 4, "Micro-Focus: +{value}% Focus XP", "🔬", "Quantum Focus: +{value}% Focus XP"),
-        EntityPerk("scientist_005", PerkType.SCRAP_CHANCE, 1, 2, "Micro-Salvage: +{value}% Scrap Chance", "♻️", "Quantum Extraction: +{value}% Scrap Chance"),
+        EntityPerk("scientist_005", PerkType.XP_SESSION, 2, 4, "Micro-Focus: +{value}% Focus XP", "đź”¬", "Quantum Focus: +{value}% Focus XP"),
+        EntityPerk("scientist_005", PerkType.SCRAP_CHANCE, 1, 2, "Micro-Salvage: +{value}% Scrap Chance", "â™»ď¸Ź", "Quantum Extraction: +{value}% Scrap Chance"),
     ],
-    "scientist_006": [EntityPerk("scientist_006", PerkType.RARITY_BIAS, 2, 4, "Reaction Base: +{value}% Epic Chance", "⚗️", "Philosopher's Stone: +{value}% Epic Chance")],
-    "scientist_007": [EntityPerk("scientist_007", PerkType.GAMBLE_LUCK, 5, 20, "Risk Assessment: +{value}% Gamble Chance", "⚡", "Lightning Luck: +{value}% Gamble Chance")],
-    "scientist_008": [EntityPerk("scientist_008", PerkType.RARITY_BIAS, 1, 2, "Golden Standard: +{value}% Legendary Chance", "🧬", "Divine Helix: +{value}% Legendary Chance")],
-    "scientist_009": [EntityPerk("scientist_009", PerkType.XP_PERCENT, 3, 5, "Eureka Moment: +{value}% Discovery XP", "🐁", "Genius Awakening: +{value}% Discovery XP")],
+    "scientist_006": [EntityPerk("scientist_006", PerkType.RARITY_BIAS, 2, 4, "Reaction Base: +{value}% Epic Chance", "âš—ď¸Ź", "Philosopher's Stone: +{value}% Epic Chance")],
+    "scientist_007": [EntityPerk("scientist_007", PerkType.GAMBLE_LUCK, 5, 20, "Risk Assessment: +{value}% Gamble Chance", "âšˇ", "Lightning Luck: +{value}% Gamble Chance")],
+    "scientist_008": [EntityPerk("scientist_008", PerkType.RARITY_BIAS, 1, 2, "Golden Standard: +{value}% Legendary Chance", "đź§¬", "Divine Helix: +{value}% Legendary Chance")],
+    "scientist_009": [EntityPerk("scientist_009", PerkType.XP_PERCENT, 3, 5, "Eureka Moment: +{value}% Discovery XP", "đź", "Genius Awakening: +{value}% Discovery XP")],
     
     # -------------------------------------------------------------------------
     # ROBOT (Industrial Focus & Autonomy)
     # -------------------------------------------------------------------------
-    "robot_001": [EntityPerk("robot_001", PerkType.DROP_LUCK, 1, 2, "Bolt Scout: +{value}% Item Drops", "🔩", "Trusted Scout: +{value}% Item Drops")],
-    "robot_002": [EntityPerk("robot_002", PerkType.ENCOUNTER_CHANCE, 1, 2, "Safety Sweep: +{value}% Encounter Chance", "🚨", "Predictive Sweep: +{value}% Encounter Chance")],
-    "robot_003": [EntityPerk("robot_003", PerkType.MERGE_SUCCESS, 1, 2, "Flow Stabilizer: +{value}% Merge Success", "🐈", "Throughput Mastery: +{value}% Merge Success")],
-    "robot_004": [EntityPerk("robot_004", PerkType.XP_LONG_SESSION, 5, 8, "Heavy Lift Rhythm: +{value}% XP for sessions > 1h", "🚜", "Atlas Endurance: +{value}% XP for sessions > 1h")],
+    "robot_001": [EntityPerk("robot_001", PerkType.DROP_LUCK, 1, 2, "Bolt Scout: +{value}% Item Drops", "đź”©", "Trusted Scout: +{value}% Item Drops")],
+    "robot_002": [EntityPerk("robot_002", PerkType.ENCOUNTER_CHANCE, 1, 2, "Safety Sweep: +{value}% Encounter Chance", "đźš¨", "Predictive Sweep: +{value}% Encounter Chance")],
+    "robot_003": [EntityPerk("robot_003", PerkType.MERGE_SUCCESS, 1, 2, "Flow Stabilizer: +{value}% Merge Success", "đź", "Throughput Mastery: +{value}% Merge Success")],
+    "robot_004": [EntityPerk("robot_004", PerkType.XP_LONG_SESSION, 5, 8, "Heavy Lift Rhythm: +{value}% XP for sessions > 1h", "đźšś", "Atlas Endurance: +{value}% XP for sessions > 1h")],
     "robot_005": [
-        EntityPerk("robot_005", PerkType.SCRAP_CHANCE, 1, 2, "Night Weld Recovery: +{value}% Scrap Chance", "🛠️", "Golden Seam Recovery: +{value}% Scrap Chance"),
-        EntityPerk("robot_005", PerkType.MERGE_LUCK, 1, 2, "Seam Integrity: +{value}% Merge Luck", "✨", "Perfect Seam: +{value}% Merge Luck"),
+        EntityPerk("robot_005", PerkType.SCRAP_CHANCE, 1, 2, "Night Weld Recovery: +{value}% Scrap Chance", "đź› ď¸Ź", "Golden Seam Recovery: +{value}% Scrap Chance"),
+        EntityPerk("robot_005", PerkType.MERGE_LUCK, 1, 2, "Seam Integrity: +{value}% Merge Luck", "âś¨", "Perfect Seam: +{value}% Merge Luck"),
     ],
-    "robot_006": [EntityPerk("robot_006", PerkType.HYDRATION_CAP, 1, 1, "Backup Reserve: +{value} Daily Glass Cap", "🔋", "Grid Reserve: +{value} Daily Glass Cap")],
-    "robot_007": [EntityPerk("robot_007", PerkType.PITY_BONUS, 5, 8, "Audit Precision: +{value}% Pity Progress", "🛰️", "Solar Audit: +{value}% Pity Progress")],
-    "robot_008": [EntityPerk("robot_008", PerkType.CAPTURE_BONUS, 4, 6, "Exosuit Rescue: +{value}% Capture Probability", "🦾", "Aster Vanguard: +{value}% Capture Probability")],
+    "robot_006": [EntityPerk("robot_006", PerkType.HYDRATION_CAP, 1, 1, "Backup Reserve: +{value} Daily Glass Cap", "đź”‹", "Grid Reserve: +{value} Daily Glass Cap")],
+    "robot_007": [EntityPerk("robot_007", PerkType.PITY_BONUS, 5, 8, "Audit Precision: +{value}% Pity Progress", "đź›°ď¸Ź", "Solar Audit: +{value}% Pity Progress")],
+    "robot_008": [EntityPerk("robot_008", PerkType.CAPTURE_BONUS, 4, 6, "Exosuit Rescue: +{value}% Capture Probability", "đź¦ľ", "Aster Vanguard: +{value}% Capture Probability")],
     "robot_009": [
-        EntityPerk("robot_009", PerkType.XP_PERCENT, 3, 5, "Autonomy Signal: +{value}% Discovery XP", "💠", "Liberation Signal: +{value}% Discovery XP"),
-        EntityPerk("robot_009", PerkType.ALL_LUCK, 2, 4, "Ethical Alignment: +{value}% All Luck", "🕊️", "Civic Alignment: +{value}% All Luck"),
+        EntityPerk("robot_009", PerkType.XP_PERCENT, 3, 5, "Autonomy Signal: +{value}% Discovery XP", "đź’ ", "Liberation Signal: +{value}% Discovery XP"),
+        EntityPerk("robot_009", PerkType.ALL_LUCK, 2, 4, "Ethical Alignment: +{value}% All Luck", "đź•Šď¸Ź", "Civic Alignment: +{value}% All Luck"),
+    ],
+
+    # -------------------------------------------------------------------------
+    # SPACE PIRATE (Risk, Navigation, and System Leverage)
+    # -------------------------------------------------------------------------
+    "space_pirate_001": [EntityPerk("space_pirate_001", PerkType.DROP_LUCK, 1, 2, "Customs Forgery: +{value}% Item Drops", "*", "Transit Clearance: +{value}% Item Drops")],
+    "space_pirate_002": [EntityPerk("space_pirate_002", PerkType.ENCOUNTER_CHANCE, 1, 2, "Seal Warning: +{value}% Encounter Chance", "!", "Hull Choir Warning: +{value}% Encounter Chance")],
+    "space_pirate_003": [EntityPerk("space_pirate_003", PerkType.XP_SESSION, 2, 4, "Contraband Brew: +{value}% Focus XP", "~", "Nebula Brew: +{value}% Focus XP")],
+    "space_pirate_004": [EntityPerk("space_pirate_004", PerkType.STREAK_SAVE, 1, 2, "Vent Route Memory: +{value}% Streak Save Chance", ">", "Prime Route Memory: +{value}% Streak Save Chance")],
+    "space_pirate_005": [EntityPerk("space_pirate_005", PerkType.PITY_BONUS, 5, 8, "Grievance Forecast: +{value}% Pity Progress", "#", "Tribunal Forecast: +{value}% Pity Progress")],
+    "space_pirate_006": [EntityPerk("space_pirate_006", PerkType.CAPTURE_BONUS, 3, 5, "Polite Boarding: +{value}% Capture Probability", "^", "Sovereign Boarding: +{value}% Capture Probability")],
+    "space_pirate_007": [
+        EntityPerk("space_pirate_007", PerkType.RARITY_BIAS, 1, 2, "Audit Exposure: +{value}% Rare Finds", "=", "Unredacted Exposure: +{value}% Rare Finds"),
+        EntityPerk("space_pirate_007", PerkType.RECALC_PAID, 1, 1, "Ledger Recheck: Recalculate probability", "=", "Forensic Recheck: Recalculate probability"),
+    ],
+    "space_pirate_008": [EntityPerk("space_pirate_008", PerkType.XP_LONG_SESSION, 5, 8, "Parade Burn: +{value}% XP for sessions > 1h", "/", "Encore Burn: +{value}% XP for sessions > 1h")],
+    "space_pirate_009": [
+        EntityPerk("space_pirate_009", PerkType.ALL_LUCK, 2, 4, "Gravity Poise: +{value}% All Luck", "@", "Omega Poise: +{value}% All Luck"),
+        EntityPerk("space_pirate_009", PerkType.RECALC_RISKY, 1, 1, "Pocket Override: Free risky recalculate", "@", "Omega Override: Free risky recalculate"),
+    ],
+
+    # -------------------------------------------------------------------------
+    # THIEF (Redemption, Accountability, and Civic Control)
+    # -------------------------------------------------------------------------
+    "thief_001": [EntityPerk("thief_001", PerkType.DROP_LUCK, 1, 2, "Receipt Trail: +{value}% Item Drops", "*", "Prime Receipt Trail: +{value}% Item Drops")],
+    "thief_002": [EntityPerk("thief_002", PerkType.ENCOUNTER_CHANCE, 1, 2, "Crime Tag Nudge: +{value}% Encounter Chance", "!", "Paid Tag Pulse: +{value}% Encounter Chance")],
+    "thief_003": [EntityPerk("thief_003", PerkType.STREAK_SAVE, 1, 2, "Hairpin Recovery: +{value}% Streak Save Chance", ">", "Sonic Recovery: +{value}% Streak Save Chance")],
+    "thief_004": [EntityPerk("thief_004", PerkType.XP_SESSION, 2, 4, "SIM Trace Focus: +{value}% Focus XP", "~", "Root Trace Focus: +{value}% Focus XP")],
+    "thief_005": [EntityPerk("thief_005", PerkType.PITY_BONUS, 5, 8, "Silencer Momentum: +{value}% Pity Progress", "#", "Void Momentum: +{value}% Pity Progress")],
+    "thief_006": [EntityPerk("thief_006", PerkType.CAPTURE_BONUS, 3, 5, "Shadow Entry: +{value}% Capture Probability", "^", "Vantablack Entry: +{value}% Capture Probability")],
+    "thief_007": [
+        EntityPerk("thief_007", PerkType.RARITY_BIAS, 1, 2, "Resonant Read: +{value}% Rare Finds", "=", "Harmonic Read: +{value}% Rare Finds"),
+        EntityPerk("thief_007", PerkType.RECALC_PAID, 1, 1, "Tumbler Recheck: Recalculate probability", "=", "Harmonic Recheck: Recalculate probability"),
+    ],
+    "thief_008": [EntityPerk("thief_008", PerkType.XP_LONG_SESSION, 5, 8, "Leverage Endurance: +{value}% XP for sessions > 1h", "/", "Plasma Endurance: +{value}% XP for sessions > 1h")],
+    "thief_009": [
+        EntityPerk("thief_009", PerkType.ALL_LUCK, 2, 4, "Evidence Beam Poise: +{value}% All Luck", "@", "UV Scanner Poise: +{value}% All Luck"),
+        EntityPerk("thief_009", PerkType.RECALC_RISKY, 1, 1, "Beamline Override: Free risky recalculate", "@", "UV Override: Free risky recalculate"),
+    ],
+
+    # -------------------------------------------------------------------------
+    # ZOO WORKER (Sanctuary Operations, Risk Discipline, and Wise Stewardship)
+    # -------------------------------------------------------------------------
+    "zoo_worker_001": [EntityPerk("zoo_worker_001", PerkType.DROP_LUCK, 1, 2, "Stub Trail: +{value}% Item Drops", "*", "Prime Trail: +{value}% Item Drops")],
+    "zoo_worker_002": [EntityPerk("zoo_worker_002", PerkType.ENCOUNTER_CHANCE, 1, 2, "Night Alert: +{value}% Encounter Chance", "!", "Marshal Alert: +{value}% Encounter Chance")],
+    "zoo_worker_003": [EntityPerk("zoo_worker_003", PerkType.XP_SESSION, 2, 4, "Route Focus: +{value}% Focus XP", "~", "True-North Focus: +{value}% Focus XP")],
+    "zoo_worker_004": [EntityPerk("zoo_worker_004", PerkType.STREAK_SAVE, 1, 2, "Latch Discipline: +{value}% Streak Save Chance", ">", "Concord Discipline: +{value}% Streak Save Chance")],
+    "zoo_worker_005": [EntityPerk("zoo_worker_005", PerkType.PITY_BONUS, 5, 8, "Triage Momentum: +{value}% Pity Progress", "#", "Aurora Momentum: +{value}% Pity Progress")],
+    "zoo_worker_006": [EntityPerk("zoo_worker_006", PerkType.CAPTURE_BONUS, 3, 5, "Archive Capture: +{value}% Capture Probability", "^", "Grand Archive Capture: +{value}% Capture Probability")],
+    "zoo_worker_007": [
+        EntityPerk("zoo_worker_007", PerkType.RARITY_BIAS, 1, 2, "Oracle Insight: +{value}% Rare Finds", "=", "Unbound Insight: +{value}% Rare Finds"),
+        EntityPerk("zoo_worker_007", PerkType.RECALC_PAID, 1, 1, "Ledger Recheck: Recalculate probability", "=", "Oracle Recheck: Recalculate probability"),
+    ],
+    "zoo_worker_008": [EntityPerk("zoo_worker_008", PerkType.XP_LONG_SESSION, 5, 8, "Storm Endurance: +{value}% XP for sessions > 1h", "/", "Zenith Endurance: +{value}% XP for sessions > 1h")],
+    "zoo_worker_009": [
+        EntityPerk("zoo_worker_009", PerkType.ALL_LUCK, 2, 4, "Dawn Poise: +{value}% All Luck", "@", "Eternal Dawn Poise: +{value}% All Luck"),
+        EntityPerk("zoo_worker_009", PerkType.RECALC_RISKY, 1, 1, "Timeflight Override: Free risky recalculate", "@", "Eternal Override: Free risky recalculate"),
     ],
 }
 
@@ -406,3 +463,4 @@ def get_perk_explanation(entity_id: str) -> str:
         explanations.append(explanation)
     
     return "\n\n".join(explanations)
+

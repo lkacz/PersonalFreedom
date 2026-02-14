@@ -1,0 +1,90 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 005: Spray Can Silencer (Normal) -->
+  <defs>
+    <!-- Can Body Gradient -->
+    <linearGradient id="canMetal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#78909C"/>
+      <stop offset="20%" stop-color="#B0BEC5"/>
+      <stop offset="50%" stop-color="#546E7A"/>
+      <stop offset="100%" stop-color="#37474F"/>
+    </linearGradient>
+    
+    <!-- Duct Tape Gradient -->
+    <linearGradient id="ductTape" x1="0%" y1="0%" x2="0%" y2="100%">
+       <stop offset="0%" stop-color="#BDBDBD"/>
+       <stop offset="20%" stop-color="#E0E0E0"/>
+       <stop offset="50%" stop-color="#9E9E9E"/>
+       <stop offset="100%" stop-color="#757575"/>
+    </linearGradient>
+
+    <!-- Smoke Filter -->
+    <filter id="smokeBlur">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <g transform="translate(256, 256)">
+    
+    <!-- Passive Floating -->
+    <!-- Fixed: ensure additive logic or simply animate around the base value -->
+    <animateTransform attributeName="transform" type="translate" values="256,256; 256,252; 256,256" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 .55 1; 0.45 0 .55 1"/>
+
+    <!-- Wrap rotation in a stable group to avoid overwrite by inner animation -->
+    <g transform="rotate(-15)">
+      
+        <!-- Recoil / Shake Animation wrapping content -->
+        <g>
+            <animateTransform attributeName="transform" type="translate"
+                values="0,0; -5,2; 0,0"
+                dur="2s"
+                repeatCount="indefinite"
+                begin="1.9s"/> 
+
+            <!-- Smoke Puffs (Emitted from Front/Right) -->
+            <g transform="translate(140, 0)" opacity="0.6">
+                <circle cx="0" cy="0" r="20" fill="#EEE" filter="url(#smokeBlur)">
+                    <animate attributeName="cx" values="0; 100" dur="2s" repeatCount="indefinite"/>
+                    <animate attributeName="r" values="20; 50" dur="2s" repeatCount="indefinite"/>
+                    <animate attributeName="opacity" values="0.6; 0" dur="2s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="0" cy="0" r="15" fill="#CCC" filter="url(#smokeBlur)">
+                    <animate attributeName="cx" values="0; 80" dur="2s" repeatCount="indefinite" begin="1s"/>
+                    <animate attributeName="r" values="15; 40" dur="2s" repeatCount="indefinite" begin="1s"/>
+                    <animate attributeName="opacity" values="0.6; 0" dur="2s" repeatCount="indefinite" begin="1s"/>
+                </circle>
+            </g>
+
+            <!-- The Can Body -->
+            <rect x="-100" y="-60" width="240" height="120" rx="5" fill="url(#canMetal)"/>
+
+            <!-- Rim details -->
+            <rect x="130" y="-55" width="10" height="110" fill="#333"/> <!-- Front Rim -->
+            <path d="M-100,-58 L140,-58" stroke="#CFD8DC" stroke-width="2" opacity="0.5"/>
+
+            <!-- Label: Peeling Paint -->
+            <path d="M-90,-50 H100 V50 H-90 Z" fill="#FF5722"/>
+            <path d="M-90,50 L-80,40 H0 L10,50 Z" fill="#E64A19"/> <!-- Torn label bottom -->
+            <text x="0" y="20" font-family="Arial Black, sans-serif" font-size="40" fill="white" text-anchor="middle" transform="rotate(2)">SHHH</text>
+
+            <!-- Duct Tape Wrapping (Back End / Left) -->
+            <g transform="translate(-110, -65)">
+                 <path d="M0,0 H60 L55,130 H5 L0,0" fill="url(#ductTape)"/>
+                 <path d="M0,20 H60" stroke="#9E9E9E" stroke-width="1"/>
+                 <path d="M-5,40 H65" stroke="#9E9E9E" stroke-width="1"/>
+                 <path d="M0,60 H60" stroke="#9E9E9E" stroke-width="1"/>
+                 <path d="M-2,80 H62" stroke="#9E9E9E" stroke-width="1"/>
+                 <path d="M0,100 H60" stroke="#9E9E9E" stroke-width="1"/>
+                 
+                 <!-- Loose Tape Step -->
+                 <path d="M30,50 L70,80 L30,90 Z" fill="#E0E0E0" opacity="0.8">
+                     <animateTransform attributeName="transform" type="rotate" values="0 30 50; 5 30 50; 0 30 50" dur="1s" repeatCount="indefinite"/>
+                 </path>
+            </g>
+        </g>
+
+    </g>
+  </g>
+</svg>

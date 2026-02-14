@@ -1,0 +1,101 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Space Pirate 007: Audit Ghost Ledger (Exceptional) - Forensic Grade -->
+  <defs>
+    <linearGradient id="holoSlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#263238" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#37474F" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#263238" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <linearGradient id="scanBeam" x1="0%" y1="0%" x2="100%" y2="0%">
+       <stop offset="0%" stop-color="#00E5FF" stop-opacity="0"/>
+       <stop offset="50%" stop-color="#00E5FF" stop-opacity="1"/>
+       <stop offset="100%" stop-color="#00E5FF" stop-opacity="0"/>
+    </linearGradient>
+
+    <filter id="cleanGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feFlood flood-color="#00E5FF" flood-opacity="0.6" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="coloredBlur"/>
+      <feComposite in="SourceGraphic" in2="coloredBlur" operator="over"/>
+    </filter>
+
+    <mask id="ledgerMask">
+         <rect x="-140" y="-190" width="280" height="380" rx="10" fill="white"/>
+    </mask>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <!-- Floating Main Group -->
+  <g transform="translate(256, 256)">
+    <!-- Precision Hover -->
+    <animateTransform attributeName="transform" type="translate"
+      values="256, 256; 256, 251; 256, 256"
+      dur="4s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+
+    <!-- Holographic Slate Base -->
+    <rect x="-140" y="-190" width="280" height="380" rx="10" 
+          fill="url(#holoSlate)" stroke="#546E7A" stroke-width="2"/>
+
+    <!-- Tech Frame/Border -->
+    <path d="M-130,-180 L-130,180 L-120,170" fill="none" stroke="#00BCD4" stroke-width="2" opacity="0.5"/>
+    <path d="M130,180 L130,-180 L120,-170" fill="none" stroke="#00BCD4" stroke-width="2" opacity="0.5"/>
+    
+    <!-- Central Data Grid -->
+    <g mask="url(#ledgerMask)">
+        <!-- Grid Lines -->
+        <path d="M-120,-100 h240 M-120,-50 h240 M-120,0 h240 M-120,50 h240 M-120,100 h240" 
+              stroke="#00E5FF" stroke-width="1" opacity="0.2"/>
+        
+        <!-- Scrolling Data Columns -->
+        <g opacity="0.4" font-family="monospace" font-size="12" fill="#00E5FF">
+             <text x="-120" y="-150">
+                <tspan x="-120" dy="20">0xA4F2...TRUE</tspan>
+                <tspan x="-120" dy="20">0xB1C9...TRUE</tspan>
+                <tspan x="-120" dy="20">0xFF00...FAIL</tspan>
+                <tspan x="-120" dy="20">0xA222...TRUE</tspan>
+                <tspan x="-120" dy="20">0x0001...NULL</tspan>
+                <animate attributeName="y" values="-150; -170" dur="2s" repeatCount="indefinite"/>
+             </text>
+             
+             <!-- Right Column moving opposite -->
+             <text x="20" y="-120">
+                <tspan x="20" dy="20">AUDIT...99%</tspan>
+                <tspan x="20" dy="20">SCAN....OK</tspan>
+                <tspan x="20" dy="20">LINK....OK</tspan>
+                <tspan x="20" dy="20">VOID....NO</tspan>
+                <animate attributeName="y" values="-120; -100" dur="2.5s" repeatCount="indefinite"/>
+             </text>
+        </g>
+        
+        <!-- The Forensic Scan Beam -->
+        <rect x="-150" y="-200" width="300" height="40" fill="url(#scanBeam)" opacity="0.6">
+            <animate attributeName="y" values="-220; 220" dur="2.5s" repeatCount="indefinite"/>
+        </rect>
+        <line x1="-140" y1="-180" x2="140" y2="-180" stroke="#00E5FF" stroke-width="2" filter="url(#cleanGlow)">
+            <animate attributeName="y1" values="-180; 200" dur="2.5s" repeatCount="indefinite"/>
+            <animate attributeName="y2" values="-180; 200" dur="2.5s" repeatCount="indefinite"/>
+        </line>
+    </g>
+
+    <!-- Floating Holographic Layers (Apparition) -->
+    <rect x="-100" y="-60" width="200" height="120" rx="5" fill="none" stroke="#00E5FF" stroke-width="1" opacity="0.3" transform="scale(1.1)">
+         <animateTransform attributeName="transform" type="scale" values="1; 1.05; 1" dur="3s" repeatCount="indefinite"/>
+         <animate attributeName="opacity" values="0.3; 0.1; 0.3" dur="3s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- Authority Seal (Top Center) -->
+    <circle cx="0" cy="-140" r="20" fill="none" stroke="#00E5FF" stroke-width="2" filter="url(#cleanGlow)">
+        <animate attributeName="r" values="20; 22; 20" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <path d="M-10,-140 L0,-130 L10,-150" stroke="#00E5FF" stroke-width="3" fill="none" filter="url(#cleanGlow)">
+        <animate attributeName="stroke-dasharray" values="0,50; 50,0" dur="1s" fill="freeze" />
+    </path>
+
+  </g>
+</svg>

@@ -1,0 +1,101 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Space Pirate 009: Pocket Gravity Button (Exceptional) - Event Horizon -->
+  <defs>
+    <radialGradient id="buttonPearl" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="70%" stop-color="#FAFAFA"/>
+      <stop offset="100%" stop-color="#CFD8DC"/>
+    </radialGradient>
+    
+    <linearGradient id="mountGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="50%" stop-color="#FFECB3"/>
+      <stop offset="100%" stop-color="#FFA000"/>
+    </linearGradient>
+
+    <!-- Strong Gravity Lens Distortion -->
+    <filter id="gravityLens" x="-50%" y="-50%" width="200%" height="200%">
+       <!-- Animated turbulence -->
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="warp">
+         <animate attributeName="baseFrequency" values="0.02; 0.03; 0.02" dur="3s" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="15"/>
+      <feGaussianBlur stdDeviation="1"/>
+    </filter>
+
+    <radialGradient id="voidGlow" cx="50%" cy="50%" r="50%">
+         <stop offset="0%" stop-color="#6200EA" stop-opacity="0.8"/>
+         <stop offset="100%" stop-color="#311B92" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <!-- Center Group -->
+  <g transform="translate(256, 256)">
+    <!-- Ominous Stability (Perfectly Still Center, Chaos Around) -->
+    
+    <!-- Background Lensing Field -->
+    <circle cx="0" cy="0" r="120" fill="url(#voidGlow)" opacity="0.4" filter="url(#gravityLens)">
+        <animate attributeName="opacity" values="0.4; 0.6; 0.4" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Horizon Line Distortion (Visualizing the bend) -->
+    <ellipse cx="0" cy="0" rx="140" ry="140" fill="none" stroke="#B388FF" stroke-width="1" opacity="0.3" filter="url(#gravityLens)">
+         <animate attributeName="rx" values="140; 130; 140" dur="4s" repeatCount="indefinite"/>
+         <animate attributeName="ry" values="140; 130; 140" dur="4s" repeatCount="indefinite"/>
+    </ellipse>
+
+    <!-- Orbiting Micro-Tracers -->
+    <g>
+        <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="5s" repeatCount="indefinite"/>
+        <circle cx="100" cy="0" r="3" fill="#FFF"/>
+        <circle cx="-100" cy="0" r="3" fill="#FFF" opacity="0.5"/>
+        <path d="M-100,0 A100,100 0 0,1 100,0" fill="none" stroke="#FFF" stroke-width="1" opacity="0.1"/>
+    </g>
+    <g>
+        <animateTransform attributeName="transform" type="rotate" from="360 0 0" to="0 0 0" dur="7s" repeatCount="indefinite"/>
+        <circle cx="0" cy="110" r="2" fill="#EA80FC"/>
+        <path d="M0,-110 A110,110 0 0,1 0,110" fill="none" stroke="#EA80FC" stroke-width="1" opacity="0.1"/>
+    </g>
+
+    <!-- The Mount (Golden Cage) -->
+    <rect x="-60" y="-60" width="120" height="120" rx="20" fill="url(#mountGold)" stroke="#FF6F00" stroke-width="2"/>
+    
+    <!-- Gold Screws -->
+    <g fill="#FFFDE7">
+        <circle cx="-45" cy="-45" r="4"/>
+        <circle cx="45" cy="-45" r="4"/>
+        <circle cx="-45" cy="45" r="4"/>
+        <circle cx="45" cy="45" r="4"/>
+    </g>
+    
+    <!-- Thread Event Horizon -->
+    <circle cx="0" cy="0" r="45" fill="#311B92" stroke="#FFD700" stroke-width="2"/>
+
+    <!-- The Button (Singularity Control) -->
+    <g>
+        <circle cx="0" cy="0" r="30" fill="url(#buttonPearl)" stroke="#FFF" stroke-width="1"/>
+        <!-- Holes with light leaking out -->
+        <circle cx="-10" cy="-10" r="4" fill="#6200EA">
+            <animate attributeName="fill" values="#6200EA; #B388FF; #6200EA" dur="1s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="10" cy="-10" r="4" fill="#6200EA">
+            <animate attributeName="fill" values="#6200EA; #B388FF; #6200EA" dur="1s" repeatCount="indefinite" begin="0.2s"/>
+        </circle>
+        <circle cx="-10" cy="10" r="4" fill="#6200EA">
+             <animate attributeName="fill" values="#6200EA; #B388FF; #6200EA" dur="1s" repeatCount="indefinite" begin="0.4s"/>
+        </circle>
+        <circle cx="10" cy="10" r="4" fill="#6200EA">
+             <animate attributeName="fill" values="#6200EA; #B388FF; #6200EA" dur="1s" repeatCount="indefinite" begin="0.6s"/>
+        </circle>
+        
+        <!-- Energy Threads -->
+        <path d="M-10,-10 L10,10 M10,-10 L-10,10" stroke="#B388FF" stroke-width="2" opacity="0.8">
+             <animate attributeName="stroke-width" values="2; 3; 2" dur="0.5s" repeatCount="indefinite"/>
+        </path>
+    </g>
+
+  </g>
+</svg>

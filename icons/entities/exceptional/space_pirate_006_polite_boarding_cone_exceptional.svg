@@ -1,0 +1,134 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Space Pirate 006: Polite Boarding Cone (Exceptional) - Relatable Evolution -->
+  <defs>
+    <!-- Palettes: Elite Gold, Obsidian Black, Forcefield Cyan -->
+    
+    <!-- Gold Plated Cone Body -->
+    <linearGradient id="coneBodyGold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#BF360C"/> <!-- Dark Copper Edge -->
+      <stop offset="20%" stop-color="#FFD700"/> <!-- Gold -->
+      <stop offset="50%" stop-color="#FFFF8D"/> <!-- Shine -->
+      <stop offset="80%" stop-color="#FFC107"/> <!-- Deep Gold -->
+      <stop offset="100%" stop-color="#BF360C"/> <!-- Dark Copper Edge -->
+    </linearGradient>
+
+    <!-- Holographic Strip -->
+    <linearGradient id="holoStrip" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00BCD4"/>
+      <stop offset="50%" stop-color="#84FFFF"/>
+      <stop offset="100%" stop-color="#006064"/>
+    </linearGradient>
+
+    <!-- Intense Beacons -->
+    <radialGradient id="beaconGlowBlue" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#E0F7FA" stop-opacity="1"/>
+      <stop offset="40%" stop-color="#00E5FF" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0091EA" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="baseObsidian" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#424242"/>
+      <stop offset="50%" stop-color="#212121"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+
+    <filter id="glowBlue" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    
+    <filter id="shadowHeavy" x="-50%" y="-50%" width="200%" height="200%">
+       <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <!-- Ground Shadow Pulse -->
+  <ellipse cx="256" cy="450" rx="100" ry="20" fill="#000" opacity="0.6" filter="url(#shadowHeavy)">
+    <animate attributeName="rx" values="100; 130; 100" dur="2s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6; 0.4; 0.6" dur="2s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- Floating Main Group -->
+  <g transform="translate(256, 250)">
+    <!-- Smoother, heavier hover -->
+    <animateTransform attributeName="transform" type="translate"
+      values="256, 250; 256, 240; 256, 250"
+      dur="4s"
+      repeatCount="indefinite"
+      calcMode="spline"
+      keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+
+    <!-- Base Platform (Armored Obsidian Ring) -->
+    <path d="M-130,120 Q0,170 130,120 L130,150 Q0,200 -130,150 Z" fill="url(#baseObsidian)" stroke="#607D8B" stroke-width="2"/>
+    <!-- Top Deck of Base -->
+    <ellipse cx="0" cy="120" rx="130" ry="25" fill="#263238" stroke="#546E7A" stroke-width="1"/>
+    
+    <!-- Advanced Thrusters (Quad) -->
+    <g transform="translate(-110, 135)">
+        <circle cx="0" cy="0" r="15" fill="#37474F" stroke="#00E5FF" stroke-width="2"/>
+        <path d="M-8,5 L0,40 L8,5" fill="#00E5FF" opacity="0.8" filter="url(#glowBlue)">
+            <animate attributeName="d" values="M-8,5 L0,30 L8,5; M-8,5 L0,50 L8,5; M-8,5 L0,30 L8,5" dur="0.15s" repeatCount="indefinite"/>
+        </path>
+    </g>
+    <g transform="translate(110, 135)">
+        <circle cx="0" cy="0" r="15" fill="#37474F" stroke="#00E5FF" stroke-width="2"/>
+        <path d="M-8,5 L0,40 L8,5" fill="#00E5FF" opacity="0.8" filter="url(#glowBlue)">
+            <animate attributeName="d" values="M-8,5 L0,30 L8,5; M-8,5 L0,50 L8,5; M-8,5 L0,30 L8,5" dur="0.18s" repeatCount="indefinite"/>
+        </path>
+    </g>
+
+    <!-- Gold Plated Cone Body -->
+    <path d="M0,-160 L100,120 Q0,150 -100,120 Z" fill="url(#coneBodyGold)" stroke="#FF6F00" stroke-width="1"/>
+    
+    <!-- Holographic Tech Stripes (Replace reflective tape) -->
+    <path d="M-35,-70 L35,-70 L48,-20 Q0,0 -48,-20 Z" fill="url(#holoStrip)" opacity="0.9" stroke="#00E5FF" stroke-width="1">
+         <animate attributeName="opacity" values="0.8; 1; 0.8" dur="0.5s" repeatCount="indefinite"/>
+    </path>
+    <path d="M-65,30 L65,30 L80,75 Q0,95 -80,75 Z" fill="url(#holoStrip)" opacity="0.9" stroke="#00E5FF" stroke-width="1">
+         <animate attributeName="opacity" values="0.8; 1; 0.8" dur="0.5s" repeatCount="indefinite" begin="0.2s"/>
+    </path>
+
+    <!-- Top Beacon Assembly (Elite) -->
+    <!-- Metal housing -->
+    <path d="M-25,-180 L25,-180 L30,-150 L-30,-150 Z" fill="#212121" stroke="#FFD700" stroke-width="2"/>
+    
+    <!-- The Diamond/Crystal Bulb -->
+    <path d="M0,-220 L20,-190 L0,-170 L-20,-190 Z" fill="#E0F7FA" stroke="#00E5FF" stroke-width="1" filter="url(#glowBlue)">
+        <animate attributeName="fill" values="#E0F7FA; #FFFFFF; #E0F7FA" dur="0.2s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Rotating Lasers -->
+    <g transform="translate(0, -190)">
+       <animateTransform attributeName="transform" type="rotate" values="0; 360" dur="1.5s" repeatCount="indefinite"/>
+       <!-- Sharp Laser Beams -->
+       <path d="M0,0 L-5,-400 L5,-400 Z" fill="#00E5FF" opacity="0.6" transform="rotate(90)"/>
+       <path d="M0,0 L-5,-400 L5,-400 Z" fill="#00E5FF" opacity="0.6" transform="rotate(270)"/>
+       <!-- Wide scan area -->
+       <path d="M0,0 L-80,-250 L80,-250 Z" fill="url(#beaconGlowBlue)" opacity="0.2" transform="rotate(90)"/>
+       <path d="M0,0 L-80,-250 L80,-250 Z" fill="url(#beaconGlowBlue)" opacity="0.2" transform="rotate(270)"/>
+    </g>
+    
+    <!-- Holographic Sign: "VIP" -->
+    <g transform="translate(0, -50)">
+        <!-- Floating projector base on cone -->
+        
+        <!-- The Holo Screen -->
+        <rect x="-80" y="-30" width="160" height="60" fill="#000" stroke="#00E5FF" stroke-width="2" opacity="0.6" rx="10">
+             <animate attributeName="stroke-opacity" values="1; 0.5; 1" dur="1s" repeatCount="indefinite"/>
+             <animate attributeName="stroke-width" values="2; 4; 2" dur="1s" repeatCount="indefinite"/>
+        </rect>
+        
+        <text x="0" y="15" font-family="monospace" font-weight="bold" font-size="40" fill="#00E5FF" text-anchor="middle" letter-spacing="8" filter="url(#glowBlue)">VIP</text>
+        <text x="0" y="15" font-family="monospace" font-weight="bold" font-size="40" fill="#FFF" text-anchor="middle" letter-spacing="8" opacity="0.5">VIP</text>
+        
+        <!-- Tech Data Scrolling -->
+        <path d="M-70,20 h140" stroke="#00E5FF" stroke-width="2" stroke-dasharray="5,5" opacity="0.5">
+            <animate attributeName="stroke-dashoffset" values="0; 20" dur="0.5s" repeatCount="indefinite"/>
+        </path>
+    </g>
+
+  </g>
+</svg>

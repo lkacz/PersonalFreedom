@@ -417,6 +417,8 @@ _SPEAKING_CREATURES = {
     "archimedes", "professor", "assessor",
     # Robot theme - awakened units
     "scout", "drone", "pico", "nori", "atlas", "bruno", "iris", "aster", "eve",
+    # Space pirate theme - odd allies with opinions
+    "cartographer", "ghost", "tribunal",
 }
 
 _OBJECT_WITH_SOUNDS = {
@@ -424,6 +426,7 @@ _OBJECT_WITH_SOUNDS = {
     "candle", "compass", "flask", "coil", "sparky", "burner", "coffee", "toffee",
     "balloon", "carriage", "standard", "rattle",
     "welding", "battery", "servo", "foundry", "core",
+    "kettle", "thruster", "seal", "cone", "button",
 }
 
 _SILENT_OBJECTS = {
@@ -432,6 +435,7 @@ _SILENT_OBJECTS = {
     "dummy", "parchment", "book", "tome", "journal", "map", "backpack",
     "coin", "sticky", "note", "succulent", "chair", "stoner",
     "chassis", "firewall", "kernel",
+    "stamp", "ledger", "complaint", "customs",
 }
 
 
@@ -499,6 +503,18 @@ def _get_personalized_flavor_text(entity: Entity, power_ratio: float, is_excepti
     # === ROBOT THEME ===
     elif theme == "robot":
         return _get_robot_flavor(name, name_lower, power_ratio, entity_type)
+    
+    # === SPACE PIRATE THEME ===
+    elif theme == "space_pirate":
+        return _get_space_pirate_flavor(name, name_lower, power_ratio, entity_type)
+
+    # === THIEF THEME ===
+    elif theme == "thief":
+        return _get_thief_flavor(name, name_lower, power_ratio, entity_type)
+
+    # === ZOO WORKER THEME ===
+    elif theme == "zoo_worker":
+        return _get_zoo_worker_flavor(name, name_lower, power_ratio, entity_type)
     
     # === FALLBACK ===
     return _get_generic_flavor(name, power_ratio, entity_type)
@@ -1591,6 +1607,339 @@ def _get_robot_flavor(name: str, name_lower: str, ratio: float, etype: str) -> s
         return f"{name} scans, computes, and nods. 'Potential verified. Continue execution.'"
     else:
         return f"{name} logs a caution marker. 'Insufficient readiness. Recalibrate and return.'"
+
+
+def _get_space_pirate_flavor(name: str, name_lower: str, ratio: float, etype: str) -> str:
+    """Space pirate theme: absurd relics, rogue logistics, and strategic humor."""
+    
+    # Customs stamp
+    if "stamp" in name_lower or "customs" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} slams down with dramatic authority. 'Cleared for nonsense and victory.'"
+        elif ratio >= 1.0:
+            return f"{name} leaves neat ink marks on your manifest. 'Documentation mostly acceptable.'"
+        elif ratio >= 0.5:
+            return f"{name} smudges suspiciously. 'One typo from detention, captain.'"
+        else:
+            return f"{name} refuses to print. 'Denied. Your confidence lacks supporting paperwork.'"
+    
+    # Airlock seal
+    if "seal" in name_lower or "airlock" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} squeaks in perfect rhythm. 'Hull integrity and vibes both stable.'"
+        elif ratio >= 1.0:
+            return f"{name} wiggles approvingly. 'Minor pressure loss. Major style retained.'"
+        elif ratio >= 0.5:
+            return f"{name} laughs nervously. 'Please stop testing atmospheric boundaries.'"
+        else:
+            return f"{name} emits one long squeal. 'Emergency recommendation: less heroics, more sealing.'"
+    
+    # Tea kettle
+    if "kettle" in name_lower or "tea" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} whistles triumphantly. 'Brew first, blockade second.'"
+        elif ratio >= 1.0:
+            return f"{name} steams politely. 'Morale remains drinkable.'"
+        elif ratio >= 0.5:
+            return f"{name} rattles. 'Your plan needs two sugars and one backup route.'"
+        else:
+            return f"{name} goes cold. 'No tea for reckless captains.'"
+    
+    # Dock rat cartographer
+    if "rat" in name_lower or "cartographer" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} scratches a perfect escape line in dust. 'Shortest route to justice: this way.'"
+        elif ratio >= 1.0:
+            return f"{name} twitches whiskers and points left. 'Patrol cycle predictable. You're welcome.'"
+        elif ratio >= 0.5:
+            return f"{name} hesitates. 'Tunnels exist. Your odds inside them do not.'"
+        else:
+            return f"{name} vanishes into a vent. 'Even I am not mapping that disaster.'"
+    
+    # Complaint box / tribunal
+    if "complaint" in name_lower or "tribunal" in name_lower or "box" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} opens itself and files your victory under 'productive dissent.'"
+        elif ratio >= 1.0:
+            return f"{name} prints a tiny slip. 'Crew trust: acceptable. Keep listening.'"
+        elif ratio >= 0.5:
+            return f"{name} rattles ominously. 'Unresolved grievances detected.'"
+        else:
+            return f"{name} overflows with forms. 'Mutiny probability no longer theoretical.'"
+    
+    # Boarding cone
+    if "cone" in name_lower or "boarding" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} glows official orange. 'Hostile targeting has become politely confused.'"
+        elif ratio >= 1.0:
+            return f"{name} beeps once. 'Proceed with courtesy and mild intimidation.'"
+        elif ratio >= 0.5:
+            return f"{name} tilts worriedly. 'You are approaching this with insufficient diplomacy.'"
+        else:
+            return f"{name} blocks your path. 'Denied. Try saying please and having a plan.'"
+    
+    # Audit ghost ledger
+    if "ledger" in name_lower or "audit" in name_lower or "ghost" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} projects immaculate proof chains. 'Corruption has nowhere left to hide.'"
+        elif ratio >= 1.0:
+            return f"{name} highlights three names in red. 'You are close. Keep the receipts.'"
+        elif ratio >= 0.5:
+            return f"{name} flickers with missing entries. 'Evidence incomplete. Narrative still vulnerable.'"
+        else:
+            return f"{name} closes with a snap. 'No claims without documentation.'"
+    
+    # Parade thruster
+    if "thruster" in name_lower or "parade" in name_lower or "encore" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} ignites with absurd fanfare. 'Unfashionable engine, flawless exit.'"
+        elif ratio >= 1.0:
+            return f"{name} hums in ceremonial tempo. 'Escape window achievable if you commit.'"
+        elif ratio >= 0.5:
+            return f"{name} coughs glitter. 'Thrust available. Confidence unavailable.'"
+        else:
+            return f"{name} sputters theatrically. 'Even dramatic engines require preparation.'"
+    
+    # Pocket gravity button
+    if "gravity" in name_lower or "button" in name_lower or "omega" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} feels almost weightless. 'Fleet-scale power detected. Restraint recommended.'"
+        elif ratio >= 1.0:
+            return f"{name} grows heavy for one second. 'You can force this. Better if you do not.'"
+        elif ratio >= 0.5:
+            return f"{name} cools in your palm. 'Intent unstable. Recalibrate ethics before activation.'"
+        else:
+            return f"{name} remains perfectly still. 'Power denied until responsibility catches up.'"
+    
+    # Generic space pirate fallback
+    if ratio >= 2.0:
+        return f"{name} salutes with outlaw swagger. 'Clean heist. Cleaner conscience.'"
+    elif ratio >= 1.0:
+        return f"{name} taps your shoulder and checks your route map. 'Potential confirmed. Stay sharp.'"
+    else:
+        return f"{name} eyes your manifest skeptically. 'Insufficient prep. Return with a better plan.'"
+
+
+def _get_thief_flavor(name: str, name_lower: str, ratio: float, etype: str) -> str:
+    """Thief theme: redemption tools, civic process, and trust-building companions."""
+
+    # Pocket Receipt Sparrow
+    if "receipt" in name_lower or "sparrow" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} flutters in circles. 'Paper trail complete. Nobody vanishes from the ledger now.'"
+        elif ratio >= 1.0:
+            return f"{name} pecks a neat timeline into dust. 'Facts line up. Keep your reports clean.'"
+        elif ratio >= 0.5:
+            return f"{name} drops a crumpled stub at your boots. 'One receipt missing. Find it before court day.'"
+        else:
+            return f"{name} goes still. 'No evidence, no heroics.'"
+
+    # Crime sticker
+    if "sticker" in name_lower or "crime" in name_lower or "paid" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} flashes in neon. 'Funny label, serious confessions. Keep it lawful.'"
+        elif ratio >= 1.0:
+            return f"{name} peels at one corner. 'You'll get truth if your questions stay clean.'"
+        elif ratio >= 0.5:
+            return f"{name} wrinkles in silence. 'Mixed methods create mixed testimony.'"
+        else:
+            return f"{name} goes dull. 'No sticker can fix a sloppy chain.'"
+
+    # Lockpick hairpin
+    if "lockpick" in name_lower or "hairpin" in name_lower or "master key" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} clicks once. 'Access granted. Keep the warrant clean and visible.'"
+        elif ratio >= 1.0:
+            return f"{name} hums at the latch. 'Precision works. Don't rush the evidence bag.'"
+        elif ratio >= 0.5:
+            return f"{name} scrapes in the lock. 'You're forcing timing that should be measured.'"
+        else:
+            return f"{name} bends and refuses. 'No lawful access, no opening.'"
+
+    # Stolen SIM
+    if "sim" in name_lower or "root black" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} pings a perfect trace tree. 'Network paths exposed. Move on verifiable leads.'"
+        elif ratio >= 1.0:
+            return f"{name} warms in your palm. 'Signal chain stable. Preserve metadata.'"
+        elif ratio >= 0.5:
+            return f"{name} drops packets. 'Trace confidence low. Reconfirm before action.'"
+        else:
+            return f"{name} goes dark. 'Blind pursuit denied.'"
+
+    # Spray can silencer
+    if "spray" in name_lower or "silencer" in name_lower or "mute canister" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} exhales a soft black mist. 'Sensors muted. Civilians stay calm. Proceed.'"
+        elif ratio >= 1.0:
+            return f"{name} hisses once. 'Noise floor lowered. Keep your team coordinated.'"
+        elif ratio >= 0.5:
+            return f"{name} sputters. 'Suppression window unstable. Do not overextend.'"
+        else:
+            return f"{name} clogs shut. 'Scene too chaotic for silent control.'"
+
+    # Hoodie shadow
+    if "hoodie" in name_lower or "shadow" in name_lower or "vantablack" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} slips across the wall line. 'Profile hidden, civilian lane preserved.'"
+        elif ratio >= 1.0:
+            return f"{name} gathers around your shoulders. 'Stealth acceptable. Keep body-cam angle compliant.'"
+        elif ratio >= 0.5:
+            return f"{name} tears at the seam. 'You're visible at the wrong moments.'"
+        else:
+            return f"{name} hangs limp. 'No concealment for reckless intent.'"
+
+    # Safe cracker stethoscope
+    if "safe cracker" in name_lower or "stethoscope" in name_lower or "resonator" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} listens through steel and concrete. 'Tumblers exposed. Open clean, log everything.'"
+        elif ratio >= 1.0:
+            return f"{name} catches a faint harmonic beat. 'You're close. Do not break chain-of-custody.'"
+        elif ratio >= 0.5:
+            return f"{name} crackles with static. 'Signal unclear. Pause and verify.'"
+        else:
+            return f"{name} hears only noise. 'No safe opens on wishful thinking.'"
+
+    # Crowbar
+    if "crowbar" in name_lower or "prybar" in name_lower or "lever" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} bites into the frame and bends it cleanly. 'Barrier breached. Civilians first.'"
+        elif ratio >= 1.0:
+            return f"{name} settles in your grip. 'Measured leverage beats panic force.'"
+        elif ratio >= 0.5:
+            return f"{name} slips on contact. 'Angle is wrong. Reposition before you hurt the scene.'"
+        else:
+            return f"{name} clangs off hardened steel. 'You are not ready for this entry.'"
+
+    # Flashlight beam
+    if "flashlight" in name_lower or "beam" in name_lower or "uv scanner" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} cuts a white line through dust. 'Hidden prints and edits exposed. Truth is admissible.'"
+        elif ratio >= 1.0:
+            return f"{name} flickers ultraviolet at the edge. 'Evidence present. Collect carefully.'"
+        elif ratio >= 0.5:
+            return f"{name} dims under interference. 'Signal compromised. Recalibrate optics and ethics.'"
+        else:
+            return f"{name} stays dark. 'No illumination until procedure catches up.'"
+
+    # Generic thief fallback
+    if ratio >= 2.0:
+        return f"{name} nods sharply. 'Past acknowledged. Process respected. Move.'"
+    elif ratio >= 1.0:
+        return f"{name} watches your hands. 'Potential is real. Procedure decides the result.'"
+    else:
+        return f"{name} holds position. 'Skill without accountability is just better crime.'"
+
+
+def _get_zoo_worker_flavor(name: str, name_lower: str, ratio: float, etype: str) -> str:
+    """Zoo worker theme: sanctuary discipline, care logistics, and wise dragon-scale choices."""
+
+    # Ticket stub gecko
+    if "ticket stub gecko" in name_lower or "gecko" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} taps a neat route in dust. 'All entries verified. No one gets lost today.'"
+        elif ratio >= 1.0:
+            return f"{name} clings to your sleeve. 'Flow is stable. Keep checkpoints honest.'"
+        elif ratio >= 0.5:
+            return f"{name} drops a damp ticket fragment. 'One path is untracked. Fix the map.'"
+        else:
+            return f"{name} freezes by the gate. 'No traceability, no trust.'"
+
+    # Night shift lemur
+    if "night shift lemur" in name_lower or "lemur" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} points toward a dark corner. 'Hazard spotted early. Crisis avoided.'"
+        elif ratio >= 1.0:
+            return f"{name} blinks twice. 'Patrol rhythm acceptable. Stay alert.'"
+        elif ratio >= 0.5:
+            return f"{name} chatters nervously. 'Your perimeter check is too slow.'"
+        else:
+            return f"{name} backs away from the gate. 'Unsafe shift conditions detected.'"
+
+    # Feeding cart compass
+    if "feeding cart compass" in name_lower or "compass" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} swings true north instantly. 'Priority lane confirmed. Move with purpose.'"
+        elif ratio >= 1.0:
+            return f"{name} steadies after one wobble. 'Route viable if you stay disciplined.'"
+        elif ratio >= 0.5:
+            return f"{name} spins indecisively. 'Signal conflict. Reassess before acting.'"
+        else:
+            return f"{name} points nowhere. 'Direction denied until intent is clear.'"
+
+    # Aviary lock lark
+    if "aviary lock lark" in name_lower or "lark" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} sings one clear note. 'Perimeter sealed. Trust the checklist.'"
+        elif ratio >= 1.0:
+            return f"{name} tilts its head. 'Most latches hold. Verify the last one.'"
+        elif ratio >= 0.5:
+            return f"{name} stays silent. 'Security confidence insufficient.'"
+        else:
+            return f"{name} hops away from the lock. 'No song for sloppy closure.'"
+
+    # Veterinary lantern moth
+    if "veterinary lantern moth" in name_lower or "lantern moth" in name_lower or "moth" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} glows over hidden harm. 'Treat early. Save everyone.'"
+        elif ratio >= 1.0:
+            return f"{name} circles your shoulder. 'Triage window open. Stay calm.'"
+        elif ratio >= 0.5:
+            return f"{name} flickers uncertainly. 'Symptoms unclear. Confirm before intervention.'"
+        else:
+            return f"{name} dims to a weak ember. 'Chaos blocks care.'"
+
+    # River otter archivist
+    if "river otter archivist" in name_lower or "otter archivist" in name_lower or "otter" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} flips to the exact page. 'Evidence chain complete. Proceed.'"
+        elif ratio >= 1.0:
+            return f"{name} taps a timestamp. 'Record integrity holding.'"
+        elif ratio >= 0.5:
+            return f"{name} smudges an entry. 'Documentation gap detected.'"
+        else:
+            return f"{name} closes the notebook. 'No proof, no action.'"
+
+    # Old scalebook oracle
+    if "old scalebook oracle" in name_lower or "scalebook" in name_lower or "oracle" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} opens to a marked passage. 'History agrees with your next step.'"
+        elif ratio >= 1.0:
+            return f"{name} rustles dry pages. 'You are close. Verify assumptions.'"
+        elif ratio >= 0.5:
+            return f"{name} shows two conflicting notes. 'Pattern uncertain. Recalculate.'"
+        else:
+            return f"{name} snaps shut. 'Wisdom refuses impulsive operators.'"
+
+    # Storm glass incubator
+    if "storm glass incubator" in name_lower or "incubator" in name_lower or "storm glass" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} stabilizes the air pressure. 'Containment secure. Keep breathing.'"
+        elif ratio >= 1.0:
+            return f"{name} hums in steady pulses. 'Load acceptable if paced correctly.'"
+        elif ratio >= 0.5:
+            return f"{name} crackles with static. 'Stress rising. Slow your sequence.'"
+        else:
+            return f"{name} clouds over. 'System overload. Retreat and reset.'"
+
+    # Emberwing
+    if "emberwing" in name_lower or "first dawn" in name_lower or "eternal dawn" in name_lower or "dragon" in name_lower:
+        if ratio >= 2.0:
+            return f"{name} lowers its great head. 'Power with care becomes wisdom.'"
+        elif ratio >= 1.0:
+            return f"{name} watches you quietly. 'You have strength. Choose what it protects.'"
+        elif ratio >= 0.5:
+            return f"{name} exhales warm ash. 'Your heart is split. Decide with honesty.'"
+        else:
+            return f"{name} folds its wings. 'No flight without responsibility.'"
+
+    # Generic zoo worker fallback
+    if ratio >= 2.0:
+        return f"{name} settles into formation. 'Sanctuary holds when process and compassion align.'"
+    elif ratio >= 1.0:
+        return f"{name} studies your posture. 'Potential confirmed. Keep the shift disciplined.'"
+    else:
+        return f"{name} signals caution. 'Care is a system. Build it before heroics.'"
 
 
 def _get_generic_flavor(name: str, ratio: float, etype: str) -> str:

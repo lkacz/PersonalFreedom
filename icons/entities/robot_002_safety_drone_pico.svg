@@ -1,14 +1,112 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label=" ">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Robot 002: Safety Drone Pico (V3 Ultimate) -->
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color=""/>
-      <stop offset="100%" stop-color="#0B1020"/>
+    <!-- Chassis Gradient: Industrial Yellow -->
+    <linearGradient id="chassis-yellow" x1="20%" y1="10%" x2="80%" y2="90%">
+      <stop offset="0%" stop-color="#ffec8b" />
+      <stop offset="40%" stop-color="#ffd700" />
+      <stop offset="100%" stop-color="#b8860b" />
+    </linearGradient>
+
+    <!-- Glass Dome Gradient -->
+    <radialGradient id="glass-dome" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.9" />
+      <stop offset="20%" stop-color="#fff" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#87cefa" stop-opacity="0.4" />
+    </radialGradient>
+    
+    <!-- Sensor Eye Glow -->
+    <radialGradient id="sensor-eye" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#00ff00" stop-opacity="1" />
+      <stop offset="70%" stop-color="#006400" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#000" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Hazard Pattern -->
+    <pattern id="hazard-stripes" width="20" height="20" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="10" height="20" fill="#222" opacity="0.8"/>
+      <rect x="10" width="10" height="20" fill="none" />
+    </pattern>
+
+    <!-- Rotor Blur -->
+    <filter id="rotor-blur">
+      <feGaussianBlur stdDeviation="3" />
+    </filter>
+
+    <!-- Laser Grid Projection -->
+    <linearGradient id="laser-grid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff4500" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#ff4500" stop-opacity="0"/>
     </linearGradient>
   </defs>
-  <rect x="4" y="4" width="120" height="120" rx="20" fill="url(#g)" stroke="" stroke-width="4"/>
-  <circle cx="64" cy="64" r="30" fill="#111827" stroke="" stroke-width="4"/>
-  <rect x="32" y="54" width="64" height="20" rx="10" fill="" opacity="0.22"/>
-  <circle cx="52" cy="64" r="6" fill=""/>
-  <circle cx="76" cy="64" r="6" fill=""/>
-  <text x="64" y="108" font-family="Segoe UI, Arial, sans-serif" font-size="14" text-anchor="middle" fill="" font-weight="700"></text>
+
+  <g transform="translate(256, 260)">
+    
+    <!-- Floor Projection (Laser Safety Zone) -->
+    <g transform="translate(0, 180) scale(1, 0.3)">
+      <circle cx="0" cy="0" r="120" fill="none" stroke="url(#laser-grid)" stroke-width="4" stroke-dasharray="10,10">
+         <animateTransform attributeName="transform" type="rotate" values="0 0 0; 360 0 0" dur="10s" repeatCount="indefinite" />
+      </circle>
+      <path d="M-100,0 L100,0 M0,-100 L0,100" stroke="url(#laser-grid)" stroke-width="2" opacity="0.5" />
+    </g>
+
+    <!-- Main Drone Body Group -->
+    <g>
+      <!-- Hover Physics -->
+      <animateTransform attributeName="transform" type="translate" values="0,0; 0,-15; 0,0" dur="3s" repeatCount="indefinite" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1" calcMode="spline" />
+
+      <!-- Left Rotor Arm -->
+      <g transform="translate(-110, 0)">
+        <rect x="0" y="-5" width="50" height="10" fill="#555" />
+        <circle cx="0" cy="0" r="45" fill="#222" opacity="0.3" filter="url(#rotor-blur)" />
+        <ellipse cx="0" cy="0" rx="45" ry="10" fill="#ccc" opacity="0.5">
+           <animateTransform attributeName="transform" type="scale" values="1,1; 1,0.2; 1,1" dur="0.1s" repeatCount="indefinite" />
+        </ellipse>
+      </g>
+
+      <!-- Right Rotor Arm -->
+      <g transform="translate(110, 0)">
+        <rect x="-50" y="-5" width="50" height="10" fill="#555" />
+        <circle cx="0" cy="0" r="45" fill="#222" opacity="0.3" filter="url(#rotor-blur)" />
+        <ellipse cx="0" cy="0" rx="45" ry="10" fill="#ccc" opacity="0.5">
+           <animateTransform attributeName="transform" type="scale" values="1,1; 1,0.2; 1,1" dur="0.1s" repeatCount="indefinite" />
+        </ellipse>
+      </g>
+
+      <!-- Main Chassis Sphere -->
+      <circle cx="0" cy="0" r="75" fill="url(#chassis-yellow)" stroke="#8b4500" stroke-width="2" />
+      
+      <!-- Hazard Stripe Belt -->
+      <path d="M-75,0 A75,75 0 0,0 75,0 L75,20 A75,75 0 0,1 -75,20 Z" fill="url(#hazard-stripes)" opacity="0.6">
+        <animateTransform attributeName="transform" type="rotate" values="-2 0 10; 2 0 10; -2 0 10" dur="4s" repeatCount="indefinite" />
+      </path>
+
+      <!-- Faceplate / Sensor Housing -->
+      <path d="M-50,-20 Q0,0 50,-20 L40,40 Q0,60 -40,40 Z" fill="#333" stroke="#555" stroke-width="2"/>
+
+      <!-- Digital Eye Array -->
+      <rect x="-30" y="0" width="60" height="20" rx="5" fill="#000" />
+      <!-- Scanning Green Line -->
+      <rect x="-25" y="5" width="50" height="10" rx="2" fill="#003300" />
+      <rect x="-25" y="5" width="10" height="10" rx="2" fill="#00ff00" opacity="0.8">
+         <animate attributeName="x" values="-25; 15; -25" dur="1.5s" repeatCount="indefinite" />
+      </rect>
+
+      <!-- Glass Dome Top -->
+      <path d="M-50,-45 Q0,-80 50,-45" fill="none" stroke="#aaa" stroke-width="2" />
+      <path d="M-50,-45 Q0,-80 50,-45 L50,-40 Q0,-75 -50,-40 Z" fill="url(#glass-dome)" />
+      
+      <!-- Internal Antenna (Visible through dome/top) -->
+      <line x1="0" y1="-75" x2="0" y2="-95" stroke="#444" stroke-width="2">
+         <animate attributeName="y2" values="-95; -85; -95" dur="0.5s" repeatCount="indefinite" />
+      </line>
+      <circle cx="0" cy="-95" r="3" fill="#ff4500">
+         <animate attributeName="cy" values="-95; -85; -95" dur="0.5s" repeatCount="indefinite" />
+         <animate attributeName="opacity" values="1; 0.2; 1" dur="0.5s" repeatCount="indefinite" />
+      </circle>
+
+      <!-- Specular Highlight on Chassis -->
+      <path d="M-40,-40 Q-20,-60 0,-60" fill="none" stroke="white" stroke-width="3" opacity="0.6" stroke-linecap="round" />
+    </g>
+  </g>
 </svg>

@@ -1,0 +1,106 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Glass Dome Gradient -->
+    <radialGradient id="glassDomeGrad" cx="30%" cy="30%" r="80%" fx="30%" fy="30%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="20%" stop-color="#e0f7fa" stop-opacity="0.4"/>
+      <stop offset="60%" stop-color="#b2ebf2" stop-opacity="0.2"/>
+      <stop offset="90%" stop-color="#80deea" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#4dd0e1" stop-opacity="0.8"/>
+    </radialGradient>
+    
+    <!-- Heavy Brass Base Gradient -->
+    <linearGradient id="brassBaseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5d4037"/>
+      <stop offset="20%" stop-color="#8d6e63"/>
+      <stop offset="40%" stop-color="#d7ccc8"/>
+      <stop offset="60%" stop-color="#8d6e63"/>
+      <stop offset="100%" stop-color="#4e342e"/>
+    </linearGradient>
+
+    <!-- Storm Cloud Dark Gradient -->
+    <radialGradient id="cloudDark" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#455a64" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#263238" stop-opacity="0"/>
+    </radialGradient>
+    
+    <!-- Lightning Gradient -->
+    <linearGradient id="lightningGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fff"/>
+      <stop offset="50%" stop-color="#80deea"/>
+      <stop offset="100%" stop-color="#fff"/>
+    </linearGradient>
+
+    <!-- Cloud Filter for Texture -->
+    <filter id="cloudFluctuation">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="warp" />
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="20" />
+    </filter>
+  </defs>
+
+  <!-- Background: Dark Lab Table -->
+  <rect width="512" height="512" fill="#1a1a1a" rx="20"/>
+  <circle cx="256" cy="400" r="140" fill="#000" fill-opacity="0.4" filter="url(#blur)"/>
+
+  <!-- Back of the Base -->
+  <path d="M156,400 L356,400 L356,430 C356,450 156,450 156,430 Z" fill="url(#brassBaseGrad)" opacity="0.6"/>
+
+  <!-- Storm Clouds Inside (Animated) -->
+  <g clip-path="url(#domeClip)">
+    <clipPath id="domeClip">
+      <path d="M156,400 L156,150 C156,70 356,70 356,150 L356,400 Z" />
+    </clipPath>
+
+    <!-- Layer 1: Background swirl -->
+    <circle cx="200" cy="250" r="80" fill="url(#cloudDark)">
+      <animateTransform attributeName="transform" type="translate" values="0,0; 20,10; 0,0" dur="8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="310" cy="200" r="90" fill="url(#cloudDark)">
+      <animateTransform attributeName="transform" type="translate" values="0,0; -20,15; 0,0" dur="7s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="256" cy="300" r="100" fill="#37474f" opacity="0.7">
+       <animateTransform attributeName="transform" type="scale" values="1; 1.1; 1" dur="10s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Lightning Bolts (Flickering) -->
+    <path d="M220,180 L250,230 L230,250 L260,320" stroke="url(#lightningGrad)" stroke-width="4" fill="none" opacity="0">
+      <animate attributeName="opacity" values="0;0;1;0;0;0.8;0;0;1;0" dur="3s" repeatCount="indefinite" />
+    </path>
+    <path d="M300,160 L280,220 L310,240 L280,300" stroke="url(#lightningGrad)" stroke-width="3" fill="none" opacity="0">
+      <animate attributeName="opacity" values="0;0;0;0;1;0;0;0.5;0;0" dur="4.2s" repeatCount="indefinite" />
+    </path>
+    
+    <!-- Layer 2: Foreground Clouds -->
+    <ellipse cx="256" cy="350" rx="120" ry="60" fill="#546e7a" opacity="0.6" filter="url(#cloudFluctuation)">
+      <animate attributeName="opacity" values="0.6;0.8;0.6" dur="5s" repeatCount="indefinite"/>
+    </ellipse>
+
+  </g>
+
+  <!-- The Glass Vessel -->
+  <path d="M156,400 L156,150 C156,70 356,70 356,150 L356,400 Z" fill="url(#glassDomeGrad)" stroke="#4dd0e1" stroke-width="2" stroke-opacity="0.5"/>
+  
+  <!-- Highlights on Glass -->
+  <path d="M176,150 Q176,100 220,90" stroke="#fff" stroke-width="4" fill="none" opacity="0.8"/>
+  <path d="M336,160 Q336,300 336,350" stroke="#fff" stroke-width="3" fill="none" opacity="0.3"/>
+
+  <!-- Base (Foreground) -->
+  <path d="M146,400 L366,400 L366,420 L356,450 L156,450 L146,420 Z" fill="url(#brassBaseGrad)" stroke="#3e2723" stroke-width="2"/>
+  
+  <!-- Gauges/Dials on Base -->
+  <circle cx="256" cy="425" r="15" fill="#eceff1" stroke="#37474f" stroke-width="2"/>
+  <line x1="256" y1="425" x2="265" y2="418" stroke="#d50000" stroke-width="2">
+    <animateTransform attributeName="transform" type="rotate" from="0 256 425" to="60 256 425" dur="0.2s" values="0 256 425; 60 256 425; 10 256 425; 50 256 425; 0 256 425" repeatCount="indefinite" calcMode="discrete"/>
+  </line>
+
+  <!-- Condensation Drops on Glass -->
+  <circle cx="200" cy="200" r="2" fill="#fff" opacity="0.6">
+    <animate attributeName="cy" from="200" to="350" dur="2s" begin="0s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="300" cy="150" r="2" fill="#fff" opacity="0.6">
+    <animate attributeName="cy" from="150" to="300" dur="2.5s" begin="1s" repeatCount="indefinite"/>
+     <animate attributeName="opacity" values="0.6;0" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+
+</svg>

@@ -32,6 +32,7 @@ except ImportError:
 # Import entitidex components
 from entitidex import (
     get_entities_for_story,
+    ENTITY_POOLS,
     Entity,
     EntitidexProgress,
     get_theme_celebration,
@@ -136,6 +137,33 @@ EXCEPTIONAL_ENTITY_COLORS = {
     "robot_007": (255, 215, 80),       # Inspection Drone Iris: White shell → Gold
     "robot_008": (120, 255, 200),      # Foundry Exosuit Aster: Dark steel → Mint
     "robot_009": (255, 255, 255),      # Freewill Core Eve: Crystal → White glow
+    "space_pirate_001": (255, 210, 120),
+    "space_pirate_002": (120, 255, 210),
+    "space_pirate_003": (255, 170, 90),
+    "space_pirate_004": (170, 220, 255),
+    "space_pirate_005": (255, 120, 160),
+    "space_pirate_006": (255, 190, 80),
+    "space_pirate_007": (180, 255, 255),
+    "space_pirate_008": (140, 200, 255),
+    "space_pirate_009": (245, 245, 190),
+    "thief_001": (255, 225, 140),
+    "thief_002": (180, 255, 210),
+    "thief_003": (140, 215, 255),
+    "thief_004": (210, 180, 255),
+    "thief_005": (255, 175, 210),
+    "thief_006": (255, 205, 110),
+    "thief_007": (170, 245, 255),
+    "thief_008": (255, 180, 130),
+    "thief_009": (255, 245, 190),
+    "zoo_worker_001": (180, 240, 190),
+    "zoo_worker_002": (210, 255, 170),
+    "zoo_worker_003": (170, 220, 255),
+    "zoo_worker_004": (255, 210, 140),
+    "zoo_worker_005": (255, 190, 230),
+    "zoo_worker_006": (140, 235, 255),
+    "zoo_worker_007": (230, 210, 255),
+    "zoo_worker_008": (180, 255, 240),
+    "zoo_worker_009": (255, 235, 180),
 }
 
 
@@ -1950,15 +1978,67 @@ class CelebrationCard(QtWidgets.QFrame):
             self._svg_widget.restart_animations()
 
 
-# Theme info for tabs (matching preview_entities.py)
-THEME_INFO = {
-    "warrior": ("🗡️ Warrior", "#C62828"),
-    "scholar": ("📚 Scholar", "#6A1B9A"),
-    "underdog": ("💪 Underdog", "#E65100"),
-    "scientist": ("🔬 Scientist", "#1565C0"),
-    "wanderer": ("🗺️ Wanderer", "#2E7D32"),
-    "robot": ("🤖 Robot", "#455A64"),
+# Theme tab metadata
+THEME_TAB_ORDER = [
+    "warrior",
+    "scholar",
+    "underdog",
+    "scientist",
+    "wanderer",
+    "robot",
+    "space_pirate",
+    "thief",
+    "zoo_worker",
+]
+
+THEME_LABEL_OVERRIDES = {
+    "warrior": "\U0001F5E1\ufe0f Warrior",
+    "scholar": "\U0001F4DA Scholar",
+    "underdog": "\U0001F4AA Underdog",
+    "scientist": "\U0001F52C Scientist",
+    "wanderer": "\U0001F5FA\ufe0f Wanderer",
+    "robot": "\U0001F916 Robot",
+    "space_pirate": "\U0001F680 Space Pirate",
+    "thief": "\U0001F575\ufe0f Thief",
+    "zoo_worker": "\U0001F99A Zoo Worker",
 }
+
+THEME_COLOR_OVERRIDES = {
+    "warrior": "#C62828",
+    "scholar": "#6A1B9A",
+    "underdog": "#E65100",
+    "scientist": "#1565C0",
+    "wanderer": "#2E7D32",
+    "robot": "#455A64",
+    "space_pirate": "#1E3A5F",
+    "thief": "#4B3621",
+    "zoo_worker": "#2E5D50",
+}
+
+THEME_COMPLETE_MARKER = "\U0001F451"
+
+
+def _humanize_theme_key(theme_key: str) -> str:
+    """Convert snake_case theme id to title case display text."""
+    return theme_key.replace("_", " ").title()
+
+
+def _build_theme_info() -> "OrderedDict[str, tuple[str, str]]":
+    """Build ordered tab metadata from available entity pools."""
+    available_themes = list(ENTITY_POOLS.keys())
+    ordered_themes = [theme for theme in THEME_TAB_ORDER if theme in available_themes]
+    ordered_themes.extend(theme for theme in available_themes if theme not in ordered_themes)
+
+    info: "OrderedDict[str, tuple[str, str]]" = OrderedDict()
+    for theme_key in ordered_themes:
+        theme_name = THEME_LABEL_OVERRIDES.get(theme_key, _humanize_theme_key(theme_key))
+        theme_color = THEME_COLOR_OVERRIDES.get(theme_key, "#4A4A4A")
+        info[theme_key] = (theme_name, theme_color)
+    return info
+
+
+THEME_INFO = _build_theme_info()
+THEME_BASE_LABELS = {theme_key: data[0] for theme_key, data in THEME_INFO.items()}
 
 
 class EntitidexTab(QtWidgets.QWidget):
@@ -1996,6 +2076,40 @@ class EntitidexTab(QtWidgets.QWidget):
     def _is_ui_built(self) -> bool:
         """Return True when the full Entitidex UI widgets are available."""
         return hasattr(self, "theme_tab_widget") and hasattr(self, "total_progress_label")
+
+    def _get_theme_keys(self) -> list:
+        """Return theme keys in current tab order."""
+        return list(THEME_INFO.keys())
+
+    @staticmethod
+    def _format_theme_tab_label(theme_key: str, is_complete: bool = False) -> str:
+        """Build tab caption with optional completion marker."""
+        base_label = THEME_BASE_LABELS.get(theme_key, _humanize_theme_key(theme_key))
+        return f"{THEME_COMPLETE_MARKER} {base_label}" if is_complete else base_label
+
+    def _update_theme_tab_status(self, theme_key: str, total_collected: int, total_slots: int, is_complete: bool) -> None:
+        """Update tab label, color and tooltip with live completion state."""
+        if not self._is_ui_built():
+            return
+
+        theme_keys = self._get_theme_keys()
+        if theme_key not in theme_keys:
+            return
+
+        tab_index = theme_keys.index(theme_key)
+        progress_percent = int((total_collected / total_slots) * 100) if total_slots > 0 else 0
+        base_label = THEME_BASE_LABELS.get(theme_key, _humanize_theme_key(theme_key))
+
+        self.theme_tab_widget.setTabText(tab_index, self._format_theme_tab_label(theme_key, is_complete))
+        status_text = "Complete" if is_complete else "In progress"
+        self.theme_tab_widget.setTabToolTip(
+            tab_index,
+            f"{base_label}: {total_collected}/{total_slots} ({progress_percent}%) - {status_text}",
+        )
+        self.theme_tab_widget.tabBar().setTabTextColor(
+            tab_index,
+            QtGui.QColor("#FFD54F") if is_complete else QtGui.QColor("#FFFFFF"),
+        )
     
     def preload(self) -> None:
         """Pre-initialize the tab in background for instant display.
@@ -2040,7 +2154,7 @@ class EntitidexTab(QtWidgets.QWidget):
         if not self.theme_tabs:
             return
         
-        theme_keys = list(THEME_INFO.keys())
+        theme_keys = self._get_theme_keys()
         current_theme = theme_keys[self._current_theme_index] if self._current_theme_index < len(theme_keys) else None
         
         if current_theme:
@@ -2098,7 +2212,7 @@ class EntitidexTab(QtWidgets.QWidget):
             return  # Not yet built
         
         # Only resume animations for the currently visible theme tab
-        theme_keys = list(THEME_INFO.keys())
+        theme_keys = self._get_theme_keys()
         current_theme = theme_keys[self._current_theme_index] if self._current_theme_index < len(theme_keys) else None
         
         if current_theme:
@@ -2146,7 +2260,7 @@ class EntitidexTab(QtWidgets.QWidget):
         if not self.theme_tabs:
             return
             
-        theme_keys = list(THEME_INFO.keys())
+        theme_keys = self._get_theme_keys()
         current_theme = theme_keys[self._current_theme_index] if self._current_theme_index < len(theme_keys) else None
         
         if current_theme:
@@ -2292,11 +2406,15 @@ class EntitidexTab(QtWidgets.QWidget):
                 background-color: #3A3A3A;
             }
         """)
+        self.theme_tab_widget.setUsesScrollButtons(True)
+        self.theme_tab_widget.setElideMode(QtCore.Qt.ElideNone)
+        self.theme_tab_widget.tabBar().setExpanding(False)
         
         # Create a tab for each theme
         for theme_key, (theme_name, theme_color) in THEME_INFO.items():
             tab_widget = self._create_theme_tab(theme_key)
-            self.theme_tab_widget.addTab(tab_widget, theme_name)
+            tab_index = self.theme_tab_widget.addTab(tab_widget, self._format_theme_tab_label(theme_key))
+            self.theme_tab_widget.setTabToolTip(tab_index, f"{theme_name}: 0/0 (0%) - In progress")
             self.theme_tabs[theme_key] = tab_widget
         
         layout.addWidget(self.theme_tab_widget)
@@ -2328,7 +2446,9 @@ class EntitidexTab(QtWidgets.QWidget):
         """)
         progress_layout = QtWidgets.QVBoxLayout(progress_frame)
         
-        progress_label = QtWidgets.QLabel(f"Collection Progress - {theme_key.capitalize()}")
+        progress_label = QtWidgets.QLabel(
+            f"Collection Progress - {THEME_BASE_LABELS.get(theme_key, _humanize_theme_key(theme_key))}"
+        )
         progress_label.setStyleSheet("color: #AAAAAA; font-size: 12px;")
         progress_label.setObjectName(f"progress_label_{theme_key}")
         progress_layout.addWidget(progress_label)
@@ -2448,7 +2568,7 @@ class EntitidexTab(QtWidgets.QWidget):
         # Pause if: 1) Entitidex tab is hidden, OR 2) This is not the current theme tab
         should_pause = not self._is_visible
         if theme_key and self._is_visible:
-            theme_keys = list(THEME_INFO.keys())
+            theme_keys = self._get_theme_keys()
             current_theme_key = theme_keys[self._current_theme_index] if self._current_theme_index < len(theme_keys) else None
             if theme_key != current_theme_key:
                 should_pause = True
@@ -2524,6 +2644,7 @@ class EntitidexTab(QtWidgets.QWidget):
         total_slots = total_entities * 2  # Normal + Exceptional for each
         total_collected = collected_normal + collected_exceptional
         progress_percent = int((total_collected / total_slots) * 100) if total_slots > 0 else 0
+        is_theme_complete = self.progress.is_theme_fully_complete(theme_key)
         
         # Update progress display for this tab
         progress_bar = tab_widget.findChild(QtWidgets.QProgressBar, f"progress_bar_{theme_key}")
@@ -2538,6 +2659,9 @@ class EntitidexTab(QtWidgets.QWidget):
                 f"⭐ Exceptional: {collected_exceptional}/{total_entities}  |  "
                 f"👁️ Encountered: {encountered_count}"
             )
+
+        # Update tab header status (title, crown marker, tooltip).
+        self._update_theme_tab_status(theme_key, total_collected, total_slots, is_theme_complete)
         
         # =====================================================================
         # THEME COMPLETION CELEBRATION CARD
@@ -2546,7 +2670,7 @@ class EntitidexTab(QtWidgets.QWidget):
         current_row = 0
         
         # Check if theme is fully complete (all normal + all exceptional)
-        if self.progress.is_theme_fully_complete(theme_key):
+        if is_theme_complete:
             # Record completion if not already recorded
             if theme_key not in self.progress.theme_completions:
                 self.progress.record_theme_completion(theme_key)
@@ -2559,7 +2683,7 @@ class EntitidexTab(QtWidgets.QWidget):
                 # Register for lifecycle management (pause/resume)
                 self._celebration_cards.append(celebration_card)
                 # Start paused if tab not visible or this isn't the current theme
-                theme_keys = list(THEME_INFO.keys())
+                theme_keys = self._get_theme_keys()
                 if not self._is_visible or theme_keys.index(theme_key) != self._current_theme_index:
                     celebration_card.pause_animations()
                 current_row += 1
@@ -2617,7 +2741,7 @@ class EntitidexTab(QtWidgets.QWidget):
         total_exceptional = 0
         total_entities = 0
         
-        for theme_key in THEME_INFO.keys():
+        for theme_key in self._get_theme_keys():
             self._refresh_theme_tab(theme_key)
             
             # Count for total progress
@@ -2644,7 +2768,7 @@ class EntitidexTab(QtWidgets.QWidget):
         Performance optimization: Only run animations for the currently visible theme tab.
         This can save significant CPU when many entity cards have active animations.
         """
-        theme_keys = list(THEME_INFO.keys())
+        theme_keys = self._get_theme_keys()
         old_theme = theme_keys[self._current_theme_index] if self._current_theme_index < len(theme_keys) else None
         new_theme = theme_keys[index] if index < len(theme_keys) else None
         self._current_theme_index = index
@@ -3475,7 +3599,7 @@ class EntitidexTab(QtWidgets.QWidget):
             return
 
         # Find and select the corresponding tab
-        theme_keys = list(THEME_INFO.keys())
+        theme_keys = self._get_theme_keys()
         if story in theme_keys:
             self.theme_tab_widget.setCurrentIndex(theme_keys.index(story))
     
@@ -3507,3 +3631,5 @@ class EntitidexTab(QtWidgets.QWidget):
         if self._is_ui_built():
             self._refresh_all_tabs()
         self._update_saved_button_count()
+
+

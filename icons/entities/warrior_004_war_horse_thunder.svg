@@ -1,95 +1,106 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <!-- War Horse Thunder - Loyal battle steed, trust in eyes -->
+  <!-- War Horse "Thunder" - Redesigned: Organic, Muscular, Heavy Armor -->
   <defs>
-    <linearGradient id="horseBody" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#5D4037"/>
-      <stop offset="100%" style="stop-color:#3E2723"/>
+    <!-- Rich Coat Gradient -->
+    <linearGradient id="coatGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4E342E"/> <!-- Dark Brown Top -->
+      <stop offset="100%" style="stop-color:#3E2723"/> <!-- Darker Bottom -->
     </linearGradient>
-    <linearGradient id="horseMane" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#212121"/>
-      <stop offset="100%" style="stop-color:#424242"/>
+    
+    <!-- Steel Armor Gradient -->
+    <linearGradient id="armorGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#B0BEC5"/>
+      <stop offset="50%" style="stop-color:#78909C"/>
+      <stop offset="100%" style="stop-color:#546E7A"/>
     </linearGradient>
-    <linearGradient id="armor" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#90A4AE"/>
-      <stop offset="50%" style="stop-color:#607D8B"/>
-      <stop offset="100%" style="stop-color:#455A64"/>
+
+    <!-- Cloth Gradient -->
+    <linearGradient id="clothGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#D32F2F"/> <!-- Red -->
+      <stop offset="100%" style="stop-color:#8E0000"/> <!-- Dark Red -->
     </linearGradient>
+
+    <filter id="shadowGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="black" flood-opacity="0.3"/>
+    </filter>
   </defs>
-  
-  <!-- Back legs -->
-  <rect x="14" y="44" width="5" height="14" rx="2" fill="#4E342E"/>
-  <rect x="20" y="46" width="5" height="12" rx="2" fill="url(#horseBody)"/>
-  
-  <!-- Hooves (back) -->
-  <rect x="13" y="56" width="7" height="4" rx="1" fill="#212121"/>
-  <rect x="19" y="56" width="7" height="4" rx="1" fill="#212121"/>
-  
-  <!-- Body -->
-  <ellipse cx="30" cy="36" rx="18" ry="12" fill="url(#horseBody)"/>
-  
-  <!-- Battle armor on body -->
-  <path d="M20 30 Q30 26, 40 30 L42 36 Q30 34, 18 36 Z" fill="url(#armor)" stroke="#455A64" stroke-width="0.5"/>
-  <circle cx="30" cy="32" r="3" fill="#455A64" stroke="#37474F" stroke-width="0.5"/>
-  
-  <!-- Front legs -->
-  <rect x="40" y="42" width="5" height="16" rx="2" fill="url(#horseBody)"/>
-  <rect x="46" y="44" width="5" height="14" rx="2" fill="#4E342E"/>
-  
-  <!-- Hooves (front) -->
-  <rect x="39" y="56" width="7" height="4" rx="1" fill="#212121"/>
-  <rect x="45" y="56" width="7" height="4" rx="1" fill="#212121"/>
-  
-  <!-- Neck -->
-  <path d="M44 32 Q52 28, 50 18 Q48 12, 46 16 Q42 24, 44 32" fill="url(#horseBody)"/>
-  
-  <!-- Mane - flowing in wind -->
-  <path d="M46 14 Q44 10, 48 8 Q50 12, 48 16 Q46 18, 48 22 Q44 20, 46 14" fill="url(#horseMane)">
-    <animate attributeName="d" values="M46 14 Q44 10, 48 8 Q50 12, 48 16 Q46 18, 48 22 Q44 20, 46 14;M46 14 Q42 10, 46 6 Q48 10, 46 14 Q44 18, 46 22 Q42 20, 46 14;M46 14 Q44 10, 48 8 Q50 12, 48 16 Q46 18, 48 22 Q44 20, 46 14" dur="1.5s" repeatCount="indefinite"/>
-  </path>
-  <path d="M44 20 Q40 18, 42 24 Q44 22, 44 20" fill="url(#horseMane)">
-    <animate attributeName="d" values="M44 20 Q40 18, 42 24 Q44 22, 44 20;M44 20 Q38 17, 40 23 Q42 21, 44 20;M44 20 Q40 18, 42 24 Q44 22, 44 20" dur="1.8s" repeatCount="indefinite"/>
-  </path>
-  
-  <!-- Head -->
-  <path d="M50 18 Q58 16, 58 22 Q58 28, 52 30 Q48 28, 48 24 Q48 20, 50 18" fill="url(#horseBody)"/>
-  
-  <!-- Blaze (white mark on face) -->
-  <path d="M52 20 Q54 22, 54 26 Q52 28, 52 24 Q52 22, 52 20" fill="#EFEBE9"/>
-  
-  <!-- Eye (full of trust and loyalty) with saccadic movement -->
-  <ellipse cx="54" cy="22" rx="2.5" ry="3" fill="#212121"/>
-  <circle cx="54.5" cy="21.5" r="1" fill="#5D4037">
-    <animate attributeName="cx" values="54.5;54.5;55;54.5;54;54.5;54.5" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
-    <animate attributeName="cy" values="21.5;21.5;21;21.5;21.5;22;21.5" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="55" cy="21" r="0.5" fill="white">
-    <animate attributeName="cx" values="55;55;55.5;55;54.5;55;55" dur="4s" calcMode="discrete" repeatCount="indefinite"/>
-    <animate attributeName="cy" values="21;21;20.5;21;21;21.5;21" dur="5s" calcMode="discrete" repeatCount="indefinite"/>
-  </circle>
-  <!-- Eye blink -->
-  <ellipse cx="54" cy="22" rx="2.5" ry="0" fill="#5D4037">
-    <animate attributeName="ry" values="0;3;0" keyTimes="0;0.98;1" dur="6.3s" begin="1.4s" calcMode="discrete" repeatCount="indefinite"/>
-  </ellipse>
-  
-  <!-- Nostril -->
-  <ellipse cx="56" cy="28" rx="1" ry="1.5" fill="#3E2723"/>
-  
-  <!-- Ears -->
-  <path d="M48 14 L46 8 L50 12" fill="url(#horseBody)"/>
-  <path d="M52 14 L54 8 L52 12" fill="url(#horseBody)"/>
-  
-  <!-- Battle bridle/harness -->
-  <path d="M50 20 L58 22 L56 28 L50 26" fill="none" stroke="url(#armor)" stroke-width="1.5"/>
-  <circle cx="50" cy="23" r="1.5" fill="#607D8B"/>
-  
-  <!-- Chamfron (head armor) -->
-  <path d="M52 16 L56 18 L56 20 L52 18 Z" fill="url(#armor)"/>
-  
-  <!-- Tail -->
-  <path d="M12 36 Q6 38, 4 44 Q2 50, 6 52 Q10 48, 12 40" fill="url(#horseMane)"/>
-  <path d="M6 52 Q4 56, 8 58 Q10 54, 8 50" fill="url(#horseMane)"/>
-  
-  <!-- Ground shadow -->
-  <ellipse cx="32" cy="60" rx="20" ry="2" fill="#1A1A1A" opacity="0.3"/>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="32" cy="58" rx="20" ry="3" fill="#1A1A1A" opacity="0.4"/>
+
+  <!-- Back Legs (Far Side - Darker) -->
+  <g transform="translate(4,0)">
+    <!-- Rear Right -->
+    <path d="M10 36 L12 48 L10 58 L14 60 L18 48 L16 36" fill="#3E2723"/> 
+    <rect x="10" y="58" width="4" height="2" fill="#1A1A1A"/>
+    <!-- Front Right -->
+    <path d="M38 36 L40 50 L42 58 L46 60 L44 48 L44 36" fill="#3E2723"/>
+    <rect x="42" y="58" width="4" height="2" fill="#1A1A1A"/>
+  </g>
+
+  <!-- Tail - Flowing -->
+  <path d="M10 26 Q4 28, 4 38 Q4 48, 8 50 Q10 40, 14 36" fill="#212121"/>
+
+  <!-- Main Body - Muscular shapes, not just an ellipse -->
+  <g>
+    <!-- Animation Group for "Breathing" -->
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,1;0,0" dur="4s" repeatCount="indefinite"/>
+
+    <!-- Hindquarters & Barrel -->
+    <path d="M10 28 Q10 18, 20 18 L36 18 Q46 18, 50 28 Q52 38, 44 46 L20 46 Q10 42, 10 28 Z" fill="url(#coatGradient)"/>
+
+    <!-- Neck - Thick and strong -->
+    <path d="M38 20 Q44 10, 50 8 L54 12 Q58 24, 48 28" fill="url(#coatGradient)"/>
+
+    <!-- Barding (Armor Blanket) -->
+    <path d="M16 20 L40 20 L42 36 Q30 40, 16 36 L16 20 Z" fill="url(#clothGradient)" stroke="#8E0000" stroke-width="0.5"/>
+    <!-- Armor Plate on flank -->
+    <circle cx="28" cy="28" r="5" fill="url(#armorGradient)" stroke="#546E7A" stroke-width="1" filter="url(#shadowGlow)"/>
+
+    <!-- Saddle edge -->
+    <path d="M32 18 Q36 22, 40 18" fill="none" stroke="#3E2723" stroke-width="2"/>
+
+    <!-- Front Legs (Near Side - Lighter/Texture) -->
+    <!-- Rear Left -->
+    <g transform="translate(0,0)">
+      <path d="M14 44 L16 52 L16 60 L22 62 L22 52 Q24 46, 20 40" fill="url(#coatGradient)"/>
+      <rect x="16" y="60" width="6" height="3" fill="#1A1A1A"/> <!-- Hoof -->
+      <path d="M16 52 L22 52" stroke="#3E2723" stroke-width="0.5" opacity="0.5"/> <!-- Hock joint hint -->
+    </g>
+
+    <!-- Front Left -->
+    <g transform="translate(0,0)">
+      <path d="M40 40 Q38 48, 42 54 L44 60 L50 62 L50 54 Q52 48, 46 38" fill="url(#coatGradient)"/>
+      <rect x="44" y="60" width="6" height="3" fill="#1A1A1A"/> <!-- Hoof -->
+      <path d="M42 54 L50 54" stroke="#3E2723" stroke-width="0.5" opacity="0.5"/> <!-- Knee joint hint -->
+    </g>
+
+    <!-- Head Group -->
+    <g transform="rotate(15, 52, 12)">
+       <!-- Mane -->
+       <path d="M44 4 Q42 10, 44 20" stroke="#1A1A1A" stroke-width="4" fill="none" stroke-linecap="round"/>
+       
+       <!-- Head shape -->
+       <path d="M48 2 L60 4 L58 14 L48 12 Z" fill="url(#coatGradient)"/>
+       
+       <!-- Ears -->
+       <path d="M49 2 L50 -2 L53 3 Z" fill="#3E2723"/>
+
+       <!-- Chanfron (Head Armor) -->
+       <path d="M50 3 L60 5 L58 10 L50 9 Z" fill="url(#armorGradient)" opacity="0.95"/>
+       
+       <!-- Eye (visible through armor slit) -->
+       <circle cx="56" cy="8" r="1.2" fill="#1A1A1A"/> 
+       <circle cx="56" cy="8" r="0.4" fill="#FFFFFF"/>
+       
+       <!-- Reins -->
+       <path d="M58 8 Q56 18, 46 22" stroke="#4E342E" stroke-width="1.5" fill="none"/>
+    </g>
+
+    <!-- Criniere (Neck Armor Plates) -->
+    <path d="M42 16 Q46 12, 50 10 L52 14 Q48 18, 44 22 Z" fill="url(#armorGradient)"/>
+    
+ </g>
+
 </svg>

@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Zoo Worker 005: Cathedral Lantern Moth (Exceptional) -->
+  <!-- Concept: A moth constructed of Victorian wrought iron and Tiffany stained glass.
+       Themes: Architectural, Antique, Warm Gaslight, Sanctuary.
+       Replaces the "Aurora" concept with something more grounded in the Zoo theme. -->
+  
+  <defs>
+    <!-- Burnished Bronze Body -->
+    <linearGradient id="bronzeBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8D6E63"/> <!-- Light Bronze -->
+      <stop offset="50%" stop-color="#5D4037"/> <!-- Medium Bronze -->
+      <stop offset="100%" stop-color="#3E2723"/> <!-- Deep Shadow -->
+    </linearGradient>
+
+    <!-- Wing Glass: Amber Cathedral (Tiffany Style) -->
+    <radialGradient id="glassAmber" cx="30%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#FFECB3" stop-opacity="0.95"/> <!-- Pale Gold -->
+      <stop offset="60%" stop-color="#FFB74D" stop-opacity="0.9"/> <!-- Amber -->
+      <stop offset="100%" stop-color="#E65100" stop-opacity="0.95"/> <!-- Burnt Orange Edge -->
+    </radialGradient>
+
+    <!-- Wing Glass: Emerald Accent -->
+    <linearGradient id="glassEmerald" x1="0%" y1="0%" x2="0%" y2="100%">
+       <stop offset="0%" stop-color="#69F0AE" stop-opacity="0.9"/>
+       <stop offset="100%" stop-color="#004D40" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <!-- Gaslight Core (Warm Fire) -->
+    <radialGradient id="gaslight" cx="50%" cy="50%" r="50%">
+      <stop offset="10%" stop-color="#FFF" stop-opacity="1"/> <!-- Flame Center -->
+      <stop offset="40%" stop-color="#FFD54F" stop-opacity="0.9"/> <!-- Inner Glow -->
+      <stop offset="80%" stop-color="#FF6F00" stop-opacity="0.6"/> <!-- Outer Glow -->
+      <stop offset="100%" stop-color="#BF360C" stop-opacity="0"/> <!-- Fade -->
+    </radialGradient>
+
+    <!-- Heavy Iron Shadow -->
+    <filter id="ironShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="2" dy="4" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g transform="translate(256, 256)">
+    <g>
+    <!-- Hover Animation: Heavy, mechanical drift -->
+    <animateTransform attributeName="transform" type="translate" values="0,-8; 0,8; 0,-8" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0.05 0.55 0.95; 0.45 0.05 0.55 0.95"/>
+
+    <!-- WINGS: Stained Glass & Wrought Iron -->
+    <g filter="url(#ironShadow)">
+        
+        <!-- Lower Wings (Emerald Panes) -->
+        <g transform="translate(0, 30)">
+            <!-- Left Lower -->
+            <g>
+                <animateTransform attributeName="transform" type="rotate" values="5 0 0; -5 0 0; 5 0 0" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+                <path d="M-20,0 Q-80,20 -120,80 Q-60,100 -20,60 Z" fill="url(#glassEmerald)" stroke="#3E2723" stroke-width="4" stroke-linejoin="round"/>
+                <!-- Iron Vein -->
+                <path d="M-20,0 Q-60,40 -80,60" fill="none" stroke="#212121" stroke-width="2"/>
+            </g>
+            <!-- Right Lower -->
+            <g>
+                <animateTransform attributeName="transform" type="rotate" values="-5 0 0; 5 0 0; -5 0 0" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+                <path d="M20,0 Q80,20 120,80 Q60,100 20,60 Z" fill="url(#glassEmerald)" stroke="#3E2723" stroke-width="4" stroke-linejoin="round"/>
+                <!-- Iron Vein -->
+                <path d="M20,0 Q60,40 80,60" fill="none" stroke="#212121" stroke-width="2"/>
+            </g>
+        </g>
+
+        <!-- Upper Wings (Amber Cathedral Glass) -->
+        <g transform="translate(0, -10)">
+            <!-- Left Upper -->
+            <g>
+                <animateTransform attributeName="transform" type="rotate" values="8 0 20; -2 0 20; 8 0 20" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+                <!-- Main Frame -->
+                <path d="M-20,20 Q-160,-100 -240,-20 Q-180,120 -20,60 Z" fill="url(#glassAmber)" stroke="#3E2723" stroke-width="6" stroke-linejoin="round"/>
+                <!-- Lead Cames (The "Tiffany Lamp" lines) -->
+                <path d="M-20,20 Q-100,-40 -160,-10" fill="none" stroke="#4E342E" stroke-width="3"/>
+                <path d="M-100,-40 Q-140,40 -120,80" fill="none" stroke="#4E342E" stroke-width="3"/>
+                <path d="M-160,-10 Q-180,20 -150,50" fill="none" stroke="#4E342E" stroke-width="2"/>
+                <!-- Iron Scrollwork -->
+                <circle cx="-160" cy="-10" r="4" fill="#3E2723"/>
+            </g>
+
+            <!-- Right Upper -->
+            <g>
+                <animateTransform attributeName="transform" type="rotate" values="-8 0 20; 2 0 20; -8 0 20" dur="4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+                <!-- Main Frame -->
+                <path d="M20,20 Q160,-100 240,-20 Q180,120 20,60 Z" fill="url(#glassAmber)" stroke="#3E2723" stroke-width="6" stroke-linejoin="round"/>
+                <!-- Lead Cames -->
+                <path d="M20,20 Q100,-40 160,-10" fill="none" stroke="#4E342E" stroke-width="3"/>
+                <path d="M100,-40 Q140,40 120,80" fill="none" stroke="#4E342E" stroke-width="3"/>
+                <path d="M160,-10 Q180,20 150,50" fill="none" stroke="#4E342E" stroke-width="2"/>
+                <!-- Iron Scrollwork -->
+                <circle cx="160" cy="-10" r="4" fill="#3E2723"/>
+            </g>
+        </g>
+    </g>
+
+    <!-- BODY: Victorian Lantern Mechanism -->
+    <g>
+        <!-- The Lantern Abdomen -->
+        <g transform="translate(0, 40)">
+             <!-- Glass Bulb -->
+            <path d="M-30,0 Q-40,40 -25,90 Q0,110 25,90 Q40,40 30,0 Z" fill="url(#gaslight)"/>
+            
+            <!-- Cage Bars -->
+            <path d="M-30,0 Q-40,40 -25,90" fill="none" stroke="#3E2723" stroke-width="4"/>
+            <path d="M30,0 Q40,40 25,90" fill="none" stroke="#3E2723" stroke-width="4"/>
+            <path d="M0,0 V100" fill="none" stroke="#3E2723" stroke-width="3"/>
+            
+            <!-- Interior Flame Flicker -->
+            <circle cx="0" cy="50" r="20" fill="#FFF" opacity="0.6" filter="url(#ironShadow)">
+                <animate attributeName="r" values="20; 22; 19; 21; 20" dur="0.15s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.6; 0.8; 0.5; 0.7; 0.6" dur="0.15s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Brass Tail Cap -->
+            <path d="M-10,95 L0,110 L10,95 Z" fill="#FFB300" stroke="#3E2723" stroke-width="1"/>
+        </g>
+
+        <!-- Thorax: Riveted Bronze Armor -->
+        <g transform="translate(0, -10)">
+            <path d="M-35,-20 L-25,40 L0,50 L25,40 L35,-20 Q0,-40 -35,-20 Z" fill="url(#bronzeBody)" stroke="#3E2723" stroke-width="3"/>
+            <!-- Rivet Details -->
+            <circle cx="-20" cy="0" r="3" fill="#D7CCC8"/> <!-- Steel Rivet -->
+            <circle cx="20" cy="0" r="3" fill="#D7CCC8"/>
+            <circle cx="0" cy="20" r="4" fill="#FFB300"/> <!-- Brass Center -->
+        </g>
+
+        <!-- Head: Ornate Ironwork -->
+        <g transform="translate(0, -50)">
+            <circle cx="0" cy="0" r="22" fill="url(#bronzeBody)" stroke="#3E2723" stroke-width="3"/>
+            
+            <!-- Eyes: Ruby Glass Facets -->
+            <path d="M-18,-5 L-8,-5 L-8,10 L-18,10 Z" fill="#B71C1C" stroke="#3E2723" stroke-width="1"/>
+            <path d="M18,-5 L8,-5 L8,10 L18,10 Z" fill="#B71C1C" stroke="#3E2723" stroke-width="1"/>
+            
+            <!-- Antennae: Wrought Iron Curlicues -->
+            <path d="M-10,-15 Q-20,-50 -60,-40 Q-80,-35 -70,-20" fill="none" stroke="#3E2723" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="-70" cy="-20" r="5" fill="#FFB300"/> <!-- Brass Finial -->
+
+            <path d="M10,-15 Q20,-50 60,-40 Q80,-35 70,-20" fill="none" stroke="#3E2723" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="70" cy="-20" r="5" fill="#FFB300"/> <!-- Brass Finial -->
+        </g>
+    </g>
+
+    </g>
+
+  </g>
+</svg>

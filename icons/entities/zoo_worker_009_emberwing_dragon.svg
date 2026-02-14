@@ -1,0 +1,230 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Zoo Worker 009: Emberwing Dragon (Master Glassblower) -->
+  <!-- Variant: Normal -->
+  <!-- Style: Clean, Concrete, Cute, Premium Vector (No Noise Filters), Shaded -->
+
+  <defs>
+    <!-- Smooth Body Gradient -->
+    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF7043"/> <!-- Warm Orange -->
+      <stop offset="100%" stop-color="#D84315"/> <!-- Deep Red-Orange -->
+    </linearGradient>
+
+    <!-- Belly Gradient -->
+    <linearGradient id="bellyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF9C4"/> <!-- Pale Yellow -->
+      <stop offset="100%" stop-color="#FFCC80"/> <!-- Soft Orange -->
+    </linearGradient>
+
+    <!-- Horn Gradient -->
+    <linearGradient id="hornGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8D6E63"/>
+      <stop offset="100%" stop-color="#4E342E"/>
+    </linearGradient>
+
+    <!-- Molten Glass Gradient -->
+    <radialGradient id="glassGrad" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FFFF8D"/> <!-- Hot White/Yellow -->
+      <stop offset="60%" stop-color="#FF9800"/> <!-- Orange -->
+      <stop offset="100%" stop-color="#BF360C"/> <!-- Cooling Red Edge -->
+    </radialGradient>
+
+    <!-- Eye Iris -->
+    <radialGradient id="eyeIris" cx="50%" cy="50%" r="50%">
+      <stop offset="40%" stop-color="#43A047"/> <!-- Green -->
+      <stop offset="100%" stop-color="#1B5E20"/> <!-- Dark Green -->
+    </radialGradient>
+
+    <!-- Shading Gradients -->
+    <radialGradient id="highlightOverlay" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FFF" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#FFF" stop-opacity="0"/>
+    </radialGradient>
+    
+    <radialGradient id="shadowOverlay" cx="70%" cy="70%" r="80%">
+      <stop offset="50%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#3E2723" stop-opacity="0.5"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background: Workshop floor shadow -->
+  <ellipse cx="256" cy="460" rx="140" ry="30" fill="#000" opacity="0.2">
+      <animate attributeName="rx" values="140;130;140" dur="4s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- DRAGON GROUP -->
+  <g transform="translate(256, 280)">
+      
+      <!-- Gentle Floating/Breathing -->
+      <animateTransform attributeName="transform" type="translate"
+        values="256, 280; 256, 270; 256, 280"
+        dur="6s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+
+      <!-- Tail -->
+      <path d="M-60,120 Q-100,140 -120,80 Q-140,20 -80,-20" stroke="#D84315" stroke-width="35" fill="none" stroke-linecap="round"/>
+      <!-- Tail Shading -->
+      <path d="M-60,120 Q-100,140 -120,80 Q-140,20 -80,-20" stroke="#3E2723" stroke-width="35" fill="none" stroke-linecap="round" opacity="0.1"/>
+      <circle cx="-120" cy="80" r="10" fill="#FFB74D"/> <!-- Tail Spike (Soft) -->
+
+      <!-- Wings (Clean, rounded shapes) -->
+      <g stroke="#BF360C" stroke-width="3" stroke-linejoin="round">
+          <animateTransform attributeName="transform" type="rotate" values="-2 0 -20; 2 0 -20; -2 0 -20" dur="3s" repeatCount="indefinite"/>
+          <!-- Left Wing -->
+          <g>
+            <path d="M-60,-20 Q-140,-80 -160,-10 Q-100,20 -60,0 Z" fill="#FFAB91"/>
+            <path d="M-60,-20 Q-140,-80 -160,-10 Q-100,20 -60,0 Z" fill="#D84315" opacity="0.2"/> <!-- Wing Shadow -->
+          </g>
+          <!-- Right Wing -->
+          <g>
+            <path d="M60,-20 Q140,-80 160,-10 Q100,20 60,0 Z" fill="#FFAB91"/>
+            <path d="M60,-20 Q140,-80 160,-10 Q100,20 60,0 Z" fill="#D84315" opacity="0.2"/> <!-- Wing Shadow -->
+          </g>
+      </g>
+
+      <!-- Body / Belly -->
+      <g>
+         <!-- Main Body Shape: Pear-like -->
+         <path d="M-75,0 C-85,150 85,150 75,0 C75,-60 -75,-60 -75,0" fill="url(#bodyGrad)"/>
+         <!-- Body Shading -->
+         <path d="M-75,0 C-85,150 85,150 75,0 C75,-60 -75,-60 -75,0" fill="url(#shadowOverlay)"/>
+         <path d="M-75,0 C-85,150 85,150 75,0 C75,-60 -75,-60 -75,0" fill="url(#highlightOverlay)"/>
+
+         <!-- Belly Scales (Smooth) -->
+         <path d="M-45,20 C-50,110 50,110 45,20 C45,0 -45,0 -45,20" fill="url(#bellyGrad)"/>
+         <!-- Belly Shadow at bottom -->
+         <path d="M-45,20 C-50,110 50,110 45,20 C45,0 -45,0 -45,20" fill="url(#shadowOverlay)" opacity="0.4"/>
+         
+         <!-- Horizontal Belly Lines -->
+         <path d="M-45,40 H45 M-48,70 H48 M-45,100 H45" stroke="#FFCC80" stroke-width="2" fill="none" opacity="0.5"/>
+      </g>
+
+      <!-- Feet (Simple, Stubby) -->
+      <g transform="translate(0, 140)">
+          <!-- Left Foot -->
+          <ellipse cx="-50" cy="0" rx="30" ry="20" fill="#D84315"/>
+          <ellipse cx="-50" cy="0" rx="30" ry="20" fill="url(#shadowOverlay)" opacity="0.6"/>
+          <!-- Right Foot -->
+          <ellipse cx="50" cy="0" rx="30" ry="20" fill="#D84315"/>
+           <ellipse cx="50" cy="0" rx="30" ry="20" fill="url(#shadowOverlay)" opacity="0.6"/>
+          <!-- Claws -->
+          <path d="M-60,15 L-50,20 L-40,15" stroke="#BF360C" stroke-width="3" fill="none"/>
+          <path d="M60,15 L50,20 L40,15" stroke="#BF360C" stroke-width="3" fill="none"/>
+      </g>
+
+      <!-- HEAD GROUP -->
+      <g transform="translate(0, -70)">
+          <!-- Head Base -->
+          <rect x="-85" y="-80" width="170" height="130" rx="55" fill="url(#bodyGrad)"/>
+          <rect x="-85" y="-80" width="170" height="130" rx="55" fill="url(#shadowOverlay)"/>
+          <rect x="-85" y="-80" width="170" height="130" rx="55" fill="url(#highlightOverlay)"/>
+          
+          <!-- Snout Highlight -->
+          <ellipse cx="0" cy="15" rx="50" ry="35" fill="#FF8A65" opacity="0.2"/>
+          
+          <!-- Nostrils -->
+          <circle cx="-25" cy="15" r="5" fill="#3E2723" opacity="0.4">
+              <animate attributeName="r" values="5;6;5" dur="1s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="25" cy="15" r="5" fill="#3E2723" opacity="0.4">
+               <animate attributeName="r" values="5;6;5" dur="1s" repeatCount="indefinite"/>
+          </circle>
+
+          <!-- Fire Puff (Added) -->
+          <g>
+             <!-- Left Puff -->
+             <circle cx="-25" cy="20" r="2" fill="#FF5722" opacity="0">
+                <animate attributeName="cy" values="20; 0" dur="4s" repeatCount="indefinite" begin="1s"/> <!-- Moves UP -->
+                <animate attributeName="r" values="2; 10" dur="4s" repeatCount="indefinite" begin="1s"/>
+                <animate attributeName="opacity" values="0; 0.8; 0" dur="4s" keyTimes="0; 0.2; 1" repeatCount="indefinite" begin="1s"/>
+             </circle>
+              <!-- Right Puff -->
+             <circle cx="25" cy="20" r="2" fill="#FF5722" opacity="0">
+                <animate attributeName="cy" values="20; 0" dur="4s" repeatCount="indefinite" begin="1s"/> <!-- Moves UP -->
+                <animate attributeName="r" values="2; 10" dur="4s" repeatCount="indefinite" begin="1s"/>
+                <animate attributeName="opacity" values="0; 0.8; 0" dur="4s" keyTimes="0; 0.2; 1" repeatCount="indefinite" begin="1s"/>
+             </circle>
+          </g>
+
+          <!-- Horns -->
+          <path d="M-40,-70 Q-60,-110 -90,-100" stroke="url(#hornGrad)" stroke-width="12" fill="none" stroke-linecap="round"/>
+          <path d="M40,-70 Q60,-110 90,-100" stroke="url(#hornGrad)" stroke-width="12" fill="none" stroke-linecap="round"/>
+
+          <!-- EYES (Saccadic) -->
+          <g transform="translate(0, -25)">
+              <!-- Left Eye -->
+              <g transform="translate(-40, 0)">
+                  <circle cx="0" cy="0" r="24" fill="#FFF"/>
+                  <g> <!-- Pupil Group -->
+                      <animateTransform attributeName="transform" type="translate"
+                          values="0 0; 8 6; -8 -2; 4 -8; 0 10; 0 0" 
+                          dur="4s" repeatCount="indefinite" calcMode="discrete" keyTimes="0; 0.1; 0.3; 0.5; 0.7; 1"/>
+                      <circle cx="0" cy="0" r="12" fill="url(#eyeIris)"/>
+                      <circle cx="4" cy="-4" r="4" fill="#FFF" opacity="0.6"/>
+                  </g>
+                  <!-- Eye Shadow/Depth -->
+                  <circle cx="0" cy="0" r="24" fill="none" stroke="#D84315" stroke-width="3" opacity="0.5"/>
+                  
+                  <!-- Eyelid (Replaced with Opacity Blink) -->
+                  <!-- Normal state (1), rapid blink off (0), back to on (1), hold (1) -->
+                  <!-- Blink duration ~80ms -->
+                  <animate attributeName="opacity" values="1; 1; 0; 0; 1; 1" keyTimes="0; 0.01; 0.012; 0.032; 0.035; 1" dur="4s" repeatCount="indefinite" begin="0.8s"/>
+              </g>
+
+              <!-- Right Eye -->
+              <g transform="translate(40, 0)">
+                  <circle cx="0" cy="0" r="24" fill="#FFF"/>
+                  <g> <!-- Pupil Group -->
+                      <animateTransform attributeName="transform" type="translate"
+                          values="0 0; 8 6; -8 -2; 4 -8; 0 10; 0 0"
+                          dur="4s" repeatCount="indefinite" calcMode="discrete" keyTimes="0; 0.1; 0.3; 0.5; 0.7; 1"/>
+                      <circle cx="0" cy="0" r="12" fill="url(#eyeIris)"/>
+                      <circle cx="4" cy="-4" r="4" fill="#FFF" opacity="0.6"/>
+                  </g>
+                   <!-- Eye Shadow/Depth -->
+                  <circle cx="0" cy="0" r="24" fill="none" stroke="#D84315" stroke-width="3" opacity="0.5"/>
+                  
+                   <!-- Eyelid (Replaced with Opacity Blink) -->
+                  <!-- Normal state (1), rapid blink off (0), back to on (1), hold (1) -->
+                  <!-- Blink duration ~80ms (4s * 0.02) - VERY FAST -->
+                  <animate attributeName="opacity" values="1; 1; 0; 0; 1; 1" keyTimes="0; 0.01; 0.012; 0.032; 0.035; 1" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+              </g>
+          </g>
+      </g>
+
+      <!-- HANDS & BLOWPIPE -->
+      <g transform="translate(0, 60)">
+          <!-- Arms -->
+          <path d="M-60,0 Q-30,30 0,10" fill="none" stroke="#D84315" stroke-width="16" stroke-linecap="round"/>
+          <path d="M-60,0 Q-30,30 0,10" fill="none" stroke="#3E2723" stroke-width="16" stroke-linecap="round" opacity="0.2"/> <!-- Shadow -->
+          
+          <path d="M60,0 Q30,30 0,10" fill="none" stroke="#D84315" stroke-width="16" stroke-linecap="round"/>
+          <path d="M60,0 Q30,30 0,10" fill="none" stroke="#3E2723" stroke-width="16" stroke-linecap="round" opacity="0.2"/> <!-- Shadow -->
+          
+          <!-- Blowpipe -->
+          <rect x="-6" y="-10" width="12" height="140" fill="#78909C" rx="2">
+              <animateTransform attributeName="transform" type="rotate" values="-1 0 0; 1 0 0; -1 0 0" dur="2s" repeatCount="indefinite"/>
+          </rect>
+          
+          <!-- Hands holding pipe -->
+          <circle cx="-12" cy="10" r="10" fill="#5D4037"/>
+          <circle cx="12" cy="10" r="10" fill="#5D4037"/>
+          
+          <!-- MOLTEN GLASS BUBBLE (Normal: Just a round blob) -->
+          <g transform="translate(0, 130)">
+              <animateTransform attributeName="transform" type="translate" values="0,130; 0,135; 0,130" dur="2s" repeatCount="indefinite"/>
+              
+              <circle cx="0" cy="0" r="30" fill="url(#glassGrad)"/>
+              
+              <!-- Hot Glow Ring -->
+              <circle cx="0" cy="0" r="30" fill="none" stroke="#FF5722" stroke-width="2" opacity="0.6">
+                  <animate attributeName="r" values="30;35;30" dur="1.5s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values="0.6;0;0.6" dur="1.5s" repeatCount="indefinite"/>
+              </circle>
+              
+              <!-- Specular Shine -->
+              <path d="M-15,-15 Q0,-25 15,-15" stroke="#FFF" stroke-width="3" fill="none" opacity="0.8" stroke-linecap="round"/>
+          </g>
+      </g>
+
+  </g>
+</svg>

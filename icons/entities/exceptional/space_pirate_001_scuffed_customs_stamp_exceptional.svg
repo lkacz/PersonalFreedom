@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Space Pirate 001: Scuffed Customs Stamp (Exceptional) - Holographic Forger -->
+  <defs>
+    <linearGradient id="chromeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ECEFF1"/>
+      <stop offset="100%" style="stop-color:#90A4AE"/>
+    </linearGradient>
+    <linearGradient id="holoBeam" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00E5FF;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#00B0FF;stop-opacity:0"/>
+    </linearGradient>
+    <filter id="holoGlow">
+      <feGaussianBlur stdDeviation="1" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Holographic Seal Projection (Rotating Base) -->
+  <!-- Robust Fix: Translate to center (32,54) and rotate around (0,0) using additive="sum" to preserve location -->
+  <g transform="translate(32, 54)">
+    <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="8s" repeatCount="indefinite" additive="sum"/>
+    <ellipse cx="0" cy="0" rx="20" ry="6" fill="none" stroke="#00E5FF" stroke-width="0.5" filter="url(#holoGlow)" opacity="0.6"/>
+    <circle cx="0" cy="0" r="4" fill="#00E5FF" opacity="0.4">
+       <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Projected Symbols -->
+    <path d="M-12 0 L-8 -2 L-8 2 Z M12 0 L8 -2 L8 2 Z" fill="#00E5FF" opacity="0.8"/>
+  </g>
+
+  <!-- Projection beams -->
+  <path d="M22 54 L32 38 L42 54 Z" fill="url(#holoBeam)" opacity="0.3">
+     <animate attributeName="opacity" values="0.3;0.6;0.3" dur="1.5s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Main Stamp Body (Floating/Suspended Tech) -->
+  <g>
+    <!-- Hover Animation -->
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,-2; 0,0" dur="3s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+    
+    <!-- Base Module -->
+    <path d="M16 38 L48 38 L46 44 L18 44 Z" fill="#263238" stroke="#00E5FF" stroke-width="0.5"/>
+    
+    <!-- Emitter Lens -->
+    <ellipse cx="32" cy="44" rx="14" ry="2" fill="#00E5FF" filter="url(#holoGlow)"/>
+    
+    <!-- Handle Stem -->
+    <rect x="28" y="24" width="8" height="14" fill="url(#chromeGradient)"/>
+    
+    <!-- LED Indicators -->
+    <circle cx="32" cy="28" r="1.5" fill="#00E5FF">
+       <animate attributeName="fill" values="#00E5FF;#00B0FF;#00E5FF" dur="1s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Handle Grip (Sleek) -->
+    <path d="M32 8 C 22 8, 18 16, 18 20 L18 22 C 18 24, 22 26, 32 26 C 42 26, 46 24, 46 22 L46 20 C 46 16, 42 8, 32 8 Z" fill="url(#chromeGradient)"/>
+    <ellipse cx="32" cy="8" rx="14" ry="4" fill="#CFD8DC"/>
+
+    <!-- Precision Edge Lighting -->
+    <path d="M18 20 Q32 22, 46 20" stroke="#00E5FF" stroke-width="0.5" fill="none" opacity="0.8"/>
+  </g>
+</svg>

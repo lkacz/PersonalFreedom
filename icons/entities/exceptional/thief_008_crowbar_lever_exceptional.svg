@@ -1,0 +1,97 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 008: Crowbar Lever (Exceptional) - Thermal Plasma Prybar -->
+  <defs>
+    <!-- Dark Tech Shaft -->
+    <linearGradient id="tungsten" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#455A64"/>
+      <stop offset="100%" stop-color="#263238"/>
+    </linearGradient>
+    
+    <!-- Superheated Tip -->
+    <radialGradient id="plasmaHeat" cx="0%" cy="100%" r="80%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="30%" stop-color="#FFEB3B"/>
+      <stop offset="70%" stop-color="#FF5722"/>
+      <stop offset="100%" stop-color="#BF360C"/>
+    </radialGradient>
+
+    <!-- Heat Haze / Glow -->
+    <filter id="heatGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feFlood flood-color="#FF5722" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <g transform="translate(256, 256)">
+    
+    <!-- Steel Surface (Melting) -->
+    <path d="M-200,100 L200,100 L200,150 L-200,150 Z" fill="#37474F"/>
+    
+    <!-- Molten Pool at Contact Point -->
+    <ellipse cx="-60" cy="100" rx="30" ry="5" fill="#FF5722" opacity="0.8" filter="url(#heatGlow)">
+        <animate attributeName="rx" values="20; 40; 20" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.6; 1; 0.6" dur="0.5s" repeatCount="indefinite"/>
+    </ellipse>
+
+    <!-- Prying Action Group -->
+    <g transform="translate(0, 100)">
+        <animateTransform attributeName="transform" type="rotate"
+            values="-45; -15; -45"
+            dur="3s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/>
+
+        <!-- The Crowbar -->
+        <g transform="translate(0, -100)">
+            <!-- Main Shaft (Tech) -->
+            <path d="M20,-200 L40,-200 L30,50 L10,50 Z" fill="url(#tungsten)" stroke="#212121" stroke-width="2"/>
+            <!-- Energy Core Line -->
+            <path d="M25,-190 L15,40" stroke="#FF5722" stroke-width="2" opacity="0.8"/>
+            
+            <!-- Curve/Hook (Heated) -->
+            <path d="M10,50 Q10,100 -50,100 L-60,90 Q-10,90 20,40 Z" fill="url(#plasmaHeat)" filter="url(#heatGlow)"/>
+            
+            <!-- Claw Tip -->
+            <path d="M-50,100 L-60,90 L-70,105 L-55,110 Z" fill="#FFF"/>
+            
+            <!-- Tech Detail Panel on Shaft -->
+            <rect x="15" y="-120" width="20" height="40" rx="2" fill="#212121"/>
+            <rect x="20" y="-115" width="10" height="30" fill="#FF5722">
+                 <animate attributeName="height" values="30; 10; 30" dur="1s" repeatCount="indefinite"/>
+            </rect>
+        </g>
+    </g>
+
+    <!-- Sparks Flying -->
+    <g transform="translate(-60, 100)">
+        <circle cx="0" cy="0" r="2" fill="#FFF" filter="url(#heatGlow)">
+             <animateTransform attributeName="transform" type="translate" values="0,0; -50,-60" dur="1s" repeatCount="indefinite" begin="0.2s"/>
+             <animate attributeName="opacity" values="1; 0" dur="1s" repeatCount="indefinite" begin="0.2s"/>
+        </circle>
+        <circle cx="0" cy="0" r="1.5" fill="#FFEB3B">
+             <animateTransform attributeName="transform" type="translate" values="0,0; -30,-80" dur="0.8s" repeatCount="indefinite" begin="0.5s"/>
+             <animate attributeName="opacity" values="1; 0" dur="0.8s" repeatCount="indefinite" begin="0.5s"/>
+        </circle>
+          <circle cx="0" cy="0" r="2" fill="#FF5722">
+             <animateTransform attributeName="transform" type="translate" values="0,0; 20,-50" dur="1.2s" repeatCount="indefinite" begin="0.4s"/>
+             <animate attributeName="opacity" values="1; 0" dur="1.2s" repeatCount="indefinite" begin="0.4s"/>
+        </circle>
+    </g>
+    
+    <!-- Molten Drip -->
+    <circle cx="-60" cy="110" r="3" fill="#FF5722" filter="url(#heatGlow)">
+        <animate attributeName="cy" values="110; 200" dur="1.5s" repeatCount="indefinite" begin="1s"/>
+        <animate attributeName="opacity" values="1; 0" dur="1.5s" repeatCount="indefinite" begin="1s"/>
+    </circle>
+
+  </g>
+</svg>

@@ -1,0 +1,76 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Thief 008: Crowbar Lever (Normal) -->
+  <defs>
+    <!-- Red Paint Gradient (Worn) -->
+    <linearGradient id="barRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D32F2F"/>
+      <stop offset="50%" stop-color="#B71C1C"/>
+      <stop offset="100%" stop-color="#7F0000"/>
+    </linearGradient>
+    
+    <!-- Exposed Steel -->
+    <linearGradient id="bareSteel" x1="0%" y1="0%" x2="100%" y2="100%">
+       <stop offset="0%" stop-color="#EEEEEE"/>
+       <stop offset="100%" stop-color="#BDBDBD"/>
+    </linearGradient>
+
+    <filter id="splinterBlur">
+      <feGaussianBlur stdDeviation="1"/>
+    </filter>
+  </defs>
+
+  <!-- Background Space -->
+  <rect x="0" y="0" width="512" height="512" fill="#1A1A1A" rx="32" opacity="0"/> 
+
+  <g transform="translate(256, 256)">
+    
+    <!-- Crate Surface (Abstract) -->
+    <path d="M-200,100 L200,100 L200,150 L-200,150 Z" fill="#5D4037" opacity="0.6"/>
+    <!-- Crack -->
+    <path d="M-20,100 L0,120 L20,100" fill="none" stroke="black" stroke-width="3" opacity="0.5"/>
+
+    <!-- Prying Action Group -->
+    <!-- Pivot around the curve contact point roughly at (0, 100) -->
+    <g transform="translate(0, 100)">
+        <animateTransform attributeName="transform" type="rotate"
+            values="-45; -10; -45"
+            dur="2s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"/> <!-- Slow heavy pull, quick return? No, standardize heaving -->
+
+        <!-- The Crowbar -->
+        <g transform="translate(0, -100)">
+            <!-- Main Shaft -->
+            <path d="M20,-200 L40,-200 L30,50 L10,50 Z" fill="url(#barRed)" stroke="#550000" stroke-width="1"/>
+            
+            <!-- Curve/Hook -->
+            <path d="M10,50 Q10,100 -50,100 L-60,90 Q-10,90 20,40 Z" fill="url(#bareSteel)" stroke="#757575" stroke-width="1"/>
+            
+            <!-- Claw Tip (Splitting) -->
+            <path d="M-50,100 L-60,90 L-70,105 L-55,110 Z" fill="url(#bareSteel)"/>
+            
+            <!-- Painted section on curve -->
+            <path d="M20,40 Q15,80 -20,85 L-20,75 Q10,70 20,30 Z" fill="url(#barRed)"/>
+        </g>
+    </g>
+
+    <!-- Flying Splinters (Synced to heave) -->
+    <g transform="translate(-40, 100)">
+        <polygon points="0,0 10,-10 5,5" fill="#A1887F">
+             <animateTransform attributeName="transform" type="translate" values="0,0; -40,-50; -45,-45" dur="2s" repeatCount="indefinite" begin="0.8s"/>
+             <animate attributeName="opacity" values="1; 1; 0" dur="2s" repeatCount="indefinite" begin="0.8s"/>
+        </polygon>
+         <polygon points="5,5 15,-5 20,0" fill="#8D6E63">
+             <animateTransform attributeName="transform" type="translate" values="0,0; -20,-60; -20,-65" dur="2s" repeatCount="indefinite" begin="0.9s"/>
+              <animate attributeName="opacity" values="1; 1; 0" dur="2s" repeatCount="indefinite" begin="0.9s"/>
+        </polygon>
+    </g>
+
+    <!-- Stress Lines / Impact -->
+    <path d="M-50,100 L-70,80 M-40,110 L-50,130" stroke="white" stroke-width="2" opacity="0">
+        <animate attributeName="opacity" values="0; 0.8; 0" dur="2s" repeatCount="indefinite" keyTimes="0; 0.5; 1" begin="0.5s"/>
+    </path>
+
+  </g>
+</svg>

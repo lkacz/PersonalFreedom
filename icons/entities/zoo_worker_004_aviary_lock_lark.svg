@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Zoo Worker 004: Aviary Lock Lark (Normal) -->
+  <!-- Concept: A heavy-duty aviary padlock with a mechanical bird indicator. 
+       When locked, the bird pops up and "sings" (mechanical chirp). -->
+  <defs>
+    <!-- Heavy Industrial Steel -->
+    <linearGradient id="steelLock" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#90A4AE"/>
+      <stop offset="50%" stop-color="#607D8B"/>
+      <stop offset="100%" stop-color="#455A64"/>
+    </linearGradient>
+
+    <!-- Deep Shadow Gradient (Grounding) -->
+    <radialGradient id="lockShadow" cx="50%" cy="50%" r="50%">
+        <stop offset="60%" stop-color="#000" stop-opacity="0.4"/>
+        <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Rust Patches -->
+    <filter id="rustSpot">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3"/>
+      <feColorMatrix type="matrix" values="0.5 0 0 0 0.5  0 0.2 0 0 0.1  0 0 0.1 0 0  0 0 0 1 0"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+    </filter>
+
+    <!-- Brass Bird Mechanism -->
+    <linearGradient id="brassBird" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFD54F"/>
+      <stop offset="100%" stop-color="#FF8F00"/>
+    </linearGradient>
+
+    <!-- Metallic Highlight -->
+    <linearGradient id="bodyHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FFF" stop-opacity="0.3"/>
+        <stop offset="20%" stop-color="#FFF" stop-opacity="0.1"/>
+        <stop offset="100%" stop-color="#FFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(256, 256)">
+
+    <!-- Ground Shadow -->
+    <ellipse cx="0" cy="150" rx="140" ry="20" fill="url(#lockShadow)"/>
+
+    <!-- Shackle Animation: Slams shut -->
+    <g>
+        <animateTransform attributeName="transform" type="translate" values="0,-40; 0,0; 0,0; 0,0; 0,-40" keyTimes="0; 0.1; 0.8; 0.9; 1" dur="4s" repeatCount="indefinite"/>
+        
+        <!-- The Shackle (Thick Steel U) -->
+        <path d="M-80,-50 V-120 A80,80 0 0 1 80,-120 V-50" fill="none" stroke="#37474F" stroke-width="40" stroke-linecap="round"/> <!-- Darker base -->
+        <path d="M-80,-50 V-120 A80,80 0 0 1 80,-120 V-50" fill="none" stroke="#546E7A" stroke-width="36" stroke-linecap="round"/> <!-- Main steel -->
+        <path d="M-80,-50 V-120 A80,80 0 0 1 80,-120 V-50" fill="none" stroke="#B0BEC5" stroke-width="10" stroke-opacity="0.3" transform="translate(-5, -5)"/> <!-- Shine -->
+    </g>
+
+    <!-- Lock Body (Main Mass) -->
+    <!-- Weathered Zoo Green Paint over Steel -->
+    <g>
+        <!-- Main Body Shape -->
+        <rect x="-110" y="-50" width="220" height="180" rx="20" fill="#2E7D32"/> <!-- Zoo Green Base -->
+        <rect x="-110" y="-50" width="220" height="180" rx="20" fill="url(#steelLock)" opacity="0.3"/> <!-- Steel texture overlay -->
+        
+        <!-- Bevel/Chisel Effect (Bottom Right Shadow) -->
+        <path d="M90,-30 H110 V130 A20,20 0 0 1 90,130 Z" fill="#1B5E20" opacity="0.6"/>
+        <path d="M-90,130 H110 V110" stroke="#1B5E20" stroke-width="2" opacity="0.5" fill="none"/>
+
+        <!-- Bevel/Chisel Effect (Top Left Highlight) -->
+        <path d="M-110,110 V-30 A20,20 0 0 1 -90,-50 H90" fill="none" stroke="#FFF" stroke-width="4" stroke-opacity="0.3"/>
+
+        <!-- Body Shine Gradient -->
+        <rect x="-110" y="-50" width="220" height="180" rx="20" fill="url(#bodyHighlight)"/>
+    </g>
+    
+    <!-- Paint Chipping / Rust Overlay -->
+    <path d="M-100,100 Q-80,120 -60,100 T-40,110" stroke="#3E2723" stroke-width="60" filter="url(#rustSpot)" opacity="0.6"/>
+    <path d="M80,-20 Q60,0 80,20" stroke="#3E2723" stroke-width="40" filter="url(#rustSpot)" opacity="0.5"/>
+
+    <!-- Shackle Entrance Shadows (Where shackle goes into body) -->
+    <ellipse cx="-80" cy="-50" rx="25" ry="5" fill="#000" opacity="0.5"/>
+    <ellipse cx="80" cy="-50" rx="25" ry="5" fill="#000" opacity="0.5"/>
+
+    <!-- Keyhole Plate -->
+    <g transform="translate(0, 80)">
+       <circle cx="0" cy="0" r="38" fill="#1B5E20"/> <!-- Darker Rim -->
+       <circle cx="0" cy="0" r="35" fill="#37474F" stroke="#263238" stroke-width="2"/>
+       
+       <!-- Inner Shadow on Plate -->
+       <circle cx="0" cy="0" r="32" fill="none" stroke="#000" stroke-width="2" opacity="0.3"/>
+
+       <!-- Keyhole -->
+       <path d="M-12,0 L0,-20 L12,0 L6,25 H-6 L-12,0 Z" fill="#000"/> 
+       <path d="M-12,0 L0,-20 L12,0 L6,25 H-6 L-12,0 Z" fill="none" stroke="#546E7A" stroke-width="1" opacity="0.3"/> <!-- Keyhole Rim -->
+    </g>
+
+    <!-- The Lark Indicator Mechanism -->
+    <!-- A small brass bird that pops out/animates when "Locked" -->
+    <g transform="translate(0, -50)">
+        
+        <!-- Recess for the bird -->
+        <path d="M-60,0 H60 A10,10 0 0 1 60,10 V30 H-60 V10 A10,10 0 0 1 -60,0" fill="#151515"/>
+        <path d="M-60,30 H60" stroke="#FFF" stroke-width="1" opacity="0.2"/> <!-- Lip Highlight -->
+
+        <!-- The Mechanical Lark -->
+        <g>
+            <!-- Pop-up Animation: Appears when shackle locks -->
+            <animateTransform attributeName="transform" type="translate" values="0,30; 0,0; 0,0; 0,0; 0,30" keyTimes="0; 0.1; 0.8; 0.9; 1" dur="4s" repeatCount="indefinite"/>
+            
+            <!-- Chirp Animation: Shake/Vibrate while up -->
+            <animateTransform attributeName="transform" type="rotate" values="0; -5; 5; -5; 0" begin="0.1s" dur="0.2s" repeatCount="5" additive="sum"/>
+
+            <!-- Brass Body -->
+            <path d="M-20,0 Q-30,-20 0,-30 Q30,-20 20,0 Z" fill="url(#brassBird)"/>
+            
+            <!-- Wing -->
+            <path d="M-15,-10 Q0,-25 10,-10" fill="#FFECB3" stroke="#FF6F00" stroke-width="1"/>
+            
+            <!-- Mechanical Details on Bird -->
+            <circle cx="-5" cy="-15" r="2" fill="#3E2723" opacity="0.6"/> <!-- Rivet -->
+
+            <!-- Head -->
+            <circle cx="15" cy="-25" r="12" fill="url(#brassBird)"/>
+            <circle cx="18" cy="-28" r="3" fill="#000"/> <!-- Eye -->
+            <circle cx="19" cy="-29" r="1" fill="#FFF"/> <!-- Eye Glint -->
+            <path d="M25,-25 L35,-20 L25,-15" fill="#FF8F00"/> <!-- Beak -->
+            
+            <!-- Music Note (Visual Chirp) -->
+            <g opacity="0">
+                <animate attributeName="opacity" values="0; 1; 0" begin="0.2s" dur="1s" repeatCount="3"/>
+                <animateTransform attributeName="transform" type="translate" values="0,0; 20,-20" begin="0.2s" dur="1s" repeatCount="3"/>
+                <circle cx="35" cy="-40" r="4" fill="#E1F5FE"/>
+                <path d="M38,-40 V-55 L45,-50" stroke="#E1F5FE" stroke-width="2"/>
+            </g>
+        </g>
+    </g>
+
+    <!-- Heavy Bolts -->
+    <g fill="#455A64" stroke="#263238" stroke-width="1">
+        <!-- Top Left -->
+        <circle cx="-90" cy="-30" r="8"/>
+        <path d="M-94,-30 H-86 M-90,-34 V-26" stroke="#263238" stroke-width="2"/>
+        
+        <!-- Top Right -->
+        <circle cx="90" cy="-30" r="8"/>
+        <path d="M86,-30 H94 M90,-34 V-26" stroke="#263238" stroke-width="2"/>
+
+        <!-- Bottom Left -->
+        <circle cx="-90" cy="110" r="8"/>
+        <path d="M-94,110 H-86 M-90,106 V114" stroke="#263238" stroke-width="2"/> 
+
+        <!-- Bottom Right -->
+        <circle cx="90" cy="110" r="8"/>
+        <path d="M86,110 H94 M90,106 V114" stroke="#263238" stroke-width="2"/>
+    </g>
+
+  </g>
+</svg>

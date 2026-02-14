@@ -11,6 +11,9 @@ Themes:
 - underdog: Office items and workplace companions
 - scientist: Lab equipment and research companions
 - robot: Factory companions and awakening-era machine allies
+- space_pirate: Surprising dockside relics and orbit-era outlaw companions
+- thief: Surprising city-side allies from shadow life to civic reform
+- zoo_worker: Sanctuary companions from practical care to mythic stewardship
 """
 
 from typing import Dict, List, Optional
@@ -658,6 +661,324 @@ ENTITY_POOLS: Dict[str, List[dict]] = {
             "synergy_tags": ["robot", "legendary", "autonomy", "liberation"],
         },
     ],
+
+    # =========================================================================
+    # THE ORBIT OUTLAW'S LEDGER (Space Pirate Theme)
+    # Surprising, funny, and deceptively powerful artifacts of free orbit life
+    # =========================================================================
+    "space_pirate": [
+        {
+            "id": "space_pirate_001",
+            "name": "Scuffed Customs Stamp",
+            "exceptional_name": "Certified Customs Stamp",
+            "power": 10,
+            "rarity": "common",
+            "lore": "Looks like office junk from a failed checkpoint booth. In the right hand, it opens more doors than a plasma cannon. 'Bureaucracy is the oldest lockpick.'",
+            "exceptional_lore": "An immaculate stamp synced to obsolete treaty codes. Entire stations wave you through because no one wants to admit they don't understand it. 'Authority hates being corrected in public.'",
+            "unlock_hint": "Tiny, dusty, and somehow more feared than a blaster...",
+            "synergy_tags": ["space_pirate", "access", "paperwork", "humor"],
+        },
+        {
+            "id": "space_pirate_002",
+            "name": "Laughing Airlock Seal",
+            "exceptional_name": "Singing Airlock Seal",
+            "power": 50,
+            "rarity": "common",
+            "lore": "A rubber pressure ring that squeaks exactly when danger approaches. Crew morale rises every time it giggles at the void. 'If it laughs, check your hull.'",
+            "exceptional_lore": "A tuned seal that harmonizes with hull stress before catastrophe. Sounds cheerful while quietly saving lives. 'Panic is noisy. Prevention is musical.'",
+            "unlock_hint": "Rubber ring, weird laugh, always near an airlock...",
+            "synergy_tags": ["space_pirate", "safety", "support", "airlock"],
+        },
+        {
+            "id": "space_pirate_003",
+            "name": "Contraband Tea Kettle",
+            "exceptional_name": "Contraband Tea Nebula",
+            "power": 150,
+            "rarity": "uncommon",
+            "lore": "A dented kettle banned on six stations for 'suspicious morale effects.' Brews tea strong enough to calm mutiny and confuse scanners. 'Steep leaves, not fear.'",
+            "exceptional_lore": "A shimmering kettle with a vapor plume that mimics decoy signatures. Patrol AI chases the steam while your crew drinks in peace. 'Hospitality can be tactical.'",
+            "unlock_hint": "Warm steam, forbidden leaves, impossible crew calm...",
+            "synergy_tags": ["space_pirate", "morale", "deception", "signal"],
+        },
+        {
+            "id": "space_pirate_004",
+            "name": "Dock Rat Cartographer",
+            "exceptional_name": "Dock Rat Cartographer Prime",
+            "power": 400,
+            "rarity": "uncommon",
+            "lore": "A station rat with uncanny route memory. It scratches perfect escape maps into steel dust. 'Every empire has vents.'",
+            "exceptional_lore": "A collar-tagged route genius that predicts inspection patterns before they are announced. Tiny paws, strategic mind. 'Small bodies fit through big blind spots.'",
+            "unlock_hint": "Tiny whiskers, huge map memory, never caught twice...",
+            "synergy_tags": ["space_pirate", "scouting", "navigation", "rat"],
+        },
+        {
+            "id": "space_pirate_005",
+            "name": "Mutiny Complaint Box",
+            "exceptional_name": "Sentient Complaint Tribunal",
+            "power": 700,
+            "rarity": "rare",
+            "lore": "An old grievance box from a failed cruiser. It predicts team fractures before they explode. 'Unspoken resentment is just delayed shrapnel.'",
+            "exceptional_lore": "A speaking arbitration unit that turns rage into actionable protocol. Crew fights still happen, but less with knives. 'Conflict logged is conflict reduced.'",
+            "unlock_hint": "Looks like a rusty mailbox, knows your crew better than you do...",
+            "synergy_tags": ["space_pirate", "governance", "trust", "morale"],
+        },
+        {
+            "id": "space_pirate_006",
+            "name": "Polite Boarding Cone",
+            "exceptional_name": "Sovereign Boarding Cone",
+            "power": 1100,
+            "rarity": "rare",
+            "lore": "Resembles a traffic cone with manners. Plant it first and hostile targeting suites hesitate long enough for parley. 'Excuse me, this seizure is unlawful.'",
+            "exceptional_lore": "A ceremonial boarding beacon recognized under forgotten maritime clauses. Automated turrets downgrade from kill to compliance review. 'Courtesy can jam a war machine.'",
+            "unlock_hint": "Orange cone, impeccable etiquette, absurdly effective...",
+            "synergy_tags": ["space_pirate", "capture", "boarding", "defense"],
+        },
+        {
+            "id": "space_pirate_007",
+            "name": "Audit Ghost Ledger",
+            "exceptional_name": "Audit Ghost Ledger Unredacted",
+            "power": 1500,
+            "rarity": "epic",
+            "lore": "A translucent tablet haunted by every missing paycheck in the sector. It highlights stolen funds in real time. 'Numbers remember what empires erase.'",
+            "exceptional_lore": "The same ledger after legal unsealing. Emits signed proof chains that survive courtroom sabotage and propaganda storms. 'Truth with receipts travels farther than fear.'",
+            "unlock_hint": "Floating numbers, missing wages, impossible paper trail...",
+            "synergy_tags": ["space_pirate", "audit", "truth", "accountability"],
+        },
+        {
+            "id": "space_pirate_008",
+            "name": "Retired Parade Thruster",
+            "exceptional_name": "Parade Thruster Encore",
+            "power": 1800,
+            "rarity": "epic",
+            "lore": "A glitter-coated ceremonial engine from a victory parade no one remembers. In emergencies it performs miracles with embarrassing fanfare. 'Dignity is optional. Survival is not.'",
+            "exceptional_lore": "Refit with precision nozzles and absurd confidence. Can thread debris fields while broadcasting victory music. 'Mocked in peacetime, legendary in crisis.'",
+            "unlock_hint": "Overdecorated engine, too loud for stealth, perfect when it counts...",
+            "synergy_tags": ["space_pirate", "engine", "escape", "endurance"],
+        },
+        {
+            "id": "space_pirate_009",
+            "name": "Pocket Gravity Button",
+            "exceptional_name": "Pocket Gravity Button Omega",
+            "power": 2000,
+            "rarity": "legendary",
+            "lore": "A cheap-looking coat button with a hidden singularity governor. It can pin dreadnought fleets in place without firing a shot. 'Small enough to ignore. Strong enough to rewrite wars.'",
+            "exceptional_lore": "Awakened governor state with ethical limiters active. Freezes only armed vectors and leaves civilian lanes untouched. 'Power is easiest to trust when it has boundaries.'",
+            "unlock_hint": "Looks disappointing, feels weightless, terrifies admirals...",
+            "synergy_tags": ["space_pirate", "legendary", "gravity", "liberation"],
+        },
+    ],
+
+    # =========================================================================
+    # THE BADGE AND THE SHADOW (Thief Theme)
+    # Surprising urban companions that turn street survival into civic trust
+    # =========================================================================
+    "thief": [
+        {
+            "id": "thief_001",
+            "name": "Pocket Receipt Sparrow",
+            "exceptional_name": "Silver Audit Sparrow",
+            "power": 10,
+            "rarity": "common",
+            "lore": "A tiny bird made of folded receipt paper that memorizes every honest transaction it sees. It chirps loudest when someone pays what they owe. 'Truth leaves a trail.'",
+            "exceptional_lore": "A silver-lined receipt sparrow that reconstructs entire money paths from a single torn stub. Corrupt accountants panic when it lands nearby. 'Every missing coin has a witness now.'",
+            "unlock_hint": "Looks like trash paper, remembers every payment...",
+            "synergy_tags": ["thief", "evidence", "papertrail", "humor"],
+        },
+        {
+            "id": "thief_002",
+            "name": "Crime Sticker",
+            "exceptional_name": "Holographic Paid Sticker",
+            "power": 50,
+            "rarity": "common",
+            "lore": "A worn 'Hello, my crime is...' sticker from an evidence box prank. Suspects often confess one extra detail after seeing it. 'Jokes open locked mouths.'",
+            "exceptional_lore": "A foil 'PAID' holographic sticker that marks resolved debts and closed loops. Entire interview rooms calm down when it flashes. 'Closure is tactical.'",
+            "unlock_hint": "Looks like a joke sticker, breaks deadlocked interviews...",
+            "synergy_tags": ["thief", "confession", "deception", "support"],
+        },
+        {
+            "id": "thief_003",
+            "name": "Lockpick Hairpin",
+            "exceptional_name": "Sonic Master Key",
+            "power": 150,
+            "rarity": "uncommon",
+            "lore": "A rusty hairpin once used to open bad doors for bad reasons. Now it opens seized lockers lawfully under warrant. 'Tools change when intent changes.'",
+            "exceptional_lore": "A resonant keying device tuned to lock harmonics. It can open corrupted safes without damaging chain-of-custody evidence. 'Precision beats force.'",
+            "unlock_hint": "Old hairpin that opens what should stay hidden...",
+            "synergy_tags": ["thief", "access", "precision", "resilience"],
+        },
+        {
+            "id": "thief_004",
+            "name": "Stolen SIM",
+            "exceptional_name": "Root Black SIM",
+            "power": 400,
+            "rarity": "uncommon",
+            "lore": "A cracked SIM card pulled from a burner phone in an alley drain. It still leaks route fragments and meetup patterns. 'Data remembers what people erase.'",
+            "exceptional_lore": "A hardened black-cell SIM with root-level traceback routines. It maps whole smuggling trees from one surviving ping. 'Networks collapse when signals are honest.'",
+            "unlock_hint": "Cracked SIM with impossible route memory...",
+            "synergy_tags": ["thief", "signals", "analysis", "planning"],
+        },
+        {
+            "id": "thief_005",
+            "name": "Spray Can Silencer",
+            "exceptional_name": "Void Mute Canister",
+            "power": 700,
+            "rarity": "rare",
+            "lore": "A rusted canister loaded with legal mark-dampening foam. It kills alarm reflections long enough for safe civilian extraction. 'Quiet windows save lives.'",
+            "exceptional_lore": "A matte-black mute canister that suppresses hostile sensor spikes and panic acoustics in tight blocks. 'Silence can be protective.'",
+            "unlock_hint": "Beat-up spray can that hushes entire scenes...",
+            "synergy_tags": ["thief", "stealth", "control", "community"],
+        },
+        {
+            "id": "thief_006",
+            "name": "Hoodie Shadow",
+            "exceptional_name": "Vantablack Anomaly",
+            "power": 1100,
+            "rarity": "rare",
+            "lore": "An empty hoodie shell that slips through camera blind spots and returns with usable line-of-sight intel. 'Stay unseen, keep others safe.'",
+            "exceptional_lore": "A near-light-absorbing shadow membrane that bends attention away from civilians during takedowns. 'Stealth with rules is protection.'",
+            "unlock_hint": "Looks like abandoned fabric, moves like intent...",
+            "synergy_tags": ["thief", "capture", "stealth", "safety"],
+        },
+        {
+            "id": "thief_007",
+            "name": "Safe Cracker Stethoscope",
+            "exceptional_name": "Harmonic Resonator",
+            "power": 1500,
+            "rarity": "epic",
+            "lore": "An old doctor's stethoscope modified for vault tumblers and hidden latch frequencies. It hears lies in steel. 'Listen before you strike.'",
+            "exceptional_lore": "A harmonic resonator rig that resolves lock-state truth in milliseconds and logs every opening event. 'No guesswork, no ghost entries.'",
+            "unlock_hint": "Medical tool that hears secret locks breathing...",
+            "synergy_tags": ["thief", "audit", "precision", "accountability"],
+        },
+        {
+            "id": "thief_008",
+            "name": "Crowbar Lever",
+            "exceptional_name": "Plasma Prybar",
+            "power": 1800,
+            "rarity": "epic",
+            "lore": "A red-painted steel crowbar with court-logged usage marks. It opens trapped doors and blocked exits faster than thermal tools. 'Leverage is a civic skill.'",
+            "exceptional_lore": "A plasma-edged prybar with selective heat control that spares evidence while breaching hardened barriers. 'Force, but accountable force.'",
+            "unlock_hint": "Simple crowbar that opens impossible exits...",
+            "synergy_tags": ["thief", "endurance", "breach", "unity"],
+        },
+        {
+            "id": "thief_009",
+            "name": "Flashlight Beam",
+            "exceptional_name": "UV Evidence Scanner",
+            "power": 2000,
+            "rarity": "legendary",
+            "lore": "A dusty tactical beam module no bigger than a marker light. It reveals erased prints, hidden routes, and altered scene metadata at city scale. 'Light is the final witness.'",
+            "exceptional_lore": "A UV forensic scanner that surfaces suppressed evidence without contaminating it and auto-tags lawful recovery chains. 'Truth should be visible and admissible.'",
+            "unlock_hint": "Small flashlight that exposes what power tried to hide...",
+            "synergy_tags": ["thief", "legendary", "justice", "reform"],
+        },
+    ],
+
+    # =========================================================================
+    # THE KEEPER OF EMBER TIME (Zoo Worker Theme)
+    # Sanctuary entities tied to care, records, and impossible farewell
+    # =========================================================================
+    "zoo_worker": [
+        {
+            "id": "zoo_worker_001",
+            "name": "Ticket Stub Gecko",
+            "exceptional_name": "Ticket Stub Gecko Prime",
+            "power": 10,
+            "rarity": "common",
+            "lore": "A tiny gecko that appears wherever entries are valid and exits are safe. It clings to torn stubs like they're legal treaties. 'Small feet, perfect memory.'",
+            "exceptional_lore": "A silver-marked gecko that can reconstruct visitor flow from a single damp ticket corner. 'Order starts with noticing details.'",
+            "unlock_hint": "Tiny gecko with paper-textured scales and perfect route memory...",
+            "synergy_tags": ["zoo_worker", "logistics", "entry", "support"],
+        },
+        {
+            "id": "zoo_worker_002",
+            "name": "Night Shift Lemur",
+            "exceptional_name": "Night Shift Lemur Marshal",
+            "power": 50,
+            "rarity": "common",
+            "lore": "A wide-eyed lemur that marks unsafe gates before alarms can trigger. 'Big eyes, quiet warnings.'",
+            "exceptional_lore": "A disciplined patrol lemur with reflective markings and predictive hazard behavior. 'The best crisis is the one prevented.'",
+            "unlock_hint": "Huge alert eyes, always near the least safe enclosure...",
+            "synergy_tags": ["zoo_worker", "safety", "patrol", "awareness"],
+        },
+        {
+            "id": "zoo_worker_003",
+            "name": "Feeding Cart Compass",
+            "exceptional_name": "Feeding Cart Compass True-North",
+            "power": 150,
+            "rarity": "uncommon",
+            "lore": "An old steel cart compass that always points to whichever enclosure needs attention first. 'Broken needle, honest direction.'",
+            "exceptional_lore": "A stabilized compass core tuned to biological stress signatures. 'Routes become ethical when priorities are correct.'",
+            "unlock_hint": "Worn cart hardware with a needle that never lies...",
+            "synergy_tags": ["zoo_worker", "routing", "focus", "triage"],
+        },
+        {
+            "id": "zoo_worker_004",
+            "name": "Aviary Lock Lark",
+            "exceptional_name": "Aviary Lock Lark Concord",
+            "power": 400,
+            "rarity": "uncommon",
+            "lore": "A lark that sings only when every latch on the aviary ring is truly secure. 'Music means the perimeter holds.'",
+            "exceptional_lore": "A harmony-tuned lock sentinel that detects micro-failures in gate tension. 'Security is verification, not vibes.'",
+            "unlock_hint": "Small songbird perched on ring locks, sings only on true closure...",
+            "synergy_tags": ["zoo_worker", "control", "trust", "discipline"],
+        },
+        {
+            "id": "zoo_worker_005",
+            "name": "Veterinary Lantern Moth",
+            "exceptional_name": "Veterinary Lantern Moth Aurora",
+            "power": 700,
+            "rarity": "rare",
+            "lore": "A soft-winged moth that glows above hidden injuries before scanners confirm them. 'Follows pain, not noise.'",
+            "exceptional_lore": "An aurora-lantern moth with spectral triage patterns for rapid treatment order. 'Compassion gets faster with practice.'",
+            "unlock_hint": "Gentle glow moth that appears where wounds are hardest to see...",
+            "synergy_tags": ["zoo_worker", "rescue", "care", "triage"],
+        },
+        {
+            "id": "zoo_worker_006",
+            "name": "River Otter Archivist",
+            "exceptional_name": "River Otter Archivist Grand",
+            "power": 1100,
+            "rarity": "rare",
+            "lore": "An otter carrying waterproof notebooks and perfect incident sequencing. 'Every event, timestamped.'",
+            "exceptional_lore": "A grand archivist that compiles provable chains from chaos in minutes. 'Records are mercy when memory fails.'",
+            "unlock_hint": "Notebook-strapped otter that remembers every shift exactly...",
+            "synergy_tags": ["zoo_worker", "capture", "records", "proof"],
+        },
+        {
+            "id": "zoo_worker_007",
+            "name": "Old Scalebook Oracle",
+            "exceptional_name": "Old Scalebook Oracle Unbound",
+            "power": 1500,
+            "rarity": "epic",
+            "lore": "An ancient keeper ledger imprinted with dragon scales and half-burned annotations from forgotten staff. 'Pages older than the zoo itself.'",
+            "exceptional_lore": "A living archival codex that recomputes truth paths and procedural outcomes on demand. 'Wisdom is audited memory.'",
+            "unlock_hint": "Weathered ledger with scale marks and impossible old entries...",
+            "synergy_tags": ["zoo_worker", "audit", "history", "accountability"],
+        },
+        {
+            "id": "zoo_worker_008",
+            "name": "Storm Glass Incubator",
+            "exceptional_name": "Storm Glass Incubator Zenith",
+            "power": 1800,
+            "rarity": "epic",
+            "lore": "A reinforced chamber that stabilizes wild pressure gradients around fragile life. 'Hums before lightning.'",
+            "exceptional_lore": "A zenith-grade incubator that contains temporal weather spikes without harming occupants. 'Endurance is engineered care.'",
+            "unlock_hint": "Crackling glass chamber that calms storm surges...",
+            "synergy_tags": ["zoo_worker", "endurance", "weather", "stability"],
+        },
+        {
+            "id": "zoo_worker_009",
+            "name": "Emberwing of First Dawn",
+            "exceptional_name": "Emberwing Eternal Dawn",
+            "power": 2000,
+            "rarity": "legendary",
+            "lore": "The displaced dragon itself: wise, restrained, and unbearably old. It chooses guardians, not owners. 'Not a beast, a witness.'",
+            "exceptional_lore": "Eternal Dawn state: a fully awakened temporal dragon that bends power toward preservation, never domination. 'The strongest flight is the one that leaves with grace.'",
+            "unlock_hint": "Ancient dragon with calm eyes and impossible kindness...",
+            "synergy_tags": ["zoo_worker", "legendary", "dragon", "time"],
+        },
+    ],
 }
 
 
@@ -706,8 +1027,18 @@ def get_entity_by_id(entity_id: str) -> Optional[Entity]:
     Returns:
         Entity object if found, None otherwise.
     """
-    # Extract theme from entity_id (e.g., "warrior_003" -> "warrior")
-    theme = entity_id.split("_")[0] if "_" in entity_id else None
+    # Extract theme from entity_id.
+    # Supports multi-part story ids (e.g., "space_pirate_003" -> "space_pirate").
+    theme = None
+    if "_" in entity_id:
+        theme_candidate = entity_id.rsplit("_", 1)[0]
+        if theme_candidate in ENTITY_POOLS:
+            theme = theme_candidate
+        else:
+            # Backward-compatible fallback for single-part themes.
+            single_part = entity_id.split("_", 1)[0]
+            if single_part in ENTITY_POOLS:
+                theme = single_part
     
     if theme and theme in ENTITY_POOLS:
         for entity_data in ENTITY_POOLS[theme]:

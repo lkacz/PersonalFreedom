@@ -1,16 +1,115 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="  exceptional">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Robot 002 Exceptional: Safety Drone Pico (Predictive Guardian V3) -->
   <defs>
-    <radialGradient id="eg" cx="50%" cy="45%" r="70%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-      <stop offset="45%" stop-color="" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#0B1020" stop-opacity="1"/>
+    <!-- Pearl Chassis Gradient -->
+    <linearGradient id="chassis-pearl" x1="20%" y1="10%" x2="80%" y2="90%">
+      <stop offset="0%" stop-color="#fff" />
+      <stop offset="50%" stop-color="#f0f8ff" />
+      <stop offset="100%" stop-color="#dcdcdc" />
+    </linearGradient>
+
+    <!-- Force Field Ripple -->
+    <radialGradient id="force-field" cx="50%" cy="50%" r="50%">
+      <stop offset="80%" stop-color="#00ffff" stop-opacity="0" />
+      <stop offset="90%" stop-color="#00ffff" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#fff" stop-opacity="0.8" />
     </radialGradient>
+
+    <!-- Holographic Code Stream -->
+    <linearGradient id="code-stream" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00ffff" stop-opacity="0" />
+      <stop offset="50%" stop-color="#00ffff" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#00ffff" stop-opacity="0" />
+    </linearGradient>
+    
+    <!-- Neon Filter -->
+    <filter id="neon-bloom">
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Eye Glint (Star) -->
+    <filter id="star-glint">
+       <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="15" result="noise" />
+       <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" />
+    </filter>
   </defs>
-  <rect x="4" y="4" width="120" height="120" rx="20" fill="url(#eg)" stroke="#FDE68A" stroke-width="4"/>
-  <circle cx="64" cy="64" r="32" fill="#0F172A" stroke="#FDE68A" stroke-width="4"/>
-  <path d="M64 24 L70 40 L88 40 L74 50 L80 66 L64 56 L48 66 L54 50 L40 40 L58 40 Z" fill="#FDE68A" opacity="0.9"/>
-  <rect x="36" y="58" width="56" height="12" rx="6" fill="" opacity="0.35"/>
-  <circle cx="52" cy="64" r="5" fill="#F8FAFC"/>
-  <circle cx="76" cy="64" r="5" fill="#F8FAFC"/>
-  <text x="64" y="109" font-family="Segoe UI, Arial, sans-serif" font-size="13" text-anchor="middle" fill="#FDE68A" font-weight="700"> EX</text>
+
+  <g transform="translate(256, 260)">
+
+    <!-- Active Protection Field (Outer Ring) -->
+    <circle cx="0" cy="0" r="140" fill="none" stroke="url(#code-stream)" stroke-width="2" opacity="0.3">
+       <animateTransform attributeName="transform" type="rotate" values="0 0 0; 360 0 0" dur="20s" repeatCount="indefinite" />
+       <animate attributeName="r" values="140; 135; 140" dur="2s" repeatCount="indefinite" />
+    </circle>
+    
+    <!-- Inner Force Field Pulse -->
+    <circle cx="0" cy="0" r="110" fill="url(#force-field)" opacity="0">
+       <animate attributeName="opacity" values="0; 0.3; 0" dur="1.5s" repeatCount="indefinite" />
+       <animate attributeName="r" values="90; 120" dur="1.5s" repeatCount="indefinite" />
+    </circle>
+
+    <!-- Conical Scan Projection (Floor) -->
+    <path d="M0,80 L-50,220 L50,220 Z" fill="url(#code-stream)" opacity="0.4">
+       <animate attributeName="opacity" values="0.3; 0.6; 0.3" dur="0.8s" repeatCount="indefinite" />
+    </path>
+    
+    <!-- Main Body Group -->
+    <g>
+      <!-- Anti-Grav Float -->
+      <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="4s" repeatCount="indefinite" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1" calcMode="spline" />
+
+      <!-- Levitating Side Pods (Magnetic Suspension) -->
+      <g transform="translate(-100, 0)">
+         <path d="M-15,-20 L15,-20 L10,20 L-10,20 Z" fill="#eee" stroke="#ccc" />
+         <!-- Magnetic Arc -->
+         <path d="M15,-10 Q25,0 15,10" fill="none" stroke="#00ffff" stroke-width="3" filter="url(#neon-bloom)">
+            <animate attributeName="opacity" values="0.5; 1; 0.5" dur="0.2s" repeatCount="indefinite" />
+         </path>
+      </g>
+      <g transform="translate(100, 0)">
+         <path d="M-15,-20 L15,-20 L10,20 L-10,20 Z" fill="#eee" stroke="#ccc" />
+         <!-- Magnetic Arc -->
+         <path d="M-15,-10 Q-25,0 -15,10" fill="none" stroke="#00ffff" stroke-width="3" filter="url(#neon-bloom)">
+            <animate attributeName="opacity" values="0.5; 1; 0.5" dur="0.2s" repeatCount="indefinite" />
+         </path>
+      </g>
+
+      <!-- Main Sphere with "Pearl" finish -->
+      <circle cx="0" cy="0" r="70" fill="url(#chassis-pearl)" stroke="#fff" stroke-width="2" />
+      
+      <!-- Halo Ring (Floating) -->
+      <ellipse cx="0" cy="-10" rx="90" ry="20" fill="none" stroke="#00ffff" stroke-width="2" opacity="0.8" filter="url(#neon-bloom)">
+         <animateTransform attributeName="transform" type="rotate" values="0 0 -10; -360 0 -10" dur="8s" repeatCount="indefinite" />
+      </ellipse>
+
+      <!-- Face Interface -->
+      <path d="M-40,-15 Q0,5 40,-15 L30,35 Q0,50 -30,35 Z" fill="#111" />
+      
+      <!-- Omni-Eye (Central Logic Core) -->
+      <circle cx="0" cy="5" r="15" fill="#000" stroke="#333" stroke-width="2" />
+      <circle cx="0" cy="5" r="8" fill="#00ffff" filter="url(#neon-bloom)">
+         <animate attributeName="opacity" values="0.8; 1; 0.8" dur="0.5s" repeatCount="indefinite" />
+      </circle>
+      <!-- Lens Flare Cross -->
+      <g transform="translate(0, 5)" opacity="0.8">
+         <rect x="-20" y="-1" width="40" height="2" fill="#fff" filter="url(#neon-bloom)">
+            <animateTransform attributeName="transform" type="rotate" values="0; 45; 0" dur="4s" repeatCount="indefinite" />
+         </rect>
+         <rect x="-1" y="-20" width="2" height="40" fill="#fff" filter="url(#neon-bloom)">
+            <animateTransform attributeName="transform" type="rotate" values="0; 45; 0" dur="4s" repeatCount="indefinite" />
+         </rect>
+      </g>
+
+      <!-- Top Antenna Array -->
+      <line x1="0" y1="-70" x2="0" y2="-90" stroke="#bbb" stroke-width="2" />
+      <circle cx="0" cy="-90" r="4" fill="#ff8c00" filter="url(#neon-bloom)">
+         <animate attributeName="opacity" values="1; 0.2; 1" dur="1s" repeatCount="indefinite" />
+      </circle>
+
+    </g>
+  </g>
 </svg>

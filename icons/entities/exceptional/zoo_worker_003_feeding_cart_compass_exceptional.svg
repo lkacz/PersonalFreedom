@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Zoo Worker 003: Feeding Cart Compass True-North (Exceptional Zoo Theme) -->
+  <!-- Concept: "The Beast Master's Guide". -->
+  <defs>
+    <!-- Turtle Shell Rim -->
+    <radialGradient id="shellRim" cx="50%" cy="50%" r="50%">
+      <stop offset="90%" stop-color="#4E342E"/>
+      <stop offset="100%" stop-color="#3E2723"/>
+    </radialGradient>
+    
+    <!-- Dragon Scale Face -->
+    <pattern id="dragonScales" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+        <path d="M10,0 Q20,10 10,20 Q0,10 10,0" fill="#2E7D32" stroke="#1B5E20" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="scaleShine" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#66BB6A" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#1B5E20" stop-opacity="0.8"/>
+    </radialGradient>
+
+    <!-- Glowing Claw Needle -->
+    <linearGradient id="clawGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#FF6F00"/>
+    </linearGradient>
+
+    <filter id="magicGlow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g transform="translate(256, 256)">
+    <!-- Main Floating Animation -->
+    <g>
+        <animateTransform attributeName="transform" type="translate" values="0,0; 0,-8; 0,0" dur="5s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+
+        <!-- Lanyard: A Thick Vine -->
+        <path d="M0,-210 Q-10,-240 0,-250 T0,-290" stroke="#558B2F" stroke-width="12" fill="none"/>
+        <path d="M5,-230 L-5,-220 M10,-260 L0,-250" stroke="#7CB342" stroke-width="4" opacity="0.8"/> <!-- Leaves -->
+        <circle cx="0" cy="-210" r="28" fill="none" stroke="#33691E" stroke-width="8"/>
+
+        <!-- Case: Turtle Shell Texture -->
+        <circle cx="0" cy="0" r="210" fill="url(#shellRim)"/>
+        <!-- Shell Segments -->
+        <g stroke="#3E2723" stroke-width="3" fill="none">
+             <circle cx="0" cy="0" r="200"/>
+             <path d="M0,-200 L0,-170 M173,-100 L147,-85 M173,100 L147,85 M0,200 L0,170 M-173,100 L-147,85 M-173,-100 L-147,-85"/>
+        </g>
+
+        <!-- Face: Dragon Scales Green -->
+        <circle cx="0" cy="0" r="170" fill="url(#dragonScales)"/>
+        <circle cx="0" cy="0" r="170" fill="url(#scaleShine)"/>
+
+        <!-- Cardinal Points: Animal Runes -->
+        <g font-family="serif" font-weight="bold" font-size="50" fill="#FFD54F" text-anchor="middle" filter="url(#magicGlow)">
+            <!-- Top (Wing/Dragon) -->
+            <path d="M0,-130 L-20,-110 L0,-160 L20,-110 Z" fill="#FFD54F"/> 
+            
+            <!-- Right (Claw/Predator) -->
+            <path d="M140,0 Q160,-10 150,20" stroke="#FFD54F" stroke-width="5" fill="none"/>
+            <path d="M130,0 Q150,-10 140,20" stroke="#FFD54F" stroke-width="5" fill="none"/>
+
+            <!-- Bottom (Hoof/Sturdy) -->
+            <rect x="-15" y="130" width="30" height="20" rx="5" fill="#FFD54F"/>
+
+            <!-- Left (Fin/Water) -->
+            <path d="M-130,-10 Q-160,0 -130,10" stroke="#FFD54F" stroke-width="5" fill="none"/>
+        </g>
+
+        <!-- Needle: A Glowing Raptor Claw -->
+        <g filter="url(#magicGlow)">
+             <!-- Needle Animation: Hunt Cycle (Search -> Lock -> Pulse) -->
+             <animateTransform attributeName="transform" type="rotate" 
+                values="0; 120; 240; 360; 355; 365; 360; 360"
+                keyTimes="0; 0.3; 0.6; 0.8; 0.82; 0.85; 0.9; 1" 
+                dur="6s" repeatCount="indefinite" isAdditive="sum"/>
+            
+            <!-- Claw Shape -->
+            <!-- Pivot is at 0,0. Claw curves up towards North (-Y) -->
+            <path d="M-15,0 Q-20,-60 0,-150 Q20,-60 15,0" fill="url(#clawGlow)"/>
+            <circle cx="0" cy="0" r="12" fill="#3E2723" stroke="#FFD54F" stroke-width="3"/>
+        </g>
+
+        <!-- Glass Glare (Clean Crystal) -->
+        <circle cx="0" cy="0" r="170" fill="url(#scaleShine)" opacity="0.1"/>
+        <path d="M-100,-100 Q0,-150 100,-100" stroke="#FFF" stroke-width="4" opacity="0.3" fill="none"/>
+
+    </g>
+  </g>
+</svg>
