@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(-20, 10)">
+    <!-- Common: Giant Wrench (Red) -->
+    <path d="M40 80 L60 80 L60 160 L40 160 Z" fill="#D32F2F" stroke="#B71C1C" stroke-width="1"/>
+    <!-- Jaws -->
+    <path d="M30 60 L70 60 L70 80 L30 80 Z" fill="#E0E0E0" stroke="#9E9E9E" stroke-width="1"/>
+    <rect x="35" y="65" width="30" height="5" fill="#BDBDBD"/> <!-- Teeth -->
+  </g>
+</svg>

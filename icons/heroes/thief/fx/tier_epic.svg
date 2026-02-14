@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <defs>
+    <radialGradient id="epicGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#3d5572" stop-opacity="0"/>
+      <stop offset="70%" stop-color="#f87171" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#f87171" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="scannerBeam" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f87171" stop-opacity="0"/>
+        <stop offset="50%" stop-color="#f87171" stop-opacity="0.4"/>
+        <stop offset="100%" stop-color="#f87171" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Pulse -->
+  <circle cx="90" cy="110" r="80" fill="url(#epicGlow)">
+      <animate attributeName="r" values="75;85;75" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.3;0.6" dur="3s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Rotating Radar/Scanner Rings -->
+  <g transform="translate(90, 110)">
+      <circle r="70" fill="none" stroke="#f87171" stroke-width="1" stroke-dasharray="20 40" opacity="0.4">
+          <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="10s" repeatCount="indefinite"/>
+      </circle>
+      <circle r="60" fill="none" stroke="#f87171" stroke-width="1.5" stroke-dasharray="10 30" opacity="0.3">
+           <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="15s" repeatCount="indefinite"/>
+      </circle>
+  </g>
+
+  <!-- Vertical Scanline -->
+  <rect x="20" y="0" width="140" height="4" fill="url(#scannerBeam)" opacity="0.3">
+       <animate attributeName="y" values="0;220;0" dur="5s" repeatCount="indefinite"/>
+  </rect>
+
+</svg>

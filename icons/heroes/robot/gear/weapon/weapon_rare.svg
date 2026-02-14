@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(-20, 10)">
+    <!-- Rare: Arc Welder -->
+    <rect x="35" y="120" width="30" height="40" rx="5" fill="#EF5350"/> <!-- Battery Pack -->
+    <path d="M50 120 L50 80 L30 60" fill="none" stroke="#212121" stroke-width="3"/> <!-- Cable to nozzle -->
+    <circle cx="28" cy="58" r="3" fill="#FFF"/> <!-- Spark tip -->
+    <path d="M28 58 L20 50 M28 58 L36 50 M28 58 L28 45" stroke="#FFEB3B" stroke-width="2"/> <!-- Sparks -->
+  </g>
+</svg>

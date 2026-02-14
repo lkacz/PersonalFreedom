@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(20, 10)">
+    <!-- Uncommon: Caution Sign (Rectangular plate) -->
+    <rect x="100" y="80" width="50" height="70" fill="#FFEB3B" stroke="#000" stroke-width="3"/>
+    <!-- Stripes -->
+    <path d="M100 90 L150 100" stroke="#000" stroke-width="8"/>
+    <path d="M100 120 L150 130" stroke="#000" stroke-width="8"/>
+    <path d="M100 105 L150 115" stroke="#000" stroke-width="8" opacity="0.1"/> <!-- Dirt -->
+  </g>
+</svg>

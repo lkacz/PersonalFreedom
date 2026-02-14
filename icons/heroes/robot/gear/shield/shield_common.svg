@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(20, 10)">
+    <!-- Common: Trash Can Lid (Improvised) -->
+    <circle cx="125" cy="110" r="30" fill="#9E9E9E" stroke="#616161" stroke-width="2"/>
+    <!-- Handle -->
+    <rect x="110" y="105" width="30" height="10" rx="3" fill="#BDBDBD" stroke="#616161"/>
+    <!-- Dents -->
+    <path d="M110 130 L115 135 L120 130" fill="none" stroke="#616161" stroke-width="1"/>
+  </g>
+</svg>

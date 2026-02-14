@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <path d="M60 70 L120 70 L116 130 L64 130 Z" fill="none" stroke="#26A69A" stroke-width="2"/>
+  <path d="M60 70 L120 70 L116 130 L64 130 Z" fill="#004D40" opacity="0.8"/>
+  <!-- Heart Core -->
+  <path d="M90 105 C90 105 80 95 80 85 C80 80 85 75 90 85 C95 75 100 80 100 85 C100 95 90 105 90 105 Z" fill="#FF5252" stroke="#FF8A80" stroke-width="1"/>
+</svg>

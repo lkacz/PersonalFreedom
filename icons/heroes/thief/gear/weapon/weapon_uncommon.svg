@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="u_baton_steel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#cfd8dc"/>
+      <stop offset="45%" stop-color="#f5f8fa"/>
+      <stop offset="100%" stop-color="#90a4ae"/>
+    </linearGradient>
+    <linearGradient id="u_baton_grip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a3a52"/>
+      <stop offset="100%" stop-color="#121a24"/>
+    </linearGradient>
+    <linearGradient id="u_baton_head" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5c6f82"/>
+      <stop offset="100%" stop-color="#314555"/>
+    </linearGradient>
+    <radialGradient id="u_led_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#7ef9f2" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#7ef9f2" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="u_soft_glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.6"/>
+    </filter>
+  </defs>
+
+  <!-- Positioned to match thief right hand around (116,138) -->
+  <g id="weapon_uncommon" transform="rotate(-24 116 138)">
+    <ellipse cx="116" cy="140" rx="11" ry="3.5" fill="#000000" opacity="0.16"/>
+
+    <!-- Grip section -->
+    <rect x="111.2" y="127" width="9.6" height="44" rx="3.8" fill="url(#u_baton_grip)" stroke="#0d131c" stroke-width="1"/>
+    <rect x="110.2" y="133.5" width="11.6" height="4.2" rx="1.8" fill="#243345" stroke="#5e748a" stroke-width="0.6"/>
+    <rect x="110.2" y="147.5" width="11.6" height="4.2" rx="1.8" fill="#243345" stroke="#5e748a" stroke-width="0.6"/>
+    <rect x="110.2" y="161.5" width="11.6" height="4.2" rx="1.8" fill="#243345" stroke="#5e748a" stroke-width="0.6"/>
+
+    <!-- Smart ring / thumb control -->
+    <circle cx="116" cy="126.5" r="4.3" fill="#182635" stroke="#8ec1d9" stroke-width="0.8"/>
+    <circle cx="116" cy="126.5" r="2.2" fill="#7ef9f2"/>
+    <circle cx="116" cy="126.5" r="6.6" fill="url(#u_led_glow)" opacity="0.55" filter="url(#u_soft_glow)"/>
+
+    <!-- Shaft -->
+    <rect x="112.5" y="79" width="7" height="49" rx="2.7" fill="url(#u_baton_steel)" stroke="#4d6372" stroke-width="0.9"/>
+    <path d="M114 82 L114 125" stroke="#ffffff" stroke-width="0.8" opacity="0.55"/>
+    <path d="M118.3 82 L118.3 125" stroke="#7c93a5" stroke-width="0.7" opacity="0.55"/>
+
+    <!-- Baton head -->
+    <rect x="109.6" y="70.5" width="12.8" height="9.2" rx="2.2" fill="url(#u_baton_head)" stroke="#2c3f4f" stroke-width="0.9"/>
+    <rect x="111.2" y="73.2" width="9.6" height="2.4" rx="1.2" fill="#9adcf7" opacity="0.75"/>
+    <circle cx="116" cy="75" r="1.35" fill="#d7ffff"/>
+
+    <!-- Pommel + retention strap -->
+    <rect x="112.4" y="170.5" width="7.2" height="4.8" rx="1.8" fill="#0f1b27" stroke="#5e748a" stroke-width="0.8"/>
+    <path d="M116 175 C124 181, 123 190, 116 194" fill="none" stroke="#27384a" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M116 175 C122.5 181, 122.4 188, 116.7 191.8" fill="none" stroke="#87a6c1" stroke-width="0.55" opacity="0.55"/>
+  </g>
+</svg>

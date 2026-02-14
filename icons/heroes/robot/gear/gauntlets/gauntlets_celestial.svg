@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(0,0)">
+    <!-- Celestial: Stardust Manipulators -->
+    <circle cx="49" cy="150" r="18" fill="none" stroke="#36d6e7" stroke-width="1" stroke-dasharray="2 2"/>
+    <circle cx="131" cy="150" r="18" fill="none" stroke="#36d6e7" stroke-width="1" stroke-dasharray="2 2"/>
+    <!-- Stars -->
+    <path d="M49 140 L52 150 L62 150 L54 156 L57 166 L49 160 L41 166 L44 156 L36 150 L46 150 Z" fill="#FFF" opacity="0.9"/>
+    <path d="M131 140 L134 150 L144 150 L136 156 L139 166 L131 160 L123 166 L126 156 L118 150 L128 150 Z" fill="#FFF" opacity="0.9"/>
+  </g>
+</svg>

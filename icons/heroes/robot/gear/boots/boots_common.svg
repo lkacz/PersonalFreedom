@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(0,0)">
+    <!-- Common: Rubber Galoshes (Chunky feet) -->
+    <path d="M50 190 L70 190 L75 210 L45 210 Z" fill="#3E2723" stroke="#000" stroke-width="1"/>
+    <path d="M130 190 L110 190 L105 210 L135 210 Z" fill="#3E2723" stroke="#000" stroke-width="1"/>
+    <!-- Tread -->
+    <line x1="45" y1="210" x2="75" y2="210" stroke="#111" stroke-width="3"/>
+    <line x1="105" y1="210" x2="135" y2="210" stroke="#111" stroke-width="3"/>
+  </g>
+</svg>

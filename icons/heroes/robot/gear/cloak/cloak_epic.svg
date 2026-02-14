@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <!-- Epic: Holo Cape -->
+  <path d="M40 70 L140 70 L160 190 L20 190 Z" fill="#36d6e7" opacity="0.3"/>
+  <path d="M40 70 L140 70 L160 190 L20 190 Z" fill="url(#gridPattern)" opacity="0.2"/> <!-- Grid Hint -->
+  <line x1="90" y1="70" x2="90" y2="190" stroke="#36d6e7" stroke-width="1" opacity="0.5"/>
+</svg>

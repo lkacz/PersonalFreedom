@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(0,0)">
+    <!-- Rare: Springs -->
+    <path d="M50 190 Q65 190 65 195 Q50 195 50 200 Q65 200 65 205 Q50 205 50 210 Q65 210 65 215" fill="none" stroke="#757575" stroke-width="2"/>
+    <rect x="45" y="215" width="25" height="4" fill="#424242"/>
+    
+    <path d="M130 190 Q115 190 115 195 Q130 195 130 200 Q115 200 115 205 Q130 205 130 210 Q115 210 115 215" fill="none" stroke="#757575" stroke-width="2"/>
+    <rect x="110" y="215" width="25" height="4" fill="#424242"/>
+  </g>
+</svg>

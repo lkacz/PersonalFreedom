@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(0,0)">
+    <!-- Uncommon: Tank Treads (Bulky) -->
+    <path d="M40 195 L75 195 L80 215 L35 215 Z" fill="#546E7A" stroke="#263238" stroke-width="1"/>
+    <path d="M140 195 L105 195 L100 215 L145 215 Z" fill="#546E7A" stroke="#263238" stroke-width="1"/>
+    <!-- Wheels inside tread -->
+    <circle cx="50" cy="205" r="4" fill="#263238"/>
+    <circle cx="65" cy="205" r="4" fill="#263238"/>
+    <circle cx="115" cy="205" r="4" fill="#263238"/>
+    <circle cx="130" cy="205" r="4" fill="#263238"/>
+  </g>
+</svg>

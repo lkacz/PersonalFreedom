@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <!-- Uncommon: Foil Insulation (Silver/Gold) -->
+  <path d="M45 70 L135 70 L155 190 L25 190 Z" fill="#B0BEC5"/>
+  <!-- Crinkle lines -->
+  <path d="M50 80 L70 120 L60 160" stroke="#78909C" stroke-width="1" fill="none"/>
+  <path d="M130 80 L110 120 L120 160" stroke="#78909C" stroke-width="1" fill="none"/>
+</svg>

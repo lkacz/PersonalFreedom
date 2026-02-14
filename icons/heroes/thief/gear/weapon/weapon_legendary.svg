@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="l_body_metal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#a2b7c7"/>
+      <stop offset="45%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#6e8799"/>
+    </linearGradient>
+    <linearGradient id="l_grip_dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1d2a39"/>
+      <stop offset="100%" stop-color="#0b121a"/>
+    </linearGradient>
+    <linearGradient id="l_legendary_orange" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd54f"/>
+      <stop offset="42%" stop-color="#ffb74d"/>
+      <stop offset="100%" stop-color="#ff9800"/>
+    </linearGradient>
+    <radialGradient id="l_orange_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd54f" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#ff9800" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="l_solar_sweep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff4d0" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#ffd180" stop-opacity="0.88"/>
+      <stop offset="100%" stop-color="#fff4d0" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="l_soft_glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="2.1"/>
+    </filter>
+    <filter id="l_bloom" x="-90%" y="-90%" width="280%" height="280%">
+      <feGaussianBlur stdDeviation="1.3"/>
+    </filter>
+  </defs>
+
+  <!-- Legendary tier: command baton with civic crest emitter -->
+  <!-- Anchor tuned for thief hand near (116,138) -->
+  <g id="weapon_legendary" transform="rotate(-30 116 138)">
+    <ellipse cx="116" cy="142.5" rx="13.4" ry="4.2" fill="#000000" opacity="0.18"/>
+
+    <!-- Grip + premium wraps -->
+    <rect x="110.2" y="122.8" width="11.6" height="52.2" rx="4.3" fill="url(#l_grip_dark)" stroke="#070c12" stroke-width="1"/>
+    <rect x="109.1" y="130.4" width="13.8" height="4.8" rx="1.9" fill="#2a3d52" stroke="#8ea6bb" stroke-width="0.7"/>
+    <rect x="109.1" y="145.3" width="13.8" height="4.8" rx="1.9" fill="#2a3d52" stroke="#8ea6bb" stroke-width="0.7"/>
+    <rect x="109.1" y="160.2" width="13.8" height="4.8" rx="1.9" fill="#2a3d52" stroke="#8ea6bb" stroke-width="0.7"/>
+
+    <!-- Legendary command ring -->
+    <circle cx="116" cy="121.6" r="5.2" fill="#1a2d42" stroke="#ffd180" stroke-width="1"/>
+    <circle cx="116" cy="121.6" r="2.4" fill="#ffd54f"/>
+    <circle cx="116" cy="121.6" r="8.2" fill="url(#l_orange_glow)" opacity="0.62" filter="url(#l_soft_glow)">
+      <animate attributeName="r" values="7.2;9.5;7.2" dur="2.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.45;0.85;0.45" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- Main shaft -->
+    <rect x="112.2" y="60.5" width="7.6" height="62.5" rx="2.8" fill="url(#l_body_metal)" stroke="#425b6c" stroke-width="1"/>
+    <path d="M113.7 64 L113.7 119.7" stroke="#ffffff" stroke-width="0.85" opacity="0.64"/>
+    <path d="M118.1 64 L118.1 119.5" stroke="#6c8799" stroke-width="0.78" opacity="0.64"/>
+
+    <!-- Side civic crest module (legendary silhouette boost) -->
+    <g transform="translate(104.6 87)">
+      <path d="M0 0 L-7 3.8 L-7 14.8 C-7 20.1 -3.9 24.2 0 25.8 C3.9 24.2 7 20.1 7 14.8 L7 3.8 Z"
+            fill="#223549" stroke="#ffb74d" stroke-width="0.9"/>
+      <circle cx="0" cy="11" r="2.2" fill="#ffd54f"/>
+      <path d="M-2.2 14.1 L2.2 14.1" stroke="#ffd180" stroke-width="0.8"/>
+    </g>
+
+    <!-- Crowned emitter head -->
+    <rect x="108.8" y="51.2" width="14.4" height="10.1" rx="2.3" fill="#314a60" stroke="#152432" stroke-width="0.95"/>
+    <rect x="110.4" y="46.6" width="11.2" height="5.2" rx="1.6" fill="url(#l_legendary_orange)" stroke="#8a5100" stroke-width="0.7"/>
+
+    <!-- Twin ion forks + legendary arc -->
+    <rect x="109.8" y="40.8" width="3.2" height="6.5" rx="1.2" fill="#ffe6a3" stroke="#7a8f9f" stroke-width="0.55"/>
+    <rect x="119.0" y="40.8" width="3.2" height="6.5" rx="1.2" fill="#ffe6a3" stroke="#7a8f9f" stroke-width="0.55"/>
+    <path d="M111.4 41.1 L111.4 36.0" stroke="#ffd54f" stroke-width="1.35"/>
+    <path d="M120.6 41.1 L120.6 36.0" stroke="#ffd54f" stroke-width="1.35"/>
+    <path d="M111.5 36.1 Q116 32.1 120.5 36.1" fill="none" stroke="#ff9800" stroke-width="1.25" opacity="0.86"/>
+    <path d="M112.4 35.6 Q116 33.3 119.6 35.6" fill="none" stroke="#fff6cf" stroke-width="0.7" opacity="0.72"/>
+
+    <!-- Legendary GFX: crowned halo, arc surge, and golden sweep -->
+    <g id="legendary_gfx">
+      <circle cx="116" cy="44.8" r="8.6" fill="none" stroke="#ffd180" stroke-width="0.95" opacity="0.34"
+              stroke-dasharray="2.0 2.4">
+        <animateTransform attributeName="transform" type="rotate" from="0 116 44.8" to="360 116 44.8" dur="4.8s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.22;0.5;0.22" dur="2.1s" repeatCount="indefinite"/>
+      </circle>
+
+      <path d="M111.5 36.1 Q116 32.1 120.5 36.1" fill="none" stroke="#ffe8b6" stroke-width="1.0"
+            stroke-dasharray="3.0 2.0" opacity="0.78">
+        <animate attributeName="stroke-dashoffset" values="0;-10" dur="0.8s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.35;0.92;0.35" dur="1.1s" repeatCount="indefinite"/>
+      </path>
+
+      <rect x="112.8" y="64.0" width="6.4" height="18.0" rx="2.0" fill="url(#l_solar_sweep)" opacity="0" filter="url(#l_bloom)">
+        <animate attributeName="y" values="64;106;64" dur="2.6s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.86;0" dur="2.6s" repeatCount="indefinite"/>
+      </rect>
+
+      <circle cx="106.8" cy="101.0" r="1.05" fill="#ffe2a8" opacity="0.0" filter="url(#l_bloom)">
+        <animate attributeName="cy" values="104;95;104" dur="2.0s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.0;0.74;0.0" dur="2.0s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="124.8" cy="88.0" r="1.05" fill="#ffe2a8" opacity="0.0" filter="url(#l_bloom)">
+        <animate attributeName="cy" values="91;83;91" dur="2.3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.0;0.68;0.0" dur="2.3s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- Pommel + lanyard -->
+    <rect x="111.8" y="175.0" width="8.4" height="5.4" rx="2.0" fill="#0f1b28" stroke="#7a94a9" stroke-width="0.85"/>
+    <path d="M116 180.3 C126.2 186.5, 125.2 196.4, 116.4 200.6" fill="none" stroke="#1f3346" stroke-width="1.9" stroke-linecap="round"/>
+    <path d="M116 180.3 C124.2 186.2, 124.0 194.0, 117.0 197.8" fill="none" stroke="#9db8d0" stroke-width="0.62" opacity="0.62"/>
+  </g>
+</svg>

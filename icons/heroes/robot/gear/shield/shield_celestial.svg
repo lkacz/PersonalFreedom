@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(20, 10)">
+    <!-- Celestial: Event Horizon (Swirl) -->
+    <circle cx="125" cy="115" r="35" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 2"/>
+    <circle cx="125" cy="115" r="25" fill="#36d6e7" opacity="0.2"/>
+    <path d="M125 115 L160 115" stroke="#fff" stroke-width="1"/>
+    <path d="M125 115 L125 80" stroke="#fff" stroke-width="1"/>
+    <path d="M125 115 L90 115" stroke="#fff" stroke-width="1"/>
+    <path d="M125 115 L125 150" stroke="#fff" stroke-width="1"/>
+  </g>
+</svg>

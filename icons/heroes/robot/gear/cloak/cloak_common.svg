@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <!-- Common: Safety Tarp (Orange/Blue) -->
+  <path d="M40 70 L140 70 L160 200 L20 200 Z" fill="#1565C0" opacity="0.8"/>
+  <path d="M40 70 L140 70 L140 75 L40 75 Z" fill="#0D47A1"/> <!-- Collar -->
+</svg>

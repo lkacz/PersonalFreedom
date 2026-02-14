@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="u_back" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#40515f"/>
+      <stop offset="100%" stop-color="#1f2b35"/>
+    </linearGradient>
+    <linearGradient id="u_side" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#354551"/>
+      <stop offset="100%" stop-color="#182128"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Uncommon cloak: fitted drape + subtle green tactical stitch accents -->
+  <g id="cloak_uncommon">
+    <path d="M70 84 Q90 76 110 84 L121 176 Q90 189 59 176 Z" fill="url(#u_back)" opacity="0.52"/>
+    <path d="M68 84 L82 90 L76 183 L52 176 Z" fill="url(#u_side)" opacity="0.79"/>
+    <path d="M112 84 L98 90 L104 183 L128 176 Z" fill="url(#u_side)" opacity="0.79"/>
+
+    <path d="M68 85 Q90 79 112 85" fill="none" stroke="#4caf50" stroke-width="1.0" opacity="0.88"/>
+    <path d="M54 176 L76 183" fill="none" stroke="#4caf50" stroke-width="0.8" opacity="0.8"/>
+    <path d="M126 176 L104 183" fill="none" stroke="#4caf50" stroke-width="0.8" opacity="0.8"/>
+    <path d="M62 101 L75 104" fill="none" stroke="#4caf50" stroke-width="0.7" stroke-dasharray="1.4 1.2" opacity="0.78"/>
+    <path d="M118 101 L105 104" fill="none" stroke="#4caf50" stroke-width="0.7" stroke-dasharray="1.4 1.2" opacity="0.78"/>
+    <rect x="87.6" y="87.4" width="4.8" height="2.2" rx="0.6" fill="#4caf50" opacity="0.92"/>
+    <circle cx="90" cy="88.5" r="1.6" fill="#4caf50" opacity="0.9"/>
+  </g>
+</svg>

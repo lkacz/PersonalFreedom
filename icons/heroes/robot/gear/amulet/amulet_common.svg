@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <!-- Common: USB Stick -->
+  <g transform="translate(85, 90)">
+    <rect x="0" y="0" width="10" height="20" fill="#78909C" stroke="#37474F"/>
+    <rect x="2" y="15" width="6" height="4" fill="#E0E0E0"/> <!-- Connector -->
+  </g>
+</svg>

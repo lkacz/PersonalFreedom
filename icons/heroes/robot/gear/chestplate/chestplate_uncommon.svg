@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <path d="M62 75 L118 75 L115 128 L65 128 Z" fill="#546E7A" stroke="#263238" stroke-width="2"/>
+  <rect x="62" y="95" width="56" height="10" fill="#FFC107"/> <!-- Hazard Stripe -->
+  <path d="M70 95 L65 105" stroke="#000" stroke-width="2"/>
+  <path d="M80 95 L75 105" stroke="#000" stroke-width="2"/>
+  <path d="M90 95 L85 105" stroke="#000" stroke-width="2"/>
+  <path d="M100 95 L95 105" stroke="#000" stroke-width="2"/>
+  <path d="M110 95 L105 105" stroke="#000" stroke-width="2"/>
+</svg>

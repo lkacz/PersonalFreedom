@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <!-- Common tier: intentionally very simple basic baton -->
+  <g id="weapon_common" transform="rotate(-24 116 138)">
+    <rect x="112.8" y="77" width="6.4" height="52" rx="2.2" fill="#8f9aa3" stroke="#58656f" stroke-width="0.9"/>
+    <rect x="111.0" y="128.5" width="10.0" height="42" rx="3.2" fill="#202933" stroke="#11171d" stroke-width="0.9"/>
+    <circle cx="116" cy="171.5" r="3.1" fill="#26313c"/>
+  </g>
+</svg>

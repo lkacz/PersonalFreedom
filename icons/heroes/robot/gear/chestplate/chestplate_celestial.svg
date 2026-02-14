@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <!-- Celestial Chest: Transparent Crystal Cage -->
+  <path d="M60 70 L120 70 L115 130 L65 130 Z" fill="#E1F5FE" stroke="#fff" stroke-width="2" opacity="0.4"/>
+  <path d="M80 70 L80 130" stroke="#fff" stroke-width="2" opacity="0.6"/>
+  <path d="M100 70 L100 130" stroke="#fff" stroke-width="2" opacity="0.6"/>
+  <!-- Inner core visible -->
+  <circle cx="90" cy="100" r="15" fill="#fff" opacity="0.8"/>
+  <circle cx="90" cy="100" r="18" fill="none" stroke="#36d6e7" stroke-width="2" stroke-dasharray="2 2"/>
+</svg>

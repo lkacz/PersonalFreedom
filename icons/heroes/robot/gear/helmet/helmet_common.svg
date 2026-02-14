@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(0, -5)">
+    <!-- Common Helmet: Safety Hardhat -->
+    <path d="M65 40 Q90 10 115 40 L115 50 L65 50 Z" fill="#FFC107" stroke="#37474F" stroke-width="2"/>
+    <rect x="60" y="50" width="60" height="5" rx="2" fill="#FFC107" stroke="#37474F" stroke-width="2"/>
+    <rect x="85" y="25" width="10" height="20" fill="#FFA000" opacity="0.5"/> <!-- Stripe -->
+  </g>
+</svg>

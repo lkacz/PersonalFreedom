@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(0, -5)">
+    <!-- Epic Helmet: Digital Faceplate (Emoticon) -->
+    <path d="M65 30 L115 30 L112 70 L68 70 Z" fill="#212121" stroke="#36d6e7" stroke-width="2"/>
+    <rect x="70" y="40" width="40" height="20" rx="2" fill="#000"/>
+    <path d="M75 50 Q78 45 81 50" stroke="#36d6e7" stroke-width="2" fill="none"/>
+    <path d="M99 50 Q102 45 105 50" stroke="#36d6e7" stroke-width="2" fill="none"/>
+    <path d="M85 55 Q90 58 95 55" stroke="#36d6e7" stroke-width="2" fill="none"/>
+    <line x1="115" y1="30" x2="125" y2="15" stroke="#36d6e7" stroke-width="2"/>
+    <circle cx="125" cy="15" r="2" fill="#FF4081"/>
+  </g>
+</svg>

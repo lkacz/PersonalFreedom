@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <g transform="translate(0,0)">
+    <!-- Uncommon: Clamp Claws (Friendly pincers) -->
+    <path d="M35 130 L63 130 L65 150 L33 150 Z" fill="#B0BEC5" stroke="#455A64" stroke-width="1"/>
+    <path d="M117 130 L145 130 L147 150 L115 150 Z" fill="#B0BEC5" stroke="#455A64" stroke-width="1"/>
+    <!-- Pincers -->
+    <path d="M38 150 L38 165" stroke="#455A64" stroke-width="4"/>
+    <path d="M60 150 L60 165" stroke="#455A64" stroke-width="4"/>
+    <path d="M120 150 L120 165" stroke="#455A64" stroke-width="4"/>
+    <path d="M142 150 L142 165" stroke="#455A64" stroke-width="4"/>
+  </g>
+</svg>
