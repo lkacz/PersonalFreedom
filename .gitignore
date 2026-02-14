@@ -30,6 +30,8 @@ config.json
 .idea/
 *.swp
 *.swo
+.claude/
+update_icon_007.py
 
 # OS
 Thumbs.db
