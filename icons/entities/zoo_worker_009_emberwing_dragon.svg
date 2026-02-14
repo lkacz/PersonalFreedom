@@ -66,16 +66,17 @@
       <path d="M-60,120 Q-100,140 -120,80 Q-140,20 -80,-20" stroke="#3E2723" stroke-width="35" fill="none" stroke-linecap="round" opacity="0.1"/>
       <circle cx="-120" cy="80" r="10" fill="#FFB74D"/> <!-- Tail Spike (Soft) -->
 
-      <!-- Wings (Clean, rounded shapes) -->
+      <!-- Wings (Fast Flutter) -->
       <g stroke="#BF360C" stroke-width="3" stroke-linejoin="round">
-          <animateTransform attributeName="transform" type="rotate" values="-2 0 -20; 2 0 -20; -2 0 -20" dur="3s" repeatCount="indefinite"/>
           <!-- Left Wing -->
           <g>
+            <animateTransform attributeName="transform" type="rotate" values="10 0 0; -5 0 0; 10 0 0" dur="0.15s" repeatCount="indefinite"/>
             <path d="M-60,-20 Q-140,-80 -160,-10 Q-100,20 -60,0 Z" fill="#FFAB91"/>
             <path d="M-60,-20 Q-140,-80 -160,-10 Q-100,20 -60,0 Z" fill="#D84315" opacity="0.2"/> <!-- Wing Shadow -->
           </g>
           <!-- Right Wing -->
           <g>
+            <animateTransform attributeName="transform" type="rotate" values="-10 0 0; 5 0 0; -10 0 0" dur="0.15s" repeatCount="indefinite"/>
             <path d="M60,-20 Q140,-80 160,-10 Q100,20 60,0 Z" fill="#FFAB91"/>
             <path d="M60,-20 Q140,-80 160,-10 Q100,20 60,0 Z" fill="#D84315" opacity="0.2"/> <!-- Wing Shadow -->
           </g>
