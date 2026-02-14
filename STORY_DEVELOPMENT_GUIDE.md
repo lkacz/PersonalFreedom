@@ -35,7 +35,7 @@ The ADHD Buster gamification system uses **story themes** to contextualize the p
 - **Progressive narrative** - Chapters that unlock as you advance
 - **Separate progression** - Each story has its own hero, inventory, and equipped gear
 
-### Current Stories (v3.1.4)
+### Current Stories
 
 | Story ID | Title | Theme | Target Audience |
 |----------|-------|-------|-----------------|
@@ -43,6 +43,8 @@ The ADHD Buster gamification system uses **story themes** to contextualize the p
 | `scholar` | The Infinite Library | Scholar seeking ancient knowledge | Book lovers, researchers, students |
 | `wanderer` | The Endless Road | Traveler exploring focus landscapes | Explorers, creative types |
 | `underdog` | Rise of the Underdog | Underdog proving themselves | Late bloomers, comeback seekers |
+| `scientist` | The Breakthrough Protocol | Researcher pursuing disciplined discovery | Builders, analysts, experiment-driven users |
+| `robot` | The Assembly of Becoming | Factory robot evolving toward autonomy | Users motivated by transformation arcs and identity growth |
 
 **New Feature**: Each story now includes an **Entitidex** - a collectible entity system where users encounter and capture story-themed entities after focus sessions (see `ENTITIDEX_DESIGN.md` for details).
 
@@ -380,6 +382,8 @@ Your entities should be **real, tangible objects and creatures** that users coul
 - **Scholar**: Library creatures, magical study tools (mice, owls, sentient books, enchanted quills)
 - **Wanderer**: Travel gear, journey companions (compasses, maps, loyal dogs, magical backpacks)
 - **Underdog**: Office items, workplace companions (desk pets, lucky staplers, AI assistants, pigeons)
+- **Scientist**: Lab companions and experimental artifacts (lab rats, microscopes, coils, discovery relics)
+- **Robot**: Factory companions and sentient machine allies (drones, exosuits, cognition cores, rescue units)
 
 **2. Power Progression** (10 → 2000)
 Distribute power levels across 9 entities:
