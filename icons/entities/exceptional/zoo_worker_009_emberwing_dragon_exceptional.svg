@@ -46,6 +46,12 @@
       <stop offset="40%" stop-color="#000" stop-opacity="0"/>
       <stop offset="100%" stop-color="#002200" stop-opacity="0.8"/> <!-- Very Dark Green Shadow -->
     </radialGradient>
+
+    <!-- Scale Pattern (Exceptional) -->
+    <pattern id="scalePattern_ex" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+        <path d="M0,8 Q8,16 16,8" fill="none" stroke="#66BB6A" stroke-width="1.5" opacity="0.3"/>
+        <path d="M8,0 Q16,8 24,0" fill="none" stroke="#66BB6A" stroke-width="1.5" opacity="0.3"/>
+    </pattern>
   </defs>
 
   <!-- Background: Smaller floor shadow for smaller dragon -->
@@ -88,6 +94,8 @@
       <g>
          <!-- Main Body Shape: Rounder -->
          <ellipse cx="0" cy="50" rx="70" ry="90" fill="url(#bodyGrad_ex)"/>
+         <!-- Scales Overlay -->
+         <ellipse cx="0" cy="50" rx="70" ry="90" fill="url(#scalePattern_ex)" opacity="0.6"/>
          <ellipse cx="0" cy="50" rx="70" ry="90" fill="url(#shadowOverlay_ex)"/>
          <ellipse cx="0" cy="50" rx="70" ry="90" fill="url(#highlightOverlay_ex)"/>
 
@@ -97,12 +105,32 @@
          <path d="M-40,60 Q0,150 40,60 Q40,0 -40,0 Z" fill="url(#shadowOverlay_ex)" opacity="0.3"/>
       </g>
 
-      <!-- Feet (Very Small) -->
+      <!-- Feet (Redesigned - Small but Detailed) -->
       <g transform="translate(0, 130)">
-          <!-- Left Foot -->
-          <ellipse cx="-40" cy="0" rx="20" ry="15" fill="#1B5E20"/>
-          <!-- Right Foot -->
-          <ellipse cx="40" cy="0" rx="20" ry="15" fill="#1B5E20"/>
+          <!-- Left Leg -->
+          <g transform="translate(-50, 0)">
+              <!-- Thigh -->
+              <ellipse cx="0" cy="-5" rx="30" ry="25" fill="url(#bodyGrad_ex)"/>
+              <ellipse cx="0" cy="-5" rx="30" ry="25" fill="url(#scalePattern_ex)" opacity="0.4"/>
+              <!-- Foot -->
+              <path d="M-15,10 Q-5,20 15,10 L10,0 Q0,-5 -15,0 Z" fill="#1B5E20"/>
+              <!-- Claws -->
+              <path d="M-15,10 L-20,18 L-10,14" fill="#E8F5E9"/>
+              <path d="M-5,12 L-5,20 L5,14" fill="#E8F5E9"/>
+              <path d="M10,10 L15,18 L5,14" fill="#E8F5E9"/>
+          </g>
+          <!-- Right Leg -->
+          <g transform="translate(50, 0)">
+              <!-- Thigh -->
+              <ellipse cx="0" cy="-5" rx="30" ry="25" fill="url(#bodyGrad_ex)"/>
+              <ellipse cx="0" cy="-5" rx="30" ry="25" fill="url(#scalePattern_ex)" opacity="0.4"/>
+              <!-- Foot -->
+              <path d="M15,10 Q5,20 -15,10 L-10,0 Q0,-5 15,0 Z" fill="#1B5E20"/>
+               <!-- Claws -->
+              <path d="M15,10 L20,18 L10,14" fill="#E8F5E9"/>
+              <path d="M5,12 L5,20 L-5,14" fill="#E8F5E9"/>
+              <path d="M-10,10 L-15,18 L-5,14" fill="#E8F5E9"/>
+          </g>
       </g>
 
       <!-- HEAD GROUP (Larger relative to body for 'Tiny' look) -->
