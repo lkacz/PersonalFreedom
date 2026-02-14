@@ -5,32 +5,31 @@
         <stop offset="0%" stop-color="#311B92"/>
         <stop offset="100%" stop-color="#1A237E"/>
     </linearGradient>
-    <pattern id="hexMesh" width="10" height="10" patternUnits="userSpaceOnUse">
-        <path d="M5 0 L10 2.5 L10 7.5 L5 10 L0 7.5 L0 2.5 Z" fill="none" stroke="#7C4DFF" stroke-width="0.5" opacity="0.3"/>
+    <pattern id="hexMesh" width="6" height="6" patternUnits="userSpaceOnUse">
+        <path d="M3 0 L6 1.5 L6 4.5 L3 6 L0 4.5 L0 1.5 Z" fill="none" stroke="#7C4DFF" stroke-width="0.3" opacity="0.3"/>
     </pattern>
     <filter id="neonBlur">
-        <feGaussianBlur stdDeviation="1.5" result="blur"/>
+        <feGaussianBlur stdDeviation="1" result="blur"/>
         <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
 </defs>
-<g transform="translate(0, 5)">
-    <!-- Main Suit -->
-    <path d="M40 30 Q90 15 140 30 L135 170 Q90 180 45 170 Z" fill="url(#stealthVoid)"/>
+<g transform="translate(0, 0)">
+    <!-- Main Suit (Form Fitting) -->
+    <path d="M65 80 Q90 75 115 80 L112 140 Q90 145 68 140 Z" fill="url(#stealthVoid)"/>
     
     <!-- Mesh Overlay -->
-    <path d="M40 30 Q90 15 140 30 L135 170 Q90 180 45 170 Z" fill="url(#hexMesh)" opacity="0.5"/>
+    <path d="M65 80 Q90 75 115 80 L112 140 Q90 145 68 140 Z" fill="url(#hexMesh)" opacity="0.5"/>
     
-    <!-- Armor Plates (Glossy) -->
-    <path d="M55 45 L125 45 L120 90 L60 90 Z" fill="#4A148C" opacity="0.8" stroke="#AA00FF" stroke-width="1"/>
-    <path d="M60 100 L120 100 L115 150 L65 150 Z" fill="#4A148C" opacity="0.8" stroke="#AA00FF" stroke-width="1"/>
+    <!-- Armor Plates -->
+    <path d="M72 90 L108 90 L106 110 L74 110 Z" fill="#4A148C" opacity="0.8" stroke="#AA00FF" stroke-width="0.5"/>
+    <path d="M75 115 L105 115 L102 135 L78 135 Z" fill="#4A148C" opacity="0.8" stroke="#AA00FF" stroke-width="0.5"/>
     
     <!-- Energy Lines -->
-    <path d="M90 30 L90 170" stroke="#E040FB" stroke-width="1.5" filter="url(#neonBlur)" opacity="0.8">
+    <path d="M90 80 L90 140" stroke="#E040FB" stroke-width="1" filter="url(#neonBlur)" opacity="0.8">
         <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
-        <animate attributeName="stroke-width" values="1;2;1" dur="2s" repeatCount="indefinite"/>
     </path>
-    <circle cx="90" cy="95" r="4" fill="#E040FB" filter="url(#neonBlur)">
-         <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite"/>
+    <circle cx="90" cy="110" r="2.5" fill="#E040FB" filter="url(#neonBlur)">
+         <animate attributeName="r" values="2.5;3.5;2.5" dur="0.5s" repeatCount="indefinite"/>
     </circle>
 </g>
 </svg>
