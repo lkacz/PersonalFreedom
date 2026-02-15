@@ -1,45 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-<defs>
-    <linearGradient id="ceramicPlate" x1="0%" y1="0%" x2="1" y2="1">
-        <stop offset="0%" stop-color="#FF6F00"/>
-        <stop offset="40%" stop-color="#E65100"/>
-        <stop offset="60%" stop-color="#FF8F00"/> 
-        <stop offset="100%" stop-color="#BF360C"/> 
-    </linearGradient>
-    <filter id="heatShimmer">
-        <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" result="turb">
-             <animate attributeName="baseFrequency" values="0.05;0.055;0.05" dur="0.5s" repeatCount="indefinite"/>
-        </feTurbulence>
-        <feDisplacementMap in="SourceGraphic" in2="turb" scale="1"/>
-    </filter>
-</defs>
-<g transform="translate(36, 43) scale(0.6)">
-    <!-- Base Rig -->
-    <path d="M62 78 L118 78 L115 145 L65 145 Z" fill="#3E2723" stroke="#D84315" stroke-width="2"/>
-
-    <!-- Reactive Plates (Smaller) -->
-    <g filter="url(#heatShimmer)">
-        <!-- Top Plate -->
-        <rect x="68" y="85" width="44" height="20" rx="2" fill="url(#ceramicPlate)" stroke="#3E2723" stroke-width="1"/>
-        <!-- Mid Plate -->
-        <rect x="70" y="110" width="40" height="15" rx="2" fill="url(#ceramicPlate)" stroke="#3E2723" stroke-width="1"/>
-        <!-- Low Plate -->
-        <rect x="72" y="130" width="36" height="10" rx="2" fill="url(#ceramicPlate)" stroke="#3E2723" stroke-width="1"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+    <!-- Legendary Chestplate: Tiny Pin (Sparkle) -->
+    <defs>
+        <filter id="badgeShadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0.2" dy="0.5" stdDeviation="0.2" flood-color="#000" flood-opacity="0.5"/>
+        </filter>
+        <radialGradient id="glintLegendary" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#FFD54F"/>
+            <stop offset="100%" stop-color="#FF6F00"/>
+        </radialGradient>
+    </defs>
+    
+    <g transform="translate(100, 95)">
+        <!-- Main body is tiny -->
+        <circle r="2" fill="url(#glintLegendary)" stroke="#E65100" stroke-width="0.5" filter="url(#badgeShadow)"/>
+        <!-- Tiny sparkle -->
+        <path d="M0 -3 L0.5 -0.5 L3 0 L0.5 0.5 L0 3 L-0.5 0.5 L-3 0 L-0.5 -0.5 Z" fill="#FFF" fill-opacity="0.9"/>
     </g>
-    
-    <!-- Warning Stripes -->
-    <path d="M68 85 L75 85 L68 92 Z" fill="#FFD600"/>
-    <path d="M112 85 L105 85 L112 92 Z" fill="#FFD600"/>
-    
-    <!-- Core Heat Glow -->
-    <circle cx="90" cy="117" r="3" fill="#FFAB00" opacity="0.8">
-        <animate attributeName="opacity" values="0.6;1;0.6" dur="0.2s" repeatCount="indefinite"/>
-        <animate attributeName="r" values="3;4;3" dur="0.8s" repeatCount="indefinite"/>
-    </circle>
-</g>
 </svg>
-
-
-
-

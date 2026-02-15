@@ -1,39 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-<defs>
-    <linearGradient id="stealthVoid" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#311B92"/>
-        <stop offset="100%" stop-color="#1A237E"/>
-    </linearGradient>
-    <pattern id="hexMesh" width="6" height="6" patternUnits="userSpaceOnUse">
-        <path d="M3 0 L6 1.5 L6 4.5 L3 6 L0 4.5 L0 1.5 Z" fill="none" stroke="#7C4DFF" stroke-width="0.3" opacity="0.3"/>
-    </pattern>
-    <filter id="neonBlur">
-        <feGaussianBlur stdDeviation="1" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-</defs>
-<g transform="translate(36, 43) scale(0.6)">
-    <!-- Main Suit (Form Fitting) -->
-    <path d="M65 80 Q90 75 115 80 L112 140 Q90 145 68 140 Z" fill="url(#stealthVoid)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+    <!-- Epic Chestplate: Tiny Pin -->
+    <defs>
+        <filter id="badgeShadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0.2" dy="0.5" stdDeviation="0.2" flood-color="#000" flood-opacity="0.5"/>
+        </filter>
+        <radialGradient id="glintEpic" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#BA68C8"/>
+            <stop offset="100%" stop-color="#6A1B9A"/>
+        </radialGradient>
+    </defs>
     
-    <!-- Mesh Overlay -->
-    <path d="M65 80 Q90 75 115 80 L112 140 Q90 145 68 140 Z" fill="url(#hexMesh)" opacity="0.5"/>
-    
-    <!-- Armor Plates -->
-    <path d="M72 90 L108 90 L106 110 L74 110 Z" fill="#4A148C" opacity="0.8" stroke="#AA00FF" stroke-width="0.5"/>
-    <path d="M75 115 L105 115 L102 135 L78 135 Z" fill="#4A148C" opacity="0.8" stroke="#AA00FF" stroke-width="0.5"/>
-    
-    <!-- Energy Lines -->
-    <path d="M90 80 L90 140" stroke="#E040FB" stroke-width="1" filter="url(#neonBlur)" opacity="0.8">
-        <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
-    </path>
-    <circle cx="90" cy="110" r="2.5" fill="#E040FB" filter="url(#neonBlur)">
-         <animate attributeName="r" values="2.5;3.5;2.5" dur="0.5s" repeatCount="indefinite"/>
-    </circle>
-</g>
+    <g transform="translate(100, 95)">
+        <circle r="2" fill="url(#glintEpic)" stroke="#4A148C" stroke-width="0.5" filter="url(#badgeShadow)"/>
+        <circle cx="-0.5" cy="-0.5" r="0.5" fill="#ffffff" fill-opacity="0.6"/>
+    </g>
 </svg>
-
-
-
-

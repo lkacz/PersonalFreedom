@@ -5,11 +5,14 @@ Handles triggering encounters after focus sessions and selecting
 which entity appears based on user progress and hero power.
 """
 
+import logging
 import random
 from typing import Optional, List, Tuple
 from .entity import Entity
 from .entity_pools import get_entities_for_story
 from .progress_tracker import EntitidexProgress
+
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -18,15 +21,15 @@ from .progress_tracker import EntitidexProgress
 
 ENCOUNTER_CONFIG = {
     # Base encounter chance after completing a focus session
-    "base_chance": 0.55,  # 55% - increased from 40% for better engagement
-    
+    "base_chance": 0.45,  # 45% baseline chance per completed session
+
     # Bonuses that increase encounter chance
-    "bonus_per_15min": 0.08,      # +8% per 15 min beyond minimum (was 5%)
-    "bonus_perfect_session": 0.12,  # +12% for no bypass attempts (was 10%)
-    "bonus_per_streak_day": 0.03,   # +3% per consecutive day (was 2%)
-    
+    "bonus_per_15min": 0.06,        # +6% per 15 min beyond minimum
+    "bonus_perfect_session": 0.10,  # +10% for no bypass attempts
+    "bonus_per_streak_day": 0.01,   # +1% per consecutive day
+
     # Maximum encounter chance (cap)
-    "max_chance": 0.92,  # 92% maximum (was 85%)
+    "max_chance": 0.75,  # 75% maximum
     
     # Entity selection weights
     "weight_power_near": 100,      # Entity within 200 power of hero
@@ -187,17 +190,31 @@ def should_trigger_encounter(
         city_encounter_bonus=city_encounter_bonus,
     )
     
-    # Always log encounter check for debugging
-    result_str = "✅ ENCOUNTER!" if occurred else "❌ No encounter"
-    print(f"[Entitidex] {result_str} | Chance: {chance*100:.1f}% | Session: {session_minutes}min | Perfect: {was_perfect_session} | Streak: {streak_days} | Bypass: {was_bypass_used}")
+    # Always log encounter check for debugging (ASCII-safe to avoid console encoding crashes).
+    result_str = "ENCOUNTER" if occurred else "NO_ENCOUNTER"
+    logger.debug(
+        "[Entitidex] %s | Chance: %.1f%% | Session: %smin | Perfect: %s | Streak: %s | Bypass: %s",
+        result_str,
+        chance * 100.0,
+        session_minutes,
+        was_perfect_session,
+        streak_days,
+        was_bypass_used,
+    )
     
     # Log perk contribution if any
     if perk_bonus > 0 and occurred:
-        print(f"[Entity Perks] ✨ Encounter boosted by +{perk_bonus*100:.1f}% from collected entities!")
+        logger.debug(
+            "[Entity Perks] Encounter boosted by +%.1f%% from collected entities",
+            perk_bonus * 100.0,
+        )
     
     # Log bypass penalty if applied
     if was_bypass_used and occurred:
-        print(f"[Entitidex] 🎁 Bypass session still triggered encounter! (reduced {int(ENCOUNTER_CONFIG['bypass_penalty_multiplier']*100)}% chance)")
+        logger.debug(
+            "[Entitidex] Bypass session still triggered encounter (effective %s%% chance)",
+            int(ENCOUNTER_CONFIG["bypass_penalty_multiplier"] * 100),
+        )
     
     return occurred
 

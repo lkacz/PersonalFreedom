@@ -1575,9 +1575,15 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         "Legendary": 20
     }
     
-    def __init__(self, win_chance: float, priority_title: str,
-                 logged_hours: float = 0, story_id: str = None,
-                 parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(
+        self,
+        win_chance: float,
+        priority_title: str,
+        logged_hours: float = 0,
+        story_id: str = None,
+        pre_rolled_result: Optional[dict] = None,
+        parent: Optional[QtWidgets.QWidget] = None,
+    ):
         """
         Args:
             win_chance: Chance to win (0.0-1.0)
@@ -1587,27 +1593,65 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
             parent: Parent widget
         """
         super().__init__(parent)
-        self.win_chance = win_chance
+        self._pre_rolled_result = pre_rolled_result if isinstance(pre_rolled_result, dict) else {}
+        required_roll_keys = {"won", "chance", "win_roll"}
+        if not required_roll_keys.issubset(self._pre_rolled_result.keys()):
+            try:
+                from gamification import roll_priority_completion_reward
+                fallback_result = roll_priority_completion_reward(
+                    story_id=story_id,
+                    logged_hours=logged_hours,
+                )
+                if isinstance(fallback_result, dict):
+                    self._pre_rolled_result = fallback_result
+            except Exception:
+                # Keep deterministic fallback behavior below if backend roll is unavailable.
+                pass
+
+        chance_from_backend = self._pre_rolled_result.get("chance")
+        if isinstance(chance_from_backend, (int, float)):
+            self.win_chance = max(0.0, min(0.99, float(chance_from_backend) / 100.0))
+        else:
+            self.win_chance = max(0.0, min(0.99, win_chance))
         self.priority_title = priority_title
         self.logged_hours = logged_hours
         self.story_id = story_id
         
-        # Pre-roll results
-        self.win_roll = random.random()
-        self.won = self.win_roll < win_chance
-        
-        # Roll rarity (will only matter if won)
-        self.rarity_roll = random.random() * 100
-        self.won_rarity = self._determine_rarity(self.rarity_roll)
-        self.won_item = None
-        
-        if self.won:
-            # Generate the actual item
+        # Use backend pre-rolls when provided. Deterministic fallback if unavailable.
+        fallback_won = bool(self._pre_rolled_result.get("won", False))
+        eps = 0.000001
+        fallback_win_roll = (self.win_chance - eps) if fallback_won else (self.win_chance + eps)
+        try:
+            self.win_roll = float(self._pre_rolled_result.get("win_roll", fallback_win_roll))
+        except (TypeError, ValueError):
+            self.win_roll = fallback_win_roll
+        self.win_roll = max(0.0, min(1.0, self.win_roll))
+        self.won = bool(self._pre_rolled_result.get("won", self.win_roll < self.win_chance))
+
+        pre_rarity = self._pre_rolled_result.get("rarity")
+        pre_rarity_roll = self._pre_rolled_result.get("rarity_roll")
+        if pre_rarity_roll is None:
+            if isinstance(pre_rarity, str) and pre_rarity in self.RARITY_WEIGHTS:
+                pre_rarity_roll = self._midpoint_roll_for_rarity(pre_rarity)
+            else:
+                pre_rarity_roll = 0.0
+        try:
+            self.rarity_roll = float(pre_rarity_roll)
+        except (TypeError, ValueError):
+            self.rarity_roll = 0.0
+        self.rarity_roll = max(0.0, min(100.0, self.rarity_roll))
+
+        if isinstance(pre_rarity, str) and pre_rarity in self.RARITY_WEIGHTS:
+            self.won_rarity = pre_rarity
+        else:
+            self.won_rarity = self._determine_rarity(self.rarity_roll)
+
+        self.won_item = self._pre_rolled_result.get("item") if isinstance(self._pre_rolled_result.get("item"), dict) else None
+        if self.won and self.won_item is None:
             try:
                 from gamification import generate_item
                 self.won_item = generate_item(rarity=self.won_rarity, story_id=story_id)
             except (ImportError, Exception):
-                # Fallback if gamification unavailable
                 self.won_item = {"name": f"{self.won_rarity} Item", "rarity": self.won_rarity, "power": 10}
         
         self.current_stage = 0
@@ -1627,6 +1671,20 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
                 return rarity
             cumulative += zone_pct
         return "Legendary"
+
+    def _midpoint_roll_for_rarity(self, rarity: str) -> float:
+        """Return a deterministic roll at the midpoint of the rarity zone."""
+        total = sum(self.RARITY_WEIGHTS.values())
+        if total <= 0:
+            return 0.0
+        cumulative = 0.0
+        for rarity_name in ["Common", "Uncommon", "Rare", "Epic", "Legendary"]:
+            weight = self.RARITY_WEIGHTS.get(rarity_name, 0)
+            zone_pct = (weight / total) * 100.0 if total > 0 else 0.0
+            if rarity_name == rarity:
+                return cumulative + (zone_pct / 2.0)
+            cumulative += zone_pct
+        return 0.0
     
     def _setup_ui(self):
         """Build the two-stage lottery UI."""
@@ -1694,11 +1752,14 @@ class PriorityLotteryDialog(QtWidgets.QDialog):
         self.stage1_title.setStyleSheet("color: #aaa; font-size: 12px; font-weight: bold;")
         # Add tooltip explaining win chance
         win_pct = self.win_chance * 100
+        hours_bonus = 0
+        if self.logged_hours > 0:
+            hours_bonus = min(84, int((self.logged_hours / 20.0) * 84))
         self.stage1_title.setToolTip(
             f"🎲 Win Chance: {win_pct:.0f}%\n"
             f"──────────────\n"
             f"Base: 15%\n"
-            f"Hours logged ({self.logged_hours:.1f}h): +{min(84, int(self.logged_hours * 10))}%\n"
+            f"Hours logged ({self.logged_hours:.1f}h): +{hours_bonus}%\n"
             f"Max: 99%\n\n"
             f"Log more hours for better odds!"
         )
@@ -2515,21 +2576,28 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
                  base_rarity: str = "Common",
                  title: str = "",
                  parent: Optional[QtWidgets.QWidget] = None,
-                 entity_perk_contributors: list = None):
+                 entity_perk_contributors: list = None,
+                 tier_roll: Optional[float] = None,
+                 rolled_tier: Optional[str] = None,
+                 tier_weights: Optional[list] = None):
         """
         Args:
-            success_roll: The actual success roll (0.0-1.0). If <= 0, generates random roll.
+            success_roll: The actual success roll (0.0-1.0). If negative, generates random roll.
             success_threshold: Success threshold (0.0-1.0). Roll < threshold = success.
             tier_upgrade_enabled: Whether +50 coin tier upgrade is active
             base_rarity: The RESULT rarity (center of distribution)
             title: Custom title for the dialog (empty = default "Lucky Merge")
             parent: Parent widget
             entity_perk_contributors: List of entity perks that boosted rarity/luck
+            tier_roll: Optional pre-rolled tier roll (0.0-100.0)
+            rolled_tier: Optional pre-rolled tier outcome
+            tier_weights: Optional pre-calculated tier weights for display
         """
         super().__init__(parent)
         # Generate random roll if not provided (negative means "generate one")
         # Note: 0.0 is a valid roll (guaranteed success), so only check for negative
         self.success_roll = success_roll if success_roll >= 0 else random.random()
+        self.success_roll = max(0.0, min(1.0, float(self.success_roll)))
         self.success_threshold = success_threshold
         self.is_success = self.success_roll < success_threshold
         self.tier_upgrade_enabled = tier_upgrade_enabled
@@ -2538,11 +2606,19 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
         self._entity_perk_contributors = entity_perk_contributors or []
         
         # Calculate tier weights using moving window
-        self.tier_weights = self._calculate_tier_weights()
+        self.tier_weights = (
+            list(tier_weights)
+            if isinstance(tier_weights, list) and len(tier_weights) == len(self.TIERS)
+            else self._calculate_tier_weights()
+        )
         
-        # Pre-roll tier (only matters if success)
-        self.tier_roll = random.random() * 100
-        self.rolled_tier = self._determine_tier(self.tier_roll)
+        # Pre-roll tier (only matters if success). If pre-rolled values are provided,
+        # use them so animation only reveals backend-authoritative outcomes.
+        if tier_roll is None and rolled_tier in self.TIERS:
+            tier_roll = self._midpoint_roll_for_tier(rolled_tier)
+        self.tier_roll = float(tier_roll) if tier_roll is not None else (random.random() * 100.0)
+        self.tier_roll = max(0.0, min(100.0, self.tier_roll))
+        self.rolled_tier = rolled_tier if rolled_tier in self.TIERS else self._determine_tier(self.tier_roll)
         
         # Calculate tier jump for backwards compatibility
         try:
@@ -2588,6 +2664,21 @@ class MergeTwoStageLotteryDialog(QtWidgets.QDialog):
                 return tier
             cumulative += zone_pct
         return "Legendary"
+
+    def _midpoint_roll_for_tier(self, tier: str) -> float:
+        """Return a representative roll in the middle of a tier zone."""
+        total = sum(self.tier_weights)
+        if total <= 0:
+            return 50.0
+        cumulative = 0.0
+        for tier_name, weight in zip(self.TIERS, self.tier_weights):
+            if weight <= 0:
+                continue
+            zone_pct = (weight / total) * 100.0
+            if tier_name == tier:
+                return cumulative + (zone_pct / 2.0)
+            cumulative += zone_pct
+        return 50.0
     
     def _setup_ui(self):
         """Build two-stage merge lottery UI."""
@@ -3372,8 +3463,15 @@ class WaterLotteryDialog(QtWidgets.QDialog):
     # Signal emits (won: bool, rarity: str, item: dict or None, new_attempts: int)
     finished_signal = QtCore.Signal(bool, str, object, int)
     
-    def __init__(self, glass_number: int, lottery_attempts: int,
-                 story_id: str = None, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(
+        self,
+        glass_number: int,
+        lottery_attempts: int,
+        story_id: str = None,
+        pre_rolled_outcome: Optional[dict] = None,
+        pre_rolled_item: Optional[dict] = None,
+        parent: Optional[QtWidgets.QWidget] = None,
+    ):
         """
         Args:
             glass_number: Which glass this is today (1-5)
@@ -3385,27 +3483,64 @@ class WaterLotteryDialog(QtWidgets.QDialog):
         self.glass_number = glass_number
         self.lottery_attempts = lottery_attempts
         self.story_id = story_id
+        self._pre_rolled_outcome = pre_rolled_outcome if isinstance(pre_rolled_outcome, dict) else {}
+        required_roll_keys = {"won", "success_roll", "tier_roll", "rolled_tier"}
+        if not required_roll_keys.issubset(self._pre_rolled_outcome.keys()):
+            try:
+                from gamification import roll_water_reward_outcome
+                fallback_outcome = roll_water_reward_outcome(glass_number=glass_number)
+                if isinstance(fallback_outcome, dict):
+                    self._pre_rolled_outcome = fallback_outcome
+            except Exception:
+                # Keep deterministic fallback behavior below if backend roll is unavailable.
+                pass
         
         # Success rate decreases with each glass: 99%, 80%, 60%, 40%, 20%
         success_rates = [0.99, 0.80, 0.60, 0.40, 0.20]
         self.success_rate = success_rates[min(glass_number - 1, len(success_rates) - 1)]
-        
-        # Pre-roll tier result
-        self.tier_roll = random.random() * 100
-        self.rolled_tier = self._determine_tier(self.tier_roll)
-        
-        # Pre-roll win/lose result  
-        self.win_roll = random.random()
-        self.won = self.win_roll < self.success_rate
-        
-        # Generate item if won
-        self.won_item = None
-        if self.won:
+
+        if "success_rate" in self._pre_rolled_outcome:
+            try:
+                self.success_rate = max(0.0, min(1.0, float(self._pre_rolled_outcome.get("success_rate", self.success_rate))))
+            except Exception:
+                pass
+
+        pre_rolled_tier = self._pre_rolled_outcome.get("rolled_tier")
+        pre_tier_roll = self._pre_rolled_outcome.get("tier_roll")
+        if pre_tier_roll is None:
+            if isinstance(pre_rolled_tier, str) and pre_rolled_tier in self.TIERS:
+                pre_tier_roll = self._midpoint_roll_for_tier(pre_rolled_tier)
+            else:
+                pre_tier_roll = 0.0
+        try:
+            self.tier_roll = float(pre_tier_roll)
+        except (TypeError, ValueError):
+            self.tier_roll = 0.0
+        self.tier_roll = max(0.0, min(100.0, self.tier_roll))
+
+        if isinstance(pre_rolled_tier, str) and pre_rolled_tier in self.TIERS:
+            self.rolled_tier = pre_rolled_tier
+        else:
+            self.rolled_tier = self._determine_tier(self.tier_roll)
+
+        fallback_won = bool(self._pre_rolled_outcome.get("won", False))
+        eps = 0.000001
+        fallback_win_roll = (self.success_rate - eps) if fallback_won else (self.success_rate + eps)
+        try:
+            self.win_roll = float(self._pre_rolled_outcome.get("success_roll", fallback_win_roll))
+        except (TypeError, ValueError):
+            self.win_roll = fallback_win_roll
+        self.win_roll = max(0.0, min(1.0, self.win_roll))
+        self.won = bool(self._pre_rolled_outcome.get("won", self.win_roll < self.success_rate))
+
+        # Generate/reuse item if won.
+        self.won_item = pre_rolled_item if isinstance(pre_rolled_item, dict) else None
+        if self.won and self.won_item is None:
             try:
                 from gamification import generate_item
-                self.won_item = generate_item(rarity=self.rolled_tier, story_id=story_id)
+                reward_tier = self._pre_rolled_outcome.get("reward_tier", self.rolled_tier)
+                self.won_item = generate_item(rarity=reward_tier, story_id=story_id)
             except (ImportError, Exception):
-                # Fallback if gamification unavailable
                 self.won_item = {"name": f"{self.rolled_tier} Item", "rarity": self.rolled_tier, "power": 10}
         
         # No longer using attempt counter - kept for compatibility
@@ -3441,6 +3576,22 @@ class WaterLotteryDialog(QtWidgets.QDialog):
                 return tier
             cumulative += weight
         return "Legendary"
+
+    def _midpoint_roll_for_tier(self, tier: str) -> float:
+        """Return a deterministic roll at the midpoint of the requested tier zone."""
+        center_tier = min(self.glass_number - 1, 4)
+        weights = [0] * len(self.TIERS)
+        for offset, pct in zip([-2, -1, 0, 1, 2], self.BASE_WINDOW):
+            target_tier = center_tier + offset
+            clamped_tier = max(0, min(len(self.TIERS) - 1, target_tier))
+            weights[clamped_tier] += pct
+
+        cumulative = 0.0
+        for tier_name, weight in zip(self.TIERS, weights):
+            if tier_name == tier:
+                return cumulative + (weight / 2.0)
+            cumulative += weight
+        return 0.0
     
     def _setup_ui(self):
         """Build the two-stage water lottery UI."""
@@ -3489,8 +3640,8 @@ class WaterLotteryDialog(QtWidgets.QDialog):
             f"💧 Water Lottery Success Rate\n"
             f"──────────────────\n"
             f"Glass #{self.glass_number}: {self.success_rate*100:.0f}%\n\n"
-            f"Higher glasses = better odds!\n"
-            f"Glass 1: ~50% | Glass 8: ~85%"
+            f"Odds decrease each glass:\n"
+            f"Glass 1: 99% | 2: 80% | 3: 60% | 4: 40% | 5: 20%"
         )
         container_layout.addWidget(success_info)
         
@@ -3858,10 +4009,19 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
     }
     TIERS = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
     
-    def __init__(self, session_minutes: int, streak_days: int = 0, parent=None):
+    def __init__(
+        self,
+        session_minutes: int,
+        streak_days: int = 0,
+        tier_weights: Optional[list] = None,
+        parent=None,
+    ):
         super().__init__(parent)
         self.session_minutes = session_minutes
         self.streak_days = streak_days
+        self._explicit_tier_weights = (
+            list(tier_weights) if isinstance(tier_weights, (list, tuple)) and len(tier_weights) == 5 else None
+        )
         self.zone_widths = self._calculate_zone_widths()
         self.position = 50.0
         self.result_tier = None
@@ -3869,6 +4029,9 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
     
     def _calculate_zone_widths(self) -> list:
         """Calculate zone widths based on session duration (matches gamification.py)."""
+        if self._explicit_tier_weights and sum(self._explicit_tier_weights) > 0:
+            return self._explicit_tier_weights
+
         # Session length to center tier mapping (must match calculate_rarity_bonuses)
         # <30min: -1 (base weights), 30min: 0, 1hr: 1, 2hr: 2, 3hr: 3, 4hr+: 4, 5hr+: 5, 6hr+: 6
         if self.session_minutes >= 360:      # 6hr+ = 100% Legendary
@@ -3890,21 +4053,21 @@ class FocusTimerTierSliderWidget(QtWidgets.QWidget):
         
         # Streak bonus (must match calculate_rarity_bonuses)
         if self.streak_days >= 60:
-            streak_bonus = 2
-        elif self.streak_days >= 30:
-            streak_bonus = 1.5
-        elif self.streak_days >= 14:
-            streak_bonus = 1
-        elif self.streak_days >= 7:
             streak_bonus = 0.5
+        elif self.streak_days >= 30:
+            streak_bonus = 0.35
+        elif self.streak_days >= 14:
+            streak_bonus = 0.2
+        elif self.streak_days >= 7:
+            streak_bonus = 0.1
         else:
             streak_bonus = 0
         
         effective_center = center_tier + streak_bonus
         
-        if center_tier >= 0:
-            # Moving window: [5%, 20%, 50%, 20%, 5%] centered on tier (MUST match generate_item)
-            window = [5, 20, 50, 20, 5]
+        if effective_center >= 0:
+            # Moving window must match generate_item().
+            window = [2, 20, 56, 20, 2]
             weights = [0, 0, 0, 0, 0]
             
             for offset, pct in zip([-2, -1, 0, 1, 2], window):
@@ -4060,8 +4223,15 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
     
     finished_signal = QtCore.Signal(str, dict)  # (tier, item)
     
-    def __init__(self, session_minutes: int, streak_days: int, 
-                 item: dict, parent=None):
+    def __init__(
+        self,
+        session_minutes: int,
+        streak_days: int,
+        item: dict,
+        tier_weights: Optional[list] = None,
+        tier_roll: Optional[float] = None,
+        parent=None,
+    ):
         """
         Args:
             session_minutes: Session duration in minutes
@@ -4072,13 +4242,21 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         self.session_minutes = session_minutes
         self.streak_days = streak_days
         self.item = item
+        self.tier_weights = tier_weights if isinstance(tier_weights, (list, tuple)) and len(tier_weights) == 5 else None
         self.rolled_tier = item.get("rarity", "Common")
         
         # Calculate target position in the slider
         self._setup_ui()
         
         # Calculate roll position based on tier
-        self.tier_roll = self._calculate_roll_for_tier(self.rolled_tier)
+        if tier_roll is None:
+            self.tier_roll = self._calculate_roll_for_tier(self.rolled_tier)
+        else:
+            try:
+                self.tier_roll = float(tier_roll)
+            except (TypeError, ValueError):
+                self.tier_roll = self._calculate_roll_for_tier(self.rolled_tier)
+            self.tier_roll = max(0.0, min(100.0, self.tier_roll))
         
         QtCore.QTimer.singleShot(300, self._start_animation)
     
@@ -4155,7 +4333,11 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
         lottery_layout.addWidget(lottery_title)
         
         # Tier slider
-        self.tier_slider = FocusTimerTierSliderWidget(self.session_minutes, self.streak_days)
+        self.tier_slider = FocusTimerTierSliderWidget(
+            self.session_minutes,
+            self.streak_days,
+            tier_weights=self.tier_weights,
+        )
         self.tier_slider.setFixedHeight(70)
         lottery_layout.addWidget(self.tier_slider)
         
@@ -4283,7 +4465,8 @@ class FocusTimerLotteryDialog(QtWidgets.QDialog):
     
     def _show_result(self):
         """Show the won item."""
-        tier = self.rolled_tier
+        tier = self.tier_slider.get_tier_at_position(self.tier_roll)
+        self.rolled_tier = tier
         tier_colors = {
             "Common": "#9e9e9e", "Uncommon": "#4caf50", "Rare": "#2196f3",
             "Epic": "#9c27b0", "Legendary": "#ff9800"
@@ -4367,7 +4550,9 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
     
     def __init__(self, effective_minutes: float, pre_rolled_rarity: str,
                  story_id: str = None, parent: Optional[QtWidgets.QWidget] = None,
-                 item: Optional[dict] = None):
+                 item: Optional[dict] = None,
+                 tier_roll: Optional[float] = None,
+                 tier_weights: Optional[list] = None):
         """
         Args:
             effective_minutes: Calculated effective minutes for display
@@ -4385,10 +4570,21 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
         self.story_id = story_id
         
         # Calculate tier distribution for display
-        self.tier_weights = self._calculate_tier_weights()
+        self.tier_weights = (
+            list(tier_weights)
+            if isinstance(tier_weights, (list, tuple)) and len(tier_weights) == len(self.TIERS)
+            else self._calculate_tier_weights()
+        )
         
         # Pre-roll the position (0-100) for animation target
-        self.tier_roll = self._get_position_for_tier(self.rolled_tier)
+        if tier_roll is None:
+            self.tier_roll = self._get_position_for_tier(self.rolled_tier)
+        else:
+            try:
+                self.tier_roll = float(tier_roll)
+            except (TypeError, ValueError):
+                self.tier_roll = self._get_position_for_tier(self.rolled_tier)
+            self.tier_roll = max(0.0, min(100.0, self.tier_roll))
         
         self._setup_ui()
         QtCore.QTimer.singleShot(300, self._start_animation)
@@ -4396,6 +4592,8 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
     def _calculate_tier_weights(self) -> list:
         """Calculate tier weights based on effective minutes."""
         # Determine center tier (same logic as gamification.py)
+        if self.effective_minutes >= 120:
+            return [0, 0, 0, 0, 100]  # 120+ effective minutes = guaranteed top tier
         if self.effective_minutes >= 100:
             center_tier = 4  # Legendary-centered (75%)
         elif self.effective_minutes >= 70:
@@ -4602,6 +4800,7 @@ class ActivityLotteryDialog(QtWidgets.QDialog):
     
     def _finish_animation(self):
         """Show final result."""
+        self.rolled_tier = self.tier_slider.get_tier_at_position(self.tier_roll)
         color = self.TIER_COLORS.get(self.rolled_tier, "#aaa")
         
         # Set result on slider to trigger glow effect
@@ -5044,7 +5243,8 @@ class WeightLotteryDialog(QtWidgets.QDialog):
     
     def _show_result(self):
         """Show the won item with polished reveal."""
-        tier = self.rolled_tier
+        tier = self.tier_slider.get_tier_at_position(self.tier_roll)
+        self.rolled_tier = tier
         color = self.TIER_COLORS.get(tier, "#fff")
         
         # Update slider with result (triggers glow effect)
@@ -5368,7 +5568,8 @@ class SleepLotteryDialog(QtWidgets.QDialog):
     
     def _show_result(self):
         """Show the won item with polished reveal."""
-        tier = self.rolled_tier
+        tier = self.tier_slider.get_tier_at_position(self.tier_roll)
+        self.rolled_tier = tier
         color = self.TIER_COLORS.get(tier, "#fff")
         
         # Update slider with result (triggers glow effect)

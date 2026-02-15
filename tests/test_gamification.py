@@ -400,6 +400,85 @@ class TestLuckyMergeSystem(unittest.TestCase):
         self.assertIn("needed", result)
         if result["success"]:
             self.assertIsNotNone(result["result_item"])
+
+    def test_roll_push_your_luck_outcome_is_deterministic_with_injected_rolls(self) -> None:
+        """Push-luck outcome should honor provided rolls for backend/UI sync."""
+        from gamification import roll_push_your_luck_outcome
+
+        # Force primary failure, then safety save success.
+        outcome = roll_push_your_luck_outcome(
+            success_threshold=0.40,
+            item_save_threshold=0.10,
+            success_roll=0.80,
+            item_save_roll=0.05,
+        )
+        self.assertFalse(outcome["success"])
+        self.assertTrue(outcome["item_saved"])
+        self.assertAlmostEqual(outcome["success_roll"], 0.80, places=6)
+        self.assertAlmostEqual(outcome["item_save_roll"], 0.05, places=6)
+
+    def test_roll_chad_skip_interaction_is_deterministic_with_injected_rolls(self) -> None:
+        """Chad skip behavior should be backend-deterministic with explicit rolls."""
+        from gamification import roll_chad_skip_interaction
+
+        outcome = roll_chad_skip_interaction(
+            has_chad_normal=True,
+            has_chad_exceptional=True,
+            appearance_roll=0.01,
+            gift_roll=0.15,
+            coin_amount=137,
+        )
+        self.assertTrue(outcome["appears"])
+        self.assertEqual(outcome["variant"], "exceptional")
+        self.assertEqual(outcome["coin_amount"], 137)
+        self.assertTrue(outcome["gift_on_decline"])
+
+    def test_roll_activity_reward_outcome_uses_endpoint_roll(self) -> None:
+        """Activity outcome should be derived from the numeric endpoint roll."""
+        from gamification import roll_activity_reward_outcome
+
+        outcome = roll_activity_reward_outcome(effective_minutes=45, roll=42.2)
+        self.assertIsNotNone(outcome)
+        self.assertAlmostEqual(outcome["roll"], 42.2, places=6)
+
+        # Recompute expected rarity from returned weights and roll.
+        rarities = outcome["rarities"]
+        weights = outcome["weights"]
+        total = sum(weights)
+        cumulative = 0.0
+        expected = rarities[-1]
+        for rarity_name, weight in zip(rarities, weights):
+            zone_pct = (weight / total) * 100.0
+            if outcome["roll"] < cumulative + zone_pct:
+                expected = rarity_name
+                break
+            cumulative += zone_pct
+        self.assertEqual(outcome["rarity"], expected)
+
+    def test_roll_focus_reward_outcome_uses_endpoint_roll(self) -> None:
+        """Focus outcome should be derived from the numeric endpoint roll."""
+        from gamification import roll_focus_reward_outcome
+
+        outcome = roll_focus_reward_outcome(
+            session_minutes=60,
+            streak_days=0,
+            adhd_buster={},
+            roll=42.2,
+        )
+        self.assertAlmostEqual(outcome["roll"], 42.2, places=6)
+
+        rarities = outcome["rarities"]
+        weights = outcome["weights"]
+        total = sum(weights)
+        cumulative = 0.0
+        expected = rarities[-1]
+        for rarity_name, weight in zip(rarities, weights):
+            zone_pct = (weight / total) * 100.0
+            if outcome["roll"] < cumulative + zone_pct:
+                expected = rarity_name
+                break
+            cumulative += zone_pct
+        self.assertEqual(outcome["rarity"], expected)
     
     def test_is_merge_worthwhile_all_legendary(self) -> None:
         """Legendary-only merges are allowed as rerolls."""

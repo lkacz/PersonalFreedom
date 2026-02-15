@@ -1,38 +1,176 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
   <defs>
-    <radialGradient id="legendCore" cx="50%" cy="56%" r="58%">
-      <stop offset="0%" stop-color="#ffb347" stop-opacity="0.28"/>
-      <stop offset="100%" stop-color="#ffb347" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="legendArc" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#ffe0aa"/>
-      <stop offset="100%" stop-color="#ff9f2e"/>
+    <!-- Deepest Night Gradient -->
+    <linearGradient id="nightSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#020617" />
+      <stop offset="30%" stop-color="#0f172a" />
+      <stop offset="60%" stop-color="#1e1b4b" />
+      <stop offset="90%" stop-color="#2e1065" />
+      <stop offset="100%" stop-color="#4f46e5" />
     </linearGradient>
+
+    <!-- Star Pulse Anim -->
+    <filter id="starPulse">
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+
+    <!-- Holographic Scanlines -->
+    <pattern id="scanlines" width="10" height="4" patternUnits="userSpaceOnUse">
+       <rect width="10" height="2" fill="#22d3ee" opacity="0.1"/>
+    </pattern>
+
+    <!-- Chrome/Metal Gradient for Furniture -->
+    <linearGradient id="chromeGrad" x1="0" y1="0" x2="1" y2="1">
+       <stop offset="0%" stop-color="#475569"/>
+       <stop offset="50%" stop-color="#e2e8f0"/>
+       <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+
+    <!-- Gold Gradient -->
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+       <stop offset="0%" stop-color="#fcd34d"/>
+       <stop offset="50%" stop-color="#fef3c7"/>
+       <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+
+    <!-- Marble Floor Veins -->
+    <pattern id="marbleVein" width="20" height="20" patternUnits="userSpaceOnUse">
+       <path d="M0 0 Q5 5 10 0 T20 20" fill="none" stroke="#fff" stroke-width="0.5" opacity="0.1"/>
+    </pattern>
+
+    <!-- City Window Grid -->
+    <pattern id="cityGrid" width="6" height="6" patternUnits="userSpaceOnUse">
+       <rect width="6" height="6" fill="#1e1b4b"/>
+       <rect x="2" y="2" width="2" height="2" fill="#fbbf24" opacity="0.5">
+           <animate attributeName="opacity" values="0.5;0.1;0.5" dur="4s" repeatCount="indefinite"/>
+       </rect>
+    </pattern>
   </defs>
 
-  <!-- warm hero glow -->
-  <ellipse cx="90" cy="133" rx="56" ry="47" fill="url(#legendCore)"/>
+  <!-- BACKGROUND: The Void -->
+  <rect width="180" height="220" fill="#020617"/>
 
-  <!-- prestige frame arcs -->
-  <path d="M40 132 Q90 76 140 132" fill="none" stroke="url(#legendArc)" stroke-width="1.7" opacity="0.62"/>
-  <path d="M50 142 Q90 94 130 142" fill="none" stroke="#ffb44c" stroke-width="1.1" opacity="0.52"/>
-  <path d="M61 104 L68 98 L75 104 L82 98 L90 104 L98 98 L105 104 L112 98 L119 104" fill="none" stroke="#ffdca2" stroke-width="1.0" opacity="0.66"/>
+  <!-- SKY: The Atmosphere -->
+  <rect x="0" y="0" width="180" height="150" fill="url(#nightSky)"/>
+  
+  <!-- Stars (Background) -->
+  <g fill="#fff">
+     <circle cx="20" cy="20" r="0.5" opacity="0.8"/>
+     <circle cx="150" cy="10" r="0.5" opacity="0.6"/>
+     <circle cx="90" cy="30" r="1" opacity="0.9" filter="url(#starPulse)">
+        <animate attributeName="opacity" values="0.9;0.2;0.9" dur="3s" repeatCount="indefinite"/>
+     </circle>
+  </g>
 
-  <!-- city-light reflection sweeps -->
-  <path d="M69 94 L82 156" stroke="#ffd7a0" stroke-width="1.4" opacity="0.0">
-    <animate attributeName="opacity" values="0;0.55;0" dur="2.7s" repeatCount="indefinite"/>
-  </path>
-  <path d="M98 90 L111 152" stroke="#ffc778" stroke-width="1.2" opacity="0.0">
-    <animate attributeName="opacity" values="0;0.5;0" dur="3.1s" begin="0.6s" repeatCount="indefinite"/>
-  </path>
+  <!-- Moon (Halo Effect) -->
+  <circle cx="160" cy="30" r="20" fill="radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)" />
+  <circle cx="160" cy="30" r="8" fill="#f8fafc"/>
 
-  <!-- radiant badge pulse -->
-  <circle cx="90" cy="124" r="5.2" fill="none" stroke="#ffd690" stroke-width="1.0" opacity="0.82"/>
-  <circle cx="90" cy="124" r="8.3" fill="none" stroke="#ffae3a" stroke-width="0.9" stroke-dasharray="1.5 2.2" opacity="0.72">
-    <animate attributeName="stroke-dashoffset" values="0;8" dur="2.4s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="90" cy="124" r="2.0" fill="#ffdca0" opacity="0.0">
-    <animate attributeName="opacity" values="0;1;0" dur="1.9s" repeatCount="indefinite"/>
-  </circle>
+  <!-- CITYSCAPE: Layer 1 (Silhouettes & Fog) -->
+  <path d="M0 150 L20 100 L40 120 L70 80 L90 110 L120 70 L150 120 L180 90 V150 H0 Z" fill="#0f172a" opacity="0.8"/>
+  
+  <!-- CITYSCAPE: Layer 2 (Dense Urban Mid-ground) -->
+  <g transform="translate(0, 60)">
+      <!-- Left Cluster -->
+      <rect x="10" y="50" width="30" height="100" fill="url(#cityGrid)"/>
+      <rect x="12" y="45" width="26" height="5" fill="#1e1b4b"/> <!-- Roof -->
+      <rect x="15" y="40" width="2" height="5" fill="#ef4444"><animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/></rect>
+
+      <!-- Center Pinnacle -->
+      <path d="M80 150 V40 L90 20 L100 40 V150" fill="#172554"/>
+      <line x1="90" y1="20" x2="90" y2="150" stroke="#3b82f6" stroke-width="1" opacity="0.5"/>
+      <rect x="85" y="45" width="10" height="105" fill="black" opacity="0.3"/> 
+
+      <!-- Right Tower -->
+      <rect x="140" y="60" width="25" height="90" fill="#312e81"/>
+      <rect x="145" y="65" width="15" height="85" fill="#fbbf24" opacity="0.1"/> <!-- Strip light -->
+  </g>
+
+  <!-- Moving Traffic (Highway Stream) -->
+  <g transform="translate(0, 145)">
+      <!-- Beams Up -->
+      <path d="M0 0 H180" stroke="#fff" stroke-width="2" stroke-dasharray="10,20" opacity="0.5">
+          <animate attributeName="stroke-dashoffset" from="30" to="0" dur="2s" repeatCount="indefinite"/>
+      </path>
+      <!-- Beams Down -->
+      <path d="M0 4 H180" stroke="#ef4444" stroke-width="2" stroke-dasharray="10,20" opacity="0.5">
+           <animate attributeName="stroke-dashoffset" from="0" to="30" dur="2s" repeatCount="indefinite"/>
+      </path>
+  </g>
+
+  <!-- Drone / Aircraft -->
+  <g transform="translate(-10, 40)">
+      <circle r="1" fill="#ef4444">
+           <animate attributeName="opacity" values="1;0;1" dur="0.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="2" cy="0" r="1" fill="#22c55e">
+           <animate attributeName="opacity" values="0;1;0" dur="0.5s" repeatCount="indefinite"/>
+      </circle>
+      <animateTransform attributeName="transform" type="translate" from="-10 40" to="200 40" dur="25s" repeatCount="indefinite"/>
+  </g>
+
+  <!-- INTERIOR: High-End Penthouse -->
+  <!-- Floor (Marble with Veins & Reflection) -->
+  <rect x="0" y="150" width="180" height="70" fill="#0f172a"/>
+  <rect x="0" y="150" width="180" height="70" fill="url(#marbleVein)"/>
+  
+  <!-- Reflection of City Window on Floor -->
+  <path d="M20 150 L10 200 H170 L160 150 Z" fill="#312e81" opacity="0.1"/>
+  
+  <!-- Architectural Columns -->
+  <g>
+     <rect x="0" y="0" width="15" height="220" fill="#1e293b"/> <!-- Left Pillar -->
+     <rect x="165" y="0" width="15" height="220" fill="#1e293b"/> <!-- Right Pillar -->
+     <line x1="15" y1="0" x2="15" y2="220" stroke="#334155" stroke-width="1"/>
+     <line x1="165" y1="0" x2="165" y2="220" stroke="#334155" stroke-width="1"/>
+     
+     <!-- Sconce Light on Pillar -->
+     <path d="M5 100 L10 90 H0 L5 100" fill="url(#gold)"/>
+     <path d="M0 90 L5 70 L10 90" fill="url(#gold)" opacity="0.5">
+        <animate attributeName="opacity" values="0.5;0.7;0.5" dur="4s" repeatCount="indefinite"/>
+     </path>
+  </g>
+
+  <!-- HOLOGRAM SYSTEM: "The Global Market" -->
+  <g transform="translate(130, 60)">
+      <!-- Base Emitter -->
+      <ellipse cx="0" cy="30" rx="10" ry="3" fill="#1e293b" stroke="#22d3ee" stroke-width="0.5"/>
+      <!-- Cone Beam -->
+      <path d="M-10 30 L-20 -10 H20 L10 30 Z" fill="url(#holoGrad)" opacity="0.2"/>
+      <!-- Rotating Rings -->
+      <g stroke="#22d3ee" stroke-width="0.5" fill="none">
+          <ellipse cx="0" cy="10" rx="15" ry="5">
+              <animateTransform attributeName="transform" type="rotate" from="0 0 10" to="360 0 10" dur="8s" repeatCount="indefinite"/>
+          </ellipse>
+           <ellipse cx="0" cy="10" rx="10" ry="15">
+              <animateTransform attributeName="transform" type="rotate" from="360 0 10" to="0 0 10" dur="12s" repeatCount="indefinite"/>
+          </ellipse>
+      </g>
+      <!-- Central Core Pulse -->
+      <circle cx="0" cy="10" r="2" fill="#fff">
+         <animate attributeName="r" values="2;4;2" dur="2s" repeatCount="indefinite"/>
+         <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <!-- Floating Panels -->
+      <rect x="15" y="0" width="10" height="6" fill="#22d3ee" opacity="0.4">
+          <animate attributeName="y" values="0;-5;0" dur="3s" repeatCount="indefinite"/>
+      </rect>
+  </g>
+
+  <!-- MODERN ART SCULPTURE (Background Left) -->
+  <g transform="translate(35, 130)">
+      <!-- Pedestal -->
+      <rect x="-10" y="0" width="20" height="40" fill="#0f172a"/>
+      <!-- The Art (Abstract Gold) -->
+      <path d="M0 0 C-10 -20 20 -30 0 -50 C-20 -30 10 -20 0 0" fill="url(#gold)" opacity="0.9">
+         <animateTransform attributeName="transform" type="rotate" values="0 0 -25; 5 0 -25; 0 0 -25" dur="10s" repeatCount="indefinite"/>
+      </path>
+      <!-- Spotlight from above -->
+      <path d="M-10 -80 L10 -80 L0 0 Z" fill="white" opacity="0.05"/>
+  </g>
+
+  <!-- LUXURY FURNITURE: Lounge Chair (Silhouette) -->
+  <path d="M-5 180 Q10 180 20 200 V220 H-5 Z" fill="#1e293b"/>
+  <circle cx="10" cy="180" r="15" fill="#0f172a"/> <!-- Headrest -->
+
 </svg>

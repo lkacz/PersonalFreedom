@@ -22,16 +22,16 @@ CATCH_CONFIG = {
     
     # Pity system settings
     "pity_enabled": True,
-    "pity_threshold_1": 5,    # +10% after 5 failed attempts
-    "pity_bonus_1": 0.10,
-    "pity_threshold_2": 10,   # +25% after 10 failed attempts  
-    "pity_bonus_2": 0.25,
-    "pity_threshold_3": 15,   # +50% after 15 failed attempts
-    "pity_bonus_3": 0.50,
+    "pity_threshold_1": 6,    # +8% after 6 failed attempts
+    "pity_bonus_1": 0.08,
+    "pity_threshold_2": 12,   # +18% after 12 failed attempts
+    "pity_bonus_2": 0.18,
+    "pity_threshold_3": 18,   # +35% after 18 failed attempts
+    "pity_bonus_3": 0.35,
     
     # Luck modifier settings
     "luck_modifiers_enabled": True,
-    "max_luck_bonus": 0.15,   # Maximum +15% from luck items
+    "max_luck_bonus": 0.05,   # Maximum +5% from luck/capture modifiers
 }
 
 
@@ -154,7 +154,8 @@ def get_final_probability(
         entity_power: Entity's power level
         failed_attempts: Previous failed attempts on this entity
         luck_bonus: Bonus from luck items/effects
-        city_bonus: Bonus from city buildings (University) - 0.0 to 0.15
+        city_bonus: Bonus from city buildings (University) as a percentage.
+                   Applied with a hard +5% cap.
         
     Returns:
         Final probability between 0.01 and 0.99
@@ -168,9 +169,9 @@ def get_final_probability(
     # Step 3: Apply luck modifier
     with_luck = apply_luck_modifier(with_pity, luck_bonus)
     
-    # Step 4: Apply city bonus (University building)
-    # city_bonus is a percentage (e.g., 10 = 10%), convert to decimal
-    city_modifier = city_bonus / 100.0 if city_bonus > 0 else 0.0
+    # Step 4: Apply city bonus (University building) with a hard +5% cap.
+    # city_bonus is a percentage (e.g., 10 = 10%).
+    city_modifier = min(city_bonus / 100.0, 0.05) if city_bonus > 0 else 0.0
     final = min(CATCH_CONFIG["probability_max"], with_luck + city_modifier)
     
     return final

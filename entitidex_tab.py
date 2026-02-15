@@ -3510,11 +3510,9 @@ class EntitidexTab(QtWidgets.QWidget):
     
     def _open_saved_encounter_risky_flow(self, index: int):
         """Open a saved encounter with risky (free) probability recalculation."""
-        import random
         from gamification import (
             open_saved_encounter_risky_recalculate,
             finalize_risky_recalculate,
-            RISKY_RECALC_SUCCESS_RATE,
         )
         
         if not hasattr(self.blocker, 'adhd_buster'):
@@ -3527,8 +3525,9 @@ class EntitidexTab(QtWidgets.QWidget):
             styled_warning(self, "Risky Recalculate", prep_result.get("message", "Error"))
             return
         
-        # Do the risky roll locally
-        risky_success = random.random() < RISKY_RECALC_SUCCESS_RATE
+        # Use backend-prepared risky roll so UI only reveals the canonical result.
+        risky_roll = prep_result.get("risky_roll")
+        risky_success = prep_result.get("risky_recalc_succeeded", False)
         new_prob = prep_result.get("new_probability", 0)
         old_prob = prep_result.get("old_probability", 0)
         
@@ -3552,7 +3551,8 @@ class EntitidexTab(QtWidgets.QWidget):
         final_result = finalize_risky_recalculate(
             self.blocker.adhd_buster, 
             index, 
-            risky_success
+            recalc_succeeded=risky_success,
+            risky_roll=risky_roll,
         )
         
         # Save config after encounter consumed

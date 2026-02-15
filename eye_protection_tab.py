@@ -2678,17 +2678,26 @@ class EyeProtectionTab(QtWidgets.QWidget):
         except Exception:
             pass
         
-        # Import the merge lottery dialog for moving window animation
+        # Import backend roller + merge lottery dialog for moving window animation
+        from gamification import roll_merge_lottery
         from lottery_animation import MergeTwoStageLotteryDialog
         
+        lottery_roll = roll_merge_lottery(
+            success_threshold=success_rate,
+            base_rarity=base_rarity,
+            tier_upgrade_enabled=False,
+        )
         # Show the animated two-stage lottery dialog with moving window
         lottery = MergeTwoStageLotteryDialog(
-            success_roll=-1,  # Auto-generate random roll (negative = generate)
-            success_threshold=success_rate,
+            success_roll=lottery_roll["success_roll"],
+            success_threshold=lottery_roll["success_threshold"],
             tier_upgrade_enabled=False,
-            base_rarity=base_rarity,
+            base_rarity=lottery_roll["base_rarity"],
             title="👁️‍🗨️ Eyes Routine Reward 👁️‍🗨️",
-            parent=self
+            parent=self,
+            tier_roll=lottery_roll["tier_roll"],
+            rolled_tier=lottery_roll["rolled_tier"],
+            tier_weights=lottery_roll["tier_weights"],
         )
         lottery.exec()
         
@@ -2707,14 +2716,22 @@ class EyeProtectionTab(QtWidgets.QWidget):
                     f"\"If I can survive fluorescent lights, you can survive this!\""
                 )
                 
+                reroll_outcome = roll_merge_lottery(
+                    success_threshold=success_rate,
+                    base_rarity=base_rarity,
+                    tier_upgrade_enabled=False,
+                )
                 # Do the reroll with same parameters
                 lottery2 = MergeTwoStageLotteryDialog(
-                    success_roll=-1,  # Auto-generate random roll
-                    success_threshold=success_rate,
+                    success_roll=reroll_outcome["success_roll"],
+                    success_threshold=reroll_outcome["success_threshold"],
                     tier_upgrade_enabled=False,
-                    base_rarity=base_rarity,
+                    base_rarity=reroll_outcome["base_rarity"],
                     title="🌀 Second Chance Roll 🌀",
-                    parent=self
+                    parent=self,
+                    tier_roll=reroll_outcome["tier_roll"],
+                    rolled_tier=reroll_outcome["rolled_tier"],
+                    tier_weights=reroll_outcome["tier_weights"],
                 )
                 lottery2.exec()
                 won_item, tier = lottery2.get_results()

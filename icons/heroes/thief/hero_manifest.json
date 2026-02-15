@@ -15,14 +15,14 @@
   },
   "gear": {
     "slot_order": [
+      "Amulet",
+      "Shield",
       "Cloak",
       "Chestplate",
       "Boots",
+      "Weapon",
       "Gauntlets",
-      "Amulet",
-      "Helmet",
-      "Shield",
-      "Weapon"
+      "Helmet"
     ],
     "patterns": [
       "gear/{slot}/{slot}_{rarity}.svg",

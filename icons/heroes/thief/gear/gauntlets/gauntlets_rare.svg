@@ -1,32 +1,72 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <defs>
-    <linearGradient id="restraint_shell" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#5e7180"/>
-      <stop offset="100%" stop-color="#2f3f4c"/>
-    </linearGradient>
-    <linearGradient id="restraint_palm" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#8292a0"/>
-      <stop offset="100%" stop-color="#465b6c"/>
-    </linearGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+    <defs>
+        <filter id="glow">
+            <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    
+    <g id="hero_body_proxy" transform="translate(90, 205)">
+        <animateTransform attributeName="transform" type="scale"
+            values="1 1; 1.005 0.995; 1 1"
+            dur="4s" repeatCount="indefinite" additive="sum"/>
+        <g transform="translate(-90, -205)">
+            <!-- Left Hand (Blue Rare) -->
+            <g>
+                <animateTransform attributeName="transform" type="rotate" values="0 65 140; 1 65 140; 0 65 140" dur="2s" repeatCount="indefinite"/>
+                <!-- Base Hand -->
+                <path d="M60 136 Q58 140 60 145 Q62 148 66 148 Q70 148 71 144 Q72 140 70 136 Z" fill="#60a5fa"/>
+                <!-- Fingers (Wiggling) -->
+                <g>
+                   <animateTransform attributeName="transform" type="translate" values="0 0; 0.2 0.3; 0 0" dur="1.5s" repeatCount="indefinite"/>
+                   <path d="M60 145 Q59 150 61 152 Q63 150 62 147" fill="#60a5fa"/>
+                   <path d="M63 147 Q62 152 64 154 Q66 152 65 148" fill="#60a5fa"/>
+                   <path d="M66 147 Q65 151 67 153 Q69 151 68 147" fill="#60a5fa"/>
+                </g>
 
-  <!-- Rare: Restraint Gloves -->
-  <g id="gauntlets_rare">
-    <path d="M56.2 112.0 Q52.8 123.6 57.4 135.8 L67.3 132.7 Q70.0 123.8 66.9 112.0 Z" fill="url(#restraint_shell)" stroke="#162028" stroke-width="0.9"/>
-    <rect x="57.0" y="131.1" width="10.6" height="3.2" rx="1.1" fill="#2d9bf3" opacity="0.92"/>
-    <circle cx="64" cy="138" r="4.9" fill="url(#restraint_palm)" stroke="#162028" stroke-width="0.9"/>
-    <circle cx="62.0" cy="133.0" r="1.15" fill="none" stroke="#79c3ff" stroke-width="0.8"/>
-    <circle cx="66.0" cy="133.0" r="1.15" fill="none" stroke="#79c3ff" stroke-width="0.8"/>
-    <path d="M63.1 133.0 L64.9 133.0" stroke="#79c3ff" stroke-width="0.72"/>
-    <path d="M60.9 139.7 L67.1 139.7" stroke="#91d0ff" stroke-width="0.68" opacity="0.86"/>
+                <!-- Geometry & Highlights -->
+                <polygon points="62,138 65,137 68,138 67,141 63,141" fill="#FFF" opacity="0.4"/>
+                <polygon points="63,141 67,141 66,145 62,145" fill="#FFF" opacity="0.1"/>
+                <polygon points="70,136 72,140 71,144 68,145 67,140" fill="#000" opacity="0.3"/>
+                <g>
+                   <animateTransform attributeName="transform" type="translate" values="0 0; 0.2 0.3; 0 0" dur="1.5s" repeatCount="indefinite"/>
+                   <polygon points="60.5,146 61.5,146 61.2,150 60.2,149" fill="#FFF" opacity="0.5"/>
+                   <polygon points="63.5,148 64.5,148 64.2,152 63.2,151" fill="#FFF" opacity="0.5"/>
+                   <polygon points="66.5,148 67.5,148 67.2,152 66.2,151" fill="#FFF" opacity="0.5"/>
+                </g>
+                <polygon points="60,145 63,144 66,144 68,145 66,146 63,146 60,146" fill="#000" opacity="0.15"/>
+                <polygon points="60,136 60,140 59,142 58,138" fill="#000" opacity="0.2"/>
+            </g>
 
-    <path d="M123.8 112.0 Q127.2 123.6 122.6 135.8 L112.7 132.7 Q110.0 123.8 113.1 112.0 Z" fill="url(#restraint_shell)" stroke="#162028" stroke-width="0.9"/>
-    <rect x="112.4" y="131.1" width="10.6" height="3.2" rx="1.1" fill="#2d9bf3" opacity="0.92"/>
-    <circle cx="116" cy="138" r="4.9" fill="url(#restraint_palm)" stroke="#162028" stroke-width="0.9"/>
-    <circle cx="114.0" cy="133.0" r="1.15" fill="none" stroke="#79c3ff" stroke-width="0.8"/>
-    <circle cx="118.0" cy="133.0" r="1.15" fill="none" stroke="#79c3ff" stroke-width="0.8"/>
-    <path d="M115.1 133.0 L116.9 133.0" stroke="#79c3ff" stroke-width="0.72"/>
-    <path d="M112.9 139.7 L119.1 139.7" stroke="#91d0ff" stroke-width="0.68" opacity="0.86"/>
-  </g>
+            <!-- Right Hand (Blue Rare) -->
+            <g>
+                <animateTransform attributeName="transform" type="rotate" values="0 115 140; -1 115 140; 0 115 140" dur="2.2s" repeatCount="indefinite"/>
+                <!-- Base Hand -->
+                <path d="M120 136 Q122 140 120 145 Q118 148 114 148 Q110 148 109 144 Q108 140 110 136 Z" fill="#60a5fa"/>
+                <!-- Fingers (Wiggling) -->
+                <g>
+                   <animateTransform attributeName="transform" type="translate" values="0 0; -0.2 0.3; 0 0" dur="1.6s" repeatCount="indefinite"/>
+                   <path d="M120 145 Q121 150 119 152 Q117 150 118 147" fill="#60a5fa"/>
+                   <path d="M117 147 Q118 152 116 154 Q114 152 115 148" fill="#60a5fa"/>
+                   <path d="M114 147 Q115 151 113 153 Q111 151 112 147" fill="#60a5fa"/>
+                </g>
+
+                <!-- Geometry & Highlights -->
+                <polygon points="118,138 115,137 112,138 113,141 117,141" fill="#FFF" opacity="0.4"/>
+                <polygon points="117,141 113,141 114,145 118,145" fill="#FFF" opacity="0.1"/>
+                <polygon points="110,136 108,140 109,144 112,145 113,140" fill="#000" opacity="0.3"/>
+                 <g>
+                   <animateTransform attributeName="transform" type="translate" values="0 0; -0.2 0.3; 0 0" dur="1.6s" repeatCount="indefinite"/>
+                   <polygon points="119.5,146 118.5,146 118.8,150 119.8,149" fill="#FFF" opacity="0.5"/>
+                   <polygon points="116.5,148 115.5,148 115.8,152 116.8,151" fill="#FFF" opacity="0.5"/>
+                   <polygon points="113.5,148 112.5,148 112.8,152 113.8,151" fill="#FFF" opacity="0.5"/>
+                </g>
+                <polygon points="120,145 117,144 114,144 112,145 114,146 117,146 120,146" fill="#000" opacity="0.15"/>
+                <polygon points="120,136 120,140 121,142 122,138" fill="#000" opacity="0.2"/>
+            </g>
+        </g>
+    </g>
 </svg>

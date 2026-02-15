@@ -1,45 +1,47 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
   <defs>
-    <radialGradient id="legendaryGlow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0%" stop-color="#GOLD" stop-opacity="0"/>
-      <stop offset="50%" stop-color="#FFD700" stop-opacity="0.1"/>
-      <stop offset="100%" stop-color="#FFA500" stop-opacity="0"/>
+    <!-- Spotlight Beam Gradient -->
+    <linearGradient id="beamGrad" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9" />
+      <stop offset="80%" stop-color="#FFFFFF" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Siren Red Glow -->
+    <radialGradient id="sirenRed" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#EF4444" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#EF4444" stop-opacity="0" />
     </radialGradient>
-    <filter id="glowBlur">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
-    </filter>
+
+    <!-- Siren Blue Glow -->
+    <radialGradient id="sirenBlue" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#3B82F6" stop-opacity="0" />
+    </radialGradient>
   </defs>
 
-  <!-- Golden Aura Behind -->
-  <circle cx="90" cy="110" r="75" fill="url(#legendaryGlow)">
-     <animate attributeName="r" values="70;80;70" dur="4s" repeatCount="indefinite"/>
-  </circle>
+  <!-- Police Strobe Lights (Background) -->
+  <rect x="0" y="0" width="180" height="220" fill="url(#sirenRed)" opacity="0">
+      <animate attributeName="opacity" values="0; 0.6; 0; 0" dur="1s" repeatCount="indefinite" />
+  </rect>
+  
+  <rect x="0" y="0" width="180" height="220" fill="url(#sirenBlue)" opacity="0">
+      <animate attributeName="opacity" values="0; 0; 0.6; 0" dur="1s" repeatCount="indefinite" begin="0.5s" />
+  </rect>
 
-  <!-- Badge of Honor Star Shape -->
-  <g transform="translate(90,110)" opacity="0.3">
-    <!-- Starburst -->
-    <path d="M0 -70 L10 -10 L70 0 L10 10 L0 70 L-10 10 L-70 0 L-10 -10 Z" fill="#FFD700">
-        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/>
-    </path>
-    <!-- Inner Star -->
-    <path d="M0 -40 L5 -5 L40 0 L5 5 L0 40 L-5 5 L-40 0 L-5 -5 Z" fill="#FFFACD" stroke="#DAA520" stroke-width="1">
-         <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="20s" repeatCount="indefinite"/>
-    </path>
+  <!-- Helicopter/Searchlight Beams -->
+  <!-- Beam 1: Sweeping from top left -->
+  <g transform="translate(40, -20) rotate(-10)">
+      <path d="M0 0 L-30 250 L30 250 Z" fill="url(#beamGrad)" opacity="0.6">
+        <animateTransform attributeName="transform" type="rotate" values="-20 0 0; 20 0 0; -20 0 0" dur="4s" repeatCount="indefinite" />
+      </path>
   </g>
 
-  <!-- Ascending Particles -->
-  <circle cx="90" cy="180" r="2" fill="#FFD700" opacity="0.6">
-      <animate attributeName="cy" values="180;40" dur="2.5s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0;0.8;0" dur="2.5s" repeatCount="indefinite"/>
-  </circle>
-  <circle cx="70" cy="190" r="1.5" fill="#FFD700" opacity="0.6">
-      <animate attributeName="cy" values="190;50" dur="3s" repeatCount="indefinite" begin="1s"/>
-      <animate attributeName="opacity" values="0;0.7;0" dur="3s" repeatCount="indefinite" begin="1s"/>
-  </circle>
-  <circle cx="110" cy="190" r="1.5" fill="#FFD700" opacity="0.6">
-      <animate attributeName="cy" values="190;50" dur="2.8s" repeatCount="indefinite" begin="0.5s"/>
-      <animate attributeName="opacity" values="0;0.7;0" dur="2.8s" repeatCount="indefinite" begin="0.5s"/>
-  </circle>
-
+  <!-- Beam 2: Fast sweep from right -->
+  <g transform="translate(160, 0) rotate(10)">
+      <path d="M0 0 L-20 220 L20 220 Z" fill="url(#beamGrad)" opacity="0.4">
+        <animateTransform attributeName="transform" type="rotate" values="10 0 0; -30 0 0; 10 0 0" dur="2.5s" repeatCount="indefinite" />
+      </path>
+  </g>
+  
 </svg>

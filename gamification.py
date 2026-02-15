@@ -3216,6 +3216,128 @@ MERGE_TIER_JUMP_WEIGHTS = [
     (4, 5),    # +4 tiers: 5% chance (LEGENDARY JACKPOT!)
 ]
 
+# Canonical 5-tier order used by merge lottery UI/animation.
+MERGE_TIER_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"]
+MERGE_BASE_WINDOW = [5, 15, 60, 15, 5]
+MERGE_UPGRADED_WINDOW = [5, 10, 25, 45, 15]
+
+
+def calculate_merge_tier_weights(base_rarity: str, tier_upgrade_enabled: bool = False) -> list:
+    """
+    Calculate merge rarity distribution weights for the two-stage merge lottery.
+
+    Args:
+        base_rarity: Center rarity tier for the window
+        tier_upgrade_enabled: Whether upgraded window should be used
+
+    Returns:
+        List of 5 weights in MERGE_TIER_ORDER order
+    """
+    window = MERGE_UPGRADED_WINDOW if tier_upgrade_enabled else MERGE_BASE_WINDOW
+
+    try:
+        center_idx = MERGE_TIER_ORDER.index(base_rarity)
+    except ValueError:
+        # Clamp unknown/future tiers (e.g., Celestial) into supported 5-tier merge window.
+        try:
+            center_idx = min(max(RARITY_ORDER.index(base_rarity), 0), len(MERGE_TIER_ORDER) - 1)
+        except ValueError:
+            center_idx = 2  # Rare-centered fallback
+
+    weights = [0] * len(MERGE_TIER_ORDER)
+    for offset, pct in zip([-2, -1, 0, 1, 2], window):
+        target_idx = center_idx + offset
+        clamped_idx = max(0, min(len(MERGE_TIER_ORDER) - 1, target_idx))
+        weights[clamped_idx] += pct
+    return weights
+
+
+def roll_merge_lottery(
+    success_threshold: float,
+    base_rarity: str,
+    tier_upgrade_enabled: bool = False,
+    success_roll: Optional[float] = None,
+    tier_roll: Optional[float] = None,
+) -> dict:
+    """
+    Canonical backend roll for merge/merge-like two-stage lotteries.
+
+    Stage 1: Roll rarity tier from calculated distribution.
+    Stage 2: Roll success/fail against success threshold.
+    """
+    threshold = max(0.0, min(1.0, float(success_threshold)))
+    if success_roll is None:
+        success_roll = random.random()
+    success_roll = max(0.0, min(1.0, float(success_roll)))
+
+    weights = calculate_merge_tier_weights(base_rarity, tier_upgrade_enabled=tier_upgrade_enabled)
+    total = sum(weights)
+
+    if tier_roll is None:
+        tier_roll = random.random() * 100.0
+    tier_roll = max(0.0, min(100.0, float(tier_roll)))
+
+    rolled_tier = MERGE_TIER_ORDER[-1]
+    cumulative = 0.0
+    if total > 0:
+        for tier_name, weight in zip(MERGE_TIER_ORDER, weights):
+            zone_pct = (weight / total) * 100.0
+            if tier_roll < cumulative + zone_pct:
+                rolled_tier = tier_name
+                break
+            cumulative += zone_pct
+
+    success = success_roll < threshold
+    return {
+        "success": success,
+        "success_roll": success_roll,
+        "success_threshold": threshold,
+        "tier_roll": tier_roll,
+        "rolled_tier": rolled_tier,
+        "tier_weights": weights,
+        "base_rarity": base_rarity,
+        "tier_upgrade_enabled": bool(tier_upgrade_enabled),
+    }
+
+
+def roll_push_your_luck_outcome(
+    success_threshold: float,
+    item_save_threshold: float = 0.0,
+    success_roll: Optional[float] = None,
+    item_save_roll: Optional[float] = None,
+) -> dict:
+    """
+    Canonical backend roll for merge "Push Your Luck" outcomes.
+
+    Stage 1: Roll success/fail against push-luck threshold.
+    Stage 2: On failure, optional item-save roll (e.g., Blank Parchment).
+    """
+    threshold = max(0.01, min(0.99, float(success_threshold)))
+    save_threshold = max(0.0, min(1.0, float(item_save_threshold)))
+
+    if success_roll is None:
+        success_roll = random.random()
+    success_roll = max(0.0, min(1.0, float(success_roll)))
+    success = success_roll < threshold
+
+    resolved_item_save_roll = None
+    item_saved = False
+
+    if not success and save_threshold > 0.0:
+        if item_save_roll is None:
+            item_save_roll = random.random()
+        resolved_item_save_roll = max(0.0, min(1.0, float(item_save_roll)))
+        item_saved = resolved_item_save_roll < save_threshold
+
+    return {
+        "success": success,
+        "success_roll": success_roll,
+        "success_threshold": threshold,
+        "item_saved": item_saved,
+        "item_save_roll": resolved_item_save_roll,
+        "item_save_threshold": save_threshold,
+    }
+
 
 def get_random_tier_jump() -> int:
     """Roll for random tier upgrade on successful merge.
@@ -3238,72 +3360,84 @@ def get_random_tier_jump() -> int:
     return 1  # Fallback
 
 
-def perform_lucky_merge(items: list, story_id: str = None, items_merge_luck: int = 0) -> dict:
+def perform_lucky_merge(
+    items: list,
+    story_id: str = None,
+    items_merge_luck: int = 0,
+    city_bonus: int = 0,
+    tier_upgrade_enabled: bool = False,
+    success_roll: Optional[float] = None,
+    tier_roll: Optional[float] = None,
+    base_rarity: Optional[str] = None,
+) -> dict:
     """Attempt a lucky merge of items.
     
-    On success, the resulting item can be +1 to +4 tiers higher than
-    the base result, with tiered probability for exciting results:
-    - 50% chance for +1 tier (reliable upgrade)
-    - 30% chance for +2 tiers (good luck!)
-    - 15% chance for +3 tiers (excellent luck!)
-    - 5% chance for +4 tiers (JACKPOT - straight to Legendary!)
+    Backend is authoritative for both rolls:
+    - Success roll against merge success threshold
+    - Tier roll against calculated rarity distribution window
     
     Args:
         items: List of items to merge
         story_id: Story theme for the resulting item
         items_merge_luck: Total merge_luck% from items being merged (sacrificed)
+        city_bonus: Merge success bonus from city buildings
+        tier_upgrade_enabled: Whether upgraded tier window is active
+        success_roll: Optional externally provided success roll (0.0-1.0)
+        tier_roll: Optional externally provided tier roll (0.0-100.0)
+        base_rarity: Optional explicit base rarity center for tier window
     """
     # Filter out None items
     valid_items = [item for item in items if item is not None]
     if len(valid_items) < 2:
         return {"success": False, "error": "Need at least 2 items to merge"}
     
-    success_rate = calculate_merge_success_rate(valid_items, items_merge_luck=items_merge_luck)
-    roll = random.random()
-    
+    success_rate = calculate_merge_success_rate(
+        valid_items,
+        items_merge_luck=items_merge_luck,
+        city_bonus=city_bonus,
+    )
+    resolved_base_rarity = base_rarity or get_merge_result_rarity(valid_items)
+    lottery = roll_merge_lottery(
+        success_threshold=success_rate,
+        base_rarity=resolved_base_rarity,
+        tier_upgrade_enabled=tier_upgrade_enabled,
+        success_roll=success_roll,
+        tier_roll=tier_roll,
+    )
+
     result = {
-        "success": roll < success_rate,
+        "success": lottery["success"],
         "items_lost": valid_items,
-        "roll": roll,
-        "needed": success_rate,
-        "roll_pct": f"{roll*100:.1f}%",
-        "needed_pct": f"{success_rate*100:.1f}%",
-        "tier_jump": 0
+        "roll": lottery["success_roll"],
+        "needed": lottery["success_threshold"],
+        "roll_pct": f"{lottery['success_roll']*100:.1f}%",
+        "needed_pct": f"{lottery['success_threshold']*100:.1f}%",
+        "tier_roll": lottery["tier_roll"],
+        "rolled_tier": lottery["rolled_tier"],
+        "tier_weights": lottery["tier_weights"],
+        "base_rarity": resolved_base_rarity,
+        "tier_upgraded": bool(tier_upgrade_enabled),
+        "tier_jump": 0,
+        "final_rarity": None,
+        "result_item": None,
     }
-    
-    if result["success"]:
-        # Safely get rarity index, defaulting to 0 (Common) for invalid values
-        def safe_rarity_idx(item):
-            rarity = item.get("rarity", "Common")
-            try:
-                return RARITY_ORDER.index(rarity)
-            except ValueError:
-                return 0  # Default to Common if invalid rarity
-        
-        # Get base rarity from lowest item (using valid_items)
-        rarity_indices = [safe_rarity_idx(item) for item in valid_items]
-        if not rarity_indices:
-            result["success"] = False
-            result["message"] = "Cannot determine rarity"
-            result["result_item"] = None
-            return result
-        lowest_idx = min(rarity_indices)
-        
-        # Roll for tier jump
-        tier_jump = get_random_tier_jump()
-        result["tier_jump"] = tier_jump
-        
-        # Calculate final rarity with tier jump (capped at current max obtainable tier)
-        max_obtainable_idx = get_rarity_index(get_standard_reward_rarity_order()[-1], order=RARITY_ORDER)
-        final_idx = min(lowest_idx + tier_jump, max_obtainable_idx)
-        final_rarity = RARITY_ORDER[final_idx]
-        
-        result["result_item"] = generate_item(rarity=final_rarity, story_id=story_id)
-        result["base_rarity"] = RARITY_ORDER[lowest_idx]
+
+    if lottery["success"]:
+        final_rarity = lottery["rolled_tier"]
+        try:
+            base_idx = RARITY_ORDER.index(resolved_base_rarity)
+        except ValueError:
+            base_idx = 0
+        try:
+            final_idx = RARITY_ORDER.index(final_rarity)
+        except ValueError:
+            final_idx = base_idx
+
+        # Backward-compatible "jump" metric for UI text paths.
+        result["tier_jump"] = max(1, final_idx - base_idx + 1)
         result["final_rarity"] = final_rarity
-    else:
-        result["result_item"] = None
-    
+        result["result_item"] = generate_item(rarity=final_rarity, story_id=story_id)
+
     return result
 
 
@@ -5925,7 +6059,7 @@ def calculate_rarity_bonuses(session_minutes: int = 0, streak_days: int = 0) -> 
     """
     Calculate rarity distribution using a moving window system.
     
-    The window [5%, 20%, 50%, 20%, 5%] shifts through tiers based on session length:
+    The window [2%, 20%, 56%, 20%, 2%] shifts through tiers based on session length:
     - 30min: Center on Common (tier 0)
     - 60min: Center on Uncommon (tier 1)
     - 2hr: Center on Rare (tier 2)
@@ -5965,13 +6099,13 @@ def calculate_rarity_bonuses(session_minutes: int = 0, streak_days: int = 0) -> 
     # Streak bonus (adds to center tier)
     streak_tier_bonus = 0
     if streak_days >= 60:
-        streak_tier_bonus = 2
-    elif streak_days >= 30:
-        streak_tier_bonus = 1.5
-    elif streak_days >= 14:
-        streak_tier_bonus = 1
-    elif streak_days >= 7:
         streak_tier_bonus = 0.5
+    elif streak_days >= 30:
+        streak_tier_bonus = 0.35
+    elif streak_days >= 14:
+        streak_tier_bonus = 0.2
+    elif streak_days >= 7:
+        streak_tier_bonus = 0.1
     
     return {
         "center_tier": center_tier,
@@ -5982,6 +6116,119 @@ def calculate_rarity_bonuses(session_minutes: int = 0, streak_days: int = 0) -> 
         "session_bonus": min(session_minutes, 480) // 4.8 if session_minutes > 0 else 0,
         "streak_bonus": streak_tier_bonus * 20,
         "total_bonus": (center_tier + streak_tier_bonus) * 20 if center_tier >= 0 else 0
+    }
+
+
+def get_focus_rarity_distribution(
+    session_minutes: int = 0,
+    streak_days: int = 0,
+    adhd_buster: Optional[dict] = None,
+) -> dict:
+    """
+    Compute the canonical focus-session rarity distribution used by generate_item().
+    """
+    rarities = get_standard_reward_rarity_order()
+    base_weights = [ITEM_RARITIES[r]["weight"] for r in rarities]
+
+    bonuses = calculate_rarity_bonuses(session_minutes, streak_days)
+    center_tier = bonuses.get("center_tier", -1)
+    streak_bonus = bonuses.get("streak_tier_bonus", 0.0)
+
+    entity_rarity_bonus = 0.0
+    city_rarity_bonus = 0.0
+    if adhd_buster:
+        luck_perks = get_entity_luck_perks(adhd_buster)
+
+        rarity_bias = luck_perks.get("rarity_bias", 0)
+        if rarity_bias > 0:
+            entity_rarity_bonus += rarity_bias / 10.0
+
+        drop_luck = min(luck_perks.get("drop_luck", 0), 5)
+        if drop_luck > 0:
+            entity_rarity_bonus += drop_luck / 20.0
+
+        entity_rarity_bonus = min(entity_rarity_bonus, 0.3)
+
+        try:
+            city_bonuses = _safe_get_city_bonuses(adhd_buster)
+            city_rarity = city_bonuses.get("rarity_bias_bonus", 0)
+            if city_rarity > 0:
+                city_rarity_bonus = city_rarity / 10.0
+        except Exception:
+            pass
+
+        city_rarity_bonus = min(city_rarity_bonus, 0.2)
+
+    total_modifier = min(streak_bonus + entity_rarity_bonus + city_rarity_bonus, 1.0)
+    effective_center = center_tier + total_modifier
+
+    if effective_center >= 0:
+        window = [2, 20, 56, 20, 2]
+        weights = [0] * len(rarities)
+        rounded_center = round(effective_center)
+        for offset, pct in zip([-2, -1, 0, 1, 2], window):
+            target_tier = rounded_center + offset
+            clamped_tier = max(0, min(len(rarities) - 1, target_tier))
+            weights[clamped_tier] += pct
+    else:
+        weights = base_weights
+
+    return {
+        "rarities": rarities,
+        "weights": weights,
+        "center_tier": center_tier,
+        "effective_center": effective_center,
+        "total_modifier": total_modifier,
+    }
+
+
+def roll_focus_reward_outcome(
+    session_minutes: int = 0,
+    streak_days: int = 0,
+    adhd_buster: Optional[dict] = None,
+    roll: Optional[float] = None,
+) -> dict:
+    """
+    Canonical backend roll for focus-session reward rarity.
+
+    The slider's final position maps directly to this roll (0..100).
+    """
+    distribution = get_focus_rarity_distribution(
+        session_minutes=session_minutes,
+        streak_days=streak_days,
+        adhd_buster=adhd_buster,
+    )
+    rarities = distribution.get("rarities", get_standard_reward_rarity_order())
+    weights = distribution.get("weights", [])
+    total = sum(weights)
+
+    if total <= 0 or not rarities:
+        fallback = get_standard_reward_rarity_order()
+        return {
+            "rarity": fallback[0] if fallback else "Common",
+            "roll": 0.0,
+            "weights": [100] + [0] * (len(fallback) - 1) if fallback else [100],
+            "rarities": fallback,
+        }
+
+    if roll is None:
+        roll = random.random() * 100.0
+    roll = max(0.0, min(100.0, float(roll)))
+
+    rolled_rarity = rarities[-1]
+    cumulative = 0.0
+    for rarity_name, weight in zip(rarities, weights):
+        zone_pct = (weight / total) * 100.0
+        if roll < cumulative + zone_pct:
+            rolled_rarity = rarity_name
+            break
+        cumulative += zone_pct
+
+    return {
+        "rarity": rolled_rarity,
+        "roll": roll,
+        "weights": weights,
+        "rarities": rarities,
     }
 
 
@@ -6064,18 +6311,31 @@ def roll_priority_completion_reward(story_id: str = None, logged_hours: float = 
         chance = PRIORITY_BASE_COMPLETION_CHANCE
     
     # First roll: did the user win?
-    if random.randint(1, 100) > chance:
+    win_roll = random.random()
+    won = win_roll < (chance / 100.0)
+    if not won:
         return {
             "won": False,
             "item": None,
             "message": "No lucky gift this time... Keep completing priorities for another chance!",
-            "chance": chance
+            "chance": chance,
+            "win_roll": win_roll,
+            "rarity_roll": None,
+            "rarity": "",
         }
     
-    # User won! Roll for rarity (weighted toward high tiers)
-    rarities = list(PRIORITY_REWARD_WEIGHTS.keys())
-    weights = [PRIORITY_REWARD_WEIGHTS[r] for r in rarities]
-    lucky_rarity = random.choices(rarities, weights=weights)[0]
+    # User won! Roll for rarity (weighted toward high tiers).
+    rarity_roll = random.random() * 100.0
+    total_weight = float(sum(PRIORITY_REWARD_WEIGHTS.values()))
+    cumulative = 0.0
+    lucky_rarity = "Legendary"
+    for rarity_name in ["Common", "Uncommon", "Rare", "Epic", "Legendary"]:
+        weight = PRIORITY_REWARD_WEIGHTS.get(rarity_name, 0)
+        zone_pct = (weight / total_weight) * 100.0 if total_weight > 0 else 0.0
+        if rarity_roll < cumulative + zone_pct:
+            lucky_rarity = rarity_name
+            break
+        cumulative += zone_pct
     
     # Generate the item with this rarity and story theme
     item = generate_item(rarity=lucky_rarity, story_id=story_id)
@@ -6093,7 +6353,10 @@ def roll_priority_completion_reward(story_id: str = None, logged_hours: float = 
         "won": True,
         "item": item,
         "message": rarity_messages.get(lucky_rarity, "You won a reward!"),
-        "chance": chance
+        "chance": chance,
+        "win_roll": win_roll,
+        "rarity_roll": rarity_roll,
+        "rarity": lucky_rarity,
     }
 
 
@@ -6104,7 +6367,7 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
     
     Uses a moving window system where longer sessions shift the probability
     distribution toward higher rarities:
-    - Window pattern: [5%, 20%, 50%, 20%, 5%] centered on a tier
+    - Window pattern: [2%, 20%, 56%, 20%, 2%] centered on a tier
     - Overflow at edges is absorbed by the edge tier
     
     Args:
@@ -6118,60 +6381,13 @@ def generate_item(rarity: str = None, session_minutes: int = 0, streak_days: int
         dict with item properties including story_theme for display
     """
     if rarity is None:
-        # Standard lotteries intentionally exclude Celestial.
-        rarities = get_standard_reward_rarity_order()
-        base_weights = [ITEM_RARITIES[r]["weight"] for r in rarities]
-        
-        bonuses = calculate_rarity_bonuses(session_minutes, streak_days)
-        center_tier = bonuses.get("center_tier", -1)
-        streak_bonus = bonuses.get("streak_tier_bonus", 0)
-        
-        # âś¨ ENTITY PERK BONUS: Apply rarity_bias and drop_luck from collected entities
-        # âś¨ CITY BONUS: Apply rarity_bias from city buildings (Artisan Guild)
-        entity_rarity_bonus = 0.0
-        city_rarity_bonus = 0.0
-        if adhd_buster:
-            luck_perks = get_entity_luck_perks(adhd_buster)
-            # Rarity bias shifts weights toward higher rarities
-            # Each 1% rarity_bias = 0.1 tier shift (e.g., 10% = +1 tier)
-            rarity_bias = luck_perks.get("rarity_bias", 0)
-            if rarity_bias > 0:
-                entity_rarity_bonus += rarity_bias / 10.0  # 10% = +1 tier shift
-            
-            # Drop luck also improves item quality (since items always drop)
-            # Each 1% drop_luck = 0.05 tier shift (e.g., 20% = +1 tier)
-            drop_luck = luck_perks.get("drop_luck", 0)
-            if drop_luck > 0:
-                entity_rarity_bonus += drop_luck / 20.0  # 20% = +1 tier shift
-            
-            # City building bonus (Artisan Guild)
-            try:
-                all_bonuses = get_all_perk_bonuses(adhd_buster)
-                city_rarity = all_bonuses.get("rarity_bias", 0)
-                if city_rarity > 0:
-                    city_rarity_bonus = city_rarity / 10.0  # Same scale as entity perks
-            except Exception:
-                pass
-        
-        # Adjust center tier with streak bonus and entity rarity bonus + city bonus
-        effective_center = center_tier + streak_bonus + entity_rarity_bonus + city_rarity_bonus
-        
-        if effective_center >= 0:
-            # Moving window: [5%, 20%, 50%, 20%, 5%] centered on effective_center
-            window = [5, 20, 50, 20, 5]  # -2, -1, 0, +1, +2 from center
-            weights = [0] * len(rarities)
-            
-            for offset, pct in zip([-2, -1, 0, 1, 2], window):
-                # Use round() instead of int() for proper rounding of fractional tiers
-                # int() truncates toward zero, causing bias toward lower tiers
-                target_tier = round(effective_center + offset)
-                # Clamp to valid range - overflow absorbed at edges
-                clamped_tier = max(0, min(len(rarities) - 1, target_tier))
-                weights[clamped_tier] += pct
-        else:
-            # No bonus (<30min) - use base distribution
-            weights = base_weights
-        
+        distribution = get_focus_rarity_distribution(
+            session_minutes=session_minutes,
+            streak_days=streak_days,
+            adhd_buster=adhd_buster,
+        )
+        rarities = distribution["rarities"]
+        weights = distribution["weights"]
         rarity = random.choices(rarities, weights=weights)[0]
     
     # Get story-themed item generation data
@@ -16776,68 +16992,93 @@ def calculate_effective_minutes(duration_minutes: int, activity_id: str,
 def get_activity_reward_rarity(effective_minutes: float) -> Optional[str]:
     """
     Get reward rarity based on effective minutes using moving window distribution.
-    
+
     The window [5%, 15%, 60%, 15%, 5%] shifts through rarity tiers based on effort.
     Overflow at edges is absorbed by the edge tier.
-    
+
     Args:
         effective_minutes: Calculated effective minutes
-    
+
     Returns:
         Rarity string or None if below threshold
     """
-    import random
-    
-    # Minimum threshold for any reward
+    outcome = roll_activity_reward_outcome(effective_minutes)
+    return outcome.get("rarity") if outcome else None
+
+
+def get_activity_reward_weights(effective_minutes: float) -> Optional[list]:
+    """Get activity reward weights for a given effective-minute score."""
     if effective_minutes < 8:
         return None
-    
-    # Determine center tier based on effective minutes
-    # 8min â†’ Common-centered, 20min â†’ Uncommon, 40min â†’ Rare, 70min â†’ Epic, 100min â†’ Legendary (75%), 120min+ â†’ 100% Legendary
-    if effective_minutes >= 120:
-        return get_standard_reward_rarity_order()[-1]  # 100% top tier for 120+ effective minutes
-    elif effective_minutes >= 100:
-        center_tier = 5  # Legendary-centered (75%)
-    elif effective_minutes >= 70:
-        center_tier = 4  # Epic-centered
-    elif effective_minutes >= 40:
-        center_tier = 3  # Rare-centered
-    elif effective_minutes >= 20:
-        center_tier = 2  # Uncommon-centered
-    else:  # 8-19 min
-        center_tier = 1  # Common-centered
-    
-    # Rarity tiers map to currently obtainable order.
+
     rarities = get_standard_reward_rarity_order()
-    
-    # Base window distribution: [5%, 15%, 60%, 15%, 5%]
-    # Centered on center_tier, so offsets are [-2, -1, 0, +1, +2]
-    base_weights = [5, 15, 60, 15, 5]  # percentages for tiers center-2 to center+2
-    
-    # Calculate actual weights for each rarity tier
+    if effective_minutes >= 120:
+        weights = [0] * len(rarities)
+        if weights:
+            weights[-1] = 100
+        return weights
+
+    if effective_minutes >= 100:
+        center_tier = 5
+    elif effective_minutes >= 70:
+        center_tier = 4
+    elif effective_minutes >= 40:
+        center_tier = 3
+    elif effective_minutes >= 20:
+        center_tier = 2
+    else:
+        center_tier = 1
+
+    base_weights = [5, 15, 60, 15, 5]
     weights = [0] * len(rarities)
-    
     for offset, weight in enumerate(base_weights):
-        tier = center_tier - 2 + offset  # tier position in 1-5 range
+        tier = center_tier - 2 + offset
         if tier < 1:
-            # Below Common - absorb into Common
             weights[0] += weight
-        elif tier > 5:
-            # Above Legendary - absorb into Legendary
+        elif tier > len(rarities):
             weights[-1] += weight
         else:
-            # Valid tier - add to that rarity
             weights[tier - 1] += weight
-    
-    # Select rarity based on weights
-    roll = random.randint(1, 100)
-    cumulative = 0
-    for i, w in enumerate(weights):
-        cumulative += w
-        if roll <= cumulative:
-            return rarities[i]
-    
-    return rarities[-1]  # Fallback
+    return weights
+
+
+def roll_activity_reward_outcome(
+    effective_minutes: float,
+    roll: Optional[float] = None,
+) -> Optional[dict]:
+    """
+    Canonical backend roll for activity reward rarity.
+
+    The slider's final position maps directly to this roll (0..100).
+    """
+    weights = get_activity_reward_weights(effective_minutes)
+    if not weights:
+        return None
+
+    rarities = get_standard_reward_rarity_order()
+    total = sum(weights)
+    if total <= 0:
+        return None
+
+    if roll is None:
+        roll = random.random() * 100.0
+    roll = max(0.0, min(100.0, float(roll)))
+
+    rolled_rarity = rarities[-1]
+    cumulative = 0.0
+    for rarity_name, weight in zip(rarities, weights):
+        zone_pct = (weight / total) * 100.0
+        if roll < cumulative + zone_pct:
+            rolled_rarity = rarity_name
+            break
+        cumulative += zone_pct
+
+    return {
+        "rarity": rolled_rarity,
+        "roll": roll,
+        "weights": weights,
+        "rarities": rarities,
+    }
 
 
 def check_activity_streak(activity_entries: list) -> int:
@@ -16925,6 +17166,8 @@ def check_activity_entry_reward(duration_minutes: int, activity_id: str,
         "reward": None,
         "effective_minutes": 0,
         "rarity": None,
+        "rarity_roll": None,
+        "rarity_weights": None,
         "messages": [],
     }
     
@@ -16938,8 +17181,11 @@ def check_activity_entry_reward(duration_minutes: int, activity_id: str,
     effective = calculate_effective_minutes(duration_minutes, activity_id, intensity_id)
     result["effective_minutes"] = effective
     
-    rarity = get_activity_reward_rarity(effective)
+    activity_outcome = roll_activity_reward_outcome(effective)
+    rarity = activity_outcome.get("rarity") if activity_outcome else None
     result["rarity"] = rarity
+    result["rarity_roll"] = activity_outcome.get("roll") if activity_outcome else None
+    result["rarity_weights"] = activity_outcome.get("weights") if activity_outcome else None
     
     if rarity:
         result["reward"] = generate_item(rarity=rarity, story_id=story_id)
@@ -17633,6 +17879,80 @@ def get_hydration_daily_cap(adhd_buster: dict) -> int:
         return base_cap
 
 
+def roll_water_reward_outcome(
+    glass_number: int,
+    success_roll: Optional[float] = None,
+    tier_roll: Optional[float] = None,
+) -> dict:
+    """
+    Canonical water lottery roll (success + tier), used by gameplay and UI.
+
+    Returns:
+        dict with keys:
+        - base_rarity: str or None
+        - success_rate: float
+        - rolled_tier: str or None
+        - success_roll: float or None
+        - tier_roll: float or None
+        - weights: list[int]
+        - won: bool
+    """
+    import random
+
+    if glass_number < 1 or glass_number > HYDRATION_MAX_DAILY_GLASSES:
+        return {
+            "base_rarity": None,
+            "success_rate": 0.0,
+            "rolled_tier": None,
+            "success_roll": None,
+            "tier_roll": None,
+            "weights": [0, 0, 0, 0, 0],
+            "won": False,
+        }
+
+    center_tier = glass_number - 1
+    success_rates = [0.99, 0.80, 0.60, 0.40, 0.20]
+    success_rate = success_rates[min(center_tier, len(success_rates) - 1)]
+
+    tier_names = get_standard_reward_rarity_order()
+    center_tier = min(center_tier, len(tier_names) - 1)
+    base_rarity = tier_names[center_tier]
+
+    window = [5, 15, 60, 15, 5]
+    weights = [0] * len(tier_names)
+    for offset, pct in zip([-2, -1, 0, 1, 2], window):
+        target_tier = center_tier + offset
+        clamped_tier = max(0, min(len(tier_names) - 1, target_tier))
+        weights[clamped_tier] += pct
+
+    if tier_roll is None:
+        tier_roll = random.random() * 100.0
+    tier_roll = max(0.0, min(100.0, float(tier_roll)))
+    cumulative = 0.0
+    rolled_tier = tier_names[-1]
+    for tier_name, weight in zip(tier_names, weights):
+        if tier_roll < cumulative + weight:
+            rolled_tier = tier_name
+            break
+        cumulative += weight
+
+    if success_roll is None:
+        success_roll = random.random()
+    success_roll = max(0.0, min(1.0, float(success_roll)))
+    won = success_roll < success_rate
+
+    return {
+        "base_rarity": base_rarity,
+        "success_rate": success_rate,
+        "rolled_tier": rolled_tier,
+        "reward_tier": rolled_tier if won else None,
+        "success_roll": success_roll,
+        "tier_roll": tier_roll,
+        "weights": weights,
+        "won": won,
+    }
+
+
 def get_water_reward_rarity(glass_number: int, success_roll: float = None) -> tuple:
     """
     Get reward rarity for logging a glass of water.
@@ -17652,45 +17972,12 @@ def get_water_reward_rarity(glass_number: int, success_roll: float = None) -> tu
         (base_rarity: str, success_rate: float, rolled_tier: str or None)
         Returns (None, 0.0, None) if over daily limit
     """
-    import random
-    
-    if glass_number < 1 or glass_number > HYDRATION_MAX_DAILY_GLASSES:
-        return (None, 0.0, None)
-    
-    # Glass number maps to tier index in currently obtainable rarity order.
-    center_tier = glass_number - 1
-    
-    # Success rate decreases: 99%, 80%, 60%, 40%, 20%
-    success_rates = [0.99, 0.80, 0.60, 0.40, 0.20]
-    success_rate = success_rates[min(center_tier, len(success_rates) - 1)]
-    
-    # Tier names
-    tier_names = get_standard_reward_rarity_order()
-    center_tier = min(center_tier, len(tier_names) - 1)
-    base_rarity = tier_names[center_tier]
-    
-    # Moving window: [5%, 15%, 60%, 15%, 5%] centered on center_tier (same as merge/eye)
-    window = [5, 15, 60, 15, 5]
-    weights = [0] * len(tier_names)
-    
-    for offset, pct in zip([-2, -1, 0, 1, 2], window):
-        target_tier = center_tier + offset
-        clamped_tier = max(0, min(len(tier_names) - 1, target_tier))
-        weights[clamped_tier] += pct
-    
-    rarities = tier_names
-    
-    # Roll success first
-    if success_roll is None:
-        success_roll = random.random()
-    
-    if success_roll < success_rate:
-        # Success - roll for tier using moving window
-        rolled_tier = random.choices(rarities, weights=weights)[0]
-        return (base_rarity, success_rate, rolled_tier)
-    else:
-        # Failed - no tier
-        return (base_rarity, success_rate, None)
+    outcome = roll_water_reward_outcome(glass_number=glass_number, success_roll=success_roll)
+    return (
+        outcome["base_rarity"],
+        outcome["success_rate"],
+        outcome["reward_tier"],
+    )
 
 
 def get_hydration_streak_bonus_rarity(streak_days: int) -> Optional[str]:
@@ -20102,7 +20389,7 @@ def attempt_entitidex_bond(
             "success": True,
             "entity": entity,
             "probability": 1.0,
-            "roll": random.random(),
+            "roll": 0.0,  # Deterministic: forced success path has no actual lottery roll
             "pity_bonus": 0.0,
             "consecutive_fails": 0,
             "message": message,
@@ -20582,20 +20869,21 @@ def get_saved_encounters(adhd_buster: dict) -> list:
     for idx, enc in enumerate(saved):
         entity = get_entity_by_id(enc.entity_id)
         if entity:
-            from entitidex import calculate_join_probability
-            
             # Get the story that originally had this encounter
             saved_story_id = enc.story_id_at_encounter or current_story_id
             
             # Check if there's a story mismatch
             is_story_mismatch = saved_story_id != current_story_id
             
-            # Calculate potential probability using the ORIGINAL story's hero power
-            # Always use _calculate_power_for_story for consistency, even if same story
-            # This ensures we're reading from story_heroes directly, not relying on flat sync
-            original_hero_power = _calculate_power_for_story(adhd_buster, saved_story_id)
-            
-            potential_prob = calculate_join_probability(original_hero_power, entity.power)
+            # Calculate potential probability using the same stacked formula used by
+            # the actual recalculate path (power + pity + perks + city + caps).
+            potential_prob, original_hero_power = _calculate_saved_encounter_recalc_probability(
+                adhd_buster=adhd_buster,
+                manager=manager,
+                saved=enc,
+                entity_power=entity.power,
+                use_saved_story_power=True,
+            )
             
             result.append({
                 "saved_encounter": enc.to_dict(),
@@ -20706,6 +20994,67 @@ def get_saved_encounter_count(adhd_buster: dict) -> int:
 # Entity IDs required for recalculation perks
 CHAD_ENTITY_ID = "underdog_008"  # Legacy compatibility marker only.
 # Recalculate unlock providers are discovered dynamically from ENTITY_PERKS.
+CHAD_SKIP_APPEAR_CHANCE = 0.20
+CHAD_SKIP_GIFT_CHANCE = 0.20
+CHAD_SKIP_COIN_MIN = 100
+CHAD_SKIP_COIN_MAX = 200
+
+
+def roll_chad_skip_interaction(
+    has_chad_normal: bool,
+    has_chad_exceptional: bool,
+    appearance_roll: Optional[float] = None,
+    gift_roll: Optional[float] = None,
+    coin_amount: Optional[int] = None,
+) -> dict:
+    """
+    Canonical backend roll for Chad skip interaction behavior.
+
+    Returns an outcome dict consumed by UI dialogs so gameplay logic and
+    animation/presentation remain in sync.
+    """
+    has_any_chad = bool(has_chad_normal or has_chad_exceptional)
+
+    if appearance_roll is None:
+        appearance_roll = random.random()
+    appearance_roll = max(0.0, min(1.0, float(appearance_roll)))
+
+    appears = has_any_chad and (appearance_roll < CHAD_SKIP_APPEAR_CHANCE)
+    variant = "none"
+    if appears:
+        if has_chad_exceptional:
+            variant = "exceptional"
+        elif has_chad_normal:
+            variant = "normal"
+
+    resolved_coin_amount = None
+    resolved_gift_roll = None
+    gift_on_decline = False
+
+    if variant == "exceptional":
+        if coin_amount is None:
+            coin_amount = random.randint(CHAD_SKIP_COIN_MIN, CHAD_SKIP_COIN_MAX)
+        try:
+            resolved_coin_amount = int(coin_amount)
+        except (TypeError, ValueError):
+            resolved_coin_amount = CHAD_SKIP_COIN_MIN
+        resolved_coin_amount = max(CHAD_SKIP_COIN_MIN, min(CHAD_SKIP_COIN_MAX, resolved_coin_amount))
+
+        if gift_roll is None:
+            gift_roll = random.random()
+        resolved_gift_roll = max(0.0, min(1.0, float(gift_roll)))
+        gift_on_decline = resolved_gift_roll < CHAD_SKIP_GIFT_CHANCE
+
+    return {
+        "appears": appears,
+        "variant": variant,  # "none" | "normal" | "exceptional"
+        "appearance_roll": appearance_roll,
+        "appearance_threshold": CHAD_SKIP_APPEAR_CHANCE,
+        "coin_amount": resolved_coin_amount,
+        "gift_roll": resolved_gift_roll,
+        "gift_threshold": CHAD_SKIP_GIFT_CHANCE if variant == "exceptional" else 0.0,
+        "gift_on_decline": gift_on_decline,
+    }
 
 
 def get_recalculate_provider_names(risky: bool = False, include_ids: bool = False) -> list:
@@ -20756,6 +21105,44 @@ def get_recalculate_provider_names(risky: bool = False, include_ids: bool = Fals
             break
 
     return names
+
+
+def _calculate_saved_encounter_recalc_probability(
+    adhd_buster: dict,
+    manager: "EntitidexManager",
+    saved,
+    entity_power: int,
+    use_saved_story_power: bool = True,
+) -> tuple[float, int]:
+    """
+    Calculate recalculated catch probability for a saved encounter.
+
+    Uses the same effective formula as live encounter attempts:
+    - hero power (saved-story hero when available)
+    - pity acceleration from active perks
+    - capture/luck bonus
+    - city catch bonus
+    """
+    from entitidex.catch_mechanics import get_final_probability
+
+    if use_saved_story_power and getattr(saved, "story_id_at_encounter", None):
+        hero_power_for_calc = _calculate_power_for_story(adhd_buster, saved.story_id_at_encounter)
+    else:
+        # Legacy saved encounters without story_id - use current active hero.
+        hero_power_for_calc = calculate_character_power(adhd_buster)
+
+    failed_attempts = manager.progress.get_failed_attempts(saved.entity_id, saved.is_exceptional)
+    effective_failed_attempts = manager._get_effective_failed_attempts(failed_attempts)
+    total_luck_bonus, _ = manager._get_total_luck_bonus()
+
+    probability = get_final_probability(
+        hero_power=hero_power_for_calc,
+        entity_power=entity_power,
+        failed_attempts=effective_failed_attempts,
+        luck_bonus=total_luck_bonus,
+        city_bonus=manager.city_catch_bonus,
+    )
+    return probability, hero_power_for_calc
 
 # ============================================================================
 # CHAD & RAD NARRATIVE POOLS - Rotating daily quotes for entertainment
@@ -21610,7 +21997,7 @@ def get_recalculate_cost(adhd_buster: dict, index: int = 0) -> dict:
     Returns:
         dict with cost info and probability comparison
     """
-    from entitidex import get_entity_by_id, calculate_join_probability
+    from entitidex import get_entity_by_id
     
     manager = get_entitidex_manager(adhd_buster)
     saved_list = manager.progress.get_saved_encounters()
@@ -21627,17 +22014,14 @@ def get_recalculate_cost(adhd_buster: dict, index: int = 0) -> dict:
     # Calculate cost based on rarity
     cost = RECALCULATE_COST_BY_RARITY.get(entity.rarity.lower(), 100)
     
-    # Calculate what new probability would be with current power
-    current_hero_power = calculate_character_power(adhd_buster)
-    new_probability = calculate_join_probability(current_hero_power, entity.power)
-    
-    # Apply pity bonus if applicable (from current failed attempts)
-    from entitidex.catch_mechanics import apply_pity_bonus
-    current_failed = manager.progress.get_failed_attempts(saved.entity_id, saved.is_exceptional)
-    new_probability = apply_pity_bonus(new_probability, current_failed)
-    
-    # Cap at 99%
-    new_probability = min(0.99, new_probability)
+    # Calculate recalculated probability with the same full stack as live encounters.
+    new_probability, recalc_hero_power = _calculate_saved_encounter_recalc_probability(
+        adhd_buster=adhd_buster,
+        manager=manager,
+        saved=saved,
+        entity_power=entity.power,
+        use_saved_story_power=True,
+    )
     
     old_probability = saved.catch_probability
     probability_change = new_probability - old_probability
@@ -21666,8 +22050,8 @@ def get_recalculate_cost(adhd_buster: dict, index: int = 0) -> dict:
         "probability_change_percent": f"{probability_change * 100:+.1f}%",
         "is_worth_it": is_worth_it,
         "old_hero_power": saved.hero_power_at_encounter,
-        "current_hero_power": current_hero_power,
-        "power_gained": current_hero_power - saved.hero_power_at_encounter,
+        "current_hero_power": recalc_hero_power,
+        "power_gained": recalc_hero_power - saved.hero_power_at_encounter,
         "recommendation": _get_recalc_recommendation(probability_change, can_afford),
         # Perk availability for UI
         "has_paid_recalculate_perk": has_paid,
@@ -21713,8 +22097,7 @@ def open_saved_encounter_with_recalculate(
     Returns:
         dict with bond attempt result
     """
-    from entitidex import get_entity_by_id, calculate_join_probability
-    from entitidex.catch_mechanics import apply_pity_bonus
+    from entitidex import get_entity_by_id
     import random
     
     manager = get_entitidex_manager(adhd_buster)
@@ -21777,20 +22160,13 @@ def open_saved_encounter_with_recalculate(
         recalc_cost = cost
         paid_for_recalc = True
         
-        # Recalculate probability using the power of the hero that originally encountered this entity
-        # This prevents exploiting by saving with weak hero and recalculating with maxed hero
-        original_story_id = saved.story_id_at_encounter
-        if original_story_id:
-            hero_power_for_calc = _calculate_power_for_story(adhd_buster, original_story_id)
-        else:
-            # Legacy saved encounters without story_id - use current hero
-            hero_power_for_calc = calculate_character_power(adhd_buster)
-        probability_to_use = calculate_join_probability(hero_power_for_calc, entity.power)
-        
-        # Apply pity bonus
-        current_failed = manager.progress.get_failed_attempts(saved.entity_id, saved.is_exceptional)
-        probability_to_use = apply_pity_bonus(probability_to_use, current_failed)
-        probability_to_use = min(0.99, probability_to_use)
+        probability_to_use, _ = _calculate_saved_encounter_recalc_probability(
+            adhd_buster=adhd_buster,
+            manager=manager,
+            saved=saved,
+            entity_power=entity.power,
+            use_saved_story_power=True,
+        )
     
     # Now pop the encounter
     manager.progress.pop_saved_encounter(index)
@@ -21863,6 +22239,7 @@ def open_saved_encounter_with_recalculate(
         "success": success,
         "entity": entity,
         "probability": probability_to_use,
+        "roll": roll,
         "original_probability": saved.catch_probability if paid_for_recalc else None,
         "is_exceptional": saved.is_exceptional,
         "exceptional_colors": exceptional_colors,
@@ -21899,8 +22276,7 @@ def open_saved_encounter_risky_recalculate(
     Returns:
         dict with encounter info for lottery animation, or error
     """
-    from entitidex import get_entity_by_id, calculate_join_probability
-    from entitidex.catch_mechanics import apply_pity_bonus
+    from entitidex import get_entity_by_id
     
     # Check if user has any entity with RECALC_RISKY.
     if not has_risky_recalculate_perk(adhd_buster):
@@ -21938,25 +22314,22 @@ def open_saved_encounter_risky_recalculate(
             "remaining_saved": manager.progress.get_saved_encounter_count(),
         }
     
-    # Calculate new probability with the power of the hero that originally encountered this entity
-    # This prevents exploiting by saving with weak hero and recalculating with maxed hero
-    original_story_id = saved.story_id_at_encounter
-    if original_story_id:
-        hero_power_for_calc = _calculate_power_for_story(adhd_buster, original_story_id)
-    else:
-        # Legacy saved encounters without story_id - use current hero
-        hero_power_for_calc = calculate_character_power(adhd_buster)
-    new_probability = calculate_join_probability(hero_power_for_calc, entity.power)
-    
-    # Apply pity bonus
-    current_failed = manager.progress.get_failed_attempts(saved.entity_id, saved.is_exceptional)
-    new_probability = apply_pity_bonus(new_probability, current_failed)
-    new_probability = min(0.99, new_probability)
+    new_probability, _ = _calculate_saved_encounter_recalc_probability(
+        adhd_buster=adhd_buster,
+        manager=manager,
+        saved=saved,
+        entity_power=entity.power,
+        use_saved_story_power=True,
+    )
     
     display_name = entity.exceptional_name if saved.is_exceptional and entity.exceptional_name else entity.name
     
-    # Return data for lottery animation
-    # UI should show the lottery, then call finalize_risky_recalculate
+    # Pre-roll the risky recalc in backend so UI only reveals the result.
+    risky_roll = random.random()
+    risky_recalc_succeeded = risky_roll < RISKY_RECALC_SUCCESS_RATE
+
+    # Return data for lottery animation.
+    # UI should reveal this backend roll, then call finalize_risky_recalculate.
     return {
         "success": True,
         "ready_for_lottery": True,
@@ -21968,6 +22341,8 @@ def open_saved_encounter_risky_recalculate(
         "new_probability": new_probability,
         "probability_change": new_probability - saved.catch_probability,
         "risky_success_rate": RISKY_RECALC_SUCCESS_RATE,
+        "risky_roll": risky_roll,
+        "risky_recalc_succeeded": risky_recalc_succeeded,
         "message": f"đźŽ˛ Rolling for FREE recalculate... {RISKY_RECALC_SUCCESS_RATE*100:.0f}% chance!",
     }
 
@@ -21975,7 +22350,8 @@ def open_saved_encounter_risky_recalculate(
 def finalize_risky_recalculate(
     adhd_buster: dict,
     index: int,
-    recalc_succeeded: bool,
+    recalc_succeeded: Optional[bool] = None,
+    risky_roll: Optional[float] = None,
 ) -> dict:
     """
     Finalize a risky recalculate after the lottery animation.
@@ -21985,13 +22361,13 @@ def finalize_risky_recalculate(
     Args:
         adhd_buster: Hero data dictionary
         index: Index of saved encounter
-        recalc_succeeded: True if the lottery roll succeeded (use new probability)
+        recalc_succeeded: Optional legacy override from UI. If omitted, derived from risky_roll.
+        risky_roll: Optional pre-rolled value from open_saved_encounter_risky_recalculate.
         
     Returns:
         dict with bond attempt result
     """
-    from entitidex import get_entity_by_id, calculate_join_probability
-    from entitidex.catch_mechanics import apply_pity_bonus
+    from entitidex import get_entity_by_id
     import random
     
     manager = get_entitidex_manager(adhd_buster)
@@ -22016,21 +22392,28 @@ def finalize_risky_recalculate(
             "remaining_saved": manager.progress.get_saved_encounter_count(),
         }
     
-    # Determine probability to use based on lottery result
+    # Determine risky recalc result from backend roll (canonical).
+    if risky_roll is None:
+        risky_roll = random.random()
+    risky_roll = max(0.0, min(1.0, float(risky_roll)))
+    rolled_recalc_success = risky_roll < RISKY_RECALC_SUCCESS_RATE
+
+    # Keep compatibility with older callers that only passed recalc_succeeded.
+    if recalc_succeeded is None:
+        recalc_succeeded = rolled_recalc_success
+    else:
+        # Backend roll is authoritative.
+        recalc_succeeded = rolled_recalc_success
+
+    # Determine probability to use based on risky lottery result.
     if recalc_succeeded:
-        # Use power of the hero that originally encountered this entity
-        original_story_id = saved.story_id_at_encounter
-        if original_story_id:
-            hero_power_for_calc = _calculate_power_for_story(adhd_buster, original_story_id)
-        else:
-            # Legacy saved encounters without story_id - use current hero
-            hero_power_for_calc = calculate_character_power(adhd_buster)
-        probability_to_use = calculate_join_probability(hero_power_for_calc, entity.power)
-        
-        # Apply pity bonus
-        current_failed = manager.progress.get_failed_attempts(saved.entity_id, saved.is_exceptional)
-        probability_to_use = apply_pity_bonus(probability_to_use, current_failed)
-        probability_to_use = min(0.99, probability_to_use)
+        probability_to_use, _ = _calculate_saved_encounter_recalc_probability(
+            adhd_buster=adhd_buster,
+            manager=manager,
+            saved=saved,
+            entity_power=entity.power,
+            use_saved_story_power=True,
+        )
         used_recalculated = True
     else:
         probability_to_use = saved.catch_probability
@@ -22109,8 +22492,10 @@ def finalize_risky_recalculate(
         "success": success,
         "entity": entity,
         "probability": probability_to_use,
+        "roll": roll,
         "original_probability": saved.catch_probability,
         "used_recalculated_probability": used_recalculated,
+        "risky_roll": risky_roll,
         "is_exceptional": saved.is_exceptional,
         "exceptional_colors": exceptional_colors,
         "xp_awarded": xp_awarded,

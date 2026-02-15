@@ -17,6 +17,7 @@ try:
         calculate_merge_success_rate, 
         get_merge_result_rarity,
         perform_lucky_merge,
+        roll_push_your_luck_outcome,
         ITEM_RARITIES,
         RARITY_POWER,
         RARITY_ORDER,
@@ -63,6 +64,28 @@ except ImportError:
         except ValueError:
             cap_idx = len(RARITY_ORDER) - 1
         return RARITY_ORDER[min(current_idx + 1, cap_idx)]
+    def roll_push_your_luck_outcome(success_threshold, item_save_threshold=0.0, success_roll=None, item_save_roll=None):
+        threshold = max(0.01, min(0.99, float(success_threshold)))
+        save_threshold = max(0.0, min(1.0, float(item_save_threshold)))
+        if success_roll is None:
+            success_roll = random.random()
+        success_roll = max(0.0, min(1.0, float(success_roll)))
+        success = success_roll < threshold
+        resolved_save_roll = None
+        item_saved = False
+        if not success and save_threshold > 0.0:
+            if item_save_roll is None:
+                item_save_roll = random.random()
+            resolved_save_roll = max(0.0, min(1.0, float(item_save_roll)))
+            item_saved = resolved_save_roll < save_threshold
+        return {
+            "success": success,
+            "success_roll": success_roll,
+            "success_threshold": threshold,
+            "item_saved": item_saved,
+            "item_save_roll": resolved_save_roll,
+            "item_save_threshold": save_threshold,
+        }
     get_slot_display_name = None
     get_selected_story = None
 
@@ -1902,82 +1925,55 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         boost_bonus = 25 if self.boost_enabled else 0
         # Include: items merge luck + entity perk merge luck + boost bonus
         total_items_merge_luck = self.items_merge_luck + self.total_entity_merge_luck + boost_bonus
-        
-        # Calculate the success threshold (includes city bonus)
-        success_rate = calculate_merge_success_rate(self.items, items_merge_luck=total_items_merge_luck, city_bonus=self.city_merge_bonus)
-        
-        # Roll for success
-        success_roll = random.random()
-        is_success = success_roll < success_rate
-        
-        # Determine base rarity for display
+
+        # Determine base rarity for the lottery window display.
         base_rarity = self.result_rarity  # Calculated in __init__
-        
-        # Show dramatic two-stage animation (success + tier jump)
-        # Pass tier_upgrade_enabled to show boosted distribution
-        animation_dialog = MergeTwoStageLotteryDialog(
-            success_roll, success_rate,
+
+        # Backend is authoritative for success + tier rolls.
+        merge_backend = perform_lucky_merge(
+            self.items,
+            story_id=story_id,
+            items_merge_luck=total_items_merge_luck,
+            city_bonus=self.city_merge_bonus,
             tier_upgrade_enabled=self.tier_upgrade_enabled,
             base_rarity=base_rarity,
-            parent=self
+        )
+
+        if not merge_backend or merge_backend.get("error"):
+            err = merge_backend.get("error", "Merge failed to execute.") if isinstance(merge_backend, dict) else "Merge failed to execute."
+            for button in self.findChildren(QtWidgets.QPushButton):
+                button.setEnabled(True)
+            msg = QtWidgets.QMessageBox(self)
+            msg.setWindowTitle("Merge Failed")
+            msg.setText(str(err))
+            msg.setIcon(QtWidgets.QMessageBox.NoIcon)
+            msg.setOption(QtWidgets.QMessageBox.DontUseNativeDialog, True)
+            msg.exec_()
+            return
+
+        # Animate exactly the backend-rolled outcome.
+        animation_dialog = MergeTwoStageLotteryDialog(
+            merge_backend.get("roll", 1.0),
+            merge_backend.get("needed", 0.0),
+            tier_upgrade_enabled=self.tier_upgrade_enabled,
+            base_rarity=merge_backend.get("base_rarity", base_rarity),
+            parent=self,
+            tier_roll=merge_backend.get("tier_roll"),
+            rolled_tier=merge_backend.get("rolled_tier"),
+            tier_weights=merge_backend.get("tier_weights"),
         )
         animation_dialog.exec_()
-        
-        # Get results from animation (rolled_tier is the actual rarity name)
-        # Use the dialog's authoritative is_success result
-        is_success, rolled_rarity = animation_dialog.get_results()
-        
+
         # Calculate scrap earned (leftovers from merging)
-        scrap_earned, scrap_desc = calculate_merge_scrap(
+        scrap_earned, _scrap_desc = calculate_merge_scrap(
             len(self.items), do_roll=True, scrap_chance_bonus=self.scrap_chance_bonus
         )
-        
-        # Now build the merge result using the rolled rarity
-        if is_success:
-            # Use the rolled rarity directly from animation
-            final_rarity = rolled_rarity if rolled_rarity else self.result_rarity
-            
-            # Calculate tier_jump for backwards compatibility with result display
-            def safe_rarity_idx(item):
-                rarity = item.get("rarity", "Common")
-                try:
-                    return RARITY_ORDER.index(rarity)
-                except ValueError:
-                    return 0
-            
-            valid_items = [item for item in self.items if item is not None]
-            rarity_indices = [safe_rarity_idx(item) for item in valid_items]
-            lowest_idx = min(rarity_indices) if rarity_indices else 0
-            final_idx = RARITY_ORDER.index(final_rarity) if final_rarity in RARITY_ORDER else lowest_idx
-            tier_jump = max(1, final_idx - lowest_idx + 1)
-            
-            # Generate the result item
-            from gamification import generate_item
-            result_item = generate_item(rarity=final_rarity, story_id=story_id)
-            
-            self.merge_result = {
-                "success": True,
-                "items_lost": valid_items,
-                "roll": success_roll,
-                "needed": success_rate,
-                "tier_jump": tier_jump,
-                "result_item": result_item,
-                "base_rarity": RARITY_ORDER[lowest_idx],
-                "final_rarity": final_rarity,
-                "scrap_earned": scrap_earned,
-                "tier_upgraded": bool(self.tier_upgrade_enabled),
-            }
-        else:
-            self.merge_result = {
-                "success": False,
-                "items_lost": self.items,
-                "roll": success_roll,
-                "needed": success_rate,
-                "tier_jump": 0,
-                "result_item": None,
-                "scrap_earned": scrap_earned
-            }
-        
+
+        # Preserve backend outcome as source of truth; UI animation is reveal-only.
+        self.merge_result = dict(merge_backend)
+        self.merge_result["scrap_earned"] = scrap_earned
+        self.merge_result["tier_upgraded"] = bool(self.tier_upgrade_enabled)
+
         # Show result after animation
         self._show_result()
     
@@ -2495,8 +2491,6 @@ class LuckyMergeDialog(QtWidgets.QDialog):
     
     def _execute_push_your_luck(self):
         """Execute the push-your-luck re-roll with animation."""
-        import random
-        
         # Track cumulative multiplier for multiple re-rolls
         if not hasattr(self, 'push_luck_multiplier'):
             self.push_luck_multiplier = 1.0
@@ -2534,11 +2528,16 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         adjusted_rate = self.success_rate * self.push_luck_multiplier
         adjusted_rate = max(0.01, min(0.99, adjusted_rate))  # Clamp between 1% and 99%
         
-        roll = random.random()
+        push_outcome = roll_push_your_luck_outcome(
+            success_threshold=adjusted_rate,
+            item_save_threshold=(gamble_safety_chance / 100.0),
+        )
+        roll = push_outcome.get("success_roll", 1.0)
         
         # Show dramatic roll animation
         animation_dialog = MergeRollAnimationDialog(
-            roll, adjusted_rate,
+            roll,
+            push_outcome.get("success_threshold", adjusted_rate),
             title="🎲 Push Your Luck!",
             success_text="✨ LUCK HOLDS! ✨",
             failure_text="💔 LUCK RAN OUT 💔",
@@ -2550,7 +2549,7 @@ class LuckyMergeDialog(QtWidgets.QDialog):
         rarity = current_item.get("rarity", "Common")
         next_rarity = get_next_rarity(rarity, max_rarity=MAX_OBTAINABLE_RARITY)
         
-        if roll < adjusted_rate:
+        if push_outcome.get("success", False):
             # SUCCESS! Upgrade to next tier
             from gamification import generate_item
             story_id = current_item.get("story_theme", "warrior")
@@ -2568,19 +2567,26 @@ class LuckyMergeDialog(QtWidgets.QDialog):
             self._show_success_dialog()
         else:
             # FAILURE! But check for Blank Parchment item recovery
-            item_saved = False
-            if gamble_safety_chance > 0:
-                save_roll = random.random()
-                if save_roll < (gamble_safety_chance / 100.0):
-                    item_saved = True
-                    self._show_item_saved_dialog(current_item, gamble_safety_chance, blank_parchment_is_exceptional, save_roll)
+            item_saved = push_outcome.get("item_saved", False)
+            if item_saved:
+                save_roll = push_outcome.get("item_save_roll")
+                if save_roll is None:
+                    save_roll = 1.0
+                self._show_item_saved_dialog(
+                    current_item,
+                    gamble_safety_chance,
+                    blank_parchment_is_exceptional,
+                    save_roll,
+                )
             
             if not item_saved:
                 # Lose everything
                 self.merge_result["success"] = False
                 self.merge_result["push_luck_failed"] = True
                 self.merge_result["roll"] = roll
-                self.merge_result["needed"] = adjusted_rate
+                self.merge_result["needed"] = push_outcome.get("success_threshold", adjusted_rate)
+                self.merge_result["item_save_roll"] = push_outcome.get("item_save_roll")
+                self.merge_result["item_save_needed"] = push_outcome.get("item_save_threshold")
                 
                 # Show failure message
                 self._show_push_luck_failure_dialog()

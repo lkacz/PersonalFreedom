@@ -1,34 +1,46 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <linearGradient id="l_back" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#465c6e"/>
-      <stop offset="100%" stop-color="#202d39"/>
-    </linearGradient>
-    <linearGradient id="l_side" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#3a4d5c"/>
-      <stop offset="100%" stop-color="#182129"/>
-    </linearGradient>
-    <radialGradient id="l_core_glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffd180" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#ff9800" stop-opacity="0"/>
-    </radialGradient>
+    <!-- Hooligan Scarf Patterns (Legendary: Orange/Gold) -->
+    <pattern id="stripeLegendary" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">
+      <rect width="5" height="10" fill="#E65100"/>
+      <rect x="5" width="5" height="10" fill="#FF9800"/>
+    </pattern>
+    <filter id="fabricShadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-opacity="0.4"/>
+    </filter>
   </defs>
 
-  <!-- Legendary cloak: fitted drape + orange command trim -->
-  <g id="cloak_legendary">
-    <path d="M70 84 Q90 76 110 84 L121 176 Q90 189 59 176 Z" fill="url(#l_back)" opacity="0.56"/>
-    <path d="M68 84 L82 90 L76 183 L52 176 Z" fill="url(#l_side)" opacity="0.83"/>
-    <path d="M112 84 L98 90 L104 183 L128 176 Z" fill="url(#l_side)" opacity="0.83"/>
+  <g id="scarf_legendary" transform="translate(0, -6)">
+    
+    <!-- Scarf - Tail 1 (Hanging Left) -->
+    <path d="M88 95 Q80 120 70 130 L80 135 Q86 120 90 98" fill="url(#stripeLegendary)" stroke="#BF360C" stroke-width="0.5" filter="url(#fabricShadow)">
+        <animate attributeName="d" values="M88 95 Q80 120 70 130 L80 135 Q86 120 90 98; M88 95 Q75 122 65 132 L75 137 Q84 120 90 98; M88 95 Q80 120 70 130 L80 135 Q86 120 90 98" dur="2s" repeatCount="indefinite"/>
+    </path>
 
-    <path d="M68 85 Q90 79 112 85" fill="none" stroke="#ff9800" stroke-width="1.15" opacity="0.93"/>
-    <path d="M74 95 L67 173" fill="none" stroke="#ffb74d" stroke-width="0.9" opacity="0.84"/>
-    <path d="M106 95 L113 173" fill="none" stroke="#ffb74d" stroke-width="0.9" opacity="0.84"/>
-    <path d="M79 101.3 Q90 106.8 101 101.3" fill="none" stroke="#ffcc80" stroke-width="1.0" opacity="0.88"/>
-    <circle cx="90" cy="88.5" r="2.2" fill="#ff9800" opacity="0.95"/>
-    <circle cx="90" cy="88.5" r="5.5" fill="url(#l_core_glow)" opacity="0.55">
-      <animate attributeName="r" values="4.9;6.4;4.9" dur="2.2s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.35;0.7;0.35" dur="2.2s" repeatCount="indefinite"/>
-    </circle>
+    <!-- Scarf - Tail 2 (Hanging Right) -->
+    <path d="M92 95 Q100 120 110 125 L100 130 Q94 120 90 98" fill="url(#stripeLegendary)" stroke="#BF360C" stroke-width="0.5" filter="url(#fabricShadow)">
+        <animate attributeName="d" values="M92 95 Q100 120 110 125 L100 130 Q94 120 90 98; M92 95 Q105 118 115 123 L105 128 Q96 120 90 98; M92 95 Q100 120 110 125 L100 130 Q94 120 90 98" dur="2.3s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Fringes on Tail 1 -->
+    <g transform="translate(70, 130) rotate(20)">
+         <line y2="4" stroke="#EF6C00" stroke-width="1"/>
+         <line x1="3" y2="4" stroke="#EF6C00" stroke-width="1"/>
+         <line x1="6" y2="4" stroke="#EF6C00" stroke-width="1"/>
+    </g>
+
+    <!-- Fringes on Tail 2 -->
+    <g transform="translate(110, 125) rotate(-20)">
+         <line y2="4" stroke="#EF6C00" stroke-width="1"/>
+         <line x1="-3" y2="4" stroke="#EF6C00" stroke-width="1"/>
+         <line x1="-6" y2="4" stroke="#EF6C00" stroke-width="1"/>
+    </g>
+
+    <!-- Neck Loop -->
+    <path d="M75 80 Q90 90 105 80 Q112 86 108 92 Q90 98 72 92 Q68 86 75 80 Z" fill="url(#stripeLegendary)" stroke="#BF360C" stroke-width="0.5" filter="url(#fabricShadow)"/>
+    
+    <!-- Knot / Crossover Bundle -->
+    <path d="M85 88 Q90 94 95 88 Q95 85 85 85 Z" fill="#EF6C00" />
+    
   </g>
 </svg>

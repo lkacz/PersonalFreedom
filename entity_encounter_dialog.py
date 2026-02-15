@@ -14,6 +14,7 @@ from PySide6.QtSvgWidgets import QSvgWidget
 
 # Import entitidex components
 from entitidex import Entity
+from entitidex.catch_mechanics import CATCH_CONFIG
 from app_utils import get_app_dir
 from styled_dialog import styled_info
 
@@ -681,14 +682,21 @@ class BondResultDialog(QtWidgets.QDialog):
         layout.addWidget(message)
         
         # Pity system hint
-        if self.consecutive_fails >= 3:
+        pity_t1 = int(CATCH_CONFIG.get("pity_threshold_1", 6))
+        pity_t2 = int(CATCH_CONFIG.get("pity_threshold_2", 12))
+        pity_t3 = int(CATCH_CONFIG.get("pity_threshold_3", 18))
+        pity_b1 = int(CATCH_CONFIG.get("pity_bonus_1", 0.08) * 100)
+        pity_b2 = int(CATCH_CONFIG.get("pity_bonus_2", 0.18) * 100)
+        pity_b3 = int(CATCH_CONFIG.get("pity_bonus_3", 0.35) * 100)
+
+        if self.consecutive_fails >= max(3, pity_t1 - 2):
             pity_hint = ""
-            if self.consecutive_fails >= 15:
-                pity_hint = "đź”Ą Maximum pity bonus active! (+50%)"
-            elif self.consecutive_fails >= 10:
-                pity_hint = "â¬†ď¸Ź High pity bonus active! (+25%)"
-            elif self.consecutive_fails >= 5:
-                pity_hint = "đź“ Pity bonus building... (+10%)"
+            if self.consecutive_fails >= pity_t3:
+                pity_hint = f"Maximum pity bonus active! (+{pity_b3}%)"
+            elif self.consecutive_fails >= pity_t2:
+                pity_hint = f"High pity bonus active! (+{pity_b2}%)"
+            elif self.consecutive_fails >= pity_t1:
+                pity_hint = f"Pity bonus building... (+{pity_b1}%)"
             else:
                 pity_hint = f"Consecutive misses: {self.consecutive_fails}"
             

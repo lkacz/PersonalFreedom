@@ -1,12 +1,111 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <defs>
+    <!-- Hyperspace Center Gradient (Bright Yellow to Orange to Dark) -->
+    <radialGradient id="hyperCore" cx="0.5" cy="0.5" r="0.5">
+       <stop offset="0%" stop-color="#fff" />
+       <stop offset="20%" stop-color="#fef08a" /> <!-- Yellow-200 -->
+       <stop offset="50%" stop-color="#f97316" /> <!-- Orange-500 -->
+       <stop offset="100%" stop-color="#7c2d12" stop-opacity="0" /> <!-- Dark Orange Transparent -->
+    </radialGradient>
 
-  <g id="fx_legendary">
-    <ellipse cx="90" cy="100" rx="29" ry="14" fill="#FF9800" opacity="0.11"/>
-    <ellipse cx="90" cy="100" rx="35" ry="17.5" fill="none" stroke="#FF9800" stroke-width="1.5" opacity="0.74"/>
-    <ellipse cx="90" cy="100" rx="23" ry="11.2" fill="none" stroke="#ffd69f" stroke-width="1.05" opacity="0.66"/>
-    <path d="M57 102 Q90 73 123 102" stroke="#FF9800" stroke-width="1.4" fill="none" opacity="0.74"/>
-    <path d="M62 113 Q90 90 118 113" stroke="#ffc36f" stroke-width="1" fill="none" opacity="0.62"/>
-    <circle cx="90" cy="82" r="2" fill="#FF9800"/>
+    <!-- Speed Blur Filter -->
+    <filter id="speed" x="-20%" y="-20%" width="140%" height="140%">
+       <feGaussianBlur stdDeviation="1" in="SourceGraphic" result="blur"/>
+    </filter>
+    
+    <!-- Cockpit Lighting Overlay (Orange tint) -->
+    <linearGradient id="cockpitDash" x1="0" y1="0" x2="0" y2="1">
+       <stop offset="0%" stop-color="#f97316" stop-opacity="0.1"/>
+       <stop offset="100%" stop-color="#c2410c" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+
+  <!-- BACKGROUND: The Void (Dark Space) -->
+  <rect width="180" height="220" fill="#0f172a" />
+
+  <!-- HYPERSPACE TUNNEL (Orange/Yellow) -->
+  <g transform="translate(90, 100)">
+      
+      <!-- Core Glow -->
+      <circle cx="0" cy="0" r="150" fill="url(#hyperCore)" opacity="0.6">
+         <animate attributeName="opacity" values="0.5;0.7;0.5" dur="0.2s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Streak Group 1 -->
+      <g stroke="#fbbf24" stroke-width="2" stroke-linecap="round">
+         <line x1="10" y1="10" x2="60" y2="60">
+             <animate attributeName="x2" values="20;100" dur="0.5s" repeatCount="indefinite"/>
+             <animate attributeName="y2" values="20;100" dur="0.5s" repeatCount="indefinite"/>
+             <animate attributeName="opacity" values="0;1;0" dur="0.5s" repeatCount="indefinite"/>
+         </line>
+         <line x1="-10" y1="-10" x2="-80" y2="-80">
+             <animate attributeName="x2" values="-20;-120" dur="0.4s" repeatCount="indefinite"/>
+             <animate attributeName="y2" values="-20;-120" dur="0.4s" repeatCount="indefinite"/>
+             <animate attributeName="opacity" values="0;1;0" dur="0.4s" repeatCount="indefinite"/>
+         </line>
+         <line x1="5" y1="-20" x2="20" y2="-120">
+             <animate attributeName="x2" values="10;40" dur="0.3s" repeatCount="indefinite"/>
+             <animate attributeName="y2" values="-40;-160" dur="0.3s" repeatCount="indefinite"/>
+             <animate attributeName="opacity" values="0;1;0" dur="0.3s" repeatCount="indefinite"/>
+         </line>
+         <line x1="-20" y1="5" x2="-100" y2="25">
+             <animate attributeName="x2" values="-40;-140" dur="0.6s" repeatCount="indefinite"/>
+             <animate attributeName="y2" values="10;40" dur="0.6s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="0.6s" repeatCount="indefinite"/>
+         </line>
+      </g>
+      
+      <!-- Streak Group 2 (Offset, Warmer Orange) -->
+      <g stroke="#f97316" stroke-width="3" stroke-linecap="round" opacity="0.8">
+         <line x1="0" y1="-10" x2="0" y2="-100">
+             <animate attributeName="y2" values="-20;-180" dur="0.2s" repeatCount="indefinite"/>
+             <animate attributeName="opacity" values="0;1;0" dur="0.2s" repeatCount="indefinite"/>
+         </line>
+          <line x1="0" y1="10" x2="0" y2="100">
+             <animate attributeName="y2" values="20;180" dur="0.3s" repeatCount="indefinite"/>
+             <animate attributeName="opacity" values="0;1;0" dur="0.3s" repeatCount="indefinite"/>
+         </line>
+         <line x1="-15" y1="0" x2="-120" y2="0">
+             <animate attributeName="x2" values="-30;-160" dur="0.25s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="0.25s" repeatCount="indefinite"/>
+         </line>
+         <line x1="15" y1="0" x2="120" y2="0">
+             <animate attributeName="x2" values="30;160" dur="0.35s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0;1;0" dur="0.35s" repeatCount="indefinite"/>
+         </line>
+      </g>
   </g>
+
+  <!-- COCKPIT INTERIOR (Frame Overlay) -->
+  <!-- Creates a sense of speed by vibrating slightly -->
+  <g>
+      <animateTransform attributeName="transform" type="translate" values="-1,-1; 1,1; -1,1; 1,-1; -1,-1" dur="0.1s" repeatCount="indefinite"/>
+      
+      <!-- Dashboard -->
+      <path d="M0 220 V170 L40 160 L60 170 H120 L140 160 L180 170 V220 H0 Z" fill="#292524" stroke="#44403c"/>
+      
+      <!-- Orange Warning Lights / Speed Indicators -->
+      <rect x="10" y="180" width="20" height="5" fill="#ef4444">
+          <animate attributeName="fill" values="#ef4444;#7f1d1d;#ef4444" dur="0.5s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="150" y="180" width="20" height="5" fill="#ef4444">
+          <animate attributeName="fill" values="#ef4444;#7f1d1d;#ef4444" dur="0.5s" repeatCount="indefinite"/>
+      </rect>
+      
+      <!-- Speedometer Digital Readout Simulation -->
+      <path d="M60 170 H120 V190 H60 Z" fill="#431407"/>
+      <path d="M65 180 H115" stroke="#f97316" stroke-width="2" stroke-dasharray="2,2"/>
+      
+      <!-- Window Frame (Pillars) -->
+      <path d="M0 0 L20 0 L10 100 L0 120 Z" fill="#292524" opacity="0.9"/>
+      <path d="M180 0 L160 0 L170 100 L180 120 Z" fill="#292524" opacity="0.9"/>
+      
+      <!-- Glass tint -->
+      <rect x="0" y="0" width="180" height="220" fill="url(#cockpitDash)" pointer-events="none" opacity="0.3"/>
+  </g>
+  
+  <!-- "Hold On!" Effect (Zoom Blur lines on edges) -->
+  <path d="M0 0 L90 110 M180 0 L90 110 M0 220 L90 110 M180 220 L90 110" stroke="#fff" stroke-width="0.5" opacity="0.2">
+  </path>
 
 </svg>

@@ -1,10 +1,106 @@
-﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <g id="fx_epic">
-    <ellipse cx="90" cy="104" rx="27" ry="13" fill="#9C27B0" opacity="0.11"/>
-    <circle cx="90" cy="102" r="20" fill="none" stroke="#9C27B0" stroke-width="1.7" opacity="0.68"/>
-    <path d="M66 103 Q90 90 114 103" stroke="#cf83ef" stroke-width="1.1" fill="none" opacity="0.75"/>
-    <path d="M73 116 Q90 111 107 116" stroke="#cf83ef" stroke-width="0.9" fill="none" opacity="0.65"/>
-    <circle cx="70" cy="95" r="1.3" fill="#cf83ef"/>
-    <circle cx="110" cy="111" r="1.2" fill="#cf83ef"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <defs>
+    <!-- Sunset Sky Gradient -->
+    <linearGradient id="skySunset" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="40%" stop-color="#60a5fa" />
+      <stop offset="70%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#f97316" />
+    </linearGradient>
+
+    <!-- Water Gradients -->
+    <linearGradient id="waterDeep" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e40af" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="waterShallow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#60a5fa" stop-opacity="0.6"/>
+    </linearGradient>
+    
+    <!-- Sand Texture Gradient -->
+    <radialGradient id="sandTexture" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="80%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#ca8a04" />
+    </radialGradient>
+
+    <!-- Sun Glow -->
+    <filter id="sunGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" />
+    </filter>
+  </defs>
+
+  <!-- Sky Background -->
+  <rect width="180" height="220" fill="url(#skySunset)"/>
+
+  <!-- Sun with Glow -->
+  <circle cx="140" cy="50" r="20" fill="#facc15" filter="url(#sunGlow)" opacity="0.6">
+    <animate attributeName="opacity" values="0.5;0.7;0.5" dur="4s" repeatCount="indefinite" />
+  </circle>
+  <circle cx="140" cy="50" r="16" fill="#fef08a"/>
+
+  <!-- Clouds -->
+  <g opacity="0.8">
+    <path d="M10 40 Q25 25 40 40 T70 40 T90 50" fill="none" stroke="#fff" stroke-width="20" stroke-linecap="round" filter="blur(5px)">
+       <animateTransform attributeName="transform" type="translate" values="-10 0; 10 0; -10 0" dur="15s" repeatCount="indefinite" />
+    </path>
+    <path d="M110 30 Q130 15 150 30 T180 30" fill="none" stroke="#fff" stroke-width="15" stroke-linecap="round" filter="blur(8px)" opacity="0.6">
+       <animateTransform attributeName="transform" type="translate" values="5 0; -5 0; 5 0" dur="12s" repeatCount="indefinite" />
+    </path>
+  </g>
+
+  <!-- Ocean Layers -->
+  <!-- Deep Water (Back) -->
+  <path d="M0 150 Q30 140 60 150 T120 150 T180 150 V220 H0 Z" fill="url(#waterDeep)">
+     <animate attributeName="d" values="M0 150 Q30 140 60 150 T120 150 T180 150 V220 H0 Z; M0 150 Q30 160 60 150 T120 150 T180 150 V220 H0 Z; M0 150 Q30 140 60 150 T120 150 T180 150 V220 H0 Z" dur="6s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Mid Waves -->
+  <path d="M0 165 Q45 155 90 165 T180 165 V220 H0 Z" fill="url(#waterShallow)" opacity="0.7">
+    <animateTransform attributeName="transform" type="translate" values="-5 0; 5 0; -5 0" dur="4s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Front Waves (Foam) -->
+  <path d="M0 180 Q20 175 40 180 T80 180 T120 180 T160 180 T200 180" fill="none" stroke="#e0f2fe" stroke-width="2" opacity="0.5">
+    <animateTransform attributeName="transform" type="translate" values="-10 0; 0 0; -10 0" dur="3s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Island Base -->
+  <ellipse cx="90" cy="200" rx="75" ry="30" fill="url(#sandTexture)"/>
+  
+  <!-- Sand Speckles (Texture) -->
+  <circle cx="50" cy="195" r="1" fill="#b45309" opacity="0.4"/>
+  <circle cx="70" cy="205" r="1" fill="#b45309" opacity="0.4"/>
+  <circle cx="110" cy="200" r="1.5" fill="#b45309" opacity="0.4"/>
+  <circle cx="130" cy="190" r="1" fill="#b45309" opacity="0.4"/>
+
+  <!-- Detailed Palm Tree -->
+  <g transform="translate(90, 185)">
+    <!-- Trunk with segments -->
+    <path d="M-6 0 Q-10 -15 -2 -30 Q4 -45 -4 -60 L4 -60 Q12 -45 6 -30 Q14 -15 6 0 Z" fill="#713f12"/>
+    <path d="M-8 -10 L8 -8 M-5 -25 L5 -23 M-6 -40 L4 -38" stroke="#451a03" stroke-width="1" opacity="0.4"/>
+    
+    <!-- Leaves (Layered) -->
+    <g transform="translate(0, -60)">
+      <!-- Back leaves (Darker) -->
+      <path d="M0 0 Q-20 -20 -35 -10" fill="none" stroke="#14532d" stroke-width="5" stroke-linecap="round"/>
+      <path d="M0 0 Q20 -20 35 -10" fill="none" stroke="#14532d" stroke-width="5" stroke-linecap="round"/>
+      
+      <!-- Front leaves (Lighter) -->
+      <path d="M0 0 Q-25 -25 -40 -15" fill="none" stroke="#16a34a" stroke-width="4" stroke-linecap="round">
+        <animate attributeName="d" values="M0 0 Q-25 -25 -40 -15; M0 0 Q-25 -30 -40 -20; M0 0 Q-25 -25 -40 -15" dur="3s" repeatCount="indefinite"/>
+      </path>
+      <path d="M0 0 Q25 -25 40 -15" fill="none" stroke="#16a34a" stroke-width="4" stroke-linecap="round">
+        <animate attributeName="d" values="M0 0 Q25 -25 40 -15; M0 0 Q25 -30 40 -20; M0 0 Q25 -25 40 -15" dur="4s" repeatCount="indefinite"/>
+      </path>
+      <path d="M0 0 Q0 -35 -10 -50" fill="none" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+      <path d="M0 0 Q10 -30 20 -45" fill="none" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/>
+      
+      <!-- Coconuts -->
+      <circle cx="-3" cy="4" r="3" fill="#3f2305"/>
+      <circle cx="3" cy="2" r="3" fill="#3f2305"/>
+      <circle cx="0" cy="5" r="3" fill="#3f2305"/>
+    </g>
   </g>
 </svg>

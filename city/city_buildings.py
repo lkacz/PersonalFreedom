@@ -88,11 +88,11 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "completion_reward": {"coins": 75, "xp": 200},
         "effect": {
             "type": "rarity_bias_bonus",
-            "bonus_percent": 3,  # +3% chance for higher rarity items
+            "bonus_percent": 1,  # +1% chance for higher rarity items
         },
         "max_level": 3,
         "level_scaling": {
-            "bonus_percent": 3,  # +3% per level (L3 = +9% total rarity bias)
+            "bonus_percent": 1,  # +1% per level (L1=1%, L2=2%, L3=3%)
         },
         "visual": "artisan_guild",
     },
@@ -112,11 +112,11 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "completion_reward": {"coins": 50, "xp": 300},
         "effect": {
             "type": "entity_catch_bonus",
-            "bonus_percent": 3,  # +3% entity catch probability
+            "bonus_percent": 1,  # +1% entity catch probability
         },
         "max_level": 3,
         "level_scaling": {
-            "bonus_percent": 3,  # +3% per level (L3 = +9% total catch bonus)
+            "bonus_percent": 1,  # +1% per level (L1=1%, L2=2%, L3=3%)
         },
         "visual": "university",
     },
@@ -241,11 +241,11 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
         "completion_reward": {"coins": 500, "xp": 1000},
         "effect": {
             "type": "entity_encounter_bonus",
-            "bonus_percent": 10,  # +10% entity encounter rate
+            "bonus_percent": 1,  # +1% entity encounter rate
         },
         "max_level": 3,
         "level_scaling": {
-            "bonus_percent": 5,  # +5% per level (L3 = +20% encounters)
+            "bonus_percent": 1,  # +1% per level (L1=1%, L2=2%, L3=3%)
         },
         "visual": "observatory",
     },
@@ -272,8 +272,8 @@ CITY_BUILDINGS: Dict[str, Dict[str, Any]] = {
                 "focus_session_coins": 5,   # Coins on focus session completion
                 "exercise_coins": 5,        # Coins on exercise
                 "merge_success_bonus": 5,   # +5% merge
-                "rarity_bias_bonus": 5,     # +5% rarity
-                "entity_catch_bonus": 5,    # +5% catch
+                "rarity_bias_bonus": 3,     # +3% rarity
+                "entity_catch_bonus": 2,    # +2% catch
                 "xp_bonus": 10,             # +10% XP
                 "power_bonus": 5,           # +5% power
             },

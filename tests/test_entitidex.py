@@ -240,16 +240,16 @@ class TestCatchMechanics:
         base = 0.30
         
         # No bonus under threshold 1
-        assert apply_pity_bonus(base, 4) == base
+        assert apply_pity_bonus(base, 5) == base
         
         # Bonus 1 at threshold 1
-        assert apply_pity_bonus(base, 5) == base + CATCH_CONFIG["pity_bonus_1"]
+        assert apply_pity_bonus(base, 6) == base + CATCH_CONFIG["pity_bonus_1"]
         
         # Bonus 2 at threshold 2
-        assert apply_pity_bonus(base, 10) == base + CATCH_CONFIG["pity_bonus_2"]
+        assert apply_pity_bonus(base, 12) == base + CATCH_CONFIG["pity_bonus_2"]
         
         # Bonus 3 at threshold 3
-        assert apply_pity_bonus(base, 15) == base + CATCH_CONFIG["pity_bonus_3"]
+        assert apply_pity_bonus(base, 18) == base + CATCH_CONFIG["pity_bonus_3"]
     
     def test_pity_bonus_caps_at_max(self):
         """Pity bonus should not exceed max probability."""
@@ -652,13 +652,13 @@ class TestEntitidexManager:
         )
         manager.force_encounter("warrior_001")
 
-        # Base chance is 50% at equal power. With +20% city bonus => 70%.
-        with patch("entitidex.catch_mechanics.random.random", return_value=0.60):
+        # Base chance is 50% at equal power. City bonus is now hard-capped at +5%.
+        with patch("entitidex.catch_mechanics.random.random", return_value=0.54):
             result = manager.attempt_catch()
 
         assert result is not None
         assert result.success is True
-        assert result.probability > 0.69
+        assert 0.54 < result.probability < 0.56
 
     def test_encounter_probability_matches_catch_with_pity_perk(self):
         """Displayed encounter probability should match actual catch probability."""
@@ -674,7 +674,7 @@ class TestEntitidexManager:
         encounter = manager.force_encounter("warrior_001")
         assert encounter is not None
 
-        with patch("entitidex.catch_mechanics.random.random", return_value=0.80):
+        with patch("entitidex.catch_mechanics.random.random", return_value=0.60):
             result = manager.attempt_catch()
 
         assert result is not None
@@ -780,8 +780,8 @@ class TestIntegration:
         details = manager.get_entity_details("underdog_009")
         
         # Base probability at 10 vs 2000 power is ~0.5%
-        # After 15 failures, should have +50% pity bonus
-        assert details["current_catch_probability"] > 0.40
+        # After 15 failures, current pity config gives +18% (threshold_2 at 12).
+        assert details["current_catch_probability"] > 0.19
     
     def test_collection_completion(self):
         """Test that completion is detected correctly."""
