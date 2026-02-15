@@ -1,6 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <path d="M60 70 L120 70 L116 130 L64 130 Z" fill="none" stroke="#26A69A" stroke-width="2"/>
-  <path d="M60 70 L120 70 L116 130 L64 130 Z" fill="#004D40" opacity="0.8"/>
-  <!-- Heart Core -->
-  <path d="M90 105 C90 105 80 95 80 85 C80 80 85 75 90 85 C95 75 100 80 100 85 C100 95 90 105 90 105 Z" fill="#FF5252" stroke="#FF8A80" stroke-width="1"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="c_alloy_body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#90CAF9"/>
+      <stop offset="100%" stop-color="#1976D2"/>
+    </linearGradient>
+  </defs>
+  <g id="chestplate_rare">
+    <!-- Streamlined Tapered Torso -->
+    <path d="M60 55 L120 55 L110 120 L70 120 Z" fill="url(#c_alloy_body)" stroke="#0D47A1" stroke-width="1.5"/>
+    
+    <!-- Chest Cavity -->
+    <path d="M70 65 L110 65 L105 100 L75 100 Z" fill="#0D47A1"/>
+    
+    <!-- Arc Reactor (Hexagon Blue) -->
+    <path d="M90 70 L100 78 L100 92 L90 100 L80 92 L80 78 Z" fill="#00B0FF" stroke="#E3F2FD" stroke-width="1.5"/>
+    
+    <!-- Energy Ribs -->
+    <path d="M70 105 L85 105" stroke="#42A5F5" stroke-width="2"/>
+    <path d="M110 105 L95 105" stroke="#42A5F5" stroke-width="2"/>
+    <path d="M72 112 L82 112" stroke="#42A5F5" stroke-width="2"/>
+    <path d="M108 112 L98 112" stroke="#42A5F5" stroke-width="2"/>
+    
+    <!-- Shoulder Vents -->
+    <rect x="62" y="58" width="8" height="20" rx="2" fill="#1565C0"/>
+    <rect x="110" y="58" width="8" height="20" rx="2" fill="#1565C0"/>
+  </g>
 </svg>

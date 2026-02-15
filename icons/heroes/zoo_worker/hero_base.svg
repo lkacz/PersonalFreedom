@@ -1,16 +1,341 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f3e0c8"/>
+      <stop offset="100%" stop-color="#e4c3a0"/>
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fafafa"/>
+      <stop offset="100%" stop-color="#f0eff5"/>
+    </linearGradient>
+
+    <linearGradient id="shortsGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#56644a"/>
+      <stop offset="100%" stop-color="#313a2f"/>
+    </linearGradient>
+    <linearGradient id="waistbandGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6e6a52"/>
+      <stop offset="100%" stop-color="#4d4838"/>
+    </linearGradient>
     <style>
-      .p { font-family: Arial, sans-serif; }
+      .body-outline { fill: url(#skinGrad); stroke: #5a4a3a; stroke-width: 0.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+      .body-detail { fill: none; stroke: #8a7a6a; stroke-width: 0.55; vector-effect: non-scaling-stroke; }
+      .body-subtle { fill: none; stroke: #b0a090; stroke-width: 0.35; vector-effect: non-scaling-stroke; }
+      .muscle-line { fill: none; stroke: #c0a888; stroke-width: 0.45; opacity: 0.7; vector-effect: non-scaling-stroke; }
+      .bone-hint { fill: none; stroke: #a09080; stroke-width: 0.35; stroke-dasharray: 2,2; vector-effect: non-scaling-stroke; }
     </style>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#8a8a8a" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#8a8a8a" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#8a8a8a" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#8a8a8a" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">hero_base</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: n/a</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: hero_base.svg</text>
+
+  <g id="hero_body" transform="translate(0 0)">
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 -1;0 0" dur="4.6s" repeatCount="indefinite"/>
+    <g id="body" transform="translate(90, 42) scale(0.13 0.114)">
+
+    <!-- HEAD -->
+    <ellipse cx="0" cy="110" rx="52" ry="70" class="body-outline"/>
+    <ellipse cx="-18" cy="103" rx="9" ry="4" class="body-detail"/>
+    <ellipse cx="18" cy="103" rx="9" ry="4" class="body-detail"/>
+    <circle cx="-18" cy="103" r="3" fill="#5a4a3a" opacity="0.6"/>
+    <circle cx="18" cy="103" r="3" fill="#5a4a3a" opacity="0.6"/>
+    <path d="M-5,115 Q0,128 5,115" class="body-detail"/>
+    <path d="M-12,136 Q0,143 12,136" class="body-subtle"/>
+    <ellipse cx="-52" cy="110" rx="8" ry="16" class="body-outline"/>
+    <ellipse cx="52" cy="110" rx="8" ry="16" class="body-outline"/>
+    <path d="M-42,65 Q-30,45 0,40 Q30,45 42,65" class="body-subtle"/>
+
+    <!-- NECK -->
+    <rect x="-22" y="178" width="44" height="52" fill="url(#skinGrad)" stroke="none"/>
+    <path d="M-22,178 L-22,220 Q-22,230 -30,235" class="body-outline" fill="none"/>
+    <path d="M22,178 L22,220 Q22,230 30,235" class="body-outline" fill="none"/>
+    <path d="M-18,185 L-8,220" class="muscle-line"/>
+    <path d="M18,185 L8,220" class="muscle-line"/>
+    <path d="M-4,205 L0,200 L4,205" class="body-subtle"/>
+
+    <!-- TORSO -->
+    <path d="M-30,235 Q-60,230 -110,250 Q-130,258 -140,270
+             Q-135,285 -120,310
+             L-95,420 Q-82,468 -70,510
+             Q-64,535 -60,555
+             Q-58,570 -58,580
+             L58,580
+             Q58,570 60,555
+             Q64,535 70,510
+             Q82,468 95,420
+             L120,310 Q135,285 140,270
+             Q130,258 110,250 Q60,230 30,235"
+          fill="url(#skinGrad)" stroke="#5a4a3a" stroke-width="0.6" stroke-linejoin="round"/>
+
+    <!-- Clavicles -->
+    <path d="M-8,240 Q-50,235 -105,255" class="bone-hint" stroke-width="1"/>
+    <path d="M8,240 Q50,235 105,255" class="bone-hint" stroke-width="1"/>
+    <!-- Sternum -->
+    <line x1="0" y1="240" x2="0" y2="380" class="bone-hint"/>
+    <path d="M-4,380 L0,390 L4,380" class="bone-hint"/>
+    <!-- Pectoralis -->
+    <path d="M-15,260 Q-50,270 -90,300 Q-105,310 -110,280" class="muscle-line"/>
+    <path d="M15,260 Q50,270 90,300 Q105,310 110,280" class="muscle-line"/>
+    <!-- Nipples -->
+    <circle cx="-55" cy="320" r="3" fill="#c0a090" opacity="0.5"/>
+    <circle cx="55" cy="320" r="3" fill="#c0a090" opacity="0.5"/>
+    <!-- Rectus abdominis -->
+    <line x1="-8" y1="390" x2="-8" y2="555" class="muscle-line"/>
+    <line x1="8" y1="390" x2="8" y2="555" class="muscle-line"/>
+    <path d="M-8,415 Q0,418 8,415" class="muscle-line"/>
+    <path d="M-8,450 Q0,453 8,450" class="muscle-line"/>
+    <path d="M-8,485 Q0,488 8,485" class="muscle-line"/>
+    <!-- Costal margin -->
+    <path d="M-5,380 Q-30,385 -65,410" class="bone-hint"/>
+    <path d="M5,380 Q30,385 65,410" class="bone-hint"/>
+    <!-- Navel -->
+    <ellipse cx="0" cy="470" rx="5" ry="4" class="body-detail"/>
+    <!-- External obliques -->
+    <path d="M-65,410 Q-55,460 -55,520" class="muscle-line"/>
+    <path d="M65,410 Q55,460 55,520" class="muscle-line"/>
+
+    <!-- PELVIS — smooth from torso -->
+    <path d="M-58,580
+             Q-62,600 -68,625
+             Q-74,650 -76,670
+             Q-76,690 -72,705
+             L-70,715
+             Q-66,728 -60,738
+             Q-48,752 -25,758
+             Q-10,762 0,763
+             Q10,762 25,758
+             Q48,752 60,738
+             Q66,728 70,715
+             L72,705
+             Q76,690 76,670
+             Q74,650 68,625
+             Q62,600 58,580"
+          class="body-outline"/>
+    <!-- Iliac crest -->
+    <path d="M-55,585 Q-62,598 -68,615" class="bone-hint"/>
+    <path d="M55,585 Q62,598 68,615" class="bone-hint"/>
+    <!-- ASIS -->
+    <circle cx="-60" cy="612" r="2.5" fill="#a09080" opacity="0.5"/>
+    <circle cx="60" cy="612" r="2.5" fill="#a09080" opacity="0.5"/>
+    <!-- Inguinal ligament -->
+    <path d="M-60,618 Q-38,668 -18,698" class="muscle-line"/>
+    <path d="M60,618 Q38,668 18,698" class="muscle-line"/>
+    <!-- Hip joint circles -->
+    <circle cx="-68" cy="705" r="6" class="bone-hint" stroke-width="0.8"/>
+    <circle cx="68" cy="705" r="6" class="bone-hint" stroke-width="0.8"/>
+
+    <!-- LEFT THIGH — outer starts at pelvis width (76), seamless junction -->
+    <path d="M-76,710
+             Q-80,730 -84,760
+             Q-86,790 -86,830
+             Q-86,870 -80,910
+             Q-76,940 -68,960
+             Q-60,975 -52,978
+             L-44,978
+             Q-36,975 -30,958
+             Q-24,938 -22,910
+             L-20,865
+             Q-18,825 -18,785
+             Q-18,762 -22,755"
+          class="body-outline"/>
+    <path d="M-60,745 Q-67,830 -67,910" class="muscle-line"/>
+    <path d="M-34,810 Q-32,880 -36,950" class="muscle-line"/>
+    <path d="M-60,625 Q-44,760 -38,940" class="muscle-line" opacity="0.4"/>
+    <path d="M-52,730 Q-52,850 -52,940" class="muscle-line" opacity="0.35"/>
+
+    <!-- RIGHT THIGH — outer starts at pelvis width (76), seamless junction -->
+    <path d="M76,710
+             Q80,730 84,760
+             Q86,790 86,830
+             Q86,870 80,910
+             Q76,940 68,960
+             Q60,975 52,978
+             L44,978
+             Q36,975 30,958
+             Q24,938 22,910
+             L20,865
+             Q18,825 18,785
+             Q18,762 22,755"
+          class="body-outline"/>
+    <path d="M60,745 Q67,830 67,910" class="muscle-line"/>
+    <path d="M34,810 Q32,880 36,950" class="muscle-line"/>
+    <path d="M60,625 Q44,760 38,940" class="muscle-line" opacity="0.4"/>
+    <path d="M52,730 Q52,850 52,940" class="muscle-line" opacity="0.35"/>
+
+
+    <!-- KEEPER SHORTS -->
+    <g id="boxing-shorts">
+      <!-- Waistband -->
+      <path d="M-88,566
+               Q-92,588 -88,610
+               Q-46,624 0,626
+               Q46,624 88,610
+               Q92,588 88,566
+               Q46,578 0,580
+               Q-46,578 -88,566 Z"
+            fill="url(#waistbandGrad)" stroke="#5f5a49" stroke-width="0.8" stroke-linejoin="round"/>
+      <!-- Left panel -->
+      <path d="M-92,610
+               Q-96,650 -95,705
+               Q-94,748 -84,778
+               L-14,778
+               Q-4,748 -4,707
+               Q-4,658 -10,620
+               Q-52,634 -92,610 Z"
+            fill="url(#shortsGrad)" stroke="#3b4638" stroke-width="0.75" stroke-linejoin="round"/>
+      <!-- Right panel -->
+      <path d="M92,610
+               Q96,650 95,705
+               Q94,748 84,778
+               L14,778
+               Q4,748 4,707
+               Q4,658 10,620
+               Q52,634 92,610 Z"
+            fill="url(#shortsGrad)" stroke="#3b4638" stroke-width="0.75" stroke-linejoin="round"/>
+
+      <!-- Center panel to fully cover pelvis/midline -->
+      <path d="M-14,620
+               Q-4,658 -4,707
+               Q-4,748 -14,778
+               L14,778
+               Q4,748 4,707
+               Q4,658 14,620
+               Q0,626 -14,620 Z"
+            fill="url(#shortsGrad)" stroke="#3b4638" stroke-width="0.75" stroke-linejoin="round"/>
+
+      <!-- Center seam and waistband text -->
+      <path d="M0,626 L0,748" fill="none" stroke="#7b876e" stroke-width="0.7" opacity="0.9"/>
+      <text x="0" y="598" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+            font-size="14" font-weight="700" fill="#efe8d6" letter-spacing="1.2">KEEPER</text>
+
+      <!-- Leg openings -->
+      <path d="M-84,778 Q-50,744 -12,748" fill="none" stroke="#636d58" stroke-width="1.1"/>
+      <path d="M84,778 Q50,744 12,748" fill="none" stroke="#636d58" stroke-width="1.1"/>
+
+      <!-- Side folds -->
+      <path d="M-86,640 Q-74,692 -78,744" fill="none" stroke="#6c775f" stroke-width="0.55" opacity="0.8"/>
+      <path d="M86,640 Q74,692 78,744" fill="none" stroke="#6c775f" stroke-width="0.55" opacity="0.8"/>
+      <path d="M-20,640 Q-16,700 -20,760" fill="none" stroke="#6c775f" stroke-width="0.5" opacity="0.7"/>
+      <path d="M20,640 Q16,700 20,760" fill="none" stroke="#6c775f" stroke-width="0.5" opacity="0.7"/>
+    </g>
+
+
+    <!-- LEFT PATELLA -->
+    <ellipse cx="-52" cy="988" rx="17" ry="18" class="body-outline"/>
+    <ellipse cx="-52" cy="988" rx="12" ry="13" class="bone-hint"/>
+    <!-- RIGHT PATELLA -->
+    <ellipse cx="52" cy="988" rx="17" ry="18" class="body-outline"/>
+    <ellipse cx="52" cy="988" rx="12" ry="13" class="bone-hint"/>
+
+    <!-- LEFT LOWER LEG -->
+    <path d="M-66,1005
+             Q-68,1030 -66,1070
+             Q-64,1110 -60,1145
+             L-57,1185
+             Q-55,1215 -52,1235
+             Q-48,1250 -42,1253
+             L-38,1253
+             Q-32,1250 -30,1235
+             Q-28,1215 -28,1185
+             L-30,1145
+             Q-32,1110 -34,1070
+             Q-36,1030 -38,1005"
+          class="body-outline"/>
+    <circle cx="-50" cy="1015" r="3" class="bone-hint"/>
+    <path d="M-48,1020 L-46,1225" class="bone-hint"/>
+    <path d="M-64,1030 Q-70,1090 -64,1145" class="muscle-line"/>
+
+    <!-- RIGHT LOWER LEG -->
+    <path d="M66,1005
+             Q68,1030 66,1070
+             Q64,1110 60,1145
+             L57,1185
+             Q55,1215 52,1235
+             Q48,1250 42,1253
+             L38,1253
+             Q32,1250 30,1235
+             Q28,1215 28,1185
+             L30,1145
+             Q32,1110 34,1070
+             Q36,1030 38,1005"
+          class="body-outline"/>
+    <circle cx="50" cy="1015" r="3" class="bone-hint"/>
+    <path d="M48,1020 L46,1225" class="bone-hint"/>
+    <path d="M64,1030 Q70,1090 64,1145" class="muscle-line"/>
+
+    <!-- Malleoli -->
+    <circle cx="-34" cy="1248" r="5" class="bone-hint"/>
+    <circle cx="34" cy="1248" r="5" class="bone-hint"/>
+    <circle cx="-60" cy="1244" r="5" class="bone-hint"/>
+    <circle cx="60" cy="1244" r="5" class="bone-hint"/>
+
+    <!-- LEFT FOOT — angled outward (toes point left) -->
+    <path d="M-62,1250 Q-70,1258 -75,1272
+             Q-76,1288 -70,1298
+             L-38,1308 Q-28,1310 -24,1305
+             Q-22,1290 -27,1275
+             Q-30,1258 -32,1250"
+          class="body-outline"/>
+    <path d="M-70,1298 L-76,1312 M-62,1302 L-67,1318 M-54,1306 L-58,1320 M-46,1308 L-49,1320 M-38,1308 L-40,1318" class="body-subtle"/>
+
+    <!-- RIGHT FOOT — angled outward (toes point right) -->
+    <path d="M62,1250 Q70,1258 75,1272
+             Q76,1288 70,1298
+             L38,1308 Q28,1310 24,1305
+             Q22,1290 27,1275
+             Q30,1258 32,1250"
+          class="body-outline"/>
+    <path d="M70,1298 L76,1312 M62,1302 L67,1318 M54,1306 L58,1320 M46,1308 L49,1320 M38,1308 L40,1318" class="body-subtle"/>
+
+    <!-- UPPER ARMS -->
+    <!-- Left arm -->
+    <path d="M-140,270 Q-150,285 -158,315
+             L-168,385 Q-172,405 -170,425
+             L-165,445 Q-163,455 -158,465
+             Q-145,470 -135,465
+             L-128,445 Q-122,425 -120,405
+             L-118,325 Q-118,305 -120,315"
+          class="body-outline"/>
+    <path d="M-110,255 Q-140,264 -150,290 Q-155,305 -145,320" class="muscle-line"/>
+    <path d="M-140,345 Q-148,385 -152,425 Q-148,455 -145,465" class="muscle-line"/>
+
+    <!-- Right arm -->
+    <path d="M140,270 Q150,285 158,315
+             L168,385 Q172,405 170,425
+             L165,445 Q163,455 158,465
+             Q145,470 135,465
+             L128,445 Q122,425 120,405
+             L118,325 Q118,305 120,315"
+          class="body-outline"/>
+    <path d="M110,255 Q140,264 150,290 Q155,305 145,320" class="muscle-line"/>
+    <path d="M140,345 Q148,385 152,425 Q148,455 145,465" class="muscle-line"/>
+
+    <!-- FOREARMS + HANDS — seamless wrist transition -->
+    <!-- Left forearm flowing into hand, no wrist pinch -->
+    <path d="M-158,465 Q-162,485 -168,525
+             L-175,585 Q-178,615 -178,640
+             Q-180,660 -182,680
+             Q-183,700 -180,720 Q-175,740 -168,750
+             Q-162,755 -158,750
+             Q-150,730 -148,710
+             L-148,690 Q-147,660 -145,635
+             L-138,525 Q-136,490 -135,465"
+          class="body-outline"/>
+    <path d="M-160,463 Q-155,470 -148,465" class="bone-hint"/>
+    <!-- Fingers left -->
+    <path d="M-180,720 L-185,750 M-175,725 L-180,760 M-170,728 L-174,765 M-165,728 L-168,762 M-158,720 L-158,750" class="body-subtle"/>
+
+    <!-- Right forearm flowing into hand, no wrist pinch -->
+    <path d="M158,465 Q162,485 168,525
+             L175,585 Q178,615 178,640
+             Q180,660 182,680
+             Q183,700 180,720 Q175,740 168,750
+             Q162,755 158,750
+             Q150,730 148,710
+             L148,690 Q147,660 145,635
+             L138,525 Q136,490 135,465"
+          class="body-outline"/>
+    <path d="M160,463 Q155,470 148,465" class="bone-hint"/>
+    <!-- Fingers right -->
+    <path d="M180,720 L185,750 M175,725 L180,760 M170,728 L174,765 M165,728 L168,762 M158,720 L158,750" class="body-subtle"/>
+
+    </g>
+  </g>
 </svg>

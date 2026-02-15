@@ -1,10 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(0,0)">
-    <!-- Celestial: Stardust Manipulators -->
-    <circle cx="49" cy="150" r="18" fill="none" stroke="#36d6e7" stroke-width="1" stroke-dasharray="2 2"/>
-    <circle cx="131" cy="150" r="18" fill="none" stroke="#36d6e7" stroke-width="1" stroke-dasharray="2 2"/>
-    <!-- Stars -->
-    <path d="M49 140 L52 150 L62 150 L54 156 L57 166 L49 160 L41 166 L44 156 L36 150 L46 150 Z" fill="#FFF" opacity="0.9"/>
-    <path d="M131 140 L134 150 L144 150 L136 156 L139 166 L131 160 L123 166 L126 156 L118 150 L128 150 Z" fill="#FFF" opacity="0.9"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+
+  <g id="gauntlets_celestial">
+    <path d="M37 134 L63 134 L62 156 L38 156 Z" fill="#344a67" stroke="#1c2d49" stroke-width="1.2"/>
+    <path d="M117 134 L143 134 L142 156 L118 156 Z" fill="#344a67" stroke="#1c2d49" stroke-width="1.2"/>
+    <path d="M40 145 L60 145" stroke="#00E5FF" stroke-width="1.5" opacity="0.95"/>
+    <path d="M120 145 L140 145" stroke="#00E5FF" stroke-width="1.5" opacity="0.95"/>
+    <rect x="43" y="151" width="14" height="2.8" rx="1.2" fill="#d0b388" opacity="0.92"/>
+    <rect x="123" y="151" width="14" height="2.8" rx="1.2" fill="#d0b388" opacity="0.92"/>
+    <rect x="39.5" y="140.5" width="21" height="3.2" rx="1.6" fill="#4d6588" opacity="0.8"/><rect x="119.5" y="140.5" width="21" height="3.2" rx="1.6" fill="#4d6588" opacity="0.8"/><circle cx="50" cy="146" r="1.5" fill="#00E5FF"/><circle cx="130" cy="146" r="1.5" fill="#00E5FF"/><circle cx="50" cy="146" r="5.4" fill="#00E5FF" opacity="0.2"><animate attributeName="opacity" values="0.08;0.25;0.08" dur="2s" repeatCount="indefinite"/></circle><circle cx="130" cy="146" r="5.4" fill="#00E5FF" opacity="0.2"><animate attributeName="opacity" values="0.08;0.25;0.08" dur="2s" begin="0.35s" repeatCount="indefinite"/></circle><path d="M38 142 L35 137 L40 137 Z" fill="#00E5FF"/><path d="M142 142 L145 137 L140 137 Z" fill="#00E5FF"/><ellipse cx="50" cy="146" rx="8.5" ry="3.2" fill="none" stroke="#00E5FF" stroke-width="0.9" opacity="0.6"/><ellipse cx="130" cy="146" rx="8.5" ry="3.2" fill="none" stroke="#00E5FF" stroke-width="0.9" opacity="0.6"/>
   </g>
+
 </svg>

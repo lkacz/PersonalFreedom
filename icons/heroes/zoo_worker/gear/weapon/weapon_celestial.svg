@@ -1,16 +1,40 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="ce_shaft" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9a825f"/>
+      <stop offset="100%" stop-color="#604831"/>
+    </linearGradient>
+    <linearGradient id="ce_blade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#dffcff"/>
+      <stop offset="100%" stop-color="#72ecff"/>
+    </linearGradient>
+    <radialGradient id="ce_core" cx="50%" cy="50%" r="58%">
+      <stop offset="0%" stop-color="#e9fdff" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#00E5FF" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#00e5ff" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Weapon -&gt; Tool</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: celestial</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: weapon_celestial.svg</text>
+
+  <!-- Zoo Worker weapon (celestial): Ember Lance -->
+  <g id="weapon_celestial" transform="translate(90 122) scale(1.0) translate(-90 -122)">
+    <g transform="rotate(24 108 138)">
+      <rect x="106.1" y="94.2" width="4.3" height="44.6" rx="1.9" fill="url(#ce_shaft)" stroke="#4d3a28" stroke-width="0.72"/>
+      <rect x="105.2" y="129.9" width="6.0" height="9.2" rx="1.5" fill="#66503b" stroke="#463423" stroke-width="0.6"/>
+      <rect x="105.8" y="133.2" width="4.9" height="1.3" rx="0.5" fill="#00E5FF"/>
+
+      <path d="M108.2 94.5 L114.6 103.5 L108.2 111.8 L101.8 103.5 Z" fill="url(#ce_blade)" stroke="#34bfd5" stroke-width="0.8"/>
+      <path d="M101.8 103.5 L98.5 106.3 L102.6 108.2 Z" fill="#8ef5ff" opacity="0.85"/>
+      <path d="M114.6 103.5 L117.9 106.3 L113.8 108.2 Z" fill="#8ef5ff" opacity="0.85"/>
+      <circle cx="108.2" cy="103.7" r="2.1" fill="#c6fbff" stroke="#00E5FF" stroke-width="0.74"/>
+    </g>
+
+    <path d="M113.5 136.5 C117.4 141.1 117.5 146.1 114.0 151.8" fill="none" stroke="#00E5FF" stroke-width="0.9" stroke-linecap="round" opacity="0.92"/>
+    <circle cx="108.2" cy="103.8" r="5.0" fill="url(#ce_core)" opacity="0.5">
+      <animate attributeName="r" values="2.8;6.2;2.8" dur="1.35s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.12;0.85;0.12" dur="1.35s" repeatCount="indefinite"/>
+    </circle>
+    <ellipse cx="108.2" cy="103.9" rx="10.6" ry="2.1" fill="none" stroke="#7df7ff" stroke-width="0.76" stroke-dasharray="1.2 1.8" opacity="0.9">
+      <animate attributeName="stroke-dashoffset" values="0;9" dur="1.35s" repeatCount="indefinite"/>
+    </ellipse>
+  </g>
 </svg>

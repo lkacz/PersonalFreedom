@@ -1,16 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
-  </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#4caf50" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: space_pirate</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Chestplate -&gt; Voidcoat</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: uncommon</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: chestplate_uncommon.svg</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+
+  <g id="chestplate_uncommon">
+    <path d="M70 79 L110 79 Q115 86 115 97 L112 145 L68 145 L65 97 Q65 86 70 79 Z" fill="#283d60" stroke="#15243a" stroke-width="1.25"/>
+    <path d="M74 85 L106 85 L104 137 L76 137 Z" fill="#36507c" opacity="0.9"/>
+    <path d="M72 80 L86 88 L80 133 L72 131 Z" fill="#23334d" opacity="0.8"/><path d="M108 80 L94 88 L100 133 L108 131 Z" fill="#23334d" opacity="0.8"/>
+    <path d="M90 84 L90 139" stroke="#17263f" stroke-width="1" opacity="0.74"/>
+    <path d="M76 136 Q90 141 104 136" stroke="#4CAF50" stroke-width="1.25" opacity="0.78" fill="none"/>
+    <path d="M74 92 L106 92 M74 103 L106 103 M74 114 L106 114" stroke="#546e95" stroke-width="0.9" opacity="0.72"/>
+  </g>
+
 </svg>

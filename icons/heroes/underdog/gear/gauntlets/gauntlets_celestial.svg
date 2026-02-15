@@ -1,36 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <linearGradient id="celestial_band_fill" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#76F4FF"/>
-      <stop offset="100%" stop-color="#00BFD4"/>
+    <linearGradient id="ce_band_fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7CF2FF"/>
+      <stop offset="100%" stop-color="#00E5FF"/>
     </linearGradient>
-    <linearGradient id="celestial_wave" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#CBFBFF"/>
-      <stop offset="50%" stop-color="#00E5FF"/>
-      <stop offset="100%" stop-color="#8EF7FF"/>
-    </linearGradient>
-    <radialGradient id="celestial_core" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#E6FDFF" stop-opacity="0.98"/>
-      <stop offset="100%" stop-color="#4FEAFF" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="celestial_band_glow" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="0.66" result="g"/>
-      <feMerge>
-        <feMergeNode in="g"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
 
-  <g id="gauntlets_celestial_wristband" transform="translate(70.0 130.2) rotate(-8) scale(1.35 1.35) translate(-68.5 -131.2)">
-    <ellipse cx="68.3" cy="132.1" rx="5.5" ry="1.25" fill="#000000" opacity="0.12"/>
-    <rect x="63.2" y="128.3" width="10.6" height="5.4" rx="2.45" fill="url(#celestial_band_fill)" stroke="#0092A6" stroke-width="0.72"/>
-    <path d="M64.6 131.0 Q66.5 129.8 68.4 131.0 Q70.3 132.2 72.2 131.0" fill="none" stroke="url(#celestial_wave)" stroke-width="0.56" filter="url(#celestial_band_glow)"/>
-    <path d="M64.7 132.2 L72.6 132.2" stroke="#D8FBFF" stroke-width="0.5" stroke-linecap="round" opacity="0.82"/>
-    <circle cx="71.9" cy="131.0" r="0.82" fill="url(#celestial_core)" filter="url(#celestial_band_glow)">
-      <animate attributeName="r" values="0.5;1.2;0.5" dur="1.5s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.35;1;0.35" dur="1.5s" repeatCount="indefinite"/>
-    </circle>
+  <!-- Thin wristband between palm and wrist -->
+  <g id="gauntlets_celestial_wristband" transform="rotate(-8 70.2 131.8)">
+    <rect x="66.3" y="131.0" width="7.8" height="1.8" rx="0.9" fill="url(#ce_band_fill)" stroke="#0092A6" stroke-width="0.34"/>
+    <path d="M67.0 131.45 H73.5" stroke="#CCFAFF" stroke-width="0.30" stroke-linecap="round" opacity="0.82"/>
   </g>
 </svg>

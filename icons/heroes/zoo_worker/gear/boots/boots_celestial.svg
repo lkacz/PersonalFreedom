@@ -1,16 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="b_rubber_celestial" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6f5a45"/>
+      <stop offset="100%" stop-color="#4a3a2b"/>
+    </linearGradient>
+    <linearGradient id="b_sole_celestial" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c3b59a"/>
+      <stop offset="100%" stop-color="#97866d"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#00e5ff" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Boots -&gt; Mud Boots</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: celestial</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: boots_celestial.svg</text>
+  <!-- Zoo Worker boots (celestial): Skyline Boots -->
+  <g id="boots_celestial" transform="translate(90 198) scale(0.80 0.88) translate(-90 -200)">
+    <ellipse cx="74.8" cy="208.0" rx="10.8" ry="2.0" fill="#000000" opacity="0.12"/>
+    <ellipse cx="105.2" cy="208.0" rx="11.6" ry="2.05" fill="#000000" opacity="0.12"/>
+
+    <rect x="67.8" y="191.6" width="11.8" height="11.7" rx="2.2" fill="url(#b_rubber_celestial)" stroke="#3f3124" stroke-width="0.72"/>
+    <path d="M64.8 202.5 L80.8 202.5 C83.3 202.5 85.4 204.0 85.4 205.9 C85.4 207.6 83.8 208.2 82.1 208.2 L65.4 208.2 C63.9 208.2 63.1 207.4 63.1 206.2 C63.1 204.3 64.0 202.5 64.8 202.5 Z" fill="url(#b_rubber_celestial)" stroke="#3f3124" stroke-width="0.72"/>
+    <rect x="63.1" y="206.0" width="22.1" height="2.5" rx="1.1" fill="url(#b_sole_celestial)" stroke="#7a6a53" stroke-width="0.42"/>
+
+    <rect x="99.6" y="191.6" width="12.2" height="11.7" rx="2.2" fill="url(#b_rubber_celestial)" stroke="#3f3124" stroke-width="0.72"/>
+    <path d="M95.8 202.5 L112.3 202.5 C114.9 202.5 117.0 204.0 117.0 205.9 C117.0 207.7 115.3 208.2 113.5 208.2 L96.3 208.2 C94.8 208.2 93.9 207.4 93.9 206.2 C93.9 204.3 94.9 202.5 95.8 202.5 Z" fill="url(#b_rubber_celestial)" stroke="#3f3124" stroke-width="0.72"/>
+    <rect x="93.8" y="206.0" width="23.4" height="2.5" rx="1.1" fill="url(#b_sole_celestial)" stroke="#7a6a53" stroke-width="0.42"/>
+
+    <path d="M69 195.2 L77.2 195.2 M101.4 195.2 L110.0 195.2" stroke="#00E5FF" stroke-width="0.65" stroke-linecap="round"/><rect x="70" y="197.2" width="6.4" height="1.0" rx="0.3" fill="#00E5FF" opacity="0.85"/><rect x="102" y="197.2" width="6.8" height="1.0" rx="0.3" fill="#00E5FF" opacity="0.85"/><circle cx="74.0" cy="199.1" r="0.8" fill="#00E5FF"/><circle cx="106.0" cy="199.1" r="0.8" fill="#00E5FF"/><path d="M66.8 206.8 L82.8 206.8 M97.2 206.8 L113.2 206.8" stroke="#00E5FF" stroke-width="0.75" stroke-linecap="round" opacity="0.9"/><path d="M63.8 204.0 L66.2 202.6 M117.8 204.0 L115.4 202.6" stroke="#00E5FF" stroke-width="0.9"/><ellipse cx="74.8" cy="207.0" rx="8.0" ry="1.2" fill="#00E5FF" opacity="0.16"><animate attributeName="opacity" values="0.08;0.35;0.08" dur="1.7s" repeatCount="indefinite"/></ellipse>
+    <ellipse cx="105.2" cy="207.0" rx="8.4" ry="1.2" fill="#00E5FF" opacity="0.16"><animate attributeName="opacity" values="0.08;0.35;0.08" dur="1.7s" repeatCount="indefinite"/></ellipse>
+  </g>
 </svg>

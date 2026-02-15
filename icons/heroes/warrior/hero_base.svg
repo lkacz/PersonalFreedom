@@ -1,16 +1,76 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="armorGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5a6373"/>
+      <stop offset="100%" stop-color="#303744"/>
+    </linearGradient>
+    <linearGradient id="innerGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#364354"/>
+      <stop offset="100%" stop-color="#1f2937"/>
+    </linearGradient>
+    <linearGradient id="pantsGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2e3a4a"/>
+      <stop offset="100%" stop-color="#1a2230"/>
+    </linearGradient>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f3d5bf"/>
+      <stop offset="100%" stop-color="#d8ab8f"/>
+    </linearGradient>
+    <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5b4635"/>
+      <stop offset="100%" stop-color="#322519"/>
+    </linearGradient>
+    <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#8a8a8a" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#8a8a8a" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#8a8a8a" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#8a8a8a" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: warrior</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">hero_base</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: n/a</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: hero_base.svg</text>
+
+  <ellipse cx="90" cy="206" rx="42" ry="7" fill="url(#shadowGrad)"/>
+
+  <g id="hero_body">
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 -0.6;0 0" dur="4.2s" repeatCount="indefinite"/>
+
+    <path d="M72 166 Q70 185 73 201 L86 201 Q87 178 84 166 Z" fill="url(#pantsGrad)"/>
+    <path d="M97 166 Q95 178 96 201 L109 201 Q112 184 108.5 166 Z" fill="url(#pantsGrad)"/>
+    <path d="M71 193 L86.5 193 L88 201 L69.8 201 Z" fill="#454d5a"/>
+    <path d="M95.5 193 L111 193 L112.5 201 L94.3 201 Z" fill="#454d5a"/>
+
+    <circle cx="68.5" cy="87.8" r="8.2" fill="#3d4653"/>
+    <circle cx="111.5" cy="87.8" r="8.2" fill="#3d4653"/>
+    <path d="M70 72 Q60 86 62 103 L67 166 L113 166 L118 103 Q120 86 110 72 Z" fill="url(#armorGrad)"/>
+    <path d="M78 78 L103 78 L105 152 L76 152 Z" fill="url(#innerGrad)"/>
+    <path d="M79 79 L85 92 M101 79 L95 92" stroke="#8f9caf" stroke-width="1"/>
+    <path d="M90 79 L90 153" stroke="#242f3f" stroke-width="1.1"/>
+    <path d="M76 160 L105 160 Q103 166 101 170 L80 170 Q77 166 76 160 Z" fill="#6b4a39"/>
+    <rect x="88.4" y="160.4" width="3.2" height="7.1" rx="0.8" fill="#b98b5e"/>
+
+    <path d="M62 92 Q56 102 57 116 L58 145 Q58 151 62 151 Q66 151 67 145 L68 116 Q68 103 71 93 Z" fill="url(#armorGrad)"/>
+    <path d="M118 92 Q124 102 123 116 L122 145 Q122 151 118 151 Q114 151 113 145 L112 116 Q112 103 109 93 Z" fill="url(#armorGrad)"/>
+    <ellipse cx="59.5" cy="149" rx="3.6" ry="3.9" fill="url(#skinGrad)"/>
+    <ellipse cx="120.5" cy="149" rx="3.6" ry="3.9" fill="url(#skinGrad)"/>
+
+    <rect x="85.2" y="63.5" width="9.6" height="10" rx="3.8" fill="url(#skinGrad)"/>
+    <ellipse cx="90" cy="49" rx="13.2" ry="15.2" fill="url(#skinGrad)"/>
+    <path d="M77.2 45 Q82 34 90 33 Q99 34 102.8 45 L101.5 47.8 Q90 44 78.5 47.8 Z" fill="url(#hairGrad)"/>
+
+    <g id="eyes">
+      <animateTransform attributeName="transform" type="translate"
+        values="0 0; -0.4 0.1; 0.7 -0.2; 0 0; 0.25 0.1; 0 0"
+        keyTimes="0;0.13;0.24;0.57;0.75;1" dur="4.2s" repeatCount="indefinite"/>
+      <ellipse cx="85.1" cy="49.2" rx="1.9" ry="1.5" fill="#f4fbff">
+        <animate attributeName="ry" values="1.5;1.5;0.2;1.5;1.5;0.2;1.5" keyTimes="0;0.2;0.22;0.24;0.68;0.70;1" dur="5s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="94.9" cy="49.2" rx="1.9" ry="1.5" fill="#f4fbff">
+        <animate attributeName="ry" values="1.5;1.5;0.2;1.5;1.5;0.2;1.5" keyTimes="0;0.2;0.22;0.24;0.68;0.70;1" dur="5s" repeatCount="indefinite"/>
+      </ellipse>
+      <circle cx="85.1" cy="49.2" r="0.65" fill="#25313f"/>
+      <circle cx="94.9" cy="49.2" r="0.65" fill="#25313f"/>
+    </g>
+
+    <path d="M88.7 52.8 L89.4 56.8 L90.6 56.8 L91.3 52.8" fill="#b68770"/>
+    <path d="M85.8 59.1 Q90 60.3 94.2 59.1" stroke="#744f3f" stroke-width="0.92" fill="none" stroke-linecap="round"/>
+  </g>
+
 </svg>

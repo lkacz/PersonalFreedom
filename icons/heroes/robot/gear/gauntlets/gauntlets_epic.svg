@@ -1,14 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(0,0)">
-    <!-- Epic: Laser Guides -->
-    <rect x="35" y="125" width="28" height="30" rx="4" fill="#263238" stroke="#36d6e7" stroke-width="1.5"/>
-    <rect x="117" y="125" width="28" height="30" rx="4" fill="#263238" stroke="#36d6e7" stroke-width="1.5"/>
-    <!-- Laser fingers -->
-    <line x1="38" y1="155" x2="38" y2="170" stroke="#36d6e7" stroke-width="2"/>
-    <line x1="49" y1="155" x2="49" y2="170" stroke="#36d6e7" stroke-width="2"/>
-    <line x1="60" y1="155" x2="60" y2="170" stroke="#36d6e7" stroke-width="2"/>
-    <line x1="120" y1="155" x2="120" y2="170" stroke="#36d6e7" stroke-width="2"/>
-    <line x1="131" y1="155" x2="131" y2="170" stroke="#36d6e7" stroke-width="2"/>
-    <line x1="142" y1="155" x2="142" y2="170" stroke="#36d6e7" stroke-width="2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="g_void" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7B1FA2"/>
+      <stop offset="100%" stop-color="#4A148C"/>
+    </linearGradient>
+  </defs>
+  <g id="gauntlets_epic">
+    <!-- Void Gauntlets -->
+    <path d="M40 110 L60 110 L56 140 L44 140 Z" fill="url(#g_void)" stroke="#E040FB" stroke-width="1"/>
+    <path d="M120 110 L140 110 L136 140 L124 140 Z" fill="url(#g_void)" stroke="#E040FB" stroke-width="1"/>
+    
+    <!-- Floating Talons (Levitating Fingers) -->
+    <path d="M42 145 L40 155 L44 152 Z" fill="#4A148C" stroke="#E040FB">
+       <animate attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <path d="M48 145 L50 160 L52 145 Z" fill="#4A148C" stroke="#E040FB">
+       <animate attributeName="transform" type="translate" values="0 0; 0 3; 0 0" dur="1.5s" repeatCount="indefinite"/>
+    </path>
+    <path d="M56 145 L58 155 L54 152 Z" fill="#4A148C" stroke="#E040FB">
+       <animate attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2.2s" repeatCount="indefinite"/>
+    </path>
+
+    <!-- Right Hand copy -->
+    <path d="M122 145 L120 155 L124 152 Z" fill="#4A148C" stroke="#E040FB">
+       <animate attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2s" repeatCount="indefinite" begin="0.1s"/>
+    </path>
+    <path d="M128 145 L130 160 L132 145 Z" fill="#4A148C" stroke="#E040FB">
+       <animate attributeName="transform" type="translate" values="0 0; 0 3; 0 0" dur="1.5s" repeatCount="indefinite" begin="0.1s"/>
+    </path>
+    <path d="M136 145 L138 155 L134 152 Z" fill="#4A148C" stroke="#E040FB">
+       <animate attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2.2s" repeatCount="indefinite" begin="0.1s"/>
+    </path>
   </g>
 </svg>

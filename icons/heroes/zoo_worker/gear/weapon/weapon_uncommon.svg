@@ -1,16 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="u_staff" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7f6f56"/>
+      <stop offset="100%" stop-color="#564434"/>
+    </linearGradient>
+    <linearGradient id="u_tip" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d6dfd8"/>
+      <stop offset="100%" stop-color="#8c9890"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#4caf50" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Weapon -&gt; Tool</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: uncommon</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: weapon_uncommon.svg</text>
+
+  <!-- Zoo Worker weapon (uncommon): Signal Staff -->
+  <g id="weapon_uncommon" transform="translate(90 122) scale(1.0) translate(-90 -122)">
+    <g transform="rotate(22 108 138)">
+      <rect x="106.2" y="97.0" width="3.9" height="41.2" rx="1.6" fill="url(#u_staff)" stroke="#4e3d2f" stroke-width="0.7"/>
+      <rect x="105.5" y="130.8" width="5.3" height="8.3" rx="1.4" fill="#5f4a37" stroke="#433325" stroke-width="0.6"/>
+      <rect x="105.9" y="133.7" width="4.5" height="1.2" rx="0.5" fill="#4CAF50"/>
+
+      <path d="M108.2 97.0 L115.8 102.6 L108.2 107.0 Z" fill="#7ea26e" stroke="#4f6c44" stroke-width="0.6"/>
+      <path d="M108.2 97.2 L113.8 101.3 L108.2 104.5 Z" fill="#cddfc3" opacity="0.82"/>
+      <circle cx="108.2" cy="96.7" r="1.55" fill="#4CAF50" stroke="#2f7f34" stroke-width="0.55"/>
+
+      <path d="M108.2 108.0 L111.0 111.7" stroke="#4CAF50" stroke-width="0.8" stroke-linecap="round"/>
+      <circle cx="111.5" cy="112.6" r="1.4" fill="#d6c18c" stroke="#8f7648" stroke-width="0.55"/>
+    </g>
+  </g>
 </svg>

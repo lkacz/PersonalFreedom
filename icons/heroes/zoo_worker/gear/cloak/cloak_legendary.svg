@@ -1,16 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="cl_leg_gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="50%" stop-color="#FF8F00"/>
+      <stop offset="100%" stop-color="#BF360C"/>
+    </linearGradient>
+    <filter id="cl_glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#ff9800" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Cloak -&gt; Raincoat</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: legendary</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: cloak_legendary.svg</text>
+  <!-- Apex Cloak: Gold/Orange, Regal Theme -->
+  <g id="cloak_legendary" transform="translate(90 118) scale(0.92) translate(-90 -118)">
+    <path d="M67.5 84 Q90 80.5 112.5 84 L109.5 95 Q113 126 106.5 157 L90 161 L73.5 157 Q67 126 70.5 95 Z"
+          fill="url(#cl_leg_gold)" fill-opacity="0.55" stroke="#E65100" stroke-width="1.1"/>
+
+    <path d="M70 86 Q79 92 90 86 Q101 92 110 86"
+          stroke="#FF6F00" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0.62"/>
+
+    <circle cx="90" cy="114" r="8.5" fill="none" stroke="#FFD700" stroke-width="1" opacity="0.85"/>
+    <path d="M86.5 109.5 L90 117.3 L93.5 109.5" stroke="#FFD700" stroke-width="1" fill="none" opacity="0.82"/>
+    <path d="M86.5 121 L93.5 121" stroke="#FFD700" stroke-width="0.85" opacity="0.75"/>
+
+    <path d="M74 152 Q90 145 106 152" stroke="#FFD700" stroke-width="1" fill="none" filter="url(#cl_glow)">
+      <animate attributeName="stroke" values="#FFD700;#FF5722;#FFD700" dur="3s" repeatCount="indefinite"/>
+    </path>
+  </g>
 </svg>

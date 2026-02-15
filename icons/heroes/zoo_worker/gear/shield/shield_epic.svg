@@ -1,16 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="s_epic_field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9C27B0" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#4A148C" stop-opacity="0.6"/>
+    </linearGradient>
+    <filter id="s_epic_glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#9c27b0" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Shield -&gt; Barrier Panel</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: epic</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: shield_epic.svg</text>
+  <!-- Zoo Worker shield (epic): Void Ward -->
+  <g id="shield_epic" transform="translate(90 126) scale(1.045) translate(-90 -126)">
+    <!-- Floating Hexagons -->
+    <path d="M55 100 L75 110 L75 145 L55 155 L35 145 L35 110 Z" fill="url(#s_epic_field)" stroke="#E1BEE7" stroke-width="1.5">
+       <animate attributeName="stroke-opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Inner Energy Core -->
+    <circle cx="55" cy="127.5" r="10" fill="none" stroke="#E1BEE7" stroke-width="2" filter="url(#s_epic_glow)">
+       <animate attributeName="r" values="8;11;8" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Orbiting particles -->
+    <circle cx="55" cy="127.5" r="2" fill="#FFFFFF">
+       <animateTransform attributeName="transform" type="rotate" from="0 55 127.5" to="360 55 127.5" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Tech Lines -->
+    <path d="M35 110 L75 145" stroke="#AB47BC" stroke-width="0.5" opacity="0.4"/>
+    <path d="M75 110 L35 145" stroke="#AB47BC" stroke-width="0.5" opacity="0.4"/>
+  </g>
 </svg>

@@ -1,16 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="c_wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8f6b45"/>
+      <stop offset="100%" stop-color="#5d432d"/>
+    </linearGradient>
+    <linearGradient id="c_metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d6dbd6"/>
+      <stop offset="100%" stop-color="#8f9993"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#9e9e9e" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#9e9e9e" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#9e9e9e" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Weapon -&gt; Tool</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: common</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: weapon_common.svg</text>
+
+  <!-- Zoo Worker weapon (common): Feed Hook -->
+  <g id="weapon_common" transform="translate(90 122) scale(1.0) translate(-90 -122)">
+    <g transform="rotate(20 108 138)">
+      <rect x="106.3" y="102.4" width="3.8" height="36.4" rx="1.6" fill="url(#c_wood)" stroke="#4b3624" stroke-width="0.7"/>
+      <rect x="105.6" y="131.4" width="5.2" height="8.1" rx="1.4" fill="#5a4230" stroke="#3f2f22" stroke-width="0.6"/>
+      <rect x="106.0" y="134.0" width="4.4" height="1.2" rx="0.5" fill="#9E9E9E"/>
+
+      <path d="M108.1 101.9 C116.5 98.6 121.8 103.2 118.9 109.2 C116.2 114.8 108.0 114.2 106.7 109.3" fill="none" stroke="url(#c_metal)" stroke-width="2.0" stroke-linecap="round"/>
+      <path d="M107.8 103.8 C113.7 101.3 116.9 104.4 115.5 107.8" fill="none" stroke="#eef2ef" stroke-width="0.9" stroke-linecap="round" opacity="0.72"/>
+    </g>
+  </g>
 </svg>

@@ -1,12 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(0,0)">
-    <!-- Uncommon: Tank Treads (Bulky) -->
-    <path d="M40 195 L75 195 L80 215 L35 215 Z" fill="#546E7A" stroke="#263238" stroke-width="1"/>
-    <path d="M140 195 L105 195 L100 215 L145 215 Z" fill="#546E7A" stroke="#263238" stroke-width="1"/>
-    <!-- Wheels inside tread -->
-    <circle cx="50" cy="205" r="4" fill="#263238"/>
-    <circle cx="65" cy="205" r="4" fill="#263238"/>
-    <circle cx="115" cy="205" r="4" fill="#263238"/>
-    <circle cx="130" cy="205" r="4" fill="#263238"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="b_heavy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#66BB6A"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </linearGradient>
+  </defs>
+  <g id="boots_uncommon">
+    <!-- Heavy Greaves -->
+    <path d="M40 155 L65 155 L68 195 L37 195 Z" fill="url(#b_heavy)" stroke="#1B5E20" stroke-width="1.5"/>
+    <path d="M115 155 L140 155 L143 195 L112 195 Z" fill="url(#b_heavy)" stroke="#1B5E20" stroke-width="1.5"/>
+    
+    <!-- Grip Soles -->
+    <path d="M35 195 L70 195 L70 205 L35 205 Z" fill="#212121"/>
+    <line x1="40" y1="205" x2="45" y2="195" stroke="#424242" stroke-width="2"/>
+    <line x1="50" y1="205" x2="55" y2="195" stroke="#424242" stroke-width="2"/>
+    <line x1="60" y1="205" x2="65" y2="195" stroke="#424242" stroke-width="2"/>
+    
+    <path d="M110 195 L145 195 L145 205 L110 205 Z" fill="#212121"/>
+    <line x1="115" y1="205" x2="120" y2="195" stroke="#424242" stroke-width="2"/>
+    <line x1="125" y1="205" x2="130" y2="195" stroke="#424242" stroke-width="2"/>
+    <line x1="135" y1="205" x2="140" y2="195" stroke="#424242" stroke-width="2"/>
+    
+    <!-- Hydraulic Pistons -->
+    <rect x="50" y="160" width="6" height="30" fill="#BDBDBD"/>
+    <rect x="125" y="160" width="6" height="30" fill="#BDBDBD"/>
   </g>
 </svg>

@@ -1,9 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(0,0)">
-    <!-- Celestial: Light Trails -->
-    <path d="M60 180 L60 220" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity="0.5"/>
-    <path d="M60 180 L60 220" stroke="#36d6e7" stroke-width="4" stroke-linecap="round"/>
-    <path d="M120 180 L120 220" stroke="#fff" stroke-width="10" stroke-linecap="round" opacity="0.5"/>
-    <path d="M120 180 L120 220" stroke="#36d6e7" stroke-width="4" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+
+  <g id="boots_celestial">
+    <path d="M44 188 L74 188 L76 203 L42 203 Z" fill="#364d6a" stroke="#1a2b45" stroke-width="1.2"/>
+    <path d="M104 188 L134 188 L136 203 L102 203 Z" fill="#364d6a" stroke="#1a2b45" stroke-width="1.2"/>
+    <path d="M42 202 L77 202 L79 210 L40 210 Z" fill="#212c3c" stroke="#101722" stroke-width="1"/>
+    <path d="M102 202 L137 202 L139 210 L100 210 Z" fill="#212c3c" stroke="#101722" stroke-width="1"/>
+    <path d="M45 193 L74 193" stroke="#00E5FF" stroke-width="1.4" opacity="0.95"/>
+    <path d="M105 193 L134 193" stroke="#00E5FF" stroke-width="1.4" opacity="0.95"/>
+    <rect x="50" y="195" width="20" height="2" rx="1" fill="#4f6688" opacity="0.85"/><rect x="110" y="195" width="20" height="2" rx="1" fill="#4f6688" opacity="0.85"/><path d="M48 190 L44 192 L48 196 Z" fill="#00E5FF" opacity="0.85"/><path d="M132 190 L136 192 L132 196 Z" fill="#00E5FF" opacity="0.85"/><rect x="46" y="203" width="28" height="2.4" rx="1.2" fill="#00E5FF" opacity="0.95"><animate attributeName="opacity" values="0.45;1;0.45" dur="1.9s" repeatCount="indefinite"/></rect><rect x="106" y="203" width="28" height="2.4" rx="1.2" fill="#00E5FF" opacity="0.95"><animate attributeName="opacity" values="0.45;1;0.45" dur="1.9s" begin="0.3s" repeatCount="indefinite"/></rect><rect x="54" y="191" width="7" height="3" rx="1" fill="#00E5FF"/><rect x="119" y="191" width="7" height="3" rx="1" fill="#00E5FF"/><ellipse cx="60" cy="207" rx="12" ry="3.4" fill="none" stroke="#00E5FF" stroke-width="0.9" opacity="0.58"/><ellipse cx="120" cy="207" rx="12" ry="3.4" fill="none" stroke="#00E5FF" stroke-width="0.9" opacity="0.58"/>
   </g>
+
 </svg>

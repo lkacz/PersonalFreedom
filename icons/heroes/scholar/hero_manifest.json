@@ -25,13 +25,24 @@
       "Weapon"
     ],
     "patterns": [
-      "gear/{slot}/{item_type}_{rarity}.svg",
-      "gear/{slot}/{item_name}_{rarity}.svg",
-      "gear/{slot}/{item_type}.svg",
       "gear/{slot}/{slot}_{rarity}.svg",
       "gear/{slot}/{rarity}.svg",
-      "gear/{slot}/{slot}.svg"
-    ]
+      "gear/{slot}/{slot}.svg",
+      "gear/{slot}/{item_type}_{rarity}.svg",
+      "gear/{slot}/{item_name}_{rarity}.svg",
+      "gear/{slot}/{item_type}.svg"
+    ],
+    "slot_display": {
+      "Helmet": "Lens Crown",
+      "Chestplate": "Knowledge Mantle",
+      "Gauntlets": "Script Bracers",
+      "Boots": "Arcane Soles",
+      "Shield": "Codex Bulwark",
+      "Weapon": "Gravity Pen Staff",
+      "Cloak": "Archive Veil",
+      "Amulet": "Chronicle Core"
+    },
+    "semantic_contract": "Canonical slot keys are technical. Render scholar story-facing semantics from slot_display while keeping one rarity progression object per slot."
   },
   "fx": {
     "tier_pattern": "fx/tier_{power_tier}.svg"

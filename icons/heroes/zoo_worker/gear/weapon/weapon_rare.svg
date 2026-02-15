@@ -1,16 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="r_barrel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b8c6cd"/>
+      <stop offset="100%" stop-color="#7e8d95"/>
+    </linearGradient>
+    <linearGradient id="r_grip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#75634f"/>
+      <stop offset="100%" stop-color="#4a3a2d"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#2196f3" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Weapon -&gt; Tool</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: rare</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: weapon_rare.svg</text>
+
+  <!-- Zoo Worker weapon (rare): Calming Baton -->
+  <g id="weapon_rare" transform="translate(90 122) scale(1.0) translate(-90 -122)">
+    <g transform="rotate(18 108 138)">
+      <rect x="106.2" y="104.2" width="4.2" height="32.2" rx="2.0" fill="url(#r_barrel)" stroke="#66757d" stroke-width="0.68"/>
+      <rect x="105.4" y="127.8" width="5.8" height="11.0" rx="1.7" fill="url(#r_grip)" stroke="#3f3024" stroke-width="0.6"/>
+      <rect x="106.0" y="132.2" width="4.6" height="1.3" rx="0.5" fill="#2196F3"/>
+
+      <rect x="105.5" y="109.6" width="5.6" height="14.0" rx="2.2" fill="#9ab8cc" opacity="0.45"/>
+      <circle cx="108.3" cy="116.8" r="2.2" fill="#d8ecfb" stroke="#2196F3" stroke-width="0.72"/>
+      <path d="M107.6 116.9 C108.1 116.0 109.2 116.4 109.1 117.4 C109.0 118.1 108.1 118.5 107.5 117.8 C106.8 117.0 107.1 116.1 108.0 115.9" fill="none" stroke="#2196F3" stroke-width="0.56" stroke-linecap="round"/>
+    </g>
+  </g>
 </svg>

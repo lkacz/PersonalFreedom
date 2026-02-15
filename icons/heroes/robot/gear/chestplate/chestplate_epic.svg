@@ -1,8 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <!-- Epic Chestplate: Sleek Nanite Weave (Clean, futuristic) -->
-  <path d="M60 72 Q90 65 120 72 L116 128 Q90 135 64 128 Z" fill="#ECEFF1" stroke="#36d6e7" stroke-width="2"/>
-  <path d="M90 70 L90 130" stroke="#CFD8DC" stroke-width="1"/>
-  <path d="M60 90 Q90 100 120 90" stroke="#36d6e7" stroke-width="1" fill="none"/>
-  <circle cx="90" cy="100" r="10" fill="#263238" stroke="#36d6e7" stroke-width="2"/>
-  <circle cx="90" cy="100" r="5" fill="#36d6e7"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <radialGradient id="c_void_core" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="80%" stop-color="#7B1FA2"/>
+      <stop offset="100%" stop-color="#E040FB"/>
+    </radialGradient>
+  </defs>
+  <g id="chestplate_epic">
+    <!-- Floating Shoulder Pads -->
+    <path d="M55 55 L75 55 L70 80 L50 80 Z" fill="#4A148C" stroke="#E040FB" stroke-width="1">
+       <animate attributeName="transform" type="translate" values="0 0; 0 -2; 0 0" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <path d="M125 55 L105 55 L110 80 L130 80 Z" fill="#4A148C" stroke="#E040FB" stroke-width="1">
+       <animate attributeName="transform" type="translate" values="0 0; 0 -2; 0 0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+    </path>
+    
+    <!-- Hovering Main Plate -->
+    <path d="M70 65 L110 65 L105 115 L75 115 Z" fill="#212121" stroke="#7B1FA2" stroke-width="1"/>
+    
+    <!-- Void Core (Black Hole) -->
+    <circle cx="90" cy="85" r="12" fill="url(#c_void_core)">
+       <animate attributeName="r" values="10;12;10" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Energy Containment Rings -->
+    <circle cx="90" cy="85" r="16" fill="none" stroke="#E040FB" stroke-width="1" stroke-dasharray="2,3">
+      <animateTransform attributeName="transform" type="rotate" from="0 90 85" to="360 90 85" dur="5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Anti-Grav Connectors -->
+    <line x1="75" y1="90" x2="55" y2="70" stroke="#E040FB" stroke-width="0.5" stroke-dasharray="2,2"/>
+    <line x1="105" y1="90" x2="125" y2="70" stroke="#E040FB" stroke-width="0.5" stroke-dasharray="2,2"/>
+  </g>
 </svg>
