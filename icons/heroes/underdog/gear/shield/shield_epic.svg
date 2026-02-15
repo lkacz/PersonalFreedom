@@ -21,7 +21,7 @@
   </defs>
 
   <!-- Epic suitcase shield: premium commuter case -->
-  <g id="shield_epic" transform="rotate(-8 62 149)">
+  <g id="shield_epic" transform="translate(-25 42) translate(62 149) scale(1.55 1.55) translate(-62 -149) rotate(-6 62 149)">
     <ellipse cx="62.2" cy="160.3" rx="10.6" ry="3.0" fill="#000000" opacity="0.17"/>
     <rect x="51.9" y="137.9" width="20.6" height="16.7" rx="2.55" fill="url(#e_case)" stroke="#563682" stroke-width="0.98"/>
     <rect x="53.0" y="138.9" width="18.5" height="3.7" rx="1.0" fill="#ecdafc" opacity="0.62"/>

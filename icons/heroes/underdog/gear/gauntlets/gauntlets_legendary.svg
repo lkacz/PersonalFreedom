@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <linearGradient id="belt_legend_shade" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="legend_band_fill" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#FFBC47"/>
       <stop offset="100%" stop-color="#D87700"/>
     </linearGradient>
@@ -9,8 +9,8 @@
       <stop offset="0%" stop-color="#FFE29D"/>
       <stop offset="100%" stop-color="#FF9800"/>
     </linearGradient>
-    <filter id="legend_belt_glow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="0.78" result="g"/>
+    <filter id="legend_band_glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="0.64" result="g"/>
       <feMerge>
         <feMergeNode in="g"/>
         <feMergeNode in="SourceGraphic"/>
@@ -18,18 +18,15 @@
     </filter>
   </defs>
 
-  <g id="gauntlets_legendary_belt">
-    <rect x="73.9" y="139.9" width="32.2" height="9.6" rx="2.3" fill="#FF9800" stroke="#B55F00" stroke-width="0.86"/>
-    <rect x="75.1" y="141.1" width="30.0" height="7.1" rx="1.7" fill="url(#belt_legend_shade)" opacity="0.67"/>
-    <path d="M76.0 143.0 Q79.0 141.4 82.0 143.0 Q85.0 144.6 88.0 143.0 Q91.0 141.4 94.0 143.0 Q97.0 144.6 100.0 143.0 Q103.0 141.4 105.0 142.8"
-          fill="none" stroke="url(#legend_filigree)" stroke-width="0.78" filter="url(#legend_belt_glow)"/>
-    <path d="M76.0 146.3 Q79.0 144.7 82.0 146.3 Q85.0 147.9 88.0 146.3 Q91.0 144.7 94.0 146.3 Q97.0 147.9 100.0 146.3 Q103.0 144.7 105.0 146.1"
-          fill="none" stroke="#FFE6B8" stroke-width="0.55" opacity="0.8"/>
-    <rect x="86.4" y="140.5" width="7.2" height="8.6" rx="1.2" fill="#FFF3DD" stroke="#A86908" stroke-width="0.66"/>
-    <path d="M88.0 143.5 L90.0 141.6 L92.0 143.5 L90.0 145.4 Z" fill="#FFB22A" stroke="#8A4F00" stroke-width="0.45"/>
-    <path d="M75.0 147.2 L105.0 147.2" stroke="#FFD27A" stroke-width="0.7" stroke-dasharray="1.1 1.1" opacity="0">
-      <animate attributeName="opacity" values="0;1;0" dur="1.4s" repeatCount="indefinite"/>
-      <animate attributeName="stroke-dashoffset" values="0;7" dur="1.4s" repeatCount="indefinite"/>
+  <g id="gauntlets_legendary_wristband" transform="translate(70.0 130.2) rotate(-8) scale(1.35 1.35) translate(-68.5 -131.2)">
+    <ellipse cx="68.3" cy="132.1" rx="5.4" ry="1.25" fill="#000000" opacity="0.12"/>
+    <rect x="63.3" y="128.4" width="10.4" height="5.3" rx="2.4" fill="url(#legend_band_fill)" stroke="#B55F00" stroke-width="0.7"/>
+    <path d="M64.6 131.0 Q66.5 129.8 68.4 131.0 Q70.3 132.2 72.2 131.0" fill="none" stroke="url(#legend_filigree)" stroke-width="0.54" filter="url(#legend_band_glow)"/>
+    <path d="M64.7 132.1 L72.5 132.1" stroke="#FFE6B8" stroke-width="0.5" stroke-linecap="round" opacity="0.82"/>
+    <rect x="70.0" y="129.1" width="2.0" height="2.5" rx="0.5" fill="#FFF3DD" stroke="#A86908" stroke-width="0.34"/>
+    <path d="M64.4 133.2 L72.8 133.2" stroke="#FFD27A" stroke-width="0.56" stroke-dasharray="1.1 1.1" opacity="0">
+      <animate attributeName="opacity" values="0;1;0" dur="1.3s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dashoffset" values="0;5" dur="1.3s" repeatCount="indefinite"/>
     </path>
   </g>
 </svg>

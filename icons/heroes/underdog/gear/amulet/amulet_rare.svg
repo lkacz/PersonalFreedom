@@ -16,7 +16,7 @@
   </defs>
 
   <!-- Rare ID badge (rarity accent: blue) -->
-  <g id="amulet_rare" transform="translate(90 111) scale(0.97) translate(-90 -111)">
+  <g id="amulet_rare" transform="translate(90 87) scale(0.97) translate(-90 -111)">
     <path d="M86.4 98.0 L90.0 102.4 L93.6 98.0" fill="none" stroke="#4f81b0" stroke-width="0.86" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M87.2 98.8 L90.0 102.1 L92.8 98.8" fill="none" stroke="#7f69c7" stroke-width="0.42" opacity="0.55" stroke-linecap="round"/>
     <rect x="88.5" y="101.8" width="3.0" height="2.4" rx="0.5" fill="#7eabcf" stroke="#436f98" stroke-width="0.46"/>

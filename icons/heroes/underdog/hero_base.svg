@@ -1,131 +1,341 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <linearGradient id="ud_skin" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#F2C8B1"/>
-      <stop offset="100%" stop-color="#D0A088"/>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f7ede2"/>
+      <stop offset="100%" stop-color="#eddcd2"/>
     </linearGradient>
-    <linearGradient id="ud_hair" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#4B3A3F"/>
-      <stop offset="100%" stop-color="#231B22"/>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fafafa"/>
+      <stop offset="100%" stop-color="#f0eff5"/>
     </linearGradient>
-    <linearGradient id="ud_hair_shine" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#8A6D77"/>
-      <stop offset="100%" stop-color="#4B3A3F"/>
+
+    <linearGradient id="shortsGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2b3142"/>
+      <stop offset="100%" stop-color="#171c28"/>
     </linearGradient>
-    <linearGradient id="ud_jacket" x1="0" y1="0" x2="0.9" y2="1">
-      <stop offset="0%" stop-color="#607590"/>
-      <stop offset="50%" stop-color="#3B5068"/>
-      <stop offset="100%" stop-color="#25364A"/>
+    <linearGradient id="waistbandGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4b5368"/>
+      <stop offset="100%" stop-color="#2c3242"/>
     </linearGradient>
-    <linearGradient id="ud_shirt" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#A8BBCF"/>
-      <stop offset="100%" stop-color="#7D95AD"/>
-    </linearGradient>
-    <linearGradient id="ud_tie" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#3D5168"/>
-      <stop offset="100%" stop-color="#213244"/>
-    </linearGradient>
-    <linearGradient id="ud_pants" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#2A3E52"/>
-      <stop offset="100%" stop-color="#1A2A39"/>
-    </linearGradient>
-    <linearGradient id="ud_shoe" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#8A99A8"/>
-      <stop offset="100%" stop-color="#4B5967"/>
-    </linearGradient>
-    <radialGradient id="ud_shadow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#000000" stop-opacity="0.42"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
-    </radialGradient>
+    <style>
+      .body-outline { fill: url(#skinGrad); stroke: #5a4a3a; stroke-width: 0.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+      .body-detail { fill: none; stroke: #8a7a6a; stroke-width: 0.55; vector-effect: non-scaling-stroke; }
+      .body-subtle { fill: none; stroke: #b0a090; stroke-width: 0.35; vector-effect: non-scaling-stroke; }
+      .muscle-line { fill: none; stroke: #c0a888; stroke-width: 0.45; opacity: 0.7; vector-effect: non-scaling-stroke; }
+      .bone-hint { fill: none; stroke: #a09080; stroke-width: 0.35; stroke-dasharray: 2,2; vector-effect: non-scaling-stroke; }
+    </style>
   </defs>
 
-  <ellipse cx="90" cy="208" rx="43" ry="6.8" fill="url(#ud_shadow)"/>
-
   <g id="hero_body" transform="translate(0 0)">
-    <animateTransform attributeName="transform" type="translate" values="0 0;0 -1;0 0" dur="4.6s" repeatCount="indefinite"/>
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 -1;0 0" dur="4s" repeatCount="indefinite"/>
+    <g id="body" transform="translate(90, 40) scale(0.12)">
 
-    <!-- Legs: tuned to trouser overlay area (y 138..197) -->
-    <path d="M74 149 Q70 170 71.4 197 L87.5 197 Q89.1 167 90.1 149 Z" fill="url(#ud_pants)"/>
-    <path d="M90.1 149 Q91.1 167 92.7 197 L108.8 197 Q110.2 170 106.2 149 Z" fill="url(#ud_pants)"/>
-    <path d="M76.1 163.2 Q80.4 164.4 84.8 163.1 M95.2 163.1 Q99.6 164.4 104.0 163.2" stroke="#1A2736" stroke-width="0.7" opacity="0.55"/>
+    <!-- HEAD -->
+    <ellipse cx="0" cy="110" rx="52" ry="70" class="body-outline"/>
+    <ellipse cx="-18" cy="103" rx="9" ry="4" class="body-detail"/>
+    <ellipse cx="18" cy="103" rx="9" ry="4" class="body-detail"/>
+    <circle cx="-18" cy="103" r="3" fill="#5a4a3a" opacity="0.6"/>
+    <circle cx="18" cy="103" r="3" fill="#5a4a3a" opacity="0.6"/>
+    <path d="M-5,115 Q0,128 5,115" class="body-detail"/>
+    <path d="M-12,136 Q0,143 12,136" class="body-subtle"/>
+    <ellipse cx="-52" cy="110" rx="8" ry="16" class="body-outline"/>
+    <ellipse cx="52" cy="110" rx="8" ry="16" class="body-outline"/>
+    <path d="M-42,65 Q-30,45 0,40 Q30,45 42,65" class="body-subtle"/>
 
-    <!-- Shoes -->
-    <path d="M69.0 195.1 L88.0 195.1 L86.1 206.0 L66.0 206.0 Z" fill="url(#ud_shoe)" stroke="#2C3A48" stroke-width="0.8"/>
-    <path d="M92.1 195.1 L111.8 195.1 L114.0 206.0 L90.8 206.0 Z" fill="url(#ud_shoe)" stroke="#2C3A48" stroke-width="0.8"/>
-    <path d="M70.9 199.2 L84.6 199.2 M70.4 201.6 L84.2 201.6" stroke="#D4DEE8" stroke-width="0.58" opacity="0.85"/>
-    <path d="M94.0 199.2 L108.0 199.2 M94.5 201.6 L108.5 201.6" stroke="#D4DEE8" stroke-width="0.58" opacity="0.85"/>
+    <!-- NECK -->
+    <rect x="-22" y="178" width="44" height="52" fill="url(#skinGrad)" stroke="none"/>
+    <path d="M-22,178 L-22,220 Q-22,230 -30,235" class="body-outline" fill="none"/>
+    <path d="M22,178 L22,220 Q22,230 30,235" class="body-outline" fill="none"/>
+    <path d="M-18,185 L-8,220" class="muscle-line"/>
+    <path d="M18,185 L8,220" class="muscle-line"/>
+    <path d="M-4,205 L0,200 L4,205" class="body-subtle"/>
 
-    <!-- Torso: tuned to chest overlay area (x 68..112, y 92..147) -->
-    <path d="M66 92 Q62 121 66 149 L114 149 Q118 121 114 92 Q90 82 66 92 Z" fill="url(#ud_jacket)"/>
-    <path d="M74 95 Q72.6 116 74.6 139 L105.4 139 Q107.4 116 106 95 Q90 89 74 95 Z" fill="url(#ud_shirt)" opacity="0.93"/>
-    <path d="M90 95.0 L90 149.0" stroke="#A6BACF" stroke-width="0.95" opacity="0.6"/>
-    <path d="M82.0 97.0 Q90.0 92.7 98.0 97.0" stroke="#334A62" stroke-width="1.4" fill="none"/>
-    <path d="M88.6 97.2 L91.4 97.2 L90.0 104.4 Z" fill="url(#ud_tie)"/>
-    <path d="M90.0 104.4 L91.2 112.1 L90.0 114.0 L88.8 112.1 Z" fill="url(#ud_tie)" opacity="0.95"/>
-    <path d="M90.0 114.0 L91.5 124.5 L90.0 128.5 L88.5 124.5 Z" fill="url(#ud_tie)" opacity="0.92"/>
+    <!-- TORSO -->
+    <path d="M-30,235 Q-60,230 -110,250 Q-130,258 -140,270
+             Q-135,285 -120,310
+             L-95,420 Q-82,468 -70,510
+             Q-64,535 -60,555
+             Q-58,570 -58,580
+             L58,580
+             Q58,570 60,555
+             Q64,535 70,510
+             Q82,468 95,420
+             L120,310 Q135,285 140,270
+             Q130,258 110,250 Q60,230 30,235"
+          fill="url(#skinGrad)" stroke="#5a4a3a" stroke-width="0.6" stroke-linejoin="round"/>
 
-    <!-- Arms: slim, lowered -->
-    <path d="M66.2 101.0 Q62.3 103.7 61.4 108.2 L67.6 109.0 Q68.6 105.2 71.2 103.0 Z" fill="url(#ud_jacket)"/>
-    <path d="M67.6 108.3 Q63.3 117.6 64.0 129.9 L69.7 130.7 Q70.8 117.7 73.3 109.9 Z" fill="url(#ud_jacket)"/>
-    <path d="M64.1 129.5 Q64.0 140.2 65.2 149.4 L70.6 148.7 Q70.8 139.0 69.8 130.3 Z" fill="url(#ud_jacket)"/>
-    <ellipse cx="68.0" cy="152.2" rx="2.7" ry="3.1" fill="url(#ud_skin)"/>
-    <path d="M64.3 129.1 Q67.2 127.4 70.0 128.8" fill="none" stroke="#6D8298" stroke-width="0.7" opacity="0.72"/>
+    <!-- Clavicles -->
+    <path d="M-8,240 Q-50,235 -105,255" class="bone-hint" stroke-width="1"/>
+    <path d="M8,240 Q50,235 105,255" class="bone-hint" stroke-width="1"/>
+    <!-- Sternum -->
+    <line x1="0" y1="240" x2="0" y2="380" class="bone-hint"/>
+    <path d="M-4,380 L0,390 L4,380" class="bone-hint"/>
+    <!-- Pectoralis -->
+    <path d="M-15,260 Q-50,270 -90,300 Q-105,310 -110,280" class="muscle-line"/>
+    <path d="M15,260 Q50,270 90,300 Q105,310 110,280" class="muscle-line"/>
+    <!-- Nipples -->
+    <circle cx="-55" cy="320" r="3" fill="#c0a090" opacity="0.5"/>
+    <circle cx="55" cy="320" r="3" fill="#c0a090" opacity="0.5"/>
+    <!-- Rectus abdominis -->
+    <line x1="-8" y1="390" x2="-8" y2="555" class="muscle-line"/>
+    <line x1="8" y1="390" x2="8" y2="555" class="muscle-line"/>
+    <path d="M-8,415 Q0,418 8,415" class="muscle-line"/>
+    <path d="M-8,450 Q0,453 8,450" class="muscle-line"/>
+    <path d="M-8,485 Q0,488 8,485" class="muscle-line"/>
+    <!-- Costal margin -->
+    <path d="M-5,380 Q-30,385 -65,410" class="bone-hint"/>
+    <path d="M5,380 Q30,385 65,410" class="bone-hint"/>
+    <!-- Navel -->
+    <ellipse cx="0" cy="470" rx="5" ry="4" class="body-detail"/>
+    <!-- External obliques -->
+    <path d="M-65,410 Q-55,460 -55,520" class="muscle-line"/>
+    <path d="M65,410 Q55,460 55,520" class="muscle-line"/>
 
-    <path d="M113.8 101.0 Q117.7 103.7 118.6 108.2 L112.4 109.0 Q111.4 105.2 108.8 103.0 Z" fill="url(#ud_jacket)"/>
-    <path d="M112.4 108.3 Q116.7 117.6 116.0 129.9 L110.3 130.7 Q109.2 117.7 106.7 109.9 Z" fill="url(#ud_jacket)"/>
-    <path d="M115.9 129.5 Q116.0 140.2 114.8 149.4 L109.4 148.7 Q109.2 139.0 110.2 130.3 Z" fill="url(#ud_jacket)"/>
-    <ellipse cx="112.0" cy="152.2" rx="2.7" ry="3.1" fill="url(#ud_skin)"/>
-    <path d="M115.7 129.1 Q112.8 127.4 110.0 128.8" fill="none" stroke="#6D8298" stroke-width="0.7" opacity="0.72"/>
+    <!-- PELVIS — smooth from torso -->
+    <path d="M-58,580
+             Q-62,600 -68,625
+             Q-74,650 -76,670
+             Q-76,690 -72,705
+             L-70,715
+             Q-66,728 -60,738
+             Q-48,752 -25,758
+             Q-10,762 0,763
+             Q10,762 25,758
+             Q48,752 60,738
+             Q66,728 70,715
+             L72,705
+             Q76,690 76,670
+             Q74,650 68,625
+             Q62,600 58,580"
+          class="body-outline"/>
+    <!-- Iliac crest -->
+    <path d="M-55,585 Q-62,598 -68,615" class="bone-hint"/>
+    <path d="M55,585 Q62,598 68,615" class="bone-hint"/>
+    <!-- ASIS -->
+    <circle cx="-60" cy="612" r="2.5" fill="#a09080" opacity="0.5"/>
+    <circle cx="60" cy="612" r="2.5" fill="#a09080" opacity="0.5"/>
+    <!-- Inguinal ligament -->
+    <path d="M-60,618 Q-38,668 -18,698" class="muscle-line"/>
+    <path d="M60,618 Q38,668 18,698" class="muscle-line"/>
+    <!-- Hip joint circles -->
+    <circle cx="-68" cy="705" r="6" class="bone-hint" stroke-width="0.8"/>
+    <circle cx="68" cy="705" r="6" class="bone-hint" stroke-width="0.8"/>
 
-    <!-- Neck and head -->
-    <rect x="83.1" y="74.0" width="13.8" height="10.5" rx="2.2" fill="url(#ud_skin)"/>
-    <path d="M79.5 53.8 L79.5 68.2 Q79.5 80.8 90.0 82.8 Q100.5 80.8 100.5 68.2 L100.5 53.8 Q90.0 45.4 79.5 53.8 Z" fill="url(#ud_skin)"/>
-    <ellipse cx="79.3" cy="66.8" rx="1.7" ry="2.4" fill="url(#ud_skin)" stroke="#B68472" stroke-width="0.42"/>
-    <ellipse cx="100.7" cy="66.8" rx="1.7" ry="2.4" fill="url(#ud_skin)" stroke="#B68472" stroke-width="0.42"/>
-    <ellipse cx="83.9" cy="71.7" rx="1.15" ry="0.75" fill="#E5B29E" opacity="0.34"/>
-    <ellipse cx="96.1" cy="71.7" rx="1.15" ry="0.75" fill="#E5B29E" opacity="0.34"/>
+    <!-- LEFT THIGH — outer starts at pelvis width (76), seamless junction -->
+    <path d="M-76,710
+             Q-80,730 -84,760
+             Q-86,790 -86,830
+             Q-86,870 -80,910
+             Q-76,940 -68,960
+             Q-60,975 -52,978
+             L-44,978
+             Q-36,975 -30,958
+             Q-24,938 -22,910
+             L-20,865
+             Q-18,825 -18,785
+             Q-18,762 -22,755"
+          class="body-outline"/>
+    <path d="M-60,745 Q-67,830 -67,910" class="muscle-line"/>
+    <path d="M-34,810 Q-32,880 -36,950" class="muscle-line"/>
+    <path d="M-60,625 Q-44,760 -38,940" class="muscle-line" opacity="0.4"/>
+    <path d="M-52,730 Q-52,850 -52,940" class="muscle-line" opacity="0.35"/>
 
-    <!-- Hair: executive side-part -->
-    <path d="M79.3 56.5 Q82.0 48.8 89.9 47.3 Q97.8 48.0 101.1 54.6 L100.9 60.4 Q96.9 58.7 93.4 58.1 Q90.0 57.6 86.6 58.0 Q83.2 58.4 79.3 60.8 Z" fill="url(#ud_hair)"/>
-    <path d="M90.3 47.8 Q89.1 54.0 90.8 60.2" fill="none" stroke="url(#ud_hair_shine)" stroke-width="1.05" stroke-linecap="round" opacity="0.9"/>
-    <path d="M79.7 59.3 Q83.7 57.0 87.1 56.6 Q90.7 56.1 94.0 56.8 Q96.9 57.3 100.3 59.1" fill="none" stroke="#2C232A" stroke-width="0.9" opacity="0.78"/>
+    <!-- RIGHT THIGH — outer starts at pelvis width (76), seamless junction -->
+    <path d="M76,710
+             Q80,730 84,760
+             Q86,790 86,830
+             Q86,870 80,910
+             Q76,940 68,960
+             Q60,975 52,978
+             L44,978
+             Q36,975 30,958
+             Q24,938 22,910
+             L20,865
+             Q18,825 18,785
+             Q18,762 22,755"
+          class="body-outline"/>
+    <path d="M60,745 Q67,830 67,910" class="muscle-line"/>
+    <path d="M34,810 Q32,880 36,950" class="muscle-line"/>
+    <path d="M60,625 Q44,760 38,940" class="muscle-line" opacity="0.4"/>
+    <path d="M52,730 Q52,850 52,940" class="muscle-line" opacity="0.35"/>
 
-    <!-- Face -->
-    <path d="M89.8 66.8 L89.2 70.1 L90.8 70.1" fill="#D39F8A" opacity="0.82"/>
-    <path d="M88.8 70.7 Q90.0 71.4 91.2 70.7" stroke="#B17F70" stroke-width="0.5" fill="none" stroke-linecap="round" opacity="0.8"/>
-    <path d="M86.7 73.5 Q90.0 75.7 93.3 73.5" stroke="#8D5D52" stroke-width="0.95" fill="none" stroke-linecap="round"/>
-    <path d="M87.2 74.5 Q90.0 75.8 92.8 74.5" stroke="#A67265" stroke-width="0.45" fill="none" stroke-linecap="round" opacity="0.8"/>
 
-    <!-- Eyes with blink and saccades -->
-    <g id="eye_open_group" opacity="1">
-      <animate attributeName="opacity" values="1;1;1;0;0;1;1;1;0;0;1" dur="8s" repeatCount="indefinite"/>
-      <path d="M83.6 62.1 Q85.7 60.5 87.8 61.9" stroke="#51393F" stroke-width="0.72" fill="none" stroke-linecap="round"/>
-      <path d="M92.2 61.9 Q94.3 60.5 96.4 62.1" stroke="#51393F" stroke-width="0.72" fill="none" stroke-linecap="round"/>
-      <ellipse cx="85.8" cy="66.0" rx="2.05" ry="1.65" fill="#F5F9FC" stroke="#A5B5C2" stroke-width="0.32"/>
-      <ellipse cx="94.2" cy="66.0" rx="2.05" ry="1.65" fill="#F5F9FC" stroke="#A5B5C2" stroke-width="0.32"/>
-      <g transform="translate(0 0)">
-        <animateTransform attributeName="transform" type="translate" values="0 0;0.8 -0.4;-0.8 0.3;0 0;0.7 0;-0.6 -0.3;0 0" dur="5.4s" repeatCount="indefinite"/>
-        <circle cx="85.8" cy="66.0" r="0.78" fill="#1F2A36"/>
-        <circle cx="94.2" cy="66.0" r="0.78" fill="#1F2A36"/>
-        <circle cx="86.2" cy="65.6" r="0.2" fill="#EAF6FF"/>
-        <circle cx="94.6" cy="65.6" r="0.2" fill="#EAF6FF"/>
-      </g>
+    <!-- BOXING SHORTS -->
+    <g id="boxing-shorts">
+      <!-- Waistband -->
+      <path d="M-88,566
+               Q-92,588 -88,610
+               Q-46,624 0,626
+               Q46,624 88,610
+               Q92,588 88,566
+               Q46,578 0,580
+               Q-46,578 -88,566 Z"
+            fill="url(#waistbandGrad)" stroke="#3f4758" stroke-width="0.8" stroke-linejoin="round"/>
+      <!-- Left panel -->
+      <path d="M-92,610
+               Q-96,650 -95,705
+               Q-94,748 -84,778
+               L-14,778
+               Q-4,748 -4,707
+               Q-4,658 -10,620
+               Q-52,634 -92,610 Z"
+            fill="url(#shortsGrad)" stroke="#293041" stroke-width="0.75" stroke-linejoin="round"/>
+      <!-- Right panel -->
+      <path d="M92,610
+               Q96,650 95,705
+               Q94,748 84,778
+               L14,778
+               Q4,748 4,707
+               Q4,658 10,620
+               Q52,634 92,610 Z"
+            fill="url(#shortsGrad)" stroke="#293041" stroke-width="0.75" stroke-linejoin="round"/>
+
+      <!-- Center panel to fully cover pelvis/midline -->
+      <path d="M-14,620
+               Q-4,658 -4,707
+               Q-4,748 -14,778
+               L14,778
+               Q4,748 4,707
+               Q4,658 14,620
+               Q0,626 -14,620 Z"
+            fill="url(#shortsGrad)" stroke="#293041" stroke-width="0.75" stroke-linejoin="round"/>
+
+      <!-- Center seam and waistband text -->
+      <path d="M0,626 L0,748" fill="none" stroke="#5e6780" stroke-width="0.7" opacity="0.9"/>
+      <text x="0" y="598" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+            font-size="14" font-weight="700" fill="#e9edf5" letter-spacing="1.2">BOXING</text>
+
+      <!-- Leg openings -->
+      <path d="M-84,778 Q-50,744 -12,748" fill="none" stroke="#4e576c" stroke-width="1.1"/>
+      <path d="M84,778 Q50,744 12,748" fill="none" stroke="#4e576c" stroke-width="1.1"/>
+
+      <!-- Side folds -->
+      <path d="M-86,640 Q-74,692 -78,744" fill="none" stroke="#5a6379" stroke-width="0.55" opacity="0.8"/>
+      <path d="M86,640 Q74,692 78,744" fill="none" stroke="#5a6379" stroke-width="0.55" opacity="0.8"/>
+      <path d="M-20,640 Q-16,700 -20,760" fill="none" stroke="#5a6379" stroke-width="0.5" opacity="0.7"/>
+      <path d="M20,640 Q16,700 20,760" fill="none" stroke="#5a6379" stroke-width="0.5" opacity="0.7"/>
     </g>
-    <g id="eye_blink_group" opacity="0">
-      <animate attributeName="opacity" values="0;0;0;1;1;0;0;0;1;1;0" dur="8s" repeatCount="indefinite"/>
-      <path d="M84.0 66.0 L87.6 66.0" stroke="#3A2D33" stroke-width="1.0" stroke-linecap="round"/>
-      <path d="M92.4 66.0 L96.0 66.0" stroke="#3A2D33" stroke-width="1.0" stroke-linecap="round"/>
+
+
+    <!-- LEFT PATELLA -->
+    <ellipse cx="-52" cy="988" rx="17" ry="18" class="body-outline"/>
+    <ellipse cx="-52" cy="988" rx="12" ry="13" class="bone-hint"/>
+    <!-- RIGHT PATELLA -->
+    <ellipse cx="52" cy="988" rx="17" ry="18" class="body-outline"/>
+    <ellipse cx="52" cy="988" rx="12" ry="13" class="bone-hint"/>
+
+    <!-- LEFT LOWER LEG -->
+    <path d="M-66,1005
+             Q-68,1030 -66,1070
+             Q-64,1110 -60,1145
+             L-57,1185
+             Q-55,1215 -52,1235
+             Q-48,1250 -42,1253
+             L-38,1253
+             Q-32,1250 -30,1235
+             Q-28,1215 -28,1185
+             L-30,1145
+             Q-32,1110 -34,1070
+             Q-36,1030 -38,1005"
+          class="body-outline"/>
+    <circle cx="-50" cy="1015" r="3" class="bone-hint"/>
+    <path d="M-48,1020 L-46,1225" class="bone-hint"/>
+    <path d="M-64,1030 Q-70,1090 -64,1145" class="muscle-line"/>
+
+    <!-- RIGHT LOWER LEG -->
+    <path d="M66,1005
+             Q68,1030 66,1070
+             Q64,1110 60,1145
+             L57,1185
+             Q55,1215 52,1235
+             Q48,1250 42,1253
+             L38,1253
+             Q32,1250 30,1235
+             Q28,1215 28,1185
+             L30,1145
+             Q32,1110 34,1070
+             Q36,1030 38,1005"
+          class="body-outline"/>
+    <circle cx="50" cy="1015" r="3" class="bone-hint"/>
+    <path d="M48,1020 L46,1225" class="bone-hint"/>
+    <path d="M64,1030 Q70,1090 64,1145" class="muscle-line"/>
+
+    <!-- Malleoli -->
+    <circle cx="-34" cy="1248" r="5" class="bone-hint"/>
+    <circle cx="34" cy="1248" r="5" class="bone-hint"/>
+    <circle cx="-60" cy="1244" r="5" class="bone-hint"/>
+    <circle cx="60" cy="1244" r="5" class="bone-hint"/>
+
+    <!-- LEFT FOOT — angled outward (toes point left) -->
+    <path d="M-62,1250 Q-70,1258 -75,1272
+             Q-76,1288 -70,1298
+             L-38,1308 Q-28,1310 -24,1305
+             Q-22,1290 -27,1275
+             Q-30,1258 -32,1250"
+          class="body-outline"/>
+    <path d="M-70,1298 L-76,1312 M-62,1302 L-67,1318 M-54,1306 L-58,1320 M-46,1308 L-49,1320 M-38,1308 L-40,1318" class="body-subtle"/>
+
+    <!-- RIGHT FOOT — angled outward (toes point right) -->
+    <path d="M62,1250 Q70,1258 75,1272
+             Q76,1288 70,1298
+             L38,1308 Q28,1310 24,1305
+             Q22,1290 27,1275
+             Q30,1258 32,1250"
+          class="body-outline"/>
+    <path d="M70,1298 L76,1312 M62,1302 L67,1318 M54,1306 L58,1320 M46,1308 L49,1320 M38,1308 L40,1318" class="body-subtle"/>
+
+    <!-- UPPER ARMS -->
+    <!-- Left arm -->
+    <path d="M-140,270 Q-150,285 -158,315
+             L-168,385 Q-172,405 -170,425
+             L-165,445 Q-163,455 -158,465
+             Q-145,470 -135,465
+             L-128,445 Q-122,425 -120,405
+             L-118,325 Q-118,305 -120,315"
+          class="body-outline"/>
+    <path d="M-110,255 Q-140,264 -150,290 Q-155,305 -145,320" class="muscle-line"/>
+    <path d="M-140,345 Q-148,385 -152,425 Q-148,455 -145,465" class="muscle-line"/>
+
+    <!-- Right arm -->
+    <path d="M140,270 Q150,285 158,315
+             L168,385 Q172,405 170,425
+             L165,445 Q163,455 158,465
+             Q145,470 135,465
+             L128,445 Q122,425 120,405
+             L118,325 Q118,305 120,315"
+          class="body-outline"/>
+    <path d="M110,255 Q140,264 150,290 Q155,305 145,320" class="muscle-line"/>
+    <path d="M140,345 Q148,385 152,425 Q148,455 145,465" class="muscle-line"/>
+
+    <!-- FOREARMS + HANDS — seamless wrist transition -->
+    <!-- Left forearm flowing into hand, no wrist pinch -->
+    <path d="M-158,465 Q-162,485 -168,525
+             L-175,585 Q-178,615 -178,640
+             Q-180,660 -182,680
+             Q-183,700 -180,720 Q-175,740 -168,750
+             Q-162,755 -158,750
+             Q-150,730 -148,710
+             L-148,690 Q-147,660 -145,635
+             L-138,525 Q-136,490 -135,465"
+          class="body-outline"/>
+    <path d="M-160,463 Q-155,470 -148,465" class="bone-hint"/>
+    <!-- Fingers left -->
+    <path d="M-180,720 L-185,750 M-175,725 L-180,760 M-170,728 L-174,765 M-165,728 L-168,762 M-158,720 L-158,750" class="body-subtle"/>
+
+    <!-- Right forearm flowing into hand, no wrist pinch -->
+    <path d="M158,465 Q162,485 168,525
+             L175,585 Q178,615 178,640
+             Q180,660 182,680
+             Q183,700 180,720 Q175,740 168,750
+             Q162,755 158,750
+             Q150,730 148,710
+             L148,690 Q147,660 145,635
+             L138,525 Q136,490 135,465"
+          class="body-outline"/>
+    <path d="M160,463 Q155,470 148,465" class="bone-hint"/>
+    <!-- Fingers right -->
+    <path d="M180,720 L185,750 M175,725 L180,760 M170,728 L174,765 M165,728 L168,762 M158,720 L158,750" class="body-subtle"/>
+
     </g>
-
-    <!-- Glasses -->
-    <rect x="82.6" y="64.4" width="6.5" height="3.8" rx="1.4" fill="none" stroke="#4B5D6F" stroke-width="0.64"/>
-    <rect x="90.9" y="64.4" width="6.5" height="3.8" rx="1.4" fill="none" stroke="#4B5D6F" stroke-width="0.64"/>
-    <path d="M89.1 66.3 L90.9 66.3" stroke="#4B5D6F" stroke-width="0.62"/>
-    <path d="M82.5 66.3 L80.7 66.1 M97.5 66.3 L99.3 66.1" stroke="#4B5D6F" stroke-width="0.55" opacity="0.7"/>
-
-    <!-- Waist hint (kept subtle so belts remain dominant) -->
-    <rect x="77.2" y="141.6" width="25.6" height="7.0" rx="1.4" fill="#6F4A41" opacity="0.82"/>
-    <rect x="88.0" y="141.6" width="4.0" height="7.0" fill="#B78A78" opacity="0.9"/>
   </g>
 </svg>

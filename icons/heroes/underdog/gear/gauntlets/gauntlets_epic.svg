@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <linearGradient id="belt_epic_shade" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="epic_band_fill" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#C861DC"/>
       <stop offset="100%" stop-color="#7A1D90"/>
     </linearGradient>
@@ -10,8 +10,8 @@
       <stop offset="50%" stop-color="#E5A0FF"/>
       <stop offset="100%" stop-color="#9C27B0"/>
     </linearGradient>
-    <filter id="epic_belt_glow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="0.72" result="g"/>
+    <filter id="epic_band_glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="0.56" result="g"/>
       <feMerge>
         <feMergeNode in="g"/>
         <feMergeNode in="SourceGraphic"/>
@@ -19,16 +19,15 @@
     </filter>
   </defs>
 
-  <g id="gauntlets_epic_belt">
-    <rect x="74.2" y="140.1" width="31.8" height="9.3" rx="2.2" fill="#9C27B0" stroke="#6A1B9A" stroke-width="0.84"/>
-    <rect x="75.3" y="141.3" width="29.8" height="6.9" rx="1.7" fill="url(#belt_epic_shade)" opacity="0.66"/>
-    <path d="M76.2 144.0 Q80.6 141.7 85.0 144.0 Q89.4 146.3 93.8 144.0 Q98.2 141.7 102.6 144.0" fill="none" stroke="url(#epic_wave)" stroke-width="0.8" filter="url(#epic_belt_glow)"/>
-    <path d="M76.2 145.8 Q80.6 143.5 85.0 145.8 Q89.4 148.1 93.8 145.8 Q98.2 143.5 102.6 145.8" fill="none" stroke="#F0C0FF" stroke-opacity="0.52" stroke-width="0.52"/>
-    <rect x="86.7" y="140.6" width="6.7" height="8.3" rx="1.1" fill="#FAF1FF" stroke="#8C3CA6" stroke-width="0.64"/>
-    <path d="M88.0 142.2 L92.1 142.2 M88.0 144.0 L92.1 144.0 M88.0 145.8 L92.1 145.8" stroke="#9C27B0" stroke-width="0.48"/>
-    <path d="M75.2 147.0 L104.8 147.0" stroke="#D58CE8" stroke-width="0.66" stroke-dasharray="1.2 1.2" opacity="0">
-      <animate attributeName="opacity" values="0;0.95;0" dur="1.8s" repeatCount="indefinite"/>
-      <animate attributeName="stroke-dashoffset" values="0;6" dur="1.8s" repeatCount="indefinite"/>
+  <g id="gauntlets_epic_wristband" transform="translate(70.0 130.2) rotate(-8) scale(1.35 1.35) translate(-68.5 -131.2)">
+    <ellipse cx="68.3" cy="132.1" rx="5.4" ry="1.25" fill="#000000" opacity="0.12"/>
+    <rect x="63.4" y="128.5" width="10.2" height="5.2" rx="2.3" fill="url(#epic_band_fill)" stroke="#6A1B9A" stroke-width="0.68"/>
+    <path d="M64.8 130.9 Q66.6 129.9 68.4 130.9 Q70.2 131.9 72.0 130.9" fill="none" stroke="url(#epic_wave)" stroke-width="0.52" filter="url(#epic_band_glow)"/>
+    <path d="M64.8 132.0 L72.4 132.0" stroke="#F0C0FF" stroke-width="0.46" stroke-linecap="round" opacity="0.7"/>
+    <circle cx="71.9" cy="131.0" r="0.74" fill="#F6DCFF"/>
+    <path d="M64.5 133.1 L72.7 133.1" stroke="#D58CE8" stroke-width="0.54" stroke-dasharray="1.1 1.1" opacity="0">
+      <animate attributeName="opacity" values="0;0.95;0" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="stroke-dashoffset" values="0;5" dur="1.6s" repeatCount="indefinite"/>
     </path>
   </g>
 </svg>

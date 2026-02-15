@@ -16,7 +16,7 @@
   </defs>
 
   <!-- Rare headphones: blue tactical with mild glow -->
-  <g id="helmet_rare">
+  <g id="helmet_rare" transform="translate(90 59) scale(0.84 0.84) translate(-90 -64)">
     <path d="M78.4 59.8 Q90.0 51.4 101.6 59.8" fill="none" stroke="url(#r_band)" stroke-width="2.5" stroke-linecap="round"/>
     <path d="M80.3 61.1 Q90.0 54.5 99.7 61.1" fill="none" stroke="#c8e7ff" stroke-width="0.8" opacity="0.66"/>
     <rect x="75.6" y="62.3" width="5.9" height="11.9" rx="2.2" fill="url(#r_pad)" stroke="#3a6795" stroke-width="0.8"/>

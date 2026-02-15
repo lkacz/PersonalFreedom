@@ -19,8 +19,14 @@
   </defs>
 
   <!-- Celestial: cosmic mug variant -->
-  <g id="weapon_celestial" transform="rotate(-16 118 150)">
-    <ellipse cx="118.2" cy="160.0" rx="8.3" ry="2.7" fill="#000000" opacity="0.17"/>
+  <g id="weapon_celestial" transform="translate(-2 31) scale(1.08 1.08)">
+    
+    <!-- Coffee table staging -->
+    M3.5" rx="15.0" ry="2.6" fill="#000000" opacity="0.18"/>
+    <rect x="103.2" y="154.1" width="30.0" height="4.0" rx="1.3" fill="#8b6446" stroke="#563b28" stroke-width="0.62"/>
+    <rect x="106.5" y="157.8" width="2.4" height="11.0" rx="0.7" fill="#6e4d35" stroke="#4a3222" stroke-width="0.45"/>
+    <rect x="127.5" y="157.8" width="2.4" height="11.0" rx="0.7" fill="#6e4d35" stroke="#4a3222" stroke-width="0.45"/>
+<ellipse cx="118.2" cy="160.0" rx="8.3" ry="2.7" fill="#000000" opacity="0.17"/>
     <rect x="110.4" y="137.8" width="15.5" height="16.7" rx="2.7" fill="url(#ce_mug)" stroke="#3f9cb4" stroke-width="1.0"/>
     <path d="M125.4 141.0 Q130.8 142.2 130.8 146.0 Q130.8 149.9 125.4 151.0" fill="none" stroke="#69d7f0" stroke-width="1.25"/>
     <path d="M125.3 142.5 Q128.2 143.4 128.2 146.0 Q128.2 148.8 125.3 149.6" fill="none" stroke="#d6f8ff" stroke-width="0.78" opacity="0.86"/>

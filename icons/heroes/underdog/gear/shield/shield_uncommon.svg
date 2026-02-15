@@ -12,7 +12,7 @@
   </defs>
 
   <!-- Uncommon suitcase shield -->
-  <g id="shield_uncommon" transform="rotate(-8 62 149)">
+  <g id="shield_uncommon" transform="translate(-25 42) translate(62 149) scale(1.55 1.55) translate(-62 -149) rotate(-6 62 149)">
     <ellipse cx="62.2" cy="160.3" rx="10.4" ry="2.85" fill="#000000" opacity="0.16"/>
     <rect x="52.1" y="138.1" width="20.2" height="16.4" rx="2.45" fill="url(#u_case)" stroke="#416046" stroke-width="0.92"/>
     <rect x="53.1" y="139.1" width="18.2" height="3.5" rx="1.0" fill="#d7efd7" opacity="0.58"/>
