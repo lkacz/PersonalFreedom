@@ -6,6 +6,7 @@ from PySide6.QtSvg import QSvgRenderer
 from hero_svg_system import (
     HeroLayer,
     build_hero_layer_plan,
+    load_hero_manifest,
     resolve_layer_target_rect,
     resolve_hero_base_layer,
     resolve_hero_gear_layer,
@@ -92,10 +93,10 @@ def test_build_plan_includes_base_gear_and_fx(tmp_path: Path) -> None:
     )
 
     assert len(plan) == 3
-    assert plan[0].kind == "base"
-    assert plan[1].kind == "gear"
-    assert plan[1].slot == "Helmet"
-    assert plan[2].kind == "fx"
+    assert plan[0].kind == "fx"
+    assert plan[1].kind == "base"
+    assert plan[2].kind == "gear"
+    assert plan[2].slot == "Helmet"
 
 
 def test_resolve_tier_fx_aliases_godlike_to_celestial(tmp_path: Path) -> None:
@@ -167,6 +168,61 @@ def test_resolve_layer_target_rect_honors_manifest_override_box_anchor_offset(tm
     assert abs(rect.x() - 36.0) < 0.5
     # top-left anchored should keep y at box top (~22)
     assert abs(rect.y() - 22.0) < 0.5
+
+
+def test_resolve_layer_target_rect_applies_saved_composition_profile(tmp_path: Path) -> None:
+    theme_root = tmp_path / "icons" / "heroes" / "robot"
+    _write_svg(theme_root / "hero_base.svg")
+    gear_path = theme_root / "gear" / "helmet" / "helmet_common.svg"
+    _write_svg(gear_path, viewbox="0 0 180 220")
+
+    profile_path = tmp_path / "artifacts" / "hero_composition" / "robot_composition_profile.json"
+    profile_path.parent.mkdir(parents=True, exist_ok=True)
+    profile_path.write_text(
+        """
+{
+  "theme": "robot",
+  "schema_version": 2,
+  "slots": {
+    "Helmet": {
+      "active_rarity": "Common",
+      "visible": true,
+      "rarities": {
+        "Common": {
+          "offset_x": 0.1,
+          "offset_y": 0.05,
+          "scale_x": 0.5,
+          "scale_y": 0.5,
+          "rotation_deg": 0.0,
+          "visible": true,
+          "rarity": "Common"
+        }
+      }
+    }
+  }
+}
+""".strip(),
+        encoding="utf-8",
+    )
+
+    manifest = load_hero_manifest("robot", base_dir=tmp_path)
+    renderer = QSvgRenderer(str(gear_path))
+    layer = HeroLayer(path=gear_path, kind="gear", slot="Helmet", rarity="common")
+    target = QtCore.QRectF(0, 0, 180, 220)
+
+    rect = resolve_layer_target_rect(
+        layer=layer,
+        renderer=renderer,
+        target_rect=target,
+        manifest=manifest,
+        base_dir=tmp_path,
+    )
+
+    # Full-canvas canonical source scaled 0.5 around center, then offset by +10% x and +5% y.
+    assert abs(rect.x() - 63.0) < 0.5
+    assert abs(rect.y() - 66.0) < 0.5
+    assert abs(rect.width() - 90.0) < 0.5
+    assert abs(rect.height() - 110.0) < 0.5
 
 
 def test_validate_theme_pack_reports_base_and_slot_candidates(tmp_path: Path) -> None:

@@ -12,7 +12,7 @@
     </linearGradient>
   </defs>
   <!-- Zoo Worker shield (legendary): Lion's Aegis -->
-  <g id="shield_legendary" transform="translate(90 126) scale(1.060) translate(-90 -126)">
+  <g id="shield_legendary" transform="translate(95 132) scale(0.84) translate(-90 -126)">
     <!-- Shadow -->
     <ellipse cx="55" cy="158" rx="22" ry="4" fill="#000000" opacity="0.25"/>
 

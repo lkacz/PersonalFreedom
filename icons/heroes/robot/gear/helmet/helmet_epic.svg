@@ -16,7 +16,7 @@
       </feMerge>
     </filter>
   </defs>
-  <g id="helmet_epic" transform="translate(15, 10)">
+  <g id="helmet_epic" transform="translate(31, -3) scale(0.64)">
     <!-- Base Chassis: Void Alloy (Same shape, darker) -->
     <rect x="55" y="45" width="70" height="80" rx="15" fill="url(#h_steel_dark)" stroke="#E040FB" stroke-width="1"/>
     

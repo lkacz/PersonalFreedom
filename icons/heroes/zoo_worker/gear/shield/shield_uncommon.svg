@@ -11,7 +11,7 @@
     </linearGradient>
   </defs>
   <!-- Zoo Worker shield (uncommon): Pallet Sign -->
-  <g id="shield_uncommon" transform="translate(90 126) scale(1.015) translate(-90 -126)">
+  <g id="shield_uncommon" transform="translate(95 132) scale(0.80) translate(-90 -126)">
     <!-- Shadow -->
     <ellipse cx="55" cy="155" rx="22" ry="3.5" fill="#000000" opacity="0.2"/>
     

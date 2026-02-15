@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
 
-  <g id="helmet_celestial">
+  <g id="helmet_celestial" transform="translate(-11, 26) scale(1.35)">
     <path d="M66 38 Q90 14 114 38 L114 52 L66 52 Z" fill="#30435f" stroke="#1a2740" stroke-width="1.5"/>
     <rect x="63" y="51" width="54" height="5" rx="2.5" fill="#3c5273" stroke="#1a2740" stroke-width="1"/>
     <rect x="86.5" y="23" width="7" height="21" rx="2" fill="#415a81" opacity="0.8"/>

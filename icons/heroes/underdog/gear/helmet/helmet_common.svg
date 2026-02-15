@@ -12,7 +12,7 @@
   </defs>
 
   <!-- Common headphones: simple over-ear -->
-  <g id="helmet_common" transform="translate(90 59) scale(0.84 0.84) translate(-90 -64)">
+  <g id="helmet_common" transform="translate(90 52) scale(0.68 0.68) translate(-90 -64)">
     <path d="M78.8 60.2 Q90.0 52.0 101.2 60.2" fill="none" stroke="url(#c_band)" stroke-width="2.3" stroke-linecap="round"/>
     <path d="M80.6 61.4 Q90.0 55.1 99.4 61.4" fill="none" stroke="#a8b1bb" stroke-width="0.7" opacity="0.62"/>
     <rect x="76.0" y="62.8" width="5.4" height="11.2" rx="2.0" fill="url(#c_pad)" stroke="#434d58" stroke-width="0.75"/>

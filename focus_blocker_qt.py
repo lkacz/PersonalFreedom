@@ -32710,6 +32710,11 @@ class DevTab(QtWidgets.QWidget):
             btn_layout.addWidget(btn)
         item_layout.addLayout(btn_layout)
         
+        full_matrix_btn = QtWidgets.QPushButton("Add Full Matrix (All Themes x Slots x Rarities)")
+        full_matrix_btn.setStyleSheet("background-color: #673ab7; color: white; font-weight: bold; padding: 10px;")
+        full_matrix_btn.clicked.connect(self._generate_full_item_matrix)
+        item_layout.addWidget(full_matrix_btn)
+        
         layout.addWidget(item_group)
 
         # Add Coins Section
@@ -33113,6 +33118,119 @@ class DevTab(QtWidgets.QWidget):
             game_state.add_item(item)
             self.status_label.setText(f"✅ Generated: {item.get('name', 'Unknown')} ({rarity})")
             self.status_label.setStyleSheet(f"color: #4caf50; padding: 10px;")
+        except Exception as e:
+            self.status_label.setText(f"❌ Error: {e}")
+            self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+
+    def _generate_full_item_matrix(self) -> None:
+        """Generate one item for every theme x slot x rarity combination."""
+        try:
+            from gamification import generate_item, STORY_GEAR_THEMES
+
+            game_state = get_game_state()
+            if not game_state:
+                self.status_label.setText("❌ Game state not available")
+                self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+                return
+
+            rarity_tiers = _get_item_rarity_order(include_unreleased=True)
+            if not rarity_tiers:
+                self.status_label.setText("❌ No rarity tiers available")
+                self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+                return
+
+            if AVAILABLE_STORIES:
+                story_ids = [sid for sid in AVAILABLE_STORIES.keys() if sid in STORY_GEAR_THEMES]
+            else:
+                story_ids = list(STORY_GEAR_THEMES.keys())
+
+            if not story_ids:
+                self.status_label.setText("❌ No story themes available")
+                self.status_label.setStyleSheet("color: #f44336; padding: 10px;")
+                return
+
+            matrix_targets = []
+            for story_id in story_ids:
+                item_types = (STORY_GEAR_THEMES.get(story_id, {}) or {}).get("item_types", {}) or {}
+                story_slots = list(item_types.keys()) if item_types else list(GEAR_SLOTS)
+                ordered_slots = [slot for slot in GEAR_SLOTS if slot in story_slots]
+                ordered_slots.extend([slot for slot in story_slots if slot not in ordered_slots])
+
+                for slot in ordered_slots:
+                    for rarity in rarity_tiers:
+                        matrix_targets.append((story_id, slot, rarity))
+
+            total_targets = len(matrix_targets)
+            current_inventory = len(game_state.adhd_buster.get("inventory", []))
+            max_inventory = game_state.get_max_inventory_size() if hasattr(game_state, "get_max_inventory_size") else 500
+            estimated_drop = max(0, current_inventory + total_targets - max_inventory)
+
+            confirm_text = (
+                f"This will generate {total_targets} items "
+                f"({len(story_ids)} themes x slots x {len(rarity_tiers)} rarities).\n\n"
+                f"Current inventory: {current_inventory}/{max_inventory}\n"
+                f"Estimated old items pushed out by cap: {estimated_drop}\n\n"
+                "Continue?"
+            )
+            reply = show_question(
+                self,
+                "Generate Full Item Matrix",
+                confirm_text,
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                QtWidgets.QMessageBox.No,
+            )
+            if reply != QtWidgets.QMessageBox.Yes:
+                self.status_label.setText("ℹ️ Full matrix generation cancelled")
+                self.status_label.setStyleSheet("color: #9e9e9e; padding: 10px;")
+                return
+
+            self.status_label.setText(f"⏳ Generating full matrix... 0/{total_targets}")
+            self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
+            QtWidgets.QApplication.processEvents()
+
+            added = 0
+            attempts_total = 0
+            failed_targets = []
+            max_attempts_per_target = 120
+
+            with game_state.batch():
+                for idx, (story_id, target_slot, rarity) in enumerate(matrix_targets, start=1):
+                    matched_item = None
+                    for _ in range(max_attempts_per_target):
+                        attempts_total += 1
+                        candidate = generate_item(rarity=rarity, story_id=story_id)
+                        if candidate.get("slot") == target_slot:
+                            matched_item = candidate
+                            break
+
+                    if not matched_item:
+                        failed_targets.append((story_id, target_slot, rarity))
+                        continue
+
+                    matched_item["source"] = "dev_tools_full_matrix"
+                    matched_item["dev_matrix"] = True
+                    game_state.add_item(matched_item, track_collected=False)
+                    added += 1
+
+                    if idx % 24 == 0 or idx == total_targets:
+                        self.status_label.setText(f"⏳ Generating full matrix... {idx}/{total_targets}")
+                        QtWidgets.QApplication.processEvents()
+
+            if failed_targets:
+                preview = ", ".join([f"{s}:{slot}:{r}" for s, slot, r in failed_targets[:5]])
+                if len(failed_targets) > 5:
+                    preview += ", ..."
+                self.status_label.setText(
+                    f"⚠️ Added {added}/{total_targets} items. Failed: {len(failed_targets)} ({preview})"
+                )
+                self.status_label.setStyleSheet("color: #ff9800; padding: 10px;")
+            else:
+                self.status_label.setText(
+                    f"✅ Added full matrix: {added} items "
+                    f"across {len(story_ids)} themes ({attempts_total} generation rolls)"
+                )
+                self.status_label.setStyleSheet("color: #4caf50; padding: 10px;")
+
         except Exception as e:
             self.status_label.setText(f"❌ Error: {e}")
             self.status_label.setStyleSheet("color: #f44336; padding: 10px;")

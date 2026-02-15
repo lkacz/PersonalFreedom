@@ -16,7 +16,7 @@
       </feMerge>
     </filter>
   </defs>
-  <g id="helmet_rare" transform="translate(15, 10)">
+  <g id="helmet_rare" transform="translate(31, -3) scale(0.64)">
     <!-- Base Chassis: Sleek Alloy (Same shape + smooth) -->
     <rect x="55" y="45" width="70" height="80" rx="15" fill="url(#h_steel_sleek)" stroke="#78909C" stroke-width="2"/>
     
