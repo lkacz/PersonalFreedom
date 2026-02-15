@@ -11,7 +11,7 @@
     </filter>
   </defs>
   <!-- Zoo Worker shield (epic): Void Ward -->
-  <g id="shield_epic" transform="translate(90 126) scale(1.045) translate(-90 -126)">
+  <g id="shield_epic" transform="translate(95 132) scale(0.83) translate(-90 -126)">
     <!-- Floating Hexagons -->
     <path d="M55 100 L75 110 L75 145 L55 155 L35 145 L35 110 Z" fill="url(#s_epic_field)" stroke="#E1BEE7" stroke-width="1.5">
        <animate attributeName="stroke-opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/>

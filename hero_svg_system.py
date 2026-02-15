@@ -2,6 +2,8 @@
 Hero SVG rendering subsystem.
 
 This module provides a safe SVG-first rendering path for hero + equipped gear.
+It also supports optional runtime composition overrides loaded from:
+`artifacts/hero_composition/<theme>_composition_profile.json`.
 If required assets are missing or invalid, callers can fall back to procedural
 rendering without breaking gameplay.
 """
@@ -105,6 +107,9 @@ _ANCHOR_FACTORS: Dict[str, tuple[float, float]] = {
     "top": (0.5, 0.0),
     "bottom": (0.5, 1.0),
 }
+
+_renderer_cache: Dict[str, tuple[float, QSvgRenderer]] = {}
+_composition_profile_cache: Dict[str, tuple[float, dict]] = {}
 
 
 @dataclass(frozen=True)
@@ -213,7 +218,129 @@ def _fit_contain_rect(
     return QtCore.QRectF(draw_x, draw_y, draw_w, draw_h)
 
 
-def _layer_layout_config(manifest: Optional[dict], layer: HeroLayer) -> dict:
+def _composition_profile_path(story_theme: str, base_dir: Optional[Path] = None) -> Path:
+    root = Path(base_dir) if base_dir else get_app_dir()
+    return root / "artifacts" / "hero_composition" / f"{story_theme}_composition_profile.json"
+
+
+def _load_theme_composition_profile(story_theme: str, base_dir: Optional[Path] = None) -> Optional[dict]:
+    theme_slug = _slugify(story_theme)
+    if not theme_slug:
+        return None
+
+    profile_path = _composition_profile_path(theme_slug, base_dir=base_dir)
+    cache_key = str(profile_path.resolve())
+
+    if not profile_path.exists():
+        _composition_profile_cache.pop(cache_key, None)
+        return None
+
+    try:
+        mtime = profile_path.stat().st_mtime
+    except OSError:
+        return None
+
+    cached = _composition_profile_cache.get(cache_key)
+    if cached and cached[0] == mtime:
+        return cached[1]
+
+    try:
+        data = json.loads(profile_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.warning("Invalid composition profile for theme '%s': %s", story_theme, exc)
+        return None
+
+    if not isinstance(data, dict):
+        logger.warning("Composition profile for theme '%s' is not a JSON object", story_theme)
+        return None
+
+    _composition_profile_cache[cache_key] = (mtime, data)
+    return data
+
+
+def _coerce_profile_layout_override(raw_cfg: dict) -> dict:
+    cfg: dict = {}
+    if not isinstance(raw_cfg, dict):
+        return cfg
+
+    try:
+        ox = float(raw_cfg.get("offset_x", 0.0))
+        oy = float(raw_cfg.get("offset_y", 0.0))
+        cfg["offset"] = [ox, oy]
+    except (TypeError, ValueError):
+        pass
+
+    try:
+        sx = float(raw_cfg.get("scale_x", 1.0))
+        sy = float(raw_cfg.get("scale_y", 1.0))
+        cfg["scale"] = [sx, sy]
+    except (TypeError, ValueError):
+        pass
+
+    try:
+        cfg["rotation_deg"] = float(raw_cfg.get("rotation_deg", raw_cfg.get("rotation", 0.0)) or 0.0)
+    except (TypeError, ValueError):
+        pass
+
+    if "visible" in raw_cfg:
+        cfg["visible"] = bool(raw_cfg.get("visible"))
+
+    return cfg
+
+
+def _resolve_profile_slot_payload(slots: dict, slot: str) -> Optional[dict]:
+    if not isinstance(slots, dict):
+        return None
+    slot_slug = _normalize_slot(slot)
+    for key in (slot, slot_slug):
+        payload = slots.get(key)
+        if isinstance(payload, dict):
+            return payload
+    for key, payload in slots.items():
+        if not isinstance(payload, dict):
+            continue
+        if _normalize_slot(str(key)) == slot_slug:
+            return payload
+    return None
+
+
+def _profile_override_for_layer(profile: Optional[dict], layer: HeroLayer) -> dict:
+    if layer.kind != "gear" or not layer.slot or not isinstance(profile, dict):
+        return {}
+    slots = profile.get("slots", {})
+    slot_payload = _resolve_profile_slot_payload(slots, layer.slot)
+    if not isinstance(slot_payload, dict):
+        return {}
+
+    # v2 schema: slot -> {visible, active_rarity, rarities: {Common: {...}}}
+    raw_rarities = slot_payload.get("rarities", {})
+    if isinstance(raw_rarities, dict):
+        rarity_slug = _normalize_rarity(layer.rarity or "common")
+        candidates = []
+        if layer.rarity:
+            candidates.extend([str(layer.rarity), str(layer.rarity).title(), str(layer.rarity).lower()])
+        candidates.extend([rarity_slug, rarity_slug.title(), rarity_slug.capitalize()])
+        raw_cfg = None
+        for key in candidates:
+            val = raw_rarities.get(key)
+            if isinstance(val, dict):
+                raw_cfg = val
+                break
+        if raw_cfg is None:
+            for key, value in raw_rarities.items():
+                if isinstance(value, dict) and _normalize_rarity(str(key)) == rarity_slug:
+                    raw_cfg = value
+                    break
+        override = _coerce_profile_layout_override(raw_cfg or {})
+        if "visible" not in override and "visible" in slot_payload:
+            override["visible"] = bool(slot_payload.get("visible"))
+        return override
+
+    # v1 schema fallback: slot -> {offset_x, offset_y, ...}
+    return _coerce_profile_layout_override(slot_payload)
+
+
+def _layer_layout_config(manifest: Optional[dict], layer: HeroLayer, base_dir: Optional[Path] = None) -> dict:
     layout_root = manifest.get("layout", {}) if isinstance(manifest, dict) else {}
     if not isinstance(layout_root, dict):
         layout_root = {}
@@ -250,6 +377,14 @@ def _layer_layout_config(manifest: Optional[dict], layer: HeroLayer) -> dict:
     if isinstance(slot_cfg, dict):
         config.update(slot_cfg)
 
+    story_theme = ""
+    if isinstance(manifest, dict):
+        story_theme = str(manifest.get("theme_id", "")).strip()
+    profile = _load_theme_composition_profile(story_theme, base_dir=base_dir) if story_theme else None
+    profile_override = _profile_override_for_layer(profile, layer)
+    if profile_override:
+        config.update(profile_override)
+
     return config
 
 
@@ -258,6 +393,7 @@ def resolve_layer_target_rect(
     renderer: QSvgRenderer,
     target_rect: QtCore.QRectF,
     manifest: Optional[dict] = None,
+    base_dir: Optional[Path] = None,
 ) -> QtCore.QRectF:
     """
     Resolve per-layer draw rect with smart fit/anchor correction.
@@ -272,7 +408,7 @@ def resolve_layer_target_rect(
 
     source_w, source_h = _renderer_source_size(renderer)
     canonical_source = _is_canonical_canvas_source(source_w, source_h)
-    cfg = _layer_layout_config(manifest, layer)
+    cfg = _layer_layout_config(manifest, layer, base_dir=base_dir)
 
     fit = _slugify(str(cfg.get("fit", "auto")))
     if fit == "keep_aspect_ratio":
@@ -473,7 +609,20 @@ def build_hero_layer_plan(
     if not base_layer:
         return []
 
-    layers: list[HeroLayer] = [HeroLayer(path=base_layer, kind="base")]
+    fx_layer = resolve_hero_tier_fx_layer(
+        story_theme=story_theme,
+        power_tier=power_tier,
+        manifest=manifest,
+        base_dir=base_dir,
+    )
+
+    # Draw order: FX background -> base hero -> gear overlays.
+    # This guarantees tier FX stays behind the character across all themes.
+    layers: list[HeroLayer] = []
+    if fx_layer:
+        layers.append(HeroLayer(path=fx_layer, kind="fx"))
+    layers.append(HeroLayer(path=base_layer, kind="base"))
+
     equipped = equipped or {}
     slot_order = manifest.get("gear", {}).get("slot_order", list(GEAR_SLOT_ORDER))
 
@@ -499,15 +648,6 @@ def build_hero_layer_plan(
                 item_type=_slugify(item.get("item_type", slot)),
             )
         )
-
-    fx_layer = resolve_hero_tier_fx_layer(
-        story_theme=story_theme,
-        power_tier=power_tier,
-        manifest=manifest,
-        base_dir=base_dir,
-    )
-    if fx_layer:
-        layers.append(HeroLayer(path=fx_layer, kind="fx"))
 
     return layers
 
@@ -543,12 +683,10 @@ def validate_hero_svg_theme_pack(
     }
 
 
-_renderer_cache: Dict[str, tuple[float, QSvgRenderer]] = {}
-
-
 def clear_hero_svg_cache() -> None:
     """Clear renderer cache (useful for tooling/hot-reload workflows)."""
     _renderer_cache.clear()
+    _composition_profile_cache.clear()
 
 
 def _get_cached_renderer(path: Path) -> Optional[QSvgRenderer]:
@@ -607,13 +745,33 @@ def render_hero_svg_character(
                 return False
             continue
         renderer.setAspectRatioMode(QtCore.Qt.IgnoreAspectRatio)
+        layer_cfg = _layer_layout_config(manifest, layer, base_dir=base_dir)
+        if layer.kind == "gear" and not bool(layer_cfg.get("visible", True)):
+            continue
         layer_target = resolve_layer_target_rect(
             layer=layer,
             renderer=renderer,
             target_rect=target,
             manifest=manifest,
+            base_dir=base_dir,
         )
-        renderer.render(painter, layer_target)
+
+        try:
+            rotation_deg = float(layer_cfg.get("rotation_deg", layer_cfg.get("rotation", 0.0)) or 0.0)
+        except (TypeError, ValueError):
+            rotation_deg = 0.0
+
+        if abs(rotation_deg) > 1e-6:
+            center = layer_target.center()
+            painter.save()
+            painter.translate(center)
+            painter.rotate(rotation_deg)
+            painter.translate(-center)
+            renderer.render(painter, layer_target)
+            painter.restore()
+        else:
+            renderer.render(painter, layer_target)
+
         if layer.kind == "base":
             base_rendered = True
 

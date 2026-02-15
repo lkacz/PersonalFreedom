@@ -11,7 +11,7 @@
     </linearGradient>
   </defs>
   <!-- Zoo Worker boots (celestial): Skyline Boots -->
-  <g id="boots_celestial" transform="translate(90 198) scale(0.80 0.88) translate(-90 -200)">
+  <g id="boots_celestial" transform="translate(90 194) scale(0.74 0.82) translate(-90 -200)">
     <ellipse cx="74.8" cy="208.0" rx="10.8" ry="2.0" fill="#000000" opacity="0.12"/>
     <ellipse cx="105.2" cy="208.0" rx="11.6" ry="2.05" fill="#000000" opacity="0.12"/>
 

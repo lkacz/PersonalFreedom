@@ -12,7 +12,7 @@
         <rect x="0" y="0" width="2" height="4" fill="#37474F"/>
     </pattern>
   </defs>
-  <g id="helmet_uncommon" transform="translate(15, 10)">
+  <g id="helmet_uncommon" transform="translate(31, -3) scale(0.64)">
     <!-- Base Chassis: Reinforced Steel (Same shape + armor) -->
     <rect x="55" y="45" width="70" height="80" rx="10" fill="url(#h_steel_clean)" stroke="#546E7A" stroke-width="2"/>
     

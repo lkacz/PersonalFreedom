@@ -40,7 +40,7 @@
     </filter>
   </defs>
 
-  <g id="helmet_legendary" transform="translate(15, 10)">
+  <g id="helmet_legendary" transform="translate(31, -3) scale(0.64)">
     
     <!-- === BACKGROUND AURA === -->
     <circle cx="90" cy="80" r="55" fill="url(#h_gold_complex)" opacity="0.08">

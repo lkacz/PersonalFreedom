@@ -15,7 +15,7 @@
   </defs>
 
   <!-- Legendary headphones: tiny but powerful light earbuds -->
-  <g id="helmet_legendary" transform="translate(90 59) scale(0.84 0.84) translate(-90 -64)">
+  <g id="helmet_legendary" transform="translate(90 52) scale(0.68 0.68) translate(-90 -64)">
     <path d="M83.4 58.6 Q90.0 54.3 96.6 58.6" fill="none" stroke="#d58c25" stroke-width="1.2" opacity="0.7"/>
 
     <!-- tiny earbuds -->

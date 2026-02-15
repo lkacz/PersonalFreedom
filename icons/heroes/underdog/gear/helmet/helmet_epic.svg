@@ -16,7 +16,7 @@
   </defs>
 
   <!-- Epic headphones: purple audio-reactive set -->
-  <g id="helmet_epic" transform="translate(90 59) scale(0.84 0.84) translate(-90 -64)">
+  <g id="helmet_epic" transform="translate(90 52) scale(0.68 0.68) translate(-90 -64)">
     <path d="M78.2 59.7 Q90.0 51.1 101.8 59.7" fill="none" stroke="url(#e_band)" stroke-width="2.6" stroke-linecap="round"/>
     <path d="M80.2 61.0 Q90.0 54.2 99.8 61.0" fill="none" stroke="#e7cdfc" stroke-width="0.84" opacity="0.7"/>
     <rect x="75.4" y="62.2" width="6.1" height="12.1" rx="2.25" fill="url(#e_pad)" stroke="#5e3a86" stroke-width="0.82"/>
