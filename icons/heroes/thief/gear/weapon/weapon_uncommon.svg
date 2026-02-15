@@ -1,10 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
     <defs>
         <radialGradient id="lightBeamGreen" cx="50%" cy="0%" r="80%" fx="50%" fy="0%">
             <stop offset="0%" stop-color="#22c55e" stop-opacity="0.7"/>
             <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
         </radialGradient>
     </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
     <g transform="translate(118, 144) rotate(-25) scale(0.35)">
         <!-- Beam -->
         <path d="M-12 10 L-90 260 L90 260 L12 10 Z" fill="url(#lightBeamGreen)">
@@ -35,4 +38,6 @@
         <path d="M-11 10 L-16 22 L16 22 L11 10 Z" fill="#222" />
         <ellipse cx="0" cy="22" rx="16" ry="5" fill="#ccfbf1" opacity="0.9"/>
     </g>
+  </g>
 </svg>
+

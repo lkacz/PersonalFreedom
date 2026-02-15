@@ -15,6 +15,10 @@
     </radialGradient>
   </defs>
 
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+
   <!-- Zoo Worker weapon (legendary): Rescue Pole -->
   <g id="weapon_legendary" transform="translate(90 122) scale(1.0) translate(-90 -122)">
     <g transform="rotate(22 108 138)">
@@ -37,5 +41,6 @@
       <animate attributeName="r" values="2.6;5.8;2.6" dur="1.45s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.1;0.82;0.1" dur="1.45s" repeatCount="indefinite"/>
     </circle>
+  </g>
   </g>
 </svg>

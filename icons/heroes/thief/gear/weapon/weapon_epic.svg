@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
     <defs>
        <filter id="purpleGlow">
             <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -12,6 +12,9 @@
              <stop offset="100%" stop-color="#581c87" stop-opacity="0"/>
         </linearGradient>
     </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
     <g transform="translate(118, 144) rotate(-25) scale(0.35)">
         <!-- Beam: Length 300, Width +/-80 (More focused void beam) -->
         <path d="M-8 10 L-80 300 L80 300 L8 10 Z" fill="url(#voidBeam)" filter="url(#purpleGlow)">
@@ -31,4 +34,6 @@
         <path d="M-12 15 L-20 30 L20 30 L12 15 Z" fill="#1a1a1a" stroke="#a855f7" stroke-width="1"/>
         <ellipse cx="0" cy="30" rx="20" ry="7" fill="#f3e8ff" opacity="0.9"/>
     </g>
+  </g>
 </svg>
+

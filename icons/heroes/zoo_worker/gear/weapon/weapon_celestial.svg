@@ -15,6 +15,10 @@
     </radialGradient>
   </defs>
 
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+
   <!-- Zoo Worker weapon (celestial): Ember Lance -->
   <g id="weapon_celestial" transform="translate(90 122) scale(1.0) translate(-90 -122)">
     <g transform="rotate(24 108 138)">
@@ -36,5 +40,6 @@
     <ellipse cx="108.2" cy="103.9" rx="10.6" ry="2.1" fill="none" stroke="#7df7ff" stroke-width="0.76" stroke-dasharray="1.2 1.8" opacity="0.9">
       <animate attributeName="stroke-dashoffset" values="0;9" dur="1.35s" repeatCount="indefinite"/>
     </ellipse>
+  </g>
   </g>
 </svg>

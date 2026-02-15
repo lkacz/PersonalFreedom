@@ -20,6 +20,10 @@
     </radialGradient>
   </defs>
 
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+
   <!-- Epic ID badge (rarity accent: purple, plus cyan/gold contrasts) -->
   <g id="amulet_epic" transform="translate(90 87) scale(1.05) translate(-90 -111)">
     <path d="M86.4 98.0 L90.0 102.4 L93.6 98.0" fill="none" stroke="#7d59a8" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round"/>
@@ -43,5 +47,6 @@
       <animate attributeName="x" values="84.5;92.9;84.5" dur="2.2s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0;0.88;0" dur="2.2s" repeatCount="indefinite"/>
     </rect>
+  </g>
   </g>
 </svg>

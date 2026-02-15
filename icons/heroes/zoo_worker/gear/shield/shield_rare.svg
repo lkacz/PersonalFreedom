@@ -7,6 +7,10 @@
       <stop offset="100%" stop-color="#0277BD" stop-opacity="0.5"/>
     </linearGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <!-- Zoo Worker shield (rare): Riot Poly-Shield -->
   <g id="shield_rare" transform="translate(95 132) scale(0.82) translate(-90 -126)">
     <!-- Shadow -->
@@ -32,5 +36,6 @@
     <circle cx="70" cy="106" r="1.5" fill="#00E5FF">
        <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
     </circle>
+  </g>
   </g>
 </svg>

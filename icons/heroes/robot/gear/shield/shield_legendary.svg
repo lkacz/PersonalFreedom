@@ -5,6 +5,10 @@
       <stop offset="100%" stop-color="#FF6F00"/>
     </radialGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <g id="shield_legendary" transform="translate(8, 0)">
     <!-- Solar Aegis -->
     <!-- Main Disk -->
@@ -24,5 +28,6 @@
     <circle cx="42" cy="120" r="6" fill="#FFFFFF" opacity="0.8">
        <animate attributeName="opacity" values="0.6;1;0.6" dur="1s" repeatCount="indefinite"/>
     </circle>
+  </g>
   </g>
 </svg>

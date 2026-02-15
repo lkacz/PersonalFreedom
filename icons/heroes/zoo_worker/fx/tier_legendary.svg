@@ -24,30 +24,38 @@
       <stop offset="0%" stop-color="#fff" stop-opacity="0"/>
       <stop offset="100%" stop-color="#fff" stop-opacity="0.2"/>
     </linearGradient>
+    
+    <!-- Jungle Blur Filter -->
+    <filter id="jungleBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3.5" />
+    </filter>
   </defs>
 
   <!-- Deep Background -->
   <rect width="180" height="220" fill="url(#jungleDeep)"/>
 
-  <!-- God Rays (Beams of light) -->
-  <path d="M40 0 L-20 220 L60 220 L100 0 Z" fill="url(#godRay)">
-    <animate attributeName="opacity" values="0.2;0.4;0.2" dur="5s" repeatCount="indefinite"/>
-  </path>
-  <path d="M120 0 L80 220 L160 220 L180 0 Z" fill="url(#godRay)">
-    <animate attributeName="opacity" values="0.1;0.3;0.1" dur="7s" repeatCount="indefinite" begin="1s"/>
-  </path>
+  <!-- BLURRED BACKGROUND GROUP -->
+  <g filter="url(#jungleBlur)">
+      <!-- God Rays (Beams of light) -->
+      <path d="M40 0 L-20 220 L60 220 L100 0 Z" fill="url(#godRay)">
+        <animate attributeName="opacity" values="0.2;0.4;0.2" dur="5s" repeatCount="indefinite"/>
+      </path>
+      <path d="M120 0 L80 220 L160 220 L180 0 Z" fill="url(#godRay)">
+        <animate attributeName="opacity" values="0.1;0.3;0.1" dur="7s" repeatCount="indefinite" begin="1s"/>
+      </path>
 
-  <!-- Background Vines -->
-  <path d="M30 0 S10 50 35 100 S10 200 30 220" fill="none" stroke="#064e3b" stroke-width="4" opacity="0.6"/>
-  <path d="M150 0 S170 60 140 120 S170 200 150 220" fill="none" stroke="#064e3b" stroke-width="5" opacity="0.6"/>
+      <!-- Background Vines -->
+      <path d="M30 0 S10 50 35 100 S10 200 30 220" fill="none" stroke="#064e3b" stroke-width="4" opacity="0.6"/>
+      <path d="M150 0 S170 60 140 120 S170 200 150 220" fill="none" stroke="#064e3b" stroke-width="5" opacity="0.6"/>
 
-  <!-- Mid-Ground Foliage (Darker) -->
-  <g fill="#14532d" opacity="0.8">
-    <path d="M-20 220 C10 180 50 180 80 220 Z"/>
-    <path d="M100 220 C130 170 170 170 200 220 Z"/>
+      <!-- Mid-Ground Foliage (Darker) -->
+      <g fill="#14532d" opacity="0.8">
+        <path d="M-20 220 C10 180 50 180 80 220 Z"/>
+        <path d="M100 220 C130 170 170 170 200 220 Z"/>
+      </g>
   </g>
 
-  <!-- Hanging Vines (Animated) -->
+  <!-- Hanging Vines (Animated - Sharp) -->
   <path d="M60 0 Q50 40 65 80 Q80 120 60 160" fill="none" stroke="#22c55e" stroke-width="3">
     <animate attributeName="d" values="M60 0 Q50 40 65 80 Q80 120 60 160; M60 0 Q55 40 70 80 Q85 120 65 160; M60 0 Q50 40 65 80 Q80 120 60 160" dur="6s" repeatCount="indefinite"/>
   </path>
@@ -55,7 +63,7 @@
     <animate attributeName="d" values="M120 0 Q130 50 110 100 Q90 150 120 190; M120 0 Q125 50 105 100 Q85 150 115 190; M120 0 Q130 50 110 100 Q90 150 120 190" dur="7s" repeatCount="indefinite"/>
   </path>
 
-  <!-- Detailed Monster Leaves (Foreground) -->
+  <!-- Detailed Monster Leaves (Foreground - Sharp) -->
   <g>
     <!-- Left Leaf -->
     <path d="M0 220 Q40 120 90 220" fill="#15803d"/>
@@ -69,12 +77,12 @@
     <path d="M160 200 L140 180 M150 210 L130 190" stroke="#1ec168" stroke-width="1" opacity="0.3"/>
   </g>
   
-  <!-- Low Mist -->
-  <rect x="0" y="160" width="180" height="60" fill="url(#mistGrad)" filter="blur(4px)">
+  <!-- Low Mist (Soft) -->
+  <rect x="0" y="160" width="180" height="60" fill="url(#mistGrad)">
      <animate attributeName="opacity" values="0.4;0.7;0.4" dur="10s" repeatCount="indefinite"/>
   </rect>
 
-  <!-- Fireflies with Halo -->
+  <!-- Fireflies with Halo (Overlay) -->
   <g>
     <circle cx="50" cy="100" r="4" fill="url(#fireflyGlow)" opacity="0.8">
        <animate attributeName="cy" values="100;90;110;100" dur="4s" repeatCount="indefinite"/>
@@ -96,5 +104,4 @@
         <animate attributeName="cy" values="150;140;150" dur="5s" repeatCount="indefinite" begin="1s"/>
     </circle>
   </g>
-
 </svg>

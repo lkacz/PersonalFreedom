@@ -9,6 +9,10 @@
       <stop offset="100%" stop-color="#BF360C"/>
     </radialGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <g id="helmet_common" transform="translate(31, -3) scale(0.64)">
     <!-- Base Chassis: Dented Steel (Standard shape) -->
     <rect x="55" y="45" width="70" height="80" rx="10" fill="url(#h_steel_base)" stroke="#455A64" stroke-width="2"/>
@@ -45,5 +49,6 @@
         <animate attributeName="opacity" values="0;1;0" dur="0.1s" repeatCount="indefinite" begin="1s; 3.5s"/>
     </circle>
 
+  </g>
   </g>
 </svg>

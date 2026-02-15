@@ -5,7 +5,11 @@
       <stop offset="100%" stop-color="#FFFF00"/>
     </linearGradient>
   </defs>
-  <g id="weapon_legendary" transform="rotate(-5 130 130)">
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+  <g id="weapon_legendary" transform="translate(0, 14) rotate(-5 130 130)">
     <!-- Solar Scepter -->
     <!-- Staff -->
     <rect x="130" y="80" width="6" height="80" rx="1" fill="#FFD700" stroke="#FF6F00"/>
@@ -24,5 +28,6 @@
     <path d="M133 70 L131 40 L135 40 Z" fill="url(#w_sun_beam)" opacity="0.8">
        <animate attributeName="d" values="M133 70 L131 40 L135 40 Z; M133 70 L130 30 L136 30 Z; M133 70 L131 40 L135 40 Z" dur="0.2s" repeatCount="indefinite"/>
     </path>
+  </g>
   </g>
 </svg>

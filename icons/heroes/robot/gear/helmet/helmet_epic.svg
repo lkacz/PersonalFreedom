@@ -16,6 +16,10 @@
       </feMerge>
     </filter>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <g id="helmet_epic" transform="translate(31, -3) scale(0.64)">
     <!-- Base Chassis: Void Alloy (Same shape, darker) -->
     <rect x="55" y="45" width="70" height="80" rx="15" fill="url(#h_steel_dark)" stroke="#E040FB" stroke-width="1"/>
@@ -66,5 +70,6 @@
     <!-- Chin Spikes -->
     <path d="M80 120 L82 135 L85 120" fill="#455A64"/> <!-- Longer sharper -->
     <path d="M95 120 L98 135 L101 120" fill="#455A64"/>
+  </g>
   </g>
 </svg>

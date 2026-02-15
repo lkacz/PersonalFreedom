@@ -1,16 +1,63 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+    <!-- Warrior Tier: "The Ancient Armory" -->
+    <defs>
+        <linearGradient id="forgeHeat" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#450a0a" />
+            <stop offset="80%" stop-color="#7f1d1d" />
+            <stop offset="100%" stop-color="#b91c1c" />
+        </linearGradient>
 
-  <g id="fx_celestial">
-    <rect x="60" y="0" width="60" height="220" fill="#00E5FF" opacity="0.045"/>
-    <ellipse cx="90" cy="100" rx="31" ry="14.3" fill="#00E5FF" opacity="0.1"/>
-    <ellipse cx="90" cy="100" rx="39" ry="18.3" fill="none" stroke="#00E5FF" stroke-width="1.1" opacity="0.7"/>
-    <ellipse cx="90" cy="100" rx="33" ry="15.1" fill="none" stroke="#b1f9ff" stroke-width="0.86" opacity="0.58"/>
-    <path d="M90 67 L90 133" stroke="#bdf9ff" stroke-width="0.98" opacity="0.55"/>
-    <path d="M57 100 L123 100" stroke="#bdf9ff" stroke-width="0.98" opacity="0.55"/>
-    <circle cx="60" cy="88" r="1.15" fill="#9bf6ff"/>
-    <circle cx="120" cy="92" r="1.12" fill="#9bf6ff"/>
-    <circle cx="104" cy="116" r="1.05" fill="#9bf6ff"/>
-    <circle cx="76" cy="116" r="1.05" fill="#9bf6ff"/>
-  </g>
+        <filter id="battleBlur">
+             <feGaussianBlur stdDeviation="3"/>
+        </filter>
+        
+        <filter id="emberBlur">
+             <feGaussianBlur stdDeviation="1"/>
+        </filter>
+    </defs>
+
+    <!-- 1. Background -->
+    <rect width="180" height="220" fill="url(#forgeHeat)" />
+
+    <!-- 2. Blurred Armory/Pillars (Background) -->
+    <g filter="url(#battleBlur)" opacity="0.6">
+        <!-- Stone Pillars -->
+        <path d="M10 0 L30 0 L35 220 L5 220 Z" fill="#292524" />
+        <path d="M150 0 L170 0 L175 220 L145 220 Z" fill="#292524" />
+        
+        <!-- Weapon Rack Silhouettes -->
+        <rect x="40" y="80" width="10" height="100" fill="#1c1917" />
+        <path d="M35 100 L55 100 L55 104 L35 104 Z" fill="#44403c" />
+        
+        <rect x="130" y="80" width="10" height="100" fill="#1c1917" />
+         <!-- Crossed Swords X on wall -->
+        <path d="M60 40 L120 100" stroke="#000" stroke-width="8" opacity="0.4"/>
+        <path d="M120 40 L60 100" stroke="#000" stroke-width="8" opacity="0.4"/>
+    </g>
+
+    <!-- 3. Rising Embers (Blurred) -->
+    <g filter="url(#emberBlur)">
+        <circle cx="50" cy="200" r="2" fill="#fca5a5">
+             <animate attributeName="cy" from="220" to="0" dur="4s" repeatCount="indefinite"/>
+             <animate attributeName="opacity" values="1;0" dur="4s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="100" cy="210" r="3" fill="#fbbf24">
+             <animate attributeName="cy" from="230" to="50" dur="3s" repeatCount="indefinite" begin="0.5s"/>
+             <animate attributeName="opacity" values="1;0" dur="3s" repeatCount="indefinite" begin="0.5s"/>
+        </circle>
+         <circle cx="150" cy="220" r="1.5" fill="#f87171">
+             <animate attributeName="cy" from="220" to="100" dur="5s" repeatCount="indefinite"/>
+             <animate attributeName="opacity" values="1;0" dur="5s" repeatCount="indefinite"/>
+        </circle>
+    </g>
+
+    <!-- 4. Foreground: Victory Banners (Sharp but semi-transparent) -->
+    <g opacity="0.4">
+         <path d="M10 0 L40 0 L40 60 L25 80 L10 60 Z" fill="#7f1d1d" />
+         <path d="M140 0 L170 0 L170 60 L155 80 L140 60 Z" fill="#7f1d1d" />
+    </g>
+    
+    <!-- 5. Battle Dust -->
+    <rect width="180" height="220" fill="url(#forgeHeat)" opacity="0.2" style="mix-blend-mode: overlay" />
 
 </svg>

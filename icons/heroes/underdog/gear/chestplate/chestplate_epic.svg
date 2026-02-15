@@ -22,6 +22,10 @@
     </filter>
   </defs>
 
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+
   <!-- Underdog epic tee -->
   <g id="chestplate_epic" filter="url(#shadowEpic)" transform="translate(0 -26) translate(90 110) scale(0.72 0.78) translate(-90 -110)">
     <path d="M62 102 L68 92 L81 88 Q90 95.2 99 88 L112 92 L118 102 L110 108 L110 149 L70 149 L70 108 Z" fill="#9C27B0" stroke="#6A1B9A" stroke-width="1.18"/>
@@ -48,5 +52,6 @@
       <animate attributeName="r" values="1.0;1.7;1.0" dur="1.0s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.45;1;0.45" dur="1.0s" repeatCount="indefinite"/>
     </circle>
+  </g>
   </g>
 </svg>

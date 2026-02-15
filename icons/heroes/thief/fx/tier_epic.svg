@@ -5,7 +5,7 @@
       <stop offset="0%" stop-color="#4B5563" />
       <stop offset="100%" stop-color="#1F2937" />
     </linearGradient>
-    
+
     <!-- Lightning Gradient -->
     <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" stop-color="#FEF08A" />
@@ -13,40 +13,65 @@
       <stop offset="100%" stop-color="#FEF08A" />
     </linearGradient>
 
-    <!-- Glow Filter for Lightning -->
-    <filter id="lightningGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
-      <feMerge>
-        <feMergeNode in="blur" />
-        <feMergeNode in="SourceGraphic" />
-      </feMerge>
+    <!-- Simple Glow Filter -->
+    <filter id="simpleGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+    </filter>
+    
+    <!-- Cloud Blur Filter -->
+    <filter id="cloudBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+    </filter>
+    
+    <!-- Skyline Blur Filter -->
+    <filter id="skyBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
     </filter>
   </defs>
 
-  <!-- Clouds Background Layer -->
-  <path d="M20 60 Q30 40 50 45 Q55 30 75 35 Q90 20 110 35 Q130 25 145 40 Q160 35 170 55 L160 70 Q140 85 120 75 Q100 90 80 80 Q60 95 40 85 Q20 90 10 70 Z" fill="url(#cloudGrad)" opacity="0.9">
-    <animateTransform attributeName="transform" type="translate" values="-5,0; 5,0; -5,0" dur="8s" repeatCount="indefinite" />
-  </path>
-  
-  <path d="M40 70 Q50 50 70 55 Q75 40 95 45 Q110 30 130 45 Q150 35 165 50 Q180 45 190 65 L180 80 Q160 95 140 85 Q120 100 100 90 Q80 105 60 95 Q40 100 30 80 Z" fill="#374151" opacity="0.7" transform="translate(-20, 20)">
-     <animateTransform attributeName="transform" type="translate" values="-20,20; -10,20; -20,20" dur="10s" repeatCount="indefinite" />
-  </path>
+  <!-- BLURRED BACKGROUND -->
+  <g filter="url(#cloudBlur)">
+      <!-- Clouds Background Layer -->
+      <path d="M20 60 Q30 40 50 45 Q55 30 75 35 Q90 20 110 35 Q130 25 145 40 Q160 35 170 55 L160 70 Q140 85 120 75 Q100 90 80 80 Q60 95 40 85 Q20 90 10 70 Z" fill="url(#cloudGrad)" opacity="0.9">
+        <animateTransform attributeName="transform" type="translate" values="-5,0; 5,0; -5,0" dur="8s" repeatCount="indefinite" />
+      </path>
+  </g>
 
-  <!-- Lightning Bolts -->
-  <!-- Bolt 1 (Left) -->
-  <path d="M60 80 L40 120 L55 125 L35 180" fill="none" stroke="url(#boltGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#lightningGlow)" opacity="0">
-    <!-- Flash Animation: Quick burst, wait, repeat -->
+  <!-- BLURRED SKYLINE -->
+  <g transform="translate(-20, 20)" filter="url(#skyBlur)">
+    <path d="M40 70 Q50 50 70 55 Q75 40 95 45 Q110 30 130 45 Q150 35 165 50 Q180 45 190 65 L180 80 Q160 95 140 85 Q120 100 100 90 Q80 105 60 95 Q40 100 30 80 Z" fill="#374151" opacity="0.7">
+      <animateTransform attributeName="transform" type="translate" values="0,0; 10,0; 0,0" dur="10s" repeatCount="indefinite" />
+    </path>
+  </g>
+
+  <!-- Lightning Bolts (Optimized: "Glow" is a separate blurred path underneath) -->
+  <!-- Bolt 1 Group -->
+  <g opacity="0">
+    <!-- Animation controls visibility of the whole bolt -->
     <animate attributeName="opacity" values="0; 1; 0; 0; 0; 0" dur="3s" repeatCount="indefinite" begin="0s" />
-    <animate attributeName="d" values="M60 80 L40 120 L55 125 L35 180; M62 80 L42 120 L57 125 L37 180; M60 80 L40 120 L55 125 L35 180" dur="0.2s" repeatCount="indefinite" />
-  </path>
+    
+    <!-- Glow Layer -->
+    <path d="M60 80 L40 120 L55 125 L35 180" fill="none" stroke="#FFFF00" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" filter="url(#simpleGlow)" opacity="0.6">
+      <animate attributeName="d" values="M60 80 L40 120 L55 125 L35 180; M62 80 L42 120 L57 125 L37 180; M60 80 L40 120 L55 125 L35 180" dur="0.2s" repeatCount="indefinite" />
+    </path>
+    <!-- Core Bolt -->
+    <path d="M60 80 L40 120 L55 125 L35 180" fill="none" stroke="url(#boltGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <animate attributeName="d" values="M60 80 L40 120 L55 125 L35 180; M62 80 L42 120 L57 125 L37 180; M60 80 L40 120 L55 125 L35 180" dur="0.2s" repeatCount="indefinite" />
+    </path>
+  </g>
 
-  <!-- Bolt 2 (Right, delayed) -->
-  <path d="M120 75 L140 110 L125 115 L150 170" fill="none" stroke="url(#boltGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#lightningGlow)" opacity="0">
+  <!-- Bolt 2 Group (Delayed) -->
+  <g opacity="0">
     <animate attributeName="opacity" values="0; 0; 0; 1; 0; 0" dur="4s" repeatCount="indefinite" begin="1.5s" />
-  </path>
+    
+    <!-- Glow -->
+    <path d="M120 75 L140 110 L125 115 L150 170" fill="none" stroke="#FFFF00" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" filter="url(#simpleGlow)" opacity="0.6" />
+    <!-- Core -->
+    <path d="M120 75 L140 110 L125 115 L150 170" fill="none" stroke="url(#boltGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
 
   <!-- Ground Flash glow -->
-  <ellipse cx="90" cy="180" rx="60" ry="10" fill="#FFFF00" opacity="0">
-      <animate attributeName="opacity" values="0; 0.2; 0; 0.2; 0; 0" dur="3s" repeatCount="indefinite" />
+  <ellipse cx="90" cy="180" rx="60" ry="10" fill="#FFFF00" opacity="0" filter="url(#simpleGlow)">
+      <animate attributeName="opacity" values="0; 0.4; 0; 0.4; 0; 0" dur="3s" repeatCount="indefinite" />
   </ellipse>
 </svg>

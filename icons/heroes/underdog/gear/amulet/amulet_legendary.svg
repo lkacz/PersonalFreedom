@@ -21,6 +21,10 @@
     </linearGradient>
   </defs>
 
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+
   <!-- Legendary ID badge (rarity accent: orange, plus cyan/violet contrasts) -->
   <g id="amulet_legendary" transform="translate(90 87) scale(1.13) translate(-90 -111)">
     <path d="M86.3 97.8 L90.0 102.4 L93.7 97.8" fill="none" stroke="#a96b1f" stroke-width="0.92" stroke-linecap="round" stroke-linejoin="round"/>
@@ -47,5 +51,6 @@
       <animate attributeName="x" values="84.5;93.3;84.5" dur="2.0s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0;0.9;0" dur="2.0s" repeatCount="indefinite"/>
     </rect>
+  </g>
   </g>
 </svg>

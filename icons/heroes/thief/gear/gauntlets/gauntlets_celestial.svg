@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
     <linearGradient id="tactical_shell" x1="0" y1="0" x2="0" y2="1">
@@ -14,6 +14,9 @@
       <stop offset="100%" stop-color="#53edff" stop-opacity="0"/>
     </radialGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
 
   <!-- Celestial: Tactical Hands -->
   <g id="gauntlets_celestial">
@@ -39,4 +42,6 @@
     </circle>
     <path d="M112.6 140.0 L119.4 140.0" stroke="#8defff" stroke-width="0.68" opacity="0.9"/>
   </g>
+  </g>
 </svg>
+

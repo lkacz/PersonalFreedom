@@ -5,6 +5,10 @@
       <stop offset="100%" stop-color="#FF6F00"/>
     </radialGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <g id="amulet_legendary">
     <!-- Prime Matrix -->
     <path d="M85 85 Q90 95 95 85" fill="none" stroke="#FFD700" stroke-width="1"/>
@@ -22,5 +26,6 @@
     <path d="M90 108 L90 111" stroke="#FFAB00" stroke-width="1"/>
     <path d="M78 98 L81 98" stroke="#FFAB00" stroke-width="1"/>
     <path d="M99 98 L102 98" stroke="#FFAB00" stroke-width="1"/>
+  </g>
   </g>
 </svg>

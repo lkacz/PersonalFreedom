@@ -11,6 +11,10 @@
       <feComposite in="SourceGraphic" in2="blur" operator="over"/>
     </filter>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <!-- Apex Cloak: Gold/Orange, Regal Theme -->
   <g id="cloak_legendary" transform="translate(90 118) scale(0.92) translate(-90 -118)">
     <path d="M67.5 84 Q90 80.5 112.5 84 L109.5 95 Q113 126 106.5 157 L90 161 L73.5 157 Q67 126 70.5 95 Z"
@@ -26,5 +30,6 @@
     <path d="M74 152 Q90 145 106 152" stroke="#FFD700" stroke-width="1" fill="none" filter="url(#cl_glow)">
       <animate attributeName="stroke" values="#FFD700;#FF5722;#FFD700" dur="3s" repeatCount="indefinite"/>
     </path>
+  </g>
   </g>
 </svg>
