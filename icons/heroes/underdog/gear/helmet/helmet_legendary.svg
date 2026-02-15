@@ -1,16 +1,43 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <radialGradient id="l_core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff2cf" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#ffab2e" stop-opacity="1"/>
+    </radialGradient>
+    <radialGradient id="l_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd89e" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#ff9800" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="l_blur" x="-180%" y="-180%" width="460%" height="460%">
+      <feGaussianBlur stdDeviation="1.7"/>
+    </filter>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#ff9800" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Helmet -&gt; Headwear</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: legendary</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: helmet_legendary.svg</text>
+
+  <!-- Legendary headphones: tiny but powerful light earbuds -->
+  <g id="helmet_legendary">
+    <path d="M83.4 58.6 Q90.0 54.3 96.6 58.6" fill="none" stroke="#d58c25" stroke-width="1.2" opacity="0.7"/>
+
+    <!-- tiny earbuds -->
+    <circle cx="80.2" cy="67.2" r="1.55" fill="url(#l_core)" stroke="#a66413" stroke-width="0.45"/>
+    <circle cx="99.8" cy="67.2" r="1.55" fill="url(#l_core)" stroke="#a66413" stroke-width="0.45"/>
+
+    <!-- intense power glow -->
+    <circle cx="80.2" cy="67.2" r="4.9" fill="url(#l_glow)" opacity="0.68" filter="url(#l_blur)">
+      <animate attributeName="r" values="3.2;6.2;3.2" dur="1.35s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.34;0.98;0.34" dur="1.35s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="99.8" cy="67.2" r="4.9" fill="url(#l_glow)" opacity="0.68" filter="url(#l_blur)">
+      <animate attributeName="r" values="3.2;6.2;3.2" dur="1.35s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.34;0.98;0.34" dur="1.35s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- tiny electric hints -->
+    <path d="M77.8 63.9 L78.9 62.6 L78.6 64.2 L79.8 63.4" fill="none" stroke="#ffc965" stroke-width="0.62" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+      <animate attributeName="opacity" values="0;1;0" dur="0.85s" repeatCount="indefinite"/>
+    </path>
+    <path d="M100.3 64.1 L101.4 62.8 L101.1 64.4 L102.3 63.6" fill="none" stroke="#ffc965" stroke-width="0.62" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+      <animate attributeName="opacity" values="0;0.95;0" dur="0.9s" repeatCount="indefinite"/>
+    </path>
+  </g>
 </svg>

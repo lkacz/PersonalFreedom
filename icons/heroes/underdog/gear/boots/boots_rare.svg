@@ -1,16 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="rare_sole" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E5F4FF"/>
+      <stop offset="100%" stop-color="#AECDE6"/>
+    </linearGradient>
+    <radialGradient id="rare_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#92D7FF" stop-opacity="0.68"/>
+      <stop offset="100%" stop-color="#92D7FF" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#2196f3" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Boots -&gt; Footwear</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: rare</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: boots_rare.svg</text>
+
+  <!-- Rare: clearly rounder and cleaner silhouette -->
+  <g id="boots_rare">
+    <ellipse cx="76.4" cy="207.7" rx="10.9" ry="1.9" fill="#000000" opacity="0.13"/>
+    <ellipse cx="102.6" cy="207.7" rx="11.7" ry="2.0" fill="#000000" opacity="0.13"/>
+
+    <rect x="66.2" y="194.2" width="20.9" height="11.9" rx="3.6" fill="#2196F3" stroke="#1565C0" stroke-width="0.76"/>
+    <ellipse cx="85.3" cy="200.1" rx="3.3" ry="3.9" fill="#2196F3" stroke="#1565C0" stroke-width="0.66"/>
+    <path d="M68.0 196.2 L85.0 196.2" stroke="#A9DCFF" stroke-width="0.62" opacity="0.85"/>
+    <path d="M69.9 198.0 L82.5 198.0 M69.6 199.6 L82.2 199.6 M69.3 201.1 L81.9 201.1" stroke="#EAF7FF" stroke-width="0.5" stroke-linecap="round" opacity="0.82"/>
+    <rect x="65.8" y="203.2" width="22.3" height="3.2" rx="2.2" fill="url(#rare_sole)" stroke="#6BA9D6" stroke-width="0.46"/>
+    <circle cx="82.8" cy="197.2" r="1.4" fill="url(#rare_glow)"/>
+
+    <rect x="91.0" y="194.2" width="22.7" height="11.9" rx="3.6" fill="#2196F3" stroke="#1565C0" stroke-width="0.76"/>
+    <ellipse cx="112.1" cy="200.1" rx="3.6" ry="4.1" fill="#2196F3" stroke="#1565C0" stroke-width="0.66"/>
+    <path d="M93.2 196.2 L111.5 196.2" stroke="#A9DCFF" stroke-width="0.62" opacity="0.85"/>
+    <path d="M95.0 198.0 L107.9 198.0 M95.3 199.6 L108.2 199.6 M95.6 201.1 L108.5 201.1" stroke="#EAF7FF" stroke-width="0.5" stroke-linecap="round" opacity="0.82"/>
+    <rect x="90.6" y="203.2" width="24.1" height="3.2" rx="2.2" fill="url(#rare_sole)" stroke="#6BA9D6" stroke-width="0.46"/>
+    <circle cx="108.2" cy="197.2" r="1.4" fill="url(#rare_glow)"/>
+  </g>
 </svg>

@@ -65,42 +65,42 @@ Generate all files below.
 
 ## Preferred Item-Type Output Files
 Generate these for full visual variety. If constrained, prioritize Helmet, Chestplate, Weapon, Shield.
-- `icons/heroes/thief/gear/helmet/watch_cap_common.svg`
-- `icons/heroes/thief/gear/helmet/watch_cap_uncommon.svg`
-- `icons/heroes/thief/gear/helmet/watch_cap_rare.svg`
-- `icons/heroes/thief/gear/helmet/watch_cap_epic.svg`
-- `icons/heroes/thief/gear/helmet/watch_cap_legendary.svg`
-- `icons/heroes/thief/gear/helmet/watch_cap_celestial.svg`
-- `icons/heroes/thief/gear/helmet/patrol_cap_common.svg`
-- `icons/heroes/thief/gear/helmet/patrol_cap_uncommon.svg`
-- `icons/heroes/thief/gear/helmet/patrol_cap_rare.svg`
-- `icons/heroes/thief/gear/helmet/patrol_cap_epic.svg`
-- `icons/heroes/thief/gear/helmet/patrol_cap_legendary.svg`
-- `icons/heroes/thief/gear/helmet/patrol_cap_celestial.svg`
-- `icons/heroes/thief/gear/helmet/undercover_hood_common.svg`
-- `icons/heroes/thief/gear/helmet/undercover_hood_uncommon.svg`
-- `icons/heroes/thief/gear/helmet/undercover_hood_rare.svg`
-- `icons/heroes/thief/gear/helmet/undercover_hood_epic.svg`
-- `icons/heroes/thief/gear/helmet/undercover_hood_legendary.svg`
-- `icons/heroes/thief/gear/helmet/undercover_hood_celestial.svg`
-- `icons/heroes/thief/gear/helmet/night_visor_common.svg`
-- `icons/heroes/thief/gear/helmet/night_visor_uncommon.svg`
-- `icons/heroes/thief/gear/helmet/night_visor_rare.svg`
-- `icons/heroes/thief/gear/helmet/night_visor_epic.svg`
-- `icons/heroes/thief/gear/helmet/night_visor_legendary.svg`
-- `icons/heroes/thief/gear/helmet/night_visor_celestial.svg`
-- `icons/heroes/thief/gear/helmet/signal_cap_common.svg`
-- `icons/heroes/thief/gear/helmet/signal_cap_uncommon.svg`
-- `icons/heroes/thief/gear/helmet/signal_cap_rare.svg`
-- `icons/heroes/thief/gear/helmet/signal_cap_epic.svg`
-- `icons/heroes/thief/gear/helmet/signal_cap_legendary.svg`
-- `icons/heroes/thief/gear/helmet/signal_cap_celestial.svg`
-- `icons/heroes/thief/gear/helmet/inspector_hat_common.svg`
-- `icons/heroes/thief/gear/helmet/inspector_hat_uncommon.svg`
-- `icons/heroes/thief/gear/helmet/inspector_hat_rare.svg`
-- `icons/heroes/thief/gear/helmet/inspector_hat_epic.svg`
-- `icons/heroes/thief/gear/helmet/inspector_hat_legendary.svg`
-- `icons/heroes/thief/gear/helmet/inspector_hat_celestial.svg`
+- `icons/heroes/thief/gear/helmet/shadow_hoodie_common.svg`
+- `icons/heroes/thief/gear/helmet/shadow_hoodie_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/shadow_hoodie_rare.svg`
+- `icons/heroes/thief/gear/helmet/shadow_hoodie_epic.svg`
+- `icons/heroes/thief/gear/helmet/shadow_hoodie_legendary.svg`
+- `icons/heroes/thief/gear/helmet/shadow_hoodie_celestial.svg`
+- `icons/heroes/thief/gear/helmet/prowler_hoodie_common.svg`
+- `icons/heroes/thief/gear/helmet/prowler_hoodie_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/prowler_hoodie_rare.svg`
+- `icons/heroes/thief/gear/helmet/prowler_hoodie_epic.svg`
+- `icons/heroes/thief/gear/helmet/prowler_hoodie_legendary.svg`
+- `icons/heroes/thief/gear/helmet/prowler_hoodie_celestial.svg`
+- `icons/heroes/thief/gear/helmet/operative_hoodie_common.svg`
+- `icons/heroes/thief/gear/helmet/operative_hoodie_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/operative_hoodie_rare.svg`
+- `icons/heroes/thief/gear/helmet/operative_hoodie_epic.svg`
+- `icons/heroes/thief/gear/helmet/operative_hoodie_legendary.svg`
+- `icons/heroes/thief/gear/helmet/operative_hoodie_celestial.svg`
+- `icons/heroes/thief/gear/helmet/voidwalker_hoodie_common.svg`
+- `icons/heroes/thief/gear/helmet/voidwalker_hoodie_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/voidwalker_hoodie_rare.svg`
+- `icons/heroes/thief/gear/helmet/voidwalker_hoodie_epic.svg`
+- `icons/heroes/thief/gear/helmet/voidwalker_hoodie_legendary.svg`
+- `icons/heroes/thief/gear/helmet/voidwalker_hoodie_celestial.svg`
+- `icons/heroes/thief/gear/helmet/hazard_hoodie_common.svg`
+- `icons/heroes/thief/gear/helmet/hazard_hoodie_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/hazard_hoodie_rare.svg`
+- `icons/heroes/thief/gear/helmet/hazard_hoodie_epic.svg`
+- `icons/heroes/thief/gear/helmet/hazard_hoodie_legendary.svg`
+- `icons/heroes/thief/gear/helmet/hazard_hoodie_celestial.svg`
+- `icons/heroes/thief/gear/helmet/netrunner_hoodie_common.svg`
+- `icons/heroes/thief/gear/helmet/netrunner_hoodie_uncommon.svg`
+- `icons/heroes/thief/gear/helmet/netrunner_hoodie_rare.svg`
+- `icons/heroes/thief/gear/helmet/netrunner_hoodie_epic.svg`
+- `icons/heroes/thief/gear/helmet/netrunner_hoodie_legendary.svg`
+- `icons/heroes/thief/gear/helmet/netrunner_hoodie_celestial.svg`
 - `icons/heroes/thief/gear/chestplate/padded_vest_common.svg`
 - `icons/heroes/thief/gear/chestplate/padded_vest_uncommon.svg`
 - `icons/heroes/thief/gear/chestplate/padded_vest_rare.svg`
@@ -413,7 +413,7 @@ Generate these for full visual variety. If constrained, prioritize Helmet, Chest
 ### Helmet
 - role: Head identity piece. Prioritize profile readability and theme signature crest.
 - animation cue: Visor sweep or indicator blink every 2-4s.
-- item types to represent: Watch Cap, Patrol Cap, Undercover Hood, Night Visor, Signal Cap, Inspector Hat
+- item types to represent: Shadow Hoodie, Prowler Hoodie, Operative Hoodie, Voidwalker Hoodie, Hazard Hoodie, Netrunner Hoodie
 - rarity progression:
   - common: Simple practical geometry, minimal ornament, stable materials.
   - uncommon: Add one structural upgrade (trim, plate, attachment, or secondary contour).

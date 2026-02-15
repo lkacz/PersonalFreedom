@@ -1,16 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="ce_case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ccf8ff"/>
+      <stop offset="100%" stop-color="#63c9df"/>
+    </linearGradient>
+    <linearGradient id="ce_edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ecfdff"/>
+      <stop offset="100%" stop-color="#8adff0"/>
+    </linearGradient>
+    <radialGradient id="ce_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#d9fbff" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#56ddff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="ce_blur" x="-150%" y="-150%" width="400%" height="400%">
+      <feGaussianBlur stdDeviation="1.45"/>
+    </filter>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#00e5ff" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Shield -&gt; Protection</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: celestial</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: shield_celestial.svg</text>
+
+  <!-- Celestial suitcase shield -->
+  <g id="shield_celestial" transform="rotate(-8 62 149)">
+    <ellipse cx="62.2" cy="160.4" rx="10.9" ry="3.1" fill="#000000" opacity="0.18"/>
+    <rect x="51.7" y="137.7" width="21.0" height="17.0" rx="2.65" fill="url(#ce_case)" stroke="#3d95a7" stroke-width="1.02"/>
+    <rect x="52.9" y="138.7" width="18.8" height="3.9" rx="1.05" fill="#f2feff" opacity="0.68"/>
+    <rect x="58.0" y="134.3" width="8.0" height="3.5" rx="1.12" fill="url(#ce_edge)" stroke="#4caabc" stroke-width="0.82"/>
+    <rect x="60.5" y="144.7" width="3.1" height="3.0" rx="0.5" fill="#f8ffff" stroke="#6ec8da" stroke-width="0.54"/>
+    <path d="M54.7 141.1 L57.0 141.1 M67.6 141.1 L70.0 141.1" stroke="#b3f3ff" stroke-width="0.66"/>
+    <path d="M56.2 149.8 L68.1 149.8" stroke="#7ae6fa" stroke-width="0.72" opacity="0.86"/>
+    <circle cx="55.0" cy="153.0" r="0.9" fill="#8adff0"/>
+    <circle cx="70.0" cy="153.0" r="0.9" fill="#8adff0"/>
+    <circle cx="62.2" cy="146.2" r="3.7" fill="url(#ce_glow)" opacity="0.64" filter="url(#ce_blur)">
+      <animate attributeName="r" values="2.8;5.2;2.8" dur="1.7s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.24;0.98;0.24" dur="1.7s" repeatCount="indefinite"/>
+    </circle>
+  </g>
 </svg>

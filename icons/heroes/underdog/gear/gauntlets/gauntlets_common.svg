@@ -1,16 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="belt_common_shade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#B8B8B8"/>
+      <stop offset="100%" stop-color="#7A7A7A"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#9e9e9e" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#9e9e9e" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#9e9e9e" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Gauntlets -&gt; Accessories</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: common</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: gauntlets_common.svg</text>
+
+  <!-- Gauntlets slot re-themed as belt -->
+  <g id="gauntlets_common_belt">
+    <rect x="75.0" y="140.8" width="30.2" height="8.0" rx="1.7" fill="#9E9E9E" stroke="#5E5E5E" stroke-width="0.78"/>
+    <rect x="76.0" y="141.7" width="28.2" height="6.0" rx="1.3" fill="url(#belt_common_shade)" opacity="0.6"/>
+    <rect x="87.2" y="141.3" width="5.6" height="6.9" rx="0.9" fill="#D9DDE2" stroke="#7A8088" stroke-width="0.58"/>
+    <rect x="89.0" y="142.5" width="2.0" height="4.4" rx="0.4" fill="none" stroke="#6B727A" stroke-width="0.52"/>
+    <circle cx="79.2" cy="144.7" r="0.58" fill="#DDE1E6" opacity="0.8"/>
+    <circle cx="101.0" cy="144.7" r="0.58" fill="#DDE1E6" opacity="0.8"/>
+  </g>
 </svg>

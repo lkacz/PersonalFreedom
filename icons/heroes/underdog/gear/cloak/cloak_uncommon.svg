@@ -1,16 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="pantBaseUncommon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2B3A48"/>
+      <stop offset="100%" stop-color="#1D2731"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#4caf50" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Cloak -&gt; Outerwear</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: uncommon</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: cloak_uncommon.svg</text>
+
+  <!-- Underdog trousers: uncommon -->
+  <g id="cloak_uncommon_trousers">
+    <path d="M73.8 137.8 Q70.0 165.0 71.0 197.0 L87.8 197.0 Q89.0 164.2 89.5 138.0 Z"
+          fill="url(#pantBaseUncommon)" stroke="#121A22" stroke-width="0.9"/>
+    <path d="M89.5 138.0 Q91.0 164.0 92.2 197.0 L109.2 197.0 Q110.5 166.0 106.5 138.0 Z"
+          fill="url(#pantBaseUncommon)" stroke="#121A22" stroke-width="0.9"/>
+
+    <path d="M74.5 142.0 L72.2 195.2 M105.8 142.0 L108.2 195.2" stroke="#3E4D5C" stroke-width="0.62" opacity="0.72"/>
+    <path d="M80.9 138.6 L82.0 197.0 M98.1 138.6 L97.0 197.0" stroke="#0E141C" stroke-width="0.68" opacity="0.56"/>
+    <path d="M72.0 195.0 L87.6 195.0 M92.4 195.0 L109.0 195.0" stroke="#5E707F" stroke-width="0.78" opacity="0.8"/>
+
+    <path d="M74.7 146.5 Q77.2 145.2 79.7 146.5" stroke="#4CAF50" stroke-width="0.8" stroke-linecap="round"/>
+    <path d="M101.0 146.4 Q103.2 145.0 105.8 146.2" stroke="#4CAF50" stroke-width="0.8" stroke-linecap="round"/>
+
+    <rect x="94.3" y="159.4" width="8.2" height="9.0" rx="1.3" fill="#24313C" stroke="#4CAF50" stroke-width="0.76"/>
+    <path d="M95.5 161.5 L101.2 161.5 M95.5 163.7 L101.2 163.7 M95.5 165.9 L101.2 165.9" stroke="#9BE7A0" stroke-width="0.44" opacity="0.8"/>
+  </g>
 </svg>

@@ -1,16 +1,45 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <radialGradient id="celGlow" cx="50%" cy="54%" r="60%">
+      <stop offset="0%" stop-color="#8df8ff" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#8df8ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="celRing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d6fdff"/>
+      <stop offset="100%" stop-color="#53eefe"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#00e5ff" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">fx: tier_celestial</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: celestial</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: tier_celestial.svg</text>
+
+  <!-- gentle high-tier aura -->
+  <ellipse cx="90" cy="130" rx="60" ry="50" fill="url(#celGlow)"/>
+
+  <!-- layered orbital rings -->
+  <ellipse cx="90" cy="130" rx="50" ry="40" fill="none" stroke="url(#celRing)" stroke-width="1.4" opacity="0.56" stroke-dasharray="2.0 4.0">
+    <animateTransform attributeName="transform" type="rotate" from="0 90 130" to="360 90 130" dur="14s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="90" cy="130" rx="42" ry="33" fill="none" stroke="#88f5ff" stroke-width="1.0" opacity="0.45" stroke-dasharray="1.2 3.2">
+    <animateTransform attributeName="transform" type="rotate" from="360 90 130" to="0 90 130" dur="10s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- upward comeback beams -->
+  <path d="M79 170 L79 98" stroke="#91f7ff" stroke-width="1.0" opacity="0.0">
+    <animate attributeName="opacity" values="0;0.75;0" dur="2.0s" repeatCount="indefinite"/>
+  </path>
+  <path d="M101 170 L101 96" stroke="#b4fbff" stroke-width="1.0" opacity="0.0">
+    <animate attributeName="opacity" values="0;0.82;0" dur="2.3s" begin="0.4s" repeatCount="indefinite"/>
+  </path>
+  <path d="M90 174 L90 92" stroke="#e3feff" stroke-width="1.15" opacity="0.0">
+    <animate attributeName="opacity" values="0;0.6;0" dur="2.7s" begin="0.8s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- tiny stars -->
+  <path d="M63 112 L65 116 L69 116 L66 119 L67 123 L63 121 L59 123 L60 119 L57 116 L61 116 Z" fill="#cfffff" opacity="0.65"/>
+  <path d="M121 112 L123 116 L127 116 L124 119 L125 123 L121 121 L117 123 L118 119 L115 116 L119 116 Z" fill="#cfffff" opacity="0.65"/>
+  <circle cx="71" cy="152" r="1.0" fill="#bbfbff" opacity="0.0">
+    <animate attributeName="opacity" values="0;0.9;0" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="109" cy="152" r="1.0" fill="#bbfbff" opacity="0.0">
+    <animate attributeName="opacity" values="0;0.9;0" dur="2.5s" begin="1.0s" repeatCount="indefinite"/>
+  </circle>
 </svg>

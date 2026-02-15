@@ -801,7 +801,7 @@ STORY_GEAR_THEMES = {
         "theme_id": "thief",
         "theme_name": "Civic Shadow Kit",
         "slot_display": {
-            "Helmet": "Cap",
+            "Helmet": "Hoodie",
             "Chestplate": "Vest",
             "Gauntlets": "Gloves",
             "Boots": "Boots",
@@ -811,7 +811,7 @@ STORY_GEAR_THEMES = {
             "Amulet": "Badge",
         },
         "item_types": {
-            "Helmet": ["Watch Cap", "Patrol Cap", "Undercover Hood", "Night Visor", "Signal Cap", "Inspector Hat"],
+            "Helmet": ["Shadow Hoodie", "Prowler Hoodie", "Operative Hoodie", "Voidwalker Hoodie", "Hazard Hoodie", "Netrunner Hoodie"],
             "Chestplate": ["Padded Vest", "Patrol Vest", "Street Armor", "Evidence Rig", "Duty Harness", "Command Vest"],
             "Gauntlets": ["Grip Gloves", "Fingerprint Gloves", "Restraint Gloves", "Rapid-Cuff Mitts", "Search Gloves", "Tactical Hands"],
             "Boots": ["Silent Boots", "Pursuit Boots", "Rain Boots", "Rooftop Treads", "Patrol Soles", "Field Runners"],

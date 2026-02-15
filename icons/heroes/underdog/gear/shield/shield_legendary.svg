@@ -1,16 +1,89 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="l_case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffcf89"/>
+      <stop offset="100%" stop-color="#ca7d1a"/>
+    </linearGradient>
+    <linearGradient id="l_edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffe2b3"/>
+      <stop offset="100%" stop-color="#e5a145"/>
+    </linearGradient>
+    <radialGradient id="l_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd89f" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#ff9800" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="l_rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd89f" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#ffac3a" stop-opacity="0.28"/>
+    </linearGradient>
+    <linearGradient id="l_sheen" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#ffe8bf" stop-opacity="0.48"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="l_cyan_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#9df3ff" stop-opacity="0.92"/>
+      <stop offset="100%" stop-color="#00c9e8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="l_blur" x="-140%" y="-140%" width="380%" height="380%">
+      <feGaussianBlur stdDeviation="1.3"/>
+    </filter>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#ff9800" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Shield -&gt; Protection</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: legendary</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: shield_legendary.svg</text>
+
+  <!-- Legendary suitcase shield: executive case with arc-core -->
+  <g id="shield_legendary" transform="rotate(-8 62 149)">
+    <ellipse cx="62.2" cy="160.4" rx="10.8" ry="3.05" fill="#000000" opacity="0.18"/>
+    <rect x="51.8" y="137.8" width="20.8" height="16.9" rx="2.6" fill="url(#l_case)" stroke="#8f5613" stroke-width="1.0"/>
+    <rect x="52.0" y="138.0" width="20.4" height="16.5" rx="2.45" fill="none" stroke="url(#l_rim)" stroke-width="0.55" opacity="0.85"/>
+    <rect x="52.9" y="138.8" width="18.7" height="3.8" rx="1.05" fill="#ffe8c6" opacity="0.66"/>
+    <rect x="58.1" y="134.4" width="7.8" height="3.4" rx="1.1" fill="url(#l_edge)" stroke="#a86d1f" stroke-width="0.8"/>
+    <rect x="60.5" y="144.7" width="3.1" height="2.9" rx="0.5" fill="#fff4e2" stroke="#be8234" stroke-width="0.52"/>
+    <rect x="56.5" y="145.1" width="2.2" height="2.35" rx="0.45" fill="#ffeac8" stroke="#c2883d" stroke-width="0.46"/>
+    <rect x="65.6" y="145.1" width="2.2" height="2.35" rx="0.45" fill="#ffeac8" stroke="#c2883d" stroke-width="0.46"/>
+    <path d="M54.9 146.2 L57.2 146.2 M67.3 146.2 L69.6 146.2" stroke="#7ce9ff" stroke-width="0.56" opacity="0.86"/>
+    <path d="M55.1 150.5 L57.1 150.5 M67.5 150.5 L69.5 150.5" stroke="#48d9f5" stroke-width="0.5" opacity="0.7"/>
+    <path d="M54.0 148.1 L70.6 148.1" stroke="#f2b35b" stroke-width="0.72" opacity="0.76"/>
+    <path d="M54.2 151.2 L70.4 151.2" stroke="#d88c2f" stroke-width="0.66" opacity="0.64"/>
+    <path d="M61.1 146.2 L62.2 147.3 L63.4 145.8" fill="none" stroke="#8f5613" stroke-width="0.58" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+    <path d="M54.7 141.2 L57.0 141.2 M67.6 141.2 L69.8 141.2" stroke="#ffca7a" stroke-width="0.64"/>
+    <path d="M56.3 149.8 L67.9 149.8" stroke="#f9b34e" stroke-width="0.7" opacity="0.82"/>
+    <circle cx="55.0" cy="153.0" r="0.88" fill="#d09139"/>
+    <circle cx="69.8" cy="153.0" r="0.88" fill="#d09139"/>
+    <circle cx="53.5" cy="140.1" r="0.78" fill="#ffd593" opacity="0.75"/>
+    <circle cx="70.9" cy="140.1" r="0.78" fill="#ffd593" opacity="0.75"/>
+    <circle cx="53.5" cy="152.3" r="0.78" fill="#ebb15f" opacity="0.7"/>
+    <circle cx="70.9" cy="152.3" r="0.78" fill="#ebb15f" opacity="0.7"/>
+    <circle cx="53.6" cy="146.2" r="1.5" fill="url(#l_cyan_glow)" opacity="0.62"/>
+    <circle cx="70.8" cy="146.2" r="1.5" fill="url(#l_cyan_glow)" opacity="0.62"/>
+
+    <!-- Funny sticker for personality -->
+    <g transform="rotate(11 67.2 150.5)">
+      <rect x="64.4" y="148.2" width="5.8" height="4.6" rx="0.8" fill="#ff4fb8" stroke="#8df4ff" stroke-width="0.45"/>
+      <rect x="64.8" y="148.5" width="5.0" height="0.9" rx="0.35" fill="#ff91d2" opacity="0.72"/>
+      <circle cx="66.4" cy="150.4" r="0.55" fill="#fff6cf"/>
+      <circle cx="68.2" cy="150.4" r="0.55" fill="#fff6cf"/>
+      <circle cx="66.4" cy="150.4" r="0.16" fill="#6e2f57"/>
+      <circle cx="68.2" cy="150.4" r="0.16" fill="#6e2f57"/>
+      <path d="M65.9 151.5 Q67.3 152.25 68.7 151.5" fill="none" stroke="#fff6cf" stroke-width="0.32" stroke-linecap="round"/>
+    </g>
+
+    <rect x="52.4" y="140.3" width="4.6" height="13.7" rx="1.2" fill="url(#l_sheen)" opacity="0.0">
+      <animate attributeName="x" values="52.4;66.1;52.4" dur="2.2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.82;0" dur="2.2s" repeatCount="indefinite"/>
+    </rect>
+    <circle cx="62.2" cy="146.2" r="3.6" fill="url(#l_glow)" opacity="0.62" filter="url(#l_blur)">
+      <animate attributeName="r" values="2.6;4.8;2.6" dur="1.45s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.28;0.98;0.28" dur="1.45s" repeatCount="indefinite"/>
+    </circle>
+    <path d="M56.0 143.8 A6.3 3.6 0 0 1 68.4 143.8" fill="none" stroke="#ffd39a" stroke-width="0.62" opacity="0.0">
+      <animate attributeName="opacity" values="0;0.85;0" dur="1.4s" repeatCount="indefinite"/>
+    </path>
+    <path d="M59.3 143.1 L60.5 141.8 L60.2 143.4 L61.5 142.6" fill="none" stroke="#ffc965" stroke-width="0.62" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+      <animate attributeName="opacity" values="0;1;0" dur="0.9s" repeatCount="indefinite"/>
+    </path>
+    <path d="M63.2 143.0 L64.3 141.7 L64.1 143.3 L65.2 142.6" fill="none" stroke="#ffc965" stroke-width="0.58" stroke-linecap="round" stroke-linejoin="round" opacity="0">
+      <animate attributeName="opacity" values="0;0.95;0" dur="1.0s" repeatCount="indefinite"/>
+    </path>
+  </g>
 </svg>

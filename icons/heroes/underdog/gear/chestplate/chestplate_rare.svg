@@ -1,16 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="shirtShadeRare" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#58B5FF"/>
+      <stop offset="100%" stop-color="#1775C9"/>
+    </linearGradient>
+    <pattern id="fabricRare" width="4" height="4" patternUnits="userSpaceOnUse">
+      <path d="M0 2 L4 2 M2 0 L2 4" stroke="#FFFFFF" stroke-opacity="0.10" stroke-width="0.45"/>
+    </pattern>
+    <filter id="shadowRare" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0.6" dy="1.0" stdDeviation="0.8" flood-color="#000000" flood-opacity="0.28"/>
+    </filter>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#2196f3" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Chestplate -&gt; Top</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: rare</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: chestplate_rare.svg</text>
+
+  <!-- Underdog rare tee -->
+  <g id="chestplate_rare" filter="url(#shadowRare)">
+    <path d="M68 92 Q78 85 90 86 Q102 85 112 92 L118 102 L110 108 L108.5 147 Q90 151 71.5 147 L70 108 L62 102 Z"
+          fill="#2196F3" stroke="#1565C0" stroke-width="1.15"/>
+    <path d="M70 94 Q79 88.2 90 89 Q101 88.2 110 94 L115 102 L108 106 L106.7 145.2 Q90 148.8 73.3 145.2 L72 106 L65 102 Z"
+          fill="url(#shirtShadeRare)" opacity="0.58"/>
+    <path d="M72.2 107 L70.8 147 M107.8 107 L109.2 147" stroke="#CDEAFF" stroke-opacity="0.5" stroke-width="0.72"/>
+    <path d="M77.2 90.5 Q90 97.2 102.8 90.5" stroke="#B2E1FF" stroke-width="0.85" opacity="0.8"/>
+    <path d="M81.8 89.6 Q90 93.5 98.2 89.6" stroke="#124A86" stroke-width="3.0" stroke-linecap="round"/>
+    <path d="M81.8 89.6 Q90 93.5 98.2 89.6" stroke="#74C7FF" stroke-width="1.5" stroke-linecap="round"/>
+
+    <rect x="72.8" y="98.8" width="34.4" height="25.0" rx="6.2" fill="#EFF8FF" stroke="#2B6EA6" stroke-width="1.0"/>
+    <rect x="72.8" y="98.8" width="34.4" height="25.0" rx="6.2" fill="url(#fabricRare)"/>
+    <path d="M76.3 103.1 L104.0 120.1" stroke="#9DD7FF" stroke-opacity="0.52" stroke-width="1.0"/>
+    <text x="90" y="112.2" text-anchor="middle" fill="#13518D" font-size="7.0" font-weight="800" font-family="Segoe UI, Arial, sans-serif">Rare find</text>
+
+    <!-- Mini magnifier icon -->
+    <circle cx="79.8" cy="117.7" r="2.0" fill="none" stroke="#13518D" stroke-width="0.75"/>
+    <path d="M81.2 119.1 L82.8 120.7" stroke="#13518D" stroke-width="0.75" stroke-linecap="round"/>
+    <circle cx="98.6" cy="117.7" r="0.95" fill="#FFC857"/>
+    <path d="M98.6 116.2 L98.6 119.2 M97.1 117.7 L100.1 117.7" stroke="#8A641A" stroke-width="0.36" stroke-linecap="round"/>
+  </g>
 </svg>

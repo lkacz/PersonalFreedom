@@ -87,6 +87,13 @@ Required fields:
 - `adjectives` for `Common`, `Uncommon`, `Rare`, `Epic`, `Legendary`, `Celestial`
 - `suffixes` for `Common`, `Uncommon`, `Rare`, `Epic`, `Legendary`, `Celestial`
 
+Semantic constraints:
+
+1. Canonical slot keys (`Helmet`, `Chestplate`, etc.) are equip-compatibility IDs and stay fixed across all themes.
+2. `slot_display` defines story-facing meaning for each slot and must match the narrative domain.
+3. `item_types` must reinforce the same story-facing meaning as `slot_display`.
+4. Only warrior-like themes should use literal armor semantics by default; other themes should reinterpret slot meaning.
+
 Recommended field:
 
 - `set_themes` (for set-bonus theming)
@@ -227,6 +234,7 @@ Contract requirements:
 2. Missing/invalid hero SVG assets must not break rendering; procedural fallback must still render.
 3. Hero SVG layer viewBox must align with canonical hero canvas (`180x220`).
 4. Optional tier FX overlays may be provided via manifest pattern (for epic/legendary/celestial polish).
+5. Canonical slot filenames remain fixed for resolver compatibility, but art direction must follow theme-specific slot semantics from `slot_display` + `item_types`.
 
 Rarity rollout note:
 

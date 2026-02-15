@@ -1,16 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="e_case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bc9fe0"/>
+      <stop offset="100%" stop-color="#7855a7"/>
+    </linearGradient>
+    <linearGradient id="e_edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e1c8ff"/>
+      <stop offset="100%" stop-color="#9b79c7"/>
+    </linearGradient>
+    <radialGradient id="e_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e5bcff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#e5bcff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="e_sheen" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="45%" stop-color="#f3ddff" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#9c27b0" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Shield -&gt; Protection</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: epic</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: shield_epic.svg</text>
+
+  <!-- Epic suitcase shield: premium commuter case -->
+  <g id="shield_epic" transform="rotate(-8 62 149)">
+    <ellipse cx="62.2" cy="160.3" rx="10.6" ry="3.0" fill="#000000" opacity="0.17"/>
+    <rect x="51.9" y="137.9" width="20.6" height="16.7" rx="2.55" fill="url(#e_case)" stroke="#563682" stroke-width="0.98"/>
+    <rect x="53.0" y="138.9" width="18.5" height="3.7" rx="1.0" fill="#ecdafc" opacity="0.62"/>
+    <rect x="58.2" y="134.5" width="7.6" height="3.3" rx="1.1" fill="url(#e_edge)" stroke="#69489a" stroke-width="0.78"/>
+    <rect x="60.6" y="144.8" width="3.0" height="2.8" rx="0.5" fill="#f7efff" stroke="#8a67b7" stroke-width="0.5"/>
+    <rect x="56.7" y="145.2" width="2.1" height="2.2" rx="0.45" fill="#eddfff" stroke="#8f6bbb" stroke-width="0.45"/>
+    <rect x="65.5" y="145.2" width="2.1" height="2.2" rx="0.45" fill="#eddfff" stroke="#8f6bbb" stroke-width="0.45"/>
+    <path d="M54.0 148.2 L70.5 148.2" stroke="#bd95e7" stroke-width="0.65" opacity="0.6"/>
+    <path d="M54.1 151.1 L70.4 151.1" stroke="#b080df" stroke-width="0.6" opacity="0.54"/>
+    <path d="M54.8 141.3 L57.0 141.3 M67.5 141.3 L69.7 141.3" stroke="#d7b8f2" stroke-width="0.62"/>
+    <circle cx="55.0" cy="152.9" r="0.86" fill="#af8dd5"/>
+    <circle cx="69.7" cy="152.9" r="0.86" fill="#af8dd5"/>
+    <circle cx="53.6" cy="140.2" r="0.75" fill="#d9b9f5" opacity="0.72"/>
+    <circle cx="70.8" cy="140.2" r="0.75" fill="#d9b9f5" opacity="0.72"/>
+    <circle cx="53.6" cy="152.2" r="0.75" fill="#c6a2ea" opacity="0.7"/>
+    <circle cx="70.8" cy="152.2" r="0.75" fill="#c6a2ea" opacity="0.7"/>
+    <rect x="52.3" y="140.4" width="4.4" height="13.5" rx="1.2" fill="url(#e_sheen)" opacity="0.0">
+      <animate attributeName="x" values="52.3;65.4;52.3" dur="2.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.72;0" dur="2.8s" repeatCount="indefinite"/>
+    </rect>
+    <circle cx="62.2" cy="146.2" r="3.2" fill="url(#e_glow)" opacity="0.58">
+      <animate attributeName="opacity" values="0.25;0.95;0.25" dur="1.7s" repeatCount="indefinite"/>
+    </circle>
+  </g>
 </svg>
