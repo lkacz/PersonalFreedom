@@ -1,26 +1,105 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <defs>
-    <linearGradient id="u_shell" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#6e7c86"/>
-      <stop offset="100%" stop-color="#3a4851"/>
-    </linearGradient>
-    <linearGradient id="u_plate" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#9ba9b3"/>
-      <stop offset="100%" stop-color="#687985"/>
-    </linearGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+    <defs>
+        <linearGradient id="pitbullBody" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#78716c"/>
+            <stop offset="60%" stop-color="#44403c"/>
+            <stop offset="100%" stop-color="#292524"/>
+        </linearGradient>
+        <linearGradient id="pitbullChest" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#e7e5e4"/>
+            <stop offset="100%" stop-color="#a8a29e"/>
+        </linearGradient>
+        <filter id="dogShadow">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+            <feOffset dx="1" dy="2" result="offsetblur"/>
+            <feComponentTransfer>
+                <feFuncA type="linear" slope="0.4"/>
+            </feComponentTransfer>
+            <feMerge> 
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/> 
+            </feMerge>
+        </filter>
+    </defs>
+    
+    <!-- Position: Bottom Left relative to hero. Scaled 0.65 -->
+    <g transform="translate(40, 160) scale(0.65)" filter="url(#dogShadow)">
+        
+        <!-- Ground Shadow -->
+        <ellipse cx="0" cy="55" rx="45" ry="8" fill="#000" opacity="0.3">
+            <animate attributeName="rx" values="45;48;45" dur="2s" repeatCount="indefinite"/>
+        </ellipse>
 
-  <!-- Uncommon: notched fingerprint shield -->
-  <g id="shield_uncommon">
-    <path d="M35.0 105.2 L44.6 101.1 L55.8 101.1 L61.8 110.0 L59.0 145.3 L47.5 151.2 L37.0 145.0 L33.6 135.8 Z" fill="url(#u_shell)" stroke="#1a252d" stroke-width="1"/>
-    <path d="M38.2 109.2 L46.1 106.0 L54.4 106.0 L58.3 112.3 L56.0 140.8 L47.5 145.5 L40.0 140.9 L37.4 134.2 Z" fill="url(#u_plate)" opacity="0.64"/>
-    <path d="M40.8 113.8 L54.5 113.8 M40.1 121.1 L53.7 121.1 M39.4 128.4 L52.9 128.4 M38.8 135.7 L52.2 135.7" stroke="#c4ced5" stroke-width="0.68" opacity="0.52"/>
-    <path d="M42.1 136.2 Q48.0 129.4 53.9 136.2" fill="none" stroke="#4caf50" stroke-width="0.8" opacity="0.88"/>
-    <path d="M41.5 137.8 Q48.0 130.2 54.5 137.8" fill="none" stroke="#7adf7e" stroke-width="0.66" opacity="0.78"/>
-    <path d="M40.9 139.3 Q48.0 131.0 55.1 139.3" fill="none" stroke="#4caf50" stroke-width="0.56" opacity="0.64"/>
-    <rect x="57.4" y="120.2" width="4.8" height="21.8" rx="1.6" fill="#25333d"/>
-    <rect x="56.8" y="127.4" width="6.0" height="7.4" rx="2.2" fill="#7c8d9a" stroke="#2a3944" stroke-width="0.5"/>
-    <path d="M38.6 107.6 L41.6 109.0 M37.9 112.0 L41.0 113.4 M37.2 116.4 L40.4 117.8" stroke="#52c35a" stroke-width="0.5" opacity="0.75"/>
-  </g>
+        <!-- Tail (Stiff/Tense wag) -->
+        <path d="M25 -5 L45 -15" stroke="#44403c" stroke-width="5" fill="none" stroke-linecap="round">
+             <animateTransform attributeName="transform" type="rotate" values="0 25 -5; 10 25 -5; 0 25 -5" dur="0.2s" repeatCount="indefinite"/>
+        </path>
+
+        <!-- Back Leg (Left) -->
+        <path d="M-25 15 L-32 45 L-38 55 L-20 55 L-12 40 Z" fill="#44403c"/>
+        <!-- Back Leg (Right) -->
+        <path d="M25 15 L32 45 L38 55 L20 55 L12 40 Z" fill="#44403c"/>
+
+        <!-- Torso -->
+        <path d="M-35 -15 L35 -15 L30 35 L-30 35 Z" fill="url(#pitbullBody)" stroke="#292524" stroke-width="1"/>
+        
+        <!-- Chest -->
+        <path d="M-15 -10 L0 5 L15 -10 L10 35 L-10 35 Z" fill="url(#pitbullChest)"/>
+
+        <!-- Front Leg (Left) -->
+        <path d="M-25 15 L-28 45 L-35 55 L-15 55 L-12 45 L-15 15 Z" fill="url(#pitbullBody)"/>
+        <!-- Front Leg (Right) -->
+        <path d="M25 15 L28 45 L35 55 L15 55 L12 45 L15 15 Z" fill="url(#pitbullBody)"/>
+
+
+        <!-- COLLAR (On Torso) - Green for Uncommon -->
+        <g transform="translate(0, -10)"> 
+             <path d="M-30 0 Q0 15 30 0 L30 15 Q0 30 -30 15 Z" fill="#15803d" stroke="#052e16" stroke-width="1"/>
+             <!-- Collar Spikes -->
+             <circle cx="-20" cy="12" r="2" fill="#e5e5e5"/>
+             <circle cx="-7" cy="18" r="2" fill="#e5e5e5"/>
+             <circle cx="7" cy="18" r="2" fill="#e5e5e5"/>
+             <circle cx="20" cy="12" r="2" fill="#e5e5e5"/>
+        </g>
+
+        <!-- Head Group (Lowered slightly, aggressive Bob) -->
+        <g transform="translate(0, -20)">
+            <animateTransform attributeName="transform" type="translate" values="0 -20; 0 -18; 0 -20" dur="1.5s" repeatCount="indefinite"/>
+            
+            <!-- Head Block -->
+            <path d="M-25 -25 L25 -25 L20 10 L-20 10 Z" fill="url(#pitbullBody)"/>
+            
+            <!-- Ears -->
+            <path d="M-22 -25 L-28 -40 L-10 -25 Z" fill="#44403c"/>
+            <path d="M22 -25 L28 -40 L10 -25 Z" fill="#44403c"/>
+
+            <!-- Snout/Upper Lip -->
+            <path d="M-12 -5 Q0 0 12 -5 L12 10 Q0 5 -12 10 Z" fill="#d6d3d1"/>
+            
+            <!-- Mouth Gums/Lips (Formerly the collar placement) - RED -->
+            <!-- This resembles the lower jaw/gums exposed -->
+            <path d="M-14 10 Q0 20 14 10" stroke="#991b1b" stroke-width="6" fill="none" stroke-linecap="round"/>
+            
+            <!-- TEETH -->
+            <!-- Top Fangs -->
+            <path d="M-9 10 L-6 18 L-3 10 Z" fill="#fff"/> 
+            <path d="M9 10 L6 18 L3 10 Z" fill="#fff"/>
+            <!-- Bottom Teeth (Small, protruding from red gum) -->
+            <path d="M-5 13 L-3 10 L-1 13 Z" fill="#fff"/>
+            <path d="M5 13 L3 10 L1 13 Z" fill="#fff"/>
+            <path d="M0 14 L0 10 L0 14 Z" stroke="#fff" stroke-width="2"/>
+
+            <!-- Nose -->
+            <ellipse cx="0" cy="-2" rx="7" ry="4" fill="#1c1917"/>
+
+            <!-- Eyes -->
+            <path d="M-18 -12 L-8 -12 L-12 -8 Z" fill="#000"/>
+            <circle cx="-13" cy="-11" r="1.5" fill="#fff" opacity="0.8"/>
+            <path d="M-20 -15 L-5 -10" stroke="#292524" stroke-width="2" stroke-linecap="round"/>
+
+            <path d="M18 -12 L8 -12 L12 -8 Z" fill="#000"/>
+            <circle cx="13" cy="-11" r="1.5" fill="#fff" opacity="0.8"/>
+            <path d="M20 -15 L5 -10" stroke="#292524" stroke-width="2" stroke-linecap="round"/>
+        </g>
+    </g>
 </svg>

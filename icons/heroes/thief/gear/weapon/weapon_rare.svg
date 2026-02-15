@@ -1,70 +1,42 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <defs>
-    <linearGradient id="r_core_metal" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#9fb2c2"/>
-      <stop offset="44%" stop-color="#f6fbff"/>
-      <stop offset="100%" stop-color="#728a9c"/>
-    </linearGradient>
-    <linearGradient id="r_grip_body" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#1f3045"/>
-      <stop offset="100%" stop-color="#0c141d"/>
-    </linearGradient>
-    <linearGradient id="r_cartridge" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#3f5f7a"/>
-      <stop offset="100%" stop-color="#20384c"/>
-    </linearGradient>
-    <radialGradient id="r_energy_glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#86f8ff" stop-opacity="0.95"/>
-      <stop offset="100%" stop-color="#86f8ff" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="r_soft_glow" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="1.8"/>
-    </filter>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+    <defs>
+        <radialGradient id="lightBeamBlue" cx="50%" cy="0%" r="80%" fx="50%" fy="0%">
+            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="silverBody" x1="0" y1="0" x2="1" y2="0">
+             <stop offset="0%" stop-color="#94a3b8"/>
+             <stop offset="50%" stop-color="#e2e8f0"/>
+             <stop offset="100%" stop-color="#94a3b8"/>
+        </linearGradient>
+    </defs>
+    <g transform="translate(118, 144) rotate(-25) scale(0.35)">
+        <!-- Beam: Length 280, Width +/-100 -->
+        <path d="M-14 10 L-100 280 L100 280 L14 10 Z" fill="url(#lightBeamBlue)">
+             <animate attributeName="d" values="M-14 10 L-100 280 L100 280 L14 10 Z; M-14 10 L-90 270 L90 270 L14 10 Z; M-14 10 L-100 280 L100 280 L14 10 Z" dur="2s" repeatCount="indefinite"/>
+        </path>
 
-  <!-- Rare tier: reinforced electro-baton with evidence scanner pod -->
-  <!-- Grip anchored near thief right hand at x116,y138 -->
-  <g id="weapon_rare" transform="rotate(-27 116 138)">
-    <ellipse cx="116" cy="141.5" rx="12.5" ry="4" fill="#000000" opacity="0.17"/>
-
-    <!-- Primary grip -->
-    <rect x="110.6" y="124.5" width="10.8" height="49" rx="4.2" fill="url(#r_grip_body)" stroke="#091018" stroke-width="1"/>
-    <rect x="109.7" y="131.4" width="12.6" height="4.6" rx="1.9" fill="#24374f" stroke="#7e97ad" stroke-width="0.65"/>
-    <rect x="109.7" y="146.0" width="12.6" height="4.6" rx="1.9" fill="#24374f" stroke="#7e97ad" stroke-width="0.65"/>
-    <rect x="109.7" y="160.6" width="12.6" height="4.6" rx="1.9" fill="#24374f" stroke="#7e97ad" stroke-width="0.65"/>
-
-    <!-- Thumb trigger ring -->
-    <circle cx="116" cy="123.8" r="4.8" fill="#1a2b3d" stroke="#9cd0ea" stroke-width="0.85"/>
-    <circle cx="116" cy="123.8" r="2.3" fill="#86f8ff"/>
-    <circle cx="116" cy="123.8" r="7.1" fill="url(#r_energy_glow)" opacity="0.55" filter="url(#r_soft_glow)"/>
-
-    <!-- Reinforced shaft -->
-    <rect x="112.5" y="69.5" width="7.0" height="55.5" rx="2.7" fill="url(#r_core_metal)" stroke="#4a6273" stroke-width="0.95"/>
-    <path d="M113.7 73 L113.7 121.5" stroke="#ffffff" stroke-width="0.8" opacity="0.62"/>
-    <path d="M118.2 72.8 L118.2 121.5" stroke="#6f879a" stroke-width="0.75" opacity="0.6"/>
-    <rect x="111.9" y="98" width="8.2" height="7.6" rx="1.8" fill="#1b2f43" stroke="#8eb6d4" stroke-width="0.7"/>
-    <circle cx="116" cy="101.8" r="1.2" fill="#8df8ff"/>
-
-    <!-- Side scanner pod (rare silhouette upgrade) -->
-    <g transform="translate(104.8 93)">
-      <rect x="-5.7" y="0.4" width="5.7" height="17" rx="2.0" fill="url(#r_cartridge)" stroke="#6f8ca5" stroke-width="0.75"/>
-      <rect x="-5.0" y="4.0" width="4.2" height="4.3" rx="1.2" fill="#9adfff" opacity="0.75"/>
-      <path d="M-0.1 6.2 L2.1 6.2" stroke="#75f9ff" stroke-width="1.0"/>
-      <path d="M-0.1 11.1 L2.7 11.1" stroke="#75f9ff" stroke-width="0.9" opacity="0.6"/>
+        <!-- Dust Particles -->
+        <g opacity="0.6" fill="#dbeafe">
+            <circle r="1.2" cx="-40" cy="120">
+                <animate attributeName="cy" values="120;200" dur="2s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle r="1.8" cx="50" cy="180">
+                <animate attributeName="cy" values="180;260" dur="3s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/>
+            </circle>
+             <circle r="1" cx="-10" cy="220">
+                <animate attributeName="cy" values="220;280" dur="2.5s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite"/>
+            </circle>
+        </g>
+        
+        <rect x="-10" y="-30" width="20" height="50" fill="url(#silverBody)" rx="4" />
+        <path d="M-12 10 L-18 25 L18 25 L12 10 Z" fill="#64748b" />
+        <ellipse cx="0" cy="25" rx="18" ry="6" fill="#dbeafe" opacity="0.95"/>
+        <rect x="-10" y="-5" width="20" height="2" fill="#3b82f6">
+             <animate attributeName="opacity" values="0.5;1;0.5" dur="1s" repeatCount="indefinite"/>
+        </rect>
     </g>
-
-    <!-- Split emitter fork -->
-    <rect x="109.4" y="61.8" width="13.2" height="8.8" rx="2.2" fill="#2c4257" stroke="#1a2b39" stroke-width="0.9"/>
-    <rect x="110.2" y="55.6" width="4.0" height="7.0" rx="1.2" fill="#d9f3ff" stroke="#66889f" stroke-width="0.6"/>
-    <rect x="117.8" y="55.6" width="4.0" height="7.0" rx="1.2" fill="#d9f3ff" stroke="#66889f" stroke-width="0.6"/>
-    <path d="M112.2 55.8 L112.2 50.7" stroke="#7ef9ff" stroke-width="1.25"/>
-    <path d="M119.8 55.8 L119.8 50.7" stroke="#7ef9ff" stroke-width="1.25"/>
-    <path d="M112.2 50.9 Q116 47.8 119.8 50.9" fill="none" stroke="#7ef9ff" stroke-width="1.15" opacity="0.75"/>
-
-    <!-- Pommel + retention lanyard -->
-    <rect x="112.2" y="173.2" width="7.6" height="5.0" rx="1.9" fill="#0f1d2a" stroke="#6888a5" stroke-width="0.8"/>
-    <path d="M116 178 C125 184, 124 193, 116.2 197" fill="none" stroke="#233548" stroke-width="1.7" stroke-linecap="round"/>
-    <path d="M116 178 C123.2 184, 123.0 191.3, 116.8 194.7" fill="none" stroke="#8cb2d2" stroke-width="0.58" opacity="0.58"/>
-  </g>
 </svg>

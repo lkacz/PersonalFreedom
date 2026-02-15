@@ -1,122 +1,115 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <defs>
-    <linearGradient id="search_shell" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#718191"/>
-      <stop offset="58%" stop-color="#465968"/>
-      <stop offset="100%" stop-color="#2b3a46"/>
-    </linearGradient>
-    <linearGradient id="search_palm" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#99a8b8"/>
-      <stop offset="100%" stop-color="#5d7386"/>
-    </linearGradient>
-    <linearGradient id="search_trim" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#ffe2ae"/>
-      <stop offset="100%" stop-color="#ff9a1e"/>
-    </linearGradient>
-    <radialGradient id="search_lens" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#fff8de"/>
-      <stop offset="45%" stop-color="#ffd88e"/>
-      <stop offset="100%" stop-color="#f39a22"/>
-    </radialGradient>
-    <radialGradient id="search_orange_glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffe6b2" stop-opacity="0.94"/>
-      <stop offset="58%" stop-color="#ffb245" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="#ffa726" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="forensic_cool" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#97e9ff"/>
-      <stop offset="100%" stop-color="#5bc9e9"/>
-    </linearGradient>
-    <linearGradient id="pursuit_hot" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#ffd79a"/>
-      <stop offset="100%" stop-color="#ff8f1f"/>
-    </linearGradient>
-    <filter id="search_soft_glow" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="0.7"/>
-    </filter>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+    <defs>
+        <filter id="fireGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+        <linearGradient id="magmaScale" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0%" stop-color="#FF4500" /> <!-- OrangeRed -->
+            <stop offset="50%" stop-color="#FF8C00" /> <!-- DarkOrange -->
+            <stop offset="100%" stop-color="#FFA500" /> <!-- Orange -->
+        </linearGradient>
+    </defs>
+    
+    <g id="hero_body_proxy" transform="translate(90, 205)">
+        <animateTransform attributeName="transform" type="scale"
+            values="1 1; 1.005 0.995; 1 1"
+            dur="4s" repeatCount="indefinite" additive="sum"/>
+        <g transform="translate(-90, -205)">
+        
+            <!-- STEAM / FIRE FX LAYER (Behind hands) -->
+            <g opacity="0.6" filter="url(#fireGlow)">
+                 <!-- Left Hand Rising Steam/Embers -->
+                 <g transform="translate(65, 140)">
+                    <circle r="3" fill="#FF4500" opacity="0">
+                        <animateTransform attributeName="transform" type="translate" values="-5 0; -8 -30" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+                        <animate attributeName="opacity" values="0;0.8;0" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+                        <animate attributeName="r" values="3;1;0" dur="1.5s" repeatCount="indefinite" begin="0s"/>
+                    </circle>
+                    <circle r="2" fill="#FFA500" opacity="0">
+                        <animateTransform attributeName="transform" type="translate" values="5 5; 8 -25" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+                        <animate attributeName="opacity" values="0;0.6;0" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+                         <animate attributeName="r" values="2;4;0" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+                    </circle>
+                    <circle r="4" fill="#FF8C00" opacity="0">
+                        <animateTransform attributeName="transform" type="translate" values="0 0; -2 -40" dur="2.2s" repeatCount="indefinite" begin="0.2s"/>
+                        <animate attributeName="opacity" values="0;0.5;0" dur="2.2s" repeatCount="indefinite" begin="0.2s"/>
+                    </circle>
+                 </g>
+                 
+                 <!-- Right Hand Rising Steam/Embers -->
+                 <g transform="translate(115, 140)">
+                    <circle r="3" fill="#FF4500" opacity="0">
+                        <animateTransform attributeName="transform" type="translate" values="-5 0; -2 -35" dur="1.6s" repeatCount="indefinite" begin="0.1s"/>
+                        <animate attributeName="opacity" values="0;0.8;0" dur="1.6s" repeatCount="indefinite" begin="0.1s"/>
+                        <animate attributeName="r" values="3;1;0" dur="1.6s" repeatCount="indefinite" begin="0.1s"/>
+                    </circle>
+                    <circle r="2" fill="#FFA500" opacity="0">
+                        <animateTransform attributeName="transform" type="translate" values="6 5; 3 -20" dur="1.4s" repeatCount="indefinite" begin="0.6s"/>
+                        <animate attributeName="opacity" values="0;0.6;0" dur="1.4s" repeatCount="indefinite" begin="0.6s"/>
+                        <animate attributeName="r" values="2;4;0" dur="1.4s" repeatCount="indefinite" begin="0.6s"/>
+                    </circle>
+                     <circle r="4" fill="#FF8C00" opacity="0">
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 5 -45" dur="2.5s" repeatCount="indefinite" begin="0.3s"/>
+                        <animate attributeName="opacity" values="0;0.5;0" dur="2.5s" repeatCount="indefinite" begin="0.3s"/>
+                    </circle>
+                 </g>
+            </g>
 
-  <!-- Legendary: Search Gloves (asymmetry: left forensic, right pursuit) -->
-  <g id="gauntlets_legendary">
-    <!-- LEFT: Forensic glove -->
-    <path d="M56.2 112.0 Q52.8 123.6 57.4 135.8 L67.3 132.7 Q70.0 123.8 66.9 112.0 Z" fill="url(#search_shell)" stroke="#162028" stroke-width="0.9"/>
-    <path d="M56.6 130.8 L67.9 130.8 L67.2 134.8 L57.3 134.8 Z" fill="url(#search_trim)" opacity="0.95"/>
-    <path d="M57.2 130.3 L67.3 130.3" stroke="#ffd9a1" stroke-width="0.7" opacity="0.9"/>
-    <circle cx="64" cy="138" r="4.9" fill="url(#search_palm)" stroke="#162028" stroke-width="0.9"/>
-    <path d="M60.7 136.5 L67.3 136.5 L66.5 140.6 L61.5 140.6 Z" fill="#6a7d8d" stroke="#324453" stroke-width="0.5" opacity="0.92"/>
+            <!-- LEFT HAND (Glove) -->
+            <g stroke="#FFD700" stroke-width="0.5" stroke-opacity="0.5"> <!-- Gold Outline for "Hot" Look -->
+                <animateTransform attributeName="transform" type="rotate" values="0 65 140; 1 65 140; 0 65 140" dur="2s" repeatCount="indefinite"/>
+                <!-- Base Hand -->
+                <path d="M60 136 Q58 140 60 145 Q62 148 66 148 Q70 148 71 144 Q72 140 70 136 Z" fill="url(#magmaScale)"/>
+                <!-- Fingers Base -->
+                <g>
+                   <animateTransform attributeName="transform" type="translate" values="0 0; 0.2 0.3; 0 0" dur="1.5s" repeatCount="indefinite"/>
+                   <path d="M60 145 Q59 150 61 152 Q63 150 62 147" fill="url(#magmaScale)"/>
+                   <path d="M63 147 Q62 152 64 154 Q66 152 65 148" fill="url(#magmaScale)"/>
+                   <path d="M66 147 Q65 151 67 153 Q69 151 68 147" fill="url(#magmaScale)"/>
+                </g>
+                <!-- Highlights & Geometry -->
+                <g fill="#FFFF00" opacity="0.6" filter="url(#fireGlow)">
+                     <polygon points="62,138 65,137 68,138 67,141 63,141" />
+                     <g>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0.2 0.3; 0 0" dur="1.5s" repeatCount="indefinite"/>
+                        <polygon points="60.5,146 61.5,146 61.2,150 60.2,149" />
+                        <polygon points="63.5,148 64.5,148 64.2,152 63.2,151" />
+                        <polygon points="66.5,148 67.5,148 67.2,152 66.2,151" />
+                     </g>
+                </g>
+                 <g fill="#8B0000" opacity="0.3">
+                    <polygon points="70,136 72,140 71,144 68,145 67,140"/>
+                 </g>
+            </g>
 
-    <circle cx="64" cy="133.0" r="1.55" fill="url(#search_lens)"/>
-    <circle cx="64" cy="133.0" r="3.3" fill="url(#search_orange_glow)" opacity="0.7">
-      <animate attributeName="r" values="2.8;4.1;2.8" dur="2.0s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.28;0.88;0.28" dur="2.0s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="64" cy="133.0" r="2.35" fill="none" stroke="#ffbc5a" stroke-width="0.72" opacity="0.95"/>
-    <g transform="translate(64 133)">
-      <g>
-        <animateTransform attributeName="transform" type="rotate" values="0;360" dur="5.6s" repeatCount="indefinite"/>
-        <path d="M-3.9 0 L-2.8 0 M3.9 0 L2.8 0 M0 -3.9 L0 -2.8 M0 3.9 L0 2.8" stroke="#ffd998" stroke-width="0.55" stroke-linecap="round" opacity="0.9"/>
-      </g>
-      <circle cx="0" cy="0" r="0.85" fill="#fff1cc"/>
+            <!-- RIGHT HAND (Glove) -->
+            <g stroke="#FFD700" stroke-width="0.5" stroke-opacity="0.5">
+                <animateTransform attributeName="transform" type="rotate" values="0 115 140; -1 115 140; 0 115 140" dur="2.2s" repeatCount="indefinite"/>
+                <!-- Base Hand -->
+                <path d="M120 136 Q122 140 120 145 Q118 148 114 148 Q110 148 109 144 Q108 140 110 136 Z" fill="url(#magmaScale)"/>
+                <!-- Fingers Base -->
+                <g>
+                   <animateTransform attributeName="transform" type="translate" values="0 0; -0.2 0.3; 0 0" dur="1.6s" repeatCount="indefinite"/>
+                   <path d="M120 145 Q121 150 119 152 Q117 150 118 147" fill="url(#magmaScale)"/>
+                   <path d="M117 147 Q118 152 116 154 Q114 152 115 148" fill="url(#magmaScale)"/>
+                   <path d="M114 147 Q115 151 113 153 Q111 151 112 147" fill="url(#magmaScale)"/>
+                </g>
+                <!-- Highlights & Geometry -->
+                <g fill="#FFFF00" opacity="0.6" filter="url(#fireGlow)">
+                     <polygon points="118,138 115,137 112,138 113,141 117,141" />
+                     <g>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; -0.2 0.3; 0 0" dur="1.6s" repeatCount="indefinite"/>
+                        <polygon points="119.5,146 118.5,146 118.8,150 119.8,149" />
+                        <polygon points="116.5,148 115.5,148 115.8,152 116.8,151" />
+                        <polygon points="113.5,148 112.5,148 112.8,152 113.8,151" />
+                     </g>
+                </g>
+                 <g fill="#8B0000" opacity="0.3">
+                    <polygon points="110,136 108,140 109,144 112,145 113,140"/>
+                 </g>
+            </g>
+
+        </g>
     </g>
-    <circle cx="64" cy="133.0" r="4.55" fill="none" stroke="#ffb33d" stroke-width="0.55" stroke-dasharray="1.0 1.5" opacity="0.78">
-      <animate attributeName="stroke-dashoffset" values="0;5" dur="2.2s" repeatCount="indefinite"/>
-    </circle>
-    <!-- forensic evidence motifs -->
-    <path d="M60.8 129.6 L67.2 129.6" stroke="#ffe7bd" stroke-width="0.72" opacity="0.9"/>
-    <path d="M60.5 139.9 L67.5 139.9" stroke="#ffc978" stroke-width="0.66" opacity="0.9"/>
-    <path d="M60.6 136.9 Q64.0 133.6 67.4 136.9" fill="none" stroke="url(#forensic_cool)" stroke-width="0.52" opacity="0.86"/>
-    <path d="M60.2 137.9 Q64.0 134.0 67.8 137.9" fill="none" stroke="url(#forensic_cool)" stroke-width="0.48" opacity="0.75"/>
-    <path d="M59.8 138.9 Q64.0 134.4 68.2 138.9" fill="none" stroke="url(#forensic_cool)" stroke-width="0.45" opacity="0.65">
-      <animate attributeName="opacity" values="0.35;0.8;0.35" dur="2.4s" repeatCount="indefinite"/>
-    </path>
-    <path d="M57.8 117.5 L59.4 118.2 M57.6 120.3 L59.2 121.0 M57.5 123.1 L59.0 123.8" stroke="url(#forensic_cool)" stroke-width="0.45" opacity="0.75"/>
-    <circle cx="59.7" cy="133.9" r="0.62" fill="#ffd07a" opacity="0.0" filter="url(#search_soft_glow)">
-      <animate attributeName="opacity" values="0;0.9;0" dur="2.0s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="68.1" cy="132.1" r="0.55" fill="#ffc15c" opacity="0.0" filter="url(#search_soft_glow)">
-      <animate attributeName="opacity" values="0;0.85;0" dur="1.7s" repeatCount="indefinite"/>
-    </circle>
-
-    <!-- RIGHT: Pursuit glove -->
-    <path d="M123.8 112.0 Q127.2 123.6 122.6 135.8 L112.7 132.7 Q110.0 123.8 113.1 112.0 Z" fill="url(#search_shell)" stroke="#162028" stroke-width="0.9"/>
-    <path d="M112.1 130.8 L123.4 130.8 L122.7 134.8 L112.8 134.8 Z" fill="url(#search_trim)" opacity="0.95"/>
-    <path d="M112.7 130.3 L122.8 130.3" stroke="#ffd9a1" stroke-width="0.7" opacity="0.9"/>
-    <circle cx="116" cy="138" r="4.9" fill="url(#search_palm)" stroke="#162028" stroke-width="0.9"/>
-    <path d="M112.7 136.5 L119.3 136.5 L118.5 140.6 L113.5 140.6 Z" fill="#6a7d8d" stroke="#324453" stroke-width="0.5" opacity="0.92"/>
-
-    <circle cx="116" cy="133.0" r="1.55" fill="url(#search_lens)"/>
-    <circle cx="116" cy="133.0" r="3.3" fill="url(#search_orange_glow)" opacity="0.7">
-      <animate attributeName="r" values="2.8;4.1;2.8" dur="2.3s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.28;0.88;0.28" dur="2.3s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="116" cy="133.0" r="2.35" fill="none" stroke="#ffbc5a" stroke-width="0.72" opacity="0.95"/>
-    <g transform="translate(116 133)">
-      <g>
-        <animateTransform attributeName="transform" type="rotate" values="360;0" dur="6.1s" repeatCount="indefinite"/>
-        <path d="M-3.9 0 L-2.8 0 M3.9 0 L2.8 0 M0 -3.9 L0 -2.8 M0 3.9 L0 2.8" stroke="#ffd998" stroke-width="0.55" stroke-linecap="round" opacity="0.9"/>
-      </g>
-      <circle cx="0" cy="0" r="0.85" fill="#fff1cc"/>
-    </g>
-    <circle cx="116" cy="133.0" r="4.55" fill="none" stroke="#ffb33d" stroke-width="0.55" stroke-dasharray="1.0 1.5" opacity="0.78">
-      <animate attributeName="stroke-dashoffset" values="5;0" dur="2.5s" repeatCount="indefinite"/>
-    </circle>
-    <!-- pursuit motifs -->
-    <path d="M112.8 129.6 L119.2 129.6" stroke="#ffe7bd" stroke-width="0.72" opacity="0.9"/>
-    <path d="M112.5 139.9 L119.5 139.9" stroke="#ffc978" stroke-width="0.66" opacity="0.9"/>
-    <path d="M113.0 131.5 L114.8 132.9 L113.0 134.3 M115.0 131.5 L116.8 132.9 L115.0 134.3 M117.0 131.5 L118.8 132.9 L117.0 134.3" fill="none" stroke="url(#pursuit_hot)" stroke-width="0.55" opacity="0.86"/>
-    <circle cx="116" cy="131.2" r="4.2" fill="none" stroke="url(#pursuit_hot)" stroke-width="0.45" stroke-dasharray="0.9 1.5" opacity="0.66">
-      <animate attributeName="stroke-dashoffset" values="0;5" dur="1.8s" repeatCount="indefinite"/>
-    </circle>
-    <circle cy="131.2" r="0.55" fill="#ffe7bb" opacity="0.85">
-      <animate attributeName="cx" values="112.6;119.4;112.6" dur="1.8s" repeatCount="indefinite"/>
-    </circle>
-    <path d="M120.3 119.1 L122.6 118.6 M120.8 121.1 L123.1 120.6 M121.4 123.1 L123.7 122.6" stroke="url(#pursuit_hot)" stroke-width="0.45" opacity="0.72"/>
-    <circle cx="111.7" cy="132.2" r="0.55" fill="#ffc15c" opacity="0.0" filter="url(#search_soft_glow)">
-      <animate attributeName="opacity" values="0;0.85;0" dur="1.9s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="120.3" cy="133.8" r="0.62" fill="#ffd07a" opacity="0.0" filter="url(#search_soft_glow)">
-      <animate attributeName="opacity" values="0;0.9;0" dur="2.2s" repeatCount="indefinite"/>
-    </circle>
-  </g>
 </svg>

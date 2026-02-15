@@ -11,7 +11,6 @@ from pathlib import Path
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtSvgWidgets import QSvgWidget
 from lottery_animation import LotteryRollDialog
-import random
 from typing import Callable, Optional, Dict, Any
 from app_utils import get_app_dir
 from styled_dialog import styled_info, styled_warning, styled_error, styled_question
@@ -679,15 +678,29 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         has_chad_exceptional = self.chad_interaction_data.get("has_chad_exceptional", False)
         add_coins_callback = self.chad_interaction_data.get("add_coins_callback")
         give_entity_callback = self.chad_interaction_data.get("give_entity_callback")
-        
-        # 20% chance for Chad to appear if user has any version of Chad
-        roll = random.random()
-        chad_appears = roll < 0.20
-        
-        if has_chad_exceptional and chad_appears and add_coins_callback:
+
+        chad_roll = None
+        try:
+            from gamification import roll_chad_skip_interaction
+            chad_roll = roll_chad_skip_interaction(
+                has_chad_normal=has_chad_normal,
+                has_chad_exceptional=has_chad_exceptional,
+            )
+        except Exception:
+            chad_roll = {
+                "appears": False,
+                "variant": "none",
+                "coin_amount": None,
+                "gift_on_decline": False,
+            }
+
+        variant = chad_roll.get("variant", "none")
+        appears = chad_roll.get("appears", False)
+
+        if variant == "exceptional" and appears and add_coins_callback:
             # Exceptional Chad offers coins from his "banking system hack"
-            self._show_exceptional_chad_offer(add_coins_callback, give_entity_callback)
-        elif has_chad_normal and chad_appears:
+            self._show_exceptional_chad_offer(add_coins_callback, give_entity_callback, chad_roll)
+        elif variant == "normal" and appears:
             # Normal Chad tells a joke about failure
             self._show_normal_chad_joke()
             self.reject()  # Still skip after the joke
@@ -751,9 +764,12 @@ class EntityEncounterDialog(QtWidgets.QDialog):
         
         dialog.exec_()
     
-    def _show_exceptional_chad_offer(self, add_coins_callback, give_entity_callback):
+    def _show_exceptional_chad_offer(self, add_coins_callback, give_entity_callback, chad_roll: Optional[dict] = None):
         """Show exceptional Chad's offer of coins from his 'banking system hack'."""
-        coin_amount = random.randint(100, 200)
+        chad_roll = chad_roll or {}
+        coin_amount = chad_roll.get("coin_amount")
+        if coin_amount is None:
+            coin_amount = 100
         
         # Create custom dialog with mini-card
         dialog = QtWidgets.QDialog(self)
@@ -866,8 +882,9 @@ class EntityEncounterDialog(QtWidgets.QDialog):
                 pass  # Silently fail if callback fails
             self.reject()  # Still skip the entity
         else:
-            # User declined - 20% chance Chad gives the entity anyway
-            if give_entity_callback and random.random() < 0.20:
+            # User declined - use backend pre-rolled gift outcome.
+            gift_on_decline = bool(chad_roll.get("gift_on_decline", False))
+            if give_entity_callback and gift_on_decline:
                 self._show_chad_gift_surprise(give_entity_callback)
             else:
                 # Just skip normally
@@ -1148,16 +1165,21 @@ def show_entity_encounter(entity, join_probability: float,
     # Prefer the actual roll used by the bond logic if available.
     prob_used = result.get("probability", join_probability)
     roll = result.get("roll")
+    try:
+        roll = float(roll) if roll is not None else None
+    except (TypeError, ValueError):
+        roll = None
+
     if roll is None:
-        # If success, we need a roll < probability
-        # If fail, we need a roll >= probability
+        # Deterministic fallback for legacy/error paths where backend did not return roll.
+        # Keep visualization aligned with already-resolved success/failure outcome.
         eps = 0.0001
         if success:
-            upper = max(eps, prob_used - eps)
-            roll = random.uniform(0.0, upper)
+            roll = prob_used - eps
         else:
-            lower = min(1.0 - eps, prob_used + eps)
-            roll = random.uniform(lower, 1.0)
+            roll = prob_used + eps
+
+    roll = max(0.0, min(1.0, roll))
     
     # 4. Show the dramatic lottery animation
     # For exceptional entities, use the playful exceptional_name if available

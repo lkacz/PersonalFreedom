@@ -1,28 +1,46 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <linearGradient id="u_back" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#40515f"/>
-      <stop offset="100%" stop-color="#1f2b35"/>
-    </linearGradient>
-    <linearGradient id="u_side" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#354551"/>
-      <stop offset="100%" stop-color="#182128"/>
-    </linearGradient>
+    <!-- Hooligan Scarf Patterns (Uncommon: Green) -->
+    <pattern id="stripeGreen" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">
+      <rect width="5" height="10" fill="#2E7D32"/>
+      <rect x="5" width="5" height="10" fill="#4CAF50"/>
+    </pattern>
+    <filter id="fabricShadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-opacity="0.4"/>
+    </filter>
   </defs>
 
-  <!-- Uncommon cloak: fitted drape + subtle green tactical stitch accents -->
-  <g id="cloak_uncommon">
-    <path d="M70 84 Q90 76 110 84 L121 176 Q90 189 59 176 Z" fill="url(#u_back)" opacity="0.52"/>
-    <path d="M68 84 L82 90 L76 183 L52 176 Z" fill="url(#u_side)" opacity="0.79"/>
-    <path d="M112 84 L98 90 L104 183 L128 176 Z" fill="url(#u_side)" opacity="0.79"/>
+  <g id="scarf_uncommon" transform="translate(0, -6)">
+    
+    <!-- Scarf - Tail 1 (Hanging Left) -->
+    <path d="M88 95 Q80 120 70 130 L80 135 Q86 120 90 98" fill="url(#stripeGreen)" stroke="#1B5E20" stroke-width="0.5" filter="url(#fabricShadow)">
+        <animate attributeName="d" values="M88 95 Q80 120 70 130 L80 135 Q86 120 90 98; M88 95 Q75 122 65 132 L75 137 Q84 120 90 98; M88 95 Q80 120 70 130 L80 135 Q86 120 90 98" dur="2s" repeatCount="indefinite"/>
+    </path>
 
-    <path d="M68 85 Q90 79 112 85" fill="none" stroke="#4caf50" stroke-width="1.0" opacity="0.88"/>
-    <path d="M54 176 L76 183" fill="none" stroke="#4caf50" stroke-width="0.8" opacity="0.8"/>
-    <path d="M126 176 L104 183" fill="none" stroke="#4caf50" stroke-width="0.8" opacity="0.8"/>
-    <path d="M62 101 L75 104" fill="none" stroke="#4caf50" stroke-width="0.7" stroke-dasharray="1.4 1.2" opacity="0.78"/>
-    <path d="M118 101 L105 104" fill="none" stroke="#4caf50" stroke-width="0.7" stroke-dasharray="1.4 1.2" opacity="0.78"/>
-    <rect x="87.6" y="87.4" width="4.8" height="2.2" rx="0.6" fill="#4caf50" opacity="0.92"/>
-    <circle cx="90" cy="88.5" r="1.6" fill="#4caf50" opacity="0.9"/>
+    <!-- Scarf - Tail 2 (Hanging Right) -->
+    <path d="M92 95 Q100 120 110 125 L100 130 Q94 120 90 98" fill="url(#stripeGreen)" stroke="#1B5E20" stroke-width="0.5" filter="url(#fabricShadow)">
+        <animate attributeName="d" values="M92 95 Q100 120 110 125 L100 130 Q94 120 90 98; M92 95 Q105 118 115 123 L105 128 Q96 120 90 98; M92 95 Q100 120 110 125 L100 130 Q94 120 90 98" dur="2.3s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Fringes on Tail 1 -->
+    <g transform="translate(70, 130) rotate(20)">
+         <line y2="4" stroke="#388E3C" stroke-width="1"/>
+         <line x1="3" y2="4" stroke="#388E3C" stroke-width="1"/>
+         <line x1="6" y2="4" stroke="#388E3C" stroke-width="1"/>
+    </g>
+
+    <!-- Fringes on Tail 2 -->
+    <g transform="translate(110, 125) rotate(-20)">
+         <line y2="4" stroke="#388E3C" stroke-width="1"/>
+         <line x1="-3" y2="4" stroke="#388E3C" stroke-width="1"/>
+         <line x1="-6" y2="4" stroke="#388E3C" stroke-width="1"/>
+    </g>
+
+    <!-- Neck Loop -->
+    <path d="M75 80 Q90 90 105 80 Q112 86 108 92 Q90 98 72 92 Q68 86 75 80 Z" fill="url(#stripeGreen)" stroke="#1B5E20" stroke-width="0.5" filter="url(#fabricShadow)"/>
+    
+    <!-- Knot / Crossover Bundle -->
+    <path d="M85 88 Q90 94 95 88 Q95 85 85 85 Z" fill="#388E3C" />
+    
   </g>
 </svg>

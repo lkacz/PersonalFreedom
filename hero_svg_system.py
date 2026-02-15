@@ -110,6 +110,7 @@ _ANCHOR_FACTORS: Dict[str, tuple[float, float]] = {
 
 _renderer_cache: Dict[str, tuple[float, QSvgRenderer]] = {}
 _composition_profile_cache: Dict[str, tuple[float, dict]] = {}
+_renderer_active_ref_counts: Dict[str, int] = {}
 
 
 @dataclass(frozen=True)
@@ -687,6 +688,100 @@ def clear_hero_svg_cache() -> None:
     """Clear renderer cache (useful for tooling/hot-reload workflows)."""
     _renderer_cache.clear()
     _composition_profile_cache.clear()
+    _renderer_active_ref_counts.clear()
+
+
+def _set_renderer_animation_enabled(renderer: QSvgRenderer, enabled: bool) -> None:
+    """Best-effort animation toggle for a renderer."""
+    try:
+        renderer.setAnimationEnabled(bool(enabled))
+    except Exception:
+        # Non-animated documents or older bindings may reject this call.
+        pass
+
+
+def get_hero_svg_layer_renderers(
+    story_theme: str,
+    equipped: Optional[dict],
+    power_tier: Optional[str] = None,
+    base_dir: Optional[Path] = None,
+) -> list[tuple[str, QSvgRenderer]]:
+    """
+    Resolve and return unique renderer objects for the hero's active layer plan.
+
+    Returns:
+        List of `(absolute_path, renderer)` tuples.
+    """
+    manifest = load_hero_manifest(story_theme, base_dir=base_dir)
+    layers = build_hero_layer_plan(
+        story_theme=story_theme,
+        equipped=equipped,
+        power_tier=power_tier,
+        base_dir=base_dir,
+        manifest=manifest,
+    )
+    if not layers:
+        return []
+
+    refs: list[tuple[str, QSvgRenderer]] = []
+    seen: set[str] = set()
+    for layer in layers:
+        abs_path = str(layer.path.resolve())
+        if abs_path in seen:
+            continue
+        renderer = _get_cached_renderer(layer.path)
+        if not renderer:
+            continue
+        seen.add(abs_path)
+        refs.append((abs_path, renderer))
+    return refs
+
+
+def retain_hero_svg_renderer_paths(paths: Iterable[str]) -> None:
+    """
+    Mark renderer paths as actively used by visible hero canvases.
+
+    Animated renderers are enabled while at least one active consumer exists.
+    """
+    for abs_path in {str(p) for p in paths if p}:
+        count = _renderer_active_ref_counts.get(abs_path, 0) + 1
+        _renderer_active_ref_counts[abs_path] = count
+        cached = _renderer_cache.get(abs_path)
+        if cached:
+            _set_renderer_animation_enabled(cached[1], True)
+
+
+def release_hero_svg_renderer_paths(paths: Iterable[str]) -> None:
+    """
+    Release active usage refs for renderer paths.
+
+    When ref-count reaches zero, renderer animation is paused.
+    """
+    for abs_path in {str(p) for p in paths if p}:
+        current = _renderer_active_ref_counts.get(abs_path, 0)
+        if current <= 1:
+            _renderer_active_ref_counts.pop(abs_path, None)
+            cached = _renderer_cache.get(abs_path)
+            if cached:
+                _set_renderer_animation_enabled(cached[1], False)
+        else:
+            _renderer_active_ref_counts[abs_path] = current - 1
+
+
+def evict_inactive_hero_svg_renderers() -> int:
+    """
+    Remove cached renderers that are no longer retained by active canvases.
+
+    Returns:
+        Number of renderer instances evicted from cache.
+    """
+    removed = 0
+    for abs_path in list(_renderer_cache.keys()):
+        if _renderer_active_ref_counts.get(abs_path, 0) > 0:
+            continue
+        _renderer_cache.pop(abs_path, None)
+        removed += 1
+    return removed
 
 
 def _get_cached_renderer(path: Path) -> Optional[QSvgRenderer]:
@@ -698,13 +793,19 @@ def _get_cached_renderer(path: Path) -> Optional[QSvgRenderer]:
 
     cached = _renderer_cache.get(abs_path)
     if cached and cached[0] == mtime:
-        return cached[1]
+        renderer = cached[1]
+        _set_renderer_animation_enabled(
+            renderer,
+            _renderer_active_ref_counts.get(abs_path, 0) > 0,
+        )
+        return renderer
 
     renderer = QSvgRenderer(abs_path)
     if not renderer.isValid():
         logger.warning("Invalid hero SVG asset: %s", abs_path)
         return None
 
+    _set_renderer_animation_enabled(renderer, _renderer_active_ref_counts.get(abs_path, 0) > 0)
     _renderer_cache[abs_path] = (mtime, renderer)
     return renderer
 

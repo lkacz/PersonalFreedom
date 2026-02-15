@@ -7,6 +7,7 @@ the Entitidex system with the rest of the application.
 """
 
 from dataclasses import dataclass
+import logging
 from typing import Optional, Dict, Any, Tuple, List
 
 from .entity import Entity, EntityCapture
@@ -26,6 +27,8 @@ from .encounter_system import (
     get_encounter_flavor_text,
     get_next_recommended_entity,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -235,7 +238,10 @@ class EntitidexManager:
             from .entity_perks import PerkType
             encounter_bonus = self.active_perks.get(PerkType.ENCOUNTER_CHANCE, 0)
             if capture_perk > 0:
-                print(f"[Entity Perks] ✨ Capture boosted by +{capture_perk}% from collected entities!")
+                logger.debug(
+                    "[Entity Perks] Capture boosted by +%s%% from collected entities",
+                    capture_perk,
+                )
             if encounter_bonus > 0:
                 encounter_perk = encounter_bonus
         

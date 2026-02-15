@@ -1,37 +1,52 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
   <defs>
-    <radialGradient id="epicGlow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0%" stop-color="#3d5572" stop-opacity="0"/>
-      <stop offset="70%" stop-color="#f87171" stop-opacity="0.2"/>
-      <stop offset="100%" stop-color="#f87171" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="scannerBeam" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#f87171" stop-opacity="0"/>
-        <stop offset="50%" stop-color="#f87171" stop-opacity="0.4"/>
-        <stop offset="100%" stop-color="#f87171" stop-opacity="0"/>
+    <!-- Cloud Gradient -->
+    <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4B5563" />
+      <stop offset="100%" stop-color="#1F2937" />
     </linearGradient>
+    
+    <!-- Lightning Gradient -->
+    <linearGradient id="boltGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="50%" stop-color="#FFFF00" />
+      <stop offset="100%" stop-color="#FEF08A" />
+    </linearGradient>
+
+    <!-- Glow Filter for Lightning -->
+    <filter id="lightningGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
   </defs>
 
-  <!-- Background Pulse -->
-  <circle cx="90" cy="110" r="80" fill="url(#epicGlow)">
-      <animate attributeName="r" values="75;85;75" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="opacity" values="0.6;0.3;0.6" dur="3s" repeatCount="indefinite"/>
-  </circle>
+  <!-- Clouds Background Layer -->
+  <path d="M20 60 Q30 40 50 45 Q55 30 75 35 Q90 20 110 35 Q130 25 145 40 Q160 35 170 55 L160 70 Q140 85 120 75 Q100 90 80 80 Q60 95 40 85 Q20 90 10 70 Z" fill="url(#cloudGrad)" opacity="0.9">
+    <animateTransform attributeName="transform" type="translate" values="-5,0; 5,0; -5,0" dur="8s" repeatCount="indefinite" />
+  </path>
+  
+  <path d="M40 70 Q50 50 70 55 Q75 40 95 45 Q110 30 130 45 Q150 35 165 50 Q180 45 190 65 L180 80 Q160 95 140 85 Q120 100 100 90 Q80 105 60 95 Q40 100 30 80 Z" fill="#374151" opacity="0.7" transform="translate(-20, 20)">
+     <animateTransform attributeName="transform" type="translate" values="-20,20; -10,20; -20,20" dur="10s" repeatCount="indefinite" />
+  </path>
 
-  <!-- Rotating Radar/Scanner Rings -->
-  <g transform="translate(90, 110)">
-      <circle r="70" fill="none" stroke="#f87171" stroke-width="1" stroke-dasharray="20 40" opacity="0.4">
-          <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="10s" repeatCount="indefinite"/>
-      </circle>
-      <circle r="60" fill="none" stroke="#f87171" stroke-width="1.5" stroke-dasharray="10 30" opacity="0.3">
-           <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="15s" repeatCount="indefinite"/>
-      </circle>
-  </g>
+  <!-- Lightning Bolts -->
+  <!-- Bolt 1 (Left) -->
+  <path d="M60 80 L40 120 L55 125 L35 180" fill="none" stroke="url(#boltGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" filter="url(#lightningGlow)" opacity="0">
+    <!-- Flash Animation: Quick burst, wait, repeat -->
+    <animate attributeName="opacity" values="0; 1; 0; 0; 0; 0" dur="3s" repeatCount="indefinite" begin="0s" />
+    <animate attributeName="d" values="M60 80 L40 120 L55 125 L35 180; M62 80 L42 120 L57 125 L37 180; M60 80 L40 120 L55 125 L35 180" dur="0.2s" repeatCount="indefinite" />
+  </path>
 
-  <!-- Vertical Scanline -->
-  <rect x="20" y="0" width="140" height="4" fill="url(#scannerBeam)" opacity="0.3">
-       <animate attributeName="y" values="0;220;0" dur="5s" repeatCount="indefinite"/>
-  </rect>
+  <!-- Bolt 2 (Right, delayed) -->
+  <path d="M120 75 L140 110 L125 115 L150 170" fill="none" stroke="url(#boltGrad)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#lightningGlow)" opacity="0">
+    <animate attributeName="opacity" values="0; 0; 0; 1; 0; 0" dur="4s" repeatCount="indefinite" begin="1.5s" />
+  </path>
 
+  <!-- Ground Flash glow -->
+  <ellipse cx="90" cy="180" rx="60" ry="10" fill="#FFFF00" opacity="0">
+      <animate attributeName="opacity" values="0; 0.2; 0; 0.2; 0; 0" dur="3s" repeatCount="indefinite" />
+  </ellipse>
 </svg>

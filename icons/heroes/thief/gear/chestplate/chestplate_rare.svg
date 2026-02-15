@@ -1,51 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-<defs>
-    <linearGradient id="metalPlate" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#424242"/>
-        <stop offset="30%" stop-color="#757575"/>
-        <stop offset="50%" stop-color="#9E9E9E"/> 
-        <stop offset="100%" stop-color="#212121"/>
-    </linearGradient>
-    <radialGradient id="rivetGrad" cx="30%" cy="30%" r="70%">
-        <stop offset="0%" stop-color="#CFD8DC"/>
-        <stop offset="100%" stop-color="#546E7A"/>
-    </radialGradient>
-    <filter id="scratchMetal">
-        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" result="noise"/>
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
-    <filter id="rivetShadow"><feDropShadow dx="0.5" dy="0.5" stdDeviation="0.5" flood-opacity="0.5"/></filter>
-</defs>
-<g transform="translate(36, 43) scale(0.6)">
-    <!-- Base Undersuit -->
-    <path d="M65 80 L115 80 L112 140 L68 140 Z" fill="#263238"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+    <!-- Rare Chestplate: Tiny Pin -->
+    <defs>
+        <filter id="badgeShadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0.2" dy="0.5" stdDeviation="0.2" flood-color="#000" flood-opacity="0.5"/>
+        </filter>
+        <radialGradient id="glintRare" cx="30%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#64B5F6"/>
+            <stop offset="100%" stop-color="#1565C0"/>
+        </radialGradient>
+    </defs>
     
-    <!-- Metal Plates (Scratched) -->
-    <g filter="url(#scratchMetal)">
-        <!-- Chest Plate -->
-        <path d="M68 85 L112 85 L110 110 L70 110 Z" fill="url(#metalPlate)" stroke="#212121" stroke-width="0.5"/>
-        <!-- Ab Plate -->
-        <path d="M72 115 L108 115 L106 135 L74 135 Z" fill="url(#metalPlate)" stroke="#212121" stroke-width="0.5"/>
+    <g transform="translate(100, 95)">
+        <circle r="2" fill="url(#glintRare)" stroke="#0D47A1" stroke-width="0.5" filter="url(#badgeShadow)"/>
+        <circle cx="-0.5" cy="-0.5" r="0.5" fill="#ffffff" fill-opacity="0.6"/>
     </g>
-    
-    <!-- Rivets -->
-    <g fill="url(#rivetGrad)" filter="url(#rivetShadow)">
-        <circle cx="70" cy="88" r="1.5"/>
-        <circle cx="110" cy="88" r="1.5"/>
-        <circle cx="72" cy="108" r="1.5"/>
-        <circle cx="108" cy="108" r="1.5"/>
-        <circle cx="74" cy="118" r="1.5"/>
-        <circle cx="106" cy="118" r="1.5"/>
-        <circle cx="76" cy="132" r="1.5"/>
-        <circle cx="104" cy="132" r="1.5"/>
-    </g>
-    
-    <!-- Blue Accents -->
-    <path d="M88 85 L92 85 L91 110 L89 110 Z" fill="#0277BD" opacity="0.8"/>
-</g>
 </svg>
-
-
-
-

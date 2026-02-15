@@ -4,7 +4,13 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from app_utils import get_activity_date
-from gamification import can_log_water, check_water_entry_reward, get_hydration_stats
+from gamification import (
+    can_log_water,
+    check_water_entry_reward,
+    get_hydration_stats,
+    get_water_reward_rarity,
+    roll_water_reward_outcome,
+)
 
 
 def test_get_hydration_stats_respects_daily_goal() -> None:
@@ -90,3 +96,11 @@ def test_check_water_entry_reward_handles_failed_roll() -> None:
         result = check_water_entry_reward(glasses_today=0, streak_days=0, story_id="warrior")
 
     assert result["glass_reward"] is None
+
+
+def test_roll_water_reward_outcome_keeps_tier_roll_even_when_fail() -> None:
+    """UI can still reveal the rolled tier even if the claim roll fails."""
+    outcome = roll_water_reward_outcome(glass_number=5, success_roll=1.0, tier_roll=0.0)
+    assert outcome["won"] is False
+    assert outcome["rolled_tier"] is not None
+    assert get_water_reward_rarity(glass_number=5, success_roll=1.0)[2] is None

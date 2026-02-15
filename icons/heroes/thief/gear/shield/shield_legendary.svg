@@ -1,52 +1,130 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <defs>
-    <linearGradient id="l_shell" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#818e9c"/>
-      <stop offset="100%" stop-color="#485866"/>
-    </linearGradient>
-    <linearGradient id="l_plate" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#b7c2ca"/>
-      <stop offset="100%" stop-color="#8294a2"/>
-    </linearGradient>
-    <linearGradient id="l_orange" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#ffd08c"/>
-      <stop offset="100%" stop-color="#ff8f1f"/>
-    </linearGradient>
-    <filter id="l_glow" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="0.7"/>
-    </filter>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+    <defs>
+        <linearGradient id="magmaBody" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#fb923c"/> <!-- Light Orange -->
+            <stop offset="50%" stop-color="#ea580c"/> <!-- Orange -->
+            <stop offset="100%" stop-color="#7c2d12"/> <!-- Dark Red-Orange -->
+        </linearGradient>
+        <radialGradient id="eyeGlow" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stop-color="#fef08a" stop-opacity="1"/>
+            <stop offset="100%" stop-color="#a16207" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="fireGlow" width="150%" height="150%">
+            <feGaussianBlur stdDeviation="2.5" result="blur"/>
+            <feFlood flood-color="#c2410c" result="color"/>
+            <feComposite in="color" in2="blur" operator="in" result="glow"/>
+            <feMerge>
+                <feMergeNode in="glow"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+        <radialGradient id="smokeGradient">
+             <stop offset="0%" stop-color="#fdba74" stop-opacity="0.8"/>
+             <stop offset="100%" stop-color="#431407" stop-opacity="0"/>
+        </radialGradient>
+    </defs>
+    
+    <!-- Legendary Petite Molten Pitbull 
+         Scale 0.45 (Small/Cute) -->
+    <g transform="translate(45, 175) scale(0.45)">
+        
+        <!-- Lava Pool Shadow -->
+        <ellipse cx="0" cy="55" rx="55" ry="12" fill="#7c2d12" opacity="0.6">
+            <animate attributeName="rx" values="55;60;55" dur="2s" repeatCount="indefinite"/>
+            <animate attributeName="fill" values="#7c2d12;#9a3412;#7c2d12" dur="2s" repeatCount="indefinite"/>
+        </ellipse>
 
-  <!-- Legendary: magistrate crest guard -->
-  <g id="shield_legendary">
-    <path d="M33.4 108.4 L47.9 99.4 L61.8 107.8 L62.6 120.0 L58.9 142.6 L48.0 153.2 L37.1 142.5 L33.1 120.0 Z" fill="url(#l_shell)" stroke="#1a252d" stroke-width="1"/>
-    <path d="M37.2 111.7 L47.9 105.5 L58.5 111.8 L59.2 119.9 L56.2 139.3 L48.0 146.9 L39.9 139.3 L36.8 120.0 Z" fill="url(#l_plate)" opacity="0.64"/>
-    <path d="M39.8 114.2 L56.0 114.2 M39.3 120.1 L55.3 120.1 M38.7 126.0 L54.5 126.0 M38.1 131.9 L53.8 131.9 M37.6 137.8 L53.0 137.8" stroke="#ffac34" stroke-width="0.72" opacity="0.88"/>
-    <path d="M40.8 111.1 L55.0 111.1" stroke="#ffe3b0" stroke-width="0.74" opacity="0.92"/>
-    <path d="M40.5 141.0 L54.8 141.0" stroke="#ffc067" stroke-width="0.7" opacity="0.9"/>
-    <path d="M48.0 116.9 L49.5 120.6 L53.4 120.9 L50.4 123.4 L51.4 127.2 L48.0 125.2 L44.6 127.2 L45.6 123.4 L42.6 120.9 L46.5 120.6 Z" fill="#ffcb73" stroke="#ffdca6" stroke-width="0.35" opacity="0.95"/>
-    <circle cx="48.0" cy="125.8" r="1.55" fill="#ffc866"/>
-    <circle cx="48.0" cy="125.8" r="3.3" fill="#ff9b2a" opacity="0.0" filter="url(#l_glow)">
-      <animate attributeName="opacity" values="0;0.7;0" dur="1.9s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="48.0" cy="125.8" r="5.6" fill="none" stroke="url(#l_orange)" stroke-width="0.74" stroke-dasharray="1.1 1.7" opacity="0.82">
-      <animate attributeName="stroke-dashoffset" values="0;5" dur="2.2s" repeatCount="indefinite"/>
-    </circle>
-    <path d="M41.6 106.8 L54.6 145.2" stroke="#ffe3ba" stroke-width="1.2" opacity="0.0">
-      <animate attributeName="opacity" values="0.0;0.55;0.0" dur="2.8s" repeatCount="indefinite"/>
-    </path>
-    <path d="M40.8 109.2 L53.8 147.6" stroke="#ffd7a3" stroke-width="0.7" opacity="0.0">
-      <animate attributeName="opacity" values="0.0;0.48;0.0" dur="2.8s" begin="0.2s" repeatCount="indefinite"/>
-    </path>
-    <circle cx="42.0" cy="118.5" r="0.75" fill="#ffd284" opacity="0">
-      <animate attributeName="opacity" values="0;0.9;0" dur="1.3s" repeatCount="indefinite"/>
-    </circle>
-    <circle cx="54.4" cy="133.9" r="0.75" fill="#ffd284" opacity="0">
-      <animate attributeName="opacity" values="0;0.9;0" dur="1.6s" repeatCount="indefinite"/>
-    </circle>
-    <rect x="57.4" y="120.2" width="4.8" height="21.8" rx="1.6" fill="#25333d"/>
-    <rect x="56.8" y="127.4" width="6.0" height="7.4" rx="2.2" fill="#ffb75b" stroke="#2a3944" stroke-width="0.5"/>
-    <path d="M58.3 122.4 L60.9 122.4 M58.3 138.9 L60.9 138.9" stroke="#ffd9a7" stroke-width="0.52" opacity="0.88"/>
-  </g>
+        <!-- Burning Tail -->
+        <path d="M25 -5 L50 -20" stroke="#ea580c" stroke-width="5" fill="none" stroke-linecap="round">
+             <animateTransform attributeName="transform" type="rotate" values="0 25 -5; 20 25 -5; 0 25 -5" dur="0.15s" repeatCount="indefinite"/>
+        </path>
+        <!-- Flame Sparks -->
+        <circle cx="55" cy="-25" r="3" fill="#fb923c">
+            <animate attributeName="cy" values="-25;-40" dur="0.5s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="1;0" dur="0.5s" repeatCount="indefinite"/>
+        </circle>
+         <circle cx="50" cy="-20" r="2" fill="#ffd700">
+            <animate attributeName="cy" values="-20;-35" dur="0.6s" repeatCount="indefinite" begin="0.2s"/>
+            <animate attributeName="opacity" values="1;0" dur="0.6s" repeatCount="indefinite"/>
+        </circle>
+
+
+        <!-- Back Legs -->
+        <path d="M-25 15 L-32 45 L-38 55 L-20 55 L-12 40 Z" fill="#9a3412"/>
+        <path d="M25 15 L32 45 L38 55 L20 55 L12 40 Z" fill="#9a3412"/>
+
+        <!-- Torso (Magma) -->
+        <path d="M-35 -15 L35 -15 L30 35 L-30 35 Z" fill="url(#magmaBody)" stroke="#431407" stroke-width="1" filter="url(#fireGlow)">
+             <animate attributeName="fill-opacity" values="1;0.9;1" dur="1s" repeatCount="indefinite"/>
+        </path>
+        
+        <!-- Chest (Glowing Core) -->
+        <path d="M-15 -10 L0 5 L15 -10 L10 35 L-10 35 Z" fill="#fff7ed" opacity="0.9">
+            <animate attributeName="opacity" values="0.7;1;0.7" dur="1s" repeatCount="indefinite"/>
+        </path>
+
+        <!-- Front Legs -->
+        <path d="M-25 15 L-28 45 L-35 55 L-15 55 L-12 45 L-15 15 Z" fill="url(#magmaBody)"/>
+        <path d="M25 15 L28 45 L35 55 L15 55 L12 45 L15 15 Z" fill="url(#magmaBody)"/>
+
+        <!-- COLLAR - Obsidian/Dark Metal -->
+        <path d="M-18 8 Q0 18 18 8" stroke="#1c1917" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- Gemstone (Red/Orange) -->
+        <circle cx="0" cy="13" r="4" fill="#ef4444" stroke="#7f1d1d" stroke-width="1"/> 
+
+        <!-- Head Group -->
+        <g transform="translate(0, -20)">
+            <animateTransform attributeName="transform" type="translate" values="0 -20; 0 -18; 0 -20" dur="2s" repeatCount="indefinite"/>
+            
+            <!-- Head Block -->
+            <path d="M-22 -25 L22 -25 L18 10 L-18 10 Z" fill="url(#magmaBody)" filter="url(#fireGlow)"/>
+            
+            <!-- Ears -->
+            <path d="M-20 -25 L-35 -15 L-20 -10 Z" fill="#9a3412"/>
+            <path d="M20 -25 L35 -15 L20 -10 Z" fill="#9a3412"/>
+
+            <!-- Snout -->
+            <path d="M-12 -5 Q0 0 12 -5 L10 12 Q0 15 -10 12 Z" fill="#fdba74"/>
+            
+            <!-- Mouth/Smile -->
+            <path d="M-8 8 Q0 14 8 8" stroke="#431407" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <path d="M-3 10 Q0 15 3 10 Z" fill="#ef4444"/>
+
+            <!-- Nose -->
+            <ellipse cx="0" cy="-2" rx="6" ry="3.5" fill="#431407"/>
+            <circle cx="-2" cy="-3" r="1" fill="#fff" opacity="0.4"/>
+
+            <!-- Eyes (Glowing) -->
+            <circle cx="-10" cy="-10" r="4" fill="#431407"/>
+            <circle cx="-10" cy="-10" r="2" fill="#fbbf24">
+                 <animate attributeName="r" values="2;2.5;2" dur="1s" repeatCount="indefinite"/>
+            </circle>
+            
+            <circle cx="10" cy="-10" r="4" fill="#431407"/>
+            <circle cx="10" cy="-10" r="2" fill="#fbbf24">
+                 <animate attributeName="r" values="2;2.5;2" dur="1s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Brows -->
+            <path d="M-14 -16 Q-10 -20 -6 -16" stroke="#7c2d12" stroke-width="1.5" fill="none"/>
+            <path d="M6 -16 Q10 -20 14 -16" stroke="#7c2d12" stroke-width="1.5" fill="none"/>
+        </g>
+        
+        <!-- Embers / Heat Haze -->
+        <g opacity="0.8">
+             <circle cx="-20" cy="0" r="4" fill="url(#smokeGradient)">
+                 <animateTransform attributeName="transform" type="translate" values="0 0; -5 -50" dur="1.5s" repeatCount="indefinite"/>
+                 <animate attributeName="opacity" values="0.8; 0" dur="1.5s" repeatCount="indefinite"/>
+             </circle>
+             <circle cx="20" cy="10" r="3" fill="url(#smokeGradient)">
+                 <animateTransform attributeName="transform" type="translate" values="0 0; 8 -40" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+                 <animate attributeName="opacity" values="0.8; 0" dur="2s" repeatCount="indefinite"/>
+             </circle>
+             <circle cx="0" cy="-15" r="5" fill="url(#smokeGradient)">
+                 <animateTransform attributeName="transform" type="translate" values="0 0; 0 -60" dur="2.5s" repeatCount="indefinite" begin="0.7s"/>
+                 <animate attributeName="opacity" values="0.6; 0" dur="2.5s" repeatCount="indefinite"/>
+             </circle>
+        </g>
+
+    </g>
 </svg>

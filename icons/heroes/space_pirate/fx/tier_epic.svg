@@ -1,11 +1,80 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <defs>
+    <!-- Deep Space Background -->
+    <linearGradient id="spaceDeep" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e1b4b" />
+    </linearGradient>
 
-  <g id="fx_epic">
-    <ellipse cx="90" cy="102" rx="26" ry="12" fill="#9C27B0" opacity="0.1"/>
-    <circle cx="90" cy="101" r="20" fill="none" stroke="#9C27B0" stroke-width="1.7" opacity="0.66"/>
-    <path d="M68 100 Q90 89 112 100" stroke="#d48af0" stroke-width="1.1" fill="none" opacity="0.76"/>
-    <circle cx="66" cy="95" r="1.2" fill="#ca7ae9"/>
-    <circle cx="115" cy="107" r="1.2" fill="#ca7ae9"/>
+    <!-- Metal Interior Gradient -->
+    <linearGradient id="shipMetal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="50%" stop-color="#94a3b8" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+
+    <!-- Glass Reflection -->
+    <linearGradient id="glassReflect" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.1" />
+      <stop offset="50%" stop-color="#fff" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#fff" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Hologram Blue -->
+    <radialGradient id="holoBlue" cx="0.5" cy="0.5" r="0.5">
+       <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.8"/>
+       <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- BACKGROUND: Starfield View -->
+  <rect width="180" height="220" fill="url(#spaceDeep)" />
+  
+  <!-- Moving Stars (Parallax) -->
+  <g fill="#fff" opacity="0.8">
+     <circle cx="20" cy="50" r="0.5"><animate attributeName="cx" values="20;180" dur="20s" repeatCount="indefinite"/></circle>
+     <circle cx="100" cy="20" r="0.8"><animate attributeName="cx" values="100;180" dur="15s" repeatCount="indefinite"/></circle>
+     <circle cx="50" cy="100" r="0.5"><animate attributeName="cx" values="50;180" dur="25s" repeatCount="indefinite"/></circle>
+     <circle cx="-10" cy="80" r="0.6"><animate attributeName="cx" values="-10;180" dur="18s" repeatCount="indefinite"/></circle>
   </g>
+
+  <!-- Distant Planet -->
+  <circle cx="160" cy="40" r="25" fill="#4f46e5" opacity="0.6" />
+  <circle cx="155" cy="35" r="20" fill="url(#glassReflect)" opacity="0.3"/> <!-- Planet Shine -->
+  
+  <!-- INTERIOR: Elegant Bridge Structure -->
+  <!-- Left Wall / Arch -->
+  <path d="M0 0 V220 H30 Q50 110 30 0 H0 Z" fill="url(#shipMetal)" stroke="#1e293b"/>
+  <!-- Right Wall / Arch -->
+  <path d="M180 0 V220 H150 Q130 110 150 0 H180 Z" fill="url(#shipMetal)" stroke="#1e293b"/>
+
+  <!-- Window Frame Ribs -->
+  <path d="M30 0 Q50 110 30 220" fill="none" stroke="#64748b" stroke-width="2"/>
+  <path d="M150 0 Q130 110 150 220" fill="none" stroke="#64748b" stroke-width="2"/>
+
+  <!-- Control Console (Bottom) -->
+  <path d="M0 220 V180 Q90 160 180 180 V220 Z" fill="#1e293b" stroke="#334155"/>
+  <path d="M10 190 Q90 175 170 190" fill="none" stroke="#22d3ee" stroke-width="1" opacity="0.5"/>
+
+  <!-- Console Lights (Blinking) -->
+  <g>
+     <rect x="40" y="195" width="4" height="2" fill="#ef4444"><animate attributeName="opacity" values="1;0.2;1" dur="1s" repeatCount="indefinite"/></rect>
+     <rect x="46" y="195" width="4" height="2" fill="#22c55e"><animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" repeatCount="indefinite"/></rect>
+     <rect x="52" y="195" width="4" height="2" fill="#eab308"><animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/></rect>
+  </g>
+
+  <!-- Holographic Navigation Display (Center) -->
+  <g transform="translate(90, 160)">
+     <ellipse cx="0" cy="0" rx="30" ry="8" fill="url(#holoBlue)" opacity="0.3"/>
+     <ellipse cx="0" cy="0" rx="25" ry="5" fill="none" stroke="#22d3ee" stroke-width="0.5">
+        <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="5s" repeatCount="indefinite"/>
+     </ellipse>
+     <!-- Target Reticle -->
+     <path d="M-5 0 H5 M0 -5 V5" stroke="#fff" stroke-width="1" opacity="0.8"/>
+  </g>
+
+  <!-- Captains Chair Silhouette (Background Center) -->
+  <!-- Subtle hint of a high-tech seat back behind the hero position -->
+  <path d="M70 220 V180 Q90 170 110 180 V220" fill="#0f172a" opacity="0.5"/>
 
 </svg>

@@ -70,7 +70,13 @@ if platform.system() == "Windows":
         pass
 
 from PySide6 import QtCore, QtGui, QtWidgets
-from hero_svg_system import render_hero_svg_character
+from hero_svg_system import (
+    evict_inactive_hero_svg_renderers,
+    get_hero_svg_layer_renderers,
+    release_hero_svg_renderer_paths,
+    render_hero_svg_character,
+    retain_hero_svg_renderer_paths,
+)
 
 # pynput for reliable global hotkeys (works even when window hidden)
 try:
@@ -4108,9 +4114,48 @@ class TimerTab(QtWidgets.QWidget):
             adhd_buster=self.blocker.adhd_buster
         )
 
-        # Generate item (100% guaranteed drop) with entity rarity perks
-        item = generate_item(session_minutes=session_minutes, streak_days=streak,
-                              story_id=active_story, adhd_buster=self.blocker.adhd_buster)
+        # Roll rarity outcome in backend; indicator endpoint maps to this roll.
+        item = None
+        tier_weights = None
+        tier_roll = None
+        try:
+            from gamification import roll_focus_reward_outcome
+            focus_outcome = roll_focus_reward_outcome(
+                session_minutes=session_minutes,
+                streak_days=streak,
+                adhd_buster=self.blocker.adhd_buster,
+            )
+            rolled_rarity = focus_outcome.get("rarity")
+            tier_roll = focus_outcome.get("roll")
+            tier_weights = focus_outcome.get("weights")
+            if rolled_rarity:
+                item = generate_item(
+                    rarity=rolled_rarity,
+                    story_id=active_story,
+                    adhd_buster=self.blocker.adhd_buster,
+                )
+        except Exception:
+            pass
+
+        # Fallback path if focus-outcome helper unavailable.
+        if not item:
+            item = generate_item(
+                session_minutes=session_minutes,
+                streak_days=streak,
+                story_id=active_story,
+                adhd_buster=self.blocker.adhd_buster,
+            )
+            if not tier_weights:
+                try:
+                    from gamification import get_focus_rarity_distribution
+                    focus_distribution = get_focus_rarity_distribution(
+                        session_minutes=session_minutes,
+                        streak_days=streak,
+                        adhd_buster=self.blocker.adhd_buster,
+                    )
+                    tier_weights = focus_distribution.get("weights")
+                except Exception:
+                    pass
 
         # Get currently equipped item BEFORE awarding the new one (for comparison dialog)
         equipped_item_before = None
@@ -4127,6 +4172,8 @@ class TimerTab(QtWidgets.QWidget):
             session_minutes=session_minutes,
             streak_days=streak,
             item=item,
+            tier_weights=tier_weights,
+            tier_roll=tier_roll,
             parent=self.window()
         )
         lottery_dialog.exec()
@@ -14017,12 +14064,16 @@ class ActivityTab(QtWidgets.QWidget):
 
             # Reveal the exact pre-generated item to keep animation and awarded result aligned.
             pre_awarded_item = rewards.get("reward") if isinstance(rewards, dict) else None
+            rarity_roll = rewards.get("rarity_roll") if isinstance(rewards, dict) else None
+            rarity_weights = rewards.get("rarity_weights") if isinstance(rewards, dict) else None
             lottery = ActivityLotteryDialog(
                 effective_minutes=effective_mins,
                 pre_rolled_rarity=rarity,
                 story_id=self.blocker.adhd_buster.get("active_story", "warrior"),
                 parent=self,
                 item=pre_awarded_item,
+                tier_roll=rarity_roll,
+                tier_weights=rarity_weights,
             )
             lottery.exec()
             lottery.hide()  # Explicitly hide before deletion
@@ -18590,25 +18641,270 @@ class CharacterCanvas(QtWidgets.QWidget):
         "legendary": ("#ffd700", 8), "godlike": ("#fff9c4", 12)
     }
 
-    def __init__(self, equipped: dict, power: int, width: int = 180, height: int = 220,
-                 parent: Optional[QtWidgets.QWidget] = None, story_theme: str = "warrior") -> None:
+    def __init__(
+        self,
+        equipped: dict,
+        power: int,
+        width: int = 180,
+        height: int = 220,
+        parent: Optional[QtWidgets.QWidget] = None,
+        story_theme: str = "warrior",
+        manage_svg_animations: bool = True,
+    ) -> None:
         super().__init__(parent)
-        self.equipped = equipped
-        self.power = power
+        self.equipped: dict = {}
+        self.power = 0
         self.story_theme = story_theme  # warrior, scholar, wanderer, underdog, scientist, robot, space_pirate, thief, zoo_worker
+        self.tier = "pathetic"
+        self._particles: list[tuple[int, int, int]] = []
+
         # Set minimum size but allow expansion (for splitter resizing)
         self.setMinimumSize(120, 145)  # Minimum readable size
         # Use size policy that maintains aspect ratio when resizing
         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        # Render cache for static frames (used when no animated SVG layers are active)
+        self._render_cache_pixmap: Optional[QtGui.QPixmap] = None
+        self._render_revision = 0
+        self._render_cache_revision = -1
+        self._render_cache_size = QtCore.QSize()
+        self._state_signature: Optional[tuple] = None
+
+        # Animation lifecycle state for hero SVG layers
+        self._manage_svg_animations = bool(manage_svg_animations)
+        self._animations_requested = True
+        self._svg_bindings_dirty = self._manage_svg_animations
+        self._bound_renderer_map: Dict[str, Any] = {}
+        self._retained_renderer_paths: Set[str] = set()
+        self._has_animated_svg_layers = False
+        self._last_repaint_ms = 0
+        self._repaint_clock = QtCore.QElapsedTimer()
+        self._repaint_clock.start()
+
+        # Initialize the visible state in one place.
+        self.set_character_state(equipped, power, story_theme, queue_update=False)
+
+    def _resolve_tier(self, power: int) -> str:
         if GAMIFICATION_AVAILABLE:
-            self.tier = get_diary_power_tier(power)
-        else:
-            self.tier = "pathetic" if power < 50 else "modest" if power < 150 else "decent"
-        # Generate stable particle positions based on power (deterministic)
-        import random
-        rng = random.Random(power)
-        self._particles = [(rng.randint(-50, 50), rng.randint(-60, 60), rng.randint(2, 5)) 
-                           for _ in range(15)]
+            return get_diary_power_tier(power)
+        return "pathetic" if power < 50 else "modest" if power < 150 else "decent"
+
+    @staticmethod
+    def _snapshot_equipped(equipped: Optional[dict]) -> dict:
+        src = equipped or {}
+        snapshot: dict = {}
+        for slot, item in src.items():
+            if isinstance(item, dict):
+                snapshot[slot] = dict(item)
+            else:
+                snapshot[slot] = item
+        return snapshot
+
+    @staticmethod
+    def _equipment_signature(equipped: dict) -> tuple:
+        signature: list[tuple] = []
+        for slot in sorted(equipped.keys()):
+            item = equipped.get(slot) or {}
+            if not isinstance(item, dict):
+                signature.append((slot, str(item)))
+                continue
+            signature.append(
+                (
+                    slot,
+                    item.get("id"),
+                    item.get("item_type"),
+                    item.get("name"),
+                    item.get("rarity"),
+                    item.get("power"),
+                    item.get("color"),
+                )
+            )
+        return tuple(signature)
+
+    def _reseed_particles(self) -> None:
+        # Stable particle positions keyed by power keep visuals deterministic.
+        rng = random.Random(self.power)
+        self._particles = [
+            (rng.randint(-50, 50), rng.randint(-60, 60), rng.randint(2, 5))
+            for _ in range(15)
+        ]
+
+    def _mark_render_dirty(self) -> None:
+        self._render_revision += 1
+        self._render_cache_pixmap = None
+
+    def set_character_state(
+        self,
+        equipped: dict,
+        power: int,
+        story_theme: str,
+        *,
+        queue_update: bool = True,
+    ) -> None:
+        snapshot = self._snapshot_equipped(equipped)
+        tier = self._resolve_tier(power)
+        new_signature = (
+            story_theme,
+            int(power),
+            tier,
+            self._equipment_signature(snapshot),
+        )
+        if new_signature == self._state_signature:
+            return
+
+        self._state_signature = new_signature
+        self.equipped = snapshot
+        self.power = int(power)
+        self.story_theme = story_theme
+        self.tier = tier
+        self._reseed_particles()
+        self._mark_render_dirty()
+
+        if self._manage_svg_animations:
+            self._svg_bindings_dirty = True
+            self._sync_svg_renderer_bindings()
+
+        if queue_update:
+            self.update()
+
+    def _sync_svg_renderer_bindings(self, force: bool = False) -> None:
+        if not self._manage_svg_animations:
+            return
+        if not force and not self._svg_bindings_dirty:
+            self._update_svg_animation_activity()
+            return
+
+        try:
+            refs = get_hero_svg_layer_renderers(
+                story_theme=self.story_theme,
+                equipped=self.equipped,
+                power_tier=self.tier,
+            )
+        except Exception as exc:
+            logger.debug("Hero SVG renderer resolution failed: %s", exc)
+            refs = []
+
+        new_map: Dict[str, Any] = {path: renderer for path, renderer in refs}
+
+        # Disconnect stale renderer callbacks.
+        for path, renderer in self._bound_renderer_map.items():
+            new_renderer = new_map.get(path)
+            if new_renderer is renderer:
+                continue
+            try:
+                renderer.repaintNeeded.disconnect(self._on_svg_repaint_needed)
+            except (TypeError, RuntimeError):
+                pass
+
+        # Connect new renderer callbacks once.
+        for path, renderer in new_map.items():
+            if self._bound_renderer_map.get(path) is renderer:
+                continue
+            try:
+                renderer.repaintNeeded.connect(
+                    self._on_svg_repaint_needed,
+                    QtCore.Qt.ConnectionType.UniqueConnection,
+                )
+            except TypeError:
+                try:
+                    renderer.repaintNeeded.connect(self._on_svg_repaint_needed)
+                except Exception:
+                    pass
+            except Exception:
+                pass
+
+        self._bound_renderer_map = new_map
+        self._has_animated_svg_layers = any(renderer.animated() for renderer in new_map.values())
+        self._svg_bindings_dirty = False
+        self._update_svg_animation_activity()
+
+    def _update_svg_animation_activity(self) -> None:
+        if not self._manage_svg_animations:
+            return
+
+        should_run = (
+            self._animations_requested
+            and self.isVisible()
+            and self._has_animated_svg_layers
+        )
+        target_paths = set(self._bound_renderer_map.keys()) if should_run else set()
+
+        to_release = self._retained_renderer_paths - target_paths
+        to_retain = target_paths - self._retained_renderer_paths
+
+        if to_release:
+            release_hero_svg_renderer_paths(to_release)
+        if to_retain:
+            retain_hero_svg_renderer_paths(to_retain)
+
+        self._retained_renderer_paths = target_paths
+
+    def pause_animations(self) -> None:
+        if not self._manage_svg_animations:
+            return
+        if not self._animations_requested:
+            return
+        self._animations_requested = False
+        self._update_svg_animation_activity()
+
+    def resume_animations(self) -> None:
+        if not self._manage_svg_animations:
+            return
+        if self._animations_requested:
+            self._sync_svg_renderer_bindings()
+            return
+        self._animations_requested = True
+        self._sync_svg_renderer_bindings()
+        self._mark_render_dirty()
+        self.update()
+
+    def release_svg_resources(self, evict_cache: bool = False) -> None:
+        if not self._manage_svg_animations:
+            return
+
+        self.pause_animations()
+
+        for renderer in self._bound_renderer_map.values():
+            try:
+                renderer.repaintNeeded.disconnect(self._on_svg_repaint_needed)
+            except (TypeError, RuntimeError):
+                pass
+
+        self._bound_renderer_map.clear()
+        self._has_animated_svg_layers = False
+        self._svg_bindings_dirty = True
+        self._retained_renderer_paths.clear()
+        self._mark_render_dirty()
+
+        if evict_cache:
+            evict_inactive_hero_svg_renderers()
+
+    def _on_svg_repaint_needed(self) -> None:
+        if not self._manage_svg_animations:
+            return
+        if not self._animations_requested or not self.isVisible():
+            return
+        now_ms = self._repaint_clock.elapsed()
+        # Throttle to ~60 FPS max while preserving renderer timing.
+        if (now_ms - self._last_repaint_ms) < 16:
+            return
+        self._last_repaint_ms = now_ms
+        self._render_cache_pixmap = None
+        self.update()
+
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        super().showEvent(event)
+        self._sync_svg_renderer_bindings()
+
+    def hideEvent(self, event: QtGui.QHideEvent) -> None:
+        super().hideEvent(event)
+        self._update_svg_animation_activity()
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        try:
+            self.release_svg_resources(evict_cache=False)
+        finally:
+            super().closeEvent(event)
 
     def hasHeightForWidth(self) -> bool:
         """Enable aspect ratio preservation."""
@@ -18625,6 +18921,7 @@ class CharacterCanvas(QtWidgets.QWidget):
     def resizeEvent(self, event) -> None:
         """Maintain aspect ratio on resize."""
         super().resizeEvent(event)
+        self._mark_render_dirty()
         # Force aspect ratio by adjusting height based on width
         new_width = event.size().width()
         ideal_height = self.heightForWidth(new_width)
@@ -18635,6 +18932,45 @@ class CharacterCanvas(QtWidgets.QWidget):
 
     def paintEvent(self, event) -> None:
         """Dispatch to theme-specific drawing method."""
+        if self._manage_svg_animations:
+            self._sync_svg_renderer_bindings()
+
+        live_svg_animation = (
+            self._manage_svg_animations
+            and self._animations_requested
+            and self._has_animated_svg_layers
+            and self.isVisible()
+        )
+
+        if not live_svg_animation:
+            if (
+                self._render_cache_pixmap is None
+                or self._render_cache_revision != self._render_revision
+                or self._render_cache_size != self.size()
+            ):
+                if self.width() > 0 and self.height() > 0:
+                    pm = QtGui.QPixmap(self.size())
+                    pm.fill(QtCore.Qt.transparent)
+                    cache_painter = QtGui.QPainter(pm)
+                    try:
+                        sx = self.width() / self.BASE_W if self.BASE_W else 1
+                        sy = self.height() / self.BASE_H if self.BASE_H else 1
+                        cache_painter.scale(sx, sy)
+                        self.render_content(cache_painter)
+                    finally:
+                        cache_painter.end()
+                    self._render_cache_pixmap = pm
+                    self._render_cache_revision = self._render_revision
+                    self._render_cache_size = self.size()
+
+            if self._render_cache_pixmap and not self._render_cache_pixmap.isNull():
+                painter = QtGui.QPainter(self)
+                try:
+                    painter.drawPixmap(0, 0, self._render_cache_pixmap)
+                finally:
+                    painter.end()
+                return
+
         painter = QtGui.QPainter(self)
         try:
             # Apply scaling to map canonical coords (BASE_W x BASE_H) to actual widget size
@@ -24706,10 +25042,25 @@ class HydrationTab(QtWidgets.QWidget):
             from lottery_animation import WaterLotteryDialog
             
             active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+            pre_rolled_outcome = None
+            pre_rolled_item = None
+            try:
+                from gamification import roll_water_reward_outcome
+                pre_rolled_outcome = roll_water_reward_outcome(glass_number=glass_number)
+                if pre_rolled_outcome.get("won"):
+                    rolled_tier = pre_rolled_outcome.get("rolled_tier")
+                    if rolled_tier:
+                        pre_rolled_item = generate_item(rarity=rolled_tier, story_id=active_story)
+            except Exception:
+                pre_rolled_outcome = None
+                pre_rolled_item = None
+
             lottery = WaterLotteryDialog(
                 glass_number=glass_number,
                 lottery_attempts=self.blocker.water_lottery_attempts,
                 story_id=active_story,
+                pre_rolled_outcome=pre_rolled_outcome,
+                pre_rolled_item=pre_rolled_item,
                 parent=self
             )
             
@@ -25823,6 +26174,10 @@ class ADHDBusterTab(QtWidgets.QWidget):
         self._refreshing = False  # Prevent recursive refresh loops
         self._session_active = False  # Track if a focus session is active
         self._shown_style_bonuses = set()  # Track which style bonuses have been shown
+        self._is_visible = False
+        self._resource_release_timer = QtCore.QTimer(self)
+        self._resource_release_timer.setSingleShot(True)
+        self._resource_release_timer.timeout.connect(self._release_hidden_resources)
         
         # Collapsible section states (stored in blocker config)
         self._collapsed_sections = self.blocker.adhd_buster.get("collapsed_sections", {})
@@ -25990,6 +26345,56 @@ class ADHDBusterTab(QtWidgets.QWidget):
         # Disable/enable inventory selection
         if hasattr(self, 'inv_table'):
             self.inv_table.setEnabled(not active)
+
+    def _pause_all_animations(self) -> None:
+        """Pause hero canvas animations when tab is hidden/inactive."""
+        if hasattr(self, 'char_canvas') and self.char_canvas:
+            self.char_canvas.pause_animations()
+
+    def _resume_all_animations(self) -> None:
+        """Resume hero canvas animations when tab becomes active."""
+        if hasattr(self, 'char_canvas') and self.char_canvas:
+            self.char_canvas.resume_animations()
+
+    def _release_hidden_resources(self) -> None:
+        """Release heavyweight hero SVG resources after inactivity."""
+        if self._is_visible:
+            return
+        if hasattr(self, 'char_canvas') and self.char_canvas:
+            self.char_canvas.release_svg_resources(evict_cache=True)
+
+    def on_window_minimized(self) -> None:
+        """Explicit minimize hook mirroring Entitidex lifecycle behavior."""
+        self._pause_all_animations()
+
+    def on_window_restored(self) -> None:
+        """Explicit restore hook mirroring Entitidex lifecycle behavior."""
+        if self.isVisible():
+            self._resume_all_animations()
+
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        super().showEvent(event)
+        self._is_visible = True
+        if self._resource_release_timer.isActive():
+            self._resource_release_timer.stop()
+        self._resume_all_animations()
+
+    def hideEvent(self, event: QtGui.QHideEvent) -> None:
+        super().hideEvent(event)
+        self._is_visible = False
+        self._pause_all_animations()
+        # Delayed eviction avoids thrash on quick tab switches.
+        self._resource_release_timer.start(15000)
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        try:
+            if self._resource_release_timer.isActive():
+                self._resource_release_timer.stop()
+            self._pause_all_animations()
+            if hasattr(self, 'char_canvas') and self.char_canvas:
+                self.char_canvas.release_svg_resources(evict_cache=True)
+        finally:
+            super().closeEvent(event)
 
     def _build_ui(self) -> None:
         layout = QtWidgets.QVBoxLayout(self)
@@ -26950,12 +27355,12 @@ class ADHDBusterTab(QtWidgets.QWidget):
         power_info = get_power_breakdown(self.blocker.adhd_buster)
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
         
-        # Update character canvas
-        self.char_canvas.equipped = equipped
-        self.char_canvas.power = power_info["total_power"]
-        self.char_canvas.story_theme = active_story  # Update story theme for correct character graphic
-        self.char_canvas.tier = get_diary_power_tier(power_info["total_power"])  # Recalculate tier
-        self.char_canvas.update()  # Trigger repaint
+        # Update character canvas (state-aware update keeps SVG animation bindings in sync)
+        self.char_canvas.set_character_state(
+            equipped=equipped,
+            power=power_info["total_power"],
+            story_theme=active_story,
+        )
         
         # Update power label with all components (gear + sets + style + entity patrons)
         power_parts = [str(power_info['base_power'])]
@@ -29721,6 +30126,17 @@ class PrioritiesDialog(StyledDialog):
         
         # Show animated lottery dialog for priority completion
         active_story = self.blocker.adhd_buster.get("active_story", "warrior")
+        pre_rolled_result = None
+        try:
+            from gamification import roll_priority_completion_reward
+            pre_rolled_result = roll_priority_completion_reward(
+                story_id=active_story,
+                logged_hours=logged_hours,
+            )
+            if isinstance(pre_rolled_result, dict) and "chance" in pre_rolled_result:
+                chance = int(pre_rolled_result["chance"])
+        except Exception:
+            pre_rolled_result = None
         
         from lottery_animation import PriorityLotteryDialog
         lottery = PriorityLotteryDialog(
@@ -29728,6 +30144,7 @@ class PrioritiesDialog(StyledDialog):
             priority_title=title,
             logged_hours=logged_hours,
             story_id=active_story,
+            pre_rolled_result=pre_rolled_result,
             parent=self
         )
         lottery.exec()
@@ -30503,7 +30920,8 @@ class MiniHeroWidget(QtWidgets.QWidget):
         full_canvas = CharacterCanvas(self._equipped, self._power, 
                                        width=CharacterCanvas.BASE_W, 
                                        height=CharacterCanvas.BASE_H, 
-                                       story_theme=self._story_theme)
+                                       story_theme=self._story_theme,
+                                       manage_svg_animations=False)
         
         # Use QImage for robust offscreen rendering
         image = QtGui.QImage(CharacterCanvas.BASE_W, CharacterCanvas.BASE_H, 
@@ -33617,7 +34035,13 @@ class DevTab(QtWidgets.QWidget):
             
             hero_power = game_state.get_current_power()
             join_prob = calculate_join_probability(hero_power, entity.power)
-            is_exceptional = random.random() < 0.20  # 20% exceptional chance
+            exceptional_chance = 0.20
+            try:
+                from entitidex.encounter_system import ENCOUNTER_CONFIG
+                exceptional_chance = float(ENCOUNTER_CONFIG.get("exceptional_chance", 0.20))
+            except Exception:
+                pass
+            is_exceptional = random.random() < exceptional_chance
             
             def bond_callback_wrapper(eid: str, exceptional: bool = is_exceptional):
                 result = attempt_entitidex_bond(
@@ -33778,7 +34202,13 @@ class DevTab(QtWidgets.QWidget):
                 if entities:
                     import random
                     entity = random.choice(entities)
-                    is_exceptional = random.random() < 0.20  # 20% exceptional chance
+                    exceptional_chance = 0.20
+                    try:
+                        from entitidex.encounter_system import ENCOUNTER_CONFIG
+                        exceptional_chance = float(ENCOUNTER_CONFIG.get("exceptional_chance", 0.20))
+                    except Exception:
+                        pass
+                    is_exceptional = random.random() < exceptional_chance
                 else:
                     self.status_label.setText("❌ No entities available")
                     return
@@ -33894,7 +34324,13 @@ class DevTab(QtWidgets.QWidget):
             
             entity = random.choice(entities)
             join_prob = calculate_join_probability(hero_power, entity.power)
-            is_exceptional = random.random() < 0.20  # 20% exceptional chance
+            exceptional_chance = 0.20
+            try:
+                from entitidex.encounter_system import ENCOUNTER_CONFIG
+                exceptional_chance = float(ENCOUNTER_CONFIG.get("exceptional_chance", 0.20))
+            except Exception:
+                pass
+            is_exceptional = random.random() < exceptional_chance
             
             # Show encounter dialog using new merge-style flow
             from entity_drop_dialog import show_entity_encounter
@@ -34005,7 +34441,13 @@ class DevTab(QtWidgets.QWidget):
             
             entity = random.choice(matching)
             join_prob = calculate_join_probability(hero_power, entity.power)
-            is_exceptional = random.random() < 0.20  # 20% exceptional chance
+            exceptional_chance = 0.20
+            try:
+                from entitidex.encounter_system import ENCOUNTER_CONFIG
+                exceptional_chance = float(ENCOUNTER_CONFIG.get("exceptional_chance", 0.20))
+            except Exception:
+                pass
+            is_exceptional = random.random() < exceptional_chance
             
             # Show encounter dialog using new merge-style flow
             from entity_drop_dialog import show_entity_encounter
@@ -36868,6 +37310,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
         # Notify Entitidex tab to resume animations if it's currently visible
         if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
             self.entitidex_tab.on_window_restored()
+        if hasattr(self, 'adhd_tab') and self.adhd_tab:
+            self.adhd_tab.on_window_restored()
         # Tray icon stays visible and timer keeps running
 
     def _quit_application(self) -> None:
@@ -36890,6 +37334,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                 # Window was minimized - notify Entitidex tab to pause animations
                 if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
                     self.entitidex_tab.on_window_minimized()
+                if hasattr(self, 'adhd_tab') and self.adhd_tab:
+                    self.adhd_tab.on_window_minimized()
             else:
                 # Window was restored (any non-minimized state)
                 # Check if the old state was minimized
@@ -36900,6 +37346,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
                         # Window was restored from minimized - notify Entitidex tab to resume
                         if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
                             self.entitidex_tab.on_window_restored()
+                        if hasattr(self, 'adhd_tab') and self.adhd_tab:
+                            self.adhd_tab.on_window_restored()
                 except AttributeError:
                     pass  # Not a QWindowStateChangeEvent, ignore
         super().changeEvent(event)
@@ -36910,6 +37358,8 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             # Pause Entitidex animations before hiding (saves CPU in background)
             if hasattr(self, 'entitidex_tab') and self.entitidex_tab:
                 self.entitidex_tab.on_window_minimized()
+            if hasattr(self, 'adhd_tab') and self.adhd_tab:
+                self.adhd_tab.on_window_minimized()
             self.hide()
             self.tray_icon.showMessage(
                 "Personal Liberty",
@@ -37758,6 +38208,13 @@ class FocusBlockerWindow(QtWidgets.QMainWindow):
             else:
                 # Switching AWAY from Entitidex - pause animations
                 self.entitidex_tab._pause_all_animations()
+
+        # Mirror the same lifecycle policy for Hero tab SVG animations.
+        if GAMIFICATION_AVAILABLE and hasattr(self, 'adhd_tab'):
+            if widget == self.adhd_tab:
+                self.adhd_tab._resume_all_animations()
+            else:
+                self.adhd_tab._pause_all_animations()
         
         # Refresh stats tab when switched to
         if hasattr(self, 'stats_tab') and widget == self.stats_tab:

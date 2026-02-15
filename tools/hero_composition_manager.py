@@ -51,6 +51,36 @@ SLOT_SLUGS = {
     "Cloak": "cloak",
     "Amulet": "amulet",
 }
+SLOT_SHORT_LABELS = {
+    "Helmet": "H",
+    "Chestplate": "C",
+    "Gauntlets": "G",
+    "Boots": "B",
+    "Shield": "S",
+    "Weapon": "W",
+    "Cloak": "K",
+    "Amulet": "A",
+}
+SLOT_ANCHOR_NORMALIZED = {
+    "Helmet": (0.50, 0.20),
+    "Chestplate": (0.50, 0.39),
+    "Gauntlets": (0.50, 0.47),
+    "Boots": (0.50, 0.79),
+    "Shield": (0.25, 0.50),
+    "Weapon": (0.75, 0.50),
+    "Cloak": (0.50, 0.52),
+    "Amulet": (0.50, 0.40),
+}
+SLOT_COLORS = {
+    "Helmet": "#6ec8ff",
+    "Chestplate": "#88f0a5",
+    "Gauntlets": "#f4d166",
+    "Boots": "#d0b0ff",
+    "Shield": "#ff8c7a",
+    "Weapon": "#ff6fd2",
+    "Cloak": "#87d9df",
+    "Amulet": "#ffd36a",
+}
 
 
 @dataclass
@@ -88,6 +118,32 @@ class LayerItem(QGraphicsSvgItem):
             self._owner.on_slot_item_moved(self.slot)
         elif change == QtWidgets.QGraphicsItem.ItemSelectedHasChanged and bool(value):
             self._owner.on_scene_slot_selected(self.slot)
+        return super().itemChange(change, value)
+
+
+class SlotAnchorHandle(QtWidgets.QGraphicsEllipseItem):
+    """Draggable on-canvas anchor point for a slot."""
+
+    def __init__(self, slot: str, color: QtGui.QColor, owner: "CompositionManagerWindow") -> None:
+        super().__init__(-4.0, -4.0, 8.0, 8.0)
+        self.slot = slot
+        self._owner = owner
+        self._base_color = color
+        self.setBrush(QtGui.QBrush(color))
+        self.setPen(QtGui.QPen(QtGui.QColor("#dff4ff"), 1.1))
+        self.setFlags(
+            QtWidgets.QGraphicsItem.ItemIsMovable
+            | QtWidgets.QGraphicsItem.ItemIsSelectable
+            | QtWidgets.QGraphicsItem.ItemSendsGeometryChanges
+        )
+        self.setCursor(QtCore.Qt.OpenHandCursor)
+        self.setZValue(900.0)
+
+    def itemChange(self, change, value):
+        if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
+            self._owner.on_anchor_moved(self.slot)
+        elif change == QtWidgets.QGraphicsItem.ItemSelectedHasChanged and bool(value):
+            self._owner.select_slot(self.slot)
         return super().itemChange(change, value)
 
 
@@ -141,10 +197,13 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
         self.current_slot: Optional[str] = None
         self.base_item: Optional[QGraphicsSvgItem] = None
         self.slot_items: Dict[str, Optional[LayerItem]] = {slot: None for slot in GEAR_SLOT_ORDER}
+        self.slot_z_values: Dict[str, float] = {slot: 0.0 for slot in GEAR_SLOT_ORDER}
         self.slot_transforms: Dict[str, Dict[str, SlotTransform]] = self._new_slot_transform_map()
         self.slot_rarity_combos: Dict[str, QtWidgets.QComboBox] = {}
         self.slot_visibility_checks: Dict[str, QtWidgets.QCheckBox] = {}
         self.slot_select_buttons: Dict[str, QtWidgets.QPushButton] = {}
+        self.anchor_items: Dict[str, SlotAnchorHandle] = {}
+        self.anchor_labels: Dict[str, QtWidgets.QGraphicsSimpleTextItem] = {}
 
         self._build_ui()
         self._populate_themes()
@@ -184,7 +243,7 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
         left_layout.addWidget(header)
 
         hint = QtWidgets.QLabel(
-            "Drag selected layer on canvas.\n"
+            "Drag selected layer or slot anchor on canvas.\n"
             "Ctrl + wheel: scale | Shift + wheel: rotate | wheel: zoom canvas."
         )
         hint.setStyleSheet("color: #b8c4de;")
@@ -237,9 +296,31 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
         controls_group = QtWidgets.QGroupBox("Selected Slot Transform")
         form = QtWidgets.QFormLayout(controls_group)
 
+        nav_row = QtWidgets.QHBoxLayout()
+        prev_btn = QtWidgets.QPushButton("Prev")
+        prev_btn.clicked.connect(self._select_prev_slot)
+        nav_row.addWidget(prev_btn)
+        self.slot_nav_combo = QtWidgets.QComboBox()
+        self.slot_nav_combo.addItems(GEAR_SLOT_ORDER)
+        self.slot_nav_combo.currentTextChanged.connect(self._on_slot_nav_changed)
+        nav_row.addWidget(self.slot_nav_combo, 1)
+        next_btn = QtWidgets.QPushButton("Next")
+        next_btn.clicked.connect(self._select_next_slot)
+        nav_row.addWidget(next_btn)
+        form.addRow("Navigate:", nav_row)
+
         self.selected_slot_label = QtWidgets.QLabel("None")
         self.selected_slot_label.setStyleSheet("font-weight: 700; color: #e3ecff;")
         form.addRow("Slot:", self.selected_slot_label)
+
+        self.link_position_all_rarities_check = QtWidgets.QCheckBox("Position edits apply to all rarities")
+        self.link_position_all_rarities_check.setChecked(True)
+        form.addRow(self.link_position_all_rarities_check)
+
+        self.show_anchors_check = QtWidgets.QCheckBox("Show slot anchors")
+        self.show_anchors_check.setChecked(True)
+        self.show_anchors_check.stateChanged.connect(self._update_anchor_visibility)
+        form.addRow(self.show_anchors_check)
 
         self.offset_x_spin = QtWidgets.QDoubleSpinBox()
         self.offset_x_spin.setRange(-1.0, 1.0)
@@ -310,6 +391,7 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
 
         self.scene = QtWidgets.QGraphicsScene(0, 0, HERO_CANVAS_WIDTH, HERO_CANVAS_HEIGHT, self)
         self._init_scene_background()
+        self._init_slot_anchors()
 
         self.view = CompositionView(self)
         self.view.setScene(self.scene)
@@ -335,6 +417,64 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
             QtGui.QPen(QtGui.QColor("#4d6aa8"), 1.0),
         )
         frame.setZValue(-50)
+
+    def _init_slot_anchors(self) -> None:
+        font = QtGui.QFont("Segoe UI", 7)
+        font.setBold(True)
+        for slot in GEAR_SLOT_ORDER:
+            color = QtGui.QColor(SLOT_COLORS.get(slot, "#ffd98a"))
+            handle = SlotAnchorHandle(slot=slot, color=color, owner=self)
+            self.scene.addItem(handle)
+            label = self.scene.addSimpleText(SLOT_SHORT_LABELS.get(slot, slot[:1]), font)
+            label.setBrush(QtGui.QBrush(QtGui.QColor("#e9f2ff")))
+            label.setZValue(905.0)
+            label.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
+            self.anchor_items[slot] = handle
+            self.anchor_labels[slot] = label
+        self._update_all_anchor_positions()
+        self._update_anchor_visibility()
+
+    def _slot_base_anchor_px(self, slot: str) -> QtCore.QPointF:
+        nx, ny = SLOT_ANCHOR_NORMALIZED.get(slot, (0.5, 0.5))
+        return QtCore.QPointF(nx * HERO_CANVAS_WIDTH, ny * HERO_CANVAS_HEIGHT)
+
+    def _update_anchor_position(self, slot: str) -> None:
+        handle = self.anchor_items.get(slot)
+        label = self.anchor_labels.get(slot)
+        if not handle or not label:
+            return
+        cfg = self._active_cfg_for_slot(slot)
+        base = self._slot_base_anchor_px(slot)
+        x = base.x() + cfg.offset_x * HERO_CANVAS_WIDTH
+        y = base.y() + cfg.offset_y * HERO_CANVAS_HEIGHT
+        self._syncing = True
+        try:
+            handle.setPos(x, y)
+            label.setPos(x + 5.0, y - 12.0)
+            is_current = slot == self.current_slot
+            radius = 5.2 if is_current else 4.0
+            handle.setRect(-radius, -radius, radius * 2.0, radius * 2.0)
+            base_color = QtGui.QColor(SLOT_COLORS.get(slot, "#ffd98a"))
+            handle.setBrush(QtGui.QBrush(base_color.lighter(120 if is_current else 100)))
+            handle.setPen(QtGui.QPen(QtGui.QColor("#ffffff"), 1.6 if is_current else 1.0))
+            handle.setZValue(950.0 if is_current else 900.0)
+            label.setVisible(self.show_anchors_check.isChecked())
+        finally:
+            self._syncing = False
+
+    def _update_all_anchor_positions(self) -> None:
+        for slot in GEAR_SLOT_ORDER:
+            self._update_anchor_position(slot)
+
+    def _update_anchor_visibility(self, *_args) -> None:
+        visible = self.show_anchors_check.isChecked()
+        for slot in GEAR_SLOT_ORDER:
+            handle = self.anchor_items.get(slot)
+            label = self.anchor_labels.get(slot)
+            if handle is not None:
+                handle.setVisible(visible)
+            if label is not None:
+                label.setVisible(visible)
 
     def _populate_themes(self) -> None:
         heroes_root = ROOT / "icons" / "heroes"
@@ -409,11 +549,25 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
         p = ROOT / "icons" / "heroes" / theme / "gear" / slot_slug / f"{slot_slug}_{rarity.lower()}.svg"
         return p if p.exists() else None
 
+    def _set_slot_offset(self, slot: str, offset_x: float, offset_y: float, propagate: bool) -> None:
+        ox = max(-1.0, min(1.0, float(offset_x)))
+        oy = max(-1.0, min(1.0, float(offset_y)))
+        if propagate:
+            for rarity in RARITIES:
+                cfg = self.slot_transforms[slot][rarity]
+                cfg.offset_x = ox
+                cfg.offset_y = oy
+        else:
+            cfg = self._active_cfg_for_slot(slot)
+            cfg.offset_x = ox
+            cfg.offset_y = oy
+
     def _clear_scene_items(self) -> None:
         for slot, item in self.slot_items.items():
             if item is not None:
                 self.scene.removeItem(item)
                 self.slot_items[slot] = None
+                self.slot_z_values[slot] = 0.0
         if self.base_item is not None:
             self.scene.removeItem(self.base_item)
             self.base_item = None
@@ -445,6 +599,7 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
             self._rebuild_slot_item(slot, z=10 + idx)
 
         self.select_slot(GEAR_SLOT_ORDER[0])
+        self._update_all_anchor_positions()
         profile_path = self._theme_profile_path(theme)
         self.profile_path_label.setText(f"Default profile path:\n{profile_path}")
         self.status.setText(f"Loaded theme: {theme}")
@@ -465,11 +620,13 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
 
         item = LayerItem(slot=slot, svg_path=path, owner=self)
         item.setZValue(z)
+        self.slot_z_values[slot] = float(z)
         self.scene.addItem(item)
         self.slot_items[slot] = item
         self._apply_slot_transform(slot)
         if was_selected:
             item.setSelected(True)
+        self._update_slot_item_interaction()
 
     def _apply_slot_transform(self, slot: str) -> None:
         item = self.slot_items.get(slot)
@@ -499,15 +656,66 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
         item = self.slot_items.get(slot)
         if item is None:
             return
-        cfg = self._active_cfg_for_slot(slot)
         p = item.pos()
-        cfg.offset_x = p.x() / HERO_CANVAS_WIDTH
-        cfg.offset_y = p.y() / HERO_CANVAS_HEIGHT
+        self._set_slot_offset(
+            slot,
+            p.x() / HERO_CANVAS_WIDTH,
+            p.y() / HERO_CANVAS_HEIGHT,
+            propagate=self.link_position_all_rarities_check.isChecked(),
+        )
+        self._update_anchor_position(slot)
+        if slot == self.current_slot:
+            self._sync_controls_from_slot(slot)
+
+    def on_anchor_moved(self, slot: str) -> None:
+        if self._syncing:
+            return
+        handle = self.anchor_items.get(slot)
+        if handle is None:
+            return
+        base = self._slot_base_anchor_px(slot)
+        p = handle.pos()
+        self._set_slot_offset(
+            slot,
+            (p.x() - base.x()) / HERO_CANVAS_WIDTH,
+            (p.y() - base.y()) / HERO_CANVAS_HEIGHT,
+            propagate=self.link_position_all_rarities_check.isChecked(),
+        )
+        self._apply_slot_transform(slot)
+        self._update_anchor_position(slot)
         if slot == self.current_slot:
             self._sync_controls_from_slot(slot)
 
     def on_scene_slot_selected(self, slot: str) -> None:
         self.select_slot(slot)
+
+    def _on_slot_nav_changed(self, slot: str) -> None:
+        if self._syncing or not slot:
+            return
+        self.select_slot(slot)
+
+    def _select_prev_slot(self) -> None:
+        if not self.current_slot:
+            return
+        idx = GEAR_SLOT_ORDER.index(self.current_slot)
+        self.select_slot(GEAR_SLOT_ORDER[(idx - 1) % len(GEAR_SLOT_ORDER)])
+
+    def _select_next_slot(self) -> None:
+        if not self.current_slot:
+            return
+        idx = GEAR_SLOT_ORDER.index(self.current_slot)
+        self.select_slot(GEAR_SLOT_ORDER[(idx + 1) % len(GEAR_SLOT_ORDER)])
+
+    def _update_slot_item_interaction(self) -> None:
+        for slot, item in self.slot_items.items():
+            if item is None:
+                continue
+            is_current = slot == self.current_slot
+            item.setAcceptedMouseButtons(QtCore.Qt.LeftButton if is_current else QtCore.Qt.NoButton)
+            item.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, is_current)
+            item.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, is_current)
+            item.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, True)
+            item.setZValue(500.0 if is_current else self.slot_z_values.get(slot, 10.0))
 
     def select_slot(self, slot: str) -> None:
         self.current_slot = slot
@@ -522,9 +730,12 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
             for other_slot, other_item in self.slot_items.items():
                 if other_item is not None:
                     other_item.setSelected(other_slot == slot and item is not None)
+            self.slot_nav_combo.setCurrentText(slot)
         finally:
             self._syncing = False
 
+        self._update_slot_item_interaction()
+        self._update_all_anchor_positions()
         self._sync_controls_from_slot(slot)
 
     def _sync_controls_from_slot(self, slot: str) -> None:
@@ -543,12 +754,18 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
         if self._syncing or not self.current_slot:
             return
         cfg = self._active_cfg_for_slot(self.current_slot)
-        cfg.offset_x = self.offset_x_spin.value()
-        cfg.offset_y = self.offset_y_spin.value()
+        self._set_slot_offset(
+            self.current_slot,
+            self.offset_x_spin.value(),
+            self.offset_y_spin.value(),
+            propagate=self.link_position_all_rarities_check.isChecked(),
+        )
+        cfg = self._active_cfg_for_slot(self.current_slot)
         cfg.scale_x = self.scale_x_spin.value()
         cfg.scale_y = self.scale_y_spin.value()
         cfg.rotation_deg = self.rotation_spin.value()
         self._apply_slot_transform(self.current_slot)
+        self._update_anchor_position(self.current_slot)
 
     def _on_slot_rarity_changed(self, slot: str) -> None:
         idx = GEAR_SLOT_ORDER.index(slot)
@@ -559,6 +776,7 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
             self.slot_visibility_checks[slot].setChecked(cfg.visible)
         finally:
             self._syncing = False
+        self._update_anchor_position(slot)
         if slot == self.current_slot:
             self.select_slot(slot)
 
@@ -593,11 +811,16 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
         rarity = self._active_rarity_for_slot(self.current_slot)
         visible = self.slot_visibility_checks[self.current_slot].isChecked()
         defaults = self._slot_defaults_from_manifest(self.current_theme)
-        self.slot_transforms[self.current_slot][rarity] = defaults[self.current_slot].clone(
-            rarity=rarity,
-            visible=visible,
-        )
+        if self.link_position_all_rarities_check.isChecked():
+            default_cfg = defaults[self.current_slot]
+            for rarity_name in RARITIES:
+                cfg = self.slot_transforms[self.current_slot][rarity_name]
+                cfg.offset_x = default_cfg.offset_x
+                cfg.offset_y = default_cfg.offset_y
+                cfg.visible = visible
+        self.slot_transforms[self.current_slot][rarity] = defaults[self.current_slot].clone(rarity=rarity, visible=visible)
         self._apply_slot_transform(self.current_slot)
+        self._update_anchor_position(self.current_slot)
         self._sync_controls_from_slot(self.current_slot)
 
     def reset_all_slots(self) -> None:
@@ -609,6 +832,7 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
             for rarity in RARITIES:
                 self.slot_transforms[slot][rarity] = defaults[slot].clone(rarity=rarity, visible=visible)
             self._apply_slot_transform(slot)
+            self._update_anchor_position(slot)
         if self.current_slot:
             self._sync_controls_from_slot(self.current_slot)
 
@@ -691,6 +915,7 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
                     self.slot_rarity_combos[slot].setCurrentText(rarity)
                 self.slot_visibility_checks[slot].setChecked(template.visible)
                 self._apply_slot_transform(slot)
+                self._update_anchor_position(slot)
                 continue
 
             raw_rarities = raw.get("rarities", {})
@@ -716,9 +941,12 @@ class CompositionManagerWindow(QtWidgets.QMainWindow):
             vis = bool(raw.get("visible", self.slot_visibility_checks[slot].isChecked()))
             self.slot_visibility_checks[slot].setChecked(vis)
             self._apply_slot_transform(slot)
+            self._update_anchor_position(slot)
 
         if self.current_slot:
             self._sync_controls_from_slot(self.current_slot)
+        self._update_slot_item_interaction()
+        self._update_all_anchor_positions()
         self.status.setText(f"Loaded profile: {path}")
 
 

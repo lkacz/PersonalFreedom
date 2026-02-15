@@ -16,7 +16,7 @@
   </defs>
 
   <!-- Celestial cloak: fitted drape + cyan astral trim -->
-  <g id="cloak_celestial">
+  <g id="cloak_celestial" transform="translate(-5.4 -13.8) scale(1.06)">
     <path d="M70 84 Q90 76 110 84 L121 176 Q90 189 59 176 Z" fill="url(#x_back)" opacity="0.57"/>
     <path d="M68 84 L82 90 L76 183 L52 176 Z" fill="url(#x_side)" opacity="0.84"/>
     <path d="M112 84 L98 90 L104 183 L128 176 Z" fill="url(#x_side)" opacity="0.84"/>

@@ -1,34 +1,125 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <defs>
-    <linearGradient id="e_shell" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#798795"/>
-      <stop offset="100%" stop-color="#425261"/>
-    </linearGradient>
-    <linearGradient id="e_plate" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#b0bcc6"/>
-      <stop offset="100%" stop-color="#798b9a"/>
-    </linearGradient>
-    <filter id="e_glow" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="0.7"/>
-    </filter>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+    <defs>
+        <linearGradient id="pitbullBody" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#78716c"/>
+            <stop offset="60%" stop-color="#44403c"/>
+            <stop offset="100%" stop-color="#292524"/>
+        </linearGradient>
+        <linearGradient id="pitbullChest" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#e7e5e4"/>
+            <stop offset="100%" stop-color="#a8a29e"/>
+        </linearGradient>
+        <filter id="dogShadow">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+            <feOffset dx="1" dy="2" result="offsetblur"/>
+            <feComponentTransfer>
+                <feFuncA type="linear" slope="0.4"/>
+            </feComponentTransfer>
+            <feMerge> 
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/> 
+            </feMerge>
+        </filter>
+        <filter id="droolGlow">
+             <feGaussianBlur stdDeviation="0.5"/>
+        </filter>
+    </defs>
+    
+    <!-- Position: Bottom Left. Base scale 0.65 -> +10% = ~0.72 -->
+    <g transform="translate(35, 155) scale(0.72)" filter="url(#dogShadow)">
+        
+        <!-- Ground Shadow -->
+        <ellipse cx="0" cy="55" rx="55" ry="10" fill="#000" opacity="0.3">
+            <animate attributeName="rx" values="55;58;55" dur="0.6s" repeatCount="indefinite"/>
+        </ellipse>
 
-  <!-- Epic: hex barrier shield -->
-  <g id="shield_epic">
-    <path d="M34.7 109.0 L47.9 101.2 L60.8 108.9 L59.8 139.0 L48.1 148.7 L36.2 141.0 Z" fill="url(#e_shell)" stroke="#1a252d" stroke-width="1"/>
-    <path d="M38.2 112.0 L48.0 106.4 L57.4 112.0 L56.7 136.7 L48.1 143.6 L39.3 137.1 Z" fill="url(#e_plate)" opacity="0.64"/>
-    <path d="M40.8 114.6 L55.3 114.6 M40.2 121.4 L54.8 121.4 M39.8 128.2 L54.2 128.2 M39.3 135.0 L53.7 135.0" stroke="#c78ae7" stroke-width="0.7" opacity="0.8"/>
-    <path d="M40.5 111.0 L48.1 107.0 L55.7 111.0" fill="none" stroke="#dfb4f6" stroke-width="0.68" opacity="0.82"/>
-    <circle cx="47.8" cy="125.6" r="4.4" fill="none" stroke="#b35cdb" stroke-width="0.75" opacity="0.78">
-      <animateTransform attributeName="transform" type="rotate" from="0 47.8 125.6" to="360 47.8 125.6" dur="6.5s" repeatCount="indefinite"/>
-    </circle>
-    <path d="M44.9 125.6 L50.7 125.6 M47.8 122.7 L47.8 128.5" stroke="#e7c4f7" stroke-width="0.68" opacity="0.88"/>
-    <circle cx="47.8" cy="125.6" r="1.1" fill="#dc9bf6"/>
-    <circle cx="47.8" cy="125.6" r="2.5" fill="#bf73e3" opacity="0.0" filter="url(#e_glow)">
-      <animate attributeName="opacity" values="0;0.65;0" dur="2.1s" repeatCount="indefinite"/>
-    </circle>
-    <rect x="57.4" y="120.2" width="4.8" height="21.8" rx="1.6" fill="#25333d"/>
-    <rect x="56.8" y="127.4" width="6.0" height="7.4" rx="2.2" fill="#bd8ed9" stroke="#2a3944" stroke-width="0.5"/>
-  </g>
+        <!-- Tail (Furious Wag) -->
+        <path d="M25 -5 L50 -20" stroke="#44403c" stroke-width="6" fill="none" stroke-linecap="round">
+             <animateTransform attributeName="transform" type="rotate" values="0 25 -5; 20 25 -5; 0 25 -5" dur="0.08s" repeatCount="indefinite"/>
+        </path>
+
+        <!-- Back Legs -->
+        <path d="M-30 15 L-38 45 L-45 55 L-25 55 L-15 40 Z" fill="#44403c"/>
+        <path d="M30 15 L38 45 L45 55 L25 55 L15 40 Z" fill="#44403c"/>
+
+        <!-- Torso -->
+        <path d="M-40 -15 L40 -15 L35 35 L-35 35 Z" fill="url(#pitbullBody)" stroke="#292524" stroke-width="1"/>
+        
+        <!-- Chest -->
+        <path d="M-18 -10 L0 5 L18 -10 L12 35 L-12 35 Z" fill="url(#pitbullChest)"/>
+
+        <!-- Front Legs -->
+        <path d="M-30 15 L-33 45 L-40 55 L-20 55 L-17 45 L-20 15 Z" fill="url(#pitbullBody)"/>
+        <path d="M30 15 L33 45 L40 55 L20 55 L17 45 L20 15 Z" fill="url(#pitbullBody)"/>
+
+
+        <!-- COLLAR (Torso) - EPIC: Purple -->
+        <g transform="translate(0, -10)"> 
+             <path d="M-35 0 Q0 18 35 0 L35 18 Q0 36 -35 18 Z" fill="#7e22ce" stroke="#581c87" stroke-width="1"/>
+             <!-- Spikes (Menacing) -->
+             <path d="M-25 10 L-25 20 L-22 15 Z" fill="#e9d5ff"/>
+             <path d="M-10 16 L-10 26 L-7 21 Z" fill="#e9d5ff"/>
+             <path d="M10 16 L10 26 L13 21 Z" fill="#e9d5ff"/>
+             <path d="M25 10 L25 20 L28 15 Z" fill="#e9d5ff"/>
+        </g>
+
+        <!-- Head Group (Fast aggressive animation) -->
+        <g transform="translate(0, -20)">
+            <animateTransform attributeName="transform" type="translate" values="0 -20; 0 -17; 0 -20" dur="0.6s" repeatCount="indefinite"/>
+            <g>
+                <animateTransform attributeName="transform" type="rotate" values="-3 0 0; 3 0 0; -3 0 0" dur="0.6s" repeatCount="indefinite"/>
+
+                <!-- Head Block -->
+                <path d="M-28 -28 L28 -28 L22 12 L-22 12 Z" fill="url(#pitbullBody)"/>
+                
+                <!-- Ears (Tattered/Notched) -->
+                <path d="M-25 -28 L-32 -42 L-12 -28 Z" fill="#44403c"/>
+                <path d="M25 -28 L32 -42 L12 -28 Z" fill="#44403c"/>
+
+                <!-- Scars on Face -->
+                <path d="M-20 -20 L-10 -5" stroke="#7f1d1d" stroke-width="1.5" opacity="0.6"/>
+                <path d="M-18 -22 L-8 -18" stroke="#7f1d1d" stroke-width="1.5" opacity="0.6"/>
+
+                <!-- Snout -->
+                <path d="M-14 -5 Q0 0 14 -5 L14 12 Q0 7 -14 12 Z" fill="#d6d3d1"/>
+                
+                <!-- Mouth/Gums - Deep Red -->
+                <path d="M-16 12 Q0 24 16 12" stroke="#7f1d1d" stroke-width="7" fill="none" stroke-linecap="round"/>
+                
+                <!-- TEETH (Epic amount) -->
+                <path d="M-12 12 L-8 22 L-5 12 Z" fill="#fff"/> <!-- Big Fang L -->
+                <path d="M12 12 L8 22 L5 12 Z" fill="#fff"/>   <!-- Big Fang R -->
+                <path d="M-4 15 L-2 10 L0 15 Z" fill="#fff"/> <!-- Lower -->
+                <path d="M4 15 L2 10 L0 15 Z" fill="#fff"/>   <!-- Lower -->
+                <path d="M-8 15 L-6 10 L-4 15 Z" fill="#fff"/>
+                <path d="M8 15 L6 10 L4 15 Z" fill="#fff"/>
+
+                <!-- Drool/Spit -->
+                <ellipse cx="-10" cy="22" rx="1.5" ry="3" fill="#a5f3fc" opacity="0.8">
+                     <animate attributeName="cy" values="22; 40" dur="0.8s" repeatCount="indefinite"/>
+                     <animate attributeName="opacity" values="0.8; 0" dur="0.8s" repeatCount="indefinite"/>
+                </ellipse>
+                <ellipse cx="10" cy="22" rx="2" ry="4" fill="#a5f3fc" opacity="0.8">
+                     <animate attributeName="cy" values="22; 45" dur="0.7s" begin="0.2s" repeatCount="indefinite"/>
+                     <animate attributeName="opacity" values="0.8; 0" dur="0.7s" begin="0.2s" repeatCount="indefinite"/>
+                </ellipse>
+
+                <!-- Nose (Glossy) -->
+                <ellipse cx="0" cy="-2" rx="8" ry="5" fill="#000"/>
+                <ellipse cx="-2" cy="-3" rx="3" ry="1.5" fill="#fff" opacity="0.4"/> <!-- Shine -->
+
+                <!-- Eyes (One open, one scarred shut/blind) -->
+                <!-- Right Eye (Viewer Right) - Open, Furious -->
+                <path d="M18 -12 L8 -12 L12 -8 Z" fill="#000"/>
+                <circle cx="13" cy="-11" r="1.5" fill="#ef4444"/> <!-- Red pupil/glow for Epic -->
+                <path d="M22 -15 L6 -10" stroke="#292524" stroke-width="2.5" stroke-linecap="round"/> <!-- Brow -->
+
+                <!-- Left Eye (Viewer Left) - Scarred/Closed -->
+                <path d="M-18 -10 L-8 -10" stroke="#292524" stroke-width="2"/>
+                <path d="M-13 -14 L-13 -6" stroke="#57534e" stroke-width="1"/> <!-- Stitch -->
+                <path d="M-22 -14 L-6 -9" stroke="#292524" stroke-width="2" stroke-linecap="round"/> <!-- Brow -->
+
+            </g>
+        </g>
+    </g>
 </svg>
