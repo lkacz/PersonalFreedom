@@ -10,6 +10,10 @@
       <stop offset="100%" stop-color="#8da081"/>
     </linearGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <!-- Zoo Worker cloak (celestial): Dawn Mantle -->
   <g id="cloak_celestial" transform="translate(90 118) scale(0.92) translate(-90 -118)">
     <path d="M68 84 L112 84 L109 95 L105 149 L102 158 L90 161 L78 158 L75 149 L71 95 Z"
@@ -27,5 +31,6 @@
     <circle cx="90" cy="116" r="5.6" fill="#00E5FF" opacity="0.12">
       <animate attributeName="opacity" values="0.08;0.34;0.08" dur="1.8s" repeatCount="indefinite"/>
     </circle>
+  </g>
   </g>
 </svg>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
     <linearGradient id="x_shell" x1="0" y1="0" x2="0" y2="1">
@@ -15,6 +15,9 @@
       <stop offset="100%" stop-color="#00d9ff" stop-opacity="0"/>
     </radialGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
 
   <!-- Celestial: curved holo aegis -->
   <g id="shield_celestial">
@@ -37,4 +40,6 @@
     <rect x="57.4" y="120.2" width="4.8" height="21.8" rx="1.6" fill="#25333d"/>
     <rect x="56.8" y="127.4" width="6.0" height="7.4" rx="2.2" fill="#8aefff" stroke="#2a3944" stroke-width="0.5"/>
   </g>
+  </g>
 </svg>
+

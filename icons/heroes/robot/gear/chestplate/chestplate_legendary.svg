@@ -10,6 +10,10 @@
       <feComposite in="SourceGraphic" in2="blur" operator="over"/>
     </filter>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <g id="chestplate_legendary">
     <!-- Divine Chassis -->
     <path d="M60 50 Q90 45 120 50 L115 120 L90 130 L65 120 Z" 
@@ -35,5 +39,6 @@
     
     <!-- Royal Filigree -->
     <path d="M70 100 Q90 120 110 100" fill="none" stroke="#FFF" stroke-width="1" opacity="0.6"/>
+  </g>
   </g>
 </svg>

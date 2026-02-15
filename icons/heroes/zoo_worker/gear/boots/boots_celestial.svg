@@ -10,6 +10,10 @@
       <stop offset="100%" stop-color="#97866d"/>
     </linearGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <!-- Zoo Worker boots (celestial): Skyline Boots -->
   <g id="boots_celestial" transform="translate(90 194) scale(0.74 0.82) translate(-90 -200)">
     <ellipse cx="74.8" cy="208.0" rx="10.8" ry="2.0" fill="#000000" opacity="0.12"/>
@@ -25,5 +29,6 @@
 
     <path d="M69 195.2 L77.2 195.2 M101.4 195.2 L110.0 195.2" stroke="#00E5FF" stroke-width="0.65" stroke-linecap="round"/><rect x="70" y="197.2" width="6.4" height="1.0" rx="0.3" fill="#00E5FF" opacity="0.85"/><rect x="102" y="197.2" width="6.8" height="1.0" rx="0.3" fill="#00E5FF" opacity="0.85"/><circle cx="74.0" cy="199.1" r="0.8" fill="#00E5FF"/><circle cx="106.0" cy="199.1" r="0.8" fill="#00E5FF"/><path d="M66.8 206.8 L82.8 206.8 M97.2 206.8 L113.2 206.8" stroke="#00E5FF" stroke-width="0.75" stroke-linecap="round" opacity="0.9"/><path d="M63.8 204.0 L66.2 202.6 M117.8 204.0 L115.4 202.6" stroke="#00E5FF" stroke-width="0.9"/><ellipse cx="74.8" cy="207.0" rx="8.0" ry="1.2" fill="#00E5FF" opacity="0.16"><animate attributeName="opacity" values="0.08;0.35;0.08" dur="1.7s" repeatCount="indefinite"/></ellipse>
     <ellipse cx="105.2" cy="207.0" rx="8.4" ry="1.2" fill="#00E5FF" opacity="0.16"><animate attributeName="opacity" values="0.08;0.35;0.08" dur="1.7s" repeatCount="indefinite"/></ellipse>
+  </g>
   </g>
 </svg>

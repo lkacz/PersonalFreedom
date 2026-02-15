@@ -10,6 +10,10 @@
       <stop offset="100%" stop-color="#cbb08b"/>
     </linearGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <!-- Zoo Worker chestplate (celestial): Dawn Vest -->
   <g id="chestplate_celestial" transform="translate(90 108) scale(1.0) translate(-90 -108)">
     <path d="M69 83 L75 78 L105 78 L111 83 L108 136 L72 136 Z" fill="url(#cv_outer_celestial)" stroke="#71614a" stroke-width="0.9"/>
@@ -23,5 +27,6 @@
     <rect x="80" y="111" width="6.8" height="7.8" rx="1.2" fill="#7a8f66" stroke="#4f613f" stroke-width="0.55"/><rect x="93.2" y="111" width="6.8" height="7.8" rx="1.2" fill="#7a8f66" stroke="#4f613f" stroke-width="0.55"/><path d="M74 96 L84 96 M96 96 L106 96" stroke="#00E5FF" stroke-width="0.8" stroke-linecap="round"/><path d="M77 88 C81 85 87 85 90 88 C93 85 99 85 103 88" fill="none" stroke="#00E5FF" stroke-width="0.9"/><rect x="87" y="100" width="6" height="7" rx="1.1" fill="#d8be8d" stroke="#00E5FF" stroke-width="0.9"/><path d="M90 101.5 L90 106" stroke="#00E5FF" stroke-width="0.8"/><circle cx="90" cy="104" r="4.4" fill="#00E5FF" opacity="0.2">
       <animate attributeName="opacity" values="0.1;0.55;0.1" dur="1.8s" repeatCount="indefinite"/>
     </circle>
+  </g>
   </g>
 </svg>

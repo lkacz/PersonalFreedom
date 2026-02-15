@@ -1,4 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
 
   <g id="shield_epic">
     <path d="M33 103 L61 98 L65 122 L59 149 L36 147 L33 129 Z" fill="#2e476f" stroke="#13233a" stroke-width="1.2"/>
@@ -7,4 +10,5 @@
     <path d="M38 111 L59 111 M38 120 L59 120 M38 129 L59 129" stroke="#58739b" stroke-width="0.92" opacity="0.72"/><path d="M40 105 L58 102 L61 118 L57 143 L40 141 L38 125 Z" fill="none" stroke="#9C27B0" stroke-width="0.9" opacity="0.8"/><rect x="42" y="115" width="14" height="2.1" rx="1" fill="#9C27B0" opacity="0.85"><animate attributeName="y" values="115;138;115" dur="2.1s" repeatCount="indefinite"/></rect>
   </g>
 
+  </g>
 </svg>

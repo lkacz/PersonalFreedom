@@ -10,6 +10,10 @@
       <stop offset="100%" stop-color="#4a3a2a"/>
     </linearGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <!-- Zoo Worker helmet (celestial): Storm Brim -->
   <g id="helmet_celestial" transform="translate(90 52) scale(0.34) translate(-90 -52)">
     <path d="M69 70 C69 56 78 48 90 48 C102 48 111 56 111 70 L107 72 L73 72 Z" fill="url(#h_top_celestial)" stroke="#415036" stroke-width="0.9"/>
@@ -24,5 +28,6 @@
       <animate attributeName="r" values="1.8;3.8;1.8" dur="1.7s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.2;0.9;0.2" dur="1.7s" repeatCount="indefinite"/>
     </circle>
+  </g>
   </g>
 </svg>

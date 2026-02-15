@@ -18,7 +18,7 @@
       <stop offset="100%" stop-color="#2c3242"/>
     </linearGradient>
     <style>
-      .body-outline { fill: url(#skinGrad); stroke: #5a4a3a; stroke-width: 0.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+      .body-outline { fill: #f3e5d8; stroke: #5a4a3a; stroke-width: 0.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
       .body-detail { fill: none; stroke: #8a7a6a; stroke-width: 0.55; vector-effect: non-scaling-stroke; }
       .body-subtle { fill: none; stroke: #b0a090; stroke-width: 0.35; vector-effect: non-scaling-stroke; }
       .muscle-line { fill: none; stroke: #c0a888; stroke-width: 0.45; opacity: 0.7; vector-effect: non-scaling-stroke; }

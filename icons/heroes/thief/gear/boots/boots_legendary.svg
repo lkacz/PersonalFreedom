@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
     <linearGradient id="l_boot_shell" x1="0" y1="0" x2="0" y2="1">
@@ -27,6 +27,9 @@
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
     </linearGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
 
   <!-- Legendary: fitted template + orange laces + command-grade metal details -->
   <g id="boots_legendary">
@@ -74,4 +77,6 @@
       <animate attributeName="opacity" values="0;0.74;0" dur="2.8s" repeatCount="indefinite"/>
     </rect>
   </g>
+  </g>
 </svg>
+

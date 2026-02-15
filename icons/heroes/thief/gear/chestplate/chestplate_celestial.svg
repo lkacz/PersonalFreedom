@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
 <defs>
     <linearGradient id="holoField" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -12,6 +12,9 @@
         <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="tint"/></feMerge>
     </filter>
 </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
 <g transform="translate(36, 43) scale(0.6)">
     <!-- Physical Frame (Minimal) -->
     <path d="M68 85 L112 85 L110 140 L70 140 Z" fill="none" stroke="#00BCD4" stroke-width="0.5" opacity="0.5"/>
@@ -37,8 +40,6 @@
         <animate attributeName="stroke-dashoffset" values="0;100" dur="1s" repeatCount="indefinite"/>
     </path>
 </g>
+  </g>
 </svg>
-
-
-
 

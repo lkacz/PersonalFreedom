@@ -1,4 +1,4 @@
-﻿"""
+"""
 Celebration Audio Manager.
 
 Implements a high-quality "Software Synthesizer" using QtMultimedia.

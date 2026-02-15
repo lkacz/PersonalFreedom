@@ -18,6 +18,10 @@
     </filter>
   </defs>
 
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+
   <!-- Underdog trousers: legendary -->
   <g id="cloak_legendary_trousers">
     <path d="M76.0 120.6 Q90.0 126.0 104.0 120.6 L103.6 136.0 Q97.4 141.0 90.0 141.6 Q82.6 141.0 76.4 136.0 Z M82.6 122.2 Q90.0 125.3 97.4 122.2 Q90.0 121.2 82.6 122.2 Z"
@@ -57,5 +61,6 @@
       <animate attributeName="opacity" values="0;0.95;0" dur="1.6s" repeatCount="indefinite"/>
       <animate attributeName="stroke-dashoffset" values="0;7" dur="1.6s" repeatCount="indefinite"/>
     </path>
+  </g>
   </g>
 </svg>

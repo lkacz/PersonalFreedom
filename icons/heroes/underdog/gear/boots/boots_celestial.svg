@@ -14,6 +14,10 @@
     </filter>
   </defs>
 
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+
   <!-- Celestial: smoothest and most rounded -->
   <g id="boots_celestial" transform="translate(90 194) scale(0.68 0.78) translate(-90 -200)">
     <ellipse cx="76.4" cy="207.7" rx="10.9" ry="1.9" fill="#000000" opacity="0.13"/>
@@ -38,5 +42,6 @@
       <animate attributeName="r" values="1.0;2.5;1.0" dur="1.45s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.25;1;0.25" dur="1.45s" repeatCount="indefinite"/>
     </circle>
+  </g>
   </g>
 </svg>

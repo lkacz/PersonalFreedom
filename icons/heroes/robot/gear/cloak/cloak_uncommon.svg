@@ -5,7 +5,11 @@
       <stop offset="100%" stop-color="#1B5E20"/>
     </linearGradient>
   </defs>
-  <g id="cloak_uncommon">
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+  <g id="cloak_uncommon" transform="translate(0, 14)">
     <!-- Military Backpack Unit -->
     <!-- Main Box -->
     <rect x="65" y="80" width="50" height="60" rx="4" fill="url(#c_mil)" stroke="#1B5E20" stroke-width="2"/>
@@ -20,5 +24,6 @@
     <circle cx="110" cy="50" r="2" fill="#F44336">
        <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
     </circle>
+  </g>
   </g>
 </svg>

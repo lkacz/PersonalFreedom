@@ -1,67 +1,66 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <defs>
-    <!-- Deep Space Gradient -->
-    <radialGradient id="spaceGrad" cx="0.5" cy="0.5" r="0.8">
-      <stop offset="0%" stop-color="#1e1b4b" />
-      <stop offset="40%" stop-color="#0f172a" />
-      <stop offset="100%" stop-color="#000000" />
-    </radialGradient>
+    <!-- Thief Tier: "The Shadow Realm" -->
+    <defs>
+        <linearGradient id="nightSky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1e1b4b" />
+            <stop offset="100%" stop-color="#312e81" />
+        </linearGradient>
 
-    <!-- Star Glow -->
-    <radialGradient id="starGlow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.9" />
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
-    </radialGradient>
+        <filter id="cityBlur">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+        </filter>
+        
+        <filter id="smokeBlur">
+            <feGaussianBlur stdDeviation="5" result="blur"/>
+        </filter>
+    </defs>
 
-    <!-- Nebula Cloud Gradient -->
-    <linearGradient id="nebulaGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.2" />
-      <stop offset="50%" stop-color="#ec4899" stop-opacity="0.1" />
-      <stop offset="100%" stop-color="#6366f1" stop-opacity="0.2" />
-    </linearGradient>
-  </defs>
+    <!-- 1. Background: Night Sky -->
+    <rect width="180" height="220" fill="url(#nightSky)" />
 
-  <!-- Space Background -->
-  <rect width="180" height="220" fill="url(#spaceGrad)" />
+    <!-- 2. Distant City Skyline (Blurred) -->
+    <g filter="url(#cityBlur)" opacity="0.6">
+        <!-- Skyscrapers -->
+        <rect x="10" y="80" width="30" height="150" fill="#0f172a" />
+        <rect x="45" y="60" width="25" height="170" fill="#0f172a" />
+        <rect x="80" y="100" width="40" height="130" fill="#1e293b" />
+        <rect x="130" y="50" width="35" height="180" fill="#0f172a" />
+        
+        <!-- Lit Windows (Glitches) -->
+        <rect x="15" y="90" width="4" height="6" fill="#fde047" opacity="0.8">
+             <animate attributeName="opacity" values="0.8;0;0.8" dur="0.5s" repeatCount="indefinite" begin="0s" />
+        </rect>
+        <rect x="50" y="120" width="4" height="6" fill="#fde047" opacity="0.8">
+             <animate attributeName="opacity" values="0.8;0;0.8" dur="3s" repeatCount="indefinite" begin="1s" />
+        </rect>
+        <rect x="140" y="60" width="4" height="6" fill="#fde047" opacity="0.8">
+             <animate attributeName="opacity" values="0.8;0;0.8" dur="4s" repeatCount="indefinite" begin="2s" />
+        </rect>
+    </g>
 
-  <!-- Nebula Clouds -->
-  <path d="M0 0 Q45 50 90 20 T180 0 V220 H0 Z" fill="url(#nebulaGrad)">
-    <animate attributeName="d" values="M0 0 Q45 50 90 20 T180 0 V220 H0 Z; M0 0 Q45 30 90 60 T180 0 V220 H0 Z; M0 0 Q45 50 90 20 T180 0 V220 H0 Z" dur="10s" repeatCount="indefinite" />
-  </path>
-  
-  <path d="M-20 100 Q30 150 90 120 T200 100" stroke="url(#nebulaGrad)" stroke-width="40" fill="none" opacity="0.4" filter="blur(10px)">
-    <animateTransform attributeName="transform" type="translate" values="-10 0; 10 0; -10 0" dur="8s" repeatCount="indefinite" />
-  </path>
-
-  <!-- Stars (Sparkling) -->
-  <g>
-    <circle cx="20" cy="30" r="1.5" fill="#fff">
-      <animate attributeName="opacity" values="0.2;1;0.2" dur="2s" repeatCount="indefinite" begin="0.1s"/>
+    <!-- 3. Foreground Smoke/Fog (Heavy Blur) -->
+    <circle cx="20" cy="200" r="40" fill="#4338ca" opacity="0.4" filter="url(#smokeBlur)">
+         <animate attributeName="cx" values="20;40;20" dur="8s" repeatCount="indefinite" />
     </circle>
-    <circle cx="150" cy="50" r="2" fill="#fff">
-      <animate attributeName="opacity" values="0.2;1;0.2" dur="3s" repeatCount="indefinite" begin="1s"/>
+    <circle cx="160" cy="180" r="50" fill="#4338ca" opacity="0.4" filter="url(#smokeBlur)">
+         <animate attributeName="cx" values="160;140;160" dur="10s" repeatCount="indefinite" />
     </circle>
-    <circle cx="90" cy="180" r="1" fill="#fff">
-      <animate attributeName="opacity" values="0.2;1;0.2" dur="2.5s" repeatCount="indefinite" begin="0.5s"/>
-    </circle>
-    <circle cx="40" cy="140" r="1.2" fill="#fff">
-      <animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite" begin="2s"/>
-    </circle>
-    <circle cx="160" cy="160" r="1.5" fill="#fff">
-      <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" begin="0s"/>
-    </circle>
-  </g>
 
-  <!-- Shooting Star -->
-  <path d="M-10 20 L40 50" stroke="url(#starGlow)" stroke-width="2" stroke-linecap="round">
-    <animate attributeName="d" values="M-20 10 L-10 20; M190 120 L200 130" dur="3s" repeatCount="indefinite" keyTimes="0; 1" begin="3s"/>
-    <animate attributeName="opacity" values="1;0" dur="3s" repeatCount="indefinite" begin="3s"/>
-  </path>
-  
-  <!-- Central Cosmic Flare/Supernova (Optional center piece for hero) -->
-  <circle cx="90" cy="110" r="60" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.3">
-     <animate attributeName="r" values="50;60;50" dur="4s" repeatCount="indefinite" />
-     <animate attributeName="opacity" values="0.1;0.3;0.1" dur="4s" repeatCount="indefinite" />
-  </circle>
+    <!-- 4. Subtle Falling "Loot" Sparkle (Sharp) -->
+    <g fill="#fff" opacity="0.8">
+        <path d="M50 50 L52 55 L50 60 L48 55 Z" opacity="0">
+             <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" />
+             <animate attributeName="transform" type="translate" from="0 0" to="0 20" dur="2s" repeatCount="indefinite" />
+        </path>
+         <path d="M120 80 L122 85 L120 90 L118 85 Z" opacity="0">
+             <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="1s" />
+             <animate attributeName="transform" type="translate" from="0 0" to="0 20" dur="2.5s" repeatCount="indefinite" begin="1s" />
+        </path>
+    </g>
+    
+    <!-- 5. Searchlight Beam (Overlay) -->
+    <path d="M-20 0 L100 220 L140 220 L20 0 Z" fill="#fff" opacity="0.05">
+          <animateTransform attributeName="transform" type="rotate" values="-20 60 110; 20 60 110; -20 60 110" dur="8s" repeatCount="indefinite" />
+    </path>
 
 </svg>

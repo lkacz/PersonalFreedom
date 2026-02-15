@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Preview Entity SVG Graphics - View all entity icons in a grid."""
 
 import sys
@@ -206,7 +206,7 @@ class EntityCard(QFrame):
         layout.addWidget(name_label, 0, Qt.AlignCenter)
         
         # Power label
-        power_label = QLabel(f"âš”ď¸Ź Power: {power}")
+        power_label = QLabel(f"⚔️ Power: {power}")
         power_label.setAlignment(Qt.AlignCenter)
         power_label.setFont(QFont("Segoe UI", 9))
         power_label.setStyleSheet("color: #FFFFFF;")
@@ -275,7 +275,7 @@ class EntityPreviewWindow(QMainWindow):
         main_layout = QVBoxLayout(central)
         
         # Header
-        header = QLabel(f"âś¨ ENTITIDEX - Complete Entity Collection ({total_entities} Entities)")
+        header = QLabel(f"✨ ENTITIDEX - Complete Entity Collection ({total_entities} Entities)")
         header.setFont(QFont("Segoe UI", 18, QFont.Bold))
         header.setAlignment(Qt.AlignCenter)
         header.setStyleSheet("color: #a5b4fc; margin: 10px;")
@@ -288,13 +288,13 @@ class EntityPreviewWindow(QMainWindow):
         """)
         
         theme_info = {
-            "warrior": ("đź—ˇď¸Ź Warrior", "#C62828"),
-            "scholar": ("đź“š Scholar", "#6A1B9A"),
-            "underdog": ("đź’Ş Underdog", "#E65100"),
-            "scientist": ("đź”¬ Scientist", "#1565C0"),
-            "wanderer": ("đź—şď¸Ź Wanderer", "#2E7D32"),
-            "robot": ("đź¤– Robot", "#455A64"),
-            "space_pirate": ("đźŹ€ Space Pirate", "#1E3A5F"),
+            "warrior": ("🗡️ Warrior", "#C62828"),
+            "scholar": ("📚 Scholar", "#6A1B9A"),
+            "underdog": ("💪 Underdog", "#E65100"),
+            "scientist": ("🔬 Scientist", "#1565C0"),
+            "wanderer": ("🗺️ Wanderer", "#2E7D32"),
+            "robot": ("🤖 Robot", "#455A64"),
+            "space_pirate": ("🏴‍☠️ Space Pirate", "#1E3A5F"),
             "thief": ("Thief", "#4B3621"),
             "zoo_worker": ("Zoo Worker", "#2E5D50"),
         }
@@ -337,7 +337,7 @@ class EntityPreviewWindow(QMainWindow):
                     col = 0
                     row += 1
             else:
-                missing_label = QLabel(f"âťŚ Missing:\n{svg_file}")
+                missing_label = QLabel(f"❌ Missing:\n{svg_file}")
                 missing_label.setAlignment(Qt.AlignCenter)
                 missing_label.setStyleSheet("color: #FF5252; background: #2D2D2D; padding: 20px; border-radius: 8px;")
                 missing_label.setFixedSize(180, 220)

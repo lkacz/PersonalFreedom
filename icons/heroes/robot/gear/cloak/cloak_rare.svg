@@ -5,6 +5,10 @@
       <stop offset="100%" stop-color="#90CAF9"/>
     </linearGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <g id="cloak_rare">
     <!-- Jetpack Unit -->
     <!-- Center Core -->
@@ -25,5 +29,6 @@
     <path d="M110 125 L115 140 L120 125" fill="#03A9F4" opacity="0.6">
         <animate attributeName="d" values="M110 125 L115 140 L120 125; M110 125 L115 145 L120 125; M110 125 L115 140 L120 125" dur="0.2s" repeatCount="indefinite"/>
     </path>
+  </g>
   </g>
 </svg>

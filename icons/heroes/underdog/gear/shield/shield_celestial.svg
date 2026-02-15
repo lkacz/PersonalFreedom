@@ -18,6 +18,10 @@
     </filter>
   </defs>
 
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+
   <!-- Celestial suitcase shield -->
   <g id="shield_celestial" transform="translate(-25 42) translate(62 149) scale(1.55 1.55) translate(-62 -149) rotate(-6 62 149)">
     <ellipse cx="62.2" cy="160.4" rx="10.9" ry="3.1" fill="#000000" opacity="0.18"/>
@@ -33,5 +37,6 @@
       <animate attributeName="r" values="2.8;5.2;2.8" dur="1.7s" repeatCount="indefinite"/>
       <animate attributeName="opacity" values="0.24;0.98;0.24" dur="1.7s" repeatCount="indefinite"/>
     </circle>
+  </g>
   </g>
 </svg>

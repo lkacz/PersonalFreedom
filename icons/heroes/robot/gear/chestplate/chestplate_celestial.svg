@@ -1,6 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
 
-  <g id="chestplate_celestial">
+
+  <g id="chestplate_celestial" transform="translate(0, -14)">
     <path d="M66 80 L114 80 L111 136 L69 136 Z" fill="#334966" stroke="#1d2d48" stroke-width="1.25"/>
     <path d="M72 86 L108 86 L105.5 129 L74.5 129 Z" fill="#445d81" opacity="0.92"/>
     <path d="M71 89 Q90 100 109 89" stroke="#617ba4" stroke-width="0.95" opacity="0.75" fill="none"/>
@@ -13,4 +16,5 @@
     <ellipse cx="90" cy="104" rx="22" ry="10" fill="none" stroke="#00E5FF" stroke-width="1.1" opacity="0.56"/><ellipse cx="90" cy="104" rx="16" ry="7" fill="none" stroke="#b5f4ff" stroke-width="0.85" opacity="0.55"/>
   </g>
 
+  </g>
 </svg>

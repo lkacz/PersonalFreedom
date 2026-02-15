@@ -1,16 +1,117 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+    <!-- Advanced Factory Tier: "The Fabrication Cradle" -->
+    <defs>
+        <!-- Dark Factory Atmosphere -->
+        <linearGradient id="factoryDark" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0f172a" />
+            <stop offset="100%" stop-color="#1e293b" />
+        </linearGradient>
 
-  <g id="fx_celestial">
-    <rect x="60" y="0" width="60" height="220" fill="#00E5FF" opacity="0.05"/>
-    <ellipse cx="90" cy="100" rx="30" ry="14" fill="#00E5FF" opacity="0.11"/>
-    <ellipse cx="90" cy="100" rx="38" ry="18" fill="none" stroke="#00E5FF" stroke-width="1.2" opacity="0.72"/>
-    <ellipse cx="90" cy="100" rx="32" ry="15" fill="none" stroke="#9ff7ff" stroke-width="0.9" opacity="0.58"/>
-    <path d="M90 68 L90 132" stroke="#bdf9ff" stroke-width="1.1" opacity="0.55"/>
-    <path d="M58 100 L122 100" stroke="#bdf9ff" stroke-width="1.1" opacity="0.55"/>
-    <circle cx="60" cy="88" r="1.4" fill="#9bf6ff"/>
-    <circle cx="120" cy="92" r="1.3" fill="#9bf6ff"/>
-    <circle cx="104" cy="116" r="1.2" fill="#9bf6ff"/>
-    <circle cx="76" cy="116" r="1.2" fill="#9bf6ff"/>
-  </g>
+        <!-- Metallic Surface -->
+        <linearGradient id="metalPanel" x1="0" y1="0" x2="1" y2="0">
+             <stop offset="0%" stop-color="#334155" />
+             <stop offset="50%" stop-color="#475569" />
+             <stop offset="100%" stop-color="#334155" />
+        </linearGradient>
+
+        <!-- Warning Hazard Stripe (Manual pattern for Qt compatibility) -->
+        <linearGradient id="hazard" x1="0" y1="0" x2="1" y2="0">
+             <stop offset="0" stop-color="#f59e0b"/>
+             <stop offset="0.5" stop-color="#fbbf24"/>
+             <stop offset="1" stop-color="#f59e0b"/>
+        </linearGradient>
+
+        <!-- Laser Scanner -->
+        <linearGradient id="laserBeam" x1="0" y1="0" x2="0" y2="1">
+             <stop offset="0%" stop-color="#ef4444" stop-opacity="0" />
+             <stop offset="45%" stop-color="#ef4444" stop-opacity="0.8" />
+             <stop offset="55%" stop-color="#ef4444" stop-opacity="0.8" />
+             <stop offset="100%" stop-color="#ef4444" stop-opacity="0" />
+        </linearGradient>
+
+        <!-- Depth of Field Blur -->
+        <filter id="depthBlur" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+        </filter>
+        
+        <!-- Slight Blur for Mid-ground -->
+        <filter id="softBlur" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="1" result="blur"/>
+        </filter>
+    </defs>
+
+    <!-- 1. Background Shell -->
+    <rect width="180" height="220" fill="url(#factoryDark)" />
+
+    <!-- 2. BLURRED BACKGROUND MACHINERY (Simulation of depth) -->
+    <g filter="url(#depthBlur)" opacity="0.6">
+        <!-- Distant Pillars -->
+        <rect x="20" y="0" width="20" height="220" fill="#1e293b" />
+        <rect x="140" y="0" width="20" height="220" fill="#1e293b" />
+        
+        <!-- Moving Piston/Press (Bg) -->
+        <rect x="60" y="-100" width="60" height="150" fill="#0f172a" stroke="#334155" stroke-width="2">
+            <animate attributeName="y" values="-100; -20; -100" dur="8s" repeatCount="indefinite" />
+        </rect>
+        
+        <!-- Sparks in distance -->
+        <circle cx="90" cy="100" r="2" fill="#fbbf24">
+             <animate attributeName="opacity" values="0;1;0" dur="0.2s" repeatCount="indefinite" begin="1s"/>
+        </circle>
+    </g>
+
+    <!-- 3. Mid-Ground: Assembly Frame (Slightly blurred) -->
+    <g filter="url(#softBlur)">
+        <!-- Vertical Gantry Rails -->
+        <rect x="10" y="20" width="5" height="180" fill="url(#metalPanel)" />
+        <rect x="165" y="20" width="5" height="180" fill="url(#metalPanel)" />
+        
+        <!-- Cross Braces -->
+        <path d="M15 40 L165 60" stroke="#334155" stroke-width="2" opacity="0.5"/>
+        <path d="M15 160 L165 140" stroke="#334155" stroke-width="2" opacity="0.5"/>
+    </g>
+
+    <!-- 4. Foreground: The fabrication Platform (Sharp) -->
+    <!-- Floor Platform -->
+    <path d="M20 220 L40 190 H140 L160 220 Z" fill="#334155" stroke="#475569" stroke-width="1" />
+    <path d="M40 190 H140" stroke="#fbbf24" stroke-width="2" stroke-dasharray="10,5" opacity="0.8" />
+    
+    <!-- Robotic Arm (Left) - Stylized -->
+    <g transform="translate(0, 100)">
+        <path d="M0 0 L30 20 L20 60" fill="none" stroke="#475569" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+            <animate attributeName="d" values="M0 0 L30 20 L20 60; M0 0 L25 40 L15 60; M0 0 L30 20 L20 60" dur="5s" repeatCount="indefinite" />
+        </path>
+         <!-- Joint -->
+        <circle cx="30" cy="20" r="6" fill="#64748b">
+             <animate attributeName="cx" values="30;25;30" dur="5s" repeatCount="indefinite"/>
+             <animate attributeName="cy" values="20;40;20" dur="5s" repeatCount="indefinite"/>
+        </circle>
+    </g>
+
+    <!-- Robotic Arm (Right) - Welder -->
+    <g transform="translate(180, 80) scale(-1, 1)">
+         <path d="M0 0 L40 30 L30 80" fill="none" stroke="#475569" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+            <animate attributeName="d" values="M0 0 L40 30 L30 80; M0 0 L35 10 L25 80; M0 0 L40 30 L30 80" dur="4s" repeatCount="indefinite" />
+         </path>
+         <!-- Welder Tip -->
+         <circle cx="30" cy="80" r="4" fill="#ef4444">
+             <animate attributeName="cx" values="30;25;30" dur="4s" repeatCount="indefinite"/>
+             <animate attributeName="fill" values="#ef4444;#fbbf24;#ef4444" dur="0.1s" repeatCount="indefinite"/>
+         </circle>
+    </g>
+
+    <!-- 5. Active Holographic Scanner (Scanning the Hero) -->
+    <rect x="0" y="0" width="180" height="2" fill="url(#laserBeam)" opacity="0.6">
+        <animate attributeName="y" values="0; 220" dur="3s" repeatCount="indefinite" />
+        <animate attributeName="height" values="2; 10; 2" dur="3s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0; 0.8; 0" dur="3s" repeatCount="indefinite" />
+    </rect>
+    
+    <!-- Floating Data Hexagons (Subtle) -->
+    <g transform="translate(90, 110)" opacity="0.4">
+         <path d="M-50 0 L-25 -43 L25 -43 L50 0 L25 43 L-25 43 Z" fill="none" stroke="#00e5ff" stroke-width="1" stroke-dasharray="5,10">
+              <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="20s" repeatCount="indefinite"/>
+         </path>
+    </g>
 
 </svg>

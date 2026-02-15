@@ -5,6 +5,10 @@
       <stop offset="100%" stop-color="#00B0FF"/>
     </radialGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <g id="amulet_rare">
     <!-- Arc Core Pendant -->
     <path d="M85 85 Q90 95 95 85" fill="none" stroke="#00B0FF" stroke-width="1"/>
@@ -16,5 +20,6 @@
     <circle cx="90" cy="96" r="3" fill="url(#a_core)">
         <animate attributeName="opacity" values="0.8;1;0.8" dur="1s" repeatCount="indefinite"/>
     </circle>
+  </g>
   </g>
 </svg>

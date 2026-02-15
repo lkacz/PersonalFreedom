@@ -5,7 +5,11 @@
       <stop offset="100%" stop-color="#FFD700" stop-opacity="0.5"/>
     </radialGradient>
   </defs>
-  <g id="cloak_legendary">
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+  <g id="cloak_legendary" transform="translate(9, 28) scale(0.9)">
     <!-- Divine Light Wings -->
     <!-- Center Node -->
     <circle cx="90" cy="80" r="10" fill="#FFD700" stroke="#FFFFFF" stroke-width="2"/>
@@ -22,5 +26,6 @@
     <line x1="90" y1="80" x2="90" y2="40" stroke="#FFD700" stroke-width="2" stroke-dasharray="2,2"/>
     <line x1="90" y1="80" x2="60" y2="60" stroke="#FFD700" stroke-width="2" stroke-dasharray="2,2"/>
     <line x1="90" y1="80" x2="120" y2="60" stroke="#FFD700" stroke-width="2" stroke-dasharray="2,2"/>
+  </g>
   </g>
 </svg>

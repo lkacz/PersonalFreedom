@@ -5,7 +5,7 @@
       <stop offset="100%" stop-color="#FFFFFF"/>
     </linearGradient>
   </defs>
-  <g id="weapon_rare" transform="rotate(-10 130 130)">
+  <g id="weapon_rare" transform="translate(0, 5) rotate(-10 130 130)">
     <!-- Plasma Rifle -->
     <!-- Stock/Grip -->
     <path d="M125 140 L135 140 L130 160 Z" fill="#1565C0"/>

@@ -11,6 +11,10 @@
       <stop offset="100%" stop-color="#E65100"/>
     </linearGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <!-- Zoo Worker shield (legendary): Lion's Aegis -->
   <g id="shield_legendary" transform="translate(95 132) scale(0.84) translate(-90 -126)">
     <!-- Shadow -->
@@ -37,5 +41,6 @@
     <circle cx="60" cy="122" r="1.5" fill="#FFFF00" opacity="0">
        <animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite"/>
     </circle>
+  </g>
   </g>
 </svg>

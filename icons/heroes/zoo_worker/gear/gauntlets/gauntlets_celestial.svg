@@ -10,6 +10,10 @@
       <stop offset="100%" stop-color="#f2f2f2"/>
     </linearGradient>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <!-- Zoo Worker gauntlets (celestial): Scaleproof Gloves -->
   <g id="gauntlets_celestial" transform="translate(90 128) scale(1.0) translate(-90 -128)">
     <ellipse cx="72.6" cy="141.0" rx="3.2" ry="2.1" fill="#2b2118" opacity="0.28"/>
@@ -22,5 +26,6 @@
     <rect x="104.1" y="139.8" width="6.5" height="1.2" rx="0.5" fill="url(#g_cuff_celestial)" opacity="0.95"/>
     <path d="M70.6 138.0 L73.8 138.0 M105.6 138.0 L108.8 138.0" stroke="#d9c49f" stroke-width="0.38"/><circle cx="71.6" cy="137.4" r="0.9" fill="#00E5FF"/><circle cx="106.8" cy="137.4" r="0.9" fill="#00E5FF"/><path d="M70.8 136.8 L74.8 136.8 M105.2 136.8 L109.2 136.8" stroke="#00E5FF" stroke-width="0.55"/><path d="M72.8 139.8 L74.1 141.2 L72.8 142.6 M107.2 139.8 L105.9 141.2 L107.2 142.6" fill="none" stroke="#00E5FF" stroke-width="0.55"/><circle cx="71.9" cy="141.0" r="1.35" fill="#00E5FF" opacity="0.3"><animate attributeName="opacity" values="0.1;0.7;0.1" dur="1.6s" repeatCount="indefinite"/></circle>
     <circle cx="106.1" cy="141.0" r="1.35" fill="#00E5FF" opacity="0.3"><animate attributeName="opacity" values="0.1;0.7;0.1" dur="1.6s" repeatCount="indefinite"/></circle>
+  </g>
   </g>
 </svg>

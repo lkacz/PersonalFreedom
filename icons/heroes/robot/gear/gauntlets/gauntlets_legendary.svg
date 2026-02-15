@@ -9,6 +9,10 @@
       <feComposite in="SourceGraphic" in2="blur" operator="over"/>
     </filter>
   </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
   <g id="gauntlets_legendary">
     <!-- Divine Cannons -->
     <path d="M35 110 Q50 100 65 110 L60 150 L40 150 Z" fill="url(#g_gold)" stroke="#FF6F00" stroke-width="1.5"/>
@@ -28,5 +32,6 @@
     <!-- Filigree -->
     <path d="M40 120 L50 130 L60 120" fill="none" stroke="#FFF" opacity="0.5"/>
     <path d="M120 120 L130 130 L140 120" fill="none" stroke="#FFF" opacity="0.5"/>
+  </g>
   </g>
 </svg>

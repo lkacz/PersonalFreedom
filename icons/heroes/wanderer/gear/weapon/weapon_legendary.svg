@@ -1,4 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
 
   <g id="weapon_legendary" transform="rotate(-24 121 131)">
     <rect x="115.2" y="126" width="10.2" height="36" rx="3" fill="#21354f" stroke="#111c2d" stroke-width="1"/>
@@ -11,4 +14,5 @@
     <path d="M126 103.5 Q139 96 146 108" stroke="#FF9800" stroke-width="0.9" fill="none" opacity="0.82"/><path d="M127 111.5 Q139 106 147 99" stroke="#FF9800" stroke-width="0.82" fill="none" opacity="0.75"/><circle cx="142" cy="102.5" r="1.5" fill="#FF9800" opacity="0.95"/><path d="M124 124 L128 120 L131 126 L127 130 Z" fill="#2c4564" stroke="#FF9800" stroke-width="0.84"/><path d="M124 106 Q140 94 151 106" stroke="#FF9800" stroke-width="1.22" fill="none" opacity="0.9"/><path d="M126 118 Q140 112 149 105" stroke="#FF9800" stroke-width="0.86" fill="none" opacity="0.8"><animate attributeName="opacity" values="0.45;1;0.45" dur="1.5s" repeatCount="indefinite"/></path>
   </g>
 
+  </g>
 </svg>

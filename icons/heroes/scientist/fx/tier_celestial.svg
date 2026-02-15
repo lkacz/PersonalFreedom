@@ -1,16 +1,75 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+    <!-- Scientist Tier: "The Quantum Lab" -->
+    <defs>
+        <linearGradient id="labClean" x1="0" y1="0.5" x2="1" y2="0.5">
+            <stop offset="0%" stop-color="#0f172a" />
+            <stop offset="50%" stop-color="#1e293b" />
+            <stop offset="100%" stop-color="#0f172a" />
+        </linearGradient>
 
-  <g id="fx_celestial">
-    <rect x="60" y="0" width="60" height="220" fill="#00E5FF" opacity="0.045"/>
-    <ellipse cx="90" cy="100" rx="31" ry="14.3" fill="#00E5FF" opacity="0.1"/>
-    <ellipse cx="90" cy="100" rx="39" ry="18.3" fill="none" stroke="#00E5FF" stroke-width="1.12" opacity="0.7"/>
-    <ellipse cx="90" cy="100" rx="33" ry="15.1" fill="none" stroke="#b1f9ff" stroke-width="0.88" opacity="0.58"/>
-    <path d="M90 67 L90 133" stroke="#bdf9ff" stroke-width="1" opacity="0.55"/>
-    <path d="M57 100 L123 100" stroke="#bdf9ff" stroke-width="1" opacity="0.55"/>
-    <circle cx="60" cy="88" r="1.2" fill="#9bf6ff"/>
-    <circle cx="120" cy="92" r="1.15" fill="#9bf6ff"/>
-    <circle cx="104" cy="116" r="1.08" fill="#9bf6ff"/>
-    <circle cx="76" cy="116" r="1.08" fill="#9bf6ff"/>
-  </g>
+        <linearGradient id="fluidTube" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#10b981" stop-opacity="0.6" />
+            <stop offset="50%" stop-color="#34d399" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#10b981" stop-opacity="0.6" />
+        </linearGradient>
 
+        <filter id="labBlur">
+             <feGaussianBlur stdDeviation="4"/>
+        </filter>
+        
+        <filter id="glowBlur">
+             <feGaussianBlur stdDeviation="2"/>
+        </filter>
+    </defs>
+
+    <!-- 1. Background -->
+    <rect width="180" height="220" fill="url(#labClean)" />
+
+    <!-- 2. Blurred Lab Equipment (Background) -->
+    <g filter="url(#labBlur)" opacity="0.5">
+        <!-- Giant Glass Vats -->
+        <rect x="15" y="40" width="40" height="150" rx="10" fill="#334155" stroke="#64748b" stroke-width="2" />
+        <rect x="19" y="44" width="32" height="142" rx="8" fill="url(#fluidTube)">
+             <animate attributeName="fill-opacity" values="0.6;0.8;0.6" dur="3s" repeatCount="indefinite"/>
+        </rect>
+
+        <rect x="125" y="40" width="40" height="150" rx="10" fill="#334155" stroke="#64748b" stroke-width="2" />
+        <rect x="129" y="44" width="32" height="142" rx="8" fill="url(#fluidTube)">
+             <animate attributeName="fill-opacity" values="0.6;0.8;0.6" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+        </rect>
+        
+        <!-- Overhead Pipes -->
+        <path d="M0 20 H180" stroke="#475569" stroke-width="8" stroke-dasharray="10,5" />
+    </g>
+
+    <!-- 3. Rising Bubbles (Blurred background) -->
+    <g filter="url(#labBlur)" fill="#a7f3d0" opacity="0.6">
+        <circle cx="35" cy="180" r="3">
+            <animate attributeName="cy" from="180" to="50" dur="4s" repeatCount="indefinite" />
+        </circle>
+        <circle cx="145" cy="170" r="4">
+            <animate attributeName="cy" from="170" to="40" dur="5s" repeatCount="indefinite" begin="1s"/>
+        </circle>
+    </g>
+
+    <!-- 4. Foreground: Holographic Data -->
+    <g transform="translate(90, 110)">
+         <!-- Rotating rings -->
+         <ellipse rx="70" ry="20" fill="none" stroke="#22d3ee" stroke-width="1" opacity="0.4">
+             <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="10s" repeatCount="indefinite"/>
+         </ellipse>
+         <ellipse rx="70" ry="20" fill="none" stroke="#22d3ee" stroke-width="1" opacity="0.4" transform="rotate(60)">
+             <animateTransform attributeName="transform" type="rotate" from="60 0 0" to="420 0 0" dur="10s" repeatCount="indefinite"/>
+         </ellipse>
+         <ellipse rx="70" ry="20" fill="none" stroke="#22d3ee" stroke-width="1" opacity="0.4" transform="rotate(-60)">
+             <animateTransform attributeName="transform" type="rotate" from="-60 0 0" to="300 0 0" dur="10s" repeatCount="indefinite"/>
+         </ellipse>
+    </g>
+    
+    <!-- 5. Floating Hexagons (Sharp Foreground) -->
+    <g opacity="0.8" fill="none" stroke="#06b6d4">
+        <path d="M10 10 L20 15 L20 25 L10 30 L0 25 L0 15 Z" transform="translate(140, 30)">
+             <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/>
+        </path>
+    </g>
 </svg>

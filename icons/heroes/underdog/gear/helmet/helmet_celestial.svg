@@ -15,6 +15,10 @@
     </radialGradient>
   </defs>
 
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+
   <!-- Celestial headphones: astral over-ear -->
   <g id="helmet_celestial" transform="translate(90 52) scale(0.68 0.68) translate(-90 -64)">
     <path d="M78.0 59.5 Q90.0 50.8 102.0 59.5" fill="none" stroke="url(#ce_band)" stroke-width="2.7" stroke-linecap="round"/>
@@ -30,5 +34,6 @@
       <animate attributeName="opacity" values="0.24;0.95;0.24" dur="1.8s" repeatCount="indefinite"/>
     </circle>
     <path d="M89.6 55.0 A4.0 2.0 0 0 1 93.6 55.0" fill="none" stroke="#9ef3ff" stroke-width="0.62" opacity="0.82"/>
+  </g>
   </g>
 </svg>
