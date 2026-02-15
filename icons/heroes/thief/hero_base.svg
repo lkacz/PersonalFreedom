@@ -1,30 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-    <!-- Thief Base V3: Realistic Anatomy, Definitive Muscle Groups, Tactical Detail -->
+    <!-- Thief Base V4: Handsome Remaster
+         - Improved Facial Geometry (Strong Jaw, Expressive Eyes)
+         - Detailed Hair (Modern Undercut/Messy Style)
+         - Refined Hands (Anatomical Gloves)
+         - Enhanced Shading & Depth
+         - PRESERVED GEOMETRY: Head 20px wide (x80-100), Shoulders ~44px wide
+    -->
     <defs>
-        <!-- Skin: Natural warm tone -->
+        <!-- Skin: Radiant warm tone with subsurface scattering effect -->
         <linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#FFCCBC"/> 
-            <stop offset="100%" stop-color="#D8A890"/>
+            <stop offset="0%" stop-color="#FFD1BA"/>  <!-- Highlight -->
+            <stop offset="50%" stop-color="#E0B098"/> <!-- Midtone -->
+            <stop offset="100%" stop-color="#BF907A"/> <!-- Shadow -->
         </linearGradient>
 
-        <!-- Suit: Tech-Stealth Fabric (Matte with sheen) -->
-        <linearGradient id="suitGrad" x1="0" y1="0" x2="0.8" y2="1">
-            <stop offset="0%" stop-color="#455A64"/>     <!-- Light hit -->
-            <stop offset="40%" stop-color="#263238"/>    <!-- Base -->
-            <stop offset="100%" stop-color="#102027"/>   <!-- Shadow -->
+        <!-- Hair: Deep Brunette with Shine -->
+        <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#5D4037"/>
+            <stop offset="40%" stop-color="#3E2723"/>
+            <stop offset="100%" stop-color="#281A15"/>
         </linearGradient>
 
-        <!-- Muscles: Subtle highlight for definition -->
-        <linearGradient id="muscleHighlight" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.1"/>
-            <stop offset="100%" stop-color="#000000" stop-opacity="0.1"/>
+        <!-- Suit: High-Tech Stealth Texture -->
+        <linearGradient id="suitGrad" x1="0.2" y1="0" x2="0.8" y2="1">
+            <stop offset="0%" stop-color="#546E7A"/>
+            <stop offset="50%" stop-color="#37474F"/>
+            <stop offset="100%" stop-color="#263238"/>
         </linearGradient>
+        
+        <!-- Suit Mesh Pattern -->
+        <pattern id="meshPattern" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
+             <circle cx="2" cy="2" r="0.5" fill="#000" opacity="0.2"/>
+        </pattern>
 
         <!-- Leather Gear -->
-        <linearGradient id="leatherGrad" x1="0" y1="0" x2="0" y2="1">
-             <stop offset="0%" stop-color="#424242"/>
+        <linearGradient id="leatherGrad" x1="0" y1="0" x2="1" y2="1">
+             <stop offset="0%" stop-color="#616161"/>
              <stop offset="100%" stop-color="#212121"/>
+        </linearGradient>
+        
+        <!-- Glove Gradient -->
+        <linearGradient id="gloveGrad" x1="0" y1="0" x2="0" y2="1">
+             <stop offset="0%" stop-color="#424242"/>
+             <stop offset="100%" stop-color="#000000"/>
         </linearGradient>
         
         <!-- Drop Shadow -->
@@ -45,100 +64,162 @@
 
         <g transform="translate(-90, -205)">
 
-            <!-- LEGS (Realistic Segmentation) -->
+            <!-- === LEGS === -->
             <!-- Left Leg (Background) -->
             <path d="M85 140 Q80 160 82 175 Q85 195 90 205 L108 205 Q115 170 110 140 L85 140 Z" fill="url(#suitGrad)"/>
+            <path d="M85 140 Q80 160 82 175 Q85 195 90 205 L108 205 Q115 170 110 140 L85 140 Z" fill="url(#meshPattern)" opacity="0.3"/>
             
             <!-- Right Leg (Foreground) -->
             <path d="M70 140 Q62 165 65 185 Q68 200 62 205 L82 205 Q88 170 95 140 L70 140 Z" fill="url(#suitGrad)"/>
+            <path d="M70 140 Q62 165 65 185 Q68 200 62 205 L82 205 Q88 170 95 140 L70 140 Z" fill="url(#meshPattern)" opacity="0.3"/>
+            
+            <!-- Knee Pads -->
+            <path d="M82 170 L95 172 L93 185 L84 183 Z" fill="url(#leatherGrad)" opacity="0.8"/> <!-- Left -->
+            <path d="M64 175 L78 177 L76 190 L66 188 Z" fill="url(#leatherGrad)" opacity="0.8"/> <!-- Right -->
 
-            <!-- Boots (Base Layer) -->
-            <path d="M62 195 L82 195 L80 208 L60 208 Z" fill="url(#leatherGrad)"/>
-            <path d="M90 195 L110 195 L112 208 L88 208 Z" fill="url(#leatherGrad)"/>
+            <!-- Boots (Refined Shape) -->
+            <path d="M62 195 L82 195 L82 200 L80 208 L60 208 L60 200 Z" fill="url(#leatherGrad)"/>
+            <path d="M60 208 L80 208" stroke="#000" stroke-width="2"/> <!-- Sole -->
+            <path d="M90 195 L110 195 L110 200 L112 208 L88 208 L88 200 Z" fill="url(#leatherGrad)"/>
+            <path d="M88 208 L112 208" stroke="#000" stroke-width="2"/> <!-- Sole -->
 
-            <!-- TORSO (Anatomical V-Taper) -->
+            <!-- === TORSO === -->
             <g id="torso_group">
                 <!-- Abdomen Core -->
-                <path d="M75 120 L105 120 L98 145 L82 145 Z" fill="#263238" stroke="#102027" stroke-width="0.5"/>
+                <path d="M75 120 L105 120 L100 145 L80 145 Z" fill="#263238" stroke="#102027" stroke-width="0.5"/>
+                <!-- Abs Definition -->
+                <path d="M82 120 Q90 125 98 120" stroke="#000" stroke-opacity="0.3" stroke-width="1" fill="none"/>
+                <path d="M83 130 Q90 135 97 130" stroke="#000" stroke-opacity="0.3" stroke-width="1" fill="none"/>
                 
                 <!-- Latissimus Dorsi (Lats) & Ribcage -->
                 <path d="M65 85 Q60 100 75 120 L105 120 Q120 100 115 85 L90 85 Z" fill="url(#suitGrad)"/>
 
-                <!-- Pectorals (Chest Definition) -->
-                <path d="M68 85 Q75 105 90 105 Q105 105 112 85" fill="none" stroke="#102027" stroke-width="0.5" opacity="0.4"/>
-                <line x1="90" y1="85" x2="90" y2="105" stroke="#102027" stroke-width="0.5" opacity="0.3"/>
-
+                <!-- Pectorals (Enhanced) -->
+                <path d="M68 85 Q75 110 90 110 Q105 110 112 85" fill="url(#suitGrad)" stroke="none" opacity="0.8"/>
+                <path d="M90 85 L90 110" stroke="#000" stroke-opacity="0.2" stroke-width="1"/>
+                
+                <!-- Tactical Vest Details -->
+                <path d="M72 90 L85 105" stroke="#37474F" stroke-width="3" opacity="0.5"/>
+                <path d="M108 90 L95 105" stroke="#37474F" stroke-width="3" opacity="0.5"/>
+                
                 <!-- Utility Belt -->
-                <rect x="78" y="142" width="24" height="8" rx="1" fill="#4E342E" stroke="#3E2723" stroke-width="1"/>
-                <rect x="88" y="142" width="4" height="8" fill="#8D6E63"/> <!-- Buckle -->
+                <rect x="78" y="142" width="24" height="8" rx="2" fill="#3E2723" stroke="#261815" stroke-width="1"/>
+                <rect x="88" y="142" width="4" height="8" fill="#BCAAA4"/> <!-- Metal Buckle -->
+                <rect x="80" y="144" width="2" height="4" fill="#5D4037"/> <!-- Pouch L -->
+                <rect x="98" y="144" width="2" height="4" fill="#5D4037"/> <!-- Pouch R -->
             </g>
 
-            <!-- ARMS (Musculature) -->
+            <!-- === ARMS === -->
             <!-- Left Arm -->
             <g>
                 <!-- Shoulder (Deltoid) -->
                 <circle cx="62" cy="85" r="9" fill="url(#suitGrad)"/>
-                <!-- Bicep/Tricep -->
+                <circle cx="62" cy="85" r="7" fill="url(#meshPattern)" opacity="0.4"/>
+                
+                <!-- Bicep -->
                 <path d="M55 88 Q50 100 58 115 L68 112 Q70 100 68 88 Z" fill="url(#suitGrad)"/>
+                
                 <!-- Forearm -->
                 <path d="M58 115 Q55 130 60 135 L68 132 Q72 125 68 112 Z" fill="url(#suitGrad)"/>
-                <!-- Hand (Gloves) -->
-                <circle cx="64" cy="138" r="4.5" fill="#212121"/>
+                <!-- Bracer/Gauntlet Base -->
+                <path d="M60 125 L68 123 L67 134 L61 135 Z" fill="url(#leatherGrad)"/>
+
+                <!-- Hand (Refined Glove) -->
+                <!-- Thumb -->
+                <path d="M66 135 L68 140" stroke="#212121" stroke-width="2.5" stroke-linecap="round"/>
+                <!-- Fingers -->
+                <path d="M61 135 L61 142 Q63 145 65 142 L66 135" fill="url(#gloveGrad)"/>
             </g>
 
             <!-- Right Arm -->
             <g>
                  <!-- Shoulder -->
                 <circle cx="118" cy="85" r="9" fill="url(#suitGrad)"/>
-                <!-- Bicep/Tricep -->
+                <circle cx="118" cy="85" r="7" fill="url(#meshPattern)" opacity="0.4"/>
+                
+                <!-- Bicep -->
                 <path d="M125 88 Q130 100 122 115 L112 112 Q110 100 112 88 Z" fill="url(#suitGrad)"/>
+                
                 <!-- Forearm -->
                 <path d="M122 115 Q125 130 120 135 L112 132 Q108 125 112 112 Z" fill="url(#suitGrad)"/>
-                <!-- Hand (Gloves) -->
-                <circle cx="116" cy="138" r="4.5" fill="#212121"/>
+                <!-- Bracer/Gauntlet Base -->
+                <path d="M119 125 L112 123 L113 134 L120 135 Z" fill="url(#leatherGrad)"/>
+
+                <!-- Hand (Refined Glove) -->
+                <!-- Thumb -->
+                <path d="M114 135 L112 140" stroke="#212121" stroke-width="2.5" stroke-linecap="round"/>
+                <!-- Fingers -->
+                <path d="M119 135 L119 142 Q117 145 115 142 L114 135" fill="url(#gloveGrad)"/>
             </g>
 
-            <!-- NECK & HEAD -->
-            <!-- Trapezius muscles -->
+            <!-- === HEAD & NECK === -->
+            <!-- Trapezius -->
             <path d="M75 80 L85 70 L95 70 L105 80 H75 Z" fill="url(#suitGrad)"/>
             
             <!-- Neck -->
-            <rect x="83" y="68" width="14" height="12" fill="url(#skinGrad)"/>
-            <!-- Throat shadow -->
-            <path d="M83 75 Q90 82 97 75" fill="#D7CCC8" opacity="0.6"/>
+            <path d="M83 68 L83 75 Q90 78 97 75 L97 68" fill="url(#skinGrad)"/>
+            <!-- Adam-s Apple/Shadow -->
+            <path d="M88 72 Q90 74 92 72" stroke="#BF907A" stroke-width="1" fill="none" opacity="0.6"/>
 
-            <!-- Head -->
+            <!-- Head Group: "Handsome" Face -->
+            <!-- Bounds check: x80 to x100, y50 to y78 preserved -->
             <g id="head">
-                <!-- Base Shape (Jaw & Cranium) -->
-                <path d="M80 50 L80 62 Q80 76 90 78 Q100 76 100 62 L100 50 Q90 42 80 50 Z" fill="url(#skinGrad)"/>
+                <!-- Jawline: Sharper, more defined -->
+                <path d="M80 50 L80 60 Q80 73 90 78 Q100 73 100 60 L100 50" fill="url(#skinGrad)"/>
+                <!-- Cheek contour shadows -->
+                <path d="M81 65 Q85 70 88 72" stroke="#BF907A" stroke-width="0.5" fill="none" opacity="0.5"/>
+                <path d="M99 65 Q95 70 92 72" stroke="#BF907A" stroke-width="0.5" fill="none" opacity="0.5"/>
+
+                <!-- Ears -->
+                <path d="M79 60 Q77 62 79 65" fill="url(#skinGrad)"/>
+                <path d="M101 60 Q103 62 101 65" fill="url(#skinGrad)"/>
 
                 <!-- Face Features -->
-                <g opacity="0.85">
-                    <!-- Mouth -->
-                    <path d="M87 70 Q90 72 93 70" stroke="#A1887F" stroke-width="1" fill="none" stroke-linecap="round"/>
-                    <!-- Nose -->
-                    <path d="M90 60 L89 65 L91 65" fill="#D7CCC8"/>
-                    <!-- Eyes (Neutral/Serious) -->
-                    <path d="M83 60 L88 60" stroke="#4E342E" stroke-width="1.2"/>
-                    <path d="M92 60 L97 60" stroke="#4E342E" stroke-width="1.2"/>
-                    <!-- Brows -->
-                    <path d="M83 58 L88 59" stroke="#3E2723" stroke-width="1"/>
-                    <path d="M92 59 L97 58" stroke="#3E2723" stroke-width="1"/>
+                <g>
+                    <!-- Mouth: Confident Smirk -->
+                    <path d="M87 71 Q90 72 93 70" stroke="#A1887F" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+                    <path d="M93 70 L92 70" stroke="#5D4037" stroke-width="1"/> <!-- Corner accent -->
+                    
+                    <!-- Nose: Straight and defined -->
+                    <path d="M90 60 L89 66 L91 66" fill="#D7CCC8"/>
+                    <path d="M89 66 Q90 67 91 66" stroke="#BF907A" stroke-width="0.5" fill="none"/>
+
+                    <!-- Eyes: Focused, "Steely" Gaze -->
+                    <!-- Whites -->
+                    <path d="M83 60 Q85 59 87 60" fill="#FFF" opacity="0.7"/>
+                    <path d="M93 60 Q95 59 97 60" fill="#FFF" opacity="0.7"/>
+                    <!-- Irises (Blue/Grey) -->
+                    <circle cx="85" cy="60" r="0.8" fill="#546E7A"/>
+                    <circle cx="95" cy="60" r="0.8" fill="#546E7A"/>
+                    <!-- Upper Lid (Lashes) -->
+                    <path d="M82.5 59.5 Q85 58.5 87.5 59.5" stroke="#3E2723" stroke-width="0.8" fill="none"/>
+                    <path d="M92.5 59.5 Q95 58.5 97.5 59.5" stroke="#3E2723" stroke-width="0.8" fill="none"/>
+                    
+                    <!-- Brows: Strong, Groomed -->
+                    <path d="M82 57 Q85 56 88 57" stroke="#3E2723" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+                    <path d="M92 57 Q95 56 98 57" stroke="#3E2723" stroke-width="1.2" stroke-linecap="round" fill="none"/>
                 </g>
                 
-                <!-- Under-Cowl/Bandana (Hair/Skullcap) -->
-                 <path d="M80 55 L80 50 Q90 40 100 50 L100 55 Q90 59 80 55 Z" fill="#263238"/>
+                <!-- Hair: Modern "Undercut" / Messy Quiff -->
+                <!-- Sides (Faded) -->
+                <path d="M80 58 L80 50 L100 50 L100 58" fill="url(#hairGrad)" opacity="0.8"/>
+                <!-- Top (Volume) -->
+                <path d="M78 52 Q82 45 90 44 Q98 45 102 52 L100 55 Q90 50 80 55 Z" fill="url(#hairGrad)"/>
+                <!-- Bangs/Strands -->
+                <path d="M90 44 Q95 48 92 52" stroke="#5D4037" stroke-width="0.5" fill="none"/>
+                <path d="M85 46 Q82 50 84 53" stroke="#5D4037" stroke-width="0.5" fill="none"/>
+
             </g>
             
-            <!-- TACTICAL GEAR DETAILS -->
-            <!-- Shoulder Straps -->
-            <path d="M75 84 L85 105 L82 106 L72 85 Z" fill="#3E2723"/>
-            <path d="M105 84 L95 105 L98 106 L108 85 Z" fill="#3E2723"/>
-            <!-- Center Harness Ring -->
-            <circle cx="90" cy="105" r="3" fill="#90A4AE" stroke="#263238" stroke-width="1"/>
-            <!-- Connecting Straps -->
-            <line x1="82" y1="106" x2="88" y2="105" stroke="#3E2723" stroke-width="2"/>
-            <line x1="98" y1="106" x2="92" y2="105" stroke="#3E2723" stroke-width="2"/>
+            <!-- TACTICAL GEAR OVERLAY -->
+            <!-- Harness Straps (Thinner, sleeker) -->
+            <path d="M76 84 L85 105 L82 106 L73 85 Z" fill="#3E2723"/>
+            <path d="M104 84 L95 105 L98 106 L107 85 Z" fill="#3E2723"/>
+            <!-- Center Ring -->
+            <circle cx="90" cy="105" r="2.5" fill="#B0BEC5" stroke="#455A64" stroke-width="0.5"/>
+            <!-- Horizontal Connectors -->
+            <line x1="82" y1="105" x2="87" y2="105" stroke="#3E2723" stroke-width="1.5"/>
+            <line x1="98" y1="105" x2="93" y2="105" stroke="#3E2723" stroke-width="1.5"/>
 
         </g>
     </g>
