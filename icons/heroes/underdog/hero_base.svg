@@ -1,47 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <!-- Underdog Base Hero: "Industry Standard" Refresh
-       Features:
-       - Realistic Anatomy (V-Taper, Defined Musculature)
-       - Dynamic Lighting/Gradients
-       - Idle Breathing Animation
-       - "Scrappy Street Fighter" Aesthetic
+  <!-- Underdog Base Hero: "Industry Standard" Visuals + "Legacy" Structure
+       Fits existing gear:
+       - Head Width: ~22px (fits Headphones x=76..104)
+       - Shoulder Width: ~44px (fits Tee x=68..112)
+       - Waist Width: ~32-37px (fits Tee bottom x=72..108)
+       - Leg Start: x=74..106
   -->
   <defs>
-    <!-- Skin: Warm, slightly weathered/gritty tone -->
+    <!-- Skin: Warm, gritty -->
     <linearGradient id="skinGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#E0C0A8"/> <!-- Highlight -->
-      <stop offset="50%" style="stop-color:#D7A788"/> <!-- Midtone -->
-      <stop offset="100%" style="stop-color:#8D6E63"/> <!-- Shadow -->
+      <stop offset="0%" style="stop-color:#E0C0A8"/>
+      <stop offset="50%" style="stop-color:#D7A788"/>
+      <stop offset="100%" style="stop-color:#8D6E63"/>
     </linearGradient>
 
-    <!-- Muscle Contours (Overlay) -->
-    <linearGradient id="muscleShade" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#8D6E63; stop-opacity:0.0"/>
-      <stop offset="100%" style="stop-color:#8D6E63; stop-opacity:0.4"/>
-    </linearGradient>
-
-    <!-- Shirt: Worn Cotton Texture (Slate Blue) -->
+    <!-- Shirt: Worn Cotton (Slate Blue) -->
     <linearGradient id="shirtGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#607D8B"/>
       <stop offset="50%" style="stop-color:#455A64"/>
       <stop offset="100%" style="stop-color:#263238"/>
     </linearGradient>
 
-    <!-- Pants: Denim/Cargo Texture (Dark Blue/Grey) -->
+    <!-- Pants: Denim/Cargo Texture -->
     <linearGradient id="pantsGrad" x1="0%" y1="0%" x2="100%" y2="0%">
       <stop offset="0%" style="stop-color:#37474F"/>
       <stop offset="50%" style="stop-color:#263238"/>
       <stop offset="100%" style="stop-color:#102027"/>
     </linearGradient>
 
-    <!-- Boots: Worn Leather/Rubber -->
+    <!-- Shoes -->
     <linearGradient id="shoeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#78909C"/>
       <stop offset="100%" style="stop-color:#455A64"/>
     </linearGradient>
 
-    <!-- Hair: Messy Brown/Black -->
+    <!-- Hair -->
     <linearGradient id="hairGrad" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:#5D4037"/>
       <stop offset="100%" style="stop-color:#3E2723"/>
@@ -49,152 +43,129 @@
   </defs>
 
   <!-- Ground Shadow -->
-  <ellipse cx="90" cy="210" rx="50" ry="8" fill="#000" opacity="0.3" filter="blur(2px)"/>
+  <ellipse cx="90" cy="208" rx="40" ry="6" fill="#000" opacity="0.3" filter="blur(2px)"/>
 
   <!-- Main Character Group (Pivoted at feet for breathing) -->
-  <g transform="translate(90, 210)">
-    
-    <!-- Breathing Animation: subtle scale Y, counter-scale X -->
+  <g transform="translate(90, 208)">
     <animateTransform attributeName="transform" type="scale"
       values="1 1; 1.005 0.995; 1 1"
-      dur="3s" repeatCount="indefinite" additive="sum"/>
+      dur="3s" repeatCount="indefinite"/>
     
-    <!-- Reset translation to draw from 0,0 relative to feet -->
-    <g transform="translate(-90, -210)">
+    <g transform="translate(-90, -208)">
 
-      <!-- === LEGS === -->
-      <!-- Right Leg (Viewer Left) -->
-      <g> 
-        <path d="M70 140 
-                 Q 65 160, 68 180 
-                 L 72 205 
-                 L 88 205 
-                 L 90 180 
-                 Q 92 160, 90 140 Z" 
-              fill="url(#pantsGrad)"/>
-        <!-- Knee/Wrinkle Details -->
-        <path d="M72 170 Q 80 172, 88 170" stroke="#000" stroke-opacity="0.2" stroke-width="1" fill="none"/>
-      </g>
-
-      <!-- Left Leg (Viewer Right) -->
+      <!-- === LEGS === (Matched close to original M74 138) -->
+      <!-- Left Leg (Left side of image) -->
       <g>
-        <path d="M110 140 
-                 Q 115 160, 112 180 
-                 L 108 205 
-                 L 92 205 
-                 L 90 180 
-                 Q 88 160, 90 140 Z" 
-              fill="url(#pantsGrad)"/>
-        <!-- Knee/Wrinkle Details -->
-        <path d="M92 170 Q 100 172, 108 170" stroke="#000" stroke-opacity="0.2" stroke-width="1" fill="none"/>
+         <path d="M74 138 
+                  Q 70 160, 72 180 
+                  L 74 202 
+                  L 88 202 
+                  L 89 180 
+                  Q 90 160, 89 138 Z" 
+               fill="url(#pantsGrad)"/>
+         <!-- Knee Wrinkle -->
+         <path d="M74 170 Q 80 172, 86 170" stroke="#000" stroke-opacity="0.2" stroke-width="0.8" fill="none"/>
       </g>
 
-      <!-- Pant Cuffs/Hems -->
-      <path d="M68 200 L 88 200" stroke="#102027" stroke-width="2"/>
-      <path d="M92 200 L 112 200" stroke="#102027" stroke-width="2"/>
-
-
-      <!-- === FOOTWEAR (Sneakers/Boots) === -->
-      <!-- Right Boot -->
-      <g transform="translate(0,0)">
-         <path d="M68 205 L 88 205 L 88 215 Q 88 218, 85 218 L 65 218 Q 62 218, 62 215 L 68 205 Z" 
-               fill="url(#shoeGrad)"/>
-         <path d="M62 218 L 88 218" stroke="#263238" stroke-width="2"/> <!-- Sole -->
-      </g>
-      <!-- Left Boot -->
-      <g transform="translate(0,0)">
-         <path d="M92 205 L 112 205 L 118 215 Q 118 218, 115 218 L 95 218 Q 92 218, 92 215 L 92 205 Z" 
-               fill="url(#shoeGrad)"/>
-         <path d="M92 218 L 118 218" stroke="#263238" stroke-width="2"/> <!-- Sole -->
-      </g>
-
-
-      <!-- === TORSO (Upper Body) === -->
-      <!-- V-Taper Shape -->
-      <!-- Wasit: 130y, Shoulders: 70y -->
+      <!-- Right Leg (Right side of image) -->
       <g>
-        <!-- Main Torso Shape -->
-        <path d="M90 145       
-                 L 70 140      
-                 L 60 75       
-                 Q 90 70, 120 75 
-                 L 110 140     
-                 L 90 145 Z"   
-              fill="url(#shirtGrad)"/>
-              
-        <!-- Pectoral Definition (under tight shirt) -->
-        <path d="M90 85 Q 75 85, 70 95" stroke="#000" stroke-opacity="0.1" stroke-width="1" fill="none"/>
-        <path d="M90 85 Q 105 85, 110 95" stroke="#000" stroke-opacity="0.1" stroke-width="1" fill="none"/>
-        <path d="M90 85 L 90 115" stroke="#000" stroke-opacity="0.05" stroke-width="2" fill="none"/> <!-- Sternum shade -->
-
-        <!-- Abs/Fabric Folds -->
-        <path d="M75 120 Q 90 125, 105 120" stroke="#000" stroke-opacity="0.1" stroke-width="1" fill="none"/>
+         <path d="M106 138 
+                  Q 110 160, 108 180 
+                  L 106 202 
+                  L 92 202 
+                  L 91 180 
+                  Q 90 160, 91 138 Z" 
+               fill="url(#pantsGrad)"/>
+         <!-- Knee Wrinkle -->
+         <path d="M94 170 Q 100 172, 106 170" stroke="#000" stroke-opacity="0.2" stroke-width="0.8" fill="none"/>
       </g>
 
-      <!-- === ARMS (Fit, Athletic) === -->
-      <!-- Right Arm (Viewer Left) -->
+      <!-- Pant Hem -->
+      <path d="M72 198 L 88 198" stroke="#102027" stroke-width="1.5"/>
+      <path d="M92 198 L 108 198" stroke="#102027" stroke-width="1.5"/>
+
+
+      <!-- === FOOTWEAR (Sneakers) === -->
+      <!-- Left Shoe -->
+      <path d="M70 202 L 88 202 L 88 210 Q 88 214, 85 214 L 68 214 Q 65 214, 65 210 L 70 202 Z" 
+            fill="url(#shoeGrad)"/>
+      <path d="M65 210 L 88 210" stroke="#263238" stroke-width="1.5"/>
+
+      <!-- Right Shoe -->
+      <path d="M92 202 L 110 202 L 115 210 Q 115 214, 112 214 L 95 214 Q 92 214, 92 210 L 92 202 Z" 
+            fill="url(#shoeGrad)"/>
+      <path d="M92 210 L 115 210" stroke="#263238" stroke-width="1.5"/>
+
+
+      <!-- === TORSO === (Slimmer, to fit Chestplate gear x=68..112) -->
       <g>
-         <!-- Deltoid -->
-         <path d="M60 75 Q 45 80, 50 100" fill="url(#skinGrad)" stroke="#8D6E63" stroke-width="0.5"/>
-         <!-- Bicep/Tricep Area -->
-         <path d="M50 100 L 45 130 Q 55 135, 60 130 L 62 100" fill="url(#skinGrad)"/>
-         <!-- Forearm -->
-         <path d="M45 130 L 42 160 Q 50 165, 58 160 L 60 130" fill="url(#skinGrad)"/>
-         <!-- Hand (Fist) -->
-         <rect x="42" y="160" width="16" height="14" rx="3" fill="url(#skinGrad)"/>
-         <!-- Hand Tape (Underdog aesthetic) -->
-         <path d="M42 164 L 58 164" stroke="#EEE" stroke-opacity="0.6" stroke-width="1"/>
-         <path d="M42 168 L 58 168" stroke="#EEE" stroke-opacity="0.6" stroke-width="1"/>
+         <!-- Base Shape -->
+         <path d="M89 140 
+                  L 74 138      
+                  L 68 85       
+                  Q 90 82, 112 85 
+                  L 106 138     
+                  L 91 140 Z"   
+               fill="url(#shirtGrad)"/>
+         
+         <!-- Muscles under shirt -->
+         <path d="M89 95 Q 78 95, 75 102" stroke="#000" stroke-opacity="0.1" stroke-width="0.8" fill="none"/>
+         <path d="M91 95 Q 102 95, 105 102" stroke="#000" stroke-opacity="0.1" stroke-width="0.8" fill="none"/>
+         <path d="M90 95 L 90 120" stroke="#000" stroke-opacity="0.05" stroke-width="1.5" fill="none"/>
       </g>
 
-      <!-- Left Arm (Viewer Right) -->
+      <!-- === ARMS === (Slimmer) -->
+      <!-- Left Arm -->
       <g>
-         <!-- Deltoid -->
-         <path d="M120 75 Q 135 80, 130 100" fill="url(#skinGrad)" stroke="#8D6E63" stroke-width="0.5"/>
-         <!-- Bicep -->
-         <path d="M130 100 L 135 130 Q 125 135, 120 130 L 118 100" fill="url(#skinGrad)"/>
-         <!-- Forearm -->
-         <path d="M135 130 L 138 160 Q 130 165, 122 160 L 120 130" fill="url(#skinGrad)"/>
-         <!-- Hand (Fist) -->
-         <rect x="122" y="160" width="16" height="14" rx="3" fill="url(#skinGrad)"/>
-         <!-- Hand Tape -->
-         <path d="M122 164 L 138 164" stroke="#EEE" stroke-opacity="0.6" stroke-width="1"/>
-         <path d="M122 168 L 138 168" stroke="#EEE" stroke-opacity="0.6" stroke-width="1"/>
+         <path d="M68 85 Q 58 88, 60 100" fill="url(#skinGrad)"/> <!-- Deltoid -->
+         <path d="M60 100 L 58 125 Q 63 128, 66 125 L 68 100" fill="url(#skinGrad)"/> <!-- Bicep -->
+         <path d="M58 125 L 56 150 Q 61 154, 66 150 L 66 125" fill="url(#skinGrad)"/> <!-- Forearm -->
+         <rect x="56" y="150" width="12" height="12" rx="3" fill="url(#skinGrad)"/> <!-- Hand -->
+         <!-- Tape -->
+         <path d="M56 154 L 68 154" stroke="#EEE" stroke-opacity="0.5" stroke-width="0.8"/>
+         <path d="M56 158 L 68 158" stroke="#EEE" stroke-opacity="0.5" stroke-width="0.8"/>
       </g>
 
-      <!-- === HEAD & NECK === -->
+      <!-- Right Arm -->
+      <g>
+         <path d="M112 85 Q 122 88, 120 100" fill="url(#skinGrad)"/> <!-- Deltoid -->
+         <path d="M120 100 L 122 125 Q 117 128, 114 125 L 112 100" fill="url(#skinGrad)"/> <!-- Bicep -->
+         <path d="M122 125 L 124 150 Q 119 154, 114 150 L 114 125" fill="url(#skinGrad)"/> <!-- Forearm -->
+         <rect x="112" y="150" width="12" height="12" rx="3" fill="url(#skinGrad)"/> <!-- Hand -->
+         <!-- Tape -->
+         <path d="M112 154 L 124 154" stroke="#EEE" stroke-opacity="0.5" stroke-width="0.8"/>
+         <path d="M112 158 L 124 158" stroke="#EEE" stroke-opacity="0.5" stroke-width="0.8"/>
+      </g>
+
+      <!-- === HEAD & NECK === (Slimmer, Width 22px centered at 90 -> x=79..101) -->
       <g>
          <!-- Neck -->
-         <path d="M82 75 L 82 60 L 98 60 L 98 75" fill="url(#skinGrad)"/>
-         <path d="M82 65 Q 90 70, 98 65" stroke="#8D6E63" stroke-width="0.5" fill="none" opacity="0.5"/> <!-- Throat Detail -->
+         <path d="M84 85 L 84 75 L 96 75 L 96 85" fill="url(#skinGrad)"/>
 
-         <!-- Face/Head -->
-         <path d="M75 60 L 75 35 Q 90 25, 105 35 L 105 60 Q 90 70, 75 60 Z" fill="url(#skinGrad)"/>
+         <!-- Face (Fits inside Headphones x=76-104) -->
+         <path d="M79 75 L 79 50 Q 90 42, 101 50 L 101 75 Q 90 82, 79 75 Z" fill="url(#skinGrad)"/>
          
-         <!-- Facial Features (Subtle, base layer) -->
-         <!-- Ears -->
-         <circle cx="74" cy="48" r="3" fill="url(#skinGrad)"/>
-         <circle cx="106" cy="48" r="3" fill="url(#skinGrad)"/>
+         <!-- Features -->
+         <circle cx="78" cy="62" r="2" fill="url(#skinGrad)"/> <!-- Ear L -->
+         <circle cx="102" cy="62" r="2" fill="url(#skinGrad)"/> <!-- Ear R -->
+
+         <path d="M82 60 L 86 60" stroke="#5D4037" stroke-width="1.5"/> <!-- Eye L -->
+         <path d="M94 60 L 98 60" stroke="#5D4037" stroke-width="1.5"/> <!-- Eye R -->
+
+         <!-- Stubble -->
+         <path d="M82 68 Q 90 72, 98 68" stroke="#3E2723" stroke-width="0.5" fill="none" opacity="0.3"/>
+      </g>
       
-         <!-- Eyes (Shadowed/Serious) -->
-         <path d="M80 46 L 86 46" stroke="#5D4037" stroke-width="2"/>
-         <path d="M94 46 L 100 46" stroke="#5D4037" stroke-width="2"/>
-         
-         <!-- Stubble/Scruff (Underdog Look) -->
-         <path d="M80 55 Q 90 60, 100 55" stroke="#3E2723" stroke-width="1" fill="none" opacity="0.3"/> 
-      </g>
-
-      <!-- === HAIR (Messy/Short) === -->
+      <!-- === HAIR === (Slimmer info) -->
       <g>
-          <!-- Back hair -->
-          <path d="M72 35 Q 90 20, 108 35" fill="url(#hairGrad)"/>
+          <path d="M78 50 Q 90 40, 102 50" fill="url(#hairGrad)"/>
           <!-- Top Spikes -->
-          <path d="M75 35 L 72 25 L 80 30 L 85 22 L 95 30 L 100 24 L 105 35 Z" fill="url(#hairGrad)"/>
+          <path d="M79 50 L 78 42 L 84 46 L 88 40 L 94 46 L 98 42 L 101 50 Z" fill="url(#hairGrad)"/>
           <!-- Sideburns -->
-          <path d="M75 35 L 75 50 L 78 45 Z" fill="url(#hairGrad)"/>
-          <path d="M105 35 L 105 50 L 102 45 Z" fill="url(#hairGrad)"/>
+          <path d="M79 50 L 79 62 L 81 58 Z" fill="url(#hairGrad)"/>
+          <path d="M101 50 L 101 62 L 99 58 Z" fill="url(#hairGrad)"/>
       </g>
 
-    </g> <!-- End Transform Reset -->
+    </g> <!-- End Translate Reset -->
   </g> <!-- End Breathing Group -->
 </svg>
