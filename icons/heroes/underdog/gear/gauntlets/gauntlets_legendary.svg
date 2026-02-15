@@ -1,32 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <linearGradient id="legend_band_fill" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#FFBC47"/>
-      <stop offset="100%" stop-color="#D87700"/>
-    </linearGradient>
-    <linearGradient id="legend_filigree" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#FFE29D"/>
+    <linearGradient id="l_band_fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFC15C"/>
       <stop offset="100%" stop-color="#FF9800"/>
     </linearGradient>
-    <filter id="legend_band_glow" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur stdDeviation="0.64" result="g"/>
-      <feMerge>
-        <feMergeNode in="g"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
 
-  <g id="gauntlets_legendary_wristband" transform="translate(70.0 130.2) rotate(-8) scale(1.35 1.35) translate(-68.5 -131.2)">
-    <ellipse cx="68.3" cy="132.1" rx="5.4" ry="1.25" fill="#000000" opacity="0.12"/>
-    <rect x="63.3" y="128.4" width="10.4" height="5.3" rx="2.4" fill="url(#legend_band_fill)" stroke="#B55F00" stroke-width="0.7"/>
-    <path d="M64.6 131.0 Q66.5 129.8 68.4 131.0 Q70.3 132.2 72.2 131.0" fill="none" stroke="url(#legend_filigree)" stroke-width="0.54" filter="url(#legend_band_glow)"/>
-    <path d="M64.7 132.1 L72.5 132.1" stroke="#FFE6B8" stroke-width="0.5" stroke-linecap="round" opacity="0.82"/>
-    <rect x="70.0" y="129.1" width="2.0" height="2.5" rx="0.5" fill="#FFF3DD" stroke="#A86908" stroke-width="0.34"/>
-    <path d="M64.4 133.2 L72.8 133.2" stroke="#FFD27A" stroke-width="0.56" stroke-dasharray="1.1 1.1" opacity="0">
-      <animate attributeName="opacity" values="0;1;0" dur="1.3s" repeatCount="indefinite"/>
-      <animate attributeName="stroke-dashoffset" values="0;5" dur="1.3s" repeatCount="indefinite"/>
-    </path>
+  <!-- Thin wristband between palm and wrist -->
+  <g id="gauntlets_legendary_wristband" transform="rotate(-8 70.2 131.8)">
+    <rect x="66.3" y="131.0" width="7.8" height="1.8" rx="0.9" fill="url(#l_band_fill)" stroke="#B55F00" stroke-width="0.34"/>
+    <path d="M67.0 131.45 H73.5" stroke="#FFE2B0" stroke-width="0.30" stroke-linecap="round" opacity="0.82"/>
   </g>
 </svg>

@@ -1,8 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <!-- Legendary: Jet Thruster Wings -->
-  <path d="M130 60 L170 50 L180 120 L140 100 Z" fill="#37474F" stroke="#ff8a3d" stroke-width="2"/>
-  <path d="M50 60 L10 50 L0 120 L40 100 Z" fill="#37474F" stroke="#ff8a3d" stroke-width="2"/>
-  <!-- Exhaust -->
-  <path d="M150 120 L160 140 L170 120" fill="#ff8a3d"/>
-  <path d="M30 120 L20 140 L10 120" fill="#ff8a3d"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <radialGradient id="c_halo" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FFF8E1"/>
+      <stop offset="100%" stop-color="#FFD700" stop-opacity="0.5"/>
+    </radialGradient>
+  </defs>
+  <g id="cloak_legendary">
+    <!-- Divine Light Wings -->
+    <!-- Center Node -->
+    <circle cx="90" cy="80" r="10" fill="#FFD700" stroke="#FFFFFF" stroke-width="2"/>
+    
+    <!-- Wings (Energy) -->
+    <path d="M90 80 Q140 30 150 70 Q160 110 90 130" fill="url(#c_halo)" opacity="0.8">
+        <animate attributeName="d" values="M90 80 Q140 30 150 70 Q160 110 90 130; M90 82 Q135 35 145 75 Q155 115 90 128; M90 80 Q140 30 150 70 Q160 110 90 130" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <path d="M90 80 Q40 30 30 70 Q20 110 90 130" fill="url(#c_halo)" opacity="0.8">
+        <animate attributeName="d" values="M90 80 Q40 30 30 70 Q20 110 90 130; M90 82 Q45 35 35 75 Q25 115 90 128; M90 80 Q40 30 30 70 Q20 110 90 130" dur="2s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Rays -->
+    <line x1="90" y1="80" x2="90" y2="40" stroke="#FFD700" stroke-width="2" stroke-dasharray="2,2"/>
+    <line x1="90" y1="80" x2="60" y2="60" stroke="#FFD700" stroke-width="2" stroke-dasharray="2,2"/>
+    <line x1="90" y1="80" x2="120" y2="60" stroke="#FFD700" stroke-width="2" stroke-dasharray="2,2"/>
+  </g>
 </svg>

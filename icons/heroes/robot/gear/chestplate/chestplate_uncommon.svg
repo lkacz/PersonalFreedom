@@ -1,9 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <path d="M62 75 L118 75 L115 128 L65 128 Z" fill="#546E7A" stroke="#263238" stroke-width="2"/>
-  <rect x="62" y="95" width="56" height="10" fill="#FFC107"/> <!-- Hazard Stripe -->
-  <path d="M70 95 L65 105" stroke="#000" stroke-width="2"/>
-  <path d="M80 95 L75 105" stroke="#000" stroke-width="2"/>
-  <path d="M90 95 L85 105" stroke="#000" stroke-width="2"/>
-  <path d="M100 95 L95 105" stroke="#000" stroke-width="2"/>
-  <path d="M110 95 L105 105" stroke="#000" stroke-width="2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="c_heavy_plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#66BB6A"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </linearGradient>
+    <pattern id="p_hazard" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">
+      <rect width="5" height="10" fill="#FDD835"/>
+      <rect x="5" width="5" height="10" fill="#212121"/>
+    </pattern>
+  </defs>
+  <g id="chestplate_uncommon">
+    <!-- Main Heavy Chassis -->
+    <rect x="62" y="60" width="56" height="60" rx="2" fill="url(#c_heavy_plate)" stroke="#1B5E20" stroke-width="1.5"/>
+    
+    <!-- Hazard Shoulders -->
+    <rect x="62" y="60" width="12" height="15" fill="url(#p_hazard)" stroke="#000"/>
+    <rect x="106" y="60" width="12" height="15" fill="url(#p_hazard)" stroke="#000"/>
+    
+    <!-- Reinforced Core Housing -->
+    <rect x="75" y="75" width="30" height="30" fill="#1B5E20"/>
+    <circle cx="90" cy="90" r="10" fill="#212121"/>
+    
+    <!-- Reactor Core (Stable Green) -->
+    <circle cx="90" cy="90" r="6" fill="#00E676"/>
+    
+    <!-- Protection Grill -->
+    <path d="M82 90 L98 90 M90 82 L90 98" stroke="#1B5E20" stroke-width="2"/>
+    
+    <!-- Bolts -->
+    <circle cx="66" cy="115" r="2" fill="#BDBDBD"/>
+    <circle cx="114" cy="115" r="2" fill="#BDBDBD"/>
+  </g>
 </svg>

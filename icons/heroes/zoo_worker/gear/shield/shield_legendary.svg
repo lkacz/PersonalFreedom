@@ -1,16 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="s_leg_gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#FF8F00"/>
+    </linearGradient>
+    <linearGradient id="s_leg_mane" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#E65100"/>
+      <stop offset="50%" stop-color="#FF6F00"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#ff9800" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Shield -&gt; Barrier Panel</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: legendary</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: shield_legendary.svg</text>
+  <!-- Zoo Worker shield (legendary): Lion's Aegis -->
+  <g id="shield_legendary" transform="translate(90 126) scale(1.060) translate(-90 -126)">
+    <!-- Shadow -->
+    <ellipse cx="55" cy="158" rx="22" ry="4" fill="#000000" opacity="0.25"/>
+
+    <!-- Mane / Fur Rim -->
+    <path d="M30 110 Q55 95 80 110 Q90 130 80 150 Q55 165 30 150 Q20 130 30 110 Z"
+          fill="url(#s_leg_mane)" stroke="#BF360C" stroke-width="1"/>
+          
+    <!-- Main Gold Shield Plate -->
+    <path d="M35 115 Q55 105 75 115 L72 145 Q55 155 38 145 L35 115 Z"
+          fill="url(#s_leg_gold)" stroke="#FF6F00" stroke-width="1.5"/>
+          
+    <!-- Lion Face Relief -->
+    <path d="M45 120 Q55 115 65 120" fill="none" stroke="#BF360C" stroke-width="1"/> <!-- Eyes/Brows -->
+    <circle cx="50" cy="122" r="1.5" fill="#BF360C"/> <circle cx="60" cy="122" r="1.5" fill="#BF360C"/> <!-- Eyes -->
+    <path d="M55 125 L53 132 L57 132 Z" fill="#BF360C"/> <!-- Nose -->
+    <path d="M55 132 Q55 138 65 135 M55 132 Q55 138 45 135" fill="none" stroke="#BF360C" stroke-width="1"/> <!-- Mouth -->
+
+    <!-- Glowing Eyes Animation -->
+    <circle cx="50" cy="122" r="1.5" fill="#FFFF00" opacity="0">
+       <animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="60" cy="122" r="1.5" fill="#FFFF00" opacity="0">
+       <animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
 </svg>

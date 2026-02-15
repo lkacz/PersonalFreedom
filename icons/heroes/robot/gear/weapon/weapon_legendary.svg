@@ -1,9 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(-20, 10)">
-    <!-- Legendary: Plasma Cannon -->
-    <rect x="30" y="80" width="40" height="60" rx="4" fill="#673AB7" stroke="#311B92" stroke-width="2"/>
-    <circle cx="50" cy="80" r="15" fill="#36d6e7" opacity="0.8"/> <!-- Mouth -->
-    <circle cx="50" cy="80" r="10" fill="#fff" opacity="0.5"/>
-    <rect x="25" y="100" width="10" height="30" fill="#311B92"/> <!-- Handle -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="w_sun_beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF3D00"/>
+      <stop offset="100%" stop-color="#FFFF00"/>
+    </linearGradient>
+  </defs>
+  <g id="weapon_legendary" transform="rotate(-5 130 130)">
+    <!-- Solar Scepter -->
+    <!-- Staff -->
+    <rect x="130" y="80" width="6" height="80" rx="1" fill="#FFD700" stroke="#FF6F00"/>
+    
+    <!-- Head -->
+    <circle cx="133" cy="80" r="10" fill="#FF3D00"/>
+    <circle cx="133" cy="80" r="6" fill="#FFFF00">
+       <animate attributeName="opacity" values="0.8;1;0.8" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Wings/Blades -->
+    <path d="M133 80 L115 65 L125 90 Z" fill="#FFD700" stroke="#FF6F00"/>
+    <path d="M133 80 L151 65 L141 90 Z" fill="#FFD700" stroke="#FF6F00"/>
+    
+    <!-- Beam Emission (Vertical) -->
+    <path d="M133 70 L131 40 L135 40 Z" fill="url(#w_sun_beam)" opacity="0.8">
+       <animate attributeName="d" values="M133 70 L131 40 L135 40 Z; M133 70 L130 30 L136 30 Z; M133 70 L131 40 L135 40 Z" dur="0.2s" repeatCount="indefinite"/>
+    </path>
   </g>
 </svg>

@@ -1,8 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(0, -5)">
-    <!-- Common Helmet: Safety Hardhat -->
-    <path d="M65 40 Q90 10 115 40 L115 50 L65 50 Z" fill="#FFC107" stroke="#37474F" stroke-width="2"/>
-    <rect x="60" y="50" width="60" height="5" rx="2" fill="#FFC107" stroke="#37474F" stroke-width="2"/>
-    <rect x="85" y="25" width="10" height="20" fill="#FFA000" opacity="0.5"/> <!-- Stripe -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="h_steel_base" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#B0BEC5"/>
+      <stop offset="100%" stop-color="#607D8B"/>
+    </linearGradient>
+    <radialGradient id="h_eye_rust" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FFAB91"/>
+      <stop offset="100%" stop-color="#BF360C"/>
+    </radialGradient>
+  </defs>
+  <g id="helmet_common" transform="translate(15, 10)">
+    <!-- Base Chassis: Dented Steel (Standard shape) -->
+    <rect x="55" y="45" width="70" height="80" rx="10" fill="url(#h_steel_base)" stroke="#455A64" stroke-width="2"/>
+    
+    <!-- Faceplate (Recessed) -->
+    <rect x="65" y="60" width="50" height="40" rx="2" fill="#37474F"/>
+    
+    <!-- Cyclops Eye (Flickering) -->
+    <circle cx="90" cy="80" r="12" fill="url(#h_eye_rust)" stroke="#3E2723" stroke-width="2">
+       <animate attributeName="opacity" values="0.8;1;0.4;1;0.8" dur="0.2s" repeatCount="indefinite" begin="0s; 2s; 5s"/> <!-- Glitch effect -->
+    </circle>
+    
+    <!-- Broken/Exposed Components -->
+    <path d="M55 70 L45 70" stroke="#212121" stroke-width="1"/> <!-- Missing ear -->
+    <path d="M125 70 L135 70 L135 90 L125 90" fill="none" stroke="#212121" stroke-width="1"/> <!-- Wire ear -->
+    
+    <!-- Duct Tape Fix -->
+    <rect x="100" y="45" width="20" height="8" fill="#BDBDBD" transform="rotate(15 110 49)" opacity="0.9"/>
+    <rect x="100" y="45" width="20" height="8" fill="url(#h_steel_base)" opacity="0.2" transform="rotate(15 110 49)"/> <!-- Texture -->
+    
+    <!-- Sticker: "QC REJECTED" (Peeling) -->
+    <rect x="60" y="50" width="25" height="10" fill="#FFCDD2" transform="rotate(-5 72 55)" stroke="#D32F2F" stroke-width="0.5"/>
+    <text x="62" y="57" font-family="Arial" font-size="6" fill="#D32F2F" transform="rotate(-5 72 55)">REJECT</text>
+    
+    <!-- Rust Patch -->
+    <path d="M60 110 L70 115 L65 120 Z" fill="#5D4037" opacity="0.8"/>
+    
+    <!-- Loose Wire hanging from chin -->
+    <path d="M90 125 L90 135 L95 138" fill="none" stroke="#EF6C00" stroke-width="1.5">
+        <animate attributeName="d" values="M90 125 L90 135 L95 138; M90 125 L88 135 L95 138; M90 125 L90 135 L95 138" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <!-- Spark on wire -->
+    <circle cx="95" cy="138" r="1.5" fill="#FFEB3B" opacity="0">
+        <animate attributeName="opacity" values="0;1;0" dur="0.1s" repeatCount="indefinite" begin="1s; 3.5s"/>
+    </circle>
+
   </g>
 </svg>

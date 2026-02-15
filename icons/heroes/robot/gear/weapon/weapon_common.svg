@@ -1,9 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(-20, 10)">
-    <!-- Common: Giant Wrench (Red) -->
-    <path d="M40 80 L60 80 L60 160 L40 160 Z" fill="#D32F2F" stroke="#B71C1C" stroke-width="1"/>
-    <!-- Jaws -->
-    <path d="M30 60 L70 60 L70 80 L30 80 Z" fill="#E0E0E0" stroke="#9E9E9E" stroke-width="1"/>
-    <rect x="35" y="65" width="30" height="5" fill="#BDBDBD"/> <!-- Teeth -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="w_rust" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#757575"/>
+      <stop offset="100%" stop-color="#424242"/>
+    </linearGradient>
+  </defs>
+  <g id="weapon_common" transform="rotate(-15 130 130)">
+    <!-- Giant Wrench -->
+    <!-- Handle -->
+    <rect x="125" y="110" width="10" height="60" rx="2" fill="#5D4037" stroke="#3E2723"/>
+    
+    <!-- Head -->
+    <path d="M115 90 L145 90 L145 110 L140 115 L120 115 L115 110 Z" fill="url(#w_rust)" stroke="#212121" stroke-width="1.5"/>
+    
+    <!-- Jaw Screw -->
+    <rect x="128" y="100" width="4" height="10" fill="#BDBDBD"/>
+    <line x1="128" y1="102" x2="132" y2="102" stroke="#212121" stroke-width="0.5"/>
+    <line x1="128" y1="105" x2="132" y2="105" stroke="#212121" stroke-width="0.5"/>
+    <line x1="128" y1="108" x2="132" y2="108" stroke="#212121" stroke-width="0.5"/>
   </g>
 </svg>

@@ -1,21 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <linearGradient id="rare_band_fill" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#69C3FF"/>
-      <stop offset="100%" stop-color="#1A76CB"/>
+    <linearGradient id="r_band_fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5FB6FF"/>
+      <stop offset="100%" stop-color="#2196F3"/>
     </linearGradient>
-    <radialGradient id="rare_band_glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#9FDBFF" stop-opacity="0.72"/>
-      <stop offset="100%" stop-color="#9FDBFF" stop-opacity="0"/>
-    </radialGradient>
   </defs>
 
-  <g id="gauntlets_rare_wristband" transform="translate(70.0 130.2) rotate(-8) scale(1.35 1.35) translate(-68.5 -131.2)">
-    <ellipse cx="68.3" cy="132.0" rx="5.3" ry="1.2" fill="#000000" opacity="0.12"/>
-    <rect x="63.5" y="128.6" width="10.0" height="5.0" rx="2.2" fill="url(#rare_band_fill)" stroke="#1565C0" stroke-width="0.66"/>
-    <path d="M64.7 131.0 L72.3 131.0" stroke="#DFF3FF" stroke-width="0.5" stroke-linecap="round" opacity="0.82"/>
-    <rect x="69.8" y="129.3" width="2.2" height="2.8" rx="0.6" fill="#EAF6FF" stroke="#3477AF" stroke-width="0.36"/>
-    <circle cx="71.9" cy="131.0" r="0.72" fill="url(#rare_band_glow)"/>
+  <!-- Thin wristband between palm and wrist -->
+  <g id="gauntlets_rare_wristband" transform="rotate(-8 70.2 131.8)">
+    <rect x="66.3" y="131.0" width="7.8" height="1.8" rx="0.9" fill="url(#r_band_fill)" stroke="#1565C0" stroke-width="0.34"/>
+    <path d="M67.0 131.45 H73.5" stroke="#D9EEFF" stroke-width="0.30" stroke-linecap="round" opacity="0.82"/>
   </g>
 </svg>

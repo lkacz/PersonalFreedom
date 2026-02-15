@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <linearGradient id="uncommon_band_fill" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#66D26A"/>
-      <stop offset="100%" stop-color="#2E8E35"/>
+    <linearGradient id="u_band_fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#67C66E"/>
+      <stop offset="100%" stop-color="#4CAF50"/>
     </linearGradient>
   </defs>
 
-  <g id="gauntlets_uncommon_wristband" transform="translate(70.0 130.2) rotate(-8) scale(1.35 1.35) translate(-68.5 -131.2)">
-    <ellipse cx="68.3" cy="132.0" rx="5.2" ry="1.2" fill="#000000" opacity="0.12"/>
-    <rect x="63.6" y="128.7" width="9.8" height="4.8" rx="2.1" fill="url(#uncommon_band_fill)" stroke="#2E7D32" stroke-width="0.64"/>
-    <path d="M64.8 131.0 L72.2 131.0" stroke="#D2FFD5" stroke-width="0.46" stroke-linecap="round" opacity="0.74"/>
-    <circle cx="71.9" cy="131.0" r="0.66" fill="#C4F7C7" stroke="#3C7C41" stroke-width="0.34"/>
-    <path d="M65.2 132.1 L67.2 132.1" stroke="#9BF2A0" stroke-width="0.4" stroke-linecap="round"/>
+  <!-- Thin wristband between palm and wrist -->
+  <g id="gauntlets_uncommon_wristband" transform="rotate(-8 70.2 131.8)">
+    <rect x="66.3" y="131.0" width="7.8" height="1.8" rx="0.9" fill="url(#u_band_fill)" stroke="#2E7D32" stroke-width="0.34"/>
+    <path d="M67.0 131.45 H73.5" stroke="#D4F7D7" stroke-width="0.30" stroke-linecap="round" opacity="0.82"/>
   </g>
 </svg>

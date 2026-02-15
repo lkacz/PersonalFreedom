@@ -1,12 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(0,0)">
-    <!-- Legendary: Hover Hands (Disconnect from arm) -->
-    <circle cx="49" cy="150" r="15" fill="#FFC107" stroke="#FF6F00" stroke-width="2"/>
-    <circle cx="131" cy="150" r="15" fill="#FFC107" stroke="#FF6F00" stroke-width="2"/>
-    <!-- Energy Field connecting back -->
-    <path d="M49 135 L49 125" stroke="#36d6e7" stroke-width="2" stroke-dasharray="2 2"/>
-    <path d="M131 135 L131 125" stroke="#36d6e7" stroke-width="2" stroke-dasharray="2 2"/>
-    <circle cx="49" cy="150" r="5" fill="#FFF"/>
-    <circle cx="131" cy="150" r="5" fill="#FFF"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="g_gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFECB3"/>
+      <stop offset="100%" stop-color="#FF6F00"/>
+    </linearGradient>
+    <filter id="g_sun_glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <g id="gauntlets_legendary">
+    <!-- Divine Cannons -->
+    <path d="M35 110 Q50 100 65 110 L60 150 L40 150 Z" fill="url(#g_gold)" stroke="#FF6F00" stroke-width="1.5"/>
+    <path d="M115 110 Q130 100 145 110 L140 150 L120 150 Z" fill="url(#g_gold)" stroke="#FF6F00" stroke-width="1.5"/>
+    
+    <!-- Sun Core Emitter -->
+    <circle cx="50" cy="150" r="8" fill="#FF3D00" filter="url(#g_sun_glow)">
+       <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="50" cy="150" r="5" fill="#FFFF00"/>
+    
+    <circle cx="130" cy="150" r="8" fill="#FF3D00" filter="url(#g_sun_glow)">
+       <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="130" cy="150" r="5" fill="#FFFF00"/>
+    
+    <!-- Filigree -->
+    <path d="M40 120 L50 130 L60 120" fill="none" stroke="#FFF" opacity="0.5"/>
+    <path d="M120 120 L130 130 L140 120" fill="none" stroke="#FFF" opacity="0.5"/>
   </g>
 </svg>

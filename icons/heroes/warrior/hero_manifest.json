@@ -25,13 +25,24 @@
       "Weapon"
     ],
     "patterns": [
-      "gear/{slot}/{item_type}_{rarity}.svg",
-      "gear/{slot}/{item_name}_{rarity}.svg",
-      "gear/{slot}/{item_type}.svg",
       "gear/{slot}/{slot}_{rarity}.svg",
       "gear/{slot}/{rarity}.svg",
-      "gear/{slot}/{slot}.svg"
-    ]
+      "gear/{slot}/{slot}.svg",
+      "gear/{slot}/{item_type}_{rarity}.svg",
+      "gear/{slot}/{item_name}_{rarity}.svg",
+      "gear/{slot}/{item_type}.svg"
+    ],
+    "slot_display": {
+      "Helmet": "War Helm",
+      "Chestplate": "War Cuirass",
+      "Gauntlets": "Claw Gauntlets",
+      "Boots": "Engraved Sabatons",
+      "Shield": "Fortress Shield",
+      "Weapon": "Dragon Greatweapon",
+      "Cloak": "Battle Banner",
+      "Amulet": "Command Sigil"
+    },
+    "semantic_contract": "Canonical slot keys are technical. Render warrior story-facing semantics from slot_display while keeping one rarity progression object per slot."
   },
   "fx": {
     "tier_pattern": "fx/tier_{power_tier}.svg"

@@ -1,16 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
-  </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#4caf50" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: scientist</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Helmet -&gt; Eyewear</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: uncommon</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: helmet_uncommon.svg</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+
+  <g id="helmet_uncommon">
+    <rect x="76.2" y="44.6" width="27.6" height="8" rx="3.2" fill="#153047" stroke="#0e1b2b" stroke-width="0.9"/>
+    <circle cx="85.5" cy="48.5" r="2.6" fill="none" stroke="#cceeff" stroke-width="1"/>
+    <circle cx="94.5" cy="48.5" r="2.6" fill="none" stroke="#cceeff" stroke-width="1"/>
+    <path d="M88.1 48.5 L91.9 48.5" stroke="#cceeff" stroke-width="0.85"/>
+    <path d="M79.3 48.5 L83 48.5 M97 48.5 L100.7 48.5" stroke="#4CAF50" stroke-width="0.9" opacity="0.8"/>
+    <rect x="72" y="46.2" width="4.8" height="4.6" rx="1" fill="#4CAF50" opacity="0.75"/><rect x="103.2" y="46.2" width="4.8" height="4.6" rx="1" fill="#4CAF50" opacity="0.75"/>
+    
+    
+    
+    
+  </g>
+
 </svg>

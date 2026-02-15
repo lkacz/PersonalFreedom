@@ -1,16 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
-  </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#2196f3" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: scientist</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Cloak -&gt; Hazmat Suit</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: rare</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: cloak_rare.svg</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+
+  <g id="cloak_rare" opacity="0.86">
+    <path d="M63 74 L117 74 L124 92 L117 191 L63 191 L56 92 Z" fill="#dce3ed" opacity="0.36"/>
+    <path d="M68 82 L112 82 L116 97 L112 186 L68 186 L64 97 Z" fill="#5a6f92" opacity="0.34"/>
+    <path d="M70 150 L62 191 L74 191 Z" fill="#415a80" opacity="0.5"/>
+    <path d="M108 150 L120 189 L106 190 Z" fill="#415a80" opacity="0.5"/>
+    <path d="M72 94 L68 182 M108 94 L112 182" stroke="#9fb3d1" stroke-width="0.8" opacity="0.45"/><path d="M68 83 Q90 96 112 83" stroke="#2196F3" stroke-width="0.95" fill="none" opacity="0.82"/>
+  </g>
+
 </svg>

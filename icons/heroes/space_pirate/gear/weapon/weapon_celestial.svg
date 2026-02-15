@@ -1,16 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
-  </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#00e5ff" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: space_pirate</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Weapon -&gt; Boarding Tool</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: celestial</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: weapon_celestial.svg</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+
+  <g id="weapon_celestial" transform="rotate(-26 122 130)">
+    <rect x="115.5" y="126" width="10" height="35" rx="3" fill="#172337" stroke="#0d1522" stroke-width="1"/>
+    <rect x="117.1" y="133" width="6.8" height="2.4" rx="1" fill="#00E5FF" opacity="0.96"/>
+    <rect x="117.1" y="143" width="6.8" height="2.4" rx="1" fill="#00E5FF" opacity="0.78"/>
+    <rect x="118.8" y="158" width="3.4" height="5.2" rx="1.5" fill="#233a59"/>
+    <path d="M115.4 126 L125.6 126 L127 122 L114 122 Z" fill="#2e4667" stroke="#1b2c45" stroke-width="1"/>
+    <path d="M124 100 Q142 92 152 106 Q138 111 126 124 Z" fill="#cddcf0" stroke="#304968" stroke-width="1.05"/>
+    <path d="M145 111 Q152 114 151 122 Q148 129 140 127" stroke="#00E5FF" stroke-width="1" fill="none" opacity="0.8"/><ellipse cx="142" cy="103" rx="10.8" ry="4.5" fill="none" stroke="#00E5FF" stroke-width="0.95" opacity="0.58"/>
+    <path d="M125 106 Q140 96 151 106" stroke="#00E5FF" stroke-width="1.4" fill="none" opacity="0.92"/><path d="M126 118 Q140 112 149 105" stroke="#00E5FF" stroke-width="0.95" fill="none" opacity="0.82"><animate attributeName="opacity" values="0.45;1;0.45" dur="1.4s" repeatCount="indefinite"/></path>
+  </g>
+
 </svg>

@@ -1,16 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
-  </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#ff9800" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: scientist</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">fx: tier_legendary</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: legendary</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: tier_legendary.svg</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+
+  <g id="fx_legendary">
+    <ellipse cx="90" cy="100" rx="29" ry="14" fill="#FF9800" opacity="0.11"/>
+    <ellipse cx="90" cy="100" rx="35" ry="17" fill="none" stroke="#FF9800" stroke-width="1.45" opacity="0.74"/>
+    <ellipse cx="90" cy="100" rx="22.5" ry="10.8" fill="none" stroke="#ffd59f" stroke-width="1" opacity="0.67"/>
+    <path d="M57 102 Q90 75 123 102" stroke="#FF9800" stroke-width="1.35" fill="none" opacity="0.74"/>
+    <circle cx="90" cy="82" r="1.95" fill="#FF9800"/>
+  </g>
+
 </svg>

@@ -1,16 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
-  </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#4caf50" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: wanderer</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Helmet -&gt; Crown</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: uncommon</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: helmet_uncommon.svg</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+
+  <g id="helmet_uncommon">
+    <path d="M66 44 Q90 35 114 44 L110 51 Q90 49 70 51 Z" fill="#223857" stroke="#122038" stroke-width="1"/>
+    <path d="M78 42 L102 42 L102 48 L78 48 Z" fill="#324c72" stroke="#1b304d" stroke-width="0.8"/>
+    <circle cx="84.8" cy="47.2" r="1.8" fill="#d6e9ff"/>
+    <circle cx="95.2" cy="47.2" r="1.8" fill="#d6e9ff"/>
+    <circle cx="84.8" cy="47.2" r="0.7" fill="#26303e"/>
+    <circle cx="95.2" cy="47.2" r="0.7" fill="#26303e"/>
+    <path d="M87.3 47.2 L92.7 47.2" stroke="#adc5eb" stroke-width="0.8"/>
+    <path d="M82 37 Q88 30 94 37 Q88.5 38.5 82 37 Z" fill="none" stroke="#4CAF50" stroke-width="1" opacity="0.8"/>
+    
+    
+    
+    
+  </g>
+
 </svg>

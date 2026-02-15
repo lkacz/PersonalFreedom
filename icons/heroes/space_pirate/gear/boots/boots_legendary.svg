@@ -1,16 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
-  </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#ff9800" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: space_pirate</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Boots -&gt; Mag Boots</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: legendary</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: boots_legendary.svg</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+
+  <g id="boots_legendary">
+    <path d="M44 188 L74 188 L76 202 L42 202 Z" fill="#324b6f" stroke="#1b2d48" stroke-width="1.2"/>
+    <path d="M104 188 L134 188 L136 202 L102 202 Z" fill="#324b6f" stroke="#1b2d48" stroke-width="1.2"/>
+    <path d="M42 201 L77 201 L79 209 L40 209 Z" fill="#1f2a3a" stroke="#101722" stroke-width="1"/>
+    <path d="M102 201 L137 201 L139 209 L100 209 Z" fill="#1f2a3a" stroke="#101722" stroke-width="1"/>
+    <path d="M46 192 L74 192" stroke="#FF9800" stroke-width="1.3" opacity="0.92"/>
+    <path d="M106 192 L134 192" stroke="#FF9800" stroke-width="1.3" opacity="0.92"/>
+    <path d="M45 194 L73 194 M106 194 L134 194" stroke="#5f789e" stroke-width="1" opacity="0.85"/><path d="M48 190 L44 192 L48 196 Z" fill="#FF9800" opacity="0.85"/><path d="M132 190 L136 192 L132 196 Z" fill="#FF9800" opacity="0.85"/><rect x="46.5" y="203.2" width="27" height="2.1" rx="1" fill="#FF9800" opacity="0.88"/><rect x="106.5" y="203.2" width="27" height="2.1" rx="1" fill="#FF9800" opacity="0.88"/><circle cx="60" cy="191.6" r="1.3" fill="#FF9800"/><circle cx="120" cy="191.6" r="1.3" fill="#FF9800"/><path d="M52 188 Q60 182 68 188" stroke="#FF9800" stroke-width="0.95" fill="none" opacity="0.9"/><path d="M112 188 Q120 182 128 188" stroke="#FF9800" stroke-width="0.95" fill="none" opacity="0.9"/>
+  </g>
+
 </svg>

@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <linearGradient id="common_band_fill" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#C4C4C4"/>
-      <stop offset="100%" stop-color="#8A8A8A"/>
+    <linearGradient id="c_band_fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C8CED6"/>
+      <stop offset="100%" stop-color="#A8B0BA"/>
     </linearGradient>
   </defs>
 
-  <!-- Common wristband: left wrist fit for current underdog hero base -->
-  <g id="gauntlets_common_wristband" transform="translate(70.0 130.2) rotate(-8) scale(1.35 1.35) translate(-68.5 -131.2)">
-    <ellipse cx="68.3" cy="132.0" rx="5.2" ry="1.2" fill="#000000" opacity="0.12"/>
-    <rect x="63.7" y="128.8" width="9.6" height="4.6" rx="2.0" fill="url(#common_band_fill)" stroke="#5E5E5E" stroke-width="0.62"/>
-    <path d="M64.8 131.0 L72.1 131.0" stroke="#E8E8E8" stroke-width="0.44" stroke-linecap="round" opacity="0.65"/>
-    <circle cx="71.9" cy="131.0" r="0.62" fill="#DDE1E6" stroke="#6F7780" stroke-width="0.34"/>
+  <!-- Thin wristband between palm and wrist -->
+  <g id="gauntlets_common_wristband" transform="rotate(-8 70.2 131.8)">
+    <rect x="66.3" y="131.0" width="7.8" height="1.8" rx="0.9" fill="url(#c_band_fill)" stroke="#6D7784" stroke-width="0.34"/>
+    <path d="M67.0 131.45 H73.5" stroke="#E7ECF2" stroke-width="0.30" stroke-linecap="round" opacity="0.82"/>
   </g>
 </svg>

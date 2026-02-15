@@ -1,16 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
-  </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#00e5ff" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: scholar</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Shield -&gt; Tome</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: celestial</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: shield_celestial.svg</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+
+  <g id="shield_celestial">
+    <path d="M34 100 L60 100 L64 106 L64 142 L60 149 L34 149 L30 142 L30 106 Z" fill="#324a70" stroke="#162740" stroke-width="1.2"/>
+    <rect x="36.5" y="103.4" width="21" height="42" rx="2" fill="#4a628c" opacity="0.85"/>
+    <path d="M41 100 L53 100 L57 94 L45 94 Z" fill="#293d5e" stroke="#17263d" stroke-width="0.8"/>
+    <path d="M30 106 L64 106" stroke="#00E5FF" stroke-width="1" opacity="0.82"/>
+    <path d="M38 108 L58 108 M38 116 L58 116 M38 124 L58 124 M38 132 L58 132" stroke="#657fa9" stroke-width="0.82" opacity="0.75"/><path d="M40 102 L58 102 L62 108 L62 140 L58 146 L40 146 L36 140 L36 108 Z" fill="none" stroke="#00E5FF" stroke-width="0.9" opacity="0.82"/><rect x="43" y="115.5" width="12" height="2" rx="1" fill="#00E5FF" opacity="0.86"><animate attributeName="y" values="115.5;137;115.5" dur="2.1s" repeatCount="indefinite"/></rect><path d="M44 126 L49 131 L55 121" stroke="#00E5FF" stroke-width="1.1" fill="none"/><circle cx="49.5" cy="110.4" r="2.1" fill="#1f2f49" stroke="#00E5FF" stroke-width="0.92"/><ellipse cx="49" cy="125" rx="17.2" ry="8.2" fill="none" stroke="#00E5FF" stroke-width="1" opacity="0.56"/><ellipse cx="49" cy="125" rx="11.6" ry="5.5" fill="none" stroke="#b6f7ff" stroke-width="0.8" opacity="0.56"/>
+  </g>
+
 </svg>

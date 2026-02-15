@@ -1,16 +1,88 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="coatGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#314566"/>
+      <stop offset="100%" stop-color="#1d2d49"/>
+    </linearGradient>
+    <linearGradient id="vestGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#47608a"/>
+      <stop offset="100%" stop-color="#2d4268"/>
+    </linearGradient>
+    <linearGradient id="pantsGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#273b5d"/>
+      <stop offset="100%" stop-color="#17263f"/>
+    </linearGradient>
+    <linearGradient id="bootGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#424754"/>
+      <stop offset="100%" stop-color="#222834"/>
+    </linearGradient>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f3ceb5"/>
+      <stop offset="100%" stop-color="#d5a88f"/>
+    </linearGradient>
+    <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4b352a"/>
+      <stop offset="100%" stop-color="#281a13"/>
+    </linearGradient>
+    <radialGradient id="shadowGrad" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#8a8a8a" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#8a8a8a" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#8a8a8a" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#8a8a8a" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: space_pirate</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">hero_base</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: n/a</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: hero_base.svg</text>
+
+  <ellipse cx="90" cy="206" rx="41" ry="7" fill="url(#shadowGrad)"/>
+
+  <g id="hero_body" transform="translate(0 0)">
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 -0.9;0 0" dur="4.6s" repeatCount="indefinite"/>
+
+    <path d="M65 166 Q63 185 66 201 L82 201 Q83 176 80 166 Z" fill="url(#pantsGrad)"/>
+    <path d="M99 166 Q97 176 98 201 L114 201 Q117 184 113 166 Z" fill="url(#pantsGrad)"/>
+
+    <path d="M64 193 L84 193 L86 201 L63 201 Z" fill="url(#bootGrad)"/>
+    <path d="M96 193 L116 193 L118 201 L95 201 Z" fill="url(#bootGrad)"/>
+
+    <circle cx="70" cy="88" r="8" fill="#273a59"/>
+    <circle cx="110" cy="88" r="8" fill="#273a59"/>
+    <path d="M71 72 Q60 86 62 104 L67 166 L113 166 L118 104 Q120 86 109 72 Z" fill="url(#coatGrad)"/>
+    <path d="M77 78 L103 78 L105 152 L75 152 Z" fill="url(#vestGrad)"/>
+
+    <path d="M76 79 L82 92 M104 79 L98 92" stroke="#ff9f43" stroke-width="1.2" opacity="0.65"/>
+    <path d="M73 93 L67 108 Q65 116 66 122" stroke="#1a2942" stroke-width="1.1" opacity="0.75" fill="none"/>
+    <path d="M107 93 L113 108 Q115 116 114 122" stroke="#1a2942" stroke-width="1.1" opacity="0.75" fill="none"/>
+
+    <path d="M75 161 L105 161 Q104 167 102 171 L78 171 Q76 167 75 161 Z" fill="#664638"/>
+    <rect x="88" y="161" width="4" height="8" rx="1" fill="#c89f67"/>
+
+    <path d="M62 92 Q56 103 57 117 L58 145 Q58 151 62 151 Q66 151 67 145 L68 116 Q68 102 72 93 Z" fill="url(#coatGrad)"/>
+    <path d="M118 92 Q124 103 123 117 L122 145 Q122 151 118 151 Q114 151 113 145 L112 116 Q112 102 108 93 Z" fill="url(#coatGrad)"/>
+    <ellipse cx="59" cy="149" rx="3.8" ry="4.2" fill="url(#skinGrad)"/>
+    <ellipse cx="121" cy="149" rx="3.8" ry="4.2" fill="url(#skinGrad)"/>
+
+    <rect x="85" y="63" width="10" height="10" rx="4" fill="url(#skinGrad)"/>
+    <ellipse cx="90" cy="49" rx="14" ry="16" fill="url(#skinGrad)"/>
+
+    <path d="M76 45 Q80 35 90 34 Q100 35 104 45 L102 48 Q90 44 78 48 Z" fill="url(#hairGrad)"/>
+    <path d="M77 44 Q90 40 103 44 L103 47 Q90 45 77 47 Z" fill="#20324e"/>
+
+    <g id="eyes" transform="translate(0 0)">
+      <animateTransform attributeName="transform" type="translate"
+        values="0 0; -0.7 0.1; 0.8 -0.2; 0 0; 0.35 0.1; 0 0"
+        keyTimes="0;0.12;0.23;0.55;0.73;1" dur="4.1s" repeatCount="indefinite"/>
+      <ellipse cx="85" cy="50" rx="2.4" ry="2" fill="#f6fbff">
+        <animate attributeName="ry" values="2;2;0.2;2;2;0.2;2" keyTimes="0;0.18;0.2;0.22;0.66;0.68;1" dur="5.1s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="95" cy="50" rx="2.4" ry="2" fill="#f6fbff">
+        <animate attributeName="ry" values="2;2;0.2;2;2;0.2;2" keyTimes="0;0.18;0.2;0.22;0.66;0.68;1" dur="5.1s" repeatCount="indefinite"/>
+      </ellipse>
+      <circle cx="85" cy="50" r="0.8" fill="#26303e"/>
+      <circle cx="95" cy="50" r="0.8" fill="#26303e"/>
+    </g>
+
+    <path d="M88 53 L89 57 L91 57 L92 53" fill="#b5846d"/>
+    <path d="M84 59 Q90 62 96 59" stroke="#724a3d" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M82 57 Q86 55 88 57" stroke="#724a3d" stroke-width="0.9" fill="none"/>
+    <path d="M98 57 Q94 55 92 57" stroke="#724a3d" stroke-width="0.9" fill="none"/>
+
+    <path d="M66 167 Q90 172 114 167" stroke="#132338" stroke-width="1.1" fill="none" opacity="0.58"/>
+  </g>
 </svg>

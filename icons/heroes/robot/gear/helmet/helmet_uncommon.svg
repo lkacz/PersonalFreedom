@@ -1,9 +1,51 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(0, -5)">
-    <!-- Uncommon Helmet: Welder Mask with raised visor (friendly, workmanlike) -->
-    <path d="M65 30 L115 30 L115 65 L90 75 L65 65 Z" fill="#455A64" stroke="#263238" stroke-width="2"/>
-    <rect x="70" y="45" width="40" height="15" fill="#111" stroke="#546E7A" stroke-width="1"/>
-    <!-- Sticker or detail -->
-    <circle cx="105" cy="40" r="3" fill="#FFEE58"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="h_steel_clean" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#CFD8DC"/>
+      <stop offset="100%" stop-color="#90A4AE"/>
+    </linearGradient>
+    <radialGradient id="h_eye_green" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#69F0AE"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </radialGradient>
+    <pattern id="h_vent_pattern" x="0" y="0" width="4" height="4" patternUnits="userSpaceOnUse">
+        <rect x="0" y="0" width="2" height="4" fill="#37474F"/>
+    </pattern>
+  </defs>
+  <g id="helmet_uncommon" transform="translate(15, 10)">
+    <!-- Base Chassis: Reinforced Steel (Same shape + armor) -->
+    <rect x="55" y="45" width="70" height="80" rx="10" fill="url(#h_steel_clean)" stroke="#546E7A" stroke-width="2"/>
+    
+    <!-- Faceplate (Armored) -->
+    <rect x="65" y="60" width="50" height="40" rx="2" fill="#263238"/>
+    
+    <!-- Ears (Comms) -->
+    <rect x="45" y="65" width="10" height="30" rx="2" fill="#607D8B" stroke="#455A64"/>
+    <rect x="125" y="65" width="10" height="30" rx="2" fill="#607D8B" stroke="#455A64"/>
+    
+    <!-- Antenna -->
+    <line x1="130" y1="65" x2="130" y2="40" stroke="#455A64" stroke-width="1"/>
+    <circle cx="130" cy="40" r="2" fill="#F44336">
+         <animate attributeName="fill" values="#F44336;#B71C1C;#F44336" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Cyclops Eye (Stable Green) -->
+    <circle cx="90" cy="80" r="14" fill="url(#h_eye_green)" stroke="#1B5E20" stroke-width="2"/>
+    <circle cx="94" cy="76" r="3" fill="#FFFFFF" opacity="0.6"/> <!-- Glint -->
+    
+    <!-- Hazard Stripes on Top -->
+    <path d="M70 45 L80 45 L75 50" fill="#FDD835"/>
+    <path d="M100 45 L110 45 L105 50" fill="#FDD835"/>
+    <!-- Tiny Caution Text -->
+    <text x="75" y="55" font-family="Arial" font-size="4" fill="#263238" text-anchor="middle">CAUTION</text>
+
+    <!-- Jaw Guard -->
+    <path d="M65 110 L115 110 L110 125 L70 125 Z" fill="#455A64"/>
+    <!-- Hex Bolts -->
+    <polygon points="75,116 77,117 77,119 75,120 73,119 73,117" fill="#CFD8DC" stroke="#37474F" stroke-width="0.5"/>
+    <polygon points="105,116 107,117 107,119 105,120 103,119 103,117" fill="#CFD8DC" stroke="#37474F" stroke-width="0.5"/>
+    
+    <!-- Vent Grill on Jaw -->
+    <rect x="85" y="115" width="10" height="6" fill="url(#h_vent_pattern)"/>
   </g>
 </svg>

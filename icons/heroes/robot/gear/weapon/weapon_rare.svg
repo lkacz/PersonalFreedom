@@ -1,9 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(-20, 10)">
-    <!-- Rare: Arc Welder -->
-    <rect x="35" y="120" width="30" height="40" rx="5" fill="#EF5350"/> <!-- Battery Pack -->
-    <path d="M50 120 L50 80 L30 60" fill="none" stroke="#212121" stroke-width="3"/> <!-- Cable to nozzle -->
-    <circle cx="28" cy="58" r="3" fill="#FFF"/> <!-- Spark tip -->
-    <path d="M28 58 L20 50 M28 58 L36 50 M28 58 L28 45" stroke="#FFEB3B" stroke-width="2"/> <!-- Sparks -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="w_plasma" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00B0FF"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+  </defs>
+  <g id="weapon_rare" transform="rotate(-10 130 130)">
+    <!-- Plasma Rifle -->
+    <!-- Stock/Grip -->
+    <path d="M125 140 L135 140 L130 160 Z" fill="#1565C0"/>
+    
+    <!-- Body -->
+    <rect x="120" y="100" width="20" height="40" rx="2" fill="#FFFFFF" stroke="#0D47A1"/>
+    
+    <!-- Barrel (Energy) -->
+    <rect x="126" y="70" width="8" height="30" fill="url(#w_plasma)" opacity="0.8"/>
+    <rect x="124" y="70" width="12" height="4" fill="#1565C0"/> <!-- Muzzle -->
+    
+    <!-- Coils -->
+    <line x1="120" y1="110" x2="140" y2="110" stroke="#00B0FF" stroke-width="1"/>
+    <line x1="120" y1="120" x2="140" y2="120" stroke="#00B0FF" stroke-width="1"/>
+    <line x1="120" y1="130" x2="140" y2="130" stroke="#00B0FF" stroke-width="1"/>
   </g>
 </svg>

@@ -1,9 +1,217 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(0, -5)">
-    <!-- Legendary Helmet: Crown of Connectivity -->
-    <defs><linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FFD54F"/><stop offset="100%" stop-color="#FF6F00"/></linearGradient></defs>
-    <path d="M60 30 L120 30 L115 70 L65 70 Z" fill="url(#goldGrad)" stroke="#E65100" stroke-width="2"/>
-    <path d="M60 30 L70 10 L80 30 L90 10 L100 30 L110 10 L120 30" fill="none" stroke="#FFD54F" stroke-width="3" stroke-linejoin="round"/>
-    <circle cx="90" cy="45" r="8" fill="#36d6e7" stroke="#fff" stroke-width="1"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <!-- Rich Golden Gradient -->
+    <linearGradient id="h_gold_complex" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFECB3"/>
+      <stop offset="30%" stop-color="#FFD54F"/>
+      <stop offset="70%" stop-color="#FF6F00"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </linearGradient>
+    
+    <!-- Platinum/Chrome Gradient -->
+    <linearGradient id="h_platinum_complex" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="49%" stop-color="#CFD8DC"/>
+      <stop offset="50%" stop-color="#90A4AE"/>
+      <stop offset="100%" stop-color="#607D8B"/>
+    </linearGradient>
+
+    <!-- Hex/Carbon Mesh Pattern -->
+    <pattern id="h_hex_mesh" x="0" y="0" width="3" height="3" patternUnits="userSpaceOnUse">
+        <path d="M1.5 0 L3 0.75 L3 2.25 L1.5 3 L0 2.25 L0 0.75 Z" fill="none" stroke="#000000" stroke-width="0.1" opacity="0.2"/>
+    </pattern>
+
+    <linearGradient id="h_eye_human" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E3F2FD"/>
+    </linearGradient>
+
+    <clipPath id="h_eye_clip_left">
+      <circle cx="78" cy="80" r="10"/>
+    </clipPath>
+    <clipPath id="h_eye_clip_right">
+      <circle cx="102" cy="80" r="10"/>
+    </clipPath>
+
+    <!-- Godly Glow & Bloom -->
+    <filter id="h_god_bloom" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <g id="helmet_legendary" transform="translate(15, 10)">
+    
+    <!-- === BACKGROUND AURA === -->
+    <circle cx="90" cy="80" r="55" fill="url(#h_gold_complex)" opacity="0.08">
+        <animate attributeName="opacity" values="0.08;0.15;0.08" dur="5s" repeatCount="indefinite"/>
+        <animate attributeName="r" values="55;58;55" dur="5s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- === SIDE WINGS (Divine Engine) === -->
+    <!-- Detailed aerodynamic cowling -->
+    <path d="M45 70 L55 60 L55 100 L45 90 Z" fill="url(#h_gold_complex)" stroke="#FF6F00" stroke-width="0.5"/>
+    <path d="M135 70 L125 60 L125 100 L135 90 Z" fill="url(#h_gold_complex)" stroke="#FF6F00" stroke-width="0.5"/>
+    
+    <!-- Engine vents with heat glow -->
+    <g stroke="#FFF" stroke-width="0.5" opacity="0.8">
+        <line x1="47" y1="75" x2="53" y2="70"/>
+        <line x1="47" y1="80" x2="53" y2="75"/>
+        <line x1="47" y1="85" x2="53" y2="80"/>
+        
+        <line x1="133" y1="75" x2="127" y2="70"/>
+        <line x1="133" y1="80" x2="127" y2="75"/>
+        <line x1="133" y1="85" x2="127" y2="80"/>
+    </g>
+    <!-- Tiny caution text on wings -->
+    <text x="44" y="92" font-family="Arial" font-size="2" fill="#3E2723" transform="rotate(-90 44 92)">HOT</text>
+    <text x="136" y="92" font-family="Arial" font-size="2" fill="#3E2723" transform="rotate(90 136 92)">HOT</text>
+
+    <!-- === BASE CHASSIS: Platinum Nanoweave === -->
+    <path d="M55 55 L55 125 L125 125 L125 55 Q90 35 55 55 Z" fill="url(#h_platinum_complex)" stroke="url(#h_gold_complex)" stroke-width="2"/>
+    <!-- Subtle Carbon Texture Overlay -->
+    <path d="M55 55 L55 125 L125 125 L125 55 Q90 35 55 55 Z" fill="url(#h_hex_mesh)" opacity="0.3"/>
+
+    <!-- === FACEPLATE: Reinforced Ceramic === -->
+    <!-- Extended chin downwards to covering neck area more -->
+    <path d="M60 60 L120 60 L120 110 L105 135 L75 135 L60 110 Z" fill="#263238" stroke="url(#h_gold_complex)" stroke-width="1.5"/>
+    <!-- Reflection/Gloss on Faceplate -->
+    <path d="M62 62 L118 62 L90 85 Z" fill="url(#h_platinum_complex)" opacity="0.1"/>
+    
+    <!-- Tiny Torx Screws on faceplate corners -->
+    <g fill="#B0BEC5" stroke="#37474F" stroke-width="0.2">
+        <circle cx="63" cy="63" r="1.5"/> <path d="M63 61.5 L63 64.5 M61.5 63 L64.5 63" stroke-width="0.3"/>
+        <circle cx="117" cy="63" r="1.5"/> <path d="M117 61.5 L117 64.5 M115.5 63 L118.5 63" stroke-width="0.3"/>
+        <circle cx="63" cy="108" r="1.5"/> <path d="M63 106.5 L63 109.5 M61.5 108 L64.5 108" stroke-width="0.3"/>
+        <circle cx="117" cy="108" r="1.5"/> <path d="M117 106.5 L117 109.5 M115.5 108 L118.5 108" stroke-width="0.3"/>
+    </g>
+
+    <!-- === SYSTEM LABELS === -->
+    <rect x="112" y="100" width="6" height="6" fill="white" opacity="0.8"/> <!-- QR Code Placeholder -->
+    <rect x="113" y="101" width="1" height="1" fill="black"/> <rect x="115" y="101" width="1" height="1" fill="black"/>
+    <rect x="113" y="103" width="2" height="1" fill="black"/> <rect x="116" y="104" width="1" height="1" fill="black"/>
+    
+    <text x="65" y="122" font-family="Courier" font-size="2" fill="#546E7A">SER. #990-?</text>
+
+    <!-- === FILIGREE / ENGRAVING === -->
+    <path d="M60 55 Q70 45 60 45" fill="none" stroke="#FFD700" stroke-width="0.5"/>
+    <path d="M120 55 Q110 45 120 45" fill="none" stroke="#FFD700" stroke-width="0.5"/>
+
+    <!-- === HALO SYSTEM === -->
+    <!-- Rotating Rune Ring -->
+    <g transform="translate(90, 45)">
+        <circle cx="0" cy="0" r="35" fill="none" stroke="url(#h_gold_complex)" stroke-width="0.5" stroke-dasharray="1,2" opacity="0.6">
+            <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="20s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Inner energy ring -->
+        <circle cx="0" cy="0" r="32" fill="none" stroke="#FFF" stroke-width="0.2" stroke-dasharray="10,20" opacity="0.4">
+             <animateTransform attributeName="transform" type="rotate" from="360 0 0" to="0 0 0" dur="15s" repeatCount="indefinite"/>
+        </circle>
+    </g>
+    <!-- Main Crown Structure -->
+    <path d="M40 50 Q90 10 140 50 L135 60 Q90 20 45 60 Z" fill="url(#h_gold_complex)" filter="url(#h_god_bloom)">
+       <animate attributeName="opacity" values="0.9;1;0.9" dur="3s" repeatCount="indefinite"/>
+    </path>
+    <!-- Floating Holographic Text -->
+    <text x="90" y="40" font-family="Courier New" font-size="3" fill="#FFF8E1" text-anchor="middle" font-weight="bold" letter-spacing="1">SYSTEM: DIVINE</text>
+
+    <!-- === SENSOR CLUSTER (Forehead) === -->
+    <rect x="85" y="52" width="10" height="4" rx="1" fill="#102027" stroke="#37474F" stroke-width="0.5"/>
+    <circle cx="87" cy="54" r="1" fill="#F44336">
+        <animate attributeName="opacity" values="1;0.4;1" dur="1s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="90" cy="54" r="1" fill="#29B6F6"/>
+    <circle cx="93" cy="54" r="1" fill="#66BB6A"/>
+
+    <!-- === EYE SYSTEM: Biometric Lens === -->
+    <!-- Left Eye -->
+    <g clip-path="url(#h_eye_clip_left)">
+        <circle cx="78" cy="80" r="10" fill="url(#h_eye_human)"/> <!-- Sclera -->
+        <path d="M70 80 Q78 80 86 80" stroke="#F44336" stroke-width="0.2" opacity="0.2"/> <!-- Capillaries -->
+        
+        <!-- Iris Complex -->
+        <circle cx="78" cy="80" r="5" fill="#2962FF">
+             <animate attributeName="cx" values="78; 80; 76; 78; 78; 78" keyTimes="0; 0.1; 0.2; 0.3; 0.9; 1" dur="4s" repeatCount="indefinite"/>
+             <animate attributeName="cy" values="80; 80; 82; 80; 80; 80" keyTimes="0; 0.1; 0.2; 0.3; 0.9; 1" dur="4s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="78" cy="80" r="4.5" fill="none" stroke="#1E88E5" stroke-width="0.5" stroke-dasharray="1,1" opacity="0.5"> <!-- Iris tech ring -->
+             <animateTransform attributeName="transform" type="rotate" from="0 78 80" to="360 78 80" dur="10s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Pupil & Shine -->
+        <circle cx="78" cy="80" r="2" fill="#000000">
+             <animate attributeName="cx" values="78; 80; 76; 78; 78; 78" keyTimes="0; 0.1; 0.2; 0.3; 0.9; 1" dur="4s" repeatCount="indefinite"/>
+             <animate attributeName="cy" values="80; 80; 82; 80; 80; 80" keyTimes="0; 0.1; 0.2; 0.3; 0.9; 1" dur="4s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="76.5" cy="78.5" r="1" fill="#FFFFFF" opacity="0.9"/>
+        
+        <!-- Camera Zoom lines -->
+        <rect x="68" y="70" width="4" height="1" fill="#00B0FF" opacity="0.5"/>
+        <rect x="84" y="89" width="4" height="1" fill="#00B0FF" opacity="0.5"/>
+
+        <!-- Eyelid Shutter -->
+        <rect x="68" y="70" width="20" height="20" fill="#37474F">
+           <animate attributeName="height" values="0;20;0" keyTimes="0;0.5;1" dur="0.15s" begin="2s; 6s" fill="freeze" />
+        </rect>
+    </g>
+    
+    <!-- Right Eye -->
+    <g clip-path="url(#h_eye_clip_right)">
+        <circle cx="102" cy="80" r="10" fill="url(#h_eye_human)"/> <!-- Sclera -->
+        <path d="M94 80 Q102 80 110 80" stroke="#F44336" stroke-width="0.2" opacity="0.2"/> <!-- Capillaries -->
+        
+        <!-- Iris Complex -->
+        <circle cx="102" cy="80" r="5" fill="#2962FF">
+             <animate attributeName="cx" values="102; 104; 100; 102; 102; 102" keyTimes="0; 0.1; 0.2; 0.3; 0.9; 1" dur="4s" repeatCount="indefinite"/>
+             <animate attributeName="cy" values="80; 80; 82; 80; 80; 80" keyTimes="0; 0.1; 0.2; 0.3; 0.9; 1" dur="4s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="102" cy="80" r="4.5" fill="none" stroke="#1E88E5" stroke-width="0.5" stroke-dasharray="1,1" opacity="0.5"> <!-- Iris tech ring -->
+             <animateTransform attributeName="transform" type="rotate" from="0 102 80" to="360 102 80" dur="10s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Pupil & Shine -->
+        <circle cx="102" cy="80" r="2" fill="#000000">
+             <animate attributeName="cx" values="102; 104; 100; 102; 102; 102" keyTimes="0; 0.1; 0.2; 0.3; 0.9; 1" dur="4s" repeatCount="indefinite"/>
+             <animate attributeName="cy" values="80; 80; 82; 80; 80; 80" keyTimes="0; 0.1; 0.2; 0.3; 0.9; 1" dur="4s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="100.5" cy="78.5" r="1" fill="#FFFFFF" opacity="0.9"/>
+        
+        <!-- Camera Zoom lines -->
+         <rect x="92" y="70" width="4" height="1" fill="#00B0FF" opacity="0.5"/>
+        <rect x="108" y="89" width="4" height="1" fill="#00B0FF" opacity="0.5"/>
+
+        <!-- Eyelid Shutter -->
+        <rect x="92" y="70" width="20" height="20" fill="#37474F">
+           <animate attributeName="height" values="0;20;0" keyTimes="0;0.5;1" dur="0.15s" begin="2s; 6s" fill="freeze" />
+        </rect>
+    </g>
+
+    <!-- === HUD OVERLAY & AR === -->
+    <path d="M70 100 L110 100" stroke="#00B0FF" stroke-width="0.5" opacity="0.3"/> <!-- Target line -->
+    <!-- Complex HUD Numbers -->
+    <text x="55" y="90" font-family="Arial" font-size="2" fill="#00B0FF" opacity="0.7">TGT: LOCKED</text>
+    <text x="55" y="93" font-family="Arial" font-size="1.5" fill="#00B0FF" opacity="0.5">X: 44.29 Y: 11.02</text>
+    
+    <!-- Altitude Slider -->
+    <line x1="125" y1="80" x2="125" y2="100" stroke="#00B0FF" stroke-width="0.5" opacity="0.4"/>
+    <rect x="123" y="90" width="4" height="1" fill="#00B0FF" opacity="0.8">
+        <animate attributeName="y" values="90;82;95;90" dur="4s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- === DIVINE SPEAKER GRILL === -->
+    <g transform="translate(80, 118)">
+        <rect x="0" y="0" width="20" height="1.5" fill="url(#h_gold_complex)"/>
+        <line x1="0" y1="0.75" x2="20" y2="0.75" stroke="#000" stroke-width="0.1" opacity="0.2"/>
+        
+        <rect x="0" y="3" width="20" height="1.5" fill="url(#h_gold_complex)"/>
+        <line x1="0" y1="3.75" x2="20" y2="3.75" stroke="#000" stroke-width="0.1" opacity="0.2"/>
+        
+        <rect x="0" y="6" width="20" height="1.5" fill="url(#h_gold_complex)"/>
+        <line x1="0" y1="6.75" x2="20" y2="6.75" stroke="#000" stroke-width="0.1" opacity="0.2"/>
+        
+        <rect x="0" y="9" width="20" height="1.5" fill="url(#h_gold_complex)"/>
+        <line x1="0" y1="9.75" x2="20" y2="9.75" stroke="#000" stroke-width="0.1" opacity="0.2"/>
+    </g>
+
   </g>
 </svg>

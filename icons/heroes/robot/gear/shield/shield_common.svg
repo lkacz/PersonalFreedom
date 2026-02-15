@@ -1,10 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(20, 10)">
-    <!-- Common: Trash Can Lid (Improvised) -->
-    <circle cx="125" cy="110" r="30" fill="#9E9E9E" stroke="#616161" stroke-width="2"/>
-    <!-- Handle -->
-    <rect x="110" y="105" width="30" height="10" rx="3" fill="#BDBDBD" stroke="#616161"/>
-    <!-- Dents -->
-    <path d="M110 130 L115 135 L120 130" fill="none" stroke="#616161" stroke-width="1"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <radialGradient id="s_rust" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#9E9E9E"/>
+      <stop offset="100%" stop-color="#3E2723"/>
+    </radialGradient>
+  </defs>
+  <g id="shield_common" transform="translate(10, 0)">
+    <!-- Trash Can Lid / Scrap Shield -->
+    <circle cx="40" cy="120" r="25" fill="url(#s_rust)" stroke="#5D4037" stroke-width="2"/>
+    
+    <!-- Dents and Handles -->
+    <rect x="30" y="115" width="20" height="4" rx="1" fill="#424242"/> <!-- Handle -->
+    <path d="M40 100 L45 105 L35 110 Z" fill="#3E2723" opacity="0.6"/> <!-- Dent -->
+    <path d="M55 130 L60 125" stroke="#212121" stroke-width="1"/> <!-- Scratch -->
   </g>
 </svg>

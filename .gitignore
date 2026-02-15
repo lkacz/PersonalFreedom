@@ -68,3 +68,9 @@ log*.txtcrash_log.txt
 
 # User data (runtime state, not source code)
 users/*/stats.json
+
+# Generated art/debug previews (local QA artifacts)
+artifacts/hero_previews/
+preview_hoodie_alignment_inline.html
+preview_thief_hoodies_composite.svg
+preview_thief_hoodies.py

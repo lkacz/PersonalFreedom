@@ -1,16 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="e_body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#96a8ad"/>
+      <stop offset="100%" stop-color="#65767b"/>
+    </linearGradient>
+    <radialGradient id="e_core" cx="50%" cy="50%" r="58%">
+      <stop offset="0%" stop-color="#eed8f2" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#9C27B0" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#9c27b0" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Weapon -&gt; Tool</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: epic</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: weapon_epic.svg</text>
+
+  <!-- Zoo Worker weapon (epic): Rope Launcher -->
+  <g id="weapon_epic" transform="translate(90 122) scale(1.0) translate(-90 -122)">
+    <g transform="rotate(14 108 138)">
+      <rect x="104.2" y="122.0" width="9.8" height="14.5" rx="2.0" fill="url(#e_body)" stroke="#4f5d63" stroke-width="0.72"/>
+      <rect x="108.2" y="111.2" width="3.8" height="12.3" rx="1.4" fill="#8aa2aa" stroke="#5a6970" stroke-width="0.62"/>
+      <rect x="106.3" y="131.8" width="5.6" height="6.9" rx="1.3" fill="#5a4534" stroke="#413023" stroke-width="0.58"/>
+      <rect x="106.6" y="134.3" width="4.9" height="1.2" rx="0.5" fill="#9C27B0"/>
+
+      <circle cx="109.1" cy="126.4" r="2.8" fill="#d8e6ea" stroke="#6f8087" stroke-width="0.6"/>
+      <circle cx="109.1" cy="126.4" r="1.4" fill="#9C27B0" opacity="0.78"/>
+      <path d="M112.0 113.0 L117.2 109.0" stroke="#9C27B0" stroke-width="0.95" stroke-linecap="round"/>
+    </g>
+
+    <path d="M112.4 137.6 C116.0 141.9 116.2 146.9 112.8 151.9" fill="none" stroke="#9C27B0" stroke-width="0.88" stroke-linecap="round" opacity="0.92"/>
+    <path d="M114.9 139.0 C118.1 143.0 118.0 147.3 115.1 151.8" fill="none" stroke="#d58fe4" stroke-width="0.56" stroke-linecap="round" opacity="0.8"/>
+    <circle cx="109.0" cy="126.0" r="4.2" fill="url(#e_core)" opacity="0.45">
+      <animate attributeName="r" values="2.4;4.8;2.4" dur="1.4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.14;0.8;0.14" dur="1.4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
 </svg>

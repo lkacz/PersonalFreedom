@@ -1,16 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="a_frame_celestial" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c69a5c"/>
+      <stop offset="100%" stop-color="#8e6838"/>
+    </linearGradient>
+    <linearGradient id="a_panel_celestial" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f1e7d3"/>
+      <stop offset="100%" stop-color="#d8c6a5"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#00e5ff" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Amulet -&gt; Whistle</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: celestial</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: amulet_celestial.svg</text>
+  <!-- Zoo Worker amulet (celestial): Ember Crest -->
+  <g id="amulet_celestial" transform="translate(90 88) scale(1.14) translate(-90 -110)">
+    <path d="M86.8 98.0 L90.0 102.2 L93.2 98.0" fill="none" stroke="#6e5031" stroke-width="0.85" stroke-linecap="round"/>
+    <rect x="88.6" y="101.6" width="2.8" height="2.3" rx="0.45" fill="#886340" stroke="#5f432b" stroke-width="0.45"/>
+    <rect x="83.6" y="103.6" width="12.8" height="14.9" rx="1.8" fill="url(#a_frame_celestial)" stroke="#6e5031" stroke-width="0.86"/>
+    <rect x="84.5" y="104.7" width="11.0" height="12.9" rx="1.35" fill="url(#a_panel_celestial)" stroke="#b99966" stroke-width="0.4"/>
+    <rect x="85.3" y="107.8" width="9.2" height="1.0" rx="0.35" fill="#a78758" opacity="0.78"/>
+    <rect x="85.3" y="109.6" width="7.0" height="0.95" rx="0.35" fill="#a78758" opacity="0.7"/>
+    <path d="M89.2 112.2 C90.0 110.6 92.1 111.3 92.0 113.2 C91.9 114.6 90.2 115.3 89.1 114.0 C87.9 112.5 88.4 110.8 90.0 110.5" fill="none" stroke="#00E5FF" stroke-width="0.75" stroke-linecap="round"/><path d="M86.0 109.9 L88.0 108.0 M94.0 109.9 L92.0 108.0" stroke="#00E5FF" stroke-width="0.58"/><path d="M90.2 114.8 L90.8 116.0 L92.1 116.2 L91.1 117.1 L91.3 118.4 L90.2 117.8 L89.1 118.4 L89.3 117.1 L88.3 116.2 L89.6 116.0 Z" fill="#00E5FF" opacity="0.92"/><circle cx="90" cy="111.2" r="4.6" fill="#00E5FF" opacity="0.24">
+      <animate attributeName="r" values="3.0;5.8;3.0" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.08;0.5;0.08" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
 </svg>

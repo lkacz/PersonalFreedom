@@ -1,7 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <!-- Rare: Power Node -->
-  <g transform="translate(82, 85)">
-    <circle cx="8" cy="8" r="8" fill="#3cd6e7" stroke="#263238" stroke-width="2"/>
-    <circle cx="8" cy="8" r="4" fill="#fff" opacity="0.8"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <radialGradient id="a_core" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#00B0FF"/>
+    </radialGradient>
+  </defs>
+  <g id="amulet_rare">
+    <!-- Arc Core Pendant -->
+    <path d="M85 85 Q90 95 95 85" fill="none" stroke="#00B0FF" stroke-width="1"/>
+    
+    <!-- Housing -->
+    <path d="M90 90 L95 93 L95 99 L90 102 L85 99 L85 93 Z" fill="#263238" stroke="#0091EA" stroke-width="1"/>
+    
+    <!-- Glowing Core -->
+    <circle cx="90" cy="96" r="3" fill="url(#a_core)">
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="1s" repeatCount="indefinite"/>
+    </circle>
   </g>
 </svg>

@@ -1,16 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
-  </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#9c27b0" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">fx: tier_epic</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: epic</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: tier_epic.svg</text>
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <g id="fx_epic">
+    <ellipse cx="90" cy="104" rx="27" ry="13" fill="#9C27B0" opacity="0.11"/>
+    <circle cx="90" cy="102" r="20" fill="none" stroke="#9C27B0" stroke-width="1.7" opacity="0.68"/>
+    <path d="M66 103 Q90 90 114 103" stroke="#cf83ef" stroke-width="1.1" fill="none" opacity="0.75"/>
+    <path d="M73 116 Q90 111 107 116" stroke="#cf83ef" stroke-width="0.9" fill="none" opacity="0.65"/>
+    <circle cx="70" cy="95" r="1.3" fill="#cf83ef"/>
+    <circle cx="110" cy="111" r="1.2" fill="#cf83ef"/>
+  </g>
 </svg>

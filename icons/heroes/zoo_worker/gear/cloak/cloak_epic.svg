@@ -1,16 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="cl_epic_void" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7B1FA2"/>
+      <stop offset="100%" stop-color="#4A148C"/>
+    </linearGradient>
+    <radialGradient id="cl_glow_purple" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#E1BEE7" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#7B1FA2" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#9c27b0" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: zoo_worker</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Cloak -&gt; Raincoat</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: epic</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: cloak_epic.svg</text>
+  <!-- Void Cloak: Purple, Glowing Crystals, Mystical -->
+  <g id="cloak_epic" transform="translate(90 118) scale(0.92) translate(-90 -118)">
+    <path d="M68 84 Q90 82 112 84 L109 95 L105 149 Q90 163 75 149 L71 95 Z"
+          fill="url(#cl_epic_void)" fill-opacity="0.55" stroke="#4A148C" stroke-width="1.0"/>
+
+    <path d="M78 110 L82 120 L78 130" fill="none" stroke="#E1BEE7" stroke-width="1" opacity="0.7"/>
+    <path d="M102 110 L98 120 L102 130" fill="none" stroke="#E1BEE7" stroke-width="1" opacity="0.7"/>
+
+    <circle cx="90" cy="100" r="4" fill="url(#cl_glow_purple)">
+      <animate attributeName="r" values="3;5;3" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+    </circle>
+
+    <circle cx="80" cy="140" r="1" fill="#E1BEE7" opacity="0.6">
+      <animate attributeName="cy" from="140" to="130" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="100" cy="145" r="1.2" fill="#E1BEE7" opacity="0.6">
+      <animate attributeName="cy" from="145" to="135" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.8;0" dur="4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
 </svg>

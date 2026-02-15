@@ -1,12 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
-  <g transform="translate(0,0)">
-    <!-- Uncommon: Clamp Claws (Friendly pincers) -->
-    <path d="M35 130 L63 130 L65 150 L33 150 Z" fill="#B0BEC5" stroke="#455A64" stroke-width="1"/>
-    <path d="M117 130 L145 130 L147 150 L115 150 Z" fill="#B0BEC5" stroke="#455A64" stroke-width="1"/>
-    <!-- Pincers -->
-    <path d="M38 150 L38 165" stroke="#455A64" stroke-width="4"/>
-    <path d="M60 150 L60 165" stroke="#455A64" stroke-width="4"/>
-    <path d="M120 150 L120 165" stroke="#455A64" stroke-width="4"/>
-    <path d="M142 150 L142 165" stroke="#455A64" stroke-width="4"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="g_heavy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#66BB6A"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </linearGradient>
+  </defs>
+  <g id="gauntlets_uncommon">
+    <!-- Armored Forearms -->
+    <rect x="38" y="110" width="24" height="35" rx="2" fill="url(#g_heavy)" stroke="#1B5E20" stroke-width="1.5"/>
+    <rect x="118" y="110" width="24" height="35" rx="2" fill="url(#g_heavy)" stroke="#1B5E20" stroke-width="1.5"/>
+    
+    <!-- Hazard Stripes -->
+    <rect x="38" y="125" width="24" height="5" fill="#FDD835"/>
+    <path d="M42 125 L38 130 M48 125 L43 130 M54 125 L49 130 M60 125 L55 130" stroke="#000" stroke-width="1"/>
+    
+    <rect x="118" y="125" width="24" height="5" fill="#FDD835"/>
+    <path d="M122 125 L118 130 M128 125 L123 130 M134 125 L129 130 M140 125 L135 130" stroke="#000" stroke-width="1"/>
+    
+    <!-- Heavy Pincers -->
+    <path d="M38 145 L45 160 L50 145 L55 160 L62 145" fill="#424242" stroke="#212121" stroke-width="1"/>
+    <path d="M118 145 L125 160 L130 145 L135 160 L142 145" fill="#424242" stroke="#212121" stroke-width="1"/>
   </g>
 </svg>
