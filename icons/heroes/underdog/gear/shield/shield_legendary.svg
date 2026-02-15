@@ -32,7 +32,7 @@
   </defs>
 
   <!-- Legendary suitcase shield: executive case with arc-core -->
-  <g id="shield_legendary" transform="rotate(-8 62 149)">
+  <g id="shield_legendary" transform="translate(-25 42) translate(62 149) scale(1.55 1.55) translate(-62 -149) rotate(-6 62 149)">
     <ellipse cx="62.2" cy="160.4" rx="10.8" ry="3.05" fill="#000000" opacity="0.18"/>
     <rect x="51.8" y="137.8" width="20.8" height="16.9" rx="2.6" fill="url(#l_case)" stroke="#8f5613" stroke-width="1.0"/>
     <rect x="52.0" y="138.0" width="20.4" height="16.5" rx="2.45" fill="none" stroke="url(#l_rim)" stroke-width="0.55" opacity="0.85"/>

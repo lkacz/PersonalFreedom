@@ -12,7 +12,7 @@
   </defs>
 
   <!-- Uncommon headphones: green commuter set -->
-  <g id="helmet_uncommon">
+  <g id="helmet_uncommon" transform="translate(90 59) scale(0.84 0.84) translate(-90 -64)">
     <path d="M78.6 60.0 Q90.0 51.8 101.4 60.0" fill="none" stroke="url(#u_band)" stroke-width="2.4" stroke-linecap="round"/>
     <path d="M80.4 61.2 Q90.0 54.8 99.6 61.2" fill="none" stroke="#bde4bf" stroke-width="0.75" opacity="0.64"/>
     <rect x="75.8" y="62.5" width="5.7" height="11.6" rx="2.1" fill="url(#u_pad)" stroke="#3f5f42" stroke-width="0.78"/>

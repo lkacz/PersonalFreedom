@@ -16,7 +16,7 @@
   </defs>
 
   <!-- Common ID badge (rarity accent: neutral silver) -->
-  <g id="amulet_common" transform="translate(90 111) scale(0.82) translate(-90 -111)">
+  <g id="amulet_common" transform="translate(90 87) scale(0.82) translate(-90 -111)">
     <path d="M86.6 98.2 L90.0 102.4 L93.4 98.2" fill="none" stroke="#6f7c8a" stroke-width="0.82" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M87.3 99.0 L90.0 102.2 L92.7 99.0" fill="none" stroke="#4da2d8" stroke-width="0.42" opacity="0.55" stroke-linecap="round"/>
     <rect x="88.5" y="101.8" width="3.0" height="2.4" rx="0.5" fill="url(#c_clip)" stroke="#525d68" stroke-width="0.45"/>

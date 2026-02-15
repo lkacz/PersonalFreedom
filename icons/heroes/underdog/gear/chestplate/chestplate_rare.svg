@@ -14,20 +14,24 @@
   </defs>
 
   <!-- Underdog rare tee -->
-  <g id="chestplate_rare" filter="url(#shadowRare)">
-    <path d="M68 92 Q78 85 90 86 Q102 85 112 92 L118 102 L110 108 L108.5 147 Q90 151 71.5 147 L70 108 L62 102 Z"
-          fill="#2196F3" stroke="#1565C0" stroke-width="1.15"/>
-    <path d="M70 94 Q79 88.2 90 89 Q101 88.2 110 94 L115 102 L108 106 L106.7 145.2 Q90 148.8 73.3 145.2 L72 106 L65 102 Z"
-          fill="url(#shirtShadeRare)" opacity="0.58"/>
+  <g id="chestplate_rare" filter="url(#shadowRare)" transform="translate(0 -26) translate(90 110) scale(0.72 0.78) translate(-90 -110)">
+    <path d="M62 102 L68 92 L81 88 Q90 95.2 99 88 L112 92 L118 102 L110 108 L110 149 L70 149 L70 108 Z" fill="#2196F3" stroke="#1565C0" stroke-width="1.15"/>
+    <path d="M65 102 L70 94 L82 90 Q90 96.0 98 90 L110 94 L115 102 L108 106 L106.7 147.2 L73.3 147.2 L72 106 Z" fill="url(#shirtShadeRare)" opacity="0.58"/>
     <path d="M72.2 107 L70.8 147 M107.8 107 L109.2 147" stroke="#CDEAFF" stroke-opacity="0.5" stroke-width="0.72"/>
-    <path d="M77.2 90.5 Q90 97.2 102.8 90.5" stroke="#B2E1FF" stroke-width="0.85" opacity="0.8"/>
-    <path d="M81.8 89.6 Q90 93.5 98.2 89.6" stroke="#124A86" stroke-width="3.0" stroke-linecap="round"/>
-    <path d="M81.8 89.6 Q90 93.5 98.2 89.6" stroke="#74C7FF" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Cotton fold shading (polygon facets) -->
+    <g id="cottonShadingPolygons">
+      <polygon points="74.2,113.0 84.6,121.2 80.2,140.8 71.6,132.6" fill="#000000" opacity="0.14"/>
+      <polygon points="77.2,138.6 90.8,145.2 104.4,138.8 90.6,141.4" fill="#000000" opacity="0.10"/>
+      <polygon points="96.2,109.6 106.0,115.2 103.6,123.2 94.0,118.2" fill="#FFFFFF" opacity="0.14"/>
+      <polygon points="100.6,112.2 105.6,126.2 101.8,143.0 95.8,126.2" fill="#000000" opacity="0.12"/>
+      <polygon points="79.0,120.6 86.8,126.4 83.6,137.4 76.0,132.4" fill="#FFFFFF" opacity="0.09"/>
+    </g>
+
 
     <rect x="72.8" y="98.8" width="34.4" height="25.0" rx="6.2" fill="#EFF8FF" stroke="#2B6EA6" stroke-width="1.0"/>
     <rect x="72.8" y="98.8" width="34.4" height="25.0" rx="6.2" fill="url(#fabricRare)"/>
     <path d="M76.3 103.1 L104.0 120.1" stroke="#9DD7FF" stroke-opacity="0.52" stroke-width="1.0"/>
-    <text x="90" y="112.2" text-anchor="middle" fill="#13518D" font-size="7.0" font-weight="800" font-family="Segoe UI, Arial, sans-serif">Rare find</text>
+    <text x="90" y="112.3" text-anchor="middle" fill="#13518D" font-size="6.5" font-weight="800" font-family="Segoe UI, Arial, sans-serif" textLength="23.6" lengthAdjust="spacingAndGlyphs">Rare find</text>
 
     <!-- Mini magnifier icon -->
     <circle cx="79.8" cy="117.7" r="2.0" fill="none" stroke="#13518D" stroke-width="0.75"/>

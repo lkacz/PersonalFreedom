@@ -12,7 +12,7 @@
   </defs>
 
   <!-- Uncommon ID badge (rarity accent: green) -->
-  <g id="amulet_uncommon" transform="translate(90 111) scale(0.90) translate(-90 -111)">
+  <g id="amulet_uncommon" transform="translate(90 87) scale(0.90) translate(-90 -111)">
     <path d="M86.5 98.1 L90.0 102.4 L93.5 98.1" fill="none" stroke="#5b8660" stroke-width="0.84" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M87.3 98.9 L90.0 102.1 L92.7 98.9" fill="none" stroke="#4caed5" stroke-width="0.42" opacity="0.58" stroke-linecap="round"/>
     <rect x="88.5" y="101.8" width="3.0" height="2.4" rx="0.5" fill="#8ab18e" stroke="#496c4d" stroke-width="0.46"/>

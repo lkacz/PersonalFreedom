@@ -12,7 +12,7 @@
   </defs>
 
   <!-- Rare: clearly rounder and cleaner silhouette -->
-  <g id="boots_rare">
+  <g id="boots_rare" transform="translate(90 198) scale(0.74 0.82) translate(-90 -200)">
     <ellipse cx="76.4" cy="207.7" rx="10.9" ry="1.9" fill="#000000" opacity="0.13"/>
     <ellipse cx="102.6" cy="207.7" rx="11.7" ry="2.0" fill="#000000" opacity="0.13"/>
 

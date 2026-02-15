@@ -15,7 +15,7 @@
   </defs>
 
   <!-- Epic: noticeably rounded with neon pulse -->
-  <g id="boots_epic">
+  <g id="boots_epic" transform="translate(90 198) scale(0.74 0.82) translate(-90 -200)">
     <ellipse cx="76.4" cy="207.7" rx="10.9" ry="1.9" fill="#000000" opacity="0.13"/>
     <ellipse cx="102.6" cy="207.7" rx="11.7" ry="2.0" fill="#000000" opacity="0.13"/>
     <ellipse cx="76.4" cy="205.9" rx="12.1" ry="2.3" fill="none" stroke="#D770F4" stroke-width="0.76" stroke-dasharray="1.1 1.8" opacity="0">

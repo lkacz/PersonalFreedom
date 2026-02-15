@@ -22,19 +22,23 @@
   </defs>
 
   <!-- Underdog legendary tee -->
-  <g id="chestplate_legendary" filter="url(#shadowLegendary)">
-    <path d="M68 92 Q78 85 90 86 Q102 85 112 92 L118 102 L110 108 L108.5 147 Q90 151 71.5 147 L70 108 L62 102 Z"
-          fill="#FF9800" stroke="#C56A00" stroke-width="1.2"/>
-    <path d="M70 94 Q79 88.2 90 89 Q101 88.2 110 94 L115 102 L108 106 L106.7 145.2 Q90 148.8 73.3 145.2 L72 106 L65 102 Z"
-          fill="url(#shirtShadeLegendary)" opacity="0.62"/>
+  <g id="chestplate_legendary" filter="url(#shadowLegendary)" transform="translate(0 -26) translate(90 110) scale(0.72 0.78) translate(-90 -110)">
+    <path d="M62 102 L68 92 L81 88 Q90 95.2 99 88 L112 92 L118 102 L110 108 L110 149 L70 149 L70 108 Z" fill="#FF9800" stroke="#C56A00" stroke-width="1.2"/>
+    <path d="M65 102 L70 94 L82 90 Q90 96.0 98 90 L110 94 L115 102 L108 106 L106.7 147.2 L73.3 147.2 L72 106 Z" fill="url(#shirtShadeLegendary)" opacity="0.62"/>
     <path d="M72.2 107 L70.8 147 M107.8 107 L109.2 147" stroke="#FFE2A4" stroke-opacity="0.52" stroke-width="0.74"/>
-    <path d="M77.2 90.5 Q90 97.2 102.8 90.5" stroke="#FFD587" stroke-width="0.9" opacity="0.84"/>
-    <path d="M81.8 89.6 Q90 93.5 98.2 89.6" stroke="#7C4600" stroke-width="3.0" stroke-linecap="round"/>
-    <path d="M81.8 89.6 Q90 93.5 98.2 89.6" stroke="#FFC95F" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Cotton fold shading (polygon facets) -->
+    <g id="cottonShadingPolygons">
+      <polygon points="74.2,113.0 84.6,121.2 80.2,140.8 71.6,132.6" fill="#000000" opacity="0.14"/>
+      <polygon points="77.2,138.6 90.8,145.2 104.4,138.8 90.6,141.4" fill="#000000" opacity="0.10"/>
+      <polygon points="96.2,109.6 106.0,115.2 103.6,123.2 94.0,118.2" fill="#FFFFFF" opacity="0.14"/>
+      <polygon points="100.6,112.2 105.6,126.2 101.8,143.0 95.8,126.2" fill="#000000" opacity="0.12"/>
+      <polygon points="79.0,120.6 86.8,126.4 83.6,137.4 76.0,132.4" fill="#FFFFFF" opacity="0.09"/>
+    </g>
+
 
     <rect x="72.4" y="98.4" width="35.2" height="25.8" rx="6.6" fill="#2B1D07" stroke="url(#legendaryTrim)" stroke-width="1.05"/>
     <path d="M72.4 104.0 L107.6 104.0 M72.4 118.5 L107.6 118.5" stroke="url(#legendaryTrim)" stroke-opacity="0.62" stroke-width="0.7"/>
-    <text x="90" y="111.3" text-anchor="middle" fill="#FFD777" font-size="6.5" font-weight="800" font-family="Segoe UI, Arial, sans-serif">I'm a legend</text>
+    <text x="90" y="111.2" text-anchor="middle" fill="#FFD777" font-size="5.9" font-weight="800" font-family="Segoe UI, Arial, sans-serif" textLength="27.0" lengthAdjust="spacingAndGlyphs">I'm a legend</text>
 
     <!-- Crown emblem + animated gleam -->
     <path d="M83.8 115.0 L85.8 111.7 L88.0 114.5 L90 111.2 L92.0 114.5 L94.2 111.7 L96.2 115.0 L96.2 117.0 L83.8 117.0 Z"

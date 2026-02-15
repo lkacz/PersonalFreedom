@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <linearGradient id="pantBaseEpic" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="pantBaseEpic" x1="90" y1="119" x2="90" y2="197" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#273243"/>
       <stop offset="100%" stop-color="#1A212D"/>
     </linearGradient>
@@ -20,22 +20,36 @@
 
   <!-- Underdog trousers: epic -->
   <g id="cloak_epic_trousers">
-    <path d="M73.8 137.8 Q70.0 165.0 71.0 197.0 L87.8 197.0 Q89.0 164.2 89.5 138.0 Z"
-          fill="url(#pantBaseEpic)" stroke="#101721" stroke-width="0.92"/>
-    <path d="M89.5 138.0 Q91.0 164.0 92.2 197.0 L109.2 197.0 Q110.5 166.0 106.5 138.0 Z"
-          fill="url(#pantBaseEpic)" stroke="#101721" stroke-width="0.92"/>
+    <path d="M76.0 120.6 Q90.0 126.0 104.0 120.6 L103.6 136.0 Q97.4 141.0 90.0 141.6 Q82.6 141.0 76.4 136.0 Z M82.6 122.2 Q90.0 125.3 97.4 122.2 Q90.0 121.2 82.6 122.2 Z"
+          fill="url(#pantBaseEpic)" fill-rule="evenodd"/>
+        <g id="waistbandDetail" opacity="0.95">
+      <path d="M82.6 122.4 Q90.0 125.8 97.4 122.4" stroke="#C8D2DE" stroke-opacity="0.32" stroke-width="0.54"/>
+      <path d="M83.6 123.0 Q90.0 125.3 96.4 123.0" stroke="#101A24" stroke-opacity="0.22" stroke-width="0.48"/>
 
-    <path d="M74.6 142.0 L72.2 195.2 M105.8 142.0 L108.2 195.2" stroke="#384657" stroke-width="0.62" opacity="0.72"/>
-    <path d="M80.9 138.6 L82.0 197.0 M98.1 138.6 L97.0 197.0" stroke="#0C121A" stroke-width="0.68" opacity="0.56"/>
-    <path d="M72.0 195.0 L87.6 195.0 M92.4 195.0 L109.0 195.0" stroke="#556577" stroke-width="0.78" opacity="0.8"/>
+      <rect x="82.0" y="121.6" width="1.0" height="3.9" rx="0.33" fill="#C7D0DB" opacity="0.60"/>
+      <rect x="97.0" y="121.6" width="1.0" height="3.9" rx="0.33" fill="#C7D0DB" opacity="0.60"/>
+      <rect x="88.2" y="122.5" width="3.6" height="2.2" rx="0.40" fill="none" stroke="#CFD8E2" stroke-width="0.44" opacity="0.82"/>
+      <path d="M89.2 123.6 H90.8" stroke="#CFD8E2" stroke-width="0.40" opacity="0.72" stroke-linecap="round"/>
+    </g>
+    <path d="M76.4 133.8 Q73.8 151.0 75.9 197.0 L88.5 197.0 Q89.8 154.5 90.1 133.8 Q86.8 137.7 83.0 136.9 Q79.4 136.1 76.4 133.8 Z"
+          fill="url(#pantBaseEpic)"/>
+    <path d="M89.9 133.8 Q90.2 154.5 91.5 197.0 L104.1 197.0 Q106.2 151.0 103.6 133.8 Q100.6 136.1 97.0 136.9 Q93.2 137.7 89.9 133.8 Z"
+          fill="url(#pantBaseEpic)"/>
+    <path d="M90.0 123.2 L90.0 138.4 M90.0 129.0 Q88.2 130.9 87.2 133.4"
+          stroke="#0F1822" stroke-width="0.52" opacity="0.48"/>
 
-    <path d="M75.0 145.4 L84.0 145.4 M96.0 145.4 L105.0 145.4" stroke="url(#epicAccent)" stroke-width="0.82" filter="url(#epicGlow)"/>
-    <path d="M76.1 161.0 L82.2 167.0 M82.2 161.0 L76.1 167.0" stroke="#9C27B0" stroke-width="0.7"/>
-    <path d="M97.2 161.0 L103.3 167.0 M103.3 161.0 L97.2 167.0" stroke="#9C27B0" stroke-width="0.7"/>
+    <path d="M77.8 141.2 Q76.4 162.0 76.9 195.2 M102.2 141.2 Q103.6 162.0 103.1 195.2" stroke="#1A2430" stroke-width="0.58" fill="none" stroke-linecap="round"/>
+    <path d="M84.4 140.6 L84.9 197.0 M95.6 140.6 L95.1 197.0" stroke="#101821" stroke-width="0.54" opacity="0.36"/>
+    <path d="M78.2 143.0 L77.2 195.2 M101.8 143.0 L102.8 195.2" stroke="#4A5B6A" stroke-width="0.52" opacity="0.46"/>
+    <path d="M77.2 195.0 L88.3 195.0 M91.7 195.0 L102.8 195.0" stroke="#6D7A87" stroke-width="0.64" opacity="0.66"/>
 
-    <rect x="75.1" y="159.0" width="8.0" height="8.8" rx="1.4" fill="#231A2D" stroke="#9C27B0" stroke-width="0.78"/>
-    <rect x="96.9" y="159.0" width="8.0" height="8.8" rx="1.4" fill="#231A2D" stroke="#9C27B0" stroke-width="0.78"/>
-    <path d="M74.9 171.6 Q90.0 168.8 105.1 171.6" stroke="#CF86E1" stroke-width="0.74" stroke-dasharray="1.2 1.2" opacity="0">
+    <path d="M77.4 145.4 L85.8 145.4 M94.2 145.4 L102.6 145.4" stroke="url(#epicAccent)" stroke-width="0.82" filter="url(#epicGlow)"/>
+    <path d="M78.3 161.0 L84.4 167.0 M84.4 161.0 L78.3 167.0" stroke="#9C27B0" stroke-width="0.7"/>
+    <path d="M95.4 161.0 L101.5 167.0 M101.5 161.0 L95.4 167.0" stroke="#9C27B0" stroke-width="0.7"/>
+
+    <rect x="77.5" y="159.0" width="8.0" height="8.8" rx="1.4" fill="#231A2D" stroke="#9C27B0" stroke-width="0.78"/>
+    <rect x="94.9" y="159.0" width="8.0" height="8.8" rx="1.4" fill="#231A2D" stroke="#9C27B0" stroke-width="0.78"/>
+    <path d="M77.0 171.6 Q90.0 168.8 103.0 171.6" stroke="#CF86E1" stroke-width="0.74" stroke-dasharray="1.2 1.2" opacity="0">
       <animate attributeName="opacity" values="0;0.9;0" dur="2.0s" repeatCount="indefinite"/>
       <animate attributeName="stroke-dashoffset" values="0;6" dur="2.0s" repeatCount="indefinite"/>
     </path>

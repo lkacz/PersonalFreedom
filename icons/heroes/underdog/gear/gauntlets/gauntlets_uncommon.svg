@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <linearGradient id="belt_uncommon_shade" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#67C26B"/>
-      <stop offset="100%" stop-color="#2F8E35"/>
+    <linearGradient id="uncommon_band_fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#66D26A"/>
+      <stop offset="100%" stop-color="#2E8E35"/>
     </linearGradient>
   </defs>
 
-  <g id="gauntlets_uncommon_belt">
-    <rect x="74.7" y="140.6" width="30.8" height="8.4" rx="1.8" fill="#4CAF50" stroke="#2E7D32" stroke-width="0.8"/>
-    <rect x="75.8" y="141.6" width="28.8" height="6.3" rx="1.4" fill="url(#belt_uncommon_shade)" opacity="0.62"/>
-    <rect x="87.1" y="141.1" width="6.0" height="7.3" rx="0.95" fill="#E5F7E6" stroke="#3C7C41" stroke-width="0.6"/>
-    <path d="M88.1 142.6 L92.1 142.6 M88.1 144.5 L92.1 144.5 M88.1 146.4 L92.1 146.4" stroke="#4CAF50" stroke-width="0.48"/>
-    <path d="M76.8 142.0 L83.0 142.0 M97.0 142.0 L103.2 142.0" stroke="#A7EBAB" stroke-width="0.58" opacity="0.84"/>
-    <circle cx="79.0" cy="145.0" r="0.62" fill="#C4F7C7"/>
-    <circle cx="101.2" cy="145.0" r="0.62" fill="#C4F7C7"/>
+  <g id="gauntlets_uncommon_wristband" transform="translate(70.0 130.2) rotate(-8) scale(1.35 1.35) translate(-68.5 -131.2)">
+    <ellipse cx="68.3" cy="132.0" rx="5.2" ry="1.2" fill="#000000" opacity="0.12"/>
+    <rect x="63.6" y="128.7" width="9.8" height="4.8" rx="2.1" fill="url(#uncommon_band_fill)" stroke="#2E7D32" stroke-width="0.64"/>
+    <path d="M64.8 131.0 L72.2 131.0" stroke="#D2FFD5" stroke-width="0.46" stroke-linecap="round" opacity="0.74"/>
+    <circle cx="71.9" cy="131.0" r="0.66" fill="#C4F7C7" stroke="#3C7C41" stroke-width="0.34"/>
+    <path d="M65.2 132.1 L67.2 132.1" stroke="#9BF2A0" stroke-width="0.4" stroke-linecap="round"/>
   </g>
 </svg>
