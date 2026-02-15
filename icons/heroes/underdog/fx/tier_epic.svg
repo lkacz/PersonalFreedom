@@ -1,16 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <radialGradient id="epicGlow" cx="50%" cy="55%" r="55%">
+      <stop offset="0%" stop-color="#c77dff" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#c77dff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="epicRing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#9c27b0"/>
+      <stop offset="100%" stop-color="#5f8bff"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#9c27b0" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">fx: tier_epic</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: epic</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: tier_epic.svg</text>
+
+  <!-- soft torso aura -->
+  <ellipse cx="90" cy="132" rx="54" ry="44" fill="url(#epicGlow)"/>
+
+  <!-- comeback ring -->
+  <circle cx="90" cy="132" r="46" fill="none" stroke="url(#epicRing)" stroke-width="1.5" opacity="0.55" stroke-dasharray="2.2 4.2">
+    <animateTransform attributeName="transform" type="rotate" from="0 90 132" to="360 90 132" dur="12s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="90" cy="132" r="38" fill="none" stroke="#b869ff" stroke-width="1.0" opacity="0.45" stroke-dasharray="1.2 3.2">
+    <animateTransform attributeName="transform" type="rotate" from="360 90 132" to="0 90 132" dur="9s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- tiny city-light sparks -->
+  <circle cx="60" cy="114" r="1.2" fill="#e9c7ff" opacity="0.0">
+    <animate attributeName="opacity" values="0;0.9;0" dur="1.7s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="122" cy="146" r="1.1" fill="#d3b6ff" opacity="0.0">
+    <animate attributeName="opacity" values="0;0.85;0" dur="1.9s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="74" cy="156" r="0.9" fill="#9dc8ff" opacity="0.0">
+    <animate attributeName="opacity" values="0;0.75;0" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="112" cy="104" r="0.9" fill="#9dc8ff" opacity="0.0">
+    <animate attributeName="opacity" values="0;0.75;0" dur="2.0s" repeatCount="indefinite"/>
+  </circle>
 </svg>

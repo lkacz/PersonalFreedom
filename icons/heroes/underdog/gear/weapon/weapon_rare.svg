@@ -1,16 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="r_mug" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9dc2e8"/>
+      <stop offset="100%" stop-color="#5d88b3"/>
+    </linearGradient>
+    <linearGradient id="r_coffee" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6a4a39"/>
+      <stop offset="100%" stop-color="#3f2a21"/>
+    </linearGradient>
+    <radialGradient id="r_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#9fd8ff" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#9fd8ff" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#2196f3" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#2196f3" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Weapon -&gt; Device</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: rare</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: weapon_rare.svg</text>
+
+  <!-- Rare: blue mug with badge -->
+  <g id="weapon_rare" transform="rotate(-18 118 150)">
+    <ellipse cx="118.2" cy="159.8" rx="8.0" ry="2.55" fill="#000000" opacity="0.15"/>
+    <rect x="110.7" y="138.1" width="14.9" height="16.1" rx="2.5" fill="url(#r_mug)" stroke="#436886" stroke-width="0.92"/>
+    <path d="M125.1 141.2 Q130.2 142.3 130.2 146.0 Q130.2 149.8 125.1 150.8" fill="none" stroke="#5c8cb3" stroke-width="1.2"/>
+    <path d="M125.0 142.5 Q127.8 143.4 127.8 146.0 Q127.8 148.7 125.0 149.5" fill="none" stroke="#b9ddff" stroke-width="0.72" opacity="0.82"/>
+    <ellipse cx="118.1" cy="139.8" rx="5.3" ry="1.7" fill="url(#r_coffee)"/>
+    <circle cx="117.9" cy="146.7" r="1.7" fill="#d4e8fb" opacity="0.9"/>
+    <path d="M116.9 146.6 L117.7 147.4 L118.9 145.9" fill="none" stroke="#3f6481" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M114.8 135.0 Q113.7 132.0 115.7 129.6" fill="none" stroke="#b9ddff" stroke-width="0.72" opacity="0.58"/>
+    <path d="M120.9 134.9 Q121.7 132.2 119.8 130.0" fill="none" stroke="#b9ddff" stroke-width="0.72" opacity="0.58"/>
+    <circle cx="124.9" cy="146.8" r="2.8" fill="url(#r_glow)" opacity="0.6"/>
+  </g>
 </svg>

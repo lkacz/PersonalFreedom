@@ -10,8 +10,8 @@ Procedural hero rendering remains fallback when SVG files are missing.
 
 Validation status (current workspace):
 - All 9 themes have manifest + directory scaffolding.
-- Required SVG coverage is currently `0 / 52` per theme.
-- This means code path is ready; asset production is the remaining blocking work.
+- Required SVG coverage is currently `52 / 52` per theme as placeholder content.
+- Primary task is replacing placeholder art with production SVG content in-place.
 
 Use:
 ```powershell
@@ -36,6 +36,12 @@ Minimum production pack per theme:
 
 Total required files per theme: `52`.
 
+Semantic rule:
+- Canonical slot names are technical compatibility keys.
+- Story-facing gear meaning must follow each theme's `slot_display` and `item_types`.
+- Do not treat non-warrior themes as literal helmet/chestplate armor sets.
+- Do not substitute cross-genre defaults (for example generic fantasy rogue gear for `thief`).
+
 Rarities (must exist in naming and design progression):
 - `common`
 - `uncommon`
@@ -52,16 +58,30 @@ Rarities (must exist in naming and design progression):
 4. Rarity progression must change silhouette/form, not only color.
 5. Keep assets static-compatible (first-frame readable for `QSvgRenderer`).
 6. Do not change manifest schema or runtime lookup rules.
+7. Keep designs likable/relatable/cute/witty; avoid over-abstract sci-fi noise.
+8. Epic/Legendary/Celestial should be original and non-cliche, with surprising but coherent tier upgrades.
+9. Hero eyes should support saccadic motion + fast blink behavior.
+10. Add minimal movement cues where applicable; keep motion subtle and readable.
+11. Use gradient grading with consistent light direction to reinforce depth, overlap hierarchy, and perspective.
+12. TAXONOMY LOCK: slot concepts must match the exact `item_types` vocabulary in the theme packet.
+13. SLOT-FIT LOCK: gear assets must be authored as body-fit objects with tight bounds and approximately 70%-92% occupancy of canvas.
+14. Reject tiny-center-icon composition and oversized transparent margins; slot orientation must match body-contact intent.
 
 ## 5. Recommended Delivery Flow (Per Theme)
 
-1. Generate all 52 required files first.
-2. Run validator:
+1. Complete a preflight readback:
+   - list 8 semantic slot labels (`slot_display`) for theme
+   - list full `item_types` entries per slot for theme
+   - confirm canonical slots are technical keys
+   - confirm required file count is 52
+   - confirm slot-fit authoring intent (body-fit composition, no tiny centered icon assets)
+2. Generate/replace all 52 required files first.
+3. Run validator:
 ```powershell
 python validate_hero_svg_assets.py --theme <theme_id> --show-missing
 ```
-3. Fix all missing/invalid files until required completion reaches 100%.
-4. Only then generate optional item-type variants listed in packet.
+4. Fix all missing/invalid files until required completion reaches 100%.
+5. Only then generate optional item-type variants listed in packet.
 
 ## 6. QA Gate
 
@@ -83,4 +103,3 @@ Machine-readable report:
 ```powershell
 python validate_hero_svg_assets.py --json
 ```
-

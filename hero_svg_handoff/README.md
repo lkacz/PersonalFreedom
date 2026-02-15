@@ -4,8 +4,6 @@ This folder contains detailed packets for another LLM to generate hero and gear 
 Primary contracts:
 - `HERO_SVG_SYSTEM_SPEC.md`
 - `HERO_SVG_VISUAL_BIBLE.md`
-- `hero_svg_handoff/SVG_GENERATION_EXECUTION_GUIDE.md`
-- `hero_svg_handoff/PASTE_TO_SVG_AGENT_PROMPT.md`
 
 ## Packets
 - `warrior_svg_packet.md`

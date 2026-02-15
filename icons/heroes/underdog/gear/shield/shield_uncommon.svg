@@ -1,16 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="u_case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9ec69f"/>
+      <stop offset="100%" stop-color="#5f845f"/>
+    </linearGradient>
+    <linearGradient id="u_edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c7e2c6"/>
+      <stop offset="100%" stop-color="#7ba17b"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#4caf50" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Shield -&gt; Protection</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: uncommon</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: shield_uncommon.svg</text>
+
+  <!-- Uncommon suitcase shield -->
+  <g id="shield_uncommon" transform="rotate(-8 62 149)">
+    <ellipse cx="62.2" cy="160.3" rx="10.4" ry="2.85" fill="#000000" opacity="0.16"/>
+    <rect x="52.1" y="138.1" width="20.2" height="16.4" rx="2.45" fill="url(#u_case)" stroke="#416046" stroke-width="0.92"/>
+    <rect x="53.1" y="139.1" width="18.2" height="3.5" rx="1.0" fill="#d7efd7" opacity="0.58"/>
+    <rect x="58.4" y="134.7" width="7.2" height="3.1" rx="1.0" fill="url(#u_edge)" stroke="#4a6b4d" stroke-width="0.74"/>
+    <rect x="60.7" y="144.9" width="2.9" height="2.6" rx="0.5" fill="#eff9ef" stroke="#5f8a63" stroke-width="0.46"/>
+    <path d="M54.9 141.5 L57.0 141.5 M67.4 141.5 L69.5 141.5" stroke="#8fbb90" stroke-width="0.58"/>
+    <circle cx="55.0" cy="152.8" r="0.82" fill="#86b487"/>
+    <circle cx="69.5" cy="152.8" r="0.82" fill="#86b487"/>
+  </g>
 </svg>

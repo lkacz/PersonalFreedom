@@ -1,1 +1,28 @@
-<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220"><defs><linearGradient id="shieldGloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#29B6F6" stop-opacity="0.3"/><stop offset="100%" stop-color="#0277BD" stop-opacity="0.6"/></linearGradient></defs><g transform="translate(0, 10)"><!-- Witness Guard --><path d="M40 40 Q90 20 140 40 L140 140 Q90 180 40 140 Z" fill="#263238" stroke="#0277BD" stroke-width="3"/><path d="M50 50 Q90 35 130 50 L130 90 Q90 100 50 90 Z" fill="url(#shieldGloss)"/><path d="M60 110 L120 110" stroke="#0288D1" stroke-width="5" opacity="0.5"/><path d="M60 120 L120 120" stroke="#0288D1" stroke-width="5" opacity="0.5"/></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="r_shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#748390"/>
+      <stop offset="100%" stop-color="#3f505e"/>
+    </linearGradient>
+    <linearGradient id="r_plate" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a7b4be"/>
+      <stop offset="100%" stop-color="#738695"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rare: kite witness guard -->
+  <g id="shield_rare">
+    <path d="M34.6 107.0 L48.1 99.2 L61.5 107.2 L58.2 143.5 L48.1 151.5 L38.2 143.6 Z" fill="url(#r_shell)" stroke="#1a252d" stroke-width="1"/>
+    <path d="M37.9 110.7 L48.1 104.9 L58.3 110.9 L55.8 140.4 L48.1 146.1 L40.4 140.6 Z" fill="url(#r_plate)" opacity="0.64"/>
+    <path d="M40.3 113.3 L48.1 109.0 L55.9 113.4 L54.8 122.4 L48.1 126.3 L41.4 122.5 Z" fill="#3ea8f2" opacity="0.3"/>
+    <path d="M40.7 126.3 L54.8 126.3 M40.1 132.1 L54.1 132.1 M39.5 137.9 L53.3 137.9" stroke="#5fbdff" stroke-width="0.7" opacity="0.68"/>
+    <path d="M39.8 114.9 L55.9 114.9" stroke="#9ed8ff" stroke-width="0.7" opacity="0.62"/>
+    <rect x="57.4" y="120.2" width="4.8" height="21.8" rx="1.6" fill="#25333d"/>
+    <rect x="56.8" y="127.4" width="6.0" height="7.4" rx="2.2" fill="#88b6d7" stroke="#2a3944" stroke-width="0.5"/>
+    <circle cx="42.0" cy="110.2" r="1.0" fill="#79c4ff" opacity="0.95"/>
+    <circle cx="54.6" cy="110.2" r="1.0" fill="#79c4ff" opacity="0.95"/>
+    <circle cx="40.5" cy="141.1" r="1.0" fill="#79c4ff" opacity="0.85"/>
+    <circle cx="53.4" cy="141.6" r="0.9" fill="#79c4ff" opacity="0.85"/>
+  </g>
+</svg>

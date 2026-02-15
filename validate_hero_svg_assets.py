@@ -86,10 +86,47 @@ def _apply_completion_stats(report: dict) -> dict:
     return report
 
 
+def _apply_semantic_slot_stats(report: dict) -> dict:
+    required_slots = list(SLOT_SLUGS.keys())
+    manifest_path = Path(report.get("manifest_path", ""))
+    slot_display = {}
+    semantic_contract = None
+
+    if manifest_path.exists():
+        try:
+            payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+            gear_payload = payload.get("gear", {}) if isinstance(payload, dict) else {}
+            if isinstance(gear_payload, dict):
+                slot_display = gear_payload.get("slot_display", {}) or {}
+                semantic_contract = gear_payload.get("semantic_contract")
+        except Exception:
+            slot_display = {}
+            semantic_contract = None
+
+    present_slots = []
+    missing_slots = []
+    resolved_labels = {}
+    for slot in required_slots:
+        label = slot_display.get(slot) if isinstance(slot_display, dict) else None
+        if isinstance(label, str) and label.strip():
+            present_slots.append(slot)
+            resolved_labels[slot] = label.strip()
+        else:
+            missing_slots.append(slot)
+
+    report["slot_display_labels"] = resolved_labels
+    report["slot_display_present_count"] = len(present_slots)
+    report["slot_display_missing"] = missing_slots
+    report["slot_display_complete"] = not missing_slots
+    report["semantic_contract_present"] = isinstance(semantic_contract, str) and bool(semantic_contract.strip())
+    return report
+
+
 def _collect_reports(theme: str | None, base_dir: Path | None) -> list[dict]:
     themes = [theme] if theme else list(AVAILABLE_STORIES.keys())
     reports = [validate_hero_svg_theme_pack(story_theme=t, base_dir=base_dir) for t in themes]
-    return [_apply_completion_stats(report) for report in reports]
+    normalized = [_apply_completion_stats(report) for report in reports]
+    return [_apply_semantic_slot_stats(report) for report in normalized]
 
 
 def main() -> int:
@@ -118,9 +155,16 @@ def main() -> int:
             f"  - required completion: {report['required_present']}/{report['required_count']} "
             f"({report['completion_pct']}%)"
         )
+        print(
+            f"  - semantic slot labels: {report['slot_display_present_count']}/{len(SLOT_SLUGS)} "
+            f"(complete={report['slot_display_complete']})"
+        )
         if args.show_missing and report["required_missing"]:
             for rel in report["required_missing"]:
                 print(f"    * missing: {rel}")
+        if args.show_missing and report["slot_display_missing"]:
+            for slot in report["slot_display_missing"]:
+                print(f"    * missing slot_display label: {slot}")
     return 0
 
 

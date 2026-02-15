@@ -1,16 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="shirtShadeEpic" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#BC4CD1"/>
+      <stop offset="100%" stop-color="#7D1E90"/>
+    </linearGradient>
+    <linearGradient id="neonEpic" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7CF6FF"/>
+      <stop offset="50%" stop-color="#FF93F4"/>
+      <stop offset="100%" stop-color="#9C27B0"/>
+    </linearGradient>
+    <filter id="glowEpic" x="-35%" y="-35%" width="170%" height="170%">
+      <feGaussianBlur stdDeviation="0.9" result="g"/>
+      <feMerge>
+        <feMergeNode in="g"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="shadowEpic" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0.7" dy="1.1" stdDeviation="0.85" flood-color="#000000" flood-opacity="0.32"/>
+    </filter>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#9c27b0" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Chestplate -&gt; Top</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: epic</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: chestplate_epic.svg</text>
+
+  <!-- Underdog epic tee -->
+  <g id="chestplate_epic" filter="url(#shadowEpic)">
+    <path d="M68 92 Q78 85 90 86 Q102 85 112 92 L118 102 L110 108 L108.5 147 Q90 151 71.5 147 L70 108 L62 102 Z"
+          fill="#9C27B0" stroke="#6A1B9A" stroke-width="1.18"/>
+    <path d="M70 94 Q79 88.2 90 89 Q101 88.2 110 94 L115 102 L108 106 L106.7 145.2 Q90 148.8 73.3 145.2 L72 106 L65 102 Z"
+          fill="url(#shirtShadeEpic)" opacity="0.6"/>
+    <path d="M72.2 107 L70.8 147 M107.8 107 L109.2 147" stroke="#F4C9FF" stroke-opacity="0.48" stroke-width="0.72"/>
+    <path d="M77.2 90.5 Q90 97.2 102.8 90.5" stroke="#EAB2FF" stroke-width="0.85" opacity="0.8"/>
+    <path d="M81.8 89.6 Q90 93.5 98.2 89.6" stroke="#4A1262" stroke-width="3.0" stroke-linecap="round"/>
+    <path d="M81.8 89.6 Q90 93.5 98.2 89.6" stroke="#D987E8" stroke-width="1.5" stroke-linecap="round"/>
+
+    <rect x="72.6" y="98.6" width="34.8" height="25.3" rx="6.4" fill="#1F1531" stroke="#E2ABFF" stroke-width="0.95"/>
+    <text x="90" y="112.0" text-anchor="middle" fill="#FFB8F8" font-size="8.1" font-weight="800" font-family="Segoe UI, Arial, sans-serif">Epic!</text>
+    <path d="M76.4 116.8 L104.0 103.4" stroke="url(#neonEpic)" stroke-width="1.1" opacity="0.85" filter="url(#glowEpic)">
+      <animate attributeName="opacity" values="0.55;1;0.55" dur="1.6s" repeatCount="indefinite"/>
+    </path>
+    <path d="M77.4 104.0 L82.2 106.4 L79.4 110.8 L74.6 108.4 Z" fill="none" stroke="#6CF6FF" stroke-width="0.72" opacity="0.86"/>
+    <path d="M100.2 112.4 L104.8 114.8 L102.2 119.2 L97.6 116.8 Z" fill="none" stroke="#FF93F4" stroke-width="0.72" opacity="0.86"/>
+    <circle cx="90" cy="121.0" r="1.2" fill="#FFD166" filter="url(#glowEpic)">
+      <animate attributeName="r" values="1.0;1.7;1.0" dur="1.0s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.45;1;0.45" dur="1.0s" repeatCount="indefinite"/>
+    </circle>
+  </g>
 </svg>

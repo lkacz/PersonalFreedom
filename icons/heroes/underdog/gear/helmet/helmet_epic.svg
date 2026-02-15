@@ -1,16 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="e_band" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b992dd"/>
+      <stop offset="100%" stop-color="#70479c"/>
+    </linearGradient>
+    <linearGradient id="e_pad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d1b3f0"/>
+      <stop offset="100%" stop-color="#855db4"/>
+    </linearGradient>
+    <radialGradient id="e_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e5bcff" stop-opacity="0.88"/>
+      <stop offset="100%" stop-color="#e5bcff" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#9c27b0" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#9c27b0" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Helmet -&gt; Headwear</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: epic</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: helmet_epic.svg</text>
+
+  <!-- Epic headphones: purple audio-reactive set -->
+  <g id="helmet_epic">
+    <path d="M78.2 59.7 Q90.0 51.1 101.8 59.7" fill="none" stroke="url(#e_band)" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M80.2 61.0 Q90.0 54.2 99.8 61.0" fill="none" stroke="#e7cdfc" stroke-width="0.84" opacity="0.7"/>
+    <rect x="75.4" y="62.2" width="6.1" height="12.1" rx="2.25" fill="url(#e_pad)" stroke="#5e3a86" stroke-width="0.82"/>
+    <rect x="98.5" y="62.2" width="6.1" height="12.1" rx="2.25" fill="url(#e_pad)" stroke="#5e3a86" stroke-width="0.82"/>
+    <circle cx="78.4" cy="68.3" r="1.3" fill="#f0dfff"/>
+    <circle cx="101.6" cy="68.3" r="1.3" fill="#f0dfff"/>
+    <circle cx="78.4" cy="68.3" r="3.0" fill="url(#e_glow)" opacity="0.58">
+      <animate attributeName="opacity" values="0.28;0.88;0.28" dur="1.7s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="101.6" cy="68.3" r="3.0" fill="url(#e_glow)" opacity="0.58">
+      <animate attributeName="opacity" values="0.28;0.88;0.28" dur="1.7s" repeatCount="indefinite"/>
+    </circle>
+    <path d="M85.4 56.7 L87.2 56.7 M88.7 56.7 L90.4 56.7 M92.0 56.7 L93.7 56.7" stroke="#e6c5ff" stroke-width="0.7" opacity="0.72"/>
+  </g>
 </svg>

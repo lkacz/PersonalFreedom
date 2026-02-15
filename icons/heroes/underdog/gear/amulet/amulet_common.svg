@@ -1,16 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="c_frame" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b8c1cb"/>
+      <stop offset="100%" stop-color="#8593a1"/>
+    </linearGradient>
+    <linearGradient id="c_panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f3f7fb"/>
+      <stop offset="100%" stop-color="#dce4ec"/>
+    </linearGradient>
+    <linearGradient id="c_clip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#95a0ac"/>
+      <stop offset="100%" stop-color="#606a75"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#9e9e9e" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#9e9e9e" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#9e9e9e" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Amulet -&gt; Badge</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: common</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: amulet_common.svg</text>
+
+  <!-- Common ID badge (rarity accent: neutral silver) -->
+  <g id="amulet_common" transform="translate(90 111) scale(0.82) translate(-90 -111)">
+    <path d="M86.6 98.2 L90.0 102.4 L93.4 98.2" fill="none" stroke="#6f7c8a" stroke-width="0.82" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M87.3 99.0 L90.0 102.2 L92.7 99.0" fill="none" stroke="#4da2d8" stroke-width="0.42" opacity="0.55" stroke-linecap="round"/>
+    <rect x="88.5" y="101.8" width="3.0" height="2.4" rx="0.5" fill="url(#c_clip)" stroke="#525d68" stroke-width="0.45"/>
+
+    <rect x="84.3" y="104.0" width="11.4" height="13.6" rx="1.6" fill="url(#c_frame)" stroke="#5d6b78" stroke-width="0.84"/>
+    <rect x="85.0" y="104.8" width="10.0" height="11.8" rx="1.2" fill="url(#c_panel)" stroke="#a9b4bf" stroke-width="0.4"/>
+    <rect x="85.2" y="104.9" width="9.6" height="2.6" rx="0.75" fill="#e8eef5" opacity="0.82"/>
+    <rect x="86.0" y="108.3" width="2.7" height="3.1" rx="0.5" fill="#edf2f7" stroke="#7f8d99" stroke-width="0.38"/>
+    <path d="M89.4 108.8 L93.5 108.8 M89.4 110.3 L92.9 110.3 M86.0 112.6 L93.8 112.6 M86.0 114.2 L92.7 114.2" stroke="#768592" stroke-width="0.42" stroke-linecap="round"/>
+
+    <rect x="85.9" y="115.2" width="7.6" height="0.9" rx="0.35" fill="#4da2d8" opacity="0.72"/>
+    <circle cx="93.6" cy="116.1" r="0.88" fill="#f2b35e"/>
+  </g>
 </svg>

@@ -1,16 +1,50 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="ce_frame" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d2f9ff"/>
+      <stop offset="100%" stop-color="#6ed0e7"/>
+    </linearGradient>
+    <linearGradient id="ce_panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f3feff"/>
+      <stop offset="100%" stop-color="#d8f3f8"/>
+    </linearGradient>
+    <radialGradient id="ce_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#d9fbff" stop-opacity="0.96"/>
+      <stop offset="100%" stop-color="#56ddff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ce_sheen" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#e8fdff" stop-opacity="0.62"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#00e5ff" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Amulet -&gt; Badge</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: celestial</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: amulet_celestial.svg</text>
+
+  <!-- Celestial ID badge (rarity accent: cyan, plus violet/gold contrasts) -->
+  <g id="amulet_celestial" transform="translate(90 111) scale(1.20) translate(-90 -111)">
+    <path d="M86.2 97.7 L90.0 102.4 L93.8 97.7" fill="none" stroke="#4ea6ba" stroke-width="0.94" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M87.1 98.6 L90.0 102.1 L92.9 98.6" fill="none" stroke="#9071d9" stroke-width="0.44" opacity="0.6" stroke-linecap="round"/>
+    <rect x="88.5" y="101.6" width="3.0" height="2.5" rx="0.52" fill="#95e7f6" stroke="#3f8ea1" stroke-width="0.49"/>
+
+    <rect x="83.8" y="103.6" width="12.4" height="14.3" rx="1.78" fill="url(#ce_frame)" stroke="#3e91a3" stroke-width="0.96"/>
+    <rect x="84.8" y="104.6" width="10.5" height="12.2" rx="1.28" fill="url(#ce_panel)" stroke="#7fbfcd" stroke-width="0.44"/>
+    <rect x="85.2" y="104.7" width="9.7" height="2.9" rx="0.8" fill="#ecfdff" opacity="0.84"/>
+    <rect x="86.0" y="108.3" width="2.8" height="3.2" rx="0.52" fill="#f9ffff" stroke="#57a9bc" stroke-width="0.43"/>
+    <path d="M89.7 108.8 L94.0 108.8 M89.7 110.3 L93.3 110.3 M86.0 112.6 L94.4 112.6 M86.0 114.3 L93.2 114.3" stroke="#4a9daf" stroke-width="0.47" stroke-linecap="round"/>
+
+    <rect x="85.9" y="115.4" width="8.2" height="1.02" rx="0.37" fill="#00dff8" opacity="0.9"/>
+    <path d="M85.8 111.9 L94.1 111.9" stroke="#9375de" stroke-width="0.48" opacity="0.62"/>
+    <rect x="85.8" y="109.0" width="0.98" height="5.0" rx="0.3" fill="#9375de" opacity="0.76"/>
+    <circle cx="86.7" cy="116.4" r="0.8" fill="#f4be6e" opacity="0.95"/>
+    <path d="M91.9 116.0 L92.7 116.8 L93.6 115.6" fill="none" stroke="#3c8698" stroke-width="0.45" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="93.8" cy="116.4" r="1.14" fill="#effdff"/>
+    <circle cx="93.8" cy="116.4" r="2.95" fill="url(#ce_glow)" opacity="0.66">
+      <animate attributeName="r" values="2.0;3.9;2.0" dur="1.65s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.25;0.98;0.25" dur="1.65s" repeatCount="indefinite"/>
+    </circle>
+    <rect x="84.5" y="104.9" width="2.7" height="12.7" rx="0.75" fill="url(#ce_sheen)" opacity="0">
+      <animate attributeName="x" values="84.5;93.6;84.5" dur="1.9s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;0.92;0" dur="1.9s" repeatCount="indefinite"/>
+    </rect>
+  </g>
 </svg>

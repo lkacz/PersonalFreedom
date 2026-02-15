@@ -1,16 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="c_mug" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c9d0d8"/>
+      <stop offset="100%" stop-color="#8b97a4"/>
+    </linearGradient>
+    <linearGradient id="c_coffee" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#6a4d3d"/>
+      <stop offset="100%" stop-color="#3d2a20"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#9e9e9e" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#9e9e9e" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#9e9e9e" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#9e9e9e" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Weapon -&gt; Device</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: common</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: weapon_common.svg</text>
+
+  <!-- Common: plain gray mug -->
+  <g id="weapon_common" transform="rotate(-18 118 150)">
+    <ellipse cx="118.2" cy="159.8" rx="7.8" ry="2.4" fill="#000000" opacity="0.14"/>
+    <rect x="110.8" y="138.2" width="14.6" height="16.0" rx="2.4" fill="url(#c_mug)" stroke="#5e6b78" stroke-width="0.9"/>
+    <path d="M125.0 141.2 Q129.9 142.2 129.9 145.9 Q129.9 149.7 125.0 150.7" fill="none" stroke="#758291" stroke-width="1.15"/>
+    <path d="M125.0 142.4 Q127.6 143.2 127.6 145.9 Q127.6 148.6 125.0 149.4" fill="none" stroke="#aab5c1" stroke-width="0.68" opacity="0.82"/>
+    <ellipse cx="118.1" cy="139.8" rx="5.2" ry="1.6" fill="url(#c_coffee)"/>
+    <path d="M115.2 136.4 Q117.2 133.8 116.4 131.3" fill="none" stroke="#d3dbe2" stroke-width="0.65" opacity="0.42"/>
+  </g>
 </svg>

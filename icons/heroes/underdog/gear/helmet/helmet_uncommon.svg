@@ -1,16 +1,23 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="u_band" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8dbf8d"/>
+      <stop offset="100%" stop-color="#517a54"/>
+    </linearGradient>
+    <linearGradient id="u_pad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a8cfaa"/>
+      <stop offset="100%" stop-color="#648b66"/>
+    </linearGradient>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#4caf50" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#4caf50" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Helmet -&gt; Headwear</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: uncommon</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: helmet_uncommon.svg</text>
+
+  <!-- Uncommon headphones: green commuter set -->
+  <g id="helmet_uncommon">
+    <path d="M78.6 60.0 Q90.0 51.8 101.4 60.0" fill="none" stroke="url(#u_band)" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M80.4 61.2 Q90.0 54.8 99.6 61.2" fill="none" stroke="#bde4bf" stroke-width="0.75" opacity="0.64"/>
+    <rect x="75.8" y="62.5" width="5.7" height="11.6" rx="2.1" fill="url(#u_pad)" stroke="#3f5f42" stroke-width="0.78"/>
+    <rect x="98.5" y="62.5" width="5.7" height="11.6" rx="2.1" fill="url(#u_pad)" stroke="#3f5f42" stroke-width="0.78"/>
+    <rect x="76.9" y="67.6" width="3.4" height="1.4" rx="0.6" fill="#7be686" opacity="0.82"/>
+    <rect x="99.7" y="67.6" width="3.4" height="1.4" rx="0.6" fill="#7be686" opacity="0.82"/>
+  </g>
 </svg>

@@ -1,16 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
   <defs>
-    <style>
-      .p { font-family: Arial, sans-serif; }
-    </style>
+    <linearGradient id="shirtShadeLegendary" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFB03A"/>
+      <stop offset="100%" stop-color="#D87300"/>
+    </linearGradient>
+    <linearGradient id="legendaryTrim" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FFD67A"/>
+      <stop offset="100%" stop-color="#FFC13F"/>
+    </linearGradient>
+    <filter id="glowLegendary" x="-35%" y="-35%" width="170%" height="170%">
+      <feGaussianBlur stdDeviation="0.95" result="g"/>
+      <feMerge>
+        <feMergeNode in="g"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="shadowLegendary" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0.75" dy="1.1" stdDeviation="0.9" flood-color="#000000" flood-opacity="0.34"/>
+    </filter>
   </defs>
-  <rect x="8" y="8" width="164" height="204" rx="14" fill="none" stroke="#ff9800" stroke-width="2" stroke-dasharray="6 4"/>
-  <circle cx="90" cy="66" r="18" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.75"/>
-  <rect x="66" y="90" width="48" height="58" rx="12" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.65"/>
-  <rect x="56" y="152" width="68" height="28" rx="8" fill="none" stroke="#ff9800" stroke-width="2" opacity="0.55"/>
-  <text class="p" x="90" y="28" text-anchor="middle" fill="#d5dbe5" font-size="11">PLACEHOLDER - replace art</text>
-  <text class="p" x="90" y="44" text-anchor="middle" fill="#b9c3d1" font-size="10">theme: underdog</text>
-  <text class="p" x="90" y="188" text-anchor="middle" fill="#c5ced9" font-size="9">slot: Chestplate -&gt; Top</text>
-  <text class="p" x="90" y="202" text-anchor="middle" fill="#aab4c2" font-size="9">rarity: legendary</text>
-  <text class="p" x="90" y="214" text-anchor="middle" fill="#95a1b1" font-size="8">file: chestplate_legendary.svg</text>
+
+  <!-- Underdog legendary tee -->
+  <g id="chestplate_legendary" filter="url(#shadowLegendary)">
+    <path d="M68 92 Q78 85 90 86 Q102 85 112 92 L118 102 L110 108 L108.5 147 Q90 151 71.5 147 L70 108 L62 102 Z"
+          fill="#FF9800" stroke="#C56A00" stroke-width="1.2"/>
+    <path d="M70 94 Q79 88.2 90 89 Q101 88.2 110 94 L115 102 L108 106 L106.7 145.2 Q90 148.8 73.3 145.2 L72 106 L65 102 Z"
+          fill="url(#shirtShadeLegendary)" opacity="0.62"/>
+    <path d="M72.2 107 L70.8 147 M107.8 107 L109.2 147" stroke="#FFE2A4" stroke-opacity="0.52" stroke-width="0.74"/>
+    <path d="M77.2 90.5 Q90 97.2 102.8 90.5" stroke="#FFD587" stroke-width="0.9" opacity="0.84"/>
+    <path d="M81.8 89.6 Q90 93.5 98.2 89.6" stroke="#7C4600" stroke-width="3.0" stroke-linecap="round"/>
+    <path d="M81.8 89.6 Q90 93.5 98.2 89.6" stroke="#FFC95F" stroke-width="1.5" stroke-linecap="round"/>
+
+    <rect x="72.4" y="98.4" width="35.2" height="25.8" rx="6.6" fill="#2B1D07" stroke="url(#legendaryTrim)" stroke-width="1.05"/>
+    <path d="M72.4 104.0 L107.6 104.0 M72.4 118.5 L107.6 118.5" stroke="url(#legendaryTrim)" stroke-opacity="0.62" stroke-width="0.7"/>
+    <text x="90" y="111.3" text-anchor="middle" fill="#FFD777" font-size="6.5" font-weight="800" font-family="Segoe UI, Arial, sans-serif">I'm a legend</text>
+
+    <!-- Crown emblem + animated gleam -->
+    <path d="M83.8 115.0 L85.8 111.7 L88.0 114.5 L90 111.2 L92.0 114.5 L94.2 111.7 L96.2 115.0 L96.2 117.0 L83.8 117.0 Z"
+          fill="#FFC13F" stroke="#7E4B00" stroke-width="0.62"/>
+    <path d="M76 100 L80 100 L102 122 L98 122 Z" fill="#FFFFFF" opacity="0.0" filter="url(#glowLegendary)">
+      <animate attributeName="opacity" values="0;0.75;0" dur="1.9s" repeatCount="indefinite"/>
+      <animate attributeName="x" values="74;79;74" dur="1.9s" repeatCount="indefinite"/>
+    </path>
+  </g>
 </svg>

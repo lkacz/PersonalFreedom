@@ -1,1 +1,40 @@
-<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220"><defs><linearGradient id="holoField" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00E5FF" stop-opacity="0.1"/><stop offset="100%" stop-color="#00BCD4" stop-opacity="0.5"/></linearGradient></defs><g transform="translate(0, 10)"><!-- Public Shield --><path d="M30 40 Q90 0 150 40 L150 160 Q90 200 30 160 Z" fill="url(#holoField)" stroke="#00BCD4" stroke-width="2"/><path d="M40 50 Q90 20 140 50" fill="none" stroke="#80DEEA" stroke-width="1"/><path d="M40 70 Q90 40 140 70" fill="none" stroke="#80DEEA" stroke-width="1"/><path d="M40 90 Q90 60 140 90" fill="none" stroke="#80DEEA" stroke-width="1"/></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="x_shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8795a2"/>
+      <stop offset="100%" stop-color="#4f6070"/>
+    </linearGradient>
+    <linearGradient id="x_plate" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c3ccd2"/>
+      <stop offset="100%" stop-color="#90a0ad"/>
+    </linearGradient>
+    <radialGradient id="x_cyan_glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#dcfdff" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#68f1ff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#00d9ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Celestial: curved holo aegis -->
+  <g id="shield_celestial">
+    <path d="M34.1 108.3 Q48.1 95.1 61.7 108.6 Q60.2 137.8 57.2 145.2 Q48.2 156.1 38.2 145.1 Q34.2 136.2 34.1 108.3 Z" fill="url(#x_shell)" stroke="#1a252d" stroke-width="1"/>
+    <path d="M37.4 111.5 Q48.1 101.6 58.3 111.7 Q57.1 136.3 54.8 142.0 Q48.2 149.8 40.8 141.9 Q37.8 135.0 37.4 111.5 Z" fill="url(#x_plate)" opacity="0.58"/>
+    <path d="M39.6 112.9 Q48.0 105.2 56.4 112.9 Q55.6 125.9 54.2 130.2 Q48.1 135.7 42.0 130.0 Q40.0 124.8 39.6 112.9 Z" fill="#55e8ff" opacity="0.22"/>
+    <path d="M40.9 114.5 L55.0 114.5 M40.4 121.2 L54.4 121.2 M39.8 127.9 L53.8 127.9 M39.3 134.6 L53.2 134.6 M38.8 141.3 L52.6 141.3" stroke="#7beeff" stroke-width="0.72" opacity="0.9"/>
+    <circle cx="48.0" cy="125.6" r="1.45" fill="#8ef5ff"/>
+    <circle cx="48.0" cy="125.6" r="3.1" fill="url(#x_cyan_glow)" opacity="0.7">
+      <animate attributeName="r" values="2.7;4.1;2.7" dur="1.8s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.35;0.9;0.35" dur="1.8s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="48.0" cy="125.6" r="5.3" fill="none" stroke="#70eeff" stroke-width="0.72" stroke-dasharray="1.0 1.7" opacity="0.8">
+      <animate attributeName="stroke-dashoffset" values="0;6" dur="1.9s" repeatCount="indefinite"/>
+    </circle>
+    <path d="M37.2 110.0 Q48.0 98.8 58.8 110.1" fill="none" stroke="#d9fcff" stroke-width="0.65" opacity="0.7"/>
+    <path d="M36.9 141.6 Q48.0 154.4 59.0 141.7" fill="none" stroke="#8ff4ff" stroke-width="0.62" opacity="0.7"/>
+    <path d="M40.7 110.3 L55.3 110.3" stroke="#d7fcff" stroke-width="0.7" opacity="0.92"/>
+    <path d="M40.6 140.2 L55.1 140.2" stroke="#9ff5ff" stroke-width="0.66" opacity="0.88"/>
+    <rect x="57.4" y="120.2" width="4.8" height="21.8" rx="1.6" fill="#25333d"/>
+    <rect x="56.8" y="127.4" width="6.0" height="7.4" rx="2.2" fill="#8aefff" stroke="#2a3944" stroke-width="0.5"/>
+  </g>
+</svg>

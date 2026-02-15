@@ -13,12 +13,38 @@ Last updated: 2026-02-14
 3. Keep consistent hero grounding line around y=180..190.
 4. Export one logical layer per file (base, gear, fx).
 
+### 1.1a Slot-Fit Authoring Contract (Mandatory)
+
+Gear files are not free-floating icons. They are composited onto a hero body through slot windows, so each item must be authored to fit a body region cleanly.
+
+1. Draw each gear item as a slot-ready object that occupies most of the canvas (target occupancy: about 70%-92% of `180x220`).
+2. Keep transparent margins tight and intentional (avoid tiny centered objects with large empty borders).
+3. Keep item orientation body-compatible for its slot family:
+   - Helmet: readable lower contact edge for head fit.
+   - Chestplate: torso-centered mass and chest-facing symmetry.
+   - Gauntlets: hand/forearm logic with clear left-right read.
+   - Boots: sole/ground read near lower area.
+   - Shield: inner grip/strap toward body-facing edge.
+   - Weapon: held-orientation with a readable grip side.
+   - Cloak: drape flow from shoulders downward, not icon-floating.
+   - Amulet: compact chest ornament read, not oversized prop.
+4. Do not draw full hero scenes inside gear files; author only the gear object layer.
+
 ### 1.2 Readability Rules
 
 1. Silhouette must read at mini-size (70x90) and full-size (180x220).
 2. Avoid thin strokes below 1.25px in source scale.
 3. Keep face focal contrast high for identity recognition.
 4. Use 3-value shading at minimum (light, mid, shadow).
+
+### 1.2a Depth, Perspective, and Lighting (Mandatory)
+
+1. Use gradient grading deliberately to communicate object depth (do not rely on flat fills).
+2. Define a consistent key light direction per theme and keep it coherent across base + gear.
+3. Include contact shadow cues where parts overlap to reinforce layer stacking and perspective.
+4. Use subtle rim light/specular accents on high-value edges to improve readability and material feel.
+5. Apply perspective-aware shape tapering/foreshortening where appropriate so forms feel dimensional.
+6. Keep depth effects tasteful; avoid noisy over-rendering that hurts small-size readability.
 
 ### 1.3 Rarity Progression (Mandatory)
 
@@ -27,8 +53,9 @@ Items must change **form language**, not only color:
 1. Common: practical, minimal detail, blunt silhouette.
 2. Uncommon: one structural upgrade (trim, secondary plate, accessory).
 3. Rare: distinct silhouette variation (wings, fins, segmented parts, asymmetry).
-4. Epic: thematic signature motif + emissive channels.
-5. Legendary: transformed geometry, mythic profile, ceremonial complexity.
+4. Epic: thematic signature motif + story-specific personality detail (avoid generic trope shapes).
+5. Legendary: transformed geometry with memorable, non-cliche identity; must feel original to the theme.
+6. Celestial: apex form that is surprising yet coherent with story logic; avoid abstract noise and overdesigned sci-fi spikes.
 
 ### 1.4 Animation Readiness
 
@@ -37,6 +64,29 @@ Even in static rendering mode, design files as animation-ready:
 1. Separate movable subgroups in authoring source (cloak, antenna, tassel, sparks).
 2. Keep pivots obvious (hinges, straps, joints).
 3. Use layered glow/FX assets for high-tier motion.
+4. Add minimal motion hooks where applicable (tiny idle sway, blink cue, glint pass), never busy loops.
+
+### 1.5 Tone and Personality Guardrails
+
+Keep visuals likable, relatable, and playful across all themes:
+
+1. Favor tangible, everyday-inspired forms over abstract sci-fi geometry.
+2. Use friendly silhouettes (clear head/torso/readable props, soft or rounded transitions where possible).
+3. Include one witty or charming detail per hero/slot family (a clever badge, mascot-like motif, playful trim).
+4. Keep designs emotionally warm: aspirational and fun, not cold or alien.
+5. Avoid over-abstract symbols that read as generic shapes without story context.
+6. Prefer original, story-grounded shapes over genre cliches, especially in Epic/Legendary/Celestial tiers.
+7. Surprising design beats are encouraged when they remain readable and thematically coherent.
+
+### 1.6 Eye Expression and Motion Readiness (Global)
+
+All hero bases should be authored with eye motion in mind:
+
+1. Provide separate eye/eyelid groups in source authoring (left eye, right eye, upper/lower lids where applicable).
+2. Design for quick saccadic gaze shifts: short, fast jumps with tiny settle motion.
+3. Design for fast blinks: brief close-open cycles, with occasional double blink behavior.
+4. Keep a clean neutral frame (forward gaze, eyes open) for static render fallback.
+5. Prioritize cute/expressive readability over hyper-realistic eye detail.
 
 ## 2. Layer Contract
 
@@ -57,6 +107,41 @@ Slots:
 6. `weapon`
 7. `cloak`
 8. `amulet`
+
+### 2.1 Canonical Slots vs Story Meaning
+
+1. Slot names above are technical keys for runtime compatibility and file lookup.
+2. Story-facing meaning is theme-specific and must come from `STORY_GEAR_THEMES[story_id]` (`slot_display` + `item_types`).
+3. Only warrior should default to literal armor readings like "helmet/chestplate".
+4. Non-warrior themes must reinterpret slot art to match their world (for example, Helmet key may represent cap, visor, crown, hat, goggles, etc.).
+
+### 2.2 Story Vocabulary Lock (Non-Negotiable)
+
+1. Treat each theme packet `item_types` list as source-of-truth vocabulary for visual concepts.
+2. Do not introduce cross-genre substitutions that are not represented in that vocabulary.
+3. If a concept is not in the slot `item_types` list, do not use it as a primary item identity.
+4. For thief specifically: keep modern urban civic/tactical semantics; avoid medieval rogue defaults.
+
+### 2.3 Runtime Slot Box Reference (Normalized)
+
+Use this placement map when judging body-fit and composition intent. Values are normalized `[x, y, width, height]` in the `180x220` canvas.
+
+| Slot key | Slot box |
+| --- | --- |
+| `helmet` | `[0.28, 0.06, 0.44, 0.28]` |
+| `chestplate` | `[0.24, 0.22, 0.52, 0.34]` |
+| `gauntlets` | `[0.18, 0.30, 0.64, 0.34]` |
+| `boots` | `[0.28, 0.64, 0.44, 0.30]` |
+| `shield` | `[0.08, 0.28, 0.34, 0.44]` |
+| `weapon` | `[0.58, 0.24, 0.34, 0.52]` |
+| `cloak` | `[0.16, 0.20, 0.68, 0.64]` |
+| `amulet` | `[0.40, 0.30, 0.20, 0.20]` |
+
+Interpretation:
+
+1. Runtime fit places gear into these slot windows; your SVG must still read correctly after that transform.
+2. If an item looks good only when centered as a tiny icon, the asset is invalid for this pipeline.
+3. Validate against real hero composition, not isolated file view.
 
 ## 3. Theme Direction
 
@@ -274,14 +359,15 @@ Apply to every slot, every theme:
 1. Common: one dominant shape, no tertiary silhouette.
 2. Uncommon: add one secondary silhouette element.
 3. Rare: add one directional motion cue shape (fin, plume, blade curve, trailing edge).
-4. Epic: add one identity-defining motif unique to theme.
-5. Legendary: dual-motif composition plus ceremonial framing geometry.
+4. Epic: add one identity-defining motif unique to theme (not a genre default trope).
+5. Legendary: dual-motif composition plus ceremonial framing geometry with unique silhouette logic.
+6. Celestial: introduce a surprising apex twist that still reads as the same item family and theme.
 
 Do not satisfy rarity progression with hue shift alone.
 
 ## 5. Slot-Specific Animation Blueprint
 
-Use these animation families consistently:
+Use these animation families consistently for canonical slot keys and their theme-specific semantic equivalents:
 
 1. Helmet: indicator blink, visor sweep, minor tilt.
 2. Chestplate: center glow pulse or panel breathing.
@@ -291,6 +377,8 @@ Use these animation families consistently:
 6. Weapon: edge glint, energy charge, looped hum wave.
 7. Cloak: low-frequency sway, rare gust spikes.
 8. Amulet: heartbeat pulse, orbiting mote loop.
+9. Hero eyes (base layer): saccadic micro-jumps + fast blinks (with occasional double blink).
+10. Global motion cap: keep motion minimal, readable, and tasteful.
 
 ## 6. Asset QA Checklist
 
@@ -302,6 +390,9 @@ For every exported SVG:
 4. Layer order works over `hero_base.svg`.
 5. Epic and Legendary are silhouette-distinct from lower tiers.
 6. Visual style aligns with theme section in this bible.
+7. Higher tiers (Epic/Legendary/Celestial) are original, non-cliche, and not reduced to abstract sci-fi noise.
+8. Gear object occupancy is slot-fit ready (not a tiny center icon with oversized empty margins).
+9. Contact edge/orientation reads correctly for the intended body slot.
 
 For every theme:
 
@@ -309,3 +400,4 @@ For every theme:
 2. All 8 slots have rarity progression across 6 tiers.
 3. Animation-ready grouping is present in source files.
 4. Optional tier FX overlays exist for `epic`, `legendary`, and `celestial`.
+5. Eye groups and eyelid logic are authored for saccades + fast blink behavior.

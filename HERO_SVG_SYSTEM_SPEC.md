@@ -22,6 +22,7 @@ If this file conflicts with older hero art notes, this file wins.
 3. Deterministic lookup: file resolution follows strict pattern order.
 4. Backward compatibility: no asset -> no crash -> procedural fallback.
 5. Performance-safe: `QSvgRenderer` is cached by file path + mtime.
+6. Canonical slot IDs are compatibility keys only; visual meaning is theme-defined.
 
 ## 3. Runtime Integration Points
 
@@ -65,6 +66,13 @@ Optional manifest:
 - `icons/heroes/<story_id>/hero_manifest.json`
 
 ## 5. Slot and Rarity Normalization
+
+Semantic rule:
+
+1. Canonical slot keys are runtime compatibility IDs, not literal item requirements.
+2. Theme meaning is defined by story metadata (`slot_display` and `item_types` in `STORY_GEAR_THEMES`).
+3. Only themes that intentionally map literally (for example warrior) should read as direct armor nouns.
+4. Non-warrior themes should reinterpret the same canonical slots according to story context.
 
 Canonical slot keys:
 
@@ -151,6 +159,15 @@ Supported anchors:
 - `center_left`, `center_right`
 - `bottom_left`, `bottom_center`, `bottom_right`
 
+### 6.5 Asset Authoring Guidance For Slot-Fit Layouts
+
+When manifests use per-slot boxes with `fit: "contain"` (current production profile), gear art must be authored for body composition, not icon gallery display.
+
+1. Keep primary gear geometry tight and intentional (roughly 70%-92% canvas occupancy is recommended).
+2. Avoid tiny centered symbols surrounded by oversized transparent margins.
+3. Keep orientation consistent with slot-body contact intent (headgear contact edge, grounded boots, shield inner grip toward body, held weapon grip side).
+4. If an item intentionally needs unusual framing, encode that via manifest `layout.gear.slots.<slot>.offset` and/or `scale` instead of ad-hoc whitespace tricks.
+
 ## 7. Manifest Schema
 
 Path:
@@ -170,6 +187,16 @@ Minimal example:
   },
   "gear": {
     "slot_order": ["Cloak", "Chestplate", "Boots", "Gauntlets", "Amulet", "Helmet", "Shield", "Weapon"],
+    "slot_display": {
+      "Helmet": "Visor",
+      "Chestplate": "Chassis",
+      "Gauntlets": "Manipulators",
+      "Boots": "Treads",
+      "Shield": "Firewall",
+      "Weapon": "Tool",
+      "Cloak": "Cooling Shroud",
+      "Amulet": "Core"
+    },
     "patterns": [
       "gear/{slot}/{item_type}_{rarity}.svg",
       "gear/{slot}/{item_name}_{rarity}.svg",
@@ -204,6 +231,7 @@ Notes:
 4. `scale` may be single value or `[x, y]`.
 5. `box` is normalized `[x, y, width, height]` in hero canvas space.
 6. Omit manifest entirely to use defaults.
+7. `gear.slot_display` is optional but recommended for art/handoff clarity and should mirror story semantic slot labels.
 
 ## 8. Rendering and Performance
 
@@ -244,6 +272,12 @@ Expected use:
 ## 10. Animation Contract
 
 The runtime currently supports static layer composition and optional FX layers.
+
+Motion coupling behavior (current):
+
+1. Base and gear are rendered as layered composition into the same hero target space.
+2. If a global hero transform is applied by runtime (future or caller-side), base and all equipped layers move together.
+3. Per-part rigging/kinematic attachment (for example independent armature-driven slot motion) is not yet implemented.
 
 Animation guidance for asset generation:
 
