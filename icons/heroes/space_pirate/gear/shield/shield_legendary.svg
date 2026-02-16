@@ -1,14 +1,244 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
-  <g id="qt_anim_driver">
-    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+  <defs>
+    <!-- Legendary Colors: Amber/Orange/Gold, Obsidian, Cyan Energy -->
+    <linearGradient id="legendaryShell" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#555555"/> <!-- Glossy highlight -->
+      <stop offset="40%" style="stop-color:#000000"/> <!-- Pitch black -->
+      <stop offset="100%" style="stop-color:#111111"/>
+    </linearGradient>
+    
+    <linearGradient id="obsidian" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#424242"/>
+      <stop offset="50%" style="stop-color:#212121"/>
+      <stop offset="100%" style="stop-color:#000000"/>
+    </linearGradient>
 
+    <linearGradient id="goldTrim" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#333333"/>
+      <stop offset="40%" style="stop-color:#111111"/>
+      <stop offset="100%" style="stop-color:#000000"/>
+    </linearGradient>
 
-  <g id="shield_legendary">
-    <path d="M33 103 L61 98 L65 122 L59 149 L36 147 L33 129 Z" fill="#2e476f" stroke="#13233a" stroke-width="1.2"/>
-    <path d="M33 103 L61 98 L65 122 L59 149 L36 147 L33 129 Z" fill="none" stroke="#FF9800" stroke-width="1" opacity="0.95"/>
-    <path d="M37 106 L60 105" stroke="#a6c0e4" stroke-width="0.85" opacity="0.62"/>
-    <path d="M38 111 L59 111 M38 120 L59 120 M38 129 L59 129" stroke="#58739b" stroke-width="0.92" opacity="0.72"/><path d="M40 105 L58 102 L61 118 L57 143 L40 141 L38 125 Z" fill="none" stroke="#FF9800" stroke-width="0.9" opacity="0.8"/><rect x="42" y="115" width="14" height="2.1" rx="1" fill="#FF9800" opacity="0.85"><animate attributeName="y" values="115;138;115" dur="2.1s" repeatCount="indefinite"/></rect><path d="M47 126 L51 131 L56 122" stroke="#FF9800" stroke-width="1.1" fill="none"/><circle cx="49.5" cy="111.5" r="2.3" fill="#17243a" stroke="#FF9800" stroke-width="0.95"/>
-  </g>
+    <!-- Core Energy -->
+    <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#00E5FF;stop-opacity:1"/>
+      <stop offset="60%" style="stop-color:#00E5FF;stop-opacity:0.5"/>
+      <stop offset="100%" style="stop-color:#00E5FF;stop-opacity:0"/>
+    </radialGradient>
+
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    
+    <filter id="legendaryGlow">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <filter id="intenseGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="coloredBlur"/> <!-- Double up for intensity -->
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <pattern id="carbonFiber" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="#212121"/>
+      <path d="M0,4 L4,0 M-1,1 L1,-1 M3,5 L5,3" stroke="#333" stroke-width="1"/>
+    </pattern>
+    <clipPath id="screenClip">
+      <rect x="0" y="0" width="90" height="60" rx="8"/>
+    </clipPath>
+  </defs>
+
+  <ellipse cx="90" cy="216" rx="40" ry="4" fill="#000" opacity="0.2"/>
+
+  <!-- 
+    LEGENDARY TWIST: "The Captain's Treasure"
+    1. Visuals: Robo-Parrot wearing a holographic Pirate Captain's Hat.
+    2. Mechanic: The chest is a literal treasure chest / safe that opens and closes.
+       Inside is a spinning "Legendary Core" (the loot).
+  -->
+  <g transform="translate(5, 175) scale(0.146)">
+
+      <g id="parrotBotLegendary" filter="url(#shadow)">
+      
+        <!-- ===== LEGS (Obsidian) ===== -->
+        <g id="legs">
+          <g>
+            <rect x="95" y="248" width="8" height="22" rx="2" fill="url(#obsidian)" stroke="#000" stroke-width="1"/>
+            <path d="M84,268 L78,275 L76,280 L116,280 L118,275 L112,268" fill="url(#goldTrim)" stroke="#333" stroke-width="0.8"/>
+          </g>
+          <g>
+             <rect x="157" y="248" width="8" height="22" rx="2" fill="url(#obsidian)" stroke="#000" stroke-width="1"/>
+             <path d="M148,268 L142,275 L140,280 L180,280 L178,275 L172,268" fill="url(#goldTrim)" stroke="#333" stroke-width="0.8"/>
+          </g>
+        </g>
+
+        <!-- ===== TORSO (The Vault) ===== -->
+        <g id="torso">
+          <!-- Main Chassis -->
+          <rect x="75" y="130" width="110" height="115" rx="16" fill="url(#legendaryShell)" stroke="#333" stroke-width="1.5"/>
+          <rect x="75" y="130" width="110" height="115" rx="16" fill="url(#carbonFiber)" opacity="0.1"/>
+
+          <!-- The Vault Door Mechanism (Chest) -->
+          <g transform="translate(85, 145)">
+            
+             <!-- Vault Background (Dark void) -->
+             <rect x="0" y="0" width="90" height="60" rx="8" fill="#111" stroke="#333" stroke-width="2"/>
+             
+             <!-- Inner Loot: Pirate Treasure -->
+             <g clip-path="url(#screenClip)">
+                 <!-- GOLD GLOW BACKDROP: Pulses with door opening -->
+                 <rect x="0" y="0" width="90" height="60" fill="#FFD700" opacity="0">
+                     <animate attributeName="opacity" values="0;0.4;0.4;0;0" keyTimes="0;0.2;0.6;0.8;1" dur="4s" repeatCount="indefinite" />
+                 </rect>
+                 
+                 <!-- Treasure Pile (Irregular Heap) -->
+                 <g>
+                     <!-- Gold Bars (Messy Pile) -->
+                     <g transform="rotate(-5 45 50)">
+                        <rect x="15" y="48" width="40" height="8" rx="1" fill="#FFB300" stroke="#E65100" stroke-width="0.5"/>
+                     </g>
+                     <g transform="rotate(3 55 45)">
+                        <rect x="35" y="45" width="40" height="8" rx="1" fill="#FFC107" stroke="#E65100" stroke-width="0.5"/>
+                     </g>
+                     <g transform="rotate(-8 30 40)">
+                         <rect x="20" y="38" width="35" height="8" rx="1" fill="#FFD54F" stroke="#E65100" stroke-width="0.5"/>
+                     </g>
+                     <g transform="rotate(10 60 40)">
+                         <rect x="50" y="35" width="30" height="8" rx="1" fill="#FFCA28" stroke="#E65100" stroke-width="0.5"/>
+                     </g>
+                     
+                     <!-- Loose Coins (Scattered) -->
+                     <circle cx="15" cy="52" r="5" fill="#FFD700" stroke="#FFA000" stroke-width="0.5"/>
+                     <circle cx="22" cy="55" r="4" fill="#FFD700" stroke="#FFA000" stroke-width="0.5"/>
+                     <circle cx="28" cy="35" r="4" fill="#FFFF00" stroke="#FFA000" stroke-width="0.5"/>
+                     
+                     <circle cx="75" cy="50" r="5" fill="#FFD700" stroke="#FFA000" stroke-width="0.5"/>
+                     <circle cx="82" cy="45" r="4" fill="#FFD700" stroke="#FFA000" stroke-width="0.5"/>
+                     
+                     <circle cx="50" cy="30" r="4" fill="#FFF59D" stroke="#FFA000" stroke-width="0.5"/>
+                     <circle cx="58" cy="28" r="3" fill="#FFF9C4" stroke="#FFA000" stroke-width="0.5"/>
+                     <circle cx="35" cy="32" r="3" fill="#FFF9C4" stroke="#FFA000" stroke-width="0.5"/>
+
+                     <!-- Gems (Scattered in the pile) -->
+                     <!-- Ruby on top -->
+                     <path d="M42,25 L47,20 L52,25 L47,30 Z" fill="#FF1744" stroke="#D50000" stroke-width="0.5" transform="rotate(-15 47 25)"/>
+                     <!-- Emerald to the right -->
+                     <rect x="68" y="38" width="8" height="8" transform="rotate(30 72 42)" fill="#00E676" stroke="#00C853" stroke-width="0.5"/>
+                     <!-- Blue Sapphire buried left -->
+                     <path d="M25,45 L30,40 L35,45 L30,50 Z" fill="#00B0FF" stroke="#40C4FF" stroke-width="0.5"/>
+                 </g>
+
+                 <!-- State of the Art Shimmering -->
+                 <defs>
+                   <linearGradient id="shimmerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#fff" stop-opacity="0"/>
+                      <stop offset="40%" stop-color="#fff" stop-opacity="0"/>
+                      <stop offset="50%" stop-color="#fff" stop-opacity="0.8"/>
+                      <stop offset="60%" stop-color="#fff" stop-opacity="0"/>
+                      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+                   </linearGradient>
+                 </defs>
+                 
+                 <!-- 1. The Sheen (Moving reflection across the whole pile) -->
+                 <rect x="-50" y="-10" width="200" height="100" fill="url(#shimmerGrad)" transform="rotate(-20)" style="mix-blend-mode: overlay" pointer-events="none">
+                    <animateTransform attributeName="transform" type="translate" from="-100 0" to="150 0" dur="3s" repeatCount="indefinite" begin="1s"/>
+                 </rect>
+
+                 <!-- 2. High-Fidelity Static Sparkles (Cross stars that pulse) -->
+                 <!-- Star Shape Definition: M0,-4 L1,-1 L4,0 L1,1 L0,4 L-1,1 L-4,0 L-1,-1 Z -->
+                 
+                 <!-- Sparkle on Ruby (Red/White hot center) -->
+                 <g transform="translate(47, 25)">
+                    <path d="M0,-5 L1.5,-1.5 L5,0 L1.5,1.5 L0,5 L-1.5,1.5 L-5,0 L-1.5,-1.5 Z" fill="#FFF" filter="url(#glow)">
+                        <animateTransform attributeName="transform" type="scale" values="0;1.2;0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                        <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                    </path>
+                 </g>
+                 
+                 <!-- Sparkle on Gold Bar (Yellow/White) -->
+                 <g transform="translate(25, 45)">
+                    <path d="M0,-4 L1,-1 L4,0 L1,1 L0,4 L-1,1 L-4,0 L-1,-1 Z" fill="#FFF" filter="url(#glow)">
+                        <animateTransform attributeName="transform" type="scale" values="0;1;0" dur="3s" repeatCount="indefinite" begin="1.5s"/>
+                        <animateTransform attributeName="transform" type="rotate" values="0;45;90" dur="3s" repeatCount="indefinite" begin="1.5s" additive="sum"/>
+                    </path>
+                 </g>
+                 
+                 <!-- Sparkle on Emerald (Green/White) -->
+                 <g transform="translate(72, 42)">
+                    <path d="M0,-3 L0.8,-0.8 L3,0 L0.8,0.8 L0,3 L-0.8,0.8 L-3,0 L-0.8,-0.8 Z" fill="#FFF" filter="url(#glow)">
+                        <animateTransform attributeName="transform" type="scale" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="2s"/>
+                        <animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="2s"/>
+                    </path>
+                 </g>
+
+                 <!-- Vault Door Left -->
+                 <rect x="0" y="0" width="45" height="60" fill="url(#obsidian)" stroke="#555" stroke-width="1">
+                    <animate attributeName="width" values="45;5;5;45;45" keyTimes="0;0.2;0.6;0.8;1" dur="4s" repeatCount="indefinite"/> 
+                 </rect>
+                 <!-- Vault Door Right -->
+                 <rect x="45" y="0" width="45" height="60" fill="url(#obsidian)" stroke="#555" stroke-width="1">
+                     <animate attributeName="x" values="45;85;85;45;45" keyTimes="0;0.2;0.6;0.8;1" dur="4s" repeatCount="indefinite"/>
+                     <animate attributeName="width" values="45;5;5;45;45" keyTimes="0;0.2;0.6;0.8;1" dur="4s" repeatCount="indefinite"/>
+                 </rect>
+             </g>
+             
+             <!-- Vault Frame -->
+             <rect x="-2" y="-2" width="94" height="64" rx="10" fill="none" stroke="url(#goldTrim)" stroke-width="3"/>
+          </g>
+          
+          <!-- Lower Abdomen -->
+          <path d="M90,215 L170,215 L160,240 L100,240 Z" fill="url(#goldTrim)" opacity="0.8"/>
+        </g>
+
+        <!-- ===== ARMS ===== -->
+        <!-- Beefier arms -->
+        <g id="arms">
+             <rect x="62" y="150" width="16" height="35" rx="5" fill="url(#obsidian)"/>
+             <circle cx="70" cy="190" r="8" fill="url(#goldTrim)"/>
+             <rect x="65" y="190" width="12" height="30" rx="4" fill="url(#legendaryShell)"/>
+             <!-- Claw -->
+             <path d="M60,220 L80,220 L75,240 L65,240 Z" fill="#333"/>
+             
+             <rect x="182" y="150" width="16" height="35" rx="5" fill="url(#obsidian)"/>
+             <circle cx="190" cy="190" r="8" fill="url(#goldTrim)"/>
+             <rect x="183" y="190" width="12" height="30" rx="4" fill="url(#legendaryShell)"/>
+             <!-- Claw or Hook? Let's do a Hook for pirate theme -->
+             <path d="M190,220 C190,220 200,240 185,245 C170,240 180,220 180,220" fill="none" stroke="#CCC" stroke-width="3"/>
+        </g>
+
+        <!-- ===== HEAD ===== -->
+        <g id="head">
+          <animateTransform attributeName="transform" type="rotate" values="0 130 118; 10 130 118; 10 130 118; -10 130 118; -10 130 118; 0 130 118" keyTimes="0; 0.1; 0.3; 0.4; 0.6; 1" dur="4s" repeatCount="indefinite" />
+          
+          <!-- Neck -->
+          <rect x="120" y="115" width="20" height="20" fill="#333"/>
+          
+          <!-- Head Shape -->
+          <path d="M90,82 C90,52 108,30 130,30 C152,30 170,52 170,82 L170,105 C170,112 162,118 130,118 C98,118 90,112 90,105 Z" fill="url(#legendaryShell)" stroke="#333" stroke-width="1.2"/>
+          
+          <!-- Beak (Obsidian) -->
+          <path d="M110,96 L150,96 L140,115 L120,115 Z" fill="url(#obsidian)" stroke="#000"/>
+
+          <!-- Eyes -->
+          <rect x="100" y="70" width="26" height="22" rx="4" fill="#000" stroke="#333" stroke-width="0.5"/>
+          <rect x="134" y="70" width="26" height="22" rx="4" fill="#000" stroke="#333" stroke-width="0.5"/>
+          
+          <!-- Normal Glowing Eyes (Cyan) -->
+          <circle cx="113" cy="81" r="6" fill="#00E5FF" opacity="0.8" filter="url(#glow)"/>
+          <circle cx="113" cy="81" r="3" fill="#FFF"/>
+          
+          <circle cx="147" cy="81" r="6" fill="#00E5FF" opacity="0.8" filter="url(#glow)"/>
+          <circle cx="147" cy="81" r="3" fill="#FFF"/>
+
+        </g>
+
+      </g>
 
   </g>
 </svg>
