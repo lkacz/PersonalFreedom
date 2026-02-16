@@ -401,6 +401,78 @@ class TestLuckyMergeSystem(unittest.TestCase):
         if result["success"]:
             self.assertIsNotNone(result["result_item"])
 
+    def test_merge_celestial_chance_requires_five_legendary(self) -> None:
+        """Celestial chance unlocks at 5+ Legendary items only."""
+        from gamification import calculate_merge_celestial_chance
+
+        four_legendary = [{"rarity": "Legendary"} for _ in range(4)]
+        five_legendary = [{"rarity": "Legendary"} for _ in range(5)]
+
+        self.assertEqual(calculate_merge_celestial_chance(four_legendary), 0.0)
+        self.assertAlmostEqual(calculate_merge_celestial_chance(five_legendary), 0.01, places=6)
+
+    def test_merge_celestial_chance_scales_with_extra_legendary(self) -> None:
+        """Celestial chance gains +1% per Legendary item above 5."""
+        from gamification import calculate_merge_celestial_chance
+
+        seven_legendary = [{"rarity": "Legendary"} for _ in range(7)]
+        self.assertAlmostEqual(calculate_merge_celestial_chance(seven_legendary), 0.03, places=6)
+
+    def test_perform_lucky_merge_can_award_celestial_with_five_legendary(self) -> None:
+        """Deterministic Celestial roll should award Celestial when unlocked."""
+        from gamification import perform_lucky_merge
+
+        items = [{"rarity": "Legendary", "name": f"Legendary {i}"} for i in range(5)]
+        result = perform_lucky_merge(
+            items,
+            success_roll=0.0,
+            tier_roll=99.0,
+            celestial_roll=0.0,
+        )
+
+        self.assertTrue(result["success"])
+        self.assertTrue(result["celestial_unlocked"])
+        self.assertTrue(result["celestial_triggered"])
+        self.assertAlmostEqual(result["celestial_chance"], 0.01, places=6)
+        self.assertEqual(result["final_rarity"], "Celestial")
+        self.assertEqual((result.get("result_item") or {}).get("rarity"), "Celestial")
+
+    def test_perform_lucky_merge_hides_celestial_below_threshold(self) -> None:
+        """Below 5 Legendary items, Celestial should remain unavailable."""
+        from gamification import perform_lucky_merge
+
+        items = [{"rarity": "Legendary", "name": f"Legendary {i}"} for i in range(4)]
+        result = perform_lucky_merge(
+            items,
+            success_roll=0.0,
+            tier_roll=99.0,
+            celestial_roll=0.0,
+        )
+
+        self.assertTrue(result["success"])
+        self.assertFalse(result["celestial_unlocked"])
+        self.assertFalse(result["celestial_triggered"])
+        self.assertEqual(result["celestial_chance"], 0.0)
+        self.assertNotEqual(result["final_rarity"], "Celestial")
+
+    def test_celestial_merge_inputs_do_not_downgrade_merge_tier(self) -> None:
+        """Merging Celestial items should clamp base merge tier to Legendary, not lower."""
+        from gamification import get_merge_result_rarity, perform_lucky_merge
+
+        items = [{"rarity": "Celestial", "name": f"Celestial {i}"} for i in range(2)]
+        self.assertEqual(get_merge_result_rarity(items), "Legendary")
+
+        result = perform_lucky_merge(
+            items,
+            success_roll=0.0,
+            tier_roll=99.0,
+            celestial_roll=0.0,
+        )
+        self.assertTrue(result["success"])
+        self.assertEqual(result["base_rarity"], "Legendary")
+        self.assertEqual(result["final_rarity"], "Legendary")
+        self.assertEqual((result.get("result_item") or {}).get("rarity"), "Legendary")
+
     def test_roll_push_your_luck_outcome_is_deterministic_with_injected_rolls(self) -> None:
         """Push-luck outcome should honor provided rolls for backend/UI sync."""
         from gamification import roll_push_your_luck_outcome
@@ -572,6 +644,7 @@ class TestDailyRewardSystem(unittest.TestCase):
         self.assertEqual(get_standard_reward_rarity_order()[-1], "Legendary")
         self.assertNotIn("Celestial", get_standard_reward_rarity_order())
         self.assertEqual(get_next_rarity("Legendary", max_rarity=MAX_OBTAINABLE_RARITY), "Legendary")
+        self.assertEqual(get_next_rarity("Celestial", max_rarity=MAX_OBTAINABLE_RARITY), "Legendary")
         self.assertEqual(get_next_rarity("Legendary"), "Celestial")
 
     def test_generate_item_supports_forced_celestial_rarity(self) -> None:

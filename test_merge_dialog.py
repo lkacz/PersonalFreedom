@@ -16,6 +16,7 @@ from merge_dialog import (
     ItemPreviewWidget,
     SuccessRateWidget,
     ResultPreviewWidget,
+    RarityDistributionWidget,
     LuckyMergeDialog
 )
 
@@ -285,6 +286,45 @@ class TestLuckyMergeDialog(unittest.TestCase):
         # Instead, verify the items section shows what will be lost
         self.assertTrue(hasattr(dialog, '_items_toggle_btn'),
                        "Should have items section showing items to merge")
+
+    def test_celestial_chance_hidden_below_five_legendary(self):
+        """Celestial hint/chance should be unavailable below 5 Legendary items."""
+        items = [generate_item(rarity="Legendary") for _ in range(4)]
+        dialog = LuckyMergeDialog(items, 0, {})
+
+        self.assertEqual(dialog.legendary_count, 4)
+        self.assertEqual(dialog.celestial_chance, 0.0)
+        self.assertEqual(dialog.rarity_dist_widget.celestial_chance, 0.0)
+        self.assertNotIn("Celestial", dialog.rarity_dist_widget.distribution)
+
+    def test_celestial_chance_unlocks_at_five_legendary(self):
+        """At 5 Legendary items, Celestial chance should become 1%."""
+        items = [generate_item(rarity="Legendary") for _ in range(5)]
+        dialog = LuckyMergeDialog(items, 0, {})
+
+        self.assertEqual(dialog.legendary_count, 5)
+        self.assertAlmostEqual(dialog.celestial_chance, 0.01, places=6)
+        self.assertAlmostEqual(dialog.rarity_dist_widget.celestial_chance, 0.01, places=6)
+
+
+class TestRarityDistributionWidget(unittest.TestCase):
+    """Direct tests for rarity distribution widget behavior."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.app = QtWidgets.QApplication.instance()
+        if cls.app is None:
+            cls.app = QtWidgets.QApplication(sys.argv)
+
+    def test_legendary_distribution_does_not_include_celestial_zone(self):
+        """Merge distribution remains 5-tier; Celestial is separate bonus context."""
+        widget = RarityDistributionWidget(
+            base_rarity="Legendary",
+            upgraded=False,
+            celestial_chance=0.0,
+            legendary_count=4,
+        )
+        self.assertNotIn("Celestial", widget.distribution)
 
 
 class TestDialogAccessibility(unittest.TestCase):

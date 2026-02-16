@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="c_tarp" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#616161"/>
+      <stop offset="100%" stop-color="#424242"/>
+    </linearGradient>
+  </defs>
+  <g id="cloak_common">
+    <!-- Tattered Tarp -->
+    <path d="M65 80 L115 80 L120 180 L100 170 L90 185 L80 170 L60 180 L65 80 Z" fill="url(#c_tarp)" opacity="0.9"/>
+    
+    <!-- Patches -->
+    <rect x="70" y="100" width="15" height="15" fill="#757575" transform="rotate(10 77.5 107.5)"/>
+    <path d="M90 130 L105 130 L105 145 L90 145 Z" fill="#5D4037"/>
+    
+    <!-- Mounting Holes -->
+    <circle cx="70" cy="85" r="2" fill="#212121"/>
+    <circle cx="110" cy="85" r="2" fill="#212121"/>
+  </g>
+</svg>

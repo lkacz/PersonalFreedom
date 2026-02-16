@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220">
+  <!-- Robot Hero Base: Industrial chassis, Becoming Autonomous -->
+  <defs>
+    <linearGradient id="chassisGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#263238"/>
+      <stop offset="20%" stop-color="#37474F"/>
+      <stop offset="80%" stop-color="#37474F"/>
+      <stop offset="100%" stop-color="#263238"/>
+    </linearGradient>
+    <linearGradient id="limbGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#455A64"/>
+      <stop offset="100%" stop-color="#263238"/>
+    </linearGradient>
+    <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#36d6e7" stop-opacity="1"/>
+      <stop offset="80%" stop-color="#36d6e7" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#36d6e7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="90" cy="205" rx="55" ry="8" fill="#000000" opacity="0.3"/>
+
+  <!-- Legs -->
+  <g transform="translate(0,0)">
+    <!-- Left Leg -->
+    <path d="M70 140 L65 170 L55 200 L40 205 L45 190 L58 140 Z" fill="url(#limbGradient)" stroke="#263238" stroke-width="1.5"/>
+    <rect x="53" y="168" width="14" height="4" fill="#263238"/> <!-- Joint Detail -->
+    
+    <!-- Right Leg -->
+    <path d="M110 140 L115 170 L125 200 L140 205 L135 190 L122 140 Z" fill="url(#limbGradient)" stroke="#263238" stroke-width="1.5"/>
+    <rect x="113" y="168" width="14" height="4" fill="#263238"/> <!-- Joint Detail -->
+  </g>
+  
+  <!-- Pelvis Chassis -->
+  <path d="M65 130 L115 130 L110 155 L70 155 Z" fill="#37474F" stroke="#263238" stroke-width="2"/>
+  <circle cx="90" cy="142" r="6" fill="#1C262B"/>
+
+  <!-- Torso Unit -->
+  <path d="M60 70 L120 70 L116 130 L64 130 Z" fill="url(#chassisGradient)" stroke="#4a6375" stroke-width="1.5"/>
+  
+  <!-- Chest Detail - Vents -->
+  <path d="M68 80 L78 80" stroke="#546E7A" stroke-width="2"/>
+  <path d="M68 86 L78 86" stroke="#546E7A" stroke-width="2"/>
+  <path d="M102 80 L112 80" stroke="#546E7A" stroke-width="2"/>
+  <path d="M102 86 L112 86" stroke="#546E7A" stroke-width="2"/>
+  
+  <!-- Central Core -->
+  <circle cx="90" cy="100" r="14" fill="#263238" stroke="#4a6375" stroke-width="2"/>
+  <circle cx="90" cy="100" r="8" fill="url(#coreGlow)"/>
+  
+  <!-- Shoulders -->
+  <circle cx="50" cy="72" r="14" fill="#455A64" stroke="#263238"/>
+  <circle cx="130" cy="72" r="14" fill="#455A64" stroke="#263238"/>
+  
+  <!-- Arms -->
+  <rect x="38" y="80" width="24" height="50" rx="4" fill="url(#limbGradient)" stroke="#263238"/>
+  <rect x="118" y="80" width="24" height="50" rx="4" fill="url(#limbGradient)" stroke="#263238"/>
+  
+  <!-- Hands -->
+  <path d="M38 135 L62 135 L60 155 L40 155 Z" fill="#263238" stroke="#4a6375" stroke-width="1"/>
+  <path d="M118 135 L142 135 L140 155 L120 155 Z" fill="#263238" stroke="#4a6375" stroke-width="1"/>
+
+  <!-- Head Unit -->
+  <g transform="translate(0, -5)"> <!-- Slightly raised for neck -->
+      <rect x="82" y="50" width="16" height="20" fill="#263238"/> <!-- Neck -->
+      <path d="M72 35 L108 35 L108 60 L72 60 Z" fill="#546E7A" stroke="#263238" stroke-width="2"/> <!-- Head Box -->
+      <rect x="70" y="33" width="40" height="4" fill="#37474F"/> <!-- Top Cap -->
+      
+      <!-- Optic Sensor Band -->
+      <rect x="74" y="42" width="32" height="10" fill="#111111"/>
+      <!-- Cyclops Eye -->
+      <circle cx="90" cy="47" r="3.5" fill="#ff8a3d"/>
+  </g>
+</svg>

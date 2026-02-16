@@ -1,11 +1,50 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="600" height="900">
+  <defs>
+    <!-- Skin tone from hero_base (exact match to hide patch) -->
+    <linearGradient id="skinCover" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c8956c"/>
+      <stop offset="100%" style="stop-color:#b07a55"/>
+    </linearGradient>
+  </defs>
 
   <g id="amulet_legendary">
-    <path d="M86 90 Q90 86 94 90" stroke="#8394ac" stroke-width="1.1" fill="none"/>
-    <rect x="85" y="94" width="10" height="12" rx="2" fill="#223550" stroke="#101b2b" stroke-width="1"/>
-    <circle cx="90" cy="100" r="2.1" fill="#FF9800" opacity="0.96"/>
-    <circle cx="90" cy="100" r="6.8" fill="none" stroke="#FF9800" stroke-width="1.15" opacity="0.85"/><path d="M90 95.2 L92.4 99.4 L90 103.5 L87.6 99.4 Z" fill="#FF9800" opacity="0.92"/><path d="M84.5 100 L95.5 100" stroke="#FF9800" stroke-width="0.95" opacity="0.82"/><circle cx="90" cy="100" r="10.4" fill="none" stroke="#FF9800" stroke-width="0.9" opacity="0.45"><animateTransform attributeName="transform" type="rotate" values="0 90 100;360 90 100" dur="8s" repeatCount="indefinite"/></circle><path d="M82 100 L76 97 L78 104 Z" fill="#FF9800" opacity="0.9"/><path d="M98 100 L104 97 L102 104 Z" fill="#FF9800" opacity="0.9"/>
-    <circle cx="90" cy="100" r="2.8" fill="#FF9800" opacity="0.24"><animate attributeName="r" values="2.2;4.6;2.2" dur="2s" repeatCount="indefinite"/></circle>
+    <!-- 
+      1. SKIN PATCH COVER
+      Matches the "eyePatchShape" path from hero_base.svg exactly to cover it.
+    -->
+    <path d="M308,195 C315,185 335,185 342,200 C345,210 335,220 322,220 C310,220 305,210 308,195 Z" 
+          fill="url(#skinCover)" stroke="none" />
+    
+    <!-- Cover the strap as well -->
+    <path d="M310,192 C318,187 330,187 340,190" stroke="url(#skinCover)" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+    <!-- 
+      2. NEW LEGENDARY EYE
+      Modeled after left eye: ellipse cx="278" cy="205" rx="12" ry="8"
+      Mirrored X position relative to face center (approx 300):
+      New CX = 322
+    -->
+    <ellipse cx="322" cy="205" rx="12" ry="8" fill="#ffffff" stroke="#6b5040" stroke-width="0.8"/>
+    
+    <!-- Iris - Legendary Orange (#FF9800) with Glow -->
+    <circle cx="322" cy="205" r="5" fill="#FF9800" opacity="0.9">
+       <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <!-- Glow ring around iris -->
+    <circle cx="322" cy="205" r="5.5" fill="none" stroke="#FF9800" stroke-width="1.5" opacity="0.4">
+       <animate attributeName="r" values="5.5;6.5;5.5" dur="1.5s" repeatCount="indefinite"/>
+       <animate attributeName="opacity" values="0.4;0;0.4" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Pupil -->
+    <circle cx="322" cy="205" r="2.5" fill="#111111"/>
+    
+    <!-- Highlight -->
+    <circle cx="324" cy="203" r="1.2" fill="#ffffff" opacity="0.9"/>
+
+    <!-- Subtle eyelid crease top -->
+    <path d="M312,198 Q322,194 332,198" fill="none" stroke="#a06a48" stroke-width="0.5" opacity="0.6"/>
+
   </g>
 
 </svg>

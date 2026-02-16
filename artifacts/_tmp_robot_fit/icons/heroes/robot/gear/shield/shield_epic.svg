@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <radialGradient id="s_void" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="100%" stop-color="#4A148C" stop-opacity="0.8"/>
+    </radialGradient>
+  </defs>
+  <g id="shield_epic" transform="translate(10, 0)">
+    <!-- Void Singularity Shield -->
+    <circle cx="40" cy="120" r="25" fill="url(#s_void)" stroke="#AA00FF" stroke-width="1"/>
+    
+    <!-- Swirls -->
+    <path d="M40 120 M15 120 Q15 95 40 95 Q65 95 65 120" fill="none" stroke="#E040FB" stroke-width="1.5">
+       <animateTransform attributeName="transform" type="rotate" from="0 40 120" to="360 40 120" dur="4s" repeatCount="indefinite"/>
+    </path>
+    <path d="M40 120 M25 120 Q25 105 40 105 Q55 105 55 120" fill="none" stroke="#7B1FA2" stroke-width="1">
+       <animateTransform attributeName="transform" type="rotate" from="360 40 120" to="0 40 120" dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Core -->
+    <circle cx="40" cy="120" r="5" fill="#000000"/>
+  </g>
+</svg>

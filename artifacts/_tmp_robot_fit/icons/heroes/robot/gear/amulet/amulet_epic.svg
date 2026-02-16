@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <radialGradient id="a_void" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#E040FB"/>
+      <stop offset="100%" stop-color="#4A148C"/>
+    </radialGradient>
+  </defs>
+  <g id="amulet_epic">
+    <!-- Void Shard -->
+    
+    <!-- Floating Shard -->
+    <path d="M90 90 L94 96 L90 104 L86 96 Z" fill="url(#a_void)" stroke="#AA00FF" stroke-width="0.5">
+       <animateTransform attributeName="transform" type="translate" values="0 0; 0 2; 0 0" dur="2s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Energy Orbit -->
+    <circle cx="90" cy="97" r="6" fill="none" stroke="#E040FB" stroke-width="0.5" stroke-dasharray="2,2">
+       <animateTransform attributeName="transform" type="rotate" from="0 90 97" to="360 90 97" dur="5s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>

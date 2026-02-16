@@ -1,10 +1,209 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <!-- Uncommon colors: Green Accent (#4CAF50), Partially Restored -->
+    <!-- Steel Base -->
+    <linearGradient id="protoSteel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#bdc3c7"/>
+      <stop offset="40%" style="stop-color:#95a5a6"/>
+      <stop offset="100%" style="stop-color:#7f8c8d"/>
+    </linearGradient>
+    <!-- Uncommon Green Plating -->
+    <linearGradient id="greenPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4CAF50"/>
+      <stop offset="50%" style="stop-color:#388E3C"/>
+      <stop offset="100%" style="stop-color:#2E7D32"/>
+    </linearGradient>
+    <!-- Wire bundles - Green insulated -->
+    <linearGradient id="greenWires" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#81C784"/>
+      <stop offset="50%" style="stop-color:#4CAF50"/>
+      <stop offset="100%" style="stop-color:#388E3C"/>
+    </linearGradient>
+    <linearGradient id="darkMetal" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3a3a50"/>
+      <stop offset="50%" style="stop-color:#2a2a3e"/>
+      <stop offset="100%" style="stop-color:#1e1e30"/>
+    </linearGradient>
+    <!-- Working Screen BG -->
+    <linearGradient id="workingScreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1b5e20"/>
+      <stop offset="100%" style="stop-color:#003300"/>
+    </linearGradient>
+    <!-- Bright Green Glow -->
+    <radialGradient id="greenGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#69f0ae;stop-opacity:1"/>
+      <stop offset="50%" style="stop-color:#00e676;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#00c853;stop-opacity:0"/>
+    </radialGradient>
+    <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M 8 0 L 0 0 0 8" fill="none" stroke="#505050" stroke-width="0.5"/>
+    </pattern>
+    <filter id="shadow">
+      <feDropShadow dx="1" dy="2" stdDeviation="2.5" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="screenClip">
+      <rect x="100" y="150" width="58" height="34" rx="5"/>
+    </clipPath>
+  </defs>
 
-  <g id="shield_uncommon">
-    <path d="M33 103 L61 98 L65 122 L59 149 L36 147 L33 129 Z" fill="#2e476f" stroke="#13233a" stroke-width="1.2"/>
-    <path d="M33 103 L61 98 L65 122 L59 149 L36 147 L33 129 Z" fill="none" stroke="#4CAF50" stroke-width="1" opacity="0.95"/>
-    <path d="M37 106 L60 105" stroke="#a6c0e4" stroke-width="0.85" opacity="0.62"/>
-    <path d="M38 111 L59 111 M38 120 L59 120 M38 129 L59 129" stroke="#58739b" stroke-width="0.92" opacity="0.72"/>
+  <ellipse cx="40" cy="216" rx="16" ry="2" fill="#000" opacity="0.1"/>
+
+  <g transform="translate(5, 175) scale(0.133)">
+      <g id="uncommonParrot" filter="url(#shadow)">
+
+        <!-- ===== LEGS (Reinforced) ===== -->
+        <g id="legs">
+          <!-- Left leg -->
+          <g id="leftLeg">
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 -10; 0 0; 0 0" keyTimes="0; 0.2; 0.4; 1" dur="4s" repeatCount="indefinite" />
+            <!-- Piston with partial green cover -->
+            <rect x="97" y="248" width="2" height="22" fill="#95a5a6" stroke="none"/>
+            <rect x="94" y="255" width="8" height="8" rx="1" fill="url(#greenPlate)" stroke="#1b5e20" stroke-width="0.5"/>
+            <!-- Left knee joint -->
+            <circle cx="98" cy="250" r="3" fill="#4a4e64" stroke="#2c3e50" stroke-width="0.8"/>
+            <!-- Left foot - Skeletal but clean -->
+            <path d="M86,268 L80,275 L78,280 L118,280 L116,275 L110,268" fill="none" stroke="#5da861" stroke-width="1.2"/>
+            <circle cx="84" cy="278" r="1.5" fill="#4a4e64"/>
+            <circle cx="114" cy="278" r="1.5" fill="#4a4e64"/>
+          </g>
+
+          <!-- Right leg -->
+          <g id="rightLeg">
+            <animateTransform attributeName="transform" type="translate" values="0 0; 0 0; 0 -10; 0 0" keyTimes="0; 0.5; 0.7; 1" dur="4s" repeatCount="indefinite" />
+            <rect x="159" y="248" width="2" height="22" fill="#95a5a6" stroke="none"/>
+            <rect x="156" y="255" width="8" height="8" rx="1" fill="url(#greenPlate)" stroke="#1b5e20" stroke-width="0.5"/>
+            <circle cx="160" cy="250" r="3" fill="#4a4e64" stroke="#2c3e50" stroke-width="0.8"/>
+            <path d="M148,268 L142,275 L140,280 L180,280 L178,275 L172,268" fill="none" stroke="#5da861" stroke-width="1.2"/>
+            <circle cx="146" cy="278" r="1.5" fill="#4a4e64"/>
+            <circle cx="176" cy="278" r="1.5" fill="#4a4e64"/>
+          </g>
+        </g>
+
+        <!-- ===== LOWER BODY / HIP ===== -->
+        <g id="hip">
+          <!-- Frame with some plating -->
+          <rect x="90" y="234" width="78" height="18" rx="4" fill="#333" stroke="#4a4e64" stroke-width="1.5"/>
+          <!-- Green Accent Stripe -->
+          <rect x="95" y="240" width="68" height="3" rx="1" fill="#4CAF50" opacity="0.8"/>
+          <!-- Cable routed neatly -->
+          <path d="M100 252 C 100 255, 110 255, 110 252" fill="none" stroke="#4CAF50" stroke-width="1"/>
+        </g>
+
+        <!-- ===== TORSO (Partial Shell) ===== -->
+        <g id="torso">
+          <!-- Main body frame - still visible but cleaner -->
+          <rect x="80" y="132" width="98" height="104" rx="10" fill="url(#darkMetal)" stroke="#555" stroke-width="1"/>
+          
+          <!-- Green chest plate (partial) -->
+          <path d="M 80 132 L 178 132 L 178 150 L 160 160 L 98 160 L 80 150 Z" fill="url(#greenPlate)" stroke="#2E7D32" stroke-width="1"/>
+
+          <!-- Rusted chest plate backing restored to metal -->
+          <rect x="92" y="142" width="74" height="50" rx="8" fill="#444" stroke="#666" stroke-width="1"/>
+          
+          <!-- Screen - Functional -->
+          <rect x="100" y="150" width="58" height="34" rx="2" fill="url(#workingScreen)" stroke="#4CAF50" stroke-width="1"/>
+          <!-- Data display -->
+          <g clip-path="url(#screenClip)">
+             <polyline points="0,167 10,167 15,160 20,174 25,167 60,167" fill="none" stroke="#69f0ae" stroke-width="1.5" transform="translate(100,0)">
+                <animateTransform attributeName="transform" type="translate" from="100 0" to="90 0" dur="0.5s" repeatCount="indefinite"/>
+             </polyline>
+             <text x="105" y="162" font-family="monospace" font-size="8" fill="#69f0ae" opacity="0.9">SYS.OK</text>
+          </g>
+
+          <!-- Panel below chest - Reinforced -->
+          <rect x="92" y="198" width="74" height="18" rx="5" fill="#222" stroke="#555" stroke-width="1"/>
+          <!-- Green Status LEDs -->
+          <circle cx="106" cy="207" r="2" fill="#00e676" filter="url(#glow)">
+            <animate attributeName="opacity" values="1;0.5;1" dur="1s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="114" cy="207" r="2" fill="#00e676" opacity="0.5"/>
+          <circle cx="122" cy="207" r="2" fill="#00e676" opacity="0.5"/>
+
+          <!-- Side frame bars -->
+          <line x1="82" y1="160" x2="82" y2="220" stroke="#4CAF50" stroke-width="1.5"/>
+          <line x1="176" y1="160" x2="176" y2="220" stroke="#4CAF50" stroke-width="1.5"/>
+        </g>
+
+        <!-- ===== ARMS (Servos added) ===== -->
+        <g id="arms">
+          <!-- Left arm -->
+          <g id="leftArm">
+            <!-- Shoulder joint -->
+            <circle cx="74" cy="148" r="6" fill="#7f8c8d" stroke="#555" stroke-width="1"/>
+            <!-- Upper arm - Green casing -->
+            <rect x="68" y="155" width="12" height="28" rx="2" fill="url(#greenPlate)" stroke="#2E7D32" stroke-width="1"/>
+            <!-- Elbow joint -->
+            <circle cx="71" cy="186" r="4" fill="#555"/>
+            <!-- Forearm -->
+            <rect x="68" y="190" width="6" height="24" fill="none" stroke="#4CAF50" stroke-width="1"/>
+            <!-- Hand - clean metal -->
+            <path d="M62,214 L60,228 L73,226 L74,214" fill="#777" stroke="#555" stroke-width="1"/>
+            <path d="M60,228 L63,229" stroke="#555"/>
+            <path d="M70,228 L69,229" stroke="#555"/>
+          </g>
+
+          <!-- Right arm -->
+          <g id="rightArm">
+            <circle cx="184" cy="148" r="6" fill="#7f8c8d" stroke="#555" stroke-width="1"/>
+            <rect x="178" y="155" width="12" height="28" rx="2" fill="url(#greenPlate)" stroke="#2E7D32" stroke-width="1"/>
+            <circle cx="187" cy="186" r="4" fill="#555"/>
+            <rect x="184" y="190" width="6" height="24" fill="none" stroke="#4CAF50" stroke-width="1"/>
+            <path d="M184,214 L182,228 L195,226 L196,214" fill="#777" stroke="#555" stroke-width="1"/>
+            <path d="M182,228 L185,229" stroke="#555"/>
+            <path d="M192,228 L191,229" stroke="#555"/>
+          </g>
+        </g>
+
+        <!-- ===== NECK (Protected) ===== -->
+        <g id="neck">
+          <!-- Green collar -->
+          <rect x="120" y="116" width="18" height="18" rx="3" fill="url(#greenPlate)" stroke="#2E7D32"/>
+        </g>
+
+        <!-- ===== HEAD (Reconstructed) ===== -->
+        <g id="head">
+          <animateTransform attributeName="transform" type="rotate" values="0 130 118; 15 130 118; 15 130 118; -15 130 118; -15 130 118; 0 130 118; 0 130 118" keyTimes="0; 0.1; 0.3; 0.4; 0.6; 0.7; 1" dur="5s" repeatCount="indefinite" />
+          
+          <!-- Head frame with partial plating -->
+          <path d="M96 66 L162 66 L162 110 L96 110 Z" fill="#333" stroke="#555" stroke-width="1"/>
+          
+          <!-- Green top cap -->
+          <path d="M96 66 L129 50 L162 66" fill="url(#greenPlate)" stroke="#2E7D32" stroke-width="1"/>
+
+          <!-- Face plate - Clean metal -->
+          <rect x="96" y="66" width="66" height="42" rx="2" fill="url(#protoSteel)" opacity="0.9"/>
+
+          <!-- Eye sockets - Functional Green Sensors -->
+          <rect x="104" y="74" width="20" height="16" rx="2" fill="#111"/>
+          <circle cx="114" cy="82" r="5" fill="#00e676" filter="url(#glow)"/>
+          
+          <rect x="134" y="74" width="20" height="16" rx="2" fill="#111"/>
+          <circle cx="144" cy="82" r="5" fill="#00e676" filter="url(#glow)" opacity="0.8"/>
+
+          <!-- Mouth - Grille -->
+          <rect x="110" y="96" width="38" height="10" rx="2" fill="#222" stroke="#444"/>
+          <line x1="115" y1="96" x2="115" y2="106" stroke="#555"/>
+          <line x1="125" y1="96" x2="125" y2="106" stroke="#555"/>
+          <line x1="135" y1="96" x2="135" y2="106" stroke="#555"/>
+          <line x1="145" y1="96" x2="145" y2="106" stroke="#555"/>
+
+          <!-- Antenna / Sensor - Upgraded -->
+          <line x1="100" y1="60" x2="95" y2="35" stroke="#4CAF50" stroke-width="1.5"/>
+          <circle cx="95" cy="35" r="3" fill="#00e676" filter="url(#glow)"/>
+        </g>
+
+        <!-- ===== BACK THRUSTER PACK ===== -->
+        <g id="thrusterPack">
+           <!-- Basic housing restored -->
+          <rect x="112" y="220" width="34" height="16" rx="4" fill="#333" stroke="#555" stroke-width="1"/>
+          <circle cx="120" cy="228" r="3" fill="#4CAF50" opacity="0.5"/>
+          <circle cx="138" cy="228" r="3" fill="#4CAF50" opacity="0.5"/>
+        </g>
+
+      </g>
   </g>
-
 </svg>

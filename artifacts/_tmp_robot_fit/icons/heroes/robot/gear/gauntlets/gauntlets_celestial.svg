@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+
+  <g id="gauntlets_celestial">
+    <path d="M37 134 L63 134 L62 156 L38 156 Z" fill="#344a67" stroke="#1c2d49" stroke-width="1.2"/>
+    <path d="M117 134 L143 134 L142 156 L118 156 Z" fill="#344a67" stroke="#1c2d49" stroke-width="1.2"/>
+    <path d="M40 145 L60 145" stroke="#00E5FF" stroke-width="1.5" opacity="0.95"/>
+    <path d="M120 145 L140 145" stroke="#00E5FF" stroke-width="1.5" opacity="0.95"/>
+    <rect x="43" y="151" width="14" height="2.8" rx="1.2" fill="#d0b388" opacity="0.92"/>
+    <rect x="123" y="151" width="14" height="2.8" rx="1.2" fill="#d0b388" opacity="0.92"/>
+    <rect x="39.5" y="140.5" width="21" height="3.2" rx="1.6" fill="#4d6588" opacity="0.8"/><rect x="119.5" y="140.5" width="21" height="3.2" rx="1.6" fill="#4d6588" opacity="0.8"/><circle cx="50" cy="146" r="1.5" fill="#00E5FF"/><circle cx="130" cy="146" r="1.5" fill="#00E5FF"/><circle cx="50" cy="146" r="5.4" fill="#00E5FF" opacity="0.2"><animate attributeName="opacity" values="0.08;0.25;0.08" dur="2s" repeatCount="indefinite"/></circle><circle cx="130" cy="146" r="5.4" fill="#00E5FF" opacity="0.2"><animate attributeName="opacity" values="0.08;0.25;0.08" dur="2s" begin="0.35s" repeatCount="indefinite"/></circle><path d="M38 142 L35 137 L40 137 Z" fill="#00E5FF"/><path d="M142 142 L145 137 L140 137 Z" fill="#00E5FF"/><ellipse cx="50" cy="146" rx="8.5" ry="3.2" fill="none" stroke="#00E5FF" stroke-width="0.9" opacity="0.6"/><ellipse cx="130" cy="146" rx="8.5" ry="3.2" fill="none" stroke="#00E5FF" stroke-width="0.9" opacity="0.6"/>
+  </g>
+
+  </g>
+</svg>

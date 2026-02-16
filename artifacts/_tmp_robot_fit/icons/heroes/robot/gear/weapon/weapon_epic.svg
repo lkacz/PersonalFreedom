@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <radialGradient id="w_void_orb" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="70%" stop-color="#7B1FA2"/>
+      <stop offset="100%" stop-color="#E040FB" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g id="weapon_epic">
+    <!-- Levitating Void Focus -->
+    <!-- The Orb -->
+    <circle cx="135" cy="110" r="10" fill="url(#w_void_orb)">
+       <animate attributeName="r" values="8;11;8" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Floating Containment Rings -->
+    <path d="M125 110 A 10 10 0 0 1 145 110" fill="none" stroke="#E040FB" stroke-width="1.5">
+       <animateTransform attributeName="transform" type="rotate" from="0 135 110" to="360 135 110" dur="3s" repeatCount="indefinite"/>
+    </path>
+    <path d="M135 100 A 10 10 0 0 1 135 120" fill="none" stroke="#E040FB" stroke-width="1.5" transform="rotate(90 135 110)">
+       <animateTransform attributeName="transform" type="rotate" from="90 135 110" to="450 135 110" dur="4s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Energy Tether to Hand -->
+    <path d="M135 125 L135 140" stroke="#7B1FA2" stroke-width="1" stroke-dasharray="2,2"/>
+  </g>
+</svg>

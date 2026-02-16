@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+
+  <g id="weapon_celestial" transform="rotate(-24 121 131)">
+    <rect x="115" y="126" width="10.5" height="36" rx="3" fill="#18253a" stroke="#0d1522" stroke-width="1"/>
+    <rect x="116.8" y="134" width="7" height="2.5" rx="1" fill="#00E5FF" opacity="0.96"/>
+    <rect x="116.8" y="145" width="7" height="2.4" rx="1" fill="#00E5FF" opacity="0.78"/>
+    <rect x="118.8" y="160" width="3.2" height="5" rx="1.4" fill="#233a59"/>
+    <path d="M114.8 126 L125.8 126 L127.2 122 L113.6 122 Z" fill="#314b6d" stroke="#1b2d47" stroke-width="1"/>
+    <path d="M124 102 Q141 92 152 106 Q138 111 126 124 Z" fill="#c5d8ec" stroke="#304968" stroke-width="1.1"/>
+    <path d="M125 106 Q140 96 151 106" stroke="#00E5FF" stroke-width="1.5" fill="none" opacity="0.95"/><path d="M126 118 Q140 112 149 105" stroke="#00E5FF" stroke-width="0.95" fill="none" opacity="0.85"><animate attributeName="opacity" values="0.55;1;0.55" dur="1.5s" repeatCount="indefinite"/></path>
+    <path d="M114 126 L122 121 L127 129 L119 134 Z" fill="#27405e" stroke="#00E5FF" stroke-width="1"/><circle cx="119" cy="127.5" r="1.5" fill="#00E5FF"/>
+    <ellipse cx="142" cy="103" rx="11" ry="4.5" fill="none" stroke="#00E5FF" stroke-width="1" opacity="0.62"/>
+  </g>
+
+  </g>
+</svg>

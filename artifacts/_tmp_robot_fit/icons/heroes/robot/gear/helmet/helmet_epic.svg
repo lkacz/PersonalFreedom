@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 220" width="180" height="220">
+  <defs>
+    <linearGradient id="h_steel_dark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#455A64"/>
+      <stop offset="100%" stop-color="#263238"/>
+    </linearGradient>
+    <radialGradient id="h_eye_purple" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#E040FB"/>
+      <stop offset="100%" stop-color="#4A148C"/>
+    </radialGradient>
+    <filter id="h_void_glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g id="qt_anim_driver">
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -0.9; 0 0" dur="2.6s" repeatCount="indefinite"/>
+
+  <g id="helmet_epic" transform="translate(31, -3) scale(0.64)">
+    <!-- Base Chassis: Void Alloy (Same shape, darker) -->
+    <rect x="55" y="45" width="70" height="80" rx="15" fill="url(#h_steel_dark)" stroke="#E040FB" stroke-width="1"/>
+    
+    <!-- Glossy Reflection -->
+    <path d="M57 55 Q90 45 123 55 L123 65 Q90 55 57 65 Z" fill="#FFFFFF" opacity="0.1"/>
+    
+    <!-- Faceplate (Obsidian) -->
+    <path d="M60 60 L120 60 L120 100 L105 115 L75 115 L60 100 Z" fill="#000000"/>
+    
+    <!-- "VOID IF REMOVED" Sticker (Broken) -->
+    <rect x="110" y="50" width="12" height="4" fill="#F48FB1"/>
+    <line x1="116" y1="50" x2="116" y2="54" stroke="#263238" stroke-width="0.5"/> <!-- Cut/Void line -->
+    
+    <!-- Floating Modules (Ears detached) - Magnetic Levitation Detail -->
+    <line x1="50" y1="80" x2="55" y2="80" stroke="#E040FB" stroke-width="0.5" stroke-dasharray="1,1"/>
+    <line x1="125" y1="80" x2="130" y2="80" stroke="#E040FB" stroke-width="0.5" stroke-dasharray="1,1"/>
+    
+    <rect x="40" y="60" width="10" height="40" rx="2" fill="#455A64" stroke="#7B1FA2">
+       <animate attributeName="y" values="60;55;60" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Module detail -->
+     <circle cx="45" cy="70" r="2" fill="#E040FB"/> 
+
+    <rect x="130" y="60" width="10" height="40" rx="2" fill="#455A64" stroke="#7B1FA2">
+       <animate attributeName="y" values="60;65;60" dur="3s" repeatCount="indefinite"/>
+    </rect>
+    <!-- Module detail -->
+     <circle cx="135" cy="90" r="2" fill="#E040FB"/>
+
+    <!-- Twin Void Eyes (Static/Menacing) -->
+    <g filter="url(#h_void_glow)">
+        <circle cx="80" cy="80" r="10" fill="url(#h_eye_purple)"/>
+        <circle cx="100" cy="80" r="10" fill="url(#h_eye_purple)"/>
+        <circle cx="80" cy="80" r="2" fill="#FFFFFF"/> <!-- Pupil Light Pinprick -->
+        <circle cx="100" cy="80" r="2" fill="#FFFFFF"/>
+    </g>
+    
+    <!-- Runes/Circuitry on Forehead -->
+    <path d="M65 50 L75 50 L80 55" fill="none" stroke="#7B1FA2" stroke-width="0.5" opacity="0.6"/>
+    <path d="M115 50 L105 50 L100 55" fill="none" stroke="#7B1FA2" stroke-width="0.5" opacity="0.6"/>
+    
+    <!-- Forehead Crystal -->
+    <path d="M90 40 L95 50 L90 60 L85 50 Z" fill="#E040FB" stroke="#FFFFFF" stroke-width="0.5">
+       <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Chin Spikes -->
+    <path d="M80 120 L82 135 L85 120" fill="#455A64"/> <!-- Longer sharper -->
+    <path d="M95 120 L98 135 L101 120" fill="#455A64"/>
+  </g>
+  </g>
+</svg>
